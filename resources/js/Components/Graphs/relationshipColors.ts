@@ -52,7 +52,3 @@ export function edgeTypeColor(type: string | undefined | null): string {
 export function scopeColor(scope: string | undefined | null): string {
   return SCOPE_STYLES[scope as RelationshipScope]?.color ?? FALLBACK_COLOR;
 }
-
-export function directionStyle(direction: string | undefined | null) {
-  return DIRECTION_STYLES[direction as RelationshipDirection] ?? DIRECTION_STYLES.mutual;
-}

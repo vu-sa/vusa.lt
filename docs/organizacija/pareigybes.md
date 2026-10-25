@@ -3,13 +3,17 @@ doc_status: reviewed
 title: Pareigybės
 area: duties
 models: [Duty, Role, Tenant, Type, Institution, ResponsibilityGrant]
-last_reviewed: 2026-10-20
+last_reviewed: 2026-10-25
 tests:
+  - resources/js/Components/AdminForms/__tests__/DutyForm.component.test.ts
+  - resources/js/Pages/Admin/People/__tests__/ShowDuty.component.test.ts
+  - tests/Feature/Api/Admin/RecordActivityStatusTest.php
   - tests/Feature/Permissions/DutyTypeAssignmentTest.php
   - resources/js/Pages/Admin/People/__tests__/IndexDuty.component.test.ts
   - tests/Feature/Admin/DutyMergeTest.php
   - tests/Feature/Api/Admin/DutyApiControllerTest.php
   - tests/Browser/PostCreateNavigationTest.php
+  - tests/Browser/DutySeatReferenceTest.php
   - resources/js/Pages/Admin/People/__tests__/CreateRecordNavigation.component.test.ts
   - resources/js/Utils/__tests__/String.test.ts
   - resources/js/Features/Admin/DutiableTimeline/__tests__/dutyNames.test.ts
@@ -49,7 +53,7 @@ tests:
   - resources/js/Features/Admin/Occupancy/__tests__/occupancy.test.ts
   - resources/js/Features/Admin/Occupancy/__tests__/AssignDutyUserSheet.component.test.ts
   - resources/js/Features/Admin/Occupancy/__tests__/MemberSearchField.component.test.ts
-  - resources/js/Features/Admin/AdminSearch/Components/Detail/__tests__/DutyDetailPreview.component.test.ts
+  - resources/js/Components/Duties/__tests__/DutyPreview.component.test.ts
   - resources/js/Composables/__tests__/useDuplicateDutyCheck.test.ts
 ---
 
@@ -111,14 +115,28 @@ Tipą priskirti ar pašalinti gali jį deleguoti įgaliotas narys arba atsakomyb
 
 ### Vietų skaičius ir užimtumas {#uzimtumas}
 
-Kiekviena pareigybė turi numatytą **vietų skaičių**:
-- Jei pareigybei numatyta 1 vieta, o ją eina 1 narys – pareigybė pilnai užimta.
-- Jei pareigų šiuo metu niekas neina – ji laikoma **neužimta**.
-- Neužimtos pareigybės sąrašuose žymimos perspėjimo ženklu, o pareigybės puslapyje rodomas ryškus
-  perspėjimas **Pareigos neužimtos**.
+**Vietų skaičius** – neprivalomas, ranka įrašomas informacinis skaičius, pavyzdžiui,
+Parlamento ar komisijos vietų skaičius. Jis pildomas pareigybės formos
+**Papildomuose nustatymuose**. Kai skaičius nenustatytas, rodomas mygtukas **Pridėti vietų skaičių**:
+jį paspaudus atsiveria laukas su pradine reikšme **1**. Mygtukas **Išvalyti** pašalina skaičių ir vėl paslepia lauką.
+Pakeitimai įrašomi išsaugojus formą. Kai skaičius įrašytas, pareigybės puslapyje jis rodomas atskirai nuo dabartinių narių skaičiaus.
+
+Šis skaičius neriboja narių priskyrimo ir nenustato, ar pareigybė pilnai užimta.
+Institucijos puslapyje rodomi dabartiniai nariai, nesumuojant pareigybių vietų.
+Bendrų pareigybių [padalinių kvotos](#bendros-pareigybes) tikrinamos atskirai.
+
+- Aktyvi pareigybė be dabartinių narių laikoma **neužimta**. Sąrašuose ji žymima perspėjimo
+  ženklu, o pareigybės puslapyje rodomas **Pareigos neužimtos**.
+  Puslapio faktuose rodoma tik **Neužimta**, nekartojant narių skaičiaus **0**.
 - [Neaktyvi](#istorija) pareigybė neužimta nelaikoma – jos niekas ir nebeturi eiti.
-- Kolegialiems valdymo organams (taryboms, komisijoms) vietų skaičius nurodo, kiek studentų atstovų
-  turi būti deleguota į šį organą.
+
+<ChangelogNote version="v3.15" date="2026-10-25" title="Vietų skaičius – tik informacijai">
+
+Ankstesni vietų skaičiai išvalyti. Naujos pareigybės kuriamos be šio skaičiaus; ten, kur jis
+naudingas, galima įrašyti ranka. Narių priskyrimo languose ir laikotarpių tvarkyklėje nebėra
+pagal šį skaičių rodomų užimtumo perspėjimų.
+
+</ChangelogNote>
 
 ### Atsakomybės {#atsakomybes}
 
@@ -153,6 +171,13 @@ pirmininkas pagal pareigas yra ir padalinio tarybos narys.
   pareigų datas.
 
 ### Neaktyvios pareigybės, ankstesni pavadinimai ir pirmtakės {#istorija}
+
+Pareigybių sąrašo stulpelyje **Būsena** ir prie įrašo eilutėje rodoma **AKTYVI** arba **NEAKTYVI**.
+Turint teisę redaguoti konkrečią pareigybę, šiame meniu galima pakeisti jos būseną. Formoje naudojami tie patys
+žali ir pilki būsenų pasirinkimai; formos pakeitimas įsigalioja paspaudus **Išsaugoti**.
+Jei pareigybę dar eina narys, pirmiau reikia užbaigti jo pareigybių laikotarpį.
+Institucijos neaktyvumas rodomas atskira žyma **Neaktyvi institucija** ir nekeičia pačios pareigybės aktyvumo.
+
 
 Pareigybės istorija neturėtų trūkinėti, net jei pareigybė keitėsi:
 

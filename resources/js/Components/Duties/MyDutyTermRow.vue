@@ -11,6 +11,7 @@
           {{ term.institutionName }}
         </Link>
         <template v-else>{{ term.institutionName }}</template>
+        <InactiveInstitutionBadge :active="term.institutionIsActive ?? undefined" />
         <template v-if="term.tenant"> · {{ term.tenant }}</template>
       </span>
 
@@ -38,12 +39,15 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import InflectedDutyName from './InflectedDutyName.vue';
 
+import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
+
 export interface MyDutyTerm {
   id: string | number;
   dutyName: string;
   useOriginalDutyName?: boolean;
   dutyHref: string | null;
   institutionName: string | null;
+  institutionIsActive?: boolean | null;
   institutionHref: string | null;
   tenant: string | null;
   representsTenant: string | null;

@@ -218,12 +218,10 @@ describe('batch update users', function (): void {
         ]);
     });
 
-    test('can update places_to_occupy through batch update', function (): void {
-        // First verify current value
+    test('batch assignment ignores a submitted informational seat count', function (): void {
         $this->duty->update(['places_to_occupy' => 3]);
         $newUser = makeUser($this->tenant);
 
-        // Add a user change along with places_to_occupy update
         $response = asUser($this->dutyManager)->post(route('duties.batchUpdateUsers', $this->duty), [
             'user_changes' => [
                 [
@@ -237,7 +235,8 @@ describe('batch update users', function (): void {
 
         $response->assertRedirectToRoute('duties.show', $this->duty);
 
-        expect($this->duty->fresh()->places_to_occupy)->toBe(5);
+        expect($this->duty->fresh()->places_to_occupy)->toBe(3);
+        $this->assertDatabaseHas('dutiables', ['duty_id' => $this->duty->id, 'dutiable_id' => $newUser->id]);
     });
 });
 
@@ -278,14 +277,17 @@ describe('validation', function (): void {
             ->assertSessionHasErrors('user_changes.0.action');
     });
 
-    test('places_to_occupy must be a positive integer', function (): void {
-        $response = asUser($this->dutyManager)->post(route('duties.batchUpdateUsers', $this->duty), [
-            'user_changes' => [],
-            'places_to_occupy' => -1,
-        ]);
+    test('batch assignment may exceed the informational seat count', function (): void {
+        $this->duty->update(['places_to_occupy' => 1]);
+        $newUser = makeUser($this->tenant);
 
-        $response->assertStatus(302)
-            ->assertSessionHasErrors('places_to_occupy');
+        asUser($this->dutyManager)->post(route('duties.batchUpdateUsers', $this->duty), [
+            'user_changes' => [['user_id' => $newUser->id, 'action' => 'add']],
+            'places_to_occupy' => -1,
+        ])->assertSessionHasNoErrors()->assertRedirectToRoute('duties.show', $this->duty);
+
+        $this->assertDatabaseHas('dutiables', ['duty_id' => $this->duty->id, 'dutiable_id' => $newUser->id]);
+        expect($this->duty->fresh()->places_to_occupy)->toBe(1);
     });
 });
 

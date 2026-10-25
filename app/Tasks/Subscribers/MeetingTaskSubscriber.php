@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Notifications\MeetingAgendaCompletedNotification;
 use App\Notifications\MeetingCreatedNotification;
 use App\Services\AgendaItemPresenter;
+use App\Services\MeetingCompletionService;
 use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;
 use App\Tasks\Handlers\AgendaCompletionTaskHandler;
@@ -27,6 +28,7 @@ class MeetingTaskSubscriber
         protected AgendaCreationTaskHandler $creationHandler,
         protected AgendaCompletionTaskHandler $completionHandler,
         protected PeriodicityGapTaskHandler $periodicityGapHandler,
+        protected MeetingCompletionService $completionService,
     ) {}
 
     public function subscribe(Dispatcher $events): void
@@ -34,6 +36,11 @@ class MeetingTaskSubscriber
         $events->listen(
             MeetingFullyCreated::class,
             [self::class, 'handleMeetingCreated']
+        );
+
+        $events->listen(
+            'eloquent.restored: '.Meeting::class,
+            [self::class, 'handleMeetingRestored']
         );
 
         $events->listen(
@@ -58,28 +65,7 @@ class MeetingTaskSubscriber
 
         $meeting->load(['institutions.tenant', 'agendaItems']);
 
-        // Nominated secretaries when the term has any, else the representatives who
-        // were actually active at the meeting date. See ResolveTaskAssignees.
-        $representatives = ResolveTaskAssignees::forMeeting($meeting);
-        $agendaTask = null;
-
-        if ($representatives->isNotEmpty() && $meeting->agendaItems->isEmpty()) {
-            $agendaTask = $this->creationHandler->findOrCreate(
-                name: __('Sukurti posėdžio darbotvarkės klausimus'),
-                meeting: $meeting,
-                users: $representatives,
-                dueDate: $meeting->start_time->addDays(3)->toDateString(),
-            );
-        }
-
-        if ($representatives->isNotEmpty() && $meeting->agendaItems->isNotEmpty()) {
-            $agendaTask = $this->completionHandler->findOrCreate(
-                name: __('Užpildyti darbotvarkės klausimų informaciją'),
-                meeting: $meeting,
-                users: $representatives,
-                dueDate: $meeting->start_time->addDays(7)->toDateString(),
-            );
-        }
+        $agendaTask = $this->createAgendaTask($meeting);
 
         foreach ($meeting->institutions as $institution) {
             $this->periodicityGapHandler->completeForInstitution(
@@ -110,6 +96,50 @@ class MeetingTaskSubscriber
         if ($followers->isNotEmpty()) {
             Notification::send($followers, new MeetingCreatedNotification($meeting)->viaFollow());
         }
+    }
+
+    /**
+     * Trashing a meeting deletes its tasks (HasTasks), so restoring it hands back the open one. A filled-in
+     * agenda gets none: recreating its task only to close it would mail everyone a completion notice.
+     */
+    public function handleMeetingRestored(Meeting $meeting): void
+    {
+        $meeting->load(['institutions.tenant', 'agendaItems.votes']);
+
+        if ($this->completionService->calculate($meeting) === 'complete') {
+            return;
+        }
+
+        $this->createAgendaTask($meeting);
+    }
+
+    /**
+     * Assigned to the nominated secretaries when the term has any, else the representatives who
+     * were actually active at the meeting date. See ResolveTaskAssignees.
+     */
+    protected function createAgendaTask(Meeting $meeting): ?Task
+    {
+        $representatives = ResolveTaskAssignees::forMeeting($meeting);
+
+        if ($representatives->isEmpty()) {
+            return null;
+        }
+
+        if ($meeting->agendaItems->isEmpty()) {
+            return $this->creationHandler->findOrCreate(
+                name: __('Sukurti posėdžio darbotvarkės klausimus'),
+                meeting: $meeting,
+                users: $representatives,
+                dueDate: $meeting->start_time->addDays(3)->toDateString(),
+            );
+        }
+
+        return $this->completionHandler->findOrCreate(
+            name: __('Užpildyti darbotvarkės klausimų informaciją'),
+            meeting: $meeting,
+            users: $representatives,
+            dueDate: $meeting->start_time->addDays(7)->toDateString(),
+        );
     }
 
     public function handleAgendaItemSaved(AgendaItem $agendaItem): void

@@ -10,6 +10,7 @@ use App\Models\PendingUpload;
 use App\Models\ReservationDraft;
 use App\Models\User;
 use App\Services\SystemMonitorService;
+use App\Tasks\Synchronizers\ReservationReviewTaskSynchronizer;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
@@ -65,6 +66,12 @@ Schedule::command('notifications:send-digests')
     ->hourly()
     ->name('notification-digests')
     ->withoutOverlapping(10);
+
+Schedule::call(fn () => app(ReservationReviewTaskSynchronizer::class)->reconcileAll())
+    ->dailyAt('00:05')
+    ->timezone('Europe/Vilnius')
+    ->name('reservation-review-handover')
+    ->withoutOverlapping(30);
 
 // Task reminders: each user picks which of these intervals reach them
 Schedule::call(function (): void {

@@ -158,7 +158,6 @@ return [
                 'ex_officio_drift' => 'Ex officio datos nesutampa su šaltiniu',
                 'off_cadence' => 'Data nesutampa su kadencijos riba',
                 'spans_cadences' => 'Perrinkta kelioms kadencijoms',
-                'understaffed' => 'Užimta mažiau vietų, nei numatyta',
                 'orphan_derived_suspect' => 'Įtartinas ex officio įrašas be šaltinio',
             ],
             'detail' => [
@@ -168,7 +167,6 @@ return [
                 'drift_start' => 'pradžia nutolusi :days d.',
                 'drift_end' => 'pabaiga nutolusi :days d.',
                 'spans' => 'kadencijų: :count',
-                'understaffed' => 'užimta :active iš :places vietų',
                 'ex_officio_drift' => 'Tvarkoma perkeliant šaltinio įrašą.',
             ],
             'orphan_note' => 'Šie įrašai suteikia realias teises, o nuoroda į šaltinį jau ištrinta, todėl automatiškai jų liesti negalima. Paleisk „duties:audit-ex-officio“.',

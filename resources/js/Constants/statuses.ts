@@ -29,6 +29,7 @@ import {
   ThumbsDown,
   ThumbsUp,
   TriangleAlert,
+  UserX,
 } from '@lucide/vue';
 
 import { DocumentStatus, GoalStatus, InstitutionActivityStatus, MailingListMode, MailingListSyncStatus, SupportRequestStatus, VoteValue } from '@/Types/enums';
@@ -145,6 +146,15 @@ export const contentStatuses: Record<ContentStatus, StatusPresentation> = {
   draft: status('Juodraštis', 'neutral', FilePenLine, true),
 };
 
+export const activityStatuses = {
+  active: status('Aktyvi', 'success', CircleCheck, true),
+  inactive: status('Neaktyvi', 'neutral', CircleSlash, true),
+} satisfies Record<string, StatusPresentation>;
+
+export const inactiveInstitutionStatus: StatusPresentation = status('Neaktyvi institucija', 'neutral', CircleSlash);
+export const notReservableStatus: StatusPresentation = status('Nerezervuojamas', 'neutral', Ban);
+export const deletedMemberStatus: StatusPresentation = status('Ištrintas', 'neutral', UserX);
+
 export const bannerStatuses = {
   active: status('Aktyvus', 'success', Eye, true),
   inactive: status('Neaktyvus', 'neutral', CircleSlash, true),
@@ -214,4 +224,9 @@ export const activityRequestStatuses: Record<ActivityRequestStatus, StatusPresen
 
 function status(label: string, role: StatusRole, icon: LucideIcon, uppercase = false): StatusPresentation {
   return uppercase ? { label, role, icon, uppercase } : { label, role, icon };
+}
+
+/** A value from an untyped source (a search document, a facet) mapped to its status, or none when unnamed. */
+export function statusFor<K extends string>(map: Record<K, StatusPresentation>, value: string | null | undefined): StatusPresentation | null {
+  return value && Object.hasOwn(map, value) ? map[value as K] : null;
 }

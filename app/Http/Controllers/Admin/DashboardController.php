@@ -160,7 +160,7 @@ class DashboardController extends AdminController
     public function institutionGraph()
     {
         // Only the fields the graph actually renders (id, name, users_count, tenant for grouping).
-        $institutions = Institution::withCount('users')->get(['id', 'name', 'tenant_id']);
+        $institutions = Institution::withCount('users')->get(['id', 'name', 'tenant_id', 'is_active']);
 
         $relations = app(InstitutionRelationService::class);
         $typeGraph = $relations->typeGraph();
@@ -211,6 +211,7 @@ class DashboardController extends AdminController
                 return [
                     'id' => $institution->id,
                     'name' => $institution->name,
+                    'is_active' => (bool) $institution->is_active,
                     ...$activityStatus->toArray(),
                 ];
             })

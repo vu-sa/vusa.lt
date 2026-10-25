@@ -8,6 +8,7 @@
         <Link :href="route('duties.show', duty.id)" class="min-w-0 hover:underline">
           <DutyLabel :duty="{ name: nameDuringTerm, institution: duty.institution }" :holder :use-original-duty-name="Boolean(term.use_original_duty_name)" />
         </Link>
+        <InactiveInstitutionBadge :active="duty.institution?.is_active" />
         <span v-if="term.via_dutiable_id" :class="chipClass">{{ $t('Ex-officio') }}</span>
         <span v-if="term.tenant_id" :class="chipClass">{{ $t('Deleguota') }}</span>
         <span v-if="status === 'upcoming'" :class="chipClass">{{ $t('Būsima') }}</span>
@@ -46,6 +47,7 @@ import { computed } from 'vue';
 
 import { dutyNameOn, termStatus, type FormerDutyName } from './occupancy';
 
+import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import DutyLabel, { type DutyLabelHolder } from '@/Components/Duties/DutyLabel.vue';
 import { Button } from '@/Components/ui/button';
 import { formatStaticTime } from '@/Utils/IntlTime';
@@ -68,7 +70,7 @@ const props = defineProps<{
     name: string;
     contacts_grouping?: string | null;
     former_names?: FormerDutyName[] | null;
-    institution?: { name: string; tenant?: { shortname?: string | null } | null } | null;
+    institution?: { name: string; is_active?: boolean | number; tenant?: { shortname?: string | null } | null } | null;
     pivot?: Term | null;
   };
   /** Whose duty it is: the name ending follows their pronouns. */

@@ -136,6 +136,7 @@ import CollectionViewToggle from '@/Components/Collection/CollectionViewToggle.v
 import type { CollectionColumn, CollectionQuickFilter, CollectionTrash } from '@/Components/Collection/types';
 import type { CollectionChip, CollectionSource } from '@/Composables/useCollectionSource';
 import { useCollectionView, type CollectionViewMode } from '@/Composables/useCollectionView';
+import { useListDetailSelection } from '@/Composables/useListDetailSelection';
 
 const props = withDefaults(defineProps<{
   source: CollectionSource<T>;
@@ -180,7 +181,7 @@ const emit = defineEmits<{
   quickFilter: [id: string];
 }>();
 
-defineSlots<{
+const slots = defineSlots<{
   'lead'?: () => unknown;
   'actions': () => unknown;
   /** Replaces the chips row, e.g. to wrap it in a spotlight; render `CollectionQuickFilters` inside. */
@@ -201,6 +202,7 @@ const { view, availableViews, setView, filtersOpen } = useCollectionView({
   collection: props.collection,
   defaultView: props.defaultView,
   views: props.availableViews,
+  hasPreview: Boolean(slots.preview),
 });
 
 // --- Selection (TanStack row selection, keyed by itemKey) ------------------------------------
@@ -302,7 +304,11 @@ function clearAll(): void {
 
 const selectedKey = ref<string | null>(new URLSearchParams(window.location.search).get('item'));
 
-function select(key: string): void {
+function select(key: string | null): void {
+  // An emptied list keeps `?item=`: the source refills it (first load, a new search).
+  if (key === null) {
+    return;
+  }
   selectedKey.value = key;
 
   const url = new URL(window.location.href);
@@ -310,19 +316,26 @@ function select(key: string): void {
   window.history.replaceState(window.history.state, '', url.toString());
 }
 
-// The preview pane is never empty while there is something to show.
-watch(
-  () => [view.value, props.source.items.value] as const,
-  ([currentView, items]) => {
-    if (currentView !== 'preview' || items.length === 0) {
-      return;
-    }
-    if (!items.some(item => props.itemKey(item) === selectedKey.value)) {
-      select(props.itemKey(items[0]));
+const rowOf = (key: string) => [...(root.value?.querySelectorAll('[data-collection-key]') ?? [])]
+  .find(row => row.getAttribute('data-collection-key') === key) ?? null;
+
+// The preview pane is never empty while there is something to show; ↑/↓ walk it, Enter opens.
+useListDetailSelection({
+  items: () => props.source.items.value,
+  itemKey: props.itemKey,
+  selectedKey,
+  select,
+  enabled: () => view.value === 'preview',
+  root,
+  rowSelector: '[data-collection-open]',
+  onEnter: (item) => {
+    const href = rowOf(props.itemKey(item))?.querySelector('a[data-collection-open]')?.getAttribute('href');
+    if (href) {
+      router.visit(href);
     }
   },
-  { immediate: true },
-);
+  onNavigate: key => rowOf(key)?.scrollIntoView?.({ block: 'nearest' }),
+});
 
 // --- Back navigation lands where the user left (O3) -----------------------------------------
 

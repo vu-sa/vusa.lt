@@ -46,6 +46,7 @@ return [
         'create_failed' => 'Could not create the meeting.',
         'updated' => 'Meeting updated successfully.',
         'deleted' => 'Meeting deleted successfully!',
+        'discarded' => 'Meeting deleted permanently.',
         'restored' => 'Meeting restored successfully.',
         'institution_attached' => 'Institution attached to the meeting.',
         'calendar_event_created' => 'Draft calendar event created. Publish it to make the meeting publicly visible.',

@@ -116,6 +116,7 @@ return [
         'backtrack_skipped' => '{1} :count išteklius praleistas.|[2,9] :count ištekliai praleisti.|[10,*] :count išteklių praleista.',
     ],
     'show' => [
+        'participants' => 'Rezervacijos dalyviai',
         'no_resources_for_tenant' => 'Pagal pasirinktą padalinį išteklių nerasta.',
     ],
     'status_mixed' => 'Mišri',
@@ -214,8 +215,8 @@ return [
         'tenant' => 'Padalinys',
         'location' => 'Vieta',
         'identifier' => 'Identifikatorius',
-        'managers' => 'Valdytojai',
-        'no_managers' => 'valdytojų nėra',
+        'managers' => 'Dabartiniai administratoriai',
+        'no_managers' => 'Administratorius nepaskirtas',
         'sections' => [
             'availability' => 'Užimtumas',
             'about' => 'Apie',

@@ -58,6 +58,28 @@ describe('mark as read', function (): void {
         expect($notification->read_at)->not->toBeNull();
     });
 
+    test('opening a notification marks it read without a redirect to follow', function (): void {
+        $this->user->notify(new WelcomeNotification);
+        $notification = $this->user->unreadNotifications()->first();
+
+        asUser($this->user)
+            ->postJson(route('notifications.markAsRead', $notification->id))
+            ->assertNoContent();
+
+        expect($notification->refresh()->read_at)->not->toBeNull();
+    });
+
+    test('opening another user\'s notification is forbidden', function (): void {
+        $otherUser = makeUser($this->tenant);
+        $otherUser->notify(new WelcomeNotification);
+
+        asUser($this->user)
+            ->postJson(route('notifications.markAsRead', $otherUser->notifications()->first()->id))
+            ->assertForbidden();
+
+        expect($otherUser->unreadNotifications()->count())->toBe(1);
+    });
+
     test('user can mark all notifications as read', function (): void {
         $this->user->notify(new WelcomeNotification);
         $this->user->notify(new AccessChangedNotification([], now()->toDateString()));

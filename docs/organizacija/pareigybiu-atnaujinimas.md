@@ -3,8 +3,9 @@ doc_status: reviewed
 title: Pareigybių atnaujinimas
 area: duties
 models: [Duty, User, Dutiable]
-last_reviewed: 2026-09-30
+last_reviewed: 2026-10-25
 tests:
+  - resources/js/Components/DutyUserWizard/__tests__/DutyReferenceCounts.component.test.ts
   - tests/Feature/Admin/Management/DutyUserWizardTest.php
   - tests/Feature/Permissions/DutyBatchUsersSelfLockoutTest.php
   - resources/js/Pages/Admin/People/__tests__/DutyUserUpdateWizard.test.ts
@@ -40,7 +41,7 @@ Galima naudotis paieška; jei institucijos nėra, ją galima sukurti turint kūr
 
 ### 2 žingsnis. Pareigybės pasirinkimas {#zingsnis-2}
 
-Pasirenkama **viena** institucijos pareigybė. Prie jos rodomas vietų užimtumas.
+Pasirenkama **viena** institucijos pareigybė. Prie jos rodomas dabartinių narių skaičius; aktyvi pareigybė be narių pažymėta kaip neužimta.
 Jei pareigybės nėra, ją galima sukurti turint kūrimo teisę.
 
 ### 3 žingsnis. Narių priskyrimas {#zingsnis-3}
@@ -49,6 +50,10 @@ Jei pareigybės nėra, ją galima sukurti turint kūrimo teisę.
 - Narys pridedamas iš paieškos arba sukuriamas naujas nario įrašas, įvedant prašomus kontaktinius duomenis.
 - Patikrinama naujų laikotarpių pradžia ir pabaiga. Jei reikia, pasirenkama studijų programa.
 - Bendroje pareigybėje galima skirti savo padalinio narius pagal jam nustatytą kvotą.
+
+Vedlio viršuje **Vietų skaičius** rodomas tik tada, kai jis įrašytas pareigybės formoje.
+Nenustatytas skaičius nerodomas; dabartinių narių skaičius lieka narių skiltyje.
+Padalinio kvota rodoma ir tikrinama atskirai nuo informacinio vietų skaičiaus.
 
 **Pradžios ir pabaigos dienos įskaitomos.** Užbaigiant siūloma šiandienos data:
 narys šiandien dar eina pareigas. Plačiau – [Laikotarpio datos](/organizacija/pareigybes#laikotarpio-datos).
@@ -61,6 +66,7 @@ liepos 1 d. įrašius kaip pabaigą, ši diena taip pat bus aktyvi.
 ### 4 žingsnis. Peržiūra ir patvirtinimas {#zingsnis-4}
 
 Šiame žingsnyje peržiūrima, kas baigia pareigas, kas paskiriamas, jų datos ir naujų narių kontaktai.
+Rodomas dabartinis ir po pakeitimų numatomas narių skaičius. Informacinis vietų skaičius čia nekeičiamas.
 Patvirtinus įrašomi pasirinktos pareigybės pakeitimai. Jei išsaugoti nepavyksta,
 rodomos klaidos, kurias reikia ištaisyti.
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Actions\SerializeResourceManagers;
 use App\Http\Controllers\Api\ApiController;
 use App\Models\Resource;
 use Illuminate\Http\JsonResponse;
@@ -46,15 +47,7 @@ class ResourceApiController extends ApiController
         return $this->jsonSuccess([
             'upcoming_reservations' => $activeReservations->map($mapReservation)->values(),
             'previous_reservations' => $previousReservations->map($mapReservation)->values(),
-            'managers' => $resource->managers()
-                ->map(fn ($user) => [
-                    'id' => (string) $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'phone' => $user->phone,
-                    'facebook_url' => $user->facebook_url,
-                    'profile_photo_path' => $user->profile_photo_path,
-                ])->values(),
+            'managers' => SerializeResourceManagers::execute($resource),
         ]);
     }
 }

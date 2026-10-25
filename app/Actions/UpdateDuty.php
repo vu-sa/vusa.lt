@@ -16,7 +16,7 @@ class UpdateDuty
     public function __construct(private readonly DutyAssignmentService $assignments) {}
 
     /**
-     * @param array{name: array<string, string|null>|string, institution_id: string, places_to_occupy: int|float|string, contacts_grouping: string,
+     * @param array{name: array<string, string|null>|string, institution_id: string, places_to_occupy?: int|string|null, contacts_grouping: string,
      *     description?: array<string, string|null>|string|null, email?: string|null, current_users?: list<string>|null,
      *     types?: list<int>|null, ex_officio_target_duty_ids?: list<string>|null, assignable_tenants?: list<array{tenant_id: int, quota?: int|null, user_ids?: list<string>|null}>|null,
      *     is_active?: bool, former_names?: list<array{name: array<string, string|null>, used_until: string}>|null} $data

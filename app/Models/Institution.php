@@ -28,6 +28,7 @@ use App\Services\Typesense\SearchText;
 use App\Settings\MeetingSettings;
 use App\Support\LocalizedRouteSlugs;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -162,9 +163,11 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
         return $this->hasMany(Cadence::class)->orderBy('start_date');
     }
 
-    /**
-     * Scope institutions that have at least one active duty with current users.
-     */
+    public function scopeActive(Builder $query): void
+    {
+        $query->where('institutions.is_active', true);
+    }
+
     public function scopeHasActiveDuties($query)
     {
         return $query->whereHas('duties.current_users');
@@ -507,6 +510,9 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
         static::updated(function (Institution $institution): void {
             if ($institution->wasChanged('tenant_id')) {
                 InstitutionRelationService::flush();
+            }
+            if ($institution->wasChanged('is_active')) {
+                $institution->reindexDuties();
             }
         });
         static::deleted(fn () => InstitutionRelationService::flush());

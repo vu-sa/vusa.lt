@@ -11,6 +11,10 @@
     actions-beside-title
     @action="handleRecordAction"
   >
+    <template v-if="institution.is_active === false" #subtitle>
+      <InactiveInstitutionBadge :active="institution.is_active" />
+    </template>
+
     <template #fact-members>
       <UsersFactList :users="overview.current_users" :inline-limit="2" class="mt-1" />
     </template>
@@ -186,7 +190,6 @@
     :user="sheetUser"
     :study-programs="management?.studyPrograms ?? []"
     :taken-ids
-    :occupied-places
   />
 
   <AddCheckInDialog
@@ -209,7 +212,7 @@
   <ConfirmDialog
     v-model:open="deleteMeetingOpen"
     :title="$t('Ištrinti posėdį?')"
-    :description="$t('Posėdis bus perkeltas į šiukšlinę.')"
+    :description="meetingToDelete?.can_discard ? $t('Posėdis tuščias ir ką tik sukurtas, todėl bus ištrintas visam laikui.') : $t('Posėdis bus perkeltas į šiukšlinę.')"
     :confirm-label="$t('Ištrinti')"
     destructive
     @confirm="deleteMeeting"
@@ -233,6 +236,7 @@ import {
   UserCheck,
 } from '@lucide/vue';
 
+import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import InstitutionActivityRequestHistory, { type ActivityRequestHistory } from '@/Components/Institutions/InstitutionActivityRequestHistory.vue';
 import { CadenceSection } from '@/Components/Cadences';
 import InstitutionDutiesSection from '@/Components/Institutions/InstitutionDutiesSection.vue';
@@ -253,7 +257,7 @@ import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import { enterInstitution } from '@/Composables/useRecordTrail';
 import { getSuggestedCheckInRange, type TaskDisplayData } from '@/Composables/useTaskPresentation';
 import { countIncompleteTasks } from '@/Composables/useTaskUrgency';
-import { institutionActivityStatuses, type StatusPresentation } from '@/Constants/statuses';
+import { inactiveInstitutionStatus, institutionActivityStatuses, type StatusPresentation } from '@/Constants/statuses';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
 import { AssignDutyUserSheet } from '@/Features/Admin/Occupancy';
 import { FileableFilesPanel, type FileableFileItem } from '@/Components/Files';
@@ -366,12 +370,13 @@ const primaryType = computed(() => {
 });
 
 // Withheld with the meetings when they are not public and the reader has no access.
-const activityStatus = computed<StatusPresentation>(() => props.overview.activity_status
-  ? institutionActivityStatuses[props.overview.activity_status.status as InstitutionActivityStatus]
-  : { label: 'Nerodoma', role: 'neutral', icon: EyeOff });
+const activityStatus = computed<StatusPresentation>(() => props.institution.is_active === false
+  ? inactiveInstitutionStatus
+  : props.overview.activity_status
+    ? institutionActivityStatuses[props.overview.activity_status.status as InstitutionActivityStatus]
+    : { label: 'Nerodoma', role: 'neutral', icon: EyeOff });
 
 const filledPositions = computed(() => props.overview.current_users.length);
-const totalPositions = computed(() => props.overview.duties.reduce((sum, duty) => sum + Number(duty.places_to_occupy ?? 0), 0));
 
 const recordFacts = computed<RecordFact[]>(() => {
   // The meeting status leads, toned in its colour, with what it rests on — the same line the
@@ -408,10 +413,7 @@ const recordFacts = computed<RecordFact[]>(() => {
 
   facts.push({
     key: 'members',
-    // The fill rate rides in the label, so the value can be the people themselves.
-    label: totalPositions.value > 0
-      ? `${$t('Nariai')} · ${filledPositions.value} / ${totalPositions.value}`
-      : $t('Nariai'),
+    label: `${$t('Nariai')} · ${filledPositions.value}`,
   });
 
   facts.push({
@@ -601,7 +603,6 @@ const sheetUser = ref<App.Entities.User | null>(null);
 /** Who already holds the duty right now cannot be assigned to it again. */
 const holdsNow = (duty: DutyWithUsers | null) => (duty?.current_users ?? []);
 const takenIds = computed(() => holdsNow(sheetDuty.value as DutyWithUsers | null).map(user => String(user.id)));
-const occupiedPlaces = computed(() => holdsNow(sheetDuty.value as DutyWithUsers | null).length);
 
 const openAssignSheet = (duty: DutyWithUsers) => {
   sheetDuty.value = duty as unknown as App.Entities.Duty & Record<string, unknown>;

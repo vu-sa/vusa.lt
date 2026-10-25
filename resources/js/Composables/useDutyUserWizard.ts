@@ -37,9 +37,6 @@ export interface DutyUserWizardState {
   userChanges: UserChange[];
   newUsersToCreate: NewUserData[];
 
-  // Capacity update
-  newPlacesToOccupy?: number | null;
-
   // Loading and errors
   loading: {
     submission: boolean;
@@ -132,7 +129,6 @@ export function useDutyUserWizard(options: UseDutyUserWizardOptions = {}) {
 
     userChanges: [],
     newUsersToCreate: [],
-    newPlacesToOccupy: undefined,
 
     loading: {
       submission: false,
@@ -170,7 +166,6 @@ export function useDutyUserWizard(options: UseDutyUserWizardOptions = {}) {
     return state.currentStep > 1 && !state.loading.submission;
   });
 
-  // Capacity calculations
   const currentUserCount = computed(() => {
     return state.duty?.current_users?.length || 0;
   });
@@ -181,19 +176,7 @@ export function useDutyUserWizard(options: UseDutyUserWizardOptions = {}) {
     return currentUserCount.value + additions - removals;
   });
 
-  const targetCapacity = computed(() => {
-    return state.newPlacesToOccupy ?? state.duty?.places_to_occupy ?? 0;
-  });
-
-  const capacityMismatch = computed(() => {
-    return projectedUserCount.value !== targetCapacity.value;
-  });
-
-  const hasChanges = computed(() => {
-    return state.userChanges.length > 0
-      || state.newUsersToCreate.length > 0
-      || state.newPlacesToOccupy !== undefined;
-  });
+  const hasChanges = computed(() => state.userChanges.length > 0 || state.newUsersToCreate.length > 0);
 
   // Track if lazy data has been loaded
   const lazyDataLoaded = ref({
@@ -366,7 +349,6 @@ export function useDutyUserWizard(options: UseDutyUserWizardOptions = {}) {
       state.duty = undefined;
       state.userChanges = [];
       state.newUsersToCreate = [];
-      state.newPlacesToOccupy = undefined;
       state.validation.duty = false;
       state.validation.users = false;
     }
@@ -385,7 +367,6 @@ export function useDutyUserWizard(options: UseDutyUserWizardOptions = {}) {
     if (state.duty?.id !== duty.id) {
       state.userChanges = [];
       state.newUsersToCreate = [];
-      state.newPlacesToOccupy = undefined;
       state.validation.users = false;
     }
 
@@ -500,11 +481,6 @@ export function useDutyUserWizard(options: UseDutyUserWizardOptions = {}) {
       .forEach((c) => { c.endDate = date; });
   };
 
-  // Capacity update
-  const setNewPlacesToOccupy = (places: number | null) => {
-    state.newPlacesToOccupy = places;
-  };
-
   // Submission
   const submitChanges = async () => {
     if (!state.duty) return;
@@ -523,7 +499,6 @@ export function useDutyUserWizard(options: UseDutyUserWizardOptions = {}) {
           study_program_id: c.studyProgramId,
         })),
         new_users: state.newUsersToCreate,
-        places_to_occupy: state.newPlacesToOccupy,
       };
 
       router.post(route('duties.batchUpdateUsers', state.duty.id), payload, {
@@ -559,7 +534,6 @@ export function useDutyUserWizard(options: UseDutyUserWizardOptions = {}) {
     state.duty = undefined;
     state.userChanges = [];
     state.newUsersToCreate = [];
-    state.newPlacesToOccupy = undefined;
     state.errors = {};
     state.validation = {
       institution: false,
@@ -579,8 +553,6 @@ export function useDutyUserWizard(options: UseDutyUserWizardOptions = {}) {
     canGoToPrevious,
     currentUserCount,
     projectedUserCount,
-    targetCapacity,
-    capacityMismatch,
     hasChanges,
     lazyDataLoaded: readonly(lazyDataLoaded),
 
@@ -609,9 +581,6 @@ export function useDutyUserWizard(options: UseDutyUserWizardOptions = {}) {
     setAllAddedUsersStartDate,
     setAllAddedUsersEndDate,
     setAllRemovedUsersEndDate,
-
-    // Capacity
-    setNewPlacesToOccupy,
 
     // Actions
     submitChanges,

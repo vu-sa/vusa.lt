@@ -1,6 +1,6 @@
 import { flushPromises, mount } from '@vue/test-utils';
 import { computed, ref } from 'vue';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { router } from '@inertiajs/vue3';
 
 import CollectionPage from '../CollectionPage.vue';
@@ -62,8 +62,21 @@ function makeSource(overrides: Partial<Record<keyof CollectionSource<Item>, unkn
   return { source, spies };
 }
 
-function mountPage(source: CollectionSource<Item>, extra: Record<string, unknown> = {}, slots: Record<string, string> = {}) {
-  return mount(CollectionPage as never, {
+const mounted: { unmount: () => void }[] = [];
+
+afterEach(() => {
+  mounted.splice(0).forEach((wrapper) => {
+    try {
+      wrapper.unmount();
+    }
+    catch {
+      // Already unmounted by the test itself.
+    }
+  });
+});
+
+function mountPage(source: CollectionSource<Item>, extra: Record<string, unknown> = {}, slots: Record<string, string | undefined> = {}) {
+  const wrapper = mount(CollectionPage as never, {
     props: {
       source,
       collection: 'test',
@@ -75,15 +88,18 @@ function mountPage(source: CollectionSource<Item>, extra: Record<string, unknown
       columns: [{ key: 'name', label: 'Pavadinimas' }],
       ...extra,
     },
-    slots: {
+    slots: Object.fromEntries(Object.entries({
       row: '<template #row="{ item }"><a data-collection-open :href="`/x/${item.id}`" class="row">{{ item.name }}</a></template>',
       cell: '<template #cell="{ item }"><span class="cell">{{ item.name }}</span></template>',
       preview: '<template #preview="{ item }"><p class="preview">Peržiūra: {{ item.name }}</p></template>',
       ...slots,
-    },
+    }).filter(([, slot]) => slot !== undefined)) as Record<string, string>,
     global: { stubs: { ...commonStubs, Teleport: true } },
     attachTo: document.body,
   });
+  mounted.push(wrapper);
+
+  return wrapper;
 }
 
 beforeEach(() => {
@@ -252,6 +268,15 @@ describe('CollectionPage', () => {
       expect(mountPage(source).findAll('[role="radio"]').map(radio => radio.attributes('aria-label'))).toEqual(['Eilutės', 'Lentelė', 'Peržiūra']);
     });
 
+    it('never offers the preview pane to a collection without a preview', () => {
+      media.xl = true;
+      window.history.replaceState({}, '', '/mano/meetings?view=preview');
+      const wrapper = mountPage(makeSource().source, {}, { preview: undefined });
+
+      expect(wrapper.findAll('[role="radio"]').map(radio => radio.attributes('aria-label'))).toEqual(['Eilutės', 'Lentelė']);
+      expect(wrapper.find('[data-slot="collection-preview"]').exists()).toBe(false);
+    });
+
     it('is rows only on a phone, with no toggle to choose from', () => {
       media.md = false;
       const wrapper = mountPage(makeSource().source);
@@ -320,6 +345,19 @@ describe('CollectionPage', () => {
 
       expect(event.defaultPrevented).toBe(true);
       expect(wrapper.find('.preview').text()).toBe('Peržiūra: Antras');
+    });
+
+    it('walks the rows with the arrow keys and opens the record on Enter', async () => {
+      const wrapper = mountPage(makeSource().source);
+      await flushPromises();
+
+      document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }));
+      await flushPromises();
+      expect(wrapper.find('.preview').text()).toBe('Peržiūra: Antras');
+      expect(new URLSearchParams(window.location.search).get('item')).toBe('b');
+
+      document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+      expect(router.visit).toHaveBeenCalledWith('/x/b');
     });
 
     it('leaves modified clicks to the browser so a row can still open in a new tab', async () => {

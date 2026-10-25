@@ -11,7 +11,7 @@
     @toggle="$emit('toggle', $event)"
   >
     <template #detail="{ hit }">
-      <ResourceDetail
+      <ResourcePreview
         v-if="hit"
         :key="hit.id"
         :resource="hit.raw as ResourceSearchResult"
@@ -28,13 +28,13 @@
 import { computed, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import ResourceDetail from '../Detail/ResourceDetail.vue';
 import { useAdminCollectionSearch } from '../../Composables/useAdminCollectionSearch';
 import { useResourceAvailability, type DateTimeRange } from '../../Composables/useResourceAvailability';
 import { normalizeHit, type NormalizedSearchHit } from '../../Utils/searchHitMappers';
 
 import SearchSelectView from './SearchSelectView.vue';
 
+import ResourcePreview from '@/Components/Reservations/ResourcePreview.vue';
 import type { ResourceSearchResult } from '@/Shared/Search/types';
 
 const props = defineProps<{

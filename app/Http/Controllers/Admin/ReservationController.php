@@ -8,6 +8,7 @@ use App\Actions\LoadReservationResourceApprovals;
 use App\Actions\NotifyAffectedReservationDrafts;
 use App\Actions\SerializeReservationCart;
 use App\Actions\SerializeReservationsForTable;
+use App\Actions\SerializeResourceManagers;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexReservationRequest;
 use App\Http\Requests\StoreReservationRequest;
@@ -169,7 +170,7 @@ class ReservationController extends AdminController
 
                     return [
                         ...$resource->toArray(),
-                        'managers' => $resource->managers(),
+                        'managers' => SerializeResourceManagers::execute($resource),
                         'pivot' => $resource->pivot->append('approvable')->toArray(),
                         'lowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($capacityAtDateTimeRange),
                         // Per resource: `resources.update.padalinys` is tenant-scoped, so one flag would be wrong.

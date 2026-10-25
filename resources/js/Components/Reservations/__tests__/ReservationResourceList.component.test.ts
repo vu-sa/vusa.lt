@@ -77,6 +77,19 @@ describe('ReservationResourceList', () => {
     expect(roles).toEqual(['info', 'progress']);
   });
 
+  it('shows current contacts independently of historical decision makers', () => {
+    const resource = {
+      ...item('1', 'returned', {}, { approvals: [{ id: 'a1', decision: 'approved', created_at: '2026-09-20T09:00:00Z', user: { name: 'Buvęs administratorius' } }] }),
+      managers: [{ id: 'new', name: 'Dabartinis administratorius', email: 'dabartinis@vusa.lt' }],
+    };
+    const wrapper = mountList([resource]);
+    const contacts = wrapper.get('[data-slot="resource-managers"]');
+    expect(contacts.text()).toContain('Dabartinis administratorius');
+    expect(contacts.text()).not.toContain('Buvęs administratorius');
+    expect(contacts.get('a').attributes('href')).toBe('mailto:dabartinis@vusa.lt');
+    expect(wrapper.get('details').text()).toContain('Buvęs administratorius');
+  });
+
   it('offers the approve action only where the server flagged the item approvable', () => {
     const wrapper = mountList([item('1', 'created', { approvable: true }), item('2', 'created', { approvable: false })]);
     const rows = wrapper.findAll('[data-slot="reservation-resource-row"]');

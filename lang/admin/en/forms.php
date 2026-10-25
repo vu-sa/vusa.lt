@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'activity_status' => [
+        'spotlight_title' => 'Change activity in the list',
+        'spotlight_description' => 'Choose a status to activate or deactivate a record.',
+        'deactivate_title' => 'Deactivate this institution?',
+        'deactivate' => 'Deactivate',
+    ],
     'duty_type_filter' => [
         'label' => 'Duty type',
         'spotlight' => 'Choose a duty type in Filters, or “No type” to find duties without a type.',
@@ -13,6 +19,9 @@ return [
     ],
     'required_note' => 'Fields marked with an asterisk (*) are required; you can skip the others.',
     'fields' => [
+        'add_duty_seats' => 'Add seat count',
+        'duty_seats_spotlight_title' => 'Seat count has moved',
+        'duty_seats_spotlight_body' => 'You can add or clear the informational seat count in advanced settings.',
         'name_and_surname' => 'Name and surname',
         'title' => 'Title',
         'name' => 'Name',

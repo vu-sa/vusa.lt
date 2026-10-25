@@ -24,7 +24,7 @@
       </div>
     </template>
 
-    <template #fact-managers>
+    <template #fact-participants>
       <div v-if="reservation.users?.length" class="flex items-center gap-2">
         <UsersAvatarGroup :users="reservation.users" :max="3" size="xxs" />
         <span class="text-sm text-muted-foreground tabular-nums">{{ reservation.users.length }}</span>
@@ -213,7 +213,7 @@ const recordFacts = computed<RecordFact[]>(() => [
   { key: 'period', label: $t('Laikotarpis'), value: period.value },
   { key: 'resources', label: capitalize($tChoice('entities.resource.model', 2)), value: String(resourcesCount.value) },
   ...(pendingCount.value > 0 ? [{ key: 'pending', label: $t('laukia'), value: String(pendingCount.value) }] : []),
-  { key: 'managers', label: $t('valdytojai'), value: '' },
+  { key: 'participants', label: $t('reservations.show.participants'), value: '' },
 ]);
 
 /**

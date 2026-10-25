@@ -208,6 +208,7 @@ export interface MeetingSearchResult {
   institution_name_lt?: string;
   institution_name_en?: string;
   institution_ids?: string[];
+  inactive_institution_ids?: string[];
   completion_status?: string;
   vote_alignment_status?: string;
   institution_type_title?: string;
@@ -236,6 +237,7 @@ export interface AgendaItemSearchResult {
   vote_result?: string;
   meeting_start_time?: number;
   institution_ids?: string[];
+  inactive_institution_ids?: string[];
   institution_name_lt?: string;
   institution_name_en?: string;
   tenant_shortnames?: string[];
@@ -263,6 +265,7 @@ export interface NewsSearchResult {
   lang: string;
   tenant_id?: number;
   tenant_name?: string;
+  tenant_shortname?: string;
   /** Only present in the admin `news` index — the public index drops it. */
   draft?: boolean;
 }
@@ -324,6 +327,7 @@ export interface InstitutionSearchResult {
   current_user_names?: string[];
   duty_names?: string[];
   type_ids?: number[];
+  is_active?: boolean;
 }
 
 /**
@@ -384,6 +388,7 @@ export interface DutySearchResult {
   email?: string;
   /** Absent on documents indexed before the flag existed; treat as active. */
   is_active?: boolean;
+  institution_is_active?: boolean;
   former_names?: string[];
   /** Home tenant ∪ assignable tenants — drives the scoped-key access filter. */
   tenant_ids?: number[];

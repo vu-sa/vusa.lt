@@ -291,11 +291,11 @@ import {
 } from 'reka-ui';
 import { capitalize, computed, ref } from 'vue';
 
+import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
 import FormPanel from '@/Components/Patterns/FormPanel.vue';
-import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { Button } from '@/Components/ui/button';
 import {
@@ -498,6 +498,7 @@ const selectedInstitutionHits = ref<NormalizedSearchHit[]>(props.institutions
     id: institution.id,
     name_lt: institution.name,
     tenant_id: institution.tenant_id,
+    is_active: institution.is_active === undefined ? true : Boolean(institution.is_active),
   })));
 
 const institutionBaseFilterBy = computed(() => {

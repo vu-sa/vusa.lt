@@ -258,8 +258,6 @@ function detailFor(finding: TimelineDiagnostic): string | null {
     suggested_start?: string;
     suggested_end?: string;
     drift_days?: Record<string, number>;
-    active?: number;
-    places_to_occupy?: number;
     count?: number;
   };
   const row = rowsById.value.get(finding.row_ids[0] ?? '');
@@ -291,13 +289,6 @@ function detailFor(finding: TimelineDiagnostic): string | null {
 
     case 'spans_cadences':
       return $t('dutiables.timeline.diagnostics.detail.spans', { count: detail.count ?? 0 });
-
-    // The "there is less space than places_to_occupy" message that never said how many.
-    case 'understaffed':
-      return $t('dutiables.timeline.diagnostics.detail.understaffed', {
-        active: detail.active ?? 0,
-        places: detail.places_to_occupy ?? 0,
-      });
 
     case 'ex_officio_drift':
       return $t('dutiables.timeline.diagnostics.detail.ex_officio_drift');

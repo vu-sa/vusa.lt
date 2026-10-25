@@ -18,18 +18,23 @@ class SyncRelationSearchIndex
     public function subscribe(Dispatcher $events): void
     {
         $events->listen(SearchRelationChanged::class, fn (SearchRelationChanged $event) => $this->relationChanged($event));
+        $events->listen('eloquent.updated: '.Institution::class, function (Institution $institution): void {
+            if ($institution->wasChanged('is_active')) {
+                $this->institutionFactsChanged($institution);
+            }
+        });
     }
 
     private function relationChanged(SearchRelationChanged $event): void
     {
         match (true) {
-            $event->model instanceof Institution && $event->relation === 'types' => $this->institutionTypesChanged($event->model),
+            $event->model instanceof Institution && $event->relation === 'types' => $this->institutionFactsChanged($event->model),
             $event->model instanceof Meeting && $event->relation === 'institutions' => $this->meetingInstitutionsChanged($event->model),
             default => null,
         };
     }
 
-    private function institutionTypesChanged(Institution $institution): void
+    private function institutionFactsChanged(Institution $institution): void
     {
         $institution->unsetRelation('types')->searchable();
 

@@ -34,13 +34,15 @@
         </div>
 
         <div class="flex items-center gap-4">
-          <div class="text-right">
-            <p class="text-[11px] text-muted-foreground font-medium">
-              {{ $t('Vietų skaičius') }}
-            </p>
-            <p class="font-bold text-sm text-foreground">
-              {{ currentUsers.length }} / {{ wizard.state.duty?.places_to_occupy || '?' }}
-            </p>
+          <div v-if="wizard.state.duty?.places_to_occupy != null || isExternalDuty" class="text-right">
+            <template v-if="wizard.state.duty?.places_to_occupy != null">
+              <p class="text-[11px] text-muted-foreground font-medium">
+                {{ $t('Vietų skaičius') }}
+              </p>
+              <p class="font-bold text-sm text-foreground" data-testid="wizard-seat-count">
+                {{ wizard.state.duty.places_to_occupy }}
+              </p>
+            </template>
             <p v-if="isExternalDuty" class="text-[11px] text-muted-foreground">
               {{ $t('forms.fields.tenant_quota') }}: {{ tenantQuota ?? '∞' }}
             </p>
@@ -418,11 +420,8 @@
           </span>
           <Separator orientation="vertical" class="h-4" />
           <span class="text-muted-foreground font-normal">
-            {{ $t('Naujas vietų skaičius:') }}
+            {{ $t('Narių po pakeitimų:') }}
             <strong class="text-foreground ml-1">{{ wizard.projectedUserCount.value }}</strong>
-            <span v-if="wizard.capacityMismatch.value" class="text-status-attention ml-1.5 inline-flex items-center">
-              <AlertTriangle class="size-3.5 inline" />
-            </span>
           </span>
         </div>
       </div>
@@ -467,7 +466,7 @@ import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 const wizard = inject<ReturnType<typeof useDutyUserWizard>>('dutyUserWizard')!;
 
 const page = usePage();
-const auth = page.props.auth as any;
+const auth = page.props.auth;
 
 const isLoadingStepData = computed(() => wizard.state.loading.stepData);
 
@@ -575,8 +574,8 @@ const handleAddUser = (user: UserSearchResult) => {
   showUserSearch.value = false;
 };
 
-const handleRemoveUser = (user: any) => {
-  wizard.addUserToRemove(user as App.Entities.User, getTodayDate());
+const handleRemoveUser = (user: App.Entities.User) => {
+  wizard.addUserToRemove(user, getTodayDate());
 };
 
 const cancelRemoval = (userId: string) => {

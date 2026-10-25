@@ -237,7 +237,7 @@ test('closed assignments remain in both user history surfaces with their institu
     );
     $summary = GetUserAccessSummary::execute($user->fresh());
     expect(collect($summary['ended'])->firstWhere('id', $term->id))
-        ->toMatchArray(['institutionName' => 'Buvusi institucija', 'startDate' => '2026-01-01', 'endDate' => '2026-10-15']);
+        ->toMatchArray(['institutionName' => 'Buvusi institucija', 'institutionIsActive' => false, 'startDate' => '2026-01-01', 'endDate' => '2026-10-15']);
     asUser($user)->get(route('profile.roles'))->assertOk()->assertInertia(fn (Assert $page) => $page
         ->where('access.ended.0.institutionName', 'Buvusi institucija')
         ->where('access.ended.0.endDate', '2026-10-15')

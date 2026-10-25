@@ -3,8 +3,8 @@
   <div
     data-slot="mobile-context-bar"
     :class="[
-      'shrink-0 border-b border-(--border-opaque) bg-background/90 backdrop-blur-sm md:hidden',
-      '[.a11y-contrast_&]:bg-background [.a11y-contrast_&]:backdrop-blur-none',
+      'shrink-0 border-b border-(--border-opaque) bg-background/90 md:hidden',
+      '[.a11y-contrast_&]:bg-background',
     ]"
   >
     <div class="flex h-12 items-stretch">

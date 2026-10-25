@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Posėdžiai
 area: meetings
 models: [Meeting]
-last_reviewed: 2026-10-21
+last_reviewed: 2026-10-25
 tests:
   - tests/Feature/Permissions/MeetingPermissionsTest.php
   - tests/Feature/Admin/Search/SearchVisibilityParityTest.php
@@ -161,7 +161,7 @@ posėdžio** (paimami ankstesnio posėdžio punktai, kuriuos gali pataisyti). Na
 darbotvarkės gale. Kaip pildyti punktus, aprašyta puslapyje
 [Darbotvarkės klausimai](/visak/darbotvarkes-klausimai).
 
-### Posėdžio keitimas
+### Posėdžio keitimas {#keitimas}
 
 - **Redaguoti posėdį** – šoninėje formoje pakeisti datą, tipą ir aprašymą. Jei uždarai formą
   neišsaugojęs pakeitimų, sistema paprašo patvirtinti. Aprašymą gali įrašyti lietuviškai ir angliškai.
@@ -182,7 +182,16 @@ darbotvarkės gale. Kaip pildyti punktus, aprašyta puslapyje
   ir paskelbiami. Failas turi priklausyti posėdžio institucijos padaliniui (padalinys nurodomas
   SharePoint).
 - **Ištrinti** – posėdis patenka į [šiukšlinę](/pagrindai/platforma#siuksline) kartu su
-  darbotvarke, balsavimais ir pastabomis. Atkūrus grįžta viskas.
+  darbotvarke, balsavimais ir pastabomis, o jo užduotys pašalinamos. Atkūrus grįžta viskas, o
+  neužbaigta darbotvarkės užduotis sukuriama iš naujo. Posėdis, sukurtas mažiau nei prieš parą ir
+  dar tuščias (be darbotvarkės, failų, dokumentų, komentarų ir kalendoriaus įrašo), ištrinamas visam
+  laikui – patvirtinimo lange tai parašyta.
+
+<ChangelogNote version="v3.14" date="2026-10-25" title="Ką tik sukurtas tuščias posėdis ištrinamas visam laikui">
+
+Anksčiau toks posėdis patekdavo į šiukšlinę, o atkūrus posėdį jo užduotys negrįždavo.
+
+</ChangelogNote>
 
 ### Posėdžių sąrašas
 
@@ -240,6 +249,7 @@ dieną. Dabar juos pildo ir posėdžio metu buvę institucijos nariai.
 | Užregistruojamas posėdis be darbotvarkės | Atstovai (arba kadencijos sekretoriai) | Užduotį **„Sukurti posėdžio darbotvarkės klausimus“**, terminas – 3 dienos po posėdžio |
 | Posėdis įgyja darbotvarkę | Tie patys | Užduotį **„Užpildyti darbotvarkės klausimų informaciją“**, terminas – 7 dienos po posėdžio; darbotvarkės kūrimo užduotis užbaigiama |
 | Pildomi punktai | – | Užduoties eiga (pvz., „1 iš 2“) atnaujinama; užpildžius visus, užduotis užbaigiama. Jei punktas vėl tampa nepilnas – užduotis atveriama |
+| Posėdis perkeliamas į šiukšlinę / atkuriamas | Tie patys | Užduotys pašalinamos; atkūrus vėl sukuriama darbotvarkės kūrimo arba pildymo užduotis (jei darbotvarkė jau užpildyta – nekuriama) |
 | Užregistruojamas posėdis | Koordinatoriai ir institucijos sekėjai | Pranešimą apie naują posėdį |
 | Užpildoma visa darbotvarkė | Koordinatoriai ir sekėjai | Pranešimą, kad darbotvarkė užpildyta |
 | Prieš posėdį | Posėdžio dieną pareigas einantys nariai ir sekretoriai | Priminimą (numatytai **prieš 24 ir 1 valandą**) |

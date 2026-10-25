@@ -20,7 +20,26 @@
         :hint="purpose.drives"
         :error="form.errors[`purposes.${purpose.key}`]"
       >
+        <SpotlightPopover
+          v-if="purpose.key === 'reservation_handling' && canEdit"
+          class="w-full"
+          :title="purpose.label"
+          :description="purpose.drives"
+          :is-dismissed="reservationSpotlight.isDismissed.value"
+          @dismiss="reservationSpotlight.dismiss()"
+        >
+          <NativeSelect
+            :id="`purpose_${purpose.key}`"
+            v-model="form.purposes[purpose.key]"
+            :options="responsibilityOptions"
+            :placeholder="$t('settings.purposes.responsibility_none')"
+            placeholder-selectable
+            @change="reservationSpotlight.dismiss()"
+            @pointerdown="reservationSpotlight.dismiss()"
+          />
+        </SpotlightPopover>
         <NativeSelect
+          v-else
           :id="`purpose_${purpose.key}`"
           v-model="form.purposes[purpose.key]"
           :options="responsibilityOptions"
@@ -58,9 +77,11 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import FormSection from '@/Components/Patterns/FormSection.vue';
 import { NativeSelect } from '@/Components/ui/native-select';
 import { TypeTreeSelect } from '@/Components/AdminForms/TypeTree';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 
 interface Purpose { key: string; label: string; drives: string; responsibility_id: string | null }
 interface DutyTypePart { key: string; label: string; drives: string; type_id: number | null; effective_type_id: number | null; fallback_slug: string }
@@ -72,6 +93,8 @@ const props = defineProps<{
   dutyTypes: DutyTypePart[];
   dutyTypeOptions: { id: number; title: string; parent_id: number | null }[];
 }>();
+
+const reservationSpotlight = useFeatureSpotlight('reservation-handling-v1');
 
 const responsibilityOptions = computed(() => props.responsibilities.map(item => ({ value: item.id, label: item.title })));
 

@@ -9,6 +9,10 @@ return [
     ],
 
     'purposes' => [
+        'reservation_handling' => [
+            'label' => 'Rezervacijų administravimas',
+            'drives' => 'Kas gauna prašymus patvirtinti rezervacijas ir nebaigtas peržiūros užduotis bei rodomas kaip dabartinis išteklių kontaktas. Sprendimams reikia atskirų teisių.',
+        ],
         'student_representation' => [
             'label' => 'Studentų atstovavimas',
             'drives' => 'Jos nariai laikomi studentų atstovais: rodomi posėdžiuose, gauna užduotis, kai institucija neturi sekretoriaus, ir veiklos užklausas, jų darbas skaičiuojamas atstovų rodikliuose.',

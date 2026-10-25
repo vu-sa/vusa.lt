@@ -90,6 +90,31 @@ const mountStep = (wizard = makeWizard()) =>
   });
 
 describe('Step3UserAssignment.vue', () => {
+  it.each([null, undefined])('hides the seat count for an unset reference of %s', (places) => {
+    const wrapper = mountStep(makeWizard({ duty: { id: 'duty-1', name: 'Duty', places_to_occupy: places, current_users: [] } }));
+    expect(wrapper.text()).not.toContain('Vietų skaičius');
+    expect(wrapper.find('[data-testid="wizard-seat-count"]').exists()).toBe(false);
+    expect(wrapper.text()).toContain('Dabartiniai nariai');
+  });
+
+  it('shows the configured seat count independently of members and reacts to duty changes', async () => {
+    const wizard = makeWizard();
+    const wrapper = mountStep(wizard);
+    expect(wrapper.get('[data-testid="wizard-seat-count"]').text()).toBe('3');
+    wizard.state.duty = { ...wizard.state.duty, places_to_occupy: null };
+    await nextTick();
+    expect(wrapper.text()).not.toContain('Vietų skaičius');
+  });
+
+  it('keeps an external tenant quota visible without an informational count', () => {
+    const wrapper = mountStep(makeWizard({
+      duty: { id: 'duty-1', name: 'Duty', places_to_occupy: null, current_users: [], assignable_tenants: [{ pivot: { quota: 2 } }] },
+    }));
+    expect(wrapper.text()).not.toContain('Vietų skaičius');
+    expect(wrapper.text()).toContain('forms.fields.tenant_quota');
+    expect(wrapper.text()).toContain('2');
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     apiMock.data.value = [];

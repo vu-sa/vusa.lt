@@ -119,119 +119,18 @@
     </template>
 
     <template #preview="{ item }">
-      <section class="flex flex-col gap-5 p-5">
-        <div>
-          <div class="flex items-center justify-between gap-3">
-            <p class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              {{ $t('Problema') }}
-            </p>
-            <StatusBadge
-              v-if="item.status && problemStatuses[item.status as ProblemStatus]"
-              :status="problemStatuses[item.status as ProblemStatus]"
-            />
-          </div>
-          <Link
-            v-if="!isDeleted"
-            :href="route('problems.show', item.id)"
-            class="mt-1.5 block text-lg font-semibold leading-snug hover:text-brand"
-          >
-            {{ localizedTitle(item) }}
-          </Link>
-          <h2 v-else class="mt-1.5 text-lg font-semibold leading-snug text-muted-foreground">
-            {{ localizedTitle(item) }}
-          </h2>
-          <div v-if="item.tenant?.shortname" class="mt-1 text-xs text-muted-foreground">
-            {{ item.tenant.shortname }}
-          </div>
-        </div>
-
-        <dl class="grid gap-3 border-y border-border py-4 text-sm">
-          <div class="flex items-center justify-between gap-2">
-            <dt class="text-xs text-muted-foreground">
-              {{ $t('Atsakingas') }}
-            </dt>
-            <dd class="text-sm font-medium">
-              {{ item.responsible_user?.name ?? '—' }}
-            </dd>
-          </div>
-          <div class="flex items-center justify-between gap-2">
-            <dt class="text-xs text-muted-foreground">
-              {{ $t('Įvykio data') }}
-            </dt>
-            <dd class="text-sm tabular-nums">
-              {{ formatDate(new Date(item.occurred_at)) }}
-            </dd>
-          </div>
-          <div v-if="item.resolved_at" class="flex items-center justify-between gap-2">
-            <dt class="text-xs text-muted-foreground">
-              {{ $t('Išspręsta') }}
-            </dt>
-            <dd class="text-sm tabular-nums">
-              {{ formatDate(new Date(item.resolved_at)) }}
-            </dd>
-          </div>
-          <div v-if="item.categories?.length" class="flex flex-col gap-1.5">
-            <dt class="text-xs text-muted-foreground">
-              {{ $t('Kategorijos') }}
-            </dt>
-            <dd class="flex flex-wrap gap-1">
-              <Badge v-for="cat in item.categories" :key="cat.id" variant="secondary" class="text-xs">
-                {{ cat.name }}
-              </Badge>
-            </dd>
-          </div>
-          <div v-if="item.institutions?.length" class="flex flex-col gap-1.5">
-            <dt class="text-xs text-muted-foreground">
-              {{ $tChoice('entities.institution.model', 2) }}
-            </dt>
-            <dd class="flex flex-wrap gap-1">
-              <Badge v-for="inst in item.institutions" :key="inst.id" variant="outline" class="text-xs">
-                {{ inst.name }}
-              </Badge>
-            </dd>
-          </div>
-        </dl>
-
-        <div v-if="localizedDescription(item)" class="space-y-1.5">
-          <h4 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            {{ $t('Aprašymas') }}
-          </h4>
-          <!-- eslint-disable-next-line vue/no-v-html -->
-          <div class="line-clamp-4 text-sm text-foreground/90" v-html="localizedDescription(item)" />
-        </div>
-
-        <div class="mt-auto flex flex-col gap-2 pt-4">
-          <template v-if="isDeleted">
-            <Button variant="outline" size="sm" @click="restoreProblem(item)">
-              <RotateCcw aria-hidden="true" class="size-4" />
-              {{ $t('Atkurti') }}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              class="text-destructive hover:text-destructive"
-              @click="targetProblemToForceDelete = item"
-            >
-              <Trash2 aria-hidden="true" class="size-4" />
-              {{ $t('Ištrinti visam laikui') }}
-            </Button>
-          </template>
-          <template v-else>
-            <Button as-child variant="brand" size="sm">
-              <Link :href="route('problems.show', item.id)">
-                {{ $t('Atidaryti problemą') }}
-                <ArrowRight class="ml-1.5 size-4" />
-              </Link>
-            </Button>
-            <Button v-if="item.can_update" as-child variant="outline" size="sm">
-              <Link :href="route('problems.edit', item.id)">
-                <Edit class="mr-1.5 size-4" />
-                {{ $t('Redaguoti') }}
-              </Link>
-            </Button>
-          </template>
-        </div>
-      </section>
+      <ProblemPreview :key="item.id" :problem="item" :trashed="isDeleted">
+        <template v-if="isDeleted" #actions>
+          <Button variant="outline" size="sm" @click="restoreProblem(item)">
+            <RotateCcw aria-hidden="true" />
+            {{ $t('Atkurti') }}
+          </Button>
+          <Button variant="ghost" size="sm" class="text-destructive hover:text-destructive" @click="targetProblemToForceDelete = item">
+            <Trash2 aria-hidden="true" />
+            {{ $t('Ištrinti visam laikui') }}
+          </Button>
+        </template>
+      </ProblemPreview>
     </template>
 
     <template #empty>
@@ -260,13 +159,14 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { ArrowRight, ChevronRight, Pencil, Plus, RotateCcw, Trash2 } from '@lucide/vue';
+import { ChevronRight, Pencil, Plus, RotateCcw, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
 import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
+import ProblemPreview from '@/Components/Problems/ProblemPreview.vue';
 import { ConfirmDialog, EmptyState, StatusBadge } from '@/Components/Patterns';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
@@ -327,15 +227,6 @@ const localizedTitle = (item: App.Entities.Problem): string => {
     return getTranslatedValue(item.title as unknown as Record<string, string>, locale);
   }
   return String(item.title);
-};
-
-const localizedDescription = (item: App.Entities.Problem): string => {
-  if (!item.description) return '';
-  if (typeof item.description === 'object') {
-    const locale = getActiveLanguage() as 'lt' | 'en';
-    return getTranslatedValue(item.description as unknown as Record<string, string>, locale);
-  }
-  return String(item.description);
 };
 
 const myTenantIds = computed<number[]>(() =>

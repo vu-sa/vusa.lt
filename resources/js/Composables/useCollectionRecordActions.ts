@@ -13,6 +13,7 @@ interface RecordActionOptions {
   canDuplicate?: () => boolean;
   canDelete?: () => boolean;
   canRestore?: () => boolean;
+  restoreOpensRecord?: boolean;
   canForceDelete?: () => boolean;
   /** Set when the record opens somewhere other than `<prefix>.edit`. */
   editHref?: (id: string) => string;
@@ -59,7 +60,7 @@ export function useCollectionRecordActions(options: RecordActionOptions) {
     const name = rest.join(':');
 
     if (kind === 'restore') {
-      router.patch(route(`${options.routePrefix}.restore`, id), {}, { preserveScroll: true });
+      router.patch(route(`${options.routePrefix}.restore`, id), {}, { preserveScroll: !options.restoreOpensRecord });
     }
     else if (kind === 'duplicate') {
       router.post(route(`${options.routePrefix}.duplicate`, id));

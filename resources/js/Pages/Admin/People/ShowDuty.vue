@@ -11,6 +11,11 @@
     actions-beside-title
     @action="handleRecordAction"
   >
+    <template #fact-institution>
+      <Link v-if="duty.institution" :href="route('institutions.show', duty.institution.id)" class="font-medium hover:underline">{{ duty.institution.name }}</Link>
+      <InactiveInstitutionBadge :active="duty.institution?.is_active" />
+    </template>
+
     <template #title>
       <InflectedDutyName :name="dutyTitle" />
     </template>
@@ -273,7 +278,6 @@
     :user="selectedUserForSheet"
     :study-programs="studyPrograms ?? []"
     :existing-terms
-    :occupied-places="currentHolders.length"
   />
 
   <SheetForm
@@ -327,7 +331,6 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { Deferred, Link, router, useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
-  Archive,
   Briefcase,
   CalendarClock,
   CalendarRange,
@@ -344,6 +347,7 @@ import {
   X,
 } from '@lucide/vue';
 
+import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
@@ -354,7 +358,7 @@ import type { ActionDescriptor } from '@/Components/Layouts/RecordPageAction.vue
 import { ConfirmDialog, OverviewSection, SheetForm, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
-import type { StatusPresentation } from '@/Constants/statuses';
+import { activityStatuses, type StatusPresentation } from '@/Constants/statuses';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
 import { DutiableTimelineDialog } from '@/Features/Admin/DutiableTimeline';
 import { AssignDutyUserSheet, DutySearchField, MemberTermRow, dutyNameOn, termStatus, type DutyHit, type FormerDutyName } from '@/Features/Admin/Occupancy';
@@ -460,7 +464,7 @@ const formerNameDuring = (term?: { start_date?: string | null } | null) => {
 const dutyTitle = computed(() => getTranslatedValue(props.duty.name));
 
 // The healthy state (occupied) gets no badge — only what needs attention is painted.
-const inactiveStatus: StatusPresentation = { label: $t('Neaktyvi'), role: 'neutral', icon: Archive };
+const inactiveStatus = activityStatuses.inactive;
 const dutyStatus = computed<StatusPresentation | undefined>(() => {
   if (!isActive.value) {
     return inactiveStatus;
@@ -495,12 +499,15 @@ const recordFacts = computed<RecordFact[]>(() => {
     facts.push({ key: 'tenant', label: $t('Padalinys'), value: props.duty.institution.tenant.shortname });
   }
 
-  const places = `${currentHolders.value.length} / ${props.duty.places_to_occupy || '—'}`;
+  const members = String(currentHolders.value.length);
 
-  // Vacancy rides on the places fact, as an institution's status does on its own.
   facts.push(dutyStatus.value
-    ? { key: 'places', label: $t('Vietos'), status: dutyStatus.value, detail: places }
-    : { key: 'places', label: $t('Vietos'), value: places });
+    ? { key: 'members', label: $t('Nariai'), status: dutyStatus.value, detail: isVacant.value ? undefined : members }
+    : { key: 'members', label: $t('Nariai'), value: members });
+
+  if (props.duty.places_to_occupy != null) {
+    facts.push({ key: 'places', label: $t('Vietų skaičius'), value: props.duty.places_to_occupy });
+  }
 
   facts.push({
     key: 'email',

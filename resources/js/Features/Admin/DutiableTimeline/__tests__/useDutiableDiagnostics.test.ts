@@ -188,7 +188,7 @@ describe('useDutiableDiagnostics', () => {
     const { findings } = analyze([makeRow()], [makeCadence()], new Map(), server);
 
     // The server's own off_cadence is dropped: this side recomputes it over staged state.
-    expect(codes(findings.value)).toEqual(['orphan_derived_suspect', 'understaffed']);
+    expect(codes(findings.value)).toEqual(['orphan_derived_suspect']);
   });
 
   it('ranks a row by its worst finding through the counts', () => {
@@ -228,6 +228,5 @@ describe('fixOperationFor', () => {
   it('offers no automatic fix where guessing would take real access away', () => {
     expect(fixOperationFor({ code: 'orphan_derived_suspect', severity: 'info', row_ids: ['a'] })).toBeNull();
     expect(fixOperationFor({ code: 'ex_officio_drift', severity: 'warning', row_ids: ['a'] })).toBeNull();
-    expect(fixOperationFor({ code: 'understaffed', severity: 'info', row_ids: [] })).toBeNull();
   });
 });

@@ -34,7 +34,9 @@
           :description="hit.subtitle"
           :icon="Landmark"
           @click="pick(hit)"
-        />
+        >
+          <template #description>{{ hit.subtitle }} <InactiveInstitutionBadge v-if="hit.inactiveInstitution" :active="false" /></template>
+        </ActionChoiceButton>
       </ActionChoiceList>
 
       <Button
@@ -59,6 +61,7 @@ import ActionChoiceButton from '../ActionChoiceButton.vue';
 import ActionChoiceList from '../ActionChoiceList.vue';
 import ActionWindowScreen from '../ActionWindowScreen.vue';
 
+import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { useActionWindowData } from '@/Composables/useActionWindowData';
 import { useAdminCollectionSearch } from '@/Features/Admin/AdminSearch/Composables/useAdminCollectionSearch';

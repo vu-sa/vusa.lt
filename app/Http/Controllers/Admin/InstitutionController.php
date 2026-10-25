@@ -65,6 +65,10 @@ class InstitutionController extends AdminController
         // Live rows come from Typesense (the scoped key carries the authorization) and the trash
         // from api.v1.admin.trash.index, so the page itself needs no rows.
         return $this->inertiaResponse('Admin/People/IndexInstitution', [
+            'statusUpdateScope' => fn () => [
+                'all' => request()->user()->isSuperAdmin() || $this->authorizer->scope(request()->user(), 'institutions.update.padalinys')->isAllScope,
+                'tenantIds' => $this->authorizer->tenants(request()->user(), 'institutions.update.padalinys')->pluck('id')->values(),
+            ],
             'deletedCount' => $this->scopedTrashedCount(Institution::query(), 'tenant', 'institutions.read.padalinys'),
             // Following is per user, so the index cannot carry it; the page filters Typesense by these ids.
             'followedInstitutionIds' => $request->user()->followedInstitutions()->pluck('institutions.id')->map(fn ($id): string => (string) $id)->values(),
@@ -164,7 +168,6 @@ class InstitutionController extends AdminController
                 'id' => $duty->id,
                 'name' => $duty->name,
                 'order' => $duty->order,
-                'places_to_occupy' => $duty->places_to_occupy,
                 'current_users' => $duty->current_users,
             ])
             ->values());
@@ -192,7 +195,8 @@ class InstitutionController extends AdminController
         return $this->inertiaResponse('Admin/People/ShowInstitution', [
             'institution' => fn () => [
                 'id' => $loadInstitution()->id,
-                'name' => $loadInstitution()->name,
+                'name' => trim((string) $loadInstitution()->name) ?: __('Be pavadinimo').' · '.($institution->alias ?: $institution->id),
+                'is_active' => (bool) $loadInstitution()->is_active,
                 'short_name' => $loadInstitution()->short_name,
                 'description' => $loadInstitution()->description,
                 'tenant' => $loadInstitution()->tenant,
@@ -363,7 +367,14 @@ class InstitutionController extends AdminController
      */
     public function restore(Institution $institution): RedirectResponse
     {
-        return $this->restoreModel($institution, $this->entityMessage('restored', 'institution'));
+        $response = $this->restoreModel($institution, $this->entityMessage('restored', 'institution'));
+        $institution->refresh();
+
+        if ($institution->trashed() || ! request()->user()->can('viewSummary', $institution)) {
+            return $response;
+        }
+
+        return redirect()->route('institutions.show', $institution);
     }
 
     /**

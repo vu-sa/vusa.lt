@@ -118,14 +118,12 @@
 
     <template #aside>
       <FormPanel :title="$t('Būsena ir padalinys')" :icon="Building2" title-class="text-brand">
-        <FormToggleRow
+        <ActivityStatusField
+          id="institution-active"
           v-model="isActive"
-          :label="$t('Aktyvi institucija')"
+          :error="form.errors.is_active"
           :hint="$t('forms.helpers.institution_active_hint')"
         />
-        <p v-if="form.errors.is_active" class="text-sm text-destructive" role="alert">
-          {{ form.errors.is_active }}
-        </p>
         <Alert v-if="isEditing && institution.is_active && !isActive && deactivation" data-testid="institution-deactivation-warning">
           <AlertDescription class="space-y-2">
             <p>{{ $t('forms.helpers.institution_deactivation_consequence', { count: deactivation.endingCount, date: formatDate(deactivation.effectiveEndDate) }) }}</p>
@@ -262,9 +260,14 @@
 <script setup lang="ts">
 import { Link, useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Building2, CircleCheck, CircleSlash, Layers, Trash2 } from '@lucide/vue';
+import { Building2, Layers, Trash2 } from '@lucide/vue';
+
 import { computed, ref } from 'vue';
 
+import ActivityStatusField from './ActivityStatusField.vue';
+
+import { activityStatuses } from '@/Constants/statuses';
+import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import PermalinkField from '@/Components/AdminForms/PermalinkField.vue';
 import PermalinkPreviewHint from '@/Components/AdminForms/PermalinkPreviewHint.vue';
@@ -275,8 +278,6 @@ import FormPage from '@/Components/Layouts/FormPage.vue';
 import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
 import FormPanel from '@/Components/Patterns/FormPanel.vue';
 import FormSection from '@/Components/Patterns/FormSection.vue';
-import FormToggleRow from '@/Components/Patterns/FormToggleRow.vue';
-import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { Button } from '@/Components/ui/button';
 import { Alert, AlertDescription } from '@/Components/ui/alert';
@@ -289,7 +290,6 @@ import type { ImageData } from '@/Types/media';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
 import { usePermalinkPreview } from '@/Composables/usePermalinkPreview';
-import type { StatusPresentation } from '@/Constants/statuses';
 import { InstitutionScope, ModelEnum } from '@/Types/enums';
 
 interface Translated { lt: string; en: string }
@@ -414,11 +414,7 @@ const isActive = computed({
   },
 });
 
-const institutionStatus = computed<StatusPresentation>(() => ({
-  label: isActive.value ? $t('Aktyvi') : $t('Neaktyvi'),
-  role: isActive.value ? 'success' : 'neutral',
-  icon: isActive.value ? CircleCheck : CircleSlash,
-}));
+const institutionStatus = computed(() => activityStatuses[isActive.value ? 'active' : 'inactive']);
 
 /**
  * Mirrors InstitutionScopeResolver: the nearest type in the parent chain that declares a

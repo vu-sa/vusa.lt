@@ -19,9 +19,8 @@ describe('SectionTabs', () => {
     const nav = wrapper.find('nav');
 
     expect(nav.classes()).toContain('bg-secondary/50');
-    expect(nav.classes()).toContain('backdrop-blur-sm');
+    expect(nav.classes()).not.toContain('backdrop-blur-sm');
     expect(nav.classes()).toContain('[.a11y-contrast_&]:bg-background');
-    expect(nav.classes()).toContain('[.a11y-contrast_&]:backdrop-blur-none');
   });
 
   it('renders one tab per section of the workspace', () => {

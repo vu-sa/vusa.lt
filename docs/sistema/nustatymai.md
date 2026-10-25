@@ -71,7 +71,7 @@ Nauja sritis nurodo, kuri atsakomybė ir kurie pareigybių tipai atlieka sistemo
 Adresas: `/mano/settings/purposes`. Puslapis turi dvi dalis:
 
 - **Atsakomybių paskirtys**: kuri atsakomybė laikoma *studentų atstovavimu*, *studentų atstovų
-  koordinavimu* ir *narių registracija*. Pagal jas sistema randa žmones – kam siųsti užduotis,
+  koordinavimu*, *narių registracija* ir *rezervacijų administravimu*. Pagal jas sistema randa žmones – kam siųsti užduotis,
   registracijas ir pranešimus. Viena atsakomybė gali atlikti tik vieną paskirtį. Kaip tai veikia,
   aprašyta [Atsakomybėse](/pagrindai/atsakomybes#paskirtys).
 - **Viešieji kontaktai**: kurie pareigybių tipai rodomi kaip *Koordinatoriai*, *Kuratoriai* ir

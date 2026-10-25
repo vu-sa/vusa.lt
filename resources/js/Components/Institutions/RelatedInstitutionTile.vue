@@ -13,6 +13,7 @@
       <span v-if="typeLabel" class="block truncate text-xs text-muted-foreground">{{ typeLabel }}</span>
     </span>
 
+    <InactiveInstitutionBadge :active="item.is_active" />
     <Lock v-if="item.authorized === false" class="size-3.5 shrink-0 text-muted-foreground" :aria-label="$t('relationships.not_authorized')" />
   </Link>
 </template>
@@ -23,6 +24,7 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Lock } from '@lucide/vue';
 
+import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import EntityTypeMark from '@/Components/EntityTypeMark.vue';
 
 export interface RelatedInstitutionItem {
@@ -33,6 +35,7 @@ export interface RelatedInstitutionItem {
   kind_label?: string;
   cross_tenant?: boolean;
   authorized?: boolean;
+  is_active?: boolean;
 }
 
 const props = defineProps<{

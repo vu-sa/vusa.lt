@@ -15,6 +15,7 @@ export interface HomeTask {
 }
 
 export interface HomeMeeting {
+  institution_is_active?: boolean | null;
   id: string;
   title: string;
   start_time: string;
@@ -27,6 +28,7 @@ export interface HomeMeeting {
 
 /** A row of "Sekamos institucijos" (GetFollowedInstitutions). */
 export interface HomeFollowedInstitution {
+  is_active?: boolean;
   id: string;
   name: string;
   activity_status: InstitutionActivityStatusName;

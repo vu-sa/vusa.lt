@@ -136,7 +136,7 @@
     </template>
 
     <template #preview="{ item }">
-      <DocumentDetailPreview :key="item.id" :document="item" />
+      <DocumentPreview :key="item.id" :document="item" />
     </template>
 
     <template #empty>
@@ -173,11 +173,11 @@ import { DocumentFolderBrowser } from '@/Components/Files';
 import { DocumentIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
+import DocumentPreview from '@/Components/Files/DocumentPreview.vue';
 import { Button } from '@/Components/ui/button';
 import { Spinner } from '@/Components/ui/spinner';
 import { useAdminNavigation } from '@/Composables/useAdminNavigation';
 import { useTypesenseCollectionSource } from '@/Composables/useCollectionSource';
-import DocumentDetailPreview from '@/Features/Admin/AdminSearch/Components/Detail/DocumentDetailPreview.vue';
 import FilePicker from '@/Features/Admin/SharepointFilePicker/FilePicker.vue';
 import { isPickerAvailable, pickedDocuments, type Item } from '@/Features/Admin/SharepointFilePicker/picker';
 import type { DocumentSearchResult } from '@/Shared/Search/types';

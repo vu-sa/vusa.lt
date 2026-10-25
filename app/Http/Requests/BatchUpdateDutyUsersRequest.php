@@ -72,7 +72,6 @@ class BatchUpdateDutyUsersRequest extends FormRequest
             'new_users.*.email' => ['nullable', 'email', UniqueAmongTrashed::of('users', 'email')],
             'new_users.*.phone' => 'nullable|string|max:50',
             'new_users.*.temp_id' => 'required|string',
-            'places_to_occupy' => 'nullable|integer|min:1',
         ];
     }
 

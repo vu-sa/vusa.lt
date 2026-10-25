@@ -4,9 +4,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Notification, NotificationData } from '@/Composables/useNotificationFormatting';
 import NotificationCard from '@/Features/Admin/Notifications/NotificationCard.vue';
+import { markNotificationRead } from '@/Composables/markNotificationRead';
 import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
+vi.mock('@/Composables/markNotificationRead');
 
 const make = (data: NotificationData, readAt: string | null = null): Notification => ({
   id: 'n1',
@@ -24,6 +26,7 @@ const mountCard = (notification: Notification) => mount(NotificationCard, {
 describe('NotificationCard', () => {
   beforeEach(() => {
     vi.mocked(router.visit).mockClear();
+    vi.mocked(markNotificationRead).mockClear();
   });
 
   it('renders context rows as label/value pairs', () => {
@@ -68,7 +71,7 @@ describe('NotificationCard', () => {
     expect(wrapper.find('[data-slot="notification-primary-action"]').attributes('aria-label')).toBe('Peržiūrėti');
   });
 
-  it('links to the action url, not the card url, and marks an unread card read', async () => {
+  it('links to the action url, not the card url, and marks an unread card read without a second visit', async () => {
     const wrapper = mountCard(make({ primaryAction: { label: 'Registruoti posėdį', url: '/mano/register' } }));
 
     const action = wrapper.get('[data-slot="notification-primary-action"]');
@@ -76,7 +79,8 @@ describe('NotificationCard', () => {
 
     expect(action.attributes('href')).toBe('/mano/register');
     expect(action.findComponent(Link).exists()).toBe(true);
-    expect(wrapper.emitted('markAsRead')).toEqual([['n1']]);
+    expect(markNotificationRead).toHaveBeenCalledWith('n1');
+    expect(wrapper.emitted('markAsRead')).toBeUndefined();
   });
 
   it('omits the open arrow when it duplicates the primary action destination', () => {
@@ -97,7 +101,7 @@ describe('NotificationCard', () => {
 
     await wrapper.find('[data-slot="notification-primary-action"]').trigger('click');
 
-    expect(wrapper.emitted('markAsRead')).toBeUndefined();
+    expect(markNotificationRead).not.toHaveBeenCalled();
     expect(wrapper.get('[data-slot="notification-primary-action"]').attributes('href')).toBe('/mano/x');
   });
 
@@ -124,7 +128,7 @@ describe('NotificationCard', () => {
     action.element.addEventListener('click', event => event.preventDefault());
     await action.trigger('click');
 
-    expect(wrapper.emitted('markAsRead')).toEqual([['n1']]);
+    expect(markNotificationRead).toHaveBeenCalledWith('n1');
     expect(router.visit).not.toHaveBeenCalled();
   });
 });

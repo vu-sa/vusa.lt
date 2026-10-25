@@ -12,11 +12,18 @@ import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import type { AdminCollection } from '../Types/AdminSearchTypes';
-import { getFacetValueLabel } from '../Config/collectionFacetConfig';
 
-import { completionTone, voteTone, type BadgeTone } from './searchBadges';
-
+import { newsStatus } from '@/Components/News/newsStatus';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
+import {
+  contentStatuses,
+  deletedMemberStatus,
+  meetingCompletionStatuses,
+  notReservableStatus,
+  statusFor,
+  voteStatuses,
+  type StatusPresentation,
+} from '@/Constants/statuses';
 import { hasIdentityMatch, PROSE_FIELDS, type SearchMatchDocument } from '@/Shared/Search/matches';
 import { changeDutyNameEndings } from '@/Utils/String';
 import { termYearSpan } from '@/Features/Admin/Occupancy/occupancy';
@@ -104,15 +111,14 @@ export interface NormalizedSearchHit {
   aside?: string;
   href?: string;
   /**
-   * "View" / "Edit" links for the two-button row affordance (command palette).
-   * Mirror the same per-collection routes as the detail-pane `#actions` slot
-   * (e.g. `DutyDetailPreview.vue`) — a collection with no dedicated admin show
-   * page (news, pages, calendar) or a stubbed one (resources) omits `viewHref`.
+   * "View" / "Edit" links for the command palette's two-button row. A collection with no
+   * admin show page (news, pages, calendar) or a stubbed one (resources) omits `viewHref`.
    */
   viewHref?: string;
   editHref?: string;
   /** Contextual colored status badge shown on the list row. */
-  statusBadge?: { label: string; tone: BadgeTone };
+  statusBadge?: StatusPresentation | null;
+  inactiveInstitution?: boolean;
   /** Context shown as a neutral chip rather than a status. */
   contextBadge?: string;
   /** Duties only: the row belongs to a tenant outside the user's own scope. */
@@ -271,9 +277,8 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
     href: route('meetings.show', m.id),
     viewHref: route('meetings.show', m.id),
     editHref: route('meetings.edit', m.id),
-    statusBadge: m.completion_status
-      ? { label: getFacetValueLabel('completion_status', m.completion_status), tone: completionTone(m.completion_status) }
-      : undefined,
+    statusBadge: statusFor(meetingCompletionStatuses, m.completion_status),
+    inactiveInstitution: Boolean(m.inactive_institution_ids?.length),
     isRelated: computeIsRelated(m.institution_ids, ctx?.directInstitutionIds),
   }),
   agendaItems: (a: AgendaItemSearchResult, ctx?: MapperContext) => ({
@@ -285,9 +290,8 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
     // Agenda items have no dedicated show page — "view" opens their parent meeting.
     viewHref: a.meeting_id ? route('meetings.show', a.meeting_id) : undefined,
     editHref: route('agendaItems.edit', a.id),
-    statusBadge: a.decision
-      ? { label: getFacetValueLabel('decision', a.decision), tone: voteTone(a.decision) }
-      : undefined,
+    statusBadge: statusFor(voteStatuses, a.decision),
+    inactiveInstitution: Boolean(a.inactive_institution_ids?.length),
     isRelated: computeIsRelated(a.institution_ids, ctx?.directInstitutionIds),
   }),
   institutions: (i: InstitutionSearchResult) => ({
@@ -298,6 +302,7 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
     href: route('institutions.show', i.id),
     viewHref: route('institutions.show', i.id),
     editHref: route('institutions.edit', i.id),
+    inactiveInstitution: i.is_active === false,
   }),
   resources: (r: ResourceSearchResult) => ({
     recordId: String(r.id),
@@ -307,10 +312,8 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
     badge: r.tenant_shortname,
     href: route('resources.show', r.id),
     editHref: route('resources.edit', r.id),
-    statusBadge: {
-      label: r.is_reservable ? $t('Skolinamas') : $t('Neskolinamas'),
-      tone: (r.is_reservable ? 'success' : 'neutral') as BadgeTone,
-    },
+    // Reservable is the healthy default and gets no badge.
+    statusBadge: r.is_reservable ? undefined : notReservableStatus,
   }),
   duties: (d: DutySearchResult, ctx?: MapperContext) => {
     const external = isDutyExternal(d, ctx);
@@ -327,6 +330,7 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
       viewHref: route('duties.show', d.id),
       editHref: route('duties.edit', d.id),
       isExternal: external,
+      inactiveInstitution: d.institution_is_active === false,
       contextBadge: external ? d.tenant_shortname : undefined,
     };
   },
@@ -350,11 +354,8 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
     editHref: route('news.edit', n.id),
     // The admin index (unlike the public one) also contains drafts and
     // scheduled articles — flag them so they aren't mistaken for live ones.
-    statusBadge: n.draft
-      ? { label: $t('Juodraštis'), tone: 'neutral' as BadgeTone }
-      : (n.publish_time && n.publish_time * 1000 > Date.now()
-          ? { label: $t('Suplanuota'), tone: 'info' as BadgeTone }
-          : undefined),
+    // The admin index also holds drafts and scheduled articles; only those are flagged.
+    statusBadge: newsStatus(n) === contentStatuses.published ? undefined : newsStatus(n),
   }),
   pages: (p: PageSearchResult) => ({
     recordId: String(p.id),
@@ -381,9 +382,7 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
     href: route('users.show', u.id),
     viewHref: route('users.show', u.id),
     editHref: route('users.edit', u.id),
-    statusBadge: u.is_active === false
-      ? { label: $t('Ištrintas'), tone: 'danger' as BadgeTone }
-      : undefined,
+    statusBadge: u.is_active === false ? deletedMemberStatus : undefined,
   }),
 };
 

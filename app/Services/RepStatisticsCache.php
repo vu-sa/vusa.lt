@@ -42,7 +42,7 @@ class RepStatisticsCache
     public static function remember(string $scope, Closure $compute, bool $history = false, bool $refresh = false, ?array $tenantIds = null, ?int $ttl = null): mixed
     {
         // Payloads carry translated names and labels, so a locale never shares an entry with another.
-        $key = 'visak:statistics:v6:'.md5($scope.':'.app()->getLocale().':'.today()->toDateString().':'.self::revision($history, $tenantIds));
+        $key = 'visak:statistics:v7:'.md5($scope.':'.app()->getLocale().':'.today()->toDateString().':'.self::revision($history, $tenantIds));
 
         // One forced rebuild per key every few seconds: the revision already follows every write,
         // so ?refresh=1 must not let a caller keep evicting an entry everyone shares.

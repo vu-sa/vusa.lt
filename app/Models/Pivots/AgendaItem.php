@@ -411,6 +411,7 @@ class AgendaItem extends Pivot implements Commentable
 
                 // All institutions (for .own scope filtering)
                 'institution_ids' => $meeting->institutions->pluck('id')->toArray(),
+                'inactive_institution_ids' => $meeting->institutions->filter(fn ($institution) => ! $institution->is_active)->pluck('id')->values()->all(),
 
                 // Compared with the public meeting types when a scoped key is made (TypesenseScopedKeyService)
                 'institution_type_ids' => $meeting->institutions

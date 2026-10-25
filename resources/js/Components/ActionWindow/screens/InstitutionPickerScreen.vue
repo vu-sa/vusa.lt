@@ -32,6 +32,7 @@
       >
         <template #description>
           {{ contextLine(institution) }}
+          <InactiveInstitutionBadge :active="institution.is_active" />
         </template>
       </ActionChoiceButton>
 
@@ -59,6 +60,7 @@ import ActionWindowScreen from '../ActionWindowScreen.vue';
 import { institutionStatusStyle } from '../institutionStatusStyle';
 import { useWindowDates } from '../useWindowDates';
 
+import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { useActionWindowData, type ActionWindowInstitution } from '@/Composables/useActionWindowData';
 import { describeInstitutionActivity } from '@/Components/Institutions/institutionActivity';

@@ -69,9 +69,8 @@ it('opens the checkout with the representative\'s saved cart', function (): void
 });
 
 it('offers the manager the next step for each item on the reservation page', function (): void {
-    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::RESOURCE_MANAGER_EMAIL));
     $reservation = Reservation::query()->where('name', DocsSeeder::MIXED_RESERVATION_NAME)->firstOrFail();
-    navigateTo($page, "/mano/reservations/{$reservation->id}");
+    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::RESOURCE_MANAGER_EMAIL), "/mano/reservations/{$reservation->id}");
     waitForInertiaRender($page, '[data-slot=record-title]');
 
     // Waiting → approve, reserved → hand over, lent → mark returned.
@@ -82,6 +81,17 @@ it('offers the manager the next step for each item on the reservation page', fun
 
     $page->resize(1440, 1200);
     docsScreenshot($page, 'reservation-decisions');
+
+    foreach (['light', 'dark'] as $theme) {
+        $page->script('document.documentElement.classList.toggle("dark", '.($theme === 'dark' ? 'true' : 'false').')');
+        foreach ([390, 820, 1180, 1440] as $width) {
+            $page->resize($width, 900);
+            expect($page->script('document.documentElement.scrollWidth'))->toBeLessThanOrEqual($width);
+            if (env('DOCS_SCREENSHOTS')) {
+                $page->screenshot(fullPage: false, filename: "reservation-contacts-{$theme}-{$width}");
+            }
+        }
+    }
 
     $page->assertNoJavaScriptErrors();
 });

@@ -10,7 +10,7 @@ use App\Services\InstitutionScopeResolver;
  * purpose; code finds people through it, never by a duty type slug or a role id.
  *
  * A closed list: each case has its own consumers, so adding one is a code change. A purpose
- * grants nothing by itself; permissions come from the holder's responsibilities.
+ * adds no permission records; consumers may allow specific access for the purpose.
  */
 enum ResponsibilityPurpose: string
 {
@@ -23,6 +23,8 @@ enum ResponsibilityPurpose: string
     /** Narių registracija: who receives and may read a padalinys' member registrations. */
     case MemberRegistration = 'member_registration';
 
+    case ReservationHandling = 'reservation_handling';
+
     /**
      * Levels a grant may cover. Empty means the purpose applies where the duty sits.
      *
@@ -33,7 +35,7 @@ enum ResponsibilityPurpose: string
         return match ($this) {
             self::StudentRepresentation => [],
             self::StudentRepCoordination => [ResponsibilityScope::Tenant, ResponsibilityScope::InstitutionType, ResponsibilityScope::Institution],
-            self::MemberRegistration => [ResponsibilityScope::Tenant],
+            self::MemberRegistration, self::ReservationHandling => [ResponsibilityScope::Tenant],
         };
     }
 
@@ -61,6 +63,7 @@ enum ResponsibilityPurpose: string
     public function minimumPermissions(): array
     {
         return match ($this) {
+            self::ReservationHandling => ['resources.update.padalinys', 'reservations.read.padalinys'],
             self::StudentRepCoordination => [
                 'institutions.read.padalinys',
                 'meetings.read.padalinys',

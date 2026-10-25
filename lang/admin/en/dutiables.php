@@ -158,7 +158,6 @@ return [
                 'ex_officio_drift' => 'Ex officio dates differ from their source',
                 'off_cadence' => 'Date does not match the cadence boundary',
                 'spans_cadences' => 'Re-elected across cadences',
-                'understaffed' => 'Fewer holders than places to occupy',
                 'orphan_derived_suspect' => 'Suspicious ex officio row with no source',
             ],
             'detail' => [
@@ -168,7 +167,6 @@ return [
                 'drift_start' => 'start is :days days off',
                 'drift_end' => 'end is :days days off',
                 'spans' => ':count cadences',
-                'understaffed' => ':active of :places places filled',
                 'ex_officio_drift' => 'Fix this by moving the source row.',
             ],
             'orphan_note' => 'These rows grant real permissions and their link to a source is already gone, so nothing here touches them automatically. Run “duties:audit-ex-officio”.',

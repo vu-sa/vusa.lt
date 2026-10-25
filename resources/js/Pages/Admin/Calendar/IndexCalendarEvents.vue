@@ -96,6 +96,23 @@
       />
     </template>
 
+    <template #preview="{ item }">
+      <CalendarEventPreview :key="item.id" :event="calendarEventPreviewFromRecord(item)" :trashed="isTrash">
+        <template #status>
+          <CollectionStatusMenu
+            :status="item.is_draft ? contentStatuses.draft : contentStatuses.published"
+            :model-value="item.is_draft ? 'draft' : 'published'"
+            :options="statusOptions"
+            :editable="canEdit && !isTrash"
+            @update:model-value="value => updateEvent(item, { is_draft: value === 'draft' })"
+          />
+        </template>
+        <template #actions>
+          <CollectionRowActions :actions="actionsFor(item)" class="flex-wrap" @select="key => select(key, item)" />
+        </template>
+      </CalendarEventPreview>
+    </template>
+
     <template #empty>
       <EmptyState
         mode="empty"
@@ -117,6 +134,8 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Plus } from '@lucide/vue';
 import { computed } from 'vue';
 
+import CalendarEventPreview from '@/Components/Calendar/CalendarEventPreview.vue';
+import { calendarEventPreviewFromRecord } from '@/Components/Calendar/calendarEventPreview';
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';

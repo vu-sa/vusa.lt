@@ -4,6 +4,7 @@ namespace App\Notifications\Subscribers;
 
 use App\Contracts\Approvable;
 use App\Events\ApprovalRequested;
+use App\Models\User;
 use App\Notifications\ApprovalRequestedNotification;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Events\Dispatcher;
@@ -39,7 +40,8 @@ class ApprovalNotificationSubscriber
 
         // Get approvers for this step
         /** @var Approvable&Model $approvable */
-        $approvers = $approvable->getApproversForStep($step);
+        $approvers = $approvable->getApproversForStep($step)
+            ->reject(fn (User $user): bool => $user->is(auth()->user()));
 
         if ($approvers->isEmpty()) {
             return;

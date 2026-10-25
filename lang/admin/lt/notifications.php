@@ -243,7 +243,7 @@ return [
         ],
         'approval_requested' => [
             'label' => 'Reikia patvirtinti rezervaciją',
-            'description' => 'Kai kas nors rezervuoja tavo padalinio išteklių ir reikia tavo sprendimo.',
+            'description' => 'Kai tavo pareigybė administruoja padalinio rezervacijas ir reikia peržiūrėti naują ar perimtą užklausą.',
         ],
         'reservation_status_changed' => [
             'label' => 'Pasikeitė rezervacijos būsena',
@@ -363,7 +363,7 @@ return [
         'how_tasks' => 'Užduočių pranešimus gauna tie, kam užduotis priskirta ir kas vis dar turi pareigas toje institucijoje. Jei kadencijai paskirti sekretoriai, posėdžių užduotys tenka jiems, o ne visiems atstovams. Automatinės užduotys sukuriamos be atskiro pranešimo, o priminimai siunčiami artėjant terminui.',
         'how_meetings' => 'Posėdžių priminimai siunčiami visiems, kurie posėdžio dieną turi pareigas institucijoje, ir tos kadencijos sekretoriams. Apie naują posėdį sužino koordinatoriai ir tie, kam tenka darbotvarkės užduotis (išskyrus posėdį sukūrusįjį), apie užpildytą darbotvarkę – tik koordinatoriai.',
         'how_followed' => 'Sekamų institucijų pranešimus gauni tik tada, kai tų pačių žinių negauni dėl pareigų. Nebenori jų gauti – nebesek institucijos.',
-        'how_reservations' => 'Išteklių administratoriai gauna tik prašymą patvirtinti. Rezervavęs apie sprendimą sužino vieną kartą – kai pasikeičia rezervacijos būsena.',
+        'how_reservations' => 'Prašymus peržiūrėti gauna rezervacijų administravimo paskirtį turintys žmonės. Pasikeitus atsakingiems žmonėms, nebaigtos peržiūros ir jų priminimai perduodami dabartiniams. Rezervacijos dalyviai sužino apie būsenos pasikeitimą.',
         'how_self' => 'Apie savo paties veiksmą (patvirtinimą, užduoties uždarymą, būsenos pakeitimą) pranešimo negauni.',
         'how_list' => 'Čia matai tik tuos pranešimus, kuriuos gali gauti pagal savo pareigas ir atsakomybes.',
     ],

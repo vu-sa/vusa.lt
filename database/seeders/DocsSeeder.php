@@ -395,6 +395,12 @@ class DocsSeeder extends Seeder
             'description' => ['lt' => '', 'en' => ''],
         ]);
         $managerDuty->assignRole(RoleResourceManagerSeeder::NAME);
+        (new RoleReservationHandlerSeeder)->run();
+        $managerDuty->responsibilityGrants()->firstOrCreate([
+            'role_id' => Role::forPurpose(ResponsibilityPurpose::ReservationHandling)->id,
+            'scope_type' => 'tenant',
+            'scope_id' => (string) $tenant->id,
+        ]);
 
         $manager = User::factory()->create(['name' => 'Tomas Kazlauskas', 'email' => self::RESOURCE_MANAGER_EMAIL]);
         $manager->duties()->attach($managerDuty, ['start_date' => now()->subYear()]);
@@ -480,13 +486,11 @@ class DocsSeeder extends Seeder
             'name' => ['lt' => 'Pirmininkas (-ė)', 'en' => 'Chair'],
             'description' => ['lt' => '', 'en' => ''],
             'email' => 'parlamentas@vusa.lt',
-            'places_to_occupy' => 1,
         ]);
         $member = Duty::factory()->for($parliament)->create([
             'name' => ['lt' => 'Parlamento narys (-ė)', 'en' => 'Member of Parliament'],
             'description' => ['lt' => '', 'en' => ''],
             'email' => 'parlamento.nariai@vusa.lt',
-            'places_to_occupy' => 5,
         ]);
 
         $term = fn (int $year): array => [sprintf('%d-07-01', $year), sprintf('%d-06-30', $year + 1)];

@@ -264,6 +264,7 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
             'institution_name_en' => $this->institutions->first()?->getTranslation('name', 'en'),
 
             'institution_ids' => $this->institutions->pluck('id')->toArray(),
+            'inactive_institution_ids' => $this->institutions->filter(fn (Institution $institution) => ! $institution->is_active)->pluck('id')->values()->all(),
             'institution_names' => $this->institutions->map(fn ($i) => $i->getTranslation('name', 'lt'))->toArray(),
 
             'institution_type_id' => $this->institutions->first()?->types->first()?->id,
@@ -478,6 +479,20 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
             // institution — which is essentially all of them.
             $meeting->institutions()->detach();
         });
+    }
+
+    /**
+     * A meeting created by mistake moments ago is deleted outright instead of filling the trash.
+     * Anything someone has put into it — agenda, files, documents, comments, a calendar entry — keeps it restorable.
+     */
+    public function isDiscardable(): bool
+    {
+        return $this->created_at->isAfter(now()->subDay()) === true
+            && ! $this->agendaItems()->exists()
+            && ! $this->fileableFiles()->exists()
+            && ! $this->documents()->exists()
+            && ! $this->comments()->exists()
+            && ! $this->calendarEvent()->exists();
     }
 
     /**

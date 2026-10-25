@@ -66,7 +66,7 @@ class DutyController extends AdminController
             'duties' => [
                 'data' => $duties->getCollection()->map(function ($duty) {
                     /** @var Duty $duty */
-                    return $duty->append('force_delete_blocked_reason')->toFullArray();
+                    return [...$duty->append('force_delete_blocked_reason')->toFullArray(), 'can_update' => request()->user()->can('update', $duty)];
                 })->values(),
                 'meta' => [
                     'total' => $duties->total(),
@@ -155,7 +155,7 @@ class DutyController extends AdminController
                     ->where('id', '!=', $duty->id)
                     ->orderBy('order')
                     ->with('current_users:id,name,profile_photo_path')
-                    ->get(['id', 'name', 'institution_id', 'places_to_occupy', 'order'])
+                    ->get(['id', 'name', 'institution_id', 'order'])
                     ->map(fn (Duty $sibling) => $sibling->toArray())
                     ->values()
                     ->all()
@@ -625,10 +625,6 @@ class DutyController extends AdminController
 
                         $this->assignments->endDateDutiables($removeQuery, $change['end_date'] ?? now());
                     }
-                }
-
-                if (isset($validated['places_to_occupy'])) {
-                    $duty->update(['places_to_occupy' => $validated['places_to_occupy']]);
                 }
             });
         };

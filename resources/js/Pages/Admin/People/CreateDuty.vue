@@ -28,7 +28,7 @@ const duty = {
   description: { lt: '', en: '' },
   email: null,
   institution_id: props.prefillInstitutionId ?? null,
-  places_to_occupy: 1,
+  places_to_occupy: null,
   contacts_grouping: 'none',
   types: [],
   ex_officio_target_duties: [],

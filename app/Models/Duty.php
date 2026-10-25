@@ -52,7 +52,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property int $order Order of duty in institution
  * @property string|null $email Commonly the @vusa.lt email address, which is used as the OAuth login. Personal mail is stored in users.email.
  * @property string $contacts_grouping
- * @property int|null $places_to_occupy Full number of positions to occupy for this duty
+ * @property int|null $places_to_occupy Manually maintained informational seat count
  * @property bool $is_active
  * @property Carbon $created_at
  * @property Carbon $updated_at
@@ -207,6 +207,7 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
             'institution_id' => $this->institution_id ? (string) $this->institution_id : null,
             'institution_name_lt' => $this->institution?->getTranslation('name', 'lt'),
             'institution_name_en' => $this->institution?->getTranslation('name', 'en'),
+            'institution_is_active' => (bool) $this->institution?->is_active,
             'type_titles' => $this->types
                 ->map(fn (DutyType $type) => $type->getTranslation('title', 'lt'))
                 ->filter()

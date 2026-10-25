@@ -3,6 +3,7 @@
 namespace App\Tasks\Subscribers;
 
 use App\Models\Pivots\ReservationResource;
+use App\Tasks\Synchronizers\ReservationReviewTaskSynchronizer;
 use App\Tasks\Synchronizers\ReservationTaskSynchronizer;
 use Illuminate\Events\Dispatcher;
 use Spatie\ModelStates\Events\StateChanged;
@@ -37,5 +38,6 @@ class ReservationTaskSubscriber
         $isForward = $initialIndex !== false && $finalIndex !== false && $initialIndex < $finalIndex;
 
         $this->taskSynchronizer->sync($model->reservation, $isForward);
+        app(ReservationReviewTaskSynchronizer::class)->reconcile($model->reservation, $finalState === 'created');
     }
 }

@@ -21,6 +21,10 @@
     @update:locale="activeLocale = $event"
     @submit="emit('submit:form', form)"
   >
+    <template v-if="isEditing" #title-status>
+      <StatusBadge :status="activityStatuses[form.is_active ? 'active' : 'inactive']" />
+    </template>
+
     <template #title>
       <InflectedDutyName :name="dutyTitle" :locale="activeLocale" />
     </template>
@@ -94,6 +98,7 @@
                 {{ selectedInstitution?.name ?? $t('Pasirinkti instituciją…') }}
               </span>
               <span class="flex shrink-0 items-center gap-2">
+                <InactiveInstitutionBadge :active="selectedInstitution?.is_active" />
                 <span
                   v-if="selectedInstitution?.tenant?.shortname"
                   class="border border-border bg-secondary px-1.5 py-0.5 text-xs font-medium text-muted-foreground"
@@ -237,29 +242,14 @@
     <!-- Aside Slot -->
     <template #aside>
       <FormPanel :title="$t('Nustatymai')" :icon="Building2" title-class="text-brand">
-        <FormToggleRow
+        <ActivityStatusField
           v-if="isEditing && canEditDuty"
+          id="duty-active"
           v-model="form.is_active"
-          :label="$t('Aktyvi pareigybė')"
+          :error="form.errors.is_active"
           :hint="$t('Neaktyvi pareigybė lieka su istorija, bet nebesiūloma priskiriant narius.')"
           data-testid="toggle-duty-active"
         />
-        <p v-if="form.errors.is_active" class="text-xs text-destructive">
-          {{ form.errors.is_active }}
-        </p>
-
-        <!-- Places to occupy -->
-        <FormFieldWrapper
-          id="places_to_occupy"
-          :label="$t('Kiek vietų')"
-          :error="form.errors.places_to_occupy"
-        >
-          <NumberField
-            id="places_to_occupy"
-            v-model="form.places_to_occupy"
-            :min="1"
-          />
-        </FormFieldWrapper>
 
         <!-- Contacts grouping -->
         <FormFieldWrapper
@@ -301,9 +291,8 @@
         </div>
       </FormPanel>
 
-      <!-- Advanced Settings: Ex-officio -->
       <FormPanel
-        v-if="$page.props.auth?.user?.isSuperAdmin || (assignableDuties && assignableDuties.length > 0)"
+        v-if="canEditDuty || $page.props.auth?.user?.isSuperAdmin || (assignableDuties && assignableDuties.length > 0)"
         :title="$t('Papildomi nustatymai')"
         :icon="SlidersHorizontal"
         title-class="text-brand"
@@ -352,6 +341,51 @@
             </template>
           </CollectionSelectDialog>
         </FormFieldWrapper>
+
+        <div v-if="canEditDuty" ref="seatCountControls">
+          <FormFieldWrapper
+            v-if="seatCountExpanded || form.places_to_occupy != null || form.errors.places_to_occupy"
+            id="places_to_occupy"
+            :label="$t('Vietų skaičius')"
+            :hint="$t('Informacinis skaičius, pvz., Parlamento vietos. Narių priskyrimo neriboja.')"
+            :error="form.errors.places_to_occupy"
+          >
+            <NumberField
+              id="places_to_occupy"
+              v-model="form.places_to_occupy"
+              :min="1"
+              @update:model-value="seatCountSpotlight.dismiss()"
+            />
+            <Button
+              type="button"
+              variant="link"
+              voice="sentence"
+              class="justify-start px-0 text-xs text-muted-foreground"
+              data-testid="duty-seats-clear"
+              @click="clearSeatCount"
+            >
+              {{ $t('Išvalyti') }}
+            </Button>
+          </FormFieldWrapper>
+          <SpotlightPopover
+            v-else
+            :title="$t('forms.fields.duty_seats_spotlight_title')"
+            :description="$t('forms.fields.duty_seats_spotlight_body')"
+            :is-dismissed="seatCountSpotlight.isDismissed.value"
+            @dismiss="seatCountSpotlight.dismiss()"
+          >
+            <Button
+              type="button"
+              variant="outline"
+              voice="sentence"
+              data-testid="duty-seats-add"
+              @click="addSeatCount"
+            >
+              <Plus class="size-4" aria-hidden="true" />
+              {{ $t('forms.fields.add_duty_seats') }}
+            </Button>
+          </SpotlightPopover>
+        </div>
       </FormPanel>
     </template>
 
@@ -380,13 +414,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Building2, ChevronsUpDown, Plus, SlidersHorizontal, Trash2, Users } from '@lucide/vue';
 
+import ActivityStatusField from './ActivityStatusField.vue';
+
+import { activityStatuses } from '@/Constants/statuses';
+import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
+import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
+
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import { ConfirmDialog, FormPanel, FormSection, FormToggleRow } from '@/Components/Patterns';
+import { ConfirmDialog, FormPanel, FormSection } from '@/Components/Patterns';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { DatePicker } from '@/Components/ui/date-picker';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
@@ -407,6 +447,8 @@ import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { ModelEnum } from '@/Types/enums';
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { formatDate, todayIso } from '@/Utils/dateTime';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 
 interface AssignableTenantRow {
   tenant_id: number;
@@ -426,7 +468,7 @@ interface DutyPropType {
   description?: { lt?: string; en?: string } | string;
   email?: string | null;
   institution_id?: string | null;
-  places_to_occupy?: number;
+  places_to_occupy?: number | null;
   contacts_grouping?: string;
   is_active?: boolean;
   former_names?: Array<{ name: { lt?: string; en?: string }; used_until: string }>;
@@ -463,7 +505,7 @@ const props = withDefaults(defineProps<{
     description: { lt: '', en: '' },
     email: null,
     institution_id: null,
-    places_to_occupy: 1,
+    places_to_occupy: null,
     contacts_grouping: 'none',
     types: [],
     ex_officio_target_duties: [],
@@ -513,7 +555,7 @@ const form = useForm({
   },
   email: props.duty?.email ?? '',
   institution_id: props.duty?.institution_id ?? null,
-  places_to_occupy: props.duty?.places_to_occupy ?? 1,
+  places_to_occupy: props.duty?.places_to_occupy ?? null,
   contacts_grouping: props.duty?.contacts_grouping ?? 'none',
   is_active: props.duty?.is_active ?? true,
   former_names: (props.duty?.former_names ?? []).map(former => ({
@@ -531,6 +573,27 @@ const form = useForm({
     quota: t.pivot?.quota ?? null,
   })) ?? []) as AssignableTenantRow[],
 });
+
+const seatCountExpanded = ref(form.places_to_occupy != null);
+const seatCountControls = ref<HTMLElement | null>(null);
+const seatCountSpotlight = useFeatureSpotlight('duty-seat-count-v1');
+
+async function addSeatCount() {
+  seatCountExpanded.value = true;
+  form.places_to_occupy = 1;
+  void seatCountSpotlight.dismiss();
+  await nextTick();
+  seatCountControls.value?.querySelector<HTMLInputElement>('input')?.focus();
+}
+
+async function clearSeatCount() {
+  form.places_to_occupy = null;
+  form.clearErrors('places_to_occupy');
+  seatCountExpanded.value = false;
+  void seatCountSpotlight.dismiss();
+  await nextTick();
+  seatCountControls.value?.querySelector<HTMLButtonElement>('[data-testid="duty-seats-add"]')?.focus();
+}
 
 const barTitle = computed(() => isEditing.value
   ? getTranslatedValue(props.duty.name, undefined, $t('Pareigybė'))
@@ -595,6 +658,7 @@ const institutionInitialHits = computed<NormalizedSearchHit[]>(() => {
     id: String(inst.id),
     name_lt: inst.name,
     tenant_shortname: inst.tenant?.shortname,
+    is_active: inst.is_active === undefined ? true : Boolean(inst.is_active),
   })];
 });
 
@@ -643,6 +707,7 @@ const exOfficioInitialHits = computed<NormalizedSearchHit[]>(() =>
     id: String(d.id),
     name_lt: d.name,
     institution_name_lt: d.institution?.name,
+    institution_is_active: d.institution?.is_active === undefined ? undefined : Boolean(d.institution.is_active),
   })),
 );
 

@@ -12,34 +12,36 @@ const makeHolder = (id: string, name: string) => ({ id, name, pivot: { start_dat
 describe('DutyCurrentHoldersCard', () => {
   it('renders the vacancy state when there are no holders', () => {
     const wrapper = mount(DutyCurrentHoldersCard, {
-      props: { holders: [], placesToOccupy: 2, canAssign: true },
+      props: { holders: [], canAssign: true },
       global: { stubs },
     });
     expect(wrapper.text()).toContain('Pareigos neužimtos');
     expect(wrapper.find('.holder').exists()).toBe(false);
   });
 
-  it('renders a holder card per holder and the occupancy count', () => {
+  it('renders a holder card per holder and the holder count', () => {
     const wrapper = mount(DutyCurrentHoldersCard, {
-      props: { holders: [makeHolder('1', 'Jane'), makeHolder('2', 'John')], placesToOccupy: 3, canAssign: false },
+      props: { holders: [makeHolder('1', 'Jane'), makeHolder('2', 'John')], canAssign: false },
       global: { stubs },
     });
     expect(wrapper.findAll('.holder')).toHaveLength(2);
-    expect(wrapper.text()).toContain('2 / 3');
+    expect(wrapper.text()).toContain('2');
   });
 
-  it('shows an open-seat affordance when seats remain and the user can assign', () => {
+  it('keeps assignment available when the duty already has holders', async () => {
     const wrapper = mount(DutyCurrentHoldersCard, {
-      props: { holders: [makeHolder('1', 'Jane')], placesToOccupy: 3, canAssign: true },
+      props: { holders: [makeHolder('1', 'Jane')], canAssign: true },
       global: { stubs },
     });
-    // 2 remaining seats → pluralized key
-    expect(wrapper.text()).toContain(':count laisvos vietos');
+
+    expect(wrapper.findAll('button')).toHaveLength(1);
+    await wrapper.find('button').trigger('click');
+    expect(wrapper.emitted('assign')).toHaveLength(1);
   });
 
   it('emits assign when the assign action is triggered', async () => {
     const wrapper = mount(DutyCurrentHoldersCard, {
-      props: { holders: [], placesToOccupy: 1, canAssign: true },
+      props: { holders: [], canAssign: true },
       global: { stubs },
     });
     await wrapper.findAll('button').at(-1)!.trigger('click');

@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\ResponsibilityPurpose;
 use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\Tenant;
@@ -13,6 +14,7 @@ beforeEach(function (): void {
 
     $this->simpleUser = makeUser($this->tenantA);
     $this->manager = makeTenantUserWithRole('Išteklių administratorius', $this->tenantB);
+    grantPurpose($this->manager->current_duties()->first(), ResponsibilityPurpose::ReservationHandling);
 
     $this->resource = Resource::factory()->for($this->tenantB)->create([
         'name' => ['lt' => 'Bendra įranga', 'en' => 'Shared equipment'],

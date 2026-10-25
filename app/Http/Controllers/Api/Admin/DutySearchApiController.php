@@ -46,7 +46,6 @@ class DutySearchApiController extends ApiController
             'current_holder_names' => $match['duty']->relationLoaded('current_users')
                 ? $match['duty']->current_users->pluck('name')->take(2)->values()
                 : [],
-            'places_to_occupy' => $match['duty']->places_to_occupy,
             'is_active' => (bool) $match['duty']->is_active,
             'can_view' => $actor->can('view', $match['duty']),
             'can_manage' => $actor->can('update', $match['duty']),

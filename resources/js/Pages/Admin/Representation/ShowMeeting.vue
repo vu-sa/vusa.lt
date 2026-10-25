@@ -24,6 +24,7 @@
           <Link v-else :href="route('institutions.show', institution.id)" class="text-brand underline decoration-brand/40 underline-offset-4 hover:decoration-brand">
             {{ institution.name }}
           </Link>
+          <InactiveInstitutionBadge :active="institution.is_active" />
         </template>
       </div>
       <span v-else>{{ $t('Be institucijos') }}</span>
@@ -252,24 +253,11 @@
         </DialogHeader>
 
         <div class="space-y-4">
-          <p class="text-sm text-muted-foreground">
-            {{ $t("Ar tikrai nori ištrinti šį posėdį? Šis veiksmas negrįžtamas ir bus pašalinti visi su posėdžiu susiję duomenys, įskaitant darbotvarkės punktus.") }}
+          <p data-testid="meeting-delete-description" class="text-sm text-muted-foreground">
+            {{ abilities?.discard
+              ? $t('Posėdis tuščias ir ką tik sukurtas, todėl bus ištrintas visam laikui.')
+              : $t('Posėdis bus perkeltas į šiukšlinę, o jo užduotys pašalintos. Atkūrus posėdį, neužbaigta užduotis grįš.') }}
           </p>
-
-          <div class="border border-[var(--status-danger-border)] bg-[var(--status-danger-surface)] p-3 text-[var(--status-danger)]">
-            <p class="text-sm font-medium">
-              {{ $t("Bus ištrinta:") }}
-            </p>
-            <ul class="mt-1 space-y-1 text-xs">
-              <li>• {{ meeting.agenda_items?.length ?? 0 }} {{ $t("darbotvarkės punktai") }}</li>
-              <li v-if="tasks?.length">
-                • {{ tasks.length }} {{ $t("užduotys") }}
-              </li>
-              <li v-if="meeting.files && meeting.files.length">
-                • {{ meeting.files.length }} {{ $t("failai") }}
-              </li>
-            </ul>
-          </div>
 
           <div class="flex justify-end gap-3">
             <Button variant="outline" @click="showDeleteDialog = false">
@@ -308,6 +296,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { AlertTriangle, CalendarPlus, CalendarX, CircleCheck, CircleDashed, Copy, Edit, Globe, Link2, Plus, Trash2 } from '@lucide/vue';
 import { DialogDescription } from 'reka-ui';
 
+import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import { preferredScrollBehavior } from '@/Composables/useAccessibilityPreferences';
 import { useToasts } from '@/Composables/useToasts';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
@@ -343,6 +332,7 @@ import { countIncompleteTasks } from '@/Composables/useTaskUrgency';
 interface MeetingAbilities {
   update: boolean;
   delete: boolean;
+  discard?: boolean;
   createAgendaItems: boolean;
   reorderAgendaItems: boolean;
   attachInstitution: boolean;
@@ -356,7 +346,7 @@ interface MeetingCompletion {
 const props = withDefaults(defineProps<{
   meeting: App.Entities.Meeting;
   representatives: App.Entities.User[];
-  availableInstitutionsForAttach?: { id: string; name: string; tenant_shortname?: string | null }[] | null;
+  availableInstitutionsForAttach?: { id: string; name: string; is_active?: boolean; tenant_shortname?: string | null }[] | null;
   governanceScope?: string;
   abilities?: MeetingAbilities;
   completion?: MeetingCompletion;

@@ -3,6 +3,7 @@
 use App\Enums\InstitutionScope;
 use App\Models\Calendar;
 use App\Models\Duty;
+use App\Models\FileableFile;
 use App\Models\Institution;
 use App\Models\InstitutionLink;
 use App\Models\InstitutionType;
@@ -12,6 +13,7 @@ use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Settings\MeetingSettings;
+use App\Support\MorphMap;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -983,6 +985,8 @@ describe('editing a meeting', function (): void {
     });
 
     test('deleting moves the meeting to the trash and restoring brings it back', function (): void {
+        AgendaItem::factory()->for($this->meeting)->create();
+
         asUser($this->admin)->delete(route('meetings.destroy', $this->meeting))->assertRedirect();
 
         expect($this->meeting->fresh()->trashed())->toBeTrue();
@@ -994,7 +998,7 @@ describe('editing a meeting', function (): void {
 
     test('a student representative coordinator deletes only meetings of their own institutions', function (): void {
         $coordinator = makeTenantUserWithRole('Studentų atstovų koordinatorius', $this->tenant);
-        $own = Meeting::factory()->hasAttached($coordinator->duties()->first()->institution)->create();
+        $own = Meeting::factory()->hasAttached($coordinator->duties()->first()->institution)->has(AgendaItem::factory())->create();
 
         asUser($coordinator)->delete(route('meetings.destroy', $this->meeting))->assertForbidden();
         asUser($coordinator)->delete(route('meetings.destroy', $own))->assertRedirect();
@@ -1002,4 +1006,30 @@ describe('editing a meeting', function (): void {
         expect($this->meeting->fresh()->trashed())->toBeFalse()
             ->and($own->fresh()->trashed())->toBeTrue();
     });
+
+    test('a meeting created by mistake moments ago skips the trash', function (): void {
+        $meeting = Meeting::factory()->hasAttached($this->institution)->create();
+
+        asUser($this->admin)->delete(route('meetings.destroy', $meeting))
+            ->assertRedirect()
+            ->assertSessionHas('success', __('messages.meeting.discarded'));
+
+        expect(Meeting::withTrashed()->find($meeting->id))->toBeNull();
+    });
+
+    test('a meeting goes to the trash once it holds anything', function (string $content): void {
+        $meeting = Meeting::factory()->hasAttached($this->institution)->create();
+
+        match ($content) {
+            'agenda item' => AgendaItem::factory()->for($meeting)->create(),
+            'file' => FileableFile::factory()->create(['fileable_type' => MorphMap::alias(Meeting::class), 'fileable_id' => $meeting->id]),
+            'calendar entry' => Calendar::factory()->create(['meeting_id' => $meeting->id]),
+            'history' => $meeting->forceFill(['created_at' => now()->subDays(2)])->saveQuietly(),
+        };
+
+        asUser($this->admin)->delete(route('meetings.destroy', $meeting))
+            ->assertSessionHas('success', __('messages.meeting.deleted'));
+
+        expect(Meeting::withTrashed()->find($meeting->id)?->trashed())->toBeTrue();
+    })->with(['agenda item', 'file', 'calendar entry', 'history']);
 });

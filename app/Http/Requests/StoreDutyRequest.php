@@ -37,7 +37,7 @@ class StoreDutyRequest extends FormRequest
             'description.en' => 'nullable',
             'email' => 'nullable|email',
             'institution_id' => 'required',
-            'places_to_occupy' => 'nullable|integer',
+            'places_to_occupy' => 'nullable|integer|min:1',
             'contacts_grouping' => 'required|in:none,study_program,tenant',
             'types' => 'nullable|array',
             'types.*' => ['integer', 'distinct', SoftDeleteRules::existsLive('duty_types')],

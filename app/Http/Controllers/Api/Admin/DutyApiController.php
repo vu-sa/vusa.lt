@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Actions\BuildDutyIndexQuery;
+use App\Actions\SetDutyActive;
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Api\Admin\UpdateRecordActivityRequest;
 use App\Http\Requests\IndexDutyRequest;
 use App\Http\Requests\StoreDutyRequest;
 use App\Http\Traits\HasTanstackTables;
@@ -20,6 +22,13 @@ class DutyApiController extends ApiController
 
     public function __construct(private TanstackTableService $tableService, private ModelAuthorizer $authorizer) {}
 
+    public function updateStatus(UpdateRecordActivityRequest $request, Duty $duty, SetDutyActive $update): JsonResponse
+    {
+        $update->execute($duty, $request->boolean('is_active'));
+
+        return $this->jsonSuccess(['is_active' => $duty->fresh()->is_active], $this->entityMessage('updated', 'duty'));
+    }
+
     public function index(IndexDutyRequest $request): JsonResponse
     {
         $this->authorizeApi('viewAny', Duty::class);
@@ -33,7 +42,7 @@ class DutyApiController extends ApiController
         $duties = $query($request)->paginate($request->getPerPage());
 
         return $this->jsonSuccess([
-            'items' => $duties->getCollection()->map(fn (Duty $duty): array => $duty->append('force_delete_blocked_reason')->toFullArray())->values(),
+            'items' => $duties->getCollection()->map(fn (Duty $duty): array => [...$duty->append('force_delete_blocked_reason')->toFullArray(), 'can_update' => $request->user()->can('update', $duty)])->values(),
             'total' => $duties->total(),
             'per_page' => $duties->perPage(),
             'current_page' => $duties->currentPage(),

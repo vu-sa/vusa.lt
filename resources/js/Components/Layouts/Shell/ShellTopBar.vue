@@ -2,10 +2,10 @@
   <header
     data-slot="shell-top-bar"
     :class="[
-      'shrink-0 border-b border-(--border-opaque) bg-background/90 backdrop-blur-sm',
+      'shrink-0 border-b border-(--border-opaque) bg-background/90',
       // Phones get the context bar instead; a form still needs this bar for its editor controls.
       !focused && 'max-md:hidden',
-      '[.a11y-contrast_&]:bg-background [.a11y-contrast_&]:backdrop-blur-none',
+      '[.a11y-contrast_&]:bg-background',
     ]"
   >
     <div class="mx-auto flex h-14 w-full max-w-7xl items-center gap-2 px-4 sm:px-6 md:h-16 md:gap-3 lg:px-8">

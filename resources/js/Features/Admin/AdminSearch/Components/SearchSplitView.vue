@@ -11,7 +11,7 @@
       <!-- List -->
       <div
         :class="[
-          'min-h-0 border border-border bg-card',
+          'min-h-0 border border-border bg-background',
           'w-full lg:w-2/5 lg:max-w-md',
           mobileShowsDetail ? 'hidden lg:block' : 'block',
         ]"
@@ -38,14 +38,14 @@
       <!-- Detail -->
       <div
         :class="[
-          'min-h-0 flex-1 border border-border bg-card',
+          'min-h-0 flex-1 border border-border bg-background',
           mobileShowsDetail ? 'block' : 'hidden lg:block',
         ]"
       >
         <!-- Mobile back button -->
-        <div class="border-b p-2 lg:hidden">
+        <div class="border-b border-border p-2 lg:hidden">
           <Button variant="ghost" size="sm" voice="sentence" @click="mobileShowsDetail = false">
-            <ChevronLeft class="mr-1 size-4" />
+            <ChevronLeft aria-hidden="true" />
             {{ $t('Atgal į sąrašą') }}
           </Button>
         </div>
@@ -58,10 +58,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { useEventListener } from '@vueuse/core';
 import { ChevronLeft } from '@lucide/vue';
 
 import type { NormalizedSearchHit } from '../Utils/searchHitMappers';
@@ -70,6 +69,7 @@ import SearchResultList from './SearchResultList.vue';
 import SearchDetailPane from './SearchDetailPane.vue';
 
 import { Button } from '@/Components/ui/button';
+import { useListDetailSelection } from '@/Composables/useListDetailSelection';
 
 const props = withDefaults(defineProps<{
   hits: NormalizedSearchHit[];
@@ -111,72 +111,30 @@ const onSelect = (hit: NormalizedSearchHit) => {
   mobileShowsDetail.value = true;
 };
 
-// Auto-select the first result when the set changes and the current selection is gone.
-watch(
-  () => props.hits,
-  (hits) => {
-    if (hits.length === 0) {
-      if (props.selectedHit !== null) {
-        emit('update:selectedHit', null);
-      }
-      return;
-    }
-    const stillPresent = props.selectedHit && hits.some(h => h.id === props.selectedHit!.id);
-    if (!stillPresent) {
-      emit('update:selectedHit', hits[0]);
-    }
-  },
-  { deep: false },
-);
-
-// Keyboard navigation (up/down move selection, Enter opens) when not typing in a field.
-useEventListener('keydown', (event: KeyboardEvent) => {
-  if (!['ArrowDown', 'ArrowUp', 'Enter'].includes(event.key)) {
-    return;
-  }
-  const target = event.target as HTMLElement | null;
-  const typing = target && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName));
-  if (target?.closest('button, a, [role="button"], [role="checkbox"], [role="combobox"]')) {
-    return;
-  }
-
-  if (event.key === 'Enter') {
-    if (typing) {
-      return;
-    }
+useListDetailSelection({
+  items: () => props.hits,
+  itemKey: hit => hit.id,
+  selectedKey: () => props.selectedHit?.id ?? null,
+  select: key => emit('update:selectedHit', props.hits.find(hit => hit.id === key) ?? null),
+  arrowsFromInput: true,
+  onEnter: (hit) => {
     // In selection mode Enter toggles the highlighted hit rather than navigating.
     if (props.selectable) {
-      if (props.selectedHit && !props.disabledIds?.has(props.selectedHit.id)) {
-        event.preventDefault();
-        emit('toggleSelect', props.selectedHit);
+      if (!props.disabledIds?.has(hit.id)) {
+        emit('toggleSelect', hit);
       }
       return;
     }
-    const href = props.selectedHit?.href;
-    if (href) {
-      // External links (e.g. document URLs) open in a new tab; internal
-      // routes use Inertia so we keep the SPA navigation.
-      if (/^https?:\/\//.test(href)) {
-        window.open(href, '_blank', 'noopener');
-      }
-      else {
-        router.visit(href);
-      }
+    if (!hit.href) {
+      return;
     }
-    return;
-  }
-  if (typing && target?.tagName !== 'INPUT') {
-    return;
-  }
-  if (props.hits.length === 0) {
-    return;
-  }
-  event.preventDefault();
-  const currentIndex = props.selectedHit
-    ? props.hits.findIndex(h => h.id === props.selectedHit!.id)
-    : -1;
-  const delta = event.key === 'ArrowDown' ? 1 : -1;
-  const nextIndex = Math.min(props.hits.length - 1, Math.max(0, currentIndex + delta));
-  emit('update:selectedHit', props.hits[nextIndex]);
+    // External links (document URLs) open in a new tab; internal routes stay in the SPA.
+    if (/^https?:\/\//.test(hit.href)) {
+      window.open(hit.href, '_blank', 'noopener');
+    }
+    else {
+      router.visit(hit.href);
+    }
+  },
 });
 </script>

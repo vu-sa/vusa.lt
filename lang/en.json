@@ -1,4 +1,5 @@
 {
+    "Atkurti ir atidaryti": "Restore and open",
   "Bandomoji aplinka": "Staging environment",
   "Bandomosios aplinkos duomenys gali skirtis nuo tikrosios": "Test environment data may differ from production",
   "Pakeitimai nebus išsaugoti – rytoj duomenys bus atnaujinti": "Changes won't be saved — data is refreshed tomorrow",
@@ -1429,5 +1430,21 @@
   "Mažosios raidės, skaičiai ir brūkšneliai. Palik tuščią – sukursime iš pavadinimo.": "Lowercase letters, numbers and hyphens. Leave empty to build it from the name.",
   "Ankstesni vieši adresai": "Previous public addresses",
   "Naršymo kelias": "Breadcrumb",
-  "Išskleisti": "Expand"
+  "Išskleisti": "Expand",
+  "Posėdis bus perkeltas į šiukšlinę.": "The meeting will be moved to the trash.",
+  "Posėdis tuščias ir ką tik sukurtas, todėl bus ištrintas visam laikui.": "The meeting is empty and was just created, so it will be deleted permanently.",
+  "Posėdis bus perkeltas į šiukšlinę, o jo užduotys pašalintos. Atkūrus posėdį, neužbaigta užduotis grįš.": "The meeting will be moved to the trash and its tasks removed. If you restore the meeting, its unfinished task comes back.",
+  "Informacinis skaičius, pvz., Parlamento vietos. Narių priskyrimo neriboja.": "A reference number, e.g. Parliament seats. It does not limit member assignments.",
+  "Narių po pakeitimų:": "Members after changes:",
+  "Vietų skaičius": "Seat count",
+  "Atidaryti dokumentą": "Open document",
+  "Atidaryti failą": "Open file",
+  "Atidaryti išteklių": "Open resource",
+  "Atidaryti narį": "Open member",
+  "Atidaryti pareigybę": "Open duty",
+  "Atidaryti punktą": "Open agenda item",
+  "Atidaryti rezervaciją": "Open reservation",
+  "Redaguoti naujieną": "Edit news",
+  "Redaguoti puslapį": "Edit page",
+  "Redaguoti renginį": "Edit event"
 }

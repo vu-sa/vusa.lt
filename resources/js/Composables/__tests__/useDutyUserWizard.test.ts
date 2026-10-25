@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { router } from '@inertiajs/vue3';
 
 import {
   useDutyUserWizard,
@@ -280,13 +281,13 @@ describe('useDutyUserWizard', () => {
     });
   });
 
-  describe('capacity calculations', () => {
+  describe('member counts', () => {
     it('calculates projected user count', () => {
       const wizard = useDutyUserWizard();
       const duty = {
         id: 'duty1',
         name: 'Test Duty',
-        current_users: [{ id: 'u1' }, { id: 'u2' }] as any[],
+        current_users: [{ id: 'u1' }, { id: 'u2' }],
       } as unknown as App.Entities.Duty;
 
       wizard.setDuty(duty);
@@ -297,32 +298,11 @@ describe('useDutyUserWizard', () => {
       expect(wizard.projectedUserCount.value).toBe(3);
     });
 
-    it('detects capacity mismatch', () => {
+    it('does not treat an informational seat count as an assignment change', () => {
       const wizard = useDutyUserWizard();
-      const duty = {
-        id: 'duty1',
-        name: 'Test Duty',
-        current_users: [{ id: 'u1' }] as any[],
-        places_to_occupy: 3,
-      } as unknown as App.Entities.Duty;
+      wizard.setDuty({ id: 'duty1', places_to_occupy: 38 } as App.Entities.Duty);
 
-      wizard.setDuty(duty);
-
-      expect(wizard.capacityMismatch.value).toBe(true); // 1 user vs 3 places
-    });
-
-    it('can update places to occupy', () => {
-      const wizard = useDutyUserWizard();
-      const duty = {
-        id: 'duty1',
-        name: 'Test Duty',
-        places_to_occupy: 3,
-      } as unknown as App.Entities.Duty;
-
-      wizard.setDuty(duty);
-      wizard.setNewPlacesToOccupy(5);
-
-      expect(wizard.targetCapacity.value).toBe(5);
+      expect(wizard.hasChanges.value).toBe(false);
     });
   });
 
@@ -342,12 +322,15 @@ describe('useDutyUserWizard', () => {
       expect(wizard.hasChanges.value).toBe(true);
     });
 
-    it('returns true with capacity change', () => {
+    it('submits only member changes and leaves the reference number alone', async () => {
       const wizard = useDutyUserWizard();
+      wizard.setDuty({ id: 'duty1', places_to_occupy: 1 } as App.Entities.Duty);
+      wizard.addUserToAdd({ id: 'user1', name: 'Test', email: null } as App.Entities.User);
+      await wizard.submitChanges();
 
-      wizard.setNewPlacesToOccupy(5);
-
-      expect(wizard.hasChanges.value).toBe(true);
+      const payload = vi.mocked(router.post).mock.calls.at(-1)![1];
+      expect(payload).not.toHaveProperty('places_to_occupy');
+      expect(payload?.user_changes).toHaveLength(1);
     });
   });
 

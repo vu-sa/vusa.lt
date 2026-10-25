@@ -11,6 +11,8 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
 
@@ -882,9 +884,24 @@ describe('padalinys, deletion and trash', function (): void {
         $institution = Institution::factory()->for($this->tenant)->create();
         $institution->delete();
 
-        asUser($this->admin)->patch(route('institutions.restore', $institution))->assertRedirect();
+        asUser($this->admin)->patch(route('institutions.restore', $institution))->assertRedirect(route('institutions.show', $institution));
 
         expect($institution->fresh()->trashed())->toBeFalse();
+    });
+
+    test('restoring an untitled legacy institution opens an identifiable record without changing its title', function (): void {
+        $institution = Institution::factory()->for($this->tenant)->create();
+        $institution->delete();
+        DB::table('institutions')->where('id', $institution->id)->update(['name' => null, 'short_name' => null]);
+        $institution = $institution->fresh();
+
+        asUser($this->admin)->from(route('institutions.index', ['showDeleted' => true]))
+            ->patch(route('institutions.restore', $institution))
+            ->assertRedirect(route('institutions.show', $institution))->assertSessionHas('success');
+
+        asUser($this->admin)->get(route('institutions.show', $institution))->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->where('institution.name', __('Be pavadinimo').' · '.$institution->alias));
+        expect($institution->fresh()->getRawOriginal('name'))->toBeNull();
     });
 
     test('an institution with duties or check-ins cannot be deleted permanently', function (): void {

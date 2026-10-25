@@ -32,7 +32,7 @@ const stubs = {
   },
   ConfirmDialog: ConfirmStub,
   AssignDutyUserSheet: {
-    props: ['open', 'dutiable', 'existingTerms', 'occupiedPlaces', 'studyPrograms'],
+    props: ['open', 'dutiable', 'existingTerms', 'studyPrograms'],
     template: '<div data-testid="assign-sheet" :data-open="open" :data-dutiable="dutiable?.id" :data-terms="(existingTerms ?? []).map(t => `${t.user_id}:${t.start_date}`).join(\',\')" />',
   },
   DutiableTimelineDialog: true,
@@ -128,21 +128,23 @@ describe('ShowDuty.vue', () => {
 
     expect(wrapper.text()).toContain('Komunikacijos koordinatorius');
     expect(wrapper.text()).toContain('Dabartinis Narys');
-    expect(wrapper.find('[data-testid="fact-places"]').attributes('data-status')).toBeUndefined();
+    expect(wrapper.find('[data-testid="fact-members"]').attributes('data-status')).toBeUndefined();
     expect(wrapper.find('[data-testid="duty-vacancy-alert"]').exists()).toBe(false);
   });
 
-  it('flags a vacant duty on the places fact and as the record alert', () => {
+  it('flags a vacant duty on the members fact and as the record alert', () => {
     const wrapper = mountPage({ duty: { ...baseDuty, users: [] } });
 
-    expect(wrapper.find('[data-testid="fact-places"]').attributes('data-status')).toBe('Neužimta');
+    expect(wrapper.find('[data-testid="fact-members"]').attributes('data-status')).toBe('Neužimta');
+    expect(wrapper.find('[data-testid="fact-members"]').text()).toBe('');
     expect(wrapper.find('[data-testid="duty-vacancy-alert"]').exists()).toBe(true);
   });
 
   it('marks an inactive duty instead of calling it vacant', () => {
     const wrapper = mountPage({ duty: { ...baseDuty, users: [], is_active: false } });
 
-    expect(wrapper.find('[data-testid="fact-places"]').attributes('data-status')).toBe('Neaktyvi');
+    expect(wrapper.find('[data-testid="fact-members"]').attributes('data-status')).toBe('Neaktyvi');
+    expect(wrapper.find('[data-testid="fact-members"]').text()).toBe('0');
     expect(wrapper.find('[data-testid="duty-vacancy-alert"]').exists()).toBe(false);
   });
 
@@ -209,7 +211,7 @@ describe('ShowDuty.vue', () => {
     expect(text).toContain('Būsimi nariai');
     expect(text).toContain('Laikotarpių istorija');
     expect(wrapper.findAll('[data-slot="member-term-row"]')).toHaveLength(3);
-    // The tab and the places fact count only who serves today.
+    // The tab and the members fact count only who serves today.
     expect(wrapper.find('[data-testid="tabs"]').text()).toContain('Nariai:1');
   });
 
@@ -218,7 +220,8 @@ describe('ShowDuty.vue', () => {
       duty: { ...baseDuty, users: [holder('future', 'Būsimas Narys', { start_date: '2026-10-01' })] },
     });
 
-    expect(wrapper.find('[data-testid="fact-places"]').attributes('data-status')).toBe('Neužimta');
+    expect(wrapper.find('[data-testid="fact-members"]').attributes('data-status')).toBe('Neužimta');
+    expect(wrapper.find('[data-testid="fact-members"]').text()).toBe('');
   });
 
   it('names the institution and its padalinys as facts, with the actions beside the title', () => {
@@ -297,5 +300,23 @@ describe('ShowDuty.vue', () => {
 
   it('renders the activity feed', () => {
     expect(mountPage().find('[data-testid="record-activity"]').exists()).toBe(true);
+  });
+});
+
+describe('informational duty seat count', () => {
+  it.each([null, undefined])('hides the reference when it is %s', (places) => {
+    const wrapper = mountPage({ duty: { ...baseDuty, places_to_occupy: places } });
+
+    expect(wrapper.find('[data-testid="fact-places"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="fact-members"]').text()).toBe('1');
+  });
+
+  it.each([1, 2, 38])('shows %s as a separate neutral reference', (places) => {
+    const wrapper = mountPage({ duty: { ...baseDuty, places_to_occupy: places } });
+
+    expect(wrapper.find('[data-testid="fact-places"]').text()).toBe(String(places));
+    expect(wrapper.find('[data-testid="fact-places"]').attributes('data-status')).toBeUndefined();
+    expect(wrapper.find('[data-testid="fact-members"]').text()).toBe('1');
+    expect(wrapper.find('[data-testid="duty-vacancy-alert"]').exists()).toBe(false);
   });
 });

@@ -19,7 +19,6 @@ export interface InstitutionPageDuty {
   name: string;
   email?: string | null;
   order?: number | null;
-  places_to_occupy?: number | null;
   current_users?: App.Entities.User[];
 }
 
@@ -35,6 +34,7 @@ export interface InstitutionPageMeeting {
   agenda_items_count?: number;
   has_protocol?: boolean;
   has_report?: boolean;
+  can_discard?: boolean;
 }
 
 export interface InstitutionPageTask {
@@ -66,6 +66,7 @@ export interface InstitutionPageTask {
 }
 
 export interface InstitutionPageRelatedInstitution {
+  is_active?: boolean;
   id: string | number;
   name: string;
   direction?: 'outgoing' | 'incoming' | 'mutual';
@@ -81,6 +82,7 @@ interface InstitutionPageType extends Omit<App.Entities.InstitutionType, 'title'
 }
 
 export interface InstitutionPageData {
+  is_active: boolean;
   id: string | number;
   name: string;
   short_name?: string | null;

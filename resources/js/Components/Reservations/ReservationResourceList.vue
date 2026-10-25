@@ -34,6 +34,8 @@
               <ReservationPeriod :start-time="resource.pivot.start_time" :end-time="resource.pivot.end_time" />
             </p>
 
+            <ResourceManagers :managers="resource.managers ?? []" />
+
             <p v-if="isOverbooked(resource)" class="text-xs text-status-danger" data-testid="overbooked">
               {{ $t('Trūksta išteklių šiam laikotarpiui') }}
             </p>
@@ -103,6 +105,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronRight, Pencil, Trash2 } from '@lucide/vue';
 
 import ReservationDecisionDialog from './ReservationDecisionDialog.vue';
+import ResourceManagers, { type ResourceManagerContact } from './ResourceManagers.vue';
 import ReservationRowActions from './ReservationRowActions.vue';
 import type { ReservationDecision } from './types';
 
@@ -127,6 +130,7 @@ interface ApprovalRow {
 type RecordResource = DashboardReservation['resources'][number] & {
   pivot: { approvals?: ApprovalRow[] };
   lowestCapacityAtDateTimeRange?: number | null;
+  managers?: ResourceManagerContact[];
   /** `resources.update` on this resource: its own page would be a 403 for anyone else. */
   can_edit?: boolean;
 };

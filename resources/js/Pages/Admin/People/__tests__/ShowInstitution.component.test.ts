@@ -122,6 +122,11 @@ describe('ShowInstitution.vue', () => {
   const statusFact = (wrapper: ReturnType<typeof createWrapper>) =>
     (wrapper.findComponent({ name: 'RecordPage' }).props('facts') as Array<{ key: string; detail?: string; status?: { label: string; role: string } }>)[0];
 
+  it('shows an inactive institution explicitly instead of a healthy meeting status', () => {
+    const wrapper = createWrapper({ is_active: false });
+    expect(wrapper.text()).toContain('Neaktyvi institucija');
+  });
+
   it('leads the facts with the activity status, "Aktyvi" included, instead of a title badge', () => {
     const wrapper = createWrapper();
 

@@ -243,7 +243,7 @@ return [
         ],
         'approval_requested' => [
             'label' => 'Reservation needs approval',
-            'description' => 'When someone reserves a resource of your unit and it needs your decision.',
+            'description' => 'When your duty handles reservations for a padalinys and a new or handed-over request needs review.',
         ],
         'reservation_status_changed' => [
             'label' => 'Reservation status changed',
@@ -363,7 +363,7 @@ return [
         'how_tasks' => 'Task notifications go to the people the task is assigned to who still hold a duty in that institution. When secretaries are appointed for the term, meeting tasks go to them rather than to every representative. Automatic tasks are created without a separate notice; reminders follow as the deadline approaches.',
         'how_meetings' => 'Meeting reminders go to everyone holding a duty in the institution on the meeting day, and to that term\'s secretaries. Coordinators and whoever carries the agenda task hear about a new meeting (except the person who created it); only coordinators hear about a filled-in agenda.',
         'how_followed' => 'Followed-institution notices reach you only when your duties do not already bring you the same news. Unfollow the institution to stop receiving these notices.',
-        'how_reservations' => 'Resource managers get only the approval request. The requester hears about the decision once — when the reservation\'s status changes.',
+        'how_reservations' => 'Review requests go to people holding the reservation-handling purpose. Outstanding reviews and their reminders follow current holders after a handover. Reservation participants hear about status changes.',
         'how_self' => 'You are never notified about your own action (an approval, closing a task, a status change).',
         'how_list' => 'You only see the notifications your duties and responsibilities can bring you.',
     ],

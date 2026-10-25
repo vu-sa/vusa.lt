@@ -25,7 +25,7 @@ export function resolveCadenceFor(
 }
 
 /** Only the server can see this one: it needs a join over ex_officio_duties. */
-const SERVER_ONLY_CODES = new Set(['orphan_derived_suspect', 'understaffed']);
+const SERVER_ONLY_CODES = new Set(['orphan_derived_suspect']);
 
 const MS_PER_DAY = 86_400_000;
 
@@ -48,9 +48,7 @@ function dayBefore(date: string): string {
  * and produces the preview's before/after delta. The two are kept honest by sharing
  * fixture cases with DutiableDiagnosticsTest.
  *
- * `understaffed` and `orphan_derived_suspect` are passed straight through from the
- * payload: the first depends on a duty's full holder set (not just the rows on screen)
- * and the second on a query this side cannot make.
+ * `orphan_derived_suspect` is passed through: it needs a query this side cannot make.
  */
 export function useDutiableDiagnostics(
   rows: Ref<ParsedRow[]>,
@@ -255,7 +253,6 @@ export function useDutiableDiagnostics(
  * only real fix is moving its source, which is a decision rather than a repair.
  * `orphan_derived_suspect` has none because a NULL `via_dutiable_id` is indistinguishable
  * from a deliberate manual assignment, and these rows grant real permissions.
- * `understaffed` has none because filling a seat is a decision about a person.
  * `spans_cadences` has none because a re-election is not a fault, and widening real dates
  * to term edges would overwrite a deliberate mid-term start.
  */

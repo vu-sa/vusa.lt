@@ -603,6 +603,7 @@ $settings = [
                         ['name' => 'institution_name_lt', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'institution_name_en', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'institution_ids', 'type' => 'string[]', 'facet' => true], // ULIDs for .own scope filtering
+                        ['name' => 'inactive_institution_ids', 'type' => 'string[]', 'optional' => true],
                         ['name' => 'institution_names', 'type' => 'string[]', 'optional' => true, 'infix' => true],
 
                         // Institution type for faceting
@@ -674,6 +675,7 @@ $settings = [
                         ['name' => 'institution_name_lt', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'institution_name_en', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'institution_ids', 'type' => 'string[]', 'facet' => true], // ULIDs for .own scope filtering
+                        ['name' => 'inactive_institution_ids', 'type' => 'string[]', 'optional' => true],
                         ['name' => 'institution_type_ids', 'type' => 'int32[]', 'optional' => true],
 
                         // Completion indicators
@@ -758,6 +760,7 @@ $settings = [
                         ['name' => 'email', 'type' => 'string', 'optional' => true],
                         // Inactive duties keep their history but are not offered for new assignments.
                         ['name' => 'is_active', 'type' => 'bool', 'facet' => true, 'optional' => true],
+                        ['name' => 'institution_is_active', 'type' => 'bool', 'optional' => true],
                         ['name' => 'former_names', 'type' => 'string[]', 'infix' => true, 'optional' => true],
 
                         // Tenant filtering (CRITICAL for scoped API keys)

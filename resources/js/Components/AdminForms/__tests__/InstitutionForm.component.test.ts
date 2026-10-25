@@ -7,7 +7,7 @@ import InstitutionForm from '@/Components/AdminForms/InstitutionForm.vue';
 import PermalinkField from '@/Components/AdminForms/PermalinkField.vue';
 import PermalinkPreviewHint from '@/Components/AdminForms/PermalinkPreviewHint.vue';
 import PublicUrlHistoryCard from '@/Components/AdminForms/PublicUrlHistoryCard.vue';
-import FormToggleRow from '@/Components/Patterns/FormToggleRow.vue';
+import ActivityStatusField from '@/Components/AdminForms/ActivityStatusField.vue';
 import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
@@ -74,7 +74,7 @@ describe('InstitutionForm.vue', () => {
     });
     expect(wrapper.find('[data-testid="institution-deactivation-warning"]').exists()).toBe(false);
 
-    wrapper.findComponent(FormToggleRow).vm.$emit('update:modelValue', false);
+    wrapper.findComponent(ActivityStatusField).vm.$emit('update:modelValue', false);
     await wrapper.vm.$nextTick();
 
     const warning = wrapper.get('[data-testid="institution-deactivation-warning"]');
@@ -85,7 +85,7 @@ describe('InstitutionForm.vue', () => {
     await wrapper.setProps({ institution: { ...institution, is_active: false } });
     expect(wrapper.find('[data-testid="institution-deactivation-warning"]').exists()).toBe(false);
 
-    wrapper.findComponent(FormToggleRow).vm.$emit('update:modelValue', true);
+    wrapper.findComponent(ActivityStatusField).vm.$emit('update:modelValue', true);
     await wrapper.vm.$nextTick();
     expect(wrapper.find('[data-testid="institution-deactivation-warning"]').exists()).toBe(false);
   });
@@ -97,7 +97,7 @@ describe('InstitutionForm.vue', () => {
       institution: { ...institution, is_active: false },
       deactivation: { endingCount: 0, effectiveEndDate: '2026-10-15', blockers: [] },
     });
-    wrapper.findComponent(FormToggleRow).vm.$emit('update:modelValue', true);
+    wrapper.findComponent(ActivityStatusField).vm.$emit('update:modelValue', true);
     await wrapper.vm.$nextTick();
 
     expect(wrapper.find('[data-testid="institution-deactivation-warning"]').exists()).toBe(false);
