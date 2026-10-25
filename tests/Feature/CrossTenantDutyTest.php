@@ -685,6 +685,30 @@ test('owning admin can remove wizard-added cross-tenant user via duties.update',
     expect($dutiable->end_date)->not->toBeNull();
 });
 
+test('saving the duty form without user_ids keeps cross-tenant reps', function (): void {
+    $crossUser = makeUser($this->assignableTenant);
+
+    $dutiable = Dutiable::factory()->create([
+        'duty_id' => $this->duty->id,
+        'dutiable_id' => $crossUser->id,
+        'dutiable_type' => MorphMap::alias(User::class),
+        'tenant_id' => $this->assignableTenant->id,
+        'start_date' => now()->subMonth()->toDateString(),
+        'end_date' => null,
+    ]);
+
+    asUser($this->owningAdmin)->patch(route('duties.update', $this->duty), [
+        'name' => ['lt' => $this->duty->getTranslation('name', 'lt'), 'en' => $this->duty->getTranslation('name', 'en') ?? ''],
+        'institution_id' => $this->duty->institution_id,
+        'contacts_grouping' => 'none',
+        'assignable_tenants' => [
+            ['tenant_id' => $this->assignableTenant->id, 'quota' => 2],
+        ],
+    ])->assertRedirect();
+
+    expect($dutiable->fresh()->end_date)->toBeNull();
+});
+
 test('removing assignable tenant end-dates all active reps including future end_dated ones', function (): void {
     $crossUser = makeUser($this->assignableTenant);
 

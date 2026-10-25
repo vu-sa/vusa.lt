@@ -79,8 +79,11 @@ class UpdateDuty
 
             $duty->assignableTenants()->sync($this->assignments->buildAssignableTenantsSync($assignableTenantsInput));
 
+            // The duty form sends only tenant and quota; a missing list must not read as "remove everyone".
             foreach ($assignableTenantsInput as $row) {
-                $this->assignments->syncRepresentatives($duty, $row['user_ids'] ?? [], (int) $row['tenant_id']);
+                if (array_key_exists('user_ids', $row)) {
+                    $this->assignments->syncRepresentatives($duty, $row['user_ids'] ?? [], (int) $row['tenant_id']);
+                }
             }
         });
     }
