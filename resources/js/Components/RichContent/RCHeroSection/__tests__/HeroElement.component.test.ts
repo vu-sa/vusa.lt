@@ -1,10 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
+import { defineComponent, h } from 'vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 import HeroElement from '../HeroElement.vue';
 
+import { providePageHeading } from '@/Composables/usePageHeading';
 import type { Hero } from '@/Types/contentParts';
 
 function makeElement(overrides: Partial<Hero['options']> = {}, jsonOverrides: Partial<Hero['json_content']> = {}): Hero {
@@ -31,6 +33,20 @@ describe('HeroElement', () => {
     const wrapper = mount(HeroElement, { props: { element: makeElement() }, global: { stubs } });
     expect(wrapper.find('.image-with-decorations').exists()).toBe(true);
     expect(wrapper.find('[role="heading"][aria-level="1"]').exists()).toBe(true);
+  });
+
+  it('steps down to level 2 when the page already has its h1', () => {
+    const Page = defineComponent({
+      setup() {
+        providePageHeading();
+
+        return () => h(HeroElement, { element: makeElement() });
+      },
+    });
+    const wrapper = mount(Page, { global: { stubs } });
+
+    expect(wrapper.find('[role="heading"][aria-level="1"]').exists()).toBe(false);
+    expect(wrapper.find('[role="heading"][aria-level="2"]').exists()).toBe(true);
   });
 
   it('centered variant renders no image', () => {

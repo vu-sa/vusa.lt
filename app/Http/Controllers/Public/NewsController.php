@@ -10,6 +10,7 @@ use App\Models\Tenant;
 use App\Services\PublicUrlService;
 use App\Support\LocalizedRouteSlugs;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 use Inertia\Inertia;
 
 class NewsController extends PublicController
@@ -52,8 +53,6 @@ class NewsController extends PublicController
             $other_lang_page->lang
         ) : null);
 
-        // Get description for SEO, prioritizing 'short' field over tiptap content
-        // Pass the news article's tenant for proper canonical URL
         $this->applyPageHead(
             contentTenant: $news->tenant,
             title: $news->title,
@@ -64,32 +63,7 @@ class NewsController extends PublicController
             modifiedTime: $news->updated_at,
         );
 
-        // Fetch related articles from the same tenant. The shape matches `NewsItem`
-        // (resources/js/Types/contentParts.ts) so they render through the same `NewsCard` as the
-        // homepage's news block and the archive.
-        $relatedArticles = News::where('tenant_id', $news->tenant_id)
-            ->where('id', '!=', $news->id)
-            ->where('lang', $news->lang)
-            ->where('draft', false)
-            ->where('publish_time', '<=', now())
-            ->orderByDesc('publish_time')
-            ->take(3)
-            ->with('media')
-            ->get(['id', 'title', 'short', 'permalink', 'publish_time', 'lang'])
-            ->map(fn ($article) => [
-                'id' => $article->id,
-                'title' => $article->title,
-                'short' => $article->short,
-                'lang' => $article->lang,
-                'image' => $article->getImageUrl(),
-                'image_media' => $article->imageData('image'),
-                'permalink' => $article->permalink,
-                'publish_time' => $article->publish_time,
-                'url' => LocalizedRouteSlugs::route('news', [
-                    'subdomain' => $this->subdomain,
-                    'news' => $article->permalink,
-                ], $article->lang),
-            ]);
+        $relatedArticles = $this->relatedArticles($news);
 
         // Generate breadcrumb schema
         $breadcrumbs = [
@@ -150,12 +124,7 @@ class NewsController extends PublicController
             ->where('lang', app()->getLocale())
             ->where('draft', false);
 
-        // Filter by tag if provided. `?tag=` arrives as either an alias (links built
-        // server-side, e.g. NavigationLinkApiController) or a translated name (the
-        // client-side Typesense filter — useNewsSearch's `tag_names:=[...]` condition
-        // matches by name, and `parseUrlParams()` feeds this same raw param straight into
-        // it once the page hydrates) — match either, so the initial SSR list agrees with
-        // what the page filters down to a moment later.
+        // Match aliases and translated names so the initial list agrees with the browser filter.
         if (request('tag')) {
             $query->whereHas('tags', function (Builder $query): void {
                 $this->matchTagParam($query, request('tag'));
@@ -201,48 +170,21 @@ class NewsController extends PublicController
         $locale = app()->getLocale();
         $isLt = $locale === 'lt';
 
-        // Pass the current tenant for proper canonical URL
-        // Title suffix (" - <tenant>") is applied by applyPageHead(), so the org name
-        // must not also appear at the front of the title here.
         $this->applyPageHead(
             contentTenant: $this->tenant,
             title: $currentTag
-                ? ($isLt ? "Naujienos - {$currentTag->name}" : "News - {$currentTag->name}")
+                ? ($isLt ? "Naujienos: {$currentTag->name}" : "News: {$currentTag->name}")
                 : ($isLt ? 'Naujienų archyvas' : 'News Archive'),
             description: $currentTag
-                ? ($isLt
-                    ? "Naršyk per {$this->tenant->shortname} naujienas pagal žymą '{$currentTag->name}'"
-                    : "Browse {$this->tenant->shortname} news tagged with '{$currentTag->name}'")
-                : ($isLt
-                    ? "Naršyk per visas {$this->tenant->shortname} naujienas"
-                    : "Browse all {$this->tenant->shortname} news")
+                ? [$currentTag->description, __('seo.topic_description', ['topic' => $currentTag->name, 'tenant' => $this->tenant->shortname])]
+                : __('seo.news_archive_description'),
+            canonicalUrl: $this->getCanonicalUrl($this->tenant, ['page', 'tag']),
         );
 
         // Share pagination SEO metadata for rel=next/prev links
         $this->sharePaginationSeoMeta($news, $this->tenant);
 
-        // Generate breadcrumb schema for archive
-        $breadcrumbs = [
-            [
-                'name' => $locale === 'lt' ? 'Pradžia' : 'Home',
-                'url' => route('home', ['subdomain' => $this->subdomain, 'lang' => $locale]),
-            ],
-            [
-                'name' => $locale === 'lt' ? 'Naujienos' : 'News',
-                'url' => LocalizedRouteSlugs::route('newsArchive', ['subdomain' => $this->subdomain], $locale),
-            ],
-        ];
-
-        // Add tag to breadcrumb if filtered
-        if ($currentTag) {
-            $breadcrumbs[] = [
-                'name' => $currentTag->name,
-                'url' => LocalizedRouteSlugs::route('newsArchive', [
-                    'subdomain' => $this->subdomain,
-                    'tag' => $currentTag->alias,
-                ], $locale),
-            ];
-        }
+        $breadcrumbs = $this->archiveBreadcrumbs($currentTag);
 
         return Inertia::render('Public/NewsArchive', [
             'tenantSwitchTarget' => 'same-page',
@@ -256,20 +198,69 @@ class NewsController extends PublicController
         );
     }
 
+    /** @return Collection<int, covariant array<string, mixed>> */
+    private function relatedArticles(News $news): Collection
+    {
+        return News::where('tenant_id', $news->tenant_id)
+            ->where('id', '!=', $news->id)
+            ->where('lang', $news->lang)
+            ->where('draft', false)
+            ->where('publish_time', '<=', now())
+            ->orderByDesc('publish_time')
+            ->take(3)
+            ->with('media')
+            ->get(['id', 'title', 'short', 'permalink', 'publish_time', 'lang'])
+            ->map(fn ($article) => [
+                'id' => $article->id,
+                'title' => $article->title,
+                'short' => $article->short,
+                'lang' => $article->lang,
+                'image' => $article->getImageUrl(),
+                'image_media' => $article->imageData('image'),
+                'permalink' => $article->permalink,
+                'publish_time' => $article->publish_time,
+                'url' => LocalizedRouteSlugs::route('news', [
+                    'subdomain' => $this->subdomain,
+                    'news' => $article->permalink,
+                ], $article->lang),
+            ]);
+    }
+
+    private function archiveBreadcrumbs(?Tag $currentTag): array
+    {
+        $locale = app()->getLocale();
+        $breadcrumbs = [
+            [
+                'name' => $locale === 'lt' ? 'Pradžia' : 'Home',
+                'url' => route('home', ['subdomain' => $this->subdomain, 'lang' => $locale]),
+            ],
+            [
+                'name' => $locale === 'lt' ? 'Naujienos' : 'News',
+                'url' => LocalizedRouteSlugs::route('newsArchive', ['subdomain' => $this->subdomain], $locale),
+            ],
+        ];
+
+        if ($currentTag) {
+            $breadcrumbs[] = [
+                'name' => $currentTag->name,
+                'url' => LocalizedRouteSlugs::route('newsArchive', [
+                    'subdomain' => $this->subdomain,
+                    'tag' => $currentTag->alias,
+                ], $locale),
+            ];
+        }
+
+        return $breadcrumbs;
+    }
+
     /**
-     * Matches `?tag=` against a Tag's alias, its current-locale translated name, or (for a
-     * purely numeric value) its id — see the comment above `newsArchive()`'s filter for why
-     * both alias and name have to work.
-     *
      * @param  Builder<Tag>  $query
      * @return Builder<Tag>
      */
     private function matchTagParam(Builder $query, string $tagParam): Builder
     {
         return $query->where(function (Builder $query) use ($tagParam): void {
-            // Local scopes have no "or" magic of their own (that only exists for real
-            // `where*` builder methods) — the closure groups `whereJsonContainsLocale`
-            // as its own single-condition OR branch instead.
+            // Group the locale scope because Eloquent only supplies OR variants for where methods.
             $query->where('alias', $tagParam)
                 ->orWhere(fn (Builder $q) => $q->whereJsonContainsLocale('name', app()->getLocale(), $tagParam));
 

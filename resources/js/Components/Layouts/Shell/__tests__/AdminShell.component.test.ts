@@ -64,6 +64,21 @@ describe('AdminShell focus mode', () => {
     expect(scrollArea.find('[data-testid="bottom-bar"]').exists()).toBe(false);
   });
 
+  it('keeps the chrome out of page view transitions and the window pinned at the top', async () => {
+    const { wrapper } = mountShell();
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+
+    expect(wrapper.find('.sticky').classes()).toContain('[view-transition-name:admin-chrome]');
+
+    Object.defineProperty(window, 'scrollY', { value: 34, configurable: true });
+    document.dispatchEvent(new FocusEvent('focusout'));
+
+    expect(scrollTo).toHaveBeenCalledWith(0, 0);
+
+    Object.defineProperty(window, 'scrollY', { value: 0, configurable: true });
+    wrapper.unmount();
+  });
+
   it('shows the navigation chrome when no form is open', () => {
     const { wrapper } = mountShell();
 

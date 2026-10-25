@@ -2,7 +2,7 @@
 
 return [
     'page_title' => 'Individualių studijų komplektai',
-    'page_description' => 'VU studentų individualių studijų komplektai pagal padalinius',
+    'page_description' => 'Vilniaus universiteto studentų individualių studijų komplektai, sugrupuoti pagal fakultetus ir padalinius.',
     'no_sets' => 'Šiuo metu nėra individualių studijų komplektų.',
     'no_sets_description' => 'Pasirinkite kitą padalinį arba užsukite vėliau.',
     'course_name' => 'Dalyko pavadinimas',

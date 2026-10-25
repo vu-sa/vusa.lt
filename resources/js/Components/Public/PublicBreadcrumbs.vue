@@ -10,46 +10,52 @@
 
   <nav
     v-else-if="items.length > 0"
-    aria-label="Breadcrumb"
-    class="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground max-w-full"
+    :aria-label="$t('Naršymo kelias')"
+    class="max-w-full"
     data-slot="public-breadcrumbs"
   >
-    <template v-for="(item, index) in items" :key="index">
-      <!-- Ellipsis for the items hidden after the first one -->
-      <span
-        v-if="index === 1 && (mobileOverflow || desktopOverflow)"
-        data-testid="breadcrumb-ellipsis"
-        :class="['inline-flex items-center gap-2', visibilityClass(mobileOverflow, desktopOverflow)]"
-      >
-        <span class="shrink-0 opacity-60" aria-hidden="true">/</span>
-        <span class="shrink-0 px-0.5 text-muted-foreground/60">…</span>
-      </span>
+    <!-- The trail would otherwise lead Google's snippet ("Pradinis / … / …"). -->
+    <div data-nosnippet>
+      <ol class="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground">
+        <template v-for="(item, index) in items" :key="index">
+          <!-- Ellipsis for the items hidden after the first one -->
+          <li
+            v-if="index === 1 && (mobileOverflow || desktopOverflow)"
+            data-testid="breadcrumb-ellipsis"
+            aria-hidden="true"
+            :class="['inline-flex items-center gap-2', visibilityClass(mobileOverflow, desktopOverflow)]"
+          >
+            <span class="shrink-0 opacity-60">/</span>
+            <span class="shrink-0 px-0.5 text-muted-foreground/60">…</span>
+          </li>
 
-      <span
-        v-if="isVisibleOnMobile(index) || isVisibleOnDesktop(index)"
-        :class="['inline-flex min-w-0 items-center gap-2', visibilityClass(isVisibleOnMobile(index), isVisibleOnDesktop(index))]"
-      >
-        <span v-if="index > 0" class="shrink-0 opacity-60" aria-hidden="true">/</span>
+          <li
+            v-if="isVisibleOnMobile(index) || isVisibleOnDesktop(index)"
+            :class="['inline-flex min-w-0 items-center gap-2', visibilityClass(isVisibleOnMobile(index), isVisibleOnDesktop(index))]"
+          >
+            <span v-if="index > 0" class="shrink-0 opacity-60" aria-hidden="true">/</span>
 
-        <SmartLink
-          v-if="item.href && index < items.length - 1"
-          :href="item.href"
-          :prefetch="item.prefetch ?? true"
-          class="inline-flex items-center gap-1.5 flex-shrink-0 transition-colors hover:text-brand"
-        >
-          <span class="truncate max-w-24 sm:max-w-40">{{ $t(item.label) }}</span>
-        </SmartLink>
+            <SmartLink
+              v-if="item.href && index < items.length - 1"
+              :href="item.href"
+              :prefetch="item.prefetch ?? true"
+              class="inline-flex items-center gap-1.5 flex-shrink-0 transition-colors hover:text-brand"
+            >
+              <span class="truncate max-w-24 sm:max-w-40">{{ $t(item.label) }}</span>
+            </SmartLink>
 
-        <!-- Current page (last item, no link) -->
-        <span
-          v-else
-          class="inline-flex min-w-0 items-center gap-1.5 text-foreground"
-          aria-current="page"
-        >
-          <span class="truncate max-w-28 sm:max-w-48">{{ $t(item.label) }}</span>
-        </span>
-      </span>
-    </template>
+            <!-- Current page (last item, no link) -->
+            <span
+              v-else
+              class="inline-flex min-w-0 items-center gap-1.5 text-foreground"
+              aria-current="page"
+            >
+              <span class="truncate max-w-28 sm:max-w-48">{{ $t(item.label) }}</span>
+            </span>
+          </li>
+        </template>
+      </ol>
+    </div>
   </nav>
 </template>
 

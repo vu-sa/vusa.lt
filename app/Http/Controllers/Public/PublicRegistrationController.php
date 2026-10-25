@@ -16,7 +16,7 @@ class PublicRegistrationController extends PublicController
         $this->getBanners();
         $this->getTenantLinks();
 
-        $form = Form::query()->whereJsonContains('path->'.$lang, $registrationForm)->with(['formFields' => function ($query): void {
+        $form = Form::query()->where('path->'.$lang, $registrationForm)->with(['formFields' => function ($query): void {
             $query->orderBy('order');
         }])->firstOrFail();
 
@@ -30,7 +30,11 @@ class PublicRegistrationController extends PublicController
             'registrationForm' => $form->getTranslation('path', $otherLocale),
         ], $otherLocale));
 
-        $this->applyPageHead(contentTenant: null, title: $form->name);
+        $this->applyPageHead(
+            contentTenant: null,
+            title: $form->name,
+            description: [$form->description, __('seo.registration_description', ['form' => $form->name, 'tenant' => $this->tenant->shortname])],
+        );
 
         $preselectedInstitutionId = request()->query('institution');
 

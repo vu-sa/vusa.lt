@@ -461,21 +461,34 @@ class Calendar extends Model implements ImageMediaOwner
             ->organizer(
                 (new Organization)
                     ->name($this->tenant->shortname ?? 'VU SA')
-                    ->url(route('home', ['subdomain' => $this->tenant->alias]))
+                    ->url(route('home', ['subdomain' => $this->tenant->subdomain(), 'lang' => $locale]))
             );
 
-        // Add end date if exists
+        if ($url = $this->publicUrl($locale)) {
+            $schema->url($url);
+        }
+
         if ($this->end_date) {
             $schema->endDate($this->end_date);
         }
 
-        // Add description
         $description = $this->getTranslation('description', $locale) ?: $this->description;
         if ($description) {
             $schema->description(strip_tags($description));
         }
 
-        // Add location if exists
+        $this->applyEventLocation($schema, $locale);
+
+        $imageUrl = $this->getFirstMediaUrl('images') ?: $this->getFirstMediaUrl('main_image');
+        if ($imageUrl) {
+            $schema->image($imageUrl);
+        }
+
+        return $schema;
+    }
+
+    private function applyEventLocation(Event $schema, string $locale): void
+    {
         $location = $this->getTranslation('location', $locale) ?: $this->location;
         if ($location) {
             $schema->location(
@@ -485,8 +498,7 @@ class Calendar extends Model implements ImageMediaOwner
             );
         }
 
-        // Add event attendance mode. The explicit flag wins; an empty location on an older
-        // row (from before is_remote existed) still falls back to the old inference.
+        // Older rows without a location retain the online fallback.
         if ($this->is_remote) {
             $schema->setProperty('eventAttendanceMode', 'https://schema.org/OnlineEventAttendanceMode');
         } elseif ($location) {
@@ -494,13 +506,5 @@ class Calendar extends Model implements ImageMediaOwner
         } else {
             $schema->setProperty('eventAttendanceMode', 'https://schema.org/OnlineEventAttendanceMode');
         }
-
-        // Add image if exists
-        $imageUrl = $this->getFirstMediaUrl('images') ?: $this->getFirstMediaUrl('main_image');
-        if ($imageUrl) {
-            $schema->image($imageUrl);
-        }
-
-        return $schema;
     }
 }

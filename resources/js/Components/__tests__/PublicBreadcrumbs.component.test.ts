@@ -73,7 +73,7 @@ describe('PublicBreadcrumbs rendering', () => {
     const nav = renderWithTrail().find('nav');
 
     expect(nav.classes()).not.toContain('border-y');
-    expect(nav.classes()).toContain('text-xs');
+    expect(nav.find('ol').classes()).toContain('text-xs');
     expect(nav.text()).toContain('/');
     expect(nav.findAll('svg')).toHaveLength(0);
   });
@@ -86,13 +86,22 @@ describe('PublicBreadcrumbs rendering', () => {
   });
 });
 
+describe('PublicBreadcrumbs semantics', () => {
+  it('is an ordered list kept out of search snippets', () => {
+    const nav = renderWithTrail().find('nav');
+
+    expect(nav.attributes('aria-label')).toBeTruthy();
+    expect(nav.find('[data-nosnippet] > ol').findAll('li')).toHaveLength(3);
+  });
+});
+
 describe('PublicBreadcrumbs shortening', () => {
   /** Breakpoint classes, not a JS breakpoint, so the server renders what the phone hydrates. */
   it('keeps home and the parent on phones and the last four on desktop', () => {
     const labels = ['Pradinis', 'A', 'B', 'C', 'D', 'Tėvinis', 'Puslapis'];
     const nav = renderWithTrail(undefined, labels.map(label => ({ label, href: '/lt' }))).find('nav');
 
-    const itemClass = (label: string) => nav.findAll(':scope > span').find(el => el.text().endsWith(label))?.classes();
+    const itemClass = (label: string) => nav.findAll('ol > li').find(el => el.text().endsWith(label))?.classes();
 
     expect(nav.text()).not.toMatch(/\bA\b|\bB\b/);
     expect(itemClass('Pradinis')).not.toContain('max-sm:hidden');

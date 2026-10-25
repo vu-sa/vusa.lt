@@ -1,10 +1,5 @@
 <template>
   <div class="institution-page">
-    <Head>
-      <title>{{ `${institution.name} | ${$t('Kontaktai')}` }}</title>
-      <meta v-if="institution.description" name="description" :content="institution.description">
-    </Head>
-
     <!-- Hero Section based on v0 redesign -->
     <section :class="availableDetails.length === 0 && 'border-b border-border'">
       <div
@@ -160,6 +155,7 @@
                     variant="ghost"
                     size="sm"
                     class="size-7 p-0 text-muted-foreground hover:text-foreground"
+                    :aria-label="$t('Apie balsavimo skaidrumą')"
                     @click.stop="showInfoModal = true"
                   >
                     <IFluentInfo16Regular class="size-4" />
@@ -171,7 +167,13 @@
           </div>
 
           <CollapsibleTrigger as-child>
-            <Button voice="brand" variant="ghost" size="sm" class="size-8 p-0">
+            <Button
+              voice="brand"
+              variant="ghost"
+              size="sm"
+              class="size-8 p-0"
+              :aria-label="$t(showMeetings ? 'Suskleisti' : 'Išskleisti')"
+            >
               <IFluentChevronDown16Regular
                 class="size-4 transition-transform duration-200"
                 :class="{ 'rotate-180': !showMeetings }"
@@ -249,7 +251,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Head, usePage } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import MediaImage from '@/Components/Brand/MediaImage.vue';

@@ -43,6 +43,10 @@ describe('MobileBottomBar', () => {
     expect(wrapper.find('[aria-label="shell.chrome.actions"] svg.lucide-mouse-pointer-click').exists()).toBe(true);
   });
 
+  it('stays out of the page cross-fade so a tapped tab animates once', () => {
+    expect(mountBar().find('[data-slot="mobile-bottom-bar"]').classes()).toContain('[view-transition-name:admin-bottom-bar]');
+  });
+
   it('hides the create button when the user has nothing to create', () => {
     expect(mountBar({ canCreate: false }).find('[aria-label="shell.chrome.actions"]').exists()).toBe(false);
   });

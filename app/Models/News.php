@@ -518,10 +518,9 @@ class News extends Model implements Feedable, ImageMediaOwner, Sitemapable
             $schema = $schema->abstract(implode(' • ', $this->highlights));
         }
 
-        // Create proper organization with website URL
         $organization = (new Organization)
             ->name($this->tenant->shortname)
-            ->url(url('/'));
+            ->url(route('home', ['subdomain' => $this->tenant->subdomain(), 'lang' => $this->lang]));
 
         // Add full organization name if available
         if ($this->tenant->fullname) {
@@ -531,11 +530,9 @@ class News extends Model implements Feedable, ImageMediaOwner, Sitemapable
         $schema = $schema->author($organization);
         $schema = $schema->publisher($organization);
 
-        // Add main entity of page (canonical URL)
-        $schema = $schema->mainEntityOfPage(url('/naujiena/'.$this->permalink));
-
-        // Add article URL
-        $schema = $schema->url(url('/naujiena/'.$this->permalink));
+        if ($url = $this->publicUrl()) {
+            $schema = $schema->mainEntityOfPage($url)->url($url);
+        }
 
         return $schema;
     }

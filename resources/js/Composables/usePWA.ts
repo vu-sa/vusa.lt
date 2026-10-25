@@ -1,7 +1,8 @@
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { toast } from 'vue-sonner';
+import type { registerSW as RegisterSW } from 'virtual:pwa-register';
 
 import { describeDevice } from '@/Utils/pushDevice';
 
@@ -21,7 +22,7 @@ import { describeDevice } from '@/Utils/pushDevice';
  */
 
 // Dynamic import for registerSW - only available in production builds
-let registerSW: ((options?: any) => (reloadPage?: boolean) => Promise<void>) | undefined;
+let registerSW: typeof RegisterSW | undefined;
 
 const pwaModulePromise = import('virtual:pwa-register')
   .then((pwaModule) => {
@@ -113,6 +114,137 @@ function updatePWACookie(): void {
   }
 }
 
+function getCsrfToken(): string {
+  return (usePage().props.csrf_token as string) || '';
+}
+
+function getVapidKey(): string | null {
+  return (usePage().props.pwa as { vapidPublicKey?: string } | undefined)?.vapidPublicKey ?? null;
+}
+
+// Convert URL-safe base64 to Uint8Array for VAPID key
+function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding)
+    .replace(/-/g, '+')
+    .replace(/_/g, '/');
+
+  const rawData = window.atob(base64);
+  const buffer = new ArrayBuffer(rawData.length);
+  const outputArray = new Uint8Array(buffer);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+async function subscribeRegistration(registration: ServiceWorkerRegistration, vapidKey: string): Promise<PushSubscriptionJSON> {
+  const subscription = await registration.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: urlBase64ToUint8Array(vapidKey),
+  });
+
+  const subscriptionJson = subscription.toJSON() as PushSubscriptionJSON;
+
+  // PushEncryptionKeyName tells the server which encryption format to use
+  const response = await fetch(route('api.v1.admin.pushSubscriptions.store'), {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': getCsrfToken(),
+    },
+    body: JSON.stringify({
+      endpoint: subscriptionJson.endpoint,
+      keys: subscriptionJson.keys,
+      contentEncoding: (PushManager as unknown as { supportedContentEncodings?: string[] }).supportedContentEncodings?.[0] || 'aes128gcm',
+      deviceName: describeDevice(navigator.userAgent),
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Server returned ${response.status}`);
+  }
+
+  return subscriptionJson;
+}
+
+function destroySubscription(endpoint: string): Promise<Response> {
+  return fetch(route('api.v1.admin.pushSubscriptions.destroy'), {
+    method: 'DELETE',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': getCsrfToken(),
+    },
+    body: JSON.stringify({ endpoint }),
+  });
+}
+
+const RELOAD_FALLBACK_MS = 3000;
+
+/**
+ * workbox-window reloads on `controlling`, which a page the waiting worker will not control never
+ * receives — so reload ourselves once it activates, with a timeout in case it never reports back.
+ */
+export async function activateWaitingWorker(reload = () => window.location.reload()): Promise<void> {
+  const waiting = swRegistration?.waiting;
+
+  if (!updateSW || !waiting) {
+    reload();
+    return;
+  }
+
+  waiting.addEventListener('statechange', () => {
+    if (waiting.state === 'activated') {
+      reload();
+    }
+  });
+  window.setTimeout(reload, RELOAD_FALLBACK_MS);
+
+  await updateSW();
+}
+
+/**
+ * The worker used to be registered at /build/sw.js. Its push subscription moves to the
+ * current worker before it is unregistered, so the device neither loses pushes nor gets them twice.
+ */
+export async function migrateLegacyRegistration(current: ServiceWorkerRegistration): Promise<void> {
+  // pushManager.subscribe() needs an active worker; a first install migrates on the next load.
+  if (!current.active) {
+    return;
+  }
+
+  const registrations = await navigator.serviceWorker.getRegistrations();
+  const legacy = registrations.find(registration => new URL(registration.scope).pathname === '/build/');
+
+  if (!legacy) {
+    return;
+  }
+
+  try {
+    const subscription = await legacy.pushManager.getSubscription();
+    const vapidKey = getVapidKey();
+
+    if (subscription) {
+      if (vapidKey && 'Notification' in window && Notification.permission === 'granted') {
+        const subscriptionJson = await subscribeRegistration(current, vapidKey);
+        currentBrowserSubscribed.value = true;
+        currentBrowserEndpoint.value = subscriptionJson.endpoint;
+      }
+
+      await destroySubscription(subscription.endpoint);
+      await subscription.unsubscribe();
+    }
+
+    await legacy.unregister();
+  }
+  catch (error) {
+    console.warn('[PWA] Could not migrate the old service worker:', error);
+  }
+}
+
 /**
  * Composable for PWA functionality including:
  * - Detecting if running as installed PWA
@@ -145,11 +277,8 @@ export function usePWA() {
     return false;
   };
 
-  // Refresh the app with new service worker
   const updateApp = async () => {
-    if (updateSW) {
-      await updateSW(true);
-    }
+    await activateWaitingWorker();
   };
 
   // Dismiss the update prompt
@@ -233,38 +362,6 @@ export function usePWA() {
     }
   };
 
-  // Get device name from user agent
-  const getDeviceName = (): string => describeDevice(navigator.userAgent);
-
-  // Get CSRF token from Inertia page props
-  const getCsrfToken = (): string => {
-    const page = usePage();
-    return (page.props.csrf_token as string) || '';
-  };
-
-  // Get VAPID public key from server
-  const getVapidKey = (): string | null => {
-    const page = usePage();
-    return (page.props.pwa as any)?.vapidPublicKey ?? null;
-  };
-
-  // Convert URL-safe base64 to Uint8Array for VAPID key
-  const urlBase64ToUint8Array = (base64String: string): Uint8Array<ArrayBuffer> => {
-    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-    const base64 = (base64String + padding)
-      .replace(/-/g, '+')
-      .replace(/_/g, '/');
-
-    const rawData = window.atob(base64);
-    const buffer = new ArrayBuffer(rawData.length);
-    const outputArray = new Uint8Array(buffer);
-
-    for (let i = 0; i < rawData.length; ++i) {
-      outputArray[i] = rawData.charCodeAt(i);
-    }
-    return outputArray;
-  };
-
   // Subscribe to push notifications
   const subscribeToPush = async (): Promise<boolean> => {
     // The registration may not be stored yet (early click, or a worker registered in an earlier visit).
@@ -294,33 +391,7 @@ export function usePWA() {
         return false;
       }
 
-      // Subscribe to push
-      const subscription = await swRegistration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidKey),
-      });
-
-      const subscriptionJson = subscription.toJSON() as PushSubscriptionJSON;
-
-      // Send subscription to server with content encoding and device name
-      // PushEncryptionKeyName tells the server which encryption format to use
-      const response = await fetch(route('api.v1.admin.pushSubscriptions.store'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': getCsrfToken(),
-        },
-        body: JSON.stringify({
-          endpoint: subscriptionJson.endpoint,
-          keys: subscriptionJson.keys,
-          contentEncoding: (PushManager as any).supportedContentEncodings?.[0] || 'aes128gcm',
-          deviceName: getDeviceName(),
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Server returned ${response.status}`);
-      }
+      const subscriptionJson = await subscribeRegistration(swRegistration, vapidKey);
 
       // Update local state to reflect subscription
       currentBrowserSubscribed.value = true;
@@ -357,17 +428,7 @@ export function usePWA() {
           // Unsubscribe locally first
           await subscription.unsubscribe();
 
-          // Remove from server
-          const response = await fetch(route('api.v1.admin.pushSubscriptions.destroy'), {
-            method: 'DELETE',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRF-TOKEN': getCsrfToken(),
-            },
-            body: JSON.stringify({
-              endpoint: subscription.endpoint,
-            }),
-          });
+          const response = await destroySubscription(subscription.endpoint);
 
           if (!response.ok) {
             console.warn('[PWA] Server returned error on unsubscribe:', response.status);
@@ -387,16 +448,7 @@ export function usePWA() {
 
       // Fallback: If we have a stored endpoint but no SW, try server-only removal
       if (currentBrowserEndpoint.value) {
-        const response = await fetch(route('api.v1.admin.pushSubscriptions.destroy'), {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': getCsrfToken(),
-          },
-          body: JSON.stringify({
-            endpoint: currentBrowserEndpoint.value,
-          }),
-        });
+        const response = await destroySubscription(currentBrowserEndpoint.value);
 
         if (response.ok) {
           currentBrowserSubscribed.value = false;
@@ -658,24 +710,27 @@ export async function initPWA() {
         pushPermission.value = Notification.permission;
       }
 
-      // Check if this browser has an active push subscription and store endpoint
-      if (registration) {
-        registration.pushManager.getSubscription().then((subscription: PushSubscription | null) => {
-          currentBrowserSubscribed.value = subscription !== null;
-          currentBrowserEndpoint.value = subscription?.endpoint ?? null;
-          console.log('[PWA] Browser push subscription:', subscription !== null);
-        }).catch(() => {
-          currentBrowserSubscribed.value = false;
-          currentBrowserEndpoint.value = null;
-        });
+      if (!registration) {
+        return;
       }
 
-      // Check for updates periodically (every hour)
-      if (registration) {
-        setInterval(() => {
-          registration.update();
-        }, 60 * 60 * 1000);
-      }
+      registration.pushManager.getSubscription().then((subscription: PushSubscription | null) => {
+        currentBrowserSubscribed.value = subscription !== null;
+        currentBrowserEndpoint.value = subscription?.endpoint ?? null;
+      }).catch(() => {
+        currentBrowserSubscribed.value = false;
+        currentBrowserEndpoint.value = null;
+      }).finally(() => migrateLegacyRegistration(registration));
+
+      // iOS suspends an installed app instead of keeping it open, so the hourly check alone rarely runs.
+      // An offline check rejects; the next one retries.
+      const checkForUpdate = () => registration.update().catch(() => undefined);
+      setInterval(checkForUpdate, 60 * 60 * 1000);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          checkForUpdate();
+        }
+      });
     },
     onRegisterError(error: Error) {
       console.error('[PWA] Service worker registration error:', error);

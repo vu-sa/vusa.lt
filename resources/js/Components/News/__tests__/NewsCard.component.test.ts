@@ -30,6 +30,11 @@ describe('NewsCard', () => {
     expect(wrapper.get('a').attributes('href')).toBe(news.public_url);
     expect(wrapper.get('a').attributes('prefetch')).toBeUndefined();
   });
+
+  it('titles itself with the heading level the page asks for', () => {
+    expect(mount(NewsCard, { props: { news } }).find('h3').text()).toBe('Naujiena');
+    expect(mount(NewsCard, { props: { news, headingTag: 'h2' } }).find('h2').text()).toBe('Naujiena');
+  });
 });
 
 it('keeps responsive image candidates on featured and grid cards', () => {

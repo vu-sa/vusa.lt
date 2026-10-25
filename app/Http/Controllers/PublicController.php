@@ -14,20 +14,27 @@ use App\Support\PublicCacheTags;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Str;
 use Illuminate\Support\Uri;
 use Inertia\Inertia;
+use Laravel\Head\Enums\OgType;
 use Laravel\Head\Facades\Head;
 use Spatie\SchemaOrg\BreadcrumbList;
 use Spatie\SchemaOrg\ListItem;
 use Spatie\SchemaOrg\Organization;
+use Spatie\SchemaOrg\WebSite;
 
 class PublicController extends Controller
 {
     use ResolvesPublicContent;
+
+    /** Project heuristic for preferring a useful summary over a very short fragment. */
+    private const int MIN_DESCRIPTION_LENGTH = 50;
 
     protected Tenant $tenant;
 
@@ -174,44 +181,43 @@ class PublicController extends Controller
      */
     protected function tenantRoute(string $routeName, array $parameters = [], ?Tenant $tenant = null): string
     {
-        $subdomain = $this->getSubdomainForTenant($tenant);
+        // www-only routes have no {subdomain}; route() would append it as "?subdomain=…".
+        if (in_array('subdomain', Route::getRoutes()->getByName($routeName)?->parameterNames() ?? [], true)) {
+            $parameters = [...$parameters, 'subdomain' => $this->getSubdomainForTenant($tenant)];
+        } else {
+            unset($parameters['subdomain']);
+        }
 
-        // Merge subdomain with provided parameters
-        // Note: route() automatically adds non-route params as query string
-        return route($routeName, array_merge([
-            'subdomain' => $subdomain,
-        ], $parameters));
+        return route($routeName, $parameters);
     }
 
     /**
-     * Generate the canonical URL for the current page.
+     * Generate the canonical URL for the current page on the content owner's subdomain.
      *
-     * Uses Laravel's Route facade to get current route name and parameters,
-     * then rebuilds the URL with the content owner's subdomain.
+     * Only allow-listed query parameters survive, so tracking (`utm_*`, `fbclid`) and filter
+     * noise never mint duplicate canonicals; `page=1` is dropped as it equals the bare URL.
      *
-     * @param  Tenant|null  $contentTenant  The tenant that owns the content (for proper canonical URL)
-     * @param  bool  $includeQueryString  Whether to include query parameters (for pagination, etc.)
+     * @param  list<string>  $allowedQuery
      */
-    protected function getCanonicalUrl(?Tenant $contentTenant = null, bool $includeQueryString = false): string
+    protected function getCanonicalUrl(?Tenant $contentTenant = null, array $allowedQuery = ['page']): string
     {
         $currentRoute = Route::current();
         $routeName = Route::currentRouteName();
 
         if (! $currentRoute || ! $routeName) {
-            // Fallback to current URL if no named route
             return request()->url();
         }
 
-        // Get current route parameters and replace subdomain with content tenant's
-        $parameters = $currentRoute->parameters();
+        $query = array_filter(
+            Arr::only(request()->query(), $allowedQuery),
+            fn ($value, $key) => is_string($value) && $value !== '' && ! ($key === 'page' && (int) $value <= 1),
+            ARRAY_FILTER_USE_BOTH,
+        );
+        ksort($query);
 
-        // Include query string parameters if needed
-        if ($includeQueryString) {
-            $queryParams = request()->query();
-            $parameters = array_merge($parameters, $queryParams);
-        }
+        $parameters = Arr::only($currentRoute->parameters(), $currentRoute->parameterNames());
 
-        return $this->tenantRoute($routeName, $parameters, $contentTenant);
+        return $this->tenantRoute($routeName, [...$parameters, ...$query], $contentTenant);
     }
 
     /**
@@ -300,18 +306,15 @@ class PublicController extends Controller
     }
 
     /**
-     * Apply page-specific head metadata (title, description, canonical, Open Graph, hreflang, …)
-     * via Laravel Head, using the content owner's subdomain for URL generation.
+     * An empty titleSuffix suppresses the derived tenant suffix.
      *
-     * @param  Tenant|null  $contentTenant  The tenant that owns the content (for proper canonical/hreflang URLs)
-     * @param  string|null  $titleSuffix  Overrides the derived " - <tenant shortname>" suffix; pass '' to
-     *                                    suppress it entirely, or a string (e.g. an institution name) to replace it
+     * @param  string|list<string|null>|null  $description  Candidates in order of preference
      */
     protected function applyPageHead(
         ?Tenant $contentTenant = null,
         ?string $title = null,
         ?string $titleSuffix = null,
-        ?string $description = null,
+        string|array|null $description = null,
         ?string $image = null,
         ?string $author = null,
         ?string $robots = null,
@@ -319,21 +322,25 @@ class PublicController extends Controller
         ?CarbonInterface $modifiedTime = null,
         ?string $canonicalUrl = null,
     ): void {
-        // Generate canonical URL using the content owner's subdomain.
-        // This ensures content is always canonicalized to its owner's subdomain.
-        $canonicalUrl ??= $this->getCanonicalUrl(contentTenant: $contentTenant, includeQueryString: true);
+        $headTenant = $contentTenant ?? $this->tenant;
+        $canonicalUrl ??= $this->getCanonicalUrl(contentTenant: $contentTenant);
 
         Head::canonical($canonicalUrl);
 
         if ($title !== null) {
-            $suffix = $titleSuffix ?? ' - '.($contentTenant ?? $this->tenant)->shortname;
+            $suffix = $titleSuffix ?? ' - '.$headTenant->shortname;
 
             $suffix === '' ? Head::title($title) : Head::title($title, suffix: $suffix);
         }
 
-        if ($description !== null) {
-            Head::description($description);
-        }
+        Head::description($this->seoDescription($description, $headTenant, $title));
+
+        Head::og(
+            type: $publishedTime !== null ? OgType::Article : null,
+            url: $canonicalUrl,
+            siteName: $headTenant->shortname,
+            locale: app()->getLocale() === 'en' ? 'en_US' : 'lt_LT',
+        );
 
         Head::ogImage($this->resolveOgImageUrl($image));
 
@@ -358,6 +365,25 @@ class PublicController extends Controller
         // Schema objects are view data, never Inertia props: Inertia serialises JsonSerializable
         // props into arrays, which strips the ->toScript() the root view calls.
         View::share('SITE_JSONLD_Schemas', $this->getStructuredDataSchemas());
+    }
+
+    /** @param  string|list<string|null>|null  $candidates  Plain text or HTML, best first */
+    protected function seoDescription(string|array|null $candidates, ?Tenant $tenant = null, ?string $title = null): string
+    {
+        $tenant ??= $this->tenant;
+        $fallback = $title === null
+            ? __($tenant->isMain() ? 'seo.default_description' : 'seo.unit_default_description', ['tenant' => $tenant->shortname])
+            : __('seo.page_description', ['page' => $title, 'tenant' => $tenant->shortname]);
+
+        foreach ([...(array) $candidates, $fallback] as $candidate) {
+            $text = Str::squish(html_entity_decode(strip_tags(str_replace('<', ' <', (string) $candidate)), ENT_QUOTES | ENT_HTML5));
+
+            if (mb_strlen($text) >= self::MIN_DESCRIPTION_LENGTH) {
+                break;
+            }
+        }
+
+        return Str::limit($text, 159, '…', preserveWords: true);
     }
 
     /**
@@ -425,7 +451,7 @@ class PublicController extends Controller
                     ->name($locale === 'lt' ? 'Vilniaus universiteto Studentų atstovybė' : 'Vilnius University Students\' Representation')
                     ->alternateName('VU SA')
                     ->url($baseUrl)
-                    ->logo($baseUrl.'/images/photos/vusa.jpg')
+                    ->logo($baseUrl.'/images/icons/logos/vusa_color_logo.png')
                     ->description($locale === 'lt'
                         ? 'VU SA - visuomeninė, ne pelno siekianti, nepolitinė, ekspertinė švietimo organizacija, atstovaujanti Vilniaus universiteto studentų interesams.'
                         : 'VU SA - a public, non-profit, non-political, expert educational organization representing the interests of Vilnius University students.'
@@ -436,6 +462,15 @@ class PublicController extends Controller
                     $organizationSchema,
                 ];
             });
+    }
+
+    /** Site identity is shared across both language homepages. */
+    protected function getWebSiteSchema(Tenant $tenant): WebSite
+    {
+        return (new WebSite)
+            ->name(app()->getLocale() === 'lt' ? $tenant->fullname : $tenant->shortname)
+            ->alternateName($tenant->shortname)
+            ->url(route('home', ['subdomain' => $tenant->subdomain(), 'lang' => null]));
     }
 
     /**

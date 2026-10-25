@@ -1,7 +1,10 @@
 ---
 doc_status: reviewed
-last_reviewed: 2026-10-17
+last_reviewed: 2026-10-25
 tests:
+  - tests/Feature/Public/PublicSeoContractTest.php
+  - tests/Browser/PublicSeoRenderTest.php
+  - resources/js/Pages/Public/__tests__/PublicSeoMarkup.component.test.ts
   - resources/js/Composables/__tests__/useContentEditor.component.test.ts
   - tests/Feature/Search/SearchExperienceTest.php
   - tests/Feature/Api/Admin/ContentEditorTest.php
@@ -41,6 +44,14 @@ Puslapiai organizuojami medžio principu:
 
 - **Puslapiai ir polapiai:** puslapį gali priskirti kitam puslapiui ir taip sukurti turinio hierarchiją, pvz., puslapiui „Atstovavimas“ priskirti polapius „Studijų programų komitetai“ ir „Ginčų komisija“.
 - **Nuorodų istorija:** puslapis turi viešą adresą. Pakeitus šį adresą, ankstesnė nuoroda nukreipia lankytoją į naująjį puslapio adresą.
+
+### Puslapio aprašymas paieškoje {#paieskos-aprasymas}
+
+Paieškos sistemoms pirmiausia pateikiamas formoje įrašytas puslapio aprašymas, tada – pradinis turinio tekstas. Jei tekstas tuščias arba labai trumpas, naudojamas aprašymas su puslapio ir padalinio pavadinimu. Pateikiamas tekstas sutrumpinamas iki 160 simbolių. Paieškos sistema pati pasirenka, kurią ištrauką rodyti.
+
+Meniu, naršymo kelias ir filtrai pažymėti kaip neįtrauktini į paieškos rezultatų ištraukas. Nuorodos su sekimo parametrais nurodo tą patį pagrindinį puslapio adresą.
+
+Paslėpus matomą puslapio pavadinimą, jis išlieka pasiekiamas ekrano skaitytuvams. Turinio herojų antraštės tada lieka antrojo lygio – puslapio pagrindinė antraštė nesidubliuoja.
 
 ### Būsenos
 

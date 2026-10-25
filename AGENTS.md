@@ -41,6 +41,8 @@ Build from `ui/` → `Public/Base/` → `Public/<area>/` → `Public/Layouts/` �
 Use `Public/Base/` for domain-free primitives and `ui/button` for actions. Keep corners square and
 use tokens instead of raw colour utilities. Check both themes and phone layouts. Detailed rules
 live in `.ai/rules/public.md`, `.ai/rules/css.md`, and `resources/js/Components/CLAUDE.md`.
+SEO (head metadata, one h1, `data-nosnippet` on chrome, no client `<Head>`) is in `.ai/rules/seo.md`
+and is enforced by `PublicSeoContractTest` and `PublicSeoRenderTest`.
 
 ## Documentation Hub
 

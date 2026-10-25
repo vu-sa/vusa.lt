@@ -1,10 +1,5 @@
 <template>
   <div class="student-reps-page">
-    <Head>
-      <title>{{ `${pageHeadTitle} | ${$t('Kontaktai')}` }}</title>
-      <meta v-if="pageDescription" name="description" :content="pageDescription">
-    </Head>
-
     <!-- Page Title Band per editorial redesign -->
     <PageTitleBand
       :eyebrow="pageEyebrow"
@@ -217,7 +212,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Head, router, usePage } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { TenantType } from '@/Types/enums';
@@ -255,10 +250,6 @@ const pageTitle = computed(() => {
     return props.categoryType.title;
   }
   return 'Studentų atstovai';
-});
-
-const pageHeadTitle = computed(() => {
-  return $t(pageTitle.value);
 });
 
 // Set breadcrumbs with band placement

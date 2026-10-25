@@ -21,6 +21,16 @@
   }
 }
 
+/* The admin shell is the viewport and scrolls inside itself. A scrollable window lets iOS rubber-band
+   or keyboard scrolling carry the whole shell off screen in the installed app. Login has no shell. */
+html:has([data-slot="admin-shell"]),
+html:has([data-slot="admin-shell"]) body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  padding-bottom: 0;
+}
+
 /* Navigation progress bar under admin surface: crisp, 2px hairline in brand colour
    with zero shadows, glow or peg blur (.ai/rules/js-pages-admin.md, O16, O3). */
 html[data-surface="admin"] #nprogress .bar {

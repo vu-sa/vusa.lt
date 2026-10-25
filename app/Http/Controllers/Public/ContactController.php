@@ -22,7 +22,6 @@ use App\Support\MeetingTitle;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -41,7 +40,7 @@ class ContactController extends PublicController
         $this->applyPageHead(
             contentTenant: $this->tenant,
             title: __('Kontaktų paieška'),
-            description: app()->getLocale() === 'lt' ? 'VU SA kontaktų paieškoje vienoje vietoje suraskite visus VU SA kontaktus' : 'In the VU SA contact search, find all VU SA contacts in one place',
+            description: __('search.institution_page_description'),
         );
 
         $atstovavimasSettings = app(AtstovavimasSettings::class);
@@ -89,7 +88,8 @@ class ContactController extends PublicController
     {
         $this->getTenantLinks();
 
-        Inertia::share('otherLangURL', route('contacts.institution', ['subdomain' => $this->subdomain, 'lang' => $this->getOtherLang(), 'institution' => $institution->id]));
+        Inertia::share('otherLangURL', $institution->publicUrl($this->getOtherLang())
+            ?? route('contacts.institution', ['subdomain' => $this->subdomain, 'lang' => $this->getOtherLang(), 'institution' => $institution->id]));
 
         // Load types for breadcrumb navigation
         $institution->load('types');
@@ -101,8 +101,9 @@ class ContactController extends PublicController
         return $this->renderInstitutionPage(
             $institution,
             $this->presentationService->contactsFor($institution, $duties),
-            $institution->name.' | Kontaktai',
+            $institution->name,
             activeDutyTypeTab: 'all',
+            canonicalUrl: $institution->publicUrl(app()->getLocale()),
         );
     }
 
@@ -140,7 +141,7 @@ class ContactController extends PublicController
         return $this->renderInstitutionPage(
             $institution,
             $this->presentationService->contactsFor($institution, $duties),
-            $institution->name.' | '.($part === SystemDutyType::Coordinator ? __('Koordinatoriai') : __('Kuratoriai')),
+            ($part === SystemDutyType::Coordinator ? __('Koordinatoriai') : __('Kuratoriai')).': '.$institution->name,
             activeDutyTypeTab: $part->publicSegment(),
         );
     }
@@ -172,7 +173,8 @@ class ContactController extends PublicController
         $this->applyPageHead(
             contentTenant: $this->tenant,
             title: __('Studentų atstovai'),
-            description: app()->getLocale() === 'lt' ? $this->tenant->shortname.' studentų atstovų paieškoje vienoje vietoje suraskite visus '.$this->tenant->shortname.'studentų atstovus' : 'In '.$this->tenant->shortname.'contact search find all'.$this->tenant->shortname.'student representatives');
+            description: __('seo.student_reps_description', ['tenant' => $this->tenant->shortname]),
+        );
 
         return Inertia::render('Public/Contacts/ShowStudentReps', [
             'tenantSwitchTarget' => 'same-page',
@@ -187,7 +189,8 @@ class ContactController extends PublicController
         Institution $institution,
         array $contacts,
         string $title,
-        ?string $activeDutyTypeTab = 'all'
+        ?string $activeDutyTypeTab = 'all',
+        ?string $canonicalUrl = null,
     ) {
         abort_unless($institution->is_active === 1, 404);
 
@@ -236,12 +239,18 @@ class ContactController extends PublicController
             }
         }
 
-        // Use the institution's tenant for proper canonical URL
+        // PKP tenants have no site of their own; their institutions live on www.
+        $siteTenant = $institution->tenant?->type === TenantType::Pkp ? Tenant::main() : $institution->tenant;
+
         $this->applyPageHead(
-            contentTenant: $institution->tenant,
+            contentTenant: $siteTenant,
             title: $title,
-            description: Str::limit(strip_tags($institution->description), 160),
+            description: [
+                $institution->description,
+                __('seo.institution_description', ['institution' => $institution->name, 'tenant' => $siteTenant->shortname ?? $this->tenant->shortname]),
+            ],
             image: $institution->imageData('image')['url'] ?? null,
+            canonicalUrl: $canonicalUrl,
         );
 
         $data = [
@@ -319,7 +328,7 @@ class ContactController extends PublicController
             contentTenant: $primaryInstitution->tenant,
             title: MeetingTitle::for($meeting, app()->getLocale()),
             titleSuffix: ' - '.$primaryInstitution->name,
-            description: Str::limit(strip_tags($meeting->description), 160),
+            description: $meeting->description,
             robots: 'noindex, nofollow',
         );
 
@@ -360,12 +369,10 @@ class ContactController extends PublicController
                 }, 'types']);
             }])->institutions;
 
-            // Title suffix now derives from the current tenant instead of a hardcoded "VU SA" — on a
-            // padalinys subdomain this reads "... - VU SA <padalinys>" instead of always "- VU SA".
             $this->applyPageHead(
                 contentTenant: $this->tenant,
                 title: __('Kontaktai').': '.$type->title,
-                description: Str::limit(Str::squish(strip_tags((string) $type->description)), 160),
+                description: [$type->description, __('seo.contact_category_description', ['category' => $type->title, 'tenant' => $this->tenant->shortname])],
             );
 
             return Inertia::render('Public/Contacts/ShowContactCategory', [
@@ -409,7 +416,7 @@ class ContactController extends PublicController
         $this->applyPageHead(
             contentTenant: $this->tenant,
             title: __('Kontaktai').': '.$type->title,
-            description: Str::limit(Str::squish(strip_tags((string) $type->description)), 160),
+            description: [$type->description, __('seo.contact_category_description', ['category' => $type->title, 'tenant' => $this->tenant->shortname])],
         );
 
         return Inertia::render('Public/Contacts/ShowStudentReps', [

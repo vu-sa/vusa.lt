@@ -48,6 +48,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Http/Requests/** | .ai/rules/requests.md |
 | resources/js/Components/RichContent/** | .ai/rules/rich-content.md |
 | routes/api.php, routes/admin.php, routes/web.php | .ai/rules/routes.md |
+| app/Http/Controllers/Public/**, app/Http/Controllers/PublicController.php, resources/js/Pages/Public/**, resources/js/Components/Public/**, public/robots.txt, resources/views/app.blade.php | .ai/rules/seo.md |
 | app/Services/** | .ai/rules/services.md |
 | resources/js/Pages/Admin/Settings/**, app/Settings/** | .ai/rules/settings.md |
 | app/Services/AdminNavigation/**, resources/js/Components/Layouts/Shell/** | .ai/rules/shell.md |

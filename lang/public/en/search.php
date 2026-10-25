@@ -138,8 +138,8 @@ return [
     // Document search specific
     'document_search_title' => 'Documents',
     'document_search_description' => 'Search VU SR documents archive – find protocols, decisions and other documents.',
-    'document_page_title' => 'Documents - VU SR',
-    'document_page_description' => 'Search VU SR documents archive',
+    'document_page_title' => 'Documents',
+    'document_page_description' => 'The VU SA document archive – statutes, procedures, minutes and other documents. Search by title, type or unit.',
     'offline_message' => 'No internet connection - search is unavailable',
     'showing_results' => 'Showing',
     'found_results' => 'Found',
@@ -231,8 +231,8 @@ return [
     'date_to_format' => 'To :date',
 
     // Meeting search specific
-    'meeting_page_title' => 'Meetings - VU SR',
-    'meeting_page_description' => 'Search VU SA meetings and view student representation results',
+    'meeting_page_title' => 'Meetings',
+    'meeting_page_description' => 'Student representatives\' meetings in Vilnius University bodies – agendas, decisions and representation results.',
     'meeting_search_title' => 'Meetings',
     'meeting_search_description' => 'Search VU SA meetings and view student representation activity results.',
     'search_meetings_placeholder' => 'Search meetings by title...',
@@ -255,8 +255,8 @@ return [
     'meeting_plural' => 'meetings',
 
     // Institution/contacts search specific
-    'institution_page_title' => 'Contacts Search - VU SR',
-    'institution_page_description' => 'Search VU SA institutions and contacts',
+    'institution_page_title' => 'Contacts Search',
+    'institution_page_description' => 'Search VU SA institutions and contacts – student representatives, coordinators, mentors and units in one place.',
     'institution_search_title' => 'Contacts Search',
     'institution_search_description' => 'Search VU SA institutions and find all the contacts you need in one place.',
     'search_institutions_placeholder' => 'Search institutions by name...',
@@ -283,7 +283,7 @@ return [
     'go_to_search' => 'Go to global search',
 
     // Unified search page
-    'all_page_title' => 'Search - VU SR',
+    'all_page_title' => 'Search',
     'all_page_description' => 'Search VU SA news, pages, documents, events, institutions and meetings in one place.',
     'all_search_title' => 'Search',
     'all_search_description' => 'Search across all VU SA content – news, pages, documents, events, institutions and meetings.',

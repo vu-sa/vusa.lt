@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Laravel\Head\Facades\Head;
 
 class PublicPageController extends PublicController
 {
@@ -53,15 +54,28 @@ class PublicPageController extends PublicController
             $this->sharePublicEditLink($this->tenant);
         }
 
-        $this->applyPageHead(contentTenant: $this->tenant, title: __('Pagrindinis puslapis'));
+        $heading = $locale === 'lt' ? $this->tenant->fullname : __($this->tenant->isMain() ? 'seo.home_title_main' : 'seo.home_title_unit');
+
+        $this->applyPageHead(
+            contentTenant: $this->tenant,
+            title: $heading,
+            description: __($this->tenant->isMain() ? 'seo.default_description' : 'seo.unit_default_description', ['tenant' => $this->tenant->shortname]),
+        );
 
         $resolvedParts = $this->resolveContentParts($content);
+        $firstNewsImageUrl = $this->firstNewsImageUrl($content, $resolvedParts);
+
+        if ($firstNewsImageUrl !== null) {
+            Head::link('preload', $firstNewsImageUrl, ['as' => 'image', 'fetchpriority' => 'high']);
+        }
 
         return Inertia::render('Public/HomePage', [
             'tenantSwitchTarget' => 'same-page',
+            'heading' => $heading,
             'content' => $content,
             'resolvedParts' => (object) $resolvedParts,
-            'firstNewsImageUrl' => $this->firstNewsImageUrl($content, $resolvedParts),
+        ])->withViewData([
+            'JSONLD_Schemas' => [$this->getWebSiteSchema($this->tenant)],
         ]);
     }
 
@@ -111,54 +125,10 @@ class PublicPageController extends PublicController
             return redirect()->route('contacts.alias', ['subdomain' => $this->subdomain, 'lang' => app()->getLocale(), 'institution' => request()->permalink]);
         }
 
-        // Continue with normal page rendering
-
         $this->getBanners();
         $this->getTenantLinks();
 
-        // Cache the page data
-        $locale = app()->getLocale();
-        $cacheKey = "page_content_{$this->tenant->id}_{$locale}_".md5(request()->permalink);
-
-        $pageData = Cache::tags(['pages', PublicCacheTags::pages($this->tenant->id, $locale)])
-            ->remember($cacheKey, 3600, function () {
-                $page = Page::query()->where([
-                    ['permalink', '=', request()->permalink],
-                    ['tenant_id', '=', $this->tenant->id],
-                    ['is_active', '=', true],
-                ])->first();
-
-                // false, not null: the cache treats a stored null as a miss, and page saves
-                // flush this entry when the permalink appears.
-                if ($page === null) {
-                    return false;
-                }
-
-                $page->load(['tenant', 'content']);
-
-                $navigation_item = Navigation::query()->where('name', $page->title)->first();
-                $other_lang_page = $page->getOtherLanguage();
-
-                $children = $page->children()
-                    ->where('is_active', true)
-                    ->get(['id', 'title', 'permalink', 'lang', 'tenant_id', 'meta_description'])
-                    ->map(fn (Page $child) => [
-                        'title' => $child->title,
-                        'url' => $child->publicUrl(),
-                        'meta_description' => $child->meta_description,
-                    ])
-                    ->values()
-                    ->all();
-
-                return [
-                    'page' => $page,
-                    'navigation_item' => $navigation_item,
-                    'other_lang_page' => $other_lang_page,
-                    'ancestors' => $page->ancestors(),
-                    'children' => $children,
-                    'seo_description' => ContentHelper::getDescriptionForSeo($page),
-                ];
-            });
+        $pageData = $this->cachedPageData();
 
         if ($pageData === false) {
             $publicUrl = $publicUrls->resolve(request()->url());
@@ -198,45 +168,16 @@ class PublicPageController extends PublicController
             ]
         ) : null);
 
-        // Get description for SEO from first tiptap element
-        // Use the page's tenant for proper canonical URL
         $this->applyPageHead(
             contentTenant: $page->tenant,
             title: $page->title,
-            description: $pageData['seo_description'] ?? ContentHelper::getDescriptionForSeo($page),
+            description: [$page->meta_description, $pageData['seo_description'] ?? ContentHelper::getDescriptionForSeo($page)],
+            image: $page->getFeaturedImageUrl(),
+            modifiedTime: $page->last_edited_at ?? $page->updated_at,
         );
 
-        // Generate breadcrumb schema
         $locale = app()->getLocale();
-        $breadcrumbs = [
-            [
-                'name' => $locale === 'lt' ? 'Pradžia' : 'Home',
-                'url' => route('home', ['subdomain' => $this->subdomain, 'lang' => $locale]),
-            ],
-        ];
-
-        // Add the page's ancestor chain (root first), replacing the old category crumb —
-        // page structure is now expressed as structure, not as a category.
-        foreach ($ancestors as $ancestor) {
-            $breadcrumbs[] = [
-                'name' => $ancestor->title,
-                'url' => route('page', [
-                    'subdomain' => $this->subdomain,
-                    'lang' => $locale,
-                    'permalink' => $ancestor->permalink,
-                ]),
-            ];
-        }
-
-        // Add current page
-        $breadcrumbs[] = [
-            'name' => $page->title,
-            'url' => route('page', [
-                'subdomain' => $this->subdomain,
-                'lang' => $locale,
-                'permalink' => $page->permalink,
-            ]),
-        ];
+        $breadcrumbs = $this->pageBreadcrumbs($page, $ancestors);
 
         return Inertia::render('Public/ContentPage', [
             'navigationItemId' => $navigation_item?->id,
@@ -266,6 +207,88 @@ class PublicPageController extends PublicController
         ])->withViewData([
             'JSONLD_Schemas' => [$this->getBreadcrumbSchema($breadcrumbs)],
         ]);
+    }
+
+    private function cachedPageData(): array|false
+    {
+        $locale = app()->getLocale();
+        $cacheKey = "page_content_{$this->tenant->id}_{$locale}_".md5(request()->permalink);
+
+        return Cache::tags(['pages', PublicCacheTags::pages($this->tenant->id, $locale)])
+            ->remember($cacheKey, 3600, function () {
+                $page = Page::query()->where([
+                    ['permalink', '=', request()->permalink],
+                    ['tenant_id', '=', $this->tenant->id],
+                    ['is_active', '=', true],
+                ])->first();
+
+                // false, not null: the cache treats a stored null as a miss, and page saves
+                // flush this entry when the permalink appears.
+                if ($page === null) {
+                    return false;
+                }
+
+                $page->load(['tenant', 'content']);
+
+                $navigation_item = Navigation::query()->where('name', $page->title)->first();
+                $other_lang_page = $page->getOtherLanguage();
+
+                $children = $page->children()
+                    ->where('is_active', true)
+                    ->get(['id', 'title', 'permalink', 'lang', 'tenant_id', 'meta_description'])
+                    ->map(fn (Page $child) => [
+                        'title' => $child->title,
+                        'url' => $child->publicUrl(),
+                        'meta_description' => $child->meta_description,
+                    ])
+                    ->values()
+                    ->all();
+
+                return [
+                    'page' => $page,
+                    'navigation_item' => $navigation_item,
+                    'other_lang_page' => $other_lang_page,
+                    'ancestors' => $page->ancestors(),
+                    'children' => $children,
+                    'seo_description' => ContentHelper::getDescriptionForSeo($page),
+                ];
+            });
+
+    }
+
+    /** @param  list<Page>  $ancestors */
+    private function pageBreadcrumbs(Page $page, array $ancestors): array
+    {
+        $locale = app()->getLocale();
+        $ownerSubdomain = $this->getSubdomainForTenant($page->tenant);
+        $breadcrumbs = [
+            [
+                'name' => $locale === 'lt' ? 'Pradžia' : 'Home',
+                'url' => route('home', ['subdomain' => $ownerSubdomain, 'lang' => $locale]),
+            ],
+        ];
+
+        foreach ($ancestors as $ancestor) {
+            $breadcrumbs[] = [
+                'name' => $ancestor->title,
+                'url' => route('page', [
+                    'subdomain' => $ownerSubdomain,
+                    'lang' => $locale,
+                    'permalink' => $ancestor->permalink,
+                ]),
+            ];
+        }
+
+        $breadcrumbs[] = [
+            'name' => $page->title,
+            'url' => route('page', [
+                'subdomain' => $ownerSubdomain,
+                'lang' => $locale,
+                'permalink' => $page->permalink,
+            ]),
+        ];
+
+        return $breadcrumbs;
     }
 
     /**
@@ -306,8 +329,9 @@ class PublicPageController extends PublicController
         $this->applyPageHead(
             contentTenant: null,
             title: __('Individualios studijos'),
-            description: app()->getLocale() === 'lt' ? 'Nuo 2023 m. Vilniaus universitete kiekvienas naujai įstojęs (-usi) bakalauro ar vientisųjų studijų programos studentas (-ė) turi galimybę dėlioti savo studijas pagal asmeninius interesus, pasinaudodas (-a) individualių studijų galimybe.' : 'Since 2023 m. every newly
-            enrolled bachelor\'s or integrated study program student at Vilnius University has the opportunity to arrange their studies according to personal interests, using the possibility of individual studies.',
+            description: app()->getLocale() === 'lt'
+                ? 'Nuo 2023 m. Vilniaus universitete kiekvienas naujai įstojęs (-usi) bakalauro ar vientisųjų studijų programos studentas (-ė) turi galimybę dėlioti savo studijas pagal asmeninius interesus, pasinaudodas (-a) individualių studijų galimybe.'
+                : 'Since 2023, every newly enrolled bachelor\'s or integrated study programme student at Vilnius University can arrange their studies around personal interests through individual studies.',
         );
 
         return Inertia::render('Public/IndividualStudies');
@@ -654,29 +678,29 @@ class PublicPageController extends PublicController
             ? $this->siblingMeetingEvents($calendar, $meeting)
             : [null, null];
 
-        // Use the calendar event's tenant for proper canonical URL
         $this->applyPageHead(
             contentTenant: $calendar->tenant,
             title: $calendar->title,
-            // Replace " with empty string, because it breaks JSON-LD
-            description: app()->getLocale() === 'lt' ? Str::of((strip_tags($calendar->description)))->limit(160)->replaceMatches(pattern: '/\"/', replace: '') : Str::of((strip_tags($calendar->description)))->limit(160)->replaceMatches(pattern: '/\"/', replace: ''),
+            description: [
+                $calendar->description,
+                __('seo.calendar_event_description', ['event' => $calendar->title, 'tenant' => $calendar->tenant->shortname]),
+            ],
             image: $calendar->getFirstMediaUrl('images'),
-            publishedTime: $calendar->created_at,
             modifiedTime: $calendar->updated_at,
+            canonicalUrl: $calendar->publicUrl(app()->getLocale()),
         );
 
         $relatedEvents = $this->otherEventsAround($calendar);
 
-        // Generate breadcrumb schema
         $locale = app()->getLocale();
         $breadcrumbs = [
             [
                 'name' => $locale === 'lt' ? 'Pradžia' : 'Home',
-                'url' => route('home', ['subdomain' => $this->subdomain, 'lang' => $locale]),
+                'url' => route('home', ['subdomain' => 'www', 'lang' => $locale]),
             ],
             [
                 'name' => $locale === 'lt' ? 'Renginiai' : 'Events',
-                'url' => route('calendar.list', ['subdomain' => $this->subdomain, 'lang' => $locale]),
+                'url' => LocalizedRouteSlugs::route('calendar.list', [], $locale),
             ],
             [
                 'name' => $calendar->title,

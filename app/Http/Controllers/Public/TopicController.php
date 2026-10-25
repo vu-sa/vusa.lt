@@ -60,7 +60,7 @@ class TopicController extends PublicController
         $this->applyPageHead(
             contentTenant: $this->tenant,
             title: $tag->name,
-            description: $tag->description,
+            description: [$tag->description, __('seo.topic_description', ['topic' => $tag->name, 'tenant' => $this->tenant->shortname])],
         );
 
         return Inertia::render('Public/TopicPage', [

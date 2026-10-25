@@ -4,7 +4,7 @@
     data-slot="admin-shell"
     :data-focused="focused || undefined"
     :class="[
-      'flex h-svh flex-col bg-background text-foreground',
+      'flex h-dvh flex-col bg-background text-foreground',
       !focused && 'max-md:[--shell-bottom-bar:calc(3.5rem_+_env(safe-area-inset-bottom,0px))]',
     ]"
   >
@@ -33,7 +33,8 @@
         '--shell-scroll-height': `${scrollAreaHeight}px`,
       } : undefined"
     >
-      <div ref="shellChrome" class="sticky top-0 z-40 shrink-0">
+      <!-- Named so a page visit's view transition leaves the chrome out of the root cross-fade. -->
+      <div ref="shellChrome" class="sticky top-0 z-40 shrink-0 [view-transition-name:admin-chrome]">
         <ShellTopBar
           :workspaces
           :active-workspace
@@ -85,7 +86,7 @@
 
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
-import { useElementSize, useLocalStorage } from '@vueuse/core';
+import { useElementSize, useEventListener, useLocalStorage } from '@vueuse/core';
 import { computed, ref } from 'vue';
 
 import MobileBottomBar from './MobileBottomBar.vue';
@@ -119,4 +120,13 @@ const canCreate = computed(() => workspaces.value.some(workspace => workspace.cr
 // Visi skyriai lists only what the user may open, so it is never a dead end and is offered to everyone.
 const showAllSections = true;
 const systemMessage = computed(() => page.props.app?.systemMessage ?? null);
+
+// iOS can leave the window scrolled after the keyboard closes, even with overflow hidden.
+const resetWindowScroll = () => {
+  if (window.scrollY !== 0) {
+    window.scrollTo(0, 0);
+  }
+};
+useEventListener(typeof document === 'undefined' ? null : document, 'focusout', resetWindowScroll);
+useEventListener(typeof window === 'undefined' ? null : window.visualViewport, 'resize', resetWindowScroll);
 </script>

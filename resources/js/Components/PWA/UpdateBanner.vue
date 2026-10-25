@@ -1,27 +1,29 @@
 <template>
-  <!-- PWA Update Available Banner -->
   <Transition
-    enter-active-class="transition-transform duration-300 ease-out"
-    enter-from-class="translate-y-full"
-    enter-to-class="translate-y-0"
-    leave-active-class="transition-transform duration-200 ease-in"
-    leave-from-class="translate-y-0"
-    leave-to-class="translate-y-full"
+    enter-active-class="transition-[opacity,translate] duration-300 ease-out motion-reduce:transition-none"
+    enter-from-class="translate-y-4 opacity-0"
+    leave-active-class="transition-[opacity,translate] duration-200 ease-in motion-reduce:transition-none"
+    leave-to-class="translate-y-4 opacity-0"
   >
     <div
       v-if="needRefresh && isPWA"
-      class="fixed bottom-20 left-4 right-4 md:left-auto md:right-4 md:bottom-4 md:w-80 z-50 bg-primary text-primary-foreground rounded-lg shadow-lg p-4"
+      data-slot="pwa-update-banner"
+      role="status"
+      :class="[
+        'fixed inset-x-4 z-50 border border-border bg-background p-4 text-foreground',
+        'bottom-[calc(3.5rem_+_env(safe-area-inset-bottom,0px)_+_0.75rem)] md:inset-x-auto md:right-4 md:bottom-4 md:w-80',
+      ]"
     >
       <div class="flex items-center justify-between gap-3">
-        <div class="flex items-center gap-2">
-          <RefreshCwIcon class="h-5 w-5" />
-          <span class="text-sm font-medium">{{ $t('Nauja versija prieinama') }}</span>
-        </div>
-        <div class="flex gap-2">
-          <Button size="sm" variant="secondary" @click="dismissUpdate">
+        <span class="flex items-center gap-2 text-sm font-semibold">
+          <RefreshCw class="size-4 shrink-0 text-brand" aria-hidden="true" />
+          {{ $t('Nauja versija prieinama') }}
+        </span>
+        <div class="flex shrink-0 gap-2">
+          <Button size="sm" variant="ghost" @click="dismissUpdate">
             {{ $t('Vėliau') }}
           </Button>
-          <Button size="sm" variant="default" class="bg-white text-primary hover:bg-white/90" @click="updateApp">
+          <Button size="sm" variant="brand" voice="sentence" @click="updateApp">
             {{ $t('Atnaujinti') }}
           </Button>
         </div>
@@ -31,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import { RefreshCwIcon } from '@lucide/vue';
+import { RefreshCw } from '@lucide/vue';
 
 import { usePWA } from '@/Composables/usePWA';
 import { Button } from '@/Components/ui/button';

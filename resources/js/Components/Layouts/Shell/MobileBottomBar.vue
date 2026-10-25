@@ -6,6 +6,8 @@
     :class="[
       'flex h-(--shell-bottom-bar) shrink-0 items-stretch border-t border-border bg-background pb-[env(safe-area-inset-bottom,0px)] md:hidden',
       'touch-manipulation select-none [-webkit-tap-highlight-color:transparent]',
+      // Out of the root cross-fade, so a tapped tab's marker animates once (view-transitions.css).
+      '[view-transition-name:admin-bottom-bar]',
     ]"
   >
     <Link
