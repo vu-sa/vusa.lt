@@ -64,6 +64,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Comment> $comments
  * @property-read DutyDutyType|Dutiable|null $pivot
  * @property-read Collection<int, User> $current_users
+ * @property-read Collection<int, Document> $documents
  * @property-read Collection<int, Dutiable> $dutiables
  * @property-read Collection<int, Duty> $exOfficioSourceDuties
  * @property-read Collection<int, Duty> $exOfficioTargetDuties
@@ -94,6 +95,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, User> $users
  * @property-read int|null $tenants_count
  * @property-read int|null $meetings_count
+ * @property-read int|null $documents_count
  * @property-read int|null $agenda_items_count
  * @property-read int|null $tasks_count
  * @property-read int|null $reservations_count

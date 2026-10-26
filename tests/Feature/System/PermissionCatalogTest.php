@@ -92,8 +92,8 @@ test('meeting scope explanations and highlighted duty dates are translated witho
     app()->setLocale($locale);
     $meeting = collect(PermissionCatalog::toFrontend()['resources'])->firstWhere('key', 'meetings');
 
-    expect(implode('', array_column($meeting['baselineSegments'], 'text')))->toBe($meeting['baseline']);
-    expect($meeting['baselineSegments'][1]['strong'])->toBeTrue()
+    expect(implode('', array_column($meeting['baselineSegments'], 'text')))->toBe($meeting['baseline'])
+        ->and($meeting['baselineSegments'][1]['strong'])->toBeTrue()
         ->and($meeting['scopeLabels']['own'])->not->toStartWith('access.')
         ->and($meeting['scopeDescriptions']['read']['padalinys'])->not->toStartWith('access.')
         ->and($meeting['abilities']['read'])->not->toContain('own');

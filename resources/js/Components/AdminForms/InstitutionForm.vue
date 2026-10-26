@@ -261,7 +261,6 @@
 import { Link, useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Building2, Layers, Trash2 } from '@lucide/vue';
-
 import { computed, ref } from 'vue';
 
 import ActivityStatusField from './ActivityStatusField.vue';

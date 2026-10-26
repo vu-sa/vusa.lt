@@ -82,8 +82,8 @@ test('institution specific coordination reveals only that institutions requests'
 
     $history = $this->history->history($this->recipient, $viewer);
 
-    expect(array_column($history['data'], 'id'))->toBe([$visible->id]);
-    expect($history['data'][0]['answer_url'])->toBeNull();
+    expect(array_column($history['data'], 'id'))->toBe([$visible->id])
+        ->and($history['data'][0]['answer_url'])->toBeNull();
 });
 
 test('global institution editors and super administrators see requests across tenants', function (string $role): void {
@@ -94,8 +94,8 @@ test('global institution editors and super administrators see requests across te
 
     $history = $this->history->history($this->recipient, $viewer);
 
-    expect($history['data'])->toHaveCount(2);
-    expect(array_column($history['data'], 'answer_url'))->toBe([null, null]);
+    expect($history['data'])->toHaveCount(2)
+        ->and(array_column($history['data'], 'answer_url'))->toBe([null, null]);
 })->with(['Centrinio biuro studentų atstovų koordinatorius', 'Super Admin']);
 
 test('history preserves both campaign types and status precedence', function (array $state, string $expected): void {
@@ -106,9 +106,9 @@ test('history preserves both campaign types and status precedence', function (ar
 
     $row = $this->history->history($this->recipient, $this->recipient)['data'][0];
 
-    expect($row['status'])->toBe($expected);
-    expect($row['campaign_type'])->toBe('missing_meetings');
-    expect($row['answer_url'])->toBe($expected === 'pending' ? $request->answerUrl() : null);
+    expect($row['status'])->toBe($expected)
+        ->and($row['campaign_type'])->toBe('missing_meetings')
+        ->and($row['answer_url'])->toBe($expected === 'pending' ? $request->answerUrl() : null);
 })->with([
     'pending' => [[], 'pending'],
     'answered wins' => [fn () => ['answer' => InstitutionActivityAnswer::NotMet, 'answered_at' => now(), 'resolved_at' => now(), 'expires_at' => today()->subDay()], 'answered'],
@@ -123,12 +123,12 @@ test('history puts pending requests first and paginates twenty at a time', funct
     $first = $this->history->history($this->recipient, $this->recipient);
     $second = $this->history->history($this->recipient, $this->recipient, 2);
 
-    expect($first['data'])->toHaveCount(20);
-    expect($first['data'][0]['id'])->toBe($pending->id);
-    expect($first['next_page'])->toBe(2);
-    expect($second['data'])->toHaveCount(1);
-    expect($second['page'])->toBe(2);
-    expect($second['next_page'])->toBeNull();
+    expect($first['data'])->toHaveCount(20)
+        ->and($first['data'][0]['id'])->toBe($pending->id)
+        ->and($first['next_page'])->toBe(2)
+        ->and($second['data'])->toHaveCount(1)
+        ->and($second['page'])->toBe(2)
+        ->and($second['next_page'])->toBeNull();
 });
 
 test('home initially shows only three own pending requests by expiry with their total', function (): void {

@@ -65,7 +65,7 @@ test('status endpoints authorize the owning record and validate the activity fla
     asUser($otherActor)->patchJson($url, ['is_active' => false])->assertForbidden();
     asUser($this->actor)->patchJson($url, ['is_active' => 'invalid'])->assertUnprocessable()->assertJsonValidationErrors('is_active');
     asUser($this->actor)->patchJson($url, [])->assertUnprocessable()->assertJsonValidationErrors('is_active');
-    expect((bool) $record->fresh()->is_active)->toBeTrue();
+    expect($record->fresh()->is_active)->toBeTruthy();
 })->with(['institutions', 'duties']);
 
 test('duty status changes preserve its relations and reject occupied duties', function (): void {
@@ -124,8 +124,8 @@ test('related inactive institutions remain tagged in admin but never enter the G
     InstitutionLink::factory()->create(['source_institution_id' => $this->institution->id, 'target_institution_id' => $inactive->id]);
     $relations = app(InstitutionRelationService::class);
     expect(collect($relations->summaryFor($this->institution))->firstWhere('id', $inactive->id))
-        ->toMatchArray(['is_active' => false]);
-    expect($relations->forMultiple(new Collection([$this->institution]))->modelKeys())->toContain($inactive->id)
+        ->toMatchArray(['is_active' => false])
+        ->and($relations->forMultiple(new Collection([$this->institution]))->modelKeys())->toContain($inactive->id)
         ->and($relations->forMultiple(new Collection([$this->institution]), activeOnly: true))->toBeEmpty()
         ->and($relations->linksOf($this->institution)[0]['other']['is_active'])->toBeFalse();
 });

@@ -142,8 +142,8 @@ describe('reservation resource query loading', function (): void {
         $firstResource = $reservations[$this->reservation->id]->resources->firstWhere('id', $firstPivot->resource_id);
         $otherResource = $reservations[$otherReservation->id]->resources->first();
         expect($firstResource->pivot->approvals)->toHaveCount(1)
-            ->and($firstResource->pivot->approvals->first()->approvable_id)->toBe((string) $firstPivot->id);
-        expect($otherResource->pivot->approvals)->toHaveCount(1)
+            ->and($firstResource->pivot->approvals->first()->approvable_id)->toBe((string) $firstPivot->id)
+            ->and($otherResource->pivot->approvals)->toHaveCount(1)
             ->and($otherResource->pivot->approvals->first()->id)->toBe($otherApproval->id);
     });
 

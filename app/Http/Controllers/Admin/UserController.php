@@ -182,7 +182,7 @@ class UserController extends AdminController
 
         return $this->inertiaResponse('Admin/People/ShowUser', [
             'user' => fn () => $loadUser()->toFullArray(),
-            'isSuperAdmin' => fn () => $user->isSuperAdmin(),
+            'isSuperAdmin' => $user->isSuperAdmin(...),
             'activityRequests' => Inertia::defer(fn () => $activityRequests->history($user, $actor(), max(1, request()->integer('activity_requests_page', 1))), 'activityRequests'),
             'tasks' => fn () => TaskResource::collection($tasks())->resolve(),
             'taskStats' => fn () => $taskStats(),

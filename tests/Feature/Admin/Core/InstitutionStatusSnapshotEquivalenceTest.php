@@ -120,8 +120,8 @@ test('a failed bulk write rolls back only its day', function (): void {
         }
     });
     $service = app(InstitutionStatusSnapshotService::class);
-    expect(fn () => $service->capture(now()->subDays(3), now(), false))->toThrow(RuntimeException::class, 'Write interrupted');
-    expect(InstitutionStatusSnapshot::query()->pluck('taken_on')->map->toDateString()->unique()->values()->all())->toBe(['2026-10-17']);
+    expect(fn () => $service->capture(now()->subDays(3), now(), false))->toThrow(RuntimeException::class, 'Write interrupted')
+        ->and(InstitutionStatusSnapshot::query()->pluck('taken_on')->map->toDateString()->unique()->values()->all())->toBe(['2026-10-17']);
 
     $interrupt = false;
     $service->capture(now()->subDays(3), now(), false);

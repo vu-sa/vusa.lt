@@ -970,7 +970,7 @@ describe('informational seat count', function (): void {
         asUser($this->dutyManager)->post(route('duties.store'), $payload)->assertSessionHasErrors('places_to_occupy');
         asUser($this->dutyManager)->patch(route('duties.update', $duty), $payload)->assertSessionHasErrors('places_to_occupy');
 
-        expect($duty->fresh()->places_to_occupy)->toBe(38);
-        expect(Duty::where('name->lt', 'Netinkamas skaičius')->exists())->toBeFalse();
+        expect($duty->fresh()->places_to_occupy)->toBe(38)
+            ->and(Duty::where('name->lt', 'Netinkamas skaičius')->exists())->toBeFalse();
     })->with(['zero' => 0, 'negative' => -1, 'fraction' => 1.5, 'text' => 'invalid']);
 });

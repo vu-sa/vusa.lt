@@ -27,6 +27,7 @@ use App\Services\PublicUrlService;
 use App\Services\Typesense\SearchText;
 use App\Settings\MeetingSettings;
 use App\Support\LocalizedRouteSlugs;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -105,19 +106,20 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read int|null $tasks_from_meetings_count
  * @property-read int|null $users_count
  *
+ * @method static Builder<static>|Institution active()
  * @method static \Database\Factories\InstitutionFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution hasActiveDuties()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution whereLocale(string $column, string $locale)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution whereLocales(string $column, array $locales)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution withoutTrashed()
+ * @method static Builder<static>|Institution hasActiveDuties()
+ * @method static Builder<static>|Institution newModelQuery()
+ * @method static Builder<static>|Institution newQuery()
+ * @method static Builder<static>|Institution onlyTrashed()
+ * @method static Builder<static>|Institution query()
+ * @method static Builder<static>|Institution whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|Institution whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|Institution whereLocale(string $column, string $locale)
+ * @method static Builder<static>|Institution whereLocales(string $column, array $locales)
+ * @method static Builder<static>|Institution whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
+ * @method static Builder<static>|Institution withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|Institution withoutTrashed()
  *
  * @mixin \Eloquent
  */
@@ -163,7 +165,8 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
         return $this->hasMany(Cadence::class)->orderBy('start_date');
     }
 
-    public function scopeActive(Builder $query): void
+    #[Scope]
+    protected function active(Builder $query): void
     {
         $query->where('institutions.is_active', true);
     }

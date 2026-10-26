@@ -2,7 +2,7 @@
   <PreviewPane
     entity-type="problem"
     :eyebrow="$t('Problema')"
-    :title="title"
+    :title
     :href="trashed ? undefined : showHref"
     :subtitle="problem.tenant?.shortname"
   >

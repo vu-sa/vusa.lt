@@ -16,6 +16,6 @@ class LoadReservationResourceApprovals
         $pivots = collect($reservations)
             ->flatMap(fn (Reservation $reservation) => $reservation->resources->pluck('pivot'));
 
-        (new Collection($pivots->all()))->loadMissing($relations);
+        new Collection($pivots->all())->loadMissing($relations);
     }
 }

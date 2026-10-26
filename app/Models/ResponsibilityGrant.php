@@ -41,6 +41,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @method static \Database\Factories\ResponsibilityGrantFactory factory($count = null, $state = [])
  * @method static Builder<static>|ResponsibilityGrant newModelQuery()
  * @method static Builder<static>|ResponsibilityGrant newQuery()
+ * @method static Builder<static>|ResponsibilityGrant payload()
  * @method static Builder<static>|ResponsibilityGrant query()
  *
  * @mixin \Eloquent

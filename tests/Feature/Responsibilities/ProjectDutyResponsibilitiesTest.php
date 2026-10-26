@@ -105,7 +105,7 @@ describe('duty type tree', function (): void {
     test('the drift check agrees with the inherited projection', function (): void {
         ResponsibilityGrant::factory()->forDutyType($this->parent)->of($this->role)->create();
 
-        expect(ProjectDutyResponsibilities::drift())->toBe([]);
+        expect(ProjectDutyResponsibilities::drift())->toBeEmpty();
     });
 });
 

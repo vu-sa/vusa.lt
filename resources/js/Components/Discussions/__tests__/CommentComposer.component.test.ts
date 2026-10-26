@@ -110,5 +110,4 @@ describe('CommentComposer', () => {
     wrapper.unmount();
     expect(document.querySelector('[data-comment-mention-menu]')).toBeNull();
   });
-
 });
