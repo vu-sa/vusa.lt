@@ -230,20 +230,36 @@ describe('ShowMeeting.vue', () => {
   });
 
   it('shows visibility next to status with a globe and a surface matching public access', () => {
-    const publicFact = createWrapper({ publicUrl: 'https://www.vusa.test/lt/meeting' }).findAll('dl > div')[1];
+    const publicFact = createWrapper({ publicVisibility: { mode: 'public_page', url: 'https://www.vusa.test/lt/meeting' } }).findAll('dl > div')[1];
     const privateFact = createWrapper().findAll('dl > div')[1];
 
     expect(publicFact.classes()).toContain('bg-status-success-surface');
     expect(publicFact.find('dt').attributes('aria-label')).toBe('Matomumas');
     expect(publicFact.find('dt svg').exists()).toBe(true);
     expect(publicFact.find('dt').text()).toBe('');
-    expect(publicFact.find('dd a').text()).toBe('Matoma vusa.lt');
+    expect(publicFact.find('dd a').text()).toBe('meetings.record.visible_public');
     expect(privateFact.classes()).toContain('bg-status-neutral-surface');
-    expect(privateFact.find('dd').text()).toContain('Rodoma tik ViSAK');
+    expect(privateFact.find('dd').text()).toContain('meetings.record.internal_only');
+  });
+
+  it('shows a meeting announced through a published calendar event as visible there', () => {
+    const fact = createWrapper({ publicVisibility: { mode: 'calendar_event', url: 'https://www.vusa.test/lt/kalendorius/2026/posedis' } }).findAll('dl > div')[1];
+
+    expect(fact.classes()).toContain('bg-status-success-surface');
+    expect(fact.find('dd a').text()).toBe('meetings.record.visible_event');
+    expect(fact.find('dd a').attributes('href')).toBe('https://www.vusa.test/lt/kalendorius/2026/posedis');
+  });
+
+  it('keeps a meeting with a draft calendar event internal and says why', () => {
+    const fact = createWrapper({ publicVisibility: { mode: 'calendar_draft', url: null } }).findAll('dl > div')[1];
+
+    expect(fact.classes()).toContain('bg-status-neutral-surface');
+    expect(fact.find('dd a').exists()).toBe(false);
+    expect(fact.find('dd').text()).toContain('meetings.record.event_draft');
   });
 
   it('explains what vusa.lt shows for this meeting', async () => {
-    const wrapper = createWrapper({ publicUrl: 'https://www.vusa.test/lt/meeting' });
+    const wrapper = createWrapper({ publicVisibility: { mode: 'public_page', url: 'https://www.vusa.test/lt/meeting' } });
     const dialog = wrapper.findComponent({ name: 'MeetingPublicVisibilityDialog' });
 
     expect(dialog.props('open')).toBe(false);
@@ -251,7 +267,7 @@ describe('ShowMeeting.vue', () => {
     await wrapper.get('[data-testid="meeting-visibility-explain"]').trigger('click');
 
     expect(dialog.props('open')).toBe(true);
-    expect(dialog.props('isPublic')).toBe(true);
+    expect(dialog.props('mode')).toBe('public_page');
   });
 
   it('hides the explanation trigger in the read-only view', () => {

@@ -250,8 +250,7 @@ describe('ShowAgendaItem.vue', () => {
 
   it('shows public visibility after status and only once outside the description', () => {
     const wrapper = createWrapper({
-      agendaItem: { ...baseAgendaItem, meeting: { ...baseAgendaItem.meeting, is_public: true } },
-      publicUrl: 'https://www.vusa.test/lt/meeting',
+      publicVisibility: { mode: 'public_page', url: 'https://www.vusa.test/lt/meeting' },
       abilities: { update: false, delete: false },
     });
     const visibility = wrapper.findAll('dl > div')[1];
@@ -273,8 +272,19 @@ describe('ShowAgendaItem.vue', () => {
     const visibility = createWrapper().findAll('dl > div')[1];
 
     expect(visibility.classes()).toContain('bg-status-neutral-surface');
-    expect(visibility.find('dd').text()).toBe('meetings.privacy.internal_only');
+    expect(visibility.find('dd').text()).toBe('meetings.record.internal_only');
     expect(visibility.find('a').exists()).toBe(false);
+  });
+
+  it('links the calendar event page when the meeting is shown only through it', () => {
+    const visibility = createWrapper({
+      publicVisibility: { mode: 'calendar_event', url: 'https://www.vusa.test/lt/kalendorius/2026/posedis' },
+      abilities: { update: false, delete: false },
+    }).findAll('dl > div')[1];
+
+    expect(visibility.classes()).toContain('bg-status-success-surface');
+    expect(visibility.find('a').text()).toBe('meetings.record.visible_event');
+    expect(visibility.find('a').attributes('href')).toBe('https://www.vusa.test/lt/kalendorius/2026/posedis');
   });
 
   it('labels a decision-only vote as decided for an internal body, not "Neaptartas"', () => {

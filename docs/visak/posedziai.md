@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Posėdžiai
 area: meetings
 models: [Meeting]
-last_reviewed: 2026-10-25
+last_reviewed: 2026-10-26
 tests:
   - tests/Feature/Permissions/MeetingPermissionsTest.php
   - tests/Feature/Admin/Search/SearchVisibilityParityTest.php
@@ -72,11 +72,16 @@ posėdis“. Sprendimui el. paštu laikas nerodomas. Pakeitus datą ar tipą, pa
 
 ### Matomumas {#matomumas}
 
-Posėdžio puslapyje rodoma **Matoma vusa.lt** (su nuoroda į viešą puslapį) arba **Rodoma tik ViSAK**.
-Posėdis viešas, jei viena jo institucijų yra tipo, kurio posėdžiai
-[posėdžių nustatymuose](/sistema/nustatymai) pažymėti viešais (žr.
-[Institucijos](/visak/institucijos#viesumas)). Viešame puslapyje rodomi tik paskelbti posėdžio
-dokumentai.
+Posėdžio ir jo darbotvarkės klausimų puslapiuose matomumas rodomas taip:
+
+| Matomumas | Kada | Kas rodoma vusa.lt |
+|---|---|---|
+| **Matoma vusa.lt** | Viena posėdžio institucijų yra tipo, kurio posėdžiai [posėdžių nustatymuose](/sistema/nustatymai) pažymėti viešais (žr. [Institucijos](/visak/institucijos#viesumas)) | Posėdžio puslapis: data, institucija, būsena, darbotvarkė, atstovai ir paskelbti dokumentai |
+| **Matoma renginio puslapyje** | Posėdis neviešas, bet paskelbtas [kalendoriuje](/svetaine/kalendorius) | Renginio puslapyje – posėdžio darbotvarkė ir paskelbti dokumentai |
+| **Rodoma tik ViSAK · renginys – juodraštis** | Posėdis susietas su kalendoriaus renginiu, bet renginys dar nepaskelbtas | Nieko, kol renginys nepaskelbtas |
+| **Rodoma tik ViSAK** | Nė viena iš aukščiau nurodytų sąlygų | Nieko |
+
+Abiem viešais atvejais nuoroda veda į atitinkamą viešą puslapį.
 
 Viešą posėdį gali atidaryti ir nariai, kurie jo tvarkyti negali: jie mato darbotvarkę, bet ne
 failus, užduotis, komentarus ir atstovų pastabas.
@@ -89,6 +94,13 @@ niekada. Skirtuko **Failai** failai viešai nerodomi niekada (žr.
 
 Iki v3.0 posėdžio puslapis rodė tik „Matoma vusa.lt“ ar „Rodoma tik ViSAK“, nepaaiškindamas, kas
 konkrečiai skelbiama.
+
+</ChangelogNote>
+
+<ChangelogNote version="v3.25" date="2026-10-26" title="Matomumas per kalendorių">
+
+Iki v3.25 kalendoriuje paskelbtas posėdis buvo žymimas „Rodoma tik ViSAK“, nors jo darbotvarkė
+rodoma renginio puslapyje.
 
 </ChangelogNote>
 

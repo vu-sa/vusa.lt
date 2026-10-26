@@ -226,19 +226,6 @@ class MeetingController extends AdminController
             ->values()
             ->all());
 
-        $publicUrl = fn () => once(function () use ($loadMeeting, $primaryInstitution): ?string {
-            $m = $loadMeeting();
-            $pi = $primaryInstitution();
-
-            return $m->is_public && $pi?->tenant
-                ? route('publicMeetings.show', [
-                    'subdomain' => $pi->tenant->subdomain(),
-                    'lang' => app()->getLocale(),
-                    'meeting' => $m,
-                ])
-                : null;
-        });
-
         // show meeting
         return $this->inertiaResponse('Admin/Representation/ShowMeeting', [
             'meeting' => fn () => [
@@ -272,7 +259,7 @@ class MeetingController extends AdminController
                     ? null : $this->meetingCompletionService->calculate($loadMeeting()),
                 'missingActions' => $missingActions(),
             ],
-            'publicUrl' => fn () => $publicUrl(),
+            'publicVisibility' => fn () => $loadMeeting()->publicVisibility(app()->getLocale()),
             'availableInstitutionsForAttach' => fn () => $canUpdate()
                 ? $this->getAvailableInstitutionsForAttach($meeting)
                 : [],

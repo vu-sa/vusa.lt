@@ -131,22 +131,22 @@
           data-testid="agenda-item-edit-visibility"
           @click="openPrivacyEditor"
         >
-          {{ form.is_private || !publicUrl ? $t('meetings.privacy.internal_only') : $t('meetings.record.visible_public') }}
+          {{ form.is_private ? $t('meetings.privacy.internal_only') : meetingVisibilityLabel(publicVisibility) }}
           <PenLine class="size-3.5" />
         </Button>
       </SpotlightPopover>
       <span v-else-if="isRedacted || form.is_private">{{ $t('meetings.privacy.internal_only') }}</span>
       <a
-        v-else-if="publicUrl"
-        :href="publicUrl"
+        v-else-if="publicVisibility.url"
+        :href="publicVisibility.url"
         target="_blank"
         rel="noopener noreferrer"
         class="inline-flex items-center gap-1 text-status-success underline underline-offset-4"
       >
-        {{ $t('meetings.record.visible_public') }}
+        {{ meetingVisibilityLabel(publicVisibility) }}
         <ExternalLink class="size-3.5 shrink-0" aria-hidden="true" />
       </a>
-      <span v-else>{{ $t('meetings.record.internal_only') }}</span>
+      <span v-else>{{ meetingVisibilityLabel(publicVisibility) }}</span>
     </template>
 
     <template v-if="canUpdate" #next-actions>
@@ -306,6 +306,7 @@ import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import AgendaItemVotesSheetForm from '@/Components/AgendaItems/AgendaItemVotesSheetForm.vue';
 import RecordPage, { type RecordAction, type RecordFact, type RecordNavigationContext } from '@/Components/Layouts/RecordPage.vue';
 import { missingFieldsLabel, type AgendaItemMissingAction } from '@/Components/Meetings/meetingCompletion';
+import { isShownPublicly, meetingVisibilityLabel, type MeetingPublicVisibility } from '@/Components/Meetings/meetingPublicVisibility';
 import { ConfirmDialog, OverviewSection, RecordNextActions, type RecordNextAction } from '@/Components/Patterns';
 import { createOverviewStatusRegistry, OVERVIEW_STATUS_KEY } from '@/Components/Patterns/overviewStatus';
 import ProblemLinkSheet from '@/Components/Problems/ProblemLinkSheet.vue';
@@ -355,7 +356,7 @@ interface SiblingAgendaItem {
 const props = withDefaults(defineProps<{
   agendaItem: EditableAgendaItem;
   siblingAgendaItems: SiblingAgendaItem[];
-  publicUrl?: string | null;
+  publicVisibility?: MeetingPublicVisibility;
   abilities?: { update: boolean; delete: boolean };
   requiresStudentPerspective?: boolean;
   problems?: ProblemSummary[];
@@ -369,7 +370,7 @@ const props = withDefaults(defineProps<{
 }>(), {
   abilities: () => ({ update: false, delete: false }),
   problems: () => [],
-  publicUrl: null,
+  publicVisibility: () => ({ mode: 'internal', url: null }),
   meetingContext: undefined,
   requiresStudentPerspective: true,
 });
@@ -474,8 +475,8 @@ const status = computed(() => agendaItemStatuses[getAgendaItemStatus({
   votes: form.votes.map(vote => ({ ...vote, id: vote.id ?? undefined })),
 }, props.requiresStudentPerspective)]);
 
-const meeting = computed(() => (props.meetingContext ?? props.agendaItem.meeting) as (App.Entities.Meeting & { is_public?: boolean }) | undefined);
-const meetingIsPublic = computed(() => Boolean(meeting.value?.is_public));
+const meeting = computed(() => (props.meetingContext ?? props.agendaItem.meeting) as App.Entities.Meeting | undefined);
+const meetingIsPublic = computed(() => isShownPublicly(props.publicVisibility));
 // An email meeting's time is only a placeholder, so it would anchor the time suggestions nowhere useful.
 const meetingStartTime = computed(() => {
   if (!meeting.value?.start_time || isEmailMeeting(meeting.value)) {
@@ -515,7 +516,7 @@ const recordFacts = computed<RecordFact[]>(() => {
       key: 'visibility',
       label: $t('Matomumas'),
       labelIcon: Globe,
-      surfaceClass: props.publicUrl && !form.is_private ? 'bg-status-success-surface' : 'bg-status-neutral-surface',
+      surfaceClass: isShownPublicly(props.publicVisibility) && !form.is_private ? 'bg-status-success-surface' : 'bg-status-neutral-surface',
     },
     { key: 'institution', label: $t('meetings.item.institution') },
     { key: 'meeting', label: $t('meetings.item.meeting') },

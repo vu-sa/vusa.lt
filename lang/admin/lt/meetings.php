@@ -4,8 +4,11 @@ return [
     'visibility' => [
         'title' => 'Kas rodoma vusa.lt?',
         'public_intro' => 'Šis posėdis viešas, nes bent viena jo institucija yra tipo, kurio posėdžiai skelbiami vusa.lt.',
-        'internal_intro' => 'Šis posėdis vusa.lt neskelbiamas. Jei posėdis paskelbtas kalendoriuje, renginio puslapyje rodoma tik jo darbotvarkė.',
+        'calendar_event_intro' => 'Posėdis neturi atskiro viešo puslapio, bet yra paskelbtas kalendoriuje, todėl jo darbotvarkė ir dokumentai rodomi vusa.lt renginio puslapyje.',
+        'calendar_draft_intro' => 'Posėdis susietas su kalendoriaus renginiu, bet renginys dar juodraštis, todėl vusa.lt kol kas nieko nerodo. Paskelbus renginį, jo puslapyje bus rodoma posėdžio darbotvarkė ir dokumentai.',
+        'internal_intro' => 'Šis posėdis vusa.lt neskelbiamas. Paskelbus jį kalendoriuje, renginio puslapyje bus rodoma jo darbotvarkė ir dokumentai.',
         'shown_heading' => 'Rodoma vusa.lt',
+        'shown_event_heading' => 'Rodoma renginio puslapyje',
         'never_heading' => 'Niekada nerodoma',
         'shown' => [
             'basics' => 'Posėdžio data, institucija ir būsena',
@@ -90,6 +93,8 @@ return [
         'secretaries' => 'Sekretoriai',
         'write' => 'Parašyti',
         'visible_public' => 'Matoma vusa.lt',
+        'visible_event' => 'Matoma renginio puslapyje',
+        'event_draft' => 'renginys – juodraštis',
         'internal_only' => 'Rodoma tik ViSAK',
         'edit_meeting' => 'Redaguoti posėdį',
         'previous_meeting' => 'Ankstesnis posėdis',

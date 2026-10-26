@@ -36,10 +36,10 @@
 
     <template #fact-visibility>
       <div class="flex flex-wrap items-center gap-x-2">
-        <a v-if="publicUrl" :href="publicUrl" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-status-success underline underline-offset-4">
-          {{ $t('Matoma vusa.lt') }}
+        <a v-if="publicVisibility.url" :href="publicVisibility.url" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-status-success underline underline-offset-4">
+          {{ meetingVisibilityLabel(publicVisibility) }}
         </a>
-        <span v-else>{{ $t('Rodoma tik ViSAK') }}</span>
+        <span v-else>{{ meetingVisibilityLabel(publicVisibility) }}</span>
         <SpotlightPopover
           v-if="!readOnly"
           :title="$t('meetings.visibility.spotlight_title')"
@@ -57,7 +57,7 @@
           </button>
         </SpotlightPopover>
       </div>
-      <MeetingPublicVisibilityDialog v-model:open="showVisibilityDialog" :is-public="!!publicUrl" />
+      <MeetingPublicVisibilityDialog v-model:open="showVisibilityDialog" :mode="publicVisibility.mode" />
     </template>
 
     <template #fact-after-meeting>
@@ -319,6 +319,7 @@ import AddAgendaItemsSheet, { type AddAgendaMode, type RecentAgenda } from '@/Co
 import MeetingForm from '@/Components/AdminForms/MeetingForm.vue';
 import AnnounceMeetingDialog from '@/Components/Meetings/AnnounceMeetingDialog.vue';
 import MeetingPublicVisibilityDialog from '@/Components/Meetings/MeetingPublicVisibilityDialog.vue';
+import { isShownPublicly, meetingVisibilityLabel, type MeetingPublicVisibility } from '@/Components/Meetings/meetingPublicVisibility';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import MeetingDocumentsPanel from '@/Components/Meetings/MeetingDocumentsPanel.vue';
 import { FileableFilesPanel, type DocumentFolderRow, type FileableFileItem } from '@/Components/Files';
@@ -350,7 +351,7 @@ const props = withDefaults(defineProps<{
   governanceScope?: string;
   abilities?: MeetingAbilities;
   completion?: MeetingCompletion;
-  publicUrl?: string | null;
+  publicVisibility?: MeetingPublicVisibility;
   recordNavigation?: RecordNavigationContext;
   tasks?: InstanceType<typeof TaskManager>['$props']['tasks'];
   documents?: NonNullable<App.Entities.Meeting['documents']>;
@@ -371,7 +372,7 @@ const props = withDefaults(defineProps<{
     attachInstitution: false,
   }),
   completion: () => ({ status: 'no_items', missingActions: [] }),
-  publicUrl: null,
+  publicVisibility: () => ({ mode: 'internal', url: null }),
   recordNavigation: undefined,
   tasks: undefined,
   documents: undefined,
@@ -545,8 +546,8 @@ const recordFacts = computed<RecordFact[]>(() => [
     key: 'visibility',
     label: $t('Matomumas'),
     labelIcon: Globe,
-    surfaceClass: props.publicUrl ? 'bg-status-success-surface' : 'bg-status-neutral-surface',
-    value: props.publicUrl ? $t('Matoma vusa.lt') : $t('Rodoma tik ViSAK'),
+    surfaceClass: isShownPublicly(props.publicVisibility) ? 'bg-status-success-surface' : 'bg-status-neutral-surface',
+    value: meetingVisibilityLabel(props.publicVisibility),
   },
   {
     key: 'time',

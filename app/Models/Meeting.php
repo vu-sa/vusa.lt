@@ -165,6 +165,35 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
     }
 
     /**
+     * Where, if anywhere, the public sees this meeting. The meeting page wins over a published
+     * calendar event because it shows more; a draft event exposes nothing yet.
+     *
+     * @return array{mode: 'public_page'|'calendar_event'|'calendar_draft'|'internal', url: string|null}
+     */
+    public function publicVisibility(string $locale): array
+    {
+        $tenant = $this->isPubliclyVisible() ? $this->institutions->first()?->tenant : null;
+
+        if ($tenant !== null) {
+            return ['mode' => 'public_page', 'url' => route('publicMeetings.show', [
+                'subdomain' => $tenant->subdomain(),
+                'lang' => $locale,
+                'meeting' => $this,
+            ])];
+        }
+
+        $event = $this->calendarEvent;
+
+        if ($event === null) {
+            return ['mode' => 'internal', 'url' => null];
+        }
+
+        return $event->is_draft
+            ? ['mode' => 'calendar_draft', 'url' => null]
+            : ['mode' => 'calendar_event', 'url' => $event->publicUrl($locale)];
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function voteStatistics(): array

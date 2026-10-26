@@ -111,15 +111,6 @@ class AgendaItemController extends AdminController
         }]);
 
         $meeting = $agendaItem->meeting;
-        $meeting->append('is_public');
-        $primaryInstitution = $meeting->institutions->first();
-        $publicUrl = $meeting->is_public && $primaryInstitution?->tenant
-            ? route('publicMeetings.show', [
-                'subdomain' => $primaryInstitution->tenant->subdomain(),
-                'lang' => app()->getLocale(),
-                'meeting' => $meeting,
-            ])
-            : null;
 
         $missingByItem = collect($meetingCompletionService->missingActions($meeting))
             ->filter(fn (array $action): bool => isset($action['agenda_item_id']))
@@ -154,7 +145,7 @@ class AgendaItemController extends AdminController
             'problems' => ProblemSummaryResource::collection(
                 $agendaItem->problems()->with(['tenant:id,shortname', 'responsibleUser:id,name'])->orderByDesc('occurred_at')->get()
             )->resolve(),
-            'publicUrl' => $publicUrl,
+            'publicVisibility' => $meeting->publicVisibility(app()->getLocale()),
             'isRedacted' => false,
             'readOnly' => $readOnly,
             'abilities' => [
