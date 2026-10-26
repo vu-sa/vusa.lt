@@ -3,18 +3,21 @@
 use App\Enums\MeetingType;
 use App\Events\CommentBroadcast;
 use App\Http\Resources\CommentResource;
+use App\Models\Comment;
 use App\Models\Duty;
 use App\Models\Form;
 use App\Models\Institution;
 use App\Models\InstitutionLink;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
+use App\Models\Problem;
 use App\Models\Reservation;
 use App\Models\Role;
 use App\Models\SupportRequest;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\CommentRecipientResolver;
+use App\Support\Commentables;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
@@ -516,4 +519,85 @@ describe('form', function (): void {
     test('an outsider is forbidden (403)', function (): void {
         asUser($this->outsider)->getJson($this->formIndexUrl)->assertStatus(403);
     });
+});
+
+describe('reply destinations', function (): void {
+    test('root comments and nested replies round trip on every discussion record', function (string $type): void {
+        Event::fake([CommentBroadcast::class]);
+        $commentable = match ($type) {
+            'meeting' => $this->meeting,
+            'agendaItem' => $this->agendaItem,
+            'institution' => $this->institution,
+            'duty' => $this->coordinator->duties()->firstOrFail(),
+            'form' => Form::factory()->for($this->tenant)->create(),
+            'problem' => Problem::factory()->for($this->tenant)->create(['created_by' => $this->coordinator->id]),
+            'reservation' => Reservation::factory()->create(),
+            'supportRequest' => SupportRequest::factory()->create(['created_by' => $this->coordinator->id]),
+        };
+        if ($commentable instanceof Reservation) {
+            $commentable->users()->attach($this->coordinator);
+        }
+        $params = ['commentableType' => $type, 'commentableId' => $commentable->getKey()];
+        $url = route('api.v1.admin.comments.store', $params);
+        $rootId = asUser($this->coordinator)->postJson($url, ['body' => '<p>Root</p>'])
+            ->assertCreated()->json('data.id');
+
+        $replyId = asUser($this->coordinator)->postJson($url, ['body' => '<p>Reply</p>', 'parent_id' => $rootId])
+            ->assertCreated()
+            ->assertJsonPath('data.parent_id', $rootId)
+            ->assertJsonPath('data.thread_root_id', $rootId)
+            ->json('data.id');
+        asUser($this->coordinator)->postJson($url, ['body' => '<p>Nested reply</p>', 'parent_id' => $replyId])
+            ->assertCreated()
+            ->assertJsonPath('data.parent_id', $replyId)
+            ->assertJsonPath('data.thread_root_id', $rootId);
+
+        asUser($this->coordinator)->getJson(route('api.v1.admin.comments.index', $params))
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonCount(2, 'data.0.replies');
+        expect($commentable->comments()->count())->toBe(3);
+        Event::assertDispatchedTimes(CommentBroadcast::class, 3);
+    })->with(array_keys(Commentables::TYPES));
+
+    test('a reply cannot use a parent from another record (403)', function (string $destination): void {
+        Event::fake([CommentBroadcast::class]);
+        $this->actingAs($this->coordinator);
+        $otherRecord = match ($destination) {
+            'same type' => AgendaItem::factory()->create(['meeting_id' => $this->meeting->id]),
+            'different type' => $this->meeting,
+            'different tenant' => Problem::factory()->create([
+                'tenant_id' => Tenant::query()->whereKeyNot($this->tenant->id)->firstOrFail()->id,
+            ]),
+        };
+        $parent = $otherRecord->comment('<p>Another record</p>');
+
+        asUser($this->coordinator)->postJson($this->storeUrl, [
+            'body' => '<p>Misplaced reply</p>', 'parent_id' => $parent->id,
+        ])->assertForbidden();
+
+        expect($this->agendaItem->comments()->count())->toBe(0)
+            ->and($parent->replies()->count())->toBe(0);
+        Event::assertNotDispatched(CommentBroadcast::class);
+    })->with(['same type', 'different type', 'different tenant']);
+
+    test('a record excludes legacy replies belonging to another record', function (): void {
+        $this->actingAs($this->coordinator);
+        $root = $this->agendaItem->comment('<p>Root</p>');
+        Comment::factory()->create([
+            'user_id' => $this->coordinator->id,
+            'commentable_type' => $this->meeting->getMorphClass(),
+            'commentable_id' => $this->meeting->id,
+            'parent_id' => $root->id,
+            'thread_root_id' => $root->id,
+            'body' => '<p>Another record</p>',
+        ]);
+
+        asUser($this->coordinator)->getJson($this->indexUrl)
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonCount(0, 'data.0.replies')
+            ->assertJsonMissing(['body' => '<p>Another record</p>']);
+    });
+
 });

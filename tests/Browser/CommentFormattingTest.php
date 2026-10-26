@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Meeting;
 use App\Models\SupportRequest;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -67,3 +68,34 @@ test('formatted comments survive saving and editing across responsive layouts', 
     $page->screenshotElement('[role=dialog]', filename: 'comments-poll-phone-dark');
     $page->assertNoJavaScriptErrors();
 });
+
+test('a reply can be posted and reloaded on both discussion surfaces', function (string $type): void {
+    $user = makeTenantUserWithRole('Komunikacijos koordinatorius', Tenant::query()->firstOrFail());
+    if ($type === 'meeting') {
+        $commentable = Meeting::factory()->create();
+        $commentable->institutions()->attach($user->duties()->firstOrFail()->institution_id);
+        $path = route('meetings.show', $commentable->id, absolute: false);
+    } else {
+        $commentable = SupportRequest::factory()->create(['created_by' => $user->id]);
+        $path = route('supportRequests.show', $commentable->id, absolute: false);
+    }
+    $this->actingAs($user);
+    $root = $commentable->comment('<p>Pradinis komentaras</p>');
+    $page = loginAsAdmin($user, $path, 390, 900);
+    $page->assertSee('Pradinis komentaras');
+
+    $page->click('[data-slot=comment-thread] button:has-text("Atsakyti")');
+    $page->fill('[data-slot=comment-thread] .ProseMirror', 'Atsakymas į komentarą');
+    $page->click('[data-slot=comment-thread] .comment-composer button:has-text("Atsakyti")');
+    $page->assertSee('Atsakymas į komentarą');
+
+    $reply = $root->replies()->firstOrFail();
+    expect($reply->parent_id)->toBe($root->id)
+        ->and($reply->thread_root_id)->toBe($root->id)
+        ->and($reply->body)->toContain('Atsakymas į komentarą')
+        ->and($commentable->comments()->count())->toBe(2);
+    navigateTo($page, $path);
+    $page->assertSee('Atsakymas į komentarą')->assertNoJavaScriptErrors();
+    $surface = $type === 'meeting' ? '[aria-labelledby=record-activity-title]' : '[data-slot=discussion-panel]';
+    $page->screenshotElement($surface, filename: 'comment-reply-'.$type);
+})->with(['meeting', 'supportRequest']);

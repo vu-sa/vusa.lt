@@ -11,6 +11,7 @@ tests:
   - tests/Feature/Admin/Discussions/PollVoteApiTest.php
   - tests/Feature/Notifications/CommentNotificationTest.php
   - resources/js/Components/Discussions/__tests__/DiscussionPanel.component.test.ts
+  - resources/js/Features/Admin/ActivityLogViewer/__tests__/RecordActivity.component.test.ts
   - resources/js/Components/Discussions/__tests__/CommentComposer.component.test.ts
   - resources/js/Components/TipTap/__tests__/commentExtensions.test.ts
   - tests/Unit/Services/HtmlSanitizerServiceTest.php
@@ -51,7 +52,9 @@ atsakyti į kitų komentarus, paminėti kolegas, rengti greitas apklausas ir pa�
 3. Jei nori atkreipti konkretaus asmens dėmesį, įvesk `@` arba spausk **Paminėti** ir pasirink vardą iš sąrašo. Apatinėje laukelio juostoje matysi,
    kas gaus pranešimą apie paminėjimą (redaguojant komentarą pranešimai iš naujo nesiunčiami).
 4. Spausk **Komentuoti**.
-5. Norėdamas prisidėti prie gijos, po jos pagrindiniu komentaru paspausk **Atsakyti**.
+5. Norėdamas prisidėti prie gijos, po jos pagrindiniu komentaru paspausk **Atsakyti**. Parašęs tekstą,
+   spausk **Atsakyti** rašymo laukelyje – atsakymas atsiras toje pačioje gijoje. Tai veikia visose
+   aukščiau išvardytose įrašų skiltyse. Gijos atsakymai rodomi viename lygyje ir išlieka iš naujo atvėrus įrašą.
 
 ### Teksto formatavimas {#formatavimas}
 
@@ -69,7 +72,7 @@ Formatavimas išlieka išsaugojus ir vėl atvėrus komentarą.
 **Enter** tęsia pastraipą ar sąrašą, **Shift + Enter** įterpia eilutės lūžį.
 Lentelės, antraštės ir priedai komentaruose nesiūlomi.
 
-<ChangelogNote version="v3.21" date="2026-10-26" title="Komentarų formatavimas">
+<ChangelogNote version="v3.22" date="2026-10-26" title="Komentarų formatavimas">
 
 Sąrašų ženkleliai ir numeracija matomi tiek rašant, tiek išsaugojus komentarą.
 Formatavimo mygtukai veikia ir telefone.

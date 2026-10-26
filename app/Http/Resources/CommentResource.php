@@ -51,12 +51,10 @@ class CommentResource extends JsonResource
             'mentioned_user_ids' => $this->mentioned_user_ids ?? [],
             'reactions' => $this->reactionsTally($userId),
             'poll' => $this->when($this->isPoll(), fn () => $this->pollPayload($userId)),
-            // Only emit replies when the relation is actually loaded. Wrapping an
-            // unloaded relation (a MissingValue) in a resource collection blows up
-            // when the array is serialized directly (e.g. a broadcast payload).
+            // Broadcast payloads do not load a thread; never serialize an unloaded relation.
             'replies' => $this->when(
-                $this->relationLoaded('replies'),
-                fn () => self::collection($this->replies),
+                $this->relationLoaded('threadReplies'),
+                fn () => self::collection($this->threadReplies),
             ),
             'can' => [
                 'update' => ! $isErased && $user !== null && $this->isEditableBy($user),

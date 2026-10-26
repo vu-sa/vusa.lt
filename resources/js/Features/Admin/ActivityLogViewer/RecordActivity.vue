@@ -11,6 +11,7 @@
       <CommentComposer
         ref="rootComposer"
         class="min-w-0 flex-1"
+        discover-formatting
         :mentionables="discussion.mentionables.value"
         :submitting="discussion.posting.value"
         @submit="postComment"
@@ -52,7 +53,7 @@
           :comment
           :mentionables="discussion.mentionables.value"
           :submitting="discussion.mutating.value"
-          @reply="discussion.post"
+          @reply="replyToComment"
           @update="discussion.update"
           @delete="discussion.remove"
           @resolve="discussion.resolve"
@@ -107,6 +108,10 @@ const postComment = async (html: string) => {
   if (comment) {
     rootComposer.value?.reset();
   }
+};
+
+const replyToComment = async (parentId: string, html: string) => {
+  await discussion.post(html, parentId);
 };
 
 const createPoll = async (html: string, poll: PollDraft) => {

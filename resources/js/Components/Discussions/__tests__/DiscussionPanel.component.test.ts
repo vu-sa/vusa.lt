@@ -190,4 +190,19 @@ describe('DiscussionPanel', () => {
     expect(wrapper.find('.comment-content ol li p').text()).toBe('Nested');
   });
 
+  it('posts replies with the correct body and parent on the support request surface', async () => {
+    mocks.fetchThread.mockResolvedValue([makeComment({ id: 'root1' })]);
+    mocks.postComment.mockResolvedValue(makeComment({ id: 'reply1', body: '<p>new</p>', parent_id: 'root1', thread_root_id: 'root1' }));
+    const wrapper = mount(DiscussionPanel, {
+      props: { commentableType: 'supportRequest', commentableId: 'sr1' },
+      global: { stubs },
+    });
+    await flushPromises();
+    await wrapper.findAll('button').find(button => button.text() === 'Atsakyti')!.trigger('click');
+    await wrapper.findAll('.composer-stub')[1]!.trigger('click');
+    await flushPromises();
+
+    expect(mocks.postComment).toHaveBeenCalledWith('<p>new</p>', 'root1');
+    wrapper.unmount();
+  });
 });
