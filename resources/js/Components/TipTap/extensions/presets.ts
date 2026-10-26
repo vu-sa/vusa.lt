@@ -20,6 +20,7 @@ import { CustomHeading } from '../CustomHeading';
 import { TextAlign } from '../TextAlign';
 import { RCTag } from '../RCTag';
 import { Video } from '../Video';
+import { isValidTiptapLink } from '../linkUrl';
 
 export type EditorPreset = 'minimal' | 'compact' | 'full' | 'marks';
 
@@ -101,15 +102,25 @@ export function createMinimalExtensions(options: PresetOptions = {}): AnyExtensi
   return extensions;
 }
 
-/**
- * Marks preset - a single inline run of text with bold/italic/underline/link marks. No
- * headings, lists, blockquote, hr, code, or strike — those nodes/marks aren't
- * just hidden from the toolbar, they're unregistered, so their markdown input rules
- * ("# ", "- ", "> ", "---") can't fire either. For fields like the hero title/
- * description, where the value is a single styled line, not a document. Always pair
- * with `toolbar="bubble"` — the fixed toolbar's link/list controls aren't gated by
- * preset and would otherwise still render.
- */
+export function createCommentExtensions(options: PresetOptions = {}): AnyExtension[] {
+  const extensions: AnyExtension[] = [
+    StarterKit.configure({
+      heading: false,
+      codeBlock: false,
+      code: false,
+      horizontalRule: false,
+      blockquote: false,
+      link: {
+        ...getStarterKitLinkConfig(false),
+        isAllowedUri: isValidTiptapLink,
+      },
+    }),
+  ];
+  if (options.placeholder) extensions.push(Placeholder.configure({ placeholder: options.placeholder }));
+  return extensions;
+}
+
+/** Inline-only fields disable block input rules as well as their toolbar controls. */
 export function createMarksExtensions(options: PresetOptions = {}): AnyExtension[] {
   const extensions: AnyExtension[] = [
     StarterKit.configure({
@@ -149,14 +160,7 @@ export function createCompactExtensions(options: PresetOptions = {}): AnyExtensi
     CustomHeading.configure({
       levels: [2],
     }),
-    // Without these, any existing content saved with a tag mark or an alignment
-    // attribute (e.g. a content-grid text column authored through the `full` preset
-    // elsewhere, or seeded directly) fails to load at all: ProseMirror's schema
-    // throws "There is no mark type rcTag in this schema" while building the doc from
-    // JSON, which crashed the whole compact editor instance — nothing rendered, not
-    // just the tag. `align` alone wouldn't have crashed (unknown node attributes are
-    // silently dropped, only unknown *marks* throw), but would have silently lost the
-    // author's alignment choice on the next save.
+    // Compact fields may contain full-schema tags/alignment; preserve them on edits.
     TextAlign,
     RCTag,
     BubbleMenu,

@@ -9,6 +9,7 @@
     :aria-label="label"
     :aria-pressed="toggle ? active : undefined"
     data-slot="tiptap-tool"
+    @mousedown.prevent
   >
     <slot />
   </Button>

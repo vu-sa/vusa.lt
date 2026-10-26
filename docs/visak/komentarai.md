@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Komentarai
 area: comments
 models: [Comment]
-last_reviewed: 2026-09-30
+last_reviewed: 2026-10-26
 tests:
   - tests/Feature/Admin/Discussions/CommentAuthorizationTest.php
   - tests/Feature/Admin/Discussions/CommentApiTest.php
@@ -11,6 +11,10 @@ tests:
   - tests/Feature/Admin/Discussions/PollVoteApiTest.php
   - tests/Feature/Notifications/CommentNotificationTest.php
   - resources/js/Components/Discussions/__tests__/DiscussionPanel.component.test.ts
+  - resources/js/Components/Discussions/__tests__/CommentComposer.component.test.ts
+  - resources/js/Components/TipTap/__tests__/commentExtensions.test.ts
+  - tests/Unit/Services/HtmlSanitizerServiceTest.php
+  - tests/Browser/CommentFormattingTest.php
 ---
 
 # Komentarai
@@ -48,6 +52,29 @@ atsakyti į kitų komentarus, paminėti kolegas, rengti greitas apklausas ir pa�
    kas gaus pranešimą apie paminėjimą (redaguojant komentarą pranešimai iš naujo nesiunčiami).
 4. Spausk **Komentuoti**.
 5. Norėdamas prisidėti prie gijos, po jos pagrindiniu komentaru paspausk **Atsakyti**.
+
+### Teksto formatavimas {#formatavimas}
+
+Komentaruose, atsakymuose ir apklausos klausime galima paryškinti tekstą, rašyti kursyvu,
+pabraukti, perbraukti, pridėti nuorodą ir kurti ženklelių arba numeruotus sąrašus su įtraukomis.
+Formatavimas išlieka išsaugojus ir vėl atvėrus komentarą.
+
+1. Pažymėk tekstą ir virš laukelio pasirink formatavimo mygtuką.
+2. Sąrašui pasirink ženklelių arba numeruotą sąrašą. Jį galima pradėti ir įvedus `- ` arba `1. `.
+3. Meniu **Daugiau parinkčių** rasi pabraukimą, perbraukimą, sąrašo įtraukas,
+   veiksmų atšaukimą, pakartojimą ir formatavimo išvalymą.
+4. Nuorodai pasirink grandinėlės mygtuką arba paspausk **Ctrl/Cmd + K**. Įrašyk adresą;
+   nuorodą taip pat galima pakeisti ar pašalinti.
+
+**Enter** tęsia pastraipą ar sąrašą, **Shift + Enter** įterpia eilutės lūžį.
+Lentelės, antraštės ir priedai komentaruose nesiūlomi.
+
+<ChangelogNote version="v3.21" date="2026-10-26" title="Komentarų formatavimas">
+
+Sąrašų ženkleliai ir numeracija matomi tiek rašant, tiek išsaugojus komentarą.
+Formatavimo mygtukai veikia ir telefone.
+
+</ChangelogNote>
 
 ### Apklausos kūrimas komentare
 

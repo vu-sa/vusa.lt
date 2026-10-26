@@ -139,3 +139,26 @@ describe('comment profile is unchanged', function (): void {
             ->not->toContain('<img');
     });
 });
+
+describe('comment formatting round trip', function (): void {
+    test('preserves the supported comment HTML', function (string $html, string $expected): void {
+        expect($this->sanitizer->sanitizeCommentBody($html))->toContain($expected);
+    })->with([
+        'marks and line breaks' => ['<p><strong>B</strong><em>I</em><u>U</u><s>S</s><br>Next</p>', '<strong>B</strong><em>I</em><u>U</u><s>S</s><br />Next'],
+        'nested lists and numbering' => ['<ul><li><p>First</p><ol start="3"><li><p>Third</p></li></ol></li></ul>', '<ol start="3"><li><p>Third</p></li></ol>'],
+        'relative link' => ['<a href="/mano/meetings">Meeting</a>', 'href="/mano/meetings"'],
+        'mention identity' => ['<span class="comment-mention" data-type="mention" data-id="u1" data-label="Ona">@Ona</span>', 'data-id="u1"'],
+    ]);
+
+    test('keeps the comment security boundary', function (string $html, string $forbidden): void {
+        expect($this->sanitizer->sanitizeCommentBody($html))->not->toContain($forbidden);
+    })->with([
+        'unsafe link' => ['<a href="javascript:alert(1)">Bad</a>', 'javascript:'],
+        'event handler' => ['<p onclick="alert(1)">Text</p>', 'onclick'],
+        'inline styles' => ['<span style="position:fixed">Text</span>', 'style='],
+        'image' => ['<img src="https://example.com/a.png">', '<img'],
+        'iframe' => ['<iframe src="https://example.com"></iframe>', '<iframe'],
+        'quote' => ['<blockquote><p>Quote</p></blockquote>', '<blockquote'],
+        'code' => ['<code>Code</code>', '<code'],
+    ]);
+});

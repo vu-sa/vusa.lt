@@ -3,26 +3,21 @@
  * Unified styles for all TipTap editor instances.
  * Import this file in your main CSS or component.
  *
- * Presentation rules (flow, headings, blockquote, links, hr, table cell chrome) are
- * scoped `:not(.rc-prose-editing)`: a root opted into the shared prose block
- * (`rc-prose-editing` on the ProseMirror root — TiptapEditor's `prose-style` and
- * TiptapDisplay's inline editor) is styled by `.rc-prose`'s published treatment
- * instead, so WYSIWYG matches what renders. This file loads as a separate chunk
- * AFTER app.css, so unscoped rules here would win every specificity tie and even
- * beat the prose flow on `.tiptap p` (0,1,1) vs `> * + *` (0,1,0).
+ * Public prose and comments own their presentation; generic editor flow rules
+ * exclude those roots so lazy-loaded editor CSS cannot restyle another surface.
  */
 
 /* Base editor styles */
-.tiptap {
+.tiptap:not(.comment-content) {
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
 
 /* Paragraph and block spacing */
-.tiptap:not(.rc-prose-editing) p,
-.tiptap:not(.rc-prose-editing) ul,
-.tiptap:not(.rc-prose-editing) ol,
-.tiptap:not(.rc-prose-editing) blockquote {
+.tiptap:not(.rc-prose-editing):not(.comment-content) p,
+.tiptap:not(.rc-prose-editing):not(.comment-content) ul,
+.tiptap:not(.rc-prose-editing):not(.comment-content) ol,
+.tiptap:not(.rc-prose-editing):not(.comment-content) blockquote {
   margin: 0.4rem 0;
 }
 
@@ -41,47 +36,47 @@
 }
 
 /* Nested list indentation */
-.tiptap:not(.rc-prose-editing) li > ul,
-.tiptap:not(.rc-prose-editing) li > ol {
+.tiptap:not(.rc-prose-editing):not(.comment-content) li > ul,
+.tiptap:not(.rc-prose-editing):not(.comment-content) li > ol {
   margin: 0.25rem 0;
 }
 
 /* Links — `var(--brand)` so they follow the theme (red light / amber dark) instead
    of the old hardcoded #bd2835, which was unreadable on dark admin chrome. */
-.tiptap:not(.rc-prose-editing) a {
+.tiptap:not(.rc-prose-editing):not(.comment-content) a {
   color: var(--brand);
   text-decoration: underline;
   font-weight: 500;
 }
 
 /* Blockquotes */
-.tiptap:not(.rc-prose-editing) blockquote {
+.tiptap:not(.rc-prose-editing):not(.comment-content) blockquote {
   padding-left: 1rem;
   border-left: 4px solid #e2e8f0;
   font-style: italic;
   margin: 1rem 0;
 }
 
-.dark .tiptap:not(.rc-prose-editing) blockquote {
+.dark .tiptap:not(.rc-prose-editing):not(.comment-content) blockquote {
   border-left-color: #52525b;
 }
 
 /* Headings */
-.tiptap:not(.rc-prose-editing) h2,
-.tiptap:not(.rc-prose-editing) h3,
-.tiptap:not(.rc-prose-editing) h4,
-.tiptap:not(.rc-prose-editing) h5,
-.tiptap:not(.rc-prose-editing) h6 {
+.tiptap:not(.rc-prose-editing):not(.comment-content) h2,
+.tiptap:not(.rc-prose-editing):not(.comment-content) h3,
+.tiptap:not(.rc-prose-editing):not(.comment-content) h4,
+.tiptap:not(.rc-prose-editing):not(.comment-content) h5,
+.tiptap:not(.rc-prose-editing):not(.comment-content) h6 {
   margin-bottom: 1rem;
   font-weight: 600;
 }
 
-.tiptap:not(.rc-prose-editing) h2 {
+.tiptap:not(.rc-prose-editing):not(.comment-content) h2 {
   font-size: 1.5rem;
   line-height: 2rem;
 }
 
-.tiptap:not(.rc-prose-editing) h3 {
+.tiptap:not(.rc-prose-editing):not(.comment-content) h3 {
   font-size: 1.25rem;
   line-height: 1.75rem;
 }
@@ -95,7 +90,7 @@
 
 /* On the prose surface the image's spacing comes from the shared flow (`> * + *`),
    matching the published output; elsewhere keep the compact margin. */
-.tiptap:not(.rc-prose-editing) img {
+.tiptap:not(.rc-prose-editing):not(.comment-content) img {
   margin: 0.5rem 0;
 }
 
@@ -177,7 +172,7 @@
   overflow-x: auto;
 }
 
-.tiptap:not(.rc-prose-editing) table {
+.tiptap:not(.rc-prose-editing):not(.comment-content) table {
   margin: 1rem 0;
 }
 
@@ -221,13 +216,13 @@
 
 /* Horizontal rule — published rules are preflight's 1px hairline with the base
    layer's border colour, so the prose surface opts out of the thicker editor one. */
-.tiptap:not(.rc-prose-editing) hr {
+.tiptap:not(.rc-prose-editing):not(.comment-content) hr {
   border: none;
   border-top: 2px solid #e4e4e7;
   margin: 1.5rem 0;
 }
 
-.dark .tiptap:not(.rc-prose-editing) hr {
+.dark .tiptap:not(.rc-prose-editing):not(.comment-content) hr {
   border-top-color: #3f3f46;
 }
 

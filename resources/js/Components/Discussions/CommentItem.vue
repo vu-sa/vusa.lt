@@ -39,13 +39,14 @@
           <DropdownMenuTrigger as-child>
             <button
               type="button"
+              data-testid="comment-actions"
               class="ml-auto flex size-7 items-center justify-center text-muted-foreground transition-opacity hover:bg-accent focus-visible:opacity-100 group-hover/comment:opacity-100 pointer-fine:opacity-0 pointer-coarse:size-11"
             >
               <MoreHorizontal class="h-4 w-4" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem v-if="comment.can.update" @click="startEdit">
+            <DropdownMenuItem v-if="comment.can.update" data-testid="comment-edit" @click="startEdit">
               <Pencil class="mr-2 h-4 w-4" />
               {{ $t('Redaguoti') }}
             </DropdownMenuItem>
@@ -83,7 +84,7 @@
       <!-- Read mode -->
       <div
         v-else
-        class="mt-0.5 max-w-none text-sm text-foreground [&_.comment-mention]:bg-brand/10 [&_.comment-mention]:px-1 [&_.comment-mention]:font-medium [&_.comment-mention]:text-brand"
+        class="comment-content mt-0.5 max-w-none text-sm text-foreground"
         v-html="comment.body"
       />
 
@@ -114,6 +115,8 @@
 import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Ban, CheckCircle2, CornerDownRight, MoreHorizontal, Pencil, RotateCcw, Trash2 } from '@lucide/vue';
+
+import './comment-content.css';
 
 import CommentComposer from '@/Components/Discussions/CommentComposer.vue';
 import CommentReactions from '@/Components/Discussions/CommentReactions.vue';

@@ -576,6 +576,8 @@ return [
     'text_style' => 'Teksto stilius',
     'bold' => 'Paryškinti',
     'italic' => 'Kursyvas',
+    'strikethrough' => 'Perbraukti',
+    'link_invalid_url' => 'Įrašyk http, https, el. pašto arba vidinę nuorodą.',
     'underline' => 'Pabraukti',
     'insert' => 'Įterpti',
     'link_open' => 'Atidaryti naujame skirtuke',

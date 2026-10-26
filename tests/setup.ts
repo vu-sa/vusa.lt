@@ -37,6 +37,12 @@ if (typeof performance.getEntriesByType !== 'function') {
   performance.getEntriesByType = () => [];
 }
 
+// jsdom has no Range geometry; editor focus may ask for it while scrolling a selection.
+if (typeof Range !== 'undefined' && typeof Range.prototype.getClientRects !== 'function') {
+  Range.prototype.getClientRects = () => [] as unknown as DOMRectList;
+  Range.prototype.getBoundingClientRect = () => new DOMRect();
+}
+
 // Async components start loading on mount; under `vmThreads` any import still pending when the
 // file ends rejects with "Vite module runner has been closed" and fails the run.
 afterAll(() => vi.dynamicImportSettled());

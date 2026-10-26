@@ -61,27 +61,12 @@
         :label="$t('rich-content.link')"
         @click="contextMenus?.openLinkDialog()"
       >
-        <IFluentLink24Regular />
+        <Link />
       </TiptapToolButton>
 
       <template v-if="tools.lists">
         <Separator orientation="vertical" class="mx-0.5 h-5" />
-        <TiptapToolButton
-          toggle
-          :active="editor.isActive('bulletList')"
-          :label="$t('rich-content.bullet_list')"
-          @click="editor.chain().focus().toggleBulletList().run()"
-        >
-          <IFluentTextBulletListLtr20Regular />
-        </TiptapToolButton>
-        <TiptapToolButton
-          toggle
-          :active="editor.isActive('orderedList')"
-          :label="$t('rich-content.ordered_list')"
-          @click="editor.chain().focus().toggleOrderedList().run()"
-        >
-          <IFluentTextNumberListLtr20Regular />
-        </TiptapToolButton>
+        <TiptapListButtons :editor />
       </template>
 
       <template v-if="hasInsertTools(tools) || hasMoreMenu">
@@ -96,14 +81,14 @@
           :disabled="!editor.can().undo()"
           @click="editor.chain().focus().undo().run()"
         >
-          <IFluentArrowUndo20Regular />
+          <Undo2 />
         </TiptapToolButton>
         <TiptapToolButton
           :label="$t('rich-content.redo')"
           :disabled="!editor.can().redo()"
           @click="editor.chain().focus().redo().run()"
         >
-          <IFluentArrowRedo20Regular />
+          <Redo2 />
         </TiptapToolButton>
       </div>
     </div>
@@ -125,6 +110,7 @@ import { computed, nextTick, ref, watch, onBeforeUnmount, useTemplateRef } from 
 import { EditorContent, useEditor } from '@tiptap/vue-3';
 import { Extension } from '@tiptap/core';
 import { trans as $t } from 'laravel-vue-i18n';
+import { Link, Undo2, Redo2 } from '@lucide/vue';
 
 import './accessible-image-commands.d.ts';
 
@@ -136,6 +122,7 @@ import { headingLevelLabel } from './toolbarOptions';
 import { hasInsertTools, profileForPreset, toolsFor, type ToolbarProfile } from './toolbarProfiles';
 import TiptapContextMenus from './TiptapContextMenus.vue';
 import TiptapFormattingButtons from './TiptapFormattingButtons.vue';
+import TiptapListButtons from './TiptapListButtons.vue';
 import TiptapInsertMenu from './TiptapInsertMenu.vue';
 import TiptapMoreMenu from './TiptapMoreMenu.vue';
 import TiptapToolButton from './TiptapToolButton.vue';
@@ -144,11 +131,6 @@ import { collectHeadingIds } from '@/Components/RichContent/headingAnchors';
 import { Separator } from '@/Components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { latinizeId } from '@/Utils/String';
-import IFluentArrowRedo20Regular from '~icons/fluent/arrow-redo20-regular';
-import IFluentArrowUndo20Regular from '~icons/fluent/arrow-undo20-regular';
-import IFluentLink24Regular from '~icons/fluent/link24-regular';
-import IFluentTextBulletListLtr20Regular from '~icons/fluent/text-bullet-list-ltr20-regular';
-import IFluentTextNumberListLtr20Regular from '~icons/fluent/text-number-list-ltr20-regular';
 
 import './tiptap-base.css';
 
@@ -236,7 +218,10 @@ const extensions = [
 const contentError = ref(false);
 const editor = useEditor({
   enableContentCheck: true,
-  onContentError: ({ editor: currentEditor }) => { contentError.value = true; currentEditor.setEditable(false); },
+  onContentError: ({ editor: currentEditor }) => {
+    contentError.value = true;
+    currentEditor.setEditable(false);
+  },
   editorProps: {
     attributes: {
       class: ['focus:outline-none w-full min-h-[80px]', isFramed.value ? 'px-4 py-3 text-sm leading-relaxed' : 'px-3 py-2', props.proseStyle ? 'rc-prose-editing tracking-normal' : ''].filter(Boolean).join(' '),
