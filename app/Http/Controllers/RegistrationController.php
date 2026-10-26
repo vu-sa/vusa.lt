@@ -22,13 +22,6 @@ class RegistrationController extends Controller
      */
     public function store(StoreRegistrationRequest $request, Form $form)
     {
-        // Check if form is published
-        // If publish_time is null, form is available by default
-        // If publish_time is set and in the future, block access
-        if ($form->publish_time?->isFuture()) {
-            abort(403, 'Form is not yet published');
-        }
-
         try {
             return DB::transaction(function () use ($request, $form) {
                 $registration = new Registration;

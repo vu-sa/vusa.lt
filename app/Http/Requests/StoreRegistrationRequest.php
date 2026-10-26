@@ -5,130 +5,91 @@ namespace App\Http\Requests;
 use App\Models\Form;
 use App\Models\FormField;
 use App\Services\FormOptionResolver;
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Validator;
+use Illuminate\Validation\Rule;
 
 class StoreRegistrationRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return true;
+        $form = $this->route('form');
+
+        return $form instanceof Form && ! $form->publish_time?->isFuture();
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
-        return [
-            'data' => 'required|array',
-            'data.*' => 'required|array', // Each field response must be an array
-            'data.*.value' => 'present', // Each response must have a 'value' key (can be null)
-        ];
+        $fields = $this->fields();
+        $rules = ['data' => ['required', 'array:'.implode(',', $fields->modelKeys())]];
+
+        foreach ($fields as $field) {
+            $path = "data.{$field->id}";
+            $rules[$path] = ['bail', $field->is_required ? 'required' : 'sometimes', 'array:value'];
+            $rules["{$path}.value"] = [
+                'bail',
+                $field->is_required ? 'required' : Rule::when($this->exists($path), 'present', 'sometimes'),
+                'nullable',
+                ...$this->valueRules($field),
+            ];
+        }
+
+        return $rules;
     }
 
-    /**
-     * Human-readable field name for validation messages.
-     *
-     * The label is a translatable attribute, so interpolating the model attribute
-     * directly would render the literal string "Array".
-     */
-    private function fieldLabel(FormField $field): string
+    public function attributes(): array
     {
-        return (string) $field->getTranslation('label', app()->getLocale());
+        $attributes = [];
+
+        foreach ($this->fields() as $field) {
+            $label = $field->getTranslation('label', app()->getLocale());
+            $attributes["data.{$field->id}"] = $label;
+            $attributes["data.{$field->id}.value"] = $label;
+        }
+
+        return $attributes;
     }
 
-    /**
-     * Configure the validator instance.
-     */
-    public function withValidator(\Illuminate\Contracts\Validation\Validator $validator): void
+    private function valueRules(FormField $field): array
     {
-        $validator->after(function (\Illuminate\Contracts\Validation\Validator $validator): void {
-            $form = $this->route('form');
-            if (! $form instanceof Form) {
+        return match ($field->type) {
+            'string', 'text' => $field->subtype === 'email' ? ['string', 'email'] : ['string'],
+            'email' => ['string', 'email'],
+            'number' => ['numeric'],
+            'boolean' => $field->is_required ? ['boolean', 'accepted'] : ['boolean'],
+            'date' => ['date'],
+            'enum', 'select' => [$this->optionRule($field)],
+            default => [Rule::prohibitedIf(true)],
+        };
+    }
+
+    private function optionRule(FormField $field): \Closure
+    {
+        return function (string $attribute, mixed $value, \Closure $fail) use ($field): void {
+            if (! is_string($value) && ! is_int($value) && ! is_float($value)) {
+                $fail('validation.in')->translate();
+
                 return;
             }
 
-            /** @var Collection<int, FormField> $formFields */
-            $formFields = $form->formFields()->get();
-            $data = $this->input('data', []);
-
-            foreach ($formFields as $field) {
-                $fieldId = (string) $field->id;
-                $fieldData = $data[$fieldId] ?? null;
-                $value = $fieldData['value'] ?? null;
-
-                // Check required fields
-                if ($field->is_required && empty($value)) {
-                    $validator->errors()->add("data.{$fieldId}.value", "The {$this->fieldLabel($field)} field is required.");
-                }
-
-                // Validate based on field type
-                if (! empty($value)) {
-                    $this->validateFieldByType($validator, $field, $value, $fieldId);
-                }
+            if ($field->resolvedOptionSource() !== null) {
+                $accepted = app(FormOptionResolver::class)->accepts($field, $value);
+            } else {
+                $options = collect($field->options ?? [])->map(fn ($option) => is_array($option) ? ($option['value'] ?? null) : $option);
+                $accepted = $options->contains(fn ($option) => $option !== null && (string) $option === (string) $value);
             }
-        });
+
+            if (! $accepted) {
+                $fail('validation.in')->translate();
+            }
+        };
     }
 
-    /**
-     * Validate field based on its type
-     */
-    private function validateFieldByType(\Illuminate\Contracts\Validation\Validator $validator, FormField $field, $value, string $fieldId): void
+    /** @return Collection<int, FormField> */
+    private function fields(): Collection
     {
-        // Handle email validation - check both type and subtype
-        if ($field->type === 'email' || ($field->type === 'string' && $field->subtype === 'email')) {
-            if (! filter_var($value, FILTER_VALIDATE_EMAIL)) {
-                $validator->errors()->add("data.{$fieldId}.value", "The {$this->fieldLabel($field)} must be a valid email address.");
-            }
+        $form = $this->route('form');
 
-            return;
-        }
-
-        switch ($field->type) {
-            case 'number':
-                if (! is_numeric($value)) {
-                    $validator->errors()->add("data.{$fieldId}.value", "The {$this->fieldLabel($field)} must be a number.");
-                }
-                break;
-
-            case 'enum':
-            case 'select':
-                if ($field->resolvedOptionSource() !== null) {
-                    if (! app(FormOptionResolver::class)->accepts($field, $value)) {
-                        $validator->errors()->add("data.{$fieldId}.value", "The selected {$this->fieldLabel($field)} is invalid.");
-                    }
-
-                    break;
-                }
-
-                if ($field->options) {
-                    // Extract values from option objects for validation
-                    $validValues = collect($field->options)->pluck('value')->filter()->toArray();
-
-                    // Fallback to direct array values if no 'value' properties exist
-                    if (empty($validValues)) {
-                        $validValues = $field->options;
-                    }
-
-                    if (! in_array($value, $validValues)) {
-                        $validator->errors()->add("data.{$fieldId}.value", "The selected {$this->fieldLabel($field)} is invalid.");
-                    }
-                }
-                break;
-
-            case 'date':
-                if (! strtotime($value)) {
-                    $validator->errors()->add("data.{$fieldId}.value", "The {$this->fieldLabel($field)} must be a valid date.");
-                }
-                break;
-        }
+        return $form instanceof Form ? $form->loadMissing('formFields')->formFields : new Collection;
     }
 }

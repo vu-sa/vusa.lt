@@ -3,12 +3,15 @@ doc_status: reviewed
 title: Formos ir registracijos
 area: forms
 models: [Form, Registration]
-last_reviewed: 2026-10-15
+last_reviewed: 2026-10-27
 tests:
   - tests/Feature/Admin/Forms/FormControllerTest.php
   - tests/Feature/Admin/Forms/FormAccessTest.php
   - tests/Feature/Forms/StudentRepRegistrationTest.php
   - tests/Feature/Forms/RegistrationSecurityTest.php
+  - tests/Feature/Forms/RegistrationValidationTest.php
+  - tests/Browser/PublicRegistrationTest.php
+  - tests/Browser/ImageInsertionTest.php
   - tests/Feature/Forms/RegistrationWorkflowTest.php
   - tests/Feature/Forms/SendMemberRegistrationNotificationTest.php
   - tests/Feature/Forms/ConfirmMemberRegistrationTest.php
@@ -69,6 +72,20 @@ Laukams su tipu `enum` galima įjungti **modelio parinktis** (`use_model_options
 
 - **Padaliniai (`Tenant`)**: pasirinkimo sąrašas automatiškai užpildomas visais VU SA padaliniais.
 - **Institucijos (`Institution`)**: sąrašas automatiškai užpildomas universiteto valdymo organais ir komisijomis.
+
+### Atsakymų pildymas ir tikrinimas {#atsakymu-tikrinimas}
+
+Viešoje anketoje atsakymas tikrinamas baigus pildyti lauką arba pakeitus pasirinkimą.
+Klaida rodoma prie klausimo; pateikus anketą visi atsakymai patikrinami dar kartą.
+Jei pateikti nepavyksta, įrašyti atsakymai išlieka ir juos galima pataisyti bei pateikti pakartotinai.
+
+Skaitiniame lauke `0` yra galiojantis atsakymas. Privalomą sutikimo varnelę reikia pažymėti;
+neprivalomą galima palikti nepažymėtą. Paslėptas iš anksto parinktas atsakymas taip pat tikrinamas.
+Po sėkmingo pateikimo atsakymai lieka matomi, o išeinant neberodomas įspėjimas apie neišsaugotus pakeitimus.
+
+Anketos ar klausimo aprašyme paveikslėlį galima įterpti per redaktoriaus įterpimo meniu.
+Pridėk alternatyvųjį tekstą (iki 125 ženklų) arba pažymėk, kad paveikslėlis dekoratyvinis;
+pasirenkamas paveikslėlio pavadinimas gali būti iki 200 ženklų.
 
 ### Atsakymų vientisumo apsauga {#vientisumas}
 

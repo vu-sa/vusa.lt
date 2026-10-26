@@ -22,7 +22,7 @@
         </div>
 
         <!-- Registration Form -->
-        <RegistrationForm :form :prefilled-values @submit="handleSubmit" />
+        <RegistrationForm :key="form.id" :form :prefilled-values :submit-url="route('registrations.store', { form: form.id })" />
       </div>
     </section>
   </div>
@@ -31,28 +31,15 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { router } from '@inertiajs/vue3';
 
 import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import RegistrationForm from '@/Features/Registrations/RegistrationForm.vue';
+import type { RegistrationDefinition, RegistrationFieldDefinition } from '@/Features/Registrations/types';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 
-interface FormField {
-  id: number | string;
-  option_source?: 'tenant' | 'institution' | null;
-  options?: Array<{ value: string | number; label: string }>;
-}
-
-interface RegistrationFormData {
-  id: number;
-  name: string;
-  description?: string | null;
-  form_fields?: FormField[];
-}
-
 const { form } = defineProps<{
-  form: RegistrationFormData;
+  form: RegistrationDefinition;
 }>();
 
 // Set breadcrumbs for registration page
@@ -75,7 +62,7 @@ const prefilledValues = computed(() => {
   if (!institutionId.value) return {};
 
   // Find the institution field in the form
-  const institutionField = form.form_fields?.find((field: FormField) =>
+  const institutionField = form.form_fields?.find((field: RegistrationFieldDefinition) =>
     field.option_source === 'institution',
   );
 
@@ -93,20 +80,16 @@ const prefilledValues = computed(() => {
 const prefilledInstitutionName = computed(() => {
   if (!institutionId.value) return null;
 
-  const institutionField = form.form_fields?.find((field: FormField) =>
+  const institutionField = form.form_fields?.find((field: RegistrationFieldDefinition) =>
     field.option_source === 'institution',
   );
 
   if (!institutionField?.options) return null;
 
-  const institution = institutionField.options.find((opt: { value: string | number }) =>
-    String(opt.value) === String(institutionId.value),
+  const institution = institutionField.options.find(opt =>
+    typeof opt === 'object' && String(opt.value) === String(institutionId.value),
   );
 
-  return institution?.label ?? null;
+  return institution && typeof institution === 'object' ? institution.label : null;
 });
-
-const handleSubmit = (data: Record<string, unknown>) => {
-  router.post(route('registrations.store', { form: form.id }), { data });
-};
 </script>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\SystemDutyType;
 use App\Services\PublicUrlService;
 use App\Support\LocalizedRouteSlugs;
+use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Route;
@@ -43,7 +44,7 @@ Route::post('login', [Admin\AuthController::class, 'authenticate'])->middleware(
 Route::post('feedback', [Public\MainController::class, 'sendFeedback'])->name('feedback.send');
 
 Route::post('registration/{form}', [RegistrationController::class, 'store'])
-    ->middleware('throttle:10,1')
+    ->middleware([HandlePrecognitiveRequests::class, 'throttle:publicRegistrations'])
     ->name('registrations.store');
 
 // Short URL redirects for documents
