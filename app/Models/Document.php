@@ -310,8 +310,9 @@ class Document extends Model
     }
 
     /**
-     * Documents whose publication this user may decide: their padaliniai's, or all with `*` scope.
-     * A file with no resolvable Padalinys belongs to no tenant, so only `*` scope reaches it.
+     * Documents whose publication this user may decide: their padaliniai's, their own institutions'
+     * (`.own`, for bodies like Revizijos komisija inside a padalinys), or all with `*` scope.
+     * A file with no resolvable Padalinys belongs to no institution, so only `*` scope reaches it.
      *
      * @param  Builder<Document>  $query
      */
@@ -320,15 +321,34 @@ class Document extends Model
     {
         $scope = app(ModelAuthorizer::class)->scope($user, 'documents.update.padalinys');
 
-        if (! $scope->granted) {
+        if ($scope->granted && $scope->isAllScope) {
+            return;
+        }
+
+        $tenantIds = $scope->granted ? $scope->tenantIds()->all() : [];
+        $institutionIds = self::ownInstitutionIds($user, 'documents.update.own');
+
+        if ($tenantIds === [] && $institutionIds === []) {
             $query->whereRaw('1 = 0');
 
             return;
         }
 
-        if (! $scope->isAllScope) {
-            $query->whereHas('institution', fn (Builder $institution) => $institution->whereIn('tenant_id', $scope->tenantIds()));
-        }
+        $query->where(fn (Builder $query) => $query
+            ->when($tenantIds !== [], fn (Builder $query) => $query->orWhereHas('institution', fn (Builder $institution) => $institution->whereIn('tenant_id', $tenantIds)))
+            ->when($institutionIds !== [], fn (Builder $query) => $query->orWhereIn('institution_id', $institutionIds)));
+    }
+
+    /**
+     * Institutions of the user's duties that grant this `.own` document permission.
+     *
+     * @return list<string>
+     */
+    public static function ownInstitutionIds(User $user, string $permission): array
+    {
+        $scope = app(ModelAuthorizer::class)->scope($user, $permission);
+
+        return $scope->granted ? $scope->duties->pluck('institution_id')->filter()->unique()->values()->all() : [];
     }
 
     /**

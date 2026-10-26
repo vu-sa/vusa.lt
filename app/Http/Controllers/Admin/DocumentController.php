@@ -41,6 +41,7 @@ class DocumentController extends AdminController
         }
 
         $updateScope = $this->authorizer->scope($user, 'documents.update.padalinys');
+        $ownInstitutionIds = Document::ownInstitutionIds($user, 'documents.update.own');
         $manageable = fn () => Document::query()->manageableBy($user);
 
         return $this->inertiaResponse('Admin/Files/IndexDocument', [
@@ -55,9 +56,10 @@ class DocumentController extends AdminController
             ] : null,
             'abilities' => [
                 'create' => $canCreate,
-                'update' => $updateScope->granted,
-                // Archive rows come from search, so their actions are decided by padalinys in the browser; null is every one.
+                'update' => $updateScope->granted || $ownInstitutionIds !== [],
+                // Archive rows come from search, so their actions are decided by padalinys or institution in the browser; null is every one.
                 'updateTenantShortnames' => $updateScope->isAllScope ? null : $updateScope->tenants->pluck('shortname')->values()->all(),
+                'updateInstitutionIds' => $ownInstitutionIds,
             ],
             // Central office documents matter to everyone, so VU SA joins the user's own padaliniai.
             'defaultTenantShortnames' => GetUserTenantShortnames::execute($user, withMainTenant: true),

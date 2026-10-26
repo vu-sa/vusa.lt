@@ -229,7 +229,10 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
         return $this->tenant();
     }
 
-    public function documents()
+    /**
+     * @return HasMany<Document, $this>
+     */
+    public function documents(): HasMany
     {
         return $this->hasMany(Document::class);
     }

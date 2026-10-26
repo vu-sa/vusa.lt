@@ -259,6 +259,44 @@ describe('public visibility', function (): void {
     });
 });
 
+describe('own institutions', function (): void {
+    beforeEach(function (): void {
+        // A body inside the main padalinys, like Revizijos komisija beside Centrinis biuras.
+        $this->bodyMember = makeTenantUser(null, Tenant::main());
+        $this->bodyDuty = $this->bodyMember->duties()->firstOrFail();
+        $this->bodyDuty->pivot->update(['end_date' => null]);
+        $this->bodyDuty->givePermissionTo(['documents.create.own', 'documents.update.own']);
+        $this->own = Document::factory()->pending()->create(['institution_id' => $this->bodyDuty->institution_id]);
+        $this->sibling = Document::factory()->pending()->create(['institution_id' => Institution::factory()->create(['tenant_id' => Tenant::main()->id])->id]);
+    });
+
+    test('a member lists their institution\'s unpublished files, not those of others in the same padalinys', function (): void {
+        asUser($this->bodyMember)->getJson(route('api.v1.admin.documents.folder', ['path' => '', 'flat' => 1, 'show' => 'pending']))
+            ->assertOk()
+            ->assertJsonCount(1, 'data.files')
+            ->assertJsonPath('data.files.0.id', $this->own->id)
+            ->assertJsonPath('data.files.0.can.update', true);
+    });
+
+    test('a member publishes their institution\'s file but not a sibling institution\'s', function (): void {
+        asUser($this->bodyMember)->post(route('documents.status'), ['document_ids' => [$this->sibling->id], 'status' => 'published'])->assertForbidden();
+        asUser($this->bodyMember)->post(route('documents.status'), ['document_ids' => [$this->own->id], 'status' => 'published'])->assertRedirect();
+
+        expect($this->own->refresh()->status)->toBe(DocumentStatus::Published)
+            ->and($this->sibling->refresh()->status)->toBe(DocumentStatus::Pending);
+    });
+
+    test('the page gives the member the managers\' view, counting only their files', function (): void {
+        asUser($this->bodyMember)->get(route('documents.index'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('abilities.create', true)
+                ->where('abilities.update', true)
+                ->where('abilities.updateInstitutionIds', [$this->bodyDuty->institution_id])
+                ->where('discovery.counts.pending', 1));
+    });
+});
+
 describe('folder view', function (): void {
     beforeEach(function (): void {
         $this->base = 'Dokumentų sistema/00. Lietuvių kalba/01. VU SA Padaliniai/MIF';

@@ -41,6 +41,16 @@ class DocumentPolicy extends ModelPolicy
     }
 
     /**
+     * `.own` lets a body inside a padalinys (Revizijos komisija) pick and discover files too;
+     * publishing each one is still checked against its institution.
+     */
+    #[\Override]
+    public function create(User $user): bool
+    {
+        return parent::create($user) || $this->authorizer->allows($user, 'documents.create.own');
+    }
+
+    /**
      * Standard view method that most models will use.
      * Override in child classes when needed.
      *

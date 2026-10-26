@@ -88,6 +88,7 @@ return [
         'only_removed_deletable' => 'Only documents whose files were removed from SharePoint can be deleted.',
         'picked_published' => 'Files published: :count. Public links will be ready in a few minutes.',
         'picked_incomplete' => 'These files are missing SharePoint data, fill it in SharePoint: :titles.',
+        'picked_no_institution' => 'These files have no “Padalinys” set in SharePoint, so you cannot publish them. Fill it in SharePoint and try again: :titles.',
         'pick_outside_archive' => 'The file “:name” is not in the document archive, so it cannot be published.',
         'pick_not_found' => 'The chosen file was not found in SharePoint. Try again.',
     ],

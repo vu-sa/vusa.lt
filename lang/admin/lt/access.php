@@ -45,6 +45,7 @@ return [
     ],
     'duty_period' => 'tavo pareigų laikotarpį',
     'own_institutions' => 'Savo institucijų, visų kadencijų',
+    'own_institution_documents' => 'Savo institucijų',
     'permission_scopes' => [
         'meetings' => [
             'read' => [
@@ -68,6 +69,7 @@ return [
         'agendaItems' => 'Matai viešų posėdžių viešus klausimus. Savo institucijų posėdžių, kurių data patenka į :period, klausimus ir balsavimus matai, kuri, redaguoji ir trini ir pareigoms pasibaigus. Nepasibaigusių pareigybių, ryšiais pasiekiamų ir sekretoriumi prižiūrimų institucijų klausimus matai. Posėdžio redagavimo teisė leidžia tvarkyti jo klausimus.',
         'problems' => 'Mato visų padalinių problemas.',
         'resources' => 'Mato visus išteklius.',
+        'documents' => 'ViSAK paskelbtus dokumentus naršo visi nariai. Šios teisės skirtos dokumentų tvarkymui: laukiančių ir paslėptų failų matymui, paskelbimui ir slėpimui.',
         'duties' => 'Mato savo dabartines ir buvusias pareigybes bei kadencijas.',
         'dutiables' => 'Savo pareigybes ir jų kadencijas mato visi nariai; kitų kadencijas valdo pareigybes tvarkantys.',
         'tasks' => 'Mato ir atlieka jiems priskirtas užduotis.',

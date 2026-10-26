@@ -17,7 +17,7 @@ paths:
 ## A scope is only offered where a policy reads it
 - `*` — everywhere. `padalinys` — the tenants of the user's non-ended granting duties.
 - `own` — ids from the **same-named relation on `Duty`** (`ModelAuthorizer::resolveOwnModelIds`). A model with no such relation gets no `own` cell; offering one grants nothing. Check the relation before allowing `own`.
-- `viewAny` and `create` only look at `.padalinys` (`HasCommonChecks`). `create.own` therefore exists for `meetings` alone (`MeetingPolicy::createFor`, listed in `OWN_CREATE`). Anything else must read it in its own policy first.
+- `viewAny` and `create` only look at `.padalinys` (`HasCommonChecks`). `create.own` therefore exists only where the policy reads it and the resource is listed in `OWN_CREATE`: `meetings` (`MeetingPolicy::createFor`) and `documents` (`DocumentPolicy::create`; `own` = files of the duty's institution, for bodies like Revizijos komisija inside the main padalinys). Anything else must read it in its own policy first.
 - A scope reserved for later (`goals.*.own`) is allowed in `ModelEnum::getAllowedScopes` with a comment saying so.
 
 ## Baseline versus grant

@@ -21,6 +21,7 @@ final class BaselineAccess
         'agendaItems',
         'problems',
         'resources',
+        'documents',
         'duties',
         'dutiables',
         'tasks',

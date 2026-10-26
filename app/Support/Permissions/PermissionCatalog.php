@@ -68,12 +68,12 @@ final class PermissionCatalog
     /**
      * Combinations that would grant nothing, matched with `Str::is` against `resource.ability.scope`.
      * `own` resolves through a same-named relation on Duty; a model without one has no `own` rows,
-     * and `create` only reads `.padalinys`, so `create.own` exists for meetings alone.
+     * and `create` only reads `.padalinys`, so `create.own` exists only where a policy reads it (`OWN_CREATE`).
      * Anything every member already has belongs in the policy and BaselineAccess instead.
      */
     private const array UNGRANTABLE = [
         // No Duty relation, so `own` matches no record.
-        'banners.*.own', 'calendars.*.own', 'documents.*.own', 'files.*.own', 'forms.*.own', 'news.*.own', 'pages.*.own',
+        'banners.*.own', 'calendars.*.own', 'files.*.own', 'forms.*.own', 'news.*.own', 'pages.*.own',
         // Same records as `padalinys`.
         'resources.*.own',
         // Agenda items follow their meeting; tasks are the assignee's (Duty::tasks reaches a colleague's).
@@ -89,7 +89,7 @@ final class PermissionCatalog
     ];
 
     /** Resources whose `create` is also granted at `own`. */
-    private const array OWN_CREATE = ['meetings'];
+    private const array OWN_CREATE = ['meetings', 'documents'];
 
     /**
      * Built from code alone, so once per process: `isGrantable()` runs per stored permission.
@@ -203,7 +203,11 @@ final class PermissionCatalog
                 'abilities' => $abilities,
                 'baseline' => $baseline[$resource] ?? null,
                 'baselineSegments' => BaselineAccess::segments($resource),
-                'scopeLabels' => $resource === 'meetings' ? ['own' => __('access.own_institutions')] : [],
+                'scopeLabels' => match ($resource) {
+                    'meetings' => ['own' => __('access.own_institutions')],
+                    'documents' => ['own' => __('access.own_institution_documents')],
+                    default => [],
+                },
                 'scopeDescriptions' => in_array($resource, ['meetings', 'agendaItems'], true) ? __("access.permission_scopes.{$resource}") : [],
                 'softDeletes' => ModelEnum::isSoftDeletable($resource),
             ])

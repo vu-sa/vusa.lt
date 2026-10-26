@@ -343,6 +343,7 @@ export interface DocumentSearchResult {
   name?: string;
   language?: string;
   content_type?: string;
+  institution_id?: string;
   institution_name_lt?: string;
   institution_name_en?: string;
   tenant_shortname?: string;

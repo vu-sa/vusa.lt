@@ -109,6 +109,13 @@ describe('documents page', function (): void {
 
         expect($foreign->fresh()->status)->toBe(DocumentStatus::Pending);
     });
+
+    test('a picked file without a padalinys is refused with what to fix', function (): void {
+        Document::factory()->pending()->create(['institution_id' => null, 'sharepoint_id' => 'orphan-1', 'title' => 'Be padalinio']);
+
+        asUser($this->manager)->post(route('documents.pick'), ['documents' => [pickedFile('orphan-1')]])
+            ->assertSessionHasErrors(['documents' => __('messages.document.picked_no_institution', ['titles' => 'Be padalinio'])]);
+    });
 });
 
 describe('meeting page', function (): void {

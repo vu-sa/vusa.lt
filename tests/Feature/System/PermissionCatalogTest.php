@@ -63,8 +63,8 @@ test('combinations that grant nothing are not offered', function (string $name):
     'tasks belong to the assignee' => 'tasks.update.own',
     'users manage themselves' => 'users.read.own',
     'everyone sees their reservations' => 'reservations.read.own',
-    'no create at own outside meetings' => 'news.create.own',
-    'no duty relation behind own' => 'documents.read.own',
+    'no create at own outside meetings and documents' => 'news.create.own',
+    'no duty relation behind own' => 'files.read.own',
     'members read their institutions' => 'institutions.read.own',
     'members already read their meetings' => 'meetings.read.own',
     'permissions are only listed' => 'permissions.update.*',
@@ -73,7 +73,7 @@ test('combinations that grant nothing are not offered', function (string $name):
 
 test('what is still offered at own', function (string $name): void {
     expect(PermissionCatalog::isGrantable($name))->toBeTrue();
-})->with(['meetings.create.own', 'meetings.update.own', 'duties.update.own', 'goals.update.own', 'reservations.delete.own', 'settings.read.*']);
+})->with(['meetings.create.own', 'meetings.update.own', 'documents.create.own', 'documents.update.own', 'duties.update.own', 'goals.update.own', 'reservations.delete.own', 'settings.read.*']);
 
 test('every own scope has a same-named relation on Duty, or is reserved on purpose', function (): void {
     $reserved = ['goals'];

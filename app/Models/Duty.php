@@ -388,6 +388,14 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
         return $this->hasManyDeepFromRelations($this->institution(), (new Institution)->meetings());
     }
 
+    /**
+     * The files of the duty's institution, which `documents.*.own` reaches.
+     */
+    public function documents(): HasManyDeep
+    {
+        return $this->hasManyDeepFromRelations($this->institution(), (new Institution)->documents());
+    }
+
     public function agendaItems(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->institution(), (new Institution)->meetings(), (new Meeting)->agendaItems());

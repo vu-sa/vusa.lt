@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Cadence;
+use App\Models\Document;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\InstitutionLink;
@@ -109,6 +110,16 @@ test('browses every padalinys\' problems and every resource', function (): void 
     asUser($this->member)->get(route('problems.show', $problem))->assertOk();
     asUser($this->member)->get(route('resources.index'))->assertOk();
     asUser($this->member)->get(route('resources.show', $resource))->assertOk();
+});
+
+test('browses published documents, but not the managers\' view', function (): void {
+    $document = Document::factory()->pending()->create(['institution_id' => $this->institution->id]);
+
+    asUser($this->member)->get(route('documents.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('discovery', null)->where('abilities.update', false));
+
+    expect($this->member->can('publish', $document))->toBeFalse();
 });
 
 test('opens their current and past duties, not other people\'s', function (): void {

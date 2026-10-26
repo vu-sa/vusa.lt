@@ -90,6 +90,7 @@ return [
         'only_removed_deletable' => 'Ištrinti galima tik dokumentus, kurių failai pašalinti iš SharePoint.',
         'picked_published' => 'Paskelbta failų: :count. Viešos nuorodos bus sukurtos per kelias minutes.',
         'picked_incomplete' => 'Šiems failams trūksta SharePoint duomenų, juos užpildyk SharePoint: :titles.',
+        'picked_no_institution' => 'Šiems failams SharePoint nenurodytas „Padalinys“, todėl negali jų paskelbti. Užpildyk jį SharePoint ir bandyk dar kartą: :titles.',
         'pick_outside_archive' => 'Failas „:name“ ne iš dokumentų archyvo, todėl jo paskelbti negalima.',
         'pick_not_found' => 'Pasirinkto failo SharePoint nerasta. Pabandyk dar kartą.',
     ],

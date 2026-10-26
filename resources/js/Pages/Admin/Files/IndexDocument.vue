@@ -185,7 +185,7 @@ import { formatDate, formatNearDate } from '@/Utils/dateTime';
 
 const props = defineProps<{
   importantContentTypes: string[];
-  abilities: { create: boolean; update: boolean; updateTenantShortnames: string[] | null };
+  abilities: { create: boolean; update: boolean; updateTenantShortnames: string[] | null; updateInstitutionIds: string[] };
   /** The user's padaliniai plus VU SA: a first visit starts filtered to them. */
   defaultTenantShortnames: string[];
   /** Managers get every SharePoint file from the database; null for members who browse the published archive. */
@@ -211,10 +211,11 @@ const lead = computed(() => {
 
 const browser = ref<InstanceType<typeof DocumentFolderBrowser> | null>(null);
 
-// Members who may update a padalinys' documents act on archive rows by its shortname, as in DocumentPolicy.
+// Archive rows are acted on by padalinys shortname or own institution, as in DocumentPolicy.
 const canUpdateItem = (item: DocumentSearchResult): boolean => props.abilities.update && (
   props.abilities.updateTenantShortnames === null
   || (!!item.tenant_shortname && props.abilities.updateTenantShortnames.includes(item.tenant_shortname))
+  || (!!item.institution_id && props.abilities.updateInstitutionIds.includes(item.institution_id))
 );
 
 const rowActions = (item: DocumentSearchResult): CollectionRowAction[] => canUpdateItem(item)

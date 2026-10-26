@@ -25,7 +25,7 @@ describe('unauthorized access', function (): void {
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/Files/IndexDocument')
-                ->where('abilities', ['create' => false, 'update' => false, 'updateTenantShortnames' => []])
+                ->where('abilities', ['create' => false, 'update' => false, 'updateTenantShortnames' => [], 'updateInstitutionIds' => []])
                 ->where('discovery', null)
                 ->where('defaultTenantShortnames', [$this->tenant->shortname, Tenant::main()->shortname])
             );

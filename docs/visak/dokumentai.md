@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Dokumentai
 area: documents
 models: [Document]
-last_reviewed: 2026-10-10
+last_reviewed: 2026-10-26
 tests:
   - tests/Feature/Admin/Resources/DocumentControllerTest.php
   - tests/Feature/Admin/Resources/DocumentPublicationTest.php
@@ -212,16 +212,30 @@ sukuriama.
 
 ## Kas ką gali {#teises}
 
-| Veiksmas | Bet kuris prisijungęs narys | Padalinio dokumentų valdytojas | Super Admin |
-|---|---|---|---|
-| Naršyti paskelbtus dokumentus ir atverti viešas nuorodas | ✓ | ✓ | ✓ |
-| Tikrinti SharePoint iš karto | – | ✓ | ✓ |
-| Matyti laukiančius, paslėptus ir pašalintus failus | – | ✓ Savo padalinio | ✓ Visų, ir be padalinio |
-| Paskelbti, paslėpti ar pasirinkti iš SharePoint | – | ✓ Savo padalinio | ✓ Visų, ir be padalinio |
-| Atnaujinti ar bandyti dar kartą sukurti nuorodą | – | ✓ Savo padalinio | ✓ Visų padalinių |
-| Ištrinti pašalintus iš SharePoint | – | ✓ Savo padalinio | ✓ Visų, ir be padalinio |
+| Veiksmas | Bet kuris prisijungęs narys | Padalinio dokumentų valdytojas | Savo institucijų dokumentus tvarkantis | Super Admin |
+|---|---|---|---|---|
+| Naršyti paskelbtus dokumentus ir atverti viešas nuorodas | ✓ | ✓ | ✓ | ✓ |
+| Tikrinti SharePoint iš karto | – | ✓ | ✓ | ✓ |
+| Matyti laukiančius, paslėptus ir pašalintus failus | – | ✓ Savo padalinio | ✓ Savo institucijų | ✓ Visų, ir be padalinio |
+| Paskelbti, paslėpti ar pasirinkti iš SharePoint | – | ✓ Savo padalinio | ✓ Savo institucijų | ✓ Visų, ir be padalinio |
+| Atnaujinti ar bandyti dar kartą sukurti nuorodą | – | ✓ Savo padalinio | ✓ Savo institucijų | ✓ Visų padalinių |
+| Ištrinti pašalintus iš SharePoint | – | ✓ Savo padalinio | ✓ Savo institucijų | ✓ Visų, ir be padalinio |
 
 Kitų padalinių paskelbti failai sąraše rodomi, bet jų būsena nekeičiama.
+
+**Savo institucijų** dokumentus tvarko atsakomybė, kurios dokumentų teisė suteikta lygiu
+„Savo institucijų“. Tai skirta organams, veikiantiems padalinio viduje, pvz., Revizijos komisijai:
+jos nariai tvarko tik failus, kurių SharePoint „Padalinys“ yra Revizijos komisija, o ne visus
+centrinės VU SA failus. Failas priskiriamas institucijai, kurios pavadinimas ar trumpinys sutampa
+su SharePoint nurodytu padaliniu. Failą be padalinio gali paskelbti tik Super Admin, todėl kitiems
+pirmiausia reikia užpildyti padalinį SharePoint.
+
+<ChangelogNote version="v3.21" date="2026-10-26" title="Dokumentus galima tvarkyti pagal instituciją">
+
+Organai padalinio viduje, pvz., Revizijos komisija, tvarko tik savo institucijos failus, o ne visus
+centrinės VU SA dokumentus.
+
+</ChangelogNote>
 
 **Padalinio dokumentų valdytojas** – atskira rolė. Vien išteklių administratoriaus rolė
 nesuteikia dokumentų valdymo.
@@ -249,9 +263,13 @@ paskelbtas dokumentas nepraranda nuorodos.
 ## Techninė informacija {#technine-informacija}
 
 - Sąrašą ir veiksmus valdo `DocumentController`; `index` leidžia naršyti be valdymo rolės.
-- `documents.create.padalinys` leidžia matyti nepaskelbtus failus ir paleisti `documents.discover`;
-  pavienio atnaujinimo ir paskelbimo apimtį tikrina `DocumentPolicy`. Eilutėms ji perduodama kaip
-  `can.update` (`DocumentRowResource`), archyvo eilutėms – `abilities.updateTenantShortnames`.
+- `documents.create.padalinys` arba `documents.create.own` leidžia matyti nepaskelbtus failus ir
+  paleisti `documents.discover`; pavienio atnaujinimo ir paskelbimo apimtį tikrina `DocumentPolicy`.
+  `.own` – failai, kurių `institution_id` sutampa su teisę suteikiančios pareigybės institucija
+  (`Duty::documents()`, `Document::manageableBy()`). Eilutėms ji perduodama kaip `can.update`
+  (`DocumentRowResource`), archyvo eilutėms – `abilities.updateTenantShortnames` ir
+  `abilities.updateInstitutionIds`. Pasirinkus failą be institucijos, `ResolvePickedDocuments`
+  grąžina klaidą `documents`, o ne 403.
 - Paskelbimas ir paslėpimas – tik per `UpdateDocumentStatus`, kuris eilutę skaito iš naujo su
   `lockForUpdate()`; nuorodą saugantis `DocumentSharepointSyncService` laikosi to paties užrakto, todėl
   paslėpimas visada mato atšauktiną leidimą. Posėdžio susiejimas eina per `linkToMeeting()`; su kitu
