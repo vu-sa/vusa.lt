@@ -2,7 +2,7 @@
 doc_status: reviewed
 title: Paskyra ir prieiga
 area: profile
-last_reviewed: 2026-10-26
+last_reviewed: 2026-10-27
 tests:
   - resources/js/Components/Institutions/__tests__/UserActivityRequestHistory.component.test.ts
   - tests/Browser/UserActivityRequestsTest.php
@@ -25,7 +25,7 @@ tests:
 
 Viršutinėje juostoje paspaudus savo nuotrauką arba vardą, atveriamas paskyros meniu.
 Jame pasiekiami punktai **Paskyra**, **Mano rolės ir pareigybės**, **Pranešimų nustatymai**, **Mano veiklos užklausos**,
-**Išvaizda** ir **Pagalba**. Šiais puslapiais gali naudotis kiekvienas prisijungęs narys;
+**Kalba**, **Išvaizda** ir **Pagalba**. Šiais puslapiais gali naudotis kiekvienas prisijungęs narys;
 juose rodomi tavo duomenys.
 
 ## Kaip tai veikia
@@ -79,7 +79,8 @@ Jei skilties trūksta, verta patikrinti pareigų datas bei roles ir kreiptis į 
 
 - **Pranešimų nustatymai**: čia pasirenkamos laiškų ir įrenginio pranešimų parinktys. Jų taisyklės
   aprašytos [Pranešimų pagrinduose](/pagrindai/pranesimai).
-- **Išvaizda**: galima perjungti temą, kalbą arba atverti prieinamumo valdiklius
+- **Kalba**: kalbą galima perjungti tiesiogiai paskyros meniu.
+- **Išvaizda**: galima perjungti temą arba atverti prieinamumo valdiklius
   (plačiau – [Platforma](/pagrindai/platforma#spalvos-zenklai-ir-formos)).
 - **Pagalba**: čia galima atverti gidą, **Parodyk, kaip veikia** turą, **Mano užklausos** arba **Pranešti problemą**.
   Problemos pranešimui pridedamas dabartinis puslapio adresas ir naršyklės kontekstas.

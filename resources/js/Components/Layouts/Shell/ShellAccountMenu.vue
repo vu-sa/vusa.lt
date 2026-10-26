@@ -49,20 +49,12 @@
             <span>{{ $t('shell.account.roles') }}</span>
           </Link>
         </DropdownMenuItem>
-        <SpotlightPopover
-          class="w-full"
-          :title="$t('activity_requests.personal.spotlight_title')"
-          :description="$t('activity_requests.personal.spotlight_body')"
-          :is-dismissed="activityRequestSpotlight.isDismissed.value"
-          @dismiss="activityRequestSpotlight.dismiss()"
-        >
-          <DropdownMenuItem as-child class="gap-3 px-3.5 py-2.5 rounded-none cursor-pointer text-sm font-medium">
-            <Link :href="route('profile.activityRequests')" @click="activityRequestSpotlight.dismiss()">
-              <MailQuestion class="size-4 shrink-0" />
-              <span>{{ $t('activity_requests.personal.title') }}</span>
-            </Link>
-          </DropdownMenuItem>
-        </SpotlightPopover>
+        <DropdownMenuItem as-child class="gap-3 px-3.5 py-2.5 rounded-none cursor-pointer text-sm font-medium">
+          <Link :href="route('profile.activityRequests')">
+            <MailQuestion class="size-4 shrink-0" />
+            <span>{{ $t('activity_requests.personal.title') }}</span>
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuItem as-child class="gap-3 px-3.5 py-2.5 rounded-none cursor-pointer text-sm font-medium">
           <Link :href="route('profile.notifications')" prefetch>
             <Bell class="size-4 shrink-0" />
@@ -75,6 +67,11 @@
 
       <!-- Tools & Preferences -->
       <div class="p-1">
+        <DropdownMenuItem data-slot="language-settings" class="gap-3 px-3.5 py-2.5 rounded-none cursor-pointer text-sm font-medium" @select="changeLocale">
+          <Languages class="size-4 shrink-0" />
+          <span>{{ $t('shell.account.language', { language: page.props.app?.locale === 'en' ? 'Lietuvių' : 'English' }) }}</span>
+        </DropdownMenuItem>
+
         <DropdownMenuSub>
           <DropdownMenuSubTrigger data-slot="appearance-settings-trigger" class="gap-3 px-3.5 py-2.5 rounded-none cursor-pointer text-sm font-medium">
             <Palette class="size-4 shrink-0" />
@@ -85,10 +82,6 @@
               <Sun v-if="isDark" class="size-4 shrink-0" />
               <Moon v-else class="size-4 shrink-0" />
               <span>{{ $t(isDark ? 'shell.account.light' : 'shell.account.dark') }}</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem class="gap-3 px-3.5 py-2 rounded-none cursor-pointer text-sm font-medium" @select="changeLocale">
-              <Languages class="size-4 shrink-0" />
-              <span>{{ $t('shell.account.language', { language: page.props.app?.locale === 'en' ? 'Lietuvių' : 'English' }) }}</span>
             </DropdownMenuItem>
             <DropdownMenuItem data-slot="accessibility-settings-open" class="gap-3 px-3.5 py-2 rounded-none cursor-pointer text-sm font-medium" @select="openAccessibilitySettings">
               <IFluentAccessibility24Regular class="size-4 shrink-0" />
@@ -245,8 +238,6 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
-import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { useLogout } from '@/Composables/useLogout';
 import { useStartFm } from '@/Composables/useStartFm';
 import { useTour } from '@/Composables/useTourProvider';
@@ -290,5 +281,4 @@ function changeLocale(): void {
   const locale = page.props.app?.locale === 'en' ? 'lt' : 'en';
   router.reload({ data: { lang: locale }, onSuccess: () => loadLanguageAsync(locale) });
 }
-const activityRequestSpotlight = useFeatureSpotlight('user-activity-requests-v1');
 </script>

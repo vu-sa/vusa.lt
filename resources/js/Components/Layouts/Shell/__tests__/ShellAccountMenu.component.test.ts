@@ -6,6 +6,7 @@ import ShellAccountMenu from '../ShellAccountMenu.vue';
 
 import { commonStubs } from '@/tests/stubs';
 import { router } from '@/mocks/inertia.mock';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -49,6 +50,7 @@ describe('ShellAccountMenu', () => {
     expect(links.some(l => l.text().includes('shell.account.roles'))).toBe(true);
     expect(links.some(l => l.attributes('href')?.includes('profile.activityRequests'))).toBe(true);
     expect(links.some(l => l.text().includes('shell.account.notifications'))).toBe(true);
+    expect(wrapper.findComponent(SpotlightPopover).exists()).toBe(false);
   });
 
   it('renders submenu triggers for appearance, help, and about', () => {
@@ -71,9 +73,10 @@ describe('ShellAccountMenu', () => {
 
   it('loads the new language dictionary once the locale reload succeeds', async () => {
     const wrapper = mountMenu();
-    const languageItem = wrapper.findAll('button').find(b => b.text().includes('shell.account.language'));
+    const languageItem = wrapper.get('[data-slot="language-settings"]');
 
-    await languageItem?.trigger('click');
+    expect(languageItem.element.closest('[data-testid="dropdown-menu-sub"]')).toBeNull();
+    await languageItem.trigger('click');
     const options = vi.mocked(router.reload).mock.lastCall?.[0];
     expect(options?.data).toEqual({ lang: 'en' });
 

@@ -63,10 +63,7 @@ const stubs = {
     props: ['modelValue', 'disabled', 'id', 'type'],
     template: '<input :id="id" :type="type" data-testid="input" :disabled="disabled" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
   },
-  Checkbox: {
-    props: ['modelValue', 'disabled', 'id'],
-    template: '<input :id="id" type="checkbox" :checked="modelValue" :disabled="disabled" @change="$emit(\'update:modelValue\', $event.target.checked)" />',
-  },
+  Checkbox: false,
   MultiLocaleInput: {
     props: ['input', 'id'],
     template: '<div :id="id" data-testid="multi-locale-input" />',
