@@ -3,8 +3,9 @@ doc_status: reviewed
 title: Nariai
 area: users
 models: [User]
-last_reviewed: 2026-10-23
+last_reviewed: 2026-10-26
 tests:
+  - tests/Feature/Admin/Management/UserActivityRequestsTest.php
   - resources/js/Components/Public/__tests__/ContactWithPhoto.component.test.ts
   - resources/js/Utils/__tests__/String.test.ts
   - tests/Feature/Search/ContactSearchIndexSyncTest.php
@@ -265,6 +266,12 @@ Sujungus:
 - **Trynimas visam laikui yra blokuojamas**, jei narys sistemoje yra palikęs komentarų, patikrinimų
   posėdžiuose (`check_ins`) arba pranešęs problemų. Tai apsaugo nuo susijusių duomenų praradimo
   ir duomenų bazės ryšių klaidų.
+
+### Veiklos užklausos {#veiklos-uzklausos}
+
+Nario puslapio skiltis **Veiklos užklausos** rodo jam gautas užklausas apie tas institucijas, kurių veiklos gali klausti. Padalinio studentų atstovų ir komunikacijos koordinatoriai mato savo administruojamų institucijų užklausas, o Centrinio biuro atitinkami koordinatoriai – visų padalinių. Institucijai studentų atstovų koordinavimo atsakomybę turintis narys mato tos institucijos užklausas, jei gali atverti nario puslapį. Vien nario profilio skaitymo prieigos nepakanka.
+
+Jei narys dirba keliuose padaliniuose, kito padalinio užklausos savaime neatskleidžiamos. Skiltis nerodoma, kai nėra matomų užklausų. Koordinatorius mato būsenas ir rezultatus; atsakyti kito gavėjo vardu negalima. Savo gautas užklausas kiekvienas narys pasiekia per [Mano veiklos užklausas](/mano/paskyra-ir-prieiga#veiklos-uzklausos).
 
 ## Kas ką gali {#teises}
 

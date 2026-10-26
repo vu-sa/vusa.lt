@@ -49,6 +49,20 @@
             <span>{{ $t('shell.account.roles') }}</span>
           </Link>
         </DropdownMenuItem>
+        <SpotlightPopover
+          class="w-full"
+          :title="$t('activity_requests.personal.spotlight_title')"
+          :description="$t('activity_requests.personal.spotlight_body')"
+          :is-dismissed="activityRequestSpotlight.isDismissed.value"
+          @dismiss="activityRequestSpotlight.dismiss()"
+        >
+          <DropdownMenuItem as-child class="gap-3 px-3.5 py-2.5 rounded-none cursor-pointer text-sm font-medium">
+            <Link :href="route('profile.activityRequests')" @click="activityRequestSpotlight.dismiss()">
+              <MailQuestion class="size-4 shrink-0" />
+              <span>{{ $t('activity_requests.personal.title') }}</span>
+            </Link>
+          </DropdownMenuItem>
+        </SpotlightPopover>
         <DropdownMenuItem as-child class="gap-3 px-3.5 py-2.5 rounded-none cursor-pointer text-sm font-medium">
           <Link :href="route('profile.notifications')" prefetch>
             <Bell class="size-4 shrink-0" />
@@ -192,6 +206,7 @@ import { Link, router, usePage } from '@inertiajs/vue3';
 import { loadLanguageAsync, trans as $t } from 'laravel-vue-i18n';
 import { useDark } from '@vueuse/core';
 import {
+  MailQuestion,
   ArrowUpRight,
   Bell,
   BookOpen,
@@ -230,6 +245,8 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { useLogout } from '@/Composables/useLogout';
 import { useStartFm } from '@/Composables/useStartFm';
 import { useTour } from '@/Composables/useTourProvider';
@@ -273,4 +290,5 @@ function changeLocale(): void {
   const locale = page.props.app?.locale === 'en' ? 'lt' : 'en';
   router.reload({ data: { lang: locale }, onSuccess: () => loadLanguageAsync(locale) });
 }
+const activityRequestSpotlight = useFeatureSpotlight('user-activity-requests-v1');
 </script>

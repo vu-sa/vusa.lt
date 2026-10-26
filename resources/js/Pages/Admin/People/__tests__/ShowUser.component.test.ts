@@ -93,6 +93,11 @@ const createWrapper = (overrides: Record<string, unknown> = {}, can: Record<stri
 const tabs = (wrapper: ReturnType<typeof mount>) => wrapper.find('[data-testid="tabs"]').text();
 
 describe('ShowUser.vue', () => {
+  it('shows the activity request tab only with its per-record capability', () => {
+    expect(tabs(createWrapper({}, { ...fullCan, viewActivityRequests: true }))).toContain('activityRequests:');
+    expect(tabs(createWrapper({}, { ...fullCan, viewActivityRequests: false }))).not.toContain('activityRequests:');
+  });
+
   it('keeps ended assignments from inactive institutions in the previous duties group', () => {
     const ended = makeDuty({
       institution: { id: 'inactive', name: 'Neaktyvi institucija', is_active: false },

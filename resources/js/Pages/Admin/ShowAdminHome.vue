@@ -13,6 +13,8 @@
           :more-href="route('tasks.index')"
         />
 
+        <MyActivityRequests v-if="activeActivityRequests" :requests="activeActivityRequests" />
+
         <Deferred v-if="hasAtstovavimas" :data="deferredProps">
           <template #fallback>
             <CollectionSkeleton :rows="3" />
@@ -72,6 +74,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { computed, onMounted } from 'vue';
 import type { DriveStep } from 'driver.js';
 
+import MyActivityRequests, { type ActiveActivityRequests } from '@/Components/Home/MyActivityRequests.vue';
 import AttentionQueue from '@/Components/Home/AttentionQueue.vue';
 import CreateShortcuts from '@/Components/Home/CreateShortcuts.vue';
 import QuickAccess from '@/Components/Home/QuickAccess.vue';
@@ -110,6 +113,7 @@ interface TaskStats {
 
 // The first response carries the queue and upcoming meetings; the rest arrives as one deferred group.
 const props = defineProps<{
+  activeActivityRequests: ActiveActivityRequests;
   accessChanges: HomeAccessChange[];
   /** Set when the URL asked for the ActionWindow (a reminder's answer buttons, U21). */
   actionWindowLaunch: { flow: 'meeting.create' | 'check-in'; institution: ActionWindowInstitutionRef } | null;
@@ -141,6 +145,7 @@ const hasAtstovavimas = computed(() => Boolean(
 
 const hasPrimaryContent = computed(() => Boolean(
   visibleTasks.value.length
+  || props.activeActivityRequests?.total
   || props.reservationDraft
   || (hasAtstovavimas.value && (props.institutionsNeedingAttention === undefined || props.institutionsNeedingAttention.length > 0)),
 ));

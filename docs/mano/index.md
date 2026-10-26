@@ -2,8 +2,9 @@
 doc_status: reviewed
 title: Mano
 area: dashboard
-last_reviewed: 2026-10-08
+last_reviewed: 2026-10-26
 tests:
+  - tests/Feature/Admin/Management/UserActivityRequestsTest.php
   - resources/js/Pages/Admin/__tests__/ShowAdminHome.component.test.ts
   - resources/js/Components/Home/__tests__/SiteContentLists.component.test.ts
   - tests/Browser/AdminPublicLinksTest.php
@@ -56,6 +57,10 @@ Pirmą kartą Pradžios turas parodo svarbiausias vietas. Jį vėl galima paleis
 **Pagalba → Parodyk, kaip veikia**, jei puslapis turi turą. Pareigos ir prieigos pokyčių
 istorija pateikiama puslapyje [Paskyra ir prieiga](/mano/paskyra-ir-prieiga), o gauti pranešimai –
 [Pranešimų puslapyje](/mano/pranesimai).
+
+### Laukia tavo atsakymo {#veiklos-uzklausos}
+
+Po užduotimis rodomos iki trijų tau gautų galiojančių neatsakytų veiklos užklausų, pirmiausia tos, kurių terminas baigsis greičiausiai. **Atsakyti** atveria atsakymo puslapį, o nuoroda **Visos veiklos užklausos** – [visą tavo istoriją](/mano/paskyra-ir-prieiga#veiklos-uzklausos). Atsakytos, užbaigtos ir pasibaigusios užklausos Pradžioje neberodomos, bet lieka asmeninėje istorijoje.
 
 ## Techninė informacija {#technine-informacija}
 

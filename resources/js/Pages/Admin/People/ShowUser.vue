@@ -116,6 +116,15 @@
       </OverviewSection>
     </template>
 
+    <template #activityRequests>
+      <Deferred data="activityRequests">
+        <template #fallback>
+          <CollectionSkeleton :rows="3" />
+        </template>
+        <UserActivityRequestHistory v-if="activityRequests" :key="user.id" :history="activityRequests" />
+      </Deferred>
+    </template>
+
     <template #tasks>
       <TaskManager
         :tasks
@@ -189,16 +198,17 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref } from 'vue';
-import { router, usePage } from '@inertiajs/vue3';
+import { Deferred, router, usePage } from '@inertiajs/vue3';
 import { useClipboard } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Briefcase, CalendarClock, CalendarRange, Copy, Edit3, History, KeyRound, Plus, Shield, Trash2 } from '@lucide/vue';
 
+import UserActivityRequestHistory, { type UserActivityRequestHistory as RequestHistory } from '@/Components/Institutions/UserActivityRequestHistory.vue';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import RecordPage, { type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import type { ActionDescriptor } from '@/Components/Layouts/RecordPageAction.vue';
 import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
-import { ConfirmDialog, EmptyState, FormToggleRow, OverviewSection } from '@/Components/Patterns';
+import { CollectionSkeleton, ConfirmDialog, EmptyState, FormToggleRow, OverviewSection } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
@@ -245,7 +255,8 @@ const props = defineProps<{
   }>;
   taskStats: { total: number; completed: number; pending: number; overdue: number; autoCompleting: number };
   /** From the controller, not `auth.can`: the flat map holds index/create/forceDelete only. */
-  can?: { update: boolean; delete?: boolean; updateSuperAdmin?: boolean; managePasswords?: boolean };
+  activityRequests?: RequestHistory;
+  can?: { viewActivityRequests?: boolean; update: boolean; delete?: boolean; updateSuperAdmin?: boolean; managePasswords?: boolean };
   isSuperAdmin?: boolean;
   /** Deferred (`userPanels`): the Priskirti sheet's options, sent only to someone who may act on it. */
   assignment?: { studyPrograms: (App.Entities.StudyProgram & { tenant_id?: number | null })[] } | null;
@@ -297,6 +308,7 @@ const tabs = computed<RecordPageSection[]>(() => [
   { value: 'duties', label: $t('Pareigos'), count: allDuties.value.length },
   ...(showAccessSection.value ? [{ value: 'access', label: $t('users.access.title') }] : []),
   // `pending`, not `total`: a finished task is not something the reader still has to act on.
+  ...(props.can?.viewActivityRequests ? [{ value: 'activityRequests', label: $t('activity_requests.personal.record_title') }] : []),
   { value: 'tasks', label: $t('Užduotys'), count: props.taskStats.pending },
 ]);
 

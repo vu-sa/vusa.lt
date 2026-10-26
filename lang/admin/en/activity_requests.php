@@ -1,6 +1,18 @@
 <?php
 
 return [
+    'personal' => [
+        'title' => 'My activity requests',
+        'record_title' => 'Activity requests',
+        'active_title' => 'Waiting for your answer',
+        'answer' => 'Answer',
+        'view_all' => 'All activity requests (:count)',
+        'empty_title' => 'No activity requests',
+        'empty_description' => 'Questions you receive about institution activity and their response statuses will appear here.',
+        'unavailable_institution' => 'Institution is no longer available',
+        'spotlight_title' => 'Received activity requests',
+        'spotlight_body' => 'View your activity requests and their statuses. You can answer requests that are still open here.',
+    ],
     'recent_check_in' => 'Check-in recently ended',
     'check_in_ended' => 'No meetings were reported through :date',
     'recent_check_in_spotlight_title' => 'Ask after a check-in ends',

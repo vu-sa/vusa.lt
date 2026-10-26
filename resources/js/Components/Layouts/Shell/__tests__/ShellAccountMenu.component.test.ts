@@ -47,6 +47,7 @@ describe('ShellAccountMenu', () => {
 
     expect(links.some(l => l.attributes('href')?.includes('/profile') || l.text().includes('shell.chrome.account'))).toBe(true);
     expect(links.some(l => l.text().includes('shell.account.roles'))).toBe(true);
+    expect(links.some(l => l.attributes('href')?.includes('profile.activityRequests'))).toBe(true);
     expect(links.some(l => l.text().includes('shell.account.notifications'))).toBe(true);
   });
 

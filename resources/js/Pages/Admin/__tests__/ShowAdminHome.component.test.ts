@@ -24,6 +24,7 @@ vi.mock('@/Composables/useApi', () => ({
 
 // The bands are tested on their own; here only what the page decides matters.
 const stubs = {
+  MyActivityRequests: { name: 'MyActivityRequests', props: ['requests'], template: '<div v-if="requests.total" data-testid="active-requests" />' },
   AttentionQueue: true,
   CreateShortcuts: true,
   QuickAccess: true,
@@ -35,6 +36,8 @@ const stubs = {
 };
 
 const baseProps = {
+  activeActivityRequests: { total: 0, data: [] },
+  upcomingMeetingsTotal: 0,
   accessChanges: [],
   actionWindowLaunch: null,
   taskStats: { total: 0, overdue: 0, dueSoon: 0 },
@@ -58,6 +61,14 @@ beforeEach(() => {
 });
 
 describe('ShowAdminHome', () => {
+  it('keeps own pending requests in the primary section even without representation access', () => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({ auth: { can: { create: { meeting: false } } } }) as ReturnType<typeof usePage>);
+    const wrapper = mountPage({ activeActivityRequests: { total: 1, data: [] } });
+    const primary = wrapper.get('[data-slot="home-primary-section"]');
+    expect(primary.find('[data-testid="active-requests"]').exists()).toBe(true);
+    expect(primary.find('quick-access-stub').exists()).toBe(false);
+  });
+
   it('places institutions beside quick actions and destinations in a full row below', () => {
     const wrapper = mountPage({
       upcomingMeetings: [{ id: '1', title: 'Meeting' }],

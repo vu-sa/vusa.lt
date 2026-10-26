@@ -2,8 +2,11 @@
 doc_status: reviewed
 title: Paskyra ir prieiga
 area: profile
-last_reviewed: 2026-10-18
+last_reviewed: 2026-10-26
 tests:
+  - resources/js/Components/Institutions/__tests__/UserActivityRequestHistory.component.test.ts
+  - tests/Browser/UserActivityRequestsTest.php
+  - tests/Feature/Admin/Management/UserActivityRequestsTest.php
   - tests/Feature/Profile/ProfileControllerTest.php
   - tests/Feature/Profile/PasswordTest.php
   - tests/Feature/Admin/Core/ProfileRolesTest.php
@@ -21,7 +24,7 @@ tests:
 # Paskyra ir prieiga
 
 Viršutinėje juostoje paspaudus savo nuotrauką arba vardą, atveriamas paskyros meniu.
-Jame pasiekiami punktai **Paskyra**, **Mano rolės ir pareigybės**, **Pranešimų nustatymai**,
+Jame pasiekiami punktai **Paskyra**, **Mano rolės ir pareigybės**, **Pranešimų nustatymai**, **Mano veiklos užklausos**,
 **Išvaizda** ir **Pagalba**. Šiais puslapiais gali naudotis kiekvienas prisijungęs narys;
 juose rodomi tavo duomenys.
 
@@ -118,6 +121,16 @@ užveriamas, išskyrus XL teksto dydį, kai paliekama mobilioji navigacija.
 **Atsijungti** užbaigia Mano VU SA sesiją. **Atsijungti nuo Microsoft** papildomai pradeda
 „Microsoft“ atsijungimą. Bendrame kompiuteryje rekomenduojama rinktis ir „Microsoft“ atsijungimą;
 vien naršyklės užvėrimas nėra patikimas atsijungimo veiksmas.
+
+### Mano veiklos užklausos {#veiklos-uzklausos}
+
+<ChangelogNote version="v3.24" date="2026-10-26" title="Veiklos užklausos paskyros meniu ir Pradžioje">
+Gautas veiklos užklausas ir jų būsenas galima peržiūrėti paskyros meniu, o laukiančias atsakymo – Pradžioje.
+</ChangelogNote>
+
+Paskyros meniu **Mano veiklos užklausos** (`/mano/profile/activity-requests`) rodo tau gautas užklausas apie institucijų veiklą ir posėdžių įrašų papildymą. Matoma institucija, laikotarpis, siuntėjas arba automatinis šaltinis, žinutė ir būsena: **Laukiame atsakymo**, **Atsakyta**, **Veikla patvirtinta** arba **Galiojimas baigėsi**. Pirmos rodomos neatsakytos galiojančios užklausos, tada naujausia istorija; **Rodyti daugiau** įkelia kitus įrašus.
+
+Prie galiojančios neatsakytos užklausos **Atsakyti** atveria tą patį atsakymo puslapį kaip laiško nuoroda. Atsakymas išsaugomas tik jį patvirtinus. Užklausų istorija išlieka ir pasibaigus pareigoms; papildomų administravimo teisių jai nereikia. Kolegų atsakymai gali užbaigti užklausą – rodoma užbaigimo priežastis ir užfiksuoti rezultatai.
 
 ## Kas ką gali {#teises}
 
