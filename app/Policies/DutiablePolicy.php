@@ -2,7 +2,9 @@
 
 namespace App\Policies;
 
+use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
+use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
@@ -36,5 +38,14 @@ class DutiablePolicy extends ModelPolicy
             : null;
 
         return app(DutyPolicy::class)->managePeople($user, $duty, $targetUser);
+    }
+
+    /**
+     * Whether the user may decide which padalinys quota a seat on this duty counts toward.
+     * Checked against the duty, not a seat, so it also answers before the seat exists.
+     */
+    public function assignQuota(User $user, Duty $duty): bool
+    {
+        return $this->commonChecker($user, $duty, CRUDEnum::UPDATE->label(), $this->pluralModelName);
     }
 }

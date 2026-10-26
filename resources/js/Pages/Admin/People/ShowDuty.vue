@@ -72,6 +72,7 @@
                 :key="`${user.id}-${user.pivot?.id}`"
                 :user
                 :can-manage="canAssignMembers"
+                :quota-tenant-name="user.pivot?.tenant?.shortname"
                 @edit="openAssignSheet(user.pivot, user)"
                 @end="endTenureTarget = user"
               />
@@ -91,6 +92,7 @@
                 :key="`${user.id}-${user.pivot?.id}`"
                 :user
                 :can-manage="canAssignMembers"
+                :quota-tenant-name="user.pivot?.tenant?.shortname"
                 @edit="openAssignSheet(user.pivot, user)"
               />
             </div>
@@ -110,6 +112,7 @@
               :key="`${user.id}-${user.pivot?.id}`"
               :user
               :can-manage="canAssignMembers"
+              :quota-tenant-name="user.pivot?.tenant?.shortname"
               :duty-name="formerNameDuring(user.pivot)"
               @edit="openAssignSheet(user.pivot, user)"
             />
@@ -278,6 +281,8 @@
     :user="selectedUserForSheet"
     :study-programs="studyPrograms ?? []"
     :existing-terms
+    :quota-tenants="quotaTenants ?? []"
+    :can-assign-quota="can?.assignQuota ?? false"
   />
 
   <SheetForm
@@ -361,7 +366,7 @@ import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 import { activityStatuses, type StatusPresentation } from '@/Constants/statuses';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
 import { DutiableTimelineDialog } from '@/Features/Admin/DutiableTimeline';
-import { AssignDutyUserSheet, DutySearchField, MemberTermRow, dutyNameOn, termStatus, type DutyHit, type FormerDutyName } from '@/Features/Admin/Occupancy';
+import { AssignDutyUserSheet, DutySearchField, MemberTermRow, dutyNameOn, termStatus, type DutyHit, type FormerDutyName, type QuotaTenant } from '@/Features/Admin/Occupancy';
 import DutyResponsibilitiesSection from '@/Features/Admin/Responsibilities/DutyResponsibilitiesSection.vue';
 import type { DutyResponsibilitiesPayload, DutyResponsibilityOptions } from '@/Features/Admin/Responsibilities/types';
 import { FileableFilesPanel, type FileableFileItem } from '@/Components/Files';
@@ -394,13 +399,15 @@ const props = defineProps<{
     is_active?: boolean;
     former_names?: FormerDutyName[];
   };
-  can?: { update: boolean; managePeople: boolean };
+  can?: { update: boolean; managePeople: boolean; assignQuota?: boolean };
   /** Deferred (`dutyPanels`): only the About tab needs siblings. */
   otherDuties?: App.Entities.Duty[];
   /** Deferred (`dutyPanels`): only the assignment sheet's picker needs them. */
   studyPrograms?: App.Entities.StudyProgram[];
   /** Deferred (`dutyPanels`): predecessor/successor links and the predecessors' holders. */
   lineage?: DutyLineage;
+  /** Deferred (`dutyPanels`): padaliniai the duty offers seats to, for the sheet and the delegated chip. */
+  quotaTenants?: QuotaTenant[];
   /** Deferred (`dutyPanels`): what the duty must handle, beside its roles. */
   responsibilities?: DutyResponsibilitiesPayload;
   /** Optional: only the add-responsibility sheet needs these. */
@@ -430,6 +437,7 @@ const holdersWhere = (wanted: ReturnType<typeof termStatus>) => {
     !!user.pivot && termStatus(user.pivot, today) === wanted);
 };
 
+// Ordered by the server, the same way as the public contacts page.
 const currentHolders = computed(() => holdersWhere('current'));
 const upcomingHolders = computed(() => holdersWhere('upcoming'));
 const termDay = (value?: string | null) => String(value ?? '').slice(0, 10);

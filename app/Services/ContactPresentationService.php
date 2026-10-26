@@ -91,10 +91,26 @@ class ContactPresentationService
             return $duty->current_users;
         }
 
-        $fallback = $this->fallbackGroupName();
+        return $this->sortHolders($duty, $duty->current_users);
+    }
 
-        return $duty->current_users->sortBy([
-            fn (User $a, User $b) => $this->groupSortKey($a, $duty, $fallback) <=> $this->groupSortKey($b, $duty, $fallback),
+    /**
+     * Holders by their `contacts_grouping` group (ungrouped last), then by name; an ungrouped
+     * duty sorts by name alone. Shared with the admin duty record so both list people alike.
+     *
+     * @param  Collection<int, User>  $holders  with pivots
+     * @return Collection<int, User>
+     */
+    public function sortHolders(Duty $duty, Collection $holders): Collection
+    {
+        new EloquentCollection($holders->pluck('pivot')->filter()->all())
+            ->loadMissing(['tenant:id,shortname', 'study_program:id,name']);
+
+        $fallback = $this->fallbackGroupName();
+        $grouping = $duty->contacts_grouping ?? 'none';
+
+        return $holders->sortBy([
+            fn (User $a, User $b) => $this->groupSortKey($a, $grouping, $duty, $fallback) <=> $this->groupSortKey($b, $grouping, $duty, $fallback),
             fn (User $a, User $b) => strnatcasecmp((string) $a->name, (string) $b->name),
         ])->values();
     }
@@ -102,9 +118,9 @@ class ContactPresentationService
     /**
      * @return array{0: bool, 1: string}
      */
-    private function groupSortKey(User $user, Duty $duty, string $fallback): array
+    private function groupSortKey(User $user, string $grouping, Duty $duty, string $fallback): array
     {
-        $key = $this->getGroupKey($user->pivot, $duty->contacts_grouping, $duty);
+        $key = $this->getGroupKey($user->pivot, $grouping, $duty);
 
         return [$key === $fallback, mb_strtolower($key)];
     }

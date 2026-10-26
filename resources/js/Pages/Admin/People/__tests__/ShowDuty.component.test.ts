@@ -195,6 +195,22 @@ describe('ShowDuty.vue', () => {
     expect(names.map(text => text.split(/\s/)[0])).toEqual(['Naujausias', 'Vidurinis', 'Seniausias']);
   });
 
+  it('keeps the server order of current members and names a delegated seat\'s padalinys', () => {
+    const wrapper = mountPage({
+      duty: {
+        ...baseDuty,
+        users: [
+          holder('z', 'Žydrūnas Narys', { start_date: '2026-01-01', tenant_id: 4, tenant: { id: 4, shortname: 'FSF' } }),
+          holder('a', 'Agnė Narė', { start_date: '2026-01-01' }),
+        ],
+      },
+    });
+    const rows = wrapper.findAll('[data-slot="member-term-row"]');
+
+    expect(rows.map(row => row.text().split(/\s/)[0])).toEqual(['Žydrūnas', 'Agnė']);
+    expect(rows[0].text()).toContain('Deleguota · FSF');
+  });
+
   it('splits members into current, upcoming and history by term', () => {
     const wrapper = mountPage({
       duty: {

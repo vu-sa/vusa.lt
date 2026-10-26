@@ -112,6 +112,28 @@
         </div>
       </div>
 
+      <div v-if="showQuotaTenant" class="space-y-1.5" data-testid="assign-quota-tenant">
+        <Label for="assign-quota-tenant" class="text-sm font-medium">
+          {{ $t('Kieno kvotai skaičiuojama') }}
+        </Label>
+        <NativeSelect
+          id="assign-quota-tenant"
+          v-model="form.tenant_id"
+          :options="quotaTenantOptions"
+          :placeholder="$t('Pareigybės padalinio vieta (ne kvota)')"
+          :placeholder-value="null"
+          placeholder-selectable
+          :disabled="isExOfficio"
+          :error="!!form.errors.tenant_id"
+        />
+        <p class="text-xs text-muted-foreground">
+          {{ $t('Deleguota vieta skaičiuojama pasirinkto padalinio kvotai.') }}
+        </p>
+        <p v-if="form.errors.tenant_id" class="text-xs text-destructive">
+          {{ form.errors.tenant_id }}
+        </p>
+      </div>
+
       <details :open="extrasOpen" class="group border-t border-border pt-4" data-testid="assign-extras" @toggle="onExtrasToggle">
         <summary class="u-touch flex cursor-pointer select-none items-center justify-between text-sm font-semibold text-foreground">
           <span>{{ $t('Papildomi nustatymai') }}</span>
@@ -382,6 +404,14 @@ interface CadenceOption {
   is_current: boolean;
 }
 
+/** A padalinys the duty offers seats to, with its current count. */
+export interface QuotaTenant {
+  id: number;
+  shortname: string;
+  quota: number | null;
+  occupied: number;
+}
+
 /** A term already on the duty, to tell who holds it during the chosen dates. */
 export interface ExistingTerm {
   user_id: string;
@@ -411,6 +441,9 @@ const props = withDefaults(defineProps<{
   takenIds?: string[];
   /** Every term on the duty, so only people holding it during the chosen dates are blocked. */
   existingTerms?: ExistingTerm[] | null;
+  /** Padaliniai the seat may count toward; the picker shows only with `canAssignQuota`. */
+  quotaTenants?: QuotaTenant[];
+  canAssignQuota?: boolean;
 }>(), {
   duty: null,
   dutiable: null,
@@ -418,6 +451,8 @@ const props = withDefaults(defineProps<{
   studyPrograms: () => [],
   takenIds: () => [],
   existingTerms: null,
+  quotaTenants: () => [],
+  canAssignQuota: false,
 });
 
 const emit = defineEmits<{
@@ -475,6 +510,13 @@ const availableStudyPrograms = computed(() => {
 
   return props.studyPrograms.filter(program => program.tenant_id === tenantId);
 });
+// Hidden when the duty is picked in the sheet: its padaliniai are not known there.
+const showQuotaTenant = computed(() => props.canAssignQuota && !pickDuty.value && props.quotaTenants.length > 0);
+const quotaTenantOptions = computed<NativeSelectOption[]>(() => props.quotaTenants.map(tenant => ({
+  value: tenant.id,
+  label: tenant.quota === null ? tenant.shortname : `${tenant.shortname} · ${tenant.occupied}/${tenant.quota}`,
+})));
+
 const saveLabel = computed(() => (isEditing.value ? $t('Išsaugoti') : $t('Priskirti')));
 
 // A programme only means something on a curator's term; one already set is never hidden.
@@ -509,6 +551,7 @@ const initialValues = () => ({
   study_program_note: asNote(props.dutiable?.study_program_note),
   description: asDescription(props.dutiable?.description),
   use_original_duty_name: Boolean(props.dutiable?.use_original_duty_name),
+  tenant_id: (props.dutiable?.tenant_id ?? null) as number | null,
   new_user: null as { name: string; email: string | null } | null,
   acknowledge_access_change: false,
 });
@@ -736,9 +779,10 @@ const submit = () => {
     form.acknowledge_access_change = acknowledge;
 
     const options = { preserveScroll: true, onSuccess: finish };
-    const payload = form.transform(({ new_user: newUser, ...data }) => ({
+    const payload = form.transform(({ new_user: newUser, tenant_id: tenantId, ...data }) => ({
       ...data,
       ...(newUser ? { new_user: newUser } : {}),
+      ...(showQuotaTenant.value && !isExOfficio.value ? { tenant_id: tenantId } : {}),
       description: hasText(data.description) ? data.description : null,
       study_program_note: hasText(data.study_program_note) ? data.study_program_note : null,
     }));

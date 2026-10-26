@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\HasImageValidation;
+use App\Http\Requests\Concerns\ValidatesQuotaTenant;
 use App\Models\Pivots\Dutiable;
 use App\Rules\SoftDeleteRules;
 use Carbon\Carbon;
@@ -12,6 +13,7 @@ use Illuminate\Foundation\Http\FormRequest;
 class UpdateDutiableRequest extends FormRequest
 {
     use HasImageValidation;
+    use ValidatesQuotaTenant;
 
     /**
      * Determine if the user is authorized to make this request.
@@ -59,6 +61,7 @@ class UpdateDutiableRequest extends FormRequest
             'additional_email' => 'nullable|email',
             ...$this->imageMediaRules('photo_media', $this->route('dutiable') instanceof Dutiable ? $this->route('dutiable') : new Dutiable, 'photo'),
             'use_original_duty_name' => 'nullable|boolean',
+            'tenant_id' => $this->quotaTenantRules($this->route('dutiable')?->duty),
         ];
     }
 }

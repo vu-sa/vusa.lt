@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\HasImageValidation;
+use App\Http\Requests\Concerns\ValidatesQuotaTenant;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
@@ -19,6 +20,7 @@ use Illuminate\Validation\Validator;
 class StoreDutiableRequest extends FormRequest
 {
     use HasImageValidation;
+    use ValidatesQuotaTenant;
 
     /**
      * Determine if the user is authorized to make this request.
@@ -92,6 +94,7 @@ class StoreDutiableRequest extends FormRequest
             'description.lt' => ['nullable', 'string'],
             'description.en' => ['nullable', 'string'],
             'use_original_duty_name' => ['nullable', 'boolean'],
+            'tenant_id' => $this->quotaTenantRules($this->duty()),
         ];
     }
 
@@ -113,13 +116,17 @@ class StoreDutiableRequest extends FormRequest
     }
 
     /**
-     * The tenant a cross-tenant admin assigns the member *for*, or null when the
-     * actor owns the duty (an ordinary seat). Delegated seats must carry the
-     * tenant, otherwise the owning tenant's next duty save reads them as its own.
+     * The tenant a cross-tenant admin assigns the member *for* (or the one an `assignQuota` holder
+     * chose), or null for an ordinary seat. Delegated seats must carry the tenant, otherwise the
+     * owning tenant's next duty save reads them as its own.
      */
     public function delegatedTenantId(): ?int
     {
         $duty = $this->duty();
+
+        if ($this->choosesQuotaTenant()) {
+            return $this->filled('tenant_id') ? (int) $this->input('tenant_id') : null;
+        }
 
         if ($duty === null || $this->user()->can('update', $duty)) {
             return null;
@@ -141,9 +148,14 @@ class StoreDutiableRequest extends FormRequest
         return $tenantId === null ? null : (int) $tenantId;
     }
 
+    private function choosesQuotaTenant(): bool
+    {
+        return $this->has('tenant_id') && $this->canAssignQuota($this->duty());
+    }
+
     private function duty(): ?Duty
     {
-        return Duty::query()->find($this->input('duty_id'));
+        return once(fn () => Duty::query()->find($this->input('duty_id')));
     }
 
     private function overlapsExistingTerm(): bool
@@ -164,6 +176,11 @@ class StoreDutiableRequest extends FormRequest
 
     private function validateTenantQuota(Validator $validator): void
     {
+        // Whoever picks the quota by hand may knowingly go over it, e.g. during a handover.
+        if ($this->choosesQuotaTenant()) {
+            return;
+        }
+
         $tenantId = $this->delegatedTenantId();
 
         // A term that already ended occupies no seat today.

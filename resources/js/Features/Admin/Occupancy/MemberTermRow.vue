@@ -11,7 +11,7 @@
             {{ user.name }}
           </Link>
           <span v-if="user.pivot?.via_dutiable_id" :class="chipClass">{{ $t('Ex-officio') }}</span>
-          <span v-if="user.pivot?.tenant_id" :class="chipClass">{{ $t('Deleguota') }}</span>
+          <span v-if="user.pivot?.tenant_id" :class="chipClass">{{ quotaTenantName ? `${$t('Deleguota')} · ${quotaTenantName}` : $t('Deleguota') }}</span>
         </div>
         <p v-if="user.pivot?.additional_email || user.email" class="truncate text-xs text-muted-foreground">
           {{ user.pivot?.additional_email || user.email }}
@@ -57,6 +57,8 @@ const props = defineProps<{
   canManage: boolean;
   /** The duty's name during this term, when it differs from today's (a former name or a predecessor). */
   dutyName?: string | null;
+  /** The padalinys whose quota a delegated seat counts toward. */
+  quotaTenantName?: string | null;
 }>();
 
 const emit = defineEmits<{

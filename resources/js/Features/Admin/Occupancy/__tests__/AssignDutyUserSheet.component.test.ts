@@ -319,6 +319,33 @@ describe('AssignDutyUserSheet.vue', () => {
       expect(vi.mocked(form.patch).mock.calls[0][0]).toContain('/mocked-route/dutiables.update');
     });
 
+    describe('quota padalinys', () => {
+      const quotaTenants = [{ id: 3, shortname: 'VU SA MIF', quota: 3, occupied: 2 }];
+      const submittedPayload = async (wrapper: ReturnType<typeof mount>) => {
+        const form = lastForm();
+        await wrapper.find('form').trigger('submit');
+        const transform = vi.mocked(form.transform).mock.calls[0][0] as (data: Record<string, unknown>) => Record<string, unknown>;
+
+        return transform({ ...form.data() });
+      };
+
+      it('is offered only to those who may assign quotas', () => {
+        expect(mountSheet({ dutiable, duty: null, quotaTenants }).find('[data-testid="assign-quota-tenant"]').exists()).toBe(false);
+
+        const wrapper = mountSheet({ dutiable: { ...dutiable, tenant_id: 3 }, duty: null, quotaTenants, canAssignQuota: true });
+
+        expect(wrapper.find('[data-testid="assign-quota-tenant"]').text()).toContain('VU SA MIF · 2/3');
+        expect(lastForm().tenant_id).toBe(3);
+      });
+
+      it('sends the chosen padalinys only when the picker is shown', async () => {
+        expect(await submittedPayload(mountSheet({ dutiable, duty: null, quotaTenants, canAssignQuota: true }))).toHaveProperty('tenant_id', null);
+
+        vi.mocked(useForm).mockClear();
+        expect(await submittedPayload(mountSheet({ dutiable, duty: null, quotaTenants }))).not.toHaveProperty('tenant_id');
+      });
+    });
+
     it('asks before ending the term, then ends it today (Vilnius date)', async () => {
       const wrapper = mountSheet({ dutiable, duty: null });
       const form = lastForm();

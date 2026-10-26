@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Pareigybės
 area: duties
 models: [Duty, Role, Tenant, Type, Institution, ResponsibilityGrant]
-last_reviewed: 2026-10-25
+last_reviewed: 2026-10-26
 tests:
   - resources/js/Components/AdminForms/__tests__/DutyForm.component.test.ts
   - resources/js/Pages/Admin/People/__tests__/ShowDuty.component.test.ts
@@ -158,6 +158,24 @@ Tokioms pareigybėms naudojamas **padalinių kvotų mechanizmas**:
   paskirti savo fakulteto studentą, neviršydamas skirtos kvotos.
 - Fakulteto administratorius negali keisti pačios pareigybės pavadinimo ar kitų padalinių atstovų,
   tačiau gali valdyti savo deleguotus narius.
+
+Kurio padalinio kvotai skaičiuojama konkreti vieta, galima pakeisti **Priskirti** lange, lauke
+**Kieno kvotai skaičiuojama**. Laukas rodomas tik turintiems teisę redaguoti pareigybių laikotarpius
+pareigybės padalinyje (Superadministratoriui – visur). Pasirinkus „Pareigybės padalinio vieta (ne
+kvota)“, vieta priklauso pačios pareigybės padaliniui.
+
+- Pasirinkus jau užpildytą kvotą, laikotarpis vis tiek išsaugomas, o kvota rodoma viršyta (pvz., 4/3).
+  Fakulteto koordinatoriams pilna kvota ir toliau neleidžia pridėti naujo nario.
+- Jei narys nepriklauso pasirinktam padaliniui, išsaugant parodomas įspėjimas: to padalinio
+  administratoriai šios vietos redaguoti negalės.
+- Prie deleguoto nario rodoma žyma **Deleguota** su padalinio pavadinimu.
+
+<ChangelogNote version="v3.20" date="2026-10-26" title="Kvotos pasirinkimas laikotarpyje">
+
+Anksčiau vietą prie padalinio kvotos susiedavo tik pats fakulteto koordinatorius, paskirdamas narį.
+Dabar ją galima nustatyti ar pataisyti ir redaguojant laikotarpį.
+
+</ChangelogNote>
 
 ### Ex officio pareigos {#ex-officio}
 

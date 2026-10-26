@@ -812,3 +812,137 @@ test('saving the duty without a member list keeps its current members', function
 
     expect($dutiable->fresh()->end_date)->toBeNull();
 });
+
+describe('choosing the quota padalinys of a seat', function (): void {
+    beforeEach(function (): void {
+        Role::findByName('Komunikacijos koordinatorius', 'web')->givePermissionTo('dutiables.update.padalinys');
+
+        $this->member = makeUser($this->assignableTenant);
+        $this->seat = Dutiable::factory()->create([
+            'duty_id' => $this->duty->id,
+            'dutiable_id' => $this->member->id,
+            'dutiable_type' => MorphMap::alias(User::class),
+            'tenant_id' => null,
+            'start_date' => now()->subMonth()->toDateString(),
+            'end_date' => null,
+        ]);
+    });
+
+    test('the duty record lists its quota padaliniai with current seats once the panels load', function (): void {
+        $this->seat->update(['tenant_id' => $this->assignableTenant->id]);
+
+        asUserWithInertia($this->owningAdmin)->get(route('duties.show', $this->duty))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('can.assignQuota', true)
+                ->missing('quotaTenants')
+                ->loadDeferredProps('dutyPanels', fn ($panels) => $panels
+                    ->where('quotaTenants', [[
+                        'id' => $this->assignableTenant->id,
+                        'shortname' => $this->assignableTenant->shortname,
+                        'quota' => 2,
+                        'occupied' => 1,
+                    ]])));
+    });
+
+    test('the duty record lists holders grouped by padalinys when the duty groups contacts that way', function (): void {
+        $this->duty->update(['contacts_grouping' => 'tenant']);
+        $this->member->update(['name' => 'Zigmas Delegatas']);
+        $this->seat->update(['tenant_id' => $this->assignableTenant->id]);
+        $ownSeatHolder = makeUser($this->owningTenant);
+        $ownSeatHolder->update(['name' => 'Agnė Sava']);
+        $this->duty->users()->attach($ownSeatHolder->id, ['start_date' => now()->subMonth()->toDateString()]);
+
+        $expected = strnatcasecmp($this->assignableTenant->shortname, $this->owningTenant->shortname) < 0
+            ? ['Zigmas Delegatas', 'Agnė Sava']
+            : ['Agnė Sava', 'Zigmas Delegatas'];
+
+        asUserWithInertia($this->owningAdmin)->get(route('duties.show', $this->duty))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('duty.users', fn ($users) => collect($users)->pluck('name')->all() === $expected)
+                ->where('duty.users', fn ($users) => collect($users)->firstWhere('name', 'Zigmas Delegatas')['pivot']['tenant']['shortname'] === $this->assignableTenant->shortname));
+    });
+
+    test('a dutiables.update holder can move a seat into a quota and back', function (): void {
+        asUser($this->owningAdmin)->patch(route('dutiables.update', $this->seat), ['tenant_id' => $this->assignableTenant->id])
+            ->assertSessionHasNoErrors();
+        expect($this->seat->fresh()->tenant_id)->toBe($this->assignableTenant->id);
+
+        asUser($this->owningAdmin)->patch(route('dutiables.update', $this->seat), ['tenant_id' => null])
+            ->assertSessionHasNoErrors();
+        expect($this->seat->fresh()->tenant_id)->toBeNull();
+    });
+
+    test('a dutiables.update holder may assign past a full quota', function (): void {
+        $this->duty->assignableTenants()->updateExistingPivot($this->assignableTenant->id, ['quota' => 1]);
+        Dutiable::factory()->create([
+            'duty_id' => $this->duty->id,
+            'dutiable_id' => makeUser($this->assignableTenant)->id,
+            'dutiable_type' => MorphMap::alias(User::class),
+            'tenant_id' => $this->assignableTenant->id,
+            'start_date' => now()->subMonth()->toDateString(),
+        ]);
+        $newcomer = makeUser($this->assignableTenant);
+
+        asUser($this->owningAdmin)->post(route('dutiables.store'), [
+            'duty_id' => $this->duty->id,
+            'user_id' => $newcomer->id,
+            'tenant_id' => $this->assignableTenant->id,
+        ])->assertSessionHasNoErrors();
+
+        expect(Dutiable::where('duty_id', $this->duty->id)->where('dutiable_id', $newcomer->id)->value('tenant_id'))->toBe($this->assignableTenant->id);
+    });
+
+    test('a cross-tenant admin still cannot assign past a full quota', function (): void {
+        $this->duty->assignableTenants()->updateExistingPivot($this->assignableTenant->id, ['quota' => 1]);
+        $this->seat->update(['tenant_id' => $this->assignableTenant->id]);
+
+        asUser($this->crossAdmin)->post(route('dutiables.store'), [
+            'duty_id' => $this->duty->id,
+            'user_id' => $this->tenantUser->id,
+        ])->assertSessionHasErrors('user_id');
+    });
+
+    test('managing people without dutiables.update cannot choose the quota', function (): void {
+        $dutyOnlyRole = Role::create(['name' => 'Pareigybių tvarkytojas', 'guard_name' => 'web']);
+        $dutyOnlyRole->givePermissionTo(['duties.read.padalinys', 'duties.update.padalinys']);
+        $dutyOnlyAdmin = makeUser($this->owningTenant);
+        $dutyOnlyAdmin->duties()->first()->assignRole($dutyOnlyRole);
+
+        asUser($dutyOnlyAdmin)->patch(route('dutiables.update', $this->seat), ['tenant_id' => $this->assignableTenant->id])
+            ->assertSessionHasErrors('tenant_id');
+        expect($this->seat->fresh()->tenant_id)->toBeNull();
+    });
+
+    test('a cross-tenant admin cannot choose the quota', function (): void {
+        asUser($this->crossAdmin)->patch(route('dutiables.update', $this->seat), ['tenant_id' => $this->assignableTenant->id])
+            ->assertSessionHasErrors('tenant_id');
+    });
+
+    test('only padaliniai the duty offers seats to can be chosen', function (): void {
+        $other = Tenant::query()->whereNotIn('id', [$this->owningTenant->id, $this->assignableTenant->id])->firstOrFail();
+
+        asUser($this->owningAdmin)->patch(route('dutiables.update', $this->seat), ['tenant_id' => $other->id])
+            ->assertSessionHasErrors('tenant_id');
+    });
+
+    test('counting a seat toward a padalinys its member is not in warns without blocking', function (): void {
+        $outsider = makeUser($this->owningTenant);
+        $this->seat->update(['dutiable_id' => $outsider->id]);
+
+        asUser($this->owningAdmin)->patch(route('dutiables.update', $this->seat), ['tenant_id' => $this->assignableTenant->id])
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('toast_description');
+        expect($this->seat->fresh()->tenant_id)->toBe($this->assignableTenant->id);
+    });
+
+    test('an ex-officio seat keeps the padalinys of its source', function (): void {
+        $source = Dutiable::factory()->create(['dutiable_id' => $this->member->id, 'dutiable_type' => MorphMap::alias(User::class)]);
+        $this->seat->update(['via_dutiable_id' => $source->id]);
+
+        asUser($this->owningAdmin)->patch(route('dutiables.update', $this->seat), ['tenant_id' => $this->assignableTenant->id])
+            ->assertSessionHasNoErrors();
+        expect($this->seat->fresh()->tenant_id)->toBeNull();
+    });
+});

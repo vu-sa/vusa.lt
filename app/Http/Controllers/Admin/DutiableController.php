@@ -8,6 +8,7 @@ use App\Http\Requests\StoreDutiableRequest;
 use App\Http\Requests\UpdateDutiableRequest;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
+use App\Models\Tenant;
 use App\Models\User;
 use App\Support\MorphMap;
 use Illuminate\Http\RedirectResponse;
@@ -69,7 +70,7 @@ class DutiableController extends AdminController
             $syncImage->fromValidated($dutiable, 'photo', $request->validated(), 'photo_media', $request->user());
         });
 
-        return back()->with('success', $this->entityMessage('created', 'dutiable'));
+        return $this->savedResponse('created', $duty, $tenantId, $request->validated('user_id'));
     }
 
     /**
@@ -98,7 +99,7 @@ class DutiableController extends AdminController
         // Derived (ex-officio) rows have their dates mirrored from the source;
         // do not allow manual overrides.
         if (! is_null($dutiable->via_dutiable_id)) {
-            unset($data['start_date'], $data['end_date']);
+            unset($data['start_date'], $data['end_date'], $data['tenant_id']);
         }
 
         $mutation = function () use ($dutiable, $data, $request): void {
@@ -112,7 +113,26 @@ class DutiableController extends AdminController
             return $warning;
         }
 
-        return back()->with('success', $this->entityMessage('updated', 'dutiable'));
+        return $this->savedResponse('updated', $dutiable->duty, $dutiable->tenant_id, $dutiable->dutiable_id);
+    }
+
+    /**
+     * Warns, without blocking, when a seat counts toward a padalinys its member does not belong to:
+     * that padalinys's admins cannot edit it (DutyPolicy::managePeople checks membership).
+     */
+    private function savedResponse(string $action, Duty $duty, ?int $tenantId, ?string $userId): RedirectResponse
+    {
+        $response = back()->with('success', $this->entityMessage($action, 'dutiable'));
+        $member = $tenantId !== null && $userId !== null ? User::query()->find($userId) : null;
+
+        if ($member === null || $member->tenants()->where('tenants.id', $tenantId)->exists()) {
+            return $response;
+        }
+
+        return $response->with('toast_description', __('dutiables.assign.quota_tenant_not_member', [
+            'name' => $member->name,
+            'tenant' => Tenant::query()->whereKey($tenantId)->value('shortname') ?? (string) $tenantId,
+        ]));
     }
 
     /**
