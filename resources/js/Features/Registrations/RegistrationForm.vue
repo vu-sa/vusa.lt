@@ -1,7 +1,7 @@
 <template>
-  <form class="space-y-6" novalidate @submit.prevent="submit">
-    <div v-if="Object.keys(form.errors).length" ref="errorSummary" tabindex="-1" role="alert" class="space-y-2 border border-destructive p-4">
-      <p v-for="(message, key) in form.errors" :key class="text-sm text-destructive">
+  <form ref="formElement" class="space-y-6" novalidate @submit.prevent="submit">
+    <div v-if="Object.keys(unmappedErrors).length" ref="errorSummary" data-testid="registration-errors" tabindex="-1" role="alert" class="space-y-2 border border-destructive p-4">
+      <p v-for="(message, key) in unmappedErrors" :key class="text-sm text-destructive">
         {{ message }}
       </p>
     </div>
@@ -47,7 +47,14 @@ const values: Record<string, { value: RegistrationValue }> = Object.fromEntries(
 const form = useForm({ responses: values })
   .transform(({ responses }) => ({ data: responses }))
   .withPrecognition('post', props.submitUrl).setValidationTimeout(500);
+const formElement = ref<HTMLFormElement | null>(null);
 const errorSummary = ref<HTMLElement | null>(null);
+const unmappedErrors = computed(() => {
+  const visibleKeys = new Set(props.form.form_fields
+    .filter(field => !props.prefilledValues?.[field.id]?.hidden)
+    .flatMap(field => [`data.${field.id}`, `data.${field.id}.value`]));
+  return Object.fromEntries(Object.entries(form.errors).filter(([key]) => !visibleKeys.has(key)));
+});
 const pendingVisit = shallowRef<PendingVisit | null>(null);
 let submitting = false;
 let allowNextVisit = false;
@@ -64,8 +71,9 @@ async function validateField(id: string | number) {
 
 async function focusErrors() {
   await nextTick();
-  errorSummary.value?.focus();
-  errorSummary.value?.scrollIntoView({ block: 'nearest' });
+  const target = errorSummary.value ?? formElement.value?.querySelector<HTMLElement>('[aria-invalid="true"]');
+  target?.focus();
+  target?.scrollIntoView({ block: 'nearest' });
 }
 
 function submit() {

@@ -1,64 +1,53 @@
 <template>
-  <button
-    type="button"
-    role="checkbox"
-    :aria-checked="modelValue"
+  <label
+    :for="controlId"
     :class="cn(
-      'flex w-full items-center justify-between gap-4 px-4 py-3.5 text-left transition-colors',
-      'hover:bg-secondary/60 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
+      'flex w-full cursor-pointer items-center justify-between gap-4 px-4 py-3.5 text-left transition-colors',
+      'hover:bg-secondary/60 has-[:focus-visible]:outline-2 has-[:focus-visible]:-outline-offset-2 has-[:focus-visible]:outline-ring',
       props.class,
     )"
     data-slot="check-control"
-    @click="modelValue = !modelValue"
   >
-    <!-- `font-medium`, not the default weight: every other label in this menu carries weight
-         (the section headings are `font-semibold`), and a regular-weight row read as secondary
-         to the control beside it. -->
     <span class="text-sm font-medium text-foreground">
       <slot>{{ label }}</slot>
     </span>
 
-    <span
-      :class="cn(
-        'flex shrink-0 items-center justify-center transition-colors',
-        size === 'sm' ? 'size-4.5 border' : 'size-7 border-2',
-        modelValue ? 'border-brand-fill bg-brand-fill text-brand-foreground' : 'border-border',
-      )"
-      aria-hidden="true"
+    <Checkbox
+      :id="controlId"
+      v-bind="$attrs"
+      :model-value
+      :size="size === 'sm' ? 'md' : 'lg'"
+      class="border-border bg-transparent"
+      @update:model-value="modelValue = $event === true"
     >
-      <IFluentCheckmark24Filled v-if="modelValue" :class="size === 'sm' ? 'size-3.5' : 'size-5'" />
-    </span>
-  </button>
+      <IFluentCheckmark24Filled />
+    </Checkbox>
+  </label>
 </template>
 
 <script setup lang="ts">
-import type { HTMLAttributes } from 'vue';
+import { computed, useId, type HTMLAttributes } from 'vue';
 
 import IFluentCheckmark24Filled from '~icons/fluent/checkmark-24-filled';
+import { Checkbox } from '@/Components/ui/checkbox';
 import { cn } from '@/Utils/Shadcn/utils';
 
-/**
- * A labelled on/off control for the public surface: a full-width row with a big square
- * checkmark box.
- *
- * **Use this instead of `ui/switch` anywhere on the public site.** A switch is a pill — it is
- * built from `rounded-full`, which is a literal and therefore survives the public surface's
- * zeroed radius scale, so it renders as the one soft shape on an otherwise cornery page. The
- * box is also a larger, more obvious hit target, and reads as on/off without relying on the
- * position of a thumb.
- *
- * The whole row is the control (not just the box) so the label is clickable, which is why this
- * is a `button` with `role="checkbox"` rather than a `label` + `input` pair.
- */
+/** Use this square, full-row control instead of a pill switch on the public surface. */
+defineOptions({ inheritAttrs: false });
+
 const props = withDefaults(defineProps<{
+  id?: string;
   label?: string;
   class?: HTMLAttributes['class'];
   size?: 'default' | 'sm';
 }>(), {
+  id: undefined,
   label: undefined,
   class: undefined,
   size: 'default',
 });
 
 const modelValue = defineModel<boolean>({ default: false });
+const generatedId = useId();
+const controlId = computed(() => props.id ?? generatedId);
 </script>

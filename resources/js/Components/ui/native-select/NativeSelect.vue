@@ -15,13 +15,14 @@
     <select
       v-bind="$attrs"
       :id
-      v-model="model"
+      v-model="selectValue"
       :disabled
       :required
       :aria-label
       :aria-invalid="!!error"
       :class="cn(
-        'w-full appearance-none border border-border bg-secondary/50 text-foreground transition-colors',
+        'w-full appearance-none border border-border bg-secondary/50 transition-colors',
+        showingPlaceholder ? 'text-muted-foreground' : 'text-foreground',
         'focus:border-brand focus:bg-background focus:outline-none focus:ring-2 focus:ring-brand/20',
         'disabled:cursor-not-allowed disabled:opacity-50',
         size === 'sm'
@@ -33,7 +34,7 @@
       @blur="emit('blur', $event)"
       @change="emit('change', $event)"
     >
-      <option v-if="placeholder" :value="placeholderValue" :disabled="!placeholderSelectable">
+      <option v-if="placeholder" :value="placeholderValue ?? ''" :disabled="!placeholderSelectable" class="text-muted-foreground">
         {{ placeholder }}
       </option>
       <slot>
@@ -42,6 +43,7 @@
           :key="String(opt.value)"
           :value="opt.value"
           :disabled="opt.disabled"
+          class="text-foreground"
         >
           {{ opt.label }}
         </option>
@@ -60,6 +62,7 @@
 
 <script setup lang="ts">
 import type { Component, HTMLAttributes } from 'vue';
+import { computed } from 'vue';
 import { ChevronDown } from '@lucide/vue';
 
 import { cn } from '@/Utils/Shadcn/utils';
@@ -105,4 +108,16 @@ const emit = defineEmits<{
 }>();
 
 const model = defineModel<string | number | null | undefined>();
+
+const showingPlaceholder = computed(() => Boolean(props.placeholder)
+  && (model.value == null || model.value === props.placeholderValue));
+
+const selectValue = computed({
+  get: () => model.value ?? props.placeholderValue ?? '',
+  set: (value: string | number) => {
+    model.value = props.placeholder && value === (props.placeholderValue ?? '')
+      ? props.placeholderValue
+      : value;
+  },
+});
 </script>

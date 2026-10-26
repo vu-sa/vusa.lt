@@ -1,5 +1,8 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
-import { nextTick, reactive } from 'vue';
+import { effectScope, nextTick, reactive, ref } from 'vue';
+import { toast } from 'vue-sonner';
+
+import { useToasts } from '../useToasts';
 
 // Mock vue-sonner first
 vi.mock('vue-sonner', () => ({
@@ -9,8 +12,6 @@ vi.mock('vue-sonner', () => ({
     info: vi.fn(),
   },
 }));
-
-import { toast } from 'vue-sonner';
 
 const mockToast = vi.mocked(toast);
 
@@ -32,11 +33,10 @@ vi.mock('@inertiajs/vue3', () => ({
   usePage: () => ({ props: mockPageProps }),
 }));
 
-// Import after mocks are set up
-import { useToasts } from '../useToasts';
-
 describe('useToasts', () => {
+  let scope: ReturnType<typeof effectScope>;
   beforeEach(() => {
+    scope = effectScope();
     vi.clearAllMocks();
     // Reset flash messages and errors
     mockPageProps.flash.success = null;
@@ -47,6 +47,7 @@ describe('useToasts', () => {
   });
 
   afterEach(() => {
+    scope.stop();
     vi.clearAllTimers();
   });
 
@@ -95,7 +96,7 @@ describe('useToasts', () => {
   describe('flash message watching', () => {
     test('displays flash messages and nullifies them', async () => {
       const { initializeToasts } = useToasts();
-      initializeToasts();
+      scope.run(() => initializeToasts());
       await nextTick();
 
       // Test success flash
@@ -119,11 +120,27 @@ describe('useToasts', () => {
   });
 
   describe('validation error watching', () => {
+    test('can suppress inline validation toasts while keeping flash feedback', async () => {
+      const enabled = ref(false);
+      const { initializeToasts } = useToasts();
+      scope.run(() => initializeToasts({ validationErrors: () => enabled.value }));
+      mockPageProps.errors = { email: 'Required' };
+      await nextTick();
+      expect(mockToast.error).not.toHaveBeenCalled();
+      mockPageProps.flash = { success: 'Saved', error: null, info: null };
+      await nextTick();
+      expect(mockToast.success).toHaveBeenCalledWith('Saved');
+      enabled.value = true;
+      mockPageProps.errors = { email: 'Invalid' };
+      await nextTick();
+      expect(mockToast.error).toHaveBeenCalledWith('email: Invalid');
+    });
+
     test('shows validation errors in local environment', async () => {
       const { initializeToasts } = useToasts();
 
       mockPageProps.app.env = 'local';
-      initializeToasts();
+      scope.run(() => initializeToasts());
       await nextTick();
       vi.clearAllMocks();
 

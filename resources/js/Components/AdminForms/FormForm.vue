@@ -153,6 +153,7 @@
           variant="outline"
           :disabled="hasRegistrations"
           class="u-touch"
+          data-testid="add-form-field"
           @click="handleNewFormFieldCreate"
         >
           <Plus class="mr-1.5 size-4" />
@@ -239,7 +240,7 @@
     </template>
 
     <Sheet v-model:open="showFormFieldModal">
-      <SheetContent class="flex w-full flex-col overflow-y-auto sm:max-w-xl">
+      <SheetContent class="flex w-full flex-col overflow-y-auto p-6 sm:max-w-xl" data-testid="form-field-sheet">
         <SheetHeader>
           <SheetTitle>{{ $t('forms.sections.form_field') }}</SheetTitle>
           <SheetDescription class="sr-only">

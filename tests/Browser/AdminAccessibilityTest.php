@@ -21,7 +21,7 @@ it('applies reader preferences from the admin appearance menu', function (): voi
     $page->click('[aria-label="Padidinti teksto dydį"]');
     expect((float) $page->script('getComputedStyle(document.documentElement).fontSize'))->toBeGreaterThan($initialSize);
 
-    $page->click('[data-slot="accessibility-settings"] [data-preference="contrast"]');
+    $page->click('[data-slot="accessibility-settings"] label:has([data-preference="contrast"])');
     expect($page->script('getComputedStyle(document.documentElement).getPropertyValue("--border")'))->not->toBe($initialBorder);
 
     $page->click('[data-slot="accessibility-settings"] [data-preference="underline-links"]');

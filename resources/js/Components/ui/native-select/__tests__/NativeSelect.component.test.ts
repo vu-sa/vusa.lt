@@ -72,6 +72,35 @@ describe('NativeSelect.vue', () => {
     expect(wrapper.find('select').classes()).toContain('pl-9');
   });
 
+  it.each(['', null, undefined])('styles an empty selection as a placeholder (%s)', async (modelValue) => {
+    const wrapper = mount(NativeSelect, {
+      props: { options, placeholder: 'Pasirinkti', modelValue },
+    });
+
+    expect(wrapper.get('select').classes()).toContain('text-muted-foreground');
+    await wrapper.setProps({ modelValue: 1 });
+    expect(wrapper.get('select').classes()).toContain('text-foreground');
+    expect(wrapper.get('select').classes()).not.toContain('text-muted-foreground');
+  });
+
+  it('uses an empty native value for a nullable placeholder and preserves numeric zero', async () => {
+    const wrapper = mount(NativeSelect, {
+      props: {
+        options: [{ value: 0, label: 'Zero' }], placeholder: 'Pasirinkti',
+        placeholderValue: null, placeholderSelectable: true, modelValue: null, required: true,
+      },
+    });
+
+    expect(wrapper.get('select').element.value).toBe('');
+    expect(wrapper.get('select').element.validity.valueMissing).toBe(true);
+    await wrapper.get('select').setValue('0');
+    expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([0]);
+    await wrapper.setProps({ modelValue: 0 });
+    expect(wrapper.get('select').classes()).toContain('text-foreground');
+    await wrapper.get('select').setValue('');
+    expect(wrapper.emitted('update:modelValue')?.[1]).toEqual([null]);
+  });
+
   it('applies compact size classes when size is sm', () => {
     const wrapper = mount(NativeSelect, {
       props: {

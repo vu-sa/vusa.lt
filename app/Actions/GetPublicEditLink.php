@@ -3,6 +3,7 @@
 namespace App\Actions;
 
 use App\Models\Calendar;
+use App\Models\Form;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\News;
@@ -24,14 +25,12 @@ class GetPublicEditLink
         Page::class => 'pages.edit',
         News::class => 'news.edit',
         Calendar::class => 'calendar.edit',
+        Form::class => 'forms.edit',
         Institution::class => 'institutions.edit',
         Meeting::class => 'meetings.edit',
     ];
 
-    /**
-     * @return array{url: string, type: string, id: int}|null Null when there is no editable
-     *                                                        record or the user may not edit it.
-     */
+    /** @return array{url: string, type: string, id: int|string}|null */
     public static function execute(Model $model): ?array
     {
         $user = Auth::user();

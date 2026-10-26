@@ -4,10 +4,8 @@ import { router as coreRouter } from '@inertiajs/core';
 import { router, useForm, usePage, type InertiaPrecognitiveForm } from '@inertiajs/vue3';
 
 import RegistrationForm from '../RegistrationForm.vue';
-import RegistrationField from '../RegistrationField.vue';
 import type { RegistrationFieldDefinition, RegistrationValue } from '../types';
 
-import { Select } from '@/Components/ui/select';
 import { commonStubs } from '@/tests/stubs';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
@@ -49,6 +47,18 @@ afterEach(() => {
 });
 
 describe('registration fields', () => {
+  it('places each checkbox beside its associated label in a shared row', () => {
+    const wrapper = createWrapper();
+    const checkbox = wrapper.get('#registration-field-7');
+    const row = checkbox.element.parentElement!;
+
+    expect(row.classList.contains('flex')).toBe(true);
+    expect(row.classList.contains('items-center')).toBe(true);
+    expect(row.querySelector('label')?.getAttribute('for')).toBe('registration-field-7');
+    expect(row.textContent).toContain('Sutinku');
+    expect(wrapper.find('input#registration-field-7').exists()).toBe(false);
+  });
+
   it('keeps numeric and false defaults and renders labels, descriptions and placeholders', () => {
     const wrapper = createWrapper();
     expect(form.responses['5'].value).toBe(0);
@@ -69,10 +79,21 @@ describe('registration fields', () => {
 
   it('validates the updated option value rather than its duplicate label', async () => {
     const wrapper = createWrapper();
-    wrapper.findComponent(RegistrationField).findComponent(Select).vm.$emit('update:modelValue', 2);
+    await wrapper.get('select#registration-field-4').setValue('2');
     await flushPromises();
     expect(form.responses['4'].value).toBe(2);
     expect(validate).toHaveBeenCalledWith('data.4.value', 2);
+  });
+
+  it('clears optional native selections without changing numeric option values', async () => {
+    const wrapper = createWrapper({}, [{ ...fields[0], is_required: false }]);
+    const select = wrapper.get('select#registration-field-4');
+    await select.setValue('0');
+    expect(form.responses['4'].value).toBe(0);
+    await select.setValue('');
+    await flushPromises();
+    expect(form.responses['4'].value).toBeNull();
+    expect(validate).toHaveBeenLastCalledWith('data.4.value', null);
   });
 
   it('validates typed values on blur and keeps dates independent of time zones', async () => {
@@ -93,6 +114,28 @@ describe('registration fields', () => {
     expect(wrapper.find('#registration-field-6').attributes('aria-invalid')).toBe('true');
     expect(wrapper.find('#registration-field-6').attributes('aria-describedby')).toContain('registration-field-6-error');
     expect(wrapper.find('#registration-field-6-error').text()).toBe('Reikia atsakymo');
+    expect(wrapper.find('[data-testid="registration-errors"]').exists()).toBe(false);
+  });
+
+  it('keeps errors for hidden fields and the whole form visible', async () => {
+    const wrapper = createWrapper({ prefilledValues: { 4: { value: 0, hidden: true } } });
+    form.setErrors({ 'data.4.value': 'Pasirinkimas nebegalioja', 'data': 'Patikrink atsakymus', 'data.6.value': 'Reikia atsakymo' });
+    await flushPromises();
+    const summary = wrapper.get('[data-testid="registration-errors"]');
+    expect(summary.text()).toContain('Pasirinkimas nebegalioja');
+    expect(summary.text()).toContain('Patikrink atsakymus');
+    expect(summary.text()).not.toContain('Reikia atsakymo');
+  });
+
+  it('focuses the first invalid field after an unsuccessful submission', async () => {
+    const wrapper = createWrapper();
+    const post = vi.spyOn(coreRouter, 'post').mockImplementation(() => {});
+    const input = wrapper.get('#registration-field-6').element as HTMLInputElement;
+    input.scrollIntoView = vi.fn();
+    await wrapper.find('form').trigger('submit');
+    await post.mock.calls[0][2]!.onError?.({ 'data.6.value': 'Reikia atsakymo' });
+    expect(document.activeElement).toBe(input);
+    expect(input.scrollIntoView).toHaveBeenCalledWith({ block: 'nearest' });
   });
 });
 

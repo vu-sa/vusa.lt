@@ -5,6 +5,7 @@ use App\Enums\InstitutionScope;
 use App\Models\Calendar;
 use App\Models\Content;
 use App\Models\ContentPart;
+use App\Models\Form;
 use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\Meeting;
@@ -66,6 +67,39 @@ function editLinkMeetingUrl(Meeting $meeting): string
         'meeting' => $meeting->id,
     ]);
 }
+
+describe('registration forms', function (): void {
+    beforeEach(function (): void {
+        $this->form = Form::factory()->for($this->tenant)->published()->create([
+            'path' => ['lt' => 'edit-link-registration', 'en' => 'edit-link-registration'],
+        ]);
+        $this->registrationUrl = route('registrationPage', [
+            'lang' => 'lt',
+            'registrationString' => 'registracija',
+            'registrationForm' => 'edit-link-registration',
+        ]);
+    });
+
+    test('authorized editors get a link to the form editor', function (): void {
+        asUser($this->editor)->get($this->registrationUrl)
+            ->assertOk()
+            ->assertInertia(fn (Assert $props) => $props
+                ->where('publicEditLink.url', route('forms.edit', $this->form))
+                ->where('publicEditLink.type', 'form')
+                ->where('publicEditLink.id', $this->form->id));
+    });
+
+    test('guests and users without update permission get no edit link', function (string $actor): void {
+        if ($actor === 'member') {
+            $this->actingAs($this->plainUser);
+        } elseif ($actor === 'other tenant') {
+            $this->actingAs(makeTenantUserWithRole('Komunikacijos koordinatorius', Tenant::factory()->create(['type' => 'padalinys'])));
+        }
+
+        $this->get($this->registrationUrl)->assertOk()
+            ->assertInertia(fn (Assert $props) => $props->where('publicEditLink', null));
+    })->with(['guest', 'member', 'other tenant']);
+});
 
 describe('content pages', function (): void {
     test('guests get no edit link', function (): void {

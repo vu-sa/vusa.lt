@@ -8,9 +8,11 @@ tests:
   - tests/Feature/Admin/Forms/FormControllerTest.php
   - tests/Feature/Admin/Forms/FormAccessTest.php
   - tests/Feature/Forms/StudentRepRegistrationTest.php
+  - tests/Feature/Public/PublicEditLinkTest.php
   - tests/Feature/Forms/RegistrationSecurityTest.php
   - tests/Feature/Forms/RegistrationValidationTest.php
   - tests/Browser/PublicRegistrationTest.php
+  - tests/Browser/RegistrationFieldEditorTest.php
   - tests/Browser/ImageInsertionTest.php
   - tests/Feature/Forms/RegistrationWorkflowTest.php
   - tests/Feature/Forms/SendMemberRegistrationNotificationTest.php
@@ -18,6 +20,8 @@ tests:
   - tests/Feature/Forms/MemberRegistrationNotificationMailTest.php
   - tests/Feature/Api/Admin/FormApiControllerTest.php
   - resources/js/Components/AdminForms/__tests__/FormForm.component.test.ts
+  - resources/js/Components/AdminForms/__tests__/FormFieldForm.component.test.ts
+  - resources/js/Components/ui/checkbox/__tests__/Checkbox.component.test.ts
   - resources/js/Features/Registrations/__tests__/RegistrationForm.component.test.ts
 ---
 
@@ -53,6 +57,9 @@ Kiekviena forma susideda iš:
 
 ### Formos laukai {#laukai}
 
+Klausimas kuriamas ir redaguojamas šoniniame skydelyje. Jo tipą, potipį ir parinkčių duomenų šaltinį
+gali pasirinkti naršyklės sąrašuose.
+
 Formoje galima laisvai sudaryti klausimų seką. Palaikomi laukų tipai:
 
 | Laukas | Paskirtis | Galimi potipiai |
@@ -73,14 +80,24 @@ Laukams su tipu `enum` galima įjungti **modelio parinktis** (`use_model_options
 - **Padaliniai (`Tenant`)**: pasirinkimo sąrašas automatiškai užpildomas visais VU SA padaliniais.
 - **Institucijos (`Institution`)**: sąrašas automatiškai užpildomas universiteto valdymo organais ir komisijomis.
 
+Viešoje anketoje naudotojui, turinčiam teisę redaguoti tą formą, rodomas pranešimas
+„Gali redaguoti šį puslapį“. Jo mygtukas „Redaguoti“ atveria formos redaktorių naujame skirtuke.
+
 ### Atsakymų pildymas ir tikrinimas {#atsakymu-tikrinimas}
 
+Pasirinkimo laukai naudoja naršyklės sąrašą. Kol nepasirinktas atsakymas, jame blankesniu tekstu
+rodomas pagalbinis tekstas „Pasirinkti“ arba klausimui nustatytas tekstas. Jis nėra atsakymas;
+neprivalomame lauke prie jo galima grįžti ir taip išvalyti pasirinkimą.
+
 Viešoje anketoje atsakymas tikrinamas baigus pildyti lauką arba pakeitus pasirinkimą.
-Klaida rodoma prie klausimo; pateikus anketą visi atsakymai patikrinami dar kartą.
+Klaida rodoma prie klausimo, nekartojant jos virš anketos. Pateikus anketą visi atsakymai patikrinami dar kartą;
+jei yra klaidų, dėmesys perkeliamas prie pirmo neteisingai užpildyto lauko.
+Bendros klaidos ir klaidos paslėptuose atsakymuose rodomos virš anketos.
 Jei pateikti nepavyksta, įrašyti atsakymai išlieka ir juos galima pataisyti bei pateikti pakartotinai.
 
-Skaitiniame lauke `0` yra galiojantis atsakymas. Privalomą sutikimo varnelę reikia pažymėti;
-neprivalomą galima palikti nepažymėtą. Paslėptas iš anksto parinktas atsakymas taip pat tikrinamas.
+Skaitiniame lauke `0` yra galiojantis atsakymas. Varnelė rodoma šalia klausimo pavadinimo; paspaudus pavadinimą ji pažymima arba atžymima. Privalomą sutikimo varnelę reikia pažymėti;
+neprivalomą galima palikti nepažymėtą. Pažymėjimą rodo varnelė ir užpildytas langelio fonas.
+Paslėptas iš anksto parinktas atsakymas taip pat tikrinamas.
 Po sėkmingo pateikimo atsakymai lieka matomi, o išeinant neberodomas įspėjimas apie neišsaugotus pakeitimus.
 
 Anketos ar klausimo aprašyme paveikslėlį galima įterpti per redaktoriaus įterpimo meniu.

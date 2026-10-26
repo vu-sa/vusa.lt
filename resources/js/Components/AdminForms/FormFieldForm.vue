@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-4">
     <FormFieldWrapper id="label" :label="$t('forms.fields.name')" required>
-      <MultiLocaleInput v-model:input="model.label" />
+      <MultiLocaleInput v-model:input="model.label" data-testid="form-field-label" />
     </FormFieldWrapper>
 
     <MultiLocaleTiptapFormItem
@@ -10,29 +10,12 @@
     />
 
     <FormFieldWrapper id="type" :label="$t('Tipas')" required>
-      <Select v-model="model.type" :disabled="hasRegistrations">
-        <SelectTrigger>
-          <SelectValue :placeholder="$t('Pasirink tipą')" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem v-for="opt in options" :key="opt.value" :value="opt.value">
-            {{ opt.label }}
-          </SelectItem>
-        </SelectContent>
-      </Select>
+      <NativeSelect id="type" v-model="model.type" :options :disabled="hasRegistrations" :placeholder="$t('Pasirink tipą')" />
     </FormFieldWrapper>
 
     <FormFieldWrapper v-if="subtypeOptions.length > 0" id="subtype" :label="$t('Subtipas')">
-      <Select v-model="model.subtype" :disabled="hasRegistrations">
-        <SelectTrigger>
-          <SelectValue :placeholder="$t('Pasirink subtipą')" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem v-for="opt in subtypeOptions" :key="opt.value" :value="opt.value">
-            {{ opt.label }}
-          </SelectItem>
-        </SelectContent>
-      </Select>
+      <NativeSelect id="subtype" v-model="model.subtype" :options="subtypeOptions" :disabled="hasRegistrations"
+        :placeholder="$t('Pasirink subtipą')" :placeholder-value="null" placeholder-selectable />
     </FormFieldWrapper>
 
     <template v-if="model.type === 'enum'">
@@ -77,16 +60,8 @@
               <Switch v-model="model.use_model_options" />
             </FormFieldWrapper>
             <FormFieldWrapper id="option_source" :label="$t('Duomenų šaltinis')">
-              <Select v-model="model.option_source" :disabled="!model.use_model_options">
-                <SelectTrigger>
-                  <SelectValue :placeholder="$t('Pasirink modelį')" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem v-for="opt in fieldModels" :key="opt.value" :value="opt.value">
-                    {{ opt.label }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              <NativeSelect id="option_source" v-model="model.option_source" :options="fieldModels" :disabled="!model.use_model_options"
+                :placeholder="$t('Pasirink modelį')" :placeholder-value="null" placeholder-selectable />
             </FormFieldWrapper>
           </div>
         </CollapsibleContent>
@@ -128,7 +103,7 @@ import { Button } from '@/Components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
 import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
 import { Input } from '@/Components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { NativeSelect } from '@/Components/ui/native-select';
 import { Switch } from '@/Components/ui/switch';
 
 const props = defineProps<{

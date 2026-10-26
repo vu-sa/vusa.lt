@@ -24,6 +24,8 @@ class PublicRegistrationController extends PublicController
             abort(404);
         }
 
+        $this->sharePublicEditLink($form);
+
         $otherLocale = app()->getLocale() === 'lt' ? 'en' : 'lt';
 
         Inertia::share('otherLangURL', LocalizedRouteSlugs::route('registrationPage', [

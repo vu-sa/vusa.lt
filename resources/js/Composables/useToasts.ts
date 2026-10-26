@@ -20,7 +20,7 @@ export function useToasts() {
     recentToasts.add(key);
 
     // Build toast options
-    const toastOptions: any = {};
+    const toastOptions: { duration?: number; description?: string } = {};
     if (options?.duration) {
       toastOptions.duration = options.duration;
     }
@@ -78,8 +78,9 @@ export function useToasts() {
   /**
    * Watch validation errors
    */
-  const watchValidationErrors = () => {
+  const watchValidationErrors = (shouldShow: () => boolean) => {
     watch(() => usePage().props.errors, (errors) => {
+      if (!shouldShow()) return;
       if (errors) {
         Object.entries(errors).forEach(([key, value]) => {
           showToast('error', `${key}: ${value}`);
@@ -91,9 +92,9 @@ export function useToasts() {
   /**
    * Initialize all toast watchers
    */
-  const initializeToasts = () => {
+  const initializeToasts = (options: { validationErrors?: () => boolean } = {}) => {
     watchFlashMessages();
-    watchValidationErrors();
+    watchValidationErrors(options.validationErrors ?? (() => true));
   };
 
   return {
