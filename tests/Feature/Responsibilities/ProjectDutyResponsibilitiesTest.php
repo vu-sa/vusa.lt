@@ -8,6 +8,8 @@ use App\Models\Institution;
 use App\Models\ResponsibilityGrant;
 use App\Models\Role;
 use App\Models\Tenant;
+use App\Models\User;
+use App\Services\ModelAuthorizer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -55,6 +57,25 @@ describe('duty type tree', function (): void {
 
         expect(roleIdsOf($this->duty))->toEqualCanonicalizing([$this->role->id, $childOnly->id])
             ->and(roleIdsOf($parentDuty))->toBe([$this->role->id]);
+    });
+
+    test('permissions granted to a subtype do not reach holders of its parent or grandparent type', function (): void {
+        $grandparent = DutyType::factory()->create();
+        $this->parent->update(['parent_id' => $grandparent->id]);
+        $this->role->givePermissionTo('news.delete.*');
+        ResponsibilityGrant::factory()->forDutyType($this->child)->of($this->role)->create();
+
+        $holderOf = function (DutyType $type): User {
+            $duty = Duty::factory()->for($this->institution)->create();
+            $duty->types()->attach($type);
+
+            return User::factory()->hasAttached($duty, ['start_date' => now()->subDay()])->create();
+        };
+        $authorizer = app(ModelAuthorizer::class);
+
+        expect($authorizer->allows($holderOf($this->child), 'news.delete.*'))->toBeTrue()
+            ->and($authorizer->allows($holderOf($this->parent), 'news.delete.*'))->toBeFalse()
+            ->and($authorizer->allows($holderOf($grandparent), 'news.delete.*'))->toBeFalse();
     });
 
     test('moving a subtype out from under its parent takes the inherited responsibilities away', function (): void {
