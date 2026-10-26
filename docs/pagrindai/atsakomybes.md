@@ -25,7 +25,7 @@ suteikia tam darbui reikalingas [teises](/pagrindai/teises). Pasikeitus žmogui,
 pareigybei. Atsakomybės kuriamos ir jų teisės nustatomos skiltyje
 [Atsakomybės ir leidimai](/sistema/roles-ir-leidimai).
 
-<ChangelogNote version="v3.10" date="2026-10-19" title="Rolės ir atsakomybės sujungtos">
+<ChangelogNote date="2026-10-19" title="Rolės ir atsakomybės sujungtos">
 
 Atskirų rolių nebėra: kiekviena buvusi rolė tapo atsakomybe su tomis pačiomis teisėmis. Pareigybės
 skirtuke **Atsakomybės** matyti visos jos atsakomybės, ir tos, kurias ji gauna per tipą ar
@@ -51,7 +51,7 @@ registracijas gautų visų padalinių to tipo pareigybės.
 
 Institucijai suteikta atsakomybė visada apima tos institucijos padalinį, todėl jo rinktis nereikia.
 
-<ChangelogNote version="v3.12" date="2026-10-21" title="Apimtis „Savo padalinys“">
+<ChangelogNote date="2026-10-21" title="Apimtis „Savo padalinys“">
 
 Tipui suteikiant atsakomybę su paskirtimi, galima rinktis apimtį „Savo padalinys“.
 

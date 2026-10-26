@@ -148,7 +148,7 @@
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent class="w-56 rounded-none border border-border bg-popover p-1 shadow-none">
             <DropdownMenuLabel class="px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              {{ latestVersion ?? 'VU SA' }}
+              {{ lastUpdateDate ?? 'VU SA' }}
             </DropdownMenuLabel>
             <DropdownMenuItem as-child class="gap-3 px-3.5 py-2 rounded-none cursor-pointer text-sm font-medium">
               <a href="https://github.com/vu-sa/vusa.lt" target="_blank" rel="noopener noreferrer">
@@ -269,7 +269,7 @@ const { logout, logoutMicrosoft } = useLogout();
 const { hasTour, startTour } = useTour();
 const startFm = useStartFm();
 const isDark = useDark();
-const { latestVersion, docsBase, changelogHref } = useDocsUpdateIndicator();
+const { lastUpdateDate, docsBase, changelogHref } = useDocsUpdateIndicator();
 const reportProblemHref = computed(() => {
   const context = typeof window === 'undefined'
     ? {}

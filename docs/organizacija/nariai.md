@@ -134,7 +134,7 @@ Narių sąraše (`/mano/users`) pateikiama visų pasiekiamų narių suvestinė:
 Kai renkantis narį ieškoma pagal vardą (pvz., [priskiriant pareigybę](/organizacija/pareigybes#priskirti-nari)),
 pirmiausia rodomi dabartiniai nariai, o buvę pažymimi metais, todėl ilgėjantis buvusių narių sąrašas paieškos neužgožia.
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Dabartiniai ir buvę nariai">
+<ChangelogNote date="2026-10-02" title="Dabartiniai ir buvę nariai">
 
 Narių sąraše atsirado filtrai „Dabartiniai“ ir „Buvę“, o buvę nariai pažymimi pareigų pabaigos metais.
 
@@ -208,7 +208,7 @@ Atidarius formą per **Redaguoti narį** (`/mano/users/{id}/edit`):
 
 ### Narių sujungimas {#sujungimas}
 
-<ChangelogNote version="v3.4" date="2026-10-18" title="Kelių įrašų sujungimas ir prisijungimo adreso pasirinkimas">
+<ChangelogNote date="2026-10-18" title="Kelių įrašų sujungimas ir prisijungimo adreso pasirinkimas">
 
 Filtras „Galimi dublikatai“ padeda rasti pasikartojančius profilius. Galima sujungti kelis to paties asmens
 įrašus iš karto ir pasirinkti prisijungimo el. paštą, jei leidžiama keisti paliekamos paskyros tapatybę.

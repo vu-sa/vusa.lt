@@ -26,7 +26,7 @@ Darbo srities **Sistema** skiltys **Atsakomybės** (`/mano/responsibilities`) ir
 (`/mano/permissions`) nusako, ką pareigybės daro ir ką dėl to gali platformoje. Kaip veikia
 teisės ir bazinė nario prieiga, aprašyta [Teisėse](/pagrindai/teises).
 
-<ChangelogNote version="v3.10" date="2026-10-19" title="Rolės tapo atsakomybėmis">
+<ChangelogNote date="2026-10-19" title="Rolės tapo atsakomybėmis">
 
 Buvusios rolės dabar vadinamos **atsakomybėmis**: jos turi lietuvišką ir anglišką pavadinimą bei
 aprašymą, o teisės nustatomos viename tinklelyje.
@@ -100,7 +100,7 @@ Posėdžių apimtis **Savo institucijų, visų kadencijų** reiškia institucija
 Be papildomos teisės galima redaguoti tik posėdžius, kurių data patenka į **nario pareigų
 laikotarpį**; ši galimybė išlieka ir pareigoms pasibaigus. Posėdžių peržiūros apimties „Savo“ atskirai rinktis nebereikia.
 
-<ChangelogNote version="v3.12" date="2026-10-21" title="Ką posėdžiams reiškia „Savo institucijų, visų kadencijų“">
+<ChangelogNote date="2026-10-21" title="Ką posėdžiams reiškia „Savo institucijų, visų kadencijų“">
 
 Tinklelis atskiria automatinę prieigą savo pareigų laikotarpio posėdžiams nuo papildomos teisės
 redaguoti ir kitų laikotarpių posėdžius. Posėdžių kūrimas ir perkėlimas į šiukšlinę lieka atskiros teisės.

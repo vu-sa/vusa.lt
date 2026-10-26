@@ -59,7 +59,7 @@ Naujienos turinio blokai redaguojami taip pat kaip [puslapiuose](/svetaine/pusla
 
 ## Išsaugojimas ir paskelbimas {#issaugojimas}
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Patikimesnis išsaugojimas">
+<ChangelogNote date="2026-10-02" title="Patikimesnis išsaugojimas">
 
 Nepavykęs išsaugojimas palieka pakeitimus formoje. Jei kolega jau išsaugojo naujesnę versiją, pirmiausia verta ją peržiūrėti.
 

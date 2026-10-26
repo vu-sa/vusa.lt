@@ -31,7 +31,7 @@ pašalinamas, o naujai paskirtas – pridedamas.
 
 Skiltis pasiekiama adresu `/mano/mailingLists` (Organizacija → Konferencijos).
 
-<ChangelogNote version="v3.7" date="2026-10-18" title="El. pašto konferencijos">
+<ChangelogNote date="2026-10-18" title="El. pašto konferencijos">
 
 Konferencijos, jų gavėjų šaltiniai ir laiškų archyvai pasiekiami Organizacijos srityje.
 

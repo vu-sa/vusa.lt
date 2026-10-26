@@ -10,7 +10,6 @@ const { Layout } = DefaultTheme
 const { lang } = useData()
 
 const lastUpdated = ref<string | null>(null)
-const latestVersion = ref<string | null>(null)
 const latestChangelog = ref('v2')
 
 onMounted(async () => {
@@ -19,7 +18,6 @@ onMounted(async () => {
     if (res.ok) {
       const meta = await res.json()
       lastUpdated.value = meta.lastUpdated
-      latestVersion.value = meta.latestVersion
       latestChangelog.value = meta.latestChangelog ?? latestChangelog.value
     }
   } catch {
@@ -42,15 +40,15 @@ onMounted(async () => {
     </template>
 
     <template #home-features-after>
-      <div v-if="latestVersion" class="vusa-home-section">
+      <div v-if="lastUpdated" class="vusa-home-section">
         <div class="last-update-banner">
           <span class="update-icon">🔄</span>
           <span v-if="lang === 'lt'">
-            Versija <strong>{{ latestVersion }}</strong> · {{ lastUpdated }} —
+            Atnaujinta <strong>{{ lastUpdated }}</strong> —
             <a :href="`/gidas/changelog/${latestChangelog}`">Peržiūrėti visus atnaujinimus →</a>
           </span>
           <span v-else>
-            Version <strong>{{ latestVersion }}</strong> · {{ lastUpdated }} —
+            Updated <strong>{{ lastUpdated }}</strong> —
             <a :href="`/gidas/en/changelog/${latestChangelog}`">View all updates →</a>
           </span>
         </div>

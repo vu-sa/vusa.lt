@@ -41,7 +41,7 @@ Sukūrus greitąją nuorodą, atveriama jos redagavimo forma.
 
 ## Rodymas svetainėje {#rodymas}
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Meniu paruošiamas prieš pirmą rodymą">
+<ChangelogNote date="2026-10-02" title="Meniu paruošiamas prieš pirmą rodymą">
 
 Viešo meniu kalba ir greitųjų nuorodų piktogramos paruošiamos kartu su puslapiu. Nuorodų duomenys toliau tvarkomi šioje skiltyje.
 
@@ -64,7 +64,7 @@ Sąrašo puslapyje (`/mano/quickLinks`):
 
 Puslapio viršuje spausk **Nauja nuoroda** (arba eik adresu `/mano/quickLinks/create`). Forma atsiveria su tuo padaliniu ir kalba, kuriuos buvai pasirinkęs sąraše – pvz., iš EN sąrašo kuriama angliška nuoroda.
 
-<ChangelogNote version="v3.13" date="2026-10-23" title="Padalinys pasirenkamas formoje">
+<ChangelogNote date="2026-10-23" title="Padalinys pasirenkamas formoje">
 
 Nauja nuoroda išsaugoma tam padaliniui, kuris pasirinktas formoje, ir kurti ją galima ir angliškai svetainės versijai.
 

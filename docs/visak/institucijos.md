@@ -100,7 +100,7 @@ automatiškai neužbaigiamos. Ankstesnių posėdžių viešumas ir toliau prikla
 viešumo nustatymų. Teisę valdyti instituciją turintys nariai ją ir toliau gali redaguoti Mano VU SA.
 Anksčiau neaktyviomis pažymėtų institucijų pareigos automatiškai nekeičiamos, nes jų uždarymo datos nežinomos.
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Neaktyvių institucijų viešumas">
+<ChangelogNote date="2026-10-02" title="Neaktyvių institucijų viešumas">
 
 Pažymėjus instituciją neaktyvia, užbaigiamos dabartinės narių pareigos ir iš jų gaunamos ex-officio pareigos.
 Istorija išsaugoma, o viešas kontaktų puslapis tampa nepasiekiamas.
@@ -137,7 +137,7 @@ Neaktyvios institucijos nepatenka į asmeninę ir padalinių Gantt diagramas bei
 Jau užfiksuoti istoriniai rodikliai nesikeičia. Administravimo sąrašuose, ryšiuose, paieškoje ir pasirinkimo
 laukuose jos lieka matomos pagal turimas teises, su žyma **Neaktyvi institucija**. Ši žyma rodoma ir įrašo puslapyje.
 
-<ChangelogNote version="v3.18" date="2026-10-25" title="Institucijų aktyvumo būsena">
+<ChangelogNote date="2026-10-25" title="Institucijų aktyvumo būsena">
 
 Aktyvumo būsena keičiama sąraše arba formoje. Neaktyvios institucijos neįtraukiamos į dabartines Gantt diagramas ir statistiką,
 o administravimo vietose pažymimos atskira žyma.
@@ -230,7 +230,7 @@ priminimo. Klausimą galima išsiųsti iš:
 - **Veiksmai → Paklausti, ar vyko posėdžiai** (institucijas pasirenki pats);
 - institucijos meniu **⋯ → Paklausti, ar vyko posėdžiai**.
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Dvi atskiros užklausos ir atsakymų istorija">
+<ChangelogNote date="2026-10-02" title="Dvi atskiros užklausos ir atsakymų istorija">
 Galima pasirinkti, ar klausiama apie institucijos veiklą, ar prašoma papildyti posėdžių įrašus. Išsiųstos užklausos
 ir atsakymai pateikiami institucijos skiltyje **Užklausos atstovams**.
 </ChangelogNote>
@@ -274,14 +274,14 @@ pareigybės laikotarpį; jei dabartinės kadencijos nėra, naudojama atstovo par
 kuriuos reikia papildyti. Paskutinė pareigų diena dar yra galiojanti. Laikotarpio pabaiga
 užfiksuojama siunčiant ir vėliau nesikeičia.
 
-<ChangelogNote version="v3.2" date="2026-10-18" title="Klausiama tik apie laiką po paskutinės veiklos">
+<ChangelogNote date="2026-10-18" title="Klausiama tik apie laiką po paskutinės veiklos">
 
 Anksčiau laikotarpis visada prasidėdavo nuo kadencijos pradžios, todėl atstovų būdavo klausiama ir apie
 laiką, apie kurį jie jau pranešė.
 
 </ChangelogNote>
 
-<ChangelogNote version="v3.9" date="2026-10-19" title="Galima paklausti pasibaigus pranešimui">
+<ChangelogNote date="2026-10-19" title="Galima paklausti pasibaigus pranešimui">
 
 Koordinatorius gali siųsti **Ar vyko posėdis?**, kai institucija vėluoja arba jos būklė yra
 **Pranešimo laikotarpis baigėsi**. Antruoju atveju gavėjų pasirinkime ir siuntimo peržiūroje rodoma
@@ -402,7 +402,7 @@ tiems patiems žmonėms kaip ir ši skiltis.
 
 ### Sekretoriai {#sekretoriai}
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Sekretorius ir koordinatorius atlieka skirtingus darbus">
+<ChangelogNote date="2026-10-02" title="Sekretorius ir koordinatorius atlieka skirtingus darbus">
 
 Sekretorius skiriamas kadencijai, jei jis fiksuos jos posėdžius: tų posėdžių užduotys ir laiškai keliauja jam. Koordinavimo atsakomybė pati savaime žmogaus sekretoriumi nepaskiria.
 
@@ -446,7 +446,7 @@ puslapyje (**⋯ → Sekti**) arba sąraše, pažymėjus kelias institucijas. S�
 - **Nebesekti** – pašalinti instituciją iš sekamų sąrašo ir nebegauti jos sekėjams skirtų pranešimų.
 - Pranešimai dėl einamų pareigų nepriklauso nuo pasirinkimo sekti instituciją.
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Vienas pasirinkimas – sekti arba nebesekti">
+<ChangelogNote date="2026-10-02" title="Vienas pasirinkimas – sekti arba nebesekti">
 Atskiras institucijos nutildymas pašalintas. Anksčiau sektos ir nutildytos institucijos
 nebesekamos, kad jų pranešimai nebūtų vėl įjungti. Pranešimų nustatymuose išlieka laikinas
 visų pranešimų nutildymas ir siuntimo kanalų pasirinkimai.
@@ -474,7 +474,7 @@ institucijas. Jei toks adresas jau užimtas, priekyje pridedamas padalinio trump
   **Ankstesni vieši adresai**; nebereikalingą galima ištrinti – tada jis nebeveiks.
 - Padalinio pagrindinės institucijos ir centrinio biuro adresas nekeičiamas.
 
-<ChangelogNote version="v3.9" date="2026-10-19" title="Kiekviena institucija turi savo adresą">
+<ChangelogNote date="2026-10-19" title="Kiekviena institucija turi savo adresą">
 
 Anksčiau kelios institucijos galėjo turėti tą patį adresą, todėl viešose kortelėse visos vesdavo į
 vieną instituciją. Dabar adresai sudaryti iš pavadinimų, o seni adresai nukreipia į naujus.

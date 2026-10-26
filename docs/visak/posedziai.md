@@ -90,16 +90,16 @@ failus, užduotis, komentarus ir atstovų pastabas.
 niekada. Skirtuko **Failai** failai viešai nerodomi niekada (žr.
 [Įrašų failai](/visak/failai#viesumas)).
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Kas rodoma vusa.lt?">
+<ChangelogNote date="2026-10-02" title="Kas rodoma vusa.lt?">
 
-Iki v3.0 posėdžio puslapis rodė tik „Matoma vusa.lt“ ar „Rodoma tik ViSAK“, nepaaiškindamas, kas
+Iki v3 posėdžio puslapis rodė tik „Matoma vusa.lt“ ar „Rodoma tik ViSAK“, nepaaiškindamas, kas
 konkrečiai skelbiama.
 
 </ChangelogNote>
 
-<ChangelogNote version="v3.25" date="2026-10-26" title="Matomumas per kalendorių">
+<ChangelogNote date="2026-10-26" title="Matomumas per kalendorių">
 
-Iki v3.25 kalendoriuje paskelbtas posėdis buvo žymimas „Rodoma tik ViSAK“, nors jo darbotvarkė
+Iki 2026-10-26 kalendoriuje paskelbtas posėdis buvo žymimas „Rodoma tik ViSAK“, nors jo darbotvarkė
 rodoma renginio puslapyje.
 
 </ChangelogNote>
@@ -199,7 +199,7 @@ darbotvarkės gale. Kaip pildyti punktus, aprašyta puslapyje
   dar tuščias (be darbotvarkės, failų, dokumentų, komentarų ir kalendoriaus įrašo), ištrinamas visam
   laikui – patvirtinimo lange tai parašyta.
 
-<ChangelogNote version="v3.14" date="2026-10-25" title="Ką tik sukurtas tuščias posėdis ištrinamas visam laikui">
+<ChangelogNote date="2026-10-25" title="Ką tik sukurtas tuščias posėdis ištrinamas visam laikui">
 
 Anksčiau toks posėdis patekdavo į šiukšlinę, o atkūrus posėdį jo užduotys negrįždavo.
 
@@ -225,7 +225,7 @@ neleidžia jų redaguoti. Atsakomybės redagavimo apimtis **Savo institucijų, v
 teisę suteikiančių pareigybių institucijų posėdžius, nepriklausomai nuo posėdžio datos.
 Posėdžių kūrimas ir perkėlimas į šiukšlinę reikalauja atskirų teisių.
 
-<ChangelogNote version="v3.12" date="2026-10-21" title="Paieška rodo ir pareigų laikotarpio posėdžius">
+<ChangelogNote date="2026-10-21" title="Paieška rodo ir pareigų laikotarpio posėdžius">
 
 Automatiškai prieinami posėdžiai randami sąraše ir paieškoje be papildomos atsakomybės, taip pat
 ir pasibaigus pareigoms. Kiti institucijos posėdžiai ir ankstesnės darbotvarkės siūlomi tik tada,
@@ -247,7 +247,7 @@ posėdžius (vienpusis ryšys – tik kryptimi nuo tavo institucijos). Paskirtas
 mato prižiūrimos institucijos posėdžius; tai savaime nesuteikia redagavimo teisės. Negrįžtamam
 trynimui reikia atskiros teisės; įprastos atstovų ir koordinatorių atsakomybės jos neturi.
 
-<ChangelogNote version="v3.11" date="2026-10-20" title="Darbotvarkę pildo ir buvę nariai">
+<ChangelogNote date="2026-10-20" title="Darbotvarkę pildo ir buvę nariai">
 
 Anksčiau darbotvarkės punktus ir balsavimus galėjo pildyti tik tie, kurie pareigas ėjo pildymo
 dieną. Dabar juos pildo ir posėdžio metu buvę institucijos nariai.

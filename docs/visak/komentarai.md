@@ -72,7 +72,7 @@ Formatavimas išlieka išsaugojus ir vėl atvėrus komentarą.
 **Enter** tęsia pastraipą ar sąrašą, **Shift + Enter** įterpia eilutės lūžį.
 Lentelės, antraštės ir priedai komentaruose nesiūlomi.
 
-<ChangelogNote version="v3.22" date="2026-10-26" title="Komentarų formatavimas">
+<ChangelogNote date="2026-10-26" title="Komentarų formatavimas">
 
 Sąrašų ženkleliai ir numeracija matomi tiek rašant, tiek išsaugojus komentarą.
 Formatavimo mygtukai veikia ir telefone.

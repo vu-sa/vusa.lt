@@ -50,7 +50,7 @@ Tai nekeičia tavo „Microsoft“ paskyros slaptažodžio.
 
 ### Patikrinti savo prieigą {#prieiga}
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Pareigos, rolės ir prieigos istorija atskirame puslapyje">
+<ChangelogNote date="2026-10-02" title="Pareigos, rolės ir prieigos istorija atskirame puslapyje">
 
 Pasikeitus pareigoms arba neberandant skilties, pirmiausia verta patikrinti **Mano rolės ir pareigybės**.
 Čia matai savo pareigas ir skiltis, kurias gali atverti.
@@ -87,7 +87,7 @@ Jei skilties trūksta, verta patikrinti pareigų datas bei roles ir kreiptis į 
 
 ### Prieinamumo nustatymai {#prieinamumas}
 
-<ChangelogNote version="v3.3" date="2026-10-18" title="Bendri prieinamumo ir judesio nustatymai">
+<ChangelogNote date="2026-10-18" title="Bendri prieinamumo ir judesio nustatymai">
 
 Paskyros skiltyje **Prieinamumas** atverk **Valdyti prieinamumo nustatymus**. Tie patys valdikliai
 pasiekiami paskyros meniu per **Išvaizda → Prieinamumas** ir viešos svetainės prieinamumo meniu.
@@ -124,7 +124,7 @@ vien naršyklės užvėrimas nėra patikimas atsijungimo veiksmas.
 
 ### Mano veiklos užklausos {#veiklos-uzklausos}
 
-<ChangelogNote version="v3.24" date="2026-10-26" title="Veiklos užklausos paskyros meniu ir Pradžioje">
+<ChangelogNote date="2026-10-26" title="Veiklos užklausos paskyros meniu ir Pradžioje">
 Gautas veiklos užklausas ir jų būsenas galima peržiūrėti paskyros meniu, o laukiančias atsakymo – Pradžioje.
 </ChangelogNote>
 

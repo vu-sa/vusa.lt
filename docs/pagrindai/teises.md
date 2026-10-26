@@ -21,7 +21,7 @@ atsakomybės suteikiamos **pareigybėms**, o narys teises gauna eidamas pareigyb
 
 ## Ką gali kiekvienas narys {#bazine-prieiga}
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Rolė prideda prieigą prie bendro pagrindo">
+<ChangelogNote date="2026-10-02" title="Rolė prideda prieigą prie bendro pagrindo">
 
 Vieša institucijų ir posėdžių informacija, problemos ir ištekliai pasiekiami be papildomos rolės. Savo pareigų metu vykusių posėdžių prieiga išlieka ir pareigoms pasibaigus; tai nesuteikia prieigos prie vėlesnių neviešų posėdžių.
 

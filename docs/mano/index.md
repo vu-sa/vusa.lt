@@ -37,7 +37,7 @@ jo viešas puslapis atveriamas tame pačiame naršyklės skirtuke; atgal galima 
 
 ## Pradėti ir grįžti prie darbo {#pradzia}
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Pradžia rodo tai, ką turi padaryti">
+<ChangelogNote date="2026-10-02" title="Pradžia rodo tai, ką turi padaryti">
 
 Užduotys ir artimiausi posėdžiai padeda grįžti prie darbo. Nebaigtą rezervaciją galima tęsti iš jos
 nuorodos; senasis pirmųjų žingsnių kontrolinis sąrašas ir pareigų pokyčių juosta pašalinti.

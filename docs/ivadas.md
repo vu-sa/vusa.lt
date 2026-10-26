@@ -8,7 +8,7 @@ coverage: ignore
 # Įvadas
 
 ::: warning Dar neįdiegta www.vusa.lt
-Gidas aprašo v3.0 versiją, kuri kol kas neveikia www.vusa.lt – ten vis dar naudojama ankstesnė
+Gidas aprašo v3 versiją, kuri kol kas neveikia www.vusa.lt – ten vis dar naudojama ankstesnė
 platformos versija. Dalis aprašytų puslapių ir veiksmų ten atsiras tik įdiegus naują versiją.
 :::
 
@@ -31,9 +31,9 @@ skyrių, susijusį su savo atsakomybėmis.
 
 ## Kas pasikeitė nuo rugsėjo {#rugsejo-pokyciai}
 
-Gidas aprašo dabartinį platformos **v3.0 variantą**, parengtą po rugsėjo ir spalio pradžios
+Gidas aprašo dabartinį platformos **v3 variantą**, parengtą po rugsėjo ir spalio pradžios
 pakeitimų. Jau įtraukti v2 atnaujinimai lieka
-[v2 istorijoje](/changelog/v2); o naujo paleidimo suvestinė – [v3.0](/changelog/v3#v3-0).
+[v2 istorijoje](/changelog/v2); o naujo paleidimo suvestinė – [v3](/changelog/v3#v3).
 
 Svarbiausios pasikeitusios platformos sritys:
 
@@ -44,7 +44,7 @@ Svarbiausios pasikeitusios platformos sritys:
 - **Rezervuoti daiktus**: [krepšelis](/rezervacijos/rezervacijos) išlaiko pasirinkimą, bet jo nepateikus daiktai neužimami; rezervacijos trynimas yra negrįžtamas.
 
 Prie svarbiausių taisyklių pažymėti atnaujinimai su nuoroda į jų suvestinę.
-Datos ties v3.0 rodo, kada aprašymas patikrintas.
+Datos ties v3 rodo, kada aprašymas patikrintas.
 
 ## Kaip skaityti puslapius
 

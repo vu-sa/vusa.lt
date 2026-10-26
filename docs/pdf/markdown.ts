@@ -8,6 +8,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { appLinkPath } from '../.vitepress/appLinks.ts'
+import { changelogMajors, majorForDate } from '../.vitepress/changelogEntries.ts'
 
 export const pdfDir = path.dirname(fileURLToPath(import.meta.url))
 export const docsDir = path.resolve(pdfDir, '..')
@@ -23,6 +24,15 @@ function resolveAppUrl(): string {
 
 export const appUrl = resolveAppUrl()
 export const siteUrl = `${appUrl}/gidas`
+
+const changelogDir = path.join(docsDir, 'changelog')
+const majors = changelogMajors(Object.fromEntries(
+  fs.readdirSync(changelogDir).flatMap((file) => {
+    const major = file.match(/^(v\d+)\.md$/)?.[1]
+
+    return major ? [[major, fs.readFileSync(path.join(changelogDir, file), 'utf-8')]] : []
+  }),
+))
 
 /** `/rezervacijos/` and `/rezervacijos/index` are the same page. */
 export function normaliseLink(link: string): string {
@@ -207,10 +217,10 @@ export function toCmarkerMarkdown(body: string, options: ConvertOptions): string
     }
 
     if (/^\s*<ChangelogNote\b/.test(line)) {
-      const version = attribute(line, 'version') ?? ''
-      const href = `${siteUrl}/changelog/${version.split('.')[0]}#${version.replace('.', '-')}`
+      const date = attribute(line, 'date') ?? ''
+      const major = majorForDate(majors, date) ?? ''
 
-      return [`<changelog version="${version}" date="${attribute(line, 'date') ?? ''}" title="${attribute(line, 'title') ?? ''}" href="${href}">`]
+      return [`<changelog major="${major}" date="${date}" title="${attribute(line, 'title') ?? ''}" href="${siteUrl}/changelog/${major}">`]
     }
 
     if (/^\s*<\/ChangelogNote>/.test(line)) {

@@ -37,13 +37,13 @@ describe('useDocsUpdateIndicator', () => {
   test('links to the per-major changelog named by the build meta', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: async () => ({ latestVersion: 'v3.1', lastUpdated: '2027-01-02', latestChangelog: 'v3' }),
+      json: async () => ({ lastUpdated: '2027-01-02', latestChangelog: 'v3' }),
     });
 
-    const { changelogHref, latestVersion } = await mountIndicator('en');
+    const { changelogHref, lastUpdateDate } = await mountIndicator('en');
 
     expect(changelogHref.value).toBe('/gidas/en/changelog/v3');
-    expect(latestVersion.value).toBe('v3.1');
+    expect(lastUpdateDate.value).toBe('2027-01-02');
   });
 
   test.each(['lt', 'en'])('falls back to the v3 changelog when the meta is unavailable (%s)', async (locale) => {
@@ -57,7 +57,7 @@ describe('useDocsUpdateIndicator', () => {
   test('uses the v3 fallback when older metadata omits the changelog page', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: async () => ({ latestVersion: 'v3.0', lastUpdated: '2026-10-02' }),
+      json: async () => ({ lastUpdated: '2026-10-02' }),
     });
 
     const { changelogHref } = await mountIndicator('lt');

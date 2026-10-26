@@ -56,7 +56,7 @@ Kad skirtingų padalinių failai nesusimaišytų ir nebūtų atsitiktinai perra�
 
 ### Formų nuotraukos {#formu-nuotraukos}
 
-<ChangelogNote version="v3.1" date="2026-10-17" title="Nuotraukos priklauso įrašui">
+<ChangelogNote date="2026-10-17" title="Nuotraukos priklauso įrašui">
 
 Formose įkeltos nuotraukos saugomos prie įrašo, o svetainė kiekvienam ekranui parenka tinkamo dydžio versiją.
 
@@ -72,7 +72,7 @@ Formose įkeltos nuotraukos saugomos prie įrašo, o svetainė kiekvienam ekranu
 
 ### Nuotraukų dydžiai {#nuotrauku-dydziai}
 
-<ChangelogNote version="v3.1" date="2026-10-17" title="Ryškesnės nuotraukos">
+<ChangelogNote date="2026-10-17" title="Ryškesnės nuotraukos">
 
 Svetainė kiekvienai vietai parenka pakankamo dydžio nuotraukos versiją, todėl nuotraukos ryškios ir didelės raiškos ekranuose.
 
@@ -85,7 +85,7 @@ Svetainė kiekvienai vietai parenka pakankamo dydžio nuotraukos versiją, todė
 
 ### Įkėlimų apdorojimas {#ikelimas}
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Patikimesnis failų įkėlimas">
+<ChangelogNote date="2026-10-02" title="Patikimesnis failų įkėlimas">
 
 Vieno pavadinimo failai neperrašo vienas kito, o neišsaugotas failas nepažymimas kaip sėkmingai įkeltas.
 
@@ -100,7 +100,7 @@ Vieno pavadinimo failai neperrašo vienas kito, o neišsaugotas failas nepažymi
 
 ### Failų naršyklė ir paieška {#narsykle}
 
-<ChangelogNote version="v3.6" date="2026-10-18" title="Patogesnė failų tvarkyklė">
+<ChangelogNote date="2026-10-18" title="Patogesnė failų tvarkyklė">
 
 Aplankų medis lieka matomas slenkant, failų tipų filtras rodo plėtinius, o lentelėje matomos miniatiūros.
 
@@ -139,7 +139,7 @@ Paspaudus failą atsidaro **informacijos skydelis** (telefone – iš apačios):
 
 ### Pervadinimas ir perkėlimas {#pervadinimas}
 
-<ChangelogNote version="v3.6" date="2026-10-18" title="Failų pervadinimas ir perkėlimas">
+<ChangelogNote date="2026-10-18" title="Failų pervadinimas ir perkėlimas">
 
 Failus ir aplankus galima pervadinti, failus – perkelti į kitą aplanką, o tuščius aplankus – ištrinti.
 
@@ -153,7 +153,7 @@ Failus ir aplankus galima pervadinti, failus – perkelti į kitą aplanką, o t
 
 Prieš trinant failą, sistema leidžia apsisaugoti nuo puslapių sugadinimo:
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Patikimesnė naudojimo patikra">
+<ChangelogNote date="2026-10-02" title="Patikimesnė naudojimo patikra">
 
 Patikra randa failą visuose turinio blokuose, nuotraukų laukuose ir nuorodose, net kai jo pavadinime yra tarpų ar lietuviškų raidžių, ir parodo, kur jis naudojamas.
 
@@ -172,7 +172,7 @@ Jei nėra prieigos prie failų tvarkyklės, tiesioginė nuoroda parodo prieigos 
 Turint prieigą prie savo padalinio aplanko, bendrojo aplanko nuoroda nukreipia į pasiekiamą aplanką.
 Vien teisė peržiūrėti failus nesuteikia teisės kurti aplankų, optimizuoti paveikslėlių, pervadinti, perkelti ar trinti. Veiksmai, kurių atliktame aplanke negali, nerodomi.
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Grupinio trynimo teisės tikrinamos iš anksto">
+<ChangelogNote date="2026-10-02" title="Grupinio trynimo teisės tikrinamos iš anksto">
 
 Jei bent vieno pasirinkto failo trinti negalima dėl teisių, netrinamas nė vienas pasirinktas failas.
 Sąsajoje parodoma prieigos klaida; pasirinkimą galima pakeisti ir bandyti dar kartą.

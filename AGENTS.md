@@ -421,7 +421,7 @@ That covers every write path (mass assignment, `update()`, `setTranslations()`, 
 
 ## Changelog
 
-User-facing changes go in `docs/changelog/v3.md` (LT) **and** `docs/en/changelog/v3.md` (EN) — one file per major version; a new major gets a new `vN.md` pair plus sidebar entries in `docs/.vitepress/{lt,en}.ts`, and the admin **Atnaujinimai** (Updates) link follows automatically. Skip purely internal changes (deps, refactors).
+User-facing changes go in `docs/changelog/v3.md` (LT) **and** `docs/en/changelog/v3.md` (EN) — one file per major version, entries headed `## YYYY-MM-DD — Title` with no minor number; a new major gets a new `vN.md` pair plus sidebar entries in `docs/.vitepress/{lt,en}.ts`, and the admin **Atnaujinimai** (Updates) link follows automatically. Skip purely internal changes (deps, refactors).
 
 Scale each entry to the release: number main features only when there are several substantial ones;
 include role sections only for substantial changes specific to that role. Small releases use a short
