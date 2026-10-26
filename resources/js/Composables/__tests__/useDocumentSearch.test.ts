@@ -37,7 +37,7 @@ vi.mock('../useSearchClient', () => ({
 
 vi.mock('../../Services/DocumentSearchService', () => ({
   // The composable constructs the service with `new`.
-  DocumentSearchService: vi.fn().mockImplementation(() => {
+  DocumentSearchService: vi.fn().mockImplementation(function () {
     return {
       performSearch: vi.fn(() => Promise.resolve({
         hits: [],

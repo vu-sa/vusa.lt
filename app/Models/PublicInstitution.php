@@ -7,6 +7,7 @@ use App\Services\PublicInstitutionSearchIndexBuilder;
 use App\Services\Typesense\SearchText;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
