@@ -46,7 +46,7 @@ class CommentApiController extends ApiController
                 'reactions.user:id,name',
                 'pollVotes.user:id,name',
                 'threadReplies' => fn ($q) => $q
-                    ->forCommentable($commentable->getMorphClass(), $commentable->getKey())
+                    ->whereMorphedTo('commentable', $commentable)
                     ->with($replyLoad),
             ])
             ->orderBy('created_at');
