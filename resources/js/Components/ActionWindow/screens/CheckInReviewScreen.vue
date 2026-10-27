@@ -62,7 +62,7 @@ const periodLabel = computed(() => {
     return undefined;
   }
 
-  return `${dates.day(startDate)} – ${dates.day(endDate)}`;
+  return dates.range(startDate, endDate);
 });
 
 const submit = () => {
