@@ -424,7 +424,6 @@ import ActivityStatusField from './ActivityStatusField.vue';
 import { activityStatuses } from '@/Constants/statuses';
 import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
-
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog, FormPanel, FormSection } from '@/Components/Patterns';
 import { Checkbox } from '@/Components/ui/checkbox';

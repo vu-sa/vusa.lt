@@ -12,7 +12,9 @@
     @action="handleRecordAction"
   >
     <template #fact-institution>
-      <Link v-if="duty.institution" :href="route('institutions.show', duty.institution.id)" class="font-medium hover:underline">{{ duty.institution.name }}</Link>
+      <Link v-if="duty.institution" :href="route('institutions.show', duty.institution.id)" class="font-medium hover:underline">
+        {{ duty.institution.name }}
+      </Link>
       <InactiveInstitutionBadge :active="duty.institution?.is_active" />
     </template>
 

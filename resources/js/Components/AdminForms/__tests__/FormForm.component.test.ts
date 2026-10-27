@@ -174,6 +174,7 @@ describe('FormForm.vue', () => {
 
       expect(vm.showFormFieldModal).toBe(true);
       expect(wrapper.find('.card-modal').exists()).toBe(true);
+      expect(wrapper.get('[data-testid="form-field-sheet"]').classes()).toContain('p-6');
     });
 
     it('does not allow adding fields when there are registrations', async () => {

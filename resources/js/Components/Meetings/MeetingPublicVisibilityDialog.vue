@@ -7,14 +7,14 @@
           {{ $t('meetings.visibility.title') }}
         </DialogTitle>
         <DialogDescription class="mt-2 text-sm text-muted-foreground">
-          {{ isPublic ? $t('meetings.visibility.public_intro') : $t('meetings.visibility.internal_intro') }}
+          {{ $t(INTRO_KEYS[mode]) }}
         </DialogDescription>
       </DialogHeader>
 
       <div class="space-y-5 pt-2 text-sm">
-        <section v-if="isPublic" data-slot="visibility-shown">
+        <section v-if="shownKeys.length" data-slot="visibility-shown">
           <h3 class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-            {{ $t('meetings.visibility.shown_heading') }}
+            {{ mode === 'calendar_event' ? $t('meetings.visibility.shown_event_heading') : $t('meetings.visibility.shown_heading') }}
           </h3>
           <ul class="space-y-1.5">
             <li v-for="key in shownKeys" :key class="flex items-start gap-2">
@@ -49,24 +49,39 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Eye, EyeOff, Globe } from '@lucide/vue';
 import { DialogDescription } from 'reka-ui';
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { useDocsHref } from '@/Composables/useDocsHref';
+import type { MeetingPublicVisibility } from '@/Components/Meetings/meetingPublicVisibility';
 
-defineProps<{
+const props = defineProps<{
   open: boolean;
-  /** Mirrors Meeting::isPubliclyVisible(); the lists follow ContactController::showMeeting(). */
-  isPublic: boolean;
+  mode: MeetingPublicVisibility['mode'];
 }>();
 
 defineEmits<{
   'update:open': [value: boolean];
 }>();
 
-const shownKeys = ['basics', 'agenda', 'representatives', 'documents'] as const;
+const INTRO_KEYS = {
+  public_page: 'meetings.visibility.public_intro',
+  calendar_event: 'meetings.visibility.calendar_event_intro',
+  calendar_draft: 'meetings.visibility.calendar_draft_intro',
+  internal: 'meetings.visibility.internal_intro',
+} as const;
+
+// The lists follow ContactController::showMeeting() and PublicPageController::meetingBehind().
+const shownKeys = computed(() => {
+  if (props.mode === 'public_page') {
+    return ['basics', 'agenda', 'representatives', 'documents'];
+  }
+
+  return props.mode === 'calendar_event' ? ['agenda', 'documents'] : [];
+});
 const neverKeys = ['files', 'tasks', 'comments'] as const;
 
 const filesDocsHref = useDocsHref('/visak/failai');

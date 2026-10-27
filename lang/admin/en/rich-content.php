@@ -576,6 +576,8 @@ return [
     'text_style' => 'Text style',
     'bold' => 'Bold',
     'italic' => 'Italic',
+    'strikethrough' => 'Strikethrough',
+    'link_invalid_url' => 'Enter an http, https, email, or internal link.',
     'underline' => 'Underline',
     'insert' => 'Insert',
     'link_open' => 'Open in a new tab',

@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('profile', [ProfileController::class, 'userSettings'])->name('profile');
+Route::get('profile/activity-requests', [ProfileController::class, 'activityRequests'])->name('profile.activityRequests');
 Route::get('profile/roles', [ProfileController::class, 'roles'])->name('profile.roles');
 Route::get('profile/notifications', [ProfileController::class, 'notificationSettings'])->name('profile.notifications');
 Route::inertia('administration', 'Admin/ShowAdministration')->name('administration');

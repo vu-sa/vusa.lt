@@ -9,34 +9,8 @@
       :options="menuOptions"
     >
       <div data-agenda-notes-menu class="notes-menu">
-        <template v-if="!linkOpen">
-          <button type="button" :class="btnClass(editor.isActive('bold'))" :title="$t('Paryškinti')" @mousedown.prevent="toggle('toggleBold')">
-            <Bold class="h-4 w-4" />
-          </button>
-          <button type="button" :class="btnClass(editor.isActive('italic'))" :title="$t('Kursyvas')" @mousedown.prevent="toggle('toggleItalic')">
-            <Italic class="h-4 w-4" />
-          </button>
-          <button type="button" :class="btnClass(editor.isActive('strike'))" :title="$t('Perbraukti')" @mousedown.prevent="toggle('toggleStrike')">
-            <Strikethrough class="h-4 w-4" />
-          </button>
-          <button type="button" :class="btnClass(editor.isActive('link'))" :title="$t('Nuoroda')" @mousedown.prevent="openLink">
-            <LinkIcon class="h-4 w-4" />
-          </button>
-        </template>
-        <template v-else>
-          <input
-            ref="linkInput"
-            v-model="linkUrl"
-            type="url"
-            class="h-7 w-44 border border-border bg-transparent px-2 text-xs focus:border-brand focus:outline-none"
-            :placeholder="$t('Įklijuok nuorodą…')"
-            @keydown.enter.prevent="applyLink"
-            @keydown.esc.prevent="closeLink"
-          >
-          <button type="button" :class="btnClass(false)" :title="$t('Nuoroda')" @mousedown.prevent="applyLink">
-            <Check class="h-4 w-4" />
-          </button>
-        </template>
+        <TiptapFormattingButtons :editor :marks="['bold', 'italic', 'strike']" />
+        <TiptapLinkPopover v-model:open="linkOpen" :editor />
       </div>
     </BubbleMenu>
 
@@ -45,9 +19,9 @@
 </template>
 
 <script setup lang="ts">
-import { type Component, nextTick, onBeforeUnmount, ref } from 'vue';
+import { onBeforeUnmount, ref } from 'vue';
 import { Extension } from '@tiptap/core';
-import { EditorContent, useEditor, VueRenderer } from '@tiptap/vue-3';
+import { EditorContent, useEditor } from '@tiptap/vue-3';
 import { BubbleMenu } from '@tiptap/vue-3/menus';
 import Collaboration from '@tiptap/extension-collaboration';
 import CollaborationCaret from '@tiptap/extension-collaboration-caret';
@@ -56,15 +30,19 @@ import Mention from '@tiptap/extension-mention';
 import { Placeholder } from '@tiptap/extensions';
 import { StarterKit } from '@tiptap/starter-kit';
 import { Suggestion } from '@tiptap/suggestion';
-import { computePosition, flip, offset, shift } from '@floating-ui/dom';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Bold, Check, Italic, Link as LinkIcon, Strikethrough } from '@lucide/vue';
+import { PluginKey } from '@tiptap/pm/state';
+import type { Editor } from '@tiptap/core';
+import type { EditorState } from '@tiptap/pm/state';
 import type { Awareness } from 'y-protocols/awareness';
 import type * as Y from 'yjs';
 
+import TiptapFormattingButtons from '@/Components/TipTap/TiptapFormattingButtons.vue';
+import TiptapLinkPopover from '@/Components/TipTap/TiptapLinkPopover.vue';
+import { createSuggestionRenderer } from '@/Components/TipTap/composables/createSuggestionRenderer';
 import AgendaItemNotesMentionList from '@/Components/AgendaItems/AgendaItemNotesMentionList.vue';
 import AgendaItemNotesSlashMenu from '@/Components/AgendaItems/AgendaItemNotesSlashMenu.vue';
-import { buildSlashCommandItems } from '@/Components/AgendaItems/notesSlashCommands';
+import { buildSlashCommandItems, type SlashCommandItem } from '@/Components/AgendaItems/notesSlashCommands';
 import type { NotesMentionUser } from '@/Composables/useAgendaItemNotes';
 
 const props = withDefaults(defineProps<{
@@ -86,74 +64,20 @@ const emit = defineEmits<{ htmlChange: [html: string] }>();
 const menuOptions = { strategy: 'fixed' as const };
 
 const linkOpen = ref(false);
-const linkUrl = ref('');
-const linkInput = ref<HTMLInputElement | null>(null);
-
-/**
- * Shared suggestion popup renderer (used by both the "@" mention and "/" slash
- * menus): mounts a Vue list component with VueRenderer and positions it with
- * floating-ui (no tippy dependency). The list component must expose `onKeyDown`.
- */
-function createSuggestionRenderer(listComponent: Component) {
-  return () => {
-    let component: VueRenderer | null = null;
-    let dropdown: HTMLElement | null = null;
-
-    const reposition = (clientRect?: (() => DOMRect | null) | null) => {
-      if (!dropdown || !clientRect) {
-        return;
-      }
-      const virtual = { getBoundingClientRect: () => clientRect() as DOMRect };
-      void computePosition(virtual, dropdown, {
-        placement: 'bottom-start',
-        strategy: 'fixed',
-        middleware: [offset(6), flip(), shift({ padding: 8 })],
-      }).then(({ x, y }) => {
-        if (dropdown) {
-          Object.assign(dropdown.style, { left: `${x}px`, top: `${y}px` });
-        }
-      });
-    };
-
-    return {
-      onStart: (sprops: any) => {
-        component = new VueRenderer(listComponent, { props: sprops, editor: sprops.editor });
-        dropdown = component.element as HTMLElement;
-        dropdown.style.position = 'fixed';
-        dropdown.style.zIndex = '9999';
-        document.body.appendChild(dropdown);
-        reposition(sprops.clientRect);
-      },
-      onUpdate: (sprops: any) => {
-        component?.updateProps(sprops);
-        reposition(sprops.clientRect);
-      },
-      onKeyDown: (sprops: any) => {
-        if (sprops.event.key === 'Escape') {
-          return true;
-        }
-        return (component?.ref as any)?.onKeyDown(sprops) ?? false;
-      },
-      onExit: () => {
-        dropdown?.remove();
-        component?.destroy();
-        component = null;
-        dropdown = null;
-      },
-    };
-  };
-}
+const mentionPluginKey = new PluginKey('agendaMention');
+const slashPluginKey = new PluginKey('agendaSlash');
 
 /** "@" → mention the meeting's student representatives. */
 const mentionSuggestion = {
   char: '@',
+  pluginKey: mentionPluginKey,
   items: ({ query }: { query: string }) => {
     const q = query.toLowerCase();
     return props.representatives
       .filter(user => user.name.toLowerCase().includes(q))
       .slice(0, 8);
   },
-  render: createSuggestionRenderer(AgendaItemNotesMentionList),
+  render: createSuggestionRenderer<NotesMentionUser, { id: string; label: string }>(AgendaItemNotesMentionList, mentionPluginKey),
 };
 
 /** "/" → insert a block (heading / lists / checklist). */
@@ -161,7 +85,8 @@ const SlashCommands = Extension.create({
   name: 'notesSlashCommands',
   addProseMirrorPlugins() {
     return [
-      Suggestion({
+      Suggestion<SlashCommandItem, SlashCommandItem>({
+        pluginKey: slashPluginKey,
         editor: this.editor,
         char: '/',
         startOfLine: false,
@@ -169,10 +94,10 @@ const SlashCommands = Extension.create({
           const q = query.toLowerCase();
           return buildSlashCommandItems().filter(item => item.title.toLowerCase().includes(q));
         },
-        command: ({ editor: instance, range, props: item }: any) => {
+        command: ({ editor: instance, range, props: item }) => {
           item.command({ editor: instance, range });
         },
-        render: createSuggestionRenderer(AgendaItemNotesSlashMenu),
+        render: createSuggestionRenderer<SlashCommandItem, SlashCommandItem>(AgendaItemNotesSlashMenu, slashPluginKey),
       }),
     ];
   },
@@ -181,9 +106,7 @@ const SlashCommands = Extension.create({
 const editor = useEditor({
   editable: props.editable,
   extensions: [
-    // Collaboration provides its own undo/redo history, so the StarterKit
-    // history MUST be disabled or the two fight over the document. The feature
-    // set is intentionally minimal (a single H2 heading level, no quote/code/HR).
+    // Yjs owns history; StarterKit history would conflict with collaborative undo.
     StarterKit.configure({
       undoRedo: false,
       codeBlock: false,
@@ -225,57 +148,12 @@ const editor = useEditor({
 
 // --- Menu visibility (focus-gated so menus never linger when the editor is not active) ---
 
-function bubbleShouldShow({ editor: instance, state }: any): boolean {
-  return (instance.isFocused || linkOpen.value) && !state.selection.empty;
-}
-
-// --- Button helpers ---
-
-function btnClass(active: boolean): string[] {
-  return [
-    'flex size-7 items-center justify-center transition-colors pointer-coarse:size-11',
-    active
-      ? 'bg-foreground text-background'
-      : 'text-muted-foreground hover:bg-accent hover:text-foreground',
-  ];
-}
-
-type ChainCommand = 'toggleBold' | 'toggleItalic' | 'toggleStrike';
-
-function toggle(command: ChainCommand): void {
-  const chain = editor.value?.chain().focus();
-  (chain as any)?.[command]().run();
-}
-
-// --- Link flow (inline input inside the bubble) ---
-
-function openLink(): void {
-  linkUrl.value = editor.value?.getAttributes('link').href ?? '';
-  linkOpen.value = true;
-  nextTick(() => linkInput.value?.focus());
-}
-
-function applyLink(): void {
-  const url = linkUrl.value.trim();
-  const chain = editor.value?.chain().focus().extendMarkRange('link');
-  if (url) {
-    chain?.setLink({ href: url }).run();
-  }
-  else {
-    chain?.unsetLink().run();
-  }
-  closeLink();
-}
-
-function closeLink(): void {
-  linkOpen.value = false;
-  linkUrl.value = '';
-  editor.value?.chain().focus().run();
+function bubbleShouldShow({ editor: instance, state }: { editor: Editor; state: EditorState }): boolean {
+  return linkOpen.value || (instance.isFocused && !state.selection.empty);
 }
 
 onBeforeUnmount(() => {
-  // Destroy only the editor view; the shared Y.Doc + awareness live in the
-  // composable so re-mounting (sidebar ↔ dialog) preserves all content.
+  // The parent owns the shared Y.Doc and awareness across remounts.
   editor.value?.destroy();
 });
 </script>

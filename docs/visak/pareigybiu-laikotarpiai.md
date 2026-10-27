@@ -146,9 +146,9 @@ rankiniu būdu negalima – jį pažymėjus, šoniniame skydelyje pateikiamas my
 
 ### Išdėstymas ir visas ekranas {#visas-ekranas}
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Naujas išdėstymas ir visas ekranas">
+<ChangelogNote date="2026-10-02" title="Naujas išdėstymas ir visas ekranas">
 
-Iki v3.0 pasirinkimas, pasiūlymai ir išsaugojimas buvo po grafiku ir užėmė nemažą ekrano dalį.
+Iki v3 pasirinkimas, pasiūlymai ir išsaugojimas buvo po grafiku ir užėmė nemažą ekrano dalį.
 Dabar išsaugojimas yra įrankių juostoje, o pasirinkimas ir pasiūlymai – šoniniame skydelyje.
 
 </ChangelogNote>

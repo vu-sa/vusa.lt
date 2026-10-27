@@ -1,6 +1,18 @@
 <?php
 
 return [
+    'personal' => [
+        'title' => 'Mano veiklos užklausos',
+        'record_title' => 'Veiklos užklausos',
+        'active_title' => 'Laukia tavo atsakymo',
+        'answer' => 'Atsakyti',
+        'view_all' => 'Visos veiklos užklausos (:count)',
+        'empty_title' => 'Veiklos užklausų nėra',
+        'empty_description' => 'Čia matysi gautus klausimus apie institucijų veiklą ir jų atsakymų būsenas.',
+        'unavailable_institution' => 'Institucija nebepasiekiama',
+        'spotlight_title' => 'Gautos veiklos užklausos',
+        'spotlight_body' => 'Peržiūrėk savo veiklos užklausas ir jų būsenas. Į dar galiojančias neatsakytas užklausas gali atsakyti čia.',
+    ],
     'recent_check_in' => 'Pranešimo laikotarpis baigėsi',
     'check_in_ended' => 'Pranešta, kad posėdžių nebuvo iki :date',
     'recent_check_in_spotlight_title' => 'Gali paklausti pasibaigus pranešimui',

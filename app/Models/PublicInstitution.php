@@ -7,6 +7,7 @@ use App\Services\PublicInstitutionSearchIndexBuilder;
 use App\Services\Typesense\SearchText;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -79,16 +80,17 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property-read int|null $tasks_from_meetings_count
  * @property-read int|null $users_count
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution hasActiveDuties()
+ * @method static Builder<static>|PublicInstitution active()
+ * @method static Builder<static>|PublicInstitution hasActiveDuties()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution whereLocale(string $column, string $locale)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution whereLocales(string $column, array $locales)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
+ * @method static Builder<static>|PublicInstitution whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|PublicInstitution whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|PublicInstitution whereLocale(string $column, string $locale)
+ * @method static Builder<static>|PublicInstitution whereLocales(string $column, array $locales)
+ * @method static Builder<static>|PublicInstitution whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution withoutTrashed()
  *

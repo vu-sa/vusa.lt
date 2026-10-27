@@ -74,8 +74,8 @@ describe('ApprovalTaskSubscriber', function (): void {
                 ->where('action_type', ActionType::Approval)
                 ->count();
 
-            expect($approvalTaskCount)->toBe(1);
-            expect($reservation->tasks()->first()->users)->toBeEmpty();
+            expect($approvalTaskCount)->toBe(1)
+                ->and($reservation->tasks()->first()->users)->toBeEmpty();
         });
     });
 

@@ -35,7 +35,7 @@ nuo rolės. Viso padalinio vaizdas yra [Padalinių apžvalgoje](/visak/padalinia
 
 ## Kaip tai veikia
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Tavo institucijos ir padalinių rodikliai atskirti">
+<ChangelogNote date="2026-10-02" title="Tavo institucijos ir padalinių rodikliai atskirti">
 
 Ši apžvalga skirta tavo institucijoms ir toms, kurių sekretorius esi. Viso padalinio rodikliai bei laiko juosta pateikiami skiltyje **Padaliniai**; apžvalgoje seno „Mano institucijos / Padalinys“ jungiklio nėra.
 
@@ -68,7 +68,7 @@ pranešimas nesuteikia būklės **Aktyvi**: jo laikotarpis yra pusė periodišku
 pusę. Dienos skaičiuojamos nuo kitos dienos po pabaigos. Esant 30 dienų periodiškumui, 15-ą
 skaičiuojamą dieną dar rodoma **Pranešimo laikotarpis baigėsi**, 16-ą – **Vėluoja**.
 
-<ChangelogNote version="v3.9" date="2026-10-19" title="Pasibaigęs pranešimas turi atskirą būklę">
+<ChangelogNote date="2026-10-19" title="Pasibaigęs pranešimas turi atskirą būklę">
 
 Šios institucijos rodomos atskiru skaičiumi ir grafiko dalimi. Jos nepriskiriamos nei tvarkingoms,
 nei toms, kurioms reikia dėmesio. Koordinatorius jau gali siųsti **Ar vyko posėdis?**, o automatinis

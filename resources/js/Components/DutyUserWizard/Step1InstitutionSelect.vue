@@ -327,7 +327,7 @@ const institutionTypes = inject<App.Entities.InstitutionType[]>('institutionType
 const addInstitution = inject<(institution: App.Entities.Institution) => void>('addInstitution');
 
 const page = usePage();
-const auth = page.props.auth;
+const { auth } = page.props;
 
 // Search state
 const searchQuery = ref('');

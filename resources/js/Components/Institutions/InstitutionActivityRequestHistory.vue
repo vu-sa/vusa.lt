@@ -11,7 +11,9 @@
             {{ $t(`activity_requests.campaigns.${sending.campaign}`) }}
           </h3>
           <p class="text-xs text-muted-foreground">
-            <span class="font-medium text-foreground">{{ sending.requester ? $t('activity_requests.history.sent_by', { name: sending.requester }) : $t('activity_requests.automatic') }}</span>
+            <span class="font-medium text-foreground">
+              {{ sending.requester ? $t('activity_requests.history.sent_by', { name: sending.requester }) : $t('activity_requests.automatic') }}
+            </span>
             · <time :datetime="sending.sentAt">{{ formatDateTime(sending.sentAt) }}</time>
           </p>
         </div>
@@ -19,45 +21,7 @@
           {{ note }}
         </blockquote>
         <ul class="divide-y divide-border border-y border-border">
-          <li v-for="request in sending.requests" :key="request.id" class="flex flex-col gap-2 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6" data-slot="activity-request-recipient">
-            <div class="min-w-0 space-y-1">
-              <p class="text-sm font-semibold">
-                {{ request.recipient ?? '–' }}
-              </p>
-              <p class="text-xs text-muted-foreground">
-                {{ $t('activity_requests.history.period') }}: {{ formatDate(request.period_start) }} – {{ request.period_end ? formatDate(request.period_end) : $t('activity_requests.legacy_period') }}
-              </p>
-              <p v-if="outcome(request)" class="text-sm">
-                {{ outcome(request) }}
-              </p>
-              <div v-if="request.meetings.length || request.check_ins.length" class="flex flex-wrap gap-2 pt-1">
-                <template v-for="meeting in request.meetings" :key="meeting.id">
-                  <Link
-                    v-if="meeting.url"
-                    :href="meeting.url"
-                    :class="controlVariants({ size: 'sm', voice: 'sentence' })"
-                  >
-                    <CalendarDays class="size-3.5" aria-hidden="true" />
-                    {{ $t('activity_requests.history.meeting', { date: formatDate(meeting.date) }) }}
-                  </Link>
-                  <span v-else class="inline-flex min-h-9 items-center gap-1.5 text-xs text-muted-foreground">
-                    <CalendarDays class="size-3.5" aria-hidden="true" />
-                    {{ $t('activity_requests.history.meeting', { date: formatDate(meeting.date) }) }}
-                  </span>
-                </template>
-                <span v-for="checkIn in request.check_ins" :key="checkIn.id" class="inline-flex min-h-9 items-center gap-1.5 text-xs text-muted-foreground">
-                  <CalendarX class="size-3.5" aria-hidden="true" />
-                  {{ $t('activity_requests.no_meetings') }}: {{ formatDate(checkIn.start) }} – {{ formatDate(checkIn.end) }}
-                </span>
-              </div>
-            </div>
-            <div class="flex shrink-0 flex-col gap-1 sm:items-end">
-              <StatusBadge :status="activityRequestStatuses[request.status]" />
-              <p class="text-xs text-muted-foreground">
-                {{ statusDetail(request) }}
-              </p>
-            </div>
-          </li>
+          <ActivityRequestHistoryRow v-for="request in sending.requests" :key="request.id" :request />
         </ul>
       </li>
     </ol>
@@ -69,18 +33,20 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { Link, router } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { CalendarDays, CalendarX } from '@lucide/vue';
 
-import { StatusBadge } from '@/Components/Patterns';
+import ActivityRequestHistoryRow from './ActivityRequestHistoryRow.vue';
+
 import { Button } from '@/Components/ui/button';
-import { controlVariants } from '@/Components/ui/control';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
-import { activityRequestStatuses, type ActivityRequestStatus } from '@/Constants/statuses';
+import type { ActivityRequestStatus } from '@/Constants/statuses';
 
 export interface ActivityRequestHistoryItem {
   id: string;
+  institution?: { id: string; name: string | null; url: string | null };
+  campaign_type?: string;
+  answer_url?: string | null;
   recipient: string | null;
   requester: string | null;
   period_start: string;
@@ -111,7 +77,7 @@ export interface ActivityRequestHistory {
 const props = defineProps<{ history: ActivityRequestHistory }>();
 const batches = ref<ActivityRequestHistory['data']>([]);
 const loading = ref(false);
-const { formatDate, formatDateTime } = useDateFormatter();
+const { formatDateTime } = useDateFormatter();
 
 watch(() => props.history, (value) => {
   const incoming = new Set(value.data.map(batch => batch.id));
@@ -129,26 +95,6 @@ const sendings = computed(() => batches.value.flatMap(batch => Object.entries(ba
     notes: [...new Set(requests.map(request => request.note).filter((note): note is string => Boolean(note)))],
     requests,
   }))));
-
-const outcome = (request: ActivityRequestHistoryItem): string => {
-  if (request.answer) {
-    return $t(`activity_requests.history.answers.${request.answer}`);
-  }
-
-  if (!request.resolved_at) {
-    return '';
-  }
-  const resolution = $t(`activity_requests.resolution.${request.resolution_source ?? 'meeting'}`);
-
-  return request.resolved_by ? `${resolution} · ${$t('activity_requests.history.resolved_by', { name: request.resolved_by })}` : resolution;
-};
-
-const statusDetail = (request: ActivityRequestHistoryItem): string => ({
-  pending: `${$t('activity_requests.valid_until')} ${formatDate(request.expires_at)}`,
-  answered: request.answered_at ? formatDateTime(request.answered_at) : '',
-  resolved: request.resolved_at ? formatDateTime(request.resolved_at) : '',
-  expired: `${$t('activity_requests.history.expired_at')} ${formatDate(request.expires_at)}`,
-})[request.status];
 
 const loadMore = () => {
   loading.value = true;

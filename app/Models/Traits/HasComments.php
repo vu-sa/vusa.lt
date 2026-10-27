@@ -38,7 +38,8 @@ trait HasComments
         $threadRootId = null;
 
         if ($parentId !== null) {
-            $parent = Comment::findOrFail($parentId);
+            $parent = $this->comments()->find($parentId);
+            abort_if($parent === null, 403);
             $threadRootId = $parent->thread_root_id ?? $parent->id;
         }
 

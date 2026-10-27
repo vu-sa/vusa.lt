@@ -75,4 +75,39 @@ describe('CommentComposer', () => {
 
     expect(wrapper.find('[data-testid="mention-notice"]').exists()).toBe(false);
   });
+  it('renders lists through the same content style used by saved comments and submits formatted HTML', async () => {
+    await mountComposer({ content: '<ul><li><p>First</p></li></ul>' });
+
+    expect(wrapper.find('.ProseMirror').classes()).toContain('comment-content');
+    expect(wrapper.find('.ProseMirror ul li').text()).toBe('First');
+    await wrapper.findAll('button').find(button => button.text() === 'Komentuoti')!.trigger('click');
+
+    expect(wrapper.emitted('submit')?.[0][0]).toContain('<ul><li><p>First</p></li></ul>');
+  });
+
+  it('treats an empty paragraph as empty after loading HTML', async () => {
+    await mountComposer({ content: '<p></p>' });
+    const submit = wrapper.findAll('button').find(button => button.text() === 'Komentuoti')!;
+
+    await vi.waitFor(() => expect(submit.attributes('disabled')).toBeDefined());
+    await submit.trigger('click');
+    expect(wrapper.emitted('submit')).toBeUndefined();
+  });
+
+  it('dismisses suggestions with Escape and removes a popup when the editor unmounts', async () => {
+    await mountComposer();
+    await mentionButton().trigger('click');
+    await flushPromises();
+    expect(document.querySelector('[data-comment-mention-menu]')).not.toBeNull();
+
+    await wrapper.find('.ProseMirror').trigger('keydown', { key: 'Escape' });
+    await flushPromises();
+    expect(document.querySelector('[data-comment-mention-menu]')).toBeNull();
+
+    await mentionButton().trigger('click');
+    await flushPromises();
+    expect(document.querySelector('[data-comment-mention-menu]')).not.toBeNull();
+    wrapper.unmount();
+    expect(document.querySelector('[data-comment-mention-menu]')).toBeNull();
+  });
 });

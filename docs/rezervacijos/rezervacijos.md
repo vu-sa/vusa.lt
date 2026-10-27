@@ -71,7 +71,7 @@ spausk „Pridėti“, ir jis patenka į tavo krepšelį. Krepšelis:
 - ištrinamas automatiškai, jei jo nekeitei **14 dienų**;
 - **nerezervuoja daiktų**. Kol renkiesi, tuos pačius daiktus gali užsirezervuoti kiti.
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Rezervacija išsaugoma kaip juodraštis">
+<ChangelogNote date="2026-10-02" title="Rezervacija išsaugoma kaip juodraštis">
 
 Nebaigtas pasirinkimas išlieka ir kitame įrenginyje, o pakeitus laiką ištekliai neišvalomi.
 Krepšelis daiktų neužima: kiekis dar kartą tikrinamas pateikiant, net jei du žmonės pateikia vienu metu.
@@ -136,7 +136,7 @@ prieš jį išsaugant.
 
 ## Veiksmai
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Ištrinta rezervacija nebeatkuriama">
+<ChangelogNote date="2026-10-02" title="Ištrinta rezervacija nebeatkuriama">
 
 Rezervacijos neturi šiukšlinės. **Atšaukti** ir **Ištrinti** yra skirtingi veiksmai: ištrynus įrašas pašalinamas visam laikui.
 
@@ -155,7 +155,7 @@ Rezervacijų sąraše (`/mano/reservations`) pateikiama visų pasiekiamų rezerv
 
 ### Valdytojo sprendimai
 
-<ChangelogNote version="v2.2" date="2026-09-14" title="Klaidingą sprendimą galima grąžinti vienu žingsniu">
+<ChangelogNote date="2026-09-14" title="Klaidingą sprendimą galima grąžinti vienu žingsniu">
 
 **Atšaukti paskutinį veiksmą** grąžina patvirtinimą, išdavimą ar grąžinimą į ankstesnę būseną. Tai skiriasi nuo rezervacijos atšaukimo ar jos ištrynimo; veiksmo priežastis lieka istorijoje.
 
@@ -177,7 +177,7 @@ ir su keliais pasirinktais ištekliais iš karto.
   rezervuota → pateikta, paskolinta → rezervuota, grąžinta → paskolinta. Atšauktas patvirtinimas lieka
   istorijoje su tavo nurodyta priežastimi.
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Grupinio atšaukimo teisės tikrinamos iš anksto">
+<ChangelogNote date="2026-10-02" title="Grupinio atšaukimo teisės tikrinamos iš anksto">
 
 Pasirinkus kelis daiktus veiksmui **Atšaukti paskutinį veiksmą**, pirmiausia tikrinamos teisės į visus
 pasirinktus daiktus. Jei bent vieno valdyti negalima, nė vieno būsena nekeičiama ir parodoma prieigos klaida.
@@ -248,7 +248,7 @@ nebeadministruoja išteklių. Pasikeitus pareigoms, nebaigtos peržiūros ir jų
 naujiems atsakingiems žmonėms; atliktų užduočių ir sprendimų autoriai nekeičiami. Jei atsakingo
 žmogaus nėra, peržiūra lieka laukti, kol pareigybė bus užpildyta.
 
-<ChangelogNote version="v3.17" date="2026-10-25" title="Rezervacijų administravimo atsakomybė">
+<ChangelogNote date="2026-10-25" title="Rezervacijų administravimo atsakomybė">
 
 Dabartiniai kontaktai, peržiūros užduotys ir pranešimai remiasi viena paskirtimi. Sprendimų istorija
 lieka susieta su žmonėmis, kurie tuos sprendimus priėmė.

@@ -132,6 +132,10 @@ class AppServiceProvider extends ServiceProvider
         // A CMS page can hold dozens of images; only a cache miss costs real work.
         RateLimiter::for('images', fn (Request $request) => Limit::perMinute(600)->by($request->ip()));
 
+        RateLimiter::for('publicRegistrations', fn (Request $request) => $request->isAttemptingPrecognition()
+            ? Limit::perMinute(60)->by('validation|'.$request->ip())
+            : Limit::perMinute(10)->by('submission|'.$request->ip()));
+
         RateLimiter::for('formRegistrations', fn (Request $request) => $request->user()
             ? Limit::perMinute(100)->by($request->user()->id)
             : Limit::perHour(5)->by($request->ip()));

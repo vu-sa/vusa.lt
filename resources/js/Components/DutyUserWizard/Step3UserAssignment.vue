@@ -466,7 +466,7 @@ import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 const wizard = inject<ReturnType<typeof useDutyUserWizard>>('dutyUserWizard')!;
 
 const page = usePage();
-const auth = page.props.auth;
+const { auth } = page.props;
 
 const isLoadingStepData = computed(() => wizard.state.loading.stepData);
 

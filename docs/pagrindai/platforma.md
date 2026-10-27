@@ -66,7 +66,7 @@ išjungti. Jei kolega mato skiltį, kurios tu nematai, skiriasi jūsų teisės (
 
 ## Mygtukai ir klaviatūra {#mygtukai-ir-klaviatura}
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Bendras veiksmų langas ir darbo sričių navigacija">
+<ChangelogNote date="2026-10-02" title="Bendras veiksmų langas ir darbo sričių navigacija">
 
 Vietoje seno administravimo meniu pasirenkama darbo sritis ir jos skiltis. **Veiksmai** rodo
 leidžiamus veiksmus; telefono juostose pasiekiami tie patys pagrindiniai darbai.
@@ -97,7 +97,7 @@ naudojamą puslapį – prisegtos nuorodos rodomos paletės pradžioje. Telefone
 Paletėje rezultatai pateikiami vienu sąrašu: pirmiausia įrašai, kurių vardas ar pavadinimas sutapo, o kiekviena eilutė nurodo įrašo rūšį (pvz., Narys, Pareigybė, Naujiena). **Rodyti visus** nuveda į atitinkamą sąrašą, kuriame galima tikslinti paiešką ir filtrus.
 Paieška nesuteikia naujų teisių: kitų įrašų ar jų veiksmų prieiga priklauso nuo tavo pareigų ir rolių.
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Paieška turinyje ir aiškesni filtrai">
+<ChangelogNote date="2026-10-02" title="Paieška turinyje ir aiškesni filtrai">
 
 Puslapiai ir naujienos randami pagal išsaugotą turinio tekstą. Rezultato ištrauka parodo, kur sutapo paieška. Lietuvių ir anglų tekstuose paieška atpažįsta ir skirtingas žodžio formas. Pagal aktualumą rikiuojami teksto atitikmenys; pasirinktas rikiavimas pagal datą ar pavadinimą taikomas tiesiogiai.
 
@@ -117,7 +117,7 @@ Ilgesniame parinkčių sąraše ieškomą reikšmę galima įrašyti į filtro p
 
 ### Peržiūra šalia sąrašo {#perziura}
 
-<ChangelogNote version="v3.19" date="2026-10-25" title="Vienoda įrašų peržiūra">
+<ChangelogNote date="2026-10-25" title="Vienoda įrašų peržiūra">
 
 Sąrašai ir paieška naudoja tą pačią įrašo peržiūrą. Peržiūra atsirado narių, naujienų ir renginių sąrašuose, o rodyklių klavišais galima pereiti prie kito įrašo.
 
@@ -140,7 +140,7 @@ juostoje lieka išsaugotas įrašo pavadinimas, o kuriant – formos paskirtis, 
 
 ### Po sukūrimo {#po-sukurimo}
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Sukurto įrašo atvėrimas">
+<ChangelogNote date="2026-10-02" title="Sukurto įrašo atvėrimas">
 
 Atskiroje formoje sukūrus narį, pareigybę, instituciją, registracijos formą, problemą, išteklių ar rolę,
 atveriamas naujo įrašo puslapis. Sukūrus naujieną, puslapį, renginį, banerį, greitąją nuorodą,

@@ -27,12 +27,9 @@ function findByText(wrapper: ReturnType<typeof mount>, text: string) {
  * Submits through the form element rather than the Insert button: the button sits
  * outside the form and is wired to it with `form="image-details-form"`, an
  * association jsdom does not implement, so clicking it never dispatches submit.
- * Validation is async, hence the macrotask turn on top of flushPromises.
  */
 async function submitDetails(wrapper: ReturnType<typeof mount>) {
   await wrapper.find('form').trigger('submit');
-  await flushPromises();
-  await new Promise(resolve => setTimeout(resolve, 0));
   await flushPromises();
 }
 
@@ -50,12 +47,6 @@ async function mountAtDetailsStep() {
   return wrapper;
 }
 
-/**
- * Kept apart from ImageSelector.component.test.ts on purpose: driving the vee-validate
- * form's submit event in jsdom turns out to be sensitive to unrelated DOM interaction
- * earlier in the same environment (opening the Collapsible in another test is enough
- * to make a later submit silently not fire). File-level isolation keeps these honest.
- */
 describe('ImageSelector submission', () => {
   it('still refuses an image with no alt text', async () => {
     const wrapper = await mountAtDetailsStep();
@@ -64,6 +55,37 @@ describe('ImageSelector submission', () => {
 
     expect(wrapper.emitted('submit')).toBeUndefined();
     expect(wrapper.text()).toContain('accessibility.alt_text_required');
+  });
+
+  it('rejects whitespace alt and trims submitted descriptions', async () => {
+    const wrapper = await mountAtDetailsStep();
+    await wrapper.find('#image-alt').setValue('   ');
+    await submitDetails(wrapper);
+    expect(wrapper.emitted('submit')).toBeUndefined();
+    await wrapper.find('#image-alt').setValue('  Students  ');
+    await wrapper.find('#image-title').setValue('  Event  ');
+    await submitDetails(wrapper);
+    expect(wrapper.emitted('submit')?.[0]).toEqual([{ src: '/uploads/files/test.png', alt: 'Students', title: 'Event' }]);
+  });
+
+  it.each([['#image-alt', 126], ['#image-title', 201]])('enforces the length limit for %s', async (selector, length) => {
+    const wrapper = await mountAtDetailsStep();
+    await wrapper.find('#image-alt').setValue('Valid alt');
+    await wrapper.find(selector).setValue('x'.repeat(length));
+    await submitDetails(wrapper);
+    expect(wrapper.emitted('submit')).toBeUndefined();
+    expect(wrapper.text()).toContain('validation.max.string');
+  });
+
+  it('clears details and errors when reopened', async () => {
+    const wrapper = await mountAtDetailsStep();
+    await submitDetails(wrapper);
+    await wrapper.setProps({ showModal: false });
+    await wrapper.setProps({ showModal: true });
+    await wrapper.find('[data-testid="pick"]').trigger('click');
+    await findByText(wrapper, 'common.next')!.trigger('click');
+    expect((wrapper.find('#image-alt').element as HTMLInputElement).value).toBe('');
+    expect(wrapper.find('#image-alt-error').exists()).toBe(false);
   });
 
   it('lets a decorative image through with an empty alt', async () => {

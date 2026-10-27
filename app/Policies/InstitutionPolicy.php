@@ -19,7 +19,7 @@ class InstitutionPolicy extends ModelPolicy
     #[\Override]
     protected bool $hasManyTenants = false;
 
-    public function __construct(ModelAuthorizer $authorizer, private InstitutionAccessService $institutions)
+    public function __construct(ModelAuthorizer $authorizer, private readonly InstitutionAccessService $institutions)
     {
         parent::__construct($authorizer);
         $this->pluralModelName = Str::plural(ModelEnum::INSTITUTION->label());

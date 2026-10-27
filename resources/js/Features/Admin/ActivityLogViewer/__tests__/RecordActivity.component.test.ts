@@ -8,26 +8,31 @@ import { commonStubs } from '@/tests/stubs';
 
 const fetchThread = vi.fn();
 const fetchMentionables = vi.fn();
+const postComment = vi.fn();
 const mockFetch = vi.fn();
 vi.stubGlobal('fetch', mockFetch);
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 vi.mock('@/Composables/useDiscussionApi', () => ({
-  useDiscussionApi: () => ({ fetchThread, fetchMentionables }),
+  useDiscussionApi: () => ({ fetchThread, fetchMentionables, postComment }),
 }));
 
 vi.mock('@/Composables/useDiscussionChannel', () => ({
   useDiscussionChannel: () => ({ members: ref([]), connect: vi.fn(), disconnect: vi.fn(), whisperTyping: vi.fn() }),
 }));
 
-const mountActivity = () => mount(RecordActivity, {
-  props: { commentableType: 'meeting', commentableId: 'm1' },
+const mountActivity = (commentableType = 'meeting') => mount(RecordActivity, {
+  props: { commentableType, commentableId: 'record1' },
   global: {
     stubs: {
       ...commonStubs,
       CommentComposer: { template: '<div class="composer-stub" />', methods: { reset: vi.fn() } },
-      CommentThread: { props: ['comment'], template: '<div class="thread-stub">{{ comment.body }}</div>' },
+      CommentThread: {
+        props: ['comment'],
+        emits: ['reply'],
+        template: `<div class="thread-stub">{{ comment.body }}<button type="button" data-testid="reply" @click="$emit('reply', comment.id, '<p>A reply</p>')" /></div>`,
+      },
     },
   },
 });
@@ -70,5 +75,17 @@ describe('RecordActivity', () => {
     expect(wrapper.find('.composer-stub').exists()).toBe(true);
     expect(wrapper.find('.thread-stub').exists()).toBe(false);
     expect(wrapper.find('section > p').exists()).toBe(false);
+  });
+  it.each(['meeting', 'agendaItem', 'institution', 'duty', 'form', 'problem', 'reservation'])('posts replies with the correct body and parent for %s', async (type) => {
+    fetchThread.mockResolvedValue([{ id: 'root1', body: 'Root', replies: [] }]);
+    postComment.mockResolvedValue({ id: 'reply1', body: '<p>A reply</p>', parent_id: 'root1', thread_root_id: 'root1' });
+    const wrapper = mountActivity(type);
+    await flushPromises();
+
+    await wrapper.find('[data-testid="reply"]').trigger('click');
+    await flushPromises();
+
+    expect(postComment).toHaveBeenCalledWith('<p>A reply</p>', 'root1');
+    wrapper.unmount();
   });
 });

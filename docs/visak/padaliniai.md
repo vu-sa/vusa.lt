@@ -70,7 +70,7 @@ užduotys ir atstovai neprisideda prie dabartinių rodiklių, jei nesusiję ir s
 Jau užfiksuoti ankstesnių dienų rodikliai išsaugomi.
 
 
-<ChangelogNote version="v3.11" date="2026-10-20" title="Rodikliai skaičiuojami VU organams">
+<ChangelogNote date="2026-10-20" title="Rodikliai skaičiuojami VU organams">
 
 Rodikliai pagal nutylėjimą skaičiuojami tik VU organų institucijoms ir jų atstovams; VU SA organai rodomi posėdžių laiko juostoje.
 
@@ -156,7 +156,7 @@ Numatytoji palyginimo kadencija – ankstesnė baigta bendra kadencija. Sistemos
 
 Tai **retrospektyvus** skaičiavimas pagal dabar išlikusius įrašus, ne tiksli anksčiau matyto ekrano kopija. Vėliau įvestas posėdis įtraukiamas į jo datos kadenciją; vėliau užpildytas darbotvarkės klausimas ar atlikta užduotis gali pakeisti ankstesnės kadencijos skaičius. Dabartinė kadencija dar nesibaigusi, todėl jos imtis ir metų dalis skiriasi nuo visos palyginimo kadencijos.
 
-<ChangelogNote version="v3.11" date="2026-10-20" title="Rodikliai lyginami pagal kadencijas">
+<ChangelogNote date="2026-10-20" title="Rodikliai lyginami pagal kadencijas">
 
 Rodiklių lentelė ir atstovų aktyvumas pateikiami po laiko juosta. Palyginimo kadencija pasirenkama nustatymuose.
 
@@ -214,7 +214,7 @@ mėlyna punktyrinė juosta per klausiamą laikotarpį su laiško ženklu viduryj
 matyti, kada užklausa išsiųsta, iki kada galioja ir kiek gavėjų. Užklausa **Papildyk posėdžių
 įrašus** pažymi pačius neužpildytus to laikotarpio posėdžius mėlyna spalva ir laiško ženklu.
 
-<ChangelogNote version="v3.8" date="2026-10-18" title="Grupavimas pagal tipus ir užklausos laiko juostoje">
+<ChangelogNote date="2026-10-18" title="Grupavimas pagal tipus ir užklausos laiko juostoje">
 
 Laiko juostą galima grupuoti pagal institucijų tipus, ji seka rodiklių padalinių pasirinkimą, rodo
 neatsakytas užklausas atstovams ir greičiau kraunasi atitolinus vaizdą. Išsamios eilutės pašalintos.

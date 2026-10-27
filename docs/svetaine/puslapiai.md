@@ -68,7 +68,7 @@ temos puslapį, vienoje vietoje pateikia su ja susietą viešą turinį.
 
 ## Turinio redagavimas {#turinio-redagavimas}
 
-<ChangelogNote version="v2.0" date="2026-09-05" title="Turinį redaguok puslapio vaizde">
+<ChangelogNote date="2026-09-05" title="Turinį redaguok puslapio vaizde">
 
 Vizualus redaktorius leidžia keisti turinio blokus jų peržiūroje. Viso ekrano režimas skirtas turiniui; pavadinimas, viršelis ir kiti įrašo duomenys tvarkomi formoje.
 
@@ -84,7 +84,7 @@ Tvarkaraščio eilutes galima įrašyti ranka arba importuoti iš posėdžio. Im
 
 ## Atkūrimo kopijos {#atkurimas}
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Privatūs pakeitimai ir aiškesnis atkūrimas">
+<ChangelogNote date="2026-10-02" title="Privatūs pakeitimai ir aiškesnis atkūrimas">
 
 Automatinė atkūrimo kopija padeda tęsti darbą, bet nepakeičia paskelbto puslapio. Įrašas atnaujinamas tik paspaudus **Išsaugoti**.
 
@@ -104,7 +104,7 @@ Jei kitas redaktorius išsaugojo naujesnę puslapio versiją, atlikti pakeitimai
 
 ## Kalbų versijos {#kalbu-versijos}
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Abi kalbas redaguok kartu">
+<ChangelogNote date="2026-10-02" title="Abi kalbas redaguok kartu">
 
 Kalbų versijas gali palyginti ir redaguoti viename lange. Kiekviena išsaugoma ir skelbiama atskirai; kitos kalbos versija nesukuriama ar nepaskelbiama savaime.
 

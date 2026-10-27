@@ -17,7 +17,7 @@ Ryšys nurodo, kad vienos institucijos nariai gali matyti kitos institucijos pos
 Ryšiai lemia [institucijų prieigą](/visak/padaliniai), posėdžių sąrašą atstovavimo laiko juostoje
 ir yra vaizduojami [Institucijų grafe](/visak/instituciju-grafas).
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Ryšiai tvarkomi kortelėse">
+<ChangelogNote date="2026-10-02" title="Ryšiai tvarkomi kortelėse">
 
 Ryšiai kuriami ir keičiami institucijų ir institucijų tipų kortelėse, skirtuke **Ryšiai**.
 Atskiros skilties **Sistema → Ryšiai** ir ryšio tipų nebėra.
@@ -68,7 +68,7 @@ Tipas gali būti susietas ir su savimi („To paties tipo institucijos“):
 - abipusis ryšys **Tarp visų padalinių** susieja, pavyzdžiui, visų fakultetų dekanatus. Tada kiekvieno
   dekanato nariai mato visų kitų dekanatų posėdžius ir darbotvarkes.
 
-<ChangelogNote version="v3.5" date="2026-10-18" title="Tipų ryšys tarp visų padalinių">
+<ChangelogNote date="2026-10-18" title="Tipų ryšys tarp visų padalinių">
 
 Aprėptis **Tarp visų padalinių** susieja tų pačių tipų institucijas skirtinguose padaliniuose,
 pvz., visų fakultetų dekanatus.

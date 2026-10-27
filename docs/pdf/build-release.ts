@@ -1,4 +1,4 @@
-/** The vN PDF contains only vN.0; minor release notes stay in the web changelog. */
+/** The vN PDF contains only the {#vN} launch entry; later entries stay in the web changelog. */
 import fs from 'node:fs'
 import path from 'node:path'
 

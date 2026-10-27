@@ -130,7 +130,7 @@ Bendrų pareigybių [padalinių kvotos](#bendros-pareigybes) tikrinamos atskirai
   Puslapio faktuose rodoma tik **Neužimta**, nekartojant narių skaičiaus **0**.
 - [Neaktyvi](#istorija) pareigybė neužimta nelaikoma – jos niekas ir nebeturi eiti.
 
-<ChangelogNote version="v3.15" date="2026-10-25" title="Vietų skaičius – tik informacijai">
+<ChangelogNote date="2026-10-25" title="Vietų skaičius – tik informacijai">
 
 Ankstesni vietų skaičiai išvalyti. Naujos pareigybės kuriamos be šio skaičiaus; ten, kur jis
 naudingas, galima įrašyti ranka. Narių priskyrimo languose ir laikotarpių tvarkyklėje nebėra
@@ -170,7 +170,7 @@ kvota)“, vieta priklauso pačios pareigybės padaliniui.
   administratoriai šios vietos redaguoti negalės.
 - Prie deleguoto nario rodoma žyma **Deleguota** su padalinio pavadinimu.
 
-<ChangelogNote version="v3.20" date="2026-10-26" title="Kvotos pasirinkimas laikotarpyje">
+<ChangelogNote date="2026-10-26" title="Kvotos pasirinkimas laikotarpyje">
 
 Anksčiau vietą prie padalinio kvotos susiedavo tik pats fakulteto koordinatorius, paskirdamas narį.
 Dabar ją galima nustatyti ar pataisyti ir redaguojant laikotarpį.
@@ -212,7 +212,7 @@ Pareigybės istorija neturėtų trūkinėti, net jei pareigybė keitėsi:
   neaktyvia pareigybe su savo nariais, o naujosios su ja susiejamos. Pirmtakės nariai rodomi naujųjų
   pareigybių laikotarpių istorijoje, todėl tas pats laikotarpis nedubliuojamas.
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Pareigybės istorija">
+<ChangelogNote date="2026-10-02" title="Pareigybės istorija">
 
 Pareigybę galima pažymėti neaktyvia, išsaugoti ankstesnius jos pavadinimus ir susieti su pareigybe,
 kurios darbą ji perėmė.
@@ -252,7 +252,7 @@ Kad duomenų bazėje nesidaugintų dubliuotos pareigybės:
 - Panašios pareigybės kitose to paties padalinio institucijose išvardijamos su nuoroda į jų puslapį;
   kitų padalinių atitikmenys tik suskaičiuojami.
 
-<ChangelogNote version="v3.12" date="2026-10-20" title="Dublikatų patikra abiem kalbomis">
+<ChangelogNote date="2026-10-20" title="Dublikatų patikra abiem kalbomis">
 
 Kuriant ar redaguojant pareigybę, tikrinami abu jos pavadinimai – lietuviškas ir angliškas.
 Įvedus anglišką pavadinimą, atitikmuo randamas ir tada, kai pareigybė turi kitokį lietuvišką
@@ -320,7 +320,7 @@ Pradžia negali būti vėlesnė už pabaigą. Pabaigos data yra paskutinė aktyv
 narys lieka dabartinių narių sąraše iki dienos pabaigos ir tampa buvusiu kitą dieną.
 Istorinis įrašas išlieka. Jei paskutinė pareigų diena buvo vakar, įrašyk vakarykštę datą.
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Paskutinė pareigų diena">
+<ChangelogNote date="2026-10-02" title="Paskutinė pareigų diena">
 
 Dabartinių ir buvusių narių sąrašai dabar vienodai įskaito pabaigos dieną.
 Užbaigimo patvirtinimas aiškiai paaiškina, kad šiandien pareigos dar galioja.
@@ -345,7 +345,7 @@ Paspaudus **Priskirti** pareigybės puslapyje:
 Jei per pasirinktą laikotarpį tas pats žmogus jau eina šias pareigas, jo pasirinkti negalima.
 Pasibaigęs laikotarpis neužima vietos, todėl jam padalinio kvota netaikoma.
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Buvusių narių priskyrimas">
+<ChangelogNote date="2026-10-02" title="Buvusių narių priskyrimas">
 
 Priskyrimo formoje atsirado kadencijos pasirinkimas, galimybė sukurti narį be el. pašto ir suskleisti
 papildomi nustatymai.
@@ -381,7 +381,7 @@ Redaguojant papildomai rodoma:
 
 ### Pareigybių sujungimas {#sujungimas}
 
-<ChangelogNote version="v3.4" date="2026-10-18" title="Sujungia tik Superadministratorius, dublikatai ištrinami visam laikui">
+<ChangelogNote date="2026-10-18" title="Sujungia tik Superadministratorius, dublikatai ištrinami visam laikui">
 
 Į paliekamą pareigybę nuo šiol perkeliamos ir atsakomybės, tikslai, komentarai, failai, užduotys
 bei tiesiogiai suteiktos teisės.

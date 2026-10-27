@@ -2,8 +2,9 @@
 doc_status: reviewed
 title: Mano
 area: dashboard
-last_reviewed: 2026-10-08
+last_reviewed: 2026-10-26
 tests:
+  - tests/Feature/Admin/Management/UserActivityRequestsTest.php
   - resources/js/Pages/Admin/__tests__/ShowAdminHome.component.test.ts
   - resources/js/Components/Home/__tests__/SiteContentLists.component.test.ts
   - tests/Browser/AdminPublicLinksTest.php
@@ -36,7 +37,7 @@ jo viešas puslapis atveriamas tame pačiame naršyklės skirtuke; atgal galima 
 
 ## Pradėti ir grįžti prie darbo {#pradzia}
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Pradžia rodo tai, ką turi padaryti">
+<ChangelogNote date="2026-10-02" title="Pradžia rodo tai, ką turi padaryti">
 
 Užduotys ir artimiausi posėdžiai padeda grįžti prie darbo. Nebaigtą rezervaciją galima tęsti iš jos
 nuorodos; senasis pirmųjų žingsnių kontrolinis sąrašas ir pareigų pokyčių juosta pašalinti.
@@ -56,6 +57,10 @@ Pirmą kartą Pradžios turas parodo svarbiausias vietas. Jį vėl galima paleis
 **Pagalba → Parodyk, kaip veikia**, jei puslapis turi turą. Pareigos ir prieigos pokyčių
 istorija pateikiama puslapyje [Paskyra ir prieiga](/mano/paskyra-ir-prieiga), o gauti pranešimai –
 [Pranešimų puslapyje](/mano/pranesimai).
+
+### Laukia tavo atsakymo {#veiklos-uzklausos}
+
+Po užduotimis rodomos iki trijų tau gautų galiojančių neatsakytų veiklos užklausų, pirmiausia tos, kurių terminas baigsis greičiausiai. **Atsakyti** atveria atsakymo puslapį, o nuoroda **Visos veiklos užklausos** – [visą tavo istoriją](/mano/paskyra-ir-prieiga#veiklos-uzklausos). Atsakytos, užbaigtos ir pasibaigusios užklausos Pradžioje neberodomos, bet lieka asmeninėje istorijoje.
 
 ## Techninė informacija {#technine-informacija}
 

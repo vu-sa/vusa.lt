@@ -99,12 +99,10 @@ it('serves a complete head for every public page', function (Closure $arrange): 
     expect($head['title'])->toEndWith(" - {$brand}")
         ->not->toContain(' | ')
         ->not->toContain('VU SR')
-        ->and(substr_count($head['title'], $brand))->toBe(1, "brand repeated in \"{$head['title']}\"");
-
-    expect(mb_strlen($head['description']))->toBeBetween(50, 160, "description \"{$head['description']}\"")
-        ->and($head['description'])->not->toMatch('/<|&[a-z#0-9]+;/i');
-
-    expect($canonical->scheme())->toBe('https')
+        ->and(substr_count($head['title'], $brand))->toBe(1, "brand repeated in \"{$head['title']}\"")
+        ->and(mb_strlen($head['description']))->toBeBetween(50, 160, "description \"{$head['description']}\"")
+        ->and($head['description'])->not->toMatch('/<|&[a-z#0-9]+;/i')
+        ->and($canonical->scheme())->toBe('https')
         ->and(array_keys($canonical->query()->all()))->each->toBeIn(['page', 'tag'])
         ->and($head['ogUrl'])->toBe($head['canonical'])
         ->and($head['ogImage'])->toStartWith('http')

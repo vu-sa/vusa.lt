@@ -2,8 +2,11 @@
 doc_status: reviewed
 title: Paskyra ir prieiga
 area: profile
-last_reviewed: 2026-10-18
+last_reviewed: 2026-10-27
 tests:
+  - resources/js/Components/Institutions/__tests__/UserActivityRequestHistory.component.test.ts
+  - tests/Browser/UserActivityRequestsTest.php
+  - tests/Feature/Admin/Management/UserActivityRequestsTest.php
   - tests/Feature/Profile/ProfileControllerTest.php
   - tests/Feature/Profile/PasswordTest.php
   - tests/Feature/Admin/Core/ProfileRolesTest.php
@@ -21,8 +24,8 @@ tests:
 # Paskyra ir prieiga
 
 Viršutinėje juostoje paspaudus savo nuotrauką arba vardą, atveriamas paskyros meniu.
-Jame pasiekiami punktai **Paskyra**, **Mano rolės ir pareigybės**, **Pranešimų nustatymai**,
-**Išvaizda** ir **Pagalba**. Šiais puslapiais gali naudotis kiekvienas prisijungęs narys;
+Jame pasiekiami punktai **Paskyra**, **Mano rolės ir pareigybės**, **Pranešimų nustatymai**, **Mano veiklos užklausos**,
+**Kalba**, **Išvaizda** ir **Pagalba**. Šiais puslapiais gali naudotis kiekvienas prisijungęs narys;
 juose rodomi tavo duomenys.
 
 ## Kaip tai veikia
@@ -47,7 +50,7 @@ Tai nekeičia tavo „Microsoft“ paskyros slaptažodžio.
 
 ### Patikrinti savo prieigą {#prieiga}
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Pareigos, rolės ir prieigos istorija atskirame puslapyje">
+<ChangelogNote date="2026-10-02" title="Pareigos, rolės ir prieigos istorija atskirame puslapyje">
 
 Pasikeitus pareigoms arba neberandant skilties, pirmiausia verta patikrinti **Mano rolės ir pareigybės**.
 Čia matai savo pareigas ir skiltis, kurias gali atverti.
@@ -76,7 +79,8 @@ Jei skilties trūksta, verta patikrinti pareigų datas bei roles ir kreiptis į 
 
 - **Pranešimų nustatymai**: čia pasirenkamos laiškų ir įrenginio pranešimų parinktys. Jų taisyklės
   aprašytos [Pranešimų pagrinduose](/pagrindai/pranesimai).
-- **Išvaizda**: galima perjungti temą, kalbą arba atverti prieinamumo valdiklius
+- **Kalba**: kalbą galima perjungti tiesiogiai paskyros meniu.
+- **Išvaizda**: galima perjungti temą arba atverti prieinamumo valdiklius
   (plačiau – [Platforma](/pagrindai/platforma#spalvos-zenklai-ir-formos)).
 - **Pagalba**: čia galima atverti gidą, **Parodyk, kaip veikia** turą, **Mano užklausos** arba **Pranešti problemą**.
   Problemos pranešimui pridedamas dabartinis puslapio adresas ir naršyklės kontekstas.
@@ -84,7 +88,7 @@ Jei skilties trūksta, verta patikrinti pareigų datas bei roles ir kreiptis į 
 
 ### Prieinamumo nustatymai {#prieinamumas}
 
-<ChangelogNote version="v3.3" date="2026-10-18" title="Bendri prieinamumo ir judesio nustatymai">
+<ChangelogNote date="2026-10-18" title="Bendri prieinamumo ir judesio nustatymai">
 
 Paskyros skiltyje **Prieinamumas** atverk **Valdyti prieinamumo nustatymus**. Tie patys valdikliai
 pasiekiami paskyros meniu per **Išvaizda → Prieinamumas** ir viešos svetainės prieinamumo meniu.
@@ -118,6 +122,16 @@ užveriamas, išskyrus XL teksto dydį, kai paliekama mobilioji navigacija.
 **Atsijungti** užbaigia Mano VU SA sesiją. **Atsijungti nuo Microsoft** papildomai pradeda
 „Microsoft“ atsijungimą. Bendrame kompiuteryje rekomenduojama rinktis ir „Microsoft“ atsijungimą;
 vien naršyklės užvėrimas nėra patikimas atsijungimo veiksmas.
+
+### Mano veiklos užklausos {#veiklos-uzklausos}
+
+<ChangelogNote date="2026-10-26" title="Veiklos užklausos paskyros meniu ir Pradžioje">
+Gautas veiklos užklausas ir jų būsenas galima peržiūrėti paskyros meniu, o laukiančias atsakymo – Pradžioje.
+</ChangelogNote>
+
+Paskyros meniu **Mano veiklos užklausos** (`/mano/profile/activity-requests`) rodo tau gautas užklausas apie institucijų veiklą ir posėdžių įrašų papildymą. Matoma institucija, laikotarpis, siuntėjas arba automatinis šaltinis, žinutė ir būsena: **Laukiame atsakymo**, **Atsakyta**, **Veikla patvirtinta** arba **Galiojimas baigėsi**. Pirmos rodomos neatsakytos galiojančios užklausos, tada naujausia istorija; **Rodyti daugiau** įkelia kitus įrašus.
+
+Prie galiojančios neatsakytos užklausos **Atsakyti** atveria tą patį atsakymo puslapį kaip laiško nuoroda. Atsakymas išsaugomas tik jį patvirtinus. Užklausų istorija išlieka ir pasibaigus pareigoms; papildomų administravimo teisių jai nereikia. Kolegų atsakymai gali užbaigti užklausą – rodoma užbaigimo priežastis ir užfiksuoti rezultatai.
 
 ## Kas ką gali {#teises}
 

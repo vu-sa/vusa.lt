@@ -85,7 +85,7 @@ describe('ContactPresentationService', function (): void {
                     $dutiable->setRelation('study_program', $studyProgram);
                 }
 
-                return (new User(['name' => $name]))->setRelation('pivot', $dutiable);
+                return new User(['name' => $name])->setRelation('pivot', $dutiable);
             };
         });
 

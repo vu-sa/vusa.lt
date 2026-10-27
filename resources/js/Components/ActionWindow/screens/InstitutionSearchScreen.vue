@@ -35,7 +35,9 @@
           :icon="Landmark"
           @click="pick(hit)"
         >
-          <template #description>{{ hit.subtitle }} <InactiveInstitutionBadge v-if="hit.inactiveInstitution" :active="false" /></template>
+          <template #description>
+            {{ hit.subtitle }} <InactiveInstitutionBadge v-if="hit.inactiveInstitution" :active="false" />
+          </template>
         </ActionChoiceButton>
       </ActionChoiceList>
 

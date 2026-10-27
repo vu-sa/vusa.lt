@@ -107,8 +107,9 @@ describe('the deploy workflows', function () use ($shared, $source): void {
         $workflow = Yaml::parse($source($shared));
         $build = collect($workflow['jobs']['deploy']['steps'])->firstWhere('name', 'Build frontend assets');
 
-        expect($build['env']['BROADCAST_CONNECTION'])->toBe('log');
-        expect($build['run'])->toContain('npm run build')->toContain('npm run build:ssr');
+        expect($build['env']['BROADCAST_CONNECTION'])->toBe('log')
+            ->and($build['run'])->toContain('npm run build')
+            ->toContain('npm run build:ssr');
 
         foreach ([
             'VITE_SHAREPOINT_CLIENT_ID' => '${{ secrets.SHAREPOINT_CLIENT_ID }}',

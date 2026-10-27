@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-3">
+  <div class="flex flex-col gap-3" data-slot="discussion-panel">
     <!-- Header -->
     <div class="flex items-center justify-between gap-2">
       <div
@@ -36,6 +36,7 @@
           ref="rootComposer"
           class="min-w-0 flex-1"
           :mentionables
+          discover-formatting
           :submitting="posting"
           @submit="onPost"
         >

@@ -45,7 +45,9 @@ class CommentApiController extends ApiController
             ->with([
                 'reactions.user:id,name',
                 'pollVotes.user:id,name',
-                'replies' => fn ($q) => $q->with($replyLoad)->orderBy('created_at'),
+                'threadReplies' => fn ($q) => $q
+                    ->whereMorphedTo('commentable', $commentable)
+                    ->with($replyLoad),
             ])
             ->orderBy('created_at');
 

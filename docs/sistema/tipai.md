@@ -26,7 +26,7 @@ Tipai ir kategorijos skirti institucijoms, pareigybėms, renginiams, ištekliams
 
 ## Kaip tai veikia
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Atskiri institucijų ir pareigybių tipų sąrašai">
+<ChangelogNote date="2026-10-02" title="Atskiri institucijų ir pareigybių tipų sąrašai">
 
 Institucijų ir pareigybių tipai tvarkomi atskirai. Renkantis sąrašą išlieka bendras katalogas, o susiejimai tvarkomi konkretaus tipo įraše.
 
@@ -62,13 +62,13 @@ Viena institucija ar pareigybė gali turėti kelis tipus. Institucijos tipo skir
 
 ### Pareigybės tipo atsakomybės {#pareigybes-tipo-atsakomybes}
 
-<ChangelogNote version="v3.10" date="2026-10-19" title="Atsakomybių suteikimas vienoje vietoje">
+<ChangelogNote date="2026-10-19" title="Atsakomybių suteikimas vienoje vietoje">
 
 Tipo įraše suteikimai rodomi su aprėptimi ir nuorodomis; jie tvarkomi atsakomybės puslapyje.
 
 </ChangelogNote>
 
-<ChangelogNote version="v3.11" date="2026-10-20" title="Potipiai paveldi atsakomybes">
+<ChangelogNote date="2026-10-20" title="Potipiai paveldi atsakomybes">
 
 Pareigybės potipis gauna ir tėvinių tipų atsakomybes. Pareigybių tipams negalima suteikti atsakomybių su leidimais „Visur“ ar „Trinti negrįžtamai“.
 

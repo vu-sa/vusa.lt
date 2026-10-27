@@ -87,6 +87,12 @@ Note: `composer phpmd` has no baseline, so it lists every existing finding; CI r
 
 Note: `npm run typecheck` (`vue-tsc --noEmit`) is available and runs in CI, but is currently **non-blocking** (advisory only). Don't run ESLint fixes or chase typecheck findings unless explicitly asked — verify frontend changes with Vitest instead.
 
+### Working in a Git worktree
+
+- Run builds, tests and other file-writing commands as `sail`, never container root. When using the main checkout's running container, pass both the user and worktree directory explicitly: `./vendor/bin/sail exec -u sail -w /var/www/html/.worktrees/<name> laravel.test <command>`. Plain `sail exec` can run as root, leaving generated files owned by `nobody` on the host and preventing worktree removal.
+- Before removing a worktree, check its status and preserve uncommitted work. Fix any container-created ownership problems within that worktree before running `git worktree remove <path>`; do not use `--force` to bypass permission errors or discard work.
+- Verify removal in both `git worktree list` and the filesystem. Missing Git metadata does not prove cleanup succeeded: permission errors can leave a partially deleted folder. Remove confirmed leftovers through the container with sufficient permissions, scoped to that folder; never follow shared `.env`, `node_modules` or other symlinks.
+
 ### Running backend tests — always `--parallel`
 
 Anything wider than a single file runs with `--parallel` (the full suite takes ~50s on 16 processes
@@ -96,10 +102,21 @@ takes exactly one path — passing two files/directories fails with paratest's
 `Too many arguments, expected arguments "path"`; narrow to a common path or use `--filter` instead
 of falling back to a serial run. Full command reference, the TIA baseline/CI mechanics, and the
 `--no-tia`/`--fresh` escape hatches: [tests/CLAUDE.md](tests/CLAUDE.md#running-backend-tests).
+The one exception is a git worktree, where parallel runs fail — see [Branches and worktrees](#branches-and-worktrees).
 
 ### Linting
 
 `npm run lint` runs ESLint across the entire `resources/js` directory — expect hundreds of pre-existing warnings and errors (`no-explicit-any`, `no-restricted-imports`, import-order, etc.). To check only the files you changed, use `npm run lint:file -- <path>` (e.g. `vendor/bin/sail npm run lint:file -- resources/js/Pages/Public/Search.vue`). This is the recommended way to verify your edits without drowning in legacy noise.
+
+### Branches and worktrees
+
+Unless the person asks otherwise, create every fix, enhancement or feature on its own branch in a git worktree — never `git checkout` in the main checkout, which other agent sessions share. Put the worktree inside the repo so the Sail container can see it (only `.` is mounted):
+
+```bash
+git worktree add .worktrees/<name> -b <fix|feat>/<name> main   # add /.worktrees/ to .git/info/exclude once
+```
+
+A new worktree needs its own `composer install`, a copied `.env` and `public/build`. Run Sail commands there with `-u sail` (root leaves root-owned files behind). Git can't resolve the worktree's `.git` inside the container, so `pint --dirty` and parallel/TIA Pest fail — run Pint on explicit paths and test files serially.
 
 ## Core Patterns
 
@@ -404,7 +421,7 @@ That covers every write path (mass assignment, `update()`, `setTranslations()`, 
 
 ## Changelog
 
-User-facing changes go in `docs/changelog/v3.md` (LT) **and** `docs/en/changelog/v3.md` (EN) — one file per major version; a new major gets a new `vN.md` pair plus sidebar entries in `docs/.vitepress/{lt,en}.ts`, and the admin **Atnaujinimai** (Updates) link follows automatically. Skip purely internal changes (deps, refactors).
+User-facing changes go in `docs/changelog/v3.md` (LT) **and** `docs/en/changelog/v3.md` (EN) — one file per major version, entries headed `## YYYY-MM-DD — Title` with no minor number; a new major gets a new `vN.md` pair plus sidebar entries in `docs/.vitepress/{lt,en}.ts`, and the admin **Atnaujinimai** (Updates) link follows automatically. Skip purely internal changes (deps, refactors).
 
 Scale each entry to the release: number main features only when there are several substantial ones;
 include role sections only for substantial changes specific to that role. Small releases use a short

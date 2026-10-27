@@ -58,7 +58,7 @@ nerodomi – žr. [Įrašų failai](/visak/failai). Bendrą integraciją paaišk
 [SharePoint integracija](/sistema/sharepoint).
 Posėdžio dokumentų susiejimas aprašytas [Posėdžių gide](/visak/posedziai).
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Dokumentų archyvas pasiekiamas visiems nariams">
+<ChangelogNote date="2026-10-02" title="Dokumentų archyvas pasiekiamas visiems nariams">
 
 Dokumentus naršyk be valdytojo rolės. SharePoint tikrinimas, paskelbimas ir slėpimas lieka
 juos tvarkantiems; pirmą kartą sąrašas atrenkamas pagal tavo padalinius ir centrinę VU SA.
@@ -127,7 +127,7 @@ Failui grįžus į SharePoint (pvz., atkūrus iš šiukšlinės), jis vėl įgau
 Trumpoji nuoroda `vusa.lt/d/…` veikia tik paskelbtam dokumentui; vėl paskelbus, ta pati nuoroda
 vėl veikia.
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Visi SharePoint archyvo failai Dokumentuose">
+<ChangelogNote date="2026-10-02" title="Visi SharePoint archyvo failai Dokumentuose">
 
 Nauji archyvo failai patys atsiranda su būsena **Laukia**, o dokumentų valdytojas nusprendžia,
 kuriuos rodyti vusa.lt – sąraše arba SharePoint aplankuose, keisdamas failo būseną. Įprastas
@@ -230,7 +230,7 @@ centrinės VU SA failus. Failas priskiriamas institucijai, kurios pavadinimas ar
 su SharePoint nurodytu padaliniu. Failą be padalinio gali paskelbti tik Super Admin, todėl kitiems
 pirmiausia reikia užpildyti padalinį SharePoint.
 
-<ChangelogNote version="v3.21" date="2026-10-26" title="Dokumentus galima tvarkyti pagal instituciją">
+<ChangelogNote date="2026-10-26" title="Dokumentus galima tvarkyti pagal instituciją">
 
 Organai padalinio viduje, pvz., Revizijos komisija, tvarko tik savo institucijos failus, o ne visus
 centrinės VU SA dokumentus.

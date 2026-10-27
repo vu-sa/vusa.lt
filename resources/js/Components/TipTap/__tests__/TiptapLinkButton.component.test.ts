@@ -115,11 +115,11 @@ describe('TiptapLinkButton', () => {
 
     await openDialog(wrapper);
 
-    expect((wrapper.find('#url-input').element as HTMLInputElement).value).toBe('https://vusa.lt');
+    expect((wrapper.find('[data-testid="link-url"]').element as HTMLInputElement).value).toBe('https://vusa.lt');
     // Regression: previously `textBetween(from, from)` returned '' for a collapsed
     // selection, so the link text never appeared. Extending the mark range first
     // surfaces the full link text.
-    expect((wrapper.find('#link-text-input').element as HTMLInputElement).value).toBe('mano nuoroda');
+    expect((wrapper.find('[data-testid="link-text"]').element as HTMLInputElement).value).toBe('mano nuoroda');
   });
 
   it('clears the link text when opened with no selection and no active link', async () => {
@@ -128,8 +128,8 @@ describe('TiptapLinkButton', () => {
 
     await openDialog(wrapper);
 
-    expect((wrapper.find('#url-input').element as HTMLInputElement).value).toBe('');
-    expect((wrapper.find('#link-text-input').element as HTMLInputElement).value).toBe('');
+    expect((wrapper.find('[data-testid="link-url"]').element as HTMLInputElement).value).toBe('');
+    expect((wrapper.find('[data-testid="link-text"]').element as HTMLInputElement).value).toBe('');
   });
 
   it('emits document:submit with the document href and falls back to its title as text', async () => {

@@ -1,0 +1,69 @@
+.comment-content {
+  overflow-wrap: anywhere;
+  line-height: 1.65;
+}
+
+.comment-content > * + * {
+  margin-top: 0.55rem;
+}
+
+.comment-content ul,
+.comment-content ol {
+  padding-inline-start: 1.5rem;
+}
+
+.comment-content ul {
+  list-style-type: disc;
+}
+
+.comment-content ol {
+  list-style-type: decimal;
+}
+
+.comment-content li + li,
+.comment-content li > ul,
+.comment-content li > ol,
+.comment-content li > p + p {
+  margin-top: 0.25rem;
+}
+
+.comment-content li > p {
+  margin-block: 0;
+}
+
+.comment-content a {
+  color: var(--brand);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.comment-content .comment-mention {
+  padding: 0.05rem 0.3rem;
+  font-weight: 600;
+  color: var(--brand);
+  background: color-mix(in oklab, var(--brand) 10%, transparent);
+}
+
+.comment-composer .ProseMirror {
+  font-size: 0.9375rem;
+  caret-color: var(--brand);
+}
+
+/* A smaller field makes iOS Safari zoom when the keyboard opens. */
+@media (max-width: 640px) {
+  .comment-composer .ProseMirror {
+    font-size: 1rem;
+  }
+}
+
+.comment-composer .ProseMirror ::selection {
+  background: color-mix(in oklab, var(--brand) 15%, transparent);
+}
+
+.comment-composer .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: var(--muted-foreground);
+}

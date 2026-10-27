@@ -1,248 +1,105 @@
 <template>
-  <AutoForm :form="autoform" class="space-y-6" :schema="formSchema" :field-config="formFieldConfig" @submit="onSubmit">
-    <template v-for="field in fieldsWithDescription" #[`form-field-${field.id}`]="slotProps" :key="field.id">
-      <div class="mb-6">
-        <AutoFormField v-bind="slotProps" />
-        <div class="text-sm mt-1 text-muted-foreground" v-html="field.description" />
-      </div>
+  <form ref="formElement" class="space-y-6" novalidate @submit.prevent="submit">
+    <div v-if="Object.keys(unmappedErrors).length" ref="errorSummary" data-testid="registration-errors" tabindex="-1" role="alert" class="space-y-2 border border-destructive p-4">
+      <p v-for="(message, key) in unmappedErrors" :key class="text-sm text-destructive">
+        {{ message }}
+      </p>
+    </div>
+    <template v-for="field in definition.form_fields" :key="field.id">
+      <RegistrationField v-if="!prefilledValues?.[field.id]?.hidden" v-model="form.responses[String(field.id)].value" :field :locale
+        :error="fieldError(field.id)" @validate="validateField(field.id)" />
     </template>
-    <!-- Hide prefilled fields -->
-    <template v-for="fieldId in hiddenFieldIds" #[`form-field-${fieldId}`]="slotProps" :key="'hidden-' + fieldId">
-      <div class="hidden">
-        <AutoFormField v-bind="slotProps" />
-      </div>
-    </template>
-    <Button type="submit" variant="brand" size="lg">
-      {{ $t("Pateikti") }}
+    <Button type="submit" variant="brand" size="lg" :disabled="form.processing">
+      {{ $t('Pateikti') }}
     </Button>
-  </AutoForm>
-  <ConfirmDialog
-    :open="pendingVisit !== null"
-    :title="$t('Neišsaugoti pakeitimai')"
-    :description="$t('Tai, ką įvedei formoje, nebus išsaugota.')"
-    :cancel-label="$t('Likti puslapyje')"
-    :confirm-label="$t('Išeiti iš puslapio')"
-    @update:open="handleDiscardDialogOpen"
-    @confirm="continueNavigation"
-  />
+  </form>
+  <ConfirmDialog :open="pendingVisit !== null" :title="$t('Neišsaugoti pakeitimai')"
+    :description="$t('Tai, ką įvedei formoje, nebus išsaugota.')" :cancel-label="$t('Likti puslapyje')"
+    :confirm-label="$t('Išeiti iš puslapio')" @update:open="handleDiscardDialogOpen" @confirm="continueNavigation" />
 </template>
 
 <script setup lang="ts">
-import { z } from 'zod';
-import { useForm } from 'vee-validate';
-import { toTypedSchema } from '@vee-validate/zod';
-import { ref, shallowRef, watch, computed, onMounted, onBeforeUnmount } from 'vue';
-import { router, usePage } from '@inertiajs/vue3';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
+import { router, useForm, usePage } from '@inertiajs/vue3';
 import type { PendingVisit } from '@inertiajs/core';
 
-import { Button } from '@/Components/ui/button';
-import AutoForm from '@/Components/ui/auto-form/AutoForm.vue';
-import AutoFormField from '@/Components/ui/auto-form/AutoFormField.vue';
-import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
+import RegistrationField from './RegistrationField.vue';
+import { initialValue, type PrefilledValue, type RegistrationDefinition, type RegistrationValue } from './types';
 
-interface PrefilledValue {
-  value: string | number | boolean;
-  hidden?: boolean;
-}
+import { Button } from '@/Components/ui/button';
+import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
+import type { PageProps } from '@/Types';
 
 const props = defineProps<{
-  form: Record<string, any>;
+  form: RegistrationDefinition;
+  submitUrl: string;
   prefilledValues?: Record<string, PrefilledValue>;
 }>();
-
-const emit = defineEmits<(e: 'submit', data: Record<string, any>) => void>();
-
-const schema = {};
-const fieldsWithDescription = ref([]);
-
-const removeInertiaBeforeEventListener = ref<VoidFunction | null>(null);
+const definition = computed(() => props.form);
+const currentPage = usePage<PageProps>();
+const locale = computed(() => currentPage.props.app.locale);
+const values: Record<string, { value: RegistrationValue }> = Object.fromEntries(
+  props.form.form_fields.map(field => [
+    String(field.id),
+    { value: initialValue(field, locale.value, props.prefilledValues?.[field.id]) },
+  ]),
+);
+const form = useForm({ responses: values })
+  .transform(({ responses }) => ({ data: responses }))
+  .withPrecognition('post', props.submitUrl).setValidationTimeout(500);
+const formElement = ref<HTMLFormElement | null>(null);
+const errorSummary = ref<HTMLElement | null>(null);
+const unmappedErrors = computed(() => {
+  const visibleKeys = new Set(props.form.form_fields
+    .filter(field => !props.prefilledValues?.[field.id]?.hidden)
+    .flatMap(field => [`data.${field.id}`, `data.${field.id}.value`]));
+  return Object.fromEntries(Object.entries(form.errors).filter(([key]) => !visibleKeys.has(key)));
+});
 const pendingVisit = shallowRef<PendingVisit | null>(null);
+let submitting = false;
 let allowNextVisit = false;
 
-// Track which fields should be hidden (prefilled with hidden: true)
-const hiddenFieldIds = computed(() => {
-  if (!props.prefilledValues) return [];
-  return Object.entries(props.prefilledValues)
-    .filter(([_, config]) => config.hidden)
-    .map(([fieldId]) => fieldId);
+function fieldError(id: string | number): string | undefined {
+  const { errors }: { errors: Record<string, string | undefined> } = form;
+  return errors[`data.${id}.value`] ?? errors[`data.${id}`];
+}
+
+async function validateField(id: string | number) {
+  await nextTick();
+  form.validator().validate(`data.${id}.value`, form.responses[String(id)].value);
+}
+
+async function focusErrors() {
+  await nextTick();
+  const target = errorSummary.value ?? formElement.value?.querySelector<HTMLElement>('[aria-invalid="true"]');
+  target?.focus();
+  target?.scrollIntoView({ block: 'nearest' });
+}
+
+function submit() {
+  if (form.processing) return;
+  submitting = true;
+  form.submit({
+    onSuccess: (page) => {
+      const { flash } = page.props as PageProps;
+      if (flash?.success && !flash.error) form.defaults();
+      // Inertia otherwise marks redirects carrying application errors as saved.
+      else form.defaults({});
+    },
+    onError: focusErrors,
+    onFinish: () => { submitting = false; },
+  });
+}
+
+const removeBeforeListener = router.on('before', (event) => {
+  if (event.detail.visit.prefetch || submitting || !form.isDirty) return;
+  if (allowNextVisit) {
+    allowNextVisit = false;
+    return;
+  }
+  event.preventDefault();
+  pendingVisit.value = event.detail.visit;
 });
-
-/**
- * Labels arrive either as a plain scalar (model-backed options, e.g. a tenant's `fullname`)
- * or as a `{ lt, en }` object whose values may be numbers. Both shapes can appear in one form,
- * so resolve per option — probing only `options[0]` mislabelled every option in the field.
- */
-const resolveOptionLabel = (label: unknown): string => {
-  if (label === null || label === undefined) {
-    return '';
-  }
-
-  if (typeof label === 'object') {
-    const translations = label as Record<string, unknown>;
-    const locale = (usePage().props as any).app?.locale ?? 'lt';
-    const translated = translations[locale] ?? translations.lt ?? Object.values(translations)[0];
-
-    return translated === null || translated === undefined ? '' : String(translated);
-  }
-
-  return String(label);
-};
-
-const getFieldOptions = (field: Record<string, any>): Record<string, any>[] => field.options ?? [];
-
-const findOptionByValue = (field: Record<string, any>, value: string | number | boolean) =>
-  getFieldOptions(field).find(option => String(option.value) === String(value));
-
-const findOptionByLabel = (field: Record<string, any>, label: unknown) =>
-  getFieldOptions(field).find(option => resolveOptionLabel(option.label) === label);
-
-const getEnumLabel = (field: Record<string, any>, value: string | number | boolean) => {
-  if (field.type !== 'enum') {
-    return value;
-  }
-
-  const option = findOptionByValue(field, value);
-
-  return option ? resolveOptionLabel(option.label) : value;
-};
-
-// Get default value for a field (checking prefilled values first)
-const getDefaultValue = (field: Record<string, any>) => {
-  const prefilledConfig = props.prefilledValues?.[field.id];
-
-  if (prefilledConfig) {
-    // For enum fields, convert the raw value to its label; otherwise returns the value as-is
-    return getEnumLabel(field, prefilledConfig.value);
-  }
-  return field.default_value;
-};
-
-// dynamically build form schema from form.formFields
-props.form.form_fields.forEach((field: Record<string, any>) => {
-  let fieldSchema: z.ZodType;
-  let options: string[] = [];
-
-  switch (field.type) {
-    case 'string':
-      fieldSchema = z.string();
-      break;
-    case 'number':
-      fieldSchema = z.number();
-      break;
-    case 'enum':
-      options = getFieldOptions(field).map(option => resolveOptionLabel(option.label));
-
-      // z.enum() rejects an empty list, and model-backed options can legitimately resolve to none.
-      fieldSchema = options.length > 0 ? z.enum(options as [string, ...string[]]) : z.string();
-      break;
-    case 'date':
-      fieldSchema = z.coerce.date();
-      break;
-    case 'boolean':
-      fieldSchema = z.boolean();
-
-      if (field.is_required) {
-        fieldSchema = fieldSchema.refine(value => value, {
-          message: 'You must accept to proceed.',
-        });
-      }
-  }
-
-  if (field.subtype === 'email') {
-    fieldSchema = fieldSchema.email();
-  }
-
-  if (!field.is_required) {
-    fieldSchema = fieldSchema.optional();
-  }
-
-  const defaultValue = getDefaultValue(field);
-  if (defaultValue) {
-    fieldSchema = fieldSchema.default(defaultValue);
-  }
-
-  if (field.description) {
-    fieldsWithDescription.value.push({
-      id: field.id,
-      description: field.description,
-    });
-  }
-
-  schema[`form-field-${field.id}`] = fieldSchema;
-});
-
-const formSchema = z.object(schema);
-
-const formFieldConfig = props.form.form_fields.reduce((acc, field: Record<string, any>) => {
-  const description = Array.isArray(field.description) ? '' : field.description;
-
-  acc[`form-field-${field.id}`] = {
-    label: field.label,
-  };
-
-  if (field.subtype === 'textarea') {
-    acc[`form-field-${field.id}`].component = 'textarea';
-  }
-
-  return acc;
-}, {});
-
-const autoform = useForm({
-  validationSchema: toTypedSchema(formSchema),
-});
-
-// Set initial values for prefilled fields after mount
-onMounted(() => {
-  if (props.prefilledValues) {
-    const initialValues: Record<string, any> = {};
-
-    for (const [fieldId, config] of Object.entries(props.prefilledValues)) {
-      const field = props.form.form_fields.find((f: Record<string, any>) => String(f.id) === String(fieldId));
-      if (field) {
-        const formFieldKey = `form-field-${fieldId}`;
-
-        // For enum fields, convert value to label
-        if (field.type === 'enum') {
-          const option = findOptionByValue(field, config.value);
-
-          if (option) {
-            initialValues[formFieldKey] = resolveOptionLabel(option.label);
-          }
-        }
-        else {
-          initialValues[formFieldKey] = config.value;
-        }
-      }
-    }
-
-    if (Object.keys(initialValues).length > 0) {
-      // Use resetForm to set values without triggering validation
-      autoform.resetForm({
-        values: { ...autoform.values, ...initialValues },
-      });
-    }
-  }
-});
-
-const isSubmitting = ref(false);
-
-watch(() => autoform.meta.value.dirty, (isDirty) => {
-  if (isDirty) {
-    removeInertiaBeforeEventListener.value = router.on('before', (event) => {
-      if (event.detail.visit.prefetch || isSubmitting.value || !autoform.meta.value.dirty) {
-        return;
-      }
-
-      if (allowNextVisit) {
-        allowNextVisit = false;
-        return;
-      }
-
-      event.preventDefault();
-      pendingVisit.value = event.detail.visit;
-    });
-  }
-}, { once: true });
 
 function handleDiscardDialogOpen(open: boolean) {
   if (!open) pendingVisit.value = null;
@@ -252,52 +109,21 @@ function continueNavigation() {
   const visit = pendingVisit.value;
   pendingVisit.value = null;
   if (!visit) return;
-
   const { url, ...options } = visit;
-  for (const key of ['id', 'completed', 'cancelled', 'interrupted']) {
-    Reflect.deleteProperty(options, key);
-  }
-
+  for (const key of ['id', 'completed', 'cancelled', 'interrupted']) Reflect.deleteProperty(options, key);
   allowNextVisit = true;
   router.visit(url, options);
 }
 
-onBeforeUnmount(() => removeInertiaBeforeEventListener.value?.());
+function beforeUnload(event: BeforeUnloadEvent) {
+  if (!form.isDirty || submitting) return;
+  event.preventDefault();
+  event.returnValue = '';
+}
 
-const onSubmit = (data: Record<string, any>) => {
-  isSubmitting.value = true;
-
-  // skip onbefore event
-  if (removeInertiaBeforeEventListener.value) removeInertiaBeforeEventListener.value?.();
-
-  // transform data to match the backend
-  // remove form-field- prefix
-
-  const transformedData = Object.keys(data).reduce((acc, key) => {
-    let fieldData = data[key];
-
-    const formField = props.form.form_fields.find((field: Record<string, any>) => String(field.id) === key.replace('form-field-', ''));
-
-    if (formField?.type === 'enum') {
-      // The select holds the rendered label; send the option's value back to the backend.
-      const selectedOption = findOptionByLabel(formField, fieldData);
-
-      if (selectedOption) {
-        fieldData = selectedOption.value;
-      }
-    }
-
-    const fieldId = key.replace('form-field-', '');
-
-    acc[fieldId] = {
-      value: fieldData,
-    };
-
-    return acc;
-  }, {});
-
-  emit('submit', transformedData);
-
-  autoform.resetForm();
-};
+onMounted(() => window.addEventListener('beforeunload', beforeUnload));
+onBeforeUnmount(() => {
+  removeBeforeListener();
+  window.removeEventListener('beforeunload', beforeUnload);
+});
 </script>

@@ -42,6 +42,7 @@ const EXCLUDED_FROM_CATALOG = [
     'administration' => 'Visi skyriai is the catalog rendered as a map (PR 7.5); it lists every section, so it is not one itself',
     'profile' => 'reached from the account menu, not a workspace section (PR 4.4)',
     'profile.roles' => 'Mano rolės ir pareigybės, reached from the account menu and every 403 page (PR 5.9)',
+    'profile.activityRequests' => 'personal received activity requests, reached from the account menu and home',
     'profile.notifications' => 'Pranešimų nustatymai, reached from the account menu and Paskyra (PR 9.9)',
     'mySupportRequests.index' => 'Pagalba entry point, not a workspace section (PR 4.4)',
     'settings.cadences.index' => 'reached from within Nustatymai, not a top-level section',
@@ -53,7 +54,7 @@ const EXCLUDED_FROM_CATALOG = [
  * menu or Pagalba, or are legacy redirects that never render (`SearchController`'s own docblocks).
  */
 const WORKSPACELESS_ROUTES = [
-    'administration', 'profile', 'profile.roles', 'profile.notifications', 'mySupportRequests.index', 'mySupportRequests.create',
+    'administration', 'profile', 'profile.roles', 'profile.activityRequests', 'profile.notifications', 'mySupportRequests.index', 'mySupportRequests.create',
     'search.index', 'search.agendaItems', 'search.institutions',
     'search.meetings', 'search.resources',
     // Redirects straight out to the file's anonymous SharePoint link; never rendered as a page.

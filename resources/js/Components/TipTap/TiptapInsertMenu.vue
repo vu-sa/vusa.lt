@@ -17,15 +17,15 @@
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent data-rc-smart-toolbar-layer align="start" class="w-56">
-      <DropdownMenuItem v-if="tools.image" data-testid="tiptap-insert-image" @select="openLater(showImage)">
+      <DropdownMenuItem v-if="tools.image" data-testid="tiptap-insert-image" @select="openLater(() => showImage = true)">
         <IFluentImage24Regular />
         {{ $t('rich-content.select_image') }}
       </DropdownMenuItem>
-      <DropdownMenuItem v-if="tools.youtube" data-testid="tiptap-insert-youtube" @select="openLater(showYoutube)">
+      <DropdownMenuItem v-if="tools.youtube" data-testid="tiptap-insert-youtube" @select="openLater(() => showYoutube = true)">
         <IFluentVideoClip24Regular />
         {{ $t('rich-content.insert_youtube') }}
       </DropdownMenuItem>
-      <DropdownMenuItem v-if="tools.video" data-testid="tiptap-insert-video" @select="openLater(showVideo)">
+      <DropdownMenuItem v-if="tools.video" data-testid="tiptap-insert-video" @select="openLater(() => showVideo = true)">
         <IFluentVideo24Regular />
         {{ $t('rich-content.insert_video') }}
       </DropdownMenuItem>
@@ -47,7 +47,7 @@
 
 <script setup lang="ts">
 import type { Editor } from '@tiptap/core';
-import { ref, type Ref } from 'vue';
+import { ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import ImageSelector from './ImageSelector.vue';
@@ -81,9 +81,7 @@ const showVideo = ref(false);
 const showYoutube = ref(false);
 
 /** Wait for the menu to close and hand focus back before a dialog claims it. */
-function openLater(flag: Ref<boolean>): void {
-  setTimeout(() => {
-    flag.value = true;
-  });
+function openLater(open: () => void): void {
+  setTimeout(open);
 }
 </script>

@@ -373,6 +373,9 @@ watch(() => form.scope_type, () => {
   form.scope_id = '';
 });
 
+// A full visit drops the deferred grants and swaps the list for its skeleton, which resets the scroll.
+const GRANT_CHANGE_PROPS = ['grants', 'people', 'facts', 'can', 'flash'];
+
 function openSheet(grantee: Grantee): void {
   form.reset();
   form.clearErrors();
@@ -393,6 +396,7 @@ function submit(): void {
     })
     .post(route('responsibilities.grants.store', props.roleId), {
       preserveScroll: true,
+      only: GRANT_CHANGE_PROPS,
       onSuccess: () => {
         form.defaults();
         sheetOpen.value = false;
@@ -413,6 +417,7 @@ function remove(): void {
       router.delete(url, {
         data: { acknowledge_access_change: acknowledge },
         preserveScroll: true,
+        only: GRANT_CHANGE_PROPS,
       });
     });
   }

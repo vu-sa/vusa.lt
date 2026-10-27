@@ -62,7 +62,7 @@ nieko negalima. Atskiro autorizacijos puslapio nebėra.
 
 ### Sistemos paskirtys {#sistemos-paskirtys}
 
-<ChangelogNote version="v3.10" date="2026-10-19" title="Sistemos paskirtys nustatymuose">
+<ChangelogNote date="2026-10-19" title="Sistemos paskirtys nustatymuose">
 
 Nauja sritis nurodo, kuri atsakomybė ir kurie pareigybių tipai atlieka sistemos numatytas paskirtis.
 
@@ -122,7 +122,7 @@ Adresas: `/mano/settings/documents`. Čia pažymimi **svarbūs dokumentų turini
   šių tipų rezultatai rodomi aukščiau. Be paieškos frazės bendras sąrašas rodomas nuo naujausių.
 - **Vidiniame dokumentų sąraše** (`/mano/documents`): jie siūlomi kaip greitojo filtravimo parinktys.
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Rekomenduojami dokumentai paieškoje">
+<ChangelogNote date="2026-10-02" title="Rekomenduojami dokumentai paieškoje">
 
 Tame pačiame puslapyje galima pridėti rekomendaciją ir pasirinkti dokumentą (paspaudus pavadinimą,
 jis pakeičiamas). Kiekviena rekomendacija rodoma dviem atskirais atvejais:

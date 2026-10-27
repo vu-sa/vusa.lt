@@ -75,87 +75,71 @@
             </div>
           </div>
 
-          <!-- Accessibility form (vee-validate + zod) -->
-          <Form
-            id="image-details-form"
-            :validation-schema="formSchema"
-            :initial-values="{ alt: '', title: '' }"
-            @submit="onSubmitDetails"
-          >
+          <form id="image-details-form" novalidate @submit.prevent="onSubmitDetails">
             <div class="space-y-4">
-              <FormField v-slot="{ componentField, value }" name="alt">
-                <FormItem>
-                  <FormLabel>
-                    {{ $t('accessibility.alt_text') }}
-                    <span class="text-destructive">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      v-bind="componentField"
-                      :placeholder="$t('accessibility.alt_text_placeholder')"
-                      :disabled="isDecorative"
-                      maxlength="125"
-                    />
-                  </FormControl>
-                  <FormMessage />
+              <div class="space-y-2">
+                <Label for="image-alt">
+                  {{ $t('accessibility.alt_text') }}
+                  <span class="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="image-alt" v-model="details.alt" :aria-invalid="!!errors.alt"
+                  :aria-describedby="errors.alt ? 'image-alt-error' : undefined"
+                  :placeholder="$t('accessibility.alt_text_placeholder')"
+                  :disabled="isDecorative"
+                  maxlength="125"
+                />
+                <p v-if="errors.alt" id="image-alt-error" class="text-sm text-destructive" role="alert">
+                  {{ errors.alt }}
+                </p>
 
-                  <!-- The rationale costs one line until asked for: an author who
-                       already knows it inserts images all day and shouldn't scroll
-                       past a paragraph every time. -->
-                  <Collapsible v-model:open="altHelpOpen">
-                    <div class="flex items-center justify-between gap-2">
-                      <CollapsibleTrigger as-child>
-                        <!-- Explicit type: shadcn's Button sets none, so inside a form this
-                             toggle would submit it. -->
-                        <Button type="button" variant="ghost" size="sm"
-                          class="h-auto gap-2 p-0 text-xs font-normal has-[>svg]:p-0 text-muted-foreground hover:bg-transparent hover:text-foreground">
-                          <Info class="size-4" />
-                          {{ $t('accessibility.why_alt_required') }}
-                          <ChevronDown class="size-3 transition-transform duration-200"
-                            :class="{ 'rotate-180': altHelpOpen }" />
-                        </Button>
-                      </CollapsibleTrigger>
-                      <span class="text-xs tabular-nums text-muted-foreground">
-                        {{ (value as string | undefined)?.length ?? 0 }}/125
-                      </span>
-                    </div>
-                    <CollapsibleContent class="space-y-1 pt-2 text-xs leading-relaxed text-muted-foreground">
-                      <p>{{ $t('accessibility.alt_text_required_explanation') }}</p>
-                      <p>{{ $t('accessibility.alt_text_example') }}</p>
-                    </CollapsibleContent>
-                  </Collapsible>
-
-                  <!-- Matches ImageAccessibilityDialog: a purely decorative image is
-                       better served by an empty alt than by a description a screen
-                       reader has to read out for nothing. -->
-                  <div class="flex items-center gap-2">
-                    <Checkbox id="image-decorative" v-model="isDecorative" />
-                    <Label for="image-decorative" class="text-xs font-normal text-muted-foreground">
-                      {{ $t('accessibility.image_is_decorative') }}
-                    </Label>
+                <Collapsible v-model:open="altHelpOpen">
+                  <div class="flex items-center justify-between gap-2">
+                    <CollapsibleTrigger as-child>
+                      <Button type="button" variant="ghost" size="sm"
+                        class="h-auto gap-2 p-0 text-xs font-normal has-[>svg]:p-0 text-muted-foreground hover:bg-transparent hover:text-foreground">
+                        <Info class="size-4" />
+                        {{ $t('accessibility.why_alt_required') }}
+                        <ChevronDown class="size-3 transition-transform duration-200"
+                          :class="{ 'rotate-180': altHelpOpen }" />
+                      </Button>
+                    </CollapsibleTrigger>
+                    <span class="text-xs tabular-nums text-muted-foreground">
+                      {{ details.alt.length }}/125
+                    </span>
                   </div>
-                </FormItem>
-              </FormField>
+                  <CollapsibleContent class="space-y-1 pt-2 text-xs leading-relaxed text-muted-foreground">
+                    <p>{{ $t('accessibility.alt_text_required_explanation') }}</p>
+                    <p>{{ $t('accessibility.alt_text_example') }}</p>
+                  </CollapsibleContent>
+                </Collapsible>
 
-              <FormField v-slot="{ componentField }" name="title">
-                <FormItem>
-                  <FormLabel>
-                    {{ $t('accessibility.title_text') }}
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      v-bind="componentField"
-                      :placeholder="$t('accessibility.title_text_placeholder')"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                  <p class="text-xs text-muted-foreground">
-                    {{ $t('accessibility.title_text_help') }}
-                  </p>
-                </FormItem>
-              </FormField>
+                <div class="flex items-center gap-2">
+                  <Checkbox id="image-decorative" v-model="isDecorative" />
+                  <Label for="image-decorative" class="text-xs font-normal text-muted-foreground">
+                    {{ $t('accessibility.image_is_decorative') }}
+                  </Label>
+                </div>
+              </div>
+
+              <div class="space-y-2">
+                <Label for="image-title">
+                  {{ $t('accessibility.title_text') }}
+                </Label>
+                <Input
+                  id="image-title" v-model="details.title" maxlength="200" :aria-invalid="!!errors.title"
+                  :aria-describedby="errors.title ? 'image-title-error image-title-hint' : 'image-title-hint'"
+                  :placeholder="$t('accessibility.title_text_placeholder')"
+                />
+                <p v-if="errors.title" id="image-title-error" class="text-sm text-destructive" role="alert">
+                  {{ errors.title }}
+                </p>
+                <p id="image-title-hint" class="text-xs text-muted-foreground">
+                  {{ $t('accessibility.title_text_help') }}
+                </p>
+              </div>
             </div>
-          </Form>
+          </form>
         </div>
       </div>
       <DialogFooter class="px-8 pb-6">
@@ -189,11 +173,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronDown, Info } from '@lucide/vue';
-import { toTypedSchema } from '@vee-validate/zod';
-import { z } from 'zod';
 
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
@@ -209,12 +191,10 @@ import {
   StepperTitle,
   StepperDescription,
 } from '@/Components/ui/stepper';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/Components/ui/form';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
 import FileSelector from '@/Features/Admin/FileManager/FileSelector.vue';
 
-const props = defineProps<{
-  // only specific values for selectionType are allowed
+defineProps<{
   selectionType?: 'image' | 'video';
 }>();
 
@@ -227,14 +207,16 @@ const currentStep = ref<number>(1);
 const altHelpOpen = ref(false);
 const isDecorative = ref(false);
 
-const formSchema = toTypedSchema(z.object({
-  alt: z.string().optional(),
-  title: z.string().max(200, { message: $t('validation.max') }).optional().or(z.literal('')),
-}).superRefine((values, context) => {
-  if (!isDecorative.value && !values.alt?.trim()) {
-    context.addIssue({ code: z.ZodIssueCode.custom, path: ['alt'], message: $t('accessibility.alt_text_required') });
-  }
-}));
+const details = reactive({ alt: '', title: '' });
+const attempted = ref(false);
+const errors = computed(() => {
+  const result: { alt?: string; title?: string } = {};
+  if (!attempted.value) return result;
+  if (!isDecorative.value && !details.alt.trim()) result.alt = $t('accessibility.alt_text_required');
+  else if (!isDecorative.value && details.alt.length > 125) result.alt = $t('validation.max.string', { attribute: $t('accessibility.alt_text'), max: 125 });
+  if (details.title.length > 200) result.title = $t('validation.max.string', { attribute: $t('accessibility.title_text'), max: 200 });
+  return result;
+});
 
 // Watch for modal close to reset form
 watch(showModal, (isOpen) => {
@@ -269,12 +251,13 @@ function goBackToSelection() {
   currentStep.value = 1;
 }
 
-function onSubmitDetails(values: { alt?: string; title?: string }) {
-  if (!selectedImageUrl.value) return;
+function onSubmitDetails() {
+  attempted.value = true;
+  if (!selectedImageUrl.value || Object.keys(errors.value).length) return;
   emit('submit', {
     src: selectedImageUrl.value,
-    alt: isDecorative.value ? '' : (values.alt ?? '').trim(),
-    title: (values.title ?? '').trim(),
+    alt: isDecorative.value ? '' : details.alt.trim(),
+    title: details.title.trim(),
   });
   showModal.value = false;
 }
@@ -284,6 +267,10 @@ function resetForm() {
   showModal.value = false;
   currentStep.value = 1;
   isDecorative.value = false;
+  details.alt = '';
+  details.title = '';
+  attempted.value = false;
+  altHelpOpen.value = false;
 }
 
 function getImageName(url: string): string {

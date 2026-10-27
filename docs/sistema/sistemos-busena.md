@@ -54,7 +54,7 @@ Kortelėje pateikiami iki keturių svarbiausių paslaugos parametrų (pvz., ryš
 
 ### Priežiūros veiksmai
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Priežiūros veiksmus paleisk platformoje">
+<ChangelogNote date="2026-10-02" title="Priežiūros veiksmus paleisk platformoje">
 
 Super administratorius gali paleisti šiame puslapyje pateiktus priežiūros veiksmus. Prieš patvirtinant verta patikrinti pasirinktą veiksmą; jo paleidimas įrašomas į veiklos žurnalą.
 

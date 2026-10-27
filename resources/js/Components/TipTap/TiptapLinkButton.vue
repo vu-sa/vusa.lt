@@ -30,29 +30,7 @@
         </TabsList>
 
         <TabsContent value="url" class="space-y-4 pt-4">
-          <div class="space-y-4">
-            <div class="space-y-2">
-              <Label for="url-input">{{ $t('rich-content.link_url') }}</Label>
-              <Input
-                id="url-input"
-                v-model="urlRef"
-                placeholder="https://..."
-                type="url"
-                @keydown.enter.prevent="addLink"
-              />
-            </div>
-            <div class="space-y-2">
-              <Label for="link-text-input">{{ $t('rich-content.link_text') }}</Label>
-              <Input
-                id="link-text-input"
-                v-model="linkTextRef"
-                :placeholder="urlRef || $t('rich-content.link_text')"
-              />
-              <p class="text-xs text-muted-foreground">
-                {{ hasSelectedText ? $t('rich-content.link_text_editing') : $t('rich-content.link_text_fallback_url') }}
-              </p>
-            </div>
-          </div>
+          <TiptapLinkForm v-model:url="urlRef" v-model:text="linkTextRef" :has-selected-text @submit="addLink" @cancel="showModal = false" />
         </TabsContent>
 
         <TabsContent value="file" class="pt-4 max-h-[60vh] overflow-y-auto pr-1 space-y-4">
@@ -111,7 +89,7 @@
         <Button type="button" variant="outline" @click="showModal = false">
           {{ $t('Atšaukti') }}
         </Button>
-        <Button type="button" :disabled="!urlRef.trim()" @click="addLink">
+        <Button type="button" :disabled="!isValidTiptapLink(urlRef)" @click="addLink">
           {{ $t('rich-content.link_apply') }}
         </Button>
       </DialogFooter>
@@ -123,6 +101,9 @@
 import { computed, ref } from 'vue';
 import type { Editor } from '@tiptap/core';
 import { trans as $t } from 'laravel-vue-i18n';
+
+import TiptapLinkForm from './TiptapLinkForm.vue';
+import { isValidTiptapLink } from './linkUrl';
 
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
@@ -144,7 +125,6 @@ const emit = defineEmits<{
 }>();
 
 const showModal = ref(false);
-// keep urlRef always a string to simplify template checks
 const urlRef = ref<string>('');
 const linkTextRef = ref<string>('');
 
@@ -155,27 +135,20 @@ const hasSelectedText = computed(() => {
 });
 
 function open() {
-  // Optional chain on editor and attributes; default to empty string
   const linkAttrs = props.editor?.getAttributes?.('link');
   urlRef.value = linkAttrs?.href ?? '';
 
-  // Get selected text or current link text
   const { from, to } = props.editor?.state.selection || { from: 0, to: 0 };
   if (from !== to) {
-    // Has selected text
     linkTextRef.value = props.editor?.state.doc.textBetween(from, to) || '';
   }
   else if (linkAttrs?.href) {
-    // Collapsed cursor inside a link — extend the selection to the link mark so
-    // we can read its text. This also leaves the link text selected, which makes
-    // the submit path treat it as an edit (extendMarkRange('link').setLink(...))
-    // rather than inserting a duplicate <a> node.
+    // Extend a collapsed cursor so applying a URL edits rather than duplicates the link.
     props.editor?.chain().focus().extendMarkRange('link').run();
     const sel = props.editor?.state.selection;
     linkTextRef.value = sel ? (props.editor?.state.doc.textBetween(sel.from, sel.to) || '') : '';
   }
   else {
-    // No selection, clear text
     linkTextRef.value = '';
   }
 
@@ -184,7 +157,7 @@ function open() {
 
 function addLink() {
   const url = urlRef.value.trim();
-  if (url) {
+  if (isValidTiptapLink(url)) {
     emit('submit', url, linkTextRef.value.trim() || url);
   }
 

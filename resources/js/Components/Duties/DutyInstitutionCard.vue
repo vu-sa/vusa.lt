@@ -5,7 +5,9 @@
     :title="institution.name"
     :icon="InstitutionIconFilled"
   >
-    <template #trailing><InactiveInstitutionBadge :active="institution.is_active" /></template>
+    <template #trailing>
+      <InactiveInstitutionBadge :active="institution.is_active" />
+    </template>
   </EntityLinkCard>
 </template>
 

@@ -3,8 +3,9 @@ doc_status: reviewed
 title: Nariai
 area: users
 models: [User]
-last_reviewed: 2026-10-23
+last_reviewed: 2026-10-26
 tests:
+  - tests/Feature/Admin/Management/UserActivityRequestsTest.php
   - resources/js/Components/Public/__tests__/ContactWithPhoto.component.test.ts
   - resources/js/Utils/__tests__/String.test.ts
   - tests/Feature/Search/ContactSearchIndexSyncTest.php
@@ -133,7 +134,7 @@ Narių sąraše (`/mano/users`) pateikiama visų pasiekiamų narių suvestinė:
 Kai renkantis narį ieškoma pagal vardą (pvz., [priskiriant pareigybę](/organizacija/pareigybes#priskirti-nari)),
 pirmiausia rodomi dabartiniai nariai, o buvę pažymimi metais, todėl ilgėjantis buvusių narių sąrašas paieškos neužgožia.
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Dabartiniai ir buvę nariai">
+<ChangelogNote date="2026-10-02" title="Dabartiniai ir buvę nariai">
 
 Narių sąraše atsirado filtrai „Dabartiniai“ ir „Buvę“, o buvę nariai pažymimi pareigų pabaigos metais.
 
@@ -207,7 +208,7 @@ Atidarius formą per **Redaguoti narį** (`/mano/users/{id}/edit`):
 
 ### Narių sujungimas {#sujungimas}
 
-<ChangelogNote version="v3.4" date="2026-10-18" title="Kelių įrašų sujungimas ir prisijungimo adreso pasirinkimas">
+<ChangelogNote date="2026-10-18" title="Kelių įrašų sujungimas ir prisijungimo adreso pasirinkimas">
 
 Filtras „Galimi dublikatai“ padeda rasti pasikartojančius profilius. Galima sujungti kelis to paties asmens
 įrašus iš karto ir pasirinkti prisijungimo el. paštą, jei leidžiama keisti paliekamos paskyros tapatybę.
@@ -265,6 +266,12 @@ Sujungus:
 - **Trynimas visam laikui yra blokuojamas**, jei narys sistemoje yra palikęs komentarų, patikrinimų
   posėdžiuose (`check_ins`) arba pranešęs problemų. Tai apsaugo nuo susijusių duomenų praradimo
   ir duomenų bazės ryšių klaidų.
+
+### Veiklos užklausos {#veiklos-uzklausos}
+
+Nario puslapio skiltis **Veiklos užklausos** rodo jam gautas užklausas apie tas institucijas, kurių veiklos gali klausti. Padalinio studentų atstovų ir komunikacijos koordinatoriai mato savo administruojamų institucijų užklausas, o Centrinio biuro atitinkami koordinatoriai – visų padalinių. Institucijai studentų atstovų koordinavimo atsakomybę turintis narys mato tos institucijos užklausas, jei gali atverti nario puslapį. Vien nario profilio skaitymo prieigos nepakanka.
+
+Jei narys dirba keliuose padaliniuose, kito padalinio užklausos savaime neatskleidžiamos. Skiltis nerodoma, kai nėra matomų užklausų. Koordinatorius mato būsenas ir rezultatus; atsakyti kito gavėjo vardu negalima. Savo gautas užklausas kiekvienas narys pasiekia per [Mano veiklos užklausas](/mano/paskyra-ir-prieiga#veiklos-uzklausos).
 
 ## Kas ką gali {#teises}
 

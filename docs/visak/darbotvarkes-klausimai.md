@@ -100,7 +100,7 @@ viešame posėdyje paskelbiamas jo įprastas turinys, todėl prieš išsaugant v
 Kopijuojant ankstesnę darbotvarkę, matomumo žyma išlieka; viešas pavadinimas naujam
 klausimui įrašomas atskirai.
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Atskiro klausimo matomumas">
+<ChangelogNote date="2026-10-02" title="Atskiro klausimo matomumas">
 
 Žyma **Rodoma tik ViSAK** leidžia atskirti vidaus darbo klausimą nuo kitų viešo posėdžio klausimų.
 Redagavimo lange rodomas prieigos paaiškinimas ir viešos eilutės peržiūra.
@@ -125,7 +125,7 @@ būsimam – kaip *bus*, o sprendimui el. paštu – kaip jis sprendžiamas el. 
 
 Pasirinkus **Balsavimas**, automatiškai pridedamas pirmas balsavimas.
 
-<ChangelogNote version="v3.11" date="2026-10-20" title="Aptarimas ir Išbrauktas">
+<ChangelogNote date="2026-10-20" title="Aptarimas ir Išbrauktas">
 
 Tipas **Informacinis** pervadintas į **Aptarimas** – jis tinka ir pristatymui, ir aptarimui be
 balsavimo. Naujas tipas **Išbrauktas** skirtas klausimams, kurie išbraukti iš darbotvarkės ar
@@ -141,7 +141,7 @@ nustatoma pagal visus balsavimus: kai jų rezultatas vienodas, rodomas tas rezul
 skiriasi – **Skirtingi rezultatai**. Pagrindinis nebūtinas ir pats neparenkamas. Balsavimų tvarka,
 pavadinimai ir pagrindinis (paspaudus dar kartą – atžymimas) keičiami lange **Tvarkyti balsavimus**.
 
-<ChangelogNote version="v3.11" date="2026-10-20" title="Pagrindinis balsavimas nebūtinas">
+<ChangelogNote date="2026-10-20" title="Pagrindinis balsavimas nebūtinas">
 
 Anksčiau vienas balsavimas visada buvo pagrindinis: pirmas pažymimas automatiškai, o ištrynus
 pagrindinį juo tapdavo kitas.
@@ -179,9 +179,9 @@ Klausimas **užpildytas**, kai:
 Kai pagrindinis pažymėtas, kiti balsavimai užpildymui įtakos neturi. Ta pati taisyklė taikoma posėdžio
 [būsenai](/visak/posedziai#busena), užpildymo užduočiai ir sąrašo filtrui **Užpildymo būsena**.
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Viena užpildymo taisyklė">
+<ChangelogNote date="2026-10-02" title="Viena užpildymo taisyklė">
 
-Iki v3.0 sąrašo filtras informacinius, atidėtus klausimus, pertraukas ir VU SA darinių klausimus su
+Iki v3 sąrašo filtras informacinius, atidėtus klausimus, pertraukas ir VU SA darinių klausimus su
 vien sprendimu laikė nepilnais, o posėdžio būsena klausimą be tipo galėjo laikyti užpildytu.
 
 </ChangelogNote>
@@ -266,7 +266,7 @@ Institucijos narys posėdžio metu – žmogus, kuris posėdžio dieną ėjo par
 jei jo pareigos jau baigėsi. Jis klausimus pildo taip pat, kaip ir patį posėdį; jo pakeitimai matomi
 posėdžio istorijoje.
 
-<ChangelogNote version="v3.11" date="2026-10-20" title="Darbotvarkę pildo ir buvę nariai">
+<ChangelogNote date="2026-10-20" title="Darbotvarkę pildo ir buvę nariai">
 
 Anksčiau institucijos narys be atsakomybės klausimų redaguoti negalėjo, nors galėjo keisti patį
 posėdį.

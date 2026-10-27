@@ -14,7 +14,7 @@ use Illuminate\Support\Str;
 
 class MeetingPolicy extends ModelPolicy
 {
-    public function __construct(ModelAuthorizer $authorizer, private MeetingAccessService $meetingAccess)
+    public function __construct(ModelAuthorizer $authorizer, private readonly MeetingAccessService $meetingAccess)
     {
         parent::__construct($authorizer);
         $this->pluralModelName = Str::plural(ModelEnum::MEETING->label());

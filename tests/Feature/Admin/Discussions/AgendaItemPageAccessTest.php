@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\MeetingType;
+use App\Models\Calendar;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\InstitutionLink;
@@ -50,7 +51,7 @@ test('a coordinator opens the agenda item page with the outcome controls live', 
         ->assertInertia(fn (Assert $page) => $page
             ->component('Admin/Representation/ShowAgendaItem')
             ->where('abilities.update', true)
-            ->where('publicUrl', null)
+            ->where('publicVisibility.mode', 'internal')
         );
 });
 
@@ -66,11 +67,23 @@ test('a public agenda item links to its meeting on the institution subdomain', f
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('Admin/Representation/ShowAgendaItem')
-            ->where('publicUrl', route('publicMeetings.show', [
+            ->where('publicVisibility.url', route('publicMeetings.show', [
                 'subdomain' => $this->tenant->subdomain(),
                 'lang' => app()->getLocale(),
                 'meeting' => $this->meeting,
             ]))
+        );
+});
+
+test('an agenda item of a meeting announced in the calendar links the event page', function (): void {
+    $event = Calendar::factory()->create(['tenant_id' => $this->tenant->id, 'meeting_id' => $this->meeting->id, 'is_draft' => false]);
+
+    asUserWithInertia($this->coordinator)
+        ->get(route('agendaItems.show', $this->agendaItem))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('publicVisibility.mode', 'calendar_event')
+            ->where('publicVisibility.url', $event->publicUrl(app()->getLocale()))
         );
 });
 

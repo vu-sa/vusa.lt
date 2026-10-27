@@ -63,7 +63,7 @@ class HtmlSanitizerService
             ->allowElement('s')
             ->allowElement('u')
             ->allowElement('ul')
-            ->allowElement('ol')
+            ->allowElement('ol', ['start'])
             ->allowElement('li')
             ->allowElement('a', ['href', 'class'])
             ->allowElement('span', ['class'])
@@ -71,6 +71,7 @@ class HtmlSanitizerService
             ->allowAttribute('data-type', 'span')
             ->allowAttribute('data-label', 'span')
             ->allowLinkSchemes(['https', 'http', 'mailto'])
+            ->allowRelativeLinks()
             ->forceAttribute('a', 'rel', 'noopener noreferrer nofollow')
             ->withMaxInputLength(500_000);
     }

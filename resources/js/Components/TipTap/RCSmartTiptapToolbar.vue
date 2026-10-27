@@ -39,31 +39,14 @@
 
       <TiptapLinkButton :editor @submit="(url, text) => commands.insertLink(url, text)" @document:submit="(url, text) => commands.insertLink(url, text, { document: true })">
         <TiptapToolButton toggle :active="editor.isActive('link')" :label="$t('rich-content.link')">
-          <IFluentLink24Regular class="size-4" />
+          <Link class="size-4" />
         </TiptapToolButton>
       </TiptapLinkButton>
 
       <Separator orientation="vertical" class="mx-0.5 h-5" />
 
       <!-- Lists: Bullet & Ordered -->
-      <Button
-        type="button"
-        size="icon-sm"
-        :variant="editor.isActive('bulletList') ? 'brand' : 'ghost'"
-        :title="$t('rich-content.bullet_list')"
-        @click="editor.chain().focus().toggleBulletList().run()"
-      >
-        <IFluentTextBulletList20Regular class="size-4" />
-      </Button>
-      <Button
-        type="button"
-        size="icon-sm"
-        :variant="editor.isActive('orderedList') ? 'brand' : 'ghost'"
-        :title="$t('rich-content.ordered_list')"
-        @click="editor.chain().focus().toggleOrderedList().run()"
-      >
-        <IFluentTextNumberListLtr20Regular class="size-4" />
-      </Button>
+      <TiptapListButtons :editor />
       <Button
         type="button"
         size="icon-sm"
@@ -71,7 +54,7 @@
         :title="$t('rich-content.blockquote')"
         @click="editor.chain().focus().toggleBlockquote().run()"
       >
-        <IFluentTextQuote20Regular class="size-4" />
+        <Quote class="size-4" />
       </Button>
 
       <Separator orientation="vertical" class="mx-0.5 h-5" />
@@ -81,7 +64,7 @@
          toolbar showed two image icons. -->
       <TiptapImageButton as-child @submit:object="commands.insertImage">
         <Button type="button" size="icon-sm" variant="ghost" :title="$t('rich-content.select_image')">
-          <IFluentImage24Regular class="size-4" />
+          <ImagePlus class="size-4" />
         </Button>
       </TiptapImageButton>
 
@@ -94,7 +77,7 @@
         :title="$t('rich-content.insert_table')"
         @click="commands.insertTable()"
       >
-        <IFluentTableAdd24Regular class="size-4" />
+        <Table2 class="size-4" />
       </Button>
 
       <Separator orientation="vertical" class="mx-0.5 h-5" />
@@ -110,7 +93,7 @@
         :title="$t('rich-content.undo')"
         @click="editor.chain().focus().undo().run()"
       >
-        <IFluentArrowUndo20Regular class="size-3.5" />
+        <Undo2 class="size-3.5" />
       </Button>
       <Button
         type="button"
@@ -120,7 +103,7 @@
         :title="$t('rich-content.redo')"
         @click="editor.chain().focus().redo().run()"
       >
-        <IFluentArrowRedo20Regular class="size-3.5" />
+        <Redo2 class="size-3.5" />
       </Button>
 
       <!-- Close / Minimize button -->
@@ -133,7 +116,7 @@
         :title="$t('rich-content.close_toolbar')"
         @click="isClosed = true"
       >
-        <IFluentDismiss12Regular class="size-3.5" />
+        <X class="size-3.5" />
       </Button>
     </div>
 
@@ -146,7 +129,7 @@
       :style="minimizedStyle"
       @click="isClosed = false"
     >
-      <IFluentTextEffects20Regular class="size-3.5 text-brand" />
+      <Type class="size-3.5 text-brand" />
       <span>{{ $t('rich-content.show_toolbar') }}</span>
     </button>
   </Teleport>
@@ -156,8 +139,10 @@
 import { computed, inject, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import type { Editor } from '@tiptap/core';
 import { trans as $t } from 'laravel-vue-i18n';
+import { Link, Undo2, Redo2, Quote, Table2, ImagePlus, X, Type } from '@lucide/vue';
 
 import TiptapFormattingButtons from './TiptapFormattingButtons.vue';
+import TiptapListButtons from './TiptapListButtons.vue';
 import TiptapLinkButton from './TiptapLinkButton.vue';
 import TiptapMoreMenu from './TiptapMoreMenu.vue';
 import TiptapToolButton from './TiptapToolButton.vue';
@@ -169,16 +154,6 @@ import { SMART_TIPTAP_TOOLBAR_PORTAL_KEY } from './smartToolbarPortal';
 import { Button } from '@/Components/ui/button';
 import { Separator } from '@/Components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import IFluentLink24Regular from '~icons/fluent/link-24-regular';
-import IFluentTextBulletList20Regular from '~icons/fluent/text-bullet-list-20-regular';
-import IFluentTextNumberListLtr20Regular from '~icons/fluent/text-number-list-ltr-20-regular';
-import IFluentTextQuote20Regular from '~icons/fluent/text-quote-20-regular';
-import IFluentTableAdd24Regular from '~icons/fluent/table-add-24-regular';
-import IFluentImage24Regular from '~icons/fluent/image-24-regular';
-import IFluentArrowUndo20Regular from '~icons/fluent/arrow-undo-20-regular';
-import IFluentArrowRedo20Regular from '~icons/fluent/arrow-redo-20-regular';
-import IFluentDismiss12Regular from '~icons/fluent/dismiss-12-regular';
-import IFluentTextEffects20Regular from '~icons/fluent/text-effects-20-regular';
 
 const props = withDefaults(defineProps<{
   editor: Editor;

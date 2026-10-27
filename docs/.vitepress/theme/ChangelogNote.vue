@@ -1,31 +1,30 @@
 <template>
   <aside class="changelog-note">
     <p class="changelog-note__label">
-      <span class="changelog-note__version">Atnaujinta {{ version }}</span>
-      <span class="changelog-note__date">{{ date }}</span>
+      <span class="changelog-note__version">Atnaujinta {{ date }}</span>
     </p>
     <p class="changelog-note__title">{{ title }}</p>
     <div class="changelog-note__body">
       <slot />
     </div>
-    <a class="changelog-note__link" :href="withBase(`/changelog/${major}#${anchor}`)">Visi {{ version }} pakeitimai →</a>
+    <a v-if="major" class="changelog-note__link" :href="withBase(`/changelog/${major}`)">Visi {{ major }} pakeitimai →</a>
   </aside>
 </template>
 
 <script setup lang="ts">
-import { withBase } from 'vitepress'
+import { useData, withBase } from 'vitepress'
 import { computed } from 'vue'
 
-// A dated pointer from a guide section to the release that changed it; the PDF build renders the same note.
+import { majorForDate, type ChangelogMajor } from '../changelogEntries.ts'
+
+// A dated pointer from a guide section to the change that shaped it; the PDF build renders the same note.
 const props = defineProps<{
-  /** e.g. `v2.21`, matching the changelog heading's `{#v2-21}` anchor. */
-  version: string
   date: string
   title: string
 }>()
 
-const major = computed(() => props.version.split('.')[0])
-const anchor = computed(() => props.version.replace('.', '-'))
+const { theme } = useData<{ changelogMajors: ChangelogMajor[] }>()
+const major = computed(() => majorForDate(theme.value.changelogMajors, props.date))
 </script>
 
 <style scoped>
@@ -50,10 +49,6 @@ const anchor = computed(() => props.version.replace('.', '-'))
   color: #1a1a1a;
   font-weight: 600;
   letter-spacing: 0.02em;
-}
-
-.changelog-note__date {
-  color: var(--vp-c-text-2);
 }
 
 .changelog-note__title {

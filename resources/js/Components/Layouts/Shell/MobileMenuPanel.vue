@@ -109,6 +109,24 @@
                 </Link>
               </li>
               <li>
+                <SpotlightPopover
+                  class="w-full"
+                  :title="$t('activity_requests.personal.spotlight_title')"
+                  :description="$t('activity_requests.personal.spotlight_body')"
+                  :is-dismissed="activityRequestSpotlight.isDismissed.value"
+                  @dismiss="activityRequestSpotlight.dismiss()"
+                >
+                  <Link
+                    :href="route('profile.activityRequests')"
+                    class="u-touch flex items-center gap-3 px-4 py-3 text-sm text-foreground"
+                    @click="activityRequestSpotlight.dismiss(); close()"
+                  >
+                    <MailQuestion class="size-5 text-muted-foreground" />
+                    {{ $t('activity_requests.personal.title') }}
+                  </Link>
+                </SpotlightPopover>
+              </li>
+              <li>
                 <Link
                   :href="route('profile.notifications')"
                   prefetch
@@ -225,6 +243,7 @@ import { Link, router, usePage } from '@inertiajs/vue3';
 import { onKeyStroke, useDark, useScrollLock } from '@vueuse/core';
 import { loadLanguageAsync, trans as $t } from 'laravel-vue-i18n';
 import {
+  MailQuestion,
   Bell,
   BookOpen,
   Bug,
@@ -255,6 +274,8 @@ import {
   type AdminWorkspace,
 } from '@/Composables/useAdminNavigation';
 import { useDocsUpdateIndicator } from '@/Composables/useDocsUpdateIndicator';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { useLogout } from '@/Composables/useLogout';
 import { useStartFm } from '@/Composables/useStartFm';
 import { useTour } from '@/Composables/useTourProvider';
@@ -336,4 +357,5 @@ onKeyStroke('Escape', () => {
     close();
   }
 });
+const activityRequestSpotlight = useFeatureSpotlight('user-activity-requests-v1');
 </script>

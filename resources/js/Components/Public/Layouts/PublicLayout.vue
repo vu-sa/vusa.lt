@@ -133,27 +133,12 @@ const toasts = useToasts();
 usePublicEditLinkToast(() => usePage().props.publicEditLink);
 usePublicStagingToast(() => usePage().props.staging, () => usePage().url);
 
-// Handle validation errors (show only first error for public pages)
-watch(() => usePage().props.errors, (errors) => {
-  if (errors && typeof errors === 'object' && Object.keys(errors).length > 0) {
-    // In public page, show only one error message at a time
-    const entries = Object.entries(errors);
-    const firstEntry = entries[0];
-    if (firstEntry) {
-      const [key, value] = firstEntry;
-      if (key && value) {
-        toasts.error(`${key}: ${value}`);
-      }
-    }
-  }
-});
-
 // Listen for navigation events to handle breadcrumb persistence
 onMounted(() => {
   mounted.value = true;
 
   // Initialize flash message handling
-  toasts.initializeToasts();
+  toasts.initializeToasts({ validationErrors: () => usePage().component !== 'Public/RegistrationPage' });
 
   // Setup router navigation events for breadcrumbs
   router.on('start', () => {

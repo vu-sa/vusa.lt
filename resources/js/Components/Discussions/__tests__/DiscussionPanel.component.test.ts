@@ -177,4 +177,32 @@ describe('DiscussionPanel', () => {
     expect(wrapper.html()).not.toContain('Kada kitas posėdis?');
     expect(wrapper.html()).toContain('Rugsėjo 30 d.');
   });
+  it('renders stored nested lists with the comment content styling hook', async () => {
+    mocks.fetchThread.mockResolvedValue([makeComment({ body: '<ul><li><p>First</p><ol start="3"><li><p>Nested</p></li></ol></li></ul>' })]);
+    const wrapper = mount(DiscussionPanel, {
+      props: { commentableType: 'meeting', commentableId: 'm1' },
+      global: { stubs },
+    });
+    await flushPromises();
+
+    expect(wrapper.find('.comment-content > ul > li > p').text()).toBe('First');
+    expect(wrapper.find('.comment-content ol').attributes('start')).toBe('3');
+    expect(wrapper.find('.comment-content ol li p').text()).toBe('Nested');
+  });
+
+  it('posts replies with the correct body and parent on the support request surface', async () => {
+    mocks.fetchThread.mockResolvedValue([makeComment({ id: 'root1' })]);
+    mocks.postComment.mockResolvedValue(makeComment({ id: 'reply1', body: '<p>new</p>', parent_id: 'root1', thread_root_id: 'root1' }));
+    const wrapper = mount(DiscussionPanel, {
+      props: { commentableType: 'supportRequest', commentableId: 'sr1' },
+      global: { stubs },
+    });
+    await flushPromises();
+    await wrapper.findAll('button').find(button => button.text() === 'Atsakyti')!.trigger('click');
+    await wrapper.findAll('.composer-stub')[1]!.trigger('click');
+    await flushPromises();
+
+    expect(mocks.postComment).toHaveBeenCalledWith('<p>new</p>', 'root1');
+    wrapper.unmount();
+  });
 });

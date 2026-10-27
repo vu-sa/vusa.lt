@@ -18,7 +18,6 @@ const DEFAULT_CHANGELOG = 'v3';
 export function useDocsUpdateIndicator() {
   const hasNewUpdates = ref(false);
   const lastUpdateDate = ref<string | null>(null);
-  const latestVersion = ref<string | null>(null);
   const latestChangelog = ref(DEFAULT_CHANGELOG);
   const lastSeen = useStorage<string | null>(STORAGE_KEY, null);
 
@@ -33,7 +32,6 @@ export function useDocsUpdateIndicator() {
 
       const meta = await response.json();
       lastUpdateDate.value = meta.lastUpdated;
-      latestVersion.value = meta.latestVersion;
       latestChangelog.value = meta.latestChangelog ?? DEFAULT_CHANGELOG;
 
       if (!lastSeen.value || lastSeen.value < meta.lastUpdated) {
@@ -55,7 +53,6 @@ export function useDocsUpdateIndicator() {
   return {
     hasNewUpdates,
     lastUpdateDate,
-    latestVersion,
     docsBase,
     changelogHref,
     markAsSeen,

@@ -41,6 +41,7 @@ use Illuminate\Support\Facades\DB;
  * @property-read Collection<int, CommentReaction> $reactions
  * @property-read Collection<int, Comment> $replies
  * @property-read User|null $resolver
+ * @property-read Collection<int, Comment> $threadReplies
  * @property-read Comment|null $threadRoot
  * @property-read User|null $user
  *
@@ -134,6 +135,11 @@ class Comment extends Model
     public function replies(): HasMany
     {
         return $this->hasMany(Comment::class, 'parent_id')->orderBy('created_at');
+    }
+
+    public function threadReplies(): HasMany
+    {
+        return $this->hasMany(Comment::class, 'thread_root_id')->orderBy('created_at');
     }
 
     public function threadRoot(): BelongsTo

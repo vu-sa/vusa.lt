@@ -27,7 +27,7 @@ dalyviai atskirai gauna būsenų pasikeitimus. Žr. [Kontaktai ir istorija](/rez
 
 ## Pranešimų kanalai {#kanalai}
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Laiško pristatymą rinkis kiekvienai pranešimų rūšiai">
+<ChangelogNote date="2026-10-02" title="Laiško pristatymą rinkis kiekvienai pranešimų rūšiai">
 
 Laiškas iškart, suvestinė ir išjungimas yra atskiri pasirinkimai. Įrenginio pranešimai valdomi atskirai, o nutildymas nepašalina pranešimo iš varpelio. Ramybės valandos neatideda pavienių laiškų.
 
@@ -91,7 +91,7 @@ pranešimo – apie jas primenama artėjant terminui. Apie naują posėdį atsto
 darbotvarkės užduotis, sužino vienu pranešimu **„Sukurtas naujas posėdis“**, kaip ir koordinatoriai.
 Posėdį sukūręs narys šio pranešimo negauna.
 
-<ChangelogNote version="v3.9" date="2026-10-19" title="Automatinės užduotys be atskiro pranešimo">
+<ChangelogNote date="2026-10-19" title="Automatinės užduotys be atskiro pranešimo">
 
 Anksčiau kiekvienas naujas posėdis atstovo suvestinėje palikdavo dvi „Nauja užduotis“ eilutes, iš kurių viena jau būdavo atlikta.
 

@@ -16,7 +16,7 @@ use Illuminate\Support\Str;
 /** Private agenda reading grants remain independent of meeting reading grants. */
 class AgendaItemPolicy extends ModelPolicy
 {
-    public function __construct(ModelAuthorizer $authorizer, private MeetingAccessService $meetingAccess)
+    public function __construct(ModelAuthorizer $authorizer, private readonly MeetingAccessService $meetingAccess)
     {
         parent::__construct($authorizer);
         $this->pluralModelName = Str::plural(ModelEnum::AGENDA_ITEM->label());

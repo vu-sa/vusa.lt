@@ -386,11 +386,32 @@ describe('meeting show payload', function (): void {
         asUserWithInertia($admin)->get(route('meetings.show', $meeting))
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/Representation/ShowMeeting')
-                ->where('publicUrl', route('publicMeetings.show', [
+                ->where('publicVisibility.mode', 'public_page')
+                ->where('publicVisibility.url', route('publicMeetings.show', [
                     'subdomain' => 'other',
                     'lang' => app()->getLocale(),
                     'meeting' => $meeting,
                 ]))
+            );
+    });
+
+    test('a non-public meeting is visible through its published calendar event', function (): void {
+        $meeting = Meeting::factory()->create(['start_time' => now()->addDay()]);
+        $meeting->institutions()->attach($this->institution);
+        $event = Calendar::factory()->create(['tenant_id' => $this->tenant->id, 'meeting_id' => $meeting->id, 'is_draft' => false]);
+
+        asUserWithInertia($this->admin)->get(route('meetings.show', $meeting))
+            ->assertInertia(fn ($page) => $page
+                ->where('publicVisibility.mode', 'calendar_event')
+                ->where('publicVisibility.url', $event->publicUrl(app()->getLocale()))
+            );
+
+        $event->update(['is_draft' => true]);
+
+        asUserWithInertia($this->admin)->get(route('meetings.show', $meeting))
+            ->assertInertia(fn ($page) => $page
+                ->where('publicVisibility.mode', 'calendar_draft')
+                ->where('publicVisibility.url', null)
             );
     });
 

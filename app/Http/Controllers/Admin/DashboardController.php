@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\ActivityRequests\GetUserActivityRequests;
 use App\Actions\GetFollowedInstitutions;
 use App\Actions\GetRecentAccessChanges;
 use App\Actions\GetRecentlyEditedRecords;
@@ -40,7 +41,7 @@ class DashboardController extends AdminController
         private readonly InstitutionActivityStatusService $activityStatusService,
     ) {}
 
-    public function index(ShowAdminHomeRequest $request)
+    public function index(ShowAdminHomeRequest $request, GetUserActivityRequests $activityRequests)
     {
         $user = fn () => once(fn () => $request->user());
         $loadUserDuties = fn () => once(function () use ($user) {
@@ -65,36 +66,7 @@ class DashboardController extends AdminController
             ];
         });
 
-        // Get upcoming tasks (due within 14 days or overdue)
-        $upcomingTasks = fn () => once(fn () => $user()->tasks()
-            ->whereNull('completed_at')
-            ->where(function ($query): void {
-                $query->where('due_date', '<=', now()->addDays(14))
-                    ->orWhere('due_date', '<', now());
-            })
-            ->orderByDesc('due_date')
-            ->with('taskable')
-            ->take(10)
-            ->get()
-            ->map(fn (Task $task) => [
-                'id' => $task->id,
-                'name' => $task->name,
-                'due_date' => $task->due_date?->toISOString(),
-                'is_overdue' => $task->isOverdue(),
-                'taskable_type' => $task->taskable_type ?? '',
-                'taskable_id' => $task->taskable_id,
-                // What the task is about, so a row can say "Senato posėdis" and link to it.
-                'taskable' => $task->taskable === null ? null : [
-                    'id' => (string) $task->taskable_id,
-                    'name' => $task->taskable->getAttribute('title') ?? $task->taskable->getAttribute('name'),
-                ],
-                'action_type' => $task->action_type?->value,
-                'metadata' => $task->metadata,
-                'progress' => $task->getProgress(),
-                'can_be_manually_completed' => $task->canBeManuallyCompleted(),
-                'icon' => $task->icon,
-                'color' => $task->color,
-            ]));
+        $upcomingTasks = fn () => once(fn () => $this->upcomingTasks($user()));
 
         $upcomingMeetings = fn () => once(fn () => GetUpcomingMeetingsForUser::execute($user()));
 
@@ -135,6 +107,7 @@ class DashboardController extends AdminController
         );
 
         return $this->inertiaResponse('Admin/ShowAdminHome', [
+            'activeActivityRequests' => fn () => $activityRequests->activeSummary($user()),
             'accessChanges' => fn () => GetRecentAccessChanges::execute($user(), self::ACCESS_BAND_DAYS),
             'actionWindowLaunch' => fn () => $request->actionWindowLaunch($user()),
             'taskStats' => fn () => $taskStats(),
@@ -155,6 +128,39 @@ class DashboardController extends AdminController
             'registrationForms' => fn () => $this->registrationForms($user()),
             'reservationDraft' => fn () => SerializeReservationCart::summary($user()),
         ]);
+    }
+
+    private function upcomingTasks(User $user): Collection
+    {
+        return $user->tasks()
+            ->whereNull('completed_at')
+            ->where(function ($query): void {
+                $query->where('due_date', '<=', now()->addDays(14))
+                    ->orWhere('due_date', '<', now());
+            })
+            ->orderByDesc('due_date')
+            ->with('taskable')
+            ->take(10)
+            ->get()
+            ->map(fn (Task $task) => [
+                'id' => $task->id,
+                'name' => $task->name,
+                'due_date' => $task->due_date?->toISOString(),
+                'is_overdue' => $task->isOverdue(),
+                'taskable_type' => $task->taskable_type ?? '',
+                'taskable_id' => $task->taskable_id,
+                // What the task is about, so a row can say "Senato posėdis" and link to it.
+                'taskable' => $task->taskable === null ? null : [
+                    'id' => (string) $task->taskable_id,
+                    'name' => $task->taskable->getAttribute('title') ?? $task->taskable->getAttribute('name'),
+                ],
+                'action_type' => $task->action_type?->value,
+                'metadata' => $task->metadata,
+                'progress' => $task->getProgress(),
+                'can_be_manually_completed' => $task->canBeManuallyCompleted(),
+                'icon' => $task->icon,
+                'color' => $task->color,
+            ]);
     }
 
     public function institutionGraph()

@@ -50,6 +50,12 @@
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem as-child class="gap-3 px-3.5 py-2.5 rounded-none cursor-pointer text-sm font-medium">
+          <Link :href="route('profile.activityRequests')">
+            <MailQuestion class="size-4 shrink-0" />
+            <span>{{ $t('activity_requests.personal.title') }}</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem as-child class="gap-3 px-3.5 py-2.5 rounded-none cursor-pointer text-sm font-medium">
           <Link :href="route('profile.notifications')" prefetch>
             <Bell class="size-4 shrink-0" />
             <span>{{ $t('shell.account.notifications') }}</span>
@@ -61,6 +67,11 @@
 
       <!-- Tools & Preferences -->
       <div class="p-1">
+        <DropdownMenuItem data-slot="language-settings" class="gap-3 px-3.5 py-2.5 rounded-none cursor-pointer text-sm font-medium" @select="changeLocale">
+          <Languages class="size-4 shrink-0" />
+          <span>{{ $t('shell.account.language', { language: page.props.app?.locale === 'en' ? 'Lietuvių' : 'English' }) }}</span>
+        </DropdownMenuItem>
+
         <DropdownMenuSub>
           <DropdownMenuSubTrigger data-slot="appearance-settings-trigger" class="gap-3 px-3.5 py-2.5 rounded-none cursor-pointer text-sm font-medium">
             <Palette class="size-4 shrink-0" />
@@ -71,10 +82,6 @@
               <Sun v-if="isDark" class="size-4 shrink-0" />
               <Moon v-else class="size-4 shrink-0" />
               <span>{{ $t(isDark ? 'shell.account.light' : 'shell.account.dark') }}</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem class="gap-3 px-3.5 py-2 rounded-none cursor-pointer text-sm font-medium" @select="changeLocale">
-              <Languages class="size-4 shrink-0" />
-              <span>{{ $t('shell.account.language', { language: page.props.app?.locale === 'en' ? 'Lietuvių' : 'English' }) }}</span>
             </DropdownMenuItem>
             <DropdownMenuItem data-slot="accessibility-settings-open" class="gap-3 px-3.5 py-2 rounded-none cursor-pointer text-sm font-medium" @select="openAccessibilitySettings">
               <IFluentAccessibility24Regular class="size-4 shrink-0" />
@@ -134,7 +141,7 @@
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent class="w-56 rounded-none border border-border bg-popover p-1 shadow-none">
             <DropdownMenuLabel class="px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              {{ latestVersion ?? 'VU SA' }}
+              {{ lastUpdateDate ?? 'VU SA' }}
             </DropdownMenuLabel>
             <DropdownMenuItem as-child class="gap-3 px-3.5 py-2 rounded-none cursor-pointer text-sm font-medium">
               <a href="https://github.com/vu-sa/vusa.lt" target="_blank" rel="noopener noreferrer">
@@ -192,6 +199,7 @@ import { Link, router, usePage } from '@inertiajs/vue3';
 import { loadLanguageAsync, trans as $t } from 'laravel-vue-i18n';
 import { useDark } from '@vueuse/core';
 import {
+  MailQuestion,
   ArrowUpRight,
   Bell,
   BookOpen,
@@ -252,7 +260,7 @@ const { logout, logoutMicrosoft } = useLogout();
 const { hasTour, startTour } = useTour();
 const startFm = useStartFm();
 const isDark = useDark();
-const { latestVersion, docsBase, changelogHref } = useDocsUpdateIndicator();
+const { lastUpdateDate, docsBase, changelogHref } = useDocsUpdateIndicator();
 const reportProblemHref = computed(() => {
   const context = typeof window === 'undefined'
     ? {}

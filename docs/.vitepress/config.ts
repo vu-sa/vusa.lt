@@ -5,8 +5,20 @@ import fs from 'node:fs'
 import lt from './lt.ts'
 import en from './en.ts'
 import { appLinkPath } from './appLinks.ts'
+import { changelogEntryPattern, changelogMajors } from './changelogEntries.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+// One file per major (v1.md, v2.md, …); ChangelogNote and the update indicator both need them.
+const changelogDir = path.resolve(__dirname, '../changelog')
+const changelogFiles: Record<string, string> = Object.fromEntries(
+  fs.readdirSync(changelogDir).flatMap((file) => {
+    const major = file.match(/^(v\d+)\.md$/)?.[1]
+
+    return major ? [[major, fs.readFileSync(path.join(changelogDir, file), 'utf-8')]] : []
+  }),
+)
+const majors = changelogMajors(changelogFiles)
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -31,6 +43,7 @@ export default defineConfig({
 
   // Global search configuration
   themeConfig: {
+    changelogMajors: majors,
     search: {
       provider: 'local',
       options: {
@@ -115,32 +128,18 @@ export default defineConfig({
   buildEnd: (siteConfig) => {
     warnAboutMissingScreenshots(siteConfig.srcDir)
 
-    const changelogDir = path.resolve(__dirname, '../changelog')
     const outDir = path.resolve(__dirname, '../..', 'public/gidas')
 
     try {
-      // One file per major version (v1.md, v2.md, …); the highest major holds the newest entries.
-      const majorFiles = fs.readdirSync(changelogDir)
-        .map(file => file.match(/^v(\d+)\.md$/))
-        .filter((match): match is RegExpMatchArray => match !== null)
-        .sort((a, b) => Number(b[1]) - Number(a[1]))
-      const latestChangelog = `v${majorFiles[0][1]}`
-
-      // Parse changelog headings: ## vX.Y — Title (YYYY-MM-DD)
-      const entryPattern = /^## (v[\d.]+) — .+\((\d{4}-\d{2}-\d{2})\)/gm
-      const matches = [...fs.readFileSync(path.resolve(changelogDir, `${latestChangelog}.md`), 'utf-8').matchAll(entryPattern)]
-      const totalEntries = majorFiles.reduce(
-        (count, [file]) => count + [...fs.readFileSync(path.resolve(changelogDir, file), 'utf-8').matchAll(entryPattern)].length,
-        0,
-      )
-
+      const latestChangelog = majors[0]!.major
+      const latest = changelogFiles[latestChangelog]!.matchAll(changelogEntryPattern).next().value
       const meta = {
-        latestVersion: matches.length > 0 ? matches[0][1] : `${latestChangelog}.0`,
-        lastUpdated: matches.length > 0 ? matches[0][2] : new Date().toISOString().substring(0, 10),
+        lastUpdated: latest?.[1] ?? majors[0]!.since,
         latestChangelog,
-        totalEntries,
+        totalEntries: Object.values(changelogFiles)
+          .reduce((count, markdown) => count + [...markdown.matchAll(changelogEntryPattern)].length, 0),
       }
-      
+
       fs.mkdirSync(outDir, { recursive: true })
       fs.writeFileSync(
         path.resolve(outDir, 'changelog-meta.json'),

@@ -95,6 +95,20 @@ describe('ResponsibilityGrants', () => {
     expect(form.scope_type).toBe('tenant');
   });
 
+  it('removes a grant as a partial reload so the deferred list stays in place', async () => {
+    vi.mocked(router.delete).mockClear();
+    const wrapper = mountGrants({}, {
+      ConfirmDialog: { props: ['open'], emits: ['confirm'], template: '<button v-if="open" data-testid="confirm-yes" @click="$emit(\'confirm\')" />' },
+    });
+    await wrapper.get('[data-testid="grant-duty-type"] button').trigger('click');
+    await wrapper.get('[data-testid="confirm-yes"]').trigger('click');
+
+    expect(router.delete).toHaveBeenCalledWith('/mocked/responsibilities.grants.destroy', expect.objectContaining({
+      preserveScroll: true,
+      only: expect.arrayContaining(['grants', 'flash']),
+    }));
+  });
+
   describe('people holding it directly', () => {
     const withHolder = { ...grants, users: [{ id: 'u1', name: 'Justas', profile_photo_path: null, tenants: ['VU SA', 'VU SA FilF'] }] };
     const confirmingDialog = { ConfirmDialog: { props: ['open'], emits: ['confirm'], template: '<button v-if="open" data-testid="confirm-yes" @click="$emit(\'confirm\')" />' } };

@@ -90,9 +90,9 @@ Jei nuoroda pateko ne tiems žmonėms ar failas nebeturi būti pasiekiamas buvus
 
 Kitą kartą atvėrus failą sukuriama nauja nuoroda, kuria prireikus galima pasidalyti iš naujo.
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Nuorodos atšaukimas">
+<ChangelogNote date="2026-10-02" title="Nuorodos atšaukimas">
 
-Iki v3.0 kartą sukurta failo nuoroda veikdavo tol, kol failas būdavo ištrintas.
+Iki v3 kartą sukurta failo nuoroda veikdavo tol, kol failas būdavo ištrintas.
 
 </ChangelogNote>
 

@@ -69,7 +69,7 @@ describe('migrateLegacyRegistration', () => {
     expect(current.pushManager.subscribe).toHaveBeenCalledOnce();
     expect(mockFetch).toHaveBeenCalledWith('/mocked-route/api.v1.admin.pushSubscriptions.store', expect.objectContaining({
       method: 'POST',
-      headers: expect.objectContaining({ Accept: 'application/json', 'X-CSRF-TOKEN': 'csrf' }),
+      headers: expect.objectContaining({ 'Accept': 'application/json', 'X-CSRF-TOKEN': 'csrf' }),
       body: expect.any(String),
     }));
     expect(mockFetch).toHaveBeenCalledWith('/mocked-route/api.v1.admin.pushSubscriptions.destroy', expect.objectContaining({
@@ -149,5 +149,4 @@ describe('migrateLegacyRegistration', () => {
     }));
     expect(subscriptions).toEqual([expect.objectContaining(device)]);
   });
-
 });

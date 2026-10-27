@@ -4,29 +4,29 @@ import fs from 'node:fs'
 
 import { selectMajorRelease } from './release-content.ts'
 
-test('a major PDF excludes newer and older minor entries and retains its own metadata', () => {
+test('a major PDF excludes newer and older entries and retains its own metadata', () => {
   const release = selectMajorRelease(`# Changelog
-## v3.2 — Newer minor (2026-11-01) {#v3-2}
+## 2026-11-01 — Newer change
 Newer feature
-## v3.0 — Major release (2026-10-02) {#v3-0}
+## 2026-10-02 — Major release {#v3}
 ### Main feature
 Major content
-## v3.1 — Another minor (2026-10-16) {#v3-1}
-Minor content`, 'v3')
+## 2026-09-30 — Older change
+Older content`, 'v3')
   assert.deepEqual(release, {
-    version: 'v3.0', title: 'Major release', date: '2026-10-02',
-    body: '## v3.0 — Major release (2026-10-02) {#v3-0}\n### Main feature\nMajor content',
+    version: 'v3', title: 'Major release', date: '2026-10-02',
+    body: '## 2026-10-02 — Major release {#v3}\n### Main feature\nMajor content',
   })
 })
 
-test('a missing major release fails instead of silently publishing a minor release as its PDF', () => {
-  assert.throws(() => selectMajorRelease('## v3.1 — Minor (2026-10-16)\nContent', 'v3'), /No v3\.0 release entry/)
+test('a missing major release fails instead of silently publishing a later entry as its PDF', () => {
+  assert.throws(() => selectMajorRelease('## 2026-10-16 — Change\nContent', 'v3'), /No \{#v3\} release entry/)
 })
 
-test('the current v3 PDF contains v3.0 and excludes minor releases', () => {
+test('the current v3 PDF contains the v3 launch and excludes later entries', () => {
   const changelog = fs.readFileSync(new URL('../changelog/v3.md', import.meta.url), 'utf8')
   const release = selectMajorRelease(changelog, 'v3')
-  assert.equal(release.version, 'v3.0')
+  assert.equal(release.date, '2026-10-02')
   assert.match(release.body, /Atnaujinta Mano VU SA/)
-  assert.doesNotMatch(release.body, /v3\.[1-9]|v3-[1-9]|v3-mailing-lists/)
+  assert.doesNotMatch(release.body, /^## 2026-10-(?!02)/m)
 })

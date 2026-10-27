@@ -4,8 +4,11 @@ return [
     'visibility' => [
         'title' => 'What is shown on vusa.lt?',
         'public_intro' => 'This meeting is public because at least one of its institutions is of a type whose meetings are published on vusa.lt.',
-        'internal_intro' => 'This meeting is not published on vusa.lt. If it is announced in the calendar, the event page shows its agenda only.',
+        'calendar_event_intro' => 'This meeting has no public page of its own, but it is announced in the calendar, so its agenda and documents are shown on the vusa.lt event page.',
+        'calendar_draft_intro' => 'This meeting is linked to a calendar event, but the event is still a draft, so vusa.lt shows nothing yet. Once the event is published, its page will show the meeting’s agenda and documents.',
+        'internal_intro' => 'This meeting is not published on vusa.lt. If you announce it in the calendar, the event page will show its agenda and documents.',
         'shown_heading' => 'Shown on vusa.lt',
+        'shown_event_heading' => 'Shown on the event page',
         'never_heading' => 'Never shown',
         'shown' => [
             'basics' => 'Meeting date, institution and status',
@@ -90,6 +93,8 @@ return [
         'secretaries' => 'Secretaries',
         'write' => 'Email',
         'visible_public' => 'Visible on vusa.lt',
+        'visible_event' => 'Visible on the event page',
+        'event_draft' => 'event is a draft',
         'internal_only' => 'Only shown in ViSAK',
         'edit_meeting' => 'Edit meeting',
         'previous_meeting' => 'Previous meeting',

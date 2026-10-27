@@ -8,6 +8,7 @@ import { SMART_TIPTAP_TOOLBAR_PORTAL_KEY } from '../smartToolbarPortal';
 
 function makeMockEditor(overrides = {}): Editor {
   return {
+    schema: { nodes: { bulletList: {}, orderedList: {} } },
     isFocused: true,
     isDestroyed: false,
     isActive: vi.fn(() => false),

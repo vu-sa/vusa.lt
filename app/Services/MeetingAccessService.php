@@ -11,7 +11,7 @@ use Illuminate\Support\Collection;
 
 class MeetingAccessService
 {
-    public function __construct(private InstitutionAccessService $institutions, private ModelAuthorizer $authorizer) {}
+    public function __construct(private readonly InstitutionAccessService $institutions, private readonly ModelAuthorizer $authorizer) {}
 
     public function hasBaselineAccess(User $user, Meeting $meeting): bool
     {

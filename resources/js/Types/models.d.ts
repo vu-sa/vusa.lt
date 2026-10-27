@@ -271,18 +271,21 @@ declare global {
       user?: User
       parent?: Comment
       replies?: Comment[]
+      thread_replies?: Comment[]
       thread_root?: Comment
       reactions?: CommentReaction[]
       poll_votes?: CommentPollVote[]
       resolver?: User
       // counts
       replies_count: number
+      thread_replies_count: number
       reactions_count: number
       poll_votes_count: number
       // exists
       user_exists: boolean
       parent_exists: boolean
       replies_exists: boolean
+      thread_replies_exists: boolean
       thread_root_exists: boolean
       reactions_exists: boolean
       poll_votes_exists: boolean
@@ -520,6 +523,7 @@ declare global {
       institutions?: Institution
       tenants?: Tenant
       meetings?: Meeting
+      documents?: Document
       agenda_items?: AgendaItem
       tasks?: Task
       reservations?: Reservation
@@ -2947,6 +2951,7 @@ declare global {
       StudentRepresentation: 'student_representation',
       StudentRepCoordination: 'student_rep_coordination',
       MemberRegistration: 'member_registration',
+      ReservationHandling: 'reservation_handling',
     } as const;
 
     export type ResponsibilityPurpose = typeof ResponsibilityPurpose[keyof typeof ResponsibilityPurpose]

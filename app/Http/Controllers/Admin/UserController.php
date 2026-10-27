@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\ActivityRequests\GetUserActivityRequests;
 use App\Actions\BuildUserIndexQuery;
 use App\Actions\DeleteUserPassword;
 use App\Actions\FindMergeableUserDuplicates;
@@ -143,7 +144,7 @@ class UserController extends AdminController
     /**
      * Display the specified resource.
      */
-    public function show(User $user)
+    public function show(User $user, GetUserActivityRequests $activityRequests)
     {
         $this->handleAuthorization('view', $user);
 
@@ -181,11 +182,13 @@ class UserController extends AdminController
 
         return $this->inertiaResponse('Admin/People/ShowUser', [
             'user' => fn () => $loadUser()->toFullArray(),
-            'isSuperAdmin' => fn () => $user->isSuperAdmin(),
+            'isSuperAdmin' => $user->isSuperAdmin(...),
+            'activityRequests' => Inertia::defer(fn () => $activityRequests->history($user, $actor(), max(1, request()->integer('activity_requests_page', 1))), 'activityRequests'),
             'tasks' => fn () => TaskResource::collection($tasks())->resolve(),
             'taskStats' => fn () => $taskStats(),
             // Per-record, not from `auth.can`, which carries no flat permission names.
             'can' => fn () => [
+                'viewActivityRequests' => $activityRequests->visible($user, $actor()),
                 'update' => (bool) $actor()->can('update', $user),
                 'delete' => (bool) $actor()->can('delete', $user),
                 'updateSuperAdmin' => (bool) $actor()->isSuperAdmin(),

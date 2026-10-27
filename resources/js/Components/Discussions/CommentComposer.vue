@@ -1,10 +1,11 @@
 <template>
   <div class="comment-composer">
     <div class="border border-border bg-background focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20">
+      <CommentToolbar v-if="editor" ref="toolbar" :editor :discover-formatting />
       <EditorContent :editor />
-      <div class="flex items-center justify-between gap-2 border-t border-border px-2 py-1">
+      <div class="flex flex-wrap items-center justify-between gap-2 border-t border-border px-2 py-1">
         <div class="flex shrink-0 items-center gap-1">
-          <Button type="button" variant="ghost" size="xs" voice="sentence" class="text-muted-foreground" @click="insertMention">
+          <Button data-testid="comment-mention" type="button" variant="ghost" size="xs" voice="sentence" class="text-muted-foreground" @click="insertMention">
             <AtSign class="size-3.5" />
             {{ $t('Paminėti') }}
           </Button>
@@ -39,17 +40,19 @@
 </template>
 
 <script setup lang="ts">
-import { type Component, computed, onBeforeUnmount, ref } from 'vue';
+import { computed, onBeforeUnmount, ref, useTemplateRef } from 'vue';
 import { usePage } from '@inertiajs/vue3';
-import { EditorContent, useEditor, VueRenderer } from '@tiptap/vue-3';
+import { EditorContent, useEditor } from '@tiptap/vue-3';
 import Mention from '@tiptap/extension-mention';
-import { Placeholder } from '@tiptap/extensions';
-import { StarterKit } from '@tiptap/starter-kit';
-import type { SuggestionKeyDownProps, SuggestionProps } from '@tiptap/suggestion';
-import { computePosition, flip, offset, shift } from '@floating-ui/dom';
+import type { Editor } from '@tiptap/core';
+import { PluginKey } from '@tiptap/pm/state';
 import { trans as $t } from 'laravel-vue-i18n';
 import { AtSign, Bell, Loader2, Send } from '@lucide/vue';
 
+import CommentToolbar from '@/Components/Discussions/CommentToolbar.vue';
+import { createCommentExtensions } from '@/Components/TipTap/extensions/presets';
+import { createSuggestionRenderer } from '@/Components/TipTap/composables/createSuggestionRenderer';
+import './comment-content.css';
 import CommentMentionList from '@/Components/Discussions/CommentMentionList.vue';
 import { Button } from '@/Components/ui/button';
 import { Separator } from '@/Components/ui/separator';
@@ -65,6 +68,7 @@ const props = withDefaults(defineProps<{
   content?: string;
   /** Edits never re-send mention notifications, so don't promise one. */
   quietMentions?: boolean;
+  discoverFormatting?: boolean;
 }>(), {
   mentionables: () => [],
   submitting: false,
@@ -84,110 +88,56 @@ const notifiedNames = computed(() => (props.quietMentions
   ? []
   : [...new Map(mentions.value.filter(mention => mention.id !== currentUserId.value).map(mention => [mention.id, mention.label])).values()]));
 
-/**
- * Mount a Vue suggestion list with VueRenderer and position it with floating-ui
- * (mirrors the agenda notes editor pattern). The list must expose `onKeyDown`.
- */
-function createSuggestionRenderer(listComponent: Component) {
-  return () => {
-    let component: VueRenderer | null = null;
-    let dropdown: HTMLElement | null = null;
-
-    const reposition = (clientRect?: (() => DOMRect | null) | null) => {
-      if (!dropdown || !clientRect) {
-        return;
-      }
-      const virtual = { getBoundingClientRect: () => clientRect() as DOMRect };
-      void computePosition(virtual, dropdown, {
-        placement: 'bottom-start',
-        strategy: 'fixed',
-        middleware: [offset(6), flip(), shift({ padding: 8 })],
-      }).then(({ x, y }) => {
-        if (dropdown) {
-          Object.assign(dropdown.style, { left: `${x}px`, top: `${y}px` });
-        }
-      });
-    };
-
-    return {
-      onStart: (sprops: SuggestionProps<MentionableUser, { id: string; label: string }>) => {
-        component = new VueRenderer(listComponent, { props: sprops, editor: sprops.editor });
-        dropdown = component.element as HTMLElement;
-        dropdown.style.position = 'fixed';
-        dropdown.style.zIndex = '9999';
-        document.body.appendChild(dropdown);
-        reposition(sprops.clientRect);
-      },
-      onUpdate: (sprops: SuggestionProps<MentionableUser, { id: string; label: string }>) => {
-        component?.updateProps(sprops);
-        reposition(sprops.clientRect);
-      },
-      onKeyDown: (sprops: SuggestionKeyDownProps) => {
-        if (sprops.event.key === 'Escape') {
-          return true;
-        }
-        const mentionList = component?.ref as { onKeyDown?: (props: SuggestionKeyDownProps) => boolean } | null;
-
-        return mentionList?.onKeyDown?.(sprops) ?? false;
-      },
-      onExit: () => {
-        dropdown?.remove();
-        component?.destroy();
-        component = null;
-        dropdown = null;
-      },
-    };
-  };
-}
+const toolbar = useTemplateRef<InstanceType<typeof CommentToolbar>>('toolbar');
+const mentionPluginKey = new PluginKey('commentMention');
 
 const editor = useEditor({
   autofocus: props.autofocus,
   content: props.content,
   extensions: [
-    StarterKit.configure({
-      codeBlock: false,
-      code: false,
-      horizontalRule: false,
-      blockquote: false,
-      heading: false,
-      link: {
-        openOnClick: false,
-        HTMLAttributes: { class: 'text-brand underline font-medium' },
-      },
-    }),
+    ...createCommentExtensions({ placeholder: props.placeholder || $t('Parašyk komentarą…') }),
     Mention.configure({
       HTMLAttributes: { class: 'comment-mention' },
       suggestion: {
         char: '@',
+        pluginKey: mentionPluginKey,
         items: ({ query }: { query: string }) => {
           const q = query.toLowerCase();
           return props.mentionables
             .filter(user => user.name.toLowerCase().includes(q))
             .slice(0, 8);
         },
-        render: createSuggestionRenderer(CommentMentionList),
+        render: createSuggestionRenderer<MentionableUser, { id: string; label: string }>(CommentMentionList, mentionPluginKey),
       },
-    }),
-    Placeholder.configure({
-      placeholder: props.placeholder || $t('Parašyk komentarą…'),
     }),
   ],
   editorProps: {
+    handleKeyDown: (_view, event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        toolbar.value?.openLink();
+        return true;
+      }
+      return false;
+    },
     attributes: {
-      class: 'focus:outline-none px-3.5 py-2.5 min-h-10 text-foreground',
+      class: 'comment-content focus:outline-none px-3.5 py-2.5 min-h-10 text-foreground',
     },
   },
-  onUpdate: ({ editor: instance }) => {
-    isEmpty.value = instance.isEmpty;
-    const found: { id: string; label: string }[] = [];
-    instance.state.doc.descendants((node) => {
-      if (node.type.name === 'mention') {
-        found.push({ id: String(node.attrs.id), label: String(node.attrs.label ?? node.attrs.id) });
-      }
-    });
-    mentions.value = found;
-  },
+  onCreate: ({ editor: instance }) => updateState(instance),
+  onUpdate: ({ editor: instance }) => updateState(instance),
 });
+
+function updateState(instance: Editor) {
+  isEmpty.value = instance.isEmpty;
+  const found: { id: string; label: string }[] = [];
+  instance.state.doc.descendants((node) => {
+    if (node.type.name === 'mention') {
+      found.push({ id: String(node.attrs.id), label: String(node.attrs.label ?? node.attrs.id) });
+    }
+  });
+  mentions.value = found;
+}
 
 function submit() {
   const instance = editor.value;
@@ -209,9 +159,6 @@ function insertMention() {
   instance.chain().focus().insertContent(`${prefix}@`).run();
 }
 
-/**
- * Clear the editor (called by the parent after a successful submit).
- */
 function reset() {
   editor.value?.commands.clearContent(true);
   isEmpty.value = true;
@@ -224,58 +171,3 @@ onBeforeUnmount(() => {
   editor.value?.destroy();
 });
 </script>
-
-<style scoped>
-/* Make the writing surface feel deliberate rather than form-generic:
-   comfortable size + line-height, crisp rendering (kerning/ligatures),
-   softened text colour, and a branded caret + selection. */
-.comment-composer :deep(.ProseMirror) {
-  font-size: 0.9375rem; /* 15px */
-  line-height: 1.65;
-}
-
-/* iOS Safari zooms the viewport when focusing a field smaller than 16px.
-   Keep the comfortable 15px on larger screens but use 16px on phones to
-   suppress the unwanted zoom (no accessibility cost — pinch-zoom still works). */
-@media (max-width: 640px) {
-  .comment-composer :deep(.ProseMirror) {
-    font-size: 1rem; /* 16px */
-  }
-}
-
-.comment-composer :deep(.ProseMirror) {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-  font-feature-settings: "kern", "liga", "calt";
-  caret-color: var(--brand);
-}
-
-.comment-composer :deep(.ProseMirror) ::selection {
-  background: rgb(189 40 53 / 0.15);
-}
-
-.comment-composer :deep(.ProseMirror) > * + * {
-  margin-top: 0.55rem;
-}
-
-.comment-composer :deep(.comment-mention) {
-  border-radius: 0.3rem;
-  padding: 0.05rem 0.3rem;
-  font-weight: 600;
-  color: var(--brand);
-  background: rgb(189 40 53 / 0.1);
-}
-
-.comment-composer :deep(.ProseMirror p.is-editor-empty:first-child::before) {
-  content: attr(data-placeholder);
-  float: left;
-  height: 0;
-  pointer-events: none;
-  color: rgb(161 161 170);
-}
-
-:global(.dark) .comment-composer :deep(.ProseMirror p.is-editor-empty:first-child::before) {
-  color: rgb(113 113 122);
-}
-</style>
