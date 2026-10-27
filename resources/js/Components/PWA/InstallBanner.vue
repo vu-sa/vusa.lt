@@ -10,7 +10,7 @@
       data-slot="pwa-install-banner"
       :class="[
         'fixed inset-x-4 z-50 mx-auto max-w-md border border-border bg-background p-4 text-foreground md:hidden',
-        'bottom-[calc(3.5rem_+_env(safe-area-inset-bottom,0px)_+_0.75rem)]',
+        'bottom-[calc(var(--bottom-chrome-height,3.5rem)_+_0.75rem)]',
       ]"
     >
       <div class="flex items-start gap-3">

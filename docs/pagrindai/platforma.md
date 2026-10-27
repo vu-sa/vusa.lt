@@ -2,8 +2,11 @@
 doc_status: reviewed
 title: Platforma
 area: actionWindow
-last_reviewed: 2026-10-25
+last_reviewed: 2026-10-27
 tests:
+  - resources/js/Composables/__tests__/useStartFm.test.ts
+  - resources/js/Components/__tests__/StartFmPlayer.component.test.ts
+  - resources/js/Components/Layouts/__tests__/FormPage.component.test.ts
   - tests/Browser/PostCreateNavigationTest.php
   - tests/Feature/Admin/Content/PageControllerTest.php
   - tests/Feature/Api/Admin/ContentEditorTest.php
@@ -244,3 +247,19 @@ Būsena visada rodoma per `StatusBadge`, nenaudojant atskirų spalvų.
   telefono juostą ir sparčiuosius klavišus – `AdminShellTest`, langą **Veiksmai** – `ActionWindowTest`.
 - Laikiną ištrynimą (`SoftDeletes`) ir jo elgseną sąrašuose tikrina `SoftDeletableResourcesTest`; visiškas ištrynimas reikalauja `*.forceDelete` teisės, kurią turi tik super administratorius.
 - Daugiakalbių laukų elgseną (Spatie `HasTranslations`, `toFullArray()` administravimo formose ir `toArray()` lokalizuotai peržiūrai) bei vertimų vientisumą užtikrina `TranslatableExpectationsTest` ir `TranslationIntegrityTest`.
+
+## START FM {#start-fm}
+
+Studentų radijo gali klausytis pasirinkęs **Klausyti START FM** paskyros meniu, telefono
+meniu arba komandų paletėje. Viešoje svetainėje grotuvas atidaromas muzikos natos mygtuku
+puslapio apačioje. Pasirinkus radiją, jis pradeda groti iškart.
+
+Grotuve gali pristabdyti transliaciją, keisti garsumą arba nutildyti garsą. Telefone garsumo
+valdikliai išskleidžiami garsiakalbio mygtuku. Jei naršyklė neleidžia keisti garsumo,
+grotuvas pasiūlo naudoti įrenginio mygtukus. Užvėrus grotuvą transliacija sustabdoma;
+pristabdžius grotuvas lieka matomas, o tęsiant klausoma tiesioginės transliacijos.
+
+Kompiuteryje grotuvas rodomas apatiniame dešiniajame kampe. Telefone jis yra virš apatinio
+meniu arba formos išsaugojimo juostos. Pereinant tarp tos pačios svetainės puslapių klausymas
+tęsiasi. Perkrovus puslapį arba perėjus tarp viešos svetainės ir Mano VU SA, radiją reikia
+įjungti iš naujo. Nepavykus prisijungti, grotuve galima bandyti dar kartą.

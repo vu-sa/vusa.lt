@@ -70,15 +70,19 @@
       </main>
     </div>
 
-    <MobileBottomBar
-      v-if="!focused"
-      :active-workspace
-      :active-section
-      :can-create
-      :menu-open
-      @create="actionWindow.open()"
-      @menu="menuOpen = true"
-    />
+    <div ref="bottomStack" class="shrink-0 md:contents" data-slot="shell-bottom-stack">
+      <StartFmPlayer surface="admin" />
+      <div :id="SHELL_MOBILE_ACTIONS_ID" class="md:hidden" />
+      <MobileBottomBar
+        v-if="!focused"
+        :active-workspace
+        :active-section
+        :can-create
+        :menu-open
+        @create="actionWindow.open()"
+        @menu="menuOpen = true"
+      />
+    </div>
     <MobileMenuPanel
       v-model:open="menuOpen"
       :workspaces
@@ -91,7 +95,7 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
 import { useElementSize, useEventListener, useLocalStorage } from '@vueuse/core';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import MobileBottomBar from './MobileBottomBar.vue';
 import MobileContextBar from './MobileContextBar.vue';
@@ -105,7 +109,16 @@ import StagingBanner from '@/Components/StagingBanner.vue';
 import StagingWatermark from '@/Components/StagingWatermark.vue';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { useAdminNavigation } from '@/Composables/useAdminNavigation';
-import { useShellFocus } from '@/Composables/useShellFocus';
+import StartFmPlayer from '@/Components/StartFmPlayer.vue';
+import { useStartFm } from '@/Composables/useStartFm';
+import { SHELL_MOBILE_ACTIONS_ID, useShellFocus } from '@/Composables/useShellFocus';
+
+const radio = useStartFm();
+const bottomStack = ref<HTMLElement | null>(null);
+const { height: bottomHeight } = useElementSize(bottomStack, undefined, { box: 'border-box' });
+watch(bottomHeight, (height) => {
+  radio.bottomInset.value = height;
+});
 
 const page = usePage<PageProps>();
 const stagingDismissed = useLocalStorage(`admin-staging-warning:${page.props.auth?.user?.id ?? 'guest'}`, false, { writeDefaults: false });

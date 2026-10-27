@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed inset-x-0 bottom-0 z-50 flex justify-center p-4 sm:p-6">
+  <div class="fixed inset-x-0 bottom-(--start-fm-clearance,0px) z-50 flex justify-center p-4 sm:p-6">
     <section
       data-slot="cookie-consent"
       class="w-full max-w-xl border border-border border-t-2 border-t-brand bg-card p-5 text-card-foreground sm:p-6"

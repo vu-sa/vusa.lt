@@ -224,30 +224,32 @@
       </aside>
     </form>
 
-    <!-- Phones: the save bar takes the bottom nav's place, in thumb reach. -->
-    <div
-      v-if="mode !== 'view'"
-      :class="[
-        'fixed inset-x-0 bottom-(--shell-bottom-bar,0px) z-40 md:hidden',
-        'flex items-center justify-between gap-4 border-t border-border bg-background px-4 pt-3',
-        'pb-[calc(0.75rem_+_env(safe-area-inset-bottom,0px))]',
-      ]"
-      data-testid="form-page-mobile-save"
-    >
-      <SaveState v-if="saveState" :state="saveState" />
-      <span v-else />
-
-      <Button
-        variant="brand"
-        type="submit"
-        :form="formId"
-        :disabled="processing || disabled"
+    <Teleport defer :to="`#${SHELL_MOBILE_ACTIONS_ID}`" :disabled="!shellFocus">
+      <div
+        v-if="mode !== 'view'"
+        :class="[
+          'md:hidden',
+          !shellFocus && 'fixed inset-x-0 bottom-(--shell-bottom-bar,0px) z-40',
+          'flex items-center justify-between gap-4 border-t border-border bg-background px-4 pt-3',
+          'pb-[calc(0.75rem_+_env(safe-area-inset-bottom,0px))]',
+        ]"
+        data-testid="form-page-mobile-save"
       >
-        <Loader2 v-if="processing" class="size-4 animate-spin" />
-        <Save v-else class="size-4" />
-        {{ saveLabel ?? $t('Išsaugoti') }}
-      </Button>
-    </div>
+        <SaveState v-if="saveState" :state="saveState" />
+        <span v-else />
+
+        <Button
+          variant="brand"
+          type="submit"
+          :form="formId"
+          :disabled="processing || disabled"
+        >
+          <Loader2 v-if="processing" class="size-4 animate-spin" />
+          <Save v-else class="size-4" />
+          {{ saveLabel ?? $t('Išsaugoti') }}
+        </Button>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -263,7 +265,7 @@ import EntityTypeMark from '@/Components/EntityTypeMark.vue';
 import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
 import { Button } from '@/Components/ui/button';
 import { segmentGroupClass, segmentVariants } from '@/Components/ui/control';
-import { SHELL_FORM_BAR_ID, useShellFocus } from '@/Composables/useShellFocus';
+import { SHELL_FORM_BAR_ID, SHELL_MOBILE_ACTIONS_ID, useShellFocus } from '@/Composables/useShellFocus';
 import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 import { formatDate } from '@/Utils/dateTime';
 import type { ModelEnum } from '@/Types/enums';

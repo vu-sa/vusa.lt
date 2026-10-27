@@ -4,7 +4,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { defineComponent, h, nextTick, ref } from 'vue';
 
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import { SHELL_FORM_BAR_ID, createShellFocusProvider, type ShellFocusContext } from '@/Composables/useShellFocus';
+import { SHELL_FORM_BAR_ID, SHELL_MOBILE_ACTIONS_ID, createShellFocusProvider, type ShellFocusContext } from '@/Composables/useShellFocus';
 import { ModelEnum } from '@/Types/enums';
 
 describe('FormPage.vue', () => {
@@ -356,6 +356,7 @@ describe('FormPage.vue', () => {
           focus = createShellFocusProvider();
           return () => h('div', [
             h('div', { id: SHELL_FORM_BAR_ID }),
+            h('div', { id: SHELL_MOBILE_ACTIONS_ID }),
             showForm.value ? h(FormPage, { title: 'Puslapis', backHref: '/mano/pages' }) : null,
           ]);
         },
@@ -372,6 +373,9 @@ describe('FormPage.vue', () => {
 
       expect(focus().isFocused.value).toBe(true);
       expect(document.querySelector(`#${SHELL_FORM_BAR_ID} [data-testid="form-page-bar"]`)).not.toBeNull();
+      const saveBar = document.querySelector(`#${SHELL_MOBILE_ACTIONS_ID} [data-testid="form-page-mobile-save"]`);
+      expect(saveBar).not.toBeNull();
+      expect(saveBar?.classList.contains('fixed')).toBe(false);
 
       showForm.value = false;
       await nextTick();

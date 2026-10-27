@@ -11,7 +11,7 @@
       role="status"
       :class="[
         'fixed inset-x-4 z-50 border border-border bg-background p-4 text-foreground',
-        'bottom-[calc(3.5rem_+_env(safe-area-inset-bottom,0px)_+_0.75rem)] md:inset-x-auto md:right-4 md:bottom-4 md:w-80',
+        'bottom-[calc(var(--bottom-chrome-height,3.5rem)_+_0.75rem)] md:inset-x-auto md:right-4 md:bottom-[calc(var(--start-fm-clearance,0px)_+_1rem)] md:w-80',
       ]"
     >
       <div class="flex items-center justify-between gap-3">
