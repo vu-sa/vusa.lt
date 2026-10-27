@@ -30,7 +30,7 @@
                   <span class="block truncate text-sm">{{ entry.display_name ?? entry.email }}</span>
                   <span class="block truncate text-xs text-muted-foreground">{{ entry.email }} · {{ entry.reasons.join(' · ') }}</span>
                 </span>
-                <Button variant="ghost" size="sm" voice="sentence" class="pointer-coarse:min-h-11" @click="exclude(entry.email)">
+                <Button variant="ghost" size="sm" voice="sentence" class="pointer-coarse:min-h-11" data-testid="diff-exclude" @click="exclude(entry.email)">
                   {{ $t('mailing_lists.diff.exclude') }}
                 </Button>
               </li>

@@ -118,7 +118,7 @@ return [
         ],
         'address_mode_hints' => [
             'holder' => 'Pareigų el. paštas, jei nurodytas, kitaip – nario el. paštas.',
-            'duty_mailbox' => 'Pareigybės dėžutė (pvz., atstovai@…), todėl keičiantis žmonėms adresas lieka tas pats.',
+            'duty_mailbox' => 'Pareigybės dėžutė (pvz., atstovai@…), todėl keičiantis žmonėms adresas lieka tas pats. Jei jos nėra – pareigų el. paštas, tada pareigybės, per kurią užimama ši, paštas, ir tik tada asmeninis.',
         ],
         'tenant_scopes' => [
             'all' => 'Visi',
@@ -199,6 +199,8 @@ return [
         'manual' => 'Pridėta rankiniu būdu',
         'manual_with_note' => 'Pridėta rankiniu būdu: :note',
         'duty_mailbox' => 'Pareigybės paštas: :duty',
+        'duty_mailbox_via' => ':duty · per „:via“ pareigybės paštą',
+        'mailbox_fallback' => ':duty · pareigybė neturi pašto, naudojamas asmeninis',
     ],
 
     'messages' => [

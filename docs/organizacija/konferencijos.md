@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Konferencijos
 area: mailingLists
 models: [MailingList]
-last_reviewed: 2026-10-18
+last_reviewed: 2026-10-27
 tests:
   - tests/Feature/Admin/MailingLists/ResolveMailingListMembersTest.php
   - tests/Feature/Admin/MailingLists/SyncMailingListTest.php
@@ -17,6 +17,8 @@ tests:
   - resources/js/Features/Admin/MailingLists/__tests__/ShowMailingList.component.test.ts
   - resources/js/Features/Admin/MailingLists/__tests__/MailingListArchive.component.test.ts
   - resources/js/Features/Admin/MailingLists/__tests__/MailingListSourceSheet.component.test.ts
+  - resources/js/Features/Admin/MailingLists/__tests__/MailingListRecipients.component.test.ts
+  - resources/js/Features/Admin/MailingLists/__tests__/MailingListSources.component.test.ts
 ---
 
 # Konferencijos
@@ -90,7 +92,18 @@ gali rinktis tik jam prieinamų padalinių šaltinius; tipų šaltiniai taip pat
 
 - **Asmeninis paštas** – pareigų laikotarpyje nurodytas el. paštas, o jei jo nėra, nario el. paštas.
 - **Pareigybės paštas** – pareigybės dėžutė (pvz., `atstovai@mif.vusa.lt`). Keičiantis žmonėms adresas
-  lieka tas pats. Jei pareigybė dėžutės neturi, imamas užimančiojo asmeninis paštas.
+  lieka tas pats. Jei pareigybė dėžutės neturi, imamas pirmas rastas:
+  1. pareigų laikotarpyje nurodytas el. paštas;
+  2. jei pareigos užimamos dėl kitos pareigybės (pvz., padalinio pirmininkas yra ir Tarybos narys) –
+     tos pareigybės laikotarpio el. paštas, o jei jo nėra, tos pareigybės dėžutė (pvz., `pirmininkas@ff.vusa.lt`);
+  3. asmeninis paštas. Toks gavėjas sąraše pažymimas „pareigybė neturi pašto, naudojamas asmeninis“.
+
+<ChangelogNote date="2026-10-27" title="Pareigybės paštas per kitą pareigybę">
+
+Konferencija, sudaryta iš institucijos ar pareigybės su **Pareigybės paštu**, nariams, kurie pareigas užima dėl kitos
+pareigybės, naudoja tos pareigybės dėžutę, o ne asmeninį paštą.
+
+</ChangelogNote>
 
 Jei tas pats žmogus į konferenciją patenka per kelias pareigybes, jis įtraukiamas vieną kartą, o
 pareigų laikotarpyje nurodytas el. paštas turi pirmenybę prieš nario el. paštą.
