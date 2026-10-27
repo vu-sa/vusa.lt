@@ -6,6 +6,8 @@ use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\Tenant;
+use App\Services\SystemDutyTypes;
+use App\Settings\DutyTypeSettings;
 use App\Support\LocalizedRouteSlugs;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -57,7 +59,11 @@ test('duty type contact URLs follow the primary institution visibility', functio
             'name' => ['lt' => 'Padalinio institucija', 'en' => 'Unit institution'],
         ]);
     $institution->update(['is_active' => true]);
-    DutyType::firstOrCreate(['slug' => 'koordinatoriai'], ['title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators']]);
+    $type = DutyType::firstOrCreate(['id' => 6], ['title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators']]);
+    $settings = app(DutyTypeSettings::class);
+    $settings->coordinator_type_id = $type->id;
+    $settings->save();
+    app(SystemDutyTypes::class)->flush();
     $url = LocalizedRouteSlugs::route('contacts.dutyType', ['subdomain' => $subdomain, 'lang' => $locale, 'type' => 'koordinatoriai'], $locale);
 
     $this->get($url)->assertOk();

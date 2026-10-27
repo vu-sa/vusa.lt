@@ -78,6 +78,8 @@ class RoleGlobalCommunicationCoordinatorSeeder extends Seeder
         ]);
 
         // This role can be attached to high-level coordination types
-        $role->attachable_types()->attach(DutyType::query()->where('slug', 'pirmininkas')->firstOrFail());
+        $type = DutyType::query()->find(TypeSeeder::CHAIR_DUTY_TYPE_ID)
+            ?? DutyType::query()->where('title->lt', 'Pirmininkas')->firstOrFail();
+        $role->attachable_types()->attach($type);
     }
 }

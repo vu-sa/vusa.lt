@@ -167,7 +167,6 @@ class SettingsController extends AdminController
                 'drives' => (string) __($part->drivesKey()),
                 'type_id' => $dutyTypeSettings->{$part->settingKey()},
                 'effective_type_id' => $systemDutyTypes->id($part),
-                'fallback_slug' => $part->fallbackSlug(),
             ])->all(),
             'dutyTypeOptions' => DutyType::query()->get(['id', 'title', 'parent_id'])
                 ->map(fn (DutyType $type): array => ['id' => (int) $type->id, 'title' => (string) $type->getTranslation('title', app()->getLocale()), 'parent_id' => $type->parent_id])

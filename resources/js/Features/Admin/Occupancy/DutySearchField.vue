@@ -121,7 +121,7 @@ export interface DutyHit {
   tenantShortname?: string;
   /** The duty's home tenant, used to narrow the study-programme list. */
   homeTenantId?: number | null;
-  typeSlugs?: string[];
+  typeIds?: number[];
   isActive?: boolean;
 }
 
@@ -131,7 +131,7 @@ interface DutyDocument {
   institution_name_lt?: string;
   tenant_shortname?: string;
   home_tenant_id?: number | null;
-  type_slugs?: string[];
+  type_ids?: number[];
   is_active?: boolean;
 }
 
@@ -177,7 +177,7 @@ const hits = computed<DutyHit[]>(() => (showList.value
       institutionName: doc.institution_name_lt ?? undefined,
       tenantShortname: doc.tenant_shortname ?? undefined,
       homeTenantId: doc.home_tenant_id ?? null,
-      typeSlugs: doc.type_slugs ?? [],
+      typeIds: doc.type_ids ?? [],
       isActive: doc.is_active !== false,
     }))
   : []));

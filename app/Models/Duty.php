@@ -215,7 +215,7 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
                 ->filter()
                 ->values()
                 ->all(),
-            'type_slugs' => $this->types->pluck('slug')->filter()->values()->all(),
+            'type_ids' => $this->types->pluck('id')->map(fn ($id) => (int) $id)->values()->all(),
             // Names + ids stay index-aligned so the detail pane can render clickable member links.
             'current_user_names' => $currentUsers->pluck('name')->values()->all(),
             'current_user_ids' => $currentUsers->pluck('id')->map(fn ($id) => (string) $id)->values()->all(),

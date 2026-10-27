@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { termStatus, termYearSpan } from '../occupancy';
+import { isCuratorDuty, termStatus, termYearSpan } from '../occupancy';
 
 describe('termStatus', () => {
   const today = '2026-09-20';
@@ -58,5 +58,19 @@ describe('termYearSpan', () => {
 
   it('has nothing to say without dated terms', () => {
     expect(termYearSpan([], 'dabar', today)).toBeNull();
+  });
+});
+
+describe('isCuratorDuty', () => {
+  it('returns true when duty types intersect with curator type ids', () => {
+    expect(isCuratorDuty([8], [8, 9])).toBe(true);
+    expect(isCuratorDuty([6, 8], [8, 9])).toBe(true);
+  });
+
+  it('returns false when duty types do not intersect with curator type ids', () => {
+    expect(isCuratorDuty([6], [8, 9])).toBe(false);
+    expect(isCuratorDuty([], [8, 9])).toBe(false);
+    expect(isCuratorDuty(null, [8, 9])).toBe(false);
+    expect(isCuratorDuty([undefined, null], [8, 9])).toBe(false);
   });
 });

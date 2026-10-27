@@ -95,7 +95,7 @@ it('reviews incomplete records for the sending representative without overflow i
     $user = makeAdminUser(Tenant::query()->first());
     $institution = Institution::factory()->for(Tenant::query()->first())->create();
     $duty = Duty::factory()->for($institution)->create();
-    $type = DutyType::query()->firstOrCreate(['slug' => 'studentu-atstovai'], ['name' => ['lt' => 'Studentų atstovai', 'en' => 'Student representatives']]);
+    $type = DutyType::factory()->create(['title' => ['lt' => 'Studentų atstovai', 'en' => 'Student representatives']]);
     $duty->types()->attach($type);
     $user->duties()->attach($duty, ['start_date' => today()->subMonth()]);
     app(RecordMeeting::class)->execute($institution, now()->subWeek());

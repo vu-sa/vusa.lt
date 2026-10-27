@@ -52,7 +52,7 @@ const defaultPageProps = {
     { id: 'vuif', name: 'VU IF', shortname: 'VU IF' },
     { id: 'vumif', name: 'VU MIF', shortname: 'VU MIF' },
   ],
-  curatorDutyTypeSlugs: ['kuratoriai', 'mentors'],
+  curatorDutyTypeIds: [8, 9],
   eventTypes: [
     { id: 1, slug: 'stovykla', name: 'Stovykla' },
     { id: 2, slug: 'konferencija', name: 'Konferencija' },

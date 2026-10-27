@@ -27,7 +27,8 @@ class RoleProblemEditorSeeder extends Seeder
         ]);
 
         // A type grant reaches the existing coordinator duties through the projection.
-        DutyType::query()->where('slug', 'koordinatoriai')->firstOrFail()
-            ->responsibilityGrants()->firstOrCreate(['role_id' => $role->id, 'scope_type' => null, 'scope_id' => null]);
+        $type = DutyType::query()->find(TypeSeeder::COORDINATOR_DUTY_TYPE_ID)
+            ?? DutyType::query()->where('title->lt', 'Koordinatorius')->firstOrFail();
+        $type->responsibilityGrants()->firstOrCreate(['role_id' => $role->id, 'scope_type' => null, 'scope_id' => null]);
     }
 }

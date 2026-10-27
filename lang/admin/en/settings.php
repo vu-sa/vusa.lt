@@ -131,7 +131,7 @@ return [
         'duty_types_title' => 'Public contacts',
         'duty_types_description' => 'Padalinys contact pages are grouped by these duty types. The links do not change.',
         'duty_type_label' => 'Duty type',
-        'fallback' => 'Not chosen – the type with the link ":slug" is used',
+        'fallback' => 'Not chosen.',
         'duty_types' => [
             'coordinator' => [
                 'label' => 'Coordinators',

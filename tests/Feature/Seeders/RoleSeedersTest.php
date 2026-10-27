@@ -7,6 +7,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use Database\Seeders\RoleProblemEditorSeeder;
 use Database\Seeders\RoleStudentRepresentativeSeeder;
+use Database\Seeders\TypeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
@@ -15,9 +16,9 @@ pest()->use(RefreshDatabase::class);
  * A user whose duty was tagged with the type before the role was linked to it — the case the
  * type → role link previously missed, since only the observer on DutyType::roles() backfills duties.
  */
-function userWithDutyTypedBeforeLink(string $typeSlug, string $roleName): User
+function userWithDutyTypedBeforeLink(int $typeId, string $roleName): User
 {
-    $type = DutyType::query()->where('slug', $typeSlug)->firstOrFail();
+    $type = DutyType::query()->findOrFail($typeId);
     $type->roles()->detach(Role::findByName($roleName)->id);
 
     $user = makeUser(Tenant::query()->firstOrFail());
@@ -27,7 +28,7 @@ function userWithDutyTypedBeforeLink(string $typeSlug, string $roleName): User
 }
 
 test('every coordinator duty, including earlier ones, gets the problem editor role', function (): void {
-    $coordinator = userWithDutyTypedBeforeLink('koordinatoriai', RoleProblemEditorSeeder::NAME);
+    $coordinator = userWithDutyTypedBeforeLink(TypeSeeder::COORDINATOR_DUTY_TYPE_ID, RoleProblemEditorSeeder::NAME);
 
     $this->seed(RoleProblemEditorSeeder::class);
 
@@ -36,7 +37,7 @@ test('every coordinator duty, including earlier ones, gets the problem editor ro
 });
 
 test('every student representative duty, including earlier ones, gets the representative role', function (): void {
-    $representative = userWithDutyTypedBeforeLink('studentu-atstovai', 'Studentų atstovas');
+    $representative = userWithDutyTypedBeforeLink(TypeSeeder::STUDENT_REPRESENTATIVE_DUTY_TYPE_ID, 'Studentų atstovas');
 
     $this->seed(RoleStudentRepresentativeSeeder::class);
 

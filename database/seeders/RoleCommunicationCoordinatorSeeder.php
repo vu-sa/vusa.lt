@@ -78,10 +78,16 @@ class RoleCommunicationCoordinatorSeeder extends Seeder
             'problems.delete.padalinys',
         ]);
 
-        $role->attachable_types()->attach(DutyType::query()->where('slug', 'pirmininkas')->firstOrFail());
+        $attachableTypes = DutyType::query()->whereIn('id', [
+            TypeSeeder::CHAIR_DUTY_TYPE_ID,
+            TypeSeeder::COORDINATOR_DUTY_TYPE_ID,
+            TypeSeeder::CURATOR_DUTY_TYPE_ID,
+        ])->get();
 
-        $role->attachable_types()->attach(DutyType::query()->where('slug', 'koordinatoriai')->firstOrFail());
+        if ($attachableTypes->isEmpty()) {
+            $attachableTypes = DutyType::query()->whereIn('title->lt', ['Pirmininkas', 'Koordinatorius', 'Kuratorius'])->get();
+        }
 
-        $role->attachable_types()->attach(DutyType::query()->where('slug', 'kuratoriai')->firstOrFail());
+        $role->attachable_types()->attach($attachableTypes);
     }
 }

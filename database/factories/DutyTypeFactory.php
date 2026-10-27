@@ -20,7 +20,6 @@ class DutyTypeFactory extends Factory
         return [
             'title' => ['lt' => $this->faker->sentence, 'en' => $this->faker->sentence],
             'description' => ['lt' => $this->faker->paragraph, 'en' => $this->faker->paragraph],
-            'slug' => $this->faker->slug,
         ];
     }
 }

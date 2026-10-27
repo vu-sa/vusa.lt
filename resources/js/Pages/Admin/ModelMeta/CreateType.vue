@@ -3,6 +3,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import type { InertiaForm } from '@inertiajs/vue3';
 
 import TypeForm from '@/Components/AdminForms/TypeForm.vue';
@@ -11,7 +12,12 @@ const props = defineProps<{
   typeKind: 'institutionType' | 'dutyType';
   contentTypes: Array<App.Entities.InstitutionType | App.Entities.DutyType>;
 }>();
-const type = { title: { lt: '', en: '' }, description: { lt: '', en: '' }, parent_id: null, slug: '', extra_attributes: {} } as App.Entities.InstitutionType | App.Entities.DutyType;
+const type = computed(() => ({
+  title: { lt: '', en: '' },
+  description: { lt: '', en: '' },
+  parent_id: null,
+  ...(props.typeKind === 'institutionType' ? { slug: '', extra_attributes: {} } : {}),
+})) as unknown as App.Entities.InstitutionType | App.Entities.DutyType;
 function submit(form: unknown): void {
   const resource = props.typeKind === 'institutionType' ? 'institutionTypes' : 'dutyTypes';
   (form as InertiaForm<Record<string, unknown>>).post(route(`${resource}.store`));

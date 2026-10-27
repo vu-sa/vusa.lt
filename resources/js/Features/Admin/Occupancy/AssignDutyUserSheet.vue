@@ -491,14 +491,16 @@ const page = usePage();
 const canCreateMember = computed(() => Boolean((page.props.auth as { can?: { create?: { user?: boolean } } } | undefined)?.can?.create?.user));
 
 /** Duty types are known on the duty record and from search; elsewhere the old behaviour stays. */
-const dutyTypeSlugs = computed<string[] | null>(() => {
+const dutyTypeIds = computed<number[] | null>(() => {
   if (pickDuty.value) {
-    return chosenDuty.value?.typeSlugs ?? null;
+    return chosenDuty.value?.typeIds ?? null;
   }
 
-  const types = (dutyContext.value as { types?: { slug?: string | null }[] } | null)?.types;
+  const types = (dutyContext.value as { types?: { id?: number | string | null }[] } | null)?.types;
 
-  return Array.isArray(types) ? types.map(type => type.slug ?? '') : null;
+  return Array.isArray(types)
+    ? types.map(type => Number(type.id)).filter((id): id is number => Number.isInteger(id))
+    : null;
 });
 
 const availableStudyPrograms = computed(() => {
@@ -521,8 +523,8 @@ const saveLabel = computed(() => (isEditing.value ? $t('Išsaugoti') : $t('Prisk
 
 // A programme only means something on a curator's term; one already set is never hidden.
 const showStudyProgram = computed(() => availableStudyPrograms.value.length > 0 && (
-  dutyTypeSlugs.value === null
-  || isCuratorDuty(dutyTypeSlugs.value, page.props.curatorDutyTypeSlugs ?? [])
+  dutyTypeIds.value === null
+  || isCuratorDuty(dutyTypeIds.value, (page.props.curatorDutyTypeIds as number[] | undefined) ?? [])
   || !!props.dutiable?.study_program_id
   || hasText(asNote(props.dutiable?.study_program_note))
 ));

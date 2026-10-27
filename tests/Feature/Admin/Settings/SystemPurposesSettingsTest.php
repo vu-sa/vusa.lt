@@ -72,8 +72,8 @@ test('one responsibility cannot carry two purposes', function (): void {
         ->assertSessionHasErrors();
 });
 
-test('the chosen contacts type wins over the old slug and cannot be deleted', function (): void {
-    $type = DutyType::factory()->create(['slug' => 'musu-koordinatoriai']);
+test('the chosen contacts type cannot be deleted', function (): void {
+    $type = DutyType::factory()->create();
 
     asUser($this->admin)
         ->post(route('settings.purposes.update'), purposesPayload(

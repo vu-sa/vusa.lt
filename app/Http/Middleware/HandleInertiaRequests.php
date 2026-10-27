@@ -189,7 +189,7 @@ class HandleInertiaRequests extends Middleware
             // identical "not worth a search endpoint" rationale for topics.
             'eventTypes' => fn () => $onAdmin ? $this->getEventTypesForInertia() : [],
             'tags' => fn () => $onAdmin ? $this->getTagsForInertia() : [],
-            'curatorDutyTypeSlugs' => fn () => $onAdmin ? app(SystemDutyTypes::class)->curatorSlugs() : [],
+            'curatorDutyTypeIds' => fn () => $onAdmin ? app(SystemDutyTypes::class)->curatorIds() : [],
             'institutionTypes' => $this->getInstitutionTypesForInertia(...),
             'typesenseConfig' => TypesenseManager::getFrontendConfig(...),
             'pwa' => [

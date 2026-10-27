@@ -34,13 +34,13 @@ abstract class TypeAttributesRequest extends FormRequest
             'title.en' => ['nullable', 'string'],
             'description.lt' => ['nullable', 'string'],
             'description.en' => ['nullable', 'string'],
-            'slug' => ['nullable', 'string', 'max:125'],
             'parent_id' => ['nullable', 'integer', SoftDeleteRules::existsLive((new $class)->getTable()), Rule::notIn($excluded)],
             'model_type' => ['prohibited'],
         ];
 
         if ($class === InstitutionType::class) {
             $rules += [
+                'slug' => ['nullable', 'string', 'max:125'],
                 'extra_attributes' => ['nullable', 'array'],
                 'extra_attributes.meeting_periodicity_days' => ['nullable', 'integer', 'min:1', 'max:365'],
                 'extra_attributes.governance_scope' => ['nullable', Rule::enum(InstitutionScope::class)],
