@@ -49,6 +49,8 @@ return [
     'create_new' => 'Create New',
     'due' => 'Due',
     'auto_completing' => 'Auto-completing',
+    'cancelled' => 'Cancelled',
+    'cancelled_hint' => 'This task no longer applies – the institution has new representatives or is no longer active. Nobody needs to complete it.',
     'instructions' => 'Instructions',
     'available_actions' => 'Available actions',
     'assigned_to' => 'Assigned to',

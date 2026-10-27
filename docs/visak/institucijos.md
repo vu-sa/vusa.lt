@@ -577,7 +577,9 @@ Pranešimas apie tai, kad posėdžio nebus, suteikia atskirą pusės periodišku
 - Periodiškumo užduotis: `tasks:repopulate institution` (kasdien 10.00) →
   `PeriodicityGapTaskHandler`; gavėjai – `ResolveTaskAssignees::forInstitution`. Būklei įkeliami visi
   pranešimai „Posėdžio nebuvo“; pasibaigusiems taikoma pusė periodiškumo. Kasdienis vykdymas taip pat
-  užbaigia likusias atviras periodiškumo užduotis, kai dabartinė būklė dėmesio nebereikalauja.
+  užbaigia likusias atviras periodiškumo užduotis, kai posėdis ar pranešimas uždengė laikotarpį, o
+  [atšaukia](/mano/uzduotys#atsauktos), kai jas nebeaktualias padarė tik nauja kadencija ar
+  institucijos išjungimas.
 - Pranešimo sutrumpinimas: `CheckInService::adjustForMeeting()` iš `MeetingController`.
 - Klausimai „Ar vyko posėdis?“: `InstitutionActivityRequest` (vienas gavėjui ir institucijai),
   siunčia `SendInstitutionActivityRequests` (`tasks:repopulate institution` per `forTask()`, kai

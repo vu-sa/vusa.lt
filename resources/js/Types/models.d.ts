@@ -2547,6 +2547,7 @@ declare global {
       taskable_type: string
       taskable_id: string
       completed_at?: string | null
+      cancelled_at?: string | null
       created_at: string
       updated_at: string
       // mutators

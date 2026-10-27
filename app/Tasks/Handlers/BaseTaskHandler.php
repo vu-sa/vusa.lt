@@ -53,6 +53,15 @@ abstract class BaseTaskHandler implements TaskHandler
     }
 
     /**
+     * Close a task that no longer applies. Silent: nobody did it, so there is nothing to announce.
+     */
+    public function cancel(Task $task): void
+    {
+        $task->completed_at = $task->cancelled_at = now();
+        $task->save();
+    }
+
+    /**
      * @param  User|null  $completedBy  Excluded from completion notifications.
      */
     protected function notifyUsersOfCompletion(Task $task, string $reason, ?User $completedBy = null): void
