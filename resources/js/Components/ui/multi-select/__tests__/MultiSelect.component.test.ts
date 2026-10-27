@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 
 import { MultiSelect } from '@/Components/ui/multi-select';
 
@@ -15,6 +15,19 @@ describe('MultiSelect', () => {
     const overflow = wrapper.get('[data-slot="multi-select-overflow"]');
     expect(overflow.text()).toBe('+2');
     expect(overflow.attributes('aria-label')).toBe('EVAF, ChGF');
+  });
+
+  it('opens the list from anywhere in a one-line field, tags included', async () => {
+    const wrapper = mount(MultiSelect, { props: { modelValue: options, options, maxVisibleTags: 2 }, attachTo: document.body });
+
+    expect(wrapper.find('[data-slot="multi-select-overflow"]').exists()).toBe(true);
+    expect(document.body.querySelector('[role="listbox"]')).toBeNull();
+
+    await wrapper.get('[data-slot="multi-select-overflow"]').trigger('click');
+    await flushPromises();
+
+    expect(document.body.querySelector('[role="listbox"]')?.textContent).toContain('ChGF');
+    wrapper.unmount();
   });
 
   it('wraps every tag when no limit is set', () => {

@@ -1,5 +1,5 @@
 <template>
-  <div class="grid gap-2 sm:grid-cols-2" data-slot="activity-request-filters">
+  <div class="grid gap-2 sm:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]" data-slot="activity-request-filters">
     <MultiSelect
       :aria-label="$t('Padaliniai')"
       :model-value="selectedTenants"
@@ -13,6 +13,7 @@
       :aria-label="$t('forms.fields.governance_scope')"
       :model-value="draft.activityRequest.filters.governanceScope ?? ''"
       :options="scopeOptions"
+      select-class="truncate"
       @update:model-value="setScope"
     />
   </div>

@@ -4,17 +4,18 @@
       :class="cn(
         'relative flex min-h-11 w-full items-center gap-1.5 rounded-none border border-border bg-secondary/50 px-3 py-2 text-sm transition-colors',
         'focus-within:bg-background focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20 focus-within:outline-none',
-        maxVisibleTags === undefined ? 'flex-wrap' : 'flex-nowrap overflow-hidden',
+        compact ? 'flex-nowrap overflow-hidden' : 'flex-wrap',
         disabled && 'cursor-not-allowed opacity-50',
         props.class,
       )"
+      @click="openFromField"
     >
       <!-- Selected tags -->
       <Badge
         v-for="item in visibleItems"
         :key="getItemValue(item)"
         variant="secondary"
-        class="flex shrink-0 items-center gap-1 pr-1"
+        :class="['flex items-center gap-1 pr-1', compact ? 'min-w-0 shrink overflow-hidden' : 'shrink-0']"
       >
         <slot name="selected-item" :item>
           <span class="max-w-[150px] truncate">{{ getItemLabel(item) }}</span>
@@ -43,7 +44,8 @@
       <ComboboxInput
         v-if="!disabled"
         v-model="searchTerm"
-        class="min-w-[80px] flex-1 bg-transparent text-sm placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+        :class="compact ? 'min-w-6' : 'min-w-[80px]'"
+        class="flex-1 bg-transparent text-sm placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
         :placeholder="selectedItems.length === 0 ? placeholder : ''"
         :disabled
         @focus="isOpen = true"
@@ -171,6 +173,16 @@ const emit = defineEmits<(e: 'update:modelValue', value: T[]) => void>();
 const selectedItems = ref<T[]>([...props.modelValue]) as { value: T[] };
 
 const isOpen = ref(false);
+
+// One line: tags shrink and truncate so the chevron is never pushed out of the field.
+const compact = computed(() => props.maxVisibleTags !== undefined);
+
+// The search input is only a sliver in compact mode, so the whole field opens the list.
+const openFromField = (event: MouseEvent) => {
+  if (compact.value && !props.disabled && !(event.target as Element).closest('button')) {
+    isOpen.value = true;
+  }
+};
 
 const visibleItems = computed(() => props.maxVisibleTags === undefined ? selectedItems.value : selectedItems.value.slice(0, props.maxVisibleTags));
 const hiddenItems = computed(() => selectedItems.value.slice(visibleItems.value.length));
