@@ -6,6 +6,8 @@ export { default as DutySectionList } from './DutySectionList.vue';
 export { default as DutyCurrentHoldersCard } from './DutyCurrentHoldersCard.vue';
 export { default as DutyAboutCard } from './DutyAboutCard.vue';
 export { default as DutyLineageCard } from './DutyLineageCard.vue';
+export { default as DutyLineageTimeline } from './DutyLineageTimeline.vue';
+export type { DutyLineageEvent, LineageLinkedDuty } from './DutyLineageTimeline.vue';
 export { default as DutyMeetingMiniCard } from './DutyMeetingMiniCard.vue';
 export { default as DutyOtherDutiesCard } from './DutyOtherDutiesCard.vue';
 export { default as DutyInstitutionCard } from './DutyInstitutionCard.vue';

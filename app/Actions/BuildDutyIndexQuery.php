@@ -25,6 +25,8 @@ final class BuildDutyIndexQuery
 
         self::applyDataQualityFilter($query, $request->getFilters()['data_quality'] ?? null);
 
+        self::applyHistoryFilter($query, $request->getFilters()['history'] ?? null);
+
         $type = $request->getFilters()['duty_type_id'] ?? null;
         if ($type === 'none') {
             $query->whereDoesntHave('types');
@@ -70,6 +72,19 @@ final class BuildDutyIndexQuery
                     ->groupBy('dup.dutiable_id')
                     ->havingRaw('COUNT(*) > 1');
             }),
+            default => null,
+        };
+    }
+
+    /** @param Builder<Duty> $query */
+    private static function applyHistoryFilter(Builder $query, ?string $history): void
+    {
+        $linked = fn (Builder $query) => $query->whereHas('predecessors')->orWhereHas('successors');
+
+        match ($history) {
+            'any' => $query->where(fn (Builder $query) => $linked($query)->orWhereHas('formerNames')),
+            'renamed' => $query->whereHas('formerNames'),
+            'linked' => $query->where($linked),
             default => null,
         };
     }

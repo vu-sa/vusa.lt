@@ -17,25 +17,15 @@
     </li>
     <li v-if="actions.length && fillActions.length" role="separator" aria-orientation="vertical" class="mx-1 h-6 w-px bg-border" />
     <li v-for="entry in fillActions" :key="entry.id">
-      <Button
-        variant="outline"
-        size="sm"
-        voice="sentence"
-        class="border-dashed border-muted-foreground/50 text-muted-foreground pointer-coarse:h-11"
-        data-tier="fill"
-        @click="entry.action.run()"
-      >
-        <component :is="entry.action.icon ?? Plus" class="size-4" aria-hidden="true" />
-        {{ entry.action.label }}
-      </Button>
+      <FillActionButton :label="entry.action.label" :icon="entry.action.icon" @click="entry.action.run()" />
     </li>
   </ul>
 </template>
 
 <script setup lang="ts">
-import { Plus } from '@lucide/vue';
 import { computed, inject, type Component } from 'vue';
 
+import FillActionButton from './FillActionButton.vue';
 import { OVERVIEW_STATUS_KEY, type OverviewStatusEntry } from './overviewStatus';
 
 import { Button } from '@/Components/ui/button';

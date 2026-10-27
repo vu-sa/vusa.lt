@@ -198,44 +198,13 @@
             <p v-if="!hasLineage" class="text-sm text-muted-foreground">
               {{ $t('Jei šios pareigybės darbą anksčiau dirbo kita pareigybė (pvz., ji buvo padalinta), susiek ją — jos nariai bus rodomi istorijoje.') }}
             </p>
-            <dl v-else class="space-y-3 text-sm">
-              <div v-if="lineage?.predecessors.length">
-                <dt class="text-xs text-muted-foreground">
-                  {{ $t('Ankstesnė pareigybė') }}
-                </dt>
-                <dd v-for="linked in lineage.predecessors" :key="linked.id" class="flex min-h-11 items-center justify-between gap-2">
-                  <Link :href="route('duties.show', linked.id)" class="min-w-0 truncate font-medium hover:underline">
-                    <InflectedDutyName :name="linked.name" />
-                    <span v-if="linked.institution_name" class="font-normal text-muted-foreground"> · {{ linked.institution_name }}</span>
-                  </Link>
-                  <span class="flex shrink-0 items-center gap-1">
-                    <StatusBadge v-if="!linked.is_active" :status="inactiveStatus" />
-                    <Button
-                      v-if="canManageDuty"
-                      size="sm"
-                      variant="ghost"
-                      voice="sentence"
-                      class="u-touch"
-                      :aria-label="$t('Atsieti')"
-                      @click="unlinkPredecessor(linked.id)"
-                    >
-                      <X class="size-4" />
-                    </Button>
-                  </span>
-                </dd>
-              </div>
-              <div v-if="lineage?.successors.length">
-                <dt class="text-xs text-muted-foreground">
-                  {{ $t('Darbą perėmė') }}
-                </dt>
-                <dd v-for="linked in lineage.successors" :key="linked.id" class="flex min-h-11 items-center gap-2">
-                  <Link :href="route('duties.show', linked.id)" class="min-w-0 truncate font-medium hover:underline">
-                    <InflectedDutyName :name="linked.name" />
-                    <span v-if="linked.institution_name" class="font-normal text-muted-foreground"> · {{ linked.institution_name }}</span>
-                  </Link>
-                </dd>
-              </div>
-            </dl>
+            <DutyLineageTimeline
+              v-else
+              :events="lineage?.events ?? []"
+              :can-manage="canManageDuty"
+              @unlink="unlinkPredecessor"
+              @fold="foldTarget = $event"
+            />
           </OverviewSection>
         </Deferred>
       </div>
@@ -298,7 +267,29 @@
     @submit="linkPredecessor"
   >
     <DutySearchField v-model="predecessorChoice" include-inactive :error="predecessorForm.errors.predecessor_id" />
+    <FormFieldWrapper
+      id="predecessor-effective-on"
+      :label="$t('Nuo')"
+      required
+      :hint="$t('Diena, nuo kurios ši pareigybė perėmė darbą. Pasiūlyta pagal pirmąjį laikotarpį arba kadenciją.')"
+      :error="predecessorForm.errors.effective_on"
+    >
+      <DatePicker
+        :model-value="predecessorForm.effective_on"
+        @update:model-value="(value?: Date) => predecessorForm.effective_on = value ? formatDate(value) : ''"
+      />
+    </FormFieldWrapper>
   </SheetForm>
+
+  <ConfirmDialog
+    :open="foldTarget !== null"
+    :title="$t('Paversti pervadinimu?')"
+    :description="$t('„:name“ laikotarpiai bus perkelti į šią pareigybę, jos pavadinimas išsaugotas kaip ankstesnis, o pati pareigybė ištrinta.', { name: foldTarget?.name ?? '' })"
+    :confirm-label="$t('Paversti pervadinimu')"
+    destructive
+    @update:open="!$event && (foldTarget = null)"
+    @confirm="foldIntoRename"
+  />
 
   <DutiableTimelineDialog
     v-model:open="timelineOpen"
@@ -351,7 +342,6 @@ import {
   UserPlus,
   Users,
   UserX,
-  X,
 } from '@lucide/vue';
 
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
@@ -359,13 +349,16 @@ import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarni
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
+import DutyLineageTimeline, { type DutyLineageEvent, type LineageLinkedDuty } from '@/Components/Duties/DutyLineageTimeline.vue';
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
+import { DatePicker } from '@/Components/ui/date-picker';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import RecordPage, { type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import type { ActionDescriptor } from '@/Components/Layouts/RecordPageAction.vue';
-import { ConfirmDialog, OverviewSection, SheetForm, StatusBadge } from '@/Components/Patterns';
+import { ConfirmDialog, OverviewSection, SheetForm } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
-import { activityStatuses, type StatusPresentation } from '@/Constants/statuses';
+import { operatingStatuses, type StatusPresentation } from '@/Constants/statuses';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
 import { DutiableTimelineDialog } from '@/Features/Admin/DutiableTimeline';
 import { AssignDutyUserSheet, DutySearchField, MemberTermRow, dutyNameOn, termStatus, type DutyHit, type FormerDutyName, type QuotaTenant } from '@/Features/Admin/Occupancy';
@@ -373,25 +366,19 @@ import DutyResponsibilitiesSection from '@/Features/Admin/Responsibilities/DutyR
 import type { DutyResponsibilitiesPayload, DutyResponsibilityOptions } from '@/Features/Admin/Responsibilities/types';
 import { FileableFilesPanel, type FileableFileItem } from '@/Components/Files';
 import { ModelEnum } from '@/Types/enums';
-import { todayIso } from '@/Utils/dateTime';
+import { formatDate, todayIso } from '@/Utils/dateTime';
 
 interface TranslatableText {
   lt?: string;
   en?: string;
 }
 
-interface LinkedDuty {
-  id: string;
-  name: string;
-  is_active: boolean;
-  institution_name: string | null;
-}
-
 interface DutyLineage {
-  predecessors: LinkedDuty[];
-  successors: LinkedDuty[];
-  /** Holders of the predecessor duties, labelled with the name their duty had then. */
+  /** Renames and takeovers, newest first. */
+  events: DutyLineageEvent[];
+  /** Holders of the predecessor duties from before each takeover, labelled with the name their duty had then. */
   predecessorTerms: (App.Entities.User & { duty_name: string })[];
+  suggestedLinkDate: string;
 }
 
 const props = defineProps<{
@@ -461,7 +448,7 @@ const existingTerms = computed(() => (props.duty.users ?? [])
 
 const predecessorTerms = computed(() => props.lineage?.predecessorTerms ?? []);
 const lineage = computed(() => props.lineage);
-const hasLineage = computed(() => (props.lineage?.predecessors.length ?? 0) + (props.lineage?.successors.length ?? 0) > 0);
+const hasLineage = computed(() => (props.lineage?.events.length ?? 0) > 0);
 
 /** The name an ended term ran under, when the duty has been renamed since. */
 const formerNameDuring = (term?: { start_date?: string | null } | null) => {
@@ -474,7 +461,7 @@ const formerNameDuring = (term?: { start_date?: string | null } | null) => {
 const dutyTitle = computed(() => getTranslatedValue(props.duty.name));
 
 // The healthy state (occupied) gets no badge — only what needs attention is painted.
-const inactiveStatus = activityStatuses.inactive;
+const inactiveStatus = operatingStatuses.inactive;
 const dutyStatus = computed<StatusPresentation | undefined>(() => {
   if (!isActive.value) {
     return inactiveStatus;
@@ -619,13 +606,14 @@ onMounted(() => {
 
 const predecessorSheetOpen = ref(false);
 const predecessorChoice = ref<DutyHit | null>(null);
-const predecessorForm = useForm({ predecessor_id: '' });
+const predecessorForm = useForm({ predecessor_id: '', effective_on: '' });
 
 watch(predecessorSheetOpen, (isOpen) => {
   if (isOpen) {
     predecessorChoice.value = null;
     predecessorForm.reset();
     predecessorForm.clearErrors();
+    predecessorForm.effective_on = props.lineage?.suggestedLinkDate ?? todayIso();
   }
 });
 
@@ -639,8 +627,18 @@ const linkPredecessor = () => {
   });
 };
 
-const unlinkPredecessor = (predecessorId: string) => {
-  router.delete(route('duties.predecessors.destroy', [props.duty.id, predecessorId]), { preserveScroll: true });
+const unlinkPredecessor = (linked: LineageLinkedDuty) => {
+  router.delete(route('duties.predecessors.destroy', [props.duty.id, linked.link_id]), { preserveScroll: true });
+};
+
+const foldTarget = ref<LineageLinkedDuty | null>(null);
+const foldIntoRename = () => {
+  const linked = foldTarget.value;
+  foldTarget.value = null;
+
+  if (linked) {
+    router.post(route('duties.predecessors.foldRename', [props.duty.id, linked.link_id]), {}, { preserveScroll: true });
+  }
 };
 
 const deleteDuty = () => {

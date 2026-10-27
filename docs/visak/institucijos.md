@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Institucijos
 area: institutions
 models: [Institution, InstitutionCheckIn, InstitutionSecretary]
-last_reviewed: 2026-10-25
+last_reviewed: 2026-10-27
 tests:
   - tests/Feature/Api/Admin/RecordActivityStatusTest.php
   - resources/js/Pages/Admin/People/__tests__/CreateRecordNavigation.component.test.ts
@@ -66,11 +66,11 @@ puslapį `/mano/institutions/{id}`.
 
 Atskiroje formoje sukūrus instituciją, atveriamas jos puslapis. Pareigybių atnaujinimo vedlyje institucija sukuriama liekant vedlyje.
 
-### Aktyvi ir neaktyvi institucija {#aktyvumas}
+### Veikianti ir nebeveikianti institucija {#aktyvumas}
 
 <DocScreenshot name="institution-deactivation" alt="Institucijos redagavimo forma prieš užbaigiant veiklą: įspėjimas apie užbaigiamas pareigas ir paskutinę pareigų dieną" caption="Prieš išsaugant neaktyvią būseną parodomos pasekmės narių pareigoms." />
 
-Institucijos redagavimo formoje išjungus **Aktyvi institucija** ir išsaugojus, institucija
+Institucijos redagavimo formoje pasirinkus **Nebeveikianti** ir išsaugojus, institucija
 neberodoma viešuose kontaktų sąrašuose ir paieškoje. Jos viešas kontaktų puslapis nepasiekiamas
 nei pagal identifikatorių, nei pagal trumpąjį adresą; padalinio koordinatorių ir kuratorių
 kontaktų puslapiai taip pat nepasiekiami, jei pagrindinė padalinio institucija neaktyvi.
@@ -123,9 +123,10 @@ Rūšis lemia, ką rodo ir ko reikalauja kiti puslapiai:
 - [Koordinatorius](/visak/#koordinatorius) priskiriamas tik VU organams. Kaip jis parenkamas,
   aprašyta [Atsakomybėse](/pagrindai/atsakomybes).
 
-### Aktyvi institucija
+### Veikianti institucija {#aktyvi-institucija}
 
-Formos lauke **Būsena** pasirenkama **AKTYVI** arba **NEAKTYVI** – tai nurodo, ar iš institucijos dar tikimasi posėdžių. Neaktyvi
+Formos lauke **Būsena** pasirenkama **Veikianti** arba **Nebeveikianti** – tai nurodo, ar institucija dar veikia ir ar iš jos tikimasi posėdžių.
+Tai ne tas pats, kas institucijos puslapio **Veiklos būklė**, rodanti, ar posėdžiai vyksta laiku. Nebeveikianti
 institucija nerodoma viešame sąraše, jai nekuriamos užduotys dėl posėdžių periodiškumo, o nariai
 be teisės ją matyti jos puslapio neatidaro.
 
@@ -135,12 +136,18 @@ patvirtinimo lange rodomas užbaigiamų pareigybių laikotarpių skaičius, paba
 
 Neaktyvios institucijos nepatenka į asmeninę ir padalinių Gantt diagramas bei dabartinę statistiką.
 Jau užfiksuoti istoriniai rodikliai nesikeičia. Administravimo sąrašuose, ryšiuose, paieškoje ir pasirinkimo
-laukuose jos lieka matomos pagal turimas teises, su žyma **Neaktyvi institucija**. Ši žyma rodoma ir įrašo puslapyje.
+laukuose jos lieka matomos pagal turimas teises, su žyma **Nebeveikianti institucija**. Ši žyma rodoma ir įrašo puslapyje.
 
 <ChangelogNote date="2026-10-25" title="Institucijų aktyvumo būsena">
 
 Aktyvumo būsena keičiama sąraše arba formoje. Neaktyvios institucijos neįtraukiamos į dabartines Gantt diagramas ir statistiką,
 o administravimo vietose pažymimos atskira žyma.
+
+</ChangelogNote>
+
+<ChangelogNote date="2026-10-27" title="Veikianti ir nebeveikianti">
+
+Būsenos „Aktyvi“ ir „Neaktyvi“ pervadintos į „Veikianti“ ir „Nebeveikianti“, kad nesipainiotų su posėdžių veiklos būkle.
 
 </ChangelogNote>
 

@@ -11,6 +11,7 @@ use App\Events\FileableNameUpdated;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Pivots\Dutiable;
 use App\Models\Pivots\DutyDutyType;
+use App\Models\Pivots\DutySuccession;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTranslations;
@@ -465,17 +466,19 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
     /**
      * Duties whose work this one took over (e.g. a combined coordinator split in two).
      *
-     * @return BelongsToMany<Duty, $this>
+     * @return BelongsToMany<Duty, $this, DutySuccession>
      */
     public function predecessors(): BelongsToMany
     {
-        return $this->belongsToMany(Duty::class, 'duty_successions', 'successor_id', 'predecessor_id')->withTimestamps();
+        return $this->belongsToMany(Duty::class, 'duty_successions', 'successor_id', 'predecessor_id')
+            ->using(DutySuccession::class)->withPivot(['id', 'effective_on'])->withTimestamps();
     }
 
-    /** @return BelongsToMany<Duty, $this> */
+    /** @return BelongsToMany<Duty, $this, DutySuccession> */
     public function successors(): BelongsToMany
     {
-        return $this->belongsToMany(Duty::class, 'duty_successions', 'predecessor_id', 'successor_id')->withTimestamps();
+        return $this->belongsToMany(Duty::class, 'duty_successions', 'predecessor_id', 'successor_id')
+            ->using(DutySuccession::class)->withPivot(['id', 'effective_on'])->withTimestamps();
     }
 
     /** Additional tenants whose admins may assign their own reps to this duty, with per-tenant quotas. */

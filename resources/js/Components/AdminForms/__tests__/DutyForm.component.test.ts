@@ -357,6 +357,38 @@ describe('DutyForm.vue — ex-officio seats in the assignable-tenants section', 
   });
 });
 
+describe('DutyForm.vue — revealing the assignable tenants', () => {
+  const tenant = { id: 7, shortname: 'VU SA MIF' };
+
+  it('hides the section behind a fill-in action until a tenant is allowed', async () => {
+    const wrapper = mountForm(emptyDuty({ id: 'duty-1', former_names: [] }), { assignableTenants: [tenant] });
+
+    expect(wrapper.find('[data-testid="assignable-tenants-section"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="allow-external"]').exists()).toBe(false);
+
+    await wrapper.find('[data-testid="form-fill-assignable-tenants"]').trigger('click');
+    await nextTick();
+
+    expect(wrapper.find('[data-testid="assignable-tenants-section"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="form-fill-assignable-tenants"]').exists()).toBe(false);
+  });
+
+  it('clears every tenant and hides the section again', async () => {
+    const wrapper = mountForm(emptyDuty({
+      id: 'duty-1',
+      assignable_tenants: [{ id: tenant.id, shortname: tenant.shortname, pivot: { quota: 2 } }],
+    }), { assignableTenants: [tenant] });
+
+    await wrapper.find('[data-testid="assignable-tenants-clear"]').trigger('click');
+    await nextTick();
+
+    expect(wrapper.find('[data-testid="assignable-tenants-section"]').exists()).toBe(false);
+    wrapper.findComponent({ name: 'FormPage' }).vm.$emit('submit');
+    await nextTick();
+    expect((wrapper.emitted('submit:form')!.at(-1)![0] as Record<string, unknown>).assignable_tenants).toEqual([]);
+  });
+});
+
 describe('DutyForm.vue — picking which tenants may assign representatives', () => {
   let wrapper: ReturnType<typeof mount>;
 
@@ -427,6 +459,24 @@ describe('DutyForm.vue — picking which tenants may assign representatives', ()
     expect(programOption.attributes('aria-pressed')).toBe('true');
   });
 
+  it('offers grouping by unit only while other units may assign representatives', async () => {
+    const tenant = { id: 7, shortname: 'VU SA MIF' };
+    expect(mountForm(emptyDuty()).find('[data-testid="contacts-grouping-tenant"]').exists()).toBe(false);
+
+    wrapper = mountForm(emptyDuty({
+      id: 'duty-1',
+      contacts_grouping: 'tenant',
+      assignable_tenants: [{ id: tenant.id, shortname: tenant.shortname, pivot: { quota: null } }],
+    }), { assignableTenants: [tenant] });
+    expect(wrapper.find('[data-testid="contacts-grouping-tenant"]').exists()).toBe(true);
+
+    await wrapper.find('[data-testid="assignable-tenants-clear"]').trigger('click');
+    await nextTick();
+
+    expect(wrapper.find('[data-testid="contacts-grouping-tenant"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="contacts-grouping-none"]').attributes('aria-pressed')).toBe('true');
+  });
+
   it('binds the duty types picker to type ids and offers the types as a tree', async () => {
     const parent = { id: 1, title: 'Koordinatorius', parent_id: null };
     const child = { id: 2, title: 'Administratorius', parent_id: 1 };
@@ -468,19 +518,32 @@ describe('DutyForm.vue — duty history', () => {
     return wrapper.emitted('submit:form')!.at(-1)![0] as Record<string, unknown>;
   };
 
-  it('keeps the old name when the duty is renamed, unless the editor opts out', async () => {
+  it('keeps the old name when the duty is renamed, unless the editor removes it', async () => {
     const wrapper = mountForm(existing());
+    expect(wrapper.find('[data-testid="duty-former-names"]').exists()).toBe(false);
 
     await wrapper.find('input#duty-name').setValue('Ryšių su visuomene koordinatorius');
     await nextTick();
 
+    expect(wrapper.find('[data-slot="field-history-disclosure"]').attributes('open')).toBeDefined();
     const kept = (await submittedForm(wrapper)).former_names as { name: { lt: string } }[];
     expect(kept.map(former => former.name.lt)).toEqual(['Komunikacijos koordinatorius']);
 
-    await wrapper.find('[data-testid="keep-former-name"] button').trigger('click');
+    await wrapper.find('[data-testid="former-name-remove"]').trigger('click');
     await nextTick();
 
     expect((await submittedForm(wrapper)).former_names).toEqual([]);
+  });
+
+  it('offers adding a former name at the end of the form only while there is none', async () => {
+    const wrapper = mountForm(existing());
+
+    await wrapper.find('[data-testid="form-fill-former-names"]').trigger('click');
+    await nextTick();
+
+    expect(wrapper.findAll('[data-testid="former-name-row"]')).toHaveLength(1);
+    expect(wrapper.find('[data-testid="form-fill-former-names"]').exists()).toBe(false);
+    expect(mountForm(emptyDuty()).find('[data-testid="form-fill-former-names"]').exists()).toBe(false);
   });
 
   it('offers the active switch only on an existing duty', () => {

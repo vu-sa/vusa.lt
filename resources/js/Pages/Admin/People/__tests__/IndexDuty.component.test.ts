@@ -64,16 +64,39 @@ describe('IndexDuty', () => {
   it('offers possible duplicates as a data-quality quick filter', () => {
     const wrapper = render();
 
-    expect(quickFilterIds(wrapper)).toEqual(['vacant', 'untyped', 'possible_duplicates']);
+    expect(quickFilterIds(wrapper)).toEqual(['vacant', 'untyped', 'history', 'possible_duplicates']);
     wrapper.findComponent(CollectionPage).vm.$emit('quickFilter', 'possible_duplicates');
     expect(state.setFilter).toHaveBeenCalledWith('data_quality', 'possible_duplicates');
+  });
+
+  it('toggles duties with a changed history', () => {
+    const wrapper = render();
+
+    wrapper.findComponent(CollectionPage).vm.$emit('quickFilter', 'history');
+    expect(state.setFilter).toHaveBeenCalledWith('history', 'any');
+  });
+
+  it('offers editing on the rows the user may edit', () => {
+    const wrapper = mount(IndexDuty, {
+      props: { duties: { data: [], meta: { total: 0, per_page: 20, current_page: 1, last_page: 1 } }, dutyTypes: [], deletedCount: 0 },
+      global: { stubs: { ...commonStubs, MergeRecordsDialog, ConfirmDialog: true, CollectionPage: {
+        template: `<div>
+          <slot name="cell" :item="{ ...row, id: 'editable', can_update: true }" :column="{ key: 'actions' }" />
+          <slot name="cell" :item="{ ...row, id: 'readonly', can_update: false }" :column="{ key: 'actions' }" />
+        </div>`,
+        data: () => ({ row: duty('x', 'Koordinatorius') }),
+      } } },
+    });
+
+    const keys = wrapper.findAllComponents({ name: 'CollectionRowActions' }).map(actions => actions.props('actions')[0].key);
+    expect(keys).toEqual(['edit', 'open']);
   });
 
   it('hides and clears the duplicate filter in trash', () => {
     state.initialFilters = { data_quality: 'possible_duplicates' };
     const wrapper = render({ showDeleted: true });
 
-    expect(quickFilterIds(wrapper)).toEqual(['vacant', 'untyped']);
+    expect(quickFilterIds(wrapper)).toEqual(['vacant', 'untyped', 'history']);
     expect(state.setFilter).toHaveBeenCalledWith('data_quality', undefined);
   });
 

@@ -16,3 +16,6 @@ paths:
 
 ## Use field hints and one required-field note
 Put concise field guidance in FormFieldWrapper’s `hint` prop, as in PageForm.vue; do not turn field hints into standalone lead paragraphs or repeat context in section headings, badges and descriptions. Mark required fields with an asterisk and show one translated note near the start: “Žvaigždute (*) pažymėti laukai yra privalomi; kitus gali praleisti.” Do not append “(neprivaloma)” to optional field labels. Follow ProblemForm.vue only for the required-field note styling.
+
+## Rare optional form sections start as dashed fill-in buttons
+A rarely used, optional field group (e.g. DutyForm's former names, "Padaliniai, galintys skirti atstovus") is not rendered while empty. Instead it is offered as a tier-3 fill-in at the end of the main column: `FormFillActions` (Patterns) renders `FillActionButton`s, the same dashed `border-muted-foreground/50`, muted, `+`/icon button as `RecordNextActions`' fill tier on records (ShowAgendaItem). Clicking reveals the section and focuses its first control; once revealed it stays until save even if emptied, and an existing value always shows the section. Read-only viewers get no buttons. Never gate such a group with an "enable" checkbox. Reference: `DutyForm.vue`.

@@ -23,7 +23,7 @@
               {{ $t('forms.duty_duplicate.reason_former_name') }}
             </Badge>
             <Badge v-if="match.is_active === false" variant="outline" class="text-xs" data-testid="duplicate-inactive">
-              {{ $t('Neaktyvi') }}
+              {{ $t('Nebeveikianti') }}
             </Badge>
 
             <span class="ml-auto flex flex-wrap items-center gap-1">
@@ -78,7 +78,7 @@
             {{ $t('forms.duty_duplicate.reason_former_name') }}
           </Badge>
           <Badge v-if="match.is_active === false" variant="outline" class="text-xs">
-            {{ $t('Neaktyvi') }}
+            {{ $t('Nebeveikianti') }}
           </Badge>
         </li>
       </ul>

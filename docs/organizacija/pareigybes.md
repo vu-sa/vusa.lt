@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Pareigybės
 area: duties
 models: [Duty, Role, Tenant, Type, Institution, ResponsibilityGrant]
-last_reviewed: 2026-10-26
+last_reviewed: 2026-10-27
 tests:
   - resources/js/Components/AdminForms/__tests__/DutyForm.component.test.ts
   - resources/js/Pages/Admin/People/__tests__/ShowDuty.component.test.ts
@@ -37,6 +37,7 @@ tests:
   - tests/Feature/Admin/People/DutyLifecycleTest.php
   - tests/Feature/Admin/Management/DutiableControllerTest.php
   - tests/Unit/Services/DutyNameNormalizerTest.php
+  - tests/Feature/Migrations/DateDutySuccessionsTest.php
   - tests/Browser/DutyResponsibilitiesLayoutTest.php
   - resources/js/Pages/Admin/People/__tests__/ShowDuty.component.test.ts
   - resources/js/Pages/Admin/People/__tests__/ShowUser.component.test.ts
@@ -125,10 +126,10 @@ Pakeitimai įrašomi išsaugojus formą. Kai skaičius įrašytas, pareigybės p
 Institucijos puslapyje rodomi dabartiniai nariai, nesumuojant pareigybių vietų.
 Bendrų pareigybių [padalinių kvotos](#bendros-pareigybes) tikrinamos atskirai.
 
-- Aktyvi pareigybė be dabartinių narių laikoma **neužimta**. Sąrašuose ji žymima perspėjimo
+- Veikianti pareigybė be dabartinių narių laikoma **neužimta**. Sąrašuose ji žymima perspėjimo
   ženklu, o pareigybės puslapyje rodomas **Pareigos neužimtos**.
   Puslapio faktuose rodoma tik **Neužimta**, nekartojant narių skaičiaus **0**.
-- [Neaktyvi](#istorija) pareigybė neužimta nelaikoma – jos niekas ir nebeturi eiti.
+- [Nebeveikianti](#istorija) pareigybė neužimta nelaikoma – jos niekas ir nebeturi eiti.
 
 <ChangelogNote date="2026-10-25" title="Vietų skaičius – tik informacijai">
 
@@ -188,34 +189,57 @@ pirmininkas pagal pareigas yra ir padalinio tarybos narys.
 - Rankiniu būdu keisti *ex officio* laikotarpio datų negalima – jos visada seka pagrindinių
   pareigų datas.
 
-### Neaktyvios pareigybės, ankstesni pavadinimai ir pirmtakės {#istorija}
+### Nebeveikiančios pareigybės, ankstesni pavadinimai ir pirmtakės {#istorija}
 
-Pareigybių sąrašo stulpelyje **Būsena** ir prie įrašo eilutėje rodoma **AKTYVI** arba **NEAKTYVI**.
+Pareigybių sąrašo stulpelyje **Būsena** ir prie įrašo eilutėje rodoma **Veikianti** arba **Nebeveikianti**.
 Turint teisę redaguoti konkrečią pareigybę, šiame meniu galima pakeisti jos būseną. Formoje naudojami tie patys
 žali ir pilki būsenų pasirinkimai; formos pakeitimas įsigalioja paspaudus **Išsaugoti**.
 Jei pareigybę dar eina narys, pirmiau reikia užbaigti jo pareigybių laikotarpį.
-Institucijos neaktyvumas rodomas atskira žyma **Neaktyvi institucija** ir nekeičia pačios pareigybės aktyvumo.
-
+Institucijos būsena rodoma atskira žyma **Nebeveikianti institucija** ir nekeičia pačios pareigybės būsenos.
 
 Pareigybės istorija neturėtų trūkinėti, net jei pareigybė keitėsi:
 
-- **Neaktyvi pareigybė** – tokia, kurios nebeinama (pvz., projektų koordinatoriaus vieta vienais metais
+- **Nebeveikianti pareigybė** – tokia, kurios nebeinama (pvz., projektų koordinatoriaus vieta vienais metais
   nebuvo užpildyta arba pareigybė buvo padalinta į dvi). Ji lieka su visais buvusiais nariais, tačiau
   nebesiūloma [Pareigybių atnaujinimo vedlyje](/organizacija/pareigybiu-atnaujinimas) ir pareigybių
-  paieškoje priskiriant narį. Neaktyvia pažymėti galima tik tada, kai pareigybės šiuo metu niekas neina.
-- **Ankstesni pavadinimai** – kai pareigybė pervadinama, senasis pavadinimas išsaugomas su data, iki kada
-  jis galiojo. Seni laikotarpiai pareigybės ir nario puslapiuose rodomi su tuo metu galiojusiu
-  pavadinimu („Kaip: …“). Viešuose kontaktuose rodomi tik dabartiniai nariai, todėl ten matomas
+  paieškoje priskiriant narį. Nebeveikiančia pažymėti galima tik tada, kai pareigybės šiuo metu niekas neina.
+- **Ankstesni pavadinimai** – kai pareigybė **tik pervadinama**, tai ta pati pareigybė: senasis pavadinimas
+  išsaugomas su data, iki kada jis galiojo. Seni laikotarpiai pareigybės ir nario puslapiuose rodomi su tuo metu
+  galiojusiu pavadinimu („Kaip: …“). Viešuose kontaktuose rodomi tik dabartiniai nariai, todėl ten matomas
   dabartinis pavadinimas.
-- **Ankstesnė pareigybė (pirmtakė)** – kai viena pareigybė padalinama (pvz., *Socialinis-akademinis
-  koordinatorius* → *Socialinis koordinatorius* ir *Akademinis koordinatorius*), senoji lieka atskira
-  neaktyvia pareigybe su savo nariais, o naujosios su ja susiejamos. Pirmtakės nariai rodomi naujųjų
-  pareigybių laikotarpių istorijoje, todėl tas pats laikotarpis nedubliuojamas.
+- **Ankstesnė pareigybė (pirmtakė)** – kai pareigybės **sujungiamos arba padalinamos**, kiekviena lieka
+  atskira pareigybe su savo nariais, o naujoji susiejama su pirmtake nurodant datą **Nuo** – pirmą dieną,
+  kai darbą dirbo naujoji. Data pasiūloma pagal pirmąjį pareigybės laikotarpį arba kadencijos pradžią.
+  Pirmtakės nariai rodomi naujosios laikotarpių istorijoje, bet tik tie, kurių laikotarpiai prasidėjo iki tos datos;
+  istorija sekama ir per kelias pirmtakes atgal.
+
+Pavyzdys: *Socialinis koordinatorius* ir *Akademinis koordinatorius* 2019 m. sujungti į *Socialinis-akademinis
+koordinatorius*, o 2022 m. vėl atskirti. Bendroji pareigybė susiejama su abiem pirmtakėmis nuo 2019-07-01, o
+abi senosios pareigybės vėl susiejamos su bendrąja nuo 2022-07-01 – naujų įrašų kurti nereikia. *Socialinio
+koordinatoriaus* istorijoje tada matomi jo paties nariai ir bendrosios pareigybės nariai, bet ne *Akademinio
+koordinatoriaus* nariai iki sujungimo.
+
+Skiltyje **Apie pareigybę → Pareigybės istorija** visi pokyčiai rodomi vienoje datuotoje laiko juostoje:
+pervadinimai, iš kurių pareigybių darbas perimtas („Perėmė darbą iš“ arba „Sujungta iš“) ir kam perduotas
+(„Darbą perėmė“ arba „Padalinta į“).
+
+**Tai buvo tik pervadinimas.** Jei pervadinimas anksčiau buvo įrašytas kaip nauja pareigybė su pirmtake, ryšio
+eilutėje rodomas mygtukas **Tai buvo tik pervadinimas**. Jis siūlomas, kai ryšys yra vienas su vienu (tą dieną
+pirmtakė perdavė darbą tik šiai pareigybei, o ši perėmė tik iš jos), abi pareigybės yra toje pačioje institucijoje ir
+gali redaguoti abi. Patvirtinus pirmtakės laikotarpiai perkeliami į šią pareigybę, jos pavadinimas išsaugomas kaip
+ankstesnis (galiojęs iki dienos prieš **Nuo**), o pati pirmtakė ištrinama.
 
 <ChangelogNote date="2026-10-02" title="Pareigybės istorija">
 
-Pareigybę galima pažymėti neaktyvia, išsaugoti ankstesnius jos pavadinimus ir susieti su pareigybe,
+Pareigybę galima pažymėti nebeveikiančia, išsaugoti ankstesnius jos pavadinimus ir susieti su pareigybe,
 kurios darbą ji perėmė.
+
+</ChangelogNote>
+
+<ChangelogNote date="2026-10-27" title="Datuota pareigybės istorija">
+
+Pirmtakės susiejamos su data, todėl sujungtas ir vėl atskirtas pareigybes galima susieti iš naujo. Pervadinimą, įrašytą
+kaip naują pareigybę, galima paversti ankstesniu pavadinimu. Būsenos vadinamos „Veikianti“ ir „Nebeveikianti“.
 
 </ChangelogNote>
 
@@ -247,7 +271,7 @@ Kad duomenų bazėje nesidaugintų dubliuotos pareigybės:
   institucijoje jau yra „Komunikacijos koordinatorius“, bandant sukurti „Komunikacijos koordinatorė“
   arba „Komunikacijos koordinatorius (-ė)“, formoje iškart pasirodo perspėjimas **Aptiktas pareigybės dublikatas**
   su nuoroda į jau esantį įrašą.
-- Tikrinamos ir **neaktyvios** pareigybės bei **ankstesni pavadinimai**: tokiu atveju geriau
+- Tikrinamos ir **nebeveikiančios** pareigybės bei **ankstesni pavadinimai**: tokiu atveju geriau
   aktyvuoti esamą pareigybę, kad jos istorija liktų vienoje vietoje.
 - Panašios pareigybės kitose to paties padalinio institucijose išvardijamos su nuoroda į jų puslapį;
   kitų padalinių atitikmenys tik suskaičiuojami.
@@ -268,6 +292,7 @@ padaliniams. Perspėjimas netrukdo išsaugoti pareigybės.
 Pareigybių sąraše (`/mano/duties`) pateikiamos visos pasiekiamos pareigybės:
 
 - **Paieška**: galima ieškoti pagal pareigybės pavadinimą, el. paštą arba instituciją.
+- **Redaguoti** eilutėje rodomas pareigybėms, kurias gali redaguoti; kitoms – **Atidaryti**.
 - **Greitasis filtras „Neužimtos“**: vienu paspaudimu atrenka pareigybes, kurios šiuo metu neturi
   narių.
 - **Greitasis filtras „Galimi dublikatai“**: atrenka pareigybes, kurių pavadinimas toje pačioje
@@ -281,8 +306,10 @@ Pareigybių sąraše (`/mano/duties`) pateikiamos visos pasiekiamos pareigybės:
   - *Trūksta LT pavadinimo* – pareigybės be lietuviško pavadinimo.
   - *Pasikartojantys nariai* – pareigybės, kuriose tas pats žmogus turi kelis persidengiančius
     laikotarpius.
-  - *Neaktyvios* – pareigybės, kurių nebeinama, bet istorija išlaikoma.
+  - *Nebeveikiančios* – pareigybės, kurių nebeinama, bet istorija išlaikoma.
   - *Galimi dublikatai* – tas pats kaip greitasis filtras.
+- **Filtras „Istorija“** (ir greitasis filtras **„Su istorija“**) atrenka pareigybes, kurios buvo
+  *pervadintos*, *susietos su kitomis pareigybėmis* (pirmtakėmis ar perėmėjomis) arba turi bet kurį iš šių pakeitimų.
 - **Šiukšliadėžė** viršuje leidžia peržiūrėti ištrintas pareigybes ir jas atkurti.
 
 ### Pareigybės puslapis {#puslapis}
@@ -304,8 +331,8 @@ suskirstytas į skirtukus:
 2. **Apie pareigybę**:
    - Pareigybės aprašymas.
    - Kitos tos pačios institucijos pareigybės ir kiek narių jas eina.
-   - *Pareigybės istorija*: ankstesnė pareigybė (pirmtakė) ir pareigybės, perėmusios šios darbą.
-     Mygtukas **Susieti ankstesnę pareigybę** leidžia pasirinkti ir neaktyvias pareigybes.
+   - *Pareigybės istorija*: datuota laiko juosta – pervadinimai, pirmtakės ir pareigybės, perėmusios šios darbą
+     (žr. [Istorija](#istorija)). Mygtukas **Susieti ankstesnę pareigybę** leidžia pasirinkti ir nebeveikiančias pareigybes.
 3. **Atsakomybės**:
    - Padaliniai, institucijų tipai ar konkretūs organai, kuriuos ši pareigybė koordinuoja.
    - Mygtukas **Pridėti atsakomybę** leidžia priskirti naują koordinavimo sritį.
@@ -372,12 +399,18 @@ viršuje (`/mano/duties/create`):
   rikiuoja pagal atstovaujamą padalinį ir nurodo jį šalia pareigybės (pvz., „Parlamento narė · VU SA MIF“),
   „Pagal studijų programą“ – pagal programą, kuri taip pat rodoma kortelėje. Padalinio kontaktuose
   pirmiausia rodomi koordinatoriai, tada kuratoriai, tada kiti.
+  „Pagal padalinį“ siūloma tik tada, kai kitiems padaliniams leista skirti atstovus; pašalinus visus
+  padalinius, rikiavimas grąžinamas į „Numatytasis“.
 
 Redagavimas pasiekiamas pareigybės puslapyje per **⋯ → Redaguoti pareigybę** (`/mano/duties/{id}/edit`).
 Redaguojant papildomai rodoma:
-- **Aktyvi pareigybė** – išjungus pareigybė tampa [neaktyvi](#istorija).
-- **Ankstesni pavadinimai** – sąrašas su data „Naudotas iki“. Pakeitus pavadinimą, senasis pridedamas
-  automatiškai (galiojęs iki vakar); jei tai buvo tik rašybos klaida, varnelę galima nuimti.
+- **Būsena** – **Veikianti** arba [**Nebeveikianti**](#istorija).
+- **Ankstesni pavadinimai** – išskleidžiamas sąrašas po pavadinimo lauku, su data „Naudotas iki“. Pakeitus
+  pavadinimą, senasis pridedamas automatiškai (galiojęs iki vakar) ir pažymimas „Naujas“; jei tai buvo tik rašybos
+  klaida, eilutę galima ištrinti.
+- Retesni laukai formoje nerodomi, kol jų neprireikia: formos apačioje esantys punktyriniai mygtukai
+  **Pridėti ankstesnį pavadinimą** ir **Leisti kitiems padaliniams skirti atstovus** atveria atitinkamą dalį.
+  Pašalinus visus padalinius (**Nebeleisti kitiems padaliniams skirti atstovų**), dalis vėl paslepiama.
 
 ### Pareigybių sujungimas {#sujungimas}
 
@@ -423,7 +456,7 @@ ir „Atstovė taryboje“, arba dublikatas dėl rašybos klaidos), Superadminis
 | Priskirti narius savo padalinyje | – | ✓ | ✓ | ✓, visų padalinių | ✓ |
 | Priskirti narius pagal savo padalinio kvotą bendrose pareigybėse | – | ✓ | ✓ | ✓ | ✓ |
 | Priskiriant sukurti naują narį | – | ✓ | ✓ | ✓ | ✓ |
-| Pažymėti pareigybę neaktyvia, tvarkyti ankstesnius pavadinimus ir pirmtakes | – | ✓ | ✓ | ✓, visų padalinių | ✓ |
+| Pažymėti pareigybę nebeveikiančia, tvarkyti ankstesnius pavadinimus ir pirmtakes | – | ✓ | ✓ | ✓, visų padalinių | ✓ |
 | Sujungti pareigybes | – | – | – | – | ✓ |
 | Pridėti pareigybės atsakomybes | – | ✓ | ✓ | ✓ | ✓ |
 | Ištrinti pareigybę į šiukšlinę | – | ✓ | ✓ | ✓ | ✓ |

@@ -2,10 +2,10 @@
 
 return [
     'activity_status' => [
-        'spotlight_title' => 'Keisk aktyvumą sąraše',
-        'spotlight_description' => 'Pasirink būseną, kad aktyvuotum arba pažymėtum įrašą neaktyviu.',
-        'deactivate_title' => 'Pažymėti instituciją neaktyvia?',
-        'deactivate' => 'Pažymėti neaktyvia',
+        'spotlight_title' => 'Keisk būseną sąraše',
+        'spotlight_description' => 'Pasirink būseną, kad pažymėtum įrašą veikiančiu arba nebeveikiančiu.',
+        'deactivate_title' => 'Pažymėti instituciją nebeveikiančia?',
+        'deactivate' => 'Pažymėti nebeveikiančia',
     ],
     'duty_type_filter' => [
         'label' => 'Pareigybės tipas',
@@ -145,11 +145,11 @@ return [
         'field_placeholder' => 'Pagalbinis tekstas laukelyje',
     ],
     'helpers' => [
-        'institution_active_hint' => 'Išsaugojus neaktyvią būseną, institucija neberodoma viešai, o dabartinės narių pareigos užbaigiamos.',
+        'institution_active_hint' => 'Išsaugojus nebeveikiančios būseną, institucija neberodoma viešai, o dabartinės narių pareigos užbaigiamos.',
         'institution_deactivation_consequence' => 'Išsaugojus bus užbaigti pareigybių laikotarpiai (:count). Paskutinė pareigų diena – :date. Iš šių pareigų gaunama prieiga baigsis iškart.',
-        'institution_deactivation_blocked' => 'Pirmiau atšauk, perkelk arba pataisyk šiandien ar vėliau prasidedančius pareigybių laikotarpius. Tada galėsi pažymėti instituciją neaktyvia.',
-        'institution_assignment_closed' => 'Neaktyviai institucijai galima įrašyti tik buvusias pareigas. Užbaigto laikotarpio neatverk iš naujo – aktyvioje institucijoje sukurk naują laikotarpį.',
-        'institution_reactivation_hint' => 'Vėl aktyvavus instituciją, užbaigtos pareigos neatnaujinamos. Nariams reikės naujų pareigybių laikotarpių.',
+        'institution_deactivation_blocked' => 'Pirmiau atšauk, perkelk arba pataisyk šiandien ar vėliau prasidedančius pareigybių laikotarpius. Tada galėsi pažymėti instituciją nebeveikiančia.',
+        'institution_assignment_closed' => 'Nebeveikiančiai institucijai galima įrašyti tik buvusias pareigas. Užbaigto laikotarpio neatverk iš naujo – veikiančioje institucijoje sukurk naują laikotarpį.',
+        'institution_reactivation_hint' => 'Vėl pažymėjus instituciją veikiančia, užbaigtos pareigos neatnaujinamos. Nariams reikės naujų pareigybių laikotarpių.',
         'institution_resolve_terms' => 'Tvarkyti pareigybių laikotarpius',
         'tag_alias_hint' => 'Papildomas pavadinimas žymai (neprivalomas). Jei neįvestas, bus sugeneruotas automatiškai iš pavadinimo.',
         'is_topic_hint' => 'Temos rodomos atskirame puslapyje, kuriame surenkamos visos su ja susijusios naujienos, puslapiai ir renginiai.',
@@ -312,7 +312,7 @@ return [
         'variant_hint' => 'Moteriškosios/vyriškosios giminės ar daugiskaitos forma yra sugeneruojama automatiškai pagal asmens įvardį — atskiros pareigybės kurti nereikia.',
         'other_institutions' => 'Tokia pareigybė yra dar :count institucijoje (-ose) — tai normalu.',
         'reason_former_name' => 'anksčiau vadinosi taip',
-        'inactive_hint' => 'Neaktyvią pareigybę gali vėl aktyvuoti — taip jos istorija liks vienoje vietoje.',
+        'inactive_hint' => 'Nebeveikiančią pareigybę gali vėl pažymėti veikiančia — taip jos istorija liks vienoje vietoje.',
         'same_tenant_title' => 'Panašios pareigybės kitose šio padalinio institucijose:',
     ],
     'validation' => [

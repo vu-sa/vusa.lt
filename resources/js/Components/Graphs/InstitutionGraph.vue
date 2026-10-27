@@ -486,7 +486,7 @@ function render() {
     .attr('x', d => nodeRadius(d) + 4)
     .attr('y', '1.7em')
     .attr('class', 'text-xs fill-status-neutral')
-    .text($t('Neaktyvi institucija'));
+    .text($t('Nebeveikianti institucija'));
 
   nodeSelection
     .on('mouseenter', (_event: MouseEvent, d) => {

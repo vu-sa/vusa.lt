@@ -105,7 +105,7 @@
                 {{ $t('Atidaryti') }}
               </Link>
             </Button>
-            <Button v-if="canUpdate" as-child variant="outline" size="sm">
+            <Button v-if="item.can_update" as-child variant="outline" size="sm">
               <Link :href="route('duties.edit', item.id)">
                 {{ $t('Redaguoti') }}
               </Link>
@@ -165,7 +165,6 @@ const props = defineProps<{
 }>();
 const isDeleted = computed(() => Boolean(props.showDeleted));
 const canCreate = computed(() => Boolean(usePage().props.auth?.can?.create?.duty));
-const canUpdate = computed(() => Boolean(usePage().props.auth?.can?.update?.duty));
 const canForceDelete = computed(() => Boolean(usePage().props.auth?.can?.forceDelete?.duty));
 const { hasCollectionAction } = useAdminNavigation();
 const canMerge = computed(() => hasCollectionAction('duties.index', 'merge'));
@@ -179,7 +178,7 @@ const rowActions = (item: Duty): CollectionRowAction[] => isDeleted.value
       { key: 'restore', label: $t('Atkurti'), icon: RotateCcw, labelled: true },
       ...(canForceDelete.value ? [{ key: 'forceDelete', label: $t('Ištrinti visam laikui'), icon: Trash2, destructive: true }] : []),
     ]
-  : canUpdate.value
+  : item.can_update
     ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, labelled: true, href: route('duties.edit', item.id) }]
     : [{ key: 'open', label: $t('Atidaryti'), icon: ArrowRight, labelled: true, href: route('duties.show', item.id) }];
 
@@ -197,10 +196,19 @@ const source = useDatabaseCollectionSource<Duty>({
   facets: [{ field: 'data_quality', label: $t('Duomenų kokybė'), single: true, values: [
     { value: 'vacant', label: $t('Neužimtos') }, { value: 'missing_en_name', label: $t('Trūksta EN pavadinimo') },
     { value: 'missing_lt_name', label: $t('Trūksta LT pavadinimo') }, { value: 'duplicate_holders', label: $t('Pasikartojantys nariai') },
-    { value: 'inactive', label: $t('Neaktyvios') },
+    { value: 'inactive', label: $t('Nebeveikiančios') },
     // Only live duties are compared, so the trash has none to show.
     ...(isDeleted.value ? [] : [{ value: 'possible_duplicates', label: $t('forms.duty_duplicate.filter') }]),
   ] }, {
+    field: 'history',
+    get label() { return $t('Istorija'); },
+    single: true,
+    values: [
+      { value: 'any', get label() { return $t('Su istorija'); } },
+      { value: 'renamed', get label() { return $t('Pervadintos'); } },
+      { value: 'linked', get label() { return $t('Susietos su kitomis pareigybėmis'); } },
+    ],
+  }, {
     field: 'duty_type_id',
     get label() { return $t('forms.duty_type_filter.label'); },
     single: true,
@@ -240,6 +248,14 @@ const quickFilters = computed<CollectionQuickFilter[]>(() => [
       description: $t('forms.duty_type_filter.spotlight'),
     },
   },
+  {
+    id: 'history', label: $t('Su istorija'), active: source.filters.value.history === 'any',
+    spotlight: {
+      id: 'duty-history-filter-v1',
+      title: $t('Su istorija'),
+      description: $t('Atrink pareigybes, kurios buvo pervadintos arba susietos su ankstesnėmis ar vėlesnėmis pareigybėmis.'),
+    },
+  },
   ...(isDeleted.value
     ? []
     : [{
@@ -254,6 +270,10 @@ const quickFilters = computed<CollectionQuickFilter[]>(() => [
       }]),
 ]);
 function toggleQuickFilter(id: string): void {
+  if (id === 'history') {
+    source.setFilter('history', source.filters.value.history === 'any' ? undefined : 'any');
+    return;
+  }
   if (id === 'untyped') {
     source.setFilter('duty_type_id', source.filters.value.duty_type_id === 'none' ? undefined : 'none');
     return;

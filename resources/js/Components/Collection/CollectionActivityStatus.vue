@@ -59,7 +59,7 @@ import { Button } from '@/Components/ui/button';
 import { useApi, useApiMutation } from '@/Composables/useApi';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
-import { activityStatuses } from '@/Constants/statuses';
+import { operatingStatuses } from '@/Constants/statuses';
 
 const props = defineProps<{
   entity: 'institutions' | 'duties';
@@ -78,10 +78,10 @@ const summary = ref<InstitutionDeactivationSummary | null>(null);
 const discovery = useFeatureSpotlight(`${props.entity}-activity-status-v1`);
 const { formatDate } = useDateFormatter();
 const value = computed(() => current.value ? 'active' : 'inactive');
-const status = computed(() => activityStatuses[value.value]);
+const status = computed(() => operatingStatuses[value.value]);
 const options = [
-  { value: 'active', status: activityStatuses.active },
-  { value: 'inactive', status: activityStatuses.inactive },
+  { value: 'active', status: operatingStatuses.active },
+  { value: 'inactive', status: operatingStatuses.inactive },
 ];
 const consequence = computed(() => summary.value
   ? $t('forms.helpers.institution_deactivation_consequence', {

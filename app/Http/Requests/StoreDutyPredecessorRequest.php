@@ -27,6 +27,7 @@ class StoreDutyPredecessorRequest extends FormRequest
     {
         return [
             'predecessor_id' => ['required', 'ulid', $this->viewablePredecessor(...)],
+            'effective_on' => ['required', 'date'],
         ];
     }
 
@@ -47,9 +48,17 @@ class StoreDutyPredecessorRequest extends FormRequest
             return;
         }
 
-        // A duty cannot follow itself, nor the duty that followed it.
-        if ($predecessor->is($duty) || $duty->successors()->whereKey($predecessor->getKey())->exists()) {
+        $day = $this->date('effective_on')?->toDateString();
+
+        // A link back to an earlier successor is fine on a later day (merged, then split back), never the same one.
+        if ($predecessor->is($duty) || ($day !== null && $duty->successors()->whereKey($predecessor->getKey())->wherePivot('effective_on', $day)->exists())) {
             $fail(__('Ši pareigybė negali būti savo pačios pirmtakė.'));
+
+            return;
+        }
+
+        if ($day !== null && $duty->predecessors()->whereKey($predecessor->getKey())->wherePivot('effective_on', $day)->exists()) {
+            $fail(__('Ši pareigybė jau susieta šia data.'));
         }
     }
 }

@@ -2,10 +2,10 @@
 
 return [
     'activity_status' => [
-        'spotlight_title' => 'Change activity in the list',
-        'spotlight_description' => 'Choose a status to activate or deactivate a record.',
-        'deactivate_title' => 'Deactivate this institution?',
-        'deactivate' => 'Deactivate',
+        'spotlight_title' => 'Change status in the list',
+        'spotlight_description' => 'Choose a status to mark a record as operating or no longer operating.',
+        'deactivate_title' => 'Mark this institution as no longer operating?',
+        'deactivate' => 'Mark as not operating',
     ],
     'duty_type_filter' => [
         'label' => 'Duty type',
@@ -145,10 +145,10 @@ return [
         'field_placeholder' => 'Helper text in the field',
     ],
     'helpers' => [
-        'institution_active_hint' => 'Saving the inactive status hides the institution publicly and ends its members’ current duty assignments.',
+        'institution_active_hint' => 'Saving the not-operating status hides the institution publicly and ends its members’ current duty assignments.',
         'institution_deactivation_consequence' => 'Saving will end duty assignments (:count). Their last active day will be :date. Access granted by these assignments will end immediately.',
-        'institution_deactivation_blocked' => 'First cancel, move or correct duty assignments starting today or later. You can then mark the institution inactive.',
-        'institution_assignment_closed' => 'Only historical assignments can be recorded for inactive institutions. Do not reopen a closed period; create a new period in an active institution.',
+        'institution_deactivation_blocked' => 'First cancel, move or correct duty assignments starting today or later. You can then mark the institution as not operating.',
+        'institution_assignment_closed' => 'Only historical assignments can be recorded for institutions that no longer operate. Do not reopen a closed period; create a new period in an operating institution.',
         'institution_reactivation_hint' => 'Reactivating the institution does not restore ended assignments. Members will need new duty assignment periods.',
         'institution_resolve_terms' => 'Manage duty assignment periods',
         'tag_alias_hint' => 'An additional name for the tag (optional). If left empty, it will be generated automatically from the name.',
@@ -309,7 +309,7 @@ return [
         'variant_hint' => 'The masculine/feminine or plural form is generated automatically from the holder\'s pronouns — there is no need to create a separate duty.',
         'other_institutions' => 'This duty also exists in :count other institution(s) — that is normal.',
         'reason_former_name' => 'former name',
-        'inactive_hint' => 'You can reactivate an inactive duty — that keeps its history in one place.',
+        'inactive_hint' => 'You can mark a duty as operating again — that keeps its history in one place.',
         'same_tenant_title' => 'Similar duties in other institutions of this unit:',
     ],
     'validation' => [

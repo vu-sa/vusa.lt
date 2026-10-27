@@ -146,12 +146,13 @@ export const contentStatuses: Record<ContentStatus, StatusPresentation> = {
   draft: status('Juodraštis', 'neutral', FilePenLine, true),
 };
 
-export const activityStatuses = {
-  active: status('Aktyvi', 'success', CircleCheck, true),
-  inactive: status('Neaktyvi', 'neutral', CircleSlash, true),
+/** Whether a duty or institution still exists in the structure — not meeting health, which is `institutionActivityStatuses`. */
+export const operatingStatuses = {
+  active: status('Veikianti', 'success', CircleCheck),
+  inactive: status('Nebeveikianti', 'neutral', CircleSlash),
 } satisfies Record<string, StatusPresentation>;
 
-export const inactiveInstitutionStatus: StatusPresentation = status('Neaktyvi institucija', 'neutral', CircleSlash);
+export const inactiveInstitutionStatus: StatusPresentation = status('Nebeveikianti institucija', 'neutral', CircleSlash);
 export const notReservableStatus: StatusPresentation = status('Nerezervuojamas', 'neutral', Ban);
 export const deletedMemberStatus: StatusPresentation = status('Ištrintas', 'neutral', UserX);
 

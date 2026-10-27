@@ -101,7 +101,7 @@ class UpdateDutyRequest extends FormRequest
 
             // Retiring a duty must not quietly strand the people still holding it.
             if ($this->has('is_active') && ! $this->boolean('is_active') && $duty->current_users()->exists()) {
-                $v->errors()->add('is_active', __('Pirmiau užbaik narių pareigas, tada pažymėk pareigybę neaktyvia.'));
+                $v->errors()->add('is_active', __('Pirmiau užbaik narių pareigas, tada pažymėk pareigybę nebeveikiančia.'));
             }
 
             $hasGlobalDutyScope = app(ModelAuthorizer::class)->allows($this->user(), 'duties.update.*');

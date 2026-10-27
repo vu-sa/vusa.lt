@@ -124,7 +124,7 @@ describe('ShowInstitution.vue', () => {
 
   it('shows an inactive institution explicitly instead of a healthy meeting status', () => {
     const wrapper = createWrapper({ is_active: false });
-    expect(wrapper.text()).toContain('Neaktyvi institucija');
+    expect(wrapper.text()).toContain('Nebeveikianti institucija');
   });
 
   it('leads the facts with the activity status, "Aktyvi" included, instead of a title badge', () => {
