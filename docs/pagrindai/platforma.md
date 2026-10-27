@@ -21,6 +21,7 @@ tests:
   - resources/js/Shared/Search/__tests__/FacetOptions.component.test.ts
   - resources/js/__tests__/designTokens.test.ts
   - resources/js/Components/Patterns/__tests__/StatusBadge.component.test.ts
+  - resources/js/Components/Layouts/__tests__/FormPage.component.test.ts
   - resources/js/Components/AdminForms/__tests__/DuplicateDutyWarning.component.test.ts
   - resources/js/Components/AdminForms/__tests__/DuplicateUserWarning.component.test.ts
   - resources/js/Features/Admin/AdminSearch/Components/Select/__tests__/SearchSelectDialog.component.test.ts
@@ -140,6 +141,11 @@ Kuriant narį ar pareigybę, perspėjimas apie galimą dublikatą parodo sutapim
 
 Redaguojant įrašo pavadinimą, didžioji formos antraštė iškart atspindi rašomą tekstą. Viršutinėje
 juostoje lieka išsaugotas įrašo pavadinimas, o kuriant – formos paskirtis, pvz., „Nauja naujiena“.
+
+### Klavišai formose {#formu-klavisai}
+
+**⌘/Ctrl + Enter** išsaugo formą. **Esc** tik išeina iš laukelio, kuriame rašai, – formos puslapis
+neuždaromas. Jei atvertas pasirinkimo sąrašas, pirmas **Esc** jį užveria.
 
 ### Po sukūrimo {#po-sukurimo}
 

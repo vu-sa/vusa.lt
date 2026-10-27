@@ -200,28 +200,40 @@ describe('FormPage.vue', () => {
       wrapper.unmount();
     });
 
-    it('cancels with Escape and goes back', async () => {
+    it('leaves the focused field, not the page, on Escape', async () => {
       const visit = vi.spyOn(router, 'visit').mockImplementation(() => undefined);
-      const wrapper = mount(FormPage, { props: { title: 'Forma', backHref: '/mano/duties' }, global: { stubs }, attachTo: document.body });
+      const wrapper = mount(FormPage, {
+        props: { title: 'Forma', backHref: '/mano/duties' },
+        slots: { default: '<input id="field" />' },
+        global: { stubs },
+        attachTo: document.body,
+      });
       await nextTick(); // the shortcut listener attaches once the form ref is set
+      const field = wrapper.find('#field').element as HTMLInputElement;
+      field.focus();
 
-      await wrapper.find('form').trigger('keydown', { key: 'Escape' });
+      await wrapper.find('#field').trigger('keydown', { key: 'Escape' });
 
-      expect(wrapper.emitted('cancel')).toHaveLength(1);
-      expect(visit).toHaveBeenCalledWith('/mano/duties');
+      expect(document.activeElement).not.toBe(field);
+      expect(visit).not.toHaveBeenCalled();
       visit.mockRestore();
       wrapper.unmount();
     });
 
-    it('leaves Escape alone when something inside already handled it', async () => {
-      const wrapper = mount(FormPage, { props: { title: 'Forma', backHref: '/mano/duties' }, global: { stubs }, attachTo: document.body });
-      await nextTick(); // the shortcut listener attaches once the form ref is set
-      const form = wrapper.find('form').element;
-      form.addEventListener('keydown', e => e.preventDefault(), { capture: true });
+    it('keeps focus in an open combobox so Escape only closes its list', async () => {
+      const wrapper = mount(FormPage, {
+        props: { title: 'Forma' },
+        slots: { default: '<input id="field" role="combobox" aria-expanded="true" />' },
+        global: { stubs },
+        attachTo: document.body,
+      });
+      await nextTick();
+      const field = wrapper.find('#field').element as HTMLInputElement;
+      field.focus();
 
-      form.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+      await wrapper.find('#field').trigger('keydown', { key: 'Escape' });
 
-      expect(wrapper.emitted('cancel')).toBeUndefined();
+      expect(document.activeElement).toBe(field);
       wrapper.unmount();
     });
   });

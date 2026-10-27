@@ -178,9 +178,9 @@ end of the aside); in the two-column shape `#danger-zone` closes the aside. Cont
 `AdminForms/ContentPublishPanel` (status, publish time, visibility callout), `ContentLanguagePanel` (language +
 other-language link) and `TenantSelectField`; choices of 2–5 options use `Patterns/FormSegmentedControl`, and
 fields on the tinted canvas take `fieldSurfaceClass` from `ui/control`. Without an aside the form stays one
-column (`#advanced` "Papildomi nustatymai", `#danger-zone`). It owns three behaviours callers should not re-implement: **⌘/Ctrl + Enter**
-submits and **Esc** cancels (listeners on the `<form>`, so a portaled Select never cancels it), and on a failed
-submit the error summary is scrolled into view and focused, each message focusing its field. Pass
+column (`#advanced` "Papildomi nustatymai", `#danger-zone`). It owns two behaviours callers should not re-implement: **⌘/Ctrl + Enter**
+submits, and on a failed submit the error summary is scrolled into view and focused, each message focusing its
+field. Esc only blurs the focused field — a page is not a dialog, so Esc never navigates away. Pass
 `mode="create"` for a new record (the bar never claims "all saved"), `field-ids` when an error key is not the
 field's id (`name.lt` → `duty-name`), and `:available-locales="['lt', 'en']"` + `v-model:locale` only for a form that switches
 fields by language (the switch is hidden by default). Field labels

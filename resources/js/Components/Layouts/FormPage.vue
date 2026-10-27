@@ -254,7 +254,7 @@
 </template>
 
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowLeft, ChevronDown, Eye, Languages, Loader2, Save } from '@lucide/vue';
 import { useEventListener } from '@vueuse/core';
@@ -324,7 +324,6 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   (e: 'submit'): void;
-  (e: 'cancel'): void;
   (e: 'update:locale', locale: 'lt' | 'en'): void;
 }>();
 
@@ -443,7 +442,6 @@ watch(() => Object.keys(props.errors).join('|'), async (keys, previous) => {
 
 const formEl = ref<HTMLFormElement | null>(null);
 
-// On the form, not `document`, so Esc inside a portaled Select or Popover never cancels it.
 useEventListener(formEl, 'keydown', (event: KeyboardEvent) => {
   if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
     event.preventDefault();
@@ -452,15 +450,10 @@ useEventListener(formEl, 'keydown', (event: KeyboardEvent) => {
       emit('submit');
     }
   }
-  else if (event.key === 'Escape' && !event.defaultPrevented) {
-    handleCancel();
+  // Esc only leaves the field, never the page; an open combobox or suggestion list closes first.
+  else if (event.key === 'Escape' && !event.defaultPrevented && event.target instanceof HTMLElement
+    && event.target.getAttribute('aria-expanded') !== 'true') {
+    event.target.blur();
   }
 });
-
-const handleCancel = () => {
-  emit('cancel');
-  if (props.backHref) {
-    router.visit(props.backHref);
-  }
-};
 </script>
