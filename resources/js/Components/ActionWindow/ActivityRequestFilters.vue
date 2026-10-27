@@ -1,28 +1,20 @@
 <template>
-  <div class="space-y-3" data-slot="activity-request-filters">
-    <div class="space-y-1">
-      <Label id="activity-request-tenants-label">{{ $t('Padaliniai') }}</Label>
-      <MultiSelect
-        aria-labelledby="activity-request-tenants-label"
-        :model-value="selectedTenants"
-        :options="tenants"
-        :placeholder="$t('activity_requests.all_tenants')"
-        :empty-text="$t('Nieko nerasta')"
-        @update:model-value="setTenants"
-      />
-      <p class="text-xs text-muted-foreground">
-        {{ $t('activity_requests.filters_hint') }}
-      </p>
-    </div>
-    <div class="space-y-1">
-      <Label for="activity-request-scope">{{ $t('forms.fields.governance_scope') }}</Label>
-      <NativeSelect
-        id="activity-request-scope"
-        :model-value="draft.activityRequest.filters.governanceScope ?? ''"
-        :options="scopeOptions"
-        @update:model-value="setScope"
-      />
-    </div>
+  <div class="grid gap-2 sm:grid-cols-2" data-slot="activity-request-filters">
+    <MultiSelect
+      :aria-label="$t('Padaliniai')"
+      :model-value="selectedTenants"
+      :options="tenants"
+      :placeholder="$t('activity_requests.all_tenants')"
+      :empty-text="$t('Nieko nerasta')"
+      :max-visible-tags="2"
+      @update:model-value="setTenants"
+    />
+    <NativeSelect
+      :aria-label="$t('forms.fields.governance_scope')"
+      :model-value="draft.activityRequest.filters.governanceScope ?? ''"
+      :options="scopeOptions"
+      @update:model-value="setScope"
+    />
   </div>
 </template>
 
@@ -35,7 +27,6 @@ import { useActionWindow, type ActionWindowInstitutionRef } from '@/Composables/
 import { InstitutionScope } from '@/Types/enums';
 import { MultiSelect } from '@/Components/ui/multi-select';
 import { NativeSelect } from '@/Components/ui/native-select';
-import { Label } from '@/Components/ui/label';
 
 const props = defineProps<{ institutions: ActionWindowInstitutionRef[] }>();
 const { draft, updateActivityRequest } = useActionWindow();

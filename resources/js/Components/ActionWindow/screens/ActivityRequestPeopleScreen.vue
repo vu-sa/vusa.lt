@@ -3,11 +3,15 @@
     :title="$t('action_window.activity_request.people.title')"
     :subtitle="$t('action_window.activity_request.people.subtitle')"
   >
-    <div class="space-y-3 pb-3">
+    <div class="space-y-2 pb-3">
       <Input v-model="query" :placeholder="$t('action_window.activity_request.people.search')" />
       <ActivityRequestFilters :institutions="allInstitutions" />
-      <p class="text-xs text-muted-foreground" role="status">
-        {{ $t('activity_requests.selection_limit') }} ({{ selectedInstitutionIds.size }}/100)
+      <p
+        class="text-right text-xs text-muted-foreground tabular-nums"
+        role="status"
+        :aria-label="$t('activity_requests.selected_count', { count: String(selectedInstitutionIds.size) })"
+      >
+        {{ selectedInstitutionIds.size }}/100
       </p>
     </div>
 

@@ -262,9 +262,11 @@ Filtrus galima keisti abiem gavėjų rinkimo būdais. Pakeitus padalinius ar val
 jų neatitinkančios institucijos nužymimos; vien teksto paieška pasirinkimo nekeičia.
 </ChangelogNote>
 
-**Pažymėti atitinkančias institucijas (iki 100)** automatiškai įkelia daugiau paieškos rezultatų ir
-pažymi tik tas institucijas, kurių atstovų galima klausti. Pasiekus ribą rodomas paaiškinimas.
-**Nuimti visus žymėjimus** išvalo visą institucijų pasirinkimą, įskaitant paieškoje nematomas institucijas.
+Padaliniai ir valdysenos sritis pasirenkami vienoje eilutėje; kai pasirinkta daugiau nei du padaliniai,
+likę rodomi kaip **+N**. **Pažymėti atitinkančias** automatiškai įkelia daugiau paieškos rezultatų ir
+pažymi tik tas institucijas, kurių atstovų galima klausti (iki 100). Šalia rodoma, kiek pasirinkta, pvz., **12/100**;
+pasiekus ribą rodomas paaiškinimas. **Nuimti žymėjimus** išvalo visą institucijų pasirinkimą, įskaitant
+paieškoje nematomas institucijas.
 
 Vienu kartu galima apimti iki **100 institucijų**. Institucija ar žmogus, kurių paklausti nebūtų ko
 (pvz., jau paklausta, posėdis jau užfiksuotas), sąraše rodomi neaktyvūs su priežastimi, savo vietoje.
@@ -272,7 +274,7 @@ Jei bus klausiama tik dalies gavėjų ar institucijų, eilutėje parašyta, kiek
 
 Peržiūroje **Ką ir kam išsiųsime** gavėjai sugrupuoti taip, kaip pasirinkta: pagal institucijas arba
 pagal atstovus. Kiekviena eilutė turi žymimąjį langelį – galima nužymėti tuos, kurių šįkart klausti nenorima.
-Mygtukais **Pažymėti visus** ir **Nuimti visus žymėjimus** galima iš karto keisti visų siunčiamų
+Mygtukais **Pažymėti visus** ir **Nuimti žymėjimus** galima iš karto keisti visų siunčiamų
 gavėjų eilučių žymėjimą. Nenurodžius nė vieno gavėjo, siųsti negalima.
 **Kam laiško nesiųsime** paaiškina praleistas institucijas ir gavėjų pranešimų nustatymus:
 laiškas dabar, santrauka, išjungtas el. paštas ar nutildyti pranešimai. Galima pridėti žinutę iki 500

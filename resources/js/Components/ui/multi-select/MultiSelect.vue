@@ -2,15 +2,16 @@
   <Combobox v-model="selectedItems" multiple :filter-function :open="isOpen" @update:open="isOpen = $event">
     <ComboboxAnchor
       :class="cn(
-        'relative flex min-h-11 w-full flex-wrap items-center gap-1.5 rounded-none border border-border bg-secondary/50 px-3 py-2 text-sm transition-colors',
+        'relative flex min-h-11 w-full items-center gap-1.5 rounded-none border border-border bg-secondary/50 px-3 py-2 text-sm transition-colors',
         'focus-within:bg-background focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20 focus-within:outline-none',
+        maxVisibleTags === undefined ? 'flex-wrap' : 'flex-nowrap overflow-hidden',
         disabled && 'cursor-not-allowed opacity-50',
         props.class,
       )"
     >
       <!-- Selected tags -->
       <Badge
-        v-for="item in selectedItems"
+        v-for="item in visibleItems"
         :key="getItemValue(item)"
         variant="secondary"
         class="flex shrink-0 items-center gap-1 pr-1"
@@ -27,6 +28,15 @@
           <XIcon class="h-3 w-3" />
           <span class="sr-only">{{ $t('Remove') }} {{ getItemLabel(item) }}</span>
         </button>
+      </Badge>
+      <Badge
+        v-if="hiddenItems.length > 0"
+        variant="outline"
+        class="shrink-0"
+        data-slot="multi-select-overflow"
+        :aria-label="hiddenItems.map(getItemLabel).join(', ')"
+      >
+        +{{ hiddenItems.length }}
       </Badge>
 
       <!-- Search input -->
@@ -141,6 +151,8 @@ const props = withDefaults(defineProps<{
   virtualizationThreshold?: number;
   /** Estimated size of each item for virtualization (default: 40) */
   estimateSize?: number;
+  /** Keep the field one line tall: show this many tags, then "+N" (the list still shows every selection). */
+  maxVisibleTags?: number;
 }>(), {
   labelField: 'label',
   valueField: 'id',
@@ -150,6 +162,7 @@ const props = withDefaults(defineProps<{
   class: undefined,
   virtualizationThreshold: 50,
   estimateSize: 40,
+  maxVisibleTags: undefined,
 });
 
 const emit = defineEmits<(e: 'update:modelValue', value: T[]) => void>();
@@ -158,6 +171,9 @@ const emit = defineEmits<(e: 'update:modelValue', value: T[]) => void>();
 const selectedItems = ref<T[]>([...props.modelValue]) as { value: T[] };
 
 const isOpen = ref(false);
+
+const visibleItems = computed(() => props.maxVisibleTags === undefined ? selectedItems.value : selectedItems.value.slice(0, props.maxVisibleTags));
+const hiddenItems = computed(() => selectedItems.value.slice(visibleItems.value.length));
 
 // Search term — bound to ComboboxInput. reka-ui's built-in filtering is bypassed
 // in virtual mode, so we use this to filter the virtualized list ourselves.

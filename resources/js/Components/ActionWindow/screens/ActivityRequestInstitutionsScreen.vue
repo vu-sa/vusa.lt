@@ -3,33 +3,33 @@
     :title="$t('action_window.activity_request.institutions.title')"
     :subtitle="$t('action_window.activity_request.institutions.subtitle')"
   >
-    <div class="space-y-3 pb-3">
+    <div class="space-y-2 pb-3">
       <Input :model-value="controller.query.value" :placeholder="$t('action_window.institution.search')" @update:model-value="controller.search(String($event), true)" />
       <ActivityRequestFilters :institutions="candidates ?? []" />
-      <SpotlightPopover
-        :title="$t('activity_requests.bulk_title')"
-        :description="$t('activity_requests.bulk_hint')"
-        :is-dismissed="spotlight.isDismissed.value"
-        @dismiss="spotlight.dismiss()"
-      >
-        <div class="flex flex-wrap gap-2">
-          <Button variant="outline" voice="sentence" class="min-h-11" data-slot="activity-select-all"
+      <div class="flex flex-wrap items-center gap-2">
+        <SpotlightPopover
+          :title="$t('activity_requests.bulk_title')"
+          :description="$t('activity_requests.bulk_hint')"
+          :is-dismissed="spotlight.isDismissed.value"
+          @dismiss="spotlight.dismiss()"
+        >
+          <Button variant="outline" voice="sentence" data-slot="activity-select-all"
             :disabled="bulkSelecting || isFetching || controller.status.value !== 'idle' || selected.length >= 100" @click="selectAll">
             {{ $t(bulkSelecting ? 'activity_requests.selecting' : 'activity_requests.select_matching') }}
           </Button>
-          <Button variant="ghost" voice="sentence" class="min-h-11" data-slot="activity-deselect-all" :disabled="selected.length === 0 && !bulkSelecting" @click="deselectAll">
-            {{ $t('activity_requests.deselect_all') }}
-          </Button>
-        </div>
-      </SpotlightPopover>
+        </SpotlightPopover>
+        <Button variant="ghost" voice="sentence" data-slot="activity-deselect-all" :disabled="selected.length === 0 && !bulkSelecting" @click="deselectAll">
+          {{ $t('activity_requests.deselect_all') }}
+        </Button>
+        <span class="ml-auto text-xs text-muted-foreground tabular-nums" role="status" :aria-label="$t('activity_requests.selected_count', { count: String(selected.length) })">
+          {{ selected.length }}/100
+        </span>
+      </div>
       <p v-if="draft.activityRequest.selectionLimited || selected.length >= 100" class="text-xs text-muted-foreground" role="status">
         {{ $t('activity_requests.limit_reached') }}
       </p>
       <p v-if="bulkError" class="text-sm text-destructive" role="alert">
         {{ $t('action_window.common.error') }}
-      </p>
-      <p class="text-xs text-muted-foreground" role="status">
-        {{ $t('activity_requests.selection_limit') }} ({{ selected.length }}/100)
       </p>
     </div>
 

@@ -1,11 +1,11 @@
 <?php
 
 return [
-    'filters_hint' => 'Nepasirinkus padalinio, rodomi visi pasiekiami padaliniai. Pakeitus filtrus, jų neatitinkančios institucijos nužymimos.',
     'all_scopes' => 'Visos valdysenos sritys',
-    'select_matching' => 'Pažymėti atitinkančias institucijas (iki 100)',
+    'select_matching' => 'Pažymėti atitinkančias',
     'select_all' => 'Pažymėti visus',
-    'deselect_all' => 'Nuimti visus žymėjimus',
+    'deselect_all' => 'Nuimti žymėjimus',
+    'selected_count' => 'Pasirinkta :count iš 100 institucijų',
     'selecting' => 'Įkeliama ir žymima…',
     'limit_reached' => 'Vienu kartu galima pasirinkti iki 100 institucijų. Kitoms institucijoms paruošk atskirą užklausą.',
     'bulk_title' => 'Žymėti kelias institucijas',
@@ -145,7 +145,6 @@ return [
     'campaign_spotlight' => 'Pasirink, ar klausi apie veiklą, ar prašai papildyti posėdžių įrašus.',
     'send_section' => 'Ką ir kam išsiųsime',
     'skip_section' => 'Kam laiško nesiųsime',
-    'selection_limit' => 'Vienu kartu gali pasirinkti iki 100 institucijų. Likusioms sukurk kitą užklausą.',
     'all_tenants' => 'Visi padaliniai',
     'delivery' => [
         'immediate' => 'Laiškas dabar',
