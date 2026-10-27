@@ -118,6 +118,8 @@ Rūšis lemia, ką rodo ir ko reikalauja kiti puslapiai:
 
 - VU SA dariniams forma siūlo **kontaktų** skiltį (adresas, darbo laikas, el. paštas, socialiniai
   tinklai). Ji pažymėta „Matoma vusa.lt“, nes rodoma viešame institucijos puslapyje.
+- Viešoje padalinių kontaktų kategorijoje kortelė rodo institucijos nuotrauką, jei ji įkelta;
+  jei nuotraukos nėra, rodomas logotipas.
 - VU SA darinių posėdžiuose studentų pozicijos žymėti nereikia (žr.
   [Darbotvarkės klausimai](/visak/darbotvarkes-klausimai#vusa-isimtis)).
 - [Koordinatorius](/visak/#koordinatorius) priskiriamas tik VU organams. Kaip jis parenkamas,

@@ -94,6 +94,44 @@ test('padaliniai category lists only active institutions and reflects reactivati
     );
 });
 
+test('padaliniai category provides institution photos and preserves the logo fallback', function (string $locale): void {
+    Storage::fake('spatieMediaLibrary');
+    $tenant = Tenant::where('type', TenantType::Padalinys)->firstOrFail();
+    $type = InstitutionType::where('slug', 'padaliniai')->firstOrFail();
+    $institution = Institution::factory()->for($tenant)->create(['is_active' => true]);
+    $institution->types()->attach($type);
+    app(AddImageMedia::class)->execute($institution, UploadedFile::fake()->image('team.jpg'), 'image');
+    $institution->getFirstMedia('image')->setCustomProperty('focal_point', '40% 60%')->save();
+    $photo = $institution->fresh()->imageData('image');
+
+    $withoutPhoto = Institution::factory()->for($tenant)->create([
+        'is_active' => true,
+        'logo_url' => '/images/unit-logo.svg',
+    ]);
+    $withoutPhoto->types()->attach($type);
+
+    $url = LocalizedRouteSlugs::route('contacts.category', [
+        'subdomain' => 'www', 'lang' => $locale, 'type' => $type->slug,
+    ], $locale);
+
+    $this->get($url)->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->component('Public/Contacts/ShowContactCategory')
+        ->where('institutions', function ($institutions) use ($institution, $withoutPhoto, $photo): bool {
+            $withPhoto = collect($institutions)->firstWhere('id', $institution->id);
+            $fallback = collect($institutions)->firstWhere('id', $withoutPhoto->id);
+
+            expect($withPhoto)->toHaveKey('image_url', $photo['url'])
+                ->toHaveKey('image_media', $photo)
+                ->not->toHaveKey('media');
+            expect($fallback)->toHaveKey('image_url', null)
+                ->toHaveKey('image_media', null)
+                ->toHaveKey('logo_url', '/images/unit-logo.svg');
+
+            return true;
+        })
+    );
+})->with(['lt', 'en']);
+
 test('an institution provides its image in public props', function (): void {
     Storage::fake('spatieMediaLibrary');
     $tenant = Tenant::main();

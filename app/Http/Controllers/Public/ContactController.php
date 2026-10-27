@@ -361,12 +361,11 @@ class ContactController extends PublicController
             'subdomain' => $this->subdomain,
             'lang' => $this->getOtherLang(), 'type' => $type->slug]));
 
-        // For padaliniai type, use the traditional ShowContactCategory view
         if ($type->slug === 'padaliniai') {
             $institutions = $type->load(['institutions' => function ($query): void {
                 $query->where('is_active', true)->orderBy('name')->with(['tenant' => function ($query): void {
                     $query->where('type', TenantType::Padalinys);
-                }, 'types']);
+                }, 'types', 'media']);
             }])->institutions;
 
             $this->applyPageHead(
@@ -377,10 +376,16 @@ class ContactController extends PublicController
 
             return Inertia::render('Public/Contacts/ShowContactCategory', [
                 'tenantSwitchTarget' => 'same-page',
-                'institutions' => $institutions->map(fn ($institution) => [
-                    ...$institution->toArray(),
-                    'description' => '',
-                ]),
+                'institutions' => $institutions->map(function (Institution $institution): array {
+                    $image = $institution->imageData('image');
+
+                    return [
+                        ...$institution->unsetRelation('media')->toArray(),
+                        'image_url' => $image['url'] ?? null,
+                        'image_media' => $image,
+                        'description' => '',
+                    ];
+                }),
                 'type' => $type->unsetRelation('institutions'),
             ]);
         }
