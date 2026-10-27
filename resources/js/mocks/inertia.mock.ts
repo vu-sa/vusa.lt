@@ -124,6 +124,8 @@ export const router = {
     console.log('Inertia router delete:', url, options);
     return Promise.resolve();
   }),
+  restore: mockFn(),
+  remember: mockFn(),
   reload: mockFn((options?: any) => {
     console.log('Inertia router reload:', options);
     return Promise.resolve();
@@ -151,7 +153,7 @@ export const router = {
 export const useForm = mockFn((keyOrData: any = {}, rememberedData?: any) => {
   // `useForm('RememberKey', data)` keeps a draft across navigations; the mock only needs the data.
   const data = typeof keyOrData === 'string' ? (rememberedData ?? {}) : keyOrData;
-  const form: Record<string, any> = {
+  const form: Record<string, any> = reactive({
     ...data,
     data: () => data,
     errors: {},
@@ -172,10 +174,16 @@ export const useForm = mockFn((keyOrData: any = {}, rememberedData?: any) => {
     patch: mockFn(),
     delete: mockFn(),
     cancel: mockFn(),
-  };
+    validating: false,
+    valid: mockFn(() => false),
+    invalid: mockFn(() => false),
+  });
 
   // Inertia's transform() is chainable: form.transform(fn).post(...).
   form.transform = mockFn(() => form);
+  form.withPrecognition = mockFn(() => form);
+  form.validate = mockFn(() => form);
+  form.setValidationTimeout = mockFn(() => form);
 
   return form;
 });

@@ -1,16 +1,17 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
+import { usePage } from '@inertiajs/vue3';
 
 import CalendarForm from '@/Components/AdminForms/CalendarForm.vue';
+import { createMockPage } from '@/tests/helpers/createMockPage';
 
-// Use the real Inertia useForm because CalendarForm relies on its Precognition helpers.
-vi.mock('@inertiajs/vue3', async () => {
-  const actual = await vi.importActual('@inertiajs/vue3');
+vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-  return {
-    ...actual,
-    usePage: () => ({ props: { app: { locale: 'lt', url: 'https://www.vusa.test' } } }),
-  };
+beforeEach(() => {
+  vi.clearAllMocks();
+  vi.mocked(usePage).mockReturnValue(createMockPage({
+    app: { locale: 'lt', url: 'https://www.vusa.test' },
+  }));
 });
 
 describe('CalendarForm.vue — create tenant default', () => {
