@@ -69,27 +69,20 @@
   --rc-measure: inherit;
 }
 
-/* Left-aligned measure (News `headline` layout, and ContentPage's `default` layout
-   whenever a ToC sidebar is present) — the prose column hugs the start edge instead of
-   being centered between the wide/content steps.
+/* Left-aligned measure — ContentPage's `default` layout whenever a ToC sidebar is present.
+   The prose hugs the canvas gutter so it lines up with the masthead text; content/wide
+   blocks grow rightward only, towards the sidebar.
 
-   Gated to ≥1024px on purpose: `.rc-aside` (the 17rem ToC sidebar this variant exists
-   for) is `hidden lg:block`, and `.rc-shell` only goes two-column at that same
-   ≥1024px breakpoint (see `.rc-shell:has(>.rc-aside)` below). Below 1024px there is no
-   sidebar consuming space, so this template's leading wide/content steps (8rem + 6rem
-   from 768px) grew unopposed while the trailing `1fr` track collapsed — pushing the
-   whole prose column ~150-200px right and reading as a large, asymmetric left margin
-   between 768 and 1023px. Falling back to the default centered template in that range
-   fixes it; the sidebar reclaims the space again at ≥1024px. */
+   Gated to ≥1024px, the breakpoint where `.rc-shell` goes two-column and `.rc-aside`
+   appears; below it the default centered template applies. */
 @media (width >=1024px) {
   .rc-canvas[data-align='start'] {
     grid-template-columns:
       [full-start] var(--rc-gutter)
-      [wide-start] minmax(0, var(--rc-wide-step))
-      [content-start] minmax(0, var(--rc-content-step))
-      [prose-start] min(var(--rc-measure), 100% - var(--rc-gutter) * 2) [prose-end]
-      minmax(0, 1fr)
-      [content-end wide-end] minmax(var(--rc-gutter), 1fr) [full-end];
+      [wide-start content-start prose-start] min(var(--rc-measure), 100% - var(--rc-gutter) * 2) [prose-end]
+      minmax(0, calc(var(--rc-content-step) * 2)) [content-end]
+      minmax(0, calc(var(--rc-wide-step) * 2)) [wide-end]
+      minmax(0, 1fr) [full-end];
   }
 }
 
@@ -142,9 +135,9 @@
    without the sidebar clipping `rc-full` blocks down to a second, narrower measure
    on every page — only pages that actually have anchor links pay that cost.
 
-   `.rc-shell` spans the viewport with no padding of its own. The nested canvas reserves
-   its own left gutter, but the 17rem `.rc-aside` track has none, so the shell reserves the
-   right one (matching `.rc-canvas`'s 2rem desktop gutter). */
+   With a sidebar the shell sits in the masthead's `max-w-7xl` frame, so on wide screens the
+   prose and ToC line up with the title band instead of drifting to the viewport edges. The
+   canvas reserves its own left gutter; the shell reserves the right one for the aside. */
 .rc-shell {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -154,6 +147,8 @@
 @media (width >=1024px) {
   .rc-shell:has(>.rc-aside) {
     grid-template-columns: minmax(0, 1fr) 17rem;
+    max-width: 80rem;
+    margin-inline: auto;
     padding-inline-end: 2rem;
   }
 }
