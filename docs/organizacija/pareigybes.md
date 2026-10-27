@@ -245,6 +245,12 @@ kaip naują pareigybę, galima paversti ankstesniu pavadinimu. Būsenos vadinamo
 
 ### Pareigų galūnių giminizavimas, linksniavimas ir dublikatų prevencija {#lytis-ir-dublikatai}
 
+Pritaikoma ir pora **Pavaduotojas / Pavaduotoja**, taip pat kai po jos eina sritis, pvz.,
+**Pavaduotojas studijoms / Pavaduotoja studijoms**. Dublikatų patikra atpažįsta abi gimines
+ir daugiskaitą (**Pavaduotojai / Pavaduotojos**), bet išlaiko skirtingas pareigų sritis.
+Vardo atpažinimas turi išimčių, todėl vien galūnė **-a** ne visada reiškia moteriškąją giminę;
+aiškiai nurodyti įvardžiai ir laikotarpio parinktis išlaikyti originalų pavadinimą turi pirmenybę.
+
 Lietuvių kalboje pareigybių pavadinimai kinta pagal einančio asmens įvardį arba vardo giminę (*Pirmininkas* /
 *Pirmininkė*, *Koordinatorius* / *Koordinatorė*).
 

@@ -27,39 +27,30 @@ class DutyNameNormalizer
     private const array GENDERED_ENDINGS = ['ius', 'iai', 'ys', 'as', 'ai', 'es', 'e', 'a'];
 
     /**
-     * Agent-noun stems that can head a duty title, mapped to the masculine singular ending
-     * they take — ASCII-folded, because matching happens after Str::ascii() ("iždinink"
-     * arrives as "izdinink", "atstovė" as "atstove").
+     * ASCII-folded masculine/feminine endings mirror DUTY_AGENT_NOUN_STEMS in resources/js/Utils/String.ts.
      *
-     * The head noun is frequently not the last word ("Studentų atstovas VU FF Taryboje",
-     * "SPK atstovas"), so normalising only the tail leaves the masculine and feminine
-     * spellings of one duty looking like two different duties. Recognising the noun itself
-     * is what makes those collapse.
-     *
-     * Mirrors DUTY_AGENT_NOUN_STEMS in resources/js/Utils/String.ts — keep the two in step.
-     *
-     * @var array<string, string>
+     * @var array<string, array{string, string}>
      */
     private const array AGENT_NOUN_STEMS = [
-        'administrator' => 'ius',
-        'atstov' => 'as',
-        'direktor' => 'ius',
-        'instruktor' => 'ius',
-        'izdinink' => 'as',
-        'koordinator' => 'ius',
-        'kurator' => 'ius',
-        'mentor' => 'ius',
-        'nar' => 'ys',
-        'pavaduotoj' => 'as',
-        'pirminink' => 'as',
-        'prezident' => 'as',
-        'redaktor' => 'ius',
-        'sekretor' => 'ius',
-        'seniun' => 'as',
-        'trener' => 'is',
-        'vadov' => 'as',
-        'vicepirminink' => 'as',
-        'viceprezident' => 'as',
+        'administrator' => ['ius', 'e'],
+        'atstov' => ['as', 'e'],
+        'direktor' => ['ius', 'e'],
+        'instruktor' => ['ius', 'e'],
+        'izdinink' => ['as', 'e'],
+        'koordinator' => ['ius', 'e'],
+        'kurator' => ['ius', 'e'],
+        'mentor' => ['ius', 'e'],
+        'nar' => ['ys', 'e'],
+        'pavaduotoj' => ['as', 'a'],
+        'pirminink' => ['as', 'e'],
+        'prezident' => ['as', 'e'],
+        'redaktor' => ['ius', 'e'],
+        'sekretor' => ['ius', 'e'],
+        'seniun' => ['as', 'e'],
+        'trener' => ['is', 'e'],
+        'vadov' => ['as', 'e'],
+        'vicepirminink' => ['as', 'e'],
+        'viceprezident' => ['as', 'e'],
     ];
 
     /** @var array<string, string> */
@@ -139,12 +130,12 @@ class DutyNameNormalizer
      */
     private static function matchAgentNounStem(string $word): ?string
     {
-        foreach (self::AGENT_NOUN_STEMS as $stem => $masculineEnding) {
+        foreach (self::AGENT_NOUN_STEMS as $stem => [$masculineEnding, $feminineEnding]) {
             $forms = [
                 $stem.$masculineEnding,
                 $stem.self::MASCULINE_PLURAL_ENDINGS[$masculineEnding],
-                $stem.'e',
-                $stem.'es',
+                $stem.$feminineEnding,
+                $stem.($feminineEnding === 'a' ? 'os' : 'es'),
             ];
 
             if (in_array($word, $forms, true)) {

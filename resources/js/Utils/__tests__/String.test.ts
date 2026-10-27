@@ -176,6 +176,11 @@ describe('changeDutyNameEndings', () => {
     ['Jonas Jonaitė', 'Koordinatorė', '', 'Koordinatorius'],
     ['Katrin Smith', 'Koordinatorius', '', 'Koordinatorė'],
     ['German Smith', 'Koordinatorė', '', 'Koordinatorė'],
+    ['Nikita', 'Koordinatorė', '', 'Koordinatorius'],
+    ['Nikita Smith', 'Pavaduotoja', '', 'Pavaduotojas'],
+    ['  NIKITA   Smith  ', 'Pavaduotoja', '', 'Pavaduotojas'],
+    ['Nikita', 'Pavaduotojas', 'ji/jos', 'Pavaduotoja'],
+    ['Nikita', 'Pavaduotoja', 'they/them', 'Pavaduotojai'],
   ])('resolves %s holding %s with pronouns %s', (name, duty, pronouns, expected) => {
     expect(changeDutyNameEndings({ name }, duty, 'lt', pronouns)).toBe(expected);
   });
@@ -188,6 +193,23 @@ describe('changeDutyNameEndings', () => {
   it('preserves English titles and explicit assignment overrides', () => {
     expect(changeDutyNameEndings({ name: 'Ona Onaitė' }, 'Coordinator', 'en', 'she/her')).toBe('Coordinator');
     expect(changeDutyNameEndings({ name: 'Ona Onaitė' }, 'Koordinatorius', 'lt', 'ji/jos', true)).toBe('Koordinatorius');
+    expect(changeDutyNameEndings({ name: 'Nikita' }, 'Deputy', 'en')).toBe('Deputy');
+    expect(changeDutyNameEndings({ name: 'Nikita' }, 'Pavaduotoja', 'lt', '', true)).toBe('Pavaduotoja');
+  });
+
+  it.each([
+    ['Pavaduotojas', 'ji/jos', 'Pavaduotoja'],
+    ['Pavaduotoja', 'jis/jo', 'Pavaduotojas'],
+    ['Pavaduotoja', 'jie/jų', 'Pavaduotojai'],
+    ['Pavaduotojai', 'ji/jos', 'Pavaduotoja'],
+    ['Pavaduotojos', 'jis/jo', 'Pavaduotojas'],
+    ['Pavaduotojos', 'ji/jos', 'Pavaduotoja'],
+    ['Pavaduotojas studijoms', 'ji/jos', 'Pavaduotoja studijoms'],
+    ['Pavaduotoja studijoms', 'jis/jo', 'Pavaduotojas studijoms'],
+    ['Pavaduotojas (Studijos)', 'ji/jos', 'Pavaduotoja (Studijos)'],
+    ['Pavaduotojas (-a) studijoms', 'ji/jos', 'Pavaduotojas (-a) studijoms'],
+  ])('inflects %s with %s as %s', (duty, pronouns, expected) => {
+    expect(changeDutyNameEndings(null, duty, 'lt', pronouns)).toBe(expected);
   });
 
   const masculinize = (name: string) => changeDutyNameEndings(null, name, 'lt', 'jis/jo', false);
@@ -262,6 +284,15 @@ describe('changeDutyNameEndings', () => {
 });
 
 describe('getDutyNameGenderVariants', () => {
+  it.each(['Pavaduotojas', 'Pavaduotoja'])('splits the -as/-a pair stored as %s', (duty) => {
+    expect(getDutyNameGenderVariants(`${duty} studijoms`)).toEqual({
+      stem: 'Pavaduotoj',
+      masculineEnding: 'as',
+      feminineEnding: 'a',
+      suffix: ' studijoms',
+    });
+  });
+
   it('splits an -ius/-ė pair stored in the masculine form', () => {
     expect(getDutyNameGenderVariants('Koordinatorius')).toEqual({
       stem: 'Koordinator',
@@ -341,6 +372,8 @@ describe('getDutyNameGenderVariants', () => {
   it('returns null for a duty stored in the plural, which no single holder inflects to', () => {
     expect(getDutyNameGenderVariants('Studentų atstovai MIF Taryboje')).toBeNull();
     expect(getDutyNameGenderVariants('Komunikacijos koordinatorės')).toBeNull();
+    expect(getDutyNameGenderVariants('Pavaduotojai studijoms')).toBeNull();
+    expect(getDutyNameGenderVariants('Pavaduotojos studijoms')).toBeNull();
   });
 
   it('returns null for empty, whitespace-only, or nullish input', () => {

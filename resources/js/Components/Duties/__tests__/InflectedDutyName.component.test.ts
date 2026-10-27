@@ -9,6 +9,23 @@ import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPrefe
 describe('InflectedDutyName.vue', () => {
   let wrapper: ReturnType<typeof mount>;
 
+  it.each(['Pavaduotojas', 'Pavaduotoja'])('renders correct deputy endings for %s', (name) => {
+    wrapper = mount(InflectedDutyName, { props: { name, locale: 'lt' }, global: { stubs: commonStubs } });
+
+    expect(wrapper.get('[data-testid="duty-ending-masculine"]').text()).toBe('as');
+    expect(wrapper.get('[data-testid="duty-ending-feminine"]').text()).toBe('a');
+  });
+
+  it('renders a masculine duty title inferred from an exceptional first name', () => {
+    wrapper = mount(InflectedDutyName, {
+      props: { name: 'Pavaduotoja studijoms', holder: { name: 'Nikita Smith' }, locale: 'lt' },
+      global: { stubs: commonStubs },
+    });
+
+    expect(wrapper.text()).toBe('Pavaduotojas studijoms');
+    expect(wrapper.find('[data-testid="duty-ending-group"]').exists()).toBe(false);
+  });
+
   it('highlights a duty name in place while preserving both gender endings', () => {
     const doc = documentWithMatch({ document: { name_lt: 'Prezidentas' }, highlights: [{ field: 'name_lt', snippet: '⟦Prezidentas⟧' }] }) as SearchMatchDocument;
     wrapper = mount(InflectedDutyName, { props: { name: 'Prezidentas', matches: doc._searchTitleMatches }, global: { stubs: commonStubs } });
