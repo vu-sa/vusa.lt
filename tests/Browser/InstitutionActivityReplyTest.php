@@ -13,6 +13,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Notifications\InstitutionActivityNotification;
 use Database\Seeders\DocsSeeder;
+use Database\Seeders\TypeSeeder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Vite;
@@ -95,7 +96,7 @@ it('reviews incomplete records for the sending representative without overflow i
     $user = makeAdminUser(Tenant::query()->first());
     $institution = Institution::factory()->for(Tenant::query()->first())->create();
     $duty = Duty::factory()->for($institution)->create();
-    $type = DutyType::factory()->create(['title' => ['lt' => 'Studentų atstovai', 'en' => 'Student representatives']]);
+    $type = DutyType::query()->findOrFail(TypeSeeder::STUDENT_REPRESENTATIVE_DUTY_TYPE_ID);
     $duty->types()->attach($type);
     $user->duties()->attach($duty, ['start_date' => today()->subMonth()]);
     app(RecordMeeting::class)->execute($institution, now()->subWeek());
