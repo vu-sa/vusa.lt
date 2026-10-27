@@ -5,6 +5,7 @@ use App\Models\Duty;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
+use Database\Seeders\TypeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -224,7 +225,7 @@ test('contact manager can add type to duty', function (): void {
     ]);
 
     $this->assertDatabaseHas('duty_types', [
-        'slug' => 'studentu-atstovai',
+        'id' => TypeSeeder::STUDENT_REPRESENTATIVE_DUTY_TYPE_ID,
     ]);
 
     $admin->get(route('dashboard'));

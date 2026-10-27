@@ -464,9 +464,7 @@ describe('duty role management', function (): void {
     });
 
     test('attaching an attachable type to a duty automatically grants associated roles to the duty', function (): void {
-        $type = DutyType::factory()->create([
-            'slug' => 'test-duty-type',
-        ]);
+        $type = DutyType::factory()->create();
         $grantedRole = Role::firstOrCreate(['name' => 'Automated Granted Role', 'guard_name' => 'web']);
         ResponsibilityGrant::factory()->forDutyType($type)->of($grantedRole)->create();
 

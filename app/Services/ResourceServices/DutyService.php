@@ -136,7 +136,7 @@ class DutyService
                 'meetings.calendarEvent:id,meeting_id,is_draft',
                 // Historical assignments are required for Gantt coverage periods.
                 'duties.users:id,name,profile_photo_path,last_action',
-                'duties.types:id,title,slug',
+                'duties.types:id,title',
                 'checkIns',
             ])
             ->withCount([
@@ -331,7 +331,7 @@ class DutyService
                 'meetings.calendarEvent:id,meeting_id,is_draft',
                 // Historical assignments are required for Gantt coverage periods.
                 'duties.users:id,name,profile_photo_path,last_action',
-                'duties.types:id,title,slug',
+                'duties.types:id,title',
                 'checkIns',
             ])
             ->withCount([

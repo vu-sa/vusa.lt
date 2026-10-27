@@ -776,7 +776,7 @@ $settings = [
 
                         // Facets
                         ['name' => 'type_titles', 'type' => 'string[]', 'facet' => true, 'optional' => true],
-                        ['name' => 'type_slugs', 'type' => 'string[]', 'facet' => true, 'optional' => true],
+                        ['name' => 'type_ids', 'type' => 'int32[]', 'facet' => true, 'optional' => true],
 
                         // Members (for the detail pane). Names are searchable; the parallel
                         // id arrays stay index-aligned so the pane can render clickable links.

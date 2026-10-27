@@ -8,6 +8,7 @@ use App\Models\Type;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
 use Database\Seeders\RoleResourceManagerSeeder;
+use Database\Seeders\TypeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
@@ -29,8 +30,15 @@ function typedDutyUser(string $typeSlug): User
 }
 
 beforeEach(function (): void {
+    // duty_types no longer has slugs, but the legacy types table this migration reads still does.
+    $legacySlugs = [
+        TypeSeeder::COORDINATOR_DUTY_TYPE_ID => 'koordinatoriai',
+        TypeSeeder::STUDENT_REPRESENTATIVE_DUTY_TYPE_ID => 'studentu-atstovai',
+    ];
+
     foreach (DutyType::query()->get() as $type) {
         $row = $type->getAttributes();
+        $row['slug'] = $legacySlugs[$type->id] ?? null;
         $row['created_at'] ??= now();
         $row['updated_at'] ??= now();
         DB::table('types')->insert($row + ['model_type' => 'duty']);

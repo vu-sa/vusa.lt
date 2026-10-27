@@ -196,7 +196,7 @@ class InstitutionRelationService
             return new EloquentCollection;
         }
 
-        $base = ['types', 'meetings:id,title,start_time,type', 'meetings.fileableFiles:id,fileable_id,fileable_type,file_type,deleted_externally_at', 'tenant:id,shortname', 'duties.users:id,name,profile_photo_path,last_action', 'duties.types:id,title,slug', 'checkIns'];
+        $base = ['types', 'meetings:id,title,start_time,type', 'meetings.fileableFiles:id,fileable_id,fileable_type,file_type,deleted_externally_at', 'tenant:id,shortname', 'duties.users:id,name,profile_photo_path,last_action', 'duties.types:id,title', 'checkIns'];
         $authorizedIds = array_keys(array_filter($picked, fn (array $entry) => $entry['authorized']));
         $restrictedIds = array_keys(array_filter($picked, fn (array $entry) => ! $entry['authorized']));
 
