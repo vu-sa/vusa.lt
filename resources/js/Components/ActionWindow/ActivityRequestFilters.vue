@@ -25,13 +25,18 @@ import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { useActionWindow, type ActionWindowInstitutionRef } from '@/Composables/useActionWindow';
-import { InstitutionScope } from '@/Types/enums';
+import { InstitutionScope, TenantType } from '@/Types/enums';
 import { MultiSelect } from '@/Components/ui/multi-select';
 import { NativeSelect } from '@/Components/ui/native-select';
 
 const props = defineProps<{ institutions: ActionWindowInstitutionRef[] }>();
 const { draft, updateActivityRequest } = useActionWindow();
 const page = usePage();
+const TYPE_ORDER: string[] = [TenantType.Pagrindinis, TenantType.Padalinys, TenantType.Pkp];
+const typeRank = (id: string) => {
+  const rank = TYPE_ORDER.indexOf(page.props.tenants?.find(tenant => String(tenant.id) === id)?.type ?? '');
+  return rank === -1 ? TYPE_ORDER.length : rank;
+};
 const tenants = computed(() => {
   const options = new Map(props.institutions
     .filter(item => item.tenant_id != null)
@@ -42,7 +47,7 @@ const tenants = computed(() => {
       options.set(id, { id, label: tenant?.shortname ?? id });
     }
   }
-  return [...options.values()];
+  return [...options.values()].sort((a, b) => typeRank(a.id) - typeRank(b.id) || a.label.localeCompare(b.label, 'lt'));
 });
 const selectedTenants = computed(() => tenants.value.filter(item => draft.activityRequest.filters.tenantIds.includes(item.id)));
 const setTenants = (items: { id: string }[]) => updateActivityRequest({

@@ -88,6 +88,27 @@ describe('ActivityRequestInstitutionsScreen.vue', () => {
     expect(wrapper.findAll('[data-slot="action-choice-button"]')).toHaveLength(0);
   });
 
+  it('lists the central office first, then units by name, then student initiatives', () => {
+    const defaultPage = vi.mocked(usePage).getMockImplementation()!;
+    const page = createMockPage();
+    page.props.tenants = [
+      { id: 1, shortname: 'VU SA MIF', type: 'padalinys' },
+      { id: 2, shortname: 'VU SA', type: 'pagrindinis' },
+      { id: 3, shortname: 'VU SA CHGF', type: 'padalinys' },
+      { id: 4, shortname: 'Klubas', type: 'pkp' },
+    ] as typeof page.props.tenants;
+    vi.mocked(usePage).mockReturnValue(page);
+    const items = [candidate('a', 4), candidate('b', 1), candidate('c', 2), candidate('d', 3)]
+      .map(item => ({ ...item, tenant_shortname: page.props.tenants!.find(tenant => tenant.id === item.tenant_id)!.shortname }));
+    candidates.value = items;
+
+    const { wrapper } = mountScreen(ActivityRequestInstitutionsScreen, { flow: 'activity.request' });
+
+    expect(wrapper.getComponent(MultiSelect).props('options').map((option: { label: string }) => option.label))
+      .toEqual(['VU SA', 'VU SA CHGF', 'VU SA MIF', 'Klubas']);
+    vi.mocked(usePage).mockImplementation(defaultPage);
+  });
+
   it('caps an oversized initial selection after filtering and explains the limit', () => {
     const items = Array.from({ length: 101 }, (_, index) => candidate(String(index)));
     candidates.value = [candidate('outside', 2), ...items];
