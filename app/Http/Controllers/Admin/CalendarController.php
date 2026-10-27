@@ -155,7 +155,7 @@ class CalendarController extends AdminController
      */
     private function legacyDateUrls(Calendar $calendar): array
     {
-        if ($calendar->created_at?->gte(Calendar::DATE_URLS_RETIRED_AT)) {
+        if ($calendar->created_at->gte(Calendar::DATE_URLS_RETIRED_AT)) {
             return ['lt' => null, 'en' => null];
         }
 
