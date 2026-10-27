@@ -50,3 +50,5 @@ export { default as FieldHistoryDisclosure } from './FieldHistoryDisclosure.vue'
 export type { FormSegmentOption } from './FormSegmentedControl.vue';
 
 export { default as SectionCard } from './SectionCard.vue';
+
+export { default as ModelTimestamps } from './ModelTimestamps.vue';

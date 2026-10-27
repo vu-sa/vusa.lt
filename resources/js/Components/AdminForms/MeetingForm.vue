@@ -1,5 +1,7 @@
 <template>
   <SheetForm
+    :created-at="meeting?.created_at"
+    :updated-at="meeting?.updated_at"
     :open
     :title="$t('Redaguoti posėdį')"
     :processing="form.processing"

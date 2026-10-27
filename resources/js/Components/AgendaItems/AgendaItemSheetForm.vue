@@ -1,5 +1,7 @@
 <template>
   <SheetForm
+    :created-at
+    :updated-at
     :open
     :title="$t('meetings.item.edit')"
     :processing="form.processing"
@@ -182,6 +184,8 @@ import type { AgendaItemFormData } from '@/Composables/useAgendaItemAutosave';
 
 const props = withDefaults(defineProps<{
   open: boolean;
+  createdAt?: string | null;
+  updatedAt?: string | null;
   /** The live, autosaving form: the sheet edits a draft and writes it back on save. */
   form: InertiaForm<AgendaItemFormData>;
   /** Saves the form, then calls back once the server accepted it. */
@@ -197,6 +201,8 @@ const props = withDefaults(defineProps<{
   /** Focused on open, when the sheet was opened to fill one field. */
   focusField?: 'description' | 'student_position' | null;
 }>(), {
+  createdAt: undefined,
+  updatedAt: undefined,
   defaultStartTime: null,
   meetingStartTime: null,
   requiresStudentPerspective: true,

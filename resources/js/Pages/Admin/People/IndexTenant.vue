@@ -86,7 +86,7 @@ import { Button } from '@/Components/ui/button';
 import { useLocalCollectionSource } from '@/Composables/useCollectionSource';
 import TenantSheetForm, { type TenantInput, type TenantInstitution } from '@/Features/Admin/Tenants/TenantSheetForm.vue';
 
-type TenantRow = Pick<App.Entities.Tenant, 'id' | 'fullname' | 'shortname' | 'alias' | 'type'> & {
+type TenantRow = Pick<App.Entities.Tenant, 'id' | 'fullname' | 'shortname' | 'alias' | 'type' | 'created_at' | 'updated_at'> & {
   can: { update: boolean; delete: boolean };
   shortname_vu?: string;
   primary_institution_id?: string | null;
@@ -138,6 +138,8 @@ function openSheet(item: TenantRow | null = null): void {
   if (item) {
     editingTenant.value = {
       id: item.id,
+      created_at: item.created_at,
+      updated_at: item.updated_at,
       fullname: item.fullname,
       shortname: item.shortname,
       type: item.type,

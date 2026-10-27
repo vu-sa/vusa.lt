@@ -1,6 +1,8 @@
 <template>
   <SheetForm
     v-model:open="open"
+    :created-at="eventType?.created_at"
+    :updated-at="eventType?.updated_at"
     :title="eventType ? $t('Redaguoti renginio tipą') : $t('Naujas renginio tipas')"
     :description="$t('Renginių tipai padeda grupuoti renginius pagal jų pobūdį.')"
     :processing="form.processing"
@@ -75,6 +77,8 @@ import { Label } from '@/Components/ui/label';
 import { Switch } from '@/Components/ui/switch';
 
 interface EventTypeInput {
+  created_at?: string | null;
+  updated_at?: string | null;
   id?: string | number;
   name: { lt: string; en: string };
   slug: string;

@@ -28,7 +28,7 @@ class TenantController extends AdminController
         return $this->inertiaResponse('Admin/People/IndexTenant', [
             'tenants' => Tenant::query()->orderBy('fullname')
                 ->with(['primary_institution:id,name,tenant_id,is_active', 'primary_institution.tenant:id,shortname'])
-                ->get(['id', 'fullname', 'shortname', 'alias', 'type', 'shortname_vu', 'primary_institution_id', 'goals_enabled'])
+                ->get(['id', 'fullname', 'shortname', 'alias', 'type', 'shortname_vu', 'primary_institution_id', 'goals_enabled', 'created_at', 'updated_at'])
                 ->map(fn (Tenant $tenant) => [
                     ...$tenant->toArray(),
                     'primary_institution' => $tenant->primary_institution ? [

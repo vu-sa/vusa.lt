@@ -8,6 +8,8 @@ import type {
 } from '@/Types/enums';
 
 export interface MailingListSummary {
+  created_at?: string | null;
+  updated_at?: string | null;
   id: string;
   address: string;
   display_name: string;

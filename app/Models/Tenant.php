@@ -8,13 +8,13 @@ use App\Http\Middleware\HandleInertiaRequests;
 use App\Services\InstitutionRelationService;
 use App\Settings\SiteSettings;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
-use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Scout\Searchable;
 use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
@@ -32,6 +32,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $shortname_vu
  * @property string|null $primary_institution_id
  * @property bool $goals_enabled
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read Collection<int, Banner> $banners
  * @property-read Collection<int, Calendar> $calendar
  * @property-read Collection<int, Duty> $duties
@@ -56,7 +58,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
-#[WithoutTimestamps]
 #[Unguarded]
 class Tenant extends Model
 {

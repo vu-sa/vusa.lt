@@ -1,6 +1,8 @@
 <template>
   <div>
     <SheetForm
+      :created-at="dutiable?.created_at"
+      :updated-at="dutiable?.updated_at"
       :open
       :title="sheetTitle"
       :description="sheetDescription"

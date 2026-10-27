@@ -199,24 +199,7 @@
       <aside v-if="$slots.aside" class="flex min-w-0 flex-col gap-6" data-testid="form-page-aside">
         <slot name="aside" />
 
-        <dl v-if="createdAt || updatedAt" class="border border-border bg-background text-sm" data-testid="form-page-meta">
-          <div v-if="createdAt" class="flex items-center justify-between gap-4 border-b border-border px-4 py-3 last:border-b-0">
-            <dt class="text-muted-foreground">
-              {{ $t('Sukurta') }}
-            </dt>
-            <dd class="font-bold text-foreground">
-              {{ formatDate(createdAt) }}
-            </dd>
-          </div>
-          <div v-if="updatedAt" class="flex items-center justify-between gap-4 px-4 py-3">
-            <dt class="text-muted-foreground">
-              {{ $t('Atnaujinta') }}
-            </dt>
-            <dd class="font-bold text-foreground">
-              {{ formatDate(updatedAt) }}
-            </dd>
-          </div>
-        </dl>
+        <ModelTimestamps :created-at :updated-at data-testid="form-page-meta" />
 
         <div v-if="$slots['danger-zone']" class="flex flex-col gap-3" data-testid="form-page-danger-zone">
           <slot name="danger-zone" />
@@ -267,7 +250,7 @@ import { Button } from '@/Components/ui/button';
 import { segmentGroupClass, segmentVariants } from '@/Components/ui/control';
 import { SHELL_FORM_BAR_ID, SHELL_MOBILE_ACTIONS_ID, useShellFocus } from '@/Composables/useShellFocus';
 import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
-import { formatDate } from '@/Utils/dateTime';
+import ModelTimestamps from '@/Components/Patterns/ModelTimestamps.vue';
 import type { ModelEnum } from '@/Types/enums';
 
 const props = withDefaults(defineProps<{

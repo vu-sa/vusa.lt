@@ -66,6 +66,8 @@ describe('authorized access', function (): void {
                 ->component('Admin/People/IndexTenant')
                 ->where('tenants.0.can.update', true)
                 ->where('tenants.0.can.delete', true)
+                ->has('tenants.0.created_at')
+                ->has('tenants.0.updated_at')
                 ->has('tenants.0.shortname_vu')
                 ->has('tenants.0.primary_institution_id')
                 ->has('tenants')

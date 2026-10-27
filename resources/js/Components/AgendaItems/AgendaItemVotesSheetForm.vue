@@ -1,5 +1,7 @@
 <template>
   <SheetForm
+    :created-at
+    :updated-at
     :open
     :title="$t('meetings.item.manage_votes')"
     :description="$t('meetings.item.manage_votes_description')"
@@ -128,6 +130,8 @@ import type { AgendaItemFormData, TranslatedField } from '@/Composables/useAgend
 
 const props = defineProps<{
   open: boolean;
+  createdAt?: string | null;
+  updatedAt?: string | null;
   /** The live, autosaving form: the sheet edits a draft and writes it back on save. */
   form: InertiaForm<AgendaItemFormData>;
   /** Saves the form, then calls back once the server accepted it. */

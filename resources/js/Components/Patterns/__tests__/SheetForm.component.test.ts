@@ -53,6 +53,20 @@ describe('SheetForm.vue', () => {
     expect(wrapper.emitted('submit')).toHaveLength(1);
   });
 
+  it('shows the saved record dates after the fields and updates them when the record changes', async () => {
+    const wrapper = mount(SheetForm, {
+      props: { open: true, title: 'Žyma', createdAt: '2026-10-01T10:15:00Z', updatedAt: '2026-10-27T14:30:00Z' },
+      slots: { default: '<input id="name" />' },
+      global: { stubs },
+    });
+
+    expect(wrapper.get('[data-slot="model-timestamps"]').text()).toContain('2026-10-27 16:30');
+    expect(wrapper.get('[data-slot="model-timestamps"]').element.previousElementSibling?.id).toBe('name');
+
+    await wrapper.setProps({ createdAt: null, updatedAt: null });
+    expect(wrapper.find('[data-slot="model-timestamps"]').exists()).toBe(false);
+  });
+
   it('replaces the fields and save action with picker content without opening another dialog', () => {
     const wrapper = mount(SheetForm, {
       props: { open: true, title: 'Picker' },

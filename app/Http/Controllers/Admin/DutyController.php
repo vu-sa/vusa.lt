@@ -136,7 +136,12 @@ class DutyController extends AdminController
         $this->handleAuthorization('view', $duty);
 
         $loadDuty = fn () => once(function () use ($duty): Duty {
-            $duty->loadMissing('institution.tenant', 'users', 'types', 'formerNames');
+            $duty->loadMissing([
+                'institution.tenant',
+                'users' => fn ($query) => $query->withPivot('created_at', 'updated_at'),
+                'types',
+                'formerNames',
+            ]);
 
             return $duty->setRelation('users', app(ContactPresentationService::class)->sortHolders($duty, $duty->users));
         });

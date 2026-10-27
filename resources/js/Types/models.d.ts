@@ -2575,6 +2575,8 @@ declare global {
       shortname_vu?: string | null
       primary_institution_id?: string | null
       goals_enabled: boolean
+      created_at?: string | null
+      updated_at?: string | null
       // relations
       banners?: Banner[]
       calendar?: Calendar[]
@@ -2997,4 +2999,3 @@ declare global {
 
   }
 }
-

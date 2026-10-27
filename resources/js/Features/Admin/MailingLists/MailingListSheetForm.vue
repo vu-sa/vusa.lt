@@ -1,6 +1,8 @@
 <template>
   <SheetForm
     v-model:open="open"
+    :created-at="mailingList?.created_at"
+    :updated-at="mailingList?.updated_at"
     :title="mailingList ? $t('mailing_lists.edit.title') : $t('mailing_lists.create.title')"
     :description="mailingList ? undefined : $t('mailing_lists.create.description')"
     :save-label="mailingList ? $t('mailing_lists.edit.submit') : $t('mailing_lists.create.submit')"

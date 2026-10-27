@@ -93,6 +93,20 @@ export const Sheet: StoryObj = {
   }),
 };
 
+export const EditSheet: StoryObj = {
+  render: () => ({
+    components: { SheetForm, Input, Label },
+    template: `
+      <SheetForm :open="true" title="Redaguoti žymą" description="Žymos duomenys ir išsaugojimo datos." created-at="2026-10-01T10:15:00Z" updated-at="2026-10-27T14:30:00Z">
+        <div class="space-y-2">
+          <Label for="story-tag">Pavadinimas</Label>
+          <Input id="story-tag" model-value="Stipendijos" />
+        </div>
+      </SheetForm>
+    `,
+  }),
+};
+
 export const Confirm: StoryObj = {
   render: () => ({
     components: { ConfirmDialog },

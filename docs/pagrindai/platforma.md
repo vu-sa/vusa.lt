@@ -7,6 +7,8 @@ tests:
   - resources/js/Composables/__tests__/useStartFm.test.ts
   - resources/js/Components/__tests__/StartFmPlayer.component.test.ts
   - resources/js/Components/Layouts/__tests__/FormPage.component.test.ts
+  - resources/js/Components/Patterns/__tests__/ModelTimestamps.component.test.ts
+  - resources/js/Components/Patterns/__tests__/SheetForm.component.test.ts
   - resources/js/Composables/__tests__/useCollectionRecordActions.test.ts
   - tests/Browser/CollectionTrashRefreshTest.php
   - tests/Browser/PostCreateNavigationTest.php
@@ -148,6 +150,10 @@ juostoje lieka išsaugotas įrašo pavadinimas, o kuriant – formos paskirtis, 
 
 **⌘/Ctrl + Enter** išsaugo formą. **Esc** tik išeina iš laukelio, kuriame rašai, – formos puslapis
 neuždaromas. Jei atvertas pasirinkimo sąrašas, pirmas **Esc** jį užveria.
+
+### Įrašo datos formose {#formu-datos}
+
+Redaguojant išsaugotą įrašą, mažosios formos lange po laukais rodomos **Sukurta** ir **Atnaujinta** datos su laiku. Jos pateikiamos Vilniaus laiku, tuo pačiu stiliumi kaip pilnos formos šoninėje skiltyje. Kuriant naują įrašą datos dar nerodomos.
 
 ### Po sukūrimo {#po-sukurimo}
 

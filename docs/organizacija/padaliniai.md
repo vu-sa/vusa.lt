@@ -5,6 +5,7 @@ area: tenants
 models: [Tenant]
 last_reviewed: 2026-10-27
 tests:
+  - tests/Unit/Models/TenantTimestampTest.php
   - tests/Feature/Admin/Management/TenantControllerTest.php
   - resources/js/Features/Admin/Tenants/__tests__/TenantSheetForm.component.test.ts
   - resources/js/Pages/Admin/People/__tests__/IndexTenant.component.test.ts
@@ -24,6 +25,8 @@ Platformoje padalinių duomenys ir prieigos teisės atskiriami: beveik kiekviena
 padaliniui, o naudotojų teisės ir matomumas yra ribojami jų atstovaujamais padaliniais.
 
 Padalinių valdymo skiltis pasiekiama adresu `/mano/tenants`.
+
+Redagavimo lange po laukais rodomos sukūrimo ir paskutinio atnaujinimo datos. Padaliniams šios datos kaupiamos nuo 2026-10-27: ankstesnė sukūrimo data lieka nežinoma, o atnaujinimo data atsiranda kitą kartą išsaugojus pakeitimus.
 
 ## Kaip tai veikia
 

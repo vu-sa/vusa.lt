@@ -1,6 +1,8 @@
 <template>
   <SheetForm
     v-model:open="open"
+    :created-at="tag?.created_at"
+    :updated-at="tag?.updated_at"
     :title="tag ? $t('Redaguoti žymą') : $t('Nauja žyma')"
     :description="$t('Žyma padeda susieti panašų svetainės turinį.')"
     :processing="form.processing"
@@ -54,6 +56,8 @@ import { Label } from '@/Components/ui/label';
 import { Switch } from '@/Components/ui/switch';
 
 interface TagInput {
+  created_at?: string | null;
+  updated_at?: string | null;
   id?: string | number;
   name: { lt: string; en: string };
   description: { lt: string; en: string } | null;

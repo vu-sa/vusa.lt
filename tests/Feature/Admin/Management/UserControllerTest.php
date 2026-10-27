@@ -540,6 +540,18 @@ describe('super admin is a switch on the record', function (): void {
 });
 
 describe('the record hands the assignment sheets their options', function (): void {
+    test('upcoming terms include their saved timestamps', function (): void {
+        $person = makeUser($this->tenant);
+        $duty = Duty::factory()->create();
+        $person->duties()->attach($duty, ['start_date' => today()->addWeek(), 'created_at' => now(), 'updated_at' => now()]);
+
+        asUserWithInertia(makeAdminUser($this->tenant))->get(route('users.show', $person))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->has('user.upcoming_duties.0.pivot.created_at')
+                ->has('user.upcoming_duties.0.pivot.updated_at'));
+    });
+
     test('only to someone who may update the person, deferred, and never a role list', function (): void {
         $admin = makeAdminUser($this->tenant);
         $person = makeUser($this->tenant);

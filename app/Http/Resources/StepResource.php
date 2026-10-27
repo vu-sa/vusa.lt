@@ -54,6 +54,8 @@ class StepResource extends JsonResource
 
         return [
             'id' => $this->id,
+            'created_at' => $this->created_at?->toISOString(),
+            'updated_at' => $this->updated_at?->toISOString(),
             'title' => $this->getTranslations('title'),
             'description' => $this->getTranslations('description'),
             'happened_on' => $this->happened_on->toDateString(),

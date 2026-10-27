@@ -24,6 +24,8 @@
             <div class="min-h-0 flex-1 space-y-6 overflow-y-auto px-6 py-5">
               <slot />
 
+              <ModelTimestamps :created-at :updated-at />
+
               <div v-if="$slots['danger-zone']" class="border-t border-border pt-5">
                 <slot name="danger-zone" />
               </div>
@@ -79,6 +81,7 @@ import { Loader2 } from '@lucide/vue';
 import { ref } from 'vue';
 
 import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
+import ModelTimestamps from '@/Components/Patterns/ModelTimestamps.vue';
 import { Button } from '@/Components/ui/button';
 import {
   Sheet,
@@ -92,6 +95,8 @@ import { useIsMobile } from '@/Composables/useIsMobile';
 const props = withDefaults(defineProps<{
   open: boolean;
   title: string;
+  createdAt?: string | null;
+  updatedAt?: string | null;
   description?: string;
   saveLabel?: string;
   processing?: boolean;
@@ -102,6 +107,8 @@ const props = withDefaults(defineProps<{
   initialFocus?: string;
 }>(), {
   description: undefined,
+  createdAt: undefined,
+  updatedAt: undefined,
   initialFocus: undefined,
   saveLabel: undefined,
 });

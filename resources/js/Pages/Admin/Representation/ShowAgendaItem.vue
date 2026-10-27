@@ -238,6 +238,8 @@
     <AgendaItemSheetForm
       v-if="canUpdate"
       v-model:open="sheetOpen"
+      :created-at="agendaItem.created_at"
+      :updated-at="agendaItem.updated_at"
       :focus-field="sheetFocusField"
       :form
       :save-then
@@ -263,6 +265,8 @@
     <AgendaItemVotesSheetForm
       v-if="canUpdate"
       v-model:open="votesSheetOpen"
+      :created-at="agendaItem.created_at"
+      :updated-at="agendaItem.updated_at"
       :form
       :save-then
     />

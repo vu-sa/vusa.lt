@@ -1,6 +1,8 @@
 <template>
   <SheetForm
     v-model:open="open"
+    :created-at="tenant?.created_at"
+    :updated-at="tenant?.updated_at"
     :title="picking ? $t('forms.tenants.pick_institution') : tenant ? $t('Redaguoti padalinį') : $t('Naujas padalinys')"
     :description="picking ? $t('forms.tenants.picker_description') : $t('VU SA padaliniai: kiekvienas turi savo svetainės dalį, narius ir pareigybes.')"
     :processing="form.processing"
@@ -165,6 +167,8 @@ export interface TenantInstitution {
 }
 
 export interface TenantInput {
+  created_at?: string | null;
+  updated_at?: string | null;
   id?: number | string;
   fullname: string;
   shortname: string;
