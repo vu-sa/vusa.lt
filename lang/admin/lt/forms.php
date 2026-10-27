@@ -1,6 +1,25 @@
 <?php
 
 return [
+    'tenants' => [
+        'alias' => 'Subdomenas',
+        'picker_spotlight_title' => 'Institucijos paieška',
+        'primary_institution' => 'Pagrindinė institucija',
+        'pick_institution' => 'Pasirinkti instituciją',
+        'picker_description' => 'Ieškok šio padalinio institucijų ir pasirink vieną.',
+        'no_institutions' => 'Šio padalinio institucijų nerasta.',
+        'not_assigned' => 'Nepriskirta',
+        'fullname_hint' => 'Oficialus pavadinimas padalinių sąrašuose ir lietuviško svetainės pradžios puslapio antraštėje.',
+        'shortname_hint' => 'Rodomas navigacijoje, filtruose ir kontaktų kortelėse, pvz., VU SA MIF.',
+        'type_hint' => 'Nustato padalinio rūšį; atstovavimo rodikliai ir ataskaitos neapima PKP.',
+        'alias_hint' => 'Nustato viešos svetainės subdomeną, pvz., mif → mif.vusa.lt.',
+        'shortname_vu_hint' => 'Fakulteto trumpinys studijų medžiagos puslapyje ir padalinių pasirinkimų rikiavimui, pvz., MIF.',
+        'primary_institution_hint' => 'Jos nuotrauka ir trumpas pavadinimas rodomi viešame padalinio pasirinkime, nuotrauka – ir Mano VU SA pradžioje.',
+        'primary_institution_details' => 'Pagrindinė institucija iškeliama viešoje kontaktų paieškoje. Ji taip pat naudojama narių registracijos laiškuose; gavėjai parenkami pagal priskirtas atsakomybes. Padalinio kontaktų puslapis instituciją randa pagal sutampančius subdomeno ir institucijos trumpinius, o ne šį pasirinkimą.',
+        'save_first' => 'Pirmiausia išsaugok padalinį, tada galėsi pasirinkti jo instituciją.',
+        'cross_tenant_warning' => 'Pasirinkta institucija priklauso kitam padaliniui. Prieš išsaugodamas pakeisk ją šio padalinio institucija arba išvalyk pasirinkimą.',
+        'goals_hint' => 'Įjungia tikslus ir veiksmus teisę juos valdyti turintiems nariams bei viešą padalinio tikslų puslapį.',
+    ],
     'activity_status' => [
         'spotlight_title' => 'Keisk būseną sąraše',
         'spotlight_description' => 'Pasirink būseną, kad pažymėtum įrašą veikiančiu arba nebeveikiančiu.',

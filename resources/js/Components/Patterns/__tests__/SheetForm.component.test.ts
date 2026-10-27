@@ -53,6 +53,23 @@ describe('SheetForm.vue', () => {
     expect(wrapper.emitted('submit')).toHaveLength(1);
   });
 
+  it('replaces the fields and save action with picker content without opening another dialog', () => {
+    const wrapper = mount(SheetForm, {
+      props: { open: true, title: 'Picker' },
+      slots: {
+        default: '<input data-testid="hidden-field" />',
+        body: '<div data-testid="picker-body">Search</div>',
+        footer: '<button type="button" data-testid="picker-confirm">Confirm</button>',
+      },
+      global: { stubs },
+    });
+
+    expect(wrapper.find('[data-testid="hidden-field"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="picker-body"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="picker-confirm"]').exists()).toBe(true);
+    expect(wrapper.find('button[type="submit"]').exists()).toBe(false);
+  });
+
   it('emits cancel and update:open false on cancel button click', async () => {
     const wrapper = mount(SheetForm, {
       props: {

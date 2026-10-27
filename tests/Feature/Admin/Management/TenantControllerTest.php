@@ -2,8 +2,11 @@
 
 use App\Enums\TenantType;
 use App\Models\Content;
+use App\Models\Institution;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
+use Inertia\Testing\AssertableInertia;
 
 pest()->use(RefreshDatabase::class);
 
@@ -366,5 +369,78 @@ describe('relationships', function (): void {
 
         expect($ids)->toContain($padalinys->id)
             ->not->toContain($pkp->id);
+    });
+});
+
+describe('primary institution', function (): void {
+    test('the tenant collection provides the selected institution without loading all candidates', function (): void {
+        $institution = Institution::factory()->for($this->tenant)->create([
+            'name' => ['lt' => 'Padalinio institucija', 'en' => 'Tenant institution'],
+            'is_active' => false,
+        ]);
+        $this->tenant->update(['primary_institution_id' => $institution->id]);
+
+        asUser(makeAdminUser($this->tenant))->get(route('tenants.index'))
+            ->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+            ->missing('assignableInstitutions')
+            ->where('tenants', function ($tenants) use ($institution): bool {
+                $tenant = collect($tenants)->firstWhere('id', $this->tenant->id);
+                expect($tenant['primary_institution'])->toMatchArray([
+                    'id' => $institution->id,
+                    'name' => 'Padalinio institucija',
+                    'is_active' => false,
+                    'tenant' => ['id' => $this->tenant->id, 'shortname' => $this->tenant->shortname],
+                ]);
+
+                return true;
+            })
+            );
+    });
+
+    test('a tenant can select its own institution or clear the selection', function (): void {
+        $institution = Institution::factory()->for($this->tenant)->create();
+        $payload = [...$this->tenant->only(['fullname', 'shortname', 'alias', 'shortname_vu']), 'type' => $this->tenant->type->value];
+        $admin = makeAdminUser($this->tenant);
+
+        asUser($admin)->patch(route('tenants.update', $this->tenant), [
+            ...$payload, 'primary_institution_id' => $institution->id,
+        ])->assertRedirect()->assertSessionHasNoErrors();
+        expect($this->tenant->fresh()->primary_institution_id)->toBe($institution->id);
+
+        asUser($admin)->patch(route('tenants.update', $this->tenant), [
+            ...$payload, 'primary_institution_id' => null,
+        ])->assertRedirect()->assertSessionHasNoErrors();
+        expect($this->tenant->fresh()->primary_institution_id)->toBeNull();
+    });
+
+    test('a tenant rejects an institution outside its live candidate set', function (string $candidate): void {
+        $institution = match ($candidate) {
+            'other tenant' => Institution::factory()->for(Tenant::factory())->create(),
+            'deleted' => Institution::factory()->for($this->tenant)->create(),
+            default => null,
+        };
+        if ($candidate === 'deleted') {
+            $institution->delete();
+        }
+        $id = $institution?->id ?? (string) Str::ulid();
+
+        asUser(makeAdminUser($this->tenant))->patch(route('tenants.update', $this->tenant), [
+            ...$this->tenant->only(['fullname', 'shortname', 'alias', 'shortname_vu']),
+            'type' => $this->tenant->type->value,
+            'primary_institution_id' => $id,
+        ])->assertSessionHasErrors('primary_institution_id');
+        expect($this->tenant->fresh()->primary_institution_id)->toBeNull();
+    })->with(['other tenant', 'deleted', 'missing']);
+
+    test('a new tenant cannot select an institution belonging to an existing tenant', function (): void {
+        $institution = Institution::factory()->for($this->tenant)->create();
+
+        asUser(makeAdminUser($this->tenant))->post(route('tenants.store'), [
+            'fullname' => 'New tenant with invalid institution',
+            'shortname' => 'New invalid',
+            'type' => TenantType::Padalinys->value,
+            'primary_institution_id' => $institution->id,
+        ])->assertSessionHasErrors('primary_institution_id');
+        $this->assertDatabaseMissing('tenants', ['fullname' => 'New tenant with invalid institution']);
     });
 });

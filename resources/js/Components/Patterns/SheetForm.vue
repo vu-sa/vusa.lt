@@ -20,13 +20,15 @@
             </SheetDescription>
           </SheetHeader>
 
-          <div class="flex-1 space-y-6 overflow-y-auto px-6 py-5">
-            <slot />
+          <slot name="body">
+            <div class="min-h-0 flex-1 space-y-6 overflow-y-auto px-6 py-5">
+              <slot />
 
-            <div v-if="$slots['danger-zone']" class="border-t border-border pt-5">
-              <slot name="danger-zone" />
+              <div v-if="$slots['danger-zone']" class="border-t border-border pt-5">
+                <slot name="danger-zone" />
+              </div>
             </div>
-          </div>
+          </slot>
 
           <div
             :class="[
@@ -34,24 +36,26 @@
               'pb-[max(1rem,env(safe-area-inset-bottom))]',
             ]"
           >
-            <Button
-              variant="ghost"
-              type="button"
-              class="u-touch"
-              @click="requestOpenChange(false)"
-            >
-              {{ $t('Atšaukti') }}
-            </Button>
+            <slot name="footer">
+              <Button
+                variant="ghost"
+                type="button"
+                class="u-touch"
+                @click="requestOpenChange(false)"
+              >
+                {{ $t('Atšaukti') }}
+              </Button>
 
-            <Button
-              variant="brand"
-              type="submit"
-              class="u-touch uppercase"
-              :disabled="processing || disabled"
-            >
-              <Loader2 v-if="processing" class="size-4 animate-spin" />
-              {{ saveLabel ?? $t('Išsaugoti') }}
-            </Button>
+              <Button
+                variant="brand"
+                type="submit"
+                class="u-touch uppercase"
+                :disabled="processing || disabled"
+              >
+                <Loader2 v-if="processing" class="size-4 animate-spin" />
+                {{ saveLabel ?? $t('Išsaugoti') }}
+              </Button>
+            </slot>
           </div>
         </form>
       </SheetContent>

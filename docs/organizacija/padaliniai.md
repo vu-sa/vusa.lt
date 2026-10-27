@@ -3,9 +3,12 @@ doc_status: reviewed
 title: Padaliniai
 area: tenants
 models: [Tenant]
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-27
 tests:
   - tests/Feature/Admin/Management/TenantControllerTest.php
+  - resources/js/Features/Admin/Tenants/__tests__/TenantSheetForm.component.test.ts
+  - resources/js/Pages/Admin/People/__tests__/IndexTenant.component.test.ts
+  - tests/Browser/TenantPrimaryInstitutionTest.php
   - tests/Feature/CrossTenantDutyTest.php
   - tests/Feature/System/TenantDataIsolationTest.php
   - tests/Unit/Models/TenantHostnameTest.php
@@ -48,9 +51,16 @@ Kiekvienas padalinys turi unikalų **subdomeną / kelią** (`alias`):
 
 Padaliniui galima priskirti **pagrindinę instituciją** (`primary_institution_id`):
 
-- Tai vadovaujantis padalinio organas (dažniausiai padalinio taryba arba valdyba).
-- Pagal šią instituciją nustatomi padalinio vadovai (pirmininkas) ir nukreipiami su padaliniu susiję
-  pranešimai (pavyzdžiui, [Narių registracijos](/organizacija/formos-ir-registracijos) anketos).
+- Pasirenkama tik tam padaliniui priklausanti, neištrinta institucija. Pasirinkimą galima pakeisti arba išvalyti.
+- Jos nuotrauka ir trumpas pavadinimas rodomi viešame padalinio pasirinkime; nuotrauka gali būti rodoma ir Mano VU SA pradžioje.
+- Pagrindinė institucija iškeliama viešos kontaktų paieškos sąraše.
+- Ji naudojama [narių registracijos](/organizacija/formos-ir-registracijos) patvirtinimo laiškuose ir pranešimuose. Gavėjai parenkami pagal padaliniui priskirtą narių registracijos atsakomybę, o ne institucijos vadovą.
+
+Padalinio koordinatoriams ir kuratoriams skirtas kontaktų puslapis instituciją randa pagal sutampančius padalinio ir institucijos trumpinius (`alias`), o ne šį pasirinkimą.
+
+<ChangelogNote date="2026-10-27" title="Pagrindinės institucijos pasirinkimas">
+Instituciją gali rasti paieškoje redagavimo lange. Pasirinkta institucija taip pat rodoma padalinių sąraše.
+</ChangelogNote>
 
 ## Veiksmai
 
@@ -61,6 +71,7 @@ Padalinių sąraše (`/mano/tenants`) pateikiami visi sistemos padaliniai:
 - **Paieška**: galima ieškoti pagal padalinio pavadinimą, trumpinį ar subdomeną (`alias`).
 - **Filtravimas pagal tipą**: šoninėje juostoje galima vienu paspaudimu atsirinkti fakultetinius padalinius, PKP ar pagrindinį biurą.
 - **Rikiavimas**: pagal pavadinimą nuo A iki Z arba nuo Z iki A.
+- **Pagrindinė institucija**: rodoma lentelėje ir kortelėse; jei nepasirinkta, rodoma „Nepriskirta“.
 
 Kadangi padalinių skaičius organizacijoje yra nedidelis, visas sąrašas pateikiamas iš karto, o paieška ir rikiavimas atliekami naršyklėje.
 
@@ -71,12 +82,22 @@ paspaudus jo pavadinimo arba per veiksmų meniu **⋯ → Redaguoti**:
 
 Atsidariusiame šoniniame lange (`TenantSheetForm`) užpildomi laukai:
 
-1. **Pavadinimas** (`fullname`) – visas oficialus padalinio pavadinimas (pvz., *VU SA Matematikos ir informatikos fakultete*).
-2. **Trumpinys** (`shortname`) – padalinio trumpinys (pvz., *MIF*).
-3. **Tipas** – pasirenkamas tipas iš sąrašo (*Padalinys*, *Programos, klubai, projektai*, *Centrinis biuras*).
-4. **Subdomenas (alias)** – unikalus identifikatorius mažosiomis raidėmis (pvz., *mif*).
-5. **VU trumpinys** (`shortname_vu`, neprivaloma) – universiteto naudojamas fakulteto trumpinys.
-6. **Pagrindinė institucija** (neprivaloma) – padalinio pagrindinė institucija iš sąrašo.
+| Laukas | Kur naudojamas |
+|---|---|
+| **Pilnas pavadinimas** (`fullname`) | Padalinių sąrašuose ir lietuviško viešo pradžios puslapio antraštėje. |
+| **Trumpas pavadinimas** (`shortname`), pvz., VU SA MIF | Navigacijoje, filtruose ir kontaktų kortelėse. |
+| **Tipas** | Atskiriami fakultetiniai padaliniai, PKP ir Centrinis biuras; atstovavimo rodikliai bei ataskaitos neapima PKP. |
+| **Subdomenas** (`alias`), pvz., mif | Viešos svetainės adresui ir padalinio turinio parinkimui. |
+| **Trumpinys VU** (`shortname_vu`), pvz., MIF | Fakulteto pavadinimui studijų medžiagos puslapyje ir padalinių pasirinkimų rikiavimui. |
+| **Pagrindinė institucija** | Viešam padalinio pasirinkimui, pradžios nuotraukai, kontaktų paieškai ir narių registracijos laiškams; žr. [paskirtį](#pagrindine-institucija). |
+| **Įjungti tikslus** | Įjungia tikslus ir veiksmus teisę juos valdyti turintiems nariams bei viešą padalinio tikslų puslapį. |
+
+Pagrindinės institucijos laukas atveria paiešką tame pačiame lange. **Pasirinkti** patvirtina pasirinkimą,
+**Išvalyti** paruošia tuščią pasirinkimą, o **Grįžti** atšaukia paieškoje padarytus pakeitimus.
+Padalinio duomenys išsaugomi tik paspaudus **Išsaugoti**.
+
+Naują padalinį pirmiausia išsaugok, tada sukurk jam instituciją ir priskirk ją kaip pagrindinę.
+Jei anksčiau priskirta institucija priklauso kitam padaliniui, prieš išsaugant ją reikia pakeisti arba išvalyti.
 
 ### Padalinio pagrindinio puslapio redagavimas {#pagrindinis-puslapis}
 
@@ -118,7 +139,7 @@ ir narius, tačiau pačios padalinio struktūros nekeičia.
 |---|---|---|
 | Išsaugomas padalinys ar pakeičiami jo duomenys | Automatiškai išvaloma padalinių paieškos ir sąrašų talpykla (`tenant:main`, `tenant:all`) | Sistemos komponentai |
 | Atnaujinamas padalinio pagrindinis puslapis | Išvaloma atitinkamo subdomeno pagrindinio puslapio talpykla (`homepage_content_{id}_{locale}`) | Vieša svetainė |
-| Padaliniui priskiriama pagrindinė institucija | Jos vadovai tampa padalinio vadovais sistemos pranešimų grandinėse | Padalinio pirmininkas |
+| Pateikiama nario registracija | Pagrindinė institucija naudojama patvirtinimo laiške ir pranešimuose; ji turi būti priskirta | Registruojantis asmuo ir narių registracijos atsakomybę turinčios pareigybės |
 
 Padalinių kūrimas ar redagavimas **nesiunčia** el. laiškų ar automatinių pranešimų nariams.
 
