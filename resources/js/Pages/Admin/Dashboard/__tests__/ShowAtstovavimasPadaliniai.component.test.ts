@@ -4,6 +4,7 @@ import { nextTick, ref } from 'vue';
 
 import ShowAtstovavimasPadaliniai from '@/Pages/Admin/Dashboard/ShowAtstovavimasPadaliniai.vue';
 import { commonStubs } from '@/tests/stubs';
+import { InstitutionScope } from '@/Types/enums';
 
 // Data composables are stable refs and the heavy children are stubbed: this test is about the
 // padalinys overview's contract — numbers from the tenant summary, never a wrong zero while it
@@ -150,8 +151,9 @@ vi.mock('@/Composables/useFeatureSpotlight', () => ({
   useFeatureSpotlight: () => ({ isDismissed: ref(true), dismiss: vi.fn() }),
 }));
 
+const openActionWindow = vi.fn();
 vi.mock('@/Composables/useActionWindow', () => ({
-  useActionWindow: () => ({ isOpen: ref(false), open: vi.fn() }),
+  useActionWindow: () => ({ isOpen: ref(false), open: openActionWindow }),
 }));
 
 const marker = (name: string) => ({ name, template: `<div data-testid="${name}" />` });
@@ -286,6 +288,17 @@ describe('upper section', () => {
 });
 
 describe('scopes', () => {
+  it('opens a request with the current statistics tenants and VU scope', async () => {
+    selectedTenants.value = ['1', '2'];
+    const wrapper = createWrapper();
+    const attention = wrapper.getComponent({ name: 'InstitutionsNeedingAttention' });
+    attention.vm.$emit('ask', attention.props('institutions'));
+    await nextTick();
+    expect(openActionWindow).toHaveBeenLastCalledWith(expect.objectContaining({
+      flow: 'activity.request',
+      activityRequestFilters: { tenantIds: ['1', '2'], governanceScope: InstitutionScope.University },
+    }));
+  });
   it('scopes the header selector to the managed padaliniai and names it as the statistics scope', () => {
     wrapper = createWrapper();
 

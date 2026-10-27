@@ -43,6 +43,7 @@ class InstitutionActivityRequestApiController extends ApiController
                 'name' => is_string($institution->name) ? $institution->name : '',
                 'tenant_id' => $institution->tenant_id,
                 'tenant_shortname' => $institution->tenant?->shortname,
+                'governance_scope' => $institution->governance_scope->value,
                 'activity_status' => $statuses->resolve($institution)->toArray(),
             ])
             ->sortBy([
@@ -63,7 +64,8 @@ class InstitutionActivityRequestApiController extends ApiController
     {
         $this->authorize('viewAny', InstitutionCheckIn::class);
 
-        return $this->jsonSuccess($recipients->people($this->reachable($request, $askable)->get(['id', 'name'])));
+        return $this->jsonSuccess($recipients->people($this->reachable($request, $askable)
+            ->with(['types', 'tenant'])->get(['id', 'name', 'tenant_id'])));
     }
 
     /** @return Builder<Institution> */

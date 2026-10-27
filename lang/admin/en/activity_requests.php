@@ -1,6 +1,15 @@
 <?php
 
 return [
+    'filters_hint' => 'Leave units empty to show all accessible units. Changing filters deselects institutions outside the new scope.',
+    'all_scopes' => 'All governance scopes',
+    'select_matching' => 'Select matching institutions (up to 100)',
+    'select_all' => 'Select all',
+    'deselect_all' => 'Deselect all',
+    'selecting' => 'Loading and selecting…',
+    'limit_reached' => 'You can select up to 100 institutions at once. Prepare a separate request for other institutions.',
+    'bulk_title' => 'Select several institutions',
+    'bulk_hint' => 'Select institutions matching the filters and search together. More results load automatically, up to 100 institutions. You can also clear the entire selection.',
     'personal' => [
         'title' => 'My activity requests',
         'record_title' => 'Activity requests',

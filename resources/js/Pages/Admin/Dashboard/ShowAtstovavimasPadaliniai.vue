@@ -160,6 +160,7 @@ import type { InstitutionActivityInsight } from '@/Components/Home/types';
 import InstitutionsNeedingAttention from '@/Components/Home/InstitutionsNeedingAttention.vue';
 import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue';
 import { useActionWindow } from '@/Composables/useActionWindow';
+import { InstitutionScope } from '@/Types/enums';
 import { useApi } from '@/Composables/useApi';
 import { OverviewSection } from '@/Components/Patterns';
 
@@ -278,7 +279,10 @@ function recordActivityFor(institution: InstitutionActivityInsight): void {
 function askAboutActivity(institutions: InstitutionActivityInsight[]): void {
   actionWindow.open({
     flow: 'activity.request',
-    // The request takes at most 100; the list is sorted by urgency, so the cut drops the calmest.
+    activityRequestFilters: {
+      tenantIds: [...timelineFilters.selectedStatsTenants.value],
+      governanceScope: InstitutionScope.University,
+    },
     institutions: institutions.map(institution => ({ id: institution.id, name: institution.name })),
   });
 }

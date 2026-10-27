@@ -1,6 +1,15 @@
 <?php
 
 return [
+    'filters_hint' => 'Nepasirinkus padalinio, rodomi visi pasiekiami padaliniai. Pakeitus filtrus, jų neatitinkančios institucijos nužymimos.',
+    'all_scopes' => 'Visos valdysenos sritys',
+    'select_matching' => 'Pažymėti atitinkančias institucijas (iki 100)',
+    'select_all' => 'Pažymėti visus',
+    'deselect_all' => 'Nuimti visus žymėjimus',
+    'selecting' => 'Įkeliama ir žymima…',
+    'limit_reached' => 'Vienu kartu galima pasirinkti iki 100 institucijų. Kitoms institucijoms paruošk atskirą užklausą.',
+    'bulk_title' => 'Žymėti kelias institucijas',
+    'bulk_hint' => 'Pažymėk filtrus ir paiešką atitinkančias institucijas vienu veiksmu. Sąrašas įkeliamas automatiškai, iki 100 institucijų. Visus žymėjimus gali nuimti iš karto.',
     'personal' => [
         'title' => 'Mano veiklos užklausos',
         'record_title' => 'Veiklos užklausos',

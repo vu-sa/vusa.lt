@@ -5,6 +5,7 @@ use App\Actions\ActivityRequests\SendInstitutionActivityRequests;
 use App\Actions\RecordMeeting;
 use App\Enums\ActivityRequestSkipReason;
 use App\Enums\InstitutionActivityCampaign;
+use App\Enums\InstitutionScope;
 use App\Enums\ResponsibilityPurpose;
 use App\Models\Cadence;
 use App\Models\Duty;
@@ -12,6 +13,7 @@ use App\Models\Institution;
 use App\Models\InstitutionActivityRequest;
 use App\Models\InstitutionCheckIn;
 use App\Models\InstitutionSecretary;
+use App\Models\InstitutionType;
 use App\Models\Pivots\AgendaItem;
 use App\Models\ResponsibilityGrant;
 use App\Models\Task;
@@ -56,6 +58,9 @@ beforeEach(function (): void {
 });
 
 describe('unauthorized access', function (): void {
+    test('a representative cannot list request candidates', function (): void {
+        asUser($this->rep)->getJson(route('api.v1.admin.activityRequests.candidates'))->assertForbidden();
+    });
     test('a representative cannot ask about their own institution', function (): void {
         asUser($this->rep)
             ->post(route('institutions.activity-requests.store'), ['campaign_type' => 'activity_confirmation', 'institution_ids' => [$this->institution->id]])
@@ -92,6 +97,30 @@ describe('tenant isolation', function (): void {
 });
 
 describe('authorized access', function (): void {
+    test('candidate and people payloads expose resolved scope and tenant metadata', function (): void {
+        $coordinator = makeTenantUserWithRole('Studentų atstovų koordinatorius', $this->tenant);
+        $parent = InstitutionType::factory()->withGovernanceScope(InstitutionScope::Vusa)->create();
+        $child = InstitutionType::factory()->withGovernanceScope()->create(['parent_id' => $parent->id]);
+        $this->institution->types()->sync([$child->id]);
+
+        $candidates = collect(asUser($coordinator)
+            ->getJson(route('api.v1.admin.activityRequests.candidates'))->assertOk()->json('data'));
+
+        expect($candidates->firstWhere('id', $this->institution->id))
+            ->toMatchArray(['tenant_id' => $this->tenant->id, 'tenant_shortname' => $this->tenant->shortname, 'governance_scope' => 'vusa'])
+            ->and($candidates->firstWhere('id', $this->otherInstitution->id)['governance_scope'])->toBe('vu');
+
+        $people = collect(asUser($coordinator)
+            ->getJson(route('api.v1.admin.activityRequests.people'))->assertOk()->json('data'));
+        $institution = collect($people->firstWhere('id', $this->rep->id)['institutions'])->firstWhere('id', $this->institution->id);
+
+        expect($institution)->toMatchArray([
+            'tenant_id' => $this->tenant->id,
+            'tenant_shortname' => $this->tenant->shortname,
+            'governance_scope' => 'vusa',
+        ]);
+    });
+
     test('each representative gets one email covering all of their institutions, with the note', function (): void {
         activityRequestRep($this->otherInstitution, $this->rep);
 

@@ -5,6 +5,7 @@ area: institutions
 models: [Institution, InstitutionCheckIn, InstitutionSecretary]
 last_reviewed: 2026-10-27
 tests:
+  - resources/js/Pages/Admin/Dashboard/__tests__/ShowAtstovavimasPadaliniai.component.test.ts
   - tests/Browser/CollectionTrashRefreshTest.php
   - tests/Feature/Api/Admin/RecordActivityStatusTest.php
   - resources/js/Pages/Admin/People/__tests__/CreateRecordNavigation.component.test.ts
@@ -236,7 +237,7 @@ Koordinatorius gali pats paklausti atstovų, ar institucija posėdžiavo – nel
 priminimo. Klausimą galima išsiųsti iš:
 
 - **ViSAK → Padaliniai**, sąrašo **Reikia dėmesio** mygtuko **Paklausti atstovų** (pasirinktos visos
-  sąrašo institucijos);
+  sąrašo institucijos, atitinkančios lango filtrus, iki 100);
 - **Veiksmai → Paklausti, ar vyko posėdžiai** (institucijas pasirenki pats);
 - institucijos meniu **⋯ → Paklausti, ar vyko posėdžiai**.
 
@@ -249,11 +250,21 @@ Pirmiausia pasirenkama **Ar vyko posėdis?** arba **Papildyk posėdžių įrašu
 jau pasirinktos. Tada pasirenkama, kaip bus renkami gavėjai:
 
 - **Pagal institucijas** – klausiama institucijos studentų atstovų.
-  Filtruojama pagal padalinį arba ieškoma pagal pavadinimą; prieš atveriant langą pasirinktos institucijos
-  (pvz., iš **Reikia dėmesio**) lieka sąrašo pradžioje, o tų, kurių paklausti nebūtų ko, žymėjimas
-  nuimamas.
-- **Pagal atstovus** – pasirenkami atstovai; kiekvieno klausiama apie visas jo institucijas. Ieškoma
-  pagal vardą arba institucijos pavadinimą.
+  Galima pasirinkti kelis padalinius ir valdysenos sritį arba ieškoti pagal pavadinimą.
+  Prieš atveriant langą pasirinktos institucijos (pvz., iš **Reikia dėmesio**) lieka sąrašo pradžioje,
+  jei atitinka filtrus ir paiešką, o tų, kurių paklausti nebūtų ko, žymėjimas nuimamas.
+- **Pagal atstovus** – pasirenkami atstovai; kiekvieno klausiama apie jo institucijas, atitinkančias
+  padalinių ir valdysenos srities filtrus. Ieškoma pagal vardą arba institucijos pavadinimą.
+
+<ChangelogNote date="2026-10-27" title="Filtrai ir bendras žymėjimas užklausose">
+Iš **ViSAK → Padaliniai** atvertas langas perima rodiklių padalinių filtrą ir pasirenka **VU organas**.
+Filtrus galima keisti abiem gavėjų rinkimo būdais. Pakeitus padalinius ar valdysenos sritį,
+jų neatitinkančios institucijos nužymimos; vien teksto paieška pasirinkimo nekeičia.
+</ChangelogNote>
+
+**Pažymėti atitinkančias institucijas (iki 100)** automatiškai įkelia daugiau paieškos rezultatų ir
+pažymi tik tas institucijas, kurių atstovų galima klausti. Pasiekus ribą rodomas paaiškinimas.
+**Nuimti visus žymėjimus** išvalo visą institucijų pasirinkimą, įskaitant paieškoje nematomas institucijas.
 
 Vienu kartu galima apimti iki **100 institucijų**. Institucija ar žmogus, kurių paklausti nebūtų ko
 (pvz., jau paklausta, posėdis jau užfiksuotas), sąraše rodomi neaktyvūs su priežastimi, savo vietoje.
@@ -261,6 +272,8 @@ Jei bus klausiama tik dalies gavėjų ar institucijų, eilutėje parašyta, kiek
 
 Peržiūroje **Ką ir kam išsiųsime** gavėjai sugrupuoti taip, kaip pasirinkta: pagal institucijas arba
 pagal atstovus. Kiekviena eilutė turi žymimąjį langelį – galima nužymėti tuos, kurių šįkart klausti nenorima.
+Mygtukais **Pažymėti visus** ir **Nuimti visus žymėjimus** galima iš karto keisti visų siunčiamų
+gavėjų eilučių žymėjimą. Nenurodžius nė vieno gavėjo, siųsti negalima.
 **Kam laiško nesiųsime** paaiškina praleistas institucijas ir gavėjų pranešimų nustatymus:
 laiškas dabar, santrauka, išjungtas el. paštas ar nutildyti pranešimai. Galima pridėti žinutę iki 500
 simbolių. Patvirtinus rodoma, kiek užklausų paruošta, kiek yra gavėjų ir kiek laiškų numatyta siųsti iš karto. Tai dar nėra pristatymo patvirtinimas.
