@@ -5,6 +5,7 @@ area: duties
 models: [Duty, Role, Tenant, Type, Institution, ResponsibilityGrant]
 last_reviewed: 2026-10-27
 tests:
+  - tests/Browser/CollectionTrashRefreshTest.php
   - resources/js/Components/AdminForms/__tests__/DutyForm.component.test.ts
   - resources/js/Pages/Admin/People/__tests__/ShowDuty.component.test.ts
   - tests/Feature/Api/Admin/RecordActivityStatusTest.php

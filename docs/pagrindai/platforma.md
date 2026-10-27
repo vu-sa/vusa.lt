@@ -7,6 +7,8 @@ tests:
   - resources/js/Composables/__tests__/useStartFm.test.ts
   - resources/js/Components/__tests__/StartFmPlayer.component.test.ts
   - resources/js/Components/Layouts/__tests__/FormPage.component.test.ts
+  - resources/js/Composables/__tests__/useCollectionRecordActions.test.ts
+  - tests/Browser/CollectionTrashRefreshTest.php
   - tests/Browser/PostCreateNavigationTest.php
   - tests/Feature/Admin/Content/PageControllerTest.php
   - tests/Feature/Api/Admin/ContentEditorTest.php
@@ -172,6 +174,7 @@ Turinio ir konfigūracijos įrašai (naujienos, puslapiai, baneriai, kalendoriau
 - Ištrintas įrašas nepašalinamas iš duomenų bazės iš karto – jis perkeliamas į **šiukšlinę**.
 - Naudotojai, turintys įrašo trynimo teisę, gali jį **atkurti** mygtuku „Atkurti“.
 - Visiškas pašalinimas („Ištrinti visam laikui“) reikalauja super administratoriaus teisės, apsaugančios nuo netyčinio duomenų praradimo.
+- Atkūrus arba galutinai ištrynus įrašą, sąrašas atsinaujina automatiškai. Jei atkūrimo veiksmas atidaro įrašą, iškart pereinama į jo puslapį.
 - **Operaciniai įrašai** (pvz., **rezervacijos**) į šiukšlinę nekeliami: juos ištrynus, įrašas iš karto negrįžtamai pašalinamas kartu su susijusiais tarpiniais duomenimis.
 
 ### Daugiakalbiškumas ir vertimai {#vertimai}

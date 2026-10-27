@@ -1,10 +1,12 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { ref, toValue, type MaybeRefOrGetter } from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
 
 import IndexInstitution from '../IndexInstitution.vue';
 
 import { commonStubs } from '@/tests/stubs';
+import { createMockPage } from '@/tests/helpers/createMockPage';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -14,10 +16,15 @@ const typesense = vi.hoisted(() => ({
   scope: { isSuperAdmin: false, tenantIds: [1], institutionIds: [] as string[] },
 }));
 const subscription = vi.hoisted(() => ({ setFollowedMany: vi.fn(), toggleFollow: vi.fn() }));
+const trash = vi.hoisted(() => ({ active: false, refresh: vi.fn() }));
 
 vi.mock('@/Composables/useCollectionSource', () => ({
-  isTrashView: () => false,
-  useTrashCollectionSource: vi.fn(),
+  isTrashView: () => trash.active,
+  useTrashCollectionSource: () => {
+    const items = ref(typesense.rows);
+    trash.refresh.mockImplementation(() => { items.value = []; });
+    return { items, refresh: trash.refresh };
+  },
   useTypesenseCollectionSource: (options: { baseFilterBy?: unknown }) => {
     typesense.baseFilterBy = options.baseFilterBy;
 
@@ -44,16 +51,41 @@ const CollectionPageStub = {
 
 const mountPage = (followedInstitutionIds: string[] = ['i1']) => mount(IndexInstitution, {
   props: { deletedCount: 0, followedInstitutionIds, defaultTenantShortnames: [], publicMeetingTypeIds: [7] },
-  global: { stubs: { ...commonStubs, CollectionPage: CollectionPageStub, CollectionConfirmAction: true } },
+  global: { stubs: { ...commonStubs, CollectionPage: CollectionPageStub, CollectionConfirmAction: {
+    props: ['dialog'],
+    emits: ['confirm'],
+    template: '<button v-if="dialog" data-testid="confirm-deletion" @click="$emit(\'confirm\')">Confirm deletion</button>',
+  } } },
 });
 
 const baseFilter = () => toValue(typesense.baseFilterBy as MaybeRefOrGetter<string | undefined>);
 
 describe('IndexInstitution following', () => {
   beforeEach(() => {
+    trash.active = false;
+    trash.refresh.mockReset();
+    vi.mocked(usePage).mockReturnValue(createMockPage({ auth: { can: { forceDelete: { institution: true } } } }));
     typesense.rows = [{ id: 'i1', name_lt: 'Senatas', tenant_id: 1 }, { id: 'i2', name_lt: 'Taryba', tenant_id: 1 }];
     subscription.setFollowedMany.mockReset().mockResolvedValue(true);
     window.history.replaceState({}, '', '/mano/institutions');
+  });
+
+  it('removes permanently deleted institutions from the trash without a page refresh', async () => {
+    trash.active = true;
+    typesense.rows = [{ id: 'i1', name_lt: 'Senatas', tenant_id: 1 }];
+    const wrapper = mountPage([]);
+
+    await wrapper.get('button[aria-label="Ištrinti visam laikui"]').trigger('click');
+    await wrapper.get('[data-testid="confirm-deletion"]').trigger('click');
+
+    const options = vi.mocked(router.delete).mock.calls.at(-1)?.[1];
+    expect(wrapper.findAll('[data-testid="row"]')).toHaveLength(1);
+    options.onSuccess();
+    await wrapper.vm.$nextTick();
+
+    expect(trash.refresh).toHaveBeenCalledOnce();
+    expect(wrapper.findAll('[data-testid="row"]')).toHaveLength(0);
+    wrapper.unmount();
   });
 
   it('keeps untitled institutions identifiable by their searchable alias or record id', () => {

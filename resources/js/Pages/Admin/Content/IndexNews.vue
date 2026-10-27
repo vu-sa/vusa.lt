@@ -183,6 +183,7 @@ const source = useTrashAwareSource<NewsRow>(
 );
 
 const actions = useCollectionRecordActions({
+  source,
   routePrefix: 'news',
   canDuplicate: () => canCreate.value,
   canDelete: () => canCreate.value,

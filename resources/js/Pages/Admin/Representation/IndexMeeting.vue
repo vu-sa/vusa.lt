@@ -142,6 +142,7 @@ const liveSource = isTrash
 const source: CollectionSource<MeetingSearchResult> = liveSource ?? useTrashCollectionSource<MeetingSearchResult>('meetings');
 
 const actions = useCollectionRecordActions({
+  source,
   routePrefix: 'meetings',
   canRestore: () => false,
   canForceDelete: () => false,

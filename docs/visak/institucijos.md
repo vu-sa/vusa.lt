@@ -5,6 +5,7 @@ area: institutions
 models: [Institution, InstitutionCheckIn, InstitutionSecretary]
 last_reviewed: 2026-10-27
 tests:
+  - tests/Browser/CollectionTrashRefreshTest.php
   - tests/Feature/Api/Admin/RecordActivityStatusTest.php
   - resources/js/Pages/Admin/People/__tests__/CreateRecordNavigation.component.test.ts
   - tests/Feature/Admin/Management/InstitutionControllerTest.php
@@ -493,6 +494,7 @@ vieną instituciją. Dabar adresai sudaryti iš pavadinimų, o seni adresai nukr
   pareigybės ir posėdžiai lieka. Institucijos, kurioje einamos pareigos, ištrinti negalima.
 - Šiukšlinės veiksmas **Atkurti ir atidaryti** atkuria instituciją ir iškart atidaro jos įrašą. Įrašai be pavadinimo sąraše ir įrašo puslapyje rodomi kaip **Be pavadinimo · nuorodos kodas**, kad juos būtų galima atskirti ir rasti pagal kodą. **Galutinai ištrinti** negalima, kol ji turi
   posėdžių, pareigybių ar pranešimų apie veiklą arba yra padalinio pagrindinė institucija.
+- Galutinai ištrynus instituciją, šiukšlinės sąrašas atsinaujina automatiškai.
 
 ## Kas ką gali {#teises}
 

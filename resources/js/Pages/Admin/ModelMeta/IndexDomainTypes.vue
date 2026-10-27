@@ -116,6 +116,7 @@ const source = useLocalCollectionSource<TypeRow>({
 });
 
 const actions = useCollectionRecordActions({
+  source,
   routePrefix: resource,
   canDelete: () => Boolean(page.props.auth?.can?.delete?.[props.typeKind]),
   canRestore: () => Boolean(page.props.auth?.can?.restore?.[props.typeKind]),

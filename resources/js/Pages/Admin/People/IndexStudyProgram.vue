@@ -124,6 +124,7 @@ const source = useLocalCollectionSource<StudyProgramRow>({
 });
 
 const actions = useCollectionRecordActions({
+  source,
   routePrefix: 'studyPrograms',
   canDelete: () => canCreate.value,
   canRestore: () => canCreate.value,
