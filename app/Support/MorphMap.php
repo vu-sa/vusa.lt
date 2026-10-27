@@ -39,6 +39,7 @@ final class MorphMap
         'daily_device_metric' => Models\DailyDeviceMetric::class,
         'document' => Models\Document::class,
         'dutiable' => Models\Pivots\Dutiable::class,
+        'duty_succession' => Models\Pivots\DutySuccession::class,
         'duty' => Models\Duty::class,
         'duty_name' => Models\DutyName::class,
         'duty_responsibility' => Models\DutyResponsibility::class,
