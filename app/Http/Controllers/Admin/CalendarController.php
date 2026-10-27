@@ -155,6 +155,10 @@ class CalendarController extends AdminController
      */
     private function legacyDateUrls(Calendar $calendar): array
     {
+        if ($calendar->created_at?->gte(Calendar::DATE_URLS_RETIRED_AT)) {
+            return ['lt' => null, 'en' => null];
+        }
+
         return collect(['lt', 'en'])->mapWithKeys(function (string $locale) use ($calendar) {
             // useFallbackLocale: false — don't show an "English" legacy URL that's actually
             // just the Lithuanian title, for an event with no English title of its own.

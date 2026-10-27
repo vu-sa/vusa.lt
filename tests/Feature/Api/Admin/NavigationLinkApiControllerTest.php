@@ -43,8 +43,11 @@ describe('resolve-url endpoint', function (): void {
         expect($response->json('data.url'))->toContain('nauja-naujiena');
     });
 
-    test('resolves a calendar event URL', function (): void {
-        $calendar = Calendar::factory()->for($this->tenant)->create();
+    test('resolves a calendar event to its permalink URL', function (): void {
+        $calendar = Calendar::factory()->for($this->tenant)->create([
+            'date' => '2026-11-05 18:00:00',
+            'permalink' => ['lt' => 'rudens-renginys', 'en' => 'autumn-event'],
+        ]);
 
         $response = asUser($this->admin)
             ->postJson(route('api.v1.admin.navigation.resolveUrl'), [
@@ -53,7 +56,7 @@ describe('resolve-url endpoint', function (): void {
             ]);
 
         $response->assertOk();
-        expect($response->json('data.url'))->toContain((string) $calendar->id);
+        expect($response->json('data.url'))->toEndWith('/2026/rudens-renginys');
     });
 
     test('resolves an institution URL', function (): void {
