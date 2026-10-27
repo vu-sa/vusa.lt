@@ -1,6 +1,8 @@
 <template>
   <SheetForm
     v-model:open="open"
+    :created-at="tag?.created_at"
+    :updated-at="tag?.updated_at"
     :title="tag ? $t('Redaguoti žymą') : $t('Nauja žyma')"
     :description="$t('Žyma padeda susieti panašų svetainės turinį.')"
     :processing="form.processing"
@@ -42,7 +44,7 @@
 </template>
 
 <script setup lang="ts">
-import { router, useForm } from '@inertiajs/vue3';
+import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, watch } from 'vue';
 
@@ -54,6 +56,8 @@ import { Label } from '@/Components/ui/label';
 import { Switch } from '@/Components/ui/switch';
 
 interface TagInput {
+  created_at?: string | null;
+  updated_at?: string | null;
   id?: string | number;
   name: { lt: string; en: string };
   description: { lt: string; en: string } | null;
@@ -65,11 +69,19 @@ const props = defineProps<{ open: boolean; tag?: TagInput | null }>();
 const emit = defineEmits<{ 'update:open': [value: boolean]; 'saved': [] }>();
 
 const open = computed({ get: () => props.open, set: (value: boolean) => emit('update:open', value) });
-const blank = (): TagInput => ({ name: { lt: '', en: '' }, description: null, alias: null, is_topic: false });
+const blank = (): TagInput => ({ name: { lt: '', en: '' }, description: { lt: '', en: '' }, alias: null, is_topic: false });
 const form = useForm<TagInput>(blank());
 
 watch(() => props.tag, (tag) => {
-  form.defaults(tag ? structuredClone(tag) : blank());
+  form.defaults(tag
+    ? {
+        id: tag.id,
+        name: { ...tag.name },
+        description: { lt: tag.description?.lt ?? '', en: tag.description?.en ?? '' },
+        alias: tag.alias,
+        is_topic: tag.is_topic,
+      }
+    : blank());
   form.reset();
   form.clearErrors();
 }, { immediate: true });

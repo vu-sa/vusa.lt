@@ -3,10 +3,17 @@
     :title="$t('Susieti dokumentai')"
     :icon="FileText"
     :count="documents.length"
-    :empty="documents.length === 0 && !hasPending"
+    :empty="documents.length === 0"
   >
     <template #action>
       <div v-if="canUpdate" class="flex flex-wrap items-center gap-2">
+        <MeetingPendingDocumentsDialog
+          v-if="hasPending"
+          :meeting-id
+          :suggestions="pendingDocuments ?? []"
+          @confirm="linkInTurn"
+        />
+
         <FilePicker v-if="pickerAvailable" @pick="linkFromSharepoint">
           <template #trigger>
             <Button type="button" variant="outline" size="sm" voice="sentence" :disabled="picking">
@@ -84,61 +91,22 @@
         </button>
       </li>
     </ul>
-
-    <section v-if="hasPending" :class="documents.length > 0 && 'mt-4 border-t border-border pt-3'" data-slot="meeting-pending-documents">
-      <h3 class="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-        {{ $t('Laukia SharePoint') }}
-      </h3>
-      <p class="mt-0.5 text-xs text-muted-foreground">
-        {{ $t('Šio padalinio failai, dar nepaskelbti vusa.lt. Susietas failas bus paskelbtas.') }}
-      </p>
-      <!-- The page suggests only the first few; the rest are a search away. -->
-      <input
-        v-if="(pendingDocuments?.length ?? 0) >= SUGGESTION_COUNT"
-        v-model="pendingSearch"
-        type="search"
-        :placeholder="$t('Ieškoti kitų failų...')"
-        :aria-label="$t('Ieškoti kitų failų...')"
-        autocomplete="off"
-        :class="[searchFieldClass, 'mt-2 bg-secondary/40 text-base md:text-sm']"
-        data-slot="meeting-pending-search"
-      >
-      <p v-if="searching && !isFetching && shownPending.length === 0" class="py-2.5 text-sm text-muted-foreground">
-        {{ $t('Nieko nerasta') }}
-      </p>
-      <ul class="divide-y divide-border">
-        <li v-for="pending in shownPending" :key="pending.id" class="flex items-center gap-3 py-2.5">
-          <FileText class="size-4 shrink-0 text-muted-foreground" />
-          <div class="min-w-0 flex-1">
-            <span class="block truncate text-sm font-medium">{{ pending.title || pending.name }}</span>
-            <span class="block truncate text-xs text-muted-foreground">
-              {{ [pending.sharepoint_path, pending.document_date].filter(Boolean).join(' · ') }}
-            </span>
-          </div>
-          <Button type="button" variant="outline" size="sm" voice="sentence" @click="linkPending(pending.id)">
-            <Link2 class="mr-1.5 size-3.5" />
-            {{ $t('Paskelbti ir susieti') }}
-          </Button>
-        </li>
-      </ul>
-    </section>
   </SectionCard>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
-import { refDebounced } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { FileText, FileUp, Link2, X } from '@lucide/vue';
 import { toast } from 'vue-sonner';
 
+import MeetingPendingDocumentsDialog from './MeetingPendingDocumentsDialog.vue';
+
 import type { DocumentFolderRow } from '@/Components/Files';
 import { EmptyState, SectionCard } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { searchFieldClass } from '@/Components/ui/control';
 import { Spinner } from '@/Components/ui/spinner';
-import { useApi } from '@/Composables/useApi';
 import CollectionSelectDialog from '@/Features/Admin/AdminSearch/Components/Select/CollectionSelectDialog.vue';
 import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import FilePicker from '@/Features/Admin/SharepointFilePicker/FilePicker.vue';
@@ -176,20 +144,6 @@ const props = defineProps<{
 
 const hasPending = computed(() => Boolean(props.canUpdate && props.pendingDocuments?.length));
 
-/** How many the meeting page suggests (MeetingController::pendingDocumentsFor). */
-const SUGGESTION_COUNT = 8;
-
-const pendingSearch = ref('');
-const debouncedPendingSearch = refDebounced(pendingSearch, 300);
-const searching = computed(() => debouncedPendingSearch.value.trim() !== '');
-const pendingSearchUrl = computed(() => route('api.v1.admin.meetings.pendingDocuments', {
-  meeting: props.meetingId,
-  search: debouncedPendingSearch.value.trim(),
-}));
-const { data: foundPending, isFetching } = useApi<DocumentFolderRow[]>(pendingSearchUrl, { immediate: false, refetch: true });
-
-const shownPending = computed(() => (searching.value ? foundPending.value ?? [] : props.pendingDocuments ?? []));
-
 const pickerOpen = ref(false);
 
 const documentFilter = computed(() => {
@@ -208,26 +162,27 @@ const documentFilter = computed(() => {
 /** Already-linked rows are shown as unselectable rather than silently failing on confirm. */
 const linkedIds = computed(() => new Set(props.documents.map(document => String(document.id))));
 
-const link = (documentId: number) => {
+/** One at a time: a new Inertia visit cancels the one still in flight. */
+const linkInTurn = ([documentId, ...rest]: number[]) => {
+  if (documentId === undefined) {
+    return;
+  }
   router.post(
     route('meetings.documents.store', { meeting: props.meetingId }),
     { document_id: documentId },
     {
       preserveScroll: true,
-      // The suggestions come back fresh with the page; the search answer would still list this file.
-      onSuccess: () => { pendingSearch.value = ''; },
       // A file already linked to another meeting is refused, not moved.
       onError: errors => errors.document_id && toast.error(errors.document_id),
+      onFinish: () => linkInTurn(rest),
     },
   );
 };
 
 const linkDocuments = (hits: NormalizedSearchHit[]) => {
-  hits.forEach(hit => link(Number(hit.recordId)));
+  linkInTurn(hits.map(hit => Number(hit.recordId)));
   pickerOpen.value = false;
 };
-
-const linkPending = (documentId: number) => link(documentId);
 
 const pickerAvailable = computed(() => isPickerAvailable(usePage().props.app?.url));
 const picking = ref(false);

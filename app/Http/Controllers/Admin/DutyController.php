@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\BuildDutyIndexQuery;
+use App\Actions\Duties\BuildDutyLineage;
 use App\Actions\GetAttachableTypesForDuty;
 use App\Actions\GetTenantsForUpserts;
 use App\Actions\GetTypeFiles;
@@ -135,7 +136,12 @@ class DutyController extends AdminController
         $this->handleAuthorization('view', $duty);
 
         $loadDuty = fn () => once(function () use ($duty): Duty {
-            $duty->loadMissing('institution.tenant', 'users', 'types', 'formerNames');
+            $duty->loadMissing([
+                'institution.tenant',
+                'users' => fn ($query) => $query->withPivot('created_at', 'updated_at'),
+                'types',
+                'formerNames',
+            ]);
 
             return $duty->setRelation('users', app(ContactPresentationService::class)->sortHolders($duty, $duty->users));
         });
@@ -168,7 +174,7 @@ class DutyController extends AdminController
                     ->all()
                 : [], 'dutyPanels'),
             'studyPrograms' => Inertia::defer(fn () => $this->studyProgramsFor($duty), 'dutyPanels'),
-            'lineage' => Inertia::defer(fn () => $this->lineageFor($duty), 'dutyPanels'),
+            'lineage' => Inertia::defer(fn () => BuildDutyLineage::execute($duty, $user()), 'dutyPanels'),
             'responsibilities' => Inertia::defer(fn () => DutyResponsibilityController::payload($duty), 'dutyPanels'),
             'quotaTenants' => Inertia::defer(fn () => $this->quotaTenantsFor($duty), 'dutyPanels'),
             // Only the add sheet needs these; loaded when it opens.
@@ -205,44 +211,6 @@ class DutyController extends AdminController
             'quota' => $tenant->getAttribute('pivot')?->quota,
             'occupied' => (int) ($occupied[$tenant->id] ?? 0),
         ])->values()->all();
-    }
-
-    /**
-     * The duties this one took over from and handed over to, and the predecessors' holders, each
-     * labelled with the name their duty carried when the term began.
-     *
-     * @return array{predecessors: list<array<string, mixed>>, successors: list<array<string, mixed>>, predecessorTerms: list<array<string, mixed>>}
-     */
-    private function lineageFor(Duty $duty): array
-    {
-        $summary = fn (Duty $linked) => [
-            'id' => $linked->id,
-            'name' => $linked->name,
-            'is_active' => $linked->is_active,
-            'institution_name' => $linked->institution?->short_name ?: $linked->institution?->name,
-        ];
-
-        $predecessors = $duty->predecessors()->with(['institution:id,name,short_name', 'users', 'formerNames'])->get();
-
-        return [
-            'predecessors' => $predecessors->map($summary)->values()->all(),
-            'successors' => $duty->successors()->with('institution:id,name,short_name')->get()->map($summary)->values()->all(),
-            'predecessorTerms' => $predecessors
-                ->flatMap(fn (Duty $predecessor) => $predecessor->users->map(fn (User $holder) => [
-                    ...$holder->only(['id', 'name', 'profile_photo_path']),
-                    'pivot' => $holder->pivot?->only(['id', 'start_date', 'end_date']),
-                    'duty_name' => $this->localized($predecessor->nameOn($holder->pivot?->start_date)),
-                ]))
-                ->sortByDesc(fn (array $term) => $term['pivot']['start_date'] ?? '')
-                ->values()
-                ->all(),
-        ];
-    }
-
-    /** @param  array<string, string>|string|null  $name */
-    private function localized(array|string|null $name): ?string
-    {
-        return is_array($name) ? ($name[app()->getLocale()] ?? $name['lt'] ?? null) : $name;
     }
 
     /**

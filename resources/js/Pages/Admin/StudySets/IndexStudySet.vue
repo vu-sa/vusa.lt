@@ -96,6 +96,7 @@ const source = useLocalCollectionSource<StudySetRow>({
 });
 
 const actions = useCollectionRecordActions({
+  source,
   routePrefix: 'studySets',
   canDelete: () => canCreate.value,
   canRestore: () => canCreate.value,

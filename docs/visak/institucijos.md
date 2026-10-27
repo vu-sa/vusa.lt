@@ -3,8 +3,10 @@ doc_status: reviewed
 title: Institucijos
 area: institutions
 models: [Institution, InstitutionCheckIn, InstitutionSecretary]
-last_reviewed: 2026-10-25
+last_reviewed: 2026-10-27
 tests:
+  - resources/js/Pages/Admin/Dashboard/__tests__/ShowAtstovavimasPadaliniai.component.test.ts
+  - tests/Browser/CollectionTrashRefreshTest.php
   - tests/Feature/Api/Admin/RecordActivityStatusTest.php
   - resources/js/Pages/Admin/People/__tests__/CreateRecordNavigation.component.test.ts
   - tests/Feature/Admin/Management/InstitutionControllerTest.php
@@ -66,11 +68,11 @@ puslapį `/mano/institutions/{id}`.
 
 Atskiroje formoje sukūrus instituciją, atveriamas jos puslapis. Pareigybių atnaujinimo vedlyje institucija sukuriama liekant vedlyje.
 
-### Aktyvi ir neaktyvi institucija {#aktyvumas}
+### Veikianti ir nebeveikianti institucija {#aktyvumas}
 
 <DocScreenshot name="institution-deactivation" alt="Institucijos redagavimo forma prieš užbaigiant veiklą: įspėjimas apie užbaigiamas pareigas ir paskutinę pareigų dieną" caption="Prieš išsaugant neaktyvią būseną parodomos pasekmės narių pareigoms." />
 
-Institucijos redagavimo formoje išjungus **Aktyvi institucija** ir išsaugojus, institucija
+Institucijos redagavimo formoje pasirinkus **Nebeveikianti** ir išsaugojus, institucija
 neberodoma viešuose kontaktų sąrašuose ir paieškoje. Jos viešas kontaktų puslapis nepasiekiamas
 nei pagal identifikatorių, nei pagal trumpąjį adresą; padalinio koordinatorių ir kuratorių
 kontaktų puslapiai taip pat nepasiekiami, jei pagrindinė padalinio institucija neaktyvi.
@@ -118,14 +120,17 @@ Rūšis lemia, ką rodo ir ko reikalauja kiti puslapiai:
 
 - VU SA dariniams forma siūlo **kontaktų** skiltį (adresas, darbo laikas, el. paštas, socialiniai
   tinklai). Ji pažymėta „Matoma vusa.lt“, nes rodoma viešame institucijos puslapyje.
+- Viešoje padalinių kontaktų kategorijoje kortelė rodo institucijos nuotrauką, jei ji įkelta;
+  jei nuotraukos nėra, rodomas logotipas.
 - VU SA darinių posėdžiuose studentų pozicijos žymėti nereikia (žr.
   [Darbotvarkės klausimai](/visak/darbotvarkes-klausimai#vusa-isimtis)).
 - [Koordinatorius](/visak/#koordinatorius) priskiriamas tik VU organams. Kaip jis parenkamas,
   aprašyta [Atsakomybėse](/pagrindai/atsakomybes).
 
-### Aktyvi institucija
+### Veikianti institucija {#aktyvi-institucija}
 
-Formos lauke **Būsena** pasirenkama **AKTYVI** arba **NEAKTYVI** – tai nurodo, ar iš institucijos dar tikimasi posėdžių. Neaktyvi
+Formos lauke **Būsena** pasirenkama **Veikianti** arba **Nebeveikianti** – tai nurodo, ar institucija dar veikia ir ar iš jos tikimasi posėdžių.
+Tai ne tas pats, kas institucijos puslapio **Veiklos būklė**, rodanti, ar posėdžiai vyksta laiku. Nebeveikianti
 institucija nerodoma viešame sąraše, jai nekuriamos užduotys dėl posėdžių periodiškumo, o nariai
 be teisės ją matyti jos puslapio neatidaro.
 
@@ -135,12 +140,18 @@ patvirtinimo lange rodomas užbaigiamų pareigybių laikotarpių skaičius, paba
 
 Neaktyvios institucijos nepatenka į asmeninę ir padalinių Gantt diagramas bei dabartinę statistiką.
 Jau užfiksuoti istoriniai rodikliai nesikeičia. Administravimo sąrašuose, ryšiuose, paieškoje ir pasirinkimo
-laukuose jos lieka matomos pagal turimas teises, su žyma **Neaktyvi institucija**. Ši žyma rodoma ir įrašo puslapyje.
+laukuose jos lieka matomos pagal turimas teises, su žyma **Nebeveikianti institucija**. Ši žyma rodoma ir įrašo puslapyje.
 
 <ChangelogNote date="2026-10-25" title="Institucijų aktyvumo būsena">
 
 Aktyvumo būsena keičiama sąraše arba formoje. Neaktyvios institucijos neįtraukiamos į dabartines Gantt diagramas ir statistiką,
 o administravimo vietose pažymimos atskira žyma.
+
+</ChangelogNote>
+
+<ChangelogNote date="2026-10-27" title="Veikianti ir nebeveikianti">
+
+Būsenos „Aktyvi“ ir „Neaktyvi“ pervadintos į „Veikianti“ ir „Nebeveikianti“, kad nesipainiotų su posėdžių veiklos būkle.
 
 </ChangelogNote>
 
@@ -226,7 +237,7 @@ Koordinatorius gali pats paklausti atstovų, ar institucija posėdžiavo – nel
 priminimo. Klausimą galima išsiųsti iš:
 
 - **ViSAK → Padaliniai**, sąrašo **Reikia dėmesio** mygtuko **Paklausti atstovų** (pasirinktos visos
-  sąrašo institucijos);
+  sąrašo institucijos, atitinkančios lango filtrus, iki 100);
 - **Veiksmai → Paklausti, ar vyko posėdžiai** (institucijas pasirenki pats);
 - institucijos meniu **⋯ → Paklausti, ar vyko posėdžiai**.
 
@@ -239,11 +250,23 @@ Pirmiausia pasirenkama **Ar vyko posėdis?** arba **Papildyk posėdžių įrašu
 jau pasirinktos. Tada pasirenkama, kaip bus renkami gavėjai:
 
 - **Pagal institucijas** – klausiama institucijos studentų atstovų.
-  Filtruojama pagal padalinį arba ieškoma pagal pavadinimą; prieš atveriant langą pasirinktos institucijos
-  (pvz., iš **Reikia dėmesio**) lieka sąrašo pradžioje, o tų, kurių paklausti nebūtų ko, žymėjimas
-  nuimamas.
-- **Pagal atstovus** – pasirenkami atstovai; kiekvieno klausiama apie visas jo institucijas. Ieškoma
-  pagal vardą arba institucijos pavadinimą.
+  Galima pasirinkti kelis padalinius ir valdysenos sritį arba ieškoti pagal pavadinimą.
+  Prieš atveriant langą pasirinktos institucijos (pvz., iš **Reikia dėmesio**) lieka sąrašo pradžioje,
+  jei atitinka filtrus ir paiešką, o tų, kurių paklausti nebūtų ko, žymėjimas nuimamas.
+- **Pagal atstovus** – pasirenkami atstovai; kiekvieno klausiama apie jo institucijas, atitinkančias
+  padalinių ir valdysenos srities filtrus. Ieškoma pagal vardą arba institucijos pavadinimą.
+
+<ChangelogNote date="2026-10-27" title="Filtrai ir bendras žymėjimas užklausose">
+Iš **ViSAK → Padaliniai** atvertas langas perima rodiklių padalinių filtrą ir pasirenka **VU organas**.
+Filtrus galima keisti abiem gavėjų rinkimo būdais. Pakeitus padalinius ar valdysenos sritį,
+jų neatitinkančios institucijos nužymimos; vien teksto paieška pasirinkimo nekeičia.
+</ChangelogNote>
+
+Padaliniai ir valdysenos sritis pasirenkami vienoje eilutėje; kai pasirinkta daugiau nei du padaliniai,
+likę rodomi kaip **+N**. **Pažymėti atitinkančias** automatiškai įkelia daugiau paieškos rezultatų ir
+pažymi tik tas institucijas, kurių atstovų galima klausti (iki 100). Šalia rodoma, kiek pasirinkta, pvz., **12/100**;
+pasiekus ribą rodomas paaiškinimas. **Nuimti žymėjimus** išvalo visą institucijų pasirinkimą, įskaitant
+paieškoje nematomas institucijas.
 
 Vienu kartu galima apimti iki **100 institucijų**. Institucija ar žmogus, kurių paklausti nebūtų ko
 (pvz., jau paklausta, posėdis jau užfiksuotas), sąraše rodomi neaktyvūs su priežastimi, savo vietoje.
@@ -251,6 +274,8 @@ Jei bus klausiama tik dalies gavėjų ar institucijų, eilutėje parašyta, kiek
 
 Peržiūroje **Ką ir kam išsiųsime** gavėjai sugrupuoti taip, kaip pasirinkta: pagal institucijas arba
 pagal atstovus. Kiekviena eilutė turi žymimąjį langelį – galima nužymėti tuos, kurių šįkart klausti nenorima.
+Mygtukais **Pažymėti visus** ir **Nuimti žymėjimus** galima iš karto keisti visų siunčiamų
+gavėjų eilučių žymėjimą. Nenurodžius nė vieno gavėjo, siųsti negalima.
 **Kam laiško nesiųsime** paaiškina praleistas institucijas ir gavėjų pranešimų nustatymus:
 laiškas dabar, santrauka, išjungtas el. paštas ar nutildyti pranešimai. Galima pridėti žinutę iki 500
 simbolių. Patvirtinus rodoma, kiek užklausų paruošta, kiek yra gavėjų ir kiek laiškų numatyta siųsti iš karto. Tai dar nėra pristatymo patvirtinimas.
@@ -484,6 +509,7 @@ vieną instituciją. Dabar adresai sudaryti iš pavadinimų, o seni adresai nukr
   pareigybės ir posėdžiai lieka. Institucijos, kurioje einamos pareigos, ištrinti negalima.
 - Šiukšlinės veiksmas **Atkurti ir atidaryti** atkuria instituciją ir iškart atidaro jos įrašą. Įrašai be pavadinimo sąraše ir įrašo puslapyje rodomi kaip **Be pavadinimo · nuorodos kodas**, kad juos būtų galima atskirti ir rasti pagal kodą. **Galutinai ištrinti** negalima, kol ji turi
   posėdžių, pareigybių ar pranešimų apie veiklą arba yra padalinio pagrindinė institucija.
+- Galutinai ištrynus instituciją, šiukšlinės sąrašas atsinaujina automatiškai.
 
 ## Kas ką gali {#teises}
 
@@ -551,7 +577,9 @@ Pranešimas apie tai, kad posėdžio nebus, suteikia atskirą pusės periodišku
 - Periodiškumo užduotis: `tasks:repopulate institution` (kasdien 10.00) →
   `PeriodicityGapTaskHandler`; gavėjai – `ResolveTaskAssignees::forInstitution`. Būklei įkeliami visi
   pranešimai „Posėdžio nebuvo“; pasibaigusiems taikoma pusė periodiškumo. Kasdienis vykdymas taip pat
-  užbaigia likusias atviras periodiškumo užduotis, kai dabartinė būklė dėmesio nebereikalauja.
+  užbaigia likusias atviras periodiškumo užduotis, kai posėdis ar pranešimas uždengė laikotarpį, o
+  [atšaukia](/mano/uzduotys#atsauktos), kai jas nebeaktualias padarė tik nauja kadencija ar
+  institucijos išjungimas.
 - Pranešimo sutrumpinimas: `CheckInService::adjustForMeeting()` iš `MeetingController`.
 - Klausimai „Ar vyko posėdis?“: `InstitutionActivityRequest` (vienas gavėjui ir institucijai),
   siunčia `SendInstitutionActivityRequests` (`tasks:repopulate institution` per `forTask()`, kai

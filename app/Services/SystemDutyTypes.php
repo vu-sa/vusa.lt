@@ -8,8 +8,7 @@ use App\Settings\DutyTypeSettings;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * Resolves which duty type plays each {@see SystemDutyType} part: the one chosen in settings, or
- * the type with the old slug while nothing is chosen. Never look these types up by slug elsewhere.
+ * Resolves which duty type plays each {@see SystemDutyType} part: the one chosen in settings.
  */
 class SystemDutyTypes
 {
@@ -46,21 +45,13 @@ class SystemDutyTypes
     }
 
     /**
-     * @return list<string>
-     */
-    public function slugsWithDescendants(SystemDutyType ...$parts): array
-    {
-        return DutyType::query()->whereKey($this->idsWithDescendants(...$parts))->pluck('slug')->filter()->values()->all();
-    }
-
-    /**
-     * Slugs of the curator and mentor types and their subtypes; a programme belongs to these duties.
+     * IDs of the curator and mentor types and their subtypes; a programme belongs to these duties.
      *
-     * @return list<string>
+     * @return list<int>
      */
-    public function curatorSlugs(): array
+    public function curatorIds(): array
     {
-        return Cache::rememberForever(self::CACHE_KEY.':curator_slugs', fn (): array => $this->slugsWithDescendants(SystemDutyType::Curator, SystemDutyType::Mentor));
+        return Cache::rememberForever(self::CACHE_KEY.':curator_ids', fn (): array => $this->idsWithDescendants(SystemDutyType::Curator, SystemDutyType::Mentor));
     }
 
     /**
@@ -77,7 +68,7 @@ class SystemDutyTypes
     {
         $this->ids = null;
         Cache::forget(self::CACHE_KEY);
-        Cache::forget(self::CACHE_KEY.':curator_slugs');
+        Cache::forget(self::CACHE_KEY.':curator_ids');
     }
 
     /**
@@ -93,7 +84,7 @@ class SystemDutyTypes
                 $configured = $settings->{$part->settingKey()};
                 $ids[$part->value] = ($configured !== null && DutyType::query()->whereKey($configured)->exists())
                     ? (int) $configured
-                    : DutyType::query()->where('slug', $part->fallbackSlug())->value('id');
+                    : null;
             }
 
             return $ids;

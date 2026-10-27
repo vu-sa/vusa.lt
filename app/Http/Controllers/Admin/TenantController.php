@@ -9,7 +9,6 @@ use App\Http\Requests\StoreTenantRequest;
 use App\Http\Requests\UpdateContentRequest;
 use App\Http\Requests\UpdateTenantRequest;
 use App\Models\Content;
-use App\Models\Institution;
 use App\Models\Tenant;
 use App\Services\ContentService;
 use Illuminate\Support\Facades\Cache;
@@ -27,15 +26,22 @@ class TenantController extends AdminController
 
         // A short list sent whole: the collection searches, sorts and filters it in the browser.
         return $this->inertiaResponse('Admin/People/IndexTenant', [
-            'tenants' => Tenant::query()->orderBy('fullname')->get(['id', 'fullname', 'shortname', 'alias', 'type', 'shortname_vu', 'primary_institution_id', 'goals_enabled'])
+            'tenants' => Tenant::query()->orderBy('fullname')
+                ->with(['primary_institution:id,name,tenant_id,is_active', 'primary_institution.tenant:id,shortname'])
+                ->get(['id', 'fullname', 'shortname', 'alias', 'type', 'shortname_vu', 'primary_institution_id', 'goals_enabled', 'created_at', 'updated_at'])
                 ->map(fn (Tenant $tenant) => [
                     ...$tenant->toArray(),
+                    'primary_institution' => $tenant->primary_institution ? [
+                        'id' => $tenant->primary_institution->id,
+                        'name' => $tenant->primary_institution->name,
+                        'is_active' => $tenant->primary_institution->is_active,
+                        'tenant' => $tenant->primary_institution->tenant?->only(['id', 'shortname']),
+                    ] : null,
                     'can' => [
                         'update' => $request->user()->can('update', $tenant),
                         'delete' => $request->user()->can('delete', $tenant),
                     ],
                 ]),
-            'assignableInstitutions' => Institution::query()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 

@@ -214,6 +214,7 @@ const source = useTrashAwareSource<PageRow>(
 );
 
 const actions = useCollectionRecordActions({
+  source,
   routePrefix: 'pages',
   canDelete: () => canCreate.value,
   canRestore: () => canCreate.value,

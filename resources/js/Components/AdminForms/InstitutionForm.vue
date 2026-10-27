@@ -265,7 +265,7 @@ import { computed, ref } from 'vue';
 
 import ActivityStatusField from './ActivityStatusField.vue';
 
-import { activityStatuses } from '@/Constants/statuses';
+import { operatingStatuses } from '@/Constants/statuses';
 import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import PermalinkField from '@/Components/AdminForms/PermalinkField.vue';
@@ -413,7 +413,7 @@ const isActive = computed({
   },
 });
 
-const institutionStatus = computed(() => activityStatuses[isActive.value ? 'active' : 'inactive']);
+const institutionStatus = computed(() => operatingStatuses[isActive.value ? 'active' : 'inactive']);
 
 /**
  * Mirrors InstitutionScopeResolver: the nearest type in the parent chain that declares a

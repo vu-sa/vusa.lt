@@ -52,3 +52,19 @@ describe('periodicity gap action', () => {
     expect(wrapper.text()).not.toContain('tasks.periodicity_gap.report_no_meeting');
   });
 });
+
+describe('cancelled task', () => {
+  it('says it was cancelled and why, and offers no report action', () => {
+    const wrapper = mountDialog(makeTask({
+      action_type: TaskActionType.PeriodicityGap,
+      can_be_manually_completed: false,
+      completed_at: '2026-10-01T10:00:00Z',
+      cancelled_at: '2026-10-01T10:00:00Z',
+    }));
+
+    expect(wrapper.get('[data-slot="task-cancelled"]').text()).toContain('tasks.cancelled');
+    expect(wrapper.text()).toContain('tasks.cancelled_hint');
+    expect(wrapper.text()).not.toContain('tasks.auto_completing');
+    expect(wrapper.text()).not.toContain('tasks.periodicity_gap.report_no_meeting');
+  });
+});

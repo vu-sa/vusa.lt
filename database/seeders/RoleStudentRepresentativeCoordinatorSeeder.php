@@ -49,6 +49,8 @@ class RoleStudentRepresentativeCoordinatorSeeder extends Seeder
             'mailingLists.update.padalinys',
         ]);
 
-        $role->attachable_types()->attach(DutyType::query()->where('slug', 'studentu-atstovai')->firstOrFail());
+        $type = DutyType::query()->find(TypeSeeder::STUDENT_REPRESENTATIVE_DUTY_TYPE_ID)
+            ?? DutyType::query()->where('title->lt', 'Studentų atstovas')->firstOrFail();
+        $role->attachable_types()->attach($type);
     }
 }

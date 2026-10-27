@@ -251,6 +251,18 @@ describe('authorized access', function (): void {
             );
     });
 
+    test('edit page lists the date address only for events that predate permalinks', function (): void {
+        $older = Calendar::factory()->create(['tenant_id' => $this->tenant->id, 'date' => '2025-03-14 12:00:00']);
+        $older->forceFill(['created_at' => '2025-03-01 10:00:00'])->saveQuietly();
+        $newer = Calendar::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        asUser($this->calendarManager)->get(route('calendar.edit', $older))
+            ->assertInertia(fn ($page) => $page->where('calendar.legacy_date_urls.lt', fn ($url) => str_contains($url, '/2025/03/14/')));
+
+        asUser($this->calendarManager)->get(route('calendar.edit', $newer))
+            ->assertInertia(fn ($page) => $page->where('calendar.legacy_date_urls', ['lt' => null, 'en' => null]));
+    });
+
     test('accessing show redirects to edit page per decision o4', function (): void {
         $calendar = Calendar::factory()->create(['tenant_id' => $this->tenant->id]);
 

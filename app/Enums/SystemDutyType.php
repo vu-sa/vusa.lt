@@ -22,12 +22,6 @@ enum SystemDutyType: string
         };
     }
 
-    /** Used until a type is chosen in settings. */
-    public function fallbackSlug(): string
-    {
-        return $this->publicSegment();
-    }
-
     /**
      * @return list<string>
      */

@@ -55,12 +55,16 @@ class RepStatisticsScope
                 ->whereIn('institution_id', self::institutions($tenantIds)->select('institutions.id'))));
     }
 
-    /** @return Builder<Task> */
+    /**
+     * Cancelled tasks are left out: nobody was asked to finish them, so they are neither done nor missed.
+     *
+     * @return Builder<Task>
+     */
     public static function tasks(?array $tenantIds = null): Builder
     {
         $ids = self::institutions($tenantIds)->select('institutions.id');
 
-        return Task::query()->whereHasMorph('taskable', [Institution::class, Meeting::class], function ($query, string $type) use ($ids): void {
+        return Task::query()->whereNull('tasks.cancelled_at')->whereHasMorph('taskable', [Institution::class, Meeting::class], function ($query, string $type) use ($ids): void {
             if ($type === Institution::class) {
                 $query->whereIn('institutions.id', $ids);
             } else {

@@ -118,7 +118,7 @@ return [
         ],
         'address_mode_hints' => [
             'holder' => 'The assignment’s email if set, otherwise the member’s email.',
-            'duty_mailbox' => 'The duty’s mailbox (e.g. atstovai@…), so the address stays when people change.',
+            'duty_mailbox' => 'The duty’s mailbox (e.g. atstovai@…), so the address stays when people change. Without one: the assignment’s email, then the mailbox of the duty this seat comes with, and only then the personal email.',
         ],
         'tenant_scopes' => [
             'all' => 'All',
@@ -199,6 +199,8 @@ return [
         'manual' => 'Added manually',
         'manual_with_note' => 'Added manually: :note',
         'duty_mailbox' => 'Duty mailbox: :duty',
+        'duty_mailbox_via' => ':duty · via the “:via” duty mailbox',
+        'mailbox_fallback' => ':duty · the duty has no mailbox, personal email used',
     ],
 
     'messages' => [

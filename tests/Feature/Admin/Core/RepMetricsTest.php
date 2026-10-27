@@ -116,6 +116,23 @@ describe('GetRepOutcomeMetrics', function (): void {
             ->and($report['now']['task_completion'])->toBe(50.0);
     });
 
+    test('a cancelled task counts as neither done nor missed', function (): void {
+        $gap = fn (?string $completedAt, ?string $cancelledAt = null) => Task::factory()->for($this->institution, 'taskable')->create([
+            'action_type' => ActionType::PeriodicityGap,
+            'created_at' => '2026-09-01 08:00:00',
+            'completed_at' => $completedAt,
+            'cancelled_at' => $cancelledAt,
+        ]);
+        $gap('2026-09-05 08:00:00');
+        $gap(null);
+        $gap('2026-09-10 08:00:00', '2026-09-10 08:00:00');
+
+        $report = GetRepOutcomeMetrics::execute(2);
+
+        expect($report['tasks']['periodicity_gap'])->toMatchArray(['total' => 2, 'completed' => 1])
+            ->and($report['now']['periodicity_gap'])->toBe(50.0);
+    });
+
     test('a task that predates the window is left out', function (): void {
         Task::factory()->for($this->institution, 'taskable')->create(['action_type' => ActionType::Manual, 'created_at' => '2025-01-01 08:00:00']);
 

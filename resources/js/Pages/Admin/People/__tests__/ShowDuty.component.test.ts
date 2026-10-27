@@ -143,7 +143,7 @@ describe('ShowDuty.vue', () => {
   it('marks an inactive duty instead of calling it vacant', () => {
     const wrapper = mountPage({ duty: { ...baseDuty, users: [], is_active: false } });
 
-    expect(wrapper.find('[data-testid="fact-members"]').attributes('data-status')).toBe('Neaktyvi');
+    expect(wrapper.find('[data-testid="fact-members"]').attributes('data-status')).toBe('Nebeveikianti');
     expect(wrapper.find('[data-testid="fact-members"]').text()).toBe('0');
     expect(wrapper.find('[data-testid="duty-vacancy-alert"]').exists()).toBe(false);
   });
@@ -160,11 +160,13 @@ describe('ShowDuty.vue', () => {
     expect(wrapper.find('[data-testid="member-term-duty-name"]').text()).toContain('Viešųjų ryšių koordinatorius');
   });
 
+  const combinedLink = { id: 'duty-0', link_id: 7, name: 'Socialinis-akademinis koordinatorius', is_active: false, institution_name: 'VU SA MIF' };
+
   it('lists the holders of a predecessor duty in the history', () => {
     const wrapper = mountPage({
       lineage: {
-        predecessors: [{ id: 'duty-0', name: 'Socialinis-akademinis koordinatorius', is_active: false, institution_name: 'VU SA MIF' }],
-        successors: [],
+        events: [{ kind: 'took_over', date: '2019-07-01', duties: [combinedLink] }],
+        suggestedLinkDate: '2019-07-01',
         predecessorTerms: [{
           id: 'old',
           name: 'Senas Narys',
@@ -176,6 +178,30 @@ describe('ShowDuty.vue', () => {
 
     expect(wrapper.find('[data-testid="predecessor-term"]').text()).toContain('Senas Narys');
     expect(wrapper.find('[data-testid="duty-lineage"]').text()).toContain('Socialinis-akademinis koordinatorius');
+  });
+
+  it('shows renames and takeovers on one dated timeline, folding only where offered', async () => {
+    const wrapper = mountPage({
+      lineage: {
+        events: [
+          { kind: 'handed_over', date: '2024-07-01', duties: [{ ...combinedLink, id: 'duty-2', link_id: 9 }, { ...combinedLink, id: 'duty-3', link_id: 10 }] },
+          { kind: 'took_over', date: '2019-07-01', duties: [{ ...combinedLink, can_fold: true }] },
+          { kind: 'rename', date: '2018-06-30', name: 'Informacijos koordinatorius' },
+        ],
+        suggestedLinkDate: '2019-07-01',
+        predecessorTerms: [],
+      },
+    });
+
+    expect(wrapper.findAll('[data-slot="duty-lineage-timeline"] > li').map(event => event.attributes('data-testid')))
+      .toEqual(['lineage-event-handed_over', 'lineage-event-took_over', 'lineage-event-rename']);
+    expect(wrapper.text()).toContain('Informacijos koordinatorius');
+    expect(wrapper.findAll('[data-testid="lineage-fold"]')).toHaveLength(1);
+
+    await wrapper.get('[data-testid="lineage-fold"]').trigger('click');
+    await wrapper.get('[data-testid="confirm-Paversti pervadinimu"] [data-testid="confirm-yes"]').trigger('click');
+
+    expect(router.post).toHaveBeenCalledWith(expect.stringContaining('duties.predecessors.foldRename'), {}, { preserveScroll: true });
   });
 
   it('orders the history from the most recent term to the oldest', () => {

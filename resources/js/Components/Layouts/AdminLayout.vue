@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-background">
+  <div class="bg-background" :style="bottomChromeStyle">
     <Head :title />
 
     <!-- One provider for every tooltip in the admin; the old sidebar supplied it. -->
@@ -10,7 +10,6 @@
 
       <!-- Guided action window: outside the shell so any page can open it. -->
       <ActionWindow />
-      <StartFmDock />
 
       <!-- Toast notifications -->
       <Toaster rich-colors />
@@ -31,7 +30,7 @@
 <script setup lang="ts">
 import { Head, usePage } from '@inertiajs/vue3';
 import { useDebounceFn, useEventListener, useOnline } from '@vueuse/core';
-import { defineAsyncComponent, onMounted, watch, ref, nextTick } from 'vue';
+import { defineAsyncComponent, onMounted, watch, ref, nextTick, computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { usePWA } from '@/Composables/usePWA';
@@ -44,7 +43,6 @@ import UpdateBanner from '@/Components/PWA/UpdateBanner.vue';
 import { Toaster } from '@/Components/ui/sonner';
 import { TooltipProvider } from '@/Components/ui/tooltip';
 import AdminShell from '@/Components/Layouts/Shell/AdminShell.vue';
-import StartFmDock from '@/Components/Layouts/Shell/StartFmDock.vue';
 import { createTourProvider } from '@/Composables/useTourProvider';
 import { createActionWindowProvider } from '@/Composables/useActionWindow';
 import { createShellFocusProvider } from '@/Composables/useShellFocus';
@@ -90,7 +88,11 @@ const { isOpen: commandPaletteOpen } = createCommandPaletteProvider({
   recentPages: uiPreferences.recentPages,
   clearRecent: uiPreferences.clearRecent,
 });
-createStartFmProvider();
+const radio = createStartFmProvider();
+const bottomChromeStyle = computed(() => ({
+  '--bottom-chrome-height': `${radio.bottomInset.value}px`,
+  '--start-fm-clearance': `${radio.desktopHeight.value}px`,
+}));
 
 const keyboardShortcutsOpen = ref(false);
 

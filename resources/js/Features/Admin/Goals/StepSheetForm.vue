@@ -1,6 +1,8 @@
 <template>
   <SheetForm
     v-model:open="open"
+    :created-at="step?.created_at"
+    :updated-at="step?.updated_at"
     :title="step ? $t('goals.steps.edit') : $t('goals.steps.add')"
     :description="$t('goals.steps.sheet_description')"
     :processing="form.processing"

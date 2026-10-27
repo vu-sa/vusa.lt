@@ -44,15 +44,19 @@ test('ordinary users cannot create or assign dictionary entries', function (stri
     ['dutyTypes', DutyType::class],
 ]);
 
-test('each collection creates a translated concrete type', function (string $resource, string $class): void {
-    asUser($this->admin)->post(route($resource.'.store'), [
+test('institution type collection creates a translated concrete type with slug', function (): void {
+    asUser($this->admin)->post(route('institutionTypes.store'), [
         'title' => ['lt' => 'Naujas tipas', 'en' => 'New type'], 'slug' => 'new-type',
     ])->assertRedirect();
-    expect($class::where('slug', 'new-type')->firstOrFail())->toHaveTranslations('title');
-})->with([
-    ['institutionTypes', InstitutionType::class],
-    ['dutyTypes', DutyType::class],
-]);
+    expect(InstitutionType::where('slug', 'new-type')->firstOrFail())->toHaveTranslations('title');
+});
+
+test('duty type collection creates a translated concrete type', function (): void {
+    asUser($this->admin)->post(route('dutyTypes.store'), [
+        'title' => ['lt' => 'Naujas pareigų tipas', 'en' => 'New duty type'],
+    ])->assertRedirect();
+    expect(DutyType::whereJsonContainsLocale('title', 'lt', 'Naujas pareigų tipas')->firstOrFail())->toHaveTranslations('title');
+});
 
 test('parents must belong to the same dictionary and cannot form a cycle', function (): void {
     $root = InstitutionType::factory()->create();

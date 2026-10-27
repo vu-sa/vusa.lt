@@ -87,7 +87,7 @@ class NavigationLinkApiController extends ApiController
             return null;
         }
 
-        return route('calendar.event', [
+        return $calendar->publicUrl(app()->getLocale()) ?? route('calendar.event', [
             'lang' => app()->getLocale(),
             'calendar' => $calendar->id,
         ]);

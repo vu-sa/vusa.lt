@@ -2,7 +2,7 @@
 doc_status: reviewed
 title: Padaliniai
 area: visak
-last_reviewed: 2026-10-25
+last_reviewed: 2026-10-27
 tests:
   - tests/Feature/Api/Admin/RecordActivityStatusTest.php
   - tests/Feature/Admin/Dashboard/AtstovavimasDashboardTest.php
@@ -124,6 +124,9 @@ Institucijos, kurios vėluoja, neturi veiklos arba kurioms artėja terminas, sva
 Rodomos pirmos keturios, o likusias atveria **Rodyti visas** – ten jas galima ir ieškoti. Jei
 pasirinkti keli padaliniai, prie kiekvienos institucijos parašytas jos padalinys. Mygtukas
 **Fiksuoti veiklą** leidžia užregistruoti posėdį arba pranešti, kad posėdžio nebuvo. Mygtukas **Paklausti atstovų** pateikiamas po sąrašu, greta **Rodyti visas**.
+Užklausos langas perima **Rodikliai** pasirinktus padalinius ir iš pradžių rodo tik **VU organus**.
+Filtrus galima keisti; jų neatitinkančios institucijos nužymimos. Institucijų pasirinkime ir galutinėje
+gavėjų peržiūroje yra bendro žymėjimo mygtukai. [Užklausų taisyklės ir 100 institucijų riba](/visak/institucijos#paklausti).
 
 ### Būklės pokyčiai {#busenos-pokyciai}
 

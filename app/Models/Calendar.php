@@ -107,6 +107,12 @@ class Calendar extends Model implements ImageMediaOwner
      */
     public const MAX_RANGE_DAYS = 455;
 
+    /**
+     * Events created from this date on were born with a permalink, so they never had a
+     * `kalendorius/{Y}/{m}/{d}/{slug}` address to redirect from.
+     */
+    public const DATE_URLS_RETIRED_AT = '2026-09-10';
+
     #[\Override]
     protected function casts(): array
     {

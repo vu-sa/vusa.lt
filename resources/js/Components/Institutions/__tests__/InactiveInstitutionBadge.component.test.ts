@@ -8,7 +8,7 @@ import { commonStubs } from '@/tests/stubs';
 describe('InactiveInstitutionBadge', () => {
   it.each([false, 0])('labels an explicitly inactive institution (%s)', (active) => {
     const wrapper = mount(InactiveInstitutionBadge, { props: { active }, global: { stubs: commonStubs } });
-    expect(wrapper.text()).toContain('Neaktyvi institucija');
+    expect(wrapper.text()).toContain('Nebeveikianti institucija');
     expect(wrapper.find('[data-status-role="neutral"]').exists()).toBe(true);
   });
 

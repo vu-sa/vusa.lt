@@ -84,7 +84,7 @@ import { TypeTreeSelect } from '@/Components/AdminForms/TypeTree';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 
 interface Purpose { key: string; label: string; drives: string; responsibility_id: string | null }
-interface DutyTypePart { key: string; label: string; drives: string; type_id: number | null; effective_type_id: number | null; fallback_slug: string }
+interface DutyTypePart { key: string; label: string; drives: string; type_id: number | null; effective_type_id: number | null }
 
 const props = defineProps<{
   canEdit: boolean;
@@ -103,14 +103,11 @@ const form = useForm({
   duty_types: Object.fromEntries(props.dutyTypes.map(part => [part.key, part.type_id])) as Record<string, number | null>,
 });
 
-/** Until a type is chosen, the contact pages still use the type with the old link. */
 function fallbackHint(part: DutyTypePart): string | null {
   if (form.duty_types[part.key] !== null) {
     return null;
   }
 
-  const fallback = props.dutyTypeOptions.find(type => type.id === part.effective_type_id);
-
-  return `${part.drives} ${$t('settings.purposes.fallback', { slug: fallback?.title ?? part.fallback_slug })}`;
+  return `${part.drives} ${$t('settings.purposes.fallback')}`;
 }
 </script>

@@ -4,10 +4,12 @@ import { Copy, Pencil, RotateCcw, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import type { CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
+import type { CollectionSource } from '@/Composables/useCollectionSource';
 
 interface RecordActionOptions {
   /** Route name prefix: `pages` → `pages.edit`, `pages.destroy`, `pages.restore`, `pages.forceDelete`. */
   routePrefix: string;
+  source: Pick<CollectionSource<unknown>, 'refresh'>;
   canEdit?: () => boolean;
   /** Offers `<prefix>.duplicate`; off unless given. */
   canDuplicate?: () => boolean;
@@ -27,11 +29,7 @@ export interface PendingRecordAction {
   blockedReason?: string | null;
 }
 
-/**
- * The row actions every collection shares — edit, soft delete, and in the trash view restore
- * and permanent delete — with the confirmation state the destructive ones need. Each mutation
- * is an Inertia visit, so the page reloads its own source afterwards.
- */
+/** Inertia preserves collection state, so mutations must also refresh the source. */
 export function useCollectionRecordActions(options: RecordActionOptions) {
   const pending = ref<PendingRecordAction | null>(null);
   const allowed = (check?: () => boolean) => check?.() ?? true;
@@ -60,7 +58,10 @@ export function useCollectionRecordActions(options: RecordActionOptions) {
     const name = rest.join(':');
 
     if (kind === 'restore') {
-      router.patch(route(`${options.routePrefix}.restore`, id), {}, { preserveScroll: !options.restoreOpensRecord });
+      router.patch(route(`${options.routePrefix}.restore`, id), {}, {
+        preserveScroll: !options.restoreOpensRecord,
+        onSuccess: options.restoreOpensRecord ? undefined : () => options.source.refresh(),
+      });
     }
     else if (kind === 'duplicate') {
       router.post(route(`${options.routePrefix}.duplicate`, id));
@@ -79,7 +80,7 @@ export function useCollectionRecordActions(options: RecordActionOptions) {
     }
 
     const routeName = action.kind === 'delete' ? `${options.routePrefix}.destroy` : `${options.routePrefix}.forceDelete`;
-    router.delete(route(routeName, action.id), { preserveScroll: true });
+    router.delete(route(routeName, action.id), { preserveScroll: true, onSuccess: () => options.source.refresh() });
   }
 
   const dialog = computed(() => {

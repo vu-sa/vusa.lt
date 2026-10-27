@@ -272,6 +272,7 @@ $settings = [
                 'collection-schema' => [
                     'fields' => [
                         ['name' => 'id', 'type' => 'string'],
+                        ['name' => 'public_url', 'type' => 'string', 'optional' => true],
                         ['name' => 'title', 'type' => 'string', 'infix' => true],
                         ['name' => 'short', 'type' => 'string', 'optional' => true, 'infix' => true],
                         ['name' => 'permalink', 'type' => 'string', 'optional' => true],
@@ -776,7 +777,7 @@ $settings = [
 
                         // Facets
                         ['name' => 'type_titles', 'type' => 'string[]', 'facet' => true, 'optional' => true],
-                        ['name' => 'type_slugs', 'type' => 'string[]', 'facet' => true, 'optional' => true],
+                        ['name' => 'type_ids', 'type' => 'int32[]', 'facet' => true, 'optional' => true],
 
                         // Members (for the detail pane). Names are searchable; the parallel
                         // id arrays stay index-aligned so the pane can render clickable links.

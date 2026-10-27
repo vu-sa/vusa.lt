@@ -17,6 +17,8 @@ export interface TaskDisplayData {
   description?: string | null;
   due_date?: string | null;
   completed_at?: string | null;
+  /** Set together with `completed_at` when a task closed because it no longer applied. */
+  cancelled_at?: string | null;
   created_at?: string | null;
   action_type?: TaskActionType | string | null;
   /** `effective_days_since_activity` (periodicity-gap tasks) drives the check-in date suggestion. */

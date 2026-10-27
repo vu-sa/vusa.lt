@@ -65,7 +65,7 @@ class ResolveActivityRequestRecipients
      * The people a coordinator can pick, each with the institutions they can be asked about.
      *
      * @param  iterable<Institution>  $institutions
-     * @return list<array{id: string, name: string, institutions: list<array{id: string, name: string}>}>
+     * @return list<array{id: string, name: string, institutions: list<array{id: string, name: string, tenant_id: int, tenant_shortname: string|null, governance_scope: string}>}>
      */
     public function people(iterable $institutions): array
     {
@@ -75,7 +75,13 @@ class ResolveActivityRequestRecipients
             $institution = $institutions[$institutionId];
             foreach ($roles['secretaries'] + $roles['representatives'] as $userId => ['user' => $user]) {
                 $people[$userId] ??= ['id' => (string) $userId, 'name' => $user->name, 'institutions' => []];
-                $people[$userId]['institutions'][] = ['id' => (string) $institution->id, 'name' => is_string($institution->name) ? $institution->name : ''];
+                $people[$userId]['institutions'][] = [
+                    'id' => (string) $institution->id,
+                    'name' => is_string($institution->name) ? $institution->name : '',
+                    'tenant_id' => $institution->tenant_id,
+                    'tenant_shortname' => $institution->tenant?->shortname,
+                    'governance_scope' => $institution->governance_scope->value,
+                ];
             }
         }
 

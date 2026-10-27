@@ -3,8 +3,9 @@ doc_status: reviewed
 title: Žymos
 area: tags
 models: [Tag]
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-27
 tests:
+  - resources/js/Features/Admin/Tags/__tests__/TagSheetForm.component.test.ts
   - tests/Feature/Admin/Content/TagControllerTest.php
   - tests/Feature/Admin/Content/PolymorphicTaggingTest.php
   - tests/Feature/Admin/Content/NewsTagsTest.php
@@ -62,7 +63,7 @@ Puslapio viršuje spausk **Nauja žyma** (arba eik adresu `/mano/tags/create`):
 
 1. **Pavadinimas** – įrašyk žymos pavadinimą lietuvių ir anglų kalbomis.
 2. **Alias** – įrašyk unikalų URL trumpinį mažosiomis raidėmis (pvz., `atstovavimas`).
-3. **Aprašymas** – trumpas temos paaiškinimas (rodomas temos puslapio viršuje).
+3. **Aprašymas** – neprivalomas temos paaiškinimas lietuvių ir anglų kalbomis (rodomas temos puslapio viršuje). Redaktorius matomas ir kuriant žymą, ir redaguojant žymą be aprašymo.
 4. **Temos puslapis** – pažymėk varnelę, jei nori, kad žyma turėtų viešą temos puslapį `/tema/{alias}`.
 5. Spausk **Išsaugoti**.
 

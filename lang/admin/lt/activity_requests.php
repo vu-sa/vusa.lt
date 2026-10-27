@@ -1,6 +1,15 @@
 <?php
 
 return [
+    'all_scopes' => 'Visos valdysenos sritys',
+    'select_matching' => 'Pažymėti atitinkančias',
+    'select_all' => 'Pažymėti visus',
+    'deselect_all' => 'Nuimti žymėjimus',
+    'selected_count' => 'Pasirinkta :count iš 100 institucijų',
+    'selecting' => 'Įkeliama ir žymima…',
+    'limit_reached' => 'Vienu kartu galima pasirinkti iki 100 institucijų. Kitoms institucijoms paruošk atskirą užklausą.',
+    'bulk_title' => 'Žymėti kelias institucijas',
+    'bulk_hint' => 'Pažymėk filtrus ir paiešką atitinkančias institucijas vienu veiksmu. Sąrašas įkeliamas automatiškai, iki 100 institucijų. Visus žymėjimus gali nuimti iš karto.',
     'personal' => [
         'title' => 'Mano veiklos užklausos',
         'record_title' => 'Veiklos užklausos',
@@ -136,7 +145,6 @@ return [
     'campaign_spotlight' => 'Pasirink, ar klausi apie veiklą, ar prašai papildyti posėdžių įrašus.',
     'send_section' => 'Ką ir kam išsiųsime',
     'skip_section' => 'Kam laiško nesiųsime',
-    'selection_limit' => 'Vienu kartu gali pasirinkti iki 100 institucijų. Likusioms sukurk kitą užklausą.',
     'all_tenants' => 'Visi padaliniai',
     'delivery' => [
         'immediate' => 'Laiškas dabar',

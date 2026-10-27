@@ -9,6 +9,7 @@ use App\Actions\ResolveTaskAssignees;
 use App\Enums\InstitutionActivityStatus;
 use App\Listeners\QueueNotificationForDigest;
 use App\Models\Institution;
+use App\Models\InstitutionActivityRequest;
 use App\Models\Meeting;
 use App\Models\Pivots\ReservationResource;
 use App\Models\Reservation;
@@ -17,6 +18,8 @@ use App\Models\User;
 use App\Services\AcademicCalendarService;
 use App\States\ReservationResource\Lent;
 use App\States\ReservationResource\Reserved;
+use App\Support\MorphMap;
+use App\Tasks\Enums\ActionType;
 use App\Tasks\Handlers\AgendaCompletionTaskHandler;
 use App\Tasks\Handlers\AgendaCreationTaskHandler;
 use App\Tasks\Handlers\PeriodicityGapTaskHandler;
@@ -30,26 +33,25 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 
 /**
- * Repopulate autotasks for specified model type or all model types.
+ * Create the automatic tasks the current state calls for, without duplicating open ones.
  *
- * This command is idempotent - it will skip tasks that already exist
- * and only create missing tasks based on current system state.
- *
- * Friendly aliases for models:
- * - institution: PeriodicityGap tasks
- * - reservation: Pickup and Return tasks
- * - meeting: AgendaCreation and AgendaCompletion tasks
+ * `institution` runs daily: besides creating periodicity gap tasks it completes, cancels or
+ * reassigns the open ones and sends "Ar vyko posėdis?" to overdue institutions, so it does send
+ * emails. `reservation` and `meeting` are backfills (pickup/return and agenda tasks).
  */
-#[Description('Repopulate autotasks for a model type or all types. Idempotent - skips existing tasks. Use --include-past for historical meetings.')]
+#[Description('Create missing automatic tasks; for institutions also reconcile open ones and ask overdue institutions about their activity')]
 #[Signature('tasks:repopulate
                             {model? : Model type to repopulate (institution, reservation, meeting)}
-                            {--force : Force repopulation without confirmation (required for production)}
-                            {--dry-run : Show what would be done without creating tasks}
+                            {--force : Skip the confirmation asked when no model type is given}
+                            {--dry-run : Show what would be done without changing anything or sending emails}
                             {--include-past : Include past meetings (useful for historical data entry)}')]
 class RepopulateTasks extends Command
 {
     /** @var list<array{task: Task, institution: Institution, recipients: Collection<int, User>}> */
     private array $pendingAsks = [];
+
+    /** @var array{completed: int, cancelled: int, reassigned: int, overdue: int, questions: int|null} */
+    private array $outcomes = ['completed' => 0, 'cancelled' => 0, 'reassigned' => 0, 'overdue' => 0, 'questions' => null];
 
     /**
      * Model alias mapping to handler methods.
@@ -78,13 +80,11 @@ class RepopulateTasks extends Command
     {
         $model = $this->argument('model');
         $dryRun = $this->option('dry-run');
-        $force = $this->option('force');
 
         if ($dryRun) {
-            $this->warn('DRY RUN - No tasks will be created');
+            $this->warn('DRY RUN - nothing will be changed or sent');
         }
 
-        // Validate model argument if provided
         if ($model && ! isset($this->modelHandlers[$model])) {
             $this->error("Unknown model type: {$model}");
             $this->line('Available types: '.implode(', ', array_keys($this->modelHandlers)));
@@ -92,58 +92,53 @@ class RepopulateTasks extends Command
             return self::FAILURE;
         }
 
-        // If no model specified, ask for confirmation (unless --force)
-        if (! $model) {
-            if (! $force && ! $this->confirm('Repopulate tasks for all model types?')) {
-                $this->info('Operation cancelled.');
+        if (! $model && ! $this->option('force') && ! $this->confirm('Repopulate tasks for all model types?')) {
+            $this->info('Operation cancelled.');
 
-                return self::SUCCESS;
-            }
+            return self::SUCCESS;
         }
 
         $totalCreated = 0;
         $totalSkipped = 0;
 
-        // Skip digest queuing during bulk repopulation
-        // Notifications will still be sent but won't be batched into digest emails
-        QueueNotificationForDigest::$skipDigest = true;
+        foreach ($model ? [$model] : array_keys($this->modelHandlers) as $modelType) {
+            $this->info("Processing {$modelType} tasks...");
 
-        try {
-            // Process specified model or all models
-            $modelsToProcess = $model ? [$model] : array_keys($this->modelHandlers);
+            // A backfill should not fill digests with old news. The institution run is the daily one,
+            // and its questions must reach people who take their email as a digest.
+            QueueNotificationForDigest::$skipDigest = $modelType !== 'institution';
 
-            foreach ($modelsToProcess as $modelType) {
-                $this->info("Processing {$modelType} tasks...");
-
-                $method = $this->modelHandlers[$modelType];
-                $result = $this->{$method}($dryRun);
-
-                $totalCreated += $result['created'];
-                $totalSkipped += $result['skipped'];
-
-                $this->line("  Created: {$result['created']}, Skipped: {$result['skipped']}");
+            try {
+                $result = $this->{$this->modelHandlers[$modelType]}($dryRun);
+            } finally {
+                QueueNotificationForDigest::$skipDigest = false;
             }
-        } finally {
-            // Always reset the flag
-            QueueNotificationForDigest::$skipDigest = false;
+
+            $totalCreated += $result['created'];
+            $totalSkipped += $result['skipped'];
+
+            $this->line("  Created: {$result['created']}, Skipped: {$result['skipped']}");
         }
 
         $this->newLine();
-        $this->info('Summary:');
-        $this->table(
-            ['Metric', 'Count'],
-            [
-                ['Tasks created', $totalCreated],
-                ['Tasks skipped (existing)', $totalSkipped],
-            ]
-        );
+        $this->info($dryRun ? 'Summary (dry run):' : 'Summary:');
+        $this->table(['Metric', 'Count'], [
+            ['Tasks created', $totalCreated],
+            ['Tasks already open', $totalSkipped],
+            ['Open tasks completed', $this->outcomes['completed']],
+            ['Open tasks cancelled', $this->outcomes['cancelled']],
+            ['Open tasks reassigned', $this->outcomes['reassigned']],
+            ['Overdue institutions', $this->outcomes['overdue']],
+            // Most overdue institutions were asked within the month or have nobody to ask.
+            ['Questions sent', $this->outcomes['questions'] ?? '–'],
+        ]);
 
         return self::SUCCESS;
     }
 
     /**
-     * Repopulate periodicity gap tasks for institutions. The task appears once the institution
-     * approaches its threshold; its "Ar vyko posėdis?" goes out once, when it turns overdue.
+     * Create periodicity gap tasks for institutions approaching their threshold, reconcile the open
+     * ones, and ask "Ar vyko posėdis?" once an institution turns overdue.
      *
      * @return array{created: int, skipped: int}
      */
@@ -157,13 +152,11 @@ class RepopulateTasks extends Command
             ->get();
 
         $candidates = $this->activityRecipients->forInstitutions($institutions->pluck('id'));
-        foreach ($institutions as $institution) {
+        $bar = $this->output->createProgressBar($institutions->count());
+        foreach ($bar->iterate($institutions) as $institution) {
             $roles = $candidates[$institution->id];
             $tenureStart = collect($roles['secretaries'] ?: $roles['representatives'])->min('start');
             $activityStatus = $this->activityEligibility->status($institution, $tenureStart);
-            $periodicityDays = $activityStatus->periodicityDays;
-
-            $isOverdue = $activityStatus->status === InstitutionActivityStatus::Overdue;
             $existingTask = $this->periodicityGapHandler->findExistingTask($institution);
 
             if ($existingTask) {
@@ -173,51 +166,62 @@ class RepopulateTasks extends Command
                 continue;
             }
 
-            if (! $isOverdue && $activityStatus->status !== InstitutionActivityStatus::Approaching) {
-                continue;
-            }
-
-            $daysUntilThreshold = $isOverdue ? -1 : $periodicityDays - ($activityStatus->effectiveDaysSinceActivity ?? $periodicityDays);
-
-            // Administrators for the current term, else today's representatives.
-            $representatives = ResolveTaskAssignees::forInstitution($institution);
-
-            if ($representatives->isEmpty()) {
-                continue;
-            }
-
-            // Due a week after the institution turns overdue, so the weekly overdue reminder follows the
-            // question instead of arriving with it. Vacation days are skipped.
-            $dueDate = Carbon::instance(
-                $this->academicCalendar->addEffectiveDays(Carbon::today(), max(0, $daysUntilThreshold + 1) + 7)
-            );
-
-            if ($dryRun) {
-                $this->line("    → Would create: {$institution->name}".($isOverdue ? ' (and ask)' : ''));
-                $created++;
-
-                continue;
-            }
-
-            $task = $this->periodicityGapHandler->findOrCreate(
-                institution: $institution,
-                users: $representatives,
-                dueDate: $dueDate,
-                activityStatus: $activityStatus,
-            );
-
-            if ($isOverdue) {
-                $this->askAboutActivity($task, $institution, $dryRun);
-            }
-
-            $this->line("    ✓ Created: {$institution->name}");
-            $created++;
+            $created += (int) $this->createPeriodicityTask($institution, $activityStatus, $dryRun);
         }
+        $this->newLine();
 
-        $this->activityRequests->forTasks($this->pendingAsks);
+        $this->cancelTasksOfInactiveInstitutions($institutions->modelKeys(), $dryRun);
+
+        $this->outcomes['overdue'] += count($this->pendingAsks);
+        if (! $dryRun) {
+            $before = InstitutionActivityRequest::query()->count();
+            $this->activityRequests->forTasks($this->pendingAsks);
+            $this->outcomes['questions'] = InstitutionActivityRequest::query()->count() - $before;
+        }
         $this->pendingAsks = [];
 
         return ['created' => $created, 'skipped' => $skipped];
+    }
+
+    /** A task for an institution approaching or past its threshold; overdue ones are also asked. */
+    private function createPeriodicityTask(Institution $institution, InstitutionActivityStatusData $activityStatus, bool $dryRun): bool
+    {
+        $isOverdue = $activityStatus->status === InstitutionActivityStatus::Overdue;
+        if (! $isOverdue && $activityStatus->status !== InstitutionActivityStatus::Approaching) {
+            return false;
+        }
+
+        // Administrators for the current term, else today's representatives.
+        $representatives = ResolveTaskAssignees::forInstitution($institution);
+        if ($representatives->isEmpty()) {
+            return false;
+        }
+
+        $this->detail($dryRun, ($dryRun ? 'Would create: ' : 'Created: ').$institution->name.($isOverdue ? ' (and ask)' : ''));
+        if ($dryRun) {
+            return true;
+        }
+
+        $daysUntilThreshold = $isOverdue ? -1 : $activityStatus->periodicityDays - ($activityStatus->effectiveDaysSinceActivity ?? $activityStatus->periodicityDays);
+
+        // Due a week after the institution turns overdue, so the weekly overdue reminder follows the
+        // question instead of arriving with it. Vacation days are skipped.
+        $dueDate = Carbon::instance(
+            $this->academicCalendar->addEffectiveDays(Carbon::today(), max(0, $daysUntilThreshold + 1) + 7)
+        );
+
+        $task = $this->periodicityGapHandler->findOrCreate(
+            institution: $institution,
+            users: $representatives,
+            dueDate: $dueDate,
+            activityStatus: $activityStatus,
+        );
+
+        if ($isOverdue) {
+            $this->askAboutActivity($task, $institution, $dryRun);
+        }
+
+        return true;
     }
 
     /**
@@ -227,7 +231,8 @@ class RepopulateTasks extends Command
     private function askAboutActivity(Task $task, Institution $institution, bool $dryRun): void
     {
         if ($dryRun) {
-            $this->line("    → Would ask: {$institution->name}");
+            $this->detail($dryRun, "Overdue, would ask unless already asked: {$institution->name}");
+            $this->outcomes['overdue']++;
 
             return;
         }
@@ -236,18 +241,34 @@ class RepopulateTasks extends Command
     }
 
     /**
-     * An open task keeps the people from the day it was made; a new term or a backdated duty end
-     * would otherwise leave it, and its question, with nobody to reach.
+     * An open task keeps the people from the day it was made. Once its gap is closed by a meeting or a
+     * report it is completed; once only a new term made it moot (nothing was reported, but the new
+     * people have not been in office long enough to owe anything) it is cancelled. While it stands,
+     * it follows the current people, so its question never goes to last term's.
      */
     private function reconcilePeriodicityTask(Task $task, Institution $institution, InstitutionActivityStatusData $status, bool $dryRun): void
     {
-        if (! $status->status->requiresAction() && ! $dryRun) {
-            $this->periodicityGapHandler->completeForInstitution($institution);
+        if (! $status->status->requiresAction()) {
+            $resolvedByActivity = ! $this->activityEligibility->status($institution)->status->requiresAction();
+            $outcome = $resolvedByActivity ? 'completed' : 'cancelled';
+            $this->outcomes[$outcome]++;
+            $this->detail($dryRun, ($dryRun ? 'Would mark ' : 'Marked ')."{$outcome}: {$institution->name}");
+
+            if (! $dryRun) {
+                $resolvedByActivity
+                    ? $this->periodicityGapHandler->completeForInstitution($institution)
+                    : $this->periodicityGapHandler->cancelTask($task);
+            }
+
+            return;
         }
 
-        if ($status->status->requiresAction() && ! $dryRun) {
-            $current = ResolveTaskAssignees::forInstitution($institution)->pluck('id');
-            if ($current->isNotEmpty() && $current->sort()->values()->all() !== $task->users->pluck('id')->sort()->values()->all()) {
+        $current = ResolveTaskAssignees::forInstitution($institution)->pluck('id');
+        if ($current->isNotEmpty() && $current->sort()->values()->all() !== $task->users->pluck('id')->sort()->values()->all()) {
+            $this->outcomes['reassigned']++;
+            $this->detail($dryRun, ($dryRun ? 'Would reassign: ' : 'Reassigned: ').$institution->name);
+
+            if (! $dryRun) {
                 $task->users()->sync($current);
                 $task->load('users');
             }
@@ -256,6 +277,36 @@ class RepopulateTasks extends Command
         if ($status->status === InstitutionActivityStatus::Overdue) {
             $this->askAboutActivity($task, $institution, $dryRun);
         }
+    }
+
+    /**
+     * A deactivated institution owes no more reports. Deleted ones take their tasks with them (HasTasks).
+     *
+     * @param  list<string>  $activeInstitutionIds
+     */
+    private function cancelTasksOfInactiveInstitutions(array $activeInstitutionIds, bool $dryRun): void
+    {
+        $tasks = Task::query()
+            ->where('taskable_type', MorphMap::alias(Institution::class))
+            ->where('action_type', ActionType::PeriodicityGap)
+            ->whereNull('completed_at')
+            ->whereNotIn('taskable_id', $activeInstitutionIds)
+            ->get();
+
+        foreach ($tasks as $task) {
+            $this->outcomes['cancelled']++;
+            $this->detail($dryRun, ($dryRun ? 'Would mark' : 'Marked')." cancelled (institution inactive): {$task->name}");
+
+            if (! $dryRun) {
+                $this->periodicityGapHandler->cancelTask($task);
+            }
+        }
+    }
+
+    /** Per-item lines are for -v; a dry run always shows them, since they are its whole point. */
+    private function detail(bool $dryRun, string $line): void
+    {
+        $this->line('    '.$line, verbosity: $dryRun ? null : 'v');
     }
 
     /**
@@ -491,8 +542,4 @@ class RepopulateTasks extends Command
 
         return ['created' => $created, 'skipped' => $skipped];
     }
-
-    /**
-     * Get the date of the last meeting for an institution.
-     */
 }

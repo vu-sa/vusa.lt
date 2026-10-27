@@ -2,8 +2,15 @@
 doc_status: reviewed
 title: Platforma
 area: actionWindow
-last_reviewed: 2026-10-25
+last_reviewed: 2026-10-27
 tests:
+  - resources/js/Composables/__tests__/useStartFm.test.ts
+  - resources/js/Components/__tests__/StartFmPlayer.component.test.ts
+  - resources/js/Components/Layouts/__tests__/FormPage.component.test.ts
+  - resources/js/Components/Patterns/__tests__/ModelTimestamps.component.test.ts
+  - resources/js/Components/Patterns/__tests__/SheetForm.component.test.ts
+  - resources/js/Composables/__tests__/useCollectionRecordActions.test.ts
+  - tests/Browser/CollectionTrashRefreshTest.php
   - tests/Browser/PostCreateNavigationTest.php
   - tests/Feature/Admin/Content/PageControllerTest.php
   - tests/Feature/Api/Admin/ContentEditorTest.php
@@ -18,6 +25,7 @@ tests:
   - resources/js/Shared/Search/__tests__/FacetOptions.component.test.ts
   - resources/js/__tests__/designTokens.test.ts
   - resources/js/Components/Patterns/__tests__/StatusBadge.component.test.ts
+  - resources/js/Components/Layouts/__tests__/FormPage.component.test.ts
   - resources/js/Components/AdminForms/__tests__/DuplicateDutyWarning.component.test.ts
   - resources/js/Components/AdminForms/__tests__/DuplicateUserWarning.component.test.ts
   - resources/js/Features/Admin/AdminSearch/Components/Select/__tests__/SearchSelectDialog.component.test.ts
@@ -138,6 +146,15 @@ Kuriant narį ar pareigybę, perspėjimas apie galimą dublikatą parodo sutapim
 Redaguojant įrašo pavadinimą, didžioji formos antraštė iškart atspindi rašomą tekstą. Viršutinėje
 juostoje lieka išsaugotas įrašo pavadinimas, o kuriant – formos paskirtis, pvz., „Nauja naujiena“.
 
+### Klavišai formose {#formu-klavisai}
+
+**⌘/Ctrl + Enter** išsaugo formą. **Esc** tik išeina iš laukelio, kuriame rašai, – formos puslapis
+neuždaromas. Jei atvertas pasirinkimo sąrašas, pirmas **Esc** jį užveria.
+
+### Įrašo datos formose {#formu-datos}
+
+Redaguojant išsaugotą įrašą, mažosios formos lange po laukais rodomos **Sukurta** ir **Atnaujinta** datos su laiku. Jos pateikiamos Vilniaus laiku, tuo pačiu stiliumi kaip pilnos formos šoninėje skiltyje. Kuriant naują įrašą datos dar nerodomos.
+
 ### Po sukūrimo {#po-sukurimo}
 
 <ChangelogNote date="2026-10-02" title="Sukurto įrašo atvėrimas">
@@ -163,6 +180,7 @@ Turinio ir konfigūracijos įrašai (naujienos, puslapiai, baneriai, kalendoriau
 - Ištrintas įrašas nepašalinamas iš duomenų bazės iš karto – jis perkeliamas į **šiukšlinę**.
 - Naudotojai, turintys įrašo trynimo teisę, gali jį **atkurti** mygtuku „Atkurti“.
 - Visiškas pašalinimas („Ištrinti visam laikui“) reikalauja super administratoriaus teisės, apsaugančios nuo netyčinio duomenų praradimo.
+- Atkūrus arba galutinai ištrynus įrašą, sąrašas atsinaujina automatiškai. Jei atkūrimo veiksmas atidaro įrašą, iškart pereinama į jo puslapį.
 - **Operaciniai įrašai** (pvz., **rezervacijos**) į šiukšlinę nekeliami: juos ištrynus, įrašas iš karto negrįžtamai pašalinamas kartu su susijusiais tarpiniais duomenimis.
 
 ### Daugiakalbiškumas ir vertimai {#vertimai}
@@ -244,3 +262,19 @@ Būsena visada rodoma per `StatusBadge`, nenaudojant atskirų spalvų.
   telefono juostą ir sparčiuosius klavišus – `AdminShellTest`, langą **Veiksmai** – `ActionWindowTest`.
 - Laikiną ištrynimą (`SoftDeletes`) ir jo elgseną sąrašuose tikrina `SoftDeletableResourcesTest`; visiškas ištrynimas reikalauja `*.forceDelete` teisės, kurią turi tik super administratorius.
 - Daugiakalbių laukų elgseną (Spatie `HasTranslations`, `toFullArray()` administravimo formose ir `toArray()` lokalizuotai peržiūrai) bei vertimų vientisumą užtikrina `TranslatableExpectationsTest` ir `TranslationIntegrityTest`.
+
+## START FM {#start-fm}
+
+Studentų radijo gali klausytis pasirinkęs **Klausyti START FM** paskyros meniu, telefono
+meniu arba komandų paletėje. Viešoje svetainėje grotuvas atidaromas muzikos natos mygtuku
+puslapio apačioje. Pasirinkus radiją, jis pradeda groti iškart.
+
+Grotuve gali pristabdyti transliaciją, keisti garsumą arba nutildyti garsą. Telefone garsumo
+valdikliai išskleidžiami garsiakalbio mygtuku. Jei naršyklė neleidžia keisti garsumo,
+grotuvas pasiūlo naudoti įrenginio mygtukus. Užvėrus grotuvą transliacija sustabdoma;
+pristabdžius grotuvas lieka matomas, o tęsiant klausoma tiesioginės transliacijos.
+
+Kompiuteryje grotuvas rodomas apatiniame dešiniajame kampe. Telefone jis yra virš apatinio
+meniu arba formos išsaugojimo juostos. Pereinant tarp tos pačios svetainės puslapių klausymas
+tęsiasi. Perkrovus puslapį arba perėjus tarp viešos svetainės ir Mano VU SA, radiją reikia
+įjungti iš naujo. Nepavykus prisijungti, grotuve galima bandyti dar kartą.

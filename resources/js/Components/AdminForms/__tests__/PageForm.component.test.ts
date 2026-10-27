@@ -7,17 +7,10 @@ import PermalinkField from '@/Components/AdminForms/PermalinkField.vue';
 import PermalinkPreviewHint from '@/Components/AdminForms/PermalinkPreviewHint.vue';
 import { commonStubs } from '@/tests/stubs';
 
-vi.mock('@inertiajs/vue3', async () => {
-  const actual = await vi.importActual('@inertiajs/vue3');
-  return {
-    ...actual,
-    usePage: () => ({
-      props: {
-        app: { locale: 'lt', url: 'https://www.vusa.test' },
-      },
-    }),
-  };
-});
+import { router, usePage } from '@inertiajs/vue3';
+import { createMockPage } from '@/tests/helpers/createMockPage';
+
+vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 interface PageFormVm {
   form: Record<string, unknown> & { validate: (field: string) => unknown };
@@ -116,6 +109,9 @@ describe('PageForm.vue — show_breadcrumbs toggle', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      app: { locale: 'lt', url: 'https://www.vusa.test' },
+    }));
   });
 
   afterEach(() => {
@@ -248,11 +244,7 @@ describe('PageForm.vue — show_breadcrumbs toggle', () => {
 describe('PageForm.vue — create mode tenant selection', () => {
   let wrapper: ReturnType<typeof mount>;
 
-  // useForm('CreatePage', ...) remembers form state in Inertia's shared page singleton keyed by
-  // that literal string — every test here reuses it (PageForm's isCreate requires the exact
-  // 'CreatePage' key), so a value set by one test would otherwise leak into the next.
-  beforeEach(async () => {
-    const { router } = await vi.importActual<typeof import('@inertiajs/vue3')>('@inertiajs/vue3');
+  beforeEach(() => {
     router.remember(undefined, 'CreatePage');
   });
 

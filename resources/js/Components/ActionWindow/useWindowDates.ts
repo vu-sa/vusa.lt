@@ -20,8 +20,10 @@ export const toPickerDate = (date: Date): Date =>
 export function useWindowDates() {
   const locale = useDateLocale();
 
+  const toDate = (value: Date | string): Date => (typeof value === 'string' ? new Date(value) : value);
+
   const at = (value: Date | string, pattern: string): string =>
-    format(typeof value === 'string' ? new Date(value) : value, pattern, { locale: locale.value });
+    format(toDate(value), pattern, { locale: locale.value });
 
   return {
     /** "rugsėjo 15" */
@@ -32,5 +34,11 @@ export function useWindowDates() {
     dayWithTime: (value: Date | string) => at(value, 'EEEE, MMMM d, HH:mm'),
     /** "2026 m. rugpjūčio 30 d." */
     fullDay: (value: Date | string) => at(value, 'PPP'),
+    /** "rugsėjo 1 – spalio 16", with years only when the range crosses one */
+    range: (start: Date | string, end: Date | string) => {
+      const pattern = toDate(start).getFullYear() === toDate(end).getFullYear() ? 'MMMM d' : 'PPP';
+
+      return `${at(start, pattern)} – ${at(end, pattern)}`;
+    },
   };
 }

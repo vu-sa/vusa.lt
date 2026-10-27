@@ -153,6 +153,7 @@ class UserController extends AdminController
                 'current_duties.institution.tenant',
                 'current_duties.current_users:id,name,profile_photo_path',
                 'upcoming_duties.institution.tenant',
+                'upcoming_duties' => fn ($query) => $query->withPivot('created_at', 'updated_at'),
                 'previous_duties.institution.tenant',
                 'previous_duties.formerNames',
                 'tasks.taskable',

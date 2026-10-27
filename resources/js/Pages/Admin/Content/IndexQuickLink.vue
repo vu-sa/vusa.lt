@@ -220,6 +220,7 @@ const source = useLocalCollectionSource<QuickLinkRow>({
 });
 
 const actions = useCollectionRecordActions({
+  source,
   routePrefix: 'quickLinks',
   canForceDelete: () => canForceDelete.value,
 });

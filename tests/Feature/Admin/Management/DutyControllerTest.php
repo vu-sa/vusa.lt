@@ -464,9 +464,7 @@ describe('duty role management', function (): void {
     });
 
     test('attaching an attachable type to a duty automatically grants associated roles to the duty', function (): void {
-        $type = DutyType::factory()->create([
-            'slug' => 'test-duty-type',
-        ]);
+        $type = DutyType::factory()->create();
         $grantedRole = Role::firstOrCreate(['name' => 'Automated Granted Role', 'guard_name' => 'web']);
         ResponsibilityGrant::factory()->forDutyType($type)->of($grantedRole)->create();
 
@@ -885,6 +883,8 @@ describe('show page', function (): void {
         $response->assertStatus(200)
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('Admin/People/ShowDuty')
+                ->has('duty.users.0.pivot.created_at')
+                ->has('duty.users.0.pivot.updated_at')
                 ->missing('otherDuties')
                 ->missing('studyPrograms')
                 ->missing('duty.next_meeting')

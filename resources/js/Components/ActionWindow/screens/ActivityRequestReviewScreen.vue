@@ -27,6 +27,16 @@
         <p class="mt-1 text-xs text-muted-foreground">
           {{ $t('activity_requests.recipient_count', { count: String(recipientCount) }) }}
         </p>
+        <div class="mt-2 flex flex-wrap gap-2">
+          <Button variant="outline" voice="sentence" class="min-h-11" data-slot="review-select-all"
+            :disabled="!previewReady || checkedRows.length === rows.length" @click="updateActivityRequest({ unchecked: [] })">
+            {{ $t('activity_requests.select_all') }}
+          </Button>
+          <Button variant="ghost" voice="sentence" class="min-h-11" data-slot="review-deselect-all"
+            :disabled="!previewReady || checkedRows.length === 0" @click="updateActivityRequest({ unchecked: rows.map(row => row.key) })">
+            {{ $t('activity_requests.deselect_all') }}
+          </Button>
+        </div>
         <div class="mt-3 divide-y divide-border border-y border-border" data-slot="activity-request-preview">
           <div v-for="group in sendGroups" :key="group.key" class="py-4">
             <p class="text-sm font-bold">
@@ -186,7 +196,8 @@ const setChecked = (rowKey: string, checked: boolean) => updateActivityRequest({
 });
 const checkedRows = computed(() => rows.value.filter(row => isChecked(row.key)));
 const recipientCount = computed(() => new Set(checkedRows.value.map(row => row.recipient.id)).size);
-const ready = computed(() => !!draft.activityRequest.campaignType && loadedKey.value === key.value && !isFetching.value && !error.value && !submitting.value && checkedRows.value.length > 0 && institutionIds.value.length <= 100);
+const previewReady = computed(() => !!draft.activityRequest.campaignType && loadedKey.value === key.value && !isFetching.value && !error.value && !submitting.value);
+const ready = computed(() => previewReady.value && checkedRows.value.length > 0 && institutionIds.value.length <= 100);
 
 const submit = () => {
   if (!ready.value) return;

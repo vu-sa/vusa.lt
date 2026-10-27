@@ -9,6 +9,8 @@ export interface RelationKindOption {
 
 /** One link as seen from the record it is shown on. */
 export interface RelationshipLinkRow {
+  created_at?: string | null;
+  updated_at?: string | null;
   id: number;
   other: { id: string; name: string; is_active?: boolean };
   direction: 'outgoing' | 'incoming';

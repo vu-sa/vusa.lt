@@ -90,7 +90,7 @@
       </FormPanel>
     </template>
 
-    <template #advanced>
+    <template v-if="typeKind === 'institutionType'" #advanced>
       <FormFieldWrapper
         id="slug"
         :label="$t('forms.fields.technical_slug')"

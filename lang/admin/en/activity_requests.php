@@ -1,6 +1,15 @@
 <?php
 
 return [
+    'all_scopes' => 'All governance scopes',
+    'select_matching' => 'Select matching',
+    'select_all' => 'Select all',
+    'deselect_all' => 'Clear selection',
+    'selected_count' => 'Selected :count of 100 institutions',
+    'selecting' => 'Loading and selecting…',
+    'limit_reached' => 'You can select up to 100 institutions at once. Prepare a separate request for other institutions.',
+    'bulk_title' => 'Select several institutions',
+    'bulk_hint' => 'Select institutions matching the filters and search together. More results load automatically, up to 100 institutions. You can also clear the entire selection.',
     'personal' => [
         'title' => 'My activity requests',
         'record_title' => 'Activity requests',
@@ -136,7 +145,6 @@ return [
     'campaign_spotlight' => 'Choose whether to ask about activity or request missing meeting records.',
     'send_section' => 'What we will send, and to whom',
     'skip_section' => 'Who will not receive an email',
-    'selection_limit' => 'Select up to 100 institutions at a time. Create another request for the remaining institutions.',
     'all_tenants' => 'All divisions',
     'delivery' => [
         'immediate' => 'Email now',

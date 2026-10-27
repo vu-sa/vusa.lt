@@ -179,8 +179,8 @@ Paskelbus vieša nuoroda sukuriama fone, todėl paskelbtųjų sąraše dokumenta
 minučių. Kol nuoroda kuriama, prie failo rodoma „Vieša nuoroda dar nesukurta“, o aplankas
 atsinaujina pats, kai nuoroda sukuriama. Bandomojoje
 ir vietinėje aplinkoje gyvo SharePoint archyvo nuorodos nekuriamos – ten failas lieka be nuorodos. Paslėptą failą vėliau galima vėl parodyti tame pačiame aplanke. Posėdžio puslapyje
-laukiantys to padalinio failai rodomi skiltyje **Susieti dokumentai** – **Paskelbti ir susieti**
-failą paskelbia ir susieja su posėdžiu (žr. [Posėdžių gidą](/visak/posedziai)).
+laukiantys to padalinio failai atsiveria mygtuku **Laukia SharePoint** – **Paskelbti ir susieti**
+pažymėtus failus paskelbia ir susieja su posėdžiu (žr. [Posėdžių gidą](/visak/posedziai)).
 
 ### Atnaujinti duomenis {#sinchronizavimas}
 

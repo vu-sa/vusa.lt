@@ -41,7 +41,7 @@ describe('CollectionActivityStatus', () => {
     await flushPromises();
     expect(apiMocks.mutate).toHaveBeenCalledWith(expect.any(String), 'PATCH', { is_active: false }, expect.any(Object));
     expect(wrapper.emitted('updated')).toEqual([[false]]);
-    expect(wrapper.findComponent(CollectionStatusMenu).props('status')).toMatchObject({ label: 'Neaktyvi', role: 'neutral', uppercase: true });
+    expect(wrapper.findComponent(CollectionStatusMenu).props('status')).toMatchObject({ label: 'Nebeveikianti', role: 'neutral' });
   });
 
   it('rolls back a rejected mutation', async () => {

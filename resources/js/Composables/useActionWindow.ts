@@ -22,6 +22,7 @@ import { computed, inject, provide, reactive, readonly, ref, type InjectionKey, 
 import { invalidateActionWindowData } from '@/Composables/useActionWindowData';
 import { toLocalDateTime, type AgendaItemFormData, type MeetingFormData } from '@/Composables/useMeetingCreation';
 import { isDateOnlyMeetingType } from '@/Types/MeetingType';
+import type { InstitutionScope } from '@/Types/enums';
 
 export type ScreenId
   = | 'persona'
@@ -56,6 +57,14 @@ export interface ActionWindowInstitutionRef {
   name: string;
   /** Only VU SA's own bodies may be announced in the calendar; undefined until known. */
   isInternal?: boolean;
+  tenant_id?: number;
+  tenant_shortname?: string | null;
+  governance_scope?: InstitutionScope;
+}
+
+export interface ActivityRequestFilters {
+  tenantIds: string[];
+  governanceScope: InstitutionScope | null;
 }
 
 /** A representative or secretary a coordinator can ask, with the institutions they would be asked about. */
@@ -84,6 +93,8 @@ export interface ActionWindowDraft {
    * `unchecked` holds the review rows ("institutionId:userId") the coordinator unticked.
    */
   activityRequest: {
+    filters: ActivityRequestFilters;
+    selectionLimited: boolean;
     mode: 'institutions' | 'people';
     institutions: ActionWindowInstitutionRef[];
     pinned: ActionWindowInstitutionRef[];
@@ -95,6 +106,7 @@ export interface ActionWindowDraft {
 }
 
 export interface OpenOptions {
+  activityRequestFilters?: ActivityRequestFilters;
   /** Jump straight into a flow instead of the persona screen. */
   flow?: 'meeting.create' | 'check-in' | 'meeting.complete' | 'institution.report' | 'activity.request';
   institution?: ActionWindowInstitutionRef | null;
@@ -150,7 +162,7 @@ const emptyDraft = (): ActionWindowDraft => ({
   meeting: { start_time: '', type: undefined, description: '', announce_in_calendar: false },
   agendaItems: [],
   checkIn: { startDate: undefined, endDate: undefined, note: '' },
-  activityRequest: { mode: 'institutions', institutions: [], pinned: [], people: [], unchecked: [], campaignType: null, note: '' },
+  activityRequest: { filters: { tenantIds: [], governanceScope: null }, selectionLimited: false, mode: 'institutions', institutions: [], pinned: [], people: [], unchecked: [], campaignType: null, note: '' },
 });
 
 const ROOT_FRAME: ScreenFrame = { id: 'persona' };
@@ -225,6 +237,10 @@ export function createActionWindowProvider(): ActionWindowContext {
     if (options?.institutions) {
       draft.activityRequest.institutions = [...options.institutions];
       draft.activityRequest.pinned = [...options.institutions];
+    }
+
+    if (options?.activityRequestFilters) {
+      draft.activityRequest.filters = { ...options.activityRequestFilters, tenantIds: [...options.activityRequestFilters.tenantIds] };
     }
 
     stack.splice(0, stack.length, ...initialStack(options, !!options?.institution));

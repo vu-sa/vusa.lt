@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Užduotys
 area: tasks
 models: [Task]
-last_reviewed: 2026-10-25
+last_reviewed: 2026-10-27
 tests:
   - tests/Browser/VisakOverviewPagesTest.php
   - tests/Feature/Admin/Dashboard/UserTasksTest.php
@@ -67,6 +67,19 @@ gavėjo terminui, skaičiuojamam nuo jo pareigų pradžios dabartinėje kadencij
 tik praėjus kiekvieno gavėjo terminui, ne vos sukūrus užduotį, ir ne dažniau kaip kartą per mėnesį
 apie tą pačią instituciją. Atostogų dienos neskaičiuojamos. Kol periodiškumo užduotis atvira, jos
 atsakingieji kasdien atnaujinami pagal dabartinius institucijos atstovus ar sekretorius.
+
+### Atšauktos užduotys {#atsauktos}
+
+Periodiškumo užduotis **atšaukiama**, kai ji nebeaktuali, nors niekas jos neatliko:
+
+- prasidėjo nauja kadencija, institucija posėdžių dar neturėjo, o naujiems atstovams terminas dar nesuėjo;
+- institucija pažymėta kaip neveikianti.
+
+Atšaukta užduotis dingsta iš neatliktų, joje rodoma žymė **Atšaukta**, o atstovų rodikliuose ji
+neskaičiuojama nei kaip atlikta, nei kaip neatlikta. Apie atšaukimą niekam nepranešama, o jos
+neatsakyti klausimai „Ar vyko posėdis?“ nebegalioja. Kai naujiems atstovams terminas artės, bus
+sukurta nauja užduotis – jau jiems.
+
 Pavyzdys ir bendros rankinių bei automatinių užklausų sąlygos – [Institucijų gide](/visak/institucijos#paklausti).
 
 ### Kada užduotis vėluoja {#veluoja}
@@ -150,6 +163,8 @@ nebėra. Rankinės užduoties priminimus gauna visi, kuriuos priskyrė žmogus.
   (`TaskPolicy::update`). Ištrinti – `tasks.delete.{*|padalinys|own}`, automatines taip pat
   (`Task::isDeletableBy`). `.own` (tavo pareigybių bendradarbių užduotys) nė vienai standartinei
   rolei nepriskiriama.
-- Periodiškumo užduotis kuria `tasks:repopulate institution --force` (kasdien 10.00). Priminimus
+- Periodiškumo užduotis kuria `tasks:repopulate institution` (kasdien 10.00). Atšaukimas –
+  `BaseTaskHandler::cancel()`: nustatomi ir `completed_at`, ir `cancelled_at`, todėl visos atvirų
+  užduočių užklausos jos nebemato, o `RepStatisticsScope::tasks()` ją praleidžia. Priminimus
   siunčia `TaskNotifier::notifyDaysLeft` (išskyrus `periodicity_gap`) ir
   `notifications:task-overdue-reminders` gavėjams iš `Task::notifiableUsers()` (`ResolveTaskAudience`).

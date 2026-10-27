@@ -17,7 +17,7 @@ class SetDutyActive
 
             if (! $active && $duty->current_users()->exists()) {
                 throw ValidationException::withMessages([
-                    'is_active' => __('Pirmiau užbaik narių pareigas, tada pažymėk pareigybę neaktyvia.'),
+                    'is_active' => __('Pirmiau užbaik narių pareigas, tada pažymėk pareigybę nebeveikiančia.'),
                 ]);
             }
 

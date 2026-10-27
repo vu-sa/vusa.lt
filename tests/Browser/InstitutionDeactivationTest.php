@@ -78,7 +78,7 @@ it('applies list status changes and retains inactive institution tags across nav
     }
 
     $page->click('[data-slot=institution-collection-row]:has-text("Būsenos patikra") [data-slot=collection-status-menu]');
-    $page->click('[role=menuitemradio]:has-text("Neaktyvi")');
+    $page->click('[role=menuitemradio]:has-text("Nebeveikianti")');
     $page->assertVisible('[data-slot=confirm-dialog-action]');
     $page->click('[data-slot=confirm-dialog-action]');
     waitForInertiaRender($page, '[data-slot=institution-collection-row]:has-text("Būsenos patikra") [data-status-role=neutral]');
@@ -86,7 +86,7 @@ it('applies list status changes and retains inactive institution tags across nav
 
     navigateTo($page, '/mano/duties');
     waitForInertiaRender($page, '[data-slot=collection-status-menu]');
-    $page->assertSee('Neaktyvi institucija');
+    $page->assertSee('Nebeveikianti institucija');
     foreach (['light', 'dark'] as $theme) {
         $page->script('document.documentElement.classList.toggle("dark", '.($theme === 'dark' ? 'true' : 'false').')');
         foreach ([390, 820, 1180, 1440] as $width) {
@@ -95,7 +95,7 @@ it('applies list status changes and retains inactive institution tags across nav
         }
     }
     $page->click('[data-slot=duty-collection-row]:has-text("Būsenos pareigybė") [data-slot=collection-status-menu]');
-    $page->click('[role=menuitemradio]:has-text("Neaktyvi")');
+    $page->click('[role=menuitemradio]:has-text("Nebeveikianti")');
     waitForInertiaRender($page, '[data-slot=duty-collection-row]:has-text("Būsenos pareigybė") [data-slot=collection-status-menu] [data-status-role=neutral]');
     expect($duty->fresh()->is_active)->toBeFalse();
     navigateTo($page, '/mano/institutions?view=table');

@@ -28,11 +28,10 @@ class UpdateTenantRequest extends FormRequest
         return [
             'fullname' => 'required|unique:tenants,fullname,'.$this->tenant->id,
             'shortname' => 'required|unique:tenants,shortname,'.$this->tenant->id,
-            // Type one of: pagrindinis, padalinys, pkp
             'type' => ['required', new Enum(TenantType::class)],
             'alias' => 'nullable|unique:tenants,alias,'.$this->tenant->id,
             'shortname_vu' => 'nullable|unique:tenants,shortname_vu,'.$this->tenant->id,
-            'primary_institution_id' => ['nullable', SoftDeleteRules::existsLive('institutions')],
+            'primary_institution_id' => ['nullable', SoftDeleteRules::existsLive('institutions')->where('tenant_id', $this->tenant->id)],
             'goals_enabled' => ['sometimes', 'boolean'],
         ];
     }

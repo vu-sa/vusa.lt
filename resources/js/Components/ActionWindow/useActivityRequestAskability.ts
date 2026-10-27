@@ -1,4 +1,4 @@
-import { reactive, ref, watch, type Ref } from 'vue';
+import { onScopeDispose, reactive, ref, watch, type Ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { useApiMutation } from '@/Composables/useApi';
@@ -43,7 +43,7 @@ export const skipLabel = (reason: string) => $t(`activity_requests.skip.${reason
  */
 export function useActivityRequestAskability(campaign: Ref<string | null>, pairsFor?: (institutionId: string) => ActivityRecipientPair[]) {
   const payload = ref<PreviewPayload>({ institution_ids: [], campaign_type: null });
-  const { data, execute } = useApiMutation<ActivityPreviewEntry[], PreviewPayload>(
+  const { data, error, execute, abort } = useApiMutation<ActivityPreviewEntry[], PreviewPayload>(
     route('api.v1.admin.activityRequests.preview'), 'POST', payload, { showSuccessToast: false, showErrorToast: false },
   );
   const entries = reactive(new Map<string, ActivityPreviewEntry>());
@@ -55,15 +55,21 @@ export function useActivityRequestAskability(campaign: Ref<string | null>, pairs
     generation++;
     entries.clear();
     requested.clear();
+  }, { flush: 'sync' });
+
+  onScopeDispose(() => {
+    generation++;
+    abort();
   });
 
   const ensure = (ids: string[]) => {
     const missing = ids.filter(id => !requested.has(id));
-    if (!campaign.value || missing.length === 0) return;
+    if (!campaign.value || missing.length === 0) return queue;
     missing.forEach(id => requested.add(id));
     const current = generation;
     queue = queue.then(async () => {
       for (let index = 0; index < missing.length; index += CHUNK) {
+        if (current !== generation) return;
         const chunk = missing.slice(index, index + CHUNK);
         payload.value = {
           institution_ids: chunk,
@@ -72,9 +78,13 @@ export function useActivityRequestAskability(campaign: Ref<string | null>, pairs
         };
         await execute();
         if (current !== generation) return;
-        (data.value ?? []).forEach(entry => entries.set(entry.institution.id, entry));
+        if (!error.value) {
+          (data.value ?? []).filter(entry => chunk.includes(entry.institution.id)).forEach(entry => entries.set(entry.institution.id, entry));
+        }
+        chunk.filter(id => !entries.has(id)).forEach(id => requested.delete(id));
       }
     });
+    return queue;
   };
 
   return { entries, ensure };

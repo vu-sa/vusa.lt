@@ -15,6 +15,8 @@ use App\Models\News;
 use App\Models\Page;
 use App\Models\Tag;
 use App\Models\Tenant;
+use App\Services\SystemDutyTypes;
+use App\Settings\DutyTypeSettings;
 use App\Settings\MeetingSettings;
 use App\Support\LocalizedRouteSlugs;
 use Dom\HTMLDocument;
@@ -191,7 +193,11 @@ it('serves a complete head for every public page', function (Closure $arrange): 
     },
     'student representatives' => fn () => [LocalizedRouteSlugs::route('contacts.studentRepresentatives', ['subdomain' => 'mif'], 'lt'), seoTenant('mif')->shortname],
     'coordinators' => function (): array {
-        DutyType::firstOrCreate(['slug' => 'koordinatoriai'], ['title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators']]);
+        $type = DutyType::firstOrCreate(['id' => 6], ['title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators']]);
+        $settings = app(DutyTypeSettings::class);
+        $settings->coordinator_type_id = $type->id;
+        $settings->save();
+        app(SystemDutyTypes::class)->flush();
         Institution::factory()->create(['tenant_id' => seoTenant('mif')->id, 'alias' => 'mif', 'is_active' => true]);
 
         return [LocalizedRouteSlugs::route('contacts.dutyType', ['subdomain' => 'mif', 'type' => 'koordinatoriai'], 'lt'), 'VU SA MIF'];

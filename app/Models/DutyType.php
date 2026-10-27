@@ -31,7 +31,6 @@ use Illuminate\Support\Facades\DB;
  * @property int|null $parent_id
  * @property array|string|null $title
  * @property array|string|null $description
- * @property string|null $slug
  * @property array<array-key, mixed>|null $extra_attributes
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -68,7 +67,7 @@ use Illuminate\Support\Facades\DB;
  *
  * @mixin \Eloquent
  */
-#[Fillable(['title', 'description', 'slug', 'parent_id', 'extra_attributes'])]
+#[Fillable(['title', 'description', 'parent_id', 'extra_attributes'])]
 class DutyType extends Model implements GuardsForceDelete, SharepointFileableContract
 {
     use GuardsForceDeleteWhenReferenced, HasFactory, HasSharepointFiles, HasTranslations, HasTypeHierarchy, LogsModelActivity, SoftDeletes;
@@ -93,7 +92,7 @@ class DutyType extends Model implements GuardsForceDelete, SharepointFileableCon
             }
         });
 
-        // The contact pages fall back to slugs and skip trashed types, so any of these can move them.
+        // The contact pages skip trashed types, so any of these can move them.
         static::saved(fn () => app(SystemDutyTypes::class)->flush());
         static::deleted(fn () => app(SystemDutyTypes::class)->flush());
         static::restored(fn () => app(SystemDutyTypes::class)->flush());

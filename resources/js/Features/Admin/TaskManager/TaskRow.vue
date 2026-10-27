@@ -8,7 +8,9 @@
     <CollectionPrimaryCell class="min-w-0 flex-1" :title-lines="2" clickable @open="emit('open')">
       <span :class="task.completed_at && 'line-through'">{{ task.name }}</span>
       <template #sub>
-        {{ subject }}<template v-if="task.due_date">
+        {{ subject }}<template v-if="task.cancelled_at">
+          · {{ $t('tasks.cancelled') }}
+        </template><template v-else-if="task.due_date">
           · <span :class="getDueDateUrgencyClasses(task)">{{ formatTaskDueDate(task.due_date, dateLocale) }}</span>
         </template>
       </template>

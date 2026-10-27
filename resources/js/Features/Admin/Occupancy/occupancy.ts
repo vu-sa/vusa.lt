@@ -46,8 +46,8 @@ export function dutyNameOn(current: string, formerNames: FormerDutyName[] | null
 }
 
 /** Curators (and their English-programme counterpart, mentors) are the duties a study programme belongs to. */
-export function isCuratorDuty(typeSlugs: (string | null | undefined)[] | null | undefined, curatorSlugs: readonly string[]): boolean {
-  return (typeSlugs ?? []).some(slug => !!slug && curatorSlugs.includes(slug));
+export function isCuratorDuty(typeIds: (number | null | undefined)[] | null | undefined, curatorTypeIds: readonly number[]): boolean {
+  return (typeIds ?? []).some(id => id != null && curatorTypeIds.includes(Number(id)));
 }
 
 /**

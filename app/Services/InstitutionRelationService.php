@@ -104,7 +104,7 @@ class InstitutionRelationService
     /**
      * The direct links an institution takes part in, from its side, for editing on its record.
      *
-     * @return list<array{id: int, other: array{id: string, name: mixed}, direction: 'outgoing'|'incoming', kind: string, kind_label: string, mutual: bool}>
+     * @return list<array{id: int, created_at: string|null, updated_at: string|null, other: array{id: string, name: mixed}, direction: 'outgoing'|'incoming', kind: string, kind_label: string, mutual: bool}>
      */
     public function linksOf(Institution $institution): array
     {
@@ -120,6 +120,8 @@ class InstitutionRelationService
 
                 return $other === null ? null : [
                     'id' => $link->id,
+                    'created_at' => $link->created_at?->toISOString(),
+                    'updated_at' => $link->updated_at?->toISOString(),
                     'other' => ['id' => $other->id, 'name' => $other->name, 'is_active' => (bool) $other->is_active],
                     'direction' => $outgoing ? 'outgoing' : 'incoming',
                     'kind' => $link->kind->value,
@@ -135,7 +137,7 @@ class InstitutionRelationService
     /**
      * The links a type takes part in, from its side. A self-link reads as outgoing.
      *
-     * @return list<array{id: int, other: array{id: string, name: mixed}, direction: 'outgoing'|'incoming', kind: string, kind_label: string, mutual: bool, scope: string, scope_label: string}>
+     * @return list<array{id: int, created_at: string|null, updated_at: string|null, other: array{id: string, name: mixed}, direction: 'outgoing'|'incoming', kind: string, kind_label: string, mutual: bool, scope: string, scope_label: string}>
      */
     public function typeLinksOf(InstitutionType $type): array
     {
@@ -151,6 +153,8 @@ class InstitutionRelationService
 
                 return $other === null ? null : [
                     'id' => $link->id,
+                    'created_at' => $link->created_at?->toISOString(),
+                    'updated_at' => $link->updated_at?->toISOString(),
                     'other' => ['id' => (string) $other->id, 'name' => $other->title],
                     'direction' => $outgoing ? 'outgoing' : 'incoming',
                     'kind' => $link->kind->value,
@@ -196,7 +200,7 @@ class InstitutionRelationService
             return new EloquentCollection;
         }
 
-        $base = ['types', 'meetings:id,title,start_time,type', 'meetings.fileableFiles:id,fileable_id,fileable_type,file_type,deleted_externally_at', 'tenant:id,shortname', 'duties.users:id,name,profile_photo_path,last_action', 'duties.types:id,title,slug', 'checkIns'];
+        $base = ['types', 'meetings:id,title,start_time,type', 'meetings.fileableFiles:id,fileable_id,fileable_type,file_type,deleted_externally_at', 'tenant:id,shortname', 'duties.users:id,name,profile_photo_path,last_action', 'duties.types:id,title', 'checkIns'];
         $authorizedIds = array_keys(array_filter($picked, fn (array $entry) => $entry['authorized']));
         $restrictedIds = array_keys(array_filter($picked, fn (array $entry) => ! $entry['authorized']));
 

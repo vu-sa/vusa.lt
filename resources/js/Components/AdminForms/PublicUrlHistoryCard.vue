@@ -1,54 +1,40 @@
 <template>
   <div v-if="props.urls.length" class="mt-1">
-    <details class="group">
-      <summary
-        :class="[
-          'u-touch inline-flex cursor-pointer items-center gap-1.5',
-          'text-xs font-bold uppercase tracking-wide text-foreground/80 hover:text-foreground transition-colors select-none',
-        ]"
+    <FieldHistoryDisclosure :label="$t('Ankstesni vieši adresai')" :count="props.urls.length">
+      <li
+        v-for="row in props.urls"
+        :key="row.id ?? row.url"
+        class="flex items-center justify-between gap-3 px-3 py-2 text-xs"
       >
-        <ChevronDown class="size-3.5 transition-transform group-open:rotate-180" />
-        <span>{{ $t('Ankstesni vieši adresai') }} ({{ props.urls.length }})</span>
-      </summary>
-
-      <div class="mt-2 border border-border bg-background">
-        <ul class="divide-y divide-border">
-          <li
-            v-for="row in props.urls"
-            :key="row.id ?? row.url"
-            class="flex items-center justify-between gap-3 px-3 py-2 text-xs"
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="border border-border bg-secondary/60 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            {{ row.locale.toUpperCase() }}
+          </span>
+          <a
+            :href="row.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="truncate font-mono text-muted-foreground hover:text-foreground hover:underline"
           >
-            <div class="flex items-center gap-2 min-w-0">
-              <span class="border border-border bg-secondary/60 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                {{ row.locale.toUpperCase() }}
-              </span>
-              <a
-                :href="row.url"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="truncate font-mono text-muted-foreground hover:text-foreground hover:underline"
-              >
-                {{ row.url }}
-              </a>
-            </div>
-            <Button
-              v-if="row.id"
-              variant="ghost"
-              size="icon"
-              class="shrink-0 text-muted-foreground hover:text-destructive"
-              :aria-label="$t('Ištrinti')"
-              data-testid="delete-public-url"
-              @click="confirmDelete(props.destroyRoute(row.id))"
-            >
-              <Trash2 class="size-3.5" />
-            </Button>
-            <span v-else class="shrink-0 text-xs italic text-muted-foreground">
-              {{ $t('Pasenusi nuoroda') }}
-            </span>
-          </li>
-        </ul>
-      </div>
-    </details>
+            {{ row.url }}
+          </a>
+        </div>
+        <Button
+          v-if="row.id"
+          variant="ghost"
+          size="icon"
+          class="shrink-0 text-muted-foreground hover:text-destructive"
+          :aria-label="$t('Ištrinti')"
+          data-testid="delete-public-url"
+          @click="confirmDelete(props.destroyRoute(row.id))"
+        >
+          <Trash2 class="size-3.5" />
+        </Button>
+        <span v-else class="shrink-0 text-xs italic text-muted-foreground">
+          {{ $t('Pasenusi nuoroda') }}
+        </span>
+      </li>
+    </FieldHistoryDisclosure>
 
     <ConfirmDialog
       v-model:open="isOpen"
@@ -65,9 +51,9 @@
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronDown, Trash2 } from '@lucide/vue';
+import { Trash2 } from '@lucide/vue';
 
-import { ConfirmDialog } from '@/Components/Patterns';
+import { ConfirmDialog, FieldHistoryDisclosure } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 
 export interface PublicUrlRow {

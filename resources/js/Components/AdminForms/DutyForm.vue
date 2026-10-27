@@ -22,7 +22,7 @@
     @submit="emit('submit:form', form)"
   >
     <template v-if="isEditing" #title-status>
-      <StatusBadge :status="activityStatuses[form.is_active ? 'active' : 'inactive']" />
+      <StatusBadge :status="operatingStatuses[form.is_active ? 'active' : 'inactive']" />
     </template>
 
     <template #title>
@@ -52,6 +52,60 @@
           :placeholder="activeLocale === 'lt' ? $t('Pirmininkas, Koordinatorius…') : 'Chair, Coordinator…'"
         />
       </FormFieldWrapper>
+
+      <div v-if="showFormerNames" id="duty-former-names" class="-mt-2 space-y-1" data-testid="duty-former-names">
+        <FieldHistoryDisclosure v-model:open="formerNamesOpen" :label="$t('Ankstesni pavadinimai')" :count="form.former_names.length">
+          <li class="px-3 py-2 text-xs text-muted-foreground">
+            {{ $t('Seni laikotarpiai rodomi su tuo metu galiojusiu pavadinimu.') }}
+          </li>
+          <li
+            v-for="(former, index) in form.former_names"
+            :key="index"
+            class="grid gap-2 p-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_10rem_auto] sm:items-end"
+            data-testid="former-name-row"
+          >
+            <div class="space-y-1">
+              <Label :for="`former-name-lt-${index}`" class="flex items-center gap-2 text-xs text-muted-foreground">
+                LT
+                <span v-if="former.auto" class="border border-border bg-secondary px-1.5 text-xs font-medium text-foreground">{{ $t('Naujas') }}</span>
+              </Label>
+              <Input :id="`former-name-lt-${index}`" v-model="former.name.lt" :disabled="former.auto" />
+            </div>
+            <div class="space-y-1">
+              <Label :for="`former-name-en-${index}`" class="text-xs text-muted-foreground">EN</Label>
+              <Input :id="`former-name-en-${index}`" v-model="former.name.en" :disabled="former.auto" />
+            </div>
+            <div class="space-y-1">
+              <Label class="text-xs text-muted-foreground">{{ $t('Naudotas iki') }}</Label>
+              <DatePicker
+                :model-value="former.used_until"
+                :disabled="former.auto"
+                @update:model-value="(value?: Date) => former.used_until = value ? formatDate(value) : ''"
+              />
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              class="u-touch text-destructive"
+              :aria-label="$t('Pašalinti')"
+              data-testid="former-name-remove"
+              @click="removeFormerName(index)"
+            >
+              <Trash2 class="size-3.5" />
+            </Button>
+          </li>
+          <li class="p-2">
+            <Button type="button" variant="ghost" size="sm" voice="sentence" class="u-touch" @click="addFormerName">
+              <Plus class="size-3.5" />
+              {{ $t('Pridėti ankstesnį pavadinimą') }}
+            </Button>
+          </li>
+        </FieldHistoryDisclosure>
+        <p v-if="formerNamesError" class="text-xs text-destructive" role="alert">
+          {{ formerNamesError }}
+        </p>
+      </div>
 
       <!-- Duplicate Duty Warning -->
       <DuplicateDutyWarning
@@ -122,73 +176,15 @@
         <TiptapEditor :key="activeLocale" v-model="form.description[activeLocale]" tools="description" html />
       </FormFieldWrapper>
 
-      <FormFieldWrapper
-        v-if="isEditing"
-        id="duty-former-names"
-        :label="$t('Ankstesni pavadinimai')"
-        :hint="$t('Seni laikotarpiai rodomi su tuo metu galiojusiu pavadinimu.')"
-        :error="form.errors.former_names"
-      >
-        <label v-if="renamedFrom" class="flex items-start gap-2.5 text-sm" data-testid="keep-former-name">
-          <Checkbox v-model="keepFormerName" class="mt-0.5" />
-          <span>{{ $t('Išsaugoti „:name“ kaip ankstesnį pavadinimą', { name: renamedFrom }) }}</span>
-        </label>
-
-        <ul v-if="form.former_names.length > 0" class="divide-y divide-border border border-border">
-          <li
-            v-for="(former, index) in form.former_names"
-            :key="index"
-            class="grid gap-2 p-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_10rem_auto] sm:items-end"
-            data-testid="former-name-row"
-          >
-            <div class="space-y-1">
-              <Label :for="`former-name-lt-${index}`" class="text-xs text-muted-foreground">LT</Label>
-              <Input :id="`former-name-lt-${index}`" v-model="former.name.lt" :disabled="former.auto" />
-            </div>
-            <div class="space-y-1">
-              <Label :for="`former-name-en-${index}`" class="text-xs text-muted-foreground">EN</Label>
-              <Input :id="`former-name-en-${index}`" v-model="former.name.en" :disabled="former.auto" />
-            </div>
-            <div class="space-y-1">
-              <Label class="text-xs text-muted-foreground">{{ $t('Naudotas iki') }}</Label>
-              <DatePicker
-                :model-value="former.used_until"
-                :disabled="former.auto"
-                @update:model-value="(value?: Date) => former.used_until = value ? formatDate(value) : ''"
-              />
-            </div>
-            <Button
-              v-if="!former.auto"
-              type="button"
-              variant="ghost"
-              size="sm"
-              class="u-touch text-destructive"
-              :aria-label="$t('Pašalinti')"
-              @click="form.former_names.splice(index, 1)"
-            >
-              <Trash2 class="size-3.5" />
-            </Button>
-          </li>
-        </ul>
-
-        <Button type="button" variant="outline" size="sm" voice="sentence" class="u-touch self-start" @click="addFormerName">
-          <Plus class="size-3.5" />
-          {{ $t('Pridėti ankstesnį pavadinimą') }}
-        </Button>
-      </FormFieldWrapper>
     </template>
 
     <FormSection
-      v-if="assignableTenants && assignableTenants.length > 0"
+      v-if="showAssignableTenants"
       :title="$t('forms.fields.assignable_tenants')"
       :description="$t('Leisti kitiems padaliniams skirti atstovus į šią pareigybę.')"
+      data-testid="assignable-tenants-section"
     >
-      <label v-if="canEditDuty" class="flex items-start gap-2.5 text-sm" data-testid="allow-external">
-        <Checkbox :model-value="allowExternal" class="mt-0.5" @update:model-value="toggleAllowExternal($event === true)" />
-        <span>{{ $t('Leisti deleguotas vietas') }}</span>
-      </label>
-
-      <div v-if="allowExternal || !canEditDuty" class="space-y-3">
+      <div class="space-y-3">
         <MultiSelect
           v-if="canEditDuty"
           id="assignable-tenants"
@@ -236,8 +232,30 @@
             </div>
           </div>
         </div>
+        <Button
+          v-if="canEditDuty"
+          type="button"
+          variant="ghost"
+          size="sm"
+          voice="sentence"
+          class="u-touch text-muted-foreground"
+          data-testid="assignable-tenants-clear"
+          @click="clearAssignableTenants"
+        >
+          {{ $t('Nebeleisti kitiems padaliniams skirti atstovų') }}
+        </Button>
       </div>
     </FormSection>
+
+    <SpotlightPopover
+      v-if="fillActions.length"
+      :title="$t('Retesni laukai – formos apačioje')"
+      :description="$t('Ankstesnius pavadinimus ir kitų padalinių atstovus pridėsi šiais mygtukais, kai jų prireiks.')"
+      :is-dismissed="fillSpotlight.isDismissed.value"
+      @dismiss="fillSpotlight.dismiss()"
+    >
+      <FormFillActions :actions="fillActions" />
+    </SpotlightPopover>
 
     <!-- Aside Slot -->
     <template #aside>
@@ -247,7 +265,7 @@
           id="duty-active"
           v-model="form.is_active"
           :error="form.errors.is_active"
-          :hint="$t('Neaktyvi pareigybė lieka su istorija, bet nebesiūloma priskiriant narius.')"
+          :hint="$t('Nebeveikianti pareigybė lieka su istorija, bet nebesiūloma priskiriant narius.')"
           data-testid="toggle-duty-active"
         />
 
@@ -417,16 +435,15 @@
 import { computed, nextTick, ref, watch } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Building2, ChevronsUpDown, Plus, SlidersHorizontal, Trash2, Users } from '@lucide/vue';
+import { Building2, ChevronsUpDown, History, Plus, SlidersHorizontal, Trash2, Users } from '@lucide/vue';
 
 import ActivityStatusField from './ActivityStatusField.vue';
 
-import { activityStatuses } from '@/Constants/statuses';
+import { operatingStatuses } from '@/Constants/statuses';
 import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import { ConfirmDialog, FormPanel, FormSection } from '@/Components/Patterns';
-import { Checkbox } from '@/Components/ui/checkbox';
+import { ConfirmDialog, FieldHistoryDisclosure, FormFillActions, FormPanel, FormSection, type FormFillAction } from '@/Components/Patterns';
 import { DatePicker } from '@/Components/ui/date-picker';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import { Input } from '@/Components/ui/input';
@@ -544,6 +561,7 @@ const fieldIds = {
   'places_to_occupy': 'places_to_occupy',
   'contacts_grouping': 'contacts_grouping',
   'types': 'duty-types',
+  'former_names': 'duty-former-names',
 };
 
 // Form Initialization
@@ -607,7 +625,7 @@ const missingLocaleCounts = computed(() => ({
   en: !form.name.en ? 1 : 0,
 }));
 
-// Renaming keeps the old name for the terms that ran under it, unless the editor opts out.
+// Renaming keeps the old name for the terms that ran under it; removing that row opts out.
 const originalName = {
   lt: (typeof props.duty?.name === 'object' ? props.duty?.name?.lt : props.duty?.name) ?? '',
   en: (typeof props.duty?.name === 'object' ? props.duty?.name?.en : '') ?? '',
@@ -624,16 +642,41 @@ const yesterdayIso = () => {
   return formatDate(date);
 };
 
+const formerNamesOpen = ref(false);
+const formerNamesRevealed = ref(false);
+const showFormerNames = computed(() => isEditing.value && props.canEditDuty && (form.former_names.length > 0 || formerNamesRevealed.value));
+const formerNamesError = computed(() => Object.entries(form.errors as Record<string, string>)
+  .find(([key]) => key.startsWith('former_names'))?.[1]);
+
+watch(renamedFrom, () => {
+  keepFormerName.value = true;
+});
+
 watch([renamedFrom, keepFormerName], ([from, keep]) => {
   const manual = form.former_names.filter(former => !former.auto);
 
   form.former_names = from && keep
     ? [{ name: { ...originalName }, used_until: yesterdayIso(), auto: true }, ...manual]
     : manual;
+  if (from && keep) {
+    formerNamesOpen.value = true;
+  }
 });
 
-const addFormerName = () => {
+const addFormerName = async () => {
+  formerNamesRevealed.value = true;
+  formerNamesOpen.value = true;
   form.former_names.push({ name: { lt: '', en: '' }, used_until: yesterdayIso() });
+  await nextTick();
+  document.getElementById(`former-name-lt-${form.former_names.length - 1}`)?.focus();
+};
+
+const removeFormerName = (index: number) => {
+  if (form.former_names[index]?.auto) {
+    keepFormerName.value = false;
+    return;
+  }
+  form.former_names.splice(index, 1);
 };
 
 // Duplicate duty check composable
@@ -668,10 +711,13 @@ const onInstitutionConfirm = (hits: NormalizedSearchHit[]) => {
   }
 };
 
+// Holders only carry a unit when other units delegate them; a saved choice stays visible until changed.
 const contactsGroupingOptions = computed<FormSegmentOption<string>[]>(() => [
   { value: 'none', label: $t('Numatytasis') },
   { value: 'study_program', label: $t('Pagal studijų programą') },
-  { value: 'tenant', label: $t('Pagal padalinį') },
+  ...(form.assignable_tenants.length > 0 || form.contacts_grouping === 'tenant'
+    ? [{ value: 'tenant', label: $t('Pagal padalinį') }]
+    : []),
 ]);
 
 const readonlyTypes = computed(() => (props.duty?.types ?? []).filter(type =>
@@ -714,13 +760,23 @@ const onExOfficioConfirm = (hits: NormalizedSearchHit[]) => {
   form.ex_officio_target_duty_ids = hits.map(h => h.recordId);
 };
 
-// Assignable Tenants (Delegated Seats)
-const allowExternal = ref((form.assignable_tenants?.length ?? 0) > 0);
+// Assignable Tenants (Delegated Seats): rare, so hidden until offered; stays open until save once revealed.
+const assignableTenantsRevealed = ref(false);
+const showAssignableTenants = computed(() => (props.assignableTenants?.length ?? 0) > 0 && (props.canEditDuty
+  ? form.assignable_tenants.length > 0 || assignableTenantsRevealed.value
+  : visibleAssignableTenantRows.value.length > 0));
 
-const toggleAllowExternal = (val: boolean) => {
-  allowExternal.value = val;
-  if (!val) {
-    form.assignable_tenants = [];
+const revealAssignableTenants = async () => {
+  assignableTenantsRevealed.value = true;
+  await nextTick();
+  document.getElementById('assignable-tenants')?.focus();
+};
+
+const clearAssignableTenants = () => {
+  form.assignable_tenants = [];
+  assignableTenantsRevealed.value = false;
+  if (form.contacts_grouping === 'tenant') {
+    form.contacts_grouping = 'none';
   }
 };
 
@@ -755,6 +811,30 @@ const tenantOccupancy = (row: AssignableTenantRow) => {
   const exOfficioCount = (props.exOfficioMembers ?? []).filter(m => m.tenant_id === row.tenant_id).length;
   return pickedCount + exOfficioCount;
 };
+
+const fillSpotlight = useFeatureSpotlight('duty-form-fill-actions-v1');
+
+const fillActions = computed<FormFillAction[]>(() => {
+  if (!props.canEditDuty) {
+    return [];
+  }
+
+  const actions: FormFillAction[] = [];
+  if (isEditing.value && !showFormerNames.value) {
+    actions.push({ key: 'former-names', label: $t('Pridėti ankstesnį pavadinimą'), icon: History, run: () => {
+      void fillSpotlight.dismiss();
+      void addFormerName();
+    } });
+  }
+  if ((props.assignableTenants?.length ?? 0) > 0 && !showAssignableTenants.value) {
+    actions.push({ key: 'assignable-tenants', label: $t('Leisti kitiems padaliniams skirti atstovus'), icon: Users, run: () => {
+      void fillSpotlight.dismiss();
+      void revealAssignableTenants();
+    } });
+  }
+
+  return actions;
+});
 
 const removeTenantRow = (tenantId: number) => {
   form.assignable_tenants = form.assignable_tenants.filter(r => r.tenant_id !== tenantId);

@@ -82,6 +82,16 @@ class PeriodicityGapTaskHandler extends BaseTaskHandler
         return true;
     }
 
+    /**
+     * Its open questions expire with it rather than resolve: no activity was reported.
+     */
+    public function cancelTask(Task $task): void
+    {
+        $this->cancel($task);
+
+        InstitutionActivityRequest::query()->open()->where('task_id', $task->id)->update(['expires_at' => now()]);
+    }
+
     public function findExistingTask(Institution $institution): ?Task
     {
         return Task::query()

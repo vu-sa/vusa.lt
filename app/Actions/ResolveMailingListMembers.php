@@ -176,13 +176,13 @@ class ResolveMailingListMembers
             $duties = $duties->diff($withMailbox);
         }
 
-        $this->collectHolders($duties);
+        $this->collectHolders($duties, $source->address_mode);
     }
 
     /**
      * @param  \Illuminate\Database\Eloquent\Collection<int, Duty>  $duties
      */
-    private function collectHolders(\Illuminate\Database\Eloquent\Collection $duties): void
+    private function collectHolders(\Illuminate\Database\Eloquent\Collection $duties, MailingListAddressMode $mode): void
     {
         if ($duties->isEmpty()) {
             return;
@@ -194,6 +194,7 @@ class ResolveMailingListMembers
             ->activeOn($this->date)
             ->where('dutiable_type', MorphMap::alias(User::class))
             ->whereIn('duty_id', $dutiesById->keys())
+            ->when($mode === MailingListAddressMode::DutyMailbox, fn (Builder $query) => $query->with('viaDutiable.duty:id,email,name'))
             ->orderBy('start_date')
             ->orderBy('id')
             ->get();
@@ -204,21 +205,22 @@ class ResolveMailingListMembers
             $user = $users->get($assignment->dutiable_id);
 
             if ($user !== null) {
-                $this->addHolder($user, $assignment, $dutiesById->get($assignment->duty_id));
+                $this->addHolder($user, $assignment, $dutiesById->get($assignment->duty_id), $mode);
             }
         }
     }
 
-    private function addHolder(User $user, Dutiable $assignment, Duty $duty): void
+    private function addHolder(User $user, Dutiable $assignment, Duty $duty, MailingListAddressMode $mode): void
     {
-        $assignmentEmail = $this->normalize($assignment->additional_email);
+        [$assignmentEmail, $reason] = $mode === MailingListAddressMode::DutyMailbox
+            ? $this->mailboxFor($assignment, $duty)
+            : [$this->normalize($assignment->additional_email), $this->dutyLabel($duty)];
         $email = $assignmentEmail ?? $this->normalize($user->email);
 
         if ($email === null) {
             return;
         }
 
-        $reason = $this->dutyLabel($duty);
         $current = $this->holders[$user->id] ?? null;
 
         if ($current === null) {
@@ -239,6 +241,29 @@ class ResolveMailingListMembers
 
         $current['reasons'] = array_values(array_unique([...$current['reasons'], $reason]));
         $this->holders[$user->id] = $current;
+    }
+
+    /**
+     * For a duty without a mailbox: the assignment's email, else — for an ex-officio seat — the
+     * email of the assignment it comes from, then that duty's mailbox. Null means personal email.
+     *
+     * @return array{0: string|null, 1: string}
+     */
+    private function mailboxFor(Dutiable $assignment, Duty $duty): array
+    {
+        $label = $this->dutyLabel($duty);
+        $own = $this->normalize($assignment->additional_email);
+        if ($own !== null) {
+            return [$own, $label];
+        }
+
+        $via = $assignment->viaDutiable;
+        $viaEmail = $via === null ? null : ($this->normalize($via->additional_email) ?? $this->normalize($via->duty?->email));
+        if ($viaEmail !== null) {
+            return [$viaEmail, __('mailing_lists.reasons.duty_mailbox_via', ['duty' => $label, 'via' => (string) $via->duty?->name])];
+        }
+
+        return [null, __('mailing_lists.reasons.mailbox_fallback', ['duty' => $label])];
     }
 
     private function addAddress(MailingListRecipient $recipient): void

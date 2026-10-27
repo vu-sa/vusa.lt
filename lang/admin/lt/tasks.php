@@ -49,6 +49,8 @@ return [
     'create_new' => 'Sukurti naują',
     'due' => 'Terminas',
     'auto_completing' => 'Automatiškai užbaigiama',
+    'cancelled' => 'Atšaukta',
+    'cancelled_hint' => 'Užduotis nebeaktuali – pasikeitė institucijos atstovai arba institucija nebeveikia. Niekam nereikia jos atlikti.',
     'instructions' => 'Instrukcijos',
     'available_actions' => 'Galimi veiksmai',
     'assigned_to' => 'Priskirta',

@@ -15,6 +15,7 @@
 import { computed, inject, provide, ref, type ComputedRef, type InjectionKey } from 'vue';
 
 export const SHELL_FORM_BAR_ID = 'shell-form-bar';
+export const SHELL_MOBILE_ACTIONS_ID = 'shell-mobile-actions';
 
 export interface ShellFocusContext {
   isFocused: ComputedRef<boolean>;

@@ -164,7 +164,7 @@ const presets = computed(() => {
     })
     .map((candidate) => {
       // The whole range, so the rep sees the start the server chose as well as the end they pick.
-      const range = `${dates.day(from.value)} – ${dates.day(candidate.date)}`;
+      const range = dates.range(from.value, candidate.date);
 
       return {
         ...candidate,

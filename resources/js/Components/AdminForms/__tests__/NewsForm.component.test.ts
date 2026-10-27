@@ -7,19 +7,10 @@ import PermalinkField from '@/Components/AdminForms/PermalinkField.vue';
 import PermalinkPreviewHint from '@/Components/AdminForms/PermalinkPreviewHint.vue';
 import SEOPreview from '@/Components/AdminForms/SEOPreview.vue';
 
-// Use the real Inertia useForm (which has withPrecognition); only override usePage
-// with a minimal page object. The global inertia mock's useForm lacks withPrecognition.
-vi.mock('@inertiajs/vue3', async () => {
-  const actual = await vi.importActual('@inertiajs/vue3');
-  return {
-    ...actual,
-    usePage: () => ({
-      props: {
-        app: { locale: 'lt', url: 'https://www.vusa.test' },
-      },
-    }),
-  };
-});
+import { router, usePage } from '@inertiajs/vue3';
+import { createMockPage } from '@/tests/helpers/createMockPage';
+
+vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 interface NewsFormVm {
   form: Record<string, unknown> & { validate: (field: string) => unknown };
@@ -97,6 +88,9 @@ describe('NewsForm.vue', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      app: { locale: 'lt', url: 'https://www.vusa.test' },
+    }));
   });
 
   afterEach(() => {
@@ -219,11 +213,7 @@ describe('NewsForm.vue', () => {
 describe('NewsForm.vue — create mode tenant selection', () => {
   let wrapper: ReturnType<typeof mount>;
 
-  // useForm('CreateNews', ...) remembers form state in Inertia's shared page singleton keyed by
-  // that literal string — every test here reuses it (NewsForm's isCreate requires the exact
-  // 'CreateNews' key), so a value set by one test would otherwise leak into the next.
-  beforeEach(async () => {
-    const { router } = await vi.importActual<typeof import('@inertiajs/vue3')>('@inertiajs/vue3');
+  beforeEach(() => {
     router.remember(undefined, 'CreateNews');
   });
 

@@ -9,6 +9,7 @@ use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\MailingList;
 use App\Models\MailingListSource;
+use App\Models\Pivots\Dutiable;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
@@ -146,6 +147,53 @@ describe('addresses', function (): void {
         ]);
 
         expect(mailingListEmails($this->list))->toBe(['atstovai@mif.vusa.lt', 'holder-b@stud.vu.lt']);
+    });
+
+    test('a mailbox source follows an ex-officio seat to the mailbox of the duty it comes with', function (array $sourcePivot, array $seatPivot, string $expected): void {
+        $council = Institution::factory()->for($this->main)->create();
+        $chair = mailingListSeat(Institution::factory()->for($this->padalinys)->create(), 'chair@ff.stud.vu.lt', $sourcePivot, ['email' => 'pirmininkas@ff.vusa.lt']);
+        $chair->duties()->attach(Duty::factory()->for($council)->create(['email' => null]), [
+            'start_date' => today()->subMonth(),
+            'via_dutiable_id' => Dutiable::query()->where('dutiable_id', $chair->id)->value('id'),
+            ...$seatPivot,
+        ]);
+
+        mailingListSource($this->list, MailingListSourceType::Institution, $council->id, [
+            'address_mode' => MailingListAddressMode::DutyMailbox,
+        ]);
+
+        expect(mailingListEmails($this->list))->toBe([$expected]);
+    })->with([
+        'source duty mailbox' => [[], [], 'pirmininkas@ff.vusa.lt'],
+        'source assignment email' => [['additional_email' => 'chair@vusa.lt'], [], 'chair@vusa.lt'],
+        'seat assignment email' => [['additional_email' => 'chair@vusa.lt'], ['additional_email' => 'seat@vusa.lt'], 'seat@vusa.lt'],
+    ]);
+
+    test('a mailbox source marks holders who fall back to their personal email', function (): void {
+        $institution = Institution::factory()->for($this->main)->create();
+        mailingListSeat($institution, 'member@stud.vu.lt');
+
+        mailingListSource($this->list, MailingListSourceType::Institution, $institution->id, [
+            'address_mode' => MailingListAddressMode::DutyMailbox,
+        ]);
+
+        $recipient = ResolveMailingListMembers::execute($this->list)->sole();
+
+        expect($recipient->email)->toBe('member@stud.vu.lt')
+            ->and($recipient->reasons[0])->toContain(__('mailing_lists.reasons.mailbox_fallback', ['duty' => '']));
+    });
+
+    test('a personal email source ignores the duty an ex-officio seat comes with', function (): void {
+        $council = Institution::factory()->for($this->main)->create();
+        $chair = mailingListSeat(Institution::factory()->for($this->padalinys)->create(), 'chair@ff.stud.vu.lt', duty: ['email' => 'pirmininkas@ff.vusa.lt']);
+        $chair->duties()->attach(Duty::factory()->for($council)->create(['email' => null]), [
+            'start_date' => today()->subMonth(),
+            'via_dutiable_id' => Dutiable::query()->where('dutiable_id', $chair->id)->value('id'),
+        ]);
+
+        mailingListSource($this->list, MailingListSourceType::Institution, $council->id);
+
+        expect(mailingListEmails($this->list))->toBe(['chair@ff.stud.vu.lt']);
     });
 
     test('a person reached through several assignments is subscribed once, with the assignment email', function (): void {

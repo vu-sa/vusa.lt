@@ -143,41 +143,29 @@ export const capitalize = (word: string) => {
 };
 
 /**
- * Nominative agent-noun stems that can head a Lithuanian duty title, each mapped to the
- * masculine singular ending it takes. A duty name is inflected on this word wherever it
- * sits in the title, so "Studentų atstovas VU FF Taryboje" turns on "atstovas" instead of
- * being left alone because the title ends in a locative.
- *
- * A curated vocabulary rather than a suffix rule, because from the outside the neighbouring
- * words are indistinguishable from the head noun: "Socialinis darbas", "Duomenų mokslas",
- * "Chemijos magistras" and "Kompiuterinis modeliavimas" all end in `-as` without ever
- * naming the person who holds the duty. Keyed by stem, so both genders and both numbers of
- * one noun collapse into a single entry.
- *
- * Add a stem here when a new kind of title appears; names with no entry still fall back to
- * the end-of-string rules in {@link inflectDutyNameEnding}, which is all any duty name had
- * before. Mirrored, ASCII-folded, by `App\Services\DutyNameNormalizer` on the server.
+ * Curated nouns avoid treating qualifiers such as "Socialinis darbas" as the holder.
+ * Masculine/feminine endings mirror App\Services\DutyNameNormalizer, ASCII-folded there.
  */
-const DUTY_AGENT_NOUN_STEMS: Record<string, 'ius' | 'as' | 'ys' | 'is'> = {
-  administrator: 'ius',
-  atstov: 'as',
-  direktor: 'ius',
-  instruktor: 'ius',
-  iždinink: 'as',
-  koordinator: 'ius',
-  kurator: 'ius',
-  mentor: 'ius',
-  nar: 'ys',
-  pavaduotoj: 'as',
-  pirminink: 'as',
-  prezident: 'as',
-  redaktor: 'ius',
-  sekretor: 'ius',
-  seniūn: 'as',
-  trener: 'is',
-  vadov: 'as',
-  vicepirminink: 'as',
-  viceprezident: 'as',
+const DUTY_AGENT_NOUN_STEMS: Record<string, readonly ['ius' | 'as' | 'ys' | 'is', 'ė' | 'a']> = {
+  administrator: ['ius', 'ė'],
+  atstov: ['as', 'ė'],
+  direktor: ['ius', 'ė'],
+  instruktor: ['ius', 'ė'],
+  iždinink: ['as', 'ė'],
+  koordinator: ['ius', 'ė'],
+  kurator: ['ius', 'ė'],
+  mentor: ['ius', 'ė'],
+  nar: ['ys', 'ė'],
+  pavaduotoj: ['as', 'a'],
+  pirminink: ['as', 'ė'],
+  prezident: ['as', 'ė'],
+  redaktor: ['ius', 'ė'],
+  sekretor: ['ius', 'ė'],
+  seniūn: ['as', 'ė'],
+  trener: ['is', 'ė'],
+  vadov: ['as', 'ė'],
+  vicepirminink: ['as', 'ė'],
+  viceprezident: ['as', 'ė'],
 };
 
 const MASCULINE_PLURAL_ENDINGS = { ius: 'iai', as: 'ai', ys: 'iai', is: 'iai' } as const;
@@ -185,6 +173,7 @@ const MASCULINE_PLURAL_ENDINGS = { ius: 'iai', as: 'ai', ys: 'iai', is: 'iai' } 
 interface DutyAgentNoun {
   stem: string;
   masculineEnding: string;
+  feminineEnding: string;
   pluralEnding: string;
   /** Whether the spelling found in the name is already plural ("atstovai", "koordinatorės"). */
   isPlural: boolean;
@@ -192,15 +181,16 @@ interface DutyAgentNoun {
 
 /** Every surface form of every stem above, keyed by the lowercased word. */
 const DUTY_AGENT_NOUN_FORMS = new Map<string, DutyAgentNoun>(
-  Object.entries(DUTY_AGENT_NOUN_STEMS).flatMap(([stem, masculineEnding]) => {
+  Object.entries(DUTY_AGENT_NOUN_STEMS).flatMap(([stem, [masculineEnding, feminineEnding]]) => {
     const pluralEnding = MASCULINE_PLURAL_ENDINGS[masculineEnding];
-    const noun = { stem, masculineEnding, pluralEnding };
+    const femininePluralEnding = feminineEnding === 'a' ? 'os' : 'ės';
+    const noun = { stem, masculineEnding, feminineEnding, pluralEnding };
 
     return [
       [stem + masculineEnding, { ...noun, isPlural: false }],
-      [`${stem}ė`, { ...noun, isPlural: false }],
+      [stem + feminineEnding, { ...noun, isPlural: false }],
       [stem + pluralEnding, { ...noun, isPlural: true }],
-      [`${stem}ės`, { ...noun, isPlural: true }],
+      [stem + femininePluralEnding, { ...noun, isPlural: true }],
     ] as [string, DutyAgentNoun][];
   }),
 );
@@ -302,7 +292,7 @@ const inflectDutyName = (name: string, gender: DutyNameGender): string => {
   }
 
   const ending = gender === 'feminine'
-    ? 'ė'
+    ? head.feminineEnding
     : gender === 'plural' ? head.pluralEnding : head.masculineEnding;
 
   // Slicing the stem out of the original name keeps whatever casing was typed ("Kuratorė").
@@ -348,6 +338,7 @@ export const changeDutyNameEndings = (
 
   const firstName = name.split(/\s+/)[0];
   if (firstName === 'katrin') return inflectDutyName(dutyName, 'feminine');
+  if (firstName === 'nikita') return inflectDutyName(dutyName, 'masculine');
   if (firstName === 'german') return dutyName;
 
   // A recognisable first name wins over a surname shared by people of different genders.
@@ -403,7 +394,7 @@ export const getDutyNameGenderVariants = (
     return {
       stem: name.slice(0, head.start + head.stem.length),
       masculineEnding: head.masculineEnding,
-      feminineEnding: 'ė',
+      feminineEnding: head.feminineEnding,
       suffix: name.slice(head.end),
     };
   }

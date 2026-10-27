@@ -17,7 +17,7 @@
             {{ description || $t('Aprašymo nėra.') }}
           </p>
           <dl class="grid gap-4 pt-2 sm:grid-cols-2">
-            <div>
+            <div v-if="typeKind === 'institutionType'">
               <dt class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 {{ $t('Techninė žymė') }}
               </dt>

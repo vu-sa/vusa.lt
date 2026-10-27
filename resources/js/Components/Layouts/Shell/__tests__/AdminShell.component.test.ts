@@ -23,6 +23,7 @@ afterEach(() => {
 });
 
 const stubs = {
+  StartFmPlayer: true,
   StagingBanner: {
     props: ['dismissed', 'compact'],
     emits: ['update:dismissed'],
@@ -62,6 +63,10 @@ describe('AdminShell focus mode', () => {
     expect(scrollArea.find('.sticky').find('[data-testid="top-bar"]').exists()).toBe(true);
     expect(scrollArea.find('[data-slot="admin-page-measure"]').text()).toBe('Puslapis');
     expect(scrollArea.find('[data-testid="bottom-bar"]').exists()).toBe(false);
+    const bottomStack = wrapper.get('[data-slot="shell-bottom-stack"]');
+    expect(bottomStack.find('start-fm-player-stub').exists()).toBe(true);
+    expect(bottomStack.find('#shell-mobile-actions').exists()).toBe(true);
+    expect(bottomStack.find('[data-testid="bottom-bar"]').exists()).toBe(true);
   });
 
   it('keeps the chrome out of page view transitions and the window pinned at the top', async () => {

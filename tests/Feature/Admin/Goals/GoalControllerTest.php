@@ -197,6 +197,8 @@ describe('goals', function (): void {
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Goals/ShowGoal')
+                ->has('steps.0.created_at')
+                ->has('steps.0.updated_at')
                 ->where('steps.0.problem.id', $problem->id)
                 ->where('problems.0.id', $problem->id)
                 ->where('goal.public_url', fn (string $url) => str_contains($url, '/lt/tikslai/'.$this->goal->id))

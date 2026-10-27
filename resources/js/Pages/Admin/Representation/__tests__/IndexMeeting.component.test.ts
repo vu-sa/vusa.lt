@@ -10,12 +10,16 @@ import { createMockPage } from '@/tests/helpers/createMockPage';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-const rows = vi.hoisted(() => ({ items: [] as Record<string, unknown>[] }));
+const rows = vi.hoisted(() => ({ items: [] as Record<string, unknown>[], refresh: vi.fn() }));
 
 vi.mock('@/Composables/useCollectionSource', () => ({
   isTrashView: () => true,
   useTypesenseCollectionSource: vi.fn(),
-  useTrashCollectionSource: () => ({ items: ref(rows.items) }),
+  useTrashCollectionSource: () => {
+    const items = ref(rows.items);
+    rows.refresh.mockImplementation(() => { items.value = []; });
+    return { items, refresh: rows.refresh };
+  },
 }));
 
 function mountPage() {
@@ -45,7 +49,11 @@ describe('meeting trash actions', () => {
 
     expect(button.text()).toBe('Atkurti');
     await button.trigger('click');
-    expect(router.patch).toHaveBeenCalledWith(expect.stringContaining('meetings.restore'), {}, { preserveScroll: true });
+    expect(router.patch).toHaveBeenCalledWith(expect.stringContaining('meetings.restore'), {}, expect.objectContaining({ preserveScroll: true }));
+    vi.mocked(router.patch).mock.calls.at(-1)?.[2].onSuccess();
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('[data-row="m1"]').exists()).toBe(false);
+    wrapper.unmount();
   });
 
   it('does not offer restoration based on creation permission or another rows abilities', () => {

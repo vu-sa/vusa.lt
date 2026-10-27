@@ -231,6 +231,7 @@ const source = useDatabaseCollectionSource<UserRow>({
 
 // Live members are edited on their record page; the list only acts on the trash.
 const actions = useCollectionRecordActions({
+  source,
   routePrefix: 'users',
   canRestore: () => canCreate.value,
   canForceDelete: () => canForceDelete.value,

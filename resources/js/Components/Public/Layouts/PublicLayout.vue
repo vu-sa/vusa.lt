@@ -6,7 +6,7 @@
   <!-- Pages own their measure (`SectionBand`, `max-w-7xl`); the layout adds none.
        `overflow-x-clip` absorbs the half-scrollbar overhang of rich-content `.rc-viewport`
        bands; `clip`, not `hidden`, so sticky descendants keep working. -->
-  <div class="@container min-h-screen flex flex-col overflow-x-clip bg-background text-foreground font-public">
+  <div class="@container min-h-screen flex flex-col overflow-x-clip bg-background text-foreground font-public" :style="bottomChromeStyle">
     <!-- data-nosnippet (honoured on div/span/section only) keeps site chrome out of Google's
          snippets, which are built from rendered text in DOM order. See .ai/rules/seo.md. -->
     <div data-nosnippet>
@@ -44,11 +44,15 @@
     <div data-nosnippet class="mt-auto">
       <SiteFooter />
     </div>
+    <div ref="bottomPlayer" :class="['fixed inset-x-0 bottom-0 z-40 md:static', radio.isOpen.value && 'pb-[env(safe-area-inset-bottom,0px)] md:pb-0']">
+      <StartFmPlayer />
+    </div>
+    <div :style="{ height: `${bottomHeight}px` }" class="shrink-0 md:hidden" aria-hidden="true" />
     <StagingWatermark />
   </div>
 
   <!-- Toast notifications (flash messages + the persistent public edit-link toast) -->
-  <Toaster />
+  <Toaster :style="bottomChromeStyle" />
 </template>
 
 <script setup lang="ts">
@@ -56,13 +60,15 @@
  * PublicLayout - Main layout component for public pages
  */
 import { computed, h, defineAsyncComponent, onMounted, ref, watch, nextTick } from 'vue';
-import { useDark } from '@vueuse/core';
+import { useDark, useElementSize } from '@vueuse/core';
 import { usePage, router } from '@inertiajs/vue3';
 
 import SiteFooter from '../FullWidth/SiteFooter.vue';
 
 import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
 import StagingWatermark from '@/Components/StagingWatermark.vue';
+import StartFmPlayer from '@/Components/StartFmPlayer.vue';
+import { createStartFmProvider } from '@/Composables/useStartFm';
 import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
 import { Toaster } from '@/Components/ui/sonner';
 import { useToasts } from '@/Composables/useToasts';
@@ -87,6 +93,14 @@ const ConsentCard = defineAsyncComponent({
   loader: () => import('../ConsentCard.vue'),
   delay: 0, // Load immediately when needed
 });
+
+const radio = createStartFmProvider();
+const bottomPlayer = ref<HTMLElement | null>(null);
+const { height: bottomHeight } = useElementSize(bottomPlayer, undefined, { box: 'border-box' });
+const bottomChromeStyle = computed(() => ({
+  '--bottom-chrome-height': `${bottomHeight.value}px`,
+  '--start-fm-clearance': `${Math.max(bottomHeight.value, radio.desktopHeight.value)}px`,
+}));
 
 const isDark = useDark();
 

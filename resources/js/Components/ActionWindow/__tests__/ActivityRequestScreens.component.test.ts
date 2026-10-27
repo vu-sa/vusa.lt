@@ -11,6 +11,9 @@ import ActivityRequestModeScreen from '@/Components/ActionWindow/screens/Activit
 import ActivityRequestPeopleScreen from '@/Components/ActionWindow/screens/ActivityRequestPeopleScreen.vue';
 import { createActionWindowProvider, type ActionWindowContext, type OpenOptions } from '@/Composables/useActionWindow';
 import { createMockPage } from '@/tests/helpers/createMockPage';
+import ActivityRequestFilters from '@/Components/ActionWindow/ActivityRequestFilters.vue';
+import { MultiSelect } from '@/Components/ui/multi-select';
+import { InstitutionScope } from '@/Types/enums';
 import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
@@ -19,15 +22,17 @@ const candidates = ref<unknown[]>([]);
 const preview = ref<unknown[] | null>(null);
 const fetching = ref(false);
 const apiError = ref<string | null>(null);
-const previewExecute = vi.fn(async () => {});
+const previewExecute = vi.fn(async (_payload?: { institution_ids: string[] }) => {});
 
 vi.mock('@/Composables/useApi', () => ({
   useApi: () => ({ data: candidates, error: ref(null), isFetching: ref(false), execute: vi.fn() }),
-  useApiMutation: () => ({ data: preview, error: apiError, isFetching: fetching, execute: previewExecute, abort: vi.fn() }),
+  useApiMutation: (_url: string, _method: string, payload: { value: { institution_ids: string[] } }) => ({
+    data: preview, error: apiError, isFetching: fetching, execute: () => previewExecute(payload.value), abort: vi.fn(),
+  }),
 }));
 
 vi.mock('@/Features/Admin/AdminSearch/Composables/useAdminCollectionSearch', () => ({
-  useAdminCollectionSearch: vi.fn(() => ({ results: computed(() => candidates.value), query: ref(''), hasMoreResults: ref(false), search: vi.fn(), loadMore: vi.fn() })),
+  useAdminCollectionSearch: vi.fn(() => ({ results: computed(() => candidates.value), status: ref('idle'), error: ref(null), query: ref(''), hasMoreResults: ref(false), search: vi.fn(), loadMore: vi.fn() })),
 }));
 vi.mock('@/Composables/useFeatureSpotlight', () => ({ useFeatureSpotlight: () => ({ isDismissed: ref(true), dismiss: vi.fn() }) }));
 
@@ -60,6 +65,164 @@ beforeEach(() => {
 });
 
 describe('ActivityRequestInstitutionsScreen.vue', () => {
+  const candidate = (id: string, tenant = 1, scope = InstitutionScope.University) => ({
+    id, name: `Institution ${id}`, tenant_id: tenant, tenant_shortname: `Tenant ${tenant}`, governance_scope: scope, activity_status: status,
+  });
+
+  it('inherits several tenants and VU, filters pinned institutions, and prunes on filter changes', async () => {
+    const items = [candidate('a'), candidate('b', 2), candidate('c', 3), candidate('d', 1, InstitutionScope.Vusa)];
+    candidates.value = items;
+    const { wrapper, window } = mountScreen(ActivityRequestInstitutionsScreen, {
+      flow: 'activity.request', institutions: items,
+      activityRequestFilters: { tenantIds: ['1', '2'], governanceScope: InstitutionScope.University },
+    });
+    expect(window.draft.activityRequest.institutions.map(item => item.id)).toEqual(['a', 'b']);
+    expect(wrapper.findAll('[data-slot="action-choice-button"]')).toHaveLength(2);
+    expect(wrapper.get('select').element.value).toBe('vu');
+    wrapper.getComponent(MultiSelect).vm.$emit('update:modelValue', [{ id: '2', label: 'Tenant 2' }]);
+    await flushPromises();
+    expect(window.draft.activityRequest.institutions.map(item => item.id)).toEqual(['b']);
+    expect(wrapper.findAll('[data-slot="action-choice-button"]')).toHaveLength(1);
+    await wrapper.get('select').setValue('vusa');
+    expect(window.draft.activityRequest.institutions).toEqual([]);
+    expect(wrapper.findAll('[data-slot="action-choice-button"]')).toHaveLength(0);
+  });
+
+  it('lists the central office first, then units by name, then student initiatives', () => {
+    const defaultPage = vi.mocked(usePage).getMockImplementation()!;
+    const page = createMockPage();
+    page.props.tenants = [
+      { id: 1, shortname: 'VU SA MIF', type: 'padalinys' },
+      { id: 2, shortname: 'VU SA', type: 'pagrindinis' },
+      { id: 3, shortname: 'VU SA CHGF', type: 'padalinys' },
+      { id: 4, shortname: 'Klubas', type: 'pkp' },
+    ] as typeof page.props.tenants;
+    vi.mocked(usePage).mockReturnValue(page);
+    const items = [candidate('a', 4), candidate('b', 1), candidate('c', 2), candidate('d', 3)]
+      .map(item => ({ ...item, tenant_shortname: page.props.tenants!.find(tenant => tenant.id === item.tenant_id)!.shortname }));
+    candidates.value = items;
+
+    const { wrapper } = mountScreen(ActivityRequestInstitutionsScreen, { flow: 'activity.request' });
+
+    expect(wrapper.getComponent(MultiSelect).props('options').map((option: { label: string }) => option.label))
+      .toEqual(['VU SA', 'VU SA CHGF', 'VU SA MIF', 'Klubas']);
+    vi.mocked(usePage).mockImplementation(defaultPage);
+  });
+
+  it('caps an oversized initial selection after filtering and explains the limit', () => {
+    const items = Array.from({ length: 101 }, (_, index) => candidate(String(index)));
+    candidates.value = [candidate('outside', 2), ...items];
+    const { wrapper, window } = mountScreen(ActivityRequestInstitutionsScreen, {
+      flow: 'activity.request', institutions: [candidate('outside', 2), ...items],
+      activityRequestFilters: { tenantIds: ['1'], governanceScope: InstitutionScope.University },
+    });
+    expect(window.draft.activityRequest.institutions.map(item => item.id)).toEqual(items.slice(0, 100).map(item => item.id));
+    expect(wrapper.text()).toContain('activity_requests.limit_reached');
+  });
+
+  const paginatedSearch = (items: ReturnType<typeof candidate>[]) => {
+    const results = ref(items.slice(0, 20));
+    const hasMoreResults = computed(() => results.value.length < items.length);
+    const loadMore = vi.fn(async () => {
+      results.value = items.slice(0, results.value.length + 20);
+    });
+    vi.mocked(useAdminCollectionSearch).mockReturnValueOnce({
+      results, hasMoreResults, loadMore, status: ref('idle'), error: ref(null), query: ref(''), search: vi.fn(),
+    } as unknown as ReturnType<typeof useAdminCollectionSearch>);
+    return { results, loadMore };
+  };
+
+  const eligiblePreview = (ids: string[], blocked: string[] = []) => ids.map(id => ({
+    institution: { id, name: id }, skip_reason: blocked.includes(id) ? 'already_asked' : null,
+    recipients: blocked.includes(id) ? [] : [{ id: `rep-${id}`, name: id, period_start: '2026-01-01', period_end: '2026-10-27', delivery_mode: 'immediate', skip_reason: null }],
+  }));
+
+  it('loads matching pages, skips blocked institutions and stops at 100 distinct selections', async () => {
+    const items = Array.from({ length: 102 }, (_, index) => candidate(String(index)));
+    candidates.value = items;
+    const { loadMore } = paginatedSearch(items);
+    previewExecute.mockImplementation(async (payload) => {
+      preview.value = eligiblePreview(payload!.institution_ids, ['0']);
+    });
+    const { wrapper, window } = mountScreen(ActivityRequestInstitutionsScreen, { flow: 'activity.request', institutions: [items[1]!] });
+    await wrapper.get('[data-slot="activity-select-all"]').trigger('click');
+    await flushPromises();
+    expect(loadMore).toHaveBeenCalledTimes(5);
+    expect(window.draft.activityRequest.institutions).toHaveLength(100);
+    expect(new Set(window.draft.activityRequest.institutions.map(item => item.id)).size).toBe(100);
+    expect(window.draft.activityRequest.institutions.some(item => item.id === '0')).toBe(false);
+    expect(wrapper.text()).toContain('activity_requests.limit_reached');
+    await wrapper.get('[data-slot="activity-deselect-all"]').trigger('click');
+    expect(window.draft.activityRequest.institutions).toEqual([]);
+    expect(wrapper.get('[data-slot="action-window-primary"]').attributes('disabled')).toBeDefined();
+  });
+
+  it('clears selections hidden by text search and never bulk selects pinned nonmatches', async () => {
+    const items = [candidate('a'), candidate('b')];
+    candidates.value = items;
+    const search = paginatedSearch(items);
+    previewExecute.mockImplementation(async (payload) => {
+      preview.value = eligiblePreview(payload!.institution_ids);
+    });
+    const { wrapper, window } = mountScreen(ActivityRequestInstitutionsScreen, { flow: 'activity.request', institutions: items });
+    const controller = vi.mocked(useAdminCollectionSearch).mock.results.at(-1)!.value;
+    controller.query.value = 'Institution b';
+    search.results.value = [items[1]!];
+    await flushPromises();
+    expect(wrapper.findAll('[data-slot="action-choice-button"]')).toHaveLength(1);
+    await wrapper.get('[data-slot="activity-deselect-all"]').trigger('click');
+    expect(window.draft.activityRequest.institutions).toEqual([]);
+    // The search has no additional matches.
+    controller.hasMoreResults = ref(false);
+    await wrapper.get('[data-slot="activity-select-all"]').trigger('click');
+    await flushPromises();
+    expect(window.draft.activityRequest.institutions.map(item => item.id)).toEqual(['b']);
+  });
+
+  it('does not select unchecked candidates when eligibility fails', async () => {
+    candidates.value = [candidate('a')];
+    apiError.value = 'Failed';
+    preview.value = eligiblePreview(['a']);
+    const { wrapper, window } = mountScreen(ActivityRequestInstitutionsScreen, { flow: 'activity.request' });
+    await wrapper.get('[data-slot="activity-select-all"]').trigger('click');
+    await flushPromises();
+    expect(window.draft.activityRequest.institutions).toEqual([]);
+    expect(wrapper.get('[role="alert"]').text()).toContain('action_window.common.error');
+  });
+
+  it.each(['filters', 'campaign', 'navigation'] as const)('cancels bulk selection when %s changes during eligibility loading', async (change) => {
+    candidates.value = [candidate('a')];
+    let finish!: () => void;
+    previewExecute.mockImplementationOnce(() => new Promise<void>((resolve) => {
+      finish = resolve;
+    }));
+    const { wrapper, window } = mountScreen(ActivityRequestInstitutionsScreen, { flow: 'activity.request' });
+    await wrapper.get('[data-slot="activity-select-all"]').trigger('click');
+    if (change === 'filters') await wrapper.get('select').setValue('vusa');
+    if (change === 'campaign') window.updateActivityRequest({ campaignType: 'missing_meetings' });
+    if (change === 'navigation') window.goTo('activity.mode');
+    preview.value = eligiblePreview(['a']);
+    finish();
+    await flushPromises();
+    expect(window.draft.activityRequest.institutions).toEqual([]);
+  });
+
+  it('stops loading more matches after a search failure', async () => {
+    const items = Array.from({ length: 21 }, (_, index) => candidate(String(index)));
+    candidates.value = items;
+    const { loadMore } = paginatedSearch(items);
+    loadMore.mockImplementation(async () => {});
+    previewExecute.mockImplementation(async (payload) => {
+      preview.value = eligiblePreview(payload!.institution_ids);
+    });
+    const { wrapper, window } = mountScreen(ActivityRequestInstitutionsScreen, { flow: 'activity.request' });
+    await wrapper.get('[data-slot="activity-select-all"]').trigger('click');
+    await flushPromises();
+    expect(loadMore).toHaveBeenCalledTimes(1);
+    expect(window.draft.activityRequest.institutions).toHaveLength(20);
+    expect(wrapper.find('[role="alert"]').exists()).toBe(true);
+  });
+
   it('picks several institutions and moves on to the review', async () => {
     candidates.value = [
       { id: 'a', name: 'VU SA MIF', tenant_shortname: 'MIF', activity_status: status },
@@ -88,6 +251,26 @@ describe('ActivityRequestInstitutionsScreen.vue', () => {
 
 describe('ActivityRequestReviewScreen.vue', () => {
   const institutions = [{ id: 'a', name: 'VU SA MIF' }, { id: 'b', name: 'VU SA FilF' }];
+
+  it.each(['institutions', 'people'] as const)('bulk toggles sendable recipients in %s mode and submits the remaining pair', async (mode) => {
+    const recipient = (id: string) => ({ id, name: id, period_start: '2026-01-01', period_end: '2026-10-27', delivery_mode: 'immediate', skip_reason: null });
+    preview.value = [{ institution: institutions[0], recipients: [recipient('u'), recipient('w')], excluded_recipients: [{ ...recipient('excluded'), skip_reason: 'already_asked' }], skip_reason: null }];
+    const { wrapper, window } = mountScreen(ActivityRequestReviewScreen, { flow: 'activity.request', institutions: [institutions[0]!] });
+    window.updateActivityRequest({ mode, people: [{ id: 'u', name: 'u', institutions: [institutions[0]!] }, { id: 'w', name: 'w', institutions: [institutions[0]!] }] });
+    await flushPromises();
+    await wrapper.get('[data-slot="review-deselect-all"]').trigger('click');
+    expect(wrapper.get('[data-slot="action-window-primary"]').attributes('disabled')).toBeDefined();
+    expect(wrapper.findAll('[data-slot="activity-request-row"] button[aria-checked="true"]')).toHaveLength(0);
+    await wrapper.get('[data-slot="action-window-primary"]').trigger('click');
+    expect(router.post).not.toHaveBeenCalled();
+    await wrapper.get('[data-slot="review-select-all"]').trigger('click');
+    expect(wrapper.findAll('[data-slot="activity-request-row"] button[aria-checked="true"]')).toHaveLength(2);
+    await wrapper.findAll('[data-slot="activity-request-row"] button')[1]!.trigger('click');
+    await wrapper.get('[data-slot="action-window-primary"]').trigger('click');
+    expect(router.post).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({
+      recipients: [{ institution_id: 'a', user_id: 'u' }],
+    }), expect.any(Object));
+  });
 
   it.each(['institutions', 'people'] as const)('shows ended check-in context when selecting by %s', async (mode) => {
     preview.value = [{
@@ -201,19 +384,21 @@ describe('campaign choice and selection stability', () => {
   it('includes tenant filtering in the scoped Typesense query and retains selections', async () => {
     candidates.value = [{ id: 'a', name: 'A', tenant_id: 1, tenant_shortname: 'MIF', activity_status: status }];
     const { wrapper, window } = mountScreen(ActivityRequestInstitutionsScreen, { flow: 'activity.request', institutions: [{ id: 'a', name: 'A' }] });
-    await wrapper.find('select').setValue('1');
+    wrapper.getComponent(ActivityRequestFilters).getComponent(MultiSelect).vm.$emit('update:modelValue', [{ id: '1', label: 'MIF' }]);
+    await flushPromises();
     const options = vi.mocked(useAdminCollectionSearch).mock.calls.at(-1)![0];
     expect((options.baseFilterBy as { value: string }).value).toBe('id:[a] && tenant_ids:[1]');
     expect(window.draft.activityRequest.institutions.map(item => item.id)).toEqual(['a']);
   });
 
   it('shows the selection limit and prevents adding a 101st institution', async () => {
-    candidates.value = [{ id: 'extra', name: 'Extra', tenant_id: 1, tenant_shortname: 'MIF', activity_status: status }];
     const institutions = Array.from({ length: 100 }, (_, index) => ({ id: String(index), name: String(index) }));
+    candidates.value = [...institutions, { id: 'extra', name: 'Extra' }].map(item => ({ ...item, tenant_id: 1, tenant_shortname: 'MIF', activity_status: status }));
     const { wrapper, window } = mountScreen(ActivityRequestInstitutionsScreen, { flow: 'activity.request', institutions });
     expect(wrapper.text()).toContain('100/100');
-    expect(wrapper.find('[data-slot="action-choice-button"]').attributes('disabled')).toBeDefined();
-    await wrapper.find('[data-slot="action-choice-button"]').trigger('click');
+    const extra = wrapper.findAll('[data-slot="action-choice-button"]').find(row => row.text().includes('Extra'))!;
+    expect(extra.attributes('disabled')).toBeDefined();
+    await extra.trigger('click');
     expect(window.draft.activityRequest.institutions).toHaveLength(100);
   });
 });
@@ -306,6 +491,25 @@ describe('left-out rows are disabled before they are picked', () => {
 });
 
 describe('picking by representative', () => {
+  it('limits each person to the inherited scope and prunes selected people when filters change', async () => {
+    const institution = (id: string, tenant: number, scope = InstitutionScope.University) => ({
+      id, name: id, tenant_id: tenant, tenant_shortname: String(tenant), governance_scope: scope,
+    });
+    candidates.value = [
+      { id: 'u', name: 'Ona', institutions: [institution('a', 1), institution('b', 2)] },
+      { id: 'v', name: 'Jonas', institutions: [institution('c', 1, InstitutionScope.Vusa)] },
+    ];
+    const { wrapper, window } = mountScreen(ActivityRequestPeopleScreen, {
+      flow: 'activity.request', activityRequestFilters: { tenantIds: ['1'], governanceScope: InstitutionScope.University },
+    });
+    expect(wrapper.findAll('[data-slot="action-choice-button"]')).toHaveLength(1);
+    await wrapper.get('[data-slot="action-choice-button"]').trigger('click');
+    expect(window.draft.activityRequest.people[0]!.institutions.map(item => item.id)).toEqual(['a']);
+    await wrapper.get('select').setValue('vusa');
+    expect(window.draft.activityRequest.people).toEqual([]);
+    expect(wrapper.get('[data-slot="action-choice-button"]').text()).toContain('Jonas');
+  });
+
   it('goes from the question to the choice of how to pick, and on to people', async () => {
     const { wrapper, window } = mountScreen(ActivityRequestCampaignScreen, { flow: 'activity.request' });
     await wrapper.findAll('[data-slot="action-choice-button"]')[0]!.trigger('click');

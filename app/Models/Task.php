@@ -27,6 +27,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string $taskable_type
  * @property string $taskable_id
  * @property Carbon|null $completed_at
+ * @property Carbon|null $cancelled_at
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read mixed $color
@@ -65,6 +66,7 @@ class Task extends Model
         return [
             'due_date' => 'datetime',
             'completed_at' => 'datetime',
+            'cancelled_at' => 'datetime',
             'action_type' => ActionType::class,
             'metadata' => 'array',
         ];
@@ -189,6 +191,15 @@ class Task extends Model
     public function isCompleted(): bool
     {
         return $this->completed_at !== null;
+    }
+
+    /**
+     * Closed because it no longer applied, not because anyone did it. `completed_at` is set too,
+     * so every open-task query already skips it; only outcome counts need to tell the two apart.
+     */
+    public function isCancelled(): bool
+    {
+        return $this->cancelled_at !== null;
     }
 
     /**

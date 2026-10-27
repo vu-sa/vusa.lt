@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Posėdžiai
 area: meetings
 models: [Meeting]
-last_reviewed: 2026-10-26
+last_reviewed: 2026-10-27
 tests:
   - tests/Feature/Permissions/MeetingPermissionsTest.php
   - tests/Feature/Admin/Search/SearchVisibilityParityTest.php
@@ -185,10 +185,10 @@ darbotvarkės gale. Kaip pildyti punktus, aprašyta puslapyje
   Paskelbtas renginys rodo posėdžio darbotvarkę, bet pats posėdis viešu netampa (žr.
   [Matomumas](#matomumas)).
 - **Dokumentai** – susieti institucijos (ar kitos to paties padalinio institucijos) dokumentus.
-  Atsiejus dokumentas lieka dokumentų naršyklėje. Skiltyje **Laukia SharePoint** rodomi dar
-  nepaskelbti to padalinio failai (pirmiausia – posėdžio dienos): **Paskelbti ir susieti** failą
-  paskelbia vusa.lt ir susieja su posėdžiu. Kai siūlomų failų daug, kitų galima ieškoti pagal
-  pavadinimą. Jau su kitu posėdžiu susietas dokumentas nesusiejamas – pirma jį atsiek ten. Skiltį
+  Atsiejus dokumentas lieka dokumentų naršyklėje. Mygtukas **Laukia SharePoint** atveria
+  langą su dar nepaskelbtais to padalinio failais (pirmiausia – posėdžio dienos); kitų galima
+  ieškoti pagal pavadinimą. Pažymėtus failus **Paskelbti ir susieti** paskelbia vusa.lt ir susieja
+  su posėdžiu. Jau su kitu posėdžiu susietas dokumentas nesusiejamas – pirma jį atsiek ten. Mygtuką
   mato tie, kas gali redaguoti posėdį ir tvarkyti padalinio dokumentus. **Pasirinkti iš SharePoint**
   atveria SharePoint langą: pasirinkti archyvo failai susiejami su posėdžiu, o dar neperžiūrėti
   ir paskelbiami. Failas turi priklausyti posėdžio institucijos padaliniui (padalinys nurodomas

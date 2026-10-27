@@ -172,8 +172,8 @@ describe('AssignDutyUserSheet.vue', () => {
     });
 
     it('offers a study programme only on a curator duty', () => {
-      const plain = mountSheet({ duty: { ...duty, types: [{ slug: 'koordinatoriai' }] }, studyPrograms: programmes });
-      const curator = mountSheet({ duty: { ...duty, types: [{ slug: 'kuratoriai' }] }, studyPrograms: programmes });
+      const plain = mountSheet({ duty: { ...duty, types: [{ id: 6 }] }, studyPrograms: programmes });
+      const curator = mountSheet({ duty: { ...duty, types: [{ id: 8 }] }, studyPrograms: programmes });
 
       expect((plain.vm as unknown as { showStudyProgram: boolean }).showStudyProgram).toBe(false);
       expect((curator.vm as unknown as { showStudyProgram: boolean }).showStudyProgram).toBe(true);

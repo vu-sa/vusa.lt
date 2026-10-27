@@ -1,6 +1,8 @@
 <template>
   <SheetForm
     v-model:open="open"
+    :created-at="link?.created_at"
+    :updated-at="link?.updated_at"
     :title="link ? $t('Redaguoti ryšį') : $t('Pridėti ryšį')"
     :description="$t('Rodyklė rodo, kas ką mato: šaltinio nariai mato tikslo posėdžius ir darbotvarkes.')"
     :processing="form.processing"

@@ -131,7 +131,7 @@ return [
         'duty_types_title' => 'Viešieji kontaktai',
         'duty_types_description' => 'Pagal šiuos pareigybių tipus grupuojami padalinių kontaktų puslapiai. Nuorodos nesikeičia.',
         'duty_type_label' => 'Pareigybių tipas',
-        'fallback' => 'Nepasirinkta – naudojamas tipas su nuoroda „:slug“',
+        'fallback' => 'Nepasirinkta.',
         'duty_types' => [
             'coordinator' => [
                 'label' => 'Koordinatoriai',

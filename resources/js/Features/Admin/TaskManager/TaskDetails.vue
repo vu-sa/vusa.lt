@@ -5,7 +5,10 @@
         <AlertCircleIcon class="h-3 w-3" />
         {{ $t('overdue') }}
       </Badge>
-      <Badge v-if="task.can_be_manually_completed === false" variant="secondary" class="gap-1">
+      <Badge v-if="task.cancelled_at" variant="secondary" data-slot="task-cancelled">
+        {{ $t('tasks.cancelled') }}
+      </Badge>
+      <Badge v-else-if="task.can_be_manually_completed === false" variant="secondary" class="gap-1">
         <RotateCwIcon class="h-3 w-3" />
         {{ $t('tasks.auto_completing') }}
       </Badge>
@@ -13,6 +16,10 @@
         {{ $t('tasks.due') }}: {{ formatDate(task.due_date) }}
       </span>
     </div>
+
+    <p v-if="task.cancelled_at" class="text-sm text-muted-foreground">
+      {{ $t('tasks.cancelled_hint') }}
+    </p>
 
     <div v-if="task.description" class="border-l-2 border-border pl-3">
       <h4 class="mb-1 flex items-center gap-2 text-sm font-medium text-foreground">

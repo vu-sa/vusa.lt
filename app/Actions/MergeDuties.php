@@ -29,6 +29,7 @@ class MergeDuties
 
     /** Polymorphic owners: table => [morph name, columns shared with an existing kept row]. */
     public const array REPOINT_MORPH = [
+        'activity_log' => ['subject', null],
         'comments' => ['commentable', null],
         'fileable_files' => ['fileable', null],
         'model_has_permissions' => ['model', ['permission_id']],
@@ -116,6 +117,9 @@ class MergeDuties
             $moved[$table] = MergeRepointer::morph($table, $morph, $sharedColumns, MorphMap::alias(Duty::class), $kept->id, $source->id);
         }
 
+        // Grouped entries (e.g. a term edited under its duty) point at their record through the root as well.
+        MergeRepointer::morph('activity_log', 'root_subject', null, MorphMap::alias(Duty::class), $kept->id, $source->id);
+
         return $moved;
     }
 
@@ -143,6 +147,7 @@ class MergeDuties
                 $moved += DB::table('duty_successions')->insertOrIgnore([
                     'predecessor_id' => $predecessorId,
                     'successor_id' => $successorId,
+                    'effective_on' => $row->effective_on,
                     'created_at' => $row->created_at,
                     'updated_at' => now(),
                 ]);

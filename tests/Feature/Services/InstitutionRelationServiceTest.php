@@ -39,6 +39,24 @@ beforeEach(function (): void {
 });
 
 describe('direct links', function (): void {
+    test('editing a link includes its saved timestamps', function (string $kind): void {
+        if ($kind === 'direct') {
+            $link = InstitutionLink::factory()->create(['source_institution_id' => $this->source->id, 'target_institution_id' => $this->target->id]);
+            $rows = relations()->linksOf($this->source);
+        } else {
+            $source = InstitutionType::factory()->create();
+            $target = InstitutionType::factory()->create();
+            $link = InstitutionTypeLink::factory()->create(['source_type_id' => $source->id, 'target_type_id' => $target->id]);
+            $rows = relations()->typeLinksOf($source);
+        }
+
+        expect($rows[0])->toMatchArray([
+            'id' => $link->id,
+            'created_at' => $link->created_at->toISOString(),
+            'updated_at' => $link->updated_at->toISOString(),
+        ]);
+    })->with(['direct', 'type']);
+
     test('the source sees the target, the target only lists the source', function (): void {
         InstitutionLink::factory()->create(['source_institution_id' => $this->source->id, 'target_institution_id' => $this->target->id, 'kind' => InstitutionRelationKind::Oversees]);
 

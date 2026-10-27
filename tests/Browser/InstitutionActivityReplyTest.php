@@ -13,6 +13,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Notifications\InstitutionActivityNotification;
 use Database\Seeders\DocsSeeder;
+use Database\Seeders\TypeSeeder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Vite;
@@ -95,7 +96,7 @@ it('reviews incomplete records for the sending representative without overflow i
     $user = makeAdminUser(Tenant::query()->first());
     $institution = Institution::factory()->for(Tenant::query()->first())->create();
     $duty = Duty::factory()->for($institution)->create();
-    $type = DutyType::query()->firstOrCreate(['slug' => 'studentu-atstovai'], ['name' => ['lt' => 'Studentų atstovai', 'en' => 'Student representatives']]);
+    $type = DutyType::query()->findOrFail(TypeSeeder::STUDENT_REPRESENTATIVE_DUTY_TYPE_ID);
     $duty->types()->attach($type);
     $user->duties()->attach($duty, ['start_date' => today()->subMonth()]);
     app(RecordMeeting::class)->execute($institution, now()->subWeek());
@@ -134,9 +135,29 @@ it('captures documentation reference frames for activity requests', function ():
     $page->click('[data-testid=record-overflow-trigger]');
     $page->click('[role=menuitem]:has-text("Paklausti, ar vyko posėdžiai")');
     $page->click('[data-slot=action-choice-button]:has-text("Ar vyko posėdis?")');
-    pickPreselectedInstitutions($page);
+    $page->click('[data-slot=action-choice-button]:has-text("Pagal institucijas")');
+    waitForInertiaRender($page, '[data-slot=action-window-primary]:not([disabled])');
+    foreach ([390, 1440] as $width) {
+        $page->resize($width, 900);
+        foreach (['light', 'dark'] as $theme) {
+            $page->script('document.documentElement.classList.toggle("dark", '.($theme === 'dark' ? 'true' : 'false').')');
+            expect($page->script('document.documentElement.scrollWidth <= innerWidth'))->toBeTrue();
+            $page->screenshot(fullPage: false, filename: "activity-picker-{$width}-{$theme}");
+        }
+    }
+    $page->script('document.documentElement.classList.remove("dark")');
+    $page->click('[data-slot=action-window-primary]');
     $page->page()->waitForSelector('[data-slot=activity-request-preview]', ['timeout' => 15000]);
     $page->fill('#activity-request-note', 'Ar per pastarąjį mėnesį vyko Chemijos SPK posėdis? Laukiame informacijos apie priimtus sprendimus.');
+    foreach ([390, 1440] as $width) {
+        $page->resize($width, 900);
+        foreach (['light', 'dark'] as $theme) {
+            $page->script('document.documentElement.classList.toggle("dark", '.($theme === 'dark' ? 'true' : 'false').')');
+            expect($page->script('document.documentElement.scrollWidth <= innerWidth'))->toBeTrue();
+            $page->screenshot(fullPage: false, filename: "activity-bulk-review-{$width}-{$theme}");
+        }
+    }
+    $page->script('document.documentElement.classList.remove("dark")');
     docsScreenshot($page, 'activity-request-review', selector: '[role="dialog"]');
     $page->assertNoJavaScriptErrors();
 

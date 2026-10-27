@@ -223,7 +223,7 @@ test('an unknown category alias 404s', function (): void {
 test('padalinys institution page renders duty type tabs', function (): void {
     $tenant = Tenant::factory()->create(['type' => TenantType::Padalinys]);
     $institution = Institution::factory()->create(['tenant_id' => $tenant->id]);
-    $type = DutyType::factory()->create(['slug' => 'koordinatoriai', 'title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators']]);
+    $type = DutyType::factory()->create(['title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators']]);
     $duty = Duty::factory()->create(['institution_id' => $institution->id]);
     $duty->types()->attach($type);
     $settings = app(DutyTypeSettings::class);
@@ -382,10 +382,13 @@ test('a padalinys lists coordinators before curators regardless of duty order', 
     $tenant = Tenant::factory()->create(['type' => TenantType::Padalinys]);
     $institution = Institution::factory()->create(['tenant_id' => $tenant->id]);
 
-    $coordinators = DutyType::where('slug', 'koordinatoriai')->first()
-        ?? DutyType::factory()->create(['slug' => 'koordinatoriai', 'title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators']]);
-    $curators = DutyType::where('slug', 'kuratoriai')->first()
-        ?? DutyType::factory()->create(['slug' => 'kuratoriai', 'title' => ['lt' => 'Kuratoriai', 'en' => 'Mentors']]);
+    $coordinators = DutyType::factory()->create(['title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators']]);
+    $curators = DutyType::factory()->create(['title' => ['lt' => 'Kuratoriai', 'en' => 'Mentors']]);
+    $settings = app(DutyTypeSettings::class);
+    $settings->coordinator_type_id = $coordinators->id;
+    $settings->curator_type_id = $curators->id;
+    $settings->save();
+    app(SystemDutyTypes::class)->flush();
 
     $curatorDuty = Duty::factory()->create(['institution_id' => $institution->id, 'order' => 0]);
     $curatorDuty->types()->attach($curators);
@@ -449,14 +452,14 @@ test('duty type contacts page shows a study-program-ordered duty as one grid', f
 
     $tenant = Tenant::factory()->create();
 
-    // Create or find a type for the duty (e.g., koordinatoriai)
-    $type = DutyType::where('slug', 'koordinatoriai')->first();
-    if (! $type) {
-        $type = DutyType::factory()->create([
-            'slug' => 'koordinatoriai',
-            'title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators'],
-        ]);
-    }
+    // Create a type for the duty
+    $type = DutyType::factory()->create([
+        'title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators'],
+    ]);
+    $settings = app(DutyTypeSettings::class);
+    $settings->coordinator_type_id = $type->id;
+    $settings->save();
+    app(SystemDutyTypes::class)->flush();
 
     // Create study programs
     $studyProgram1 = StudyProgram::factory()->create([
@@ -489,7 +492,7 @@ test('duty type contacts page shows a study-program-ordered duty as one grid', f
     $duty->users()->attach($user2, ['study_program_id' => $studyProgram1->id, 'start_date' => now()]);
     $duty->users()->attach($user3, ['study_program_id' => $studyProgram2->id, 'start_date' => now()]);
 
-    $this->get(route('contacts.dutyType', ['subdomain' => 'www', 'lang' => 'lt', 'type' => $type->slug]))
+    $this->get(route('contacts.dutyType', ['subdomain' => 'www', 'lang' => 'lt', 'type' => 'koordinatoriai']))
         ->assertInertia(fn (Assert $page) => $page
             ->component('Public/Contacts/ShowInstitution')
             ->has('institution')
@@ -506,14 +509,14 @@ test('duty type contacts page handles both grouped and flat duties correctly', f
         $institution = Institution::factory()->create(['alias' => 'centrinis-biuras']);
     }
 
-    // Create or find a type for the duty (e.g., koordinatoriai)
-    $type = DutyType::where('slug', 'koordinatoriai')->first();
-    if (! $type) {
-        $type = DutyType::factory()->create([
-            'slug' => 'koordinatoriai',
-            'title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators'],
-        ]);
-    }
+    // Create a type for the duty
+    $type = DutyType::factory()->create([
+        'title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators'],
+    ]);
+    $settings = app(DutyTypeSettings::class);
+    $settings->coordinator_type_id = $type->id;
+    $settings->save();
+    app(SystemDutyTypes::class)->flush();
 
     // Create a flat duty (no grouping)
     $flatDuty = Duty::factory()->create([
@@ -528,7 +531,7 @@ test('duty type contacts page handles both grouped and flat duties correctly', f
     $flatDuty->users()->attach($flatUser, ['start_date' => now()]);
 
     // Verify the page works and shows mixed grouping when there's at least one grouped duty
-    $this->get(route('contacts.dutyType', ['subdomain' => 'www', 'lang' => 'lt', 'type' => $type->slug]))
+    $this->get(route('contacts.dutyType', ['subdomain' => 'www', 'lang' => 'lt', 'type' => 'koordinatoriai']))
         ->assertInertia(fn (Assert $page) => $page
             ->component('Public/Contacts/ShowInstitution')
             ->has('institution')

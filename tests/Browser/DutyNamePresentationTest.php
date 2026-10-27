@@ -9,18 +9,18 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
 
-it('mounts duty headings and personalized contact names without overflow or JavaScript errors', function (): void {
+it('mounts duty headings and personalized contact names without overflow or JavaScript errors', function (string $dutyName, string $holderName, array $pronouns, string $expectedTitle): void {
     $tenant = Tenant::query()->where('alias', 'vusa')->firstOrFail();
     $institution = Institution::factory()->for($tenant)->create([
         'name' => ['lt' => 'VU SA kontaktai', 'en' => 'VU SR contacts'],
         'description' => ['lt' => '', 'en' => ''],
     ]);
     $duty = Duty::factory()->for($institution)->create([
-        'name' => ['lt' => 'Komunikacijos koordinatorius', 'en' => 'Communication coordinator'],
+        'name' => ['lt' => $dutyName, 'en' => 'Duty'],
         'contacts_grouping' => 'none',
     ]);
     $holder = User::factory()->create([
-        'name' => 'Jonas Jonaitis', 'pronouns' => ['lt' => '', 'en' => 'she / her'],
+        'name' => $holderName, 'pronouns' => $pronouns,
     ]);
     Dutiable::factory()->create([
         'duty_id' => $duty->id, 'dutiable_id' => $holder->id,
@@ -44,6 +44,10 @@ it('mounts duty headings and personalized contact names without overflow or Java
             waitForInertiaRender($page, $screen === 'form' ? '[data-slot="form-page"] h1' : '[data-slot="record-title"]');
         }
 
+        if (in_array($screen, ['user', 'contacts'], true)) {
+            $page->assertSee($expectedTitle);
+        }
+
         foreach ([false, true] as $dark) {
             $page->script('document.documentElement.classList.toggle("dark", '.($dark ? 'true' : 'false').')');
             foreach ([390, 820, 1180, 1440] as $width) {
@@ -57,10 +61,13 @@ it('mounts duty headings and personalized contact names without overflow or Java
         if ($screen === 'form') {
             $page->fill('input#duty-name', 'Finansų koordinatorius');
             $page->assertSeeIn('[data-slot="form-page"] h1', 'Finansų koordinator');
-            $page->assertSeeIn('[data-testid="form-page-bar-title"]', 'Komunikacijos koordinatorius');
+            $page->assertSeeIn('[data-testid="form-page-bar-title"]', $dutyName);
             expect($page->script('document.querySelector("[data-testid=form-page-bar-title] [data-testid=duty-ending-trigger]") === null'))->toBeTrue();
-            $page->fill('input#duty-name', 'Komunikacijos koordinatorius');
+            $page->fill('input#duty-name', $dutyName);
         }
         $page->assertNoJavaScriptErrors();
     }
-});
+})->with([
+    'explicit pronouns' => ['Komunikacijos koordinatorius', 'Jonas Jonaitis', ['lt' => '', 'en' => 'she / her'], 'Komunikacijos koordinatorė'],
+    'exceptional first name' => ['Pavaduotoja studijoms', 'Nikita Smith', ['lt' => '', 'en' => ''], 'Pavaduotojas studijoms'],
+]);

@@ -113,4 +113,15 @@ describe('CheckInUntilScreen.vue', () => {
 
     expect(window.draft.checkIn).toMatchObject({ startDate: '2026-09-01', endDate: '2026-10-19' });
   });
+
+  it('names the years only when the period crosses into the next one', async () => {
+    vi.setSystemTime(new Date(2026, 11, 22, 12));
+    state.from = '2026-12-01';
+    state.reason = 'tenure_start';
+    const { wrapper } = mountScreen();
+    await flushPromises();
+
+    expect(choices(wrapper)[0]!.text()).not.toContain('2026');
+    expect(choices(wrapper)[1]!.text()).toMatch(/2026.* – .*2027/);
+  });
 });

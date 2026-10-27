@@ -2547,6 +2547,7 @@ declare global {
       taskable_type: string
       taskable_id: string
       completed_at?: string | null
+      cancelled_at?: string | null
       created_at: string
       updated_at: string
       // mutators
@@ -2575,6 +2576,8 @@ declare global {
       shortname_vu?: string | null
       primary_institution_id?: string | null
       goals_enabled: boolean
+      created_at?: string | null
+      updated_at?: string | null
       // relations
       banners?: Banner[]
       calendar?: Calendar[]
@@ -2997,4 +3000,3 @@ declare global {
 
   }
 }
-

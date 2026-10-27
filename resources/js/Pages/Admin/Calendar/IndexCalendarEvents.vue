@@ -225,6 +225,7 @@ const quickFilters = computed<CollectionQuickFilter[]>(() => (isTrash
   : [{ id: 'untyped', label: $t('Be tipo'), active: source.filters.value.untyped === 'true' }]));
 
 const actions = useCollectionRecordActions({
+  source,
   routePrefix: 'calendar',
   canDuplicate: () => canCreate.value,
   canDelete: () => canCreate.value,

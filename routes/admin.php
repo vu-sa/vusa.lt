@@ -244,7 +244,8 @@ Route::post('duties/{duty}/batch-update-users', [DutyController::class, 'batchUp
 Route::post('duties/{duty}/responsibilities', [DutyResponsibilityController::class, 'store'])->name('duties.responsibilities.store');
 Route::delete('duties/{duty}/responsibilities/{grant}', [DutyResponsibilityController::class, 'destroy'])->name('duties.responsibilities.destroy');
 Route::post('duties/{duty}/predecessors', [DutySuccessionController::class, 'store'])->name('duties.predecessors.store');
-Route::delete('duties/{duty}/predecessors/{predecessor}', [DutySuccessionController::class, 'destroy'])->name('duties.predecessors.destroy');
+Route::delete('duties/{duty}/predecessors/{succession}', [DutySuccessionController::class, 'destroy'])->name('duties.predecessors.destroy');
+Route::post('duties/{duty}/predecessors/{succession}/fold-rename', [DutySuccessionController::class, 'foldRename'])->name('duties.predecessors.foldRename');
 // Dutiables (occupancies) created and managed through the unified Priskirti flow (Decision O21).
 // Declared before the resource so /dutiables/timeline can never be read as /dutiables/{dutiable}.
 Route::get('dutiables/timeline', [DutiableTimelineController::class, 'index'])->name('dutiables.timeline');

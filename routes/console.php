@@ -104,7 +104,7 @@ Schedule::command('notifications:task-overdue-reminders')
 
 // Periodicity gap tasks - runs daily at 10 AM to create tasks for institutions approaching their
 // meeting periodicity threshold, and to ask "Ar vyko posėdis?" once they are overdue
-Schedule::command('tasks:repopulate institution --force')
+Schedule::command('tasks:repopulate institution')
     ->dailyAt('10:00')
     ->name('periodicity-gap-tasks')
     ->withoutOverlapping(15);

@@ -43,6 +43,12 @@ export { default as FormSection } from './FormSection.vue';
 export { default as FormPanel } from './FormPanel.vue';
 export { default as FormToggleRow } from './FormToggleRow.vue';
 export { default as FormSegmentedControl } from './FormSegmentedControl.vue';
+export { default as FillActionButton } from './FillActionButton.vue';
+export { default as FormFillActions } from './FormFillActions.vue';
+export type { FormFillAction } from './FormFillActions.vue';
+export { default as FieldHistoryDisclosure } from './FieldHistoryDisclosure.vue';
 export type { FormSegmentOption } from './FormSegmentedControl.vue';
 
 export { default as SectionCard } from './SectionCard.vue';
+
+export { default as ModelTimestamps } from './ModelTimestamps.vue';

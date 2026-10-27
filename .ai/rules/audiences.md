@@ -23,7 +23,7 @@ Each action answers one checkable question; do not reuse a name for a union of t
 - `GetInstitutionFollowersToNotify` — opted in via `institution_follows`, filtered by meeting visibility.
 - `GetMeetingOverseers` — the by-position audience: institution managers ∪ tenant-visibility roles ∪ global-visibility roles ∪ the nominated secretaries.
 - `ResolveMeetingNotificationAudience` — overseers ∪ followers. The only one meeting notifications should call.
-- `ResolveMailingListMembers` — who belongs on a managed Mailman list ("konferencija") today: its sources (duties, duty/institution types, institutions, other lists, manual emails) minus exclusions, one address per person, an assignment's `additional_email` winning over `users.email`. The only answer to "who is on a list"; Mailman is written only by `SyncMailingList`.
+- `ResolveMailingListMembers` — who belongs on a managed Mailman list ("konferencija") today: its sources (duties, duty/institution types, institutions, other lists, manual emails) minus exclusions, one address per person, an assignment's `additional_email` winning over `users.email`; in duty-mailbox mode a seat without a mailbox follows `via_dutiable_id` to its source assignment's email, then that duty's mailbox, before falling back to `users.email`. The only answer to "who is on a list"; Mailman is written only by `SyncMailingList`.
 - `ResolveTaskAssignees` — the single decision point for *task* assignment: nominated secretaries for the term, else date-scoped representatives. A replacement, not a union; that is what keeps a 46-seat body's sitting out of 46 inboxes. `ResolveTaskAudience` (which assignees still hear about it) is distinct — see tasks.md.
 
 ## Secretaries are not members

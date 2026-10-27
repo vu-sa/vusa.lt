@@ -1,6 +1,8 @@
 <template>
   <SheetForm
     v-model:open="open"
+    :created-at="category?.created_at"
+    :updated-at="category?.updated_at"
     :title="category ? $t('Redaguoti kategoriją') : $t('Nauja kategorija')"
     :description="$t('Kategorija sugrupuoja panašius išteklius, kad juos būtų lengviau rasti.')"
     :processing="form.processing"
@@ -52,6 +54,8 @@ import { Label } from '@/Components/ui/label';
 import { RESOURCE_CATEGORY_PLACEHOLDERS } from '@/Constants/I18n/Placeholders';
 
 interface CategoryInput {
+  created_at?: string | null;
+  updated_at?: string | null;
   id?: string | number;
   name: { lt: string; en: string };
   description: { lt: string; en: string } | null;

@@ -7,7 +7,10 @@ paths:
 # Changelog
 
 ## Entries are dated, never numbered
-Entries carry the release date and no number: minor numbers meant nothing to readers and every parallel branch claimed the same next one. Several entries may share a date — add yours on top, no renumbering, no explicit anchor. Majors (`vN.md`) stay as eras: only the entry that launched one carries `{#vN}`, and its sections may use `{#vN-topic}` anchors. Guide text says „Iki 2026-10-26“ or „Nuo v3“, never a minor number.
+Entries carry the release date and no number: minor numbers meant nothing to readers and every parallel branch claimed the same next one. No renumbering or explicit anchor. Majors (`vN.md`) stay as eras: only the entry that launched one carries `{#vN}`, and its sections may use `{#vN-topic}` anchors. Guide text says „Iki 2026-10-26“ or „Nuo v3“, never a minor number.
+
+## Group changes from the same day
+Keep ordinary features, improvements and fixes from the same day in one `## YYYY-MM-DD — Title` entry. Before adding an entry, check for that date and extend its existing daily entry, broadening the title when needed. Use bullets or feature subsections within it rather than a separate dated entry for each change. Only a substantial feature that warrants its own release narrative may have a separate entry on the same date. Keep the same grouping in LT and EN; when merging branches, combine ordinary entries that share a date.
 
 ## Release entries: scale the structure to the change
 Each `## YYYY-MM-DD — Title` entry stays h2 (`changelogEntryPattern` in `docs/.vitepress/changelogEntries.ts` reads it for changelog-meta.json, ChangelogNote links and the PDF) and contains, in order:

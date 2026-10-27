@@ -9,6 +9,7 @@ import {
   type OpenOptions,
 } from '@/Composables/useActionWindow';
 import { invalidateActionWindowData } from '@/Composables/useActionWindowData';
+import { InstitutionScope } from '@/Types/enums';
 
 vi.mock('@/Composables/useActionWindowData', () => ({
   invalidateActionWindowData: vi.fn(),
@@ -38,6 +39,18 @@ const openedOn = (options: OpenOptions) => {
 };
 
 describe('useActionWindow', () => {
+  it('preserves independent request filters through navigation and resets them on another opening', () => {
+    const filters = { tenantIds: ['1', '2'], governanceScope: InstitutionScope.University };
+    const window = openedOn({ flow: 'activity.request', activityRequestFilters: filters });
+    window.goTo('activity.institutions');
+    window.goTo('activity.review');
+    window.back();
+    expect(window.draft.activityRequest.filters).toEqual(filters);
+    filters.tenantIds.push('3');
+    expect(window.draft.activityRequest.filters.tenantIds).toEqual(['1', '2']);
+    window.open({ flow: 'activity.request' });
+    expect(window.draft.activityRequest.filters).toEqual({ tenantIds: [], governanceScope: null });
+  });
   it('opens on the persona screen when nothing is seeded', () => {
     const window = makeWindow();
     window.open();

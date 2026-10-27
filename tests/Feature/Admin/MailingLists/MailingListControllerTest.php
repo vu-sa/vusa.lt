@@ -72,7 +72,9 @@ describe('access', function (): void {
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/MailingLists/IndexMailingList')
                 ->has('mailingLists', 1)
-                ->where('mailingLists.0.id', $this->list->id));
+                ->where('mailingLists.0.id', $this->list->id)
+                ->where('mailingLists.0.created_at', $this->list->created_at->toISOString())
+                ->where('mailingLists.0.updated_at', $this->list->updated_at->toISOString()));
 
         asUser($this->editor)->get(route('mailingLists.show', $this->otherList))->assertForbidden();
     });

@@ -20,13 +20,17 @@
             </SheetDescription>
           </SheetHeader>
 
-          <div class="flex-1 space-y-6 overflow-y-auto px-6 py-5">
-            <slot />
+          <slot name="body">
+            <div class="min-h-0 flex-1 space-y-6 overflow-y-auto px-6 py-5">
+              <slot />
 
-            <div v-if="$slots['danger-zone']" class="border-t border-border pt-5">
-              <slot name="danger-zone" />
+              <ModelTimestamps :created-at :updated-at />
+
+              <div v-if="$slots['danger-zone']" class="border-t border-border pt-5">
+                <slot name="danger-zone" />
+              </div>
             </div>
-          </div>
+          </slot>
 
           <div
             :class="[
@@ -34,24 +38,26 @@
               'pb-[max(1rem,env(safe-area-inset-bottom))]',
             ]"
           >
-            <Button
-              variant="ghost"
-              type="button"
-              class="u-touch"
-              @click="requestOpenChange(false)"
-            >
-              {{ $t('Atšaukti') }}
-            </Button>
+            <slot name="footer">
+              <Button
+                variant="ghost"
+                type="button"
+                class="u-touch"
+                @click="requestOpenChange(false)"
+              >
+                {{ $t('Atšaukti') }}
+              </Button>
 
-            <Button
-              variant="brand"
-              type="submit"
-              class="u-touch uppercase"
-              :disabled="processing || disabled"
-            >
-              <Loader2 v-if="processing" class="size-4 animate-spin" />
-              {{ saveLabel ?? $t('Išsaugoti') }}
-            </Button>
+              <Button
+                variant="brand"
+                type="submit"
+                class="u-touch uppercase"
+                :disabled="processing || disabled"
+              >
+                <Loader2 v-if="processing" class="size-4 animate-spin" />
+                {{ saveLabel ?? $t('Išsaugoti') }}
+              </Button>
+            </slot>
           </div>
         </form>
       </SheetContent>
@@ -75,6 +81,7 @@ import { Loader2 } from '@lucide/vue';
 import { ref } from 'vue';
 
 import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
+import ModelTimestamps from '@/Components/Patterns/ModelTimestamps.vue';
 import { Button } from '@/Components/ui/button';
 import {
   Sheet,
@@ -88,6 +95,8 @@ import { useIsMobile } from '@/Composables/useIsMobile';
 const props = withDefaults(defineProps<{
   open: boolean;
   title: string;
+  createdAt?: string | null;
+  updatedAt?: string | null;
   description?: string;
   saveLabel?: string;
   processing?: boolean;
@@ -98,6 +107,8 @@ const props = withDefaults(defineProps<{
   initialFocus?: string;
 }>(), {
   description: undefined,
+  createdAt: undefined,
+  updatedAt: undefined,
   initialFocus: undefined,
   saveLabel: undefined,
 });

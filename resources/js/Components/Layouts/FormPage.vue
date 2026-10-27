@@ -199,24 +199,7 @@
       <aside v-if="$slots.aside" class="flex min-w-0 flex-col gap-6" data-testid="form-page-aside">
         <slot name="aside" />
 
-        <dl v-if="createdAt || updatedAt" class="border border-border bg-background text-sm" data-testid="form-page-meta">
-          <div v-if="createdAt" class="flex items-center justify-between gap-4 border-b border-border px-4 py-3 last:border-b-0">
-            <dt class="text-muted-foreground">
-              {{ $t('Sukurta') }}
-            </dt>
-            <dd class="font-bold text-foreground">
-              {{ formatDate(createdAt) }}
-            </dd>
-          </div>
-          <div v-if="updatedAt" class="flex items-center justify-between gap-4 px-4 py-3">
-            <dt class="text-muted-foreground">
-              {{ $t('Atnaujinta') }}
-            </dt>
-            <dd class="font-bold text-foreground">
-              {{ formatDate(updatedAt) }}
-            </dd>
-          </div>
-        </dl>
+        <ModelTimestamps :created-at :updated-at data-testid="form-page-meta" />
 
         <div v-if="$slots['danger-zone']" class="flex flex-col gap-3" data-testid="form-page-danger-zone">
           <slot name="danger-zone" />
@@ -224,35 +207,37 @@
       </aside>
     </form>
 
-    <!-- Phones: the save bar takes the bottom nav's place, in thumb reach. -->
-    <div
-      v-if="mode !== 'view'"
-      :class="[
-        'fixed inset-x-0 bottom-(--shell-bottom-bar,0px) z-40 md:hidden',
-        'flex items-center justify-between gap-4 border-t border-border bg-background px-4 pt-3',
-        'pb-[calc(0.75rem_+_env(safe-area-inset-bottom,0px))]',
-      ]"
-      data-testid="form-page-mobile-save"
-    >
-      <SaveState v-if="saveState" :state="saveState" />
-      <span v-else />
-
-      <Button
-        variant="brand"
-        type="submit"
-        :form="formId"
-        :disabled="processing || disabled"
+    <Teleport defer :to="`#${SHELL_MOBILE_ACTIONS_ID}`" :disabled="!shellFocus">
+      <div
+        v-if="mode !== 'view'"
+        :class="[
+          'md:hidden',
+          !shellFocus && 'fixed inset-x-0 bottom-(--shell-bottom-bar,0px) z-40',
+          'flex items-center justify-between gap-4 border-t border-border bg-background px-4 pt-3',
+          'pb-[calc(0.75rem_+_env(safe-area-inset-bottom,0px))]',
+        ]"
+        data-testid="form-page-mobile-save"
       >
-        <Loader2 v-if="processing" class="size-4 animate-spin" />
-        <Save v-else class="size-4" />
-        {{ saveLabel ?? $t('Išsaugoti') }}
-      </Button>
-    </div>
+        <SaveState v-if="saveState" :state="saveState" />
+        <span v-else />
+
+        <Button
+          variant="brand"
+          type="submit"
+          :form="formId"
+          :disabled="processing || disabled"
+        >
+          <Loader2 v-if="processing" class="size-4 animate-spin" />
+          <Save v-else class="size-4" />
+          {{ saveLabel ?? $t('Išsaugoti') }}
+        </Button>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowLeft, ChevronDown, Eye, Languages, Loader2, Save } from '@lucide/vue';
 import { useEventListener } from '@vueuse/core';
@@ -263,9 +248,9 @@ import EntityTypeMark from '@/Components/EntityTypeMark.vue';
 import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
 import { Button } from '@/Components/ui/button';
 import { segmentGroupClass, segmentVariants } from '@/Components/ui/control';
-import { SHELL_FORM_BAR_ID, useShellFocus } from '@/Composables/useShellFocus';
+import { SHELL_FORM_BAR_ID, SHELL_MOBILE_ACTIONS_ID, useShellFocus } from '@/Composables/useShellFocus';
 import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
-import { formatDate } from '@/Utils/dateTime';
+import ModelTimestamps from '@/Components/Patterns/ModelTimestamps.vue';
 import type { ModelEnum } from '@/Types/enums';
 
 const props = withDefaults(defineProps<{
@@ -322,7 +307,6 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   (e: 'submit'): void;
-  (e: 'cancel'): void;
   (e: 'update:locale', locale: 'lt' | 'en'): void;
 }>();
 
@@ -441,7 +425,6 @@ watch(() => Object.keys(props.errors).join('|'), async (keys, previous) => {
 
 const formEl = ref<HTMLFormElement | null>(null);
 
-// On the form, not `document`, so Esc inside a portaled Select or Popover never cancels it.
 useEventListener(formEl, 'keydown', (event: KeyboardEvent) => {
   if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
     event.preventDefault();
@@ -450,15 +433,10 @@ useEventListener(formEl, 'keydown', (event: KeyboardEvent) => {
       emit('submit');
     }
   }
-  else if (event.key === 'Escape' && !event.defaultPrevented) {
-    handleCancel();
+  // Esc only leaves the field, never the page; an open combobox or suggestion list closes first.
+  else if (event.key === 'Escape' && !event.defaultPrevented && event.target instanceof HTMLElement
+    && event.target.getAttribute('aria-expanded') !== 'true') {
+    event.target.blur();
   }
 });
-
-const handleCancel = () => {
-  emit('cancel');
-  if (props.backHref) {
-    router.visit(props.backHref);
-  }
-};
 </script>

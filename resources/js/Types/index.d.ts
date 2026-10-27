@@ -127,7 +127,7 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
    */
   eventTypes: Array<{ id: number; slug: string; name: string }>;
   /** Configured in Settings → Sistemos paskirtys; empty outside the admin. */
-  curatorDutyTypeSlugs: string[];
+  curatorDutyTypeIds: number[];
   /** Global tag lookup for rich-content news/link-list filters. `is_topic` tags drive
    *  the topic picker; the rest stay descriptive-only. */
   tags: Array<{ id: number; alias: string | null; name: string; is_topic: boolean }>;

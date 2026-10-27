@@ -54,7 +54,7 @@ class DutyTypeController extends AdminController
     public function store(DutyTypeRequest $request): RedirectResponse
     {
         $type = DutyType::query()->create(
-            $request->safe()->only('title', 'description', 'parent_id', 'slug')
+            $request->safe()->only('title', 'description', 'parent_id')
         );
 
         return redirect()->route('dutyTypes.show', $type)
@@ -140,7 +140,7 @@ class DutyTypeController extends AdminController
 
     public function update(DutyTypeRequest $request, DutyType $type): RedirectResponse
     {
-        $type->update($request->safe()->only('title', 'description', 'parent_id', 'slug'));
+        $type->update($request->safe()->only('title', 'description', 'parent_id'));
 
         return back()->with('success', $this->entityMessage('updated', 'dutyType'));
     }

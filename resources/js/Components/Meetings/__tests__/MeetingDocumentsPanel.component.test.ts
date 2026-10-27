@@ -19,6 +19,7 @@ const dialogStub = {
 const stubs = {
   CollectionSelectDialog: dialogStub,
   FilePicker: { name: 'FilePicker', template: '<div />', emits: ['pick'] },
+  MeetingPendingDocumentsDialog: { name: 'MeetingPendingDocumentsDialog', props: ['meetingId', 'suggestions'], emits: ['confirm'], template: '<div />' },
   SectionCard: { template: '<section><slot name="action" /><slot name="empty" /><slot /></section>' },
 };
 
@@ -110,28 +111,31 @@ describe('MeetingDocumentsPanel', () => {
       sync_status: 'success', sync_error_message: null, public_url: null, can: { update: true },
     };
 
-    it('offers a search for the rest only when the suggestions may not be all', () => {
-      const few = factory({ pendingDocuments: [pending] });
-      const full = factory({ pendingDocuments: Array.from({ length: 8 }, (_, index) => ({ ...pending, id: index + 1 })) });
+    const pendingDialog = (wrapper: ReturnType<typeof mount>) => wrapper.findComponent({ name: 'MeetingPendingDocumentsDialog' });
 
-      expect(few.find('[data-slot="meeting-pending-search"]').exists()).toBe(false);
-      expect(full.find('[data-slot="meeting-pending-search"]').exists()).toBe(true);
+    it('keeps them behind a button instead of listing them beside the linked documents', () => {
+      const wrapper = factory({ pendingDocuments: [pending] });
+
+      expect(pendingDialog(wrapper).props('suggestions')).toEqual([pending]);
+      expect(wrapper.text()).not.toContain('Tarybos protokolas');
     });
 
-    it('lists them and links one by publishing it', async () => {
+    it('publishes and links the chosen files one after another', () => {
       vi.mocked(router.post).mockClear();
       const wrapper = factory({ pendingDocuments: [pending] });
 
-      const section = wrapper.get('[data-slot="meeting-pending-documents"]');
-      expect(section.text()).toContain('Tarybos protokolas');
+      pendingDialog(wrapper).vm.$emit('confirm', [42, 43]);
 
-      await section.get('button').trigger('click');
-
+      expect(router.post).toHaveBeenCalledTimes(1);
       expect(router.post).toHaveBeenCalledWith('/mocked/meetings.documents.store', { document_id: 42 }, expect.objectContaining({ preserveScroll: true }));
+
+      vi.mocked(router.post).mock.calls[0][2]?.onFinish?.({} as never);
+
+      expect(router.post).toHaveBeenLastCalledWith('/mocked/meetings.documents.store', { document_id: 43 }, expect.any(Object));
     });
 
-    it('hides the list from someone who cannot link documents', () => {
-      expect(factory({ pendingDocuments: [pending], canUpdate: false }).find('[data-slot="meeting-pending-documents"]').exists()).toBe(false);
+    it('hides the button from someone who cannot link documents', () => {
+      expect(pendingDialog(factory({ pendingDocuments: [pending], canUpdate: false })).exists()).toBe(false);
     });
   });
 

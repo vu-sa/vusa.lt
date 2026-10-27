@@ -15,6 +15,11 @@ test('gendered/variant pairs normalize to the same form', function (string $a, s
 })->with([
     'koordinatorius / koordinatorė' => ['Komunikacijos koordinatorius', 'Komunikacijos koordinatorė'],
     'narys / narė' => ['Kolegialaus valdymo organo narys', 'Kolegialaus valdymo organo narė'],
+    'pavaduotojas / pavaduotoja' => ['Pavaduotojas', 'Pavaduotoja'],
+    'deputy before qualifier' => ['Pavaduotojas studijoms', 'Pavaduotoja studijoms'],
+    'deputy feminine plural before qualifier' => ['Pavaduotojas studijoms', 'Pavaduotojos studijoms'],
+    'deputy masculine plural before qualifier' => ['Pavaduotojai studijoms', 'Pavaduotoja studijoms'],
+    'deputy with parenthesised scope' => ['Pavaduotojas (Studijos)', 'Pavaduotoja (Studijos)'],
     'administratorius variants' => ['Administratorius', 'Administratorius (-ė)'],
     'administratorius / administratorė with trailing space' => ['Administratorius', 'Administratorė '],
     'valdybos narys casing' => ['Valdybos Narys', 'Valdybos narys'],
@@ -57,6 +62,7 @@ test('head noun mid-name does not collapse differently-scoped duties', function 
     'different body' => ['Studentų atstovas VU FF Taryboje', 'Studentų atstovas VU FF Dekanate'],
     'different faculty' => ['Studentų atstovas VU FF Taryboje', 'Studentų atstovas VU KnF Taryboje'],
     'scoped vs bare' => ['Studentų atstovė SPK', 'Studentų atstovė'],
+    'different deputy scope' => ['Pavaduotojas studijoms', 'Pavaduotoja komunikacijai'],
 ]);
 
 test('unrelated or differently-scoped names do not collapse together', function (string $a, string $b): void {

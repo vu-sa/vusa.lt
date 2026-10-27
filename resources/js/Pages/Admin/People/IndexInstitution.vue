@@ -294,6 +294,7 @@ function canFollow(institution: InstitutionRow): boolean {
 
 // Live institutions are edited on their record page; the list only acts on the trash.
 const actions = useCollectionRecordActions({
+  source,
   routePrefix: 'institutions',
   restoreOpensRecord: true,
   canRestore: () => canCreate.value,

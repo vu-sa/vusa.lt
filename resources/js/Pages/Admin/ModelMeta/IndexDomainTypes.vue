@@ -35,14 +35,25 @@
     <template #row="{ item }">
       <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
         <div class="min-w-0 flex-1">
-          <CollectionPrimaryCell :title="titleOf(item)" :href="isTrash ? undefined : route(`${resource}.show`, item.id)" :sub="item.slug" mono />
+          <CollectionPrimaryCell
+            :title="titleOf(item)"
+            :href="isTrash ? undefined : route(`${resource}.show`, item.id)"
+            :sub="subOf(item)"
+            mono
+          />
         </div>
         <CollectionRowActions :actions="actionsFor(item)" @select="key => actions.select(key, item.force_delete_blocked_reason)" />
       </article>
     </template>
 
     <template #cell="{ item, column }">
-      <CollectionPrimaryCell v-if="column.key === 'title'" :title="titleOf(item)" :href="isTrash ? undefined : route(`${resource}.show`, item.id)" :sub="item.slug" mono />
+      <CollectionPrimaryCell
+        v-if="column.key === 'title'"
+        :title="titleOf(item)"
+        :href="isTrash ? undefined : route(`${resource}.show`, item.id)"
+        :sub="subOf(item)"
+        mono
+      />
       <span v-else-if="column.key === 'updated'" class="tabular-nums text-muted-foreground">{{ formatDate(item.updated_at) }}</span>
       <CollectionRowActions v-else-if="column.key === 'actions'" :actions="actionsFor(item)" @select="key => actions.select(key, item.force_delete_blocked_reason)" />
     </template>
@@ -90,11 +101,12 @@ const isTrash = isTrashView();
 const canCreate = computed(() => Boolean(page.props.auth?.can?.create?.[props.typeKind]));
 const canForceDelete = computed(() => Boolean(page.props.auth?.can?.forceDelete?.[props.typeKind]));
 
-const titleOf = (type: TypeRow) => getTranslatedValue(type.title) || type.slug || '—';
+const titleOf = (type: TypeRow) => getTranslatedValue(type.title) || ('slug' in type ? type.slug : null) || '—';
+const subOf = (type: TypeRow): string | undefined => (props.typeKind === 'institutionType' ? (type as App.Entities.InstitutionType).slug : undefined);
 
 const source = useLocalCollectionSource<TypeRow>({
   items: toRef(props, 'types'),
-  searchText: type => [titleOf(type), type.slug],
+  searchText: type => ('slug' in type && type.slug ? [titleOf(type), type.slug] : [titleOf(type)]),
   defaultSort: 'title:asc',
   sortOptions: () => [
     { value: 'title:asc', label: $t('Pagal pavadinimą (A–Z)'), by: titleOf },
@@ -104,6 +116,7 @@ const source = useLocalCollectionSource<TypeRow>({
 });
 
 const actions = useCollectionRecordActions({
+  source,
   routePrefix: resource,
   canDelete: () => Boolean(page.props.auth?.can?.delete?.[props.typeKind]),
   canRestore: () => Boolean(page.props.auth?.can?.restore?.[props.typeKind]),

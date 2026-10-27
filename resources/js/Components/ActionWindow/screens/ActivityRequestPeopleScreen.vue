@@ -3,10 +3,15 @@
     :title="$t('action_window.activity_request.people.title')"
     :subtitle="$t('action_window.activity_request.people.subtitle')"
   >
-    <div class="space-y-3 pb-3">
+    <div class="space-y-2 pb-3">
       <Input v-model="query" :placeholder="$t('action_window.activity_request.people.search')" />
-      <p class="text-xs text-muted-foreground" role="status">
-        {{ $t('activity_requests.selection_limit') }} ({{ selectedInstitutionIds.size }}/100)
+      <ActivityRequestFilters :institutions="allInstitutions" />
+      <p
+        class="text-right text-xs text-muted-foreground tabular-nums"
+        role="status"
+        :aria-label="$t('activity_requests.selected_count', { count: String(selectedInstitutionIds.size) })"
+      >
+        {{ selectedInstitutionIds.size }}/100
       </p>
     </div>
 
@@ -57,6 +62,8 @@ import ActionChoiceList from '../ActionChoiceList.vue';
 import ActionWindowPrimaryButton from '../ActionWindowPrimaryButton.vue';
 import ActionWindowScreen from '../ActionWindowScreen.vue';
 import { skipLabel, useActivityRequestAskability } from '../useActivityRequestAskability';
+import ActivityRequestFilters from '../ActivityRequestFilters.vue';
+import { useActivityRequestScope } from '../useActivityRequestScope';
 
 import { useActionWindow, type ActionWindowPersonRef } from '@/Composables/useActionWindow';
 import { useApi } from '@/Composables/useApi';
@@ -74,19 +81,31 @@ const query = ref('');
 const limit = ref(PAGE);
 const selected = computed(() => draft.activityRequest.people);
 const selectedInstitutionIds = computed(() => new Set(selected.value.flatMap(person => person.institutions.map(institution => institution.id))));
+const { scopeKey, matchesScope } = useActivityRequestScope();
+const allInstitutions = computed(() => (people.value ?? []).flatMap(person => person.institutions));
+const scopedPeople = computed(() => (people.value ?? [])
+  .map(person => ({ ...person, institutions: person.institutions.filter(matchesScope) }))
+  .filter(person => person.institutions.length > 0));
+watch(scopedPeople, (available) => {
+  if (!people.value) return;
+  const byId = new Map(available.map(person => [person.id, person]));
+  updateActivityRequest({ people: selected.value.flatMap(person => byId.has(person.id) ? [byId.get(person.id)!] : []) });
+}, { immediate: true });
 
 const normalize = (value: string) => value.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
 const filtered = computed(() => {
   const needle = normalize(query.value.trim());
-  return (people.value ?? []).filter(person => !needle
+  return scopedPeople.value.filter(person => !needle
     || normalize(person.name).includes(needle)
     || person.institutions.some(institution => normalize(institution.name).includes(needle)));
 });
-watch(query, () => { limit.value = PAGE; });
+watch([query, scopeKey], () => {
+  limit.value = PAGE;
+});
 
 const pairsByInstitution = computed(() => {
   const pairs = new Map<string, Array<{ institution_id: string; user_id: string }>>();
-  (people.value ?? []).forEach(person => person.institutions.forEach((institution) => {
+  scopedPeople.value.forEach(person => person.institutions.forEach((institution) => {
     pairs.set(institution.id, [...(pairs.get(institution.id) ?? []), { institution_id: institution.id, user_id: person.id }]);
   }));
   return pairs;
@@ -94,7 +113,12 @@ const pairsByInstitution = computed(() => {
 const askability = useActivityRequestAskability(computed(() => draft.activityRequest.campaignType), id => pairsByInstitution.value.get(id) ?? []);
 
 const shown = computed(() => filtered.value.slice(0, limit.value));
-watch(() => shown.value.flatMap(person => person.institutions.map(institution => institution.id)), ids => askability.ensure([...new Set(ids)]), { immediate: true });
+watch([
+  () => shown.value.flatMap(person => person.institutions.map(institution => institution.id)),
+  () => draft.activityRequest.campaignType,
+], ([ids]) => {
+  void askability.ensure([...new Set(ids)]);
+}, { immediate: true });
 
 /** Why each of the person's institutions would be left out, once known. */
 function rowState(person: ActionWindowPersonRef): { blocked: boolean; note: string | null } | null {

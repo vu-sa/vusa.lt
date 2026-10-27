@@ -280,6 +280,8 @@ class MailingListController extends AdminController
     {
         return [
             'id' => $list->id,
+            'created_at' => $list->created_at?->toISOString(),
+            'updated_at' => $list->updated_at?->toISOString(),
             'address' => $list->address,
             'display_name' => $list->display_name,
             'description' => $list->description,

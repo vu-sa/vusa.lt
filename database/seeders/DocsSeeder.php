@@ -87,7 +87,8 @@ class DocsSeeder extends Seeder
 
         $committee = $this->institution($tenant, 'Chemijos studijų programos komitetas', 'Chemistry Study Programme Committee', 'Chemijos SPK');
 
-        $representativeType = DutyType::query()->where('slug', 'studentu-atstovai')->firstOrFail();
+        $representativeType = DutyType::query()->find(TypeSeeder::STUDENT_REPRESENTATIVE_DUTY_TYPE_ID)
+            ?? DutyType::query()->where('title->lt', 'Studentų atstovas')->firstOrFail();
 
         // A VU body type, so the institution frame shows its governance scope instead of a dash.
         $council->types()->attach(InstitutionType::query()->where('slug', 'studentu-atstovu-organas')->firstOrFail());

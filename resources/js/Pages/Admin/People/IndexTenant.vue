@@ -25,6 +25,10 @@
           <p class="mt-2 text-xs text-muted-foreground">
             {{ item.shortname }} · {{ item.type }}
           </p>
+          <p class="mt-2 text-sm text-muted-foreground">
+            {{ $t('forms.tenants.primary_institution') }}: {{ item.primary_institution?.name ?? $t('forms.tenants.not_assigned') }}
+            <InactiveInstitutionBadge :active="item.primary_institution?.is_active" />
+          </p>
         </div>
         <CollectionRowActions :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
       </article>
@@ -41,6 +45,10 @@
       />
       <span v-else-if="column.key === 'shortname'">{{ item.shortname }}</span>
       <span v-else-if="column.key === 'type'" class="text-muted-foreground">{{ item.type }}</span>
+      <span v-else-if="column.key === 'primary_institution'" class="text-sm">
+        {{ item.primary_institution?.name ?? $t('forms.tenants.not_assigned') }}
+        <InactiveInstitutionBadge :active="item.primary_institution?.is_active" />
+      </span>
       <CollectionRowActions v-else-if="column.key === 'actions'" :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
     </template>
   </CollectionPage>
@@ -48,7 +56,6 @@
   <TenantSheetForm
     v-model:open="sheetOpen"
     :tenant="editingTenant"
-    :assignable-institutions
     @saved="onSaved"
   />
 
@@ -73,21 +80,22 @@ import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell
 import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import type { CollectionColumn } from '@/Components/Collection/types';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
+import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import { ConfirmDialog } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { useLocalCollectionSource } from '@/Composables/useCollectionSource';
-import TenantSheetForm, { type TenantInput } from '@/Features/Admin/Tenants/TenantSheetForm.vue';
+import TenantSheetForm, { type TenantInput, type TenantInstitution } from '@/Features/Admin/Tenants/TenantSheetForm.vue';
 
-type TenantRow = Pick<App.Entities.Tenant, 'id' | 'fullname' | 'shortname' | 'alias' | 'type'> & {
+type TenantRow = Pick<App.Entities.Tenant, 'id' | 'fullname' | 'shortname' | 'alias' | 'type' | 'created_at' | 'updated_at'> & {
   can: { update: boolean; delete: boolean };
   shortname_vu?: string;
-  primary_institution_id?: number | string | null;
+  primary_institution_id?: string | null;
+  primary_institution?: TenantInstitution | null;
   goals_enabled?: boolean;
 };
 
 const props = defineProps<{
   tenants: TenantRow[];
-  assignableInstitutions?: App.Entities.Institution[];
 }>();
 
 const canCreate = computed(() => Boolean(usePage().props.auth?.can?.create?.tenant));
@@ -102,7 +110,7 @@ function selectRowAction(key: string, item: TenantRow): void {
 }
 
 const sheetOpen = ref(false);
-const editingTenant = ref<TenantInput | null>(null);
+const editingTenant = ref<(TenantInput & { primary_institution?: TenantInstitution | null }) | null>(null);
 const targetToDelete = ref<TenantRow | null>(null);
 
 const source = useLocalCollectionSource<TenantRow>({
@@ -120,6 +128,7 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'fullname', label: $t('Padalinys'), sortField: 'fullname' },
   { key: 'shortname', label: $t('Trumpinys'), class: 'w-40' },
   { key: 'type', label: $t('Tipas'), class: 'w-40' },
+  { key: 'primary_institution', label: $t('forms.tenants.primary_institution') },
   ...(props.tenants.some(tenant => tenant.can.update || tenant.can.delete)
     ? [{ key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true }]
     : []),
@@ -129,12 +138,15 @@ function openSheet(item: TenantRow | null = null): void {
   if (item) {
     editingTenant.value = {
       id: item.id,
+      created_at: item.created_at,
+      updated_at: item.updated_at,
       fullname: item.fullname,
       shortname: item.shortname,
       type: item.type,
       alias: item.alias,
       shortname_vu: item.shortname_vu ?? '',
       primary_institution_id: item.primary_institution_id ?? null,
+      primary_institution: item.primary_institution ?? null,
       goals_enabled: Boolean(item.goals_enabled),
     };
   }
