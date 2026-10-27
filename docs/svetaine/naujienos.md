@@ -1,7 +1,8 @@
 ---
 doc_status: reviewed
-last_reviewed: 2026-10-17
+last_reviewed: 2026-10-27
 tests:
+  - resources/js/Pages/Public/__tests__/NewsArchive.component.test.ts
   - resources/js/Composables/__tests__/useContentEditor.component.test.ts
   - tests/Feature/Search/SearchExperienceTest.php
   - tests/Feature/Api/Admin/ContentEditorTest.php
@@ -33,6 +34,8 @@ Skiltis pasiekiama adresu `/mano/news`.
 Sukūrus naujieną, atveriama jos redagavimo forma. Įrašius pakeitimus jau atvertame redaktoriuje, liekama jame.
 
 Paieška randa išsaugotą pavadinimą, aprašymą, žymas ir turinio tekstą. Ištrauka po rezultato pavadinimu padeda suprasti atitikimą. Viešoje paieškoje išlieka tik viešai skelbiami įrašai. [Paieška ir filtrų skaičiai](/pagrindai/platforma#paieska-ir-pasirinkimas).
+
+Viešame naujienų archyve išvalius padalinio filtrą rodomos visų padalinių naujienos. Kiekvienos naujienos nuoroda veda į ją paskelbusio padalinio svetainės dalį.
 
 
 ### Naujienos duomenys ir skelbimo laikas

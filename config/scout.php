@@ -272,6 +272,7 @@ $settings = [
                 'collection-schema' => [
                     'fields' => [
                         ['name' => 'id', 'type' => 'string'],
+                        ['name' => 'public_url', 'type' => 'string', 'optional' => true],
                         ['name' => 'title', 'type' => 'string', 'infix' => true],
                         ['name' => 'short', 'type' => 'string', 'optional' => true, 'infix' => true],
                         ['name' => 'permalink', 'type' => 'string', 'optional' => true],

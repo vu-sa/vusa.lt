@@ -15,6 +15,7 @@ export interface NewsDocument {
   title: string;
   short?: string;
   permalink?: string | null;
+  public_url?: string | null;
   image?: string;
   publish_time: number;
   lang?: string;
@@ -231,6 +232,7 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
       _searchFieldMatches: doc._searchFieldMatches,
       short: doc.short ?? '',
       permalink: doc.permalink ?? null,
+      public_url: doc.public_url ?? null,
       image: doc.image ?? '',
       image_media: imageFromSearch(doc as unknown as Record<string, unknown>),
       publish_time: publishIso,

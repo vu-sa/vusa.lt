@@ -174,6 +174,39 @@ describe('Public/NewsArchive.vue', () => {
     expect(wrapper.text()).not.toContain('Visos');
   });
 
+  it('links featured and grid results to their own tenants when all news is shown', async () => {
+    const wrapper = mountPage();
+    await flushPromises();
+    const urls = [
+      'http://mif.vusa.test/lt/naujiena/mif-naujiena',
+      'http://www.vusa.test/lt/naujiena/bendra-naujiena',
+    ];
+    mockSearch.mockResolvedValueOnce({
+      hits: urls.map((public_url, index) => ({
+        document: {
+          id: String(index + 3),
+          title: `Naujiena ${index}`,
+          permalink: index === 0 ? 'mif-naujiena' : 'bendra-naujiena',
+          publish_time: 1756713600,
+          lang: 'lt',
+          tenant_id: index === 0 ? 11 : 16,
+          public_url,
+        },
+      })),
+      found: 2,
+    });
+
+    const clearButton = wrapper.findAll('button').find(button => button.text().includes('Išvalyti visus'));
+    expect(clearButton).toBeDefined();
+    await clearButton!.trigger('click');
+    await flushPromises();
+
+    expect(wrapper.findComponent(PublicFilterPopover).props('selected')).toEqual([]);
+    expect(wrapper.findAll('[data-slot="news-card"]').map(card => card.attributes('href'))).toEqual(urls);
+    expect(wrapper.get('[data-slot="news-card"]').element.tagName).toBe('A');
+    wrapper.unmount();
+  });
+
   it('renders search bar and filter controls', () => {
     const wrapper = mountPage();
     const searchInput = wrapper.find('input[type="text"]');

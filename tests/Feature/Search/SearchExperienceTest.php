@@ -24,6 +24,22 @@ use Typesense\Client;
 
 pest()->use(RefreshDatabase::class);
 
+test('public news search results carry canonical URLs for each tenant and language', function (string $lang): void {
+    $tenants = [Tenant::main(), Tenant::query()->where('alias', 'mif')->firstOrFail()];
+
+    foreach ($tenants as $tenant) {
+        $news = News::factory()->create(['tenant_id' => $tenant->id, 'lang' => $lang]);
+        $document = PublicNews::findOrFail($news->id)->toSearchableArray();
+
+        expect($document['public_url'])->toBe(route('news', [
+            'subdomain' => $tenant->alias === 'mif' ? 'mif' : 'www',
+            'lang' => $lang,
+            'newsString' => $lang === 'lt' ? 'naujiena' : 'news',
+            'news' => $news->permalink,
+        ]));
+    }
+})->with(['lt', 'en']);
+
 test('document search finds statutes first when only the word prefix is entered', function (): void {
     usesTypesense();
     $institution = Institution::factory()->create();

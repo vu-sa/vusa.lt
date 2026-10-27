@@ -97,6 +97,7 @@ class PublicNews extends News
     {
         $array = parent::toSearchableArray();
         unset($array['draft']);
+        $array['public_url'] = $this->publicUrl();
 
         return $array;
     }
