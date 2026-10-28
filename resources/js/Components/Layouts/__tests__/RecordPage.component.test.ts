@@ -101,6 +101,8 @@ describe('RecordPage', () => {
     await wrapper.setProps({ actionsBesideTitle: true });
 
     expect(wrapper.find('[data-slot="record-title"]').classes()).toContain('lg:row-start-2');
+    expect(wrapper.find('header').html()).toContain('lg:min-h-42');
+    expect(wrapper.find('header').html()).toContain('lg:items-start');
     expect(wrapper.find('header').html()).toContain('lg:col-start-2 lg:row-start-2');
   });
 
