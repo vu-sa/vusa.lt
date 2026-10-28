@@ -87,6 +87,6 @@ test('serializes delete separately from update for problem rows', function (): v
     $own = collect($response->json('data.items'))->firstWhere('id', $this->problem->id);
     $other = collect($response->json('data.items'))->firstWhere('id', $this->otherTenantProblem->id);
 
-    expect($own)->toMatchArray(['can_update' => true, 'can_delete' => true]);
-    expect($other)->toMatchArray(['can_update' => false, 'can_delete' => false]);
+    expect($own)->toMatchArray(['can_update' => true, 'can_delete' => true])
+        ->and($other)->toMatchArray(['can_update' => false, 'can_delete' => false]);
 });

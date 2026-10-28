@@ -103,8 +103,8 @@ it('keeps collection actions reachable across widths and themes', function (): v
         $page->click('[data-sonner-toast] button:has-text("Atšaukti")')
             ->assertSeeIn('[data-slot=collection-results]', $tagName)
             ->assertSeeIn('[data-slot=collection-results-toolbar]', 'Rasta '.$tagCount);
-        expect(Tag::query()->find($tag->id))->not->toBeNull();
-        expect(settlesWithoutSidewaysScroll($page))->toBeTrue();
+        expect(Tag::query()->find($tag->id))->not->toBeNull()
+            ->and(settlesWithoutSidewaysScroll($page))->toBeTrue();
 
         $page->script('document.documentElement.classList.add("dark")');
         expect(settlesWithoutSidewaysScroll($page))->toBeTrue();
@@ -131,8 +131,8 @@ it('keeps collection actions reachable across widths and themes', function (): v
             const container = document.querySelector("[data-slot=collection-table]");
             container.scrollLeft = container.scrollWidth / 2;
             return container.scrollWidth > container.clientWidth;
-        })()'))->toBeTrue();
-        expect($page->script('(function () {
+        })()'))->toBeTrue()
+            ->and($page->script('(function () {
             const container = document.querySelector("[data-slot=collection-table]");
             const cell = container.querySelector("tbody tr td:last-child");
             const bounds = container.getBoundingClientRect();

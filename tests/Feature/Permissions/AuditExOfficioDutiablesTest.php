@@ -97,7 +97,7 @@ test('confirmed manual and future assignments do not need orphan review', functi
             'end_date' => null, 'assignment_origin' => $origin,
         ]);
     }
-    expect(FindSuspectExOfficioDutiables::idsForDuties([$this->targetDuty->id]))->toBe([]);
+    expect(FindSuspectExOfficioDutiables::idsForDuties([$this->targetDuty->id]))->toBeEmpty();
 });
 
 test('one valid source is sufficient even when other possible sources are absent', function (): void {
@@ -112,7 +112,7 @@ test('one valid source is sufficient even when other possible sources are absent
         'duty_id' => $other->id, 'dutiable_id' => $this->user->id,
         'start_date' => today(), 'end_date' => today(),
     ]);
-    expect(FindSuspectExOfficioDutiables::idsForDuties([$this->targetDuty->id]))->toBe([]);
+    expect(FindSuspectExOfficioDutiables::idsForDuties([$this->targetDuty->id]))->toBeEmpty();
     $source->update(['start_date' => today()->addDay(), 'end_date' => null]);
     expect(FindSuspectExOfficioDutiables::idsForDuties([$this->targetDuty->id]))->toHaveCount(1);
 });

@@ -18,7 +18,7 @@ test('invalid ability batches return 422', function (array $query): void {
         ->getJson(route('api.v1.admin.recordAbilities', $query))
         ->assertUnprocessable();
 })->with([
-    'unknown type' => [['type' => 'App\\Models\\User', 'ids' => ['missing']]],
+    'unknown type' => [['type' => User::class, 'ids' => ['missing']]],
     'too many ids' => [['type' => 'resources', 'ids' => range(1, 101)]],
     'nested id' => [['type' => 'resources', 'ids' => [['unexpected' => 'id']]]],
     'missing ids' => [['type' => 'resources']],
