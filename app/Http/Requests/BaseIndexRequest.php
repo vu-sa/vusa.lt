@@ -42,16 +42,27 @@ abstract class BaseIndexRequest extends FormRequest
             'per_page' => 'nullable|integer|min:1|max:100',
             'search' => 'nullable|string',
             'sorting' => 'nullable|string',
-            'sort' => 'nullable|string',
             'filters' => 'nullable|string',
             'showDeleted' => 'nullable|string|in:true,false',
         ];
     }
 
     /**
-     * Get the sorting state from the request: the API's `sorting` JSON, else the collection URL's
-     * `sort=field:direction` (so a bookmarked sort holds on the first Inertia render), else
-     * {@see $defaultSorting}.
+     * The collection URL carries `sort=field:direction`; it becomes `sorting` before validation so
+     * a bookmarked order holds on the first Inertia render and subclass `sorting` rules cover it.
+     */
+    protected function prepareForValidation(): void
+    {
+        $sort = $this->query('sort');
+
+        if (! $this->has('sorting') && is_string($sort) && preg_match('/^([\w.]+):(asc|desc)$/', $sort, $matches) === 1) {
+            $this->merge(['sorting' => json_encode([['id' => $matches[1], 'desc' => $matches[2] === 'desc']])]);
+        }
+    }
+
+    /**
+     * Get the sorting state from the request.
+     * Falls back to {@see $defaultSorting} when the request carries no sorting param.
      */
     public function getSorting(): array
     {
@@ -63,10 +74,6 @@ abstract class BaseIndexRequest extends FormRequest
             } catch (\Exception) {
                 return $this->defaultSorting;
             }
-        }
-
-        if (is_string($this->query('sort')) && preg_match('/^([\w.]+):(asc|desc)$/', $this->query('sort'), $matches) === 1) {
-            return [['id' => $matches[1], 'desc' => $matches[2] === 'desc']];
         }
 
         return $this->defaultSorting;

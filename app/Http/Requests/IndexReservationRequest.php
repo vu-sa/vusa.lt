@@ -23,6 +23,8 @@ class IndexReservationRequest extends BaseIndexRequest
     #[\Override]
     protected function prepareForValidation(): void
     {
+        parent::prepareForValidation();
+
         if (is_string($this->input('state'))) {
             $this->merge(['state' => array_values(array_filter(explode(',', $this->input('state'))))]);
         }

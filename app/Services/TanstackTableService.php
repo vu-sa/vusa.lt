@@ -6,7 +6,6 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Query\Expression;
@@ -57,6 +56,11 @@ class TanstackTableService
 
                             // Only add join if not already added
                             if (! in_array($joinName, $addedJoins)) {
+                                // Without an explicit select, the joined table's `id` would overwrite the model's.
+                                if ($query->getQuery()->columns === null) {
+                                    $query->select("{$model->getTable()}.*");
+                                }
+
                                 $query->leftJoin(
                                     "{$relatedTable} as {$joinName}",
                                     "{$model->getTable()}.{$foreignKey}",
@@ -65,26 +69,8 @@ class TanstackTableService
                                 );
                                 $addedJoins[] = $joinName;
                             }
-                        } elseif ($relationObj instanceof HasOneOrMany) {
-                            // For HasMany, HasOne, etc.
-                            $foreignKey = $relationObj->getForeignKeyName();
-                            $localKey = $relationObj->getLocalKeyName() ?: 'id';
-
-                            // Generate a unique join name to avoid conflicts
-                            $joinName = "{$relatedTable}_sort";
-
-                            // Only add join if not already added
-                            if (! in_array($joinName, $addedJoins)) {
-                                $query->leftJoin(
-                                    "{$relatedTable} as {$joinName}",
-                                    "{$joinName}.{$localKey}",
-                                    '=',
-                                    "{$model->getTable()}.{$foreignKey}"
-                                );
-                                $addedJoins[] = $joinName;
-                            }
                         } else {
-                            // Unsupported relation type for a join-based sort — skip it.
+                            // A has-many join would repeat parent rows, so only BelongsTo relations sort.
                             continue;
                         }
 

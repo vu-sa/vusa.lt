@@ -164,6 +164,22 @@ describe('filter key validation', function (): void {
         expect($result->count())->toBeGreaterThanOrEqual(1);
     });
 
+    test('keeps the model\'s own id when sorting through a joined relation', function (): void {
+        $news = News::factory()->for($this->tenant)->create();
+
+        $sorted = $this->service->applySorting(News::query()->whereKey($news->id), [['id' => 'tenant.shortname', 'desc' => false]])->sole();
+
+        expect($sorted->id)->toBe($news->id);
+    });
+
+    test('ignores sorts through has-many relations instead of joining them', function (): void {
+        $query = $this->service->applySorting(Tenant::query(), [['id' => 'duties.name', 'desc' => false]]);
+
+        expect($query->getQuery()->joins)->toBeEmpty()
+            ->and($query->getQuery()->orders)->toBeEmpty();
+        $query->get();
+    });
+
     test('ignores a direct sort on a column the table does not have', function (): void {
         $query = $this->service->applySorting(News::query(), [['id' => 'no_such_column', 'desc' => false]]);
 
