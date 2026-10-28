@@ -6,12 +6,13 @@
 
     <div class="mx-auto w-full max-w-[90rem]">
       <header class="border-b border-border pt-6 pb-6 sm:pt-10 sm:pb-8">
-        <div class="flex min-w-0 items-start gap-4">
+        <!-- Holds three clamped title lines plus the fold toggle on desktop so the facts strip and aside below do not jump between records. -->
+        <div class="flex min-w-0 items-start gap-4 lg:min-h-42">
           <div v-if="$slots.identity" class="shrink-0">
             <slot name="identity" />
           </div>
 
-          <div :class="['min-w-0 flex-1', actionsBesideTitle && 'lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-x-6']">
+          <div :class="['min-w-0 flex-1', actionsBesideTitle && 'lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start lg:gap-x-6']">
             <p :class="['flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-brand', actionsBesideTitle && 'lg:col-span-2']" data-slot="record-eyebrow">
               <component :is="entityDefinition.icon" v-if="entityDefinition" class="size-4 shrink-0" aria-hidden="true" />
               {{ $t(entityLabel) }}
