@@ -8,6 +8,7 @@
     :dirty="form.isDirty"
     :errors="form.errors"
     :available-locales="[]"
+    required-note
     @submit="handleFormSubmit"
   >
     <FormSection
@@ -16,6 +17,7 @@
     >
       <FormFieldWrapper
         id="member_registration_form_id"
+        required
         :label="$t('settings.form_settings.form_label')"
         :error="form.errors.member_registration_form_id"
       >
@@ -59,6 +61,8 @@
       >
         <NativeSelect
           id="student_rep_registration_form_id"
+          placeholder-selectable
+          :placeholder-value="null"
           v-model="form.student_rep_registration_form_id"
           :options="formOptions"
           :placeholder="$t('settings.form_settings.no_form_selected')"

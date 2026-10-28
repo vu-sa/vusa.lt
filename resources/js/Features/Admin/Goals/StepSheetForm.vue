@@ -1,5 +1,6 @@
 <template>
   <SheetForm
+    required-note
     v-model:open="open"
     :created-at="step?.created_at"
     :updated-at="step?.updated_at"
@@ -11,7 +12,7 @@
     @submit="submit"
   >
     <div class="space-y-2">
-      <Label for="step-title">{{ capitalize($t('entities.step.title')) }}</Label>
+      <Label for="step-title">{{ capitalize($t('entities.step.title')) }} <span class="text-destructive">*</span></Label>
       <MultiLocaleInput id="step-title" v-model:input="form.title" />
       <p v-if="form.errors['title.lt']" class="text-sm text-status-danger">
         {{ form.errors['title.lt'] }}
@@ -19,7 +20,7 @@
     </div>
 
     <div class="space-y-2">
-      <Label for="step-happened-on">{{ capitalize($t('entities.step.happened_on')) }}</Label>
+      <Label for="step-happened-on">{{ capitalize($t('entities.step.happened_on')) }} <span class="text-destructive">*</span></Label>
       <DatePicker id="step-happened-on" :model-value="form.happened_on" @update:model-value="setDate" />
       <p v-if="form.errors.happened_on" class="text-sm text-status-danger">
         {{ form.errors.happened_on }}
@@ -27,7 +28,7 @@
     </div>
 
     <div class="space-y-2">
-      <Label for="step-performers">{{ $t('goals.steps.done_by') }} <span class="text-muted-foreground">({{ $t('neprivaloma') }})</span></Label>
+      <Label for="step-performers">{{ $t('goals.steps.done_by') }}</Label>
       <MultiCollectionSelectDialog
         v-model:open="performersOpen"
         multiple
@@ -53,13 +54,13 @@
 
     <div class="space-y-2">
       <Label for="step-description">
-        {{ capitalize($t('entities.step.description')) }} <span class="text-muted-foreground">({{ $t('neprivaloma') }})</span>
+        {{ capitalize($t('entities.step.description')) }}
       </Label>
       <MultiLocaleInput id="step-description" v-model:input="form.description" input-type="textarea" />
     </div>
 
     <div class="space-y-2">
-      <Label for="step-reference">{{ $t('goals.steps.reference') }} <span class="text-muted-foreground">({{ $t('neprivaloma') }})</span></Label>
+      <Label for="step-reference">{{ $t('goals.steps.reference') }}</Label>
       <div class="flex gap-2">
         <MultiCollectionSelectDialog
           v-model:open="referenceOpen"
@@ -88,7 +89,7 @@
     </div>
 
     <div class="space-y-2">
-      <Label for="step-url">{{ $t('goals.steps.url') }} <span class="text-muted-foreground">({{ $t('neprivaloma') }})</span></Label>
+      <Label for="step-url">{{ $t('goals.steps.url') }}</Label>
       <Input id="step-url" v-model="form.url" type="url" inputmode="url" placeholder="https://" :class="fieldSurfaceClass" />
       <p v-if="form.errors.url" class="text-sm text-status-danger">
         {{ form.errors.url }}

@@ -55,6 +55,19 @@ describe('form field native selects', () => {
     expect(wrapper.emitted('submit')?.[0][0]).toMatchObject({ option_source: 'institution' });
   });
 
+  it('saves checkbox values and associates their labels', async () => {
+    const wrapper = createWrapper({ type: 'enum' });
+    await wrapper.find('button[aria-expanded]').trigger('click');
+    await wrapper.get('#use_model_options').trigger('click');
+    await wrapper.get('#is_required').trigger('click');
+    expect(wrapper.get('label[for="use_model_options"]').exists()).toBe(true);
+    expect(wrapper.get('label[for="is_required"]').exists()).toBe(true);
+
+    const submit = wrapper.findAll('button').find(button => button.text().includes('Pateikti'))!;
+    await submit.trigger('click');
+    expect(wrapper.emitted('submit')?.[0][0]).toMatchObject({ use_model_options: true, is_required: true });
+  });
+
   it('keeps field types locked once registrations exist', () => {
     const wrapper = createWrapper({}, true);
     expect(wrapper.get('select#type').attributes('disabled')).toBeDefined();

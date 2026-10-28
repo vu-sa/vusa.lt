@@ -353,7 +353,15 @@ describe('CalendarForm.vue — all-day default', () => {
 
   function createWrapper(rememberKey: string) {
     return mount(CalendarForm, {
-      shallow: true,
+      global: {
+        stubs: {
+          FormPage: { template: '<form @submit.prevent><slot /></form>' },
+          FormPanel: true,
+          DateTimePicker: true,
+          TiptapEditor: true,
+          PermalinkPreviewHint: true,
+        },
+      },
       props: {
         calendar,
         eventTypes: [],
@@ -391,11 +399,15 @@ describe('CalendarForm.vue — all-day default', () => {
     expect(vm.form.is_all_day).toBe(false);
   });
 
-  it('stops auto-deriving once the admin has touched the switch directly', async () => {
+  it('preserves the checkbox choice when dates later span multiple days', async () => {
     wrapper = createWrapper('CreateCalendarAllDayTouched');
     const vm = wrapper.vm as unknown as FormVm;
 
-    vm.isAllDayTouched = true;
+    const checkbox = wrapper.get('button#is_all_day[role="checkbox"]');
+    expect(wrapper.get('label[for="is_all_day"]').exists()).toBe(true);
+    await checkbox.trigger('click');
+    expect(vm.form.is_all_day).toBe(true);
+    await checkbox.trigger('click');
     vm.form.date = '2026-08-25 09:00:00';
     vm.form.end_date = '2026-08-27 17:00:00';
     await wrapper.vm.$nextTick();

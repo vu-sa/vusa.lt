@@ -170,7 +170,7 @@ return [
         'institution_assignment_closed' => 'Only historical assignments can be recorded for institutions that no longer operate. Do not reopen a closed period; create a new period in an operating institution.',
         'institution_reactivation_hint' => 'Reactivating the institution does not restore ended assignments. Members will need new duty assignment periods.',
         'institution_resolve_terms' => 'Manage duty assignment periods',
-        'tag_alias_hint' => 'An additional name for the tag (optional). If left empty, it will be generated automatically from the name.',
+        'tag_alias_hint' => 'Leave empty to generate it from the name.',
         'is_topic_hint' => 'Topics get their own page collecting every related news article, page and event.',
         'form_main_info' => 'Basic information about the registration form.',
         'registrations_count' => 'Number of registrations: :count',

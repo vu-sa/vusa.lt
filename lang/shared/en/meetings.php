@@ -10,7 +10,7 @@ return [
         'nonpublic_hint' => 'This meeting’s page is currently private, so access through that page will stay the same. We still recommend enabling this for internal working items: the institution type may allow public meetings later, or the meeting may be linked to a public calendar event.',
         'creation_hint' => 'You can make an item private later. Find more about visibility in the item editor.',
         'details_label' => 'Who can see this item?',
-        'public_title' => 'Public title (optional)',
+        'public_title' => 'Public title',
         'public_title_hint' => 'This title will appear publicly instead of the original. Leave it blank to show “Not displayed”.',
         'public_preview' => 'On the public agenda',
         'audience' => 'The full item is visible to people with internal access: institution members at the meeting date, authorized representatives and coordinators, members with access through institution relationships, and super administrators. Signing in alone does not grant access.',

@@ -200,7 +200,7 @@ return [
             'title' => 'Pažymėti, kad posėdžių nėra',
             'subtitle' => 'Paspausk ant eilutės, jei nori ką nors pakeisti.',
             'period' => 'Laikotarpis',
-            'note' => 'Pastaba (neprivaloma)',
+            'note' => 'Pastaba',
             'note_placeholder' => 'Pvz. atostogų laikotarpis, neveiklus semestro metas…',
             'submit' => 'Pranešti',
             'submitting' => 'Siunčiama…',

@@ -52,7 +52,7 @@ describe('AgendaItemSheetForm', () => {
     expect(details.attributes('open')).toBeUndefined();
     expect(details.find('summary').text()).toContain('meetings.privacy.details_label');
     expect(details.text()).toContain('meetings.privacy.nonpublic_hint');
-    await wrapper.findComponent({ name: 'Switch' }).vm.$emit('update:modelValue', true);
+    await wrapper.get('#agenda-item-private').trigger('click');
     await wrapper.vm.$nextTick();
     expect(wrapper.text()).toContain('meetings.privacy.enabled_lead');
     expect(wrapper.text()).not.toContain('meetings.privacy.disabled_lead');
@@ -62,7 +62,7 @@ describe('AgendaItemSheetForm', () => {
 
   it('saves privacy with the draft and never previews the original title', async () => {
     const { wrapper, form } = factory({ order: 3 });
-    await wrapper.findComponent({ name: 'Switch' }).vm.$emit('update:modelValue', true);
+    await wrapper.get('#agenda-item-private').trigger('click');
     await wrapper.vm.$nextTick();
 
     const preview = wrapper.find('[data-testid="agenda-item-public-preview"]');
@@ -84,7 +84,7 @@ describe('AgendaItemSheetForm', () => {
 
   it('discarding the privacy draft leaves the saved visibility untouched', async () => {
     const { wrapper, form } = factory();
-    wrapper.findComponent({ name: 'Switch' }).vm.$emit('update:modelValue', true);
+    await wrapper.get('#agenda-item-private').trigger('click');
     await wrapper.vm.$nextTick();
     wrapper.findComponent({ name: 'SheetForm' }).vm.$emit('cancel');
     await wrapper.vm.$nextTick();

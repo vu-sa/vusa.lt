@@ -22,6 +22,7 @@
 
           <slot name="body">
             <div class="min-h-0 flex-1 space-y-6 overflow-y-auto px-6 py-5">
+              <FormRequiredNote :note="requiredNote" />
               <slot />
 
               <ModelTimestamps :created-at :updated-at />
@@ -80,6 +81,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Loader2 } from '@lucide/vue';
 import { ref } from 'vue';
 
+import FormRequiredNote from '@/Components/Patterns/FormRequiredNote.vue';
 import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
 import ModelTimestamps from '@/Components/Patterns/ModelTimestamps.vue';
 import { Button } from '@/Components/ui/button';
@@ -98,6 +100,7 @@ const props = withDefaults(defineProps<{
   createdAt?: string | null;
   updatedAt?: string | null;
   description?: string;
+  requiredNote?: boolean | string;
   saveLabel?: string;
   processing?: boolean;
   disabled?: boolean;

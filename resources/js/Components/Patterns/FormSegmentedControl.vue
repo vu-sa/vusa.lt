@@ -18,6 +18,7 @@
       v-for="option in options"
       :key="String(option.value)"
       type="button"
+      :disabled
       :class="optionClass(option)"
       :aria-pressed="model === option.value"
       :data-testid="testIdPrefix ? `${testIdPrefix}-${option.testId ?? String(option.value)}` : undefined"
@@ -52,6 +53,8 @@ const props = defineProps<{
   options: FormSegmentOption<T>[];
   ariaLabel: string;
   testIdPrefix?: string;
+  disabled?: boolean;
+  voice?: 'sentence' | 'brand';
   /** Four long labels do not fit a phone's width in one row, so they wrap to a 2×2 grid below `sm`. */
   stackOnPhone?: boolean;
   class?: HTMLAttributes['class'];
@@ -61,11 +64,13 @@ const model = defineModel<T>({ required: true });
 
 function optionClass(option: FormSegmentOption<T>) {
   const active = model.value === option.value;
+  const voiceClass = props.voice === 'brand' ? '' : 'normal-case tracking-normal';
+  const disabledClass = 'disabled:cursor-not-allowed disabled:opacity-50';
 
   if (active && option.activeClass) {
-    return cn(segmentVariants({ active: true }), 'w-full border', option.activeClass);
+    return cn(segmentVariants({ active: true }), 'w-full border', option.activeClass, voiceClass, disabledClass);
   }
 
-  return cn(segmentVariants({ active }), 'w-full');
+  return cn(segmentVariants({ active }), 'w-full', voiceClass, disabledClass);
 }
 </script>

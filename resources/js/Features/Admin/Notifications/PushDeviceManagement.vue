@@ -1,5 +1,5 @@
 <template>
-  <FormPanel :title="$t('notifications.push_devices.title')" :icon="Smartphone" title-class="text-brand" flush>
+  <FormPanel :title="$t('notifications.push_devices.title')" :icon="Smartphone" flush>
     <div class="flex flex-col gap-3 border-b border-border px-4 py-3">
       <div class="flex items-center justify-between gap-3">
         <div class="flex min-w-0 items-center gap-2">

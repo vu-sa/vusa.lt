@@ -75,7 +75,7 @@ return [
     // Accessibility
     'image_alt_text' => 'Alt tekstas (prieinamumui)',
     'image_alt_placeholder' => 'Aprašyk, kas pavaizduota nuotraukoje',
-    'image_title' => 'Pavadinimas (neprivalomas)',
+    'image_title' => 'Pavadinimas',
     'image_title_placeholder' => 'Pavadinimas, rodomas užvedus pelę',
     // Image bubble menu
     'image_size' => 'Dydis',

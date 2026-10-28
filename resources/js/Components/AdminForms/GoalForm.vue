@@ -80,6 +80,8 @@
         <FormFieldWrapper id="goal-cadence" :label="capitalize($t('entities.goal.cadence'))" :error="form.errors.cadence_id">
           <NativeSelect
             id="goal-cadence"
+            placeholder-selectable
+            :placeholder-value="null"
             v-model="form.cadence_id"
             :options="cadenceOptions"
             :placeholder="$t('goals.form.no_cadence')"

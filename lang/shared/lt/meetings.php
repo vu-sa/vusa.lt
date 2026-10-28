@@ -10,7 +10,7 @@ return [
         'nonpublic_hint' => 'Šio posėdžio puslapis dabar neviešas, todėl vien čia prieiga nepasikeis. Vis tiek rekomenduojame įjungti šią parinktį vidaus darbui skirtiems klausimams: vėliau institucijos tipas gali leisti viešinti posėdžius arba posėdis gali būti susietas su viešu kalendoriaus renginiu.',
         'creation_hint' => 'Klausimą vėliau galėsi padaryti privatų. Daugiau apie matomumą – klausimo redagavimo lange.',
         'details_label' => 'Kas matys klausimą?',
-        'public_title' => 'Viešas pavadinimas (neprivaloma)',
+        'public_title' => 'Viešas pavadinimas',
         'public_title_hint' => 'Šis pavadinimas bus matomas viešai vietoj tikrojo. Jo neįrašius, rodoma „Nerodoma“.',
         'public_preview' => 'Viešai darbotvarkėje',
         'audience' => 'Visą punktą mato tie, kas turi vidinę prieigą: institucijos nariai posėdžio metu, įgalioti atstovai ir koordinatoriai, prieigą per institucijų ryšius turintys nariai ir super administratorius. Vien prisijungimo nepakanka.',

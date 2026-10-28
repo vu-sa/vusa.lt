@@ -68,8 +68,11 @@
           :label="$t('forms.fields.governance_scope')"
           :hint="$t('forms.helpers.governance_scope_hint')"
         >
-          <NativeSelect
+          <FormSegmentedControl
             id="governance_scope"
+            tabindex="-1"
+            stack-on-phone
+            :aria-label="$t('forms.fields.governance_scope')"
             v-model="governanceScope"
             :options="governanceScopeOptions"
           />
@@ -113,7 +116,7 @@ import FormPanel from '@/Components/Patterns/FormPanel.vue';
 import FormSection from '@/Components/Patterns/FormSection.vue';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
-import { NativeSelect } from '@/Components/ui/native-select';
+import FormSegmentedControl from '@/Components/Patterns/FormSegmentedControl.vue';
 import { NumberField } from '@/Components/ui/number-field';
 import { TypeTreeSelect } from '@/Components/AdminForms/TypeTree';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';

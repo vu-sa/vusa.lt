@@ -47,6 +47,19 @@ describe('TagSheetForm', () => {
     wrapper.unmount();
   });
 
+  it('saves the topic checkbox with the form', async () => {
+    const wrapper = mountForm();
+    const form = vi.mocked(useForm).mock.results[0].value;
+    const post = vi.spyOn(form, 'post').mockImplementation(() => {});
+
+    expect(wrapper.get('label[for="tag-is-topic"]').exists()).toBe(true);
+    await wrapper.get('#tag-is-topic').trigger('click');
+    expect(form.is_topic).toBe(true);
+    await wrapper.get('[data-testid="save"]').trigger('click');
+    expect(post).toHaveBeenCalled();
+    wrapper.unmount();
+  });
+
   it.each([null, { lt: '<p>Tema</p>', en: '<p>Topic</p>' }])('opens and edits a reactive tag with description %j', async (description) => {
     const tag = reactive({
       id: 71,
