@@ -12,6 +12,7 @@ use App\Models\StudyProgram;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\SystemDutyTypes;
+use App\Settings\AtstovavimasSettings;
 use App\Settings\DutyTypeSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
@@ -153,6 +154,12 @@ test('news route resolves the padalinys article when permalink is shared', funct
 });
 
 test('can open student representative page', function (): void {
+    $root = InstitutionType::query()->where('slug', 'studentu-atstovu-organas')->firstOrFail();
+    $settings = app(AtstovavimasSettings::class);
+    $settings->student_rep_root_type_id = $root->id;
+    $settings->save();
+    AtstovavimasSettings::clearStudentRepTypeCache();
+
     $this->get(route('contacts.studentRepresentatives', ['subdomain' => 'www', 'lang' => 'lt']))
         ->assertInertia(fn (Assert $page) => $page
             ->component('Public/Contacts/ShowStudentReps')
@@ -160,12 +167,38 @@ test('can open student representative page', function (): void {
         );
 });
 
+test('student representative contacts are empty when no root type is selected', function (): void {
+    $settings = app(AtstovavimasSettings::class);
+    $settings->student_rep_root_type_id = null;
+    $settings->save();
+    AtstovavimasSettings::clearStudentRepTypeCache();
+
+    $this->get(route('contacts.studentRepresentatives', ['subdomain' => 'www', 'lang' => 'lt']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Public/Contacts/ShowStudentReps')
+            ->has('types', 0)
+        );
+
+    $this->get(route('contacts', ['subdomain' => 'www', 'lang' => 'lt']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('studentRepTypeSlugs', [])
+        );
+});
+
 test('can open contacts search page with student rep type slugs', function (): void {
+    $root = InstitutionType::query()->where('slug', 'studentu-atstovu-organas')->firstOrFail();
+    $settings = app(AtstovavimasSettings::class);
+    $settings->student_rep_root_type_id = $root->id;
+    $settings->save();
+    AtstovavimasSettings::clearStudentRepTypeCache();
+
     $this->get(route('contacts', ['subdomain' => 'www', 'lang' => 'lt']))
         ->assertInertia(fn (Assert $page) => $page
             ->component('Public/Contacts/ShowContacts')
             ->has('institutionTypes')
-            ->has('studentRepTypeSlugs')
+            ->where('studentRepTypeSlugs', [$root->slug])
         );
 });
 

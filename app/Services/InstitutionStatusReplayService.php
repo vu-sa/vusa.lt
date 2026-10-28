@@ -6,7 +6,6 @@ use App\Enums\InstitutionActivityStatus;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\Meeting;
-use App\Settings\MeetingSettings;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Collection;
@@ -17,7 +16,6 @@ class InstitutionStatusReplayService
     public function __construct(
         private readonly InstitutionActivityStatusService $activityStatusService,
         private readonly AcademicCalendarService $academicCalendar,
-        private readonly MeetingSettings $meetingSettings,
     ) {}
 
     /**
@@ -36,25 +34,18 @@ class InstitutionStatusReplayService
     }
 
     /**
-     * Drops the excluded institution types and loads meetings (trashed included, with their
-     * registration times) and check-ins.
+     * Loads meetings (including trashed and registration times) and check-ins.
      *
      * @param  Collection<int, Institution>  $institutions
      * @return Collection<int, Institution>
      */
     public function prepare(Collection $institutions): Collection
     {
-        $institutions->load([
+        return $institutions->load([
             'types',
             'meetings' => fn ($query) => $query->withTrashed()->select('meetings.id', 'start_time', 'meetings.created_at', 'meetings.deleted_at'),
             'checkIns',
         ]);
-
-        $excludedTypeIds = $this->meetingSettings->getExcludedInstitutionTypeIds();
-
-        return $excludedTypeIds->isEmpty()
-            ? $institutions
-            : $institutions->filter(fn (Institution $institution) => $institution->types->pluck('id')->intersect($excludedTypeIds)->isEmpty())->values();
     }
 
     /**

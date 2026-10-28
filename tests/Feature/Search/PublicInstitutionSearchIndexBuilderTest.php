@@ -24,6 +24,11 @@ test('PublicInstitutionSearchIndexBuilder includes contacts, current user names,
         ['title' => json_encode(['lt' => 'Studentų atstovų organas', 'en' => 'Student representative body'])],
     );
 
+    $settings = app(AtstovavimasSettings::class);
+    $settings->student_rep_root_type_id = $rootType->id;
+    $settings->save();
+    AtstovavimasSettings::clearStudentRepTypeCache();
+
     $childType = InstitutionType::factory()->create([
         'title' => 'Fakulteto taryba',
         'slug' => 'fakulteto-taryba',

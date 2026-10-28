@@ -70,10 +70,6 @@ return [
         'types_label' => 'Institucijų tipai',
         'types_placeholder' => 'Pasirinkti institucijų tipus',
         'no_types_found' => 'Institucijų tipų nerasta.',
-        'excluded_types_title' => 'Institucijų tipai be posėdžių',
-        'excluded_types_description' => 'Pasirink institucijų tipus, kurių institucijos neskaičiuojamos atstovavimo rodikliuose. Šių tipų institucijos (pvz., padalinys, PKP) neturi formalių posėdžių, bet posėdžių grafike vis tiek rodomos.',
-        'excluded_types_label' => 'Išskirti institucijų tipai',
-        'excluded_types_placeholder' => 'Pasirinkti institucijų tipus išskyrimui',
     ],
 
     // Atstovavimas settings page
@@ -85,9 +81,8 @@ return [
         'student_rep_type_title' => 'Studentų atstovų organų šakninis tipas',
         'student_rep_type_description' => 'Pasirink šakninį institucijos tipą, kuris (ir visi jo potipiai) laikomas studentų atstovų organu. Šio tipo institucijoms viešame kontaktų puslapyje bus rodoma studentų atstovų kortelė vietoje standartinės institucijos kortelės.',
         'student_rep_type_label' => 'Šakninis tipas',
-        'student_rep_type_placeholder' => 'Pagal nutylėjimą: Studentų atstovų organas',
-        'student_rep_type_default' => 'Pagal nutylėjimą (studentu-atstovu-organas)',
-        'student_rep_type_note' => 'Pagal nutylėjimą naudojamas tipas su unikaliu kodu "studentu-atstovu-organas".',
+        'student_rep_type_placeholder' => 'Nepasirinkta (išjungta)',
+        'student_rep_type_note' => 'Nepasirinkus tipo, viešuose kontaktuose nerodomos studentų atstovų kortelės ir jų grupės. Atstovavimo rodikliai nuo šio pasirinkimo nepriklauso.',
         'counted_scopes_title' => 'Kurie organai skaičiuojami rodikliuose',
         'counted_scopes_description' => 'Padalinių statistika (atstovai, posėdžių registravimas, institucijų būklė) skaičiuojama tik pažymėtų organų institucijoms. Posėdžių grafike vis tiek matysi visas institucijas.',
         'counted_scopes_label' => 'Skaičiuojami organai',

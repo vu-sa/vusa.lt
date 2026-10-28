@@ -21,8 +21,8 @@ use App\Models\User;
 use App\Services\InstitutionActivityStatusService;
 use App\Services\InstitutionRelationService;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\RepStatisticsScope;
 use App\Settings\FormSettings;
-use App\Settings\MeetingSettings;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
 
@@ -187,28 +187,16 @@ class DashboardController extends AdminController
      */
     private function institutionsNeedingAttention(Collection $userInstitutionIds): array
     {
-        $meetingSettings = app(MeetingSettings::class);
-        $excludedTypeIds = $meetingSettings->getExcludedInstitutionTypeIds();
         $userInstitutions = Institution::query()
             ->whereIn('id', $userInstitutionIds)
             ->with([
                 'meetings:id,start_time',
                 'types',
-                // Load all check-ins: InstitutionActivityStatusService::resolve() needs
-                // completed check-ins to compute lastActivityAt, and it calls loadMissing()
-                // which is a no-op once the relation is already loaded. Filtering here
-                // would silently hide historical activity and skew the status, causing the
-                // card to disagree with the ShowAtstovavimas page.
+                // Keep completed check-ins so activity status agrees with the representation page.
                 'checkIns',
             ])
             ->get()
-            ->filter(function ($institution) use ($excludedTypeIds) {
-                if ($excludedTypeIds->isNotEmpty()) {
-                    return $institution->types->pluck('id')->intersect($excludedTypeIds)->isEmpty();
-                }
-
-                return true;
-            });
+            ->filter(RepStatisticsScope::counts(...));
 
         return $userInstitutions
             ->map(function (Institution $institution) {

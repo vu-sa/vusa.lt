@@ -84,6 +84,22 @@ describe('ShowContacts', () => {
     expect(wrapper.text()).toContain('VU SA Centrinis biuras');
   });
 
+  it('renders a standard card for the former default slug when no student rep types are supplied', () => {
+    mockResults.value = [
+      {
+        id: 'inst-unconfigured',
+        name: 'Fakulteto taryba',
+        type_slugs: ['studentu-atstovu-organas'],
+        is_student_representation: false,
+      },
+    ];
+
+    const wrapper = mount(ShowContacts, { global: { stubs } });
+
+    expect(wrapper.find('[data-slot="institution-card"]').exists()).toBe(true);
+    expect(wrapper.find('[data-slot="student-rep-institution-card"]').exists()).toBe(false);
+  });
+
   it('renders StudentRepInstitutionCard when institution has is_student_representation flag', () => {
     mockResults.value = [
       {

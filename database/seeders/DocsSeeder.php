@@ -32,6 +32,7 @@ use App\Models\Resource;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Settings\AtstovavimasSettings;
 use App\Support\MeetingTitle;
 use App\Tasks\Handlers\PeriodicityGapTaskHandler;
 use Illuminate\Database\Seeder;
@@ -91,7 +92,12 @@ class DocsSeeder extends Seeder
             ?? DutyType::query()->where('title->lt', 'Studentų atstovas')->firstOrFail();
 
         // A VU body type, so the institution frame shows its governance scope instead of a dash.
-        $council->types()->attach(InstitutionType::query()->where('slug', 'studentu-atstovu-organas')->firstOrFail());
+        $studentRepType = InstitutionType::query()->where('slug', 'studentu-atstovu-organas')->firstOrFail();
+        $council->types()->attach($studentRepType);
+        $settings = app(AtstovavimasSettings::class);
+        $settings->student_rep_root_type_id = $studentRepType->id;
+        $settings->save();
+        AtstovavimasSettings::clearStudentRepTypeCache();
 
         // Duty inboxes show up in the notification settings frame; faker addresses read as placeholders.
         foreach (['chgf.taryba@vusa.lt' => $council, 'senatas@vusa.lt' => $senate, 'chemija.spk@vusa.lt' => $committee] as $email => $institution) {
