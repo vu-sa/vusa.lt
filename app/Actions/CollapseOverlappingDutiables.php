@@ -140,7 +140,9 @@ class CollapseOverlappingDutiables
                 $fields = ['study_program_id', 'study_program_note', 'additional_email', 'description',
                     'additional_photo', 'additional_photo_focal_point', 'use_original_duty_name',
                     'ended_by_institution_deactivation'];
-                if ($kept->only($fields) === $seat->only($fields) && $seat->getMedia('photo')->isEmpty()) {
+                $sameDetails = collect($fields)->every(fn (string $field) => $kept->getAttribute($field) === $seat->getAttribute($field));
+
+                if ($sameDetails && $seat->getMedia('photo')->isEmpty()) {
                     $seat->delete();
                 }
             }

@@ -50,6 +50,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property bool $ended_by_institution_deactivation
+ * @property string $assignment_origin
  * @property-read Collection<int, Dutiable> $derivedDutiables
  * @property-read Model $dutiable
  * @property-read Duty|null $duty
@@ -127,7 +128,8 @@ class Dutiable extends MorphPivot implements ImageMediaOwner
                 }
             }
 
-            if (! $this->exists && $this->assignment_origin === null) {
+            // New rows can lack the attribute before the non-null database default applies.
+            if (! $this->exists && $this->getAttribute('assignment_origin') === null) {
                 $this->assignment_origin = $this->via_dutiable_id === null ? 'manual' : 'ex_officio';
             }
 
@@ -310,11 +312,13 @@ class Dutiable extends MorphPivot implements ImageMediaOwner
             ->where(fn ($q) => $q->whereNull('end_date')->orWhereDate('end_date', '>=', $date));
     }
 
+    /** @return BelongsTo<Dutiable, $this> */
     public function viaDutiable(): BelongsTo
     {
         return $this->belongsTo(Dutiable::class, 'via_dutiable_id');
     }
 
+    /** @return HasMany<Dutiable, $this> */
     public function derivedDutiables(): HasMany
     {
         return $this->hasMany(Dutiable::class, 'via_dutiable_id');

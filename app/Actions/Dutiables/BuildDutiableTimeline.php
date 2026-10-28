@@ -197,6 +197,7 @@ class BuildDutiableTimeline
      * @param  Collection<string, EloquentCollection<int, Dutiable>>  $derivedBySource
      * @param  array<string, Cadence|null>  $cadenceByRow
      * @param  array<string, list<string>>  $cadenceIdsByRow
+     * @param  Collection<int, Dutiable>  $reviewSources
      * @return array<string, mixed>
      */
     private static function row(
@@ -245,13 +246,8 @@ class BuildDutiableTimeline
     }
 
     /**
-     * The per-assignment overrides a row can carry beyond its dates.
-     *
-     * These are invisible on a chart of bars, and they are exactly what makes a row not
-     * safely interchangeable with its neighbour — a merge or a delete throws them away.
-     * Summarised rather than sent whole: `description` is rich HTML nobody needs here.
-     *
-     * @return array<string, mixed>|null null when the row is just a pair of dates
+     * @param  Collection<int, Dutiable>  $sources
+     * @return list<array<string, mixed>>
      */
     private static function reviewSources(Dutiable $row, Collection $sources): array
     {
@@ -265,6 +261,7 @@ class BuildDutiableTimeline
             ])->values()->all();
     }
 
+    /** @return array<string, mixed>|null */
     private static function extras(Dutiable $row): ?array
     {
         $extras = array_filter([
