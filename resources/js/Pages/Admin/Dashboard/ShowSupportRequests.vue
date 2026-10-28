@@ -1,5 +1,6 @@
 <template>
   <CollectionPage
+    :row-actions="rowActions"
     :source
     collection="supportRequests"
     entity-type="support_request"
@@ -21,7 +22,7 @@
       </Button>
     </template>
 
-    <template #row="{ item }">
+    <template #row="{ item, actions: recordActions }">
       <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
         <div class="min-w-0 flex-1">
           <CollectionPrimaryCell
@@ -34,6 +35,7 @@
           </p>
         </div>
         <StatusBadge :status="statusOf(item)" class="shrink-0" />
+        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" />
       </article>
     </template>
 
@@ -49,6 +51,9 @@
 </template>
 
 <script setup lang="ts">
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import { ArrowUpRight } from '@lucide/vue';
 import { computed } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
@@ -117,4 +122,7 @@ function formatDate(value: string): string {
 function changeTab(tab: string): void {
   router.get(route('mySupportRequests.index'), { tab }, { preserveState: false });
 }
+const rowActions = (item: SupportRequestItem): AdminRecordAction[] => [
+  { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, href: route('supportRequests.show', item.id) },
+];
 </script>

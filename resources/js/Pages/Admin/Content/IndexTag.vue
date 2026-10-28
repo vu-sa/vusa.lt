@@ -1,5 +1,7 @@
 <template>
   <CollectionPage
+    :row-actions="() => rowActions"
+    @row-action="(item, key) => selectRowAction(key, item)"
     :source
     collection="tags"
     entity-type="tag"
@@ -24,11 +26,11 @@
       </Button>
     </template>
 
-    <template #row="{ item }">
+    <template #row="{ item, actions: recordActions }">
       <article class="flex min-h-16 items-center gap-3 px-4 py-4">
         <CollectionPrimaryCell class="flex-1" :title="title(item)" :clickable="!isDeleted && canUpdate" :sub="item.alias" mono @open="openSheet(item)" />
         <span v-if="item.is_topic" class="text-xs text-muted-foreground">{{ $t('Teminė') }}</span>
-        <CollectionRowActions :actions="rowActions" @select="key => selectRowAction(key, item)" />
+        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => selectRowAction(key, item)" />
       </article>
     </template>
 
@@ -37,30 +39,12 @@
       <span v-else-if="column.key === 'alias'">{{ item.alias || '—' }}</span>
       <span v-else-if="column.key === 'topic'">{{ item.is_topic ? $t('Taip') : '—' }}</span>
       <span v-else-if="column.key === 'created'" class="tabular-nums">{{ formatDate(new Date(item.created_at)) }}</span>
-      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="rowActions" @select="key => selectRowAction(key, item)" />
     </template>
 
-    <template #preview="{ item }">
+    <template #preview="{ item, actions: recordActions }">
       <TagPreview :key="item.id" :tag="item">
         <template #actions>
-          <template v-if="isDeleted">
-            <Button v-if="canDelete" variant="outline" size="sm" @click="restoreTag(item)">
-              <RotateCcw aria-hidden="true" />
-              {{ $t('Atkurti') }}
-            </Button>
-            <Button v-if="canForceDelete" variant="ghost" size="sm" class="text-destructive hover:text-destructive" @click="targetTagToForceDelete = item">
-              <Trash2 aria-hidden="true" />
-              {{ $t('Ištrinti visam laikui') }}
-            </Button>
-          </template>
-          <template v-else>
-            <Button v-if="canUpdate" variant="brand" size="sm" @click="openSheet(item)">
-              {{ $t('Redaguoti') }}
-            </Button>
-            <Button v-if="canDelete" variant="ghost" size="sm" @click="remove(item)">
-              {{ $t('Ištrinti') }}
-            </Button>
-          </template>
+          <CollectionRowActions :actions="recordActions" full-labels class="flex-wrap" @select="key => selectRowAction(key, item)" />
         </template>
       </TagPreview>
     </template>
@@ -148,11 +132,11 @@ const canForceDelete = computed(() => Boolean(usePage().props.auth?.can?.forceDe
 const canMerge = computed(() => hasCollectionAction('tags.index', 'merge'));
 const rowActions = computed<CollectionRowAction[]>(() => isDeleted.value
   ? [
-      ...(canDelete.value ? [{ key: 'restore', label: $t('Atkurti'), icon: RotateCcw, labelled: true }] : []),
+      ...(canDelete.value ? [{ key: 'restore', label: $t('Atkurti'), icon: RotateCcw, primary: !canForceDelete.value }] : []),
       ...(canForceDelete.value ? [{ key: 'forceDelete', label: $t('Ištrinti visam laikui'), icon: Trash2, destructive: true }] : []),
     ]
   : [
-      ...(canUpdate.value ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, labelled: true }] : []),
+      ...(canUpdate.value ? [{ key: 'edit', role: 'edit' as const, label: $t('Redaguoti'), icon: Pencil }] : []),
       ...(canDelete.value ? [{ key: 'delete', label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
     ]);
 
@@ -194,7 +178,6 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'alias', label: $t('Alias'), class: 'w-48', sortField: 'alias' },
   { key: 'topic', label: $t('Tema'), class: 'w-28' },
   { key: 'created', label: $t('Sukurta'), class: 'w-32', sortField: 'created_at' },
-  ...(rowActions.value.length ? [{ key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true }] : []),
 ]);
 
 const tagKey = (tag: Tag) => String(tag.id);

@@ -206,7 +206,7 @@ import { Briefcase, CalendarClock, CalendarRange, Copy, Edit3, History, KeyRound
 import UserActivityRequestHistory, { type UserActivityRequestHistory as RequestHistory } from '@/Components/Institutions/UserActivityRequestHistory.vue';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import RecordPage, { type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
-import type { ActionDescriptor } from '@/Components/Layouts/RecordPageAction.vue';
+import type { AdminRecordAction as ActionDescriptor } from '@/Features/Admin/RecordActions/types';
 import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
 import { CollectionSkeleton, ConfirmDialog, EmptyState, FormToggleRow, OverviewSection } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';

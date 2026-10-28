@@ -16,12 +16,12 @@ vi.mock('@vueuse/integrations/useSortable', () => ({
 /** The collection shell is covered by its own suite; here it only hands over its slots and events. */
 const CollectionPageStub = {
   name: 'CollectionPage',
-  props: ['source', 'quickFilters', 'trash', 'keepParams', 'title'],
+  props: ['source', 'quickFilters', 'trash', 'keepParams', 'title', 'rowActions'],
   emits: ['quickFilter'],
   template: `
     <div data-testid="collection-page">
       <div data-testid="actions"><slot name="actions" /></div>
-      <div v-for="item in source.items.value" :key="item.id" data-testid="row"><slot name="row" :item="item" /></div>
+      <div v-for="item in source.items.value" :key="item.id" data-testid="row"><slot name="row" :item="item" :actions="rowActions?.(item) ?? []" /></div>
       <div v-if="source.items.value.length === 0"><slot name="empty" /></div>
     </div>
   `,
@@ -130,6 +130,32 @@ describe('IndexQuickLink.vue', () => {
 
       expect(wrapper.findComponent({ name: 'CollectionPage' }).props('keepParams')).toEqual(['tenant', 'lang']);
     });
+  });
+
+  it('preserves the default edit and delete actions independently of creation ability', () => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({ auth: { can: { create: { quickLink: false } } } }));
+    wrapper = createWrapper();
+    const rowActions = wrapper.findComponent({ name: 'CollectionPage' }).props('rowActions');
+    expect(rowActions(links[0])).toEqual([
+      expect.objectContaining({ key: 'edit:1', role: 'edit', label: 'Redaguoti' }),
+      expect.objectContaining({ key: 'delete:1:Stipendijos', destructive: true }),
+    ]);
+  });
+
+  it.each([false, true])('preserves default restoration and the force-delete gate (%s)', (forceDelete) => {
+    window.history.replaceState({}, '', '/mano/quickLinks?showDeleted=true');
+    vi.mocked(usePage).mockReturnValue(createMockPage({ auth: { can: {
+      create: { quickLink: false },
+      forceDelete: { quickLink: forceDelete },
+    } } }));
+    wrapper = createWrapper();
+    const rowActions = wrapper.findComponent({ name: 'CollectionPage' }).props('rowActions');
+    const actions = rowActions(links[0]);
+    expect(actions.map((action: { key: string }) => action.key.split(':')[0])).toEqual([
+      'restore',
+      ...(forceDelete ? ['forceDelete'] : []),
+    ]);
+    expect(actions[0].primary).toBe(!forceDelete);
   });
 
   describe('create', () => {

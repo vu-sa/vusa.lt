@@ -114,7 +114,7 @@ describe('ReservationResourceList', () => {
     const wrapper = mountList([item('1', 'created', { approvable: true, cancellable: true })]);
     const actions = wrapper.get('[data-slot="reservation-row-actions"]');
 
-    expect(actions.get('[aria-label="Veiksmai"]').exists()).toBe(true);
+    expect(actions.get('[aria-label="Daugiau veiksmų"]').exists()).toBe(true);
     expect(actions.text()).toContain('reservations.actions.approve');
     expect(actions.get('[data-testid="dropdown-menu-content"]').text()).toContain('reservations.actions.reject');
     expect(actions.get('[data-testid="dropdown-menu-content"]').text()).toContain('reservations.actions.cancel_reservation');
@@ -137,19 +137,19 @@ describe('ReservationResourceList', () => {
 
   it('hides edit and remove for a finished item and for someone who may not edit', () => {
     const finished = mountList([item('1', 'returned')]);
-    expect(finished.find('[aria-label="Redaguoti"]').exists()).toBe(false);
+    expect(finished.find('[data-action="edit"]').exists()).toBe(false);
 
     const viewer = mountList([item('1', 'created')], { canEdit: false });
-    expect(viewer.find('[aria-label="Redaguoti"]').exists()).toBe(false);
-    expect(viewer.find('[aria-label="Pašalinti"]').exists()).toBe(false);
+    expect(viewer.find('[data-action="edit"]').exists()).toBe(false);
+    expect(viewer.find('[data-action="remove"]').exists()).toBe(false);
 
-    expect(mountList([item('1', 'created')]).find('[aria-label="Redaguoti"]').exists()).toBe(true);
+    expect(mountList([item('1', 'created')]).find('[data-action="edit"]').exists()).toBe(true);
   });
 
   it('emits the resource to edit', async () => {
     const wrapper = mountList([item('1', 'created')]);
 
-    await wrapper.find('[aria-label="Redaguoti"]').trigger('click');
+    await wrapper.find('[data-action="edit"]').trigger('click');
 
     expect((wrapper.emitted('edit')?.[0][0] as { id: string }).id).toBe('res-1');
   });
@@ -157,7 +157,7 @@ describe('ReservationResourceList', () => {
   it('asks before removing an item, then deletes its pivot', async () => {
     const wrapper = mountList([item('1', 'created')]);
 
-    await wrapper.find('[aria-label="Pašalinti"]').trigger('click');
+    await wrapper.find('[data-action="remove"]').trigger('click');
     expect(router.delete).not.toHaveBeenCalled();
 
     await wrapper.find('[data-testid="confirm-yes"]').trigger('click');
@@ -202,8 +202,8 @@ describe('ReservationResourceList', () => {
   });
   it('hides editing for an approved item while retaining removal and backtracking', () => {
     const wrapper = mountList([item('1', 'reserved', { approvable: true, backtrackable: true })]);
-    expect(wrapper.find('[aria-label="Redaguoti"]').exists()).toBe(false);
-    expect(wrapper.find('[aria-label="Pašalinti"]').exists()).toBe(true);
+    expect(wrapper.find('[data-action="edit"]').exists()).toBe(false);
+    expect(wrapper.find('[data-action="remove"]').exists()).toBe(true);
     expect(wrapper.text()).toContain('reservations.actions.backtrack');
   });
 });

@@ -1,5 +1,6 @@
 <template>
   <CollectionPage
+    :row-actions="rowActions"
     :source
     collection="mailingLists"
     entity-type="mailing_list"
@@ -25,7 +26,7 @@
       </Button>
     </template>
 
-    <template #row="{ item }">
+    <template #row="{ item, actions: recordActions }">
       <article class="flex min-h-16 items-center gap-4 px-3 py-3 sm:px-4">
         <div class="min-w-0 flex-1">
           <Link :href="route('mailingLists.show', item.id)" data-collection-open class="block truncate font-medium hover:text-brand">
@@ -42,6 +43,7 @@
         </div>
         <StatusBadge v-if="item.last_sync_status && item.last_sync_status !== 'synced'" :status="mailingListSyncStatuses[item.last_sync_status]" />
         <StatusBadge :status="mailingListModes[item.mode]" />
+        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" />
       </article>
     </template>
 
@@ -70,6 +72,9 @@
 </template>
 
 <script setup lang="ts">
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import { ArrowUpRight } from '@lucide/vue';
 import { Link, router } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { Mail as MailingListIcon, RefreshCw } from '@lucide/vue';
@@ -141,4 +146,7 @@ function importFromMailman(): void {
     onFinish: () => { importing.value = false; },
   });
 }
+const rowActions = (item: MailingListRow): AdminRecordAction[] => [
+  { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, href: route('mailingLists.show', item.id) },
+];
 </script>

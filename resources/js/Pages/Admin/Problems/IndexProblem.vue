@@ -1,5 +1,7 @@
 <template>
   <CollectionPage
+    :row-actions="item => rowActions(item)"
+    @row-action="(item, key) => selectRowAction(key, item)"
     :source
     collection="problems"
     entity-type="problem"
@@ -34,7 +36,7 @@
       </Button>
     </template>
 
-    <template #row="{ item }">
+    <template #row="{ item, actions: recordActions }">
       <article class="flex min-h-14 items-center justify-between gap-4 px-3 py-2.5 sm:px-4">
         <div class="min-w-0 flex-1">
           <div class="flex items-center gap-2">
@@ -63,7 +65,7 @@
             </template>
           </div>
         </div>
-        <CollectionRowActions :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
+        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => selectRowAction(key, item)" />
       </article>
     </template>
 
@@ -115,20 +117,12 @@
         {{ item.tenant?.shortname ?? '—' }}
       </span>
 
-      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
     </template>
 
-    <template #preview="{ item }">
+    <template #preview="{ item, actions: recordActions }">
       <ProblemPreview :key="item.id" :problem="item" :trashed="isDeleted">
-        <template v-if="isDeleted" #actions>
-          <Button variant="outline" size="sm" @click="restoreProblem(item)">
-            <RotateCcw aria-hidden="true" />
-            {{ $t('Atkurti') }}
-          </Button>
-          <Button variant="ghost" size="sm" class="text-destructive hover:text-destructive" @click="targetProblemToForceDelete = item">
-            <Trash2 aria-hidden="true" />
-            {{ $t('Ištrinti visam laikui') }}
-          </Button>
+        <template #actions>
+          <CollectionRowActions :actions="recordActions" full-labels class="flex-wrap" @select="key => selectRowAction(key, item)" />
         </template>
       </ProblemPreview>
     </template>
@@ -203,12 +197,12 @@ type ProblemRow = App.Entities.Problem & { can_update?: boolean };
 
 const rowActions = (item: ProblemRow): CollectionRowAction[] => isDeleted.value
   ? [
-      { key: 'restore', label: $t('Atkurti'), icon: RotateCcw, labelled: true },
+      { key: 'restore', label: $t('Atkurti'), icon: RotateCcw, primary: !canForceDelete.value },
       ...(canForceDelete.value ? [{ key: 'forceDelete', label: $t('Ištrinti visam laikui'), icon: Trash2, destructive: true }] : []),
     ]
   : [
-      ...(item.can_update ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, href: route('problems.edit', item.id) }] : []),
-      { key: 'open', label: $t('Atidaryti'), icon: ChevronRight, labelled: true, href: route('problems.show', item.id) },
+      ...(item.can_update ? [{ key: 'edit', role: 'edit' as const, label: $t('Redaguoti'), icon: Pencil, href: route('problems.edit', item.id) }] : []),
+      { key: 'open', label: $t('Atidaryti'), icon: ChevronRight, role: 'open' as const, href: route('problems.show', item.id) },
     ];
 
 function selectRowAction(key: string, item: App.Entities.Problem): void {
@@ -298,7 +292,6 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'responsible_user', label: $t('entities.problem.responsible_user'), class: 'w-44' },
   { key: 'categories', label: $t('entities.problem.categories'), class: 'w-40' },
   { key: 'tenant', label: $tChoice('entities.tenant.model', 1), class: 'w-24' },
-  { key: 'actions', label: $t('Veiksmai'), class: 'w-28 text-right' },
 ]);
 
 const asList = (value: unknown): string[] => (Array.isArray(value) ? value.map(String) : value ? [String(value)] : []);

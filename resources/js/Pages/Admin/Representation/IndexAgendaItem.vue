@@ -1,5 +1,6 @@
 <template>
   <CollectionPage
+    :row-actions="item => openActions(item)"
     :source
     collection="agenda_items"
     entity-type="agenda_item"
@@ -11,27 +12,28 @@
     :columns
     :search-placeholder="$t('Ieškoti darbotvarkės klausimų')"
   >
-    <template #row="{ item }">
+    <template #row="{ item, actions: recordActions }">
       <div class="flex items-center gap-4 px-4 py-4">
         <div class="min-w-0 flex-1">
-          <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches" :title="item.title || $t('Be pavadinimo')" :href="route('agendaItems.edit', item.id)" :sub="item.meeting_title" />
+          <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches" :title="item.title || $t('Be pavadinimo')" :href="route('agendaItems.show', item.id)" :sub="item.meeting_title" />
           <p v-if="getSearchTranslation(item, 'institution_name')" class="mt-1 text-xs text-muted-foreground">
             {{ getSearchTranslation(item, 'institution_name') }}
           </p>
         </div>
-        <CollectionRowActions :actions="openActions(item)" />
+        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" />
       </div>
     </template>
 
     <template #cell="{ item, column }">
-      <CollectionPrimaryCell v-if="column.key === 'title'" :match="item._searchMatch" :title-matches="item._searchTitleMatches" :title="item.title || $t('Be pavadinimo')" :href="route('agendaItems.edit', item.id)" />
+      <CollectionPrimaryCell v-if="column.key === 'title'" :match="item._searchMatch" :title-matches="item._searchTitleMatches" :title="item.title || $t('Be pavadinimo')" :href="route('agendaItems.show', item.id)" />
       <span v-else-if="column.key === 'meeting'">{{ item.meeting_title || '—' }}</span>
       <span v-else-if="column.key === 'institution'">{{ getSearchTranslation(item, 'institution_name') || '—' }}</span>
-      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="openActions(item)" />
     </template>
 
-    <template #preview="{ item }">
-      <AgendaItemPreview :key="item.id" :item />
+    <template #preview="{ item, actions: recordActions }">
+      <AgendaItemPreview :key="item.id" :item >
+        <template #actions><CollectionRowActions :actions="recordActions" full-labels class="flex-wrap" /></template>
+      </AgendaItemPreview>
     </template>
 
     <template #empty>
@@ -70,10 +72,10 @@ const columns: CollectionColumn[] = [
   { key: 'title', label: $t('Darbotvarkės klausimas'), sortField: 'title' },
   { key: 'meeting', label: $t('Posėdis') },
   { key: 'institution', label: $t('Institucija') },
-  { key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true },
+
 ];
 
 const openActions = (item: AgendaItemSearchResult) => [
-  { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, href: route('agendaItems.edit', item.id), labelled: true },
+  { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, href: route('agendaItems.show', item.id), role: 'open' as const },
 ];
 </script>

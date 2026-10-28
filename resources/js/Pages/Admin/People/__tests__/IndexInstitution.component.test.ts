@@ -39,11 +39,11 @@ vi.mock('@/Composables/useInstitutionSubscription', () => ({
 /** The collection shell is covered by its own suite; here it only hands over its slots and events. */
 const CollectionPageStub = {
   name: 'CollectionPage',
-  props: ['source', 'quickFilters', 'selectable'],
+  props: ['source', 'quickFilters', 'selectable', 'rowActions'],
   emits: ['quickFilter'],
   template: `
     <div>
-      <div v-for="item in source.items.value" :key="item.id" data-testid="row"><slot name="row" :item="item" view="rows" /></div>
+      <div v-for="item in source.items.value" :key="item.id" data-testid="row"><slot name="row" :item="item" :actions="rowActions?.(item) ?? []" view="rows" /></div>
       <div data-testid="cells" v-for="item in source.items.value" :key="'cell-' + item.id"><slot name="cell" :item="item" :column="{ key: 'name' }" /><slot name="cell" :item="item" :column="{ key: 'types' }" /><slot name="cell" :item="item" :column="{ key: 'tenant' }" /></div>
       <div data-testid="bulk"><slot name="bulk-actions" :selected="source.items.value" :clear="() => {}" /></div>
     </div>
@@ -93,7 +93,7 @@ describe('IndexInstitution following', () => {
     typesense.rows = [{ id: 'i1', name_lt: 'Senatas', tenant_id: 1 }];
     const wrapper = mountPage([]);
 
-    await wrapper.get('button[aria-label="Ištrinti visam laikui"]').trigger('click');
+    await wrapper.get('[data-testid="dropdown-menu-content"] [data-action^="forceDelete:"]').trigger('click');
     await wrapper.get('[data-testid="confirm-deletion"]').trigger('click');
 
     const options = vi.mocked(router.delete).mock.calls.at(-1)?.[1];

@@ -1,5 +1,6 @@
 <template>
   <CollectionPage
+    :row-actions="rowActions"
     :source
     collection="goals"
     entity-type="goal"
@@ -24,7 +25,7 @@
       </Button>
     </template>
 
-    <template #row="{ item }">
+    <template #row="{ item, actions: recordActions }">
       <article class="flex min-h-16 items-center gap-4 px-3 py-3 sm:px-4">
         <div class="min-w-0 flex-1">
           <Link :href="route('goals.show', item.id)" data-collection-open class="block truncate font-medium hover:text-brand">
@@ -45,6 +46,7 @@
           </div>
         </div>
         <StatusBadge :status="goalStatuses[item.status]" />
+        <CollectionRowActions :actions="recordActions" />
       </article>
     </template>
 
@@ -73,6 +75,9 @@
 </template>
 
 <script setup lang="ts">
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import { ArrowUpRight, Pencil } from '@lucide/vue';
 import { Link, router } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { Plus } from '@lucide/vue';
@@ -137,4 +142,8 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'steps_count', label: $tChoice('entities.step.model', 2), class: 'w-24', sortField: 'steps_count' },
   { key: 'problems_count', label: $tChoice('entities.problem.model', 2), class: 'w-24' },
 ]);
+const rowActions = (item: GoalRow): AdminRecordAction[] => [
+  { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, href: route('goals.show', item.id) },
+  ...(item.can_update ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: route('goals.edit', item.id) }] : []),
+];
 </script>

@@ -1,5 +1,5 @@
 import { trans as $t } from 'laravel-vue-i18n';
-import { Check, FileCheck, FilePlus2, Megaphone, RotateCcw, Trash2 } from '@lucide/vue';
+import { ArrowUpRight, Check, FileCheck, FilePlus2, Megaphone, RotateCcw, Trash2 } from '@lucide/vue';
 
 import type { CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import {
@@ -13,11 +13,11 @@ import {
   type TaskDisplayData,
 } from '@/Composables/useTaskPresentation';
 
-export type TaskActionKey = 'report' | 'agenda' | 'complete' | 'delete';
+export type TaskActionKey = 'open' | 'report' | 'agenda' | 'complete' | 'delete';
 
 export interface TaskAction extends CollectionRowAction {
   key: TaskActionKey;
-  /** The one action the preview pane fills with the brand colour. */
+  /** The workflow action that takes the labelled row slot. */
   primary?: boolean;
   /** One word, for the labelled first button of a row. */
   shortLabel: string;
@@ -70,12 +70,10 @@ export function getTaskActions(task: TaskDisplayData): TaskAction[] {
   return actions;
 }
 
-/**
- * A row already completes through its checkbox, so that button would only repeat it. The first
- * remaining action carries a one-word label so the row says what it does; the rest stay icons.
- */
+/** Completion stays on the row checkbox. */
 export function getTaskRowActions(task: TaskDisplayData): TaskAction[] {
-  return getTaskActions(task)
-    .filter(action => action.key !== 'complete')
-    .map((action, index) => (index === 0 ? { ...action, label: action.shortLabel, labelled: true } : action));
+  return [
+    { key: 'open', label: $t('Atidaryti'), shortLabel: $t('Atidaryti'), role: 'open', icon: ArrowUpRight },
+    ...getTaskActions(task).filter(action => action.key !== 'complete'),
+  ];
 }

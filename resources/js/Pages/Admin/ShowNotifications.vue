@@ -1,5 +1,7 @@
 <template>
   <CollectionPage
+    :row-actions="notificationRowActions"
+    @row-action="(item, key) => key === 'read' ? handleMarkAsRead(item.id) : handleDelete(item.id)"
     :source
     collection="notifications"
     entity-type="notification"
@@ -40,8 +42,8 @@
         </DropdownMenuContent>
       </DropdownMenu>
     </template>
-    <template #row="{ item }">
-      <NotificationCard :notification="item" @mark-as-read="handleMarkAsRead" @delete="handleDelete" />
+    <template #row="{ item, actions }">
+      <NotificationCard :notification="item" :actions="actions" :spotlight="item === source.items.value[0]" @mark-as-read="handleMarkAsRead" @delete="handleDelete" />
     </template>
     <template #empty>
       <EmptyState
@@ -60,6 +62,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { BellOff, MoreHorizontal, Settings } from '@lucide/vue';
 
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
+import { notificationRowActions } from '@/Features/Admin/Notifications/notificationRowActions';
 import NotificationCard from '@/Features/Admin/Notifications/NotificationCard.vue';
 import { Button } from '@/Components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';

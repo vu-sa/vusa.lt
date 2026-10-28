@@ -26,9 +26,9 @@ const request = {
 
 const CollectionPageStub = {
   name: 'CollectionPage',
-  props: ['source', 'quickFilters', 'title'],
+  props: ['source', 'quickFilters', 'title', 'rowActions'],
   emits: ['quickFilter'],
-  template: '<div><div v-for="item in source.items.value" :key="item.id" data-testid="row"><slot name="row" :item="item" /></div></div>',
+  template: '<div><div v-for="item in source.items.value" :key="item.id" data-testid="row"><slot name="row" :item="item" :actions="rowActions?.(item) ?? []" /></div></div>',
 };
 
 const createWrapper = () => mount(ShowSupportRequests, {

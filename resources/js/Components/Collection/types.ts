@@ -16,7 +16,7 @@ export interface CollectionColumn {
    * indexed as sortable, so the source, not the page, decides.
    */
   sortField?: string;
-  /** Always shown, and left out of the "Stulpeliai" menu. The first column is always pinned. */
+  /** Always shown, and left out of the "Stulpeliai" menu. Does not control sticky positioning; the first column is always shown. */
   pinned?: boolean;
 }
 

@@ -1,5 +1,7 @@
 <template>
   <CollectionPage
+    :row-actions="item => actionsFor(item)"
+    @row-action="(item, key) => actions.select(key)"
     :source
     collection="meetings"
     entity-type="meeting"
@@ -22,7 +24,7 @@
       </Button>
     </template>
 
-    <template #row="{ item, pinned }">
+    <template #row="{ item, actions: recordActions, pinned }">
       <div v-if="isTrash" class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
         <div class="min-w-0 flex-1">
           <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches"
@@ -31,7 +33,7 @@
             {{ formatDate(new Date((item.start_time ?? 0) * 1000)) }}
           </p>
         </div>
-        <CollectionRowActions :actions="actionsFor(item)" @select="key => actions.select(key)" />
+        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => actions.select(key)" />
       </div>
       <MeetingCollectionRow v-else :meeting="item" :pinned />
     </template>
@@ -57,11 +59,12 @@
           :status="meetingCompletionStatuses[item.completion_status as MeetingCompletionStatus]"
         />
       </template>
-      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="actionsFor(item)" @select="key => actions.select(key)" />
     </template>
 
-    <template v-if="!isTrash" #preview="{ item }">
-      <MeetingPreview :key="item.id" :meeting="item" />
+    <template v-if="!isTrash" #preview="{ item, actions: recordActions }">
+      <MeetingPreview :key="item.id" :meeting="item" >
+        <template #actions><CollectionRowActions :actions="recordActions" full-labels class="flex-wrap" @select="key => actions.select(key)" /></template>
+      </MeetingPreview>
     </template>
 
     <template #empty>
@@ -152,10 +155,10 @@ type MeetingRow = MeetingSearchResult & { abilities?: { restore: boolean; forceD
 
 const actionsFor = (meeting: MeetingRow) => isTrash
   ? [
-      ...(meeting.abilities?.restore ? [{ key: `restore:${meeting.id}`, label: $t('Atkurti'), icon: RotateCcw, labelled: true }] : []),
+      ...(meeting.abilities?.restore ? [{ key: `restore:${meeting.id}`, label: $t('Atkurti'), icon: RotateCcw, primary: !meeting.abilities?.forceDelete }] : []),
       ...(meeting.abilities?.forceDelete ? [{ key: `forceDelete:${meeting.id}:${meeting.title}`, label: $t('Ištrinti visam laikui'), icon: Trash2, destructive: true }] : []),
     ]
-  : [{ key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, href: route('meetings.show', meeting.id), labelled: true }];
+  : [{ key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, href: route('meetings.show', meeting.id), role: 'open' as const }];
 
 const meetingKey = (meeting: MeetingSearchResult) => String(meeting.id);
 
@@ -165,7 +168,6 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'institution', label: $t('Institucija') },
   { key: 'agenda', label: $t('Punktai'), class: 'w-24', sortField: 'agenda_items_count' },
   { key: 'status', label: $t('Būsena'), class: 'w-48' },
-  { key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true },
 ]);
 
 // --- Quick filters (.ai/rules/js-pages-admin.md) ---------------------------------------------

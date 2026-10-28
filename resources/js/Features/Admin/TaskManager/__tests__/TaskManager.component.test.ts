@@ -40,7 +40,7 @@ const mountManager = (props: Record<string, unknown> = {}) => {
 
 /** AlertDialogContent teleports out of the wrapper, so reach its buttons through the document. */
 const dialogButton = (label: string) =>
-  [...document.body.querySelectorAll('button')].find(button => button.textContent?.includes(label));
+  [...document.body.querySelectorAll('[role="alertdialog"] button')].find(button => button.textContent?.includes(label));
 
 beforeEach(() => {
   vi.mocked(usePage).mockReturnValue(createMockPage());
@@ -59,7 +59,7 @@ describe('deleting a task', () => {
   it('asks for confirmation before sending the request', async () => {
     const wrapper = mountManager();
 
-    wrapper.findComponent({ name: 'TaskRow' }).vm.$emit('action', 'delete');
+    await wrapper.get('[data-testid="dropdown-menu-content"] [data-action="delete"]').trigger('click');
     await wrapper.vm.$nextTick();
 
     expect(router.delete).not.toHaveBeenCalled();
@@ -69,7 +69,7 @@ describe('deleting a task', () => {
   it('sends the delete once the confirmation is accepted', async () => {
     const wrapper = mountManager();
 
-    wrapper.findComponent({ name: 'TaskRow' }).vm.$emit('action', 'delete');
+    await wrapper.get('[data-testid="dropdown-menu-content"] [data-action="delete"]').trigger('click');
     await wrapper.vm.$nextTick();
 
     dialogButton('forms.delete')!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
@@ -86,7 +86,7 @@ describe('deleting a task', () => {
     // here as well meant every deletion announced itself twice.
     const wrapper = mountManager();
 
-    wrapper.findComponent({ name: 'TaskRow' }).vm.$emit('action', 'delete');
+    await wrapper.get('[data-testid="dropdown-menu-content"] [data-action="delete"]').trigger('click');
     await wrapper.vm.$nextTick();
     dialogButton('forms.delete')!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await wrapper.vm.$nextTick();

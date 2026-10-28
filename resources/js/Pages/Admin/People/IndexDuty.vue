@@ -1,5 +1,7 @@
 <template>
   <CollectionPage
+    :row-actions="item => rowActions(item)"
+    @row-action="(item, key) => selectRowAction(key, item)"
     :source
     collection="duties"
     entity-type="duty"
@@ -26,7 +28,7 @@
       </Button>
     </template>
 
-    <template #row="{ item }">
+    <template #row="{ item, actions: recordActions }">
       <article class="flex min-h-16 flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center" data-slot="duty-collection-row">
         <div class="min-w-0 flex-1">
           <CollectionPrimaryCell :title="title(item)" :href="isDeleted ? undefined : route('duties.show', item.id)">
@@ -53,7 +55,7 @@
           <span v-if="item.is_active !== false && item.dutiables_count === 0" class="inline-flex shrink-0 items-center gap-1 text-xs text-status-attention">
             <CircleAlert class="size-3" aria-hidden="true" />{{ $t('Neužimta') }}
           </span>
-          <CollectionRowActions :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
+          <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => selectRowAction(key, item)" />
         </div>
       </article>
     </template>
@@ -75,10 +77,9 @@
       <span v-else-if="column.key === 'institution'" class="text-muted-foreground">{{ institutionTitle(item) || '—' }} <InactiveInstitutionBadge :active="item.institution?.is_active" /></span>
       <span v-else-if="column.key === 'email'" class="text-muted-foreground">{{ item.email || '—' }}</span>
       <span v-else-if="column.key === 'occupancy'" :class="item.dutiables_count === 0 ? 'text-status-attention' : 'text-muted-foreground'">{{ item.dutiables_count === 0 ? $t('Neužimta') : $tChoice('Narys|Nariai|Narių', item.dutiables_count, { count: item.dutiables_count }) }}</span>
-      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
     </template>
 
-    <template #preview="{ item }">
+    <template #preview="{ item, actions: recordActions }">
       <DutyPreview :key="item.id" :duty="dutyPreviewFromRecord(item)">
         <template #status>
           <CollectionActivityStatus
@@ -91,26 +92,7 @@
           />
         </template>
         <template #actions>
-          <template v-if="isDeleted">
-            <Button variant="outline" size="sm" @click="restore(item)">
-              <RotateCcw aria-hidden="true" />{{ $t('Atkurti') }}
-            </Button>
-            <Button v-if="canForceDelete" variant="ghost" size="sm" class="text-destructive hover:text-destructive" @click="forceDeleteTarget = item">
-              <Trash2 aria-hidden="true" />{{ $t('Ištrinti visam laikui') }}
-            </Button>
-          </template>
-          <template v-else>
-            <Button as-child variant="brand" size="sm">
-              <Link :href="route('duties.show', item.id)">
-                {{ $t('Atidaryti') }}
-              </Link>
-            </Button>
-            <Button v-if="item.can_update" as-child variant="outline" size="sm">
-              <Link :href="route('duties.edit', item.id)">
-                {{ $t('Redaguoti') }}
-              </Link>
-            </Button>
-          </template>
+          <CollectionRowActions :actions="recordActions" full-labels class="flex-wrap" @select="key => selectRowAction(key, item)" />
         </template>
       </DutyPreview>
     </template>
@@ -175,12 +157,13 @@ const forceDeleteTarget = ref<Duty | null>(null);
 
 const rowActions = (item: Duty): CollectionRowAction[] => isDeleted.value
   ? [
-      { key: 'restore', label: $t('Atkurti'), icon: RotateCcw, labelled: true },
+      { key: 'restore', label: $t('Atkurti'), icon: RotateCcw, primary: !canForceDelete.value },
       ...(canForceDelete.value ? [{ key: 'forceDelete', label: $t('Ištrinti visam laikui'), icon: Trash2, destructive: true }] : []),
     ]
-  : item.can_update
-    ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, labelled: true, href: route('duties.edit', item.id) }]
-    : [{ key: 'open', label: $t('Atidaryti'), icon: ArrowRight, labelled: true, href: route('duties.show', item.id) }];
+  : [
+      { key: 'open', label: $t('Atidaryti'), icon: ArrowRight, role: 'open' as const, href: route('duties.show', item.id) },
+      ...(item.can_update ? [{ key: 'edit', role: 'edit' as const, label: $t('Redaguoti'), icon: Pencil, href: route('duties.edit', item.id) }] : []),
+    ];
 
 function selectRowAction(key: string, item: Duty): void {
   if (key === 'restore') restore(item);
@@ -236,7 +219,6 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'institution', label: $t('Institucija') },
   { key: 'email', label: $t('El. paštas'), sortField: 'email' },
   { key: 'occupancy', label: $t('Nariai'), class: 'w-32', sortField: 'dutiables_count' },
-  { key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true },
 ]);
 const dutyKey = (duty: Duty) => String(duty.id);
 const titleOf = (value: Translation | string | null | undefined) => getTranslatedValue(value, undefined, '—');

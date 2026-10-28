@@ -1,6 +1,6 @@
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Copy, Pencil, RotateCcw, Trash2 } from '@lucide/vue';
+import { ArrowUpRight, Copy, Pencil, RotateCcw, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import type { CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
@@ -18,6 +18,7 @@ interface RecordActionOptions {
   restoreOpensRecord?: boolean;
   canForceDelete?: () => boolean;
   /** Set when the record opens somewhere other than `<prefix>.edit`. */
+  openHref?: (id: string) => string;
   editHref?: (id: string) => string;
 }
 
@@ -39,14 +40,15 @@ export function useCollectionRecordActions(options: RecordActionOptions) {
 
     if (isTrash) {
       return [
-        ...(allowed(options.canRestore) ? [{ key: `restore:${id}`, label: $t('Atkurti'), icon: RotateCcw, labelled: true }] : []),
+        ...(allowed(options.canRestore) ? [{ key: `restore:${id}`, label: $t('Atkurti'), icon: RotateCcw, primary: !allowed(options.canForceDelete) }] : []),
         ...(allowed(options.canForceDelete) ? [{ key: `forceDelete:${id}:${name}`, label: $t('Ištrinti visam laikui'), icon: Trash2, destructive: true }] : []),
       ];
     }
 
     return [
+      ...(options.openHref ? [{ key: `open:${id}`, label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, href: options.openHref(id) }] : []),
       ...(allowed(options.canEdit)
-        ? [{ key: `edit:${id}`, label: $t('Redaguoti'), icon: Pencil, labelled: true, href: options.editHref?.(id) ?? route(`${options.routePrefix}.edit`, id) }]
+        ? [{ key: `edit:${id}`, label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: options.editHref?.(id) ?? route(`${options.routePrefix}.edit`, id) }]
         : []),
       ...(options.canDuplicate?.() ? [{ key: `duplicate:${id}`, label: $t('Dubliuoti'), icon: Copy }] : []),
       ...(allowed(options.canDelete) ? [{ key: `delete:${id}:${name}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),

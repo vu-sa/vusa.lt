@@ -1,5 +1,7 @@
 <template>
   <CollectionPage
+    :row-actions="item => actionsFor(item)"
+    @row-action="(item, key) => actions.select(key, item.force_delete_blocked_reason)"
     :source
     collection="news"
     entity-type="news"
@@ -25,7 +27,7 @@
       </Button>
     </template>
 
-    <template #row="{ item }">
+    <template #row="{ item, actions: recordActions }">
       <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
         <div class="min-w-0 flex-1">
           <div class="flex items-start justify-between gap-3">
@@ -47,7 +49,7 @@
             <span>{{ languageLabel(item.lang) }}</span>
           </p>
         </div>
-        <CollectionRowActions :actions="actionsFor(item)" @select="key => actions.select(key, item.force_delete_blocked_reason)" />
+        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => actions.select(key, item.force_delete_blocked_reason)" />
       </article>
     </template>
 
@@ -70,14 +72,9 @@
         />
       </div>
       <span v-else-if="column.key === 'date'" class="tabular-nums text-muted-foreground">{{ dateOf(item) }}</span>
-      <CollectionRowActions
-        v-else-if="column.key === 'actions'"
-        :actions="actionsFor(item)"
-        @select="key => actions.select(key, item.force_delete_blocked_reason)"
-      />
     </template>
 
-    <template #preview="{ item }">
+    <template #preview="{ item, actions: recordActions }">
       <NewsPreview
         :key="item.id"
         :news="item"
@@ -96,7 +93,7 @@
         </template>
         <template #actions>
           <CollectionRowActions
-            :actions="actionsFor(item)"
+            :actions="recordActions"
             class="flex-wrap"
             @select="key => actions.select(key, item.force_delete_blocked_reason)"
           />
@@ -220,6 +217,5 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'lang', label: $t('Kalba'), class: 'w-28' },
   { key: 'status', label: $t('Būsena'), class: 'w-36' },
   { key: 'date', label: isTrash ? $t('Ištrinta') : $t('Paskelbta'), class: 'w-32', sortField: isTrash ? 'deleted_at' : 'publish_time' },
-  { key: 'actions', label: $t('Veiksmai'), class: 'w-56 text-right', pinned: true },
 ]);
 </script>

@@ -1,5 +1,7 @@
 <template>
   <CollectionPage
+    :row-actions="item => getTaskRowActions(item)"
+    @row-action="(item, key) => runAction(item, key as TaskActionKey)"
     :source
     :collection="`tasks-${scope}`"
     entity-type="task"
@@ -24,9 +26,11 @@
       </Button>
     </template>
 
-    <template #row="{ item, view }">
+    <template #row="{ item, actions: recordActions, view }">
       <TaskRow
         :task="item"
+        :actions="recordActions"
+        :spotlight="item === source.items.value[0]"
         :loading="loadingTaskId === item.id"
         :hide-actions="view === 'preview'"
         @open="detailDialogs.openTaskDetail(item)"
@@ -68,30 +72,12 @@
         {{ item.due_date ? formatTaskDueDate(item.due_date, dateLocale) : '—' }}
       </span>
 
-      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="getTaskRowActions(item)" @select="key => runAction(item, key as TaskActionKey)" />
     </template>
 
-    <template #preview="{ item }">
+    <template #preview="{ item, actions: recordActions }">
       <TaskPreview :key="item.id" :task="item">
         <template #actions>
-          <Button
-            v-for="action in getTaskActions(item)"
-            :key="action.key"
-            :variant="action.primary ? 'brand' : 'outline'"
-            size="sm"
-            :as-child="Boolean(action.href)"
-            :class="action.destructive && 'text-destructive hover:text-destructive'"
-            @click="action.href ? undefined : runAction(item, action.key)"
-          >
-            <Link v-if="action.href" :href="action.href">
-              <component :is="action.icon" aria-hidden="true" />
-              {{ action.label }}
-            </Link>
-            <template v-else>
-              <component :is="action.icon" aria-hidden="true" />
-              {{ action.label }}
-            </template>
-          </Button>
+          <CollectionRowActions :actions="recordActions" full-labels class="flex-wrap" @select="key => runAction(item, key as TaskActionKey)" />
         </template>
       </TaskPreview>
     </template>
@@ -151,7 +137,7 @@ import {
   isOrphanedTask,
   type TaskDisplayData,
 } from '@/Composables/useTaskPresentation';
-import { getTaskActions, getTaskRowActions, type TaskActionKey } from '@/Features/Admin/TaskManager/taskActions';
+import { getTaskRowActions, type TaskActionKey } from '@/Features/Admin/TaskManager/taskActions';
 import TaskCompletionControl from '@/Features/Admin/TaskManager/TaskCompletionControl.vue';
 import TaskPreview from '@/Features/Admin/TaskManager/TaskPreview.vue';
 import TaskRow from '@/Features/Admin/TaskManager/TaskRow.vue';
@@ -274,8 +260,6 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'subject', label: $t('tasks.collection.column_subject'), class: 'w-44' },
   { key: 'users', label: $t('tasks.collection.column_assignees'), class: 'w-28' },
   { key: 'due_date', label: $t('tasks.collection.column_due'), class: 'w-32' },
-  // Fits the labelled first action ("Darbotvarkė") beside one icon button.
-  { key: 'actions', label: $t('tasks.collection.column_actions'), class: 'w-56 text-right' },
 ]);
 
 // --- Quick filters carry their counts; they replace the old stat cards --------------------------
@@ -320,6 +304,13 @@ const subjectLabel = (task: TaskDisplayData): string => (isOrphanedTask(task)
 
 function runAction(task: TaskDisplayData, key: TaskActionKey): void {
   switch (key) {
+    case 'open': {
+      const url = new URL(window.location.href);
+      url.searchParams.set('item', String(task.id));
+      window.history.replaceState(window.history.state, '', url.toString());
+      detailDialogs.openTaskDetail(task);
+      break;
+    }
     case 'report':
       detailDialogs.openReportWindow(task);
       break;

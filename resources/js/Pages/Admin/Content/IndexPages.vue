@@ -1,5 +1,7 @@
 <template>
   <CollectionPage
+    :row-actions="item => actionsFor(item)"
+    @row-action="(item, key) => actions.select(key, item.force_delete_blocked_reason)"
     :source
     collection="pages"
     entity-type="page"
@@ -40,7 +42,7 @@
       </Button>
     </template>
 
-    <template #row="{ item, view }">
+    <template #row="{ item, actions: recordActions, view }">
       <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
         <div class="min-w-0 flex-1">
           <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches"
@@ -66,14 +68,14 @@
           />
           <CollectionRowActions
             v-if="view !== 'preview'"
-            :actions="actionsFor(item)"
+            :actions="recordActions"
             @select="key => actions.select(key, item.force_delete_blocked_reason)"
           />
         </div>
       </article>
     </template>
 
-    <template #preview="{ item }">
+    <template #preview="{ item, actions: recordActions }">
       <PagePreview
         :key="item.id"
         :page="item"
@@ -92,7 +94,7 @@
         </template>
         <template #actions>
           <CollectionRowActions
-            :actions="previewActionsFor(item)"
+            :actions="recordActions"
             class="flex-wrap"
             @select="key => actions.select(key, item.force_delete_blocked_reason)"
           />
@@ -119,11 +121,6 @@
         />
       </div>
       <span v-else-if="column.key === 'date'" class="tabular-nums text-muted-foreground">{{ dateOf(item) }}</span>
-      <CollectionRowActions
-        v-else-if="column.key === 'actions'"
-        :actions="actionsFor(item)"
-        @select="key => actions.select(key, item.force_delete_blocked_reason)"
-      />
     </template>
 
     <template #bulk-actions="{ selected, clear }">
@@ -222,10 +219,8 @@ const actions = useCollectionRecordActions({
 });
 
 const pageKey = (item: PageRow) => String(item.id);
-const actionsFor = (item: PageRow) => actions.rowActions(item, item.title, isTrash);
-
-function previewActionsFor(item: PageRow): CollectionRowAction[] {
-  const rowActions = actionsFor(item);
+function actionsFor(item: PageRow): CollectionRowAction[] {
+  const rowActions = actions.rowActions(item, item.title, isTrash);
   const viewUrl = !isTrash && item.is_active && item.permalink && item.tenant_id
     ? route('page', {
         subdomain: resolveTenantSubdomain(item.tenant_id),
@@ -238,7 +233,7 @@ function previewActionsFor(item: PageRow): CollectionRowAction[] {
     ...rowActions.filter(action => action.key.startsWith('edit:')),
     ...(viewUrl ? [{ key: `view:${item.id}`, label: $t('Peržiūrėti'), icon: Eye, href: viewUrl, external: true }] : []),
     ...rowActions.filter(action => !action.key.startsWith('edit:')),
-  ].map(action => ({ ...action, labelled: true }));
+  ];
 }
 
 // Bulk actions and the status menu share one gate with delete; the server re-checks every record.
@@ -267,6 +262,5 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'lang', label: $t('Kalba'), class: 'w-24' },
   { key: 'status', label: $t('Būsena'), class: 'w-36' },
   { key: 'date', label: isTrash ? $t('Ištrinta') : $t('Sukurta'), class: 'w-28', sortField: isTrash ? 'deleted_at' : 'created_at' },
-  { key: 'actions', label: $t('Veiksmai'), class: 'w-44 text-right', pinned: true },
 ]);
 </script>

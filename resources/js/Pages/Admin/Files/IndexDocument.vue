@@ -27,6 +27,8 @@
   </DocumentFolderBrowser>
 
   <CollectionPage
+    :row-actions="item => rowActions(item)"
+    @row-action="(item, key) => selectRowAction(key, item)"
     v-else
     :source="source!"
     collection="documents"
@@ -41,7 +43,7 @@
     :search-placeholder="$t('Ieškoti dokumentų...')"
     @quick-filter="toggleQuickFilter"
   >
-    <template #row="{ item }">
+    <template #row="{ item, actions: recordActions }">
       <article class="flex min-h-14 items-center justify-between gap-4 px-3 py-2.5 sm:px-4" data-slot="document-collection-row">
         <div class="flex min-w-0 flex-1 items-center gap-3">
           <div class="flex size-10 shrink-0 items-center justify-center border border-border bg-muted text-muted-foreground">
@@ -84,7 +86,7 @@
         </div>
 
         <div class="flex shrink-0 items-center gap-2">
-          <CollectionRowActions :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
+          <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => selectRowAction(key, item)" />
         </div>
       </article>
     </template>
@@ -132,11 +134,12 @@
         <span v-else class="text-muted-foreground">—</span>
       </span>
 
-      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
     </template>
 
-    <template #preview="{ item }">
-      <DocumentPreview :key="item.id" :document="item" />
+    <template #preview="{ item, actions: recordActions }">
+      <DocumentPreview :key="item.id" :document="item" >
+        <template #actions><CollectionRowActions :actions="recordActions" full-labels class="flex-wrap" @select="key => selectRowAction(key, item)" /></template>
+      </DocumentPreview>
     </template>
 
     <template #empty>
@@ -219,13 +222,14 @@ const canUpdateItem = (item: DocumentSearchResult): boolean => props.abilities.u
   || (!!item.institution_id && props.abilities.updateInstitutionIds.includes(item.institution_id))
 );
 
-const rowActions = (item: DocumentSearchResult): CollectionRowAction[] => canUpdateItem(item)
-  ? [
+const rowActions = (item: DocumentSearchResult): CollectionRowAction[] => [
+  ...(item.anonymous_url ? [{ key: 'open', label: $t('Atidaryti'), icon: ExternalLink, role: 'open' as const, external: true, href: item.anonymous_url }] : []),
+  ...(canUpdateItem(item) ? [
       { key: 'refresh', label: $t('Atnaujinti iš SharePoint'), icon: RefreshCw, loading: refreshingId.value === String(item.id) },
       // Hiding, not deleting: SharePoint is the source, and a deleted record would only be rediscovered.
       { key: 'hide', label: $t('Slėpti'), icon: EyeOff },
-    ]
-  : [];
+    ] : []),
+];
 
 function selectRowAction(key: string, item: DocumentSearchResult): void {
   if (key === 'refresh') refreshDocument(item);
@@ -250,7 +254,6 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'content_type', label: $t('Rūšis'), class: 'w-44' },
   { key: 'institution', label: $t('Institucija'), class: 'w-44' },
   { key: 'language', label: $t('Kalba'), class: 'w-20' },
-  ...(props.abilities.update ? [{ key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true }] : []),
 ]);
 
 function institutionMatch(item: DocumentSearchResult) {

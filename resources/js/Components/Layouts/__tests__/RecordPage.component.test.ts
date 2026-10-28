@@ -175,8 +175,7 @@ describe('RecordPage', () => {
 
     const button = (label: string) => wrapper.findAll('button').find(candidate => candidate.text() === label);
 
-    await button('Redaguoti')!.trigger('click');
-    expect(router.visit).toHaveBeenCalledWith('/mano/resources/1/edit');
+    expect(wrapper.get('a[href="/mano/resources/1/edit"]').text()).toBe('Redaguoti');
     expect(wrapper.emitted('action')).toBeUndefined();
 
     await button('Ištrinti')!.trigger('click');

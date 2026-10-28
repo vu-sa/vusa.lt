@@ -16,7 +16,7 @@
       </template>
     </CollectionPrimaryCell>
 
-    <CollectionRowActions v-if="!hideActions" :actions="getTaskRowActions(task)" @select="key => emit('action', key as TaskActionKey)" />
+    <CollectionRowActions v-if="!hideActions" :spotlight :actions="actions ?? getTaskRowActions(task)" @select="key => key === 'open' ? emit('open') : emit('action', key as TaskActionKey)" />
   </article>
 </template>
 
@@ -28,7 +28,7 @@ import { getTaskRowActions, type TaskActionKey } from './taskActions';
 import TaskCompletionControl from './TaskCompletionControl.vue';
 
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
-import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import { useDateLocale } from '@/Composables/useDateLocale';
 import {
   formatTaskDueDate,
@@ -43,6 +43,8 @@ import {
  */
 const props = defineProps<{
   task: TaskDisplayData;
+  actions?: CollectionRowAction[];
+  spotlight?: boolean;
   loading?: boolean;
   /** Beside the preview pane the row only selects; the pane carries the actions. */
   hideActions?: boolean;

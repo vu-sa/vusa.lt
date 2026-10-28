@@ -25,20 +25,21 @@ describe('task actions', () => {
     expect(keys(getTaskActions({ ...gap, completed_at: '2026-01-01T00:00:00Z' }))).toEqual([]);
   });
 
-  it('leaves completing to the row checkbox but keeps it in the preview', () => {
+  it('leaves completing to the row checkbox but keeps the entity command', () => {
     const manual = task({ action_type: TaskActionType.Manual, can_delete: true });
 
     expect(keys(getTaskActions(manual))).toEqual(['complete', 'delete']);
-    expect(keys(getTaskRowActions(manual))).toEqual(['delete']);
+    expect(keys(getTaskRowActions(manual))).toEqual(['open', 'delete']);
   });
 
-  it('labels only the first row button, with one word', () => {
+  it('preserves the workflow primary and its short label', () => {
     const gap = task({ action_type: TaskActionType.PeriodicityGap, can_be_manually_completed: false, can_delete: true });
-    const [first, second] = getTaskRowActions(gap);
+    const [open, first, second] = getTaskRowActions(gap);
 
-    expect(first).toMatchObject({ key: 'report', label: 'tasks.short_actions.report', labelled: true });
+    expect(open).toMatchObject({ key: 'open', role: 'open' });
+    expect(first).toMatchObject({ key: 'report', shortLabel: 'tasks.short_actions.report', primary: true });
     expect(second).toMatchObject({ key: 'delete' });
-    expect(second.labelled).toBeUndefined();
+    expect(second.primary).not.toBe(true);
   });
 
   it('links an open agenda task to the meeting agenda, adding items only while it is being created', () => {

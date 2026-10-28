@@ -1,5 +1,7 @@
 <template>
   <CollectionPage
+    :row-actions="item => actionsFor(item)"
+    @row-action="(item, key) => actions.select(key)"
     :source
     collection="study-sets"
     entity-type="studySet"
@@ -23,7 +25,7 @@
       </Button>
     </template>
 
-    <template #row="{ item }">
+    <template #row="{ item, actions: recordActions }">
       <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
         <div class="min-w-0 flex-1">
           <div class="flex items-start justify-between gap-3">
@@ -34,7 +36,7 @@
             {{ $tChoice(':count dalykas|:count dalykai|:count dalykų', item.courses_count ?? 0, { count: item.courses_count ?? 0 }) }} · #{{ item.order }}
           </p>
         </div>
-        <CollectionRowActions :actions="actionsFor(item)" @select="key => actions.select(key)" />
+        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => actions.select(key)" />
       </article>
     </template>
 
@@ -44,7 +46,6 @@
       <span v-else-if="column.key === 'courses'" class="tabular-nums text-muted-foreground">{{ item.courses_count ?? 0 }}</span>
       <span v-else-if="column.key === 'order'" class="tabular-nums text-muted-foreground">{{ item.order }}</span>
       <StatusBadge v-else-if="column.key === 'status' && !item.is_visible" :status="contentStatuses.draft" />
-      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="actionsFor(item)" @select="key => actions.select(key)" />
     </template>
   </CollectionPage>
 
@@ -113,6 +114,5 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'courses', label: $t('Dalykai'), class: 'w-28', sortField: 'courses_count' },
   { key: 'order', label: $t('Eilė'), class: 'w-20', sortField: 'order' },
   { key: 'status', label: $t('Būsena'), class: 'w-36' },
-  { key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true },
 ]);
 </script>

@@ -1,5 +1,7 @@
 <template>
   <CollectionPage
+    :row-actions="item => actionsFor(item)"
+    @row-action="(item, key) => actions.select(key)"
     :source
     collection="quickLinks"
     entity-type="quickLink"
@@ -45,7 +47,7 @@
       </Button>
     </template>
 
-    <template #row="{ item }">
+    <template #row="{ item, actions: recordActions }">
       <article class="flex min-h-14 items-center gap-3 px-3 py-2.5 sm:px-4">
         <QuickLinkIconMark :icon="item.icon" />
         <div class="min-w-0 flex-1">
@@ -57,7 +59,7 @@
           />
         </div>
         <StatusBadge v-if="item.is_important" :status="importantStatus" class="shrink-0" />
-        <CollectionRowActions :actions="actionsFor(item)" @select="key => actions.select(key)" />
+        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => actions.select(key)" />
       </article>
     </template>
 
@@ -69,7 +71,6 @@
       <span v-else-if="column.key === 'link'" class="font-mono text-xs text-muted-foreground">{{ item.link }}</span>
       <StatusBadge v-else-if="column.key === 'important' && item.is_important" :status="importantStatus" />
       <span v-else-if="column.key === 'order'" class="tabular-nums text-muted-foreground">{{ item.order ?? '—' }}</span>
-      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="actionsFor(item)" @select="key => actions.select(key)" />
     </template>
 
     <template v-if="!isTrash" #empty>
@@ -232,7 +233,6 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'link', label: $t('Adresas') },
   { key: 'important', label: $t('Svarbi'), class: 'w-28' },
   { key: 'order', label: $t('Eilė'), class: 'w-20', sortField: 'order' },
-  { key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true },
 ]);
 
 // --- Order is a mode (.ai/rules/admin-forms.md) ---------------------------------------------

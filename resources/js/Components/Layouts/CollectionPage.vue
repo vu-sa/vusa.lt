@@ -1,5 +1,5 @@
 <template>
-  <div ref="root" class="flex flex-col gap-3 lg:gap-4" data-slot="collection-page">
+  <div ref="root" class="min-w-0 max-w-full flex flex-col gap-3 lg:gap-4" data-slot="collection-page">
     <Head :title />
 
     <CollectionTitleBand :eyebrow :title :lead :entity-type>
@@ -17,7 +17,7 @@
       </slot>
     </div>
 
-    <section class="flex flex-col gap-2 border-y border-border py-3 lg:gap-3 lg:py-4" :aria-label="$t('Paieška ir filtrai')">
+    <section class="min-w-0 max-w-full flex flex-col gap-2 border-y border-border py-3 lg:gap-3 lg:py-4" :aria-label="$t('Paieška ir filtrai')">
       <CollectionControlRow
         :query="source.query.value"
         :placeholder="searchPlaceholder ?? $t('Ieškoti')"
@@ -71,6 +71,8 @@
       :pinned="pinnedItems"
       :item-key
       :columns
+      :row-actions
+      @row-action="(item, key) => emit('rowAction', item, key)"
       :is-loading="source.isLoading.value"
       :is-loading-more="source.isLoadingMore.value"
       :has-searched="source.hasSearched.value"
@@ -133,6 +135,7 @@ import CollectionResults from '@/Components/Collection/CollectionResults.vue';
 import CollectionSelectionBar from '@/Components/Collection/CollectionSelectionBar.vue';
 import CollectionTitleBand from '@/Components/Collection/CollectionTitleBand.vue';
 import CollectionViewToggle from '@/Components/Collection/CollectionViewToggle.vue';
+import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
 import type { CollectionColumn, CollectionQuickFilter, CollectionTrash } from '@/Components/Collection/types';
 import type { CollectionChip, CollectionSource } from '@/Composables/useCollectionSource';
 import { useCollectionView, type CollectionViewMode } from '@/Composables/useCollectionView';
@@ -150,6 +153,7 @@ const props = withDefaults(defineProps<{
   itemKey: (item: T) => string;
   quickFilters?: CollectionQuickFilter[];
   columns?: CollectionColumn[];
+  rowActions?: (item: T) => AdminRecordAction[];
   /** Records the user just changed, shown until the search index reflects them (O1's Typesense trap). */
   pinnedItems?: readonly T[];
   searchPlaceholder?: string;
@@ -179,6 +183,7 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   quickFilter: [id: string];
+  rowAction: [item: T, key: string];
 }>();
 
 const slots = defineSlots<{
@@ -186,11 +191,11 @@ const slots = defineSlots<{
   'actions': () => unknown;
   /** Replaces the chips row, e.g. to wrap it in a spotlight; render `CollectionQuickFilters` inside. */
   'quick-filters'?: (props: { filters: CollectionQuickFilter[]; toggle: (id: string) => void }) => unknown;
-  'row': (props: { item: T; view: CollectionViewMode; selected: boolean; pinned: boolean }) => unknown;
+  'row': (props: { item: T; index: number; actions: AdminRecordAction[]; view: CollectionViewMode; selected: boolean; pinned: boolean }) => unknown;
   /** Needed when `availableViews` offers `cards`. */
-  'card'?: (props: { item: T; pinned: boolean }) => unknown;
-  'cell': (props: { item: T; column: CollectionColumn; pinned: boolean }) => unknown;
-  'preview': (props: { item: T }) => unknown;
+  'card'?: (props: { item: T; actions: AdminRecordAction[]; pinned: boolean }) => unknown;
+  'cell': (props: { item: T; actions: AdminRecordAction[]; column: CollectionColumn; pinned: boolean }) => unknown;
+  'preview': (props: { item: T; actions: AdminRecordAction[] }) => unknown;
   'empty': () => unknown;
   'bulk-actions': (props: { selected: T[]; clear: () => void }) => unknown;
 }>();

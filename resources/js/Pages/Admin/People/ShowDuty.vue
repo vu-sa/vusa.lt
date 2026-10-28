@@ -354,7 +354,7 @@ import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import { DatePicker } from '@/Components/ui/date-picker';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import RecordPage, { type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
-import type { ActionDescriptor } from '@/Components/Layouts/RecordPageAction.vue';
+import type { AdminRecordAction as ActionDescriptor } from '@/Features/Admin/RecordActions/types';
 import { ConfirmDialog, OverviewSection, SheetForm } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';

@@ -12,12 +12,12 @@ vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 /** The collection shell is covered by its own suite; here it only hands over its slots and events. */
 const CollectionPageStub = {
   name: 'CollectionPage',
-  props: ['source', 'quickFilters', 'title', 'eyebrow', 'view'],
+  props: ['source', 'quickFilters', 'title', 'eyebrow', 'view', 'rowActions'],
   emits: ['quickFilter'],
   template: `
     <div>
       <div data-testid="actions"><slot name="actions" /></div>
-      <div v-for="item in source.items.value" :key="item.id" data-testid="row"><slot name="row" :item="item" :view="view ?? 'rows'" /></div>
+      <div v-for="item in source.items.value" :key="item.id" data-testid="row"><slot name="row" :item="item" :actions="rowActions?.(item) ?? []" :view="view ?? 'rows'" /></div>
     </div>
   `,
 };

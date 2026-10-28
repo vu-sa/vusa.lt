@@ -29,8 +29,8 @@ function mountPage() {
       ...commonStubs,
       CollectionConfirmAction: true,
       CollectionPage: {
-        props: ['source'],
-        template: '<div><div v-for="item in source.items.value" :key="item.id" :data-row="item.id"><slot name="row" :item="item" /></div></div>',
+        props: ['source', 'rowActions'],
+        template: '<div><div v-for="item in source.items.value" :key="item.id" :data-row="item.id"><slot name="row" :item="item" :actions="rowActions?.(item) ?? []" /></div></div>',
       },
     } },
   });

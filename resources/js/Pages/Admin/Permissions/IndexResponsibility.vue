@@ -1,5 +1,6 @@
 <template>
   <CollectionPage
+    :row-actions="rowActions"
     :source
     collection="roles"
     entity-type="role"
@@ -20,13 +21,14 @@
       </Button>
     </template>
 
-    <template #row="{ item }">
+    <template #row="{ item, actions: recordActions }">
       <article class="flex flex-col gap-2 px-4 py-4">
         <CollectionPrimaryCell :title="item.title" :href="route('responsibilities.show', item.id)" :sub="item.description" :sub-lines="3" />
         <p class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
           <PurposeChip :label="item.purpose_label" show-access />
           <span>{{ counts(item) }}</span>
         </p>
+        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" />
       </article>
     </template>
 
@@ -44,6 +46,9 @@
 </template>
 
 <script setup lang="ts">
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import { ArrowUpRight } from '@lucide/vue';
 import { computed, toRef } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
@@ -104,4 +109,7 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'people', label: $t('responsibilities.facts.people'), class: 'w-24', sortField: 'people' },
   { key: 'updated', label: $t('Atnaujinta'), class: 'w-32', sortField: 'updated_at' },
 ]);
+const rowActions = (item: ResponsibilityRow): AdminRecordAction[] => [
+  { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, href: route('responsibilities.show', item.id) },
+];
 </script>

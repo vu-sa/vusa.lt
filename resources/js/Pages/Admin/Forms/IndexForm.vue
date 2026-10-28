@@ -1,5 +1,7 @@
 <template>
   <CollectionPage
+    :row-actions="item => rowActions(item)"
+    @row-action="(item, key) => selectRowAction(key, item)"
     :source
     collection="forms"
     entity-type="form"
@@ -22,7 +24,7 @@
       </Button>
     </template>
 
-    <template #row="{ item }">
+    <template #row="{ item, actions: recordActions }">
       <article class="flex min-h-14 items-center justify-between gap-4 px-3 py-2.5 sm:px-4">
         <div class="min-w-0 flex-1">
           <div class="flex items-center gap-2">
@@ -47,7 +49,7 @@
             <span>{{ $t('Atnaujinta') }}: {{ formatDate(new Date(item.updated_at)) }}</span>
           </div>
         </div>
-        <CollectionRowActions :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
+        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => selectRowAction(key, item)" />
       </article>
     </template>
 
@@ -83,7 +85,6 @@
         {{ formatDate(new Date(item.updated_at)) }}
       </span>
 
-      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
     </template>
 
     <template #empty>
@@ -160,12 +161,12 @@ const canForceDelete = computed(() => Boolean(usePage().props.auth?.can?.forceDe
 
 const rowActions = (item: FormRow): CollectionRowAction[] => isDeleted.value
   ? [
-      { key: 'restore', label: $t('Atkurti'), icon: RotateCcw, labelled: true },
+      { key: 'restore', label: $t('Atkurti'), icon: RotateCcw, primary: !canForceDelete.value },
       ...(canForceDelete.value ? [{ key: 'forceDelete', label: $t('Ištrinti visam laikui'), icon: Trash2, destructive: true }] : []),
     ]
   : [
-      ...(item.can?.update ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, href: route('forms.edit', item.id) }] : []),
-      { key: 'open', label: $t('Atidaryti'), icon: ChevronRight, labelled: true, href: route('forms.show', item.id) },
+      ...(item.can?.update ? [{ key: 'edit', role: 'edit' as const, label: $t('Redaguoti'), icon: Pencil, href: route('forms.edit', item.id) }] : []),
+      { key: 'open', label: $t('Atidaryti'), icon: ChevronRight, role: 'open' as const, href: route('forms.show', item.id) },
     ];
 
 function selectRowAction(key: string, item: FormRow): void {
@@ -237,7 +238,6 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'tenant', label: $tChoice('entities.tenant.model', 1), class: 'w-28' },
   { key: 'registrations_count', label: $t('Registracijos'), class: 'w-32', sortField: 'registrations_count' },
   { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', sortField: 'updated_at' },
-  { key: 'actions', label: $t('Veiksmai'), class: 'w-24 text-right' },
 ]);
 
 const isFiltered = computed(() => source.query.value.trim() !== '' || source.activeFilterCount.value > 0);

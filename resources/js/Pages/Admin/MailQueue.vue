@@ -1,5 +1,7 @@
 <template>
   <CollectionPage
+    :row-actions="rowActions"
+    @row-action="(recipient) => requestClearRecipient(recipient)"
     :source
     collection="mailQueue"
     :eyebrow="$t('Sistemos būsena')"
@@ -22,7 +24,7 @@
         </Button>
       </div>
     </template>
-    <template #row="{ item: recipient }">
+    <template #row="{ item: recipient, actions, index }">
       <div class="border-b border-border px-3 py-3 last:border-b-0 sm:px-4">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <div class="flex min-w-0 items-center gap-3">
@@ -41,18 +43,7 @@
             <Badge variant="secondary">
               {{ $tChoice('mail_queue.line_count', recipient.items_count) }}
             </Badge>
-            <Button
-              v-if="canManage"
-              variant="ghost"
-              size="sm"
-              voice="sentence"
-              class="text-destructive hover:text-destructive"
-              :disabled="busyKey !== null"
-              @click="requestClearRecipient(recipient)"
-            >
-              <Trash2Icon class="size-4" />
-              {{ $t('Nesiųsti') }}
-            </Button>
+            <CollectionRowActions :spotlight="index === 0" :actions="actions" @select="requestClearRecipient(recipient)" />
           </div>
         </div>
 
@@ -112,6 +103,8 @@
 </template>
 
 <script setup lang="ts">
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
 import { router } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { computed, ref, watch } from 'vue';
@@ -220,4 +213,7 @@ const confirmDiscard = () => {
   submit(pendingDiscard.value.url, pendingDiscard.value.key);
 };
 
+const rowActions = (_recipient: Recipient): AdminRecordAction[] => props.canManage
+  ? [{ key: 'discard', label: $t('Nesiųsti'), icon: Trash2Icon, destructive: true, disabled: busyKey.value !== null }]
+  : [];
 </script>

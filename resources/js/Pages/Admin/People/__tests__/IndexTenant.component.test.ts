@@ -20,9 +20,9 @@ describe('IndexTenant', () => {
       props: { tenants },
       global: { stubs: {
         CollectionPage: {
-          props: ['columns'],
+          props: ['columns', 'rowActions'],
           setup: () => ({ tenants, view }),
-          template: `<main><div v-for="item in tenants" :key="item.id"><slot v-if="view === 'row'" name="row" :item="item" /><slot v-else name="cell" :item="item" :column="{ key: 'primary_institution' }" /></div></main>`,
+          template: `<main><div v-for="item in tenants" :key="item.id"><slot v-if="view === 'row'" name="row" :item="item" :actions="rowActions?.(item) ?? []" /><slot v-else name="cell" :item="item" :column="{ key: 'primary_institution' }" /></div></main>`,
         },
         TenantSheetForm: true, ConfirmDialog: true, CollectionRowActions: true,
       } },

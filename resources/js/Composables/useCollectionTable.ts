@@ -6,6 +6,7 @@ import type { CollectionColumn } from '@/Components/Collection/types';
 import type { CollectionSortOption } from '@/Composables/useCollectionSource';
 
 export const SELECT_COLUMN_ID = '__select';
+export const ACTIONS_COLUMN_ID = '__actions';
 
 const features = tableFeatures({
   rowSortingFeature,
@@ -20,6 +21,8 @@ interface CollectionTableOptions<T> {
   itemKey: (item: T) => string;
   columns: Ref<CollectionColumn[]>;
   selectable: Ref<boolean>;
+  hasRowActions?: Ref<boolean>;
+  actionsLabel?: string;
   /** Rows that may not be selected (a reservation already decided) get no checkbox. */
   canSelect?: (item: T) => boolean;
   /** Selected item keys; owned by the page so bulk actions can read it. */
@@ -70,6 +73,9 @@ export function useCollectionTable<T>(options: CollectionTableOptions<T>): {
       defs.unshift({ id: SELECT_COLUMN_ID, header: '', enableSorting: false, enableHiding: false });
     }
 
+    if (options.hasRowActions?.value) {
+      defs.push({ id: ACTIONS_COLUMN_ID, header: options.actionsLabel ?? '', enableSorting: false, enableHiding: false });
+    }
     return defs;
   });
 
@@ -109,7 +115,7 @@ export function useCollectionTable<T>(options: CollectionTableOptions<T>): {
         return rowSelection.value;
       },
       get columnVisibility() {
-        return columnVisibility.value;
+        return { ...columnVisibility.value, [ACTIONS_COLUMN_ID]: true };
       },
     },
     onSortingChange: (updater) => {
