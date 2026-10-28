@@ -56,6 +56,7 @@
 </template>
 
 <script setup lang="ts">
+import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
@@ -71,7 +72,7 @@ const props = defineProps<{
 }>();
 
 const showHref = computed(() => route('agendaItems.show', props.item.id));
-const institutionName = computed(() => props.item.institution_name_lt || props.item.institution_name_en);
+const institutionName = computed(() => getSearchTranslation(props.item, 'institution_name'));
 const decisionStatus = computed(() => statusFor(voteStatuses, props.item.decision));
 const studentVote = computed(() => statusFor(voteStatuses, props.item.student_vote));
 const studentBenefit = computed(() => statusFor(studentBenefitStatuses, props.item.student_benefit));

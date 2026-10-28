@@ -211,6 +211,14 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
             'institution_name_lt' => $this->institution?->getTranslation('name', 'lt'),
             'institution_name_en' => $this->institution?->getTranslation('name', 'en'),
             'institution_is_active' => (bool) $this->institution?->is_active,
+            'type_titles_lt' => $this->types
+                ->map(fn (DutyType $type) => (string) $type->getTranslation('title', 'lt'))
+                ->values()
+                ->all(),
+            'type_titles_en' => $this->types
+                ->map(fn (DutyType $type) => (string) $type->getTranslation('title', 'en'))
+                ->values()
+                ->all(),
             'type_titles' => $this->types
                 ->map(fn (DutyType $type) => $type->getTranslation('title', 'lt'))
                 ->filter()

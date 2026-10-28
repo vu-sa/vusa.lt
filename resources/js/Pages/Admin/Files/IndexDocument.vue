@@ -160,6 +160,7 @@
 </template>
 
 <script setup lang="ts">
+import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ExternalLink, EyeOff, FileUp, RefreshCw } from '@lucide/vue';
@@ -255,11 +256,12 @@ const columns = computed<CollectionColumn[]>(() => [
 function institutionMatch(item: DocumentSearchResult) {
   const name = institutionName(item);
   const fields = item._searchFieldMatches;
-  return name ? highlightText(name, fields?.institution_name_lt ?? fields?.institution_name_en) : undefined;
+  const match = name === item.institution_name_en ? fields?.institution_name_en : fields?.institution_name_lt;
+  return name ? highlightText(name, match) : undefined;
 }
 
 function institutionName(item: DocumentSearchResult): string | undefined {
-  return item.institution_name_lt || item.institution_name_en || item.tenant_shortname;
+  return getSearchTranslation(item, 'institution_name') || item.tenant_shortname;
 }
 
 function formatDocDate(timestamp?: number | null): string {

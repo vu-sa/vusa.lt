@@ -3,8 +3,11 @@ doc_status: reviewed
 title: Institucijos
 area: institutions
 models: [Institution, InstitutionCheckIn, InstitutionSecretary]
-last_reviewed: 2026-10-27
+last_reviewed: 2026-10-28
 tests:
+  - tests/Feature/Search/AdminSearchTranslationsTest.php
+  - resources/js/Pages/Admin/People/__tests__/IndexInstitution.component.test.ts
+  - resources/js/Composables/__tests__/searchTranslations.test.ts
   - resources/js/Pages/Admin/Dashboard/__tests__/ShowAtstovavimasPadaliniai.component.test.ts
   - tests/Browser/CollectionTrashRefreshTest.php
   - tests/Feature/Api/Admin/RecordActivityStatusTest.php
@@ -65,6 +68,8 @@ puslapį `/mano/institutions/{id}`.
 <DocScreenshot name="institution-record" alt="Institucijos puslapis: veiklos būklė, rūšis, padalinys, nariai, posėdžių viešumas ir paskutiniai posėdžiai" caption="Atstovės vaizdas: jos institucijos būklė, nariai ir paskutiniai posėdžiai." />
 
 ## Kaip tai veikia
+
+Institucijų sąraše pavadinimai ir tipai rodomi pasirinkta Mano VU SA kalba. Jei vertimo nėra, rodomas lietuviškas arba kitas turimas pavadinimas. Padalinio trumpinys nesikeičia perjungus kalbą.
 
 Atskiroje formoje sukūrus instituciją, atveriamas jos puslapis. Pareigybių atnaujinimo vedlyje institucija sukuriama liekant vedlyje.
 

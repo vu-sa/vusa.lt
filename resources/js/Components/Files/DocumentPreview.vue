@@ -42,6 +42,7 @@
 </template>
 
 <script setup lang="ts">
+import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { CircleSlash, ExternalLink } from '@lucide/vue';
@@ -61,7 +62,7 @@ const props = defineProps<{
 }>();
 
 const showHref = computed(() => route('documents.show', props.document.id));
-const institutionName = computed(() => props.document.institution_name_lt || props.document.institution_name_en);
+const institutionName = computed(() => getSearchTranslation(props.document, 'institution_name'));
 // Search documents store Unix seconds.
 const documentDate = computed(() => (props.document.document_date ? formatDate(props.document.document_date * 1000) : null));
 </script>

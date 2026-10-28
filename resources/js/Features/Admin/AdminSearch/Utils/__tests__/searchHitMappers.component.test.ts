@@ -1,4 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { usePage } from '@inertiajs/vue3';
+
 
 import {
   adminCollectionToKey,
@@ -10,9 +12,12 @@ import {
   getUserDuties,
 } from '../searchHitMappers';
 
+import { createMockPage } from '@/tests/helpers/createMockPage';
 import { meetingCompletionStatuses } from '@/Constants/statuses';
 import type { MultiSearchResults } from '@/Shared/Search/types';
 import { createEmptyMultiSearchResults } from '@/Shared/Search/utils/createEmptyMultiSearchResults';
+
+vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 describe('adminCollectionToKey', () => {
   it('maps snake_case agenda_items to the camelCase result key', () => {
@@ -226,5 +231,19 @@ describe('holder-aware search duty names', () => {
   it('supports old documents with only stored duty names', () => {
     expect(getUserDuties({ id: 'u', name: 'Petras', previous_duty_names: ['Koordinatorė'] }, 'previous', 'lt'))
       .toEqual([{ id: undefined, name: 'Koordinatorius' }]);
+  });
+});
+
+describe('English search results', () => {
+  it('uses English names and related institution labels across shared search surfaces', () => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({ app: { locale: 'en' } }));
+    const names = { id: '1', name_lt: 'Taryba', name_en: 'Council' };
+    const relation = { id: '1', title: 'Meeting', institution_name_lt: 'Taryba', institution_name_en: 'Council' };
+
+    expect(normalizeHit('institutions', names).title).toBe('Council');
+    expect(normalizeHit('resources', { ...names, is_reservable: true, category_name: 'Technika', category_name_en: 'Equipment' }).subtitle).toBe('Equipment');
+    expect(normalizeHit('meetings', relation).subtitle).toBe('Council');
+    expect(normalizeHit('agendaItems', relation).subtitle).toBe('Council');
+    expect(normalizeHit('duties', { ...names, ...relation }).subtitle).toBe('Council');
   });
 });

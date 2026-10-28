@@ -324,6 +324,8 @@ export interface InstitutionSearchResult {
   tenant_id?: number;
   tenant_shortname?: string;
   type_titles?: string[];
+  type_titles_lt?: string[];
+  type_titles_en?: string[];
   current_user_names?: string[];
   duty_names?: string[];
   type_ids?: number[];
@@ -372,6 +374,8 @@ export interface ResourceSearchResult {
   tenant_shortname?: string;
   category_id?: number;
   category_name?: string;
+  category_name_lt?: string;
+  category_name_en?: string;
   image_url?: string;
   created_at?: number;
 }
@@ -400,6 +404,8 @@ export interface DutySearchResult {
   institution_name_lt?: string;
   institution_name_en?: string;
   type_titles?: string[];
+  type_titles_lt?: string[];
+  type_titles_en?: string[];
   type_slugs?: string[];
   current_user_names?: string[];
   /** Index-aligned with current_user_names; enables clickable member links. */
