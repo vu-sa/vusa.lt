@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -91,8 +92,11 @@ class TanstackTableService
                         $query->orderBy("{$joinName}.{$column}", $sort['desc'] ? 'desc' : 'asc');
                     }
                 } else {
-                    // Direct column sort
-                    $query->orderBy($sort['id'], $sort['desc'] ? 'desc' : 'asc');
+                    $column = $this->resolveDirectSortColumn($query, (string) $sort['id']);
+
+                    if ($column !== null) {
+                        $query->orderBy($column, $sort['desc'] ? 'desc' : 'asc');
+                    }
                 }
             }
         }
@@ -393,6 +397,37 @@ class TanstackTableService
                 if (Schema::hasColumn($relatedTable, $column)) {
                     return "{$relatedTable}.{$column}";
                 }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * A request-supplied sort id resolves only to a column of the model's table (qualified, as
+     * relation sorts add joins; translatable ones by the current locale) or an alias the query
+     * selects, such as a `withCount` result.
+     *
+     * @param  Builder<covariant Model>  $query
+     */
+    protected function resolveDirectSortColumn(Builder $query, string $id): ?string
+    {
+        $model = $query->getModel();
+        $table = $model->getTable();
+
+        if (Schema::hasColumn($table, $id)) {
+            $isTranslatable = method_exists($model, 'isTranslatableAttribute') && $model->isTranslatableAttribute($id);
+
+            return $isTranslatable ? "{$table}.{$id}->".app()->getLocale() : "{$table}.{$id}";
+        }
+
+        $grammar = $query->getQuery()->getGrammar();
+
+        foreach ($query->getQuery()->columns ?? [] as $selected) {
+            $expression = $selected instanceof Expression ? (string) $selected->getValue($grammar) : (string) $selected;
+
+            if (preg_match('/\s+as\s+[`"]?'.preg_quote($id, '/').'[`"]?$/i', $expression) === 1) {
+                return $id;
             }
         }
 
