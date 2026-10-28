@@ -81,8 +81,7 @@ it('registers a problem through the form', function (): void {
     $page->type('#problem-title', 'Per mažai vietų skaitykloje sesijos metu');
     $page->click('[data-testid=problem-description-editor] .ProseMirror');
     $page->type('[data-testid=problem-description-editor] .ProseMirror', 'Sesijos metu skaitykloje trūksta vietų.');
-    $page->click('#problem-tenant');
-    $page->click('[role=option]');
+    $page->select('#problem-tenant', (string) $this->representative->tenants()->value('tenants.id'));
 
     // Picking the padalinys scrolls the form's own container; the frame starts at the top.
     $page->script('document.querySelectorAll("*").forEach(element => { if (element.scrollTop > 0) element.scrollTop = 0; })');
