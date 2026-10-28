@@ -112,8 +112,8 @@ The one exception is a git worktree, where parallel runs fail — see [Branches 
 
 `dev` deploys to staging and `main` to production. Work targets `dev`; `dev → main` release PRs ship it, so keep them frequent and nothing waits long on `dev` alone.
 
-- **Small fixes** go straight into `dev`.
-- **Bigger pieces and refactors** get their own branch in a git worktree, based on `dev`, with a PR into `dev` — never `git checkout` in the main checkout, which other agent sessions share.
+- **Short, single-commit fixes** are committed straight to `dev` with a concise message — no PR.
+- **Bigger pieces, refactors and important fixes** get their own branch in a git worktree, based on `dev`, with a PR into `dev` — never `git checkout` in the main checkout, which other agent sessions share.
 - **Stack PRs only when work depends on another branch** (the PR's base is the branch below it). Merge with merge commits and keep a stack current by merging `dev` up the chain, not rebasing.
 - **Hotfixes** go to `main` only when urgent, followed straight away by merging `main` back into `dev`.
 
