@@ -19,7 +19,10 @@
       </time>
 
       <span class="min-w-0 flex-1">
-        <span class="block truncate text-base font-medium text-foreground">
+        <span
+          class="line-clamp-2 text-base font-medium text-foreground"
+          :title="meeting.title || $t('Be pavadinimo')"
+        >
           {{ meeting.title || $t('Be pavadinimo') }}
         </span>
         <span v-if="institutionName" class="mt-0.5 block truncate text-sm text-muted-foreground">

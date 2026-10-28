@@ -12,6 +12,7 @@
     :item-key="meetingKey"
     :quick-filters
     :columns
+    table-fixed
     :pinned-items="pinnedMeetings"
     :search-placeholder="$t('Ieškoti posėdžių')"
     :trash="{ count: deletedCount, active: isTrash }"
@@ -28,7 +29,7 @@
       <div v-if="isTrash" class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
         <div class="min-w-0 flex-1">
           <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches"
-            :title="item.title" :sub="getSearchTranslation(item, 'institution_name')" />
+            :title="item.title" :title-lines="2" :sub="getSearchTranslation(item, 'institution_name')" />
           <p class="mt-2 text-xs tabular-nums text-muted-foreground">
             {{ formatDate(new Date((item.start_time ?? 0) * 1000)) }}
           </p>
@@ -45,6 +46,7 @@
       <CollectionPrimaryCell v-else-if="column.key === 'title'" :match="item._searchMatch"
         :title-matches="item._searchTitleMatches"
         :title="item.title"
+        :title-lines="2"
         :href="isTrash ? undefined : route('meetings.show', item.id)"
       />
       <template v-else-if="column.key === 'institution'">

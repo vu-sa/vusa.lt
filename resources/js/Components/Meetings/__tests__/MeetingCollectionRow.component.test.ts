@@ -97,4 +97,15 @@ describe('MeetingCollectionRow', () => {
     expect(wrapper.text()).toContain('Be pavadinimo');
     expect(wrapper.text()).toContain('Senate representatives');
   });
+
+  it('clamps the meeting title to two lines and exposes the full title via tooltip', () => {
+    const titleText = 'A very long meeting title that wraps across multiple lines';
+    const wrapper = mountRow({ meeting: meeting({ title: titleText }) });
+    const title = wrapper.find('.line-clamp-2');
+
+    expect(title.exists()).toBe(true);
+    expect(title.classes()).toContain('line-clamp-2');
+    expect(title.classes()).not.toContain('truncate');
+    expect(title.attributes('title')).toBe(titleText);
+  });
 });

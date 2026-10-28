@@ -5,6 +5,7 @@
       :href
       prefetch
       data-collection-open
+      :title="title"
       :class="[
         'block font-bold text-foreground hover:text-brand',
         'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
@@ -17,6 +18,7 @@
       v-else-if="clickable"
       type="button"
       data-collection-open
+      :title="title"
       :class="[
         'block max-w-full text-left font-bold text-foreground hover:text-brand',
         'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
@@ -26,7 +28,7 @@
     >
       <slot><SearchMatch :match="titleMatch" :title /></slot>
     </button>
-    <p v-else :class="['font-bold text-foreground', titleLines === 2 ? 'line-clamp-2' : 'truncate']">
+    <p v-else :title="title" :class="['font-bold text-foreground', titleLines === 2 ? 'line-clamp-2' : 'truncate']">
       <slot><SearchMatch :match="titleMatch" :title /></slot>
     </p>
 
