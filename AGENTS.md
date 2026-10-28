@@ -114,7 +114,7 @@ The one exception is a git worktree, where parallel runs fail — see [Branches 
 
 - **Short, single-commit fixes** are committed straight to `dev` with a concise message — no PR.
 - **Bigger pieces, refactors and important fixes** get their own branch in a git worktree, based on `dev`, with a PR into `dev` — never `git checkout` in the main checkout, which other agent sessions share.
-- **Stack PRs only when work depends on another branch** (the PR's base is the branch below it). Merge with merge commits and keep a stack current by merging `dev` up the chain, not rebasing.
+- **Several pieces at once** go into one GitHub stack: `gh stack link --base dev <bottom> … <top>`, each PR based on the branch below it, with `dev` never part of the stack. Keep the feature branches linear — update them by rebasing and pushing with `--force-with-lease`, not with merge commits — and never force-push `dev`.
 - **Hotfixes** go to `main` only when urgent, followed straight away by merging `main` back into `dev`.
 
 Put the worktree inside the repo so the Sail container can see it (only `.` is mounted):
