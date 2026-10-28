@@ -72,7 +72,7 @@
           v-model="form.student_rep_root_type_id"
           :types="institution_types"
           :disabled="!canEdit"
-          :placeholder="$t('settings.atstovavimas_settings.student_rep_type_default')"
+          :placeholder="$t('settings.atstovavimas_settings.student_rep_type_placeholder')"
           placeholder-selectable
         />
       </FormFieldWrapper>

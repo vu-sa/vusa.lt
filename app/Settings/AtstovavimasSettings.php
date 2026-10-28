@@ -39,7 +39,7 @@ class AtstovavimasSettings extends Settings
 
     /**
      * The type ID that identifies the root student representative organ type.
-     * When null, defaults to the type with slug 'studentu-atstovu-organas'.
+     * When null, no institution types are treated as student representative bodies.
      */
     public ?int $student_rep_root_type_id = null;
 
@@ -110,20 +110,11 @@ class AtstovavimasSettings extends Settings
         return collect();
     }
 
-    /**
-     * Get the student representative root type model.
-     * Defaults to the type with slug 'studentu-atstovu-organas'.
-     */
     public function getStudentRepRootType(): ?InstitutionType
     {
-        if ($this->student_rep_root_type_id) {
-            $type = InstitutionType::find($this->student_rep_root_type_id);
-            if ($type) {
-                return $type;
-            }
-        }
-
-        return InstitutionType::query()->where('slug', 'studentu-atstovu-organas')->first();
+        return $this->student_rep_root_type_id === null
+            ? null
+            : InstitutionType::find($this->student_rep_root_type_id);
     }
 
     /**
@@ -155,7 +146,7 @@ class AtstovavimasSettings extends Settings
             $rootType = $this->getStudentRepRootType();
 
             if (! $rootType) {
-                return collect(['studentu-atstovu-organas']);
+                return collect();
             }
 
             return $rootType->getDescendantsAndSelf()->pluck('slug')->filter()->values();

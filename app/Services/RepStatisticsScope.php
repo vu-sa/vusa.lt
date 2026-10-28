@@ -8,7 +8,6 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Task;
 use App\Models\User;
-use App\Settings\MeetingSettings;
 use App\Settings\RepMetricSettings;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
@@ -18,12 +17,9 @@ class RepStatisticsScope
     /** @return Builder<Institution> */
     public static function institutions(?array $tenantIds = null): Builder
     {
-        $excluded = app(MeetingSettings::class)->getExcludedInstitutionTypeIds();
-
         $query = Institution::query()->active()
             ->when($tenantIds !== null, fn ($query) => $query->whereIn('tenant_id', $tenantIds))
-            ->whereHas('tenant', fn ($query) => $query->whereIn('type', TenantType::representationalValues()))
-            ->when($excluded->isNotEmpty(), fn ($query) => $query->whereDoesntHave('types', fn ($types) => $types->whereIn('institution_types.id', $excluded)));
+            ->whereHas('tenant', fn ($query) => $query->whereIn('type', TenantType::representationalValues()));
 
         return app(InstitutionScopeResolver::class)->constrainToScopes($query, app(RepMetricSettings::class)->countedInstitutionScopes());
     }
@@ -37,11 +33,7 @@ class RepStatisticsScope
             return false;
         }
 
-        $excluded = app(MeetingSettings::class)->getExcludedInstitutionTypeIds();
-        $institution->loadMissing('types');
-
-        return $institution->types->pluck('id')->intersect($excluded)->isEmpty()
-            && in_array(app(InstitutionScopeResolver::class)->forInstitution($institution), app(RepMetricSettings::class)->countedInstitutionScopes(), true);
+        return in_array(app(InstitutionScopeResolver::class)->forInstitution($institution), app(RepMetricSettings::class)->countedInstitutionScopes(), true);
     }
 
     /** @return Builder<User> */

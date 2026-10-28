@@ -117,7 +117,6 @@ class SettingsController extends AdminController
     {
         return $this->settingsPage($settingsSettings, 'Admin/Settings/EditMeetingSettings', [
             'selected_type_ids' => $meetingSettings->getPublicMeetingInstitutionTypeIds()->toArray(),
-            'excluded_type_ids' => $meetingSettings->getExcludedInstitutionTypeIds()->toArray(),
             'available_types' => InstitutionType::query()
                 ->get(['id', 'title', 'slug', 'parent_id'])
                 ->map->toArray(),
@@ -131,8 +130,7 @@ class SettingsController extends AdminController
     {
         $this->authorizeSettingsAccess($settingsSettings);
 
-        $meetingSettings->setPublicMeetingInstitutionTypeIds($request->input('type_ids', []));
-        $meetingSettings->setExcludedInstitutionTypeIds($request->input('excluded_type_ids', []));
+        $meetingSettings->setPublicMeetingInstitutionTypeIds($request->validated('type_ids') ?? []);
         $meetingSettings->save();
 
         // Reindex public meetings and institutions since visibility criteria changed

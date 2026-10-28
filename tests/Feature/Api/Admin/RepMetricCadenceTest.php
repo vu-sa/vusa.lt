@@ -11,7 +11,6 @@ use App\Models\Tenant;
 use App\Models\Vote;
 use App\Services\RepMetricReportService;
 use App\Settings\AtstovavimasSettings;
-use App\Settings\MeetingSettings;
 use App\Settings\RepMetricSettings;
 use App\Tasks\Enums\ActionType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -78,16 +77,8 @@ test('shared meetings and tasks count once and unrelated tenants are excluded', 
     expect($this->reports->report([$third->id])['metrics'][0])->toMatchArray(['now' => null, 'whole' => 0]);
 });
 
-test('excluded and deleted institutions do not contribute to either period', function (): void {
+test('deleted institutions do not contribute to either period', function (): void {
     cadenceMeeting($this->institution, '2026-08-01', '2026-08-01');
-    $type = InstitutionType::factory()->create();
-    $this->institution->types()->attach($type);
-    $settings = app(MeetingSettings::class);
-    $settings->excluded_institution_type_ids = [$type->id];
-    $settings->save();
-    expect($this->reports->report([$this->tenant->id])['metrics'][0]['whole'])->toBe(0);
-    $settings->excluded_institution_type_ids = [];
-    $settings->save();
     $this->institution->delete();
     expect($this->reports->report([$this->tenant->id])['metrics'][0]['whole'])->toBe(0);
 });

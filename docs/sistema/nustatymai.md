@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Nustatymai
 area: settings
 models: [Cadence]
-last_reviewed: 2026-10-21
+last_reviewed: 2026-10-28
 tests:
   - tests/Feature/Admin/Settings/SystemPurposesSettingsTest.php
   - tests/Feature/Admin/Settings/CadenceControllerTest.php
@@ -98,7 +98,6 @@ Adresas: `/mano/settings/meetings`. Čia nustatomas posėdžių atvaizdavimas ir
 
 - **Viešų posėdžių institucijų tipai**: institucijų tipai, kurių posėdžių puslapiai yra viešai
   prieinami ir indeksuojami viešojoje paieškoje.
-- **Neįtraukiami institucijų tipai**: tipai, kurių institucijos neįtraukiamos į atstovavimo suvestinių rodiklius. Posėdžių laiko juostoje jos vis tiek rodomos.
 
 ### Atstovavimo nustatymai {#atstovavimas}
 
@@ -110,8 +109,11 @@ VU SA organai, nacionaliniai ar tarptautiniai. Pagal nutylėjimą pažymėti tik
 turi likti pažymėtas. Posėdžių laiko juostoje visos institucijos rodomos nepriklausomai nuo šio
 pasirinkimo. Pakeitimas taikomas iš karto; jau išsaugotos praėjusių dienų būklės istorijos jis nekeičia.
 
-Adresas: `/mano/settings/atstovavimas`. Čia nurodomas **pagrindinis studentų atstovavimo institucijų tipas**,
-nuo kurio pradedama atstovavimo institucijų hierarchija.
+Adresas: `/mano/settings/atstovavimas`. **Studentų atstovų organų šakninis tipas** ir jo potipiai
+nurodo, kurioms institucijoms viešuose kontaktuose rodomos studentų atstovų kortelės ir jų grupės.
+Palikus „Nepasirinkta (išjungta)“, šios kortelės ir grupės nerodomos; institucijas vis tiek galima
+rasti bendroje kontaktų paieškoje. Atstovavimo rodiklius lemia aukščiau pažymėti organai,
+o ne šis tipas.
 
 ### Dokumentų nustatymai {#dokumentai}
 
