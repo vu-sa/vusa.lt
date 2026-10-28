@@ -1,27 +1,21 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
+import { useForm } from '@inertiajs/vue3';
 
 import ResourceForm from '@/Components/AdminForms/ResourceForm.vue';
 import { commonStubs } from '@/tests/stubs';
 
-vi.mock('@inertiajs/vue3', async () => {
-  const actual = await vi.importActual('@inertiajs/vue3');
-  return {
-    ...actual,
-    usePage: () => ({
-      props: {
-        app: { locale: 'lt' },
-      },
-    }),
-  };
-});
+vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
+
+const real = await vi.importActual<{ useForm: typeof useForm }>('@inertiajs/vue3');
 
 interface ResourceFormVm {
   form: {
     is_reservable: boolean;
     media: Array<{ id?: number | string; status?: string; file?: File }>;
     identifier: string;
+    resource_category_id: number | null;
   };
   existingMediaItems: Array<{ id: number | string; name: string; type: string; status: string; url: string }>;
 }
@@ -109,6 +103,7 @@ describe('ResourceForm.vue', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(useForm).mockImplementation(real.useForm);
   });
 
   afterEach(() => {
@@ -120,6 +115,18 @@ describe('ResourceForm.vue', () => {
     await wrapper.get('input#resource-name').setValue('Naujas pavadinimas');
     expect(wrapper.findComponent({ name: 'FormPage' }).props('title')).toBe('Naujas pavadinimas');
     expect(wrapper.findComponent({ name: 'FormPage' }).props('barTitle')).toBe('Testinis išteklius');
+  });
+
+  it('preserves numeric category ids and clears the category to null', async () => {
+    wrapper = createWrapper({ categories: [{ id: 7, name: 'Technika' }] });
+    const select = wrapper.get('select#resource-category');
+    const vm = wrapper.vm as unknown as ResourceFormVm;
+
+    await select.setValue('7');
+    expect(vm.form.resource_category_id).toBe(7);
+    await select.setValue('');
+    expect(vm.form.resource_category_id).toBeNull();
+    expect(wrapper.get('select#resource-category option').attributes('disabled')).toBeUndefined();
   });
 
   it('renders the form', () => {

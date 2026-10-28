@@ -9,7 +9,6 @@ use App\Models\Tenant;
 use App\Services\InstitutionActivityStatusService;
 use App\Services\InstitutionStatusReplayService;
 use App\Services\InstitutionStatusSnapshotService;
-use App\Settings\MeetingSettings;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -28,7 +27,7 @@ function legacyStatusSnapshots(): LegacyInstitutionStatusSnapshotService
     $calendar = new LegacyAcademicCalendarService;
 
     return new LegacyInstitutionStatusSnapshotService(new InstitutionStatusReplayService(
-        new InstitutionActivityStatusService($calendar), $calendar, app(MeetingSettings::class),
+        new InstitutionActivityStatusService($calendar), $calendar,
     ));
 }
 

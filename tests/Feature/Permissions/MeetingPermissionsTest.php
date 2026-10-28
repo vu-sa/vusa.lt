@@ -65,6 +65,25 @@ test('own editing adds other terms only in the granting institutions', function 
         ->assertInertia(fn (Assert $page) => $page->where('abilities.update', true));
 });
 
+test('own meeting editing manages agenda items of every term only in the granting institutions', function (): void {
+    $this->duty->pivot->update(['start_date' => '2026-09-01']);
+    $other = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
+    $this->member->duties()->attach($other, ['start_date' => '2026-09-01']);
+    $old = AgendaItem::factory()->for(Meeting::factory()->hasAttached($this->institution)->create(['start_time' => now()->subYears(3)]))->create();
+    $otherOld = AgendaItem::factory()->for(Meeting::factory()->hasAttached($other->institution)->create(['start_time' => now()->subYears(3)]))->create();
+
+    expect($this->member->can('update', $old))->toBeFalse()
+        ->and($this->member->can('delete', $old))->toBeFalse();
+
+    $this->duty->givePermissionTo('meetings.update.own');
+    app(ModelAuthorizer::class)->resetCache($this->member);
+
+    expect($this->member->can('update', $old))->toBeTrue()
+        ->and($this->member->can('delete', $old))->toBeTrue()
+        ->and($this->member->can('update', $otherOld))->toBeFalse()
+        ->and($this->member->can('delete', $otherOld))->toBeFalse();
+});
+
 test('a separate agenda creation grant adds items without editing the meeting or reading private content', function (): void {
     $institution = Institution::factory()->for($this->tenant)->create();
     $meeting = Meeting::factory()->hasAttached($institution)->create();

@@ -65,6 +65,7 @@ const props = defineProps<{
   required?: boolean;
   /** One line under the field — never hover-only (.ai/rules/admin-forms.md). */
   hint?: string;
+  /** @deprecated Use `hint` instead. Kept for backwards compatibility. */
   helperText?: string;
   error?: string;
   charCount?: number;

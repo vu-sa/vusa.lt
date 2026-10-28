@@ -74,7 +74,7 @@ Susiję tikslai matomi tik bandomojoje tikslų funkcijoje.
 
 Posėdis gali būti viešas, o atskiras jo klausimas skirtas vidaus darbui. Matomumas pasirenkamas
 jau sukurtame klausime: atvėrus **Redaguoti** arba paspaudus jo matomumo žymą. Įjungiama parinktis
-**Nerodyti punkto turinio viešai** ir, jei reikia, įrašomas **Viešas pavadinimas (neprivaloma)**.
+**Nerodyti punkto turinio viešai** ir, jei reikia, įrašomas **Viešas pavadinimas**.
 Peržiūra parodo, kaip atrodys vieša eilutė. Išskleidus **Kas matys klausimą?**, pateikiamas prieigos
 paaiškinimas. Kuriant posėdį ar jo klausimus rodoma tik trumpa nuoroda į šią galimybę.
 

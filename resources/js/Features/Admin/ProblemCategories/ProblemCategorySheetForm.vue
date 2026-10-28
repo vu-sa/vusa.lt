@@ -1,5 +1,6 @@
 <template>
   <SheetForm
+    required-note
     v-model:open="open"
     :created-at="category?.created_at"
     :updated-at="category?.updated_at"
@@ -11,7 +12,7 @@
     @submit="submit"
   >
     <div class="space-y-2">
-      <Label for="problem-category-name">{{ $t('forms.fields.title') }}</Label>
+      <Label for="problem-category-name">{{ $t('forms.fields.title') }} <span class="text-destructive">*</span></Label>
       <MultiLocaleInput id="problem-category-name" v-model:input="form.name" :placeholder="PROBLEM_CATEGORY_PLACEHOLDERS.name" />
       <p v-if="form.errors['name.lt']" class="text-sm text-status-danger">
         {{ form.errors['name.lt'] }}
@@ -20,7 +21,7 @@
 
     <div class="space-y-2">
       <Label for="problem-category-description">
-        {{ $t('forms.fields.description') }} <span class="text-muted-foreground">({{ $t('neprivaloma') }})</span>
+        {{ $t('forms.fields.description') }}
       </Label>
       <MultiLocaleInput
         id="problem-category-description"

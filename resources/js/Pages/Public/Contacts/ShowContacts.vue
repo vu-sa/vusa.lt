@@ -346,7 +346,7 @@ interface SearchInstitutionItem {
 
 const props = withDefaults(defineProps<Props>(), {
   institutionTypes: () => [],
-  studentRepTypeSlugs: () => ['studentu-atstovu-organas'],
+  studentRepTypeSlugs: () => [],
 });
 
 const isStudentRepInstitution = (inst: SearchInstitutionItem): boolean => {

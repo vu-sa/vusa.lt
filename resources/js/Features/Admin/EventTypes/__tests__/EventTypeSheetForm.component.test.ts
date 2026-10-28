@@ -14,13 +14,12 @@ const SheetFormStub = {
   template: '<section v-if="open"><h1>{{ title }}</h1><slot /><button type="button" data-testid="submit" @click="$emit(\'submit\')">save</button></section>',
 };
 
-const mountForm = (eventType: any = null) => mount(EventTypeSheetForm, {
+const mountForm = (eventType: InstanceType<typeof EventTypeSheetForm>['$props']['eventType'] = null) => mount(EventTypeSheetForm, {
   props: { open: true, eventType },
   global: {
     stubs: {
       SheetForm: SheetFormStub,
       MultiLocaleInput: { template: '<div />' },
-      Switch: { template: '<div />' },
     },
   },
 });
@@ -38,6 +37,18 @@ describe('EventTypeSheetForm.vue', () => {
     await wrapper.find('[data-testid="submit"]').trigger('click');
 
     expect(vi.mocked(useForm).mock.results[0]?.value.post).toHaveBeenCalledWith('/mocked-route/eventTypes.store', expect.any(Object));
+  });
+
+  it('keeps the checkbox value numeric for submission', async () => {
+    const wrapper = mountForm();
+    const form = vi.mocked(useForm).mock.results[0].value;
+
+    expect(wrapper.get('label[for="event-type-is-active"]').exists()).toBe(true);
+    await wrapper.get('#event-type-is-active').trigger('click');
+    expect(form.is_active).toBe(0);
+    await wrapper.get('#event-type-is-active').trigger('click');
+    expect(form.is_active).toBe(1);
+    wrapper.unmount();
   });
 
   it('patches the selected event type instead of creating another one', async () => {

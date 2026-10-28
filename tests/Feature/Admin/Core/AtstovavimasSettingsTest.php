@@ -40,6 +40,28 @@ describe('student representative root type', function (): void {
         expect(app(AtstovavimasSettings::class)->student_rep_root_type_id)->toBe($type->id);
     });
 
+    test('clearing the root matches no types even when the former default slug exists', function (): void {
+        $root = InstitutionType::query()->where('slug', 'studentu-atstovu-organas')->firstOrFail();
+        $settings = app(AtstovavimasSettings::class);
+        $settings->student_rep_root_type_id = $root->id;
+        $settings->save();
+        AtstovavimasSettings::clearStudentRepTypeCache();
+
+        expect($settings->getStudentRepInstitutionTypeIds())->toContain($root->id)
+            ->and($settings->getStudentRepInstitutionTypeSlugs())->toContain($root->slug);
+
+        asUser($this->admin)->post(route('settings.atstovavimas.update'), [
+            'student_rep_root_type_id' => null,
+        ])->assertSessionHasNoErrors()->assertRedirect();
+
+        app()->forgetInstance(AtstovavimasSettings::class);
+        $settings = app(AtstovavimasSettings::class);
+
+        expect($settings->getStudentRepRootType())->toBeNull()
+            ->and($settings->getStudentRepInstitutionTypeIds())->toBeEmpty()
+            ->and($settings->getStudentRepInstitutionTypeSlugs())->toBeEmpty();
+    });
+
     test('an unknown root type is rejected', function (): void {
         asUser($this->admin)->post(route('settings.atstovavimas.update'), [
             'student_rep_root_type_id' => 999999,

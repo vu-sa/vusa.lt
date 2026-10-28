@@ -25,7 +25,6 @@ const mountSettings = (canEdit = true) => mount(EditSystemPurposesSettings, {
       FormSection: { template: '<section><slot /></section>' },
       FormFieldWrapper: { template: '<div><slot /></div>' },
       SpotlightPopover: { template: '<div data-testid="spotlight"><slot /></div>' },
-      NativeSelect: { template: '<select />' },
       TypeTreeSelect: true,
     },
   },

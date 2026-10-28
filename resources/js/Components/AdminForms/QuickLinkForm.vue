@@ -3,6 +3,7 @@
     :title="isCreate ? $t('Nauja greitoji nuoroda') : (form.text || $t('Greitoji nuoroda'))"
     :bar-title
     entity-type="quick_link"
+    :required-note="true"
     :back-href="route('quickLinks.index')"
     :back-label="$t('Greitosios nuorodos')"
     :processing="form.processing"
@@ -63,16 +64,14 @@
 
           <span class="text-xs text-muted-foreground">{{ $t('navigation.form.or') }}</span>
 
-          <Select :model-value="topicSelectValue" @update:model-value="onTopicSelected">
-            <SelectTrigger class="w-auto min-w-40">
-              <SelectValue :placeholder="$t('navigation.form.link_target_topic')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="topic in topicOptions" :key="topic.id" :value="String(topic.id)">
-                {{ topic.name }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          <NativeSelect
+            class="w-auto min-w-40"
+            size="sm"
+            :placeholder="$t('navigation.form.link_target_topic')"
+            :model-value="topicSelectValue"
+            :options="topicSelectOptions"
+            @update:model-value="onTopicSelected"
+          />
 
           <Loader2 v-if="isResolvingUrl" class="size-4 animate-spin text-muted-foreground" />
         </div>
@@ -109,7 +108,7 @@
     </div>
 
     <template #aside>
-      <FormPanel :title="$t('Kalba')" :icon="Languages" title-class="text-brand">
+      <FormPanel :title="$t('Kalba')" :icon="Languages">
         <FormFieldWrapper
           id="lang"
           :label="$t('Kalba')"
@@ -128,7 +127,7 @@
         </FormFieldWrapper>
       </FormPanel>
 
-      <FormPanel :title="$t('Rodymo nustatymai')" :icon="LayoutGrid" title-class="text-brand" flush>
+      <FormPanel :title="$t('Rodymo nustatymai')" :icon="LayoutGrid" flush>
         <div class="p-4">
           <TenantSelectField
             v-model="form.tenant_id"
@@ -184,7 +183,7 @@ import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
 import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { NativeSelect } from '@/Components/ui/native-select';
 import { useApiMutation } from '@/Composables/useApi';
 import type { StatusPresentation } from '@/Constants/statuses';
 import { MultiCollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
@@ -266,6 +265,10 @@ const onTargetConfirm = (hits: NormalizedSearchHit[]) => {
   }
   resolveAndFillUrl(hit.collection, hit.recordId, hit.title);
 };
+
+const topicSelectOptions = computed(() =>
+  props.topicOptions?.map(t => ({ value: String(t.id), label: t.name })) ?? [],
+);
 
 const topicSelectValue = ref<string | undefined>(undefined);
 const onTopicSelected = (val: unknown) => {

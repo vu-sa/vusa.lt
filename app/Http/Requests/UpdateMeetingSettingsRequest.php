@@ -18,8 +18,6 @@ class UpdateMeetingSettingsRequest extends FormRequest
         return [
             'type_ids' => 'nullable|array',
             'type_ids.*' => ['integer', SoftDeleteRules::existsLive('institution_types')],
-            'excluded_type_ids' => 'nullable|array',
-            'excluded_type_ids.*' => ['integer', SoftDeleteRules::existsLive('institution_types')],
         ];
     }
 }

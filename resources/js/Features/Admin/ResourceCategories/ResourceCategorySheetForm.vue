@@ -1,5 +1,6 @@
 <template>
   <SheetForm
+    required-note
     v-model:open="open"
     :created-at="category?.created_at"
     :updated-at="category?.updated_at"
@@ -11,7 +12,7 @@
     @submit="submit"
   >
     <div class="space-y-2">
-      <Label for="category-name">{{ $t('forms.fields.title') }}</Label>
+      <Label for="category-name">{{ $t('forms.fields.title') }} <span class="text-destructive">*</span></Label>
       <MultiLocaleInput id="category-name" v-model:input="form.name" :placeholder="RESOURCE_CATEGORY_PLACEHOLDERS.name" />
       <p v-if="form.errors.name || form.errors['name.lt']" class="text-sm text-status-danger">
         {{ form.errors.name || form.errors['name.lt'] }}
@@ -20,7 +21,7 @@
 
     <div class="space-y-2">
       <Label for="category-description">
-        {{ $t('forms.fields.description') }} <span class="text-muted-foreground">({{ $t('neprivaloma') }})</span>
+        {{ $t('forms.fields.description') }}
       </Label>
       <MultiLocaleInput
         id="category-description"
@@ -34,7 +35,7 @@
     </div>
 
     <div class="space-y-2">
-      <Label>{{ $t('Ikona') }} <span class="text-muted-foreground">({{ $t('neprivaloma') }})</span></Label>
+      <Label>{{ $t('Ikona') }}</Label>
       <Suspense>
         <FluentIconSelect :icon="form.icon" @update:icon="(value) => form.icon = value" />
       </Suspense>

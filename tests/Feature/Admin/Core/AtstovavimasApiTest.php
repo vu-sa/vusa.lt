@@ -644,15 +644,11 @@ describe('internal bodies', function (): void {
             'extra_attributes' => ['governance_scope' => 'vusa'],
         ]);
 
-        $settings = app(MeetingSettings::class);
-        $settings->excluded_institution_type_ids = [$this->internalType->id];
-        $settings->save();
-
         $this->internalInstitution = Institution::factory()->for($this->tenant)->create();
         $this->internalInstitution->types()->attach($this->internalType);
     });
 
-    test('an excluded type no longer hides its meetings from the chart', function (): void {
+    test('internal bodies have their meetings drawn on the chart', function (): void {
         $meeting = Meeting::factory()->create(['title' => 'Valdybos posėdis', 'start_time' => now()->subDays(5)]);
         $meeting->institutions()->attach($this->internalInstitution->id);
 
@@ -676,17 +672,6 @@ describe('internal bodies', function (): void {
 
         expect($rows->get((string) $this->internalInstitution->id)['is_internal'])->toBeTrue()
             ->and($rows->get((string) $this->institution->id)['is_internal'])->toBeFalse();
-    });
-
-    test('the timeline leaves an excluded type out of the attention list as well as the numbers', function (): void {
-        $response = asUser($this->admin)->getJson(route('api.v1.admin.visak.timeline', [
-            'tenant_ids' => [$this->tenant->id],
-        ]));
-
-        $rows = collect($response->json('data.institutions'))->keyBy('id');
-        expect($rows->get((string) $this->internalInstitution->id)['in_summary'])->toBeFalse()
-            ->and($rows->get((string) $this->institution->id)['in_summary'])->toBeTrue()
-            ->and($response->json('data.institution_summary.all'))->toBe(1);
     });
 });
 

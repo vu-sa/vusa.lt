@@ -130,7 +130,7 @@
     </FormFieldWrapper>
 
     <template #aside>
-      <FormPanel :title="$t('reservations.cart.submit_panel')" :icon="Send" title-class="text-brand">
+      <FormPanel :title="$t('reservations.cart.submit_panel')" :icon="Send">
         <div
           class="flex items-start gap-2 border border-border bg-secondary/40 p-3 text-xs leading-relaxed text-muted-foreground"
           data-testid="reservation-draft-intro"
@@ -157,7 +157,7 @@
         </p>
       </FormPanel>
 
-      <FormPanel :title="$t('reservations.cart.more_about')" :icon="Info" title-class="text-brand">
+      <FormPanel :title="$t('reservations.cart.more_about')" :icon="Info">
         <a class="inline-flex items-center gap-1.5 text-sm font-medium underline underline-offset-4" target="_blank" rel="noopener noreferrer" :href="reservationGuideUrl">
           <ExternalLink class="size-4" aria-hidden="true" />
           {{ $t('Rezervacijų atmintinė') }}

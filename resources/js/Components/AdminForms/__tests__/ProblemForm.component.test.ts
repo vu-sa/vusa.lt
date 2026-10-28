@@ -110,7 +110,7 @@ describe('ProblemForm.vue — field requirements', () => {
       'problem-institutions',
     ];
 
-    expect(wrapper.get('[data-testid="problem-required-note"]').text()).toBe('problems.form.instructions');
+    expect(wrapper.get('[data-testid="form-page-required-note"]').text()).toBe('forms.required_note');
     expect(wrapper.text()).not.toContain('problems.form.translation_requirement');
 
     for (const id of optionalFieldIds) {
@@ -137,6 +137,25 @@ describe('ProblemForm.vue — field requirements', () => {
 });
 
 describe('ProblemForm.vue — institution picker', () => {
+  it('preserves numeric tenant ids and clears institutions when the tenant changes', async () => {
+    const wrapper = mountForm({
+      problem: { ...emptyProblem(), tenant_id: 3, institutions: ['inst-1'] },
+      tenants: [{ id: 3, shortname: 'MIF' }, { id: 4, shortname: 'FF' }],
+      institutions: [{ id: 'inst-1', name: 'Faculty council', tenant_id: 3 }],
+    });
+    const form = (wrapper.vm as unknown as {
+      form: { tenant_id: number | null; institutions: string[] };
+    }).form;
+
+    await wrapper.get('select#problem-tenant').setValue('4');
+    expect(form.tenant_id).toBe(4);
+    expect(form.institutions).toEqual([]);
+    expect(wrapper.findComponent(CollectionSelectDialogStub).props('initialHits')).toEqual([]);
+    await wrapper.get('form').trigger('submit');
+    expect(wrapper.emitted('submit:form')?.[0]?.[0]).toMatchObject({ tenant_id: 4, institutions: [] });
+    wrapper.unmount();
+  });
+
   it('uses the searchable collection picker with saved institutions and tenant scope', async () => {
     const form = createMockForm({ ...emptyProblem(), tenant_id: 3, institutions: ['inst-1'] });
     const wrapper = mountForm({
@@ -157,6 +176,22 @@ describe('ProblemForm.vue — institution picker', () => {
 
     expect((wrapper.vm as unknown as { form: { institutions: string[] } }).form.institutions).toEqual(['inst-2']);
     expect(wrapper.find('#problem-institutions').text()).toContain('Student council');
+  });
+});
+
+describe('ProblemForm.vue — status selection', () => {
+  it('submits the status key and keeps its error-summary target focusable', async () => {
+    const wrapper = mountForm({ problem: emptyProblem() });
+    const form = (wrapper.vm as unknown as { form: { status: string } }).form;
+    const status = wrapper.get('#problem-status');
+
+    expect(status.attributes('tabindex')).toBe('-1');
+    await status.findAll('button')[2].trigger('click');
+    expect(form.status).toBe('resolved');
+    expect(status.findAll('button')[2].classes()).toContain('normal-case');
+    await wrapper.get('form').trigger('submit');
+    expect(wrapper.emitted('submit:form')?.[0]?.[0]).toMatchObject({ status: 'resolved' });
+    wrapper.unmount();
   });
 });
 

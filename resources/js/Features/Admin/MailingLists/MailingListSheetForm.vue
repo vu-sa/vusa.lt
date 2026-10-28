@@ -1,5 +1,6 @@
 <template>
   <SheetForm
+    required-note
     v-model:open="open"
     :created-at="mailingList?.created_at"
     :updated-at="mailingList?.updated_at"
@@ -12,9 +13,6 @@
     @submit="submit"
   >
     <div class="space-y-6">
-      <p class="text-xs text-muted-foreground">
-        {{ $t('mailing_lists.fields.required_note') }}
-      </p>
       <FormFieldWrapper
         v-if="!mailingList"
         id="mailing_list_local_part"

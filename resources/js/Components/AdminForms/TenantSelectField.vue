@@ -49,7 +49,7 @@ const model = defineModel<number | null>({ default: null });
 const tenantOptions = computed(() =>
   props.tenants.map(tenant => ({
     value: tenant.id,
-    label: tenant.shortname,
+    label: tenant.shortname || tenant.fullname,
   })),
 );
 </script>

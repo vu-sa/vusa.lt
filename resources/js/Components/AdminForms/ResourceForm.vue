@@ -4,6 +4,7 @@
     :bar-title="isEditing ? getTranslatedValue(resource.name, undefined, $t('Išteklius')) : $t('Naujas išteklius')"
     :lead="isEditing ? undefined : $t('Pridėk ištekliaus pavadinimą, vietą ir kiekį — nuotraukas ir aprašymą galėsi papildyti vėliau.')"
     :entity-type="ModelEnum.RESOURCE"
+    required-note
     :back-href="route('resources.index')"
     :back-label="capitalize($tChoice('entities.resource.model', 2))"
     :processing="form.processing"
@@ -22,7 +23,7 @@
   >
     <FormFieldWrapper
       id="resource-name"
-      :label="`${$t('forms.fields.title')} (${activeLocale.toUpperCase()})`"
+      :label="$t('forms.fields.title')"
       required
       :error="form.errors[`name.${activeLocale}`]"
     >
@@ -36,7 +37,7 @@
 
     <FormFieldWrapper
       id="resource-description"
-      :label="`${$t('forms.fields.description')} (${activeLocale.toUpperCase()})`"
+      :label="$t('forms.fields.description')"
       required
       :error="form.errors[`description.${activeLocale}`]"
     >
@@ -51,7 +52,7 @@
 
     <FormFieldWrapper
       id="resource-media"
-      :label="`${$t('reservations.resource.photos')} (${$t('neprivaloma')})`"
+      :label="$t('reservations.resource.photos')"
     >
       <ImageUpload
         v-model:files="mediaFiles"
@@ -87,7 +88,7 @@
     </FormFieldWrapper>
 
     <template #aside>
-      <FormPanel :title="$t('Priskyrimas ir nustatymai')" :icon="Boxes" title-class="text-brand">
+      <FormPanel :title="$t('Priskyrimas ir nustatymai')" :icon="Boxes">
         <TenantSelectField
           id="resource-tenant"
           v-model="form.tenant_id"
@@ -97,26 +98,17 @@
 
         <FormFieldWrapper
           id="resource-category"
-          :label="`${$t('Kategorija')} (${$t('neprivaloma')})`"
+          :label="$t('Kategorija')"
           :error="form.errors.resource_category_id"
         >
-          <Select v-model="categoryIdString">
-            <SelectTrigger id="resource-category">
-              <SelectValue :placeholder="$t('Kategorija')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__none__">
-                {{ $t('Be kategorijos') }}
-              </SelectItem>
-              <SelectItem v-for="category in categoriesOptions" :key="category.value" :value="String(category.value)">
-                <span class="inline-flex items-center gap-2">
-                  <!-- The icon name is stored as data, so it can only be resolved at runtime. -->
-                  <Icon v-if="category.icon" :icon="`fluent:${category.icon}`" />
-                  {{ category.label }}
-                </span>
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          <NativeSelect
+            id="resource-category"
+            placeholder-selectable
+            :placeholder-value="null"
+            v-model="form.resource_category_id"
+            :options="categorySelectOptions"
+            :placeholder="$t('Be kategorijos')"
+          />
         </FormFieldWrapper>
 
         <div class="flex items-start gap-2.5 pt-1">
@@ -140,10 +132,11 @@
         </div>
       </FormPanel>
 
-      <FormPanel :title="$t('Vieta ir kiekis')" :icon="MapPin" title-class="text-brand">
+      <FormPanel :title="$t('Vieta ir kiekis')" :icon="MapPin">
         <FormFieldWrapper
           id="resource-location"
           :label="$t('forms.fields.location')"
+          :hint="$t('Patalpa, spinta ar kita vieta, kur laikomas išteklius.')"
           required
           :error="form.errors.location"
         >
@@ -162,7 +155,8 @@
 
           <FormFieldWrapper
             id="resource-identifier"
-            :label="`${$t('Identifikacinis kodas')} (${$t('neprivaloma')})`"
+            :label="$t('Identifikacinis kodas')"
+            :hint="$t('Vidinis inventoriaus ar ženklinimo numeris.')"
             :error="form.errors.identifier"
           >
             <Input id="resource-identifier" v-model="form.identifier" placeholder="PRJ-CB-01-K" />
@@ -200,7 +194,6 @@
 </template>
 
 <script setup lang="ts">
-import { Icon } from '@iconify/vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { ArrowRight, Boxes, MapPin, Trash2 } from '@lucide/vue';
@@ -217,8 +210,8 @@ import { Checkbox } from '@/Components/ui/checkbox';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
+import { NativeSelect } from '@/Components/ui/native-select';
 import { NumberField } from '@/Components/ui/number-field';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
 import { ImageUpload } from '@/Components/ui/upload';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
@@ -249,10 +242,9 @@ const deleteConfirmOpen = ref(false);
 
 const resourceTitle = computed(() => form.name?.[activeLocale.value] || form.name?.lt || '');
 
-const categoriesOptions = computed(() => props.categories.map(category => ({
+const categorySelectOptions = computed(() => props.categories.map(category => ({
   value: category.id,
   label: category.name,
-  icon: category.icon,
 })));
 
 const form = props.rememberKey ? useForm(props.rememberKey, props.resource) : useForm(props.resource);
@@ -273,13 +265,6 @@ const missingLocaleCounts = computed(() => ({
   lt: (form.name.lt ? 0 : 1) + (form.description.lt ? 0 : 1),
   en: (form.name.en ? 0 : 1) + (form.description.en ? 0 : 1),
 }));
-
-const categoryIdString = computed({
-  get: () => (form.resource_category_id != null ? String(form.resource_category_id) : '__none__'),
-  set: (val: string) => {
-    form.resource_category_id = val === '__none__' || !val ? null : Number(val);
-  },
-});
 
 // Deferred upload files
 const mediaFiles = ref<File[]>([]);

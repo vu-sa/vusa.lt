@@ -1,5 +1,6 @@
 <template>
   <SheetForm
+    :required-note="Boolean(options)"
     v-model:open="open"
     :title="$t('mailing_lists.sheet.title')"
     :description="$t('mailing_lists.sheet.description')"
@@ -18,9 +19,6 @@
       </Button>
     </div>
     <div v-else class="space-y-6">
-      <p class="text-xs text-muted-foreground">
-        {{ $t('mailing_lists.fields.required_note') }}
-      </p>
       <FormFieldWrapper id="source_type" :label="$t('mailing_lists.sheet.type')" :error="form.errors.type" required>
         <NativeSelect id="source_type" v-model="form.type" :options="typeOptions" data-testid="source-type" />
       </FormFieldWrapper>

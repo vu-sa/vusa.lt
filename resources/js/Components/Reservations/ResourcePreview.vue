@@ -4,7 +4,7 @@
     :eyebrow="$t('Išteklius')"
     :title="name"
     :href="showHref"
-    :subtitle="resource.category_name"
+    :subtitle="getSearchTranslation(resource, 'category_name')"
   >
     <template v-if="!resource.is_reservable" #badges>
       <StatusBadge :status="notReservableStatus" />
@@ -140,6 +140,7 @@
 </template>
 
 <script setup lang="ts">
+import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { AlertTriangle, Expand } from '@lucide/vue';
@@ -187,9 +188,9 @@ const { data, isLoading } = usePreviewApi<ResourcePreviewData>(
   props.showUpcomingReservations || props.showPreviousReservations || props.showManagers,
 );
 
-const name = computed(() => props.resource.name_lt || props.resource.name_en || $t('Be pavadinimo'));
+const name = computed(() => getSearchTranslation(props.resource, 'name') || $t('Be pavadinimo'));
 const showHref = computed(() => route('resources.show', props.resource.id));
-const description = computed(() => props.resource.description_lt || props.resource.description_en);
+const description = computed(() => getSearchTranslation(props.resource, 'description'));
 const isUnavailable = computed(() => !props.resource.is_reservable || (props.availability != null && props.availability.lowestCapacityAtDateTimeRange <= 0));
 const hasDiscrepancies = computed(() => (props.availability?.discrepancies ?? []).length > 0);
 

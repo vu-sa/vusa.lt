@@ -3,6 +3,7 @@
     :title="isCreate ? $t(`types.${typeKind}.create`) : (localizedTitle || $t('Tipas'))"
     :bar-title="isCreate ? $t(`types.${typeKind}.create`) : getTranslatedValue(type.title, undefined, $t('Tipas'))"
     :entity-type
+    required-note
     :back-href="route(`${resource}.index`)"
     :back-label="$t(`types.${typeKind}.title`)"
     :processing="form.processing"
@@ -19,10 +20,10 @@
     @update:locale="activeLocale = $event"
     @submit="$emit('submit:form', form)"
   >
-    <FormSection :title="$t('forms.context.main_info')" :description="$t('forms.helpers.type_main_info')">
+    <FormSection :title="$t('forms.context.main_info')">
       <FormFieldWrapper
         id="title"
-        :label="`${$t('forms.fields.name')} (${activeLocale.toUpperCase()})`"
+        :label="$t('forms.fields.name')"
         required
         :error="form.errors[`title.${activeLocale}`]"
       >
@@ -36,7 +37,7 @@
 
       <FormFieldWrapper
         id="description"
-        :label="`${$t('forms.fields.description')} (${activeLocale.toUpperCase()})`"
+        :label="$t('forms.fields.description')"
         :error="form.errors[`description.${activeLocale}`]"
       >
         <TiptapEditor v-if="editorReady" :key="activeLocale" v-model="form.description[activeLocale]" tools="description" html />
@@ -44,7 +45,7 @@
     </FormSection>
 
     <template #aside>
-      <FormPanel :title="$t('forms.sections.type_parameters')" :icon="SlidersHorizontal" title-class="text-brand">
+      <FormPanel :title="$t('forms.sections.type_parameters')" :icon="SlidersHorizontal">
         <FormFieldWrapper id="parent_id" :label="$t('forms.fields.parent_type')" :error="form.errors.parent_id">
           <TypeTreeSelect
             id="parent_id"
@@ -61,23 +62,20 @@
         v-if="typeKind === 'institutionType'"
         :title="$t('forms.sections.institution_settings')"
         :icon="Building2"
-        title-class="text-brand"
       >
         <FormFieldWrapper
           id="governance_scope"
           :label="$t('forms.fields.governance_scope')"
           :hint="$t('forms.helpers.governance_scope_hint')"
         >
-          <Select v-model="governanceScope">
-            <SelectTrigger id="governance_scope">
-              <SelectValue :placeholder="$t('forms.options.governance_scope_inherit')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="option in governanceScopeOptions" :key="option.value" :value="option.value">
-                {{ option.label }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          <FormSegmentedControl
+            id="governance_scope"
+            tabindex="-1"
+            stack-on-phone
+            :aria-label="$t('forms.fields.governance_scope')"
+            v-model="governanceScope"
+            :options="governanceScopeOptions"
+          />
         </FormFieldWrapper>
 
         <FormFieldWrapper
@@ -118,8 +116,8 @@ import FormPanel from '@/Components/Patterns/FormPanel.vue';
 import FormSection from '@/Components/Patterns/FormSection.vue';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
+import FormSegmentedControl from '@/Components/Patterns/FormSegmentedControl.vue';
 import { NumberField } from '@/Components/ui/number-field';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { TypeTreeSelect } from '@/Components/AdminForms/TypeTree';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { InstitutionScope, ModelEnum } from '@/Types/enums';

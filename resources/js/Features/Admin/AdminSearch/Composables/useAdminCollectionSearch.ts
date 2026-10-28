@@ -6,6 +6,7 @@
  */
 
 import { ref, computed, watch, onMounted, onUnmounted, shallowRef, nextTick, toValue, type MaybeRefOrGetter } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import { useUrlSearchParams, useDebounceFn } from '@vueuse/core';
 
 import type {
@@ -80,6 +81,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     debounceMs = 300,
     perPage = 24,
   } = options;
+  const page = usePage();
   const baseFilterBy = computed(() => toValue(options.baseFilterBy) || undefined);
 
   // Get the facet config for this collection
@@ -246,7 +248,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
 
     // Resolve the relevance sentinel into a concrete Typesense sort expression
     // (with the collection's date field as a recency tiebreak).
-    const effectiveSortBy = resolveSortValue(collection, sortBy.value);
+    const effectiveSortBy = resolveSortValue(collection, sortBy.value, page.props.app?.locale);
 
     try {
       const searchResult = await adminSearch.searchWithFacets(collection, query.value || '*', {

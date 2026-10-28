@@ -3,7 +3,7 @@
     :source
     collection="quickLinks"
     entity-type="quickLink"
-    :eyebrow="`${$t('shell.workspaces.website.title')} · ${$t('Greitosios nuorodos')}`"
+    :eyebrow="`${$t('shell.workspaces.svetaine.title')} · ${$t('Greitosios nuorodos')}`"
     :title="isTrash ? $t('Ištrintos greitosios nuorodos') : $t('Greitosios nuorodos')"
     :lead="isTrash
       ? $t('Peržiūrėk ištrintas greitąsias nuorodas arba atkurk jas.')

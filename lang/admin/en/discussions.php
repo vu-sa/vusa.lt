@@ -20,7 +20,7 @@ return [
         'remove_option' => 'Remove',
         'add_option' => 'Add option',
         'allow_multiple' => 'Allow multiple choices',
-        'close_optional' => 'Close at (optional)',
+        'close_optional' => 'Close at',
         'votes_count' => '{1} :count vote|[2,*] :count votes',
         'closed' => 'Poll closed',
     ],

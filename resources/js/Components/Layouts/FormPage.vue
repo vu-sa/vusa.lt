@@ -176,6 +176,10 @@
       @submit.prevent="mode !== 'view' && emit('submit')"
     >
       <div :class="$slots.aside ? 'flex min-w-0 flex-col gap-8' : 'contents'">
+        <slot name="required-note">
+          <FormRequiredNote :note="requiredNote" data-testid="form-page-required-note" />
+        </slot>
+
         <slot />
 
         <details
@@ -250,6 +254,7 @@ import { Button } from '@/Components/ui/button';
 import { segmentGroupClass, segmentVariants } from '@/Components/ui/control';
 import { SHELL_FORM_BAR_ID, SHELL_MOBILE_ACTIONS_ID, useShellFocus } from '@/Composables/useShellFocus';
 import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
+import FormRequiredNote from '@/Components/Patterns/FormRequiredNote.vue';
 import ModelTimestamps from '@/Components/Patterns/ModelTimestamps.vue';
 import type { ModelEnum } from '@/Types/enums';
 
@@ -284,6 +289,7 @@ const props = withDefaults(defineProps<{
   /** Record facts listed at the end of the `#aside`. */
   createdAt?: string | null;
   updatedAt?: string | null;
+  requiredNote?: boolean | string;
 }>(), {
   barTitle: undefined,
   headTitle: undefined,
@@ -303,6 +309,7 @@ const props = withDefaults(defineProps<{
   activitySubject: undefined,
   createdAt: undefined,
   updatedAt: undefined,
+  requiredNote: false,
 });
 
 const emit = defineEmits<{
@@ -314,6 +321,7 @@ const slots = defineSlots<{
   'default'?: () => unknown;
   'aside'?: () => unknown;
   'advanced'?: () => unknown;
+  'required-note'?: () => unknown;
   /** Below the fields; in a two-column form, at the end of the `#aside`. */
   'danger-zone'?: () => unknown;
   'header-actions'?: () => unknown;

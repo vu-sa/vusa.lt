@@ -21,7 +21,6 @@
   >
     <FormSection
       :title="$t('Turinys')"
-      :description="$t('Pagrindinio puslapio informacija')"
     >
       <RichContentFormElement
         v-model="form.parts"
@@ -31,7 +30,7 @@
     </FormSection>
 
     <template #aside>
-      <FormPanel :title="$t('Padalinys')" :icon="Building2" title-class="text-brand">
+      <FormPanel :title="$t('Padalinys')" :icon="Building2">
         <div class="space-y-3 text-sm">
           <div class="flex items-center justify-between border-b border-border/60 pb-2">
             <span class="text-muted-foreground">{{ $t('Pavadinimas') }}</span>

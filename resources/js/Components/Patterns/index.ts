@@ -40,6 +40,7 @@ export { default as ConfirmDialog } from './ConfirmDialog.vue';
 export { default as ConfirmDangerousDialog } from './ConfirmDangerousDialog.vue';
 export { default as SheetForm } from './SheetForm.vue';
 export { default as FormSection } from './FormSection.vue';
+export { default as FormRequiredNote } from './FormRequiredNote.vue';
 export { default as FormPanel } from './FormPanel.vue';
 export { default as FormToggleRow } from './FormToggleRow.vue';
 export { default as FormSegmentedControl } from './FormSegmentedControl.vue';

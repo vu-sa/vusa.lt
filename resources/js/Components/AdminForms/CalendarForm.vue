@@ -3,6 +3,7 @@
     :title="isCreate ? $t('Naujas renginys') : (calendarTitle || $t('Renginys'))"
     :bar-title
     entity-type="calendar"
+    required-note
     :back-href="route('calendar.index')"
     :back-label="$t('Kalendorius')"
     :processing="form.processing"
@@ -56,7 +57,7 @@
     <!-- Title -->
     <FormFieldWrapper
       id="title"
-      :label="`${$t('forms.fields.title')} (${activeLocale.toUpperCase()})`"
+      :label="$t('forms.fields.title')"
       :required="activeLocale === 'lt'"
       :char-count="form.title?.[activeLocale]?.length || 0"
       :error="form.errors[`title.${activeLocale}`]"
@@ -81,7 +82,7 @@
         :permalink="form.permalink?.[activeLocale]"
         :base-url="calendarBaseUrl"
         :view-url="publicCalendarUrl"
-        :label="`${$t('Nuoroda')} (${activeLocale.toUpperCase()})`"
+        :label="$t('Nuoroda')"
         :disabled="readOnly"
         :warning="permalinkChanged
           ? $t('Pakeitus nuorodą, sena nuoroda ir toliau nukreips į šį puslapį — nebereikalingas senas nuorodas galėsi ištrinti.')
@@ -137,8 +138,8 @@
         </FormFieldWrapper>
       </div>
 
-      <label class="flex items-center gap-2 text-sm text-muted-foreground select-none">
-        <Switch
+      <label for="is_all_day" class="flex items-center gap-2 text-sm text-muted-foreground select-none">
+        <Checkbox
           id="is_all_day"
           v-model="form.is_all_day"
           :disabled="readOnly"
@@ -151,7 +152,7 @@
     <!-- Location & Remote toggle -->
     <FormFieldWrapper
       id="location"
-      :label="`${$t('Renginio vieta')} (${activeLocale.toUpperCase()})`"
+      :label="$t('Renginio vieta')"
       :hint="form.is_remote
         ? $t('Nuotolinis renginys — nurodyta vieta nerodoma')
         : $t('Kuo tikslesnis adresas, tuo tiksliau renginio puslapyje bus parodytas žemėlapis')"
@@ -164,8 +165,8 @@
         :class="['h-11', fieldSurfaceClass]"
         :disabled="readOnly || form.is_remote"
       />
-      <label class="mt-2 flex items-center gap-2 text-sm text-muted-foreground select-none">
-        <Switch id="is_remote" v-model="form.is_remote" :disabled="readOnly" />
+      <label for="is_remote" class="mt-2 flex items-center gap-2 text-sm text-muted-foreground select-none">
+        <Checkbox id="is_remote" v-model="form.is_remote" :disabled="readOnly" />
         <span>{{ $t('Nuotolinis renginys') }}</span>
       </label>
     </FormFieldWrapper>
@@ -173,7 +174,7 @@
     <!-- Description -->
     <FormFieldWrapper
       id="description"
-      :label="`${$t('Aprašymas')} (${activeLocale.toUpperCase()})`"
+      :label="$t('Aprašymas')"
     >
       <template v-if="readOnly">
         <!-- eslint-disable-next-line vue/no-v-html -- calendar rich text is sanitized when written -->
@@ -189,7 +190,7 @@
     </FormFieldWrapper>
 
     <!-- Photos section -->
-    <FormPanel :title="$t('Nuotraukos')" :icon="Image" title-class="text-brand">
+    <FormPanel :title="$t('Nuotraukos')" :icon="Image">
       <!-- Main Image -->
       <FormFieldWrapper
         id="main_image_media"
@@ -243,10 +244,10 @@
     </FormPanel>
 
     <!-- Links and Promotion section -->
-    <FormPanel :title="$t('Nuorodos ir viešinimas')" :icon="Link2" title-class="text-brand">
+    <FormPanel :title="$t('Nuorodos ir viešinimas')" :icon="Link2">
       <FormFieldWrapper
         id="cto_url"
-        :label="`${$t('Renginio nuoroda')} (${activeLocale.toUpperCase()})`"
+        :label="$t('Renginio nuoroda')"
         :hint="$t('Nuoroda į pagrindinį renginio puslapį arba registracijos formą')"
       >
         <Input
@@ -305,7 +306,7 @@
       </ContentPublishPanel>
 
       <!-- Related meeting panel in modern admin style -->
-      <FormPanel v-if="meeting" :title="$t('Susietas posėdis')" :icon="CalendarClock" title-class="text-brand">
+      <FormPanel v-if="meeting" :title="$t('Susietas posėdis')" :icon="CalendarClock">
         <div class="flex flex-col gap-3 text-xs">
           <div class="flex items-start justify-between gap-2">
             <a
@@ -338,7 +339,7 @@
         </div>
       </FormPanel>
 
-      <FormPanel :title="$t('Renginio nustatymai')" :icon="SlidersHorizontal" title-class="text-brand">
+      <FormPanel :title="$t('Renginio nustatymai')" :icon="SlidersHorizontal">
         <FormFieldWrapper
           id="event_type"
           :label="$t('Renginio tipas')"
@@ -370,7 +371,7 @@
 
         <FormFieldWrapper
           id="organizer"
-          :label="`${$t('Organizatorius')} (${activeLocale.toUpperCase()})`"
+          :label="$t('Organizatorius')"
           :hint="`${$t('Organizatorius')}, ${$t('jeigu neįrašytas, bus')} ${defaultOrganizer}`"
         >
           <Input
@@ -398,7 +399,7 @@
         </FormFieldWrapper>
       </FormPanel>
 
-      <FormPanel :title="$t('Temos')" :icon="Tags" title-class="text-brand">
+      <FormPanel :title="$t('Temos')" :icon="Tags">
         <TagMultiSelect
           v-model="form.tags"
           :available-tags="props.availableTags"
@@ -406,7 +407,7 @@
         />
       </FormPanel>
 
-      <FormPanel :title="$t('Rodymo nustatymai')" :icon="LayoutTemplate" title-class="text-brand" flush>
+      <FormPanel :title="$t('Rodymo nustatymai')" :icon="LayoutTemplate" flush>
         <div class="flex flex-col gap-2 p-4" data-slot="form-field">
           <Label class="text-sm font-bold text-foreground">{{ $t('Renginio vaizdas') }}</Label>
           <VisualOptionSelect
@@ -481,7 +482,7 @@ import { DateTimePicker } from '@/Components/ui/date-picker';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { NativeSelect } from '@/Components/ui/native-select';
-import { Switch } from '@/Components/ui/switch';
+import { Checkbox } from '@/Components/ui/checkbox';
 import { ImageUpload } from '@/Components/ui/upload';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import VisualOptionSelect from '@/Components/FormItems/VisualOptionSelect.vue';
@@ -603,10 +604,7 @@ if (isCreate.value) {
   });
 }
 
-// Default "all day" for the common case (a multi-day event, where clock times aren't the
-// point) without making the admin think about the flag. Once they touch the switch directly,
-// their choice wins from then on. An existing event's flag already reflects a deliberate past
-// choice, so editing starts "touched" — nudging the dates a little must not silently flip it.
+// Infer all-day only until the author chooses it; preserve saved choices.
 const isAllDayTouched = ref(!isCreate.value);
 
 watch([() => form.date, () => form.end_date], () => {

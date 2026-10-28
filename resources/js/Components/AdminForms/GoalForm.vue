@@ -4,6 +4,7 @@
     :bar-title
     :lead="isEditing ? undefined : $t('goals.lead')"
     :entity-type="ModelEnum.GOAL"
+    required-note
     :back-href="isEditing && form.id ? route('goals.show', form.id) : route('goals.index')"
     :back-label="isEditing ? $tChoice('entities.goal.model', 1) : $t('shell.sections.tikslai')"
     :processing="form.processing"
@@ -25,13 +26,13 @@
       </Badge>
     </template>
 
-    <p class="max-w-prose border-l border-border pl-3 text-sm leading-relaxed text-muted-foreground">
+    <p class="max-w-prose text-sm leading-relaxed text-muted-foreground">
       {{ $t('goals.form.about_intro') }}
     </p>
 
     <FormFieldWrapper
       id="goal-title"
-      :label="`${capitalize($t('entities.goal.title'))} (${activeLocale.toUpperCase()})`"
+      :label="capitalize($t('entities.goal.title'))"
       :required="!form.title[otherLocale].trim()"
       :error="form.errors[`title.${activeLocale}`]"
     >
@@ -40,7 +41,7 @@
 
     <FormFieldWrapper
       id="goal-expected-result"
-      :label="`${capitalize($t('entities.goal.expected_result'))} (${activeLocale.toUpperCase()})`"
+      :label="capitalize($t('entities.goal.expected_result'))"
       :hint="$t('goals.form.expected_result_hint')"
       :error="form.errors[`expected_result.${activeLocale}`]"
     >
@@ -49,7 +50,7 @@
 
     <FormFieldWrapper
       id="goal-description"
-      :label="`${capitalize($t('entities.goal.description'))} (${activeLocale.toUpperCase()})`"
+      :label="capitalize($t('entities.goal.description'))"
       :error="form.errors[`description.${activeLocale}`]"
     >
       <TiptapEditor :key="activeLocale" v-model="form.description[activeLocale]" tools="description" html />
@@ -58,7 +59,7 @@
     <FormFieldWrapper
       v-if="isEditing"
       id="goal-evaluation"
-      :label="`${capitalize($t('entities.goal.evaluation'))} (${activeLocale.toUpperCase()})`"
+      :label="capitalize($t('entities.goal.evaluation'))"
       :hint="$t('goals.form.evaluation_intro')"
       :error="form.errors[`evaluation.${activeLocale}`]"
     >
@@ -66,34 +67,25 @@
     </FormFieldWrapper>
 
     <template #aside>
-      <FormPanel :title="$t('goals.form.where')" :icon="CircleDot" title-class="text-brand">
-        <FormFieldWrapper id="goal-tenant" :label="capitalize($tChoice('entities.tenant.model', 1))" required :error="form.errors.tenant_id">
-          <Select v-model="tenantIdString">
-            <SelectTrigger id="goal-tenant">
-              <SelectValue :placeholder="capitalize($tChoice('entities.tenant.model', 1))" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="tenant in tenants" :key="tenant.id" :value="String(tenant.id)">
-                {{ tenant.shortname }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </FormFieldWrapper>
+      <FormPanel :title="$t('goals.form.where')" :icon="CircleDot">
+        <TenantSelectField
+          id="goal-tenant"
+          :model-value="form.tenant_id"
+          :tenants
+          required
+          :error="form.errors.tenant_id"
+          @update:model-value="onTenantChanged"
+        />
 
         <FormFieldWrapper id="goal-cadence" :label="capitalize($t('entities.goal.cadence'))" :error="form.errors.cadence_id">
-          <Select v-model="cadenceIdString">
-            <SelectTrigger id="goal-cadence">
-              <SelectValue :placeholder="$t('goals.form.no_cadence')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem :value="NONE">
-                {{ $t('goals.form.no_cadence') }}
-              </SelectItem>
-              <SelectItem v-for="cadence in cadences" :key="cadence.id" :value="cadence.id">
-                {{ cadence.label }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          <NativeSelect
+            id="goal-cadence"
+            placeholder-selectable
+            :placeholder-value="null"
+            v-model="form.cadence_id"
+            :options="cadenceOptions"
+            :placeholder="$t('goals.form.no_cadence')"
+          />
         </FormFieldWrapper>
 
         <FormFieldWrapper id="goal-status" :label="capitalize($t('entities.goal.status'))" required :error="form.errors.status">
@@ -161,6 +153,7 @@ import { CircleDot, Trash2 } from '@lucide/vue';
 import { capitalize, computed, ref } from 'vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
+import TenantSelectField from '@/Components/AdminForms/TenantSelectField.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
 import FormPanel from '@/Components/Patterns/FormPanel.vue';
@@ -173,7 +166,7 @@ import { Checkbox } from '@/Components/ui/checkbox';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { NativeSelect } from '@/Components/ui/native-select';
 import SingleSelect from '@/Components/ui/single-select/SingleSelect.vue';
 import { Textarea } from '@/Components/ui/textarea';
 import { goalStatuses, statusRoleClasses } from '@/Constants/statuses';
@@ -196,9 +189,6 @@ const emit = defineEmits<{
   (event: 'submit:form', form: unknown): void;
   (event: 'delete'): void;
 }>();
-
-// shadcn Select rejects an empty-string value, so "no term" needs a sentinel.
-const NONE = '__none__';
 
 const activeLocale = ref<'lt' | 'en'>('lt');
 const otherLocale = computed(() => (activeLocale.value === 'lt' ? 'en' : 'lt'));
@@ -242,17 +232,13 @@ const missingLocaleCounts = computed(() => ({
   en: form.title.en.trim() === '' ? 1 : 0,
 }));
 
-const tenantIdString = computed({
-  get: () => (form.tenant_id != null ? String(form.tenant_id) : ''),
-  set: (value: string) => {
-    const tenantId = value ? Number(value) : null;
-    // A duty belongs to one padalinys; switching padalinys drops it.
-    if (tenantId !== form.tenant_id) {
-      form.responsible_duty_id = null;
-    }
-    form.tenant_id = tenantId;
-  },
-});
+const onTenantChanged = (tenantId: number | null) => {
+  // A duty belongs to one padalinys; switching padalinys drops it.
+  if (tenantId !== form.tenant_id) {
+    form.responsible_duty_id = null;
+  }
+  form.tenant_id = tenantId;
+};
 
 // The chosen status reads in the same colours as its tag in the list and on the record.
 const statusOptions = computed<FormSegmentOption<string>[]>(() => props.statuses.map((option) => {
@@ -266,12 +252,7 @@ const statusOptions = computed<FormSegmentOption<string>[]>(() => props.statuses
   };
 }));
 
-const cadenceIdString = computed({
-  get: () => form.cadence_id ?? NONE,
-  set: (value: string) => {
-    form.cadence_id = value === NONE ? null : value;
-  },
-});
+const cadenceOptions = computed(() => props.cadences.map(c => ({ value: c.id, label: c.label })));
 
 const tenantDuties = computed(() => props.duties
   .filter(duty => duty.tenant_id === form.tenant_id)

@@ -3,6 +3,7 @@
     :title="isCreate ? $t('responsibilities.form.create') : (form.title[activeLocale] || form.title.lt || $t('responsibilities.entity.singular'))"
     :bar-title="isCreate ? $t('responsibilities.form.create') : (responsibility.title?.lt ?? '')"
     :entity-type="ModelEnum.ROLE"
+    required-note
     :back-href="isCreate ? route('responsibilities.index') : route('responsibilities.show', responsibility.id!)"
     :back-label="$t('shell.sections.roles')"
     :processing="form.processing"
@@ -16,14 +17,10 @@
     @update:locale="activeLocale = $event"
     @submit="emit('submit:form', form)"
   >
-    <p class="text-xs text-muted-foreground">
-      {{ $t('forms.required_note') }}
-    </p>
-
-    <FormSection :title="$t('responsibilities.form.what')" :description="$t('responsibilities.form.what_description')">
+    <FormSection :title="$t('Pagrindinė informacija')">
       <FormFieldWrapper
         id="title"
-        :label="`${$t('forms.fields.title')} (${activeLocale.toUpperCase()})`"
+        :label="$t('forms.fields.title')"
         :hint="$t('responsibilities.form.title_hint')"
         :required="activeLocale === 'lt'"
         :error="form.errors[`title.${activeLocale}`]"
@@ -33,7 +30,7 @@
 
       <FormFieldWrapper
         id="description"
-        :label="`${$t('forms.fields.description')} (${activeLocale.toUpperCase()})`"
+        :label="$t('forms.fields.description')"
         :hint="$t('responsibilities.form.description_hint')"
         :error="form.errors[`description.${activeLocale}`]"
       >

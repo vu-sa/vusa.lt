@@ -7,6 +7,7 @@ use App\Models\Duty;
 use App\Models\Form;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
+use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\News;
 use App\Models\Page;
@@ -544,6 +545,22 @@ describe('institutions needing attention', function (): void {
         $this->travelTo('2025-09-01');
 
         [$user, $institution] = institutionForUserWithMeeting('2025-06-20 10:00:00');
+
+        asUserWithInertia($user)
+            ->get(route('dashboard'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page
+                    ->where('institutionsNeedingAttention', fn ($institutions) => collect($institutions)->firstWhere('id', $institution->id) === null)
+                )
+            );
+    });
+
+    test('does not flag a VU SA body outside the counted governance scopes', function (): void {
+        $this->travelTo('2025-11-15');
+
+        [$user, $institution] = institutionForUserWithMeeting('2025-10-01 10:00:00');
+        $institution->types()->attach(InstitutionType::factory()->create(['extra_attributes' => ['governance_scope' => 'vusa']]));
 
         asUserWithInertia($user)
             ->get(route('dashboard'))

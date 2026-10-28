@@ -153,7 +153,7 @@ class ContactController extends PublicController
 
         $type = app(AtstovavimasSettings::class)->getStudentRepRootType();
         /** @var Collection<int, InstitutionType> $descendants */
-        $descendants = $type ? $type->getDescendantsAndSelf() : collect();
+        $descendants = $type ? $type->getDescendantsAndSelf() : new Collection;
 
         $descendants->load(['institutions' => function ($query): void {
             $query

@@ -13,20 +13,23 @@
       <p v-for="(error, field) in reservationResourceForm.errors" :key="field" role="alert" class="text-sm text-destructive">
         {{ error }}
       </p>
-      <!-- Date Range Picker -->
-      <div class="space-y-2">
-        <Label for="reservation-period">{{ capitalize($t('entities.reservation.period')) }} <span class="text-destructive">*</span></Label>
+      <FormFieldWrapper
+        id="reservation-period"
+        :label="capitalize($t('entities.reservation.period'))"
+        required
+      >
         <DateRangePicker
           id="reservation-period"
           v-model="dateRange"
           :number-of-months="2"
           @change="onDateChange"
         />
-      </div>
-
-      <!-- Resource Select -->
-      <div class="space-y-2">
-        <Label for="resource-select">{{ $t('forms.fields.title') }}</Label>
+      </FormFieldWrapper>
+      <FormFieldWrapper
+        id="resource-select"
+        :label="capitalize($tChoice('entities.resource.model', 1))"
+        required
+      >
         <ResourceSelectDialog
           v-model:open="resourceDialogOpen"
           :multiple="false"
@@ -35,7 +38,7 @@
           @confirm="onResourceConfirm"
         >
           <template #trigger>
-            <Button type="button" variant="outline" class="w-full justify-between font-normal">
+            <Button id="resource-select" type="button" variant="outline" class="w-full justify-between font-normal">
               <span class="inline-flex items-center gap-2 truncate" :class="{ 'text-muted-foreground': !selectedResource }">
                 <component :is="ResourceIcon" class="size-4" />
                 {{ selectedResource?.name ?? `${$t('Pasirink')}...` }}
@@ -49,11 +52,14 @@
             </Button>
           </template>
         </ResourceSelectDialog>
-      </div>
-
-      <!-- Quantity Input -->
-      <div class="space-y-2">
-        <Label for="quantity-input">{{ $t('forms.fields.quantity') }}</Label>
+      </FormFieldWrapper>
+      <FormFieldWrapper
+        id="quantity-input"
+        :label="$t('forms.fields.quantity')"
+        required
+        :hint="reservationResourceForm.resource_id && capacityMax > 0 ? `${$t('Maksimalus kiekis')}: ${capacityMax}` : undefined"
+        :error="quantityError"
+      >
         <NumberField
           id="quantity-input"
           v-model="reservationResourceForm.quantity"
@@ -62,16 +68,8 @@
           :disabled="reservationResourceForm.resource_id === null"
           class="w-full max-w-xs"
         />
-        <p v-if="reservationResourceForm.resource_id && capacityMax > 0" class="text-xs text-muted-foreground">
-          {{ $t('Maksimalus kiekis') }}: {{ capacityMax }}
-        </p>
-        <p v-if="quantityError" class="text-xs text-destructive">
-          {{ quantityError }}
-        </p>
-      </div>
-
-      <!-- Submit Button -->
-      <Button :disabled="!canSubmit || reservationResourceForm.processing" @click="handleSubmit">
+      </FormFieldWrapper>
+      <Button variant="brand" :disabled="!canSubmit || reservationResourceForm.processing" @click="handleSubmit">
         <Spinner v-if="reservationResourceForm.processing" class="mr-2 size-4" />
         {{ $t("forms.submit") }}
       </Button>
@@ -87,8 +85,9 @@ import { computed, ref, watch, onMounted } from 'vue';
 import { CalendarDateTime, getLocalTimeZone, today, type DateValue } from '@internationalized/date';
 import type { DateRange } from 'reka-ui';
 
+import FormFieldWrapper from './FormFieldWrapper.vue';
+
 import { Button } from '@/Components/ui/button';
-import { Label } from '@/Components/ui/label';
 import { Badge } from '@/Components/ui/badge';
 import { Spinner } from '@/Components/ui/spinner';
 import { NumberField } from '@/Components/ui/number-field';

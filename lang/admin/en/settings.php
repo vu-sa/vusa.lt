@@ -70,10 +70,6 @@ return [
         'types_label' => 'Institution Types',
         'types_placeholder' => 'Select institution types',
         'no_types_found' => 'No institution types found.',
-        'excluded_types_title' => 'Institution Types Without Meetings',
-        'excluded_types_description' => 'Select institution types whose institutions the representation metrics leave out. Institutions of these types (e.g., unit, PKP) have no formal meetings, but the meetings chart still shows them.',
-        'excluded_types_label' => 'Excluded Institution Types',
-        'excluded_types_placeholder' => 'Select institution types to exclude',
     ],
 
     // Atstovavimas settings page
@@ -85,9 +81,8 @@ return [
         'student_rep_type_title' => 'Student representative body root type',
         'student_rep_type_description' => 'Select the root institution type that (along with all its descendant types) is recognized as a student representative body. Institutions of this type will be displayed using the student rep card instead of the standard institution card in public contacts.',
         'student_rep_type_label' => 'Root type',
-        'student_rep_type_placeholder' => 'Default: Student representative body',
-        'student_rep_type_default' => 'Default (studentu-atstovu-organas)',
-        'student_rep_type_note' => 'By default, the type with slug "studentu-atstovu-organas" is used.',
+        'student_rep_type_placeholder' => 'Not selected (disabled)',
+        'student_rep_type_note' => 'Without a selected type, public contacts show no student representative cards or groups. Representation metrics are independent of this selection.',
         'counted_scopes_title' => 'Which bodies the metrics count',
         'counted_scopes_description' => 'Unit statistics (representatives, meeting registration, institution status) only count institutions of the ticked bodies. The meetings chart still shows every institution.',
         'counted_scopes_label' => 'Counted bodies',
