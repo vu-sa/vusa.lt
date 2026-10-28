@@ -13,7 +13,7 @@ paths:
 - Server-only rules go through Precognition (`useForm().withPrecognition()`, validate on change/blur); the Form Request is the one source of validation.
 - Save bar holds status + Išsaugoti; delete lives in ⋯ or a final "Pavojinga zona"; no autosave switch. Form-level LT | EN switch (do not append "(LT)" or "(EN)" suffixes to field labels when the form has a form-level switch). Fields shown publicly carry "Matoma vusa.lt".
 - `FormPanel` heading defaults to `text-brand` (no manual `title-class="text-brand"`). `FormPanel` is primarily for the `#aside` column, but is also allowed in the main canvas for framed, titled panel groups (e.g. notification categories).
-- Relations live on the record page, never in a form (e.g. no associated news lists in `TagForm`). Exception: `UserForm` on creation requires selecting at least one initial duty because user profiles cannot exist without an association.
+- Exception to relations-on-the-record: `UserForm` on create asks for at least one initial duty, because a user cannot exist without one.
 - Order is a mode: "Keisti tvarką" with ↑/↓ buttons (plus drag), then Išsaugoti tvarką / Atšaukti. Never always-on drag.
 
 ## Use field hints and one required-field note
