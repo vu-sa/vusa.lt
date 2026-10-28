@@ -1,6 +1,6 @@
 <template>
   <CollectionPage
-    :row-actions="item => getTaskRowActions(item)"
+    :row-actions="taskRowActions"
     @row-action="(item, key) => runAction(item, key as TaskActionKey)"
     :source
     :collection="`tasks-${scope}`"
@@ -74,10 +74,33 @@
 
     </template>
 
-    <template #preview="{ item, actions: recordActions }">
+    <template #preview="{ item }">
       <TaskPreview :key="item.id" :task="item">
         <template #actions>
-          <CollectionRowActions :actions="recordActions" full-labels class="flex-wrap" @select="key => runAction(item, key as TaskActionKey)" />
+          <Button
+            v-for="action in taskPreviewActions(item)"
+            :key="action.key"
+            as-child
+            :variant="action.primary ? 'brand' : 'outline'"
+            voice="sentence"
+            size="sm"
+            :disabled="action.disabled || action.loading"
+            :class="[action.destructive && 'text-destructive', (action.disabled || action.loading) && 'pointer-events-none opacity-50']"
+          >
+            <component
+              :is="action.href ? Link : 'button'"
+              :href="action.href"
+              :type="action.href ? undefined : 'button'"
+              :tabindex="action.href && (action.disabled || action.loading) ? -1 : undefined"
+              :aria-busy="action.loading || undefined"
+              :aria-disabled="action.disabled || action.loading || undefined"
+              :data-action="action.key"
+              @click="event => selectPreviewAction(item, action, event)"
+            >
+              <component :is="action.icon" v-if="action.icon" :class="['size-4', action.loading && 'animate-spin']" aria-hidden="true" />
+              {{ action.label }}
+            </component>
+          </Button>
         </template>
       </TaskPreview>
     </template>
@@ -119,7 +142,6 @@ import { computed, defineAsyncComponent, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
-import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
@@ -137,7 +159,7 @@ import {
   isOrphanedTask,
   type TaskDisplayData,
 } from '@/Composables/useTaskPresentation';
-import { getTaskRowActions, type TaskActionKey } from '@/Features/Admin/TaskManager/taskActions';
+import { getTaskActions, getTaskRowActions, type TaskAction, type TaskActionKey } from '@/Features/Admin/TaskManager/taskActions';
 import TaskCompletionControl from '@/Features/Admin/TaskManager/TaskCompletionControl.vue';
 import TaskPreview from '@/Features/Admin/TaskManager/TaskPreview.vue';
 import TaskRow from '@/Features/Admin/TaskManager/TaskRow.vue';
@@ -302,6 +324,16 @@ const subjectLabel = (task: TaskDisplayData): string => (isOrphanedTask(task)
   ? $t('tasks.orphaned')
   : task.taskable?.name ?? task.taskable_type);
 
+function selectPreviewAction(task: TaskDisplayData, action: TaskAction, event: MouseEvent): void {
+  if (action.disabled || action.loading) {
+    event.preventDefault();
+    return;
+  }
+  if (!action.href) {
+    runAction(task, action.key);
+  }
+}
+
 function runAction(task: TaskDisplayData, key: TaskActionKey): void {
   switch (key) {
     case 'open': {
@@ -324,6 +356,15 @@ function runAction(task: TaskDisplayData, key: TaskActionKey): void {
 }
 
 const loadingTaskId = ref<string | null>(null);
+const pendingActionKey = ref<TaskActionKey | null>(null);
+const isPending = (id: string) => loadingTaskId.value === id;
+const withPending = (task: TaskDisplayData, actions: TaskAction[]): TaskAction[] => actions.map(action => ({
+  ...action,
+  disabled: action.disabled || isPending(task.id),
+  loading: action.loading || (isPending(task.id) && pendingActionKey.value === action.key),
+}));
+const taskRowActions = (task: TaskDisplayData) => withPending(task, getTaskRowActions(task));
+const taskPreviewActions = (task: TaskDisplayData) => withPending(task, getTaskActions(task));
 
 /**
  * Optimistic: the row flips at once and stays in place, so unticking it again is the undo.
@@ -337,6 +378,7 @@ function toggleCompletion(task: TaskDisplayData): void {
   const completed = !task.completed_at;
   const undo = source.patchItems([String(task.id)], { completed_at: completed ? new Date().toISOString() : null });
   loadingTaskId.value = task.id;
+  pendingActionKey.value = 'complete';
 
   router.post(route('tasks.updateCompletionStatus', task.id), { completed }, {
     only: ['taskCounts'],
@@ -348,6 +390,7 @@ function toggleCompletion(task: TaskDisplayData): void {
     },
     onFinish: () => {
       loadingTaskId.value = null;
+      pendingActionKey.value = null;
     },
   });
 }
@@ -357,10 +400,12 @@ const taskPendingDeletion = ref<TaskDisplayData | null>(null);
 function deleteTask(): void {
   const task = taskPendingDeletion.value;
   taskPendingDeletion.value = null;
-  if (!task) {
+  if (!task || loadingTaskId.value) {
     return;
   }
 
+  loadingTaskId.value = task.id;
+  pendingActionKey.value = 'delete';
   const undo = source.hideItems([String(task.id)]);
 
   router.delete(route('tasks.destroy', task.id), {
@@ -368,6 +413,10 @@ function deleteTask(): void {
     preserveScroll: true,
     preserveState: true,
     onError: () => undo(),
+    onFinish: () => {
+      loadingTaskId.value = null;
+      pendingActionKey.value = null;
+    },
   });
 }
 </script>

@@ -1,9 +1,12 @@
 import { mount } from '@vue/test-utils';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import MeetingCollectionRow from '../MeetingCollectionRow.vue';
-
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import { commonStubs } from '@/tests/stubs';
 import type { MeetingSearchResult } from '@/Shared/Search/types';
+
+vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 const meeting = (overrides: Partial<MeetingSearchResult> = {}): MeetingSearchResult => ({
   id: '01j0000000000000000000000a',
@@ -21,6 +24,14 @@ const meeting = (overrides: Partial<MeetingSearchResult> = {}): MeetingSearchRes
 const mountRow = (props: { meeting: MeetingSearchResult; pinned?: boolean }) => mount(MeetingCollectionRow, { props });
 
 describe('MeetingCollectionRow', () => {
+  it('renders the supplied actions through the shared row component and forwards commands', () => {
+    const actions = [{ key: 'open', role: 'open' as const, label: 'Atidaryti', href: '/mano/meetings/1' }, { key: 'delete', label: 'Ištrinti', destructive: true }];
+    const wrapper = mount(MeetingCollectionRow, { props: { meeting: meeting(), actions }, global: { stubs: commonStubs } });
+    expect(wrapper.findComponent(CollectionRowActions).props('actions')).toEqual(actions);
+    wrapper.findComponent(CollectionRowActions).vm.$emit('select', 'delete');
+    expect(wrapper.emitted('select')).toEqual([['delete']]);
+  });
+
   it('links the whole title block to the record and marks it as the row\'s main link', () => {
     const wrapper = mountRow({ meeting: meeting() });
     const main = wrapper.find('a[data-collection-open]');

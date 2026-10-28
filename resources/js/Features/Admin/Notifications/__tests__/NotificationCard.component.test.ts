@@ -126,6 +126,8 @@ describe('NotificationCard', () => {
     expect(wrapper.findComponent(Link).exists()).toBe(false);
     expect(wrapper.get('h4 a').attributes('href')).toBe(url);
     expect(wrapper.get('[data-action="primary"]').attributes('href')).toBe(`${url}&answer=met`);
+    expect(wrapper.get('[data-action="primary"]').attributes('target')).toBe(new URL(url, window.location.href).origin === window.location.origin ? undefined : '_blank');
+    expect(wrapper.get('[data-testid="dropdown-menu-content"] [data-action="secondary"] a').attributes('target')).toBe(new URL(url, window.location.href).origin === window.location.origin ? undefined : '_blank');
     expect(wrapper.get('a[title="Atidaryti"]').attributes('href')).toBe(url);
     expect(wrapper.findAll('a').map(link => link.attributes('href'))).toContain(`${url}&answer=not_met`);
 

@@ -29,6 +29,21 @@ const mountResults = (view: 'cards' | 'rows') => mount(CollectionResults, {
 });
 
 describe('CollectionResults', () => {
+  it('omits the action column when every row has no actions and restores it reactively', async () => {
+    const wrapper = mountResults('rows');
+    await wrapper.setProps({ view: 'table', columns: [{ key: 'name', label: 'Vardas' }], rowActions: () => [] } as never);
+    expect(wrapper.findAll('th').map(header => header.text())).not.toContain('Veiksmai');
+    await wrapper.setProps({ rowActions: () => [{ key: 'open', role: 'open', label: 'Atidaryti', href: '/mano/items/1' }] } as never);
+    expect(wrapper.findAll('th').at(-1)?.text()).toBe('Veiksmai');
+  });
+
+  it('forwards a table link navigation with its row and key', async () => {
+    const wrapper = mountResults('rows');
+    await wrapper.setProps({ view: 'table', columns: [{ key: 'name', label: 'Vardas' }], rowActions: () => [{ key: 'open', role: 'open', label: 'Atidaryti', href: '/mano/items/1' }] } as never);
+    await wrapper.get('[data-action="open"]').trigger('click');
+    expect(wrapper.emitted('rowNavigate')?.[0]).toEqual([items[0], 'open']);
+  });
+
   it('renders the built-in sticky actions last and leaves pinned data columns in flow', () => {
     const wrapper = mount(CollectionResults, {
       props: {

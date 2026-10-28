@@ -1,4 +1,5 @@
 import { mount } from '@vue/test-utils';
+import { Link } from '@inertiajs/vue3';
 import { ArrowUpRight, Pencil, RefreshCw, Trash2 } from '@lucide/vue';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -53,6 +54,27 @@ describe('CollectionRowActions', () => {
     expect(wrapper.get('button').attributes('disabled')).toBeDefined();
     expect(wrapper.get('button').attributes('aria-busy')).toBe('true');
     expect(wrapper.get('svg').classes()).toContain('animate-spin');
+  });
+
+  it('uses plain same-tab links when requested', () => {
+    const wrapper = render([{ key: 'answer', label: 'Atsakyti', role: 'open', href: '/atsakymas/1', plain: true }]);
+    expect(wrapper.findComponent(Link).exists()).toBe(false);
+    expect(wrapper.get('a').attributes('target')).toBeUndefined();
+  });
+
+  it.each(['disabled', 'loading'] as const)('gives a %s link disabled semantics and styling', async (flag) => {
+    const wrapper = render([{ ...actions[0], [flag]: true }]);
+    const link = wrapper.get('a');
+    expect(link.attributes('aria-disabled')).toBe('true');
+    expect(link.classes()).toEqual(expect.arrayContaining(['pointer-events-none', 'opacity-50']));
+    await link.trigger('click');
+    expect(wrapper.emitted('navigate')).toBeUndefined();
+  });
+
+  it('keeps an embedded edit command without a role in the menu', () => {
+    const wrapper = render([{ key: 'edit', label: 'Redaguoti' }]);
+    expect(wrapper.find('button').exists()).toBe(false);
+    expect(wrapper.findComponent(RecordActionMenu).props('actions')[0].key).toBe('edit');
   });
 
   it('labels a restore declared primary and keeps other restore commands in the menu', () => {

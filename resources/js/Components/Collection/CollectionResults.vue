@@ -142,7 +142,7 @@
                     @click.capture="rememberShift"
                     @update:model-value="value => toggleRow(row.id, value === true, { range: shiftHeld })"
                   />
-                  <CollectionRowActions v-else-if="cell.column.id === ACTIONS_COLUMN_ID" :actions="rowActions?.(row.original) ?? []" :spotlight="row.id === table.getRowModel().rows[0]?.id" @select="key => emit('rowAction', row.original, key)" />
+                  <CollectionRowActions v-else-if="cell.column.id === ACTIONS_COLUMN_ID" :actions="rowActions?.(row.original) ?? []" :spotlight="row.id === table.getRowModel().rows[0]?.id" @select="key => emit('rowAction', row.original, key)" @navigate="key => emit('rowNavigate', row.original, key)" />
                   <slot
                     v-else-if="cell.column.id !== SELECT_COLUMN_ID"
                     name="cell"
@@ -285,6 +285,7 @@ const emit = defineEmits<{
   select: [key: string];
   sort: [value: string];
   rowAction: [item: T, key: string];
+  rowNavigate: [item: T, key: string];
 }>();
 
 defineSlots<{
@@ -308,7 +309,7 @@ const { table, hideableColumns, toggleRow } = useCollectionTable<T>({
   items: allItems,
   itemKey: props.itemKey,
   columns: toRef(props, 'columns'),
-  hasRowActions: computed(() => Boolean(props.rowActions)),
+  hasRowActions: computed(() => allItems.value.some(item => (props.rowActions?.(item).length ?? 0) > 0)),
   actionsLabel: $t('Veiksmai'),
   selectable: toRef(props, 'selectable'),
   canSelect: item => props.canSelect?.(item) ?? true,

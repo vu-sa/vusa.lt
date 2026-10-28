@@ -10,10 +10,10 @@ const primaryLabels: Record<string, string> = {
   lent: 'reservations.actions.mark_returned',
 };
 
-export function reservationRowActions(reservation: DashboardReservation, disabled = false): AdminRecordAction[] {
+export function reservationRowActions(reservation: DashboardReservation, disabled = false, { includeOpen = true }: { includeOpen?: boolean } = {}): AdminRecordAction[] {
   const primary = getPrimaryAction(reservation);
   return [
-    { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open', href: route('reservations.show', reservation.id) },
+    ...(includeOpen ? [{ key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, href: route('reservations.show', reservation.id), disabled }] : []),
     ...(primary ? [{ key: 'approved', label: $t(primaryLabels[primary.state] ?? 'reservations.actions.approve'), icon: Check, primary: true, disabled }] : []),
     ...(getBacktrackAction(reservation) ? [{ key: 'backtracked', label: $t('reservations.actions.backtrack'), icon: Undo2, disabled }] : []),
     ...(primary?.state === 'created' ? [{ key: 'rejected', label: $t('reservations.actions.reject'), icon: X, destructive: true, disabled }] : []),

@@ -2,7 +2,7 @@
   <div v-if="actions.length" class="flex shrink-0 items-center justify-end gap-2" data-slot="collection-row-actions">
     <template v-for="action in visibleActions" :key="action.key">
       <component
-        :is="action.href && !action.external ? Link : action.href ? 'a' : 'button'"
+        :is="action.href && !action.external && !action.plain ? Link : action.href ? 'a' : 'button'"
         :data-action="action.key"
         :href="action.href"
         :type="action.href ? undefined : 'button'"
@@ -10,10 +10,13 @@
         :rel="action.external ? 'noopener noreferrer' : undefined"
         :disabled="!action.href && (action.disabled || action.loading) ? true : undefined"
         :aria-busy="action.loading || undefined"
+        :aria-disabled="action.disabled || action.loading || undefined"
+        :tabindex="action.href && (action.disabled || action.loading) ? -1 : undefined"
         :aria-label="action === labelledAction ? undefined : action.label"
         :title="action === labelledAction ? undefined : action.label"
         :class="[
           action === labelledAction ? labelledClass : iconClass,
+          (action.disabled || action.loading) && 'pointer-events-none opacity-50',
           action.destructive ? 'hover:border-destructive hover:text-destructive' : 'hover:border-brand hover:text-brand',
         ]"
         @click="event => activate(action, event)"
@@ -35,15 +38,14 @@ import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
 export type CollectionRowAction = AdminRecordAction;
 
 const props = defineProps<{ actions: CollectionRowAction[]; fullLabels?: boolean; spotlight?: boolean }>();
-const roleOf = (action: CollectionRowAction) => action.role ?? (action.key.split(':')[0] === 'edit' ? 'edit' : action.key === 'open' ? 'open' : undefined);
 const labelledAction = computed(() =>
   props.actions.find(action => action.primary)
-  ?? props.actions.find(action => roleOf(action) === 'edit')
-  ?? props.actions.find(action => roleOf(action) === 'open'),
+  ?? props.actions.find(action => action.role === 'edit')
+  ?? props.actions.find(action => action.role === 'open'),
 );
 const visibleActions = computed(() => {
   const icons = ['open', 'edit'].flatMap(role =>
-    props.actions.filter(action => action !== labelledAction.value && roleOf(action) === role),
+    props.actions.filter(action => action !== labelledAction.value && action.role === role),
   );
 
   return [labelledAction.value, ...icons]
@@ -69,7 +71,6 @@ const emit = defineEmits<{
   navigate: [key: string];
 }>();
 
-// Always visible, never hover-revealed: nothing may be hover-only (.ai/rules/js-pages-admin.md).
 const iconClass = [
   'flex size-9 items-center justify-center border border-border text-muted-foreground transition-colors',
   'pointer-coarse:size-11 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50',

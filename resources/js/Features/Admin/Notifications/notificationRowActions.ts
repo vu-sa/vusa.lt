@@ -9,18 +9,19 @@ export function notificationRowActions(notification: Notification): AdminRecordA
   const primary = getNotificationPrimaryAction(notification);
   const url = getNotificationUrl(notification);
   const secondary = getNotificationSecondaryAction(notification);
-  const external = (href: string) => {
+  const navigation = (href: string) => {
     const page = usePage();
     const current = import.meta.env.SSR
       ? new URL(page.url, page.props.app.url)
       : new URL(window.location.href);
     const destination = new URL(href, current);
-    return destination.origin !== current.origin || !(destination.pathname === '/mano' || destination.pathname.startsWith('/mano/'));
+    const external = destination.origin !== current.origin;
+    return { external, plain: !external && !(destination.pathname === '/mano' || destination.pathname.startsWith('/mano/')) };
   };
   return [
-    ...(primary ? [{ key: 'primary', label: primary.label, icon: getNotificationPrimaryActionIcon(notification), primary: true, href: primary.url, external: external(primary.url) }] : []),
-    ...(url && url !== primary?.url ? [{ key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, href: url, external: external(url) }] : []),
-    ...(secondary ? [{ key: 'secondary', label: secondary.label, href: secondary.url, external: external(secondary.url) }] : []),
+    ...(primary ? [{ key: 'primary', label: primary.label, icon: getNotificationPrimaryActionIcon(notification), primary: true, href: primary.url, ...navigation(primary.url) }] : []),
+    ...(url && url !== primary?.url ? [{ key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, href: url, ...navigation(url) }] : []),
+    ...(secondary ? [{ key: 'secondary', label: secondary.label, href: secondary.url, ...navigation(secondary.url) }] : []),
     ...(!notification.read_at ? [{ key: 'read', label: $t('Pažymėti kaip skaitytą'), icon: Check }] : []),
     { key: 'delete', label: $t('Ištrinti'), icon: Trash2, destructive: true },
   ];

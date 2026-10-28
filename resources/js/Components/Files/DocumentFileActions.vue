@@ -22,9 +22,9 @@ const emit = defineEmits<{
 const removed = computed(() => Boolean(props.file.removed_from_sharepoint_at));
 
 const actions = computed<CollectionRowAction[]>(() => [
-  ...(props.file.public_url ? [{ key: 'public', label: $t('Atidaryti vusa.lt nuorodą'), icon: ExternalLink, href: props.file.public_url, external: true }] : []),
-  ...(props.file.sharepoint_web_url && !removed.value ? [{ key: 'sharepoint', label: $t('Atidaryti SharePoint'), icon: Folder, href: props.file.sharepoint_web_url, external: true }] : []),
-  ...(removed.value && props.file.can.update ? [{ key: 'delete', label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
+  ...(props.file.public_url ? [{ key: 'public', role: 'open' as const, label: $t('Atidaryti vusa.lt nuorodą'), icon: ExternalLink, href: props.file.public_url, external: true }] : []),
+  ...(props.file.sharepoint_web_url && !removed.value ? [{ key: 'sharepoint', role: 'open' as const, label: $t('Atidaryti SharePoint'), icon: Folder, href: props.file.sharepoint_web_url, external: true }] : []),
+  ...(removed.value && props.file.can.update ? [{ key: 'delete', label: $t('Ištrinti'), icon: Trash2, destructive: true, primary: true }] : []),
 ]);
 
 function select(key: string): void {

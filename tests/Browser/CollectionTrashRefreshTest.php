@@ -21,7 +21,8 @@ it('refreshes trash rows after permanent deletion without reloading the page', f
     $page = loginAsAdmin(makeAdminUser($tenant), '/mano/'.$collection.'?showDeleted=true');
     $page->assertSee($name);
     $page->script('window.trashRefreshMarker = "preserved"');
-    $page->click('[data-slot="collection-row-actions"] button[title="Ištrinti visam laikui"]');
+    $page->page()->locator('[data-slot="collection-row-actions"] button[aria-label="Daugiau veiksmų"]:visible')->first()->click();
+    $page->click('[data-slot=dropdown-menu-content] [role=menuitem]:has-text("Ištrinti visam laikui")');
     $page->click('[data-slot="confirm-dialog-action"]');
     $page->assertDontSee($name)->assertNoJavaScriptErrors();
 

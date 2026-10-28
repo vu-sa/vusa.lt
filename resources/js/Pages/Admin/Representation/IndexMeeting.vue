@@ -35,7 +35,7 @@
         </div>
         <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => actions.select(key)" />
       </div>
-      <MeetingCollectionRow v-else :meeting="item" :pinned />
+      <MeetingCollectionRow v-else :meeting="item" :actions="recordActions" :pinned @select="key => actions.select(key)" />
     </template>
 
     <template #cell="{ item, column }">

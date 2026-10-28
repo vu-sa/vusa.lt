@@ -225,7 +225,7 @@ const canUpdateItem = (item: DocumentSearchResult): boolean => props.abilities.u
 const rowActions = (item: DocumentSearchResult): CollectionRowAction[] => [
   ...(item.anonymous_url ? [{ key: 'open', label: $t('Atidaryti'), icon: ExternalLink, role: 'open' as const, external: true, href: item.anonymous_url }] : []),
   ...(canUpdateItem(item) ? [
-      { key: 'refresh', label: $t('Atnaujinti iš SharePoint'), icon: RefreshCw, loading: refreshingId.value === String(item.id) },
+      { key: 'refresh', label: $t('Atnaujinti iš SharePoint'), icon: RefreshCw, primary: !item.anonymous_url, loading: refreshingId.value === String(item.id) },
       // Hiding, not deleting: SharePoint is the source, and a deleted record would only be rediscovered.
       { key: 'hide', label: $t('Slėpti'), icon: EyeOff },
     ] : []),

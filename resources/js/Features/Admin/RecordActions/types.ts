@@ -8,6 +8,8 @@ export interface AdminRecordAction {
   icon?: Component;
   href?: string;
   external?: boolean;
+  /** Native same-tab navigation for pages outside the Inertia app. */
+  plain?: boolean;
   role?: 'open' | 'edit';
   primary?: boolean;
   destructive?: boolean;

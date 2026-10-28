@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Pareigybės
 area: duties
 models: [Duty, Role, Tenant, Type, Institution, ResponsibilityGrant]
-last_reviewed: 2026-10-27
+last_reviewed: 2026-10-28
 tests:
   - tests/Browser/CollectionTrashRefreshTest.php
   - resources/js/Components/AdminForms/__tests__/DutyForm.component.test.ts

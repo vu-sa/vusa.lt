@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { router } from '@inertiajs/vue3';
 
 import CollectionPage from '../CollectionPage.vue';
+import CollectionResults from '@/Components/Collection/CollectionResults.vue';
 
 import type { CollectionSource } from '@/Composables/useCollectionSource';
 import { commonStubs } from '@/tests/stubs';
@@ -123,6 +124,13 @@ it('renders a custom lead with a navigation link instead of the plain lead', () 
 });
 
 describe('CollectionPage', () => {
+  it('forwards link navigation with the row and action key', () => {
+    const { source } = makeSource();
+    const wrapper = mountPage(source);
+    wrapper.findComponent(CollectionResults).vm.$emit('rowNavigate', source.items.value[0], 'open');
+    expect(wrapper.emitted('rowNavigate')).toEqual([[source.items.value[0], 'open']]);
+  });
+
   it('states where the person is and draws the entity identity tile', () => {
     const { source } = makeSource();
     const wrapper = mountPage(source);

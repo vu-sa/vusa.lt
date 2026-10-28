@@ -146,6 +146,15 @@ describe('ReservationResourceList', () => {
     expect(mountList([item('1', 'created')]).find('[data-action="edit"]').exists()).toBe(true);
   });
 
+  it('keeps edit and remove in the menu without linking back to the current reservation', () => {
+    const wrapper = mountList([item('1', 'created', { approvable: true })]);
+    const actions = wrapper.get('[data-slot="reservation-row-actions"]');
+    expect(actions.find('[data-action="open"]').exists()).toBe(false);
+    expect(actions.get('[data-testid="dropdown-menu-content"] [data-action="edit"]').exists()).toBe(true);
+    expect(actions.get('[data-testid="dropdown-menu-content"] [data-action="remove"]').exists()).toBe(true);
+    expect(actions.get('[data-action="approved"]').exists()).toBe(true);
+  });
+
   it('emits the resource to edit', async () => {
     const wrapper = mountList([item('1', 'created')]);
 

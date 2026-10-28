@@ -1,6 +1,7 @@
 <template>
   <CollectionPage
     :row-actions="notificationRowActions"
+    @row-navigate="markUnreadRowAsRead"
     @row-action="(item, key) => key === 'read' ? handleMarkAsRead(item.id) : handleDelete(item.id)"
     :source
     collection="notifications"
@@ -56,6 +57,7 @@
 </template>
 
 <script setup lang="ts">
+import { markNotificationRead } from '@/Composables/markNotificationRead';
 import { computed, toRef } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
@@ -153,4 +155,9 @@ const handleDeleteAll = () => {
     },
   });
 };
+function markUnreadRowAsRead(item: Notification): void {
+  if (!item.read_at) {
+    markNotificationRead(item.id);
+  }
+}
 </script>

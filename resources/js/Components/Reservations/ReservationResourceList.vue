@@ -190,8 +190,8 @@ const remove = () => {
 };
 function resourceActions(resource: RecordResource): AdminRecordAction[] {
   return [
-    ...reservationRowActions(rowTarget(resource)),
-    ...(props.canEdit && isEditable(resource) ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const }] : []),
+    ...reservationRowActions(rowTarget(resource), false, { includeOpen: false }),
+    ...(props.canEdit && isEditable(resource) ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil }] : []),
     ...(props.canEdit && isRemovable(resource) ? [{ key: 'remove', label: $t('Pašalinti'), icon: Trash2, destructive: true }] : []),
   ];
 }

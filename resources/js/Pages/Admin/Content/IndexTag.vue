@@ -207,6 +207,7 @@ function remove(tag: Tag): void {
   router.delete(route('tags.destroy', tag.id), {
     preserveScroll: true,
     onSuccess: () => {
+      source.refresh();
       toast.success($t('Žyma ištrinta.'), {
         action: {
           label: $t('Atšaukti'),

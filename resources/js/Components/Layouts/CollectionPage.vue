@@ -73,6 +73,7 @@
       :columns
       :row-actions
       @row-action="(item, key) => emit('rowAction', item, key)"
+      @row-navigate="(item, key) => emit('rowNavigate', item, key)"
       :is-loading="source.isLoading.value"
       :is-loading-more="source.isLoadingMore.value"
       :has-searched="source.hasSearched.value"
@@ -184,6 +185,7 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   quickFilter: [id: string];
   rowAction: [item: T, key: string];
+  rowNavigate: [item: T, key: string];
 }>();
 
 const slots = defineSlots<{
