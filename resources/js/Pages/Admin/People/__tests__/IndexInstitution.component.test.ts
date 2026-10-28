@@ -44,6 +44,7 @@ const CollectionPageStub = {
   template: `
     <div>
       <div v-for="item in source.items.value" :key="item.id" data-testid="row"><slot name="row" :item="item" view="rows" /></div>
+      <div data-testid="cells" v-for="item in source.items.value" :key="'cell-' + item.id"><slot name="cell" :item="item" :column="{ key: 'name' }" /><slot name="cell" :item="item" :column="{ key: 'types' }" /><slot name="cell" :item="item" :column="{ key: 'tenant' }" /></div>
       <div data-testid="bulk"><slot name="bulk-actions" :selected="source.items.value" :clear="() => {}" /></div>
     </div>
   `,
@@ -68,6 +69,23 @@ describe('IndexInstitution following', () => {
     typesense.rows = [{ id: 'i1', name_lt: 'Senatas', tenant_id: 1 }, { id: 'i2', name_lt: 'Taryba', tenant_id: 1 }];
     subscription.setFollowedMany.mockReset().mockResolvedValue(true);
     window.history.replaceState({}, '', '/mano/institutions');
+  });
+
+  it.each(['lt', 'en'])('renders institution names and types in %s in rows and table cells', (locale) => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({ app: { locale } }));
+    typesense.rows = [{
+      id: 'i1', name_lt: 'Taryba', name_en: 'Council', tenant_id: 1,
+      tenant_shortname: 'VU SA MIF', type_titles: ['Komitetas'],
+      type_titles_lt: ['Komitetas'], type_titles_en: ['Committee'],
+    }];
+    const wrapper = mountPage([]);
+
+    for (const selector of ['[data-testid="row"]', '[data-testid="cells"]']) {
+      expect(wrapper.get(selector).text()).toContain(locale === 'en' ? 'Council' : 'Taryba');
+      expect(wrapper.get(selector).text()).toContain(locale === 'en' ? 'Committee' : 'Komitetas');
+      expect(wrapper.get(selector).text()).toContain('VU SA MIF');
+    }
+    wrapper.unmount();
   });
 
   it('removes permanently deleted institutions from the trash without a page refresh', async () => {
@@ -96,7 +114,7 @@ describe('IndexInstitution following', () => {
     const wrapper = mountPage([]);
     expect(wrapper.text()).toContain('Be pavadinimo · institucija-legacy');
     expect(wrapper.text()).toContain('Be pavadinimo · i2');
-    expect(wrapper.findAllComponents({ name: 'CollectionPrimaryCell' }).map(cell => cell.props('titleLines'))).toEqual([2, 2]);
+    expect(wrapper.findAllComponents({ name: 'CollectionPrimaryCell' }).map(cell => cell.props('titleLines'))).toEqual([2, 2, 2, 2]);
   });
 
   it('marks followed rows and counts them on the quick filter', () => {

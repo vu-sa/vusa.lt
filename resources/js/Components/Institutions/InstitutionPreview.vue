@@ -4,7 +4,7 @@
     :eyebrow="$t('Institucija')"
     :title="name"
     :href="showHref"
-    :subtitle="institution.short_name_lt || institution.short_name_en"
+    :subtitle="getSearchTranslation(institution, 'short_name')"
   >
     <template #badges>
       <!-- A page that passes its own status control already says whether the institution is active. -->
@@ -72,6 +72,7 @@
 </template>
 
 <script setup lang="ts">
+import { getSearchTranslation, getSearchTranslations } from '@/Composables/useTranslatedTitle';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
@@ -100,11 +101,11 @@ const props = defineProps<{
 
 const { data, isLoading } = usePreviewApi<InstitutionPreviewData>(route('api.v1.admin.institutions.preview', props.institution.id));
 
-const name = computed(() => props.institution.name_lt || props.institution.name_en || $t('Be pavadinimo'));
+const name = computed(() => getSearchTranslation(props.institution, 'name') || $t('Be pavadinimo'));
 const showHref = computed(() => route('institutions.show', props.institution.id));
 
 // The search document already carries the type titles; the fetched ones replace them when they arrive.
-const types = computed(() => data.value?.types?.map(type => type.title) ?? props.institution.type_titles ?? []);
+const types = computed(() => data.value?.types?.map(type => type.title) ?? getSearchTranslations(props.institution, 'type_titles'));
 
 const related = computed<PreviewChipItem[]>(() => (data.value?.related_institutions ?? []).map(institution => ({
   id: institution.id,

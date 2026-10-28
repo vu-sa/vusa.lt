@@ -67,6 +67,7 @@
 </template>
 
 <script setup lang="ts">
+import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Vote } from '@lucide/vue';
@@ -94,7 +95,7 @@ const props = defineProps<{
 const { data, isLoading } = usePreviewApi<MeetingPreviewData>(route('api.v1.admin.meetings.preview', props.meeting.id));
 
 const showHref = computed(() => route('meetings.show', props.meeting.id));
-const institutionName = computed(() => props.meeting.institution_name_lt || props.meeting.institution_name_en);
+const institutionName = computed(() => getSearchTranslation(props.meeting, 'institution_name'));
 const completionStatus = computed(() => statusFor(meetingCompletionStatuses, props.meeting.completion_status));
 
 // No status map exists for vote alignment yet, so it is named neutrally rather than given an invented colour.

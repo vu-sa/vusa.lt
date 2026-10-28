@@ -398,6 +398,14 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
             'tenant_id' => $this->tenant_id,
             'tenant_ids' => $this->tenant_id ? [$this->tenant_id] : [],
             'tenant_shortname' => $this->tenant?->shortname,
+            'type_titles_lt' => $this->types
+                ->map(fn (InstitutionType $type) => (string) $type->getTranslation('title', 'lt'))
+                ->values()
+                ->all(),
+            'type_titles_en' => $this->types
+                ->map(fn (InstitutionType $type) => (string) $type->getTranslation('title', 'en'))
+                ->values()
+                ->all(),
             'type_titles' => $this->types
                 ->map(fn (InstitutionType $type) => $type->getTranslation('title', 'lt'))
                 ->filter()

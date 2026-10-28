@@ -476,7 +476,7 @@ $settings = [
                         ['name' => 'id', 'type' => 'string'],
                         ['name' => 'title', 'type' => 'string', 'infix' => true, 'sort' => true],
                         ['name' => 'name_lt', 'type' => 'string', 'infix' => true, 'sort' => true],
-                        ['name' => 'name_en', 'type' => 'string', 'infix' => true, 'sort' => true, 'optional' => true],
+                        ['name' => 'name_en', 'type' => 'string', 'infix' => true, 'optional' => true],
                         ['name' => 'short_name_lt', 'type' => 'string', 'infix' => true, 'optional' => true],
                         ['name' => 'short_name_en', 'type' => 'string', 'infix' => true, 'optional' => true],
                         ['name' => 'alias', 'type' => 'string', 'infix' => true, 'optional' => true],
@@ -548,6 +548,8 @@ $settings = [
                         ['name' => 'tenant_ids', 'type' => 'int32[]', 'facet' => true, 'optional' => true],
                         ['name' => 'tenant_shortname', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'type_titles', 'type' => 'string[]', 'facet' => true, 'optional' => true],
+                        ['name' => 'type_titles_lt', 'type' => 'string[]', 'optional' => true],
+                        ['name' => 'type_titles_en', 'type' => 'string[]', 'optional' => true],
                         // Self-referential institution_ids for .own permission filtering
                         ['name' => 'institution_ids', 'type' => 'string[]', 'facet' => true],
                         // Refreshed nightly (institutions:refresh-activity-status) and on meeting/check-in changes
@@ -726,6 +728,8 @@ $settings = [
                         // Category info
                         ['name' => 'category_id', 'type' => 'int32', 'facet' => true, 'optional' => true],
                         ['name' => 'category_name', 'type' => 'string', 'facet' => true, 'optional' => true],
+                        ['name' => 'category_name_lt', 'type' => 'string', 'optional' => true],
+                        ['name' => 'category_name_en', 'type' => 'string', 'optional' => true],
 
                         // Media
                         ['name' => 'image_url', 'type' => 'string', 'optional' => true],
@@ -777,6 +781,8 @@ $settings = [
 
                         // Facets
                         ['name' => 'type_titles', 'type' => 'string[]', 'facet' => true, 'optional' => true],
+                        ['name' => 'type_titles_lt', 'type' => 'string[]', 'optional' => true],
+                        ['name' => 'type_titles_en', 'type' => 'string[]', 'optional' => true],
                         ['name' => 'type_ids', 'type' => 'int32[]', 'facet' => true, 'optional' => true],
 
                         // Members (for the detail pane). Names are searchable; the parallel

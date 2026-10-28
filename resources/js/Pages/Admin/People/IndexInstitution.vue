@@ -31,7 +31,7 @@
           <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches" :title="nameOf(item)" :title-lines="hasName(item) ? 1 : 2" :href="isTrash ? undefined : route('institutions.show', item.id)" />
           <p class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
             <span v-if="item.tenant_shortname">{{ item.tenant_shortname }}</span>
-            <span v-if="item.type_titles?.length">{{ item.type_titles.join(', ') }}</span>
+            <span v-if="getSearchTranslations(item, 'type_titles').length">{{ getSearchTranslations(item, 'type_titles').join(', ') }}</span>
             <span v-if="item.current_user_names?.length">
               {{ $t('Narių: :count', { count: String(item.current_user_names.length) }) }}
             </span>
@@ -74,7 +74,7 @@
         {{ item.tenant_shortname ?? '—' }}
       </template>
       <template v-else-if="column.key === 'types'">
-        {{ item.type_titles?.join(', ') || '—' }}
+        {{ getSearchTranslations(item, 'type_titles').join(', ') || '—' }}
       </template>
       <span v-else-if="column.key === 'members'" class="tabular-nums">
         {{ item.current_user_names?.length ?? 0 }}
@@ -157,6 +157,7 @@
 </template>
 
 <script setup lang="ts">
+import { getSearchTranslation, getSearchTranslations } from '@/Composables/useTranslatedTitle';
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowUpRight, Eye, EyeOff, Plus } from '@lucide/vue';
@@ -303,7 +304,7 @@ const actions = useCollectionRecordActions({
 
 const institutionKey = (institution: InstitutionRow) => String(institution.id);
 const hasName = (institution: InstitutionRow) => Boolean(institution.name_lt?.trim() || institution.name_en?.trim());
-const nameOf = (institution: InstitutionRow) => institution.name_lt?.trim() || institution.name_en?.trim()
+const nameOf = (institution: InstitutionRow) => getSearchTranslation(institution, 'name').trim()
   || `${$t('Be pavadinimo')} · ${institution.alias || institution.id}`;
 const actionsFor = (institution: InstitutionRow): CollectionRowAction[] => isTrash
   ? actions.rowActions(institution, nameOf(institution), true).map(action => action.key.startsWith('restore:')

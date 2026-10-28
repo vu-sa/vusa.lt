@@ -26,7 +26,7 @@
       <div v-if="isTrash" class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
         <div class="min-w-0 flex-1">
           <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches"
-            :title="item.title" :sub="item.institution_name_lt || item.institution_name_en" />
+            :title="item.title" :sub="getSearchTranslation(item, 'institution_name')" />
           <p class="mt-2 text-xs tabular-nums text-muted-foreground">
             {{ formatDate(new Date((item.start_time ?? 0) * 1000)) }}
           </p>
@@ -46,7 +46,7 @@
         :href="isTrash ? undefined : route('meetings.show', item.id)"
       />
       <template v-else-if="column.key === 'institution'">
-        {{ item.institution_name_lt || item.institution_name_en || '—' }}
+        {{ getSearchTranslation(item, 'institution_name') || '—' }}
       </template>
       <template v-else-if="column.key === 'agenda'">
         <span class="tabular-nums">{{ item.agenda_items_count ?? '—' }}</span>
@@ -80,6 +80,7 @@
 </template>
 
 <script setup lang="ts">
+import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowUpRight, Plus, RotateCcw, Trash2 } from '@lucide/vue';

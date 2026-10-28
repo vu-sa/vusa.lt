@@ -482,18 +482,15 @@ const RELEVANCE_SORT_OPTION: SortOption = {
   icon: 'Sparkles',
 };
 
-/**
- * Resolve the relevance sentinel into a concrete Typesense sort expression for a
- * collection, falling back to the collection's default date tiebreak. Other sort
- * values pass through unchanged.
- */
-export function resolveSortValue(collection: string, sortBy: string): string {
-  if (sortBy !== RELEVANCE_SORT_VALUE) {
-    return sortBy;
-  }
-  const config = getCollectionFacetConfig(collection);
-  const tiebreak = config?.defaultSortBy ?? 'created_at:desc';
-  return `_text_match:desc,${tiebreak}`;
+/** Resolve display-name sorts in the current locale, including relevance tiebreaks. */
+export function resolveSortValue(collection: string, sortBy: string, locale = 'lt'): string {
+  const resolved = sortBy === RELEVANCE_SORT_VALUE
+    ? `_text_match:desc,${getCollectionFacetConfig(collection)?.defaultSortBy ?? 'created_at:desc'}`
+    : sortBy;
+
+  return locale === 'en' && collection === 'duties'
+    ? resolved.replace(/\bname_lt:/g, 'name_en:')
+    : resolved;
 }
 
 /**

@@ -14,7 +14,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import type { AdminCollection } from '../Types/AdminSearchTypes';
 
 import { newsStatus } from '@/Components/News/newsStatus';
-import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
+import { getTranslatedValue, getSearchTranslation, getSearchTranslations } from '@/Composables/useTranslatedTitle';
 import {
   contentStatuses,
   deletedMemberStatus,
@@ -271,7 +271,7 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
   meetings: (m: MeetingSearchResult, ctx?: MapperContext) => ({
     recordId: String(m.id),
     title: m.title ?? $t('Be pavadinimo'),
-    subtitle: m.institution_name_lt || m.institution_name_en,
+    subtitle: getSearchTranslation(m, 'institution_name') || undefined,
     badge: m.tenant_shortname,
     meta: formatSearchDate(m.start_time),
     href: route('meetings.show', m.id),
@@ -284,7 +284,7 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
   agendaItems: (a: AgendaItemSearchResult, ctx?: MapperContext) => ({
     recordId: String(a.id),
     title: a.title ?? $t('Be pavadinimo'),
-    subtitle: a.institution_name_lt || a.institution_name_en,
+    subtitle: getSearchTranslation(a, 'institution_name') || undefined,
     meta: formatSearchDate(a.meeting_start_time),
     href: route('agendaItems.edit', a.id),
     // Agenda items have no dedicated show page — "view" opens their parent meeting.
@@ -296,7 +296,7 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
   }),
   institutions: (i: InstitutionSearchResult) => ({
     recordId: String(i.id),
-    title: i.name_lt || i.name_en || $t('Be pavadinimo'),
+    title: getSearchTranslation(i, 'name') || $t('Be pavadinimo'),
     subtitle: i.tenant_shortname,
     badge: i.tenant_shortname,
     href: route('institutions.show', i.id),
@@ -306,8 +306,8 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
   }),
   resources: (r: ResourceSearchResult) => ({
     recordId: String(r.id),
-    title: r.name_lt || r.name_en || $t('Be pavadinimo'),
-    subtitle: [r.location, r.category_name].filter(Boolean).join(' • ') || undefined,
+    title: getSearchTranslation(r, 'name') || $t('Be pavadinimo'),
+    subtitle: [r.location, getSearchTranslation(r, 'category_name')].filter(Boolean).join(' • ') || undefined,
     imageUrl: r.image_url || undefined,
     badge: r.tenant_shortname,
     href: route('resources.show', r.id),
@@ -319,11 +319,11 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
     const external = isDutyExternal(d, ctx);
     const memberMeta = d.current_user_names?.length
       ? d.current_user_names.slice(0, 2).join(', ') + (d.current_user_names.length > 2 ? ` +${d.current_user_names.length - 2}` : '')
-      : d.type_titles?.[0];
+      : getSearchTranslations(d, 'type_titles')[0];
     return {
       recordId: String(d.id),
       title: getTranslatedValue({ lt: d.name_lt, en: d.name_en }, undefined, $t('Be pavadinimo')),
-      subtitle: d.institution_name_lt || d.institution_name_en,
+      subtitle: getSearchTranslation(d, 'institution_name') || undefined,
       badge: d.tenant_shortname,
       meta: memberMeta,
       href: route('duties.show', d.id),

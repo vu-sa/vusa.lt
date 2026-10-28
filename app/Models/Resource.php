@@ -133,6 +133,8 @@ class Resource extends Model implements GuardsForceDelete, ImageMediaOwner
             'tenant_ids' => $this->tenant_id ? [$this->tenant_id] : [],
             'tenant_shortname' => $this->tenant->shortname,
             'category_id' => $this->resource_category_id,
+            'category_name_lt' => $this->category?->getTranslation('name', 'lt'),
+            'category_name_en' => $this->category?->getTranslation('name', 'en'),
             'category_name' => $this->category?->getTranslation('name', 'lt'),
             'image_url' => $this->imageGallery('images')[0]['thumb'] ?? '',
             'created_at' => $this->created_at->timestamp,

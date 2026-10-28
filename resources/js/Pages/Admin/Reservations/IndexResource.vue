@@ -66,7 +66,7 @@
               <SearchMatch :match="matchTitle(nameOf(item), item._searchTitleMatches)" :title="nameOf(item)" />
             </Link>
             <p class="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-              <span v-if="item.category_name"><SearchMatch :match="item._searchFieldMatches?.category_name" :title="item.category_name" /></span>
+              <span v-if="getSearchTranslation(item, 'category_name')"><SearchMatch :match="highlightText(getSearchTranslation(item, 'category_name'), item._searchFieldMatches?.category_name)" :title="getSearchTranslation(item, 'category_name')" /></span>
               <span v-if="item.tenant_shortname">{{ item.tenant_shortname }}</span>
               <span v-if="item.location">{{ item.location }}</span>
             </p>
@@ -109,7 +109,7 @@
                 <SearchMatch :match="matchTitle(nameOf(item), item._searchTitleMatches)" :title="nameOf(item)" />
               </span>
               <span class="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-                <span v-if="item.category_name"><SearchMatch :match="item._searchFieldMatches?.category_name" :title="item.category_name" /></span>
+                <span v-if="getSearchTranslation(item, 'category_name')"><SearchMatch :match="highlightText(getSearchTranslation(item, 'category_name'), item._searchFieldMatches?.category_name)" :title="getSearchTranslation(item, 'category_name')" /></span>
                 <span v-if="item.tenant_shortname">{{ item.tenant_shortname }}</span>
                 <span v-if="item.location">{{ item.location }}</span>
                 <span
@@ -139,7 +139,7 @@
           <SearchMatch :match="matchTitle(nameOf(item), item._searchTitleMatches)" :title="nameOf(item)" />
         </Link>
         <template v-else-if="column.key === 'category'">
-          <SearchMatch v-if="item.category_name" :match="item._searchFieldMatches?.category_name" :title="item.category_name" />
+          <SearchMatch v-if="getSearchTranslation(item, 'category_name')" :match="highlightText(getSearchTranslation(item, 'category_name'), item._searchFieldMatches?.category_name)" :title="getSearchTranslation(item, 'category_name')" />
           <template v-else>
             —
           </template>
@@ -202,12 +202,13 @@
 </template>
 
 <script setup lang="ts">
+import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { CalendarClock, Plus } from '@lucide/vue';
 import { capitalize, computed, onMounted, watch } from 'vue';
 
-import { matchTitle } from '@/Shared/Search/matches';
+import { highlightText, matchTitle } from '@/Shared/Search/matches';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import type { CollectionColumn } from '@/Components/Collection/types';
 import EntityTypeMark from '@/Components/EntityTypeMark.vue';
@@ -248,7 +249,7 @@ const source = useTypesenseCollectionSource<ResourceSearchResult>({
 /** Only the exception is painted: a reservable resource is the healthy default. */
 
 const resourceKey = (resource: ResourceSearchResult) => String(resource.id);
-const nameOf = (resource: ResourceSearchResult) => resource.name_lt || resource.name_en || $t('Be pavadinimo');
+const nameOf = (resource: ResourceSearchResult) => getSearchTranslation(resource, 'name') || $t('Be pavadinimo');
 
 const columns = computed<CollectionColumn[]>(() => [
   { key: 'name', label: capitalize($tChoice('entities.resource.model', 1)) },
