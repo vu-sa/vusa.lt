@@ -72,9 +72,10 @@
 </template>
 
 <script setup lang="ts">
+import { useRowAbilities } from '@/Composables/useRowAbilities';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
-import { ArrowUpRight } from '@lucide/vue';
+import { Pencil, ArrowUpRight } from '@lucide/vue';
 import { Link, router } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { Mail as MailingListIcon, RefreshCw } from '@lucide/vue';
@@ -148,5 +149,8 @@ function importFromMailman(): void {
 }
 const rowActions = (item: MailingListRow): AdminRecordAction[] => [
   { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, href: route('mailingLists.show', item.id) },
+  ...(rowAbilities.can(item.id, 'update') ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: route('mailingLists.show', { mailingList: item.id, action: 'edit' }) }] : []),
 ];
+
+const rowAbilities = useRowAbilities('mailingLists', () => source.items.value.map(item => item.id));
 </script>

@@ -17,6 +17,8 @@ interface RecordActionOptions {
   canRestore?: () => boolean;
   restoreOpensRecord?: boolean;
   canForceDelete?: () => boolean;
+  onMutated?: (id: string) => void;
+  deletePermanently?: boolean;
   /** Set when the record opens somewhere other than `<prefix>.edit`. */
   openHref?: (id: string) => string;
   editHref?: (id: string) => string;
@@ -82,7 +84,13 @@ export function useCollectionRecordActions(options: RecordActionOptions) {
     }
 
     const routeName = action.kind === 'delete' ? `${options.routePrefix}.destroy` : `${options.routePrefix}.forceDelete`;
-    router.delete(route(routeName, action.id), { preserveScroll: true, onSuccess: () => options.source.refresh() });
+    router.delete(route(routeName, action.id), {
+      preserveScroll: true,
+      onSuccess: () => {
+        options.onMutated?.(action.id);
+        options.source.refresh();
+      },
+    });
   }
 
   const dialog = computed(() => {
@@ -105,7 +113,7 @@ export function useCollectionRecordActions(options: RecordActionOptions) {
 
     return {
       title: $t('Ištrinti „:name“?', { name: action.name }),
-      description: $t('Įrašas bus perkeltas į ištrintus — iš ten jį galėsi atkurti.'),
+      description: options.deletePermanently ? $t('Šis veiksmas negrįžtamas.') : $t('Įrašas bus perkeltas į ištrintus — iš ten jį galėsi atkurti.'),
       confirmLabel: $t('Ištrinti'),
       destructive: true,
     };

@@ -1,5 +1,6 @@
 <template>
   <CollectionPage
+    @row-action="(_item, key) => deleteActions.select(key)"
     :row-actions="rowActions"
     :source
     collection="goals"
@@ -46,7 +47,7 @@
           </div>
         </div>
         <StatusBadge :status="goalStatuses[item.status]" />
-        <CollectionRowActions :actions="recordActions" />
+        <CollectionRowActions @select="key => deleteActions.select(key)" :actions="recordActions" />
       </article>
     </template>
 
@@ -72,12 +73,15 @@
       />
     </template>
   </CollectionPage>
+  <CollectionConfirmAction :dialog="deleteActions.dialog.value" @confirm="deleteActions.confirm" @cancel="deleteActions.pending.value = null" />
 </template>
 
 <script setup lang="ts">
+import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
+import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
-import { ArrowUpRight, Pencil } from '@lucide/vue';
+import { ArrowUpRight, Pencil, Trash2 } from '@lucide/vue';
 import { Link, router } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { Plus } from '@lucide/vue';
@@ -106,6 +110,7 @@ interface GoalRow {
   problems_count: number;
   updated_at: string | null;
   can_update: boolean;
+  can_delete: boolean;
 }
 
 const props = defineProps<{
@@ -145,5 +150,8 @@ const columns = computed<CollectionColumn[]>(() => [
 const rowActions = (item: GoalRow): AdminRecordAction[] => [
   { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, href: route('goals.show', item.id) },
   ...(item.can_update ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: route('goals.edit', item.id) }] : []),
+  ...(item.can_delete ? [{ key: `delete:${item.id}:${title(item)}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
 ];
+
+const deleteActions = useCollectionRecordActions({ source, routePrefix: 'goals', deletePermanently: true });
 </script>

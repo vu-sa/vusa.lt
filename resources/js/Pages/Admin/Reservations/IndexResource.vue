@@ -1,6 +1,7 @@
 <template>
   <div>
     <CollectionPage
+      @row-action="(_item, key) => collectionActions.select(key)"
       :row-actions="rowActions"
       :source
       collection="resources"
@@ -85,7 +86,7 @@
                 </div>
               </template>
             </div>
-            <CollectionRowActions :actions="recordActions" class="relative z-10 mt-3" />
+            <CollectionRowActions @select="key => collectionActions.select(key)" :actions="recordActions" class="relative z-10 mt-3" />
           </div>
         </article>
       </template>
@@ -128,7 +129,7 @@
           <div v-else-if="canReserve" class="shrink-0">
             <AddToReservationButton :resource-id="String(item.id)" />
           </div>
-          <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" />
+          <CollectionRowActions @select="key => collectionActions.select(key)" :spotlight="item === source?.items.value[0]" :actions="recordActions" />
         </div>
       </template>
 
@@ -178,7 +179,7 @@
               without-draft="reserve"
               :label="$t('reservations.cart.add_to_reservation')"
             />
-            <CollectionRowActions :actions="recordActions" full-labels />
+            <CollectionRowActions @select="key => collectionActions.select(key)" :actions="recordActions" full-labels />
           </template>
         </ResourcePreview>
       </template>
@@ -197,13 +198,17 @@
 
     <ReservationCartBar />
     <ReservationCartSheet />
+    <CollectionConfirmAction :dialog="collectionActions.dialog.value" @confirm="collectionActions.confirm" @cancel="collectionActions.pending.value = null" />
   </div>
 </template>
 
 <script setup lang="ts">
+import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
+import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import { useRowAbilities } from '@/Composables/useRowAbilities';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
-import { ArrowUpRight } from '@lucide/vue';
+import { Trash2, Pencil, ArrowUpRight } from '@lucide/vue';
 import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
@@ -314,5 +319,14 @@ onMounted(() => {
 });
 const rowActions = (item: ResourceSearchResult): AdminRecordAction[] => [
   { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, href: route('resources.show', item.id) },
+  ...(rowAbilities.can(item.id, 'update') ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: route('resources.edit', item.id) }] : []),
+  ...(rowAbilities.can(item.id, 'delete') ? [{ key: `delete:${item.id}:${nameOf(item)}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
 ];
+
+const rowAbilities = useRowAbilities('resources', () => source.items.value.map(item => item.id));
+const collectionActions = useCollectionRecordActions({
+  source,
+  routePrefix: 'resources',
+  onMutated: id => rowAbilities.invalidate([id]),
+});
 </script>

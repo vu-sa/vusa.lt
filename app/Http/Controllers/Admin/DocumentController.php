@@ -17,6 +17,7 @@ use App\Services\ModelAuthorizer as Authorizer;
 use App\Settings\DocumentDiscoverySettings;
 use App\Settings\DocumentSettings;
 use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\Response;
 
 class DocumentController extends AdminController
 {
@@ -114,6 +115,17 @@ class DocumentController extends AdminController
         SyncDocumentFromSharePointJob::dispatch($document, force: true);
 
         return back()->with('success', __('messages.document.refresh_queued'));
+    }
+
+    public function edit(Document $document): Response
+    {
+        $this->handleAuthorization('update', $document);
+
+        if ($document->sharepoint_web_url && $document->removed_from_sharepoint_at === null) {
+            return Inertia::location($document->sharepoint_web_url);
+        }
+
+        return redirect()->route('documents.index')->with('info', __('messages.document.edit_unavailable'));
     }
 
     /**

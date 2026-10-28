@@ -110,9 +110,12 @@
 
   <MergeRecordsDialog :open="mergeRecords.length > 0" type="duties" :records="mergeRecords" :initial-target-id="mergeTargetId" :submit-url="route('duties.mergeDuties')" target-field="target_duty_id" source-field="source_duty_ids" @close="closeMerge" @merged="merged" />
   <ConfirmDialog :open="forceDeleteTarget !== null" :title="$t('Ištrinti pareigybę visam laikui?')" :description="$t('Šis veiksmas negrįžtamas. Pareigybė bus visiškai pašalinta.')" :confirm-label="$t('Ištrinti visam laikui')" destructive @update:open="!$event && (forceDeleteTarget = null)" @confirm="forceDelete" />
+  <CollectionConfirmAction :dialog="deleteActions.dialog.value" @confirm="deleteActions.confirm" @cancel="deleteActions.pending.value = null" />
 </template>
 
 <script setup lang="ts">
+import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
+import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { ArrowRight, CircleAlert, Merge, Pencil, Plus, RotateCcw, Trash2 } from '@lucide/vue';
@@ -136,7 +139,7 @@ import { useAdminNavigation } from '@/Composables/useAdminNavigation';
 import { useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
 
 interface Translation { lt?: string; en?: string }
-type Duty = App.Entities.Duty & { name: Translation; email?: string | null; dutiables_count: number; can_update?: boolean; is_active?: boolean; institution?: { id: string | number; name?: Translation; is_active?: boolean; short_name?: Translation | null } | null; types?: { id: string | number; title: Translation }[] };
+type Duty = App.Entities.Duty & { name: Translation; email?: string | null; dutiables_count: number; can_update?: boolean; can_delete?: boolean; is_active?: boolean; institution?: { id: string | number; name?: Translation; is_active?: boolean; short_name?: Translation | null } | null; types?: { id: string | number; title: Translation }[] };
 
 const props = defineProps<{
   duties: { data: Duty[]; meta: { total: number; per_page: number; current_page: number; last_page: number } };
@@ -163,9 +166,11 @@ const rowActions = (item: Duty): CollectionRowAction[] => isDeleted.value
   : [
       { key: 'open', label: $t('Atidaryti'), icon: ArrowRight, role: 'open' as const, href: route('duties.show', item.id) },
       ...(item.can_update ? [{ key: 'edit', role: 'edit' as const, label: $t('Redaguoti'), icon: Pencil, href: route('duties.edit', item.id) }] : []),
+      ...(item.can_delete ? [{ key: `delete:${item.id}:${titleOf(item.name)}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
     ];
 
 function selectRowAction(key: string, item: Duty): void {
+  if (key.startsWith('delete:')) deleteActions.select(key);
   if (key === 'restore') restore(item);
   if (key === 'forceDelete') forceDeleteTarget.value = item;
 }
@@ -306,4 +311,6 @@ function forceDelete(): void {
   forceDeleteTarget.value = null;
   router.delete(route('duties.forceDelete', duty.id), { preserveScroll: true, onSuccess: () => source.refresh() });
 }
+
+const deleteActions = useCollectionRecordActions({ source, routePrefix: 'duties' });
 </script>

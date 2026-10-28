@@ -61,6 +61,7 @@ class ProblemController extends AdminController
             'data' => $problems->getCollection()->map(fn (Problem $problem): array => [
                 ...$problem->toArray(),
                 'can_update' => $request->user()->can('update', $problem),
+                'can_delete' => $request->user()->can('delete', $problem),
             ])->values(),
             'meta' => [
                 'total' => $problems->total(),

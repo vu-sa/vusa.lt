@@ -621,6 +621,13 @@ onMounted(() => {
   const urlTab = params?.get('tab');
   const urlAction = params?.get('action');
 
+  if (urlAction === 'edit' && props.abilities.update) {
+    showMeetingModal.value = true;
+    const url = new URL(window.location.href);
+    url.searchParams.delete('action');
+    window.history.replaceState(window.history.state, '', url.toString());
+  }
+
   // Reset to the agenda tab for a freshly visited meeting (unless URL pins a tab)
   if (!urlTab && lastVisitedMeetingId.value !== props.meeting.id) {
     currentTab.value = 'agenda';

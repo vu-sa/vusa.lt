@@ -34,7 +34,7 @@ function mountPage(preview?: MailingListDiffPayload, can: { view?: boolean; upda
           props: ['primaryAction', 'overflowActions', 'sections', 'historySubject'], emits: ['action'],
           template: `<div><button v-if="primaryAction" data-testid="primary" :data-action="primaryAction.key" @click="$emit('action', primaryAction.key)">{{ primaryAction.label }}</button></div>`,
         },
-        MailingListSheetForm: true,
+        MailingListSheetForm: { name: 'MailingListSheetForm', props: ['open'], template: '<div />' },
         ConfirmDialog: {
           props: ['open', 'description'], emits: ['confirm', 'update:open'],
           template: `<div v-if="open" data-testid="review"><p>{{ description }}</p><button data-testid="confirm" @click="$emit('confirm')">Confirm</button></div>`,
@@ -83,4 +83,14 @@ describe('mailing list review', () => {
     expect(recordPage.props('sections')).toEqual([expect.objectContaining({ value: 'archyvas' })]);
     expect(recordPage.props('historySubject')).toBeUndefined();
   });
+});
+
+it.each([true, false])('opens the mailing list edit sheet from its collection link only when allowed (%s)', async (allowed) => {
+  window.history.replaceState({}, '', '/mano/mailingLists/list-1?action=edit');
+  const wrapper = mountPage(undefined, { update: allowed });
+  await wrapper.vm.$nextTick();
+  expect(wrapper.findComponent({ name: 'MailingListSheetForm' }).props('open')).toBe(allowed);
+  if (allowed) expect(new URLSearchParams(window.location.search).has('action')).toBe(false);
+  wrapper.unmount();
+  window.history.replaceState({}, '', '/');
 });

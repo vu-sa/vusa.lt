@@ -1,5 +1,6 @@
 <template>
   <CollectionPage
+    @row-action="(_item, key) => collectionActions.select(key)"
     :row-actions="item => openActions(item)"
     :source
     collection="agenda_items"
@@ -20,7 +21,7 @@
             {{ getSearchTranslation(item, 'institution_name') }}
           </p>
         </div>
-        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" />
+        <CollectionRowActions @select="key => collectionActions.select(key)" :spotlight="item === source?.items.value[0]" :actions="recordActions" />
       </div>
     </template>
 
@@ -32,7 +33,7 @@
 
     <template #preview="{ item, actions: recordActions }">
       <AgendaItemPreview :key="item.id" :item >
-        <template #actions><CollectionRowActions :actions="recordActions" full-labels class="flex-wrap" /></template>
+        <template #actions><CollectionRowActions @select="key => collectionActions.select(key)" :actions="recordActions" full-labels class="flex-wrap" /></template>
       </AgendaItemPreview>
     </template>
 
@@ -40,12 +41,16 @@
       <EmptyState mode="empty" :icon="AgendaItemIcon" :title="$t('Nėra darbotvarkės punktų')" />
     </template>
   </CollectionPage>
+  <CollectionConfirmAction :dialog="collectionActions.dialog.value" @confirm="collectionActions.confirm" @cancel="collectionActions.pending.value = null" />
 </template>
 
 <script setup lang="ts">
+import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
+import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import { useRowAbilities } from '@/Composables/useRowAbilities';
 import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowUpRight } from '@lucide/vue';
+import { Trash2, Pencil, ArrowUpRight } from '@lucide/vue';
 
 import AgendaItemPreview from '@/Components/AgendaItems/AgendaItemPreview.vue';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
@@ -77,5 +82,15 @@ const columns: CollectionColumn[] = [
 
 const openActions = (item: AgendaItemSearchResult) => [
   { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, href: route('agendaItems.show', item.id), role: 'open' as const },
+  ...(rowAbilities.can(item.id, 'update') ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: route('agendaItems.edit', { agendaItem: item.id, action: 'edit' }) }] : []),
+  ...(rowAbilities.can(item.id, 'delete') ? [{ key: `delete:${item.id}:${item.title}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
 ];
+
+const rowAbilities = useRowAbilities('agenda_items', () => source.items.value.map(item => item.id));
+const collectionActions = useCollectionRecordActions({
+  source,
+  deletePermanently: true,
+  routePrefix: 'agendaItems',
+  onMutated: id => rowAbilities.invalidate([id]),
+});
 </script>

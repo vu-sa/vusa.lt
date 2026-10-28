@@ -148,9 +148,12 @@
     @update:open="!$event && (targetProblemToForceDelete = null)"
     @confirm="forceDeleteProblem"
   />
+  <CollectionConfirmAction :dialog="deleteActions.dialog.value" @confirm="deleteActions.confirm" @cancel="deleteActions.pending.value = null" />
 </template>
 
 <script setup lang="ts">
+import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
+import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { ChevronRight, Pencil, Plus, RotateCcw, Trash2 } from '@lucide/vue';
@@ -193,7 +196,7 @@ const canCreate = computed(() => Boolean(usePage().props.auth?.can?.create?.prob
 const canForceDelete = computed(() => Boolean(usePage().props.auth?.can?.forceDelete?.problem));
 
 /** The server decides per row: editing is scoped to the problem's padalinys. */
-type ProblemRow = App.Entities.Problem & { can_update?: boolean };
+type ProblemRow = App.Entities.Problem & { can_update?: boolean; can_delete?: boolean };
 
 const rowActions = (item: ProblemRow): CollectionRowAction[] => isDeleted.value
   ? [
@@ -203,9 +206,11 @@ const rowActions = (item: ProblemRow): CollectionRowAction[] => isDeleted.value
   : [
       ...(item.can_update ? [{ key: 'edit', role: 'edit' as const, label: $t('Redaguoti'), icon: Pencil, href: route('problems.edit', item.id) }] : []),
       { key: 'open', label: $t('Atidaryti'), icon: ChevronRight, role: 'open' as const, href: route('problems.show', item.id) },
+      ...(item.can_delete ? [{ key: `delete:${item.id}:${localizedTitle(item)}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
     ];
 
 function selectRowAction(key: string, item: App.Entities.Problem): void {
+  if (key.startsWith('delete:')) deleteActions.select(key);
   if (key === 'restore') restoreProblem(item);
   if (key === 'forceDelete') targetProblemToForceDelete.value = item;
 }
@@ -370,4 +375,6 @@ function forceDeleteProblem(): void {
     },
   });
 }
+
+const deleteActions = useCollectionRecordActions({ source, routePrefix: 'problems' });
 </script>

@@ -42,7 +42,7 @@ class DutyApiController extends ApiController
         $duties = $query($request)->paginate($request->getPerPage());
 
         return $this->jsonSuccess([
-            'items' => $duties->getCollection()->map(fn (Duty $duty): array => [...$duty->append('force_delete_blocked_reason')->toFullArray(), 'can_update' => $request->user()->can('update', $duty)])->values(),
+            'items' => $duties->getCollection()->map(fn (Duty $duty): array => [...$duty->append('force_delete_blocked_reason')->toFullArray(), 'can_update' => $request->user()->can('update', $duty), 'can_delete' => $request->user()->can('delete', $duty)])->values(),
             'total' => $duties->total(),
             'per_page' => $duties->perPage(),
             'current_page' => $duties->currentPage(),

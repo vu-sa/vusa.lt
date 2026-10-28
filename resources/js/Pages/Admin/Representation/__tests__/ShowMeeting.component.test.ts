@@ -25,7 +25,7 @@ const stubs = {
   DiscussionPanel: { template: '<div />' },
   FileableFilesPanel: { name: 'FileableFilesPanel', template: '<div data-testid="files-panel" />' },
   TaskManager: { name: 'TaskManager', template: '<div data-testid="task-manager" />' },
-  MeetingForm: { template: '<div />' },
+  MeetingForm: { name: 'MeetingForm', props: ['open'], template: '<div />' },
   AddAgendaItemsSheet: {
     name: 'AddAgendaItemsSheet',
     props: { open: Boolean, initialMode: String, meetingId: String, recentAgendas: Array },
@@ -395,4 +395,15 @@ describe('ShowMeeting.vue', () => {
       expect(wrapper.find('button[aria-label="Kitas įrašas"]').text()).toBe('04-04');
     });
   });
+});
+
+it.each([true, false])('opens the meeting edit sheet from action=edit only for editors (%s)', async (allowed) => {
+  window.history.replaceState({}, '', '/mano/meetings/meet1?action=edit&tab=agenda');
+  const wrapper = createWrapper({ abilities: { update: allowed, delete: false, createAgendaItems: false, reorderAgendaItems: false, attachInstitution: false } });
+  await wrapper.vm.$nextTick();
+  expect(wrapper.findComponent({ name: 'MeetingForm' }).props('open')).toBe(allowed);
+  if (allowed) expect(new URLSearchParams(window.location.search).has('action')).toBe(false);
+  expect(new URLSearchParams(window.location.search).get('tab')).toBe('agenda');
+  wrapper.unmount();
+  window.history.replaceState({}, '', '/');
 });

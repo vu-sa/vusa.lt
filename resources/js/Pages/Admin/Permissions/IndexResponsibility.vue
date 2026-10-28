@@ -1,5 +1,6 @@
 <template>
   <CollectionPage
+    @row-action="(_item, key) => collectionActions.select(key)"
     :row-actions="rowActions"
     :source
     collection="roles"
@@ -28,7 +29,7 @@
           <PurposeChip :label="item.purpose_label" show-access />
           <span>{{ counts(item) }}</span>
         </p>
-        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" />
+        <CollectionRowActions @select="key => collectionActions.select(key)" :spotlight="item === source?.items.value[0]" :actions="recordActions" />
       </article>
     </template>
 
@@ -43,12 +44,16 @@
       <span v-else-if="column.key === 'updated'" class="tabular-nums text-muted-foreground">{{ formatDate(item.updated_at) }}</span>
     </template>
   </CollectionPage>
+  <CollectionConfirmAction :dialog="collectionActions.dialog.value" @confirm="collectionActions.confirm" @cancel="collectionActions.pending.value = null" />
 </template>
 
 <script setup lang="ts">
+import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
+import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import { useRowAbilities } from '@/Composables/useRowAbilities';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
-import { ArrowUpRight } from '@lucide/vue';
+import { Trash2, Pencil, ArrowUpRight } from '@lucide/vue';
 import { computed, toRef } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
@@ -63,6 +68,8 @@ import PurposeChip from '@/Features/Admin/Responsibilities/PurposeChip.vue';
 import { formatDate } from '@/Utils/dateTime';
 
 interface ResponsibilityRow {
+  is_super_admin: boolean;
+  delete_blocked: boolean;
   id: string;
   title: string;
   description: string | null;
@@ -111,5 +118,15 @@ const columns = computed<CollectionColumn[]>(() => [
 ]);
 const rowActions = (item: ResponsibilityRow): AdminRecordAction[] => [
   { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, href: route('responsibilities.show', item.id) },
+  ...(rowAbilities.can(item.id, 'update') && !item.is_super_admin ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: route('responsibilities.edit', item.id) }] : []),
+  ...(rowAbilities.can(item.id, 'delete') && !item.delete_blocked ? [{ key: `delete:${item.id}:${item.title}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
 ];
+
+const rowAbilities = useRowAbilities('responsibilities', () => source.items.value.map(item => item.id));
+const collectionActions = useCollectionRecordActions({
+  source,
+  deletePermanently: true,
+  routePrefix: 'responsibilities',
+  onMutated: id => rowAbilities.invalidate([id]),
+});
 </script>

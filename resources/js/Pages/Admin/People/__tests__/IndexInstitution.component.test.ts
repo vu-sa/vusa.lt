@@ -8,6 +8,11 @@ import IndexInstitution from '../IndexInstitution.vue';
 import { commonStubs } from '@/tests/stubs';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
+const rowAbilityState = vi.hoisted(() => ({ update: false, delete: false }));
+vi.mock('@/Composables/useRowAbilities', () => ({
+  useRowAbilities: () => ({ can: (_id: string, ability: 'update' | 'delete') => rowAbilityState[ability], invalidate: vi.fn() }),
+}));
+
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 const typesense = vi.hoisted(() => ({
@@ -166,4 +171,17 @@ describe('IndexInstitution following', () => {
     await wrapper.find('[data-testid="bulk"] button').trigger('click');
     expect(subscription.setFollowedMany).toHaveBeenCalledWith(['mine', 'public'], true);
   });
+});
+
+beforeEach(() => { rowAbilityState.update = false; rowAbilityState.delete = false; });
+
+it.each([true, false])('offers edit only for allowed live institution rows (%s)', (allowed) => {
+  trash.active = false;
+  typesense.rows = [];
+  rowAbilityState.update = allowed;
+  const wrapper = mountPage([]);
+  const actions = wrapper.findComponent(CollectionPageStub).props('rowActions')({ id: 'i1', name_lt: 'Taryba' });
+  expect(actions.some(action => action.role === 'edit')).toBe(allowed);
+  expect(actions.some(action => action.role === 'open')).toBe(true);
+  wrapper.unmount();
 });

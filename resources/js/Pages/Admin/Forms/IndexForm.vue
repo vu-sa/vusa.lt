@@ -108,9 +108,12 @@
     @update:open="!$event && (targetFormToForceDelete = null)"
     @confirm="forceDeleteForm"
   />
+  <CollectionConfirmAction :dialog="deleteActions.dialog.value" @confirm="deleteActions.confirm" @cancel="deleteActions.pending.value = null" />
 </template>
 
 <script setup lang="ts">
+import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
+import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { ChevronRight, Pencil, Plus, RotateCcw, Trash2 } from '@lucide/vue';
@@ -167,9 +170,11 @@ const rowActions = (item: FormRow): CollectionRowAction[] => isDeleted.value
   : [
       ...(item.can?.update ? [{ key: 'edit', role: 'edit' as const, label: $t('Redaguoti'), icon: Pencil, href: route('forms.edit', item.id) }] : []),
       { key: 'open', label: $t('Atidaryti'), icon: ChevronRight, role: 'open' as const, href: route('forms.show', item.id) },
+      ...(item.can?.delete ? [{ key: `delete:${item.id}:${localizedName(item)}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
     ];
 
 function selectRowAction(key: string, item: FormRow): void {
+  if (key.startsWith('delete:')) deleteActions.select(key);
   if (key === 'restore') restoreForm(item);
   if (key === 'forceDelete') targetFormToForceDelete.value = item;
 }
@@ -271,4 +276,6 @@ function forceDeleteForm(): void {
     },
   });
 }
+
+const deleteActions = useCollectionRecordActions({ source, routePrefix: 'forms' });
 </script>

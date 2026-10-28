@@ -166,7 +166,7 @@
 import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ExternalLink, EyeOff, FileUp, RefreshCw } from '@lucide/vue';
+import { Pencil, ExternalLink, EyeOff, FileUp, RefreshCw } from '@lucide/vue';
 import { computed, onBeforeUnmount, ref } from 'vue';
 
 import { highlightText, matchTitle } from '@/Shared/Search/matches';
@@ -180,6 +180,7 @@ import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
 import DocumentPreview from '@/Components/Files/DocumentPreview.vue';
 import { Button } from '@/Components/ui/button';
 import { Spinner } from '@/Components/ui/spinner';
+import { useRowAbilities } from '@/Composables/useRowAbilities';
 import { useAdminNavigation } from '@/Composables/useAdminNavigation';
 import { useTypesenseCollectionSource } from '@/Composables/useCollectionSource';
 import FilePicker from '@/Features/Admin/SharepointFilePicker/FilePicker.vue';
@@ -215,17 +216,11 @@ const lead = computed(() => {
 
 const browser = ref<InstanceType<typeof DocumentFolderBrowser> | null>(null);
 
-// Archive rows are acted on by padalinys shortname or own institution, as in DocumentPolicy.
-const canUpdateItem = (item: DocumentSearchResult): boolean => props.abilities.update && (
-  props.abilities.updateTenantShortnames === null
-  || (!!item.tenant_shortname && props.abilities.updateTenantShortnames.includes(item.tenant_shortname))
-  || (!!item.institution_id && props.abilities.updateInstitutionIds.includes(item.institution_id))
-);
-
 const rowActions = (item: DocumentSearchResult): CollectionRowAction[] => [
-  ...(item.anonymous_url ? [{ key: 'open', label: $t('Atidaryti'), icon: ExternalLink, role: 'open' as const, external: true, href: item.anonymous_url }] : []),
-  ...(canUpdateItem(item) ? [
-      { key: 'refresh', label: $t('Atnaujinti iš SharePoint'), icon: RefreshCw, primary: !item.anonymous_url, loading: refreshingId.value === String(item.id) },
+  { key: 'open', label: $t('Atidaryti'), icon: ExternalLink, role: 'open' as const, external: Boolean(item.anonymous_url), href: item.anonymous_url || route('documents.show', item.id) },
+  ...(rowAbilities.can(item.id, 'update') ? [
+      { key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: route('documents.edit', item.id) },
+      { key: 'refresh', label: $t('Atnaujinti iš SharePoint'), icon: RefreshCw, loading: refreshingId.value === String(item.id) },
       // Hiding, not deleting: SharePoint is the source, and a deleted record would only be rediscovered.
       { key: 'hide', label: $t('Slėpti'), icon: EyeOff },
     ] : []),
@@ -297,6 +292,7 @@ function refreshDocument(item: DocumentSearchResult): void {
   refreshingId.value = item.id;
   router.post(route('documents.refresh', item.id), {}, {
     preserveScroll: true,
+    onSuccess: () => rowAbilities.invalidate([item.id]),
     onFinish: () => {
       refreshingId.value = null;
     },
@@ -366,12 +362,16 @@ const hideDescription = computed(() => $t('„:title“ nebebus rodomas vusa.lt,
 
 function handleHide(): void {
   if (!documentToHide.value) return;
-  router.post(route('documents.status'), { document_ids: [Number(documentToHide.value.id)], status: 'hidden' }, {
+  const id = documentToHide.value.id;
+  router.post(route('documents.status'), { document_ids: [Number(id)], status: 'hidden' }, {
     preserveScroll: true,
     onSuccess: () => {
+      rowAbilities.invalidate([id]);
       documentToHide.value = null;
       source?.refresh();
     },
   });
 }
+
+const rowAbilities = useRowAbilities('documents', () => source?.items.value.map(item => item.id) ?? []);
 </script>

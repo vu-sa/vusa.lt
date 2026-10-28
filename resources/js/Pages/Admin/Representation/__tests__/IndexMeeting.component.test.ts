@@ -8,13 +8,18 @@ import IndexMeeting from '../IndexMeeting.vue';
 import { commonStubs } from '@/tests/stubs';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
+const rowAbilityState = vi.hoisted(() => ({ update: false, delete: false }));
+vi.mock('@/Composables/useRowAbilities', () => ({
+  useRowAbilities: () => ({ can: (_id: string, ability: 'update' | 'delete') => rowAbilityState[ability], invalidate: vi.fn() }),
+}));
+
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-const rows = vi.hoisted(() => ({ items: [] as Record<string, unknown>[], refresh: vi.fn() }));
+const rows = vi.hoisted(() => ({ items: [] as Record<string, unknown>[], refresh: vi.fn(), trash: true }));
 
 vi.mock('@/Composables/useCollectionSource', () => ({
-  isTrashView: () => true,
-  useTypesenseCollectionSource: vi.fn(),
+  isTrashView: () => rows.trash,
+  useTypesenseCollectionSource: () => ({ items: ref([]), query: ref(''), activeFilterCount: ref(0), filters: ref({}), directInstitutionIds: ref([]) }),
   useTrashCollectionSource: () => {
     const items = ref(rows.items);
     rows.refresh.mockImplementation(() => { items.value = []; });
@@ -22,22 +27,25 @@ vi.mock('@/Composables/useCollectionSource', () => ({
   },
 }));
 
+const CollectionPageStub = {
+  props: ['source', 'rowActions'],
+  template: '<div><div v-for="item in source.items.value" :key="item.id" :data-row="item.id"><slot name="row" :item="item" :actions="rowActions?.(item) ?? []" /></div></div>',
+};
+
 function mountPage() {
   return mount(IndexMeeting, {
     props: { deletedCount: rows.items.length, recentlyChanged: [], defaultTenantShortnames: [] },
     global: { stubs: {
       ...commonStubs,
       CollectionConfirmAction: true,
-      CollectionPage: {
-        props: ['source', 'rowActions'],
-        template: '<div><div v-for="item in source.items.value" :key="item.id" :data-row="item.id"><slot name="row" :item="item" :actions="rowActions?.(item) ?? []" /></div></div>',
-      },
+      CollectionPage: CollectionPageStub,
     } },
   });
 }
 
 describe('meeting trash actions', () => {
   beforeEach(() => {
+    rows.trash = true;
     vi.clearAllMocks();
     vi.mocked(usePage).mockReturnValue(createMockPage({ auth: { can: { create: { meeting: false } } } }));
   });
@@ -67,4 +75,16 @@ describe('meeting trash actions', () => {
     expect(wrapper.find('[data-row="allowed"] button').exists()).toBe(true);
     expect(wrapper.find('[data-row="denied"] button').exists()).toBe(false);
   });
+});
+
+beforeEach(() => { rowAbilityState.update = false; rowAbilityState.delete = false; });
+
+it.each([true, false])('offers a deep link to the meeting edit sheet only when allowed (%s)', (allowed) => {
+  rows.trash = false;
+  rowAbilityState.update = allowed;
+  const wrapper = mountPage();
+  const actions = wrapper.findComponent(CollectionPageStub).props('rowActions')({ id: 'm1', title: 'Posėdis' });
+  expect(actions.some(action => action.role === 'edit')).toBe(allowed);
+  expect(actions.some(action => action.role === 'open')).toBe(true);
+  wrapper.unmount();
 });

@@ -88,7 +88,7 @@
 import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowUpRight, Plus, RotateCcw, Trash2 } from '@lucide/vue';
+import { Pencil, ArrowUpRight, Plus, RotateCcw, Trash2 } from '@lucide/vue';
 import { computed } from 'vue';
 
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
@@ -103,6 +103,7 @@ import MeetingPreview from '@/Components/Meetings/MeetingPreview.vue';
 import { Button } from '@/Components/ui/button';
 import { meetingCompletionStatuses, type MeetingCompletionStatus } from '@/Constants/statuses';
 import { useActionWindow } from '@/Composables/useActionWindow';
+import { useRowAbilities } from '@/Composables/useRowAbilities';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import {
   isTrashView,
@@ -147,9 +148,12 @@ const liveSource = isTrash
     });
 const source: CollectionSource<MeetingSearchResult> = liveSource ?? useTrashCollectionSource<MeetingSearchResult>('meetings');
 
+const rowAbilities = useRowAbilities('meetings', () => isTrash ? [] : [...source.items.value, ...props.recentlyChanged].map(item => item.id));
+
 const actions = useCollectionRecordActions({
   source,
   routePrefix: 'meetings',
+  onMutated: id => rowAbilities.invalidate([id]),
   canRestore: () => false,
   canForceDelete: () => false,
 });
@@ -160,7 +164,11 @@ const actionsFor = (meeting: MeetingRow) => isTrash
       ...(meeting.abilities?.restore ? [{ key: `restore:${meeting.id}`, label: $t('Atkurti'), icon: RotateCcw, primary: !meeting.abilities?.forceDelete }] : []),
       ...(meeting.abilities?.forceDelete ? [{ key: `forceDelete:${meeting.id}:${meeting.title}`, label: $t('Ištrinti visam laikui'), icon: Trash2, destructive: true }] : []),
     ]
-  : [{ key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, href: route('meetings.show', meeting.id), role: 'open' as const }];
+  : [
+      { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, href: route('meetings.show', meeting.id), role: 'open' as const },
+      ...(rowAbilities.can(meeting.id, 'update') ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: route('meetings.edit', { meeting: meeting.id, action: 'edit' }) }] : []),
+      ...(rowAbilities.can(meeting.id, 'delete') ? [{ key: `delete:${meeting.id}:${meeting.title}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
+    ];
 
 const meetingKey = (meeting: MeetingSearchResult) => String(meeting.id);
 

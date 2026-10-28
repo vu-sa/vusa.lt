@@ -137,7 +137,7 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowUpRight, CircleSlash, Merge, Plus } from '@lucide/vue';
+import { Trash2, Pencil, ArrowUpRight, CircleSlash, Merge, Plus } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
@@ -154,6 +154,7 @@ import UserPreview from '@/Components/Users/UserPreview.vue';
 import { userPreviewFromRecord } from '@/Components/Users/userPreview';
 import { Button } from '@/Components/ui/button';
 import { useAdminNavigation } from '@/Composables/useAdminNavigation';
+import { useRowAbilities } from '@/Composables/useRowAbilities';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { isTrashView, useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
 import type { StatusPresentation } from '@/Constants/statuses';
@@ -230,15 +231,22 @@ const source = useDatabaseCollectionSource<UserRow>({
   preserveUrlKeys: ['showDeleted'],
 });
 
+const rowAbilities = useRowAbilities('users', () => isTrash ? [] : source.items.value.map(item => item.id));
+
 const actions = useCollectionRecordActions({
   source,
   routePrefix: 'users',
+  onMutated: id => rowAbilities.invalidate([id]),
   canRestore: () => canCreate.value,
   canForceDelete: () => canForceDelete.value,
 });
 const actionsFor = (user: UserRow): CollectionRowAction[] => isTrash
   ? actions.rowActions(user, user.name, true)
-  : [{ key: 'open', label: $t('Atidaryti'), role: 'open' as const, icon: ArrowUpRight, href: route('users.show', user.id) }];
+  : [
+      { key: 'open', label: $t('Atidaryti'), role: 'open' as const, icon: ArrowUpRight, href: route('users.show', user.id) },
+      ...(rowAbilities.can(user.id, 'update') ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: route('users.edit', user.id) }] : []),
+      ...(rowAbilities.can(user.id, 'delete') ? [{ key: `delete:${user.id}:${user.name}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
+    ];
 
 /** A member with no duties belongs to no unit, so no other tenant admin sees them until one is assigned. */
 const withoutUnit: StatusPresentation = { label: 'Be padalinio', role: 'attention', icon: CircleSlash };
@@ -296,6 +304,7 @@ const toMergeRecords = (users: UserRow[]) =>
   users.map(user => ({ id: user.id, label: user.name, context: user.email, email: user.email, can_update_identity: user.can_update_identity }));
 
 function merged(): void {
+  rowAbilities.invalidate();
   mergeRecords.value = [];
   mergeMode.value = false;
   source.refresh();

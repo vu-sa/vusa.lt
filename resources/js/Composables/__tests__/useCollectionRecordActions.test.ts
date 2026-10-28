@@ -57,3 +57,20 @@ describe('useCollectionRecordActions', () => {
     expect(onSuccess).toHaveBeenCalledTimes(restoreOpensRecord ? 0 : 1);
   });
 });
+
+
+it('invalidates only after a successful row mutation', () => {
+  const invalidate = vi.fn();
+  const actions = useCollectionRecordActions({ routePrefix: 'institutions', source: { refresh: vi.fn() }, onMutated: invalidate });
+  actions.select('delete:i1:Senatas');
+  actions.confirm();
+  expect(invalidate).not.toHaveBeenCalled();
+  vi.mocked(router.delete).mock.calls.at(-1)?.[1].onSuccess();
+  expect(invalidate).toHaveBeenCalledWith('i1');
+});
+
+it('does not promise restoration for records deleted permanently', () => {
+  const actions = useCollectionRecordActions({ routePrefix: 'responsibilities', source: { refresh: vi.fn() }, deletePermanently: true });
+  actions.select('delete:r1:Atsakomybė');
+  expect(actions.dialog.value?.description).toBe('Šis veiksmas negrįžtamas.');
+});

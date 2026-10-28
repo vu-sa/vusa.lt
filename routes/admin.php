@@ -229,7 +229,7 @@ Route::get('files', [FilesController::class, 'index'])->name('files.index');
 Route::post('files/compress', [FilesController::class, 'compressImage'])->name('files.compress');
 
 // No destroy: SharePoint is the source, a deleted record would be rediscovered as a new one. Hide instead.
-Route::resource('documents', DocumentController::class)->only('index', 'show');
+Route::resource('documents', DocumentController::class)->only('index', 'show', 'edit');
 Route::post('documents/{document}/refresh', [DocumentController::class, 'refresh'])->name('documents.refresh');
 Route::post('documents/status', [DocumentController::class, 'updateStatus'])->name('documents.status');
 Route::post('documents/discover', [DocumentController::class, 'discover'])->name('documents.discover');

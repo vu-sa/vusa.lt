@@ -158,7 +158,7 @@
 import { getSearchTranslation, getSearchTranslations } from '@/Composables/useTranslatedTitle';
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowUpRight, Eye, EyeOff, Plus } from '@lucide/vue';
+import { Trash2, Pencil, ArrowUpRight, Eye, EyeOff, Plus } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import CollectionActivityStatus from '@/Components/Collection/CollectionActivityStatus.vue';
@@ -171,6 +171,7 @@ import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { EmptyState } from '@/Components/Patterns';
 import InstitutionPreview from '@/Components/Institutions/InstitutionPreview.vue';
 import { Button } from '@/Components/ui/button';
+import { useRowAbilities } from '@/Composables/useRowAbilities';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { useInstitutionSubscription } from '@/Composables/useInstitutionSubscription';
 import { escapeFilterValue } from '@/Features/Admin/AdminSearch/Services/AdminSearchService';
@@ -291,10 +292,12 @@ function canFollow(institution: InstitutionRow): boolean {
   ));
 }
 
-// Live institutions are edited on their record page; the list only acts on the trash.
+const rowAbilities = useRowAbilities('institutions', () => isTrash ? [] : source.items.value.map(item => item.id));
+
 const actions = useCollectionRecordActions({
   source,
   routePrefix: 'institutions',
+  onMutated: id => rowAbilities.invalidate([id]),
   restoreOpensRecord: true,
   canRestore: () => canCreate.value,
   canForceDelete: () => canForceDelete.value,
@@ -310,6 +313,8 @@ const actionsFor = (institution: InstitutionRow): CollectionRowAction[] => isTra
       : action)
   : [
       { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, href: route('institutions.show', institution.id), role: 'open' as const },
+      ...(rowAbilities.can(institution.id, 'update') ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: route('institutions.edit', institution.id) }] : []),
+      ...(rowAbilities.can(institution.id, 'delete') ? [{ key: `delete:${institution.id}:${nameOf(institution)}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
       ...(isFollowed(institution)
         ? [{ key: 'follow', label: $t('Nebesekti'), icon: EyeOff }]
         : canFollow(institution) ? [{ key: 'follow', label: $t('Sekti'), icon: Eye }] : []),
@@ -325,6 +330,7 @@ function onRowAction(key: string, institution: InstitutionRow): void {
 }
 
 function statusUpdated(item: InstitutionRow, active: boolean): void {
+  rowAbilities.invalidate([item.id]);
   source.patchItems([String(item.id)], active ? { is_active: true } : { is_active: false, current_user_names: [] });
   source.refresh();
 }
