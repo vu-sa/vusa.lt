@@ -5,6 +5,7 @@
     :head-title="barTitle"
     :lead="isEditing ? undefined : $t('Užregistruok problemą, su kuria susidūrė studentai.')"
     :entity-type="ModelEnum.PROBLEM"
+    required-note
     :back-href="isEditing && form.id ? route('problems.show', form.id) : route('problems.index')"
     :back-label="isEditing ? $t('Į problemą') : $t('Problemos')"
     :processing="form.processing"
@@ -32,12 +33,9 @@
           {{ $t('problems.internal_support.link') }}
         </Link>
       </p>
-      <p class="max-w-prose border-l border-border pl-3 text-sm leading-relaxed text-muted-foreground" data-testid="problem-required-note">
-        {{ $t('problems.form.instructions') }}
-      </p>
       <FormFieldWrapper
         id="problem-title"
-        :label="`${capitalize($tChoice('entities.problem.title', 1))} (${activeLocale.toUpperCase()})`"
+        :label="capitalize($tChoice('entities.problem.title', 1))"
         :required="!form.title[otherLocale].trim()"
         :error="form.errors[`title.${activeLocale}`]"
       >
@@ -52,7 +50,7 @@
 
     <FormFieldWrapper
       id="problem-description"
-      :label="`${capitalize($tChoice('entities.problem.description', 1))} (${activeLocale.toUpperCase()})`"
+      :label="capitalize($tChoice('entities.problem.description', 1))"
       :required="!form.description[otherLocale].trim()"
       :error="form.errors[`description.${activeLocale}`]"
     >
@@ -78,25 +76,16 @@
     </FormFieldWrapper>
 
     <template #aside>
-      <FormPanel :title="$t('Būsena ir priskyrimas')" :icon="CircleDot" title-class="text-brand">
+      <FormPanel :title="$t('Būsena ir priskyrimas')" :icon="CircleDot">
         <div class="grid gap-4 lg:grid-cols-2">
-          <FormFieldWrapper
+          <TenantSelectField
             id="problem-tenant"
-            :label="capitalize($tChoice('entities.tenant.model', 1))"
+            :model-value="form.tenant_id"
+            :tenants="tenants"
             required
             :error="form.errors.tenant_id"
-          >
-            <Select v-model="tenantIdString">
-              <SelectTrigger id="problem-tenant">
-                <SelectValue :placeholder="capitalize($tChoice('entities.tenant.model', 1))" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem v-for="tenant in tenants" :key="tenant.id" :value="String(tenant.id)">
-                  {{ tenant.shortname || tenant.fullname }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </FormFieldWrapper>
+            @update:model-value="onTenantChanged"
+          />
 
           <FormFieldWrapper
             id="problem-status"
@@ -104,22 +93,11 @@
             required
             :error="form.errors.status"
           >
-            <Select v-model="form.status">
-              <SelectTrigger id="problem-status">
-                <SelectValue :placeholder="capitalize($tChoice('entities.problem.status', 1))" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="open">
-                  {{ $t('Atvira') }}
-                </SelectItem>
-                <SelectItem value="in_progress">
-                  {{ $t('Vykdoma') }}
-                </SelectItem>
-                <SelectItem value="resolved">
-                  {{ $t('Išspręsta') }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <FormSegmentedControl
+              v-model="form.status"
+              :options="statusOptions"
+              :aria-label="capitalize($tChoice('entities.problem.status', 1))"
+            />
           </FormFieldWrapper>
         </div>
 
@@ -198,7 +176,7 @@
         </div>
       </FormPanel>
 
-      <FormPanel :title="$t('Klasifikacija')" :icon="Layers" title-class="text-brand">
+      <FormPanel :title="$t('Klasifikacija')" :icon="Layers">
         <FormFieldWrapper
           id="problem-categories"
           :label="capitalize($tChoice('entities.problem.categories', 2))"
@@ -293,9 +271,11 @@ import { capitalize, computed, ref } from 'vue';
 
 import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
+import TenantSelectField from '@/Components/AdminForms/TenantSelectField.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
 import FormPanel from '@/Components/Patterns/FormPanel.vue';
+import FormSegmentedControl, { type FormSegmentOption } from '@/Components/Patterns/FormSegmentedControl.vue';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { Button } from '@/Components/ui/button';
 import {
@@ -419,17 +399,19 @@ const missingLocaleCounts = computed(() => ({
   en: form.title.en.trim() === '' ? 1 : 0,
 }));
 
-const tenantIdString = computed({
-  get: () => (form.tenant_id != null ? String(form.tenant_id) : ''),
-  set: (val: string) => {
-    const tenantId = val ? Number(val) : null;
-    if (tenantId !== form.tenant_id) {
-      form.institutions = [];
-      selectedInstitutionHits.value = [];
-    }
-    form.tenant_id = tenantId;
-  },
-});
+const statusOptions: FormSegmentOption[] = [
+  { value: 'open', label: $t('Atvira') },
+  { value: 'in_progress', label: $t('Vykdoma') },
+  { value: 'resolved', label: $t('Išspręsta') },
+];
+
+const onTenantChanged = (tenantId: number | null) => {
+  if (tenantId !== form.tenant_id) {
+    form.institutions = [];
+    selectedInstitutionHits.value = [];
+  }
+  form.tenant_id = tenantId;
+};
 
 // --- User search ---
 const userSearchTerm = ref('');

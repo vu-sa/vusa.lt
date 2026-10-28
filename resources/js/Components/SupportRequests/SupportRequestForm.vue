@@ -12,6 +12,7 @@
     :available-locales="[]"
     :created-at="supportRequest?.created_at"
     :updated-at="supportRequest?.updated_at"
+    required-note
     @submit="submit"
   >
     <template v-if="isEditing && supportRequest?.status" #title-status>
@@ -158,35 +159,27 @@
     </FormSection>
 
     <template #aside>
-      <FormPanel :title="$t('Klasifikacija')" :icon="Layers" title-class="text-brand">
+      <FormPanel :title="$t('Klasifikacija')" :icon="Layers">
         <FormFieldWrapper id="support_request_type_id" :label="$t('Tipas')" required :error="form.errors.support_request_type_id">
-          <Select v-model="form.support_request_type_id">
-            <SelectTrigger id="support_request_type_id">
-              <SelectValue :placeholder="$t('Pasirinkti tipą')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="t in typeOptions" :key="t.value" :value="t.value">
-                {{ t.label }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          <NativeSelect
+            id="support_request_type_id"
+            v-model="form.support_request_type_id"
+            :options="typeOptions"
+            :placeholder="$t('Pasirinkti tipą')"
+          />
         </FormFieldWrapper>
 
         <FormFieldWrapper id="support_request_area_id" :label="$t('Sritis')" required :error="form.errors.support_request_area_id">
-          <Select v-model="form.support_request_area_id">
-            <SelectTrigger id="support_request_area_id">
-              <SelectValue :placeholder="$t('Pasirinkti sritį')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="a in areaOptions" :key="a.value" :value="a.value">
-                {{ a.label }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          <NativeSelect
+            id="support_request_area_id"
+            v-model="form.support_request_area_id"
+            :options="areaOptions"
+            :placeholder="$t('Pasirinkti sritį')"
+          />
         </FormFieldWrapper>
       </FormPanel>
 
-      <FormPanel :title="$t('Matomumas')" :icon="Eye" title-class="text-brand">
+      <FormPanel :title="$t('Matomumas')" :icon="Eye">
         <FormFieldWrapper id="visibility" :label="$t('Matomumas')" required :error="form.errors.visibility">
           <RadioGroup v-model="form.visibility" class="grid gap-2.5">
             <label
@@ -217,14 +210,14 @@
             <Info class="h-4 w-4 shrink-0 mt-0.5" />
             <span class="leading-relaxed">
               <!-- eslint-disable-next-line max-len -->
-              {{ $t('Viešesnis matomumas (rolėms arba visiems nariams) leidžia kitiems matyti žinomas problemas, išvengti pasikartojančių pranešimų ir numatyti galimus sistemos sutrikimus (regresijas).') }}
+              {{ $t('Viešesnis matomumas (atsakomybėms arba visiems nariams) leidžia kitiems matyti žinomas problemas, išvengti pasikartojančių pranešimų ir numatyti galimus sistemos sutrikimus (regresijas).') }}
             </span>
           </div>
         </FormFieldWrapper>
 
         <div v-if="form.visibility === 'roles'" class="space-y-4 pt-2 border-t">
           <div>
-            <Label class="text-sm font-medium mb-2 block">{{ $t('Pasirinkti roles:') }}</Label>
+            <Label class="text-sm font-medium mb-2 block">{{ $t('Pasirinkti atsakomybes:') }}</Label>
             <div v-if="roles.length > 0" class="grid gap-2">
               <label
                 v-for="role in roles"
@@ -239,7 +232,7 @@
               </label>
             </div>
             <p v-else class="text-xs text-muted-foreground italic">
-              {{ $t('Neturi priskirtų rolių, kurioms galėtum suteikti prieigą.') }}
+              {{ $t('Neturi priskirtų atsakomybių, kurioms galėtum suteikti prieigą.') }}
             </p>
             <p v-if="form.errors.roles" class="text-xs text-destructive mt-1">
               {{ form.errors.roles }}
@@ -272,7 +265,7 @@
               </div>
             </div>
             <p v-else class="text-xs text-muted-foreground italic">
-              {{ $t('Pasirink bent vieną rolę, kad pamatytum narius, turėsiančius prieigą.') }}
+              {{ $t('Pasirink bent vieną atsakomybę, kad pamatytum narius, turėsiančius prieigą.') }}
             </p>
           </div>
         </div>
@@ -281,7 +274,7 @@
           v-if="!isEditing && users.length > 0"
           id="involved_users"
           :label="$t('Susiję žmonės')"
-          :helper-text="$t('Pridėti žmonės matys šį pranešimą, galės jį komentuoti ir gaus atnaujinimus.')"
+          :hint="$t('Pridėti žmonės matys šį pranešimą, galės jį komentuoti ir gaus atnaujinimus.')"
           :error="form.errors.involved_users"
           class="pt-2 border-t"
         >
@@ -311,13 +304,7 @@ import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/Components/ui/radio-group';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/Components/ui/select';
+import NativeSelect from '@/Components/ui/native-select/NativeSelect.vue';
 import { Textarea } from '@/Components/ui/textarea';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { supportRequestStatuses } from '@/Constants/statuses';
@@ -391,10 +378,10 @@ const visibilityOptions = computed(() => [
   },
   {
     value: 'roles',
-    label: $t('Pasirinktoms rolėms'),
+    label: $t('Pasirinktoms atsakomybėms'),
     description: props.roles.length === 0
-      ? $t('Neturi priskirtų rolių, kurioms galėtum suteikti prieigą.')
-      : $t('Matoma nurodytų rolių nariams ir administratoriams.'),
+      ? $t('Neturi priskirtų atsakomybių, kurioms galėtum suteikti prieigą.')
+      : $t('Matoma nurodytų atsakomybių nariams ir administratoriams.'),
     icon: Users,
     disabled: props.roles.length === 0,
   },

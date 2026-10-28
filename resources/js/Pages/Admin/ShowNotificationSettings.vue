@@ -45,7 +45,6 @@
       :key="section.value"
       :title="$t(`notifications.categories.${section.value}`)"
       :icon="section.icon"
-      title-class="text-brand"
       flush
       data-slot="notification-section"
     >
@@ -135,7 +134,7 @@
     />
 
     <template #aside>
-      <FormPanel :title="$t('notifications.preferences.mute_all')" :icon="BellOff" title-class="text-brand">
+      <FormPanel :title="$t('notifications.preferences.mute_all')" :icon="BellOff">
         <template v-if="mutedUntil">
           <p data-testid="muted-banner" class="flex items-center gap-1.5 text-sm font-medium text-[var(--status-attention)]">
             <BellOff class="size-4 shrink-0" aria-hidden="true" />
@@ -159,7 +158,7 @@
         </p>
       </FormPanel>
 
-      <FormPanel :title="$t('notifications.preferences.emails_title')" :icon="MailIcon" title-class="text-brand">
+      <FormPanel :title="$t('notifications.preferences.emails_title')" :icon="MailIcon">
         <DigestEmailSelector
           v-model="form.emails"
           :available-emails

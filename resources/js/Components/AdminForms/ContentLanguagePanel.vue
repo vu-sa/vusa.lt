@@ -1,5 +1,5 @@
 <template>
-  <FormPanel :title="$t('Kalba')" :icon="Languages" title-class="text-brand">
+  <FormPanel :title="$t('Kalba')" :icon="Languages">
     <FormFieldWrapper
       id="lang"
       :label="labels.lang"

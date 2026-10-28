@@ -3,6 +3,7 @@
     :title="isCreate ? $t('Nauja naujiena') : (form.title || $t('Naujiena'))"
     :bar-title
     entity-type="news"
+    :required-note="true"
     :back-href="route('news.index')"
     :back-label="$t('Naujienos')"
     :processing="form.processing"
@@ -144,7 +145,7 @@
     <FormFieldWrapper
       v-if="form.image_media"
       id="image_author"
-      :label="`${$t('Nuotraukos autorius')} (${$t('neprivaloma')})`"
+      :label="$t('Nuotraukos autorius')"
       :hint="$t('Žmogus arba organizacija, kurie sukūrė nuotrauką')"
       :error="form.errors['image_media.author']"
     >
@@ -179,7 +180,7 @@
         />
       </ContentPublishPanel>
 
-      <FormPanel :title="$t('Temos')" :icon="Tags" title-class="text-brand">
+      <FormPanel :title="$t('Temos')" :icon="Tags">
         <TagMultiSelect v-model="form.tags" :available-tags="props.availableTags" :hint="$t('Temos, pagal kurias naujieną galima rasti.')" />
       </FormPanel>
 
@@ -199,7 +200,7 @@
         @update:lang="form.validate('lang')"
       />
 
-      <FormPanel :title="$t('Rodymo nustatymai')" :icon="LayoutTemplate" title-class="text-brand" flush>
+      <FormPanel :title="$t('Rodymo nustatymai')" :icon="LayoutTemplate" flush>
         <FormToggleRow
           v-model="form.show_breadcrumbs"
           :label="$t('Rodyti naujienos kelią')"

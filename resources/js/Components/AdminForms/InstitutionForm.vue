@@ -5,6 +5,7 @@
     :head-title="barTitle"
     :lead="isEditing ? undefined : $t('Sukurk institucijos įrašą; pareigybes, kadencijas ir sekretorius pridėsi jos puslapyje.')"
     :entity-type="ModelEnum.INSTITUTION"
+    :required-note="true"
     :back-href="isEditing ? route('institutions.show', institution.id) : route('institutions.index')"
     :back-label="isEditing ? $t('Į instituciją') : $t('Institucijos')"
     :processing="form.processing"
@@ -26,12 +27,11 @@
     </template>
 
     <FormSection
-      :title="$t('Kas tai?')"
-      :description="$t('Institucija gali būti bet koks VU SA arba VU organas: padalinys, darbo grupė, studijų programos komitetas ir pan.')"
+      :title="$t('Pagrindinė informacija')"
     >
       <FormFieldWrapper
         id="institution-name"
-        :label="`${$t('Pavadinimas')} (${activeLocale.toUpperCase()})`"
+        :label="$t('Pavadinimas')"
         required
         :error="form.errors[`name.${activeLocale}`]"
       >
@@ -40,7 +40,7 @@
 
       <FormFieldWrapper
         id="institution-short-name"
-        :label="`${$t('forms.fields.short_name')} (${activeLocale.toUpperCase()}) (${$t('neprivaloma')})`"
+        :label="$t('forms.fields.short_name')"
         :hint="$t('Trumpas pavadinimas rodomas, kai vietos mažai.')"
         :error="form.errors[`short_name.${activeLocale}`]"
       >
@@ -49,7 +49,7 @@
 
       <FormFieldWrapper
         id="institution-description"
-        :label="`${$t('Aprašymas')} (${activeLocale.toUpperCase()})`"
+        :label="$t('Aprašymas')"
         :error="form.errors[`description.${activeLocale}`]"
       >
         <TiptapEditor :key="activeLocale" v-model="form.description[activeLocale]" tools="description" html />
@@ -81,14 +81,14 @@
 
       <FormFieldWrapper
         id="institution-address"
-        :label="`${$t('Adresas')} (${activeLocale.toUpperCase()})`"
+        :label="$t('Adresas')"
       >
         <Input id="institution-address" v-model="form.address[activeLocale]" :class="['h-11', fieldSurfaceClass]" />
       </FormFieldWrapper>
 
       <FormFieldWrapper
         id="institution-hours"
-        :label="`${$t('Darbo laikas')} (${activeLocale.toUpperCase()})`"
+        :label="$t('Darbo laikas')"
       >
         <Textarea id="institution-hours" v-model="form.working_hours[activeLocale]" rows="3" :class="fieldSurfaceClass" />
       </FormFieldWrapper>
@@ -117,7 +117,7 @@
     </FormSection>
 
     <template #aside>
-      <FormPanel :title="$t('Būsena ir padalinys')" :icon="Building2" title-class="text-brand">
+      <FormPanel :title="$t('Būsena ir padalinys')" :icon="Building2">
         <ActivityStatusField
           id="institution-active"
           v-model="isActive"
@@ -153,7 +153,7 @@
         />
       </FormPanel>
 
-      <FormPanel :title="$t('Tipas ir valdymas')" :icon="Layers" title-class="text-brand">
+      <FormPanel :title="$t('Tipas ir valdymas')" :icon="Layers">
         <FormFieldWrapper id="institution-types" :label="$t('Institucijos tipas')" :error="form.errors.types">
           <TypeTreeMultiSelect
             id="institution-types"
@@ -202,7 +202,7 @@
       <FormFieldWrapper
         v-else
         id="institution-alias"
-        :label="`${$t('Nuoroda')} (${$t('neprivaloma')})`"
+        :label="$t('Nuoroda')"
         :hint="$t('Mažosios raidės, skaičiai ir brūkšneliai. Palik tuščią – sukursime iš pavadinimo.')"
         :error="form.errors.alias"
       >
@@ -216,7 +216,7 @@
 
       <FormFieldWrapper
         id="institution-periodicity"
-        :label="$t('Susitikimų periodiškumas')"
+        :label="$t('Posėdžių periodiškumas')"
         :hint="$t('Perrašo tipo nustatymą. Jei nenurodyta, naudojamas tipo arba numatytasis 30 dienų nustatymas.')"
       >
         <div class="flex items-center gap-2">

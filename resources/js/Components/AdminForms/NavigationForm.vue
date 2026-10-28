@@ -3,6 +3,7 @@
     :title="isCreate ? $t('navigation.form.new_link') : (form.name || form.url || $t('navigation.form.edit_link'))"
     :bar-title
     entity-type="navigation"
+    required-note
     :back-href="route('navigation.index')"
     :back-label="$t('navigation.title')"
     :processing="form.processing"
@@ -68,7 +69,7 @@
         </FormFieldWrapper>
 
         <FormFieldWrapper id="url" :label="$t('navigation.form.url')" :required="!isFooterRoot" :error="form.errors.url"
-          :helper-text="isFooterRoot ? $t('navigation.form.footer_category_url_hint') : $t('navigation.form.link_target_manual')">
+          :hint="isFooterRoot ? $t('navigation.form.footer_category_url_hint') : $t('navigation.form.link_target_manual')">
           <div class="flex gap-1.5">
             <Input id="url" v-model="form.url" type="text" :class="['h-11', fieldSurfaceClass]" />
             <Button variant="outline" size="icon" as="a" :href="form.url" target="_blank" rel="noopener noreferrer" class="size-11 shrink-0">
@@ -194,7 +195,7 @@
 
     <template #aside>
       <!-- §3 Appearance — footer links have exactly one look, so there is nothing to pick -->
-      <FormPanel v-if="!isDivider && !isFooter" :title="$t('navigation.form.section_appearance')" :icon="Palette" title-class="text-brand">
+      <FormPanel v-if="!isDivider && !isFooter" :title="$t('navigation.form.section_appearance')" :icon="Palette">
         <FormFieldWrapper id="type" :label="$t('navigation.form.type')" required>
           <VisualOptionSelect v-model="linkType" :options="linkStyleOptions" :columns="3" icon-class="h-8 w-14" />
         </FormFieldWrapper>
@@ -227,7 +228,7 @@
       </FormPanel>
 
       <!-- §4 Advanced (collapsible, closed by default) -->
-      <FormPanel :title="$t('navigation.form.section_advanced')" :icon="SlidersHorizontal" title-class="text-brand">
+      <FormPanel :title="$t('navigation.form.section_advanced')" :icon="SlidersHorizontal">
         <Collapsible v-model:open="advancedOpen" class="w-full">
           <CollapsibleTrigger as-child>
             <Button variant="ghost" class="h-auto w-full justify-between p-0 hover:bg-transparent">

@@ -5,6 +5,7 @@
     :head-title="barTitle"
     :lead="isEditing ? (duty?.institution?.short_name ?? duty?.institution?.name) : $t('Sukurk naują pareigybę institucijoje')"
     :entity-type="ModelEnum.DUTY"
+    :required-note="true"
     :activity-subject="duty?.id ? { type: 'duty', id: duty.id } : undefined"
     :created-at="duty?.created_at"
     :updated-at="duty?.updated_at"
@@ -41,7 +42,7 @@
       <!-- Title input -->
       <FormFieldWrapper
         id="duty-name"
-        :label="`${$t('Pavadinimas')} (${activeLocale.toUpperCase()})`"
+        :label="$t('Pavadinimas')"
         required
         :error="form.errors[`name.${activeLocale}`]"
         :hint="$t('forms.helpers.duty_name_inflected_hint')"
@@ -259,7 +260,7 @@
 
     <!-- Aside Slot -->
     <template #aside>
-      <FormPanel :title="$t('Nustatymai')" :icon="Building2" title-class="text-brand">
+      <FormPanel :title="$t('Nustatymai')" :icon="Building2">
         <ActivityStatusField
           v-if="isEditing && canEditDuty"
           id="duty-active"
@@ -313,7 +314,6 @@
         v-if="canEditDuty || $page.props.auth?.user?.isSuperAdmin || (assignableDuties && assignableDuties.length > 0)"
         :title="$t('Papildomi nustatymai')"
         :icon="SlidersHorizontal"
-        title-class="text-brand"
       >
         <!-- Ex-officio Target Duties -->
         <FormFieldWrapper

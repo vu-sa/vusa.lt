@@ -19,16 +19,12 @@
         :label="$t('settings.form_settings.form_label')"
         :error="form.errors.member_registration_form_id"
       >
-        <Select v-model="form.member_registration_form_id">
-          <SelectTrigger id="member_registration_form_id">
-            <SelectValue :placeholder="$t('settings.form_settings.form_placeholder')" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem v-for="formOption in forms" :key="formOption.id" :value="formOption.id">
-              {{ formOption.name }}
-            </SelectItem>
-          </SelectContent>
-        </Select>
+        <NativeSelect
+          id="member_registration_form_id"
+          v-model="form.member_registration_form_id"
+          :options="formOptions"
+          :placeholder="$t('settings.form_settings.form_placeholder')"
+        />
       </FormFieldWrapper>
 
       <div class="space-y-1 border-t border-border pt-4 text-sm" data-testid="registration-recipients">
@@ -61,19 +57,12 @@
         :label="$t('settings.form_settings.student_rep_form_label')"
         :error="form.errors.student_rep_registration_form_id"
       >
-        <Select v-model="form.student_rep_registration_form_id">
-          <SelectTrigger id="student_rep_registration_form_id">
-            <SelectValue :placeholder="$t('settings.form_settings.form_placeholder')" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem :value="null">
-              {{ $t('settings.form_settings.no_form_selected') }}
-            </SelectItem>
-            <SelectItem v-for="formOption in forms" :key="formOption.id" :value="formOption.id">
-              {{ formOption.name }}
-            </SelectItem>
-          </SelectContent>
-        </Select>
+        <NativeSelect
+          id="student_rep_registration_form_id"
+          v-model="form.student_rep_registration_form_id"
+          :options="formOptions"
+          :placeholder="$t('settings.form_settings.no_form_selected')"
+        />
       </FormFieldWrapper>
 
       <FormFieldWrapper
@@ -94,19 +83,14 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { Link, useForm } from '@inertiajs/vue3';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import FormSection from '@/Components/Patterns/FormSection.vue';
 import { TypeTreeMultiSelect } from '@/Components/AdminForms/TypeTree';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/Components/ui/select';
+import NativeSelect from '@/Components/ui/native-select/NativeSelect.vue';
 
 interface InstitutionType {
   id: number;
@@ -130,6 +114,13 @@ const form = useForm({
   student_rep_registration_form_id: props.student_rep_registration_form_id,
   student_rep_institution_type_ids: props.student_rep_institution_type_ids ?? [],
 });
+
+const formOptions = computed(() =>
+  props.forms.map(f => ({
+    label: f.name,
+    value: f.id,
+  })),
+);
 
 const handleFormSubmit = () => {
   form.post(route('settings.forms.update'));
