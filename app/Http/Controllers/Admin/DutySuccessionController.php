@@ -27,7 +27,7 @@ class DutySuccessionController extends AdminController
     {
         $this->handleAuthorization('update', $duty);
 
-        $this->linkOf($duty, $succession)->delete();
+        static::linkOf($duty, $succession)->delete();
 
         return back()->with('success', __('Ankstesnė pareigybė atsieta.'));
     }

@@ -63,7 +63,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Tenant> $assignableTenants
  * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Collection<int, Comment> $comments
- * @property-read DutyDutyType|Dutiable|null $pivot
+ * @property-read DutyDutyType|DutySuccession|Dutiable|null $pivot
  * @property-read Collection<int, User> $current_users
  * @property-read Collection<int, Document> $documents
  * @property-read Collection<int, Dutiable> $dutiables

@@ -122,8 +122,8 @@ test('padaliniai category provides institution photos and preserves the logo fal
 
             expect($withPhoto)->toHaveKey('image_url', $photo['url'])
                 ->toHaveKey('image_media', $photo)
-                ->not->toHaveKey('media');
-            expect($fallback)->toHaveKey('image_url', null)
+                ->not->toHaveKey('media')
+                ->and($fallback)->toHaveKey('image_url', null)
                 ->toHaveKey('image_media', null)
                 ->toHaveKey('logo_url', '/images/unit-logo.svg');
 

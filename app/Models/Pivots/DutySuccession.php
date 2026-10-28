@@ -30,6 +30,7 @@ use Illuminate\Support\Carbon;
 #[Table(name: 'duty_successions')]
 class DutySuccession extends Pivot
 {
+    #[\Override]
     public $incrementing = true;
 
     #[\Override]

@@ -25,6 +25,6 @@ it('refreshes trash rows after permanent deletion without reloading the page', f
     $page->click('[data-slot="confirm-dialog-action"]');
     $page->assertDontSee($name)->assertNoJavaScriptErrors();
 
-    expect($page->script('window.trashRefreshMarker'))->toBe('preserved');
-    expect($record->newQuery()->withTrashed()->find($record->getKey()))->toBeNull();
+    expect($page->script('window.trashRefreshMarker'))->toBe('preserved')
+        ->and($record->newQuery()->withTrashed()->find($record->getKey()))->toBeNull();
 })->with(['institutions', 'duties']);

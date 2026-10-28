@@ -30,8 +30,8 @@ test('registration values are validated by their field definition', function (st
 
     if ($valid) {
         $response->assertRedirect();
-        expect(Registration::query()->count())->toBe(1);
-        expect(FieldResponse::query()->first()->response['value'])->toBe($value);
+        expect(Registration::query()->count())->toBe(1)
+            ->and(FieldResponse::query()->first()->response['value'])->toBe($value);
     } else {
         $response->assertUnprocessable()->assertJsonValidationErrors("data.{$this->field->id}.value");
         expect(Registration::query()->count())->toBe(0);

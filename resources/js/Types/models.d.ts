@@ -642,13 +642,29 @@ declare global {
       activities_as_subject_exists: boolean
     }
 
+    export interface DutySuccession {
+      // columns
+      id: number
+      predecessor_id: string
+      successor_id: string
+      effective_on: string
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      predecessor?: Duty
+      successor?: Duty
+      // counts
+      // exists
+      predecessor_exists: boolean
+      successor_exists: boolean
+    }
+
     export interface DutyType {
       // columns
       id: number
       parent_id?: number | null
       title?: Array<unknown> | null
       description?: Array<unknown> | null
-      slug?: string | null
       extra_attributes?: Array<unknown> | null
       created_at?: string | null
       updated_at?: string | null
@@ -3000,3 +3016,4 @@ declare global {
 
   }
 }
+
