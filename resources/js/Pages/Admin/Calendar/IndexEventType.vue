@@ -219,6 +219,7 @@ const source = useDatabaseCollectionSource<EventTypeRow>({
   defaultSort: 'sort_order:asc',
   sortOptions: () => [
     { value: 'sort_order:asc', label: $t('Pagal rikiavimo tvarką') },
+    { value: 'sort_order:desc', label: $t('Pagal rikiavimo tvarką (atvirkščiai)') },
     { value: 'name:asc', label: $t('Pagal pavadinimą (A–Z)') },
     { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)') },
   ],
@@ -226,7 +227,7 @@ const source = useDatabaseCollectionSource<EventTypeRow>({
 });
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'name', label: $t('forms.fields.title') },
+  { key: 'name', label: $t('forms.fields.title'), sortField: 'name' },
   { key: 'slug', label: 'Slug', class: 'w-48' },
   { key: 'is_active', label: $t('forms.fields.is_active'), class: 'w-28' },
   ...(rowActions.value.length ? [{ key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true }] : []),

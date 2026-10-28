@@ -89,8 +89,11 @@ const source = useLocalCollectionSource<StudySetRow>({
   defaultSort: 'order:asc',
   sortOptions: () => [
     { value: 'order:asc', label: $t('Eilės tvarka'), by: set => set.order },
+    { value: 'order:desc', label: $t('Eilės tvarka (atvirkščiai)'), by: set => set.order },
     { value: 'name:asc', label: $t('Pagal pavadinimą (A–Z)'), by: nameOf },
     { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)'), by: nameOf },
+    { value: 'courses_count:desc', label: $t('Daugiausia dalykų'), by: set => set.courses_count ?? 0 },
+    { value: 'courses_count:asc', label: $t('Mažiausiai dalykų'), by: set => set.courses_count ?? 0 },
   ],
   facets: [{ field: 'tenant', label: $t('Padalinys'), get: set => set.tenant?.shortname }],
 });
@@ -107,8 +110,8 @@ const actionsFor = (set: StudySetRow) => actions.rowActions(set, nameOf(set), is
 const columns = computed<CollectionColumn[]>(() => [
   { key: 'name', label: $t('Komplektas'), sortField: 'name' },
   { key: 'tenant', label: $t('Padalinys'), class: 'w-32' },
-  { key: 'courses', label: $t('Dalykai'), class: 'w-28' },
-  { key: 'order', label: $t('Eilė'), class: 'w-20' },
+  { key: 'courses', label: $t('Dalykai'), class: 'w-28', sortField: 'courses_count' },
+  { key: 'order', label: $t('Eilė'), class: 'w-20', sortField: 'order' },
   { key: 'status', label: $t('Būsena'), class: 'w-36' },
   { key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true },
 ]);

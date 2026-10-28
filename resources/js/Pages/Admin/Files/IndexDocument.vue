@@ -245,8 +245,8 @@ const source = props.discovery
 const documentKey = (item: DocumentSearchResult) => String(item.id);
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'date', label: $t('Data'), class: 'w-28' },
-  { key: 'title', label: $t('Pavadinimas') },
+  { key: 'date', label: $t('Data'), class: 'w-28', sortField: 'document_date' },
+  { key: 'title', label: $t('Pavadinimas'), sortField: 'title' },
   { key: 'content_type', label: $t('Rūšis'), class: 'w-44' },
   { key: 'institution', label: $t('Institucija'), class: 'w-44' },
   { key: 'language', label: $t('Kalba'), class: 'w-20' },

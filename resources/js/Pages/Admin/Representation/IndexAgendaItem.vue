@@ -67,7 +67,7 @@ const source = useTypesenseCollectionSource<AgendaItemSearchResult>({
 });
 
 const columns: CollectionColumn[] = [
-  { key: 'title', label: $t('Darbotvarkės klausimas') },
+  { key: 'title', label: $t('Darbotvarkės klausimas'), sortField: 'title' },
   { key: 'meeting', label: $t('Posėdis') },
   { key: 'institution', label: $t('Institucija') },
   { key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true },

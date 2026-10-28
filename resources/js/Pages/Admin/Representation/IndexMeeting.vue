@@ -160,10 +160,10 @@ const actionsFor = (meeting: MeetingRow) => isTrash
 const meetingKey = (meeting: MeetingSearchResult) => String(meeting.id);
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'date', label: $t('Data'), class: 'w-32' },
-  { key: 'title', label: $t('Posėdis') },
+  { key: 'date', label: $t('Data'), class: 'w-32', sortField: 'start_time' },
+  { key: 'title', label: $t('Posėdis'), sortField: 'title' },
   { key: 'institution', label: $t('Institucija') },
-  { key: 'agenda', label: $t('Punktai'), class: 'w-24' },
+  { key: 'agenda', label: $t('Punktai'), class: 'w-24', sortField: 'agenda_items_count' },
   { key: 'status', label: $t('Būsena'), class: 'w-48' },
   { key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true },
 ]);

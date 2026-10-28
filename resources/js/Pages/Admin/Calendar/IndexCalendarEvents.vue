@@ -214,6 +214,8 @@ const source = useDatabaseCollectionSource<EventRow>({
   sortOptions: () => [
     { value: 'date:desc', label: $t('Naujausi pirmi') },
     { value: 'date:asc', label: $t('Seniausi pirmi') },
+    { value: 'title:asc', label: $t('Pagal pavadinimą (A–Z)') },
+    { value: 'title:desc', label: $t('Pagal pavadinimą (Z–A)') },
     { value: 'created_at:desc', label: $t('Neseniai sukurti') },
   ],
   preserveUrlKeys: ['showDeleted'],
@@ -259,7 +261,7 @@ function updateType(item: EventRow, value: string): void {
 }
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'title', label: $t('Renginys') },
+  { key: 'title', label: $t('Renginys'), sortField: 'title' },
   { key: 'date', label: $t('Data'), class: 'w-48', sortField: 'date' },
   { key: 'type', label: $t('Renginio tipas'), class: 'w-44' },
   { key: 'status', label: $t('Būsena'), class: 'w-36' },

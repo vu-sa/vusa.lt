@@ -279,16 +279,22 @@ const source = useDatabaseCollectionSource<ProblemRow>({
   sortOptions: () => [
     { value: 'occurred_at:desc', label: $t('Naujausios problemos') },
     { value: 'occurred_at:asc', label: $t('Seniausios problemos') },
+    { value: 'title:asc', label: $t('Pagal pavadinimą (A–Z)') },
+    { value: 'title:desc', label: $t('Pagal pavadinimą (Z–A)') },
+    { value: 'status:asc', label: $t('Pagal būseną (A–Z)') },
+    { value: 'status:desc', label: $t('Pagal būseną (Z–A)') },
+    { value: 'resolved_at:desc', label: $t('Neseniai išspręstos') },
+    { value: 'resolved_at:asc', label: $t('Seniausiai išspręstos') },
   ],
   preserveUrlKeys: ['showDeleted'],
   facets: facets.value,
 });
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'title', label: $t('entities.problem.title') },
-  { key: 'status', label: $t('entities.problem.status'), class: 'w-32' },
-  { key: 'occurred_at', label: $t('entities.problem.occurred_at'), class: 'w-32' },
-  { key: 'resolved_at', label: $t('entities.problem.resolved_at'), class: 'w-32' },
+  { key: 'title', label: $t('entities.problem.title'), sortField: 'title' },
+  { key: 'status', label: $t('entities.problem.status'), class: 'w-32', sortField: 'status' },
+  { key: 'occurred_at', label: $t('entities.problem.occurred_at'), class: 'w-32', sortField: 'occurred_at' },
+  { key: 'resolved_at', label: $t('entities.problem.resolved_at'), class: 'w-32', sortField: 'resolved_at' },
   { key: 'responsible_user', label: $t('entities.problem.responsible_user'), class: 'w-44' },
   { key: 'categories', label: $t('entities.problem.categories'), class: 'w-40' },
   { key: 'tenant', label: $tChoice('entities.tenant.model', 1), class: 'w-24' },

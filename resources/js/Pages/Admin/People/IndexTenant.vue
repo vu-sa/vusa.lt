@@ -120,14 +120,18 @@ const source = useLocalCollectionSource<TenantRow>({
   sortOptions: () => [
     { value: 'fullname:asc', label: $t('Pagal pavadinimą (A–Z)'), by: tenant => tenant.fullname },
     { value: 'fullname:desc', label: $t('Pagal pavadinimą (Z–A)'), by: tenant => tenant.fullname },
+    { value: 'shortname:asc', label: $t('Pagal trumpinį (A–Z)'), by: tenant => tenant.shortname },
+    { value: 'shortname:desc', label: $t('Pagal trumpinį (Z–A)'), by: tenant => tenant.shortname },
+    { value: 'type:asc', label: $t('Pagal tipą (A–Z)'), by: tenant => tenant.type ?? '' },
+    { value: 'type:desc', label: $t('Pagal tipą (Z–A)'), by: tenant => tenant.type ?? '' },
   ],
   facets: [{ field: 'type', label: $t('Tipas'), get: tenant => tenant.type }],
 });
 
 const columns = computed<CollectionColumn[]>(() => [
   { key: 'fullname', label: $t('Padalinys'), sortField: 'fullname' },
-  { key: 'shortname', label: $t('Trumpinys'), class: 'w-40' },
-  { key: 'type', label: $t('Tipas'), class: 'w-40' },
+  { key: 'shortname', label: $t('Trumpinys'), class: 'w-40', sortField: 'shortname' },
+  { key: 'type', label: $t('Tipas'), class: 'w-40', sortField: 'type' },
   { key: 'primary_institution', label: $t('forms.tenants.primary_institution') },
   ...(props.tenants.some(tenant => tenant.can.update || tenant.can.delete)
     ? [{ key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true }]

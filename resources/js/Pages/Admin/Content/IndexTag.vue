@@ -181,16 +181,19 @@ const source = useDatabaseCollectionSource<Tag>({
   sortOptions: () => [
     { value: 'created_at:desc', label: $t('Naujausios pirmiausia') },
     { value: 'created_at:asc', label: $t('Seniausios pirmiausia') },
-    { value: 'alias:asc', label: $t('Pagal alias') },
+    { value: 'name:asc', label: $t('Pagal pavadinimą (A–Z)') },
+    { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)') },
+    { value: 'alias:asc', label: $t('Pagal alias (A–Z)') },
+    { value: 'alias:desc', label: $t('Pagal alias (Z–A)') },
   ],
   preserveUrlKeys: ['showDeleted'],
 });
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'name', label: $t('Žyma') },
-  { key: 'alias', label: $t('Alias'), class: 'w-48' },
+  { key: 'name', label: $t('Žyma'), sortField: 'name' },
+  { key: 'alias', label: $t('Alias'), class: 'w-48', sortField: 'alias' },
   { key: 'topic', label: $t('Tema'), class: 'w-28' },
-  { key: 'created', label: $t('Sukurta'), class: 'w-32' },
+  { key: 'created', label: $t('Sukurta'), class: 'w-32', sortField: 'created_at' },
   ...(rowActions.value.length ? [{ key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true }] : []),
 ]);
 

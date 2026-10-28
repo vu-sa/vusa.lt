@@ -219,18 +219,24 @@ const source = useDatabaseCollectionSource<FormRow>({
   defaultSort: 'updated_at:desc',
   sortOptions: () => [
     { value: 'updated_at:desc', label: $t('Naujausios atnaujintos') },
+    { value: 'updated_at:asc', label: $t('Seniausios atnaujintos') },
     { value: 'created_at:desc', label: $t('Naujausios sukurtos') },
+    { value: 'created_at:asc', label: $t('Seniausios sukurtos') },
+    { value: 'name:asc', label: $t('Pagal pavadinimą (A–Z)') },
+    { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)') },
+    { value: 'registrations_count:desc', label: $t('Daugiausia registracijų') },
+    { value: 'registrations_count:asc', label: $t('Mažiausiai registracijų') },
   ],
   preserveUrlKeys: ['showDeleted'],
   facets: facets.value,
 });
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'name', label: $t('forms.fields.name') },
+  { key: 'name', label: $t('forms.fields.name'), sortField: 'name' },
   { key: 'path', label: $t('forms.fields.link'), class: 'w-48' },
   { key: 'tenant', label: $tChoice('entities.tenant.model', 1), class: 'w-28' },
-  { key: 'registrations_count', label: $t('Registracijos'), class: 'w-32' },
-  { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36' },
+  { key: 'registrations_count', label: $t('Registracijos'), class: 'w-32', sortField: 'registrations_count' },
+  { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', sortField: 'updated_at' },
   { key: 'actions', label: $t('Veiksmai'), class: 'w-24 text-right' },
 ]);
 

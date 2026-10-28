@@ -206,16 +206,18 @@ const source = useDatabaseCollectionSource<DashboardReservation>({
   sortOptions: () => [
     { value: 'start_time:desc', label: $t('Naujausios pirmiausia') },
     { value: 'start_time:asc', label: $t('Anksčiausios pirmiausia') },
+    { value: 'name:asc', label: $t('Pagal pavadinimą (A–Z)') },
+    { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)') },
     { value: 'created_at:desc', label: $t('Naujausios sukurtos') },
   ],
   facets: facets.value,
 });
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'name', label: $t('Rezervacija'), class: 'min-w-44' },
+  { key: 'name', label: $t('Rezervacija'), class: 'min-w-44', sortField: 'name' },
   { key: 'requester', label: $t('Prašytojas'), class: 'w-44' },
   { key: 'resources', label: $t('Ištekliai') },
-  { key: 'period', label: $t('Laikas'), class: 'w-36' },
+  { key: 'period', label: $t('Laikas'), class: 'w-36', sortField: 'start_time' },
   { key: 'status', label: $t('Būsena'), class: 'w-36' },
   { key: 'actions', label: $t('Veiksmai'), class: 'w-52', pinned: true },
 ]);

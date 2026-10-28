@@ -214,6 +214,7 @@ const source = useLocalCollectionSource<QuickLinkRow>({
   defaultSort: 'order:asc',
   sortOptions: () => [
     { value: 'order:asc', label: $t('Pagal tvarką'), by: link => link.order ?? 0 },
+    { value: 'order:desc', label: $t('Pagal tvarką (atvirkščiai)'), by: link => link.order ?? 0 },
     { value: 'text:asc', label: $t('Pagal pavadinimą (A–Z)'), by: link => link.text },
     { value: 'text:desc', label: $t('Pagal pavadinimą (Z–A)'), by: link => link.text },
   ],

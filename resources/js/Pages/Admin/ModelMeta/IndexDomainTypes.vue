@@ -112,6 +112,7 @@ const source = useLocalCollectionSource<TypeRow>({
     { value: 'title:asc', label: $t('Pagal pavadinimą (A–Z)'), by: titleOf },
     { value: 'title:desc', label: $t('Pagal pavadinimą (Z–A)'), by: titleOf },
     { value: 'updated_at:desc', label: $t('Neseniai atnaujinti'), by: type => type.updated_at },
+    { value: 'updated_at:asc', label: $t('Seniausiai atnaujinti'), by: type => type.updated_at },
   ],
 });
 
@@ -126,7 +127,7 @@ const actionsFor = (type: TypeRow) => actions.rowActions(type, titleOf(type), is
 
 const columns = computed<CollectionColumn[]>(() => [
   { key: 'title', label: $t('Tipas'), sortField: 'title' },
-  { key: 'updated', label: $t('Atnaujinta'), class: 'w-36' },
+  { key: 'updated', label: $t('Atnaujinta'), class: 'w-36', sortField: 'updated_at' },
   { key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true },
 ]);
 </script>

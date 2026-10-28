@@ -266,7 +266,7 @@ const quickFilters = computed<CollectionQuickFilter[]>(() => {
 });
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'title', label: $t('Pavadinimas') },
+  { key: 'title', label: $t('Pavadinimas'), sortField: 'title' },
   { key: 'link_url', label: $t('Nuoroda'), class: 'w-64' },
   { key: 'tenant', label: $t('Padalinys'), class: 'w-32' },
   { key: 'is_active', label: $t('Būsena'), class: 'w-28' },

@@ -252,7 +252,7 @@ const resourceKey = (resource: ResourceSearchResult) => String(resource.id);
 const nameOf = (resource: ResourceSearchResult) => getSearchTranslation(resource, 'name') || $t('Be pavadinimo');
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'name', label: capitalize($tChoice('entities.resource.model', 1)) },
+  { key: 'name', label: capitalize($tChoice('entities.resource.model', 1)), sortField: 'name_lt' },
   { key: 'category', label: $t('Kategorija') },
   { key: 'tenant', label: $t('Padalinys'), class: 'w-32' },
   { key: 'availability', label: $t('reservations.cart.free_column'), class: 'w-32' },

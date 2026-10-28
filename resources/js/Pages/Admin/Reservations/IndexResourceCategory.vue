@@ -120,15 +120,17 @@ const source = useDatabaseCollectionSource<Category>({
     currentPage: props.resourceCategories.meta.current_page,
     lastPage: props.resourceCategories.meta.last_page,
   },
-  defaultSort: 'created_at:desc',
+  defaultSort: 'name:asc',
   sortOptions: () => [
+    { value: 'name:asc', label: $t('Pagal pavadinimą (A–Z)') },
+    { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)') },
     { value: 'created_at:desc', label: $t('Naujausios pirmiausia') },
     { value: 'created_at:asc', label: $t('Seniausios pirmiausia') },
   ],
 });
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'name', label: $t('Kategorija') },
+  { key: 'name', label: $t('Kategorija'), sortField: 'name' },
   { key: 'description', label: $t('Aprašymas') },
   ...(rowActions.value.length ? [{ key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true }] : []),
 ]);

@@ -116,6 +116,10 @@ const source = useLocalCollectionSource<StudyProgramRow>({
   sortOptions: () => [
     { value: 'name:asc', label: $t('Pagal pavadinimą (A–Z)'), by: program => program.name },
     { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)'), by: program => program.name },
+    { value: 'degree:asc', label: $t('Pagal laipsnį (A–Z)'), by: program => degreeLabel(program.degree) },
+    { value: 'degree:desc', label: $t('Pagal laipsnį (Z–A)'), by: program => degreeLabel(program.degree) },
+    { value: 'tenant:asc', label: $t('Pagal padalinį (A–Z)'), by: program => program.tenant?.shortname ?? '' },
+    { value: 'tenant:desc', label: $t('Pagal padalinį (Z–A)'), by: program => program.tenant?.shortname ?? '' },
   ],
   facets: [
     { field: 'degree', label: $t('Laipsnis'), get: program => program.degree, valueLabel: degreeLabel },
@@ -143,8 +147,8 @@ function merged(): void {
 
 const columns = computed<CollectionColumn[]>(() => [
   { key: 'name', label: $t('Studijų programa'), sortField: 'name' },
-  { key: 'degree', label: $t('Laipsnis'), class: 'w-40' },
-  { key: 'tenant', label: $t('Padalinys'), class: 'w-32' },
+  { key: 'degree', label: $t('Laipsnis'), class: 'w-40', sortField: 'degree' },
+  { key: 'tenant', label: $t('Padalinys'), class: 'w-32', sortField: 'tenant' },
   { key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true },
 ]);
 </script>

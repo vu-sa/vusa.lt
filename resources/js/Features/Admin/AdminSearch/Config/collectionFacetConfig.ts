@@ -488,7 +488,7 @@ export function resolveSortValue(collection: string, sortBy: string, locale = 'l
     ? `_text_match:desc,${getCollectionFacetConfig(collection)?.defaultSortBy ?? 'created_at:desc'}`
     : sortBy;
 
-  return locale === 'en' && collection === 'duties'
+  return locale === 'en' && (collection === 'duties' || collection === 'resources')
     ? resolved.replace(/\bname_lt:/g, 'name_en:')
     : resolved;
 }
@@ -499,7 +499,10 @@ export function resolveSortValue(collection: string, sortBy: string, locale = 'l
 export const MEETING_SORT_OPTIONS: SortOption[] = [
   { value: 'start_time:desc', label: 'Naujausi pirmi', icon: 'ArrowDown' },
   { value: 'start_time:asc', label: 'Seniausi pirmi', icon: 'ArrowUp' },
+  { value: 'title:asc', label: 'Pagal pavadinimą (A–Z)', icon: 'ArrowDownAZ' },
+  { value: 'title:desc', label: 'Pagal pavadinimą (Z–A)', icon: 'ArrowUpAZ' },
   { value: 'agenda_items_count:desc', label: 'Daugiausiai punktų', icon: 'ListOrdered' },
+  { value: 'agenda_items_count:asc', label: 'Mažiausiai punktų', icon: 'ListOrdered' },
   { value: 'updated_at:desc', label: 'Paskutiniai atnaujinti', icon: 'RefreshCw' },
 ];
 
@@ -509,6 +512,8 @@ export const MEETING_SORT_OPTIONS: SortOption[] = [
 export const AGENDA_ITEM_SORT_OPTIONS: SortOption[] = [
   { value: 'meeting_start_time:desc', label: 'Naujausi pirmi', icon: 'ArrowDown' },
   { value: 'meeting_start_time:asc', label: 'Seniausi pirmi', icon: 'ArrowUp' },
+  { value: 'title:asc', label: 'Pagal pavadinimą (A–Z)', icon: 'ArrowDownAZ' },
+  { value: 'title:desc', label: 'Pagal pavadinimą (Z–A)', icon: 'ArrowUpAZ' },
   { value: 'updated_at:desc', label: 'Paskutiniai atnaujinti', icon: 'RefreshCw' },
 ];
 
@@ -573,6 +578,18 @@ export const DOCUMENT_SORT_OPTIONS: SortOption[] = [
 ];
 
 /**
+ * Sort options for resources
+ */
+export const RESOURCE_SORT_OPTIONS: SortOption[] = [
+  { value: 'name_lt:asc', label: 'Pagal pavadinimą (A–Z)', icon: 'ArrowDownAZ' },
+  { value: 'name_lt:desc', label: 'Pagal pavadinimą (Z–A)', icon: 'ArrowUpAZ' },
+  { value: 'capacity:desc', label: 'Didžiausia talpa', icon: 'ArrowDown' },
+  { value: 'capacity:asc', label: 'Mažiausia talpa', icon: 'ArrowUp' },
+  { value: 'created_at:desc', label: 'Naujausi pirmi', icon: 'ArrowDown' },
+  { value: 'created_at:asc', label: 'Seniausi pirmi', icon: 'ArrowUp' },
+];
+
+/**
  * Get sort options for a collection
  */
 export function getCollectionSortOptions(collection: string): SortOption[] {
@@ -592,6 +609,8 @@ export function getCollectionSortOptions(collection: string): SortOption[] {
         return DUTY_SORT_OPTIONS;
       case 'documents':
         return DOCUMENT_SORT_OPTIONS;
+      case 'resources':
+        return RESOURCE_SORT_OPTIONS;
       case 'users':
         return USER_SORT_OPTIONS;
       default:

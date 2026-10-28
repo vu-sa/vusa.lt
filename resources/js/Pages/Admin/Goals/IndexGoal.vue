@@ -116,7 +116,11 @@ const source = useLocalCollectionSource<GoalRow>({
   defaultSort: 'updated_at:desc',
   sortOptions: () => [
     { value: 'updated_at:desc', label: $t('Naujausios atnaujintos'), by: goal => goal.updated_at ?? '' },
+    { value: 'updated_at:asc', label: $t('Seniausios atnaujintos'), by: goal => goal.updated_at ?? '' },
     { value: 'title:asc', label: $t('Pagal pavadinimą (A–Z)'), by: goal => title(goal) },
+    { value: 'title:desc', label: $t('Pagal pavadinimą (Z–A)'), by: goal => title(goal) },
+    { value: 'steps_count:desc', label: $t('Daugiausia žingsnių'), by: goal => goal.steps_count ?? 0 },
+    { value: 'steps_count:asc', label: $t('Mažiausiai žingsnių'), by: goal => goal.steps_count ?? 0 },
   ],
   facets: [
     { field: 'status', label: $t('goals.filters.status'), get: goal => goal.status, valueLabel: value => $t(goalStatuses[value as GoalStatus]?.label ?? value) },
@@ -126,11 +130,11 @@ const source = useLocalCollectionSource<GoalRow>({
 });
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'title', label: $t('entities.goal.title') },
+  { key: 'title', label: $t('entities.goal.title'), sortField: 'title' },
   { key: 'status', label: $t('goals.filters.status'), class: 'w-36' },
   { key: 'tenant', label: $tChoice('entities.tenant.model', 1), class: 'w-28' },
   { key: 'cadence', label: $t('goals.filters.cadence'), class: 'w-28' },
-  { key: 'steps_count', label: $tChoice('entities.step.model', 2), class: 'w-24' },
+  { key: 'steps_count', label: $tChoice('entities.step.model', 2), class: 'w-24', sortField: 'steps_count' },
   { key: 'problems_count', label: $tChoice('entities.problem.model', 2), class: 'w-24' },
 ]);
 </script>

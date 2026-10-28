@@ -95,7 +95,9 @@ const source = useLocalCollectionSource<Category>({
   defaultSort: 'name:asc',
   sortOptions: () => [
     { value: 'name:asc', label: $t('Pagal pavadinimą (A–Z)'), by: category => title(category) },
+    { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)'), by: category => title(category) },
     { value: 'problems_count:desc', label: $t('Dažniausiai naudojamos'), by: category => category.problems_count },
+    { value: 'problems_count:asc', label: $t('Rečiausiai naudojamos'), by: category => category.problems_count },
   ],
 });
 
@@ -113,9 +115,9 @@ function selectRowAction(key: string, category: Category): void {
 }
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'name', label: $t('Kategorija') },
+  { key: 'name', label: $t('Kategorija'), sortField: 'name' },
   { key: 'description', label: $t('Aprašymas') },
-  { key: 'problems_count', label: $tChoice('entities.problem.model', 2), class: 'w-28' },
+  { key: 'problems_count', label: $tChoice('entities.problem.model', 2), class: 'w-28', sortField: 'problems_count' },
   { key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true },
 ]);
 

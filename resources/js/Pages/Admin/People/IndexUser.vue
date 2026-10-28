@@ -223,8 +223,12 @@ const source = useDatabaseCollectionSource<UserRow>({
   sortOptions: () => [
     { value: 'name:asc', label: $t('Pagal vardą (A–Z)') },
     { value: 'name:desc', label: $t('Pagal vardą (Z–A)') },
+    { value: 'email:asc', label: $t('Pagal el. paštą (A–Z)') },
+    { value: 'email:desc', label: $t('Pagal el. paštą (Z–A)') },
     { value: 'last_action:desc', label: $t('Neseniai prisijungę') },
+    { value: 'last_action:asc', label: $t('Seniausiai prisijungę') },
     { value: 'created_at:desc', label: $t('Naujausi pirmiausia') },
+    { value: 'created_at:asc', label: $t('Seniausi pirmiausia') },
   ],
   preserveUrlKeys: ['showDeleted'],
 });
@@ -283,7 +287,7 @@ function toggleQuickFilter(id: string): void {
 
 const columns = computed<CollectionColumn[]>(() => [
   { key: 'name', label: $t('Vardas'), sortField: 'name' },
-  { key: 'email', label: $t('El. paštas') },
+  { key: 'email', label: $t('El. paštas'), sortField: 'email' },
   { key: 'years', label: $t('Metai'), class: 'w-40' },
   { key: 'duties', label: $t('Pareigos'), class: 'w-44' },
   ...(isTrash ? [{ key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true }] : []),

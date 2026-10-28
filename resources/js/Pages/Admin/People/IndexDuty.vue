@@ -191,7 +191,14 @@ const source = useDatabaseCollectionSource<Duty>({
   endpoint: route('api.v1.admin.duties.index'),
   initial: { items: props.duties.data, total: props.duties.meta.total, perPage: props.duties.meta.per_page, currentPage: props.duties.meta.current_page, lastPage: props.duties.meta.last_page },
   defaultSort: 'name:asc',
-  sortOptions: () => [{ value: 'name:asc', label: $t('Pagal pavadinimą') }, { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)') }],
+  sortOptions: () => [
+    { value: 'name:asc', label: $t('Pagal pavadinimą (A–Z)') },
+    { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)') },
+    { value: 'email:asc', label: $t('Pagal el. paštą (A–Z)') },
+    { value: 'email:desc', label: $t('Pagal el. paštą (Z–A)') },
+    { value: 'dutiables_count:desc', label: $t('Daugiausia narių') },
+    { value: 'dutiables_count:asc', label: $t('Mažiausiai narių') },
+  ],
   preserveUrlKeys: ['showDeleted'],
   facets: [{ field: 'data_quality', label: $t('Duomenų kokybė'), single: true, values: [
     { value: 'vacant', label: $t('Neužimtos') }, { value: 'missing_en_name', label: $t('Trūksta EN pavadinimo') },
@@ -227,8 +234,8 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'name', label: $t('Pareigybė'), sortField: 'name' },
   { key: 'status', label: $t('Būsena'), class: 'w-40' },
   { key: 'institution', label: $t('Institucija') },
-  { key: 'email', label: $t('El. paštas') },
-  { key: 'occupancy', label: $t('Nariai'), class: 'w-32' },
+  { key: 'email', label: $t('El. paštas'), sortField: 'email' },
+  { key: 'occupancy', label: $t('Nariai'), class: 'w-32', sortField: 'dutiables_count' },
   { key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true },
 ]);
 const dutyKey = (duty: Duty) => String(duty.id);

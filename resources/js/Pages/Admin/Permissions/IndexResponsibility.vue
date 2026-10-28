@@ -82,8 +82,11 @@ const source = useLocalCollectionSource<ResponsibilityRow>({
   sortOptions: () => [
     { value: 'purpose:asc', label: $t('responsibilities.index.sort_purpose'), by: row => `${row.purpose ? 0 : 1}${row.title}` },
     { value: 'title:asc', label: $t('Pagal pavadinimą (A–Z)'), by: row => row.title },
+    { value: 'title:desc', label: $t('Pagal pavadinimą (Z–A)'), by: row => row.title },
     { value: 'people:desc', label: $t('responsibilities.index.sort_people'), by: row => row.people_count },
+    { value: 'people:asc', label: $t('Mažiausiai žmonių'), by: row => row.people_count },
     { value: 'updated_at:desc', label: $t('Neseniai atnaujintos'), by: row => row.updated_at ?? '' },
+    { value: 'updated_at:asc', label: $t('Seniausiai atnaujintos'), by: row => row.updated_at ?? '' },
   ],
 });
 
@@ -98,7 +101,7 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'purpose', label: $t('responsibilities.index.purpose'), class: 'w-56' },
   { key: 'permissions', label: $t('responsibilities.facts.permissions'), class: 'w-24' },
   { key: 'duties', label: $t('responsibilities.facts.duties'), class: 'w-28' },
-  { key: 'people', label: $t('responsibilities.facts.people'), class: 'w-24' },
-  { key: 'updated', label: $t('Atnaujinta'), class: 'w-32' },
+  { key: 'people', label: $t('responsibilities.facts.people'), class: 'w-24', sortField: 'people' },
+  { key: 'updated', label: $t('Atnaujinta'), class: 'w-32', sortField: 'updated_at' },
 ]);
 </script>

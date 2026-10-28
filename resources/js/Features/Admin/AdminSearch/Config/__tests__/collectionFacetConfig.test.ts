@@ -16,10 +16,31 @@ describe('getCollectionSortOptions', () => {
 
     expect(options[0].value).toBe(RELEVANCE_SORT_VALUE);
     expect(options.some(o => o.value === 'start_time:desc')).toBe(true);
+    expect(options.some(o => o.value === 'title:asc')).toBe(true);
+    expect(options.some(o => o.value === 'title:desc')).toBe(true);
+    expect(options.some(o => o.value === 'agenda_items_count:asc')).toBe(true);
+  });
+
+  it('provides sort options for agenda items', () => {
+    const options = getCollectionSortOptions('agenda_items');
+
+    expect(options.some(o => o.value === 'title:asc')).toBe(true);
+    expect(options.some(o => o.value === 'title:desc')).toBe(true);
+  });
+
+  it('provides sort options for resources', () => {
+    const options = getCollectionSortOptions('resources');
+
+    expect(options[0].value).toBe(RELEVANCE_SORT_VALUE);
+    expect(options.some(o => o.value === 'name_lt:asc')).toBe(true);
+    expect(options.some(o => o.value === 'name_lt:desc')).toBe(true);
+    expect(options.some(o => o.value === 'capacity:desc')).toBe(true);
+    expect(options.some(o => o.value === 'capacity:asc')).toBe(true);
+    expect(options.some(o => o.value === 'created_at:desc')).toBe(true);
   });
 
   it('prepends the relevance option for the generic fallback', () => {
-    const options = getCollectionSortOptions('resources');
+    const options = getCollectionSortOptions('unknown_collection');
 
     expect(options[0].value).toBe(RELEVANCE_SORT_VALUE);
     expect(options.some(o => o.value === 'created_at:desc')).toBe(true);
@@ -54,6 +75,13 @@ describe('resolveSortValue', () => {
 
   it('passes concrete sort values through unchanged', () => {
     expect(resolveSortValue('meetings', 'start_time:asc')).toBe('start_time:asc');
+  });
+
+  it('rewrites localized name field for duties and resources in english', () => {
+    expect(resolveSortValue('duties', 'name_lt:asc', 'en')).toBe('name_en:asc');
+    expect(resolveSortValue('duties', 'name_lt:asc', 'lt')).toBe('name_lt:asc');
+    expect(resolveSortValue('resources', 'name_lt:desc', 'en')).toBe('name_en:desc');
+    expect(resolveSortValue('resources', 'name_lt:desc', 'lt')).toBe('name_lt:desc');
   });
 });
 
