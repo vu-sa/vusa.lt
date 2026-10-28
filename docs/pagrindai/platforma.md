@@ -2,7 +2,7 @@
 doc_status: reviewed
 title: Platforma
 area: actionWindow
-last_reviewed: 2026-10-27
+last_reviewed: 2026-10-28
 tests:
   - resources/js/Composables/__tests__/useStartFm.test.ts
   - resources/js/Components/__tests__/StartFmPlayer.component.test.ts
@@ -187,6 +187,7 @@ Turinio ir konfigūracijos įrašai (naujienos, puslapiai, baneriai, kalendoriau
 
 VU SA platforma yra dvikalbė (lietuvių ir anglų k.):
 - **Formose su verčiamais laukais** kalbas perjungi LT ir EN valdikliu. Privalomos kalbos ir laukai priklauso nuo įrašo rūšies – vadovaujamasi forma bei jos gidu.
+  Kalba perjungiama visai formai, todėl prie laukų pavadinimų kalba nerašoma. Privalomi laukai pažymėti žvaigždute (*), o formos pradžioje esanti pastaba primena, kad kitus galima praleisti.
 - **Verčiamų laukų peržiūroje** rodoma pasirinkta kalba; trūkstamas vertimas gali būti pakeičiamas atsargine kalba. Puslapiai ir naujienos turi [atskirus susietus įrašus kiekvienai kalbai](/svetaine/puslapiai#kalbu-versijos), todėl jų vertimas savaime nesukuriamas.
 
 ## Spalvos, ženklai ir formos {#spalvos-zenklai-ir-formos}
