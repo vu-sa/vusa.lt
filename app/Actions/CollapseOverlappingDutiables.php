@@ -28,7 +28,7 @@ class CollapseOverlappingDutiables
             ->orderBy('dutiable_type')
             ->orderBy('dutiable_id')
             ->orderBy('tenant_id')
-            ->orderBy('start_date')
+            ->orderBy('start_date')->orderBy('id')
             ->get();
 
         foreach ($rows->groupBy(fn (Dutiable $row) => $row->dutiable_type.'|'.$row->dutiable_id.'|'.$row->tenant_id) as $group) {
@@ -119,6 +119,33 @@ class CollapseOverlappingDutiables
 
         $survivor->save();
         self::mergePhotoMedia($survivor, $loser);
+
+        foreach ($loser->derivedDutiables()->get() as $derived) {
+            $derived->via_dutiable_id = $survivor->id;
+            if (! $derived->ended_by_institution_deactivation) {
+                $derived->start_date = $survivor->start_date;
+                $derived->end_date = $survivor->end_date;
+            }
+            $derived->save();
+        }
+        foreach ($survivor->derivedDutiables()->get() as $derived) {
+            if (! $derived->ended_by_institution_deactivation) {
+                $derived->update(['start_date' => $survivor->start_date, 'end_date' => $survivor->end_date]);
+            }
+        }
+        $seats = $survivor->derivedDutiables()->orderBy('start_date')->orderBy('id')->get();
+        foreach ($seats->groupBy(fn (Dutiable $seat) => $seat->duty_id.'|'.$seat->tenant_id) as $group) {
+            $kept = $group->first();
+            foreach ($group->skip(1) as $seat) {
+                $fields = ['study_program_id', 'study_program_note', 'additional_email', 'description',
+                    'additional_photo', 'additional_photo_focal_point', 'use_original_duty_name',
+                    'ended_by_institution_deactivation'];
+                if ($kept->only($fields) === $seat->only($fields) && $seat->getMedia('photo')->isEmpty()) {
+                    $seat->delete();
+                }
+            }
+        }
+
     }
 
     private static function mergePhotoMedia(Dutiable $survivor, Dutiable $loser): void

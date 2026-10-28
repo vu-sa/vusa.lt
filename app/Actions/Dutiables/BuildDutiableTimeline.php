@@ -3,6 +3,7 @@
 namespace App\Actions\Dutiables;
 
 use App\Actions\Cadences\ResolveCadenceForDuty;
+use App\Actions\ResolveExOfficioTenantId;
 use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -48,6 +49,12 @@ class BuildDutiableTimeline
         $cadenceByDuty = ResolveCadenceForDuty::forDuties($duties);
 
         $editable = self::editabilityMap($rows, $actor);
+        $reviewSources = Dutiable::query()->with(['duty.institution', 'duty.exOfficioTargetDuties'])
+            ->whereIn('dutiable_id', $rows->pluck('dutiable_id'))->whereNull('via_dutiable_id')
+            ->where('ended_by_institution_deactivation', false)
+            ->whereHas('duty.exOfficioTargetDuties', fn ($query) => $query->whereIn('duties.id', $rows->pluck('duty_id')))
+            ->get()->filter(fn (Dutiable $source) => $actor->can('manageDutiable', $source)
+                && $source->duty->institution?->is_active);
         $cadences = self::cadences($duties);
         ['primary' => $cadenceByRow, 'spanned' => $cadenceIdsByRow] = self::cadenceByRow($rows, $cadences);
 
@@ -61,7 +68,7 @@ class BuildDutiableTimeline
             'scope' => self::scopeDescriptor($scope, $scopeId),
             'groups' => self::groups($scope, $rows, $cadenceByDuty)->values()->all(),
             'rows' => self::sortRows($rows, $cadenceByRow)
-                ->map(fn (Dutiable $row) => self::row($row, $scope, $editable, $derivedBySource, $cadenceByRow, $cadenceIdsByRow))
+                ->map(fn (Dutiable $row) => self::row($row, $scope, $editable, $derivedBySource, $cadenceByRow, $cadenceIdsByRow, $reviewSources))
                 ->values()
                 ->all(),
             'cadences' => $cadences->map(fn (Cadence $cadence) => self::cadencePayload($cadence))->all(),
@@ -199,6 +206,7 @@ class BuildDutiableTimeline
         Collection $derivedBySource,
         array $cadenceByRow,
         array $cadenceIdsByRow,
+        Collection $reviewSources,
     ): array {
         $isDerived = $row->via_dutiable_id !== null;
 
@@ -227,6 +235,8 @@ class BuildDutiableTimeline
                 : null,
             'derived_ids' => $derivedBySource->get($row->id, collect())->pluck('id')->all(),
             'is_derived' => $isDerived,
+            'assignment_origin' => $row->assignment_origin,
+            'review_sources' => ! $isDerived && ($editable[$row->id] ?? false) ? self::reviewSources($row, $reviewSources) : [],
             // Derived rows mirror their source; DutiableController strips date edits on
             // them, so the editor must not offer the gesture in the first place.
             'editable' => ($editable[$row->id] ?? false) && ! $isDerived,
@@ -243,6 +253,18 @@ class BuildDutiableTimeline
      *
      * @return array<string, mixed>|null null when the row is just a pair of dates
      */
+    private static function reviewSources(Dutiable $row, Collection $sources): array
+    {
+        return $sources->filter(fn (Dutiable $source) => $source->id !== $row->id
+                && $source->dutiable_id === $row->dutiable_id && $source->dutiable_type === $row->dutiable_type
+                && $source->duty->exOfficioTargetDuties->contains('id', $row->duty_id)
+                && ResolveExOfficioTenantId::execute($source, $row->duty) === $row->tenant_id)
+            ->map(fn (Dutiable $source) => [
+                'id' => $source->id, 'name' => $source->duty->name,
+                'start_date' => $source->start_date->toDateString(), 'end_date' => $source->end_date?->toDateString(),
+            ])->values()->all();
+    }
+
     private static function extras(Dutiable $row): ?array
     {
         $extras = array_filter([

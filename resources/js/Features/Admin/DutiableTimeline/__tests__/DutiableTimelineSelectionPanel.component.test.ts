@@ -222,3 +222,27 @@ describe('DutiableTimelineSelectionPanel extras', () => {
     expect(wrapper.text()).toContain('Programų sistemos');
   });
 });
+
+it('offers independent and source-linked review choices only for editable root terms', () => {
+  const row = makeRow({ review_sources: [{ id: 'source-1', name: 'Pirmininkas', start_date: '2025-07-01', end_date: null }] });
+  const mountReview = (entry: ParsedRow) => mount(DutiableTimelineSelectionPanel, {
+    props: { row: entry, cadences: [cadence], staged: new Map(), selectedRows: [entry] },
+    global: { stubs: { ...commonStubs, Popover: true,
+      SpotlightPopover: { template: '<div><slot /></div>' },
+      AlertDialog: { template: '<div><slot /></div>' },
+AlertDialogTrigger: { template: '<div><slot /></div>' },
+AlertDialogContent: { template: '<div><slot /></div>' },
+AlertDialogHeader: { template: '<div><slot /></div>' },
+AlertDialogTitle: { template: '<div><slot /></div>' },
+AlertDialogDescription: { template: '<div><slot /></div>' },
+AlertDialogFooter: { template: '<div><slot /></div>' },
+AlertDialogCancel: { template: '<div><slot /></div>' },
+AlertDialogAction: { template: '<div><slot /></div>' },
+    } },
+  });
+  const wrapper = mountReview(row);
+  expect(wrapper.text()).toContain('dutiables.timeline.review.keep');
+  expect(wrapper.text()).toContain('dutiables.timeline.review.convert');
+  expect(mountReview({ ...row, editable: false }).text()).not.toContain('dutiables.timeline.review.keep');
+  expect(mountReview({ ...row, is_derived: true }).text()).not.toContain('dutiables.timeline.review.keep');
+});

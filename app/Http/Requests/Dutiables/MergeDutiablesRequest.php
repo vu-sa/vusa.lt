@@ -34,7 +34,8 @@ class MergeDutiablesRequest extends FormRequest
     {
         return [
             'row_ids' => ['required', 'array', 'min:2', 'max:50'],
-            'row_ids.*' => ['ulid', Rule::exists('dutiables', 'id')],
+            'row_ids.*' => ['distinct', 'ulid', Rule::exists('dutiables', 'id')],
+            'fingerprint' => ['nullable', 'string', 'size:64'],
             'acknowledge_access_change' => ['nullable', 'boolean'],
         ];
     }

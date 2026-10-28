@@ -36,20 +36,21 @@ class AuditExOfficioDutiables extends Command
         $rows = $this->findSuspectRows();
 
         if ($rows->isEmpty()) {
-            $this->info('✅ No orphaned ex-officio duties found.');
+            $this->info('✅ No ex-officio assignments need review.');
 
             return self::SUCCESS;
         }
 
         $this->table(
-            ['User', 'Email', 'Target duty', 'Missing source duty', 'Tenant', 'Since'],
-            $rows->map(fn ($row) => [
-                $row->user_name,
-                $row->user_email,
-                $this->localized($row->target_duty),
-                $this->localized($row->source_duty),
-                $row->tenant ?? '—',
-                $row->start_date,
+            ['Assignment', 'User', 'Email', 'Target duty', 'Possible source duties', 'Tenant', 'Since'],
+            $rows->groupBy('dutiable_id')->map(fn ($group) => [
+                $group->first()->dutiable_id,
+                $group->first()->user_name,
+                $group->first()->user_email,
+                $this->localized($group->first()->target_duty),
+                $group->map(fn ($row) => $this->localized($row->source_duty))->unique()->implode(', '),
+                $group->first()->tenant ?? '—',
+                $group->first()->start_date,
             ])->all()
         );
 

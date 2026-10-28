@@ -246,6 +246,7 @@ test('an active row on an ex-officio target duty without its source is flagged a
         'start_date' => now()->subMonth()->toDateString(),
         'end_date' => null,
         'via_dutiable_id' => null,
+        'assignment_origin' => 'unknown',
     ]);
 
     $findings = analyze();

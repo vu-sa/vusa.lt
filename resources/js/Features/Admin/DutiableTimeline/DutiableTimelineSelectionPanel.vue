@@ -61,7 +61,7 @@
           {{ $t('dutiables.timeline.actions.align') }}
         </Button>
 
-        <AlertDialog v-if="canMerge">
+        <AlertDialog v-if="canMerge" @update:open="open => open && mergePreview.execute()">
           <AlertDialogTrigger as-child>
             <Button size="xs" variant="outline">
               <Merge class="size-3.5" />
@@ -79,6 +79,10 @@
                   start: mergedSpan.start,
                   end: mergedSpan.end,
                 }) }}
+                <span v-if="selectedRows.some(entry => entry.derived_ids.length > 0)" class="mt-2 block text-status-attention">{{ $t('dutiables.timeline.review.merge_warning') }}</span>
+                <span v-for="seat in mergePreview.data.value?.derived ?? []" :key="seat.id" class="mt-1 block">
+                  {{ seat.duty_name }} · {{ seat.start_date }} → {{ seat.end_date ?? '∞' }}
+                </span>
                 <span v-if="mergeLosesExtras" class="mt-2 block text-destructive">
                   {{ $t('dutiables.timeline.actions.merge_extras_warning') }}
                 </span>
@@ -86,7 +90,7 @@
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>{{ $t('dutiables.timeline.actions.remove_cancel') }}</AlertDialogCancel>
-              <AlertDialogAction @click="emit('merge', selectedRows.map(entry => entry.id))">
+              <AlertDialogAction :disabled="!mergePreview.isSuccess.value || mergePreview.isFetching.value" @click="emit('merge', selectedRows.map(entry => entry.id), mergePreview.data.value?.fingerprint)">
                 {{ $t('dutiables.timeline.actions.merge_confirm') }}
               </AlertDialogAction>
             </AlertDialogFooter>
@@ -132,6 +136,27 @@
           {{ $t('dutiables.timeline.inspector.not_editable') }}
         </AlertDescription>
       </Alert>
+
+      <SpotlightPopover v-if="row.editable && !row.is_derived" :title="$t('dutiables.timeline.review.keep')" :description="$t('dutiables.timeline.review.explanation')" :is-dismissed="reviewSpotlight.isDismissed.value" @dismiss="reviewSpotlight.dismiss()">
+      <section class="space-y-2 border-t border-border pt-2">
+        <p class="text-xs text-muted-foreground">{{ $t('dutiables.timeline.review.explanation') }}</p>
+        <AlertDialog v-for="choice in reviewChoices" :key="choice.id">
+          <AlertDialogTrigger as-child>
+            <Button size="xs" variant="outline">{{ choice.label }}</Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{{ choice.label }}</AlertDialogTitle>
+              <AlertDialogDescription>{{ choice.description }}</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{{ $t('dutiables.timeline.actions.remove_cancel') }}</AlertDialogCancel>
+              <AlertDialogAction @click="reviewAssignment(choice.id)">{{ $t('dutiables.timeline.review.confirm') }}</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </section>
+      </SpotlightPopover>
 
       <div class="grid gap-2 sm:grid-cols-2">
         <div class="space-y-1">
@@ -286,7 +311,12 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { Link, usePage } from '@inertiajs/vue3';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import { useApiMutation } from '@/Composables/useApi';
+import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
+import { trans as $t } from 'laravel-vue-i18n';
+import { router, Link, usePage } from '@inertiajs/vue3';
 import { CalendarCheck, CalendarX, ExternalLink, Merge, Trash2 } from '@lucide/vue';
 
 import { timelineDutyName, timelineSourceDutyName } from './dutyNames';
@@ -327,7 +357,8 @@ const emit = defineEmits<{
   'align': [];
   'close': [endDate: string];
   'remove': [rowId: string];
-  'merge': [rowIds: string[]];
+  'reviewed': [];
+  'merge': [rowIds: string[], fingerprint?: string];
   'set-dates': [dates: { start_date: string | null; end_date: string | null }];
 }>();
 
@@ -399,6 +430,31 @@ const yesterday = computed(() => {
 });
 
 /** A derived row's dates are mirrored from its source and are never editable here. */
+const mergePreview = useApiMutation<{ fingerprint: string; derived: { id: string; duty_name: string; start_date: string; end_date: string | null }[] }>(
+  route('dutiables.timeline.mergePreview'), 'POST', computed(() => ({ row_ids: props.selectedRows.map(row => row.id) })),
+);
+const reviewGuard = useAccessChangeGuard();
+const reviewSpotlight = useFeatureSpotlight('ex-officio-review-v1');
+const reviewChoices = computed(() => [
+  { id: 'manual', label: $t('dutiables.timeline.review.keep'), description: $t('dutiables.timeline.review.keep_description') },
+  ...(props.row?.review_sources ?? []).map(source => ({
+    id: source.id, label: $t('dutiables.timeline.review.convert', { duty: source.name }),
+    description: $t('dutiables.timeline.review.convert_description', { start: source.start_date, end: source.end_date ?? '∞' }),
+  })),
+]);
+
+function reviewAssignment(choice: string): void {
+  if (!props.row) return;
+  reviewSpotlight.dismiss();
+  const rowId = props.row.id;
+  reviewGuard.guardedSubmit(acknowledge => router.post(route('dutiables.reviewExOfficio', rowId), {
+    acknowledge_access_change: acknowledge,
+    decision: choice === 'manual' ? 'manual' : 'convert',
+    source_id: choice === 'manual' ? null : choice,
+    acknowledge: true,
+  }, { preserveScroll: true, onSuccess: () => emit('reviewed') }));
+}
+
 const canEdit = computed(() => props.row !== null && props.row.editable);
 
 /** What the row will be saved as: the staged value when one exists, else the stored one. */

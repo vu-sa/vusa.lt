@@ -2,6 +2,16 @@
 
 return [
     'timeline' => [
+        'review' => [
+            'merge_warning' => 'Susieti ex officio priskyrimai apims visą sujungtą laikotarpį, įskaitant pertraukas. Papildomi jų duomenys bus išsaugoti.',
+            'explanation' => 'Ex officio laikotarpis priklauso nuo jį suteikiančių pareigų. Palik savarankišką laikotarpį arba pasirink šaltinį.',
+            'saved' => 'Priskyrimas peržiūrėtas.',
+            'keep' => 'Palikti savarankišką',
+            'keep_description' => 'Datos ir papildomi duomenys liks nepriklausomi nuo kitų pareigų.',
+            'convert' => 'Susieti su :duty',
+            'convert_description' => 'Laikotarpis bus pakeistas į :start → :end. Šaltinio pakeitimai keis šias datas, o ištrynus šaltinį bus ištrintas ir šis priskyrimas.',
+            'confirm' => 'Patvirtinti pasirinkimą',
+        ],
         'title' => 'Laikotarpių tvarkyklė',
         'description' => 'Peržiūrėk ir tvarkyk pareigybių laikotarpius vienoje vietoje.',
         'open' => 'Tvarkyti laikotarpius',

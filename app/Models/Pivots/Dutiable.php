@@ -84,6 +84,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
     'dutiable_type',
     'tenant_id',
     'via_dutiable_id',
+    'assignment_origin',
     'start_date',
     'end_date',
     'study_program_id',
@@ -124,6 +125,10 @@ class Dutiable extends MorphPivot implements ImageMediaOwner
                         'end_date' => __('forms.helpers.institution_assignment_closed'),
                     ]);
                 }
+            }
+
+            if (! $this->exists && $this->assignment_origin === null) {
+                $this->assignment_origin = $this->via_dutiable_id === null ? 'manual' : 'ex_officio';
             }
 
             return parent::save($options);

@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Laikotarpių tvarkyklė
 area: dutiableTimeline
 models: [Dutiable, Cadence]
-last_reviewed: 2026-10-25
+last_reviewed: 2026-10-28
 tests:
   - tests/Feature/Admin/People/DutiableTimelineControllerTest.php
   - tests/Feature/Admin/People/DutiableDiagnosticsTest.php
@@ -278,3 +278,10 @@ parodo peržiūrą.
 - Vieno laikotarpio forma – `AssignDutyUserSheet`, saugo `DutiableController`.
 - Visas ekranas (`Patterns/FocusModeFrame`) nėra modalinis langas: pats grafikas prisegamas virš
   apvalkalo, todėl iš jo atidaryti langai rodomi virš jo.
+
+
+## Ex officio priskyrimų peržiūra
+
+Pasirinkęs savarankišką laikotarpį gali patvirtinti, kad jis nepriklauso nuo kitų pareigų, arba susieti jį su siūlomu šaltiniu. Susiejant rodomos naujos datos: vėliau jos seks šaltinį, o ištrynus šaltinį bus ištrintas ir susietas priskyrimas. Keisti galima tik priskyrimus, kuriuos turi teisę valdyti. Automatinis sinchronizavimas savarankiškų laikotarpių nekeičia.
+
+Sujungus šaltinio laikotarpius, susieti ex officio priskyrimai apima visą sujungtą laikotarpį, įskaitant pertraukas. Papildomi susietų priskyrimų duomenys išsaugomi. Neaiškūs seni priskyrimai žymimi peržiūrai; įspėjimas savaime nereiškia, kad pareigos suteiktos klaidingai.

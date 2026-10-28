@@ -113,7 +113,7 @@ test('listener does not overwrite independent fields on derived row', function (
     expect($derived->additional_email)->toBe('custom@example.com');
 });
 
-test('listener adopts existing manual row instead of creating a duplicate', function (): void {
+test('listener preserves an independent manual term beside its derived term', function (): void {
     // User already has a manual Dutiable on the target duty.
     $manualRow = Dutiable::factory()->create([
         'duty_id' => $this->targetDuty->id,
@@ -141,10 +141,11 @@ test('listener adopts existing manual row instead of creating a duplicate', func
         ->where('dutiable_id', $this->user->id)
         ->count();
 
-    expect($count)->toBe(1);
+    expect($count)->toBe(2);
 
     $manualRow->refresh();
-    expect($manualRow->via_dutiable_id)->toBe($source->id);
+    expect($manualRow->via_dutiable_id)->toBeNull()
+        ->and($manualRow->start_date->toDateString())->toBe(now()->subYear()->toDateString());
 });
 
 test('listener deletes derived rows when source is force-deleted', function (): void {
@@ -346,7 +347,7 @@ test('listener preserves tenant_id when mirroring date changes', function (): vo
         ->and($derived->start_date->toDateString())->toBe($source->start_date->toDateString());
 });
 
-test('listener adopts manual row and updates tenant_id when target supports source tenant', function (): void {
+test('listener never changes an independent manual term tenant', function (): void {
     $sourceTenant = Tenant::query()->first();
     $targetTenant = Tenant::query()->where('id', '!=', $sourceTenant->id)->first();
 
@@ -388,8 +389,8 @@ test('listener adopts manual row and updates tenant_id when target supports sour
 
     $manualRow->refresh();
 
-    expect($manualRow->via_dutiable_id)->toBe($source->id)
-        ->and($manualRow->tenant_id)->toBe($sourceTenant->id);
+    expect($manualRow->via_dutiable_id)->toBeNull()
+        ->and($manualRow->tenant_id)->toBeNull();
 });
 
 test('backfill sets tenant_id for cross-tenant ex-officio', function (): void {
@@ -418,6 +419,7 @@ test('backfill sets tenant_id for cross-tenant ex-officio', function (): void {
     ]);
 
     // Backfill after adding the target.
+    $sourceDuty->exOfficioTargetDuties()->syncWithoutDetaching([$targetDuty->id]);
     BackfillExOfficioTargetDuty::execute($sourceDuty, [$targetDuty->id], []);
 
     $derived = Dutiable::where('via_dutiable_id', $source->id)->first();

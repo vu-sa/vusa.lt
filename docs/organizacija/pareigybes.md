@@ -540,3 +540,8 @@ laikotarpyje gali turėti nurodytą papildomą kontaktinį el. paštą ar asmeni
 - `current_duties` tikrina ir pradžią, ir imtinę pabaigą. `authorization_duties` apima ir
   dar neprasidėjusius laikotarpius; tai tikrina `ScheduledDutyAuthorizationTest`.
   Būsimas laikotarpis dėl to netampa dabartiniu.
+
+
+## Savarankiški ir ex officio laikotarpiai
+
+Automatinis ex officio priskyrimas nekeičia jau įvesto savarankiško laikotarpio. Prireikus jį galima aiškiai susieti su šaltiniu [laikotarpių tvarkyklėje](/visak/pareigybiu-laikotarpiai). Prieš patvirtinant rodomos susiejimo pasekmės.

@@ -2,6 +2,16 @@
 
 return [
     'timeline' => [
+        'review' => [
+            'merge_warning' => 'Linked ex-officio seats will follow the full merged period, including any gaps. Their independent details are preserved.',
+            'explanation' => 'Ex-officio seats follow their source. Keep an independent term or explicitly convert it below.',
+            'saved' => 'Assignment reviewed.',
+            'keep' => 'Keep independent',
+            'keep_description' => 'Keep these dates and details independent of any source duty.',
+            'convert' => 'Follow :duty',
+            'convert_description' => 'Replace this period with :start → :end. Source changes will update these dates; deleting the source will delete this assignment.',
+            'confirm' => 'Confirm choice',
+        ],
         'title' => 'Period manager',
         'description' => 'Review and manage duty periods in one place.',
         'open' => 'Manage periods',

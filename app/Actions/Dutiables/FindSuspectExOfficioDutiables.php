@@ -33,7 +33,8 @@ class FindSuspectExOfficioDutiables
             ->join('dutiables as t', function ($join): void {
                 $join->on('t.duty_id', '=', 'eo.target_duty_id')
                     ->where('t.dutiable_type', '=', MorphMap::alias(User::class))
-                    ->whereNull('t.via_dutiable_id');
+                    ->whereNull('t.via_dutiable_id')
+                    ->where('t.assignment_origin', '!=', 'manual');
             })
             ->join('users as u', 'u.id', '=', 't.dutiable_id')
             ->join('duties as target', 'target.id', '=', 'eo.target_duty_id')
@@ -41,12 +42,25 @@ class FindSuspectExOfficioDutiables
             ->leftJoin('institutions as inst', 'inst.id', '=', 'target.institution_id')
             ->leftJoin('tenants as tn', 'tn.id', '=', 'inst.tenant_id')
             ->whereNull('u.deleted_at')
+            ->whereNull('target.deleted_at')
+            ->whereNull('source.deleted_at')
+            ->whereNull('inst.deleted_at')
+            ->where('inst.is_active', true)
+            ->whereDate('t.start_date', '<=', $today)
             ->where(fn ($q) => $q->whereNull('t.end_date')->orWhereDate('t.end_date', '>=', $today))
             // The holder does not currently hold the source duty that grants this one.
             ->whereNotExists(function ($sub) use ($today): void {
                 $sub->select(DB::raw('1'))
                     ->from('dutiables as s')
-                    ->whereColumn('s.duty_id', 'eo.source_duty_id')
+                    ->join('ex_officio_duties as grants', 'grants.source_duty_id', '=', 's.duty_id')
+                    ->join('duties as granting_duty', 'granting_duty.id', '=', 's.duty_id')
+                    ->join('institutions as granting_institution', 'granting_institution.id', '=', 'granting_duty.institution_id')
+                    ->whereColumn('grants.target_duty_id', 't.duty_id')
+                    ->whereNull('granting_duty.deleted_at')
+                    ->whereNull('granting_institution.deleted_at')
+                    ->where('granting_institution.is_active', true)
+                    ->whereNull('s.via_dutiable_id')
+                    ->whereDate('s.start_date', '<=', $today)
                     ->whereColumn('s.dutiable_id', 't.dutiable_id')
                     ->where('s.dutiable_type', '=', MorphMap::alias(User::class))
                     ->where(fn ($q) => $q->whereNull('s.end_date')->orWhereDate('s.end_date', '>=', $today));
@@ -73,6 +87,6 @@ class FindSuspectExOfficioDutiables
             return [];
         }
 
-        return self::query(targetDutyIds: $targetDutyIds)->pluck('t.id')->all();
+        return self::query(targetDutyIds: $targetDutyIds)->distinct()->pluck('t.id')->all();
     }
 }

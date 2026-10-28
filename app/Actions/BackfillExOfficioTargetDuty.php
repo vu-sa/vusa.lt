@@ -2,13 +2,12 @@
 
 namespace App\Actions;
 
+use App\Listeners\SyncExOfficioDutiables;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
-use App\Services\DutyAssignmentService;
 use App\Support\MorphMap;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 /**
  * When an ex-officio target duty is added to or removed from a source duty,
@@ -33,7 +32,7 @@ class BackfillExOfficioTargetDuty
         $sourceRows = Dutiable::where('duty_id', $sourceDuty->id)
             ->where('dutiable_type', MorphMap::alias(User::class))
             ->whereNull('via_dutiable_id')
-            ->whereNull('end_date')
+            ->where(fn ($query) => $query->whereNull('end_date')->orWhereDate('end_date', '>=', today()))
             ->get();
 
         /** @var Collection<string, Duty> $targetDuties */
@@ -47,73 +46,25 @@ class BackfillExOfficioTargetDuty
             $targetDuty = $targetDuties->get($targetDutyId);
 
             foreach ($sourceRows as $source) {
-                self::createOrAdopt($source, $targetDutyId, $targetDuty);
+                if ($targetDuty !== null) {
+                    app(SyncExOfficioDutiables::class)->syncDerivedRow($source, $source->dutiable_id, $targetDuty);
+                }
             }
         }
 
-        // End-date derived rows for removed targets (keep history).
         foreach ($removedTargetDutyIds as $targetDutyId) {
-            foreach ($sourceRows as $source) {
-                Dutiable::where('via_dutiable_id', $source->id)
-                    ->where('duty_id', $targetDutyId)
-                    ->whereNull('end_date')
-                    ->update(['end_date' => now()]);
+            if ($sourceDuty->exOfficioTargetDuties()->whereKey($targetDutyId)->exists()) {
+                continue;
+            }
+            $sourceIds = Dutiable::query()->where('duty_id', $sourceDuty->id)->whereNull('via_dutiable_id')->pluck('id');
+            foreach (Dutiable::query()->whereIn('via_dutiable_id', $sourceIds)->where('duty_id', $targetDutyId)
+                ->where('ended_by_institution_deactivation', false)->current()->get() as $seat) {
+                if ($seat->start_date->gt(today())) {
+                    $seat->delete();
+                } else {
+                    $seat->update(['end_date' => today()]);
+                }
             }
         }
-    }
-
-    private static function createOrAdopt(Dutiable $source, string $targetDutyId, ?Duty $targetDuty): void
-    {
-        DB::transaction(function () use ($source, $targetDutyId, $targetDuty): void {
-            if ($targetDuty === null || ! app(DutyAssignmentService::class)->lockExOfficioContext($source, $targetDuty)) {
-                return;
-            }
-
-            self::createForActiveTarget($source, $targetDutyId, $targetDuty);
-        });
-    }
-
-    private static function createForActiveTarget(Dutiable $source, string $targetDutyId, Duty $targetDuty): void
-    {
-        $userId = $source->dutiable_id;
-        $resolvedTenantId = ResolveExOfficioTenantId::execute($source, $targetDuty);
-
-        $existing = Dutiable::where('via_dutiable_id', $source->id)
-            ->where('duty_id', $targetDutyId)
-            ->where('dutiable_type', MorphMap::alias(User::class))
-            ->where('dutiable_id', $userId)
-            ->first();
-
-        if ($existing) {
-            return;
-        }
-
-        // Adopt an existing active manual row.
-        $manual = Dutiable::where('duty_id', $targetDutyId)
-            ->where('dutiable_type', MorphMap::alias(User::class))
-            ->where('dutiable_id', $userId)
-            ->whereNull('via_dutiable_id')
-            ->whereNull('end_date')
-            ->first();
-
-        if ($manual) {
-            $manual->via_dutiable_id = $source->id;
-            $manual->start_date = $source->start_date;
-            $manual->end_date = $source->end_date;
-            $manual->tenant_id = $resolvedTenantId;
-            $manual->save();
-
-            return;
-        }
-
-        Dutiable::create([
-            'duty_id' => $targetDutyId,
-            'dutiable_id' => $userId,
-            'dutiable_type' => MorphMap::alias(User::class),
-            'via_dutiable_id' => $source->id,
-            'tenant_id' => $resolvedTenantId,
-            'start_date' => $source->start_date,
-            'end_date' => $source->end_date,
-        ]);
     }
 }

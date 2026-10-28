@@ -250,7 +250,9 @@ Route::post('duties/{duty}/predecessors/{succession}/fold-rename', [DutySuccessi
 // Declared before the resource so /dutiables/timeline can never be read as /dutiables/{dutiable}.
 Route::get('dutiables/timeline', [DutiableTimelineController::class, 'index'])->name('dutiables.timeline');
 Route::post('dutiables/timeline/apply', [DutiableTimelineController::class, 'apply'])->name('dutiables.timeline.apply');
+Route::post('dutiables/timeline/merge-preview', [DutiableTimelineController::class, 'previewMerge'])->name('dutiables.timeline.mergePreview');
 Route::post('dutiables/timeline/merge', [DutiableTimelineController::class, 'merge'])->name('dutiables.timeline.merge');
+Route::post('dutiables/{dutiable}/review-ex-officio', [DutiableTimelineController::class, 'reviewExOfficio'])->name('dutiables.reviewExOfficio');
 Route::resource('dutiables', DutiableController::class)->only(['store', 'edit', 'update', 'destroy']);
 /** @deprecated Merge records from the study-program list instead. */
 Route::get('studyPrograms/merge', fn () => to_route('studyPrograms.index')->with('info', __('shell.merge.redirect')))->name('studyPrograms.merge');

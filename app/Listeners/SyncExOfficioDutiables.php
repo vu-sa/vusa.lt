@@ -78,10 +78,11 @@ class SyncExOfficioDutiables implements ShouldQueue
         Dutiable::where('via_dutiable_id', $sourceId)->delete();
     }
 
-    private function syncDerivedRow(Dutiable $source, string $userId, Duty $targetDuty): void
+    public function syncDerivedRow(Dutiable $source, string $userId, Duty $targetDuty): void
     {
         DB::transaction(function () use ($source, $userId, $targetDuty): void {
-            if (! app(DutyAssignmentService::class)->lockExOfficioContext($source, $targetDuty)) {
+            if (! $source->duty()->whereHas('exOfficioTargetDuties', fn ($query) => $query->whereKey($targetDuty->id))->exists()
+                || ! app(DutyAssignmentService::class)->lockExOfficioContext($source, $targetDuty)) {
                 return;
             }
 
@@ -95,43 +96,23 @@ class SyncExOfficioDutiables implements ShouldQueue
         $resolvedTenantId = ResolveExOfficioTenantId::execute($source, $targetDuty);
 
         // If a derived row for this source already exists, mirror the dates and tenant_id.
-        $derived = Dutiable::where('via_dutiable_id', $source->id)
+        $derivedRows = Dutiable::where('via_dutiable_id', $source->id)
             ->where('duty_id', $targetDutyId)
             ->where('dutiable_type', MorphMap::alias(User::class))
             ->where('dutiable_id', $userId)
-            ->first();
+            ->get();
 
-        if ($derived) {
+        foreach ($derivedRows as $derived) {
             if ($derived->ended_by_institution_deactivation) {
-                return;
+                continue;
             }
             $derived->start_date = $source->start_date;
             $derived->end_date = $source->end_date;
             $derived->tenant_id = $resolvedTenantId;
             $derived->save();
-
-            return;
         }
 
-        if ($source->ended_by_institution_deactivation) {
-            return;
-        }
-
-        // Adopt an existing active manual row for this user+target duty.
-        $manual = Dutiable::where('duty_id', $targetDutyId)
-            ->where('dutiable_type', MorphMap::alias(User::class))
-            ->where('dutiable_id', $userId)
-            ->whereNull('via_dutiable_id')
-            ->whereNull('end_date')
-            ->first();
-
-        if ($manual) {
-            $manual->via_dutiable_id = $source->id;
-            $manual->start_date = $source->start_date;
-            $manual->end_date = $source->end_date;
-            $manual->tenant_id = $resolvedTenantId;
-            $manual->save();
-
+        if ($derivedRows->isNotEmpty() || $source->ended_by_institution_deactivation) {
             return;
         }
 
