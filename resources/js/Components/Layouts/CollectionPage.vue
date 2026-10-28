@@ -87,6 +87,7 @@
       :sort-options="source.sortOptions.value"
       :total="source.total.value"
       :table-fixed
+      :actions-width
       @clear="clearAll"
       @retry="source.refresh"
       @load-more="source.loadMore"
@@ -170,6 +171,8 @@ const props = withDefaults(defineProps<{
   keepParams?: string[];
   /** Keep table columns within assigned widths when cells contain long text. */
   tableFixed?: boolean;
+  /** Actions column width in a fixed-layout table (default `w-48`). */
+  actionsWidth?: string;
 }>(), {
   lead: undefined,
   quickFilters: undefined,

@@ -145,6 +145,30 @@ it('keeps collection actions reachable across widths and themes', function (): v
     $page->assertNoJavaScriptErrors();
 });
 
+it('gives the actions column room in a fixed-layout table', function (): void {
+    $page = openAdminPage('/mano/tasks?view=table', 1180, 900, function ($user): void {
+        Task::factory()->create([
+            'name' => 'Labai ilgas užduoties pavadinimas, kuris lentelėje turėtų lūžti į kelias eilutes',
+            'due_date' => now()->addDays(2),
+        ])->users()->attach($user->id);
+    });
+
+    foreach ([1440, 1180, 820] as $width) {
+        $page->resize($width, 900);
+        waitForInertiaRender($page, '[data-slot=collection-table] [data-slot=collection-row-actions]');
+
+        // A fixed layout takes `w-px` literally, which squeezed the actions over the title.
+        expect($page->script('(function () {
+            const cell = document.querySelector("[data-slot=collection-table] tbody tr td:last-child");
+            const actions = cell.querySelector("[data-slot=collection-row-actions]");
+            const cellBounds = cell.getBoundingClientRect();
+            const actionBounds = actions.getBoundingClientRect();
+            return actionBounds.left >= cellBounds.left - 1 && actionBounds.right <= cellBounds.right + 1;
+        })()'))->toBeTrue();
+    }
+    $page->assertNoJavaScriptErrors();
+});
+
 it('keeps reservation actions visible beside a two-line title at table widths', function (): void {
     $page = openAdminPage('/mano/reservations', 1440, 900, function ($user): void {
         $reservation = Reservation::factory()->create([

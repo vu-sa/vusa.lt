@@ -92,7 +92,7 @@
                   :key="header.id"
                   :class="[
                     header.id === SELECT_COLUMN_ID ? 'w-12' : columnOf(header.id)?.class,
-                    header.id === ACTIONS_COLUMN_ID ? 'sticky right-0 z-10 w-px whitespace-nowrap border-l border-border bg-secondary text-right' : 'whitespace-nowrap',
+                    header.id === ACTIONS_COLUMN_ID ? ['sticky right-0 z-10 whitespace-nowrap bg-secondary text-right', actionsColumnWidth] : 'whitespace-nowrap',
                   ]"
                   :aria-sort="ariaSort(header.column.getIsSorted())"
                 >
@@ -132,7 +132,7 @@
                   :key="cell.id"
                   :class="[
                     cell.column.id === SELECT_COLUMN_ID ? 'w-12' : columnOf(cell.column.id)?.class,
-                    cell.column.id === ACTIONS_COLUMN_ID ? 'sticky right-0 z-10 w-px whitespace-nowrap border-l border-border bg-background group-hover:bg-secondary group-data-[state=selected]:bg-secondary text-right' : '',
+                    cell.column.id === ACTIONS_COLUMN_ID ? ['sticky right-0 z-10 whitespace-nowrap bg-background group-hover:bg-secondary group-data-[state=selected]:bg-secondary text-right', actionsColumnWidth] : '',
                   ]"
                 >
                   <Checkbox
@@ -268,6 +268,8 @@ const props = withDefaults(defineProps<{
   sortOptions?: CollectionSortOption[];
   total: number;
   tableFixed?: boolean;
+  /** Width of the actions column in a fixed-layout table, where it cannot size itself. */
+  actionsWidth?: string;
 }>(), {
   pinned: () => [],
   columns: () => [],
@@ -303,6 +305,9 @@ const pinnedList = computed(() => {
 });
 
 const allItems = computed<readonly T[]>(() => [...pinnedList.value, ...props.items]);
+
+// A fixed layout takes `w-px` literally and squeezes the actions; only auto layout can shrink-wrap them.
+const actionsColumnWidth = computed(() => (props.tableFixed ? props.actionsWidth ?? 'w-48' : 'w-px'));
 
 const { table, hideableColumns, toggleRow } = useCollectionTable<T>({
   collection: props.collection,

@@ -13,6 +13,7 @@
     :item-key="taskKey"
     :columns
     table-fixed
+    actions-width="w-60"
     :quick-filters
     :search-placeholder="$t('tasks.collection.search')"
     @quick-filter="toggleQuickFilter"
