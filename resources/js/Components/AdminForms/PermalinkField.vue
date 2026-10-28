@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-2" data-slot="form-field">
-    <Label :for="id" :class="cn('text-sm font-bold text-foreground', labelClass)">
+    <Label :for="id" :class="cn('flex items-center gap-1.5 text-sm font-bold text-muted-foreground', labelClass)">
       {{ label ?? $t('Nuoroda') }}
     </Label>
 
@@ -52,7 +52,7 @@
       </Button>
     </div>
 
-    <p v-if="hint" class="text-xs leading-relaxed text-muted-foreground">
+    <p v-if="hint" class="max-w-prose text-xs leading-snug text-pretty text-muted-foreground">
       {{ hint }}
     </p>
 

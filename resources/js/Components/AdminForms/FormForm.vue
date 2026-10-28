@@ -4,6 +4,7 @@
     :bar-title="isEditing ? getTranslatedValue(props.form.name, undefined, $t('Forma')) : $t('Nauja registracijos forma')"
     :lead="isEditing ? undefined : $t('Kurk naują registracijos formą studentams ir nariams.')"
     :entity-type="ModelEnum.FORM"
+    required-note
     :activity-subject="isEditing && form.id ? { type: 'form', id: String(form.id) } : undefined"
     :public-url="publicUrl('lt')"
     :created-at="(form.created_at as string | undefined)"
@@ -23,7 +24,7 @@
   >
     <FormFieldWrapper
       id="form-name"
-      :label="`${$t('forms.fields.name')} (${activeLocale.toUpperCase()})`"
+      :label="$t('forms.fields.name')"
       required
       :error="form.errors[`name.${activeLocale}`]"
     >
@@ -36,7 +37,7 @@
 
     <FormFieldWrapper
       id="form-description"
-      :label="`${$t('forms.fields.description')} (${activeLocale.toUpperCase()})`"
+      :label="$t('forms.fields.description')"
       :error="form.errors[`description.${activeLocale}`]"
     >
       <TiptapEditor :key="activeLocale" v-model="form.description[activeLocale]" tools="description" html />
@@ -163,7 +164,7 @@
     </FormSection>
 
     <template #aside>
-      <FormPanel :title="$t('Paskelbimas ir nuoroda')" :icon="Send" title-class="text-brand">
+      <FormPanel :title="$t('Paskelbimas ir nuoroda')" :icon="Send">
         <div class="space-y-3">
           <PermalinkField
             :permalink="form.path.lt"

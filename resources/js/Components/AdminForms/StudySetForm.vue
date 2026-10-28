@@ -3,6 +3,7 @@
     :title="isCreate ? $t('Naujas individualių studijų komplektas') : (getTranslatedValue(form.name) || $t('Komplektas'))"
     :bar-title="isCreate ? $t('Naujas individualių studijų komplektas') : getTranslatedValue(studySet.name, undefined, $t('Komplektas'))"
     :entity-type="ModelEnum.STUDY_SET"
+    required-note
     :back-href="route('studySets.index')"
     :back-label="$t('Individualių studijų komplektai')"
     :processing="form.processing"
@@ -23,10 +24,10 @@
       <StatusBadge :status="form.is_visible ? bannerStatuses.active : bannerStatuses.inactive" />
     </template>
 
-    <FormSection :title="$t('forms.context.main_info')" :description="$t('Individualaus studijų komplekto pagrindinė informacija.')">
+    <FormSection :title="$t('forms.context.main_info')">
       <FormFieldWrapper
         id="name"
-        :label="`${$t('forms.fields.title')} (${activeLocale.toUpperCase()})`"
+        :label="$t('forms.fields.title')"
         required
         :error="form.errors[`name.${activeLocale}`]"
       >
@@ -35,7 +36,7 @@
 
       <FormFieldWrapper
         id="description"
-        :label="`${$t('forms.fields.description')} (${activeLocale.toUpperCase()})`"
+        :label="$t('forms.fields.description')"
         :error="form.errors[`description.${activeLocale}`]"
       >
         <Textarea id="description" v-model="form.description[activeLocale]" :class="fieldSurfaceClass" />
@@ -65,7 +66,7 @@
 
           <FormFieldWrapper
             :id="`course-name-${index}`"
-            :label="`${$t('forms.fields.title')} (${activeLocale.toUpperCase()})`"
+            :label="$t('forms.fields.title')"
             required
             :error="form.errors[`courses.${index}.name.${activeLocale}`]"
           >
@@ -92,7 +93,7 @@
 
             <FormFieldWrapper :id="`course-visible-${index}`" :label="$t('Matomas')">
               <div class="flex items-center gap-2 pt-2">
-                <Switch :id="`course-visible-${index}`" :model-value="course.is_visible" @update:model-value="course.is_visible = $event" />
+                <Checkbox :id="`course-visible-${index}`" :model-value="course.is_visible" @update:model-value="course.is_visible = $event === true" />
               </div>
             </FormFieldWrapper>
           </div>
@@ -137,18 +138,20 @@
 
           <FormFieldWrapper
             :id="`review-lecturer-${index}`"
-            :label="`${$t('Dėstytojas')} (${activeLocale.toUpperCase()})`"
+            :label="$t('Dėstytojas')"
             required
           >
             <Input :id="`review-lecturer-${index}`" v-model="review.lecturer[activeLocale]" :class="['h-11', fieldSurfaceClass]" />
           </FormFieldWrapper>
 
-          <FormFieldWrapper :id="`review-comment-${index}`" :label="`${$t('Komentaras')} (${activeLocale.toUpperCase()})`">
+          <FormFieldWrapper :id="`review-comment-${index}`" :label="$t('Komentaras')">
             <Textarea :id="`review-comment-${index}`" v-model="review.comment[activeLocale]" :class="fieldSurfaceClass" />
           </FormFieldWrapper>
 
           <FormFieldWrapper :id="`review-visible-${index}`" :label="$t('Matomas')">
-            <Switch :id="`review-visible-${index}`" :model-value="review.is_visible" @update:model-value="review.is_visible = $event" />
+            <div class="flex items-center gap-2 pt-2">
+              <Checkbox :id="`review-visible-${index}`" :model-value="review.is_visible" @update:model-value="review.is_visible = $event === true" />
+            </div>
           </FormFieldWrapper>
         </li>
       </ol>
@@ -165,7 +168,7 @@
     </FormSection>
 
     <template #aside>
-      <FormPanel :title="$t('Nustatymai')" :icon="SlidersHorizontal" title-class="text-brand">
+      <FormPanel :title="$t('Nustatymai')" :icon="SlidersHorizontal">
         <FormToggleRow
           v-model="form.is_visible"
           :label="$t('Matomas')"
@@ -230,7 +233,7 @@ import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
 import { NativeSelect } from '@/Components/ui/native-select';
-import { Switch } from '@/Components/ui/switch';
+import { Checkbox } from '@/Components/ui/checkbox';
 import { Textarea } from '@/Components/ui/textarea';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { bannerStatuses } from '@/Constants/statuses';

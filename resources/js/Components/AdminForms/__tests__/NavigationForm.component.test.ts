@@ -47,7 +47,7 @@ const formStubs = {
   AdminForm: { props: ['model'], template: '<form @submit.prevent><slot /></form>' },
   FormElement: { template: '<section><slot name="title" /><slot /></section>' },
   FormFieldWrapper: {
-    props: ['id', 'label', 'required', 'error', 'helperText'],
+    props: ['id', 'label', 'required', 'error', 'hint'],
     template: '<div><span class="field-label">{{ label }}</span><slot /><span v-if="error" class="field-error">{{ error }}</span></div>',
   },
   Collapsible: { template: '<div><slot /></div>' },
@@ -230,7 +230,7 @@ describe('NavigationForm.vue', () => {
       // The URL field is optional for a footer column and explains why.
       const urlField = wrapper.findAllComponents(formStubs.FormFieldWrapper).find(f => f.props('id') === 'url');
       expect(urlField?.props('required')).toBe(false);
-      expect(urlField?.props('helperText')).toBe('navigation.form.footer_category_url_hint');
+      expect(urlField?.props('hint')).toBe('navigation.form.footer_category_url_hint');
     });
 
     it('forces a footer child to the link type and keeps the parent selector', () => {

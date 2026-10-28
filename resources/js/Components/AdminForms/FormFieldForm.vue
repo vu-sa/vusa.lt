@@ -56,8 +56,8 @@
         </CollapsibleTrigger>
         <CollapsibleContent>
           <div class="space-y-4 border border-t-0 border-border bg-card p-4">
-            <FormFieldWrapper id="use_model_options" :label="$t('Naudoti iš duombazės?')" required>
-              <Switch v-model="model.use_model_options" />
+            <FormFieldWrapper id="use_model_options" :label="$t('Naudoti sistemos modelio reikšmes')">
+              <Checkbox id="use_model_options" :model-value="model.use_model_options" @update:model-value="model.use_model_options = $event === true" />
             </FormFieldWrapper>
             <FormFieldWrapper id="option_source" :label="$t('Duomenų šaltinis')">
               <NativeSelect id="option_source" v-model="model.option_source" :options="fieldModels" :disabled="!model.use_model_options"
@@ -68,8 +68,8 @@
       </Collapsible>
     </template>
 
-    <FormFieldWrapper id="is_required" :label="$t('Ar būtinas?')" required>
-      <Switch v-model="model.is_required" />
+    <FormFieldWrapper id="is_required" :label="$t('Privalomas laukas')">
+      <Checkbox id="is_required" :model-value="model.is_required" @update:model-value="model.is_required = $event === true" />
     </FormFieldWrapper>
 
     <FormFieldWrapper id="default_value" :label="$t('Automatiškai įrašomas atsakymas')">
@@ -101,10 +101,10 @@ import FormFieldWrapper from './FormFieldWrapper.vue';
 
 import { Button } from '@/Components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
+import { Checkbox } from '@/Components/ui/checkbox';
 import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
 import { Input } from '@/Components/ui/input';
 import { NativeSelect } from '@/Components/ui/native-select';
-import { Switch } from '@/Components/ui/switch';
 
 const props = defineProps<{
   formField: App.Entities.FormField | Record<string, unknown>;

@@ -6,7 +6,7 @@
   >
     <header class="flex items-center gap-2 border-b border-border px-4 py-3">
       <component :is="icon" v-if="icon" class="size-4 shrink-0 text-brand" aria-hidden="true" />
-      <h2 :id="headingId" :class="cn('text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground', titleClass)">
+      <h2 :id="headingId" :class="cn('text-[11px] font-bold uppercase tracking-[0.18em] text-brand', titleClass)">
         {{ title }}
       </h2>
       <div v-if="$slots.action" class="ml-auto">

@@ -176,6 +176,16 @@
       @submit.prevent="mode !== 'view' && emit('submit')"
     >
       <div :class="$slots.aside ? 'flex min-w-0 flex-col gap-8' : 'contents'">
+        <slot name="required-note">
+          <p
+            v-if="requiredNote"
+            class="max-w-prose border-l border-border pl-3 text-sm leading-relaxed text-muted-foreground"
+            data-testid="form-page-required-note"
+          >
+            {{ typeof requiredNote === 'string' ? requiredNote : $t('forms.required_note') }}
+          </p>
+        </slot>
+
         <slot />
 
         <details
@@ -284,6 +294,8 @@ const props = withDefaults(defineProps<{
   /** Record facts listed at the end of the `#aside`. */
   createdAt?: string | null;
   updatedAt?: string | null;
+  /** Shows the canonical required-fields guidance note near the start. */
+  requiredNote?: boolean | string;
 }>(), {
   barTitle: undefined,
   headTitle: undefined,
@@ -303,6 +315,7 @@ const props = withDefaults(defineProps<{
   activitySubject: undefined,
   createdAt: undefined,
   updatedAt: undefined,
+  requiredNote: false,
 });
 
 const emit = defineEmits<{
@@ -314,6 +327,7 @@ const slots = defineSlots<{
   'default'?: () => unknown;
   'aside'?: () => unknown;
   'advanced'?: () => unknown;
+  'required-note'?: () => unknown;
   /** Below the fields; in a two-column form, at the end of the `#aside`. */
   'danger-zone'?: () => unknown;
   'header-actions'?: () => unknown;

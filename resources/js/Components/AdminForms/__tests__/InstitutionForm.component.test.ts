@@ -128,7 +128,7 @@ describe('InstitutionForm.vue', () => {
 
     const sections = wrapper.findAll('[data-section]').map(section => section.attributes('data-section'));
 
-    expect(sections).toEqual(['Kas tai?', 'Kaip su ja susisiekti?']);
+    expect(sections).toEqual(['Pagrindinė informacija', 'Kaip su ja susisiekti?']);
     expect(wrapper.text()).not.toContain('Pareigybės');
   });
 

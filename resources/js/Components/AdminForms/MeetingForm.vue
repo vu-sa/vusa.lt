@@ -52,7 +52,7 @@
       <Textarea
         id="meeting-description"
         v-model="form.description[descriptionLocale]"
-        :placeholder="$t('Trumpas posėdžio aprašymas (neprivaloma)')"
+        :placeholder="$t('Trumpas posėdžio aprašymas...')"
         :class="fieldSurfaceClass"
         rows="3"
       />

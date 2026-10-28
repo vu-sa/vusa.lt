@@ -108,7 +108,7 @@ return [
         'recent_users_only_hint' => 'Rodomi tik per paskutinius 12 mėn. aktyvūs naudotojai (:shown iš :total).',
         'is_active' => 'Ar aktyvus?',
         'image' => 'Paveikslėlis',
-        'banner_logo' => 'Logotipas (neprivalomas)',
+        'banner_logo' => 'Logotipas',
         'banner_logo_help' => 'Jei logotipas neįkeltas, viešame puslapyje bus rodomas baneriui suteiktas pavadinimas.',
         'banner_link_url' => 'Nuoroda, į kurią nukreipia baneris',
         'technical_slug' => 'Techninė žymė',

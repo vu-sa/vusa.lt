@@ -49,6 +49,22 @@ describe('FormPage.vue', () => {
     expect(wrapper.text()).toContain('Pareigybės');
   });
 
+  it('renders standard required note when requiredNote prop is set', () => {
+    const wrapper = mount(FormPage, {
+      props: {
+        title: 'Pareigybės forma',
+        requiredNote: true,
+      },
+      slots: { default: '<div>Fields</div>' },
+      global: { stubs },
+    });
+
+    const note = wrapper.find('[data-testid="form-page-required-note"]');
+    expect(note.exists()).toBe(true);
+    expect(note.classes()).toContain('border-l');
+    expect(note.text()).toBe('forms.required_note');
+  });
+
   it('displays sticky save bar with save button and status indicator', () => {
     const wrapper = mount(FormPage, {
       props: {

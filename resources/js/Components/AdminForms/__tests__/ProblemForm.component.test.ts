@@ -110,7 +110,7 @@ describe('ProblemForm.vue — field requirements', () => {
       'problem-institutions',
     ];
 
-    expect(wrapper.get('[data-testid="problem-required-note"]').text()).toBe('problems.form.instructions');
+    expect(wrapper.get('[data-testid="form-page-required-note"]').text()).toBe('forms.required_note');
     expect(wrapper.text()).not.toContain('problems.form.translation_requirement');
 
     for (const id of optionalFieldIds) {

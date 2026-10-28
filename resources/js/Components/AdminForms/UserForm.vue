@@ -5,6 +5,7 @@
     :head-title="isCreating ? $t('Naujas narys (-ė)') : user.name"
     :lead="isCreating ? $t('Sukurk profilį ir iškart priskirk bent vieną pareigybę — kitas galėsi pridėti asmens puslapyje.') : undefined"
     :entity-type="ModelEnum.USER"
+    :required-note="true"
     :back-href="isCreating ? route('users.index') : route('users.show', user.id)"
     :back-label="isCreating ? $t('Nariai') : $t('Į profilį')"
     :processing="form.processing"
@@ -25,10 +26,6 @@
       data-testid="existing-duplicates"
       @merge="emit('merge', $event)"
     />
-
-    <p class="max-w-prose border-l border-border pl-3 text-sm leading-relaxed text-muted-foreground">
-      {{ $t('forms.required_note') }}
-    </p>
 
     <div class="space-y-4">
       <FormFieldWrapper
@@ -125,9 +122,8 @@
     <template #aside>
       <FormPanel
         v-if="isCreating"
-        :title="$t('Pareigybės ir rolės')"
+        :title="$t('Pareigybės ir atsakomybės')"
         :icon="Briefcase"
-        title-class="text-brand"
       >
         <FormFieldWrapper
           id="user-duties"
@@ -150,7 +146,6 @@
       <FormPanel
         :title="$t('Kreipinys ir įvardžiai')"
         :icon="UserCheck"
-        title-class="text-brand"
       >
         <FormFieldWrapper
           id="user-pronouns"
@@ -188,7 +183,6 @@
         v-if="!isCreating && user.last_action"
         :title="$t('Paskutinis veiksmas')"
         :icon="Clock"
-        title-class="text-brand"
       >
         <p class="text-xs text-muted-foreground">
           {{ $t('Paskutinį kartą prisijungė') }} {{ formatStaticTime(user.last_action) }}

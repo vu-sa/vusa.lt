@@ -16,6 +16,7 @@
     :activity-subject="page.id ? { type: 'page', id: page.id } : undefined"
     :created-at="isCreate ? undefined : page.created_at"
     :updated-at="isCreate ? undefined : lastEditedAt"
+    :required-note="true"
     @submit="editor.save()"
   >
     <template v-if="!isCreate" #title-status>
@@ -133,7 +134,7 @@
 
     <FormFieldWrapper
       id="featured_image_media"
-      :label="`${$t('Viršelio nuotrauka')} (${$t('neprivaloma')})`"
+      :label="$t('Viršelio nuotrauka')"
       :hint="$t('Naudojama dalinantis socialiniuose tinkluose.')"
       :error="form.errors['featured_image_media.id']"
     >
@@ -164,7 +165,7 @@
         />
       </ContentPublishPanel>
 
-      <FormPanel :title="$t('Struktūra')" :icon="ListTree" title-class="text-brand">
+      <FormPanel :title="$t('Struktūra')" :icon="ListTree">
         <FormFieldWrapper
           id="parent_page"
           :label="$t('Tėvinis puslapis')"
@@ -222,7 +223,7 @@
         @update:lang="form.validate('lang')"
       />
 
-      <FormPanel :title="$t('Rodymo nustatymai')" :icon="LayoutTemplate" title-class="text-brand" flush>
+      <FormPanel :title="$t('Rodymo nustatymai')" :icon="LayoutTemplate" flush>
         <div class="flex flex-col gap-2 border-b border-border p-4" data-slot="form-field">
           <Label class="text-sm font-bold text-foreground">{{ $t('Išdėstymas') }}</Label>
           <VisualOptionSelect v-model="form.layout" :options="layoutOptions" :columns="3" />

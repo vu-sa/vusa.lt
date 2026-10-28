@@ -5,6 +5,7 @@
     :head-title="userHeadTitle"
     :lead="$t('Tvarkyk savo asmeninę informaciją, kontaktus ir paskyros nustatymus.')"
     :entity-type="ModelEnum.USER"
+    :required-note="true"
     :back-href="route('dashboard')"
     :back-label="$t('Pradžia')"
     :save-label="$t('Išsaugoti nustatymus')"
@@ -55,7 +56,7 @@
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <FormFieldWrapper
           id="user-phone"
-          :label="`${$t('forms.fields.phone')} (${$t('neprivaloma')})`"
+          :label="$t('forms.fields.phone')"
           :error="form.errors.phone"
         >
           <Input id="user-phone" v-model="form.phone" placeholder="+370 612 34 567" />
@@ -63,7 +64,7 @@
 
         <FormFieldWrapper
           id="user-facebook"
-          :label="`${$t('forms.fields.facebook_url')} (${$t('neprivaloma')})`"
+          :label="$t('forms.fields.facebook_url')"
           :error="form.errors.facebook_url"
         >
           <Input id="user-facebook" v-model="form.facebook_url" placeholder="https://www.facebook.com/..." />
@@ -72,7 +73,7 @@
 
       <FormFieldWrapper
         id="user-picture"
-        :label="`${$t('forms.fields.picture')} (${$t('neprivaloma')})`"
+        :label="$t('forms.fields.picture')"
         :error="form.errors['profile_photo_media.id']"
       >
         <ImageUpload
@@ -161,11 +162,10 @@
       <FormPanel
         :title="$t('Kreipinys ir įvardžiai')"
         :icon="UserCheck"
-        title-class="text-brand"
       >
         <FormFieldWrapper
           id="user-pronouns"
-          :label="`${$t('forms.fields.pronouns')} (${$t('neprivaloma')})`"
+          :label="$t('forms.fields.pronouns')"
           :hint="$t('Nurodžius įvardį, pareigybės pavadinimo galūnė keičiasi automatiškai.')"
           :error="form.errors.pronouns || form.errors['pronouns.lt'] || form.errors['pronouns.en']"
         >
@@ -200,7 +200,6 @@
         <FormPanel
           :title="$t('accessibility.menu_title')"
           :icon="Eye"
-          title-class="text-brand"
         >
           <p class="text-xs text-muted-foreground leading-relaxed">
             {{ $t('accessibility.settings_description') }}
@@ -241,7 +240,6 @@
       <FormPanel
         :title="$t('Vadovų nustatymai')"
         :icon="RefreshCw"
-        title-class="text-brand"
       >
         <p class="text-xs text-muted-foreground leading-relaxed">
           {{ $t('Gali iš naujo peržiūrėti interaktyvius vadovus, kurie padeda susipažinti su sistema.') }}
@@ -266,7 +264,7 @@
       </FormPanel>
 
       <!-- Susiję puslapiai -->
-      <FormPanel :title="$t('Susiję puslapiai')" :icon="Settings" title-class="text-brand" flush>
+      <FormPanel :title="$t('Susiję puslapiai')" :icon="Settings" flush>
         <div class="divide-y divide-border">
           <Link
             :href="route('profile.notifications')"

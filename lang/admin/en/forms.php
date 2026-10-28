@@ -108,7 +108,7 @@ return [
         'recent_users_only_hint' => 'Showing only users active in the last 12 months (:shown of :total).',
         'is_active' => 'Is active?',
         'image' => 'Image',
-        'banner_logo' => 'Logo (optional)',
+        'banner_logo' => 'Logo',
         'banner_logo_help' => 'Without a logo, the public page shows the banner\'s title as a text mark instead.',
         'banner_link_url' => 'Link the banner points to',
         'technical_slug' => 'Technical tag',

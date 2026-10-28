@@ -1,5 +1,5 @@
 <template>
-  <FormPanel :title="$t('Paskelbimas')" :icon="Send" title-class="text-brand">
+  <FormPanel :title="$t('Paskelbimas')" :icon="Send">
     <FormFieldWrapper :id="`${testIdPrefix}-status`" :label="$t('Būsena')">
       <FormSegmentedControl
         v-model="published"

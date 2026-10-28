@@ -17,7 +17,6 @@
   >
     <FormSection
       :title="$t('forms.context.main_info')"
-      :description="$t('forms.helpers.study_program_main_info')"
     >
       <FormFieldWrapper
         id="name"
@@ -30,7 +29,7 @@
     </FormSection>
 
     <template #aside>
-      <FormPanel :title="$t('Priskyrimas')" :icon="GraduationCap" title-class="text-brand">
+      <FormPanel :title="$t('Priskyrimas')" :icon="GraduationCap">
         <FormFieldWrapper
           id="degree"
           :label="$t('forms.fields.degree')"
@@ -49,7 +48,6 @@
           id="tenant_id"
           v-model="form.tenant_id"
           :tenants
-          :label="$t('forms.fields.tenant')"
           required
           :error="form.errors.tenant_id"
         />
