@@ -244,11 +244,11 @@ Kai viskas gerai, ženkliuko dažniausiai nėra – rodoma tik tai, į ką verta
 
 
 
-## Sąrašo eilutės veiksmai
+## Sąrašo eilutės veiksmai {#eilutes-veiksmai}
 
 Lentelėje vienas eilutės veiksmas rodomas su tekstu: darbo žingsnis (pvz., „Darbotvarkė“), o kai jo nėra – „Redaguoti“ arba „Atidaryti“. Likę atidarymo ir redagavimo veiksmai rodomi piktogramomis su paaiškinimu. Kiti veiksmai, įskaitant ištrynimą, yra meniu „Daugiau veiksmų“ (⋯). Rodomi tik tai eilutei leidžiami veiksmai.
 
-Veiksmų stulpelis lieka dešinėje slenkant plačią lentelę. Meniu telefone atsidaro ekrano apačioje. Ištrintų įrašų atkūrimas ir galutinis ištrynimas taip pat yra ⋯ meniu; kai leidžiama tik atkurti, rodomas mygtukas „Atkurti“.
+Stulpelį, kurio antraštėje yra rodyklės, galima rikiuoti: paspaudus antraštę tvarka apsiverčia. Tą pačią tvarką galima pasirinkti ir per „Rikiuoti“. Veiksmų stulpelis lieka dešinėje slenkant plačią lentelę. Meniu telefone atsidaro ekrano apačioje. Ištrintų įrašų atkūrimas ir galutinis ištrynimas taip pat yra ⋯ meniu; kai leidžiama tik atkurti, rodomas mygtukas „Atkurti“.
 
 ## Techninė informacija {#technine-informacija}
 
