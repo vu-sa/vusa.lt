@@ -1,5 +1,7 @@
+import fs from 'fs';
 import path from 'path';
 
+import { searchForWorkspaceRoot } from 'vite';
 import { defineConfig } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
@@ -128,6 +130,13 @@ export default defineConfig({
             // fail under `test:storybook` (or the reverse) for reasons invisible in the story
             // file. inertia.storybook.ts uses `fn()` from storybook/test, which works in both.
             '@inertiajs/vue3': path.resolve(__dirname, 'resources/js/mocks/inertia.storybook.ts'),
+          },
+        },
+        // A git worktree symlinks node_modules from the main checkout; Vite only serves files under
+        // the root, so the browser could not load the Storybook setup from the symlink's target.
+        server: {
+          fs: {
+            allow: [searchForWorkspaceRoot(__dirname), fs.realpathSync(path.resolve(__dirname, 'node_modules'))],
           },
         },
         test: {
