@@ -75,7 +75,7 @@ return [
     // Accessibility
     'image_alt_text' => 'Alt text (for accessibility)',
     'image_alt_placeholder' => 'Describe what is shown in the image',
-    'image_title' => 'Title (optional)',
+    'image_title' => 'Title',
     'image_title_placeholder' => 'Title shown on hover',
     // Image bubble menu
     'image_size' => 'Size',

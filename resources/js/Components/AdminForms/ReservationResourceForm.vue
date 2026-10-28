@@ -13,7 +13,6 @@
       <p v-for="(error, field) in reservationResourceForm.errors" :key="field" role="alert" class="text-sm text-destructive">
         {{ error }}
       </p>
-      <!-- Date Range Picker -->
       <FormFieldWrapper
         id="reservation-period"
         :label="capitalize($t('entities.reservation.period'))"
@@ -26,11 +25,9 @@
           @change="onDateChange"
         />
       </FormFieldWrapper>
-
-      <!-- Resource Select -->
       <FormFieldWrapper
         id="resource-select"
-        :label="$t('forms.fields.title')"
+        :label="capitalize($tChoice('entities.resource.model', 1))"
         required
       >
         <ResourceSelectDialog
@@ -56,8 +53,6 @@
           </template>
         </ResourceSelectDialog>
       </FormFieldWrapper>
-
-      <!-- Quantity Input -->
       <FormFieldWrapper
         id="quantity-input"
         :label="$t('forms.fields.quantity')"
@@ -74,8 +69,6 @@
           class="w-full max-w-xs"
         />
       </FormFieldWrapper>
-
-      <!-- Submit Button -->
       <Button variant="brand" :disabled="!canSubmit || reservationResourceForm.processing" @click="handleSubmit">
         <Spinner v-if="reservationResourceForm.processing" class="mr-2 size-4" />
         {{ $t("forms.submit") }}
@@ -95,7 +88,6 @@ import type { DateRange } from 'reka-ui';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 
 import { Button } from '@/Components/ui/button';
-import { Label } from '@/Components/ui/label';
 import { Badge } from '@/Components/ui/badge';
 import { Spinner } from '@/Components/ui/spinner';
 import { NumberField } from '@/Components/ui/number-field';

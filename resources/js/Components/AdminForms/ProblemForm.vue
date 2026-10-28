@@ -94,6 +94,9 @@
             :error="form.errors.status"
           >
             <FormSegmentedControl
+              id="problem-status"
+              stack-on-phone
+              tabindex="-1"
               v-model="form.status"
               :options="statusOptions"
               :aria-label="capitalize($tChoice('entities.problem.status', 1))"
@@ -270,6 +273,7 @@ import {
 import { capitalize, computed, ref } from 'vue';
 
 import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
+import { problemStatuses, statusRoleClasses } from '@/Constants/statuses';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import TenantSelectField from '@/Components/AdminForms/TenantSelectField.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
@@ -294,7 +298,6 @@ import {
   SelectValue,
 } from '@/Components/ui/select';
 import { useApi } from '@/Composables/useApi';
-import { problemStatuses } from '@/Constants/statuses';
 import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
@@ -399,11 +402,14 @@ const missingLocaleCounts = computed(() => ({
   en: form.title.en.trim() === '' ? 1 : 0,
 }));
 
-const statusOptions: FormSegmentOption[] = [
-  { value: 'open', label: $t('Atvira') },
-  { value: 'in_progress', label: $t('Vykdoma') },
-  { value: 'resolved', label: $t('Išspręsta') },
-];
+const statusOptions = computed<FormSegmentOption<string>[]>(() =>
+  Object.entries(problemStatuses).map(([value, presentation]) => ({
+    value,
+    label: $t(presentation.label),
+    icon: presentation.icon,
+    activeClass: statusRoleClasses[presentation.role],
+  })),
+);
 
 const onTenantChanged = (tenantId: number | null) => {
   if (tenantId !== form.tenant_id) {

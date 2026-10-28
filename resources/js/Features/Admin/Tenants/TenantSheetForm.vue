@@ -1,5 +1,6 @@
 <template>
   <SheetForm
+    required-note
     v-model:open="open"
     :created-at="tenant?.created_at"
     :updated-at="tenant?.updated_at"
@@ -36,10 +37,6 @@
         {{ $t('Pasirinkti') }}
       </Button>
     </template>
-
-    <p class="text-xs text-muted-foreground">
-      {{ $t('forms.required_note') }}
-    </p>
     <FormFieldWrapper
       id="tenant-fullname"
       :label="$t('forms.field_model_attributes.fullname')"

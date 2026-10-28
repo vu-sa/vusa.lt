@@ -177,13 +177,7 @@
     >
       <div :class="$slots.aside ? 'flex min-w-0 flex-col gap-8' : 'contents'">
         <slot name="required-note">
-          <p
-            v-if="requiredNote"
-            class="max-w-prose border-l border-border pl-3 text-sm leading-relaxed text-muted-foreground"
-            data-testid="form-page-required-note"
-          >
-            {{ typeof requiredNote === 'string' ? requiredNote : $t('forms.required_note') }}
-          </p>
+          <FormRequiredNote :note="requiredNote" data-testid="form-page-required-note" />
         </slot>
 
         <slot />
@@ -260,6 +254,7 @@ import { Button } from '@/Components/ui/button';
 import { segmentGroupClass, segmentVariants } from '@/Components/ui/control';
 import { SHELL_FORM_BAR_ID, SHELL_MOBILE_ACTIONS_ID, useShellFocus } from '@/Composables/useShellFocus';
 import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
+import FormRequiredNote from '@/Components/Patterns/FormRequiredNote.vue';
 import ModelTimestamps from '@/Components/Patterns/ModelTimestamps.vue';
 import type { ModelEnum } from '@/Types/enums';
 
@@ -294,7 +289,6 @@ const props = withDefaults(defineProps<{
   /** Record facts listed at the end of the `#aside`. */
   createdAt?: string | null;
   updatedAt?: string | null;
-  /** Shows the canonical required-fields guidance note near the start. */
   requiredNote?: boolean | string;
 }>(), {
   barTitle: undefined,

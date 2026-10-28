@@ -65,6 +65,38 @@ describe('FormPage.vue', () => {
     expect(note.text()).toBe('forms.required_note');
   });
 
+  it('omits the required note by default and reacts to the form opting out', async () => {
+    const wrapper = mount(FormPage, {
+      props: { title: 'Forma' },
+      global: { stubs },
+    });
+
+    expect(wrapper.find('[data-testid="form-page-required-note"]').exists()).toBe(false);
+    await wrapper.setProps({ requiredNote: true });
+    expect(wrapper.find('[data-testid="form-page-required-note"]').exists()).toBe(true);
+    await wrapper.setProps({ requiredNote: false });
+    expect(wrapper.find('[data-testid="form-page-required-note"]').exists()).toBe(false);
+    wrapper.unmount();
+  });
+
+  it('supports custom required guidance and a slot override without duplicate notes', async () => {
+    const wrapper = mount(FormPage, {
+      props: { title: 'Forma', requiredNote: 'Custom guidance' },
+      global: { stubs },
+    });
+    expect(wrapper.get('[data-testid="form-page-required-note"]').text()).toBe('Custom guidance');
+    wrapper.unmount();
+
+    const slotted = mount(FormPage, {
+      props: { title: 'Forma', requiredNote: true },
+      slots: { 'required-note': '<p>Slot guidance</p>' },
+      global: { stubs },
+    });
+    expect(slotted.text()).toContain('Slot guidance');
+    expect(slotted.find('[data-testid="form-page-required-note"]').exists()).toBe(false);
+    slotted.unmount();
+  });
+
   it('displays sticky save bar with save button and status indicator', () => {
     const wrapper = mount(FormPage, {
       props: {

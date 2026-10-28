@@ -1,5 +1,6 @@
 <template>
   <SheetForm
+    required-note
     v-model:open="open"
     :created-at="tag?.created_at"
     :updated-at="tag?.updated_at"
@@ -10,7 +11,7 @@
     @submit="submit"
   >
     <div class="space-y-2">
-      <Label for="tag-name">{{ $t('Pavadinimas') }}</Label>
+      <Label for="tag-name">{{ $t('Pavadinimas') }} <span class="text-destructive">*</span></Label>
       <MultiLocaleInput id="tag-name" v-model:input="form.name" />
       <p v-if="form.errors.name" class="text-sm text-status-danger">
         {{ form.errors.name }}
@@ -18,7 +19,7 @@
     </div>
 
     <div class="space-y-2">
-      <Label for="tag-alias">{{ $t('Alias') }} <span class="text-muted-foreground">({{ $t('neprivaloma') }})</span></Label>
+      <Label for="tag-alias">{{ $t('Alias') }}</Label>
       <Input id="tag-alias" v-model="form.alias" :placeholder="$t('Pvz: stipendijos')" />
       <p class="text-sm text-muted-foreground">
         {{ $t('Trumpa nuorodos dalis naudojama ten, kur reikia pastovaus adreso.') }}
@@ -29,12 +30,12 @@
     </div>
 
     <div class="space-y-2">
-      <Label>{{ $t('Aprašymas') }} <span class="text-muted-foreground">({{ $t('neprivaloma') }})</span></Label>
+      <Label>{{ $t('Aprašymas') }}</Label>
       <MultiLocaleTiptapFormItem v-model:input="form.description" />
     </div>
 
-    <label class="flex min-h-11 items-center gap-3 border-y border-border py-3 text-sm">
-      <Switch v-model="form.is_topic" />
+    <label for="tag-is-topic" class="flex min-h-11 items-center gap-3 border-y border-border py-3 text-sm">
+      <Checkbox id="tag-is-topic" v-model="form.is_topic" />
       <span>
         <span class="block font-medium">{{ $t('Teminė žyma') }}</span>
         <span class="block text-muted-foreground">{{ $t('Rodoma kaip turinio tema svetainėje.') }}</span>
@@ -53,7 +54,7 @@ import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 import MultiLocaleTiptapFormItem from '@/Components/FormItems/MultiLocaleTiptapFormItem.vue';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { Switch } from '@/Components/ui/switch';
+import { Checkbox } from '@/Components/ui/checkbox';
 
 interface TagInput {
   created_at?: string | null;

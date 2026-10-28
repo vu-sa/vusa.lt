@@ -3,7 +3,7 @@
     :title="isCreate ? $t('navigation.form.new_link') : (form.name || form.url || $t('navigation.form.edit_link'))"
     :bar-title
     entity-type="navigation"
-    required-note
+    :required-note="!isDivider"
     :back-href="route('navigation.index')"
     :back-label="$t('navigation.title')"
     :processing="form.processing"

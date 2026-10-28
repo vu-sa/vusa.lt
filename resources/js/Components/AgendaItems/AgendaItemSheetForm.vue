@@ -1,5 +1,6 @@
 <template>
   <SheetForm
+    required-note
     :created-at
     :updated-at
     :open
@@ -33,8 +34,8 @@
     </div>
 
     <div class="space-y-3 border-y border-border py-4" data-slot="agenda-item-privacy">
-      <label class="flex cursor-pointer items-center gap-3 text-sm pointer-coarse:min-h-11">
-        <Switch id="agenda-item-private" v-model="draft.is_private" aria-describedby="agenda-item-privacy-lead" />
+      <label for="agenda-item-private" class="flex cursor-pointer items-center gap-3 text-sm pointer-coarse:min-h-11">
+        <Checkbox id="agenda-item-private" v-model="draft.is_private" aria-describedby="agenda-item-privacy-lead" />
         {{ $t('meetings.privacy.switch_label') }}
       </label>
       <p id="agenda-item-privacy-lead" class="text-sm text-muted-foreground">
@@ -175,7 +176,6 @@ import { FormSegmentedControl, SheetForm } from '@/Components/Patterns';
 import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
-import { Switch } from '@/Components/ui/switch';
 import { Input } from '@/Components/ui/input';
 import { fieldSurfaceClass, segmentGroupClass, segmentVariants } from '@/Components/ui/control';
 import { Textarea } from '@/Components/ui/textarea';

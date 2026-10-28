@@ -1,5 +1,6 @@
 <template>
   <SheetForm
+    required-note
     v-model:open="open"
     :created-at="eventType?.created_at"
     :updated-at="eventType?.updated_at"
@@ -11,7 +12,7 @@
     @submit="submit"
   >
     <div class="space-y-2">
-      <Label for="event-type-name">{{ $t('forms.fields.title') }}</Label>
+      <Label for="event-type-name">{{ $t('forms.fields.title') }} <span class="text-destructive">*</span></Label>
       <MultiLocaleInput id="event-type-name" v-model:input="form.name" />
       <p v-if="form.errors.name || form.errors['name.lt']" class="text-sm text-destructive">
         {{ form.errors.name || form.errors['name.lt'] }}
@@ -19,7 +20,7 @@
     </div>
 
     <div class="space-y-2">
-      <Label for="event-type-slug">Slug</Label>
+      <Label for="event-type-slug">{{ $t('forms.fields.technical_slug') }} <span class="text-destructive">*</span></Label>
       <Input id="event-type-slug" v-model="form.slug" placeholder="Pvz: mokymai" />
       <p v-if="form.errors.slug" class="text-sm text-destructive">
         {{ form.errors.slug }}
@@ -28,7 +29,7 @@
 
     <div class="space-y-2">
       <Label for="event-type-description">
-        {{ $t('forms.fields.description') }} <span class="text-muted-foreground">({{ $t('neprivaloma') }})</span>
+        {{ $t('forms.fields.description') }}
       </Label>
       <MultiLocaleInput
         id="event-type-description"
@@ -50,10 +51,10 @@
 
     <div class="space-y-2 pt-2">
       <div class="flex items-center gap-3">
-        <Switch
+        <Checkbox
           id="event-type-is-active"
           :model-value="!!form.is_active"
-          @update:model-value="val => form.is_active = val ? 1 : 0"
+          @update:model-value="val => form.is_active = val === true ? 1 : 0"
         />
         <Label for="event-type-is-active" class="cursor-pointer font-medium">
           {{ $t('forms.fields.is_active') }}
@@ -74,7 +75,7 @@ import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 import SheetForm from '@/Components/Patterns/SheetForm.vue';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { Switch } from '@/Components/ui/switch';
+import { Checkbox } from '@/Components/ui/checkbox';
 
 interface EventTypeInput {
   created_at?: string | null;

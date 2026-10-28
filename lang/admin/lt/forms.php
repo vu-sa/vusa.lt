@@ -170,7 +170,7 @@ return [
         'institution_assignment_closed' => 'Nebeveikiančiai institucijai galima įrašyti tik buvusias pareigas. Užbaigto laikotarpio neatverk iš naujo – veikiančioje institucijoje sukurk naują laikotarpį.',
         'institution_reactivation_hint' => 'Vėl pažymėjus instituciją veikiančia, užbaigtos pareigos neatnaujinamos. Nariams reikės naujų pareigybių laikotarpių.',
         'institution_resolve_terms' => 'Tvarkyti pareigybių laikotarpius',
-        'tag_alias_hint' => 'Papildomas pavadinimas žymai (neprivalomas). Jei neįvestas, bus sugeneruotas automatiškai iš pavadinimo.',
+        'tag_alias_hint' => 'Palik tuščią – sukursime iš pavadinimo.',
         'is_topic_hint' => 'Temos rodomos atskirame puslapyje, kuriame surenkamos visos su ja susijusios naujienos, puslapiai ir renginiai.',
         'form_main_info' => 'Pagrindinė informacija apie registracijos formą.',
         'registrations_count' => 'Registracijų skaičius: :count',

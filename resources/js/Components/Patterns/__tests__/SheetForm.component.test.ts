@@ -40,6 +40,23 @@ describe('SheetForm.vue', () => {
     expect(wrapper.text()).toContain('Atšaukti');
   });
 
+  it('shows required guidance only when the caller has mixed fields', async () => {
+    const wrapper = mount(SheetForm, {
+      props: { open: true, title: 'Forma' },
+      slots: { default: '<input id="first-field" />' },
+      global: { stubs },
+    });
+
+    expect(wrapper.find('[data-slot="form-required-note"]').exists()).toBe(false);
+    await wrapper.setProps({ requiredNote: true });
+    const note = wrapper.get('[data-slot="form-required-note"]');
+    expect(note.text()).toBe('forms.required_note');
+    expect(note.element.nextElementSibling?.id).toBe('first-field');
+    await wrapper.setProps({ requiredNote: false });
+    expect(wrapper.find('[data-slot="form-required-note"]').exists()).toBe(false);
+    wrapper.unmount();
+  });
+
   it('emits submit on form submission', async () => {
     const wrapper = mount(SheetForm, {
       props: {
