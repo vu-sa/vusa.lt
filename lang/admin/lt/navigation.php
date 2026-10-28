@@ -41,6 +41,9 @@ return [
     ],
 
     'form' => [
+        'new_link' => 'Nauja navigacijos nuoroda',
+        'edit_link' => 'Navigacijos nuoroda',
+        'delete_link' => 'Ištrinti navigacijos elementą',
         'section_basics' => 'Pagrindinė informacija',
         'section_appearance' => 'Išvaizda',
         'section_image' => 'Paveikslėlis',

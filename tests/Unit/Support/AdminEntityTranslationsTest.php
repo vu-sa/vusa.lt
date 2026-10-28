@@ -41,7 +41,7 @@ dataset('admin index entity names', array_map(
 test('the entity name scan finds every admin index page', function () use ($entityNames): void {
     // Guards the regex above: a rename that silently matches nothing would make
     // every dataset case vanish and the suite pass while covering nothing.
-    expect($entityNames)->toHaveCount(28);
+    expect($entityNames)->toHaveCount(29);
 });
 
 test('every admin index entity name has a Lithuanian model translation', function (string $entityName): void {
@@ -67,6 +67,43 @@ test('Lithuanian model translations declare the genitive plural form used by emp
     // larger counts unmatched and renders the raw pluralization string.
     expect($translations[$entityName]['model'])->toContain('[10,*]');
 })->with('admin index entity names');
+
+$appFiles = new RecursiveIteratorIterator(
+    new RecursiveDirectoryIterator($projectRoot.'/app', FilesystemIterator::SKIP_DOTS),
+);
+
+$entityMessageEntities = collect(iterator_to_array($appFiles))
+    ->filter(fn (SplFileInfo $file): bool => $file->isFile() && $file->getExtension() === 'php')
+    ->flatMap(function (SplFileInfo $file): array {
+        $source = (string) file_get_contents($file->getPathname());
+
+        preg_match_all('/->entityMessage\(\s*(?:\'[^\']+\'|\$[A-Za-z_]\w*)\s*,\s*\'([^\']+)\'\s*\)/', $source, $matches);
+
+        return $matches[1];
+    })
+    ->unique()
+    ->sort()
+    ->values()
+    ->all();
+
+dataset('entityMessage entity names', array_map(
+    fn (string $entityName): array => [$entityName],
+    $entityMessageEntities,
+));
+
+test('the entityMessage scan finds entities across app/', function () use ($entityMessageEntities): void {
+    expect($entityMessageEntities)->not->toBeEmpty()
+        ->toContain('supportRequest');
+});
+
+test('every entityMessage entity has a model and valid gender in both locales', function (string $entityName, string $locale): void {
+    $translations = require base_path("lang/admin/{$locale}/entities.php");
+
+    expect($translations)->toHaveKey($entityName)
+        ->and($translations[$entityName])->toHaveKeys(['model', 'gender'])
+        ->and($translations[$entityName]['model'])->toBeString()->not->toBe('')
+        ->and($translations[$entityName]['gender'])->toBeIn(['f', 'm']);
+})->with('entityMessage entity names')->with(['lt', 'en']);
 
 /**
  * Entities that are not real entities: they hold field labels or meta strings rather than a

@@ -168,6 +168,10 @@ return [
         'model' => '{1} navigation item|[2,*] navigation items',
         'gender' => 'm',
     ],
+    'supportRequest' => [
+        'model' => '{1} support request|[2,*] support requests',
+        'gender' => 'f',
+    ],
     'file' => [
         'model' => '{1} file|[2,*] files',
         'gender' => 'm',

@@ -1,27 +1,21 @@
 <template>
   <div class="space-y-6">
-    <!-- Header -->
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {{ $t('shell.workspaces.website.title') }} · {{ $t('navigation.title') }}
-        </p>
-        <h1 class="text-2xl font-bold tracking-tight text-foreground font-heading">
-          {{ showDeleted ? $t('trash.showing_deleted_only') : $t('navigation.title') }}
-        </h1>
-        <p class="text-sm text-muted-foreground">
-          {{ showDeleted ? $t('trash.showing_deleted_only_description') : $t('navigation.builder.footer_description') }}
-        </p>
-      </div>
+    <Head :title="showDeleted ? $t('trash.showing_deleted_only') : $t('navigation.title')" />
 
-      <div v-if="shouldShowDeletedToggle" class="flex items-center gap-2">
+    <CollectionTitleBand
+      :eyebrow="`${$t('shell.workspaces.svetaine.title')} · ${$t('navigation.title')}`"
+      :title="showDeleted ? $t('trash.showing_deleted_only') : $t('navigation.title')"
+      :lead="showDeleted ? $t('trash.showing_deleted_only_description') : $t('navigation.builder.footer_description')"
+      entity-type="navigation"
+    >
+      <template v-if="shouldShowDeletedToggle" #actions>
         <TrashViewToggle
           :show-deleted
           :deleted-count
           @update:show-deleted="handleShowDeletedChange"
         />
-      </div>
-    </div>
+      </template>
+    </CollectionTitleBand>
 
     <!-- Trash Notice -->
     <Alert
@@ -139,11 +133,12 @@
 </template>
 
 <script setup lang="ts">
-import { router, usePage } from '@inertiajs/vue3';
+import { Head, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { RotateCcw, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
+import CollectionTitleBand from '@/Components/Collection/CollectionTitleBand.vue';
 import { NavigationIcon } from '@/Components/icons';
 import { ConfirmDangerousDialog, EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';

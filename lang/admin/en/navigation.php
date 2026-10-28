@@ -41,6 +41,9 @@ return [
     ],
 
     'form' => [
+        'new_link' => 'New navigation link',
+        'edit_link' => 'Navigation link',
+        'delete_link' => 'Delete navigation item',
         'section_basics' => 'Basic information',
         'section_appearance' => 'Appearance',
         'section_image' => 'Image',

@@ -172,6 +172,10 @@ return [
         'model' => '{1} navigacijos elementas|[2,9] navigacijos elementai|[10,*] navigacijos elementų',
         'gender' => 'm',
     ],
+    'supportRequest' => [
+        'model' => '{1} pagalbos užklausa|[2,9] pagalbos užklausos|[10,*] pagalbos užklausų',
+        'gender' => 'f',
+    ],
     'file' => [
         'model' => '{1} failas|[2,9] failai|[10,*] failų',
         'gender' => 'm',
