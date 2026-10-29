@@ -146,7 +146,7 @@ test('target unlink backfill waits for commit and keeps derived membership histo
     $duty = Duty::factory()->create();
     $target = Duty::factory()->create();
     $duty->exOfficioTargetDuties()->attach($target);
-    $source = Dutiable::factory()->forDuty($duty)->active()->create();
+    $source = Dutiable::factory()->forDuty($duty)->active()->create(['start_date' => '2026-10-01']);
     $derived = Dutiable::where('via_dutiable_id', $source->id)->firstOrFail();
 
     DB::beginTransaction();
