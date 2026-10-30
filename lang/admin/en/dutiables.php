@@ -1,6 +1,32 @@
 <?php
 
 return [
+    'ex_officio_review' => [
+        'requires' => 'Select the related terms for this member together to preserve their history.',
+        'title' => 'Review ex officio',
+        'description' => 'Compare terms with their sources. Choose which changes to apply.',
+        'apply' => 'Apply selected changes',
+        'saved' => 'Ex officio terms reviewed.',
+        'loading' => 'Preparing review…',
+        'empty' => 'No terms need repair.',
+        'error' => 'The review could not load or has changed. Refresh it before continuing.',
+        'refresh' => 'Refresh review',
+        'link' => 'Link to the source and mirror its dates',
+        'create' => 'Add the missing term from its source',
+        'resync' => 'Mirror source dates',
+        'remove_duplicate' => 'Transfer missing details and delete the duplicate',
+        'split' => 'Keep independent terms (the photo stays on the original row)',
+        'orphan' => 'The source term has ended, but this member still holds the seat. Choose how to end the term.',
+        'end' => 'End with the source',
+        'keep' => 'Keep the remaining time as an independent term',
+        'quota_change' => 'Seat tenant changes: :before → :after. This may exceed its quota.',
+        'access_change' => 'Access effective today changes.',
+        'blocked_chain' => 'The source is itself linked to another term. Review this chain separately.',
+        'blocked_partial' => 'Part of this term overlaps one that is already linked. Sort it out in the term editor.',
+        'blocked_permission' => 'You cannot manage every related term.',
+        'open_end' => 'open-ended',
+    ],
+
     'timeline' => [
         'review' => [
             'merge_warning' => 'Linked ex-officio seats will follow the full merged period, including any gaps. Their independent details are preserved.',
@@ -179,7 +205,7 @@ return [
                 'spans' => ':count cadences',
                 'ex_officio_drift' => 'Fix this by moving the source row.',
             ],
-            'orphan_note' => 'These rows grant real permissions and their link to a source is already gone, so nothing here touches them automatically. Run “duties:audit-ex-officio”.',
+            'orphan_note' => 'Open the duty and choose “Review ex officio”. Review the proposals before applying them.',
         ],
 
         'fullscreen' => [

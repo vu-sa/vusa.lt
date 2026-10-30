@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Dutiables\AnalyzeDutiableTimeline;
+use App\Events\DutiableChanged;
 use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -8,6 +9,7 @@ use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 
 pest()->use(RefreshDatabase::class);
 
@@ -235,10 +237,16 @@ describe('rows covering more than one term', function (): void {
     });
 });
 
-test('an active row on an ex-officio target duty without its source is flagged as a suspect orphan', function (): void {
+test('an active target row overlapping an ended source is flagged for review', function (): void {
     $sourceDuty = Duty::factory()->for($this->institution)->create();
     $targetDuty = Duty::factory()->for($this->institution)->create();
     $sourceDuty->exOfficioTargetDuties()->attach($targetDuty);
+
+    Event::fake([DutiableChanged::class]);
+    Dutiable::factory()->create([
+        'duty_id' => $sourceDuty->id, 'dutiable_id' => $this->holder->id,
+        'start_date' => now()->subMonth()->toDateString(), 'end_date' => today()->subDay(),
+    ]);
 
     $orphanRow = Dutiable::factory()->create([
         'duty_id' => $targetDuty->id,

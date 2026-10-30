@@ -1,6 +1,32 @@
 <?php
 
 return [
+    'ex_officio_review' => [
+        'requires' => 'Kad neprarastum istorijos, kartu pasirink ir susijusius šio nario laikotarpius.',
+        'title' => 'Tikrinti ex officio',
+        'description' => 'Palygink laikotarpius su jų šaltiniais. Pasirink, kuriuos pakeitimus taikyti.',
+        'apply' => 'Taikyti pasirinktus pakeitimus',
+        'saved' => 'Ex officio laikotarpiai peržiūrėti.',
+        'loading' => 'Ruošiama peržiūra…',
+        'empty' => 'Nėra laikotarpių, kuriuos reikėtų taisyti.',
+        'error' => 'Peržiūros nepavyko įkelti arba ji pasikeitė. Atnaujink ją prieš tęsiant.',
+        'refresh' => 'Atnaujinti peržiūrą',
+        'link' => 'Susieti su šaltiniu ir pritaikyti jo datas',
+        'create' => 'Pridėti trūkstamą laikotarpį pagal šaltinį',
+        'resync' => 'Suvienodinti datas su šaltiniu',
+        'remove_duplicate' => 'Perkelti trūkstamus duomenis ir ištrinti dubliuojantį įrašą',
+        'split' => 'Išsaugoti atskirus laikotarpius (nuotrauka lieka pradiniame įraše)',
+        'orphan' => 'Šaltinio laikotarpis baigėsi, bet šis narys pareigas vis dar eina. Pasirink, kaip užbaigti laikotarpį.',
+        'end' => 'Užbaigti kartu su šaltiniu',
+        'keep' => 'Palikti likusį laiką kaip savarankišką laikotarpį',
+        'quota_change' => 'Keičiasi vietos padalinys: :before → :after. Gali būti viršyta kvota.',
+        'access_change' => 'Keičiasi šiandien galiojanti prieiga.',
+        'blocked_chain' => 'Šaltinis pats susietas su kitu laikotarpiu. Šį ryšį peržiūrėk atskirai.',
+        'blocked_partial' => 'Dalis laikotarpio sutampa su jau susietu. Sutvarkyk jį laikotarpių tvarkyklėje.',
+        'blocked_permission' => 'Neturi teisės tvarkyti visų susijusių laikotarpių.',
+        'open_end' => 'be pabaigos',
+    ],
+
     'timeline' => [
         'review' => [
             'merge_warning' => 'Susieti ex officio priskyrimai apims visą sujungtą laikotarpį, įskaitant pertraukas. Papildomi jų duomenys bus išsaugoti.',
@@ -179,7 +205,7 @@ return [
                 'spans' => 'kadencijų: :count',
                 'ex_officio_drift' => 'Tvarkoma perkeliant šaltinio įrašą.',
             ],
-            'orphan_note' => 'Šie įrašai suteikia realias teises, o nuoroda į šaltinį jau ištrinta, todėl automatiškai jų liesti negalima. Paleisk „duties:audit-ex-officio“.',
+            'orphan_note' => 'Atidaryk pareigybę ir pasirink „Tikrinti ex officio“. Peržiūrėk siūlomus pakeitimus prieš juos taikant.',
         ],
 
         'fullscreen' => [

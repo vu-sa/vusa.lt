@@ -27,9 +27,7 @@ beforeEach(function (): void {
     $this->user = User::factory()->create();
 });
 
-test('reports a target duty held without its source duty', function (): void {
-    // The shape the nullOnDelete FK leaves behind: a target-duty row with no link
-    // back to the source, and no source duty held.
+test('does not report a target duty whose holder never held a source', function (): void {
     Dutiable::factory()->create([
         'duty_id' => $this->targetDuty->id,
         'dutiable_id' => $this->user->id,
@@ -42,7 +40,7 @@ test('reports a target duty held without its source duty', function (): void {
 
     Artisan::call('duties:audit-ex-officio');
 
-    expect(Artisan::output())->toContain($this->user->name);
+    expect(Artisan::output())->not->toContain($this->user->name);
 });
 
 test('does not report a target duty when the source duty is still held', function (): void {
@@ -79,12 +77,19 @@ test('ignores expired target duties', function (): void {
     expect(Artisan::output())->toContain('No ex-officio assignments need review.');
 });
 
-test('multiple missing sources produce one timeline suspect id', function (): void {
+test('multiple historical matching sources produce one timeline suspect id', function (): void {
     $other = Duty::factory()->create(['institution_id' => $this->sourceDuty->institution_id]);
     $other->exOfficioTargetDuties()->attach($this->targetDuty);
+    Event::fake([DutiableChanged::class]);
+    foreach ([$this->sourceDuty, $other] as $duty) {
+        Dutiable::factory()->create([
+            'duty_id' => $duty->id, 'dutiable_id' => $this->user->id,
+            'start_date' => today()->subMonths(2), 'end_date' => today()->subMonth(),
+        ]);
+    }
     $row = Dutiable::factory()->create([
         'duty_id' => $this->targetDuty->id, 'dutiable_id' => $this->user->id,
-        'start_date' => today()->subDay(), 'end_date' => null, 'assignment_origin' => 'unknown',
+        'start_date' => today()->subMonths(2), 'end_date' => null, 'assignment_origin' => 'unknown',
     ]);
     expect(FindSuspectExOfficioDutiables::idsForDuties([$this->targetDuty->id]))->toBe([$row->id]);
 });
@@ -100,19 +105,35 @@ test('confirmed manual and future assignments do not need orphan review', functi
     expect(FindSuspectExOfficioDutiables::idsForDuties([$this->targetDuty->id]))->toBeEmpty();
 });
 
-test('one valid source is sufficient even when other possible sources are absent', function (): void {
+test('handover noise is ignored but a longer historical overlap is reported', function (): void {
     Event::fake([DutiableChanged::class]);
     $other = Duty::factory()->create(['institution_id' => $this->sourceDuty->institution_id]);
     $other->exOfficioTargetDuties()->attach($this->targetDuty);
     Dutiable::factory()->create([
         'duty_id' => $this->targetDuty->id, 'dutiable_id' => $this->user->id,
-        'start_date' => today()->subDay(), 'end_date' => null, 'assignment_origin' => 'unknown',
+        'start_date' => today()->subMonth(), 'end_date' => null, 'assignment_origin' => 'unknown',
     ]);
     $source = Dutiable::factory()->create([
         'duty_id' => $other->id, 'dutiable_id' => $this->user->id,
         'start_date' => today(), 'end_date' => today(),
     ]);
     expect(FindSuspectExOfficioDutiables::idsForDuties([$this->targetDuty->id]))->toBeEmpty();
-    $source->update(['start_date' => today()->addDay(), 'end_date' => null]);
+    $source->update(['start_date' => today()->subMonth(), 'end_date' => today()->subDay()]);
     expect(FindSuspectExOfficioDutiables::idsForDuties([$this->targetDuty->id]))->toHaveCount(1);
+});
+
+test('reports ended overlapping source terms and scans ended targets unless current is requested', function (): void {
+    Event::fake([DutiableChanged::class]);
+    Dutiable::factory()->create([
+        'duty_id' => $this->sourceDuty->id, 'dutiable_id' => $this->user->id,
+        'start_date' => '2020-01-01', 'end_date' => '2020-12-31',
+    ]);
+    Dutiable::factory()->create([
+        'duty_id' => $this->targetDuty->id, 'dutiable_id' => $this->user->id,
+        'start_date' => '2020-01-01', 'end_date' => '2020-12-31', 'assignment_origin' => 'unknown',
+    ]);
+    Artisan::call('duties:audit-ex-officio');
+    expect(Artisan::output())->toContain($this->user->name)->toContain('link');
+    Artisan::call('duties:audit-ex-officio', ['--current' => true]);
+    expect(Artisan::output())->not->toContain($this->user->name);
 });

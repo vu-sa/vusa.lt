@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Dutiables\BuildDutiableTimeline;
 use App\Events\DutiableChanged;
 use App\Models\Cadence;
 use App\Models\Duty;
@@ -645,6 +646,11 @@ test('explicit conversion follows an authorized source and preserves independent
         'duty_id' => $sourceDuty->id, 'dutiable_id' => $this->holder->id,
         'start_date' => '2024-06-01', 'end_date' => '2025-06-01',
     ]);
+    $this->row->update(['assignment_origin' => 'unknown']);
+    $this->duty->assignableTenants()->attach($this->tenant->id);
+    $timeline = BuildDutiableTimeline::execute('duty', $this->duty->id, $this->manager);
+    $timelineRow = collect($timeline['rows'])->firstWhere('id', $this->row->id);
+    expect(array_column($timelineRow['review_sources'], 'id'))->toContain($source->id);
     $email = $this->row->additional_email;
     asUserWithInertia($this->manager)->post(route('dutiables.reviewExOfficio', $this->row), [
         'decision' => 'convert', 'source_id' => $source->id, 'acknowledge' => true,
@@ -652,5 +658,6 @@ test('explicit conversion follows an authorized source and preserves independent
     expect($this->row->fresh()->via_dutiable_id)->toBe($source->id)
         ->and($this->row->fresh()->start_date->toDateString())->toBe('2024-06-01')
         ->and($this->row->fresh()->assignment_origin)->toBe('ex_officio')
-        ->and($this->row->fresh()->additional_email)->toBe($email);
+        ->and($this->row->fresh()->additional_email)->toBe($email)
+        ->and($this->row->fresh()->tenant_id)->toBe($this->tenant->id);
 });

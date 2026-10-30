@@ -106,19 +106,7 @@ class CollapseOverlappingDutiables
                 : $survivor->end_date;
         }
 
-        foreach (['study_program_id', 'study_program_note', 'additional_email', 'description'] as $field) {
-            if (blank($survivor->{$field}) && filled($loser->{$field})) {
-                $survivor->{$field} = $loser->{$field};
-            }
-        }
-
-        if (blank($survivor->additional_photo) && filled($loser->additional_photo)) {
-            $survivor->additional_photo = $loser->additional_photo;
-            $survivor->additional_photo_focal_point = $loser->additional_photo_focal_point;
-        }
-
-        $survivor->save();
-        self::mergePhotoMedia($survivor, $loser);
+        self::copyDetails($survivor, $loser);
 
         foreach ($loser->derivedDutiables()->get() as $derived) {
             $derived->via_dutiable_id = $survivor->id;
@@ -148,6 +136,29 @@ class CollapseOverlappingDutiables
             }
         }
 
+    }
+
+    public static function copyDetails(Dutiable $survivor, Dutiable $loser): void
+    {
+        foreach (['study_program_id', 'study_program_note', 'additional_email', 'description'] as $field) {
+            if (in_array($field, $loser->getTranslatableAttributes(), true)) {
+                foreach ($loser->getTranslations($field) as $locale => $value) {
+                    if (blank($survivor->getTranslation($field, $locale, false))) {
+                        $survivor->setTranslation($field, $locale, $value);
+                    }
+                }
+            } elseif (blank($survivor->{$field}) && filled($loser->{$field})) {
+                $survivor->{$field} = $loser->{$field};
+            }
+        }
+
+        if (blank($survivor->additional_photo) && filled($loser->additional_photo)) {
+            $survivor->additional_photo = $loser->additional_photo;
+            $survivor->additional_photo_focal_point = $loser->additional_photo_focal_point;
+        }
+
+        $survivor->save();
+        self::mergePhotoMedia($survivor, $loser);
     }
 
     private static function mergePhotoMedia(Dutiable $survivor, Dutiable $loser): void

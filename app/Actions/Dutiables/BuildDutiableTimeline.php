@@ -3,7 +3,6 @@
 namespace App\Actions\Dutiables;
 
 use App\Actions\Cadences\ResolveCadenceForDuty;
-use App\Actions\ResolveExOfficioTenantId;
 use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -52,7 +51,7 @@ class BuildDutiableTimeline
         $reviewSources = Dutiable::query()->with(['duty.institution', 'duty.exOfficioTargetDuties'])
             ->whereIn('dutiable_id', $rows->pluck('dutiable_id'))->whereNull('via_dutiable_id')
             ->where('ended_by_institution_deactivation', false)
-            ->whereHas('duty.exOfficioTargetDuties', fn ($query) => $query->whereIn('duties.id', $rows->pluck('duty_id')))
+            ->whereHas('duty.exOfficioTargetDuties', fn ($query) => $query->whereKey($rows->pluck('duty_id')))
             ->get()->filter(fn (Dutiable $source) => $actor->can('manageDutiable', $source)
                 && $source->duty->institution?->is_active);
         $cadences = self::cadences($duties);
@@ -253,8 +252,7 @@ class BuildDutiableTimeline
     {
         return $sources->filter(fn (Dutiable $source) => $source->id !== $row->id
                 && $source->dutiable_id === $row->dutiable_id && $source->dutiable_type === $row->dutiable_type
-                && $source->duty->exOfficioTargetDuties->contains('id', $row->duty_id)
-                && ResolveExOfficioTenantId::execute($source, $row->duty) === $row->tenant_id)
+                && $source->duty->exOfficioTargetDuties->contains('id', $row->duty_id))
             ->map(fn (Dutiable $source) => [
                 'id' => $source->id, 'name' => $source->duty->name,
                 'start_date' => $source->start_date->toDateString(), 'end_date' => $source->end_date?->toDateString(),

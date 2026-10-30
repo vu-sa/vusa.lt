@@ -238,6 +238,8 @@ Route::post('documents/pick', [DocumentController::class, 'pick'])->name('docume
 /** @deprecated Merge records from the duties list instead. */
 Route::get('duties/merge', fn () => to_route('duties.index')->with('info', __('shell.merge.redirect')))->name('duties.merge');
 Route::post('duties/merge', [DutyController::class, 'mergeDuties'])->name('duties.mergeDuties');
+Route::get('duties/{duty}/ex-officio-review', [DutyExOfficioReviewController::class, 'preview'])->name('duties.exOfficioReview.preview');
+Route::post('duties/{duty}/ex-officio-review', [DutyExOfficioReviewController::class, 'apply'])->name('duties.exOfficioReview.apply');
 Route::resource('duties', DutyController::class);
 Route::get('duties-update-users', [DutyController::class, 'updateUsersWizard'])->name('duties.updateUsersWizard');
 Route::post('duties/{duty}/batch-update-users', [DutyController::class, 'batchUpdateUsers'])->name('duties.batchUpdateUsers');

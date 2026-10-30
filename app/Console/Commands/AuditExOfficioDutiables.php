@@ -2,120 +2,60 @@
 
 namespace App\Console\Commands;
 
-use App\Actions\Dutiables\FindSuspectExOfficioDutiables;
-use App\Models\User;
+use App\Actions\Dutiables\PlanExOfficioReview;
+use App\Models\Duty;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
-use Illuminate\Support\Collection;
 
-/**
- * Report duties a user still holds ex officio although they no longer hold the
- * duty that granted them.
- *
- * Until DutiableChanged was fixed, deleting a source dutiable never cascaded to the
- * rows derived from it: the queued listener could not restore the deleted model, so
- * the cleanup never ran. The `via_dutiable_id` foreign key is `nullOnDelete()`, so
- * those derived rows survived with a NULL link — indistinguishable from a duty that
- * was assigned by hand.
- *
- * That ambiguity is why this command only reports. The rows it lists are *suspects*;
- * some will be legitimate manual assignments, and they grant real permissions, so
- * deciding which to remove is a human's job.
- */
-#[Description('Report active ex-officio duties whose granting source duty is no longer held')]
+/** Read-only proposals based on historical source-term overlaps. */
+#[Description('Preview historical ex-officio repairs without changing rows')]
 #[Signature('duties:audit-ex-officio
-                            {--tenant= : Limit the report to a tenant id}')]
+                            {--tenant= : Limit the report to a tenant id}
+                            {--current : Show only rows active today}')]
 class AuditExOfficioDutiables extends Command
 {
     public function handle(): int
     {
-        $this->info('🔍 Auditing ex-officio dutiables');
+        $duties = Duty::query()->whereHas('exOfficioSourceDuties')
+            ->when($this->option('tenant') !== null, fn ($query) => $query->whereHas('institution', fn ($institution) => $institution->where('tenant_id', (int) $this->option('tenant'))))
+            ->orderBy('id')->pluck('id');
+        $items = collect();
+        $blocked = collect();
+        $bar = $this->output->createProgressBar($duties->count());
+        foreach ($duties as $id) {
+            $plan = PlanExOfficioReview::execute([$id]);
+            $items = $items->merge($plan['items']);
+            $blocked = $blocked->merge($plan['blocked']);
+            $bar->advance();
+        }
+        $bar->finish();
         $this->newLine();
+        if ($this->option('current')) {
+            $items = $items->filter(function (array $item): bool {
+                $period = $item['before'] ?? $item['after'];
 
-        $rows = $this->findSuspectRows();
-
-        if ($rows->isEmpty()) {
-            $this->info('✅ No ex-officio assignments need review.');
+                return $period['start_date'] <= today()->toDateString() && ($period['end_date'] === null || $period['end_date'] >= today()->toDateString());
+            });
+        }
+        if ($items->isEmpty() && $blocked->isEmpty()) {
+            $this->info('No ex-officio assignments need review.');
 
             return self::SUCCESS;
         }
-
-        $this->table(
-            ['Assignment', 'User', 'Email', 'Target duty', 'Possible source duties', 'Tenant', 'Since'],
-            $rows->groupBy('dutiable_id')->map(fn ($group) => [
-                $group->first()->dutiable_id,
-                $group->first()->user_name,
-                $group->first()->user_email,
-                $this->localized($group->first()->target_duty),
-                $group->map(fn ($row) => $this->localized($row->source_duty))->unique()->implode(', '),
-                $group->first()->tenant ?? '—',
-                $group->first()->start_date,
-            ])->all()
-        );
-
-        $this->newLine();
-        $this->table(
-            ['Metric', 'Count'],
-            [
-                // A target duty can have several source duties, so one duty row can
-                // appear once per source it could have come from.
-                ['Suspect duty rows', $rows->pluck('dutiable_id')->unique()->count()],
-                ['(row, possible source) pairs', $rows->count()],
-                ['Users affected', $rows->pluck('user_id')->unique()->count()],
-            ]
-        );
-
-        $this->newLine();
-        $this->warn('These rows are suspects, not proven orphans — a NULL via_dutiable_id looks');
-        $this->warn('exactly like a manual assignment. Review before removing anything.');
+        $this->table(['Kind', 'User', 'Duty', 'Before', 'After', 'Tenant', 'Review'], $items->sortByDesc('orphan')->map(fn (array $item) => [
+            $item['kind'], $item['holder_name'], $item['duty_name'],
+            $item['before'] === null ? '—' : implode(' → ', array_map(fn ($date) => $date ?? '∞', $item['before'])),
+            implode(' → ', array_map(fn ($date) => $date ?? '∞', $item['after'])),
+            ($item['tenant_before'] ?? '—').' → '.($item['tenant_after'] ?? '—'),
+            $item['orphan'] ? 'Ends current access; choose remainder' : ($item['selected'] ? 'Preselected' : 'Choose explicitly'),
+        ])->all());
+        $this->table(['Kind', 'Count'], $items->countBy('kind')->map(fn (int $count, string $kind) => [$kind, $count])->values()->all());
+        if ($blocked->isNotEmpty()) {
+            $this->table(['User', 'Duty', 'Blocked reason'], $blocked->map(fn (array $item) => [$item['holder_name'], $item['target_duty_id'], $item['reason']])->all());
+        }
+        $this->info('Read only: '.$items->count().' proposals; '.$blocked->count().' blocked.');
 
         return self::SUCCESS;
-    }
-
-    /**
-     * Duty names are translatable, so the raw column holds a JSON object rather
-     * than a string. The query bypasses Eloquent, so unwrap it here.
-     */
-    private function localized(?string $value): string
-    {
-        if ($value === null) {
-            return '—';
-        }
-
-        $decoded = json_decode($value, true);
-
-        if (! is_array($decoded)) {
-            return $value;
-        }
-
-        return $decoded[app()->getLocale()] ?? $decoded['lt'] ?? reset($decoded) ?: '—';
-    }
-
-    /**
-     * Active rows on an ex-officio target duty whose holder no longer holds the
-     * matching source duty.
-     *
-     * @return Collection<int, \stdClass>
-     */
-    private function findSuspectRows(): Collection
-    {
-        $tenantId = $this->option('tenant');
-
-        // Shared with the dutiable timeline's diagnostics, so both report the same rows.
-        $query = FindSuspectExOfficioDutiables::query($tenantId === null ? null : (int) $tenantId)
-            ->select([
-                't.id as dutiable_id',
-                't.dutiable_id as user_id',
-                'u.name as user_name',
-                'u.email as user_email',
-                'target.name as target_duty',
-                'source.name as source_duty',
-                'tn.shortname as tenant',
-                't.start_date',
-            ])
-            ->orderBy('u.name');
-
-        return collect($query->get());
     }
 }

@@ -161,6 +161,8 @@ class DutyController extends AdminController
                 'update' => (bool) $user()?->can('update', $duty),
                 'managePeople' => (bool) $user()?->can('managePeople', $duty),
                 'assignQuota' => (bool) $user()?->can('assignQuota', [Dutiable::class, $duty]),
+                'reviewExOfficio' => (bool) $user()?->can('managePeople', $duty)
+                    && ($duty->exOfficioTargetDuties()->exists() || $duty->exOfficioSourceDuties()->exists()),
             ],
             // Only the "Apie pareigybę" tab and the Priskirti sheet need these.
             'otherDuties' => Inertia::defer(fn () => $duty->institution

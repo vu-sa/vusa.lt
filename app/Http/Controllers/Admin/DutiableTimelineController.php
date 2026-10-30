@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\Dutiables\ApplyDutiableTimelineChanges;
+use App\Actions\Dutiables\LinkDutiableToExOfficioSource;
 use App\Actions\Dutiables\MergeDutiables;
 use App\Actions\Dutiables\PlanDutiableTimelineChanges;
 use App\Actions\Dutiables\PreviewDutiableMerge;
-use App\Actions\ResolveExOfficioTenantId;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\Dutiables\ApplyDutiableTimelineRequest;
 use App\Http\Requests\Dutiables\IndexDutiableTimelineRequest;
@@ -16,7 +16,6 @@ use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
-use App\Services\DutyAssignmentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
@@ -120,10 +119,6 @@ class DutiableTimelineController extends AdminController
         ]));
     }
 
-    /**
-     * Folds several stints of one holder into one row. Separate from `apply()` because a
-     * merge deletes rows, which no operation in the planner's vocabulary can express.
-     */
     public function reviewExOfficio(ReviewExOfficioRequest $request, Dutiable $dutiable): RedirectResponse
     {
         $mutation = fn () => DB::transaction(function () use ($request, $dutiable): void {
@@ -135,19 +130,7 @@ class DutiableTimelineController extends AdminController
             } else {
                 $source = Dutiable::query()->lockForUpdate()->findOrFail($request->validated('source_id'));
                 $this->authorize('manageDutiable', $source);
-                abort_unless($source->id !== $dutiable->id
-                    && $source->via_dutiable_id === null
-                    && $source->dutiable_id === $dutiable->dutiable_id
-                    && $source->dutiable_type === $dutiable->dutiable_type
-                    && ! $source->ended_by_institution_deactivation
-                    && $source->duty->exOfficioTargetDuties()->whereKey($dutiable->duty_id)->exists(), 422);
-                abort_unless(app(DutyAssignmentService::class)->lockExOfficioContext($source, $dutiable->duty), 422);
-                $tenantId = ResolveExOfficioTenantId::execute($source, $dutiable->duty);
-                abort_unless($tenantId === $dutiable->tenant_id, 422);
-                $dutiable->update([
-                    'assignment_origin' => 'ex_officio', 'via_dutiable_id' => $source->id,
-                    'start_date' => $source->start_date, 'end_date' => $source->end_date,
-                ]);
+                LinkDutiableToExOfficioSource::execute($dutiable, $source);
             }
             activity()->performedOn($dutiable)->causedBy($request->user())->event('ex_officio_reviewed')
                 ->withProperties($request->safe()->only(['decision', 'source_id']))->log('ex_officio_reviewed');
@@ -166,6 +149,10 @@ class DutiableTimelineController extends AdminController
         return response()->json(['success' => true, 'data' => PreviewDutiableMerge::execute($request->rows())]);
     }
 
+    /**
+     * Folds several stints of one holder into one row. Separate from `apply()` because a
+     * merge deletes rows, which no operation in the planner's vocabulary can express.
+     */
     public function merge(MergeDutiablesRequest $request): RedirectResponse
     {
         $rows = $request->rows();
