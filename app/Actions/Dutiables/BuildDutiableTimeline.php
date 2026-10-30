@@ -95,6 +95,7 @@ class BuildDutiableTimeline
                 'user:id,name,profile_photo_path,pronouns',
                 'tenant:id,shortname',
                 'viaDutiable:id,duty_id,dutiable_id,use_original_duty_name',
+                'derivedDutiables:id,via_dutiable_id',
                 'viaDutiable.duty:id,name',
                 'study_program:id,name',
             ]);
@@ -236,7 +237,9 @@ class BuildDutiableTimeline
             'derived_ids' => $derivedBySource->get($row->id, collect())->pluck('id')->all(),
             'is_derived' => $isDerived,
             'assignment_origin' => $row->assignment_origin,
-            'review_sources' => ! $isDerived && ($editable[$row->id] ?? false) ? self::reviewSources($row, $reviewSources) : [],
+            'review_sources' => ! $isDerived && $row->derivedDutiables->isEmpty() && ($editable[$row->id] ?? false)
+                ? self::reviewSources($row, $reviewSources)
+                : [],
             // Derived rows mirror their source; DutiableController strips date edits on
             // them, so the editor must not offer the gesture in the first place.
             'editable' => ($editable[$row->id] ?? false) && ! $isDerived,

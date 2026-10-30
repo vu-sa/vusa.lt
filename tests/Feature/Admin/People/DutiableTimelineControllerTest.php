@@ -661,3 +661,47 @@ test('explicit conversion follows an authorized source and preserves independent
         ->and($this->row->fresh()->additional_email)->toBe($email)
         ->and($this->row->fresh()->tenant_id)->toBe($this->tenant->id);
 });
+
+describe('linking one row to a source', function (): void {
+    beforeEach(function (): void {
+        Event::fake([DutiableChanged::class]);
+        $this->sourceDuty = Duty::factory()->create(['institution_id' => $this->duty->institution_id]);
+        $this->sourceDuty->exOfficioTargetDuties()->attach($this->duty);
+        $this->linkSource = Dutiable::factory()->create([
+            'duty_id' => $this->sourceDuty->id, 'dutiable_id' => $this->holder->id,
+            'start_date' => '2024-06-01', 'end_date' => '2025-06-01',
+        ]);
+    });
+
+    test('a row confirmed as independent can still be linked, as the editor offers', function (): void {
+        $this->row->update(['assignment_origin' => 'manual']);
+        $timeline = BuildDutiableTimeline::execute('duty', $this->duty->id, $this->manager);
+
+        expect(collect($timeline['rows'])->firstWhere('id', $this->row->id)['review_sources'])->toHaveCount(1);
+
+        asUserWithInertia($this->manager)->post(route('dutiables.reviewExOfficio', $this->row), [
+            'decision' => 'convert', 'source_id' => $this->linkSource->id, 'acknowledge' => true,
+        ])->assertSessionHasNoErrors();
+
+        expect($this->row->fresh()->via_dutiable_id)->toBe($this->linkSource->id)
+            ->and($this->row->fresh()->assignment_origin)->toBe('ex_officio');
+    });
+
+    test('a row that grants seats of its own is neither offered nor linked, so no chain forms', function (): void {
+        $this->row->update(['assignment_origin' => 'unknown']);
+        $downstream = Duty::factory()->create(['institution_id' => $this->duty->institution_id]);
+        Dutiable::factory()->create([
+            'duty_id' => $downstream->id, 'dutiable_id' => $this->holder->id, 'via_dutiable_id' => $this->row->id,
+            'start_date' => '2024-06-01', 'end_date' => '2025-06-01',
+        ]);
+        $timeline = BuildDutiableTimeline::execute('duty', $this->duty->id, $this->manager);
+
+        expect(collect($timeline['rows'])->firstWhere('id', $this->row->id)['review_sources'])->toBeEmpty();
+
+        asUser($this->manager)->postJson(route('dutiables.reviewExOfficio', $this->row), [
+            'decision' => 'convert', 'source_id' => $this->linkSource->id, 'acknowledge' => true,
+        ])->assertUnprocessable();
+
+        expect($this->row->fresh()->via_dutiable_id)->toBeNull();
+    });
+});

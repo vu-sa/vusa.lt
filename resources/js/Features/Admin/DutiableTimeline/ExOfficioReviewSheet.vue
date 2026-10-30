@@ -21,6 +21,7 @@
             </label>
             <p>{{ item.before ? period(item.before) : '—' }} ⇒ {{ item.kind === 'remove_duplicate' ? item.survivors.map(period).join('; ') : period(item.after) }}</p>
             <p v-if="item.requires?.length">{{ $t('dutiables.ex_officio_review.requires') }}</p>
+            <p v-if="item.historical" class="text-muted-foreground">{{ $t('dutiables.ex_officio_review.historical') }}</p>
             <p v-if="item.access_change" class="text-status-attention">{{ $t('dutiables.ex_officio_review.access_change') }}</p>
             <p v-if="item.quota_change" class="text-status-attention">{{ $t('dutiables.ex_officio_review.quota_change', { before: item.tenant_before_name ?? '—', after: item.tenant_after_name ?? '—' }) }}</p>
             <p v-if="item.remainders.length">{{ $t('dutiables.ex_officio_review.split') }}: {{ item.remainders.map(period).join('; ') }}</p>
@@ -66,6 +67,7 @@ interface ReviewItem {
   after: Period;
   selected: boolean;
   orphan: boolean;
+  historical: boolean;
   access_change: boolean;
   quota_change: boolean;
   tenant_before: number | null;

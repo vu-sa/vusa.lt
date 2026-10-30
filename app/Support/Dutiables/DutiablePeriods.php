@@ -20,6 +20,12 @@ class DutiablePeriods
         return $row->start_date->lte(today()) && ($row->end_date === null || $row->end_date->gte(today()));
     }
 
+    /** A term grants its permissions from the moment it exists, before it starts; only its end takes them away. */
+    public static function grantsAccess(Dutiable $row): bool
+    {
+        return $row->end_date === null || $row->end_date->gte(today());
+    }
+
     public static function overlapDays(Dutiable $a, Dutiable $b): int
     {
         $start = max($a->start_date->toDateString(), $b->start_date->toDateString());
@@ -29,7 +35,7 @@ class DutiablePeriods
     }
 
     /** @return list<Period> */
-    public static function remainders(Dutiable $row, Collection $sources, int $noise = 7): array
+    public static function remainders(Dutiable $row, Collection $sources): array
     {
         $periods = [self::dates($row)];
         foreach ($sources->sortBy('start_date') as $source) {
@@ -40,8 +46,7 @@ class DutiablePeriods
             $periods = $next;
         }
 
-        return array_values(array_filter($periods, fn (array $period) => $period['end_date'] === null
-            || Carbon::parse($period['start_date'])->diffInDays(Carbon::parse($period['end_date'])) + 1 > $noise));
+        return $periods;
     }
 
     /**

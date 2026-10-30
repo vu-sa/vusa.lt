@@ -9,7 +9,6 @@ use App\Models\User;
 use App\Support\Dutiables\DutiablePeriods;
 use App\Support\Dutiables\ExOfficioReviewDependencies;
 use App\Support\MorphMap;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 /**
@@ -205,9 +204,10 @@ class PlanExOfficioReview
                 $cover = $targetRows->whereNotNull('via_dutiable_id')
                     ->where('assignment_origin', '!=', 'manual')
                     ->filter(fn (Dutiable $seat): bool => $seat->dutiable_id === $candidate->dutiable_id
+                        && $seat->tenant_id === $candidate->tenant_id
                         && DutiablePeriods::overlapDays($candidate, $seat) > 0
                         && $sources->whereNull('via_dutiable_id')->contains('id', $seat->via_dutiable_id));
-                if ($cover->isNotEmpty() && DutiablePeriods::remainders($candidate, $cover, 0) === []) {
+                if ($cover->isNotEmpty() && DutiablePeriods::remainders($candidate, $cover) === []) {
                     $duplicates[$candidate->id] = $cover;
                 }
             }
@@ -288,16 +288,9 @@ class PlanExOfficioReview
     /** @return list<Period> */
     private static function linkRemainders(Dutiable $candidate, Dutiable $source, Collection $sources): array
     {
-        $periods = DutiablePeriods::remainders($candidate, $sources->filter(
+        return DutiablePeriods::remainders($candidate, $sources->filter(
             fn (Dutiable $row): bool => $row->via_dutiable_id === null && $row->dutiable_id === $candidate->dutiable_id
-        ), 0);
-        $periods = array_values(array_filter($periods, fn (array $period) => $period['end_date'] === null
-            || Carbon::parse($period['start_date'])->diffInDays(Carbon::parse($period['end_date'])) + 1 > self::MIN_OVERLAP_DAYS
-            || (DutiablePeriods::current($candidate) && $source->end_date?->lt(today())
-                && $period['start_date'] <= today()->toDateString()
-                && $period['end_date'] >= today()->toDateString())));
-
-        return $periods;
+        ));
     }
 
     /**
@@ -354,7 +347,9 @@ class PlanExOfficioReview
         $tenant = ResolveExOfficioTenantId::execute($source, $target);
         $orphan = self::isOrphan($kind, $row, $source);
         $accessChange = self::changesAccess($kind, $row, $source);
-        $quotaChange = $row !== null && $row->tenant_id !== $tenant;
+        $quotaChange = $row !== null
+            ? $row->tenant_id !== $tenant
+            : $tenant !== null && DutiablePeriods::grantsAccess($source);
 
         return [
             'id' => $kind.':'.$target->id.':'.$source->id.':'.($row->id ?? 'new'),
@@ -368,7 +363,9 @@ class PlanExOfficioReview
             'survivor_ids' => $cover?->pluck('id')->all() ?? [], 'source_ids' => $sourceIds,
             'survivors' => $cover?->map(fn (Dutiable $seat) => DutiablePeriods::dates($seat))
                 ->values()->all() ?? [],
-            'selected' => ! $accessChange && ! $quotaChange && ! $orphan && $kind !== 'remove_duplicate',
+            'historical' => $kind === 'create' && ! DutiablePeriods::grantsAccess($source),
+            // A new seat rests on the link applying back then, which nothing records, so it is never assumed.
+            'selected' => ! $accessChange && ! $quotaChange && ! $orphan && ! in_array($kind, ['create', 'remove_duplicate'], true),
         ];
     }
 
@@ -380,9 +377,12 @@ class PlanExOfficioReview
 
     private static function changesAccess(string $kind, ?Dutiable $row, Dutiable $source): bool
     {
-        return $kind === 'create'
-            ? DutiablePeriods::current($source)
-            : ($row !== null && DutiablePeriods::current($row) !== DutiablePeriods::current($source));
+        if ($kind === 'create') {
+            return DutiablePeriods::grantsAccess($source);
+        }
+
+        return $row !== null && (DutiablePeriods::grantsAccess($row) !== DutiablePeriods::grantsAccess($source)
+            || DutiablePeriods::current($row) !== DutiablePeriods::current($source));
     }
 
     /** @return BlockedItem */

@@ -10,7 +10,7 @@ class LinkDutiableToExOfficioSource
 {
     public static function execute(Dutiable $row, Dutiable $source): void
     {
-        abort_unless($row->assignment_origin !== 'manual' && $row->via_dutiable_id === null
+        abort_unless($row->via_dutiable_id === null && ! $row->derivedDutiables()->exists()
             && ! $row->ended_by_institution_deactivation && $source->id !== $row->id
             && $source->via_dutiable_id === null && $source->dutiable_id === $row->dutiable_id
             && $source->dutiable_type === $row->dutiable_type && ! $source->ended_by_institution_deactivation

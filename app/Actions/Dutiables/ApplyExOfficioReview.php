@@ -91,7 +91,7 @@ class ApplyExOfficioReview
 
                 return $seat;
             });
-            abort_unless(DutiablePeriods::remainders($candidate, $coverage, 0) === [], 422);
+            abort_unless(DutiablePeriods::remainders($candidate, $coverage) === [], 422);
         }
     }
 

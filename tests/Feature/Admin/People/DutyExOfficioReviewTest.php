@@ -116,7 +116,7 @@ test('an orphan can explicitly keep its open-ended independent remainder', funct
 
 test('backfills ended sources and remains idempotent when the queued sync catches up', function (): void {
     $plan = reviewPreview();
-    expect($plan['items'][0]['kind'])->toBe('create')->and($plan['items'][0]['selected'])->toBeTrue();
+    expect($plan['items'][0]['kind'])->toBe('create')->and($plan['items'][0]['selected'])->toBeFalse();
     reviewApply($plan)->assertSessionHasNoErrors();
     app(SyncExOfficioDutiables::class)->syncDerivedRow($this->source, $this->holder->id, $this->targetDuty);
     expect(Dutiable::where('via_dutiable_id', $this->source->id)->where('duty_id', $this->targetDuty->id)->count())->toBe(1);
@@ -362,4 +362,127 @@ test('a source duty reviews only its own pairs on a target shared with other sou
         'fingerprint' => $fromSource['fingerprint'], 'item_ids' => [$otherItem],
     ])->assertStatus(422);
     expect(Dutiable::query()->where('dutiable_id', $otherHolder->id)->where('duty_id', $this->targetDuty->id)->exists())->toBeFalse();
+});
+
+describe('rules are undated, so history is only suggested', function (): void {
+    test('a term missing from history is proposed but left for the admin to tick', function (): void {
+        $item = reviewPreview()['items'][0];
+
+        expect($item['kind'])->toBe('create')
+            ->and($item['historical'])->toBeTrue()
+            ->and($item['selected'])->toBeFalse();
+    });
+
+    test('a link is still pre-ticked, because the term itself proves the seat existed', function (): void {
+        reviewCandidate();
+        $item = reviewPreview()['items'][0];
+
+        expect($item['kind'])->toBe('link')
+            ->and($item['historical'])->toBeFalse()
+            ->and($item['selected'])->toBeTrue();
+    });
+});
+
+describe('permissions begin before a term does', function (): void {
+    test('a seat on a source that has not started changes access today', function (): void {
+        $this->source->update(['start_date' => today()->addMonth()->toDateString(), 'end_date' => null]);
+        $item = reviewPreview()['items'][0];
+
+        expect($item['kind'])->toBe('create')
+            ->and($item['access_change'])->toBeTrue()
+            ->and($item['selected'])->toBeFalse();
+    });
+
+    test('linking two terms that both start later changes nothing today', function (): void {
+        $dates = ['start_date' => today()->addMonth()->toDateString(), 'end_date' => null];
+        $this->source->update($dates);
+        reviewCandidate($dates);
+        $item = reviewPreview()['items'][0];
+
+        expect($item['kind'])->toBe('link')
+            ->and($item['access_change'])->toBeFalse()
+            ->and($item['selected'])->toBeTrue();
+    });
+
+    test('linking an ended term to a running source reopens access', function (): void {
+        $this->source->update(['start_date' => today()->subDays(30)->toDateString(), 'end_date' => null]);
+        reviewCandidate(['start_date' => today()->subDays(30)->toDateString(), 'end_date' => today()->subDays(10)->toDateString()]);
+        $item = reviewPreview()['items'][0];
+
+        expect($item['access_change'])->toBeTrue()->and($item['selected'])->toBeFalse();
+    });
+});
+
+test('a new seat that counts toward a quota says so', function (): void {
+    $this->targetDuty->assignableTenants()->attach($this->tenant);
+    $this->source->update(['end_date' => null]);
+    $item = reviewPreview()['items'][0];
+
+    expect($item['kind'])->toBe('create')
+        ->and($item['quota_change'])->toBeTrue()
+        ->and($item['tenant_after_name'])->toBe($this->tenant->shortname);
+});
+
+test('an ended new seat takes up no quota', function (): void {
+    $this->targetDuty->assignableTenants()->attach($this->tenant);
+    $this->source->update(['end_date' => '2024-12-31']);
+
+    expect(reviewPreview()['items'][0]['quota_change'])->toBeFalse();
+});
+
+describe('a duplicate has to be the same seat', function (): void {
+    test('a linked term under another tenant does not make a term a duplicate', function (): void {
+        $other = Tenant::query()->whereKeyNot($this->tenant->id)->firstOrFail();
+        $this->targetDuty->assignableTenants()->attach($other);
+        reviewCandidate(['via_dutiable_id' => $this->source->id, 'assignment_origin' => 'ex_officio', 'tenant_id' => null]);
+        $kept = reviewCandidate(['tenant_id' => $other->id]);
+        $plan = reviewPreview();
+
+        expect(array_column($plan['items'], 'kind'))->not->toContain('remove_duplicate')
+            ->and(collect($plan['blocked'])->firstWhere('source_id', $kept->id)['reason'])->toBe('partial');
+    });
+
+    test('the same tenant on both is still proposed for deletion', function (): void {
+        reviewCandidate(['via_dutiable_id' => $this->source->id, 'assignment_origin' => 'ex_officio']);
+        reviewCandidate();
+
+        expect(array_column(reviewPreview()['items'], 'kind'))->toBe(['remove_duplicate']);
+    });
+});
+
+describe('no recorded day is dropped', function (): void {
+    test('a few days before the source stay as their own term', function (): void {
+        $row = reviewCandidate(['start_date' => '2023-12-28', 'end_date' => '2024-12-31']);
+        reviewApply(reviewPreview())->assertSessionHasNoErrors();
+
+        $kept = Dutiable::query()->where('duty_id', $this->targetDuty->id)->where('id', '!=', $row->id)->sole();
+        expect($kept->start_date->toDateString())->toBe('2023-12-28')
+            ->and($kept->end_date->toDateString())->toBe('2023-12-31')
+            ->and($kept->assignment_origin)->toBe('manual')
+            ->and($row->fresh()->via_dutiable_id)->toBe($this->source->id);
+    });
+
+    test('a few days after an ended source stay as their own term', function (): void {
+        $row = reviewCandidate(['start_date' => '2024-01-01', 'end_date' => '2025-01-03']);
+        reviewApply(reviewPreview())->assertSessionHasNoErrors();
+
+        $kept = Dutiable::query()->where('duty_id', $this->targetDuty->id)->where('id', '!=', $row->id)->sole();
+        expect($kept->start_date->toDateString())->toBe('2025-01-01')
+            ->and($kept->end_date->toDateString())->toBe('2025-01-03');
+    });
+
+    test('a single day is enough to keep', function (): void {
+        reviewCandidate(['start_date' => '2023-12-31', 'end_date' => '2024-12-31']);
+
+        expect(reviewPreview()['items'][0]['remainders'])->toBe([['start_date' => '2023-12-31', 'end_date' => '2023-12-31']]);
+    });
+
+    test('ending an orphan with its source remains an explicit way to drop the rest', function (): void {
+        $this->source->update(['end_date' => today()->subDays(3)->toDateString()]);
+        $row = reviewCandidate(['end_date' => null]);
+        reviewApply(reviewPreview())->assertSessionHasNoErrors();
+
+        expect(Dutiable::query()->where('duty_id', $this->targetDuty->id)->count())->toBe(1)
+            ->and($row->fresh()->end_date->toDateString())->toBe(today()->subDays(3)->toDateString());
+    });
 });

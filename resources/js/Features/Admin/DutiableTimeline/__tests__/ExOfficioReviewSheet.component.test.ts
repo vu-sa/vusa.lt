@@ -13,7 +13,7 @@ const makeItem = (id: string, extra = {}) => ({
   id, kind: 'link', holder_id: 'person', holder_name: 'Vardas', duty_name: 'Pareigybė',
   before: { start_date: '2024-01-01', end_date: null },
   after: { start_date: '2024-01-01', end_date: '2024-12-31' },
-  selected: true, orphan: false, access_change: false, quota_change: false,
+  selected: true, orphan: false, historical: false, access_change: false, quota_change: false,
   tenant_before: null, tenant_after: null, remainders: [], survivors: [], requires: [], ...extra,
 });
 const plan = { fingerprint: 'fingerprint', items: [
@@ -84,6 +84,20 @@ describe('ExOfficioReviewSheet', () => {
     await wrapper.get('[data-testid="access-warning"] button').trigger('click');
     expect(router.post).toHaveBeenLastCalledWith(expect.anything(), expect.objectContaining({ acknowledge_access_change: true }), expect.anything());
     wrapper.unmount();
+  });
+
+  it('warns on a suggested historical term and leaves it unticked', async () => {
+    vi.spyOn(api, 'useApi').mockReturnValue({
+      data: computed(() => ({ ...plan, items: [makeItem('old', { kind: 'create', before: null, selected: false, historical: true })] })),
+      response: ref(null), error: computed(() => null),
+      isFetching: ref(false), isFinished: ref(true), isSuccess: computed(() => true),
+      execute: vi.fn().mockResolvedValue(undefined), abort: vi.fn(),
+    });
+    const wrapper = mountSheet();
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('dutiables.ex_officio_review.historical');
+    expect(wrapper.find('[role="checkbox"]').attributes('data-state')).toBe('unchecked');
   });
 
   it('shows an empty state and prevents submitting an empty selection', async () => {

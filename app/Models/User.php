@@ -271,7 +271,12 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
             ->withTimestamps();
     }
 
-    /** @return MorphToMany<Duty, $this, Dutiable, 'pivot'> */
+    /**
+     * Not ended: permissions start before the term does, on purpose. For who holds a duty, or
+     * whom to contact, use {@see current_duties()}.
+     *
+     * @return MorphToMany<Duty, $this, Dutiable, 'pivot'>
+     */
     public function authorization_duties(): MorphToMany
     {
         return $this->duties()

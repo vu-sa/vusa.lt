@@ -306,12 +306,15 @@ Sistema peržiūri visą istoriją ir siūlo:
 | Susieti su šaltiniu | Laikotarpis sutampa su šaltinio pareigomis, bet nesusietas. | Laikotarpis perima šaltinio datas. Laikas už šaltinio ribų lieka atskiru savarankišku laikotarpiu. |
 | Pridėti trūkstamą laikotarpį | Žmogus ėjo šaltinio pareigas, bet *ex officio* laikotarpio nėra. | Sukuriamas susietas laikotarpis, taip pat ir pasibaigusiems laikotarpiams. |
 | Suvienodinti datas | Susieto laikotarpio datos nesutampa su šaltiniu. | Datos perkeliamos pagal šaltinį. |
-| Ištrinti dubliuojantį įrašą | Nesusietą laikotarpį visą dengia susieti laikotarpiai. | Trūkstami duomenys perkeliami į susietą laikotarpį, o įrašas ištrinamas. |
+| Ištrinti dubliuojantį įrašą | Nesusietą laikotarpį visą dengia to paties padalinio susieti laikotarpiai. | Trūkstami duomenys perkeliami į susietą laikotarpį, o įrašas ištrinamas. |
 
-Prieš taikant rodomos senos ir naujos datos. Iš anksto pažymėti tik pakeitimai, kurie nekeičia šiandienos prieigos ir vietų kvotos. Dublikatus ir pakeitimus, kurie keičia prieigą ar padalinį, pažymi pats.
+Prieš taikant rodomos senos ir naujos datos. Iš anksto pažymėti tik pakeitimai, kurie nekeičia šiandienos prieigos ir vietų kvotos. Trūkstamus laikotarpius, dublikatus ir pakeitimus, kurie keičia prieigą ar padalinį, pažymi pats. Būsimų pareigų teisės galioja jau dabar, todėl toks pakeitimas laikomas prieigos pakeitimu.
+
+Sistema nežino, nuo kada pareigos suteikia kitas, todėl istorijai taiko šiandienos ryšį. Pridėk trūkstamą laikotarpį tik tada, jei ryšys galiojo ir tuo metu.
 
 - **Šaltinio pareigos baigėsi, bet laikotarpis tęsiasi.** Pasirink, ar užbaigti jį kartu su šaltiniu (numatyta), ar likusį laiką palikti savarankišku laikotarpiu.
 - **Sutapimas turi būti ilgesnis nei 7 dienos.** Trumpesnis sutapimas laikomas kadencijų persidengimu.
 - **Niekas nesiūloma**, jei žmogus šaltinio pareigų tuo metu nėjo arba laikotarpis patvirtintas kaip savarankiškas.
 - **Kai kurie įrašai tik išvardijami** su priežastimi: kai laikotarpis tik iš dalies sutampa su jau susietu, kai šaltinis pats yra *ex officio* laikotarpis arba kai neturi teisės tvarkyti visų susijusių laikotarpių.
+- Atskiriant išsaugoma kiekviena diena, net jei liko tik kelios. Laikotarpio dalis prarandama tik pasirinkus užbaigti jį kartu su šaltiniu.
 - Atskirti savarankiški laikotarpiai nuotraukos neperima – ji lieka pradiniame įraše.

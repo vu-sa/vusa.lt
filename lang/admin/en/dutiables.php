@@ -20,6 +20,7 @@ return [
         'end' => 'End with the source',
         'keep' => 'Keep the remaining time as an independent term',
         'quota_change' => 'Seat tenant changes: :before → :after. This may exceed its quota.',
+        'historical' => 'The system does not record when this duty began granting the other. Tick this only if it applied at that time.',
         'access_change' => 'Access effective today changes.',
         'blocked_chain' => 'The source is itself linked to another term. Review this chain separately.',
         'blocked_partial' => 'Part of this term overlaps one that is already linked. Sort it out in the term editor.',

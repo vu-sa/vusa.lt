@@ -26,7 +26,7 @@ class ResolveActivityRequestRecipients
     {
         $cadences = ResolveCadenceForInstitution::forInstitutions($ids);
         $secretaries = InstitutionSecretary::query()->whereIn('institution_id', $ids)->with('user')->get()->groupBy('institution_id');
-        $assignments = Dutiable::query()->current()
+        $assignments = Dutiable::query()->activeOn()
             ->where('dutiable_type', MorphMap::alias(User::class))
             ->whereHas('duty', fn ($query) => $query->whereIn('institution_id', $ids)->holdingPurpose(ResponsibilityPurpose::StudentRepresentation))
             ->with(['duty', 'user'])->get()->groupBy('duty.institution_id');
