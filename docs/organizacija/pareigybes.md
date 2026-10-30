@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Pareigybės
 area: duties
 models: [Duty, Role, Tenant, Type, Institution, ResponsibilityGrant]
-last_reviewed: 2026-10-28
+last_reviewed: 2026-10-30
 tests:
   - tests/Browser/CollectionTrashRefreshTest.php
   - resources/js/Components/AdminForms/__tests__/DutyForm.component.test.ts
@@ -544,4 +544,4 @@ laikotarpyje gali turėti nurodytą papildomą kontaktinį el. paštą ar asmeni
 
 ## Savarankiški ir ex officio laikotarpiai
 
-Automatinis ex officio priskyrimas nekeičia jau įvesto savarankiško laikotarpio. Prireikus jį galima aiškiai susieti su šaltiniu [laikotarpių tvarkyklėje](/visak/pareigybiu-laikotarpiai). Prieš patvirtinant rodomos susiejimo pasekmės.
+Automatinis ex officio priskyrimas nekeičia jau įvesto savarankiško laikotarpio. Prireikus jį galima aiškiai susieti su šaltiniu [laikotarpių tvarkyklėje](/visak/pareigybiu-laikotarpiai). Prieš patvirtinant rodomos susiejimo pasekmės. Visą pareigybės istoriją patikrinti ir sutvarkyti gali [Tikrinti ex officio](/visak/pareigybiu-laikotarpiai#ex-officio-tikrinimas) veiksmas pareigybės puslapyje.
