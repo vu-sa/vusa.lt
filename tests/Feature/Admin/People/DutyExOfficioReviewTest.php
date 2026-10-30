@@ -343,3 +343,23 @@ test('keeping an orphan does not announce the linked part ending as lost access'
     expect(collect(GetRecentAccessChanges::execute($this->holder, 14))->where('kind', GetRecentAccessChanges::ENDED)->where('dutyName', $this->targetDuty->name)->all())->toBeEmpty()
         ->and($row->fresh()->via_dutiable_id)->toBe($this->source->id);
 });
+
+test('a source duty reviews only its own pairs on a target shared with other sources', function (): void {
+    $otherSource = Duty::factory()->for($this->sourceDuty->institution)->create();
+    $otherSource->exOfficioTargetDuties()->attach($this->targetDuty);
+    $otherHolder = User::factory()->create();
+    Dutiable::factory()->create([
+        'duty_id' => $otherSource->id, 'dutiable_id' => $otherHolder->id,
+        'start_date' => '2024-01-01', 'end_date' => '2024-12-31',
+    ]);
+
+    $fromSource = asUser($this->manager)->getJson(route('duties.exOfficioReview.preview', $this->sourceDuty))->assertOk()->json('data');
+    expect(array_column($fromSource['items'], 'holder_id'))->toBe([$this->holder->id])
+        ->and(array_column(reviewPreview()['items'], 'holder_id'))->toContain($this->holder->id, $otherHolder->id);
+
+    $otherItem = collect(reviewPreview()['items'])->firstWhere('holder_id', $otherHolder->id)['id'];
+    asUser($this->manager)->post(route('duties.exOfficioReview.apply', $this->sourceDuty), [
+        'fingerprint' => $fromSource['fingerprint'], 'item_ids' => [$otherItem],
+    ])->assertStatus(422);
+    expect(Dutiable::query()->where('dutiable_id', $otherHolder->id)->where('duty_id', $this->targetDuty->id)->exists())->toBeFalse();
+});

@@ -45,7 +45,7 @@ class ApplyExOfficioReview
                 ->lockForUpdate()
                 ->get()
                 ->keyBy('id');
-            $plan = PlanExOfficioReview::execute($targetIds, $actor);
+            $plan = PlanExOfficioReview::forDuty($duty, $actor);
             abort_unless(hash_equals($plan['fingerprint'], $data['fingerprint']), 409);
             $items = collect($plan['items'])->keyBy('id');
             self::validateSelection($items, $rows, $data);

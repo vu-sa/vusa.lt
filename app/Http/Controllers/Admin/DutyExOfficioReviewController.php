@@ -16,13 +16,13 @@ class DutyExOfficioReviewController extends AdminController
     {
         $this->authorize('managePeople', $duty);
 
-        return response()->json(['success' => true, 'data' => PlanExOfficioReview::execute(PlanExOfficioReview::targetIds($duty), request()->user())]);
+        return response()->json(['success' => true, 'data' => PlanExOfficioReview::forDuty($duty, request()->user())]);
     }
 
     public function apply(ApplyExOfficioReviewRequest $request, Duty $duty): RedirectResponse
     {
         $data = $request->validated();
-        $plan = PlanExOfficioReview::execute(PlanExOfficioReview::targetIds($duty), $request->user());
+        $plan = PlanExOfficioReview::forDuty($duty, $request->user());
         $couldAffectSelf = ! $request->user()->isSuperAdmin() && collect($plan['items'])->contains(fn (array $item) => in_array($item['id'], $data['item_ids'], true) && $item['holder_id'] === $request->user()->id);
         $mutation = fn () => ApplyExOfficioReview::execute($duty, $request->user(), $data);
         if ($warning = $this->guardSelfLockout($request->user(), $couldAffectSelf, $request, $mutation)) {

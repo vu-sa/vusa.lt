@@ -46,6 +46,42 @@ class PlanExOfficioReview
             ->all();
     }
 
+    /**
+     * The plan as one duty's page sees it: pairs where the duty is the source or the target.
+     * A shared target has many sources, and other units' terms are not this duty's to review.
+     *
+     * @return ReviewPlan
+     */
+    public static function forDuty(Duty $duty, ?User $actor = null): array
+    {
+        $plan = self::execute(self::targetIds($duty), $actor);
+        $sourceDuties = Dutiable::query()
+            ->whereKey([...array_column($plan['items'], 'source_id'), ...array_column($plan['blocked'], 'source_id')])
+            ->pluck('duty_id', 'id');
+        $inScope = fn (array $entry): bool => $entry['target_duty_id'] === $duty->id
+            || $sourceDuties->get($entry['source_id']) === $duty->id;
+        $itemsById = collect($plan['items'])->keyBy('id');
+        $pending = $itemsById->filter($inScope)->keys()->all();
+        $kept = [];
+
+        // A proposal stays complete: what it requires comes along, even from another source.
+        while ($pending !== []) {
+            $id = array_pop($pending);
+            if (! isset($kept[$id])) {
+                $kept[$id] = true;
+                array_push($pending, ...$itemsById[$id]['requires']);
+            }
+        }
+
+        return [
+            ...$plan,
+            'items' => $itemsById->only(array_keys($kept))->values()->all(),
+            'blocked' => array_values(array_filter($plan['blocked'], $inScope)),
+            'candidate_ids' => [],
+            'matches' => [],
+        ];
+    }
+
     /** @return ReviewPlan */
     public static function execute(array $targetDutyIds, ?User $actor = null): array
     {

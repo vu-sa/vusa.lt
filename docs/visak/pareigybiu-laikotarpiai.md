@@ -297,7 +297,7 @@ Sistema laikotarpius lygina su šaltinio pareigomis tuo pačiu metu, o ne su ši
 
 </ChangelogNote>
 
-Pareigybės puslapyje atidaryk papildomų veiksmų meniu ir pasirink **Tikrinti ex officio**. Veiksmas rodomas, jei gali tvarkyti pareigybės narius ir pareigybė susijusi su *ex officio* pareigomis. Atidarius šaltinio pareigybę, tikrinamos visos jos suteikiamos pareigos.
+Pareigybės puslapyje atidaryk papildomų veiksmų meniu ir pasirink **Tikrinti ex officio**. Veiksmas rodomas, jei gali tvarkyti pareigybės narius ir pareigybė susijusi su *ex officio* pareigomis. Tikrinama tik ši pareigybė: atidarius šaltinio pareigybę, rodomi tik jos pačios suteikiami laikotarpiai, o atidarius tikslinę – visi jos laikotarpiai ir jų šaltiniai.
 
 Sistema peržiūri visą istoriją ir siūlo:
 
