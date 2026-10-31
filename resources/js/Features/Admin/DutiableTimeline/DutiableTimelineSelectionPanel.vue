@@ -124,7 +124,26 @@
 
       <Alert v-if="row.is_derived" class="py-2">
         <AlertDescription class="space-y-1.5 text-xs">
-          <p>{{ $t('dutiables.timeline.inspector.ex_officio_managed', { duty: timelineSourceDutyName(row, usePage().props.app.locale) }) }}</p>
+          <p>{{ $t(row.detachable ? 'dutiables.timeline.review.detach_explanation' : 'dutiables.timeline.inspector.ex_officio_managed', { duty: timelineSourceDutyName(row, usePage().props.app.locale) }) }}</p>
+          <AlertDialog v-if="row.detachable">
+            <AlertDialogTrigger as-child>
+              <Button size="xs" variant="outline" voice="sentence">
+                {{ $t('dutiables.timeline.review.detach') }}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{{ $t('dutiables.timeline.review.detach') }}</AlertDialogTitle>
+                <AlertDialogDescription>{{ $t('dutiables.timeline.review.detach_description') }}</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{{ $t('dutiables.timeline.actions.remove_cancel') }}</AlertDialogCancel>
+                <AlertDialogAction @click="reviewAssignment('detach')">
+                  {{ $t('dutiables.timeline.review.confirm') }}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <Button v-if="row.source" size="xs" variant="outline" @click="emit('select-source', row.source.id)">
             {{ $t('dutiables.timeline.inspector.select_source') }}
           </Button>
@@ -453,12 +472,12 @@ const reviewChoices = computed(() => [
 
 function reviewAssignment(choice: string): void {
   if (!props.row) return;
-  reviewSpotlight.dismiss();
+  if (choice !== 'detach') reviewSpotlight.dismiss();
   const rowId = props.row.id;
   reviewGuard.guardedSubmit(acknowledge => router.post(route('dutiables.reviewExOfficio', rowId), {
     acknowledge_access_change: acknowledge,
-    decision: choice === 'manual' ? 'manual' : 'convert',
-    source_id: choice === 'manual' ? null : choice,
+    decision: choice === 'manual' || choice === 'detach' ? choice : 'convert',
+    source_id: choice === 'manual' || choice === 'detach' ? null : choice,
     acknowledge: true,
   }, { preserveScroll: true, onSuccess: () => emit('reviewed') }));
 }

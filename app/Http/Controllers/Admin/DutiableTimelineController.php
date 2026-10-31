@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\Dutiables\ApplyDutiableTimelineChanges;
+use App\Actions\Dutiables\DetachExOfficioSeat;
 use App\Actions\Dutiables\LinkDutiableToExOfficioSource;
 use App\Actions\Dutiables\MergeDutiables;
 use App\Actions\Dutiables\PlanDutiableTimelineChanges;
@@ -124,16 +125,22 @@ class DutiableTimelineController extends AdminController
         $mutation = fn () => DB::transaction(function () use ($request, $dutiable): void {
             $dutiable = $dutiable->newQuery()->lockForUpdate()->findOrFail($dutiable->id);
             $this->authorize('manageDutiable', $dutiable);
-            abort_if($dutiable->via_dutiable_id !== null || $dutiable->ended_by_institution_deactivation, 422);
-            if ($request->validated('decision') === 'manual') {
-                $dutiable->update(['assignment_origin' => 'manual']);
+            $properties = $request->safe()->only(['decision', 'source_id']);
+            if ($request->validated('decision') === 'detach') {
+                $properties['detached_from'] = $dutiable->via_dutiable_id;
+                DetachExOfficioSeat::execute($dutiable);
             } else {
-                $source = Dutiable::query()->lockForUpdate()->findOrFail($request->validated('source_id'));
-                $this->authorize('manageDutiable', $source);
-                LinkDutiableToExOfficioSource::execute($dutiable, $source);
+                abort_if($dutiable->via_dutiable_id !== null || $dutiable->ended_by_institution_deactivation, 422);
+                if ($request->validated('decision') === 'manual') {
+                    $dutiable->update(['assignment_origin' => 'manual']);
+                } else {
+                    $source = Dutiable::query()->lockForUpdate()->findOrFail($request->validated('source_id'));
+                    $this->authorize('manageDutiable', $source);
+                    LinkDutiableToExOfficioSource::execute($dutiable, $source);
+                }
             }
             activity()->performedOn($dutiable)->causedBy($request->user())->event('ex_officio_reviewed')
-                ->withProperties($request->safe()->only(['decision', 'source_id']))->log('ex_officio_reviewed');
+                ->withProperties($properties)->log('ex_officio_reviewed');
         });
 
         if ($warning = $this->guardSelfLockout($request->user(), ! $request->user()->isSuperAdmin()

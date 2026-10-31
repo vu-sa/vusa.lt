@@ -15,7 +15,7 @@ class ReviewExOfficioRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'decision' => ['required', Rule::in(['manual', 'convert'])],
+            'decision' => ['required', Rule::in(['manual', 'convert', 'detach'])],
             'source_id' => ['required_if:decision,convert', 'nullable', 'ulid'],
             'acknowledge' => ['accepted'],
             'acknowledge_access_change' => ['nullable', 'boolean'],

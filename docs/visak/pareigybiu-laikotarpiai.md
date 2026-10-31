@@ -309,6 +309,8 @@ Kiekvienam pagrindinių pareigų laikotarpiui, pagal kiekvieną pareigybės form
 | Pareigybei pridedamas ryšys | Dabartiniams ir būsimiems laikotarpiams sukuriami prijungti laikotarpiai su pagrindinių pareigų datomis. Praeities laikotarpius pridėk per **Tikrinti ex officio**. |
 | Pašalinamas ryšys | Prasidėję prijungti laikotarpiai baigiasi tą dieną, neprasidėję ištrinami. Toliau jie nebesikeičia. Tą patį ryšį pridėjus iš naujo, laikotarpis vėl seka pagrindines pareigas, todėl pertrauka istorijoje nelieka. |
 
+Pašalinus ryšį, laikotarpis lieka pažymėtas kaip *ex officio* ir užrakintas. Jei žmogus šias pareigas eina toliau arba laikotarpį reikia ištrinti, laikotarpių tvarkyklėje pasirink jį ir spausk **Atsieti nuo pareigų**. Datos lieka tokios pačios, o laikotarpis tampa savarankiškas, todėl jį galima keisti ar ištrinti. Kol ryšys yra, atsieti negalima: pirmiausia jį pašalink pareigybės formoje.
+
 Institucijos uždarymo metu pasibaigę laikotarpiai nekeičiami. Vėl atidarius instituciją, *ex officio* laikotarpis tęsiamas nuo atidarymo dienos, o uždarymo metas neatkuriamas.
 
 Kas naktį sistema tikrina, ar *ex officio* laikotarpiai sutampa su pagrindinėmis pareigomis ir ar kurio nors netrūksta. Radinius matyti sistemos būsenos puslapyje. Tikrinimas nieko nekeičia.

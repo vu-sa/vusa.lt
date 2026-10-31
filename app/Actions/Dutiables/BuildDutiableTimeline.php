@@ -16,6 +16,7 @@ use App\Support\Dutiables\ExOfficioSeatDates;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Assembles everything the timeline editor draws for one scope: the assignment rows,
@@ -50,6 +51,11 @@ class BuildDutiableTimeline
         $cadenceByDuty = ResolveCadenceForDuty::forDuties($duties);
 
         $editable = self::editabilityMap($rows, $actor);
+        $rulePairs = DB::table('ex_officio_duties')
+            ->whereIn('source_duty_id', $rows->pluck('viaDutiable.duty.id')->filter()->unique())
+            ->get(['source_duty_id', 'target_duty_id'])
+            ->mapWithKeys(fn ($rule) => [$rule->source_duty_id.':'.$rule->target_duty_id => true])
+            ->all();
         $reviewSources = Dutiable::query()->with(['duty.institution', 'duty.exOfficioTargetDuties', 'derivedDutiables.media'])
             ->whereIn('dutiable_id', $rows->pluck('dutiable_id'))->whereNull('via_dutiable_id')
             ->where('ended_by_institution_deactivation', false)
@@ -67,7 +73,7 @@ class BuildDutiableTimeline
             'scope' => self::scopeDescriptor($scope, $scopeId),
             'groups' => self::groups($scope, $rows, $cadenceByDuty)->values()->all(),
             'rows' => self::sortRows($rows, $cadenceByRow)
-                ->map(fn (Dutiable $row) => self::row($row, $scope, $editable, $derivedBySource, $cadenceByRow, $cadenceIdsByRow, $reviewSources))
+                ->map(fn (Dutiable $row) => self::row($row, $scope, $editable, $derivedBySource, $cadenceByRow, $cadenceIdsByRow, $reviewSources, $rulePairs))
                 ->values()
                 ->all(),
             'cadences' => $cadences->map(fn (Cadence $cadence) => self::cadencePayload($cadence))->all(),
@@ -198,6 +204,7 @@ class BuildDutiableTimeline
      * @param  array<string, Cadence|null>  $cadenceByRow
      * @param  array<string, list<string>>  $cadenceIdsByRow
      * @param  Collection<int, Dutiable>  $reviewSources
+     * @param  array<string, bool>  $rulePairs
      * @return array<string, mixed>
      */
     private static function row(
@@ -208,6 +215,7 @@ class BuildDutiableTimeline
         array $cadenceByRow,
         array $cadenceIdsByRow,
         Collection $reviewSources,
+        array $rulePairs,
     ): array {
         $isDerived = $row->via_dutiable_id !== null;
 
@@ -236,6 +244,9 @@ class BuildDutiableTimeline
                 : null,
             'derived_ids' => $derivedBySource->get($row->id, collect())->pluck('id')->all(),
             'is_derived' => $isDerived,
+            'detachable' => ($editable[$row->id] ?? false) && DetachExOfficioSeat::isOrphaned(
+                $row, isset($rulePairs[$row->viaDutiable?->duty?->id.':'.$row->duty_id]),
+            ),
             'assignment_origin' => $row->assignment_origin,
             'review_sources' => ! $isDerived && $row->derivedDutiables->isEmpty() && ($editable[$row->id] ?? false)
                 ? self::reviewSources($row, $reviewSources)
