@@ -1,6 +1,7 @@
 ---
 paths:
   - 'app/Notifications/**'
+  - 'app/Mail/**'
   - 'app/Enums/NotificationType.php'
   - 'app/Services/Notifications/**'
   - 'app/Listeners/HandleTaskCreated.php'
@@ -28,3 +29,6 @@ paths:
 
 ## Touching notification logic means reviewing Pranešimų nustatymai
 Any change to who gets a notification, when, or whether it is sent at all (notification classes, `NotificationType`, the listeners, subscribers and commands that send them) also reviews the settings page: `NotificationAudience::canReceive()` (who sees the type), `notifications.types.<value>.label`/`.description` and the `preferences.how_*` copy in `lang/admin/{lt,en}/notifications.php`, and `ShowNotificationSettings.vue`. Whoever can receive a type must be able to configure it, and the copy must describe what is actually sent.
+
+## Every new email ships in the mail preview catalog
+A new notification that can email, or a new Mailable in `app/Mail`, joins the Sistema mail previews in the same change: list it in `MailPreviewCatalog` (`NOTIFICATION_TYPES`, or the "other" keys for a standalone Mailable) and add a sample to `MailPreviewSamples`. A new digest shape gets its own scenario. Samples stay in memory (no saved models), use `text()` so each locale reads in its own language, and must render in both locales.
