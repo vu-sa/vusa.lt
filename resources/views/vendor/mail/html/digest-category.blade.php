@@ -6,7 +6,18 @@
 <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #52525b;">{{ $label }}</span>
 </td>
 </tr>
-@foreach ($items as $item)
+@foreach ($items as $section)
+@if ($section['count'] > 1)
+<tr>
+<td style="border-bottom: 1px solid #e4e4e7; padding: 14px 0;">
+<div style="font-size: 15px; font-weight: 600; color: #27272a;">{{ $section['title'] }} ({{ $section['count'] }})</div>
+@foreach ($section['items'] as $item)
+<div style="font-size: 14px; margin-top: 6px;"><a href="{{ $item['url'] }}" style="color: #27272a; text-decoration: none;">{{ $item['digestLine'] ?? $item['body'] }}</a></div>
+@endforeach
+</td>
+</tr>
+@else
+@foreach ($section['items'] as $item)
 <tr>
 <td style="border-bottom: 1px solid #e4e4e7; padding: 14px 0;">
 <a href="{{ $item['url'] }}" style="font-size: 15px; font-weight: 600; color: #27272a; text-decoration: none;">{{ Str::limit($item['title'], 80) }}</a>
@@ -27,6 +38,8 @@
 @endif
 </td>
 </tr>
+@endforeach
+@endif
 @endforeach
 @if ($remaining > 0)
 <tr>

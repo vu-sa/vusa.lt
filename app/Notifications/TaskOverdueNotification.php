@@ -7,9 +7,7 @@ use App\Models\Task;
 use Illuminate\Support\Collection;
 
 /**
- * Weekly notification sent to users who have overdue tasks.
- *
- * This notification is sent once per week with a summary of all overdue tasks.
+ * A full overdue list, delivered for newly overdue work or after the four-week cooldown.
  */
 class TaskOverdueNotification extends BaseNotification
 {
@@ -18,17 +16,8 @@ class TaskOverdueNotification extends BaseNotification
         return NotificationType::TaskOverdue;
     }
 
-    /**
-     * Create a new notification instance.
-     *
-     * @param  Collection<Task>  $tasks
-     */
-    public function __construct(
-        /**
-         * The collection of overdue tasks.
-         */
-        protected Collection $tasks
-    ) {}
+    /** @param Collection<int, Task> $tasks */
+    public function __construct(protected Collection $tasks) {}
 
     public function title(object $notifiable): string
     {

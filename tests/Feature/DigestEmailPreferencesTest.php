@@ -370,7 +370,7 @@ describe('ProcessNotificationDigests command', function (): void {
 
         // Configure to send to user email instead of default duty email
         $this->user->update(['notification_preferences' => ['emails' => ['user@example.com']]]);
-        $this->user->update(['notification_preferences' => [...$this->user->notification_preferences, 'digest_frequency_hours' => 1]]);
+        $this->user->update(['notification_preferences' => [...$this->user->notification_preferences, 'digest_frequency_hours' => 4]]);
 
         // Create a digest queue item and manually set created_at (not fillable)
         $item = NotificationDigestQueue::create([
@@ -384,7 +384,7 @@ describe('ProcessNotificationDigests command', function (): void {
                 'icon' => 'task',
             ],
         ]);
-        $item->forceFill(['created_at' => now()->subHours(2)])->saveQuietly();
+        $item->forceFill(['created_at' => now()->subHours(5)])->saveQuietly();
 
         // Run the command
         $this->artisan(ProcessNotificationDigests::class)
@@ -406,7 +406,7 @@ describe('ProcessNotificationDigests command', function (): void {
             'end_date' => null,
         ]);
 
-        $this->user->update(['notification_preferences' => [...$this->user->notification_preferences, 'digest_frequency_hours' => 1]]);
+        $this->user->update(['notification_preferences' => [...$this->user->notification_preferences, 'digest_frequency_hours' => 4]]);
 
         $item = NotificationDigestQueue::create([
             'user_id' => $this->user->id,
@@ -419,7 +419,7 @@ describe('ProcessNotificationDigests command', function (): void {
                 'icon' => 'task',
             ],
         ]);
-        $item->forceFill(['created_at' => now()->subHours(2)])->saveQuietly();
+        $item->forceFill(['created_at' => now()->subHours(5)])->saveQuietly();
 
         $this->artisan(ProcessNotificationDigests::class)
             ->assertSuccessful();
@@ -442,7 +442,7 @@ describe('ProcessNotificationDigests command', function (): void {
 
         // Configure to send to both emails
         $this->user->update(['notification_preferences' => ['emails' => ['user@example.com', 'duty@vusa.lt']]]);
-        $this->user->update(['notification_preferences' => [...$this->user->notification_preferences, 'digest_frequency_hours' => 1]]);
+        $this->user->update(['notification_preferences' => [...$this->user->notification_preferences, 'digest_frequency_hours' => 4]]);
 
         $item = NotificationDigestQueue::create([
             'user_id' => $this->user->id,
@@ -455,7 +455,7 @@ describe('ProcessNotificationDigests command', function (): void {
                 'icon' => 'task',
             ],
         ]);
-        $item->forceFill(['created_at' => now()->subHours(2)])->saveQuietly();
+        $item->forceFill(['created_at' => now()->subHours(5)])->saveQuietly();
 
         $this->artisan(ProcessNotificationDigests::class)
             ->assertSuccessful();

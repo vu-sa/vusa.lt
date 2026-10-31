@@ -45,7 +45,7 @@ function activityNotification(InstitutionActivityRequest ...$requests): Institut
 test('queued mail and digests recheck activity eligibility without changing the requested period', function (string $change): void {
     Notification::fake();
     Mail::fake();
-    $this->travelTo(now()->setTime(12, 0));
+    $this->travelTo(now()->setTimezone(config('app.timezone'))->setTime(15, 0));
     $this->activityRequest->update(['period_start' => today()->subDays(60), 'period_end' => today()->subDays(3)]);
     $period = $this->activityRequest->only(['period_start', 'period_end']);
     $notification = activityNotification($this->activityRequest);
@@ -90,7 +90,7 @@ test('delivery of record completion survives an active check-in but stops once r
 test('manual activity questions survive grace in immediate and digest delivery but automatic ones do not', function (bool $manual): void {
     Notification::fake();
     Mail::fake();
-    $this->travelTo('2026-11-20 12:00:00');
+    $this->travelTo('2026-11-20 15:00:00');
     $this->institution->update(['meeting_periodicity_days' => 30]);
     InstitutionCheckIn::factory()->for($this->institution)->create(['start_date' => '2026-09-01', 'end_date' => '2026-11-17']);
     $this->activityRequest->update([
@@ -410,7 +410,7 @@ test('queued notifications suppress obsolete questions and deleted institutions'
 });
 
 test('digest delivery removes answered requests before sending', function (): void {
-    $this->travelTo(now()->setTime(12, 0));
+    $this->travelTo(now()->setTimezone(config('app.timezone'))->setTime(15, 0));
     Mail::fake();
     $this->recipient->update(['notification_preferences' => ['types' => ['institution_activity' => ['email' => 'digest']]]]);
     NotificationDigestQueue::create([

@@ -10,14 +10,13 @@ use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 /**
- * Send weekly notifications to users with overdue tasks.
- *
- * This command runs once per week (e.g., Monday morning) and notifies
- * users who have tasks that are past their due date and not completed.
+ * Sends full overdue lists weekly when something became overdue in the last seven days,
+ * otherwise at most once every four weeks.
  */
-#[Description('Send weekly reminders to users with overdue tasks')]
+#[Description('Send overdue summaries for new overdue tasks or after four weeks')]
 #[Signature('notifications:task-overdue-reminders')]
 class SendTaskOverdueReminders extends Command
 {
@@ -25,14 +24,12 @@ class SendTaskOverdueReminders extends Command
     {
         app(ReservationReviewTaskSynchronizer::class)->reconcileAll();
 
-        // Get all overdue tasks grouped by user
         $overdueTasks = Task::query()
             ->with('users', 'taskable')
             ->where('due_date', '<', Carbon::now())
             ->whereNull('completed_at')
             ->get();
 
-        // Group tasks by user
         $tasksByUser = [];
         foreach ($overdueTasks as $task) {
             foreach ($task->notifiableUsers() as $user) {
@@ -40,22 +37,29 @@ class SendTaskOverdueReminders extends Command
             }
         }
 
+        $recentRecipients = DB::table('notifications')
+            ->where('type', TaskOverdueNotification::class)
+            ->where('notifiable_type', (new User)->getMorphClass())
+            ->whereIn('notifiable_id', array_keys($tasksByUser))
+            ->where('created_at', '>=', now()->subDays(27))
+            ->pluck('notifiable_id')->flip();
+        $users = User::whereKey(array_keys($tasksByUser))->get()->keyBy('id');
+        $newSince = now()->subDays(7);
         $sentCount = 0;
 
         foreach ($tasksByUser as $userId => $tasks) {
-            $user = User::find($userId);
+            $hasNewTask = collect($tasks)->contains(fn (Task $task): bool => $task->due_date->max($task->created_at)->gte($newSince));
+            $user = $users->get($userId);
 
-            if (! $user) {
+            if (! $user || (! $hasNewTask && $recentRecipients->has($userId))) {
                 continue;
             }
 
             $user->notify(new TaskOverdueNotification(collect($tasks)));
             $sentCount++;
-
-            $this->info("Sent overdue task reminder to {$user->email} for ".count($tasks).' tasks.');
         }
 
-        $this->info("Sent {$sentCount} overdue task reminder notifications.");
+        $this->info("Sent {$sentCount} overdue task summaries using recipient delivery preferences.");
 
         return self::SUCCESS;
     }

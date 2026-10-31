@@ -5,6 +5,7 @@ use App\Mail\NotificationDigest;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\InstitutionActivityRequest;
+use App\Models\Meeting;
 use App\Models\ResponsibilityGrant;
 use App\Models\Task;
 use App\Models\Tenant;
@@ -12,11 +13,14 @@ use App\Models\User;
 use App\Notifications\BaseNotification;
 use App\Notifications\CommentPostedNotification;
 use App\Notifications\InstitutionActivityNotification;
+use App\Notifications\MeetingAgendaCompletedNotification;
+use App\Notifications\MeetingCreatedNotification;
 use App\Notifications\TaskAssignedNotification;
 use App\Notifications\TaskAutoCompletedNotification;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Mail\Markdown;
+use Illuminate\Support\Str;
 
 pest()->use(RefreshDatabase::class);
 
@@ -261,4 +265,107 @@ test('digest greetings also use the Lithuanian first-name ending', function (): 
     foreach ([$digest->render(), $markdown->renderText('emails.notification-digest', $digest->content()->with)] as $content) {
         expect((string) $content)->toContain('Labas, Jonai!', __('mail.platform_description'));
     }
+});
+
+test('digest subjects use the single title or count and ordered categories', function (string $locale): void {
+    app()->setLocale($locale);
+    $item = ['title' => 'Užpildyk darbotvarkę', 'body' => 'Turinys', 'url' => '/x'];
+    $single = new NotificationDigest($this->recipient, ['meeting' => [$item]]);
+    $multiple = new NotificationDigest($this->recipient, ['meeting' => [$item], 'task' => [$item, $item, $item, $item]]);
+    $long = new NotificationDigest($this->recipient, ['task' => [array_replace($item, ['title' => str_repeat('Ilgas pavadinimas ', 10)])]]);
+
+    expect($single->envelope()->subject)->toBe($item['title'])
+        ->and($multiple->envelope()->subject)->toBe(trans_choice('notifications.digest_subject_categories', 5, [
+            'count' => 5,
+            'categories' => Str::lower(__('notifications.categories.task').', '.__('notifications.categories.meeting')),
+        ]))
+        ->and(mb_strlen($long->envelope()->subject))->toBeLessThanOrEqual(60)
+        ->and($long->envelope()->subject)->toEndWith('…');
+})->with(['lt', 'en']);
+
+test('digest groups repeated types and caps each category at five linked lines', function (): void {
+    $items = [];
+    for ($i = 1; $i <= 7; $i++) {
+        $items[] = [
+            'type' => 'meeting_created', 'digestGroupTitle' => 'New meetings created',
+            'digestLine' => "Institution $i, 11-01", 'title' => "Full title $i", 'body' => "Full body $i",
+            'url' => "https://example.test/meeting/$i",
+            'context' => [['label' => 'Unneeded context', 'value' => 'Value']],
+            'primaryAction' => ['label' => 'Unneeded action', 'url' => '/action'],
+        ];
+    }
+    $single = ['title' => 'Single task', 'body' => 'Full task body', 'url' => '/task', 'type' => 'task_assigned'];
+    $digest = new NotificationDigest($this->recipient, ['meeting' => $items, 'task' => [$single]]);
+    $markdown = new Markdown(view(), config('mail.markdown'));
+    $with = $digest->content()->with;
+
+    foreach ([$markdown->render('emails.notification-digest', $with), $markdown->renderText('emails.notification-digest', $with)] as $part) {
+        $content = html_entity_decode((string) $part);
+        expect($content)->toContain('New meetings created (7)', 'Institution 1, 11-01', 'Institution 5, 11-01', 'https://example.test/meeting/5', '+ 2', 'Full task body')
+            ->not->toContain('Institution 6', 'Institution 7', 'Full title', 'Full body', 'Unneeded context', 'Unneeded action')
+            ->and(strpos($content, 'Single task'))->toBeLessThan(strpos($content, 'New meetings created'));
+    }
+});
+
+test('single types and legacy items retain full rows in both digest parts', function (): void {
+    $legacy = ['title' => 'Legacy title', 'body' => 'Legacy body', 'url' => '/legacy'];
+    $single = [
+        'type' => 'meeting_created', 'digestGroupTitle' => 'Group heading', 'digestLine' => 'Compact line',
+        'title' => 'Full meeting title', 'body' => 'Full meeting body', 'url' => '/meeting',
+        'context' => [['label' => 'Date', 'value' => '2026-11-01']],
+        'primaryAction' => ['label' => 'Open meeting', 'url' => '/meeting-action'],
+    ];
+    $digest = new NotificationDigest($this->recipient, ['meeting' => [$legacy, $legacy, $single]]);
+    $markdown = new Markdown(view(), config('mail.markdown'));
+
+    foreach ([$markdown->render('emails.notification-digest', $digest->content()->with), $markdown->renderText('emails.notification-digest', $digest->content()->with)] as $part) {
+        $content = html_entity_decode((string) $part);
+        expect(substr_count($content, 'Legacy body'))->toBe(2)
+            ->and($content)->toContain('Full meeting title', 'Full meeting body', 'Date: 2026-11-01', '/meeting-action')
+            ->not->toContain('Group heading', 'Compact line');
+    }
+});
+
+test('activity questions never collapse even when they share a type', function (): void {
+    $request = InstitutionActivityRequest::factory()->create();
+    $item = new InstitutionActivityNotification(new EloquentCollection([$request]))->toDigestItem($this->recipient);
+    $digest = new NotificationDigest($this->recipient, ['meeting' => [$item, $item]]);
+    $markdown = new Markdown(view(), config('mail.markdown'));
+
+    foreach ([$markdown->render('emails.notification-digest', $digest->content()->with), $markdown->renderText('emails.notification-digest', $digest->content()->with)] as $part) {
+        expect(substr_count(html_entity_decode((string) $part), $item['activity_questions'][0]['notMine']))->toBe(2);
+    }
+});
+
+test('digest category order is fixed with unknown categories stable at the end', function (): void {
+    $item = ['title' => 'Title', 'body' => 'Body', 'url' => '/x'];
+    $digest = new NotificationDigest($this->recipient, array_fill_keys([
+        'unknown-b', 'system', 'user', 'registration', 'duty', 'comment', 'reservation', 'meeting', 'unknown-a', 'task',
+    ], [$item]));
+
+    expect(array_keys($digest->content()->with['categorizedItems']))->toBe([
+        __('notifications.categories.task'), __('notifications.categories.meeting'), __('notifications.categories.reservation'),
+        __('notifications.categories.comment'), __('notifications.categories.duty'), __('notifications.categories.registration'),
+        __('notifications.categories.user'), __('notifications.categories.system'), 'unknown-b', 'unknown-a',
+    ]);
+});
+
+test('meeting digest lines retain the notification type for followers', function (): void {
+    $institution = Institution::factory()->create();
+    $meeting = Meeting::factory()->hasAttached($institution)->create(['start_time' => '2026-11-01 12:00:00']);
+    $created = new MeetingCreatedNotification($meeting);
+    $completed = new MeetingAgendaCompletedNotification($meeting);
+
+    expect($created->toDigestItem($this->recipient))->toMatchArray([
+        'type' => 'meeting_created', 'digestLine' => $institution->name.', 11-01',
+        'digestGroupTitle' => __('notifications.meeting_created_digest_group'),
+    ])->and($completed->toDigestItem($this->recipient))->toMatchArray([
+        'type' => 'meeting_agenda_completed', 'digestLine' => $institution->name,
+        'digestGroupTitle' => __('notifications.meeting_agenda_completed_digest_group'),
+    ]);
+
+    $created->viaFollow();
+    $completed->viaFollow();
+    expect($created->toDigestItem($this->recipient)['type'])->toBe('followed_institution_activity')
+        ->and($completed->toDigestItem($this->recipient)['type'])->toBe('followed_institution_activity');
 });

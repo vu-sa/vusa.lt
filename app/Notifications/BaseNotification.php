@@ -278,15 +278,23 @@ abstract class BaseNotification extends Notification implements ShouldQueue
             ->data(['url' => $action['url']]);
     }
 
-    /**
-     * Get data for email digest grouping.
-     *
-     * @return array{category: string, title: string, body: string, url: string, icon: string, context: array<int, array{label: string, value: string}>, primaryAction: array{label: string, url: string}|null}
-     */
+    public function digestLine(object $notifiable): string
+    {
+        return Str::limit(strip_tags($this->body($notifiable)), 200);
+    }
+
+    public function digestGroupTitle(object $notifiable): string
+    {
+        return $this->title($notifiable);
+    }
+
     public function toDigestItem(object $notifiable): array
     {
         return [
             'category' => $this->category()->value,
+            'type' => $this->type()->value,
+            'digestLine' => $this->digestLine($notifiable),
+            'digestGroupTitle' => $this->digestGroupTitle($notifiable),
             'title' => $this->title($notifiable),
             'body' => Str::limit(strip_tags($this->body($notifiable)), 200),
             'url' => $this->url(),

@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import ShowNotificationSettings from '../ShowNotificationSettings.vue';
 
+import { Select } from '@/Components/ui/select';
 import { commonStubs } from '@/tests/stubs';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
@@ -37,10 +38,11 @@ const props = {
     type('member_registration', 'registration', { lockedEmail: 'immediate', email: 'immediate' }),
   ],
   notificationPreferences: {
-    digest_frequency_hours: 4,
+    digest_frequency_hours: 24,
+    digest_send_hour: 15,
     emails: [],
     muted_until: null,
-    reminder_settings: { task_reminder_days: [7, 3, 1], meeting_reminder_hours: [24, 1] },
+    reminder_settings: { task_reminder_days: [3], meeting_reminder_hours: [24] },
   },
   availableEmails: [
     { email: 'test@example.com', label: 'Test', type: 'user' as const },
@@ -99,6 +101,35 @@ describe('ShowNotificationSettings', () => {
 
     expect(wrapper.find('[data-testid="push-unavailable"]').exists()).toBe(true);
     expect(wrapper.find('[data-type="task_reminder"] [data-testid="push-toggle"]').attributes('disabled')).toBeDefined();
+  });
+
+  it('writes a one-item array when the task reminder choice changes', async () => {
+    const wrapper = mountPage();
+
+    expect(wrapper.find('[data-testid="task-reminder-3"]').attributes('aria-pressed')).toBe('true');
+    expect(wrapper.find('[data-testid="task-reminder-7"]').exists()).toBe(false);
+    await wrapper.find('[data-testid="task-reminder-1"]').trigger('click');
+    expect(lastForm().reminder_settings.task_reminder_days).toEqual([1]);
+    await wrapper.find('[data-testid="task-reminder-3"]').trigger('click');
+    expect(lastForm().reminder_settings.task_reminder_days).toEqual([3]);
+  });
+
+  it('offers two digest modes and keeps the selected hour when switching modes', async () => {
+    const wrapper = mountPage();
+
+    expect(wrapper.findAll('[data-testid^="digest-frequency-"]')).toHaveLength(2);
+    expect(wrapper.findComponent(Select).props('modelValue')).toBe(15);
+    wrapper.findComponent(Select).vm.$emit('update:modelValue', 18);
+    await wrapper.vm.$nextTick();
+    expect(lastForm().digest_send_hour).toBe(18);
+
+    await wrapper.find('[data-testid="digest-frequency-4"]').trigger('click');
+    expect(lastForm().digest_frequency_hours).toBe(4);
+    expect(wrapper.find('[data-testid="digest-send-hour"]').exists()).toBe(false);
+    expect(lastForm().digest_send_hour).toBe(18);
+
+    await wrapper.find('[data-testid="digest-frequency-24"]').trigger('click');
+    expect(wrapper.findComponent(Select).props('modelValue')).toBe(18);
   });
 
   it('mutes immediately through its own endpoint', async () => {

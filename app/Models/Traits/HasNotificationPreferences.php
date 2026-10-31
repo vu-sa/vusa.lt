@@ -16,25 +16,28 @@ use Illuminate\Support\Carbon;
  */
 trait HasNotificationPreferences
 {
-    public const array TASK_REMINDER_DAY_OPTIONS = [7, 3, 1];
+    public const array TASK_REMINDER_DAY_OPTIONS = [3, 1];
 
     public const array MEETING_REMINDER_HOUR_OPTIONS = [24, 12, 1];
 
-    public const array DIGEST_FREQUENCY_OPTIONS = [1, 4, 12, 24];
+    public const array DIGEST_FREQUENCY_OPTIONS = [24, 4];
+
+    public const array DIGEST_SEND_HOUR_OPTIONS = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
 
     /**
-     * @return array{types: array<string, array{email?: string, push?: bool}>, digest_frequency_hours: int, emails: array<int, string>, muted_until: string|null, reminder_settings: array{task_reminder_days: array<int, int>, meeting_reminder_hours: array<int, int>}}
+     * @return array{types: array<string, array{email?: string, push?: bool}>, digest_frequency_hours: int, digest_send_hour: int, emails: array<int, string>, muted_until: string|null, reminder_settings: array{task_reminder_days: array<int, int>, meeting_reminder_hours: array<int, int>}}
      */
     protected function getDefaultNotificationPreferences(): array
     {
         return [
             'types' => [],
-            'digest_frequency_hours' => 4,
+            'digest_frequency_hours' => 24,
+            'digest_send_hour' => 15,
             'emails' => [],
             'muted_until' => null,
             'reminder_settings' => [
-                'task_reminder_days' => [7, 3, 1],
-                'meeting_reminder_hours' => [24, 1],
+                'task_reminder_days' => [3],
+                'meeting_reminder_hours' => [24],
             ],
         ];
     }
@@ -109,6 +112,11 @@ trait HasNotificationPreferences
     public function getDigestFrequencyHours(): int
     {
         return (int) $this->notification_preferences['digest_frequency_hours'];
+    }
+
+    public function getDigestSendHour(): int
+    {
+        return (int) $this->notification_preferences['digest_send_hour'];
     }
 
     /**

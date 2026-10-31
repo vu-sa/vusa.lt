@@ -55,7 +55,7 @@ trait NotificationTestHelpers
         return $this->createUserWithPreferences(['types' => [$type->value => $choice]]);
     }
 
-    protected function createUserWithDigestEnabled(int $frequencyHours = 4): User
+    protected function createUserWithDigestEnabled(int $frequencyHours = 24): User
     {
         $preferences = [
             'digest_frequency_hours' => $frequencyHours,

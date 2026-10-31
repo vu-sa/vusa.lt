@@ -37,14 +37,12 @@ class MeetingAgendaCompletedNotification extends BaseNotification
     {
         $institutionName = $this->meeting->institutions->first()->name ?? __('Nežinoma institucija');
 
-        // Get type counts for the summary
         $handler = app(AgendaCompletionTaskHandler::class);
         $typeCounts = $handler->getAgendaItemTypeCounts($this->meeting);
 
         // Every typed item, so adding a type never silently shrinks the reported total.
         $totalCount = array_sum(Arr::except($typeCounts, 'unset'));
 
-        // Build the body message
         if ($this->completedBy) {
             $body = __('notifications.meeting_agenda_completed_body_with_user', [
                 'institution' => $institutionName,
@@ -58,13 +56,11 @@ class MeetingAgendaCompletedNotification extends BaseNotification
             ]);
         }
 
-        // Add type breakdown summary
         $summary = $this->buildTypeSummary($typeCounts);
         if ($summary) {
             $body .= ' '.$summary;
         }
 
-        // Add note about additional votes if there were voting items
         if ($typeCounts['voting'] > 0) {
             $body .= ' '.__('notifications.meeting_agenda_additional_votes_note');
         }
@@ -90,6 +86,18 @@ class MeetingAgendaCompletedNotification extends BaseNotification
         }
 
         return '('.implode(', ', $parts).')';
+    }
+
+    #[\Override]
+    public function digestLine(object $notifiable): string
+    {
+        return $this->meeting->institutions->first()->name ?? __('Nežinoma institucija');
+    }
+
+    #[\Override]
+    public function digestGroupTitle(object $notifiable): string
+    {
+        return __('notifications.meeting_agenda_completed_digest_group');
     }
 
     public function url(): string

@@ -183,7 +183,7 @@ describe('task reminders', function (): void {
 describe('task reminder intervals', function (): void {
     test('a reminder skips users who deselected that interval', function (): void {
         $wantsIt = User::factory()->create();
-        $optedOut = User::factory()->create(['notification_preferences' => ['reminder_settings' => ['task_reminder_days' => [7, 1]]]]);
+        $optedOut = User::factory()->create(['notification_preferences' => ['reminder_settings' => ['task_reminder_days' => [1]]]]);
 
         $task = Task::factory()->create(['taskable_type' => 'user', 'taskable_id' => $wantsIt->id, 'due_date' => now()->addDays(3)]);
         $task->users()->sync([$wantsIt->id, $optedOut->id]);
