@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\UpdateLastAction;
 use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
 use Illuminate\Support\Facades\Route;
 
@@ -57,6 +59,15 @@ Route::post('system-status/maintenance', [SystemStatusController::class, 'runMai
 
 // Mail queue — the pending notification digests behind the system status card
 Route::get('mail-queue', [MailQueueController::class, 'index'])->name('mailQueue');
+Route::get('mail-previews', [MailPreviewController::class, 'index'])
+    ->name('mailPreviews.index')
+    ->withoutMiddleware(UpdateLastAction::class);
+Route::get('mail-previews/{preview}/render', [MailPreviewController::class, 'render'])
+    ->name('mailPreviews.render')
+    ->withoutMiddleware([UpdateLastAction::class, HandleInertiaRequests::class]);
+Route::get('mail-queue/users/{user}/preview', [MailQueueController::class, 'previewForUser'])
+    ->name('mailQueue.previewForUser')
+    ->withoutMiddleware([UpdateLastAction::class, HandleInertiaRequests::class]);
 Route::delete('mail-queue', [MailQueueController::class, 'destroyAll'])->name('mailQueue.destroyAll');
 Route::delete('mail-queue/users/{user}', [MailQueueController::class, 'destroyForUser'])->name('mailQueue.destroyForUser');
 Route::delete('mail-queue/{mailQueueItem}', [MailQueueController::class, 'destroy'])->name('mailQueue.destroy');

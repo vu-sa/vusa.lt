@@ -9,6 +9,7 @@ import globals from 'globals';
 // Paths join this fence only after their redesign migration lands. Keeping the initial list empty
 // lets foundation work land without turning legacy debt into an unreviewable lint failure.
 export const MIGRATED_ADMIN_PATHS = [
+  'resources/js/Pages/Admin/MailPreviews.vue',
   'resources/js/Components/Layouts/Shell/**',
   'resources/js/Components/CommandPalette/**',
   'resources/js/Pages/Admin/AccessDenied.vue',

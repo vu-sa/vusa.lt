@@ -3,10 +3,10 @@
 namespace App\Console\Commands;
 
 use App\Actions\ActivityRequests\ResolveActivityRequestEligibility;
+use App\Actions\BuildNotificationDigest;
 use App\Enums\EmailDelivery;
 use App\Enums\InstitutionActivityCampaign;
 use App\Enums\NotificationType;
-use App\Mail\NotificationDigest;
 use App\Models\InstitutionActivityRequest;
 use App\Models\NotificationDigestQueue;
 use App\Models\User;
@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\Mail;
 #[Signature('notifications:send-digests')]
 class ProcessNotificationDigests extends Command
 {
-    public function handle(ResolveActivityRequestEligibility $eligibility): int
+    public function handle(ResolveActivityRequestEligibility $eligibility, BuildNotificationDigest $builder): int
     {
         if (QuietHours::isQuiet(now())) {
             $this->info('Quiet hours — digests are held until 07:00.');
@@ -79,15 +79,10 @@ class ProcessNotificationDigests extends Command
                 continue;
             }
 
-            // Group items by category
-            $groupedItems = $digestItems->groupBy('category')
-                ->map(fn ($items) => $items->pluck('data')->toArray())
-                ->toArray();
-
             // sendNow surfaces transport failures before removing the queued items.
             try {
                 $digestEmails = $user->notificationEmails();
-                Mail::to($digestEmails)->sendNow(new NotificationDigest($user, $groupedItems));
+                Mail::to($digestEmails)->sendNow($builder->execute($user, $digestItems));
 
                 // Delete processed items
                 NotificationDigestQueue::where('user_id', $userId)

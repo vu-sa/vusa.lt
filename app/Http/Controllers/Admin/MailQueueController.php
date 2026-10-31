@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\BuildMailQueuePage;
+use App\Actions\BuildNotificationDigest;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexMailQueueRequest;
+use App\Http\Requests\RenderMailPreviewRequest;
 use App\Models\NotificationDigestQueue;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\MailPreview\MailPreviewRenderer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Response;
@@ -33,6 +36,19 @@ class MailQueueController extends AdminController
                 'recipients' => NotificationDigestQueue::query()->distinct('user_id')->count('user_id'),
             ],
         ]);
+    }
+
+    public function previewForUser(RenderMailPreviewRequest $request, User $user, BuildNotificationDigest $builder, MailPreviewRenderer $renderer): \Illuminate\Http\Response
+    {
+        $this->handleAuthorization('viewAny', Role::class);
+
+        $items = NotificationDigestQueue::query()->where('user_id', $user->id)->orderBy('created_at')->orderBy('id')->get();
+        abort_if($items->isEmpty(), 404);
+
+        return $renderer->response($renderer->safely(
+            fn (): array => $renderer->render($builder->execute($user, $items)),
+            $request->validated('locale', 'lt'),
+        ));
     }
 
     /**

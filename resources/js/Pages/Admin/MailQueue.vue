@@ -9,10 +9,18 @@
     default-view="rows"
     :available-views="['rows']"
     :item-key="recipient => recipient.user_id"
-    @row-action="(recipient) => requestClearRecipient(recipient)"
+    @row-action="(recipient, action) => handleRowAction(recipient, action)"
   >
     <template #actions>
       <div class="flex items-center gap-2">
+        <SpotlightPopover
+          :title="$t('mail_previews.title')" :description="$t('mail_previews.spotlight')"
+          :is-dismissed="previewSpotlight.isDismissed.value" @dismiss="previewSpotlight.dismiss"
+        >
+          <Button variant="outline" voice="sentence" as-child>
+            <Link :href="route('mailPreviews.index')" @click="previewSpotlight.dismiss">{{ $t('mail_previews.title') }}</Link>
+          </Button>
+        </SpotlightPopover>
         <Button variant="outline" voice="sentence" @click="source.refresh()">
           <RefreshCwIcon class="mr-2 h-4 w-4" />
           {{ $t('Atnaujinti') }}
@@ -43,7 +51,7 @@
             <Badge variant="secondary">
               {{ $tChoice('mail_queue.line_count', recipient.items_count) }}
             </Badge>
-            <CollectionRowActions :spotlight="index === 0" :actions @select="requestClearRecipient(recipient)" />
+            <CollectionRowActions :spotlight="index === 0" :actions @select="action => handleRowAction(recipient, action)" />
           </div>
         </div>
 
@@ -103,11 +111,14 @@
 </template>
 
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { computed, ref, watch } from 'vue';
 import { format, parseISO } from 'date-fns';
 import { Mail as MailIcon, RefreshCw as RefreshCwIcon, Trash2 as Trash2Icon } from '@lucide/vue';
+
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 
 import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
@@ -213,7 +224,14 @@ const confirmDiscard = () => {
   submit(pendingDiscard.value.url, pendingDiscard.value.key);
 };
 
-const rowActions = (_recipient: Recipient): AdminRecordAction[] => props.canManage
-  ? [{ key: 'discard', label: $t('Nesiųsti'), icon: Trash2Icon, destructive: true, disabled: busyKey.value !== null }]
-  : [];
+const previewSpotlight = useFeatureSpotlight('mail-previews-v1');
+
+const handleRowAction = (recipient: Recipient, action: AdminRecordAction | string) => {
+  if ((typeof action === 'string' ? action : action.key) === 'discard') requestClearRecipient(recipient);
+};
+
+const rowActions = (recipient: Recipient): AdminRecordAction[] => [
+  ...(recipient.user ? [{ key: 'preview', label: $t('mail_previews.view_mail'), icon: MailIcon, role: 'open' as const, href: route('mailQueue.previewForUser', recipient.user_id), external: true }] : []),
+  ...(props.canManage ? [{ key: 'discard', label: $t('Nesiųsti'), icon: Trash2Icon, destructive: true, disabled: busyKey.value !== null }] : []),
+];
 </script>

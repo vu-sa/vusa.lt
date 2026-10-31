@@ -24,7 +24,9 @@ class ConfirmMemberRegistration extends Mailable
     public function __construct(public string $name, public Institution $institution, public Duty $dutyContact)
     {
         /** @var User|null $user */
-        $user = $dutyContact->current_users()->first();
+        $user = $dutyContact->relationLoaded('current_users')
+            ? $dutyContact->current_users->first()
+            : $dutyContact->current_users()->first();
 
         $this->contactName = $user?->name ? GenitivizeHelper::genitivizeEveryWord($user->name) : $dutyContact->email;
     }

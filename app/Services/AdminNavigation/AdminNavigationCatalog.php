@@ -387,7 +387,8 @@ class AdminNavigationCatalog
                 // MailQueueController) — not a distinct "super-admin" gate as the phase-0
                 // inventory's shorthand suggested.
                 new Section('sistemos_busena', 'shell.sections.sistemos_busena', 'systemStatus', [], null, Visibility::can('viewAny', Role::class), descriptionKey: 'shell.section_descriptions.sistemos_busena'),
-                new Section('laisku_eile', 'shell.sections.laisku_eile', 'mailQueue', [], null, Visibility::can('viewAny', Role::class), descriptionKey: 'shell.section_descriptions.laisku_eile'),
+                new Section('laisku_eile', 'shell.sections.laisku_eile', 'mailQueue', [], null, Visibility::can('viewAny', Role::class), matches: ['mailQueue', 'mailQueue.*'], descriptionKey: 'shell.section_descriptions.laisku_eile'),
+                new Section('laisku_perziura', 'shell.sections.laisku_perziura', 'mailPreviews.index', [], null, Visibility::can('viewAny', Role::class), descriptionKey: 'shell.section_descriptions.laisku_perziura'),
                 new Section('pagalbos_uzklausos', 'shell.sections.pagalbos_uzklausos', 'supportRequests.index', [], null, Visibility::can('viewAny', SupportRequest::class), descriptionKey: 'shell.section_descriptions.pagalbos_uzklausos'),
             ],
             overview: new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard.sistema', [], null, Visibility::always()),

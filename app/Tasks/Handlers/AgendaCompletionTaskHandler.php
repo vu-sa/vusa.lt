@@ -150,7 +150,7 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
      */
     public function getAgendaItemTypeCounts(Meeting $meeting): array
     {
-        $agendaItems = $meeting->agendaItems()->get();
+        $agendaItems = $meeting->relationLoaded('agendaItems') ? $meeting->agendaItems : $meeting->agendaItems()->get();
 
         return [
             'voting' => $agendaItems->where('type', AgendaItemType::Voting)->count(),
