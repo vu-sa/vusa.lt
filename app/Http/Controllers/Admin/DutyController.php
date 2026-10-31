@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\BuildDutyIndexQuery;
+use App\Actions\Dutiables\SyncExOfficioTargets;
 use App\Actions\Duties\BuildDutyLineage;
 use App\Actions\GetAttachableTypesForDuty;
 use App\Actions\GetTenantsForUpserts;
@@ -69,7 +70,7 @@ class DutyController extends AdminController
             'duties' => [
                 'data' => $duties->getCollection()->map(function ($duty) {
                     /** @var Duty $duty */
-                    return [...$duty->append('force_delete_blocked_reason')->toFullArray(), 'can_update' => request()->user()->can('update', $duty)];
+                    return [...$duty->append('force_delete_blocked_reason')->toFullArray(), 'can_update' => request()->user()->can('update', $duty), 'can_delete' => request()->user()->can('delete', $duty)];
                 })->values(),
                 'meta' => [
                     'total' => $duties->total(),
@@ -111,21 +112,23 @@ class DutyController extends AdminController
      */
     public function store(StoreDutyRequest $request, PostCreateRedirect $redirect)
     {
-        $duty = new Duty;
+        return DB::transaction(function () use ($request, $redirect) {
+            $duty = new Duty;
 
-        $validatedData = $request->safe();
-        $duty->fill(collect($validatedData)->except('types', 'current_users', 'ex_officio_target_duty_ids', 'assignable_tenants')->toArray())->save();
+            $validatedData = $request->safe();
+            $duty->fill(collect($validatedData)->except('types', 'current_users', 'ex_officio_target_duty_ids', 'assignable_tenants')->toArray())->save();
 
-        $duty->syncAudited('types', $request->validated('types') ?? []);
-        $duty->exOfficioTargetDuties()->sync($request->ex_officio_target_duty_ids ?? []);
-        $duty->assignableTenants()->sync($this->assignments->buildAssignableTenantsSync($request->validated('assignable_tenants') ?? []));
+            $duty->syncAudited('types', $request->validated('types') ?? []);
+            SyncExOfficioTargets::execute($duty, $validatedData['ex_officio_target_duty_ids'] ?? []);
+            $duty->assignableTenants()->sync($this->assignments->buildAssignableTenantsSync($request->validated('assignable_tenants') ?? []));
 
-        $this->assignments->syncRepresentatives($duty, $request->validated('current_users') ?? []);
+            $this->assignments->syncRepresentatives($duty, $request->validated('current_users') ?? []);
 
-        $duty->load('institution', 'types', 'current_users');
+            $duty->load('institution', 'types', 'current_users');
 
-        return redirect($redirect->url($request->user(), $duty, 'duties.show', 'view', 'duties.index'))
-            ->with('success', $this->entityMessage('created', 'duty'));
+            return redirect($redirect->url($request->user(), $duty, 'duties.show', 'view', 'duties.index'))
+                ->with('success', $this->entityMessage('created', 'duty'));
+        });
     }
 
     /**
@@ -161,6 +164,8 @@ class DutyController extends AdminController
                 'update' => (bool) $user()?->can('update', $duty),
                 'managePeople' => (bool) $user()?->can('managePeople', $duty),
                 'assignQuota' => (bool) $user()?->can('assignQuota', [Dutiable::class, $duty]),
+                'reviewExOfficio' => (bool) $user()?->can('managePeople', $duty)
+                    && ($duty->exOfficioTargetDuties()->exists() || $duty->exOfficioSourceDuties()->exists()),
             ],
             // Only the "Apie pareigybę" tab and the Priskirti sheet need these.
             'otherDuties' => Inertia::defer(fn () => $duty->institution
@@ -586,7 +591,7 @@ class DutyController extends AdminController
 
                     if ($change['action'] === 'add') {
                         // Look for an existing row scoped to the acting tenant.
-                        $existingPivotQuery = $duty->dutiables()->where('dutiable_id', $userId);
+                        $existingPivotQuery = $duty->dutiables()->where('dutiable_id', $userId)->whereNull('via_dutiable_id');
                         if ($actingTenantId !== null) {
                             $existingPivotQuery->where('tenant_id', $actingTenantId);
                         } else {

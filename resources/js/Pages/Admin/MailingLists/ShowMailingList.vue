@@ -94,6 +94,7 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue';
 import { Deferred, InfiniteScroll, router } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { Copy, Hand, Layers, Pencil, RefreshCw } from '@lucide/vue';
@@ -273,4 +274,13 @@ function setMode(mode: 'unmanaged'): void {
   processing.value = true;
   router.patch(route('mailingLists.mode', props.mailingList.id), { mode }, reload);
 }
+
+onMounted(() => {
+  const url = new URL(window.location.href);
+  if (url.searchParams.get('action') === 'edit' && props.can.update) {
+    editOpen.value = true;
+    url.searchParams.delete('action');
+    window.history.replaceState(window.history.state, '', url.toString());
+  }
+});
 </script>

@@ -27,6 +27,8 @@
   </DocumentFolderBrowser>
 
   <CollectionPage
+    :row-actions="item => rowActions(item)"
+    @row-action="(item, key) => selectRowAction(key, item)"
     v-else
     :source="source!"
     collection="documents"
@@ -41,7 +43,7 @@
     :search-placeholder="$t('Ieškoti dokumentų...')"
     @quick-filter="toggleQuickFilter"
   >
-    <template #row="{ item }">
+    <template #row="{ item, actions: recordActions }">
       <article class="flex min-h-14 items-center justify-between gap-4 px-3 py-2.5 sm:px-4" data-slot="document-collection-row">
         <div class="flex min-w-0 flex-1 items-center gap-3">
           <div class="flex size-10 shrink-0 items-center justify-center border border-border bg-muted text-muted-foreground">
@@ -84,7 +86,7 @@
         </div>
 
         <div class="flex shrink-0 items-center gap-2">
-          <CollectionRowActions :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
+          <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => selectRowAction(key, item)" />
         </div>
       </article>
     </template>
@@ -132,11 +134,12 @@
         <span v-else class="text-muted-foreground">—</span>
       </span>
 
-      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
     </template>
 
-    <template #preview="{ item }">
-      <DocumentPreview :key="item.id" :document="item" />
+    <template #preview="{ item, actions: recordActions }">
+      <DocumentPreview :key="item.id" :document="item" >
+        <template #actions><CollectionRowActions :actions="recordActions" full-labels class="flex-wrap" @select="key => selectRowAction(key, item)" /></template>
+      </DocumentPreview>
     </template>
 
     <template #empty>
@@ -163,7 +166,7 @@
 import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ExternalLink, EyeOff, FileUp, RefreshCw } from '@lucide/vue';
+import { Pencil, ExternalLink, EyeOff, FileUp, RefreshCw } from '@lucide/vue';
 import { computed, onBeforeUnmount, ref } from 'vue';
 
 import { highlightText, matchTitle } from '@/Shared/Search/matches';
@@ -177,6 +180,7 @@ import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
 import DocumentPreview from '@/Components/Files/DocumentPreview.vue';
 import { Button } from '@/Components/ui/button';
 import { Spinner } from '@/Components/ui/spinner';
+import { useRowAbilities } from '@/Composables/useRowAbilities';
 import { useAdminNavigation } from '@/Composables/useAdminNavigation';
 import { useTypesenseCollectionSource } from '@/Composables/useCollectionSource';
 import FilePicker from '@/Features/Admin/SharepointFilePicker/FilePicker.vue';
@@ -212,20 +216,15 @@ const lead = computed(() => {
 
 const browser = ref<InstanceType<typeof DocumentFolderBrowser> | null>(null);
 
-// Archive rows are acted on by padalinys shortname or own institution, as in DocumentPolicy.
-const canUpdateItem = (item: DocumentSearchResult): boolean => props.abilities.update && (
-  props.abilities.updateTenantShortnames === null
-  || (!!item.tenant_shortname && props.abilities.updateTenantShortnames.includes(item.tenant_shortname))
-  || (!!item.institution_id && props.abilities.updateInstitutionIds.includes(item.institution_id))
-);
-
-const rowActions = (item: DocumentSearchResult): CollectionRowAction[] => canUpdateItem(item)
-  ? [
+const rowActions = (item: DocumentSearchResult): CollectionRowAction[] => [
+  { key: 'open', label: $t('Atidaryti'), icon: ExternalLink, role: 'open' as const, external: Boolean(item.anonymous_url), href: item.anonymous_url || route('documents.show', item.id) },
+  ...(rowAbilities.can(item.id, 'update') ? [
+      { key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: route('documents.edit', item.id) },
       { key: 'refresh', label: $t('Atnaujinti iš SharePoint'), icon: RefreshCw, loading: refreshingId.value === String(item.id) },
       // Hiding, not deleting: SharePoint is the source, and a deleted record would only be rediscovered.
       { key: 'hide', label: $t('Slėpti'), icon: EyeOff },
-    ]
-  : [];
+    ] : []),
+];
 
 function selectRowAction(key: string, item: DocumentSearchResult): void {
   if (key === 'refresh') refreshDocument(item);
@@ -245,12 +244,11 @@ const source = props.discovery
 const documentKey = (item: DocumentSearchResult) => String(item.id);
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'date', label: $t('Data'), class: 'w-28' },
-  { key: 'title', label: $t('Pavadinimas') },
+  { key: 'date', label: $t('Data'), class: 'w-28', sortField: 'document_date' },
+  { key: 'title', label: $t('Pavadinimas'), sortField: 'title' },
   { key: 'content_type', label: $t('Rūšis'), class: 'w-44' },
   { key: 'institution', label: $t('Institucija'), class: 'w-44' },
   { key: 'language', label: $t('Kalba'), class: 'w-20' },
-  ...(props.abilities.update ? [{ key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true }] : []),
 ]);
 
 function institutionMatch(item: DocumentSearchResult) {
@@ -294,6 +292,7 @@ function refreshDocument(item: DocumentSearchResult): void {
   refreshingId.value = item.id;
   router.post(route('documents.refresh', item.id), {}, {
     preserveScroll: true,
+    onSuccess: () => rowAbilities.invalidate([item.id]),
     onFinish: () => {
       refreshingId.value = null;
     },
@@ -363,12 +362,16 @@ const hideDescription = computed(() => $t('„:title“ nebebus rodomas vusa.lt,
 
 function handleHide(): void {
   if (!documentToHide.value) return;
-  router.post(route('documents.status'), { document_ids: [Number(documentToHide.value.id)], status: 'hidden' }, {
+  const id = documentToHide.value.id;
+  router.post(route('documents.status'), { document_ids: [Number(id)], status: 'hidden' }, {
     preserveScroll: true,
     onSuccess: () => {
+      rowAbilities.invalidate([id]);
       documentToHide.value = null;
       source?.refresh();
     },
   });
 }
+
+const rowAbilities = useRowAbilities('documents', () => source?.items.value.map(item => item.id) ?? []);
 </script>

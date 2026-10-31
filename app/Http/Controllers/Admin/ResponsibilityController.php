@@ -52,6 +52,8 @@ class ResponsibilityController extends AdminController
             'responsibilities' => Role::query()->withCount(['permissions', 'duties'])->get()
                 ->map(fn (Role $role): array => [
                     'id' => $role->id,
+                    'is_super_admin' => $role->isSuperAdmin(),
+                    'delete_blocked' => $this->deleteBlockedReason($role) !== null,
                     'title' => $role->displayTitle(),
                     'description' => $role->getTranslation('description', app()->getLocale()) ?: null,
                     'purpose' => $role->purpose?->value,

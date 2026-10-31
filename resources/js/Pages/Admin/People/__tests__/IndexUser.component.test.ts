@@ -6,6 +6,11 @@ import IndexUser from '../IndexUser.vue';
 
 import { commonStubs } from '@/tests/stubs';
 
+const rowAbilityState = vi.hoisted(() => ({ update: false, delete: false }));
+vi.mock('@/Composables/useRowAbilities', () => ({
+  useRowAbilities: () => ({ can: (_id: string, ability: 'update' | 'delete') => rowAbilityState[ability], invalidate: vi.fn() }),
+}));
+
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 const state = vi.hoisted(() => ({
@@ -29,7 +34,7 @@ vi.mock('@/Composables/useAdminNavigation', () => ({
 }));
 
 const CollectionPage = {
-  props: ['quickFilters', 'source'],
+  props: ['quickFilters', 'source', 'rowActions'],
   emits: ['quickFilter'],
   template: '<div />',
 };
@@ -72,4 +77,16 @@ describe('IndexUser duplicate filter', () => {
     expect(wrapper.findComponent(CollectionPage).props('quickFilters').map((filter: { id: string }) => filter.id)).toEqual(['current', 'former']);
     expect(state.setFilter).toHaveBeenCalledWith('duplicates', undefined);
   });
+});
+
+beforeEach(() => { rowAbilityState.update = false; rowAbilityState.delete = false; });
+
+it.each([true, false])('uses the full user update policy, independently of identity edits (%s)', (allowed) => {
+  state.trash = false;
+  rowAbilityState.update = allowed;
+  const wrapper = render();
+  const actions = wrapper.findComponent(CollectionPage).props('rowActions')({ id: 'u1', name: 'Narys', can_update_identity: !allowed });
+  expect(actions.some(action => action.role === 'edit')).toBe(allowed);
+  expect(actions.some(action => action.role === 'open')).toBe(true);
+  wrapper.unmount();
 });

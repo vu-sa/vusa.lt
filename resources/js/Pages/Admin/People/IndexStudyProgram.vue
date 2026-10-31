@@ -1,5 +1,7 @@
 <template>
   <CollectionPage
+    :row-actions="item => actionsFor(item)"
+    @row-action="(item, key) => actions.select(key, item.force_delete_blocked_reason)"
     :source
     collection="study-programs"
     entity-type="studyProgram"
@@ -28,7 +30,7 @@
       </Button>
     </template>
 
-    <template #row="{ item }">
+    <template #row="{ item, actions: recordActions }">
       <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
         <div class="min-w-0 flex-1">
           <CollectionPrimaryCell :title="item.name" :href="isTrash ? undefined : route('studyPrograms.edit', item.id)" :sub="item.tenant?.shortname" />
@@ -36,7 +38,7 @@
             {{ degreeLabel(item.degree) }}
           </p>
         </div>
-        <CollectionRowActions :actions="actionsFor(item)" @select="key => actions.select(key, item.force_delete_blocked_reason)" />
+        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => actions.select(key, item.force_delete_blocked_reason)" />
       </article>
     </template>
 
@@ -44,7 +46,6 @@
       <CollectionPrimaryCell v-if="column.key === 'name'" :title="item.name" :href="isTrash ? undefined : route('studyPrograms.edit', item.id)" />
       <span v-else-if="column.key === 'degree'" class="text-muted-foreground">{{ degreeLabel(item.degree) }}</span>
       <span v-else-if="column.key === 'tenant'" class="text-muted-foreground">{{ item.tenant?.shortname ?? '—' }}</span>
-      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="actionsFor(item)" @select="key => actions.select(key, item.force_delete_blocked_reason)" />
     </template>
 
     <template #bulk-actions="{ selected }">
@@ -116,6 +117,10 @@ const source = useLocalCollectionSource<StudyProgramRow>({
   sortOptions: () => [
     { value: 'name:asc', label: $t('Pagal pavadinimą (A–Z)'), by: program => program.name },
     { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)'), by: program => program.name },
+    { value: 'degree:asc', label: $t('Pagal laipsnį (A–Z)'), by: program => degreeLabel(program.degree) },
+    { value: 'degree:desc', label: $t('Pagal laipsnį (Z–A)'), by: program => degreeLabel(program.degree) },
+    { value: 'tenant:asc', label: $t('Pagal padalinį (A–Z)'), by: program => program.tenant?.shortname ?? '' },
+    { value: 'tenant:desc', label: $t('Pagal padalinį (Z–A)'), by: program => program.tenant?.shortname ?? '' },
   ],
   facets: [
     { field: 'degree', label: $t('Laipsnis'), get: program => program.degree, valueLabel: degreeLabel },
@@ -143,8 +148,7 @@ function merged(): void {
 
 const columns = computed<CollectionColumn[]>(() => [
   { key: 'name', label: $t('Studijų programa'), sortField: 'name' },
-  { key: 'degree', label: $t('Laipsnis'), class: 'w-40' },
-  { key: 'tenant', label: $t('Padalinys'), class: 'w-32' },
-  { key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true },
+  { key: 'degree', label: $t('Laipsnis'), class: 'w-40', sortField: 'degree' },
+  { key: 'tenant', label: $t('Padalinys'), class: 'w-32', sortField: 'tenant' },
 ]);
 </script>

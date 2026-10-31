@@ -1,5 +1,7 @@
 <template>
   <CollectionPage
+    :row-actions="item => rowActions(item)"
+    @row-action="(item, key) => selectRowAction(key, item)"
     :source
     collection="tenants"
     entity-type="tenant"
@@ -18,7 +20,7 @@
       </Button>
     </template>
 
-    <template #row="{ item }">
+    <template #row="{ item, actions: recordActions }">
       <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
         <div class="min-w-0 flex-1">
           <CollectionPrimaryCell :title="item.fullname" :clickable="item.can.update" :sub="item.alias" mono @open="openSheet(item)" />
@@ -30,7 +32,7 @@
             <InactiveInstitutionBadge :active="item.primary_institution?.is_active" />
           </p>
         </div>
-        <CollectionRowActions :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
+        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => selectRowAction(key, item)" />
       </article>
     </template>
 
@@ -49,7 +51,6 @@
         {{ item.primary_institution?.name ?? $t('forms.tenants.not_assigned') }}
         <InactiveInstitutionBadge :active="item.primary_institution?.is_active" />
       </span>
-      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
     </template>
   </CollectionPage>
 
@@ -100,7 +101,7 @@ const props = defineProps<{
 
 const canCreate = computed(() => Boolean(usePage().props.auth?.can?.create?.tenant));
 const rowActions = (item: TenantRow): CollectionRowAction[] => [
-  ...(item.can.update ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, labelled: true }] : []),
+  ...(item.can.update ? [{ key: 'edit', role: 'edit' as const, label: $t('Redaguoti'), icon: Pencil }] : []),
   ...(item.can.delete ? [{ key: 'delete', label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
 ];
 
@@ -120,18 +121,19 @@ const source = useLocalCollectionSource<TenantRow>({
   sortOptions: () => [
     { value: 'fullname:asc', label: $t('Pagal pavadinimą (A–Z)'), by: tenant => tenant.fullname },
     { value: 'fullname:desc', label: $t('Pagal pavadinimą (Z–A)'), by: tenant => tenant.fullname },
+    { value: 'shortname:asc', label: $t('Pagal trumpinį (A–Z)'), by: tenant => tenant.shortname },
+    { value: 'shortname:desc', label: $t('Pagal trumpinį (Z–A)'), by: tenant => tenant.shortname },
+    { value: 'type:asc', label: $t('Pagal tipą (A–Z)'), by: tenant => tenant.type ?? '' },
+    { value: 'type:desc', label: $t('Pagal tipą (Z–A)'), by: tenant => tenant.type ?? '' },
   ],
   facets: [{ field: 'type', label: $t('Tipas'), get: tenant => tenant.type }],
 });
 
 const columns = computed<CollectionColumn[]>(() => [
   { key: 'fullname', label: $t('Padalinys'), sortField: 'fullname' },
-  { key: 'shortname', label: $t('Trumpinys'), class: 'w-40' },
-  { key: 'type', label: $t('Tipas'), class: 'w-40' },
+  { key: 'shortname', label: $t('Trumpinys'), class: 'w-40', sortField: 'shortname' },
+  { key: 'type', label: $t('Tipas'), class: 'w-40', sortField: 'type' },
   { key: 'primary_institution', label: $t('forms.tenants.primary_institution') },
-  ...(props.tenants.some(tenant => tenant.can.update || tenant.can.delete)
-    ? [{ key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true }]
-    : []),
 ]);
 
 function openSheet(item: TenantRow | null = null): void {

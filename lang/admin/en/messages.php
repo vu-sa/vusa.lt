@@ -76,6 +76,7 @@ return [
     ],
 
     'document' => [
+        'edit_unavailable' => 'The document has no SharePoint link or the file has been removed.',
         'none_to_process' => 'No documents to process.',
         'stored' => 'Documents have been successfully stored.',
         'refresh_queued' => 'Document refresh has been queued. It will be updated shortly.',

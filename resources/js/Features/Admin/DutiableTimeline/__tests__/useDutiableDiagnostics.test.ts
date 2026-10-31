@@ -143,16 +143,18 @@ describe('useDutiableDiagnostics', () => {
     expect(codes(findings.value)).not.toContain('open_ended_stale');
   });
 
-  it('flags a derived row whose dates drifted from its source', () => {
-    const { findings } = analyze([
+  it('passes through derived drift found by the server planner', () => {
+    const { findings } = useDutiableDiagnostics(ref([
       makeRow({ id: 'src' }),
       makeRow({ id: 'derived', via_dutiable_id: 'src', is_derived: true, start_date: '2024-09-01' }),
-    ]);
+    ]), ref([]), ref(new Map()), ref([{
+      code: 'ex_officio_drift', severity: 'warning', row_ids: ['derived'], duty_id: 'duty-1',
+    }]));
 
     expect(codes(findings.value)).toContain('ex_officio_drift');
   });
 
-  it('does not flag a derived row that still mirrors its source', () => {
+  it('does not invent drift from a seat being clipped to a link window', () => {
     const { findings } = analyze([
       makeRow({ id: 'src' }),
       makeRow({ id: 'derived', via_dutiable_id: 'src', is_derived: true }),

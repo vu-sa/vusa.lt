@@ -1,5 +1,7 @@
 <template>
   <CollectionPage
+    :row-actions="reservationRowActions"
+    @row-action="(item, key) => openDecision(key as ReservationDecision, item)"
     v-model:selection="selectedIds"
     :source
     collection="reservations"
@@ -29,7 +31,7 @@
       </Button>
     </template>
 
-    <template #row="{ item }">
+    <template #row="{ item, actions }">
       <article class="flex min-h-16 items-start gap-3 px-4 py-4">
         <div class="min-w-0 flex-1">
           <div class="flex items-start justify-between gap-3">
@@ -40,7 +42,7 @@
           <p class="mt-1.5 text-sm tabular-nums text-muted-foreground">
             {{ reservationPeriod(item) }}
           </p>
-          <ReservationRowActions class="mt-2 flex-wrap" :reservation="item" @decide="openDecision" />
+          <CollectionRowActions :spotlight="item === source?.items.value[0]" class="mt-2 flex-wrap" :actions="actions" @select="key => openDecision(key as ReservationDecision, item)" />
         </div>
       </article>
     </template>
@@ -70,17 +72,12 @@
         :states="statesOf(item)"
         :unresolved="isUnresolved(item)"
       />
-      <ReservationRowActions
-        v-else-if="column.key === 'actions'"
-        :reservation="item"
-        @decide="openDecision"
-      />
     </template>
 
-    <template #preview="{ item }">
+    <template #preview="{ item, actions }">
       <ReservationPreview :key="item.id" :reservation="item">
         <template #actions>
-          <ReservationRowActions :reservation="item" class="flex-wrap" @decide="openDecision" />
+          <CollectionRowActions :actions="actions" class="flex-wrap" @select="key => openDecision(key as ReservationDecision, item)" />
         </template>
       </ReservationPreview>
     </template>
@@ -139,7 +136,8 @@ import { EmptyState } from '@/Components/Patterns';
 import ReservationDecisionDialog from '@/Components/Reservations/ReservationDecisionDialog.vue';
 import ReservationPreview from '@/Components/Reservations/ReservationPreview.vue';
 import ReservationResourceChips from '@/Components/Reservations/ReservationResourceChips.vue';
-import ReservationRowActions from '@/Components/Reservations/ReservationRowActions.vue';
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import { reservationRowActions } from '@/Components/Reservations/reservationRowActions';
 import type { ReservationDecision } from '@/Components/Reservations/types';
 import { useReservationCart } from '@/Components/Reservations/useReservationCart';
 import ReservationPeriod from '@/Components/SmallElements/ReservationPeriod.vue';
@@ -206,18 +204,19 @@ const source = useDatabaseCollectionSource<DashboardReservation>({
   sortOptions: () => [
     { value: 'start_time:desc', label: $t('Naujausios pirmiausia') },
     { value: 'start_time:asc', label: $t('Anksčiausios pirmiausia') },
+    { value: 'name:asc', label: $t('Pagal pavadinimą (A–Z)') },
+    { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)') },
     { value: 'created_at:desc', label: $t('Naujausios sukurtos') },
   ],
   facets: facets.value,
 });
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'name', label: $t('Rezervacija'), class: 'min-w-44' },
+  { key: 'name', label: $t('Rezervacija'), class: 'min-w-44', sortField: 'name' },
   { key: 'requester', label: $t('Prašytojas'), class: 'w-44' },
   { key: 'resources', label: $t('Ištekliai') },
-  { key: 'period', label: $t('Laikas'), class: 'w-36' },
+  { key: 'period', label: $t('Laikas'), class: 'w-36', sortField: 'start_time' },
   { key: 'status', label: $t('Būsena'), class: 'w-36' },
-  { key: 'actions', label: $t('Veiksmai'), class: 'w-52', pinned: true },
 ]);
 
 // --- Quick filters: the URL state an overview number links to ---------------------------------

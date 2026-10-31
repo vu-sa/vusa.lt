@@ -6,6 +6,7 @@ use App\Models\Pivots\Dutiable;
 use App\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
+use Spatie\Activitylog\Models\Activity;
 
 /**
  * "Tavo prieigos pasikeitė" (U14): the duty terms that began or ended for a user lately.
@@ -41,18 +42,27 @@ class GetRecentAccessChanges
             ->get()
             ->filter(fn (Dutiable $term): bool => $term->duty !== null);
 
+        // Review-created boundaries describe repaired history, not a change in access.
+        $suppressed = Activity::query()
+            ->where('subject_type', (new Dutiable)->getMorphClass())
+            ->whereIn('subject_id', $terms->pluck('id'))
+            ->where('event', 'ex_officio_reviewed')
+            ->get()
+            ->groupBy('subject_id');
+
         $changes = [];
 
         foreach ($terms as $term) {
             $started = $term->start_date->copy()->startOfDay();
 
-            if ($started->betweenIncluded($from, $today)) {
+            if ($started->betweenIncluded($from, $today) && ! self::suppressed($suppressed->get($term->id, collect()), self::STARTED, $started->toDateString())) {
                 $changes[] = self::change($term, self::STARTED, $started, $started);
             }
 
             $lastDay = $term->end_date?->copy()->startOfDay();
 
-            if ($lastDay !== null && $lastDay->copy()->addDay()->betweenIncluded($from, $today)) {
+            if ($lastDay !== null && $lastDay->copy()->addDay()->betweenIncluded($from, $today)
+                && ! self::suppressed($suppressed->get($term->id, collect()), self::ENDED, $lastDay->copy()->addDay()->toDateString())) {
                 $changes[] = self::change($term, self::ENDED, $lastDay, $lastDay->copy()->addDay());
             }
         }
@@ -60,6 +70,11 @@ class GetRecentAccessChanges
         usort($changes, fn (array $a, array $b): int => [$b['effectiveOn'], $a['dutyName']] <=> [$a['effectiveOn'], $b['dutyName']]);
 
         return array_slice($changes, 0, $limit);
+    }
+
+    private static function suppressed(Collection $entries, string $kind, string $date): bool
+    {
+        return $entries->contains(fn (Activity $entry) => data_get($entry->properties, 'suppressed_access_changes.'.$kind) === $date);
     }
 
     /**

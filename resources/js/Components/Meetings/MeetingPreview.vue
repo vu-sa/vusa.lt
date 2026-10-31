@@ -20,6 +20,11 @@
           </Link>
         </Button>
       </slot>
+      <Button v-if="meeting.institution_ids?.length" as-child variant="outline" size="sm" voice="sentence">
+        <Link :href="route('institutions.show', meeting.institution_ids[0])">
+          {{ $t('Atidaryti instituciją') }}
+        </Link>
+      </Button>
     </template>
 
     <PreviewFacts>

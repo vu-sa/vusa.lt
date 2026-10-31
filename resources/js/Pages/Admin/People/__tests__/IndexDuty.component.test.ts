@@ -38,9 +38,9 @@ vi.mock('@/Composables/useAdminNavigation', () => ({
 }));
 
 const CollectionPage = {
-  props: ['quickFilters', 'source'],
+  props: ['quickFilters', 'source', 'rowActions'],
   emits: ['quickFilter'],
-  template: '<div><div v-for="item in source.items.value" :key="item.id" data-testid="row"><slot name="row" :item="item" /></div></div>',
+  template: '<div><div v-for="item in source.items.value" :key="item.id" data-testid="row"><slot name="row" :item="item" :actions="rowActions?.(item) ?? []" /></div></div>',
 };
 
 const MergeRecordsDialog = {
@@ -78,7 +78,7 @@ describe('IndexDuty', () => {
       meta: { total: 1, per_page: 20, current_page: 1, last_page: 1 },
     } });
 
-    await wrapper.get('button[aria-label="Ištrinti visam laikui"]').trigger('click');
+    await wrapper.get('[data-testid="dropdown-menu-content"] [data-action="forceDelete"]').trigger('click');
     await wrapper.get('[data-testid="confirm-deletion"]').trigger('click');
     const options = vi.mocked(router.delete).mock.calls.at(-1)?.[1];
     expect(wrapper.findAll('[data-testid="row"]')).toHaveLength(1);
@@ -109,17 +109,23 @@ describe('IndexDuty', () => {
   it('offers editing on the rows the user may edit', () => {
     const wrapper = mount(IndexDuty, {
       props: { duties: { data: [], meta: { total: 0, per_page: 20, current_page: 1, last_page: 1 } }, dutyTypes: [], deletedCount: 0 },
-      global: { stubs: { ...commonStubs, MergeRecordsDialog, ConfirmDialog: true, CollectionPage: {
+      global: { stubs: { ...commonStubs, MergeRecordsDialog, CollectionActivityStatus: true, ConfirmDialog: true, CollectionPage: {
+        props: ['rowActions'],
         template: `<div>
-          <slot name="cell" :item="{ ...row, id: 'editable', can_update: true }" :column="{ key: 'actions' }" />
-          <slot name="cell" :item="{ ...row, id: 'readonly', can_update: false }" :column="{ key: 'actions' }" />
+          <slot name="row" :item="{ ...row, id: 'editable', can_update: true }" :actions="rowActions({ ...row, id: 'editable', can_update: true })" />
+          <slot name="row" :item="{ ...row, id: 'readonly', can_update: false }" :actions="rowActions({ ...row, id: 'readonly', can_update: false })" />
         </div>`,
         data: () => ({ row: duty('x', 'Koordinatorius') }),
       } } },
     });
 
-    const keys = wrapper.findAllComponents({ name: 'CollectionRowActions' }).map(actions => actions.props('actions')[0].key);
-    expect(keys).toEqual(['edit', 'open']);
+    const keys = wrapper.findAllComponents({ name: 'CollectionRowActions' }).map(actions => actions.props('actions').map((action: { key: string }) => action.key));
+    expect(keys).toEqual([['open', 'edit'], ['open']]);
+    const rows = wrapper.findAll('[data-slot="collection-row-actions"]');
+    expect(rows[0].get('[data-action="edit"]').attributes('href')).toBe(route('duties.edit', 'editable'));
+    expect(rows[0].get('[data-action="edit"]').text()).toBe('Redaguoti');
+    expect(rows[1].find('[data-action="edit"]').exists()).toBe(false);
+    wrapper.unmount();
   });
 
   it('hides and clears the duplicate filter in trash', () => {

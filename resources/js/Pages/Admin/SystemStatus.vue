@@ -187,7 +187,7 @@ const props = defineProps<{
   deviceMetrics?: DeviceMetrics;
   maintenanceActions?: MaintenanceAction[];
 }>();
-const labels: Record<string, string> = { redis: 'Redis', database: 'Duomenų bazė', cache: 'Talpykla', typesense: 'Typesense', scheduler: 'Planuoklė', queue: 'Užduočių eilė', reverb: 'Reverb', digest: 'Laiškų eilė', mail: 'El. paštas', sharepoint_documents: 'SharePoint dokumentai', mailman: 'Konferencijos (Mailman)', system: 'Sistema', integrations: 'Integracijos' };
+const labels: Record<string, string> = { ex_officio: 'Ex officio', redis: 'Redis', database: 'Duomenų bazė', cache: 'Talpykla', typesense: 'Typesense', scheduler: 'Planuoklė', queue: 'Užduočių eilė', reverb: 'Reverb', digest: 'Laiškų eilė', mail: 'El. paštas', sharepoint_documents: 'SharePoint dokumentai', mailman: 'Konferencijos (Mailman)', system: 'Sistema', integrations: 'Integracijos' };
 const present = (status?: string): StatusPresentation => {
   if (['healthy', 'connected', 'working', 'configured'].includes(status ?? '')) return { label: $t('Veikia'), role: 'success', icon: CircleCheck };
   if (['warning', 'degraded'].includes(status ?? '')) return { label: $t('Reikia dėmesio'), role: 'attention', icon: TriangleAlert };

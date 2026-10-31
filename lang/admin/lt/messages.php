@@ -78,6 +78,7 @@ return [
     ],
 
     'document' => [
+        'edit_unavailable' => 'Dokumento SharePoint nuorodos nėra arba failas jau pašalintas.',
         'none_to_process' => 'Nėra dokumentų, kuriuos būtų galima apdoroti.',
         'stored' => 'Dokumentai sėkmingai išsaugoti.',
         'refresh_queued' => 'Dokumento atnaujinimas įtrauktas į eilę. Jis bus atnaujintas netrukus.',

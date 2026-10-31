@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Dutiables\AnalyzeDutiableTimeline;
+use App\Events\DutiableChanged;
 use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -8,6 +9,7 @@ use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 
 pest()->use(RefreshDatabase::class);
 
@@ -136,14 +138,18 @@ test('an open-ended row inside the current term is left alone', function (): voi
 
 test('a derived row whose dates drifted from its source is flagged', function (): void {
     $source = makeRow();
-    makeRow(['via_dutiable_id' => $source->id, 'start_date' => '2024-09-01', 'end_date' => '2025-06-30']);
+    $target = Duty::factory()->for($this->institution)->create();
+    $this->duty->exOfficioTargetDuties()->attach($target);
+    makeRow(['duty_id' => $target->id, 'via_dutiable_id' => $source->id, 'start_date' => '2024-09-01', 'end_date' => '2025-06-30']);
 
     expect(codes(analyze()))->toContain('ex_officio_drift');
 });
 
 test('a derived row that still mirrors its source is not', function (): void {
     $source = makeRow();
-    makeRow(['via_dutiable_id' => $source->id]);
+    $target = Duty::factory()->for($this->institution)->create();
+    $this->duty->exOfficioTargetDuties()->attach($target);
+    makeRow(['duty_id' => $target->id, 'via_dutiable_id' => $source->id]);
 
     expect(codes(analyze()))->not->toContain('ex_officio_drift');
 });
@@ -235,10 +241,16 @@ describe('rows covering more than one term', function (): void {
     });
 });
 
-test('an active row on an ex-officio target duty without its source is flagged as a suspect orphan', function (): void {
+test('an active target row overlapping an ended source is flagged for review', function (): void {
     $sourceDuty = Duty::factory()->for($this->institution)->create();
     $targetDuty = Duty::factory()->for($this->institution)->create();
     $sourceDuty->exOfficioTargetDuties()->attach($targetDuty);
+
+    Event::fake([DutiableChanged::class]);
+    Dutiable::factory()->create([
+        'duty_id' => $sourceDuty->id, 'dutiable_id' => $this->holder->id,
+        'start_date' => now()->subMonth()->toDateString(), 'end_date' => today()->subDay(),
+    ]);
 
     $orphanRow = Dutiable::factory()->create([
         'duty_id' => $targetDuty->id,
@@ -246,6 +258,7 @@ test('an active row on an ex-officio target duty without its source is flagged a
         'start_date' => now()->subMonth()->toDateString(),
         'end_date' => null,
         'via_dutiable_id' => null,
+        'assignment_origin' => 'unknown',
     ]);
 
     $findings = analyze();
@@ -256,4 +269,18 @@ test('an active row on an ex-officio target duty without its source is flagged a
     expect($diagnostic)->not->toBeNull()
         ->and($diagnostic['severity'])->toBe('info')
         ->and($diagnostic['row_ids'])->toBe([$orphanRow->id]);
+});
+
+test('derived drift diagnostics respect staged source and seat overrides without saving them', function (): void {
+    $source = makeRow();
+    $target = Duty::factory()->for($this->institution)->create();
+    $this->duty->exOfficioTargetDuties()->attach($target->id);
+    $seat = makeRow(['duty_id' => $target->id, 'via_dutiable_id' => $source->id]);
+    $dates = ['start_date' => '2024-09-01', 'end_date' => '2025-06-30'];
+
+    expect(codes(analyze()))->not->toContain('ex_officio_drift')
+        ->and(codes(analyze([$source->id => $dates])))->toContain('ex_officio_drift')
+        ->and(codes(analyze([$source->id => $dates, $seat->id => $dates])))->not->toContain('ex_officio_drift')
+        ->and($source->fresh()->start_date->toDateString())->toBe('2024-07-01')
+        ->and($seat->fresh()->start_date->toDateString())->toBe('2024-07-01');
 });

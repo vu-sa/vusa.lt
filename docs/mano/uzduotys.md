@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Užduotys
 area: tasks
 models: [Task]
-last_reviewed: 2026-10-27
+last_reviewed: 2026-10-28
 tests:
   - tests/Browser/VisakOverviewPagesTest.php
   - tests/Feature/Admin/Dashboard/UserTasksTest.php

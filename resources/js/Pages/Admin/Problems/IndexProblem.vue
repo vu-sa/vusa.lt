@@ -1,5 +1,7 @@
 <template>
   <CollectionPage
+    :row-actions="item => rowActions(item)"
+    @row-action="(item, key) => selectRowAction(key, item)"
     :source
     collection="problems"
     entity-type="problem"
@@ -34,7 +36,7 @@
       </Button>
     </template>
 
-    <template #row="{ item }">
+    <template #row="{ item, actions: recordActions }">
       <article class="flex min-h-14 items-center justify-between gap-4 px-3 py-2.5 sm:px-4">
         <div class="min-w-0 flex-1">
           <div class="flex items-center gap-2">
@@ -63,7 +65,7 @@
             </template>
           </div>
         </div>
-        <CollectionRowActions :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
+        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => selectRowAction(key, item)" />
       </article>
     </template>
 
@@ -115,20 +117,12 @@
         {{ item.tenant?.shortname ?? '—' }}
       </span>
 
-      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
     </template>
 
-    <template #preview="{ item }">
+    <template #preview="{ item, actions: recordActions }">
       <ProblemPreview :key="item.id" :problem="item" :trashed="isDeleted">
-        <template v-if="isDeleted" #actions>
-          <Button variant="outline" size="sm" @click="restoreProblem(item)">
-            <RotateCcw aria-hidden="true" />
-            {{ $t('Atkurti') }}
-          </Button>
-          <Button variant="ghost" size="sm" class="text-destructive hover:text-destructive" @click="targetProblemToForceDelete = item">
-            <Trash2 aria-hidden="true" />
-            {{ $t('Ištrinti visam laikui') }}
-          </Button>
+        <template #actions>
+          <CollectionRowActions :actions="recordActions" full-labels class="flex-wrap" @select="key => selectRowAction(key, item)" />
         </template>
       </ProblemPreview>
     </template>
@@ -154,9 +148,12 @@
     @update:open="!$event && (targetProblemToForceDelete = null)"
     @confirm="forceDeleteProblem"
   />
+  <CollectionConfirmAction :dialog="deleteActions.dialog.value" @confirm="deleteActions.confirm" @cancel="deleteActions.pending.value = null" />
 </template>
 
 <script setup lang="ts">
+import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
+import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { ChevronRight, Pencil, Plus, RotateCcw, Trash2 } from '@lucide/vue';
@@ -199,19 +196,21 @@ const canCreate = computed(() => Boolean(usePage().props.auth?.can?.create?.prob
 const canForceDelete = computed(() => Boolean(usePage().props.auth?.can?.forceDelete?.problem));
 
 /** The server decides per row: editing is scoped to the problem's padalinys. */
-type ProblemRow = App.Entities.Problem & { can_update?: boolean };
+type ProblemRow = App.Entities.Problem & { can_update?: boolean; can_delete?: boolean };
 
 const rowActions = (item: ProblemRow): CollectionRowAction[] => isDeleted.value
   ? [
-      { key: 'restore', label: $t('Atkurti'), icon: RotateCcw, labelled: true },
+      { key: 'restore', label: $t('Atkurti'), icon: RotateCcw, primary: !canForceDelete.value },
       ...(canForceDelete.value ? [{ key: 'forceDelete', label: $t('Ištrinti visam laikui'), icon: Trash2, destructive: true }] : []),
     ]
   : [
-      ...(item.can_update ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, href: route('problems.edit', item.id) }] : []),
-      { key: 'open', label: $t('Atidaryti'), icon: ChevronRight, labelled: true, href: route('problems.show', item.id) },
+      ...(item.can_update ? [{ key: 'edit', role: 'edit' as const, label: $t('Redaguoti'), icon: Pencil, href: route('problems.edit', item.id) }] : []),
+      { key: 'open', label: $t('Atidaryti'), icon: ChevronRight, role: 'open' as const, href: route('problems.show', item.id) },
+      ...(item.can_delete ? [{ key: `delete:${item.id}:${localizedTitle(item)}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
     ];
 
 function selectRowAction(key: string, item: App.Entities.Problem): void {
+  if (key.startsWith('delete:')) deleteActions.select(key);
   if (key === 'restore') restoreProblem(item);
   if (key === 'forceDelete') targetProblemToForceDelete.value = item;
 }
@@ -279,20 +278,25 @@ const source = useDatabaseCollectionSource<ProblemRow>({
   sortOptions: () => [
     { value: 'occurred_at:desc', label: $t('Naujausios problemos') },
     { value: 'occurred_at:asc', label: $t('Seniausios problemos') },
+    { value: 'title:asc', label: $t('Pagal pavadinimą (A–Z)') },
+    { value: 'title:desc', label: $t('Pagal pavadinimą (Z–A)') },
+    { value: 'status:asc', label: $t('Pagal būseną (A–Z)') },
+    { value: 'status:desc', label: $t('Pagal būseną (Z–A)') },
+    { value: 'resolved_at:desc', label: $t('Neseniai išspręstos') },
+    { value: 'resolved_at:asc', label: $t('Seniausiai išspręstos') },
   ],
   preserveUrlKeys: ['showDeleted'],
   facets: facets.value,
 });
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'title', label: $t('entities.problem.title') },
-  { key: 'status', label: $t('entities.problem.status'), class: 'w-32' },
-  { key: 'occurred_at', label: $t('entities.problem.occurred_at'), class: 'w-32' },
-  { key: 'resolved_at', label: $t('entities.problem.resolved_at'), class: 'w-32' },
+  { key: 'title', label: $t('entities.problem.title'), sortField: 'title' },
+  { key: 'status', label: $t('entities.problem.status'), class: 'w-32', sortField: 'status' },
+  { key: 'occurred_at', label: $t('entities.problem.occurred_at'), class: 'w-32', sortField: 'occurred_at' },
+  { key: 'resolved_at', label: $t('entities.problem.resolved_at'), class: 'w-32', sortField: 'resolved_at' },
   { key: 'responsible_user', label: $t('entities.problem.responsible_user'), class: 'w-44' },
   { key: 'categories', label: $t('entities.problem.categories'), class: 'w-40' },
   { key: 'tenant', label: $tChoice('entities.tenant.model', 1), class: 'w-24' },
-  { key: 'actions', label: $t('Veiksmai'), class: 'w-28 text-right' },
 ]);
 
 const asList = (value: unknown): string[] => (Array.isArray(value) ? value.map(String) : value ? [String(value)] : []);
@@ -371,4 +375,6 @@ function forceDeleteProblem(): void {
     },
   });
 }
+
+const deleteActions = useCollectionRecordActions({ source, routePrefix: 'problems' });
 </script>

@@ -51,6 +51,7 @@ class GoalController extends AdminController
                 'steps_count' => $goal->steps_count,
                 'problems_count' => $goal->problems_count,
                 'can_update' => $user->can('update', $goal),
+                'can_delete' => $user->can('delete', $goal),
             ]);
 
         return $this->inertiaResponse('Admin/Goals/IndexGoal', [

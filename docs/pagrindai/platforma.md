@@ -4,6 +4,14 @@ title: Platforma
 area: actionWindow
 last_reviewed: 2026-10-28
 tests:
+  - tests/Feature/Api/Admin/RecordAbilitiesApiControllerTest.php
+  - resources/js/Composables/__tests__/useRowAbilities.test.ts
+  - resources/js/Pages/Admin/Content/__tests__/RecordAbilityRowActions.component.test.ts
+  - resources/js/Components/Collection/__tests__/CollectionRowActions.component.test.ts
+  - resources/js/Components/Collection/__tests__/CollectionResults.component.test.ts
+  - resources/js/Components/Collection/__tests__/CollectionPreviewNavigation.component.test.ts
+  - tests/Browser/AdminCollectionPagesTest.php
+  - resources/js/Components/Patterns/__tests__/RecordActionMenu.component.test.ts
   - resources/js/Composables/__tests__/useStartFm.test.ts
   - resources/js/Components/__tests__/StartFmPlayer.component.test.ts
   - resources/js/Components/Layouts/__tests__/FormPage.component.test.ts
@@ -240,6 +248,14 @@ Kai viskas gerai, ženkliuko dažniausiai nėra – rodoma tik tai, į ką verta
 - Klaviatūra: **?** parodo sparčiųjų klavišų sąrašą, **/** perkelia į sąrašo paiešką.
 
 
+
+## Sąrašo eilutės veiksmai {#eilutes-veiksmai}
+
+Lentelėje vienas eilutės veiksmas rodomas su tekstu: darbo žingsnis (pvz., „Darbotvarkė“), o kai jo nėra – „Redaguoti“ arba „Atidaryti“. Likę atidarymo ir redagavimo veiksmai rodomi piktogramomis su paaiškinimu. Kiti veiksmai, įskaitant ištrynimą, yra meniu „Daugiau veiksmų“ (⋯). Rodomi tik tai eilutei leidžiami veiksmai. „Redaguoti“ rodoma tik tada, kai leidžiama redaguoti tą įrašą.
+
+Stulpelį, kurio antraštėje yra rodyklės, galima rikiuoti: paspaudus antraštę tvarka apsiverčia. Tą pačią tvarką galima pasirinkti ir per „Rikiuoti“. Veiksmų stulpelis lieka dešinėje slenkant plačią lentelę. Kai nė viena rodoma eilutė neturi veiksmų, veiksmų stulpelis nerodomas. Meniu telefone atsidaro ekrano apačioje. Ištrintų įrašų atkūrimas ir galutinis ištrynimas taip pat yra ⋯ meniu; kai leidžiama tik atkurti, rodomas mygtukas „Atkurti“.
+
+Peržiūros srityje taip pat lieka nuorodos į susijusius įrašus, o rankiniu būdu atliekamą užduotį galima pažymėti atlikta arba grąžinti į neatliktas. Kol veiksmas vykdomas, tos užduoties veiksmai laikinai neprieinami.
 
 ## Techninė informacija {#technine-informacija}
 

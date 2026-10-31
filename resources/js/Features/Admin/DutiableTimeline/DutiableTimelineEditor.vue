@@ -39,7 +39,6 @@
           :dirty-count
           :is-dirty
           :processing
-          :sync-pending="pending.size > 0"
           @preview="onPreview"
           @discard="revertAll"
           @save="onSave"
@@ -124,6 +123,7 @@
             @close="onClose"
             @remove="onRemove"
             @merge="onMerge"
+            @reviewed="execute"
             @set-dates="onSetDates"
           />
         </template>
@@ -340,7 +340,7 @@ watch(sortable, (canSort) => {
 });
 
 const {
-  staged, drawn, pending, stage, stageMany, revertAll, settle, dirtyCount, isDirty, operations,
+  staged, drawn, stage, stageMany, revertAll, settle, dirtyCount, isDirty, operations,
 } = useDutiableStaging(rows);
 
 const { findings, counts } = useDutiableDiagnostics(visibleRows, cadences, drawn, diagnostics);
@@ -502,10 +502,11 @@ function onSetDates(dates: { start_date: string | null; end_date: string | null 
  * Merging deletes rows, so it is its own endpoint rather than an operation — nothing in
  * the planner's vocabulary can express "and then there was one".
  */
-function onMerge(rowIds: string[]): void {
+function onMerge(rowIds: string[], fingerprint?: string): void {
   processing.value = true;
 
   accessGuard.guardedSubmit(acknowledge => router.post(route('dutiables.timeline.merge'), {
+    fingerprint,
     row_ids: rowIds,
     acknowledge_access_change: acknowledge,
   }, {

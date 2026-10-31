@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Cadence;
+use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\Role;
 use App\Models\Tenant;
@@ -98,8 +99,10 @@ test('a derived row is previewed as blocked rather than dropped', function (): v
 });
 
 test('a source row projects the ex-officio seats that will follow it', function (): void {
+    $target = Duty::factory()->create(['institution_id' => $this->duty->institution_id]);
+    $this->duty->exOfficioTargetDuties()->attach($target->id);
     $derived = Dutiable::factory()->create([
-        'duty_id' => $this->duty->id,
+        'duty_id' => $target->id,
         'dutiable_id' => $this->holder->id,
         'via_dutiable_id' => $this->row->id,
         'start_date' => '2024-05-18',

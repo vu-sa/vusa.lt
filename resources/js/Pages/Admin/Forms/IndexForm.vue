@@ -1,5 +1,7 @@
 <template>
   <CollectionPage
+    :row-actions="item => rowActions(item)"
+    @row-action="(item, key) => selectRowAction(key, item)"
     :source
     collection="forms"
     entity-type="form"
@@ -22,7 +24,7 @@
       </Button>
     </template>
 
-    <template #row="{ item }">
+    <template #row="{ item, actions: recordActions }">
       <article class="flex min-h-14 items-center justify-between gap-4 px-3 py-2.5 sm:px-4">
         <div class="min-w-0 flex-1">
           <div class="flex items-center gap-2">
@@ -47,7 +49,7 @@
             <span>{{ $t('Atnaujinta') }}: {{ formatDate(new Date(item.updated_at)) }}</span>
           </div>
         </div>
-        <CollectionRowActions :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
+        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => selectRowAction(key, item)" />
       </article>
     </template>
 
@@ -83,7 +85,6 @@
         {{ formatDate(new Date(item.updated_at)) }}
       </span>
 
-      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
     </template>
 
     <template #empty>
@@ -107,9 +108,12 @@
     @update:open="!$event && (targetFormToForceDelete = null)"
     @confirm="forceDeleteForm"
   />
+  <CollectionConfirmAction :dialog="deleteActions.dialog.value" @confirm="deleteActions.confirm" @cancel="deleteActions.pending.value = null" />
 </template>
 
 <script setup lang="ts">
+import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
+import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { ChevronRight, Pencil, Plus, RotateCcw, Trash2 } from '@lucide/vue';
@@ -160,15 +164,17 @@ const canForceDelete = computed(() => Boolean(usePage().props.auth?.can?.forceDe
 
 const rowActions = (item: FormRow): CollectionRowAction[] => isDeleted.value
   ? [
-      { key: 'restore', label: $t('Atkurti'), icon: RotateCcw, labelled: true },
+      { key: 'restore', label: $t('Atkurti'), icon: RotateCcw, primary: !canForceDelete.value },
       ...(canForceDelete.value ? [{ key: 'forceDelete', label: $t('Ištrinti visam laikui'), icon: Trash2, destructive: true }] : []),
     ]
   : [
-      ...(item.can?.update ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, href: route('forms.edit', item.id) }] : []),
-      { key: 'open', label: $t('Atidaryti'), icon: ChevronRight, labelled: true, href: route('forms.show', item.id) },
+      ...(item.can?.update ? [{ key: 'edit', role: 'edit' as const, label: $t('Redaguoti'), icon: Pencil, href: route('forms.edit', item.id) }] : []),
+      { key: 'open', label: $t('Atidaryti'), icon: ChevronRight, role: 'open' as const, href: route('forms.show', item.id) },
+      ...(item.can?.delete ? [{ key: `delete:${item.id}:${localizedName(item)}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
     ];
 
 function selectRowAction(key: string, item: FormRow): void {
+  if (key.startsWith('delete:')) deleteActions.select(key);
   if (key === 'restore') restoreForm(item);
   if (key === 'forceDelete') targetFormToForceDelete.value = item;
 }
@@ -219,19 +225,24 @@ const source = useDatabaseCollectionSource<FormRow>({
   defaultSort: 'updated_at:desc',
   sortOptions: () => [
     { value: 'updated_at:desc', label: $t('Naujausios atnaujintos') },
+    { value: 'updated_at:asc', label: $t('Seniausios atnaujintos') },
     { value: 'created_at:desc', label: $t('Naujausios sukurtos') },
+    { value: 'created_at:asc', label: $t('Seniausios sukurtos') },
+    { value: 'name:asc', label: $t('Pagal pavadinimą (A–Z)') },
+    { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)') },
+    { value: 'registrations_count:desc', label: $t('Daugiausia registracijų') },
+    { value: 'registrations_count:asc', label: $t('Mažiausiai registracijų') },
   ],
   preserveUrlKeys: ['showDeleted'],
   facets: facets.value,
 });
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'name', label: $t('forms.fields.name') },
+  { key: 'name', label: $t('forms.fields.name'), sortField: 'name' },
   { key: 'path', label: $t('forms.fields.link'), class: 'w-48' },
   { key: 'tenant', label: $tChoice('entities.tenant.model', 1), class: 'w-28' },
-  { key: 'registrations_count', label: $t('Registracijos'), class: 'w-32' },
-  { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36' },
-  { key: 'actions', label: $t('Veiksmai'), class: 'w-24 text-right' },
+  { key: 'registrations_count', label: $t('Registracijos'), class: 'w-32', sortField: 'registrations_count' },
+  { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', sortField: 'updated_at' },
 ]);
 
 const isFiltered = computed(() => source.query.value.trim() !== '' || source.activeFilterCount.value > 0);
@@ -265,4 +276,6 @@ function forceDeleteForm(): void {
     },
   });
 }
+
+const deleteActions = useCollectionRecordActions({ source, routePrefix: 'forms' });
 </script>

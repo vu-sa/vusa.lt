@@ -467,6 +467,7 @@ declare global {
       created_at: string
       updated_at: string
       ended_by_institution_deactivation?: boolean
+      assignment_origin: string
       // mutators
       translatable_columns_from: Array<unknown>
       translations: unknown

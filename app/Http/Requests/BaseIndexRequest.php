@@ -48,6 +48,19 @@ abstract class BaseIndexRequest extends FormRequest
     }
 
     /**
+     * The collection URL carries `sort=field:direction`; it becomes `sorting` before validation so
+     * a bookmarked order holds on the first Inertia render and subclass `sorting` rules cover it.
+     */
+    protected function prepareForValidation(): void
+    {
+        $sort = $this->query('sort');
+
+        if (! $this->has('sorting') && is_string($sort) && preg_match('/^([\w.]+):(asc|desc)$/', $sort, $matches) === 1) {
+            $this->merge(['sorting' => json_encode([['id' => $matches[1], 'desc' => $matches[2] === 'desc']])]);
+        }
+    }
+
+    /**
      * Get the sorting state from the request.
      * Falls back to {@see $defaultSorting} when the request carries no sorting param.
      */

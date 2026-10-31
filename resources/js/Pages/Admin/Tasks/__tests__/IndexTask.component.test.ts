@@ -12,12 +12,12 @@ vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 /** The collection shell is covered by its own suite; here it only hands over its slots and events. */
 const CollectionPageStub = {
   name: 'CollectionPage',
-  props: ['source', 'quickFilters', 'title', 'eyebrow', 'view'],
+  props: ['source', 'quickFilters', 'title', 'eyebrow', 'view', 'rowActions'],
   emits: ['quickFilter'],
   template: `
     <div>
       <div data-testid="actions"><slot name="actions" /></div>
-      <div v-for="item in source.items.value" :key="item.id" data-testid="row"><slot name="row" :item="item" :view="view ?? 'rows'" /></div>
+      <div v-for="item in source.items.value" :key="item.id" data-testid="row"><slot name="row" :item="item" :actions="rowActions?.(item) ?? []" :view="view ?? 'rows'" /></div>
     </div>
   `,
 };
@@ -118,6 +118,27 @@ describe('IndexTask', () => {
     );
   });
 
+  it.each([null, '2026-01-01T00:00:00Z'])('keeps completion/reopening in the preview without an open action (%s)', (completedAt) => {
+    const wrapper = mountPreview({ completed_at: completedAt });
+    const complete = wrapper.get('[data-testid="task-preview"] [data-action="complete"]');
+    expect(complete.text()).toBe(completedAt ? 'tasks.collection.reopen' : 'tasks.collection.complete');
+    expect(wrapper.find('[data-testid="task-preview"] [data-action="open"]').exists()).toBe(false);
+  });
+
+  it('keeps the pending preview action busy and disabled until the request finishes', async () => {
+    const wrapper = mountPreview();
+    await wrapper.get('[data-testid="task-preview"] [data-action="complete"]').trigger('click');
+    const complete = wrapper.get('[data-testid="task-preview"] [data-action="complete"]');
+    expect(complete.attributes('aria-busy')).toBe('true');
+    expect(complete.attributes('aria-disabled')).toBe('true');
+    expect(complete.classes()).toContain('pointer-events-none');
+    const rowActions = wrapper.findComponent({ name: 'CollectionPage' }).props('rowActions');
+    expect(rowActions(task()).every((action: { disabled?: boolean }) => action.disabled)).toBe(true);
+    vi.mocked(router.post).mock.calls.at(-1)?.[2].onFinish();
+    await wrapper.vm.$nextTick();
+    expect(wrapper.get('[data-action="complete"]').attributes('aria-busy')).toBeUndefined();
+  });
+
   it('leaves the actions to the preview pane beside it', () => {
     const task = { taskable_type: 'institution', action_type: 'periodicity_gap', can_be_manually_completed: false, can_delete: true };
     const rowActions = (view: string) => mount(IndexTask, {
@@ -136,3 +157,14 @@ describe('IndexTask', () => {
     expect(rowActions('preview')).toBe(false);
   });
 });
+
+function mountPreview(overrides: Partial<TaskDisplayData> = {}) {
+  return mount(IndexTask, {
+    props: { scope: 'mine', data: [task(overrides)], meta: { total: 1, per_page: 50, current_page: 1, last_page: 1 }, taskCounts: counts, canViewAllTasks: false, tenants: [] },
+    global: { stubs: {
+      ...commonStubs,
+      CollectionPage: { name: 'CollectionPage', props: ['source', 'rowActions'], template: '<div><slot name="preview" :item="source.items.value[0]" /></div>' },
+      TaskPreview: { template: '<div data-testid="task-preview"><slot name="actions" /></div>' },
+    } },
+  });
+}

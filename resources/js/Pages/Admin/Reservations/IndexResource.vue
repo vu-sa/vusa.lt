@@ -1,6 +1,8 @@
 <template>
   <div>
     <CollectionPage
+      @row-action="(_item, key) => collectionActions.select(key)"
+      :row-actions="rowActions"
       :source
       collection="resources"
       entity-type="resource"
@@ -34,7 +36,7 @@
         </Button>
       </template>
 
-      <template #card="{ item }">
+      <template #card="{ item, actions: recordActions }">
         <!-- The name link stretches over the whole card; the add button sits above it. -->
         <article
           :class="[
@@ -84,11 +86,12 @@
                 </div>
               </template>
             </div>
+            <CollectionRowActions @select="key => collectionActions.select(key)" :actions="recordActions" class="relative z-10 mt-3" />
           </div>
         </article>
       </template>
 
-      <template #row="{ item }">
+      <template #row="{ item, actions: recordActions }">
         <div class="relative flex items-center gap-4 px-2 py-3 sm:px-4" data-slot="resource-collection-row">
           <Link
             :href="route('resources.show', item.id)"
@@ -126,6 +129,7 @@
           <div v-else-if="canReserve" class="shrink-0">
             <AddToReservationButton :resource-id="String(item.id)" />
           </div>
+          <CollectionRowActions @select="key => collectionActions.select(key)" :spotlight="item === source?.items.value[0]" :actions="recordActions" />
         </div>
       </template>
 
@@ -156,7 +160,7 @@
         </template>
       </template>
 
-      <template #preview="{ item }">
+      <template #preview="{ item, actions: recordActions }">
         <ResourcePreview
           :key="item.id"
           :resource="item"
@@ -175,11 +179,7 @@
               without-draft="reserve"
               :label="$t('reservations.cart.add_to_reservation')"
             />
-            <Button as-child variant="outline" size="sm">
-              <Link :href="route('resources.show', item.id)">
-                {{ $t('Atidaryti') }}
-              </Link>
-            </Button>
+            <CollectionRowActions @select="key => collectionActions.select(key)" :actions="recordActions" full-labels />
           </template>
         </ResourcePreview>
       </template>
@@ -198,10 +198,17 @@
 
     <ReservationCartBar />
     <ReservationCartSheet />
+    <CollectionConfirmAction :dialog="collectionActions.dialog.value" @confirm="collectionActions.confirm" @cancel="collectionActions.pending.value = null" />
   </div>
 </template>
 
 <script setup lang="ts">
+import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
+import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import { useRowAbilities } from '@/Composables/useRowAbilities';
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import { Trash2, Pencil, ArrowUpRight } from '@lucide/vue';
 import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
@@ -252,7 +259,7 @@ const resourceKey = (resource: ResourceSearchResult) => String(resource.id);
 const nameOf = (resource: ResourceSearchResult) => getSearchTranslation(resource, 'name') || $t('Be pavadinimo');
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'name', label: capitalize($tChoice('entities.resource.model', 1)) },
+  { key: 'name', label: capitalize($tChoice('entities.resource.model', 1)), sortField: 'name_lt' },
   { key: 'category', label: $t('Kategorija') },
   { key: 'tenant', label: $t('Padalinys'), class: 'w-32' },
   { key: 'availability', label: $t('reservations.cart.free_column'), class: 'w-32' },
@@ -309,5 +316,17 @@ onMounted(() => {
   params.delete('cart');
   const query = params.toString();
   window.history.replaceState(window.history.state, '', `${window.location.pathname}${query ? `?${query}` : ''}`);
+});
+const rowActions = (item: ResourceSearchResult): AdminRecordAction[] => [
+  { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, href: route('resources.show', item.id) },
+  ...(rowAbilities.can(item.id, 'update') ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: route('resources.edit', item.id) }] : []),
+  ...(rowAbilities.can(item.id, 'delete') ? [{ key: `delete:${item.id}:${nameOf(item)}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
+];
+
+const rowAbilities = useRowAbilities('resources', () => source.items.value.map(item => item.id));
+const collectionActions = useCollectionRecordActions({
+  source,
+  routePrefix: 'resources',
+  onMutated: id => rowAbilities.invalidate([id]),
 });
 </script>

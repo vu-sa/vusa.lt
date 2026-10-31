@@ -209,7 +209,7 @@ class AgendaItemController extends AdminController
 
         return redirect()->route('agendaItems.show', [
             'agendaItem' => $agendaItem,
-            ...$request->only('focus'),
+            ...$request->only(['focus', 'action']),
         ]);
     }
 

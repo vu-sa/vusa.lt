@@ -1,5 +1,7 @@
 <template>
   <CollectionPage
+    :row-actions="item => actionsFor(item)"
+    @row-action="(item, key) => actions.select(key, item.force_delete_blocked_reason)"
     :source
     collection="users"
     entity-type="user"
@@ -30,7 +32,7 @@
       </Button>
     </template>
 
-    <template #row="{ item }">
+    <template #row="{ item, actions: recordActions }">
       <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
         <div class="flex min-w-0 flex-1 items-center gap-3">
           <UserAvatar :user="item" :size="40" class="shrink-0" />
@@ -45,7 +47,7 @@
           :total-count="Number(item.duties_count ?? 0)"
           class="self-start sm:self-center"
         />
-        <CollectionRowActions v-if="isTrash" :actions="actionsFor(item)" @select="key => actions.select(key, item.force_delete_blocked_reason)" />
+        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => actions.select(key, item.force_delete_blocked_reason)" />
       </article>
     </template>
 
@@ -68,20 +70,15 @@
         />
         <span v-else class="text-muted-foreground">—</span>
       </template>
-      <CollectionRowActions
-        v-else-if="column.key === 'actions'"
-        :actions="actionsFor(item)"
-        @select="key => actions.select(key, item.force_delete_blocked_reason)"
-      />
     </template>
 
-    <template #preview="{ item }">
+    <template #preview="{ item, actions: recordActions }">
       <UserPreview :key="item.id" :user="userPreviewFromRecord(item, isTrash)">
         <template #media>
           <UserAvatar :user="item" :size="56" />
         </template>
-        <template v-if="isTrash" #actions>
-          <CollectionRowActions :actions="actionsFor(item)" @select="key => actions.select(key, item.force_delete_blocked_reason)" />
+        <template #actions>
+          <CollectionRowActions :actions="recordActions" @select="key => actions.select(key, item.force_delete_blocked_reason)" />
         </template>
         <PreviewSection v-if="!isTrash && !noUnit(item)" :title="$t('Pareigos')">
           <MemberTermsSummary
@@ -140,13 +137,13 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { CircleSlash, Merge, Plus } from '@lucide/vue';
+import { Trash2, Pencil, ArrowUpRight, CircleSlash, Merge, Plus } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
-import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
 import { UserIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
@@ -157,6 +154,7 @@ import UserPreview from '@/Components/Users/UserPreview.vue';
 import { userPreviewFromRecord } from '@/Components/Users/userPreview';
 import { Button } from '@/Components/ui/button';
 import { useAdminNavigation } from '@/Composables/useAdminNavigation';
+import { useRowAbilities } from '@/Composables/useRowAbilities';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { isTrashView, useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
 import type { StatusPresentation } from '@/Constants/statuses';
@@ -223,20 +221,32 @@ const source = useDatabaseCollectionSource<UserRow>({
   sortOptions: () => [
     { value: 'name:asc', label: $t('Pagal vardą (A–Z)') },
     { value: 'name:desc', label: $t('Pagal vardą (Z–A)') },
+    { value: 'email:asc', label: $t('Pagal el. paštą (A–Z)') },
+    { value: 'email:desc', label: $t('Pagal el. paštą (Z–A)') },
     { value: 'last_action:desc', label: $t('Neseniai prisijungę') },
+    { value: 'last_action:asc', label: $t('Seniausiai prisijungę') },
     { value: 'created_at:desc', label: $t('Naujausi pirmiausia') },
+    { value: 'created_at:asc', label: $t('Seniausi pirmiausia') },
   ],
   preserveUrlKeys: ['showDeleted'],
 });
 
-// Live members are edited on their record page; the list only acts on the trash.
+const rowAbilities = useRowAbilities('users', () => isTrash ? [] : source.items.value.map(item => item.id));
+
 const actions = useCollectionRecordActions({
   source,
   routePrefix: 'users',
+  onMutated: id => rowAbilities.invalidate([id]),
   canRestore: () => canCreate.value,
   canForceDelete: () => canForceDelete.value,
 });
-const actionsFor = (user: UserRow) => actions.rowActions(user, user.name, true);
+const actionsFor = (user: UserRow): CollectionRowAction[] => isTrash
+  ? actions.rowActions(user, user.name, true)
+  : [
+      { key: 'open', label: $t('Atidaryti'), role: 'open' as const, icon: ArrowUpRight, href: route('users.show', user.id) },
+      ...(rowAbilities.can(user.id, 'update') ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: route('users.edit', user.id) }] : []),
+      ...(rowAbilities.can(user.id, 'delete') ? [{ key: `delete:${user.id}:${user.name}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
+    ];
 
 /** A member with no duties belongs to no unit, so no other tenant admin sees them until one is assigned. */
 const withoutUnit: StatusPresentation = { label: 'Be padalinio', role: 'attention', icon: CircleSlash };
@@ -283,10 +293,9 @@ function toggleQuickFilter(id: string): void {
 
 const columns = computed<CollectionColumn[]>(() => [
   { key: 'name', label: $t('Vardas'), sortField: 'name' },
-  { key: 'email', label: $t('El. paštas') },
+  { key: 'email', label: $t('El. paštas'), sortField: 'email' },
   { key: 'years', label: $t('Metai'), class: 'w-40' },
   { key: 'duties', label: $t('Pareigos'), class: 'w-44' },
-  ...(isTrash ? [{ key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true }] : []),
 ]);
 
 const userKey = (user: UserRow) => String(user.id);
@@ -295,6 +304,7 @@ const toMergeRecords = (users: UserRow[]) =>
   users.map(user => ({ id: user.id, label: user.name, context: user.email, email: user.email, can_update_identity: user.can_update_identity }));
 
 function merged(): void {
+  rowAbilities.invalidate();
   mergeRecords.value = [];
   mergeMode.value = false;
   source.refresh();

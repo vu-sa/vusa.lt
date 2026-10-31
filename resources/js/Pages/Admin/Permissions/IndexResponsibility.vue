@@ -1,5 +1,7 @@
 <template>
   <CollectionPage
+    @row-action="(_item, key) => collectionActions.select(key)"
+    :row-actions="rowActions"
     :source
     collection="roles"
     entity-type="role"
@@ -20,13 +22,14 @@
       </Button>
     </template>
 
-    <template #row="{ item }">
+    <template #row="{ item, actions: recordActions }">
       <article class="flex flex-col gap-2 px-4 py-4">
         <CollectionPrimaryCell :title="item.title" :href="route('responsibilities.show', item.id)" :sub="item.description" :sub-lines="3" />
         <p class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
           <PurposeChip :label="item.purpose_label" show-access />
           <span>{{ counts(item) }}</span>
         </p>
+        <CollectionRowActions @select="key => collectionActions.select(key)" :spotlight="item === source?.items.value[0]" :actions="recordActions" />
       </article>
     </template>
 
@@ -41,9 +44,16 @@
       <span v-else-if="column.key === 'updated'" class="tabular-nums text-muted-foreground">{{ formatDate(item.updated_at) }}</span>
     </template>
   </CollectionPage>
+  <CollectionConfirmAction :dialog="collectionActions.dialog.value" @confirm="collectionActions.confirm" @cancel="collectionActions.pending.value = null" />
 </template>
 
 <script setup lang="ts">
+import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
+import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import { useRowAbilities } from '@/Composables/useRowAbilities';
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import { Trash2, Pencil, ArrowUpRight } from '@lucide/vue';
 import { computed, toRef } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
@@ -58,6 +68,8 @@ import PurposeChip from '@/Features/Admin/Responsibilities/PurposeChip.vue';
 import { formatDate } from '@/Utils/dateTime';
 
 interface ResponsibilityRow {
+  is_super_admin: boolean;
+  delete_blocked: boolean;
   id: string;
   title: string;
   description: string | null;
@@ -82,8 +94,11 @@ const source = useLocalCollectionSource<ResponsibilityRow>({
   sortOptions: () => [
     { value: 'purpose:asc', label: $t('responsibilities.index.sort_purpose'), by: row => `${row.purpose ? 0 : 1}${row.title}` },
     { value: 'title:asc', label: $t('Pagal pavadinimą (A–Z)'), by: row => row.title },
+    { value: 'title:desc', label: $t('Pagal pavadinimą (Z–A)'), by: row => row.title },
     { value: 'people:desc', label: $t('responsibilities.index.sort_people'), by: row => row.people_count },
+    { value: 'people:asc', label: $t('Mažiausiai žmonių'), by: row => row.people_count },
     { value: 'updated_at:desc', label: $t('Neseniai atnaujintos'), by: row => row.updated_at ?? '' },
+    { value: 'updated_at:asc', label: $t('Seniausiai atnaujintos'), by: row => row.updated_at ?? '' },
   ],
 });
 
@@ -98,7 +113,20 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'purpose', label: $t('responsibilities.index.purpose'), class: 'w-56' },
   { key: 'permissions', label: $t('responsibilities.facts.permissions'), class: 'w-24' },
   { key: 'duties', label: $t('responsibilities.facts.duties'), class: 'w-28' },
-  { key: 'people', label: $t('responsibilities.facts.people'), class: 'w-24' },
-  { key: 'updated', label: $t('Atnaujinta'), class: 'w-32' },
+  { key: 'people', label: $t('responsibilities.facts.people'), class: 'w-24', sortField: 'people' },
+  { key: 'updated', label: $t('Atnaujinta'), class: 'w-32', sortField: 'updated_at' },
 ]);
+const rowActions = (item: ResponsibilityRow): AdminRecordAction[] => [
+  { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, href: route('responsibilities.show', item.id) },
+  ...(rowAbilities.can(item.id, 'update') && !item.is_super_admin ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: route('responsibilities.edit', item.id) }] : []),
+  ...(rowAbilities.can(item.id, 'delete') && !item.delete_blocked ? [{ key: `delete:${item.id}:${item.title}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
+];
+
+const rowAbilities = useRowAbilities('responsibilities', () => source.items.value.map(item => item.id));
+const collectionActions = useCollectionRecordActions({
+  source,
+  deletePermanently: true,
+  routePrefix: 'responsibilities',
+  onMutated: id => rowAbilities.invalidate([id]),
+});
 </script>

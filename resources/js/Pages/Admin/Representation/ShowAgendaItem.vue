@@ -617,6 +617,13 @@ const stopGuard = router.on('before', (event) => {
 onUnmounted(stopGuard);
 
 onMounted(() => {
+  const url = new URL(window.location.href);
+  if (url.searchParams.get('action') === 'edit' && canUpdate.value) {
+    handleRecordAction('edit');
+    url.searchParams.delete('action');
+    window.history.replaceState(window.history.state, '', url.toString());
+  }
+
   if (requestedFocus !== 'votes') {
     return;
   }

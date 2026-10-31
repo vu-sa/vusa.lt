@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Dutiables\BuildDutiableTimeline;
 use App\Events\DutiableChanged;
 use App\Models\Cadence;
 use App\Models\Duty;
@@ -576,5 +577,128 @@ describe('merging stints', function (): void {
         ])->assertRedirect();
 
         Event::assertDispatched(DutiableChanged::class);
+    });
+});
+
+test('merging sources preserves linked seat ids and their independent details', function (): void {
+    Event::fake([DutiableChanged::class]);
+    $target = Duty::factory()->create(['institution_id' => $this->duty->institution_id]);
+    $this->duty->exOfficioTargetDuties()->attach($target);
+    $later = Dutiable::factory()->create([
+        'duty_id' => $this->duty->id, 'dutiable_id' => $this->holder->id,
+        'start_date' => '2025-06-01', 'end_date' => null,
+    ]);
+    $seat = $later->derivedDutiables()->sole();
+    $seat->update(['additional_email' => 'seat@example.test']);
+    asUserWithInertia($this->manager)->post(route('dutiables.timeline.merge'), [
+        'row_ids' => [$this->row->id, $later->id],
+    ])->assertSessionHasNoErrors();
+    expect($seat->fresh())->not->toBeNull()
+        ->and($seat->fresh()->via_dutiable_id)->toBe($this->row->id)
+        ->and($seat->fresh()->start_date->toDateString())->toBe('2024-05-18')
+        ->and($seat->fresh()->end_date)->toBeNull()
+        ->and($seat->fresh()->additional_email)->toBe('seat@example.test');
+});
+
+test('review requires an acknowledgement and refuses an unrelated source', function (): void {
+    asUserWithInertia($this->manager)->post(route('dutiables.reviewExOfficio', $this->row), [
+        'decision' => 'manual',
+    ])->assertSessionHasErrors('acknowledge');
+    asUser($this->manager)->postJson(route('dutiables.reviewExOfficio', $this->row), [
+        'decision' => 'convert', 'source_id' => $this->row->id, 'acknowledge' => true,
+    ])->assertUnprocessable();
+    expect($this->row->fresh()->via_dutiable_id)->toBeNull();
+});
+
+test('review can confirm a legacy assignment as independent', function (): void {
+    $this->row->update(['assignment_origin' => 'unknown']);
+    asUserWithInertia($this->manager)->post(route('dutiables.reviewExOfficio', $this->row), [
+        'decision' => 'manual', 'acknowledge' => true,
+    ])->assertSessionHasNoErrors();
+    expect($this->row->fresh()->assignment_origin)->toBe('manual')
+        ->and($this->row->fresh()->start_date->toDateString())->toBe('2024-05-18');
+});
+
+test('merge preview is read only and a changed source invalidates its fingerprint', function (): void {
+    $later = Dutiable::factory()->create([
+        'duty_id' => $this->duty->id, 'dutiable_id' => $this->holder->id,
+        'start_date' => '2025-06-01', 'end_date' => null,
+    ]);
+    $ids = [$this->row->id, $later->id];
+    $preview = asUser($this->manager)->postJson(route('dutiables.timeline.mergePreview'), ['row_ids' => $ids])
+        ->assertOk()->json('data');
+    expect($this->row->fresh()->end_date->toDateString())->toBe('2025-05-17');
+    $later->update(['start_date' => '2025-07-01']);
+    asUser($this->manager)->postJson(route('dutiables.timeline.merge'), [
+        'row_ids' => $ids, 'fingerprint' => $preview['fingerprint'],
+    ])->assertConflict();
+    expect($later->fresh())->not->toBeNull();
+});
+
+test('explicit conversion follows an authorized source and preserves independent details', function (): void {
+    Event::fake([DutiableChanged::class]);
+    $sourceDuty = Duty::factory()->create(['institution_id' => $this->duty->institution_id]);
+    $sourceDuty->exOfficioTargetDuties()->attach($this->duty);
+    $source = Dutiable::factory()->create([
+        'duty_id' => $sourceDuty->id, 'dutiable_id' => $this->holder->id,
+        'start_date' => '2024-06-01', 'end_date' => '2025-06-01',
+    ]);
+    $this->row->update(['assignment_origin' => 'unknown']);
+    $this->duty->assignableTenants()->attach($this->tenant->id);
+    $timeline = BuildDutiableTimeline::execute('duty', $this->duty->id, $this->manager);
+    $timelineRow = collect($timeline['rows'])->firstWhere('id', $this->row->id);
+    expect(array_column($timelineRow['review_sources'], 'id'))->toContain($source->id);
+    $email = $this->row->additional_email;
+    asUserWithInertia($this->manager)->post(route('dutiables.reviewExOfficio', $this->row), [
+        'decision' => 'convert', 'source_id' => $source->id, 'acknowledge' => true,
+    ])->assertSessionHasNoErrors();
+    expect($this->row->fresh()->via_dutiable_id)->toBe($source->id)
+        ->and($this->row->fresh()->start_date->toDateString())->toBe('2024-06-01')
+        ->and($this->row->fresh()->assignment_origin)->toBe('ex_officio')
+        ->and($this->row->fresh()->additional_email)->toBe($email)
+        ->and($this->row->fresh()->tenant_id)->toBe($this->tenant->id);
+});
+
+describe('linking one row to a source', function (): void {
+    beforeEach(function (): void {
+        Event::fake([DutiableChanged::class]);
+        $this->sourceDuty = Duty::factory()->create(['institution_id' => $this->duty->institution_id]);
+        $this->sourceDuty->exOfficioTargetDuties()->attach($this->duty);
+        $this->linkSource = Dutiable::factory()->create([
+            'duty_id' => $this->sourceDuty->id, 'dutiable_id' => $this->holder->id,
+            'start_date' => '2024-06-01', 'end_date' => '2025-06-01',
+        ]);
+    });
+
+    test('a row confirmed as independent can still be linked, as the editor offers', function (): void {
+        $this->row->update(['assignment_origin' => 'manual']);
+        $timeline = BuildDutiableTimeline::execute('duty', $this->duty->id, $this->manager);
+
+        expect(collect($timeline['rows'])->firstWhere('id', $this->row->id)['review_sources'])->toHaveCount(1);
+
+        asUserWithInertia($this->manager)->post(route('dutiables.reviewExOfficio', $this->row), [
+            'decision' => 'convert', 'source_id' => $this->linkSource->id, 'acknowledge' => true,
+        ])->assertSessionHasNoErrors();
+
+        expect($this->row->fresh()->via_dutiable_id)->toBe($this->linkSource->id)
+            ->and($this->row->fresh()->assignment_origin)->toBe('ex_officio');
+    });
+
+    test('a row that grants seats of its own is neither offered nor linked, so no chain forms', function (): void {
+        $this->row->update(['assignment_origin' => 'unknown']);
+        $downstream = Duty::factory()->create(['institution_id' => $this->duty->institution_id]);
+        Dutiable::factory()->create([
+            'duty_id' => $downstream->id, 'dutiable_id' => $this->holder->id, 'via_dutiable_id' => $this->row->id,
+            'start_date' => '2024-06-01', 'end_date' => '2025-06-01',
+        ]);
+        $timeline = BuildDutiableTimeline::execute('duty', $this->duty->id, $this->manager);
+
+        expect(collect($timeline['rows'])->firstWhere('id', $this->row->id)['review_sources'])->toBeEmpty();
+
+        asUser($this->manager)->postJson(route('dutiables.reviewExOfficio', $this->row), [
+            'decision' => 'convert', 'source_id' => $this->linkSource->id, 'acknowledge' => true,
+        ])->assertUnprocessable();
+
+        expect($this->row->fresh()->via_dutiable_id)->toBeNull();
     });
 });

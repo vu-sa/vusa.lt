@@ -1,6 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { ref } from 'vue';
 
+import { ArrowUpRight, Pencil, Trash2 } from '@lucide/vue';
+import CollectionRowActions from './CollectionRowActions.vue';
+import CollectionResults from './CollectionResults.vue';
 import CollectionActiveChips from './CollectionActiveChips.vue';
 import CollectionFilterBar from './CollectionFilterBar.vue';
 import CollectionQuickFilters from './CollectionQuickFilters.vue';
@@ -138,4 +141,37 @@ export const MeetingRowsDark: Story = {
 export const FilterBarOpenDark: Story = {
   ...FilterBarOpen,
   globals: { surface: 'admin', theme: 'dark' },
+};
+
+export const RecordActions: Story = {
+  render: () => ({
+    components: { CollectionRowActions },
+    setup: () => ({ actions: [
+      { key: 'open', label: 'Atidaryti', role: 'open' as const, icon: ArrowUpRight, href: '/mano/items/1' },
+      { key: 'edit', label: 'Redaguoti', role: 'edit' as const, icon: Pencil, href: '/mano/items/1/edit' },
+      { key: 'delete', label: 'Ištrinti', icon: Trash2, destructive: true },
+    ] }),
+    template: '<div class="max-w-lg bg-background p-4 text-foreground"><CollectionRowActions :actions /></div>',
+  }),
+};
+
+export const StickyActions: Story = {
+  render: () => ({
+    components: { CollectionResults },
+    setup: () => ({
+      items: meetings,
+      columns: [
+        { key: 'title', label: 'Posėdis', pinned: true, class: 'min-w-80' },
+        { key: 'institution_name_lt', label: 'Institucija', class: 'min-w-96' },
+        { key: 'tenant_shortname', label: 'Padalinys', class: 'min-w-48' },
+      ],
+      rowActions: (item: { id: string }) => [{ key: 'open', label: 'Atidaryti', role: 'open' as const, icon: ArrowUpRight, href: `/mano/meetings/${item.id}` }],
+    }),
+    template: `<div class="min-w-0 max-w-2xl bg-background p-4 text-foreground">
+      <CollectionResults collection="story-sticky" view="table" :items :columns :row-actions :item-key="item => item.id"
+        :is-loading="false" :is-loading-more="false" has-searched :has-more="false" :error="null" :is-filtered="false" :selected-key="null" :total="items.length">
+        <template #cell="{ item, column }">{{ item[column.key] }}</template>
+      </CollectionResults>
+    </div>`,
+  }),
 };

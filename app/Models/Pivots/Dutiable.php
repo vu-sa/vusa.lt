@@ -2,6 +2,7 @@
 
 namespace App\Models\Pivots;
 
+use App\Actions\Dutiables\ReconcileExOfficioSeats;
 use App\Contracts\ImageMediaOwner;
 use App\Events\DutiableChanged;
 use App\Models\Duty;
@@ -50,6 +51,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property bool $ended_by_institution_deactivation
+ * @property string $assignment_origin
  * @property-read Collection<int, Dutiable> $derivedDutiables
  * @property-read Model $dutiable
  * @property-read Duty|null $duty
@@ -84,6 +86,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
     'dutiable_type',
     'tenant_id',
     'via_dutiable_id',
+    'assignment_origin',
     'start_date',
     'end_date',
     'study_program_id',
@@ -124,6 +127,11 @@ class Dutiable extends MorphPivot implements ImageMediaOwner
                         'end_date' => __('forms.helpers.institution_assignment_closed'),
                     ]);
                 }
+            }
+
+            // New rows can lack the attribute before the non-null database default applies.
+            if (! $this->exists && $this->getAttribute('assignment_origin') === null) {
+                $this->assignment_origin = $this->via_dutiable_id === null ? 'manual' : 'ex_officio';
             }
 
             return parent::save($options);
@@ -193,22 +201,20 @@ class Dutiable extends MorphPivot implements ImageMediaOwner
         return ['photo' => ['url' => 'additional_photo', 'focal' => 'additional_photo_focal_point']];
     }
 
-    /**
-     * Ex-officio rows derived from this one have to go before it does.
-     *
-     * `dutiables.via_dutiable_id` is `nullOnDelete()`, so the database clears the
-     * link the instant the parent row disappears — by the time SyncExOfficioDutiables
-     * runs its `where('via_dutiable_id', $sourceId)` cleanup there is nothing left to
-     * match, and the derived rows survive as permission-granting orphans that look
-     * exactly like manual assignments (see AuditExOfficioDutiables). Deleting them
-     * here, while the link still exists, is the only ordering that works.
-     */
     #[\Override]
     protected static function booted(): void
     {
+        static::saved(function (Dutiable $row): void {
+            if ($row->via_dutiable_id === null && $row->dutiable_type === MorphMap::alias(User::class)
+                && ! $row->ended_by_institution_deactivation && ! ReconcileExOfficioSeats::isPaused()
+                && $row->duty()->whereHas('exOfficioTargetDuties')->exists()) {
+                ReconcileExOfficioSeats::forSource($row);
+            }
+        });
+
+        /** Delete derived seats before nullOnDelete clears their source and leaves permission-granting orphans. */
         static::deleting(function (Dutiable $dutiable): void {
-            // Derived rows are leaves — they never grant further ex-officio seats,
-            // so this cannot recurse beyond one level.
+            // Derived rows are leaves — they never grant further ex-officio seats.
             if (! is_null($dutiable->via_dutiable_id)) {
                 return;
             }
@@ -305,11 +311,13 @@ class Dutiable extends MorphPivot implements ImageMediaOwner
             ->where(fn ($q) => $q->whereNull('end_date')->orWhereDate('end_date', '>=', $date));
     }
 
+    /** @return BelongsTo<Dutiable, $this> */
     public function viaDutiable(): BelongsTo
     {
         return $this->belongsTo(Dutiable::class, 'via_dutiable_id');
     }
 
+    /** @return HasMany<Dutiable, $this> */
     public function derivedDutiables(): HasMany
     {
         return $this->hasMany(Dutiable::class, 'via_dutiable_id');

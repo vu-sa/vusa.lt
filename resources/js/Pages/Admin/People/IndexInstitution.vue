@@ -1,5 +1,7 @@
 <template>
   <CollectionPage
+    :row-actions="item => actionsFor(item)"
+    @row-action="(item, key) => onRowAction(key, item)"
     v-model:selection="selection"
     :source
     collection="institutions"
@@ -25,7 +27,7 @@
       </Button>
     </template>
 
-    <template #row="{ item }">
+    <template #row="{ item, actions: recordActions }">
       <div class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center" data-slot="institution-collection-row">
         <div class="min-w-0 flex-1">
           <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches" :title="nameOf(item)" :title-lines="hasName(item) ? 1 : 2" :href="isTrash ? undefined : route('institutions.show', item.id)" />
@@ -49,7 +51,7 @@
           :spotlight="String(item.id) === String(source.items.value[0]?.id)"
           @updated="active => statusUpdated(item, active)"
         />
-        <CollectionRowActions :actions="actionsFor(item)" @select="key => onRowAction(key, item)" />
+        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => onRowAction(key, item)" />
       </div>
     </template>
 
@@ -86,14 +88,9 @@
         </template>
         <span v-else class="text-muted-foreground">—</span>
       </span>
-      <CollectionRowActions
-        v-else-if="column.key === 'actions'"
-        :actions="actionsFor(item)"
-        @select="key => onRowAction(key, item)"
-      />
     </template>
 
-    <template v-if="!isTrash" #preview="{ item }">
+    <template v-if="!isTrash" #preview="{ item, actions: recordActions }">
       <InstitutionPreview :key="item.id" :institution="item">
         <template #status>
           <CollectionActivityStatus
@@ -105,6 +102,7 @@
             @updated="active => statusUpdated(item, active)"
           />
         </template>
+        <template #actions><CollectionRowActions :actions="recordActions" full-labels class="flex-wrap" @select="key => onRowAction(key, item)" /></template>
       </InstitutionPreview>
     </template>
 
@@ -160,7 +158,7 @@
 import { getSearchTranslation, getSearchTranslations } from '@/Composables/useTranslatedTitle';
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowUpRight, Eye, EyeOff, Plus } from '@lucide/vue';
+import { Trash2, Pencil, ArrowUpRight, Eye, EyeOff, Plus } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import CollectionActivityStatus from '@/Components/Collection/CollectionActivityStatus.vue';
@@ -173,6 +171,7 @@ import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { EmptyState } from '@/Components/Patterns';
 import InstitutionPreview from '@/Components/Institutions/InstitutionPreview.vue';
 import { Button } from '@/Components/ui/button';
+import { useRowAbilities } from '@/Composables/useRowAbilities';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { useInstitutionSubscription } from '@/Composables/useInstitutionSubscription';
 import { escapeFilterValue } from '@/Features/Admin/AdminSearch/Services/AdminSearchService';
@@ -293,10 +292,12 @@ function canFollow(institution: InstitutionRow): boolean {
   ));
 }
 
-// Live institutions are edited on their record page; the list only acts on the trash.
+const rowAbilities = useRowAbilities('institutions', () => isTrash ? [] : source.items.value.map(item => item.id));
+
 const actions = useCollectionRecordActions({
   source,
   routePrefix: 'institutions',
+  onMutated: id => rowAbilities.invalidate([id]),
   restoreOpensRecord: true,
   canRestore: () => canCreate.value,
   canForceDelete: () => canForceDelete.value,
@@ -311,7 +312,9 @@ const actionsFor = (institution: InstitutionRow): CollectionRowAction[] => isTra
       ? { ...action, label: $t('Atkurti ir atidaryti') }
       : action)
   : [
-      { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, href: route('institutions.show', institution.id), labelled: true },
+      { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, href: route('institutions.show', institution.id), role: 'open' as const },
+      ...(rowAbilities.can(institution.id, 'update') ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: route('institutions.edit', institution.id) }] : []),
+      ...(rowAbilities.can(institution.id, 'delete') ? [{ key: `delete:${institution.id}:${nameOf(institution)}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
       ...(isFollowed(institution)
         ? [{ key: 'follow', label: $t('Nebesekti'), icon: EyeOff }]
         : canFollow(institution) ? [{ key: 'follow', label: $t('Sekti'), icon: Eye }] : []),
@@ -327,6 +330,7 @@ function onRowAction(key: string, institution: InstitutionRow): void {
 }
 
 function statusUpdated(item: InstitutionRow, active: boolean): void {
+  rowAbilities.invalidate([item.id]);
   source.patchItems([String(item.id)], active ? { is_active: true } : { is_active: false, current_user_names: [] });
   source.refresh();
 }
@@ -340,6 +344,5 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'types', label: $t('Tipas') },
   { key: 'members', label: $t('Nariai'), class: 'w-24' },
   ...(isTrash ? [] : [{ key: 'followed', label: $t('Sekimas'), class: 'w-24' }]),
-  { key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true },
 ]);
 </script>

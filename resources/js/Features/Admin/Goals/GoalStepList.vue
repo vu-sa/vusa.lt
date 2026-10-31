@@ -39,7 +39,7 @@
       <CollectionRowActions
         v-if="canUpdate"
         :actions="[
-          { key: 'edit', label: $t('Redaguoti'), icon: Pencil },
+          { key: 'edit', role: 'edit', label: $t('Redaguoti'), icon: Pencil },
           { key: 'delete', label: $t('goals.steps.delete'), icon: Trash2, destructive: true },
         ]"
         @select="key => key === 'edit' ? emit('edit', step) : emit('delete', step)"

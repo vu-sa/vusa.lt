@@ -1,5 +1,6 @@
 <template>
   <CollectionPage
+    :row-actions="rowActions"
     :source
     collection="mailingLists"
     entity-type="mailing_list"
@@ -25,7 +26,7 @@
       </Button>
     </template>
 
-    <template #row="{ item }">
+    <template #row="{ item, actions: recordActions }">
       <article class="flex min-h-16 items-center gap-4 px-3 py-3 sm:px-4">
         <div class="min-w-0 flex-1">
           <Link :href="route('mailingLists.show', item.id)" data-collection-open class="block truncate font-medium hover:text-brand">
@@ -42,6 +43,7 @@
         </div>
         <StatusBadge v-if="item.last_sync_status && item.last_sync_status !== 'synced'" :status="mailingListSyncStatuses[item.last_sync_status]" />
         <StatusBadge :status="mailingListModes[item.mode]" />
+        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" />
       </article>
     </template>
 
@@ -70,6 +72,10 @@
 </template>
 
 <script setup lang="ts">
+import { useRowAbilities } from '@/Composables/useRowAbilities';
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import { Pencil, ArrowUpRight } from '@lucide/vue';
 import { Link, router } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { Mail as MailingListIcon, RefreshCw } from '@lucide/vue';
@@ -108,8 +114,11 @@ const source = useLocalCollectionSource<MailingListRow>({
   defaultSort: 'address:asc',
   sortOptions: () => [
     { value: 'address:asc', label: $t('Pagal pavadinimą (A–Z)'), by: list => list.address },
-    { value: 'last_post_at:desc', label: $t('mailing_lists.fields.last_post'), by: list => list.last_post_at ?? '' },
-    { value: 'member_count:desc', label: $t('mailing_lists.fields.members'), by: list => list.member_count },
+    { value: 'address:desc', label: $t('Pagal pavadinimą (Z–A)'), by: list => list.address },
+    { value: 'last_post_at:desc', label: $t('Naujausias laiškas'), by: list => list.last_post_at ?? null },
+    { value: 'last_post_at:asc', label: $t('Seniausias laiškas'), by: list => list.last_post_at ?? null },
+    { value: 'member_count:desc', label: $t('Daugiausia gavėjų'), by: list => list.member_count },
+    { value: 'member_count:asc', label: $t('Mažiausiai gavėjų'), by: list => list.member_count },
   ],
   facets: [
     { field: 'mode', label: $t('mailing_lists.fields.mode'), get: list => list.mode, valueLabel: value => $t(`mailing_lists.modes.${value}`) },
@@ -123,12 +132,12 @@ const source = useLocalCollectionSource<MailingListRow>({
 });
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'address', label: $t('mailing_lists.fields.local_part') },
+  { key: 'address', label: $t('mailing_lists.fields.local_part'), sortField: 'address' },
   { key: 'mode', label: $t('mailing_lists.fields.mode'), class: 'w-44' },
   { key: 'tenant', label: $tChoice('entities.tenant.model', 1), class: 'w-24' },
-  { key: 'member_count', label: $t('mailing_lists.fields.members'), class: 'w-24' },
+  { key: 'member_count', label: $t('mailing_lists.fields.members'), class: 'w-24', sortField: 'member_count' },
   { key: 'posts_last_year', label: $t('mailing_lists.fields.posts_last_year'), class: 'w-28' },
-  { key: 'last_post_at', label: $t('mailing_lists.fields.last_post'), class: 'w-32' },
+  { key: 'last_post_at', label: $t('mailing_lists.fields.last_post'), class: 'w-32', sortField: 'last_post_at' },
 ]);
 
 function importFromMailman(): void {
@@ -138,4 +147,10 @@ function importFromMailman(): void {
     onFinish: () => { importing.value = false; },
   });
 }
+const rowActions = (item: MailingListRow): AdminRecordAction[] => [
+  { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, href: route('mailingLists.show', item.id) },
+  ...(rowAbilities.can(item.id, 'update') ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: route('mailingLists.show', { mailingList: item.id, action: 'edit' }) }] : []),
+];
+
+const rowAbilities = useRowAbilities('mailingLists', () => source.items.value.map(item => item.id));
 </script>

@@ -20,12 +20,12 @@
             {{ $t('Atidaryti punktą') }}
           </Link>
         </Button>
-        <Button v-if="item.meeting_id" as-child variant="outline" size="sm">
-          <Link :href="route('meetings.show', item.meeting_id)">
-            {{ $t('Atidaryti posėdį') }}
-          </Link>
-        </Button>
       </slot>
+      <Button v-if="item.meeting_id" as-child variant="outline" size="sm" voice="sentence">
+        <Link :href="route('meetings.show', item.meeting_id)">
+          {{ $t('Atidaryti posėdį') }}
+        </Link>
+      </Button>
     </template>
 
     <PreviewFacts>

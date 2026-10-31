@@ -39,4 +39,23 @@ describe('CollectionPrimaryCell', () => {
     expect(line({ subLines: 3 }).classes()).toContain('line-clamp-3');
     expect(line({ subLines: 3 }).classes()).not.toContain('truncate');
   });
+
+  it('clamps title to two lines and exposes the full title attribute when requested', () => {
+    const title = 'A long title that needs two lines to display properly';
+    const wrapper = mount(CollectionPrimaryCell, { props: { title, titleLines: 2, href: '/mano/meetings/1' } });
+    const link = wrapper.get('a');
+
+    expect(link.classes()).toContain('line-clamp-2');
+    expect(link.classes()).not.toContain('truncate');
+    expect(link.attributes('title')).toBe(title);
+  });
+
+  it('exposes the full title attribute on button and paragraph variants', () => {
+    const title = 'A long title on a button or plain text';
+    const buttonWrapper = mount(CollectionPrimaryCell, { props: { title, clickable: true } });
+    expect(buttonWrapper.get('button').attributes('title')).toBe(title);
+
+    const textWrapper = mount(CollectionPrimaryCell, { props: { title } });
+    expect(textWrapper.get('p').attributes('title')).toBe(title);
+  });
 });

@@ -2,6 +2,8 @@
 
 namespace App\Actions;
 
+use App\Actions\Dutiables\ReconcileExOfficioSeats;
+use App\Actions\Dutiables\SyncExOfficioTargets;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
@@ -26,6 +28,7 @@ class UpdateDuty
         DB::transaction(function () use ($duty, $data): void {
             Institution::withTrashed()->whereIn('id', [$duty->institution_id, $data['institution_id']])
                 ->orderBy('id')->lockForUpdate()->get();
+            $institutionChanged = $duty->institution_id !== $data['institution_id'];
             $duty->update(Arr::only($data, ['name', 'description', 'email', 'places_to_occupy', 'contacts_grouping', 'is_active']));
 
             if (array_key_exists('former_names', $data)) {
@@ -45,26 +48,13 @@ class UpdateDuty
                 ...$duty->types()->onlyTrashed()->pluck('duty_types.id')->all(),
             ]);
 
-            $previousTargetIds = $duty->exOfficioTargetDuties()->pluck('duties.id')->all();
-            $newTargetIds = array_filter($data['ex_officio_target_duty_ids'] ?? []);
-            $duty->exOfficioTargetDuties()->sync($newTargetIds);
-
-            $addedTargetIds = array_values(array_diff($newTargetIds, $previousTargetIds));
-            $removedTargetIds = array_values(array_diff($previousTargetIds, $newTargetIds));
-
-            if ($addedTargetIds || $removedTargetIds) {
-                $dutyId = $duty->id;
-                dispatch(function () use ($dutyId, $addedTargetIds, $removedTargetIds): void {
-                    $duty = Duty::find($dutyId);
-                    if ($duty) {
-                        BackfillExOfficioTargetDuty::execute($duty, $addedTargetIds, $removedTargetIds);
-                    }
-                })->afterCommit();
-            }
+            SyncExOfficioTargets::execute($duty, array_values(array_filter($data['ex_officio_target_duty_ids'] ?? [])));
 
             $previousTenantIds = $duty->assignableTenants()->pluck('tenants.id')->all();
             $assignableTenantsInput = $data['assignable_tenants'] ?? [];
             $newTenantIds = array_column($assignableTenantsInput, 'tenant_id');
+            $tenantIdsChanged = array_diff($previousTenantIds, $newTenantIds) !== []
+                || array_diff($newTenantIds, $previousTenantIds) !== [];
 
             foreach (array_diff($previousTenantIds, $newTenantIds) as $tenantId) {
                 $this->assignments->endDateDutiables(
@@ -72,6 +62,7 @@ class UpdateDuty
                         ->where('duty_id', $duty->id)
                         ->where('dutiable_type', MorphMap::alias(User::class))
                         ->where('tenant_id', $tenantId)
+                        ->whereNull('via_dutiable_id')
                         ->current(),
                     now()->subDay()
                 );
@@ -84,6 +75,9 @@ class UpdateDuty
                 if (array_key_exists('user_ids', $row)) {
                     $this->assignments->syncRepresentatives($duty, $row['user_ids'] ?? [], (int) $row['tenant_id']);
                 }
+            }
+            if ($institutionChanged || $tenantIdsChanged) {
+                ReconcileExOfficioSeats::forDuty($duty);
             }
         });
     }

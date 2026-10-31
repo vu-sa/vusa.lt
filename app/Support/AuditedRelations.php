@@ -30,6 +30,7 @@ class AuditedRelations
      */
     public const RELATIONS = [
         Duty::class => [
+            'exOfficioTargetDuties' => ['display' => 'name'],
             'users' => ['display' => 'name'],
             'types' => ['display' => 'title'],
         ],

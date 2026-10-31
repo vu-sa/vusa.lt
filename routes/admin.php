@@ -229,7 +229,7 @@ Route::get('files', [FilesController::class, 'index'])->name('files.index');
 Route::post('files/compress', [FilesController::class, 'compressImage'])->name('files.compress');
 
 // No destroy: SharePoint is the source, a deleted record would be rediscovered as a new one. Hide instead.
-Route::resource('documents', DocumentController::class)->only('index', 'show');
+Route::resource('documents', DocumentController::class)->only('index', 'show', 'edit');
 Route::post('documents/{document}/refresh', [DocumentController::class, 'refresh'])->name('documents.refresh');
 Route::post('documents/status', [DocumentController::class, 'updateStatus'])->name('documents.status');
 Route::post('documents/discover', [DocumentController::class, 'discover'])->name('documents.discover');
@@ -238,6 +238,8 @@ Route::post('documents/pick', [DocumentController::class, 'pick'])->name('docume
 /** @deprecated Merge records from the duties list instead. */
 Route::get('duties/merge', fn () => to_route('duties.index')->with('info', __('shell.merge.redirect')))->name('duties.merge');
 Route::post('duties/merge', [DutyController::class, 'mergeDuties'])->name('duties.mergeDuties');
+Route::get('duties/{duty}/ex-officio-review', [DutyExOfficioReviewController::class, 'preview'])->name('duties.exOfficioReview.preview');
+Route::post('duties/{duty}/ex-officio-review', [DutyExOfficioReviewController::class, 'apply'])->name('duties.exOfficioReview.apply');
 Route::resource('duties', DutyController::class);
 Route::get('duties-update-users', [DutyController::class, 'updateUsersWizard'])->name('duties.updateUsersWizard');
 Route::post('duties/{duty}/batch-update-users', [DutyController::class, 'batchUpdateUsers'])->name('duties.batchUpdateUsers');
@@ -250,7 +252,9 @@ Route::post('duties/{duty}/predecessors/{succession}/fold-rename', [DutySuccessi
 // Declared before the resource so /dutiables/timeline can never be read as /dutiables/{dutiable}.
 Route::get('dutiables/timeline', [DutiableTimelineController::class, 'index'])->name('dutiables.timeline');
 Route::post('dutiables/timeline/apply', [DutiableTimelineController::class, 'apply'])->name('dutiables.timeline.apply');
+Route::post('dutiables/timeline/merge-preview', [DutiableTimelineController::class, 'previewMerge'])->name('dutiables.timeline.mergePreview');
 Route::post('dutiables/timeline/merge', [DutiableTimelineController::class, 'merge'])->name('dutiables.timeline.merge');
+Route::post('dutiables/{dutiable}/review-ex-officio', [DutiableTimelineController::class, 'reviewExOfficio'])->name('dutiables.reviewExOfficio');
 Route::resource('dutiables', DutiableController::class)->only(['store', 'edit', 'update', 'destroy']);
 /** @deprecated Merge records from the study-program list instead. */
 Route::get('studyPrograms/merge', fn () => to_route('studyPrograms.index')->with('info', __('shell.merge.redirect')))->name('studyPrograms.merge');

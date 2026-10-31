@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'terms' => [
+        'via_duty' => 'per :duty',
+    ],
+    'derived_duty_removal' => 'Ex officio pareigas užbaik pakeisdamas jas suteikiančią kadenciją.',
     'index' => [
         'lead' => 'Narių paskyros, kontaktai ir pareigų istorija.',
         'empty_description' => 'Čia rodomos narių paskyros, kurias gali peržiūrėti.',

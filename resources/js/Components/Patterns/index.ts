@@ -53,3 +53,5 @@ export type { FormSegmentOption } from './FormSegmentedControl.vue';
 export { default as SectionCard } from './SectionCard.vue';
 
 export { default as ModelTimestamps } from './ModelTimestamps.vue';
+
+export { default as RecordActionMenu } from './RecordActionMenu.vue';

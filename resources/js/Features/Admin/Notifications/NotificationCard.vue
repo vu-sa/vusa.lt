@@ -75,20 +75,6 @@
         </template>
       </dl>
 
-      <div v-if="secondaryAction" class="pt-1.5">
-        <Button
-          as-child
-          variant="ghost"
-          size="sm"
-          voice="sentence"
-          class="pointer-coarse:min-h-11"
-        >
-          <NotificationLink :href="secondaryAction.url" @click="markRead">
-            {{ secondaryAction.label }}
-          </NotificationLink>
-        </Button>
-      </div>
-
       <!-- Timestamp -->
       <div class="pt-1">
         <span class="text-xs text-muted-foreground">
@@ -97,60 +83,8 @@
       </div>
     </div>
 
-    <!-- Row actions (always visible, touch-friendly) -->
-    <div data-slot="notification-row-actions" class="flex shrink-0 flex-wrap items-center gap-1.5 self-start pt-0.5">
-      <Button
-        v-if="primaryAction"
-        as-child
-        data-slot="notification-primary-action"
-        variant="outline"
-        size="icon-sm"
-        voice="sentence"
-        class="size-8 text-muted-foreground hover:border-brand hover:text-foreground pointer-coarse:size-11"
-        :title="primaryAction.label"
-        :aria-label="primaryAction.label"
-      >
-        <NotificationLink :href="primaryAction.url" @click="markRead">
-          <component :is="getNotificationPrimaryActionIcon(notification)" class="size-3.5" aria-hidden="true" />
-        </NotificationLink>
-      </Button>
-      <button
-        v-if="!notification.read_at"
-        type="button"
-        class="flex size-8 items-center justify-center border border-border text-muted-foreground transition-colors hover:border-brand hover:text-foreground pointer-coarse:size-11"
-        :title="$t('Pažymėti kaip skaitytą')"
-        :aria-label="$t('Pažymėti kaip skaitytą')"
-        @click="emit('markAsRead', notification.id)"
-      >
-        <Check class="size-3.5" />
-      </button>
-
-      <button
-        type="button"
-        :class="[
-          'flex size-8 items-center justify-center border border-border text-muted-foreground',
-          'transition-colors hover:border-destructive hover:text-destructive pointer-coarse:size-11',
-        ]"
-        :title="$t('Ištrinti')"
-        :aria-label="$t('Ištrinti')"
-        @click="emit('delete', notification.id)"
-      >
-        <Trash2 class="size-3.5" />
-      </button>
-
-      <NotificationLink
-        v-if="url && url !== primaryAction?.url"
-        :href="url"
-        :class="[
-          'hidden size-8 items-center justify-center border border-border text-muted-foreground',
-          'transition-colors hover:border-brand hover:text-foreground sm:flex pointer-coarse:size-11',
-        ]"
-        :title="$t('Atidaryti')"
-        :aria-label="$t('Atidaryti')"
-        @click="markRead"
-      >
-        <ArrowRight class="size-3.5" />
-      </NotificationLink>
+    <div data-slot="notification-row-actions">
+      <CollectionRowActions :spotlight :actions="actions ?? notificationRowActions(notification)" @navigate="markRead" @select="key => key === 'read' ? emit('markAsRead', notification.id) : emit('delete', notification.id)" />
     </div>
   </article>
 </template>
@@ -158,7 +92,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowRight, Check, Trash2 } from '@lucide/vue';
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import { notificationRowActions } from './notificationRowActions';
 
 import {
   getNotificationIcon,
@@ -166,20 +102,18 @@ import {
   getNotificationTitle,
   getNotificationMessage,
   getNotificationUrl,
-  getNotificationPrimaryAction,
-  getNotificationPrimaryActionIcon,
-  getNotificationSecondaryAction,
   getNotificationContext,
   getNotificationCategoryTag,
   formatNotificationTime,
   type Notification,
 } from '@/Composables/useNotificationFormatting';
-import { Button } from '@/Components/ui/button';
 import NotificationLink from '@/Components/Notifications/NotificationLink.vue';
 import { markNotificationRead } from '@/Composables/markNotificationRead';
 
 const props = defineProps<{
   notification: Notification;
+  actions?: AdminRecordAction[];
+  spotlight?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -193,8 +127,6 @@ const categoryTag = computed(() => getNotificationCategoryTag(props.notification
 const title = computed(() => getNotificationTitle(props.notification));
 const message = computed(() => getNotificationMessage(props.notification));
 const url = computed(() => getNotificationUrl(props.notification));
-const primaryAction = computed(() => getNotificationPrimaryAction(props.notification));
-const secondaryAction = computed(() => getNotificationSecondaryAction(props.notification));
 const context = computed(() => getNotificationContext(props.notification));
 const formattedTime = computed(() => formatNotificationTime(props.notification));
 
@@ -203,4 +135,5 @@ const markRead = () => {
     markNotificationRead(props.notification.id);
   }
 };
+
 </script>

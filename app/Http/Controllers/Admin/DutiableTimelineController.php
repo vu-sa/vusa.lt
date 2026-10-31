@@ -3,15 +3,20 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\Dutiables\ApplyDutiableTimelineChanges;
+use App\Actions\Dutiables\LinkDutiableToExOfficioSource;
 use App\Actions\Dutiables\MergeDutiables;
 use App\Actions\Dutiables\PlanDutiableTimelineChanges;
+use App\Actions\Dutiables\PreviewDutiableMerge;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\Dutiables\ApplyDutiableTimelineRequest;
 use App\Http\Requests\Dutiables\IndexDutiableTimelineRequest;
 use App\Http\Requests\Dutiables\MergeDutiablesRequest;
+use App\Http\Requests\Dutiables\ReviewExOfficioRequest;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\Pivots\Dutiable;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -114,6 +119,36 @@ class DutiableTimelineController extends AdminController
         ]));
     }
 
+    public function reviewExOfficio(ReviewExOfficioRequest $request, Dutiable $dutiable): RedirectResponse
+    {
+        $mutation = fn () => DB::transaction(function () use ($request, $dutiable): void {
+            $dutiable = $dutiable->newQuery()->lockForUpdate()->findOrFail($dutiable->id);
+            $this->authorize('manageDutiable', $dutiable);
+            abort_if($dutiable->via_dutiable_id !== null || $dutiable->ended_by_institution_deactivation, 422);
+            if ($request->validated('decision') === 'manual') {
+                $dutiable->update(['assignment_origin' => 'manual']);
+            } else {
+                $source = Dutiable::query()->lockForUpdate()->findOrFail($request->validated('source_id'));
+                $this->authorize('manageDutiable', $source);
+                LinkDutiableToExOfficioSource::execute($dutiable, $source);
+            }
+            activity()->performedOn($dutiable)->causedBy($request->user())->event('ex_officio_reviewed')
+                ->withProperties($request->safe()->only(['decision', 'source_id']))->log('ex_officio_reviewed');
+        });
+
+        if ($warning = $this->guardSelfLockout($request->user(), ! $request->user()->isSuperAdmin()
+            && $dutiable->dutiable_id === $request->user()->id, $request, $mutation)) {
+            return $warning;
+        }
+
+        return back()->with('success', __('dutiables.timeline.review.saved'));
+    }
+
+    public function previewMerge(MergeDutiablesRequest $request): JsonResponse
+    {
+        return response()->json(['success' => true, 'data' => PreviewDutiableMerge::execute($request->rows())]);
+    }
+
     /**
      * Folds several stints of one holder into one row. Separate from `apply()` because a
      * merge deletes rows, which no operation in the planner's vocabulary can express.
@@ -122,7 +157,17 @@ class DutiableTimelineController extends AdminController
     {
         $rows = $request->rows();
 
-        $mutation = fn () => DB::transaction(fn () => MergeDutiables::execute($rows));
+        $mutation = fn () => DB::transaction(function () use ($rows, $request): void {
+            $locked = Dutiable::query()->whereKey($rows->modelKeys())->orderBy('id')->lockForUpdate()->get();
+            abort_unless($locked->count() === $rows->count() && MergeDutiables::isMergeable($locked), 422);
+            foreach ($locked as $row) {
+                $this->authorize('manageDutiable', $row);
+            }
+            if ($request->filled('fingerprint')) {
+                abort_unless(hash_equals(PreviewDutiableMerge::execute($locked)['fingerprint'], $request->validated('fingerprint')), 409);
+            }
+            MergeDutiables::execute($locked);
+        });
 
         $couldAffectSelf = ! $request->user()->isSuperAdmin()
             && $rows->contains(fn ($row) => $row->dutiable_id === $request->user()->id);

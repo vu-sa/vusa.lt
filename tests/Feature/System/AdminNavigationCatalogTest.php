@@ -353,7 +353,7 @@ describe('route resolution', function (): void {
         $workspaces = $this->catalog->for(makeAdminUser($this->tenant))['workspaces'];
 
         // Listed in ViSAK (everyone) and Svetainė (managers); the shell keeps the active workspace.
-        $sharedRoutes = ['documents.index', 'documents.show'];
+        $sharedRoutes = ['documents.index', 'documents.show', 'documents.edit'];
 
         $ambiguous = adminGetRouteNames()
             ->reject(fn (string $name) => in_array($name, $sharedRoutes, true))

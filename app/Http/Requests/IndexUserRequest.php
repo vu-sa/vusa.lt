@@ -4,8 +4,11 @@ namespace App\Http\Requests;
 
 class IndexUserRequest extends BaseIndexRequest
 {
+    #[\Override]
     protected function prepareForValidation(): void
     {
+        parent::prepareForValidation();
+
         $filters = $this->getFilters();
 
         if (array_key_exists('duplicates', $filters)) {
