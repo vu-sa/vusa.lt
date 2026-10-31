@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Atsakomybės ir leidimai
 area: roles
 models: [Role, Permission, ResponsibilityGrant]
-last_reviewed: 2026-10-23
+last_reviewed: 2026-10-31
 tests:
   - tests/Feature/Permissions/MeetingPermissionsTest.php
   - tests/Feature/Console/SyncPermissionsTest.php
@@ -76,7 +76,7 @@ turinčių žmonių skaičius. Pagal nutylėjimą pirmiau rodomos atsakomybės s
 ### Naujos atsakomybės kūrimas
 
 1. Sąrašo viršuje paspausk **Nauja atsakomybė**.
-2. Įrašyk pavadinimą lietuviškai (angliškas nebūtinas) ir trumpą aprašymą.
+2. Įrašyk pavadinimą lietuviškai (angliškas nebūtinas) ir trumpą aprašymą. Aprašymą matys žmonės, turintys šią atsakomybę.
 3. Išsaugok. Atsivėrusiame atsakomybės puslapyje nustatyk teises ir kam ji suteikiama.
 
 ### Teisių nustatymas (skirtukas „Teisės“)
@@ -143,6 +143,12 @@ padaliniais, kuriuose galioja, ir superadministratorius gali juos **Atimti**. Su
 Tipo puslapyje suteikimai tik rodomi, su nuorodomis į jų atsakomybes. Tipui suteikti atsakomybę
 ar ją pašalinti galima atsakomybės puslapio skirtuke **Kam suteikta**, nurodant paskirčiai
 reikalingą aprėptį. Esami suteikimai be tinkamos aprėpties pažymimi; jų duomenys automatiškai nekeičiami.
+
+### Pakeitimų istorija
+
+Atsakomybės puslapio istorijoje matyti, kas ir kada pakeitė pavadinimą ar aprašymą, kokias teises
+pridėjo ar pašalino, kam atsakomybę suteikė ar atėmė ir kokius priskiriamus pareigybių tipus pakeitė.
+Istorija pildoma nuo šio pakeitimo; senesnių keitimų joje nėra.
 
 ### Atsakomybės trynimas
 

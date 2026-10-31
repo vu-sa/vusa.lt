@@ -244,7 +244,7 @@ priminimo. Klausimą galima išsiųsti iš:
 - **ViSAK → Padaliniai**, sąrašo **Reikia dėmesio** mygtuko **Paklausti atstovų** (pasirinktos visos
   sąrašo institucijos, atitinkančios lango filtrus, iki 100);
 - **Veiksmai → Paklausti, ar vyko posėdžiai** (institucijas pasirenki pats);
-- institucijos meniu **⋯ → Paklausti, ar vyko posėdžiai**.
+- institucijos meniu **⋯ → Paklausti, ar vyko posėdžiai** (klausiama tik apie šią instituciją, kitų pridėti negalima).
 
 <ChangelogNote date="2026-10-02" title="Dvi atskiros užklausos ir atsakymų istorija">
 Galima pasirinkti, ar klausiama apie institucijos veiklą, ar prašoma papildyti posėdžių įrašus. Išsiųstos užklausos
@@ -252,7 +252,8 @@ ir atsakymai pateikiami institucijos skiltyje **Užklausos atstovams**.
 </ChangelogNote>
 
 Pirmiausia pasirenkama **Ar vyko posėdis?** arba **Papildyk posėdžių įrašus** – net jei institucijos
-jau pasirinktos. Tada pasirenkama, kaip bus renkami gavėjai:
+jau pasirinktos. Klausiant iš institucijos meniu, iškart atveriama peržiūra. Kitais atvejais
+pasirenkama, kaip bus renkami gavėjai:
 
 - **Pagal institucijas** – klausiama institucijos studentų atstovų.
   Galima pasirinkti kelis padalinius ir valdysenos sritį arba ieškoti pagal pavadinimą.
