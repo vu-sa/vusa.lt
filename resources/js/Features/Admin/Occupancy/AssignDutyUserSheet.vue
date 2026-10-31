@@ -81,8 +81,9 @@
         </Label>
         <NativeSelect
           id="assign-cadence"
-          v-model="selectedCadence"
+          :model-value="selectedCadence"
           :options="cadenceOptions"
+          @update:model-value="selectCadence"
         />
         <p class="text-xs text-muted-foreground">
           {{ cadenceHint }}
@@ -666,13 +667,14 @@ function applyCadence(cadence: CadenceOption) {
   form.end_date = preset.end;
 }
 
-watch(selectedCadence, (id) => {
-  const cadence = cadences.value.find(option => option.id === id);
+function selectCadence(value: string | number | null | undefined) {
+  selectedCadence.value = String(value ?? CUSTOM_DATES);
+  const cadence = cadences.value.find(option => option.id === selectedCadence.value);
 
-  if (cadence && (form.start_date !== presetFor(cadence).start || form.end_date !== presetFor(cadence).end)) {
+  if (cadence) {
     applyCadence(cadence);
   }
-});
+}
 
 const cadenceOptions = computed<NativeSelectOption[]>(() => cadences.value.length === 0
   ? []

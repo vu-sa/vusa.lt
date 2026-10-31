@@ -73,7 +73,7 @@ Schedule::call(fn () => app(ReservationReviewTaskSynchronizer::class)->reconcile
     ->name('reservation-review-handover')
     ->withoutOverlapping(30);
 
-// Task reminders: each user picks which of these intervals reach them
+// Task reminders: each user chooses one interval.
 Schedule::call(function (): void {
     foreach (User::TASK_REMINDER_DAY_OPTIONS as $days) {
         TaskNotifier::notifyDaysLeft($days);
@@ -97,9 +97,9 @@ Schedule::command('notifications:access-changes')
     ->dailyAt('09:05')
     ->name('access-change-notices');
 
-// Task overdue reminders - runs weekly on Monday at 9 AM
+// Overdue summaries enter the queue before the Monday 15:00 digest.
 Schedule::command('notifications:task-overdue-reminders')
-    ->weeklyOn(1, '09:00')
+    ->weeklyOn(1, '14:30')
     ->name('task-overdue-reminders');
 
 // Periodicity gap tasks - runs daily at 10 AM to create tasks for institutions approaching their

@@ -95,6 +95,7 @@ export interface ActionWindowDraft {
   activityRequest: {
     filters: ActivityRequestFilters;
     selectionLimited: boolean;
+    institutionsLocked: boolean;
     mode: 'institutions' | 'people';
     institutions: ActionWindowInstitutionRef[];
     pinned: ActionWindowInstitutionRef[];
@@ -110,8 +111,9 @@ export interface OpenOptions {
   /** Jump straight into a flow instead of the persona screen. */
   flow?: 'meeting.create' | 'check-in' | 'meeting.complete' | 'institution.report' | 'activity.request';
   institution?: ActionWindowInstitutionRef | null;
-  /** Institutions to ask about, for `activity.request`; skips the picker. */
+  /** Preselected institutions for `activity.request`; the user may widen the selection. */
   institutions?: ActionWindowInstitutionRef[];
+  lockActivityRequestInstitutions?: boolean;
   suggestedAt?: Date | string | null;
   /**
    * Create the meeting from an existing announcement. The event's date becomes the
@@ -162,7 +164,7 @@ const emptyDraft = (): ActionWindowDraft => ({
   meeting: { start_time: '', type: undefined, description: '', announce_in_calendar: false },
   agendaItems: [],
   checkIn: { startDate: undefined, endDate: undefined, note: '' },
-  activityRequest: { filters: { tenantIds: [], governanceScope: null }, selectionLimited: false, mode: 'institutions', institutions: [], pinned: [], people: [], unchecked: [], campaignType: null, note: '' },
+  activityRequest: { filters: { tenantIds: [], governanceScope: null }, selectionLimited: false, institutionsLocked: false, mode: 'institutions', institutions: [], pinned: [], people: [], unchecked: [], campaignType: null, note: '' },
 });
 
 const ROOT_FRAME: ScreenFrame = { id: 'persona' };
@@ -198,9 +200,10 @@ export function createActionWindowProvider(): ActionWindowContext {
   const current = computed<ScreenFrame>(() => stack[stack.length - 1] ?? { ...ROOT_FRAME });
   const canGoBack = computed(() => stack.length > 1);
   const isDateLocked = computed(() => draft.calendarEvent !== undefined);
-  const skippedScreens = computed<ScreenId[]>(() =>
-    isDateLocked.value ? ['meeting.when', 'meeting.date', 'meeting.time'] : [],
-  );
+  const skippedScreens = computed<ScreenId[]>(() => [
+    ...(isDateLocked.value ? ['meeting.when', 'meeting.date', 'meeting.time'] as ScreenId[] : []),
+    ...(draft.activityRequest.institutionsLocked ? ['activity.mode', 'activity.institutions', 'activity.people'] as ScreenId[] : []),
+  ]);
 
   const reset = () => {
     stack.splice(0, stack.length, { ...ROOT_FRAME });
@@ -237,6 +240,8 @@ export function createActionWindowProvider(): ActionWindowContext {
     if (options?.institutions) {
       draft.activityRequest.institutions = [...options.institutions];
       draft.activityRequest.pinned = [...options.institutions];
+      draft.activityRequest.institutionsLocked = options.flow === 'activity.request'
+        && options.lockActivityRequestInstitutions === true && options.institutions.length > 0;
     }
 
     if (options?.activityRequestFilters) {

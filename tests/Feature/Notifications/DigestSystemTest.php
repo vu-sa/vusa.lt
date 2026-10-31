@@ -13,6 +13,7 @@ use App\Notifications\TaskOverdueNotification;
 use App\Notifications\TaskReminderNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Notifications\Events\NotificationSending;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
@@ -205,7 +206,7 @@ describe('digest processing command', function (): void {
         Mail::fake();
 
         $user = $this->createUserWithPreferences();
-        $user->update(['notification_preferences' => ['digest_frequency_hours' => 1]]);
+        $user->update(['notification_preferences' => ['digest_frequency_hours' => 4]]);
 
         // Create multiple digest items with old created_at
         for ($i = 0; $i < 5; $i++) {
@@ -215,7 +216,7 @@ describe('digest processing command', function (): void {
                 'category' => 'comment',
                 'data' => ['title' => "Test $i", 'body' => 'Body', 'url' => '/test', 'icon' => '💬'],
             ]);
-            $item->forceFill(['created_at' => now()->subHours(2)])->saveQuietly();
+            $item->forceFill(['created_at' => now()->subHours(5)])->saveQuietly();
         }
 
         expect($this->getDigestQueueCountForUser($user))->toBe(5);
@@ -238,7 +239,7 @@ describe('digest processing command', function (): void {
         Mail::fake();
 
         $user = $this->createUserWithPreferences();
-        $user->update(['notification_preferences' => ['digest_frequency_hours' => 1]]);
+        $user->update(['notification_preferences' => ['digest_frequency_hours' => 4]]);
 
         $item = NotificationDigestQueue::create([
             'user_id' => $user->id,
@@ -279,7 +280,7 @@ describe('digest processing command', function (): void {
         Mail::fake();
 
         $user = $this->createUserWithPreferences();
-        $user->update(['notification_preferences' => ['digest_frequency_hours' => 1]]);
+        $user->update(['notification_preferences' => ['digest_frequency_hours' => 4]]);
 
         // Add notifications from different categories with old timestamps
         $items = collect();
@@ -290,7 +291,7 @@ describe('digest processing command', function (): void {
             'category' => 'comment',
             'data' => ['title' => 'Comment 1', 'body' => 'Body', 'url' => '/test', 'icon' => '💬'],
         ]);
-        $item1->forceFill(['created_at' => now()->subHours(2)])->saveQuietly();
+        $item1->forceFill(['created_at' => now()->subHours(5)])->saveQuietly();
 
         $item2 = NotificationDigestQueue::create([
             'user_id' => $user->id,
@@ -298,7 +299,7 @@ describe('digest processing command', function (): void {
             'category' => 'comment',
             'data' => ['title' => 'Comment 2', 'body' => 'Body', 'url' => '/test', 'icon' => '💬'],
         ]);
-        $item2->forceFill(['created_at' => now()->subHours(2)])->saveQuietly();
+        $item2->forceFill(['created_at' => now()->subHours(5)])->saveQuietly();
 
         $item3 = NotificationDigestQueue::create([
             'user_id' => $user->id,
@@ -306,7 +307,7 @@ describe('digest processing command', function (): void {
             'category' => 'task',
             'data' => ['title' => 'Task 1', 'body' => 'Body', 'url' => '/test', 'icon' => '☑️'],
         ]);
-        $item3->forceFill(['created_at' => now()->subHours(2)])->saveQuietly();
+        $item3->forceFill(['created_at' => now()->subHours(5)])->saveQuietly();
 
         Artisan::call('notifications:send-digests');
 
@@ -317,57 +318,63 @@ describe('digest processing command', function (): void {
 });
 
 describe('digest frequency settings', function (): void {
-    test('user with 1 hour frequency receives digest faster', function (): void {
+    test('daily digests send at the default or chosen local hour regardless of queue age', function (string $date, ?int $sendHour): void {
         Mail::fake();
-
-        $user = $this->createUserWithPreferences();
-        $user->update(['notification_preferences' => ['digest_frequency_hours' => 1]]);
-
+        config(['app.timezone' => 'Europe/Vilnius']);
+        $hour = $sendHour ?? 15;
+        $this->travelTo(Carbon::parse($date, 'Europe/Vilnius')->setTime($hour - 1, 0)->utc());
+        $user = $this->createUserWithPreferences($sendHour === null ? [] : ['digest_send_hour' => $sendHour]);
         $item = NotificationDigestQueue::create([
             'user_id' => $user->id,
             'notification_class' => CommentPostedNotification::class,
             'category' => 'comment',
             'data' => ['title' => 'Test', 'body' => 'Body', 'url' => '/test', 'icon' => '💬'],
         ]);
-        $item->forceFill(['created_at' => now()->subMinutes(65)])->saveQuietly(); // Just over 1 hour
+        $item->forceFill(['created_at' => now()->subDays(2)])->saveQuietly();
 
         Artisan::call('notifications:send-digests');
+        Mail::assertNothingSent();
+        expect($this->getDigestQueueCountForUser($user))->toBe(1);
 
+        $item->forceFill(['created_at' => now()])->saveQuietly();
+        $this->travelTo(now()->addHour());
+        Artisan::call('notifications:send-digests');
         Mail::assertSent(NotificationDigest::class);
-    });
+        expect($this->getDigestQueueCountForUser($user))->toBe(0);
 
-    test('user with 24 hour frequency waits full day', function (): void {
+        Artisan::call('notifications:send-digests');
+        Mail::assertSentCount(1);
+    })->with([
+        'default winter' => ['2026-01-15', null],
+        'default spring DST' => ['2026-03-29', null],
+        'default autumn DST' => ['2026-10-25', null],
+        'custom hour' => ['2026-01-15', 18],
+        'first daytime hour' => ['2026-03-29', 7],
+        'last daytime hour' => ['2026-10-25', 21],
+    ]);
+
+    test('four-hour digests still wait for the oldest item', function (): void {
         Mail::fake();
-
-        $user = $this->createUserWithPreferences();
-        $user->update(['notification_preferences' => ['digest_frequency_hours' => 24]]);
-
+        $user = $this->createUserWithPreferences(['digest_frequency_hours' => 4]);
         $item = NotificationDigestQueue::create([
             'user_id' => $user->id,
             'notification_class' => CommentPostedNotification::class,
             'category' => 'comment',
             'data' => ['title' => 'Test', 'body' => 'Body', 'url' => '/test', 'icon' => '💬'],
         ]);
-        $item->forceFill(['created_at' => now()->subHours(12)])->saveQuietly(); // Only 12 hours
-
+        $item->forceFill(['created_at' => now()->subHours(4)->addMinute()])->saveQuietly();
         Artisan::call('notifications:send-digests');
-
-        // Should NOT be queued yet
         Mail::assertNothingSent();
 
-        // Travel past 24 hours after creation, landing outside quiet hours (08:00)
-        $this->travelTo(now()->addHours(20));
-
+        $item->forceFill(['created_at' => now()->subHours(4)->subMinute()])->saveQuietly();
         Artisan::call('notifications:send-digests');
-
-        // NOW it should be queued
         Mail::assertSent(NotificationDigest::class);
     });
 
     test('nothing is sent during quiet hours, then the queue goes out at the first run after', function (): void {
         Mail::fake();
 
-        $user = $this->createUserWithPreferences();
+        $user = $this->createUserWithPreferences(['digest_frequency_hours' => 4]);
         $item = NotificationDigestQueue::create([
             'user_id' => $user->id,
             'notification_class' => CommentPostedNotification::class,
@@ -389,7 +396,7 @@ describe('digest frequency settings', function (): void {
     });
 
     test('digest items survive a mail transport failure', function (): void {
-        $user = $this->createUserWithPreferences();
+        $user = $this->createUserWithPreferences(['digest_frequency_hours' => 4]);
 
         $item = NotificationDigestQueue::create([
             'user_id' => $user->id,

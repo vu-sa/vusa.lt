@@ -25,6 +25,6 @@ class InformChairAboutMemberRegistration extends Mailable // implements ShouldQu
      */
     public function build()
     {
-        return $this->subject($this->name.' užsiregistravo į '.$this->institution->maybe_short_name)->markdown('emails.memberRegistration.inform');
+        return $this->subject(__('mail.member_inform.subject', ['name' => $this->name, 'institution' => $this->institution->maybe_short_name]))->markdown('emails.memberRegistration.inform');
     }
 }

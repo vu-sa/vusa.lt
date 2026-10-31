@@ -39,6 +39,18 @@ class MeetingCreatedNotification extends BaseNotification
         ]);
     }
 
+    #[\Override]
+    public function digestLine(object $notifiable): string
+    {
+        return ($this->meeting->institutions->first()->name ?? __('Nežinoma institucija')).', '.$this->meeting->start_time->format('m-d');
+    }
+
+    #[\Override]
+    public function digestGroupTitle(object $notifiable): string
+    {
+        return __('notifications.meeting_created_digest_group');
+    }
+
     public function url(): string
     {
         return route('meetings.show', $this->meeting->id);

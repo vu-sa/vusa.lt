@@ -39,7 +39,7 @@ class GetUserAccessSummary
 
         /** @var Collection<int, Dutiable> $terms */
         $terms = $user->dutiables()
-            ->with(['duty.institution.tenant', 'duty.roles:id,name,title', 'tenant:id,shortname'])
+            ->with(['duty.institution.tenant', 'duty.roles:id,name,title,description', 'tenant:id,shortname'])
             ->orderByDesc('start_date')
             ->get()
             ->filter(fn (Dutiable $term): bool => $term->duty !== null);
@@ -85,7 +85,7 @@ class GetUserAccessSummary
                 'startDate' => $term->start_date->toDateString(),
                 'endDate' => $term->end_date?->toDateString(),
                 'isExOfficio' => $term->via_dutiable_id !== null,
-                'roles' => $duty->roles->map(fn ($role) => $role->displayTitle())->values()->all(),
+                'roles' => $duty->roles->map(fn ($role) => ['title' => $role->displayTitle(), 'description' => $role->displayDescription()])->values()->all(),
             ];
         })->values()->all();
     }

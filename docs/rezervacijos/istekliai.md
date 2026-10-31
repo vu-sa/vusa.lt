@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Ištekliai
 area: resources
 models: [Resource]
-last_reviewed: 2026-10-25
+last_reviewed: 2026-10-31
 tests:
   - tests/Feature/Admin/Reservations/ResourceControllerTest.php
   - tests/Feature/Api/Admin/ResourceAvailabilityApiControllerTest.php
@@ -20,6 +20,9 @@ tests:
 Išteklius yra konkretus padaliniui priklausantis daiktas ar jų rinkinys, pavyzdžiui, „Garso
 kolonėlė JBL“ ×2 ar „VU SA vėliava“ ×5. Ištekliai laikomi adresu `/mano/resources`. Juos rezervuoti
 gali visi platformos naudotojai, o tvarko **išteklio padalinio** valdytojai.
+
+Sąraše pirmiausia rodomi VU SA ištekliai, o po jų – kiti, abu pagal pavadinimą. Jei tvarkai padalinio
+rezervacijas, greitasis filtras **Mano administruojami** palieka tik to padalinio išteklius.
 
 <DocScreenshot name="resources-index" alt="Išteklių sąrašas kortelėmis: nuotrauka, padalinys, laisvas kiekis ir mygtukas Pridėti" caption="Ištekliai kortelėmis – laisvas kiekis rodomas pasirinktam rezervacijos laikotarpiui." href="/mano/resources" />
 

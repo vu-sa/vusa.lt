@@ -289,8 +289,13 @@ export const INSTITUTION_FACET_CONFIG: CollectionFacetConfig = {
 export const RESOURCE_FACET_CONFIG: CollectionFacetConfig = {
   facetBy: 'category_name,tenant_shortname,is_reservable',
   queryBy: 'name_lt,name_en,description_lt,description_en,location',
-  defaultSortBy: 'created_at:desc',
+  defaultSortBy: 'main_tenant',
   fields: [
+    {
+      field: 'tenant_id',
+      label: 'Padalinys',
+      type: 'checkbox',
+    },
     {
       field: 'category_name',
       label: 'Kategorija',
@@ -483,10 +488,13 @@ const RELEVANCE_SORT_OPTION: SortOption = {
 };
 
 /** Resolve display-name sorts in the current locale, including relevance tiebreaks. */
-export function resolveSortValue(collection: string, sortBy: string, locale = 'lt'): string {
+export function resolveSortValue(collection: string, sortBy: string, locale = 'lt', mainTenantId?: number | null): string {
+  const defaultSort = collection === 'resources' ? 'name_lt:asc' : getCollectionFacetConfig(collection)?.defaultSortBy ?? 'created_at:desc';
   const resolved = sortBy === RELEVANCE_SORT_VALUE
-    ? `_text_match:desc,${getCollectionFacetConfig(collection)?.defaultSortBy ?? 'created_at:desc'}`
-    : sortBy;
+    ? `_text_match:desc,${defaultSort}`
+    : collection === 'resources' && sortBy === 'main_tenant'
+      ? `${mainTenantId ? `_eval(tenant_id:=[${mainTenantId}]):desc,` : ''}name_lt:asc`
+      : sortBy;
 
   return locale === 'en' && (collection === 'duties' || collection === 'resources')
     ? resolved.replace(/\bname_lt:/g, 'name_en:')
@@ -581,6 +589,7 @@ export const DOCUMENT_SORT_OPTIONS: SortOption[] = [
  * Sort options for resources
  */
 export const RESOURCE_SORT_OPTIONS: SortOption[] = [
+  { value: 'main_tenant', label: 'VU SA ištekliai pirmiausia', icon: 'ArrowDownAZ' },
   { value: 'name_lt:asc', label: 'Pagal pavadinimą (A–Z)', icon: 'ArrowDownAZ' },
   { value: 'name_lt:desc', label: 'Pagal pavadinimą (Z–A)', icon: 'ArrowUpAZ' },
   { value: 'capacity:desc', label: 'Didžiausia talpa', icon: 'ArrowDown' },

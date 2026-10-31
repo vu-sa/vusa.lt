@@ -35,7 +35,7 @@ vi.mock('@/Features/Admin/AdminSearch/Composables/useResourceAvailability', () =
 const emptyPage = { data: [], meta: { total: 0, current_page: 1, per_page: 50, last_page: 1, from: 0, to: 0 }, total: 0, per_page: 50, current_page: 1, last_page: 1 };
 const cases: { name: string; component: Component; props: Record<string, unknown>; noDelete?: boolean }[] = [
   { name: 'agenda items', component: IndexAgendaItem, props: { defaultTenantShortnames: [] } },
-  { name: 'resources', component: IndexResource, props: { reservationCart: null } },
+  { name: 'resources', component: IndexResource, props: { reservationCart: null, mainTenantId: 1, managedTenantIds: [] } },
   { name: 'responsibilities', component: IndexResponsibility, props: { responsibilities: [] } },
   { name: 'mailing lists', component: IndexMailingList, props: { mailingLists: [], tenants: [], domain: '', openCreate: false, canCreate: false, canImport: false, mailmanConfigured: false }, noDelete: true },
   { name: 'goals', component: IndexGoal, props: { goals: [], canCreate: false } },

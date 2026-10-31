@@ -14,11 +14,21 @@ describe('default preferences', function (): void {
 
         expect($user->notification_preferences)->toBe([
             'types' => [],
-            'digest_frequency_hours' => 4,
+            'digest_frequency_hours' => 24,
+            'digest_send_hour' => 15,
             'emails' => [],
             'muted_until' => null,
-            'reminder_settings' => ['task_reminder_days' => [7, 3, 1], 'meeting_reminder_hours' => [24, 1]],
+            'reminder_settings' => ['task_reminder_days' => [3], 'meeting_reminder_hours' => [24]],
         ]);
+    });
+
+    test('daily delivery uses the stored hour or defaults to 15', function (): void {
+        $user = User::factory()->create(['notification_preferences' => null]);
+        expect($user->getDigestFrequencyHours())->toBe(24)
+            ->and($user->getDigestSendHour())->toBe(15);
+
+        $user->update(['notification_preferences' => ['digest_send_hour' => 18]]);
+        expect($user->fresh()->getDigestSendHour())->toBe(18);
     });
 
     test('a deselected reminder interval stays deselected', function (): void {
@@ -102,7 +112,9 @@ describe('per-type delivery', function (): void {
         expect($user->emailDeliveryFor(NotificationType::ApprovalRequested))->toBe(EmailDelivery::Immediate)
             ->and($user->emailDeliveryFor(NotificationType::MeetingCreated))->toBe(EmailDelivery::Digest)
             ->and($user->wantsPushFor(NotificationType::ApprovalRequested))->toBeTrue()
-            ->and($user->wantsPushFor(NotificationType::MeetingCreated))->toBeFalse();
+            ->and($user->wantsPushFor(NotificationType::MeetingCreated))->toBeFalse()
+            ->and($user->emailDeliveryFor(NotificationType::TaskOverdue))->toBe(EmailDelivery::Digest)
+            ->and($user->wantsPushFor(NotificationType::TaskOverdue))->toBeFalse();
     });
 
     test('stored overrides win over defaults', function (): void {
@@ -116,7 +128,9 @@ describe('per-type delivery', function (): void {
         $user = $this->createUserWithTypePreference(NotificationType::MeetingCreated, ['email' => 'weekly', 'push' => 'yes']);
 
         expect($user->emailDeliveryFor(NotificationType::MeetingCreated))->toBe(EmailDelivery::Digest)
-            ->and($user->wantsPushFor(NotificationType::MeetingCreated))->toBeFalse();
+            ->and($user->wantsPushFor(NotificationType::MeetingCreated))->toBeFalse()
+            ->and($user->emailDeliveryFor(NotificationType::TaskOverdue))->toBe(EmailDelivery::Digest)
+            ->and($user->wantsPushFor(NotificationType::TaskOverdue))->toBeFalse();
     });
 });
 

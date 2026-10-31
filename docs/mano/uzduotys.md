@@ -143,8 +143,8 @@ institucijai užduoties sukurti negalima.
 | Kada | Kas gauna | Ką |
 |---|---|---|
 | Kai užduotį priskiria žmogus | Atsakingi | Pranešimą „Nauja užduotis“. Automatinės užduotys (posėdžio darbotvarkė, išteklių atsiėmimas ir grąžinimas, patvirtinimai, veiklos klausimai) sukuriamos be šio pranešimo – apie jas praneša tai, kas jas sukūrė (pvz., [naujas posėdis](/pagrindai/pranesimai#auditorija) ar rezervacijos būsena) |
-| Kasdien 8.00, likus 7, 3 ir 1 d. iki termino | Atsakingi | Priminimą. Priminimų pasirinkimas valdomas [pranešimų nustatymuose](/pagrindai/pranesimai). Užduočiai „Pranešti apie veiklą“ jų nesiunčiama – vietoj to vieną kartą siunčiamas laiškas [„Ar vyko posėdis?“](/visak/institucijos#pranesimai) |
-| Kiekvieną pirmadienį 9.00 | Žmonės, turintys vėluojančių užduočių | Suvestinę apie vėluojančias užduotis |
+| Kasdien 8.00, likus 3 d. arba, jei taip pasirinkta, 1 d. iki termino | Atsakingi | Priminimą. Priminimų pasirinkimas valdomas [pranešimų nustatymuose](/pagrindai/pranesimai). Užduočiai „Pranešti apie veiklą“ jų nesiunčiama – vietoj to vieną kartą siunčiamas laiškas [„Ar vyko posėdis?“](/visak/institucijos#pranesimai) |
+| Pirmadieniais 14.30, jei per savaitę atsirado naujų vėluojančių užduočių arba po ankstesnio priminimo praėjo 4 savaitės | Žmonės, turintys vėluojančių užduočių | Priminimą apie vėluojančias užduotis, kuris numatytai įtraukiamas į pranešimų suvestinę |
 
 Automatinių posėdžio ir institucijos užduočių priminimai siunčiami tik tiems atsakingiems, kurie
 vis dar eina pareigas toje institucijoje. Pasibaigus kadencijai užduotis lieka, bet priminimų

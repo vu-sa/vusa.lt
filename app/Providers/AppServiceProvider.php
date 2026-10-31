@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Notifications\Channels\IdempotentDatabaseChannel;
+use App\Notifications\ReservationStatusChangeBatch;
 use App\Services\InstitutionRelationService;
 use App\Services\InstitutionScopeResolver;
 use App\Services\ModelAuthorizer;
@@ -48,6 +49,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->scoped(SystemDutyTypes::class);
         $this->app->scoped(MeetingSearchLock::class);
         $this->app->scoped(InstitutionRelationService::class);
+        $this->app->scoped(ReservationStatusChangeBatch::class);
 
         // Register our new permission service
         $this->app->scoped('permission.service', fn ($app) => new PermissionService($app->make(ModelAuthorizer::class)));

@@ -19,7 +19,7 @@ const term = (overrides: Record<string, unknown> = {}) => ({
   startDate: '2026-02-01',
   endDate: null,
   isExOfficio: false,
-  roles: ['Studentų atstovas'],
+  roles: [{ title: 'Studentų atstovas', description: null }],
   ...overrides,
 });
 
@@ -53,6 +53,17 @@ describe('ShowMyRoles', () => {
     expect(row.text()).toContain('Studentų atstovas');
     expect(row.text()).toContain('VU MIF studentų atstovybė');
     expect(row.text()).toContain('2026-02-01');
+  });
+
+  it('shows a holders responsibility description only when present', () => {
+    const wrapper = mountPage({ current: [term({ roles: [
+      { title: 'Koordinavimas', description: 'Padėk atstovams.' },
+      { title: 'Komunikacija', description: null },
+    ] })] });
+
+    const descriptions = wrapper.findAll('[data-testid="term-responsibility-description"]');
+    expect(descriptions).toHaveLength(1);
+    expect(descriptions[0]!.text()).toContain('Koordinavimas · Padėk atstovams.');
   });
 
   it('marks ex-officio seats and cross-tenant representation', () => {

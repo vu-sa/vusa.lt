@@ -3,6 +3,8 @@
     <CollectionPage
       :row-actions
       :source
+      :quick-filters
+      @quick-filter="toggleQuickFilter"
       collection="resources"
       entity-type="resource"
       :eyebrow
@@ -216,7 +218,7 @@ import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
 import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import { highlightText, matchTitle } from '@/Shared/Search/matches';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
-import type { CollectionColumn } from '@/Components/Collection/types';
+import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
 import EntityTypeMark from '@/Components/EntityTypeMark.vue';
 import { ResourceIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
@@ -234,8 +236,10 @@ import { notReservableStatus } from '@/Constants/statuses';
 import { useResourceAvailability } from '@/Features/Admin/AdminSearch/Composables/useResourceAvailability';
 import type { ResourceSearchResult } from '@/Shared/Search/types';
 
-defineProps<{
+const props = defineProps<{
   reservationCart: ReservationCart | null;
+  mainTenantId: number | null;
+  managedTenantIds: number[];
 }>();
 
 const page = usePage();
@@ -249,10 +253,38 @@ const source = useTypesenseCollectionSource<ResourceSearchResult>({
   collection: 'resources',
   preserveUrlKeys: ['view', 'item', 'cart'],
   // The facet chip reads "Ar skolinamas: Taip" — name the value as the badge does (U10).
-  valueLabel: (field, value) => (field === 'is_reservable' ? (value === 'true' ? $t('Rezervuojamas') : $t('Nerezervuojamas')) : undefined),
+  valueLabel: (field, value) => {
+    if (field === 'tenant_id') {
+      return page.props.tenants?.find(tenant => String(tenant.id) === value)?.shortname;
+    }
+
+    return field === 'is_reservable' ? (value === 'true' ? $t('Rezervuojamas') : $t('Nerezervuojamas')) : undefined;
+  },
 });
 
-/** Only the exception is painted: a reservable resource is the healthy default. */
+const managedIds = computed(() => props.managedTenantIds.map(String));
+const managedActive = computed(() => {
+  const selected = source.filters.value.tenant_id;
+
+  return Array.isArray(selected) && selected.length === managedIds.value.length
+    && managedIds.value.every(id => selected.map(String).includes(id));
+});
+const quickFilters = computed<CollectionQuickFilter[]>(() => managedIds.value.length > 0 ? [{
+  id: 'managed',
+  label: $t('Mano administruojami'),
+  active: managedActive.value,
+  spotlight: {
+    id: 'managed-resources-v1',
+    title: $t('Mano administruojami'),
+    description: $t('Rodyk išteklius tų padalinių, kurių rezervacijas administruoji.'),
+  },
+}] : []);
+
+function toggleQuickFilter(id: string): void {
+  if (id === 'managed' && managedIds.value.length > 0) {
+    source.setFilter('tenant_id', managedActive.value ? undefined : managedIds.value);
+  }
+}
 
 const resourceKey = (resource: ResourceSearchResult) => String(resource.id);
 const nameOf = (resource: ResourceSearchResult) => getSearchTranslation(resource, 'name') || $t('Be pavadinimo');

@@ -148,12 +148,13 @@ describe('converting the old category preferences', function (): void {
 });
 
 describe('restoring defaults', function (): void {
-    test('clears type choices, reminders and frequency, but keeps addresses and an active mute', function (): void {
+    test('clears type choices, reminders and digest schedule, but keeps addresses and an active mute', function (): void {
         $mutedUntil = now()->addHour()->toIso8601String();
         $this->user->update(['notification_preferences' => [
             'types' => ['task_reminder' => ['email' => 'off']],
             'reminder_settings' => ['meeting_reminder_hours' => [12]],
-            'digest_frequency_hours' => 24,
+            'digest_frequency_hours' => 4,
+            'digest_send_hour' => 18,
             'emails' => [$this->user->email],
             'muted_until' => $mutedUntil,
         ]]);
@@ -163,9 +164,60 @@ describe('restoring defaults', function (): void {
         $user = $this->user->refresh();
 
         expect($user->emailDeliveryFor(NotificationType::TaskReminder))->toBe(EmailDelivery::Immediate)
-            ->and($user->getMeetingReminderHours())->toBe([24, 1])
-            ->and($user->getDigestFrequencyHours())->toBe(4)
+            ->and($user->getMeetingReminderHours())->toBe([24])
+            ->and($user->getTaskReminderDays())->toBe([3])
+            ->and($user->getDigestFrequencyHours())->toBe(24)
+            ->and($user->getDigestSendHour())->toBe(15)
             ->and($user->notification_preferences['emails'])->toBe([$this->user->email])
             ->and($user->isGloballyMuted())->toBeTrue();
     });
 });
+
+test('task reminders require exactly one supported day', function (array $days, string $error): void {
+    asUser($this->user)->patch(route('profile.updateNotificationPreferences'), [
+        'reminder_settings' => ['task_reminder_days' => $days],
+    ])->assertSessionHasErrors($error);
+})->with([
+    'seven days' => [[7], 'reminder_settings.task_reminder_days.0'],
+    'two choices' => [[3, 1], 'reminder_settings.task_reminder_days'],
+    'no choice' => [[], 'reminder_settings.task_reminder_days'],
+]);
+
+test('saves one selected task reminder day', function (int $days): void {
+    asUser($this->user)->patch(route('profile.updateNotificationPreferences'), [
+        'reminder_settings' => ['task_reminder_days' => [$days]],
+    ])->assertSessionHas('success');
+
+    expect($this->user->refresh()->getTaskReminderDays())->toBe([$days]);
+})->with([3, 1]);
+
+test('digest settings reject retired frequencies and hours outside daytime', function (string $key, int $value): void {
+    asUser($this->user)->patch(route('profile.updateNotificationPreferences'), [$key => $value])
+        ->assertSessionHasErrors($key);
+})->with([
+    'hourly' => ['digest_frequency_hours', 1],
+    'twelve hours' => ['digest_frequency_hours', 12],
+    'before daytime' => ['digest_send_hour', 6],
+    'quiet hours' => ['digest_send_hour', 22],
+]);
+
+test('saves both digest modes and keeps the chosen hour between mode changes', function (): void {
+    asUser($this->user)->patch(route('profile.updateNotificationPreferences'), [
+        'digest_frequency_hours' => 24, 'digest_send_hour' => 18,
+    ])->assertSessionHas('success');
+    expect($this->user->refresh()->getDigestSendHour())->toBe(18);
+
+    asUser($this->user)->patch(route('profile.updateNotificationPreferences'), ['digest_frequency_hours' => 4])
+        ->assertSessionHas('success');
+    expect($this->user->refresh()->getDigestFrequencyHours())->toBe(4)
+        ->and($this->user->getDigestSendHour())->toBe(18);
+
+    asUser($this->user)->get(route('profile.notifications'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('notificationPreferences.digest_send_hour', 18));
+});
+
+test('daily delivery accepts the daytime boundary hours', function (int $hour): void {
+    asUser($this->user)->patch(route('profile.updateNotificationPreferences'), ['digest_send_hour' => $hour])
+        ->assertSessionHas('success');
+    expect($this->user->refresh()->getDigestSendHour())->toBe($hour);
+})->with([7, 21]);

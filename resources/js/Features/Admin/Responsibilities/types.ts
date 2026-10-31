@@ -8,6 +8,7 @@ export interface DutyResponsibilityItem {
   id: string;
   role_id: string;
   title: string;
+  description: string | null;
   purpose: string | null;
   purpose_label: string | null;
   source: GranteeType;

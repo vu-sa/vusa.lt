@@ -247,7 +247,7 @@ describe('per-persona visibility', function (): void {
             'sistema' => ['apzvalga', 'tipai'],
             'svetaine' => ['apzvalga', 'puslapiai', 'naujienos', 'kalendorius', 'baneriai', 'navigacija', 'greitosios_nuorodos', 'renginiu_tipai', 'zymos', 'failai', 'dokumentai', 'studiju_rinkiniai'],
             'organizacija' => ['apzvalga', 'nariai', 'pareigybes', 'pareigybiu_atnaujinimas', 'padaliniai', 'studiju_programos', 'konferencijos', 'formos'],
-            'sistema' => ['apzvalga', 'roles', 'leidimai', 'tipai', 'instituciju_tipai', 'pareigybiu_tipai', 'nustatymai', 'sistemos_busena', 'laisku_eile', 'pagalbos_uzklausos'],
+            'sistema' => ['apzvalga', 'roles', 'leidimai', 'tipai', 'instituciju_tipai', 'pareigybiu_tipai', 'nustatymai', 'sistemos_busena', 'laisku_eile', 'laisku_perziura', 'pagalbos_uzklausos'],
         ]);
     });
 

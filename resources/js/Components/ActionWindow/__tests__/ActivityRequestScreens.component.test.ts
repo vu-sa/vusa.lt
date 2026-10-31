@@ -4,6 +4,7 @@ import { router, usePage } from '@inertiajs/vue3';
 import { computed, defineComponent, h, ref, type Component } from 'vue';
 
 import ActivityRequestCampaignScreen from '@/Components/ActionWindow/screens/ActivityRequestCampaignScreen.vue';
+import ActionWindowBody from '@/Components/ActionWindow/ActionWindowBody.vue';
 import { useAdminCollectionSearch } from '@/Features/Admin/AdminSearch/Composables/useAdminCollectionSearch';
 import ActivityRequestInstitutionsScreen from '@/Components/ActionWindow/screens/ActivityRequestInstitutionsScreen.vue';
 import ActivityRequestReviewScreen from '@/Components/ActionWindow/screens/ActivityRequestReviewScreen.vue';
@@ -347,6 +348,81 @@ describe('ActivityRequestReviewScreen.vue', () => {
 });
 
 describe('campaign choice and selection stability', () => {
+  it.each(['activity_confirmation', 'missing_meetings'] as const)('reviews and sends only the locked institution for %s, including after going back', async (campaignType) => {
+    const institution = { id: 'a', name: 'Senatas' };
+    preview.value = [{
+      institution, recipients: [{ id: 'u', name: 'Ona', period_start: '2026-09-01', period_end: '2026-10-03', delivery_mode: 'immediate', skip_reason: null }],
+      excluded_recipients: [], skip_reason: null,
+    }];
+    const { wrapper, window } = mountScreen(ActionWindowBody, {
+      flow: 'activity.request', institutions: [institution], lockActivityRequestInstitutions: true,
+    });
+    await flushPromises();
+
+    expect(wrapper.findAll('[data-slot="action-window-progress"] > span')).toHaveLength(2);
+    const campaignIndex = campaignType === 'activity_confirmation' ? 0 : 1;
+    await wrapper.findAll('[data-slot="action-choice-button"]')[campaignIndex]!.trigger('click');
+    await flushPromises();
+
+    expect(window.stack.map(frame => frame.id)).toEqual(['activity.campaign', 'activity.review']);
+    expect(wrapper.text()).toContain('action_window.common.step 2 / 2');
+    expect(wrapper.findAll('[data-slot="activity-request-preview"] > div')).toHaveLength(1);
+    expect(wrapper.text()).toContain('Senatas');
+    expect(wrapper.text()).not.toContain('action_window.activity_request.review.change_institutions');
+    expect(wrapper.text()).not.toContain('action_window.activity_request.review.change_people');
+    expect(previewExecute).toHaveBeenLastCalledWith({ institution_ids: ['a'], campaign_type: campaignType });
+
+    await wrapper.get('button[aria-label="action_window.common.back"]').trigger('click');
+    await flushPromises();
+    expect(window.current.value.id).toBe('activity.campaign');
+    expect(wrapper.text()).toContain('action_window.common.step 1 / 2');
+    await wrapper.findAll('[data-slot="action-choice-button"]')[campaignIndex]!.trigger('click');
+    await flushPromises();
+    await wrapper.get('[data-slot="action-window-primary"]').trigger('click');
+
+    expect(router.post).toHaveBeenCalledWith(expect.any(String), {
+      institution_ids: ['a'], campaign_type: campaignType, note: undefined,
+    }, expect.any(Object));
+  });
+
+  it('changes the campaign from a locked review and returns directly to that review', async () => {
+    const { wrapper, window } = mountScreen(ActionWindowBody, {
+      flow: 'activity.request', institutions: [{ id: 'a', name: 'Senatas' }], lockActivityRequestInstitutions: true,
+    });
+    await flushPromises();
+    await wrapper.findAll('[data-slot="action-choice-button"]')[0]!.trigger('click');
+    await flushPromises();
+    await wrapper.findAll('button').find(button => button.text() === 'activity_requests.change_campaign')!.trigger('click');
+    await flushPromises();
+    expect(wrapper.find('[data-slot="action-window-progress"]').exists()).toBe(false);
+    await wrapper.findAll('[data-slot="action-choice-button"]')[1]!.trigger('click');
+    await flushPromises();
+
+    expect(window.stack.map(frame => frame.id)).toEqual(['activity.campaign', 'activity.review']);
+    expect(window.draft.activityRequest.campaignType).toBe('missing_meetings');
+    expect(window.draft.activityRequest.institutions.map(item => item.id)).toEqual(['a']);
+    expect(wrapper.text()).not.toContain('action_window.activity_request.review.change_institutions');
+  });
+
+  it.each(['already_asked', 'no_recipients', 'recent_activity'])('shows why the locked institution is not askable (%s) and prevents sending', async (reason) => {
+    const institution = { id: 'a', name: 'Senatas' };
+    preview.value = [{ institution, recipients: [], excluded_recipients: [], skip_reason: reason }];
+    const { wrapper, window } = mountScreen(ActionWindowBody, {
+      flow: 'activity.request', institutions: [institution], lockActivityRequestInstitutions: true,
+    });
+    await flushPromises();
+    await wrapper.findAll('[data-slot="action-choice-button"]')[0]!.trigger('click');
+    await flushPromises();
+
+    expect(previewExecute).toHaveBeenLastCalledWith({ institution_ids: ['a'], campaign_type: 'activity_confirmation' });
+    expect(wrapper.get('[data-slot="activity-request-exclusions"]').text()).toContain('Senatas');
+    expect(wrapper.get('[data-slot="activity-request-exclusions"]').text()).toContain(`activity_requests.skip.${reason}`);
+    expect(window.draft.activityRequest.institutions).toEqual([institution]);
+    expect(wrapper.get('[data-slot="action-window-primary"]').attributes('disabled')).toBeDefined();
+    await wrapper.get('[data-slot="action-window-primary"]').trigger('click');
+    expect(router.post).not.toHaveBeenCalled();
+  });
+
   it('asks how to pick even when institutions are preselected', async () => {
     const { wrapper, window } = mountScreen(ActivityRequestCampaignScreen, { flow: 'activity.request', institutions: [{ id: 'a', name: 'A' }] });
     expect(window.current.value.id).toBe('activity.campaign');

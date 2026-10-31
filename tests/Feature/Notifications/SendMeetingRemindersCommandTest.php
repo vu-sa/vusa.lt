@@ -12,21 +12,19 @@ use Illuminate\Support\Facades\Notification;
 pest()->use(RefreshDatabase::class);
 
 describe('notifications:meeting-reminders', function (): void {
-    test('does not double-send when the command runs twice inside the same reminder window', function (): void {
+    test('opting in to one hour sends once when the command repeats in the same window', function (): void {
         Notification::fake();
 
         $institution = Institution::factory()->for(Tenant::factory()->create())->create();
         $duty = Duty::factory()->for($institution)->create();
 
-        $user = User::factory()->create();
+        $user = User::factory()->create(['notification_preferences' => ['reminder_settings' => ['meeting_reminder_hours' => [1]]]]);
         $user->duties()->attach($duty, ['start_date' => now()->subMonth(), 'end_date' => null]);
 
         $meeting = Meeting::factory()->create(['start_time' => now()->addHour()]);
         $meeting->institutions()->attach($institution->id);
 
-        // The 30-minute schedule (routes/console.php) reruns well inside the 60-minute
-        // reminder window (±30 min around the target), so a steady-state run always
-        // re-finds a meeting the previous run already caught — this reproduces that.
+        // The half-hour schedule can find the same meeting twice in its one-hour window.
         $this->artisan('notifications:meeting-reminders')->assertSuccessful();
         $this->artisan('notifications:meeting-reminders')->assertSuccessful();
 
@@ -34,7 +32,7 @@ describe('notifications:meeting-reminders', function (): void {
         Notification::assertSentTo($user, MeetingReminderNotification::class);
     });
 
-    test('by default reminds 24 hours and 1 hour before, and never about a deleted meeting', function (): void {
+    test('by default reminds only 24 hours before, and never about a deleted meeting', function (): void {
         Notification::fake();
 
         $institution = Institution::factory()->for(Tenant::factory()->create())->create();
@@ -51,8 +49,8 @@ describe('notifications:meeting-reminders', function (): void {
 
         $remindedAbout = fn (Meeting $meeting): Closure => fn (MeetingReminderNotification $notification): bool => $notification->url() === route('meetings.show', $meeting);
 
-        Notification::assertSentTimes(MeetingReminderNotification::class, 2);
+        Notification::assertSentTimes(MeetingReminderNotification::class, 1);
         Notification::assertSentTo($user, MeetingReminderNotification::class, $remindedAbout($dayAhead));
-        Notification::assertSentTo($user, MeetingReminderNotification::class, $remindedAbout($hourAhead));
+        Notification::assertNotSentTo($user, MeetingReminderNotification::class, $remindedAbout($hourAhead));
     });
 });

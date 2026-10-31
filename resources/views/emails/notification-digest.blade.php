@@ -1,8 +1,6 @@
 <x-mail::message>
 # {{ \App\Support\MailGreeting::forName($user->name) }}
 
-{{ trans_choice('notifications.digest_subject', $totalCount, ['count' => $totalCount]) }}
-
 @foreach ($categorizedItems as $categoryLabel => $items)
 <x-mail::digest-category
 :label="$categoryLabel"

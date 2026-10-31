@@ -1,4 +1,7 @@
 {
+  "Mano administruojami": "Managed by me",
+  "VU SA ištekliai pirmiausia": "VU SA resources first",
+  "Rodyk išteklius tų padalinių, kurių rezervacijas administruoji.": "Show resources from the units whose reservations you manage.",
   "Kiti eilutės veiksmai yra šiame meniu.": "Other row actions are in this menu.",
     "Atkurti ir atidaryti": "Restore and open",
   "Bandomoji aplinka": "Staging environment",

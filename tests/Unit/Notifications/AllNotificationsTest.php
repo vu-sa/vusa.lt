@@ -245,11 +245,12 @@ describe('TaskOverdueNotification', function (): void {
         expect($notification->icon())->toBe('⚠️');
     });
 
-    test('does not support email digest (important)', function (): void {
+    test('defaults to digest without push interruption', function (): void {
         $tasks = collect([Task::factory()->create()]);
         $notification = new TaskOverdueNotification($tasks);
 
-        expect($notification->type()->defaultEmail())->not->toBe(EmailDelivery::Digest);
+        expect($notification->type()->defaultEmail())->toBe(EmailDelivery::Digest)
+            ->and($notification->type()->defaultPush())->toBeFalse();
     });
 });
 

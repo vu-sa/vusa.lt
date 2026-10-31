@@ -12,6 +12,7 @@ return [
     'unlinked' => 'Problemos susiejimas panaikintas.',
     'form' => [
         'instructions' => 'Žvaigždute (*) pažymėti laukai yra privalomi; kitus gali praleisti.',
+        'responsible_user_placeholder' => 'Ieškok pagal vardą',
     ],
     'hints' => [
         'title' => 'Trumpas, konkretus problemos pavadinimas, pvz. „Trūksta atsiskaitymo tvarkos aprašo“.',
