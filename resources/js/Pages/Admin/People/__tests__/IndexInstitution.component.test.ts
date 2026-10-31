@@ -8,6 +8,11 @@ import IndexInstitution from '../IndexInstitution.vue';
 import { commonStubs } from '@/tests/stubs';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
+const rowAbilityState = vi.hoisted(() => ({ update: false, delete: false }));
+vi.mock('@/Composables/useRowAbilities', () => ({
+  useRowAbilities: () => ({ can: (_id: string, ability: 'update' | 'delete') => rowAbilityState[ability], invalidate: vi.fn() }),
+}));
+
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 const typesense = vi.hoisted(() => ({
@@ -39,11 +44,11 @@ vi.mock('@/Composables/useInstitutionSubscription', () => ({
 /** The collection shell is covered by its own suite; here it only hands over its slots and events. */
 const CollectionPageStub = {
   name: 'CollectionPage',
-  props: ['source', 'quickFilters', 'selectable'],
+  props: ['source', 'quickFilters', 'selectable', 'rowActions'],
   emits: ['quickFilter'],
   template: `
     <div>
-      <div v-for="item in source.items.value" :key="item.id" data-testid="row"><slot name="row" :item="item" view="rows" /></div>
+      <div v-for="item in source.items.value" :key="item.id" data-testid="row"><slot name="row" :item="item" :actions="rowActions?.(item) ?? []" view="rows" /></div>
       <div data-testid="cells" v-for="item in source.items.value" :key="'cell-' + item.id"><slot name="cell" :item="item" :column="{ key: 'name' }" /><slot name="cell" :item="item" :column="{ key: 'types' }" /><slot name="cell" :item="item" :column="{ key: 'tenant' }" /></div>
       <div data-testid="bulk"><slot name="bulk-actions" :selected="source.items.value" :clear="() => {}" /></div>
     </div>
@@ -93,7 +98,7 @@ describe('IndexInstitution following', () => {
     typesense.rows = [{ id: 'i1', name_lt: 'Senatas', tenant_id: 1 }];
     const wrapper = mountPage([]);
 
-    await wrapper.get('button[aria-label="Ištrinti visam laikui"]').trigger('click');
+    await wrapper.get('[data-testid="dropdown-menu-content"] [data-action^="forceDelete:"]').trigger('click');
     await wrapper.get('[data-testid="confirm-deletion"]').trigger('click');
 
     const options = vi.mocked(router.delete).mock.calls.at(-1)?.[1];
@@ -166,4 +171,17 @@ describe('IndexInstitution following', () => {
     await wrapper.find('[data-testid="bulk"] button').trigger('click');
     expect(subscription.setFollowedMany).toHaveBeenCalledWith(['mine', 'public'], true);
   });
+});
+
+beforeEach(() => { rowAbilityState.update = false; rowAbilityState.delete = false; });
+
+it.each([true, false])('offers edit only for allowed live institution rows (%s)', (allowed) => {
+  trash.active = false;
+  typesense.rows = [];
+  rowAbilityState.update = allowed;
+  const wrapper = mountPage([]);
+  const actions = wrapper.findComponent(CollectionPageStub).props('rowActions')({ id: 'i1', name_lt: 'Taryba' });
+  expect(actions.some(action => action.role === 'edit')).toBe(allowed);
+  expect(actions.some(action => action.role === 'open')).toBe(true);
+  wrapper.unmount();
 });

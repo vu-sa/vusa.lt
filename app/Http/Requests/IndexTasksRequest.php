@@ -18,6 +18,8 @@ class IndexTasksRequest extends BaseIndexRequest
     #[\Override]
     protected function prepareForValidation(): void
     {
+        parent::prepareForValidation();
+
         // A bookmarked or hand-typed URL carries `?taskable_type=meeting` or a comma list.
         foreach (['taskable_type', 'tenant'] as $key) {
             if (is_string($this->input($key))) {

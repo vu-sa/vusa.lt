@@ -1,7 +1,7 @@
 <template>
   <SheetForm
-    required-note
     v-model:open="open"
+    required-note
     :created-at="mailingList?.created_at"
     :updated-at="mailingList?.updated_at"
     :title="mailingList ? $t('mailing_lists.edit.title') : $t('mailing_lists.create.title')"

@@ -36,6 +36,7 @@ const stubs = {
     template: '<div data-testid="assign-sheet" :data-open="open" :data-dutiable="dutiable?.id" :data-terms="(existingTerms ?? []).map(t => `${t.user_id}:${t.start_date}`).join(\',\')" />',
   },
   DutiableTimelineDialog: true,
+  ExOfficioReviewSheet: true,
   AccessChangeWarningDialog: true,
   UserAvatar: { template: '<span class="avatar" />' },
   InflectedDutyName: { props: ['name'], template: '<span>{{ typeof name === "string" ? name : name?.lt }}</span>' },
@@ -121,6 +122,17 @@ describe('ShowDuty.vue', () => {
 
       expect(wrapper.find('[data-testid="assign-sheet"]').attributes('data-open')).toBe('false');
     });
+  });
+
+  it('offers the ex officio review only when people management and links are available', async () => {
+    const wrapper = mountPage({ can: { update: true, managePeople: true, reviewExOfficio: true } });
+    await wrapper.get('[data-testid="overflow-ex-officio-review"]').trigger('click');
+    expect(wrapper.findComponent({ name: 'ExOfficioReviewSheet' }).exists()).toBe(true);
+    await wrapper.setProps({ can: { update: true, managePeople: false, reviewExOfficio: true } });
+    expect(wrapper.find('[data-testid="overflow-ex-officio-review"]').exists()).toBe(false);
+    await wrapper.setProps({ can: { update: true, managePeople: true, reviewExOfficio: false } });
+    expect(wrapper.find('[data-testid="overflow-ex-officio-review"]').exists()).toBe(false);
+    wrapper.unmount();
   });
 
   it('paints no status for a duty that is simply occupied', () => {

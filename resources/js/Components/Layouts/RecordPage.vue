@@ -101,51 +101,7 @@
                   @select="emit('action', $event)"
                 />
 
-                <!-- The root renders no element, so the breakpoint class lives on the trigger. -->
-                <DropdownMenu v-if="menuActions.length">
-                  <DropdownMenuTrigger as-child>
-                    <Button variant="outline" size="icon-lg" class="hidden size-11 md:inline-flex" :aria-label="$t('Daugiau veiksmų')" data-testid="record-overflow-trigger">
-                      <MoreHorizontal class="size-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      v-for="action in menuActions"
-                      :key="action.key"
-                      :class="action.destructive ? 'text-destructive focus:text-destructive' : undefined"
-                      @select="selectOverflow(action)"
-                    >
-                      <component :is="action.icon" v-if="action.icon" class="mr-2 size-4" />
-                      {{ action.label }}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <Sheet v-if="menuActions.length">
-                  <SheetTrigger as-child>
-                    <Button variant="outline" size="icon-lg" class="size-11 md:hidden" :aria-label="$t('Daugiau veiksmų')">
-                      <MoreHorizontal class="size-4" />
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent side="bottom" class="max-h-[85vh]">
-                    <SheetHeader>
-                      <SheetTitle>{{ $t('Veiksmai') }}</SheetTitle>
-                    </SheetHeader>
-                    <div class="grid gap-2 px-4 pb-6">
-                      <SheetClose v-for="action in menuActions" :key="action.key" as-child>
-                        <Button
-                          variant="ghost"
-                          class="u-touch justify-start"
-                          :class="action.destructive ? 'text-destructive' : undefined"
-                          @click="selectOverflow(action)"
-                        >
-                          <component :is="action.icon" v-if="action.icon" class="mr-2 size-4" />
-                          {{ action.label }}
-                        </Button>
-                      </SheetClose>
-                    </div>
-                  </SheetContent>
-                </Sheet>
+                <RecordActionMenu :actions="menuActions" trigger-size="default" @select="selectOverflow" />
               </div>
             </div>
           </div>
@@ -283,15 +239,15 @@ import { computed, ref, watch } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { useResizeObserver } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronLeft, ChevronRight, History, MoreHorizontal } from '@lucide/vue';
+import { ChevronLeft, ChevronRight, History } from '@lucide/vue';
 
 import ActionControl from './RecordPageAction.vue';
 
+import RecordActionMenu from '@/Components/Patterns/RecordActionMenu.vue';
+import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
 import { RuledGrid, type RuledGridColumns } from '@/Components/Brand';
 import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
-import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/Components/ui/sheet';
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 import { statusRoleParts, type StatusPresentation } from '@/Constants/statuses';
@@ -319,14 +275,7 @@ export interface RecordFact {
   detail?: string | null;
 }
 
-export interface RecordAction {
-  key: string;
-  label: string;
-  icon?: Component;
-  href?: string;
-  external?: boolean;
-  destructive?: boolean;
-}
+export type RecordAction = AdminRecordAction;
 
 export interface RecordNavigationContext {
   position: number;
@@ -439,19 +388,8 @@ const visit = (href?: string | null) => {
   }
 };
 
-/** A menu item is not a link element, so an action carrying `href` is followed here, as the primary one is. */
-const selectOverflow = (action: RecordAction) => {
-  if (action.key === '__history') {
-    historyOpen.value = true;
-  }
-  else if (action.href && action.external) {
-    window.open(action.href, '_blank', 'noopener');
-  }
-  else if (action.href) {
-    router.visit(action.href);
-  }
-  else {
-    emit('action', action.key);
-  }
+const selectOverflow = (key: string) => {
+  if (key === '__history') historyOpen.value = true;
+  else emit('action', key);
 };
 </script>

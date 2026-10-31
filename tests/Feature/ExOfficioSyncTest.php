@@ -1,8 +1,7 @@
 <?php
 
-use App\Actions\BackfillExOfficioTargetDuty;
+use App\Actions\Dutiables\SyncExOfficioTargets;
 use App\Events\DutiableChanged;
-use App\Listeners\SyncExOfficioDutiables;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
@@ -39,7 +38,7 @@ test('creating a source Dutiable fires DutiableChanged', function (): void {
     Event::assertDispatched(DutiableChanged::class);
 });
 
-test('listener creates derived Dutiable for each ex-officio target', function (): void {
+test('model save creates derived Dutiable for each ex-officio target', function (): void {
     $source = Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
@@ -48,9 +47,6 @@ test('listener creates derived Dutiable for each ex-officio target', function ()
         'end_date' => null,
         'via_dutiable_id' => null,
     ]);
-
-    $listener = new SyncExOfficioDutiables;
-    $listener->handle(new DutiableChanged($source));
 
     $derived = Dutiable::where('duty_id', $this->targetDuty->id)
         ->where('dutiable_id', $this->user->id)
@@ -62,7 +58,7 @@ test('listener creates derived Dutiable for each ex-officio target', function ()
         ->and($derived->end_date)->toBeNull();
 });
 
-test('listener mirrors end_date change to derived row', function (): void {
+test('model save mirrors end_date change to derived row', function (): void {
     $source = Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
@@ -72,21 +68,15 @@ test('listener mirrors end_date change to derived row', function (): void {
         'via_dutiable_id' => null,
     ]);
 
-    $listener = new SyncExOfficioDutiables;
-    $listener->handle(new DutiableChanged($source));
-
-    // Now end-date the source.
     $endDate = now()->subDay()->toDateString();
     $source->end_date = $endDate;
     $source->save();
-
-    $listener->handle(new DutiableChanged($source));
 
     $derived = Dutiable::where('via_dutiable_id', $source->id)->first();
     expect($derived->end_date->toDateString())->toBe($endDate);
 });
 
-test('listener does not overwrite independent fields on derived row', function (): void {
+test('model save does not overwrite independent fields on derived row', function (): void {
     $source = Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
@@ -96,25 +86,18 @@ test('listener does not overwrite independent fields on derived row', function (
         'via_dutiable_id' => null,
     ]);
 
-    $listener = new SyncExOfficioDutiables;
-    $listener->handle(new DutiableChanged($source));
-
-    // Admin edits the derived row's additional_email.
     $derived = Dutiable::where('via_dutiable_id', $source->id)->first();
     $derived->additional_email = 'custom@example.com';
     $derived->save();
 
-    // Source re-saved (e.g. dates changed) → re-sync.
     $source->start_date = now()->subWeek()->toDateString();
     $source->save();
-    $listener->handle(new DutiableChanged($source));
 
     $derived->refresh();
     expect($derived->additional_email)->toBe('custom@example.com');
 });
 
-test('listener adopts existing manual row instead of creating a duplicate', function (): void {
-    // User already has a manual Dutiable on the target duty.
+test('model save preserves an independent manual term beside its derived term', function (): void {
     $manualRow = Dutiable::factory()->create([
         'duty_id' => $this->targetDuty->id,
         'dutiable_id' => $this->user->id,
@@ -133,21 +116,18 @@ test('listener adopts existing manual row instead of creating a duplicate', func
         'via_dutiable_id' => null,
     ]);
 
-    $listener = new SyncExOfficioDutiables;
-    $listener->handle(new DutiableChanged($source));
-
-    // Should not create a new row.
     $count = Dutiable::where('duty_id', $this->targetDuty->id)
         ->where('dutiable_id', $this->user->id)
         ->count();
 
-    expect($count)->toBe(1);
+    expect($count)->toBe(2);
 
     $manualRow->refresh();
-    expect($manualRow->via_dutiable_id)->toBe($source->id);
+    expect($manualRow->via_dutiable_id)->toBeNull()
+        ->and($manualRow->start_date->toDateString())->toBe(now()->subYear()->toDateString());
 });
 
-test('listener deletes derived rows when source is force-deleted', function (): void {
+test('model save deletes derived rows when source is force-deleted', function (): void {
     $source = Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
@@ -157,24 +137,14 @@ test('listener deletes derived rows when source is force-deleted', function (): 
         'via_dutiable_id' => null,
     ]);
 
-    $listener = new SyncExOfficioDutiables;
-    $listener->handle(new DutiableChanged($source));
-
     expect(Dutiable::where('via_dutiable_id', $source->id)->count())->toBe(1);
 
-    // A real delete, not a simulated one: the event reads `exists` at construction,
-    // which is how it captures the delete signal before the row is gone.
     $source->delete();
 
-    $listener->handle(new DutiableChanged($source));
-
-    // Asserted on the target duty, not on `via_dutiable_id`: that column is
-    // nullOnDelete(), so a query for the dead source id returns zero rows whether
-    // the derived rows were cleaned up or merely orphaned.
     expect(Dutiable::where('duty_id', $this->targetDuty->id)->count())->toBe(0);
 });
 
-test('listener skips non-User dutiable types', function (): void {
+test('model save skips non-User dutiable types', function (): void {
     $source = Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
@@ -184,13 +154,10 @@ test('listener skips non-User dutiable types', function (): void {
         'via_dutiable_id' => null,
     ]);
 
-    $listener = new SyncExOfficioDutiables;
-    $listener->handle(new DutiableChanged($source));
-
     expect(Dutiable::where('duty_id', $this->targetDuty->id)->count())->toBe(0);
 });
 
-test('listener skips derived rows to prevent chains', function (): void {
+test('model save skips derived rows to prevent chains', function (): void {
     $parentDutiable = Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
@@ -210,8 +177,7 @@ test('listener skips derived rows to prevent chains', function (): void {
     ]);
 
     $before = Dutiable::count();
-    $listener = new SyncExOfficioDutiables;
-    $listener->handle(new DutiableChanged($derivedRow));
+    $derivedRow->save();
 
     expect(Dutiable::count())->toBe($before);
 });
@@ -242,9 +208,6 @@ test('cross-tenant ex-officio sets tenant_id when target supports source tenant'
         'via_dutiable_id' => null,
     ]);
 
-    $listener = new SyncExOfficioDutiables;
-    $listener->handle(new DutiableChanged($source));
-
     $derived = Dutiable::where('via_dutiable_id', $source->id)->first();
 
     expect($derived)->not->toBeNull()
@@ -264,7 +227,6 @@ test('cross-tenant ex-officio does not set tenant_id when target does not suppor
 
     $sourceDuty = Duty::factory()->for($sourceInstitution)->create();
     $targetDuty = Duty::factory()->for($targetInstitution)->create();
-    // Do NOT add sourceTenant to targetDuty's assignableTenants.
 
     $sourceDuty->exOfficioTargetDuties()->attach($targetDuty);
 
@@ -277,9 +239,6 @@ test('cross-tenant ex-officio does not set tenant_id when target does not suppor
         'via_dutiable_id' => null,
     ]);
 
-    $listener = new SyncExOfficioDutiables;
-    $listener->handle(new DutiableChanged($source));
-
     $derived = Dutiable::where('via_dutiable_id', $source->id)->first();
 
     expect($derived)->not->toBeNull()
@@ -287,7 +246,6 @@ test('cross-tenant ex-officio does not set tenant_id when target does not suppor
 });
 
 test('same-tenant ex-officio keeps tenant_id null', function (): void {
-    // Default beforeEach already creates source and target in the same tenant.
     $source = Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
@@ -297,16 +255,13 @@ test('same-tenant ex-officio keeps tenant_id null', function (): void {
         'via_dutiable_id' => null,
     ]);
 
-    $listener = new SyncExOfficioDutiables;
-    $listener->handle(new DutiableChanged($source));
-
     $derived = Dutiable::where('via_dutiable_id', $source->id)->first();
 
     expect($derived)->not->toBeNull()
         ->and($derived->tenant_id)->toBeNull();
 });
 
-test('listener preserves tenant_id when mirroring date changes', function (): void {
+test('model save preserves tenant_id when mirroring date changes', function (): void {
     $sourceTenant = Tenant::query()->first();
     $targetTenant = Tenant::query()->where('id', '!=', $sourceTenant->id)->first();
 
@@ -332,13 +287,8 @@ test('listener preserves tenant_id when mirroring date changes', function (): vo
         'via_dutiable_id' => null,
     ]);
 
-    $listener = new SyncExOfficioDutiables;
-    $listener->handle(new DutiableChanged($source));
-
-    // Change source dates.
     $source->start_date = now()->subWeek()->toDateString();
     $source->save();
-    $listener->handle(new DutiableChanged($source));
 
     $derived = Dutiable::where('via_dutiable_id', $source->id)->first();
 
@@ -346,7 +296,7 @@ test('listener preserves tenant_id when mirroring date changes', function (): vo
         ->and($derived->start_date->toDateString())->toBe($source->start_date->toDateString());
 });
 
-test('listener adopts manual row and updates tenant_id when target supports source tenant', function (): void {
+test('model save never changes an independent manual term tenant', function (): void {
     $sourceTenant = Tenant::query()->first();
     $targetTenant = Tenant::query()->where('id', '!=', $sourceTenant->id)->first();
 
@@ -363,7 +313,6 @@ test('listener adopts manual row and updates tenant_id when target supports sour
 
     $sourceDuty->exOfficioTargetDuties()->attach($targetDuty);
 
-    // Manual row on target duty without tenant_id.
     $manualRow = Dutiable::factory()->create([
         'duty_id' => $targetDuty->id,
         'dutiable_id' => $this->user->id,
@@ -383,16 +332,13 @@ test('listener adopts manual row and updates tenant_id when target supports sour
         'via_dutiable_id' => null,
     ]);
 
-    $listener = new SyncExOfficioDutiables;
-    $listener->handle(new DutiableChanged($source));
-
     $manualRow->refresh();
 
-    expect($manualRow->via_dutiable_id)->toBe($source->id)
-        ->and($manualRow->tenant_id)->toBe($sourceTenant->id);
+    expect($manualRow->via_dutiable_id)->toBeNull()
+        ->and($manualRow->tenant_id)->toBeNull();
 });
 
-test('backfill sets tenant_id for cross-tenant ex-officio', function (): void {
+test('link sync sets tenant_id for cross-tenant ex-officio', function (): void {
     $sourceTenant = Tenant::query()->first();
     $targetTenant = Tenant::query()->where('id', '!=', $sourceTenant->id)->first();
 
@@ -407,7 +353,6 @@ test('backfill sets tenant_id for cross-tenant ex-officio', function (): void {
     $targetDuty = Duty::factory()->for($targetInstitution)->create();
     $targetDuty->assignableTenants()->attach($sourceTenant->id, ['quota' => 2]);
 
-    // Active source dutiable already exists before the ex-officio link is created.
     $source = Dutiable::factory()->create([
         'duty_id' => $sourceDuty->id,
         'dutiable_id' => $this->user->id,
@@ -417,8 +362,7 @@ test('backfill sets tenant_id for cross-tenant ex-officio', function (): void {
         'via_dutiable_id' => null,
     ]);
 
-    // Backfill after adding the target.
-    BackfillExOfficioTargetDuty::execute($sourceDuty, [$targetDuty->id], []);
+    SyncExOfficioTargets::execute($sourceDuty, [$targetDuty->id]);
 
     $derived = Dutiable::where('via_dutiable_id', $source->id)->first();
 

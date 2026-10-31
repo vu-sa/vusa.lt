@@ -467,6 +467,7 @@ declare global {
       created_at: string
       updated_at: string
       ended_by_institution_deactivation?: boolean
+      assignment_origin: string
       // mutators
       translatable_columns_from: Array<unknown>
       translations: unknown
@@ -642,13 +643,29 @@ declare global {
       activities_as_subject_exists: boolean
     }
 
+    export interface DutySuccession {
+      // columns
+      id: number
+      predecessor_id: string
+      successor_id: string
+      effective_on: string
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      predecessor?: Duty
+      successor?: Duty
+      // counts
+      // exists
+      predecessor_exists: boolean
+      successor_exists: boolean
+    }
+
     export interface DutyType {
       // columns
       id: number
       parent_id?: number | null
       title?: Array<unknown> | null
       description?: Array<unknown> | null
-      slug?: string | null
       extra_attributes?: Array<unknown> | null
       created_at?: string | null
       updated_at?: string | null
@@ -3000,3 +3017,4 @@ declare global {
 
   }
 }
+

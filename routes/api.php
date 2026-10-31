@@ -35,6 +35,7 @@ use App\Http\Controllers\Api\Admin\PendingUploadApiController;
 use App\Http\Controllers\Api\Admin\PermalinkPreviewApiController;
 use App\Http\Controllers\Api\Admin\ProblemApiController;
 use App\Http\Controllers\Api\Admin\PushSubscriptionApiController;
+use App\Http\Controllers\Api\Admin\RecordAbilitiesApiController;
 use App\Http\Controllers\Api\Admin\ReservationApiController;
 use App\Http\Controllers\Api\Admin\ResourceApiController;
 use App\Http\Controllers\Api\Admin\ResourceAvailabilityApiController;
@@ -323,6 +324,9 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
             ->name('dutiableTimeline.index');
         Route::post('dutiable-timeline/preview', [DutiableTimelineApiController::class, 'preview'])
             ->name('dutiableTimeline.preview');
+
+        // What the user may do with each visible collection row (search hits carry no abilities)
+        Route::get('record-abilities', [RecordAbilitiesApiController::class, 'index'])->name('recordAbilities');
 
         // Date-range resource availability for the reservation resource picker
         Route::post('resources/availability', [ResourceAvailabilityApiController::class, 'index'])->name('resources.availability');

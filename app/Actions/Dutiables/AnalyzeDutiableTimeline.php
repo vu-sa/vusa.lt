@@ -6,17 +6,12 @@ use App\Models\Cadence;
 use App\Models\Pivots\Dutiable;
 use App\Support\Dutiables\CadenceMatcher;
 use App\Support\Dutiables\DutiableDiagnostic;
+use App\Support\Dutiables\ExOfficioSeatDates;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
-/**
- * Finds the drift the timeline exists to fix.
- *
- * Runs entirely over rows that are already loaded — the only query is the ex-officio
- * orphan sweep, which needs a join the payload does not carry. The same checks are
- * mirrored client-side over *staged* state so the panel updates during a drag; this
- * version is the authoritative one, and is what the preview's before/after delta uses.
- */
+/** Finds timeline anomalies over stored or staged periods. */
 class AnalyzeDutiableTimeline
 {
     /** Beyond this an off-boundary date reads as deliberate rather than as drift. */
@@ -185,23 +180,40 @@ class AnalyzeDutiableTimeline
     }
 
     /**
-     * A derived row whose dates no longer match its source — the queued sync either never
-     * ran or was overtaken by a direct edit.
-     *
-     * @param  Collection<int, Dutiable>  $rows
      * @param  array<string, array{start: string, end: string|null}>  $periods
      * @return list<DutiableDiagnostic>
      */
     private static function exOfficioDrift(Collection $rows, array $periods): array
     {
+        new EloquentCollection($rows->pluck('duty')->filter()->all())
+            ->loadMissing('exOfficioTargetDuties');
+        $projected = $rows->map(function (Dutiable $row) use ($periods): Dutiable {
+            $projection = clone $row;
+            $projection->fill(['start_date' => $periods[$row->id]['start'], 'end_date' => $periods[$row->id]['end']]);
+
+            return $projection;
+        })->keyBy('id');
+        new EloquentCollection($rows->all())->loadMissing('media');
+        $plans = [];
         $findings = [];
 
         foreach ($rows as $row) {
-            if ($row->via_dutiable_id === null || ! isset($periods[$row->via_dutiable_id])) {
+            if ($row->via_dutiable_id === null || ! isset($periods[$row->via_dutiable_id]) || $row->ended_by_institution_deactivation) {
                 continue;
             }
-
-            if ($periods[$row->id] !== $periods[$row->via_dutiable_id]) {
+            $source = $projected->get($row->via_dutiable_id);
+            if (! $source->duty->exOfficioTargetDuties->contains('id', $row->duty_id)) {
+                continue;
+            }
+            $key = $source->id.':'.$row->duty_id;
+            $plans[$key] ??= ExOfficioSeatDates::forTarget($source, $row->duty_id,
+                $rows->where('via_dutiable_id', $source->id), today()->toDateString());
+            $expected = $plans[$key]['dates'];
+            if ($expected === null || $plans[$key]['seat']?->id !== $row->id) {
+                continue;
+            }
+            $expectedPeriod = ['start' => $expected['start_date'], 'end' => $expected['end_date']];
+            if ($periods[$row->id] !== $expectedPeriod) {
                 $findings[] = new DutiableDiagnostic(
                     'ex_officio_drift',
                     DutiableDiagnostic::SEVERITY_WARNING,

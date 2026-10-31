@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Užduočių suvestinė
 area: tasks
 models: [Task]
-last_reviewed: 2026-09-30
+last_reviewed: 2026-10-28
 tests:
   - tests/Feature/Tasks/TaskSummaryTest.php
   - tests/Feature/Admin/Dashboard/UserTasksTest.php

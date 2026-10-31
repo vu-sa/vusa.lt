@@ -1,5 +1,6 @@
 <template>
   <CollectionPage
+    :row-actions="item => actionsFor(item)"
     :source
     :collection="resource"
     :entity-type
@@ -12,6 +13,7 @@
     :item-key="type => String(type.id)"
     :columns
     :trash="{ count: deletedCount, active: isTrash }"
+    @row-action="(item, key) => actions.select(key, item.force_delete_blocked_reason)"
     :search-placeholder="$t('Ieškoti tipų')"
   >
     <template #actions>
@@ -32,7 +34,7 @@
       </SpotlightPopover>
     </template>
 
-    <template #row="{ item }">
+    <template #row="{ item, actions: recordActions }">
       <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
         <div class="min-w-0 flex-1">
           <CollectionPrimaryCell
@@ -42,7 +44,7 @@
             mono
           />
         </div>
-        <CollectionRowActions :actions="actionsFor(item)" @select="key => actions.select(key, item.force_delete_blocked_reason)" />
+        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => actions.select(key, item.force_delete_blocked_reason)" />
       </article>
     </template>
 
@@ -55,7 +57,6 @@
         mono
       />
       <span v-else-if="column.key === 'updated'" class="tabular-nums text-muted-foreground">{{ formatDate(item.updated_at) }}</span>
-      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="actionsFor(item)" @select="key => actions.select(key, item.force_delete_blocked_reason)" />
     </template>
   </CollectionPage>
 
@@ -112,6 +113,7 @@ const source = useLocalCollectionSource<TypeRow>({
     { value: 'title:asc', label: $t('Pagal pavadinimą (A–Z)'), by: titleOf },
     { value: 'title:desc', label: $t('Pagal pavadinimą (Z–A)'), by: titleOf },
     { value: 'updated_at:desc', label: $t('Neseniai atnaujinti'), by: type => type.updated_at },
+    { value: 'updated_at:asc', label: $t('Seniausiai atnaujinti'), by: type => type.updated_at },
   ],
 });
 
@@ -126,7 +128,6 @@ const actionsFor = (type: TypeRow) => actions.rowActions(type, titleOf(type), is
 
 const columns = computed<CollectionColumn[]>(() => [
   { key: 'title', label: $t('Tipas'), sortField: 'title' },
-  { key: 'updated', label: $t('Atnaujinta'), class: 'w-36' },
-  { key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true },
+  { key: 'updated', label: $t('Atnaujinta'), class: 'w-36', sortField: 'updated_at' },
 ]);
 </script>

@@ -376,3 +376,20 @@ describe('ShowAgendaItem.vue', () => {
     expect(wrapper.find('h1').text()).toBe('Senas klausimas');
   });
 });
+
+it.each([true, false])('opens the agenda edit sheet from action=edit only for editors (%s)', async (allowed) => {
+  window.history.replaceState({}, '', '/mano/agendaItems/item-2?action=edit');
+  const wrapper = createWrapper({ abilities: { update: allowed, delete: false } });
+  await wrapper.vm.$nextTick();
+  const sheet = wrapper.findComponent({ name: 'AgendaItemSheetForm' });
+  if (allowed) {
+    expect(sheet.exists()).toBe(true);
+    expect(sheet.props('open')).toBe(true);
+    expect(new URLSearchParams(window.location.search).has('action')).toBe(false);
+  }
+  else {
+    expect(sheet.exists()).toBe(false);
+  }
+  wrapper.unmount();
+  window.history.replaceState({}, '', '/');
+});

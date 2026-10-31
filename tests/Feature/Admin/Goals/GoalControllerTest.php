@@ -433,3 +433,13 @@ test('the goal\'s change history can be read', function (): void {
         ->assertOk()
         ->assertJsonPath('data.0.event', 'updated');
 });
+
+test('goal rows serialize update and delete decisions for editors and read-only members', function (): void {
+    asUserWithInertia($this->editor)->get(route('goals.index'))->assertInertia(fn (Assert $page) => $page
+        ->where('goals.0.can_update', true)
+        ->where('goals.0.can_delete', true));
+
+    asUserWithInertia(makeUser($this->tenant))->get(route('goals.index'))->assertInertia(fn (Assert $page) => $page
+        ->where('goals.0.can_update', false)
+        ->where('goals.0.can_delete', false));
+});

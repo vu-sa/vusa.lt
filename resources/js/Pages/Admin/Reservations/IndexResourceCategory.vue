@@ -1,5 +1,6 @@
 <template>
   <CollectionPage
+    :row-actions="() => rowActions"
     :source
     collection="resourceCategories"
     entity-type="resource"
@@ -10,6 +11,7 @@
     :item-key="categoryKey"
     :columns
     :search-placeholder="$t('Ieškoti kategorijų')"
+    @row-action="(item, key) => selectRowAction(key, item)"
   >
     <template #actions>
       <Button v-if="canCreate" variant="brand" @click="openSheet()">
@@ -18,7 +20,7 @@
       </Button>
     </template>
 
-    <template #row="{ item }">
+    <template #row="{ item, actions: recordActions }">
       <article class="flex min-h-16 items-center gap-3 px-3 py-3 sm:px-4">
         <!-- The icon name is stored as data, so it can only be resolved at runtime. -->
         <Icon v-if="item.icon" :icon="`fluent:${item.icon}`" class="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
@@ -31,7 +33,7 @@
             {{ description(item) }}
           </p>
         </div>
-        <CollectionRowActions :actions="rowActions" @select="key => selectRowAction(key, item)" />
+        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => selectRowAction(key, item)" />
       </article>
     </template>
 
@@ -42,7 +44,6 @@
       </button>
       <span v-else-if="column.key === 'name'" class="font-medium">{{ title(item) }}</span>
       <span v-else-if="column.key === 'description'" class="text-muted-foreground">{{ description(item) || '—' }}</span>
-      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="rowActions" @select="key => selectRowAction(key, item)" />
     </template>
 
     <template #empty>
@@ -98,7 +99,7 @@ const canCreate = computed(() => Boolean(usePage().props.auth?.can?.create?.reso
 const canUpdate = computed(() => props.abilities.update);
 const canDelete = computed(() => props.abilities.delete);
 const rowActions = computed<CollectionRowAction[]>(() => [
-  ...(canUpdate.value ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, labelled: true }] : []),
+  ...(canUpdate.value ? [{ key: 'edit', role: 'edit' as const, label: $t('Redaguoti'), icon: Pencil }] : []),
   ...(canDelete.value ? [{ key: 'delete', label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
 ]);
 
@@ -120,17 +121,18 @@ const source = useDatabaseCollectionSource<Category>({
     currentPage: props.resourceCategories.meta.current_page,
     lastPage: props.resourceCategories.meta.last_page,
   },
-  defaultSort: 'created_at:desc',
+  defaultSort: 'name:asc',
   sortOptions: () => [
+    { value: 'name:asc', label: $t('Pagal pavadinimą (A–Z)') },
+    { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)') },
     { value: 'created_at:desc', label: $t('Naujausios pirmiausia') },
     { value: 'created_at:asc', label: $t('Seniausios pirmiausia') },
   ],
 });
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'name', label: $t('Kategorija') },
+  { key: 'name', label: $t('Kategorija'), sortField: 'name' },
   { key: 'description', label: $t('Aprašymas') },
-  ...(rowActions.value.length ? [{ key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true }] : []),
 ]);
 
 const categoryKey = (category: Category) => String(category.id);

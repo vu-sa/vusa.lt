@@ -5,6 +5,11 @@ import { router } from '@inertiajs/vue3';
 import ShowSupportRequests from '@/Pages/Admin/Dashboard/ShowSupportRequests.vue';
 import { commonStubs } from '@/tests/stubs';
 
+const rowAbilityState = vi.hoisted(() => ({ update: false, delete: false }));
+vi.mock('@/Composables/useRowAbilities', () => ({
+  useRowAbilities: () => ({ can: (_id: string, ability: 'update' | 'delete') => rowAbilityState[ability], invalidate: vi.fn() }),
+}));
+
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 vi.stubGlobal('route', (name: string) => `/mocked/${name}`);
@@ -26,9 +31,9 @@ const request = {
 
 const CollectionPageStub = {
   name: 'CollectionPage',
-  props: ['source', 'quickFilters', 'title'],
+  props: ['source', 'quickFilters', 'title', 'rowActions'],
   emits: ['quickFilter'],
-  template: '<div><div v-for="item in source.items.value" :key="item.id" data-testid="row"><slot name="row" :item="item" /></div></div>',
+  template: '<div><div v-for="item in source.items.value" :key="item.id" data-testid="row"><slot name="row" :item="item" :actions="rowActions?.(item) ?? []" /></div></div>',
 };
 
 const createWrapper = () => mount(ShowSupportRequests, {
@@ -83,4 +88,16 @@ describe('support request dashboard', () => {
       { preserveState: false },
     );
   });
+});
+
+beforeEach(() => { rowAbilityState.update = false; rowAbilityState.delete = false; });
+
+it.each([true, false])('offers support request edit and delete only when allowed (%s)', (allowed) => {
+  rowAbilityState.update = allowed;
+  rowAbilityState.delete = allowed;
+  const wrapper = createWrapper();
+  const actions = wrapper.findComponent(CollectionPageStub).props('rowActions')(request);
+  expect(actions.some(action => action.role === 'edit')).toBe(allowed);
+  expect(actions.some(action => action.destructive)).toBe(allowed);
+  wrapper.unmount();
 });

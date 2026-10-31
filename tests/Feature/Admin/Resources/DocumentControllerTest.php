@@ -193,3 +193,33 @@ describe('relationships', function (): void {
             ->and($document->sharepoint_list_id)->toBe('test-list-id');
     });
 });
+
+describe('document edit entry point', function (): void {
+    test('opens the source SharePoint file for an authorized editor', function (): void {
+        $document = Document::factory()->create([
+            'institution_id' => $this->institution->id,
+            'sharepoint_web_url' => 'https://vusa.sharepoint.com/sites/test/file.docx',
+        ]);
+
+        asUser($this->documentManager)->get(route('documents.edit', $document))
+            ->assertRedirect('https://vusa.sharepoint.com/sites/test/file.docx');
+    });
+
+    test('refuses read-only members and editors from another tenant', function (): void {
+        $document = Document::factory()->create(['institution_id' => $this->institution->id]);
+        asUser($this->regularUser)->get(route('documents.edit', $document))->assertForbidden();
+
+        $other = Document::factory()->create(['institution_id' => Institution::factory()->create()->id]);
+        asUser($this->documentManager)->get(route('documents.edit', $other))->assertForbidden();
+    });
+
+    test('returns to the collection when the source file is unavailable', function (): void {
+        $document = Document::factory()->create([
+            'institution_id' => $this->institution->id,
+            'sharepoint_web_url' => null,
+        ]);
+
+        asUser($this->documentManager)->get(route('documents.edit', $document))
+            ->assertRedirect(route('documents.index'))->assertSessionHas('info', __('messages.document.edit_unavailable'));
+    });
+});

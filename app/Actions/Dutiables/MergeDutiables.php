@@ -53,7 +53,7 @@ class MergeDutiables
      */
     public static function execute(Collection $rows): Dutiable
     {
-        $sorted = $rows->sortBy(fn (Dutiable $row) => $row->start_date->toDateString())->values();
+        $sorted = $rows->sortBy(fn (Dutiable $row) => $row->start_date->toDateString().'|'.$row->id)->values();
 
         /** @var Dutiable $survivor */
         $survivor = $sorted->first();

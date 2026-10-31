@@ -2,10 +2,13 @@
 
 use App\Actions\Media\AddImageMedia;
 use App\Enums\TenantType;
+use App\Models\Duty;
 use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionType;
+use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
+use App\Models\User;
 use App\Services\SystemDutyTypes;
 use App\Settings\DutyTypeSettings;
 use App\Support\LocalizedRouteSlugs;
@@ -122,8 +125,8 @@ test('padaliniai category provides institution photos and preserves the logo fal
 
             expect($withPhoto)->toHaveKey('image_url', $photo['url'])
                 ->toHaveKey('image_media', $photo)
-                ->not->toHaveKey('media');
-            expect($fallback)->toHaveKey('image_url', null)
+                ->not->toHaveKey('media')
+                ->and($fallback)->toHaveKey('image_url', null)
                 ->toHaveKey('image_media', null)
                 ->toHaveKey('logo_url', '/images/unit-logo.svg');
 
@@ -177,4 +180,25 @@ test('an institution id in the alias position still opens the institution', func
     $url = LocalizedRouteSlugs::route('contacts.alias', ['subdomain' => 'www', 'institution' => $institution->id], 'lt');
 
     $this->get($url)->assertRedirect(LocalizedRouteSlugs::route('contacts.institution', ['subdomain' => 'www', 'institution' => $institution->id], 'lt'));
+});
+
+test('public contacts omit internal tenant and source-term ids from duty pivots', function (): void {
+    $institution = Institution::factory()->for(Tenant::main())->create(['is_active' => true]);
+    $sourceDuty = Duty::factory()->for($institution)->create();
+    $targetDuty = Duty::factory()->for($institution)->create();
+    $sourceDuty->exOfficioTargetDuties()->attach($targetDuty);
+    $holder = User::factory()->create();
+    $source = Dutiable::factory()->forDuty($sourceDuty)->forUser($holder)->create([
+        'start_date' => today()->subMonth()->toDateString(), 'end_date' => null,
+    ]);
+    $source->derivedDutiables()->sole()->update(['tenant_id' => $institution->tenant_id]);
+
+    $this->get(route('contacts.institution', ['subdomain' => 'www', 'lang' => 'lt', 'institution' => $institution->id]))
+        ->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->has('contacts', 1)
+        ->has('contacts.0.duties', 2)
+        ->missing('contacts.0.duties.0.pivot.tenant_id')
+        ->missing('contacts.0.duties.0.pivot.via_dutiable_id')
+        ->missing('contacts.0.duties.1.pivot.tenant_id')
+        ->missing('contacts.0.duties.1.pivot.via_dutiable_id'));
 });

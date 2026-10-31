@@ -247,7 +247,7 @@ import { SecretariesSection, type SecretaryRoster } from '@/Components/Instituti
 import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue';
 import UsersFactList from '@/Components/Avatars/UsersFactList.vue';
 import RecordPage, { type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
-import type { ActionDescriptor } from '@/Components/Layouts/RecordPageAction.vue';
+import type { AdminRecordAction as ActionDescriptor } from '@/Features/Admin/RecordActions/types';
 import { ConfirmDialog, EmptyState, OverviewSection } from '@/Components/Patterns';
 import ProblemSummaryList, { type ProblemSummary } from '@/Components/Problems/ProblemSummaryList.vue';
 import { RelationshipLinkList, type RelationKindOption, type RelationshipLinkRow } from '@/Components/Relationships';

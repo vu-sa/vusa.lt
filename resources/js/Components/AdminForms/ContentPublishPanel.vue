@@ -2,8 +2,8 @@
   <FormPanel :title="$t('Paskelbimas')" :icon="Send">
     <FormFieldWrapper :id="`${testIdPrefix}-status`" :label="$t('Būsena')">
       <FormSegmentedControl
-        voice="brand"
         v-model="published"
+        voice="brand"
         :options="statusOptions"
         :aria-label="$t('Būsena')"
         :test-id-prefix="`${testIdPrefix}-status`"

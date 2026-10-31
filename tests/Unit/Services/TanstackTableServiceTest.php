@@ -1,8 +1,10 @@
 <?php
 
 use App\Models\Duty;
+use App\Models\Form;
 use App\Models\Institution;
 use App\Models\News;
+use App\Models\ResourceCategory;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer;
 use App\Services\TanstackTableService;
@@ -160,6 +162,64 @@ describe('filter key validation', function (): void {
         $result = $this->service->applySorting(News::query(), [['id' => 'tenant.shortname', 'desc' => false]]);
 
         expect($result->count())->toBeGreaterThanOrEqual(1);
+    });
+
+    test('keeps the model\'s own id when sorting through a joined relation', function (): void {
+        $news = News::factory()->for($this->tenant)->create();
+
+        $sorted = $this->service->applySorting(News::query()->whereKey($news->id), [['id' => 'tenant.shortname', 'desc' => false]])->sole();
+
+        expect($sorted->id)->toBe($news->id);
+    });
+
+    test('ignores sorts through has-many relations instead of joining them', function (): void {
+        $query = $this->service->applySorting(Tenant::query(), [['id' => 'duties.name', 'desc' => false]]);
+
+        expect($query->getQuery()->joins)->toBeEmpty()
+            ->and($query->getQuery()->orders)->toBeEmpty();
+        $query->get();
+    });
+
+    test('ignores a direct sort on a column the table does not have', function (): void {
+        $query = $this->service->applySorting(News::query(), [['id' => 'no_such_column', 'desc' => false]]);
+
+        expect($query->getQuery()->orders)->toBeEmpty();
+    });
+
+    test('qualifies direct columns so relation joins cannot make them ambiguous', function (): void {
+        $query = $this->service->applySorting(News::query(), [
+            ['id' => 'tenant.shortname', 'desc' => false],
+            ['id' => 'created_at', 'desc' => true],
+        ]);
+
+        expect(collect($query->getQuery()->orders)->pluck('column'))->toContain('news.created_at');
+        $query->get();
+    });
+
+    test('sorts translatable columns by the current locale rather than the stored JSON', function (string $locale, array $expected): void {
+        app()->setLocale($locale);
+        ResourceCategory::factory()->create(['name' => ['lt' => 'Ąžuolas', 'en' => 'Zebra']]);
+        ResourceCategory::factory()->create(['name' => ['lt' => 'Žirgas', 'en' => 'Apple']]);
+
+        $names = $this->service->applySorting(ResourceCategory::query(), [['id' => 'name', 'desc' => false]])
+            ->get()
+            ->map(fn (ResourceCategory $category) => $category->getTranslation('name', 'en'))
+            ->all();
+
+        expect($names)->toBe($expected);
+    })->with([
+        'lt' => ['lt', ['Zebra', 'Apple']],
+        'en' => ['en', ['Apple', 'Zebra']],
+    ]);
+
+    test('sorts by an alias the query selects, such as a withCount result', function (): void {
+        $query = $this->service->applySorting(
+            Form::query()->withCount('registrations'),
+            [['id' => 'registrations_count', 'desc' => true]],
+        );
+
+        expect(collect($query->getQuery()->orders)->pluck('column')->all())->toBe(['registrations_count']);
+        $query->get();
     });
 });
 

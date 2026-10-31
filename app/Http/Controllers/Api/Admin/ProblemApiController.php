@@ -36,6 +36,7 @@ class ProblemApiController extends ApiController
             'items' => $problems->getCollection()->map(fn (Problem $problem): array => [
                 ...$problem->toFullArray(),
                 'can_update' => $request->user()->can('update', $problem),
+                'can_delete' => $request->user()->can('delete', $problem),
             ])->values(),
             'total' => $problems->total(),
             'per_page' => $problems->perPage(),

@@ -63,7 +63,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Tenant> $assignableTenants
  * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Collection<int, Comment> $comments
- * @property-read DutyDutyType|Dutiable|null $pivot
+ * @property-read DutyDutyType|DutySuccession|Dutiable|null $pivot
  * @property-read Collection<int, User> $current_users
  * @property-read Collection<int, Document> $documents
  * @property-read Collection<int, Dutiable> $dutiables
@@ -428,13 +428,21 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
         return $this->hasManyDeepFromRelations($this->tenants(), (new Tenant)->resources());
     }
 
-    /** Duties that are automatically granted when a user holds this duty. */
+    /**
+     * Duties that are automatically granted when a user holds this duty.
+     *
+     * @return BelongsToMany<Duty, $this>
+     */
     public function exOfficioTargetDuties(): BelongsToMany
     {
         return $this->belongsToMany(Duty::class, 'ex_officio_duties', 'source_duty_id', 'target_duty_id');
     }
 
-    /** Duties that automatically grant this duty. */
+    /**
+     * Duties that automatically grant this duty.
+     *
+     * @return BelongsToMany<Duty, $this>
+     */
     public function exOfficioSourceDuties(): BelongsToMany
     {
         return $this->belongsToMany(Duty::class, 'ex_officio_duties', 'target_duty_id', 'source_duty_id');

@@ -29,7 +29,6 @@ use App\Listeners\ResolveInstitutionActivityRequests;
 use App\Listeners\SendMemberRegistrationNotification;
 use App\Listeners\SendStudentRepRegistrationNotification;
 use App\Listeners\SyncContactSearchIndexes;
-use App\Listeners\SyncExOfficioDutiables;
 use App\Listeners\SyncInstitutionActivityIndex;
 use App\Listeners\SyncRelationSearchIndex;
 use App\Listeners\UpdateSharepointFolder;
@@ -103,7 +102,6 @@ class EventServiceProvider extends ServiceProvider
         DutiableChanged::class => [
             QueueReservationReviewSync::class,
             HandleDutiableChange::class,
-            SyncExOfficioDutiables::class,
             SyncContactSearchIndexes::class,
             QueueMailingListSync::class,
         ],

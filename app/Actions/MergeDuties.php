@@ -2,6 +2,7 @@
 
 namespace App\Actions;
 
+use App\Actions\Dutiables\ReconcileExOfficioSeats;
 use App\Listeners\HandleDutiableChange;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -49,52 +50,57 @@ class MergeDuties
     public static function execute(Duty $kept, Collection $sources, ?User $actor = null): array
     {
         return DB::transaction(function () use ($kept, $sources, $actor): array {
-            $sourceIds = $sources->pluck('id')->all();
-            Institution::withTrashed()->whereIn('id', $sources->pluck('institution_id')->push($kept->institution_id))
-                ->orderBy('id')->lockForUpdate()->get();
+            $summary = ReconcileExOfficioSeats::paused(function () use ($kept, $sources, $actor): array {
+                $sourceIds = $sources->pluck('id')->all();
+                Institution::withTrashed()->whereIn('id', $sources->pluck('institution_id')->push($kept->institution_id))
+                    ->orderBy('id')->lockForUpdate()->get();
 
-            $movedAssignments = Dutiable::query()->whereIn('duty_id', $sourceIds)->count();
-            // Row by row so DutiableChanged syncs ex-officio seats and caches of the moved holders.
-            Dutiable::query()->whereIn('duty_id', $sourceIds)->each(fn (Dutiable $term) => $term->update(['duty_id' => $kept->id]));
+                $movedAssignments = Dutiable::query()->whereIn('duty_id', $sourceIds)->count();
+                // Model saves retain assignment events while reconciliation is paused.
+                Dutiable::query()->whereIn('duty_id', $sourceIds)->each(fn (Dutiable $term) => $term->update(['duty_id' => $kept->id]));
 
-            $summary = [
-                'moved_assignments' => $movedAssignments,
-                'collapsed_assignments' => CollapseOverlappingDutiables::execute($kept),
-                'moved_types' => 0,
-                'moved_roles' => 0,
-                'moved_ex_officio' => self::mergeExOfficioLinks($kept, $sourceIds),
-                'moved_tenant_quotas' => self::mergeDutyTenantQuotas($kept, $sourceIds),
-                'moved_former_names' => 0,
-                'moved_successions' => self::mergeSuccessions($kept, $sourceIds),
-            ];
-            $merged = [];
+                $summary = [
+                    'moved_assignments' => $movedAssignments,
+                    'collapsed_assignments' => CollapseOverlappingDutiables::execute($kept),
+                    'moved_types' => 0,
+                    'moved_roles' => 0,
+                    'moved_ex_officio' => self::mergeExOfficioLinks($kept, $sourceIds),
+                    'moved_tenant_quotas' => self::mergeDutyTenantQuotas($kept, $sourceIds),
+                    'moved_former_names' => 0,
+                    'moved_successions' => self::mergeSuccessions($kept, $sourceIds),
+                ];
+                $merged = [];
 
-            foreach ($sources as $source) {
-                $moved = self::moveRows($kept, $source);
-                $summary['moved_types'] += $moved['duty_duty_type'];
-                $summary['moved_roles'] += $moved['responsibility_grants'];
-                $summary['moved_former_names'] += $moved['duty_names'];
+                foreach ($sources as $source) {
+                    $moved = self::moveRows($kept, $source);
+                    $summary['moved_types'] += $moved['duty_duty_type'];
+                    $summary['moved_roles'] += $moved['responsibility_grants'];
+                    $summary['moved_former_names'] += $moved['duty_names'];
 
-                $merged[] = ['id' => $source->id, 'name' => $source->getTranslations('name')];
-                $source->forceDelete();
-            }
+                    $merged[] = ['id' => $source->id, 'name' => $source->getTranslations('name')];
+                    $source->forceDelete();
+                }
 
-            ProjectDutyResponsibilities::forDuties([$kept->id]);
+                ProjectDutyResponsibilities::forDuties([$kept->id]);
 
-            activity()
-                ->performedOn($kept)
-                ->causedBy($actor)
-                ->event('duties_merged')
-                ->withProperties(['merged' => $merged, 'summary' => $summary])
-                ->log('duties_merged');
+                activity()
+                    ->performedOn($kept)
+                    ->causedBy($actor)
+                    ->event('duties_merged')
+                    ->withProperties(['merged' => $merged, 'summary' => $summary])
+                    ->log('duties_merged');
 
-            // Holders already on the kept duty gain the moved roles without any dutiable event.
-            $holderIds = $kept->dutiables()->where('dutiable_type', MorphMap::alias(User::class))->pluck('dutiable_id')->unique();
+                // Holders already on the kept duty gain the moved roles without any dutiable event.
+                $holderIds = $kept->dutiables()->where('dutiable_type', MorphMap::alias(User::class))->pluck('dutiable_id')->unique();
 
-            DB::afterCommit(function () use ($kept, $holderIds): void {
-                $holderIds->each(fn (string $userId) => HandleDutiableChange::forgetUserAuthority($userId));
-                $kept->fresh()?->searchable();
+                DB::afterCommit(function () use ($kept, $holderIds): void {
+                    $holderIds->each(fn (string $userId) => HandleDutiableChange::forgetUserAuthority($userId));
+                    $kept->fresh()?->searchable();
+                });
+
+                return $summary;
             });
+            ReconcileExOfficioSeats::forDuty($kept);
 
             return $summary;
         });
@@ -193,12 +199,6 @@ class MergeDuties
         return $moved;
     }
 
-    /**
-     * ex_officio_duties is unique on (source_duty_id, target_duty_id) in both
-     * directions. A link that would become self-referencing once both ends
-     * merge onto the same kept duty (source ex-officio target, or vice versa)
-     * is simply dropped — "holding this duty grants itself" is meaningless.
-     */
     private static function mergeExOfficioLinks(Duty $kept, array $sourceIds): int
     {
         $moved = 0;

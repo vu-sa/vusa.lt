@@ -1,7 +1,7 @@
 <template>
   <SheetForm
-    required-note
     v-model:open="open"
+    required-note
     :created-at="tenant?.created_at"
     :updated-at="tenant?.updated_at"
     :title="picking ? $t('forms.tenants.pick_institution') : tenant ? $t('Redaguoti padalinį') : $t('Naujas padalinys')"

@@ -242,7 +242,7 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
     {
         return $this->morphToMany(Duty::class, 'dutiable')
             ->using(Dutiable::class)
-            ->withPivot(['id', 'start_date', 'end_date', 'additional_photo', 'additional_photo_focal_point', 'additional_email', 'use_original_duty_name', 'description', 'study_program_id']);
+            ->withPivot(['id', 'via_dutiable_id', 'tenant_id', 'start_date', 'end_date', 'additional_photo', 'additional_photo_focal_point', 'additional_email', 'use_original_duty_name', 'description', 'study_program_id']);
     }
 
     public function previous_duties(): MorphToMany
@@ -271,7 +271,12 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
             ->withTimestamps();
     }
 
-    /** @return MorphToMany<Duty, $this, Dutiable, 'pivot'> */
+    /**
+     * Not ended: permissions start before the term does, on purpose. For who holds a duty, or
+     * whom to contact, use {@see current_duties()}.
+     *
+     * @return MorphToMany<Duty, $this, Dutiable, 'pivot'>
+     */
     public function authorization_duties(): MorphToMany
     {
         return $this->duties()

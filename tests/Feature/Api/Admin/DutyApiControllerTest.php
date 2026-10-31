@@ -111,3 +111,18 @@ test('returns 403 to a user without duty access', function (): void {
         ->getJson(route('api.v1.admin.duties.index'))
         ->assertForbidden();
 });
+
+test('serializes live row mutation decisions on both initial visits and api refreshes', function (): void {
+    $duty = Duty::factory()->for($this->manager->duties()->first()->institution)->create();
+    $initial = asUserWithInertia($this->manager)->get(route('duties.index'));
+    $initial->assertInertia(fn (AssertableInertia $page) => $page
+        ->where('duties.data', function ($rows) use ($duty): bool {
+            $row = collect($rows)->firstWhere('id', $duty->id);
+
+            return $row['can_update'] === true && $row['can_delete'] === true;
+        }));
+
+    $rows = asUser($this->manager)->getJson(route('api.v1.admin.duties.index'))->assertOk()->json('data.items');
+    $row = collect($rows)->firstWhere('id', $duty->id);
+    expect($row)->toMatchArray(['can_update' => true, 'can_delete' => true]);
+});

@@ -1,5 +1,5 @@
 <template>
-  <details :open="open" class="group" data-slot="field-history-disclosure" @toggle="onToggle">
+  <details :open class="group" data-slot="field-history-disclosure" @toggle="onToggle">
     <summary
       :class="[
         'u-touch inline-flex cursor-pointer items-center gap-1.5',

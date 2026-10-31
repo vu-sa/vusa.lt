@@ -64,6 +64,14 @@ class UserDutyService
             ]);
         }
 
+        foreach ($removedDutyIds as $dutyId) {
+            $rows = Dutiable::query()->where('duty_id', $dutyId)
+                ->where('dutiable_type', MorphMap::alias(User::class))->where('dutiable_id', $user->id)->current()->get();
+            if ($rows->isNotEmpty() && $rows->whereNull('via_dutiable_id')->isEmpty()) {
+                throw ValidationException::withMessages(['current_duties' => __('users.derived_duty_removal')]);
+            }
+        }
+
         // Log duty changes as a single relation_updated activity on the user.
         $user->auditRelationChange('current_duties', function () use ($newDutyIds, $removedDutyIds, $duties, $user): void {
             foreach ($newDutyIds as $dutyId) {
@@ -72,6 +80,7 @@ class UserDutyService
                     ->where('duty_id', $dutyId)
                     ->where('dutiable_type', MorphMap::alias(User::class))
                     ->where('dutiable_id', $user->id)
+                    ->whereNull('via_dutiable_id')
                     ->where(fn ($q) => $q->whereNull('end_date')->orWhereDate('end_date', '>=', today()))
                     ->exists();
 
@@ -87,6 +96,7 @@ class UserDutyService
                 Dutiable::where('duty_id', $dutyId)
                     ->where('dutiable_type', MorphMap::alias(User::class))
                     ->where('dutiable_id', $user->id)
+                    ->whereNull('via_dutiable_id')
                     ->where(function ($query): void {
                         $query->whereNull('end_date')
                             ->orWhereDate('end_date', '>=', today());

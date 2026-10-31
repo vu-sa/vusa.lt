@@ -20,6 +20,11 @@
           </Link>
         </Button>
       </slot>
+      <Button v-if="meeting.institution_ids?.length" as-child variant="outline" size="sm" voice="sentence">
+        <Link :href="route('institutions.show', meeting.institution_ids[0])">
+          {{ $t('Atidaryti instituciją') }}
+        </Link>
+      </Button>
     </template>
 
     <PreviewFacts>
@@ -67,12 +72,12 @@
 </template>
 
 <script setup lang="ts">
-import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Vote } from '@lucide/vue';
 import { computed } from 'vue';
 
+import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import { PreviewFact, PreviewFacts, PreviewPane, PreviewSection, StatusBadge } from '@/Components/Patterns';

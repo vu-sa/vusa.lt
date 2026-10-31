@@ -1,5 +1,6 @@
 <template>
   <CollectionPage
+    :row-actions="item => actionsFor(item)"
     :source
     collection="calendar"
     entity-type="calendar"
@@ -12,6 +13,7 @@
     :item-key="eventKey"
     :columns
     :quick-filters
+    @row-action="(item, key) => select(key, item)"
     :trash="{ count: deletedCount, active: isTrash }"
     :search-placeholder="$t('Ieškoti renginių')"
     @quick-filter="id => source.toggleFilter(id, 'true')"
@@ -25,7 +27,7 @@
       </Button>
     </template>
 
-    <template #row="{ item }">
+    <template #row="{ item, actions: recordActions }">
       <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
         <div class="min-w-0 flex-1">
           <div class="flex items-start justify-between gap-3">
@@ -58,7 +60,7 @@
             :options="eventTypeOptions"
             @update:model-value="value => updateType(item, String(value))"
           />
-          <CollectionRowActions :actions="actionsFor(item)" @select="key => select(key, item)" />
+          <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => select(key, item)" />
         </div>
       </article>
     </template>
@@ -89,14 +91,9 @@
         :editable="canEdit && !isTrash"
         @update:model-value="value => updateEvent(item, { is_draft: value === 'draft' })"
       />
-      <CollectionRowActions
-        v-else-if="column.key === 'actions'"
-        :actions="actionsFor(item)"
-        @select="key => select(key, item)"
-      />
     </template>
 
-    <template #preview="{ item }">
+    <template #preview="{ item, actions: recordActions }">
       <CalendarEventPreview :key="item.id" :event="calendarEventPreviewFromRecord(item)" :trashed="isTrash">
         <template #status>
           <CollectionStatusMenu
@@ -108,7 +105,7 @@
           />
         </template>
         <template #actions>
-          <CollectionRowActions :actions="actionsFor(item)" class="flex-wrap" @select="key => select(key, item)" />
+          <CollectionRowActions :actions="recordActions" class="flex-wrap" @select="key => select(key, item)" />
         </template>
       </CalendarEventPreview>
     </template>
@@ -214,6 +211,8 @@ const source = useDatabaseCollectionSource<EventRow>({
   sortOptions: () => [
     { value: 'date:desc', label: $t('Naujausi pirmi') },
     { value: 'date:asc', label: $t('Seniausi pirmi') },
+    { value: 'title:asc', label: $t('Pagal pavadinimą (A–Z)') },
+    { value: 'title:desc', label: $t('Pagal pavadinimą (Z–A)') },
     { value: 'created_at:desc', label: $t('Neseniai sukurti') },
   ],
   preserveUrlKeys: ['showDeleted'],
@@ -259,10 +258,9 @@ function updateType(item: EventRow, value: string): void {
 }
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'title', label: $t('Renginys') },
+  { key: 'title', label: $t('Renginys'), sortField: 'title' },
   { key: 'date', label: $t('Data'), class: 'w-48', sortField: 'date' },
   { key: 'type', label: $t('Renginio tipas'), class: 'w-44' },
   { key: 'status', label: $t('Būsena'), class: 'w-36' },
-  { key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true },
 ]);
 </script>

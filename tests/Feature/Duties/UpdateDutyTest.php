@@ -96,7 +96,7 @@ test('the duty form cannot grant responsibilities, not even super admin', functi
         ->and($duty->responsibilityGrants()->count())->toBe(0);
 });
 
-test('assignable tenant removal ends all allocated seats while retained tenants sync manual representatives', function (): void {
+test('assignable tenant removal ends only root seats while retained tenants sync manual representatives', function (): void {
     $this->travelTo('2026-10-03 12:00:00');
     $duty = Duty::factory()->create();
     $removedTenant = Tenant::factory()->create();
@@ -114,14 +114,14 @@ test('assignable tenant removal ends all allocated seats while retained tenants 
     ]));
 
     expect($removed->fresh()->end_date->toDateString())->toBe('2026-10-02')
-        ->and($removedDerived->fresh()->end_date->toDateString())->toBe('2026-10-02')
+        ->and($removedDerived->fresh()->end_date)->toBeNull()
         ->and($retainedDerived->fresh()->end_date)->toBeNull()
         ->and($retained->fresh()->end_date)->toBeNull()
         ->and($owning->fresh()->end_date)->toBeNull()
         ->and($duty->assignableTenants()->first()->pivot->quota)->toBe(3);
 });
 
-test('target backfill waits for the outer transaction to commit', function (): void {
+test('target seats are reconciled inside the outer transaction', function (): void {
     $duty = Duty::factory()->create();
     $target = Duty::factory()->create();
     $source = Dutiable::factory()->forDuty($duty)->active()->create();
@@ -129,7 +129,7 @@ test('target backfill waits for the outer transaction to commit', function (): v
     DB::beginTransaction();
     try {
         app(UpdateDuty::class)->execute($duty, updateDutyActionData($duty, ['ex_officio_target_duty_ids' => [$target->id]]));
-        expect(Dutiable::where('via_dutiable_id', $source->id)->count())->toBe(0);
+        expect(Dutiable::where('via_dutiable_id', $source->id)->count())->toBe(1);
         DB::commit();
     } catch (Throwable $exception) {
         DB::rollBack();
@@ -141,18 +141,18 @@ test('target backfill waits for the outer transaction to commit', function (): v
         ->and($derived->dutiable_id)->toBe($source->dutiable_id);
 });
 
-test('target unlink backfill waits for commit and keeps derived membership history', function (): void {
+test('target unlink clips seats inside the transaction and keeps derived membership history', function (): void {
     $this->travelTo('2026-10-03 12:00:00');
     $duty = Duty::factory()->create();
     $target = Duty::factory()->create();
     $duty->exOfficioTargetDuties()->attach($target);
-    $source = Dutiable::factory()->forDuty($duty)->active()->create();
+    $source = Dutiable::factory()->forDuty($duty)->active()->create(['start_date' => '2026-10-01']);
     $derived = Dutiable::where('via_dutiable_id', $source->id)->firstOrFail();
 
     DB::beginTransaction();
     try {
         app(UpdateDuty::class)->execute($duty, updateDutyActionData($duty));
-        expect($derived->fresh()->end_date)->toBeNull();
+        expect($derived->fresh()->end_date->toDateString())->toBe('2026-10-03');
         DB::commit();
     } catch (Throwable $exception) {
         DB::rollBack();
@@ -162,7 +162,7 @@ test('target unlink backfill waits for commit and keeps derived membership histo
     expect($derived->fresh()->end_date->toDateString())->toBe('2026-10-03');
 });
 
-test('outer rollback discards duty changes and target backfill', function (): void {
+test('outer rollback discards duty changes links and reconciled target seats', function (): void {
     $duty = Duty::factory()->create();
     $originalName = $duty->getTranslations('name');
     $target = Duty::factory()->create();
@@ -181,7 +181,7 @@ test('outer rollback discards duty changes and target backfill', function (): vo
         ->and(Dutiable::where('via_dutiable_id', $source->id)->count())->toBe(0);
 });
 
-test('unchanged ex officio targets do not queue a backfill', function (): void {
+test('ex officio reconciliation never queues seat work', function (): void {
     $duty = Duty::factory()->create();
     $target = Duty::factory()->create();
     $duty->exOfficioTargetDuties()->attach($target);

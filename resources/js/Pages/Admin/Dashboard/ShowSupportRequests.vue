@@ -1,5 +1,6 @@
 <template>
   <CollectionPage
+    :row-actions
     :source
     collection="supportRequests"
     entity-type="support_request"
@@ -9,6 +10,7 @@
     default-view="rows"
     :available-views="['rows']"
     :item-key="item => item.id"
+    @row-action="(_item, key) => collectionActions.select(key)"
     :quick-filters="tabs"
     @quick-filter="changeTab"
   >
@@ -21,7 +23,7 @@
       </Button>
     </template>
 
-    <template #row="{ item }">
+    <template #row="{ item, actions: recordActions }">
       <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
         <div class="min-w-0 flex-1">
           <CollectionPrimaryCell
@@ -34,6 +36,7 @@
           </p>
         </div>
         <StatusBadge :status="statusOf(item)" class="shrink-0" />
+        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => collectionActions.select(key)" />
       </article>
     </template>
 
@@ -46,14 +49,20 @@
       />
     </template>
   </CollectionPage>
+  <CollectionConfirmAction :dialog="collectionActions.dialog.value" @confirm="collectionActions.confirm" @cancel="collectionActions.pending.value = null" />
 </template>
 
 <script setup lang="ts">
+import { Trash2, Pencil, ArrowUpRight, Plus } from '@lucide/vue';
 import { computed } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Plus } from '@lucide/vue';
 
+import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
+import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import { useRowAbilities } from '@/Composables/useRowAbilities';
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { EmptyState, StatusBadge } from '@/Components/Patterns';
@@ -117,4 +126,16 @@ function formatDate(value: string): string {
 function changeTab(tab: string): void {
   router.get(route('mySupportRequests.index'), { tab }, { preserveState: false });
 }
+const rowActions = (item: SupportRequestItem): AdminRecordAction[] => [
+  { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, href: route('supportRequests.show', item.id) },
+  ...(rowAbilities.can(item.id, 'update') ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: route('supportRequests.edit', item.id) }] : []),
+  ...(rowAbilities.can(item.id, 'delete') ? [{ key: `delete:${item.id}:${item.title}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
+];
+
+const rowAbilities = useRowAbilities('supportRequests', () => source.items.value.map(item => item.id));
+const collectionActions = useCollectionRecordActions({
+  source,
+  routePrefix: 'supportRequests',
+  onMutated: id => rowAbilities.invalidate([id]),
+});
 </script>

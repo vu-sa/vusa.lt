@@ -291,6 +291,8 @@
     @confirm="foldIntoRename"
   />
 
+  <ExOfficioReviewSheet v-if="exOfficioReviewOpen" v-model:open="exOfficioReviewOpen" :duty-id="duty.id" />
+
   <DutiableTimelineDialog
     v-model:open="timelineOpen"
     scope-type="duty"
@@ -332,6 +334,7 @@ import {
   Briefcase,
   CalendarClock,
   CalendarRange,
+  ListChecks,
   ChevronRight,
   Edit3,
   FileText,
@@ -354,12 +357,13 @@ import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import { DatePicker } from '@/Components/ui/date-picker';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import RecordPage, { type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
-import type { ActionDescriptor } from '@/Components/Layouts/RecordPageAction.vue';
+import type { AdminRecordAction as ActionDescriptor } from '@/Features/Admin/RecordActions/types';
 import { ConfirmDialog, OverviewSection, SheetForm } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 import { operatingStatuses, type StatusPresentation } from '@/Constants/statuses';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
+import ExOfficioReviewSheet from '@/Features/Admin/DutiableTimeline/ExOfficioReviewSheet.vue';
 import { DutiableTimelineDialog } from '@/Features/Admin/DutiableTimeline';
 import { AssignDutyUserSheet, DutySearchField, MemberTermRow, dutyNameOn, termStatus, type DutyHit, type FormerDutyName, type QuotaTenant } from '@/Features/Admin/Occupancy';
 import DutyResponsibilitiesSection from '@/Features/Admin/Responsibilities/DutyResponsibilitiesSection.vue';
@@ -388,7 +392,7 @@ const props = defineProps<{
     is_active?: boolean;
     former_names?: FormerDutyName[];
   };
-  can?: { update: boolean; managePeople: boolean; assignQuota?: boolean };
+  can?: { update: boolean; managePeople: boolean; assignQuota?: boolean; reviewExOfficio?: boolean };
   /** Deferred (`dutyPanels`): only the About tab needs siblings. */
   otherDuties?: App.Entities.Duty[];
   /** Deferred (`dutyPanels`): only the assignment sheet's picker needs them. */
@@ -409,6 +413,7 @@ const props = defineProps<{
 const currentSection = ref('members');
 const assignSheetOpen = ref(false);
 const timelineOpen = ref(false);
+const exOfficioReviewOpen = ref(false);
 const deleteDutyOpen = ref(false);
 const endTenureTarget = ref<App.Entities.User | null>(null);
 const selectedDutiable = ref<(App.Entities.Dutiable & Record<string, unknown>) | null>(null);
@@ -550,6 +555,10 @@ const overflowActions = computed<ActionDescriptor[]>(() => {
     { key: 'timeline', label: $t('dutiables.timeline.open'), icon: CalendarRange },
   ];
 
+  if (canAssignMembers.value && props.can?.reviewExOfficio) {
+    actions.push({ key: 'ex-officio-review', label: $t('dutiables.ex_officio_review.title'), icon: ListChecks });
+  }
+
   if (canManageDuty.value) {
     actions.push({ key: 'edit', label: $t('Redaguoti pareigybę'), icon: Edit3 });
     actions.push({ key: 'delete', label: $t('Ištrinti pareigybę'), icon: Trash2, destructive: true });
@@ -562,6 +571,9 @@ const handleRecordAction = (actionKey: string) => {
   switch (actionKey) {
     case 'assign':
       openAssignSheet();
+      break;
+    case 'ex-officio-review':
+      exOfficioReviewOpen.value = true;
       break;
     case 'timeline':
       timelineOpen.value = true;

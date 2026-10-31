@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { nextTick, ref } from 'vue';
 
-import { SELECT_COLUMN_ID, useCollectionTable } from '../useCollectionTable';
+import { ACTIONS_COLUMN_ID, SELECT_COLUMN_ID, useCollectionTable } from '../useCollectionTable';
 
 import type { CollectionColumn } from '@/Components/Collection/types';
 
@@ -14,7 +14,7 @@ interface Row {
 const columns: CollectionColumn[] = [
   { key: 'title', label: 'Pavadinimas', sortField: 'title' },
   { key: 'date', label: 'Data', sortField: 'created_at' },
-  { key: 'actions', label: 'Veiksmai', pinned: true },
+  { key: 'status', label: 'Būsena', pinned: true },
 ];
 
 function makeTable(options: { selectable?: boolean; sortBy?: string; rows?: Row[] } = {}) {
@@ -28,6 +28,8 @@ function makeTable(options: { selectable?: boolean; sortBy?: string; rows?: Row[
     itemKey: row => row.id,
     columns: ref(columns),
     selectable: ref(options.selectable ?? false),
+    hasRowActions: ref(true),
+    actionsLabel: 'Veiksmai',
     canSelect: row => !row.locked,
     selection,
     sortBy: ref(options.sortBy ?? 'title:asc'),
@@ -44,6 +46,15 @@ function makeTable(options: { selectable?: boolean; sortBy?: string; rows?: Row[
 }
 
 describe('useCollectionTable', () => {
+  it('appends the built-in actions column last and keeps it out of visibility controls', () => {
+    const { table, hideableColumns } = makeTable({ selectable: true });
+    expect(table.getAllLeafColumns().at(-1)?.id).toBe(ACTIONS_COLUMN_ID);
+    expect(table.getColumn(ACTIONS_COLUMN_ID)?.getCanHide()).toBe(false);
+    expect(hideableColumns.value.map(column => column.key)).not.toContain(ACTIONS_COLUMN_ID);
+    table.getColumn(ACTIONS_COLUMN_ID)?.toggleVisibility(false);
+    expect(table.getVisibleLeafColumns().at(-1)?.id).toBe(ACTIONS_COLUMN_ID);
+  });
+
   beforeEach(() => localStorage.clear());
 
   it('makes a header sortable only when the source offers both directions', () => {

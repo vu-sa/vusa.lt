@@ -42,22 +42,7 @@
           </div>
 
           <div class="flex flex-wrap items-center gap-1">
-            <ReservationRowActions
-              :reservation="rowTarget(resource)"
-              :extra-actions="canEdit && isRemovable(resource)"
-              @decide="onDecide"
-            >
-              <template v-if="canEdit && isRemovable(resource)" #more-actions>
-                <DropdownMenuItem v-if="isEditable(resource)" class="pointer-coarse:min-h-11" :aria-label="$t('Redaguoti')" @select="emit('edit', resource)">
-                  <Pencil aria-hidden="true" />
-                  {{ $t('Redaguoti') }}
-                </DropdownMenuItem>
-                <DropdownMenuItem variant="destructive" class="pointer-coarse:min-h-11" :aria-label="$t('Pašalinti')" @select="askRemove(resource)">
-                  <Trash2 aria-hidden="true" />
-                  {{ $t('Pašalinti') }}
-                </DropdownMenuItem>
-              </template>
-            </ReservationRowActions>
+            <CollectionRowActions data-slot="reservation-row-actions" :actions="resourceActions(resource)" @select="key => selectResourceAction(resource, key)" />
           </div>
         </div>
 
@@ -106,14 +91,14 @@ import { ChevronRight, Pencil, Trash2 } from '@lucide/vue';
 
 import ReservationDecisionDialog from './ReservationDecisionDialog.vue';
 import ResourceManagers, { type ResourceManagerContact } from './ResourceManagers.vue';
-import ReservationRowActions from './ReservationRowActions.vue';
+import { reservationRowActions } from './reservationRowActions';
 import type { ReservationDecision } from './types';
 
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
 import { ResourceIcon } from '@/Components/icons';
 import { ConfirmDialog, EmptyState, StatusBadge } from '@/Components/Patterns';
 import ReservationPeriod from '@/Components/SmallElements/ReservationPeriod.vue';
-import { Button } from '@/Components/ui/button';
-import { DropdownMenuItem } from '@/Components/ui/dropdown-menu';
 import { reservationResourceStatuses, type ReservationResourceStatus } from '@/Constants/statuses';
 import type { DashboardReservation } from '@/Utils/ReservationStatus';
 import { formatDateTime } from '@/Utils/dateTime';
@@ -203,4 +188,17 @@ const remove = () => {
     onSuccess: () => emit('changed'),
   });
 };
+function resourceActions(resource: RecordResource): AdminRecordAction[] {
+  return [
+    ...reservationRowActions(rowTarget(resource), false, { includeOpen: false }),
+    ...(props.canEdit && isEditable(resource) ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil }] : []),
+    ...(props.canEdit && isRemovable(resource) ? [{ key: 'remove', label: $t('Pašalinti'), icon: Trash2, destructive: true }] : []),
+  ];
+}
+
+function selectResourceAction(resource: RecordResource, key: string): void {
+  if (key === 'edit') emit('edit', resource);
+  else if (key === 'remove') askRemove(resource);
+  else onDecide(key as ReservationDecision, rowTarget(resource));
+}
 </script>

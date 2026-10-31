@@ -1,7 +1,7 @@
 <template>
   <SheetForm
-    required-note
     v-model:open="open"
+    required-note
     :created-at="tag?.created_at"
     :updated-at="tag?.updated_at"
     :title="tag ? $t('Redaguoti žymą') : $t('Nauja žyma')"

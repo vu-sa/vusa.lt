@@ -11,6 +11,8 @@ use App\Models\User;
 use App\Policies\DutyPolicy;
 use App\Settings\CadenceSettings;
 use App\Support\Dutiables\CadenceMatcher;
+use App\Support\Dutiables\DutiablePeriods;
+use App\Support\Dutiables\ExOfficioSeatDates;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
@@ -48,11 +50,15 @@ class BuildDutiableTimeline
         $cadenceByDuty = ResolveCadenceForDuty::forDuties($duties);
 
         $editable = self::editabilityMap($rows, $actor);
+        $reviewSources = Dutiable::query()->with(['duty.institution', 'duty.exOfficioTargetDuties', 'derivedDutiables.media'])
+            ->whereIn('dutiable_id', $rows->pluck('dutiable_id'))->whereNull('via_dutiable_id')
+            ->where('ended_by_institution_deactivation', false)
+            ->whereHas('duty.exOfficioTargetDuties', fn ($query) => $query->whereKey($rows->pluck('duty_id')))
+            ->get()->filter(fn (Dutiable $source) => $actor->can('manageDutiable', $source)
+                && $source->duty->institution?->is_active);
         $cadences = self::cadences($duties);
         ['primary' => $cadenceByRow, 'spanned' => $cadenceIdsByRow] = self::cadenceByRow($rows, $cadences);
 
-        // Every derived row that points at a row in this payload, so a source bar can
-        // show what will follow it before the queued sync runs.
         $derivedBySource = $rows
             ->filter(fn (Dutiable $row) => $row->via_dutiable_id !== null)
             ->groupBy('via_dutiable_id');
@@ -61,7 +67,7 @@ class BuildDutiableTimeline
             'scope' => self::scopeDescriptor($scope, $scopeId),
             'groups' => self::groups($scope, $rows, $cadenceByDuty)->values()->all(),
             'rows' => self::sortRows($rows, $cadenceByRow)
-                ->map(fn (Dutiable $row) => self::row($row, $scope, $editable, $derivedBySource, $cadenceByRow, $cadenceIdsByRow))
+                ->map(fn (Dutiable $row) => self::row($row, $scope, $editable, $derivedBySource, $cadenceByRow, $cadenceIdsByRow, $reviewSources))
                 ->values()
                 ->all(),
             'cadences' => $cadences->map(fn (Cadence $cadence) => self::cadencePayload($cadence))->all(),
@@ -89,6 +95,7 @@ class BuildDutiableTimeline
                 'user:id,name,profile_photo_path,pronouns',
                 'tenant:id,shortname',
                 'viaDutiable:id,duty_id,dutiable_id,use_original_duty_name',
+                'derivedDutiables:id,via_dutiable_id',
                 'viaDutiable.duty:id,name',
                 'study_program:id,name',
             ]);
@@ -190,6 +197,7 @@ class BuildDutiableTimeline
      * @param  Collection<string, EloquentCollection<int, Dutiable>>  $derivedBySource
      * @param  array<string, Cadence|null>  $cadenceByRow
      * @param  array<string, list<string>>  $cadenceIdsByRow
+     * @param  Collection<int, Dutiable>  $reviewSources
      * @return array<string, mixed>
      */
     private static function row(
@@ -199,6 +207,7 @@ class BuildDutiableTimeline
         Collection $derivedBySource,
         array $cadenceByRow,
         array $cadenceIdsByRow,
+        Collection $reviewSources,
     ): array {
         $isDerived = $row->via_dutiable_id !== null;
 
@@ -227,6 +236,10 @@ class BuildDutiableTimeline
                 : null,
             'derived_ids' => $derivedBySource->get($row->id, collect())->pluck('id')->all(),
             'is_derived' => $isDerived,
+            'assignment_origin' => $row->assignment_origin,
+            'review_sources' => ! $isDerived && $row->derivedDutiables->isEmpty() && ($editable[$row->id] ?? false)
+                ? self::reviewSources($row, $reviewSources)
+                : [],
             // Derived rows mirror their source; DutiableController strips date edits on
             // them, so the editor must not offer the gesture in the first place.
             'editable' => ($editable[$row->id] ?? false) && ! $isDerived,
@@ -235,14 +248,24 @@ class BuildDutiableTimeline
     }
 
     /**
-     * The per-assignment overrides a row can carry beyond its dates.
-     *
-     * These are invisible on a chart of bars, and they are exactly what makes a row not
-     * safely interchangeable with its neighbour — a merge or a delete throws them away.
-     * Summarised rather than sent whole: `description` is rich HTML nobody needs here.
-     *
-     * @return array<string, mixed>|null null when the row is just a pair of dates
+     * @param  Collection<int, Dutiable>  $sources
+     * @return list<array<string, mixed>>
      */
+    private static function reviewSources(Dutiable $row, Collection $sources): array
+    {
+        return $sources->filter(fn (Dutiable $source) => $source->id !== $row->id
+                && $source->dutiable_id === $row->dutiable_id && $source->dutiable_type === $row->dutiable_type
+                && $source->duty->exOfficioTargetDuties->contains('id', $row->duty_id)
+                && ($dates = ExOfficioSeatDates::forTarget($source, $row->duty_id,
+                    $source->derivedDutiables, today()->toDateString())['dates']) !== null
+                && DutiablePeriods::overlap($dates, DutiablePeriods::dates($row)) > 0)
+            ->map(fn (Dutiable $source) => [
+                'id' => $source->id, 'name' => $source->duty->name,
+                'start_date' => $source->start_date->toDateString(), 'end_date' => $source->end_date?->toDateString(),
+            ])->values()->all();
+    }
+
+    /** @return array<string, mixed>|null */
     private static function extras(Dutiable $row): ?array
     {
         $extras = array_filter([

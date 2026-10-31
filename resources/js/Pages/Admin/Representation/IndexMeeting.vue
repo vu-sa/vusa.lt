@@ -1,5 +1,6 @@
 <template>
   <CollectionPage
+    :row-actions="item => actionsFor(item)"
     :source
     collection="meetings"
     entity-type="meeting"
@@ -10,6 +11,8 @@
     :item-key="meetingKey"
     :quick-filters
     :columns
+    @row-action="(item, key) => actions.select(key)"
+    table-fixed
     :pinned-items="pinnedMeetings"
     :search-placeholder="$t('Ieškoti posėdžių')"
     :trash="{ count: deletedCount, active: isTrash }"
@@ -22,18 +25,18 @@
       </Button>
     </template>
 
-    <template #row="{ item, pinned }">
+    <template #row="{ item, actions: recordActions, pinned }">
       <div v-if="isTrash" class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
         <div class="min-w-0 flex-1">
           <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches"
-            :title="item.title" :sub="getSearchTranslation(item, 'institution_name')" />
+            :title="item.title" :title-lines="2" :sub="getSearchTranslation(item, 'institution_name')" />
           <p class="mt-2 text-xs tabular-nums text-muted-foreground">
             {{ formatDate(new Date((item.start_time ?? 0) * 1000)) }}
           </p>
         </div>
-        <CollectionRowActions :actions="actionsFor(item)" @select="key => actions.select(key)" />
+        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => actions.select(key)" />
       </div>
-      <MeetingCollectionRow v-else :meeting="item" :pinned />
+      <MeetingCollectionRow v-else :meeting="item" :actions="recordActions" :pinned @select="key => actions.select(key)" />
     </template>
 
     <template #cell="{ item, column }">
@@ -43,6 +46,7 @@
       <CollectionPrimaryCell v-else-if="column.key === 'title'" :match="item._searchMatch"
         :title-matches="item._searchTitleMatches"
         :title="item.title"
+        :title-lines="2"
         :href="isTrash ? undefined : route('meetings.show', item.id)"
       />
       <template v-else-if="column.key === 'institution'">
@@ -57,11 +61,14 @@
           :status="meetingCompletionStatuses[item.completion_status as MeetingCompletionStatus]"
         />
       </template>
-      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="actionsFor(item)" @select="key => actions.select(key)" />
     </template>
 
-    <template v-if="!isTrash" #preview="{ item }">
-      <MeetingPreview :key="item.id" :meeting="item" />
+    <template v-if="!isTrash" #preview="{ item, actions: recordActions }">
+      <MeetingPreview :key="item.id" :meeting="item">
+        <template #actions>
+          <CollectionRowActions :actions="recordActions" full-labels class="flex-wrap" @select="key => actions.select(key)" />
+        </template>
+      </MeetingPreview>
     </template>
 
     <template #empty>
@@ -80,12 +87,12 @@
 </template>
 
 <script setup lang="ts">
-import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowUpRight, Plus, RotateCcw, Trash2 } from '@lucide/vue';
+import { Pencil, ArrowUpRight, Plus, RotateCcw, Trash2 } from '@lucide/vue';
 import { computed } from 'vue';
 
+import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
@@ -98,6 +105,7 @@ import MeetingPreview from '@/Components/Meetings/MeetingPreview.vue';
 import { Button } from '@/Components/ui/button';
 import { meetingCompletionStatuses, type MeetingCompletionStatus } from '@/Constants/statuses';
 import { useActionWindow } from '@/Composables/useActionWindow';
+import { useRowAbilities } from '@/Composables/useRowAbilities';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import {
   isTrashView,
@@ -142,9 +150,12 @@ const liveSource = isTrash
     });
 const source: CollectionSource<MeetingSearchResult> = liveSource ?? useTrashCollectionSource<MeetingSearchResult>('meetings');
 
+const rowAbilities = useRowAbilities('meetings', () => isTrash ? [] : [...source.items.value, ...props.recentlyChanged].map(item => item.id));
+
 const actions = useCollectionRecordActions({
   source,
   routePrefix: 'meetings',
+  onMutated: id => rowAbilities.invalidate([id]),
   canRestore: () => false,
   canForceDelete: () => false,
 });
@@ -152,20 +163,23 @@ type MeetingRow = MeetingSearchResult & { abilities?: { restore: boolean; forceD
 
 const actionsFor = (meeting: MeetingRow) => isTrash
   ? [
-      ...(meeting.abilities?.restore ? [{ key: `restore:${meeting.id}`, label: $t('Atkurti'), icon: RotateCcw, labelled: true }] : []),
+      ...(meeting.abilities?.restore ? [{ key: `restore:${meeting.id}`, label: $t('Atkurti'), icon: RotateCcw, primary: !meeting.abilities?.forceDelete }] : []),
       ...(meeting.abilities?.forceDelete ? [{ key: `forceDelete:${meeting.id}:${meeting.title}`, label: $t('Ištrinti visam laikui'), icon: Trash2, destructive: true }] : []),
     ]
-  : [{ key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, href: route('meetings.show', meeting.id), labelled: true }];
+  : [
+      { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, href: route('meetings.show', meeting.id), role: 'open' as const },
+      ...(rowAbilities.can(meeting.id, 'update') ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: route('meetings.edit', { meeting: meeting.id, action: 'edit' }) }] : []),
+      ...(rowAbilities.can(meeting.id, 'delete') ? [{ key: `delete:${meeting.id}:${meeting.title}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
+    ];
 
 const meetingKey = (meeting: MeetingSearchResult) => String(meeting.id);
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'date', label: $t('Data'), class: 'w-32' },
-  { key: 'title', label: $t('Posėdis') },
+  { key: 'date', label: $t('Data'), class: 'w-32', sortField: 'start_time' },
+  { key: 'title', label: $t('Posėdis'), sortField: 'title' },
   { key: 'institution', label: $t('Institucija') },
-  { key: 'agenda', label: $t('Punktai'), class: 'w-24' },
+  { key: 'agenda', label: $t('Punktai'), class: 'w-24', sortField: 'agenda_items_count' },
   { key: 'status', label: $t('Būsena'), class: 'w-48' },
-  { key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true },
 ]);
 
 // --- Quick filters (.ai/rules/js-pages-admin.md) ---------------------------------------------

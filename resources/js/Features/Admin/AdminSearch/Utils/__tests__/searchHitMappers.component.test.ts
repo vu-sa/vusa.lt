@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { usePage } from '@inertiajs/vue3';
 
-
 import {
   adminCollectionToKey,
   collectAllTabHits,

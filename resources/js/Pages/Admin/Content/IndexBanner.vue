@@ -1,5 +1,6 @@
 <template>
   <CollectionPage
+    :row-actions="item => rowActions(item)"
     :source
     collection="banners"
     entity-type="banner"
@@ -10,6 +11,7 @@
     :available-views="['table', 'rows']"
     :item-key="bannerKey"
     :trash="{ count: deletedCount ?? 0, active: isDeleted }"
+    @row-action="(item, key) => selectRowAction(key, item)"
     :columns
     :quick-filters
     :search-placeholder="$t('Ieškoti banerių…')"
@@ -24,7 +26,7 @@
       </Button>
     </template>
 
-    <template #row="{ item }">
+    <template #row="{ item, actions: recordActions }">
       <article class="flex min-h-14 items-center justify-between gap-4 px-3 py-2.5 sm:px-4">
         <div class="flex min-w-0 flex-1 items-center gap-3">
           <HoverCard v-if="item.image_url" :open-delay="150">
@@ -79,7 +81,7 @@
           :editable="canCreate && !isDeleted"
           @update:model-value="value => updateStatus(item, value === 'active')"
         />
-        <CollectionRowActions :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
+        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => selectRowAction(key, item)" />
       </article>
     </template>
 
@@ -139,8 +141,6 @@
         :editable="canCreate && !isDeleted"
         @update:model-value="value => updateStatus(item, value === 'active')"
       />
-
-      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
     </template>
 
     <template #empty>
@@ -212,10 +212,10 @@ const canForceDelete = computed(() => Boolean(usePage().props.auth?.can?.forceDe
 
 const rowActions = (item: BannerRow): CollectionRowAction[] => isDeleted.value
   ? [
-      { key: 'restore', label: $t('Atkurti'), icon: RotateCcw, labelled: true },
+      { key: 'restore', label: $t('Atkurti'), icon: RotateCcw, primary: !canForceDelete.value },
       ...(canForceDelete.value ? [{ key: 'forceDelete', label: $t('Ištrinti visam laikui'), icon: Trash2, destructive: true }] : []),
     ]
-  : [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, labelled: true, href: route('banners.edit', item.id) }];
+  : [{ key: 'edit', role: 'edit', label: $t('Redaguoti'), icon: Pencil, href: route('banners.edit', item.id) }];
 
 function selectRowAction(key: string, item: BannerRow): void {
   if (key === 'restore') restoreBanner(item);
@@ -266,11 +266,10 @@ const quickFilters = computed<CollectionQuickFilter[]>(() => {
 });
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'title', label: $t('Pavadinimas') },
+  { key: 'title', label: $t('Pavadinimas'), sortField: 'title' },
   { key: 'link_url', label: $t('Nuoroda'), class: 'w-64' },
   { key: 'tenant', label: $t('Padalinys'), class: 'w-32' },
   { key: 'is_active', label: $t('Būsena'), class: 'w-28' },
-  { key: 'actions', label: $t('Veiksmai'), class: 'w-24 text-right' },
 ]);
 
 const isFiltered = computed(() => source.query.value.trim() !== '' || source.activeFilterCount.value > 0);

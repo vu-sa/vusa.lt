@@ -10,14 +10,6 @@ use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
 
-/**
- * End-to-end coverage for ex-officio assignment through the real admin routes.
- *
- * ExOfficioSyncTest drives SyncExOfficioDutiables directly, which proves the
- * listener's own logic but not that anything reaches it. Every regression here
- * was a controller or model-layer path that silently never dispatched
- * DutiableChanged, so the listener was correct and the feature still broke.
- */
 pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {

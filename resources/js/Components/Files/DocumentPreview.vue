@@ -11,13 +11,13 @@
     </template>
 
     <template #actions>
+      <Button as-child variant="brand" size="sm">
+        <Link :href="showHref">
+          {{ $t('Atidaryti dokumentą') }}
+        </Link>
+      </Button>
       <slot name="actions">
-        <Button as-child variant="brand" size="sm">
-          <Link :href="showHref">
-            {{ $t('Atidaryti dokumentą') }}
-          </Link>
-        </Button>
-        <Button v-if="document.anonymous_url" as-child variant="outline" size="sm">
+        <Button v-if="document.anonymous_url" as-child variant="outline" size="sm" voice="sentence">
           <a :href="document.anonymous_url" target="_blank" rel="noopener noreferrer">
             <ExternalLink aria-hidden="true" />
             {{ $t('Atidaryti failą') }}
@@ -42,12 +42,12 @@
 </template>
 
 <script setup lang="ts">
-import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { CircleSlash, ExternalLink } from '@lucide/vue';
 import { computed } from 'vue';
 
+import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import { PreviewFact, PreviewFacts, PreviewPane, PreviewSection, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import type { StatusPresentation } from '@/Constants/statuses';

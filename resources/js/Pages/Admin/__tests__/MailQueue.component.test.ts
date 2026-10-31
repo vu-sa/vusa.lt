@@ -5,6 +5,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import MailQueue from '../MailQueue.vue';
 
+import { commonStubs } from '@/tests/stubs';
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 vi.mock('@/Composables/useCollectionSource', () => ({
   useDatabaseCollectionSource: () => ({ refresh: vi.fn() }),
@@ -20,8 +23,9 @@ const recipient = {
 };
 
 const CollectionPageStub = defineComponent({
-  setup(_, { slots }) {
-    return () => h('div', [slots.actions?.(), slots.row?.({ item: recipient })]);
+  props: ['rowActions'],
+  setup(props, { slots }) {
+    return () => h('div', [slots.actions?.(), slots.row?.({ item: recipient, actions: props.rowActions(recipient), index: 0 })]);
   },
 });
 
@@ -37,7 +41,7 @@ function factory(canManage = true) {
       recipients: { data: [recipient], current_page: 1, last_page: 1, total: 1, per_page: 50 },
       totals: { items: 1, recipients: 1 },
     },
-    global: { stubs: { CollectionPage: CollectionPageStub, ConfirmDialog: ConfirmDialogStub } },
+    global: { stubs: { ...commonStubs, CollectionPage: CollectionPageStub, ConfirmDialog: ConfirmDialogStub } },
   });
 }
 
@@ -57,13 +61,21 @@ describe('MailQueue', () => {
 
   it('can cancel the recipient discard without a request', async () => {
     const wrapper = factory();
-    const recipientButton = wrapper.findAll('button').find(button => button.text().includes('Nesiųsti'));
-    expect(recipientButton).toBeDefined();
-    await recipientButton?.trigger('click');
+    await wrapper.get('[data-testid="dropdown-menu-content"] [data-action="discard"]').trigger('click');
     await wrapper.find('[data-testid="cancel-discard"]').trigger('click');
 
     expect(wrapper.find('[data-testid="discard-confirmation"]').exists()).toBe(false);
     expect(router.delete).not.toHaveBeenCalled();
+  });
+
+  it('confirms recipient discard through the shared menu before sending the request', async () => {
+    const wrapper = factory();
+    expect(wrapper.findComponent(CollectionRowActions).props('spotlight')).toBe(true);
+    await wrapper.get('[data-testid="dropdown-menu-content"] [data-action="discard"]').trigger('click');
+    expect(wrapper.find('[data-testid="discard-confirmation"]').exists()).toBe(true);
+    expect(router.delete).not.toHaveBeenCalled();
+    await wrapper.get('[data-testid="confirm-discard"]').trigger('click');
+    expect(router.delete).toHaveBeenCalledWith(route('mailQueue.destroyForUser', recipient.user_id), expect.any(Object));
   });
 
   it('hides destructive actions from read-only viewers', () => {

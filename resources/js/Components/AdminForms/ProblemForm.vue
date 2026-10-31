@@ -81,7 +81,7 @@
           <TenantSelectField
             id="problem-tenant"
             :model-value="form.tenant_id"
-            :tenants="tenants"
+            :tenants
             required
             :error="form.errors.tenant_id"
             @update:model-value="onTenantChanged"
@@ -95,9 +95,9 @@
           >
             <FormSegmentedControl
               id="problem-status"
+              v-model="form.status"
               stack-on-phone
               tabindex="-1"
-              v-model="form.status"
               :options="statusOptions"
               :aria-label="capitalize($tChoice('entities.problem.status', 1))"
             />

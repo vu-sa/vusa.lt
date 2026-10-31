@@ -1,5 +1,6 @@
 <template>
   <CollectionPage
+    :row-actions="notificationRowActions"
     :source
     collection="notifications"
     entity-type="notification"
@@ -9,7 +10,9 @@
     default-view="rows"
     :available-views="['rows']"
     :item-key="item => item.id"
+    @row-navigate="markUnreadRowAsRead"
     :quick-filters
+    @row-action="(item, key) => key === 'read' ? handleMarkAsRead(item.id) : handleDelete(item.id)"
     @quick-filter="toggleUnread"
   >
     <template #actions>
@@ -40,8 +43,8 @@
         </DropdownMenuContent>
       </DropdownMenu>
     </template>
-    <template #row="{ item }">
-      <NotificationCard :notification="item" @mark-as-read="handleMarkAsRead" @delete="handleDelete" />
+    <template #row="{ item, actions }">
+      <NotificationCard :notification="item" :actions :spotlight="item === source.items.value[0]" @mark-as-read="handleMarkAsRead" @delete="handleDelete" />
     </template>
     <template #empty>
       <EmptyState
@@ -59,7 +62,9 @@ import { Link, router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { BellOff, MoreHorizontal, Settings } from '@lucide/vue';
 
+import { markNotificationRead } from '@/Composables/markNotificationRead';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
+import { notificationRowActions } from '@/Features/Admin/Notifications/notificationRowActions';
 import NotificationCard from '@/Features/Admin/Notifications/NotificationCard.vue';
 import { Button } from '@/Components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
@@ -150,4 +155,9 @@ const handleDeleteAll = () => {
     },
   });
 };
+function markUnreadRowAsRead(item: Notification): void {
+  if (!item.read_at) {
+    markNotificationRead(item.id);
+  }
+}
 </script>

@@ -19,7 +19,10 @@
       </time>
 
       <span class="min-w-0 flex-1">
-        <span class="block truncate text-base font-medium text-foreground">
+        <span
+          class="line-clamp-2 text-base font-medium text-foreground"
+          :title="meeting.title || $t('Be pavadinimo')"
+        >
           {{ meeting.title || $t('Be pavadinimo') }}
         </span>
         <span v-if="institutionName" class="mt-0.5 block truncate text-sm text-muted-foreground">
@@ -38,14 +41,7 @@
 
     <div class="flex shrink-0 flex-col items-end gap-2">
       <StatusBadge v-if="badge" :status="badge" />
-      <!-- The record page decides whether this person may edit; the row only points there (U5). -->
-      <Link
-        :href="route('meetings.show', meeting.id)"
-        prefetch
-        class="inline-flex h-8 items-center gap-1.5 border border-border px-3 text-sm font-medium hover:border-brand hover:text-brand pointer-coarse:h-11"
-      >
-        {{ $t('Atidaryti') }}
-      </Link>
+      <CollectionRowActions :actions="actions ?? defaultActions" @select="emit('select', $event)" />
     </div>
   </div>
 </template>
@@ -53,8 +49,11 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
+import { ArrowUpRight } from '@lucide/vue';
 import { computed } from 'vue';
 
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
 import { StatusBadge } from '@/Components/Patterns';
 import { meetingCompletionStatuses, type MeetingCompletionStatus } from '@/Constants/statuses';
 import type { MeetingSearchResult } from '@/Shared/Search/types';
@@ -64,9 +63,15 @@ import { formatMonthShort } from '@/Utils/IntlTime';
 
 const props = defineProps<{
   meeting: MeetingSearchResult;
+  actions?: AdminRecordAction[];
   /** Just changed by the user and shown ahead of an index that has not caught up. */
   pinned?: boolean;
 }>();
+
+const emit = defineEmits<{ select: [key: string] }>();
+const defaultActions = computed<AdminRecordAction[]>(() => [
+  { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open', href: route('meetings.show', props.meeting.id) },
+]);
 
 // Typesense stores start_time as a unix timestamp in seconds.
 const startsAt = computed(() => new Date((props.meeting.start_time ?? 0) * 1000));

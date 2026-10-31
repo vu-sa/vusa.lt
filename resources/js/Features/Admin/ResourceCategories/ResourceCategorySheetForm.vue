@@ -1,7 +1,7 @@
 <template>
   <SheetForm
-    required-note
     v-model:open="open"
+    required-note
     :created-at="category?.created_at"
     :updated-at="category?.updated_at"
     :title="category ? $t('Redaguoti kategoriją') : $t('Nauja kategorija')"

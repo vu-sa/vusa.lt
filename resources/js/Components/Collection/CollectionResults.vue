@@ -1,5 +1,5 @@
 <template>
-  <div class="relative" data-slot="collection-results">
+  <div class="relative min-w-0 max-w-full" data-slot="collection-results">
     <!-- Overlaid, not in flow: inserting it on every sort or search pushed the table down and back. -->
     <TopProgressBar v-if="refreshing" class="absolute inset-x-0 top-0" :label="$t('Kraunami duomenys')" />
 
@@ -80,10 +80,10 @@
 
     <div
       v-else
-      :class="view === 'preview' ? 'grid gap-6 xl:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]' : ''"
+      :class="view === 'preview' ? 'grid min-w-0 max-w-full gap-6 xl:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]' : ''"
     >
       <div class="min-w-0">
-        <div v-if="view === 'table'" class="overflow-x-auto border border-border" data-slot="collection-table">
+        <div v-if="view === 'table'" class="min-w-0 max-w-full overflow-x-auto border border-border" data-slot="collection-table">
           <Table :class="tableFixed ? 'table-fixed min-w-[52rem]' : undefined">
             <TableHeader>
               <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
@@ -92,7 +92,7 @@
                   :key="header.id"
                   :class="[
                     header.id === SELECT_COLUMN_ID ? 'w-12' : columnOf(header.id)?.class,
-                    columnOf(header.id)?.pinned ? 'sticky right-0 z-10 bg-secondary/50' : '',
+                    header.id === ACTIONS_COLUMN_ID ? ['sticky right-0 z-10 whitespace-nowrap bg-secondary text-right', actionsColumnWidth] : 'whitespace-nowrap',
                   ]"
                   :aria-sort="ariaSort(header.column.getIsSorted())"
                 >
@@ -125,14 +125,14 @@
                 v-for="row in table.getRowModel().rows"
                 :key="row.id"
                 :data-state="row.getIsSelected() ? 'selected' : undefined"
-                class="group"
+                class="group hover:bg-secondary data-[state=selected]:bg-secondary"
               >
                 <TableCell
                   v-for="cell in row.getVisibleCells()"
                   :key="cell.id"
                   :class="[
                     cell.column.id === SELECT_COLUMN_ID ? 'w-12' : columnOf(cell.column.id)?.class,
-                    columnOf(cell.column.id)?.pinned ? 'sticky right-0 z-10 bg-background group-hover:bg-secondary/40 group-data-[state=selected]:bg-secondary' : '',
+                    cell.column.id === ACTIONS_COLUMN_ID ? ['sticky right-0 z-10 whitespace-nowrap bg-background group-hover:bg-secondary group-data-[state=selected]:bg-secondary text-right', actionsColumnWidth] : '',
                   ]"
                 >
                   <Checkbox
@@ -142,10 +142,12 @@
                     @click.capture="rememberShift"
                     @update:model-value="value => toggleRow(row.id, value === true, { range: shiftHeld })"
                   />
+                  <CollectionRowActions v-else-if="cell.column.id === ACTIONS_COLUMN_ID" :actions="rowActions?.(row.original) ?? []" :spotlight="row.id === table.getRowModel().rows[0]?.id" @select="key => emit('rowAction', row.original, key)" @navigate="key => emit('rowNavigate', row.original, key)" />
                   <slot
                     v-else-if="cell.column.id !== SELECT_COLUMN_ID"
                     name="cell"
                     :item="row.original"
+                    :actions="rowActions?.(row.original) ?? []"
                     :column="columnOf(cell.column.id)!"
                     :pinned="isPinned(row.original)"
                   />
@@ -166,13 +168,13 @@
             :data-collection-key="row.id"
             class="min-w-0"
           >
-            <slot name="card" :item="row.original" :pinned="isPinned(row.original)" />
+            <slot name="card" :item="row.original" :actions="rowActions?.(row.original) ?? []" :pinned="isPinned(row.original)" />
           </li>
         </ul>
 
         <ul v-else ref="rowsEl" class="divide-y divide-border/60 border-y border-border" data-slot="collection-rows">
           <li
-            v-for="row in table.getRowModel().rows"
+            v-for="(row, index) in table.getRowModel().rows"
             :key="row.id"
             :data-collection-key="row.id"
             :class="[
@@ -191,7 +193,7 @@
               />
             </div>
             <div class="min-w-0 flex-1">
-              <slot name="row" :item="row.original" :view :selected="selectedKey === row.id" :pinned="isPinned(row.original)" />
+              <slot name="row" :index :item="row.original" :actions="rowActions?.(row.original) ?? []" :view :selected="selectedKey === row.id" :pinned="isPinned(row.original)" />
             </div>
           </li>
         </ul>
@@ -208,7 +210,7 @@
         ]"
         data-slot="collection-preview"
       >
-        <slot v-if="selectedItem" name="preview" :item="selectedItem" />
+        <slot v-if="selectedItem" name="preview" :item="selectedItem" :actions="rowActions?.(selectedItem) ?? []" />
         <p v-else class="p-6 text-sm text-muted-foreground">
           {{ $t('Pasirink įrašą, kad matytum jo peržiūrą.') }}
         </p>
@@ -223,9 +225,11 @@ import { useEventListener } from '@vueuse/core';
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, Columns3 } from '@lucide/vue';
 import { computed, ref, toRef } from 'vue';
 
+import CollectionRowActions from './CollectionRowActions.vue';
 import CollectionLoadMore from './CollectionLoadMore.vue';
 import type { CollectionColumn } from './types';
 
+import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
 import { CollectionSkeleton, EmptyState, TopProgressBar } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
@@ -238,7 +242,7 @@ import {
 } from '@/Components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
 import type { CollectionSortOption } from '@/Composables/useCollectionSource';
-import { SELECT_COLUMN_ID, useCollectionTable } from '@/Composables/useCollectionTable';
+import { ACTIONS_COLUMN_ID, SELECT_COLUMN_ID, useCollectionTable } from '@/Composables/useCollectionTable';
 import type { CollectionViewMode } from '@/Composables/useCollectionView';
 
 const props = withDefaults(defineProps<{
@@ -249,6 +253,7 @@ const props = withDefaults(defineProps<{
   pinned?: readonly T[];
   itemKey: (item: T) => string;
   columns?: CollectionColumn[];
+  rowActions?: (item: T) => AdminRecordAction[];
   isLoading: boolean;
   isLoadingMore: boolean;
   hasSearched: boolean;
@@ -263,6 +268,8 @@ const props = withDefaults(defineProps<{
   sortOptions?: CollectionSortOption[];
   total: number;
   tableFixed?: boolean;
+  /** Width of the actions column in a fixed-layout table, where it cannot size itself. */
+  actionsWidth?: string;
 }>(), {
   pinned: () => [],
   columns: () => [],
@@ -279,13 +286,15 @@ const emit = defineEmits<{
   loadMore: [];
   select: [key: string];
   sort: [value: string];
+  rowAction: [item: T, key: string];
+  rowNavigate: [item: T, key: string];
 }>();
 
 defineSlots<{
-  row: (props: { item: T; view: CollectionViewMode; selected: boolean; pinned: boolean }) => unknown;
-  card?: (props: { item: T; pinned: boolean }) => unknown;
-  cell: (props: { item: T; column: CollectionColumn; pinned: boolean }) => unknown;
-  preview: (props: { item: T }) => unknown;
+  row: (props: { item: T; index: number; actions: AdminRecordAction[]; view: CollectionViewMode; selected: boolean; pinned: boolean }) => unknown;
+  card?: (props: { item: T; actions: AdminRecordAction[]; pinned: boolean }) => unknown;
+  cell: (props: { item: T; actions: AdminRecordAction[]; column: CollectionColumn; pinned: boolean }) => unknown;
+  preview: (props: { item: T; actions: AdminRecordAction[] }) => unknown;
   empty: () => unknown;
 }>();
 
@@ -297,11 +306,16 @@ const pinnedList = computed(() => {
 
 const allItems = computed<readonly T[]>(() => [...pinnedList.value, ...props.items]);
 
+// A fixed layout takes `w-px` literally and squeezes the actions; only auto layout can shrink-wrap them.
+const actionsColumnWidth = computed(() => (props.tableFixed ? props.actionsWidth ?? 'w-48' : 'w-px'));
+
 const { table, hideableColumns, toggleRow } = useCollectionTable<T>({
   collection: props.collection,
   items: allItems,
   itemKey: props.itemKey,
   columns: toRef(props, 'columns'),
+  hasRowActions: computed(() => allItems.value.some(item => (props.rowActions?.(item).length ?? 0) > 0)),
+  actionsLabel: $t('Veiksmai'),
   selectable: toRef(props, 'selectable'),
   canSelect: item => props.canSelect?.(item) ?? true,
   selection,

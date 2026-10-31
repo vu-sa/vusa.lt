@@ -3,8 +3,10 @@ doc_status: reviewed
 title: Žymos
 area: tags
 models: [Tag]
-last_reviewed: 2026-10-27
+last_reviewed: 2026-10-28
 tests:
+  - resources/js/Pages/Admin/Content/__tests__/IndexTag.component.test.ts
+  - tests/Browser/AdminCollectionPagesTest.php
   - resources/js/Features/Admin/Tags/__tests__/TagSheetForm.component.test.ts
   - tests/Feature/Admin/Content/TagControllerTest.php
   - tests/Feature/Admin/Content/PolymorphicTaggingTest.php
@@ -77,7 +79,7 @@ Puslapio viršuje spausk **Nauja žyma** (arba eik adresu `/mano/tags/create`):
 ### Redagavimas ir šalinimas
 
 - Norėdamas pakeisti žymos pavadinimą ar įjungti temos puslapį, sąraše paspausk žymos pavadinimo arba pasirink **Redaguoti**.
-- Veiksmų meniu pasirinkęs **Ištrinti**, perkelk žymą į šiukšlinę.
+- Meniu **⋯ → Ištrinti** žyma iškart perkeliama į šiukšlinę, be papildomo patvirtinimo. Pranešime paspaudęs **Atšaukti**, ją atkuri. Sėkmingai ištrynus, sąrašas ir rastų žymų skaičius atnaujinami.
 - Šiukšlinėje žymas galima atkurti arba ištrinti visam laikui.
 
 ## Kas ką gali {#teises}

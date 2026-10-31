@@ -225,3 +225,8 @@ Schedule::command('metrics:reps:snapshot')
     ->dailyAt('03:50')
     ->name('rep-metric-snapshot')
     ->withoutOverlapping(10);
+
+Schedule::command('duties:check-ex-officio')
+    ->dailyAt('04:00')
+    ->name('check-ex-officio-integrity')
+    ->withoutOverlapping(30);

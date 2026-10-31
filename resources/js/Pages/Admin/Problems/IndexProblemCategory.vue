@@ -1,5 +1,6 @@
 <template>
   <CollectionPage
+    :row-actions="item => rowActions(item)"
     :source
     collection="problemCategories"
     entity-type="problem"
@@ -10,6 +11,7 @@
     :item-key="categoryKey"
     :columns
     :search-placeholder="$t('Ieškoti kategorijų')"
+    @row-action="(item, key) => selectRowAction(key, item)"
   >
     <template #actions>
       <Button variant="brand" @click="openSheet()">
@@ -18,7 +20,7 @@
       </Button>
     </template>
 
-    <template #row="{ item }">
+    <template #row="{ item, actions: recordActions }">
       <article class="flex min-h-16 items-center gap-3 px-3 py-3 sm:px-4">
         <div class="min-w-0 flex-1">
           <button type="button" class="block max-w-full text-left font-medium hover:text-brand" @click="openSheet(item)">
@@ -29,7 +31,7 @@
           </p>
         </div>
         <span class="shrink-0 text-sm tabular-nums text-muted-foreground">{{ usage(item) }}</span>
-        <CollectionRowActions :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
+        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => selectRowAction(key, item)" />
       </article>
     </template>
 
@@ -39,7 +41,6 @@
       </button>
       <span v-else-if="column.key === 'description'" class="text-muted-foreground">{{ description(item) || '—' }}</span>
       <span v-else-if="column.key === 'problems_count'" class="tabular-nums">{{ item.problems_count }}</span>
-      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
     </template>
 
     <template #empty>
@@ -95,13 +96,15 @@ const source = useLocalCollectionSource<Category>({
   defaultSort: 'name:asc',
   sortOptions: () => [
     { value: 'name:asc', label: $t('Pagal pavadinimą (A–Z)'), by: category => title(category) },
+    { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)'), by: category => title(category) },
     { value: 'problems_count:desc', label: $t('Dažniausiai naudojamos'), by: category => category.problems_count },
+    { value: 'problems_count:asc', label: $t('Rečiausiai naudojamos'), by: category => category.problems_count },
   ],
 });
 
 // A category in use cannot be deleted (ProblemCategoryController::destroy), so the action is not offered.
 const rowActions = (category: Category): CollectionRowAction[] => [
-  { key: 'edit', label: $t('Redaguoti'), icon: Pencil, labelled: true },
+  { key: 'edit', role: 'edit' as const, label: $t('Redaguoti'), icon: Pencil },
   ...(props.abilities.delete && category.problems_count === 0
     ? [{ key: 'delete', label: $t('Ištrinti'), icon: Trash2, destructive: true }]
     : []),
@@ -113,10 +116,9 @@ function selectRowAction(key: string, category: Category): void {
 }
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'name', label: $t('Kategorija') },
+  { key: 'name', label: $t('Kategorija'), sortField: 'name' },
   { key: 'description', label: $t('Aprašymas') },
-  { key: 'problems_count', label: $tChoice('entities.problem.model', 2), class: 'w-28' },
-  { key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true },
+  { key: 'problems_count', label: $tChoice('entities.problem.model', 2), class: 'w-28', sortField: 'problems_count' },
 ]);
 
 const sheetOpen = ref(false);

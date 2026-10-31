@@ -1,5 +1,6 @@
 <template>
   <CollectionPage
+    :row-actions="() => rowActions"
     :source
     collection="eventTypes"
     entity-type="eventType"
@@ -10,6 +11,7 @@
     :item-key="eventTypeKey"
     :trash="{ count: deletedCount ?? 0, active: isDeleted }"
     :columns
+    @row-action="(item, key) => selectRowAction(key, item)"
     :search-placeholder="$t('Ieškoti renginių tipų…')"
   >
     <template #actions>
@@ -19,7 +21,7 @@
       </Button>
     </template>
 
-    <template #row="{ item }">
+    <template #row="{ item, actions: recordActions }">
       <article class="flex min-h-14 items-center justify-between gap-4 px-3 py-2.5 sm:px-4">
         <div class="min-w-0 flex-1">
           <div class="flex items-center gap-2">
@@ -43,7 +45,7 @@
             {{ item.slug }}
           </p>
         </div>
-        <CollectionRowActions :actions="rowActions" @select="key => selectRowAction(key, item)" />
+        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => selectRowAction(key, item)" />
       </article>
     </template>
 
@@ -80,8 +82,6 @@
           {{ $t('Neaktyvus') }}
         </span>
       </span>
-
-      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="rowActions" @select="key => selectRowAction(key, item)" />
     </template>
 
     <template #empty>
@@ -178,11 +178,11 @@ const canRestore = computed(() => props.abilities.restore);
 const canForceDelete = computed(() => Boolean(usePage().props.auth?.can?.forceDelete?.eventType));
 const rowActions = computed<CollectionRowAction[]>(() => isDeleted.value
   ? [
-      ...(canRestore.value ? [{ key: 'restore', label: $t('Atkurti'), icon: RotateCcw, labelled: true }] : []),
+      ...(canRestore.value ? [{ key: 'restore', label: $t('Atkurti'), icon: RotateCcw, primary: !canForceDelete.value }] : []),
       ...(canForceDelete.value ? [{ key: 'forceDelete', label: $t('Ištrinti visam laikui'), icon: Trash2, destructive: true }] : []),
     ]
   : [
-      ...(canUpdate.value ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, labelled: true }] : []),
+      ...(canUpdate.value ? [{ key: 'edit', role: 'edit' as const, label: $t('Redaguoti'), icon: Pencil }] : []),
       ...(canDelete.value ? [{ key: 'delete', label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
     ]);
 
@@ -219,6 +219,7 @@ const source = useDatabaseCollectionSource<EventTypeRow>({
   defaultSort: 'sort_order:asc',
   sortOptions: () => [
     { value: 'sort_order:asc', label: $t('Pagal rikiavimo tvarką') },
+    { value: 'sort_order:desc', label: $t('Pagal rikiavimo tvarką (atvirkščiai)') },
     { value: 'name:asc', label: $t('Pagal pavadinimą (A–Z)') },
     { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)') },
   ],
@@ -226,10 +227,9 @@ const source = useDatabaseCollectionSource<EventTypeRow>({
 });
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'name', label: $t('forms.fields.title') },
+  { key: 'name', label: $t('forms.fields.title'), sortField: 'name' },
   { key: 'slug', label: 'Slug', class: 'w-48' },
   { key: 'is_active', label: $t('forms.fields.is_active'), class: 'w-28' },
-  ...(rowActions.value.length ? [{ key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true }] : []),
 ]);
 
 function openSheet(item: EventTypeRow | null = null): void {

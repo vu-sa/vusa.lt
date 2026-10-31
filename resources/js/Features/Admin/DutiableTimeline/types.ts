@@ -55,6 +55,8 @@ export interface TimelineRow {
   } | null;
   source: { id: string; duty_name: string | null; use_original_duty_name?: boolean } | null;
   derived_ids: string[];
+  assignment_origin?: 'unknown' | 'manual' | 'ex_officio';
+  review_sources?: { id: string; name: string; start_date: string; end_date: string | null }[];
   is_derived: boolean;
   editable: boolean;
   edit_url: string;

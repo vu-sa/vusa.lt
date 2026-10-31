@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\ActivityRequests\GetInstitutionActivityRequestHistory;
+use App\Actions\ActivityRequests\ResolveActivityRequestRecipients;
 use App\Actions\ActivityRequests\SendInstitutionActivityRequests;
 use App\Actions\RecordMeeting;
 use App\Enums\ActivityRequestSkipReason;
@@ -604,4 +605,26 @@ test('no-history activity requests exclude vacation days from the recipients wai
         ->and($result['plan'][0]->skipReason)->toBe(ActivityRequestSkipReason::RecentActivity)
         ->and(InstitutionActivityRequest::query()->count())->toBe(0);
     Notification::assertNotSentTo($this->rep, InstitutionActivityNotification::class);
+});
+
+test('a representative who has not started yet is not asked', function (): void {
+    $duty = Duty::factory()->for($this->institution)->create();
+    grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
+    $upcoming = User::factory()->create();
+    $upcoming->duties()->attach($duty, ['start_date' => today()->addMonth(), 'end_date' => null]);
+
+    $recipients = app(ResolveActivityRequestRecipients::class)->forInstitutions(collect([$this->institution->id]));
+
+    expect($recipients[$this->institution->id]['representatives'])->toHaveKey($this->rep->id)
+        ->not->toHaveKey($upcoming->id);
+});
+
+test('a representative starting today is asked', function (): void {
+    $duty = Duty::factory()->for($this->institution)->create();
+    grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
+    $starting = User::factory()->create();
+    $starting->duties()->attach($duty, ['start_date' => today(), 'end_date' => null]);
+
+    expect(app(ResolveActivityRequestRecipients::class)->forInstitutions(collect([$this->institution->id]))[$this->institution->id]['representatives'])
+        ->toHaveKey($starting->id);
 });

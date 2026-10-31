@@ -7,6 +7,7 @@ use App\Models\Pivots\Dutiable;
 use App\Support\Dutiables\CadenceMatcher;
 use App\Support\Dutiables\DutiableTimelineChange;
 use App\Support\Dutiables\DutiableTimelinePlan;
+use App\Support\Dutiables\ExOfficioSeatDates;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
@@ -288,9 +289,7 @@ class PlanDutiableTimelineChanges
     }
 
     /**
-     * Ex-officio rows mirror their source, exactly as SyncExOfficioDutiables::syncDerivedRow()
-     * does after the queue drains. Projecting it here is what lets the diff show the
-     * knock-on seats before anything is written.
+     * Uses the reconciler's planner so the preview respects link windows and closure history.
      *
      * @param  array{start_date: string, end_date: string|null}  $after
      * @return list<array{id: string, duty_name: string|null, use_original_duty_name: bool, start_date: string, end_date: string|null}>
@@ -300,27 +299,46 @@ class PlanDutiableTimelineChanges
         if ($row->via_dutiable_id !== null) {
             return [];
         }
+        $projection = clone $row;
+        $projection->fill($after);
+        $targets = $row->duty->exOfficioTargetDuties()->with('institution')->get()
+            ->filter(fn ($target): bool => (bool) $target->institution?->is_active);
+        if (! $row->duty->institution?->is_active || $row->ended_by_institution_deactivation) {
+            $targets = collect();
+        }
+        $updates = collect();
+        $creates = collect();
+        foreach ($targets as $target) {
+            $expected = ExOfficioSeatDates::forTarget($projection, $target->id, $row->derivedDutiables, today()->toDateString());
+            $dates = $expected['dates'];
+            if ($dates === null) {
+                continue;
+            }
+            if ($expected['seat'] !== null) {
+                $updates->put($expected['seat']->id, $dates);
+            } elseif ($dates['end_date'] === null || $dates['end_date'] >= today()->toDateString()) {
+                $creates->push([...$dates, 'target_duty_id' => $target->id]);
+            }
+        }
 
-        return $row->derivedDutiables
-            ->map(fn (Dutiable $derived) => [
-                'id' => $derived->id,
-                'duty_name' => $derived->duty?->name,
-                'use_original_duty_name' => (bool) $derived->use_original_duty_name,
-                'start_date' => $after['start_date'],
-                'end_date' => $after['end_date'],
-            ])
-            ->values()
-            ->all();
+        $existing = $row->derivedDutiables->map(fn (Dutiable $derived) => [
+            'id' => $derived->id, 'duty_name' => $derived->duty?->name,
+            'use_original_duty_name' => (bool) $derived->use_original_duty_name,
+            'start_date' => $updates->get($derived->id)['start_date'] ?? $derived->start_date->toDateString(),
+            'end_date' => $updates->has($derived->id) ? $updates[$derived->id]['end_date'] : $derived->end_date?->toDateString(),
+        ]);
+        $created = $creates->map(fn (array $period) => [
+            'id' => 'new:'.$row->id.':'.$period['target_duty_id'],
+            'duty_name' => $targets->firstWhere('id', $period['target_duty_id'])?->name,
+            'use_original_duty_name' => false,
+            'start_date' => $period['start_date'], 'end_date' => $period['end_date'],
+        ]);
+
+        return collect($existing->all())->merge($created)->values()->all();
     }
 
     /**
-     * Reported rather than dropped, so a bulk selection can say what it skipped.
-     *
-     * - `derived`: an ex-officio row's dates are not its own; DutiableController::update()
-     *   strips edits to them for the same reason.
-     * - `inverted`: no combination of operations may leave a row ending before it begins.
-     *   Nothing at the database level forbids it, so the guard belongs here, where every
-     *   write path already passes.
+     * Keeps blocked rows in the preview instead of silently dropping an invalid or derived edit.
      *
      * @param  array{start_date: string, end_date: string|null}  $after
      */
@@ -365,7 +383,7 @@ class PlanDutiableTimelineChanges
         }
 
         return Dutiable::query()
-            ->with(['duty:id,name,institution_id', 'user:id,name,pronouns', 'derivedDutiables.duty:id,name'])
+            ->with(['duty:id,name,institution_id', 'user:id,name,pronouns', 'derivedDutiables.duty:id,name', 'derivedDutiables.media'])
             ->whereIn('id', $rowIds)
             ->get()
             ->keyBy('id');

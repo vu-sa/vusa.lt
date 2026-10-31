@@ -2,6 +2,7 @@
 
 namespace App\Actions;
 
+use App\Actions\Dutiables\ReconcileExOfficioSeats;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use Illuminate\Support\Collection;
@@ -9,8 +10,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Folds one holder's overlapping rows on a duty into one, keeping the widest dates and backfilling
- * blank fields. Separate stints and different tenant scopes stay apart. Used by duty and user merges.
+ * Shared by duty and user merges to widen overlapping terms and fill blank details.
+ * Separate stints and different tenant scopes stay apart.
  */
 class CollapseOverlappingDutiables
 {
@@ -28,7 +29,7 @@ class CollapseOverlappingDutiables
             ->orderBy('dutiable_type')
             ->orderBy('dutiable_id')
             ->orderBy('tenant_id')
-            ->orderBy('start_date')
+            ->orderBy('start_date')->orderBy('id')
             ->get();
 
         foreach ($rows->groupBy(fn (Dutiable $row) => $row->dutiable_type.'|'.$row->dutiable_id.'|'.$row->tenant_id) as $group) {
@@ -87,27 +88,60 @@ class CollapseOverlappingDutiables
     }
 
     /**
-     * Widen `$survivor` to also cover `$loser`, then backfill anything it is missing.
-     *
-     * Public because the timeline editor's explicit merge folds rows the same way — the
-     * only difference there is that the user chose them rather than an overlap scan.
+     * Shared by automatic overlap collapse and the timeline's explicit merge.
+     * Repoints linked seats before the losing source is deleted, preserving their provenance.
      */
     public static function foldInto(Dutiable $survivor, Dutiable $loser): void
     {
-        if ($survivor->ended_by_institution_deactivation || $loser->ended_by_institution_deactivation) {
-            throw ValidationException::withMessages([
-                'rows' => __('forms.helpers.institution_assignment_closed'),
-            ]);
-        }
+        ReconcileExOfficioSeats::paused(function () use ($survivor, $loser): void {
+            if ($survivor->ended_by_institution_deactivation || $loser->ended_by_institution_deactivation) {
+                throw ValidationException::withMessages([
+                    'rows' => __('forms.helpers.institution_assignment_closed'),
+                ]);
+            }
 
-        if ($survivor->end_date !== null) {
-            $survivor->end_date = $loser->end_date === null || $loser->end_date->gt($survivor->end_date)
-                ? $loser->end_date
-                : $survivor->end_date;
-        }
+            if ($survivor->end_date !== null) {
+                $survivor->end_date = $loser->end_date === null || $loser->end_date->gt($survivor->end_date)
+                    ? $loser->end_date
+                    : $survivor->end_date;
+            }
 
+            self::copyDetails($survivor, $loser);
+
+            foreach ($loser->derivedDutiables()->get() as $derived) {
+                $oldSourceId = $derived->via_dutiable_id;
+                $keptSeat = $derived->ended_by_institution_deactivation ? null : $survivor->derivedDutiables()
+                    ->where('duty_id', $derived->duty_id)->where('ended_by_institution_deactivation', false)
+                    ->orderBy('id')->first();
+                if ($keptSeat !== null) {
+                    self::copyDetails($keptSeat, $derived);
+                    activity()->performedOn($keptSeat)->event('source_repointed')
+                        ->withProperties(['old' => ['via_dutiable_id' => $oldSourceId], 'via_dutiable_id' => $survivor->id,
+                            'removed_seat_id' => $derived->id])
+                        ->log('ex_officio_source_repointed');
+                    $derived->delete();
+
+                    continue;
+                }
+                $derived->update(['via_dutiable_id' => $survivor->id]);
+                activity()->performedOn($derived)->event('source_repointed')
+                    ->withProperties(['old' => ['via_dutiable_id' => $oldSourceId], 'via_dutiable_id' => $survivor->id])
+                    ->log('ex_officio_source_repointed');
+            }
+        });
+        ReconcileExOfficioSeats::forSource($survivor);
+    }
+
+    public static function copyDetails(Dutiable $survivor, Dutiable $loser): void
+    {
         foreach (['study_program_id', 'study_program_note', 'additional_email', 'description'] as $field) {
-            if (blank($survivor->{$field}) && filled($loser->{$field})) {
+            if (in_array($field, $loser->getTranslatableAttributes(), true)) {
+                foreach ($loser->getTranslations($field) as $locale => $value) {
+                    if (blank($survivor->getTranslation($field, $locale, false))) {
+                        $survivor->setTranslation($field, $locale, $value);
+                    }
+                }
+            } elseif (blank($survivor->{$field}) && filled($loser->{$field})) {
                 $survivor->{$field} = $loser->{$field};
             }
         }

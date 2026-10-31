@@ -81,3 +81,12 @@ test('leaves facet counts out unless the page asks for them', function (): void 
         ->assertOk()
         ->assertJsonPath('data.facets', null);
 });
+
+test('serializes delete separately from update for problem rows', function (): void {
+    $response = asUser($this->coordinator)->getJson(route('api.v1.admin.problems.index'))->assertOk();
+    $own = collect($response->json('data.items'))->firstWhere('id', $this->problem->id);
+    $other = collect($response->json('data.items'))->firstWhere('id', $this->otherTenantProblem->id);
+
+    expect($own)->toMatchArray(['can_update' => true, 'can_delete' => true])
+        ->and($other)->toMatchArray(['can_update' => false, 'can_delete' => false]);
+});

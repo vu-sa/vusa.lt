@@ -31,8 +31,11 @@ vi.mock('@/Composables/useApi', () => ({
     isFetching,
     execute: vi.fn(),
   })),
-  useApiMutation: vi.fn((_url: unknown, _method: unknown, body: never) => {
-    previewBody = body;
+  useApiMutation: vi.fn((url: unknown, _method: unknown, body: never) => {
+    // The selection panel's merge preview mounts later and must not replace the editor's plan body.
+    if (!String(url).includes('mergePreview')) {
+      previewBody = body;
+    }
 
     return {
       data: previewPlan,

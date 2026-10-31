@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Duty;
+use App\Models\Institution;
 use App\Models\Page;
 use App\Models\Reservation;
 use App\Models\Resource;
@@ -76,14 +78,33 @@ const ADMIN_PAGES = [
 ];
 
 it('keeps collection actions reachable across widths and themes', function (): void {
-    $page = openAdminPage('/mano/tags', 1440, 900, function (): void {
-        Tag::factory()->create(['name' => ['lt' => 'Ilga studentų atstovybės veiklos žyma', 'en' => 'Long student representation tag']]);
+    $tag = null;
+    $page = openAdminPage('/mano/tags', 1440, 900, function () use (&$tag): void {
+        $tag = Tag::factory()->create(['name' => ['lt' => 'Ilga studentų atstovybės veiklos žyma', 'en' => 'Long student representation tag']]);
+        Duty::factory()->for(Institution::factory()->create())->create([
+            'name' => ['lt' => str_repeat('IlgasPareigybėsPavadinimas', 12), 'en' => str_repeat('LongDutyName', 20)],
+        ])->delete();
     });
 
+    $tagName = $tag->getTranslation('name', 'lt');
+    $tagCount = Tag::query()->count();
     foreach ([390, 820, 1180, 1440] as $width) {
         $page->resize($width, 900);
-        $page->assertPresent('[data-slot=collection-row-actions] button[aria-label="Ištrinti"]');
-        expect(settlesWithoutSidewaysScroll($page))->toBeTrue();
+        $row = $width < 768 ? '[data-slot=collection-rows] li' : '[data-slot=collection-table] tbody tr';
+        waitForInertiaRender($page, $row);
+        $page->page()->locator($row.':has-text("'.$tagName.'") button[aria-label="Daugiau veiksmų"]:visible')->click();
+        $item = $width < 768
+            ? '[data-slot=sheet-content] [data-action=delete]'
+            : '[data-slot=dropdown-menu-content] [data-action=delete]';
+        $page->click($item)
+            ->assertDontSeeIn('[data-slot=collection-results]', $tagName)
+            ->assertSeeIn('[data-slot=collection-results-toolbar]', 'Rasta '.($tagCount - 1));
+        expect(Tag::withTrashed()->findOrFail($tag->id)->trashed())->toBeTrue();
+        $page->click('[data-sonner-toast] button:has-text("Atšaukti")')
+            ->assertSeeIn('[data-slot=collection-results]', $tagName)
+            ->assertSeeIn('[data-slot=collection-results-toolbar]', 'Rasta '.$tagCount);
+        expect(Tag::query()->find($tag->id))->not->toBeNull()
+            ->and(settlesWithoutSidewaysScroll($page))->toBeTrue();
 
         $page->script('document.documentElement.classList.add("dark")');
         expect(settlesWithoutSidewaysScroll($page))->toBeTrue();
@@ -91,8 +112,60 @@ it('keeps collection actions reachable across widths and themes', function (): v
     }
 
     navigateTo($page, '/mano/tenants');
-    waitForInertiaRender($page, '[data-slot=collection-row-actions]');
-    $page->assertPresent('[data-slot=collection-row-actions] button[aria-label="Ištrinti"]');
+    foreach ([390, 820, 1180, 1440] as $width) {
+        $page->resize($width, 900);
+        waitForInertiaRender($page, '[data-slot=collection-row-actions]');
+        $page->page()->locator('[data-slot=collection-row-actions] button[aria-label="Daugiau veiksmų"]:visible')->first()->click();
+        $item = $width < 768
+            ? '[data-slot=sheet-content] [data-action=delete]'
+            : '[data-slot=dropdown-menu-content] [data-action=delete]';
+        $page->click($item)->assertPresent('[data-slot=confirm-dialog-action]');
+        $page->click('[role=alertdialog] button:has-text("Atšaukti")');
+    }
+
+    navigateTo($page, '/mano/duties?showDeleted=true&view=table');
+    foreach ([820, 1180] as $width) {
+        $page->resize($width, 900);
+        waitForInertiaRender($page, '[data-slot=collection-table] [data-slot=collection-row-actions]');
+        expect($page->script('(function () {
+            const container = document.querySelector("[data-slot=collection-table]");
+            container.scrollLeft = container.scrollWidth / 2;
+            return container.scrollWidth > container.clientWidth;
+        })()'))->toBeTrue()
+            ->and($page->script('(function () {
+            const container = document.querySelector("[data-slot=collection-table]");
+            const cell = container.querySelector("tbody tr td:last-child");
+            const bounds = container.getBoundingClientRect();
+            const edge = cell.getBoundingClientRect().right;
+            return container.querySelectorAll("thead th").length >= 6
+                && edge <= bounds.right && edge > bounds.left
+                && cell.querySelector("button[aria-label=\"Daugiau veiksmų\"]") !== null;
+        })()'))->toBeTrue();
+    }
+    $page->assertNoJavaScriptErrors();
+});
+
+it('gives the actions column room in a fixed-layout table', function (): void {
+    $page = openAdminPage('/mano/tasks?view=table', 1180, 900, function ($user): void {
+        Task::factory()->create([
+            'name' => 'Labai ilgas užduoties pavadinimas, kuris lentelėje turėtų lūžti į kelias eilutes',
+            'due_date' => now()->addDays(2),
+        ])->users()->attach($user->id);
+    });
+
+    foreach ([1440, 1180, 820] as $width) {
+        $page->resize($width, 900);
+        waitForInertiaRender($page, '[data-slot=collection-table] [data-slot=collection-row-actions]');
+
+        // A fixed layout takes `w-px` literally, which squeezed the actions over the title.
+        expect($page->script('(function () {
+            const cell = document.querySelector("[data-slot=collection-table] tbody tr td:last-child");
+            const actions = cell.querySelector("[data-slot=collection-row-actions]");
+            const cellBounds = cell.getBoundingClientRect();
+            const actionBounds = actions.getBoundingClientRect();
+            return actionBounds.left >= cellBounds.left - 1 && actionBounds.right <= cellBounds.right + 1;
+        })()'))->toBeTrue();
+    }
     $page->assertNoJavaScriptErrors();
 });
 
@@ -119,15 +192,19 @@ it('keeps reservation actions visible beside a two-line title at table widths', 
         $page->resize($width, 900);
         waitForInertiaRender($page, '[data-slot=collection-table]');
 
-        expect($page->script('(function () { const table = document.querySelector("[data-slot=collection-table]"); const actions = table.querySelector("[data-slot=reservation-row-actions]"); return actions.getBoundingClientRect().right <= table.getBoundingClientRect().right; })()'))->toBeTrue();
+        expect($page->script('(function () { const table = document.querySelector("[data-slot=collection-table]"); const actions = table.querySelector("[data-slot=collection-row-actions]"); return actions.getBoundingClientRect().right <= table.getBoundingClientRect().right; })()'))->toBeTrue();
     }
 
-    $page->click('[data-slot=collection-table] [data-slot=reservation-row-actions] button[aria-label="Veiksmai"]')
+    $page->click('[data-slot=collection-table] [data-slot=collection-row-actions] button[aria-label="Daugiau veiksmų"]:visible')
         ->assertPresent('[data-slot=dropdown-menu-content]');
     expect($page->script('document.querySelector("[data-slot=dropdown-menu-content]").getBoundingClientRect().right <= window.innerWidth'))->toBeTrue();
 
+    $page->click('[data-slot=dropdown-menu-content] [data-action=rejected]')
+        ->assertPresent('[data-slot=reservation-decision-dialog]');
+    $page->keys('[data-slot=reservation-decision-dialog]', 'Escape');
+
     $page->resize(390, 844);
-    $page->assertPresent('[data-slot=collection-rows] [data-slot=reservation-row-actions]')
+    $page->assertPresent('[data-slot=collection-rows] [data-slot=collection-row-actions]')
         ->assertNoJavaScriptErrors();
     expect(settlesWithoutSidewaysScroll($page))->toBeTrue();
 });
