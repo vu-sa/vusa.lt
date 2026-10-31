@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\NotificationType;
+use App\Mail\InformChairAboutMemberRegistration;
 use App\Mail\NotificationDigest;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -17,6 +18,7 @@ use App\Notifications\MeetingAgendaCompletedNotification;
 use App\Notifications\MeetingCreatedNotification;
 use App\Notifications\TaskAssignedNotification;
 use App\Notifications\TaskAutoCompletedNotification;
+use App\Notifications\TaskOverdueNotification;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Mail\Markdown;
@@ -161,7 +163,32 @@ describe('notification email', function (): void {
     });
 });
 
+test('the chair registration email subject follows the recipient locale', function (): void {
+    $institution = (new Institution)->forceFill(['short_name' => ['lt' => 'Taryba', 'en' => 'Council']]);
+    app()->setLocale('en');
+
+    $mail = (new InformChairAboutMemberRegistration('1', 'Jonas', $institution, '1'))->build();
+
+    expect($mail->subject)->toBe('Jonas registered for Council');
+});
+
 describe('digest email', function (): void {
+    test('the overdue line lists the tasks without repeating the title or a false "and more"', function (): void {
+        $tasks = fn (int $count) => collect(range(1, $count))->map(fn (int $index) => (new Task)->forceFill(['name' => "Užduotis {$index}"]));
+
+        expect((new TaskOverdueNotification($tasks(2)))->body($this->recipient))->toBe('Užduotis 1, Užduotis 2')
+            ->and((new TaskOverdueNotification($tasks(5)))->body($this->recipient))->toBe('Užduotis 1, Užduotis 2, Užduotis 3 ir dar 2');
+    });
+
+    test('its plain-text part shows links as text, not markdown', function (): void {
+        $text = (string) app(Markdown::class)->renderText('emails.notification-digest', (new NotificationDigest($this->recipient, [
+            'task' => [['category' => 'task', 'title' => 'Užduotis', 'body' => 'Tekstas', 'url' => 'https://example.org/task']],
+        ]))->content()->with);
+
+        expect($text)->toContain(rtrim(__('notifications.digest_footer'), '.').': '.route('profile.notifications'))
+            ->not->toContain('](');
+    });
+
     test('groups items by category with context rows and a link, in html and text', function (): void {
         $digest = new NotificationDigest($this->recipient, [
             'task' => [[

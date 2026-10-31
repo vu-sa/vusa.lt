@@ -16,6 +16,7 @@ return [
         'goodbye' => 'Iki susitikimo ir Vieningai Už Studentų Ateitį!',
     ],
     'member_inform' => [
+        'subject' => ':name užsiregistravo į :institution',
         'heading' => 'Nauja nario registracija',
         'intro' => ':name nori prisijungti prie :institution. Peržiūrėk registraciją ir susisiek dėl tolesnių žingsnių.',
         'view_button' => 'Peržiūrėti registraciją',

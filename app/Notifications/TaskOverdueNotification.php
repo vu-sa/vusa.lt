@@ -32,10 +32,12 @@ class TaskOverdueNotification extends BaseNotification
             ]);
         }
 
-        return __('notifications.task_overdue_body_multiple', [
-            'count' => $this->tasks->count(),
-            'tasks' => $this->tasks->take(3)->pluck('name')->join(', '),
-        ]);
+        $tasks = $this->tasks->take(3)->pluck('name')->join(', ');
+        $hidden = $this->tasks->count() - 3;
+
+        return $hidden > 0
+            ? __('notifications.task_overdue_body_multiple_more', ['tasks' => $tasks, 'count' => $hidden])
+            : $tasks;
     }
 
     public function url(): string

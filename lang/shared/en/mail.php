@@ -16,6 +16,7 @@ return [
         'goodbye' => 'See you soon!',
     ],
     'member_inform' => [
+        'subject' => ':name registered for :institution',
         'heading' => 'New member registration',
         'intro' => ':name wants to join :institution. Please review the registration and get in touch about the next steps.',
         'view_button' => 'View registration',
