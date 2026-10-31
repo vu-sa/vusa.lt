@@ -10,6 +10,7 @@ use App\Models\Role;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
+use Spatie\Activitylog\Models\Activity;
 
 pest()->use(RefreshDatabase::class);
 
@@ -700,5 +701,142 @@ describe('linking one row to a source', function (): void {
         ])->assertUnprocessable();
 
         expect($this->row->fresh()->via_dutiable_id)->toBeNull();
+    });
+});
+
+describe('detaching an orphaned ex officio seat', function (): void {
+    beforeEach(function (): void {
+        Event::fake([DutiableChanged::class]);
+        $this->sourceDuty = Duty::factory()->create(['institution_id' => $this->duty->institution_id]);
+        $this->sourceDuty->exOfficioTargetDuties()->attach($this->duty);
+        $this->linkSource = Dutiable::factory()->create([
+            'duty_id' => $this->sourceDuty->id, 'dutiable_id' => $this->holder->id,
+            'start_date' => '2024-06-01', 'end_date' => '2025-06-01',
+        ]);
+        $this->row->update(['via_dutiable_id' => $this->linkSource->id, 'assignment_origin' => 'ex_officio']);
+    });
+
+    test('detach preserves dates, logs its source and makes the row editable', function (): void {
+        $this->sourceDuty->exOfficioTargetDuties()->detach($this->duty);
+
+        asUserWithInertia($this->manager)->post(route('dutiables.reviewExOfficio', $this->row), [
+            'decision' => 'detach', 'source_id' => null, 'acknowledge' => true,
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        expect($this->row->fresh()->via_dutiable_id)->toBeNull()
+            ->and($this->row->fresh()->assignment_origin)->toBe('manual')
+            ->and($this->row->fresh()->start_date->toDateString())->toBe('2024-05-18')
+            ->and($this->row->fresh()->end_date->toDateString())->toBe('2025-05-17');
+        $activity = Activity::forSubject($this->row)->where('event', 'ex_officio_reviewed')->sole();
+        expect($activity->properties->get('detached_from'))->toBe($this->linkSource->id)
+            ->and($activity->properties->get('decision'))->toBe('detach');
+        Event::assertDispatched(DutiableChanged::class, fn (DutiableChanged $event) => $event->dutiableRowId === $this->row->id && $event->viaDutiableId === null);
+        $timeline = BuildDutiableTimeline::execute('duty', $this->duty->id, $this->manager);
+        $timelineRow = collect($timeline['rows'])->firstWhere('id', $this->row->id);
+        expect($timelineRow['editable'])->toBeTrue()
+            ->and($timelineRow['detachable'])->toBeFalse();
+    });
+
+    test('detach is 422 and changes nothing while the rule exists', function (): void {
+        $before = $this->row->fresh()->getRawOriginal();
+
+        asUser($this->manager)->postJson(route('dutiables.reviewExOfficio', $this->row), [
+            'decision' => 'detach', 'acknowledge' => true,
+        ])->assertUnprocessable();
+
+        expect($this->row->fresh()->getRawOriginal())->toBe($before);
+        expect(Activity::forSubject($this->row)->where('event', 'ex_officio_reviewed')->exists())->toBeFalse();
+    });
+
+    test('detach is 403 for an actor who cannot manage the seat', function (): void {
+        $this->sourceDuty->exOfficioTargetDuties()->detach($this->duty);
+        $before = $this->row->fresh()->getRawOriginal();
+
+        asUser($this->holder)->postJson(route('dutiables.reviewExOfficio', $this->row), [
+            'decision' => 'detach', 'acknowledge' => true,
+        ])->assertForbidden();
+
+        expect($this->row->fresh()->getRawOriginal())->toBe($before);
+    });
+
+    test('manual and convert remain 422 for a derived row even without its rule', function (string $decision): void {
+        $this->sourceDuty->exOfficioTargetDuties()->detach($this->duty);
+        $before = $this->row->fresh()->getRawOriginal();
+
+        asUser($this->manager)->postJson(route('dutiables.reviewExOfficio', $this->row), [
+            'decision' => $decision, 'source_id' => $this->linkSource->id, 'acknowledge' => true,
+        ])->assertUnprocessable();
+
+        expect($this->row->fresh()->getRawOriginal())->toBe($before);
+    })->with(['manual', 'convert']);
+
+    test('a detached row keeps its own seats and they mirror subsequent changes', function (): void {
+        $this->sourceDuty->exOfficioTargetDuties()->detach($this->duty);
+        $downstream = Duty::factory()->create(['institution_id' => $this->duty->institution_id]);
+        $this->duty->exOfficioTargetDuties()->attach($downstream);
+        $seat = Dutiable::factory()->create([
+            'duty_id' => $downstream->id, 'dutiable_id' => $this->holder->id,
+            'via_dutiable_id' => $this->row->id, 'assignment_origin' => 'ex_officio',
+            'start_date' => '2024-06-01', 'end_date' => '2025-06-01',
+        ]);
+
+        asUserWithInertia($this->manager)->post(route('dutiables.reviewExOfficio', $this->row), [
+            'decision' => 'detach', 'acknowledge' => true,
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        expect($seat->fresh()->via_dutiable_id)->toBe($this->row->id)
+            ->and($seat->fresh()->start_date->toDateString())->toBe('2024-05-18')
+            ->and($seat->fresh()->end_date->toDateString())->toBe('2025-05-17');
+
+        asUserWithInertia($this->manager)->post(route('dutiables.timeline.apply'), applyTimeline([[
+            'type' => 'set_dates', 'row_ids' => [$this->row->id],
+            'start_date' => '2024-07-01', 'end_date' => '2025-07-01',
+        ]]))->assertSessionHasNoErrors();
+
+        expect($seat->fresh()->via_dutiable_id)->toBe($this->row->id)
+            ->and($seat->fresh()->start_date->toDateString())->toBe('2024-07-01')
+            ->and($seat->fresh()->end_date->toDateString())->toBe('2025-07-01');
+    });
+
+    test('the timeline offers detach only for orphaned manageable seats', function (): void {
+        $timeline = BuildDutiableTimeline::execute('duty', $this->duty->id, $this->manager);
+        expect(collect($timeline['rows'])->firstWhere('id', $this->row->id)['detachable'])->toBeFalse();
+
+        $this->sourceDuty->exOfficioTargetDuties()->detach($this->duty);
+
+        $timeline = BuildDutiableTimeline::execute('duty', $this->duty->id, $this->manager);
+        expect(collect($timeline['rows'])->firstWhere('id', $this->row->id)['detachable'])->toBeTrue();
+        $timeline = BuildDutiableTimeline::execute('duty', $this->duty->id, $this->holder);
+        expect(collect($timeline['rows'])->firstWhere('id', $this->row->id)['detachable'])->toBeFalse();
+
+        $this->row->forceFill(['ended_by_institution_deactivation' => true])->save();
+
+        $timeline = BuildDutiableTimeline::execute('duty', $this->duty->id, $this->manager);
+        expect(collect($timeline['rows'])->firstWhere('id', $this->row->id)['detachable'])->toBeFalse();
+    });
+
+    test('detach is 422 for an institution-closed seat even without its rule', function (): void {
+        $this->sourceDuty->exOfficioTargetDuties()->detach($this->duty);
+        $this->row->forceFill(['ended_by_institution_deactivation' => true])->save();
+        $before = $this->row->fresh()->getRawOriginal();
+
+        asUser($this->manager)->postJson(route('dutiables.reviewExOfficio', $this->row), [
+            'decision' => 'detach', 'acknowledge' => true,
+        ])->assertUnprocessable();
+
+        expect($this->row->fresh()->getRawOriginal())->toBe($before);
+    });
+
+    test('a source duty that no longer resolves makes its seat detachable', function (): void {
+        $this->sourceDuty->delete();
+        $timeline = BuildDutiableTimeline::execute('duty', $this->duty->id, $this->manager);
+        expect(collect($timeline['rows'])->firstWhere('id', $this->row->id)['detachable'])->toBeTrue();
+
+        asUserWithInertia($this->manager)->post(route('dutiables.reviewExOfficio', $this->row), [
+            'decision' => 'detach', 'acknowledge' => true,
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        expect($this->row->fresh()->via_dutiable_id)->toBeNull()
+            ->and($this->row->fresh()->assignment_origin)->toBe('manual');
     });
 });

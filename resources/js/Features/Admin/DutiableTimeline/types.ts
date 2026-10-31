@@ -58,6 +58,7 @@ export interface TimelineRow {
   assignment_origin?: 'unknown' | 'manual' | 'ex_officio';
   review_sources?: { id: string; name: string; start_date: string; end_date: string | null }[];
   is_derived: boolean;
+  detachable?: boolean;
   editable: boolean;
   edit_url: string;
 }

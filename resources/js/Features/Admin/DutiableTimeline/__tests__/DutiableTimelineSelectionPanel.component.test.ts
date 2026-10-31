@@ -1,10 +1,15 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
+import { router } from '@inertiajs/vue3';
 
 import DutiableTimelineSelectionPanel from '../DutiableTimelineSelectionPanel.vue';
 import type { ParsedCadence, ParsedRow, StagedDates } from '../types';
 
 import { commonStubs } from '@/tests/stubs';
+import { createMockPage } from '@/tests/helpers/createMockPage';
+import { globalProgress } from '@/Composables/useTutorialProgress';
+
+vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 function makeRow(overrides: Partial<ParsedRow> = {}): ParsedRow {
   return {
@@ -223,9 +228,8 @@ describe('DutiableTimelineSelectionPanel extras', () => {
   });
 });
 
-it('offers independent and source-linked review choices only for editable root terms', () => {
-  const row = makeRow({ review_sources: [{ id: 'source-1', name: 'Pirmininkas', start_date: '2025-07-01', end_date: null }] });
-  const mountReview = (entry: ParsedRow) => mount(DutiableTimelineSelectionPanel, {
+function mountReview(entry: ParsedRow) {
+  return mount(DutiableTimelineSelectionPanel, {
     props: { row: entry, cadences: [cadence], staged: new Map(), selectedRows: [entry] },
     global: { stubs: { ...commonStubs, Popover: true,
       SpotlightPopover: { template: '<div><slot /></div>' },
@@ -237,9 +241,13 @@ it('offers independent and source-linked review choices only for editable root t
       AlertDialogDescription: { template: '<div><slot /></div>' },
       AlertDialogFooter: { template: '<div><slot /></div>' },
       AlertDialogCancel: { template: '<div><slot /></div>' },
-      AlertDialogAction: { template: '<div><slot /></div>' },
+      AlertDialogAction: { template: '<button><slot /></button>' },
     } },
   });
+}
+
+it('offers independent and source-linked review choices only for editable root terms', () => {
+  const row = makeRow({ review_sources: [{ id: 'source-1', name: 'Pirmininkas', start_date: '2025-07-01', end_date: null }] });
   const wrapper = mountReview(row);
   expect(wrapper.text()).toContain('dutiables.timeline.review.keep');
   expect(wrapper.text()).toContain('dutiables.timeline.review.convert');
@@ -253,4 +261,43 @@ it('offers independent and source-linked review choices only for editable root t
   const confirmed = mountReview({ ...row, assignment_origin: 'manual' }).text();
   expect(confirmed).not.toContain('dutiables.timeline.review.keep');
   expect(confirmed).toContain('dutiables.timeline.review.convert');
+});
+
+it.each([
+  { is_derived: true, detachable: true, shown: true },
+  { is_derived: true, detachable: false, shown: false },
+  { is_derived: true, detachable: undefined, shown: false },
+  { is_derived: false, detachable: true, shown: false },
+])('shows detach only for a detachable derived row: $is_derived / $detachable', ({ is_derived, detachable, shown }) => {
+  const wrapper = mountReview(makeRow({ is_derived, detachable, editable: false }));
+  const detach = wrapper.findAll('button').filter(button => button.text() === 'dutiables.timeline.review.detach');
+
+  expect(detach).toHaveLength(shown ? 1 : 0);
+  if (shown) {
+    expect(wrapper.text()).toContain('dutiables.timeline.review.detach_explanation');
+    expect(wrapper.text()).not.toContain('dutiables.timeline.inspector.ex_officio_managed');
+  }
+});
+
+it('confirms detach through the review route and emits reviewed on success without dismissing the spotlight', async () => {
+  vi.mocked(router.post).mockClear();
+  const spotlightBefore = { ...globalProgress.value };
+  const row = makeRow({ is_derived: true, detachable: true, editable: false, via_dutiable_id: 'source-1' });
+  const wrapper = mountReview(row);
+
+  await wrapper.findAll('button').find(button => button.text() === 'dutiables.timeline.review.detach')!.trigger('click');
+  expect(router.post).not.toHaveBeenCalled();
+
+  await wrapper.findAll('button').find(button => button.text() === 'dutiables.timeline.review.confirm')!.trigger('click');
+
+  expect(router.post).toHaveBeenCalledExactlyOnceWith(route('dutiables.reviewExOfficio', row.id), {
+    decision: 'detach', source_id: null, acknowledge: true, acknowledge_access_change: false,
+  }, expect.objectContaining({ preserveScroll: true, onSuccess: expect.any(Function) }));
+  expect(globalProgress.value).toEqual(spotlightBefore);
+  expect(wrapper.emitted('reviewed')).toBeUndefined();
+
+  const options = vi.mocked(router.post).mock.calls[0][2];
+  options?.onSuccess?.(createMockPage());
+
+  expect(wrapper.emitted('reviewed')).toHaveLength(1);
 });
