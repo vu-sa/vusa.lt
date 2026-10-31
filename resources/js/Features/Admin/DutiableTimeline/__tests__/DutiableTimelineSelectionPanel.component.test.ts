@@ -245,4 +245,12 @@ AlertDialogAction: { template: '<div><slot /></div>' },
   expect(wrapper.text()).toContain('dutiables.timeline.review.convert');
   expect(mountReview({ ...row, editable: false }).text()).not.toContain('dutiables.timeline.review.keep');
   expect(mountReview({ ...row, is_derived: true }).text()).not.toContain('dutiables.timeline.review.keep');
+
+  const withoutSource = mountReview({ ...row, review_sources: [] }).text();
+  expect(withoutSource).not.toContain('dutiables.timeline.review.explanation');
+  expect(withoutSource).not.toContain('dutiables.timeline.review.keep');
+
+  const confirmed = mountReview({ ...row, assignment_origin: 'manual' }).text();
+  expect(confirmed).not.toContain('dutiables.timeline.review.keep');
+  expect(confirmed).toContain('dutiables.timeline.review.convert');
 });

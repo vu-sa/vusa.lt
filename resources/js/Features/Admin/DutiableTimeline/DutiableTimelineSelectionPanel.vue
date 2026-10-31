@@ -137,7 +137,7 @@
         </AlertDescription>
       </Alert>
 
-      <SpotlightPopover v-if="row.editable && !row.is_derived" :title="$t('dutiables.timeline.review.keep')" :description="$t('dutiables.timeline.review.explanation')" :is-dismissed="reviewSpotlight.isDismissed.value" @dismiss="reviewSpotlight.dismiss()">
+      <SpotlightPopover v-if="row.editable && !row.is_derived && row.review_sources?.length" :title="$t('dutiables.timeline.review.keep')" :description="$t('dutiables.timeline.review.explanation')" :is-dismissed="reviewSpotlight.isDismissed.value" @dismiss="reviewSpotlight.dismiss()">
       <section class="space-y-2 border-t border-border pt-2">
         <p class="text-xs text-muted-foreground">{{ $t('dutiables.timeline.review.explanation') }}</p>
         <AlertDialog v-for="choice in reviewChoices" :key="choice.id">
@@ -436,7 +436,9 @@ const mergePreview = useApiMutation<{ fingerprint: string; derived: { id: string
 const reviewGuard = useAccessChangeGuard();
 const reviewSpotlight = useFeatureSpotlight('ex-officio-review-v1');
 const reviewChoices = computed(() => [
-  { id: 'manual', label: $t('dutiables.timeline.review.keep'), description: $t('dutiables.timeline.review.keep_description') },
+  ...(props.row?.assignment_origin === 'manual'
+    ? []
+    : [{ id: 'manual', label: $t('dutiables.timeline.review.keep'), description: $t('dutiables.timeline.review.keep_description') }]),
   ...(props.row?.review_sources ?? []).map(source => ({
     id: source.id, label: $t('dutiables.timeline.review.convert', { duty: source.name }),
     description: $t('dutiables.timeline.review.convert_description', { start: source.start_date, end: source.end_date ?? '∞' }),
