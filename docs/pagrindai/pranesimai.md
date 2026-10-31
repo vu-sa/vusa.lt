@@ -40,7 +40,7 @@ Pranešimai gali pasiekti tave trimis kanalais:
    vis tiek rasi platformoje, kol jų neištrinsi.
 2. **El. paštas**: kiekvienai pranešimų rūšiai gali pasirinkti pristatymo būdą:
    - **Laiškas iškart** – atskiras laiškas išsiunčiamas tuoj pat.
-   - **Suvestinėje** – pranešimas įtraukiamas į periodinę neskaitytų pranešimų santrauką (kas 1, 4, 12 arba 24 val.).
+   - **Suvestinėje** – pranešimas įtraukiamas į periodinę neskaitytų pranešimų santrauką: kasdien pasirinktu laiku (numatytai 15.00) arba kas 4 valandas.
    - **Išjungta** – el. laiškai nesiunčiami. Pranešimai platformoje ir įrenginyje valdomi atskirai.
 3. **Pranešimai į įrenginį („push“)**: siunčiami tiesiai į tavo naršyklę ar telefoną, jei įrenginyje
    suteikei leidimą.
