@@ -18,7 +18,7 @@ class MailPreviewRenderer
 
     public function subject(MailMessage|Mailable $mail): string
     {
-        if ($mail->subject !== null) {
+        if (filled($mail->subject)) {
             return $mail->subject;
         }
 

@@ -158,6 +158,7 @@ class MailPreviewSamples
             'overflow' => ['meeting' => $meetings],
             'overdue' => ['task' => [$item('task_overdue')]],
             'legacy' => ['meeting' => [array_diff_key($meeting, array_flip(['type', 'digestLine', 'digestGroupTitle']))]],
+            default => throw new \InvalidArgumentException("Unknown digest preview scenario: {$scenario}"),
         };
     }
 }
