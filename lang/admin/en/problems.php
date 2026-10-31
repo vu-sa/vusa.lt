@@ -12,6 +12,7 @@ return [
     'unlinked' => 'Problem unlinked.',
     'form' => [
         'instructions' => 'Fields marked with an asterisk (*) are required; you can skip the rest.',
+        'responsible_user_placeholder' => 'Search by name',
     ],
     'hints' => [
         'title' => 'A short, specific problem title, e.g. "Missing assessment procedure description".',
