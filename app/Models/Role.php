@@ -68,7 +68,7 @@ class Role extends SpatieRole
     use HasFactory, HasRelationships, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges;
 
     /** @var list<string> */
-    protected $translatable = ['title', 'description'];
+    public $translatable = ['title', 'description'];
 
     #[\Override]
     protected static function booted(): void

@@ -1,7 +1,9 @@
 <?php
 
 use App\Enums\ResponsibilityPurpose;
+use App\Http\Controllers\Admin\DutyResponsibilityController;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Models\Activity;
 use App\Models\Duty;
 use App\Models\DutyType;
 use App\Models\Institution;
@@ -44,23 +46,23 @@ test('a responsibility manager grants and removes a scoped responsibility with a
         ->and($this->duty->roles()->pluck('roles.id')->all())->toContain($this->coordination->id);
     $this->assertDatabaseHas('activity_log', ['subject_type' => 'role', 'subject_id' => $this->coordination->id, 'causer_id' => $this->manager->id, 'event' => 'relation_updated']);
 
-    $created = \App\Models\Activity::forSubject($this->coordination)->forEvent('relation_updated')->sole();
+    $created = Activity::forSubject($this->coordination)->forEvent('relation_updated')->sole();
     expect($created->properties->get('grant'))->toBe($grant->only(['id', 'grantee_type', 'grantee_id', 'scope_type', 'scope_id']))
         ->and($created->properties->get('attached')[0]['id'])->toBe($grant->id);
 
     asUser($this->manager)
         ->post(route('duties.responsibilities.store', $this->duty), coordinationFor($this->coordination, $this->tenant))
         ->assertSessionHasNoErrors();
-    expect(\App\Models\Activity::forSubject($this->coordination)->forEvent('relation_updated')->count())->toBe(1);
+    expect(Activity::forSubject($this->coordination)->forEvent('relation_updated')->count())->toBe(1);
 
     asUser($this->manager)
         ->delete(route('duties.responsibilities.destroy', [$this->duty, $grant->id]))
         ->assertRedirect();
 
-    $deleted = \App\Models\Activity::forSubject($this->coordination)->forEvent('relation_updated')->latest('id')->firstOrFail();
+    $deleted = Activity::forSubject($this->coordination)->forEvent('relation_updated')->latest('id')->firstOrFail();
     expect($deleted->properties->get('detached')[0]['id'])->toBe($grant->id)
         ->and($deleted->properties->get('attached'))->toBe([])
-        ->and(\App\Models\Activity::forSubject($this->coordination)->forEvent('relation_updated')->count())->toBe(2);
+        ->and(Activity::forSubject($this->coordination)->forEvent('relation_updated')->count())->toBe(2);
 
     expect($this->duty->responsibilityGrants()->exists())->toBeFalse()
         ->and($this->duty->roles()->exists())->toBeFalse();
@@ -171,14 +173,14 @@ test('duty responsibility descriptions use the current locale with Lithuanian fa
     ResponsibilityGrant::factory()->forDuty($this->duty)->of($role)->create();
 
     app()->setLocale('en');
-    $payload = \App\Http\Controllers\Admin\DutyResponsibilityController::payload($this->duty);
+    $payload = DutyResponsibilityController::payload($this->duty);
     expect($payload['items'][0]['description'])->toBe('Help representatives.');
 
     $role->setTranslations('description', ['lt' => 'Padėk atstovams.', 'en' => ''])->save();
-    $payload = \App\Http\Controllers\Admin\DutyResponsibilityController::payload($this->duty->fresh());
+    $payload = DutyResponsibilityController::payload($this->duty->fresh());
     expect($payload['items'][0]['description'])->toBe('Padėk atstovams.');
 
     $role->setTranslations('description', ['lt' => '', 'en' => ''])->save();
-    $payload = \App\Http\Controllers\Admin\DutyResponsibilityController::payload($this->duty->fresh());
+    $payload = DutyResponsibilityController::payload($this->duty->fresh());
     expect($payload['items'][0]['description'])->toBeNull();
 });

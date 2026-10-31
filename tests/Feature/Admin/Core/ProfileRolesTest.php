@@ -1,7 +1,9 @@
 <?php
 
+use App\Actions\GetUserAccessSummary;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\Role;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -129,17 +131,17 @@ test('links a member to their own duty and institution even without a role', fun
 });
 
 test('duty holders receive localized responsibility descriptions with Lithuanian fallback', function (): void {
-    $role = \App\Models\Role::factory()->create([
+    $role = Role::factory()->create([
         'title' => ['lt' => 'Koordinavimas', 'en' => 'Coordination'],
         'description' => ['lt' => 'Padėk atstovams.', 'en' => 'Help representatives.'],
     ]);
     $this->user->current_duties()->first()->assignRole($role);
 
     app()->setLocale('en');
-    $summary = \App\Actions\GetUserAccessSummary::execute($this->user);
+    $summary = GetUserAccessSummary::execute($this->user);
     expect($summary['current'][0]['roles'])->toBe([['title' => 'Coordination', 'description' => 'Help representatives.']]);
 
     $role->setTranslations('description', ['lt' => 'Padėk atstovams.', 'en' => ''])->save();
-    $summary = \App\Actions\GetUserAccessSummary::execute($this->user->fresh());
+    $summary = GetUserAccessSummary::execute($this->user->fresh());
     expect($summary['current'][0]['roles'][0]['description'])->toBe('Padėk atstovams.');
 });

@@ -91,6 +91,7 @@ describe('admin date and time pickers', () => {
     const input = wrapper.find('input[type="date"]');
 
     await input.setValue('2026-09-19');
+    await wrapper.setProps({ modelValue: '2026-09-19' });
     await input.setValue('');
 
     const events = [[new Date('2026-09-19T12:00:00Z')], [undefined]];

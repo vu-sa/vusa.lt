@@ -73,8 +73,19 @@ describe('MeetingDateScreen.vue', () => {
   it('cannot continue without a valid day', async () => {
     const { wrapper } = mountScreen();
 
-    await typeDate(wrapper, 'not a date');
+    await typeDate(wrapper, '');
+    await wrapper.find('input').trigger('blur');
+    await flushPromises();
 
     expect(wrapper.find('[data-slot="action-window-primary"]').attributes('disabled')).toBeDefined();
+  });
+
+  it('falls back to the chosen day when the typed text is not a date', async () => {
+    const { wrapper } = mountScreen(window => window.updateMeeting({ start_time: '2026-03-02T09:15:00' }));
+
+    await typeDate(wrapper, 'not a date');
+    await wrapper.find('input').trigger('blur');
+
+    expect((wrapper.find('input').element as HTMLInputElement).value).toBe('2026-03-02');
   });
 });

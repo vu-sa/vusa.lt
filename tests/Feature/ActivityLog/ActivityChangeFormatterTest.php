@@ -7,6 +7,7 @@ use App\Models\Meeting;
 use App\Models\Page;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Problem;
+use App\Models\Role;
 use App\Services\ActivityChangeFormatter;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -190,7 +191,7 @@ test('AgendaItemNote rich fields still show the flat placeholder, unaffected by 
 });
 
 test('responsibility permission changes resolve existing labels in the viewing locale and keep unknown keys', function (string $locale, string $expected, string $label): void {
-    $role = \App\Models\Role::factory()->create();
+    $role = Role::factory()->create();
     $activity = activity()->performedOn($role)->event('relation_updated')->withProperties([
         'relation' => 'permissions',
         'attached' => [['id' => '1', 'label' => 'news.update.padalinys']],
@@ -212,7 +213,7 @@ test('responsibility permission changes resolve existing labels in the viewing l
 ]);
 
 test('responsibility grant and attachable type snapshots render as localized text', function (string $locale, string $expected): void {
-    $role = \App\Models\Role::factory()->create();
+    $role = Role::factory()->create();
     $grant = activity()->performedOn($role)->event('relation_updated')->withProperties([
         'relation' => 'grants',
         'attached' => [['id' => 'g1', 'label' => ['lt' => 'Koordinatorius', 'en' => 'Coordinator']]],
@@ -231,9 +232,8 @@ test('responsibility grant and attachable type snapshots render as localized tex
         ->and($type->formatted_relation_change['detached'])->toBe([['id' => 't1', 'label' => $expected]]);
 })->with([['lt', 'Koordinatorius'], ['en', 'Coordinator']]);
 
-
 test('responsibility attribute edits render localized field labels and separate locale rows', function (string $locale, string $titleLabel, string $descriptionLabel): void {
-    $role = \App\Models\Role::factory()->create([
+    $role = Role::factory()->create([
         'title' => ['lt' => 'Senas pavadinimas', 'en' => 'Old title'],
         'description' => ['lt' => 'Senas aprašymas', 'en' => 'Old description'],
     ]);

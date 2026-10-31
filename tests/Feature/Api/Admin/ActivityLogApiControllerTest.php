@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Activity;
 use App\Models\Content;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -7,6 +8,7 @@ use App\Models\Meeting;
 use App\Models\Page;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Problem;
+use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Vote;
@@ -268,15 +270,15 @@ test('a relation_updated activity carries the attached/detached members and roll
 });
 
 test('role history returns responsibility changes and authorizes against the role', function (): void {
-    $role = \App\Models\Role::factory()->create();
-    $managerRole = \App\Models\Role::factory()->create();
+    $role = Role::factory()->create();
+    $managerRole = Role::factory()->create();
     $managerRole->givePermissionTo('roles.read.*');
     $this->admin->assignRole($managerRole);
     $url = route('api.v1.admin.activityLog.index', ['subjectType' => 'role', 'subjectId' => $role->id]);
 
     asUser($this->admin);
     $role->update(['title' => ['lt' => 'Pakeistas pavadinimas', 'en' => 'Updated title']]);
-    $edit = \App\Models\Activity::forSubject($role)->forEvent('updated')->sole();
+    $edit = Activity::forSubject($role)->forEvent('updated')->sole();
 
     $entry = activity()->performedOn($role)->causedBy($this->admin)->event('relation_updated')
         ->withProperties(['relation' => 'permissions', 'attached' => [['id' => 'news.update.padalinys', 'label' => 'news.update.padalinys']], 'detached' => []])
