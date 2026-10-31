@@ -40,12 +40,12 @@ import { useActionWindow } from '@/Composables/useActionWindow';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 
-const { advance, updateActivityRequest } = useActionWindow();
+const { draft, advance, updateActivityRequest } = useActionWindow();
 const spotlight = useFeatureSpotlight('activity-request-ended-check-in-v1');
 const campaigns = ['activity_confirmation', 'missing_meetings'] as const;
 const choose = (campaignType: typeof campaigns[number]) => {
   if (campaignType === 'activity_confirmation') spotlight.dismiss();
   updateActivityRequest({ campaignType });
-  advance('activity.mode');
+  advance(draft.activityRequest.institutionsLocked ? 'activity.review' : 'activity.mode');
 };
 </script>

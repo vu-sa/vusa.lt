@@ -7,7 +7,7 @@
       <Button v-if="byPeople" variant="outline" voice="sentence" size="sm" @click="editFromHere('activity.people')">
         {{ $t('action_window.activity_request.review.change_people') }}
       </Button>
-      <Button v-else variant="outline" voice="sentence" size="sm" @click="editFromHere('activity.institutions')">
+      <Button v-else-if="!draft.activityRequest.institutionsLocked" variant="outline" voice="sentence" size="sm" @click="editFromHere('activity.institutions')">
         {{ $t('action_window.activity_request.review.change_institutions') }}
       </Button>
     </div>
