@@ -187,6 +187,8 @@ pirmininkas pagal pareigas yra ir padalinio tarybos narys.
 - Prie pirmininko pareigybės nurodomos tikslinės pareigybės.
 - Paskyrus naują pirmininką arba pakeitus jo kadencijos datas, sistema automatiškai sukuria arba
   atnaujina susietus tarybos nario laikotarpius.
+- Kaip laikotarpiai keičiasi pridėjus ar pašalinus ryšį, aprašyta [laikotarpių tvarkyklės gide](/visak/pareigybiu-laikotarpiai#ex-officio-sekimas).
+- Žmogaus puslapyje *ex officio* pareigos rodomos po jas suteikiančiomis pareigomis.
 - Rankiniu būdu keisti *ex officio* laikotarpio datų negalima – jos visada seka pagrindinių
   pareigų datas.
 

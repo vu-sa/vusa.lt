@@ -7,6 +7,7 @@ last_reviewed: 2026-10-30
 tests:
   - tests/Feature/Admin/People/DutiableTimelineControllerTest.php
   - tests/Feature/Admin/People/DutiableDiagnosticsTest.php
+  - tests/Feature/Duties/ExOfficioReconcilerTest.php
   - tests/Feature/Admin/Management/DutiableControllerTest.php
   - tests/Feature/Api/Admin/DutiableTimelineApiControllerTest.php
   - tests/Feature/Api/Admin/DutiableTimelinePreviewTest.php
@@ -111,7 +112,7 @@ duomenų (kontaktinę nuotrauką, el. paštą, studijų programą ar viešą apr
 | **Tamsi** | Dabartinės pareigos: pabaigos nėra arba ji dar neatėjo. |
 | **Pilka** | Pasibaigusios pareigos. |
 | **Blyški su punktyriniu kraštu** | *Ex officio* pareigos – jos sekamos iš kitos pareigybės. |
-| **Gintarinė** | Neišsaugotas pakeitimas. Blyškesnė gintarinė – *ex officio* laikotarpis, kuris pasikeis kartu su keičiamu įrašu. |
+| **Gintarinė** | Neišsaugotas pakeitimas. Kaip pasikeis susiję *ex officio* laikotarpiai, matyti peržiūroje prieš išsaugant. |
 | **Su violetiniu kraštu** | Žmogus atstovauja kitam padaliniui. |
 | **Su rodykle dešinėje** | Laikotarpis neterminuotas. |
 | **Su įpjova ir punktyru** | Pradžia ar pabaiga ne mėnesio pradžioje / pabaigoje – data, pvz., 18 d., nurodyta sąmoningai. |
@@ -133,7 +134,7 @@ Pagal kadencijas pritraukiamos tempiamos juostos, siūlomi taisymai ir veikia my
 
 Kai kurios pareigybės suteikia kitas pareigas automatiškai (*ex officio*), pvz., pirmininkas kartu
 tampa kito organo nariu. Tokio laikotarpio datos visada sutampa su šaltinio laikotarpiu: pakeitus
-šaltinį, po kelių akimirkų pasikeičia ir *ex officio* laikotarpis. Šio laikotarpio tempti ar keisti
+šaltinį, kartu pasikeičia ir *ex officio* laikotarpis. Šio laikotarpio tempti ar keisti
 rankiniu būdu negalima – jį pažymėjus, šoniniame skydelyje pateikiamas mygtukas šaltinio įrašui pažymėti.
 
 ### Filtrai ir rodinys
@@ -272,8 +273,8 @@ parodo peržiūrą.
 - Pakeitimai siunčiami kaip operacijų sąrašas (`set_dates`, `align_to_cadence`,
   `close_open_ended`); serveris jį iš naujo suplanuoja `PlanDutiableTimelineChanges` ir įrašo
   `ApplyDutiableTimelineChanges` vienoje transakcijoje. Kliento peržiūra tik informacinė.
-- *Ex officio* įrašai (`via_dutiable_id`) operacijose praleidžiami ir sinchronizuojami
-  `SyncExOfficioDutiables` klausytojo po `DutiableChanged` įvykio.
+- *Ex officio* įrašai (`via_dutiable_id`) operacijose praleidžiami, o juos rašo tik
+  `ReconcileExOfficioSeats` toje pačioje transakcijoje kaip ir šaltinio pakeitimą.
 - Pasiūlymus skaičiuoja `AnalyzeDutiableTimeline`, klientas tą patį kartoja neišsaugotai būsenai
   (`useDutiableDiagnostics`); lygiavimo riba – 45 dienos.
 - Institucijos kadencijos parenkamos `ResolveCadenceForInstitution`: savos kadencijos visiškai
@@ -296,6 +297,23 @@ Sujungus šaltinio laikotarpius, susieti ex officio priskyrimai apima visą suju
 Sistema laikotarpius lygina su šaltinio pareigomis tuo pačiu metu, o ne su šiandienos būsena.
 
 </ChangelogNote>
+
+### Kaip *ex officio* laikotarpiai seka pagrindines pareigas {#ex-officio-sekimas}
+
+Kiekvienam pagrindinių pareigų laikotarpiui, pagal kiekvieną pareigybės formoje nurodytą ryšį, tenka vienas prijungtas *ex officio* laikotarpis su tomis pačiomis datomis.
+
+| Kas nutinka | Rezultatas |
+| --- | --- |
+| Pridedamas ar keičiamas pagrindinių pareigų laikotarpis | Prijungtas laikotarpis sukuriamas arba atnaujinamas tuo pačiu išsaugojimu. |
+| Ištrinamas pagrindinių pareigų laikotarpis | Ištrinami ir prijungti laikotarpiai. |
+| Pareigybei pridedamas ryšys | Dabartiniams ir būsimiems laikotarpiams sukuriami prijungti laikotarpiai su pagrindinių pareigų datomis. Praeities laikotarpius pridėk per **Tikrinti ex officio**. |
+| Pašalinamas ryšys | Prasidėję prijungti laikotarpiai baigiasi tą dieną, neprasidėję ištrinami. Toliau jie nebesikeičia. Tą patį ryšį pridėjus iš naujo, laikotarpis vėl seka pagrindines pareigas, todėl pertrauka istorijoje nelieka. |
+
+Institucijos uždarymo metu pasibaigę laikotarpiai nekeičiami. Vėl atidarius instituciją, *ex officio* laikotarpis tęsiamas nuo atidarymo dienos, o uždarymo metas neatkuriamas.
+
+Kas naktį sistema tikrina, ar *ex officio* laikotarpiai sutampa su pagrindinėmis pareigomis ir ar kurio nors netrūksta. Radinius matyti sistemos būsenos puslapyje. Tikrinimas nieko nekeičia.
+
+### Tikrinimas {#ex-officio-tikrinimo-eiga}
 
 Pareigybės puslapyje atidaryk papildomų veiksmų meniu ir pasirink **Tikrinti ex officio**. Veiksmas rodomas, jei gali tvarkyti pareigybės narius ir pareigybė susijusi su *ex officio* pareigomis. Tikrinama tik ši pareigybė: atidarius šaltinio pareigybę, rodomi tik jos pačios suteikiami laikotarpiai, o atidarius tikslinę – visi jos laikotarpiai ir jų šaltiniai.
 
