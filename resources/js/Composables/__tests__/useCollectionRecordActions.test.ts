@@ -58,7 +58,6 @@ describe('useCollectionRecordActions', () => {
   });
 });
 
-
 it('invalidates only after a successful row mutation', () => {
   const invalidate = vi.fn();
   const actions = useCollectionRecordActions({ routePrefix: 'institutions', source: { refresh: vi.fn() }, onMutated: invalidate });

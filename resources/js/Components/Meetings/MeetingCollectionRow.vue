@@ -49,11 +49,11 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
-import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
 import { ArrowUpRight } from '@lucide/vue';
 import { computed } from 'vue';
 
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
 import { StatusBadge } from '@/Components/Patterns';
 import { meetingCompletionStatuses, type MeetingCompletionStatus } from '@/Constants/statuses';
 import type { MeetingSearchResult } from '@/Shared/Search/types';

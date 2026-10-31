@@ -1,6 +1,5 @@
 <template>
   <CollectionPage
-    @row-action="(_item, key) => collectionActions.select(key)"
     :row-actions="item => openActions(item)"
     :source
     collection="agenda_items"
@@ -11,6 +10,7 @@
     default-view="rows"
     :item-key="item => String(item.id)"
     :columns
+    @row-action="(_item, key) => collectionActions.select(key)"
     :search-placeholder="$t('Ieškoti darbotvarkės klausimų')"
   >
     <template #row="{ item, actions: recordActions }">
@@ -21,7 +21,7 @@
             {{ getSearchTranslation(item, 'institution_name') }}
           </p>
         </div>
-        <CollectionRowActions @select="key => collectionActions.select(key)" :spotlight="item === source?.items.value[0]" :actions="recordActions" />
+        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => collectionActions.select(key)" />
       </div>
     </template>
 
@@ -32,8 +32,10 @@
     </template>
 
     <template #preview="{ item, actions: recordActions }">
-      <AgendaItemPreview :key="item.id" :item >
-        <template #actions><CollectionRowActions @select="key => collectionActions.select(key)" :actions="recordActions" full-labels class="flex-wrap" /></template>
+      <AgendaItemPreview :key="item.id" :item>
+        <template #actions>
+          <CollectionRowActions :actions="recordActions" full-labels class="flex-wrap" @select="key => collectionActions.select(key)" />
+        </template>
       </AgendaItemPreview>
     </template>
 
@@ -45,13 +47,13 @@
 </template>
 
 <script setup lang="ts">
+import { trans as $t } from 'laravel-vue-i18n';
+import { Trash2, Pencil, ArrowUpRight } from '@lucide/vue';
+
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { useRowAbilities } from '@/Composables/useRowAbilities';
 import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
-import { trans as $t } from 'laravel-vue-i18n';
-import { Trash2, Pencil, ArrowUpRight } from '@lucide/vue';
-
 import AgendaItemPreview from '@/Components/AgendaItems/AgendaItemPreview.vue';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';

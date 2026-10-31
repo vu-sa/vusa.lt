@@ -1,13 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
+import { router, usePage } from '@inertiajs/vue3';
 
 import NewsForm from '@/Components/AdminForms/NewsForm.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import PermalinkField from '@/Components/AdminForms/PermalinkField.vue';
 import PermalinkPreviewHint from '@/Components/AdminForms/PermalinkPreviewHint.vue';
 import SEOPreview from '@/Components/AdminForms/SEOPreview.vue';
-
-import { router, usePage } from '@inertiajs/vue3';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));

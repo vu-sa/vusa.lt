@@ -1,7 +1,6 @@
 <template>
   <CollectionPage
     :row-actions="item => actionsFor(item)"
-    @row-action="(item, key) => actions.select(key)"
     :source
     collection="meetings"
     entity-type="meeting"
@@ -12,6 +11,7 @@
     :item-key="meetingKey"
     :quick-filters
     :columns
+    @row-action="(item, key) => actions.select(key)"
     table-fixed
     :pinned-items="pinnedMeetings"
     :search-placeholder="$t('Ieškoti posėdžių')"
@@ -64,8 +64,10 @@
     </template>
 
     <template v-if="!isTrash" #preview="{ item, actions: recordActions }">
-      <MeetingPreview :key="item.id" :meeting="item" >
-        <template #actions><CollectionRowActions :actions="recordActions" full-labels class="flex-wrap" @select="key => actions.select(key)" /></template>
+      <MeetingPreview :key="item.id" :meeting="item">
+        <template #actions>
+          <CollectionRowActions :actions="recordActions" full-labels class="flex-wrap" @select="key => actions.select(key)" />
+        </template>
       </MeetingPreview>
     </template>
 
@@ -85,12 +87,12 @@
 </template>
 
 <script setup lang="ts">
-import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Pencil, ArrowUpRight, Plus, RotateCcw, Trash2 } from '@lucide/vue';
 import { computed } from 'vue';
 
+import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';

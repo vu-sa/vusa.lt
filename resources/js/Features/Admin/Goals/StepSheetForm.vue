@@ -1,7 +1,7 @@
 <template>
   <SheetForm
-    required-note
     v-model:open="open"
+    required-note
     :created-at="step?.created_at"
     :updated-at="step?.updated_at"
     :title="step ? $t('goals.steps.edit') : $t('goals.steps.add')"

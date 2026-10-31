@@ -138,24 +138,30 @@
       </Alert>
 
       <SpotlightPopover v-if="row.editable && !row.is_derived && row.review_sources?.length" :title="$t('dutiables.timeline.review.keep')" :description="$t('dutiables.timeline.review.explanation')" :is-dismissed="reviewSpotlight.isDismissed.value" @dismiss="reviewSpotlight.dismiss()">
-      <section class="space-y-2 border-t border-border pt-2">
-        <p class="text-xs text-muted-foreground">{{ $t('dutiables.timeline.review.explanation') }}</p>
-        <AlertDialog v-for="choice in reviewChoices" :key="choice.id">
-          <AlertDialogTrigger as-child>
-            <Button size="xs" variant="outline">{{ choice.label }}</Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>{{ choice.label }}</AlertDialogTitle>
-              <AlertDialogDescription>{{ choice.description }}</AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>{{ $t('dutiables.timeline.actions.remove_cancel') }}</AlertDialogCancel>
-              <AlertDialogAction @click="reviewAssignment(choice.id)">{{ $t('dutiables.timeline.review.confirm') }}</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </section>
+        <section class="space-y-2 border-t border-border pt-2">
+          <p class="text-xs text-muted-foreground">
+            {{ $t('dutiables.timeline.review.explanation') }}
+          </p>
+          <AlertDialog v-for="choice in reviewChoices" :key="choice.id">
+            <AlertDialogTrigger as-child>
+              <Button size="xs" variant="outline">
+                {{ choice.label }}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{{ choice.label }}</AlertDialogTitle>
+                <AlertDialogDescription>{{ choice.description }}</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{{ $t('dutiables.timeline.actions.remove_cancel') }}</AlertDialogCancel>
+                <AlertDialogAction @click="reviewAssignment(choice.id)">
+                  {{ $t('dutiables.timeline.review.confirm') }}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </section>
       </SpotlightPopover>
 
       <div class="grid gap-2 sm:grid-cols-2">
@@ -311,10 +317,6 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
-import { useApiMutation } from '@/Composables/useApi';
-import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
-import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { trans as $t } from 'laravel-vue-i18n';
 import { router, Link, usePage } from '@inertiajs/vue3';
 import { CalendarCheck, CalendarX, ExternalLink, Merge, Trash2 } from '@lucide/vue';
@@ -325,6 +327,10 @@ import TimelineDateField from './TimelineDateField.vue';
 import { resolveCadenceFor } from './composables/useDutiableDiagnostics';
 import type { ParsedCadence, ParsedRow, StagedDates } from './types';
 
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
+import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
+import { useApiMutation } from '@/Composables/useApi';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import {
   AlertDialog,
   AlertDialogAction,

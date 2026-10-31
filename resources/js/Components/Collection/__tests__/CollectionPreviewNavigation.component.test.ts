@@ -1,6 +1,7 @@
 import { mount } from '@vue/test-utils';
 import { ref } from 'vue';
 import { describe, expect, it, vi } from 'vitest';
+
 import DocumentPreview from '@/Components/Files/DocumentPreview.vue';
 import AgendaItemPreview from '@/Components/AgendaItems/AgendaItemPreview.vue';
 import MeetingPreview from '@/Components/Meetings/MeetingPreview.vue';

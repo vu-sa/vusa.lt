@@ -1,7 +1,6 @@
 <template>
   <CollectionPage
-    @row-action="(_item, key) => collectionActions.select(key)"
-    :row-actions="rowActions"
+    :row-actions
     :source
     collection="roles"
     entity-type="role"
@@ -11,6 +10,7 @@
     default-view="table"
     :item-key="responsibility => responsibility.id"
     :columns
+    @row-action="(_item, key) => collectionActions.select(key)"
     :search-placeholder="$t('responsibilities.index.search')"
   >
     <template #actions>
@@ -29,7 +29,7 @@
           <PurposeChip :label="item.purpose_label" show-access />
           <span>{{ counts(item) }}</span>
         </p>
-        <CollectionRowActions @select="key => collectionActions.select(key)" :spotlight="item === source?.items.value[0]" :actions="recordActions" />
+        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => collectionActions.select(key)" />
       </article>
     </template>
 
@@ -48,17 +48,16 @@
 </template>
 
 <script setup lang="ts">
+import { Trash2, Pencil, ArrowUpRight, Plus } from '@lucide/vue';
+import { computed, toRef } from 'vue';
+import { Link, usePage } from '@inertiajs/vue3';
+import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
+
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { useRowAbilities } from '@/Composables/useRowAbilities';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
-import { Trash2, Pencil, ArrowUpRight } from '@lucide/vue';
-import { computed, toRef } from 'vue';
-import { Link, usePage } from '@inertiajs/vue3';
-import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { Plus } from '@lucide/vue';
-
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import type { CollectionColumn } from '@/Components/Collection/types';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';

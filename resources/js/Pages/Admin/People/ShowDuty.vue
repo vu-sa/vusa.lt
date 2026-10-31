@@ -559,7 +559,6 @@ const overflowActions = computed<ActionDescriptor[]>(() => {
     actions.push({ key: 'ex-officio-review', label: $t('dutiables.ex_officio_review.title'), icon: ListChecks });
   }
 
-
   if (canManageDuty.value) {
     actions.push({ key: 'edit', label: $t('Redaguoti pareigybę'), icon: Edit3 });
     actions.push({ key: 'delete', label: $t('Ištrinti pareigybę'), icon: Trash2, destructive: true });

@@ -143,9 +143,9 @@ describe('ProblemForm.vue — institution picker', () => {
       tenants: [{ id: 3, shortname: 'MIF' }, { id: 4, shortname: 'FF' }],
       institutions: [{ id: 'inst-1', name: 'Faculty council', tenant_id: 3 }],
     });
-    const form = (wrapper.vm as unknown as {
+    const { form } = wrapper.vm as unknown as {
       form: { tenant_id: number | null; institutions: string[] };
-    }).form;
+    };
 
     await wrapper.get('select#problem-tenant').setValue('4');
     expect(form.tenant_id).toBe(4);
@@ -182,7 +182,7 @@ describe('ProblemForm.vue — institution picker', () => {
 describe('ProblemForm.vue — status selection', () => {
   it('submits the status key and keeps its error-summary target focusable', async () => {
     const wrapper = mountForm({ problem: emptyProblem() });
-    const form = (wrapper.vm as unknown as { form: { status: string } }).form;
+    const { form } = wrapper.vm as unknown as { form: { status: string } };
     const status = wrapper.get('#problem-status');
 
     expect(status.attributes('tabindex')).toBe('-1');

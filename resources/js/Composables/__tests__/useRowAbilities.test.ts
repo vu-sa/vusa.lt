@@ -40,7 +40,7 @@ beforeEach(() => {
 describe('useRowAbilities', () => {
   it('hides actions until the batch resolves, then uses only returned decisions', async () => {
     let resolve!: () => void;
-    mock.execute.mockImplementation(() => new Promise<void>(done => { resolve = done; }));
+    mock.execute.mockImplementation(() => new Promise<void>((done) => { resolve = done; }));
     const state = setup(['one', 'denied']);
     expect(state.can('one', 'update')).toBe(false);
     payload.value = { one: { update: true, delete: false } };
@@ -94,7 +94,7 @@ describe('useRowAbilities', () => {
 
   it('discards an in-flight decision invalidated by a mutation', async () => {
     let resolve!: () => void;
-    mock.execute.mockImplementationOnce(() => new Promise<void>(done => { resolve = done; }));
+    mock.execute.mockImplementationOnce(() => new Promise<void>((done) => { resolve = done; }));
     mock.execute.mockImplementation(async () => { payload.value = {}; });
     const state = setup(['one']);
     state.invalidate(['one']);
@@ -121,7 +121,6 @@ describe('useRowAbilities', () => {
     expect(mock.abort).toHaveBeenCalledOnce();
   });
 });
-
 
 it('keeps rejected transport requests hidden without an unhandled rejection', async () => {
   mock.execute.mockRejectedValueOnce(new Error('Offline'));

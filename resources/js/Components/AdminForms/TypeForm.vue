@@ -70,10 +70,10 @@
         >
           <FormSegmentedControl
             id="governance_scope"
+            v-model="governanceScope"
             tabindex="-1"
             stack-on-phone
             :aria-label="$t('forms.fields.governance_scope')"
-            v-model="governanceScope"
             :options="governanceScopeOptions"
           />
         </FormFieldWrapper>

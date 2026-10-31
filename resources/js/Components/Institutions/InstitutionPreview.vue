@@ -72,11 +72,11 @@
 </template>
 
 <script setup lang="ts">
-import { getSearchTranslation, getSearchTranslations } from '@/Composables/useTranslatedTitle';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 
+import { getSearchTranslation, getSearchTranslations } from '@/Composables/useTranslatedTitle';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import { PreviewChipList, PreviewFact, PreviewFacts, PreviewPane, PreviewSection, type PreviewChipItem } from '@/Components/Patterns';

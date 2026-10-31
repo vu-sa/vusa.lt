@@ -94,11 +94,10 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, computed, ref, watch } from 'vue';
 import { Deferred, InfiniteScroll, router } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { Copy, Hand, Layers, Pencil, RefreshCw } from '@lucide/vue';
-import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 
 import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';

@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { markNotificationRead } from '@/Composables/markNotificationRead';
 import { mount } from '@vue/test-utils';
 
 import ShowNotifications from '../ShowNotifications.vue';
 
+import { markNotificationRead } from '@/Composables/markNotificationRead';
 import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));

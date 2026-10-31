@@ -52,7 +52,7 @@ export function useRowAbilities(type: RowAbilityType, visibleIds: () => RowId[])
 
   function invalidate(ids?: RowId[]): void {
     const targets = ids?.map(String) ?? [...new Set([...attempted.keys(), ...cache.keys()])];
-    targets.forEach(id => {
+    targets.forEach((id) => {
       versions.set(id, (versions.get(id) ?? 0) + 1);
       cache.delete(id);
     });

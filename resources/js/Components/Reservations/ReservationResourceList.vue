@@ -92,10 +92,10 @@ import { ChevronRight, Pencil, Trash2 } from '@lucide/vue';
 import ReservationDecisionDialog from './ReservationDecisionDialog.vue';
 import ResourceManagers, { type ResourceManagerContact } from './ResourceManagers.vue';
 import { reservationRowActions } from './reservationRowActions';
-import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
-import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
 import type { ReservationDecision } from './types';
 
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
 import { ResourceIcon } from '@/Components/icons';
 import { ConfirmDialog, EmptyState, StatusBadge } from '@/Components/Patterns';
 import ReservationPeriod from '@/Components/SmallElements/ReservationPeriod.vue';

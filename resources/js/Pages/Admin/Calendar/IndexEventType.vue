@@ -1,7 +1,6 @@
 <template>
   <CollectionPage
     :row-actions="() => rowActions"
-    @row-action="(item, key) => selectRowAction(key, item)"
     :source
     collection="eventTypes"
     entity-type="eventType"
@@ -12,6 +11,7 @@
     :item-key="eventTypeKey"
     :trash="{ count: deletedCount ?? 0, active: isDeleted }"
     :columns
+    @row-action="(item, key) => selectRowAction(key, item)"
     :search-placeholder="$t('Ieškoti renginių tipų…')"
   >
     <template #actions>
@@ -82,7 +82,6 @@
           {{ $t('Neaktyvus') }}
         </span>
       </span>
-
     </template>
 
     <template #empty>

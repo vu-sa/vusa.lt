@@ -103,9 +103,9 @@
         >
           <NativeSelect
             id="resource-category"
+            v-model="form.resource_category_id"
             placeholder-selectable
             :placeholder-value="null"
-            v-model="form.resource_category_id"
             :options="categorySelectOptions"
             :placeholder="$t('Be kategorijos')"
           />

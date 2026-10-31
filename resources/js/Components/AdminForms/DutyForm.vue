@@ -176,7 +176,6 @@
       >
         <TiptapEditor :key="activeLocale" v-model="form.description[activeLocale]" tools="description" html />
       </FormFieldWrapper>
-
     </template>
 
     <FormSection

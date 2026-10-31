@@ -1,7 +1,6 @@
 <template>
   <CollectionPage
     :row-actions="() => rowActions"
-    @row-action="(item, key) => selectRowAction(key, item)"
     :source
     collection="tags"
     entity-type="tag"
@@ -12,6 +11,7 @@
     :item-key="tagKey"
     :trash="{ count: deletedCount ?? 0, active: isDeleted }"
     :columns
+    @row-action="(item, key) => selectRowAction(key, item)"
     :selectable="mergeMode"
     :search-placeholder="$t('Ieškoti žymų')"
   >

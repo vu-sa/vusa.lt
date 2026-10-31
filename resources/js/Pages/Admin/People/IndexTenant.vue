@@ -1,7 +1,6 @@
 <template>
   <CollectionPage
     :row-actions="item => rowActions(item)"
-    @row-action="(item, key) => selectRowAction(key, item)"
     :source
     collection="tenants"
     entity-type="tenant"
@@ -12,6 +11,7 @@
     :item-key="tenant => String(tenant.id)"
     :columns
     :search-placeholder="$t('Ieškoti padalinių')"
+    @row-action="(item, key) => selectRowAction(key, item)"
   >
     <template #actions>
       <Button v-if="canCreate" variant="brand" size="lg" @click="openSheet()">

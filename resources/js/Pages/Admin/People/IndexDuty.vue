@@ -1,7 +1,6 @@
 <template>
   <CollectionPage
     :row-actions="item => rowActions(item)"
-    @row-action="(item, key) => selectRowAction(key, item)"
     :source
     collection="duties"
     entity-type="duty"
@@ -12,6 +11,7 @@
     :item-key="dutyKey"
     :trash="{ count: deletedCount ?? 0, active: isDeleted }"
     :columns
+    @row-action="(item, key) => selectRowAction(key, item)"
     :selectable="mergeMode"
     :quick-filters
     :search-placeholder="$t('Ieškoti pareigybių')"
@@ -114,13 +114,13 @@
 </template>
 
 <script setup lang="ts">
-import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
-import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { ArrowRight, CircleAlert, Merge, Pencil, Plus, RotateCcw, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
+import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import CollectionActivityStatus from '@/Components/Collection/CollectionActivityStatus.vue';
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';

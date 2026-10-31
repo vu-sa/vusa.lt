@@ -27,9 +27,8 @@
   </DocumentFolderBrowser>
 
   <CollectionPage
-    :row-actions="item => rowActions(item)"
-    @row-action="(item, key) => selectRowAction(key, item)"
     v-else
+    :row-actions="item => rowActions(item)"
     :source="source!"
     collection="documents"
     entity-type="document"
@@ -39,6 +38,7 @@
     default-view="table"
     :item-key="documentKey"
     :quick-filters
+    @row-action="(item, key) => selectRowAction(key, item)"
     :columns
     :search-placeholder="$t('Ieškoti dokumentų...')"
     @quick-filter="toggleQuickFilter"
@@ -133,12 +133,13 @@
         </span>
         <span v-else class="text-muted-foreground">—</span>
       </span>
-
     </template>
 
     <template #preview="{ item, actions: recordActions }">
-      <DocumentPreview :key="item.id" :document="item" >
-        <template #actions><CollectionRowActions :actions="recordActions" full-labels class="flex-wrap" @select="key => selectRowAction(key, item)" /></template>
+      <DocumentPreview :key="item.id" :document="item">
+        <template #actions>
+          <CollectionRowActions :actions="recordActions" full-labels class="flex-wrap" @select="key => selectRowAction(key, item)" />
+        </template>
       </DocumentPreview>
     </template>
 
@@ -163,12 +164,12 @@
 </template>
 
 <script setup lang="ts">
-import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Pencil, ExternalLink, EyeOff, FileUp, RefreshCw } from '@lucide/vue';
 import { computed, onBeforeUnmount, ref } from 'vue';
 
+import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import { highlightText, matchTitle } from '@/Shared/Search/matches';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
@@ -219,11 +220,11 @@ const browser = ref<InstanceType<typeof DocumentFolderBrowser> | null>(null);
 const rowActions = (item: DocumentSearchResult): CollectionRowAction[] => [
   { key: 'open', label: $t('Atidaryti'), icon: ExternalLink, role: 'open' as const, external: Boolean(item.anonymous_url), href: item.anonymous_url || route('documents.show', item.id) },
   ...(rowAbilities.can(item.id, 'update') ? [
-      { key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: route('documents.edit', item.id) },
-      { key: 'refresh', label: $t('Atnaujinti iš SharePoint'), icon: RefreshCw, loading: refreshingId.value === String(item.id) },
-      // Hiding, not deleting: SharePoint is the source, and a deleted record would only be rediscovered.
-      { key: 'hide', label: $t('Slėpti'), icon: EyeOff },
-    ] : []),
+    { key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: route('documents.edit', item.id) },
+    { key: 'refresh', label: $t('Atnaujinti iš SharePoint'), icon: RefreshCw, loading: refreshingId.value === String(item.id) },
+    // Hiding, not deleting: SharePoint is the source, and a deleted record would only be rediscovered.
+    { key: 'hide', label: $t('Slėpti'), icon: EyeOff },
+  ] : []),
 ];
 
 function selectRowAction(key: string, item: DocumentSearchResult): void {
@@ -362,7 +363,7 @@ const hideDescription = computed(() => $t('„:title“ nebebus rodomas vusa.lt,
 
 function handleHide(): void {
   if (!documentToHide.value) return;
-  const id = documentToHide.value.id;
+  const { id } = documentToHide.value;
   router.post(route('documents.status'), { document_ids: [Number(id)], status: 'hidden' }, {
     preserveScroll: true,
     onSuccess: () => {

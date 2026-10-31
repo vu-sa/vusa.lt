@@ -4,8 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { router } from '@inertiajs/vue3';
 
 import CollectionPage from '../CollectionPage.vue';
-import CollectionResults from '@/Components/Collection/CollectionResults.vue';
 
+import CollectionResults from '@/Components/Collection/CollectionResults.vue';
 import type { CollectionSource } from '@/Composables/useCollectionSource';
 import { commonStubs } from '@/tests/stubs';
 

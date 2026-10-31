@@ -1,7 +1,6 @@
 <template>
   <CollectionPage
     :row-actions="item => actionsFor(item)"
-    @row-action="(item, key) => actions.select(key)"
     :source
     collection="quickLinks"
     entity-type="quickLink"
@@ -14,6 +13,7 @@
     :available-views="['rows', 'table']"
     :item-key="link => String(link.id)"
     :columns
+    @row-action="(item, key) => actions.select(key)"
     :quick-filters="languageFilters"
     :trash="{ count: deletedCount ?? 0, active: isTrash }"
     :keep-params="['tenant', 'lang']"

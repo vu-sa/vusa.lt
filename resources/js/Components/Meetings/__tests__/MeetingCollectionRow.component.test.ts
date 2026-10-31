@@ -2,6 +2,7 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 
 import MeetingCollectionRow from '../MeetingCollectionRow.vue';
+
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import { commonStubs } from '@/tests/stubs';
 import type { MeetingSearchResult } from '@/Shared/Search/types';

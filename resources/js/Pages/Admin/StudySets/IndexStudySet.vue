@@ -1,7 +1,6 @@
 <template>
   <CollectionPage
     :row-actions="item => actionsFor(item)"
-    @row-action="(item, key) => actions.select(key)"
     :source
     collection="study-sets"
     entity-type="studySet"
@@ -14,6 +13,7 @@
     :item-key="set => String(set.id)"
     :columns
     :trash="{ count: deletedCount, active: isTrash }"
+    @row-action="(item, key) => actions.select(key)"
     :search-placeholder="$t('Ieškoti komplektų')"
   >
     <template #actions>

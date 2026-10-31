@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { ref } from 'vue';
-
 import { ArrowUpRight, Pencil, Trash2 } from '@lucide/vue';
+
 import CollectionRowActions from './CollectionRowActions.vue';
 import CollectionResults from './CollectionResults.vue';
 import CollectionActiveChips from './CollectionActiveChips.vue';

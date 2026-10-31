@@ -1,7 +1,6 @@
 <template>
   <CollectionPage
     :row-actions="item => actionsFor(item)"
-    @row-action="(item, key) => actions.select(key, item.force_delete_blocked_reason)"
     :source
     :collection="resource"
     :entity-type
@@ -14,6 +13,7 @@
     :item-key="type => String(type.id)"
     :columns
     :trash="{ count: deletedCount, active: isTrash }"
+    @row-action="(item, key) => actions.select(key, item.force_delete_blocked_reason)"
     :search-placeholder="$t('Ieškoti tipų')"
   >
     <template #actions>

@@ -1,12 +1,11 @@
 <?php
 
-use App\Actions\Dutiables\ReconcileExOfficioSeats;
 use App\Actions\CollapseOverlappingDutiables;
 use App\Actions\Dutiables\MergeDutiables;
+use App\Actions\Dutiables\ReconcileExOfficioSeats;
 use App\Actions\GetUserAccessSummary;
 use App\Actions\MergeDuties;
 use App\Actions\UpdateInstitution;
-use App\Events\DutiableChanged;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Pivots\Dutiable;

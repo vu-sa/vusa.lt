@@ -72,8 +72,6 @@
       :item-key
       :columns
       :row-actions
-      @row-action="(item, key) => emit('rowAction', item, key)"
-      @row-navigate="(item, key) => emit('rowNavigate', item, key)"
       :is-loading="source.isLoading.value"
       :is-loading-more="source.isLoadingMore.value"
       :has-searched="source.hasSearched.value"
@@ -83,7 +81,9 @@
       :selected-key
       :selectable
       :can-select
+      @row-action="(item, key) => emit('rowAction', item, key)"
       :sort-by="source.sortBy.value"
+      @row-navigate="(item, key) => emit('rowNavigate', item, key)"
       :sort-options="source.sortOptions.value"
       :total="source.total.value"
       :table-fixed

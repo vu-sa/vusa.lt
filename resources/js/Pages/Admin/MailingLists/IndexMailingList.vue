@@ -1,6 +1,6 @@
 <template>
   <CollectionPage
-    :row-actions="rowActions"
+    :row-actions
     :source
     collection="mailingLists"
     entity-type="mailing_list"
@@ -72,15 +72,14 @@
 </template>
 
 <script setup lang="ts">
-import { useRowAbilities } from '@/Composables/useRowAbilities';
-import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
-import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
-import { Pencil, ArrowUpRight } from '@lucide/vue';
+import { Pencil, ArrowUpRight, Mail as MailingListIcon, RefreshCw } from '@lucide/vue';
 import { Link, router } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { Mail as MailingListIcon, RefreshCw } from '@lucide/vue';
 import { computed, ref, toRef } from 'vue';
 
+import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import { useRowAbilities } from '@/Composables/useRowAbilities';
 import type { CollectionColumn } from '@/Components/Collection/types';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { EmptyState, StatusBadge } from '@/Components/Patterns';

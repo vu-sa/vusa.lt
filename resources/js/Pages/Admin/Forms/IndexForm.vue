@@ -1,7 +1,6 @@
 <template>
   <CollectionPage
     :row-actions="item => rowActions(item)"
-    @row-action="(item, key) => selectRowAction(key, item)"
     :source
     collection="forms"
     entity-type="form"
@@ -12,6 +11,7 @@
     :available-views="['table', 'rows']"
     :item-key="formKey"
     :trash="{ count: deletedCount ?? 0, active: isDeleted }"
+    @row-action="(item, key) => selectRowAction(key, item)"
     :columns
     :search-placeholder="$t('Ieškoti formų…')"
   >
@@ -84,7 +84,6 @@
       <span v-else-if="column.key === 'updated_at'" class="tabular-nums text-muted-foreground">
         {{ formatDate(new Date(item.updated_at)) }}
       </span>
-
     </template>
 
     <template #empty>
@@ -112,14 +111,14 @@
 </template>
 
 <script setup lang="ts">
-import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
-import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { ChevronRight, Pencil, Plus, RotateCcw, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
+import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import type { CollectionColumn } from '@/Components/Collection/types';
 import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';

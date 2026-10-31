@@ -1,8 +1,6 @@
 <template>
   <CollectionPage
     :row-actions="notificationRowActions"
-    @row-navigate="markUnreadRowAsRead"
-    @row-action="(item, key) => key === 'read' ? handleMarkAsRead(item.id) : handleDelete(item.id)"
     :source
     collection="notifications"
     entity-type="notification"
@@ -12,7 +10,9 @@
     default-view="rows"
     :available-views="['rows']"
     :item-key="item => item.id"
+    @row-navigate="markUnreadRowAsRead"
     :quick-filters
+    @row-action="(item, key) => key === 'read' ? handleMarkAsRead(item.id) : handleDelete(item.id)"
     @quick-filter="toggleUnread"
   >
     <template #actions>
@@ -44,7 +44,7 @@
       </DropdownMenu>
     </template>
     <template #row="{ item, actions }">
-      <NotificationCard :notification="item" :actions="actions" :spotlight="item === source.items.value[0]" @mark-as-read="handleMarkAsRead" @delete="handleDelete" />
+      <NotificationCard :notification="item" :actions :spotlight="item === source.items.value[0]" @mark-as-read="handleMarkAsRead" @delete="handleDelete" />
     </template>
     <template #empty>
       <EmptyState
@@ -57,12 +57,12 @@
 </template>
 
 <script setup lang="ts">
-import { markNotificationRead } from '@/Composables/markNotificationRead';
 import { computed, toRef } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { BellOff, MoreHorizontal, Settings } from '@lucide/vue';
 
+import { markNotificationRead } from '@/Composables/markNotificationRead';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { notificationRowActions } from '@/Features/Admin/Notifications/notificationRowActions';
 import NotificationCard from '@/Features/Admin/Notifications/NotificationCard.vue';

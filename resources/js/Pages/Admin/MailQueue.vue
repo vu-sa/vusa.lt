@@ -1,7 +1,6 @@
 <template>
   <CollectionPage
-    :row-actions="rowActions"
-    @row-action="(recipient) => requestClearRecipient(recipient)"
+    :row-actions
     :source
     collection="mailQueue"
     :eyebrow="$t('Sistemos būsena')"
@@ -10,6 +9,7 @@
     default-view="rows"
     :available-views="['rows']"
     :item-key="recipient => recipient.user_id"
+    @row-action="(recipient) => requestClearRecipient(recipient)"
   >
     <template #actions>
       <div class="flex items-center gap-2">
@@ -43,7 +43,7 @@
             <Badge variant="secondary">
               {{ $tChoice('mail_queue.line_count', recipient.items_count) }}
             </Badge>
-            <CollectionRowActions :spotlight="index === 0" :actions="actions" @select="requestClearRecipient(recipient)" />
+            <CollectionRowActions :spotlight="index === 0" :actions @select="requestClearRecipient(recipient)" />
           </div>
         </div>
 
@@ -103,14 +103,14 @@
 </template>
 
 <script setup lang="ts">
-import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
-import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
 import { router } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { computed, ref, watch } from 'vue';
 import { format, parseISO } from 'date-fns';
 import { Mail as MailIcon, RefreshCw as RefreshCwIcon, Trash2 as Trash2Icon } from '@lucide/vue';
 
+import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';

@@ -1,8 +1,7 @@
 <template>
   <div>
     <CollectionPage
-      @row-action="(_item, key) => collectionActions.select(key)"
-      :row-actions="rowActions"
+      :row-actions
       :source
       collection="resources"
       entity-type="resource"
@@ -12,6 +11,7 @@
       default-view="cards"
       :available-views="['cards', 'rows', 'table', 'preview']"
       :item-key="resourceKey"
+      @row-action="(_item, key) => collectionActions.select(key)"
       :columns
       :search-placeholder="$t('Ieškoti išteklių')"
     >
@@ -86,7 +86,7 @@
                 </div>
               </template>
             </div>
-            <CollectionRowActions @select="key => collectionActions.select(key)" :actions="recordActions" class="relative z-10 mt-3" />
+            <CollectionRowActions :actions="recordActions" class="relative z-10 mt-3" @select="key => collectionActions.select(key)" />
           </div>
         </article>
       </template>
@@ -129,7 +129,7 @@
           <div v-else-if="canReserve" class="shrink-0">
             <AddToReservationButton :resource-id="String(item.id)" />
           </div>
-          <CollectionRowActions @select="key => collectionActions.select(key)" :spotlight="item === source?.items.value[0]" :actions="recordActions" />
+          <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => collectionActions.select(key)" />
         </div>
       </template>
 
@@ -179,7 +179,7 @@
               without-draft="reserve"
               :label="$t('reservations.cart.add_to_reservation')"
             />
-            <CollectionRowActions @select="key => collectionActions.select(key)" :actions="recordActions" full-labels />
+            <CollectionRowActions :actions="recordActions" full-labels @select="key => collectionActions.select(key)" />
           </template>
         </ResourcePreview>
       </template>
@@ -203,18 +203,17 @@
 </template>
 
 <script setup lang="ts">
+import { Trash2, Pencil, ArrowUpRight, CalendarClock, Plus } from '@lucide/vue';
+import { Link, usePage } from '@inertiajs/vue3';
+import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
+import { capitalize, computed, onMounted, watch } from 'vue';
+
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { useRowAbilities } from '@/Composables/useRowAbilities';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
-import { Trash2, Pencil, ArrowUpRight } from '@lucide/vue';
 import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
-import { Link, usePage } from '@inertiajs/vue3';
-import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { CalendarClock, Plus } from '@lucide/vue';
-import { capitalize, computed, onMounted, watch } from 'vue';
-
 import { highlightText, matchTitle } from '@/Shared/Search/matches';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import type { CollectionColumn } from '@/Components/Collection/types';

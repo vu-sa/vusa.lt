@@ -1,7 +1,6 @@
 <template>
   <CollectionPage
-    @row-action="(_item, key) => collectionActions.select(key)"
-    :row-actions="rowActions"
+    :row-actions
     :source
     collection="supportRequests"
     entity-type="support_request"
@@ -11,6 +10,7 @@
     default-view="rows"
     :available-views="['rows']"
     :item-key="item => item.id"
+    @row-action="(_item, key) => collectionActions.select(key)"
     :quick-filters="tabs"
     @quick-filter="changeTab"
   >
@@ -36,7 +36,7 @@
           </p>
         </div>
         <StatusBadge :status="statusOf(item)" class="shrink-0" />
-        <CollectionRowActions @select="key => collectionActions.select(key)" :spotlight="item === source?.items.value[0]" :actions="recordActions" />
+        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => collectionActions.select(key)" />
       </article>
     </template>
 
@@ -53,17 +53,16 @@
 </template>
 
 <script setup lang="ts">
+import { Trash2, Pencil, ArrowUpRight, Plus } from '@lucide/vue';
+import { computed } from 'vue';
+import { Link, router, usePage } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { useRowAbilities } from '@/Composables/useRowAbilities';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
-import { Trash2, Pencil, ArrowUpRight } from '@lucide/vue';
-import { computed } from 'vue';
-import { Link, router, usePage } from '@inertiajs/vue3';
-import { trans as $t } from 'laravel-vue-i18n';
-import { Plus } from '@lucide/vue';
-
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { EmptyState, StatusBadge } from '@/Components/Patterns';

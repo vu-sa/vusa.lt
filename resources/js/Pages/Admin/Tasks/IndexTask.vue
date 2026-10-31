@@ -1,7 +1,6 @@
 <template>
   <CollectionPage
     :row-actions="taskRowActions"
-    @row-action="(item, key) => runAction(item, key as TaskActionKey)"
     :source
     :collection="`tasks-${scope}`"
     entity-type="task"
@@ -12,6 +11,7 @@
     :available-views="['preview', 'table', 'rows']"
     :item-key="taskKey"
     :columns
+    @row-action="(item, key) => runAction(item, key as TaskActionKey)"
     table-fixed
     actions-width="w-60"
     :quick-filters
@@ -72,7 +72,6 @@
       <span v-else-if="column.key === 'due_date'" :class="['text-sm tabular-nums', getDueDateUrgencyClasses(item)]">
         {{ item.due_date ? formatTaskDueDate(item.due_date, dateLocale) : '—' }}
       </span>
-
     </template>
 
     <template #preview="{ item }">

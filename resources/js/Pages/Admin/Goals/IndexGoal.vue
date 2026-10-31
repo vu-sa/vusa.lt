@@ -1,7 +1,6 @@
 <template>
   <CollectionPage
-    @row-action="(_item, key) => deleteActions.select(key)"
-    :row-actions="rowActions"
+    :row-actions
     :source
     collection="goals"
     entity-type="goal"
@@ -11,6 +10,7 @@
     default-view="rows"
     :available-views="['rows', 'table']"
     :item-key="goal => goal.id"
+    @row-action="(_item, key) => deleteActions.select(key)"
     :columns
     :search-placeholder="$t('goals.search')"
   >
@@ -47,7 +47,7 @@
           </div>
         </div>
         <StatusBadge :status="goalStatuses[item.status]" />
-        <CollectionRowActions @select="key => deleteActions.select(key)" :actions="recordActions" />
+        <CollectionRowActions :actions="recordActions" @select="key => deleteActions.select(key)" />
       </article>
     </template>
 
@@ -77,16 +77,15 @@
 </template>
 
 <script setup lang="ts">
-import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
-import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
-import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
-import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
-import { ArrowUpRight, Pencil, Trash2 } from '@lucide/vue';
+import { ArrowUpRight, Pencil, Trash2, Plus } from '@lucide/vue';
 import { Link, router } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { Plus } from '@lucide/vue';
 import { computed, toRef } from 'vue';
 
+import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import type { CollectionColumn } from '@/Components/Collection/types';
 import { GoalIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';

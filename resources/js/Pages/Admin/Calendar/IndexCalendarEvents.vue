@@ -1,7 +1,6 @@
 <template>
   <CollectionPage
     :row-actions="item => actionsFor(item)"
-    @row-action="(item, key) => select(key, item)"
     :source
     collection="calendar"
     entity-type="calendar"
@@ -14,6 +13,7 @@
     :item-key="eventKey"
     :columns
     :quick-filters
+    @row-action="(item, key) => select(key, item)"
     :trash="{ count: deletedCount, active: isTrash }"
     :search-placeholder="$t('Ieškoti renginių')"
     @quick-filter="id => source.toggleFilter(id, 'true')"

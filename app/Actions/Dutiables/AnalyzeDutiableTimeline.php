@@ -185,7 +185,7 @@ class AnalyzeDutiableTimeline
      */
     private static function exOfficioDrift(Collection $rows, array $periods): array
     {
-        (new EloquentCollection($rows->pluck('duty')->filter()->all()))
+        new EloquentCollection($rows->pluck('duty')->filter()->all())
             ->loadMissing('exOfficioTargetDuties');
         $projected = $rows->map(function (Dutiable $row) use ($periods): Dutiable {
             $projection = clone $row;
@@ -193,7 +193,7 @@ class AnalyzeDutiableTimeline
 
             return $projection;
         })->keyBy('id');
-        (new EloquentCollection($rows->all()))->loadMissing('media');
+        new EloquentCollection($rows->all())->loadMissing('media');
         $plans = [];
         $findings = [];
 

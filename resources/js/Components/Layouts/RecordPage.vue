@@ -242,9 +242,9 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronLeft, ChevronRight, History } from '@lucide/vue';
 
 import ActionControl from './RecordPageAction.vue';
+
 import RecordActionMenu from '@/Components/Patterns/RecordActionMenu.vue';
 import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
-
 import { RuledGrid, type RuledGridColumns } from '@/Components/Brand';
 import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';

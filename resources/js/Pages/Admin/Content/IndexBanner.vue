@@ -1,7 +1,6 @@
 <template>
   <CollectionPage
     :row-actions="item => rowActions(item)"
-    @row-action="(item, key) => selectRowAction(key, item)"
     :source
     collection="banners"
     entity-type="banner"
@@ -12,6 +11,7 @@
     :available-views="['table', 'rows']"
     :item-key="bannerKey"
     :trash="{ count: deletedCount ?? 0, active: isDeleted }"
+    @row-action="(item, key) => selectRowAction(key, item)"
     :columns
     :quick-filters
     :search-placeholder="$t('Ieškoti banerių…')"
@@ -141,7 +141,6 @@
         :editable="canCreate && !isDeleted"
         @update:model-value="value => updateStatus(item, value === 'active')"
       />
-
     </template>
 
     <template #empty>

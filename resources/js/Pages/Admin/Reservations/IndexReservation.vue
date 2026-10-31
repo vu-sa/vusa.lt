@@ -1,8 +1,7 @@
 <template>
   <CollectionPage
-    :row-actions="reservationRowActions"
-    @row-action="(item, key) => openDecision(key as ReservationDecision, item)"
     v-model:selection="selectedIds"
+    :row-actions="reservationRowActions"
     :source
     collection="reservations"
     entity-type="reservation"
@@ -12,6 +11,7 @@
     default-view="table"
     :item-key="reservationKey"
     :columns
+    @row-action="(item, key) => openDecision(key as ReservationDecision, item)"
     :selectable="managesResources"
     :can-select="isReservationSelectable"
     :quick-filters
@@ -42,7 +42,7 @@
           <p class="mt-1.5 text-sm tabular-nums text-muted-foreground">
             {{ reservationPeriod(item) }}
           </p>
-          <CollectionRowActions :spotlight="item === source?.items.value[0]" class="mt-2 flex-wrap" :actions="actions" @select="key => openDecision(key as ReservationDecision, item)" />
+          <CollectionRowActions :spotlight="item === source?.items.value[0]" class="mt-2 flex-wrap" :actions @select="key => openDecision(key as ReservationDecision, item)" />
         </div>
       </article>
     </template>
@@ -77,7 +77,7 @@
     <template #preview="{ item, actions }">
       <ReservationPreview :key="item.id" :reservation="item">
         <template #actions>
-          <CollectionRowActions :actions="actions" class="flex-wrap" @select="key => openDecision(key as ReservationDecision, item)" />
+          <CollectionRowActions :actions class="flex-wrap" @select="key => openDecision(key as ReservationDecision, item)" />
         </template>
       </ReservationPreview>
     </template>

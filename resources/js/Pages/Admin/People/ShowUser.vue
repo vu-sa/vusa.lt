@@ -79,7 +79,7 @@
                 :key="`${duty.id}-${duty.pivot?.id}`"
                 :duty
                 :nested
-                :source-label="sourceLabel"
+                :source-label
                 :holder="dutyHolder"
                 :can-manage="Boolean(can?.update) && group.key !== 'previous'"
                 @edit="openTermSheet(duty)"
@@ -283,7 +283,8 @@ function attachedTerms(duties: UserDuty[], previous: boolean) {
     const parentId = duty.pivot?.via_dutiable_id;
     if (parentId && ids.has(parentId)) {
       children.set(parentId, [...(children.get(parentId) ?? []), duty]);
-    } else {
+    }
+    else {
       roots.push(duty);
     }
   }
@@ -291,11 +292,13 @@ function attachedTerms(duties: UserDuty[], previous: boolean) {
     const order = (a.pivot?.start_date ?? '').localeCompare(b.pivot?.start_date ?? '');
     return previous ? -order : order;
   };
-  return roots.sort(byDate).flatMap(duty => {
+  return roots.sort(byDate).flatMap((duty) => {
     const parentId = duty.pivot?.via_dutiable_id;
     const source = parentId ? allTerms.value.find(term => term.pivot?.id === parentId) : undefined;
-    const sourceLabel = source ? changeDutyNameEndings(props.user, source.name, usePage().props.app.locale,
-      dutyHolder.value.pronouns, source.pivot?.use_original_duty_name ?? false) : undefined;
+    const sourceLabel = source
+      ? changeDutyNameEndings(props.user, source.name, usePage().props.app.locale,
+          dutyHolder.value.pronouns, source.pivot?.use_original_duty_name ?? false)
+      : undefined;
     return [
       { duty, nested: false, sourceLabel },
       ...(children.get(duty.pivot?.id ?? '') ?? []).sort(byDate).map(child => ({

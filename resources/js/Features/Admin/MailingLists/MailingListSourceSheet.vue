@@ -1,7 +1,7 @@
 <template>
   <SheetForm
-    :required-note="Boolean(options)"
     v-model:open="open"
+    :required-note="Boolean(options)"
     :title="$t('mailing_lists.sheet.title')"
     :description="$t('mailing_lists.sheet.description')"
     :save-label="$t('mailing_lists.sheet.submit')"

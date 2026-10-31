@@ -1,8 +1,7 @@
 <template>
   <CollectionPage
-    :row-actions="item => actionsFor(item)"
-    @row-action="(item, key) => onRowAction(key, item)"
     v-model:selection="selection"
+    :row-actions="item => actionsFor(item)"
     :source
     collection="institutions"
     entity-type="institution"
@@ -12,6 +11,7 @@
     default-view="rows"
     :item-key="institutionKey"
     :columns
+    @row-action="(item, key) => onRowAction(key, item)"
     :search-placeholder="$t('Ieškoti institucijų')"
     :trash="{ count: deletedCount, active: isTrash }"
     :quick-filters
@@ -102,7 +102,9 @@
             @updated="active => statusUpdated(item, active)"
           />
         </template>
-        <template #actions><CollectionRowActions :actions="recordActions" full-labels class="flex-wrap" @select="key => onRowAction(key, item)" /></template>
+        <template #actions>
+          <CollectionRowActions :actions="recordActions" full-labels class="flex-wrap" @select="key => onRowAction(key, item)" />
+        </template>
       </InstitutionPreview>
     </template>
 
@@ -155,12 +157,12 @@
 </template>
 
 <script setup lang="ts">
-import { getSearchTranslation, getSearchTranslations } from '@/Composables/useTranslatedTitle';
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Trash2, Pencil, ArrowUpRight, Eye, EyeOff, Plus } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
+import { getSearchTranslation, getSearchTranslations } from '@/Composables/useTranslatedTitle';
 import CollectionActivityStatus from '@/Components/Collection/CollectionActivityStatus.vue';
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';

@@ -26,9 +26,9 @@ describe('GoalForm pickers', () => {
         },
       },
     });
-    const form = (wrapper.vm as unknown as {
+    const { form } = wrapper.vm as unknown as {
       form: { cadence_id: string | null; tenant_id: number | null; responsible_duty_id: string | null };
-    }).form;
+    };
 
     await wrapper.get('select#goal-cadence').setValue('');
     expect(form.cadence_id).toBeNull();

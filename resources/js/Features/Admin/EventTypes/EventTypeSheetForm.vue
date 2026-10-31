@@ -1,7 +1,7 @@
 <template>
   <SheetForm
-    required-note
     v-model:open="open"
+    required-note
     :created-at="eventType?.created_at"
     :updated-at="eventType?.updated_at"
     :title="eventType ? $t('Redaguoti renginio tipą') : $t('Naujas renginio tipas')"

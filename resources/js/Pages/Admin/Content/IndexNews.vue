@@ -1,7 +1,6 @@
 <template>
   <CollectionPage
     :row-actions="item => actionsFor(item)"
-    @row-action="(item, key) => actions.select(key, item.force_delete_blocked_reason)"
     :source
     collection="news"
     entity-type="news"
@@ -14,6 +13,7 @@
     :item-key="newsKey"
     :columns
     table-fixed
+    @row-action="(item, key) => actions.select(key, item.force_delete_blocked_reason)"
     :selectable="canBulkEdit"
     :trash="{ count: deletedCount, active: isTrash }"
     :search-placeholder="$t('Ieškoti naujienų')"

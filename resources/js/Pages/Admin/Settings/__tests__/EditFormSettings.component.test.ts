@@ -24,9 +24,9 @@ describe('registration form settings', () => {
         },
       },
     });
-    const form = (wrapper.vm as unknown as {
+    const { form } = wrapper.vm as unknown as {
       form: { student_rep_registration_form_id: string | null };
-    }).form;
+    };
 
     expect(wrapper.get('label[for="member_registration_form_id"]').text()).toContain('*');
     expect(wrapper.get('select#member_registration_form_id option').attributes('disabled')).toBeDefined();

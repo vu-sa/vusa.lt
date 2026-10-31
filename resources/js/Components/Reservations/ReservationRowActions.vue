@@ -3,9 +3,10 @@
 </template>
 
 <script setup lang="ts">
-import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import { reservationRowActions } from './reservationRowActions';
 import type { ReservationDecision } from './types';
+
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import type { DashboardReservation } from '@/Utils/ReservationStatus';
 
 defineProps<{ reservation: DashboardReservation; disabled?: boolean }>();

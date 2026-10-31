@@ -1,7 +1,6 @@
 <template>
   <CollectionPage
     :row-actions="item => rowActions(item)"
-    @row-action="(item, key) => selectRowAction(key, item)"
     :source
     collection="problems"
     entity-type="problem"
@@ -12,6 +11,7 @@
     :available-views="['preview', 'table', 'rows']"
     :item-key="problemKey"
     :trash="{ count: deletedCount ?? 0, active: isDeleted }"
+    @row-action="(item, key) => selectRowAction(key, item)"
     :columns
     :quick-filters
     :search-placeholder="$t('Ieškoti problemų…')"
@@ -116,7 +116,6 @@
       <span v-else-if="column.key === 'tenant'" class="truncate text-xs">
         {{ item.tenant?.shortname ?? '—' }}
       </span>
-
     </template>
 
     <template #preview="{ item, actions: recordActions }">
@@ -152,14 +151,14 @@
 </template>
 
 <script setup lang="ts">
-import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
-import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { ChevronRight, Pencil, Plus, RotateCcw, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
+import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
 import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';

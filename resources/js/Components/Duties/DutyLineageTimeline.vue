@@ -75,9 +75,9 @@ export interface LineageLinkedDuty {
   can_fold?: boolean;
 }
 
-export type DutyLineageEvent =
-  | { kind: 'rename'; date: string; name: string | null }
-  | { kind: 'took_over' | 'handed_over'; date: string; duties: LineageLinkedDuty[] };
+export type DutyLineageEvent
+  = | { kind: 'rename'; date: string; name: string | null }
+    | { kind: 'took_over' | 'handed_over'; date: string; duties: LineageLinkedDuty[] };
 
 defineProps<{ events: DutyLineageEvent[]; canManage: boolean }>();
 const emit = defineEmits<{ unlink: [duty: LineageLinkedDuty]; fold: [duty: LineageLinkedDuty] }>();

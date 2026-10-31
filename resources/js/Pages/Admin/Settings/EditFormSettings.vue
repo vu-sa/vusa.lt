@@ -61,9 +61,9 @@
       >
         <NativeSelect
           id="student_rep_registration_form_id"
+          v-model="form.student_rep_registration_form_id"
           placeholder-selectable
           :placeholder-value="null"
-          v-model="form.student_rep_registration_form_id"
           :options="formOptions"
           :placeholder="$t('settings.form_settings.no_form_selected')"
         />

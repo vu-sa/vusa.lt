@@ -71,8 +71,8 @@ test('links matching history with the resolved tenant and preserves details', fu
     $this->targetDuty->assignableTenants()->attach($this->tenant);
     $row = reviewCandidate(['additional_email' => 'seat@example.com']);
     $plan = reviewPreview();
-    expect($plan['items'][0]['kind'])->toBe('link');
-    expect($plan['items'][0]['selected'])->toBeFalse();
+    expect($plan['items'][0]['kind'])->toBe('link')
+        ->and($plan['items'][0]['selected'])->toBeFalse();
     reviewApply($plan)->assertSessionHasNoErrors();
     expect($row->fresh()->via_dutiable_id)->toBe($this->source->id)
         ->and($row->fresh()->tenant_id)->toBe($this->tenant->id)
@@ -87,13 +87,13 @@ test('splits inclusive remainders and leaves the original photo on its row', fun
         'description' => ['lt' => '<p>Tekstas</p>', 'en' => '<p>Text</p>']]);
     reviewApply(reviewPreview())->assertSessionHasNoErrors();
     $remainders = Dutiable::where('duty_id', $this->targetDuty->id)->where('assignment_origin', 'manual')->orderBy('start_date')->get();
-    expect($remainders)->toHaveCount(2);
-    expect($remainders[0]->end_date->toDateString())->toBe('2023-12-31');
-    expect($remainders[1]->start_date->toDateString())->toBe('2025-01-01');
-    expect($remainders[1]->additional_email)->toBe('seat@example.com');
-    expect($remainders[1]->getTranslation('description', 'en'))->toBe('<p>Text</p>');
-    expect($remainders[1]->additional_photo)->toBeNull();
-    expect($row->fresh()->additional_photo)->toBe('/photo.jpg');
+    expect($remainders)->toHaveCount(2)
+        ->and($remainders[0]->end_date->toDateString())->toBe('2023-12-31')
+        ->and($remainders[1]->start_date->toDateString())->toBe('2025-01-01')
+        ->and($remainders[1]->additional_email)->toBe('seat@example.com')
+        ->and($remainders[1]->getTranslation('description', 'en'))->toBe('<p>Text</p>')
+        ->and($remainders[1]->additional_photo)->toBeNull()
+        ->and($row->fresh()->additional_photo)->toBe('/photo.jpg');
 });
 
 test('seven-day overlaps and unmatched or manual rows are never written', function (): void {
@@ -112,8 +112,8 @@ test('an orphan defaults to ending with its source', function (): void {
     $plan = reviewPreview();
     expect($plan['items'][0]['orphan'])->toBeTrue()->and($plan['items'][0]['selected'])->toBeFalse();
     reviewApply($plan)->assertSessionHasNoErrors();
-    expect($row->fresh()->end_date->toDateString())->toBe('2024-12-31');
-    expect(Dutiable::where('duty_id', $this->targetDuty->id)->count())->toBe(1);
+    expect($row->fresh()->end_date->toDateString())->toBe('2024-12-31')
+        ->and(Dutiable::where('duty_id', $this->targetDuty->id)->count())->toBe(1);
 });
 
 test('an orphan can explicitly keep its open-ended independent remainder', function (): void {
@@ -129,8 +129,8 @@ test('backfills ended sources and remains idempotent on a real source save', fun
     expect($plan['items'][0]['kind'])->toBe('create')->and($plan['items'][0]['selected'])->toBeFalse();
     reviewApply($plan)->assertSessionHasNoErrors();
     $this->source->save();
-    expect(Dutiable::where('via_dutiable_id', $this->source->id)->where('duty_id', $this->targetDuty->id)->count())->toBe(1);
-    expect(reviewPreview()['items'])->toBeEmpty();
+    expect(Dutiable::where('via_dutiable_id', $this->source->id)->where('duty_id', $this->targetDuty->id)->count())->toBe(1)
+        ->and(reviewPreview()['items'])->toBeEmpty();
 });
 
 test('resyncs linked dates without changing independent manual rows', function (): void {
@@ -139,8 +139,8 @@ test('resyncs linked dates without changing independent manual rows', function (
     $plan = reviewPreview();
     expect($plan['items'][0]['kind'])->toBe('resync');
     reviewApply($plan)->assertSessionHasNoErrors();
-    expect($row->fresh()->end_date->toDateString())->toBe('2024-12-31');
-    expect($manual->fresh()->assignment_origin)->toBe('manual');
+    expect($row->fresh()->end_date->toDateString())->toBe('2024-12-31')
+        ->and($manual->fresh()->assignment_origin)->toBe('manual');
 });
 
 test('proposes duplicate deletion and transfers bilingual details without widening linked dates', function (): void {
@@ -168,9 +168,9 @@ test('a candidate spanning several sources links to the largest overlap and crea
     $plan = reviewPreview();
     expect(array_column($plan['items'], 'kind'))->toContain('link', 'create');
     reviewApply($plan)->assertSessionHasNoErrors();
-    expect($row->fresh()->via_dutiable_id)->toBe($this->source->id);
-    expect(Dutiable::where('via_dutiable_id', $second->id)->where('duty_id', $this->targetDuty->id)->count())->toBe(1);
-    expect(Dutiable::where('duty_id', $this->targetDuty->id)->where('assignment_origin', 'manual')->count())->toBe(0);
+    expect($row->fresh()->via_dutiable_id)->toBe($this->source->id)
+        ->and(Dutiable::where('via_dutiable_id', $second->id)->where('duty_id', $this->targetDuty->id)->count())->toBe(1)
+        ->and(Dutiable::where('duty_id', $this->targetDuty->id)->where('assignment_origin', 'manual')->count())->toBe(0);
 });
 
 test('changed source dates invalidate a preview with 409 and no partial changes', function (): void {
@@ -308,8 +308,8 @@ test('keeping a current orphan retains even a one-day trailing remainder', funct
 test('institution-closed derived history is never resynced or recreated', function (): void {
     $row = reviewCandidate(['via_dutiable_id' => $this->source->id, 'assignment_origin' => 'ex_officio']);
     $row->forceFill(['ended_by_institution_deactivation' => true])->save();
-    expect(reviewPreview()['items'])->toBeEmpty();
-    expect($row->fresh()->ended_by_institution_deactivation)->toBeTrue();
+    expect(reviewPreview()['items'])->toBeEmpty()
+        ->and($row->fresh()->ended_by_institution_deactivation)->toBeTrue();
 });
 
 test('requires authentication for preview and apply', function (): void {

@@ -1,7 +1,6 @@
 <template>
   <CollectionPage
     :row-actions="item => actionsFor(item)"
-    @row-action="(item, key) => actions.select(key, item.force_delete_blocked_reason)"
     :source
     collection="users"
     entity-type="user"
@@ -14,6 +13,7 @@
     :item-key="userKey"
     :columns
     :selectable="mergeMode"
+    @row-action="(item, key) => actions.select(key, item.force_delete_blocked_reason)"
     :trash="{ count: deletedCount, active: isTrash }"
     :search-placeholder="$t('Ieškoti narių')"
     :quick-filters
