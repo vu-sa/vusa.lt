@@ -301,8 +301,8 @@ test('digest groups repeated types and caps each category at five linked lines',
 
     foreach ([$markdown->render('emails.notification-digest', $with), $markdown->renderText('emails.notification-digest', $with)] as $part) {
         $content = html_entity_decode((string) $part);
-        expect($content)->toContain('New meetings created (7)', 'Institution 1, 11-01', 'Institution 5, 11-01', 'https://example.test/meeting/5', '+ 2 more items', 'Full task body')
-            ->not->toContain('+ 2 2', 'Institution 6', 'Institution 7', 'Full title', 'Full body', 'Unneeded context', 'Unneeded action')
+        expect($content)->toContain('New meetings created (7)', 'Institution 1, 11-01', 'Institution 5, 11-01', 'https://example.test/meeting/5', '+ dar 2 pranešimai', 'Full task body')
+            ->not->toContain('+ 2', 'Institution 6', 'Institution 7', 'Full title', 'Full body', 'Unneeded context', 'Unneeded action')
             ->and(strpos($content, 'Single task'))->toBeLessThan(strpos($content, 'New meetings created'));
     }
 });
