@@ -59,7 +59,7 @@ describe('resource collection filters and sorting', () => {
     window.history.replaceState({}, '', '/mano/resources');
     const controller = await mountController({ collection: 'resources' });
 
-    expect(search.searchWithFacets.mock.calls.at(-1)?.[2].sortBy).toBe('_eval(tenant_id:7):desc,name_lt:asc');
+    expect(search.searchWithFacets.mock.calls.at(-1)?.[2].sortBy).toBe('_eval(tenant_id:=[7]):desc,name_lt:asc');
     expect(controller.sortOptions.value.some(option => option.value === controller.sortBy.value)).toBe(true);
     expect(window.location.search).not.toContain('_eval');
   });
@@ -91,7 +91,7 @@ describe('resource collection filters and sorting', () => {
     controller.setSortBy('main_tenant');
     await flushPromises();
 
-    expect(search.searchWithFacets.mock.calls.at(-1)?.[2].sortBy).toBe('_eval(tenant_id:7):desc,name_lt:asc');
+    expect(search.searchWithFacets.mock.calls.at(-1)?.[2].sortBy).toBe('_eval(tenant_id:=[7]):desc,name_lt:asc');
     expect(new URLSearchParams(window.location.search).has('sort')).toBe(false);
   });
 

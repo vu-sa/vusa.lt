@@ -493,7 +493,7 @@ export function resolveSortValue(collection: string, sortBy: string, locale = 'l
   const resolved = sortBy === RELEVANCE_SORT_VALUE
     ? `_text_match:desc,${defaultSort}`
     : collection === 'resources' && sortBy === 'main_tenant'
-      ? `${mainTenantId ? `_eval(tenant_id:${mainTenantId}):desc,` : ''}name_lt:asc`
+      ? `${mainTenantId ? `_eval(tenant_id:=[${mainTenantId}]):desc,` : ''}name_lt:asc`
       : sortBy;
 
   return locale === 'en' && (collection === 'duties' || collection === 'resources')

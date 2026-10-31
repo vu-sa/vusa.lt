@@ -30,7 +30,7 @@ use Illuminate\Support\Facades\DB;
  * @property string|null $scope_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Model $grantee
+ * @property-read \Illuminate\Database\Eloquent\Model|null $grantee
  * @property-read Role $role
  * @property-read \Illuminate\Database\Eloquent\Model|null $scope
  *
@@ -85,7 +85,7 @@ class ResponsibilityGrant extends Model
                     default => null,
                 };
                 $scopeType = $this->coversOwnTenant() ? self::OWN_TENANT : $this->scope_type;
-                $label .= ' · '.__('responsibilities.scopes.'.$scopeType, [], $locale).($scopeName ? ' · '.$scopeName : '');
+                $label .= ' · '.__("responsibilities.scopes.{$scopeType}", [], $locale).($scopeName ? ' · '.$scopeName : '');
             }
 
             $labels[$locale] = (string) $label;

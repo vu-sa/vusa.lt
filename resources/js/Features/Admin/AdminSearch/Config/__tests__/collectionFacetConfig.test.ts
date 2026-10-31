@@ -8,6 +8,7 @@ import {
   resolveSortValue,
 } from '../collectionFacetConfig';
 
+import { buildProfileParams } from '@/Shared/Search/profiles';
 import { institutionActivityStatuses } from '@/Constants/statuses';
 
 describe('getCollectionSortOptions', () => {
@@ -70,11 +71,24 @@ describe('resolveSortValue', () => {
     const defaultSort = getCollectionFacetConfig('resources')!.defaultSortBy;
 
     expect(getCollectionSortOptions('resources').some(option => option.value === defaultSort)).toBe(true);
-    expect(resolveSortValue('resources', defaultSort, 'lt', 7)).toBe('_eval(tenant_id:7):desc,name_lt:asc');
-    expect(resolveSortValue('resources', defaultSort, 'en', 7)).toBe('_eval(tenant_id:7):desc,name_en:asc');
+    expect(resolveSortValue('resources', defaultSort, 'lt', 7)).toBe('_eval(tenant_id:=[7]):desc,name_lt:asc');
+    expect(resolveSortValue('resources', defaultSort, 'en', 7)).toBe('_eval(tenant_id:=[7]):desc,name_en:asc');
     expect(resolveSortValue('resources', defaultSort, 'lt', null)).toBe('name_lt:asc');
     expect(resolveSortValue('resources', 'created_at:desc', 'lt', 7)).toBe('created_at:desc');
     expect(resolveSortValue('resources', RELEVANCE_SORT_VALUE, 'en', 7)).toBe('_text_match:desc,name_en:asc');
+  });
+
+  it('builds a main-tenant sort the search profile accepts', () => {
+    const profile = {
+      version: 1,
+      parameters: { query_by_weights: '1', infix: 'off', num_typos: '1' },
+      defaultSort: 'name_lt:asc',
+      facetFields: ['tenant_id'],
+      sortFields: ['name_lt'],
+    };
+    const sortBy = resolveSortValue('resources', 'main_tenant', 'lt', 7);
+
+    expect(buildProfileParams(profile, { q: '*', query_by: 'name_lt', sort_by: sortBy }).sort_by).toBe(sortBy);
   });
 
   it('expands the relevance sentinel into a text_match sort with a date tiebreak', () => {
