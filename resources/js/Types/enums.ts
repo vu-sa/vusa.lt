@@ -16,6 +16,7 @@ export enum ActivityRequestSkipReason {
     UpcomingMeeting = 'upcoming_meeting',
     RecentActivity = 'recent_activity',
     NoRecordedMeetings = 'no_recorded_meetings',
+    NoRecordedMeetingsAskActivity = 'no_recorded_meetings_ask_activity',
     RecordsComplete = 'records_complete',
     CheckInActive = 'check_in_active',
     AlreadyAsked = 'already_asked',

@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Institucijos
 area: institutions
 models: [Institution, InstitutionCheckIn, InstitutionSecretary]
-last_reviewed: 2026-10-28
+last_reviewed: 2026-10-31
 tests:
   - tests/Feature/Search/AdminSearchTranslationsTest.php
   - resources/js/Pages/Admin/People/__tests__/IndexInstitution.component.test.ts
@@ -313,8 +313,9 @@ laiką, apie kurį jie jau pranešė.
 
 <ChangelogNote date="2026-10-19" title="Galima paklausti pasibaigus pranešimui">
 
-Koordinatorius gali siųsti **Ar vyko posėdis?**, kai institucija vėluoja arba jos būklė yra
-**Pranešimo laikotarpis baigėsi**. Antruoju atveju gavėjų pasirinkime ir siuntimo peržiūroje rodoma
+Koordinatorius gali siųsti **Ar vyko posėdis?**, kai institucija vėluoja, jos būklė yra
+**Pranešimo laikotarpis baigėsi** arba joje dar neužregistruota nei posėdžių, nei pranešimų apie
+veiklą. Kai pranešimo laikotarpis baigėsi, gavėjų pasirinkime ir siuntimo peržiūroje rodoma
 pranešimo pabaigos data. Automatinis klausimas siunčiamas tik pradėjus vėluoti.
 
 Institucija turi būti aktyvi. Būsimas posėdis, šiuo metu galiojantis pranešimas „Posėdžio nebuvo“
@@ -322,10 +323,12 @@ arba dar nepraėjęs paskutinio posėdžio terminas klausimą sustabdo. Vien art
 neužtenka. Akademinių atostogų dienos neskaičiuojamos. Priežastis, kodėl klausti dar negalima,
 rodoma renkantis gavėjus. **Papildyk posėdžių įrašus** sąlygos yra atskiros ir dėl šios būklės nesikeičia.
 
-Jei institucijoje dar neužregistruota nei posėdžių, nei pranešimų apie veiklą, laikas skaičiuojamas
-nuo kiekvieno gavėjo pareigų pradžios dabartinėje kadencijoje. Sekretoriui naudojama kadencijos pradžia.
-Pavyzdžiui, jei laikotarpis prasideda **rugsėjo 1 d.**, periodiškumas yra **30 dienų** ir nėra
-atostogų, klausti galima nuo **spalio 2 d.** Vėliau pareigas pradėjęs atstovas laukia savo termino.
+Jei institucijoje dar neužregistruota nei posėdžių, nei pranešimų apie veiklą, automatinio klausimo
+laikas skaičiuojamas nuo dienos, kai gavėjas pradėjo eiti pareigas, net jei tai buvo ankstesnėje
+kadencijoje. Sekretoriui naudojama kadencijos pradžia. Pavyzdžiui, jei atstovas pareigas pradėjo
+**rugsėjo 1 d.**, periodiškumas yra **30 dienų** ir nėra atostogų, automatinis klausimas siunčiamas
+nuo **spalio 2 d.** Vėliau pareigas pradėjęs atstovas laukia savo termino. Koordinatorius tokios
+institucijos gali paklausti ir anksčiau. Pats klausimas apima tik dabartinę kadenciją.
 Apžvalgoje tokia institucija ir toliau žymima **Nėra duomenų**, kol užregistruojama veikla.
 
 </ChangelogNote>
@@ -333,8 +336,9 @@ Apžvalgoje tokia institucija ir toliau žymima **Nėra duomenų**, kol užregis
 Pranešimas, kuris prasidės tik ateityje, dabartinio neapimto laikotarpio neuždengia.
 Sąlygos tikrinamos ir patvirtinant siuntimą, ir prieš pristatant laukiančius laiškus ar santraukas.
 **Papildyk posėdžių įrašus** klausia apie jau vykusius posėdžius, kurių darbotvarkės tuščios arba
-neužpildyti sprendimai. Jei laikotarpiu posėdžių nėra, pasirenkama **Ar vyko posėdis?**; jei visos
-darbotvarkės užpildytos, papildymo užklausos nesiunčiamos. Papildyti įrašus galima prašyti ir po
+neužpildyti sprendimai. Jei laikotarpiu įrašytų posėdžių nėra, papildyti nėra ko: priežastyje
+**Ar vyko posėdis?** siūloma tik tada, kai šį klausimą galima išsiųsti. Jei visos darbotvarkės
+užpildytos, papildymo užklausos nesiunčiamos. Papildyti įrašus galima prašyti ir po
 neseniai vykusio posėdžio ar kol galioja pranešimas „Posėdžio nebuvo“.
 Koordinatorius, kuris pats yra institucijos atstovas, gali įtraukti ir save.
 

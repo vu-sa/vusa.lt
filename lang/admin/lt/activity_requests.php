@@ -162,7 +162,8 @@ return [
         'upcoming_meeting' => 'Jau suplanuotas būsimas posėdis.',
         'already_asked' => 'Jau paklausta – laukiama atsakymo.',
         'no_period' => 'Nėra galiojančio laikotarpio.',
-        'no_recorded_meetings' => 'Šiuo laikotarpiu posėdžių nėra. Pasirink „Ar vyko posėdis?“.',
+        'no_recorded_meetings' => 'Šiuo laikotarpiu įrašytų posėdžių nėra, tad nėra ko papildyti.',
+        'no_recorded_meetings_ask_activity' => 'Šiuo laikotarpiu įrašytų posėdžių nėra, tad nėra ko papildyti. Gali paklausti „Ar vyko posėdis?“.',
         'records_complete' => 'Šio laikotarpio posėdžių įrašai jau užpildyti.',
     ],
 ];

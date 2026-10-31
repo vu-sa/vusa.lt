@@ -18,6 +18,7 @@ class ResolveActivityRequestEligibility
     public function __construct(
         private readonly InstitutionActivityStatusService $statuses,
         private readonly AcademicCalendarService $calendar,
+        private readonly ResolveActivityRequestRecipients $recipients,
     ) {}
 
     public function status(Institution $institution, ?CarbonInterface $tenureStart = null, ?CarbonInterface $at = null): InstitutionActivityStatusData
@@ -44,6 +45,11 @@ class ResolveActivityRequestEligibility
             return ActivityRequestSkipReason::InactiveInstitution;
         }
 
+        // With nothing on record there is no deadline to respect: only the automatic question waits out a term.
+        if ($manual && $this->statuses->resolve($institution, $at)->status === InstitutionActivityStatus::NoActivity) {
+            return null;
+        }
+
         return match ($this->status($institution, $tenureStart, $at)->status) {
             InstitutionActivityStatus::Overdue => null,
             InstitutionActivityStatus::RecentCheckIn => $manual ? null : ActivityRequestSkipReason::RecentActivity,
@@ -63,8 +69,17 @@ class ResolveActivityRequestEligibility
             return $request->incompleteMeetings()->isNotEmpty();
         }
 
-        return $this->skipReason($institution, $request->period_start, manual: $request->requested_by_id !== null) === null
+        return $this->skipReason($institution, $this->heldSince($request), manual: $request->requested_by_id !== null) === null
             && ! $institution->meetings->contains(fn ($meeting) => $meeting->start_time->toDateString() >= $request->period_start->toDateString()
                 && $meeting->start_time->toDateString() <= $request->periodEnd()->toDateString());
+    }
+
+    /** Must match what the send used: period_start is clamped to the term and would drop the question. */
+    private function heldSince(InstitutionActivityRequest $request): CarbonInterface
+    {
+        $roles = $this->recipients->forInstitutions(collect([$request->institution_id]))[$request->institution_id];
+
+        return ($roles['secretaries'][$request->recipient_id] ?? $roles['representatives'][$request->recipient_id] ?? null)['held_since']
+            ?? $request->period_start;
     }
 }

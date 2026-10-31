@@ -70,12 +70,12 @@ class SendInstitutionActivityRequests
             $excluded = [];
             $firstSkip = null;
 
-            foreach ($periods as $recipientId => ['user' => $recipient, 'start' => $start]) {
+            foreach ($periods as $recipientId => ['user' => $recipient, 'start' => $start, 'held_since' => $heldSince]) {
                 $knownMeetings = $this->meetingsInPeriod($institution, $start, $end);
                 $incompleteMeetings = $campaign === InstitutionActivityCampaign::MissingMeetings
                     ? $this->completion->incompleteInPeriod($knownMeetings, $start, $end)
                     : collect();
-                $skip = $this->skipReasonFor($institution, (string) $recipientId, $campaign, $start, $end, $knownMeetings, $incompleteMeetings, $existing->get($institution->id, collect()), $requestedBy !== null);
+                $skip = $this->skipReasonFor($institution, (string) $recipientId, $campaign, $start, $heldSince, $end, $knownMeetings, $incompleteMeetings, $existing->get($institution->id, collect()), $requestedBy !== null);
                 $row = $this->recipientRow($recipient, $start, $end, $skip, $incompleteMeetings);
 
                 if ($skip !== null) {
@@ -155,9 +155,9 @@ class SendInstitutionActivityRequests
     }
 
     /**
-     * @param  array{secretaries: array<string, array{user: User, start: CarbonImmutable}>, representatives: array<string, array{user: User, start: CarbonImmutable}>}  $candidates
+     * @param  array{secretaries: array<string, array{user: User, start: CarbonImmutable, held_since: CarbonImmutable}>, representatives: array<string, array{user: User, start: CarbonImmutable, held_since: CarbonImmutable}>}  $candidates
      * @param  list<string>|null  $pairs
-     * @return array<string, array{user: User, start: CarbonImmutable}>
+     * @return array<string, array{user: User, start: CarbonImmutable, held_since: CarbonImmutable}>
      */
     private function periodsFor(Institution $institution, array $candidates, ?array $pairs): array
     {
@@ -203,6 +203,7 @@ class SendInstitutionActivityRequests
         string $recipientId,
         InstitutionActivityCampaign $campaign,
         CarbonImmutable $start,
+        CarbonImmutable $heldSince,
         CarbonImmutable $end,
         EloquentCollection $knownMeetings,
         Collection $incompleteMeetings,
@@ -211,12 +212,14 @@ class SendInstitutionActivityRequests
     ): ?ActivityRequestSkipReason {
         $missingMeetings = $campaign === InstitutionActivityCampaign::MissingMeetings;
 
-        $eligibilitySkip = $missingMeetings ? null : $this->eligibility->skipReason($institution, $start, manual: $manual);
+        $eligibilitySkip = $missingMeetings ? null : $this->eligibility->skipReason($institution, $heldSince, manual: $manual);
 
         return match (true) {
             $eligibilitySkip !== null => $eligibilitySkip,
             $start->gt($end) => ActivityRequestSkipReason::NoPeriod,
-            $missingMeetings && $knownMeetings->isEmpty() => ActivityRequestSkipReason::NoRecordedMeetings,
+            $missingMeetings && $knownMeetings->isEmpty() => $this->canAskAboutActivity($institution, $recipientId, $start, $heldSince, $end, $existing, $manual)
+                ? ActivityRequestSkipReason::NoRecordedMeetingsAskActivity
+                : ActivityRequestSkipReason::NoRecordedMeetings,
             $missingMeetings && $incompleteMeetings->isEmpty() => ActivityRequestSkipReason::RecordsComplete,
             // Automatic questions wait a month after any question about the institution, even an expired one or
             // "not mine": coordinators may take longer than a day to update the representatives.
@@ -224,6 +227,19 @@ class SendInstitutionActivityRequests
             $existing->contains(fn (InstitutionActivityRequest $request) => $request->alreadyAsks($recipientId, $campaign, $start, $end)) => ActivityRequestSkipReason::AlreadyAsked,
             default => null,
         };
+    }
+
+    /**
+     * Whether the records campaign may point to "Ar vyko posėdis?" without the coordinator being refused there.
+     *
+     * @param  Collection<int, InstitutionActivityRequest>  $existing
+     */
+    private function canAskAboutActivity(Institution $institution, string $recipientId, CarbonImmutable $start, CarbonImmutable $heldSince, CarbonImmutable $end, Collection $existing, bool $manual): bool
+    {
+        $activityStart = $this->sinceLastActivity($institution, $start);
+
+        return $this->eligibility->skipReason($institution, $heldSince, manual: $manual) === null
+            && ! $existing->contains(fn (InstitutionActivityRequest $request) => $request->alreadyAsks($recipientId, InstitutionActivityCampaign::ActivityConfirmation, $activityStart, $end));
     }
 
     /**

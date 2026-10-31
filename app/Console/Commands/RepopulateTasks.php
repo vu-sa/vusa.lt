@@ -155,7 +155,7 @@ class RepopulateTasks extends Command
         $bar = $this->output->createProgressBar($institutions->count());
         foreach ($bar->iterate($institutions) as $institution) {
             $roles = $candidates[$institution->id];
-            $tenureStart = collect($roles['secretaries'] ?: $roles['representatives'])->min('start');
+            $tenureStart = collect($roles['secretaries'] ?: $roles['representatives'])->min('held_since');
             $activityStatus = $this->activityEligibility->status($institution, $tenureStart);
             $existingTask = $this->periodicityGapHandler->findExistingTask($institution);
 

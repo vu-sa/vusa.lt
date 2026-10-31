@@ -14,13 +14,15 @@ use Illuminate\Support\Collection;
 
 /**
  * Who can be asked about an institution's activity, and from which date: the current term's
- * secretaries and the institution's current student representatives.
+ * secretaries and the institution's current student representatives. `start` opens the period asked
+ * about, so it stays within the term; `held_since` runs the no-history clock, so a new term does not
+ * restart it for someone continuing in office.
  */
 class ResolveActivityRequestRecipients
 {
     /**
      * @param  Collection<int, string>  $ids
-     * @return array<string, array{secretaries: array<string, array{user: User, start: CarbonImmutable}>, representatives: array<string, array{user: User, start: CarbonImmutable}>}>
+     * @return array<string, array{secretaries: array<string, array{user: User, start: CarbonImmutable, held_since: CarbonImmutable}>, representatives: array<string, array{user: User, start: CarbonImmutable, held_since: CarbonImmutable}>}>
      */
     public function forInstitutions(Collection $ids): array
     {
@@ -38,7 +40,8 @@ class ResolveActivityRequestRecipients
 
             foreach ($secretaries->get($id, collect()) as $row) {
                 if ($cadence !== null && $row->cadence_id === $cadence->id && $row->user !== null) {
-                    $candidates[$id]['secretaries'][$row->user_id] = ['user' => $row->user, 'start' => CarbonImmutable::instance($cadence->start_date)];
+                    $start = CarbonImmutable::instance($cadence->start_date);
+                    $candidates[$id]['secretaries'][$row->user_id] = ['user' => $row->user, 'start' => $start, 'held_since' => $start];
                 }
             }
 
@@ -46,15 +49,15 @@ class ResolveActivityRequestRecipients
                 if ($row->user === null) {
                     continue;
                 }
-                $start = CarbonImmutable::instance($row->start_date);
-                if ($cadence !== null) {
-                    $start = $start->max($cadence->start_date);
-                }
+                $heldSince = CarbonImmutable::instance($row->start_date);
+                $start = $cadence === null ? $heldSince : $heldSince->max($cadence->start_date);
                 // Someone holding several representative duties is asked from the earliest one.
                 $current = $candidates[$id]['representatives'][$row->dutiable_id] ?? null;
-                if ($current === null || $start->lt($current['start'])) {
-                    $candidates[$id]['representatives'][$row->dutiable_id] = ['user' => $row->user, 'start' => $start];
-                }
+                $candidates[$id]['representatives'][$row->dutiable_id] = [
+                    'user' => $row->user,
+                    'start' => $current === null ? $start : $start->min($current['start']),
+                    'held_since' => $current === null ? $heldSince : $heldSince->min($current['held_since']),
+                ];
             }
         }
 

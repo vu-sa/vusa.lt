@@ -7,6 +7,7 @@ use App\Enums\InstitutionActivityCampaign;
 use App\Enums\InstitutionActivityStatus;
 use App\Enums\NotificationType;
 use App\Enums\ResponsibilityPurpose;
+use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\InstitutionActivityRequest;
@@ -579,6 +580,55 @@ describe('open tasks after the people or the institution change', function (): v
         $this->artisan('tasks:repopulate institution')->assertSuccessful();
 
         expect(NotificationDigestQueue::query()->where('user_id', $rep->id)
+            ->where('notification_class', InstitutionActivityNotification::class)->exists())->toBeTrue();
+    });
+});
+
+describe('a no-history institution when a new term starts', function (): void {
+    beforeEach(function (): void {
+        $this->travelTo('2026-09-10 10:00:00');
+        $this->institution = institutionWithRepresentative();
+        $this->duty = $this->institution->duties->sole();
+        $this->rep = $this->duty->users->sole();
+        Cadence::factory()->create(['institution_id' => $this->institution->id, 'start_date' => '2026-09-01', 'end_date' => '2027-06-30']);
+    });
+
+    test('a continuing representative is asked about the term, and the question reaches them', function (): void {
+        $this->rep->duties()->updateExistingPivot($this->duty->id, ['start_date' => '2026-03-01']);
+
+        $this->artisan('tasks:repopulate institution')->assertSuccessful();
+
+        expect(periodicityGapTaskFor($this->institution))->not->toBeNull()
+            ->and(InstitutionActivityRequest::query()->sole()->period_start->toDateString())->toBe('2026-09-01');
+        Notification::assertSentToTimes($this->rep, InstitutionActivityNotification::class, 1);
+    });
+
+    test('a representative who is new this term gets neither a task nor a question', function (): void {
+        $this->rep->duties()->updateExistingPivot($this->duty->id, ['start_date' => '2026-09-01']);
+
+        $this->artisan('tasks:repopulate institution')->assertSuccessful();
+
+        expect(periodicityGapTaskFor($this->institution))->toBeNull();
+        Notification::assertNothingSent();
+    });
+
+    test('an open task stays open for a continuing representative', function (): void {
+        $this->rep->duties()->updateExistingPivot($this->duty->id, ['start_date' => '2026-03-01']);
+        $task = app(PeriodicityGapTaskHandler::class)->findOrCreate($this->institution, collect([$this->rep]), today()->addWeek());
+
+        $this->artisan('tasks:repopulate institution')->assertSuccessful();
+
+        expect($task->fresh()->completed_at)->toBeNull();
+    });
+
+    test('a continuing representative on digest emails still has the question queued', function (): void {
+        Notification::swap(new ChannelManager(app()));
+        $this->rep->duties()->updateExistingPivot($this->duty->id, ['start_date' => '2026-03-01']);
+        $this->rep->update(['notification_preferences' => ['types' => [NotificationType::InstitutionActivity->value => ['email' => 'digest']]]]);
+
+        $this->artisan('tasks:repopulate institution')->assertSuccessful();
+
+        expect(NotificationDigestQueue::query()->where('user_id', $this->rep->id)
             ->where('notification_class', InstitutionActivityNotification::class)->exists())->toBeTrue();
     });
 });
