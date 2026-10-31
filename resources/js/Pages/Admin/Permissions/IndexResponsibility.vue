@@ -4,7 +4,7 @@
     :source
     collection="roles"
     entity-type="role"
-    :eyebrow="`${$t('shell.workspaces.sistema.title')} · ${$t('shell.sections.roles')}`"
+    :eyebrow="$t('shell.workspaces.sistema.title')"
     :title="$t('shell.sections.roles')"
     :lead="$t('responsibilities.index.lead')"
     default-view="table"

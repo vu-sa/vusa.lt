@@ -247,7 +247,7 @@ const page = usePage();
 const canCreate = computed(() => Boolean(page.props.auth?.can?.create?.resource));
 const canReserve = computed(() => Boolean(page.props.auth?.can?.create?.reservation));
 
-const eyebrow = computed(() => `${$t('shell.workspaces.rezervacijos.title')} · ${$t('shell.sections.istekliai')}`);
+const eyebrow = computed(() => $t('shell.workspaces.rezervacijos.title'));
 
 const source = useTypesenseCollectionSource<ResourceSearchResult>({
   collection: 'resources',

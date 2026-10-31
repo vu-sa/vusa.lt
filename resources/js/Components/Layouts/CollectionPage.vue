@@ -2,7 +2,7 @@
   <div ref="root" class="min-w-0 max-w-full flex flex-col gap-3 lg:gap-4" data-slot="collection-page">
     <Head :title />
 
-    <CollectionTitleBand :eyebrow :title :lead :entity-type>
+    <CollectionTitleBand :eyebrow :title :lead>
       <template v-if="$slots.lead" #lead>
         <slot name="lead" />
       </template>
@@ -88,6 +88,7 @@
       :total="source.total.value"
       :table-fixed
       :actions-width
+      :table-min-width
       @clear="clearAll"
       @retry="source.refresh"
       @load-more="source.loadMore"
@@ -173,6 +174,7 @@ const props = withDefaults(defineProps<{
   tableFixed?: boolean;
   /** Actions column width in a fixed-layout table (default `w-48`). */
   actionsWidth?: string;
+  tableMinWidth?: string;
 }>(), {
   lead: undefined,
   quickFilters: undefined,

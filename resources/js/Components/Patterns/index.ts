@@ -16,6 +16,8 @@ export { default as NavigationTiles } from './NavigationTiles.vue';
 export type { NavigationTileItem } from './NavigationTiles.vue';
 export { default as OverviewSection } from './OverviewSection.vue';
 export { default as OverviewStatusList } from './OverviewStatusList.vue';
+export { default as ContextFact } from './ContextFact.vue';
+export { default as ContextFacts } from './ContextFacts.vue';
 export { default as PreviewChipList } from './PreviewChipList.vue';
 export type { PreviewChipItem } from './PreviewChipList.vue';
 export { default as PreviewFact } from './PreviewFact.vue';

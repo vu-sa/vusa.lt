@@ -201,7 +201,7 @@ const props = defineProps<{
 const { activeWorkspace } = useAdminNavigation();
 
 // Listed in both ViSAK and Svetainė; the eyebrow names whichever the user came through.
-const eyebrow = computed(() => `${$t(activeWorkspace.value?.label ?? 'shell.workspaces.svetaine.title')} · ${$t('shell.sections.dokumentai')}`);
+const eyebrow = computed(() => $t(activeWorkspace.value?.label ?? 'shell.workspaces.svetaine.title'));
 
 const lead = computed(() => {
   if (!props.discovery) {

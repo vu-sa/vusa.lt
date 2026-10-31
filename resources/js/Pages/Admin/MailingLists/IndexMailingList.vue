@@ -4,7 +4,7 @@
     :source
     collection="mailingLists"
     entity-type="mailing_list"
-    :eyebrow="`${$t('shell.workspaces.organizacija.title')} · ${$t('shell.sections.konferencijos')}`"
+    :eyebrow="$t('shell.workspaces.organizacija.title')"
     :title="$t('shell.sections.konferencijos')"
     :lead="mailmanConfigured ? $t('mailing_lists.lead') : $t('mailing_lists.not_configured')"
     default-view="rows"

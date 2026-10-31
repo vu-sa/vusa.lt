@@ -55,7 +55,7 @@ export const statusRoleClasses: Record<StatusRole, string> = {
 
 export type ReservationResourceStatus = 'created' | 'reserved' | 'lent' | 'returned' | 'rejected' | 'cancelled';
 export type MeetingCompletionStatus = 'complete' | 'incomplete' | 'no_items';
-export type TaskStatus = 'completed' | 'open' | 'due_soon' | 'overdue';
+export type TaskStatus = 'completed' | 'cancelled' | 'open' | 'due_soon' | 'overdue';
 export type ContentStatus = 'published' | 'scheduled' | 'draft';
 export type ProblemStatus = 'open' | 'in_progress' | 'resolved';
 export type MissingVoteStatus = 'not_recorded';
@@ -135,6 +135,7 @@ export const statusRoleParts: Record<StatusRole, { text: string; surface: string
 
 export const taskStatuses: Record<TaskStatus, StatusPresentation> = {
   completed: status('Atlikta', 'success', CircleCheck),
+  cancelled: status('tasks.cancelled', 'neutral', Ban),
   open: status('Atvira', 'info', Circle),
   due_soon: status('Artėja terminas', 'attention', Clock3),
   overdue: status('Vėluoja', 'danger', TriangleAlert),

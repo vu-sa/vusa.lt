@@ -4,7 +4,7 @@
     :source
     collection="eventTypes"
     entity-type="eventType"
-    :eyebrow="isDeleted ? $t('Ištrinti renginių tipai') : ($t('shell.workspaces.kalendorius.title') + ' · ' + $t('Renginių tipai'))"
+    :eyebrow="isDeleted ? $t('Ištrinti renginių tipai') : ($t('shell.workspaces.kalendorius.title'))"
     :title="isDeleted ? $t('Ištrinti renginių tipai') : $t('Renginių tipai')"
     :lead="isDeleted ? $t('Peržiūrėk ištrintus renginių tipus arba atkurk juos.') : $t('Renginių tipai padeda grupuoti renginius pagal jų pobūdį.')"
     default-view="table"

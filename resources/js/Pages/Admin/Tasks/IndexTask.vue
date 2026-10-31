@@ -13,7 +13,8 @@
     :columns
     @row-action="(item, key) => runAction(item, key as TaskActionKey)"
     table-fixed
-    actions-width="w-60"
+    actions-width="w-56"
+    table-min-width="min-w-[64rem]"
     :quick-filters
     :search-placeholder="$t('tasks.collection.search')"
     @quick-filter="toggleQuickFilter"
@@ -75,34 +76,7 @@
     </template>
 
     <template #preview="{ item }">
-      <TaskPreview :key="item.id" :task="item">
-        <template #actions>
-          <Button
-            v-for="action in taskPreviewActions(item)"
-            :key="action.key"
-            as-child
-            :variant="action.primary ? 'brand' : 'outline'"
-            voice="sentence"
-            size="sm"
-            :disabled="action.disabled || action.loading"
-            :class="[action.destructive && 'text-destructive', (action.disabled || action.loading) && 'pointer-events-none opacity-50']"
-          >
-            <component
-              :is="action.href ? Link : 'button'"
-              :href="action.href"
-              :type="action.href ? undefined : 'button'"
-              :tabindex="action.href && (action.disabled || action.loading) ? -1 : undefined"
-              :aria-busy="action.loading || undefined"
-              :aria-disabled="action.disabled || action.loading || undefined"
-              :data-action="action.key"
-              @click="event => selectPreviewAction(item, action, event)"
-            >
-              <component :is="action.icon" v-if="action.icon" :class="['size-4', action.loading && 'animate-spin']" aria-hidden="true" />
-              {{ action.label }}
-            </component>
-          </Button>
-        </template>
-      </TaskPreview>
+      <TaskPreview :key="item.id" :task="item" :actions="taskPreviewActions(item)" @select="key => runAction(item, key)" />
     </template>
 
     <template #empty>
@@ -129,8 +103,10 @@
     v-if="detailDialogs.selectedDetailTask.value"
     :open="detailDialogs.showTaskDetail.value"
     :task="detailDialogs.selectedDetailTask.value"
+    :actions="taskPreviewActions(detailDialogs.selectedDetailTask.value)"
     @close="detailDialogs.closeTaskDetail"
     @report="detailDialogs.reportFromDetail"
+    @action="runDetailAction"
   />
 </template>
 
@@ -191,8 +167,8 @@ const dateLocale = useDateLocale();
 const detailDialogs = useTaskActionDialogs();
 
 const eyebrow = computed(() => props.scope === 'tenant'
-  ? `${$t('shell.workspaces.atstovavimas.title')} · ${$t('tasks.collection.title')}`
-  : `${$t('shell.workspaces.pradzia.title')} · ${$t('tasks.collection.title')}`);
+  ? $t('shell.workspaces.atstovavimas.title')
+  : $t('shell.workspaces.pradzia.title'));
 
 const taskKey = (task: TaskDisplayData) => String(task.id);
 
@@ -280,7 +256,7 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'status', label: '', class: 'w-12', pinned: true },
   { key: 'name', label: $t('tasks.collection.column_task'), pinned: true },
   { key: 'subject', label: $t('tasks.collection.column_subject'), class: 'w-44' },
-  { key: 'users', label: $t('tasks.collection.column_assignees'), class: 'w-28' },
+  { key: 'users', label: $t('tasks.collection.column_assignees'), class: 'w-36' },
   { key: 'due_date', label: $t('tasks.collection.column_due'), class: 'w-32' },
 ]);
 
@@ -324,13 +300,11 @@ const subjectLabel = (task: TaskDisplayData): string => (isOrphanedTask(task)
   ? $t('tasks.orphaned')
   : task.taskable?.name ?? task.taskable_type);
 
-function selectPreviewAction(task: TaskDisplayData, action: TaskAction, event: MouseEvent): void {
-  if (action.disabled || action.loading) {
-    event.preventDefault();
-    return;
-  }
-  if (!action.href) {
-    runAction(task, action.key);
+function runDetailAction(key: TaskActionKey): void {
+  const task = detailDialogs.selectedDetailTask.value;
+  detailDialogs.closeTaskDetail();
+  if (task) {
+    runAction(task, key);
   }
 }
 

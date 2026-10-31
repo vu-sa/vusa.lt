@@ -4,7 +4,7 @@
     :source
     collection="users"
     entity-type="user"
-    :eyebrow="`${$t('shell.workspaces.organizacija.title')} · ${$t('shell.sections.nariai')}`"
+    :eyebrow="$t('shell.workspaces.organizacija.title')"
     :title="$t('Nariai')"
     :lead="isTrash
       ? $t('Ištrinti nariai. Atkurk paskyrą, jei jos dar reikia.')

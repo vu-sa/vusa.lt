@@ -1,6 +1,6 @@
 <template>
   <OverviewPage
-    :eyebrow="`${$t('shell.workspaces.sistema.title')} · ${$t('shell.sections.nustatymai')}`"
+    :eyebrow="$t('shell.workspaces.sistema.title')"
     :title="$t('settings.pages.cadences.title')"
     :lead="$t('settings.pages.cadences.description')"
   >

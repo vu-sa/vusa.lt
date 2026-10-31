@@ -1,5 +1,9 @@
 <template>
-  <OverviewPage :title="$t('activity_requests.personal.title')">
+  <OverviewPage
+    :eyebrow="$t('shell.workspaces.pradzia.title')"
+    :title="$t('activity_requests.personal.title')"
+    :lead="$t('activity_requests.personal.lead')"
+  >
     <UserActivityRequestHistory :history="activityRequests" />
   </OverviewPage>
 </template>

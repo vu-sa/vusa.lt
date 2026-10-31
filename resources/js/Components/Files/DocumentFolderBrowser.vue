@@ -2,7 +2,7 @@
   <div class="flex flex-col gap-3 lg:gap-4" data-slot="document-folder-browser">
     <Head :title />
 
-    <CollectionTitleBand :eyebrow :title :lead entity-type="document">
+    <CollectionTitleBand :eyebrow :title :lead>
       <template v-if="$slots.actions" #actions>
         <slot name="actions" />
       </template>

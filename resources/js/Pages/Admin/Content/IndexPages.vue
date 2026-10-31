@@ -203,7 +203,7 @@ const canCreate = computed(() => Boolean(page.props.auth?.can?.create?.page));
 const canForceDelete = computed(() => Boolean(page.props.auth?.can?.forceDelete?.page));
 const tenantOptions = computed(() => page.props.auth?.user?.tenants ?? []);
 
-const eyebrow = computed(() => `${$t('shell.workspaces.svetaine.title')} · ${$t('shell.sections.puslapiai')}`);
+const eyebrow = computed(() => $t('shell.workspaces.svetaine.title'));
 
 const source = useTrashAwareSource<PageRow>(
   () => useTypesenseCollectionSource<PageRow>({ collection: 'pages', preserveUrlKeys: ['view', 'item'] }),

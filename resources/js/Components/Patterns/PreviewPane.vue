@@ -3,7 +3,9 @@
     <header class="border-b border-border p-5">
       <div class="flex items-start justify-between gap-3">
         <div class="flex min-w-0 flex-wrap items-center gap-2">
-          <EntityTypeMark v-if="entityType" :type="entityType" icon-only />
+          <slot name="mark">
+            <EntityTypeMark v-if="entityType" :type="entityType" icon-only />
+          </slot>
           <p class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
             {{ eyebrow }}
           </p>

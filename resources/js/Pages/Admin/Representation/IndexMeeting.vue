@@ -130,7 +130,7 @@ const actionWindow = useActionWindow();
 const isTrash = isTrashView();
 const canCreate = computed(() => Boolean(page.props.auth?.can?.create?.meeting));
 
-const eyebrow = computed(() => `${$t('shell.workspaces.atstovavimas.title')} · ${$t('shell.sections.posedziai')}`);
+const eyebrow = computed(() => $t('shell.workspaces.atstovavimas.title'));
 
 // Built directly rather than through useTrashAwareSource: the quick filters need the scoped
 // key's own institutions, which only the live source knows.

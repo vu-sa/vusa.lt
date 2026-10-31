@@ -57,12 +57,11 @@ function factory(canManage = true) {
 beforeEach(() => vi.clearAllMocks());
 
 describe('MailQueue', () => {
-  it('renders the collection title and recipient identity icon', () => {
+  it('renders the collection title', () => {
     const wrapper = factory();
     const titleBand = wrapper.get('[data-slot="collection-title-band"]');
 
     expect(titleBand.get('h1').text()).toBe('Laiškų eilė');
-    expect(titleBand.find('[aria-hidden="true"]').exists()).toBe(true);
   });
 
   it('requires confirmation before discarding one notification', async () => {

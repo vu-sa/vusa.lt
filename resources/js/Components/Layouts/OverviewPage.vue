@@ -6,7 +6,7 @@
       <slot name="hero" />
     </div>
 
-    <header v-else class="flex flex-col gap-4 pt-6 sm:pt-10 sm:flex-row sm:items-end sm:justify-between" data-slot="overview-title-band">
+    <header v-else class="flex flex-col gap-4 pt-3 md:pt-5 lg:pt-8 sm:flex-row sm:items-end sm:justify-between" data-slot="overview-title-band">
       <div class="min-w-0">
         <p v-if="eyebrow" class="text-xs font-bold uppercase tracking-[0.2em] text-brand">
           {{ eyebrow }}

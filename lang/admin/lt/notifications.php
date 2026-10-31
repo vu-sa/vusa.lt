@@ -157,6 +157,7 @@ return [
     // Actions
     'action_view_comment' => 'Peržiūrėti komentarą',
     'action_view_resource' => 'Peržiūrėti išteklių',
+    'action_view_details' => 'Peržiūrėti',
     'action_view_tasks' => 'Peržiūrėti užduotis',
     'action_view_registration' => 'Peržiūrėti registraciją',
     'action_view_reservation' => 'Peržiūrėti rezervaciją',

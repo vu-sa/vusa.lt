@@ -4,7 +4,7 @@
     :source
     collection="study-sets"
     entity-type="studySet"
-    :eyebrow="`${$t('shell.workspaces.svetaine.title')} · ${$t('shell.sections.studiju_rinkiniai')}`"
+    :eyebrow="$t('shell.workspaces.svetaine.title')"
     :title="$t('Studijų komplektai')"
     :lead="isTrash
       ? $t('Ištrinti komplektai. Atkurk tai, ko dar reikia.')

@@ -1,92 +1,51 @@
 <template>
-  <article
-    class="group relative flex items-start gap-3 p-4 transition-colors hover:bg-secondary/40 sm:gap-4"
+  <CollectionRow
+    :actions="actions ?? notificationRowActions(notification)"
+    :spotlight
+    class="p-4"
     :class="notification.read_at ? '' : 'bg-secondary/20'"
     data-slot="notification-row"
+    @navigate="markRead"
+    @select="key => key === 'read' ? emit('markAsRead', notification.id) : emit('delete', notification.id)"
   >
-    <!-- Icon -->
-    <div
-      :class="[
-        'mt-0.5 flex size-9 shrink-0 items-center justify-center border border-border sm:size-10',
-        colors.combined,
-      ]"
-    >
-      <component :is="icon" class="size-4 sm:size-5" />
-    </div>
-
-    <!-- Content -->
-    <div class="min-w-0 flex-1 space-y-1">
-      <!-- Eyebrow: Category Tag & Unread marker dot -->
-      <div class="flex items-center gap-1.5">
-        <span class="text-[10px] font-bold uppercase tracking-wide text-brand">
-          {{ categoryTag }}
-        </span>
-        <span
-          v-if="!notification.read_at"
-          class="size-1.5 shrink-0 bg-brand-fill"
-          aria-hidden="true"
-        />
+    <template #lead>
+      <div :class="['mt-0.5 flex size-9 shrink-0 items-center justify-center border border-border', colors.combined]">
+        <component :is="icon" class="size-4" />
       </div>
+    </template>
 
-      <!-- Title with avatar if present -->
+    <div class="space-y-1">
+      <p class="flex min-h-5 flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
+        <span v-if="!notification.read_at" class="size-1.5 shrink-0 bg-brand-fill" aria-hidden="true" />
+        <span class="text-[11px] font-bold uppercase tracking-wide text-brand">{{ categoryTag }}</span>
+        <time :datetime="notification.created_at">{{ formattedTime }}</time>
+      </p>
+
       <div class="flex items-center gap-2">
         <img
           v-if="notification.data.subject?.image"
           :src="notification.data.subject.image"
           :alt="notification.data.subject.name"
-          class="size-4 shrink-0 object-cover sm:size-5"
+          class="size-5 shrink-0 object-cover"
         >
         <h4
-          class="text-sm leading-snug line-clamp-2 text-pretty"
+          class="line-clamp-2 text-sm leading-snug text-pretty"
           :class="notification.read_at ? 'font-medium text-muted-foreground' : 'font-semibold text-foreground'"
         >
-          <NotificationLink
-            v-if="url"
-            :href="url"
-            class="transition-colors hover:text-brand"
-            @click="markRead"
-          >
+          <NotificationLink v-if="url" :href="url" class="transition-colors hover:text-brand" @click="markRead">
             {{ title }}
           </NotificationLink>
           <span v-else>{{ title }}</span>
         </h4>
       </div>
 
-      <!-- Body message -->
-      <p
-        v-if="message"
-        class="line-clamp-2 text-xs text-muted-foreground sm:text-sm"
-        v-html="message"
-      />
+      <p v-if="message" class="line-clamp-2 text-sm text-muted-foreground" v-html="message" />
 
-      <!-- Context rows: what this is about -->
-      <dl
-        v-if="context.length"
-        data-slot="notification-context"
-        class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 border-t border-border/60 pt-2 text-xs"
-      >
-        <template v-for="row in context" :key="row.label">
-          <dt class="text-muted-foreground">
-            {{ row.label }}
-          </dt>
-          <dd class="min-w-0 truncate font-medium text-foreground">
-            {{ row.value }}
-          </dd>
-        </template>
-      </dl>
-
-      <!-- Timestamp -->
-      <div class="pt-1">
-        <span class="text-xs text-muted-foreground">
-          {{ formattedTime }}
-        </span>
-      </div>
+      <ContextFacts v-if="context.length" class="mt-2" data-slot="notification-context">
+        <ContextFact v-for="row in context" :key="row.label" :label="row.label" :value="row.value" />
+      </ContextFacts>
     </div>
-
-    <div data-slot="notification-row-actions">
-      <CollectionRowActions :spotlight :actions="actions ?? notificationRowActions(notification)" @navigate="markRead" @select="key => key === 'read' ? emit('markAsRead', notification.id) : emit('delete', notification.id)" />
-    </div>
-  </article>
+  </CollectionRow>
 </template>
 
 <script setup lang="ts">
@@ -95,7 +54,8 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import { notificationRowActions } from './notificationRowActions';
 
-import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
+import { ContextFact, ContextFacts } from '@/Components/Patterns';
 import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
 import {
   getNotificationIcon,
@@ -136,5 +96,4 @@ const markRead = () => {
     markNotificationRead(props.notification.id);
   }
 };
-
 </script>

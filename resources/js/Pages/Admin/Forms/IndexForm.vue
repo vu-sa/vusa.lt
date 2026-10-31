@@ -4,7 +4,7 @@
     :source
     collection="forms"
     entity-type="form"
-    :eyebrow="$t('shell.workspaces.organizacija.title') + ' · ' + $t('Formos')"
+    :eyebrow="$t('shell.workspaces.organizacija.title')"
     :title="$t('Formos')"
     :lead="$t('Kurk ir valdyk narių registracijas, apklausas ir grįžtamojo ryšio formas.')"
     default-view="table"

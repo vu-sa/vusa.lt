@@ -4,7 +4,7 @@
     :source
     collection="resourceCategories"
     entity-type="resource"
-    :eyebrow="`${$t('shell.workspaces.rezervacijos.title')} · ${$t('shell.sections.kategorijos')}`"
+    :eyebrow="$t('shell.workspaces.rezervacijos.title')"
     :title="$t('Išteklių kategorijos')"
     :lead="$t('Kategorijos sugrupuoja išteklius, kad juos būtų lengviau rasti.')"
     default-view="table"

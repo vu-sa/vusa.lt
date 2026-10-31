@@ -172,7 +172,7 @@ const isTrash = isTrashView();
 const canCreate = computed(() => Boolean(page.props.auth?.can?.create?.news));
 const canForceDelete = computed(() => Boolean(page.props.auth?.can?.forceDelete?.news));
 
-const eyebrow = computed(() => `${$t('shell.workspaces.svetaine.title')} · ${$t('shell.sections.naujienos')}`);
+const eyebrow = computed(() => $t('shell.workspaces.svetaine.title'));
 
 const source = useTrashAwareSource<NewsRow>(
   () => useTypesenseCollectionSource<NewsRow>({ collection: 'news', preserveUrlKeys: ['view', 'item'] }),

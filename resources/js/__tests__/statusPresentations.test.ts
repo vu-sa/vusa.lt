@@ -30,7 +30,7 @@ describe('status presentation maps', () => {
   });
 
   it('covers the task and content state contracts', () => {
-    expect(Object.keys(taskStatuses)).toEqual(['completed', 'open', 'due_soon', 'overdue']);
+    expect(Object.keys(taskStatuses)).toEqual(['completed', 'cancelled', 'open', 'due_soon', 'overdue']);
     expect(Object.keys(contentStatuses)).toEqual(['published', 'scheduled', 'draft']);
   });
 

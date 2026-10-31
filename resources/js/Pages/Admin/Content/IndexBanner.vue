@@ -4,7 +4,7 @@
     :source
     collection="banners"
     entity-type="banner"
-    :eyebrow="isDeleted ? $t('Ištrinti baneriai') : `${$t('shell.workspaces.svetaine.title')} · ${$t('shell.sections.baneriai')}`"
+    :eyebrow="isDeleted ? $t('Ištrinti baneriai') : $t('shell.workspaces.svetaine.title')"
     :title="isDeleted ? $t('Ištrinti baneriai') : $t('Baneriai')"
     :lead="isDeleted ? $t('Peržiūrėk ištrintus banerius arba atkurk juos.') : $t('Tvarkyk reklaminius skydelius ir partnerių banerius.')"
     default-view="table"

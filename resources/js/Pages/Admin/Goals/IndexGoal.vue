@@ -4,7 +4,7 @@
     :source
     collection="goals"
     entity-type="goal"
-    :eyebrow="`${$t('shell.workspaces.atstovavimas.title')} · ${$t('shell.sections.tikslai')}`"
+    :eyebrow="$t('shell.workspaces.atstovavimas.title')"
     :title="$t('shell.sections.tikslai')"
     :lead="$t('goals.lead')"
     default-view="rows"

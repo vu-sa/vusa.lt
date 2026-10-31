@@ -131,13 +131,12 @@ describe('CollectionPage', () => {
     expect(wrapper.emitted('rowNavigate')).toEqual([[source.items.value[0], 'open']]);
   });
 
-  it('states where the person is and draws the entity identity tile', () => {
+  it('states where the person is', () => {
     const { source } = makeSource();
     const wrapper = mountPage(source);
 
     expect(wrapper.text()).toContain('ViSAK · Posėdžiai');
     expect(wrapper.find('h1').text()).toBe('Posėdžiai');
-    expect(wrapper.find('[data-slot="collection-title-band"] [aria-hidden="true"]').exists()).toBe(true);
   });
 
   it('renders one row per item through the row slot', () => {

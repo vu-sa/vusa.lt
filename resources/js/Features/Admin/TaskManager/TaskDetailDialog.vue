@@ -1,57 +1,46 @@
 <template>
   <Dialog :open @update:open="handleOpenChange">
-    <DialogContent class="max-h-[85vh] overflow-y-auto sm:max-w-lg">
-      <DialogHeader>
-        <DialogTitle class="flex items-center gap-2">
-          <component :is="taskIcon" class="h-5 w-5 text-muted-foreground" />
-          {{ task.name }}
-        </DialogTitle>
-        <DialogDescription v-if="task.taskable?.name">
-          {{ task.taskable.name }}
-        </DialogDescription>
-      </DialogHeader>
+    <DialogContent
+      :class="[
+        'max-h-[85dvh] gap-0 overflow-hidden p-0 sm:max-w-xl',
+        'max-sm:top-auto max-sm:bottom-0 max-sm:left-0 max-sm:max-w-full max-sm:translate-x-0 max-sm:translate-y-0 max-sm:border-x-0 max-sm:border-b-0',
+      ]"
+    >
+      <DialogTitle class="sr-only">
+        {{ task.name }}
+      </DialogTitle>
+      <DialogDescription class="sr-only">
+        {{ task.taskable?.name }}
+      </DialogDescription>
 
-      <TaskDetails :task @report="emit('report')" />
-
-      <DialogFooter class="mt-4">
-        <Button variant="outline" @click="emit('close')">
-          {{ $t('Uždaryti') }}
-        </Button>
-      </DialogFooter>
+      <TaskPreview class="max-h-[85dvh]" :task :actions="paneActions" @select="select" />
     </DialogContent>
   </Dialog>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { trans as $t } from 'laravel-vue-i18n';
-import {
-  CalendarPlus as CalendarPlusIcon,
-  ClipboardList as ClipboardListIcon,
-} from '@lucide/vue';
 
-import TaskDetails from './TaskDetails.vue';
+import { getTaskActions, type TaskAction, type TaskActionKey } from './taskActions';
+import TaskPreview from './TaskPreview.vue';
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/Components/ui/dialog';
-import { Button } from '@/Components/ui/button';
-import { isPeriodicityGapTask, type TaskDisplayData } from '@/Composables/useTaskPresentation';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/Components/ui/dialog';
+import type { TaskDisplayData } from '@/Composables/useTaskPresentation';
 
 const props = defineProps<{
   open: boolean;
   task: TaskDisplayData;
+  /** Everything the page can run. Without it the dialog offers only what needs no page wiring. */
+  actions?: TaskAction[];
 }>();
 
 const emit = defineEmits<{
   (e: 'close'): void;
   (e: 'report'): void;
+  (e: 'action', key: TaskActionKey): void;
 }>();
+
+const paneActions = computed(() => props.actions ?? getTaskActions(props.task).filter(action => action.key === 'report' || action.key === 'agenda'));
 
 const handleOpenChange = (value: boolean) => {
   if (!value) {
@@ -59,5 +48,12 @@ const handleOpenChange = (value: boolean) => {
   }
 };
 
-const taskIcon = computed(() => (isPeriodicityGapTask(props.task) ? CalendarPlusIcon : ClipboardListIcon));
+function select(key: TaskActionKey): void {
+  if (key === 'report') {
+    emit('report');
+  }
+  else {
+    emit('action', key);
+  }
+}
 </script>

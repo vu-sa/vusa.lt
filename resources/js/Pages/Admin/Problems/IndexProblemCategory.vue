@@ -4,7 +4,7 @@
     :source
     collection="problemCategories"
     entity-type="problem"
-    :eyebrow="`${$t('shell.workspaces.atstovavimas.title')} · ${$t('shell.sections.problemu_kategorijos')}`"
+    :eyebrow="$t('shell.workspaces.atstovavimas.title')"
     :title="$t('shell.sections.problemu_kategorijos')"
     :lead="$t('Kategorijos bendros visiems padaliniams: pagal jas filtruojamos problemos.')"
     default-view="table"

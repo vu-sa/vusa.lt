@@ -157,6 +157,7 @@ return [
     // Actions
     'action_view_comment' => 'View Comment',
     'action_view_resource' => 'View Resource',
+    'action_view_details' => 'View details',
     'action_view_tasks' => 'View Tasks',
     'action_view_registration' => 'View Registration',
     'action_view_reservation' => 'View Reservation',

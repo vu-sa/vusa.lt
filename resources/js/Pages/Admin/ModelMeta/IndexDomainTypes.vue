@@ -4,7 +4,7 @@
     :source
     :collection="resource"
     :entity-type
-    :eyebrow="`${$t('shell.workspaces.sistema.title')} · ${$t('shell.sections.tipai')}`"
+    :eyebrow="$t('shell.workspaces.sistema.title')"
     :title="$t(`types.${typeKind}.title`)"
     :lead="isTrash
       ? $t('Ištrinti tipai. Atkurk tai, ko dar reikia.')

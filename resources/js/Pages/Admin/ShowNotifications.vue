@@ -75,7 +75,7 @@ import type { Notification } from '@/Composables/useNotificationFormatting';
 
 const props = defineProps<{ notifications: Notification[] }>();
 
-const eyebrow = computed(() => `${$t('shell.workspaces.pradzia.title')} · ${$t('Pranešimai')}`);
+const eyebrow = computed(() => $t('shell.workspaces.pradzia.title'));
 
 const toasts = useToasts();
 const source = useLocalCollectionSource<Notification>({
@@ -90,10 +90,6 @@ const source = useLocalCollectionSource<Notification>({
     valueLabel: value => value === 'unread' ? $t('notifications.index.filter_unread') : $t('Visi'),
   }],
 });
-
-if (!new URLSearchParams(window.location.search).has('read')) {
-  source.setFilter('read', ['unread']);
-}
 
 const unreadCount = computed(() => props.notifications.filter(item => !item.read_at).length);
 const readCount = computed(() => props.notifications.filter(item => item.read_at).length);
@@ -155,6 +151,7 @@ const handleDeleteAll = () => {
     },
   });
 };
+
 function markUnreadRowAsRead(item: Notification): void {
   if (!item.read_at) {
     markNotificationRead(item.id);

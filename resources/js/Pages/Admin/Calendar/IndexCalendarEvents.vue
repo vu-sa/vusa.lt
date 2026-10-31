@@ -166,7 +166,7 @@ const canCreate = computed(() => Boolean(page.props.auth?.can?.create?.calendar)
 const canForceDelete = computed(() => Boolean(page.props.auth?.can?.forceDelete?.calendar));
 const canEdit = computed(() => canCreate.value);
 
-const eyebrow = computed(() => `${$t('shell.workspaces.svetaine.title')} · ${$t('shell.sections.kalendorius')}`);
+const eyebrow = computed(() => $t('shell.workspaces.svetaine.title'));
 
 const eventTypeOptions = computed(() => [
   { value: 'none', label: $t('Be tipo') },

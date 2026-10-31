@@ -4,7 +4,7 @@
     :source
     collection="agenda_items"
     entity-type="agenda_item"
-    :eyebrow="`${$t('shell.workspaces.atstovavimas.title')} · ${$t('shell.sections.darbotvarkes_klausimai')}`"
+    :eyebrow="$t('shell.workspaces.atstovavimas.title')"
     :title="$t('Darbotvarkės klausimai')"
     :lead="$t('Visų posėdžių darbotvarkės klausimai vienoje vietoje.')"
     default-view="rows"

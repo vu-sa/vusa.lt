@@ -204,7 +204,7 @@ const isTrash = isTrashView();
 const canCreate = computed(() => Boolean(page.props.auth?.can?.create?.institution));
 const canForceDelete = computed(() => Boolean(page.props.auth?.can?.forceDelete?.institution));
 
-const eyebrow = computed(() => `${$t('shell.workspaces.atstovavimas.title')} · ${$t('shell.sections.institucijos')}`);
+const eyebrow = computed(() => $t('shell.workspaces.atstovavimas.title'));
 
 // --- Sekamos -----------------------------------------------------------------------------------
 

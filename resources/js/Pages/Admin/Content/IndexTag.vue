@@ -4,7 +4,7 @@
     :source
     collection="tags"
     entity-type="tag"
-    :eyebrow="`${$t('shell.workspaces.svetaine.title')} · ${$t('shell.sections.zymos')}`"
+    :eyebrow="$t('shell.workspaces.svetaine.title')"
     :title="$t('Žymos')"
     :lead="isDeleted ? $t('Peržiūrėk ištrintas žymas arba atkurk jas.') : $t('Tvarkyk žymas, kurios susieja svetainės turinį.')"
     default-view="table"

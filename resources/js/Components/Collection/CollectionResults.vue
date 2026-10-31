@@ -83,8 +83,8 @@
       :class="view === 'preview' ? 'grid min-w-0 max-w-full gap-6 xl:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]' : ''"
     >
       <div class="min-w-0">
-        <div v-if="view === 'table'" class="min-w-0 max-w-full overflow-x-auto border border-border" data-slot="collection-table">
-          <Table :class="tableFixed ? 'table-fixed min-w-[52rem]' : undefined">
+        <div v-if="view === 'table'" ref="tableEl" class="min-w-0 max-w-full overflow-x-auto border border-border" data-slot="collection-table">
+          <Table :class="tableFixed ? ['table-fixed', tableMinWidth ?? 'min-w-[52rem]'] : undefined">
             <TableHeader>
               <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
                 <TableHead
@@ -92,7 +92,7 @@
                   :key="header.id"
                   :class="[
                     header.id === SELECT_COLUMN_ID ? 'w-12' : columnOf(header.id)?.class,
-                    header.id === ACTIONS_COLUMN_ID ? ['sticky right-0 z-10 whitespace-nowrap bg-secondary text-right', actionsColumnWidth] : 'whitespace-nowrap',
+                    header.id === ACTIONS_COLUMN_ID ? ['sticky right-0 z-10 whitespace-nowrap bg-[color-mix(in_srgb,var(--secondary)_50%,var(--background))] text-right', stuckEdgeClass, actionsColumnWidth] : 'whitespace-nowrap',
                   ]"
                   :aria-sort="ariaSort(header.column.getIsSorted())"
                 >
@@ -132,7 +132,7 @@
                   :key="cell.id"
                   :class="[
                     cell.column.id === SELECT_COLUMN_ID ? 'w-12' : columnOf(cell.column.id)?.class,
-                    cell.column.id === ACTIONS_COLUMN_ID ? ['sticky right-0 z-10 whitespace-nowrap bg-background group-hover:bg-secondary group-data-[state=selected]:bg-secondary text-right', actionsColumnWidth] : '',
+                    cell.column.id === ACTIONS_COLUMN_ID ? ['sticky right-0 z-10 whitespace-nowrap bg-background group-hover:bg-secondary group-data-[state=selected]:bg-secondary text-right', stuckEdgeClass, actionsColumnWidth] : '',
                   ]"
                 >
                   <Checkbox
@@ -221,9 +221,9 @@
 
 <script setup lang="ts" generic="T">
 import { trans as $t } from 'laravel-vue-i18n';
-import { useEventListener } from '@vueuse/core';
+import { useEventListener, useResizeObserver } from '@vueuse/core';
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, Columns3 } from '@lucide/vue';
-import { computed, ref, toRef } from 'vue';
+import { computed, nextTick, ref, toRef, watch } from 'vue';
 
 import CollectionRowActions from './CollectionRowActions.vue';
 import CollectionLoadMore from './CollectionLoadMore.vue';
@@ -270,6 +270,8 @@ const props = withDefaults(defineProps<{
   tableFixed?: boolean;
   /** Width of the actions column in a fixed-layout table, where it cannot size itself. */
   actionsWidth?: string;
+  /** Floor of a fixed-layout table, so wide fixed columns leave the flexible one room to read. */
+  tableMinWidth?: string;
 }>(), {
   pinned: () => [],
   columns: () => [],
@@ -354,6 +356,21 @@ const selectedItem = computed(() => allItems.value.find(item => props.itemKey(it
 const isPinned = (item: T) => pinnedList.value.some(candidate => props.itemKey(candidate) === props.itemKey(item));
 
 const rowsEl = ref<HTMLElement | null>(null);
+const tableEl = ref<HTMLElement | null>(null);
+
+// The pinned column only reads as a separate layer while rows actually slide beneath it. A pseudo
+// element, because `border-collapse` leaves a sticky cell's own border behind when it scrolls.
+const hasHiddenColumns = ref(false);
+const stuckEdgeClass = computed(() => (hasHiddenColumns.value ? 'before:absolute before:inset-y-0 before:left-0 before:w-px before:bg-border' : ''));
+
+function measureTableScroll(): void {
+  const table = tableEl.value;
+  hasHiddenColumns.value = table !== null && table.scrollLeft + table.clientWidth < table.scrollWidth - 1;
+}
+
+useEventListener(tableEl, 'scroll', measureTableScroll, { passive: true });
+useResizeObserver(tableEl, measureTableScroll);
+watch(allItems, () => nextTick(measureTableScroll));
 
 /**
  * In the preview view a row selects on click. Modified title-link clicks keep their browser

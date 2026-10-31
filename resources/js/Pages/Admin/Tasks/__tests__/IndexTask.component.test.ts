@@ -120,15 +120,15 @@ describe('IndexTask', () => {
 
   it.each([null, '2026-01-01T00:00:00Z'])('keeps completion/reopening in the preview without an open action (%s)', (completedAt) => {
     const wrapper = mountPreview({ completed_at: completedAt });
-    const complete = wrapper.get('[data-testid="task-preview"] [data-action="complete"]');
+    const complete = wrapper.get('[data-slot="preview-pane"] [data-action="complete"]');
     expect(complete.text()).toBe(completedAt ? 'tasks.collection.reopen' : 'tasks.collection.complete');
-    expect(wrapper.find('[data-testid="task-preview"] [data-action="open"]').exists()).toBe(false);
+    expect(wrapper.find('[data-slot="preview-pane"] [data-action="open"]').exists()).toBe(false);
   });
 
   it('keeps the pending preview action busy and disabled until the request finishes', async () => {
     const wrapper = mountPreview();
-    await wrapper.get('[data-testid="task-preview"] [data-action="complete"]').trigger('click');
-    const complete = wrapper.get('[data-testid="task-preview"] [data-action="complete"]');
+    await wrapper.get('[data-slot="preview-pane"] [data-action="complete"]').trigger('click');
+    const complete = wrapper.get('[data-slot="preview-pane"] [data-action="complete"]');
     expect(complete.attributes('aria-busy')).toBe('true');
     expect(complete.attributes('aria-disabled')).toBe('true');
     expect(complete.classes()).toContain('pointer-events-none');
@@ -164,7 +164,6 @@ function mountPreview(overrides: Partial<TaskDisplayData> = {}) {
     global: { stubs: {
       ...commonStubs,
       CollectionPage: { name: 'CollectionPage', props: ['source', 'rowActions'], template: '<div><slot name="preview" :item="source.items.value[0]" /></div>' },
-      TaskPreview: { template: '<div data-testid="task-preview"><slot name="actions" /></div>' },
     } },
   });
 }

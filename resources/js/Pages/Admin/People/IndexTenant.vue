@@ -4,7 +4,7 @@
     :source
     collection="tenants"
     entity-type="tenant"
-    :eyebrow="`${$t('shell.workspaces.organizacija.title')} · ${$t('shell.sections.padaliniai')}`"
+    :eyebrow="$t('shell.workspaces.organizacija.title')"
     :title="$t('Padaliniai')"
     :lead="$t('VU SA padaliniai: kiekvienas turi savo svetainės dalį, narius ir pareigybes.')"
     default-view="table"

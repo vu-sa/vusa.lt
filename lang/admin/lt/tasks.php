@@ -54,6 +54,13 @@ return [
     'instructions' => 'Instrukcijos',
     'available_actions' => 'Galimi veiksmai',
     'assigned_to' => 'Priskirta',
+    'detail' => [
+        'eyebrow' => 'Užduotis',
+        'progress' => 'Eiga',
+        'completed_on' => 'Atlikta',
+        'completing' => 'Užbaigimas',
+        'completes_itself' => 'Automatinis',
+    ],
     'periodicity_gap' => [
         'name' => 'Pranešti apie veiklą: :institution',
         'description' => 'Institucijos veiklos pranešimo periodiškumas artėja prie ribos. Užregistruok naują susitikimą arba pranešk apie veiklą.',
