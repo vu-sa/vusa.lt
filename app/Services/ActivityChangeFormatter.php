@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Enums\ModelEnum;
 use App\Models\Activity;
 use App\Models\ContentPart;
+use App\Models\Role;
 use App\Support\ActivityFields;
 use App\Support\Auditables;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
@@ -75,9 +77,60 @@ class ActivityChangeFormatter
         return [
             'relation' => $relation,
             'label' => $this->resolveLabel((string) $activity->subjectClass(), $relation),
-            'attached' => $properties->get('attached', []),
-            'detached' => $properties->get('detached', []),
+            'attached' => $this->relationItems($activity, $relation, $properties->get('attached', [])),
+            'detached' => $this->relationItems($activity, $relation, $properties->get('detached', [])),
         ];
+    }
+
+    private function relationItems(Activity $activity, string $relation, array $items): array
+    {
+        if ($activity->subjectClass() !== Role::class) {
+            return $items;
+        }
+
+        return array_map(function (array $item) use ($relation): array {
+            $label = $item['label'];
+
+            if ($relation === 'permissions' && is_string($label)) {
+                $label = $this->permissionLabel($label);
+            } elseif (is_string($label)) {
+                $label = $this->decodeLocaleMap($label) ?? $label;
+            }
+
+            if (is_array($label)) {
+                $label = ($label[app()->getLocale()] ?? null) ?: ($label['lt'] ?? $item['id']);
+            }
+
+            return ['id' => $item['id'], 'label' => $label];
+        }, $items);
+    }
+
+    private function permissionLabel(string $name): string
+    {
+        $parts = explode('.', $name);
+
+        if (count($parts) !== 3) {
+            return $name;
+        }
+
+        [$resource, $ability, $scope] = $parts;
+        $resourceKey = "responsibilities.matrix.resources.{$resource}";
+
+        foreach (ModelEnum::cases() as $model) {
+            if (Str::plural($model->label()) === $resource) {
+                $resourceKey = "entities.{$model->label()}.model";
+                break;
+            }
+        }
+
+        $abilityKey = 'responsibilities.matrix.abilities.'.($ability === 'delete' && ! ModelEnum::isSoftDeletable($resource) ? 'delete_permanent' : $ability);
+        $scopeKey = 'responsibilities.matrix.scopes.'.($scope === '*' ? 'all' : $scope);
+
+        if (! Lang::has($resourceKey) || ! Lang::has($abilityKey) || ! Lang::has($scopeKey)) {
+            return $name;
+        }
+
+        return trans_choice($resourceKey, 2).' · '.Str::lower(__($abilityKey)).' · '.Str::lower(__($scopeKey));
     }
 
     /**
@@ -334,6 +387,10 @@ class ActivityChangeFormatter
         // model-type label (e.g. "Vote") when the subject can't be loaded
         // (hard-deleted, or soft-deleted with include_soft_deleted_subjects off).
         $subject = $activity->subject;
+
+        if ($subject instanceof Role) {
+            return $subject->displayTitle();
+        }
 
         if ($subject instanceof ContentPart) {
             return $this->contentPartLabel($subject);

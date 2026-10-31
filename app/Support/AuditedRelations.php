@@ -6,6 +6,7 @@ use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Reservation;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
@@ -29,6 +30,11 @@ class AuditedRelations
      * @var array<class-string, array<string, array{display: string}>>
      */
     public const RELATIONS = [
+        Role::class => [
+            'permissions' => ['display' => 'name'],
+            'attachable_types' => ['display' => 'title'],
+            'users' => ['display' => 'name'],
+        ],
         Duty::class => [
             'exOfficioTargetDuties' => ['display' => 'name'],
             'users' => ['display' => 'name'],

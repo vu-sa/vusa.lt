@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Actions\ProjectDutyResponsibilities;
 use App\Enums\ResponsibilityScope;
-use App\Models\Traits\LogsModelActivity;
 use App\Services\ResponsibilityResolver;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -17,7 +16,6 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Spatie\Activitylog\Support\LogOptions;
 
 /**
  * A responsibility given to a duty, to every duty of a type, or to every duty in an institution.
@@ -33,7 +31,6 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property string|null $scope_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read \Illuminate\Database\Eloquent\Model $grantee
  * @property-read Role $role
  * @property-read \Illuminate\Database\Eloquent\Model|null $scope
@@ -49,7 +46,7 @@ use Spatie\Activitylog\Support\LogOptions;
 #[Fillable(['role_id', 'grantee_type', 'grantee_id', 'scope_type', 'scope_id'])]
 class ResponsibilityGrant extends Model
 {
-    use HasFactory, HasUlids, LogsModelActivity;
+    use HasFactory, HasUlids;
 
     /** @var list<class-string<\Illuminate\Database\Eloquent\Model>> */
     public const array GRANTEES = [Duty::class, DutyType::class, Institution::class];
@@ -60,13 +57,52 @@ class ResponsibilityGrant extends Model
     #[\Override]
     protected static function booted(): void
     {
+        static::created(fn (self $grant) => $grant->logGrantChange(true));
+        static::deleted(fn (self $grant) => $grant->logGrantChange(false));
         static::saved(fn (self $grant) => $grant->reproject());
         static::deleted(fn (self $grant) => $grant->reproject());
     }
 
-    public function getActivitylogOptions(): LogOptions
+    private function logGrantChange(bool $attached): void
     {
-        return LogOptions::defaults()->logFillable()->logOnlyDirty()->dontLogEmptyChanges();
+        $labels = [];
+
+        foreach (['lt', 'en'] as $locale) {
+            $grantee = $this->grantee;
+            $label = $grantee?->getAttribute('title') ?? $grantee?->getAttribute('name') ?? $this->grantee_id;
+
+            if ($grantee instanceof DutyType) {
+                $label = $grantee->getTranslation('title', $locale);
+            } elseif ($grantee instanceof Duty || $grantee instanceof Institution) {
+                $label = $grantee->getTranslation('name', $locale);
+            }
+
+            if ($this->scope_type !== null) {
+                $scope = $this->scope;
+                $scopeName = match (true) {
+                    $scope instanceof Tenant => (string) __($scope->shortname, [], $locale),
+                    $scope instanceof InstitutionType => $scope->getTranslation('title', $locale),
+                    $scope instanceof Institution => $scope->getTranslation('name', $locale),
+                    default => null,
+                };
+                $scopeType = $this->coversOwnTenant() ? self::OWN_TENANT : $this->scope_type;
+                $label .= ' · '.__('responsibilities.scopes.'.$scopeType, [], $locale).($scopeName ? ' · '.$scopeName : '');
+            }
+
+            $labels[$locale] = (string) $label;
+        }
+
+        activity()
+            ->performedOn($this->role)
+            ->causedBy(auth()->user())
+            ->event('relation_updated')
+            ->withProperties([
+                'relation' => 'grants',
+                'attached' => $attached ? [['id' => $this->id, 'label' => $labels]] : [],
+                'detached' => $attached ? [] : [['id' => $this->id, 'label' => $labels]],
+                'grant' => $this->only(['id', 'grantee_type', 'grantee_id', 'scope_type', 'scope_id']),
+            ])
+            ->log('relation_updated');
     }
 
     /** @return BelongsTo<Role, $this> */

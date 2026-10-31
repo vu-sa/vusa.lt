@@ -28,7 +28,10 @@
     </p>
 
     <p v-if="term.roles.length > 0" class="text-sm text-foreground">
-      {{ $t('access.term.roles', { roles: term.roles.map(role => $t(role)).join(', ') }) }}
+      {{ $t('access.term.roles', { roles: term.roles.map(role => role.title).join(', ') }) }}
+    </p>
+    <p v-for="role in term.roles.filter(role => role.description)" :key="role.title" class="whitespace-pre-line text-sm text-muted-foreground" data-testid="term-responsibility-description">
+      <span class="font-medium">{{ role.title }}</span> · {{ role.description }}
     </p>
   </li>
 </template>
@@ -54,7 +57,7 @@ export interface MyDutyTerm {
   startDate: string;
   endDate: string | null;
   isExOfficio: boolean;
-  roles: string[];
+  roles: { title: string; description: string | null }[];
 }
 
 defineProps<{

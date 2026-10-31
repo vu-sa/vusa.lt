@@ -12,6 +12,7 @@ use App\Models\Institution;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Problem;
+use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 
@@ -33,6 +34,7 @@ class ActivityFields
      * @var array<class-string, array<string, string>>
      */
     public const OVERRIDES = [
+        Role::class => ['description' => 'diff'],
         Problem::class => [
             'description' => 'diff',
             'solution' => 'diff',

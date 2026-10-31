@@ -266,3 +266,28 @@ test('a relation_updated activity carries the attached/detached members and roll
         ->and($entry['relation_change']['attached'][0]['label'])->toBe('Jonas Jonaitis')
         ->and($entry['relation_change']['detached'])->toBe([]);
 });
+
+test('role history returns responsibility changes and authorizes against the role', function (): void {
+    $role = \App\Models\Role::factory()->create();
+    $managerRole = \App\Models\Role::factory()->create();
+    $managerRole->givePermissionTo('roles.read.*');
+    $this->admin->assignRole($managerRole);
+    $url = route('api.v1.admin.activityLog.index', ['subjectType' => 'role', 'subjectId' => $role->id]);
+
+    asUser($this->admin);
+    $role->update(['title' => ['lt' => 'Pakeistas pavadinimas', 'en' => 'Updated title']]);
+    $edit = \App\Models\Activity::forSubject($role)->forEvent('updated')->sole();
+
+    $entry = activity()->performedOn($role)->causedBy($this->admin)->event('relation_updated')
+        ->withProperties(['relation' => 'permissions', 'attached' => [['id' => 'news.update.padalinys', 'label' => 'news.update.padalinys']], 'detached' => []])
+        ->log('relation_updated');
+
+    $response = asUser($this->admin)->getJson($url)->assertOk();
+    $returned = collect($response->json('data'))->firstWhere('id', $entry->id);
+    expect($returned)->not->toBeNull()
+        ->and($returned['subject']['type'])->toBe('role')
+        ->and($returned['relation_change']['relation'])->toBe('permissions')
+        ->and(collect($response->json('data'))->firstWhere('id', $edit->id)['causer']['id'])->toBe($this->admin->id);
+
+    asUser($this->user)->getJson($url)->assertForbidden();
+});

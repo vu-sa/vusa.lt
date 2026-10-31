@@ -87,6 +87,12 @@ return [
     'role' => [
         'model' => '{1} responsibility|[2,*] responsibilities',
         'gender' => 'f',
+        'title' => 'title',
+        'description' => 'description',
+        'permissions' => 'permissions',
+        'grants' => 'granted to',
+        'users' => 'direct holders',
+        'attachable_types' => 'assignable duty types',
     ],
     'permission' => [
         'model' => '{1} permission|[2,*] permissions',

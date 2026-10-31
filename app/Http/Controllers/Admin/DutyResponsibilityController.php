@@ -52,6 +52,7 @@ class DutyResponsibilityController extends AdminController
                     'id' => $grant->id,
                     'role_id' => $grant->role_id,
                     'title' => $grant->role->displayTitle(),
+                    'description' => $grant->role->displayDescription(),
                     'purpose' => $grant->role->purpose?->value,
                     'purpose_label' => $grant->role->purpose ? (string) __($grant->role->purpose->labelKey()) : null,
                     'source' => $grant->grantee_type,
@@ -88,7 +89,7 @@ class DutyResponsibilityController extends AdminController
                 ->map(fn (Role $role): array => [
                     'id' => $role->id,
                     'title' => $role->displayTitle(),
-                    'description' => $role->getTranslation('description', app()->getLocale()) ?: null,
+                    'description' => $role->displayDescription(),
                     'purpose_label' => $role->purpose ? (string) __($role->purpose->labelKey()) : null,
                     'scopes' => array_map(fn (ResponsibilityScope $scope) => $scope->value, $role->purpose?->allowedScopes() ?? []),
                 ])

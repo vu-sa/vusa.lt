@@ -91,6 +91,12 @@ return [
     'role' => [
         'model' => '{1} atsakomybė|[2,9] atsakomybės|[10,*] atsakomybių',
         'gender' => 'f',
+        'title' => 'pavadinimas',
+        'description' => 'aprašymas',
+        'permissions' => 'teisės',
+        'grants' => 'kam suteikta',
+        'users' => 'tiesiogiai turintys žmonės',
+        'attachable_types' => 'priskiriami pareigybių tipai',
     ],
     'permission' => [
         'model' => '{1} teisė|[2,9] teisės|[10,*] teisių',

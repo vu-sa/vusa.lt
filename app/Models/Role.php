@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\ResponsibilityPurpose;
 use App\Models\Traits\HasTranslations;
+use App\Models\Traits\LogsModelActivity;
+use App\Models\Traits\LogsRelationshipChanges;
 use App\Services\ResponsibilityResolver;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use Spatie\Activitylog\Support\LogOptions;
 use Spatie\Permission\Models\Role as SpatieRole;
 use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
@@ -62,7 +65,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  */
 class Role extends SpatieRole
 {
-    use HasFactory, HasRelationships, HasTranslations, HasUlids;
+    use HasFactory, HasRelationships, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges;
 
     /** @var list<string> */
     protected $translatable = ['title', 'description'];
@@ -81,6 +84,20 @@ class Role extends SpatieRole
     protected function casts(): array
     {
         return ['purpose' => ResponsibilityPurpose::class];
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()->logOnlyDirty()->dontLogEmptyChanges()
+            ->logOnly(['title', 'description'])
+            ->useAttributeRawValues(['title', 'description']);
+    }
+
+    public function displayDescription(?string $locale = null): ?string
+    {
+        $translations = $this->getTranslations('description');
+
+        return ($translations[$locale ?? app()->getLocale()] ?? null) ?: (($translations['lt'] ?? null) ?: null);
     }
 
     public static function forPurpose(ResponsibilityPurpose $purpose): ?self

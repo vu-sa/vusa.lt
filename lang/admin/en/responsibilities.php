@@ -59,7 +59,7 @@ return [
         'what_description' => 'Name the work, not the person: e.g. "Communication", "Running the organisation".',
         'title_hint' => 'Shown in lists and on the duty page.',
         'title_example' => 'e.g. Communication',
-        'description_hint' => 'What work this responsibility covers and who it is for.',
+        'description_hint' => 'This text is shown to people who hold this responsibility.',
         'purpose_note' => 'This responsibility fulfils the system purpose ":purpose". You change that under Settings → System purposes.',
     ],
 

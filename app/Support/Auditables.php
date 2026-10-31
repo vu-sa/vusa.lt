@@ -22,6 +22,7 @@ use App\Models\Page;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Problem;
 use App\Models\Reservation;
+use App\Models\Role;
 use App\Models\Step;
 use App\Models\Tenant;
 use App\Models\User;
@@ -45,6 +46,7 @@ class Auditables
      * @var array<string, class-string<Model>>
      */
     public const TYPES = [
+        'role' => Role::class,
         'meeting' => Meeting::class,
         'institution' => Institution::class,
         'duty' => Duty::class,

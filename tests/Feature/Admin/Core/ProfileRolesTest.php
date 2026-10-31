@@ -77,7 +77,7 @@ test('roles come from the duty and from direct assignment', function (): void {
         ->get(route('profile.roles'))
         ->assertInertia(fn (Assert $page) => $page
             ->where('access.directRoles', ['Komunikacijos koordinatorius'])
-            ->where('access.current.0.roles', ['Išteklių administratorius'])
+            ->where('access.current.0.roles.0.title', 'Išteklių administratorius')
         );
 });
 
@@ -126,4 +126,20 @@ test('links a member to their own duty and institution even without a role', fun
             ->where('access.current.0.dutyHref', fn (?string $href): bool => $href !== null)
             ->where('access.current.0.institutionHref', fn (?string $href): bool => $href !== null)
         );
+});
+
+test('duty holders receive localized responsibility descriptions with Lithuanian fallback', function (): void {
+    $role = \App\Models\Role::factory()->create([
+        'title' => ['lt' => 'Koordinavimas', 'en' => 'Coordination'],
+        'description' => ['lt' => 'Padėk atstovams.', 'en' => 'Help representatives.'],
+    ]);
+    $this->user->current_duties()->first()->assignRole($role);
+
+    app()->setLocale('en');
+    $summary = \App\Actions\GetUserAccessSummary::execute($this->user);
+    expect($summary['current'][0]['roles'])->toBe([['title' => 'Coordination', 'description' => 'Help representatives.']]);
+
+    $role->setTranslations('description', ['lt' => 'Padėk atstovams.', 'en' => ''])->save();
+    $summary = \App\Actions\GetUserAccessSummary::execute($this->user->fresh());
+    expect($summary['current'][0]['roles'][0]['description'])->toBe('Padėk atstovams.');
 });
