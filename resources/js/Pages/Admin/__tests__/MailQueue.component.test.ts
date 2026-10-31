@@ -7,6 +7,7 @@ import MailQueue from '../MailQueue.vue';
 
 import { commonStubs } from '@/tests/stubs';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import CollectionTitleBand from '@/Components/Collection/CollectionTitleBand.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 vi.mock('@/Composables/useFeatureSpotlight', async () => {
@@ -27,9 +28,13 @@ const recipient = {
 };
 
 const CollectionPageStub = defineComponent({
-  props: ['rowActions'],
+  props: ['rowActions', 'entityType', 'eyebrow', 'title', 'lead'],
   setup(props, { slots }) {
-    return () => h('div', [slots.actions?.(), slots.row?.({ item: recipient, actions: props.rowActions(recipient), index: 0 })]);
+    return () => h('div', [
+      h(CollectionTitleBand, { entityType: props.entityType, eyebrow: props.eyebrow, title: props.title, lead: props.lead }),
+      slots.actions?.(),
+      slots.row?.({ item: recipient, actions: props.rowActions(recipient), index: 0 }),
+    ]);
   },
 });
 
@@ -52,6 +57,14 @@ function factory(canManage = true) {
 beforeEach(() => vi.clearAllMocks());
 
 describe('MailQueue', () => {
+  it('renders the collection title and recipient identity icon', () => {
+    const wrapper = factory();
+    const titleBand = wrapper.get('[data-slot="collection-title-band"]');
+
+    expect(titleBand.get('h1').text()).toBe('Laiškų eilė');
+    expect(titleBand.find('[aria-hidden="true"]').exists()).toBe(true);
+  });
+
   it('requires confirmation before discarding one notification', async () => {
     const wrapper = factory();
     await wrapper.find('button[aria-label="Pašalinti eilutę"]').trigger('click');
