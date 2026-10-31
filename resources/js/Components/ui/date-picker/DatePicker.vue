@@ -10,20 +10,20 @@
     :size
     :disabled
     :class="props.class"
-    @update:model-value="updateFromInput"
+    @update:model-value="updateFromNativeInput"
     @blur="emit('blur')"
   />
   <div v-else :class="cn('flex w-full items-center gap-2', props.class)">
     <Input
       v-bind="$attrs"
       :id
-      :model-value="dateValue"
+      :model-value="inputValue"
       inputmode="numeric"
       :placeholder="placeholder ?? 'YYYY-MM-DD'"
       :size
       :disabled
       @update:model-value="updateFromInput"
-      @blur="emit('blur')"
+      @blur="onInputBlur"
     />
     <Popover @close="emit('blur')">
       <PopoverTrigger as-child>
@@ -61,7 +61,7 @@
 <script setup lang="ts">
 import { CalendarDate, type DateValue } from '@internationalized/date';
 import { Calendar as CalendarIcon, X } from '@lucide/vue';
-import { computed, type HTMLAttributes } from 'vue';
+import { computed, ref, watch, type HTMLAttributes } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { cn } from '@/Utils/Shadcn/utils';
@@ -113,6 +113,12 @@ const calendarValue = computed<CalendarDate | undefined>(() => {
 });
 
 const dateValue = computed(() => calendarValue.value ? formatDate(calendarValue.value) : '');
+const inputValue = ref('');
+
+watch(dateValue, (value) => {
+  inputValue.value = value;
+}, { immediate: true });
+
 const minDateValue = computed(() => props.minDate ? formatDate(props.minDate) : undefined);
 const maxDateValue = computed(() => props.maxDate ? formatDate(props.maxDate) : undefined);
 
@@ -145,14 +151,39 @@ function emitDate(value: CalendarDate | undefined): void {
 }
 
 function updateFromInput(value: string | number): void {
+  inputValue.value = String(value);
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(inputValue.value)) {
+    const date = parseDate(inputValue.value);
+
+    if (date) {
+      emitDate(date);
+    }
+  }
+}
+
+function onInputBlur(): void {
+  if (inputValue.value === '') {
+    emitDate(undefined);
+  }
+  else {
+    inputValue.value = dateValue.value;
+  }
+
+  emit('blur');
+}
+
+function updateFromNativeInput(value: string | number): void {
   emitDate(parseDate(String(value)));
 }
 
 function updateFromCalendar(value: DateValue | undefined): void {
+  inputValue.value = value ? formatDate(value) : '';
   emitDate(value ? new CalendarDate(value.year, value.month, value.day) : undefined);
 }
 
 function clear(): void {
+  inputValue.value = '';
   emitDate(undefined);
 }
 
