@@ -13,7 +13,7 @@ class ReservationStatusChangeBatch
 
     public function add(ReservationResource $resource, string $oldState, string $newState, ?User $changedBy): void
     {
-        $key = $resource->reservation_id.':'.($changedBy?->id ?? 'system');
+        $key = $resource->reservation_id.':'.($changedBy->id ?? 'system');
         $this->groups[$key]['actor'] = $changedBy;
         $firstOldState = $this->groups[$key]['changes'][$resource->id]['oldState'] ?? $oldState;
         $this->groups[$key]['changes'][$resource->id] = [

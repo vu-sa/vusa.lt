@@ -17,7 +17,7 @@ class ReservationStatusChangedNotification extends BaseNotification
 
     protected string $newState;
 
-    /** @param non-empty-list<array{resource: ReservationResource, oldState: string, newState: string}> $changes */
+    /** @param list<array{resource: ReservationResource, oldState: string, newState: string}> $changes */
     public function __construct(protected array $changes, protected ?User $changedBy = null)
     {
         if ($changes === []) {
