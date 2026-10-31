@@ -1,9 +1,9 @@
 <?php
 
 use App\Actions\Dutiables\PlanExOfficioReview;
+use App\Actions\Dutiables\ReconcileExOfficioSeats;
 use App\Actions\GetRecentAccessChanges;
 use App\Events\DutiableChanged;
-use App\Listeners\SyncExOfficioDutiables;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
@@ -31,11 +31,21 @@ beforeEach(function (): void {
     $this->targetDuty = Duty::factory()->for($institution)->create();
     $this->sourceDuty->exOfficioTargetDuties()->attach($this->targetDuty);
     $this->holder = User::factory()->create();
-    $this->source = Dutiable::factory()->create([
+    $this->source = reviewFixture([
         'duty_id' => $this->sourceDuty->id, 'dutiable_id' => $this->holder->id,
         'start_date' => '2024-01-01', 'end_date' => '2024-12-31',
     ]);
 });
+
+function reviewFixture(array $attributes): Dutiable
+{
+    return ReconcileExOfficioSeats::paused(fn () => Dutiable::factory()->create($attributes));
+}
+
+function reviewSourceUpdate(Dutiable $source, array $attributes): void
+{
+    ReconcileExOfficioSeats::paused(fn () => $source->update($attributes));
+}
 
 function reviewPreview(): array
 {
@@ -51,7 +61,7 @@ function reviewApply(array $plan, ?array $ids = null, array $extra = []): TestRe
 
 function reviewCandidate(array $extra = []): Dutiable
 {
-    return Dutiable::factory()->create([
+    return reviewFixture([
         'duty_id' => test()->targetDuty->id, 'dutiable_id' => test()->holder->id,
         'start_date' => '2024-01-01', 'end_date' => '2024-12-31', 'assignment_origin' => 'unknown', ...$extra,
     ]);
@@ -67,7 +77,7 @@ test('links matching history with the resolved tenant and preserves details', fu
     expect($row->fresh()->via_dutiable_id)->toBe($this->source->id)
         ->and($row->fresh()->tenant_id)->toBe($this->tenant->id)
         ->and($row->fresh()->additional_email)->toBe('seat@example.com');
-    app(SyncExOfficioDutiables::class)->syncDerivedRow($this->source, $this->holder->id, $this->targetDuty);
+    $this->source->save();
     expect(Dutiable::where('via_dutiable_id', $this->source->id)->count())->toBe(1);
 });
 
@@ -114,11 +124,11 @@ test('an orphan can explicitly keep its open-ended independent remainder', funct
     expect($remainder->start_date->toDateString())->toBe('2025-01-01')->and($remainder->end_date)->toBeNull();
 });
 
-test('backfills ended sources and remains idempotent when the queued sync catches up', function (): void {
+test('backfills ended sources and remains idempotent on a real source save', function (): void {
     $plan = reviewPreview();
     expect($plan['items'][0]['kind'])->toBe('create')->and($plan['items'][0]['selected'])->toBeFalse();
     reviewApply($plan)->assertSessionHasNoErrors();
-    app(SyncExOfficioDutiables::class)->syncDerivedRow($this->source, $this->holder->id, $this->targetDuty);
+    $this->source->save();
     expect(Dutiable::where('via_dutiable_id', $this->source->id)->where('duty_id', $this->targetDuty->id)->count())->toBe(1);
     expect(reviewPreview()['items'])->toBeEmpty();
 });
@@ -149,8 +159,8 @@ test('proposes duplicate deletion and transfers bilingual details without wideni
 });
 
 test('a candidate spanning several sources links to the largest overlap and creates the other seat', function (): void {
-    $this->source->update(['end_date' => '2024-08-31']);
-    $second = Dutiable::factory()->create([
+    reviewSourceUpdate($this->source, ['end_date' => '2024-08-31']);
+    $second = reviewFixture([
         'duty_id' => $this->sourceDuty->id, 'dutiable_id' => $this->holder->id,
         'start_date' => '2024-09-01', 'end_date' => '2024-12-31',
     ]);
@@ -166,7 +176,7 @@ test('a candidate spanning several sources links to the largest overlap and crea
 test('changed source dates invalidate a preview with 409 and no partial changes', function (): void {
     $row = reviewCandidate();
     $plan = reviewPreview();
-    $this->source->update(['end_date' => '2024-11-30']);
+    reviewSourceUpdate($this->source, ['end_date' => '2024-11-30']);
     reviewApply($plan)->assertConflict();
     expect($row->fresh()->via_dutiable_id)->toBeNull();
 });
@@ -201,7 +211,7 @@ test('unmanageable sources are blocked and cannot be selected', function (): voi
 });
 
 test('inactive institutions and chained sources never produce writable proposals', function (): void {
-    $this->source->update(['via_dutiable_id' => $this->manager->dutiables()->first()->id]);
+    reviewSourceUpdate($this->source, ['via_dutiable_id' => $this->manager->dutiables()->first()->id]);
     expect(reviewPreview()['blocked'][0]['reason'])->toBe('chain');
     $this->sourceDuty->institution->update(['is_active' => false]);
     expect(reviewPreview()['items'])->toBeEmpty();
@@ -209,7 +219,7 @@ test('inactive institutions and chained sources never produce writable proposals
 
 test('backfilled endings do not add access notices for the target duty', function (): void {
     Notification::fake();
-    $this->source->update(['end_date' => '2026-10-29']);
+    reviewSourceUpdate($this->source, ['end_date' => '2026-10-29']);
     reviewApply(reviewPreview())->assertSessionHasNoErrors();
     expect(collect(GetRecentAccessChanges::execute($this->holder, 0))->where('dutyName', (string) $this->targetDuty->name))->toBeEmpty();
     $this->artisan('notifications:access-changes')->assertSuccessful();
@@ -218,7 +228,7 @@ test('backfilled endings do not add access notices for the target duty', functio
 
 test('split starts today are synthetic and do not send an access notice', function (): void {
     Notification::fake();
-    $this->source->update(['end_date' => '2026-10-29']);
+    reviewSourceUpdate($this->source, ['end_date' => '2026-10-29']);
     reviewCandidate(['end_date' => null]);
     $plan = reviewPreview();
     reviewApply($plan, extra: ['remainder_choices' => [$plan['items'][0]['id'] => 'keep']])->assertSessionHasNoErrors();
@@ -232,7 +242,7 @@ test('ending the actor own seat warns and rolls back until acknowledged', functi
     $ownDuty = $this->manager->duties()->first();
     $ownRow = Dutiable::findOrFail($ownDuty->pivot->id);
     $this->sourceDuty->exOfficioTargetDuties()->attach($ownDuty);
-    $source = Dutiable::factory()->create([
+    $source = reviewFixture([
         'duty_id' => $this->sourceDuty->id, 'dutiable_id' => $this->manager->id,
         'start_date' => '2020-01-01', 'end_date' => '2020-12-31',
     ]);
@@ -249,8 +259,8 @@ test('ending the actor own seat warns and rolls back until acknowledged', functi
 });
 
 test('rejects a partial multi-source link that would erase unselected history', function (): void {
-    $this->source->update(['end_date' => '2024-08-31']);
-    Dutiable::factory()->create([
+    reviewSourceUpdate($this->source, ['end_date' => '2024-08-31']);
+    reviewFixture([
         'duty_id' => $this->sourceDuty->id, 'dutiable_id' => $this->holder->id,
         'start_date' => '2024-09-01', 'end_date' => '2024-12-31',
     ]);
@@ -286,7 +296,7 @@ test('source and target institutions must remain active between preview and appl
 });
 
 test('keeping a current orphan retains even a one-day trailing remainder', function (): void {
-    $this->source->update(['end_date' => '2026-10-29']);
+    reviewSourceUpdate($this->source, ['end_date' => '2026-10-29']);
     reviewCandidate(['end_date' => '2026-10-30']);
     $plan = reviewPreview();
     reviewApply($plan, extra: ['remainder_choices' => [$plan['items'][0]['id'] => 'keep']])->assertSessionHasNoErrors();
@@ -311,7 +321,7 @@ test('eight inclusive days match and an ended candidate reopening current access
     $row = reviewCandidate(['start_date' => '2024-12-24']);
     $plan = reviewPreview();
     expect($plan['items'][0]['kind'])->toBe('link');
-    $this->source->update(['end_date' => null]);
+    reviewSourceUpdate($this->source, ['end_date' => null]);
     $plan = reviewPreview();
     expect($plan['items'][0]['access_change'])->toBeTrue()->and($plan['items'][0]['selected'])->toBeFalse();
     reviewApply($plan)->assertSessionHasNoErrors();
@@ -319,7 +329,7 @@ test('eight inclusive days match and an ended candidate reopening current access
 });
 
 test('an open-ended linked row covers an open-ended duplicate without widening its dates', function (): void {
-    $this->source->update(['end_date' => null]);
+    reviewSourceUpdate($this->source, ['end_date' => null]);
     $linked = reviewCandidate(['via_dutiable_id' => $this->source->id, 'assignment_origin' => 'ex_officio', 'end_date' => null]);
     $duplicate = reviewCandidate(['start_date' => '2025-01-01', 'end_date' => null]);
     reviewApply(reviewPreview())->assertSessionHasNoErrors();
@@ -336,7 +346,7 @@ test('a candidate only partly covered by a linked term is listed, not changed', 
 });
 
 test('keeping an orphan does not announce the linked part ending as lost access', function (): void {
-    $this->source->update(['end_date' => today()->subDay()->toDateString()]);
+    reviewSourceUpdate($this->source, ['end_date' => today()->subDay()->toDateString()]);
     $row = reviewCandidate(['end_date' => null]);
     $plan = reviewPreview();
     reviewApply($plan, null, ['remainder_choices' => [$plan['items'][0]['id'] => 'keep']])->assertSessionHasNoErrors();
@@ -348,7 +358,7 @@ test('a source duty reviews only its own pairs on a target shared with other sou
     $otherSource = Duty::factory()->for($this->sourceDuty->institution)->create();
     $otherSource->exOfficioTargetDuties()->attach($this->targetDuty);
     $otherHolder = User::factory()->create();
-    Dutiable::factory()->create([
+    reviewFixture([
         'duty_id' => $otherSource->id, 'dutiable_id' => $otherHolder->id,
         'start_date' => '2024-01-01', 'end_date' => '2024-12-31',
     ]);
@@ -364,7 +374,7 @@ test('a source duty reviews only its own pairs on a target shared with other sou
     expect(Dutiable::query()->where('dutiable_id', $otherHolder->id)->where('duty_id', $this->targetDuty->id)->exists())->toBeFalse();
 });
 
-describe('rules are undated, so history is only suggested', function (): void {
+describe('past seats are only suggested', function (): void {
     test('a term missing from history is proposed but left for the admin to tick', function (): void {
         $item = reviewPreview()['items'][0];
 
@@ -385,7 +395,7 @@ describe('rules are undated, so history is only suggested', function (): void {
 
 describe('permissions begin before a term does', function (): void {
     test('a seat on a source that has not started changes access today', function (): void {
-        $this->source->update(['start_date' => today()->addMonth()->toDateString(), 'end_date' => null]);
+        reviewSourceUpdate($this->source, ['start_date' => today()->addMonth()->toDateString(), 'end_date' => null]);
         $item = reviewPreview()['items'][0];
 
         expect($item['kind'])->toBe('create')
@@ -395,7 +405,7 @@ describe('permissions begin before a term does', function (): void {
 
     test('linking two terms that both start later changes nothing today', function (): void {
         $dates = ['start_date' => today()->addMonth()->toDateString(), 'end_date' => null];
-        $this->source->update($dates);
+        reviewSourceUpdate($this->source, $dates);
         reviewCandidate($dates);
         $item = reviewPreview()['items'][0];
 
@@ -405,7 +415,7 @@ describe('permissions begin before a term does', function (): void {
     });
 
     test('linking an ended term to a running source reopens access', function (): void {
-        $this->source->update(['start_date' => today()->subDays(30)->toDateString(), 'end_date' => null]);
+        reviewSourceUpdate($this->source, ['start_date' => today()->subDays(30)->toDateString(), 'end_date' => null]);
         reviewCandidate(['start_date' => today()->subDays(30)->toDateString(), 'end_date' => today()->subDays(10)->toDateString()]);
         $item = reviewPreview()['items'][0];
 
@@ -415,7 +425,7 @@ describe('permissions begin before a term does', function (): void {
 
 test('a new seat that counts toward a quota says so', function (): void {
     $this->targetDuty->assignableTenants()->attach($this->tenant);
-    $this->source->update(['end_date' => null]);
+    reviewSourceUpdate($this->source, ['end_date' => null]);
     $item = reviewPreview()['items'][0];
 
     expect($item['kind'])->toBe('create')
@@ -425,7 +435,7 @@ test('a new seat that counts toward a quota says so', function (): void {
 
 test('an ended new seat takes up no quota', function (): void {
     $this->targetDuty->assignableTenants()->attach($this->tenant);
-    $this->source->update(['end_date' => '2024-12-31']);
+    reviewSourceUpdate($this->source, ['end_date' => '2024-12-31']);
 
     expect(reviewPreview()['items'][0]['quota_change'])->toBeFalse();
 });
@@ -478,7 +488,7 @@ describe('no recorded day is dropped', function (): void {
     });
 
     test('ending an orphan with its source remains an explicit way to drop the rest', function (): void {
-        $this->source->update(['end_date' => today()->subDays(3)->toDateString()]);
+        reviewSourceUpdate($this->source, ['end_date' => today()->subDays(3)->toDateString()]);
         $row = reviewCandidate(['end_date' => null]);
         reviewApply(reviewPreview())->assertSessionHasNoErrors();
 

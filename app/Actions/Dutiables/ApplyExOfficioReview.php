@@ -3,7 +3,6 @@
 namespace App\Actions\Dutiables;
 
 use App\Actions\CollapseOverlappingDutiables;
-use App\Listeners\SyncExOfficioDutiables;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
@@ -84,9 +83,8 @@ class ApplyExOfficioReview
             $coverage = collect($duplicate['survivor_ids'])->map(function (string $seatId) use ($rows, $selected): Dutiable {
                 $seat = clone $rows[$seatId];
                 if ($selected->where('kind', 'resync')->contains('row_id', $seatId)) {
-                    $source = $rows[$seat->via_dutiable_id];
-                    $seat->start_date = $source->start_date;
-                    $seat->end_date = $source->end_date;
+                    $repair = $selected->where('kind', 'resync')->firstWhere('row_id', $seatId);
+                    $seat->fill($repair['after']);
                 }
 
                 return $seat;
@@ -136,7 +134,7 @@ class ApplyExOfficioReview
             case 'link':
                 return self::link($item, $row, $source, $actor, $choice);
             default:
-                self::resync($item, $row);
+                ReconcileExOfficioSeats::forSource($source, targetId: $target->id);
         }
 
         return [];
@@ -154,20 +152,23 @@ class ApplyExOfficioReview
     /** @param ReviewItem $item */
     private static function create(array $item, Dutiable $source, Duty $target, User $actor): void
     {
-        app(SyncExOfficioDutiables::class)->syncDerivedRow($source, $source->dutiable_id, $target);
+        ReconcileExOfficioSeats::forSource($source, includeHistory: true, targetId: $target->id);
         $created = Dutiable::query()
             ->where('via_dutiable_id', $source->id)
             ->where('duty_id', $target->id)
+            ->whereDate('start_date', $item['after']['start_date'])
             ->firstOrFail();
         Gate::forUser($actor)->authorize('manageDutiable', $created);
-        self::log($created, $actor, $item, $source->end_date?->lt(today()) ? [
-            'started' => $source->start_date->toDateString(), 'ended' => $source->end_date->copy()->addDay()->toDateString(),
+        self::log($created, $actor, $item, $item['after']['end_date'] !== null && $item['after']['end_date'] < today()->toDateString() ? [
+            'started' => $item['after']['start_date'], 'ended' => Carbon::parse($item['after']['end_date'])->addDay()->toDateString(),
         ] : []);
     }
 
     /** @param ReviewItem $item */
     private static function link(array $item, Dutiable $row, Dutiable $source, User $actor, string $choice): array
     {
+        $source = clone $source;
+        $source->fill($item['after']);
         $suppressed = [];
         $details = $row->only([
             'duty_id', 'dutiable_id', 'dutiable_type', 'tenant_id', 'study_program_id',
@@ -197,15 +198,9 @@ class ApplyExOfficioReview
                     : Carbon::parse($period['end_date'])->addDay()->toDateString(),
             ]);
         }
-        LinkDutiableToExOfficioSource::execute($row, $source);
+        LinkDutiableToExOfficioSource::execute($row, $source, $item['after']);
 
         return $suppressed;
-    }
-
-    /** @param ReviewItem $item */
-    private static function resync(array $item, Dutiable $row): void
-    {
-        $row->update([...$item['after'], 'tenant_id' => $item['tenant_after']]);
     }
 
     private static function log(Dutiable $row, User $actor, array $item, array $suppressed = []): void

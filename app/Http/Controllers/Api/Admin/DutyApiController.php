@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Actions\BuildDutyIndexQuery;
+use App\Actions\Dutiables\SyncExOfficioTargets;
 use App\Actions\SetDutyActive;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\Admin\UpdateRecordActivityRequest;
@@ -15,6 +16,7 @@ use App\Services\ModelAuthorizer;
 use App\Services\TanstackTableService;
 use App\Support\CollectionFacetCounts;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 
 class DutyApiController extends ApiController
 {
@@ -55,21 +57,23 @@ class DutyApiController extends ApiController
     {
         $this->authorizeApi('create', Duty::class);
 
-        $duty = new Duty;
+        return DB::transaction(function () use ($request, $assignments) {
+            $duty = new Duty;
 
-        $validatedData = $request->safe();
-        $duty->fill(collect($validatedData)->except('types', 'roles', 'current_users', 'ex_officio_target_duty_ids', 'assignable_tenants')->toArray())->save();
+            $validatedData = $request->safe();
+            $duty->fill(collect($validatedData)->except('types', 'roles', 'current_users', 'ex_officio_target_duty_ids', 'assignable_tenants')->toArray())->save();
 
-        $duty->types()->sync($request->types);
-        $duty->exOfficioTargetDuties()->sync($request->ex_officio_target_duty_ids ?? []);
-        $duty->assignableTenants()->sync($assignments->buildAssignableTenantsSync($request->validated('assignable_tenants') ?? []));
+            $duty->types()->sync($request->types);
+            SyncExOfficioTargets::execute($duty, $validatedData['ex_officio_target_duty_ids'] ?? []);
+            $duty->assignableTenants()->sync($assignments->buildAssignableTenantsSync($request->validated('assignable_tenants') ?? []));
 
-        $assignments->syncRepresentatives($duty, $request->validated('current_users') ?? []);
+            $assignments->syncRepresentatives($duty, $request->validated('current_users') ?? []);
 
-        $duty->load('institution', 'types', 'current_users');
+            $duty->load('institution', 'types', 'current_users');
 
-        return $this->jsonCreated([
-            'duty' => $duty,
-        ], $this->entityMessage('created', 'duty'));
+            return $this->jsonCreated([
+                'duty' => $duty,
+            ], $this->entityMessage('created', 'duty'));
+        });
     }
 }

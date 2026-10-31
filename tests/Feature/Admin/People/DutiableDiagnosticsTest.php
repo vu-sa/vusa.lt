@@ -138,14 +138,18 @@ test('an open-ended row inside the current term is left alone', function (): voi
 
 test('a derived row whose dates drifted from its source is flagged', function (): void {
     $source = makeRow();
-    makeRow(['via_dutiable_id' => $source->id, 'start_date' => '2024-09-01', 'end_date' => '2025-06-30']);
+    $target = Duty::factory()->for($this->institution)->create();
+    $this->duty->exOfficioTargetDuties()->attach($target);
+    makeRow(['duty_id' => $target->id, 'via_dutiable_id' => $source->id, 'start_date' => '2024-09-01', 'end_date' => '2025-06-30']);
 
     expect(codes(analyze()))->toContain('ex_officio_drift');
 });
 
 test('a derived row that still mirrors its source is not', function (): void {
     $source = makeRow();
-    makeRow(['via_dutiable_id' => $source->id]);
+    $target = Duty::factory()->for($this->institution)->create();
+    $this->duty->exOfficioTargetDuties()->attach($target);
+    makeRow(['duty_id' => $target->id, 'via_dutiable_id' => $source->id]);
 
     expect(codes(analyze()))->not->toContain('ex_officio_drift');
 });
@@ -265,4 +269,18 @@ test('an active target row overlapping an ended source is flagged for review', f
     expect($diagnostic)->not->toBeNull()
         ->and($diagnostic['severity'])->toBe('info')
         ->and($diagnostic['row_ids'])->toBe([$orphanRow->id]);
+});
+
+test('derived drift diagnostics respect staged source and seat overrides without saving them', function (): void {
+    $source = makeRow();
+    $target = Duty::factory()->for($this->institution)->create();
+    $this->duty->exOfficioTargetDuties()->attach($target->id);
+    $seat = makeRow(['duty_id' => $target->id, 'via_dutiable_id' => $source->id]);
+    $dates = ['start_date' => '2024-09-01', 'end_date' => '2025-06-30'];
+
+    expect(codes(analyze()))->not->toContain('ex_officio_drift')
+        ->and(codes(analyze([$source->id => $dates])))->toContain('ex_officio_drift')
+        ->and(codes(analyze([$source->id => $dates, $seat->id => $dates])))->not->toContain('ex_officio_drift')
+        ->and($source->fresh()->start_date->toDateString())->toBe('2024-07-01')
+        ->and($seat->fresh()->start_date->toDateString())->toBe('2024-07-01');
 });

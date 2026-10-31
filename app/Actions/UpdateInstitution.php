@@ -2,6 +2,7 @@
 
 namespace App\Actions;
 
+use App\Actions\Dutiables\ReconcileExOfficioSeats;
 use App\Actions\Media\SyncImageMedia;
 use App\Models\Institution;
 use App\Models\User;
@@ -19,6 +20,7 @@ class UpdateInstitution
     {
         DB::transaction(function () use ($institution, $data, $actor): void {
             $institution->refreshForUpdate();
+            $reopening = ! $institution->is_active && ! empty($data['is_active']);
             $closing = (bool) $institution->is_active && array_key_exists('is_active', $data) && ! $data['is_active'];
             $closedIds = $closing ? $this->deactivation->closeTerms($institution) : [];
 
@@ -32,6 +34,10 @@ class UpdateInstitution
             }
             $this->syncImage->fromValidated($institution, 'image', $data, 'image_media', $actor);
             $this->syncImage->fromValidated($institution, 'logo', $data, 'logo_media', $actor);
+
+            if ($reopening) {
+                ReconcileExOfficioSeats::forInstitution($institution);
+            }
 
             if ($closing) {
                 activity()->performedOn($institution)->causedBy($actor)->event(ActivityEvent::Updated)

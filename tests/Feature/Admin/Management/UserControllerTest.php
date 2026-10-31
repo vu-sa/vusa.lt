@@ -190,6 +190,27 @@ describe('authorized access', function (): void {
                 ->missing('roles'));
     });
 
+    test('show page exposes seat provenance and tenant on each duty pivot', function (): void {
+        $user = makeUser($this->tenant);
+        $source = $user->dutiables()->firstOrFail();
+        $target = Duty::factory()->for($source->duty->institution)->create();
+        $source->duty->exOfficioTargetDuties()->attach($target);
+        $source->save();
+        $seat = $source->derivedDutiables()->sole();
+        $seat->update(['tenant_id' => $this->tenant->id]);
+
+        asUser($this->admin)->get(route('users.show', $user))->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/People/ShowUser')
+                ->where('user.current_duties', function ($duties) use ($source, $seat): bool {
+                    $pivots = collect($duties)->pluck('pivot')->keyBy('id');
+
+                    return $pivots[$seat->id]['via_dutiable_id'] === $source->id
+                        && $pivots[$seat->id]['tenant_id'] === $this->tenant->id
+                        && $pivots[$source->id]['via_dutiable_id'] === null;
+                }));
+    });
+
     test('show page passes per-record update and delete capabilities', function (): void {
         // The page gates its edit and delete controls on these, since `auth.can`
         // carries no flat permission names to gate them with.

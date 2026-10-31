@@ -8,6 +8,7 @@ use App\Models\Pivots\Dutiable;
 use App\Models\User;
 use App\Support\Dutiables\DutiablePeriods;
 use App\Support\Dutiables\ExOfficioReviewDependencies;
+use App\Support\Dutiables\ExOfficioSeatDates;
 use App\Support\MorphMap;
 use Illuminate\Support\Collection;
 
@@ -22,7 +23,7 @@ use Illuminate\Support\Collection;
  *     before: Period|null, after: Period, tenant_before: int|null, tenant_after: int|null,
  *     quota_change: bool, tenant_before_name: string|null, tenant_after_name: string|null,
  *     access_change: bool, orphan: bool, remainders: list<Period>, survivor_ids: list<string>,
- *     source_ids: list<string>, survivors: list<Period>, selected: bool,
+ *     source_ids: list<string>, survivors: list<Period>, selected: bool, historical: bool,
  *     requires?: list<string>, unavailable_dependency?: bool
  * }
  * @phpstan-type ReviewPlan array{
@@ -152,7 +153,19 @@ class PlanExOfficioReview
             ->all();
         $sources = $rows->whereIn('duty_id', $sourceIds)
             ->where('ended_by_institution_deactivation', false)
-            ->filter(fn (Dutiable $source): bool => $source->user !== null);
+            ->filter(fn (Dutiable $source): bool => $source->user !== null)
+            ->flatMap(function (Dutiable $source) use ($target, $rows) {
+                $expected = ExOfficioSeatDates::forTarget($source, $target->id,
+                    $rows->where('via_dutiable_id', $source->id), today()->toDateString());
+                if ($expected['dates'] === null) {
+                    return collect();
+                }
+                $projection = clone $source;
+                $projection->fill($expected['dates']);
+                $projection->setAttribute('planned_seat_id', $expected['seat']?->id);
+
+                return collect([$projection]);
+            });
         $targetRows = $rows->where('duty_id', $target->id)->where('ended_by_institution_deactivation', false);
         $candidates = $targetRows->whereNull('via_dutiable_id')->where('assignment_origin', 'unknown');
         $assigned = [];
@@ -238,7 +251,8 @@ class PlanExOfficioReview
         array &$blocked,
         array &$used,
     ): void {
-        $linked = $rows->where('duty_id', $target->id)->where('via_dutiable_id', $source->id);
+        $linked = $rows->where('duty_id', $target->id)->where('via_dutiable_id', $source->id)
+            ->where('id', $source->getAttribute('planned_seat_id'));
         if ($source->via_dutiable_id !== null) {
             $blocked[] = self::blocked($source, $target, 'chain');
 
@@ -351,6 +365,8 @@ class PlanExOfficioReview
             ? $row->tenant_id !== $tenant
             : $tenant !== null && DutiablePeriods::grantsAccess($source);
 
+        $historical = $kind === 'create' && $source->end_date !== null && $source->end_date->lt(today());
+
         return [
             'id' => $kind.':'.$target->id.':'.$source->id.':'.($row->id ?? 'new'),
             'kind' => $kind, 'source_id' => $source->id, 'row_id' => $row?->id, 'target_duty_id' => $target->id,
@@ -363,9 +379,8 @@ class PlanExOfficioReview
             'survivor_ids' => $cover?->pluck('id')->all() ?? [], 'source_ids' => $sourceIds,
             'survivors' => $cover?->map(fn (Dutiable $seat) => DutiablePeriods::dates($seat))
                 ->values()->all() ?? [],
-            'historical' => $kind === 'create' && ! DutiablePeriods::grantsAccess($source),
-            // A new seat rests on the link applying back then, which nothing records, so it is never assumed.
-            'selected' => ! $accessChange && ! $quotaChange && ! $orphan && ! in_array($kind, ['create', 'remove_duplicate'], true),
+            'historical' => $historical,
+            'selected' => ! $accessChange && ! $quotaChange && ! $orphan && $kind !== 'remove_duplicate' && ! $historical,
         ];
     }
 

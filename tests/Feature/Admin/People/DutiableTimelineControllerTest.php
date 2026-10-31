@@ -588,11 +588,8 @@ test('merging sources preserves linked seat ids and their independent details', 
         'duty_id' => $this->duty->id, 'dutiable_id' => $this->holder->id,
         'start_date' => '2025-06-01', 'end_date' => null,
     ]);
-    $seat = Dutiable::factory()->create([
-        'duty_id' => $target->id, 'dutiable_id' => $this->holder->id,
-        'via_dutiable_id' => $later->id, 'start_date' => '2025-06-01', 'end_date' => null,
-        'additional_email' => 'seat@example.test',
-    ]);
+    $seat = $later->derivedDutiables()->sole();
+    $seat->update(['additional_email' => 'seat@example.test']);
     asUserWithInertia($this->manager)->post(route('dutiables.timeline.merge'), [
         'row_ids' => [$this->row->id, $later->id],
     ])->assertSessionHasNoErrors();

@@ -11,6 +11,8 @@ use App\Models\User;
 use App\Policies\DutyPolicy;
 use App\Settings\CadenceSettings;
 use App\Support\Dutiables\CadenceMatcher;
+use App\Support\Dutiables\DutiablePeriods;
+use App\Support\Dutiables\ExOfficioSeatDates;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
@@ -48,7 +50,7 @@ class BuildDutiableTimeline
         $cadenceByDuty = ResolveCadenceForDuty::forDuties($duties);
 
         $editable = self::editabilityMap($rows, $actor);
-        $reviewSources = Dutiable::query()->with(['duty.institution', 'duty.exOfficioTargetDuties'])
+        $reviewSources = Dutiable::query()->with(['duty.institution', 'duty.exOfficioTargetDuties', 'derivedDutiables.media'])
             ->whereIn('dutiable_id', $rows->pluck('dutiable_id'))->whereNull('via_dutiable_id')
             ->where('ended_by_institution_deactivation', false)
             ->whereHas('duty.exOfficioTargetDuties', fn ($query) => $query->whereKey($rows->pluck('duty_id')))
@@ -57,8 +59,6 @@ class BuildDutiableTimeline
         $cadences = self::cadences($duties);
         ['primary' => $cadenceByRow, 'spanned' => $cadenceIdsByRow] = self::cadenceByRow($rows, $cadences);
 
-        // Every derived row that points at a row in this payload, so a source bar can
-        // show what will follow it before the queued sync runs.
         $derivedBySource = $rows
             ->filter(fn (Dutiable $row) => $row->via_dutiable_id !== null)
             ->groupBy('via_dutiable_id');
@@ -255,7 +255,10 @@ class BuildDutiableTimeline
     {
         return $sources->filter(fn (Dutiable $source) => $source->id !== $row->id
                 && $source->dutiable_id === $row->dutiable_id && $source->dutiable_type === $row->dutiable_type
-                && $source->duty->exOfficioTargetDuties->contains('id', $row->duty_id))
+                && $source->duty->exOfficioTargetDuties->contains('id', $row->duty_id)
+                && ($dates = ExOfficioSeatDates::forTarget($source, $row->duty_id,
+                    $source->derivedDutiables, today()->toDateString())['dates']) !== null
+                && DutiablePeriods::overlap($dates, DutiablePeriods::dates($row)) > 0)
             ->map(fn (Dutiable $source) => [
                 'id' => $source->id, 'name' => $source->duty->name,
                 'start_date' => $source->start_date->toDateString(), 'end_date' => $source->end_date?->toDateString(),

@@ -22,7 +22,7 @@ class FindSuspectExOfficioDutiables
         $query = DB::table('dutiables as t')->whereIn('t.id', $ids)
             ->join('users as u', 'u.id', '=', 't.dutiable_id')
             ->join('duties as target', 'target.id', '=', 't.duty_id')
-            ->join('ex_officio_duties as eo', 'eo.target_duty_id', '=', 't.duty_id')
+            ->joinSub(DB::table('ex_officio_duties')->select('source_duty_id', 'target_duty_id')->distinct(), 'eo', 'eo.target_duty_id', '=', 't.duty_id')
             ->join('duties as source', 'source.id', '=', 'eo.source_duty_id')
             ->join('institutions as inst', 'inst.id', '=', 'target.institution_id')
             ->leftJoin('tenants as tn', 'tn.id', '=', 'inst.tenant_id')

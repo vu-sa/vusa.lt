@@ -75,9 +75,11 @@
           >
             <div class="divide-y divide-border">
               <UserTermRow
-                v-for="duty in group.duties"
+                v-for="{ duty, nested, sourceLabel } in group.rows"
                 :key="`${duty.id}-${duty.pivot?.id}`"
                 :duty
+                :nested
+                :source-label="sourceLabel"
                 :holder="dutyHolder"
                 :can-manage="Boolean(can?.update) && group.key !== 'previous'"
                 @edit="openTermSheet(duty)"
@@ -224,7 +226,7 @@ import { todayIso } from '@/Utils/dateTime';
 
 const TaskDetailDialog = defineAsyncComponent(() => import('@/Features/Admin/TaskManager/TaskDetailDialog.vue'));
 
-interface Pivot { id?: string; start_date?: string; end_date?: string | null; additional_email?: string | null; use_original_duty_name?: boolean }
+interface Pivot { id?: string; via_dutiable_id?: string | null; tenant_id?: number | null; start_date?: string; end_date?: string | null; additional_email?: string | null; use_original_duty_name?: boolean }
 type UserDuty = App.Entities.Duty & { pivot?: Pivot };
 
 const props = defineProps<{
@@ -273,6 +275,36 @@ const allTerms = computed(() => [
 ]);
 const allDuties = allTerms;
 
+function attachedTerms(duties: UserDuty[], previous: boolean) {
+  const ids = new Set(duties.map(duty => duty.pivot?.id).filter(Boolean));
+  const children = new Map<string, UserDuty[]>();
+  const roots: UserDuty[] = [];
+  for (const duty of duties) {
+    const parentId = duty.pivot?.via_dutiable_id;
+    if (parentId && ids.has(parentId)) {
+      children.set(parentId, [...(children.get(parentId) ?? []), duty]);
+    } else {
+      roots.push(duty);
+    }
+  }
+  const byDate = (a: UserDuty, b: UserDuty) => {
+    const order = (a.pivot?.start_date ?? '').localeCompare(b.pivot?.start_date ?? '');
+    return previous ? -order : order;
+  };
+  return roots.sort(byDate).flatMap(duty => {
+    const parentId = duty.pivot?.via_dutiable_id;
+    const source = parentId ? allTerms.value.find(term => term.pivot?.id === parentId) : undefined;
+    const sourceLabel = source ? changeDutyNameEndings(props.user, source.name, usePage().props.app.locale,
+      dutyHolder.value.pronouns, source.pivot?.use_original_duty_name ?? false) : undefined;
+    return [
+      { duty, nested: false, sourceLabel },
+      ...(children.get(duty.pivot?.id ?? '') ?? []).sort(byDate).map(child => ({
+        duty: child, nested: true, sourceLabel: undefined,
+      })),
+    ];
+  });
+}
+
 const dutyGroups = computed(() => {
   const at = todayIso();
   const groups = {
@@ -291,7 +323,10 @@ const dutyGroups = computed(() => {
     { key: 'current', title: $t('Dabartinės pareigos'), icon: Briefcase, duties: groups.current },
     { key: 'upcoming', title: $t('Būsimos pareigos'), icon: CalendarClock, duties: groups.upcoming },
     { key: 'previous', title: $t('Buvusios pareigos'), icon: History, duties: groups.previous },
-  ].filter(group => group.duties.length > 0);
+  ].filter(group => group.duties.length > 0).map(group => ({
+    ...group,
+    rows: attachedTerms(group.duties, group.key === 'previous'),
+  }));
 });
 
 /** What is held now (and next) leads; the record of past terms sits beside it on wide screens. */

@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'terms' => [
+        'via_duty' => 'via :duty',
+    ],
+    'derived_duty_removal' => 'End an ex officio assignment by changing its source term.',
     'index' => [
         'lead' => 'Member accounts, contacts and duty history.',
         'empty_description' => 'Member accounts you can view appear here.',

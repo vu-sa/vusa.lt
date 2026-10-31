@@ -79,7 +79,7 @@ test('end dating through the service propagates to derived seats', function (): 
     $sourceDuty = Duty::factory()->create();
     $targetDuty = Duty::factory()->create();
     $sourceDuty->exOfficioTargetDuties()->attach($targetDuty);
-    $source = Dutiable::factory()->forDuty($sourceDuty)->active()->create();
+    $source = Dutiable::factory()->forDuty($sourceDuty)->create(['start_date' => '2026-10-03', 'end_date' => null]);
     $derived = Dutiable::where('via_dutiable_id', $source->id)->firstOrFail();
 
     app(DutyAssignmentService::class)->endDateDutiables(Dutiable::whereKey($source->id), '2026-10-02');

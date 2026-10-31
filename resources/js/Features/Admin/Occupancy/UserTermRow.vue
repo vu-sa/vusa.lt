@@ -1,7 +1,8 @@
 <template>
   <div
-    :class="['flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between', status === 'ended' && 'opacity-70']"
+    :class="['flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between', status === 'ended' && 'opacity-70', nested && 'ml-3 border-l border-border pl-3 sm:ml-6 sm:pl-4']"
     data-slot="user-term-row"
+    :data-nested="nested || undefined"
   >
     <div class="min-w-0 space-y-1">
       <div class="flex flex-wrap items-center gap-2">
@@ -13,6 +14,9 @@
         <span v-if="term.tenant_id" :class="chipClass">{{ $t('Deleguota') }}</span>
         <span v-if="status === 'upcoming'" :class="chipClass">{{ $t('Būsima') }}</span>
       </div>
+      <p v-if="sourceLabel" class="text-xs text-muted-foreground" data-testid="seat-source">
+        {{ $t('users.terms.via_duty', { duty: sourceLabel }) }}
+      </p>
       <p class="flex items-center gap-1 text-xs text-muted-foreground tabular-nums">
         <Calendar class="size-3 shrink-0" aria-hidden="true" />
         {{ tenure }}
@@ -27,11 +31,11 @@
     </div>
 
     <div v-if="canManage" class="flex shrink-0 items-center gap-2">
-      <Button variant="ghost" size="sm" class="u-touch" @click="emit('edit')">
+      <Button voice="sentence" variant="ghost" size="sm" class="u-touch" @click="emit('edit')">
         <Edit3 class="size-3.5" aria-hidden="true" />
         {{ $t('Redaguoti') }}
       </Button>
-      <Button v-if="canEnd" variant="ghost" size="sm" class="u-touch" @click="emit('end')">
+      <Button v-if="canEnd" voice="sentence" variant="ghost" size="sm" class="u-touch" @click="emit('end')">
         <CalendarCheck class="size-3.5" aria-hidden="true" />
         {{ $t('Užbaigti pareigas') }}
       </Button>
@@ -76,6 +80,8 @@ const props = defineProps<{
   /** Whose duty it is: the name ending follows their pronouns. */
   holder?: DutyLabelHolder | null;
   canManage: boolean;
+  nested?: boolean;
+  sourceLabel?: string;
 }>();
 
 const emit = defineEmits<{

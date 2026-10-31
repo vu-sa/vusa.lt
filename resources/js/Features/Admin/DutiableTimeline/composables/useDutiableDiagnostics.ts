@@ -24,8 +24,8 @@ export function resolveCadenceFor(
     ?? null;
 }
 
-/** Only the server can see this one: it needs a join over ex_officio_duties. */
-const SERVER_ONLY_CODES = new Set(['orphan_derived_suspect']);
+/** Dated links and closure history are resolved by the server planner. */
+const SERVER_ONLY_CODES = new Set(['orphan_derived_suspect', 'ex_officio_drift']);
 
 const MS_PER_DAY = 86_400_000;
 
@@ -40,16 +40,7 @@ function dayBefore(date: string): string {
   return toDateString(value);
 }
 
-/**
- * The same checks AnalyzeDutiableTimeline runs, recomputed over *staged* state so the
- * panel updates while the user drags rather than only after a save.
- *
- * The server's version stays authoritative — it ships in the payload, gates every fix,
- * and produces the preview's before/after delta. The two are kept honest by sharing
- * fixture cases with DutiableDiagnosticsTest.
- *
- * `orphan_derived_suspect` is passed through: it needs a query this side cannot make.
- */
+/** Local cadence checks follow staged dates; link and seat diagnostics come from the server. */
 export function useDutiableDiagnostics(
   rows: Ref<ParsedRow[]>,
   cadences: Ref<ParsedCadence[]>,
@@ -90,21 +81,7 @@ export function useDutiableDiagnostics(
         result.push({ code: 'inverted', severity: 'error', row_ids: [row.id], duty_id: row.duty_id });
       }
 
-      if (row.via_dutiable_id !== null && periods.value.has(row.via_dutiable_id)) {
-        const source = periods.value.get(row.via_dutiable_id)!;
-
-        if (source.start !== period.start || source.end !== period.end) {
-          result.push({
-            code: 'ex_officio_drift',
-            severity: 'warning',
-            row_ids: [row.id],
-            duty_id: row.duty_id,
-            detail: { source_id: row.via_dutiable_id },
-          });
-        }
-
-        continue;
-      }
+      if (row.via_dutiable_id !== null) continue;
 
       const cadence = cadenceFor(row, period.start);
 

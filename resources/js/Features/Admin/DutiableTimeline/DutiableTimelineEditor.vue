@@ -39,7 +39,6 @@
           :dirty-count
           :is-dirty
           :processing
-          :sync-pending="pending.size > 0"
           @preview="onPreview"
           @discard="revertAll"
           @save="onSave"
@@ -341,7 +340,7 @@ watch(sortable, (canSort) => {
 });
 
 const {
-  staged, drawn, pending, stage, stageMany, revertAll, settle, dirtyCount, isDirty, operations,
+  staged, drawn, stage, stageMany, revertAll, settle, dirtyCount, isDirty, operations,
 } = useDutiableStaging(rows);
 
 const { findings, counts } = useDutiableDiagnostics(visibleRows, cadences, drawn, diagnostics);

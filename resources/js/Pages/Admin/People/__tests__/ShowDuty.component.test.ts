@@ -374,3 +374,4 @@ describe('informational duty seat count', () => {
     expect(wrapper.find('[data-testid="duty-vacancy-alert"]').exists()).toBe(false);
   });
 });
+

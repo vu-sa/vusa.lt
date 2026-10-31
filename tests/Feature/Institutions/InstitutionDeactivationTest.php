@@ -1,13 +1,12 @@
 <?php
 
-use App\Actions\BackfillExOfficioTargetDuty;
+use App\Actions\Dutiables\ReconcileExOfficioSeats;
 use App\Actions\CollapseOverlappingDutiables;
 use App\Actions\Dutiables\MergeDutiables;
 use App\Actions\GetUserAccessSummary;
 use App\Actions\MergeDuties;
 use App\Actions\UpdateInstitution;
 use App\Events\DutiableChanged;
-use App\Listeners\SyncExOfficioDutiables;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
@@ -120,9 +119,9 @@ test('incoming and outgoing ex officio seats close while unrelated source terms 
 
     $actor = closeInstitutionMemberships($institution);
     app(UpdateInstitution::class)->execute($institution, ['is_active' => true], $actor);
-    app(SyncExOfficioDutiables::class)->handle(new DutiableChanged($incomingSource));
-    app(SyncExOfficioDutiables::class)->handle(new DutiableChanged($ownSource->fresh()));
-    BackfillExOfficioTargetDuty::execute($externalSource, [$ownDuty->id], []);
+    $incomingSource->save();
+    $ownSource->fresh()->save();
+    ReconcileExOfficioSeats::forDuty($externalSource);
 
     expect($incomingSource->fresh()->end_date)->toBeNull();
     foreach ([$incoming, $outgoing, $ownSource] as $term) {
@@ -139,7 +138,7 @@ test('ex officio sync and backfill skip inactive target institutions', function 
     $sourceDuty->exOfficioTargetDuties()->attach($targetDuty);
     $source = Dutiable::factory()->forDuty($sourceDuty)->active()->create(['start_date' => '2026-01-01']);
 
-    BackfillExOfficioTargetDuty::execute($sourceDuty, [$targetDuty->id], []);
+    ReconcileExOfficioSeats::forDuty($sourceDuty);
 
     expect(Dutiable::where('via_dutiable_id', $source->id)->exists())->toBeFalse();
 });
@@ -152,8 +151,8 @@ test('automatic seats are not created from legacy memberships in an inactive ins
     $institution->update(['is_active' => false]);
     $sourceDuty->exOfficioTargetDuties()->attach($targetDuty);
 
-    BackfillExOfficioTargetDuty::execute($sourceDuty, [$targetDuty->id], []);
-    app(SyncExOfficioDutiables::class)->handle(new DutiableChanged($source));
+    ReconcileExOfficioSeats::forDuty($sourceDuty);
+    $source->save();
 
     expect(Dutiable::where('via_dutiable_id', $source->id)->exists())->toBeFalse()
         ->and($source->fresh()->end_date)->toBeNull();

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Actions\Dutiables\CheckExOfficioIntegrity;
 use App\Enums\MailingListMode;
 use App\Enums\MailingListSyncStatus;
 use App\Enums\SearchableModelEnum;
@@ -64,7 +65,7 @@ class SystemMonitorService
     /**
      * Get a complete snapshot of system health.
      *
-     * @return array{redis: array, database: array, cache: array, typesense: array, scheduler: array, queue: array, reverb: array, digest: array, mail: array, sharepoint_documents: array, mailman: array, integrations: array, system: array}
+     * @return array{redis: array, database: array, cache: array, typesense: array, scheduler: array, queue: array, reverb: array, digest: array, ex_officio: array, mail: array, sharepoint_documents: array, mailman: array, integrations: array, system: array}
      */
     public function getAllStatus(): array
     {
@@ -77,11 +78,25 @@ class SystemMonitorService
             'queue' => $this->getQueueStatus(),
             'reverb' => $this->probes->reverbStatus(),
             'digest' => $this->getDigestStatus(),
+            'ex_officio' => $this->getExOfficioIntegrityStatus(),
             'mail' => $this->getMailStatus(),
             'sharepoint_documents' => $this->getDocumentDiscoveryStatus(),
             'mailman' => $this->getMailmanStatus(),
             'integrations' => $this->getIntegrationsStatus(),
             'system' => $this->getSystemStatus(),
+        ];
+    }
+
+    public function getExOfficioIntegrityStatus(): array
+    {
+        $result = Cache::get(CheckExOfficioIntegrity::CACHE_KEY);
+
+        return [
+            'status' => $result === null || $result['count'] > 0 ? 'warning' : 'healthy',
+            'count' => $result['count'] ?? null,
+            'last_check' => $result['checked_at'] ?? null,
+            'message' => $result === null ? 'Ex officio integrity has not been checked yet.'
+                : ($result['count'] > 0 ? 'Ex officio seats need review.' : null),
         ];
     }
 

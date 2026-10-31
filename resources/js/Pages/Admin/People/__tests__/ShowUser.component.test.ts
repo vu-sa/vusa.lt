@@ -78,7 +78,7 @@ const baseUser = {
 
 const fullCan = { update: true, delete: true, updateSuperAdmin: false, managePasswords: false };
 
-const createWrapper = (overrides: Record<string, unknown> = {}, can: Record<string, boolean> = fullCan, extra: Record<string, unknown> = {}) =>
+const createWrapper = (overrides: Record<string, unknown> = {}, can: Record<string, boolean> = fullCan, extra: Record<string, unknown> = {}, componentStubs: Record<string, boolean> = {}) =>
   mount(ShowUser, {
     props: {
       user: { ...baseUser, ...overrides } as never,
@@ -87,7 +87,7 @@ const createWrapper = (overrides: Record<string, unknown> = {}, can: Record<stri
       can: can as never,
       ...extra,
     },
-    global: { stubs },
+    global: { stubs: { ...commonStubs, ...stubs, ...componentStubs } },
   });
 
 const tabs = (wrapper: ReturnType<typeof mount>) => wrapper.find('[data-testid="tabs"]').text();
@@ -232,6 +232,52 @@ describe('ShowUser.vue', () => {
   it('uses the primary current duty as the subtitle, inflected for the holder', () => {
     // The page locale defaults to 'lt' in the test setup.
     expect(createWrapper().text()).toContain('Koordinatorė');
+  });
+
+  it('keeps seats directly beneath their parent in date-ordered blocks and counts every term', () => {
+    const parent = makeDuty({ pivot: { id: 'parent', start_date: '2024-01-01' } });
+    const next = makeDuty({ id: 'next', pivot: { id: 'next-parent', start_date: '2025-01-01' } });
+    const seat = makeDuty({ id: 'seat', pivot: { id: 'child', start_date: '2025-06-01', via_dutiable_id: 'parent' } });
+    const nextSeat = makeDuty({ id: 'next-seat', pivot: { id: 'next-child', start_date: '2023-01-01', via_dutiable_id: 'next-parent' } });
+    const wrapper = createWrapper({ current_duties: [nextSeat, next, seat, parent], previous_duties: [] }, fullCan, {}, { UserTermRow: false });
+
+    const rows = wrapper.findAllComponents({ name: 'UserTermRow' });
+    expect(rows.map(row => row.props('duty').pivot.id)).toEqual(['parent', 'child', 'next-parent', 'next-child']);
+    expect(rows.map(row => Boolean(row.props('nested')))).toEqual([false, true, false, true]);
+    expect(rows[1].classes()).toContain('border-l');
+    expect(rows[1].find('[data-testid="seat-source"]').exists()).toBe(false);
+    expect(tabs(wrapper)).toContain('duties:4');
+    wrapper.unmount();
+  });
+
+  it('labels a standalone seat with its parent duty from another group and leaves an unloaded parent unlabelled', () => {
+    const parent = makeDuty({ pivot: { id: 'parent', start_date: '2020-01-01', end_date: '2021-01-01' } });
+    const seat = makeDuty({ id: 'seat', pivot: { id: 'child', start_date: '2024-01-01', via_dutiable_id: 'parent' } });
+    const unknown = makeDuty({ id: 'unknown', pivot: { id: 'unknown-child', start_date: '2024-02-01', via_dutiable_id: 'unloaded' } });
+    const wrapper = createWrapper({ current_duties: [seat, unknown], previous_duties: [parent] }, fullCan, {}, { UserTermRow: false });
+
+    const rows = wrapper.get('[data-group="current"]').findAllComponents({ name: 'UserTermRow' });
+    expect(rows[0].props('nested')).toBe(false);
+    expect(rows[0].props('sourceLabel')).toBe('Koordinatorė');
+    expect(rows[0].find('[data-testid="seat-source"]').exists()).toBe(true);
+    expect(rows[1].props('sourceLabel')).toBeUndefined();
+    expect(rows[1].find('[data-testid="seat-source"]').exists()).toBe(false);
+    expect(tabs(wrapper)).toContain('duties:3');
+    wrapper.unmount();
+  });
+
+  it('shows ex officio and delegated chips and offers editing without an end action on a seat', () => {
+    const parent = makeDuty();
+    const seat = makeDuty({ id: 'seat', pivot: { id: 'child', start_date: '2024-01-01', via_dutiable_id: 'p1', tenant_id: 1 } });
+    const wrapper = createWrapper({ current_duties: [seat, parent], previous_duties: [] }, fullCan, {}, { UserTermRow: false });
+
+    const rows = wrapper.findAll('[data-slot="user-term-row"]');
+    expect(rows[0].text()).toContain('Užbaigti pareigas');
+    expect(rows[1].text()).toContain('Ex-officio');
+    expect(rows[1].text()).toContain('Deleguota');
+    expect(rows[1].text()).toContain('Redaguoti');
+    expect(rows[1].text()).not.toContain('Užbaigti pareigas');
+    wrapper.unmount();
   });
 
   describe('actions', () => {

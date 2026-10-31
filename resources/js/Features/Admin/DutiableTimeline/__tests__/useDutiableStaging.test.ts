@@ -70,7 +70,7 @@ describe('useDutiableStaging', () => {
     });
   });
 
-  it('projects an ex-officio row onto its staged source, and keeps it out of the operations', () => {
+  it('stages only the source and leaves ex officio dates to the server preview', () => {
     const source = makeRow({ derived_ids: ['row-2'] });
     const derived = makeRow({
       id: 'row-2', via_dutiable_id: 'row-1', is_derived: true, editable: false,
@@ -80,14 +80,12 @@ describe('useDutiableStaging', () => {
 
     staging.stage('row-1', { start_date: '2024-07-18', end_date: '2025-07-17' });
 
-    expect(staging.staged.value.get('row-2')).toEqual({
-      start_date: '2024-07-18', end_date: '2025-07-17', projected: true,
-    });
+    expect(staging.staged.value.has('row-2')).toBe(false);
     expect(staging.dirtyCount.value).toBe(1);
     expect(staging.operations.value.map(operation => operation.row_ids)).toEqual([['row-1']]);
   });
 
-  it('drops the projection again when the source edit is reverted', () => {
+  it('drops the staged source when its edit is reverted', () => {
     const source = makeRow({ derived_ids: ['row-2'] });
     const derived = makeRow({ id: 'row-2', via_dutiable_id: 'row-1', is_derived: true });
 
@@ -111,7 +109,7 @@ describe('useDutiableStaging', () => {
     expect(staging.operations.value.every(operation => operation.type === 'set_dates')).toBe(true);
   });
 
-  it('keeps the ex-officio projection drawn after a commit, until the database agrees', async () => {
+  it('clears local edits after a synchronous commit and uses the fetched seat dates', async () => {
     const source = makeRow({ derived_ids: ['row-2'] });
     const derived = makeRow({ id: 'row-2', via_dutiable_id: 'row-1', is_derived: true });
     const rows = ref([source, derived]);
@@ -119,15 +117,10 @@ describe('useDutiableStaging', () => {
 
     staging.stage('row-1', { start_date: '2024-07-18', end_date: '2025-07-17' });
 
-    // The commit succeeded: the source row is saved, but SyncExOfficioDutiables is queued
-    // ($afterCommit), so the derived row is still stale in the database.
     staging.settle();
-
     expect(staging.dirtyCount.value).toBe(0);
-    expect(staging.pending.value.get('row-2')?.start_date).toBe('2024-07-18');
-    expect(staging.drawn.value.get('row-2')?.start_date).toBe('2024-07-18');
+    expect(staging.drawn.value.size).toBe(0);
 
-    // A refetch that shows the queue has run drops the hint.
     rows.value = [
       makeRow({ start_date: '2024-07-18', end_date: '2025-07-17', derived_ids: ['row-2'] }),
       makeRow({
@@ -137,10 +130,10 @@ describe('useDutiableStaging', () => {
     ];
     await nextTick();
 
-    expect(staging.pending.value.size).toBe(0);
+    expect(staging.resolved(rows.value[1]).start_date).toBe('2024-07-18');
   });
 
-  it('revertAll clears everything, projections included', () => {
+  it('revertAll clears all staged edits', () => {
     const staging = useDutiableStaging(ref([makeRow({ derived_ids: ['row-2'] }), makeRow({ id: 'row-2' })]));
 
     staging.stage('row-1', { start_date: '2024-07-18', end_date: '2025-07-17' });

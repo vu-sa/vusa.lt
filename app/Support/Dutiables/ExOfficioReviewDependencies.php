@@ -2,7 +2,6 @@
 
 namespace App\Support\Dutiables;
 
-use App\Models\Duty;
 use Illuminate\Support\Collection;
 
 /**
@@ -46,7 +45,7 @@ class ExOfficioReviewDependencies
         $dependencies = [];
         foreach ($items as $index => $item) {
             if (in_array($item['kind'], ['create', 'link'], true)) {
-                $dependencies[$item['target_duty_id']][$item['source_id']] ??= $index;
+                $dependencies[$item['target_duty_id']][$item['source_id']] = $index;
             }
         }
 
@@ -58,11 +57,22 @@ class ExOfficioReviewDependencies
         $sources = [];
         foreach ($targets as $target) {
             $sourceDutyIds = $target->exOfficioSourceDuties
-                ->filter(fn (Duty $duty): bool => (bool) $duty->institution?->is_active)
+                ->filter(fn ($duty): bool => (bool) $duty->institution?->is_active)
                 ->pluck('id');
             $sources[$target->id] = $rows->whereIn('duty_id', $sourceDutyIds)
                 ->whereNull('via_dutiable_id')
-                ->where('ended_by_institution_deactivation', false);
+                ->where('ended_by_institution_deactivation', false)
+                ->flatMap(function ($source) use ($target, $rows) {
+                    $dates = ExOfficioSeatDates::forTarget($source, $target->id,
+                        $rows->where('via_dutiable_id', $source->id), today()->toDateString())['dates'];
+                    if ($dates === null) {
+                        return collect();
+                    }
+                    $projection = clone $source;
+                    $projection->fill($dates);
+
+                    return collect([$projection]);
+                });
         }
 
         return $sources;
@@ -88,7 +98,8 @@ class ExOfficioReviewDependencies
                 if (! $dependency['selected']) {
                     $item['selected'] = false;
                 }
-            } elseif (! $rows->where('duty_id', $item['target_duty_id'])->contains('via_dutiable_id', $source->id)) {
+            } elseif (! $rows->where('duty_id', $item['target_duty_id'])->where('via_dutiable_id', $source->id)
+                ->contains(fn ($seat) => ! $seat->ended_by_institution_deactivation && DutiablePeriods::overlapDays($seat, $source) > 0)) {
                 $item['unavailable_dependency'] = true;
             }
         }

@@ -20,7 +20,7 @@ return [
         'end' => 'Užbaigti kartu su šaltiniu',
         'keep' => 'Palikti likusį laiką kaip savarankišką laikotarpį',
         'quota_change' => 'Keičiasi vietos padalinys: :before → :after. Gali būti viršyta kvota.',
-        'historical' => 'Sistema nežino, nuo kada šios pareigos suteikia kitas. Pažymėk, tik jei taip buvo ir tuo metu.',
+        'historical' => 'Pagrindinių pareigų laikotarpis pasibaigęs. Pažymėk, jei reikia pridėti buvusias ex officio pareigas.',
         'access_change' => 'Keičiasi šiandien galiojanti prieiga.',
         'blocked_chain' => 'Šaltinis pats susietas su kitu laikotarpiu. Šį ryšį peržiūrėk atskirai.',
         'blocked_partial' => 'Dalis laikotarpio sutampa su jau susietu. Sutvarkyk jį laikotarpių tvarkyklėje.',

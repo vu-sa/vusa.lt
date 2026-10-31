@@ -28,8 +28,17 @@ class DutiablePeriods
 
     public static function overlapDays(Dutiable $a, Dutiable $b): int
     {
-        $start = max($a->start_date->toDateString(), $b->start_date->toDateString());
-        $end = min($a->end_date?->toDateString() ?? '9999-12-31', $b->end_date?->toDateString() ?? '9999-12-31');
+        return self::overlap(self::dates($a), self::dates($b));
+    }
+
+    /**
+     * @param  Period  $a
+     * @param  Period  $b
+     */
+    public static function overlap(array $a, array $b): int
+    {
+        $start = max($a['start_date'], $b['start_date']);
+        $end = min($a['end_date'] ?? '9999-12-31', $b['end_date'] ?? '9999-12-31');
 
         return $end < $start ? 0 : (int) Carbon::parse($start)->diffInDays(Carbon::parse($end)) + 1;
     }
