@@ -246,9 +246,8 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
       currentPage.value = 1;
     }
 
-    // Resolve the relevance sentinel into a concrete Typesense sort expression
-    // (with the collection's date field as a recency tiebreak).
-    const effectiveSortBy = resolveSortValue(collection, sortBy.value, page.props.app?.locale);
+    const effectiveSortBy = resolveSortValue(collection, sortBy.value, page.props.app?.locale,
+      typeof page.props.mainTenantId === 'number' ? page.props.mainTenantId : null);
 
     try {
       const searchResult = await adminSearch.searchWithFacets(collection, query.value || '*', {
@@ -491,6 +490,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     const urlSort = params.get('sort');
     if (urlSort) {
       sortBy.value = urlSort;
+      isSortUserSelected.value = true;
     }
 
     const urlPages = Number(params.get('pages'));

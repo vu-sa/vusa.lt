@@ -66,6 +66,17 @@ describe('news facets', () => {
 });
 
 describe('resolveSortValue', () => {
+  it('resolves the resource default into a main-tenant boost and localized names', () => {
+    const defaultSort = getCollectionFacetConfig('resources')!.defaultSortBy;
+
+    expect(getCollectionSortOptions('resources').some(option => option.value === defaultSort)).toBe(true);
+    expect(resolveSortValue('resources', defaultSort, 'lt', 7)).toBe('_eval(tenant_id:7):desc,name_lt:asc');
+    expect(resolveSortValue('resources', defaultSort, 'en', 7)).toBe('_eval(tenant_id:7):desc,name_en:asc');
+    expect(resolveSortValue('resources', defaultSort, 'lt', null)).toBe('name_lt:asc');
+    expect(resolveSortValue('resources', 'created_at:desc', 'lt', 7)).toBe('created_at:desc');
+    expect(resolveSortValue('resources', RELEVANCE_SORT_VALUE, 'en', 7)).toBe('_text_match:desc,name_en:asc');
+  });
+
   it('expands the relevance sentinel into a text_match sort with a date tiebreak', () => {
     expect(resolveSortValue('meetings', RELEVANCE_SORT_VALUE))
       .toBe('_text_match:desc,start_time:desc');

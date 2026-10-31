@@ -1,8 +1,13 @@
 import { flushPromises, mount } from '@vue/test-utils';
 import { defineComponent, ref } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { usePage } from '@inertiajs/vue3';
 
 import { useAdminCollectionSearch } from '../useAdminCollectionSearch';
+
+import { createMockPage } from '@/tests/helpers/createMockPage';
+
+vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 const search = vi.hoisted(() => ({ searchWithFacets: vi.fn(), totalPages: 20 }));
 
@@ -36,6 +41,7 @@ async function mountController(options: Partial<Parameters<typeof useAdminCollec
 const pagesCalled = () => search.searchWithFacets.mock.calls.map(call => call[2].page);
 
 beforeEach(() => {
+  vi.mocked(usePage).mockReturnValue(createMockPage({ mainTenantId: 7 }));
   localStorage.clear();
   search.totalPages = 20;
   search.searchWithFacets.mockReset();
@@ -46,6 +52,67 @@ beforeEach(() => {
     facets: [],
   }));
   window.history.replaceState({}, '', '/mano/meetings');
+});
+
+describe('resource collection filters and sorting', () => {
+  it('sends the default boost without putting its expression in the URL', async () => {
+    window.history.replaceState({}, '', '/mano/resources');
+    const controller = await mountController({ collection: 'resources' });
+
+    expect(search.searchWithFacets.mock.calls.at(-1)?.[2].sortBy).toBe('_eval(tenant_id:7):desc,name_lt:asc');
+    expect(controller.sortOptions.value.some(option => option.value === controller.sortBy.value)).toBe(true);
+    expect(window.location.search).not.toContain('_eval');
+  });
+
+  it('keeps an explicit URL sort when searching and remembers it on return', async () => {
+    window.history.replaceState({}, '', '/mano/resources?sort=capacity:asc');
+    const first = await mountController({ collection: 'resources' });
+    first.search('projektorius', true);
+    await flushPromises();
+
+    expect(search.searchWithFacets.mock.calls.at(-1)?.[2].sortBy).toBe('capacity:asc');
+    expect(new URLSearchParams(window.location.search).get('sort')).toBe('capacity:asc');
+
+    window.history.replaceState({}, '', '/mano/resources');
+    const second = await mountController({ collection: 'resources' });
+
+    expect(second.sortBy.value).toBe('capacity:asc');
+  });
+
+  it('lets the dropdown switch between name order and the resource default', async () => {
+    window.history.replaceState({}, '', '/mano/resources');
+    const controller = await mountController({ collection: 'resources' });
+    controller.setSortBy('name_lt:desc');
+    await flushPromises();
+
+    expect(search.searchWithFacets.mock.calls.at(-1)?.[2].sortBy).toBe('name_lt:desc');
+    expect(new URLSearchParams(window.location.search).get('sort')).toBe('name_lt:desc');
+
+    controller.setSortBy('main_tenant');
+    await flushPromises();
+
+    expect(search.searchWithFacets.mock.calls.at(-1)?.[2].sortBy).toBe('_eval(tenant_id:7):desc,name_lt:asc');
+    expect(new URLSearchParams(window.location.search).has('sort')).toBe(false);
+  });
+
+  it('combines managed tenant ids with other filters and restores them after returning', async () => {
+    window.history.replaceState({}, '', '/mano/resources?is_reservable=true');
+    const first = await mountController({ collection: 'resources' });
+    first.setFilter('tenant_id', ['2', '7']);
+    first.search('', true);
+    await flushPromises();
+
+    expect(search.searchWithFacets.mock.calls.at(-1)?.[2].filterBy).toBe('tenant_id:=[2,7] && is_reservable:=[true]');
+    expect(new URLSearchParams(window.location.search).get('tenant_id')).toBe('2,7');
+
+    const reloaded = await mountController({ collection: 'resources' });
+    expect(reloaded.filters.value.tenant_id).toEqual(['2', '7']);
+
+    window.history.replaceState({}, '', '/mano/resources');
+    const returned = await mountController({ collection: 'resources' });
+    expect(returned.filters.value.tenant_id).toEqual(['2', '7']);
+    expect(returned.filters.value.is_reservable).toEqual(['true']);
+  });
 });
 
 describe('useAdminCollectionSearch — restoring loaded pages', () => {

@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Media\AddImageMedia;
+use App\Enums\ResponsibilityPurpose;
 use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\Tenant;
@@ -178,12 +179,27 @@ describe('image search synchronization', function (): void {
 });
 
 describe('index', function (): void {
-    // The collection reads from Typesense (its scoped key carries the authorization), so the page
-    // needs no rows — and, unlike the old redirect to the search tab, it renders here.
     test('renders the resources collection instead of redirecting to the search tab', function (): void {
         asUserWithInertia($this->resourceManager)->get(route('resources.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page->component('Admin/Reservations/IndexResource'));
+    });
+
+    test('passes the main tenant and only tenants covered by reservation handling responsibilities', function (): void {
+        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->firstOrFail();
+        grantPurpose($this->resourceManager->current_duties()->first(), ResponsibilityPurpose::ReservationHandling, $otherTenant);
+
+        asUserWithInertia($this->resourceManager)->get(route('resources.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('mainTenantId', Tenant::query()->where('type', 'pagrindinis')->value('id'))
+                ->where('managedTenantIds', [$otherTenant->id]));
+    });
+
+    test('permissions alone do not mark tenants as managed', function (): void {
+        asUserWithInertia($this->resourceManager)->get(route('resources.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->where('managedTenantIds', []));
     });
 });
 
