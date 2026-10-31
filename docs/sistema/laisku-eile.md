@@ -43,3 +43,12 @@ santrauką nebepatenka.
 
 Peržiūra tikrinama per `RolePolicy::viewAny`, o pašalinimo veiksmus papildomai leidžia tik
 `Super Admin`. Eilutės saugomos `notification_digest_queue` lentelėje.
+
+## Laiškų peržiūra {#perziura}
+
+**Sistema → Laiškų peržiūra** (`/mano/mail-previews`) rodo, kaip atrodo sistemos laiškai ir suvestinės. Laiškai
+sudaromi iš pavyzdinių duomenų, todėl niekas neišsiunčiama ir neišsaugoma. Galima keisti kalbą, telefono ar
+kompiuterio plotį ir HTML ar teksto versiją.
+
+Šioje eilėje veiksmas **Peržiūrėti laišką** rodo, kaip atrodytų konkretaus gavėjo laukianti suvestinė. Peržiūra
+eilės nekeičia.

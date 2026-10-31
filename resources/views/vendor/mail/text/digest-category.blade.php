@@ -26,5 +26,5 @@
 @endif
 @endforeach
 @if ($remaining > 0)
-+ {{ $remaining }} {{ trans_choice('notifications.digest_more_items', $remaining) }}: {{ $moreUrl }}
++ {{ trans_choice('notifications.digest_more_items', $remaining) }}: {{ $moreUrl }}
 @endif

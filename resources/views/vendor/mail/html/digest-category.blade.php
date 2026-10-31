@@ -44,7 +44,7 @@
 @if ($remaining > 0)
 <tr>
 <td style="padding: 12px 0;">
-<a href="{{ $moreUrl }}" style="font-size: 13px; color: #71717a;">+ {{ $remaining }} {{ trans_choice('notifications.digest_more_items', $remaining) }} →</a>
+<a href="{{ $moreUrl }}" style="font-size: 13px; color: #71717a;">+ {{ trans_choice('notifications.digest_more_items', $remaining) }} →</a>
 </td>
 </tr>
 @endif
