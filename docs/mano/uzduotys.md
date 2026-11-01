@@ -107,7 +107,7 @@ Atliktos užduotys rikiuojamos nuo vėliausiai atliktos.
 
 Nuoroda į konkrečią užduotį (pvz., iš pranešimo) atidaro ją iš karto, net jei ji nėra pirmame puslapyje.
 
-### Veiksmai su užduotimi {#veiksmai}
+### Veiksmai su užduotimi {#veiksmai-su-uzduotimi}
 
 | Veiksmas | Kada rodomas |
 |---|---|

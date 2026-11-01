@@ -3,8 +3,11 @@ doc_status: reviewed
 title: Posėdžiai
 area: meetings
 models: [Meeting]
-last_reviewed: 2026-10-27
+last_reviewed: 2026-11-01
 tests:
+  - tests/Feature/Search/ListFreshnessTest.php
+  - resources/js/Components/Meetings/__tests__/MeetingCollectionRow.component.test.ts
+  - resources/js/Components/Meetings/__tests__/MeetingPreview.component.test.ts
   - tests/Feature/Permissions/MeetingPermissionsTest.php
   - tests/Feature/Admin/Search/SearchVisibilityParityTest.php
   - resources/js/Pages/Admin/Representation/__tests__/IndexMeeting.component.test.ts
@@ -116,9 +119,9 @@ Posėdžio būsena rodo, ar jo darbotvarkė užpildyta:
 
 | Būsena | Kada |
 |---|---|
-| **Nėra darbotvarkės** | Posėdis neturi nė vieno punkto |
-| **Neužpildyta** | Bent vienam punktui trūksta tipo arba balsavimo informacijos |
-| **Užpildyta** | Visi punktai užpildyti |
+| **Nėra darbotvarkės** | Posėdis neturi nė vieno klausimo |
+| **Neužpildyta** | Bent vienam klausimui trūksta tipo arba balsavimo informacijos |
+| **Užpildyta** | Visi klausimai užpildyti |
 
 Kada punktas laikomas užpildytu, aprašyta puslapyje
 [Darbotvarkės klausimai](/visak/darbotvarkes-klausimai#uzpildyta). Ta pati taisyklė taikoma
@@ -209,7 +212,39 @@ Anksčiau toks posėdis patekdavo į šiukšlinę, o atkūrus posėdį jo užduo
 
 Sąraše (`/mano/meetings`) filtruojama pagal metus, būseną, balsavimo atitikimą, institucijos tipą
 ir padalinį. Pirmą kartą rodomi tavo padalinių posėdžiai. Posėdžiai, kuriuos ką tik keitei,
-rodomi viršuje.
+rodomi viršuje. Išsaugojus balsavimą ar pakeitus darbotvarkę, sąrašas ir viešas posėdžio puslapis
+atsinaujina iš karto.
+
+Lentelėje yra stulpeliai **Data**, **Institucija**, **Būsena**, **Balsavimas** ir **Klausimai**.
+**Sukurta** ir **Atnaujinta** paslėpti, juos įjungia meniu **Stulpeliai**. Rikiuoti galima paspaudus
+datos, klausimų ar sukūrimo ir atnaujinimo stulpelio antraštę.
+
+Eilutėje ir lentelėje yra **Atidaryti** ir meniu **⋯** su kitais veiksmais. Telefone visi veiksmai yra
+meniu **⋯**, o pavadinimas atveria posėdį. Peržiūroje rezultatas rodomas tik kortelėje dešinėje.
+
+#### Kaip praėjo posėdis {#kaip-praejo}
+
+Sąrašas ir institucijos paskutiniai posėdžiai vienodai parodo, kaip praėjo posėdis:
+
+| Žyma ar skaičius | Ką reiškia |
+|---|---|
+| **Neužpildyta**, **Nėra darbotvarkės** | [Užpildymo būsena](#busena). Sąrašo eilutėje užpildytas posėdis jos nerodo, stulpelyje **Būsena** ji matyti visada |
+| **2 iš 3 balsavimų sutapo** | Kiek sprendimų sutapo su studentų pozicija. Žalia – sutapo visi, geltona – dalis, raudona – nė vienas. Bendru sutarimu priimtas sprendimas laikomas sutapusiu |
+| **už**, **prieš**, **susilaikė** | Sprendimai VU SA organuose, kur atskiros studentų pozicijos nėra |
+| **aptarimai**, **atidėti** | Tokio tipo klausimų skaičius |
+| **be rezultato** | Klausimai, kurių balsavimo rezultatas neįrašytas |
+
+Skaičiuojami darbotvarkės klausimai, o ne atskiri balsavimai: jei klausimui pažymėtas pagrindinis
+balsavimas, vertinamas jis, kitaip – visi klausimo balsavimai. Pertraukos ir išbraukti klausimai
+neskaičiuojami. Sąraše skaičiuojami tik viešai matomi klausimai, o jei posėdis turi klausimų, rodomų
+tik ViSAK, užpildymo būsena jame nerodoma. Institucijos paskutiniuose posėdžiuose įskaičiuojami ir
+tie, kuriuos tau leidžiama matyti.
+
+<ChangelogNote date="2026-11-01" title="Kaip praėjo posėdis">
+
+Sąrašuose atsirado posėdžio rezultatas, o lentelėje – stulpeliai **Balsavimas** ir **Klausimai**.
+
+</ChangelogNote>
 
 Atskiras klausimas gali būti pažymėtas **Rodoma tik ViSAK**, net jei posėdis viešas. Viešai lieka
 jo numeris ir nebūtinas viešas pavadinimas; matomumo žyma nerodoma. [Klausimo matomumas](/visak/darbotvarkes-klausimai#matomumas).
@@ -310,6 +345,8 @@ esminėmis narių mintimis. Jei protokolas neatsiunčiamas, ataskaita jį atstoj
 - Pavadinimas: `App\Support\MeetingTitle`; perskaičiuojamas `MeetingController::update()`.
 - Viešumas: `Meeting::is_public` pagal `MeetingSettings::public_meeting_institution_type_ids`.
 - Būsena ir trūkstami veiksmai: `MeetingCompletionService::calculate()` / `missingActions()`.
+- Rezultatas: `Meeting::outcomeSummary()` (`VoteStatisticsCalculator::outcomeSummary()`); paieškos
+  dokumentus po balsavimo ar klausimo pakeitimo atnaujina `SyncMeetingOutcomeIndex`.
 - Užduotys: `MeetingTaskSubscriber` (`MeetingFullyCreated`, punktų sukūrimas, išsaugojimas,
   ištrynimas) → `AgendaCreationTaskHandler`, `AgendaCompletionTaskHandler`.
 - Priminimai: `notifications:meeting-reminders` kas 30 min., ±30 min. langas; valandos –

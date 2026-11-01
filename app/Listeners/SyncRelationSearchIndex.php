@@ -3,15 +3,18 @@
 namespace App\Listeners;
 
 use App\Events\SearchRelationChanged;
+use App\Jobs\SyncMeetingOutcomeIndex;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
+use App\Models\Vote;
 use Illuminate\Events\Dispatcher;
 
 /**
  * Re-indexes the documents that embed a relation when it changes: meetings and agenda items
  * carry their institutions' type ids (the facts public visibility is decided from), so a type
- * or institution change must reach them — as it must the public meeting index.
+ * or institution change must reach them — as it must the public meeting index. Meetings and
+ * agenda items also carry the outcome of their votes, so those writes reach them too.
  */
 class SyncRelationSearchIndex
 {
@@ -23,6 +26,20 @@ class SyncRelationSearchIndex
                 $this->institutionFactsChanged($institution);
             }
         });
+
+        foreach (['saved', 'deleted'] as $event) {
+            $events->listen("eloquent.{$event}: ".AgendaItem::class, fn (AgendaItem $item) => SyncMeetingOutcomeIndex::dispatch($item->meeting_id));
+            $events->listen("eloquent.{$event}: ".Vote::class, fn (Vote $vote) => $this->voteChanged($vote));
+        }
+    }
+
+    private function voteChanged(Vote $vote): void
+    {
+        $meetingId = AgendaItem::query()->whereKey($vote->agenda_item_id)->value('meeting_id');
+
+        if ($meetingId !== null) {
+            SyncMeetingOutcomeIndex::dispatch($meetingId);
+        }
     }
 
     private function relationChanged(SearchRelationChanged $event): void
