@@ -84,9 +84,9 @@ const shownHeading = computed(() => {
 // The shown list follows PublicAgendaItemRow, and for a private item AgendaItemPresenter::redacted().
 const shownKeys = computed(() => (props.isPrivate
   ? ['position', 'public_title']
-  : ['title', 'status', 'description', 'votes', 'brought_by_students']));
+  : ['title', 'status', 'description', 'time', 'votes', 'brought_by_students']));
 
 const neverKeys = computed(() => (props.isPrivate
   ? ['content', 'outcome', 'notes', 'comments', 'problems', 'history']
-  : ['notes', 'comments', 'problems', 'history']));
+  : ['position_and_notes', 'notes', 'comments', 'problems', 'history']));
 </script>

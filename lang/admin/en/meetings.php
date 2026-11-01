@@ -49,6 +49,7 @@ return [
                 'title' => 'Title',
                 'status' => 'Type or result, such as “Discussion” or an adopted decision',
                 'description' => 'Description',
+                'time' => 'Time, if set',
                 'votes' => 'Votes: the student vote, the decision and the benefit to students',
                 'brought_by_students' => 'A mark that students brought the item',
                 'position' => 'The item\'s number on the agenda',
@@ -57,6 +58,7 @@ return [
             'never' => [
                 'content' => 'The real title, description and student position',
                 'outcome' => 'Type, time and votes',
+                'position_and_notes' => 'Student position and vote notes',
                 'notes' => 'Internal notes',
                 'comments' => 'Comments',
                 'problems' => 'Linked problems',

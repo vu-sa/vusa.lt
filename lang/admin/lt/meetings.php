@@ -49,6 +49,7 @@ return [
                 'title' => 'Pavadinimas',
                 'status' => 'Tipas arba rezultatas, pavyzdžiui, „Aptarimas“ ar priimtas sprendimas',
                 'description' => 'Aprašymas',
+                'time' => 'Laikas, jei įrašytas',
                 'votes' => 'Balsavimai: studentų balsas, sprendimas ir palankumas studentams',
                 'brought_by_students' => 'Žyma, kad klausimą pateikė studentai',
                 'position' => 'Klausimo numeris darbotvarkėje',
@@ -57,6 +58,7 @@ return [
             'never' => [
                 'content' => 'Tikrasis pavadinimas, aprašymas ir studentų pozicija',
                 'outcome' => 'Tipas, laikas ir balsavimai',
+                'position_and_notes' => 'Studentų pozicija ir balsavimų pastabos',
                 'notes' => 'Vidaus pastabos',
                 'comments' => 'Komentarai',
                 'problems' => 'Susijusios problemos',

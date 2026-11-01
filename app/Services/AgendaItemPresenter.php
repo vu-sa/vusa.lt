@@ -42,10 +42,30 @@ class AgendaItemPresenter
             return self::redacted($item);
         }
 
-        return Arr::only($item->toInternalArray(), [
-            'id', 'meeting_id', 'order', 'title', 'type', 'description', 'student_position',
+        $public = Arr::only($item->toInternalArray(), [
+            'id', 'meeting_id', 'order', 'title', 'type', 'description',
             'brought_by_students', 'start_time', 'end_time', 'main_vote', 'votes', 'is_private',
         ]);
+
+        if (isset($public['votes'])) {
+            $public['votes'] = array_map(self::publicVote(...), $public['votes']);
+        }
+        if (isset($public['main_vote'])) {
+            $public['main_vote'] = self::publicVote($public['main_vote']);
+        }
+
+        return $public;
+    }
+
+    /**
+     * A vote's note is the recorder's own, so it never leaves Mano VU SA.
+     *
+     * @param  array<string, mixed>  $vote
+     * @return array<string, mixed>
+     */
+    private static function publicVote(array $vote): array
+    {
+        return Arr::only($vote, ['id', 'title', 'is_main', 'is_consensus', 'student_vote', 'decision', 'student_benefit', 'order']);
     }
 
     /** @return array<string, mixed> */
