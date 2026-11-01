@@ -30,5 +30,7 @@ describe('AgendaItemPublicVisibilityDialog', () => {
 
     expect(wrapper.get('[data-testid="intro"]').text()).toContain('meetings.visibility.item.intro.unpublished');
     expect(wrapper.get('[data-slot="visibility-shown"]').text()).toContain('meetings.visibility.item.would_show_heading');
+    expect(wrapper.get('[data-slot="visibility-shown"] svg').classes()).toContain('text-status-info');
+    expect(render('public_page', false).get('[data-slot="visibility-shown"] svg').classes()).toContain('text-status-success');
   });
 });

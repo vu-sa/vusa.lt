@@ -18,7 +18,7 @@
           </h3>
           <ul class="space-y-1.5">
             <li v-for="key in shownKeys" :key class="flex items-start gap-2">
-              <Eye class="mt-0.5 size-4 shrink-0 text-status-success" aria-hidden="true" />
+              <Eye :class="['mt-0.5 size-4 shrink-0', published ? 'text-status-success' : 'text-status-info']" aria-hidden="true" />
               <span>{{ $t(`meetings.visibility.item.shown.${key}`) }}</span>
             </li>
           </ul>
