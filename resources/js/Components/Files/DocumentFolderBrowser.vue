@@ -12,6 +12,7 @@
       <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
         <SpotlightPopover
           :title="$t('Visi SharePoint failai vienoje vietoje')"
+          :description="$t('Žiūrėk failus sąrašu arba SharePoint aplankais. Būseną keisk paspaudęs ją eilutėje.')"
           :is-dismissed="layoutSpotlight.isDismissed.value"
           @dismiss="layoutSpotlight.dismiss()"
         >
@@ -178,7 +179,7 @@
                 {{ file.institution?.name ?? '—' }}
               </TableCell>
               <TableCell>
-                <DocumentFileStatus v-if="!file.removed_from_sharepoint_at" :file />
+                <DocumentFileStatus :file :busy="busyIds.has(file.id)" @status="requestStatus" />
               </TableCell>
               <TableCell>
                 <DocumentFileActions :file @delete="requestDelete([$event])" />
@@ -258,7 +259,7 @@
                 </div>
               </div>
               <div class="mt-1.5">
-                <DocumentFileStatus v-if="!file.removed_from_sharepoint_at" :file />
+                <DocumentFileStatus :file :busy="busyIds.has(file.id)" @status="requestStatus" />
               </div>
             </CollectionRow>
           </li>

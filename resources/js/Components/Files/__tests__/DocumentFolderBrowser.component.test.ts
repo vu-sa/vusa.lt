@@ -78,6 +78,8 @@ async function mountBrowser(props: Record<string, unknown> = {}) {
       Head: true,
       CollectionTitleBand: true,
       SpotlightPopover: { template: '<div><slot /></div>' },
+      // A reka dropdown; its own tests cover it. Here only what it is given and what it emits matter.
+      CollectionStatusMenu: { name: 'CollectionStatusMenu', props: ['status', 'modelValue', 'options', 'editable', 'pending'], emits: ['update:modelValue'], template: '<span />' },
     } },
   });
   await flushPromises();
@@ -88,15 +90,8 @@ async function mountBrowser(props: Record<string, unknown> = {}) {
 const folderCalls = () => vi.mocked(fetch).mock.calls.filter(([url]) => url.toString().includes('api.v1.admin.documents.folder'));
 const lastFolderParams = () => new URL(folderCalls().at(-1)![0].toString()).searchParams;
 const statusCalls = () => vi.mocked(fetch).mock.calls.filter(([url]) => url.toString().includes('api.v1.admin.documents.status'));
-const setStatus = async (wrapper: ReturnType<typeof mount>, index: number, value: DocumentStatus) => {
-  wrapper.findAll('[data-slot="document-file"]').forEach((row, rowIndex) => {
-    const checkbox = row.findComponent(Checkbox);
-    const selected = rowIndex === index;
-    if (checkbox.exists() && checkbox.props('modelValue') !== selected) checkbox.vm.$emit('update:modelValue', selected);
-  });
-  await wrapper.vm.$nextTick();
-  await wrapper.get(value === DocumentStatus.Published ? '[data-slot="document-bulk-publish"]' : '[data-slot="document-bulk-hide"]').trigger('click');
-};
+const setStatus = (wrapper: ReturnType<typeof mount>, index: number, value: DocumentStatus) =>
+  wrapper.findAll('[data-slot="document-file"]')[index].findComponent({ name: 'CollectionStatusMenu' }).vm.$emit('update:modelValue', value);
 const segment = (wrapper: ReturnType<typeof mount>, group: string, label: string) =>
   wrapper.get(`[data-slot="${group}"]`).findAll('button').find(button => button.text().startsWith(label))!;
 
@@ -169,23 +164,13 @@ describe('DocumentFolderBrowser', () => {
     responses = [listing({ files: [file({ can: { update: false } })] })];
     const wrapper = await mountBrowser();
 
-    expect(wrapper.findComponent({ name: 'CollectionStatusMenu' }).exists()).toBe(false);
-    expect(wrapper.text()).toContain('Paskelbtas');
+    expect(wrapper.findComponent({ name: 'CollectionStatusMenu' }).props('editable')).toBe(false);
   });
 
-  it('shows read-only statuses even when the user can update the files', async () => {
+  it('publishes from the status menu with one request, not a page visit', async () => {
     const wrapper = await mountBrowser();
 
-    expect(wrapper.findComponent({ name: 'CollectionStatusMenu' }).exists()).toBe(false);
-    expect(wrapper.text()).toContain('Paskelbtas');
-    expect(wrapper.text()).toContain('Laukia');
-    expect(wrapper.find('[data-collection-open]').attributes('href')).toBe(route('documents.edit', 1));
-  });
-
-  it('publishes a selected file with one request, not a page visit', async () => {
-    const wrapper = await mountBrowser();
-
-    await setStatus(wrapper, 1, DocumentStatus.Published);
+    setStatus(wrapper, 1, DocumentStatus.Published);
     await flushPromises();
 
     expect(router.post).not.toHaveBeenCalled();
@@ -197,7 +182,7 @@ describe('DocumentFolderBrowser', () => {
     responses = [listing({ files: [file({ id: 3, status: DocumentStatus.Hidden, problems: ['document_date'], public_url: null })] })];
     const wrapper = await mountBrowser();
 
-    await setStatus(wrapper, 0, DocumentStatus.Published);
+    setStatus(wrapper, 0, DocumentStatus.Published);
     await flushPromises();
 
     expect(statusCalls()).toHaveLength(0);
@@ -219,8 +204,8 @@ describe('DocumentFolderBrowser', () => {
     });
     const wrapper = await mountBrowser();
 
-    await setStatus(wrapper, 0, DocumentStatus.Hidden);
-    await setStatus(wrapper, 1, DocumentStatus.Published);
+    setStatus(wrapper, 0, DocumentStatus.Hidden);
+    setStatus(wrapper, 1, DocumentStatus.Published);
     await vi.waitFor(() => expect(statusCalls()).toHaveLength(2));
     await flushPromises();
 
@@ -251,7 +236,7 @@ describe('DocumentFolderBrowser', () => {
     });
     const wrapper = await mountBrowser();
 
-    await setStatus(wrapper, 0, DocumentStatus.Published);
+    setStatus(wrapper, 0, DocumentStatus.Published);
     await flushPromises();
     const afterPublish = folderCalls().length;
 

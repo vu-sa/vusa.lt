@@ -29,7 +29,7 @@ One action set on rows, tables and the detail card: **Atidaryti** (`role: 'open'
 - Nothing repeats within a view: a tag never sits beside the counts it sums up, a column never repeats another, and a detail card never restates what its own section lists.
 - The left item beside a detail card is the row with less: no buttons and no tags (`view === 'preview'`). The card carries them.
 - Row sub-lines join their parts with a middle dot. Quick filters read `Label · N` through `quickFilterLabel`, and the plain label at zero.
-- Status is edited in the detail card or the form, never in a row or table cell.
+- Status is edited in the detail card or the form, never in a row or table cell. The exception is a list whose main job is that decision: documents are published from their row.
 - A record that stopped working gets `rowMuted` and a mark before its name, shows no activity status, and stays reachable through a Būsena filter rather than a column.
 - Table columns: the title column takes the width left over (`tableMinWidth` is the sum of the fixed columns plus a readable title). Every collection has Sukurta and Atnaujinta with `defaultHidden`; a `sortField` needs both directions in the source's sort options, and then its header sorts.
 

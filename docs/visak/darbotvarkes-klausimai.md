@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Darbotvarkės klausimai
 area: agendaItems
 models: [AgendaItem, Vote]
-last_reviewed: 2026-10-21
+last_reviewed: 2026-11-01
 tests:
   - tests/Feature/Permissions/MeetingPermissionsTest.php
   - tests/Feature/Admin/Search/SearchVisibilityParityTest.php
@@ -240,8 +240,9 @@ klausimas matomas skirtuke **Svarstyta posėdžiuose**. **Atsieti** panaikina ry
 ### Klausimų sąrašas
 
 Sąraše (`/mano/agendaItems`) matyti visų tau prieinamų posėdžių klausimai. Pirmą kartą rodomi tavo
-padalinių klausimai. Filtrai: **Posėdžio
-metai**, **Užpildymo būsena**, **Studentų balsas**, **Sprendimas**, **Palankumas studentams**,
+padalinių klausimai. Lentelėje ir peržiūroje rodomas [klausimo tipas](#tipai), o klausimas be tipo
+pažymėtas **Nepažymėtas**. Filtrai: **Posėdžio
+metai**, **Tipas**, **Užpildymo būsena**, **Studentų balsas**, **Sprendimas**, **Palankumas studentams**,
 **Pateikė studentai**, **Balsavimo atitikimas** ir **Padalinys**.
 
 ## Kas ką gali {#teises}

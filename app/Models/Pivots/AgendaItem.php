@@ -315,7 +315,7 @@ class AgendaItem extends Pivot implements Commentable
         $voteStats = $this->calculateVoteStatistics($requiresStudentPerspective);
 
         $type = $this->getAttribute('type');
-        $typeValue = $type instanceof AgendaItemType ? $type->value : 'voting';
+        $typeValue = $type instanceof AgendaItemType ? $type->value : null;
 
         // Build base array that is always returned (prevents false-positive schema
         // mismatches when the model is validated without a loaded meeting)

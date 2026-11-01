@@ -99,6 +99,15 @@ test('the list filter counts an item complete by the same rule as the meeting an
         ->and($decisionOnlyVusa->fresh()->toSearchableArray()['vote_alignment_status'])->toBe('neutral');
 });
 
+test('an agenda item without a type is indexed as unset, not as a vote', function (): void {
+    $meeting = Meeting::factory()->create();
+    $item = AgendaItem::factory()->for($meeting)->create(['type' => null]);
+    $discussed = AgendaItem::factory()->for($meeting)->create(['type' => AgendaItemType::Informational]);
+
+    expect($item->fresh()->toSearchableArray()['type'])->toBeNull()
+        ->and($discussed->fresh()->toSearchableArray()['type'])->toBe('informational');
+});
+
 test('without a main vote, the outcome fields hold what every vote shares', function (): void {
     $item = AgendaItem::factory()->for(Meeting::factory())->create(['type' => AgendaItemType::Voting]);
     Vote::factory()->for($item, 'agendaItem')->create(['is_main' => false, 'decision' => 'positive', 'student_vote' => 'positive', 'order' => 0]);

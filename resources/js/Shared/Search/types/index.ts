@@ -250,6 +250,7 @@ export interface AgendaItemSearchResult {
   institution_name_en?: string;
   tenant_shortnames?: string[];
   student_vote?: string;
+  type?: string | null;
   decision?: string;
   student_benefit?: string;
   vote_alignment_status?: string;

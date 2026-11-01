@@ -11,7 +11,7 @@
     :columns
     table-fixed
     actions-width="w-44"
-    table-min-width="min-w-[56rem]"
+    table-min-width="min-w-[72rem]"
     @row-action="(_item, key) => collectionActions.select(key)"
     :search-placeholder="$t('Ieškoti darbotvarkės klausimų')"
   >
@@ -19,12 +19,14 @@
       <CollectionRow :spotlight="item === source?.items.value[0]" :actions="view === 'preview' ? [] : recordActions" @select="key => collectionActions.select(key)" class="px-3 py-3 sm:px-4">
         <div class="min-w-0 flex-1">
           <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches" :title="item.title || $t('Be pavadinimo')" :href="route('agendaItems.show', item.id)" :sub="[item.meeting_title, getSearchTranslation(item, 'institution_name')].filter(Boolean).join(' · ')" />
+          <AgendaItemTypeMark class="mt-1 text-xs" :type="item.type" />
         </div>
       </CollectionRow>
     </template>
 
     <template #cell="{ item, column }">
-      <CollectionPrimaryCell v-if="column.key === 'title'" :match="item._searchMatch" :title-matches="item._searchTitleMatches" :title="item.title || $t('Be pavadinimo')" :href="route('agendaItems.show', item.id)" />
+      <CollectionPrimaryCell v-if="column.key === 'title'" title-lines="wrap" :match="item._searchMatch" :title-matches="item._searchTitleMatches" :title="item.title || $t('Be pavadinimo')" :href="route('agendaItems.show', item.id)" />
+      <AgendaItemTypeMark v-else-if="column.key === 'type'" :type="item.type" />
       <span v-else-if="column.key === 'meeting'">{{ item.meeting_title || '—' }}</span>
       <span v-else-if="column.key === 'institution'">{{ getSearchTranslation(item, 'institution_name') || '—' }}</span>
       <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
@@ -54,6 +56,8 @@ import { useCollectionRecordActions } from '@/Composables/useCollectionRecordAct
 import { useRowAbilities } from '@/Composables/useRowAbilities';
 import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import AgendaItemPreview from '@/Components/AgendaItems/AgendaItemPreview.vue';
+import AgendaItemTypeMark from '@/Components/AgendaItems/AgendaItemTypeMark.vue';
+import { agendaItemTypeOptions } from '@/Components/AgendaItems/agendaItemTypes';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
@@ -74,13 +78,14 @@ const source = useTypesenseCollectionSource<AgendaItemSearchResult>({
   collection: 'agenda_items',
   preserveUrlKeys: ['view', 'item'],
   defaultFilters: { tenant_shortnames: props.defaultTenantShortnames },
+  valueLabel: (field, value) => (field === 'type' ? agendaItemTypeOptions().find(option => option.value === value)?.label : undefined),
 });
 
 const columns: CollectionColumn[] = [
-  { key: 'title', label: $t('Darbotvarkės klausimas'), sortField: 'title' },
-  { key: 'meeting', label: $t('Posėdis'), class: 'w-64' },
+  { key: 'title', label: $t('Darbotvarkės klausimas'), class: 'w-80', sortField: 'title' },
+  { key: 'type', label: $t('Tipas'), class: 'w-36' },
+  { key: 'meeting', label: $t('Posėdis') },
   { key: 'institution', label: $t('Institucija'), class: 'w-48' },
-
   { key: 'created_at', label: $t('Sukurta'), class: 'w-36', defaultHidden: true, sortField: 'created_at' },
   { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', defaultHidden: true, sortField: 'updated_at' },
 ];

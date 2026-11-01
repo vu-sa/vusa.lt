@@ -705,6 +705,7 @@ $settings = [
                         // Vote alignment
                         ['name' => 'vote_matches', 'type' => 'bool'],
                         ['name' => 'vote_alignment_status', 'type' => 'string', 'facet' => true],
+                        ['name' => 'type', 'type' => 'string', 'facet' => true, 'optional' => true],
 
                         ['name' => 'created_at', 'type' => 'int64', 'sort' => true],
                         ['name' => 'updated_at', 'type' => 'int64', 'sort' => true],
