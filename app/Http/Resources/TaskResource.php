@@ -43,7 +43,7 @@ class TaskResource extends JsonResource
             'completed_at' => $this->completed_at?->toISOString(),
             'cancelled_at' => $this->cancelled_at?->toISOString(),
             'created_at' => $this->created_at->toISOString(),
-            'updated_at' => $this->updated_at?->toISOString(),
+            'updated_at' => $this->updated_at->toISOString(),
             'action_type' => $this->action_type?->value,
             'metadata' => $this->metadata,
             'progress' => $this->getProgress(),

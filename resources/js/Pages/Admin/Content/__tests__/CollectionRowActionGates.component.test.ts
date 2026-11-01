@@ -151,7 +151,8 @@ function mountPublishingPage(testCase: CollectionCase, view = 'rows') {
           <section data-testid="preview"><slot name="preview" :item="item" :actions="rowActions(item)" /></section>
         </div>`,
       },
-      CollectionRow: { name: 'CollectionRow', props: ['actions'], template: '<article><slot /></article>' },
+      CollectionRow: { name: 'CollectionRow', props: ['actions'], template: '<article><slot name="lead" /><slot /></article>' },
+      CollectionStatusIcon: true,
       CollectionStatusMenu: true,
       CollectionRowActions: true,
       StatusBadge: true,
@@ -165,13 +166,13 @@ function mountPublishingPage(testCase: CollectionCase, view = 'rows') {
 }
 
 describe.each(publishingCases)('$prefix publishing placement', (testCase) => {
-  it('shows read-only statuses in rows and cells, with editing confined to the detail card', () => {
+  it('shows status icons in rows and editable statuses in table cells and detail cards', () => {
     const wrapper = mountPublishingPage(testCase);
-    for (const area of ['row', 'cell']) {
-      const region = wrapper.get(`[data-testid="${area}"]`);
-      expect(region.findComponent({ name: 'CollectionStatusMenu' }).exists()).toBe(false);
-      expect(region.findComponent({ name: 'StatusBadge' }).exists()).toBe(true);
-    }
+    const row = wrapper.get('[data-testid="row"]');
+    expect(row.findComponent({ name: 'CollectionStatusMenu' }).exists()).toBe(false);
+    expect(row.findComponent({ name: 'CollectionStatusIcon' }).exists()).toBe(true);
+    const cell = wrapper.get('[data-testid="cell"]');
+    expect(cell.findComponent({ name: 'CollectionStatusMenu' }).props('editable')).toBe(true);
     const preview = wrapper.get('[data-testid="preview"]');
     expect(preview.findComponent({ name: 'CollectionStatusMenu' }).exists()).toBe(!testCase.banner);
     if (!testCase.banner) {
@@ -187,11 +188,11 @@ describe.each(publishingCases)('$prefix publishing placement', (testCase) => {
       const row = wrapper.get('[data-testid="row"]');
       expect(row.findComponent({ name: 'CollectionRow' }).props('actions')).toEqual([]);
       expect(row.findComponent({ name: 'StatusBadge' }).exists()).toBe(false);
+      expect(row.findComponent({ name: 'CollectionStatusIcon' }).exists()).toBe(false);
       wrapper.unmount();
     });
   }
 });
-
 
 it('marks stopped event types before the name and mutes them without a duplicate status column', () => {
   const inactive = { id: 1, name: { lt: 'Tipas', en: 'Type' }, slug: 'type', is_active: false };

@@ -85,8 +85,8 @@ it('applies list status changes and retains inactive institution tags across nav
     waitForInertiaRender($page, '[data-slot=collection-preview] [data-slot=collection-status-menu] [data-status-role=neutral]');
     expect($institution->fresh()->is_active)->toBe(0);
 
-    navigateTo($page, '/mano/duties');
-    waitForInertiaRender($page, '[data-slot=collection-status-menu]');
+    navigateTo($page, '/mano/duties?view=preview');
+    waitForInertiaRender($page, '[data-slot=collection-preview] [data-slot=collection-status-menu]');
     $page->assertSee('Nebeveikianti institucija');
     foreach (['light', 'dark'] as $theme) {
         $page->script('document.documentElement.classList.toggle("dark", '.($theme === 'dark' ? 'true' : 'false').')');
@@ -95,15 +95,15 @@ it('applies list status changes and retains inactive institution tags across nav
             $page->screenshot(filename: "duty-activity-list-{$theme}-{$width}", fullPage: false);
         }
     }
-    $page->click('[data-slot=duty-collection-row]:has-text("Būsenos pareigybė") [data-slot=collection-status-menu]');
+    $page->click('[data-slot=collection-preview] [data-slot=collection-status-menu]');
     $page->click('[role=menuitemradio]:has-text("Nebeveikianti")');
-    waitForInertiaRender($page, '[data-slot=duty-collection-row]:has-text("Būsenos pareigybė") [data-slot=collection-status-menu] [data-status-role=neutral]');
+    waitForInertiaRender($page, '[data-slot=collection-preview] [data-slot=collection-status-menu] [data-status-role=neutral]');
     expect($duty->fresh()->is_active)->toBeFalse();
     navigateTo($page, '/mano/institutions?view=table');
     waitForInertiaRender($page, '[data-slot=collection-table]');
     $page->screenshot(filename: 'institution-activity-table', fullPage: false);
     navigateTo($page, '/mano/duties?view=table');
-    waitForInertiaRender($page, '[data-slot=collection-status-menu]');
+    waitForInertiaRender($page, '[data-slot=collection-table]');
     $page->screenshot(filename: 'duty-activity-table', fullPage: false);
     $page->assertNoJavaScriptErrors();
 });

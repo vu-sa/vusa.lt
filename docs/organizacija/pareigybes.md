@@ -301,6 +301,7 @@ padaliniams. Perspėjimas netrukdo išsaugoti pareigybės.
 Pareigybių sąraše (`/mano/duties`) pateikiamos visos pasiekiamos pareigybės:
 
 - **Paieška**: galima ieškoti pagal pareigybės pavadinimą, el. paštą arba instituciją.
+- Ilgas pareigybės pavadinimas neišplečia lentelės už jos ribų; slenkant lentelę horizontaliai, veiksmų meniu lieka pasiekiamas.
 - **Atidaryti** rodomas eilutėje, o **Redaguoti** yra meniu **⋯**, jei pareigybę gali redaguoti.
 - **Greitasis filtras „Neužimtos“**: vienu paspaudimu atrenka pareigybes, kurios šiuo metu neturi
   narių.

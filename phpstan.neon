@@ -3,6 +3,8 @@ includes:
     - vendor/nesbot/carbon/extension.neon
 
 parameters:
+    # Keep cached reflection paths scoped to this checkout, including worktrees.
+    tmpDir: storage/framework/cache/phpstan
 
     paths:
         - app/

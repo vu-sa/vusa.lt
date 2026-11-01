@@ -29,7 +29,7 @@ it('debounces remote option searches, keeps selections visible and does not chan
   await vi.advanceTimersByTimeAsync(300);
   await flushPromises();
   expect(search).toHaveBeenCalledWith('tag_names', 'outside', expect.any(AbortSignal));
-  expect(wrapper.findAll('button[role="checkbox"]').map(button => button.text().replace(/\s/g, ''))).toEqual(['Option00', 'outside-first-page3']);
+  expect(wrapper.findAll('button[role="checkbox"]').map(button => button.text().replace(/\s/g, ''))).toEqual(['Option00', 'Outside-first-page3']);
   expect(window.location.href).toBe(url);
   wrapper.unmount();
 });

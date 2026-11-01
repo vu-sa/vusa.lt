@@ -422,7 +422,7 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
             'members_total' => $this->duties->flatMap(fn (Duty $duty) => $duty->users->pluck('id'))->unique()->count(),
             'duty_names' => $dutyNames,
             'created_at' => $this->created_at->timestamp,
-            'updated_at' => $this->updated_at?->timestamp,
+            'updated_at' => $this->updated_at->timestamp,
         ];
     }
 

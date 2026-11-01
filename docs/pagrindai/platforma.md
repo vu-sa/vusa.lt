@@ -2,7 +2,7 @@
 doc_status: reviewed
 title: Platforma
 area: actionWindow
-last_reviewed: 2026-10-28
+last_reviewed: 2026-11-01
 tests:
   - tests/Feature/Api/Admin/RecordAbilitiesApiControllerTest.php
   - resources/js/Composables/__tests__/useRowAbilities.test.ts
