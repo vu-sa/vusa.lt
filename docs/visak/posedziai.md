@@ -60,7 +60,7 @@ Posėdžių sąrašas pasiekiamas adresu `/mano/meetings`, o kiekvienas posėdis
    nei 3 dienos, pranešama nedelsiant.
    - Kai žinoma darbotvarkė, įkeliami jos klausimai. Jei ji atnaujinama, atnaujinama ir platformoje.
 2. Po posėdžio užfiksuojami priimti sprendimai:
-   - įkeliamas sekretoriaus atsiųstas **protokolas** ir parengta **ataskaita**;
+   - įkeliamas sekretoriaus atsiųstas **protokolas**; **ataskaitą** galima įkelti, jei ji parengta;
    - pažymima, ar klausimas patvirtintas, kaip balsavo studentai ir ar sprendimas palankus studentams.
 3. **Elektroninis posėdis** (balsavimas el. paštu) fiksuojamas taip pat, kaip ir kiti posėdžiai.
 4. Jei institucijoje yra keli atstovai, rekomenduojama susitarti, kuris fiksuoja posėdį ir kelia dokumentus.
@@ -129,10 +129,11 @@ būsenai, užpildymo užduočiai ir darbotvarkės klausimų sąrašo filtrui **U
 
 Po būsena rodoma **Nepilnų punktų: N** su nuorodomis į kiekvieną nepilną punktą.
 
-### Po posėdžio: protokolas ir ataskaita {#protokolas}
+### Po posėdžio: protokolas {#protokolas}
 
-Laukas **Po posėdžio** rodo, ar įkelti posėdžio **protokolas** ir **ataskaita** (SharePoint failai
-su tipu „Protokolai“ arba „Ataskaitos“). Jie įkeliami skirtuke **Failai** (žr. [Įrašų failai](/visak/failai)).
+Laukas **Po posėdžio** rodo, ar įkeltas posėdžio **protokolas** (SharePoint failas su tipu „Protokolai“).
+Ataskaita neprivaloma, todėl jos būsena nerodoma, bet failą su tipu „Ataskaitos“ galima įkelti.
+Abu įkeliami skirtuke **Failai** (žr. [Įrašų failai](/visak/failai)).
 
 ### Skirtukai
 

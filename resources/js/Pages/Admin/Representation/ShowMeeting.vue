@@ -459,7 +459,7 @@ const handleUnlinkCalendarEvent = () => {
 };
 
 // File availability is shown as facts, not completion requirements.
-const { hasProtocol, hasReport, isPastMeeting } = useMeetingUrgency(() => props.meeting);
+const { hasProtocol, isPastMeeting } = useMeetingUrgency(() => props.meeting);
 
 // Hide HH:MM for email/electronic meetings (start_time is forced to 23:59 as a deadline marker)
 const meetingTimeLabel = computed(() => formatMeetingTimeOnly(props.meeting));
@@ -472,13 +472,6 @@ const documentStatuses = computed(() => [
     label: $t('meetings.record.protocol'),
     uploaded: hasProtocol.value,
     state: hasProtocol.value ? $t('Įkeltas') : $t('Neįkeltas'),
-  },
-  {
-    key: 'report',
-    fileType: 'Ataskaitos' as FileableFileType,
-    label: $t('meetings.record.report'),
-    uploaded: hasReport.value,
-    state: hasReport.value ? $t('Įkelta') : $t('Neįkelta'),
   },
 ]);
 

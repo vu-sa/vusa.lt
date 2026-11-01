@@ -15,7 +15,7 @@ export const FILEABLE_FILE_TYPES = [
 
 export type FileableFileType = typeof FILEABLE_FILE_TYPES[number]['value'];
 
-export const MEETING_PRIMARY_FILE_TYPES: FileableFileType[] = ['Protokolai', 'Ataskaitos'];
+export const MEETING_PRIMARY_FILE_TYPES: FileableFileType[] = ['Protokolai'];
 
 export const FILEABLE_FILE_ACCEPT = '.pdf,.docx,.pptx,.xlsx';
 
