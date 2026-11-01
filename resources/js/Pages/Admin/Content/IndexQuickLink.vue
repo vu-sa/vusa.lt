@@ -12,6 +12,9 @@
     :available-views="['rows', 'table']"
     :item-key="link => String(link.id)"
     :columns
+    table-fixed
+    actions-width="w-44"
+    table-min-width="min-w-[61rem]"
     @row-action="(item, key) => actions.select(key)"
     :quick-filters="languageFilters"
     :trash="{ count: deletedCount ?? 0, active: isTrash }"
@@ -47,8 +50,8 @@
     </template>
 
     <template #row="{ item, actions: recordActions }">
-      <article class="flex min-h-14 items-center gap-3 px-3 py-2.5 sm:px-4">
-        <QuickLinkIconMark :icon="item.icon" />
+      <CollectionRow :actions="recordActions" :spotlight="item === source?.items.value[0]" class="px-3 py-2.5 sm:px-4" @select="key => actions.select(key)">
+        <template #lead><QuickLinkIconMark :icon="item.icon" /></template>
         <div class="min-w-0 flex-1">
           <CollectionPrimaryCell
             :title="item.text"
@@ -58,8 +61,7 @@
           />
         </div>
         <StatusBadge v-if="item.is_important" :status="importantStatus" class="shrink-0" />
-        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => actions.select(key)" />
-      </article>
+      </CollectionRow>
     </template>
 
     <template #cell="{ item, column }">
@@ -70,6 +72,7 @@
       <span v-else-if="column.key === 'link'" class="font-mono text-xs text-muted-foreground">{{ item.link }}</span>
       <StatusBadge v-else-if="column.key === 'important' && item.is_important" :status="importantStatus" />
       <span v-else-if="column.key === 'order'" class="tabular-nums text-muted-foreground">{{ item.order ?? '—' }}</span>
+      <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
     </template>
 
     <template v-if="!isTrash" #empty>
@@ -151,7 +154,8 @@ import { computed, h, ref, toRef, type FunctionalComponent } from 'vue';
 import { useMotionAwareSortable } from '@/Composables/useMotionAwareSortable';
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
-import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
+import { quickFilterLabel } from '@/Components/Collection/quickFilterLabel';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { EmptyState, SheetForm, StatusBadge } from '@/Components/Patterns';
@@ -160,6 +164,7 @@ import { NativeSelect } from '@/Components/ui/native-select';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { isTrashView, useLocalCollectionSource } from '@/Composables/useCollectionSource';
 import type { StatusPresentation } from '@/Constants/statuses';
+import { formatRecordDate } from '@/Utils/dateTime';
 
 type QuickLinkRow = App.Entities.QuickLink;
 interface TenantOption { id: number; shortname: string; type: string }
@@ -192,8 +197,8 @@ const tenantOptions = computed(() =>
 );
 
 const languageFilters = computed<CollectionQuickFilter[]>(() => [
-  { id: 'lt', label: 'LT', active: props.currentLang === 'lt' },
-  { id: 'en', label: 'EN', active: props.currentLang === 'en' },
+  { id: 'lt', label: quickFilterLabel('LT', 0), active: props.currentLang === 'lt' },
+  { id: 'en', label: quickFilterLabel('EN', 0), active: props.currentLang === 'en' },
 ]);
 
 const createHref = computed(() => route('quickLinks.create', { tenant: props.tenant?.id, lang: props.currentLang }));
@@ -213,6 +218,10 @@ const source = useLocalCollectionSource<QuickLinkRow>({
   searchText: link => [link.text, link.link],
   defaultSort: 'order:asc',
   sortOptions: () => [
+    { value: 'updated_at:desc', label: `${$t('Atnaujinta')} ↓`, by: item => item.updated_at ? new Date(item.updated_at).getTime() : 0 },
+    { value: 'updated_at:asc', label: `${$t('Atnaujinta')} ↑`, by: item => item.updated_at ? new Date(item.updated_at).getTime() : 0 },
+    { value: 'created_at:desc', label: `${$t('Sukurta')} ↓`, by: item => item.created_at ? new Date(item.created_at).getTime() : 0 },
+    { value: 'created_at:asc', label: `${$t('Sukurta')} ↑`, by: item => item.created_at ? new Date(item.created_at).getTime() : 0 },
     { value: 'order:asc', label: $t('Pagal tvarką'), by: link => link.order ?? 0 },
     { value: 'order:desc', label: $t('Pagal tvarką (atvirkščiai)'), by: link => link.order ?? 0 },
     { value: 'text:asc', label: $t('Pagal pavadinimą (A–Z)'), by: link => link.text },
@@ -229,9 +238,11 @@ const actionsFor = (link: QuickLinkRow) => actions.rowActions(link, link.text, i
 
 const columns = computed<CollectionColumn[]>(() => [
   { key: 'text', label: $t('Nuoroda'), sortField: 'text' },
-  { key: 'link', label: $t('Adresas') },
+  { key: 'link', label: $t('Adresas'), class: 'w-64' },
   { key: 'important', label: $t('Svarbi'), class: 'w-28' },
   { key: 'order', label: $t('Eilė'), class: 'w-20', sortField: 'order' },
+  { key: 'created_at', label: $t('Sukurta'), class: 'w-36', sortField: 'created_at', defaultHidden: true },
+  { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', sortField: 'updated_at', defaultHidden: true },
 ]);
 
 // --- Order is a mode (.ai/rules/admin-forms.md) ---------------------------------------------

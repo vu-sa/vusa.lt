@@ -12,7 +12,7 @@ import { buildProfileParams } from '@/Shared/Search/profiles';
 import { institutionActivityStatuses } from '@/Constants/statuses';
 
 describe('getCollectionSortOptions', () => {
-  it.each(['meetings', 'institutions'])('offers both directions of the record dates, so their %s table headers can sort', (collection) => {
+  it.each(['meetings', 'institutions', 'news', 'pages'])('offers both directions of the record dates, so their %s table headers can sort', (collection) => {
     const values = getCollectionSortOptions(collection).map(option => option.value);
 
     expect(values).toEqual(expect.arrayContaining(['created_at:asc', 'created_at:desc', 'updated_at:asc', 'updated_at:desc']));

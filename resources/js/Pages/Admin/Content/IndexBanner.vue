@@ -12,6 +12,9 @@
     :trash="{ count: deletedCount ?? 0, active: isDeleted }"
     @row-action="(item, key) => selectRowAction(key, item)"
     :columns
+    table-fixed
+    actions-width="w-44"
+    table-min-width="min-w-[64rem]"
     :quick-filters
     :search-placeholder="$t('Ieškoti banerių…')"
     @quick-filter="id => source.toggleFilter(id, '1')"
@@ -26,7 +29,7 @@
     </template>
 
     <template #row="{ item, actions: recordActions }">
-      <article class="flex min-h-14 items-center justify-between gap-4 px-3 py-2.5 sm:px-4">
+      <CollectionRow :actions="recordActions" :spotlight="item === source?.items.value[0]" class="px-3 py-2.5 sm:px-4" @select="key => selectRowAction(key, item)">
         <div class="flex min-w-0 flex-1 items-center gap-3">
           <HoverCard v-if="item.image_url" :open-delay="150">
             <HoverCardTrigger as-child>
@@ -73,15 +76,8 @@
             </div>
           </div>
         </div>
-        <CollectionStatusMenu
-          :status="item.is_active ? bannerStatuses.active : bannerStatuses.inactive"
-          :model-value="item.is_active ? 'active' : 'inactive'"
-          :options="statusOptions"
-          :editable="canCreate && !isDeleted"
-          @update:model-value="value => updateStatus(item, value === 'active')"
-        />
-        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => selectRowAction(key, item)" />
-      </article>
+        <StatusBadge :status="item.is_active ? bannerStatuses.active : bannerStatuses.inactive" />
+      </CollectionRow>
     </template>
 
     <template #cell="{ item, column }">
@@ -132,14 +128,8 @@
         {{ item.tenant?.shortname ?? '—' }}
       </span>
 
-      <CollectionStatusMenu
-        v-else-if="column.key === 'is_active'"
-        :status="item.is_active ? bannerStatuses.active : bannerStatuses.inactive"
-        :model-value="item.is_active ? 'active' : 'inactive'"
-        :options="statusOptions"
-        :editable="canCreate && !isDeleted"
-        @update:model-value="value => updateStatus(item, value === 'active')"
-      />
+      <StatusBadge v-else-if="column.key === 'is_active'" :status="item.is_active ? bannerStatuses.active : bannerStatuses.inactive" />
+      <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
     </template>
 
     <template #empty>
@@ -172,18 +162,18 @@ import { ExternalLink, Image as ImageIcon, Pencil, Plus, RotateCcw, Trash2 } fro
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
+import { quickFilterLabel } from '@/Components/Collection/quickFilterLabel';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
-import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
-import CollectionStatusMenu from '@/Components/Collection/CollectionStatusMenu.vue';
+import type { CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
-import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
+import { ConfirmDialog, EmptyState, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/hover-card';
 import { bannerStatuses } from '@/Constants/statuses';
 import { BannerIcon } from '@/Components/icons';
 import { useDatabaseCollectionSource, type DatabaseFacetDefinition } from '@/Composables/useCollectionSource';
-
-const entityName = 'banner';
+import { formatRecordDate } from '@/Utils/dateTime';
 
 type BannerRow = App.Entities.Banner;
 
@@ -224,10 +214,6 @@ function selectRowAction(key: string, item: BannerRow): void {
 const targetBannerToForceDelete = ref<BannerRow | null>(null);
 
 const bannerKey = (item: BannerRow) => String(item.id);
-const statusOptions = [
-  { value: 'active', status: bannerStatuses.active },
-  { value: 'inactive', status: bannerStatuses.inactive },
-];
 const facets: DatabaseFacetDefinition[] = [{
   field: 'is_active',
   label: $t('Būsena'),
@@ -249,6 +235,10 @@ const source = useDatabaseCollectionSource<BannerRow>({
   },
   defaultSort: 'title:asc',
   sortOptions: () => [
+    { value: 'updated_at:desc', label: `${$t('Atnaujinta')} ↓` },
+    { value: 'updated_at:asc', label: `${$t('Atnaujinta')} ↑` },
+    { value: 'created_at:desc', label: `${$t('Sukurta')} ↓` },
+    { value: 'created_at:asc', label: `${$t('Sukurta')} ↑` },
     { value: 'title:asc', label: $t('Pagal pavadinimą (A–Z)') },
     { value: 'title:desc', label: $t('Pagal pavadinimą (Z–A)') },
   ],
@@ -261,7 +251,7 @@ const quickFilters = computed<CollectionQuickFilter[]>(() => {
     return [];
   }
 
-  return [{ id: 'is_active', label: $t('Aktyvus'), active: source.filters.value.is_active === '1' }];
+  return [{ id: 'is_active', label: quickFilterLabel($t('Aktyvus'), source.facets?.value.find(facet => facet.field === 'is_active')?.values.find(option => option.value === '1')?.count ?? 0), active: source.filters.value.is_active === '1' }];
 });
 
 const columns = computed<CollectionColumn[]>(() => [
@@ -269,6 +259,8 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'link_url', label: $t('Nuoroda'), class: 'w-64' },
   { key: 'tenant', label: $t('Padalinys'), class: 'w-32' },
   { key: 'is_active', label: $t('Būsena'), class: 'w-28' },
+  { key: 'created_at', label: $t('Sukurta'), class: 'w-36', sortField: 'created_at', defaultHidden: true },
+  { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', sortField: 'updated_at', defaultHidden: true },
 ]);
 
 const isFiltered = computed(() => source.query.value.trim() !== '' || source.activeFilterCount.value > 0);
@@ -282,15 +274,6 @@ const emptyDescription = computed(() => {
     ? $t('Šiukšliadėžėje nėra pašalintų banerių.')
     : $t('Sukurk pirmąjį banerį, kad jis būtų rodomas svetainėje.');
 });
-
-function updateStatus(item: BannerRow, active: boolean): void {
-  const undo = source.patchItems([String(item.id)], { is_active: active ? 1 : 0 });
-  router.patch(route('banners.updateStatus', item.id), { is_active: active }, {
-    preserveScroll: true,
-    preserveState: true,
-    onError: undo,
-  });
-}
 
 function restoreBanner(item: BannerRow): void {
   router.patch(route('banners.restore', item.id), {}, {

@@ -10,6 +10,9 @@
     :item-key="tagKey"
     :trash="{ count: deletedCount ?? 0, active: isDeleted }"
     :columns
+    table-fixed
+    actions-width="w-44"
+    table-min-width="min-w-[49rem]"
     @row-action="(item, key) => selectRowAction(key, item)"
     :selectable="mergeMode"
     :search-placeholder="$t('Ieškoti žymų')"
@@ -25,25 +28,24 @@
       </Button>
     </template>
 
-    <template #row="{ item, actions: recordActions }">
-      <article class="flex min-h-16 items-center gap-3 px-4 py-4">
+    <template #row="{ item, actions: recordActions, view }">
+      <CollectionRow :actions="view === 'preview' ? [] : recordActions" :spotlight="item === source?.items.value[0]" class="px-3 py-2.5 sm:px-4" @select="key => selectRowAction(key, item)">
         <CollectionPrimaryCell class="flex-1" :title="title(item)" :clickable="!isDeleted && canUpdate" :sub="item.alias" mono @open="openSheet(item)" />
-        <span v-if="item.is_topic" class="text-xs text-muted-foreground">{{ $t('Teminė') }}</span>
-        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => selectRowAction(key, item)" />
-      </article>
+        <span v-if="item.is_topic && view !== 'preview'" class="text-xs text-muted-foreground">{{ $t('Teminė') }}</span>
+      </CollectionRow>
     </template>
 
     <template #cell="{ item, column }">
       <CollectionPrimaryCell v-if="column.key === 'name'" :title="title(item)" :clickable="!isDeleted && canUpdate" @open="openSheet(item)" />
       <span v-else-if="column.key === 'alias'">{{ item.alias || '—' }}</span>
       <span v-else-if="column.key === 'topic'">{{ item.is_topic ? $t('Taip') : '—' }}</span>
-      <span v-else-if="column.key === 'created'" class="tabular-nums">{{ formatDate(new Date(item.created_at)) }}</span>
+      <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
     </template>
 
     <template #preview="{ item, actions: recordActions }">
       <TagPreview :key="item.id" :tag="item">
         <template #actions>
-          <CollectionRowActions :actions="recordActions" full-labels class="flex-wrap" @select="key => selectRowAction(key, item)" />
+          <CollectionRowActions :actions="recordActions" emphasis full-labels @select="key => selectRowAction(key, item)" />
         </template>
       </TagPreview>
     </template>
@@ -98,7 +100,9 @@ import { toast } from 'vue-sonner';
 
 import type { CollectionColumn } from '@/Components/Collection/types';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
-import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
+import type { CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
@@ -108,9 +112,7 @@ import TagSheetForm from '@/Features/Admin/Tags/TagSheetForm.vue';
 import { TagIcon } from '@/Components/icons';
 import { useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
 import { useAdminNavigation } from '@/Composables/useAdminNavigation';
-import { formatDate } from '@/Utils/dateTime';
-
-const entityName = 'tag';
+import { formatRecordDate } from '@/Utils/dateTime';
 
 interface Translation { lt?: string; en?: string }
 type Tag = App.Entities.Tag & { name: Translation; description?: Translation | null };
@@ -162,6 +164,8 @@ const source = useDatabaseCollectionSource<Tag>({
   },
   defaultSort: 'created_at:desc',
   sortOptions: () => [
+    { value: 'updated_at:desc', label: `${$t('Atnaujinta')} ↓` },
+    { value: 'updated_at:asc', label: `${$t('Atnaujinta')} ↑` },
     { value: 'created_at:desc', label: $t('Naujausios pirmiausia') },
     { value: 'created_at:asc', label: $t('Seniausios pirmiausia') },
     { value: 'name:asc', label: $t('Pagal pavadinimą (A–Z)') },
@@ -176,7 +180,8 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'name', label: $t('Žyma'), sortField: 'name' },
   { key: 'alias', label: $t('Alias'), class: 'w-48', sortField: 'alias' },
   { key: 'topic', label: $t('Tema'), class: 'w-28' },
-  { key: 'created', label: $t('Sukurta'), class: 'w-32', sortField: 'created_at' },
+  { key: 'created_at', label: $t('Sukurta'), class: 'w-36', sortField: 'created_at', defaultHidden: true },
+  { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', sortField: 'updated_at', defaultHidden: true },
 ]);
 
 const tagKey = (tag: Tag) => String(tag.id);

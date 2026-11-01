@@ -278,6 +278,8 @@ export interface NewsSearchResult {
   tenant_shortname?: string;
   /** Only present in the admin `news` index — the public index drops it. */
   draft?: boolean;
+  created_at?: number;
+  updated_at?: number;
 }
 
 /**
@@ -297,6 +299,8 @@ export interface PageSearchResult {
   tenant_shortname?: string;
   /** Only present in the admin `pages` index — the public index drops it. */
   is_active?: boolean;
+  created_at?: number;
+  updated_at?: number;
 }
 
 /**

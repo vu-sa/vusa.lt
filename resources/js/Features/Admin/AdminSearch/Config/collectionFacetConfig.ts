@@ -549,6 +549,10 @@ export const NEWS_SORT_OPTIONS: SortOption[] = [
   { value: 'publish_time:asc', label: 'Seniausi pirmi', icon: 'ArrowUp' },
   { value: 'title:asc', label: 'Pagal pavadinimą (A–Z)', icon: 'ArrowDownAZ' },
   { value: 'title:desc', label: 'Pagal pavadinimą (Z–A)', icon: 'ArrowUpAZ' },
+  { value: 'created_at:desc', label: 'Naujausiai sukurti', icon: 'RefreshCw' },
+  { value: 'created_at:asc', label: 'Seniausiai sukurti', icon: 'RefreshCw' },
+  { value: 'updated_at:desc', label: 'Paskutiniai atnaujinti', icon: 'RefreshCw' },
+  { value: 'updated_at:asc', label: 'Seniausiai atnaujinti', icon: 'RefreshCw' },
 ];
 
 /**
@@ -559,6 +563,8 @@ export const PAGE_SORT_OPTIONS: SortOption[] = [
   { value: 'created_at:asc', label: 'Seniausi pirmi', icon: 'ArrowUp' },
   { value: 'title:asc', label: 'Pagal pavadinimą (A–Z)', icon: 'ArrowDownAZ' },
   { value: 'title:desc', label: 'Pagal pavadinimą (Z–A)', icon: 'ArrowUpAZ' },
+  { value: 'updated_at:desc', label: 'Paskutiniai atnaujinti', icon: 'RefreshCw' },
+  { value: 'updated_at:asc', label: 'Seniausiai atnaujinti', icon: 'RefreshCw' },
 ];
 
 /**

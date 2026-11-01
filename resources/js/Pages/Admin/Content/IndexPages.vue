@@ -12,6 +12,8 @@
     :item-key="pageKey"
     :columns
     table-fixed
+    actions-width="w-44"
+    :table-min-width="isTrash ? 'min-w-[60rem]' : 'min-w-[53rem]'"
     @row-action="(item, key) => actions.select(key, item.force_delete_blocked_reason)"
     :selectable="canBulkEdit"
     :trash="{ count: deletedCount, active: isTrash }"
@@ -42,36 +44,13 @@
     </template>
 
     <template #row="{ item, actions: recordActions, view }">
-      <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
-        <div class="min-w-0 flex-1">
-          <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches"
-            :title="item.title"
-            :href="isTrash ? undefined : route('pages.edit', item.id)"
-            :clickable="isTrash && view === 'preview'"
-          />
-          <p class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-            <span>{{ languageLabel(item.lang) }}</span>
-            <span v-if="item.tenant_shortname" aria-hidden="true" class="text-border">·</span>
-            <span v-if="item.tenant_shortname">{{ item.tenant_shortname }}</span>
-            <span aria-hidden="true" class="text-border">·</span>
-            <span class="tabular-nums">{{ dateOf(item) }}</span>
-          </p>
+      <CollectionRow :actions="view === 'preview' ? [] : recordActions" :spotlight="item === source?.items.value[0]" class="px-3 py-2.5 sm:px-4" @select="key => actions.select(key, item.force_delete_blocked_reason)">
+        <div class="flex items-start justify-between gap-3">
+          <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches" :title="item.title" :href="isTrash ? undefined : route('pages.edit', item.id)" :clickable="isTrash && view === 'preview'" />
+          <StatusBadge v-if="view !== 'preview'" :status="pageStatus(item)" />
         </div>
-        <div class="flex shrink-0 items-center gap-3">
-          <CollectionStatusMenu
-            :status="pageStatus(item)"
-            :model-value="publishing.statusValue(item)"
-            :options="publishing.statusOptions"
-            :editable="canBulkEdit"
-            @update:model-value="value => publishing.setPublished([String(item.id)], value === 'published')"
-          />
-          <CollectionRowActions
-            v-if="view !== 'preview'"
-            :actions="recordActions"
-            @select="key => actions.select(key, item.force_delete_blocked_reason)"
-          />
-        </div>
-      </article>
+        <p class="mt-0.5 text-xs text-muted-foreground">{{ [dateOf(item), item.tenant_shortname, languageLabel(item.lang)].filter(Boolean).join(' · ') }}</p>
+      </CollectionRow>
     </template>
 
     <template #preview="{ item, actions: recordActions }">
@@ -94,7 +73,7 @@
         <template #actions>
           <CollectionRowActions
             :actions="recordActions"
-            class="flex-wrap"
+            emphasis full-labels
             @select="key => actions.select(key, item.force_delete_blocked_reason)"
           />
         </template>
@@ -111,15 +90,10 @@
       <span v-else-if="column.key === 'tenant'" class="block truncate text-muted-foreground" :title="item.tenant_shortname">{{ item.tenant_shortname ?? '—' }}</span>
       <span v-else-if="column.key === 'lang'" class="text-muted-foreground">{{ languageLabel(item.lang) }}</span>
       <div v-else-if="column.key === 'status'">
-        <CollectionStatusMenu
-          :status="pageStatus(item)"
-          :model-value="publishing.statusValue(item)"
-          :options="publishing.statusOptions"
-          :editable="canBulkEdit"
-          @update:model-value="value => publishing.setPublished([String(item.id)], value === 'published')"
-        />
+        <StatusBadge :status="pageStatus(item)" />
       </div>
       <span v-else-if="column.key === 'date'" class="tabular-nums text-muted-foreground">{{ dateOf(item) }}</span>
+      <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
     </template>
 
     <template #bulk-actions="{ selected, clear }">
@@ -157,6 +131,7 @@ import { computed } from 'vue';
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import type { CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import CollectionPublishActions from '@/Components/Collection/CollectionPublishActions.vue';
 import CollectionStatusMenu from '@/Components/Collection/CollectionStatusMenu.vue';
@@ -165,7 +140,7 @@ import { PageIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import PagePreview from '@/Components/Pages/PagePreview.vue';
 import { pageStatus } from '@/Components/Pages/pageStatus';
-import { EmptyState } from '@/Components/Patterns';
+import { EmptyState, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import {
   DropdownMenu,
@@ -183,10 +158,9 @@ import {
   useTypesenseCollectionSource,
 } from '@/Composables/useCollectionSource';
 import type { PageSearchResult } from '@/Shared/Search/types';
-import { formatDate } from '@/Utils/dateTime';
+import { formatDate, formatRecordDate } from '@/Utils/dateTime';
 
 type PageRow = PageSearchResult & {
-  created_at?: number;
   deleted_at?: string | null;
   force_delete_blocked_reason?: string | null;
 };
@@ -252,14 +226,16 @@ function dateOf(item: PageRow): string {
     return formatDate(item.deleted_at);
   }
 
-  return item.created_at ? formatDate(new Date(item.created_at * 1000)) : '—';
+  return formatRecordDate(item.created_at);
 }
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'title', label: $t('Puslapis'), class: 'w-56', sortField: 'title' },
+  { key: 'title', label: $t('Puslapis'), sortField: 'title' },
   { key: 'tenant', label: $t('Padalinys'), class: 'w-28' },
   { key: 'lang', label: $t('Kalba'), class: 'w-24' },
   { key: 'status', label: $t('Būsena'), class: 'w-36' },
-  { key: 'date', label: isTrash ? $t('Ištrinta') : $t('Sukurta'), class: 'w-28', sortField: isTrash ? 'deleted_at' : 'created_at' },
+  ...(isTrash ? [{ key: 'date', label: $t('Ištrinta'), class: 'w-28', sortField: 'deleted_at' }] : []),
+  { key: 'created_at', label: $t('Sukurta'), class: 'w-36', sortField: 'created_at', defaultHidden: true },
+  { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', sortField: 'updated_at', defaultHidden: true },
 ]);
 </script>
