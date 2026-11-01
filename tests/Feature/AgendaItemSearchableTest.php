@@ -108,6 +108,16 @@ test('an agenda item without a type is indexed as unset, not as a vote', functio
         ->and($discussed->fresh()->toSearchableArray()['type'])->toBe('informational');
 });
 
+test('a student position counts in either language, blank text does not', function (): void {
+    $meeting = Meeting::factory()->create();
+    $has = fn (array $position): bool => AgendaItem::factory()->for($meeting)->create(['student_position' => $position])->fresh()->toSearchableArray()['has_student_position'];
+
+    expect($has(['lt' => 'Pozicija']))->toBeTrue()
+        ->and($has(['en' => 'Position']))->toBeTrue()
+        ->and($has(['lt' => '   ']))->toBeFalse()
+        ->and($has([]))->toBeFalse();
+});
+
 test('without a main vote, the outcome fields hold what every vote shares', function (): void {
     $item = AgendaItem::factory()->for(Meeting::factory())->create(['type' => AgendaItemType::Voting]);
     Vote::factory()->for($item, 'agendaItem')->create(['is_main' => false, 'decision' => 'positive', 'student_vote' => 'positive', 'order' => 0]);

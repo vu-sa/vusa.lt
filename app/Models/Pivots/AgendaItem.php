@@ -330,6 +330,7 @@ class AgendaItem extends Pivot implements Commentable
             // New fields
             'type' => $typeValue,
             'student_position' => $this->getTranslation('student_position', 'lt'),
+            'has_student_position' => collect($this->getTranslations('student_position'))->contains(fn ($text): bool => trim((string) $text) !== ''),
             'brought_by_students' => (bool) $this->brought_by_students,
 
             'student_vote' => $sharedValue('student_vote'),

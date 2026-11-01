@@ -43,7 +43,7 @@ class AgendaItemPresenter
         }
 
         $public = Arr::only($item->toInternalArray(), [
-            'id', 'meeting_id', 'order', 'title', 'type', 'description',
+            'id', 'meeting_id', 'order', 'title', 'type', 'description', 'student_position',
             'brought_by_students', 'start_time', 'end_time', 'main_vote', 'votes', 'is_private',
         ]);
 

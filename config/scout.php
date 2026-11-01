@@ -706,6 +706,7 @@ $settings = [
                         ['name' => 'vote_matches', 'type' => 'bool'],
                         ['name' => 'vote_alignment_status', 'type' => 'string', 'facet' => true],
                         ['name' => 'type', 'type' => 'string', 'facet' => true, 'optional' => true],
+                        ['name' => 'has_student_position', 'type' => 'bool', 'facet' => true, 'optional' => true],
 
                         ['name' => 'created_at', 'type' => 'int64', 'sort' => true],
                         ['name' => 'updated_at', 'type' => 'int64', 'sort' => true],

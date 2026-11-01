@@ -70,7 +70,7 @@ test('public pages receive only the agenda placeholder even for an internal read
     $response->assertDontSee('Originalus neviešas pavadinimas')->assertDontSee('Neviešo turinio žymuo');
 })->with([false, true]);
 
-test('a public agenda item keeps its time but not the student position or vote notes', function (): void {
+test('a public agenda item shows its time and student position but not vote notes', function (): void {
     $this->item->update(['is_private' => false, 'end_time' => '14:30']);
     $this->item->votes()->first()->update(['note' => ['lt' => 'Vidaus balsavimo pastaba', 'en' => 'Internal vote note']]);
 
@@ -80,10 +80,10 @@ test('a public agenda item keeps its time but not the student position or vote n
         ->where('meeting.agenda_items.0.start_time', fn ($time) => str_starts_with((string) $time, '14:00'))
         ->where('meeting.agenda_items.0.end_time', fn ($time) => str_starts_with((string) $time, '14:30'))
         ->where('meeting.agenda_items.0.votes.0.decision', 'positive')
-        ->missing('meeting.agenda_items.0.student_position')
+        ->where('meeting.agenda_items.0.student_position', 'Nevieša pozicija')
         ->missing('meeting.agenda_items.0.votes.0.note')
     );
-    $response->assertDontSee('Nevieša pozicija')->assertDontSee('Vidaus balsavimo pastaba');
+    $response->assertDontSee('Vidaus balsavimo pastaba');
 });
 
 test('calendar announcements redact items even without a public meeting page', function (): void {

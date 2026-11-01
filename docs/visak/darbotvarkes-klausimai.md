@@ -72,7 +72,7 @@ Susiję tikslai matomi tik bandomojoje tikslų funkcijoje.
 
 ### Matomumas: Rodoma tik ViSAK {#matomumas}
 
-Klausimo puslapio kortelėje **Matomumas** spaudžiant **Kas rodoma?** atveriamas langas, kuriame išvardyta, kas iš šio klausimo rodoma vusa.lt, o kas nerodoma. Studentų pozicija ir balsavimų pastabos viešai neperduodamos net viešo klausimo atveju.
+Klausimo puslapio kortelėje **Matomumas** spaudžiant **Kas rodoma?** atveriamas langas, kuriame išvardyta, kas iš šio klausimo rodoma vusa.lt, o kas nerodoma. Viešo klausimo studentų pozicija rodoma vusa.lt kartu su aprašymu, o balsavimų pastabos viešai neperduodamos.
 
 Posėdis gali būti viešas, o atskiras jo klausimas skirtas vidaus darbui. Matomumas pasirenkamas
 jau sukurtame klausime: atvėrus **Redaguoti** arba paspaudus jo matomumo žymą. Įjungiama parinktis
@@ -245,7 +245,7 @@ Sąraše (`/mano/agendaItems`) matyti visų tau prieinamų posėdžių klausimai
 padalinių klausimai. Lentelėje ir peržiūroje rodomas [klausimo tipas](#tipai), o klausimas be tipo
 pažymėtas **Nepažymėtas**. Filtrai: **Posėdžio
 metai**, **Tipas**, **Užpildymo būsena**, **Studentų balsas**, **Sprendimas**, **Palankumas studentams**,
-**Pateikė studentai**, **Balsavimo atitikimas** ir **Padalinys**.
+**Studentų pozicija** (**Įrašyta** arba **Neįrašyta**), **Pateikė studentai**, **Balsavimo atitikimas** ir **Padalinys**.
 
 ## Kas ką gali {#teises}
 

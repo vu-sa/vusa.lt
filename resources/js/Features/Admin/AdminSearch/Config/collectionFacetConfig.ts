@@ -75,7 +75,7 @@ export const MEETING_FACET_CONFIG: CollectionFacetConfig = {
  * Agenda items collection facet configuration
  */
 export const AGENDA_ITEM_FACET_CONFIG: CollectionFacetConfig = {
-  facetBy: 'meeting_year,type,student_vote,decision,student_benefit,is_complete,brought_by_students,vote_alignment_status,tenant_shortnames',
+  facetBy: 'meeting_year,type,student_vote,decision,has_student_position,student_benefit,is_complete,brought_by_students,vote_alignment_status,tenant_shortnames',
   queryBy: 'title,description,student_benefit,meeting_title',
   defaultSortBy: 'meeting_start_time:desc',
   fields: [
@@ -124,6 +124,14 @@ export const AGENDA_ITEM_FACET_CONFIG: CollectionFacetConfig = {
       label: 'Palankumas studentams',
       type: 'checkbox',
       icon: 'Scale',
+      defaultOpen: false,
+      sortBy: 'count',
+    },
+    {
+      field: 'has_student_position',
+      label: 'Studentų pozicija',
+      type: 'checkbox',
+      icon: 'Tag',
       defaultOpen: false,
       sortBy: 'count',
     },
@@ -726,6 +734,10 @@ export const FACET_VALUE_LABELS: Record<string, Record<string, string>> = {
   is_complete: {
     true: 'Pilnai užpildyta',
     false: 'Nepilnai užpildyta',
+  },
+  has_student_position: {
+    true: 'Įrašyta',
+    false: 'Neįrašyta',
   },
   brought_by_students: {
     true: 'Taip',

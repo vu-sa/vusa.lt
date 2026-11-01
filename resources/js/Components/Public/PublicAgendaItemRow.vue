@@ -86,6 +86,15 @@
         {{ item.description }}
       </p>
 
+      <div v-if="studentPosition" data-slot="public-student-position">
+        <p class="text-xs font-bold text-muted-foreground">
+          {{ $t('meetings.public_agenda.student_position') }}
+        </p>
+        <p class="mt-0.5 whitespace-pre-line text-sm leading-relaxed text-foreground/90">
+          {{ studentPosition }}
+        </p>
+      </div>
+
       <template v-if="showsOutcome">
         <div
           v-for="(vote, index) in outcomeVotes"
@@ -192,7 +201,12 @@ const showsOutcome = computed(() => !props.item.is_private && props.item.type ==
 const decisionColorClass = computed(() => getDecisionTextColorClass(outcomeVote.value?.decision));
 
 /** Only rows with something more to say are worth making clickable. */
-const isExpandable = computed(() => !props.item.is_private && (Boolean(props.item.description) || showsOutcome.value));
+// VU SA's own bodies have no separate student position to record.
+const studentPosition = computed(() => (props.item.is_private || !props.requiresStudentPerspective
+  ? null
+  : (props.item.student_position as unknown as string | null) || null));
+
+const isExpandable = computed(() => !props.item.is_private && (Boolean(props.item.description) || Boolean(studentPosition.value) || showsOutcome.value));
 
 /** The columns are TIME, which MySQL hands back as `HH:MM:SS`. */
 const trimSeconds = (value: string) => value.slice(0, 5);
