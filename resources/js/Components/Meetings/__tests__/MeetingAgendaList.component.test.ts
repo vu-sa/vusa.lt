@@ -35,6 +35,20 @@ describe('MeetingAgendaList', () => {
     expect(wrapper.text()).toContain('Test agenda item');
   });
 
+  it('offers editing only on items the user may update, beside the record link', async () => {
+    const editable = makeItem({ can: { update: true } });
+    const wrapper = mount(MeetingAgendaList, {
+      props: { agendaItems: [editable, makeItem({ id: 'item-2', order: 2, can: { update: false } })] as App.Entities.AgendaItem[], meetingId: 'm1' },
+      global: { stubs: baseStubs },
+    });
+
+    const buttons = wrapper.findAll('[data-testid="agenda-item-edit"]');
+    expect(buttons).toHaveLength(1);
+
+    await buttons[0].trigger('click');
+    expect(wrapper.emitted('edit')?.[0]).toEqual([expect.objectContaining({ id: editable.id })]);
+  });
+
   /** Deleting lives in the item's ⋯ now; the list only orders and adds. */
   it('has no delete control, and shows drag handles only while ordering', async () => {
     const wrapper = mount(MeetingAgendaList, {

@@ -138,7 +138,7 @@ su tipu „Protokolai“ arba „Ataskaitos“). Jie įkeliami skirtuke **Failai
 
 | Skirtukas | Kas jame |
 |---|---|
-| **Darbotvarkė** | Punktai su būsena; čia pridedami ir perrikiuojami punktai |
+| **Darbotvarkė** | Klausimai su būsena; čia pridedami ir perrikiuojami klausimai, o mygtukas **Redaguoti** prie klausimo atveria jo redagavimo langą neišeinant iš posėdžio |
 | **Dokumentai** | Tik VU SA darinių posėdžiams: su posėdžiu susieti dokumentų naršyklės dokumentai (nutarimai, protokolai) |
 | **Failai** | Posėdžio darbo failai SharePoint; viešai nerodomi (žr. [Įrašų failai](/visak/failai)) |
 | **Užduotys** | Posėdžio užduotys; skaičius rodo neatliktas |

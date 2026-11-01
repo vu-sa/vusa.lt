@@ -69,6 +69,56 @@ export interface AgendaItemFormData {
   votes: EditableVote[];
 }
 
+/** The item as the server sends it to an editor: every translation, with its votes. */
+export interface EditableAgendaItemSource {
+  title?: unknown;
+  public_title?: unknown;
+  student_position?: unknown;
+  description?: unknown;
+  is_private?: boolean | null;
+  type?: string | null;
+  brought_by_students?: boolean | null;
+  start_time?: string | null;
+  end_time?: string | null;
+  votes?: Array<{
+    id?: string | null;
+    is_main?: boolean | null;
+    is_consensus?: boolean | null;
+    title?: unknown;
+    note?: unknown;
+    student_vote?: string | null;
+    decision?: string | null;
+    student_benefit?: string | null;
+    order?: number | null;
+  }>;
+}
+
+export function agendaItemFormData(item: EditableAgendaItemSource): AgendaItemFormData {
+  return {
+    title: toTranslatedField(item.title),
+    is_private: item.is_private ?? false,
+    public_title: toTranslatedField(item.public_title),
+    type: (item.type ?? null) as AgendaItemFormData['type'],
+    brought_by_students: item.brought_by_students ?? false,
+    student_position: toTranslatedField(item.student_position),
+    description: toTranslatedField(item.description),
+    // The columns are TIME (`HH:MM:SS`); the inputs and the validator both speak `HH:MM`.
+    start_time: item.start_time ? String(item.start_time).slice(0, 5) : null,
+    end_time: item.end_time ? String(item.end_time).slice(0, 5) : null,
+    votes: (item.votes ?? []).map((vote): EditableVote => ({
+      id: vote.id,
+      is_main: vote.is_main ?? false,
+      is_consensus: vote.is_consensus ?? false,
+      title: toTranslatedField(vote.title),
+      note: toTranslatedField(vote.note),
+      student_vote: (vote.student_vote ?? null) as VoteValue,
+      decision: (vote.decision ?? null) as VoteValue,
+      student_benefit: (vote.student_benefit ?? null) as VoteValue,
+      order: vote.order ?? 0,
+    })),
+  };
+}
+
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'dirty';
 
 /**

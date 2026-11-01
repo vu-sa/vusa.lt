@@ -337,7 +337,7 @@ import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import { agendaItemStatuses } from '@/Constants/statuses';
 import { getAgendaItemStatus } from '@/Composables/useAgendaItemStyling';
 import { enterAgendaItem } from '@/Composables/useRecordTrail';
-import { useAgendaItemAutosave, toTranslatedField, type AgendaItemFormData, type EditableVote, type VoteValue } from '@/Composables/useAgendaItemAutosave';
+import { agendaItemFormData, useAgendaItemAutosave, type AgendaItemFormData } from '@/Composables/useAgendaItemAutosave';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
 import { ModelEnum } from '@/Types/enums';
 import { formatDate, formatTime } from '@/Utils/dateTime';
@@ -451,29 +451,7 @@ const defaultStartTimeFromPreviousItem = (): string | null => {
   return previous?.end_time ? String(previous.end_time).slice(0, 5) : null;
 };
 
-const form = useForm<AgendaItemFormData>({
-  title: toTranslatedField(props.agendaItem.title),
-  is_private: props.agendaItem.is_private ?? false,
-  public_title: toTranslatedField(props.agendaItem.public_title),
-  type: (props.agendaItem.type ?? null) as AgendaItemFormData['type'],
-  brought_by_students: props.agendaItem.brought_by_students ?? false,
-  student_position: toTranslatedField(props.agendaItem.student_position),
-  description: toTranslatedField(props.agendaItem.description),
-  // The columns are TIME (`HH:MM:SS`); the inputs and the validator both speak `HH:MM`.
-  start_time: props.agendaItem.start_time ? String(props.agendaItem.start_time).slice(0, 5) : null,
-  end_time: props.agendaItem.end_time ? String(props.agendaItem.end_time).slice(0, 5) : null,
-  votes: (props.agendaItem.votes ?? []).map((vote): EditableVote => ({
-    id: vote.id,
-    is_main: vote.is_main ?? false,
-    is_consensus: vote.is_consensus ?? false,
-    title: toTranslatedField(vote.title),
-    note: toTranslatedField(vote.note),
-    student_vote: (vote.student_vote ?? null) as VoteValue,
-    decision: (vote.decision ?? null) as VoteValue,
-    student_benefit: (vote.student_benefit ?? null) as VoteValue,
-    order: vote.order ?? 0,
-  })),
-});
+const form = useForm<AgendaItemFormData>(agendaItemFormData(props.agendaItem));
 
 // A tap is a whole answer, so it saves quickly; the sheet saves on its own button.
 const { saveStatus, saveThen } = useAgendaItemAutosave(form, props.agendaItem.id, 700, ['goalLinks']);
