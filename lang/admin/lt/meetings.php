@@ -37,6 +37,32 @@ return [
         'trigger' => 'Kas rodoma?',
         'spotlight_title' => 'Kas matoma vusa.lt?',
         'spotlight_body' => 'Čia pamatysi, kas iš posėdžio rodoma viešai, o kas – niekada.',
+        'item' => [
+            'intro' => [
+                'public_page' => 'Šis klausimas rodomas vusa.lt posėdžio puslapyje.',
+                'calendar_event' => 'Šis klausimas rodomas vusa.lt renginio puslapyje.',
+                'unpublished' => 'Posėdis vusa.lt neskelbiamas, todėl klausimo viešai niekas nemato. Paskelbus posėdį, būtų rodoma tai, kas išvardyta žemiau.',
+                'private' => 'Klausimas pažymėtas „Rodoma tik ViSAK“, todėl net viešame posėdyje lieka tik jo vieta darbotvarkėje.',
+            ],
+            'would_show_heading' => 'Būtų rodoma vusa.lt',
+            'shown' => [
+                'title' => 'Pavadinimas',
+                'status' => 'Tipas arba rezultatas, pavyzdžiui, „Aptarimas“ ar priimtas sprendimas',
+                'description' => 'Aprašymas',
+                'votes' => 'Balsavimai: studentų balsas, sprendimas ir palankumas studentams',
+                'brought_by_students' => 'Žyma, kad klausimą pateikė studentai',
+                'position' => 'Klausimo numeris darbotvarkėje',
+                'public_title' => 'Viešas pavadinimas, jei įrašytas, kitaip – „Nerodoma“',
+            ],
+            'never' => [
+                'content' => 'Tikrasis pavadinimas, aprašymas ir studentų pozicija',
+                'outcome' => 'Tipas, laikas ir balsavimai',
+                'notes' => 'Vidaus pastabos',
+                'comments' => 'Komentarai',
+                'problems' => 'Susijusios problemos',
+                'history' => 'Pakeitimų istorija',
+            ],
+        ],
     ],
     'agenda' => [
         'add_items' => 'Pridėti punktų',

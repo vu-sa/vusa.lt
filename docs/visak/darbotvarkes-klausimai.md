@@ -72,6 +72,8 @@ Susiję tikslai matomi tik bandomojoje tikslų funkcijoje.
 
 ### Matomumas: Rodoma tik ViSAK {#matomumas}
 
+Klausimo puslapio kortelėje **Matomumas** spaudžiant **Kas rodoma?** atveriamas langas, kuriame išvardyta, kas iš šio klausimo rodoma vusa.lt, o kas nerodoma.
+
 Posėdis gali būti viešas, o atskiras jo klausimas skirtas vidaus darbui. Matomumas pasirenkamas
 jau sukurtame klausime: atvėrus **Redaguoti** arba paspaudus jo matomumo žymą. Įjungiama parinktis
 **Nerodyti punkto turinio viešai** ir, jei reikia, įrašomas **Viešas pavadinimas**.
