@@ -9,11 +9,16 @@ describe('useCollectionRecordActions', () => {
   it('describes open and edit separately and keeps destructive actions out of the primary slot', () => {
     const actions = useCollectionRecordActions({ routePrefix: 'goals', source: { refresh: vi.fn() }, openHref: id => `/mano/goals/${id}` });
     expect(actions.rowActions({ id: 'g1' }, 'Tikslas', false)).toEqual([
-      expect.objectContaining({ role: 'open', href: '/mano/goals/g1' }),
-      expect.objectContaining({ role: 'edit' }),
+      expect.objectContaining({ role: 'open', primary: true, href: '/mano/goals/g1' }),
+      expect.objectContaining({ role: 'edit', menuOnly: true }),
       expect.objectContaining({ destructive: true }),
     ]);
     expect(actions.rowActions({ id: 'g1' }, 'Tikslas', true)[0].primary).toBe(false);
+  });
+
+  it('leaves edit labelled for a record whose editor is its page', () => {
+    const actions = useCollectionRecordActions({ routePrefix: 'news', source: { refresh: vi.fn() } });
+    expect(actions.rowActions({ id: 'n1' }, 'Naujiena', false)[0]).toEqual(expect.objectContaining({ role: 'edit', menuOnly: false }));
   });
 
   it('labels restoration when permanent deletion is unavailable', () => {
