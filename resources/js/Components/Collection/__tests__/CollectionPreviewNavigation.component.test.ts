@@ -12,9 +12,12 @@ vi.mock('@/Composables/usePreviewApi', () => ({ usePreviewApi: () => ({ data: re
 const slots = { actions: '<button data-testid="supplied-action">Veiksmas</button>' };
 
 describe('collection preview navigation', () => {
-  it('keeps the document record link alongside supplied file actions', () => {
-    const wrapper = mount(DocumentPreview, { props: { document: { id: 'd1', title: 'Dokumentas', is_active: true } } as never, slots });
-    expect(wrapper.get('[data-slot="preview-actions"] a').attributes('href')).toBe(route('documents.show', 'd1'));
+  it('offers the document link until a list supplies its own actions', () => {
+    const props = { document: { id: 'd1', title: 'Dokumentas', is_active: true } } as never;
+    expect(mount(DocumentPreview, { props }).get('[data-slot="preview-actions"] a').attributes('href')).toBe(route('documents.show', 'd1'));
+
+    const wrapper = mount(DocumentPreview, { props, slots });
+    expect(wrapper.find('[data-slot="preview-actions"] a').exists()).toBe(false);
     expect(wrapper.find('[data-testid="supplied-action"]').exists()).toBe(true);
   });
 

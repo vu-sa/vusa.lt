@@ -536,6 +536,9 @@ export const AGENDA_ITEM_SORT_OPTIONS: SortOption[] = [
   { value: 'title:asc', label: 'Pagal pavadinimą (A–Z)', icon: 'ArrowDownAZ' },
   { value: 'title:desc', label: 'Pagal pavadinimą (Z–A)', icon: 'ArrowUpAZ' },
   { value: 'updated_at:desc', label: 'Paskutiniai atnaujinti', icon: 'RefreshCw' },
+  { value: 'created_at:desc', label: 'Naujausiai sukurti', icon: 'ArrowDown' },
+  { value: 'created_at:asc', label: 'Seniausiai sukurti', icon: 'ArrowDown' },
+  { value: 'updated_at:asc', label: 'Seniausiai atnaujinti', icon: 'RefreshCw' },
 ];
 
 /**
@@ -608,6 +611,10 @@ export const DOCUMENT_SORT_OPTIONS: SortOption[] = [
   { value: 'document_date:asc', label: 'Seniausi pirmi', icon: 'ArrowUp' },
   { value: 'title:asc', label: 'Pagal pavadinimą (A–Z)', icon: 'ArrowDownAZ' },
   { value: 'title:desc', label: 'Pagal pavadinimą (Z–A)', icon: 'ArrowUpAZ' },
+  { value: 'created_at:desc', label: 'Naujausiai sukurti', icon: 'ArrowDown' },
+  { value: 'created_at:asc', label: 'Seniausiai sukurti', icon: 'ArrowDown' },
+  { value: 'updated_at:desc', label: 'Paskutiniai atnaujinti', icon: 'RefreshCw' },
+  { value: 'updated_at:asc', label: 'Seniausiai atnaujinti', icon: 'RefreshCw' },
 ];
 
 /**
@@ -621,6 +628,8 @@ export const RESOURCE_SORT_OPTIONS: SortOption[] = [
   { value: 'capacity:asc', label: 'Mažiausia talpa', icon: 'ArrowUp' },
   { value: 'created_at:desc', label: 'Naujausi pirmi', icon: 'ArrowDown' },
   { value: 'created_at:asc', label: 'Seniausi pirmi', icon: 'ArrowUp' },
+  { value: 'updated_at:desc', label: 'Paskutiniai atnaujinti', icon: 'RefreshCw' },
+  { value: 'updated_at:asc', label: 'Seniausiai atnaujinti', icon: 'RefreshCw' },
 ];
 
 /**

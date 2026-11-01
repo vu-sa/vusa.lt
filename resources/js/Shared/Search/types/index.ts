@@ -255,6 +255,8 @@ export interface AgendaItemSearchResult {
   vote_alignment_status?: string;
   is_complete?: boolean;
   brought_by_students?: boolean;
+  created_at?: number;
+  updated_at?: number;
 }
 
 /**
@@ -362,6 +364,8 @@ export interface DocumentSearchResult {
   document_year?: string;
   anonymous_url: string;
   is_active: boolean;
+  created_at?: number;
+  updated_at?: number;
 }
 
 /**
@@ -387,6 +391,7 @@ export interface ResourceSearchResult {
   category_name_en?: string;
   image_url?: string;
   created_at?: number;
+  updated_at?: number;
 }
 
 /**

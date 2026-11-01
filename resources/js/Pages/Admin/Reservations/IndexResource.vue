@@ -14,6 +14,9 @@
       :item-key="resourceKey"
       @row-action="(_item, key) => collectionActions.select(key)"
       :columns
+      table-fixed
+      actions-width="w-44"
+      table-min-width="min-w-[68rem]"
       :search-placeholder="$t('Ieškoti išteklių')"
     >
       <template #actions>
@@ -92,8 +95,8 @@
         </article>
       </template>
 
-      <template #row="{ item, actions: recordActions }">
-        <div class="relative flex items-center gap-4 px-2 py-3 sm:px-4" data-slot="resource-collection-row">
+      <template #row="{ item, actions: recordActions, view }">
+        <CollectionRow :spotlight="item === source?.items.value[0]" :actions="view === 'preview' ? [] : recordActions" @select="key => collectionActions.select(key)" class="px-3 py-3 sm:px-4" data-slot="resource-collection-row">
           <Link
             :href="route('resources.show', item.id)"
             prefetch
@@ -112,26 +115,19 @@
               <span class="block truncate text-base font-medium text-foreground">
                 <SearchMatch :match="matchTitle(nameOf(item), item._searchTitleMatches)" :title="nameOf(item)" />
               </span>
-              <span class="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-                <span v-if="getSearchTranslation(item, 'category_name')"><SearchMatch :match="highlightText(getSearchTranslation(item, 'category_name'), item._searchFieldMatches?.category_name)" :title="getSearchTranslation(item, 'category_name')" /></span>
-                <span v-if="item.tenant_shortname">{{ item.tenant_shortname }}</span>
-                <span v-if="item.location">{{ item.location }}</span>
-                <span
-                  v-if="item.is_reservable"
-                  class="tabular-nums"
-                  :class="isFullyBooked(item) && 'font-medium text-status-attention'"
-                  data-slot="resource-availability"
-                >{{ availabilityLabel(item) }}</span>
-                <span v-else-if="item.capacity" class="tabular-nums">{{ $t('Kiekis: :count', { count: String(item.capacity) }) }}</span>
+              <span class="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-muted-foreground">
+                <template v-for="(part, index) in rowFacts(item)" :key="index">
+                  <span v-if="index > 0" aria-hidden="true">·</span>
+                  <span><SearchMatch :match="part.match" :title="part.title" /></span>
+                </template>
               </span>
             </span>
           </Link>
-          <StatusBadge v-if="!item.is_reservable" :status="notReservableStatus" class="shrink-0" />
-          <div v-else-if="canReserve" class="shrink-0">
+          <StatusBadge v-if="view !== 'preview' && !item.is_reservable" :status="notReservableStatus" class="mt-1.5" />
+          <div v-else-if="view !== 'preview' && canReserve" class="mt-1.5">
             <AddToReservationButton :resource-id="String(item.id)" />
           </div>
-          <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => collectionActions.select(key)" />
-        </div>
+        </CollectionRow>
       </template>
 
       <template #cell="{ item, column }">
@@ -159,6 +155,7 @@
           <StatusBadge v-if="!item.is_reservable" :status="notReservableStatus" />
           <AddToReservationButton v-else-if="canReserve" :resource-id="String(item.id)" />
         </template>
+        <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
       </template>
 
       <template #preview="{ item, actions: recordActions }">
@@ -180,7 +177,7 @@
               without-draft="reserve"
               :label="$t('reservations.cart.add_to_reservation')"
             />
-            <CollectionRowActions :actions="recordActions" full-labels @select="key => collectionActions.select(key)" />
+            <CollectionRowActions :actions="recordActions" emphasis full-labels @select="key => collectionActions.select(key)" />
           </template>
         </ResourcePreview>
       </template>
@@ -212,6 +209,7 @@ import { capitalize, computed, onMounted, watch } from 'vue';
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { useRowAbilities } from '@/Composables/useRowAbilities';
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
 import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
@@ -234,6 +232,7 @@ import { useTypesenseCollectionSource } from '@/Composables/useCollectionSource'
 import { notReservableStatus } from '@/Constants/statuses';
 import { useResourceAvailability } from '@/Features/Admin/AdminSearch/Composables/useResourceAvailability';
 import type { ResourceSearchResult } from '@/Shared/Search/types';
+import { formatRecordDate } from '@/Utils/dateTime';
 
 const props = defineProps<{
   reservationCart: ReservationCart | null;
@@ -290,10 +289,12 @@ const nameOf = (resource: ResourceSearchResult) => getSearchTranslation(resource
 
 const columns = computed<CollectionColumn[]>(() => [
   { key: 'name', label: capitalize($tChoice('entities.resource.model', 1)), sortField: 'name_lt' },
-  { key: 'category', label: $t('Kategorija') },
+  { key: 'category', label: $t('Kategorija'), class: 'w-44' },
   { key: 'tenant', label: $t('Padalinys'), class: 'w-32' },
   { key: 'availability', label: $t('reservations.cart.free_column'), class: 'w-32' },
   { key: 'status', label: '', class: 'w-48' },
+  { key: 'created_at', label: $t('Sukurta'), class: 'w-36', defaultHidden: true, sortField: 'created_at' },
+  { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', defaultHidden: true, sortField: 'updated_at' },
 ]);
 
 // --- Availability: for the cart's period, or right now until one is picked ---------------------
@@ -330,6 +331,13 @@ const availabilityLabel = (item: ResourceSearchResult) => {
     : $t('reservations.cart.free_of', { available: String(Math.max(0, free)), capacity: String(item.capacity) });
 };
 
+const rowFacts = (item: ResourceSearchResult) => [
+  { title: getSearchTranslation(item, 'category_name'), match: item._searchFieldMatches?.category_name },
+  { title: item.tenant_shortname },
+  { title: item.location },
+  { title: item.is_reservable ? availabilityLabel(item) : (item.capacity ? $t('Kiekis: :count', { count: String(item.capacity) }) : undefined) },
+].filter(part => Boolean(part.title));
+
 const periodLabel = computed(() => (period.value
   ? $t('reservations.cart.availability_for', { period: formatReservationPeriod(period.value.start, period.value.end) })
   : $t('reservations.cart.availability_now')));
@@ -348,8 +356,8 @@ onMounted(() => {
   window.history.replaceState(window.history.state, '', `${window.location.pathname}${query ? `?${query}` : ''}`);
 });
 const rowActions = (item: ResourceSearchResult): AdminRecordAction[] => [
-  { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, href: route('resources.show', item.id) },
-  ...(rowAbilities.can(item.id, 'update') ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: route('resources.edit', item.id) }] : []),
+  { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, primary: true, href: route('resources.show', item.id) },
+  ...(rowAbilities.can(item.id, 'update') ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, menuOnly: true, href: route('resources.edit', item.id) }] : []),
   ...(rowAbilities.can(item.id, 'delete') ? [{ key: `delete:${item.id}:${nameOf(item)}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
 ];
 

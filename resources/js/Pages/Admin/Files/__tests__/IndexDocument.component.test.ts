@@ -35,23 +35,26 @@ function actionsFor(anonymousUrl: string | null, allowed = true): AdminRecordAct
 }
 
 describe('document collection actions', () => {
-  it('offers editing when a permitted document has no public URL', () => {
+  it('labels editing when a permitted document has no public URL', () => {
     expect(actionsFor(null)).toEqual([
-      expect.objectContaining({ key: 'open', role: 'open' }),
-      expect.objectContaining({ key: 'edit', role: 'edit' }),
+      expect.objectContaining({ key: 'edit', role: 'edit', primary: true, href: route('documents.edit', 'd1') }),
       expect.objectContaining({ key: 'refresh' }),
       expect.objectContaining({ key: 'hide' }),
     ]);
   });
 
-  it('keeps public open visible and refresh in the menu when the file is available', () => {
+  it('keeps the file in the menu beside the SharePoint editor', () => {
     const actions = actionsFor('https://example.com/file');
-    expect(actions[0]).toMatchObject({ key: 'open', role: 'open', href: 'https://example.com/file' });
-    expect(actions[1]).toMatchObject({ key: 'edit', role: 'edit' });
+
+    expect(actions[0]).toMatchObject({ key: 'edit', role: 'edit', primary: true });
+    expect(actions[1]).toMatchObject({ key: 'open', menuOnly: true, external: true, href: 'https://example.com/file' });
     expect(actions[2]).toMatchObject({ key: 'refresh' });
   });
 
-  it('keeps update-only commands hidden from read-only users', () => {
-    expect(actionsFor(null, false)).toEqual([expect.objectContaining({ key: 'open', role: 'open' })]);
+  it('offers only the external file to read-only users', () => {
+    expect(actionsFor('https://example.com/file', false)).toEqual([
+      expect.objectContaining({ key: 'open', role: 'open', primary: true, external: true }),
+    ]);
+    expect(actionsFor(null, false)).toEqual([]);
   });
 });

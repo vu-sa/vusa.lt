@@ -411,7 +411,8 @@ $settings = [
                         ['name' => 'language_code', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'sync_status', 'type' => 'string', 'sort' => true, 'optional' => true],
                         ['name' => 'checked_at', 'type' => 'int64', 'optional' => true, 'sort' => true],
-                        ['name' => 'created_at', 'type' => 'int64'],
+                        ['name' => 'created_at', 'type' => 'int64', 'sort' => true],
+                        ['name' => 'updated_at', 'type' => 'int64', 'optional' => true, 'sort' => true],
                     ],
                     'default_sorting_field' => 'created_at',
                     'enable_nested_fields' => false,
@@ -703,7 +704,7 @@ $settings = [
                         ['name' => 'vote_matches', 'type' => 'bool'],
                         ['name' => 'vote_alignment_status', 'type' => 'string', 'facet' => true],
 
-                        ['name' => 'created_at', 'type' => 'int64'],
+                        ['name' => 'created_at', 'type' => 'int64', 'sort' => true],
                         ['name' => 'updated_at', 'type' => 'int64', 'sort' => true],
                     ],
                     'default_sorting_field' => 'created_at',
@@ -752,6 +753,7 @@ $settings = [
                         ['name' => 'image_focal_point', 'type' => 'string', 'optional' => true],
 
                         ['name' => 'created_at', 'type' => 'int64', 'sort' => true],
+                        ['name' => 'updated_at', 'type' => 'int64', 'optional' => true, 'sort' => true],
                     ],
                     'default_sorting_field' => 'created_at',
                     'enable_nested_fields' => false,

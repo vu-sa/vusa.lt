@@ -3,13 +3,12 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from 'laravel-vue-i18n';
-import { ExternalLink, Folder, Pencil, Trash2 } from '@lucide/vue';
 import { computed } from 'vue';
 
+import { documentFileActions } from './documentFileActions';
 import type { DocumentFolderRow } from './types';
 
-import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 
 const props = defineProps<{
   file: DocumentFolderRow;
@@ -19,14 +18,7 @@ const emit = defineEmits<{
   delete: [file: DocumentFolderRow];
 }>();
 
-const removed = computed(() => Boolean(props.file.removed_from_sharepoint_at));
-
-const actions = computed<CollectionRowAction[]>(() => [
-  ...(props.file.public_url ? [{ key: 'public', role: 'open' as const, label: $t('Atidaryti vusa.lt nuorodą'), icon: ExternalLink, href: props.file.public_url, external: true }] : []),
-  ...(props.file.can.update && !removed.value ? [{ key: 'edit', role: 'edit' as const, label: $t('Redaguoti'), icon: Pencil, href: route('documents.edit', props.file.id) }] : []),
-  ...(props.file.sharepoint_web_url && !removed.value ? [{ key: 'sharepoint', role: props.file.public_url ? undefined : 'open' as const, label: $t('Atidaryti SharePoint'), icon: Folder, href: props.file.sharepoint_web_url, external: true }] : []),
-  ...(removed.value && props.file.can.update ? [{ key: 'delete', label: $t('Ištrinti'), icon: Trash2, destructive: true, primary: true }] : []),
-]);
+const actions = computed(() => documentFileActions(props.file));
 
 function select(key: string): void {
   if (key === 'delete') emit('delete', props.file);

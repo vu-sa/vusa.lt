@@ -11,12 +11,12 @@
     </template>
 
     <template #actions>
-      <Button as-child variant="brand" size="sm">
-        <Link :href="showHref">
-          {{ $t('Atidaryti dokumentą') }}
-        </Link>
-      </Button>
       <slot name="actions">
+        <Button as-child variant="brand" size="sm">
+          <Link :href="showHref">
+            {{ $t('Atidaryti dokumentą') }}
+          </Link>
+        </Button>
         <Button v-if="document.anonymous_url" as-child variant="outline" size="sm" voice="sentence">
           <a :href="document.anonymous_url" target="_blank" rel="noopener noreferrer">
             <ExternalLink aria-hidden="true" />

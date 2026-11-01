@@ -48,6 +48,7 @@ class GoalController extends AdminController
             ->get()
             ->map(fn (Goal $goal): array => [
                 ...$this->summary($goal),
+                'created_at' => $goal->created_at?->toISOString(),
                 'steps_count' => $goal->steps_count,
                 'problems_count' => $goal->problems_count,
                 'can_update' => $user->can('update', $goal),

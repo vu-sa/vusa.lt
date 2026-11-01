@@ -138,6 +138,7 @@ class Resource extends Model implements GuardsForceDelete, ImageMediaOwner
             'category_name' => $this->category?->getTranslation('name', 'lt'),
             'image_url' => $this->imageGallery('images')[0]['thumb'] ?? '',
             'created_at' => $this->created_at->timestamp,
+            'updated_at' => $this->updated_at->timestamp,
         ];
     }
 

@@ -30,7 +30,7 @@ vi.mock('@/Composables/useRowAbilities', () => ({
 }));
 
 const CollectionPage = {
-  props: ['quickFilters'],
+  props: ['quickFilters', 'rowActions', 'columns'],
   emits: ['quickFilter'],
   template: '<div />',
 };
@@ -80,4 +80,17 @@ describe('resource managed quick filter', () => {
     expect(wrapper.findComponent(CollectionPage).props('quickFilters')[0].active).toBe(true);
     wrapper.unmount();
   });
+  it('keeps opening primary and offers hidden timestamp columns', () => {
+    const wrapper = render([]);
+    const collection = wrapper.findComponent(CollectionPage);
+    const actions = collection.props('rowActions')({ id: 'r1', name_lt: 'Išteklius' });
+
+    expect(actions[0]).toMatchObject({ role: 'open', primary: true, href: route('resources.show', 'r1') });
+    expect(collection.props('columns')).toEqual(expect.arrayContaining([
+      expect.objectContaining({ key: 'created_at', defaultHidden: true, sortField: 'created_at' }),
+      expect.objectContaining({ key: 'updated_at', defaultHidden: true, sortField: 'updated_at' }),
+    ]));
+    wrapper.unmount();
+  });
+
 });

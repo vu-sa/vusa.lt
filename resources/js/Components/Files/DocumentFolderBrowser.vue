@@ -12,7 +12,6 @@
       <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
         <SpotlightPopover
           :title="$t('Visi SharePoint failai vienoje vietoje')"
-          :description="$t('Žiūrėk failus sąrašu arba SharePoint aplankais. Būseną keisk paspaudęs ją eilutėje.')"
           :is-dismissed="layoutSpotlight.isDismissed.value"
           @dismiss="layoutSpotlight.dismiss()"
         >
@@ -106,7 +105,7 @@
               <TableHead class="w-40">
                 {{ $t('Būsena') }}
               </TableHead>
-              <TableHead class="w-28">
+              <TableHead class="w-44">
                 <span class="sr-only">{{ $t('Veiksmai') }}</span>
               </TableHead>
             </TableRow>
@@ -125,7 +124,7 @@
                 {{ folderSummary(folder.counts) }}
               </TableCell>
             </TableRow>
-            <TableRow v-for="file in listing.files" :key="file.id" data-slot="document-file">
+            <TableRow v-for="file in listing.files" :key="file.id" data-slot="document-file" :class="file.removed_from_sharepoint_at && 'text-muted-foreground [&_a]:text-muted-foreground'">
               <TableCell v-if="selectableFiles.length > 0">
                 <Checkbox
                   v-if="isSelectable(file)"
@@ -135,9 +134,11 @@
                 />
               </TableCell>
               <TableCell>
-                <p class="line-clamp-2 font-medium break-words">
+                <component :is="fileHref(file) ? 'a' : 'span'" :href="fileHref(file)" class="line-clamp-2 font-medium break-words hover:text-brand" data-collection-open>
+                  <CircleX v-if="file.removed_from_sharepoint_at" class="mr-1.5 inline size-4" :title="$t('Pašalintas iš SharePoint')" aria-hidden="true" />
+                  <span v-if="file.removed_from_sharepoint_at" class="sr-only">{{ $t('Pašalintas iš SharePoint') }}:</span>
                   {{ file.title || file.name }}
-                </p>
+                </component>
                 <p
                   v-if="folderOf(file)"
                   class="flex min-w-0 items-center gap-1 text-xs text-muted-foreground"
@@ -177,7 +178,7 @@
                 {{ file.institution?.name ?? '—' }}
               </TableCell>
               <TableCell>
-                <DocumentFileStatus :file :busy="busyIds.has(file.id)" @status="requestStatus" />
+                <DocumentFileStatus v-if="!file.removed_from_sharepoint_at" :file />
               </TableCell>
               <TableCell>
                 <DocumentFileActions :file @delete="requestDelete([$event])" />
@@ -204,54 +205,62 @@
           <li
             v-for="file in listing.files"
             :key="file.id"
-            class="flex min-h-14 flex-wrap items-center gap-x-3 gap-y-2 px-3 py-2.5"
+            :class="file.removed_from_sharepoint_at && 'text-muted-foreground [&_a]:text-muted-foreground'"
             data-slot="document-file"
           >
-            <Checkbox
-              v-if="isSelectable(file)"
-              class="pointer-coarse:size-6"
-              :model-value="selectedIds.has(file.id)"
-              :aria-label="$t('Pažymėti')"
-              @update:model-value="toggleSelected(file.id)"
-            />
-            <component :is="getFileIcon(file.name)" v-else class="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
-            <div class="min-w-0 flex-1">
-              <p class="truncate font-medium">
-                {{ file.title || file.name }}
-              </p>
-              <div class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-                <span v-if="folderOf(file)" class="inline-flex min-w-0 items-center gap-1" :title="file.sharepoint_path ?? undefined">
-                  <Folder class="size-3 shrink-0" aria-hidden="true" />
-                  <span class="truncate">{{ folderOf(file) }}</span>
-                </span>
-                <span v-if="file.document_date" class="tabular-nums">{{ formatDate(file.document_date) }}</span>
-                <span v-if="file.content_type">{{ file.content_type }}</span>
-                <span v-if="file.institution">{{ file.institution.name }}</span>
-                <span v-if="linkState(file) === 'failed'" class="inline-flex flex-wrap items-center gap-x-2 text-status-danger" data-slot="document-link-failed">
-                  {{ $t('Nepavyko sukurti viešos nuorodos') }}
-                  <button
-                    v-if="file.can.update"
-                    type="button"
-                    class="font-semibold underline underline-offset-2 pointer-coarse:min-h-11 disabled:opacity-50"
-                    :disabled="busyIds.has(file.id)"
-                    @click="retryLink(file)"
-                  >
-                    {{ $t('Bandyti dar kartą') }}
-                  </button>
-                </span>
-                <span v-else-if="linkState(file) === 'pending'" data-slot="document-link-pending">
-                  {{ $t('Vieša nuoroda dar nesukurta') }}
-                </span>
-                <span v-if="file.problems.length > 0" class="inline-flex items-center gap-1 text-status-attention" data-slot="document-problems">
-                  <TriangleAlert class="size-3 shrink-0" aria-hidden="true" />
-                  {{ problemSummary(file) }}
-                </span>
+            <CollectionRow :actions="documentFileActions(file)" class="px-3 py-2.5" @select="key => key === 'delete' && requestDelete([file])">
+              <template #lead>
+              <Checkbox
+                v-if="isSelectable(file)"
+                class="pointer-coarse:size-6"
+                :model-value="selectedIds.has(file.id)"
+                :aria-label="$t('Pažymėti')"
+                @update:model-value="toggleSelected(file.id)"
+              />
+              <component :is="getFileIcon(file.name)" v-else class="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+              </template>
+              <div class="min-w-0 flex-1">
+                <component :is="fileHref(file) ? 'a' : 'span'" :href="fileHref(file)" class="block truncate font-medium hover:text-brand" data-collection-open>
+                  <CircleX v-if="file.removed_from_sharepoint_at" class="mr-1.5 inline size-4" :title="$t('Pašalintas iš SharePoint')" aria-hidden="true" />
+                  <span v-if="file.removed_from_sharepoint_at" class="sr-only">{{ $t('Pašalintas iš SharePoint') }}:</span>
+                  {{ file.title || file.name }}
+                </component>
+                <div class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+                  <span v-if="folderOf(file)" class="inline-flex min-w-0 items-center gap-1" :title="file.sharepoint_path ?? undefined">
+                    <Folder class="size-3 shrink-0" aria-hidden="true" />
+                    <span class="truncate">{{ folderOf(file) }}</span>
+                  </span>
+                  <span v-if="folderOf(file) && file.document_date" aria-hidden="true">·</span>
+                  <span v-if="file.document_date" class="tabular-nums">{{ formatDate(file.document_date) }}</span>
+                  <span v-if="file.content_type && (folderOf(file) || file.document_date)" aria-hidden="true">·</span>
+                  <span v-if="file.content_type">{{ file.content_type }}</span>
+                  <span v-if="file.institution && (folderOf(file) || file.document_date || file.content_type)" aria-hidden="true">·</span>
+                  <span v-if="file.institution">{{ file.institution.name }}</span>
+                  <span v-if="linkState(file) === 'failed'" class="inline-flex flex-wrap items-center gap-x-2 text-status-danger" data-slot="document-link-failed">
+                    {{ $t('Nepavyko sukurti viešos nuorodos') }}
+                    <button
+                      v-if="file.can.update"
+                      type="button"
+                      class="font-semibold underline underline-offset-2 pointer-coarse:min-h-11 disabled:opacity-50"
+                      :disabled="busyIds.has(file.id)"
+                      @click="retryLink(file)"
+                    >
+                      {{ $t('Bandyti dar kartą') }}
+                    </button>
+                  </span>
+                  <span v-else-if="linkState(file) === 'pending'" data-slot="document-link-pending">
+                    {{ $t('Vieša nuoroda dar nesukurta') }}
+                  </span>
+                  <span v-if="file.problems.length > 0" class="inline-flex items-center gap-1 text-status-attention" data-slot="document-problems">
+                    <TriangleAlert class="size-3 shrink-0" aria-hidden="true" />
+                    {{ problemSummary(file) }}
+                  </span>
+                </div>
               </div>
-            </div>
-            <div class="ml-8 flex items-center gap-2">
-              <DocumentFileStatus :file :busy="busyIds.has(file.id)" @status="requestStatus" />
-              <DocumentFileActions :file @delete="requestDelete([$event])" />
-            </div>
+              <div class="mt-1.5">
+                <DocumentFileStatus v-if="!file.removed_from_sharepoint_at" :file />
+              </div>
+            </CollectionRow>
           </li>
         </ul>
       </template>
@@ -331,14 +340,17 @@
 import { Head, router } from '@inertiajs/vue3';
 import { refDebounced, useMediaQuery, useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronRight, Eye, EyeOff, Folder, FolderTree, List, Search, Trash2, TriangleAlert } from '@lucide/vue';
+import { CircleX, ChevronRight, Eye, EyeOff, Folder, FolderTree, List, Search, Trash2, TriangleAlert } from '@lucide/vue';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 import DocumentFileActions from './DocumentFileActions.vue';
+import { documentFileActions } from './documentFileActions';
 import DocumentFileStatus from './DocumentFileStatus.vue';
 import { linkState } from './linkState';
 import type { DocumentFolderListing, DocumentFolderRow, DocumentProblem, DocumentStatusFilter } from './types';
 
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
+import { quickFilterLabel } from '@/Components/Collection/quickFilterLabel';
 import CollectionQuickFilters from '@/Components/Collection/CollectionQuickFilters.vue';
 import CollectionSelectionBar from '@/Components/Collection/CollectionSelectionBar.vue';
 import CollectionTitleBand from '@/Components/Collection/CollectionTitleBand.vue';
@@ -357,6 +369,10 @@ import PathBreadcrumb from '@/Features/Admin/FileManager/Components/PathBreadcru
 import { DocumentStatus } from '@/Types/enums';
 import { formatDate } from '@/Utils/dateTime';
 import { getFileIcon } from '@/Utils/fileIcons';
+
+const fileHref = (file: DocumentFolderRow) => file.can.update && !file.removed_from_sharepoint_at
+  ? route('documents.edit', file.id)
+  : file.public_url ?? undefined;
 
 const props = defineProps<{
   eyebrow: string;
@@ -526,18 +542,15 @@ function setContentType(next: unknown): void {
 }
 
 const statusFilters = computed<CollectionQuickFilter[]>(() => [
-  { id: 'pending', label: countLabel($t('Laukia'), props.pendingCount), active: status.value === 'pending' },
+  { id: 'pending', label: quickFilterLabel($t('Laukia'), props.pendingCount), active: status.value === 'pending' },
   { id: 'published', label: $t('Paskelbti'), active: status.value === 'published' },
   { id: 'hidden', label: $t('Paslėpti'), active: status.value === 'hidden' },
   // Offered only while there is something to clear up.
   ...(props.removedCount > 0 || status.value === 'removed'
-    ? [{ id: 'removed', label: countLabel($t('Pašalinti iš SharePoint'), props.removedCount), active: status.value === 'removed' }]
+    ? [{ id: 'removed', label: quickFilterLabel($t('Pašalinti iš SharePoint'), props.removedCount), active: status.value === 'removed' }]
     : []),
 ]);
 
-function countLabel(label: string, count: number): string {
-  return count > 0 ? `${label} · ${count}` : label;
-}
 
 const emptyTitle = computed(() => {
   if (search.value) return $t('Nieko nerasta');
