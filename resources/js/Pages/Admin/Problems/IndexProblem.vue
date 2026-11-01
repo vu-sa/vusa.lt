@@ -6,7 +6,7 @@
     :eyebrow="$t('shell.workspaces.atstovavimas.title')"
     :title="$t('Problemos')"
     :lead="$t('Registruok studentų problemas, sek sprendimo eigą ir koordinuok veiksmus su institucijomis.')"
-    default-view="preview"
+    default-view="table"
     :available-views="['preview', 'table', 'rows']"
     :item-key="problemKey"
     :trash="{ count: deletedCount ?? 0, active: isDeleted }"
@@ -14,7 +14,7 @@
     :columns
     table-fixed
     actions-width="w-44"
-    table-min-width="min-w-[88rem]"
+    table-min-width="min-w-[64rem]"
     :quick-filters
     :search-placeholder="$t('Ieškoti problemų…')"
     @quick-filter="toggleQuickFilter"
@@ -76,11 +76,11 @@
           v-if="!isDeleted"
           :href="route('problems.show', item.id)"
           data-collection-open
-          class="block truncate font-medium hover:text-brand"
+          class="block whitespace-normal wrap-break-word font-medium hover:text-brand"
         >
           {{ localizedTitle(item) }}
         </Link>
-        <span v-else class="block truncate font-medium text-muted-foreground">{{ localizedTitle(item) }}</span>
+        <span v-else class="block whitespace-normal wrap-break-word font-medium text-muted-foreground">{{ localizedTitle(item) }}</span>
       </div>
 
       <div v-else-if="column.key === 'status'">
@@ -155,7 +155,7 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { ChevronRight, Pencil, Plus, RotateCcw, Trash2 } from '@lucide/vue';
+import { ArrowUpRight, Pencil, Plus, RotateCcw, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
@@ -206,7 +206,7 @@ const rowActions = (item: ProblemRow): CollectionRowAction[] => isDeleted.value
       ...(canForceDelete.value ? [{ key: 'forceDelete', label: $t('Ištrinti visam laikui'), icon: Trash2, destructive: true }] : []),
     ]
   : [
-      { key: 'open', label: $t('Atidaryti'), icon: ChevronRight, role: 'open' as const, primary: true, href: route('problems.show', item.id) },
+      { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, primary: true, href: route('problems.show', item.id) },
       ...(item.can_update ? [{ key: 'edit', role: 'edit' as const, menuOnly: true, label: $t('Redaguoti'), icon: Pencil, href: route('problems.edit', item.id) }] : []),
       ...(item.can_delete ? [{ key: `delete:${item.id}:${localizedTitle(item)}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
     ];
@@ -253,11 +253,6 @@ const facets = computed<DatabaseFacetDefinition[]>(() => [
     label: $t('Kategorija'),
     values: props.categories.map(cat => ({ value: String(cat.id), label: String(cat.name) })),
   },
-  {
-    field: 'institution',
-    label: $tChoice('entities.institution.model', 2),
-    values: props.institutions.map(inst => ({ value: String(inst.id), label: String(inst.name) })),
-  },
   ...(tenants.value.length > 0
     ? [{
         field: 'tenant.id',
@@ -297,12 +292,12 @@ const source = useDatabaseCollectionSource<ProblemRow>({
 
 const columns = computed<CollectionColumn[]>(() => [
   { key: 'title', label: $t('entities.problem.title'), sortField: 'title' },
+  { key: 'tenant', label: $tChoice('entities.tenant.model', 1), class: 'w-24' },
   { key: 'status', label: $t('entities.problem.status'), class: 'w-32', sortField: 'status' },
-  { key: 'occurred_at', label: $t('entities.problem.occurred_at'), class: 'w-32', sortField: 'occurred_at' },
-  { key: 'resolved_at', label: $t('entities.problem.resolved_at'), class: 'w-32', sortField: 'resolved_at' },
+  { key: 'occurred_at', label: $t('entities.problem.occurred_at'), class: 'w-32', defaultHidden: true, sortField: 'occurred_at' },
+  { key: 'resolved_at', label: $t('entities.problem.resolved_at'), class: 'w-32', defaultHidden: true, sortField: 'resolved_at' },
   { key: 'responsible_user', label: $t('entities.problem.responsible_user'), class: 'w-44' },
   { key: 'categories', label: $t('entities.problem.categories'), class: 'w-40' },
-  { key: 'tenant', label: $tChoice('entities.tenant.model', 1), class: 'w-24' },
   { key: 'created_at', label: $t('Sukurta'), class: 'w-36', defaultHidden: true, sortField: 'created_at' },
   { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', defaultHidden: true, sortField: 'updated_at' },
 ]);

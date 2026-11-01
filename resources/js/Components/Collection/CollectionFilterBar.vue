@@ -12,7 +12,7 @@
           type="button"
           :class="controlVariants({ size: 'sm', active: selectedCount(facet) > 0, voice: 'sentence' })"
         >
-          <span>{{ facet.label }}</span>
+          <span>{{ capitalize(facet.label) }}</span>
           <span v-if="selectedCount(facet) > 0" :class="controlCountClass">
             {{ selectedCount(facet) }}
           </span>
@@ -49,7 +49,7 @@
         <CollectionQuickFilters :filters="quickFilters" wrap @toggle="id => emit('quickFilter', id)" />
         <section v-for="facet in facets" :key="facet.field">
           <h3 class="mb-1 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-            {{ facet.label }}
+            {{ capitalize(facet.label) }}
           </h3>
           <CollectionFacetOptions :facet @toggle="(field, value) => emit('toggle', field, value)" />
         </section>
@@ -98,6 +98,7 @@ import {
   SheetTitle,
 } from '@/Components/ui/sheet';
 import type { CollectionFacet } from '@/Composables/useCollectionSource';
+import { capitalize } from '@/Utils/String';
 
 defineProps<{
   facets: CollectionFacet[];
