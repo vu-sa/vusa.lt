@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Dokumentai
 area: documents
 models: [Document]
-last_reviewed: 2026-10-26
+last_reviewed: 2026-11-01
 tests:
   - tests/Feature/Admin/Resources/DocumentControllerTest.php
   - tests/Feature/Admin/Resources/DocumentPublicationTest.php
@@ -100,9 +100,8 @@ pakilti aukščiau. Failus galima atrinkti pagal būseną (**Visi**, **Laukia**,
 Pasirinkimas išlieka perjungiant tarp sąrašo ir aplankų. Iš pradžių rodoma 100 failų, kitus atveria
 **Rodyti daugiau**.
 
-Failo būsena rodoma atskirame stulpelyje; paspaudus ją galima pasirinkti **Paskelbtas** arba
-**Paslėptas**. Pažymėjus kelis failus, apačioje atsiranda **Paskelbti** ir **Paslėpti** visiems iš
-karto. Prie failo nurodomas jo poaplankis atidaryto aplanko atžvilgiu; ilgas kelias sutrumpinamas,
+Failo būsena rodoma atskirame stulpelyje. Pažymėjus vieną ar kelis failus, apačioje atsiranda
+**Paskelbti** ir **Paslėpti**. Iš SharePoint pašalinti failai pažymėti ženklu ir išblukinti. Prie failo nurodomas jo poaplankis atidaryto aplanko atžvilgiu; ilgas kelias sutrumpinamas,
 o visas rodomas užvedus pelę. **Pašalinti iš SharePoint** visada rodo viso archyvo tokius failus.
 
 Paslėpus anksčiau rodytą failą, jo vieša SharePoint nuoroda atšaukiama ir nustoja veikti. Vėl
@@ -165,8 +164,7 @@ valdiklyje; rekomendacijos lieka virš jo. Įvedus paiešką sąrašas savaime r
 1. Įkelk failą į SharePoint archyvą ir užpildyk jo duomenis pagal [susitarimus](#susitarimai).
 2. Dokumentuose pasirink būseną **Laukia** ir rask failą sąraše ar aplanke. Jei failo dar nėra,
    spausk **Tikrinti SharePoint** ir palauk kelias minutes.
-3. Paspausk failo būseną ir pasirink **Paskelbtas**. Jau paskelbtą failą paslėpsi pasirinkęs
-   **Paslėptas**. Kelis failus pažymėk ir spausk **Paskelbti** ar **Paslėpti** apačioje.
+3. Pažymėk vieną ar kelis failus ir apačioje spausk **Paskelbti** arba **Paslėpti**.
 4. Jei failui trūksta duomenų, prieš paskelbiant tai parodoma – gali paskelbti iš karto arba
    pirma pataisyti duomenis SharePoint.
 

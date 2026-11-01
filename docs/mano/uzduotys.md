@@ -117,7 +117,7 @@ Nuoroda į konkrečią užduotį (pvz., iš pranešimo) atidaro ją iš karto, n
 | **Ištrinti** | Tik jei turi teisę ją ištrinti |
 
 Paspaudus pavadinimą, atveriama užduotis: instrukcijos, terminas ir atsakingi, o būseną rodo ženklo
-spalva. Eilučių vaizde užduotį atlikta pažymi varnelė eilutės pradžioje, pagrindinis veiksmas rodomas
+spalva. Eilučių vaizde ir lentelėje užduotį atlikta pažymi varnelė, pagrindinis veiksmas – laukiantis žingsnis arba **Atidaryti** – rodomas
 prie užduoties, o telefone jis yra meniu **⋯** viršuje, kartu su kitais veiksmais. Peržiūros vaizde veiksmai rodomi dešinėje, o rodyklėmis ↑ ir ↓ pereinama prie kitos užduoties. Varnelę ir **Pažymėti atlikta** mato tik tie, kas gali užduotį keisti: kiti ją
 mato, bet pažymėti negali.
 
