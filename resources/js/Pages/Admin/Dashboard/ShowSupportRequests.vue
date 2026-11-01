@@ -23,7 +23,7 @@
     </template>
 
     <template #row="{ item, actions: recordActions }">
-      <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
+      <CollectionRow :actions="recordActions" :spotlight="item === source?.items.value[0]" class="px-4 py-4" @select="key => collectionActions.select(key)">
         <div class="min-w-0 flex-1">
           <CollectionPrimaryCell
             :title="item.title"
@@ -34,9 +34,8 @@
             {{ item.creator?.name ?? item.reporter_name ?? $t('Svečias') }} · {{ formatDate(item.created_at) }} · {{ supportRequestVisibilityLabel(item) }}
           </p>
         </div>
-        <StatusBadge :status="statusOf(item)" class="shrink-0" />
-        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => collectionActions.select(key)" />
-      </article>
+        <StatusBadge :status="statusOf(item)" class="mt-2" />
+      </CollectionRow>
     </template>
 
     <template #empty>
@@ -57,10 +56,11 @@ import { computed } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { quickFilterLabel } from '@/Components/Collection/quickFilterLabel';
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { useRowAbilities } from '@/Composables/useRowAbilities';
-import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
@@ -85,8 +85,8 @@ const page = usePage();
 const locale = computed(() => (page.props as { app?: { locale?: string } }).app?.locale ?? 'lt');
 const translatedName = (name: SupportRequestTaxonomyItem['name'] | undefined): string => getTranslatedValue(name, locale.value, '—');
 const tabs = computed(() => [
-  { id: 'all', label: `${$t('Visi')} · ${props.tabCounts.all}`, active: props.currentTab === 'all' },
-  { id: 'mine', label: `${$t('Mano pranešimai')} · ${props.tabCounts.mine}`, active: props.currentTab === 'mine' },
+  { id: 'all', label: quickFilterLabel($t('Visi'), props.tabCounts.all), active: props.currentTab === 'all' },
+  { id: 'mine', label: quickFilterLabel($t('Mano pranešimai'), props.tabCounts.mine), active: props.currentTab === 'mine' },
 ]);
 
 const source = useDatabaseCollectionSource<SupportRequestItem>({
@@ -126,8 +126,8 @@ function changeTab(tab: string): void {
   router.get(route('mySupportRequests.index'), { tab }, { preserveState: false });
 }
 const rowActions = (item: SupportRequestItem): AdminRecordAction[] => [
-  { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, href: route('supportRequests.show', item.id) },
-  ...(rowAbilities.can(item.id, 'update') ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: route('supportRequests.edit', item.id) }] : []),
+  { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, primary: true, href: route('supportRequests.show', item.id) },
+  ...(rowAbilities.can(item.id, 'update') ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, menuOnly: true, href: route('supportRequests.edit', item.id) }] : []),
   ...(rowAbilities.can(item.id, 'delete') ? [{ key: `delete:${item.id}:${item.title}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
 ];
 

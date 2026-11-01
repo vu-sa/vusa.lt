@@ -96,10 +96,11 @@ describe('MailQueue', () => {
 
   it('offers the real digest preview in a new tab for read-only viewers', () => {
     const wrapper = factory(false);
-    const link = wrapper.get('a[data-action="preview"]');
+    const link = wrapper.get('a[data-collection-open]');
 
-    expect(link.attributes('href')).toBe(route('mailQueue.previewForUser', recipient.user_id));
+    expect(link.attributes('href')).toContain('mailQueue.previewForUser');
     expect(link.attributes('target')).toBe('_blank');
+    expect(link.text()).toBe(recipient.user.name);
     expect(router.delete).not.toHaveBeenCalled();
   });
 

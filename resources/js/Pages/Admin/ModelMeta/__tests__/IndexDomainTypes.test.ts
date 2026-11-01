@@ -5,6 +5,8 @@ import { ref } from 'vue';
 
 import IndexDomainTypes from '../IndexDomainTypes.vue';
 
+import type { CollectionColumn } from '@/Components/Collection/types';
+import type { CollectionSource } from '@/Composables/useCollectionSource';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
@@ -24,7 +26,7 @@ function render(typeKind: 'institutionType' | 'dutyType', canCreate: boolean) {
     props: { typeKind, types: [], deletedCount: 0 },
     global: {
       stubs: {
-        CollectionPage: { template: '<main><slot name="actions" /></main>' },
+        CollectionPage: { name: 'CollectionPage', props: ['columns', 'source'], template: '<main><slot name="actions" /></main>' },
         CollectionConfirmAction: true,
         SpotlightPopover: { template: '<div><slot /></div>' },
       },
@@ -48,6 +50,23 @@ describe.each([
     expect(link.attributes('href')).toBe(route(`${resource}.create`));
     await link.trigger('click');
     expect(dismiss).toHaveBeenCalledOnce();
+  });
+
+  it('offers created and updated dates as hidden sortable columns', () => {
+    const wrapper = render(typeKind, true);
+    const collection = wrapper.findComponent({ name: 'CollectionPage' });
+    const columns = collection.props('columns') as CollectionColumn[];
+    const source = collection.props('source') as CollectionSource<unknown>;
+
+    for (const field of ['created_at', 'updated_at']) {
+      expect(columns.find(column => column.key === field)).toMatchObject({
+        class: 'w-36', sortField: field, defaultHidden: true,
+      });
+      expect(source.sortOptions.value.map(option => option.value)).toEqual(expect.arrayContaining([
+        `${field}:asc`, `${field}:desc`,
+      ]));
+    }
+    wrapper.unmount();
   });
 
   it('hides creation without permission for this type', () => {

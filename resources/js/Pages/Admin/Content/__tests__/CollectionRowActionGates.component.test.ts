@@ -94,8 +94,15 @@ describe.each(cases)('$prefix row actions', (testCase) => {
 
   it.each([false, true])('retains labelled editor access and the existing delete/duplicate gates (%s)', (allowed) => {
     const actions = actionsFor(testCase, allowed);
-    expect(actions[0]).toMatchObject({ role: 'edit', label: 'Redaguoti', href: route(`${testCase.prefix}.edit`, '1') });
+    if (testCase.domainType) {
+      expect(actions[0]).toMatchObject({ role: 'open', primary: true, label: 'Atidaryti', href: route(`${testCase.prefix}.show`, '1') });
+      expect(actions[1]).toMatchObject({ role: 'edit', menuOnly: true, label: 'Redaguoti', href: route(`${testCase.prefix}.edit`, '1') });
+    }
+    else {
+      expect(actions[0]).toMatchObject({ role: 'edit', label: 'Redaguoti', href: route(`${testCase.prefix}.edit`, '1') });
+    }
     expect(kinds(actions)).toEqual([
+      ...(testCase.domainType ? ['open'] : []),
       'edit',
       ...(testCase.duplicate && allowed ? ['duplicate'] : []),
       ...(!testCase.banner && allowed ? ['delete'] : []),
@@ -115,8 +122,8 @@ describe.each(cases)('$prefix row actions', (testCase) => {
 
   if (testCase.domainType) {
     it('uses the domain delete gate independently of creation permission', () => {
-      expect(kinds(actionsFor(testCase, false, false, true))).toEqual(['edit']);
-      expect(kinds(actionsFor(testCase, true, false, false))).toEqual(['edit', 'delete']);
+      expect(kinds(actionsFor(testCase, false, false, true))).toEqual(['open', 'edit']);
+      expect(kinds(actionsFor(testCase, true, false, false))).toEqual(['open', 'edit', 'delete']);
     });
   }
 });

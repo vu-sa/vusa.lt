@@ -33,14 +33,15 @@
       </div>
     </template>
     <template #row="{ item: recipient, actions, index }">
-      <div class="border-b border-border px-3 py-3 last:border-b-0 sm:px-4">
+      <CollectionRow :actions :spotlight="index === 0" class="border-b border-border px-3 py-3 last:border-b-0 sm:px-4" @select="action => handleRowAction(recipient, action)">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <div class="flex min-w-0 items-center gap-3">
             <MailIcon class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
             <div class="min-w-0">
-              <p class="truncate text-sm font-semibold text-foreground">
-                {{ recipient.user?.name ?? $t('Ištrintas naudotojas') }}
-              </p>
+              <a v-if="recipient.user" :href="route('mailQueue.previewForUser', recipient.user_id)" target="_blank" rel="noopener noreferrer" data-collection-open class="block truncate text-sm font-semibold text-foreground hover:text-brand">
+                {{ recipient.user.name }}
+              </a>
+              <p v-else class="truncate text-sm font-semibold text-foreground">{{ $t('Ištrintas naudotojas') }}</p>
               <p class="truncate text-xs text-muted-foreground">
                 <span v-if="recipient.user?.email">{{ recipient.user.email }} · </span>
                 {{ $t('Seniausia') }}: {{ formatDate(recipient.oldest_at) }}
@@ -51,7 +52,6 @@
             <Badge variant="secondary">
               {{ $tChoice('mail_queue.line_count', recipient.items_count) }}
             </Badge>
-            <CollectionRowActions :spotlight="index === 0" :actions @select="action => handleRowAction(recipient, action)" />
           </div>
         </div>
 
@@ -94,7 +94,7 @@
             </li>
           </ul>
         </details>
-      </div>
+      </CollectionRow>
     </template>
     <template #empty>
       <EmptyState :title="$t('Laiškų eilė tuščia')" :description="$t('mail_queue.empty_description')" />
@@ -121,7 +121,7 @@ import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 
 import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
-import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
@@ -231,7 +231,7 @@ const handleRowAction = (recipient: Recipient, action: AdminRecordAction | strin
 };
 
 const rowActions = (recipient: Recipient): AdminRecordAction[] => [
-  ...(recipient.user ? [{ key: 'preview', label: $t('mail_previews.view_mail'), icon: MailIcon, role: 'open' as const, href: route('mailQueue.previewForUser', recipient.user_id), external: true }] : []),
+  ...(recipient.user ? [{ key: 'preview', label: $t('mail_previews.view_mail'), icon: MailIcon, role: 'open' as const, primary: true, href: route('mailQueue.previewForUser', recipient.user_id), external: true }] : []),
   ...(props.canManage ? [{ key: 'discard', label: $t('Nesiųsti'), icon: Trash2Icon, destructive: true, disabled: busyKey.value !== null }] : []),
 ];
 </script>
