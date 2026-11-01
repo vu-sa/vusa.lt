@@ -3,7 +3,7 @@
     <PopoverTrigger as-child>
       <button
         type="button"
-        class="u-touch inline-flex items-center gap-1.5 text-left text-sm tabular-nums underline decoration-dotted decoration-muted-foreground underline-offset-4 hover:text-brand"
+        class="u-touch inline-flex flex-wrap items-center gap-x-1.5 text-left text-sm tabular-nums underline decoration-dotted decoration-muted-foreground underline-offset-4 hover:text-brand"
         data-testid="member-terms-summary"
         @pointerenter="onPointerEnter"
         @pointerleave="onPointerLeave"
@@ -39,7 +39,7 @@
         </ul>
       </section>
       <p v-if="groups.length === 0" class="text-muted-foreground">
-        {{ $t('Institucijų nėra') }}
+        {{ loading ? $t('Kraunami duomenys') : emptyText ?? $t('Institucijų nėra') }}
       </p>
     </PopoverContent>
   </Popover>
@@ -54,6 +54,8 @@ import { termStatus, termYearSpan, type TermStatus } from './occupancy';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 
 interface MemberTerm {
+  /** Names the line itself, for a list of people rather than institutions. */
+  label?: string | null;
   institution?: { name?: string | null; short_name?: string | null } | null;
   pivot?: { start_date?: string | null; end_date?: string | null } | null;
 }
@@ -63,10 +65,18 @@ const props = withDefaults(defineProps<{
   duties: MemberTerm[];
   currentCount?: number;
   totalCount?: number;
+  loading?: boolean;
+  emptyText?: string;
 }>(), {
   currentCount: 0,
   totalCount: 0,
+  emptyText: undefined,
 });
+
+const emit = defineEmits<{
+  /** Lets a caller load the terms only when someone looks at them. */
+  open: [];
+}>();
 
 const open = ref(false);
 const openedByHover = ref(false);
@@ -120,7 +130,10 @@ const onPointerLeave = (event: PointerEvent) => {
 
 // A click or tap opens it for real: focus then moves in so the list is reachable by keyboard.
 watch(open, (isOpen) => {
-  if (!isOpen) {
+  if (isOpen) {
+    emit('open');
+  }
+  else {
     openedByHover.value = false;
   }
 });
@@ -136,7 +149,7 @@ const groups = computed(() => {
   const all = new Map<string, MemberTerm['pivot'][]>();
 
   for (const term of props.duties) {
-    const name = term.institution?.short_name || term.institution?.name;
+    const name = term.label || term.institution?.short_name || term.institution?.name;
 
     if (!name) {
       continue;

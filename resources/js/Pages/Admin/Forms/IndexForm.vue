@@ -3,7 +3,6 @@
     :row-actions="item => rowActions(item)"
     :source
     collection="forms"
-    entity-type="form"
     :eyebrow="$t('shell.workspaces.organizacija.title')"
     :title="$t('Formos')"
     :lead="$t('Kurk ir valdyk narių registracijas, apklausas ir grįžtamojo ryšio formas.')"

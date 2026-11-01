@@ -3,7 +3,6 @@
     :row-actions="taskRowActions"
     :source
     :collection="`tasks-${scope}`"
-    entity-type="task"
     :eyebrow
     :title="$t('tasks.collection.title')"
     :lead="scope === 'tenant' ? $t('tasks.collection.lead_tenant') : $t('tasks.collection.lead_mine')"
@@ -118,6 +117,7 @@ import { computed, defineAsyncComponent, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
+import { quickFilterLabel } from '@/Components/Collection/quickFilterLabel';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
@@ -262,18 +262,16 @@ const columns = computed<CollectionColumn[]>(() => [
 
 // --- Quick filters carry their counts; they replace the old stat cards --------------------------
 
-const withCount = (label: string, count: number) => (count > 0 ? `${label} · ${count}` : label);
-
 const quickFilters = computed<CollectionQuickFilter[]>(() => {
   const filters = source.filters.value;
 
   return [
-    { id: 'overdue', label: withCount($t('tasks.collection.overdue'), props.taskCounts.overdue), active: filters.overdue === '1' },
+    { id: 'overdue', label: quickFilterLabel($t('tasks.collection.overdue'), props.taskCounts.overdue), active: filters.overdue === '1' },
     ...(props.scope === 'tenant'
-      ? [{ id: 'assigned', label: withCount($t('tasks.collection.assigned_to_me'), props.taskCounts.assigned), active: filters.assigned === 'me' }]
+      ? [{ id: 'assigned', label: quickFilterLabel($t('tasks.collection.assigned_to_me'), props.taskCounts.assigned), active: filters.assigned === 'me' }]
       : []),
-    { id: 'auto', label: withCount($t('tasks.collection.automatic'), props.taskCounts.auto), active: filters.auto === '1' },
-    { id: 'completed', label: withCount($t('tasks.collection.completed'), props.taskCounts.completed), active: filters.completion === 'completed' },
+    { id: 'auto', label: quickFilterLabel($t('tasks.collection.automatic'), props.taskCounts.auto), active: filters.auto === '1' },
+    { id: 'completed', label: quickFilterLabel($t('tasks.collection.completed'), props.taskCounts.completed), active: filters.completion === 'completed' },
   ];
 });
 

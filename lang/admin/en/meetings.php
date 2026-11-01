@@ -1,6 +1,18 @@
 <?php
 
 return [
+    'outcome' => [
+        'matched_of' => ':matched of :total vote matched|:matched of :total votes matched',
+        'votes' => 'vote:|votes:',
+        'aligned' => 'matched',
+        'misaligned' => 'did not match',
+        'positive' => 'for',
+        'negative' => 'against',
+        'neutral' => 'abstained',
+        'discussed' => 'discussion|discussions',
+        'deferred' => 'deferred|deferred',
+        'unknown' => 'without a result',
+    ],
     'visibility' => [
         'title' => 'What is shown on vusa.lt?',
         'public_intro' => 'This meeting is public because at least one of its institutions is of a type whose meetings are published on vusa.lt.',

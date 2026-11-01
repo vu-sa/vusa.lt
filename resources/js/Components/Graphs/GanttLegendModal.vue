@@ -28,7 +28,7 @@
                 <div>
                   <span class="text-sm font-medium">{{ $t('Užpildytas posėdis') }}</span>
                   <p class="text-xs text-muted-foreground">
-                    {{ $t('Su darbotvarkės punktais') }}
+                    {{ $t('Su darbotvarkės klausimais') }}
                   </p>
                 </div>
               </div>
@@ -46,7 +46,7 @@
                 <div>
                   <span class="text-sm font-medium">{{ $t('Be darbotvarkės') }}</span>
                   <p class="text-xs text-muted-foreground">
-                    {{ $t('Nėra darbotvarkės punktų') }}
+                    {{ $t('Nėra darbotvarkės klausimų') }}
                   </p>
                 </div>
               </div>

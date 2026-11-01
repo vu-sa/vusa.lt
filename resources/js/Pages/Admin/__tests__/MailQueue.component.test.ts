@@ -28,10 +28,10 @@ const recipient = {
 };
 
 const CollectionPageStub = defineComponent({
-  props: ['rowActions', 'entityType', 'eyebrow', 'title', 'lead'],
+  props: ['rowActions', 'eyebrow', 'title', 'lead'],
   setup(props, { slots }) {
     return () => h('div', [
-      h(CollectionTitleBand, { entityType: props.entityType, eyebrow: props.eyebrow, title: props.title, lead: props.lead }),
+      h(CollectionTitleBand, { eyebrow: props.eyebrow, title: props.title, lead: props.lead }),
       slots.actions?.(),
       slots.row?.({ item: recipient, actions: props.rowActions(recipient), index: 0 }),
     ]);

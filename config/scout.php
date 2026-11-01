@@ -554,6 +554,8 @@ $settings = [
                         ['name' => 'institution_ids', 'type' => 'string[]', 'facet' => true],
                         // Refreshed nightly (institutions:refresh-activity-status) and on meeting/check-in changes
                         ['name' => 'activity_status', 'type' => 'string', 'facet' => true, 'optional' => true],
+                        ['name' => 'members_total', 'type' => 'int32', 'optional' => true, 'index' => false],
+                        ['name' => 'updated_at', 'type' => 'int64', 'optional' => true, 'sort' => true],
                         ['name' => 'is_active', 'type' => 'bool', 'facet' => true],
                         ['name' => 'type_ids', 'type' => 'int32[]', 'optional' => true],
                         // Linked members and duties for discoverability
@@ -625,6 +627,16 @@ $settings = [
                         ['name' => 'completion_status', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'institution_type_ids', 'type' => 'int32[]', 'optional' => true],
                         ['name' => 'is_recent', 'type' => 'bool', 'facet' => true],
+
+                        // How the meeting went, excluding private agenda items; display only
+                        ['name' => 'outcome_aligned', 'type' => 'int32', 'optional' => true, 'index' => false],
+                        ['name' => 'outcome_misaligned', 'type' => 'int32', 'optional' => true, 'index' => false],
+                        ['name' => 'outcome_unknown', 'type' => 'int32', 'optional' => true, 'index' => false],
+                        ['name' => 'outcome_positive', 'type' => 'int32', 'optional' => true, 'index' => false],
+                        ['name' => 'outcome_negative', 'type' => 'int32', 'optional' => true, 'index' => false],
+                        ['name' => 'outcome_neutral', 'type' => 'int32', 'optional' => true, 'index' => false],
+                        ['name' => 'outcome_discussed', 'type' => 'int32', 'optional' => true, 'index' => false],
+                        ['name' => 'outcome_deferred', 'type' => 'int32', 'optional' => true, 'index' => false],
 
                         // Representatives attending the meeting
                         ['name' => 'user_names', 'type' => 'string[]', 'optional' => true],

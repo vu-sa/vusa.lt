@@ -3,7 +3,6 @@
     :row-actions
     :source
     collection="goals"
-    entity-type="goal"
     :eyebrow="$t('shell.workspaces.atstovavimas.title')"
     :title="$t('shell.sections.tikslai')"
     :lead="$t('goals.lead')"

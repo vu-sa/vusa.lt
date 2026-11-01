@@ -3,7 +3,6 @@
     :row-actions="item => openActions(item)"
     :source
     collection="agenda_items"
-    entity-type="agenda_item"
     :eyebrow="$t('shell.workspaces.atstovavimas.title')"
     :title="$t('Darbotvarkės klausimai')"
     :lead="$t('Visų posėdžių darbotvarkės klausimai vienoje vietoje.')"

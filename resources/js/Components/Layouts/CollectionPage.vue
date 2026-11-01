@@ -89,6 +89,7 @@
       :table-fixed
       :actions-width
       :table-min-width
+      :row-muted
       @clear="clearAll"
       @retry="source.refresh"
       @load-more="source.loadMore"
@@ -148,7 +149,6 @@ const props = withDefaults(defineProps<{
   source: CollectionSource<T>;
   /** Stable name; scopes the remembered view and filter-bar state. */
   collection: string;
-  entityType: string;
   eyebrow: string;
   title: string;
   lead?: string;
@@ -175,6 +175,7 @@ const props = withDefaults(defineProps<{
   /** Actions column width in a fixed-layout table (default `w-48`). */
   actionsWidth?: string;
   tableMinWidth?: string;
+  rowMuted?: (item: T) => boolean;
 }>(), {
   lead: undefined,
   quickFilters: undefined,
@@ -340,6 +341,7 @@ useListDetailSelection({
   enabled: () => view.value === 'preview',
   root,
   rowSelector: '[data-collection-open]',
+  detailSelector: '[data-slot="collection-preview"]',
   onEnter: (item) => {
     const href = rowOf(props.itemKey(item))?.querySelector('a[data-collection-open]')?.getAttribute('href');
     if (href) {

@@ -92,6 +92,13 @@ export const meetingCompletionStatuses: Record<MeetingCompletionStatus, StatusPr
   no_items: status('Nėra darbotvarkės', 'attention', CircleSlash),
 };
 
+/** The student perspective across a meeting; `neutral` (nothing to compare) gets no tag. */
+export const meetingAlignmentStatuses = {
+  all_match: status('Visi sutampa', 'success', CircleCheck),
+  mixed: status('Iš dalies sutampa', 'attention', CircleDashed),
+  all_mismatch: status('Visi nesutampa', 'danger', TriangleAlert),
+} satisfies Record<string, StatusPresentation>;
+
 export const voteStatuses: Record<VoteValue | MissingVoteStatus, StatusPresentation> = {
   [VoteValue.Positive]: status('Už', 'success', CircleCheck),
   [VoteValue.Negative]: status('Prieš', 'danger', CircleX),
@@ -149,8 +156,8 @@ export const contentStatuses: Record<ContentStatus, StatusPresentation> = {
 
 /** Whether a duty or institution still exists in the structure — not meeting health, which is `institutionActivityStatuses`. */
 export const operatingStatuses = {
-  active: status('Veikianti', 'success', CircleCheck),
-  inactive: status('Nebeveikianti', 'neutral', CircleSlash),
+  active: status('Veikianti', 'success', CircleCheck, true),
+  inactive: status('Nebeveikianti', 'neutral', CircleSlash, true),
 } satisfies Record<string, StatusPresentation>;
 
 export const inactiveInstitutionStatus: StatusPresentation = status('Nebeveikianti institucija', 'neutral', CircleSlash);

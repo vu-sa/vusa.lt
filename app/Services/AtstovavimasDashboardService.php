@@ -511,6 +511,7 @@ class AtstovavimasDashboardService
         $isFull = $projection === self::PROJECTION_FULL;
         $agendaItems = $projection === self::PROJECTION_RESTRICTED ? new Collection : $meeting->agendaItems;
         $calendarEvent = $meeting->calendarEvent;
+        $outcome = $isFull ? $meeting->outcomeSummary(auth()->user()) : null;
 
         return [
             'id' => (string) $meeting->id,
@@ -519,7 +520,9 @@ class AtstovavimasDashboardService
             'start_time' => $meeting->start_time->toISOString(),
             'title' => $meeting->title,
             'type_slug' => $meeting->type?->value,
-            'completion_status' => $isFull ? $meeting->completion_status : null,
+            'completion_status' => $outcome['completion_status'] ?? null,
+            'vote_alignment_status' => $outcome['vote_alignment_status'] ?? null,
+            'requires_student_perspective' => $isFull ? $meeting->requiresStudentPerspective() : null,
             'has_report' => $isFull && $meeting->has_report,
             'has_protocol' => $isFull && $meeting->has_protocol,
             // Announced in the public calendar, and whether that announcement is still a

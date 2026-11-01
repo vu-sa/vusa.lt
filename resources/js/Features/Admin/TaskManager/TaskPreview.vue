@@ -1,15 +1,7 @@
 <template>
   <PreviewPane entity-type="task" :eyebrow="getTaskActionLabel(task.action_type) || $t('tasks.detail.eyebrow')" :title="task.name">
     <template #mark>
-      <span
-        :class="['flex size-5 shrink-0 items-center justify-center', parts.surface, parts.border, parts.text]"
-        :data-status-role="status.role"
-        :title="$t(status.label)"
-        data-slot="task-status-mark"
-      >
-        <component :is="getTaskActionIcon(task.action_type)" class="size-3.5" aria-hidden="true" />
-        <span class="sr-only">{{ $t(status.label) }}</span>
-      </span>
+      <StatusMark :icon="getTaskActionIcon(task.action_type)" :status />
     </template>
 
     <template #title>
@@ -42,8 +34,8 @@ import type { TaskAction, TaskActionKey } from './taskActions';
 import TaskDetails from './TaskDetails.vue';
 
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
-import { PreviewPane } from '@/Components/Patterns';
-import { statusRoleParts, taskStatuses } from '@/Constants/statuses';
+import { PreviewPane, StatusMark } from '@/Components/Patterns';
+import { taskStatuses } from '@/Constants/statuses';
 import { getTaskActionIcon, getTaskActionLabel, getTaskStatus, getTaskableUrl, isOrphanedTask, type TaskDisplayData } from '@/Composables/useTaskPresentation';
 
 const props = defineProps<{
@@ -56,7 +48,6 @@ const emit = defineEmits<{
 }>();
 
 const status = computed(() => taskStatuses[getTaskStatus(props.task) ?? 'open']);
-const parts = computed(() => statusRoleParts[status.value.role]);
 const taskableUrl = computed(() => getTaskableUrl(props.task));
 const subject = computed(() => (isOrphanedTask(props.task) ? $t('tasks.orphaned') : props.task.taskable?.name ?? props.task.taskable_type));
 </script>

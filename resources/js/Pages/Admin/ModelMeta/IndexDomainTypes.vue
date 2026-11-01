@@ -3,7 +3,6 @@
     :row-actions="item => actionsFor(item)"
     :source
     :collection="resource"
-    :entity-type
     :eyebrow="$t('shell.workspaces.sistema.title')"
     :title="$t(`types.${typeKind}.title`)"
     :lead="isTrash
@@ -76,7 +75,6 @@ import type { CollectionColumn } from '@/Components/Collection/types';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { Button } from '@/Components/ui/button';
-import { ModelEnum } from '@/Types/enums';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { isTrashView, useLocalCollectionSource } from '@/Composables/useCollectionSource';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
@@ -92,7 +90,6 @@ const props = defineProps<{
 }>();
 
 const resource = props.typeKind === 'institutionType' ? 'institutionTypes' : 'dutyTypes';
-const entityType = props.typeKind === 'institutionType' ? ModelEnum.INSTITUTION_TYPE : ModelEnum.DUTY_TYPE;
 const createAction = props.typeKind === 'institutionType' ? 'new_institution_type' : 'new_duty_type';
 const spotlight = props.typeKind === 'institutionType'
   ? useFeatureSpotlight('institution-type-create-v1')

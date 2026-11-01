@@ -86,7 +86,7 @@ import IFluentDismiss24Regular from '~icons/fluent/dismiss-24-regular';
 import IFluentPeople24Regular from '~icons/fluent/people-24-regular';
 import IFluentSubtract24Regular from '~icons/fluent/subtract-24-regular';
 import IFluentWarning24Regular from '~icons/fluent/warning-24-regular';
-import { getMeetingStatusSummary, getOutcomeVote, hasDecisionData } from '@/Composables/useAgendaItemStyling';
+import { getOutcomeVote, hasDecisionData } from '@/Composables/useAgendaItemStyling';
 
 const $page = usePage();
 
@@ -102,10 +102,10 @@ const allAgendaItems = computed(() => {
   return props.meeting.agenda_items || [];
 });
 
-// Meeting summary for alignment status
-const meetingSummary = computed(() => {
-  return getMeetingStatusSummary(allAgendaItems.value, props.meeting.requires_student_perspective ?? true);
-});
+// The server's reading of the meeting; it is absent on a card built from other data.
+const outcome = computed(() => (props.meeting as App.Entities.Meeting & {
+  outcome_summary?: { vote_alignment_status: string; outcome_positive: number; outcome_negative: number; outcome_neutral: number };
+}).outcome_summary);
 
 const ALIGNMENTS = {
   all_match: { label: 'Pozicija priimta', role: 'success', icon: IFluentCheckmark24Regular },
@@ -115,8 +115,11 @@ const ALIGNMENTS = {
 } as const satisfies Record<string, { label: string; role: StatusRole; icon: unknown }>;
 
 const alignment = computed(() => {
-  const status = meetingSummary.value.voteAlignmentStatus;
-  if (status === 'unknown' || meetingSummary.value.totalItems === 0) {
+  const summary = outcome.value;
+  const status = summary?.vote_alignment_status as keyof typeof ALIGNMENTS | undefined;
+  // Neutral says a body decided without a student position, not that nothing is known yet.
+  const decided = (summary?.outcome_positive ?? 0) + (summary?.outcome_negative ?? 0) + (summary?.outcome_neutral ?? 0) > 0;
+  if (!status || !(status in ALIGNMENTS) || (status === 'neutral' && !decided)) {
     return null;
   }
 

@@ -3,7 +3,6 @@
     :row-actions="item => rowActions(item)"
     :source
     collection="problems"
-    entity-type="problem"
     :eyebrow="$t('shell.workspaces.atstovavimas.title')"
     :title="$t('Problemos')"
     :lead="$t('Registruok studentų problemas, sek sprendimo eigą ir koordinuok veiksmus su institucijomis.')"

@@ -15,6 +15,7 @@ use App\Models\Traits\HasTasks;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
 use App\Models\Traits\LogsRelationshipChanges;
+use App\Services\AgendaItemPresenter;
 use App\Services\MeetingCompletionService;
 use App\Services\MeetingRepresentativeResolver;
 use App\Services\Typesense\MeetingSearchEngine;
@@ -221,17 +222,46 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
     }
 
     /**
-     * Calculate vote alignment status for filtering.
-     * Delegates to VoteStatisticsCalculator.
+     * The older names search documents carry these counts under; `vote_alignment_status` sits beside them.
      *
-     * @return string 'all_match', 'mixed', 'all_mismatch', 'neutral'
+     * @return array{vote_matches: int, vote_mismatches: int, incomplete_vote_data: int}
      */
-    protected function calculateVoteAlignmentStatus(array $voteStats): string
+    protected function searchableVoteCounts(): array
     {
-        return app(VoteStatisticsCalculator::class)->alignmentStatusFromCounts(
-            $voteStats['vote_matches'],
-            $voteStats['vote_mismatches']
+        $summary = $this->outcomeSummary();
+
+        return [
+            'vote_matches' => $summary['outcome_aligned'],
+            'vote_mismatches' => $summary['outcome_misaligned'],
+            'incomplete_vote_data' => $summary['outcome_unknown'],
+        ];
+    }
+
+    /**
+     * How the meeting went for an audience, and the one definition of it: search documents, the
+     * Gantt, public pages and admin lists all read this. Without a viewer it holds only what is safe
+     * to index. A hidden private item also withholds the completion status, which would reveal its state.
+     *
+     * @return array<string, int|string|null>
+     */
+    public function outcomeSummary(?User $viewer = null): array
+    {
+        $this->loadMissing('agendaItems.votes');
+
+        $visibleItems = $this->agendaItems->filter(
+            fn (AgendaItem $item) => ! $item->is_private || AgendaItemPresenter::canRead($item, $viewer),
         );
+
+        return [
+            ...app(VoteStatisticsCalculator::class)->outcomeSummary($visibleItems, $this->requiresStudentPerspective()),
+            'completion_status' => $visibleItems->count() === $this->agendaItems->count() ? $this->completion_status : null,
+        ];
+    }
+
+    /** For serialised public meetings, which never carry a viewer. */
+    public function getOutcomeSummaryAttribute(): array
+    {
+        return $this->outcomeSummary();
     }
 
     /**
@@ -308,12 +338,8 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
             'type_label_lt' => $this->type?->label('lt'),
             'type_label_en' => $this->type?->label('en'),
 
-            'vote_matches' => $voteStats['vote_matches'],
-            'vote_mismatches' => $voteStats['vote_mismatches'],
-            'incomplete_vote_data' => $voteStats['incomplete_vote_data'],
-            'vote_alignment_status' => $this->calculateVoteAlignmentStatus($voteStats),
-
-            'completion_status' => $this->agendaItems->contains(fn ($item) => $item->is_private) ? null : $this->completion_status,
+            ...$this->outcomeSummary(),
+            ...$this->searchableVoteCounts(),
 
             'governance_scope' => $this->institutions->first()?->governance_scope->value,
 

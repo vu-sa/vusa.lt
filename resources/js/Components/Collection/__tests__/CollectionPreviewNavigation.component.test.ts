@@ -23,8 +23,8 @@ describe('collection preview navigation', () => {
     expect(wrapper.get('[data-slot="preview-actions"] a').attributes('href')).toBe('/mocked-route/meetings.show');
   });
 
-  it('keeps the institution link alongside supplied meeting actions', () => {
+  it('links the institution from the subtitle', () => {
     const wrapper = mount(MeetingPreview, { props: { meeting: { id: 'm1', title: 'Posėdis', institution_ids: ['i1'], start_time: 1793000000 } } as never, slots });
-    expect(wrapper.get('[data-slot="preview-actions"] a').attributes('href')).toBe('/mocked-route/institutions.show');
+    expect(wrapper.get('header div.text-muted-foreground a').attributes('href')).toBe('/mocked-route/institutions.show');
   });
 });

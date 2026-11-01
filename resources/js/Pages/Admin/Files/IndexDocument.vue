@@ -31,7 +31,6 @@
     :row-actions="item => rowActions(item)"
     :source="source!"
     collection="documents"
-    entity-type="document"
     :eyebrow
     :title="$t('Dokumentai')"
     :lead

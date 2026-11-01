@@ -86,7 +86,7 @@
         v-model="draft.title[locale]"
         rows="2"
         :class="['min-h-11 text-base', fieldSurfaceClass]"
-        :placeholder="locale === 'en' ? $t('meetings.agenda.title_placeholder_en') : $t('Darbotvarkės punkto pavadinimas')"
+        :placeholder="locale === 'en' ? $t('meetings.agenda.title_placeholder_en') : $t('Darbotvarkės klausimo pavadinimas')"
       />
     </FormFieldWrapper>
 

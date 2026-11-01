@@ -19,6 +19,18 @@ const remove: AdminRecordAction = { key: 'delete', label: 'Ištrinti', destructi
 const menu = '[data-testid="dropdown-menu-content"]';
 
 describe('stacked row actions', () => {
+  it('shows a primary open action on a wide row and leaves it to the title on a narrow one', () => {
+    const primaryOpen = { ...open, primary: true };
+    const edit: AdminRecordAction = { key: 'edit', label: 'Redaguoti', role: 'edit', menuOnly: true };
+
+    expect(mountActions([primaryOpen, edit], false).get('[data-collection-row-action="primary"]').text()).toBe('Atidaryti');
+    expect(mountActions([primaryOpen, edit], false).find(`${menu} [data-action="edit"]`).exists()).toBe(true);
+
+    const narrow = mountActions([primaryOpen, edit], true);
+    expect(narrow.find('[data-action="open"]').exists()).toBe(false);
+    expect(narrow.find(`${menu} [data-action="edit"]`).exists()).toBe(true);
+  });
+
   it('shows a wide row the primary action with its full label, beside the menu', () => {
     const wrapper = mountActions([open, primary, remove], false);
 
@@ -33,10 +45,17 @@ describe('stacked row actions', () => {
     expect(wrapper.findAll(`${menu} [data-action]`).map(item => item.attributes('data-action'))).toEqual(['primary', 'delete']);
   });
 
-  it('leaves opening to the title and never promotes a non-primary action', () => {
+  it('leaves opening to the title, and a wide row keeps the edit button', () => {
     const wrapper = mountActions([open, { key: 'edit', label: 'Redaguoti', role: 'edit' }], false);
 
     expect(wrapper.find('[data-action="open"]').exists()).toBe(false);
+    expect(wrapper.get('[data-collection-row-action="primary"]').text()).toBe('Redaguoti');
+  });
+
+  it('folds the edit button into the menu on a narrow row', () => {
+    const wrapper = mountActions([open, { key: 'edit', label: 'Redaguoti', role: 'edit' }], true);
+
     expect(wrapper.find('[data-collection-row-action="primary"]').exists()).toBe(false);
+    expect(wrapper.find(`${menu} [data-action="edit"]`).exists()).toBe(true);
   });
 });

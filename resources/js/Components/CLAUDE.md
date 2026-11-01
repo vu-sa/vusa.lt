@@ -95,7 +95,7 @@ Rules for anything added there:
 - `ui/card` provides `cardVariants({ variant })` (`default`, `surface`, `interactive`, `ghost`). Hairline border, square corners, no shadows.
 - `ui/badge` defaults to sentence case / literal casing (`voice="sentence"`), with opt-in `voice="brand"` for uppercase.
 - `Brand/TagChip` provides square tag kickers with `tagChipVariants({ variant })` (`solid`, `outline`, `muted`).
-- `StatusBadge` renders sentence case by default, automatically keeping `contentStatuses` and `bannerStatuses` uppercase (or via explicit `voice="brand"`).
+- `StatusBadge` renders sentence case by default, automatically keeping `contentStatuses`, `bannerStatuses` and `operatingStatuses` uppercase (or via explicit `voice="brand"`).
 - Tables style through `ui/table` (hairline box, shaded uppercase header, roomy rows).
 
 ## What do I reach for?

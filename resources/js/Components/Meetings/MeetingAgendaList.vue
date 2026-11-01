@@ -41,7 +41,7 @@
     <EmptyState
       v-if="localItems.length === 0"
       :icon="ListOrdered"
-      :title="$t('Darbotvarkės punktų nėra')"
+      :title="$t('Darbotvarkės klausimų nėra')"
       :description="canAdd ? $t('meetings.agenda.empty_description') : $t('meetings.agenda.empty_readonly')"
       class="border-y border-border"
     >

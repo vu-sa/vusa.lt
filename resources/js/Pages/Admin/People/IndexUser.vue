@@ -3,7 +3,6 @@
     :row-actions="item => actionsFor(item)"
     :source
     collection="users"
-    entity-type="user"
     :eyebrow="$t('shell.workspaces.organizacija.title')"
     :title="$t('Nariai')"
     :lead="isTrash

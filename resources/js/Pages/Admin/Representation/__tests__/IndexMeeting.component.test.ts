@@ -5,6 +5,7 @@ import { router, usePage } from '@inertiajs/vue3';
 
 import IndexMeeting from '../IndexMeeting.vue';
 
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import { commonStubs } from '@/tests/stubs';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
@@ -53,10 +54,10 @@ describe('meeting trash actions', () => {
   it('restores an eligible row without requiring creation permission', async () => {
     rows.items = [{ id: 'm1', title: 'Posėdis', abilities: { restore: true, forceDelete: false } }];
     const wrapper = mountPage();
-    const button = wrapper.get('[data-row="m1"] button');
+    const row = wrapper.findComponent(CollectionRowActions);
 
-    expect(button.text()).toBe('Atkurti');
-    await button.trigger('click');
+    expect(row.props('actions')[0]).toMatchObject({ label: 'Atkurti', primary: true });
+    row.vm.$emit('select', row.props('actions')[0].key);
     expect(router.patch).toHaveBeenCalledWith(expect.stringContaining('meetings.restore'), {}, expect.objectContaining({ preserveScroll: true }));
     vi.mocked(router.patch).mock.calls.at(-1)?.[2].onSuccess();
     await wrapper.vm.$nextTick();

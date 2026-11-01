@@ -46,25 +46,26 @@ const props = defineProps<{
   spotlight?: boolean;
   /** Fills the primary action, for a pane where it is the region's one call to action. */
   emphasis?: boolean;
-  /** For `CollectionRow`: its title already opens the record, so no separate open action. */
+  /** For `CollectionRow`: the title opens the record, so only a primary open action stays, and only on a wide row. */
   stacked?: boolean;
   /** Moves the primary action to the top of the menu, for a row too narrow to show it. */
   foldPrimary?: boolean;
 }>();
-const availableActions = computed(() => (props.stacked ? props.actions.filter(action => action.role !== 'open') : props.actions));
+const availableActions = computed(() => (props.stacked
+  ? props.actions.filter(action => action.role !== 'open' || (action.primary && !props.foldPrimary))
+  : props.actions));
 const labelledAction = computed(() =>
   availableActions.value.find(action => action.primary)
-  ?? (props.stacked
-    ? undefined
-    : availableActions.value.find(action => action.role === 'edit') ?? availableActions.value.find(action => action.role === 'open')),
+  ?? availableActions.value.find(action => action.role === 'edit' && !action.menuOnly)
+  ?? (props.stacked ? undefined : availableActions.value.find(action => action.role === 'open')),
 );
 const visibleActions = computed(() => {
-  if (props.stacked) {
+  if (props.stacked || props.emphasis) {
     return labelledAction.value && !props.foldPrimary ? [labelledAction.value] : [];
   }
 
   const icons = ['open', 'edit'].flatMap(role =>
-    props.actions.filter(action => action !== labelledAction.value && action.role === role),
+    props.actions.filter(action => action !== labelledAction.value && action.role === role && !action.menuOnly),
   );
 
   return [labelledAction.value, ...icons]

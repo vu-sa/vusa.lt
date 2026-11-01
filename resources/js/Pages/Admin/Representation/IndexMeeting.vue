@@ -3,7 +3,6 @@
     :row-actions="item => actionsFor(item)"
     :source
     collection="meetings"
-    entity-type="meeting"
     :eyebrow
     :title="$t('Posėdžiai')"
     :lead="$t('Fiksuok posėdžius, jų darbotvarkę ir balsavimus vienoje vietoje.')"
@@ -13,6 +12,8 @@
     :columns
     @row-action="(item, key) => actions.select(key)"
     table-fixed
+    actions-width="w-44"
+    table-min-width="min-w-[68rem]"
     :pinned-items="pinnedMeetings"
     :search-placeholder="$t('Ieškoti posėdžių')"
     :trash="{ count: deletedCount, active: isTrash }"
@@ -25,18 +26,15 @@
       </Button>
     </template>
 
-    <template #row="{ item, actions: recordActions, pinned }">
-      <div v-if="isTrash" class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
-        <div class="min-w-0 flex-1">
-          <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches"
-            :title="item.title" :title-lines="2" :sub="getSearchTranslation(item, 'institution_name')" />
-          <p class="mt-2 text-xs tabular-nums text-muted-foreground">
-            {{ formatDate(new Date((item.start_time ?? 0) * 1000)) }}
-          </p>
-        </div>
-        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => actions.select(key)" />
-      </div>
-      <MeetingCollectionRow v-else :meeting="item" :actions="recordActions" :pinned @select="key => actions.select(key)" />
+    <template #row="{ item, actions: recordActions, pinned, view }">
+      <CollectionRow v-if="isTrash" :actions="recordActions" :spotlight="item === source?.items.value[0]" class="px-3 py-2.5 sm:px-4" @select="key => actions.select(key)">
+        <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches"
+          :title="item.title" :title-lines="2" :sub="getSearchTranslation(item, 'institution_name')" />
+        <p class="mt-0.5 text-xs tabular-nums text-muted-foreground">
+          {{ formatDate(new Date((item.start_time ?? 0) * 1000)) }}
+        </p>
+      </CollectionRow>
+      <MeetingCollectionRow v-else :meeting="item" :actions="view === 'preview' ? [] : recordActions" :compact="view === 'preview'" :pinned @select="key => actions.select(key)" />
     </template>
 
     <template #cell="{ item, column }">
@@ -45,28 +43,21 @@
       </template>
       <CollectionPrimaryCell v-else-if="column.key === 'title'" :match="item._searchMatch"
         :title-matches="item._searchTitleMatches"
-        :title="item.title"
+        :title="getSearchTranslation(item, 'institution_name') || item.title"
+        :sub="titleOmitsDate(item.title) ? item.title : undefined"
         :title-lines="2"
         :href="isTrash ? undefined : route('meetings.show', item.id)"
       />
-      <template v-else-if="column.key === 'institution'">
-        {{ getSearchTranslation(item, 'institution_name') || '—' }}
-      </template>
-      <template v-else-if="column.key === 'agenda'">
-        <span class="tabular-nums">{{ item.agenda_items_count ?? '—' }}</span>
-      </template>
-      <template v-else-if="column.key === 'status'">
-        <StatusBadge
-          v-if="item.completion_status && item.completion_status !== 'complete'"
-          :status="meetingCompletionStatuses[item.completion_status as MeetingCompletionStatus]"
-        />
-      </template>
+      <MeetingOutcome v-else-if="column.key === 'status'" :outcome="item" show="completion" show-complete />
+      <MeetingOutcome v-else-if="column.key === 'alignment'" :outcome="item" show="alignment" />
+      <MeetingOutcome v-else-if="column.key === 'outcome'" :outcome="item" show="counts" />
+      <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
     </template>
 
     <template v-if="!isTrash" #preview="{ item, actions: recordActions }">
       <MeetingPreview :key="item.id" :meeting="item">
         <template #actions>
-          <CollectionRowActions :actions="recordActions" full-labels class="flex-wrap" @select="key => actions.select(key)" />
+          <CollectionRowActions :actions="recordActions" emphasis full-labels @select="key => actions.select(key)" />
         </template>
       </MeetingPreview>
     </template>
@@ -95,12 +86,15 @@ import { computed } from 'vue';
 import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
 import { MeetingIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import MeetingCollectionRow from '@/Components/Meetings/MeetingCollectionRow.vue';
-import { EmptyState, StatusBadge } from '@/Components/Patterns';
+import { EmptyState } from '@/Components/Patterns';
+import MeetingOutcome from '@/Components/Meetings/MeetingOutcome.vue';
+import { titleOmitsDate } from '@/Components/Meetings/meetingTitle';
 import MeetingPreview from '@/Components/Meetings/MeetingPreview.vue';
 import { Button } from '@/Components/ui/button';
 import { meetingCompletionStatuses, type MeetingCompletionStatus } from '@/Constants/statuses';
@@ -114,7 +108,7 @@ import {
   type CollectionSource,
 } from '@/Composables/useCollectionSource';
 import type { MeetingSearchResult } from '@/Shared/Search/types';
-import { formatDate } from '@/Utils/dateTime';
+import { formatDate, formatRecordDate } from '@/Utils/dateTime';
 
 const props = defineProps<{
   /** Soft-deleted meetings the viewer could restore. */
@@ -167,8 +161,8 @@ const actionsFor = (meeting: MeetingRow) => isTrash
       ...(meeting.abilities?.forceDelete ? [{ key: `forceDelete:${meeting.id}:${meeting.title}`, label: $t('Ištrinti visam laikui'), icon: Trash2, destructive: true }] : []),
     ]
   : [
-      { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, href: route('meetings.show', meeting.id), role: 'open' as const },
-      ...(rowAbilities.can(meeting.id, 'update') ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: route('meetings.edit', { meeting: meeting.id, action: 'edit' }) }] : []),
+      { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, href: route('meetings.show', meeting.id), role: 'open' as const, primary: true },
+      ...(rowAbilities.can(meeting.id, 'update') ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, menuOnly: true, href: route('meetings.edit', { meeting: meeting.id, action: 'edit' }) }] : []),
       ...(rowAbilities.can(meeting.id, 'delete') ? [{ key: `delete:${meeting.id}:${meeting.title}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
     ];
 
@@ -176,10 +170,12 @@ const meetingKey = (meeting: MeetingSearchResult) => String(meeting.id);
 
 const columns = computed<CollectionColumn[]>(() => [
   { key: 'date', label: $t('Data'), class: 'w-32', sortField: 'start_time' },
-  { key: 'title', label: $t('Posėdis'), sortField: 'title' },
-  { key: 'institution', label: $t('Institucija') },
-  { key: 'agenda', label: $t('Punktai'), class: 'w-24', sortField: 'agenda_items_count' },
-  { key: 'status', label: $t('Būsena'), class: 'w-48' },
+  { key: 'title', label: $t('Institucija') },
+  { key: 'status', label: $t('Būsena'), class: 'w-40' },
+  { key: 'alignment', label: $t('Balsavimas'), class: 'w-44' },
+  { key: 'outcome', label: $t('Klausimai'), class: 'w-32', sortField: 'agenda_items_count' },
+  { key: 'created_at', label: $t('Sukurta'), class: 'w-36', sortField: 'created_at', defaultHidden: true },
+  { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', sortField: 'updated_at', defaultHidden: true },
 ]);
 
 // --- Quick filters (.ai/rules/js-pages-admin.md) ---------------------------------------------
@@ -205,7 +201,7 @@ const quickFilters = computed<CollectionQuickFilter[]>(() => {
           active: chosenInstitutions.length === mine.length && mine.every(id => chosenInstitutions.includes(id)),
         }]
       : []),
-    { id: 'no_votes', label: $t('Be balsavimų'), active: asList(filters.completion_status).includes('incomplete') },
+    { id: 'no_votes', label: $t('Neužpildyti'), active: asList(filters.completion_status).includes('incomplete') },
     { id: 'this_year', label: $t('Šie metai'), active: asList(filters.year).includes(String(currentYear)) },
   ];
 });

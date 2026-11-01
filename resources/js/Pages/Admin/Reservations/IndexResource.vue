@@ -6,7 +6,6 @@
       :quick-filters
       @quick-filter="toggleQuickFilter"
       collection="resources"
-      entity-type="resource"
       :eyebrow
       :title="capitalize($tChoice('entities.resource.model', 2))"
       :lead="$t('reservations.resource.index_lead')"

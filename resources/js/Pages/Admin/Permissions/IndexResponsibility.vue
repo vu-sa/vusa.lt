@@ -3,7 +3,6 @@
     :row-actions
     :source
     collection="roles"
-    entity-type="role"
     :eyebrow="$t('shell.workspaces.sistema.title')"
     :title="$t('shell.sections.roles')"
     :lead="$t('responsibilities.index.lead')"

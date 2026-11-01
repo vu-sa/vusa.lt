@@ -30,6 +30,7 @@ export { default as SectionHeading } from './SectionHeading.vue';
 export { default as ShowPageGrid } from './ShowPageGrid.vue';
 export { default as StatCard } from './StatCard.vue';
 export { default as StatTile } from './StatTile.vue';
+export { default as StatusMark } from './StatusMark.vue';
 export { default as StatusBadge } from './StatusBadge.vue';
 export { default as EmptyState } from './EmptyState.vue';
 export { default as FocusModeFrame } from './FocusModeFrame.vue';

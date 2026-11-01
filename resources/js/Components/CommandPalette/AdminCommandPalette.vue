@@ -1,6 +1,6 @@
 <template>
   <PaletteDialog v-model:open="isOpen" :title="$t('Komandų paletė')"
-    :description="$t('Ieškok veiksmų, posėdžių ir darbotvarkės punktų')">
+    :description="$t('Ieškok veiksmų, posėdžių ir darbotvarkės klausimų')">
     <!-- Custom search input (not CommandInput to avoid internal filtering) -->
     <div class="relative flex h-14 items-center gap-3 border-b border-border px-4 pr-12">
       <Search class="size-4 shrink-0 text-muted-foreground" />

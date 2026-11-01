@@ -4,7 +4,6 @@ import {
   getAgendaItemStatus,
   getAgendaItemStatusMeta,
   getDecisionLabel,
-  getMeetingStatusSummary,
   getStudentBenefitLabel,
   getStudentVoteLabel,
 } from '@/Composables/useAgendaItemStyling';
@@ -76,13 +75,6 @@ describe('getAgendaItemStatus - several votes', () => {
     expect(getAgendaItemStatus(itemWith({ ...misaligned, is_main: true }, aligned))).toBe('student_misaligned');
   });
 
-  it('counts a mixed item as discussed in the meeting summary', () => {
-    const summary = getMeetingStatusSummary([itemWith(aligned, misaligned)]);
-
-    expect(summary.mixed).toBe(1);
-    expect(summary.completionRate).toBe(100);
-    expect(summary.overallStatus).toBe('complete');
-  });
 });
 
 describe('getAgendaItemStatusMeta - governance scope', () => {
@@ -94,43 +86,6 @@ describe('getAgendaItemStatusMeta - governance scope', () => {
 
   it('keeps "Neaptartas" for an external body decision without a student vote', () => {
     expect(getAgendaItemStatusMeta(votingItem({ decision: 'positive' })).label).toBe('Neaptartas');
-  });
-});
-
-describe('getMeetingStatusSummary - governance scope', () => {
-  it('counts internal decisions as discussed voting items', () => {
-    const items = [
-      votingItem({ decision: 'positive' }),
-      votingItem({ decision: 'negative' }),
-      { id: 'item-3', type: 'informational' },
-    ];
-
-    const summary = getMeetingStatusSummary(items, false);
-
-    expect(summary.decisionPositive).toBe(1);
-    expect(summary.decisionNegative).toBe(1);
-    expect(summary.noVote).toBe(0);
-    expect(summary.overallStatus).toBe('complete');
-    expect(summary.completionRate).toBe(100);
-    // Alignment is undefined without a student position — mirrors the backend.
-    expect(summary.voteAlignmentStatus).toBe('neutral');
-  });
-
-  it('keeps an internal body missing its decision incomplete', () => {
-    const summary = getMeetingStatusSummary([votingItem(), votingItem({ decision: 'positive' })], false);
-
-    expect(summary.noVote).toBe(1);
-    expect(summary.overallStatus).toBe('incomplete');
-    expect(summary.completionRate).toBe(50);
-  });
-
-  it('leaves the external-scope reading untouched', () => {
-    const summary = getMeetingStatusSummary([votingItem({ decision: 'positive' })]);
-
-    expect(summary.noVote).toBe(1);
-    expect(summary.overallStatus).toBe('incomplete');
-    expect(summary.decisionPositive).toBe(0);
-    expect(summary.voteAlignmentStatus).toBe('unknown');
   });
 });
 
@@ -146,29 +101,14 @@ describe('break agenda items', () => {
     expect(getAgendaItemStatusMeta(breakItem() as never).label).toBe('Pertrauka');
   });
 
-  it('is counted separately in a meeting summary', () => {
-    const summary = getMeetingStatusSummary([breakItem()] as never);
 
-    expect(summary.break).toBe(1);
-    expect(summary.unset).toBe(0);
-    expect(summary.noVote).toBe(0);
-  });
-
-  it('does not drag the overall meeting status to incomplete', () => {
-    expect(getMeetingStatusSummary([breakItem()] as never).overallStatus).not.toBe('incomplete');
-  });
 });
 
 describe('withdrawn agenda items', () => {
   const withdrawnItem = () => ({ id: 'w1', type: 'withdrawn' as const, votes: [] });
 
-  it('has its own status and counts as filled in', () => {
-    const summary = getMeetingStatusSummary([withdrawnItem()] as never);
-
+  it('has its own status', () => {
     expect(getAgendaItemStatus(withdrawnItem() as never)).toBe('withdrawn');
-    expect(summary.withdrawn).toBe(1);
-    expect(summary.noVote).toBe(0);
-    expect(summary.overallStatus).toBe('complete');
   });
 });
 

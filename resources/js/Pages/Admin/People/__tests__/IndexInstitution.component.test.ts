@@ -126,7 +126,7 @@ describe('IndexInstitution following', () => {
     const wrapper = mountPage(['i1']);
 
     expect(wrapper.findAll('[data-slot="institution-followed"]')).toHaveLength(1);
-    expect(wrapper.findComponent(CollectionPageStub).props('quickFilters')).toEqual([{ id: 'followed', label: 'Sekamos (1)', active: false }]);
+    expect(wrapper.findComponent(CollectionPageStub).props('quickFilters')).toEqual([{ id: 'followed', label: 'Sekamos · 1', active: false }]);
   });
 
   it('narrows Typesense to the followed ids while "Sekamos" is on, and remembers it in the URL', async () => {

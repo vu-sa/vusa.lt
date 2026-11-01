@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Enums\AgendaItemType;
+use App\Models\Pivots\AgendaItem;
 use App\Models\Vote;
 use Illuminate\Support\Collection;
 
@@ -156,6 +158,62 @@ class VoteStatisticsCalculator
         }
 
         return 'mixed';
+    }
+
+    /**
+     * How a meeting went, one count per agenda item and judged by the item's outcome votes.
+     * Flat keys, because the search index has nested fields off.
+     *
+     * @param  Collection<int, AgendaItem>  $agendaItems  only the items the audience may read
+     * @return array{outcome_aligned: int, outcome_misaligned: int, outcome_unknown: int, outcome_positive: int, outcome_negative: int, outcome_neutral: int, outcome_discussed: int, outcome_deferred: int, vote_alignment_status: string}
+     */
+    public function outcomeSummary(Collection $agendaItems, bool $requiresStudentPerspective = true): array
+    {
+        $counts = array_fill_keys(['aligned', 'misaligned', 'unknown', 'positive', 'negative', 'neutral', 'discussed', 'deferred'], 0);
+
+        foreach ($agendaItems as $item) {
+            $bucket = $this->outcomeBucket($item, $requiresStudentPerspective);
+
+            if ($bucket !== null) {
+                $counts[$bucket]++;
+            }
+        }
+
+        return [
+            ...array_combine(array_map(fn (string $key): string => "outcome_{$key}", array_keys($counts)), $counts),
+            'vote_alignment_status' => $this->alignmentStatusFromCounts($counts['aligned'], $counts['misaligned']),
+        ];
+    }
+
+    private function outcomeBucket(AgendaItem $item, bool $requiresStudentPerspective): ?string
+    {
+        $type = $item->type instanceof AgendaItemType ? $item->type : AgendaItemType::tryFrom((string) $item->type);
+
+        return match ($type) {
+            AgendaItemType::Informational => 'discussed',
+            AgendaItemType::Deferred => 'deferred',
+            AgendaItemType::Break, AgendaItemType::Withdrawn => null,
+            default => $requiresStudentPerspective ? $this->alignmentBucket($item) : $this->decisionBucket($item),
+        };
+    }
+
+    private function alignmentBucket(AgendaItem $item): string
+    {
+        // A consensus has no separate student position to compare: everyone agreed.
+        $compared = $item->outcomeVotes()->filter(fn (Vote $vote) => $vote->is_consensus || (! empty($vote->student_vote) && ! empty($vote->decision)));
+
+        if ($compared->isEmpty()) {
+            return 'unknown';
+        }
+
+        return $compared->every(fn (Vote $vote) => $vote->is_consensus || $vote->student_vote === $vote->decision) ? 'aligned' : 'misaligned';
+    }
+
+    private function decisionBucket(AgendaItem $item): string
+    {
+        $decision = $item->outcomeVote()?->decision;
+
+        return in_array($decision, ['positive', 'negative', 'neutral'], true) ? $decision : 'unknown';
     }
 
     /**

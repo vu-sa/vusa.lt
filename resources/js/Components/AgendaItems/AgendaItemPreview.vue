@@ -1,7 +1,7 @@
 <template>
   <PreviewPane
     entity-type="agenda_item"
-    :eyebrow="$t('Darbotvarkės punktas')"
+    :eyebrow="$t('Darbotvarkės klausimas')"
     :title="item.title || $t('Be pavadinimo')"
     :href="showHref"
     :subtitle="item.meeting_title"
@@ -17,7 +17,7 @@
       <slot name="actions">
         <Button as-child variant="brand" size="sm">
           <Link :href="showHref">
-            {{ $t('Atidaryti punktą') }}
+            {{ $t('Atidaryti klausimą') }}
           </Link>
         </Button>
       </slot>

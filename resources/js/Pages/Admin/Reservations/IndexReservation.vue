@@ -4,7 +4,6 @@
     :row-actions="reservationRowActions"
     :source
     collection="reservations"
-    entity-type="reservation"
     :eyebrow="$t('shell.workspaces.rezervacijos.title')"
     :title="$t('Rezervacijos')"
     :lead="$t('Stebėk prašymus, patvirtink išdavimą ir pažymėk grąžinimą.')"

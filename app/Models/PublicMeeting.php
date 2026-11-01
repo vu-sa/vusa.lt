@@ -161,10 +161,8 @@ class PublicMeeting extends Meeting
             'votes_count' => $voteStats['total_votes'],
 
             // Vote alignment (whether student position was accepted) - for public display
-            'vote_matches' => $voteStats['vote_matches'],
-            'vote_mismatches' => $voteStats['vote_mismatches'],
-            'incomplete_vote_data' => $voteStats['incomplete_vote_data'],
-            'vote_alignment_status' => $this->calculateVoteAlignmentStatus($voteStats),
+            ...$this->searchableVoteCounts(),
+            'vote_alignment_status' => $this->outcomeSummary()['vote_alignment_status'],
 
             // For filtering
             'is_recent' => $this->start_time->isAfter(now()->subMonths(6)),
@@ -182,20 +180,6 @@ class PublicMeeting extends Meeting
         $allVotes = $this->agendaItems->reject(fn ($item) => $item->is_private)->flatMap(fn ($item) => $item->votes);
 
         return app(VoteStatisticsCalculator::class)->calculate($allVotes);
-    }
-
-    /**
-     * Calculate vote alignment status for colored dot display.
-     * Delegates to VoteStatisticsCalculator.
-     *
-     * @return string 'all_match' (green), 'mixed' (amber), 'all_mismatch' (red), 'neutral' (grey)
-     */
-    protected function calculateVoteAlignmentStatus(array $voteStats): string
-    {
-        return app(VoteStatisticsCalculator::class)->alignmentStatusFromCounts(
-            $voteStats['vote_matches'],
-            $voteStats['vote_mismatches']
-        );
     }
 
     /**

@@ -3,7 +3,6 @@
     :row-actions
     :source
     collection="mailQueue"
-    entity-type="user"
     :eyebrow="$t('Sistemos būsena')"
     :title="$t('Laiškų eilė')"
     :lead="$t('mail_queue.explanation')"

@@ -3,7 +3,6 @@
     :row-actions="item => actionsFor(item)"
     :source
     collection="quickLinks"
-    entity-type="quickLink"
     :eyebrow="$t('shell.workspaces.svetaine.title')"
     :title="isTrash ? $t('Ištrintos greitosios nuorodos') : $t('Greitosios nuorodos')"
     :lead="isTrash

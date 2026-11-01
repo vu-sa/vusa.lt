@@ -1,6 +1,18 @@
 <?php
 
 return [
+    'outcome' => [
+        'matched_of' => ':matched iš :total balsavimo sutapo|:matched iš :total balsavimų sutapo|:matched iš :total balsavimų sutapo',
+        'votes' => 'balsavimas:|balsavimai:|balsavimų:',
+        'aligned' => 'sutapo',
+        'misaligned' => 'nesutapo',
+        'positive' => 'už',
+        'negative' => 'prieš',
+        'neutral' => 'susilaikė',
+        'discussed' => 'aptarimas|aptarimai|aptarimų',
+        'deferred' => 'atidėtas|atidėti|atidėtų',
+        'unknown' => 'be rezultato',
+    ],
     'visibility' => [
         'title' => 'Kas rodoma vusa.lt?',
         'public_intro' => 'Šis posėdis viešas, nes bent viena jo institucija yra tipo, kurio posėdžiai skelbiami vusa.lt.',

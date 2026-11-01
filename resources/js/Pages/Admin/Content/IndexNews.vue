@@ -3,7 +3,6 @@
     :row-actions="item => actionsFor(item)"
     :source
     collection="news"
-    entity-type="news"
     :eyebrow
     :title="$t('Naujienos')"
     :lead="isTrash

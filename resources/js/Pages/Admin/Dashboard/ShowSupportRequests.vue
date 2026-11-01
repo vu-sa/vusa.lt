@@ -3,7 +3,6 @@
     :row-actions
     :source
     collection="supportRequests"
-    entity-type="support_request"
     :eyebrow="$t('vusa.lt pagalba')"
     :title="$t('vusa.lt pagalba')"
     :lead="$t('Čia gali pranešti apie vusa.lt svetainės problemas, siūlyti patobulinimus ir stebėti užklausų eigą.')"

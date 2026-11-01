@@ -77,7 +77,7 @@ describe('status', () => {
     const wrapper = mountDialog(makeTask(overrides));
 
     expect(wrapper.find('[data-slot="status-badge"]').exists()).toBe(false);
-    expect(wrapper.get('[data-slot="task-status-mark"]').attributes('data-status-role')).toBe(role);
+    expect(wrapper.get('[data-slot="status-mark"]').attributes('data-status-role')).toBe(role);
   });
 });
 

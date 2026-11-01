@@ -3,7 +3,6 @@
     :row-actions="item => rowActions(item)"
     :source
     collection="duties"
-    entity-type="duty"
     :eyebrow="$t('shell.workspaces.organizacija.title')"
     :title="$t('Pareigybės')"
     :lead="isDeleted ? $t('Peržiūrėk ištrintas pareigybes arba jas atkurk.') : $t('Tvarkyk pareigybes ir greitai pastebėk neužimtas vietas.')"

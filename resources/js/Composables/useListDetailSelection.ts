@@ -15,6 +15,8 @@ interface ListDetailSelectionOptions<T> {
   arrowsFromInput?: boolean;
   /** A row's own link or button: keys from it move the list instead of being left to the control. */
   rowSelector?: string;
+  /** The detail beside the list: ↑/↓ keep walking from its controls, while Enter stays theirs. */
+  detailSelector?: string;
   onEnter?: (item: T) => void;
   /** After a keyboard move, e.g. to scroll the row into view. */
   onNavigate?: (key: string) => void;
@@ -60,8 +62,9 @@ export function useListDetailSelection<T>(options: ListDetailSelectionOptions<T>
       return false;
     }
     const isRow = Boolean(options.rowSelector && target?.closest(options.rowSelector));
+    const isDetailArrow = event.key !== 'Enter' && Boolean(options.detailSelector && target?.closest(options.detailSelector));
 
-    return isRow || !target?.closest(CONTROLS);
+    return isRow || isDetailArrow || !target?.closest(CONTROLS);
   }
 
   function open(event: KeyboardEvent, isField: boolean): void {

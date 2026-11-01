@@ -199,6 +199,7 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
 
         // Institutions
         Route::get('institutions/{institution}/preview', [InstitutionApiController::class, 'preview'])->name('institutions.preview');
+        Route::get('institutions/{institution}/member-terms', [InstitutionApiController::class, 'memberTerms'])->name('institutions.memberTerms');
 
         // Agenda item collaborative notes ("Atstovų pastabos")
         Route::get('agenda-items/{agendaItem}/note', [AgendaItemNoteApiController::class, 'show'])->name('agendaItems.note.show');
