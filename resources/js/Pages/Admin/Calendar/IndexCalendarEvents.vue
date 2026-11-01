@@ -13,7 +13,7 @@
     :columns
     table-fixed
     actions-width="w-44"
-    table-min-width="min-w-[64rem]"
+    table-min-width="min-w-[56rem]"
     :quick-filters
     @row-action="(item, key) => select(key, item)"
     :trash="{ count: deletedCount, active: isTrash }"
@@ -31,26 +31,20 @@
 
     <template #row="{ item, actions: recordActions, view }">
       <CollectionRow :actions="view === 'preview' ? [] : recordActions" :spotlight="item === source?.items.value[0]" class="px-3 py-2.5 sm:px-4" @select="key => select(key, item)">
+        <template v-if="view !== 'preview'" #lead>
+          <CollectionStatusIcon :status="item.is_draft ? contentStatuses.draft : contentStatuses.published" />
+        </template>
         <div class="flex items-start justify-between gap-3">
-          <CollectionPrimaryCell :title="titleOf(item)" :href="isTrash ? undefined : route('calendar.edit', item.id)" :sub="canEdit && !isTrash && view !== 'preview' ? undefined : eventTypeOf(item)" />
-          <StatusBadge v-if="view !== 'preview'" :status="item.is_draft ? contentStatuses.draft : contentStatuses.published" />
+          <CollectionPrimaryCell :title="titleOf(item)" :href="isTrash ? undefined : route('calendar.edit', item.id)" />
         </div>
         <p class="mt-0.5 text-xs text-muted-foreground">{{ [dateOf(item), item.tenant?.shortname].filter(Boolean).join(' · ') }}</p>
-        <NativeSelect
-          v-if="canEdit && !isTrash && view !== 'preview'"
-          size="sm"
-          class="mt-2 w-44 text-xs"
-          :aria-label="$t('Renginio tipas')"
-          :model-value="item.event_type_id == null ? 'none' : String(item.event_type_id)"
-          :options="eventTypeOptions"
-          @update:model-value="value => updateType(item, String(value))"
-        />
       </CollectionRow>
     </template>
 
     <template #cell="{ item, column }">
       <CollectionPrimaryCell
         v-if="column.key === 'title'"
+        title-lines="wrap"
         :title="titleOf(item)"
         :href="isTrash ? undefined : route('calendar.edit', item.id)"
         :sub="item.tenant?.shortname"
@@ -66,7 +60,14 @@
         @update:model-value="value => updateType(item, String(value))"
       />
       <span v-else-if="column.key === 'type'" class="text-muted-foreground">{{ eventTypeOf(item) }}</span>
-      <StatusBadge v-else-if="column.key === 'status'" :status="item.is_draft ? contentStatuses.draft : contentStatuses.published" />
+      <CollectionStatusMenu
+        v-else-if="column.key === 'status'"
+        :status="item.is_draft ? contentStatuses.draft : contentStatuses.published"
+        :model-value="item.is_draft ? 'draft' : 'published'"
+        :options="statusOptions"
+        :editable="canEdit && !isTrash"
+        @update:model-value="value => updateEvent(item, { is_draft: value === 'draft' })"
+      />
       <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
     </template>
 
@@ -114,12 +115,13 @@ import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAc
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
+import CollectionStatusIcon from '@/Components/Collection/CollectionStatusIcon.vue';
 import CollectionStatusMenu from '@/Components/Collection/CollectionStatusMenu.vue';
 import { quickFilterLabel } from '@/Components/Collection/quickFilterLabel';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
 import { CalendarIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
-import { EmptyState, StatusBadge } from '@/Components/Patterns';
+import { EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { contentStatuses } from '@/Constants/statuses';
 import { NativeSelect } from '@/Components/ui/native-select';
@@ -240,7 +242,7 @@ function updateType(item: EventRow, value: string): void {
 }
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'title', label: $t('Renginys'), sortField: 'title' },
+  { key: 'title', label: $t('Renginys'), class: 'w-72', sortField: 'title' },
   { key: 'date', label: $t('Data'), class: 'w-48', sortField: 'date' },
   { key: 'type', label: $t('Renginio tipas'), class: 'w-44' },
   { key: 'status', label: $t('Būsena'), class: 'w-36' },

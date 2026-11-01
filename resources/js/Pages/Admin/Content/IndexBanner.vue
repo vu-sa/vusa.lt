@@ -14,7 +14,7 @@
     :columns
     table-fixed
     actions-width="w-44"
-    table-min-width="min-w-[64rem]"
+    table-min-width="min-w-[56rem]"
     :quick-filters
     :search-placeholder="$t('Ieškoti banerių…')"
     @quick-filter="id => source.toggleFilter(id, '1')"
@@ -54,11 +54,11 @@
                 v-if="!isDeleted"
                 :href="route('banners.edit', item.id)"
                 data-collection-open
-                class="truncate font-medium hover:text-brand"
+                class="truncate font-bold hover:text-brand"
               >
                 {{ item.title }}
               </Link>
-              <span v-else class="truncate font-medium text-muted-foreground">{{ item.title }}</span>
+              <span v-else class="truncate font-bold text-muted-foreground">{{ item.title }}</span>
             </div>
             <div class="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
               <span v-if="item.tenant?.shortname" class="font-medium">{{ item.tenant.shortname }}</span>
@@ -76,7 +76,9 @@
             </div>
           </div>
         </div>
-        <StatusBadge :status="item.is_active ? bannerStatuses.active : bannerStatuses.inactive" />
+        <template #lead>
+          <CollectionStatusIcon :status="item.is_active ? bannerStatuses.active : bannerStatuses.inactive" />
+        </template>
       </CollectionRow>
     </template>
 
@@ -103,11 +105,11 @@
           v-if="!isDeleted"
           :href="route('banners.edit', item.id)"
           data-collection-open
-          class="block truncate font-medium hover:text-brand"
+          class="block min-w-0 whitespace-normal wrap-anywhere font-bold hover:text-brand"
         >
           {{ item.title }}
         </Link>
-        <span v-else class="block truncate font-medium text-muted-foreground">{{ item.title }}</span>
+        <span v-else class="block min-w-0 whitespace-normal wrap-anywhere font-bold text-muted-foreground">{{ item.title }}</span>
       </div>
 
       <div v-else-if="column.key === 'link_url'" class="truncate">
@@ -128,7 +130,14 @@
         {{ item.tenant?.shortname ?? '—' }}
       </span>
 
-      <StatusBadge v-else-if="column.key === 'is_active'" :status="item.is_active ? bannerStatuses.active : bannerStatuses.inactive" />
+      <CollectionStatusMenu
+        v-else-if="column.key === 'is_active'"
+        :status="item.is_active ? bannerStatuses.active : bannerStatuses.inactive"
+        :model-value="item.is_active ? 'active' : 'inactive'"
+        :options="statusOptions"
+        :editable="canCreate && !isDeleted"
+        @update:model-value="value => updateStatus(item, value === 'active')"
+      />
       <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
     </template>
 
@@ -165,9 +174,11 @@ import { toast } from 'vue-sonner';
 import { quickFilterLabel } from '@/Components/Collection/quickFilterLabel';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
 import type { CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
+import CollectionStatusIcon from '@/Components/Collection/CollectionStatusIcon.vue';
+import CollectionStatusMenu from '@/Components/Collection/CollectionStatusMenu.vue';
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
-import { ConfirmDialog, EmptyState, StatusBadge } from '@/Components/Patterns';
+import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/hover-card';
 import { bannerStatuses } from '@/Constants/statuses';
@@ -233,8 +244,10 @@ const source = useDatabaseCollectionSource<BannerRow>({
     currentPage: props.banners.meta.current_page,
     lastPage: props.banners.meta.last_page,
   },
-  defaultSort: 'title:asc',
+  defaultSort: 'is_active:desc',
   sortOptions: () => [
+    { value: 'is_active:desc', label: $t('Aktyvūs pirmiausia') },
+    { value: 'is_active:asc', label: $t('Neaktyvūs pirmiausia') },
     { value: 'updated_at:desc', label: `${$t('Atnaujinta')} ↓` },
     { value: 'updated_at:asc', label: `${$t('Atnaujinta')} ↑` },
     { value: 'created_at:desc', label: `${$t('Sukurta')} ↓` },
@@ -246,6 +259,20 @@ const source = useDatabaseCollectionSource<BannerRow>({
   facets,
 });
 
+const statusOptions = [
+  { value: 'active', status: bannerStatuses.active },
+  { value: 'inactive', status: bannerStatuses.inactive },
+];
+
+function updateStatus(item: BannerRow, active: boolean): void {
+  const undo = source.patchItems([String(item.id)], { is_active: active });
+  router.patch(route('banners.updateStatus', item.id), { is_active: active }, {
+    preserveScroll: true,
+    preserveState: true,
+    onError: undo,
+  });
+}
+
 const quickFilters = computed<CollectionQuickFilter[]>(() => {
   if (isDeleted.value) {
     return [];
@@ -255,10 +282,10 @@ const quickFilters = computed<CollectionQuickFilter[]>(() => {
 });
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'title', label: $t('Pavadinimas'), sortField: 'title' },
+  { key: 'title', label: $t('Pavadinimas'), class: 'w-56', sortField: 'title' },
   { key: 'link_url', label: $t('Nuoroda'), class: 'w-64' },
   { key: 'tenant', label: $t('Padalinys'), class: 'w-32' },
-  { key: 'is_active', label: $t('Būsena'), class: 'w-28' },
+  { key: 'is_active', label: $t('Būsena'), class: 'w-28', sortField: 'is_active' },
   { key: 'created_at', label: $t('Sukurta'), class: 'w-36', sortField: 'created_at', defaultHidden: true },
   { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', sortField: 'updated_at', defaultHidden: true },
 ]);

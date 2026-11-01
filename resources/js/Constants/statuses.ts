@@ -150,7 +150,7 @@ export const taskStatuses: Record<TaskStatus, StatusPresentation> = {
 
 export const contentStatuses: Record<ContentStatus, StatusPresentation> = {
   published: status('Paskelbta', 'success', Eye, true),
-  scheduled: status('Suplanuota', 'info', CalendarClock, true),
+  scheduled: status('Suplanuota', 'success', CalendarClock, true),
   draft: status('Juodraštis', 'neutral', FilePenLine, true),
 };
 

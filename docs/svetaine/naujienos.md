@@ -1,7 +1,11 @@
 ---
 doc_status: reviewed
-last_reviewed: 2026-10-27
+last_reviewed: 2026-11-01
 tests:
+  - tests/Feature/Public/NewsArticlePayloadTest.php
+  - resources/js/Components/News/__tests__/NewsPreview.component.test.ts
+  - resources/js/Components/Collection/__tests__/ContentCollectionPublishing.component.test.ts
+  - resources/js/Components/Collection/__tests__/CollectionStatusIcon.component.test.ts
   - resources/js/Pages/Public/__tests__/NewsArchive.component.test.ts
   - resources/js/Composables/__tests__/useContentEditor.component.test.ts
   - tests/Feature/Search/SearchExperienceTest.php
@@ -70,7 +74,7 @@ Nepavykęs išsaugojimas palieka pakeitimus formoje. Jei kolega jau išsaugojo n
 
 Sėkmingą išsaugojimą patvirtina pranešimas **Išsaugota**, taip pat ir pakeitus tik nuotrauką, jos autorių ar fokusavimo tašką. Nuotraukos apdorojimas nesukelia netikro versijų neatitikimo: jei kitų pakeitimų nėra, galima išsaugoti dar kartą be įspėjimo.
 
-**Juodraštis** matomas tik sistemoje. Pasirinkus **Paskelbta** ir išsaugojus, naujiena tampa pasiekiama pagal viešą nuorodą. Jei paskelbimo laikas ateityje, paieškoje ir naujienų sąrašuose ji pasirodys nuo pasirinkto laiko; pati nuoroda jau veikia.
+**Juodraštis** matomas tik sistemoje: jo viešoji ir ankstesnės nuorodos grąžina 404, net jei naujiena anksčiau buvo paskelbta. Pasirinkus **Paskelbta** ir išsaugojus, naujiena tampa pasiekiama pagal viešą nuorodą. Jei paskelbimo laikas ateityje, paieškoje ir naujienų sąrašuose ji pasirodys nuo pasirinkto laiko; pati nuoroda jau veikia.
 
 Įvadiniame tekste gali būti iki 200 matomų simbolių. Formatavimo žymos į šį skaičių neįtraukiamos. Senesnį ilgesnį įvadą gali palikti nepakeistą; pakeistas įvadas turi tilpti į ribą. Viso ekrano **Išsaugoti** išsaugo ir likusius naujienos laukus.
 
@@ -83,6 +87,8 @@ Redaguojant saugomos privačios įrenginio bei serverio atkūrimo kopijos. Jos n
 ## Veiksmai
 
 ### Naujienų sąrašas ir paieška
+
+Lentelėje pavadinimai rodomi keliomis eilutėmis, o būseną galima keisti tiesiogiai jos stulpelyje, jei turi redagavimo teisę. Eilučių rodinyje būseną žymi piktograma be ženklelio; žalia akis reiškia paskelbtą turinį. Veiksmai ir piktograma centruojami eilutėje. Trumpas aprašymas eilučių rodinyje pateikiamas kaip paprastas tekstas be HTML žymų. Peržiūroje būsena ir paskelbimo data rodomos faktų skiltyje po antrašte. Jei ne juodraščio paskelbimo laikas ateityje, rodoma žalia **Suplanuota** būsena su kalendoriaus ir laikrodžio piktograma.
 
 Naujienų sąraše (`/mano/news`) gali ieškoti pagal pavadinimą:
 

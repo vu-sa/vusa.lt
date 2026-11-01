@@ -419,3 +419,10 @@ describe('cache functionality', function (): void {
         ]);
     });
 });
+
+test('initial banner collection puts active banners first', function (): void {
+    Banner::factory()->for($this->tenant)->create(['title' => 'A first by title', 'is_active' => false]);
+    asUser($this->admin)->get(route('banners.index'))
+        ->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('banners.data.0.id', $this->banner->id));
+});

@@ -1134,6 +1134,7 @@
   "Automatinis skyrių sąrašas šoninėje juostoje.": "An automatic list of sections in the sidebar.",
   "Ištrinti puslapį": "Delete page",
   "Juodraštis matomas tik sistemoje — svetainės lankytojai jo nemato.": "A draft is visible only in Mano VU SA — website visitors can't see it.",
+  "Juodraštis matomas tik sistemoje. Svetainės lankytojai jo negali atidaryti net turėdami dabartinę ar ankstesnę nuorodą.": "Drafts are visible only in the system. Website visitors cannot open them, even with the current or a previous link.",
   "Paskelbtas puslapis iškart matomas visiems svetainės lankytojams.": "A published page is visible to all website visitors straight away.",
   "Atidaryti puslapį": "Open page",
   "Apsimesti nariu": "Impersonate a member",
@@ -1563,5 +1564,7 @@
   "Seniausiai išspręstos": "Oldest resolved",
   "Seniausiai prisijungę": "Least recently logged in",
   "Seniausios atnaujintos": "Oldest updated",
-  "Seniausios sukurtos": "Oldest created"
+  "Seniausios sukurtos": "Oldest created",
+  "Aktyvūs pirmiausia": "Active first",
+  "Neaktyvūs pirmiausia": "Inactive first"
 }

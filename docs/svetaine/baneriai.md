@@ -5,6 +5,8 @@ area: banners
 models: [Banner]
 last_reviewed: 2026-11-01
 tests:
+  - resources/js/Components/Collection/__tests__/ContentCollectionPublishing.component.test.ts
+  - resources/js/Components/Collection/__tests__/CollectionStatusIcon.component.test.ts
   - tests/Feature/Admin/Content/BannerControllerTest.php
   - tests/Feature/Api/Admin/BannerApiControllerTest.php
   - tests/Browser/BannerIndexTest.php
@@ -51,10 +53,12 @@ Kiekvienas baneris turi vieną iš dviejų būsenų:
 
 ### Banerių sąrašas {#sarasas}
 
-Banerių sąraše (`/mano/banners`) pateikiami visi pasiekiami baneriai:
+Lentelėje pavadinimai rodomi keliomis eilutėmis, o būseną galima keisti tiesiogiai jos stulpelyje, jei turi redagavimo teisę. Eilučių rodinyje būseną žymi piktograma be ženklelio; žalia akis reiškia aktyvų banerį. Veiksmai ir piktograma centruojami eilutėje.
+
+Banerių sąraše (`/mano/banners`) pateikiami visi pasiekiami baneriai, pirmiausia aktyvūs:
 
 - **Peržiūra užvedus:** miniatiūros rodomos iškart atvėrus sąrašą. Užvedus pelės žymeklį ant miniatiūros, iššokančiame lange parodomas didesnis paveikslėlis.
-- **Būsena:** sąraše rodoma, ar baneris aktyvus. Ji keičiama banerio formoje.
+- **Būsena:** sąraše rodoma, ar baneris aktyvus. Ji keičiama lentelės būsenos meniu arba banerio formoje.
 - **Filtrai ir paieška:** gali ieškoti banerių pagal pavadinimą arba filtruoti pagal aktyvumo būseną.
 - **Išorinė nuoroda:** sąrašo eilutėje rodoma nuoroda; paspaudęs piktogramą šalia gali tiesiogiai patikrinti, ar nuoroda veikia.
 

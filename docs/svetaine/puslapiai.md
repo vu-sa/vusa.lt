@@ -1,7 +1,9 @@
 ---
 doc_status: reviewed
-last_reviewed: 2026-10-25
+last_reviewed: 2026-11-01
 tests:
+  - resources/js/Components/Collection/__tests__/ContentCollectionPublishing.component.test.ts
+  - resources/js/Components/Collection/__tests__/CollectionStatusIcon.component.test.ts
   - tests/Feature/Public/PublicSeoContractTest.php
   - tests/Browser/PublicSeoRenderTest.php
   - resources/js/Pages/Public/__tests__/PublicSeoMarkup.component.test.ts
@@ -125,6 +127,8 @@ Naujienų, renginių, nuorodų ir institucijų sąrašų blokai pasipildo patys.
 ## Veiksmai
 
 ### Puslapių sąrašas ir paieška
+
+Lentelėje pavadinimai rodomi keliomis eilutėmis, o būseną galima keisti tiesiogiai jos stulpelyje, jei turi redagavimo teisę. Eilučių rodinyje būseną žymi piktograma be ženklelio; žalia akis reiškia paskelbtą turinį. Veiksmai ir piktograma centruojami eilutėje.
 
 Sąraše (`/mano/pages`) gali ieškoti puslapių pagal pavadinimą:
 

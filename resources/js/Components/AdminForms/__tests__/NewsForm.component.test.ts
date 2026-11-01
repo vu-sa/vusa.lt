@@ -155,7 +155,7 @@ describe('NewsForm.vue', () => {
   it('offers no public link for a saved draft, which visitors cannot open', () => {
     wrapper = createWrapper({ news: { ...defaultNews, draft: 1 } });
 
-    expect(wrapper.find('[data-testid="news-status-callout"]').text()).toContain('svetainės lankytojai jo nemato');
+    expect(wrapper.find('[data-testid="news-status-callout"]').text()).toContain('Svetainės lankytojai jo negali atidaryti');
     expect(wrapper.findComponent(FormPage).props('publicUrl')).toBeUndefined();
     expect(wrapper.findComponent(PermalinkField).props('viewUrl')).toBeUndefined();
   });

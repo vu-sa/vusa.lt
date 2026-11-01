@@ -1,3 +1,4 @@
+import { CalendarClock } from '@lucide/vue';
 import { describe, expect, it } from 'vitest';
 
 import { newsStatus } from '../newsStatus';
@@ -21,7 +22,9 @@ describe('newsStatus', () => {
   });
 
   it('shows published articles with a future publish time as scheduled', () => {
-    expect(newsStatus(news({ publish_time: (now + 86_400_000) / 1000 }), now)).toBe(contentStatuses.scheduled);
+    const status = newsStatus(news({ publish_time: (now + 86_400_000) / 1000 }), now);
+    expect(status).toBe(contentStatuses.scheduled);
+    expect(status).toMatchObject({ label: 'Suplanuota', role: 'success', icon: CalendarClock });
   });
 
   it('shows published articles once their publish time arrives', () => {

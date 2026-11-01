@@ -1,6 +1,6 @@
 <template>
   <article ref="row" class="min-w-0" data-slot="collection-row">
-    <div class="flex items-start gap-3">
+    <div class="flex items-center gap-3">
       <div v-if="$slots.lead" class="shrink-0">
         <slot name="lead" />
       </div>

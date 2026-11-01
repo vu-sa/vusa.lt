@@ -13,7 +13,7 @@
     :columns
     table-fixed
     actions-width="w-44"
-    :table-min-width="isTrash ? 'min-w-[60rem]' : 'min-w-[53rem]'"
+    :table-min-width="isTrash ? 'min-w-[55rem]' : 'min-w-[48rem]'"
     @row-action="(item, key) => actions.select(key, item.force_delete_blocked_reason)"
     :selectable="canBulkEdit"
     :trash="{ count: deletedCount, active: isTrash }"
@@ -45,9 +45,11 @@
 
     <template #row="{ item, actions: recordActions, view }">
       <CollectionRow :actions="view === 'preview' ? [] : recordActions" :spotlight="item === source?.items.value[0]" class="px-3 py-2.5 sm:px-4" @select="key => actions.select(key, item.force_delete_blocked_reason)">
+        <template v-if="view !== 'preview'" #lead>
+          <CollectionStatusIcon :status="pageStatus(item)" />
+        </template>
         <div class="flex items-start justify-between gap-3">
           <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches" :title="item.title" :href="isTrash ? undefined : route('pages.edit', item.id)" :clickable="isTrash && view === 'preview'" />
-          <StatusBadge v-if="view !== 'preview'" :status="pageStatus(item)" />
         </div>
         <p class="mt-0.5 text-xs text-muted-foreground">{{ [dateOf(item), item.tenant_shortname, languageLabel(item.lang)].filter(Boolean).join(' · ') }}</p>
       </CollectionRow>
@@ -84,13 +86,19 @@
       <CollectionPrimaryCell v-if="column.key === 'title'" :match="item._searchMatch"
         :title-matches="item._searchTitleMatches"
         :title="item.title"
-        :title-lines="2"
+        title-lines="wrap"
         :href="isTrash ? undefined : route('pages.edit', item.id)"
       />
       <span v-else-if="column.key === 'tenant'" class="block truncate text-muted-foreground" :title="item.tenant_shortname">{{ item.tenant_shortname ?? '—' }}</span>
       <span v-else-if="column.key === 'lang'" class="text-muted-foreground">{{ languageLabel(item.lang) }}</span>
       <div v-else-if="column.key === 'status'">
-        <StatusBadge :status="pageStatus(item)" />
+        <CollectionStatusMenu
+          :status="pageStatus(item)"
+          :model-value="publishing.statusValue(item)"
+          :options="publishing.statusOptions"
+          :editable="canBulkEdit"
+          @update:model-value="value => publishing.setPublished([String(item.id)], value === 'published')"
+        />
       </div>
       <span v-else-if="column.key === 'date'" class="tabular-nums text-muted-foreground">{{ dateOf(item) }}</span>
       <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
@@ -134,13 +142,14 @@ import CollectionRowActions from '@/Components/Collection/CollectionRowActions.v
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import type { CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import CollectionPublishActions from '@/Components/Collection/CollectionPublishActions.vue';
+import CollectionStatusIcon from '@/Components/Collection/CollectionStatusIcon.vue';
 import CollectionStatusMenu from '@/Components/Collection/CollectionStatusMenu.vue';
 import type { CollectionColumn } from '@/Components/Collection/types';
 import { PageIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import PagePreview from '@/Components/Pages/PagePreview.vue';
 import { pageStatus } from '@/Components/Pages/pageStatus';
-import { EmptyState, StatusBadge } from '@/Components/Patterns';
+import { EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import {
   DropdownMenu,
@@ -230,7 +239,7 @@ function dateOf(item: PageRow): string {
 }
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'title', label: $t('Puslapis'), sortField: 'title' },
+  { key: 'title', label: $t('Puslapis'), class: 'w-72', sortField: 'title' },
   { key: 'tenant', label: $t('Padalinys'), class: 'w-28' },
   { key: 'lang', label: $t('Kalba'), class: 'w-24' },
   { key: 'status', label: $t('Būsena'), class: 'w-36' },
