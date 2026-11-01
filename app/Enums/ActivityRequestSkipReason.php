@@ -13,6 +13,7 @@ enum ActivityRequestSkipReason: string
     case UpcomingMeeting = 'upcoming_meeting';
     case RecentActivity = 'recent_activity';
     case NoRecordedMeetings = 'no_recorded_meetings';
+    case NoRecordedMeetingsAskActivity = 'no_recorded_meetings_ask_activity';
     case RecordsComplete = 'records_complete';
     case CheckInActive = 'check_in_active';
     case AlreadyAsked = 'already_asked';

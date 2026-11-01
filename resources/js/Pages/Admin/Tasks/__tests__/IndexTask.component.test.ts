@@ -120,23 +120,23 @@ describe('IndexTask', () => {
 
   it.each([null, '2026-01-01T00:00:00Z'])('keeps completion/reopening in the preview without an open action (%s)', (completedAt) => {
     const wrapper = mountPreview({ completed_at: completedAt });
-    const complete = wrapper.get('[data-testid="task-preview"] [data-action="complete"]');
+    const complete = wrapper.get('[data-slot="preview-pane"] [data-action="complete"]');
     expect(complete.text()).toBe(completedAt ? 'tasks.collection.reopen' : 'tasks.collection.complete');
-    expect(wrapper.find('[data-testid="task-preview"] [data-action="open"]').exists()).toBe(false);
+    expect(wrapper.find('[data-slot="preview-pane"] [data-action="open"]').exists()).toBe(false);
   });
 
-  it('keeps the pending preview action busy and disabled until the request finishes', async () => {
-    const wrapper = mountPreview();
-    await wrapper.get('[data-testid="task-preview"] [data-action="complete"]').trigger('click');
-    const complete = wrapper.get('[data-testid="task-preview"] [data-action="complete"]');
-    expect(complete.attributes('aria-busy')).toBe('true');
-    expect(complete.attributes('aria-disabled')).toBe('true');
-    expect(complete.classes()).toContain('pointer-events-none');
-    const rowActions = wrapper.findComponent({ name: 'CollectionPage' }).props('rowActions');
-    expect(rowActions(task()).every((action: { disabled?: boolean }) => action.disabled)).toBe(true);
-    vi.mocked(router.post).mock.calls.at(-1)?.[2].onFinish();
-    await wrapper.vm.$nextTick();
-    expect(wrapper.get('[data-action="complete"]').attributes('aria-busy')).toBeUndefined();
+  it('labels the due workflow step, otherwise opening the task', () => {
+    const wrapper = mountPage();
+    const actionsFor = wrapper.findComponent(CollectionPageStub).props('rowActions');
+    expect(actionsFor(task()).find(action => action.key === 'open')).toMatchObject({ primary: true, menuOnly: false });
+    const actions = actionsFor(task({ taskable_type: 'institution', action_type: 'periodicity_gap', can_be_manually_completed: false }));
+    expect(actions.find(action => action.key === 'report')).toMatchObject({ primary: true });
+    expect(actions.find(action => action.key === 'open')).toMatchObject({ primary: false, menuOnly: true });
+    expect(actions.some(action => action.key === 'complete')).toBe(false);
+    const agenda = actionsFor(task({ action_type: 'agenda_creation', can_be_manually_completed: false }));
+    expect(agenda.find(action => action.key === 'agenda')).toMatchObject({ primary: true });
+    expect(agenda.find(action => action.key === 'open')).toMatchObject({ primary: false, menuOnly: true });
+    wrapper.unmount();
   });
 
   it('leaves the actions to the preview pane beside it', () => {
@@ -164,7 +164,6 @@ function mountPreview(overrides: Partial<TaskDisplayData> = {}) {
     global: { stubs: {
       ...commonStubs,
       CollectionPage: { name: 'CollectionPage', props: ['source', 'rowActions'], template: '<div><slot name="preview" :item="source.items.value[0]" /></div>' },
-      TaskPreview: { template: '<div data-testid="task-preview"><slot name="actions" /></div>' },
     } },
   });
 }

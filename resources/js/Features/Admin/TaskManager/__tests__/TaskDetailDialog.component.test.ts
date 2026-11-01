@@ -25,13 +25,12 @@ const mountDialog = (task: TaskDisplayData) =>
   });
 
 describe('assignees', () => {
-  it('collapses a long assignee list into an avatar group with a count', () => {
-    // Twenty full-width name pills used to push the dialog past the height of the screen.
+  it('collapses a long assignee list into an expandable avatar group', () => {
     const users = Array.from({ length: 20 }, (_, index) => ({ id: `u${index}`, name: `User ${index}` }));
     const wrapper = mountDialog(makeTask({ users }));
 
-    expect(wrapper.findComponent({ name: 'UsersAvatarGroup' }).props('max')).toBe(8);
-    expect(wrapper.text()).toContain('20');
+    expect(wrapper.findComponent({ name: 'UsersAvatarGroup' }).props('max')).toBe(5);
+    expect(wrapper.findComponent({ name: 'UsersAvatarGroup' }).props('expandable')).toBe(true);
   });
 });
 
@@ -66,5 +65,35 @@ describe('cancelled task', () => {
     expect(wrapper.text()).toContain('tasks.cancelled_hint');
     expect(wrapper.text()).not.toContain('tasks.auto_completing');
     expect(wrapper.text()).not.toContain('tasks.periodicity_gap.report_no_meeting');
+  });
+});
+
+describe('status', () => {
+  it.each([
+    [{ is_overdue: true, completed_at: '2026-10-01T10:00:00Z' }, 'success'],
+    [{ is_overdue: true }, 'danger'],
+    [{}, 'info'],
+  ])('colours the task mark by the most final status (%j)', (overrides, role) => {
+    const wrapper = mountDialog(makeTask(overrides));
+
+    expect(wrapper.find('[data-slot="status-badge"]').exists()).toBe(false);
+    expect(wrapper.get('[data-slot="status-mark"]').attributes('data-status-role')).toBe(role);
+  });
+});
+
+describe('actions', () => {
+  it('hands the page its own actions back and keeps report on its own event', async () => {
+    const wrapper = mount(TaskDetailDialog, {
+      props: { open: true, task: makeTask(), actions: [
+        { key: 'report', label: 'Pranešti', shortLabel: 'Pranešti', primary: true },
+        { key: 'delete', label: 'Ištrinti', shortLabel: 'Ištrinti', destructive: true },
+      ] },
+      global: { stubs: { ...commonStubs } },
+    });
+
+    await wrapper.get('[data-slot="preview-actions"] [data-action="report"]').trigger('click');
+
+    expect(wrapper.emitted('report')).toHaveLength(1);
+    expect(wrapper.emitted('action')).toBeUndefined();
   });
 });

@@ -33,6 +33,31 @@ beforeEach(() => {
 });
 
 describe('NewsPreview', () => {
+  it('places the status control and publication date in the facts below the header', () => {
+    const wrapper = mount(NewsPreview, {
+      props: { news: { ...baseNews, image: '/news.jpg' }, date: '2026-11-01' },
+      global: { stubs: commonStubs },
+    });
+    const status = wrapper.get('[data-slot="news-preview-status"]');
+    expect(status.text()).toContain('Paskelbta');
+    expect(status.element.closest('[data-slot=preview-fact]')).not.toBeNull();
+    expect(wrapper.get('header').find('[data-slot=news-preview-status]').exists()).toBe(false);
+    expect(wrapper.get('header').text()).not.toContain('2026-11-01');
+    expect(wrapper.text().match(/2026-11-01/g)).toHaveLength(1);
+  });
+
+  it('labels a future publication date as scheduled and preserves a trash date label', async () => {
+    const wrapper = mount(NewsPreview, {
+      props: { news: { ...baseNews, draft: false, publish_time: Math.floor(Date.now() / 1000) + 86400 }, date: 'Tomorrow' },
+      global: { stubs: commonStubs },
+    });
+    expect(wrapper.text()).toContain('Suplanuota');
+    expect(wrapper.text()).toContain('Tomorrow');
+    await wrapper.setProps({ trashed: true, dateLabel: 'Ištrinta', date: 'Yesterday' });
+    expect(wrapper.text()).toContain('Ištrinta');
+    expect(wrapper.text()).toContain('Yesterday');
+  });
+
   it('builds the public news URL via route() with the tenant subdomain', () => {
     const href = publicLink(mountPreview()).attributes('href');
 

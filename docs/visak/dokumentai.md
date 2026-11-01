@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Dokumentai
 area: documents
 models: [Document]
-last_reviewed: 2026-10-26
+last_reviewed: 2026-11-01
 tests:
   - tests/Feature/Admin/Resources/DocumentControllerTest.php
   - tests/Feature/Admin/Resources/DocumentPublicationTest.php
@@ -102,7 +102,7 @@ Pasirinkimas išlieka perjungiant tarp sąrašo ir aplankų. Iš pradžių rodom
 
 Failo būsena rodoma atskirame stulpelyje; paspaudus ją galima pasirinkti **Paskelbtas** arba
 **Paslėptas**. Pažymėjus kelis failus, apačioje atsiranda **Paskelbti** ir **Paslėpti** visiems iš
-karto. Prie failo nurodomas jo poaplankis atidaryto aplanko atžvilgiu; ilgas kelias sutrumpinamas,
+karto. Iš SharePoint pašalinti failai pažymėti ženklu ir išblukinti. Prie failo nurodomas jo poaplankis atidaryto aplanko atžvilgiu; ilgas kelias sutrumpinamas,
 o visas rodomas užvedus pelę. **Pašalinti iš SharePoint** visada rodo viso archyvo tokius failus.
 
 Paslėpus anksčiau rodytą failą, jo vieša SharePoint nuoroda atšaukiama ir nustoja veikti. Vėl

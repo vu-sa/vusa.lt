@@ -51,8 +51,11 @@ const stubs = {
 
 const duty = { id: 'duty-1', name: { lt: 'Pirmininkas', en: 'Chair' }, places_to_occupy: 1, institution: { name: 'VU SA MIF' } };
 
-const mountSheet = (props: Record<string, unknown> = {}) =>
-  mount(AssignDutyUserSheet, { props: { open: true, duty, ...props }, global: { stubs } });
+const mountSheet = (props: Record<string, unknown> = {}, realDatePickers = false) =>
+  mount(AssignDutyUserSheet, {
+    props: { open: true, duty, ...props },
+    global: { stubs: { ...stubs, DatePicker: realDatePickers ? false : stubs.DatePicker } },
+  });
 
 const lastForm = () => vi.mocked(useForm).mock.results.at(-1)!.value as FormMock;
 
@@ -125,6 +128,90 @@ describe('AssignDutyUserSheet.vue', () => {
 
       expect(lastForm().start_date).toBe('2024-02-01');
       expect(lastForm().end_date).toBeNull();
+    });
+
+    it('recognizes a stored full current cadence without replacing its start with today', async () => {
+      respondWithCadences();
+      const wrapper = mountSheet({
+        dutiable: { id: 'd-1', duty_id: 'duty-1', start_date: '2026-07-01', end_date: '2027-06-30', duty },
+        duty: null,
+      });
+      await flushPromises();
+
+      expect(wrapper.find<HTMLSelectElement>('[data-testid="cadence-select"]').element.value).toBe('c-2026');
+      expect(lastForm().start_date).toBe('2026-07-01');
+      expect(lastForm().end_date).toBe('2027-06-30');
+
+      await wrapper.setProps({ open: false });
+      await wrapper.setProps({ open: true });
+      await flushPromises();
+
+      expect(lastForm().start_date).toBe('2026-07-01');
+      expect(lastForm().end_date).toBe('2027-06-30');
+    });
+
+    it('keeps both dates while typing and switches to custom only after a valid edit', async () => {
+      respondWithCadences();
+      const wrapper = mountSheet({
+        dutiable: { id: 'd-1', duty_id: 'duty-1', start_date: '2025-07-01', end_date: '2026-06-30', duty },
+        duty: null,
+      }, true);
+      await flushPromises();
+      const start = wrapper.find('input[inputmode="numeric"]');
+      const select = wrapper.find<HTMLSelectElement>('[data-testid="cadence-select"]');
+
+      for (const value of ['2025-07-0', '2025-07-', '2025-07-1']) {
+        await start.setValue(value);
+
+        expect((start.element as HTMLInputElement).value).toBe(value);
+        expect(lastForm().start_date).toBe('2025-07-01');
+        expect(lastForm().end_date).toBe('2026-06-30');
+        expect(select.element.value).toBe('c-2025');
+      }
+
+      await start.setValue('2025-07-15');
+
+      expect(lastForm().start_date).toBe('2025-07-15');
+      expect(lastForm().end_date).toBe('2026-06-30');
+      expect(select.element.value).toBe('custom');
+
+      await start.setValue('2025-07-1');
+      await start.trigger('blur');
+      await wrapper.find('form').trigger('submit');
+
+      expect((start.element as HTMLInputElement).value).toBe('2025-07-15');
+      expect(lastForm().start_date).toBe('2025-07-15');
+      expect(lastForm().end_date).toBe('2026-06-30');
+      expect(lastForm().patch).toHaveBeenCalled();
+    });
+
+    it('keeps the start date when the end date is deliberately cleared', async () => {
+      respondWithCadences();
+      const wrapper = mountSheet({
+        dutiable: { id: 'd-1', duty_id: 'duty-1', start_date: '2025-07-01', end_date: '2026-06-30', duty },
+        duty: null,
+      }, true);
+      await flushPromises();
+      const end = wrapper.findAll('input[inputmode="numeric"]')[1];
+
+      await end.setValue('');
+      expect(lastForm().end_date).toBe('2026-06-30');
+      await end.trigger('blur');
+
+      expect(lastForm().start_date).toBe('2025-07-01');
+      expect(lastForm().end_date).toBeNull();
+      expect(wrapper.find<HTMLSelectElement>('[data-testid="cadence-select"]').element.value).toBe('custom');
+    });
+
+    it('keeps both dates when custom dates are selected explicitly', async () => {
+      respondWithCadences();
+      const wrapper = mountSheet();
+      await flushPromises();
+
+      await wrapper.find('[data-testid="cadence-select"]').setValue('custom');
+
+      expect(lastForm().start_date).toBe('2026-09-20');
+      expect(lastForm().end_date).toBe('2027-06-30');
     });
   });
 

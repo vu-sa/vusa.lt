@@ -117,36 +117,48 @@
     </template>
 
     <template #fact-visibility>
-      <SpotlightPopover
-        v-if="canUpdate"
-        :title="$t('meetings.privacy.spotlight_title')"
-        :description="$t('meetings.privacy.spotlight_body')"
-        :is-dismissed="privacySpotlight.isDismissed.value"
-        @dismiss="privacySpotlight.dismiss"
-      >
-        <Button
-          variant="link"
-          voice="sentence"
-          class="relative min-h-0 p-0 text-sm pointer-coarse:min-h-0 before:absolute before:-inset-y-3 before:inset-x-0"
-          data-testid="agenda-item-edit-visibility"
-          @click="openPrivacyEditor"
+      <div class="flex flex-wrap items-center gap-x-2">
+        <SpotlightPopover
+          v-if="canUpdate"
+          :title="$t('meetings.privacy.spotlight_title')"
+          :description="$t('meetings.privacy.spotlight_body')"
+          :is-dismissed="privacySpotlight.isDismissed.value"
+          @dismiss="privacySpotlight.dismiss"
         >
-          {{ form.is_private ? $t('meetings.privacy.internal_only') : meetingVisibilityLabel(publicVisibility) }}
-          <PenLine class="size-3.5" />
-        </Button>
-      </SpotlightPopover>
-      <span v-else-if="isRedacted || form.is_private">{{ $t('meetings.privacy.internal_only') }}</span>
-      <a
-        v-else-if="publicVisibility.url"
-        :href="publicVisibility.url"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="inline-flex items-center gap-1 text-status-success underline underline-offset-4"
-      >
-        {{ meetingVisibilityLabel(publicVisibility) }}
-        <ExternalLink class="size-3.5 shrink-0" aria-hidden="true" />
-      </a>
-      <span v-else>{{ meetingVisibilityLabel(publicVisibility) }}</span>
+          <Button
+            variant="link"
+            voice="sentence"
+            class="relative min-h-0 p-0 text-sm pointer-coarse:min-h-0 before:absolute before:-inset-y-3 before:inset-x-0"
+            data-testid="agenda-item-edit-visibility"
+            @click="openPrivacyEditor"
+          >
+            {{ form.is_private ? $t('meetings.privacy.internal_only') : meetingVisibilityLabel(publicVisibility) }}
+            <PenLine class="size-3.5" />
+          </Button>
+        </SpotlightPopover>
+        <span v-else-if="isRedacted || form.is_private">{{ $t('meetings.privacy.internal_only') }}</span>
+        <a
+          v-else-if="publicVisibility.url"
+          :href="publicVisibility.url"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-1 text-status-success underline underline-offset-4"
+        >
+          {{ meetingVisibilityLabel(publicVisibility) }}
+          <ExternalLink class="size-3.5 shrink-0" aria-hidden="true" />
+        </a>
+        <span v-else>{{ meetingVisibilityLabel(publicVisibility) }}</span>
+        <button
+          v-if="!isRedacted"
+          type="button"
+          class="relative text-xs font-normal text-muted-foreground underline decoration-border underline-offset-4 before:absolute before:-inset-y-3 before:inset-x-0 hover:text-foreground hover:decoration-foreground"
+          data-testid="agenda-item-visibility-explain"
+          @click="showVisibilityDialog = true"
+        >
+          {{ $t('meetings.visibility.trigger') }}
+        </button>
+      </div>
+      <AgendaItemPublicVisibilityDialog v-if="!isRedacted" v-model:open="showVisibilityDialog" :mode="publicVisibility.mode" :is-private="form.is_private" />
     </template>
 
     <template v-if="canUpdate" #next-actions>
@@ -310,6 +322,7 @@ import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import AgendaItemVotesSheetForm from '@/Components/AgendaItems/AgendaItemVotesSheetForm.vue';
 import RecordPage, { type RecordAction, type RecordFact, type RecordNavigationContext } from '@/Components/Layouts/RecordPage.vue';
 import { missingFieldsLabel, type AgendaItemMissingAction } from '@/Components/Meetings/meetingCompletion';
+import AgendaItemPublicVisibilityDialog from '@/Components/Meetings/AgendaItemPublicVisibilityDialog.vue';
 import { isShownPublicly, meetingVisibilityLabel, type MeetingPublicVisibility } from '@/Components/Meetings/meetingPublicVisibility';
 import { ConfirmDialog, OverviewSection, RecordNextActions, type RecordNextAction } from '@/Components/Patterns';
 import { createOverviewStatusRegistry, OVERVIEW_STATUS_KEY } from '@/Components/Patterns/overviewStatus';
@@ -324,7 +337,7 @@ import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import { agendaItemStatuses } from '@/Constants/statuses';
 import { getAgendaItemStatus } from '@/Composables/useAgendaItemStyling';
 import { enterAgendaItem } from '@/Composables/useRecordTrail';
-import { useAgendaItemAutosave, toTranslatedField, type AgendaItemFormData, type EditableVote, type VoteValue } from '@/Composables/useAgendaItemAutosave';
+import { agendaItemFormData, useAgendaItemAutosave, type AgendaItemFormData } from '@/Composables/useAgendaItemAutosave';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
 import { ModelEnum } from '@/Types/enums';
 import { formatDate, formatTime } from '@/Utils/dateTime';
@@ -438,29 +451,7 @@ const defaultStartTimeFromPreviousItem = (): string | null => {
   return previous?.end_time ? String(previous.end_time).slice(0, 5) : null;
 };
 
-const form = useForm<AgendaItemFormData>({
-  title: toTranslatedField(props.agendaItem.title),
-  is_private: props.agendaItem.is_private ?? false,
-  public_title: toTranslatedField(props.agendaItem.public_title),
-  type: (props.agendaItem.type ?? null) as AgendaItemFormData['type'],
-  brought_by_students: props.agendaItem.brought_by_students ?? false,
-  student_position: toTranslatedField(props.agendaItem.student_position),
-  description: toTranslatedField(props.agendaItem.description),
-  // The columns are TIME (`HH:MM:SS`); the inputs and the validator both speak `HH:MM`.
-  start_time: props.agendaItem.start_time ? String(props.agendaItem.start_time).slice(0, 5) : null,
-  end_time: props.agendaItem.end_time ? String(props.agendaItem.end_time).slice(0, 5) : null,
-  votes: (props.agendaItem.votes ?? []).map((vote): EditableVote => ({
-    id: vote.id,
-    is_main: vote.is_main ?? false,
-    is_consensus: vote.is_consensus ?? false,
-    title: toTranslatedField(vote.title),
-    note: toTranslatedField(vote.note),
-    student_vote: (vote.student_vote ?? null) as VoteValue,
-    decision: (vote.decision ?? null) as VoteValue,
-    student_benefit: (vote.student_benefit ?? null) as VoteValue,
-    order: vote.order ?? 0,
-  })),
-});
+const form = useForm<AgendaItemFormData>(agendaItemFormData(props.agendaItem));
 
 // A tap is a whole answer, so it saves quickly; the sheet saves on its own button.
 const { saveStatus, saveThen } = useAgendaItemAutosave(form, props.agendaItem.id, 700, ['goalLinks']);
@@ -480,6 +471,7 @@ const status = computed(() => agendaItemStatuses[getAgendaItemStatus({
 }, props.requiresStudentPerspective)]);
 
 const meeting = computed(() => (props.meetingContext ?? props.agendaItem.meeting) as App.Entities.Meeting | undefined);
+const showVisibilityDialog = ref(false);
 const meetingIsPublic = computed(() => isShownPublicly(props.publicVisibility));
 // An email meeting's time is only a placeholder, so it would anchor the time suggestions nowhere useful.
 const meetingStartTime = computed(() => {

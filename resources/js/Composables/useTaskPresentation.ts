@@ -3,6 +3,7 @@ import { ShieldCheck, Package, PackageCheck, ClipboardCheck, Clock, FilePlus2, F
 import { differenceInDays, format, formatDistanceToNow, isToday, isTomorrow, parseISO } from 'date-fns';
 import type { Locale } from 'date-fns';
 
+import type { TaskStatus } from '@/Constants/statuses';
 import { TaskActionType, type TaskProgress } from '@/Types/TaskTypes';
 
 /**
@@ -238,6 +239,21 @@ export function formatTaskDueDate(dueDate: string | null | undefined, locale: Lo
   catch {
     return dueDate;
   }
+}
+
+/** The one status a task shows; `null` for an open task with nothing pressing about it. */
+export function getTaskStatus(task: Pick<TaskDisplayData, 'cancelled_at' | 'completed_at' | 'is_overdue' | 'due_date'>): TaskStatus | null {
+  if (task.cancelled_at) {
+    return 'cancelled';
+  }
+  if (task.completed_at) {
+    return 'completed';
+  }
+  if (task.is_overdue) {
+    return 'overdue';
+  }
+
+  return getDueDateUrgencyClasses(task) ? 'due_soon' : null;
 }
 
 /** Attention status for a due date landing within three days; nothing once it is already overdue. */

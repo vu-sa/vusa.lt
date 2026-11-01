@@ -1,6 +1,9 @@
 <?php
 
 return [
+    'public_agenda' => [
+        'student_position' => 'Studentų pozicija',
+    ],
     'privacy' => [
         'internal_only' => 'Rodoma tik ViSAK',
         'hidden_title' => 'Nerodoma',

@@ -7,6 +7,6 @@ class IndexBannerRequest extends BaseIndexRequest
     /** @var array<int, array{id: string, desc: bool}> */
     #[\Override]
     protected array $defaultSorting = [
-        ['id' => 'title', 'desc' => false],
+        ['id' => 'is_active', 'desc' => true],
     ];
 }

@@ -1,6 +1,9 @@
 <?php
 
 return [
+    'public_agenda' => [
+        'student_position' => 'Student position',
+    ],
     'privacy' => [
         'internal_only' => 'Only shown in ViSAK',
         'hidden_title' => 'Not displayed',

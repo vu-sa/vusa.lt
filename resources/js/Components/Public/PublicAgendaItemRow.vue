@@ -59,19 +59,10 @@
         <template v-if="showsOutcome">
           <span
             v-if="outcomeVote"
-            class="inline-flex items-center gap-1 border border-border px-2 py-0.5 font-mono text-xs font-medium"
+            class="inline-flex items-center gap-1 border border-border px-2 py-0.5 text-xs font-medium"
             :class="[status.bgClass, decisionColorClass]"
           >
             {{ getDecisionLabel(outcomeVote.decision) }}
-          </span>
-          <span
-            v-if="requiresStudentPerspective && canCompareVotes(item)"
-            class="inline-flex items-center gap-1 text-xs"
-            :class="getVoteComparisonColorClass(item)"
-            :title="getVoteComparisonText(item)"
-          >
-            <component :is="isVoteAligned(item) ? IFluentCheckmarkCircle20Regular : IFluentErrorCircle20Regular" class="size-3.5" />
-            <span class="hidden sm:inline">{{ $t('Studentai') }}</span>
           </span>
         </template>
       </div>
@@ -85,6 +76,15 @@
       >
         {{ item.description }}
       </p>
+
+      <div v-if="studentPosition" data-slot="public-student-position">
+        <p class="text-xs font-bold text-muted-foreground">
+          {{ $t('meetings.public_agenda.student_position') }}
+        </p>
+        <p class="mt-0.5 whitespace-pre-line text-sm leading-relaxed text-foreground/90">
+          {{ studentPosition }}
+        </p>
+      </div>
 
       <template v-if="showsOutcome">
         <div
@@ -133,7 +133,6 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import {
-  canCompareVotes,
   getAgendaItemStatusMeta,
   getDecisionLabel,
   getDecisionTextColorClass,
@@ -141,16 +140,11 @@ import {
   getOutcomeVotes,
   getStudentBenefitLabel,
   getStudentVoteLabel,
-  getVoteComparisonColorClass,
-  getVoteComparisonText,
   getVoteTextColorClass,
-  hasDecisionData,
-  isVoteAligned,
+  showsVoteOutcome,
 } from '@/Composables/useAgendaItemStyling';
-import IFluentCheckmarkCircle20Regular from '~icons/fluent/checkmark-circle-20-regular';
 import IFluentChevronDown20Regular from '~icons/fluent/chevron-down-20-regular';
 import IFluentChevronUp20Regular from '~icons/fluent/chevron-up-20-regular';
-import IFluentErrorCircle20Regular from '~icons/fluent/error-circle-20-regular';
 import IFluentPeople20Regular from '~icons/fluent/people-20-regular';
 
 const props = withDefaults(defineProps<{
@@ -188,11 +182,16 @@ const showStatus = computed(() => {
   return !(props.isUpcoming && status.value.status === 'no_vote');
 });
 
-const showsOutcome = computed(() => !props.item.is_private && props.item.type === 'voting' && hasDecisionData(props.item));
+const showsOutcome = computed(() => !props.item.is_private && showsVoteOutcome(props.item));
 const decisionColorClass = computed(() => getDecisionTextColorClass(outcomeVote.value?.decision));
 
 /** Only rows with something more to say are worth making clickable. */
-const isExpandable = computed(() => !props.item.is_private && (Boolean(props.item.description) || showsOutcome.value));
+// VU SA's own bodies have no separate student position to record.
+const studentPosition = computed(() => (props.item.is_private || !props.requiresStudentPerspective
+  ? null
+  : (props.item.student_position as unknown as string | null) || null));
+
+const isExpandable = computed(() => !props.item.is_private && (Boolean(props.item.description) || Boolean(studentPosition.value) || showsOutcome.value));
 
 /** The columns are TIME, which MySQL hands back as `HH:MM:SS`. */
 const trimSeconds = (value: string) => value.slice(0, 5);

@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Laiškų eilė
 area: mailQueue
 models: [NotificationDigestQueue]
-last_reviewed: 2026-09-30
+last_reviewed: 2026-10-31
 tests:
   - tests/Feature/Notifications/MailQueueControllerTest.php
   - tests/Browser/MailQueueLayoutTest.php
@@ -17,7 +17,7 @@ tests:
 Čia matai dar neišsiųstų pranešimų santraukų gavėjus. Sąrašo eilutė rodo vieną gavėją;
 atvėręs ją matai atskirus laukiančius pranešimus. To paties žmogaus pranešimai išsiunčiami
 vienu santraukos laišku. Skiltis pasiekiama adresu
-`/mano/mail-queue`.
+`/mano/mail-queue`. Puslapio antraštėje rodoma gavėjo piktograma.
 
 <DocScreenshot name="mail-queue" alt="Laiškų eilė: gavėjas, jo adresas, seniausio pranešimo laikas ir laukiančių eilučių skaičius" caption="Vienas gavėjas su laukiančiu pranešimu." />
 
@@ -43,3 +43,12 @@ santrauką nebepatenka.
 
 Peržiūra tikrinama per `RolePolicy::viewAny`, o pašalinimo veiksmus papildomai leidžia tik
 `Super Admin`. Eilutės saugomos `notification_digest_queue` lentelėje.
+
+## Laiškų peržiūra {#perziura}
+
+**Sistema → Laiškų peržiūra** (`/mano/mail-previews`) rodo, kaip atrodo sistemos laiškai ir suvestinės. Laiškai
+sudaromi iš pavyzdinių duomenų, todėl niekas neišsiunčiama ir neišsaugoma. Galima keisti kalbą, telefono ar
+kompiuterio plotį ir HTML ar teksto versiją.
+
+Šioje eilėje veiksmas **Peržiūrėti laišką** rodo, kaip atrodytų konkretaus gavėjo laukianti suvestinė. Peržiūra
+eilės nekeičia.

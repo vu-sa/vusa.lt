@@ -59,7 +59,7 @@ return [
         'what_description' => 'Pavadink darbą, o ne žmogų: pvz., „Komunikacija“, „Organizacijos valdymas“.',
         'title_hint' => 'Rodomas sąrašuose ir pareigybės puslapyje.',
         'title_example' => 'pvz., Komunikacija',
-        'description_hint' => 'Kokį darbą ši atsakomybė apima ir kam ji skirta.',
+        'description_hint' => 'Šis tekstas rodomas žmonėms, turintiems šią atsakomybę.',
         'purpose_note' => 'Ši atsakomybė atlieka sistemos paskirtį „:purpose“. Ją keisti gali nustatymuose „Sistemos paskirtys“.',
     ],
 

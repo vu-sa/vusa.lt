@@ -1,5 +1,6 @@
 <template>
-  <span class="min-w-0">
+  <!-- Keep the hidden gender pair inside the clipped title’s containing block. -->
+  <span class="relative min-w-0">
     <template v-if="!variants"><SearchMatch v-if="displayMatch" :match="displayMatch" /><template v-else>{{ displayName }}</template></template>
     <template v-else>
       <template v-if="stemLead"><SearchMatch v-if="stemLeadMatch" :match="stemLeadMatch" /><template v-else>{{ stemLead }}</template></template>

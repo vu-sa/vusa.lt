@@ -7,6 +7,7 @@ use App\Models\Meeting;
 use App\Models\Page;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Problem;
+use App\Models\Role;
 use App\Services\ActivityChangeFormatter;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -188,3 +189,66 @@ test('AgendaItemNote rich fields still show the flat placeholder, unaffected by 
         ->and($change['old_display'])->toBeNull()
         ->and($change['new_display'])->toBeNull();
 });
+
+test('responsibility permission changes resolve existing labels in the viewing locale and keep unknown keys', function (string $locale, string $expected, string $label): void {
+    $role = Role::factory()->create();
+    $activity = activity()->performedOn($role)->event('relation_updated')->withProperties([
+        'relation' => 'permissions',
+        'attached' => [['id' => '1', 'label' => 'news.update.padalinys']],
+        'detached' => [['id' => '2', 'label' => 'retired.unknown.scope']],
+    ])->log('relation_updated');
+
+    app()->setLocale($locale);
+    app(ActivityChangeFormatter::class)->prepare(collect([$activity]));
+
+    expect($activity->formatted_relation_change)->toBe([
+        'relation' => 'permissions',
+        'label' => $label,
+        'attached' => [['id' => '1', 'label' => $expected]],
+        'detached' => [['id' => '2', 'label' => 'retired.unknown.scope']],
+    ]);
+})->with([
+    ['lt', 'naujienos · redaguoti · padalinyje', 'teisės'],
+    ['en', 'news items · edit · in padalinys', 'permissions'],
+]);
+
+test('responsibility grant and attachable type snapshots render as localized text', function (string $locale, string $expected): void {
+    $role = Role::factory()->create();
+    $grant = activity()->performedOn($role)->event('relation_updated')->withProperties([
+        'relation' => 'grants',
+        'attached' => [['id' => 'g1', 'label' => ['lt' => 'Koordinatorius', 'en' => 'Coordinator']]],
+        'detached' => [],
+    ])->log('relation_updated');
+    $type = activity()->performedOn($role)->event('relation_updated')->withProperties([
+        'relation' => 'attachable_types',
+        'attached' => [],
+        'detached' => [['id' => 't1', 'label' => json_encode(['lt' => 'Koordinatorius', 'en' => 'Coordinator'])]],
+    ])->log('relation_updated');
+
+    app()->setLocale($locale);
+    app(ActivityChangeFormatter::class)->prepare(collect([$grant, $type]));
+
+    expect($grant->formatted_relation_change['attached'])->toBe([['id' => 'g1', 'label' => $expected]])
+        ->and($type->formatted_relation_change['detached'])->toBe([['id' => 't1', 'label' => $expected]]);
+})->with([['lt', 'Koordinatorius'], ['en', 'Coordinator']]);
+
+test('responsibility attribute edits render localized field labels and separate locale rows', function (string $locale, string $titleLabel, string $descriptionLabel): void {
+    $role = Role::factory()->create([
+        'title' => ['lt' => 'Senas pavadinimas', 'en' => 'Old title'],
+        'description' => ['lt' => 'Senas aprašymas', 'en' => 'Old description'],
+    ]);
+    $role->update([
+        'title' => ['lt' => 'Naujas pavadinimas', 'en' => 'New title'],
+        'description' => ['lt' => 'Naujas aprašymas', 'en' => 'New description'],
+    ]);
+    $activity = Activity::forSubject($role)->forEvent('updated')->sole();
+
+    app()->setLocale($locale);
+    $changes = collect(formatSingleActivity($activity));
+
+    expect($changes)->toHaveCount(4)
+        ->and($changes->firstWhere('key', 'title.en')['label'])->toContain($titleLabel)
+        ->and($changes->firstWhere('key', 'description.en')['label'])->toContain($descriptionLabel)
+        ->and($changes->firstWhere('key', 'description.en')['old_display'])->toBe('Old description')
+        ->and($changes->firstWhere('key', 'description.en')['new_display'])->toBe('New description');
+})->with([['lt', 'pavadinimas', 'aprašymas'], ['en', 'title', 'description']]);

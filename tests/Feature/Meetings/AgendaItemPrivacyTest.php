@@ -70,6 +70,22 @@ test('public pages receive only the agenda placeholder even for an internal read
     $response->assertDontSee('Originalus neviešas pavadinimas')->assertDontSee('Neviešo turinio žymuo');
 })->with([false, true]);
 
+test('a public agenda item shows its time and student position but not vote notes', function (): void {
+    $this->item->update(['is_private' => false, 'end_time' => '14:30']);
+    $this->item->votes()->first()->update(['note' => ['lt' => 'Vidaus balsavimo pastaba', 'en' => 'Internal vote note']]);
+
+    $response = $this->get(route('publicMeetings.show', ['subdomain' => 'www', 'lang' => 'lt', 'meeting' => $this->meeting]));
+
+    $response->assertInertia(fn (Assert $page) => $page
+        ->where('meeting.agenda_items.0.start_time', fn ($time) => str_starts_with((string) $time, '14:00'))
+        ->where('meeting.agenda_items.0.end_time', fn ($time) => str_starts_with((string) $time, '14:30'))
+        ->where('meeting.agenda_items.0.votes.0.decision', 'positive')
+        ->where('meeting.agenda_items.0.student_position', 'Nevieša pozicija')
+        ->missing('meeting.agenda_items.0.votes.0.note')
+    );
+    $response->assertDontSee('Vidaus balsavimo pastaba');
+});
+
 test('calendar announcements redact items even without a public meeting page', function (): void {
     app(MeetingSettings::class)->fill(['public_meeting_institution_type_ids' => []])->save();
     $event = Calendar::factory()->for($this->tenant)->create(['meeting_id' => $this->meeting->id, 'is_draft' => false]);

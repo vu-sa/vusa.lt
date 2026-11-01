@@ -18,6 +18,8 @@ export interface CollectionColumn {
   sortField?: string;
   /** Always shown, and left out of the "Stulpeliai" menu. Does not control sticky positioning; the first column is always shown. */
   pinned?: boolean;
+  /** Starts off; "Stulpeliai" can turn it on, and that choice is remembered. */
+  defaultHidden?: boolean;
 }
 
 /** Trash is a filter over the same collection (.ai/rules/js-pages-admin.md), not its own page. */

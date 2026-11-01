@@ -11,7 +11,8 @@ return [
     'bulk_title' => 'Žymėti kelias institucijas',
     'bulk_hint' => 'Pažymėk filtrus ir paiešką atitinkančias institucijas vienu veiksmu. Sąrašas įkeliamas automatiškai, iki 100 institucijų. Visus žymėjimus gali nuimti iš karto.',
     'personal' => [
-        'title' => 'Mano veiklos užklausos',
+        'title' => 'Veiklos užklausos',
+        'lead' => 'Čia matai, ko tavęs klausė apie institucijų veiklą, ir gali atsakyti į dar galiojančias užklausas.',
         'record_title' => 'Veiklos užklausos',
         'active_title' => 'Laukia tavo atsakymo',
         'answer' => 'Atsakyti',
@@ -162,7 +163,8 @@ return [
         'upcoming_meeting' => 'Jau suplanuotas būsimas posėdis.',
         'already_asked' => 'Jau paklausta – laukiama atsakymo.',
         'no_period' => 'Nėra galiojančio laikotarpio.',
-        'no_recorded_meetings' => 'Šiuo laikotarpiu posėdžių nėra. Pasirink „Ar vyko posėdis?“.',
+        'no_recorded_meetings' => 'Šiuo laikotarpiu įrašytų posėdžių nėra, tad nėra ko papildyti.',
+        'no_recorded_meetings_ask_activity' => 'Šiuo laikotarpiu įrašytų posėdžių nėra, tad nėra ko papildyti. Gali paklausti „Ar vyko posėdis?“.',
         'records_complete' => 'Šio laikotarpio posėdžių įrašai jau užpildyti.',
     ],
 ];

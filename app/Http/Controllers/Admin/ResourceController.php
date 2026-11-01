@@ -7,6 +7,7 @@ use App\Actions\Media\AddImageMedia;
 use App\Actions\SerializeReservationCart;
 use App\Actions\SerializeResourceAvailability;
 use App\Actions\SerializeResourceManagers;
+use App\Enums\ResponsibilityPurpose;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreResourceRequest;
 use App\Http\Requests\UpdateResourceRequest;
@@ -14,9 +15,11 @@ use App\Http\Traits\HandlesSoftDeletes;
 use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\ResourceCategory;
+use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
+use App\Services\ResponsibilityResolver;
 use App\Support\StagingProtection;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -38,6 +41,10 @@ class ResourceController extends AdminController
 
         return $this->inertiaResponse('Admin/Reservations/IndexResource', [
             'reservationCart' => SerializeReservationCart::execute(request()->user()),
+            'mainTenantId' => Tenant::main()?->id,
+            'managedTenantIds' => app(ResponsibilityResolver::class)
+                ->tenantIdsFor(request()->user(), ResponsibilityPurpose::ReservationHandling)
+                ->all(),
         ]);
     }
 

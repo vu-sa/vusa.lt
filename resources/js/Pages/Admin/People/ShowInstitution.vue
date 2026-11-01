@@ -511,7 +511,7 @@ const handleRecordAction = (key: string) => {
       openCheckInModal();
       break;
     case 'ask-activity':
-      actionWindow.open({ flow: 'activity.request', institutions: [{ id: props.institution.id, name: props.institution.name }] });
+      actionWindow.open({ flow: 'activity.request', institutions: [{ id: props.institution.id, name: props.institution.name }], lockActivityRequestInstitutions: true });
       break;
     case 'timeline':
       router.visit(route('dutiables.timeline', { institution: props.institution.id }));

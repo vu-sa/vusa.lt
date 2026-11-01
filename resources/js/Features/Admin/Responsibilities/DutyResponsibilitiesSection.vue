@@ -33,6 +33,9 @@
                 {{ $t(`responsibilities.scopes.${item.scope_type}`) }}<template v-if="item.scope_name"> · {{ item.scope_name }}</template>
               </span>
             </span>
+            <span v-if="item.description" class="mt-1 block whitespace-pre-line text-sm text-muted-foreground" data-testid="responsibility-description">
+              {{ item.description }}
+            </span>
             <span v-if="item.missing_permissions.length" class="mt-1 flex items-start gap-1.5 text-xs text-status-attention" data-testid="responsibility-gap">
               <TriangleAlert class="mt-px size-3.5 shrink-0" aria-hidden="true" />
               {{ $t('responsibilities.grants.missing', { permissions: item.missing_permissions.map(permissionLabel).join(', ') }) }}

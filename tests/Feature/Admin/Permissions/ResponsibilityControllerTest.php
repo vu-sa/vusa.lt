@@ -2,6 +2,7 @@
 
 use App\Enums\MailingListSourceType;
 use App\Enums\ResponsibilityPurpose;
+use App\Models\Activity;
 use App\Models\Duty;
 use App\Models\DutyType;
 use App\Models\Institution;
@@ -326,4 +327,108 @@ test('a member without permissions can reach none of it', function (): void {
     asUser($this->user)->delete(route('responsibilities.destroy', $this->role))->assertForbidden();
     asUser($this->user)->put(route('responsibilities.permissions.update', $this->role), ['permissions' => []])->assertForbidden();
     asUser($this->user)->post(route('responsibilities.grants.store', $this->role), ['grantee_type' => 'duty', 'grantee_id' => 'x'])->assertForbidden();
+});
+
+describe('responsibility history', function (): void {
+    test('title and description edits log raw locale changes on the role with the actor', function (): void {
+        asUser($this->admin)->patch(route('responsibilities.update', $this->role), [
+            'title' => ['lt' => 'Naujas pavadinimas', 'en' => 'New title'],
+            'description' => ['lt' => 'Padėk kolegoms.', 'en' => 'Help colleagues.'],
+        ])->assertSessionHasNoErrors();
+
+        $entry = Activity::forSubject($this->role)->forEvent('updated')->sole();
+        expect($entry->causer_id)->toBe($this->admin->id)
+            ->and(json_decode($entry->attribute_changes->get('attributes')['title'], true))->toBe(['lt' => 'Naujas pavadinimas', 'en' => 'New title'])
+            ->and(json_decode($entry->attribute_changes->get('attributes')['description'], true))->toBe(['lt' => 'Padėk kolegoms.', 'en' => 'Help colleagues.'])
+            ->and(json_decode($entry->attribute_changes->get('old')['title'], true))->toBe(['lt' => 'Komunikacija', 'en' => 'Communication']);
+
+        asUser($this->admin)->patch(route('responsibilities.update', $this->role), [
+            'title' => ['lt' => 'Naujas pavadinimas', 'en' => 'New title'],
+            'description' => ['lt' => 'Padėk kolegoms.', 'en' => 'Help colleagues.'],
+        ])->assertSessionHasNoErrors();
+
+        expect(Activity::forSubject($this->role)->forEvent('updated')->count())->toBe(1);
+    });
+
+    test('permission changes log actual added and removed names once and unchanged saves log nothing', function (): void {
+        $this->role->givePermissionTo('news.update.padalinys');
+        $before = Activity::forSubject($this->role)->count();
+
+        asUser($this->admin)->put(route('responsibilities.permissions.update', $this->role), ['permissions' => ['news.read.padalinys']])
+            ->assertSessionHasNoErrors();
+
+        $entry = Activity::forSubject($this->role)->forEvent('relation_updated')->sole();
+        expect($entry->causer_id)->toBe($this->admin->id)
+            ->and($entry->properties->get('relation'))->toBe('permissions')
+            ->and($entry->properties->get('attached'))->toBe([['id' => (string) Permission::findByName('news.read.padalinys')->id, 'label' => 'news.read.padalinys']])
+            ->and($entry->properties->get('detached'))->toBe([['id' => (string) Permission::findByName('news.update.padalinys')->id, 'label' => 'news.update.padalinys']])
+            ->and(Activity::forSubject($this->role)->count())->toBe($before + 1);
+
+        asUser($this->admin)->put(route('responsibilities.permissions.update', $this->role), ['permissions' => ['news.read.padalinys']])
+            ->assertSessionHasNoErrors();
+        expect(Activity::forSubject($this->role)->count())->toBe($before + 1);
+    });
+
+    test('grant changes through the responsibility log their target and scope on the role once', function (string $type): void {
+        $target = match ($type) {
+            'duty' => $this->user->duties()->first(),
+            'duty_type' => DutyType::factory()->create(),
+            'institution' => Institution::factory()->for($this->tenant)->create(),
+        };
+        $data = ['grantee_type' => $type, 'grantee_id' => (string) $target->id];
+        $before = Activity::forSubject($this->role)->count();
+
+        asUser($this->admin)->post(route('responsibilities.grants.store', $this->role), $data)->assertSessionHasNoErrors();
+        $grant = $this->role->grants()->sole();
+        $entry = Activity::forSubject($this->role)->forEvent('relation_updated')->sole();
+        expect($entry->causer_id)->toBe($this->admin->id)
+            ->and($entry->properties->get('relation'))->toBe('grants')
+            ->and($entry->properties->get('attached')[0]['id'])->toBe($grant->id)
+            ->and($entry->properties->get('attached')[0]['label'])->toHaveKeys(['lt', 'en'])
+            ->and($entry->properties->get('grant'))->toBe($grant->only(['id', 'grantee_type', 'grantee_id', 'scope_type', 'scope_id']))
+            ->and(Activity::forSubject($this->role)->count())->toBe($before + 1);
+
+        asUser($this->admin)->post(route('responsibilities.grants.store', $this->role), $data)->assertSessionHasNoErrors();
+        expect(Activity::forSubject($this->role)->count())->toBe($before + 1);
+
+        asUser($this->admin)->delete(route('responsibilities.grants.destroy', [$this->role, $grant]))->assertRedirect();
+        $removed = Activity::forSubject($this->role)->latest('id')->firstOrFail();
+        expect($removed->causer_id)->toBe($this->admin->id)
+            ->and($removed->properties->get('detached'))->toBe($entry->properties->get('attached'))
+            ->and($removed->properties->get('attached'))->toBe([])
+            ->and(Activity::forSubject($this->role)->count())->toBe($before + 2);
+    })->with(['duty', 'duty_type', 'institution']);
+
+    test('removing a direct holder logs the person on the role', function (): void {
+        $this->user->assignRole($this->role);
+
+        asUser($this->admin)->delete(route('responsibilities.users.destroy', [$this->role, $this->user]))->assertRedirect();
+
+        $entry = Activity::forSubject($this->role)->forEvent('relation_updated')->sole();
+        expect($entry->causer_id)->toBe($this->admin->id)
+            ->and($entry->properties->all())->toBe([
+                'relation' => 'users',
+                'attached' => [],
+                'detached' => [['id' => $this->user->id, 'label' => $this->user->name]],
+            ]);
+    });
+
+    test('attachable type sync logs additions and removals and skips unchanged saves', function (): void {
+        $old = DutyType::factory()->create();
+        $new = DutyType::factory()->create();
+        $this->role->attachable_types()->attach($old);
+
+        asUser($this->admin)->put(route('responsibilities.attachableTypes.update', $this->role), ['attachable_types' => [$new->id]])
+            ->assertSessionHasNoErrors();
+
+        $entry = Activity::forSubject($this->role)->forEvent('relation_updated')->sole();
+        expect($entry->causer_id)->toBe($this->admin->id)
+            ->and($entry->properties->get('relation'))->toBe('attachable_types')
+            ->and($entry->properties->get('attached')[0]['id'])->toBe((string) $new->id)
+            ->and($entry->properties->get('detached')[0]['id'])->toBe((string) $old->id);
+
+        asUser($this->admin)->put(route('responsibilities.attachableTypes.update', $this->role), ['attachable_types' => [$new->id]])
+            ->assertSessionHasNoErrors();
+        expect(Activity::forSubject($this->role)->forEvent('relation_updated')->count())->toBe(1);
+    });
 });

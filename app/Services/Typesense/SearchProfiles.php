@@ -63,7 +63,7 @@ class SearchProfiles
                 'parameters' => $params,
                 'defaultSort' => $settings['collection-schema']['default_sorting_field'].':desc',
                 'facetFields' => $schema->filter(fn ($field) => $field['facet'] ?? false)->keys()->all(),
-                'sortFields' => $schema->filter(fn ($field) => $field['sort'] ?? in_array($field['type'], ['int32', 'int64', 'float', 'bool'], true))->keys()->all(),
+                'sortFields' => $schema->filter(fn ($field) => ($field['index'] ?? true) && ($field['sort'] ?? in_array($field['type'], ['int32', 'int64', 'float', 'bool'], true)))->keys()->all(),
             ];
         }
 

@@ -578,6 +578,7 @@ class News extends Model implements Feedable, ImageMediaOwner, Sitemapable
             'important' => (bool) $this->important,
             'draft' => (bool) $this->draft,
             'created_at' => $this->created_at->timestamp,
+            ...($this instanceof PublicNews ? [] : ['updated_at' => $this->updated_at->timestamp]),
         ];
     }
 

@@ -36,7 +36,7 @@ describe('notifications collection', () => {
     expect(markNotificationRead).toHaveBeenCalledWith('unread');
   });
 
-  it('starts with unread notifications and can show all', () => {
+  it('starts with every notification and can narrow to unread', () => {
     window.history.replaceState({}, '', '/mano/notifications');
     const wrapper = mount(ShowNotifications, {
       props: { notifications },
@@ -44,8 +44,8 @@ describe('notifications collection', () => {
     });
     const collection = wrapper.findComponent(CollectionPageStub);
 
-    expect(collection.props('source').items.value.map((item: { id: string }) => item.id)).toEqual(['unread']);
-    collection.vm.$emit('quickFilter', 'all');
     expect(collection.props('source').items.value).toHaveLength(2);
+    collection.vm.$emit('quickFilter', 'unread');
+    expect(collection.props('source').items.value.map((item: { id: string }) => item.id)).toEqual(['unread']);
   });
 });

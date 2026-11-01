@@ -2,7 +2,7 @@
 doc_status: reviewed
 title: Pranešimai
 coverage: ignore
-last_reviewed: 2026-10-25
+last_reviewed: 2026-11-01
 tests:
   - tests/Feature/Notifications/NotificationFiringTest.php
   - tests/Feature/Tasks/Subscribers/MeetingTaskSubscriberTest.php
@@ -40,7 +40,7 @@ Pranešimai gali pasiekti tave trimis kanalais:
    vis tiek rasi platformoje, kol jų neištrinsi.
 2. **El. paštas**: kiekvienai pranešimų rūšiai gali pasirinkti pristatymo būdą:
    - **Laiškas iškart** – atskiras laiškas išsiunčiamas tuoj pat.
-   - **Suvestinėje** – pranešimas įtraukiamas į periodinę neskaitytų pranešimų santrauką (kas 1, 4, 12 arba 24 val.).
+   - **Suvestinėje** – pranešimas įtraukiamas į periodinę neskaitytų pranešimų santrauką: kasdien pasirinktu laiku (numatytai 15.00) arba kas 4 valandas.
    - **Išjungta** – el. laiškai nesiunčiami. Pranešimai platformoje ir įrenginyje valdomi atskirai.
 3. **Pranešimai į įrenginį („push“)**: siunčiami tiesiai į tavo naršyklę ar telefoną, jei įrenginyje
    suteikei leidimą.
@@ -126,7 +126,7 @@ Visi laiškai pasirašomi **Mano VU SA** vardu, ne koordinatoriaus.
 
 ## Kur rasti pranešimus ir nustatymus {#kur-rasti}
 
-- **Tavo gauti pranešimai**: pasiekiami skiltyje [Mano → Pranešimai](/mano/pranesimai) (`/mano/notifications`).
+- **Tavo gauti pranešimai**: pasiekiami skiltyje [Mano → Pranešimai](/mano/pranesimai) (`/mano/notifications`). Rodomi visi pranešimai, o filtras **Neskaityti** palieka tik naujus.
 - **Tavo pranešimų nustatymai**: pasiekiami profilio meniu viršuje dešinėje pasirinkus
   **Pranešimų nustatymai** (`/mano/profile/notifications`). Čia galima keisti kiekvienos skilties el. pašto ir
   pranešimų į įrenginį parinktis, suvestinės dažnumą bei valdyti susietus įrenginius.

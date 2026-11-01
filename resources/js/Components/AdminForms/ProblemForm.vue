@@ -77,32 +77,30 @@
 
     <template #aside>
       <FormPanel :title="$t('Būsena ir priskyrimas')" :icon="CircleDot">
-        <div class="grid gap-4 lg:grid-cols-2">
-          <TenantSelectField
-            id="problem-tenant"
-            :model-value="form.tenant_id"
-            :tenants
-            required
-            :error="form.errors.tenant_id"
-            @update:model-value="onTenantChanged"
-          />
+        <TenantSelectField
+          id="problem-tenant"
+          :model-value="form.tenant_id"
+          :tenants
+          required
+          :error="form.errors.tenant_id"
+          @update:model-value="onTenantChanged"
+        />
 
-          <FormFieldWrapper
+        <FormFieldWrapper
+          id="problem-status"
+          :label="capitalize($tChoice('entities.problem.status', 1))"
+          required
+          :error="form.errors.status"
+        >
+          <FormSegmentedControl
             id="problem-status"
-            :label="capitalize($tChoice('entities.problem.status', 1))"
-            required
-            :error="form.errors.status"
-          >
-            <FormSegmentedControl
-              id="problem-status"
-              v-model="form.status"
-              stack-on-phone
-              tabindex="-1"
-              :options="statusOptions"
-              :aria-label="capitalize($tChoice('entities.problem.status', 1))"
-            />
-          </FormFieldWrapper>
-        </div>
+            v-model="form.status"
+            stack-on-phone
+            tabindex="-1"
+            :options="statusOptions"
+            :aria-label="capitalize($tChoice('entities.problem.status', 1))"
+          />
+        </FormFieldWrapper>
 
         <FormFieldWrapper
           id="problem-responsible-user"
@@ -119,7 +117,7 @@
             <ComboboxAnchor class="flex min-h-11 w-full items-center justify-between gap-2 border border-border bg-card px-3 py-2 text-sm">
               <ComboboxInput
                 :display-value="(val: unknown) => (val as UserOption)?.name ?? ''"
-                :placeholder="capitalize($tChoice('entities.problem.responsible_user', 1))"
+                :placeholder="$t('problems.form.responsible_user_placeholder')"
                 class="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
                 @input="onUserSearchInput"
               />

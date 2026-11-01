@@ -4,7 +4,6 @@ namespace App\Http\Resources;
 
 use App\Models\Meeting;
 use App\Services\AgendaItemPresenter;
-use App\Services\VoteStatisticsCalculator;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -19,11 +18,7 @@ class InstitutionMeetingResource extends JsonResource
     #[\Override]
     public function toArray(Request $request): array
     {
-        $this->loadMissing('agendaItems.votes');
-        $statistics = app(VoteStatisticsCalculator::class)->calculate(
-            $this->agendaItems->filter(fn ($item) => ! $item->is_private || AgendaItemPresenter::canRead($item, $request->user()))->flatMap(fn ($item) => $item->votes),
-            $this->requiresStudentPerspective(),
-        );
+        $outcome = $this->outcomeSummary($request->user());
 
         return [
             'id' => $this->id,
@@ -37,9 +32,9 @@ class InstitutionMeetingResource extends JsonResource
                 ->map(fn ($item) => AgendaItemPresenter::forUser($item, $request->user())['title'])
                 ->values()
                 ->all(),
-            'vote_matches' => $statistics['vote_matches'],
-            'vote_mismatches' => $statistics['vote_mismatches'],
-            'incomplete_vote_data' => $statistics['incomplete_vote_data'],
+            'vote_matches' => $outcome['outcome_aligned'],
+            'vote_mismatches' => $outcome['outcome_misaligned'],
+            'incomplete_vote_data' => $outcome['outcome_unknown'],
             'has_protocol' => $this->has_protocol,
             'has_report' => $this->has_report,
             'can_discard' => $this->isDiscardable(),

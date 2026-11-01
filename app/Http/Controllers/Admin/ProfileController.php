@@ -78,6 +78,7 @@ class ProfileController extends AdminController
             ], $audience->typesFor($user)),
             'notificationPreferences' => [
                 'digest_frequency_hours' => $preferences['digest_frequency_hours'],
+                'digest_send_hour' => $preferences['digest_send_hour'],
                 'emails' => $preferences['emails'],
                 'muted_until' => $user->isGloballyMuted() ? $preferences['muted_until'] : null,
                 'reminder_settings' => $preferences['reminder_settings'],
@@ -123,8 +124,10 @@ class ProfileController extends AdminController
             $preferences['types'] = $this->typeOverrides($validated['types'] ?? []);
         }
 
-        if (array_key_exists('digest_frequency_hours', $validated)) {
-            $preferences['digest_frequency_hours'] = $validated['digest_frequency_hours'];
+        foreach (['digest_frequency_hours', 'digest_send_hour'] as $key) {
+            if (array_key_exists($key, $validated)) {
+                $preferences[$key] = (int) $validated[$key];
+            }
         }
 
         if (array_key_exists('emails', $validated)) {
@@ -147,7 +150,7 @@ class ProfileController extends AdminController
     }
 
     /**
-     * Back to the defaults for every type, reminder and the digest frequency; the chosen addresses
+     * Back to the defaults for every type, reminder and digest schedule; the chosen addresses
      * and an active mute stay, since those are not preferences with a default.
      */
     public function resetNotificationPreferences()

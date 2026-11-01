@@ -3,13 +3,15 @@
     :row-actions
     :source
     collection="roles"
-    entity-type="role"
-    :eyebrow="`${$t('shell.workspaces.sistema.title')} · ${$t('shell.sections.roles')}`"
+    :eyebrow="$t('shell.workspaces.sistema.title')"
     :title="$t('shell.sections.roles')"
     :lead="$t('responsibilities.index.lead')"
     default-view="table"
     :item-key="responsibility => responsibility.id"
     :columns
+    table-fixed
+    actions-width="w-44"
+    table-min-width="min-w-[86rem]"
     @row-action="(_item, key) => collectionActions.select(key)"
     :search-placeholder="$t('responsibilities.index.search')"
   >
@@ -23,14 +25,14 @@
     </template>
 
     <template #row="{ item, actions: recordActions }">
-      <article class="flex flex-col gap-2 px-4 py-4">
+      <CollectionRow :actions="recordActions" :spotlight="item === source?.items.value[0]" class="px-4 py-4" @select="key => collectionActions.select(key)">
         <CollectionPrimaryCell :title="item.title" :href="route('responsibilities.show', item.id)" :sub="item.description" :sub-lines="3" />
         <p class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
           <PurposeChip :label="item.purpose_label" show-access />
+          <span aria-hidden="true">·</span>
           <span>{{ counts(item) }}</span>
         </p>
-        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => collectionActions.select(key)" />
-      </article>
+      </CollectionRow>
     </template>
 
     <template #cell="{ item, column }">
@@ -41,7 +43,7 @@
       <span v-else-if="column.key === 'permissions'" class="tabular-nums text-muted-foreground">{{ item.permissions_count }}</span>
       <span v-else-if="column.key === 'duties'" class="tabular-nums text-muted-foreground">{{ item.duties_count }}</span>
       <span v-else-if="column.key === 'people'" class="tabular-nums text-muted-foreground">{{ item.people_count }}</span>
-      <span v-else-if="column.key === 'updated'" class="tabular-nums text-muted-foreground">{{ formatDate(item.updated_at) }}</span>
+      <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums text-muted-foreground">{{ formatRecordDate(item[column.key]) }}</span>
     </template>
   </CollectionPage>
   <CollectionConfirmAction :dialog="collectionActions.dialog.value" @confirm="collectionActions.confirm" @cancel="collectionActions.pending.value = null" />
@@ -56,7 +58,7 @@ import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { useRowAbilities } from '@/Composables/useRowAbilities';
-import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import type { CollectionColumn } from '@/Components/Collection/types';
@@ -64,7 +66,7 @@ import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { Button } from '@/Components/ui/button';
 import { useLocalCollectionSource } from '@/Composables/useCollectionSource';
 import PurposeChip from '@/Features/Admin/Responsibilities/PurposeChip.vue';
-import { formatDate } from '@/Utils/dateTime';
+import { formatRecordDate } from '@/Utils/dateTime';
 
 interface ResponsibilityRow {
   is_super_admin: boolean;
@@ -77,6 +79,7 @@ interface ResponsibilityRow {
   permissions_count: number;
   duties_count: number;
   people_count: number;
+  created_at: string | null;
   updated_at: string | null;
 }
 
@@ -91,6 +94,8 @@ const source = useLocalCollectionSource<ResponsibilityRow>({
   searchText: row => [row.title, row.description ?? '', row.purpose_label ?? ''],
   defaultSort: 'purpose:asc',
   sortOptions: () => [
+    { value: 'created_at:asc', label: $t('Seniausiai sukurti'), by: row => row.created_at ?? '' },
+    { value: 'created_at:desc', label: $t('Naujausiai sukurti'), by: row => row.created_at ?? '' },
     { value: 'purpose:asc', label: $t('responsibilities.index.sort_purpose'), by: row => `${row.purpose ? 0 : 1}${row.title}` },
     { value: 'title:asc', label: $t('Pagal pavadinimą (A–Z)'), by: row => row.title },
     { value: 'title:desc', label: $t('Pagal pavadinimą (Z–A)'), by: row => row.title },
@@ -113,11 +118,12 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'permissions', label: $t('responsibilities.facts.permissions'), class: 'w-24' },
   { key: 'duties', label: $t('responsibilities.facts.duties'), class: 'w-28' },
   { key: 'people', label: $t('responsibilities.facts.people'), class: 'w-24', sortField: 'people' },
-  { key: 'updated', label: $t('Atnaujinta'), class: 'w-32', sortField: 'updated_at' },
+  { key: 'created_at', label: $t('Sukurta'), class: 'w-36', sortField: 'created_at', defaultHidden: true },
+  { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', sortField: 'updated_at', defaultHidden: true },
 ]);
 const rowActions = (item: ResponsibilityRow): AdminRecordAction[] => [
-  { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, href: route('responsibilities.show', item.id) },
-  ...(rowAbilities.can(item.id, 'update') && !item.is_super_admin ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: route('responsibilities.edit', item.id) }] : []),
+  { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, primary: true, href: route('responsibilities.show', item.id) },
+  ...(rowAbilities.can(item.id, 'update') && !item.is_super_admin ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, menuOnly: true, href: route('responsibilities.edit', item.id) }] : []),
   ...(rowAbilities.can(item.id, 'delete') && !item.delete_blocked ? [{ key: `delete:${item.id}:${item.title}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
 ];
 

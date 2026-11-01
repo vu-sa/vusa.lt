@@ -109,6 +109,24 @@ describe('useListDetailSelection', () => {
     expect(onEnter).not.toHaveBeenCalled();
   });
 
+  it('keeps walking from the detail\'s controls, but leaves Enter and its fields to them', () => {
+    const detail = document.createElement('section');
+    detail.dataset.slot = 'detail';
+    detail.innerHTML = '<a href="/x"></a><input>';
+    document.body.append(detail);
+    const link = detail.querySelector('a')!;
+    const list = setup({ detailSelector: '[data-slot="detail"]' });
+
+    expect(press('ArrowDown', link).defaultPrevented).toBe(true);
+    expect(list.selected.value).toBe('b');
+
+    press('Enter', link);
+    expect(list.onEnter).not.toHaveBeenCalled();
+
+    press('ArrowDown', detail.querySelector('input')!);
+    expect(list.selected.value).toBe('b');
+  });
+
   it('moves from a search input only when asked to, and from a row\'s own link', () => {
     const input = document.createElement('input');
     const row = document.createElement('a');

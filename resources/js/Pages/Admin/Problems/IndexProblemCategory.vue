@@ -3,13 +3,15 @@
     :row-actions="item => rowActions(item)"
     :source
     collection="problemCategories"
-    entity-type="problem"
-    :eyebrow="`${$t('shell.workspaces.atstovavimas.title')} · ${$t('shell.sections.problemu_kategorijos')}`"
+    :eyebrow="$t('shell.workspaces.atstovavimas.title')"
     :title="$t('shell.sections.problemu_kategorijos')"
     :lead="$t('Kategorijos bendros visiems padaliniams: pagal jas filtruojamos problemos.')"
     default-view="table"
     :item-key="categoryKey"
     :columns
+    table-fixed
+    actions-width="w-40"
+    table-min-width="min-w-[52rem]"
     :search-placeholder="$t('Ieškoti kategorijų')"
     @row-action="(item, key) => selectRowAction(key, item)"
   >
@@ -20,19 +22,17 @@
       </Button>
     </template>
 
-    <template #row="{ item, actions: recordActions }">
-      <article class="flex min-h-16 items-center gap-3 px-3 py-3 sm:px-4">
+    <template #row="{ item, actions: recordActions, view }">
+      <CollectionRow :spotlight="item === source?.items.value[0]" :actions="view === 'preview' ? [] : recordActions" @select="key => selectRowAction(key, item)" class="px-3 py-3 sm:px-4">
         <div class="min-w-0 flex-1">
           <button type="button" class="block max-w-full text-left font-medium hover:text-brand" @click="openSheet(item)">
             {{ title(item) }}
           </button>
-          <p v-if="description(item)" class="mt-0.5 truncate text-sm text-muted-foreground">
-            {{ description(item) }}
+          <p class="mt-0.5 truncate text-sm text-muted-foreground">
+            {{ [description(item), usage(item)].filter(Boolean).join(' · ') }}
           </p>
         </div>
-        <span class="shrink-0 text-sm tabular-nums text-muted-foreground">{{ usage(item) }}</span>
-        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => selectRowAction(key, item)" />
-      </article>
+      </CollectionRow>
     </template>
 
     <template #cell="{ item, column }">
@@ -41,6 +41,7 @@
       </button>
       <span v-else-if="column.key === 'description'" class="text-muted-foreground">{{ description(item) || '—' }}</span>
       <span v-else-if="column.key === 'problems_count'" class="tabular-nums">{{ item.problems_count }}</span>
+      <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
     </template>
 
     <template #empty>
@@ -75,15 +76,17 @@ import { Pencil, Plus, Trash2 } from '@lucide/vue';
 import { computed, ref, toRef } from 'vue';
 
 import type { CollectionColumn } from '@/Components/Collection/types';
-import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
+import type { CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import { CategoryIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { useLocalCollectionSource } from '@/Composables/useCollectionSource';
 import ProblemCategorySheetForm, { type ProblemCategoryInput } from '@/Features/Admin/ProblemCategories/ProblemCategorySheetForm.vue';
+import { formatRecordDate } from '@/Utils/dateTime';
 
-type Category = ProblemCategoryInput & { id: number; slug: string; problems_count: number };
+type Category = ProblemCategoryInput & { id: number; slug: string; problems_count: number; created_at: string | null; updated_at: string | null };
 
 const props = defineProps<{
   problemCategories: Category[];
@@ -99,6 +102,10 @@ const source = useLocalCollectionSource<Category>({
     { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)'), by: category => title(category) },
     { value: 'problems_count:desc', label: $t('Dažniausiai naudojamos'), by: category => category.problems_count },
     { value: 'problems_count:asc', label: $t('Rečiausiai naudojamos'), by: category => category.problems_count },
+    { value: 'created_at:desc', label: $t('Naujausios pirmiausia'), by: item => item.created_at ?? '' },
+    { value: 'created_at:asc', label: $t('Seniausios pirmiausia'), by: item => item.created_at ?? '' },
+    { value: 'updated_at:desc', label: $t('Paskutiniai atnaujinti'), by: item => item.updated_at ?? '' },
+    { value: 'updated_at:asc', label: $t('Seniausios atnaujintos'), by: item => item.updated_at ?? '' },
   ],
 });
 
@@ -117,8 +124,10 @@ function selectRowAction(key: string, category: Category): void {
 
 const columns = computed<CollectionColumn[]>(() => [
   { key: 'name', label: $t('Kategorija'), sortField: 'name' },
-  { key: 'description', label: $t('Aprašymas') },
+  { key: 'description', label: $t('Aprašymas'), class: 'w-64' },
   { key: 'problems_count', label: $tChoice('entities.problem.model', 2), class: 'w-28', sortField: 'problems_count' },
+  { key: 'created_at', label: $t('Sukurta'), class: 'w-36', defaultHidden: true, sortField: 'created_at' },
+  { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', defaultHidden: true, sortField: 'updated_at' },
 ]);
 
 const sheetOpen = ref(false);

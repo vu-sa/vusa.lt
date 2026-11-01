@@ -3,8 +3,10 @@ doc_status: reviewed
 title: Institucijos
 area: institutions
 models: [Institution, InstitutionCheckIn, InstitutionSecretary]
-last_reviewed: 2026-10-28
+last_reviewed: 2026-11-01
 tests:
+  - tests/Feature/Search/ListFreshnessTest.php
+  - tests/Feature/Admin/Search/InstitutionMemberTermsApiTest.php
   - tests/Feature/Search/AdminSearchTranslationsTest.php
   - resources/js/Pages/Admin/People/__tests__/IndexInstitution.component.test.ts
   - resources/js/Composables/__tests__/searchTranslations.test.ts
@@ -70,6 +72,30 @@ puslapį `/mano/institutions/{id}`.
 ## Kaip tai veikia
 
 Institucijų sąraše pavadinimai ir tipai rodomi pasirinkta Mano VU SA kalba. Jei vertimo nėra, rodomas lietuviškas arba kitas turimas pavadinimas. Padalinio trumpinys nesikeičia perjungus kalbą.
+
+### Institucijų sąrašas {#sarasas}
+
+Eilutėje rodomas pavadinimas, padalinys, tipai ir narių skaičius. Greitasis filtras **Sekamos** palieka tavo sekamas institucijas, o skiltyje **Filtrai** galima rinktis padalinį, tipą, **Aktyvumą** ir **Būseną**.
+
+Lentelės stulpeliai:
+
+| Stulpelis | Ką rodo |
+|---|---|
+| **Institucija** | Pavadinimas; pagal jį galima rikiuoti |
+| **Padalinys** | Padalinio trumpinys |
+| **Veiklos būklė** | Ar posėdžiai vyksta laiku, žr. [periodiškumą](#periodiskumas) |
+| **Nariai** | Dabartinių ir visų narių skaičius. Atvėrus nariai su jų laikotarpiais rodomi tik galintiems matyti instituciją |
+| **Tipas**, **Sukurta**, **Atnaujinta** | Paslėpti, įjungiami meniu **Stulpeliai**. Pagal datas galima rikiuoti paspaudus antraštę |
+
+**Nebeveikianti** institucija sąraše pažymėta ženklu prieš pavadinimą ir išblukinta, o veiklos būklė jai nerodoma, nes posėdžių iš jos nebetikimasi. Atskiro stulpelio būsenai nėra: tokias institucijas galima atrinkti filtru **Būsena**.
+
+Eilutėje ir lentelėje yra **Atidaryti** ir meniu **⋯** su kitais veiksmais. Telefone visi veiksmai yra meniu **⋯**, o pavadinimas atveria institucijos puslapį. Peržiūroje dešinėje kortelė rodo būseną, atstovus ir paskutinius posėdžius su jų [rezultatais](/visak/posedziai#kaip-praejo), o kairėje lieka tik trumpa eilutė.
+
+<ChangelogNote date="2026-11-01" title="Sąrašas be būsenos keitimo eilutėje">
+
+Institucijos būsena nebekeičiama eilutėje ar lentelėje – tik peržiūros kortelėje arba formoje. Lentelėje atsirado **Veiklos būklė** ir **Nariai**, o sąraše – **Būsenos** filtras.
+
+</ChangelogNote>
 
 Atskiroje formoje sukūrus instituciją, atveriamas jos puslapis. Pareigybių atnaujinimo vedlyje institucija sukuriama liekant vedlyje.
 
@@ -139,7 +165,7 @@ Tai ne tas pats, kas institucijos puslapio **Veiklos būklė**, rodanti, ar pos�
 institucija nerodoma viešame sąraše, jai nekuriamos užduotys dėl posėdžių periodiškumo, o nariai
 be teisės ją matyti jos puslapio neatidaro.
 
-Institucijų sąraše būseną galima keisti tiesiogiai stulpelyje **Būsena** arba prie įrašo eilutėje.
+Sąraše būsena keičiama peržiūros kortelėje, o institucijos formoje – lauke **Būsena**.
 Keitimas rodomas tik turint teisę redaguoti konkrečią instituciją. Prieš pažymint ją neaktyvia,
 patvirtinimo lange rodomas užbaigiamų pareigybių laikotarpių skaičius, pabaigos data ir trukdantys laikotarpiai.
 
@@ -244,7 +270,7 @@ priminimo. Klausimą galima išsiųsti iš:
 - **ViSAK → Padaliniai**, sąrašo **Reikia dėmesio** mygtuko **Paklausti atstovų** (pasirinktos visos
   sąrašo institucijos, atitinkančios lango filtrus, iki 100);
 - **Veiksmai → Paklausti, ar vyko posėdžiai** (institucijas pasirenki pats);
-- institucijos meniu **⋯ → Paklausti, ar vyko posėdžiai**.
+- institucijos meniu **⋯ → Paklausti, ar vyko posėdžiai** (klausiama tik apie šią instituciją, kitų pridėti negalima).
 
 <ChangelogNote date="2026-10-02" title="Dvi atskiros užklausos ir atsakymų istorija">
 Galima pasirinkti, ar klausiama apie institucijos veiklą, ar prašoma papildyti posėdžių įrašus. Išsiųstos užklausos
@@ -252,7 +278,8 @@ ir atsakymai pateikiami institucijos skiltyje **Užklausos atstovams**.
 </ChangelogNote>
 
 Pirmiausia pasirenkama **Ar vyko posėdis?** arba **Papildyk posėdžių įrašus** – net jei institucijos
-jau pasirinktos. Tada pasirenkama, kaip bus renkami gavėjai:
+jau pasirinktos. Klausiant iš institucijos meniu, iškart atveriama peržiūra. Kitais atvejais
+pasirenkama, kaip bus renkami gavėjai:
 
 - **Pagal institucijas** – klausiama institucijos studentų atstovų.
   Galima pasirinkti kelis padalinius ir valdysenos sritį arba ieškoti pagal pavadinimą.
@@ -313,8 +340,9 @@ laiką, apie kurį jie jau pranešė.
 
 <ChangelogNote date="2026-10-19" title="Galima paklausti pasibaigus pranešimui">
 
-Koordinatorius gali siųsti **Ar vyko posėdis?**, kai institucija vėluoja arba jos būklė yra
-**Pranešimo laikotarpis baigėsi**. Antruoju atveju gavėjų pasirinkime ir siuntimo peržiūroje rodoma
+Koordinatorius gali siųsti **Ar vyko posėdis?**, kai institucija vėluoja, jos būklė yra
+**Pranešimo laikotarpis baigėsi** arba joje dar neužregistruota nei posėdžių, nei pranešimų apie
+veiklą. Kai pranešimo laikotarpis baigėsi, gavėjų pasirinkime ir siuntimo peržiūroje rodoma
 pranešimo pabaigos data. Automatinis klausimas siunčiamas tik pradėjus vėluoti.
 
 Institucija turi būti aktyvi. Būsimas posėdis, šiuo metu galiojantis pranešimas „Posėdžio nebuvo“
@@ -322,10 +350,12 @@ arba dar nepraėjęs paskutinio posėdžio terminas klausimą sustabdo. Vien art
 neužtenka. Akademinių atostogų dienos neskaičiuojamos. Priežastis, kodėl klausti dar negalima,
 rodoma renkantis gavėjus. **Papildyk posėdžių įrašus** sąlygos yra atskiros ir dėl šios būklės nesikeičia.
 
-Jei institucijoje dar neužregistruota nei posėdžių, nei pranešimų apie veiklą, laikas skaičiuojamas
-nuo kiekvieno gavėjo pareigų pradžios dabartinėje kadencijoje. Sekretoriui naudojama kadencijos pradžia.
-Pavyzdžiui, jei laikotarpis prasideda **rugsėjo 1 d.**, periodiškumas yra **30 dienų** ir nėra
-atostogų, klausti galima nuo **spalio 2 d.** Vėliau pareigas pradėjęs atstovas laukia savo termino.
+Jei institucijoje dar neužregistruota nei posėdžių, nei pranešimų apie veiklą, automatinio klausimo
+laikas skaičiuojamas nuo dienos, kai gavėjas pradėjo eiti pareigas, net jei tai buvo ankstesnėje
+kadencijoje. Sekretoriui naudojama kadencijos pradžia. Pavyzdžiui, jei atstovas pareigas pradėjo
+**rugsėjo 1 d.**, periodiškumas yra **30 dienų** ir nėra atostogų, automatinis klausimas siunčiamas
+nuo **spalio 2 d.** Vėliau pareigas pradėjęs atstovas laukia savo termino. Koordinatorius tokios
+institucijos gali paklausti ir anksčiau. Pats klausimas apima tik dabartinę kadenciją.
 Apžvalgoje tokia institucija ir toliau žymima **Nėra duomenų**, kol užregistruojama veikla.
 
 </ChangelogNote>
@@ -333,8 +363,9 @@ Apžvalgoje tokia institucija ir toliau žymima **Nėra duomenų**, kol užregis
 Pranešimas, kuris prasidės tik ateityje, dabartinio neapimto laikotarpio neuždengia.
 Sąlygos tikrinamos ir patvirtinant siuntimą, ir prieš pristatant laukiančius laiškus ar santraukas.
 **Papildyk posėdžių įrašus** klausia apie jau vykusius posėdžius, kurių darbotvarkės tuščios arba
-neužpildyti sprendimai. Jei laikotarpiu posėdžių nėra, pasirenkama **Ar vyko posėdis?**; jei visos
-darbotvarkės užpildytos, papildymo užklausos nesiunčiamos. Papildyti įrašus galima prašyti ir po
+neužpildyti sprendimai. Jei laikotarpiu įrašytų posėdžių nėra, papildyti nėra ko: priežastyje
+**Ar vyko posėdis?** siūloma tik tada, kai šį klausimą galima išsiųsti. Jei visos darbotvarkės
+užpildytos, papildymo užklausos nesiunčiamos. Papildyti įrašus galima prašyti ir po
 neseniai vykusio posėdžio ar kol galioja pranešimas „Posėdžio nebuvo“.
 Koordinatorius, kuris pats yra institucijos atstovas, gali įtraukti ir save.
 
@@ -549,6 +580,8 @@ pranešimus „Posėdžio nebuvo“ tvarko ir atstovų apie posėdžius klausia 
   pranešimą, ir **neaktyvioms** institucijoms. Jos terminas nepatenka į atostogas.
 - Veiklos būklė sąrašui perskaičiuojama kas naktį, o užregistravus posėdį ar pranešimą –
   iš karto.
+- Pridėjus ar pakeitus nario laikotarpį, sąrašo nariai atsinaujina iš karto. Savaime pasibaigę
+  laikotarpiai sąraše atsispindi po naktinio perskaičiavimo.
 
 ### Periodiškumas po pranešimo
 

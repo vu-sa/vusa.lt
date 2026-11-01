@@ -1,88 +1,46 @@
 <template>
   <div class="space-y-4" data-slot="task-details">
-    <div class="flex flex-wrap items-center gap-2 text-sm">
-      <Badge v-if="task.is_overdue && !task.completed_at" variant="rose" class="gap-1">
-        <AlertCircleIcon class="h-3 w-3" />
-        {{ $t('overdue') }}
-      </Badge>
-      <Badge v-if="task.cancelled_at" variant="secondary" data-slot="task-cancelled">
-        {{ $t('tasks.cancelled') }}
-      </Badge>
-      <Badge v-else-if="task.can_be_manually_completed === false" variant="secondary" class="gap-1">
-        <RotateCwIcon class="h-3 w-3" />
-        {{ $t('tasks.auto_completing') }}
-      </Badge>
-      <span v-if="task.due_date" class="text-muted-foreground">
-        {{ $t('tasks.due') }}: {{ formatDate(task.due_date) }}
-      </span>
-    </div>
-
-    <p v-if="task.cancelled_at" class="text-sm text-muted-foreground">
+    <p v-if="task.cancelled_at" class="text-sm text-muted-foreground" data-slot="task-cancelled">
       {{ $t('tasks.cancelled_hint') }}
     </p>
 
-    <div v-if="task.description" class="border-l-2 border-border pl-3">
-      <h4 class="mb-1 flex items-center gap-2 text-sm font-medium text-foreground">
-        <InfoIcon class="h-4 w-4" />
-        {{ $t('tasks.instructions') }}
-      </h4>
-      <p class="whitespace-pre-line text-sm text-muted-foreground">
-        {{ task.description }}
-      </p>
-    </div>
+    <p v-if="task.description" class="whitespace-pre-line text-sm text-foreground">
+      {{ task.description }}
+    </p>
 
-    <Button v-if="showPeriodicityActions" variant="brand" class="w-full sm:w-auto" @click="emit('report')">
-      <Megaphone aria-hidden="true" />
-      {{ $t('tasks.periodicity_gap.report_no_meeting') }}
-    </Button>
-
-    <!-- A meeting task can carry the whole institution, so assignees are avatars with the names
-         behind a hover card rather than a pill per person. -->
-    <div v-if="task.users?.length" class="border-t border-border pt-4">
-      <div class="mb-2 flex items-center gap-2">
-        <h4 class="text-sm font-medium text-foreground">
-          {{ $t('tasks.assigned_to') }}
-        </h4>
-        <Badge variant="secondary" class="tabular-nums">
-          {{ task.users.length }}
-        </Badge>
-      </div>
-      <UsersAvatarGroup :users="task.users" :size="28" :max="8" />
-    </div>
+    <ContextFacts class="gap-x-6 gap-y-2 pt-3 text-sm">
+      <ContextFact v-if="task.due_date" :label="$t('tasks.due')" :value="formatDate(task.due_date)" />
+      <ContextFact v-if="task.progress" :label="$t('tasks.detail.progress')" :value="`${task.progress.current} / ${task.progress.total}`" />
+      <ContextFact v-if="closedOn" :label="$t('tasks.detail.completed_on')" :value="closedOn" />
+      <ContextFact v-if="task.can_be_manually_completed === false && !task.completed_at" :label="$t('tasks.detail.completing')" :value="$t('tasks.detail.completes_itself')" />
+      <ContextFact v-if="task.users?.length" :label="$t('tasks.assigned_to')">
+        <span class="flex min-w-0 items-center gap-2">
+          <UsersAvatarGroup :users="task.users" :size="28" :max="5" :expandable="task.users.length > 1" />
+          <span v-if="task.users.length === 1" class="min-w-0 truncate">{{ task.users[0]?.name }}</span>
+        </span>
+      </ContextFact>
+    </ContextFacts>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { format, parseISO } from 'date-fns';
 import { trans as $t } from 'laravel-vue-i18n';
-import {
-  AlertCircle as AlertCircleIcon,
-  Info as InfoIcon,
-  Megaphone,
-  RotateCw as RotateCwIcon,
-} from '@lucide/vue';
+import { computed } from 'vue';
 
-import { Badge } from '@/Components/ui/badge';
-import { Button } from '@/Components/ui/button';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
-import { isPeriodicityGapTask, type TaskDisplayData } from '@/Composables/useTaskPresentation';
+import { ContextFact, ContextFacts } from '@/Components/Patterns';
+import { useDateLocale } from '@/Composables/useDateLocale';
+import type { TaskDisplayData } from '@/Composables/useTaskPresentation';
 
 const props = defineProps<{
   task: TaskDisplayData;
-  /** The collection preview offers these in its own action row. */
-  hideActions?: boolean;
 }>();
 
-const emit = defineEmits<{
-  /** Opens the action window: record a meeting, or say there was none. */
-  report: [];
-}>();
+const dateLocale = useDateLocale();
 
-const showPeriodicityActions = computed(() => !props.hideActions && !props.task.completed_at && isPeriodicityGapTask(props.task));
+const formatDate = (date: string) => format(parseISO(date), 'PPP', { locale: dateLocale.value });
 
-const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('lt-LT', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-});
+// A cancelled task carries `completed_at` too, but nobody completed it.
+const closedOn = computed(() => (props.task.completed_at && !props.task.cancelled_at ? formatDate(props.task.completed_at) : null));
 </script>

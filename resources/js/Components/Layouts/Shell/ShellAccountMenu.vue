@@ -44,18 +44,6 @@
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem as-child class="gap-3 px-3.5 py-2.5 rounded-none cursor-pointer text-sm font-medium">
-          <Link :href="route('profile.roles')" prefetch>
-            <ShieldCheck class="size-4 shrink-0" />
-            <span>{{ $t('shell.account.roles') }}</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem as-child class="gap-3 px-3.5 py-2.5 rounded-none cursor-pointer text-sm font-medium">
-          <Link :href="route('profile.activityRequests')">
-            <MailQuestion class="size-4 shrink-0" />
-            <span>{{ $t('activity_requests.personal.title') }}</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem as-child class="gap-3 px-3.5 py-2.5 rounded-none cursor-pointer text-sm font-medium">
           <Link :href="route('profile.notifications')" prefetch>
             <Bell class="size-4 shrink-0" />
             <span>{{ $t('shell.account.notifications') }}</span>
@@ -199,7 +187,6 @@ import { Link, router, usePage } from '@inertiajs/vue3';
 import { loadLanguageAsync, trans as $t } from 'laravel-vue-i18n';
 import { useDark } from '@vueuse/core';
 import {
-  MailQuestion,
   ArrowUpRight,
   Bell,
   BookOpen,
@@ -214,7 +201,6 @@ import {
   Moon,
   Palette,
   Radio,
-  ShieldCheck,
   Sparkles,
   Sun,
   UserRound,

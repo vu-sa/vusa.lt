@@ -1,5 +1,5 @@
 <template>
-  <div :class="['relative', slideHeightClass]">
+  <div :class="['relative h-full', slideHeightClass]">
     <!-- Background photograph, grayscale by default -->
     <MediaImage
       v-if="slide.imageSrc"

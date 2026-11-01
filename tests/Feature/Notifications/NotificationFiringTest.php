@@ -203,6 +203,8 @@ describe('reservation notifications', function (): void {
 
         // Manually dispatch state changed event (normally done by Spatie state machine)
         $initialState = $reservationResource->state;
+        // No request here: withoutDefer flushes immediately per transition.
+        $this->withoutDefer();
         $reservationResource->state->transitionTo(Reserved::class);
 
         Notification::assertSentTo($user, ReservationStatusChangedNotification::class);
@@ -213,6 +215,8 @@ describe('reservation notifications', function (): void {
 
         ['reservationResource' => $reservationResource] = $this->createReservationWithResource($user);
 
+        // No request here: withoutDefer flushes immediately per transition.
+        $this->withoutDefer();
         $reservationResource->state->transitionTo(Reserved::class);
 
         Notification::assertSentTo(
@@ -235,6 +239,8 @@ describe('reservation notifications', function (): void {
         ['reservation' => $reservation, 'reservationResource' => $reservationResource] = $this->createReservationWithResource($user1);
         $reservation->users()->attach($user2);
 
+        // No request here: withoutDefer flushes immediately per transition.
+        $this->withoutDefer();
         $reservationResource->state->transitionTo(Reserved::class);
 
         Notification::assertSentTo($user1, ReservationStatusChangedNotification::class);

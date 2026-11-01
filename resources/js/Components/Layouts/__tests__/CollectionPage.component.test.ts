@@ -81,7 +81,6 @@ function mountPage(source: CollectionSource<Item>, extra: Record<string, unknown
     props: {
       source,
       collection: 'test',
-      entityType: 'meeting',
       eyebrow: 'ViSAK · Posėdžiai',
       title: 'Posėdžiai',
       defaultView: 'rows',
@@ -131,13 +130,12 @@ describe('CollectionPage', () => {
     expect(wrapper.emitted('rowNavigate')).toEqual([[source.items.value[0], 'open']]);
   });
 
-  it('states where the person is and draws the entity identity tile', () => {
+  it('states where the person is', () => {
     const { source } = makeSource();
     const wrapper = mountPage(source);
 
     expect(wrapper.text()).toContain('ViSAK · Posėdžiai');
     expect(wrapper.find('h1').text()).toBe('Posėdžiai');
-    expect(wrapper.find('[data-slot="collection-title-band"] [aria-hidden="true"]').exists()).toBe(true);
   });
 
   it('renders one row per item through the row slot', () => {
@@ -415,7 +413,7 @@ describe('CollectionPage', () => {
 
     const { source } = makeSource({ hasSearched: ref(false) });
     const wrapper = mount(CollectionPage as never, {
-      props: { source, collection: 'test', entityType: 'meeting', eyebrow: 'e', title: 't', defaultView: 'rows', itemKey: (item: Item) => item.id },
+      props: { source, collection: 'test', eyebrow: 'e', title: 't', defaultView: 'rows', itemKey: (item: Item) => item.id },
       slots: { row: '<template #row="{ item }"><span>{{ item.name }}</span></template>' },
       global: { stubs: { ...commonStubs, Teleport: true } },
       attachTo: scroller,

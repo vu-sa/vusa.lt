@@ -3,16 +3,18 @@
     :row-actions="item => rowActions(item)"
     :source
     collection="problems"
-    entity-type="problem"
-    :eyebrow="$t('shell.workspaces.atstovavimas.title') + ' · ' + $t('Problemos')"
+    :eyebrow="$t('shell.workspaces.atstovavimas.title')"
     :title="$t('Problemos')"
     :lead="$t('Registruok studentų problemas, sek sprendimo eigą ir koordinuok veiksmus su institucijomis.')"
-    default-view="preview"
+    default-view="table"
     :available-views="['preview', 'table', 'rows']"
     :item-key="problemKey"
     :trash="{ count: deletedCount ?? 0, active: isDeleted }"
     @row-action="(item, key) => selectRowAction(key, item)"
     :columns
+    table-fixed
+    actions-width="w-44"
+    table-min-width="min-w-[64rem]"
     :quick-filters
     :search-placeholder="$t('Ieškoti problemų…')"
     @quick-filter="toggleQuickFilter"
@@ -36,8 +38,8 @@
       </Button>
     </template>
 
-    <template #row="{ item, actions: recordActions }">
-      <article class="flex min-h-14 items-center justify-between gap-4 px-3 py-2.5 sm:px-4">
+    <template #row="{ item, actions: recordActions, view }">
+      <CollectionRow :spotlight="item === source?.items.value[0]" :actions="view === 'preview' ? [] : recordActions" @select="key => selectRowAction(key, item)" class="px-3 py-3 sm:px-4">
         <div class="min-w-0 flex-1">
           <div class="flex items-center gap-2">
             <Link
@@ -50,7 +52,7 @@
             </Link>
             <span v-else class="truncate font-medium text-muted-foreground">{{ localizedTitle(item) }}</span>
             <StatusBadge
-              v-if="item.status && problemStatuses[item.status as ProblemStatus]"
+              v-if="view !== 'preview' && item.status && problemStatuses[item.status as ProblemStatus]"
               :status="problemStatuses[item.status as ProblemStatus]"
               class="shrink-0"
             />
@@ -65,8 +67,7 @@
             </template>
           </div>
         </div>
-        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => selectRowAction(key, item)" />
-      </article>
+      </CollectionRow>
     </template>
 
     <template #cell="{ item, column }">
@@ -75,11 +76,11 @@
           v-if="!isDeleted"
           :href="route('problems.show', item.id)"
           data-collection-open
-          class="block truncate font-medium hover:text-brand"
+          class="block whitespace-normal wrap-break-word font-medium hover:text-brand"
         >
           {{ localizedTitle(item) }}
         </Link>
-        <span v-else class="block truncate font-medium text-muted-foreground">{{ localizedTitle(item) }}</span>
+        <span v-else class="block whitespace-normal wrap-break-word font-medium text-muted-foreground">{{ localizedTitle(item) }}</span>
       </div>
 
       <div v-else-if="column.key === 'status'">
@@ -116,12 +117,13 @@
       <span v-else-if="column.key === 'tenant'" class="truncate text-xs">
         {{ item.tenant?.shortname ?? '—' }}
       </span>
+      <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
     </template>
 
     <template #preview="{ item, actions: recordActions }">
       <ProblemPreview :key="item.id" :problem="item" :trashed="isDeleted">
         <template #actions>
-          <CollectionRowActions :actions="recordActions" full-labels class="flex-wrap" @select="key => selectRowAction(key, item)" />
+          <CollectionRowActions :actions="recordActions" emphasis full-labels class="flex-wrap" @select="key => selectRowAction(key, item)" />
         </template>
       </ProblemPreview>
     </template>
@@ -153,13 +155,14 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { ChevronRight, Pencil, Plus, RotateCcw, Trash2 } from '@lucide/vue';
+import { ArrowUpRight, Pencil, Plus, RotateCcw, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import ProblemPreview from '@/Components/Problems/ProblemPreview.vue';
@@ -170,7 +173,7 @@ import { ProblemIcon } from '@/Components/icons';
 import { useDatabaseCollectionSource, type DatabaseFacetDefinition } from '@/Composables/useCollectionSource';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { problemStatuses, type ProblemStatus } from '@/Constants/statuses';
-import { formatDate } from '@/Utils/dateTime';
+import { formatRecordDate, formatDate } from '@/Utils/dateTime';
 
 const props = defineProps<{
   data: ProblemRow[];
@@ -203,8 +206,8 @@ const rowActions = (item: ProblemRow): CollectionRowAction[] => isDeleted.value
       ...(canForceDelete.value ? [{ key: 'forceDelete', label: $t('Ištrinti visam laikui'), icon: Trash2, destructive: true }] : []),
     ]
   : [
-      ...(item.can_update ? [{ key: 'edit', role: 'edit' as const, label: $t('Redaguoti'), icon: Pencil, href: route('problems.edit', item.id) }] : []),
-      { key: 'open', label: $t('Atidaryti'), icon: ChevronRight, role: 'open' as const, href: route('problems.show', item.id) },
+      { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, primary: true, href: route('problems.show', item.id) },
+      ...(item.can_update ? [{ key: 'edit', role: 'edit' as const, menuOnly: true, label: $t('Redaguoti'), icon: Pencil, href: route('problems.edit', item.id) }] : []),
       ...(item.can_delete ? [{ key: `delete:${item.id}:${localizedTitle(item)}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
     ];
 
@@ -250,11 +253,6 @@ const facets = computed<DatabaseFacetDefinition[]>(() => [
     label: $t('Kategorija'),
     values: props.categories.map(cat => ({ value: String(cat.id), label: String(cat.name) })),
   },
-  {
-    field: 'institution',
-    label: $tChoice('entities.institution.model', 2),
-    values: props.institutions.map(inst => ({ value: String(inst.id), label: String(inst.name) })),
-  },
   ...(tenants.value.length > 0
     ? [{
         field: 'tenant.id',
@@ -283,6 +281,10 @@ const source = useDatabaseCollectionSource<ProblemRow>({
     { value: 'status:desc', label: $t('Pagal būseną (Z–A)') },
     { value: 'resolved_at:desc', label: $t('Neseniai išspręstos') },
     { value: 'resolved_at:asc', label: $t('Seniausiai išspręstos') },
+    { value: 'created_at:desc', label: $t('Naujausios pirmiausia') },
+    { value: 'created_at:asc', label: $t('Seniausios pirmiausia') },
+    { value: 'updated_at:desc', label: $t('Paskutiniai atnaujinti') },
+    { value: 'updated_at:asc', label: $t('Seniausios atnaujintos') },
   ],
   preserveUrlKeys: ['showDeleted'],
   facets: facets.value,
@@ -290,12 +292,14 @@ const source = useDatabaseCollectionSource<ProblemRow>({
 
 const columns = computed<CollectionColumn[]>(() => [
   { key: 'title', label: $t('entities.problem.title'), sortField: 'title' },
+  { key: 'tenant', label: $tChoice('entities.tenant.model', 1), class: 'w-24' },
   { key: 'status', label: $t('entities.problem.status'), class: 'w-32', sortField: 'status' },
-  { key: 'occurred_at', label: $t('entities.problem.occurred_at'), class: 'w-32', sortField: 'occurred_at' },
-  { key: 'resolved_at', label: $t('entities.problem.resolved_at'), class: 'w-32', sortField: 'resolved_at' },
+  { key: 'occurred_at', label: $t('entities.problem.occurred_at'), class: 'w-32', defaultHidden: true, sortField: 'occurred_at' },
+  { key: 'resolved_at', label: $t('entities.problem.resolved_at'), class: 'w-32', defaultHidden: true, sortField: 'resolved_at' },
   { key: 'responsible_user', label: $t('entities.problem.responsible_user'), class: 'w-44' },
   { key: 'categories', label: $t('entities.problem.categories'), class: 'w-40' },
-  { key: 'tenant', label: $tChoice('entities.tenant.model', 1), class: 'w-24' },
+  { key: 'created_at', label: $t('Sukurta'), class: 'w-36', defaultHidden: true, sortField: 'created_at' },
+  { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', defaultHidden: true, sortField: 'updated_at' },
 ]);
 
 const asList = (value: unknown): string[] => (Array.isArray(value) ? value.map(String) : value ? [String(value)] : []);

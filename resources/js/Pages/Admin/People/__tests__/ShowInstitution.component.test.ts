@@ -1,9 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
+import { defineComponent, h } from 'vue';
 
 import ShowInstitution from '@/Pages/Admin/People/ShowInstitution.vue';
 import { createMockPage } from '@/tests/helpers/createMockPage';
+import { createActionWindowProvider, type ActionWindowContext } from '@/Composables/useActionWindow';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -230,6 +232,23 @@ describe('ShowInstitution.vue', () => {
     expect(wrapper.findComponent({ name: 'RecordPage' }).props('actionsBesideTitle')).toBe('');
     expect(wrapper.find('[data-testid="overflow-edit"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="overflow-timeline"]').exists()).toBe(true);
+  });
+
+  it('locks the activity request to this institution when opened from its record', async () => {
+    const props = createWrapper({ can: { askAboutActivity: true } }).props();
+    let actionWindow!: ActionWindowContext;
+    const wrapper = mount(defineComponent({
+      setup() {
+        actionWindow = createActionWindowProvider();
+        return () => h(ShowInstitution, props);
+      },
+    }), { global: { stubs } });
+
+    await wrapper.get('[data-testid="overflow-ask-activity"]').trigger('click');
+
+    expect(actionWindow.current.value.id).toBe('activity.campaign');
+    expect(actionWindow.draft.activityRequest.institutions).toEqual([{ id: 'inst1', name: 'Studentų atstovybė' }]);
+    expect(actionWindow.draft.activityRequest.institutionsLocked).toBe(true);
   });
 
   it('shows the primary action when either activity option is available', () => {

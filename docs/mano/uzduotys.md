@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Užduotys
 area: tasks
 models: [Task]
-last_reviewed: 2026-10-28
+last_reviewed: 2026-11-01
 tests:
   - tests/Browser/VisakOverviewPagesTest.php
   - tests/Feature/Admin/Dashboard/UserTasksTest.php
@@ -63,7 +63,7 @@ Jei institucijos kadencijai paskirti sekretoriai, posėdžio ir periodiškumo u�
 jiems. Kitu atveju – atstovams, kurie ėjo pareigas posėdžio dieną.
 
 Institucijai be užregistruotos veiklos periodiškumo užduotis kuriama artėjant pirmojo dabartinio
-gavėjo terminui, skaičiuojamam nuo jo pareigų pradžios dabartinėje kadencijoje. Laiškas siunčiamas
+gavėjo terminui, skaičiuojamam nuo dienos, kai jis pradėjo eiti pareigas. Laiškas siunčiamas
 tik praėjus kiekvieno gavėjo terminui, ne vos sukūrus užduotį, ir ne dažniau kaip kartą per mėnesį
 apie tą pačią instituciją. Atostogų dienos neskaičiuojamos. Kol periodiškumo užduotis atvira, jos
 atsakingieji kasdien atnaujinami pagal dabartinius institucijos atstovus ar sekretorius.
@@ -107,7 +107,7 @@ Atliktos užduotys rikiuojamos nuo vėliausiai atliktos.
 
 Nuoroda į konkrečią užduotį (pvz., iš pranešimo) atidaro ją iš karto, net jei ji nėra pirmame puslapyje.
 
-### Veiksmai su užduotimi
+### Veiksmai su užduotimi {#veiksmai-su-uzduotimi}
 
 | Veiksmas | Kada rodomas |
 |---|---|
@@ -116,8 +116,9 @@ Nuoroda į konkrečią užduotį (pvz., iš pranešimo) atidaro ją iš karto, n
 | **Pažymėti atlikta** / **Grąžinti į neatliktas** | Tik rankinė užduotis |
 | **Ištrinti** | Tik jei turi teisę ją ištrinti |
 
-Eilučių vaizde užduotį atlikta pažymi varnelė eilutės pradžioje, o peržiūros vaizde veiksmai
-rodomi dešinėje. Varnelę ir **Pažymėti atlikta** mato tik tie, kas gali užduotį keisti: kiti ją
+Paspaudus pavadinimą, atveriama užduotis: instrukcijos, terminas ir atsakingi, o būseną rodo ženklo
+spalva. Eilučių vaizde ir lentelėje užduotį atlikta pažymi varnelė, pagrindinis veiksmas – laukiantis žingsnis arba **Atidaryti** – rodomas
+prie užduoties, o telefone jis yra meniu **⋯** viršuje, kartu su kitais veiksmais. Peržiūros vaizde veiksmai rodomi dešinėje, o rodyklėmis ↑ ir ↓ pereinama prie kitos užduoties. Varnelę ir **Pažymėti atlikta** mato tik tie, kas gali užduotį keisti: kiti ją
 mato, bet pažymėti negali.
 
 Jei gali matyti ir padalinio užduotis, sąraše rodomas mygtukas **Visos užduotys**, vedantis į
@@ -143,8 +144,8 @@ institucijai užduoties sukurti negalima.
 | Kada | Kas gauna | Ką |
 |---|---|---|
 | Kai užduotį priskiria žmogus | Atsakingi | Pranešimą „Nauja užduotis“. Automatinės užduotys (posėdžio darbotvarkė, išteklių atsiėmimas ir grąžinimas, patvirtinimai, veiklos klausimai) sukuriamos be šio pranešimo – apie jas praneša tai, kas jas sukūrė (pvz., [naujas posėdis](/pagrindai/pranesimai#auditorija) ar rezervacijos būsena) |
-| Kasdien 8.00, likus 7, 3 ir 1 d. iki termino | Atsakingi | Priminimą. Priminimų pasirinkimas valdomas [pranešimų nustatymuose](/pagrindai/pranesimai). Užduočiai „Pranešti apie veiklą“ jų nesiunčiama – vietoj to vieną kartą siunčiamas laiškas [„Ar vyko posėdis?“](/visak/institucijos#pranesimai) |
-| Kiekvieną pirmadienį 9.00 | Žmonės, turintys vėluojančių užduočių | Suvestinę apie vėluojančias užduotis |
+| Kasdien 8.00, likus 3 d. arba, jei taip pasirinkta, 1 d. iki termino | Atsakingi | Priminimą. Priminimų pasirinkimas valdomas [pranešimų nustatymuose](/pagrindai/pranesimai). Užduočiai „Pranešti apie veiklą“ jų nesiunčiama – vietoj to vieną kartą siunčiamas laiškas [„Ar vyko posėdis?“](/visak/institucijos#pranesimai) |
+| Pirmadieniais 14.30, jei per savaitę atsirado naujų vėluojančių užduočių arba po ankstesnio priminimo praėjo 4 savaitės | Žmonės, turintys vėluojančių užduočių | Priminimą apie vėluojančias užduotis, kuris numatytai įtraukiamas į pranešimų suvestinę |
 
 Automatinių posėdžio ir institucijos užduočių priminimai siunčiami tik tiems atsakingiems, kurie
 vis dar eina pareigas toje institucijoje. Pasibaigus kadencijai užduotis lieka, bet priminimų

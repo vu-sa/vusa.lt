@@ -64,7 +64,7 @@ enum NotificationType: string
     public function urgency(): NotificationUrgency
     {
         return match ($this) {
-            self::TaskReminder, self::TaskOverdue, self::MeetingReminder, self::InstitutionActivity, self::InstitutionActivityNotMine,
+            self::TaskReminder, self::MeetingReminder, self::InstitutionActivity, self::InstitutionActivityNotMine,
             self::ApprovalRequested, self::AssignedToResource, self::CommentMention, self::DutyExpiring,
             self::MemberRegistration, self::StudentRepRegistration,
             self::SupportRequestCreated, self::SupportRequestAssigned,
@@ -108,7 +108,7 @@ enum NotificationType: string
     public function defaultPush(): bool
     {
         return match ($this) {
-            // Not TaskOverdue: a weekly summary is not worth interrupting for, the email carries it.
+            // Overdue summaries do not need a push interruption.
             self::TaskReminder, self::MeetingReminder, self::ApprovalRequested,
             self::CommentMention, self::FollowedInstitutionActivity => true,
             default => false,

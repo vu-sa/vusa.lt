@@ -10,64 +10,56 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-
-/**
- * Maximum number of notification items to show per category in the digest.
- */
-const DIGEST_MAX_ITEMS_PER_CATEGORY = 3;
+use Illuminate\Support\Str;
 
 class NotificationDigest extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
-    /**
-     * Create a new message instance.
-     *
-     * @param  array<string, array<array{title: string, body: string, url: string, icon: string, context?: array<int, array{label: string, value: string}>, primaryAction?: array{label: string, url: string}|null}>>  $groupedItems
-     */
+    private const int MAX_LINES_PER_CATEGORY = 5;
+
+    private const array CATEGORY_ORDER = [
+        NotificationCategory::Task, NotificationCategory::Meeting, NotificationCategory::Reservation,
+        NotificationCategory::Comment, NotificationCategory::Duty, NotificationCategory::Registration,
+        NotificationCategory::User, NotificationCategory::System,
+    ];
+
+    /** @param array<string, array<int, array<string, mixed>>> $groupedItems */
     public function __construct(
         public User $user,
         public array $groupedItems
     ) {}
 
-    /**
-     * Get the message envelope.
-     */
     public function envelope(): Envelope
     {
-        $totalCount = collect($this->groupedItems)->flatten(1)->count();
+        $items = collect($this->groupedItems)->flatten(1);
+        $labels = collect($this->orderedItems())->keys()->map(function (string $value): string {
+            $category = NotificationCategory::tryFrom($value);
 
-        return new Envelope(
-            subject: trans_choice('notifications.digest_subject', $totalCount, ['count' => $totalCount]),
-        );
+            return Str::lower($category ? __($category->labelKey()) : $value);
+        })->implode(', ');
+        $subject = $items->count() === 1
+            ? $items->first()['title']
+            : trans_choice('notifications.digest_subject_categories', $items->count(), [
+                'count' => $items->count(), 'categories' => $labels,
+            ]);
+
+        return new Envelope(subject: Str::limit($subject, 59, '…', preserveWords: true));
     }
 
-    /**
-     * Get the message content definition.
-     */
     public function content(): Content
     {
-        // Transform category keys to translated labels, limit items, and track overflow
         $categorizedItems = [];
         $remainingCounts = [];
         $categoryColors = [];
 
-        foreach ($this->groupedItems as $categoryValue => $items) {
+        foreach ($this->orderedItems() as $categoryValue => $items) {
             $category = NotificationCategory::tryFrom($categoryValue);
             $label = $category ? __($category->labelKey()) : $categoryValue;
             $color = $category ? $category->colorHex() : '#58554f';
 
-            $itemsCollection = collect($items);
-            $totalInCategory = $itemsCollection->count();
-
-            // Limit to max items per category
-            $categorizedItems[$label] = $itemsCollection->take(DIGEST_MAX_ITEMS_PER_CATEGORY)->all();
-
-            // Track how many more items exist beyond the limit
-            $remaining = $totalInCategory - DIGEST_MAX_ITEMS_PER_CATEGORY;
-            $remainingCounts[$label] = $remaining > 0 ? $remaining : 0;
-
-            // Store color for styling
+            $categorizedItems[$label] = $this->sections($items);
+            $remainingCounts[$label] = max(0, count($items) - self::MAX_LINES_PER_CATEGORY);
             $categoryColors[$label] = $color;
         }
 
@@ -83,5 +75,45 @@ class NotificationDigest extends Mailable implements ShouldQueue
                 'settingsUrl' => route('profile.notifications'),
             ],
         );
+    }
+
+    private function orderedItems(): array
+    {
+        $ordered = [];
+        foreach (self::CATEGORY_ORDER as $category) {
+            if (array_key_exists($category->value, $this->groupedItems)) {
+                $ordered[$category->value] = $this->groupedItems[$category->value];
+            }
+        }
+
+        return $ordered + $this->groupedItems;
+    }
+
+    /** @param array<int, array<string, mixed>> $items */
+    private function sections(array $items): array
+    {
+        $groups = [];
+        foreach ($items as $index => $item) {
+            $key = isset($item['type']) && ! array_key_exists('activity_questions', $item)
+                ? 'type:'.$item['type'] : 'item:'.$index;
+            $groups[$key][] = $item;
+        }
+
+        $sections = [];
+        $remaining = self::MAX_LINES_PER_CATEGORY;
+        foreach ($groups as $group) {
+            if ($remaining === 0) {
+                break;
+            }
+            $visible = array_slice($group, 0, $remaining);
+            $sections[] = [
+                'title' => $group[0]['digestGroupTitle'] ?? $group[0]['title'],
+                'count' => count($group),
+                'items' => $visible,
+            ];
+            $remaining -= count($visible);
+        }
+
+        return $sections;
     }
 }

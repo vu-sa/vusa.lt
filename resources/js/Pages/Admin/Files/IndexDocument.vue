@@ -31,7 +31,6 @@
     :row-actions="item => rowActions(item)"
     :source="source!"
     collection="documents"
-    entity-type="document"
     :eyebrow
     :title="$t('Dokumentai')"
     :lead
@@ -40,55 +39,51 @@
     :quick-filters
     @row-action="(item, key) => selectRowAction(key, item)"
     :columns
+    table-fixed
+    actions-width="w-44"
+    table-min-width="min-w-[72rem]"
     :search-placeholder="$t('Ieškoti dokumentų...')"
     @quick-filter="toggleQuickFilter"
   >
-    <template #row="{ item, actions: recordActions }">
-      <article class="flex min-h-14 items-center justify-between gap-4 px-3 py-2.5 sm:px-4" data-slot="document-collection-row">
+    <template #row="{ item, actions: recordActions, view }">
+      <CollectionRow :spotlight="item === source?.items.value[0]" :actions="view === 'preview' ? [] : recordActions" @select="key => selectRowAction(key, item)" class="px-3 py-3 sm:px-4" data-slot="document-collection-row">
         <div class="flex min-w-0 flex-1 items-center gap-3">
           <div class="flex size-10 shrink-0 items-center justify-center border border-border bg-muted text-muted-foreground">
             <DocumentIcon class="size-5" />
           </div>
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
-              <a
-                v-if="item.anonymous_url"
-                :href="item.anonymous_url"
-                target="_blank"
-                rel="noopener noreferrer"
+              <component
+                :is="documentHref(item) ? 'a' : 'span'"
+          :href="documentHref(item)"
+                :data-collection-open="documentHref(item) ? '' : undefined"
                 class="inline-flex items-center gap-1.5 truncate font-medium hover:text-brand"
               >
                 <span class="truncate"><SearchMatch :match="matchTitle(item.title || $t('Be pavadinimo'), item._searchTitleMatches)" :title="item.title || $t('Be pavadinimo')" /></span>
-                <ExternalLink class="size-3 shrink-0 text-muted-foreground" aria-hidden="true" />
-              </a>
-              <span v-else class="truncate font-medium text-foreground">
-                <SearchMatch :match="matchTitle(item.title || $t('Be pavadinimo'), item._searchTitleMatches)" :title="item.title || $t('Be pavadinimo')" />
-              </span>
+              </component>
               <span
-                v-if="item.language"
+                v-if="view !== 'preview' && item.language"
                 class="border border-border bg-muted px-1.5 py-0.5 text-xs text-muted-foreground"
               >
                 {{ item.language === 'Lietuvių' ? 'LT' : item.language === 'Anglų' ? 'EN' : item.language }}
               </span>
             </div>
             <div class="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-              <span v-if="item.content_type" class="border border-border bg-muted/60 px-1 py-0.5">
+              <span v-if="view !== 'preview' && item.content_type" class="border border-border bg-muted/60 px-1 py-0.5">
                 <SearchMatch :match="item._searchFieldMatches?.content_type" :title="item.content_type" />
               </span>
+              <span v-if="view !== 'preview' && item.content_type && institutionName(item)" aria-hidden="true">·</span>
               <span v-if="institutionName(item)">
                 <SearchMatch :match="institutionMatch(item)" :title="institutionName(item)" />
               </span>
+              <span v-if="item.document_date && (institutionName(item) || (view !== 'preview' && item.content_type))" aria-hidden="true">·</span>
               <span v-if="item.document_date" class="tabular-nums">
                 {{ formatDocDate(item.document_date) }}
               </span>
             </div>
           </div>
         </div>
-
-        <div class="flex shrink-0 items-center gap-2">
-          <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => selectRowAction(key, item)" />
-        </div>
-      </article>
+      </CollectionRow>
     </template>
 
     <template #cell="{ item, column }">
@@ -97,19 +92,14 @@
       </span>
 
       <div v-else-if="column.key === 'title'" class="min-w-0">
-        <a
-          v-if="item.anonymous_url"
-          :href="item.anonymous_url"
-          target="_blank"
-          rel="noopener noreferrer"
+        <component
+          :is="documentHref(item) ? 'a' : 'span'"
+          :href="documentHref(item)"
+          :data-collection-open="documentHref(item) ? '' : undefined"
           class="inline-flex items-center gap-1.5 font-medium hover:text-brand"
         >
           <span class="line-clamp-2"><SearchMatch :match="matchTitle(item.title || $t('Be pavadinimo'), item._searchTitleMatches)" :title="item.title || $t('Be pavadinimo')" /></span>
-          <ExternalLink class="size-3 shrink-0 text-muted-foreground" aria-hidden="true" />
-        </a>
-        <span v-else class="line-clamp-2 font-medium">
-          <SearchMatch :match="matchTitle(item.title || $t('Be pavadinimo'), item._searchTitleMatches)" :title="item.title || $t('Be pavadinimo')" />
-        </span>
+        </component>
       </div>
 
       <span v-else-if="column.key === 'content_type'" class="truncate text-xs">
@@ -133,12 +123,13 @@
         </span>
         <span v-else class="text-muted-foreground">—</span>
       </span>
+      <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
     </template>
 
     <template #preview="{ item, actions: recordActions }">
       <DocumentPreview :key="item.id" :document="item">
         <template #actions>
-          <CollectionRowActions :actions="recordActions" full-labels class="flex-wrap" @select="key => selectRowAction(key, item)" />
+          <CollectionRowActions :actions="recordActions" emphasis full-labels @select="key => selectRowAction(key, item)" />
         </template>
       </DocumentPreview>
     </template>
@@ -173,6 +164,8 @@ import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import { highlightText, matchTitle } from '@/Shared/Search/matches';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
+import { quickFilterLabel } from '@/Components/Collection/quickFilterLabel';
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import { DocumentFolderBrowser } from '@/Components/Files';
 import { DocumentIcon } from '@/Components/icons';
@@ -187,7 +180,7 @@ import { useTypesenseCollectionSource } from '@/Composables/useCollectionSource'
 import FilePicker from '@/Features/Admin/SharepointFilePicker/FilePicker.vue';
 import { isPickerAvailable, pickedDocuments, type Item } from '@/Features/Admin/SharepointFilePicker/picker';
 import type { DocumentSearchResult } from '@/Shared/Search/types';
-import { formatDate, formatNearDate } from '@/Utils/dateTime';
+import { formatRecordDate, formatDate, formatNearDate } from '@/Utils/dateTime';
 
 const props = defineProps<{
   importantContentTypes: string[];
@@ -201,7 +194,7 @@ const props = defineProps<{
 const { activeWorkspace } = useAdminNavigation();
 
 // Listed in both ViSAK and Svetainė; the eyebrow names whichever the user came through.
-const eyebrow = computed(() => `${$t(activeWorkspace.value?.label ?? 'shell.workspaces.svetaine.title')} · ${$t('shell.sections.dokumentai')}`);
+const eyebrow = computed(() => $t(activeWorkspace.value?.label ?? 'shell.workspaces.svetaine.title'));
 
 const lead = computed(() => {
   if (!props.discovery) {
@@ -217,15 +210,22 @@ const lead = computed(() => {
 
 const browser = ref<InstanceType<typeof DocumentFolderBrowser> | null>(null);
 
-const rowActions = (item: DocumentSearchResult): CollectionRowAction[] => [
-  { key: 'open', label: $t('Atidaryti'), icon: ExternalLink, role: 'open' as const, external: Boolean(item.anonymous_url), href: item.anonymous_url || route('documents.show', item.id) },
-  ...(rowAbilities.can(item.id, 'update') ? [
-    { key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: route('documents.edit', item.id) },
-    { key: 'refresh', label: $t('Atnaujinti iš SharePoint'), icon: RefreshCw, loading: refreshingId.value === String(item.id) },
-    // Hiding, not deleting: SharePoint is the source, and a deleted record would only be rediscovered.
-    { key: 'hide', label: $t('Slėpti'), icon: EyeOff },
-  ] : []),
-];
+const documentHref = (item: DocumentSearchResult) => rowAbilities.can(item.id, 'update')
+  ? route('documents.edit', item.id)
+  : item.anonymous_url || undefined;
+
+const rowActions = (item: DocumentSearchResult): CollectionRowAction[] => {
+  const canEdit = rowAbilities.can(item.id, 'update');
+
+  return [
+    ...(canEdit ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, primary: true, href: route('documents.edit', item.id) }] : []),
+    ...(item.anonymous_url ? [{ key: 'open', label: $t('Atidaryti'), icon: ExternalLink, role: 'open' as const, primary: !canEdit, menuOnly: canEdit, external: true, href: item.anonymous_url }] : []),
+    ...(canEdit ? [
+      { key: 'refresh', label: $t('Atnaujinti iš SharePoint'), icon: RefreshCw, loading: refreshingId.value === String(item.id) },
+      { key: 'hide', label: $t('Slėpti'), icon: EyeOff },
+    ] : []),
+  ];
+};
 
 function selectRowAction(key: string, item: DocumentSearchResult): void {
   if (key === 'refresh') refreshDocument(item);
@@ -250,6 +250,8 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'content_type', label: $t('Rūšis'), class: 'w-44' },
   { key: 'institution', label: $t('Institucija'), class: 'w-44' },
   { key: 'language', label: $t('Kalba'), class: 'w-20' },
+  { key: 'created_at', label: $t('Sukurta'), class: 'w-36', defaultHidden: true, sortField: 'created_at' },
+  { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', defaultHidden: true, sortField: 'updated_at' },
 ]);
 
 function institutionMatch(item: DocumentSearchResult) {
@@ -275,7 +277,7 @@ const quickFilters = computed<CollectionQuickFilter[]>(() => {
 
   return (props.importantContentTypes || []).map(type => ({
     id: `ct_${type}`,
-    label: type,
+    label: quickFilterLabel(type, source?.facets?.value.find(facet => facet.field === 'content_type_category')?.values.find(value => value.value === type)?.count ?? 0),
     active: chosenCategories.includes(type),
   }));
 });

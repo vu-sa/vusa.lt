@@ -24,6 +24,16 @@ describe('PublicAgendaItemRow', () => {
     expect(wrapper.find('dl').exists()).toBe(false);
   });
 
+  it('shows the student position, but not for a private item or a VU SA body', () => {
+    const render = (item: object, requiresStudentPerspective = true) => mount(PublicAgendaItemRow, {
+      props: { requiresStudentPerspective, item: { id: 'a', order: 1, title: 'Klausimas', student_position: 'Mūsų pozicija', ...item } as unknown as App.Entities.AgendaItem },
+    });
+
+    expect(render({}).get('[data-slot="public-student-position"]').text()).toContain('Mūsų pozicija');
+    expect(render({ is_private: true }).find('[data-slot="public-student-position"]').exists()).toBe(false);
+    expect(render({}, false).find('[data-slot="public-student-position"]').exists()).toBe(false);
+  });
+
   it('lists every vote when none is main, with the combined status', () => {
     const wrapper = mount(PublicAgendaItemRow, {
       props: {

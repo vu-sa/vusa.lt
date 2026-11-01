@@ -1,6 +1,8 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
+import CollectionActiveChips from '../CollectionActiveChips.vue';
+import CollectionFacetOptions from '../CollectionFacetOptions.vue';
 import CollectionControlRow from '../CollectionControlRow.vue';
 import CollectionFilterBar from '../CollectionFilterBar.vue';
 import CollectionPrimaryCell from '../CollectionPrimaryCell.vue';
@@ -10,6 +12,23 @@ import CollectionViewToggle from '../CollectionViewToggle.vue';
 import { commonStubs } from '@/tests/stubs';
 
 describe('collection controls', () => {
+  it('capitalizes category options and selected chips while preserving acronyms and values', async () => {
+    const options = mount(CollectionFacetOptions, {
+      props: { facet: { field: 'category', label: 'kategorija', values: [
+        { value: '42', label: 'įvairios VU problemos', isSelected: false },
+      ] } },
+    });
+    expect(options.text()).toContain('Įvairios VU problemos');
+    await options.get('button').trigger('click');
+    expect(options.emitted('toggle')?.[0]).toEqual(['category', '42']);
+    const chips = mount(CollectionActiveChips, {
+      props: { chips: [{ id: 'category:42', label: 'įvairios VU problemos' }] },
+    });
+    expect(chips.text()).toContain('Įvairios VU problemos');
+    await chips.get('button').trigger('click');
+    expect(chips.emitted('remove')?.[0]).toEqual(['category:42']);
+  });
+
   it('fills the Filtrai button only while the filters show, and lets the count tell set filters', () => {
     const toggleOf = (filtersOpen: boolean, activeFilterCount: number) => mount(CollectionControlRow, {
       props: { query: '', placeholder: 'Ieškoti', hasFilters: true, filtersOpen, activeFilterCount },

@@ -5,12 +5,6 @@
     :title="news.title || $t('Be pavadinimo')"
     :href="trashed ? undefined : editHref"
   >
-    <template #status>
-      <slot name="status">
-        <StatusBadge :status="newsStatus(news)" />
-      </slot>
-    </template>
-
     <template v-if="news.image" #media>
       <div class="size-20 overflow-hidden border border-border bg-muted">
         <img :src="news.image" :alt="news.title" class="size-full object-cover">
@@ -38,9 +32,16 @@
     </p>
 
     <PreviewFacts>
+      <PreviewFact :label="$t('Būsena')">
+        <div data-slot="news-preview-status">
+          <slot name="status">
+            <StatusBadge :status="newsStatus(news)" />
+          </slot>
+        </div>
+      </PreviewFact>
+      <PreviewFact v-if="date ?? publishedAt" :label="publicationLabel" :value="date ?? publishedAt" tabular />
       <PreviewFact :label="$t('Padalinys')" :value="news.tenant_shortname ?? news.tenant_name" />
       <PreviewFact :label="$t('Kalba')" :value="news.lang === 'en' ? 'English' : 'Lietuvių'" />
-      <PreviewFact :label="dateLabel ?? $t('Paskelbta')" :value="date ?? publishedAt" tabular />
     </PreviewFacts>
   </PreviewPane>
 </template>
@@ -55,6 +56,7 @@ import { newsStatus } from './newsStatus';
 
 import { PreviewFact, PreviewFacts, PreviewPane, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
+import { contentStatuses } from '@/Constants/statuses';
 import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import { stripHtml } from '@/Features/Admin/AdminSearch/Utils/html';
 import type { NewsSearchResult } from '@/Shared/Search/types';
@@ -71,6 +73,7 @@ const props = defineProps<{
 }>();
 
 const editHref = computed(() => route('news.edit', props.news.id));
+const publicationLabel = computed(() => props.dateLabel ?? $t(newsStatus(props.news) === contentStatuses.scheduled ? 'Suplanuota' : 'Paskelbta'));
 const summary = computed(() => stripHtml(props.news.short));
 // Search documents store Unix seconds.
 const publishedAt = computed(() => (props.news.publish_time ? formatDate(props.news.publish_time * 1000) : null));

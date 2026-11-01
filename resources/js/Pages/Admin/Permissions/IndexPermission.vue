@@ -2,8 +2,7 @@
   <CollectionPage
     :source
     collection="permissions"
-    entity-type="permission"
-    :eyebrow="`${$t('shell.workspaces.sistema.title')} · ${$t('shell.sections.leidimai')}`"
+    :eyebrow="$t('shell.workspaces.sistema.title')"
     :title="$t('Leidimai')"
     :lead="$t('Leidimo pavadinimas sako, ką jis leidžia: išteklius.veiksmas.apimtis. Leidimus priskiri per roles.')"
     default-view="table"

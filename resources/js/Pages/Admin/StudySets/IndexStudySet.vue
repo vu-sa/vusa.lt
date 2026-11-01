@@ -3,8 +3,7 @@
     :row-actions="item => actionsFor(item)"
     :source
     collection="study-sets"
-    entity-type="studySet"
-    :eyebrow="`${$t('shell.workspaces.svetaine.title')} · ${$t('shell.sections.studiju_rinkiniai')}`"
+    :eyebrow="$t('shell.workspaces.svetaine.title')"
     :title="$t('Studijų komplektai')"
     :lead="isTrash
       ? $t('Ištrinti komplektai. Atkurk tai, ko dar reikia.')
@@ -12,6 +11,9 @@
     default-view="table"
     :item-key="set => String(set.id)"
     :columns
+    table-fixed
+    actions-width="w-44"
+    table-min-width="min-w-[59rem]"
     :trash="{ count: deletedCount, active: isTrash }"
     @row-action="(item, key) => actions.select(key)"
     :search-placeholder="$t('Ieškoti komplektų')"
@@ -26,7 +28,7 @@
     </template>
 
     <template #row="{ item, actions: recordActions }">
-      <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
+      <CollectionRow :actions="recordActions" :spotlight="item === source?.items.value[0]" class="px-3 py-2.5 sm:px-4" @select="key => actions.select(key)">
         <div class="min-w-0 flex-1">
           <div class="flex items-start justify-between gap-3">
             <CollectionPrimaryCell :title="nameOf(item)" :href="isTrash ? undefined : route('studySets.edit', item.id)" :sub="item.tenant?.shortname" />
@@ -36,8 +38,7 @@
             {{ $tChoice(':count dalykas|:count dalykai|:count dalykų', item.courses_count ?? 0, { count: item.courses_count ?? 0 }) }} · #{{ item.order }}
           </p>
         </div>
-        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => actions.select(key)" />
-      </article>
+      </CollectionRow>
     </template>
 
     <template #cell="{ item, column }">
@@ -46,6 +47,7 @@
       <span v-else-if="column.key === 'courses'" class="tabular-nums text-muted-foreground">{{ item.courses_count ?? 0 }}</span>
       <span v-else-if="column.key === 'order'" class="tabular-nums text-muted-foreground">{{ item.order }}</span>
       <StatusBadge v-else-if="column.key === 'status' && !item.is_visible" :status="contentStatuses.draft" />
+      <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
     </template>
   </CollectionPage>
 
@@ -60,7 +62,7 @@ import { computed, toRef } from 'vue';
 
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
-import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import type { CollectionColumn } from '@/Components/Collection/types';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { StatusBadge } from '@/Components/Patterns';
@@ -69,6 +71,7 @@ import { contentStatuses } from '@/Constants/statuses';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { isTrashView, useLocalCollectionSource } from '@/Composables/useCollectionSource';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
+import { formatRecordDate } from '@/Utils/dateTime';
 
 type StudySetRow = App.Entities.StudySet & { courses_count?: number; tenant?: { id: number; shortname: string } | null };
 
@@ -89,6 +92,10 @@ const source = useLocalCollectionSource<StudySetRow>({
   searchText: set => [getTranslatedValue(set.name, 'lt'), getTranslatedValue(set.name, 'en')],
   defaultSort: 'order:asc',
   sortOptions: () => [
+    { value: 'updated_at:desc', label: `${$t('Atnaujinta')} ↓`, by: item => item.updated_at ? new Date(item.updated_at).getTime() : 0 },
+    { value: 'updated_at:asc', label: `${$t('Atnaujinta')} ↑`, by: item => item.updated_at ? new Date(item.updated_at).getTime() : 0 },
+    { value: 'created_at:desc', label: `${$t('Sukurta')} ↓`, by: item => item.created_at ? new Date(item.created_at).getTime() : 0 },
+    { value: 'created_at:asc', label: `${$t('Sukurta')} ↑`, by: item => item.created_at ? new Date(item.created_at).getTime() : 0 },
     { value: 'order:asc', label: $t('Eilės tvarka'), by: set => set.order },
     { value: 'order:desc', label: $t('Eilės tvarka (atvirkščiai)'), by: set => set.order },
     { value: 'name:asc', label: $t('Pagal pavadinimą (A–Z)'), by: nameOf },
@@ -114,5 +121,7 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'courses', label: $t('Dalykai'), class: 'w-28', sortField: 'courses_count' },
   { key: 'order', label: $t('Eilė'), class: 'w-20', sortField: 'order' },
   { key: 'status', label: $t('Būsena'), class: 'w-36' },
+  { key: 'created_at', label: $t('Sukurta'), class: 'w-36', sortField: 'created_at', defaultHidden: true },
+  { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', sortField: 'updated_at', defaultHidden: true },
 ]);
 </script>

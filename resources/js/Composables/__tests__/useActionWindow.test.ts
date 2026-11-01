@@ -39,6 +39,26 @@ const openedOn = (options: OpenOptions) => {
 };
 
 describe('useActionWindow', () => {
+  it('resets the institution lock when reopened with an editable preselection', () => {
+    const institutions = [{ id: 'a', name: 'Senatas' }];
+    const window = openedOn({ flow: 'activity.request', institutions, lockActivityRequestInstitutions: true });
+    expect(window.draft.activityRequest.institutionsLocked).toBe(true);
+    expect(window.skippedScreens.value).toEqual(['activity.mode', 'activity.institutions', 'activity.people']);
+
+    window.open({ flow: 'activity.request', institutions });
+
+    expect(window.draft.activityRequest.institutionsLocked).toBe(false);
+    expect(window.skippedScreens.value).toEqual([]);
+    expect(window.draft.activityRequest.institutions).toEqual(institutions);
+  });
+
+  it('keeps selection available when a caller requests a lock without institutions', () => {
+    const window = openedOn({ flow: 'activity.request', institutions: [], lockActivityRequestInstitutions: true });
+
+    expect(window.draft.activityRequest.institutionsLocked).toBe(false);
+    expect(window.skippedScreens.value).toEqual([]);
+  });
+
   it('preserves independent request filters through navigation and resets them on another opening', () => {
     const filters = { tenantIds: ['1', '2'], governanceScope: InstitutionScope.University };
     const window = openedOn({ flow: 'activity.request', activityRequestFilters: filters });

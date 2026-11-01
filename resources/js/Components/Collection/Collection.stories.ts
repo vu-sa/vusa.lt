@@ -58,7 +58,7 @@ export const TitleBand: Story = {
     components: { CollectionTitleBand },
     template: `
       <div class="max-w-5xl bg-background p-6 text-foreground">
-        <CollectionTitleBand eyebrow="ViSAK · Posėdžiai" title="Posėdžiai" entity-type="meeting"
+        <CollectionTitleBand eyebrow="ViSAK" title="Posėdžiai"
           lead="Fiksuok posėdžius, jų darbotvarkę ir balsavimus vienoje vietoje." />
       </div>`,
   }),

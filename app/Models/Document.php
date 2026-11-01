@@ -166,6 +166,7 @@ class Document extends Model
             'checked_at' => $this->checked_at ? $this->checked_at->timestamp : null,
             'is_in_effect' => $this->calculateIsInEffect(),
             'created_at' => $this->created_at->timestamp,
+            'updated_at' => $this->updated_at->timestamp,
             // Enhanced faceting fields
             'content_type_category' => $this->getContentTypeCategory(),
             'language_code' => $this->language_code,

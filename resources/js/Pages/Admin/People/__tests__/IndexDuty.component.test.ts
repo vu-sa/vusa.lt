@@ -121,10 +121,42 @@ describe('IndexDuty', () => {
 
     const keys = wrapper.findAllComponents({ name: 'CollectionRowActions' }).map(actions => actions.props('actions').map((action: { key: string }) => action.key));
     expect(keys).toEqual([['open', 'edit'], ['open']]);
+    const actions = wrapper.findAllComponents({ name: 'CollectionRowActions' })[0].props('actions');
+    expect(actions.find(action => action.key === 'open')).toMatchObject({ primary: true });
+    expect(actions.find(action => action.key === 'edit')).toMatchObject({ menuOnly: true });
     const rows = wrapper.findAll('[data-slot="collection-row-actions"]');
-    expect(rows[0].get('[data-action="edit"]').attributes('href')).toBe(route('duties.edit', 'editable'));
-    expect(rows[0].get('[data-action="edit"]').text()).toBe('Redaguoti');
+    expect(actions.find(action => action.key === 'edit').href).toBe(route('duties.edit', 'editable'));
     expect(rows[1].find('[data-action="edit"]').exists()).toBe(false);
+    wrapper.unmount();
+  });
+
+  it('marks inactive duties, filters their status, and edits status only in the preview', () => {
+    const item = { ...duty('d1', 'Koordinatorius'), is_active: false, can_update: true };
+    const wrapper = mount(IndexDuty, {
+      props: { duties: { data: [item], meta: { total: 1, per_page: 20, current_page: 1, last_page: 1 } }, dutyTypes: [] },
+      global: { stubs: { ...commonStubs, MergeRecordsDialog, ConfirmDialog: true, CollectionActivityStatus: true, CollectionPage: {
+        name: 'CollectionPage',
+        props: ['source', 'rowActions', 'columns', 'rowMuted'],
+        template: `<div>
+          <div data-testid="row"><slot name="row" :item="source.items.value[0]" :actions="rowActions(source.items.value[0])" view="preview" /></div>
+          <div data-testid="cells"><slot v-for="column in columns" name="cell" :item="source.items.value[0]" :column="column" /></div>
+          <div data-testid="preview"><slot name="preview" :item="source.items.value[0]" :actions="rowActions(source.items.value[0])" /></div>
+        </div>`,
+      } } },
+    });
+    const page = wrapper.findComponent({ name: 'CollectionPage' });
+    expect(page.props('rowMuted')(item)).toBe(true);
+    expect(page.props('columns').map(column => column.key)).not.toContain('status');
+    expect(state.sourceOptions.facets).toEqual(expect.arrayContaining([
+      expect.objectContaining({ field: 'is_active', label: 'Būsena', values: [
+        expect.objectContaining({ value: '1' }), expect.objectContaining({ value: '0' }),
+      ] }),
+    ]));
+    expect(wrapper.get('[data-testid="row"]').find('[data-slot="duty-inactive-mark"]').exists()).toBe(true);
+    expect(wrapper.get('[data-testid="row"]').find('[data-slot="collection-row-actions"]').exists()).toBe(false);
+    expect(wrapper.get('[data-testid="row"]').find('collection-activity-status-stub').exists()).toBe(false);
+    expect(wrapper.get('[data-testid="cells"]').find('collection-activity-status-stub').exists()).toBe(false);
+    expect(wrapper.get('[data-testid="preview"]').find('collection-activity-status-stub').exists()).toBe(true);
     wrapper.unmount();
   });
 

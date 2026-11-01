@@ -99,14 +99,19 @@
         @update:email="value => form.types[type.value].email = value"
         @update:push="value => form.types[type.value].push = value"
       >
-        <ReminderChips
+        <FormFieldWrapper
           v-if="type.value === 'task_reminder'"
+          id="task-reminder-days"
           :label="$t('notifications.preferences.task_reminder_days')"
-          :options="[7, 3, 1]"
-          :unit="$t('d.')"
-          :model-value="form.reminder_settings.task_reminder_days"
-          @update:model-value="value => form.reminder_settings.task_reminder_days = value"
-        />
+        >
+          <FormSegmentedControl
+            :model-value="form.reminder_settings.task_reminder_days[0]"
+            :options="taskReminderOptions"
+            :aria-label="$t('notifications.preferences.task_reminder_days')"
+            test-id-prefix="task-reminder"
+            @update:model-value="value => form.reminder_settings.task_reminder_days = [value]"
+          />
+        </FormFieldWrapper>
         <ReminderChips
           v-else-if="type.value === 'meeting_reminder'"
           :label="$t('notifications.preferences.meeting_reminder_hours')"
@@ -169,9 +174,27 @@
           <FormSegmentedControl
             v-model="form.digest_frequency_hours"
             :options="digestFrequencyOptions"
+            class="h-auto pointer-coarse:h-auto [&>button]:min-h-11 [&>button]:py-2"
             :aria-label="$t('notifications.preferences.digest_label')"
             test-id-prefix="digest-frequency"
           />
+        </FormFieldWrapper>
+
+        <FormFieldWrapper
+          v-if="form.digest_frequency_hours === 24"
+          id="digest-send-hour"
+          :label="$t('notifications.preferences.digest_send_hour')"
+        >
+          <Select v-model="form.digest_send_hour">
+            <SelectTrigger id="digest-send-hour" class="w-full pointer-coarse:min-h-11" data-testid="digest-send-hour">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="hour in digestSendHourOptions" :key="hour" :value="hour">
+                {{ String(hour).padStart(2, '0') }}:00
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </FormFieldWrapper>
 
         <div class="flex flex-col gap-1.5 border-t border-border pt-4">
@@ -203,6 +226,7 @@ import { ConfirmDialog, FormPanel, FormSegmentedControl, type FormSegmentOption 
 import { Button } from '@/Components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
 import { controlVariants } from '@/Components/ui/control';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -231,6 +255,7 @@ const props = defineProps<{
   notificationTypes: NotificationTypeOption[];
   notificationPreferences: {
     digest_frequency_hours: number;
+    digest_send_hour: number;
     emails: string[];
     muted_until: string | null;
     reminder_settings: {
@@ -256,6 +281,7 @@ const form = useForm({
     props.notificationTypes.map(type => [type.value, { email: type.email, push: type.push }]),
   ) as Record<string, { email: EmailDeliveryValue; push: boolean }>,
   digest_frequency_hours: props.notificationPreferences.digest_frequency_hours,
+  digest_send_hour: props.notificationPreferences.digest_send_hour,
   emails: [...props.notificationPreferences.emails],
   reminder_settings: {
     task_reminder_days: [...props.notificationPreferences.reminder_settings.task_reminder_days],
@@ -290,10 +316,17 @@ const setSectionPush = (types: NotificationTypeOption[], push: boolean) => {
   }
 };
 
-const digestFrequencyOptions: FormSegmentOption<number>[] = [1, 4, 12, 24].map(hours => ({
-  value: hours,
-  label: `${hours} ${$t('val.')}`,
-}));
+const taskReminderOptions = computed<FormSegmentOption<number>[]>(() => [3, 1].map(days => ({
+  value: days,
+  label: `${days} ${$t('d.')}`,
+})));
+
+const digestFrequencyOptions = computed<FormSegmentOption<number>[]>(() => [
+  { value: 24, label: $t('notifications.preferences.digest_daily') },
+  { value: 4, label: $t('notifications.preferences.digest_every_four_hours') },
+]);
+
+const digestSendHourOptions = Array.from({ length: 15 }, (_, index) => index + 7);
 
 const muteDurationOptions: FormSegmentOption<number>[] = [
   { value: 1, label: `1 ${$t('val.')}` },

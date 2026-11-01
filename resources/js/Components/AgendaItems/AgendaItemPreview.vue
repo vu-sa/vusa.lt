@@ -1,7 +1,7 @@
 <template>
   <PreviewPane
     entity-type="agenda_item"
-    :eyebrow="$t('Darbotvarkės punktas')"
+    :eyebrow="$t('Darbotvarkės klausimas')"
     :title="item.title || $t('Be pavadinimo')"
     :href="showHref"
     :subtitle="item.meeting_title"
@@ -17,7 +17,7 @@
       <slot name="actions">
         <Button as-child variant="brand" size="sm">
           <Link :href="showHref">
-            {{ $t('Atidaryti punktą') }}
+            {{ $t('Atidaryti klausimą') }}
           </Link>
         </Button>
       </slot>
@@ -29,6 +29,9 @@
     </template>
 
     <PreviewFacts>
+      <PreviewFact :label="$t('Tipas')">
+        <AgendaItemTypeMark :type="item.type" />
+      </PreviewFact>
       <PreviewFact v-if="institutionName" :label="$t('Institucija')">
         <Link v-if="item.institution_ids?.length" :href="route('institutions.show', item.institution_ids[0])" class="hover:text-brand">
           {{ institutionName }}
@@ -59,6 +62,8 @@
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
+
+import AgendaItemTypeMark from './AgendaItemTypeMark.vue';
 
 import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import { PreviewFact, PreviewFacts, PreviewPane, PreviewSection, StatusBadge } from '@/Components/Patterns';

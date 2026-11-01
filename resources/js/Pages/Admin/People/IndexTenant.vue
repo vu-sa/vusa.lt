@@ -3,13 +3,15 @@
     :row-actions="item => rowActions(item)"
     :source
     collection="tenants"
-    entity-type="tenant"
-    :eyebrow="`${$t('shell.workspaces.organizacija.title')} · ${$t('shell.sections.padaliniai')}`"
+    :eyebrow="$t('shell.workspaces.organizacija.title')"
     :title="$t('Padaliniai')"
     :lead="$t('VU SA padaliniai: kiekvienas turi savo svetainės dalį, narius ir pareigybes.')"
     default-view="table"
     :item-key="tenant => String(tenant.id)"
     :columns
+    table-fixed
+    actions-width="w-44"
+    table-min-width="min-w-[65rem]"
     :search-placeholder="$t('Ieškoti padalinių')"
     @row-action="(item, key) => selectRowAction(key, item)"
   >
@@ -21,7 +23,7 @@
     </template>
 
     <template #row="{ item, actions: recordActions }">
-      <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
+      <CollectionRow :actions="recordActions" :spotlight="item === source.items.value[0]" class="px-3 py-2.5 sm:px-4" @select="key => selectRowAction(key, item)">
         <div class="min-w-0 flex-1">
           <CollectionPrimaryCell :title="item.fullname" :clickable="item.can.update" :sub="item.alias" mono @open="openSheet(item)" />
           <p class="mt-2 text-xs text-muted-foreground">
@@ -32,8 +34,7 @@
             <InactiveInstitutionBadge :active="item.primary_institution?.is_active" />
           </p>
         </div>
-        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => selectRowAction(key, item)" />
-      </article>
+      </CollectionRow>
     </template>
 
     <template #cell="{ item, column }">
@@ -51,6 +52,7 @@
         {{ item.primary_institution?.name ?? $t('forms.tenants.not_assigned') }}
         <InactiveInstitutionBadge :active="item.primary_institution?.is_active" />
       </span>
+      <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
     </template>
   </CollectionPage>
 
@@ -77,8 +79,10 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Pencil, Plus, Trash2 } from '@lucide/vue';
 import { computed, ref, toRef } from 'vue';
 
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
+import { formatRecordDate } from '@/Utils/dateTime';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
-import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
+import type { CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import type { CollectionColumn } from '@/Components/Collection/types';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
@@ -101,7 +105,7 @@ const props = defineProps<{
 
 const canCreate = computed(() => Boolean(usePage().props.auth?.can?.create?.tenant));
 const rowActions = (item: TenantRow): CollectionRowAction[] => [
-  ...(item.can.update ? [{ key: 'edit', role: 'edit' as const, label: $t('Redaguoti'), icon: Pencil }] : []),
+  ...(item.can.update ? [{ key: 'edit', role: 'edit' as const, primary: true, label: $t('Redaguoti'), icon: Pencil }] : []),
   ...(item.can.delete ? [{ key: 'delete', label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
 ];
 
@@ -125,6 +129,10 @@ const source = useLocalCollectionSource<TenantRow>({
     { value: 'shortname:desc', label: $t('Pagal trumpinį (Z–A)'), by: tenant => tenant.shortname },
     { value: 'type:asc', label: $t('Pagal tipą (A–Z)'), by: tenant => tenant.type ?? '' },
     { value: 'type:desc', label: $t('Pagal tipą (Z–A)'), by: tenant => tenant.type ?? '' },
+    { value: 'created_at:asc', label: `${$t('Sukurta')} · ↑`, by: tenant => tenant.created_at ? new Date(tenant.created_at).getTime() : 0 },
+    { value: 'created_at:desc', label: `${$t('Sukurta')} · ↓`, by: tenant => tenant.created_at ? new Date(tenant.created_at).getTime() : 0 },
+    { value: 'updated_at:asc', label: `${$t('Atnaujinta')} · ↑`, by: tenant => tenant.updated_at ? new Date(tenant.updated_at).getTime() : 0 },
+    { value: 'updated_at:desc', label: `${$t('Atnaujinta')} · ↓`, by: tenant => tenant.updated_at ? new Date(tenant.updated_at).getTime() : 0 },
   ],
   facets: [{ field: 'type', label: $t('Tipas'), get: tenant => tenant.type }],
 });
@@ -133,7 +141,9 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'fullname', label: $t('Padalinys'), sortField: 'fullname' },
   { key: 'shortname', label: $t('Trumpinys'), class: 'w-40', sortField: 'shortname' },
   { key: 'type', label: $t('Tipas'), class: 'w-40', sortField: 'type' },
-  { key: 'primary_institution', label: $t('forms.tenants.primary_institution') },
+  { key: 'primary_institution', label: $t('forms.tenants.primary_institution'), class: 'w-64' },
+  { key: 'created_at', label: $t('Sukurta'), class: 'w-36', sortField: 'created_at', defaultHidden: true },
+  { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', sortField: 'updated_at', defaultHidden: true },
 ]);
 
 function openSheet(item: TenantRow | null = null): void {

@@ -45,6 +45,7 @@ class SerializeReservationsForTable
                 'start_time' => $reservation->start_time,
                 'end_time' => $reservation->end_time,
                 'created_at' => $reservation->created_at,
+                'updated_at' => $reservation->updated_at,
                 'users' => $reservation->users
                     ->map(fn (User $manager): array => [
                         'id' => $manager->id,

@@ -342,7 +342,6 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
     meta: formatSearchDate(d.document_date),
     href: d.anonymous_url,
     viewHref: route('documents.show', d.id),
-    contextBadge: d.content_type,
   }),
   news: (n: NewsSearchResult) => ({
     recordId: String(n.id),

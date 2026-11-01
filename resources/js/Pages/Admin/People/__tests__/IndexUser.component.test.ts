@@ -87,6 +87,7 @@ it.each([true, false])('uses the full user update policy, independently of ident
   const wrapper = render();
   const actions = wrapper.findComponent(CollectionPage).props('rowActions')({ id: 'u1', name: 'Narys', can_update_identity: !allowed });
   expect(actions.some(action => action.role === 'edit')).toBe(allowed);
-  expect(actions.some(action => action.role === 'open')).toBe(true);
+  expect(actions.find(action => action.role === 'open')).toMatchObject({ primary: true, href: route('users.show', 'u1') });
+  if (allowed) expect(actions.find(action => action.role === 'edit')).toMatchObject({ menuOnly: true });
   wrapper.unmount();
 });

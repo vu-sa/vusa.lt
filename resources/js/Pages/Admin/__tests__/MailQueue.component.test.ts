@@ -7,8 +7,13 @@ import MailQueue from '../MailQueue.vue';
 
 import { commonStubs } from '@/tests/stubs';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import CollectionTitleBand from '@/Components/Collection/CollectionTitleBand.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
+vi.mock('@/Composables/useFeatureSpotlight', async () => {
+  const { ref } = await import('vue');
+  return { useFeatureSpotlight: () => ({ isDismissed: ref(true), dismiss: vi.fn() }) };
+});
 vi.mock('@/Composables/useCollectionSource', () => ({
   useDatabaseCollectionSource: () => ({ refresh: vi.fn() }),
 }));
@@ -23,9 +28,13 @@ const recipient = {
 };
 
 const CollectionPageStub = defineComponent({
-  props: ['rowActions'],
+  props: ['rowActions', 'eyebrow', 'title', 'lead'],
   setup(props, { slots }) {
-    return () => h('div', [slots.actions?.(), slots.row?.({ item: recipient, actions: props.rowActions(recipient), index: 0 })]);
+    return () => h('div', [
+      h(CollectionTitleBand, { eyebrow: props.eyebrow, title: props.title, lead: props.lead }),
+      slots.actions?.(),
+      slots.row?.({ item: recipient, actions: props.rowActions(recipient), index: 0 }),
+    ]);
   },
 });
 
@@ -41,13 +50,20 @@ function factory(canManage = true) {
       recipients: { data: [recipient], current_page: 1, last_page: 1, total: 1, per_page: 50 },
       totals: { items: 1, recipients: 1 },
     },
-    global: { stubs: { ...commonStubs, CollectionPage: CollectionPageStub, ConfirmDialog: ConfirmDialogStub } },
+    global: { stubs: { ...commonStubs, SpotlightPopover: { template: '<div><slot /></div>' }, CollectionPage: CollectionPageStub, ConfirmDialog: ConfirmDialogStub } },
   });
 }
 
 beforeEach(() => vi.clearAllMocks());
 
 describe('MailQueue', () => {
+  it('renders the collection title', () => {
+    const wrapper = factory();
+    const titleBand = wrapper.get('[data-slot="collection-title-band"]');
+
+    expect(titleBand.get('h1').text()).toBe('Laiškų eilė');
+  });
+
   it('requires confirmation before discarding one notification', async () => {
     const wrapper = factory();
     await wrapper.find('button[aria-label="Pašalinti eilutę"]').trigger('click');
@@ -76,6 +92,16 @@ describe('MailQueue', () => {
     expect(router.delete).not.toHaveBeenCalled();
     await wrapper.get('[data-testid="confirm-discard"]').trigger('click');
     expect(router.delete).toHaveBeenCalledWith(route('mailQueue.destroyForUser', recipient.user_id), expect.any(Object));
+  });
+
+  it('offers the real digest preview in a new tab for read-only viewers', () => {
+    const wrapper = factory(false);
+    const link = wrapper.get('a[data-collection-open]');
+
+    expect(link.attributes('href')).toContain('mailQueue.previewForUser');
+    expect(link.attributes('target')).toBe('_blank');
+    expect(link.text()).toBe(recipient.user.name);
+    expect(router.delete).not.toHaveBeenCalled();
   });
 
   it('hides destructive actions from read-only viewers', () => {

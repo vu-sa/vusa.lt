@@ -267,7 +267,6 @@ import SmartLink from '@/Components/Public/SmartLink.vue';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import { RuledGrid, type RuledGridColumns } from '@/Components/Brand';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
-import { getMeetingStatusSummary } from '@/Composables/useAgendaItemStyling';
 import IFluentChevronDown16Regular from '~icons/fluent/chevron-down-16-regular';
 import IFluentGlobe24Regular from '~icons/fluent/globe-24-regular';
 import IFluentInfo16Regular from '~icons/fluent/info-16-regular';
@@ -491,11 +490,8 @@ const detailColumns = computed<RuledGridColumns>(() => {
 
 const hasAnyContacts = computed(() => props.contacts.length > 0);
 
-// Calculate vote alignment for meetings using composable
-const getVoteAlignment = (meeting: App.Entities.Meeting): 'aligned' | 'mixed' | 'misaligned' | 'no_data' => {
-  const summary = getMeetingStatusSummary(meeting.agenda_items || [], meeting.requires_student_perspective ?? true);
-
-  switch (summary.voteAlignmentStatus) {
+const getVoteAlignment = (meeting: App.Entities.Meeting & { outcome_summary?: { vote_alignment_status: string } }): 'aligned' | 'mixed' | 'misaligned' | 'no_data' => {
+  switch (meeting.outcome_summary?.vote_alignment_status) {
     case 'all_match':
       return 'aligned';
     case 'all_mismatch':

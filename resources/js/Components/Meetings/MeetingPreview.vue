@@ -4,12 +4,18 @@
     :eyebrow="$t('Posėdis')"
     :title="meeting.title || $t('Be pavadinimo')"
     :href="showHref"
-    :subtitle="institutionName"
   >
-    <template #badges>
-      <InactiveInstitutionBadge v-if="meeting.inactive_institution_ids?.length" :active="false" />
-      <StatusBadge v-if="completionStatus" :status="completionStatus" />
-      <StatusBadge v-if="alignmentStatus" :status="alignmentStatus" />
+    <template v-if="completionStatus" #mark>
+      <StatusMark :icon="MeetingIcon" :status="completionStatus" />
+    </template>
+
+    <template #subtitle>
+      <Link v-if="meeting.institution_ids?.length" :href="route('institutions.show', meeting.institution_ids[0])" class="underline-offset-4 hover:text-brand hover:underline">
+        {{ institutionName }}
+      </Link>
+      <template v-else>
+        {{ institutionName }}
+      </template>
     </template>
 
     <template #actions>
@@ -20,40 +26,33 @@
           </Link>
         </Button>
       </slot>
-      <Button v-if="meeting.institution_ids?.length" as-child variant="outline" size="sm" voice="sentence">
-        <Link :href="route('institutions.show', meeting.institution_ids[0])">
-          {{ $t('Atidaryti instituciją') }}
-        </Link>
-      </Button>
     </template>
 
-    <PreviewFacts>
-      <PreviewFact :label="$t('Institucija')">
-        <Link v-if="meeting.institution_ids?.length" :href="route('institutions.show', meeting.institution_ids[0])" class="hover:text-brand">
-          {{ institutionName || '—' }}
-        </Link>
-        <template v-else>
-          {{ institutionName || '—' }}
-        </template>
-      </PreviewFact>
-      <PreviewFact v-if="meeting.tenant_shortname" :label="$t('Padalinys')" :value="meeting.tenant_shortname" />
-      <PreviewFact :label="$t('Data')" :value="startsAt" tabular />
-      <PreviewFact :label="$t('Punktai')" :value="agendaCount" tabular />
-    </PreviewFacts>
+    <ContextFacts class="gap-x-6 gap-y-2 border-t-0 pt-0 text-sm">
+      <ContextFact v-if="outcome.completion_status" :label="$t('Būsena')">
+        <MeetingOutcome :outcome show="completion" show-complete />
+      </ContextFact>
+      <ContextFact v-if="hasVoteComparison" :label="$t('Balsavimas')">
+        <MeetingOutcome :outcome show="votes" />
+      </ContextFact>
+      <ContextFact :label="titleOmitsDate(meeting.title) ? $t('Data') : $t('Laikas')" :value="titleOmitsDate(meeting.title) ? startsAt : startsAtTime" />
+      <ContextFact v-if="meeting.tenant_shortname" :label="$t('Padalinys')" :value="meeting.tenant_shortname" />
+      <ContextFact v-if="meeting.inactive_institution_ids?.length" :label="$t('Institucija')" :value="$t(inactiveInstitutionStatus.label)" />
+    </ContextFacts>
 
     <PreviewSection
       v-if="isLoading || data?.representatives?.length"
       :title="$t('Atstovai')"
       :loading="isLoading"
     >
-      <UsersAvatarGroup :users="data?.representatives ?? []" :max="10" :size="32" clickable />
+      <RepresentativesList :users="data?.representatives ?? []" />
     </PreviewSection>
 
     <PreviewSection
       :title="$t('Darbotvarkė')"
       :loading="isLoading"
       :empty="!data?.agenda_items?.length"
-      :empty-message="$t('Nėra darbotvarkės punktų')"
+      :empty-message="$t('Nėra darbotvarkės klausimų')"
     >
       <ol class="divide-y divide-border border-y border-border">
         <li v-for="(item, index) in data?.agenda_items" :key="item.id">
@@ -63,7 +62,13 @@
           >
             <span class="mt-0.5 text-xs tabular-nums text-muted-foreground">{{ index + 1 }}</span>
             <span class="min-w-0 flex-1 break-words text-sm">{{ item.title }}</span>
-            <StatusBadge v-if="statusFor(voteStatuses, item.decision)" :status="statusFor(voteStatuses, item.decision)!" class="mt-0.5 shrink-0" />
+            <span
+              v-if="agendaResult(item)"
+              :class="['mt-0.5 shrink-0 text-xs font-medium', agendaResult(item)!.tone]"
+              data-slot="agenda-decision"
+            >
+              {{ agendaResult(item)!.label }}
+            </span>
           </Link>
         </li>
       </ol>
@@ -74,22 +79,24 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Vote } from '@lucide/vue';
 import { computed } from 'vue';
 
+import { titleOmitsDate } from './meetingTitle';
+import MeetingOutcome from './MeetingOutcome.vue';
+
 import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
-import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
-import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
-import { PreviewFact, PreviewFacts, PreviewPane, PreviewSection, StatusBadge } from '@/Components/Patterns';
+import RepresentativesList from '@/Components/Avatars/RepresentativesList.vue';
+import { MeetingIcon } from '@/Components/icons';
+import { ContextFact, ContextFacts, PreviewPane, PreviewSection, StatusMark } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { usePreviewApi } from '@/Composables/usePreviewApi';
-import { meetingCompletionStatuses, statusFor, voteStatuses, type StatusPresentation } from '@/Constants/statuses';
-import { getFacetValueLabel } from '@/Features/Admin/AdminSearch/Config/collectionFacetConfig';
+import { inactiveInstitutionStatus, meetingCompletionStatuses, statusFor, statusRoleParts, voteStatuses } from '@/Constants/statuses';
 import type { MeetingSearchResult } from '@/Shared/Search/types';
-import { formatDateTime } from '@/Utils/dateTime';
+import { formatDateTime, formatTime } from '@/Utils/dateTime';
 
 interface MeetingPreviewData {
-  agenda_items: Array<{ id: string; title: string; decision: string | null }>;
+  outcome?: Partial<MeetingSearchResult>;
+  agenda_items: Array<{ id: string; title: string; decision: string | null; type?: string | null }>;
   representatives: Array<{ id: string; name: string; profile_photo_path: string | null }>;
 }
 
@@ -101,16 +108,25 @@ const { data, isLoading } = usePreviewApi<MeetingPreviewData>(route('api.v1.admi
 
 const showHref = computed(() => route('meetings.show', props.meeting.id));
 const institutionName = computed(() => getSearchTranslation(props.meeting, 'institution_name'));
-const completionStatus = computed(() => statusFor(meetingCompletionStatuses, props.meeting.completion_status));
+// The API answers for this viewer, private items included; the search document never has them.
+const outcome = computed<Partial<MeetingSearchResult>>(() => data.value?.outcome ?? props.meeting);
+const hasVoteComparison = computed(() => (outcome.value.outcome_aligned ?? 0) + (outcome.value.outcome_misaligned ?? 0) > 0);
+const completionStatus = computed(() => statusFor(meetingCompletionStatuses, outcome.value.completion_status));
 
-// No status map exists for vote alignment yet, so it is named neutrally rather than given an invented colour.
-const alignmentStatus = computed<StatusPresentation | null>(() => {
-  const value = props.meeting.vote_alignment_status;
+const NON_VOTING_LABELS: Record<string, string> = { informational: 'Aptarimas', deferred: 'Atidėtas', break: 'Pertrauka', withdrawn: 'Išbrauktas' };
 
-  return value ? { label: getFacetValueLabel('vote_alignment_status', value), role: 'neutral', icon: Vote } : null;
-});
+/** What became of an item: its vote, or the kind of item it was when there was none. */
+function agendaResult(item: MeetingPreviewData['agenda_items'][number]): { label: string; tone: string } | null {
+  const vote = statusFor(voteStatuses, item.decision);
+
+  if (vote) {
+    return { label: $t(vote.label), tone: statusRoleParts[vote.role].text };
+  }
+
+  return item.type && NON_VOTING_LABELS[item.type] ? { label: $t(NON_VOTING_LABELS[item.type]!), tone: 'text-muted-foreground' } : null;
+}
 
 // Search documents store Unix seconds.
+const startsAtTime = computed(() => (props.meeting.start_time ? formatTime(new Date(props.meeting.start_time * 1000)) : null));
 const startsAt = computed(() => (props.meeting.start_time ? formatDateTime(props.meeting.start_time * 1000) : null));
-const agendaCount = computed(() => data.value?.agenda_items.length ?? props.meeting.agenda_items_count ?? null);
 </script>

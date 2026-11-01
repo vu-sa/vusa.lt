@@ -130,13 +130,13 @@ test('date boundaries hand work to the next holder after the inclusive last day'
 });
 
 test('reminders reconcile a handover before choosing recipients', function (): void {
-    reservationReviewTask($this->item)->update(['due_date' => today()->addDay()]);
+    reservationReviewTask($this->item)->update(['due_date' => today()->addDays(3)]);
     $this->handler->dutiables()->firstWhere('duty_id', $this->duty->id)->update(['end_date' => today()->subDay()]);
     $replacement = User::factory()->create();
     $replacement->duties()->attach($this->duty, ['start_date' => today()]);
     Notification::fake();
 
-    TaskNotifier::notifyDaysLeft(1);
+    TaskNotifier::notifyDaysLeft(3);
 
     Notification::assertSentTo($replacement, TaskReminderNotification::class);
     Notification::assertNotSentTo($this->handler, TaskReminderNotification::class);

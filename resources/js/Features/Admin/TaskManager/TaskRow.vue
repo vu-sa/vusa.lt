@@ -1,11 +1,16 @@
 <template>
-  <article
-    :class="['flex min-h-14 items-center gap-3 px-3 py-2.5 sm:px-4', task.completed_at && 'opacity-60']"
+  <CollectionRow
+    :actions="hideActions ? [] : (actions ?? getTaskRowActions(task))"
+    :spotlight
+    :class="['px-3 py-2.5 sm:px-4', task.completed_at && 'opacity-60']"
     data-slot="task-row"
+    @select="key => emit('action', key as TaskActionKey)"
   >
-    <TaskCompletionControl :task :loading @toggle="emit('action', 'complete')" />
+    <template #lead>
+      <TaskCompletionControl :task :loading @toggle="emit('action', 'complete')" />
+    </template>
 
-    <CollectionPrimaryCell class="min-w-0 flex-1" :title-lines="2" clickable @open="emit('open')">
+    <CollectionPrimaryCell :title-lines="2" clickable @open="emit('open')">
       <span :class="task.completed_at && 'line-through'">{{ task.name }}</span>
       <template #sub>
         {{ subject }}<template v-if="task.cancelled_at">
@@ -15,9 +20,7 @@
         </template>
       </template>
     </CollectionPrimaryCell>
-
-    <CollectionRowActions v-if="!hideActions" :spotlight :actions="actions ?? getTaskRowActions(task)" @select="key => key === 'open' ? emit('open') : emit('action', key as TaskActionKey)" />
-  </article>
+  </CollectionRow>
 </template>
 
 <script setup lang="ts">
@@ -28,7 +31,8 @@ import { getTaskRowActions, type TaskActionKey } from './taskActions';
 import TaskCompletionControl from './TaskCompletionControl.vue';
 
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
-import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
+import type { CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import { useDateLocale } from '@/Composables/useDateLocale';
 import {
   formatTaskDueDate,

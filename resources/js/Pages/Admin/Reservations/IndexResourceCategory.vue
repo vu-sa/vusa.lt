@@ -3,13 +3,15 @@
     :row-actions="() => rowActions"
     :source
     collection="resourceCategories"
-    entity-type="resource"
-    :eyebrow="`${$t('shell.workspaces.rezervacijos.title')} · ${$t('shell.sections.kategorijos')}`"
+    :eyebrow="$t('shell.workspaces.rezervacijos.title')"
     :title="$t('Išteklių kategorijos')"
     :lead="$t('Kategorijos sugrupuoja išteklius, kad juos būtų lengviau rasti.')"
     default-view="table"
     :item-key="categoryKey"
     :columns
+    table-fixed
+    actions-width="w-40"
+    table-min-width="min-w-[48rem]"
     :search-placeholder="$t('Ieškoti kategorijų')"
     @row-action="(item, key) => selectRowAction(key, item)"
   >
@@ -20,10 +22,11 @@
       </Button>
     </template>
 
-    <template #row="{ item, actions: recordActions }">
-      <article class="flex min-h-16 items-center gap-3 px-3 py-3 sm:px-4">
-        <!-- The icon name is stored as data, so it can only be resolved at runtime. -->
-        <Icon v-if="item.icon" :icon="`fluent:${item.icon}`" class="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+    <template #row="{ item, actions: recordActions, view }">
+      <CollectionRow :spotlight="item === source?.items.value[0]" :actions="view === 'preview' ? [] : recordActions" @select="key => selectRowAction(key, item)" class="px-3 py-3 sm:px-4">
+        <template v-if="item.icon" #lead>
+          <Icon :icon="`fluent:${item.icon}`" class="size-5 text-muted-foreground" aria-hidden="true" />
+        </template>
         <div class="min-w-0 flex-1">
           <button v-if="canUpdate" type="button" class="block max-w-full text-left font-medium hover:text-brand" @click="openSheet(item)">
             {{ title(item) }}
@@ -33,8 +36,7 @@
             {{ description(item) }}
           </p>
         </div>
-        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => selectRowAction(key, item)" />
-      </article>
+      </CollectionRow>
     </template>
 
     <template #cell="{ item, column }">
@@ -44,6 +46,7 @@
       </button>
       <span v-else-if="column.key === 'name'" class="font-medium">{{ title(item) }}</span>
       <span v-else-if="column.key === 'description'" class="text-muted-foreground">{{ description(item) || '—' }}</span>
+      <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
     </template>
 
     <template #empty>
@@ -79,13 +82,15 @@ import { Pencil, Plus, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import type { CollectionColumn } from '@/Components/Collection/types';
-import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
+import type { CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import { CategoryIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
 import ResourceCategorySheetForm from '@/Features/Admin/ResourceCategories/ResourceCategorySheetForm.vue';
+import { formatRecordDate } from '@/Utils/dateTime';
 
 interface Translation { lt?: string; en?: string }
 type Category = App.Entities.ResourceCategory & { name: Translation; description?: Translation | null; icon?: string | null };
@@ -127,12 +132,16 @@ const source = useDatabaseCollectionSource<Category>({
     { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)') },
     { value: 'created_at:desc', label: $t('Naujausios pirmiausia') },
     { value: 'created_at:asc', label: $t('Seniausios pirmiausia') },
+    { value: 'updated_at:desc', label: $t('Paskutiniai atnaujinti') },
+    { value: 'updated_at:asc', label: $t('Seniausios atnaujintos') },
   ],
 });
 
 const columns = computed<CollectionColumn[]>(() => [
   { key: 'name', label: $t('Kategorija'), sortField: 'name' },
-  { key: 'description', label: $t('Aprašymas') },
+  { key: 'description', label: $t('Aprašymas'), class: 'w-64' },
+  { key: 'created_at', label: $t('Sukurta'), class: 'w-36', defaultHidden: true, sortField: 'created_at' },
+  { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', defaultHidden: true, sortField: 'updated_at' },
 ]);
 
 const categoryKey = (category: Category) => String(category.id);

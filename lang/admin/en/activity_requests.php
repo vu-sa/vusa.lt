@@ -11,7 +11,8 @@ return [
     'bulk_title' => 'Select several institutions',
     'bulk_hint' => 'Select institutions matching the filters and search together. More results load automatically, up to 100 institutions. You can also clear the entire selection.',
     'personal' => [
-        'title' => 'My activity requests',
+        'title' => 'Activity requests',
+        'lead' => 'See what you were asked about institution activity, and answer requests that are still open.',
         'record_title' => 'Activity requests',
         'active_title' => 'Waiting for your answer',
         'answer' => 'Answer',
@@ -162,7 +163,8 @@ return [
         'upcoming_meeting' => 'An upcoming meeting is already scheduled.',
         'already_asked' => 'Already asked – waiting for an answer.',
         'no_period' => 'No valid reporting period.',
-        'no_recorded_meetings' => 'There are no meetings in this period. Choose “Did a meeting take place?”.',
+        'no_recorded_meetings' => 'There are no recorded meetings in this period, so there is nothing to complete.',
+        'no_recorded_meetings_ask_activity' => 'There are no recorded meetings in this period, so there is nothing to complete. You can ask “Did a meeting take place?”.',
         'records_complete' => 'Meeting records for this period are already complete.',
     ],
 ];

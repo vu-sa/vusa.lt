@@ -1,6 +1,18 @@
 <?php
 
 return [
+    'outcome' => [
+        'matched_of' => ':matched iš :total balsavimo sutapo|:matched iš :total balsavimų sutapo|:matched iš :total balsavimų sutapo',
+        'votes' => 'balsavimas:|balsavimai:|balsavimų:',
+        'aligned' => 'sutapo',
+        'misaligned' => 'nesutapo',
+        'positive' => 'už',
+        'negative' => 'prieš',
+        'neutral' => 'susilaikė',
+        'discussed' => 'aptarimas|aptarimai|aptarimų',
+        'deferred' => 'atidėtas|atidėti|atidėtų',
+        'unknown' => 'be rezultato',
+    ],
     'visibility' => [
         'title' => 'Kas rodoma vusa.lt?',
         'public_intro' => 'Šis posėdis viešas, nes bent viena jo institucija yra tipo, kurio posėdžiai skelbiami vusa.lt.',
@@ -25,6 +37,35 @@ return [
         'trigger' => 'Kas rodoma?',
         'spotlight_title' => 'Kas matoma vusa.lt?',
         'spotlight_body' => 'Čia pamatysi, kas iš posėdžio rodoma viešai, o kas – niekada.',
+        'item' => [
+            'intro' => [
+                'public_page' => 'Šis klausimas rodomas vusa.lt posėdžio puslapyje.',
+                'calendar_event' => 'Šis klausimas rodomas vusa.lt renginio puslapyje.',
+                'unpublished' => 'Posėdis vusa.lt neskelbiamas, todėl klausimo viešai niekas nemato. Paskelbus posėdį, būtų rodoma tai, kas išvardyta žemiau.',
+                'private' => 'Klausimas pažymėtas „Rodoma tik ViSAK“, todėl net viešame posėdyje lieka tik jo vieta darbotvarkėje.',
+            ],
+            'would_show_heading' => 'Būtų rodoma vusa.lt',
+            'shown' => [
+                'title' => 'Pavadinimas',
+                'status' => 'Tipas arba rezultatas, pavyzdžiui, „Aptarimas“ ar priimtas sprendimas',
+                'description' => 'Aprašymas',
+                'student_position' => 'Studentų pozicija, jei įrašyta',
+                'time' => 'Laikas, jei įrašytas',
+                'votes' => 'Balsavimai: studentų balsas, sprendimas ir palankumas studentams',
+                'brought_by_students' => 'Žyma, kad klausimą pateikė studentai',
+                'position' => 'Klausimo numeris darbotvarkėje',
+                'public_title' => 'Viešas pavadinimas, jei įrašytas, kitaip – „Nerodoma“',
+            ],
+            'never' => [
+                'content' => 'Tikrasis pavadinimas, aprašymas ir studentų pozicija',
+                'outcome' => 'Tipas, laikas ir balsavimai',
+                'vote_notes' => 'Balsavimų pastabos',
+                'notes' => 'Vidaus pastabos',
+                'comments' => 'Komentarai',
+                'problems' => 'Susijusios problemos',
+                'history' => 'Pakeitimų istorija',
+            ],
+        ],
     ],
     'agenda' => [
         'add_items' => 'Pridėti punktų',

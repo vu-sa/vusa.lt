@@ -209,8 +209,16 @@ export interface MeetingSearchResult {
   institution_name_en?: string;
   institution_ids?: string[];
   inactive_institution_ids?: string[];
-  completion_status?: string;
+  completion_status?: string | null;
   vote_alignment_status?: string;
+  outcome_aligned?: number;
+  outcome_misaligned?: number;
+  outcome_unknown?: number;
+  outcome_positive?: number;
+  outcome_negative?: number;
+  outcome_neutral?: number;
+  outcome_discussed?: number;
+  outcome_deferred?: number;
   institution_type_title?: string;
   agenda_items_count?: number;
   votes_count?: number;
@@ -242,11 +250,14 @@ export interface AgendaItemSearchResult {
   institution_name_en?: string;
   tenant_shortnames?: string[];
   student_vote?: string;
+  type?: string | null;
   decision?: string;
   student_benefit?: string;
   vote_alignment_status?: string;
   is_complete?: boolean;
   brought_by_students?: boolean;
+  created_at?: number;
+  updated_at?: number;
 }
 
 /**
@@ -268,6 +279,8 @@ export interface NewsSearchResult {
   tenant_shortname?: string;
   /** Only present in the admin `news` index — the public index drops it. */
   draft?: boolean;
+  created_at?: number;
+  updated_at?: number;
 }
 
 /**
@@ -287,6 +300,8 @@ export interface PageSearchResult {
   tenant_shortname?: string;
   /** Only present in the admin `pages` index — the public index drops it. */
   is_active?: boolean;
+  created_at?: number;
+  updated_at?: number;
 }
 
 /**
@@ -326,6 +341,7 @@ export interface InstitutionSearchResult {
   type_titles?: string[];
   type_titles_lt?: string[];
   type_titles_en?: string[];
+  members_total?: number;
   current_user_names?: string[];
   duty_names?: string[];
   type_ids?: number[];
@@ -353,6 +369,8 @@ export interface DocumentSearchResult {
   document_year?: string;
   anonymous_url: string;
   is_active: boolean;
+  created_at?: number;
+  updated_at?: number;
 }
 
 /**
@@ -378,6 +396,7 @@ export interface ResourceSearchResult {
   category_name_en?: string;
   image_url?: string;
   created_at?: number;
+  updated_at?: number;
 }
 
 /**

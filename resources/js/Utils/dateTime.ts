@@ -128,6 +128,11 @@ export function todayIso(now: Date = new Date()): string {
   return formatDate(now, { format: 'iso' });
 }
 
+/** A record date from either collection source: search documents hold Unix seconds, trash rows ISO strings. */
+export function formatRecordDate(value: number | string | null | undefined): string {
+  return formatDate(typeof value === 'number' ? value * 1000 : value) || '—';
+}
+
 /**
  * Format a 24-hour time in Europe/Vilnius (e.g. "14:30").
  */

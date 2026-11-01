@@ -1,8 +1,7 @@
 <?php
 
 return [
-    'eyebrow' => 'Paskyra',
-    'title' => 'Mano atsakomybės ir pareigybės',
+    'title' => 'Atsakomybės ir pareigybės',
     'lead' => 'Čia matai, kokias pareigybes ir atsakomybes turi ir kur jos tau leidžia patekti. Jei ko trūksta, kreipkis į savo koordinatorių.',
     'link' => 'Mano atsakomybės ir pareigybės',
     'current' => [

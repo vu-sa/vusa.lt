@@ -44,6 +44,7 @@ const direct: DutyResponsibilityItem = {
   id: 'grant-1',
   role_id: 'role-coordination',
   title: 'Studentų atstovų koordinavimas',
+  description: null,
   purpose: 'student_rep_coordination',
   purpose_label: 'Studentų atstovų koordinavimas',
   source: 'duty',
@@ -100,6 +101,15 @@ describe('DutyResponsibilitiesSection', () => {
     expect(rows[0]!.text()).toContain('MIF');
     expect(rows[0]!.find('[data-testid="responsibility-gap"]').exists()).toBe(true);
     expect(rows[1]!.find('[data-testid="responsibility-source"]').text()).toContain('responsibilities.duty.via_duty_type');
+  });
+
+  it('shows descriptions to viewers and omits empty descriptions', () => {
+    const wrapper = mountSection([{ ...direct, description: 'Padėk atstovams pasiruošti.' }, viaType], false);
+    const descriptions = wrapper.findAll('[data-testid="responsibility-description"]');
+
+    expect(descriptions).toHaveLength(1);
+    expect(descriptions[0]!.text()).toBe('Padėk atstovams pasiruošti.');
+    expect(wrapper.find('[data-testid="responsibility-add"]').exists()).toBe(false);
   });
 
   it('offers removal only for responsibilities given to the duty itself', () => {

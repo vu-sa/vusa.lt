@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Žymos
 area: tags
 models: [Tag]
-last_reviewed: 2026-10-28
+last_reviewed: 2026-11-01
 tests:
   - resources/js/Pages/Admin/Content/__tests__/IndexTag.component.test.ts
   - tests/Browser/AdminCollectionPagesTest.php

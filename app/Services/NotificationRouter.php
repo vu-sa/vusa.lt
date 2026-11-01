@@ -41,7 +41,9 @@ class NotificationRouter
      */
     public function preferredEmail(User $user): ?string
     {
-        $dutyEmails = $user->current_duties()->pluck('duties.email')->filter()->values();
+        $dutyEmails = ($user->relationLoaded('current_duties')
+            ? $user->current_duties->pluck('email')
+            : $user->current_duties()->pluck('duties.email'))->filter()->values();
 
         return $dutyEmails->first(fn (string $email): bool => str_ends_with($email, 'vusa.lt'))
             ?? $dutyEmails->first()

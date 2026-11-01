@@ -9,7 +9,7 @@
       :class="[
         'block font-bold text-foreground hover:text-brand',
         'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
-        titleLines === 2 ? 'line-clamp-2' : 'truncate',
+        titleClass,
       ]"
     >
       <slot><SearchMatch :match="titleMatch" :title /></slot>
@@ -22,13 +22,13 @@
       :class="[
         'block max-w-full text-left font-bold text-foreground hover:text-brand',
         'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
-        titleLines === 2 ? 'line-clamp-2' : 'truncate',
+        titleClass,
       ]"
       @click="emit('open')"
     >
       <slot><SearchMatch :match="titleMatch" :title /></slot>
     </button>
-    <p v-else :title :class="['font-bold text-foreground', titleLines === 2 ? 'line-clamp-2' : 'truncate']">
+    <p v-else :title :class="['font-bold text-foreground', titleClass]">
       <slot><SearchMatch :match="titleMatch" :title /></slot>
     </p>
 
@@ -61,7 +61,8 @@ const props = withDefaults(defineProps<{
   match?: SearchMatchData;
   titleMatches?: SearchMatchData[];
   title?: string;
-  titleLines?: 1 | 2;
+  /** `wrap` shows all of it, for a table column whose titles are read in full. */
+  titleLines?: 1 | 2 | 'wrap';
   /** Resolved URL of the record; the link doubles as the preview opener (`data-collection-open`). */
   href?: string;
   /** Renders a button emitting `open` instead of a link — for records edited in a sheet. */
@@ -81,6 +82,7 @@ const props = withDefaults(defineProps<{
   subLines: 1,
 });
 
+const titleClass = computed(() => ({ 1: 'truncate', 2: 'line-clamp-2', wrap: 'wrap-anywhere' })[props.titleLines]);
 const titleMatch = computed(() => matchTitle(props.title ?? '', props.titleMatches));
 const subMatch = computed(() => {
   const text = props.match?.segments.map(segment => segment.text).join('');

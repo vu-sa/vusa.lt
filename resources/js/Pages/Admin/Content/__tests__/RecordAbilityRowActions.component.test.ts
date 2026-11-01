@@ -35,7 +35,7 @@ vi.mock('@/Features/Admin/AdminSearch/Composables/useResourceAvailability', () =
 const emptyPage = { data: [], meta: { total: 0, current_page: 1, per_page: 50, last_page: 1, from: 0, to: 0 }, total: 0, per_page: 50, current_page: 1, last_page: 1 };
 const cases: { name: string; component: Component; props: Record<string, unknown>; noDelete?: boolean }[] = [
   { name: 'agenda items', component: IndexAgendaItem, props: { defaultTenantShortnames: [] } },
-  { name: 'resources', component: IndexResource, props: { reservationCart: null } },
+  { name: 'resources', component: IndexResource, props: { reservationCart: null, mainTenantId: 1, managedTenantIds: [] } },
   { name: 'responsibilities', component: IndexResponsibility, props: { responsibilities: [] } },
   { name: 'mailing lists', component: IndexMailingList, props: { mailingLists: [], tenants: [], domain: '', openCreate: false, canCreate: false, canImport: false, mailmanConfigured: false }, noDelete: true },
   { name: 'goals', component: IndexGoal, props: { goals: [], canCreate: false } },
@@ -72,6 +72,10 @@ describe.each(cases)('$name row abilities', (testCase) => {
     expect(actions.some(action => action.role === 'edit')).toBe(allowed);
     expect(actions.some(action => action.destructive)).toBe(allowed && !testCase.noDelete);
     expect(actions.some(action => action.disabled)).toBe(false);
+    if (['forms', 'mailing lists', 'responsibilities'].includes(testCase.name)) {
+      expect(actions[0]).toMatchObject({ role: 'open', primary: true, label: 'Atidaryti' });
+      if (allowed) expect(actions.find(action => action.role === 'edit')).toMatchObject({ menuOnly: true });
+    }
   });
 });
 

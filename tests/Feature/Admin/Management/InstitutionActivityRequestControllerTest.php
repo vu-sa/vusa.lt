@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\ActivityRequests\GetInstitutionActivityRequestHistory;
+use App\Actions\ActivityRequests\ResolveActivityRequestEligibility;
 use App\Actions\ActivityRequests\ResolveActivityRequestRecipients;
 use App\Actions\ActivityRequests\SendInstitutionActivityRequests;
 use App\Actions\RecordMeeting;
@@ -236,7 +237,7 @@ test('period starts at the current cadence clamped to each representative assign
     expect($recipients[$this->rep->id]['period_start'])->toBe(today()->subMonths(2)->toDateString())
         ->and($recipients[$newRep->id]['period_start'])->toBe(today()->subWeek()->toDateString())
         ->and($recipients[$newRep->id]['period_end'])->toBe(today()->toDateString())
-        ->and($recipients[$newRep->id]['skip_reason'])->toBe('recent_activity');
+        ->and($recipients[$newRep->id]['skip_reason'])->toBeNull();
 });
 
 test('without a current cadence the period starts at the assignment, and former representatives are excluded', function (): void {
@@ -270,7 +271,7 @@ test('activity confirmation asks from the day after the last meeting, record com
         ->and($activity[0]->recipientPeriods[$late->id]['period_start'])->toBe(today()->subWeek()->toDateString())
         ->and($missing[0]->recipients->pluck('id')->all())->toBe([$this->rep->id])
         ->and($missing[0]->recipientPeriods[$this->rep->id]['period_start'])->toBe(today()->subYear()->toDateString())
-        ->and($missing[0]->excludedRecipients[0]['skip_reason'])->toBe('no_recorded_meetings');
+        ->and($missing[0]->excludedRecipients[0]['skip_reason'])->toBe('no_recorded_meetings_ask_activity');
 });
 
 test('activity confirmation asks from the day after the last report, and not at all while one runs', function (): void {
@@ -415,7 +416,7 @@ test('record completion targets missing agendas and excludes empty or completed 
     $entries = collect($response->json('data'))->keyBy('institution.id');
     expect(collect($entries[$this->institution->id]['recipients'][0]['incomplete_meetings'])->pluck('id')->sort()->values()->all())
         ->toBe(collect([$emptyAgenda->id, $incompleteAgenda->id])->sort()->values()->all())
-        ->and($entries[$this->otherInstitution->id]['skip_reason'])->toBe('no_recorded_meetings');
+        ->and($entries[$this->otherInstitution->id]['skip_reason'])->toBe('no_recorded_meetings_ask_activity');
     AgendaItem::factory()->create(['meeting_id' => $emptyAgenda->id, 'type' => 'informational']);
     $item->update(['type' => 'informational']);
     asUser($this->coordinator)->postJson(route('api.v1.admin.activityRequests.preview'), [
@@ -533,7 +534,7 @@ test('activity requests exclude upcoming meetings and inactive institutions', fu
     Notification::assertNotSentTo($this->rep, InstitutionActivityNotification::class);
 })->with(['scheduled' => ['upcoming', 'upcoming_meeting'], 'inactive' => ['inactive', 'inactive_institution']]);
 
-test('no-history requests wait for each recipients term interval and leave the dashboard without activity', function (): void {
+test('automatic no-history requests wait for each recipients interval and leave the dashboard without activity', function (): void {
     $this->travelTo('2026-12-02 12:00:00');
     $this->institution->update(['meeting_periodicity_days' => 30]);
     Cadence::factory()->create(['institution_id' => $this->institution->id, 'start_date' => '2026-11-01', 'end_date' => '2027-08-31']);
@@ -541,14 +542,101 @@ test('no-history requests wait for each recipients term interval and leave the d
     $newRep = activityRequestRep($this->institution);
     $newRep->duties()->updateExistingPivot($newRep->duties->first()->id, ['start_date' => '2026-11-15']);
 
-    $result = app(SendInstitutionActivityRequests::class)->send([$this->institution], $this->coordinator);
-    expect($result['queued_requests'])->toBe(1)
-        ->and($result['plan'][0]->excludedRecipients[0]['id'])->toBe($newRep->id)
-        ->and($result['plan'][0]->excludedRecipients[0]['skip_reason'])->toBe('recent_activity')
-        ->and(InstitutionActivityRequest::query()->sole()->period_start->toDateString())->toBe('2026-11-01')
+    $plan = app(SendInstitutionActivityRequests::class)->plan([$this->institution], null)[0];
+
+    expect($plan->recipients->pluck('id')->all())->toBe([$this->rep->id])
+        ->and($plan->recipientPeriods[$this->rep->id]['period_start'])->toBe('2026-11-01')
+        ->and($plan->excludedRecipients[0]['id'])->toBe($newRep->id)
+        ->and($plan->excludedRecipients[0]['skip_reason'])->toBe('recent_activity')
         ->and(app(InstitutionActivityStatusService::class)->resolve($this->institution)->status->value)->toBe('no_activity');
+});
+
+test('a coordinator can ask about a no-history institution before any recipients interval has passed', function (): void {
+    $this->travelTo('2026-11-20 12:00:00');
+    $this->institution->update(['meeting_periodicity_days' => 90]);
+    $this->rep->duties()->updateExistingPivot($this->rep->duties->first()->id, ['start_date' => '2026-11-15']);
+
+    $result = app(SendInstitutionActivityRequests::class)->send([$this->institution], $this->coordinator);
+
+    expect($result['queued_requests'])->toBe(1)
+        ->and(InstitutionActivityRequest::query()->sole()->period_start->toDateString())->toBe('2026-11-15');
     Notification::assertSentTo($this->rep, InstitutionActivityNotification::class);
-    Notification::assertNotSentTo($newRep, InstitutionActivityNotification::class);
+});
+
+test('a coordinator still cannot ask about a no-history institution with cover', function (string $condition, ActivityRequestSkipReason $reason): void {
+    if ($condition === 'meeting') {
+        app(RecordMeeting::class)->execute($this->institution, now()->addWeek());
+    } else {
+        InstitutionCheckIn::factory()->for($this->institution)->create(['start_date' => today()->subDay(), 'end_date' => today()->addWeek()]);
+    }
+
+    expect(app(SendInstitutionActivityRequests::class)->plan([$this->institution], $this->coordinator)[0]->skipReason)->toBe($reason);
+})->with([
+    'upcoming meeting' => ['meeting', ActivityRequestSkipReason::UpcomingMeeting],
+    'active check-in' => ['check_in', ActivityRequestSkipReason::CheckInActive],
+]);
+
+describe('a representative continuing into a new term', function (): void {
+    beforeEach(function (): void {
+        $this->travelTo('2026-09-10 12:00:00');
+        $this->institution->update(['meeting_periodicity_days' => 30]);
+        Cadence::factory()->create(['institution_id' => $this->institution->id, 'start_date' => '2026-09-01', 'end_date' => '2027-06-30']);
+        $this->rep->duties()->updateExistingPivot($this->rep->duties->first()->id, ['start_date' => '2026-03-01']);
+    });
+
+    test('is due from their real start while the question stays within the term', function (): void {
+        $newRep = activityRequestRep($this->institution);
+        $newRep->duties()->updateExistingPivot($newRep->duties->first()->id, ['start_date' => '2026-09-01']);
+
+        $plan = app(SendInstitutionActivityRequests::class)->plan([$this->institution], null)[0];
+
+        expect($plan->recipients->pluck('id')->all())->toBe([$this->rep->id])
+            ->and($plan->recipientPeriods[$this->rep->id]['period_start'])->toBe('2026-09-01')
+            ->and($plan->excludedRecipients[0]['id'])->toBe($newRep->id)
+            ->and($plan->excludedRecipients[0]['skip_reason'])->toBe('recent_activity');
+    });
+
+    test('counts from the earliest of their representative duties', function (): void {
+        activityRequestRep($this->institution, $this->rep);
+        $this->rep->duties()->wherePivot('start_date', '<', '2026-03-01')->first()->pivot->update(['start_date' => '2026-02-01']);
+
+        $candidate = app(ResolveActivityRequestRecipients::class)->forInstitutions(collect([$this->institution->id]))[$this->institution->id]['representatives'][$this->rep->id];
+
+        expect($candidate['held_since']->toDateString())->toBe('2026-02-01')
+            ->and($candidate['start']->toDateString())->toBe('2026-09-01');
+    });
+
+    test('loses an automatic question at delivery once they have left, as the term start applies again', function (): void {
+        $request = InstitutionActivityRequest::factory()->create([
+            'institution_id' => $this->institution->id, 'recipient_id' => $this->rep->id, 'requested_by_id' => null,
+            'period_start' => '2026-09-01', 'period_end' => '2026-09-10', 'expires_at' => now()->addWeek(),
+        ]);
+        $eligibility = app(ResolveActivityRequestEligibility::class);
+        expect($eligibility->shouldDeliver($request))->toBeTrue();
+
+        $this->rep->duties()->updateExistingPivot($this->rep->duties->first()->id, ['end_date' => '2026-09-09']);
+
+        expect($eligibility->shouldDeliver($request->fresh()))->toBeFalse();
+    });
+});
+
+describe('the reason a records request cannot be sent', function (): void {
+    test('stays plain when "Ar vyko posėdis?" would be refused too', function (string $blocker): void {
+        if ($blocker === 'recent meeting') {
+            app(RecordMeeting::class)->execute($this->institution, now()->subDays(10));
+            $this->rep->duties()->updateExistingPivot($this->rep->duties->first()->id, ['start_date' => today()->subDays(5)]);
+        } else {
+            app(SendInstitutionActivityRequests::class)->send([$this->institution], $this->coordinator);
+        }
+
+        expect(app(SendInstitutionActivityRequests::class)->plan([$this->institution->fresh()], $this->coordinator, InstitutionActivityCampaign::MissingMeetings)[0]->skipReason)
+            ->toBe(ActivityRequestSkipReason::NoRecordedMeetings);
+    })->with(['recent meeting', 'open question']);
+
+    test('suggests "Ar vyko posėdis?" when it can be sent', function (): void {
+        expect(app(SendInstitutionActivityRequests::class)->plan([$this->institution], $this->coordinator, InstitutionActivityCampaign::MissingMeetings)[0]->skipReason)
+            ->toBe(ActivityRequestSkipReason::NoRecordedMeetingsAskActivity);
+    });
 });
 
 test('an open request blocks a next-day send until expiry', function (): void {
@@ -600,11 +688,7 @@ test('no-history activity requests exclude vacation days from the recipients wai
     Cadence::factory()->create(['institution_id' => $this->institution->id, 'start_date' => '2027-06-20', 'end_date' => '2028-06-19']);
     $this->rep->duties()->updateExistingPivot($this->rep->duties->first()->id, ['start_date' => '2027-06-20']);
 
-    $result = app(SendInstitutionActivityRequests::class)->send([$this->institution], $this->coordinator);
-    expect($result['queued_requests'])->toBe(0)
-        ->and($result['plan'][0]->skipReason)->toBe(ActivityRequestSkipReason::RecentActivity)
-        ->and(InstitutionActivityRequest::query()->count())->toBe(0);
-    Notification::assertNotSentTo($this->rep, InstitutionActivityNotification::class);
+    expect(app(SendInstitutionActivityRequests::class)->plan([$this->institution], null)[0]->skipReason)->toBe(ActivityRequestSkipReason::RecentActivity);
 });
 
 test('a representative who has not started yet is not asked', function (): void {

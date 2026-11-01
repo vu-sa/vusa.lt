@@ -61,6 +61,7 @@ class ResponsibilityController extends AdminController
                     'permissions_count' => $role->permissions_count,
                     'duties_count' => $role->duties_count,
                     'people_count' => $role->currentUsersThroughDuties()->distinct()->count('users.id'),
+                    'created_at' => $role->created_at?->toDateTimeString(),
                     'updated_at' => $role->updated_at?->toDateTimeString(),
                 ])
                 ->sortBy('title')
@@ -190,15 +191,20 @@ class ResponsibilityController extends AdminController
         $gaps = app(ResponsibilityPermissionGaps::class);
         $gapsBefore = count($gaps->forRole($role));
 
-        if ($removed->isNotEmpty()) {
-            $role->revokePermissionTo($removed->all());
+        $role->auditRelationChange('permissions', function () use ($role, $added, $removed): void {
+            if ($removed->isNotEmpty()) {
+                $role->revokePermissionTo($removed->all());
+            }
+
+            if ($added->isNotEmpty()) {
+                $role->givePermissionTo($added->all());
+            }
+        });
+
+        if ($added->isNotEmpty() || $removed->isNotEmpty()) {
+            $role->touch();
         }
 
-        if ($added->isNotEmpty()) {
-            $role->givePermissionTo($added->all());
-        }
-
-        $role->touch();
         ForgetUserAccess::execute($this->holderIds($role));
 
         $message = __('responsibilities.messages.permissions_saved', ['added' => $added->count(), 'removed' => $removed->count()]);
@@ -242,7 +248,7 @@ class ResponsibilityController extends AdminController
     {
         abort_unless($role->users()->whereKey($user->getKey())->exists(), 404);
 
-        if ($warning = $this->guardSelfLockout($request->user(), $user->is($request->user()), $request, fn () => $user->removeRole($role))) {
+        if ($warning = $this->guardSelfLockout($request->user(), $user->is($request->user()), $request, fn () => $role->auditRelationChange('users', fn () => $user->removeRole($role)))) {
             return $warning;
         }
 
@@ -253,7 +259,7 @@ class ResponsibilityController extends AdminController
 
     public function syncAttachableTypes(SyncRoleAttachableTypesRequest $request, Role $role): RedirectResponse
     {
-        $role->attachable_types()->sync($request->validated('attachable_types'));
+        $role->syncAudited('attachable_types', $request->validated('attachable_types'));
 
         return back()->with('success', __('messages.role.attachables_updated'));
     }

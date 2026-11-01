@@ -22,7 +22,7 @@
       :class="[controlVariants({ size: 'sm', active: value.isSelected, voice: 'sentence' }), 'tabular-nums']"
       @click="emit('toggle', facet.field, value.value)"
     >
-      {{ value.label }}
+      {{ capitalize(value.label) }}
     </button>
   </div>
 
@@ -44,7 +44,7 @@
         >
           <Check v-if="value.isSelected" class="size-3" />
         </span>
-        <span class="min-w-0 flex-1 truncate">{{ value.label }}</span>
+        <span class="min-w-0 flex-1 truncate">{{ capitalize(value.label) }}</span>
         <span v-if="value.count !== undefined || value.isSelected" class="text-xs tabular-nums text-muted-foreground">{{ value.count ?? '–' }}</span>
       </button>
     </li>
@@ -58,6 +58,7 @@ import { Check } from '@lucide/vue';
 import { useFacetOptions } from '@/Shared/Search/useFacetOptions';
 import { controlVariants } from '@/Components/ui/control';
 import type { CollectionFacet } from '@/Composables/useCollectionSource';
+import { capitalize } from '@/Utils/String';
 
 const props = defineProps<{
   facet: CollectionFacet;

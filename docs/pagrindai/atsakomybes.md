@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Atsakomybės
 area: duties
 models: [Duty, Role, ResponsibilityGrant]
-last_reviewed: 2026-10-25
+last_reviewed: 2026-10-31
 tests:
   - tests/Feature/Responsibilities/ReservationHandlingTest.php
   - tests/Feature/Responsibilities/ResponsibilityResolverTest.php
@@ -34,6 +34,8 @@ instituciją.
 </ChangelogNote>
 
 ## Kaip tai veikia
+
+Atsakomybės aprašymas rodomas pareigybės skirtuke **Atsakomybės** ir tavo pareigų sąraše.
 
 ### Iš kur pareigybė gauna atsakomybes
 

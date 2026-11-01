@@ -4,13 +4,16 @@
     :row-actions="item => actionsFor(item)"
     :source
     collection="institutions"
-    entity-type="institution"
     :eyebrow
     :title="$t('Institucijos')"
     :lead="$t('VU SA ir VU organai, kuriuose dirba studentų atstovai.')"
     default-view="rows"
     :item-key="institutionKey"
     :columns
+    table-fixed
+    actions-width="w-44"
+    table-min-width="min-w-[60rem]"
+    :row-muted="isInactive"
     @row-action="(item, key) => onRowAction(key, item)"
     :search-placeholder="$t('Ieškoti institucijų')"
     :trash="{ count: deletedCount, active: isTrash }"
@@ -27,67 +30,59 @@
       </Button>
     </template>
 
-    <template #row="{ item, actions: recordActions }">
-      <div class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center" data-slot="institution-collection-row">
-        <div class="min-w-0 flex-1">
-          <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches" :title="nameOf(item)" :title-lines="hasName(item) ? 1 : 2" :href="isTrash ? undefined : route('institutions.show', item.id)" />
-          <p class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-            <span v-if="item.tenant_shortname">{{ item.tenant_shortname }}</span>
-            <span v-if="getSearchTranslations(item, 'type_titles').length">{{ getSearchTranslations(item, 'type_titles').join(', ') }}</span>
-            <span v-if="item.current_user_names?.length">
-              {{ $t('Narių: :count', { count: String(item.current_user_names.length) }) }}
-            </span>
-            <span v-if="isFollowed(item)" class="inline-flex items-center gap-1 text-foreground" data-slot="institution-followed">
+    <template #row="{ item, actions: recordActions, view }">
+      <CollectionRow
+        :actions="view === 'preview' ? [] : recordActions"
+        :spotlight="item === source?.items.value[0]"
+        class="px-3 py-2.5 sm:px-4"
+        data-slot="institution-collection-row"
+        @select="key => onRowAction(key, item)"
+      >
+        <InstitutionTitleCell :institution="item" :title="nameOf(item)" :inactive="isInactive(item)" :href="isTrash ? undefined : route('institutions.show', item.id)" />
+        <p class="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground">
+          <template v-for="(part, index) in rowFacts(item)" :key="part">
+            <span v-if="index > 0" aria-hidden="true">·</span>
+            <span>{{ part }}</span>
+          </template>
+          <template v-if="isFollowed(item)">
+            <span v-if="rowFacts(item).length > 0" aria-hidden="true">·</span>
+            <span class="inline-flex items-center gap-1 text-foreground" data-slot="institution-followed">
               <Eye class="size-3.5" aria-hidden="true" />
               {{ $t('Seki') }}
             </span>
-          </p>
-        </div>
-        <CollectionActivityStatus
-          entity="institutions"
-          :record-id="item.id"
-          :active="item.is_active ?? true"
-          :editable="canUpdateStatus(item)"
-          :spotlight="String(item.id) === String(source.items.value[0]?.id)"
-          @updated="active => statusUpdated(item, active)"
-        />
-        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => onRowAction(key, item)" />
-      </div>
+          </template>
+        </p>
+      </CollectionRow>
     </template>
 
     <template #cell="{ item, column }">
-      <CollectionPrimaryCell v-if="column.key === 'name'" :match="item._searchMatch"
-        :title-matches="item._searchTitleMatches"
-        :title="nameOf(item)"
-        :title-lines="hasName(item) ? 1 : 2"
-        :href="isTrash ? undefined : route('institutions.show', item.id)"
-      />
-      <template v-else-if="column.key === 'status'">
-        <CollectionActivityStatus
-          entity="institutions"
-          :record-id="item.id"
-          :active="item.is_active ?? true"
-          :editable="canUpdateStatus(item)"
-          :spotlight="String(item.id) === String(source.items.value[0]?.id)"
-          @updated="active => statusUpdated(item, active)"
-        />
+      <InstitutionTitleCell v-if="column.key === 'name'" :institution="item" :title="nameOf(item)" :inactive="isInactive(item)" :href="isTrash ? undefined : route('institutions.show', item.id)">
+        <template v-if="isFollowed(item)" #sub>
+          <span class="inline-flex items-center gap-1">
+            <Eye class="size-3.5" aria-hidden="true" />
+            {{ $t('Seki') }}
+          </span>
+        </template>
+      </InstitutionTitleCell>
+      <template v-else-if="column.key === 'activity'">
+        <StatusBadge v-if="activityStatus(item)" :status="activityStatus(item)!" />
+        <template v-else>
+          —
+        </template>
       </template>
       <template v-else-if="column.key === 'tenant'">
         {{ item.tenant_shortname ?? '—' }}
       </template>
       <template v-else-if="column.key === 'types'">
-        {{ getSearchTranslations(item, 'type_titles').join(', ') || '—' }}
+        <span class="line-clamp-2">{{ getSearchTranslations(item, 'type_titles').join(', ') || '—' }}</span>
       </template>
-      <span v-else-if="column.key === 'members'" class="tabular-nums">
-        {{ item.current_user_names?.length ?? 0 }}
-      </span>
-      <span v-else-if="column.key === 'followed'" class="inline-flex items-center gap-1">
-        <template v-if="isFollowed(item)">
-          <Eye class="size-3.5" aria-hidden="true" />
-          {{ $t('Seki') }}
-        </template>
-        <span v-else class="text-muted-foreground">—</span>
-      </span>
+      <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
+      <InstitutionMembersSummary
+        v-else-if="column.key === 'members'"
+        :institution-id="item.id"
+        :current-count="item.current_user_names?.length ?? 0"
+        :total-count="item.members_total ?? 0"
+      />
     </template>
 
     <template v-if="!isTrash" #preview="{ item, actions: recordActions }">
@@ -103,7 +98,7 @@
           />
         </template>
         <template #actions>
-          <CollectionRowActions :actions="recordActions" full-labels class="flex-wrap" @select="key => onRowAction(key, item)" />
+          <CollectionRowActions :actions="recordActions" emphasis full-labels @select="key => onRowAction(key, item)" />
         </template>
       </InstitutionPreview>
     </template>
@@ -165,14 +160,18 @@ import { computed, ref } from 'vue';
 import { getSearchTranslation, getSearchTranslations } from '@/Composables/useTranslatedTitle';
 import CollectionActivityStatus from '@/Components/Collection/CollectionActivityStatus.vue';
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
-import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
+import { quickFilterLabel } from '@/Components/Collection/quickFilterLabel';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
 import { InstitutionIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
-import { EmptyState } from '@/Components/Patterns';
+import { EmptyState, StatusBadge } from '@/Components/Patterns';
+import InstitutionTitleCell from '@/Components/Institutions/InstitutionTitleCell.vue';
+import InstitutionMembersSummary from '@/Components/Institutions/InstitutionMembersSummary.vue';
 import InstitutionPreview from '@/Components/Institutions/InstitutionPreview.vue';
 import { Button } from '@/Components/ui/button';
+import { institutionActivityStatuses, operatingStatuses, statusFor } from '@/Constants/statuses';
 import { useRowAbilities } from '@/Composables/useRowAbilities';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { useInstitutionSubscription } from '@/Composables/useInstitutionSubscription';
@@ -184,6 +183,7 @@ import {
   type CollectionSource,
 } from '@/Composables/useCollectionSource';
 import type { InstitutionSearchResult } from '@/Shared/Search/types';
+import { formatRecordDate } from '@/Utils/dateTime';
 
 type InstitutionRow = InstitutionSearchResult & { force_delete_blocked_reason?: string | null };
 
@@ -204,7 +204,7 @@ const isTrash = isTrashView();
 const canCreate = computed(() => Boolean(page.props.auth?.can?.create?.institution));
 const canForceDelete = computed(() => Boolean(page.props.auth?.can?.forceDelete?.institution));
 
-const eyebrow = computed(() => `${$t('shell.workspaces.atstovavimas.title')} · ${$t('shell.sections.institucijos')}`);
+const eyebrow = computed(() => $t('shell.workspaces.atstovavimas.title'));
 
 // --- Sekamos -----------------------------------------------------------------------------------
 
@@ -226,7 +226,7 @@ const followedFilter = computed(() => {
 
 const quickFilters = computed<CollectionQuickFilter[]>(() => isTrash
   ? []
-  : [{ id: 'followed', label: `${$t('Sekamos')} (${followedIds.value.size})`, active: followedOnly.value }]);
+  : [{ id: 'followed', label: quickFilterLabel($t('Sekamos'), followedIds.value.size), active: followedOnly.value }]);
 
 function toggleFollowedOnly(): void {
   const url = new URL(window.location.href);
@@ -276,6 +276,7 @@ const liveSource = isTrash
       preserveUrlKeys: ['view', 'item', 'followed'],
       baseFilterBy: followedFilter,
       defaultFilters: { tenant_shortname: props.defaultTenantShortnames },
+      valueLabel: (field, value) => (field === 'is_active' ? $t(operatingStatuses[String(value) === 'true' ? 'active' : 'inactive'].label) : undefined),
     });
 const source: CollectionSource<InstitutionRow> = liveSource ?? useTrashCollectionSource<InstitutionRow>('institutions');
 
@@ -306,7 +307,6 @@ const actions = useCollectionRecordActions({
 });
 
 const institutionKey = (institution: InstitutionRow) => String(institution.id);
-const hasName = (institution: InstitutionRow) => Boolean(institution.name_lt?.trim() || institution.name_en?.trim());
 const nameOf = (institution: InstitutionRow) => getSearchTranslation(institution, 'name').trim()
   || `${$t('Be pavadinimo')} · ${institution.alias || institution.id}`;
 const actionsFor = (institution: InstitutionRow): CollectionRowAction[] => isTrash
@@ -314,8 +314,8 @@ const actionsFor = (institution: InstitutionRow): CollectionRowAction[] => isTra
       ? { ...action, label: $t('Atkurti ir atidaryti') }
       : action)
   : [
-      { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, href: route('institutions.show', institution.id), role: 'open' as const },
-      ...(rowAbilities.can(institution.id, 'update') ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: route('institutions.edit', institution.id) }] : []),
+      { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, href: route('institutions.show', institution.id), role: 'open' as const, primary: true },
+      ...(rowAbilities.can(institution.id, 'update') ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, menuOnly: true, href: route('institutions.edit', institution.id) }] : []),
       ...(rowAbilities.can(institution.id, 'delete') ? [{ key: `delete:${institution.id}:${nameOf(institution)}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
       ...(isFollowed(institution)
         ? [{ key: 'follow', label: $t('Nebesekti'), icon: EyeOff }]
@@ -337,14 +337,26 @@ function statusUpdated(item: InstitutionRow, active: boolean): void {
   source.refresh();
 }
 
+const rowFacts = (item: InstitutionRow): string[] => [
+  item.tenant_shortname,
+  ...getSearchTranslations(item, 'type_titles'),
+  item.current_user_names?.length ? $t('Narių: :count', { count: String(item.current_user_names.length) }) : null,
+].filter((part): part is string => Boolean(part));
+
+const isInactive = (item: InstitutionRow) => item.is_active === false || item.is_active === 0;
+
+// A closed institution owes no meetings, so "Vėluoja" would be a false alarm.
+const activityStatus = (item: InstitutionRow) => (isInactive(item) ? null : statusFor(institutionActivityStatuses, item.activity_status));
+
 const canUpdateStatus = (item: InstitutionRow) => !isTrash && Boolean(props.statusUpdateScope?.all || props.statusUpdateScope?.tenantIds.includes(Number(item.tenant_id)));
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'name', label: $t('Institucija') },
-  { key: 'status', label: $t('Būsena'), class: 'w-40' },
-  { key: 'tenant', label: $t('Padalinys'), class: 'w-32' },
-  { key: 'types', label: $t('Tipas') },
-  { key: 'members', label: $t('Nariai'), class: 'w-24' },
-  ...(isTrash ? [] : [{ key: 'followed', label: $t('Sekimas'), class: 'w-24' }]),
+  { key: 'name', label: $t('Institucija'), sortField: 'name_lt' },
+  { key: 'tenant', label: $t('Padalinys'), class: 'w-28' },
+  { key: 'activity', label: $t('Veiklos būklė'), class: 'w-40' },
+  { key: 'types', label: $t('Tipas'), class: 'w-48', defaultHidden: true },
+  { key: 'members', label: $t('Nariai'), class: 'w-40' },
+  { key: 'created_at', label: $t('Sukurta'), class: 'w-36', sortField: 'created_at', defaultHidden: true },
+  { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', sortField: 'updated_at', defaultHidden: true },
 ]);
 </script>

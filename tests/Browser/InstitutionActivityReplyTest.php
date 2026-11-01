@@ -102,10 +102,9 @@ it('reviews incomplete records for the sending representative without overflow i
     app(RecordMeeting::class)->execute($institution, now()->subWeek());
     $page = loginAsAdmin($user, route('institutions.show', $institution, absolute: false));
     waitForInertiaRender($page, '[data-slot=admin-shell]');
-    $page->click('[data-testid=record-overflow-trigger]');
+    $page->click('header:has([data-slot=record-title]) [data-testid=record-overflow-trigger]');
     $page->click('[role=menuitem]:has-text("Paklausti, ar vyko posėdžiai")');
     $page->click('[data-slot=action-choice-button]:has-text("Papildyk posėdžių įrašus")');
-    pickPreselectedInstitutions($page);
     $page->page()->waitForSelector('[data-slot=activity-request-preview]', ['timeout' => 15000]);
     $page->assertPresent('[data-slot=activity-request-preview]')->assertNoJavaScriptErrors();
     foreach ([390, 820, 1180, 1440] as $width) {
@@ -132,21 +131,9 @@ it('captures documentation reference frames for activity requests', function ():
     // 1. Action window review screen
     $page = loginAsAdmin($coordinator, route('institutions.show', $committee, absolute: false));
     waitForInertiaRender($page, '[data-slot=admin-shell]');
-    $page->click('[data-testid=record-overflow-trigger]');
+    $page->click('header:has([data-slot=record-title]) [data-testid=record-overflow-trigger]');
     $page->click('[role=menuitem]:has-text("Paklausti, ar vyko posėdžiai")');
     $page->click('[data-slot=action-choice-button]:has-text("Ar vyko posėdis?")');
-    $page->click('[data-slot=action-choice-button]:has-text("Pagal institucijas")');
-    waitForInertiaRender($page, '[data-slot=action-window-primary]:not([disabled])');
-    foreach ([390, 1440] as $width) {
-        $page->resize($width, 900);
-        foreach (['light', 'dark'] as $theme) {
-            $page->script('document.documentElement.classList.toggle("dark", '.($theme === 'dark' ? 'true' : 'false').')');
-            expect($page->script('document.documentElement.scrollWidth <= innerWidth'))->toBeTrue();
-            $page->screenshot(fullPage: false, filename: "activity-picker-{$width}-{$theme}");
-        }
-    }
-    $page->script('document.documentElement.classList.remove("dark")');
-    $page->click('[data-slot=action-window-primary]');
     $page->page()->waitForSelector('[data-slot=activity-request-preview]', ['timeout' => 15000]);
     $page->fill('#activity-request-note', 'Ar per pastarąjį mėnesį vyko Chemijos SPK posėdis? Laukiame informacijos apie priimtus sprendimus.');
     foreach ([390, 1440] as $width) {
@@ -215,14 +202,6 @@ it('captures documentation reference frames for activity requests', function ():
     docsScreenshot($page, 'activity-request-reply', selector: 'main');
     $page->assertNoJavaScriptErrors();
 });
-
-/** "Pagal institucijas", then continue with the institutions the window was opened on. */
-function pickPreselectedInstitutions($page): void
-{
-    $page->click('[data-slot=action-choice-button]:has-text("Pagal institucijas")');
-    waitForInertiaRender($page, '[data-slot=action-window-primary]:not([disabled])');
-    $page->click('[data-slot=action-window-primary]');
-}
 
 it('records exact minutes using native date and time controls on a phone', function (): void {
     app(Vite::class)->useHotFile(storage_path('framework/testing/vite-hot-disabled'));

@@ -73,15 +73,12 @@ const institutionHit = (id: string, title: string): NormalizedSearchHit => ({
 });
 
 describe('ProblemForm.vue — mobile field spacing', () => {
-  it('gives the paired tenant/status and date fields a row gap, not just a column gap', () => {
-    // Regression: `gap-x-4` alone leaves zero space between the two FormFieldWrappers
-    // once `lg:grid-cols-2` collapses to a single column below the lg breakpoint —
-    // their labels/inputs touched on mobile. `gap-4` keeps the same visual gap at
-    // lg+ (only one row exists there, so gap-y is never applied) while fixing mobile.
+  it('gives the paired date fields a row gap, not just a column gap', () => {
+    // `gap-x-4` alone leaves no space between the fields once `lg:grid-cols-2` collapses on mobile.
     const wrapper = mountForm();
 
     const pairedGrids = wrapper.findAll('.grid.lg\\:grid-cols-2');
-    expect(pairedGrids.length).toBe(2);
+    expect(pairedGrids.length).toBe(1);
 
     for (const grid of pairedGrids) {
       expect(grid.classes()).toContain('gap-4');

@@ -38,6 +38,21 @@ test('applies the collection data-quality filter', function (): void {
         ->assertJsonPath('data.items.0.id', $vacant->id);
 });
 
+test('filters duties by operating status and sorts by the record dates', function (): void {
+    $institution = $this->manager->duties()->first()->institution;
+    $stopped = Duty::factory()->for($institution)->create(['is_active' => false]);
+
+    $response = asUser($this->manager)
+        ->getJson(route('api.v1.admin.duties.index', ['filters' => json_encode(['is_active' => '0'])]))
+        ->assertOk();
+
+    expect(collect($response->json('data.items'))->pluck('id')->all())->toBe([$stopped->id]);
+
+    asUser($this->manager)
+        ->getJson(route('api.v1.admin.duties.index', ['sorting' => json_encode([['id' => 'updated_at', 'desc' => true]])]))
+        ->assertOk();
+});
+
 test('possible duplicates are same-institution name variants and renamed twins only', function (): void {
     $institution = $this->manager->duties()->first()->institution;
     $named = fn (string $lt, ?Institution $in = null) => Duty::factory()->for($in ?? $institution)

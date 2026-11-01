@@ -3,10 +3,10 @@
 namespace App\Console\Commands;
 
 use App\Actions\ActivityRequests\ResolveActivityRequestEligibility;
+use App\Actions\BuildNotificationDigest;
 use App\Enums\EmailDelivery;
 use App\Enums\InstitutionActivityCampaign;
 use App\Enums\NotificationType;
-use App\Mail\NotificationDigest;
 use App\Models\InstitutionActivityRequest;
 use App\Models\NotificationDigestQueue;
 use App\Models\User;
@@ -21,17 +21,14 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 /**
- * Process notification digest queue and send batched email digests.
- *
- * This command runs hourly and checks each user's digest frequency setting
- * to determine if it's time to send their digest. Nothing is sent during quiet hours
- * (22:00–07:00); the queue simply waits for the first run after they end.
+ * Runs hourly: daily digests follow the chosen local hour; four-hour digests use queue age.
+ * Quiet hours hold all digests until 07:00.
  */
 #[Description('Process and send notification email digests based on user preferences')]
 #[Signature('notifications:send-digests')]
 class ProcessNotificationDigests extends Command
 {
-    public function handle(ResolveActivityRequestEligibility $eligibility): int
+    public function handle(ResolveActivityRequestEligibility $eligibility, BuildNotificationDigest $builder): int
     {
         if (QuietHours::isQuiet(now())) {
             $this->info('Quiet hours — digests are held until 07:00.');
@@ -82,21 +79,10 @@ class ProcessNotificationDigests extends Command
                 continue;
             }
 
-            // Group items by category
-            $groupedItems = $digestItems->groupBy('category')
-                ->map(fn ($items) => $items->pluck('data')->toArray())
-                ->toArray();
-
-            // Send the digest email.
-            //
-            // sendNow() is deliberate: NotificationDigest is a ShouldQueue mailable, so
-            // send() would merely enqueue it and return successfully. The items below
-            // would then be deleted before delivery was ever attempted, and a transport
-            // failure in the worker would destroy them. Sending synchronously means a
-            // failure leaves the items queued for the next run.
+            // sendNow surfaces transport failures before removing the queued items.
             try {
                 $digestEmails = $user->notificationEmails();
-                Mail::to($digestEmails)->sendNow(new NotificationDigest($user, $groupedItems));
+                Mail::to($digestEmails)->sendNow($builder->execute($user, $digestItems));
 
                 // Delete processed items
                 NotificationDigestQueue::where('user_id', $userId)
@@ -154,13 +140,12 @@ class ProcessNotificationDigests extends Command
     }
 
     /**
-     * Determine if it's time to send a digest to the user.
+     * Daily delivery follows the local clock, including across DST changes.
      */
     protected function shouldSendDigest(User $user): bool
     {
         $frequencyHours = $user->getDigestFrequencyHours();
 
-        // Get the oldest pending digest item for this user
         $oldestItem = NotificationDigestQueue::where('user_id', $user->id)
             ->orderBy('created_at', 'asc')
             ->first();
@@ -169,7 +154,10 @@ class ProcessNotificationDigests extends Command
             return false;
         }
 
-        // Check if enough time has passed since the oldest item was queued
+        if ($frequencyHours === 24) {
+            return now()->setTimezone(config('app.timezone'))->hour === $user->getDigestSendHour();
+        }
+
         $oldestTime = Carbon::parse($oldestItem->created_at);
         $hoursSinceOldest = $oldestTime->diffInHours(now());
 

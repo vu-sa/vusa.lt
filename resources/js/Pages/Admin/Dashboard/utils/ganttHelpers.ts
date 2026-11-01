@@ -128,6 +128,8 @@ export function extractMeetingsFromInstitutions(
         institution_id: inst.id,
         institution: getInstitutionDisplayName(inst),
         completion_status: m.completion_status,
+        vote_alignment_status: m.vote_alignment_status,
+        requires_student_perspective: m.requires_student_perspective,
         agenda_items: agendaItems,
         agenda_items_count: totalAgendaCount,
         authorized: isAuthorized,

@@ -66,7 +66,7 @@ it('applies list status changes and retains inactive institution tags across nav
     $actor = makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant);
     $institution = Institution::factory()->for($tenant)->create(['name' => ['lt' => 'Būsenos patikra', 'en' => 'Activity review']]);
     $duty = Duty::factory()->for($institution)->create(['name' => ['lt' => 'Būsenos pareigybė', 'en' => 'Status duty']]);
-    $page = loginAsAdmin($actor, '/mano/institutions', 1440, 1000);
+    $page = loginAsAdmin($actor, '/mano/institutions?view=preview', 1440, 1000);
     waitForInertiaRender($page, '[data-slot=collection-status-menu]');
 
     foreach (['light', 'dark'] as $theme) {
@@ -77,15 +77,16 @@ it('applies list status changes and retains inactive institution tags across nav
         }
     }
 
-    $page->click('[data-slot=institution-collection-row]:has-text("Būsenos patikra") [data-slot=collection-status-menu]');
+    $page->click('[data-slot=collection-rows] li:has-text("Būsenos patikra") [data-collection-open]');
+    $page->click('[data-slot=collection-preview] [data-slot=collection-status-menu]');
     $page->click('[role=menuitemradio]:has-text("Nebeveikianti")');
     $page->assertVisible('[data-slot=confirm-dialog-action]');
     $page->click('[data-slot=confirm-dialog-action]');
-    waitForInertiaRender($page, '[data-slot=institution-collection-row]:has-text("Būsenos patikra") [data-status-role=neutral]');
+    waitForInertiaRender($page, '[data-slot=collection-preview] [data-slot=collection-status-menu] [data-status-role=neutral]');
     expect($institution->fresh()->is_active)->toBe(0);
 
-    navigateTo($page, '/mano/duties');
-    waitForInertiaRender($page, '[data-slot=collection-status-menu]');
+    navigateTo($page, '/mano/duties?view=preview');
+    waitForInertiaRender($page, '[data-slot=collection-preview] [data-slot=collection-status-menu]');
     $page->assertSee('Nebeveikianti institucija');
     foreach (['light', 'dark'] as $theme) {
         $page->script('document.documentElement.classList.toggle("dark", '.($theme === 'dark' ? 'true' : 'false').')');
@@ -94,15 +95,15 @@ it('applies list status changes and retains inactive institution tags across nav
             $page->screenshot(filename: "duty-activity-list-{$theme}-{$width}", fullPage: false);
         }
     }
-    $page->click('[data-slot=duty-collection-row]:has-text("Būsenos pareigybė") [data-slot=collection-status-menu]');
+    $page->click('[data-slot=collection-preview] [data-slot=collection-status-menu]');
     $page->click('[role=menuitemradio]:has-text("Nebeveikianti")');
-    waitForInertiaRender($page, '[data-slot=duty-collection-row]:has-text("Būsenos pareigybė") [data-slot=collection-status-menu] [data-status-role=neutral]');
+    waitForInertiaRender($page, '[data-slot=collection-preview] [data-slot=collection-status-menu] [data-status-role=neutral]');
     expect($duty->fresh()->is_active)->toBeFalse();
     navigateTo($page, '/mano/institutions?view=table');
-    waitForInertiaRender($page, '[data-slot=collection-status-menu]');
+    waitForInertiaRender($page, '[data-slot=collection-table]');
     $page->screenshot(filename: 'institution-activity-table', fullPage: false);
     navigateTo($page, '/mano/duties?view=table');
-    waitForInertiaRender($page, '[data-slot=collection-status-menu]');
+    waitForInertiaRender($page, '[data-slot=collection-table]');
     $page->screenshot(filename: 'duty-activity-table', fullPage: false);
     $page->assertNoJavaScriptErrors();
 });
@@ -118,7 +119,8 @@ it('opens a restored untitled institution and keeps it identifiable in the live 
     $page = loginAsAdmin($actor, '/mano/institutions?showDeleted=true', 390, 900);
     waitForInertiaRender($page, '[data-slot=institution-collection-row]');
     $page->assertSee('Be pavadinimo · '.$institution->alias);
-    $page->click('[data-slot=institution-collection-row]:has-text("'.$institution->alias.'") button:has-text("Atkurti ir atidaryti")');
+    $page->click('[data-slot=institution-collection-row]:has-text("'.$institution->alias.'") button[aria-label="Daugiau veiksmų"]:visible');
+    $page->click('[role=dialog] button:has-text("Atkurti ir atidaryti")');
     waitForInertiaRender($page, '[data-slot=record-title]');
     $page->assertPathIs('/mano/institutions/'.$institution->id);
     $page->assertSee('Be pavadinimo · '.$institution->alias);

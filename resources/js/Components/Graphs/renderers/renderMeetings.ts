@@ -13,6 +13,7 @@ import type { GanttColors } from '../ganttColors';
 
 import type { GanttTooltipManager } from './GanttTooltip';
 import { buildMeetingTooltipContent } from './GanttTooltip';
+import { ganttMeetingStatus } from './meetingStatus';
 
 interface ParsedMeeting {
   id: string | number;
@@ -24,7 +25,8 @@ interface ParsedMeeting {
   institution?: string;
   completion_status?: 'complete' | 'incomplete' | 'no_items';
   // Vote alignment status from indexed meeting data
-  vote_alignment_status?: 'all_match' | 'mixed' | 'all_mismatch' | 'neutral';
+  vote_alignment_status?: 'all_match' | 'mixed' | 'all_mismatch' | 'neutral' | null;
+  requires_student_perspective?: boolean | null;
   // Whether the user has authorization for this meeting's institution
   authorized?: boolean;
   // Announced in the public calendar, and whether that announcement is still a draft
@@ -282,32 +284,8 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
   // Add native tooltip as fallback (when no tooltipManager)
   if (!tooltipManager) {
     dots.append('title').text((d: any) => {
-      let status = '';
-      if (d.authorized === false) {
-        status = ' (unauthorized)';
-      }
-      else if (d.completion_status === 'no_items') {
-        status = ' (no agenda items)';
-      }
-      else if (d.completion_status === 'incomplete') {
-        status = ' (incomplete)';
-      }
-      else if (d.completion_status === 'complete') {
-        // Show alignment status for complete meetings
-        switch (d.vote_alignment_status) {
-          case 'all_match':
-            status = ' ✓ (aligned)';
-            break;
-          case 'mixed':
-            status = ' ⚠ (mixed)';
-            break;
-          case 'all_mismatch':
-            status = ' ✗ (misaligned)';
-            break;
-          default:
-            status = ' ✓';
-        }
-      }
+      const label = ganttMeetingStatus(d)?.label;
+      const status = label ? ` (${label})` : '';
       const isEmail = d.type_slug === 'email';
       const fallback = isEmail ? labelFor(d.institution_id) : (d.title || labelFor(d.institution_id));
       return (fallback || new Date(d.date).toLocaleString()) + status;

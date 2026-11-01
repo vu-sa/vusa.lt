@@ -175,6 +175,8 @@ class AdminNavigationCatalog
                 new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard', [], null, Visibility::always()),
                 new Section('uzduotys', 'shell.sections.uzduotys', 'tasks.index', [], 'task', Visibility::always(), matches: ['tasks.index'], descriptionKey: 'shell.section_descriptions.uzduotys'),
                 new Section('pranesimai', 'shell.sections.pranesimai', 'notifications.index', [], null, Visibility::always(), descriptionKey: 'shell.section_descriptions.pranesimai'),
+                new Section('atsakomybes', 'shell.sections.atsakomybes', 'profile.roles', [], null, Visibility::always(), descriptionKey: 'shell.section_descriptions.atsakomybes'),
+                new Section('veiklos_uzklausos', 'shell.sections.veiklos_uzklausos', 'profile.activityRequests', [], null, Visibility::always(), descriptionKey: 'shell.section_descriptions.veiklos_uzklausos'),
             ],
         );
     }
@@ -387,7 +389,8 @@ class AdminNavigationCatalog
                 // MailQueueController) — not a distinct "super-admin" gate as the phase-0
                 // inventory's shorthand suggested.
                 new Section('sistemos_busena', 'shell.sections.sistemos_busena', 'systemStatus', [], null, Visibility::can('viewAny', Role::class), descriptionKey: 'shell.section_descriptions.sistemos_busena'),
-                new Section('laisku_eile', 'shell.sections.laisku_eile', 'mailQueue', [], null, Visibility::can('viewAny', Role::class), descriptionKey: 'shell.section_descriptions.laisku_eile'),
+                new Section('laisku_eile', 'shell.sections.laisku_eile', 'mailQueue', [], null, Visibility::can('viewAny', Role::class), matches: ['mailQueue', 'mailQueue.*'], descriptionKey: 'shell.section_descriptions.laisku_eile'),
+                new Section('laisku_perziura', 'shell.sections.laisku_perziura', 'mailPreviews.index', [], null, Visibility::can('viewAny', Role::class), descriptionKey: 'shell.section_descriptions.laisku_perziura'),
                 new Section('pagalbos_uzklausos', 'shell.sections.pagalbos_uzklausos', 'supportRequests.index', [], null, Visibility::can('viewAny', SupportRequest::class), descriptionKey: 'shell.section_descriptions.pagalbos_uzklausos'),
             ],
             overview: new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard.sistema', [], null, Visibility::always()),

@@ -19,7 +19,7 @@ interface RecordActionOptions {
   canForceDelete?: () => boolean;
   onMutated?: (id: string) => void;
   deletePermanently?: boolean;
-  /** Set when the record opens somewhere other than `<prefix>.edit`. */
+  /** Set when the record has its own page: Atidaryti then leads and Redaguoti moves to ⋯. */
   openHref?: (id: string) => string;
   editHref?: (id: string) => string;
 }
@@ -48,9 +48,9 @@ export function useCollectionRecordActions(options: RecordActionOptions) {
     }
 
     return [
-      ...(options.openHref ? [{ key: `open:${id}`, label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, href: options.openHref(id) }] : []),
+      ...(options.openHref ? [{ key: `open:${id}`, label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, primary: true, href: options.openHref(id) }] : []),
       ...(allowed(options.canEdit)
-        ? [{ key: `edit:${id}`, label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: options.editHref?.(id) ?? route(`${options.routePrefix}.edit`, id) }]
+        ? [{ key: `edit:${id}`, label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, menuOnly: Boolean(options.openHref), href: options.editHref?.(id) ?? route(`${options.routePrefix}.edit`, id) }]
         : []),
       ...(options.canDuplicate?.() ? [{ key: `duplicate:${id}`, label: $t('Dubliuoti'), icon: Copy }] : []),
       ...(allowed(options.canDelete) ? [{ key: `delete:${id}:${name}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),

@@ -41,7 +41,7 @@
     <EmptyState
       v-if="localItems.length === 0"
       :icon="ListOrdered"
-      :title="$t('Darbotvarkės punktų nėra')"
+      :title="$t('Darbotvarkės klausimų nėra')"
       :description="canAdd ? $t('meetings.agenda.empty_description') : $t('meetings.agenda.empty_readonly')"
       class="border-y border-border"
     >
@@ -118,6 +118,22 @@
           <ChevronRight v-if="!ordering" class="mt-1.5 size-4 shrink-0 text-muted-foreground" />
         </component>
 
+        <div v-if="!ordering && item.can?.update" class="flex shrink-0 items-center pr-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            voice="sentence"
+            class="u-touch text-muted-foreground"
+            :disabled="loadingItemId === item.id"
+            :aria-label="$t('Redaguoti')"
+            data-testid="agenda-item-edit"
+            @click="$emit('edit', item)"
+          >
+            <Pencil class="size-4" aria-hidden="true" />
+            <span class="hidden sm:inline">{{ $t('Redaguoti') }}</span>
+          </Button>
+        </div>
+
         <div v-if="ordering" class="flex shrink-0 items-center gap-1 pr-1">
           <Button
             variant="ghost"
@@ -159,6 +175,7 @@ import {
   ListOrdered,
   MessageSquare,
   NotebookPen,
+  Pencil,
   Plus,
   Users,
 } from '@lucide/vue';
@@ -173,26 +190,36 @@ import {
   getNumberBadgeClass,
 } from '@/Composables/useAgendaItemStyling';
 
+type AgendaListItem = App.Entities.AgendaItem & {
+  comments_count?: number;
+  has_notes?: boolean;
+  can?: { update?: boolean; delete?: boolean };
+};
+
 const props = withDefaults(defineProps<{
-  agendaItems: App.Entities.AgendaItem[];
+  agendaItems: AgendaListItem[];
   meetingId: string;
   canAdd?: boolean;
   canReorder?: boolean;
   /** False for VU SA's own bodies — a recorded decision alone means discussed. */
   requiresStudentPerspective?: boolean;
+  /** The item whose edit sheet is loading. */
+  loadingItemId?: string | null;
 }>(), {
   canAdd: false,
   canReorder: false,
   requiresStudentPerspective: true,
+  loadingItemId: null,
 });
 
 defineEmits<{
   add: [mode: 'lines' | 'paste'];
+  edit: [item: AgendaListItem];
 }>();
 
 const ordering = ref(false);
 
-const localItems = ref<App.Entities.AgendaItem[]>([]);
+const localItems = ref<AgendaListItem[]>([]);
 
 watch(
   () => props.agendaItems,
@@ -201,11 +228,6 @@ watch(
   },
   { immediate: true, deep: true },
 );
-
-type AgendaListItem = App.Entities.AgendaItem & {
-  comments_count?: number;
-  has_notes?: boolean;
-};
 
 const statusOf = (item: App.Entities.AgendaItem) =>
   agendaItemStatuses[getAgendaItemStatus(item as AgendaStatusItem, props.requiresStudentPerspective)];

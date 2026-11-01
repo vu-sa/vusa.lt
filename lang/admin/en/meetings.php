@@ -1,6 +1,18 @@
 <?php
 
 return [
+    'outcome' => [
+        'matched_of' => ':matched of :total vote matched|:matched of :total votes matched',
+        'votes' => 'vote:|votes:',
+        'aligned' => 'matched',
+        'misaligned' => 'did not match',
+        'positive' => 'for',
+        'negative' => 'against',
+        'neutral' => 'abstained',
+        'discussed' => 'discussion|discussions',
+        'deferred' => 'deferred|deferred',
+        'unknown' => 'without a result',
+    ],
     'visibility' => [
         'title' => 'What is shown on vusa.lt?',
         'public_intro' => 'This meeting is public because at least one of its institutions is of a type whose meetings are published on vusa.lt.',
@@ -25,6 +37,35 @@ return [
         'trigger' => 'What is shown?',
         'spotlight_title' => 'What is visible on vusa.lt?',
         'spotlight_body' => 'See what of this meeting is shown publicly and what never is.',
+        'item' => [
+            'intro' => [
+                'public_page' => 'This item is shown on the meeting page on vusa.lt.',
+                'calendar_event' => 'This item is shown on the event page on vusa.lt.',
+                'unpublished' => 'This meeting is not published on vusa.lt, so nobody sees this item publicly. If the meeting is published, the list below would be shown.',
+                'private' => 'This item is marked “Only shown in ViSAK”, so even in a public meeting only its place on the agenda remains.',
+            ],
+            'would_show_heading' => 'Would be shown on vusa.lt',
+            'shown' => [
+                'title' => 'Title',
+                'status' => 'Type or result, such as “Discussion” or an adopted decision',
+                'description' => 'Description',
+                'student_position' => 'Student position, if written',
+                'time' => 'Time, if set',
+                'votes' => 'Votes: the student vote, the decision and the benefit to students',
+                'brought_by_students' => 'A mark that students brought the item',
+                'position' => 'The item\'s number on the agenda',
+                'public_title' => 'The public title if there is one, otherwise “Not displayed”',
+            ],
+            'never' => [
+                'content' => 'The real title, description and student position',
+                'outcome' => 'Type, time and votes',
+                'vote_notes' => 'Vote notes',
+                'notes' => 'Internal notes',
+                'comments' => 'Comments',
+                'problems' => 'Linked problems',
+                'history' => 'Change history',
+            ],
+        ],
     ],
     'agenda' => [
         'add_items' => 'Add items',

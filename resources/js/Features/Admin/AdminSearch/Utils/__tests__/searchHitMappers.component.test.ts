@@ -55,6 +55,13 @@ describe('formatSearchDateTime', () => {
 });
 
 describe('normalizeHit', () => {
+  it('shows a document\'s type only as its subtitle, leaving the title the width', () => {
+    const hit = normalizeHit('documents', { id: 'd1', title: 'Protokolas', content_type: 'Protokolas', tenant_shortname: 'VU SA' });
+
+    expect(hit.subtitle).toBe('Protokolas');
+    expect(hit.contextBadge).toBeUndefined();
+  });
+
   it('normalizes a meeting hit', () => {
     const doc = {
       id: '7',

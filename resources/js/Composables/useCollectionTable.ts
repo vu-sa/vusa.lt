@@ -51,6 +51,11 @@ export function useCollectionTable<T>(options: CollectionTableOptions<T>): {
 } {
   const columnVisibility = useStorage<VisibilityState>(`admin-collection-columns:${options.collection}`, {});
 
+  const effectiveVisibility = computed<VisibilityState>(() => ({
+    ...Object.fromEntries(options.columns.value.filter(column => column.defaultHidden).map(column => [column.key, false])),
+    ...columnVisibility.value,
+  }));
+
   const sortValues = computed(() => new Set(options.sortOptions.value.map(option => option.value)));
   const isSortable = (column: CollectionColumn) =>
     column.sortField !== undefined
@@ -115,7 +120,7 @@ export function useCollectionTable<T>(options: CollectionTableOptions<T>): {
         return rowSelection.value;
       },
       get columnVisibility() {
-        return { ...columnVisibility.value, [ACTIONS_COLUMN_ID]: true };
+        return { ...effectiveVisibility.value, [ACTIONS_COLUMN_ID]: true };
       },
     },
     onSortingChange: (updater) => {
@@ -131,7 +136,7 @@ export function useCollectionTable<T>(options: CollectionTableOptions<T>): {
       options.selection.value = Object.keys(next).filter(key => next[key]);
     },
     onColumnVisibilityChange: (updater) => {
-      columnVisibility.value = resolve(updater, columnVisibility.value);
+      columnVisibility.value = resolve(updater, effectiveVisibility.value);
     },
   });
 

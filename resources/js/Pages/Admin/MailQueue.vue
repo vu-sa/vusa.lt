@@ -9,10 +9,18 @@
     default-view="rows"
     :available-views="['rows']"
     :item-key="recipient => recipient.user_id"
-    @row-action="(recipient) => requestClearRecipient(recipient)"
+    @row-action="(recipient, action) => handleRowAction(recipient, action)"
   >
     <template #actions>
       <div class="flex items-center gap-2">
+        <SpotlightPopover
+          :title="$t('mail_previews.title')" :description="$t('mail_previews.spotlight')"
+          :is-dismissed="previewSpotlight.isDismissed.value" @dismiss="previewSpotlight.dismiss"
+        >
+          <Button variant="outline" voice="sentence" as-child>
+            <Link :href="route('mailPreviews.index')" @click="previewSpotlight.dismiss">{{ $t('mail_previews.title') }}</Link>
+          </Button>
+        </SpotlightPopover>
         <Button variant="outline" voice="sentence" @click="source.refresh()">
           <RefreshCwIcon class="mr-2 h-4 w-4" />
           {{ $t('Atnaujinti') }}
@@ -25,14 +33,15 @@
       </div>
     </template>
     <template #row="{ item: recipient, actions, index }">
-      <div class="border-b border-border px-3 py-3 last:border-b-0 sm:px-4">
+      <CollectionRow :actions :spotlight="index === 0" class="border-b border-border px-3 py-3 last:border-b-0 sm:px-4" @select="action => handleRowAction(recipient, action)">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <div class="flex min-w-0 items-center gap-3">
             <MailIcon class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
             <div class="min-w-0">
-              <p class="truncate text-sm font-semibold text-foreground">
-                {{ recipient.user?.name ?? $t('Ištrintas naudotojas') }}
-              </p>
+              <a v-if="recipient.user" :href="route('mailQueue.previewForUser', recipient.user_id)" target="_blank" rel="noopener noreferrer" data-collection-open class="block truncate text-sm font-semibold text-foreground hover:text-brand">
+                {{ recipient.user.name }}
+              </a>
+              <p v-else class="truncate text-sm font-semibold text-foreground">{{ $t('Ištrintas naudotojas') }}</p>
               <p class="truncate text-xs text-muted-foreground">
                 <span v-if="recipient.user?.email">{{ recipient.user.email }} · </span>
                 {{ $t('Seniausia') }}: {{ formatDate(recipient.oldest_at) }}
@@ -43,7 +52,6 @@
             <Badge variant="secondary">
               {{ $tChoice('mail_queue.line_count', recipient.items_count) }}
             </Badge>
-            <CollectionRowActions :spotlight="index === 0" :actions @select="requestClearRecipient(recipient)" />
           </div>
         </div>
 
@@ -86,7 +94,7 @@
             </li>
           </ul>
         </details>
-      </div>
+      </CollectionRow>
     </template>
     <template #empty>
       <EmptyState :title="$t('Laiškų eilė tuščia')" :description="$t('mail_queue.empty_description')" />
@@ -103,14 +111,17 @@
 </template>
 
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { computed, ref, watch } from 'vue';
 import { format, parseISO } from 'date-fns';
 import { Mail as MailIcon, RefreshCw as RefreshCwIcon, Trash2 as Trash2Icon } from '@lucide/vue';
 
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
+
 import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
-import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
@@ -213,7 +224,14 @@ const confirmDiscard = () => {
   submit(pendingDiscard.value.url, pendingDiscard.value.key);
 };
 
-const rowActions = (_recipient: Recipient): AdminRecordAction[] => props.canManage
-  ? [{ key: 'discard', label: $t('Nesiųsti'), icon: Trash2Icon, destructive: true, disabled: busyKey.value !== null }]
-  : [];
+const previewSpotlight = useFeatureSpotlight('mail-previews-v1');
+
+const handleRowAction = (recipient: Recipient, action: AdminRecordAction | string) => {
+  if ((typeof action === 'string' ? action : action.key) === 'discard') requestClearRecipient(recipient);
+};
+
+const rowActions = (recipient: Recipient): AdminRecordAction[] => [
+  ...(recipient.user ? [{ key: 'preview', label: $t('mail_previews.view_mail'), icon: MailIcon, role: 'open' as const, primary: true, href: route('mailQueue.previewForUser', recipient.user_id), external: true }] : []),
+  ...(props.canManage ? [{ key: 'discard', label: $t('Nesiųsti'), icon: Trash2Icon, destructive: true, disabled: busyKey.value !== null }] : []),
+];
 </script>
