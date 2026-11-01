@@ -3,8 +3,9 @@ doc_status: reviewed
 title: Greitosios nuorodos
 area: quickLinks
 models: [QuickLink]
-last_reviewed: 2026-10-23
+last_reviewed: 2026-11-01
 tests:
+  - tests/Browser/QuickLinkOrderingTest.php
   - tests/Feature/Admin/Content/QuickLinkControllerTest.php
   - tests/Browser/PublicInitialRenderTest.php
   - tests/Feature/Public/PublicAssetsTest.php
@@ -57,8 +58,9 @@ Angliškame puslapyje meniu vertimai paruošiami prieš jį parodant, taip pat k
 
 Sąrašo puslapyje (`/mano/quickLinks`):
 
-- **Padalinio ir kalbos pasirinkimas:** viršuje pasirink, kurio padalinio ir kurios kalbos (LT ar EN) nuorodas nori peržiūrėti.
-- **Eiliškumo keitimas:** nutempk nuorodų korteles pele ar lietimu į norimą vietą ir spausk **Išsaugoti tvarką**. Nauja tvarka iškart taikoma viešoje svetainėje.
+- **Bendras sąrašas:** lentelėje matai abiejų kalbų ir visų padalinių, kuriuos turi teisę peržiūrėti, nuorodas. Padalinys ir kalba rodomi atskiruose stulpeliuose; juos gali pasirinkti per **Filtrai**, o kalbą – ir greituoju filtru **LT** arba **EN**.
+- **Eiliškumo keitimas:** spausk **Keisti tvarką** puslapio viršuje arba nuorodos meniu **⋯**. Šoniniame lange pasirinkti padalinys ir kalba; atvėrus iš nuorodos meniu, jie parenkami pagal tą nuorodą. Lange gali pasirinkti kitą padalinį ar kalbą. Visos šios grupės nuorodos rodomos net tada, kai sąraše taikoma paieška ar filtrai.
+- **Tvarkos išsaugojimas:** vilk nuorodas arba naudok rodykles aukštyn ir žemyn, tada spausk **Išsaugoti tvarką**. Pakeičiama tik pasirinkto padalinio ir kalbos nuorodų tvarka.
 
 ### Naujos nuorodos kūrimas {#naujos-nuorodos-kurimas}
 

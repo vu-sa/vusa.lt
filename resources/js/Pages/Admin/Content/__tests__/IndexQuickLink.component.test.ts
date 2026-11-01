@@ -16,8 +16,8 @@ vi.mock('@vueuse/integrations/useSortable', () => ({
 /** The collection shell is covered by its own suite; here it only hands over its slots and events. */
 const CollectionPageStub = {
   name: 'CollectionPage',
-  props: ['source', 'quickFilters', 'trash', 'keepParams', 'title', 'rowActions'],
-  emits: ['quickFilter'],
+  props: ['source', 'quickFilters', 'trash', 'keepParams', 'title', 'rowActions', 'defaultView', 'columns'],
+  emits: ['quickFilter', 'rowAction'],
   template: `
     <div data-testid="collection-page">
       <div data-testid="actions"><slot name="actions" /></div>
@@ -40,9 +40,9 @@ const SheetFormStub = {
 };
 
 const links = [
-  { id: 1, text: 'Stipendijos', link: '/stipendijos', icon: null, order: 1, is_important: false },
-  { id: 2, text: 'Bendrabučiai', link: '/bendrabuciai', icon: null, order: 2, is_important: true },
-  { id: 3, text: 'Kontaktai', link: '/kontaktai', icon: null, order: 3, is_important: false },
+  { id: 1, text: 'Stipendijos', link: '/stipendijos', icon: null, order: 1, is_important: false, tenant_id: 10, lang: 'lt' },
+  { id: 2, text: 'Bendrabučiai', link: '/bendrabuciai', icon: null, order: 2, is_important: true, tenant_id: 10, lang: 'lt' },
+  { id: 3, text: 'Kontaktai', link: '/kontaktai', icon: null, order: 3, is_important: false, tenant_id: 10, lang: 'lt' },
 ];
 
 const tenants = [
@@ -56,6 +56,7 @@ function createWrapper(props: Record<string, unknown> = {}) {
       quickLinks: links,
       tenant: { id: 10, shortname: 'VU SA' },
       tenants,
+      reorderTenants: tenants,
       currentLang: 'lt',
       deletedCount: 0,
       ...props,
@@ -83,6 +84,8 @@ describe('IndexQuickLink.vue', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    sessionStorage.clear();
+    localStorage.clear();
     window.history.replaceState({}, '', '/mano/quickLinks');
     vi.mocked(usePage).mockReturnValue(createMockPage({ auth: { can: { create: { quickLink: true }, forceDelete: { quickLink: false } } } }));
   });
@@ -92,43 +95,39 @@ describe('IndexQuickLink.vue', () => {
   });
 
   describe('scope', () => {
-    it('shows the current language as the active quick filter', () => {
-      wrapper = createWrapper({ currentLang: 'en' });
-
-      const filters = wrapper.findComponent({ name: 'CollectionPage' }).props('quickFilters');
-      expect(filters).toEqual([
-        { id: 'lt', label: 'LT', active: false },
-        { id: 'en', label: 'EN', active: true },
-      ]);
+    it('shows all languages and tenants together with standard filters and a table by default', () => {
+      wrapper = createWrapper({ quickLinks: [...links,
+        { ...links[0], id: 4, text: 'English', lang: 'en' },
+        { ...links[0], id: 5, text: 'MIF', tenant_id: 11 },
+      ] });
+      const collection = wrapper.findComponent({ name: 'CollectionPage' });
+      expect(collection.props('defaultView')).toBe('table');
+      expect(wrapper.findAll('[data-testid="row"]')).toHaveLength(5);
+      expect(collection.props('source').facets.value.map((facet: { field: string }) => facet.field)).toEqual(['tenant_id', 'language']);
+      expect(wrapper.findComponent({ name: 'NativeSelect' }).exists()).toBe(false);
     });
 
-    it('reloads the list for another language, keeping the tenant', async () => {
-      wrapper = createWrapper();
-
+    it('filters languages locally without reloading the page', async () => {
+      wrapper = createWrapper({ quickLinks: [...links, { ...links[0], id: 4, text: 'English', lang: 'en' }] });
       wrapper.findComponent({ name: 'CollectionPage' }).vm.$emit('quickFilter', 'en');
       await nextTick();
-
-      expect(router.get).toHaveBeenCalledWith('/mocked-route/quickLinks.index', { tenant: 10, lang: 'en' }, { preserveState: false });
+      expect(wrapper.findAll('[data-testid="row"]')).toHaveLength(1);
+      expect(wrapper.text()).toContain('English');
+      expect(router.get).not.toHaveBeenCalled();
     });
 
-    it('reloads the list for another tenant and stays in the trash when there', async () => {
-      window.history.replaceState({}, '', '/mano/quickLinks?showDeleted=true');
-      wrapper = createWrapper();
-
-      wrapper.findComponent({ name: 'NativeSelect' }).vm.$emit('update:modelValue', tenants[1].id);
+    it('combines tenant and language filters and keeps them across the trash toggle', async () => {
+      wrapper = createWrapper({ quickLinks: [...links,
+        { ...links[0], id: 4, text: 'English', lang: 'en' },
+        { ...links[0], id: 5, text: 'MIF English', tenant_id: 11, lang: 'en' },
+      ] });
+      const collection = wrapper.findComponent({ name: 'CollectionPage' });
+      collection.props('source').setFilter('tenant_id', ['11']);
+      collection.props('source').setFilter('language', ['en']);
       await nextTick();
-
-      expect(router.get).toHaveBeenCalledWith(
-        '/mocked-route/quickLinks.index',
-        { tenant: 11, lang: 'lt', showDeleted: true },
-        { preserveState: false },
-      );
-    });
-
-    it('keeps tenant and language across the trash toggle', () => {
-      wrapper = createWrapper();
-
-      expect(wrapper.findComponent({ name: 'CollectionPage' }).props('keepParams')).toEqual(['tenant', 'lang']);
+      expect(wrapper.findAll('[data-testid="row"]')).toHaveLength(1);
+      expect(wrapper.text()).toContain('MIF English');
+      expect(collection.props('keepParams')).toEqual(['tenant_id', 'language']);
     });
   });
 
@@ -139,6 +138,7 @@ describe('IndexQuickLink.vue', () => {
     expect(rowActions(links[0])).toEqual([
       expect.objectContaining({ key: 'edit:1', role: 'edit', label: 'Redaguoti' }),
       expect.objectContaining({ key: 'delete:1:Stipendijos', destructive: true }),
+      expect.objectContaining({ key: 'reorder', label: 'Keisti tvarką', menuOnly: true }),
     ]);
   });
 
@@ -175,10 +175,12 @@ describe('IndexQuickLink.vue', () => {
   });
 
   describe('reorder mode', () => {
-    it('is not offered for a single link', () => {
-      wrapper = createWrapper({ quickLinks: [links[0]] });
+    it('hides reordering without update permission', () => {
+      wrapper = createWrapper({ reorderTenants: [] });
 
       expect(wrapper.find('[data-testid="reorder-button"]').exists()).toBe(false);
+      const rowActions = wrapper.findComponent({ name: 'CollectionPage' }).props('rowActions');
+      expect(rowActions(links[0]).some((action: { key: string }) => action.key === 'reorder')).toBe(false);
     });
 
     it('opens with the saved order and cannot save until something moves', async () => {
@@ -212,6 +214,42 @@ describe('IndexQuickLink.vue', () => {
         },
         expect.objectContaining({ preserveScroll: true }),
       );
+    });
+
+    it('opens a row’s complete tenant and language group despite table filters', async () => {
+      const english = [
+        { ...links[0], id: 4, text: 'English first', tenant_id: 11, lang: 'en', order: 1 },
+        { ...links[1], id: 5, text: 'English second', tenant_id: 11, lang: 'en', order: 2 },
+      ];
+      wrapper = createWrapper({ quickLinks: [...links, ...english] });
+      const collection = wrapper.findComponent({ name: 'CollectionPage' });
+      collection.props('source').search('English first');
+      collection.vm.$emit('rowAction', english[0], 'reorder');
+      await nextTick();
+      expect(wrapper.findAll('[data-testid="reorder-item"]')).toHaveLength(2);
+      const selects = wrapper.findAllComponents({ name: 'NativeSelect' });
+      expect(selects[0].props('modelValue')).toBe(11);
+      expect(selects[1].props('modelValue')).toBe('en');
+      await wrapper.findAll('[data-testid="move-up"]')[1].trigger('click');
+      await wrapper.find('[data-testid="save-order"]').trigger('click');
+      expect(router.post).toHaveBeenCalledWith('/mocked-route/quickLinks.update-order', {
+        orderList: [{ id: 5, order: 1 }, { id: 4, order: 2 }], tenant_id: 11, lang: 'en',
+      }, expect.any(Object));
+    });
+
+    it('prefills ordering from filters and switches groups inside the sheet', async () => {
+      wrapper = createWrapper({ quickLinks: [...links, { ...links[0], id: 4, text: 'English', tenant_id: 11, lang: 'en' }] });
+      const source = wrapper.findComponent({ name: 'CollectionPage' }).props('source');
+      source.setFilter('tenant_id', ['11']);
+      source.setFilter('language', ['en']);
+      await wrapper.find('[data-testid="reorder-button"]').trigger('click');
+      expect(wrapper.findAll('[data-testid="reorder-item"]')).toHaveLength(1);
+      const selects = wrapper.findAllComponents({ name: 'NativeSelect' });
+      selects[0].vm.$emit('update:modelValue', 10);
+      selects[1].vm.$emit('update:modelValue', 'lt');
+      await nextTick();
+      expect(wrapper.findAll('[data-testid="reorder-item"]')).toHaveLength(3);
+      expect(wrapper.find('[data-testid="save-order"]').attributes('disabled')).toBeDefined();
     });
 
     it('disables moving past either end', async () => {

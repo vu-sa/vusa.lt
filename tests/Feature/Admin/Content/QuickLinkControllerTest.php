@@ -216,7 +216,7 @@ describe('authorized access', function (): void {
             ->and($ids)->not->toContain($this->quickLink->id);
     });
 
-    test('deleted count is scoped to the selected tenant and language', function (): void {
+    test('deleted count includes both languages in readable tenants', function (): void {
         $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
 
         $deletedQuickLink = QuickLink::factory()->for($this->tenant)->create(['lang' => 'lt']);
@@ -234,7 +234,7 @@ describe('authorized access', function (): void {
                 'lang' => 'lt',
             ]))
             ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page->where('deletedCount', 1));
+            ->assertInertia(fn (Assert $page) => $page->where('deletedCount', 2));
     });
 });
 
@@ -299,6 +299,33 @@ describe('tenant isolation', function (): void {
                 ->component('Admin/Content/IndexQuickLink')
                 ->has('quickLinks')
                 ->where('quickLinks', fn ($links) => collect($links)->every(fn ($link) => $link['tenant_id'] === $this->tenant->id))
+            );
+    });
+
+    test('index includes both languages but never another tenant even with a crafted scope', function (): void {
+        $english = QuickLink::factory()->for($this->tenant)->create(['lang' => 'en']);
+
+        asUserWithInertia($this->admin)
+            ->get(route('quickLinks.index', ['tenant' => $this->otherTenant->id, 'lang' => 'en']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('quickLinks', fn ($links) => collect($links)->pluck('id')->sort()->values()->all()
+                    === collect([$this->quickLink->id, $english->id])->sort()->values()->all())
+                ->where('tenant.id', $this->tenant->id)
+            );
+    });
+
+    test('global readers see all representational tenants in one collection', function (): void {
+        $this->admin->givePermissionTo('quickLinks.read.*');
+        $english = QuickLink::factory()->for($this->otherTenant)->create(['lang' => 'en']);
+
+        asUserWithInertia($this->admin)
+            ->get(route('quickLinks.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('quickLinks', fn ($links) => collect($links)->pluck('id')->contains($this->quickLink->id)
+                    && collect($links)->pluck('id')->contains($english->id))
+                ->where('reorderTenants', fn ($tenants) => collect($tenants)->pluck('id')->all() === [$this->tenant->id])
             );
     });
 

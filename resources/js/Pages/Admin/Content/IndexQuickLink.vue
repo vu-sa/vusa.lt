@@ -8,35 +8,27 @@
     :lead="isTrash
       ? $t('Peržiūrėk ištrintas greitąsias nuorodas arba atkurk jas.')
       : $t('Nuorodos ir mygtukai, rodomi pradiniame svetainės puslapyje.')"
-    default-view="rows"
-    :available-views="['rows', 'table']"
+    default-view="table"
+    :available-views="['table', 'rows']"
     :item-key="link => String(link.id)"
     :columns
     table-fixed
     actions-width="w-44"
     table-min-width="min-w-[61rem]"
-    @row-action="(item, key) => actions.select(key)"
     :quick-filters="languageFilters"
     :trash="{ count: deletedCount ?? 0, active: isTrash }"
-    :keep-params="['tenant', 'lang']"
+    :keep-params="['tenant_id', 'language']"
     :search-placeholder="$t('Ieškoti nuorodų')"
-    @quick-filter="changeScope({ lang: $event })"
+    @row-action="(item, key) => selectAction(item, key)"
+    @quick-filter="id => source.toggleFilter('language', id)"
   >
     <template #actions>
-      <div v-if="tenants.length > 1" class="w-full sm:w-56">
-        <NativeSelect
-          :model-value="tenant?.id"
-          :options="tenantOptions"
-          :aria-label="$t('Padalinys')"
-          @update:model-value="id => id && changeScope({ tenant: Number(id) })"
-        />
-      </div>
       <Button
-        v-if="!isTrash && quickLinks.length > 1"
+        v-if="!isTrash && reorderTenants.length > 0 && quickLinks.length > 0"
         variant="outline"
         size="lg"
         data-testid="reorder-button"
-        @click="openReorder"
+        @click="openReorder()"
       >
         <ArrowUpDown aria-hidden="true" />
         {{ $t('Keisti tvarką') }}
@@ -50,13 +42,15 @@
     </template>
 
     <template #row="{ item, actions: recordActions }">
-      <CollectionRow :actions="recordActions" :spotlight="item === source?.items.value[0]" class="px-3 py-2.5 sm:px-4" @select="key => actions.select(key)">
-        <template #lead><QuickLinkIconMark :icon="item.icon" /></template>
+      <CollectionRow :actions="recordActions" :spotlight="item === source?.items.value[0]" class="px-3 py-2.5 sm:px-4" @select="key => selectAction(item, key)">
+        <template #lead>
+          <QuickLinkIconMark :icon="item.icon" />
+        </template>
         <div class="min-w-0 flex-1">
           <CollectionPrimaryCell
             :title="item.text"
             :href="isTrash ? undefined : route('quickLinks.edit', item.id)"
-            :sub="item.link"
+            :sub="[tenantLabel(item.tenant_id), item.lang?.toUpperCase(), item.link].filter(Boolean).join(' · ')"
             mono
           />
         </div>
@@ -70,6 +64,8 @@
         <CollectionPrimaryCell :title="item.text" :href="isTrash ? undefined : route('quickLinks.edit', item.id)" />
       </div>
       <span v-else-if="column.key === 'link'" class="font-mono text-xs text-muted-foreground">{{ item.link }}</span>
+      <span v-else-if="column.key === 'tenant'" class="text-xs">{{ tenantLabel(item.tenant_id) }}</span>
+      <span v-else-if="column.key === 'lang'" class="text-xs">{{ item.lang?.toUpperCase() }}</span>
       <StatusBadge v-else-if="column.key === 'important' && item.is_important" :status="importantStatus" />
       <span v-else-if="column.key === 'order'" class="tabular-nums text-muted-foreground">{{ item.order ?? '—' }}</span>
       <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
@@ -97,9 +93,14 @@
     :disabled="!orderChanged"
     @submit="saveOrder"
   >
-    <p class="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
-      {{ $t('Matoma vusa.lt') }} · {{ tenant?.shortname }} · {{ currentLang.toUpperCase() }}
-    </p>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <FormFieldWrapper id="reorder-tenant" :label="$t('Padalinys')">
+        <NativeSelect id="reorder-tenant" v-model="reorderTenantId" :options="reorderTenantOptions" :disabled="savingOrder" />
+      </FormFieldWrapper>
+      <FormFieldWrapper id="reorder-language" :label="$t('Kalba')">
+        <NativeSelect id="reorder-language" v-model="reorderLang" :options="languageOptions" :disabled="savingOrder" />
+      </FormFieldWrapper>
+    </div>
     <ol ref="reorderList" class="divide-y divide-border border-y border-border" data-testid="reorder-list">
       <li
         v-for="(item, index) in orderedLinks"
@@ -149,11 +150,12 @@ import { Icon } from '@iconify/vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowDown, ArrowUp, ArrowUpDown, GripVertical, Link as LinkIcon, Plus, Star } from '@lucide/vue';
-import { computed, h, ref, toRef, type FunctionalComponent } from 'vue';
+import { computed, h, ref, toRef, watch, type FunctionalComponent } from 'vue';
 
 import { useMotionAwareSortable } from '@/Composables/useMotionAwareSortable';
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import { quickFilterLabel } from '@/Components/Collection/quickFilterLabel';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
@@ -171,8 +173,9 @@ interface TenantOption { id: number; shortname: string; type: string }
 
 const props = defineProps<{
   quickLinks: QuickLinkRow[];
-  tenant: App.Entities.Tenant | null;
+  tenant: TenantOption | null;
   tenants: TenantOption[];
+  reorderTenants: TenantOption[];
   currentLang: string;
   showDeleted?: boolean;
   deletedCount?: number;
@@ -190,26 +193,20 @@ const QuickLinkIconMark: FunctionalComponent<{ icon?: string | null }> = ({ icon
   ? h(Icon, { 'icon': `fluent:${icon}`, 'class': 'size-5 shrink-0 text-muted-foreground', 'aria-hidden': 'true' })
   : h(LinkIcon, { 'class': 'size-5 shrink-0 text-muted-foreground', 'aria-hidden': 'true' });
 
-// --- Scope: tenant and language decide what the server sends, and what order means --------
-
-const tenantOptions = computed(() =>
-  props.tenants.map(t => ({ value: t.id, label: t.shortname })),
-);
-
-const languageFilters = computed<CollectionQuickFilter[]>(() => [
-  { id: 'lt', label: quickFilterLabel('LT', 0), active: props.currentLang === 'lt' },
-  { id: 'en', label: quickFilterLabel('EN', 0), active: props.currentLang === 'en' },
-]);
-
-const createHref = computed(() => route('quickLinks.create', { tenant: props.tenant?.id, lang: props.currentLang }));
-
-function changeScope(scope: { tenant?: number; lang?: string }): void {
-  router.get(route('quickLinks.index'), {
-    tenant: scope.tenant ?? props.tenant?.id,
-    lang: scope.lang ?? props.currentLang,
-    ...(isTrash ? { showDeleted: true } : {}),
-  }, { preserveState: false });
-}
+const tenantLabel = (id: number) => props.tenants.find(tenant => tenant.id === id)?.shortname ?? '—';
+const languageOptions = [{ value: 'lt', label: 'LT' }, { value: 'en', label: 'EN' }];
+const reorderTenantOptions = computed(() => props.reorderTenants.map(tenant => ({ value: tenant.id, label: tenant.shortname })));
+const selectedTenant = computed(() => (source.filters.value.tenant_id as string[] | undefined)?.[0]);
+const selectedLanguage = computed(() => (source.filters.value.language as string[] | undefined)?.[0]);
+const createHref = computed(() => route('quickLinks.create', {
+  tenant: selectedTenant.value ?? props.tenant?.id,
+  lang: selectedLanguage.value ?? props.currentLang,
+}));
+const languageFilters = computed<CollectionQuickFilter[]>(() => languageOptions.map(option => ({
+  id: option.value,
+  label: quickFilterLabel(option.label, props.quickLinks.filter(link => link.lang === option.value).length),
+  active: (source.filters.value.language as string[] | undefined)?.includes(option.value) ?? false,
+})));
 
 // --- Collection ------------------------------------------------------------------------------
 
@@ -217,6 +214,10 @@ const source = useLocalCollectionSource<QuickLinkRow>({
   items: toRef(props, 'quickLinks'),
   searchText: link => [link.text, link.link],
   defaultSort: 'order:asc',
+  facets: [
+    { field: 'tenant_id', label: $t('Padalinys'), get: link => String(link.tenant_id), valueLabel: id => tenantLabel(Number(id)) },
+    { field: 'language', label: $t('Kalba'), get: link => link.lang, valueLabel: lang => lang.toUpperCase() },
+  ],
   sortOptions: () => [
     { value: 'updated_at:desc', label: `${$t('Atnaujinta')} ↓`, by: item => item.updated_at ? new Date(item.updated_at).getTime() : 0 },
     { value: 'updated_at:asc', label: `${$t('Atnaujinta')} ↑`, by: item => item.updated_at ? new Date(item.updated_at).getTime() : 0 },
@@ -234,10 +235,26 @@ const actions = useCollectionRecordActions({
   routePrefix: 'quickLinks',
   canForceDelete: () => canForceDelete.value,
 });
-const actionsFor = (link: QuickLinkRow) => actions.rowActions(link, link.text, isTrash);
+const actionsFor = (link: QuickLinkRow) => [
+  ...actions.rowActions(link, link.text, isTrash),
+  ...(!isTrash && props.reorderTenants.some(tenant => tenant.id === link.tenant_id)
+    ? [{ key: 'reorder', label: $t('Keisti tvarką'), icon: ArrowUpDown, menuOnly: true }]
+    : []),
+];
+
+function selectAction(link: QuickLinkRow, key: string): void {
+  if (key === 'reorder') {
+    openReorder(link);
+  }
+  else {
+    actions.select(key);
+  }
+}
 
 const columns = computed<CollectionColumn[]>(() => [
   { key: 'text', label: $t('Nuoroda'), sortField: 'text' },
+  { key: 'tenant', label: $t('Padalinys'), class: 'w-36' },
+  { key: 'lang', label: $t('Kalba'), class: 'w-20' },
   { key: 'link', label: $t('Adresas'), class: 'w-64' },
   { key: 'important', label: $t('Svarbi'), class: 'w-28' },
   { key: 'order', label: $t('Eilė'), class: 'w-20', sortField: 'order' },
@@ -251,12 +268,17 @@ const reorderOpen = ref(false);
 const reorderList = ref<HTMLElement | null>(null);
 const orderedLinks = ref<QuickLinkRow[]>([]);
 const savingOrder = ref(false);
+const reorderTenantId = ref<number | string>();
+const reorderLang = ref('lt');
 
-const savedOrder = computed(() => [...props.quickLinks]
-  .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-  .map(link => link.id));
+const scopedLinks = computed(() => props.quickLinks
+  .filter(link => link.tenant_id === Number(reorderTenantId.value) && link.lang === reorderLang.value)
+  .sort((a, b) => (a.order ?? 0) - (b.order ?? 0)));
+const orderChanged = computed(() => orderedLinks.value.map(link => link.id).join() !== scopedLinks.value.map(link => link.id).join());
 
-const orderChanged = computed(() => orderedLinks.value.map(link => link.id).join() !== savedOrder.value.join());
+watch(scopedLinks, (links) => {
+  orderedLinks.value = [...links];
+});
 
 useMotionAwareSortable(reorderList, orderedLinks, {
   handle: '.handle',
@@ -266,10 +288,20 @@ useMotionAwareSortable(reorderList, orderedLinks, {
   animation: 150,
 });
 
-function openReorder(): void {
-  orderedLinks.value = savedOrder.value
-    .map(id => props.quickLinks.find(link => link.id === id))
-    .filter((link): link is QuickLinkRow => link !== undefined);
+function openReorder(link?: QuickLinkRow): void {
+  const preferredTenant = link?.tenant_id ?? Number(selectedTenant.value ?? props.tenant?.id);
+  reorderTenantId.value = props.reorderTenants.find(tenant => tenant.id === preferredTenant)?.id
+    ?? props.reorderTenants[0]?.id;
+  reorderLang.value = link?.lang ?? selectedLanguage.value ?? props.currentLang;
+  if (!link && !scopedLinks.value.length) {
+    const fallback = props.quickLinks.find(item => item.tenant_id === Number(reorderTenantId.value))
+      ?? props.quickLinks.find(item => props.reorderTenants.some(tenant => tenant.id === item.tenant_id));
+    if (fallback) {
+      reorderTenantId.value = fallback.tenant_id;
+      reorderLang.value = fallback.lang;
+    }
+  }
+  orderedLinks.value = [...scopedLinks.value];
   reorderOpen.value = true;
 }
 
@@ -285,10 +317,14 @@ function moveItem(index: number, direction: -1 | 1): void {
 }
 
 function saveOrder(): void {
+  if (!orderChanged.value || savingOrder.value) {
+    return;
+  }
+
   router.post(route('quickLinks.update-order'), {
     orderList: orderedLinks.value.map((link, index) => ({ id: link.id, order: index + 1 })),
-    tenant_id: props.tenant?.id,
-    lang: props.currentLang,
+    tenant_id: Number(reorderTenantId.value),
+    lang: reorderLang.value,
   }, {
     preserveScroll: true,
     onStart: () => {
