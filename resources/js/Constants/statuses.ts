@@ -119,7 +119,7 @@ export const agendaItemStatuses: Record<AgendaItemStatus, StatusPresentation> = 
   student_aligned: status('Studentų pozicija priimta', 'success', CircleCheck),
   student_misaligned: status('Studentų pozicija nesutampa', 'danger', CircleX),
   decision_positive: status('Priimtas', 'success', CircleCheck),
-  decision_negative: status('Atmestas', 'danger', CircleX),
+  decision_negative: status('Nepriimtas', 'danger', CircleX),
   neutral_decided: status('Neutralus sprendimas', 'neutral', CircleMinus),
   mixed: status('Skirtingi rezultatai', 'info', Split),
   no_vote: status('Neaptartas', 'attention', CircleDashed),

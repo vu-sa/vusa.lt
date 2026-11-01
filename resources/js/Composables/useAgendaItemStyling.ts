@@ -215,7 +215,7 @@ export function getStudentVoteLabel(studentVote: VoteValue): string {
 export function getDecisionLabel(decision: VoteValue): string {
   switch (decision) {
     case 'positive': return $t('Priimtas');
-    case 'negative': return $t('Atmestas');
+    case 'negative': return $t('Nepriimtas');
     case 'neutral': return $t('Susilaikyta');
     default: return $t('Neaptartas');
   }
@@ -278,41 +278,7 @@ export function hasDecisionData(item: AgendaItem): boolean {
   return getOutcomeVotes(item).some(vote => vote.student_vote != null || vote.decision != null || vote.student_benefit != null);
 }
 
-// ============================================================================
-// Individual Agenda Item Vote Comparison Helpers
-// ============================================================================
-
-/**
- * Check if an agenda item has both student vote and decision for comparison
- */
-export function canCompareVotes(item: AgendaItem): boolean {
-  const mainVote = getOutcomeVote(item);
-  return !!(mainVote?.student_vote && mainVote?.decision);
-}
-
-/**
- * Check if student vote matches the decision for an agenda item
- */
-export function isVoteAligned(item: AgendaItem): boolean {
-  const mainVote = getOutcomeVote(item);
-  if (!mainVote?.student_vote || !mainVote?.decision) return false;
-  return mainVote.student_vote === mainVote.decision;
-}
-
-/**
- * Get vote comparison text for an agenda item
- */
-export function getVoteComparisonText(item: AgendaItem): string {
-  if (!canCompareVotes(item)) return '';
-  return isVoteAligned(item)
-    ? $t('Studentų pozicija priimta')
-    : $t('Studentų pozicija nesutampa');
-}
-
-/**
- * Get vote comparison color class for an agenda item
- */
-export function getVoteComparisonColorClass(item: AgendaItem): string {
-  if (!canCompareVotes(item)) return MUTED_TEXT;
-  return isVoteAligned(item) ? statusRoleParts.success.text : statusRoleParts.attention.text;
+/** Votes stay on an item whose type later changes, so a deferred or withdrawn one must not show them. */
+export function showsVoteOutcome(item: AgendaItem): boolean {
+  return item.type === 'voting' && hasDecisionData(item);
 }

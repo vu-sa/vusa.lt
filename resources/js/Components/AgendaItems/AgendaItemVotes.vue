@@ -199,7 +199,7 @@ const decisionRow: VoteRow = {
   label: $t('Sprendimas'),
   options: [
     option('positive', $t('Priimtas'), CircleCheck, 'success'),
-    option('negative', $t('Atmestas'), CircleX, 'danger'),
+    option('negative', $t('Nepriimtas'), CircleX, 'danger'),
     option('neutral', $t('Susilaikyta'), CircleMinus, 'neutral'),
   ],
   unanswered: option(null, $t('Nefiksuota'), CircleDashed, 'attention'),

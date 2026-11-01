@@ -154,7 +154,7 @@ Kiekviename balsavime žymimi trys laukai:
 
 | Laukas | Reikšmės |
 |---|---|
-| **Sprendimas** – ar institucija klausimą priėmė | Priimtas · Atmestas · Susilaikyta |
+| **Sprendimas** – ar institucija klausimą priėmė | Priimtas · Nepriimtas · Susilaikyta |
 | **Studentų balsas** – kaip balsavo studentų atstovai | Pritarė · Nepritarė · Susilaikė |
 | **Nauda studentams** – ar sprendimas palankus studentams | Palanku · Nepalanku · Neutralu |
 
@@ -195,7 +195,7 @@ su sprendimu), **Studentų pozicija nesutampa**, **Pritarta bendru sutarimu**, *
 nėra sprendimo, o išoriniame organe – ir studentų balso), **Aptarimas**, **Atidėtas**,
 **Išbrauktas**, **Pertrauka**, **Skirtingi rezultatai** (keli balsavimai be pagrindinio, jų rezultatai skiriasi) ar
 **Nepažymėtas** (nėra tipo). VU SA darinyje rodomas pats sprendimas: **Priimtas**,
-**Atmestas** arba **Neutralus sprendimas**.
+**Nepriimtas** arba **Neutralus sprendimas**.
 
 Būsena gali būti „Studentų pozicija priimta“, nors dar nepažymėta nauda studentams. Ar klausimui
 dar kažko trūksta, rodo posėdžio **Nepilnų punktų** sąrašas.

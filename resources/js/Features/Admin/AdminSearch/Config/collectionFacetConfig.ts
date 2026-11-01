@@ -723,7 +723,7 @@ export const FACET_VALUE_LABELS: Record<string, Record<string, string>> = {
   },
   decision: {
     positive: 'Priimtas',
-    negative: 'Atmestas',
+    negative: 'Nepriimtas',
     neutral: 'Susilaikyta',
   },
   student_benefit: {
