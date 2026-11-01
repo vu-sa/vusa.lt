@@ -80,8 +80,9 @@ final class BuildTaskIndexQuery
             default => null,
         };
 
-        if ($request->sortsBy('created_at')) {
-            return $query->latest('created_at');
+        $sort = $request->getSorting()[0] ?? null;
+        if ($sort && in_array($sort['id'] ?? null, ['created_at', 'updated_at'], true)) {
+            return $query->orderBy($sort['id'], ($sort['desc'] ?? false) ? 'desc' : 'asc')->orderBy('id');
         }
 
         if ($completion === 'completed') {

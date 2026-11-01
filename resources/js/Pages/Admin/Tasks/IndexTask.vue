@@ -12,8 +12,8 @@
     :columns
     @row-action="(item, key) => runAction(item, key as TaskActionKey)"
     table-fixed
-    actions-width="w-56"
-    table-min-width="min-w-[64rem]"
+    actions-width="w-44"
+    table-min-width="min-w-[60rem]"
     :quick-filters
     :search-placeholder="$t('tasks.collection.search')"
     @quick-filter="toggleQuickFilter"
@@ -30,7 +30,7 @@
     <template #row="{ item, actions: recordActions, view }">
       <TaskRow
         :task="item"
-        :actions="recordActions"
+        :actions="view === 'preview' ? [] : recordActions"
         :spotlight="item === source.items.value[0]"
         :loading="loadingTaskId === item.id"
         :hide-actions="view === 'preview'"
@@ -72,6 +72,7 @@
       <span v-else-if="column.key === 'due_date'" :class="['text-sm tabular-nums', getDueDateUrgencyClasses(item)]">
         {{ item.due_date ? formatTaskDueDate(item.due_date, dateLocale) : '—' }}
       </span>
+      <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
     </template>
 
     <template #preview="{ item }">
@@ -116,6 +117,7 @@ import { ArrowRight } from '@lucide/vue';
 import { computed, defineAsyncComponent, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 
+import { formatRecordDate } from '@/Utils/dateTime';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import { quickFilterLabel } from '@/Components/Collection/quickFilterLabel';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
@@ -133,7 +135,7 @@ import {
   getDueDateUrgencyClasses,
   getTaskableUrl,
   isOrphanedTask,
-  type TaskDisplayData,
+  type TaskDisplayData as TaskPresentationData,
 } from '@/Composables/useTaskPresentation';
 import { getTaskActions, getTaskRowActions, type TaskAction, type TaskActionKey } from '@/Features/Admin/TaskManager/taskActions';
 import TaskCompletionControl from '@/Features/Admin/TaskManager/TaskCompletionControl.vue';
@@ -141,6 +143,8 @@ import TaskPreview from '@/Features/Admin/TaskManager/TaskPreview.vue';
 import TaskRow from '@/Features/Admin/TaskManager/TaskRow.vue';
 
 const TaskDetailDialog = defineAsyncComponent(() => import('@/Features/Admin/TaskManager/TaskDetailDialog.vue'));
+
+type TaskDisplayData = TaskPresentationData & { updated_at?: string | null };
 
 type Scope = 'mine' | 'tenant';
 
@@ -244,6 +248,9 @@ const source = useDatabaseCollectionSource<TaskDisplayData>({
   sortOptions: () => [
     { value: 'due_date:asc', label: $t('tasks.collection.sort_due') },
     { value: 'created_at:desc', label: $t('tasks.collection.sort_newest') },
+    { value: 'created_at:asc', label: `${$t('Sukurta')} · ↑` },
+    { value: 'updated_at:asc', label: `${$t('Atnaujinta')} · ↑` },
+    { value: 'updated_at:desc', label: `${$t('Atnaujinta')} · ↓` },
   ],
   facets: facets.value,
 });
@@ -258,6 +265,8 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'subject', label: $t('tasks.collection.column_subject'), class: 'w-44' },
   { key: 'users', label: $t('tasks.collection.column_assignees'), class: 'w-36' },
   { key: 'due_date', label: $t('tasks.collection.column_due'), class: 'w-32' },
+  { key: 'created_at', label: $t('Sukurta'), class: 'w-36', sortField: 'created_at', defaultHidden: true },
+  { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', sortField: 'updated_at', defaultHidden: true },
 ]);
 
 // --- Quick filters carry their counts; they replace the old stat cards --------------------------

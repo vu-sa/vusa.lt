@@ -9,7 +9,11 @@
     default-view="rows"
     :item-key="dutyKey"
     :trash="{ count: deletedCount ?? 0, active: isDeleted }"
+    :row-muted="isInactive"
     :columns
+    table-fixed
+    actions-width="w-44"
+    table-min-width="min-w-[64rem]"
     @row-action="(item, key) => selectRowAction(key, item)"
     :selectable="mergeMode"
     :quick-filters
@@ -27,55 +31,35 @@
       </Button>
     </template>
 
-    <template #row="{ item, actions: recordActions }">
-      <article class="flex min-h-16 flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center" data-slot="duty-collection-row">
-        <div class="min-w-0 flex-1">
-          <CollectionPrimaryCell :title="title(item)" :href="isDeleted ? undefined : route('duties.show', item.id)">
+    <template #row="{ item, actions: recordActions, view }">
+      <CollectionRow :actions="view === 'preview' ? [] : recordActions" :spotlight="item === source.items.value[0]" class="px-3 py-2.5 sm:px-4" data-slot="duty-collection-row" @select="key => selectRowAction(key, item)">
+        <CollectionPrimaryCell :title="title(item)" :href="isDeleted ? undefined : route('duties.show', item.id)">
+          <span class="inline-flex items-baseline gap-1.5">
+            <template v-if="isInactive(item)">
+              <component :is="operatingStatuses.inactive.icon" class="size-4 shrink-0 self-center" aria-hidden="true" data-slot="duty-inactive-mark" />
+              <span class="sr-only">{{ $t(operatingStatuses.inactive.label) }}:</span>
+            </template>
             <InflectedDutyName :name="title(item)" />
-          </CollectionPrimaryCell>
-          <p v-if="institutionTitle(item)" class="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            {{ institutionTitle(item) }}
-            <InactiveInstitutionBadge :active="item.institution?.is_active" />
-          </p>
-          <div class="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-            <span v-if="item.email" class="truncate">{{ item.email }}</span>
-            <span v-if="item.types?.length">{{ item.types.map(type => titleOf(type.title)).join(', ') }}</span>
-          </div>
-        </div>
-        <div class="flex w-full flex-wrap items-center gap-3 sm:w-auto sm:justify-end">
-          <CollectionActivityStatus
-            entity="duties"
-            :record-id="item.id"
-            :active="item.is_active ?? true"
-            :editable="!isDeleted && Boolean(item.can_update)"
-            :spotlight="String(item.id) === String(source.items.value[0]?.id)"
-            @updated="active => statusUpdated(item, active)"
-          />
-          <span v-if="item.is_active !== false && item.dutiables_count === 0" class="inline-flex shrink-0 items-center gap-1 text-xs text-status-attention">
-            <CircleAlert class="size-3" aria-hidden="true" />{{ $t('Neužimta') }}
           </span>
-          <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => selectRowAction(key, item)" />
-        </div>
-      </article>
+        </CollectionPrimaryCell>
+        <p class="mt-0.5 text-xs text-muted-foreground">{{ rowFacts(item).join(' · ') }}</p>
+      </CollectionRow>
     </template>
 
     <template #cell="{ item, column }">
       <CollectionPrimaryCell v-if="column.key === 'name'" :title="title(item)" :href="isDeleted ? undefined : route('duties.show', item.id)">
-        <InflectedDutyName :name="title(item)" />
+        <span class="inline-flex items-baseline gap-1.5">
+          <template v-if="isInactive(item)">
+            <component :is="operatingStatuses.inactive.icon" class="size-4 shrink-0 self-center" aria-hidden="true" data-slot="duty-inactive-mark" />
+            <span class="sr-only">{{ $t(operatingStatuses.inactive.label) }}:</span>
+          </template>
+          <InflectedDutyName :name="title(item)" />
+        </span>
       </CollectionPrimaryCell>
-      <template v-else-if="column.key === 'status'">
-        <CollectionActivityStatus
-          entity="duties"
-          :record-id="item.id"
-          :active="item.is_active ?? true"
-          :editable="!isDeleted && Boolean(item.can_update)"
-          :spotlight="String(item.id) === String(source.items.value[0]?.id)"
-          @updated="active => statusUpdated(item, active)"
-        />
-      </template>
       <span v-else-if="column.key === 'institution'" class="text-muted-foreground">{{ institutionTitle(item) || '—' }} <InactiveInstitutionBadge :active="item.institution?.is_active" /></span>
       <span v-else-if="column.key === 'email'" class="text-muted-foreground">{{ item.email || '—' }}</span>
-      <span v-else-if="column.key === 'occupancy'" :class="item.dutiables_count === 0 ? 'text-status-attention' : 'text-muted-foreground'">{{ item.dutiables_count === 0 ? $t('Neužimta') : $tChoice('Narys|Nariai|Narių', item.dutiables_count, { count: item.dutiables_count }) }}</span>
+      <span v-else-if="column.key === 'occupancy'" :class="!isInactive(item) && item.dutiables_count === 0 ? 'text-status-attention' : 'text-muted-foreground'">{{ isInactive(item) && item.dutiables_count === 0 ? '—' : item.dutiables_count === 0 ? $t('Neužimta') : $tChoice('Narys|Nariai|Narių', item.dutiables_count, { count: item.dutiables_count }) }}</span>
+      <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
     </template>
 
     <template #preview="{ item, actions: recordActions }">
@@ -91,7 +75,7 @@
           />
         </template>
         <template #actions>
-          <CollectionRowActions :actions="recordActions" full-labels class="flex-wrap" @select="key => selectRowAction(key, item)" />
+          <CollectionRowActions :actions="recordActions" emphasis full-labels @select="key => selectRowAction(key, item)" />
         </template>
       </DutyPreview>
     </template>
@@ -115,13 +99,16 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { ArrowRight, CircleAlert, Merge, Pencil, Plus, RotateCcw, Trash2 } from '@lucide/vue';
+import { ArrowRight, Merge, Pencil, Plus, RotateCcw, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
+import { operatingStatuses } from '@/Constants/statuses';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import CollectionActivityStatus from '@/Components/Collection/CollectionActivityStatus.vue';
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
+import { formatRecordDate } from '@/Utils/dateTime';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
@@ -163,8 +150,8 @@ const rowActions = (item: Duty): CollectionRowAction[] => isDeleted.value
       ...(canForceDelete.value ? [{ key: 'forceDelete', label: $t('Ištrinti visam laikui'), icon: Trash2, destructive: true }] : []),
     ]
   : [
-      { key: 'open', label: $t('Atidaryti'), icon: ArrowRight, role: 'open' as const, href: route('duties.show', item.id) },
-      ...(item.can_update ? [{ key: 'edit', role: 'edit' as const, label: $t('Redaguoti'), icon: Pencil, href: route('duties.edit', item.id) }] : []),
+      { key: 'open', label: $t('Atidaryti'), icon: ArrowRight, role: 'open' as const, primary: true, href: route('duties.show', item.id) },
+      ...(item.can_update ? [{ key: 'edit', role: 'edit' as const, menuOnly: true, label: $t('Redaguoti'), icon: Pencil, href: route('duties.edit', item.id) }] : []),
       ...(item.can_delete ? [{ key: `delete:${item.id}:${titleOf(item.name)}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
     ];
 
@@ -185,12 +172,18 @@ const source = useDatabaseCollectionSource<Duty>({
     { value: 'email:desc', label: $t('Pagal el. paštą (Z–A)') },
     { value: 'dutiables_count:desc', label: $t('Daugiausia narių') },
     { value: 'dutiables_count:asc', label: $t('Mažiausiai narių') },
+    { value: 'created_at:asc', label: `${$t('Sukurta')} · ↑` },
+    { value: 'created_at:desc', label: `${$t('Sukurta')} · ↓` },
+    { value: 'updated_at:asc', label: `${$t('Atnaujinta')} · ↑` },
+    { value: 'updated_at:desc', label: `${$t('Atnaujinta')} · ↓` },
   ],
   preserveUrlKeys: ['showDeleted'],
-  facets: [{ field: 'data_quality', label: $t('Duomenų kokybė'), single: true, values: [
+  facets: [{ field: 'is_active', label: $t('Būsena'), single: true, values: [
+    { value: '1', label: $t(operatingStatuses.active.label) },
+    { value: '0', label: $t(operatingStatuses.inactive.label) },
+  ] }, { field: 'data_quality', label: $t('Duomenų kokybė'), single: true, values: [
     { value: 'vacant', label: $t('Neužimtos') }, { value: 'missing_en_name', label: $t('Trūksta EN pavadinimo') },
     { value: 'missing_lt_name', label: $t('Trūksta LT pavadinimo') }, { value: 'duplicate_holders', label: $t('Pasikartojantys nariai') },
-    { value: 'inactive', label: $t('Nebeveikiančios') },
     // Only live duties are compared, so the trash has none to show.
     ...(isDeleted.value ? [] : [{ value: 'possible_duplicates', label: $t('forms.duty_duplicate.filter') }]),
   ] }, {
@@ -219,11 +212,14 @@ function statusUpdated(item: Duty, active: boolean): void {
 
 const columns = computed<CollectionColumn[]>(() => [
   { key: 'name', label: $t('Pareigybė'), sortField: 'name' },
-  { key: 'status', label: $t('Būsena'), class: 'w-40' },
-  { key: 'institution', label: $t('Institucija') },
-  { key: 'email', label: $t('El. paštas'), sortField: 'email' },
+  { key: 'institution', label: $t('Institucija'), class: 'w-52' },
+  { key: 'email', label: $t('El. paštas'), class: 'w-52', sortField: 'email' },
   { key: 'occupancy', label: $t('Nariai'), class: 'w-32', sortField: 'dutiables_count' },
+  { key: 'created_at', label: $t('Sukurta'), class: 'w-36', sortField: 'created_at', defaultHidden: true },
+  { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', sortField: 'updated_at', defaultHidden: true },
 ]);
+const isInactive = (item: Duty) => item.is_active === false;
+const rowFacts = (item: Duty) => [institutionTitle(item), item.email, item.types?.map(type => titleOf(type.title)).join(', ')].filter(Boolean);
 const dutyKey = (duty: Duty) => String(duty.id);
 const titleOf = (value: Translation | string | null | undefined) => getTranslatedValue(value, undefined, '—');
 const title = (duty: Duty) => titleOf(duty.name);

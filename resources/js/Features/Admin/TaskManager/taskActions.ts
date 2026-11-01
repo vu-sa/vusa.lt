@@ -70,10 +70,13 @@ export function getTaskActions(task: TaskDisplayData): TaskAction[] {
   return actions;
 }
 
-/** Completion stays on the row checkbox. */
+/** Completion stays on the row checkbox, so Atidaryti leads unless a workflow step is due. */
 export function getTaskRowActions(task: TaskDisplayData): TaskAction[] {
+  const actions = getTaskActions(task).filter(action => action.key !== 'complete');
+  const stepDue = actions.some(action => action.primary);
+
   return [
-    { key: 'open', label: $t('Atidaryti'), shortLabel: $t('Atidaryti'), role: 'open', icon: ArrowUpRight },
-    ...getTaskActions(task).filter(action => action.key !== 'complete'),
+    { key: 'open', label: $t('Atidaryti'), shortLabel: $t('Atidaryti'), role: 'open', icon: ArrowUpRight, primary: !stepDue, menuOnly: stepDue },
+    ...actions,
   ];
 }

@@ -11,6 +11,9 @@
     default-view="table"
     :item-key="program => String(program.id)"
     :columns
+    table-fixed
+    actions-width="w-44"
+    table-min-width="min-w-[48rem]"
     :selectable="mergeMode"
     @row-action="(item, key) => actions.select(key, item.force_delete_blocked_reason)"
     :trash="{ count: deletedCount, active: isTrash }"
@@ -30,21 +33,21 @@
     </template>
 
     <template #row="{ item, actions: recordActions }">
-      <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
+      <CollectionRow :actions="recordActions" :spotlight="item === source.items.value[0]" class="px-3 py-2.5 sm:px-4" @select="key => actions.select(key, item.force_delete_blocked_reason)">
         <div class="min-w-0 flex-1">
-          <CollectionPrimaryCell :title="item.name" :href="isTrash ? undefined : route('studyPrograms.edit', item.id)" :sub="item.tenant?.shortname" />
+          <CollectionPrimaryCell :title="item.name" :href="isTrash ? undefined : route('studyPrograms.edit', item.id)" />
           <p class="mt-2 text-xs text-muted-foreground">
-            {{ degreeLabel(item.degree) }}
+            {{ [item.tenant?.shortname, degreeLabel(item.degree)].filter(Boolean).join(' · ') }}
           </p>
         </div>
-        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => actions.select(key, item.force_delete_blocked_reason)" />
-      </article>
+      </CollectionRow>
     </template>
 
     <template #cell="{ item, column }">
       <CollectionPrimaryCell v-if="column.key === 'name'" :title="item.name" :href="isTrash ? undefined : route('studyPrograms.edit', item.id)" />
       <span v-else-if="column.key === 'degree'" class="text-muted-foreground">{{ degreeLabel(item.degree) }}</span>
       <span v-else-if="column.key === 'tenant'" class="text-muted-foreground">{{ item.tenant?.shortname ?? '—' }}</span>
+      <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
     </template>
 
     <template #bulk-actions="{ selected }">
@@ -75,8 +78,9 @@ import { Merge, Plus } from '@lucide/vue';
 import { computed, ref, toRef } from 'vue';
 
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
+import { formatRecordDate } from '@/Utils/dateTime';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
-import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import type { CollectionColumn } from '@/Components/Collection/types';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import MergeRecordsDialog, { type MergeRecord } from '@/Components/Merge/MergeRecordsDialog.vue';
@@ -120,6 +124,10 @@ const source = useLocalCollectionSource<StudyProgramRow>({
     { value: 'degree:desc', label: $t('Pagal laipsnį (Z–A)'), by: program => degreeLabel(program.degree) },
     { value: 'tenant:asc', label: $t('Pagal padalinį (A–Z)'), by: program => program.tenant?.shortname ?? '' },
     { value: 'tenant:desc', label: $t('Pagal padalinį (Z–A)'), by: program => program.tenant?.shortname ?? '' },
+    { value: 'created_at:asc', label: `${$t('Sukurta')} · ↑`, by: program => program.created_at ? new Date(program.created_at).getTime() : 0 },
+    { value: 'created_at:desc', label: `${$t('Sukurta')} · ↓`, by: program => program.created_at ? new Date(program.created_at).getTime() : 0 },
+    { value: 'updated_at:asc', label: `${$t('Atnaujinta')} · ↑`, by: program => program.updated_at ? new Date(program.updated_at).getTime() : 0 },
+    { value: 'updated_at:desc', label: `${$t('Atnaujinta')} · ↓`, by: program => program.updated_at ? new Date(program.updated_at).getTime() : 0 },
   ],
   facets: [
     { field: 'degree', label: $t('Laipsnis'), get: program => program.degree, valueLabel: degreeLabel },
@@ -149,5 +157,7 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'name', label: $t('Studijų programa'), sortField: 'name' },
   { key: 'degree', label: $t('Laipsnis'), class: 'w-40', sortField: 'degree' },
   { key: 'tenant', label: $t('Padalinys'), class: 'w-32', sortField: 'tenant' },
+  { key: 'created_at', label: $t('Sukurta'), class: 'w-36', sortField: 'created_at', defaultHidden: true },
+  { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', sortField: 'updated_at', defaultHidden: true },
 ]);
 </script>

@@ -11,6 +11,9 @@
     default-view="table"
     :item-key="userKey"
     :columns
+    table-fixed
+    actions-width="w-44"
+    table-min-width="min-w-[64rem]"
     :selectable="mergeMode"
     @row-action="(item, key) => actions.select(key, item.force_delete_blocked_reason)"
     :trash="{ count: deletedCount, active: isTrash }"
@@ -31,23 +34,14 @@
       </Button>
     </template>
 
-    <template #row="{ item, actions: recordActions }">
-      <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
-        <div class="flex min-w-0 flex-1 items-center gap-3">
-          <UserAvatar :user="item" :size="40" class="shrink-0" />
-          <CollectionPrimaryCell :title="item.name" :href="isTrash ? undefined : route('users.show', item.id)" :sub="item.email ?? undefined" />
-          <StatusBadge v-if="!isTrash && noUnit(item)" :status="withoutUnit" class="shrink-0" />
-          <span v-else-if="!isTrash && yearSpan(item)" class="shrink-0 text-sm tabular-nums text-muted-foreground">{{ yearSpan(item) }}</span>
-        </div>
-        <MemberTermsSummary
-          v-if="!isTrash && !noUnit(item)"
-          :duties="item.duties ?? []"
-          :current-count="Number(item.current_duties_count ?? 0)"
-          :total-count="Number(item.duties_count ?? 0)"
-          class="self-start sm:self-center"
-        />
-        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => actions.select(key, item.force_delete_blocked_reason)" />
-      </article>
+    <template #row="{ item, actions: recordActions, view }">
+      <CollectionRow :actions="view === 'preview' ? [] : recordActions" :spotlight="item === source.items.value[0]" class="px-3 py-2.5 sm:px-4" @select="key => actions.select(key, item.force_delete_blocked_reason)">
+        <template #lead><UserAvatar :user="item" :size="40" /></template>
+        <CollectionPrimaryCell :title="item.name" :href="isTrash ? undefined : route('users.show', item.id)" />
+        <p class="mt-0.5 text-xs text-muted-foreground">{{ [item.email, !isTrash ? yearSpan(item) : null].filter(Boolean).join(' · ') }}</p>
+        <StatusBadge v-if="view !== 'preview' && !isTrash && noUnit(item)" :status="withoutUnit" class="mt-1" />
+        <MemberTermsSummary v-if="view !== 'preview' && !isTrash && !noUnit(item)" :duties="item.duties ?? []" :current-count="Number(item.current_duties_count ?? 0)" :total-count="Number(item.duties_count ?? 0)" class="mt-1" />
+      </CollectionRow>
     </template>
 
     <template #cell="{ item, column }">
@@ -69,6 +63,7 @@
         />
         <span v-else class="text-muted-foreground">—</span>
       </template>
+      <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
     </template>
 
     <template #preview="{ item, actions: recordActions }">
@@ -77,8 +72,9 @@
           <UserAvatar :user="item" :size="56" />
         </template>
         <template #actions>
-          <CollectionRowActions :actions="recordActions" @select="key => actions.select(key, item.force_delete_blocked_reason)" />
+          <CollectionRowActions :actions="recordActions" emphasis full-labels @select="key => actions.select(key, item.force_delete_blocked_reason)" />
         </template>
+        <StatusBadge v-if="!isTrash && noUnit(item)" :status="withoutUnit" />
         <PreviewSection v-if="!isTrash && !noUnit(item)" :title="$t('Pareigos')">
           <MemberTermsSummary
             :duties="item.duties ?? []"
@@ -141,6 +137,9 @@ import { computed, ref } from 'vue';
 
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
+import { quickFilterLabel } from '@/Components/Collection/quickFilterLabel';
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
+import { formatRecordDate } from '@/Utils/dateTime';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
@@ -226,6 +225,8 @@ const source = useDatabaseCollectionSource<UserRow>({
     { value: 'last_action:asc', label: $t('Seniausiai prisijungę') },
     { value: 'created_at:desc', label: $t('Naujausi pirmiausia') },
     { value: 'created_at:asc', label: $t('Seniausi pirmiausia') },
+    { value: 'updated_at:asc', label: `${$t('Atnaujinta')} · ↑` },
+    { value: 'updated_at:desc', label: `${$t('Atnaujinta')} · ↓` },
   ],
   preserveUrlKeys: ['showDeleted'],
 });
@@ -242,8 +243,8 @@ const actions = useCollectionRecordActions({
 const actionsFor = (user: UserRow): CollectionRowAction[] => isTrash
   ? actions.rowActions(user, user.name, true)
   : [
-      { key: 'open', label: $t('Atidaryti'), role: 'open' as const, icon: ArrowUpRight, href: route('users.show', user.id) },
-      ...(rowAbilities.can(user.id, 'update') ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: route('users.edit', user.id) }] : []),
+      { key: 'open', label: $t('Atidaryti'), role: 'open' as const, primary: true, icon: ArrowUpRight, href: route('users.show', user.id) },
+      ...(rowAbilities.can(user.id, 'update') ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, menuOnly: true, href: route('users.edit', user.id) }] : []),
       ...(rowAbilities.can(user.id, 'delete') ? [{ key: `delete:${user.id}:${user.name}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
     ];
 
@@ -259,12 +260,12 @@ const yearSpan = (user: UserRow) => termYearSpan(
 );
 
 const quickFilters = computed<CollectionQuickFilter[]>(() => [
-  { id: 'current', label: $t('Dabartiniai'), active: source.filters.value.membership === 'current' },
-  { id: 'former', label: $t('Buvę'), active: source.filters.value.membership === 'former' },
+  { id: 'current', label: quickFilterLabel($t('Dabartiniai'), 0), active: source.filters.value.membership === 'current' },
+  { id: 'former', label: quickFilterLabel($t('Buvę'), 0), active: source.filters.value.membership === 'former' },
   ...(!isTrash
     ? [{
         id: 'duplicates',
-        label: $t('users.filters.duplicates'),
+        label: quickFilterLabel($t('users.filters.duplicates'), 0),
         active: duplicatesActive.value,
         spotlight: {
           id: 'user-duplicates-v1',
@@ -292,9 +293,11 @@ function toggleQuickFilter(id: string): void {
 
 const columns = computed<CollectionColumn[]>(() => [
   { key: 'name', label: $t('Vardas'), sortField: 'name' },
-  { key: 'email', label: $t('El. paštas'), sortField: 'email' },
+  { key: 'email', label: $t('El. paštas'), class: 'w-56', sortField: 'email' },
   { key: 'years', label: $t('Metai'), class: 'w-40' },
   { key: 'duties', label: $t('Pareigos'), class: 'w-44' },
+  { key: 'created_at', label: $t('Sukurta'), class: 'w-36', sortField: 'created_at', defaultHidden: true },
+  { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', sortField: 'updated_at', defaultHidden: true },
 ]);
 
 const userKey = (user: UserRow) => String(user.id);
