@@ -3,7 +3,6 @@
     :row-actions="item => actionsFor(item)"
     :source
     collection="news"
-    entity-type="news"
     :eyebrow
     :title="$t('Naujienos')"
     :lead="isTrash
@@ -13,6 +12,8 @@
     :item-key="newsKey"
     :columns
     table-fixed
+    actions-width="w-44"
+    table-min-width="min-w-[56rem]"
     @row-action="(item, key) => actions.select(key, item.force_delete_blocked_reason)"
     :selectable="canBulkEdit"
     :trash="{ count: deletedCount, active: isTrash }"
@@ -27,37 +28,23 @@
       </Button>
     </template>
 
-    <template #row="{ item, actions: recordActions }">
-      <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
-        <div class="min-w-0 flex-1">
-          <div class="flex items-start justify-between gap-3">
-            <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches" :title="item.title" :href="isTrash ? undefined : route('news.edit', item.id)" :sub="item.short" />
-            <CollectionStatusMenu
-              v-if="!isTrash"
-              :status="newsStatus(item)"
-              :model-value="publishing.statusValue(item)"
-              :options="publishing.statusOptions"
-              :editable="canBulkEdit"
-              @update:model-value="value => publishing.setPublished([String(item.id)], value === 'published')"
-            />
-          </div>
-          <p class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-            <span class="tabular-nums">{{ dateOf(item) }}</span>
-            <span v-if="item.tenant_shortname" aria-hidden="true" class="text-border">·</span>
-            <span v-if="item.tenant_shortname">{{ item.tenant_shortname }}</span>
-            <span aria-hidden="true" class="text-border">·</span>
-            <span>{{ languageLabel(item.lang) }}</span>
-          </p>
+    <template #row="{ item, actions: recordActions, view }">
+      <CollectionRow :actions="view === 'preview' ? [] : recordActions" :spotlight="item === source?.items.value[0]" class="px-3 py-2.5 sm:px-4" @select="key => actions.select(key, item.force_delete_blocked_reason)">
+        <template v-if="view !== 'preview'" #lead>
+          <CollectionStatusIcon :status="newsStatus(item)" />
+        </template>
+        <div class="flex items-start justify-between gap-3">
+          <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches" :title="item.title" :href="isTrash ? undefined : route('news.edit', item.id)" :sub="stripHtml(item.short)" />
         </div>
-        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => actions.select(key, item.force_delete_blocked_reason)" />
-      </article>
+        <p class="mt-0.5 text-xs text-muted-foreground">{{ [dateOf(item), item.tenant_shortname, languageLabel(item.lang)].filter(Boolean).join(' · ') }}</p>
+      </CollectionRow>
     </template>
 
     <template #cell="{ item, column }">
       <CollectionPrimaryCell v-if="column.key === 'title'" :match="item._searchMatch"
         :title-matches="item._searchTitleMatches"
         :title="item.title"
-        :title-lines="2"
+        title-lines="wrap"
         :href="isTrash ? undefined : route('news.edit', item.id)"
       />
       <span v-else-if="column.key === 'tenant'" class="text-muted-foreground">{{ item.tenant_shortname ?? '—' }}</span>
@@ -72,6 +59,7 @@
         />
       </div>
       <span v-else-if="column.key === 'date'" class="tabular-nums text-muted-foreground">{{ dateOf(item) }}</span>
+      <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
     </template>
 
     <template #preview="{ item, actions: recordActions }">
@@ -80,7 +68,7 @@
         :news="item"
         :trashed="isTrash"
         :date="dateOf(item)"
-        :date-label="isTrash ? $t('Ištrinta') : $t('Paskelbta')"
+        :date-label="isTrash ? $t('Ištrinta') : undefined"
       >
         <template v-if="!isTrash" #status>
           <CollectionStatusMenu
@@ -94,7 +82,7 @@
         <template #actions>
           <CollectionRowActions
             :actions="recordActions"
-            class="flex-wrap"
+            emphasis full-labels
             @select="key => actions.select(key, item.force_delete_blocked_reason)"
           />
         </template>
@@ -137,6 +125,8 @@ import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAc
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import CollectionPublishActions from '@/Components/Collection/CollectionPublishActions.vue';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
+import CollectionStatusIcon from '@/Components/Collection/CollectionStatusIcon.vue';
 import CollectionStatusMenu from '@/Components/Collection/CollectionStatusMenu.vue';
 import type { CollectionColumn } from '@/Components/Collection/types';
 import { NewsIcon } from '@/Components/icons';
@@ -153,8 +143,9 @@ import {
   useTrashCollectionSource,
   useTypesenseCollectionSource,
 } from '@/Composables/useCollectionSource';
+import { stripHtml } from '@/Features/Admin/AdminSearch/Utils/html';
 import type { NewsSearchResult } from '@/Shared/Search/types';
-import { formatDate } from '@/Utils/dateTime';
+import { formatDate, formatRecordDate } from '@/Utils/dateTime';
 
 type NewsRow = NewsSearchResult & {
   tenant_shortname?: string;
@@ -172,7 +163,7 @@ const isTrash = isTrashView();
 const canCreate = computed(() => Boolean(page.props.auth?.can?.create?.news));
 const canForceDelete = computed(() => Boolean(page.props.auth?.can?.forceDelete?.news));
 
-const eyebrow = computed(() => `${$t('shell.workspaces.svetaine.title')} · ${$t('shell.sections.naujienos')}`);
+const eyebrow = computed(() => $t('shell.workspaces.svetaine.title'));
 
 const source = useTrashAwareSource<NewsRow>(
   () => useTypesenseCollectionSource<NewsRow>({ collection: 'news', preserveUrlKeys: ['view', 'item'] }),
@@ -212,10 +203,12 @@ function dateOf(item: NewsRow): string {
 }
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'title', label: $t('Naujiena'), class: 'w-64', sortField: 'title' },
+  { key: 'title', label: $t('Naujiena'), class: 'w-72', sortField: 'title' },
   { key: 'tenant', label: $t('Padalinys'), class: 'w-32' },
   { key: 'lang', label: $t('Kalba'), class: 'w-28' },
   { key: 'status', label: $t('Būsena'), class: 'w-36' },
   { key: 'date', label: isTrash ? $t('Ištrinta') : $t('Paskelbta'), class: 'w-32', sortField: isTrash ? 'deleted_at' : 'publish_time' },
+  { key: 'created_at', label: $t('Sukurta'), class: 'w-36', sortField: 'created_at', defaultHidden: true },
+  { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', sortField: 'updated_at', defaultHidden: true },
 ]);
 </script>

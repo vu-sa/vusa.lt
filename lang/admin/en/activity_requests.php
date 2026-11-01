@@ -11,7 +11,8 @@ return [
     'bulk_title' => 'Select several institutions',
     'bulk_hint' => 'Select institutions matching the filters and search together. More results load automatically, up to 100 institutions. You can also clear the entire selection.',
     'personal' => [
-        'title' => 'My activity requests',
+        'title' => 'Activity requests',
+        'lead' => 'See what you were asked about institution activity, and answer requests that are still open.',
         'record_title' => 'Activity requests',
         'active_title' => 'Waiting for your answer',
         'answer' => 'Answer',

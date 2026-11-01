@@ -36,13 +36,13 @@ const CollectionPageStub = {
   template: '<div><div v-for="item in source.items.value" :key="item.id" data-testid="row"><slot name="row" :item="item" :actions="rowActions?.(item) ?? []" /></div></div>',
 };
 
-const createWrapper = () => mount(ShowSupportRequests, {
+const createWrapper = (tabCounts = { all: 4, mine: 1 }) => mount(ShowSupportRequests, {
   props: {
     requests: {
       data: [request], total: 1, per_page: 20, current_page: 1, last_page: 1, from: 1, to: 1,
     },
     currentTab: 'all',
-    tabCounts: { all: 4, mine: 1 },
+    tabCounts,
     statusCounts: { new: 2, reviewing: 1, planned: 0, in_progress: 1, done: 0, declined: 0 },
     filters: {},
     sorting: [{ id: 'created_at', desc: true }],
@@ -78,6 +78,15 @@ describe('support request dashboard', () => {
     expect(wrapper.text()).toContain('Privatu');
   });
 
+  it('omits zero counts from quick filter labels', () => {
+    const wrapper = createWrapper({ all: 0, mine: 0 });
+    expect(wrapper.findComponent(CollectionPageStub).props('quickFilters')).toEqual([
+      { id: 'all', label: 'Visi', active: true },
+      { id: 'mine', label: 'Mano pranešimai', active: false },
+    ]);
+    wrapper.unmount();
+  });
+
   it('changes tabs through the collection quick filters', async () => {
     const wrapper = createWrapper();
     wrapper.findComponent(CollectionPageStub).vm.$emit('quickFilter', 'mine');
@@ -97,7 +106,9 @@ it.each([true, false])('offers support request edit and delete only when allowed
   rowAbilityState.delete = allowed;
   const wrapper = createWrapper();
   const actions = wrapper.findComponent(CollectionPageStub).props('rowActions')(request);
+  expect(actions[0]).toMatchObject({ role: 'open', primary: true, label: 'Atidaryti' });
   expect(actions.some(action => action.role === 'edit')).toBe(allowed);
+  if (allowed) expect(actions.find(action => action.role === 'edit')).toMatchObject({ menuOnly: true });
   expect(actions.some(action => action.destructive)).toBe(allowed);
   wrapper.unmount();
 });

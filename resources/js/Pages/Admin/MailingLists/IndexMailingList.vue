@@ -3,14 +3,16 @@
     :row-actions
     :source
     collection="mailingLists"
-    entity-type="mailing_list"
-    :eyebrow="`${$t('shell.workspaces.organizacija.title')} · ${$t('shell.sections.konferencijos')}`"
+    :eyebrow="$t('shell.workspaces.organizacija.title')"
     :title="$t('shell.sections.konferencijos')"
     :lead="mailmanConfigured ? $t('mailing_lists.lead') : $t('mailing_lists.not_configured')"
     default-view="rows"
     :available-views="['rows', 'table']"
     :item-key="list => list.id"
     :columns
+    table-fixed
+    actions-width="w-44"
+    table-min-width="min-w-[89rem]"
     :search-placeholder="$t('mailing_lists.search')"
   >
     <template #actions>
@@ -27,24 +29,18 @@
     </template>
 
     <template #row="{ item, actions: recordActions }">
-      <article class="flex min-h-16 items-center gap-4 px-3 py-3 sm:px-4">
+      <CollectionRow :actions="recordActions" :spotlight="item === source?.items.value[0]" class="px-3 py-3 sm:px-4">
         <div class="min-w-0 flex-1">
           <Link :href="route('mailingLists.show', item.id)" data-collection-open class="block truncate font-medium hover:text-brand">
             {{ item.address }}
           </Link>
-          <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-            <span v-if="item.display_name !== item.address" class="font-medium">{{ item.display_name }}</span>
-            <span v-if="item.tenant">{{ item.tenant.shortname }}</span>
-            <span aria-hidden="true">·</span>
-            <span>{{ $t('mailing_lists.fields.members') }}: {{ item.member_count }}</span>
-            <span aria-hidden="true">·</span>
-            <span>{{ $t('mailing_lists.fields.last_post') }}: {{ item.last_post_at ? formatNearDate(item.last_post_at) : '—' }}</span>
-          </div>
+          <p class="mt-1 text-xs text-muted-foreground">{{ rowFacts(item).join(' · ') }}</p>
         </div>
-        <StatusBadge v-if="item.last_sync_status && item.last_sync_status !== 'synced'" :status="mailingListSyncStatuses[item.last_sync_status]" />
-        <StatusBadge :status="mailingListModes[item.mode]" />
-        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" />
-      </article>
+        <div class="mt-2 flex flex-wrap gap-2">
+          <StatusBadge v-if="item.last_sync_status && item.last_sync_status !== 'synced'" :status="mailingListSyncStatuses[item.last_sync_status]" />
+          <StatusBadge :status="mailingListModes[item.mode]" />
+        </div>
+      </CollectionRow>
     </template>
 
     <template #cell="{ item, column }">
@@ -54,6 +50,7 @@
       <StatusBadge v-else-if="column.key === 'mode'" :status="mailingListModes[item.mode]" />
       <span v-else-if="column.key === 'tenant'" class="text-xs">{{ item.tenant?.shortname ?? '—' }}</span>
       <span v-else-if="column.key === 'member_count'" class="tabular-nums">{{ item.member_count }}</span>
+      <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
       <span v-else-if="column.key === 'posts_last_year'" class="tabular-nums">{{ item.posts_last_year ?? '—' }}</span>
       <span v-else-if="column.key === 'last_post_at'" class="text-xs tabular-nums">{{ item.last_post_at ? formatDate(item.last_post_at) : '—' }}</span>
     </template>
@@ -78,7 +75,7 @@ import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { computed, ref, toRef } from 'vue';
 
 import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
-import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import { useRowAbilities } from '@/Composables/useRowAbilities';
 import type { CollectionColumn } from '@/Components/Collection/types';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
@@ -88,7 +85,7 @@ import { useLocalCollectionSource } from '@/Composables/useCollectionSource';
 import { mailingListModes, mailingListSyncStatuses } from '@/Constants/statuses';
 import MailingListSheetForm from '@/Features/Admin/MailingLists/MailingListSheetForm.vue';
 import type { MailingListSummary } from '@/Features/Admin/MailingLists/types';
-import { formatDate, formatNearDate } from '@/Utils/dateTime';
+import { formatDate, formatNearDate, formatRecordDate } from '@/Utils/dateTime';
 
 type MailingListRow = MailingListSummary & { sources_count: number };
 
@@ -112,6 +109,10 @@ const source = useLocalCollectionSource<MailingListRow>({
   searchText: list => [list.address, list.display_name, list.description, list.tenant?.shortname],
   defaultSort: 'address:asc',
   sortOptions: () => [
+    { value: 'created_at:asc', label: $t('Seniausiai sukurti'), by: list => list.created_at ?? '' },
+    { value: 'created_at:desc', label: $t('Naujausiai sukurti'), by: list => list.created_at ?? '' },
+    { value: 'updated_at:asc', label: $t('Seniausiai atnaujinti'), by: list => list.updated_at ?? '' },
+    { value: 'updated_at:desc', label: $t('Paskutiniai atnaujinti'), by: list => list.updated_at ?? '' },
     { value: 'address:asc', label: $t('Pagal pavadinimą (A–Z)'), by: list => list.address },
     { value: 'address:desc', label: $t('Pagal pavadinimą (Z–A)'), by: list => list.address },
     { value: 'last_post_at:desc', label: $t('Naujausias laiškas'), by: list => list.last_post_at ?? null },
@@ -136,8 +137,17 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'tenant', label: $tChoice('entities.tenant.model', 1), class: 'w-24' },
   { key: 'member_count', label: $t('mailing_lists.fields.members'), class: 'w-24', sortField: 'member_count' },
   { key: 'posts_last_year', label: $t('mailing_lists.fields.posts_last_year'), class: 'w-28' },
+  { key: 'created_at', label: $t('Sukurta'), class: 'w-36', sortField: 'created_at', defaultHidden: true },
+  { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', sortField: 'updated_at', defaultHidden: true },
   { key: 'last_post_at', label: $t('mailing_lists.fields.last_post'), class: 'w-32', sortField: 'last_post_at' },
 ]);
+
+const rowFacts = (item: MailingListRow): string[] => [
+  item.display_name !== item.address ? item.display_name : null,
+  item.tenant?.shortname,
+  `${$t('mailing_lists.fields.members')}: ${item.member_count}`,
+  `${$t('mailing_lists.fields.last_post')}: ${item.last_post_at ? formatNearDate(item.last_post_at) : '—'}`,
+].filter((part): part is string => Boolean(part));
 
 function importFromMailman(): void {
   importing.value = true;
@@ -147,8 +157,8 @@ function importFromMailman(): void {
   });
 }
 const rowActions = (item: MailingListRow): AdminRecordAction[] => [
-  { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, href: route('mailingLists.show', item.id) },
-  ...(rowAbilities.can(item.id, 'update') ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: route('mailingLists.show', { mailingList: item.id, action: 'edit' }) }] : []),
+  { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, primary: true, href: route('mailingLists.show', item.id) },
+  ...(rowAbilities.can(item.id, 'update') ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, menuOnly: true, href: route('mailingLists.show', { mailingList: item.id, action: 'edit' }) }] : []),
 ];
 
 const rowAbilities = useRowAbilities('mailingLists', () => source.items.value.map(item => item.id));

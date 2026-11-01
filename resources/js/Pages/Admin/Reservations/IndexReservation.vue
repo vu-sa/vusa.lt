@@ -1,16 +1,18 @@
 <template>
   <CollectionPage
     v-model:selection="selectedIds"
-    :row-actions="reservationRowActions"
+    :row-actions="actionsFor"
     :source
     collection="reservations"
-    entity-type="reservation"
-    :eyebrow="$t('shell.workspaces.rezervacijos.title') + ' · ' + $t('shell.sections.rezervacijos')"
+    :eyebrow="$t('shell.workspaces.rezervacijos.title')"
     :title="$t('Rezervacijos')"
     :lead="$t('Stebėk prašymus, patvirtink išdavimą ir pažymėk grąžinimą.')"
     default-view="table"
     :item-key="reservationKey"
     :columns
+    table-fixed
+    actions-width="w-44"
+    table-min-width="min-w-[80rem]"
     @row-action="(item, key) => openDecision(key as ReservationDecision, item)"
     :selectable="managesResources"
     :can-select="isReservationSelectable"
@@ -31,20 +33,20 @@
       </Button>
     </template>
 
-    <template #row="{ item, actions }">
-      <article class="flex min-h-16 items-start gap-3 px-4 py-4">
+    <template #row="{ item, actions, view }">
+      <CollectionRow :spotlight="item === source?.items.value[0]" :actions="view === 'preview' ? [] : actions" @select="key => openDecision(key as ReservationDecision, item)" class="px-3 py-3 sm:px-4">
         <div class="min-w-0 flex-1">
           <div class="flex items-start justify-between gap-3">
             <CollectionPrimaryCell :title="item.name" :href="route('reservations.show', item.id)" />
-            <ReservationStateSummary :states="statesOf(item)" :unresolved="isUnresolved(item)" class="shrink-0" />
+            <ReservationStateSummary v-if="view !== 'preview'" :states="statesOf(item)" :unresolved="isUnresolved(item)" class="shrink-0" />
           </div>
-          <ReservationResourceChips class="mt-1.5" :resources="item.resources" :muted-foreign="isAdministrator(item)" />
+          <ReservationResourceChips v-if="view !== 'preview'" class="mt-1.5" :resources="item.resources" :muted-foreign="isAdministrator(item)" />
           <p class="mt-1.5 text-sm tabular-nums text-muted-foreground">
             {{ reservationPeriod(item) }}
           </p>
-          <CollectionRowActions :spotlight="item === source?.items.value[0]" class="mt-2 flex-wrap" :actions @select="key => openDecision(key as ReservationDecision, item)" />
+
         </div>
-      </article>
+      </CollectionRow>
     </template>
 
     <template #cell="{ item, column }">
@@ -72,12 +74,13 @@
         :states="statesOf(item)"
         :unresolved="isUnresolved(item)"
       />
+      <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
     </template>
 
     <template #preview="{ item, actions }">
       <ReservationPreview :key="item.id" :reservation="item">
         <template #actions>
-          <CollectionRowActions :actions class="flex-wrap" @select="key => openDecision(key as ReservationDecision, item)" />
+          <CollectionRowActions :actions emphasis full-labels class="flex-wrap" @select="key => openDecision(key as ReservationDecision, item)" />
         </template>
       </ReservationPreview>
     </template>
@@ -136,6 +139,7 @@ import { EmptyState } from '@/Components/Patterns';
 import ReservationDecisionDialog from '@/Components/Reservations/ReservationDecisionDialog.vue';
 import ReservationPreview from '@/Components/Reservations/ReservationPreview.vue';
 import ReservationResourceChips from '@/Components/Reservations/ReservationResourceChips.vue';
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import { reservationRowActions } from '@/Components/Reservations/reservationRowActions';
 import type { ReservationDecision } from '@/Components/Reservations/types';
@@ -145,7 +149,7 @@ import ReservationStateSummary from '@/Components/Tag/ReservationStateSummary.vu
 import { Button } from '@/Components/ui/button';
 import { ReservationIcon } from '@/Components/icons';
 import { useDatabaseCollectionSource, type DatabaseFacetDefinition } from '@/Composables/useCollectionSource';
-import { formatDate } from '@/Utils/dateTime';
+import { formatRecordDate, formatDate } from '@/Utils/dateTime';
 import { capitalize } from '@/Utils/String';
 import {
   getReservationStates,
@@ -155,7 +159,14 @@ import {
   type DashboardReservation,
 } from '@/Utils/ReservationStatus';
 
-const entityName = 'reservation';
+const actionsFor = (reservation: DashboardReservation) => {
+  const actions = reservationRowActions(reservation);
+  const hasDecision = actions.some(action => action.primary);
+
+  return actions.map(action => action.role === 'open'
+    ? { ...action, primary: !hasDecision, menuOnly: hasDecision }
+    : action);
+};
 
 const props = defineProps<{
   reservations: { data: DashboardReservation[]; meta: { total: number; per_page: number; current_page: number; last_page: number } };
@@ -191,7 +202,7 @@ const facets = computed<DatabaseFacetDefinition[]>(() => [
   { field: 'overdue', label: $t('Terminas'), single: true, values: [{ value: '1', label: $t('Vėluoja grąžinti') }] },
 ]);
 
-const source = useDatabaseCollectionSource<DashboardReservation>({
+const source = useDatabaseCollectionSource<DashboardReservation & { updated_at?: string }>({
   endpoint: route('api.v1.admin.reservations.index'),
   initial: {
     items: props.reservations.data,
@@ -207,16 +218,21 @@ const source = useDatabaseCollectionSource<DashboardReservation>({
     { value: 'name:asc', label: $t('Pagal pavadinimą (A–Z)') },
     { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)') },
     { value: 'created_at:desc', label: $t('Naujausios sukurtos') },
+    { value: 'created_at:asc', label: $t('Seniausios pirmiausia') },
+    { value: 'updated_at:desc', label: $t('Paskutiniai atnaujinti') },
+    { value: 'updated_at:asc', label: $t('Seniausios atnaujintos') },
   ],
   facets: facets.value,
 });
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'name', label: $t('Rezervacija'), class: 'min-w-44', sortField: 'name' },
+  { key: 'name', label: $t('Rezervacija'), sortField: 'name' },
   { key: 'requester', label: $t('Prašytojas'), class: 'w-44' },
-  { key: 'resources', label: $t('Ištekliai') },
+  { key: 'resources', label: $t('Ištekliai'), class: 'w-64' },
   { key: 'period', label: $t('Laikas'), class: 'w-36', sortField: 'start_time' },
   { key: 'status', label: $t('Būsena'), class: 'w-36' },
+  { key: 'created_at', label: $t('Sukurta'), class: 'w-36', defaultHidden: true, sortField: 'created_at' },
+  { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', defaultHidden: true, sortField: 'updated_at' },
 ]);
 
 // --- Quick filters: the URL state an overview number links to ---------------------------------

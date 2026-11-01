@@ -19,14 +19,17 @@ describe('DocumentFileActions', () => {
     expect(wrapper.find('[data-action="edit"]').exists()).toBe(allowed);
     const actions = wrapper.findComponent({ name: 'CollectionRowActions' }).props('actions');
     expect(actions.find(action => action.key === 'sharepoint')?.role).toBeUndefined();
-    expect(actions.find(action => action.key === 'public')?.role).toBe('open');
+    expect(actions.some(action => action.key === 'edit')).toBe(allowed);
+    if (allowed) expect(actions.find(action => action.key === 'edit')?.primary).toBe(true);
+    expect(actions.find(action => action.key === 'public')).toMatchObject({ role: allowed ? undefined : 'open', primary: !allowed });
     wrapper.unmount();
   });
 
-  it('keeps the SharePoint destination as open when a public link is unavailable', () => {
+  it('keeps editing primary when a public link is unavailable', () => {
     const wrapper = mount(DocumentFileActions, { props: { file: { ...file, public_url: null } } as never });
     const actions = wrapper.findComponent({ name: 'CollectionRowActions' }).props('actions');
-    expect(actions.find(action => action.key === 'sharepoint')?.role).toBe('open');
+    expect(actions.find(action => action.key === 'sharepoint')?.role).toBeUndefined();
+    expect(actions.find(action => action.key === 'edit')).toMatchObject({ role: 'edit', primary: true, href: route('documents.edit', file.id) });
     wrapper.unmount();
   });
 

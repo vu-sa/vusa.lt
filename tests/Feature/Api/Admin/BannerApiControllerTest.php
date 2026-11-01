@@ -46,3 +46,11 @@ test('filters banners by search query', function (): void {
         ->assertJsonCount(1, 'data.items')
         ->assertJsonPath('data.items.0.title', 'Unikalus baneris');
 });
+
+test('puts active banners first by default and honors an explicit sort', function (): void {
+    $inactive = Banner::factory()->for($this->tenant)->create(['title' => 'A first by title', 'is_active' => false]);
+    asUser($this->admin)->getJson(route('api.v1.admin.banners.index'))
+        ->assertOk()->assertJsonPath('data.items.0.id', $this->banner->id);
+    asUser($this->admin)->getJson(route('api.v1.admin.banners.index', ['sort' => 'title:asc']))
+        ->assertOk()->assertJsonPath('data.items.0.id', $inactive->id);
+});

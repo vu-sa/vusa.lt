@@ -3,7 +3,6 @@
     :row-actions="item => actionsFor(item)"
     :source
     collection="calendar"
-    entity-type="calendar"
     :eyebrow
     :title="$t('Renginiai')"
     :lead="isTrash
@@ -12,6 +11,9 @@
     default-view="table"
     :item-key="eventKey"
     :columns
+    table-fixed
+    actions-width="w-44"
+    table-min-width="min-w-[56rem]"
     :quick-filters
     @row-action="(item, key) => select(key, item)"
     :trash="{ count: deletedCount, active: isTrash }"
@@ -27,47 +29,22 @@
       </Button>
     </template>
 
-    <template #row="{ item, actions: recordActions }">
-      <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
-        <div class="min-w-0 flex-1">
-          <div class="flex items-start justify-between gap-3">
-            <CollectionPrimaryCell
-              :title="titleOf(item)"
-              :href="isTrash ? undefined : route('calendar.edit', item.id)"
-              :sub="canEdit && !isTrash ? undefined : eventTypeOf(item)"
-            />
-            <CollectionStatusMenu
-              :status="item.is_draft ? contentStatuses.draft : contentStatuses.published"
-              :model-value="item.is_draft ? 'draft' : 'published'"
-              :options="statusOptions"
-              :editable="canEdit && !isTrash"
-              @update:model-value="value => updateEvent(item, { is_draft: value === 'draft' })"
-            />
-          </div>
-          <p class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-            <span class="tabular-nums">{{ dateOf(item) }}</span>
-            <span v-if="item.tenant" aria-hidden="true" class="text-border">·</span>
-            <span v-if="item.tenant">{{ item.tenant.shortname }}</span>
-          </p>
+    <template #row="{ item, actions: recordActions, view }">
+      <CollectionRow :actions="view === 'preview' ? [] : recordActions" :spotlight="item === source?.items.value[0]" class="px-3 py-2.5 sm:px-4" @select="key => select(key, item)">
+        <template v-if="view !== 'preview'" #lead>
+          <CollectionStatusIcon :status="item.is_draft ? contentStatuses.draft : contentStatuses.published" />
+        </template>
+        <div class="flex items-start justify-between gap-3">
+          <CollectionPrimaryCell :title="titleOf(item)" :href="isTrash ? undefined : route('calendar.edit', item.id)" />
         </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <NativeSelect
-            v-if="canEdit && !isTrash"
-            size="sm"
-            class="w-44 text-xs"
-            :aria-label="$t('Renginio tipas')"
-            :model-value="item.event_type_id == null ? 'none' : String(item.event_type_id)"
-            :options="eventTypeOptions"
-            @update:model-value="value => updateType(item, String(value))"
-          />
-          <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => select(key, item)" />
-        </div>
-      </article>
+        <p class="mt-0.5 text-xs text-muted-foreground">{{ [dateOf(item), item.tenant?.shortname].filter(Boolean).join(' · ') }}</p>
+      </CollectionRow>
     </template>
 
     <template #cell="{ item, column }">
       <CollectionPrimaryCell
         v-if="column.key === 'title'"
+        title-lines="wrap"
         :title="titleOf(item)"
         :href="isTrash ? undefined : route('calendar.edit', item.id)"
         :sub="item.tenant?.shortname"
@@ -91,6 +68,7 @@
         :editable="canEdit && !isTrash"
         @update:model-value="value => updateEvent(item, { is_draft: value === 'draft' })"
       />
+      <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
     </template>
 
     <template #preview="{ item, actions: recordActions }">
@@ -105,7 +83,7 @@
           />
         </template>
         <template #actions>
-          <CollectionRowActions :actions="recordActions" class="flex-wrap" @select="key => select(key, item)" />
+          <CollectionRowActions :actions="recordActions" emphasis full-labels @select="key => select(key, item)" />
         </template>
       </CalendarEventPreview>
     </template>
@@ -136,7 +114,10 @@ import { calendarEventPreviewFromRecord } from '@/Components/Calendar/calendarEv
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
+import CollectionStatusIcon from '@/Components/Collection/CollectionStatusIcon.vue';
 import CollectionStatusMenu from '@/Components/Collection/CollectionStatusMenu.vue';
+import { quickFilterLabel } from '@/Components/Collection/quickFilterLabel';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
 import { CalendarIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
@@ -147,7 +128,7 @@ import { NativeSelect } from '@/Components/ui/native-select';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { isTrashView, useDatabaseCollectionSource, type DatabaseFacetDefinition } from '@/Composables/useCollectionSource';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
-import { formatDateTime } from '@/Utils/dateTime';
+import { formatDateTime, formatRecordDate } from '@/Utils/dateTime';
 
 type EventRow = App.Entities.Calendar & { force_delete_blocked_reason?: string | null };
 
@@ -166,7 +147,7 @@ const canCreate = computed(() => Boolean(page.props.auth?.can?.create?.calendar)
 const canForceDelete = computed(() => Boolean(page.props.auth?.can?.forceDelete?.calendar));
 const canEdit = computed(() => canCreate.value);
 
-const eyebrow = computed(() => `${$t('shell.workspaces.svetaine.title')} · ${$t('shell.sections.kalendorius')}`);
+const eyebrow = computed(() => $t('shell.workspaces.svetaine.title'));
 
 const eventTypeOptions = computed(() => [
   { value: 'none', label: $t('Be tipo') },
@@ -209,6 +190,9 @@ const source = useDatabaseCollectionSource<EventRow>({
   },
   defaultSort: 'date:desc',
   sortOptions: () => [
+    { value: 'updated_at:desc', label: `${$t('Atnaujinta')} ↓` },
+    { value: 'updated_at:asc', label: `${$t('Atnaujinta')} ↑` },
+    { value: 'created_at:asc', label: `${$t('Sukurta')} ↑` },
     { value: 'date:desc', label: $t('Naujausi pirmi') },
     { value: 'date:asc', label: $t('Seniausi pirmi') },
     { value: 'title:asc', label: $t('Pagal pavadinimą (A–Z)') },
@@ -221,7 +205,7 @@ const source = useDatabaseCollectionSource<EventRow>({
 
 const quickFilters = computed<CollectionQuickFilter[]>(() => (isTrash
   ? []
-  : [{ id: 'untyped', label: $t('Be tipo'), active: source.filters.value.untyped === 'true' }]));
+  : [{ id: 'untyped', label: quickFilterLabel($t('Be tipo'), source.facets?.value.find(facet => facet.field === 'untyped')?.values.find(option => option.value === 'true')?.count ?? 0), active: source.filters.value.untyped === 'true' }]));
 
 const actions = useCollectionRecordActions({
   source,
@@ -258,9 +242,11 @@ function updateType(item: EventRow, value: string): void {
 }
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'title', label: $t('Renginys'), sortField: 'title' },
+  { key: 'title', label: $t('Renginys'), class: 'w-72', sortField: 'title' },
   { key: 'date', label: $t('Data'), class: 'w-48', sortField: 'date' },
   { key: 'type', label: $t('Renginio tipas'), class: 'w-44' },
   { key: 'status', label: $t('Būsena'), class: 'w-36' },
+  { key: 'created_at', label: $t('Sukurta'), class: 'w-36', sortField: 'created_at', defaultHidden: true },
+  { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', sortField: 'updated_at', defaultHidden: true },
 ]);
 </script>

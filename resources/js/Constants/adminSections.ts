@@ -1,6 +1,6 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import type { Component } from 'vue';
-import { Bell, ChartNoAxesCombined, FileStack, Folder, LayoutDashboard, ListTree, Mail, Settings2, Tags } from '@lucide/vue';
+import { Bell, ChartNoAxesCombined, FileStack, Folder, LayoutDashboard, ListTree, Mail, MailQuestion, Settings2, ShieldCheck, Tags } from '@lucide/vue';
 
 import type { NavigationTileItem } from '@/Components/Patterns/NavigationTiles.vue';
 import { sectionHref, type AdminSection } from '@/Composables/useAdminNavigation';
@@ -9,6 +9,8 @@ import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 const sectionIcons: Record<string, Component> = {
   apzvalga: LayoutDashboard,
   pranesimai: Bell,
+  atsakomybes: ShieldCheck,
+  veiklos_uzklausos: MailQuestion,
   kategorijos: Tags,
   failai: Folder,
   nustatymai: Settings2,

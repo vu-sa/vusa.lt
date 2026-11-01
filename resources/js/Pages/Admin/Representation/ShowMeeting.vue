@@ -102,8 +102,23 @@
           :can-add="abilities.createAgendaItems"
           :can-reorder="abilities.reorderAgendaItems"
           :requires-student-perspective="!isInternalBody"
+          :loading-item-id="editableAgendaItemLoading"
           @add="openAgendaSheet"
+          @edit="openAgendaItemEditor"
           @delete="requestAgendaItemDelete"
+        />
+        <AgendaItemEditSheet
+          v-if="editableAgendaItem"
+          :key="editableAgendaItemKey"
+          v-model:open="agendaItemEditorOpen"
+          :item="editableAgendaItem"
+          :default-start-time="previousItemEnd(editableAgendaItem.order)"
+          :meeting-start-time="isEmailMeeting(meeting) ? null : formatTime(meeting.start_time)"
+          :requires-student-perspective="!isInternalBody"
+          :is-public="isShownPublicly(publicVisibility)"
+          :can-delete="agendaItemBeingEdited?.can?.delete ?? false"
+          :except="['documents', 'tasks', 'pendingDocuments']"
+          @delete="deleteFromEditor"
         />
       </div>
     </template>
@@ -313,6 +328,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import UsersFactList from '@/Components/Avatars/UsersFactList.vue';
 import MeetingAgendaList from '@/Components/Meetings/MeetingAgendaList.vue';
+import { useApi } from '@/Composables/useApi';
+import type { EditableAgendaItemSource } from '@/Composables/useAgendaItemAutosave';
+import { formatTime } from '@/Utils/dateTime';
+import { isEmailMeeting } from '@/Utils/MeetingDisplay';
+import AgendaItemEditSheet from '@/Components/AgendaItems/AgendaItemEditSheet.vue';
 import MeetingCompletionChecklist, { type MeetingMissingAction } from '@/Components/Meetings/MeetingCompletionChecklist.vue';
 import MeetingDatePlate from '@/Components/Meetings/MeetingDatePlate.vue';
 import AddAgendaItemsSheet, { type AddAgendaMode, type RecentAgenda } from '@/Components/Meetings/AddAgendaItemsSheet.vue';
@@ -439,7 +459,7 @@ const handleUnlinkCalendarEvent = () => {
 };
 
 // File availability is shown as facts, not completion requirements.
-const { hasProtocol, hasReport, isPastMeeting } = useMeetingUrgency(() => props.meeting);
+const { hasProtocol, isPastMeeting } = useMeetingUrgency(() => props.meeting);
 
 // Hide HH:MM for email/electronic meetings (start_time is forced to 23:59 as a deadline marker)
 const meetingTimeLabel = computed(() => formatMeetingTimeOnly(props.meeting));
@@ -452,13 +472,6 @@ const documentStatuses = computed(() => [
     label: $t('meetings.record.protocol'),
     uploaded: hasProtocol.value,
     state: hasProtocol.value ? $t('Įkeltas') : $t('Neįkeltas'),
-  },
-  {
-    key: 'report',
-    fileType: 'Ataskaitos' as FileableFileType,
-    label: $t('meetings.record.report'),
-    uploaded: hasReport.value,
-    state: hasReport.value ? $t('Įkelta') : $t('Neįkelta'),
   },
 ]);
 
@@ -481,6 +494,50 @@ const showDeleteDialog = ref(false);
 const openAgendaSheet = (mode: AddAgendaMode) => {
   agendaSheetMode.value = mode;
   showAgendaSheet.value = true;
+};
+
+// The list holds localized strings, so the sheet loads the item with every translation on opening.
+type AgendaListItem = App.Entities.AgendaItem & { can?: { update?: boolean; delete?: boolean } };
+
+const agendaItemEditorOpen = ref(false);
+const agendaItemBeingEdited = ref<AgendaListItem | null>(null);
+const editableAgendaItem = ref<(EditableAgendaItemSource & { id: string; order: number }) | null>(null);
+const editableAgendaItemKey = ref(0);
+const editableAgendaItemLoading = ref<string | null>(null);
+const editableAgendaItemUrl = ref('');
+const editableAgendaItemApi = useApi<EditableAgendaItemSource & { id: string; order: number }>(editableAgendaItemUrl, { immediate: false, refetch: false });
+
+const openAgendaItemEditor = async (item: AgendaListItem) => {
+  editableAgendaItemLoading.value = item.id;
+  editableAgendaItemUrl.value = route('api.v1.admin.agendaItems.editable', item.id);
+  await editableAgendaItemApi.execute();
+
+  if (editableAgendaItemLoading.value !== item.id) {
+    return;
+  }
+  editableAgendaItemLoading.value = null;
+
+  if (editableAgendaItemApi.isSuccess.value && editableAgendaItemApi.data.value) {
+    agendaItemBeingEdited.value = item;
+    editableAgendaItem.value = editableAgendaItemApi.data.value;
+    editableAgendaItemKey.value++;
+    agendaItemEditorOpen.value = true;
+  }
+};
+
+const deleteFromEditor = () => {
+  agendaItemEditorOpen.value = false;
+  if (agendaItemBeingEdited.value) {
+    requestAgendaItemDelete(agendaItemBeingEdited.value);
+  }
+};
+
+const previousItemEnd = (order: number): string | null => {
+  const previous = (props.meeting.agenda_items ?? [])
+    .filter(item => item.order < order && item.end_time)
+    .sort((a, b) => b.order - a.order)[0];
+
+  return previous?.end_time ? String(previous.end_time).slice(0, 5) : null;
 };
 
 // Read-only by default; toggled on to add/reorder/delete agenda items

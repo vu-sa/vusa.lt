@@ -2,7 +2,7 @@
 doc_status: reviewed
 title: Paskyra ir prieiga
 area: profile
-last_reviewed: 2026-10-27
+last_reviewed: 2026-11-01
 tests:
   - resources/js/Components/Institutions/__tests__/UserActivityRequestHistory.component.test.ts
   - tests/Browser/UserActivityRequestsTest.php
@@ -24,7 +24,7 @@ tests:
 # Paskyra ir prieiga
 
 Viršutinėje juostoje paspaudus savo nuotrauką arba vardą, atveriamas paskyros meniu.
-Jame pasiekiami punktai **Paskyra**, **Mano rolės ir pareigybės**, **Pranešimų nustatymai**, **Mano veiklos užklausos**,
+Jame pasiekiami punktai **Paskyra**, **Pranešimų nustatymai**,
 **Kalba**, **Išvaizda** ir **Pagalba**. Šiais puslapiais gali naudotis kiekvienas prisijungęs narys;
 juose rodomi tavo duomenys.
 
@@ -52,12 +52,12 @@ Tai nekeičia tavo „Microsoft“ paskyros slaptažodžio.
 
 <ChangelogNote date="2026-10-02" title="Pareigos, rolės ir prieigos istorija atskirame puslapyje">
 
-Pasikeitus pareigoms arba neberandant skilties, pirmiausia verta patikrinti **Mano rolės ir pareigybės**.
+Pasikeitus pareigoms arba neberandant skilties, pirmiausia verta patikrinti **Atsakomybės ir pareigybės**.
 Čia matai savo pareigas ir skiltis, kurias gali atverti.
 
 </ChangelogNote>
 
-Atverk **Mano rolės ir pareigybės** (`/mano/profile/roles`). Čia rasi:
+Atverk **Atsakomybės ir pareigybės** (`/mano/profile/roles`). Čia rasi:
 
 - dabartines, būsimas ir buvusias pareigas su institucijomis bei datomis;
 - per pareigybes gautas ir tiesiogiai paskyrai priskirtas roles;
@@ -65,7 +65,7 @@ Atverk **Mano rolės ir pareigybės** (`/mano/profile/roles`). Čia rasi:
 - datuotą pareigų pradžios ir pabaigos istoriją;
 - žymas apie iš kitos pareigybės kylančias (*ex-officio*) ar kito padalinio atstovavimo pareigas.
 
-<DocScreenshot name="my-roles" alt="Mano rolės ir pareigybės: dabartinės pareigybės su datomis ir rolėmis, žemiau – kokias darbo sritis ir skiltis gali atverti" caption="Atstovė mato savo tris pareigybes ir skiltis, kurias jos jai atveria." href="/mano/profile/roles" />
+<DocScreenshot name="my-roles" alt="Atsakomybės ir pareigybės: dabartinės pareigybės su datomis ir rolėmis, žemiau – kokias darbo sritis ir skiltis gali atverti" caption="Atstovė mato savo tris pareigybes ir skiltis, kurias jos jai atveria." href="/mano/profile/roles" />
 
 Jei tavo pareigos prasidės ateityje, prieigą gali gauti jau dabar, kad spėtum pasiruošti.
 Narių sąrašuose narys vis tiek rodomas tik nuo pareigų pradžios. Pabaigos diena dar įskaitoma. Tikslios taisyklės aprašytos
@@ -123,13 +123,13 @@ užveriamas, išskyrus XL teksto dydį, kai paliekama mobilioji navigacija.
 „Microsoft“ atsijungimą. Bendrame kompiuteryje rekomenduojama rinktis ir „Microsoft“ atsijungimą;
 vien naršyklės užvėrimas nėra patikimas atsijungimo veiksmas.
 
-### Mano veiklos užklausos {#veiklos-uzklausos}
+### Veiklos užklausos {#veiklos-uzklausos}
 
 <ChangelogNote date="2026-10-26" title="Veiklos užklausos paskyros meniu ir Pradžioje">
 Gautas veiklos užklausas ir jų būsenas galima peržiūrėti paskyros meniu, o laukiančias atsakymo – Pradžioje.
 </ChangelogNote>
 
-Paskyros meniu **Mano veiklos užklausos** (`/mano/profile/activity-requests`) rodo tau gautas užklausas apie institucijų veiklą ir posėdžių įrašų papildymą. Matoma institucija, laikotarpis, siuntėjas arba automatinis šaltinis, žinutė ir būsena: **Laukiame atsakymo**, **Atsakyta**, **Veikla patvirtinta** arba **Galiojimas baigėsi**. Pirmos rodomos neatsakytos galiojančios užklausos, tada naujausia istorija; **Rodyti daugiau** įkelia kitus įrašus.
+Skiltis **Mano → Veiklos užklausos** (`/mano/profile/activity-requests`) rodo tau gautas užklausas apie institucijų veiklą ir posėdžių įrašų papildymą. Matoma institucija, laikotarpis, siuntėjas arba automatinis šaltinis, žinutė ir būsena: **Laukiame atsakymo**, **Atsakyta**, **Veikla patvirtinta** arba **Galiojimas baigėsi**. Pirmos rodomos neatsakytos galiojančios užklausos, tada naujausia istorija; **Rodyti daugiau** įkelia kitus įrašus.
 
 Prie galiojančios neatsakytos užklausos **Atsakyti** atveria tą patį atsakymo puslapį kaip laiško nuoroda. Atsakymas išsaugomas tik jį patvirtinus. Užklausų istorija išlieka ir pasibaigus pareigoms; papildomų administravimo teisių jai nereikia. Kolegų atsakymai gali užbaigti užklausą – rodoma užbaigimo priežastis ir užfiksuoti rezultatai.
 

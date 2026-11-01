@@ -1,6 +1,6 @@
 <template>
   <OverviewPage
-    :eyebrow="$t('access.eyebrow')"
+    :eyebrow="$t('shell.workspaces.pradzia.title')"
     :title="$t('access.title')"
     :lead="$t('access.lead')"
   >

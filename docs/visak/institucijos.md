@@ -3,8 +3,10 @@ doc_status: reviewed
 title: Institucijos
 area: institutions
 models: [Institution, InstitutionCheckIn, InstitutionSecretary]
-last_reviewed: 2026-10-31
+last_reviewed: 2026-11-01
 tests:
+  - tests/Feature/Search/ListFreshnessTest.php
+  - tests/Feature/Admin/Search/InstitutionMemberTermsApiTest.php
   - tests/Feature/Search/AdminSearchTranslationsTest.php
   - resources/js/Pages/Admin/People/__tests__/IndexInstitution.component.test.ts
   - resources/js/Composables/__tests__/searchTranslations.test.ts
@@ -70,6 +72,30 @@ puslapį `/mano/institutions/{id}`.
 ## Kaip tai veikia
 
 Institucijų sąraše pavadinimai ir tipai rodomi pasirinkta Mano VU SA kalba. Jei vertimo nėra, rodomas lietuviškas arba kitas turimas pavadinimas. Padalinio trumpinys nesikeičia perjungus kalbą.
+
+### Institucijų sąrašas {#sarasas}
+
+Eilutėje rodomas pavadinimas, padalinys, tipai ir narių skaičius. Greitasis filtras **Sekamos** palieka tavo sekamas institucijas, o skiltyje **Filtrai** galima rinktis padalinį, tipą, **Aktyvumą** ir **Būseną**.
+
+Lentelės stulpeliai:
+
+| Stulpelis | Ką rodo |
+|---|---|
+| **Institucija** | Pavadinimas; pagal jį galima rikiuoti |
+| **Padalinys** | Padalinio trumpinys |
+| **Veiklos būklė** | Ar posėdžiai vyksta laiku, žr. [periodiškumą](#periodiskumas) |
+| **Nariai** | Dabartinių ir visų narių skaičius. Atvėrus nariai su jų laikotarpiais rodomi tik galintiems matyti instituciją |
+| **Tipas**, **Sukurta**, **Atnaujinta** | Paslėpti, įjungiami meniu **Stulpeliai**. Pagal datas galima rikiuoti paspaudus antraštę |
+
+**Nebeveikianti** institucija sąraše pažymėta ženklu prieš pavadinimą ir išblukinta, o veiklos būklė jai nerodoma, nes posėdžių iš jos nebetikimasi. Atskiro stulpelio būsenai nėra: tokias institucijas galima atrinkti filtru **Būsena**.
+
+Eilutėje ir lentelėje yra **Atidaryti** ir meniu **⋯** su kitais veiksmais. Telefone visi veiksmai yra meniu **⋯**, o pavadinimas atveria institucijos puslapį. Peržiūroje dešinėje kortelė rodo būseną, atstovus ir paskutinius posėdžius su jų [rezultatais](/visak/posedziai#kaip-praejo), o kairėje lieka tik trumpa eilutė.
+
+<ChangelogNote date="2026-11-01" title="Sąrašas be būsenos keitimo eilutėje">
+
+Institucijos būsena nebekeičiama eilutėje ar lentelėje – tik peržiūros kortelėje arba formoje. Lentelėje atsirado **Veiklos būklė** ir **Nariai**, o sąraše – **Būsenos** filtras.
+
+</ChangelogNote>
 
 Atskiroje formoje sukūrus instituciją, atveriamas jos puslapis. Pareigybių atnaujinimo vedlyje institucija sukuriama liekant vedlyje.
 
@@ -139,7 +165,7 @@ Tai ne tas pats, kas institucijos puslapio **Veiklos būklė**, rodanti, ar pos�
 institucija nerodoma viešame sąraše, jai nekuriamos užduotys dėl posėdžių periodiškumo, o nariai
 be teisės ją matyti jos puslapio neatidaro.
 
-Institucijų sąraše būseną galima keisti tiesiogiai stulpelyje **Būsena** arba prie įrašo eilutėje.
+Sąraše būsena keičiama peržiūros kortelėje, o institucijos formoje – lauke **Būsena**.
 Keitimas rodomas tik turint teisę redaguoti konkrečią instituciją. Prieš pažymint ją neaktyvia,
 patvirtinimo lange rodomas užbaigiamų pareigybių laikotarpių skaičius, pabaigos data ir trukdantys laikotarpiai.
 
@@ -554,6 +580,8 @@ pranešimus „Posėdžio nebuvo“ tvarko ir atstovų apie posėdžius klausia 
   pranešimą, ir **neaktyvioms** institucijoms. Jos terminas nepatenka į atostogas.
 - Veiklos būklė sąrašui perskaičiuojama kas naktį, o užregistravus posėdį ar pranešimą –
   iš karto.
+- Pridėjus ar pakeitus nario laikotarpį, sąrašo nariai atsinaujina iš karto. Savaime pasibaigę
+  laikotarpiai sąraše atsispindi po naktinio perskaičiavimo.
 
 ### Periodiškumas po pranešimo
 

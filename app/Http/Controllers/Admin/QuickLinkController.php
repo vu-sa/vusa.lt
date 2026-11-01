@@ -13,7 +13,6 @@ use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\QuickLink;
 use App\Models\Tag;
-use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use Illuminate\Http\RedirectResponse;
@@ -37,33 +36,25 @@ class QuickLinkController extends AdminController
             ->filter(fn ($tenant) => in_array($tenant['type'], TenantType::representationalValues(), true))
             ->values();
 
-        $tenantId = $request->input('tenant', $tenants->first()['id'] ?? null);
+        $tenant = $tenants->firstWhere('id', $request->integer('tenant')) ?? $tenants->first();
         $lang = $request->input('lang', 'lt');
-
-        $tenant = $tenantId ? Tenant::find($tenantId) : null;
-
         $showDeleted = $request->getShowDeleted();
-        $deletedCount = 0;
-        $quickLinks = [];
+        $quickLinksQuery = QuickLink::query()->whereIn('tenant_id', $tenants->pluck('id'));
+        $deletedCount = (clone $quickLinksQuery)->onlyTrashed()->count();
 
-        if ($tenant) {
-            $quickLinksQuery = QuickLink::query()
-                ->where('tenant_id', $tenant->id)
-                ->where('lang', $lang);
-
-            $deletedCount = (clone $quickLinksQuery)->onlyTrashed()->count();
-
-            if ($showDeleted) {
-                $quickLinksQuery->onlyTrashed();
-            }
-
-            $quickLinks = $quickLinksQuery->orderBy('order')->get();
+        if ($showDeleted) {
+            $quickLinksQuery->onlyTrashed();
         }
+
+        $quickLinks = $quickLinksQuery->orderBy('order')->get();
+        $reorderTenants = GetTenantsForUpserts::execute('quickLinks.update.padalinys', $this->authorizer)
+            ->whereIn('id', $tenants->pluck('id'))->values();
 
         return $this->inertiaResponse('Admin/Content/IndexQuickLink', [
             'quickLinks' => $quickLinks,
             'tenant' => $tenant,
             'tenants' => $tenants,
+            'reorderTenants' => $reorderTenants,
             'currentLang' => $lang,
             'showDeleted' => $showDeleted,
             'deletedCount' => $deletedCount,

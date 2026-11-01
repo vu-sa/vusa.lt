@@ -80,11 +80,11 @@ describe('PublicAgendaList', () => {
     expect(withDescription.find('details').exists()).toBe(true);
   });
 
-  it('shows the decision as a chip and the student comparison for external bodies', () => {
+  it('shows the decision as a chip and leaves the student comparison to the status', () => {
     const wrapper = factory({ items: [decided()], requiresStudentPerspective: true });
 
     expect(wrapper.text()).toContain('Priimtas');
-    expect(wrapper.text()).toContain('Studentai');
+    expect(wrapper.text()).not.toMatch(/\bStudentai\b/);
   });
 
   it('omits the student perspective entirely for a VU SA body', () => {

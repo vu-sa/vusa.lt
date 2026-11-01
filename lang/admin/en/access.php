@@ -1,8 +1,7 @@
 <?php
 
 return [
-    'eyebrow' => 'Account',
-    'title' => 'My responsibilities and duties',
+    'title' => 'Responsibilities and duties',
     'lead' => 'Here you can see which duties and responsibilities you hold and where they let you go. If something is missing, ask your coordinator.',
     'link' => 'My responsibilities and duties',
     'current' => [

@@ -72,6 +72,10 @@ describe.each(cases)('$name row abilities', (testCase) => {
     expect(actions.some(action => action.role === 'edit')).toBe(allowed);
     expect(actions.some(action => action.destructive)).toBe(allowed && !testCase.noDelete);
     expect(actions.some(action => action.disabled)).toBe(false);
+    if (['forms', 'mailing lists', 'responsibilities'].includes(testCase.name)) {
+      expect(actions[0]).toMatchObject({ role: 'open', primary: true, label: 'Atidaryti' });
+      if (allowed) expect(actions.find(action => action.role === 'edit')).toMatchObject({ menuOnly: true });
+    }
   });
 });
 

@@ -7,6 +7,7 @@ use App\Http\Requests\StoreVoteRequest;
 use App\Http\Requests\UpdateVoteRequest;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Vote;
+use Illuminate\Support\Facades\DB;
 
 class VoteController extends AdminController
 {
@@ -19,22 +20,25 @@ class VoteController extends AdminController
 
         $this->handleAuthorization('update', $agendaItem);
 
-        $vote = Vote::create([
-            'agenda_item_id' => $request->agenda_item_id,
-            'is_main' => $request->boolean('is_main'),
-            'title' => $request->title,
-            'student_vote' => $request->student_vote,
-            'decision' => $request->decision,
-            'student_benefit' => $request->student_benefit,
-            'note' => $request->note,
-        ]);
+        // One transaction, so the search index never sees two main votes.
+        DB::transaction(function () use ($request, $agendaItem): void {
+            $vote = Vote::create([
+                'agenda_item_id' => $request->agenda_item_id,
+                'is_main' => $request->boolean('is_main'),
+                'title' => $request->title,
+                'student_vote' => $request->student_vote,
+                'decision' => $request->decision,
+                'student_benefit' => $request->student_benefit,
+                'note' => $request->note,
+            ]);
 
-        // If this vote is marked as main, unset main flag from other votes
-        if ($vote->is_main) {
-            $agendaItem->votes()
-                ->where('id', '!=', $vote->id)
-                ->update(['is_main' => false]);
-        }
+            // If this vote is marked as main, unset main flag from other votes
+            if ($vote->is_main) {
+                $agendaItem->votes()
+                    ->where('id', '!=', $vote->id)
+                    ->update(['is_main' => false]);
+            }
+        });
 
         return back()->with('success', $this->entityMessage('created', 'vote'));
     }
@@ -48,15 +52,17 @@ class VoteController extends AdminController
 
         $this->handleAuthorization('update', $agendaItem);
 
-        $vote->fill($request->validated());
-        $vote->save();
+        DB::transaction(function () use ($request, $vote, $agendaItem): void {
+            $vote->fill($request->validated());
+            $vote->save();
 
-        // If this vote is now marked as main, unset main flag from other votes
-        if ($request->has('is_main') && $request->is_main) {
-            $agendaItem->votes()
-                ->where('id', '!=', $vote->id)
-                ->update(['is_main' => false]);
-        }
+            // If this vote is now marked as main, unset main flag from other votes
+            if ($request->has('is_main') && $request->is_main) {
+                $agendaItem->votes()
+                    ->where('id', '!=', $vote->id)
+                    ->update(['is_main' => false]);
+            }
+        });
 
         return back()->with('success', $this->entityMessage('updated', 'vote'));
     }
@@ -84,13 +90,15 @@ class VoteController extends AdminController
 
         $this->handleAuthorization('update', $agendaItem);
 
-        // Unset main flag from all other votes
-        $agendaItem->votes()
-            ->where('id', '!=', $vote->id)
-            ->update(['is_main' => false]);
+        DB::transaction(function () use ($vote, $agendaItem): void {
+            // Unset main flag from all other votes
+            $agendaItem->votes()
+                ->where('id', '!=', $vote->id)
+                ->update(['is_main' => false]);
 
-        // Set this vote as main
-        $vote->update(['is_main' => true]);
+            // Set this vote as main
+            $vote->update(['is_main' => true]);
+        });
 
         return back()->with('success', __('messages.vote.main_changed'));
     }

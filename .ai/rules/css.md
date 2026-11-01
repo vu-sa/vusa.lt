@@ -34,6 +34,6 @@ Admin-only plain CSS (not Tailwind-generated) still lives in `admin.css`/`driver
 Tokens live in `resources/css/theme/design-tokens.css`. Shape tells the three kinds apart:
 - Solid fill is brand (`--brand`/`--brand-fill`): one primary action per region, plus the current-location marker.
 - A tinted badge with icon and word is a status (`--status-{neutral|info|progress|attention|success|danger}` + `-surface`/`-border`), rendered through `StatusBadge`.
-- A small mark is a category (`--cat-1…8` + `-surface`): entity types, event types, units, chart series. Never used for status.
-Picking a status role: healthy default → no badge; draft, cancelled or archived → neutral; submitted or upcoming → info; in progress → progress; needs action or missing info → attention; done or approved → success; overdue, rejected or failed → danger. Never colour alone. No large coloured surfaces except the neutral ink band.
+- A small mark is a category (`--cat-1…8` + `-surface`): entity types, event types, units, chart series. Never used for status, except a record's own icon tinted by `StatusMark` in a detail card, where it replaces a badge.
+Picking a status role: healthy default → no badge, unless a column or fact exists to state that status; draft, cancelled or archived → neutral; submitted or upcoming → info; in progress → progress; needs action or missing info → attention; done or approved → success; overdue, rejected or failed → danger. Never colour alone. No large coloured surfaces except the neutral ink band.
 Gates: `designTokens.test.ts` guards the token list (both themes, cat hues ≥25° apart); `Patterns/ColourSystem.stories.ts` (a11y `error`) guards 4.5:1 contrast via `npm run test:storybook`.

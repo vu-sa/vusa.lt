@@ -135,6 +135,16 @@ describe('ShowAgendaItem.vue', () => {
     expect(wrapper.findComponent({ name: 'AgendaItemSheetForm' }).props('open')).toBe(true);
   });
 
+  it('explains what is public from the visibility fact', async () => {
+    const wrapper = createWrapper({ publicVisibility: { mode: 'public_page', url: 'https://www.vusa.test/lt/meeting' } });
+    const dialog = wrapper.findComponent({ name: 'AgendaItemPublicVisibilityDialog' });
+    expect(dialog.props()).toMatchObject({ open: false, mode: 'public_page', isPrivate: false });
+
+    await wrapper.get('[data-testid="agenda-item-visibility-explain"]').trigger('click');
+
+    expect(dialog.props('open')).toBe(true);
+  });
+
   it('renders only the placeholder and parent meeting for a redacted item', () => {
     const wrapper = createWrapper({
       agendaItem: { id: 'item-2', order: 2, title: 'Darbo klausimas', is_private: true, is_redacted: true },
@@ -272,7 +282,7 @@ describe('ShowAgendaItem.vue', () => {
     const visibility = createWrapper().findAll('dl > div')[1];
 
     expect(visibility.classes()).toContain('bg-status-neutral-surface');
-    expect(visibility.find('dd').text()).toBe('meetings.record.internal_only');
+    expect(visibility.find('dd').text()).toContain('meetings.record.internal_only');
     expect(visibility.find('a').exists()).toBe(false);
   });
 

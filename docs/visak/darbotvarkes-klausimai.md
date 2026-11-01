@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Darbotvarkės klausimai
 area: agendaItems
 models: [AgendaItem, Vote]
-last_reviewed: 2026-10-21
+last_reviewed: 2026-11-01
 tests:
   - tests/Feature/Permissions/MeetingPermissionsTest.php
   - tests/Feature/Admin/Search/SearchVisibilityParityTest.php
@@ -71,6 +71,8 @@ negali, tuščių skyrių nemato.
 Susiję tikslai matomi tik bandomojoje tikslų funkcijoje.
 
 ### Matomumas: Rodoma tik ViSAK {#matomumas}
+
+Klausimo puslapio kortelėje **Matomumas** spaudžiant **Kas rodoma?** atveriamas langas, kuriame išvardyta, kas iš šio klausimo rodoma vusa.lt, o kas nerodoma. Viešo klausimo studentų pozicija rodoma vusa.lt kartu su aprašymu, o balsavimų pastabos viešai neperduodamos.
 
 Posėdis gali būti viešas, o atskiras jo klausimas skirtas vidaus darbui. Matomumas pasirenkamas
 jau sukurtame klausime: atvėrus **Redaguoti** arba paspaudus jo matomumo žymą. Įjungiama parinktis
@@ -152,7 +154,7 @@ Kiekviename balsavime žymimi trys laukai:
 
 | Laukas | Reikšmės |
 |---|---|
-| **Sprendimas** – ar institucija klausimą priėmė | Priimtas · Atmestas · Susilaikyta |
+| **Sprendimas** – ar institucija klausimą priėmė | Priimtas · Nepriimtas · Susilaikyta |
 | **Studentų balsas** – kaip balsavo studentų atstovai | Pritarė · Nepritarė · Susilaikė |
 | **Nauda studentams** – ar sprendimas palankus studentams | Palanku · Nepalanku · Neutralu |
 
@@ -193,7 +195,7 @@ su sprendimu), **Studentų pozicija nesutampa**, **Pritarta bendru sutarimu**, *
 nėra sprendimo, o išoriniame organe – ir studentų balso), **Aptarimas**, **Atidėtas**,
 **Išbrauktas**, **Pertrauka**, **Skirtingi rezultatai** (keli balsavimai be pagrindinio, jų rezultatai skiriasi) ar
 **Nepažymėtas** (nėra tipo). VU SA darinyje rodomas pats sprendimas: **Priimtas**,
-**Atmestas** arba **Neutralus sprendimas**.
+**Nepriimtas** arba **Neutralus sprendimas**.
 
 Būsena gali būti „Studentų pozicija priimta“, nors dar nepažymėta nauda studentams. Ar klausimui
 dar kažko trūksta, rodo posėdžio **Nepilnų punktų** sąrašas.
@@ -240,9 +242,10 @@ klausimas matomas skirtuke **Svarstyta posėdžiuose**. **Atsieti** panaikina ry
 ### Klausimų sąrašas
 
 Sąraše (`/mano/agendaItems`) matyti visų tau prieinamų posėdžių klausimai. Pirmą kartą rodomi tavo
-padalinių klausimai. Filtrai: **Posėdžio
-metai**, **Užpildymo būsena**, **Studentų balsas**, **Sprendimas**, **Palankumas studentams**,
-**Pateikė studentai**, **Balsavimo atitikimas** ir **Padalinys**.
+padalinių klausimai. Lentelėje ir peržiūroje rodomas [klausimo tipas](#tipai), o klausimas be tipo
+pažymėtas **Nepažymėtas**. Filtrai: **Posėdžio
+metai**, **Tipas**, **Užpildymo būsena**, **Studentų balsas**, **Sprendimas**, **Palankumas studentams**,
+**Studentų pozicija** (**Įrašyta** arba **Neįrašyta**), **Pateikė studentai**, **Balsavimo atitikimas** ir **Padalinys**.
 
 ## Kas ką gali {#teises}
 

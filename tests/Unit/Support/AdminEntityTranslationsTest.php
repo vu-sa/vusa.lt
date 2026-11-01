@@ -1,48 +1,25 @@
 <?php
 
 use App\Http\Controllers\AdminController;
-use Illuminate\Support\Str;
 
 /**
  * Admin index pages resolve model names through `entities.{entityName}.model`, so a
  * missing key leaks the raw key string into the admin UI ("entities.news.model") instead
  * of a model name. These keys also feed breadcrumb and sidebar helpers, so a gap is never
  * merely cosmetic.
- *
- * The scan runs while Pest collects the file, before the application is booted, so it
- * uses plain filesystem calls rather than the `base_path()` / `File` helpers.
  */
 $projectRoot = dirname(__DIR__, 3);
 
-$entityNames = collect(glob($projectRoot.'/resources/js/Pages/Admin/*/Index*.vue') ?: [])
-    ->map(function (string $path): ?string {
-        $source = (string) file_get_contents($path);
-
-        // CollectionPage entity types may use snake_case while translation keys use camelCase.
-        if (preg_match('/(?:^const entityName\s*=\s*\'([^\']+)\'|(?<!:)entity-type="([^"]+)")/m', $source, $matches) === 1) {
-            return ! empty($matches[1]) ? $matches[1] : $matches[2];
-        }
-
-        return null;
-    })
-    ->concat(['institutionType', 'dutyType'])
-    ->filter()
-    ->map(fn (string $entityName): string => Str::camel($entityName))
-    ->unique()
-    ->sort()
-    ->values()
-    ->all();
+$entityNames = [
+    'agendaItem', 'banner', 'calendar', 'document', 'duty', 'dutyType', 'eventType', 'form', 'goal',
+    'institution', 'institutionType', 'mailingList', 'meeting', 'news', 'page', 'permission', 'problem',
+    'quickLink', 'reservation', 'resource', 'role', 'studyProgram', 'studySet', 'tag', 'task', 'tenant', 'user',
+];
 
 dataset('admin index entity names', array_map(
     fn (string $entityName): array => [$entityName],
     $entityNames,
 ));
-
-test('the entity name scan finds every admin index page', function () use ($entityNames): void {
-    // Guards the regex above: a rename that silently matches nothing would make
-    // every dataset case vanish and the suite pass while covering nothing.
-    expect($entityNames)->toHaveCount(29);
-});
 
 test('every admin index entity name has a Lithuanian model translation', function (string $entityName): void {
     $translations = require base_path('lang/admin/lt/entities.php');

@@ -42,13 +42,11 @@ describe('ShellAccountMenu', () => {
     expect(content.text()).toContain('test@vusa.lt');
   });
 
-  it('renders navigation links to profile, roles, and notifications', () => {
+  it('renders navigation links to profile and notification settings', () => {
     const wrapper = mountMenu();
     const links = wrapper.findAll('a');
 
     expect(links.some(l => l.attributes('href')?.includes('/profile') || l.text().includes('shell.chrome.account'))).toBe(true);
-    expect(links.some(l => l.text().includes('shell.account.roles'))).toBe(true);
-    expect(links.some(l => l.attributes('href')?.includes('profile.activityRequests'))).toBe(true);
     expect(links.some(l => l.text().includes('shell.account.notifications'))).toBe(true);
     expect(wrapper.findComponent(SpotlightPopover).exists()).toBe(false);
   });

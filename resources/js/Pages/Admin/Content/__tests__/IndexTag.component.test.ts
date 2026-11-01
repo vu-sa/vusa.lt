@@ -54,3 +54,30 @@ describe('tag deletion', () => {
     wrapper.unmount();
   });
 });
+
+
+it('keeps the preview row free of actions and tags while the detail card carries the editor action', () => {
+  const wrapper = mount(IndexTag, {
+    props: {
+      abilities: { update: true, delete: true }, deletedCount: 0,
+      tags: { data: [{ ...tag, is_topic: true }], meta: { total: 1, per_page: 50, current_page: 1, last_page: 1 } },
+    } as never,
+    global: { stubs: {
+      CollectionPage: {
+        props: ['source', 'rowActions'],
+        template: `<div>
+          <section data-testid="preview-row"><slot name="row" :item="source.items.value[0]" view="preview" :actions="rowActions(source.items.value[0])" /></section>
+          <slot name="preview" :item="source.items.value[0]" :actions="rowActions(source.items.value[0])" />
+        </div>`,
+      },
+      CollectionRow: { name: 'CollectionRow', props: ['actions'], template: '<article><slot /></article>' },
+      CollectionRowActions: true,
+      TagPreview: { template: '<div><slot name="actions" /></div>' },
+      TagSheetForm: true, MergeRecordsDialog: true, ConfirmDialog: true,
+    } },
+  });
+  expect(wrapper.findComponent({ name: 'CollectionRow' }).props('actions')).toEqual([]);
+  expect(wrapper.get('[data-testid="preview-row"]').text()).not.toContain('Teminė');
+  expect(wrapper.findComponent({ name: 'CollectionRowActions' }).props()).toMatchObject({ emphasis: true, fullLabels: true });
+  wrapper.unmount();
+});

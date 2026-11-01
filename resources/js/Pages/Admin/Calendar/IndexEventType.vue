@@ -3,14 +3,17 @@
     :row-actions="() => rowActions"
     :source
     collection="eventTypes"
-    entity-type="eventType"
-    :eyebrow="isDeleted ? $t('Ištrinti renginių tipai') : ($t('shell.workspaces.kalendorius.title') + ' · ' + $t('Renginių tipai'))"
+    :eyebrow="isDeleted ? $t('Ištrinti renginių tipai') : ($t('shell.workspaces.kalendorius.title'))"
     :title="isDeleted ? $t('Ištrinti renginių tipai') : $t('Renginių tipai')"
     :lead="isDeleted ? $t('Peržiūrėk ištrintus renginių tipus arba atkurk juos.') : $t('Renginių tipai padeda grupuoti renginius pagal jų pobūdį.')"
     default-view="table"
     :item-key="eventTypeKey"
     :trash="{ count: deletedCount ?? 0, active: isDeleted }"
     :columns
+    :row-muted="item => !item.is_active"
+    table-fixed
+    actions-width="w-44"
+    table-min-width="min-w-[42rem]"
     @row-action="(item, key) => selectRowAction(key, item)"
     :search-placeholder="$t('Ieškoti renginių tipų…')"
   >
@@ -22,38 +25,37 @@
     </template>
 
     <template #row="{ item, actions: recordActions }">
-      <article class="flex min-h-14 items-center justify-between gap-4 px-3 py-2.5 sm:px-4">
+      <CollectionRow :actions="recordActions" :spotlight="item === source?.items.value[0]" class="px-3 py-2.5 sm:px-4" @select="key => selectRowAction(key, item)">
         <div class="min-w-0 flex-1">
           <div class="flex items-center gap-2">
+            <component :is="operatingStatuses.inactive.icon" v-if="!item.is_active" class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+        <span v-if="!item.is_active" class="sr-only">{{ $t('Neaktyvus') }}:</span>
             <button
               v-if="canUpdate && !isDeleted"
               type="button"
+              data-collection-open
               class="truncate text-left font-medium hover:text-brand"
               @click="openSheet(item)"
             >
               {{ title(item) }}
             </button>
             <span v-else class="truncate font-medium">{{ title(item) }}</span>
-            <span
-              v-if="!item.is_active"
-              class="border border-border bg-muted px-1.5 py-0.5 text-xs text-muted-foreground"
-            >
-              {{ $t('Neaktyvus') }}
-            </span>
           </div>
           <p class="mt-0.5 truncate text-xs text-muted-foreground">
             {{ item.slug }}
           </p>
         </div>
-        <CollectionRowActions :spotlight="item === source?.items.value[0]" :actions="recordActions" @select="key => selectRowAction(key, item)" />
-      </article>
+      </CollectionRow>
     </template>
 
     <template #cell="{ item, column }">
       <div v-if="column.key === 'name'" class="flex min-w-0 items-center gap-2">
+        <component :is="operatingStatuses.inactive.icon" v-if="!item.is_active" class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+        <span v-if="!item.is_active" class="sr-only">{{ $t('Neaktyvus') }}:</span>
         <button
           v-if="canUpdate && !isDeleted"
           type="button"
+          data-collection-open
           class="block truncate text-left font-medium hover:text-brand"
           @click="openSheet(item)"
         >
@@ -68,20 +70,7 @@
         {{ item.slug }}
       </span>
 
-      <span v-else-if="column.key === 'is_active'">
-        <span
-          v-if="item.is_active"
-          class="border border-status-success/20 bg-status-success/10 px-2 py-0.5 text-xs font-medium text-status-success"
-        >
-          {{ $t('Aktyvus') }}
-        </span>
-        <span
-          v-else
-          class="border border-border bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground"
-        >
-          {{ $t('Neaktyvus') }}
-        </span>
-      </span>
+      <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
     </template>
 
     <template #empty>
@@ -125,21 +114,22 @@
 </template>
 
 <script setup lang="ts">
-import { Link, router, usePage } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Pencil, Plus, RotateCcw, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import type { CollectionColumn } from '@/Components/Collection/types';
-import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
+import type { CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import { CalendarIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
+import { operatingStatuses } from '@/Constants/statuses';
 import { useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
 import EventTypeSheetForm from '@/Features/Admin/EventTypes/EventTypeSheetForm.vue';
-
-const entityName = 'eventType';
+import { formatRecordDate } from '@/Utils/dateTime';
 
 type EventTypeRow = App.Entities.EventType & {
   name: { lt: string; en: string };
@@ -218,18 +208,27 @@ const source = useDatabaseCollectionSource<EventTypeRow>({
   },
   defaultSort: 'sort_order:asc',
   sortOptions: () => [
+    { value: 'updated_at:desc', label: `${$t('Atnaujinta')} ↓` },
+    { value: 'updated_at:asc', label: `${$t('Atnaujinta')} ↑` },
+    { value: 'created_at:desc', label: `${$t('Sukurta')} ↓` },
+    { value: 'created_at:asc', label: `${$t('Sukurta')} ↑` },
     { value: 'sort_order:asc', label: $t('Pagal rikiavimo tvarką') },
     { value: 'sort_order:desc', label: $t('Pagal rikiavimo tvarką (atvirkščiai)') },
     { value: 'name:asc', label: $t('Pagal pavadinimą (A–Z)') },
     { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)') },
   ],
+  facets: [{ field: 'is_active', label: $t('Būsena'), single: true, values: [
+    { value: '1', label: $t('Aktyvus') },
+    { value: '0', label: $t('Neaktyvus') },
+  ] }],
   preserveUrlKeys: ['showDeleted'],
 });
 
 const columns = computed<CollectionColumn[]>(() => [
   { key: 'name', label: $t('forms.fields.title'), sortField: 'name' },
   { key: 'slug', label: 'Slug', class: 'w-48' },
-  { key: 'is_active', label: $t('forms.fields.is_active'), class: 'w-28' },
+  { key: 'created_at', label: $t('Sukurta'), class: 'w-36', sortField: 'created_at', defaultHidden: true },
+  { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', sortField: 'updated_at', defaultHidden: true },
 ]);
 
 function openSheet(item: EventTypeRow | null = null): void {

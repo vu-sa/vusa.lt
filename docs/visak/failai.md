@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Įrašų failai
 area: fileableFiles
 models: [FileableFile]
-last_reviewed: 2026-10-16
+last_reviewed: 2026-11-01
 tests:
   - tests/Feature/Admin/FileableFileControllerTest.php
   - tests/Feature/SyncFileableFilesJobTest.php
@@ -42,7 +42,7 @@ mygtukas nerodomas, verta patikrinti, ar institucija priskirta padaliniui.
 
 Įkeliant failui parenkamas tipas: **Protokolai**, **Ataskaitos**, **Darbotvarkės**,
 **Pristatymai**, **Metodinė medžiaga**, **Šablonai**, **Veiklą reglamentuojantys dokumentai**
-arba **Kita**. Posėdžio protokolas ir ataskaita rodomi atskirai, o jų būsena matoma posėdžio
+arba **Kita**. Posėdžio protokolas rodomas atskirai, o jo būsena matoma posėdžio
 lauke **Po posėdžio** (žr. [Posėdžiai](/visak/posedziai#protokolas)).
 
 Institucijos ir pareigybės skirtuke **Failai** po jų pačių failais rodomi ir jų tipo failai
@@ -72,7 +72,7 @@ nuorodą. Failai, užduotys ir komentarai nerodomi niekada.
 ### Įkelti failus
 
 1. Atverk įrašo skirtuką **Failai** ir spausk **Įkelti failus** (arba nutempk failus į skirtuką).
-   Posėdyje gali spausti ir trūkstamo protokolo ar ataskaitos eilutę – tipas bus parinktas.
+   Posėdyje gali spausti ir trūkstamo protokolo eilutę – tipas bus parinktas.
 2. Kiekvienam failui pasirink tipą ir datą, jei reikia – pakeisk pavadinimą.
 3. Patvirtink. Nepavykę failai lieka lange, kad galėtum bandyti dar kartą, o įkelti nebekeliami.
 

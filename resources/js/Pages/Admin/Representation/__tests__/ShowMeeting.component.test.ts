@@ -274,19 +274,16 @@ describe('ShowMeeting.vue', () => {
     expect(createWrapper({ readOnly: true }).find('[data-testid="meeting-visibility-explain"]').exists()).toBe(false);
   });
 
-  it('merges the protocol and report into one fact', () => {
+  it('states only the protocol as expected after the meeting', () => {
     const fact = createWrapper({ meeting: { ...baseMeeting, has_protocol: true } }).findAll('dl > div')[5];
     const statuses = fact.findAll('dd [data-status-role]');
 
     expect(fact.find('dt').text()).toBe('meetings.record.after_meeting');
     expect(fact.find('dd > div').classes()).toContain('text-xs');
     expect(statuses[0].findAll('span')[0].text()).toBe('meetings.record.protocol');
-    expect(statuses[1].findAll('span')[0].text()).toBe('meetings.record.report');
     expect(statuses[0].find('.sr-only').text()).toBe('Įkeltas');
-    expect(statuses[1].find('.sr-only').text()).toBe('Neįkelta');
-    expect(statuses.map(status => status.attributes('data-status-role'))).toEqual(['success', 'attention']);
+    expect(statuses.map(status => status.attributes('data-status-role'))).toEqual(['success']);
     expect(statuses[0].find('svg').classes()).toContain('text-status-success');
-    expect(statuses[1].find('svg').classes()).toContain('text-status-attention');
     expect(statuses[0].find('svg').classes()).toContain('size-3.5');
   });
 

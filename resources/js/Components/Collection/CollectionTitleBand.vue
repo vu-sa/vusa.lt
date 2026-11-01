@@ -1,7 +1,6 @@
 <template>
   <header class="py-3 md:py-5 lg:py-8" data-slot="collection-title-band">
-    <p class="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-brand">
-      <component :is="definition.icon" v-if="definition" class="size-4 shrink-0" aria-hidden="true" />
+    <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand">
       {{ eyebrow }}
     </p>
 
@@ -25,18 +24,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-
-import { getEntityTypeDefinition } from '@/Constants/entityTypes';
-
-const props = defineProps<{
-  /** Workspace and section, e.g. "ViSAK · Posėdžiai" — location is always stated (wayfinding rule 3). */
+defineProps<{
+  /** The workspace, e.g. "ViSAK"; the headline already names the section. */
   eyebrow: string;
   title: string;
   lead?: string;
-  /** Entity type registry key; its icon marks the eyebrow as this band's identity anchor. */
-  entityType: string;
 }>();
-
-const definition = computed(() => getEntityTypeDefinition(props.entityType));
 </script>

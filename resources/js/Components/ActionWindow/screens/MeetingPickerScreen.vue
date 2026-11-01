@@ -19,7 +19,7 @@
         :key="meeting.id"
         :title="meeting.institution_name"
         :icon="meeting.completion_status === 'no_items' ? ListX : FileQuestion"
-        :tone="meeting.completion_status === 'no_items' ? 'danger' : 'attention'"
+        tone="attention"
         @click="openMeeting(meeting)"
       >
         <template #description>

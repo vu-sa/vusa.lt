@@ -3,8 +3,7 @@
     :row-actions
     :source
     collection="goals"
-    entity-type="goal"
-    :eyebrow="`${$t('shell.workspaces.atstovavimas.title')} · ${$t('shell.sections.tikslai')}`"
+    :eyebrow="$t('shell.workspaces.atstovavimas.title')"
     :title="$t('shell.sections.tikslai')"
     :lead="$t('goals.lead')"
     default-view="rows"
@@ -12,6 +11,9 @@
     :item-key="goal => goal.id"
     @row-action="(_item, key) => deleteActions.select(key)"
     :columns
+    table-fixed
+    actions-width="w-44"
+    table-min-width="min-w-[68rem]"
     :search-placeholder="$t('goals.search')"
   >
     <template #actions>
@@ -26,8 +28,8 @@
       </Button>
     </template>
 
-    <template #row="{ item, actions: recordActions }">
-      <article class="flex min-h-16 items-center gap-4 px-3 py-3 sm:px-4">
+    <template #row="{ item, actions: recordActions, view }">
+      <CollectionRow :spotlight="item === source?.items.value[0]" :actions="view === 'preview' ? [] : recordActions" @select="key => deleteActions.select(key)" class="px-3 py-3 sm:px-4">
         <div class="min-w-0 flex-1">
           <Link :href="route('goals.show', item.id)" data-collection-open class="block truncate font-medium hover:text-brand">
             {{ title(item) }}
@@ -47,8 +49,7 @@
           </div>
         </div>
         <StatusBadge :status="goalStatuses[item.status]" />
-        <CollectionRowActions :actions="recordActions" @select="key => deleteActions.select(key)" />
-      </article>
+      </CollectionRow>
     </template>
 
     <template #cell="{ item, column }">
@@ -60,6 +61,7 @@
       <span v-else-if="column.key === 'cadence'" class="text-xs tabular-nums">{{ item.cadence?.label ?? '—' }}</span>
       <span v-else-if="column.key === 'steps_count'" class="tabular-nums">{{ item.steps_count }}</span>
       <span v-else-if="column.key === 'problems_count'" class="tabular-nums">{{ item.problems_count }}</span>
+      <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
     </template>
 
     <template #empty>
@@ -83,7 +85,7 @@ import { getActiveLanguage, trans as $t, transChoice as $tChoice } from 'laravel
 import { computed, toRef } from 'vue';
 
 import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
-import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import type { CollectionColumn } from '@/Components/Collection/types';
@@ -96,6 +98,7 @@ import { useLocalCollectionSource } from '@/Composables/useCollectionSource';
 import { goalStatuses } from '@/Constants/statuses';
 import { translatedText, type Translated } from '@/Features/Admin/Goals/types';
 import type { GoalStatus } from '@/Types/enums';
+import { formatRecordDate } from '@/Utils/dateTime';
 
 interface GoalRow {
   id: string;
@@ -107,6 +110,7 @@ interface GoalRow {
   responsible_duty: string | null;
   steps_count: number;
   problems_count: number;
+  created_at: string | null;
   updated_at: string | null;
   can_update: boolean;
   can_delete: boolean;
@@ -124,12 +128,14 @@ const source = useLocalCollectionSource<GoalRow>({
   searchText: goal => [goal.title.lt, goal.title.en, goal.tenant.shortname, goal.responsible_duty],
   defaultSort: 'updated_at:desc',
   sortOptions: () => [
-    { value: 'updated_at:desc', label: $t('Naujausios atnaujintos'), by: goal => goal.updated_at ?? '' },
+    { value: 'updated_at:desc', label: $t('Paskutiniai atnaujinti'), by: goal => goal.updated_at ?? '' },
     { value: 'updated_at:asc', label: $t('Seniausios atnaujintos'), by: goal => goal.updated_at ?? '' },
     { value: 'title:asc', label: $t('Pagal pavadinimą (A–Z)'), by: goal => title(goal) },
     { value: 'title:desc', label: $t('Pagal pavadinimą (Z–A)'), by: goal => title(goal) },
     { value: 'steps_count:desc', label: $t('Daugiausia žingsnių'), by: goal => goal.steps_count ?? 0 },
     { value: 'steps_count:asc', label: $t('Mažiausiai žingsnių'), by: goal => goal.steps_count ?? 0 },
+    { value: 'created_at:desc', label: $t('Naujausios pirmiausia'), by: item => item.created_at ?? '' },
+    { value: 'created_at:asc', label: $t('Seniausios pirmiausia'), by: item => item.created_at ?? '' },
   ],
   facets: [
     { field: 'status', label: $t('goals.filters.status'), get: goal => goal.status, valueLabel: value => $t(goalStatuses[value as GoalStatus]?.label ?? value) },
@@ -145,10 +151,12 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'cadence', label: $t('goals.filters.cadence'), class: 'w-28' },
   { key: 'steps_count', label: $tChoice('entities.step.model', 2), class: 'w-24', sortField: 'steps_count' },
   { key: 'problems_count', label: $tChoice('entities.problem.model', 2), class: 'w-24' },
+  { key: 'created_at', label: $t('Sukurta'), class: 'w-36', defaultHidden: true, sortField: 'created_at' },
+  { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', defaultHidden: true, sortField: 'updated_at' },
 ]);
 const rowActions = (item: GoalRow): AdminRecordAction[] => [
-  { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, href: route('goals.show', item.id) },
-  ...(item.can_update ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, href: route('goals.edit', item.id) }] : []),
+  { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, primary: true, href: route('goals.show', item.id) },
+  ...(item.can_update ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, menuOnly: true, href: route('goals.edit', item.id) }] : []),
   ...(item.can_delete ? [{ key: `delete:${item.id}:${title(item)}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
 ];
 

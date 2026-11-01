@@ -7,11 +7,11 @@
           :key="chip.id"
           class="inline-flex h-8 shrink-0 items-center gap-1 border border-border bg-background pl-2.5 text-xs font-medium text-foreground pointer-coarse:min-h-11"
         >
-          {{ chip.label }}
+          {{ capitalize(chip.label) }}
           <button
             type="button"
             class="flex size-8 items-center justify-center text-muted-foreground hover:text-brand pointer-coarse:size-11"
-            :aria-label="$t('Šalinti filtrą :name', { name: chip.label })"
+            :aria-label="$t('Šalinti filtrą :name', { name: capitalize(chip.label) })"
             @click="emit('remove', chip.id)"
           >
             <X class="size-3.5" aria-hidden="true" />
@@ -35,6 +35,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { X } from '@lucide/vue';
 
 import type { CollectionChip } from '@/Composables/useCollectionSource';
+import { capitalize } from '@/Utils/String';
 
 defineProps<{
   chips: CollectionChip[];

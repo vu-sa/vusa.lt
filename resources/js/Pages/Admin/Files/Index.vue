@@ -3,10 +3,9 @@
     <Head :title="$t('shell.sections.failai')" />
 
     <CollectionTitleBand
-      :eyebrow="`${$t('shell.workspaces.svetaine.title')} · ${$t('shell.sections.failai')}`"
+      :eyebrow="$t('shell.workspaces.svetaine.title')"
       :title="$t('shell.sections.failai')"
       :lead="$t('files.ui.lead')"
-      entity-type="file"
     >
       <template #actions>
         <SpotlightPopover

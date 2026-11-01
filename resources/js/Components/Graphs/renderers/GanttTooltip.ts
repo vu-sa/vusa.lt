@@ -11,6 +11,8 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import type { GanttColors } from '../ganttColors';
 
+import { ganttMeetingStatus } from './meetingStatus';
+
 import { getAgendaItemStatus, type AgendaItemStatus, type AgendaItemType, type Vote } from '@/Composables/useAgendaItemStyling';
 
 export type TooltipContentType = 'meeting' | 'member' | 'gap' | 'date' | 'request' | 'none';
@@ -131,7 +133,8 @@ export function buildMeetingTooltipContent(
     title?: string;
     type_slug?: string;
     completion_status?: string;
-    vote_alignment_status?: 'all_match' | 'mixed' | 'all_mismatch' | 'neutral';
+    vote_alignment_status?: 'all_match' | 'mixed' | 'all_mismatch' | 'neutral' | null;
+    requires_student_perspective?: boolean | null;
     authorized?: boolean;
     has_report?: boolean;
     has_protocol?: boolean;
@@ -150,34 +153,8 @@ export function buildMeetingTooltipContent(
   fmtDateOnly?: Intl.DateTimeFormat,
 ): TooltipContent {
   const name = labelFor(meeting.institution_id);
-  let statusBadge = '';
-
-  // Unauthorized meetings show a special badge
-  if (meeting.authorized === false) {
-    statusBadge = '<span class="text-muted-foreground">(unauthorized)</span>';
-  }
-  else if (meeting.completion_status === 'no_items') {
-    statusBadge = '<span class="text-muted-foreground">(no agenda items)</span>';
-  }
-  else if (meeting.completion_status === 'incomplete') {
-    statusBadge = '<span class="text-amber-600 dark:text-amber-400">(incomplete)</span>';
-  }
-  else if (meeting.completion_status === 'complete') {
-    // Use alignment status for complete meetings
-    switch (meeting.vote_alignment_status) {
-      case 'all_match':
-        statusBadge = '<span class="inline-flex items-center gap-1 text-green-600 dark:text-green-400"><svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg></span>';
-        break;
-      case 'mixed':
-        statusBadge = '<span class="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400"><svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" /></svg></span>';
-        break;
-      case 'all_mismatch':
-        statusBadge = '<span class="inline-flex items-center gap-1 text-red-600 dark:text-red-400"><svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></span>';
-        break;
-      default:
-        statusBadge = '<span class="inline-flex items-center gap-1 text-green-600 dark:text-green-400"><svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg></span>';
-    }
-  }
+  const status = ganttMeetingStatus(meeting);
+  const statusBadge = status ? `<span class="${status.tone}">${escapeHtml(status.label)}</span>` : '';
 
   // Build agenda items section if available (only for authorized meetings)
   let agendaHtml = '';
@@ -190,14 +167,14 @@ export function buildMeetingTooltipContent(
         <div class="text-[10px] uppercase tracking-wide opacity-60 mb-1">Darbotvarkė (${totalCount})</div>
         <div class="space-y-0.5">
           ${itemsToShow.map((item) => {
-            const statusIcon = getAgendaItemStatusIcon(getAgendaItemStatus(item));
+            const statusIcon = getAgendaItemStatusIcon(getAgendaItemStatus(item, meeting.requires_student_perspective ?? true));
             return `<div class="flex items-start gap-1.5 leading-tight">
               ${statusIcon}
               <span class="line-clamp-2 text-[11px]">${escapeHtml(item.title)}</span>
             </div>`;
           }).join('')}
         </div>
-        ${totalCount > 4 ? `<div class="text-[10px] opacity-60 mt-1">+${totalCount - 4} more</div>` : ''}
+        ${totalCount > 4 ? `<div class="text-[10px] opacity-60 mt-1">+${totalCount - 4}</div>` : ''}
       </div>
     `;
   }
@@ -205,7 +182,6 @@ export function buildMeetingTooltipContent(
   // Build file status section (protocol and report indicators)
   const fileStatusHtml = buildFileStatusHtml(
     meeting.has_protocol,
-    meeting.has_report,
     meeting.has_calendar_event,
     meeting.calendar_event_is_draft,
   );
@@ -280,12 +256,11 @@ function escapeHtml(text: string): string {
  */
 function buildFileStatusHtml(
   hasProtocol?: boolean,
-  hasReport?: boolean,
   hasCalendarEvent?: boolean,
   calendarEventIsDraft?: boolean,
 ): string {
   // Only show if we have any file status info
-  if (hasProtocol === undefined && hasReport === undefined && hasCalendarEvent === undefined) {
+  if (hasProtocol === undefined && hasCalendarEvent === undefined) {
     return '';
   }
 
@@ -293,11 +268,6 @@ function buildFileStatusHtml(
   const protocolIcon = hasProtocol
     ? '<svg class="w-3.5 h-3.5 text-green-600 dark:text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M15 8h-5"/><path d="M15 12h-5"/></svg>'
     : '<svg class="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4"/></svg>';
-
-  // Report icon (FileBarChart from @lucide/vue)
-  const reportIcon = hasReport
-    ? '<svg class="w-3.5 h-3.5 text-green-600 dark:text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M8 18v-2"/><path d="M12 18v-4"/><path d="M16 18v-6"/></svg>'
-    : '<svg class="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>';
 
   // Announced in the calendar. Same amber/green split as ShowMeeting.vue: amber is a draft
   // announcement, which nobody outside the admin can see. Absent entirely when not announced —
@@ -312,9 +282,6 @@ function buildFileStatusHtml(
     <div class="flex items-center gap-2 mt-1.5 pt-1.5 border-t border-current/20">
       <div class="flex items-center gap-1" title="${hasProtocol ? 'Protokolas įkeltas' : 'Nėra protokolo'}">
         ${protocolIcon}
-      </div>
-      <div class="flex items-center gap-1" title="${hasReport ? 'Ataskaita įkelta' : 'Nėra ataskaitos'}">
-        ${reportIcon}
       </div>
       ${calendarHtml}
     </div>

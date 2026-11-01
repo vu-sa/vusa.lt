@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Pareigybės
 area: duties
 models: [Duty, Role, Tenant, Type, Institution, ResponsibilityGrant]
-last_reviewed: 2026-10-30
+last_reviewed: 2026-11-01
 tests:
   - tests/Browser/CollectionTrashRefreshTest.php
   - resources/js/Components/AdminForms/__tests__/DutyForm.component.test.ts
@@ -194,8 +194,8 @@ pirmininkas pagal pareigas yra ir padalinio tarybos narys.
 
 ### Nebeveikiančios pareigybės, ankstesni pavadinimai ir pirmtakės {#istorija}
 
-Pareigybių sąrašo stulpelyje **Būsena** ir prie įrašo eilutėje rodoma **Veikianti** arba **Nebeveikianti**.
-Turint teisę redaguoti konkrečią pareigybę, šiame meniu galima pakeisti jos būseną. Formoje naudojami tie patys
+Nebeveikianti pareigybė sąraše pažymėta ženklu prieš pavadinimą ir išblukinta, o atrinkti ją galima filtru **Būsena**.
+Turint teisę redaguoti konkrečią pareigybę, būsena keičiama peržiūros kortelėje arba formoje. Formoje naudojami tie patys
 žali ir pilki būsenų pasirinkimai; formos pakeitimas įsigalioja paspaudus **Išsaugoti**.
 Jei pareigybę dar eina narys, pirmiau reikia užbaigti jo pareigybių laikotarpį.
 Institucijos būsena rodoma atskira žyma **Nebeveikianti institucija** ir nekeičia pačios pareigybės būsenos.
@@ -301,7 +301,8 @@ padaliniams. Perspėjimas netrukdo išsaugoti pareigybės.
 Pareigybių sąraše (`/mano/duties`) pateikiamos visos pasiekiamos pareigybės:
 
 - **Paieška**: galima ieškoti pagal pareigybės pavadinimą, el. paštą arba instituciją.
-- **Redaguoti** eilutėje rodomas pareigybėms, kurias gali redaguoti; kitoms – **Atidaryti**.
+- Ilgas pareigybės pavadinimas neišplečia lentelės už jos ribų; slenkant lentelę horizontaliai, veiksmų meniu lieka pasiekiamas.
+- **Atidaryti** rodomas eilutėje, o **Redaguoti** yra meniu **⋯**, jei pareigybę gali redaguoti.
 - **Greitasis filtras „Neužimtos“**: vienu paspaudimu atrenka pareigybes, kurios šiuo metu neturi
   narių.
 - **Greitasis filtras „Galimi dublikatai“**: atrenka pareigybes, kurių pavadinimas toje pačioje

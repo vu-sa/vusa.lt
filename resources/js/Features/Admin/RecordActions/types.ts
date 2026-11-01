@@ -12,6 +12,8 @@ export interface AdminRecordAction {
   plain?: boolean;
   role?: 'open' | 'edit';
   primary?: boolean;
+  /** Stays in ⋯ even where its role would earn it a button of its own. */
+  menuOnly?: boolean;
   destructive?: boolean;
   disabled?: boolean;
   loading?: boolean;

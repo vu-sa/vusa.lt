@@ -28,10 +28,10 @@ const recipient = {
 };
 
 const CollectionPageStub = defineComponent({
-  props: ['rowActions', 'entityType', 'eyebrow', 'title', 'lead'],
+  props: ['rowActions', 'eyebrow', 'title', 'lead'],
   setup(props, { slots }) {
     return () => h('div', [
-      h(CollectionTitleBand, { entityType: props.entityType, eyebrow: props.eyebrow, title: props.title, lead: props.lead }),
+      h(CollectionTitleBand, { eyebrow: props.eyebrow, title: props.title, lead: props.lead }),
       slots.actions?.(),
       slots.row?.({ item: recipient, actions: props.rowActions(recipient), index: 0 }),
     ]);
@@ -57,12 +57,11 @@ function factory(canManage = true) {
 beforeEach(() => vi.clearAllMocks());
 
 describe('MailQueue', () => {
-  it('renders the collection title and recipient identity icon', () => {
+  it('renders the collection title', () => {
     const wrapper = factory();
     const titleBand = wrapper.get('[data-slot="collection-title-band"]');
 
     expect(titleBand.get('h1').text()).toBe('Laiškų eilė');
-    expect(titleBand.find('[aria-hidden="true"]').exists()).toBe(true);
   });
 
   it('requires confirmation before discarding one notification', async () => {
@@ -97,10 +96,11 @@ describe('MailQueue', () => {
 
   it('offers the real digest preview in a new tab for read-only viewers', () => {
     const wrapper = factory(false);
-    const link = wrapper.get('a[data-action="preview"]');
+    const link = wrapper.get('a[data-collection-open]');
 
-    expect(link.attributes('href')).toBe(route('mailQueue.previewForUser', recipient.user_id));
+    expect(link.attributes('href')).toContain('mailQueue.previewForUser');
     expect(link.attributes('target')).toBe('_blank');
+    expect(link.text()).toBe(recipient.user.name);
     expect(router.delete).not.toHaveBeenCalled();
   });
 

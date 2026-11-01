@@ -370,7 +370,7 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
 
     public function toSearchableArray(): array
     {
-        $this->loadMissing(['duties.current_users', 'types']);
+        $this->loadMissing(['duties.current_users', 'duties.users', 'types']);
 
         $currentUserNames = $this->duties
             ->flatMap(fn (Duty $duty) => $duty->current_users->pluck('name'))
@@ -419,8 +419,10 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
             'type_ids' => $this->types->pluck('id')->map(fn ($id) => (int) $id)->values()->all(),
             'activity_status' => app(InstitutionActivityStatusService::class)->resolve($this)->status->value,
             'current_user_names' => $currentUserNames,
+            'members_total' => $this->duties->flatMap(fn (Duty $duty) => $duty->users->pluck('id'))->unique()->count(),
             'duty_names' => $dutyNames,
             'created_at' => $this->created_at->timestamp,
+            'updated_at' => $this->updated_at->timestamp,
         ];
     }
 

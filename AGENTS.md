@@ -21,7 +21,7 @@ boxes, at working density. Every screen answers *what needs me?* before *where c
 2. **One catalog** (`AdminNavigationCatalog`) feeds every menu; the palette accelerates but never hides.
 3. **Seven page types** — Overview, Collection, Record, Form, Sheet form, Guided flow, Workbench; one canonical page per record.
 4. **Forms edit attributes; relations live on the record.** One create door: **+ Sukurti** → ActionWindow.
-5. **Budgets** — one brand fill per region; uppercase only for primary creation buttons, section titles, form labels, eyebrows, tabs, headlines, and content publishing options (`contentStatuses` / `bannerStatuses`) — every other button, row action, tag, chip (including quick filters and literal resource names) and status badge is sentence case (`voice="sentence"`); status colours are never brand. Pradžia follows the scoped typography exception in `.ai/rules/admin-home.md`.
+5. **Budgets** — one brand fill per region; uppercase only for primary creation buttons, section titles, form labels, eyebrows, tabs, headlines, content publishing options (`contentStatuses` / `bannerStatuses`), and one operating status per model (`operatingStatuses`) — every other button, row action, tag, chip (including quick filters and literal resource names) and status badge is sentence case (`voice="sentence"`); status colours are never brand. Pradžia follows the scoped typography exception in `.ai/rules/admin-home.md`.
 6. **Phone and tablet are first-class** (390 · 820 · 1180 · 1440, 44px touch, nothing hover-only).
 7. **Speak like a colleague** — *tu*, verbs on buttons, one glossary. The benchmark is a rep finishing an emailed task on a phone in five minutes.
 
@@ -331,7 +331,7 @@ Source: `resources/js/Composables/useBreadcrumbsUnified.ts`.
 
 ### Feature discovery (spotlights)
 
-New or relocated admin UI — anything a returning user wouldn't think to look for — **must ship with a spotlight** so it's discoverable. Wrap the entry point with `SpotlightPopover` (`@/Components/Onboarding/SpotlightPopover.vue`) and drive its dismissed state with `useFeatureSpotlight('<feature>-v<n>')` (`@/Composables/useFeatureSpotlight.ts`), which persists per-user via the tutorial-progress API. Dismiss it when the user engages the feature (e.g. opens the menu), not only via the popover button. Bump the `-v<n>` suffix when a feature changes enough to warrant re-surfacing. Example: the responsibilities spotlight in `Features/Admin/Responsibilities/DutyResponsibilitiesSection.vue`.
+New or relocated admin UI that a returning user wouldn't find unaided **must ship with a spotlight** so it's discoverable; something moved into plain sight, such as a visible section tab, needs none. Wrap the entry point with `SpotlightPopover` (`@/Components/Onboarding/SpotlightPopover.vue`) and drive its dismissed state with `useFeatureSpotlight('<feature>-v<n>')` (`@/Composables/useFeatureSpotlight.ts`), which persists per-user via the tutorial-progress API. Dismiss it when the user engages the feature (e.g. opens the menu), not only via the popover button. Bump the `-v<n>` suffix when a feature changes enough to warrant re-surfacing. Example: the responsibilities spotlight in `Features/Admin/Responsibilities/DutyResponsibilitiesSection.vue`.
 
 ## Styling (Tailwind v4)
 

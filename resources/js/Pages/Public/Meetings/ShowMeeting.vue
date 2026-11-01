@@ -1,6 +1,7 @@
 <template>
   <div class="meeting-page">
-    <PageTitleBand :title="formatMeetingDateTime(meeting)" size="md">
+    <PageTitleBand size="md">
+      <span class="normal-case">{{ formatMeetingDateTime(meeting) }}</span>
       <template #breadcrumbs>
         <PublicBreadcrumbs variant="inline" />
       </template>
@@ -134,7 +135,7 @@ const props = withDefaults(defineProps<{
 const page = usePage();
 const showInfoModal = ref(false);
 
-const sectionHeadingClass = 'u-display mb-4 border-l-2 border-brand pl-3 text-lg font-bold tracking-tight text-foreground sm:text-xl';
+const sectionHeadingClass = 'u-display normal-case mb-4 border-l-2 border-brand pl-3 text-lg font-bold tracking-tight text-foreground sm:text-xl';
 
 const isUpcoming = computed(() => new Date(props.meeting.start_time) > new Date());
 const allAgendaItems = computed(() => props.meeting.agenda_items || []);

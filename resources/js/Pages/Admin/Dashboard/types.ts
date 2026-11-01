@@ -95,6 +95,8 @@ export interface AtstovavimasMeeting {
   start_time: string;
   institution_id?: string;
   completion_status?: 'complete' | 'incomplete' | 'no_items';
+  vote_alignment_status?: 'all_match' | 'mixed' | 'all_mismatch' | 'neutral' | null;
+  requires_student_perspective?: boolean | null;
   has_report?: boolean;
   has_protocol?: boolean;
   has_calendar_event?: boolean;
@@ -170,6 +172,8 @@ export interface GanttMeeting {
   // Whether the user has authorization for this meeting's institution
   authorized?: boolean;
   // File status indicators for tooltip display
+  vote_alignment_status?: 'all_match' | 'mixed' | 'all_mismatch' | 'neutral' | null;
+  requires_student_perspective?: boolean | null;
   has_report?: boolean;
   has_protocol?: boolean;
   /** Announced in the public calendar. A drafted announcement counts, but is marked as one. */

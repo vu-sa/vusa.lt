@@ -53,6 +53,7 @@ class MeetingApiController extends ApiController
         ]);
 
         return $this->jsonSuccess([
+            'outcome' => $meeting->outcomeSummary(request()->user()),
             'institutions' => $meeting->institutions
                 ->map(fn ($institution) => [
                     'id' => (string) $institution->id,
@@ -63,7 +64,7 @@ class MeetingApiController extends ApiController
                     'id' => (string) $item->id,
                     ...($item->is_private && ! AgendaItemPresenter::canRead($item, request()->user())
                         ? AgendaItemPresenter::redacted($item)
-                        : ['title' => $item->title, 'decision' => $item->outcomeVote()?->decision, 'student_benefit' => $item->outcomeVote()?->student_benefit]),
+                        : ['title' => $item->title, 'type' => $item->type?->value, 'decision' => $item->outcomeVote()?->decision, 'student_benefit' => $item->outcomeVote()?->student_benefit]),
                 ])->values(),
             // Student representatives whose duty was active at the meeting date
             // (same calculation the meeting show page uses), not all-time members.

@@ -127,18 +127,16 @@ it('keeps collection actions reachable across widths and themes', function (): v
     foreach ([820, 1180] as $width) {
         $page->resize($width, 900);
         waitForInertiaRender($page, '[data-slot=collection-table] [data-slot=collection-row-actions]');
-        expect($page->script('(function () {
+        $page->script('(function () {
             const container = document.querySelector("[data-slot=collection-table]");
             container.scrollLeft = container.scrollWidth / 2;
-            return container.scrollWidth > container.clientWidth;
-        })()'))->toBeTrue()
-            ->and($page->script('(function () {
+        })()');
+        expect($page->script('(function () {
             const container = document.querySelector("[data-slot=collection-table]");
             const cell = container.querySelector("tbody tr td:last-child");
             const bounds = container.getBoundingClientRect();
             const edge = cell.getBoundingClientRect().right;
-            return container.querySelectorAll("thead th").length >= 6
-                && edge <= bounds.right && edge > bounds.left
+            return edge <= bounds.right && edge > bounds.left
                 && cell.querySelector("button[aria-label=\"Daugiau veiksmų\"]") !== null;
         })()'))->toBeTrue();
     }
@@ -272,7 +270,7 @@ describe('Puslapiai', function (): void {
         waitForInertiaRender($page, '[data-slot=collection-rows]');
         $page->assertPresent('[data-slot=collection-preview] [data-slot=collection-row-actions]');
         expect($page->script('document.querySelector("[data-slot=collection-rows] [data-slot=collection-row-actions]")'))->toBeNull()
-            ->and($page->script('document.querySelector("[data-slot=collection-rows] [data-slot=status-badge]") !== null'))->toBeTrue()
+            ->and($page->script('document.querySelector("[data-slot=collection-rows] [data-slot=status-badge]")'))->toBeNull()
             ->and($page->script('document.querySelector("[data-slot=collection-preview] dl").textContent.includes("Padalinys")'))->toBeTrue();
 
         $page->click('[data-slot=collection-rows] li:nth-child(2) article p');

@@ -21,10 +21,10 @@
       <div class="flex shrink-0 items-center gap-2 sm:flex-wrap">
         <label
           v-if="sortOptions.length > 1"
-          class="relative flex h-9 min-w-0 items-center gap-2 border border-border bg-background pr-9 pl-3 focus-within:border-brand pointer-coarse:min-h-11"
+          :class="[controlVariants({ size: 'sm', voice: 'sentence' }), 'relative min-w-0 pr-9 focus-within:border-brand']"
         >
-          <span class="text-[11px] font-bold text-muted-foreground">{{ $t('Rikiuoti') }}</span>
-          <span class="hidden max-w-44 truncate text-sm font-bold text-foreground sm:inline">{{ sortOptions.find(option => option.value === sortBy)?.label ?? sortBy }}</span>
+          <span class="text-muted-foreground">{{ $t('Rikiuoti') }}</span>
+          <span class="hidden max-w-44 truncate sm:inline">{{ sortOptions.find(option => option.value === sortBy)?.label ?? sortBy }}</span>
           <ChevronDown class="pointer-events-none absolute right-3 size-4 text-muted-foreground" aria-hidden="true" />
           <select
             :value="sortBy"
@@ -51,7 +51,7 @@
               @update:model-value="value => table.getColumn(column.key)?.toggleVisibility(value === true)"
               @select.prevent
             >
-              {{ column.label }}
+              {{ capitalize(column.label) }}
             </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -83,8 +83,8 @@
       :class="view === 'preview' ? 'grid min-w-0 max-w-full gap-6 xl:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]' : ''"
     >
       <div class="min-w-0">
-        <div v-if="view === 'table'" class="min-w-0 max-w-full overflow-x-auto border border-border" data-slot="collection-table">
-          <Table :class="tableFixed ? 'table-fixed min-w-[52rem]' : undefined">
+        <div v-if="view === 'table'" ref="tableEl" class="min-w-0 max-w-full overflow-x-auto border border-border" data-slot="collection-table">
+          <Table :class="tableFixed ? ['table-fixed', tableMinWidth ?? 'min-w-[52rem]'] : undefined">
             <TableHeader>
               <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
                 <TableHead
@@ -92,7 +92,7 @@
                   :key="header.id"
                   :class="[
                     header.id === SELECT_COLUMN_ID ? 'w-12' : columnOf(header.id)?.class,
-                    header.id === ACTIONS_COLUMN_ID ? ['sticky right-0 z-10 whitespace-nowrap bg-secondary text-right', actionsColumnWidth] : 'whitespace-nowrap',
+                    header.id === ACTIONS_COLUMN_ID ? ['sticky right-0 z-10 whitespace-nowrap bg-[color-mix(in_srgb,var(--secondary)_50%,var(--background))] text-right', stuckEdgeClass, actionsColumnWidth] : 'whitespace-nowrap',
                   ]"
                   :aria-sort="ariaSort(header.column.getIsSorted())"
                 >
@@ -125,14 +125,14 @@
                 v-for="row in table.getRowModel().rows"
                 :key="row.id"
                 :data-state="row.getIsSelected() ? 'selected' : undefined"
-                class="group hover:bg-secondary data-[state=selected]:bg-secondary"
+                :class="['group hover:bg-secondary data-[state=selected]:bg-secondary', rowMuted?.(row.original) && 'opacity-60']"
               >
                 <TableCell
                   v-for="cell in row.getVisibleCells()"
                   :key="cell.id"
                   :class="[
                     cell.column.id === SELECT_COLUMN_ID ? 'w-12' : columnOf(cell.column.id)?.class,
-                    cell.column.id === ACTIONS_COLUMN_ID ? ['sticky right-0 z-10 whitespace-nowrap bg-background group-hover:bg-secondary group-data-[state=selected]:bg-secondary text-right', actionsColumnWidth] : '',
+                    cell.column.id === ACTIONS_COLUMN_ID ? ['sticky right-0 z-10 whitespace-nowrap bg-background group-hover:bg-secondary group-data-[state=selected]:bg-secondary text-right', stuckEdgeClass, actionsColumnWidth] : '',
                   ]"
                 >
                   <Checkbox
@@ -181,6 +181,7 @@
               'flex items-stretch transition-colors hover:bg-secondary/40',
               view === 'preview' && 'cursor-pointer',
               (view === 'preview' && selectedKey === row.id) || row.getIsSelected() ? 'bg-secondary' : '',
+              rowMuted?.(row.original) && 'opacity-60',
             ]"
           >
             <div v-if="selectable" class="flex w-10 shrink-0 items-center pl-3 sm:w-12 sm:pl-4">
@@ -221,9 +222,9 @@
 
 <script setup lang="ts" generic="T">
 import { trans as $t } from 'laravel-vue-i18n';
-import { useEventListener } from '@vueuse/core';
+import { useEventListener, useResizeObserver } from '@vueuse/core';
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, Columns3 } from '@lucide/vue';
-import { computed, ref, toRef } from 'vue';
+import { computed, nextTick, ref, toRef, watch } from 'vue';
 
 import CollectionRowActions from './CollectionRowActions.vue';
 import CollectionLoadMore from './CollectionLoadMore.vue';
@@ -242,6 +243,7 @@ import {
 } from '@/Components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
 import type { CollectionSortOption } from '@/Composables/useCollectionSource';
+import { capitalize } from '@/Utils/String';
 import { ACTIONS_COLUMN_ID, SELECT_COLUMN_ID, useCollectionTable } from '@/Composables/useCollectionTable';
 import type { CollectionViewMode } from '@/Composables/useCollectionView';
 
@@ -270,6 +272,10 @@ const props = withDefaults(defineProps<{
   tableFixed?: boolean;
   /** Width of the actions column in a fixed-layout table, where it cannot size itself. */
   actionsWidth?: string;
+  /** Floor of a fixed-layout table, so wide fixed columns leave the flexible one room to read. */
+  tableMinWidth?: string;
+  /** Rows that recede: the record exists but no longer needs attention. */
+  rowMuted?: (item: T) => boolean;
 }>(), {
   pinned: () => [],
   columns: () => [],
@@ -354,6 +360,21 @@ const selectedItem = computed(() => allItems.value.find(item => props.itemKey(it
 const isPinned = (item: T) => pinnedList.value.some(candidate => props.itemKey(candidate) === props.itemKey(item));
 
 const rowsEl = ref<HTMLElement | null>(null);
+const tableEl = ref<HTMLElement | null>(null);
+
+// The pinned column only reads as a separate layer while rows actually slide beneath it. A pseudo
+// element, because `border-collapse` leaves a sticky cell's own border behind when it scrolls.
+const hasHiddenColumns = ref(false);
+const stuckEdgeClass = computed(() => (hasHiddenColumns.value ? 'before:absolute before:inset-y-0 before:left-0 before:w-px before:bg-border' : ''));
+
+function measureTableScroll(): void {
+  const table = tableEl.value;
+  hasHiddenColumns.value = table !== null && table.scrollLeft + table.clientWidth < table.scrollWidth - 1;
+}
+
+useEventListener(tableEl, 'scroll', measureTableScroll, { passive: true });
+useResizeObserver(tableEl, measureTableScroll);
+watch(allItems, () => nextTick(measureTableScroll));
 
 /**
  * In the preview view a row selects on click. Modified title-link clicks keep their browser

@@ -102,7 +102,7 @@ it('reviews incomplete records for the sending representative without overflow i
     app(RecordMeeting::class)->execute($institution, now()->subWeek());
     $page = loginAsAdmin($user, route('institutions.show', $institution, absolute: false));
     waitForInertiaRender($page, '[data-slot=admin-shell]');
-    $page->click('[data-testid=record-overflow-trigger]');
+    $page->click('header:has([data-slot=record-title]) [data-testid=record-overflow-trigger]');
     $page->click('[role=menuitem]:has-text("Paklausti, ar vyko posėdžiai")');
     $page->click('[data-slot=action-choice-button]:has-text("Papildyk posėdžių įrašus")');
     $page->page()->waitForSelector('[data-slot=activity-request-preview]', ['timeout' => 15000]);
@@ -131,7 +131,7 @@ it('captures documentation reference frames for activity requests', function ():
     // 1. Action window review screen
     $page = loginAsAdmin($coordinator, route('institutions.show', $committee, absolute: false));
     waitForInertiaRender($page, '[data-slot=admin-shell]');
-    $page->click('[data-testid=record-overflow-trigger]');
+    $page->click('header:has([data-slot=record-title]) [data-testid=record-overflow-trigger]');
     $page->click('[role=menuitem]:has-text("Paklausti, ar vyko posėdžiai")');
     $page->click('[data-slot=action-choice-button]:has-text("Ar vyko posėdis?")');
     $page->page()->waitForSelector('[data-slot=activity-request-preview]', ['timeout' => 15000]);

@@ -399,6 +399,7 @@ class Page extends Model implements ImageMediaOwner, Sitemapable
             'tag_names' => $this->tags->map(fn ($tag) => $tag->getTranslation('name', $this->lang) ?? $tag->name)->filter()->values()->all(),
             'is_active' => (bool) $this->is_active,
             'created_at' => $this->created_at->timestamp,
+            ...($this instanceof PublicPage ? [] : ['updated_at' => $this->updated_at->timestamp]),
         ];
     }
 

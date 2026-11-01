@@ -3,8 +3,10 @@ doc_status: reviewed
 title: Kalendorius
 area: calendar
 models: [Calendar]
-last_reviewed: 2026-10-20
+last_reviewed: 2026-11-01
 tests:
+  - resources/js/Components/Collection/__tests__/ContentCollectionPublishing.component.test.ts
+  - resources/js/Components/Collection/__tests__/CollectionStatusIcon.component.test.ts
   - tests/Feature/Public/CalendarEventListTest.php
   - tests/Feature/Admin/Calendar/CalendarControllerTest.php
   - tests/Feature/Public/CalendarCanonicalUrlTest.php
@@ -60,6 +62,8 @@ Kiekvienas kalendoriaus įrašas susideda iš:
 ## Veiksmai
 
 ### Renginių sąrašas ir paieška
+
+Lentelėje pavadinimai rodomi keliomis eilutėmis, o būseną galima keisti tiesiogiai jos stulpelyje, jei turi redagavimo teisę. Eilučių rodinyje būseną žymi piktograma be ženklelio; žalia akis reiškia paskelbtą turinį. Veiksmai ir piktograma centruojami eilutėje. Renginio tipas rodomas lentelėje ir peržiūroje; eilučių rodinyje jo nėra.
 
 Sąraše (`/mano/calendar`) pateikiami visi tavo pasiekiami renginiai:
 

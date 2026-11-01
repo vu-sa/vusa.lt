@@ -94,6 +94,8 @@ return [
         'padaliniu_apzvalga' => 'Padaliniai',
         'uzduotys' => 'Užduotys',
         'pranesimai' => 'Pranešimai',
+        'atsakomybes' => 'Atsakomybės',
+        'veiklos_uzklausos' => 'Veiklos užklausos',
         'institucijos' => 'Institucijos',
         'posedziai' => 'Posėdžiai',
         'darbotvarkes_klausimai' => 'Darbotvarkės klausimai',
@@ -142,6 +144,8 @@ return [
     'section_descriptions' => [
         'uzduotys' => 'Tau priskirti darbai ir terminai',
         'pranesimai' => 'Visi tau skirti pranešimai',
+        'atsakomybes' => 'Tavo pareigybės ir ką jos leidžia',
+        'veiklos_uzklausos' => 'Tau gautos užklausos apie institucijų veiklą',
         'institucijos' => 'Institucijos, kuriose atstovaujame',
         'posedziai' => 'Užfiksuoti ir būsimi posėdžiai',
         'darbotvarkes_klausimai' => 'Klausimai ir balsavimai iš visų posėdžių',

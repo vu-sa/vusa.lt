@@ -54,7 +54,7 @@ class GetRecentlyChangedMeetings
                     'institution_name_en' => $institution?->getTranslation('name', 'en'),
                     'tenant_shortname' => $institution?->tenant?->shortname,
                     'agenda_items_count' => $meeting->agendaItems->count(),
-                    'completion_status' => $meeting->completion_status,
+                    ...$meeting->outcomeSummary(),
                 ];
             })
             ->values();

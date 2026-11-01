@@ -86,3 +86,18 @@ test('the language switch does not point at a draft translation', function (): v
             ->where('otherLangURL', null)
         );
 });
+
+test('returning published news to draft blocks its current and retired URLs', function (): void {
+    $tenant = Tenant::main();
+    $news = News::factory()->for($tenant)->create([
+        'lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay(),
+    ]);
+    $oldUrl = newsArticleUrl($news);
+    $this->get($oldUrl)->assertOk();
+    $news->update(['permalink' => 'changed-news-permalink']);
+    $currentUrl = newsArticleUrl($news);
+    $this->get($oldUrl)->assertRedirect($news->publicUrl());
+    $news->update(['draft' => true]);
+    $this->get($currentUrl)->assertNotFound();
+    $this->get($oldUrl)->assertNotFound();
+});

@@ -49,7 +49,7 @@ class DutyApiController extends ApiController
             'per_page' => $duties->perPage(),
             'current_page' => $duties->currentPage(),
             'last_page' => $duties->lastPage(),
-            'facets' => CollectionFacetCounts::forRequest($request, ['data_quality', 'duty_type_id', 'history'], $query),
+            'facets' => CollectionFacetCounts::forRequest($request, ['is_active', 'data_quality', 'duty_type_id', 'history'], $query),
         ]);
     }
 

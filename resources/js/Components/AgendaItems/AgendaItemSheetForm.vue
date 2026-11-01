@@ -33,60 +33,13 @@
       </p>
     </div>
 
-    <div class="space-y-3 border-y border-border py-4" data-slot="agenda-item-privacy">
-      <label for="agenda-item-private" class="flex cursor-pointer items-center gap-3 text-sm pointer-coarse:min-h-11">
-        <Checkbox id="agenda-item-private" v-model="draft.is_private" aria-describedby="agenda-item-privacy-lead" />
-        {{ $t('meetings.privacy.switch_label') }}
-      </label>
-      <p id="agenda-item-privacy-lead" class="text-sm text-muted-foreground">
-        {{ $t(draft.is_private ? 'meetings.privacy.enabled_lead' : 'meetings.privacy.disabled_lead') }}
-      </p>
-      <details class="group" data-testid="agenda-item-privacy-details">
-        <summary :class="[
-          'u-touch inline-flex cursor-pointer items-center gap-1.5',
-          'select-none text-xs font-bold uppercase tracking-wide text-foreground/80 transition-colors hover:text-foreground',
-        ]">
-          <ChevronDown class="size-3.5 transition-transform group-open:rotate-180" />
-          {{ $t('meetings.privacy.details_label') }}
-        </summary>
-        <div class="mt-3 space-y-3 text-sm text-muted-foreground">
-          <p v-if="!isPublic">
-            {{ $t('meetings.privacy.nonpublic_hint') }}
-          </p>
-          <p>{{ $t('meetings.privacy.audience') }}</p>
-          <p>{{ $t('meetings.privacy.no_personal_data') }}</p>
-        </div>
-      </details>
-      <FormFieldWrapper
-        v-if="draft.is_private"
-        id="agenda-item-public-title"
-        :label="$t('meetings.privacy.public_title')"
-        :hint="$t('meetings.privacy.public_title_hint')"
-        :error="form.errors[`public_title.${locale}`]"
-      >
-        <Input id="agenda-item-public-title" v-model="draft.public_title[locale]" maxlength="200" :class="fieldSurfaceClass" />
-      </FormFieldWrapper>
-      <div v-if="draft.is_private" class="border-l-2 border-border pl-3 text-sm" data-testid="agenda-item-public-preview">
-        <p class="text-xs text-muted-foreground">
-          {{ $t('meetings.privacy.public_preview') }}
-        </p>
-        <p>
-          <span v-if="order" class="mr-2 font-mono text-muted-foreground">{{ order }}.</span>
-          {{ draft.public_title[locale]?.trim() || draft.public_title.lt?.trim() || $t('meetings.privacy.hidden_title') }}
-        </p>
-      </div>
-      <p v-else-if="form.is_private" class="text-sm text-status-attention">
-        {{ $t('meetings.privacy.publish_hint') }}
-      </p>
-    </div>
-
     <FormFieldWrapper id="agenda-item-title" :label="$t('meetings.item.title_label')" :error="titleError" required>
       <Textarea
         id="agenda-item-title"
         v-model="draft.title[locale]"
         rows="2"
         :class="['min-h-11 text-base', fieldSurfaceClass]"
-        :placeholder="locale === 'en' ? $t('meetings.agenda.title_placeholder_en') : $t('Darbotvarkės punkto pavadinimas')"
+        :placeholder="locale === 'en' ? $t('meetings.agenda.title_placeholder_en') : $t('Darbotvarkės klausimo pavadinimas')"
       />
     </FormFieldWrapper>
 
@@ -154,6 +107,53 @@
         :class="fieldSurfaceClass"
       />
     </FormFieldWrapper>
+
+    <div class="space-y-3 border-y border-border py-4" data-slot="agenda-item-privacy">
+      <label for="agenda-item-private" class="flex cursor-pointer items-center gap-3 text-sm pointer-coarse:min-h-11">
+        <Checkbox id="agenda-item-private" v-model="draft.is_private" aria-describedby="agenda-item-privacy-lead" />
+        {{ $t('meetings.privacy.switch_label') }}
+      </label>
+      <p id="agenda-item-privacy-lead" class="text-sm text-muted-foreground">
+        {{ $t(draft.is_private ? 'meetings.privacy.enabled_lead' : 'meetings.privacy.disabled_lead') }}
+      </p>
+      <details class="group" data-testid="agenda-item-privacy-details">
+        <summary :class="[
+          'u-touch inline-flex cursor-pointer items-center gap-1.5',
+          'select-none text-xs font-bold uppercase tracking-wide text-foreground/80 transition-colors hover:text-foreground',
+        ]">
+          <ChevronDown class="size-3.5 transition-transform group-open:rotate-180" />
+          {{ $t('meetings.privacy.details_label') }}
+        </summary>
+        <div class="mt-3 space-y-3 text-sm text-muted-foreground">
+          <p v-if="!isPublic">
+            {{ $t('meetings.privacy.nonpublic_hint') }}
+          </p>
+          <p>{{ $t('meetings.privacy.audience') }}</p>
+          <p>{{ $t('meetings.privacy.no_personal_data') }}</p>
+        </div>
+      </details>
+      <FormFieldWrapper
+        v-if="draft.is_private"
+        id="agenda-item-public-title"
+        :label="$t('meetings.privacy.public_title')"
+        :hint="$t('meetings.privacy.public_title_hint')"
+        :error="form.errors[`public_title.${locale}`]"
+      >
+        <Input id="agenda-item-public-title" v-model="draft.public_title[locale]" maxlength="200" :class="fieldSurfaceClass" />
+      </FormFieldWrapper>
+      <div v-if="draft.is_private" class="border-l-2 border-border pl-3 text-sm" data-testid="agenda-item-public-preview">
+        <p class="text-xs text-muted-foreground">
+          {{ $t('meetings.privacy.public_preview') }}
+        </p>
+        <p>
+          <span v-if="order" class="mr-2 font-mono text-muted-foreground">{{ order }}.</span>
+          {{ draft.public_title[locale]?.trim() || draft.public_title.lt?.trim() || $t('meetings.privacy.hidden_title') }}
+        </p>
+      </div>
+      <p v-else-if="form.is_private" class="text-sm text-status-attention">
+        {{ $t('meetings.privacy.publish_hint') }}
+      </p>
+    </div>
 
     <template v-if="canDelete" #danger-zone>
       <Button variant="ghost" voice="sentence" class="text-destructive hover:text-destructive" @click="emit('delete')">

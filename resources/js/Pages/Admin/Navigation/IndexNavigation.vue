@@ -3,10 +3,9 @@
     <Head :title="showDeleted ? $t('trash.showing_deleted_only') : $t('navigation.title')" />
 
     <CollectionTitleBand
-      :eyebrow="`${$t('shell.workspaces.svetaine.title')} · ${$t('navigation.title')}`"
+      :eyebrow="$t('shell.workspaces.svetaine.title')"
       :title="showDeleted ? $t('trash.showing_deleted_only') : $t('navigation.title')"
       :lead="showDeleted ? $t('trash.showing_deleted_only_description') : $t('navigation.builder.footer_description')"
-      entity-type="navigation"
     >
       <template v-if="shouldShowDeletedToggle" #actions>
         <TrashViewToggle

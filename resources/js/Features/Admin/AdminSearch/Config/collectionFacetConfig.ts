@@ -5,6 +5,8 @@
  * These configurations drive the facet sidebar rendering and search API calls.
  */
 
+import { trans } from 'laravel-vue-i18n';
+
 import type { CollectionFacetConfig, SortOption } from '../Types/AdminSearchTypes';
 
 import { institutionActivityStatuses, meetingCompletionStatuses } from '@/Constants/statuses';
@@ -73,7 +75,7 @@ export const MEETING_FACET_CONFIG: CollectionFacetConfig = {
  * Agenda items collection facet configuration
  */
 export const AGENDA_ITEM_FACET_CONFIG: CollectionFacetConfig = {
-  facetBy: 'meeting_year,student_vote,decision,student_benefit,is_complete,brought_by_students,vote_alignment_status,tenant_shortnames',
+  facetBy: 'meeting_year,type,student_vote,decision,has_student_position,student_benefit,is_complete,brought_by_students,vote_alignment_status,tenant_shortnames',
   queryBy: 'title,description,student_benefit,meeting_title',
   defaultSortBy: 'meeting_start_time:desc',
   fields: [
@@ -90,6 +92,14 @@ export const AGENDA_ITEM_FACET_CONFIG: CollectionFacetConfig = {
       label: 'Užpildymo būsena',
       type: 'checkbox',
       icon: 'CheckCircle',
+      defaultOpen: true,
+      sortBy: 'count',
+    },
+    {
+      field: 'type',
+      label: 'Tipas',
+      type: 'checkbox',
+      icon: 'Tag',
       defaultOpen: true,
       sortBy: 'count',
     },
@@ -114,6 +124,14 @@ export const AGENDA_ITEM_FACET_CONFIG: CollectionFacetConfig = {
       label: 'Palankumas studentams',
       type: 'checkbox',
       icon: 'Scale',
+      defaultOpen: false,
+      sortBy: 'count',
+    },
+    {
+      field: 'has_student_position',
+      label: 'Studentų pozicija',
+      type: 'checkbox',
+      icon: 'Tag',
       defaultOpen: false,
       sortBy: 'count',
     },
@@ -249,7 +267,7 @@ export const CALENDAR_FACET_CONFIG: CollectionFacetConfig = {
  * Institution collection facet configuration (for future use)
  */
 export const INSTITUTION_FACET_CONFIG: CollectionFacetConfig = {
-  facetBy: 'tenant_shortname,type_titles,activity_status',
+  facetBy: 'tenant_shortname,type_titles,activity_status,is_active',
   queryBy: 'name_lt,name_en,short_name_lt,short_name_en,alias,email',
   defaultSortBy: 'created_at:desc',
   fields: [
@@ -277,6 +295,14 @@ export const INSTITUTION_FACET_CONFIG: CollectionFacetConfig = {
       label: 'Aktyvumas',
       type: 'checkbox',
       icon: 'CalendarCheck',
+      defaultOpen: false,
+      sortBy: 'count',
+    },
+    {
+      field: 'is_active',
+      label: 'Būsena',
+      type: 'checkbox',
+      icon: 'CheckCircle',
       defaultOpen: false,
       sortBy: 'count',
     },
@@ -509,9 +535,12 @@ export const MEETING_SORT_OPTIONS: SortOption[] = [
   { value: 'start_time:asc', label: 'Seniausi pirmi', icon: 'ArrowUp' },
   { value: 'title:asc', label: 'Pagal pavadinimą (A–Z)', icon: 'ArrowDownAZ' },
   { value: 'title:desc', label: 'Pagal pavadinimą (Z–A)', icon: 'ArrowUpAZ' },
-  { value: 'agenda_items_count:desc', label: 'Daugiausiai punktų', icon: 'ListOrdered' },
-  { value: 'agenda_items_count:asc', label: 'Mažiausiai punktų', icon: 'ListOrdered' },
+  { value: 'agenda_items_count:desc', label: 'Daugiausiai klausimų', icon: 'ListOrdered' },
+  { value: 'agenda_items_count:asc', label: 'Mažiausiai klausimų', icon: 'ListOrdered' },
+  { value: 'created_at:desc', label: 'Naujausiai sukurti', icon: 'ArrowDown' },
+  { value: 'created_at:asc', label: 'Seniausiai sukurti', icon: 'ArrowUp' },
   { value: 'updated_at:desc', label: 'Paskutiniai atnaujinti', icon: 'RefreshCw' },
+  { value: 'updated_at:asc', label: 'Seniausiai atnaujinti', icon: 'RefreshCw' },
 ];
 
 /**
@@ -523,6 +552,9 @@ export const AGENDA_ITEM_SORT_OPTIONS: SortOption[] = [
   { value: 'title:asc', label: 'Pagal pavadinimą (A–Z)', icon: 'ArrowDownAZ' },
   { value: 'title:desc', label: 'Pagal pavadinimą (Z–A)', icon: 'ArrowUpAZ' },
   { value: 'updated_at:desc', label: 'Paskutiniai atnaujinti', icon: 'RefreshCw' },
+  { value: 'created_at:desc', label: 'Naujausiai sukurti', icon: 'ArrowDown' },
+  { value: 'created_at:asc', label: 'Seniausiai sukurti', icon: 'ArrowDown' },
+  { value: 'updated_at:asc', label: 'Seniausiai atnaujinti', icon: 'RefreshCw' },
 ];
 
 /**
@@ -533,6 +565,10 @@ export const NEWS_SORT_OPTIONS: SortOption[] = [
   { value: 'publish_time:asc', label: 'Seniausi pirmi', icon: 'ArrowUp' },
   { value: 'title:asc', label: 'Pagal pavadinimą (A–Z)', icon: 'ArrowDownAZ' },
   { value: 'title:desc', label: 'Pagal pavadinimą (Z–A)', icon: 'ArrowUpAZ' },
+  { value: 'created_at:desc', label: 'Naujausiai sukurti', icon: 'RefreshCw' },
+  { value: 'created_at:asc', label: 'Seniausiai sukurti', icon: 'RefreshCw' },
+  { value: 'updated_at:desc', label: 'Paskutiniai atnaujinti', icon: 'RefreshCw' },
+  { value: 'updated_at:asc', label: 'Seniausiai atnaujinti', icon: 'RefreshCw' },
 ];
 
 /**
@@ -543,6 +579,8 @@ export const PAGE_SORT_OPTIONS: SortOption[] = [
   { value: 'created_at:asc', label: 'Seniausi pirmi', icon: 'ArrowUp' },
   { value: 'title:asc', label: 'Pagal pavadinimą (A–Z)', icon: 'ArrowDownAZ' },
   { value: 'title:desc', label: 'Pagal pavadinimą (Z–A)', icon: 'ArrowUpAZ' },
+  { value: 'updated_at:desc', label: 'Paskutiniai atnaujinti', icon: 'RefreshCw' },
+  { value: 'updated_at:asc', label: 'Seniausiai atnaujinti', icon: 'RefreshCw' },
 ];
 
 /**
@@ -553,6 +591,18 @@ export const CALENDAR_SORT_OPTIONS: SortOption[] = [
   { value: 'date:asc', label: 'Seniausi pirmi', icon: 'ArrowUp' },
   { value: 'title:asc', label: 'Pagal pavadinimą (A–Z)', icon: 'ArrowDownAZ' },
   { value: 'title:desc', label: 'Pagal pavadinimą (Z–A)', icon: 'ArrowUpAZ' },
+];
+
+/**
+ * Sort options for institutions
+ */
+export const INSTITUTION_SORT_OPTIONS: SortOption[] = [
+  { value: 'created_at:desc', label: 'Naujausi pirmi', icon: 'ArrowDown' },
+  { value: 'created_at:asc', label: 'Seniausi pirmi', icon: 'ArrowUp' },
+  { value: 'name_lt:asc', label: 'Pagal pavadinimą (A–Z)', icon: 'ArrowDownAZ' },
+  { value: 'name_lt:desc', label: 'Pagal pavadinimą (Z–A)', icon: 'ArrowUpAZ' },
+  { value: 'updated_at:desc', label: 'Paskutiniai atnaujinti', icon: 'RefreshCw' },
+  { value: 'updated_at:asc', label: 'Seniausiai atnaujinti', icon: 'RefreshCw' },
 ];
 
 /**
@@ -583,6 +633,10 @@ export const DOCUMENT_SORT_OPTIONS: SortOption[] = [
   { value: 'document_date:asc', label: 'Seniausi pirmi', icon: 'ArrowUp' },
   { value: 'title:asc', label: 'Pagal pavadinimą (A–Z)', icon: 'ArrowDownAZ' },
   { value: 'title:desc', label: 'Pagal pavadinimą (Z–A)', icon: 'ArrowUpAZ' },
+  { value: 'created_at:desc', label: 'Naujausiai sukurti', icon: 'ArrowDown' },
+  { value: 'created_at:asc', label: 'Seniausiai sukurti', icon: 'ArrowDown' },
+  { value: 'updated_at:desc', label: 'Paskutiniai atnaujinti', icon: 'RefreshCw' },
+  { value: 'updated_at:asc', label: 'Seniausiai atnaujinti', icon: 'RefreshCw' },
 ];
 
 /**
@@ -596,6 +650,8 @@ export const RESOURCE_SORT_OPTIONS: SortOption[] = [
   { value: 'capacity:asc', label: 'Mažiausia talpa', icon: 'ArrowUp' },
   { value: 'created_at:desc', label: 'Naujausi pirmi', icon: 'ArrowDown' },
   { value: 'created_at:asc', label: 'Seniausi pirmi', icon: 'ArrowUp' },
+  { value: 'updated_at:desc', label: 'Paskutiniai atnaujinti', icon: 'RefreshCw' },
+  { value: 'updated_at:asc', label: 'Seniausiai atnaujinti', icon: 'RefreshCw' },
 ];
 
 /**
@@ -614,6 +670,8 @@ export function getCollectionSortOptions(collection: string): SortOption[] {
         return PAGE_SORT_OPTIONS;
       case 'calendar':
         return CALENDAR_SORT_OPTIONS;
+      case 'institutions':
+        return INSTITUTION_SORT_OPTIONS;
       case 'duties':
         return DUTY_SORT_OPTIONS;
       case 'documents':
@@ -665,7 +723,7 @@ export const FACET_VALUE_LABELS: Record<string, Record<string, string>> = {
   },
   decision: {
     positive: 'Priimtas',
-    negative: 'Atmestas',
+    negative: 'Nepriimtas',
     neutral: 'Susilaikyta',
   },
   student_benefit: {
@@ -676,6 +734,10 @@ export const FACET_VALUE_LABELS: Record<string, Record<string, string>> = {
   is_complete: {
     true: 'Pilnai užpildyta',
     false: 'Nepilnai užpildyta',
+  },
+  has_student_position: {
+    true: 'Įrašyta',
+    false: 'Neįrašyta',
   },
   brought_by_students: {
     true: 'Taip',
@@ -691,5 +753,8 @@ export const FACET_VALUE_LABELS: Record<string, Record<string, string>> = {
  * Get human-readable label for a facet value
  */
 export function getFacetValueLabel(field: string, value: string): string {
-  return FACET_VALUE_LABELS[field]?.[value] || value;
+  const label = FACET_VALUE_LABELS[field]?.[value];
+
+  // Some labels are keys borrowed from a status map, so they translate here rather than at each caller.
+  return label ? trans(label) : value;
 }

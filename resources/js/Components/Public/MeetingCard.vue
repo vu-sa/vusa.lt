@@ -50,8 +50,8 @@
             {{ $t('Įtraukta studentų') }}
           </span>
         </div>
-        <div v-if="hasDecisionData(item)" class="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground">
-          <span class="flex items-center gap-1">
+        <div v-if="showsVoteOutcome(item as AgendaItem)" class="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground">
+          <span v-if="requiresStudentPerspective" class="flex items-center gap-1">
             {{ $t('Studentų balsas') }}:
             <VoteStatusIndicator :vote="getOutcomeVote(item)?.student_vote" type="vote" compact />
           </span>
@@ -59,11 +59,14 @@
             {{ $t('Sprendimas') }}:
             <VoteStatusIndicator :vote="getOutcomeVote(item)?.decision" type="vote" compact />
           </span>
-          <span class="flex items-center gap-1">
+          <span v-if="requiresStudentPerspective" class="flex items-center gap-1">
             {{ $t('Nauda') }}:
             <VoteStatusIndicator :vote="getOutcomeVote(item)?.student_benefit" type="benefit" compact />
           </span>
         </div>
+        <p v-else-if="plainStatus(item)" class="mt-1.5 text-muted-foreground" data-slot="meeting-card-item-status">
+          {{ plainStatus(item) }}
+        </p>
       </li>
     </ol>
   </SmartLink>
@@ -86,7 +89,8 @@ import IFluentDismiss24Regular from '~icons/fluent/dismiss-24-regular';
 import IFluentPeople24Regular from '~icons/fluent/people-24-regular';
 import IFluentSubtract24Regular from '~icons/fluent/subtract-24-regular';
 import IFluentWarning24Regular from '~icons/fluent/warning-24-regular';
-import { getMeetingStatusSummary, getOutcomeVote, hasDecisionData } from '@/Composables/useAgendaItemStyling';
+import { agendaItemStatuses } from '@/Constants/statuses';
+import { getAgendaItemStatus, getOutcomeVote, showsVoteOutcome, type AgendaItem } from '@/Composables/useAgendaItemStyling';
 
 const $page = usePage();
 
@@ -102,10 +106,10 @@ const allAgendaItems = computed(() => {
   return props.meeting.agenda_items || [];
 });
 
-// Meeting summary for alignment status
-const meetingSummary = computed(() => {
-  return getMeetingStatusSummary(allAgendaItems.value, props.meeting.requires_student_perspective ?? true);
-});
+// The server's reading of the meeting; it is absent on a card built from other data.
+const outcome = computed(() => (props.meeting as App.Entities.Meeting & {
+  outcome_summary?: { vote_alignment_status: string; outcome_positive: number; outcome_negative: number; outcome_neutral: number };
+}).outcome_summary);
 
 const ALIGNMENTS = {
   all_match: { label: 'Pozicija priimta', role: 'success', icon: IFluentCheckmark24Regular },
@@ -115,8 +119,11 @@ const ALIGNMENTS = {
 } as const satisfies Record<string, { label: string; role: StatusRole; icon: unknown }>;
 
 const alignment = computed(() => {
-  const status = meetingSummary.value.voteAlignmentStatus;
-  if (status === 'unknown' || meetingSummary.value.totalItems === 0) {
+  const summary = outcome.value;
+  const status = summary?.vote_alignment_status as keyof typeof ALIGNMENTS | undefined;
+  // Neutral says a body decided without a student position, not that nothing is known yet.
+  const decided = (summary?.outcome_positive ?? 0) + (summary?.outcome_negative ?? 0) + (summary?.outcome_neutral ?? 0) > 0;
+  if (!status || !(status in ALIGNMENTS) || (status === 'neutral' && !decided)) {
     return null;
   }
 
@@ -124,9 +131,18 @@ const alignment = computed(() => {
   return { label: $t(label), role, icon };
 });
 
-// Items with at least one decision field filled (for outcome indicators)
-const itemsWithDecisions = computed(() => {
-  return allAgendaItems.value.filter(hasDecisionData);
-});
+const requiresStudentPerspective = computed(() => props.meeting.requires_student_perspective !== false);
+
+// Items that were actually voted on (for outcome indicators)
+const itemsWithDecisions = computed(() => allAgendaItems.value.filter(item => showsVoteOutcome(item as AgendaItem)));
+
+const PLAIN_STATUSES = ['deferred', 'informational', 'break', 'withdrawn'] as const;
+
+/** The word for an item with no vote to show; nothing for one awaiting a vote or a type. */
+function plainStatus(item: App.Entities.AgendaItem): string | null {
+  const status = getAgendaItemStatus(item as AgendaItem, requiresStudentPerspective.value);
+
+  return (PLAIN_STATUSES as readonly string[]).includes(status) ? $t(agendaItemStatuses[status].label) : null;
+}
 
 </script>

@@ -10,8 +10,7 @@ class IndexQuickLinkRequest extends BaseIndexRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * The listing is picked by tenant + language rather than paginated, so those two params
-     * are what need constraining on top of the shared index rules.
+     * Legacy scope parameters still prefill creation and ordering.
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */

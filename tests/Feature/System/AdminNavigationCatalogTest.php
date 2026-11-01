@@ -41,8 +41,6 @@ const SECTION_LANDING_ROUTES = [
 const EXCLUDED_FROM_CATALOG = [
     'administration' => 'Visi skyriai is the catalog rendered as a map (PR 7.5); it lists every section, so it is not one itself',
     'profile' => 'reached from the account menu, not a workspace section (PR 4.4)',
-    'profile.roles' => 'Mano rolės ir pareigybės, reached from the account menu and every 403 page (PR 5.9)',
-    'profile.activityRequests' => 'personal received activity requests, reached from the account menu and home',
     'profile.notifications' => 'Pranešimų nustatymai, reached from the account menu and Paskyra (PR 9.9)',
     'mySupportRequests.index' => 'Pagalba entry point, not a workspace section (PR 4.4)',
     'settings.cadences.index' => 'reached from within Nustatymai, not a top-level section',
@@ -54,7 +52,7 @@ const EXCLUDED_FROM_CATALOG = [
  * menu or Pagalba, or are legacy redirects that never render (`SearchController`'s own docblocks).
  */
 const WORKSPACELESS_ROUTES = [
-    'administration', 'profile', 'profile.roles', 'profile.activityRequests', 'profile.notifications', 'mySupportRequests.index', 'mySupportRequests.create',
+    'administration', 'profile', 'profile.notifications', 'mySupportRequests.index', 'mySupportRequests.create',
     'search.index', 'search.agendaItems', 'search.institutions',
     'search.meetings', 'search.resources',
     // Redirects straight out to the file's anonymous SharePoint link; never rendered as a page.
@@ -155,7 +153,7 @@ describe('per-persona visibility', function (): void {
         // still gets a foothold in Rezervacijos. Active institutions, public meetings, their agenda items
         // documents and problems are open to every admin too (the viewAny() of each policy).
         expect(catalogSummary($this->catalog, $user))->toEqual([
-            'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai'],
+            'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai', 'atsakomybes', 'veiklos_uzklausos'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai'],
         ]);
@@ -169,6 +167,8 @@ describe('per-persona visibility', function (): void {
                 ['key' => 'apzvalga', 'label' => 'shell.sections.apzvalga', 'routeName' => 'dashboard', 'routeParams' => [], 'entityType' => null, 'description' => null, 'collectionActions' => [], 'matches' => ['dashboard'], 'startsGroup' => false],
                 ['key' => 'uzduotys', 'label' => 'shell.sections.uzduotys', 'routeName' => 'tasks.index', 'routeParams' => [], 'entityType' => 'task', 'description' => 'shell.section_descriptions.uzduotys', 'collectionActions' => [], 'matches' => ['tasks.index'], 'startsGroup' => false],
                 ['key' => 'pranesimai', 'label' => 'shell.sections.pranesimai', 'routeName' => 'notifications.index', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.pranesimai', 'collectionActions' => [], 'matches' => ['notifications.*'], 'startsGroup' => false],
+                ['key' => 'atsakomybes', 'label' => 'shell.sections.atsakomybes', 'routeName' => 'profile.roles', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.atsakomybes', 'collectionActions' => [], 'matches' => ['profile.roles'], 'startsGroup' => false],
+                ['key' => 'veiklos_uzklausos', 'label' => 'shell.sections.veiklos_uzklausos', 'routeName' => 'profile.activityRequests', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.veiklos_uzklausos', 'collectionActions' => [], 'matches' => ['profile.activityRequests'], 'startsGroup' => false],
             ],
             'createActions' => [],
         ])
@@ -183,7 +183,7 @@ describe('per-persona visibility', function (): void {
         // Which meetings and institutions the rep gets is the scoped search key's job, not the catalog's.
         // The institution graph is a padalinys view; a rep reads only their own institutions.
         expect(catalogSummary($this->catalog, $user))->toEqual([
-            'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai'],
+            'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai', 'atsakomybes', 'veiklos_uzklausos'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai'],
         ]);
@@ -198,7 +198,7 @@ describe('per-persona visibility', function (): void {
         $duty->assignRole('Komunikacijos koordinatorius');
 
         expect(catalogSummary($this->catalog, $user))->toEqual([
-            'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai'],
+            'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai', 'atsakomybes', 'veiklos_uzklausos'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos', 'pareigybiu_laikotarpiai', 'institucijos_grafas'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai'],
             'svetaine' => ['apzvalga', 'puslapiai', 'naujienos', 'kalendorius', 'baneriai', 'greitosios_nuorodos', 'failai'],
@@ -210,7 +210,7 @@ describe('per-persona visibility', function (): void {
         $user = makeTenantUserWithRole('Išteklių administratorius', $this->tenant);
 
         expect(catalogSummary($this->catalog, $user))->toEqual([
-            'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai'],
+            'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai', 'atsakomybes', 'veiklos_uzklausos'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai', 'kategorijos'],
             'sistema' => ['apzvalga', 'tipai'],
@@ -241,7 +241,7 @@ describe('per-persona visibility', function (): void {
         $user = makeAdminUser($this->tenant);
 
         expect(catalogSummary($this->catalog, $user))->toEqual([
-            'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai'],
+            'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai', 'atsakomybes', 'veiklos_uzklausos'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'uzduociu_suvestine', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos', 'pareigybiu_laikotarpiai', 'institucijos_grafas', 'problemu_kategorijos'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai', 'kategorijos'],
             'sistema' => ['apzvalga', 'tipai'],

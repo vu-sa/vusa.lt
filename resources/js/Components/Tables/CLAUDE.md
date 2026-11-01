@@ -29,7 +29,7 @@ the same cells render them. Database and local sources just reload with `showDel
 **TanStack is the engine inside `CollectionResults`** (`useCollectionTable`): selection, header sort,
 column visibility. It runs in manual mode — the source owns search, facets, sort and paging. Pages
 describe columns as `CollectionColumn` (`sortField` makes a header sortable when the source offers
-both directions; `pinned` keeps a column out of the "Stulpeliai" menu) and render cells through the
+both directions; `pinned` keeps a column out of the "Stulpeliai" menu; `defaultHidden` starts it off) and render cells through the
 `#cell` slot. For bulk work pass `selectable` (and `can-select` for per-row rules) and fill
 `#bulk-actions`; bind `v-model:selection` only when the page must clear it itself.
 
@@ -44,7 +44,7 @@ backed by `<prefix>.bulkStatus` / `<prefix>.bulkDestroy` and `Requests/Content/B
 
 **Shared cells**: `CollectionPrimaryCell` (bold title + one quiet sub-line; `:sub-lines="3"` when the sub-line is a description, as on Atsakomybės), `CollectionStatusMenu`
 (a `StatusBadge` that opens a status picker when `editable`), `CollectionRowActions`
-(square bordered icon actions, one labelled), `StatusBadge`. Row actions for edit / delete /
+(one labelled action + ⋯, see `.ai/rules/js-pages-admin.md`), `CollectionRow` (a rows-view item that measures its own width), `StatusBadge`. Row actions for edit / delete /
 duplicate / restore / permanent delete come from `useCollectionRecordActions` with
 `CollectionConfirmAction` for the dialog.
 

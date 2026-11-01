@@ -3,7 +3,6 @@
     :row-actions="notificationRowActions"
     :source
     collection="notifications"
-    entity-type="notification"
     :eyebrow
     :title="$t('Pranešimai')"
     :lead="$t('Peržiūrėk naujus ir ankstesnius pranešimus.')"
@@ -63,6 +62,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { BellOff, MoreHorizontal, Settings } from '@lucide/vue';
 
 import { markNotificationRead } from '@/Composables/markNotificationRead';
+import { quickFilterLabel } from '@/Components/Collection/quickFilterLabel';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { notificationRowActions } from '@/Features/Admin/Notifications/notificationRowActions';
 import NotificationCard from '@/Features/Admin/Notifications/NotificationCard.vue';
@@ -75,7 +75,7 @@ import type { Notification } from '@/Composables/useNotificationFormatting';
 
 const props = defineProps<{ notifications: Notification[] }>();
 
-const eyebrow = computed(() => `${$t('shell.workspaces.pradzia.title')} · ${$t('Pranešimai')}`);
+const eyebrow = computed(() => $t('shell.workspaces.pradzia.title'));
 
 const toasts = useToasts();
 const source = useLocalCollectionSource<Notification>({
@@ -91,16 +91,12 @@ const source = useLocalCollectionSource<Notification>({
   }],
 });
 
-if (!new URLSearchParams(window.location.search).has('read')) {
-  source.setFilter('read', ['unread']);
-}
-
 const unreadCount = computed(() => props.notifications.filter(item => !item.read_at).length);
 const readCount = computed(() => props.notifications.filter(item => item.read_at).length);
 const unreadOnly = computed(() => source.filters.value.read === 'unread' || (Array.isArray(source.filters.value.read) && source.filters.value.read.includes('unread')));
 
 const quickFilters = computed(() => [
-  { id: 'unread', label: `${$t('notifications.index.filter_unread')} · ${unreadCount.value}`, active: unreadOnly.value },
+  { id: 'unread', label: quickFilterLabel($t('notifications.index.filter_unread'), unreadCount.value), active: unreadOnly.value },
   { id: 'all', label: $t('Visi'), active: !unreadOnly.value },
 ]);
 
@@ -155,6 +151,7 @@ const handleDeleteAll = () => {
     },
   });
 };
+
 function markUnreadRowAsRead(item: Notification): void {
   if (!item.read_at) {
     markNotificationRead(item.id);

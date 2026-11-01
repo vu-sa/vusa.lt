@@ -61,6 +61,7 @@ class ResponsibilityController extends AdminController
                     'permissions_count' => $role->permissions_count,
                     'duties_count' => $role->duties_count,
                     'people_count' => $role->currentUsersThroughDuties()->distinct()->count('users.id'),
+                    'created_at' => $role->created_at?->toDateTimeString(),
                     'updated_at' => $role->updated_at?->toDateTimeString(),
                 ])
                 ->sortBy('title')

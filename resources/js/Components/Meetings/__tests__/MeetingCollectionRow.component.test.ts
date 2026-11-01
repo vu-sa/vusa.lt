@@ -43,35 +43,29 @@ describe('MeetingCollectionRow', () => {
     expect(main.text()).toContain('VU SA Senato atstovai');
   });
 
-  it('shows the date plate in Vilnius time', () => {
+  it('leads with the institution and leaves the date to the title', () => {
     const wrapper = mountRow({ meeting: meeting() });
 
-    expect(wrapper.find('time').text()).toContain('18');
-    expect(wrapper.find('time').attributes('datetime')).toBe('2026-09-18T07:00:00.000Z');
+    expect(wrapper.find('a[data-collection-open] .font-bold').text()).toBe('VU SA Senato atstovai');
+    expect(wrapper.find('time').exists()).toBe(false);
   });
 
-  it('keeps a complete meeting quiet while offering its record link', () => {
+  it('keeps a complete meeting quiet', () => {
     const wrapper = mountRow({ meeting: meeting({ completion_status: 'complete' }) });
 
-    expect(wrapper.find('[data-slot="status-badge"]').exists()).toBe(false);
-    expect(wrapper.findAll('a').some(link => link.text() === 'Atidaryti')).toBe(true);
+    expect(wrapper.find('[data-slot="meeting-completion"]').exists()).toBe(false);
   });
 
   it.each([
     ['incomplete', 'attention', 'Neužpildyta'],
     ['no_items', 'attention', 'Nėra darbotvarkės'],
-  ])('marks a %s meeting once, with its role and word, and points at the record to fill it in', (status, role, label) => {
+  ])('marks a %s meeting once, with its role and word', (status, role, label) => {
     const wrapper = mountRow({ meeting: meeting({ completion_status: status }) });
 
-    const badge = wrapper.find('[data-slot="status-badge"]');
+    const badge = wrapper.find('[data-slot="meeting-completion"]');
     expect(badge.attributes('data-status-role')).toBe(role);
     expect(badge.text()).toBe(label);
-    expect(wrapper.findAll('[data-slot="status-badge"]')).toHaveLength(1);
-
-    const action = wrapper.findAll('a').find(link => link.text() === 'Atidaryti');
-    expect(action?.attributes('href')).toContain('meetings.show');
-    // The action is not the row's main link, so the preview view cannot swallow it.
-    expect(action?.attributes('data-collection-open')).toBeUndefined();
+    expect(wrapper.findAll('[data-slot="meeting-completion"]')).toHaveLength(1);
   });
 
   it('is not every meeting a posėdis: an e-mail one is a decision and shows no time', () => {
@@ -99,14 +93,21 @@ describe('MeetingCollectionRow', () => {
     expect(wrapper.text()).toContain('Senate representatives');
   });
 
-  it('clamps the meeting title to two lines and exposes the full title via tooltip', () => {
-    const titleText = 'A very long meeting title that wraps across multiple lines';
-    const wrapper = mountRow({ meeting: meeting({ title: titleText }) });
-    const title = wrapper.find('.line-clamp-2');
+  it('stays minimal beside the detail card', () => {
+    const wrapper = mount(MeetingCollectionRow, { props: { meeting: meeting({ outcome_aligned: 3, vote_alignment_status: 'all_match', completion_status: 'incomplete' }), compact: true }, global: { stubs: commonStubs } });
 
-    expect(title.exists()).toBe(true);
-    expect(title.classes()).toContain('line-clamp-2');
-    expect(title.classes()).not.toContain('truncate');
-    expect(title.attributes('title')).toBe(titleText);
+    expect(wrapper.find('[data-slot="meeting-outcome"]').exists()).toBe(false);
+  });
+
+  it('folds the vote split into one tag and adds only what the tag cannot say', () => {
+    const wrapper = mountRow({ meeting: meeting({ outcome_aligned: 3, outcome_misaligned: 1, outcome_discussed: 2, vote_alignment_status: 'mixed', agenda_items_count: 6 }) });
+
+    const tag = wrapper.get('[data-slot="status-badge"]');
+    expect(tag.attributes('data-status-role')).toBe('attention');
+    expect(tag.text()).toBe('meetings.outcome.matched_of');
+
+    const counts = wrapper.get('[data-slot="meeting-outcome-counts"]').text();
+    expect(counts).toContain('meetings.outcome.discussed');
+    expect(counts).not.toContain('meetings.outcome.aligned');
   });
 });

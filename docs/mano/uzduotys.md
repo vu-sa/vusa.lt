@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Užduotys
 area: tasks
 models: [Task]
-last_reviewed: 2026-10-28
+last_reviewed: 2026-11-01
 tests:
   - tests/Browser/VisakOverviewPagesTest.php
   - tests/Feature/Admin/Dashboard/UserTasksTest.php
@@ -107,7 +107,7 @@ Atliktos užduotys rikiuojamos nuo vėliausiai atliktos.
 
 Nuoroda į konkrečią užduotį (pvz., iš pranešimo) atidaro ją iš karto, net jei ji nėra pirmame puslapyje.
 
-### Veiksmai su užduotimi
+### Veiksmai su užduotimi {#veiksmai-su-uzduotimi}
 
 | Veiksmas | Kada rodomas |
 |---|---|
@@ -116,8 +116,9 @@ Nuoroda į konkrečią užduotį (pvz., iš pranešimo) atidaro ją iš karto, n
 | **Pažymėti atlikta** / **Grąžinti į neatliktas** | Tik rankinė užduotis |
 | **Ištrinti** | Tik jei turi teisę ją ištrinti |
 
-Eilučių vaizde užduotį atlikta pažymi varnelė eilutės pradžioje, o peržiūros vaizde veiksmai
-rodomi dešinėje. Varnelę ir **Pažymėti atlikta** mato tik tie, kas gali užduotį keisti: kiti ją
+Paspaudus pavadinimą, atveriama užduotis: instrukcijos, terminas ir atsakingi, o būseną rodo ženklo
+spalva. Eilučių vaizde ir lentelėje užduotį atlikta pažymi varnelė, pagrindinis veiksmas – laukiantis žingsnis arba **Atidaryti** – rodomas
+prie užduoties, o telefone jis yra meniu **⋯** viršuje, kartu su kitais veiksmais. Peržiūros vaizde veiksmai rodomi dešinėje, o rodyklėmis ↑ ir ↓ pereinama prie kitos užduoties. Varnelę ir **Pažymėti atlikta** mato tik tie, kas gali užduotį keisti: kiti ją
 mato, bet pažymėti negali.
 
 Jei gali matyti ir padalinio užduotis, sąraše rodomas mygtukas **Visos užduotys**, vedantis į

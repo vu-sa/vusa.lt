@@ -6,10 +6,13 @@ use App\Actions\UpdateInstitution;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\Admin\UpdateRecordActivityRequest;
 use App\Http\Requests\StoreInstitutionRequest;
+use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\User;
 use App\Services\InstitutionDeactivationService;
 use App\Services\InstitutionRelationService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Gate;
 
 class InstitutionApiController extends ApiController
 {
@@ -40,9 +43,11 @@ class InstitutionApiController extends ApiController
         ]);
 
         $meetings = $institution->meetings()
+            ->with(['institutions', 'agendaItems.votes'])
             ->orderByDesc('start_time')
             ->limit(5)
-            ->get(['meetings.id', 'title', 'start_time']);
+            ->get();
+        $viewer = request()->user();
 
         return $this->jsonSuccess([
             'types' => $institution->types
@@ -55,6 +60,8 @@ class InstitutionApiController extends ApiController
                     'id' => (string) $meeting->id,
                     'title' => $meeting->title,
                     'start_time' => $meeting->start_time->timestamp,
+                    // Seeing the institution does not grant its meetings' records.
+                    'outcome' => Gate::forUser($viewer)->allows('view', $meeting) ? $meeting->outcomeSummary($viewer) : null,
                 ])->values(),
             'representatives' => $institution->duties
                 ->flatMap->current_users
@@ -66,6 +73,23 @@ class InstitutionApiController extends ApiController
                 ])->values(),
             'related_institutions' => app(InstitutionRelationService::class)->summaryFor($institution),
         ]);
+    }
+
+    /**
+     * Who has held a duty here, for the Nariai popover. Gated like the record page, because the
+     * collection also lists public institutions the viewer cannot open.
+     */
+    public function memberTerms(Institution $institution): JsonResponse
+    {
+        $this->authorizeApi('view', $institution);
+
+        return $this->jsonSuccess($institution->duties()->with('users:id,name')->get()
+            ->flatMap(fn (Duty $duty) => $duty->users->map(fn (User $user) => [
+                'name' => $user->name,
+                'start_date' => $user->pivot->start_date,
+                'end_date' => $user->pivot->end_date,
+            ]))
+            ->values());
     }
 
     public function store(StoreInstitutionRequest $request): JsonResponse

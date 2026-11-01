@@ -94,6 +94,8 @@ return [
         'padaliniu_apzvalga' => 'Units',
         'uzduotys' => 'Tasks',
         'pranesimai' => 'Notifications',
+        'atsakomybes' => 'Responsibilities',
+        'veiklos_uzklausos' => 'Activity requests',
         'institucijos' => 'Institutions',
         'posedziai' => 'Meetings',
         'darbotvarkes_klausimai' => 'Agenda items',
@@ -142,6 +144,8 @@ return [
     'section_descriptions' => [
         'uzduotys' => 'Work assigned to you and its deadlines',
         'pranesimai' => 'All your notifications',
+        'atsakomybes' => 'Your duties and what they let you do',
+        'veiklos_uzklausos' => 'Requests you received about institution activity',
         'institucijos' => 'Institutions where we represent students',
         'posedziai' => 'Recorded and upcoming meetings',
         'darbotvarkes_klausimai' => 'Agenda items and votes across meetings',

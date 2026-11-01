@@ -55,7 +55,7 @@ export const statusRoleClasses: Record<StatusRole, string> = {
 
 export type ReservationResourceStatus = 'created' | 'reserved' | 'lent' | 'returned' | 'rejected' | 'cancelled';
 export type MeetingCompletionStatus = 'complete' | 'incomplete' | 'no_items';
-export type TaskStatus = 'completed' | 'open' | 'due_soon' | 'overdue';
+export type TaskStatus = 'completed' | 'cancelled' | 'open' | 'due_soon' | 'overdue';
 export type ContentStatus = 'published' | 'scheduled' | 'draft';
 export type ProblemStatus = 'open' | 'in_progress' | 'resolved';
 export type MissingVoteStatus = 'not_recorded';
@@ -92,6 +92,13 @@ export const meetingCompletionStatuses: Record<MeetingCompletionStatus, StatusPr
   no_items: status('Nėra darbotvarkės', 'attention', CircleSlash),
 };
 
+/** The student perspective across a meeting; `neutral` (nothing to compare) gets no tag. */
+export const meetingAlignmentStatuses = {
+  all_match: status('Visi sutampa', 'success', CircleCheck),
+  mixed: status('Iš dalies sutampa', 'attention', CircleDashed),
+  all_mismatch: status('Visi nesutampa', 'danger', TriangleAlert),
+} satisfies Record<string, StatusPresentation>;
+
 export const voteStatuses: Record<VoteValue | MissingVoteStatus, StatusPresentation> = {
   [VoteValue.Positive]: status('Už', 'success', CircleCheck),
   [VoteValue.Negative]: status('Prieš', 'danger', CircleX),
@@ -112,7 +119,7 @@ export const agendaItemStatuses: Record<AgendaItemStatus, StatusPresentation> = 
   student_aligned: status('Studentų pozicija priimta', 'success', CircleCheck),
   student_misaligned: status('Studentų pozicija nesutampa', 'danger', CircleX),
   decision_positive: status('Priimtas', 'success', CircleCheck),
-  decision_negative: status('Atmestas', 'danger', CircleX),
+  decision_negative: status('Nepriimtas', 'danger', CircleX),
   neutral_decided: status('Neutralus sprendimas', 'neutral', CircleMinus),
   mixed: status('Skirtingi rezultatai', 'info', Split),
   no_vote: status('Neaptartas', 'attention', CircleDashed),
@@ -135,6 +142,7 @@ export const statusRoleParts: Record<StatusRole, { text: string; surface: string
 
 export const taskStatuses: Record<TaskStatus, StatusPresentation> = {
   completed: status('Atlikta', 'success', CircleCheck),
+  cancelled: status('tasks.cancelled', 'neutral', Ban),
   open: status('Atvira', 'info', Circle),
   due_soon: status('Artėja terminas', 'attention', Clock3),
   overdue: status('Vėluoja', 'danger', TriangleAlert),
@@ -142,14 +150,14 @@ export const taskStatuses: Record<TaskStatus, StatusPresentation> = {
 
 export const contentStatuses: Record<ContentStatus, StatusPresentation> = {
   published: status('Paskelbta', 'success', Eye, true),
-  scheduled: status('Suplanuota', 'info', CalendarClock, true),
+  scheduled: status('Suplanuota', 'success', CalendarClock, true),
   draft: status('Juodraštis', 'neutral', FilePenLine, true),
 };
 
 /** Whether a duty or institution still exists in the structure — not meeting health, which is `institutionActivityStatuses`. */
 export const operatingStatuses = {
-  active: status('Veikianti', 'success', CircleCheck),
-  inactive: status('Nebeveikianti', 'neutral', CircleSlash),
+  active: status('Veikianti', 'success', CircleCheck, true),
+  inactive: status('Nebeveikianti', 'neutral', CircleSlash, true),
 } satisfies Record<string, StatusPresentation>;
 
 export const inactiveInstitutionStatus: StatusPresentation = status('Nebeveikianti institucija', 'neutral', CircleSlash);

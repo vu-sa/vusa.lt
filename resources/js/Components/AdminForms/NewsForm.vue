@@ -385,7 +385,7 @@ function updatePublishTime(value: string | null | undefined) {
 // A future publish_time only keeps the article out of search and listings; its link already works.
 const statusCallout = computed(() => {
   if (form.draft) {
-    return $t('Juodraštis matomas tik sistemoje — svetainės lankytojai jo nemato.');
+    return $t('Juodraštis matomas tik sistemoje. Svetainės lankytojai jo negali atidaryti net turėdami dabartinę ar ankstesnę nuorodą.');
   }
 
   const publishTime = form.publish_time ? new Date(form.publish_time as string) : null;

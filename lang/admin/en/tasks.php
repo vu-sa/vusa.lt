@@ -54,6 +54,13 @@ return [
     'instructions' => 'Instructions',
     'available_actions' => 'Available actions',
     'assigned_to' => 'Assigned to',
+    'detail' => [
+        'eyebrow' => 'Task',
+        'progress' => 'Progress',
+        'completed_on' => 'Completed',
+        'completing' => 'Completion',
+        'completes_itself' => 'Automatic',
+    ],
     'periodicity_gap' => [
         'name' => 'Report institution activity for :institution',
         'description' => 'The institution activity reporting period is approaching its threshold. Register a new meeting or report the activity.',
