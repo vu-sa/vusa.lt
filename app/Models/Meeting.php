@@ -367,9 +367,15 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
         return $this->hasMany(AgendaItem::class);
     }
 
+    /**
+     * In attachment order: the first institution hosts the meeting's SharePoint folder and leads
+     * every listing, so a joint institution added later must never displace it.
+     */
     public function institutions(): BelongsToMany
     {
-        return $this->belongsToMany(Institution::class);
+        return $this->belongsToMany(Institution::class)
+            ->orderByPivot('created_at')
+            ->orderBy('institutions.id');
     }
 
     /**
