@@ -195,7 +195,7 @@ describe('authorized access', function (): void {
                 ->component('Admin/Navigation/CreateNavigation')
                 ->has('parent_id')
                 ->has('parentElements')
-                ->where('parent_id', (string) $this->navigation->id) // Cast to string since it comes from request
+                ->where('parent_id', $this->navigation->id)
             );
     });
 

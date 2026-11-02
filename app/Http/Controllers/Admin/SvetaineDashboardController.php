@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\GetTenantsForUpserts;
 use App\Enums\TenantType;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\ShowSvetaineDashboardRequest;
 use App\Models\Calendar;
 use App\Models\News;
 use App\Models\Page;
@@ -17,11 +18,11 @@ class SvetaineDashboardController extends AdminController
         public Authorizer $authorizer,
     ) {}
 
-    public function svetaine()
+    public function svetaine(ShowSvetaineDashboardRequest $request)
     {
         $this->handleAuthorization('viewAny', Page::class);
 
-        $selectedTenant = request()->input('tenant_id');
+        $selectedTenant = $request->validated('tenant_id');
 
         // Leave only tenants that are not 'pkp'
         $tenants = collect(GetTenantsForUpserts::execute('pages.update.padalinys', $this->authorizer))->filter(fn ($tenant) => in_array($tenant['type'], TenantType::representationalValues(), true))->values();

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\BuildProblemIndexQuery;
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\CreateProblemRequest;
 use App\Http\Requests\IndexProblemRequest;
 use App\Http\Requests\StoreProblemRequest;
 use App\Http\Requests\UpdateProblemRequest;
@@ -23,7 +24,6 @@ use App\Services\PostCreateRedirect;
 use App\Services\TanstackTableService;
 use App\Support\Experiments\GoalsExperiment;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
@@ -83,15 +83,15 @@ class ProblemController extends AdminController
     /**
      * Show the form for creating a new resource.
      */
-    public function create(Request $request)
+    public function create(CreateProblemRequest $request)
     {
         $this->handleAuthorization('create', Problem::class);
 
         $tenants = GetTenantsForUpserts::execute('problems.create.padalinys', $this->authorizer);
 
         // Opened from an institution's Problemos tab: start in its padalinys, already linked, if the user may write there.
-        $institution = $request->filled('institution')
-            ? Institution::query()->find($request->string('institution')->toString())
+        $institution = filled($request->validated('institution'))
+            ? Institution::query()->find($request->validated('institution'))
             : null;
         $prefill = $institution !== null && $tenants->contains('id', $institution->tenant_id)
             ? $institution

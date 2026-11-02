@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\PublicController;
-use Illuminate\Http\Request;
+use App\Http\Requests\IndexPublicSearchRequest;
 use Inertia\Inertia;
 
 class SearchController extends PublicController
 {
-    public function index(Request $request)
+    public function index(IndexPublicSearchRequest $request)
     {
         $this->getBanners();
         $this->getTenantLinks();
@@ -26,7 +26,7 @@ class SearchController extends PublicController
 
         return Inertia::render('Public/Search', [
             'tenantSwitchTarget' => 'same-page',
-            'initialQuery' => $request->string('q')->toString(),
+            'initialQuery' => (string) $request->validated('q'),
         ]);
     }
 }

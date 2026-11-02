@@ -6,6 +6,7 @@ use App\Contracts\Commentable;
 use App\Enums\CommentKind;
 use App\Events\CommentBroadcast;
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Comments\IndexCommentsRequest;
 use App\Http\Requests\Comments\StoreCommentRequest;
 use App\Http\Requests\Comments\UpdateCommentRequest;
 use App\Http\Resources\CommentResource;
@@ -31,7 +32,7 @@ class CommentApiController extends ApiController
     /**
      * Threaded list of root comments (with their replies) for a commentable.
      */
-    public function index(Request $request, string $commentableType, string $commentableId): JsonResponse
+    public function index(IndexCommentsRequest $request, string $commentableType, string $commentableId): JsonResponse
     {
         $commentable = $this->resolveCommentable($commentableType, $commentableId);
         $this->authorize('view', $commentable);
@@ -51,8 +52,8 @@ class CommentApiController extends ApiController
             ])
             ->orderBy('created_at');
 
-        if ($request->filled('resolved')) {
-            $request->boolean('resolved') ? $query->resolved() : $query->unresolved();
+        if ($request->validated('resolved') !== null) {
+            $request->safe()->boolean('resolved') ? $query->resolved() : $query->unresolved();
         }
 
         return $this->jsonSuccess(CommentResource::collection($query->get()));

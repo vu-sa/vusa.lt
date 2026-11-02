@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\GetTenantsForUpserts;
 use App\Enums\TenantType;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\CreateQuickLinkRequest;
 use App\Http\Requests\IndexQuickLinkRequest;
 use App\Http\Requests\StoreQuickLinkRequest;
 use App\Http\Requests\UpdateQuickLinkOrderRequest;
@@ -16,7 +17,6 @@ use App\Models\Tag;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class QuickLinkController extends AdminController
@@ -64,15 +64,15 @@ class QuickLinkController extends AdminController
     /**
      * Show the form for creating a new resource.
      */
-    public function create(Request $request)
+    public function create(CreateQuickLinkRequest $request)
     {
         $this->handleAuthorization('create', QuickLink::class);
 
         $tenantOptions = GetTenantsForUpserts::execute('quickLinks.create.padalinys', $this->authorizer);
 
         // Prefill from the index's tenant/language scope, so a link started from the EN list is an EN link.
-        $requestedTenantId = $request->integer('tenant');
-        $requestedLang = $request->query('lang');
+        $requestedTenantId = $request->safe()->integer('tenant');
+        $requestedLang = $request->validated('lang');
 
         return $this->inertiaResponse('Admin/Content/CreateQuickLink', [
             'topicOptions' => $this->getTopicOptions(),

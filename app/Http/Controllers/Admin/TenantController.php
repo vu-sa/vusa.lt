@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\LocaleEnum;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\EditTenantMainPageRequest;
 use App\Http\Requests\IndexTenantRequest;
 use App\Http\Requests\StoreTenantRequest;
 use App\Http\Requests\UpdateContentRequest;
@@ -83,11 +84,11 @@ class TenantController extends AdminController
         return redirect()->route('tenants.index')->with('success', $this->entityMessage('deleted', 'tenant'));
     }
 
-    public function editMainPage(Tenant $tenant)
+    public function editMainPage(EditTenantMainPageRequest $request, Tenant $tenant)
     {
         $this->handleAuthorization('updateMainPage', $tenant);
 
-        $locale = LocaleEnum::tryFrom(request()->string('locale')->toString()) ?? LocaleEnum::LT;
+        $locale = $request->requestedLocale();
         $content = $tenant->homepageContents()
             ->where('locale', $locale->value)
             ->with('content.parts')

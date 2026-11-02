@@ -6,10 +6,10 @@ use App\Actions\ActivityRequests\AnswerInstitutionActivityRequest;
 use App\Enums\InstitutionActivityAnswer;
 use App\Enums\InstitutionActivityCampaign;
 use App\Enums\MeetingType;
+use App\Http\Requests\ShowInstitutionActivityAnswerRequest;
 use App\Http\Requests\StoreInstitutionActivityAnswerRequest;
 use App\Models\InstitutionActivityRequest;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\View\View;
 
@@ -19,7 +19,7 @@ use Illuminate\View\View;
  */
 class InstitutionActivityAnswerController extends Controller
 {
-    public function show(Request $request, InstitutionActivityRequest $activityRequest): View
+    public function show(ShowInstitutionActivityAnswerRequest $request, InstitutionActivityRequest $activityRequest): View
     {
         $activityRequest->load(['institution', 'recipient', 'requestedBy', 'meeting', 'checkIn', 'meetings', 'resolvedByRequest.recipient']);
         if ($activityRequest->institution === null || $activityRequest->recipient === null || $activityRequest->expires_at->isPast()) {
@@ -38,7 +38,7 @@ class InstitutionActivityAnswerController extends Controller
 
         return view('activity-answers.show', [
             'activityRequest' => $activityRequest,
-            'chosen' => InstitutionActivityAnswer::tryFrom((string) $request->query('answer')),
+            'chosen' => InstitutionActivityAnswer::tryFrom((string) $request->validated('answer')),
             'others' => $others,
             'meetingTypes' => MeetingType::cases(),
             'knownMeetings' => $activityRequest->institution->meetings()->whereDate('start_time', '>=', $activityRequest->period_start)->whereDate('start_time', '<=', $activityRequest->periodEnd())->orderBy('start_time')->get(),

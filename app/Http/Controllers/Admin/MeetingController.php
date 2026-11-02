@@ -12,6 +12,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Requests\AttachMeetingInstitutionRequest;
 use App\Http\Requests\IndexMeetingRequest;
 use App\Http\Requests\Meetings\DestroyMeetingRequest;
+use App\Http\Requests\Meetings\EditMeetingRequest;
 use App\Http\Requests\StoreMeetingRequest;
 use App\Http\Requests\UpdateMeetingRequest;
 use App\Http\Resources\DocumentRowResource;
@@ -33,7 +34,6 @@ use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Support\MeetingTitle;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -394,13 +394,13 @@ class MeetingController extends AdminController
     /**
      * Meetings are edited on their record page; the URL stays for public edit links and search.
      */
-    public function edit(Request $request, Meeting $meeting): RedirectResponse
+    public function edit(EditMeetingRequest $request, Meeting $meeting): RedirectResponse
     {
         $this->handleAuthorization('update', $meeting);
 
         return redirect()->route('meetings.show', [
             'meeting' => $meeting,
-            ...$request->only(['tab', 'action']),
+            ...$request->safe()->only(['tab', 'action']),
         ]);
     }
 
