@@ -13,6 +13,9 @@ use Illuminate\Support\Str;
  */
 class BannerPolicy extends ModelPolicy
 {
+    #[\Override]
+    protected bool $hasManyTenants = false;
+
     /**
      * Initialize policy with model name
      */

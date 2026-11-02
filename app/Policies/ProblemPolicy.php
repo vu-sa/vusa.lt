@@ -2,7 +2,6 @@
 
 namespace App\Policies;
 
-use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
@@ -47,32 +46,5 @@ class ProblemPolicy extends ModelPolicy
     public function view(User $user, Model $problem): bool
     {
         return true;
-    }
-
-    /**
-     * Override update method to ensure proper type hinting
-     */
-    #[\Override]
-    public function update(User $user, Model $problem): bool
-    {
-        return $this->commonChecker($user, $problem, CRUDEnum::UPDATE->label(), $this->pluralModelName, false);
-    }
-
-    /**
-     * Override delete method to ensure proper type hinting
-     */
-    #[\Override]
-    public function delete(User $user, Model $problem): bool
-    {
-        return $this->commonChecker($user, $problem, CRUDEnum::DELETE->label(), $this->pluralModelName, false);
-    }
-
-    /**
-     * Override restore method to ensure proper type hinting and single tenant handling
-     */
-    #[\Override]
-    public function restore(User $user, Model $problem): bool
-    {
-        return $this->commonChecker($user, $problem, CRUDEnum::DELETE->label(), $this->pluralModelName, false);
     }
 }

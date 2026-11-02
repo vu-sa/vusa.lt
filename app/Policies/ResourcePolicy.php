@@ -2,7 +2,6 @@
 
 namespace App\Policies;
 
-use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
 use App\Models\Resource;
 use App\Models\User;
@@ -46,27 +45,5 @@ class ResourcePolicy extends ModelPolicy
     public function view(User $user, Model $resource): bool
     {
         return true;
-    }
-
-    /**
-     * Determine whether the user can update the model.
-     *
-     * Resources belong to a single tenant, so we use hasManyTenants=false
-     */
-    #[\Override]
-    public function update(User $user, Model $resource): bool
-    {
-        return $this->commonChecker($user, $resource, CRUDEnum::UPDATE->label(), null, false);
-    }
-
-    /**
-     * Determine whether the user can delete the model.
-     *
-     * Resources belong to a single tenant, so we use hasManyTenants=false
-     */
-    #[\Override]
-    public function delete(User $user, Model $resource): bool
-    {
-        return $this->commonChecker($user, $resource, CRUDEnum::DELETE->label(), null, false);
     }
 }

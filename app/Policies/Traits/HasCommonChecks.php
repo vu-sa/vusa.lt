@@ -18,10 +18,8 @@ trait HasCommonChecks
     /**
      * Whether the model relates to tenants through a `tenants` (many) relation.
      *
-     * Policies whose model belongs to a single tenant (a `tenant` relation) must set
-     * this to false, mirroring the last argument they already pass to commonChecker().
-     * Getting this wrong throws RelationNotFoundException at runtime, because
-     * commonChecker() eager-loads the relation by name.
+     * Policies whose model belongs to a single tenant (a `tenant` relation) set this to false;
+     * left true, the padalinys scope finds no `tenants` relation and silently denies.
      */
     protected bool $hasManyTenants = true;
 
@@ -32,15 +30,17 @@ trait HasCommonChecks
      * @param  Model  $model  The model to check against
      * @param  string  $ability  The CRUD action being checked (e.g., read, update)
      * @param  string|null  $resourceName  Override the resource name if different from plural model name
-     * @param  bool  $hasManyTenants  Whether the model can belong to multiple tenants
+     * @param  bool|null  $hasManyTenants  Overrides the policy's $hasManyTenants for this check
      */
     protected function commonChecker(
         User $user,
         Model $model,
         string $ability,
         ?string $resourceName = null,
-        bool $hasManyTenants = true
+        ?bool $hasManyTenants = null
     ): bool {
+        $hasManyTenants ??= $this->hasManyTenants;
+
         // WARNING: Uses the current object pluralModelName, it must be set, or a resource name must be provided
         $resource = $resourceName ?? $this->pluralModelName;
 
@@ -131,6 +131,6 @@ trait HasCommonChecks
      */
     public function restore(User $user, Model $model): bool
     {
-        return $this->commonChecker($user, $model, CRUDEnum::DELETE->label(), $this->pluralModelName, $this->hasManyTenants);
+        return $this->commonChecker($user, $model, CRUDEnum::DELETE->label());
     }
 }

@@ -2,7 +2,6 @@
 
 namespace App\Policies;
 
-use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
 use App\Models\Institution;
 use App\Models\User;
@@ -66,30 +65,6 @@ class InstitutionPolicy extends ModelPolicy
         // Baseline: a member reads their own, related and secretaried institutions in full, role
         // or not — from election on, matching the non-ended duties ModelAuthorizer grants through.
         return $this->institutions->canAccessInstitution($user, $institution)
-            || $this->commonChecker($user, $institution, CRUDEnum::READ->label(), $this->pluralModelName, false);
-    }
-
-    /**
-     * Determine whether the user can update the model.
-     */
-    #[\Override]
-    public function update(User $user, Model $institution): bool
-    {
-        // For institutions, "own" scope only applies to read operations
-        // Since institutions.update.own permission doesn't exist, commonChecker will only
-        // check padalinys and * scopes automatically
-        return $this->commonChecker($user, $institution, CRUDEnum::UPDATE->label(), $this->pluralModelName, false);
-    }
-
-    /**
-     * Determine whether the user can delete the model.
-     */
-    #[\Override]
-    public function delete(User $user, Model $institution): bool
-    {
-        // For institutions, "own" scope only applies to read operations
-        // Since institutions.delete.own permission doesn't exist, commonChecker will only
-        // check padalinys and * scopes automatically
-        return $this->commonChecker($user, $institution, CRUDEnum::DELETE->label(), $this->pluralModelName, false);
+            || parent::view($user, $institution);
     }
 }

@@ -2,12 +2,10 @@
 
 namespace App\Policies;
 
-use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
 use App\Models\MailingList;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class MailingListPolicy extends ModelPolicy
@@ -21,12 +19,6 @@ class MailingListPolicy extends ModelPolicy
         $this->pluralModelName = Str::plural(ModelEnum::MAILING_LIST->label());
     }
 
-    #[\Override]
-    public function view(User $user, Model $mailingList): bool
-    {
-        return $this->commonChecker($user, $mailingList, CRUDEnum::READ->label(), $this->pluralModelName, false);
-    }
-
     /**
      * Like Mailman's private archive: list managers, plus anyone subscribed through one of
      * their own addresses (main email, an assignment's email or a duty mailbox they hold now).
@@ -34,18 +26,6 @@ class MailingListPolicy extends ModelPolicy
     public function viewArchive(User $user, MailingList $mailingList): bool
     {
         return $this->view($user, $mailingList) || $this->isSubscribed($user, $mailingList);
-    }
-
-    #[\Override]
-    public function update(User $user, Model $mailingList): bool
-    {
-        return $this->commonChecker($user, $mailingList, CRUDEnum::UPDATE->label(), $this->pluralModelName, false);
-    }
-
-    #[\Override]
-    public function delete(User $user, Model $mailingList): bool
-    {
-        return $this->commonChecker($user, $mailingList, CRUDEnum::DELETE->label(), $this->pluralModelName, false);
     }
 
     private function isSubscribed(User $user, MailingList $mailingList): bool

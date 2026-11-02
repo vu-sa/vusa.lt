@@ -21,9 +21,12 @@ use App\Models\Calendar;
 use App\Models\Document;
 use App\Models\Duty;
 use App\Models\Form;
+use App\Models\Goal;
 use App\Models\Institution;
+use App\Models\MailingList;
 use App\Models\Meeting;
 use App\Models\News;
+use App\Models\Page;
 use App\Models\Permission;
 use App\Models\Problem;
 use App\Models\QuickLink;
@@ -81,6 +84,12 @@ function subjectIn(string $resource, Tenant $tenant): mixed
         'quickLinks' => QuickLink::factory()->create(['tenant_id' => $tenant->id]),
         'tasks' => Task::factory()->hasAttached(makeUser($tenant))->create(),
         'studySets' => StudySet::factory()->create(['tenant_id' => $tenant->id]),
+        'pages' => Page::factory()->create(['tenant_id' => $tenant->id]),
+        'mailingLists' => MailingList::factory()->create(['tenant_id' => $tenant->id]),
+        'goals' => tap(Goal::factory()->create(['tenant_id' => $tenant->id]), function (): void {
+            // Enrol every tenant, so the scope check, not the pilot gate, refuses the other one.
+            Tenant::query()->update(['goals_enabled' => true]);
+        }),
     };
 }
 
@@ -117,6 +126,34 @@ describe('padalinys scope', function (): void {
         ['tasks', 'delete'],
         ['studySets', 'update'],
         ['studySets', 'delete'],
+        ['institutions', 'delete'],
+        ['pages', 'update'],
+        ['pages', 'delete'],
+        ['mailingLists', 'update'],
+        ['mailingLists', 'delete'],
+        ['goals', 'update'],
+        ['goals', 'delete'],
+    ]);
+
+    test('reads through the padalinys scope', function (string $resource): void {
+        $actor = actorGranted($this->tenantA, ["{$resource}.read.padalinys"]);
+
+        expect(Gate::forUser($actor)->allows('view', subjectIn($resource, $this->tenantA)))->toBeTrue()
+            ->and(Gate::forUser($actor)->allows('view', subjectIn($resource, $this->tenantB)))->toBeFalse();
+    })->with(['news', 'calendars', 'forms', 'banners', 'studyPrograms', 'quickLinks', 'studySets', 'pages', 'mailingLists']);
+
+    test('restores with delete and permanently deletes with forceDelete', function (string $resource, string $ability, string $action): void {
+        $actor = actorGranted($this->tenantA, ["{$resource}.{$action}.padalinys"]);
+
+        expect(Gate::forUser($actor)->allows($ability, subjectIn($resource, $this->tenantA)))->toBeTrue()
+            ->and(Gate::forUser($actor)->allows($ability, subjectIn($resource, $this->tenantB)))->toBeFalse();
+    })->with([
+        ['news', 'restore', 'delete'],
+        ['news', 'forceDelete', 'forceDelete'],
+        ['pages', 'restore', 'delete'],
+        ['problems', 'restore', 'delete'],
+        ['problems', 'forceDelete', 'forceDelete'],
+        ['calendars', 'restore', 'delete'],
     ]);
 
     test('a different action at the same scope is not granted', function (): void {
