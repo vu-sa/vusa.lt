@@ -140,6 +140,22 @@ describe('SharepointFileService', function (): void {
             expect($path)->toBe('General/Padaliniai/test-tenant/Institutions/Test Institution/Duties/Pareigybė');
         });
 
+        test('names folders in Lithuanian whatever the request locale', function (): void {
+            app()->setLocale('en');
+
+            $type = InstitutionType::factory()->create(['title' => ['lt' => 'Komitetai', 'en' => 'Committees']]);
+            $institution = Institution::factory()->for($this->tenant)->create([
+                'name' => ['lt' => 'Studijų komitetas', 'en' => 'Study committee'],
+            ]);
+            $duty = Duty::factory()->for($institution)->create(['name' => ['lt' => 'Narys', 'en' => 'Member']]);
+            $meeting = Meeting::factory()->create(['start_time' => Carbon::create(2023, 6, 15, 14, 30)]);
+            $meeting->institutions()->attach($institution->id);
+
+            expect(SharepointFileService::pathForFileableDriveItem($type))->toBe('General/Types/Institutions/Komitetai')
+                ->and(SharepointFileService::pathForFileableDriveItem($meeting))->toBe('General/Padaliniai/test-tenant/Institutions/Studijų komitetas/Meetings/2023-06-15 14.30')
+                ->and(SharepointFileService::pathForFileableDriveItem($duty))->toBe('General/Padaliniai/test-tenant/Institutions/Studijų komitetas/Duties/Narys');
+        });
+
         // Note: Duty has a NOT NULL constraint on institution_id in the database,
         // so the exception path cannot be tested directly. The validation happens
         // at the service level when the institution relationship returns null.
