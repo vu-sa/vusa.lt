@@ -11,6 +11,7 @@ use App\Events\MeetingFullyCreated;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\AttachMeetingInstitutionRequest;
 use App\Http\Requests\IndexMeetingRequest;
+use App\Http\Requests\Meetings\DestroyMeetingRequest;
 use App\Http\Requests\StoreMeetingRequest;
 use App\Http\Requests\UpdateMeetingRequest;
 use App\Http\Resources\DocumentRowResource;
@@ -421,11 +422,11 @@ class MeetingController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Meeting $meeting)
+    public function destroy(DestroyMeetingRequest $request, Meeting $meeting)
     {
         $this->handleAuthorization('delete', $meeting);
 
-        $redirect_url = request()->redirect_to ?? back()->getTargetUrl();
+        $redirect_url = $request->validated('redirect_to') ?? back()->getTargetUrl();
 
         // `delete` suffices for a discardable meeting: it holds nothing but what its creator just typed.
         if ($meeting->isDiscardable()) {

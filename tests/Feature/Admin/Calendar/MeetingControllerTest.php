@@ -1053,4 +1053,18 @@ describe('editing a meeting', function (): void {
 
         expect(Meeting::withTrashed()->find($meeting->id)?->trashed())->toBeTrue();
     })->with(['agenda item', 'file', 'calendar entry', 'history']);
+
+    test('deleting returns to the page the record asked for', function (): void {
+        $target = route('institutions.show', $this->institution);
+
+        asUser($this->admin)->delete(route('meetings.destroy', $this->meeting), ['redirect_to' => $target])
+            ->assertRedirect($target);
+    });
+
+    test('deleting refuses to redirect off this site', function (string $target): void {
+        asUser($this->admin)->delete(route('meetings.destroy', $this->meeting), ['redirect_to' => $target])
+            ->assertSessionHasErrors('redirect_to');
+
+        expect($this->meeting->fresh()->trashed())->toBeFalse();
+    })->with(['https://evil.example/phish', '//evil.example/phish', 'javascript:alert(1)']);
 });
