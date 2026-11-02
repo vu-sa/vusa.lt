@@ -181,6 +181,12 @@ export enum MailingListTenantScope {
     Padaliniai = 'padaliniai',
     Selected = 'selected',
 }
+export enum MeetingKind {
+    Sitting = 'sitting',
+    Assembly = 'assembly',
+    Meeting = 'meeting',
+    Conference = 'conference',
+}
 export enum MeetingType {
     InPerson = 'in-person',
     Remote = 'remote',

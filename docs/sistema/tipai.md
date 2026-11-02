@@ -5,6 +5,7 @@ area: types
 models: [InstitutionType, DutyType, EventType, ResourceCategory, ProblemCategory]
 last_reviewed: 2026-10-21
 tests:
+  - tests/Feature/Meetings/MeetingKindTest.php
   - tests/Feature/Permissions/DutyTypeAssignmentTest.php
   - tests/Feature/Responsibilities/ProjectDutyResponsibilitiesTest.php
   - tests/Feature/Admin/ModelMeta/TypeControllerTest.php
@@ -48,7 +49,9 @@ konkretūs tipai ir kategorijos tvarkomi pasirinktame sąraše.
 Institucijos ar pareigybės tipą sukurk per **Veiksmai**. Įrašyk lietuvišką ir anglišką
 pavadinimus bei aprašymus. Tėvinį tipą pasirink iš tos pačios rūšies sąrašo; tipų hierarchija
 negali sudaryti rato. Iš institucijos tipo tėvų paveldima valdymo sritis, o pareigybės tipas
-paveldi tėvinių tipų atsakomybes. Visur, kur renkamasi tipą, sąrašas rodomas medžiu: potipiai
+paveldi tėvinių tipų atsakomybes. Institucijos tipe taip pat nurodoma, kaip vadinami jo institucijų
+posėdžiai (posėdis, susirinkimas, susitikimas ar konferencija); šis laukas iš tėvinio tipo
+nepaveldimas. [Kaip vadinami posėdžiai](/visak/institucijos#posedziu-pavadinimas). Visur, kur renkamasi tipą, sąrašas rodomas medžiu: potipiai
 pateikiami po savo tėviniu tipu, o paieškoje matyti visas kelias, pvz., „Koordinatorius ›
 Administratorius“.
 

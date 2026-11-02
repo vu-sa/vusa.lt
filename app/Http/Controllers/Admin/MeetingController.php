@@ -76,7 +76,6 @@ class MeetingController extends AdminController
 
         try {
             $meetingType = $validatedData['type'] ?? null;
-            $title = $this->buildMeetingTitle($validatedData['start_time'], $meetingType);
 
             // Created from an existing announcement: the meeting takes over the event's
             // timing rather than leaving the pair to drift (Meeting::syncCalendarEventTiming
@@ -87,7 +86,6 @@ class MeetingController extends AdminController
 
             $meeting = Meeting::create([
                 'start_time' => $validatedData['start_time'],
-                'title' => $title,
                 'description' => $validatedData['description'] ?? null,
                 'type' => $meetingType,
                 'end_time' => $announcement?->end_date,
@@ -230,6 +228,7 @@ class MeetingController extends AdminController
         return $this->inertiaResponse('Admin/Representation/ShowMeeting', [
             'meeting' => fn () => [
                 ...$loadMeeting()->toArray(),
+                'title_noun' => MeetingTitle::noun($loadMeeting()->type, app()->getLocale(), $loadMeeting()->meetingKind()),
                 'agenda_items' => $loadMeeting()->agendaItems->map(fn (AgendaItem $item): array => [
                     ...AgendaItemPresenter::forUser($item, request()->user()),
                     'can' => $agendaItemAbilities()->get((string) $item->getKey()),
@@ -413,11 +412,6 @@ class MeetingController extends AdminController
 
         $validated = $request->validated();
 
-        $validated['title'] = $this->buildMeetingTitle(
-            $validated['start_time'],
-            $validated['type'] ?? $meeting->type?->value
-        );
-
         $meeting->fill($validated);
         $meeting->save();
 
@@ -523,15 +517,6 @@ class MeetingController extends AdminController
                 'is_active' => (bool) $i->is_active,
                 'tenant_shortname' => $i->tenant?->shortname,
             ]);
-    }
-
-    /**
-     * The stored title is always Lithuanian; {@see MeetingTitle} renders the other locale
-     * on the public page, so a locale change never needs a data backfill.
-     */
-    private function buildMeetingTitle(mixed $startTime, mixed $type): string
-    {
-        return MeetingTitle::build($startTime, $type, 'lt');
     }
 
     public function forceDelete(Meeting $meeting): RedirectResponse

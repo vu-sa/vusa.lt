@@ -6,6 +6,7 @@ use App\Actions\AnnounceMeetingInCalendar;
 use App\Actions\Cadences\SyncCadenceDatesFromAnchors;
 use App\Contracts\Commentable;
 use App\Contracts\SharepointFileableContract;
+use App\Enums\MeetingKind;
 use App\Enums\MeetingType;
 use App\Events\FileableNameUpdated;
 use App\Models\Pivots\AgendaItem;
@@ -33,6 +34,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Laravel\Scout\Searchable;
 use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
@@ -94,9 +96,8 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
     use HasComments, HasFactory, HasPublicSearchMirror, HasRelationships, HasSharepointFiles, HasTasks, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable, SoftDeletes;
 
     /**
-     * `title` stays a plain column: it is regenerated from `start_time` on every save
-     * ({@see MeetingTitle}) rather than authored, and both the admin and public
-     * headings recompute it from the date anyway.
+     * `title` stays a plain column: it is generated ({@see MeetingTitle}), never authored, so it
+     * is stored in Lithuanian and localized at read time.
      *
      * @var list<string>
      */
@@ -367,6 +368,32 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
         return $this->hasMany(AgendaItem::class);
     }
 
+    /** Named after the lead institution: the one whose folder and listings the meeting sits in. */
+    public function meetingKind(): MeetingKind
+    {
+        return $this->institutions->first()?->resolvedMeetingKind() ?? MeetingKind::Sitting;
+    }
+
+    /**
+     * Rewrite the stored title after its institutions or their meeting kind changed. Leaves
+     * `updated_at` alone, so a rename never surfaces the meeting as recently changed, and fires
+     * no events: callers reindex. Returns whether the title changed.
+     */
+    public function refreshTitle(): bool
+    {
+        $title = MeetingTitle::build($this->start_time, $this->type, 'lt', $this->meetingKind());
+
+        if ($title === $this->title) {
+            return false;
+        }
+
+        static::query()->withTrashed()->whereKey($this->getKey())
+            ->update(['title' => $title, 'updated_at' => DB::raw('updated_at')]);
+        $this->setAttribute('title', $title)->syncOriginalAttribute('title');
+
+        return true;
+    }
+
     /**
      * In attachment order: the first institution hosts the meeting's SharePoint folder and leads
      * every listing, so a joint institution added later must never displace it.
@@ -493,6 +520,17 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
             // Dispatch event when start_time is about to change - SharePoint must succeed first
             if ($meeting->isDirty('start_time')) {
                 FileableNameUpdated::dispatch($meeting);
+            }
+
+            // A new meeting has no institutions yet; attaching them refreshes the title
+            // (SyncRelationSearchIndex), so until then it is a posėdis.
+            if (blank($meeting->title) || ($meeting->exists && $meeting->isDirty(['start_time', 'type']))) {
+                $meeting->title = MeetingTitle::build(
+                    $meeting->start_time,
+                    $meeting->type,
+                    'lt',
+                    $meeting->exists ? $meeting->meetingKind() : MeetingKind::Sitting,
+                );
             }
         });
 

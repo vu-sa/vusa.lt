@@ -2,42 +2,56 @@
 
 namespace App\Support;
 
-use App\Actions\AnnounceMeetingInCalendar;
+use App\Enums\MeetingKind;
 use App\Enums\MeetingType;
 use App\Models\Meeting;
 use Illuminate\Support\Carbon;
 
 /**
- * The generated display name of a sitting, per locale.
+ * The one builder of a meeting's display name, per locale.
  *
- * `meetings.title` is not authored — it is rebuilt from `start_time` on every save — so it is
- * stored as plain Lithuanian and localized here at read time instead of becoming a translatable
- * column. Same division of labour as {@see AnnounceMeetingInCalendar::title()}.
+ * `meetings.title` is not authored: Meeting::refreshTitle() stores the Lithuanian name, rebuilt
+ * when the date, type or the institutions' meeting kind changes. Other locales render here.
  */
 class MeetingTitle
 {
     public static function for(Meeting $meeting, string $locale): string
     {
-        return self::build($meeting->start_time, $meeting->type, $locale);
+        return self::build($meeting->start_time, $meeting->type, $locale, $meeting->meetingKind());
     }
 
     /**
      * Email meetings carry a 23:59 deadline marker in `start_time`, so the time is dropped
-     * rather than shown as a misleading "23.59 val.".
+     * rather than shown as a misleading "23.59 val.", and they read as a decision, not a sitting.
      */
-    public static function build(mixed $startTime, mixed $type, string $locale): string
+    public static function build(mixed $startTime, mixed $type, string $locale, MeetingKind $kind = MeetingKind::Sitting): string
     {
-        $typeValue = $type instanceof MeetingType ? $type->value : $type;
-        $isEmail = $typeValue === MeetingType::Email->value;
+        $isEmail = self::isEmail($type);
+        $noun = self::noun($type, $locale, $kind);
 
         if ($locale === 'en') {
             $format = $isEmail ? 'D MMMM YYYY' : 'D MMMM YYYY HH.mm';
 
-            return Carbon::parse($startTime)->locale('en')->isoFormat($format).' meeting';
+            return Carbon::parse($startTime)->locale('en')->isoFormat($format).' '.$noun;
         }
 
         $format = $isEmail ? 'YYYY MMMM DD [d.]' : 'YYYY MMMM DD [d.] HH.mm [val.]';
 
-        return Carbon::parse($startTime)->locale('lt-LT')->isoFormat($format).' posėdis';
+        return Carbon::parse($startTime)->locale('lt-LT')->isoFormat($format).' '.$noun;
+    }
+
+    /** The words after the date, for headings that show the date their own way. */
+    public static function noun(mixed $type, string $locale, MeetingKind $kind = MeetingKind::Sitting): string
+    {
+        if (self::isEmail($type)) {
+            return $locale === 'en' ? 'decision by email' : 'sprendimas el. paštu';
+        }
+
+        return $kind->noun($locale);
+    }
+
+    private static function isEmail(mixed $type): bool
+    {
+        return ($type instanceof MeetingType ? $type->value : $type) === MeetingType::Email->value;
     }
 }

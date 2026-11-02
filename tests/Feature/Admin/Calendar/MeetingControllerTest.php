@@ -982,7 +982,7 @@ describe('editing a meeting', function (): void {
             ->patch(route('meetings.update', $this->meeting), ['start_time' => $startTime->toDateTimeString(), 'type' => 'email'])
             ->assertSessionHasNoErrors();
 
-        expect($this->meeting->fresh()->title)->toBe('2026 kovo 05 d. posėdis');
+        expect($this->meeting->fresh()->title)->toBe('2026 kovo 05 d. sprendimas el. paštu');
     });
 
     test('a member at the time of the meeting edits it and its agenda items without a role', function (): void {

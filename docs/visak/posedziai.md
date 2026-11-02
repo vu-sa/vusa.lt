@@ -3,8 +3,10 @@ doc_status: reviewed
 title: Posėdžiai
 area: meetings
 models: [Meeting]
-last_reviewed: 2026-11-01
+last_reviewed: 2026-11-02
 tests:
+  - tests/Feature/Meetings/MeetingKindTest.php
+  - tests/Unit/Services/Sharepoint/SharepointFileServiceTest.php
   - tests/Feature/Search/ListFreshnessTest.php
   - resources/js/Components/Meetings/__tests__/MeetingCollectionRow.component.test.ts
   - resources/js/Components/Meetings/__tests__/MeetingPreview.component.test.ts
@@ -70,8 +72,20 @@ Posėdžių sąrašas pasiekiamas adresu `/mano/meetings`, o kiekvienas posėdis
 ### Posėdžio tipas ir pavadinimas
 
 Posėdis būna **Gyvas posėdis**, **Nuotolinis posėdis**, **Sprendimas el. paštu** arba be tipo
-(„Kita“). Pavadinimas sudaromas automatiškai iš datos ir laiko, pvz., „2026 kovo 05 d. 16.30 val.
-posėdis“. Sprendimui el. paštu laikas nerodomas. Pakeitus datą ar tipą, pavadinimas atnaujinamas.
+(„Kita“). Pavadinimas sudaromas automatiškai iš datos, laiko ir žodžio, kuriuo vadinami
+institucijos posėdžiai, pvz., „2026 kovo 05 d. 16.30 val. posėdis“ arba „… susirinkimas“. Žodis –
+posėdis, susirinkimas, susitikimas arba konferencija – nustatomas institucijos tipe arba pačioje
+institucijoje ([Kaip vadinami posėdžiai](/visak/institucijos#posedziu-pavadinimas)). Sprendimui el.
+paštu laikas nerodomas, o pavadinimas baigiasi žodžiais „sprendimas el. paštu“. Pakeitus datą, tipą
+arba institucijos žodį, pavadinimas atnaujinamas, taip pat ir jau užfiksuotų posėdžių.
+
+<ChangelogNote date="2026-11-02" title="Susirinkimai ir kiti posėdžių pavadinimai">
+
+Posėdžio pavadinimas baigiasi institucijai nustatytu žodžiu, pvz., „susirinkimas“, o sprendimai el.
+paštu vadinami „sprendimas el. paštu“. Posėdžio puslapio antraštėje nebelinksniuojamas institucijos
+pavadinimas – institucijos nurodytos faktuose.
+
+</ChangelogNote>
 
 ### Matomumas {#matomumas}
 
@@ -112,6 +126,9 @@ rodoma renginio puslapyje.
 Posėdis gali priklausyti kelioms institucijoms (pvz., bendras dviejų komitetų posėdis). Institucija
 pridedama posėdžio meniu. Tą pačią instituciją pridėti dar kartą, taip pat pašalinti paskutinę
 instituciją negalima.
+
+Pagrindinė lieka ta institucija, kuri pridėta pirmoji: pagal ją posėdis pavadinamas ir jos aplanke
+saugomi posėdžio failai. Vėliau pridėta institucija to nepakeičia.
 
 ### Užpildymo būsena {#busena}
 
@@ -343,7 +360,13 @@ esminėmis narių mintimis. Jei protokolas neatsiunčiamas, ataskaita jį atstoj
 
 ### Kaip tai įgyvendinta
 
-- Pavadinimas: `App\Support\MeetingTitle`; perskaičiuojamas `MeetingController::update()`.
+- Pavadinimas: `App\Support\MeetingTitle`, žodis – `MeetingKind` per
+  `Institution::resolvedMeetingKind()` (pirmoji institucija). Saugomas `meetings.title`
+  atnaujinamas `Meeting::saving` (data ar tipas), `Meeting::refreshTitle()` per
+  `SyncRelationSearchIndex` (institucijos, jų tipai ar `meeting_kind`) ir `RefreshMeetingTitles`
+  (tipo `extra_attributes.meeting_kind`); `updated_at` nekeičiamas.
+- Institucijų tvarka: `Meeting::institutions()` pagal pridėjimo laiką; SharePoint aplankas –
+  pirmosios institucijos, pavadintas lietuviškai (`SharepointFileService::pathForFileableDriveItem()`).
 - Viešumas: `Meeting::is_public` pagal `MeetingSettings::public_meeting_institution_type_ids`.
 - Būsena ir trūkstami veiksmai: `MeetingCompletionService::calculate()` / `missingActions()`.
 - Rezultatas: `Meeting::outcomeSummary()` (`VoteStatisticsCalculator::outcomeSummary()`); paieškos

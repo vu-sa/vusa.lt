@@ -7,6 +7,7 @@ use App\Contracts\Commentable;
 use App\Contracts\GuardsForceDelete;
 use App\Contracts\ImageMediaOwner;
 use App\Contracts\SharepointFileableContract;
+use App\Enums\MeetingKind;
 use App\Enums\TenantType;
 use App\Events\FileableNameUpdated;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -67,6 +68,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property int|null $tenant_id
  * @property int $is_active
  * @property int|null $meeting_periodicity_days
+ * @property MeetingKind|null $meeting_kind
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
@@ -562,6 +564,31 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
 
             return $this->types->pluck('id')->intersect($allowedTypeIds)->isNotEmpty();
         });
+    }
+
+    #[\Override]
+    protected function casts(): array
+    {
+        return ['meeting_kind' => MeetingKind::class];
+    }
+
+    /**
+     * What this institution's meetings are called: its own override, else the first of its
+     * types (by id) that declares one, else a posėdis.
+     */
+    public function resolvedMeetingKind(): MeetingKind
+    {
+        if ($this->meeting_kind !== null) {
+            return $this->meeting_kind;
+        }
+
+        $this->loadMissing('types');
+
+        return $this->types
+            ->sortBy('id')
+            ->map(fn ($type) => MeetingKind::tryFrom((string) ($type->extra_attributes['meeting_kind'] ?? '')))
+            ->first(fn (?MeetingKind $kind) => $kind !== null)
+            ?? MeetingKind::Sitting;
     }
 
     /**

@@ -79,6 +79,21 @@
         </FormFieldWrapper>
 
         <FormFieldWrapper
+          id="meeting_kind"
+          :label="$t('forms.fields.meeting_kind')"
+          :hint="$t('forms.helpers.meeting_kind_hint')"
+        >
+          <FormSegmentedControl
+            id="meeting_kind"
+            v-model="meetingKind"
+            tabindex="-1"
+            stack-on-phone
+            :aria-label="$t('forms.fields.meeting_kind')"
+            :options="meetingKindOptions()"
+          />
+        </FormFieldWrapper>
+
+        <FormFieldWrapper
           id="meeting_periodicity_days"
           :label="$t('forms.fields.meeting_periodicity_days')"
           :hint="$t('forms.helpers.meeting_periodicity_hint')"
@@ -120,7 +135,8 @@ import FormSegmentedControl from '@/Components/Patterns/FormSegmentedControl.vue
 import { NumberField } from '@/Components/ui/number-field';
 import { TypeTreeSelect } from '@/Components/AdminForms/TypeTree';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
-import { InstitutionScope, ModelEnum } from '@/Types/enums';
+import { meetingKindOptions } from '@/Constants/meetingKinds';
+import { InstitutionScope, MeetingKind, ModelEnum } from '@/Types/enums';
 
 defineEmits<(event: 'submit:form', form: unknown) => void>();
 
@@ -188,6 +204,13 @@ const governanceScope = computed({
       ...(form.extra_attributes ?? {}),
       governance_scope: value === INHERIT ? null : value,
     };
+  },
+});
+
+const meetingKind = computed({
+  get: () => form.extra_attributes?.meeting_kind ?? MeetingKind.Sitting,
+  set: (value: string) => {
+    form.extra_attributes = { ...(form.extra_attributes ?? {}), meeting_kind: value };
   },
 });
 
