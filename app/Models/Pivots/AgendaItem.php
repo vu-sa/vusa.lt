@@ -125,6 +125,7 @@ class AgendaItem extends Pivot implements Commentable
         return $this->translatedArray();
     }
 
+    /** Writes the indexes inside the lock, not via syncPublicSearchIndex(): a queued write could land after the eviction. */
     public function save(array $options = []): bool
     {
         return app(MeetingSearchLock::class)->run((string) $this->meeting_id, function () use ($options): bool {

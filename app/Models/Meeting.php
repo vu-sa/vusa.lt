@@ -10,6 +10,7 @@ use App\Enums\MeetingType;
 use App\Events\FileableNameUpdated;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Traits\HasComments;
+use App\Models\Traits\HasPublicSearchMirror;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTasks;
 use App\Models\Traits\HasTranslations;
@@ -90,7 +91,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 #[Unguarded]
 class Meeting extends Model implements Commentable, SharepointFileableContract
 {
-    use HasComments, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable, SoftDeletes;
+    use HasComments, HasFactory, HasPublicSearchMirror, HasRelationships, HasSharepointFiles, HasTasks, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable, SoftDeletes;
 
     /**
      * `title` stays a plain column: it is regenerated from `start_time` on every save
@@ -492,29 +493,14 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
         static::saved(function (Meeting $meeting): void {
             $meeting->syncCalendarEventTiming();
             $meeting->syncAnchoredCadences();
-            $meeting->syncPublicSearchIndex();
         });
 
         static::deleted(function (Meeting $meeting): void {
-            $meeting->publicSearchModel()->unsearchable();
-
             // A soft delete keeps the items (see `deleting`), so only their index entries go.
             $meeting->agendaItems()->get()->unsearchable();
         });
 
-        static::forceDeleted(function (Meeting $meeting): void {
-            $meeting->publicSearchModel()->unsearchable();
-        });
-
-        static::restored(function (Meeting $meeting): void {
-            $publicMeeting = PublicMeeting::query()->find($meeting->getKey());
-
-            if ($publicMeeting?->shouldBeSearchable()) {
-                $publicMeeting->searchable();
-            }
-
-            $meeting->agendaItems()->get()->searchable();
-        });
+        static::restored(fn (Meeting $meeting) => $meeting->agendaItems()->get()->searchable());
 
         static::deleting(function (Meeting $meeting): void {
             // A soft delete has to stay reversible. Agenda items are not soft-deletable
@@ -550,23 +536,9 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
             && ! $this->calendarEvent()->exists();
     }
 
-    /**
-     * Re-evaluate this meeting's place in the public search index.
-     *
-     * Public here, not private: publishing a linked Calendar event changes the answer without
-     * touching the meeting row, so Calendar's own hooks call this too.
-     */
-    public function syncPublicSearchIndex(): void
+    protected static function publicSearchMirror(): string
     {
-        $publicMeeting = PublicMeeting::query()->find($this->getKey());
-
-        if ($publicMeeting?->shouldBeSearchable()) {
-            $publicMeeting->searchable();
-
-            return;
-        }
-
-        $this->publicSearchModel()->unsearchable();
+        return PublicMeeting::class;
     }
 
     /**
@@ -614,13 +586,5 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
         $event->date = $this->start_time;
         $event->end_date = $this->end_time;
         $event->save();
-    }
-
-    private function publicSearchModel(): PublicMeeting
-    {
-        $publicMeeting = new PublicMeeting;
-        $publicMeeting->setAttribute($publicMeeting->getKeyName(), $this->getKey());
-
-        return $publicMeeting;
     }
 }

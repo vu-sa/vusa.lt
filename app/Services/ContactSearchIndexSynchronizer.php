@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Duty;
 use App\Models\Institution;
-use App\Models\PublicInstitution;
 use App\Models\User;
 
 class ContactSearchIndexSynchronizer
@@ -46,26 +45,12 @@ class ContactSearchIndexSynchronizer
         $institution = Institution::query()->find($institutionId);
 
         if ($institution === null) {
-            $this->unsearchPublicInstitutionById($institutionId);
+            Institution::removeFromPublicSearch($institutionId);
 
             return;
         }
 
         $institution->searchable();
-
-        $publicInstitution = PublicInstitution::query()->find($institution->id);
-
-        if ($publicInstitution?->shouldBeSearchable()) {
-            $publicInstitution->searchable();
-        } else {
-            $this->unsearchPublicInstitutionById($institution->id);
-        }
-    }
-
-    private function unsearchPublicInstitutionById(string $institutionId): void
-    {
-        $publicInstitution = new PublicInstitution;
-        $publicInstitution->setAttribute($publicInstitution->getKeyName(), $institutionId);
-        $publicInstitution->unsearchable();
+        $institution->syncPublicSearchIndex();
     }
 }

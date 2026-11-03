@@ -14,6 +14,7 @@ use App\Models\Pivots\InstitutionInstitutionType;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasImageMedia;
+use App\Models\Traits\HasPublicSearchMirror;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTasks;
 use App\Models\Traits\HasTranslations;
@@ -126,7 +127,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 #[Unguarded]
 class Institution extends Model implements Commentable, GuardsForceDelete, ImageMediaOwner, SharepointFileableContract
 {
-    use GuardsForceDeleteWhenReferenced, HasComments, HasFactory, HasImageMedia, HasRelationships, HasSharepointFiles, HasTasks, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable, SoftDeletes;
+    use GuardsForceDeleteWhenReferenced, HasComments, HasFactory, HasImageMedia, HasPublicSearchMirror, HasRelationships, HasSharepointFiles, HasTasks, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable, SoftDeletes;
 
     public $translatable = ['name', 'short_name', 'description', 'address', 'working_hours'];
 
@@ -505,22 +506,6 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
             }
         });
 
-        static::saved(function (Institution $institution): void {
-            $publicInstitution = PublicInstitution::query()->find($institution->getKey());
-
-            if ($publicInstitution?->shouldBeSearchable()) {
-                $publicInstitution->searchable();
-
-                return;
-            }
-
-            $institution->publicSearchModel()->unsearchable();
-        });
-
-        static::deleted(function (Institution $institution): void {
-            $institution->publicSearchModel()->unsearchable();
-        });
-
         // Duty::toSearchableArray() derives tenant_ids from its institution, so the
         // duties have to be reindexed when the institution's visibility changes.
         static::updated(function (Institution $institution): void {
@@ -536,26 +521,11 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
 
         static::deleted(fn (Institution $institution) => $institution->reindexDuties());
         static::restored(fn (Institution $institution) => $institution->reindexDuties());
-
-        static::forceDeleted(function (Institution $institution): void {
-            $institution->publicSearchModel()->unsearchable();
-        });
-
-        static::restored(function (Institution $institution): void {
-            $publicInstitution = PublicInstitution::query()->find($institution->getKey());
-
-            if ($publicInstitution?->shouldBeSearchable()) {
-                $publicInstitution->searchable();
-            }
-        });
     }
 
-    private function publicSearchModel(): PublicInstitution
+    protected static function publicSearchMirror(): string
     {
-        $publicInstitution = new PublicInstitution;
-        $publicInstitution->setAttribute($publicInstitution->getKeyName(), $this->getKey());
-
-        return $publicInstitution;
+        return PublicInstitution::class;
     }
 
     protected function maybeShortName(): Attribute

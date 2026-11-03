@@ -6,6 +6,7 @@ use App\Actions\PairTranslatedRecord;
 use App\Contracts\ImageMediaOwner;
 use App\Enums\PageLayoutEnum;
 use App\Models\Traits\HasImageMedia;
+use App\Models\Traits\HasPublicSearchMirror;
 use App\Models\Traits\LogsModelActivity;
 use App\Services\ContentResolution\ContentPartResolver;
 use App\Services\PublicUrlService;
@@ -77,7 +78,7 @@ use Spatie\Sitemap\Tags\Url;
 #[Unguarded]
 class Page extends Model implements ImageMediaOwner, Sitemapable
 {
-    use HasFactory, HasImageMedia, LogsModelActivity, Searchable, SoftDeletes;
+    use HasFactory, HasImageMedia, HasPublicSearchMirror, LogsModelActivity, Searchable, SoftDeletes;
 
     #[\Override]
     protected function casts(): array
@@ -137,13 +138,7 @@ class Page extends Model implements ImageMediaOwner, Sitemapable
             app(PublicUrlService::class)->recordLegacyUrl($page, $page->lang, $oldUrl);
         });
 
-        static::saved(fn (Page $page) => $page->syncPublicSearchIndex());
-
         static::deleted(fn (Page $page) => $page->flushPublicCaches());
-
-        static::deleted(fn (Page $page) => $page->publicSearchModel()->unsearchable());
-
-        static::forceDeleted(fn (Page $page) => $page->publicSearchModel()->unsearchable());
 
         static::deleting(function (Page $page): void {
             // Drop the surviving counterpart's back-reference so its language switcher
@@ -161,34 +156,11 @@ class Page extends Model implements ImageMediaOwner, Sitemapable
         static::restored(function (Page $page): void {
             PairTranslatedRecord::repair($page);
         });
-
-        static::restored(fn (Page $page) => $page->syncPublicSearchIndex());
     }
 
-    /**
-     * Push this page's public-index membership in line with shouldBeSearchable(),
-     * since PublicPage's own Scout observer never fires — nothing ever saves a
-     * PublicPage instance directly.
-     */
-    private function syncPublicSearchIndex(): void
+    protected static function publicSearchMirror(): string
     {
-        $public = PublicPage::query()->withTrashed()->with('tenant')->find($this->getKey());
-
-        if ($public?->shouldBeSearchable()) {
-            $public->searchable();
-
-            return;
-        }
-
-        $this->publicSearchModel()->unsearchable();
-    }
-
-    private function publicSearchModel(): PublicPage
-    {
-        $public = new PublicPage;
-        $public->setAttribute($public->getKeyName(), $this->getKey());
-
-        return $public;
+        return PublicPage::class;
     }
 
     /**

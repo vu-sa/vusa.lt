@@ -7,6 +7,7 @@ use App\Contracts\ImageMediaOwner;
 use App\Feed\FeedHtml;
 use App\Feed\FeedItem;
 use App\Models\Traits\HasImageMedia;
+use App\Models\Traits\HasPublicSearchMirror;
 use App\Models\Traits\LogsModelActivity;
 use App\Services\ContentResolution\ContentPartResolver;
 use App\Services\HtmlSanitizerService;
@@ -83,7 +84,7 @@ use Spatie\Sitemap\Tags\Url;
 #[Unguarded]
 class News extends Model implements Feedable, ImageMediaOwner, Sitemapable
 {
-    use HasFactory, HasImageMedia, LogsModelActivity, Searchable, SoftDeletes;
+    use HasFactory, HasImageMedia, HasPublicSearchMirror, LogsModelActivity, Searchable, SoftDeletes;
 
     /** The conventional prose reading pace, used by {@see readingTimeMinutes()}. */
     private const int WORDS_PER_MINUTE = 200;
@@ -191,16 +192,10 @@ class News extends Model implements Feedable, ImageMediaOwner, Sitemapable
             app(PublicUrlService::class)->recordLegacyUrl($news, $news->lang, $oldUrl);
         });
 
-        static::saved(fn (News $news) => $news->syncPublicSearchIndex());
-
         static::deleted(function ($news): void {
             Cache::tags(PublicCacheTags::newsOf($news))->flush();
             Cache::tags([ContentPartResolver::CACHE_TAG])->flush();
         });
-
-        static::deleted(fn (News $news) => $news->publicSearchModel()->unsearchable());
-
-        static::forceDeleted(fn (News $news) => $news->publicSearchModel()->unsearchable());
 
         static::deleting(function (News $news): void {
             // Drop the surviving counterpart's back-reference so its language switcher
@@ -218,34 +213,11 @@ class News extends Model implements Feedable, ImageMediaOwner, Sitemapable
         static::restored(function (News $news): void {
             PairTranslatedRecord::repair($news);
         });
-
-        static::restored(fn (News $news) => $news->syncPublicSearchIndex());
     }
 
-    /**
-     * Push this article's public-index membership in line with shouldBeSearchable(),
-     * since PublicNews's own Scout observer never fires — nothing ever saves a
-     * PublicNews instance directly.
-     */
-    private function syncPublicSearchIndex(): void
+    protected static function publicSearchMirror(): string
     {
-        $public = PublicNews::query()->withTrashed()->with('tenant')->find($this->getKey());
-
-        if ($public?->shouldBeSearchable()) {
-            $public->searchable();
-
-            return;
-        }
-
-        $this->publicSearchModel()->unsearchable();
-    }
-
-    private function publicSearchModel(): PublicNews
-    {
-        $public = new PublicNews;
-        $public->setAttribute($public->getKeyName(), $this->getKey());
-
-        return $public;
+        return PublicNews::class;
     }
 
     /**
