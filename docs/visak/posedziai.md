@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Posėdžiai
 area: meetings
 models: [Meeting]
-last_reviewed: 2026-11-02
+last_reviewed: 2026-11-03
 tests:
   - tests/Feature/Meetings/MeetingKindTest.php
   - tests/Unit/Services/Sharepoint/SharepointFileServiceTest.php
@@ -78,6 +78,8 @@ posėdis, susirinkimas, susitikimas arba konferencija – nustatomas institucijo
 institucijoje ([Kaip vadinami posėdžiai](/visak/institucijos#posedziu-pavadinimas)). Sprendimui el.
 paštu laikas nerodomas, o pavadinimas baigiasi žodžiais „sprendimas el. paštu“. Pakeitus datą, tipą
 arba institucijos žodį, pavadinimas atnaujinamas, taip pat ir jau užfiksuotų posėdžių.
+Kalendoriaus skelbimo pavadinime prieš posėdžio žodį arba „sprendimas el. paštu“ paliekamas
+institucijos pavadinimas.
 
 <ChangelogNote date="2026-11-02" title="Susirinkimai ir kiti posėdžių pavadinimai">
 

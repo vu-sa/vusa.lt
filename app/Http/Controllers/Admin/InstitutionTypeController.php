@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\InstitutionRelationKind;
 use App\Enums\ResponsibilityScope;
+use App\Events\SearchRelationChanged;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexTypeRequest;
 use App\Http\Requests\InstitutionTypeRequest;
@@ -144,7 +145,10 @@ class InstitutionTypeController extends AdminController
 
     public function syncModels(SyncTypeModelsRequest $request, InstitutionType $type): RedirectResponse
     {
-        $type->institutions()->sync($request->validated('models'));
+        $changes = $type->institutions()->sync($request->validated('models'));
+
+        Institution::query()->whereKey(array_merge($changes['attached'], $changes['detached']))
+            ->each(fn (Institution $institution) => SearchRelationChanged::dispatch($institution, 'types'));
 
         return back()->with('success', $this->entityMessage('updated', 'institutionType'));
     }

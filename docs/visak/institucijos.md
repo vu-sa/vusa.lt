@@ -3,8 +3,9 @@ doc_status: reviewed
 title: Institucijos
 area: institutions
 models: [Institution, InstitutionCheckIn, InstitutionSecretary]
-last_reviewed: 2026-11-02
+last_reviewed: 2026-11-03
 tests:
+  - tests/Feature/Admin/ModelMeta/TypeControllerTest.php
   - tests/Feature/Meetings/MeetingKindTest.php
   - resources/js/Constants/__tests__/meetingKinds.test.ts
   - tests/Feature/Search/ListFreshnessTest.php
@@ -207,7 +208,8 @@ susirinkimams), **Susitikimas** (neformaliems susitikimams, pvz., su dekanu) arb
 institucijos formos **Papildomuose nustatymuose** jį galima pakeisti vienai institucijai. Jei
 institucija turi kelis tipus su skirtingais žodžiais, imamas anksčiausiai sukurto tipo žodis.
 
-Pakeitus žodį, pervadinami ir jau užfiksuoti institucijos posėdžiai. Tai tik pavadinimas: kokie
+Pakeitus žodį, priskyrus ar pašalinus tipą, taip pat ištrynus ar atkūrus tipą, pervadinami ir jau
+užfiksuoti institucijos posėdžiai, įskaitant esančius šiukšlinėje. Tai tik pavadinimas: kokie
 balsavimo laukai rodomi ir kokios kuriamos užduotys, lemia institucijos [rūšis](#rusis-ir-tipai).
 Sprendimai el. paštu visada vadinami „sprendimas el. paštu“.
 

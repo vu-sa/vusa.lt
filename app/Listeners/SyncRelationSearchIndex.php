@@ -55,7 +55,7 @@ class SyncRelationSearchIndex
     {
         $institution->unsetRelation('types')->searchable();
 
-        $meetings = Meeting::query()->whereHas('institutions', fn ($query) => $query->where('institutions.id', $institution->getKey()));
+        $meetings = Meeting::query()->withTrashed()->whereHas('institutions', fn ($query) => $query->where('institutions.id', $institution->getKey()));
 
         (clone $meetings)->with('institutions.types')->chunkById(100, function ($chunk): void {
             // Types and the meeting kind override decide what the meeting is called.

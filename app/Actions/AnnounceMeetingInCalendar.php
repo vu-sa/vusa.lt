@@ -7,13 +7,9 @@ use App\Enums\MeetingType;
 use App\Models\Calendar;
 use App\Models\Institution;
 use App\Models\Meeting;
+use App\Support\MeetingTitle;
 
-/**
- * Turn a meeting into a calendar announcement.
- *
- * Created as a draft: publishing is what opens the agenda to the public on the event page (see
- * PublicPageController::meetingBehind()), so it stays a deliberate second step by the editor.
- */
+/** Publishing the draft opens the agenda on the event page. */
 class AnnounceMeetingInCalendar
 {
     public static function execute(Meeting $meeting): Calendar
@@ -49,7 +45,7 @@ class AnnounceMeetingInCalendar
             ?: $institution?->getTranslation('name', $locale)
             ?: '';
 
-        $suffix = $meeting->meetingKind()->noun($locale);
+        $suffix = MeetingTitle::noun($meeting->type, $locale, $meeting->meetingKind());
 
         return trim($name.' '.$suffix);
     }

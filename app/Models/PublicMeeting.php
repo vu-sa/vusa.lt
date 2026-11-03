@@ -94,7 +94,9 @@ class PublicMeeting extends Meeting
     #[\Override]
     public function institutions(): BelongsToMany
     {
-        return $this->belongsToMany(Institution::class, 'institution_meeting', 'meeting_id', 'institution_id');
+        return $this->belongsToMany(Institution::class, 'institution_meeting', 'meeting_id', 'institution_id')
+            ->orderByPivot('created_at')
+            ->orderBy('institutions.id');
     }
 
     /**

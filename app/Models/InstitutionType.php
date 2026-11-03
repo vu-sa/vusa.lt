@@ -108,6 +108,15 @@ class InstitutionType extends Model implements GuardsForceDelete, SharepointFile
         static::restored($flush);
         static::forceDeleted($flush);
 
+        $refreshMeetingTitles = function (self $type): void {
+            if ($type->extra_attributes['meeting_kind'] ?? null) {
+                RefreshMeetingTitles::dispatch($type->institutions()->pluck('institutions.id')->all());
+            }
+        };
+
+        static::deleted($refreshMeetingTitles);
+        static::restored($refreshMeetingTitles);
+
         static::deleted(fn () => InstitutionRelationService::flush());
         static::restored(fn () => InstitutionRelationService::flush());
     }

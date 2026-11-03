@@ -1,10 +1,13 @@
 <?php
 
+use App\Enums\MeetingKind;
+use App\Enums\MeetingType;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\Duty;
 use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionType;
+use App\Models\Meeting;
 use App\Models\ResponsibilityGrant;
 use App\Models\Role;
 use App\Models\Tenant;
@@ -13,6 +16,8 @@ use App\Services\Permissions\PermissionMapBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Testing\AssertableInertia as Assert;
+use Laravel\Scout\EngineManager;
+use Laravel\Scout\Engines\NullEngine;
 
 pest()->use(RefreshDatabase::class);
 
@@ -79,6 +84,36 @@ test('assignment rejects owners from the other domain and supports clearing', fu
     ])->assertSessionHasErrors('models.0');
     asUser($this->admin)->put(route('institutionTypes.models.sync', $type), ['models' => []])->assertRedirect();
     expect($type->institutions()->exists())->toBeFalse();
+});
+
+test('changing institution type assignments refreshes meeting titles and search documents for both owners', function (): void {
+    $type = InstitutionType::factory()->create(['extra_attributes' => ['meeting_kind' => MeetingKind::Assembly->value]]);
+    $previous = Institution::factory()->create();
+    $next = Institution::factory()->create();
+    $type->institutions()->attach($previous);
+    $meetings = collect([$previous, $next])->map(fn (Institution $institution) => Meeting::factory()->hasAttached($institution)->create([
+        'start_time' => '2026-09-12 14:00', 'type' => MeetingType::InPerson,
+    ]));
+    $meetings->each->refreshTitle();
+    $indexedTitles = [];
+    $engine = Mockery::mock(NullEngine::class)->makePartial();
+    $engine->shouldReceive('update')->andReturnUsing(function ($models) use (&$indexedTitles): void {
+        foreach ($models as $model) {
+            if ($model instanceof Meeting) {
+                $indexedTitles[$model->id] = $model->toSearchableArray()['title'];
+            }
+        }
+    });
+    app(EngineManager::class)->extend('typesense', fn () => $engine);
+    app(EngineManager::class)->forgetDrivers();
+
+    asUser($this->admin)->put(route('institutionTypes.models.sync', $type), ['models' => [$next->id]])
+        ->assertRedirect()->assertSessionHasNoErrors();
+
+    expect($meetings[0]->fresh()->title)->toBe('2026 rugsėjo 12 d. 14.00 val. posėdis')
+        ->and($meetings[1]->fresh()->title)->toBe('2026 rugsėjo 12 d. 14.00 val. susirinkimas')
+        ->and($indexedTitles[$meetings[0]->id])->toBe('2026 rugsėjo 12 d. 14.00 val. posėdis')
+        ->and($indexedTitles[$meetings[1]->id])->toBe('2026 rugsėjo 12 d. 14.00 val. susirinkimas');
 });
 
 test('role links backfill duties and newly assigned duties inherit roles', function (): void {
