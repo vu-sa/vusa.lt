@@ -472,7 +472,7 @@ import TenantSelectField, { pickDefaultTenantId } from './TenantSelectField.vue'
 import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog, FormPanel, FormSegmentedControl, StatusBadge, type FormSegmentOption } from '@/Components/Patterns';
-import { isSameDay } from '@/Utils/IntlTime';
+import { isSameDay, toNaiveDateTimeString } from '@/Utils/dateTime';
 import { guessEventTypeSlug } from '@/Utils/eventTypeFromTitle';
 import { localizedRoute, localizedSlug } from '@/Utils/LocalizedRoutes';
 import { generateSlug } from '@/Utils/String';
@@ -612,7 +612,7 @@ watch([() => form.date, () => form.end_date], () => {
     return;
   }
 
-  form.is_all_day = !isSameDay(new Date(form.date), new Date(form.end_date));
+  form.is_all_day = !isSameDay(form.date, form.end_date);
 });
 
 // Suggest a type from the title until the admin chooses one; an already typed event keeps its type.
@@ -792,12 +792,7 @@ const startDate = computed({
       form.date = null;
       return;
     }
-    // Format in local timezone to avoid UTC conversion
-    const localISOString = new Date(val.getTime() - (val.getTimezoneOffset() * 60000))
-      .toISOString()
-      .slice(0, 19)
-      .replace('T', ' ');
-    form.date = localISOString;
+    form.date = toNaiveDateTimeString(val);
   },
 });
 
@@ -808,12 +803,7 @@ const endDate = computed({
       form.end_date = null;
       return;
     }
-    // Format in local timezone to avoid UTC conversion
-    const localISOString = new Date(val.getTime() - (val.getTimezoneOffset() * 60000))
-      .toISOString()
-      .slice(0, 19)
-      .replace('T', ' ');
-    form.end_date = localISOString;
+    form.end_date = toNaiveDateTimeString(val);
   },
 });
 

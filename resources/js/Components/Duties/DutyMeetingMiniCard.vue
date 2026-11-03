@@ -15,7 +15,7 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { DateBadge, EntityLinkCard } from '@/Components/Patterns';
-import { formatStaticTime } from '@/Utils/IntlTime';
+import { formatDate } from '@/Utils/dateTime';
 
 export interface MiniMeeting {
   id: string | number;
@@ -32,6 +32,6 @@ const title = computed(() => {
   if (props.meeting.title && props.meeting.title.trim() !== '') {
     return props.meeting.title;
   }
-  return `${formatStaticTime(new Date(props.meeting.start_time), { year: 'numeric', month: 'long', day: 'numeric' })} ${$t('posėdis')}`;
+  return `${formatDate(props.meeting.start_time, { format: 'full' })} ${$t('posėdis')}`;
 });
 </script>

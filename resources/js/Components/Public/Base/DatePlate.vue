@@ -18,7 +18,7 @@ import type { HTMLAttributes } from 'vue';
 import { computed } from 'vue';
 
 import { cn } from '@/Utils/Shadcn/utils';
-import { formatMonthAbbr, formatStaticTime } from '@/Utils/IntlTime';
+import { formatDateWith, formatMonthAbbr } from '@/Utils/dateTime';
 
 /**
  * The square day/month plate that overlays an event image.
@@ -35,14 +35,8 @@ const props = withDefaults(defineProps<{
   class: undefined,
 });
 
-const parsedDate = computed(() => (props.date instanceof Date ? props.date : new Date(props.date)));
+const dayLabel = computed(() => formatDateWith(props.date, { day: '2-digit' }));
 
-const dayLabel = computed(() => formatStaticTime(parsedDate.value, { day: '2-digit' }));
-
-/**
- * Three letters, not `formatMonthShort()`: Lithuanian has no abbreviated month names in Intl, so
- * 'short' renders a bare number ("09") and the plate reads as two numbers stacked. Month sits
- * above the day, as on the printed key visuals.
- */
-const monthLabel = computed(() => formatMonthAbbr(parsedDate.value));
+/** Month sits above the day, as on the printed key visuals. */
+const monthLabel = computed(() => formatMonthAbbr(props.date));
 </script>

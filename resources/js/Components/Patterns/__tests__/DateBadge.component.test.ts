@@ -19,6 +19,19 @@ describe('DateBadge', () => {
     expect(fromDate.text()).toBe(fromString.text());
   });
 
+  // Intl's Lithuanian `{ month: 'short' }` is "03", which read as a second number on the badge.
+  it('names the month with its Lithuanian abbreviation', () => {
+    const wrapper = mount(DateBadge, { props: { date: '2026-03-17T10:00:00Z' } });
+
+    expect(wrapper.text()).toContain('KOV');
+  });
+
+  it('shows the Vilnius calendar day for a late-evening UTC time', () => {
+    const wrapper = mount(DateBadge, { props: { date: '2026-03-16T23:30:00Z' } });
+
+    expect(wrapper.text()).toContain('17');
+  });
+
   it('shows a different month label for a different month', () => {
     const march = mount(DateBadge, { props: { date: '2026-03-17T10:00:00Z' } });
     const july = mount(DateBadge, { props: { date: '2026-07-17T10:00:00Z' } });

@@ -222,11 +222,18 @@ describe('ShowMeeting.vue', () => {
     expect(wrapper.find('[data-slot="record-title"]').text()).not.toContain('10:00');
   });
 
-  it('shows relative and clock time together after visibility', () => {
+  it('shows a far meeting as its date and Vilnius clock time after visibility', () => {
     const facts = createWrapper().findAll('dl > div');
 
     expect(facts[2].find('dt').text()).toBe('Laikas');
-    expect(facts[2].find('dd').text()).toMatch(/prieš .+ · 10:00/);
+    expect(facts[2].find('dd').text()).toBe('2026-03-04 · 12:00');
+  });
+
+  it('shows a near meeting relative to now', () => {
+    const startTime = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
+    const facts = createWrapper({ meeting: { ...baseMeeting, start_time: startTime } }).findAll('dl > div');
+
+    expect(facts[2].find('dd').text()).toMatch(/^prieš 2 d\. · \d{2}:\d{2}$/);
   });
 
   it('shows visibility next to status with a globe and a surface matching public access', () => {

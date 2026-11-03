@@ -108,7 +108,6 @@ describe('Public/CalendarEvent.vue', () => {
 
       expect(wrapper.text()).toContain('Ankstesnis posėdis');
       expect(wrapper.text()).toContain('Kitas posėdis');
-      // formatStaticTime with { year, month: 'long', day, hour, minute } on these dates.
       expect(wrapper.text()).toContain('2029');
       expect(wrapper.text()).toContain('2030');
     });

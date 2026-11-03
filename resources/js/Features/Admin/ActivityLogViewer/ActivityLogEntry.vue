@@ -40,7 +40,7 @@ import ActivityRelationChange from './ActivityRelationChange.vue';
 
 import UserPopover from '@/Components/Avatars/UserPopover.vue';
 import { Badge } from '@/Components/ui/badge';
-import { formatRelativeTime } from '@/Utils/IntlTime';
+import { useDateFormatter } from '@/Composables/useDateFormatter';
 import type { ActivityEntry, ActivityEvent } from '@/Types/activityLog';
 
 const props = defineProps<{
@@ -82,5 +82,6 @@ const EVENT_STYLES: Record<ActivityEvent, { icon: typeof Plus; badgeClass: strin
 
 const eventStyle = computed(() => EVENT_STYLES[props.entry.event] ?? EVENT_STYLES.updated);
 
-const relativeTime = computed(() => props.entry.created_at ? formatRelativeTime(props.entry.created_at) : '');
+const { formatNearDate } = useDateFormatter();
+const relativeTime = computed(() => formatNearDate(props.entry.created_at));
 </script>

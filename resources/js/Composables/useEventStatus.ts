@@ -2,8 +2,8 @@ import { computed, toValue, type MaybeRefOrGetter } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { usePage } from '@inertiajs/vue3';
 
-import { formatRelativeTime } from '@/Utils/IntlTime';
 import { LocaleEnum } from '@/Types/enums';
+import { formatNearDate, parseDate } from '@/Utils/dateTime';
 
 export type EventTone = 'live' | 'past' | 'upcoming';
 
@@ -12,8 +12,8 @@ export type EventTone = 'live' | 'past' | 'upcoming';
  *
  * Deliberately exposes only states that change what a visitor can do — the event
  * is running, or it already happened. Upcoming events get `relativeLabel`
- * ("rytoj", "po 2 dienų") from `Intl.RelativeTimeFormat` instead of a badge, so
- * the page states a fact rather than manufacturing urgency.
+ * ("rytoj", "po 2 d.") instead of a badge, so the page states a fact rather than
+ * manufacturing urgency.
  */
 export function useEventStatus(
   event: MaybeRefOrGetter<{ date: string; end_date?: string | null }>,
@@ -23,11 +23,8 @@ export function useEventStatus(
   const page = usePage();
   const locale = computed(() => (page.props.app?.locale ?? LocaleEnum.LT) as LocaleEnum);
 
-  const startsAt = computed(() => new Date(toValue(event).date));
-  const endsAt = computed(() => {
-    const { end_date: endDate } = toValue(event);
-    return endDate ? new Date(endDate) : startsAt.value;
-  });
+  const startsAt = computed(() => parseDate(toValue(event).date) ?? new Date(Number.NaN));
+  const endsAt = computed(() => parseDate(toValue(event).end_date) ?? startsAt.value);
 
   const isPast = computed(() => endsAt.value.getTime() < Date.now());
   const isLive = computed(() => {
@@ -50,7 +47,7 @@ export function useEventStatus(
 
   const relativeLabel = computed(() => {
     if (!isUpcoming.value) return null;
-    return formatRelativeTime(startsAt.value, { numeric: 'auto' }, locale.value);
+    return formatNearDate(startsAt.value, { locale: locale.value, thresholdDays: Infinity });
   });
 
   return { isPast, isLive, isUpcoming, tone, statusLabel, relativeLabel, startsAt, endsAt };

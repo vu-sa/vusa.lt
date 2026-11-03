@@ -316,7 +316,6 @@ import { preferredScrollBehavior } from '@/Composables/useAccessibilityPreferenc
 import { useToasts } from '@/Composables/useToasts';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { InstitutionScope, ModelEnum } from '@/Types/enums';
-import { formatRelativeTime } from '@/Utils/IntlTime';
 import { formatMeetingDateTime, formatMeetingTimeOnly } from '@/Utils/MeetingDisplay';
 import { useMeetingUrgency } from '@/Composables/useMeetingUrgency';
 import { meetingCompletionStatuses, type MeetingCompletionStatus } from '@/Constants/statuses';
@@ -329,7 +328,7 @@ import UsersFactList from '@/Components/Avatars/UsersFactList.vue';
 import MeetingAgendaList from '@/Components/Meetings/MeetingAgendaList.vue';
 import { useApi } from '@/Composables/useApi';
 import type { EditableAgendaItemSource } from '@/Composables/useAgendaItemAutosave';
-import { formatTime } from '@/Utils/dateTime';
+import { formatNearDate, formatTime } from '@/Utils/dateTime';
 import { isEmailMeeting } from '@/Utils/MeetingDisplay';
 import AgendaItemEditSheet from '@/Components/AgendaItems/AgendaItemEditSheet.vue';
 import MeetingCompletionChecklist, { type MeetingMissingAction } from '@/Components/Meetings/MeetingCompletionChecklist.vue';
@@ -462,7 +461,7 @@ const { hasProtocol, isPastMeeting } = useMeetingUrgency(() => props.meeting);
 
 // Hide HH:MM for email/electronic meetings (start_time is forced to 23:59 as a deadline marker)
 const meetingTimeLabel = computed(() => formatMeetingTimeOnly(props.meeting));
-const meetingRelativeTime = computed(() => formatRelativeTime(new Date(props.meeting.start_time)));
+const meetingRelativeTime = computed(() => formatNearDate(props.meeting.start_time));
 const meetingStatus = computed(() => meetingCompletionStatuses[props.completion.status]);
 const documentStatuses = computed(() => [
   {

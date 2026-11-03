@@ -25,7 +25,7 @@
               class="relative z-20 -mx-2.5 flex items-start gap-3 p-2.5 transition-colors hover:bg-secondary/60"
             >
               <div class="flex min-w-11 flex-col items-center justify-center border border-border px-2 py-1.5 text-center text-brand">
-                <span class="text-[0.5625rem] font-semibold uppercase leading-none">{{ formatMonthShort(event.date ?? undefined, locale) }}</span>
+                <span class="text-[0.5625rem] font-semibold uppercase leading-none">{{ formatMonthAbbr(event.date, { locale }) }}</span>
                 <span class="mt-0.5 text-base font-bold leading-none tabular-nums">{{ dayOfMonth(event.date) }}</span>
               </div>
               <div class="min-w-0 flex-1">
@@ -76,7 +76,7 @@
           <div class="flex w-14 shrink-0 flex-col items-center justify-center border border-border bg-background py-2 text-foreground transition-colors group-hover:border-brand sm:w-16">
             <span class="text-2xl font-bold leading-none tabular-nums">{{ dayOfMonth(event.date) }}</span>
             <span class="mt-1 text-[0.625rem] font-bold uppercase tracking-wide text-muted-foreground">
-              {{ formatMonthShort(event.date ?? undefined, locale) }}
+              {{ formatMonthAbbr(event.date, { locale }) }}
             </span>
           </div>
 
@@ -126,7 +126,7 @@ import type { BandResolution } from '../bandLayout';
 
 import type { EventListResolved, EventListResolvedItem } from '@/Types/contentParts';
 import SmartLink from '@/Components/Public/SmartLink.vue';
-import { formatEventDateSpan, formatMonthShort } from '@/Utils/IntlTime';
+import { formatDateWith, formatEventDateSpan, formatMonthAbbr } from '@/Utils/dateTime';
 import { LocaleEnum } from '@/Types/enums';
 
 const props = defineProps<{
@@ -169,9 +169,9 @@ const hasGroups = computed(() => groups.value.length > 0);
 const isEmpty = computed(() => (props.resolved?.meta?.total ?? 0) === 0);
 
 const dateSpan = (event: EventListResolvedItem) =>
-  formatEventDateSpan(event.date ?? '', event.endDate, { allDay: event.isAllDay, locale: locale.value });
+  formatEventDateSpan(event.date, event.endDate, { allDay: event.isAllDay, locale: locale.value });
 
-const dayOfMonth = (date: string | null) => (date ? new Date(date).getDate() : '');
+const dayOfMonth = (date: string | null) => formatDateWith(date, { day: 'numeric' });
 
 function coverImageFor(items: EventListResolvedItem[]): string | null {
   return items.find(item => item.imageUrl)?.imageUrl ?? null;

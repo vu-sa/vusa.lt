@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils';
 
 import DutyLineageCard from '../DutyLineageCard.vue';
 
-import { currentAcademicYear, formatAcademicYearLabel } from '@/Utils/IntlTime';
+import { currentAcademicYear, formatAcademicYearLabel } from '@/Utils/academicYear';
 
 const stubs = {
   UsersAvatarGroup: { props: ['users'], template: '<div class="grp">{{ users.map(u => u.name).join(",") }}</div>' },

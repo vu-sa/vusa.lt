@@ -123,7 +123,7 @@ import CommentReactions from '@/Components/Discussions/CommentReactions.vue';
 import PollBlock from '@/Components/Discussions/PollBlock.vue';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
-import { formatRelativeTime } from '@/Utils/IntlTime';
+import { useDateFormatter } from '@/Composables/useDateFormatter';
 import type { CommentData, MentionableUser, PollData } from '@/Types/discussions';
 
 const props = withDefaults(defineProps<{
@@ -171,7 +171,8 @@ const votedOptionLabel = computed(() => {
 const canResolve = computed(() => props.comment.can.resolve && !props.isReply);
 const hasActions = computed(() => props.comment.can.update || props.comment.can.delete || canResolve.value);
 
-const relativeTime = computed(() => (props.comment.created_at ? formatRelativeTime(new Date(props.comment.created_at)) : ''));
+const { formatNearDate } = useDateFormatter();
+const relativeTime = computed(() => formatNearDate(props.comment.created_at));
 
 function startEdit() {
   editing.value = true;

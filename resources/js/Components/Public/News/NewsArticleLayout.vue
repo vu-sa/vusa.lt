@@ -150,7 +150,7 @@ import SmartLink from '@/Components/Public/SmartLink.vue';
 import { EyebrowLabel, MediaFrame, ReadingSizeControl, ShareButton, TagChip } from '@/Components/Public/Base';
 import type { NewsItem } from '@/Types/contentParts';
 import type { ImageData } from '@/Types/media';
-import { formatStaticTime } from '@/Utils/IntlTime';
+import { formatDate, parseDate } from '@/Utils/dateTime';
 
 /**
  * The news article, in one design.
@@ -183,15 +183,11 @@ const subdomain = computed(() => page.props.tenant?.subdomain ?? 'www');
 const otherLocale = computed(() => (props.locale === 'lt' ? 'en' : 'lt'));
 
 const isoPublishTime = computed(() => (
-  props.article.publish_time ? new Date(props.article.publish_time).toISOString() : undefined
+  parseDate(props.article.publish_time)?.toISOString()
 ));
 
 const publishedOn = computed(() => (props.article.publish_time
-  ? formatStaticTime(
-      new Date(props.article.publish_time),
-      { year: 'numeric', month: 'long', day: 'numeric' },
-      props.locale,
-    )
+  ? formatDate(props.article.publish_time, { format: 'full', locale: props.locale })
   : ''));
 
 const archiveHref = computed(() => route('newsArchive', {
