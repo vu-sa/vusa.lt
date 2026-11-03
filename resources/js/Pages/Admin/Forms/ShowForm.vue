@@ -163,6 +163,7 @@ import { createIdColumn, createTimestampColumn } from '@/Composables/useDataTabl
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
 import { ModelEnum } from '@/Types/enums';
+import { formatDateTime } from '@/Utils/dateTime';
 
 interface FieldOption {
   value: string | number;
@@ -200,7 +201,7 @@ const localizedTitle = computed(() => {
 
 const latestRegistrationDate = computed(() => {
   const latest = props.registrations[0]?.created_at;
-  return latest ? new Date(latest).toLocaleString() : null;
+  return latest ? formatDateTime(latest) : null;
 });
 
 const recordFacts = computed<RecordFact[]>(() => [
@@ -414,12 +415,7 @@ const formatFieldValue = (field: { key?: string; id?: string | number; type?: st
   }
 
   if (field.type === 'timestamp' || field.key === 'created_at') {
-    try {
-      return new Date(value as string).toLocaleString();
-    }
-    catch {
-      return String(value);
-    }
+    return formatDateTime(value as string) || String(value);
   }
 
   return String(value);

@@ -2,6 +2,8 @@ import { ref, reactive, computed, watch, readonly } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { formatDate } from '@/Utils/dateTime';
+
 export interface UserChange {
   userId: string;
   userName: string;
@@ -98,13 +100,7 @@ export function getSuggestedEndDate(): string {
  * Format date for display in localized format
  */
 export function formatDateForDisplay(dateString: string): string {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('lt-LT', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  return formatDate(dateString, { format: 'full' });
 }
 
 /**

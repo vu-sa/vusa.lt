@@ -1,10 +1,10 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { ShieldCheck, Package, PackageCheck, ClipboardCheck, Clock, FilePlus2, FileCheck, type LucideIcon } from '@lucide/vue';
-import { differenceInDays, format, formatDistanceToNow, isToday, isTomorrow, parseISO } from 'date-fns';
-import type { Locale } from 'date-fns';
+import { differenceInDays, parseISO } from 'date-fns';
 
 import type { TaskStatus } from '@/Constants/statuses';
 import { TaskActionType, type TaskProgress } from '@/Types/TaskTypes';
+import { DEFAULT_LOCALE, formatNearDate } from '@/Utils/dateTime';
 
 /**
  * Shared presentation rules for a task. TaskRow and the task collection render the
@@ -213,32 +213,15 @@ export function getMeetingAgendaUrl(task: Pick<TaskDisplayData, 'taskable_type' 
 }
 
 /**
- * Relative wording ("in 3 days", "Today") inside a week either way, an absolute date beyond it —
- * a fortnight-old due date reads as noise when phrased relatively.
+ * Relative calendar days ("šiandien", "po 3 d.") inside a week either way, an absolute date beyond
+ * it — a fortnight-old due date reads as noise when phrased relatively.
  */
-export function formatTaskDueDate(dueDate: string | null | undefined, locale: Locale): string {
+export function formatTaskDueDate(dueDate: string | null | undefined, locale: string = DEFAULT_LOCALE): string {
   if (!dueDate) {
     return '';
   }
 
-  try {
-    const date = parseISO(dueDate);
-
-    if (isToday(date)) {
-      return $t('Today');
-    }
-    if (isTomorrow(date)) {
-      return $t('Tomorrow');
-    }
-    if (Math.abs(differenceInDays(date, new Date())) <= 7) {
-      return formatDistanceToNow(date, { addSuffix: true, locale });
-    }
-
-    return format(date, 'yyyy-MM-dd');
-  }
-  catch {
-    return dueDate;
-  }
+  return formatNearDate(dueDate, { locale, granularity: 'day' }) || dueDate;
 }
 
 /** The one status a task shows; `null` for an open task with nothing pressing about it. */

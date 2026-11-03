@@ -52,6 +52,7 @@ import type {
   ResourceSearchResult,
   UserSearchResult,
 } from '@/Shared/Search/types';
+import { formatDateWith } from '@/Utils/dateTime';
 
 export function getUserDuties(user: UserSearchResult, kind: 'current' | 'previous', locale: string) {
   return (user[`${kind}_duty_names`] ?? []).map((storedName, index) => ({
@@ -215,11 +216,7 @@ export function formatSearchDate(timestamp?: number): string | undefined {
   if (!timestamp) {
     return undefined;
   }
-  return new Date(timestamp * 1000).toLocaleDateString('lt-LT', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
+  return formatDateWith(timestamp * 1000, { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
 /** Format a Unix (seconds) timestamp as a localized date + time, or undefined. */
@@ -227,7 +224,7 @@ export function formatSearchDateTime(timestamp?: number): string | undefined {
   if (!timestamp) {
     return undefined;
   }
-  return new Date(timestamp * 1000).toLocaleDateString('lt-LT', {
+  return formatDateWith(timestamp * 1000, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',

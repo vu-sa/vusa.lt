@@ -173,6 +173,23 @@ describe('dateTime utilities (U9)', () => {
     });
   });
 
+  describe('formatNearDate by calendar day', () => {
+    // 23:30 on 19 September in Vilnius.
+    const now = new Date('2026-09-19T20:30:00Z');
+
+    it('names today and tomorrow by the Vilnius calendar, not by hours', () => {
+      expect(formatNearDate('2026-09-19', { now, granularity: 'day' })).toBe('šiandien');
+      expect(formatNearDate('2026-09-20', { now, granularity: 'day' })).toBe('rytoj');
+      expect(formatNearDate('2026-09-18', { now, granularity: 'day', locale: 'en' })).toBe('yesterday');
+    });
+
+    it('counts whole days inside the threshold and falls back to the date beyond it', () => {
+      expect(formatNearDate('2026-09-22', { now, granularity: 'day' })).toBe('po 3 d.');
+      expect(formatNearDate('2026-09-16', { now, granularity: 'day', locale: 'en' })).toBe('3d ago');
+      expect(formatNearDate('2026-10-19', { now, granularity: 'day' })).toBe('2026-10-19');
+    });
+  });
+
   describe('formatDateFact', () => {
     const now = new Date('2026-09-19T12:00:00Z');
 

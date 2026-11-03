@@ -68,6 +68,7 @@ import { ChevronRight, ClipboardCheck, FileCheck, Trash2 } from '@lucide/vue';
 import MeetingOutcomeIndicators from '@/Components/Public/Search/MeetingOutcomeIndicators.vue';
 import { Button } from '@/Components/ui/button';
 import type { InstitutionPageMeeting } from '@/Types/InstitutionPage';
+import { formatDate } from '@/Utils/dateTime';
 
 const props = defineProps<{
   meetings: InstitutionPageMeeting[];
@@ -88,12 +89,7 @@ const sortedMeetings = computed(() =>
   ),
 );
 
-const formatMeetingDate = (dateString: string) =>
-  new Date(dateString).toLocaleDateString('lt-LT', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  });
+const formatMeetingDate = (dateString: string) => formatDate(dateString);
 
 const meetingTitle = (meeting: InstitutionPageMeeting) => {
   if (meeting.title && meeting.title.trim() !== '') {

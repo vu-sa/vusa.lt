@@ -47,6 +47,11 @@ export interface FormatNearOptions {
   timeZone?: string;
   /** Format to use when date is beyond threshold. Defaults to 'iso'. */
   fallbackFormat?: 'iso' | 'full';
+  /**
+   * 'day' compares Vilnius calendar days ("šiandien", "rytoj", "po 3 d.") — for due dates and
+   * other date-only values, where "po 9 val." would invent a time of day. Defaults to 'time'.
+   */
+  granularity?: 'time' | 'day';
 }
 
 export interface DateFact {
@@ -266,12 +271,30 @@ export function formatNearDate(input: DateInput, options: FormatNearOptions = {}
     locale = DEFAULT_LOCALE,
     timeZone = VILNIUS_TIMEZONE,
     fallbackFormat = 'iso',
+    granularity = 'time',
   } = options;
+
+  const isLt = locale.startsWith('lt');
+
+  if (granularity === 'day') {
+    const calendarDay = (value: Date) => {
+      const p = getZonedParts(value, timeZone);
+      return Date.UTC(p.year, p.month - 1, p.day);
+    };
+    const dayDiff = Math.round((calendarDay(date) - calendarDay(now)) / DAY_MS);
+
+    if (dayDiff === 0) {
+      return isLt ? 'šiandien' : 'today';
+    }
+    if (Math.abs(dayDiff) <= thresholdDays) {
+      return relativeDays(Math.abs(dayDiff), dayDiff < 0, isLt);
+    }
+    return formatDate(date, { format: fallbackFormat, locale, timeZone });
+  }
 
   const diffMs = date.getTime() - now.getTime();
   const absMs = Math.abs(diffMs);
   const isPast = diffMs < 0;
-  const isLt = locale.startsWith('lt');
 
   // Under 1 minute
   if (absMs < MINUTE_MS) {
@@ -300,19 +323,23 @@ export function formatNearDate(input: DateInput, options: FormatNearOptions = {}
   const days = Math.round(absMs / DAY_MS);
 
   if (days <= thresholdDays) {
-    if (days === 1) {
-      if (isLt) return isPast ? 'vakar' : 'rytoj';
-      return isPast ? 'yesterday' : 'tomorrow';
-    }
-
-    if (isLt) {
-      return isPast ? `prieš ${days} d.` : `po ${days} d.`;
-    }
-    return isPast ? `${days}d ago` : `in ${days}d`;
+    return relativeDays(days, isPast, isLt);
   }
 
   // Beyond threshold -> fallback to absolute date
   return formatDate(date, { format: fallbackFormat, locale, timeZone });
+}
+
+function relativeDays(days: number, isPast: boolean, isLt: boolean): string {
+  if (days === 1) {
+    if (isLt) return isPast ? 'vakar' : 'rytoj';
+    return isPast ? 'yesterday' : 'tomorrow';
+  }
+
+  if (isLt) {
+    return isPast ? `prieš ${days} d.` : `po ${days} d.`;
+  }
+  return isPast ? `${days}d ago` : `in ${days}d`;
 }
 
 /**
