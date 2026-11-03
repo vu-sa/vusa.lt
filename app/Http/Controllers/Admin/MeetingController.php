@@ -396,8 +396,6 @@ class MeetingController extends AdminController
      */
     public function edit(EditMeetingRequest $request, Meeting $meeting): RedirectResponse
     {
-        $this->handleAuthorization('update', $meeting);
-
         return redirect()->route('meetings.show', [
             'meeting' => $meeting,
             ...$request->safe()->only(['tab', 'action']),

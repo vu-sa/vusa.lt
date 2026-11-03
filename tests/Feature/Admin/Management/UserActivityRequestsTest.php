@@ -70,8 +70,25 @@ test('reading a user alone gives no request history even on a partial reload', f
             ->loadDeferredProps('activityRequests', fn (Assert $reload) => $reload->has('activityRequests.data', 0)));
 });
 
-test('a person without user read access cannot open another user record', function (): void {
-    asUser($this->recipient)->get(route('users.show', User::factory()->create()))->assertForbidden();
+test('a person without user read access cannot open another user record', function (array $query): void {
+    asUser($this->recipient)->get(route('users.show', [
+        'user' => User::factory()->create(),
+        ...$query,
+    ]))->assertForbidden();
+})->with(['valid' => [[]], 'malformed history page' => [['activity_requests_page' => ['x']]]]);
+
+test('personal history ignores an invalid optional page', function (): void {
+    $own = InstitutionActivityRequest::factory()->create([
+        'recipient_id' => $this->recipient->id,
+        'institution_id' => $this->institution->id,
+    ]);
+
+    asUser($this->recipient)->get(route('profile.activityRequests', ['activity_requests_page' => ['x']]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('activityRequests.data.0.id', $own->id)
+            ->where('activityRequests.page', 1)
+        );
 });
 
 test('institution specific coordination reveals only that institutions requests', function (): void {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\DropsInvalidOptionalQuery;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -10,9 +11,14 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 class EditAgendaItemRequest extends FormRequest
 {
+    use DropsInvalidOptionalQuery;
+
     public function authorize(): bool
     {
-        return true;
+        $agendaItem = $this->route('agendaItem');
+        abort_if($agendaItem->meeting === null, 404);
+
+        return $this->user()?->can('viewSummary', $agendaItem) ?? false;
     }
 
     /**

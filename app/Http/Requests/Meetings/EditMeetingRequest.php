@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Meetings;
 
+use App\Http\Requests\Concerns\DropsInvalidOptionalQuery;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -10,9 +11,11 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 class EditMeetingRequest extends FormRequest
 {
+    use DropsInvalidOptionalQuery;
+
     public function authorize(): bool
     {
-        return true;
+        return $this->user()?->can('update', $this->route('meeting')) ?? false;
     }
 
     /**

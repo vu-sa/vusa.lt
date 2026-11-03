@@ -66,8 +66,6 @@ class QuickLinkController extends AdminController
      */
     public function create(CreateQuickLinkRequest $request)
     {
-        $this->handleAuthorization('create', QuickLink::class);
-
         $tenantOptions = GetTenantsForUpserts::execute('quickLinks.create.padalinys', $this->authorizer);
 
         // Prefill from the index's tenant/language scope, so a link started from the EN list is an EN link.

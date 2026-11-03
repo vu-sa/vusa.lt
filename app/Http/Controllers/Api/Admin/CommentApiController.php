@@ -35,7 +35,6 @@ class CommentApiController extends ApiController
     public function index(IndexCommentsRequest $request, string $commentableType, string $commentableId): JsonResponse
     {
         $commentable = $this->resolveCommentable($commentableType, $commentableId);
-        $this->authorize('view', $commentable);
 
         $this->stashModeration($request, $commentable);
 

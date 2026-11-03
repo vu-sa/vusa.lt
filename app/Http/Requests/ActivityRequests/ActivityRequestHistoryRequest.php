@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\ActivityRequests;
 
+use App\Http\Requests\Concerns\DropsInvalidOptionalQuery;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -11,9 +12,19 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 class ActivityRequestHistoryRequest extends FormRequest
 {
+    use DropsInvalidOptionalQuery;
+
     public function authorize(): bool
     {
-        return true;
+        if ($institution = $this->route('institution')) {
+            return $this->user()?->can('viewSummary', $institution) ?? false;
+        }
+
+        if ($user = $this->route('user')) {
+            return $this->user()?->can('view', $user) ?? false;
+        }
+
+        return $this->user() !== null;
     }
 
     /**

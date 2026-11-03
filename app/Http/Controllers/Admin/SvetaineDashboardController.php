@@ -20,8 +20,6 @@ class SvetaineDashboardController extends AdminController
 
     public function svetaine(ShowSvetaineDashboardRequest $request)
     {
-        $this->handleAuthorization('viewAny', Page::class);
-
         $selectedTenant = $request->validated('tenant_id');
 
         // Leave only tenants that are not 'pkp'

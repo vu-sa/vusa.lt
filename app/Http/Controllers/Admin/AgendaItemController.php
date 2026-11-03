@@ -204,10 +204,6 @@ class AgendaItemController extends AdminController
      */
     public function edit(EditAgendaItemRequest $request, AgendaItem $agendaItem): RedirectResponse
     {
-        abort_if($agendaItem->meeting === null, 404);
-
-        $this->handleAuthorization('viewSummary', $agendaItem);
-
         return redirect()->route('agendaItems.show', [
             'agendaItem' => $agendaItem,
             ...$request->safe()->only(['focus', 'action']),

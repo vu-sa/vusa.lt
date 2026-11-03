@@ -95,8 +95,6 @@ class DutyController extends AdminController
      */
     public function create(CreateDutyRequest $request)
     {
-        $this->handleAuthorization('create', Duty::class);
-
         return $this->inertiaResponse('Admin/People/CreateDuty', [
             'dutyTypes' => GetAttachableTypesForDuty::execute()->values(),
             'assignableInstitutions' => DutyService::getInstitutionsForUpserts($this->authorizer),

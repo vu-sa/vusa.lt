@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\DropsInvalidOptionalQuery;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -10,6 +11,8 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 class ShowInstitutionActivityAnswerRequest extends FormRequest
 {
+    use DropsInvalidOptionalQuery;
+
     public function authorize(): bool
     {
         return true;

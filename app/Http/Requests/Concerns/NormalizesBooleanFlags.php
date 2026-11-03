@@ -12,7 +12,10 @@ trait NormalizesBooleanFlags
     {
         foreach ($keys as $key) {
             if ($this->has($key)) {
-                $this->merge([$key => $this->boolean($key)]);
+                $value = $this->input($key);
+                $this->merge([$key => $value === null || $value === ''
+                    ? null
+                    : filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)]);
             }
         }
     }

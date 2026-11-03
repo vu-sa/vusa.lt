@@ -117,8 +117,6 @@ class InstitutionController extends AdminController
      */
     public function show(ActivityRequestHistoryRequest $request, Institution $institution)
     {
-        $this->handleAuthorization('viewSummary', $institution);
-
         // An active institution outside the user's reach opens as its public face: overview,
         // members and (public) meetings — no discussion, files, tasks, relations or management.
         $readOnly = fn () => once(fn () => ! Gate::allows('view', $institution));

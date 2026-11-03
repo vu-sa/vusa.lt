@@ -2,12 +2,14 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\DropsInvalidOptionalQuery;
 use App\Http\Requests\Concerns\NormalizesBooleanFlags;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ShowInstitutionCategoryRequest extends FormRequest
 {
+    use DropsInvalidOptionalQuery;
     use NormalizesBooleanFlags;
 
     public function authorize(): bool

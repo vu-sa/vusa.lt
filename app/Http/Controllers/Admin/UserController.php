@@ -147,8 +147,6 @@ class UserController extends AdminController
      */
     public function show(ActivityRequestHistoryRequest $request, User $user, GetUserActivityRequests $activityRequests)
     {
-        $this->handleAuthorization('view', $user);
-
         $loadUser = fn () => once(function () use ($user) {
             $user->loadMissing([
                 'current_duties.institution.tenant',

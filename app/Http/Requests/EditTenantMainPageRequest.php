@@ -3,12 +3,15 @@
 namespace App\Http\Requests;
 
 use App\Enums\LocaleEnum;
+use App\Http\Requests\Concerns\DropsInvalidOptionalQuery;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class EditTenantMainPageRequest extends FormRequest
 {
+    use DropsInvalidOptionalQuery;
+
     public function authorize(): bool
     {
         return $this->user()?->can('updateMainPage', $this->route('tenant')) ?? false;

@@ -85,8 +85,6 @@ class ProblemController extends AdminController
      */
     public function create(CreateProblemRequest $request)
     {
-        $this->handleAuthorization('create', Problem::class);
-
         $tenants = GetTenantsForUpserts::execute('problems.create.padalinys', $this->authorizer);
 
         // Opened from an institution's Problemos tab: start in its padalinys, already linked, if the user may write there.

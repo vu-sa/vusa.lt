@@ -25,8 +25,6 @@ class NavigationController extends AdminController
      */
     public function index(IndexNavigationRequest $request)
     {
-        $this->handleAuthorization('viewAny', Navigation::class);
-
         $showDeleted = $request->safe()->boolean('showDeleted');
         $lang = $this->resolveLang($request->validated('lang'));
 
@@ -66,8 +64,6 @@ class NavigationController extends AdminController
      */
     public function create(CreateNavigationRequest $request)
     {
-        $this->handleAuthorization('create', Navigation::class);
-
         $parent_id = (int) ($request->validated('parent_id') ?? 0);
 
         // A new root picks its location explicitly (the "add column" vs "add root"
