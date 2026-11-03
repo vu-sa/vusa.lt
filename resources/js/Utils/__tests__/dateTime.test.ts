@@ -41,6 +41,26 @@ describe('dateTime utilities (U9)', () => {
       expect(parseDate('2026-09-19T10:00:00+02:00')?.toISOString()).toBe('2026-09-19T08:00:00.000Z');
     });
 
+    it.each([
+      '2026-00-01',
+      '2026-13-01',
+      '2026-09-00',
+      '2026-09-31',
+      '2026-02-29',
+      '2024-02-30',
+      '2026-09-19 24:00',
+      '2026-09-19 25:00:00',
+      '2026-09-19T12:60:00',
+      '2026-09-19 12:00:60.123456',
+    ])('returns null for invalid zone-less fields in %s', (input) => {
+      expect(parseDate(input)).toBeNull();
+    });
+
+    it('accepts leap days and the last second of a day', () => {
+      expect(parseDate('2024-02-29')?.toISOString()).toBe('2024-02-28T22:00:00.000Z');
+      expect(parseDate('2026-09-30 23:59:59')?.toISOString()).toBe('2026-09-30T20:59:59.000Z');
+    });
+
     it('honours the daylight saving switch', () => {
       // Clocks go back at 04:00 EEST on 25 October 2026; 05:00 is already EET (UTC+2).
       expect(parseDate('2026-10-25 02:00')?.toISOString()).toBe('2026-10-24T23:00:00.000Z');
@@ -139,6 +159,15 @@ describe('dateTime utilities (U9)', () => {
   describe('formatNearDate', () => {
     const now = new Date('2026-09-19T12:00:00Z');
 
+    it('keeps future direction for timestamps less than a minute away', () => {
+      const soon = new Date('2026-09-19T12:00:30Z');
+
+      expect(formatNearDate(soon, { now })).toBe('po 30 sek.');
+      expect(formatNearDate(soon, { now, locale: 'en' })).toBe('in 30 sec.');
+      expect(formatNearDate(now, { now })).toBe('ką tik');
+      expect(formatNearDate(now, { now, locale: 'en' })).toBe('just now');
+    });
+
     it('formats relative near dates in Lithuanian (prieš 2 val., po 3 d.)', () => {
       // < 1 min
       expect(formatNearDate(new Date('2026-09-19T11:59:45Z'), { now })).toBe('ką tik');
@@ -187,6 +216,14 @@ describe('dateTime utilities (U9)', () => {
       expect(formatNearDate('2026-09-22', { now, granularity: 'day' })).toBe('po 3 d.');
       expect(formatNearDate('2026-09-16', { now, granularity: 'day', locale: 'en' })).toBe('3d ago');
       expect(formatNearDate('2026-10-19', { now, granularity: 'day' })).toBe('2026-10-19');
+    });
+
+    it('uses the new Vilnius calendar day just after midnight', () => {
+      const afterMidnight = new Date('2026-09-18T21:15:00Z');
+
+      expect(formatNearDate('2026-09-19', { now: afterMidnight, granularity: 'day' })).toBe('šiandien');
+      expect(formatNearDate('2026-09-20', { now: afterMidnight, granularity: 'day' })).toBe('rytoj');
+      expect(formatNearDate('2026-09-18', { now: afterMidnight, granularity: 'day', locale: 'en' })).toBe('yesterday');
     });
   });
 

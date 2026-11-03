@@ -123,11 +123,23 @@ function zoneOffsetMs(date: Date, timeZone: string): number {
 // serialises its Europe/Vilnius wall-clock casts.
 const NAIVE_DATE_TIME = /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,6}))?)?)?$/;
 
-function parseNaiveInZone(match: RegExpExecArray, timeZone: string): Date {
-  const [, year, month, day, hour = '0', minute = '0', second = '0', fraction = '0'] = match;
+function parseNaiveInZone(match: RegExpExecArray, timeZone: string): Date | null {
+  const [year, month, day, hour, minute, second] = match.slice(1, 7).map(value => Number(value ?? 0));
+  const fraction = match[7] ?? '0';
+
+  if (
+    month < 1 || month > 12
+    || day < 1 || day > new Date(Date.UTC(year, month, 0)).getUTCDate()
+    || hour < 0 || hour > 23
+    || minute < 0 || minute > 59
+    || second < 0 || second > 59
+  ) {
+    return null;
+  }
+
   const wallClockAsUtc = Date.UTC(
-    Number(year), Number(month) - 1, Number(day),
-    Number(hour), Number(minute), Number(second), Number(fraction.slice(0, 3).padEnd(3, '0')),
+    year, month - 1, day,
+    hour, minute, second, Number(fraction.slice(0, 3).padEnd(3, '0')),
   );
 
   // Re-check the offset at the resulting instant so a DST switch between the two is honoured.
@@ -298,6 +310,10 @@ export function formatNearDate(input: DateInput, options: FormatNearOptions = {}
 
   // Under 1 minute
   if (absMs < MINUTE_MS) {
+    if (diffMs > 0) {
+      return new Intl.RelativeTimeFormat(locale, { style: 'short' })
+        .format(Math.ceil(diffMs / 1000), 'second');
+    }
     return isLt ? 'ką tik' : 'just now';
   }
 
