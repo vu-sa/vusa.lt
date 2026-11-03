@@ -257,6 +257,20 @@ describe('auth: reservation manager', function (): void {
             );
     });
 
+    test('ignores an invalid optional availability range on the record page', function (): void {
+        asUser($this->reservationManager)->get(route('reservations.show', [
+            'reservation' => $this->reservation,
+            'dateTimeRange' => ['start' => 'invalid'],
+            'except-resources' => [['invalid']],
+        ]))
+            ->assertOk()
+            ->assertSessionHasNoErrors()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Reservations/ShowReservation')
+                ->where('reservation.id', $this->reservation->id)
+            );
+    });
+
     test('can access existing reservation', function (): void {
         $response = asUser($this->reservationManager)->get(route('reservations.show', $this->reservation->id));
 
@@ -459,13 +473,14 @@ describe('auth: reservation manager', function (): void {
                 ->reloadOnly('allResources', fn (Assert $reload) => $reload->has('allResources')));
     });
 
-    test('a resource range must be two timestamps in order', function (): void {
+    test('a reversed resource range is ignored rather than breaking the page', function (): void {
         asUser($this->reservationManager)
             ->get(route('reservations.show', [
                 'reservation' => $this->reservation->id,
                 'dateTimeRange' => ['start' => 2_000, 'end' => 1_000],
             ]))
-            ->assertSessionHasErrors('dateTimeRange.start');
+            ->assertOk()
+            ->assertSessionHasNoErrors();
     });
 });
 
