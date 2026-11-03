@@ -5,8 +5,11 @@ import {
   formatDateFact,
   formatDateTime,
   formatNearDate,
+  formatDateWith,
   formatTime,
+  isSameDay,
   parseDate,
+  toNaiveDateTimeString,
 } from '../dateTime';
 
 describe('dateTime utilities (U9)', () => {
@@ -22,6 +25,55 @@ describe('dateTime utilities (U9)', () => {
       expect(parseDate(undefined)).toBeNull();
       expect(parseDate('')).toBeNull();
       expect(parseDate('invalid-date')).toBeNull();
+    });
+
+    // The backend serialises its casts as zone-less Europe/Vilnius wall-clock strings.
+    // Vitest runs in UTC, so these prove the runtime zone is not used.
+    it('reads zone-less strings as Vilnius wall-clock time', () => {
+      expect(parseDate('2026-09-19 10:00')?.toISOString()).toBe('2026-09-19T07:00:00.000Z');
+      expect(parseDate('2026-01-15 10:00:00')?.toISOString()).toBe('2026-01-15T08:00:00.000Z');
+      expect(parseDate('2026-09-19T10:00:00.000000')?.toISOString()).toBe('2026-09-19T07:00:00.000Z');
+      expect(parseDate('2026-09-19')?.toISOString()).toBe('2026-09-18T21:00:00.000Z');
+    });
+
+    it('keeps the offset of strings that carry one', () => {
+      expect(parseDate('2026-09-19T10:00:00Z')?.toISOString()).toBe('2026-09-19T10:00:00.000Z');
+      expect(parseDate('2026-09-19T10:00:00+02:00')?.toISOString()).toBe('2026-09-19T08:00:00.000Z');
+    });
+
+    it('honours the daylight saving switch', () => {
+      // Clocks go back at 04:00 EEST on 25 October 2026; 05:00 is already EET (UTC+2).
+      expect(parseDate('2026-10-25 02:00')?.toISOString()).toBe('2026-10-24T23:00:00.000Z');
+      expect(parseDate('2026-10-25 05:00')?.toISOString()).toBe('2026-10-25T03:00:00.000Z');
+    });
+  });
+
+  describe('isSameDay', () => {
+    it('compares calendar days in Vilnius', () => {
+      // 00:30 and 23:00 on 19 September in Vilnius, though different UTC days.
+      expect(isSameDay('2026-09-18T21:30:00Z', '2026-09-19T20:00:00Z')).toBe(true);
+      expect(isSameDay('2026-09-19 23:59', '2026-09-20 00:00')).toBe(false);
+    });
+
+    it('is false when either side is missing', () => {
+      expect(isSameDay(null, null)).toBe(false);
+    });
+  });
+
+  describe('formatDateWith', () => {
+    it('formats the requested fields in Vilnius', () => {
+      expect(formatDateWith('2026-09-18T22:30:00Z', { day: 'numeric' })).toBe('19');
+      expect(formatDateWith('2026-09-19 10:00', { year: 'numeric', month: 'short' }, { locale: 'en' })).toBe('Sep 2026');
+    });
+
+    it('keeps hours 24-hour in English', () => {
+      expect(formatDateWith('2026-09-19 18:00', { hour: '2-digit', minute: '2-digit' }, { locale: 'en' })).toBe('18:00');
+    });
+  });
+
+  describe('toNaiveDateTimeString', () => {
+    it('keeps the wall-clock time the user picked', () => {
+      expect(toNaiveDateTimeString(new Date(2026, 8, 9, 14, 5, 7))).toBe('2026-09-09 14:05:07');
     });
   });
 
