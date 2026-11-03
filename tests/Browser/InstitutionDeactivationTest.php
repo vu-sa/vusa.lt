@@ -25,14 +25,14 @@ it('explains closure before saving and preserves the ended assignment after the 
     $duty = Duty::factory()->for($institution)->create();
     $term = Dutiable::factory()->forDuty($duty)->active()->create(['start_date' => today()->subYear()]);
     $page = loginAsAdmin($actor, "/mano/institutions/{$institution->id}/edit");
-    waitForInertiaRender($page, '[data-slot=form-segmented-control]');
+    waitForInertiaRender($page, '[data-testid=institution-active-false]');
     $page->click('[data-testid=institution-active-false]');
     $page->assertVisible('[data-testid=institution-deactivation-warning]');
 
     foreach (['lt', 'en'] as $locale) {
         if ($locale === 'en') {
             navigateTo($page, "/mano/institutions/{$institution->id}/edit?lang=en");
-            waitForInertiaRender($page, '[data-slot=form-segmented-control]');
+            waitForInertiaRender($page, '[data-testid=institution-active-false]');
             $page->click('[data-testid=institution-active-false]');
         }
         foreach (['light', 'dark'] as $theme) {
