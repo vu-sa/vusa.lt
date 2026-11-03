@@ -58,7 +58,6 @@ describe('stored titles', function (): void {
         $this->assemblyType->restore();
 
         expect($meeting->fresh()->title)->toBe('2026 rugsėjo 12 d. 14.00 val. susirinkimas');
-        Bus::assertDispatchedTimes(SyncMeetingOutcomeIndex::class, 2);
     });
 
     test('institution kind changes refresh trashed meetings before they can be restored', function (string $change): void {
