@@ -6,10 +6,12 @@ use App\Actions\AnnounceMeetingInCalendar;
 use App\Actions\Cadences\SyncCadenceDatesFromAnchors;
 use App\Contracts\Commentable;
 use App\Contracts\SharepointFileableContract;
+use App\Enums\MeetingKind;
 use App\Enums\MeetingType;
 use App\Events\FileableNameUpdated;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Traits\HasComments;
+use App\Models\Traits\HasPublicSearchMirror;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTasks;
 use App\Models\Traits\HasTranslations;
@@ -32,6 +34,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Laravel\Scout\Searchable;
 use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
@@ -90,12 +93,11 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 #[Unguarded]
 class Meeting extends Model implements Commentable, SharepointFileableContract
 {
-    use HasComments, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable, SoftDeletes;
+    use HasComments, HasFactory, HasPublicSearchMirror, HasRelationships, HasSharepointFiles, HasTasks, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable, SoftDeletes;
 
     /**
-     * `title` stays a plain column: it is regenerated from `start_time` on every save
-     * ({@see MeetingTitle}) rather than authored, and both the admin and public
-     * headings recompute it from the date anyway.
+     * `title` stays a plain column: it is generated ({@see MeetingTitle}), never authored, so it
+     * is stored in Lithuanian and localized at read time.
      *
      * @var list<string>
      */
@@ -366,9 +368,41 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
         return $this->hasMany(AgendaItem::class);
     }
 
+    /** Named after the lead institution: the one whose folder and listings the meeting sits in. */
+    public function meetingKind(): MeetingKind
+    {
+        return $this->institutions->first()?->resolvedMeetingKind() ?? MeetingKind::Sitting;
+    }
+
+    /**
+     * Rewrite the stored title after its institutions or their meeting kind changed. Leaves
+     * `updated_at` alone, so a rename never surfaces the meeting as recently changed, and fires
+     * no events: callers reindex. Returns whether the title changed.
+     */
+    public function refreshTitle(): bool
+    {
+        $title = MeetingTitle::build($this->start_time, $this->type, 'lt', $this->meetingKind());
+
+        if ($title === $this->title) {
+            return false;
+        }
+
+        static::query()->withTrashed()->whereKey($this->getKey())
+            ->update(['title' => $title, 'updated_at' => DB::raw('updated_at')]);
+        $this->setAttribute('title', $title)->syncOriginalAttribute('title');
+
+        return true;
+    }
+
+    /**
+     * In attachment order: the first institution hosts the meeting's SharePoint folder and leads
+     * every listing, so a joint institution added later must never displace it.
+     */
     public function institutions(): BelongsToMany
     {
-        return $this->belongsToMany(Institution::class);
+        return $this->belongsToMany(Institution::class)
+            ->orderByPivot('created_at')
+            ->orderBy('institutions.id');
     }
 
     /**
@@ -487,34 +521,30 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
             if ($meeting->isDirty('start_time')) {
                 FileableNameUpdated::dispatch($meeting);
             }
+
+            // A new meeting has no institutions yet; attaching them refreshes the title
+            // (SyncRelationSearchIndex), so until then it is a posėdis.
+            if (blank($meeting->title) || ($meeting->exists && $meeting->isDirty(['start_time', 'type']))) {
+                $meeting->title = MeetingTitle::build(
+                    $meeting->start_time,
+                    $meeting->type,
+                    'lt',
+                    $meeting->exists ? $meeting->meetingKind() : MeetingKind::Sitting,
+                );
+            }
         });
 
         static::saved(function (Meeting $meeting): void {
             $meeting->syncCalendarEventTiming();
             $meeting->syncAnchoredCadences();
-            $meeting->syncPublicSearchIndex();
         });
 
         static::deleted(function (Meeting $meeting): void {
-            $meeting->publicSearchModel()->unsearchable();
-
             // A soft delete keeps the items (see `deleting`), so only their index entries go.
             $meeting->agendaItems()->get()->unsearchable();
         });
 
-        static::forceDeleted(function (Meeting $meeting): void {
-            $meeting->publicSearchModel()->unsearchable();
-        });
-
-        static::restored(function (Meeting $meeting): void {
-            $publicMeeting = PublicMeeting::query()->find($meeting->getKey());
-
-            if ($publicMeeting?->shouldBeSearchable()) {
-                $publicMeeting->searchable();
-            }
-
-            $meeting->agendaItems()->get()->searchable();
-        });
+        static::restored(fn (Meeting $meeting) => $meeting->agendaItems()->get()->searchable());
 
         static::deleting(function (Meeting $meeting): void {
             // A soft delete has to stay reversible. Agenda items are not soft-deletable
@@ -550,23 +580,9 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
             && ! $this->calendarEvent()->exists();
     }
 
-    /**
-     * Re-evaluate this meeting's place in the public search index.
-     *
-     * Public here, not private: publishing a linked Calendar event changes the answer without
-     * touching the meeting row, so Calendar's own hooks call this too.
-     */
-    public function syncPublicSearchIndex(): void
+    protected static function publicSearchMirror(): string
     {
-        $publicMeeting = PublicMeeting::query()->find($this->getKey());
-
-        if ($publicMeeting?->shouldBeSearchable()) {
-            $publicMeeting->searchable();
-
-            return;
-        }
-
-        $this->publicSearchModel()->unsearchable();
+        return PublicMeeting::class;
     }
 
     /**
@@ -614,13 +630,5 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
         $event->date = $this->start_time;
         $event->end_date = $this->end_time;
         $event->save();
-    }
-
-    private function publicSearchModel(): PublicMeeting
-    {
-        $publicMeeting = new PublicMeeting;
-        $publicMeeting->setAttribute($publicMeeting->getKeyName(), $this->getKey());
-
-        return $publicMeeting;
     }
 }

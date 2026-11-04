@@ -22,3 +22,25 @@ test('unified search page receives the initial query from the q parameter', func
             ->where('initialQuery', 'studentai')
         );
 });
+
+test('unified search truncates long queries without redirecting', function (): void {
+    $query = str_repeat('ą', 201);
+
+    $this->get(route('search', ['subdomain' => 'www', 'lang' => 'lt', 'q' => $query]))
+        ->assertOk()
+        ->assertSessionHasNoErrors()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('initialQuery', str_repeat('ą', 200))
+        );
+});
+
+test('unified search ignores an array query without redirecting', function (): void {
+    $url = route('search', ['subdomain' => 'www', 'lang' => 'lt', 'q' => ['x']]);
+
+    $this->withHeader('Referer', $url)->get($url)
+        ->assertOk()
+        ->assertSessionHasNoErrors()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('initialQuery', '')
+        );
+});

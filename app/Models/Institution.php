@@ -7,6 +7,7 @@ use App\Contracts\Commentable;
 use App\Contracts\GuardsForceDelete;
 use App\Contracts\ImageMediaOwner;
 use App\Contracts\SharepointFileableContract;
+use App\Enums\MeetingKind;
 use App\Enums\TenantType;
 use App\Events\FileableNameUpdated;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -14,6 +15,7 @@ use App\Models\Pivots\InstitutionInstitutionType;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasImageMedia;
+use App\Models\Traits\HasPublicSearchMirror;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTasks;
 use App\Models\Traits\HasTranslations;
@@ -66,6 +68,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property int|null $tenant_id
  * @property int $is_active
  * @property int|null $meeting_periodicity_days
+ * @property MeetingKind|null $meeting_kind
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
@@ -126,7 +129,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 #[Unguarded]
 class Institution extends Model implements Commentable, GuardsForceDelete, ImageMediaOwner, SharepointFileableContract
 {
-    use GuardsForceDeleteWhenReferenced, HasComments, HasFactory, HasImageMedia, HasRelationships, HasSharepointFiles, HasTasks, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable, SoftDeletes;
+    use GuardsForceDeleteWhenReferenced, HasComments, HasFactory, HasImageMedia, HasPublicSearchMirror, HasRelationships, HasSharepointFiles, HasTasks, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable, SoftDeletes;
 
     public $translatable = ['name', 'short_name', 'description', 'address', 'working_hours'];
 
@@ -505,22 +508,6 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
             }
         });
 
-        static::saved(function (Institution $institution): void {
-            $publicInstitution = PublicInstitution::query()->find($institution->getKey());
-
-            if ($publicInstitution?->shouldBeSearchable()) {
-                $publicInstitution->searchable();
-
-                return;
-            }
-
-            $institution->publicSearchModel()->unsearchable();
-        });
-
-        static::deleted(function (Institution $institution): void {
-            $institution->publicSearchModel()->unsearchable();
-        });
-
         // Duty::toSearchableArray() derives tenant_ids from its institution, so the
         // duties have to be reindexed when the institution's visibility changes.
         static::updated(function (Institution $institution): void {
@@ -536,26 +523,11 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
 
         static::deleted(fn (Institution $institution) => $institution->reindexDuties());
         static::restored(fn (Institution $institution) => $institution->reindexDuties());
-
-        static::forceDeleted(function (Institution $institution): void {
-            $institution->publicSearchModel()->unsearchable();
-        });
-
-        static::restored(function (Institution $institution): void {
-            $publicInstitution = PublicInstitution::query()->find($institution->getKey());
-
-            if ($publicInstitution?->shouldBeSearchable()) {
-                $publicInstitution->searchable();
-            }
-        });
     }
 
-    private function publicSearchModel(): PublicInstitution
+    protected static function publicSearchMirror(): string
     {
-        $publicInstitution = new PublicInstitution;
-        $publicInstitution->setAttribute($publicInstitution->getKeyName(), $this->getKey());
-
-        return $publicInstitution;
+        return PublicInstitution::class;
     }
 
     protected function maybeShortName(): Attribute
@@ -592,6 +564,31 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
 
             return $this->types->pluck('id')->intersect($allowedTypeIds)->isNotEmpty();
         });
+    }
+
+    #[\Override]
+    protected function casts(): array
+    {
+        return ['meeting_kind' => MeetingKind::class];
+    }
+
+    /**
+     * What this institution's meetings are called: its own override, else the first of its
+     * types (by id) that declares one, else a posėdis.
+     */
+    public function resolvedMeetingKind(): MeetingKind
+    {
+        if ($this->meeting_kind !== null) {
+            return $this->meeting_kind;
+        }
+
+        $this->loadMissing('types');
+
+        return $this->types
+            ->sortBy('id')
+            ->map(fn ($type) => MeetingKind::tryFrom((string) ($type->extra_attributes['meeting_kind'] ?? '')))
+            ->first(fn (?MeetingKind $kind) => $kind !== null)
+            ?? MeetingKind::Sitting;
     }
 
     /**

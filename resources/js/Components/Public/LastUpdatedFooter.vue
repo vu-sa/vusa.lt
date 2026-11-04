@@ -24,7 +24,7 @@ import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import IFluentClock24Regular from '~icons/fluent/clock-24-regular';
-import { formatStaticTime } from '@/Utils/IntlTime';
+import { formatDate, parseDate } from '@/Utils/dateTime';
 import { LocaleEnum } from '@/Types/enums';
 
 const props = defineProps<{
@@ -35,15 +35,11 @@ const props = defineProps<{
 const inertiaPage = usePage();
 const locale = computed(() => (inertiaPage.props.app?.locale === 'en' ? LocaleEnum.EN : LocaleEnum.LT));
 
-const isoDate = computed(() => (props.date ? new Date(props.date).toISOString() : null));
+const isoDate = computed(() => parseDate(props.date)?.toISOString() ?? null);
 
 const formattedDate = computed(() => {
   if (!props.date) return null;
 
-  return formatStaticTime(new Date(props.date), {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }, locale.value);
+  return formatDate(props.date, { format: 'full', locale: locale.value });
 });
 </script>

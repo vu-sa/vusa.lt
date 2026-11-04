@@ -32,7 +32,8 @@ class SharepointFileService
 
     /**
      * Get the human-readable SharePoint path for a fileable.
-     * This path uses model names and is easier to navigate in SharePoint.
+     * This path uses model names and is easier to navigate in SharePoint. Names are always
+     * Lithuanian: the request locale would otherwise send an English-UI upload to a twin folder.
      *
      * Note: This path may change if model names change. The UpdateSharepointFolder
      * listener handles renaming folders when model names are updated.
@@ -53,7 +54,7 @@ class SharepointFileService
 
             $path .= '/Types';
             $path .= '/'.$typeableType;
-            $path .= '/'.$fileable->title;
+            $path .= '/'.$fileable->getTranslation('title', 'lt');
         }
 
         if ($fileable instanceof Institution) {
@@ -85,7 +86,7 @@ class SharepointFileService
             }
 
             $path .= '/'.$tenant->shortname;
-            $path .= '/'.Str::plural(class_basename($institution)).'/'.$institution->name;
+            $path .= '/'.Str::plural(class_basename($institution)).'/'.$institution->getTranslation('name', 'lt');
             $path .= '/'.Str::plural(class_basename($fileable)).'/'.$formattedDatetime;
         }
 
@@ -104,7 +105,7 @@ class SharepointFileService
 
             $path .= '/'.SharepointFolderEnum::PADALINIAI->label();
             $path .= '/'.$tenant->shortname;
-            $path .= '/'.Str::plural(class_basename($institution)).'/'.$institution->name;
+            $path .= '/'.Str::plural(class_basename($institution)).'/'.$institution->getTranslation('name', 'lt');
             $path .= '/'.Str::plural(class_basename($fileable)).'/'.$fileable->getTranslation('name', 'lt');
         }
 

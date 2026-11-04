@@ -162,7 +162,7 @@ import IFluentTicket20Regular from '~icons/fluent/ticket-20-regular';
 import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
 import Button from '@/Components/ui/button/Button.vue';
 import EventLocationMap from '@/Components/Calendar/EventLocationMap.vue';
-import { formatEventDateSpan } from '@/Utils/IntlTime';
+import { formatEventDateSpan } from '@/Utils/dateTime';
 import { useEventStatus } from '@/Composables/useEventStatus';
 import { LocaleEnum } from '@/Types/enums';
 

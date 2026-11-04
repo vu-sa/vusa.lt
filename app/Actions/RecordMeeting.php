@@ -7,7 +7,6 @@ use App\Events\MeetingFullyCreated;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Services\CheckInService;
-use App\Support\MeetingTitle;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -24,7 +23,6 @@ class RecordMeeting
         $meeting = DB::transaction(function () use ($institution, $startTime, $type): Meeting {
             $meeting = Meeting::create([
                 'start_time' => $startTime,
-                'title' => MeetingTitle::build($startTime, $type, 'lt'),
                 'type' => $type,
             ]);
 

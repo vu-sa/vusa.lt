@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Collections\NewsCollection;
+use App\Http\Requests\Api\IndexPublicNewsRequest;
 use App\Models\Tenant;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class NewsController extends ApiController
 {
@@ -16,9 +16,9 @@ class NewsController extends ApiController
      *
      * @routeName api.v1.tenants.news.index
      */
-    public function index(Request $request, Tenant $tenant): JsonResponse
+    public function index(IndexPublicNewsRequest $request, Tenant $tenant): JsonResponse
     {
-        $lang = $request->query('lang', app()->getLocale());
+        $lang = $request->validated('lang') ?? app()->getLocale();
 
         $news = NewsCollection::getPublishedForTenant($tenant->id, $lang);
 

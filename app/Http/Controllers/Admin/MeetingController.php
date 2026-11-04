@@ -11,6 +11,8 @@ use App\Events\MeetingFullyCreated;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\AttachMeetingInstitutionRequest;
 use App\Http\Requests\IndexMeetingRequest;
+use App\Http\Requests\Meetings\DestroyMeetingRequest;
+use App\Http\Requests\Meetings\EditMeetingRequest;
 use App\Http\Requests\StoreMeetingRequest;
 use App\Http\Requests\UpdateMeetingRequest;
 use App\Http\Resources\DocumentRowResource;
@@ -32,7 +34,6 @@ use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Support\MeetingTitle;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -76,7 +77,6 @@ class MeetingController extends AdminController
 
         try {
             $meetingType = $validatedData['type'] ?? null;
-            $title = $this->buildMeetingTitle($validatedData['start_time'], $meetingType);
 
             // Created from an existing announcement: the meeting takes over the event's
             // timing rather than leaving the pair to drift (Meeting::syncCalendarEventTiming
@@ -87,7 +87,6 @@ class MeetingController extends AdminController
 
             $meeting = Meeting::create([
                 'start_time' => $validatedData['start_time'],
-                'title' => $title,
                 'description' => $validatedData['description'] ?? null,
                 'type' => $meetingType,
                 'end_time' => $announcement?->end_date,
@@ -230,6 +229,7 @@ class MeetingController extends AdminController
         return $this->inertiaResponse('Admin/Representation/ShowMeeting', [
             'meeting' => fn () => [
                 ...$loadMeeting()->toArray(),
+                'title_noun' => MeetingTitle::noun($loadMeeting()->type, app()->getLocale(), $loadMeeting()->meetingKind()),
                 'agenda_items' => $loadMeeting()->agendaItems->map(fn (AgendaItem $item): array => [
                     ...AgendaItemPresenter::forUser($item, request()->user()),
                     'can' => $agendaItemAbilities()->get((string) $item->getKey()),
@@ -394,13 +394,11 @@ class MeetingController extends AdminController
     /**
      * Meetings are edited on their record page; the URL stays for public edit links and search.
      */
-    public function edit(Request $request, Meeting $meeting): RedirectResponse
+    public function edit(EditMeetingRequest $request, Meeting $meeting): RedirectResponse
     {
-        $this->handleAuthorization('update', $meeting);
-
         return redirect()->route('meetings.show', [
             'meeting' => $meeting,
-            ...$request->only(['tab', 'action']),
+            ...$request->safe()->only(['tab', 'action']),
         ]);
     }
 
@@ -413,11 +411,6 @@ class MeetingController extends AdminController
 
         $validated = $request->validated();
 
-        $validated['title'] = $this->buildMeetingTitle(
-            $validated['start_time'],
-            $validated['type'] ?? $meeting->type?->value
-        );
-
         $meeting->fill($validated);
         $meeting->save();
 
@@ -427,11 +420,11 @@ class MeetingController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Meeting $meeting)
+    public function destroy(DestroyMeetingRequest $request, Meeting $meeting)
     {
         $this->handleAuthorization('delete', $meeting);
 
-        $redirect_url = request()->redirect_to ?? back()->getTargetUrl();
+        $redirect_url = $request->validated('redirect_to') ?? back()->getTargetUrl();
 
         // `delete` suffices for a discardable meeting: it holds nothing but what its creator just typed.
         if ($meeting->isDiscardable()) {
@@ -523,15 +516,6 @@ class MeetingController extends AdminController
                 'is_active' => (bool) $i->is_active,
                 'tenant_shortname' => $i->tenant?->shortname,
             ]);
-    }
-
-    /**
-     * The stored title is always Lithuanian; {@see MeetingTitle} renders the other locale
-     * on the public page, so a locale change never needs a data backfill.
-     */
-    private function buildMeetingTitle(mixed $startTime, mixed $type): string
-    {
-        return MeetingTitle::build($startTime, $type, 'lt');
     }
 
     public function forceDelete(Meeting $meeting): RedirectResponse

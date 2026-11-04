@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { enUS } from 'date-fns/locale';
 
 import {
   formatTaskDueDate,
@@ -17,6 +16,7 @@ import {
   type TaskDisplayData,
 } from '@/Composables/useTaskPresentation';
 import { TaskActionType } from '@/Types/TaskTypes';
+import { todayIso } from '@/Utils/dateTime';
 
 const makeTask = (overrides: Partial<TaskDisplayData> = {}): TaskDisplayData => ({
   id: 'task-1',
@@ -97,11 +97,18 @@ describe('due dates', () => {
   it('falls back to an absolute date beyond a week out', () => {
     const farOff = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
 
-    expect(formatTaskDueDate(farOff, enUS)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(formatTaskDueDate(farOff, 'en')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it('names a near due date by calendar day', () => {
+    const inThreeDays = todayIso(new Date(Date.now() + 3 * 24 * 60 * 60 * 1000));
+
+    expect(formatTaskDueDate(todayIso(), 'lt')).toBe('šiandien');
+    expect(formatTaskDueDate(inThreeDays, 'lt')).toBe('po 3 d.');
   });
 
   it('returns an empty string when there is no due date', () => {
-    expect(formatTaskDueDate(null, enUS)).toBe('');
+    expect(formatTaskDueDate(null, 'en')).toBe('');
   });
 
   it('warns only for a due date landing within three days and not yet overdue', () => {

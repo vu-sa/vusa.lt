@@ -12,6 +12,7 @@ use App\Actions\Media\SyncImageMedia;
 use App\Actions\UpdateInstitution;
 use App\Enums\InstitutionRelationKind;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\ActivityRequests\ActivityRequestHistoryRequest;
 use App\Http\Requests\IndexInstitutionRequest;
 use App\Http\Requests\ReorderDutiesRequest;
 use App\Http\Requests\StoreInstitutionRequest;
@@ -114,10 +115,8 @@ class InstitutionController extends AdminController
     /**
      * Display the specified resource.
      */
-    public function show(Institution $institution)
+    public function show(ActivityRequestHistoryRequest $request, Institution $institution)
     {
-        $this->handleAuthorization('viewSummary', $institution);
-
         // An active institution outside the user's reach opens as its public face: overview,
         // members and (public) meetings — no discussion, files, tasks, relations or management.
         $readOnly = fn () => once(fn () => ! Gate::allows('view', $institution));
@@ -219,7 +218,7 @@ class InstitutionController extends AdminController
             ],
             'canViewActivityRequests' => app(GetInstitutionActivityRequestHistory::class)->visible($institution, request()->user()),
             'activityRequests' => Inertia::defer(fn () => app(GetInstitutionActivityRequestHistory::class)
-                ->execute($institution, request()->user(), max(1, request()->integer('activity_requests_page', 1))), 'activityRequests'),
+                ->execute($institution, request()->user(), $request->historyPage()), 'activityRequests'),
             'readOnly' => fn () => $readOnly(),
             'overview' => fn () => [
                 // The status is read off the meetings, so it is withheld with them.

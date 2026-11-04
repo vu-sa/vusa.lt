@@ -124,9 +124,8 @@ import { ref, computed } from 'vue';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import { highlightText, matchTitle, type SearchMatchDocument } from '@/Shared/Search/matches';
 import DatePlate from '@/Components/Public/Base/DatePlate.vue';
-import { formatEventDateSpan } from '@/Utils/IntlTime';
+import { formatEventDateSpan, parseDate } from '@/Utils/dateTime';
 import { getCalendarEvent2Route } from '@/Utils/Route';
-import type { LocaleEnum } from '@/Types/enums';
 import IFluentCalendarLtr20Regular from '~icons/fluent/calendar-ltr-20-regular';
 import IFluentCalendarLtr24Regular from '~icons/fluent/calendar-ltr-24-regular';
 import IFluentLocation16Regular from '~icons/fluent/location-16-regular';
@@ -214,12 +213,11 @@ const mainImageSrcset = computed(() => ((props.event as CalendarEventLike).main_
 
 const normalizeDate = (d: number | Date | string | undefined | null): Date => {
   if (!d) return new Date();
-  if (d instanceof Date) return d;
   if (typeof d === 'number') {
     // UNIX timestamp in seconds
     return new Date(d < 10000000000 ? d * 1000 : d);
   }
-  return new Date(d);
+  return parseDate(d) ?? new Date();
 };
 
 const eventDateObj = computed(() => normalizeDate(props.event.date));
@@ -230,7 +228,7 @@ const formattedDateTime = computed(() => {
 
   const span = formatEventDateSpan(startDate, endDate, {
     allDay: props.event.is_all_day,
-    locale: page.props.app.locale as LocaleEnum,
+    locale: page.props.app.locale,
   });
 
   return `${span.primary} · ${span.secondary}`;

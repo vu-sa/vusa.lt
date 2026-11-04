@@ -65,4 +65,16 @@ describe('tasks.updateCompletionStatus', function (): void {
 
         expect($task->fresh()->completed_at)->not->toBeNull();
     });
+
+    test('requires a real boolean, so the string "false" does not complete the task', function (): void {
+        $assignee = makeUser($this->tenant);
+        $task = Task::factory()->withActionType(ActionType::Manual)->create();
+        $task->users()->attach($assignee);
+
+        asUser($assignee)
+            ->post(route('tasks.updateCompletionStatus', $task), ['completed' => 'false'])
+            ->assertSessionHasErrors('completed');
+
+        expect($task->fresh()->completed_at)->toBeNull();
+    });
 });

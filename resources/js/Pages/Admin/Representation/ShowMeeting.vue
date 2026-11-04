@@ -316,9 +316,7 @@ import { preferredScrollBehavior } from '@/Composables/useAccessibilityPreferenc
 import { useToasts } from '@/Composables/useToasts';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { InstitutionScope, ModelEnum } from '@/Types/enums';
-import { formatRelativeTime } from '@/Utils/IntlTime';
 import { formatMeetingDateTime, formatMeetingTimeOnly } from '@/Utils/MeetingDisplay';
-import { genitivizeEveryWord } from '@/Utils/String';
 import { useMeetingUrgency } from '@/Composables/useMeetingUrgency';
 import { meetingCompletionStatuses, type MeetingCompletionStatus } from '@/Constants/statuses';
 import RecordPage, { type RecordAction, type RecordFact, type RecordNavigationContext } from '@/Components/Layouts/RecordPage.vue';
@@ -330,7 +328,7 @@ import UsersFactList from '@/Components/Avatars/UsersFactList.vue';
 import MeetingAgendaList from '@/Components/Meetings/MeetingAgendaList.vue';
 import { useApi } from '@/Composables/useApi';
 import type { EditableAgendaItemSource } from '@/Composables/useAgendaItemAutosave';
-import { formatTime } from '@/Utils/dateTime';
+import { formatNearDate, formatTime } from '@/Utils/dateTime';
 import { isEmailMeeting } from '@/Utils/MeetingDisplay';
 import AgendaItemEditSheet from '@/Components/AgendaItems/AgendaItemEditSheet.vue';
 import MeetingCompletionChecklist, { type MeetingMissingAction } from '@/Components/Meetings/MeetingCompletionChecklist.vue';
@@ -463,7 +461,7 @@ const { hasProtocol, isPastMeeting } = useMeetingUrgency(() => props.meeting);
 
 // Hide HH:MM for email/electronic meetings (start_time is forced to 23:59 as a deadline marker)
 const meetingTimeLabel = computed(() => formatMeetingTimeOnly(props.meeting));
-const meetingRelativeTime = computed(() => formatRelativeTime(new Date(props.meeting.start_time)));
+const meetingRelativeTime = computed(() => formatNearDate(props.meeting.start_time));
 const meetingStatus = computed(() => meetingCompletionStatuses[props.completion.status]);
 const documentStatuses = computed(() => [
   {
@@ -711,31 +709,17 @@ onMounted(() => {
 const mainInstitution: App.Entities.Institution | string
   = props.meeting.institutions?.[0] ?? 'Be institucijos';
 
-const isJoint = computed(
-  () => (props.meeting as App.Entities.Meeting & { is_joint?: boolean }).is_joint
-    ?? (props.meeting.institutions?.length ?? 0) > 1,
-);
-
-// Always derive the displayed title from start_time + institution.
-// The stored `meeting.title` is auto-generated server-side and historically
-// embedded a 23.59 timestamp for email meetings — recomputing here keeps the
-// header/breadcrumb correct without a data backfill.
+// Date the way the record shows dates, noun from the server's MeetingTitle (the institution's
+// meeting kind, or "sprendimas el. paštu"); the institutions themselves are a fact below.
 const meetingTitle = computed(() => {
   const datePart = formatMeetingDateTime(props.meeting, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   });
+  const noun = (props.meeting as App.Entities.Meeting & { title_noun?: string }).title_noun ?? $t('posėdis');
 
-  if (isJoint.value) {
-    return `${datePart} jungtinis posėdis`;
-  }
-
-  const institutionName = typeof mainInstitution === 'string'
-    ? mainInstitution
-    : mainInstitution.name;
-
-  return `${datePart} ${genitivizeEveryWord(institutionName)} posėdis`;
+  return `${datePart} ${noun}`;
 });
 
 watch(() => props.meeting.id, () => enterMeeting(props.meeting), { immediate: true });

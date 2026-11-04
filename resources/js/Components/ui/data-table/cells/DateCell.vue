@@ -11,45 +11,45 @@ import { computed } from 'vue';
 
 import CellTooltip from './CellTooltip.vue';
 
-import { LocaleEnum } from '@/Types/enums';
-import { formatRelativeTime, formatStaticTime } from '@/Utils/IntlTime';
+import {
+  DEFAULT_LOCALE,
+  formatDate,
+  formatDateTime,
+  formatDateWith,
+  formatNearDate,
+  type DateInput,
+} from '@/Utils/dateTime';
 
 const props = withDefaults(defineProps<{
-  date?: string | Date | null;
+  date?: DateInput;
   mode?: 'absolute' | 'relative';
+  /** Intl fields for an absolute date; the YYYY-MM-DD table date when omitted. */
   format?: Intl.DateTimeFormatOptions;
-  relativeOptions?: Intl.RelativeTimeFormatOptions;
-  locale?: LocaleEnum;
+  locale?: string;
 }>(), {
+  date: undefined,
   mode: 'absolute',
-  format: () => ({ year: 'numeric', month: '2-digit', day: '2-digit' }),
-  relativeOptions: () => ({ numeric: 'auto' }),
-  locale: LocaleEnum.LT,
+  format: undefined,
+  locale: DEFAULT_LOCALE,
 });
 
 const displayValue = computed(() => {
-  if (!props.date) return '—';
+  const value = props.mode === 'relative'
+    ? formatNearDate(props.date, { locale: props.locale })
+    : props.format
+      ? formatDateWith(props.date, props.format, { locale: props.locale })
+      : formatDate(props.date);
 
-  if (props.mode === 'relative') {
-    return formatRelativeTime(props.date, props.relativeOptions, props.locale);
-  }
-
-  return formatStaticTime(props.date, props.format, props.locale);
+  return value || '—';
 });
 
 /**
- * Only relative dates hide something: "2 days ago" does not say which day.
+ * Only relative dates hide something: "prieš 2 d." does not say which day.
  * An absolute date already reads in full, so it gets no tooltip.
  */
 const tooltipValue = computed(() => {
-  if (!props.date || props.mode !== 'relative') return undefined;
+  if (props.mode !== 'relative') return undefined;
 
-  return formatStaticTime(props.date, {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }, props.locale);
+  return formatDateTime(props.date, { locale: props.locale }) || undefined;
 });
 </script>

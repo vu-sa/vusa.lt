@@ -12,6 +12,7 @@ use App\Actions\MergeDuties;
 use App\Actions\UpdateDuty;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\BatchUpdateDutyUsersRequest;
+use App\Http\Requests\CreateDutyRequest;
 use App\Http\Requests\IndexDutyRequest;
 use App\Http\Requests\MergeDutiesRequest;
 use App\Http\Requests\StoreDutyRequest;
@@ -36,7 +37,6 @@ use App\Services\ResourceServices\SharepointFileService;
 use App\Services\TanstackTableService;
 use App\Support\MorphMap;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -93,15 +93,13 @@ class DutyController extends AdminController
     /**
      * Show the form for creating a new resource.
      */
-    public function create(Request $request)
+    public function create(CreateDutyRequest $request)
     {
-        $this->handleAuthorization('create', Duty::class);
-
         return $this->inertiaResponse('Admin/People/CreateDuty', [
             'dutyTypes' => GetAttachableTypesForDuty::execute()->values(),
             'assignableInstitutions' => DutyService::getInstitutionsForUpserts($this->authorizer),
             'assignableUsers' => $this->assignableUsersForDutyForm(),
-            'prefillInstitutionId' => $request->query('institution_id'),
+            'prefillInstitutionId' => $request->validated('institution_id'),
             'assignableTenants' => GetTenantsForUpserts::execute('duties.create.padalinys', $this->authorizer),
             'assignableDuties' => DutyService::getAssignableExOfficioDuties($this->authorizer),
         ]);

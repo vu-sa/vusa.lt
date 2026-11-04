@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatEventDateSpan } from '@/Utils/IntlTime';
+import { formatEventDateSpan } from '@/Utils/dateTime';
 import { LocaleEnum } from '@/Types/enums';
 
 describe('formatEventDateSpan', () => {
@@ -96,5 +96,22 @@ describe('formatEventDateSpan', () => {
 
     expect(span.primary).toContain('August');
     expect(span.secondary).toBe('10:00–18:00');
+  });
+
+  // The backend sends Europe/Vilnius wall-clock strings; a browser or SSR server in another zone
+  // must not shift them. Vitest runs in UTC.
+  it('reads zone-less backend strings as Vilnius time, whatever the runtime zone', () => {
+    expect(formatEventDateSpan('2026-08-25 23:30', null, { locale: LocaleEnum.LT }).secondary).toBe('23:30');
+    expect(formatEventDateSpan('2026-08-25T20:30:00Z', null, { locale: LocaleEnum.LT }).secondary).toBe('23:30');
+  });
+
+  it('counts days by the Vilnius calendar', () => {
+    // 2026-08-24T21:30Z is 00:30 on the 25th in Vilnius; the UTC calendar would count 4 days.
+    expect(
+      formatEventDateSpan('2026-08-24T21:30:00Z', '2026-08-27T12:00:00Z', {
+        allDay: true,
+        locale: LocaleEnum.LT,
+      }).secondary,
+    ).toBe('3 dienos');
   });
 });

@@ -33,7 +33,7 @@ import TaskCompletionControl from './TaskCompletionControl.vue';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import type { CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
-import { useDateLocale } from '@/Composables/useDateLocale';
+import { useDateFormatter } from '@/Composables/useDateFormatter';
 import {
   formatTaskDueDate,
   getDueDateUrgencyClasses,
@@ -59,7 +59,7 @@ const emit = defineEmits<{
   action: [key: TaskActionKey];
 }>();
 
-const dateLocale = useDateLocale();
+const { locale: dateLocale } = useDateFormatter();
 
 const subject = computed(() => (isOrphanedTask(props.task)
   ? $t('tasks.orphaned')

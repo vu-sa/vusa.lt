@@ -1,6 +1,7 @@
 import type { FileEntry, TypeFilter } from './types';
 
 import { EXTENSIONS_BY_KIND, getFileExtension, getFileKind } from '@/Utils/fileIcons';
+import { formatDateWith } from '@/Utils/dateTime';
 
 export const ROOT_PATH = 'public/files';
 
@@ -22,17 +23,9 @@ export function formatBytes(bytes?: number | null): string {
 
 export function formatDate(timestamp: number | string | Date): string {
   if (!timestamp) return '—';
-  const date = typeof timestamp === 'number'
-    ? (timestamp < 10000000000 ? new Date(timestamp * 1000) : new Date(timestamp))
-    : new Date(timestamp);
+  const value = typeof timestamp === 'number' && timestamp < 10000000000 ? timestamp * 1000 : timestamp;
 
-  if (isNaN(date.getTime())) return '—';
-
-  return date.toLocaleDateString('lt-LT', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
+  return formatDateWith(value, { year: 'numeric', month: 'short', day: 'numeric' }) || '—';
 }
 
 export function publicUrl(path: string): string {

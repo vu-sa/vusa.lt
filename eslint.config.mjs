@@ -165,6 +165,17 @@ const lodashImportPaths = [
 const lodashImportPatterns = [
   { group: ['lodash/*'], message: 'Import from "lodash-es/*" for tree-shaking.' },
 ];
+// Dates render through @/Utils/dateTime (Europe/Vilnius); date-fns stays for arithmetic.
+const dateImportPaths = [
+  {
+    name: 'date-fns',
+    importNames: ['format', 'formatDistance', 'formatDistanceToNow', 'formatDistanceStrict', 'formatRelative'],
+    message: 'Display dates with @/Utils/dateTime or useDateFormatter (Europe/Vilnius). date-fns is for date arithmetic.',
+  },
+];
+const dateImportPatterns = [
+  { group: ['@/Utils/IntlTime'], message: 'IntlTime was removed. Use @/Utils/dateTime or useDateFormatter.' },
+];
 // Icon sets that have been fully removed from the codebase.
 const removedIconPatterns = [
   { group: ['~icons/mdi/*'], message: 'MDI was removed. Use @lucide/vue for admin icons or ~icons/simple-icons/* for brand glyphs.' },
@@ -325,8 +336,8 @@ export default tseslint.config(
       // Prevent full lodash imports (use lodash-es or @vueuse/core utilities)
       // Also ban icon sets that have been fully removed from the codebase.
       'no-restricted-imports': ['error', {
-        paths: [...lodashImportPaths],
-        patterns: [...lodashImportPatterns, ...removedIconPatterns],
+        paths: [...lodashImportPaths, ...dateImportPaths],
+        patterns: [...lodashImportPatterns, ...removedIconPatterns, ...dateImportPatterns],
       }],
 
       // TypeScript modern patterns
@@ -421,10 +432,11 @@ export default tseslint.config(
     ],
     rules: {
       'no-restricted-imports': ['warn', {
-        paths: [...lodashImportPaths],
+        paths: [...lodashImportPaths, ...dateImportPaths],
         patterns: [
           ...lodashImportPatterns,
           ...removedIconPatterns,
+          ...dateImportPatterns,
           { group: ['~icons/fluent/*'], message: 'Admin uses Lucide (@lucide/vue). Fluent is reserved for Public surfaces.' },
         ],
       }],
@@ -440,10 +452,11 @@ export default tseslint.config(
       // lodash and Fluent-icon entries from the block above must be repeated here.
       // An error since no admin page imports ui/card any more.
       'no-restricted-imports': ['error', {
-        paths: [...lodashImportPaths],
+        paths: [...lodashImportPaths, ...dateImportPaths],
         patterns: [
           ...lodashImportPatterns,
           ...removedIconPatterns,
+          ...dateImportPatterns,
           { group: ['~icons/fluent/*'], message: 'Admin uses Lucide (@lucide/vue). Fluent is reserved for Public surfaces.' },
           {
             group: ['@/Components/ui/card', '@/Components/ui/card/*'],
@@ -465,10 +478,11 @@ export default tseslint.config(
       'no-restricted-imports': ['error', {
         paths: [
           ...lodashImportPaths,
+          ...dateImportPaths,
           { name: '@lucide/vue', message: 'Public uses Fluent (~icons/fluent/*) for a more stylized look. Lucide is reserved for Admin surfaces.' },
           { name: '@inertiajs/vue3', importNames: ['Head'], message: 'Public <head> comes from PublicController::applyPageHead() (.ai/rules/seo.md).' },
         ],
-        patterns: [...lodashImportPatterns, ...removedIconPatterns],
+        patterns: [...lodashImportPatterns, ...removedIconPatterns, ...dateImportPatterns],
       }],
     },
   },

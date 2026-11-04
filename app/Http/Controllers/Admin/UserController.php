@@ -11,6 +11,7 @@ use App\Actions\GenerateUserPassword;
 use App\Actions\Media\SyncImageMedia;
 use App\Actions\MergeUsers;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\ActivityRequests\ActivityRequestHistoryRequest;
 use App\Http\Requests\GenerateUserPasswordRequest;
 use App\Http\Requests\IndexUserRequest;
 use App\Http\Requests\MergeUsersRequest;
@@ -144,10 +145,8 @@ class UserController extends AdminController
     /**
      * Display the specified resource.
      */
-    public function show(User $user, GetUserActivityRequests $activityRequests)
+    public function show(ActivityRequestHistoryRequest $request, User $user, GetUserActivityRequests $activityRequests)
     {
-        $this->handleAuthorization('view', $user);
-
         $loadUser = fn () => once(function () use ($user) {
             $user->loadMissing([
                 'current_duties.institution.tenant',
@@ -184,7 +183,7 @@ class UserController extends AdminController
         return $this->inertiaResponse('Admin/People/ShowUser', [
             'user' => fn () => $loadUser()->toFullArray(),
             'isSuperAdmin' => $user->isSuperAdmin(...),
-            'activityRequests' => Inertia::defer(fn () => $activityRequests->history($user, $actor(), max(1, request()->integer('activity_requests_page', 1))), 'activityRequests'),
+            'activityRequests' => Inertia::defer(fn () => $activityRequests->history($user, $actor(), $request->historyPage()), 'activityRequests'),
             'tasks' => fn () => TaskResource::collection($tasks())->resolve(),
             'taskStats' => fn () => $taskStats(),
             // Per-record, not from `auth.can`, which carries no flat permission names.

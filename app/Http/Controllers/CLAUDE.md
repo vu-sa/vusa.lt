@@ -15,7 +15,8 @@ All admin controllers should implement `AdminControllerInterface` to ensure cons
 ### Standard Admin Controller Methods
 
 Every method that reads request input type-hints a **Form Request**, never `Illuminate\Http\Request` —
-see [.ai/rules/controllers.md](../../../.ai/rules/controllers.md).
+see [.ai/rules/controllers.md](../../../.ai/rules/controllers.md). A plain `Request` only for
+`->user()`/`->session()`/headers is fine; `ValidationConventionTest` enforces the rest.
 
 ```php
 public function index(IndexExampleRequest $request): InertiaResponse;    // Display listing

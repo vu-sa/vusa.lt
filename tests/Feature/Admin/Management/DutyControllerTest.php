@@ -42,6 +42,12 @@ describe('unauthorized access', function (): void {
         expect($response->status())->toBe(403);
     });
 
+    test('cannot open duty creation with a malformed prefill', function (): void {
+        asUser($this->regularUser)
+            ->get(route('duties.create', ['institution_id' => ['x']]))
+            ->assertForbidden();
+    });
+
     test('cannot create duties', function (): void {
         $response = asUser($this->regularUser)->post(route('duties.store'), [
             'name' => ['lt' => 'Test Duty', 'en' => 'Test Duty'],
@@ -973,4 +979,14 @@ describe('informational seat count', function (): void {
         expect($duty->fresh()->places_to_occupy)->toBe(38)
             ->and(Duty::where('name->lt', 'Netinkamas skaičius')->exists())->toBeFalse();
     })->with(['zero' => 0, 'negative' => -1, 'fraction' => 1.5, 'text' => 'invalid']);
+});
+
+test('duty creation ignores a malformed optional institution prefill', function (): void {
+    asUser($this->dutyManager)
+        ->get(route('duties.create', ['institution_id' => ['x']]))
+        ->assertOk()
+        ->assertSessionHasNoErrors()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('prefillInstitutionId', null)
+        );
 });

@@ -6,6 +6,7 @@
  * which is also what the rest of the app already does ({@link useDateLocale}).
  */
 
+// eslint-disable-next-line no-restricted-imports -- formats the picker's own wall-clock dates, which dateTime would shift to Vilnius
 import { format } from 'date-fns';
 
 import { useDateLocale } from '@/Composables/useDateLocale';

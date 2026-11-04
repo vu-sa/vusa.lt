@@ -23,7 +23,7 @@ import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
-import { formatStaticTime, isSameDay } from '@/Utils/IntlTime';
+import { formatDateWith, isSameDay, parseDate } from '@/Utils/dateTime';
 
 const props = defineProps<{
   startTime: string | Date;
@@ -32,8 +32,11 @@ const props = defineProps<{
 
 const locale = computed(() => usePage().props.app.locale);
 
-const start = computed(() => new Date(props.startTime));
-const end = computed(() => new Date(props.endTime));
+const start = computed(() => parseDate(props.startTime) ?? new Date(Number.NaN));
+const end = computed(() => parseDate(props.endTime) ?? new Date(Number.NaN));
+
+const format = (date: Date, fields: Intl.DateTimeFormatOptions) =>
+  formatDateWith(date, fields, { locale: locale.value });
 
 /**
  * Drop whatever the two dates share, so the eye only has to read what actually differs:
@@ -42,27 +45,27 @@ const end = computed(() => new Date(props.endTime));
  */
 const compact = computed<{ primary: string; secondary?: string }>(() => {
   const sameDay = isSameDay(start.value, end.value);
-  const sameMonth = start.value.getMonth() === end.value.getMonth()
-    && start.value.getFullYear() === end.value.getFullYear();
+  const sameMonth = format(start.value, { year: 'numeric', month: 'numeric' })
+    === format(end.value, { year: 'numeric', month: 'numeric' });
 
   if (sameDay) {
-    const day = formatStaticTime(start.value, { month: 'short', day: 'numeric' }, locale.value);
-    const from = formatStaticTime(start.value, { hour: '2-digit', minute: '2-digit' }, locale.value);
-    const to = formatStaticTime(end.value, { hour: '2-digit', minute: '2-digit' }, locale.value);
+    const day = format(start.value, { month: 'short', day: 'numeric' });
+    const from = format(start.value, { hour: '2-digit', minute: '2-digit' });
+    const to = format(end.value, { hour: '2-digit', minute: '2-digit' });
 
     return {
       primary: `${day}, ${from} → ${to}`,
-      secondary: formatStaticTime(start.value, { year: 'numeric' }, locale.value),
+      secondary: format(start.value, { year: 'numeric' }),
     };
   }
 
-  const from = formatStaticTime(start.value, { month: 'short', day: 'numeric' }, locale.value);
+  const from = format(start.value, { month: 'short', day: 'numeric' });
   const to = sameMonth
-    ? formatStaticTime(end.value, { day: 'numeric' }, locale.value)
-    : formatStaticTime(end.value, { month: 'short', day: 'numeric' }, locale.value);
+    ? format(end.value, { day: 'numeric' })
+    : format(end.value, { month: 'short', day: 'numeric' });
 
-  const startYear = formatStaticTime(start.value, { year: 'numeric' }, locale.value);
-  const endYear = formatStaticTime(end.value, { year: 'numeric' }, locale.value);
+  const startYear = format(start.value, { year: 'numeric' });
+  const endYear = format(end.value, { year: 'numeric' });
 
   return {
     primary: `${from} → ${to}`,
@@ -79,6 +82,6 @@ const exact = computed(() => {
     minute: '2-digit',
   };
 
-  return `${formatStaticTime(start.value, options, locale.value)} → ${formatStaticTime(end.value, options, locale.value)}`;
+  return `${format(start.value, options)} → ${format(end.value, options)}`;
 });
 </script>

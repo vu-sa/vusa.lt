@@ -2,6 +2,7 @@ import { computed } from 'vue';
 import { getActiveLanguage } from 'laravel-vue-i18n';
 
 import { MeetingType, getMeetingTypeOptions, type MeetingTypeValue } from '@/Types/MeetingType';
+import { toNaiveDateTimeString } from '@/Utils/dateTime';
 
 /**
  * Shared logic for meeting forms (create and edit)
@@ -41,14 +42,8 @@ export function useMeetingForm() {
       adjustedDate.setHours(23, 59, 59, 0);
     }
 
-    // Format date in local timezone without conversion to UTC
-    const localISOString = new Date(adjustedDate.getTime() - (adjustedDate.getTimezoneOffset() * 60000))
-      .toISOString()
-      .slice(0, 19)
-      .replace('T', ' ');
-
     return {
-      start_time: localISOString,
+      start_time: toNaiveDateTimeString(adjustedDate),
       type: meetingType,
       ...(values.description !== undefined && { description: values.description }),
     };

@@ -52,6 +52,7 @@ import type { SearchCollectionId } from '@/Composables/usePublicMultiSearch';
 import { localizedRoute } from '@/Utils/LocalizedRoutes';
 import IFluentArrowRight16Regular from '~icons/fluent/arrow-right-16-regular';
 import IFluentArrowUpRight16Regular from '~icons/fluent/arrow-up-right-16-regular';
+import { formatDateWith } from '@/Utils/dateTime';
 
 interface Props {
   collection: SearchCollectionId;
@@ -135,10 +136,8 @@ const timestamp = computed<number | null>(() => {
 
 const formattedDate = computed(() => {
   if (!timestamp.value) return '';
-  return new Date(timestamp.value * 1000).toLocaleDateString(locale.value === 'en' ? 'en-GB' : 'lt-LT', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
+  return formatDateWith(timestamp.value * 1000, { year: 'numeric', month: 'short', day: 'numeric' }, {
+    locale: locale.value === 'en' ? 'en-GB' : 'lt-LT',
   });
 });
 

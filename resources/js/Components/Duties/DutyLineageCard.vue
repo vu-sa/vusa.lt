@@ -38,7 +38,7 @@ import { GitBranch } from '@lucide/vue';
 import { SectionCard } from '@/Components/Patterns';
 import { Badge } from '@/Components/ui/badge';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
-import { academicYear, currentAcademicYear, formatAcademicYearLabel } from '@/Utils/IntlTime';
+import { academicYear, currentAcademicYear, formatAcademicYearLabel } from '@/Utils/academicYear';
 
 interface LineageGroup {
   year: number;
@@ -66,9 +66,9 @@ const groups = computed<LineageGroup[]>(() => {
     if (!start) {
       continue;
     }
-    const startYear = academicYear(new Date(start));
+    const startYear = academicYear(start);
     const end = member.pivot?.end_date;
-    const endYear = end ? Math.min(academicYear(new Date(end)), currentYear) : currentYear;
+    const endYear = end ? Math.min(academicYear(end), currentYear) : currentYear;
 
     earliestYear = Math.min(earliestYear, startYear);
 

@@ -1,9 +1,9 @@
 import { h } from 'vue';
 import type { ColumnDef } from '@tanstack/vue-table';
-import { format, isValid } from 'date-fns';
 import { trans as $t, transChoice as $tChoice, getActiveLanguage } from 'laravel-vue-i18n';
 
 import { LocaleEnum } from '@/Types/enums';
+import { parseDate } from '@/Utils/dateTime';
 import {
   DateCell,
   TagList,
@@ -100,25 +100,20 @@ export function createTimestampColumn<T>(accessorKey: string, options: {
       const value = row.getValue(accessorKey);
       if (!value) return h(TruncatedText, { text: null });
 
-      try {
-        const date = new Date(value as string);
-        if (!isValid(date)) return h(TruncatedText, { text: String(value) });
+      const date = parseDate(value as string);
+      if (!date) return h(TruncatedText, { text: String(value) });
 
-        return h(DateCell, {
-          date,
-          mode: 'absolute',
-          format: {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-          },
-        });
-      }
-      catch (e) {
-        return h(TruncatedText, { text: String(value) });
-      }
+      return h(DateCell, {
+        date,
+        mode: 'absolute',
+        format: {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+        },
+      });
     }),
     size: options.width || 160,
     enableSorting: options.enableSorting !== false,

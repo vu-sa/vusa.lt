@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\DestroyAllNotificationsRequest;
 use App\Models\NotificationDigestQueue;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -68,12 +69,12 @@ class UserNotificationsController extends AdminController
         return back();
     }
 
-    public function destroyAll(Request $request)
+    public function destroyAll(DestroyAllNotificationsRequest $request)
     {
         $user = User::query()->findOrFail(Auth::id());
 
         // If 'read_only' is passed, only delete read notifications
-        if ($request->boolean('read_only')) {
+        if ($request->safe()->boolean('read_only')) {
             $user->readNotifications()->delete();
         } else {
             $user->notifications()->delete();

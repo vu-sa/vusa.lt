@@ -223,7 +223,7 @@ import PublicMeetingDocuments, { type PublicMeetingDocument } from '@/Components
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { useEventStatus } from '@/Composables/useEventStatus';
 import { useShareLink } from '@/Composables/useShareLink';
-import { formatStaticTime } from '@/Utils/IntlTime';
+import { formatDateWith } from '@/Utils/dateTime';
 import { getCalendarEvent2Route } from '@/Utils/Route';
 import type { PhotoGalleryGrid } from '@/Types/contentParts';
 import { LocaleEnum } from '@/Types/enums';
@@ -315,17 +315,17 @@ const otherEventTag = (ev: App.Entities.Calendar): string | null =>
   ev.event_type?.name ?? ev.tenant?.shortname ?? null;
 
 const otherEventDate = (ev: App.Entities.Calendar): string =>
-  formatStaticTime(new Date(ev.date), { weekday: 'short', month: 'short', day: 'numeric' }, locale.value as LocaleEnum);
+  formatDateWith(ev.date, { weekday: 'short', month: 'short', day: 'numeric' }, { locale: locale.value });
 
 /** Full date + time for a sibling announcement, so the prev/next links say when, not just which. */
 const siblingEventDate = (event: { date: string }): string =>
-  formatStaticTime(new Date(event.date), {
+  formatDateWith(event.date, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-  }, locale.value as LocaleEnum);
+  }, { locale: locale.value });
 
 interface EventImage {
   id: number;

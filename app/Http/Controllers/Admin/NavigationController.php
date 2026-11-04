@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\CreateNavigationRequest;
+use App\Http\Requests\IndexNavigationRequest;
 use App\Http\Requests\ReorderNavigationRequest;
 use App\Http\Requests\StoreNavigationRequest;
 use App\Http\Requests\UpdateNavigationRequest;
@@ -12,7 +14,6 @@ use App\Models\Tag;
 use App\Services\NavigationService;
 use App\Services\PostCreateRedirect;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
 class NavigationController extends AdminController
@@ -22,12 +23,10 @@ class NavigationController extends AdminController
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(IndexNavigationRequest $request)
     {
-        $this->handleAuthorization('viewAny', Navigation::class);
-
-        $showDeleted = $request->boolean('showDeleted', false);
-        $lang = $this->resolveLang($request);
+        $showDeleted = $request->safe()->boolean('showDeleted');
+        $lang = $this->resolveLang($request->validated('lang'));
 
         $deletedCount = Navigation::onlyTrashed()
             ->where('lang', $lang)
@@ -63,23 +62,21 @@ class NavigationController extends AdminController
     /**
      * Show the form for creating a new resource.
      */
-    public function create(Request $request)
+    public function create(CreateNavigationRequest $request)
     {
-        $this->handleAuthorization('create', Navigation::class);
-
-        $parent_id = $request->parent_id ?? 0;
+        $parent_id = (int) ($request->validated('parent_id') ?? 0);
 
         // A new root picks its location explicitly (the "add column" vs "add root"
         // entry point); a new child inherits it from the parent it's being created
         // under, same as it inherits the parent's language below.
         $location = (int) $parent_id === 0
-            ? $this->resolveLocation($request->input('location'))
+            ? $this->resolveLocation($request->validated('location'))
             : $this->resolveLocation(Navigation::withTrashed()->find($parent_id)?->extra_attributes['location'] ?? null);
 
         return $this->inertiaResponse('Admin/Navigation/CreateNavigation',
             [
                 'parent_id' => $parent_id,
-                'lang' => $this->resolveLang($request),
+                'lang' => $this->resolveLang($request->validated('lang')),
                 'location' => $location,
                 'parentElements' => $this->rootElementsForLocation($location),
                 'topicOptions' => $this->getTopicOptions(),
@@ -217,10 +214,8 @@ class NavigationController extends AdminController
      * own locale, so switching to the EN menu doesn't require switching the whole
      * admin interface to English.
      */
-    private function resolveLang(Request $request): string
+    private function resolveLang(?string $lang): string
     {
-        $lang = $request->input('lang');
-
         return in_array($lang, ['lt', 'en'], true) ? $lang : app()->getLocale();
     }
 

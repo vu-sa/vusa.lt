@@ -1,9 +1,8 @@
 import { computed } from 'vue';
-import { format, formatDistanceToNow } from 'date-fns';
-import { lt } from 'date-fns/locale';
 
 import type { SearchMatchDocument } from '@/Shared/Search/matches';
 import { trackEvent } from '@/Plugins/umami';
+import { formatDate, parseDate } from '@/Utils/dateTime';
 
 // Document interface
 export interface DocumentDisplayItem extends SearchMatchDocument {
@@ -37,21 +36,12 @@ export function parseDocumentDate(dateValue: string | number | null | undefined)
     return null;
   }
 
-  let date: Date;
-  if (typeof dateValue === 'number'
-    || (typeof dateValue === 'string' && /^\d+$/.test(dateValue))) {
+  if (typeof dateValue === 'number' || /^\d+$/.test(dateValue)) {
     const timestamp = Number(dateValue);
-    date = new Date(timestamp < 10000000000 ? timestamp * 1000 : timestamp);
-  }
-  else {
-    date = new Date(dateValue);
+    return parseDate(timestamp < 10000000000 ? timestamp * 1000 : timestamp);
   }
 
-  if (isNaN(date.getTime())) {
-    return null;
-  }
-
-  return date;
+  return parseDate(dateValue);
 }
 
 /**
@@ -91,67 +81,9 @@ export function getDocumentTargetUrl(document: DocumentDisplayItem): string | un
  * Centralizes all document formatting and display logic
  */
 export const useDocumentDisplay = (document: DocumentDisplayItem) => {
-  // Date formatting utilities
-  const formatDate = (dateString: string): string => {
-    const date = parseDocumentDate(dateString);
-    if (!date) return dateString;
-
-    try {
-      return format(date, 'yyyy-MM-dd', { locale: lt });
-    }
-    catch {
-      return dateString;
-    }
-  };
-
-  const formatDocumentDate = (): string => {
-    const date = parseDocumentDate(document.document_date);
-    if (!date) return 'Nėra datos';
-
-    try {
-      const now = new Date();
-
-      // Show relative time for recent documents (for grid view)
-      const diffTime = Math.abs(now.getTime() - date.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-      if (diffDays <= 7) {
-        return `${diffDays} d. atgal`;
-      }
-      else if (diffDays <= 30) {
-        return `${Math.ceil(diffDays / 7)} sav. atgal`;
-      }
-      else {
-        return format(date, 'yyyy-MM-dd', { locale: lt });
-      }
-    }
-    catch {
-      return document.document_date ?? 'Nėra datos';
-    }
-  };
-
   const formatDocumentDateSimple = (): string => {
     const date = parseDocumentDate(document.document_date);
-    if (!date) return 'Nėra datos';
-
-    try {
-      return format(date, 'yyyy-MM-dd', { locale: lt });
-    }
-    catch {
-      return document.document_date ?? 'Nėra datos';
-    }
-  };
-
-  const getRelativeDate = (): string => {
-    const date = parseDocumentDate(document.document_date);
-    if (!date) return '';
-
-    try {
-      return formatDistanceToNow(date, { addSuffix: true, locale: lt });
-    }
-    catch {
-      return '';
-    }
+    return date ? formatDate(date) : 'Nėra datos';
   };
 
   // File and icon utilities
@@ -250,10 +182,7 @@ export const useDocumentDisplay = (document: DocumentDisplayItem) => {
 
   return {
     // Date functions
-    formatDate,
-    formatDocumentDate,
     formatDocumentDateSimple,
-    getRelativeDate,
 
     // File functions
     getFileExtension,

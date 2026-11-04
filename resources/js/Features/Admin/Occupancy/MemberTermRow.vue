@@ -50,7 +50,7 @@ import { termStatus } from './occupancy';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { Button } from '@/Components/ui/button';
-import { formatStaticTime } from '@/Utils/IntlTime';
+import { formatDateWith } from '@/Utils/dateTime';
 
 const props = defineProps<{
   user: App.Entities.User;
@@ -80,7 +80,7 @@ const tenure = computed(() => {
     return '';
   }
 
-  const label = (value: string) => formatStaticTime(new Date(value), { year: 'numeric', month: 'short' });
+  const label = (value: string) => formatDateWith(value, { year: 'numeric', month: 'short' });
   const end = props.user.pivot?.end_date;
 
   return `${label(start)} – ${end ? label(end) : $t('dabar')}`;

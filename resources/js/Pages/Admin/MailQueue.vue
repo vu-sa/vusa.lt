@@ -114,7 +114,6 @@
 import { Link, router } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { computed, ref, watch } from 'vue';
-import { format, parseISO } from 'date-fns';
 import { Mail as MailIcon, RefreshCw as RefreshCwIcon, Trash2 as Trash2Icon } from '@lucide/vue';
 
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
@@ -127,7 +126,7 @@ import { useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import { useDateLocale } from '@/Composables/useDateLocale';
+import { formatDateTime } from '@/Utils/dateTime';
 
 interface QueuedItem {
   id: number;
@@ -160,7 +159,6 @@ const props = defineProps<{
   totals: { items: number; recipients: number };
 }>();
 
-const dateLocale = useDateLocale();
 const source = useDatabaseCollectionSource<Recipient>({
   endpoint: route('api.v1.admin.mailQueue.index'),
   initial: {
@@ -182,8 +180,7 @@ watch(() => props.recipients, () => source.refresh());
 const busyKey = ref<string | number | null>(null);
 
 const formatDate = (value: string | null) => {
-  if (!value) return '—';
-  return format(parseISO(value), 'yyyy-MM-dd HH:mm', { locale: dateLocale.value });
+  return formatDateTime(value) || '—';
 };
 
 const submit = (url: string, key: string | number) => {

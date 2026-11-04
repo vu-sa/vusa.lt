@@ -68,7 +68,7 @@ import { descriptionMatch, matchTitle } from '@/Shared/Search/matches';
 import MediaFrame from '@/Components/Brand/MediaFrame.vue';
 import type { ImageData } from '@/Types/media';
 import type { NewsItem } from '@/Types/contentParts';
-import { formatStaticTime } from '@/Utils/IntlTime';
+import { formatDate } from '@/Utils/dateTime';
 import { localizedRoute } from '@/Utils/LocalizedRoutes';
 import { unwrapLinks } from '@/Utils/String';
 import IFluentArrowUpRight16Regular from '~icons/fluent/arrow-up-right-16-regular';
@@ -126,11 +126,10 @@ const useInertia = computed(() => {
   return new URL(href.value, window.location.href).origin === window.location.origin;
 });
 
-const longDate = (time: string | number | Date) => formatStaticTime(
-  time instanceof Date
-    ? time
-    : new Date(typeof time === 'number' || /^\d+$/.test(time) ? Number(time) * (Number(time) < 10000000000 ? 1000 : 1) : time),
-  { year: 'numeric', month: 'long', day: 'numeric' },
-  page.props.app.locale,
+const longDate = (time: string | number | Date) => formatDate(
+  typeof time === 'number' || (typeof time === 'string' && /^\d+$/.test(time))
+    ? Number(time) * (Number(time) < 10000000000 ? 1000 : 1)
+    : time,
+  { format: 'full', locale: page.props.app.locale },
 );
 </script>

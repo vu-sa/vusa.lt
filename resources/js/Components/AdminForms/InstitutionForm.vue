@@ -232,6 +232,22 @@
           <span class="text-sm text-muted-foreground">{{ $t('dienų') }}</span>
         </div>
       </FormFieldWrapper>
+
+      <FormFieldWrapper
+        id="institution-meeting-kind"
+        :label="$t('forms.fields.meeting_kind')"
+        :hint="$t('forms.helpers.meeting_kind_institution_hint')"
+        :error="form.errors.meeting_kind"
+      >
+        <FormSegmentedControl
+          id="institution-meeting-kind"
+          v-model="meetingKind"
+          tabindex="-1"
+          stack-on-phone
+          :aria-label="$t('forms.fields.meeting_kind')"
+          :options="meetingKindChoices"
+        />
+      </FormFieldWrapper>
     </template>
 
     <template v-if="isEditing && enableDelete" #danger-zone>
@@ -276,6 +292,7 @@ import InstitutionScopeBadge from '@/Components/Institutions/InstitutionScopeBad
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
 import FormPanel from '@/Components/Patterns/FormPanel.vue';
+import FormSegmentedControl from '@/Components/Patterns/FormSegmentedControl.vue';
 import FormSection from '@/Components/Patterns/FormSection.vue';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { Button } from '@/Components/ui/button';
@@ -289,7 +306,8 @@ import type { ImageData } from '@/Types/media';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
 import { usePermalinkPreview } from '@/Composables/usePermalinkPreview';
-import { InstitutionScope, ModelEnum } from '@/Types/enums';
+import { meetingKindFromTypes, meetingKindLabel, meetingKindOptions } from '@/Constants/meetingKinds';
+import { InstitutionScope, ModelEnum, type MeetingKind } from '@/Types/enums';
 
 interface Translated { lt: string; en: string }
 
@@ -350,6 +368,7 @@ const initial = () => ({
   instagram_url: (source.instagram_url ?? '') as string,
   alias: (source.alias ?? '') as string,
   meeting_periodicity_days: (source.meeting_periodicity_days ?? null) as number | null,
+  meeting_kind: (source.meeting_kind ?? null) as MeetingKind | null,
 });
 
 const form = props.rememberKey ? useForm(props.rememberKey, initial()) : useForm(initial());
@@ -377,6 +396,26 @@ const aliasWarning = computed(() => (form.alias !== savedAlias || renamedWithUnt
   ? $t('Pakeitus nuorodą, sena nuoroda ir toliau nukreips į šį puslapį — nebereikalingas senas nuorodas galėsi ištrinti.')
   : undefined));
 
+/** Stands in for a null override: the institution's types decide. */
+const FROM_TYPE = '__type__';
+
+const meetingKindChoices = computed(() => [
+  {
+    value: FROM_TYPE,
+    label: $t('forms.options.meeting_kind_from_type', {
+      kind: meetingKindLabel(meetingKindFromTypes(form.types, props.institutionTypes ?? [])),
+    }),
+  },
+  ...meetingKindOptions(),
+]);
+
+const meetingKind = computed({
+  get: () => form.meeting_kind ?? FROM_TYPE,
+  set: (value: string) => {
+    form.meeting_kind = value === FROM_TYPE ? null : value as MeetingKind;
+  },
+});
+
 const institutionTitle = computed(() => form.name.lt || form.name.en || '');
 const barTitle = computed(() => (isEditing.value ? (getTranslatedValue(props.institution.name) || $t('Institucija')) : $t('Nauja institucija')));
 
@@ -395,6 +434,7 @@ const fieldIds = {
   'working_hours.lt': 'institution-hours',
   'working_hours.en': 'institution-hours',
   'alias': 'institution-alias',
+  'meeting_kind': 'institution-meeting-kind',
   'email': 'institution-email',
   'website': 'institution-website',
   'phone': 'institution-phone',

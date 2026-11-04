@@ -185,14 +185,14 @@
         :icon="Clock"
       >
         <p class="text-xs text-muted-foreground">
-          {{ $t('Paskutinį kartą prisijungė') }} {{ formatStaticTime(user.last_action) }}
+          {{ $t('Paskutinį kartą prisijungė') }} {{ formatDate(user.last_action) }}
         </p>
       </FormPanel>
     </template>
 
     <template v-if="!isCreating && user.last_action" #footer-extra>
       <span class="text-xs text-muted-foreground">
-        {{ $t('Paskutinį kartą prisijungė') }} {{ formatStaticTime(user.last_action) }}
+        {{ $t('Paskutinį kartą prisijungė') }} {{ formatDate(user.last_action) }}
       </span>
     </template>
   </FormPage>
@@ -219,7 +219,7 @@ import { ImageUpload } from '@/Components/ui/upload';
 import type { ImageData } from '@/Types/media';
 import { useDuplicateUserCheck } from '@/Composables/useDuplicateUserCheck';
 import { ModelEnum } from '@/Types/enums';
-import { formatStaticTime } from '@/Utils/IntlTime';
+import { formatDate } from '@/Utils/dateTime';
 
 const props = withDefaults(defineProps<{
   user: App.Entities.User;

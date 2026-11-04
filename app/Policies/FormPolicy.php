@@ -2,7 +2,6 @@
 
 namespace App\Policies;
 
-use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
 use App\Models\Form;
 use App\Models\User;
@@ -41,7 +40,7 @@ class FormPolicy extends ModelPolicy
     #[\Override]
     public function view(User $user, Model $form): bool
     {
-        if ($this->commonChecker($user, $form, CRUDEnum::READ->label(), $this->pluralModelName, false)) {
+        if (parent::view($user, $form)) {
             return true;
         }
 
@@ -59,27 +58,5 @@ class FormPolicy extends ModelPolicy
     public function canViewSpecialForm(User $user, Model $form): bool
     {
         return $this->formAccess->canViewSpecialForm($user, $form);
-    }
-
-    /**
-     * Determine whether the user can update the model.
-     *
-     * @param  Form  $form
-     */
-    #[\Override]
-    public function update(User $user, Model $form): bool
-    {
-        return $this->commonChecker($user, $form, CRUDEnum::UPDATE->label(), $this->pluralModelName, false);
-    }
-
-    /**
-     * Determine whether the user can delete the model.
-     *
-     * @param  Form  $form
-     */
-    #[\Override]
-    public function delete(User $user, Model $form): bool
-    {
-        return $this->commonChecker($user, $form, CRUDEnum::DELETE->label(), $this->pluralModelName, false);
     }
 }

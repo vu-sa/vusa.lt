@@ -10,6 +10,7 @@ use App\Actions\GetUserCoordinators;
 use App\Enums\InstitutionScope;
 use App\Enums\TenantType;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\ShowAtstovavimasDashboardRequest;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\Meeting;
@@ -40,10 +41,9 @@ class AtstovavimasDashboardController extends AdminController
         private readonly InstitutionActivityStatusService $activityStatusService,
     ) {}
 
-    public function atstovavimas(Request $request): Response|RedirectResponse
+    public function atstovavimas(ShowAtstovavimasDashboardRequest $request): Response|RedirectResponse
     {
-        // `?scope=tenant` and `?tab=tenant` are bookmarks from when both views shared this page.
-        $requestedScope = $request->query('scope', $request->query('tab'));
+        $requestedScope = $request->validated('scope') ?? $request->validated('tab');
 
         if ($requestedScope === 'tenant' && Gate::allows('viewAny', Meeting::class)) {
             return redirect()->route('dashboard.atstovavimas.padaliniai');
