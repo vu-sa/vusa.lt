@@ -73,38 +73,34 @@ Route::delete('mail-queue/users/{user}', [MailQueueController::class, 'destroyFo
 Route::delete('mail-queue/{mailQueueItem}', [MailQueueController::class, 'destroy'])->name('mailQueue.destroy');
 
 // Restore and permanent-delete routes
-Route::patch('banners/{banner}/restore', [BannerController::class, 'restore'])->name('banners.restore')->withTrashed();
-Route::delete('banners/{banner}/force-delete', [BannerController::class, 'forceDelete'])->name('banners.forceDelete')->withTrashed();
-Route::patch('calendar/{calendar}/restore', [CalendarController::class, 'restore'])->name('calendar.restore')->withTrashed();
-Route::delete('calendar/{calendar}/force-delete', [CalendarController::class, 'forceDelete'])->name('calendar.forceDelete')->withTrashed();
-Route::patch('eventTypes/{eventType}/restore', [EventTypeController::class, 'restore'])->name('eventTypes.restore')->withTrashed();
-Route::delete('eventTypes/{eventType}/force-delete', [EventTypeController::class, 'forceDelete'])->name('eventTypes.forceDelete')->withTrashed();
-Route::patch('duties/{duty}/restore', [DutyController::class, 'restore'])->name('duties.restore')->withTrashed();
-Route::delete('duties/{duty}/force-delete', [DutyController::class, 'forceDelete'])->name('duties.forceDelete')->withTrashed();
-Route::patch('forms/{form}/restore', [FormController::class, 'restore'])->name('forms.restore')->withTrashed();
-Route::delete('forms/{form}/force-delete', [FormController::class, 'forceDelete'])->name('forms.forceDelete')->withTrashed();
-Route::patch('institutions/{institution}/restore', [InstitutionController::class, 'restore'])->name('institutions.restore')->withTrashed();
-Route::delete('institutions/{institution}/force-delete', [InstitutionController::class, 'forceDelete'])->name('institutions.forceDelete')->withTrashed();
+Route::softDeletes('banners', BannerController::class);
+Route::softDeletes('calendar', CalendarController::class);
+Route::softDeletes('duties', DutyController::class);
+Route::softDeletes('dutyTypes', DutyTypeController::class, 'type');
+Route::softDeletes('eventTypes', EventTypeController::class);
+Route::softDeletes('forms', FormController::class);
+Route::softDeletes('institutions', InstitutionController::class);
+Route::softDeletes('institutionTypes', InstitutionTypeController::class, 'type');
+Route::softDeletes('meetings', MeetingController::class);
+Route::softDeletes('navigation', NavigationController::class);
+Route::softDeletes('news', NewsController::class);
+Route::softDeletes('pages', PageController::class);
+Route::softDeletes('problems', ProblemController::class);
+Route::softDeletes('quickLinks', QuickLinkController::class);
+Route::softDeletes('resources', ResourceController::class);
+Route::softDeletes('studyPrograms', StudyProgramController::class);
+Route::softDeletes('studySets', StudySetController::class);
+Route::softDeletes('tags', TagController::class);
+Route::softDeletes('users', UserController::class);
+
 Route::delete('institutions/{institution}/public-urls/{publicUrl}', [InstitutionController::class, 'destroyPublicUrl'])->name('institutions.publicUrls.destroy');
-Route::patch('meetings/{meeting}/restore', [MeetingController::class, 'restore'])->name('meetings.restore')->withTrashed();
-Route::delete('meetings/{meeting}/force-delete', [MeetingController::class, 'forceDelete'])->name('meetings.forceDelete')->withTrashed();
-Route::patch('navigation/{navigation}/restore', [NavigationController::class, 'restore'])->name('navigation.restore')->withTrashed();
-Route::delete('navigation/{navigation}/force-delete', [NavigationController::class, 'forceDelete'])->name('navigation.forceDelete')->withTrashed();
 Route::patch('news/bulk-status', [NewsController::class, 'bulkUpdateStatus'])->name('news.bulkStatus');
 Route::delete('news/bulk-delete', [NewsController::class, 'bulkDestroy'])->name('news.bulkDestroy');
-Route::patch('news/{news}/restore', [NewsController::class, 'restore'])->name('news.restore')->withTrashed();
-Route::delete('news/{news}/force-delete', [NewsController::class, 'forceDelete'])->name('news.forceDelete')->withTrashed();
 Route::post('news/{news}/duplicate', [NewsController::class, 'duplicate'])->name('news.duplicate');
 Route::delete('news/{news}/public-urls/{publicUrl}', [NewsController::class, 'destroyPublicUrl'])->name('news.publicUrls.destroy');
 Route::patch('pages/bulk-status', [PageController::class, 'bulkUpdateStatus'])->name('pages.bulkStatus');
 Route::delete('pages/bulk-delete', [PageController::class, 'bulkDestroy'])->name('pages.bulkDestroy');
-Route::patch('pages/{page}/restore', [PageController::class, 'restore'])->name('pages.restore')->withTrashed();
-Route::delete('pages/{page}/force-delete', [PageController::class, 'forceDelete'])->name('pages.forceDelete')->withTrashed();
 Route::delete('pages/{page}/public-urls/{publicUrl}', [PageController::class, 'destroyPublicUrl'])->name('pages.publicUrls.destroy');
-Route::patch('problems/{problem}/restore', [ProblemController::class, 'restore'])->name('problems.restore')->withTrashed();
-Route::delete('problems/{problem}/force-delete', [ProblemController::class, 'forceDelete'])->name('problems.forceDelete')->withTrashed();
-Route::patch('quickLinks/{quickLink}/restore', [QuickLinkController::class, 'restore'])->name('quickLinks.restore')->withTrashed();
-Route::delete('quickLinks/{quickLink}/force-delete', [QuickLinkController::class, 'forceDelete'])->name('quickLinks.forceDelete')->withTrashed();
 Route::post('meetings/{meeting}/institutions', [MeetingController::class, 'attachInstitution'])->name('meetings.institutions.attach');
 Route::delete('meetings/{meeting}/institutions/{institution}', [MeetingController::class, 'detachInstitution'])->name('meetings.institutions.detach');
 Route::post('meetings/{meeting}/calendar-event', [MeetingCalendarController::class, 'store'])->name('meetings.calendarEvent.store');
@@ -112,16 +108,6 @@ Route::delete('meetings/{meeting}/calendar-event', [MeetingCalendarController::c
 Route::post('meetings/{meeting}/documents', [MeetingDocumentController::class, 'store'])->name('meetings.documents.store');
 Route::post('meetings/{meeting}/documents/sharepoint', [MeetingDocumentController::class, 'storeFromSharepoint'])->name('meetings.documents.storeFromSharepoint');
 Route::delete('meetings/{meeting}/documents/{document}', [MeetingDocumentController::class, 'destroy'])->name('meetings.documents.destroy');
-Route::patch('resources/{resource}/restore', [ResourceController::class, 'restore'])->name('resources.restore')->withTrashed();
-Route::delete('resources/{resource}/force-delete', [ResourceController::class, 'forceDelete'])->name('resources.forceDelete')->withTrashed();
-Route::patch('studyPrograms/{studyProgram}/restore', [StudyProgramController::class, 'restore'])->name('studyPrograms.restore')->withTrashed();
-Route::delete('studyPrograms/{studyProgram}/force-delete', [StudyProgramController::class, 'forceDelete'])->name('studyPrograms.forceDelete')->withTrashed();
-Route::patch('studySets/{studySet}/restore', [StudySetController::class, 'restore'])->name('studySets.restore')->withTrashed();
-Route::delete('studySets/{studySet}/force-delete', [StudySetController::class, 'forceDelete'])->name('studySets.forceDelete')->withTrashed();
-Route::patch('tags/{tag}/restore', [TagController::class, 'restore'])->name('tags.restore')->withTrashed();
-Route::delete('tags/{tag}/force-delete', [TagController::class, 'forceDelete'])->name('tags.forceDelete')->withTrashed();
-Route::patch('users/{user}/restore', [UserController::class, 'restore'])->name('users.restore')->withTrashed();
-Route::delete('users/{user}/force-delete', [UserController::class, 'forceDelete'])->name('users.forceDelete')->withTrashed();
 
 // Resources with Precognition (live validation)
 Route::resource('pages', PageController::class)->except(['show'])
@@ -370,7 +356,3 @@ Route::resource('institutionTypes', InstitutionTypeController::class)->parameter
 Route::resource('dutyTypes', DutyTypeController::class)->parameters(['dutyTypes' => 'type']);
 Route::put('institutionTypes/{type}/models', [InstitutionTypeController::class, 'syncModels'])->name('institutionTypes.models.sync');
 Route::put('dutyTypes/{type}/models', [DutyTypeController::class, 'syncModels'])->name('dutyTypes.models.sync');
-Route::patch('institutionTypes/{type}/restore', [InstitutionTypeController::class, 'restore'])->name('institutionTypes.restore')->withTrashed();
-Route::delete('institutionTypes/{type}/force-delete', [InstitutionTypeController::class, 'forceDelete'])->name('institutionTypes.forceDelete')->withTrashed();
-Route::patch('dutyTypes/{type}/restore', [DutyTypeController::class, 'restore'])->name('dutyTypes.restore')->withTrashed();
-Route::delete('dutyTypes/{type}/force-delete', [DutyTypeController::class, 'forceDelete'])->name('dutyTypes.forceDelete')->withTrashed();

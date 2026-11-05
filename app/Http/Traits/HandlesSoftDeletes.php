@@ -24,8 +24,8 @@ use Illuminate\Support\Facades\DB;
  * }
  * ```
  *
- * Both routes must declare `->withTrashed()` on the binding, otherwise Laravel's
- * implicit resolution applies the SoftDeletingScope and the trashed record 404s.
+ * Register both routes with `Route::softDeletes()` (AppServiceProvider), which binds
+ * trashed models; `SoftDeleteRoutesConventionTest` checks every controller has them.
  */
 trait HandlesSoftDeletes
 {
