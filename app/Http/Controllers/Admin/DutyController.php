@@ -98,7 +98,6 @@ class DutyController extends AdminController
         return $this->inertiaResponse('Admin/People/CreateDuty', [
             'dutyTypes' => GetAttachableTypesForDuty::execute()->values(),
             'assignableInstitutions' => DutyService::getInstitutionsForUpserts($this->authorizer),
-            'assignableUsers' => $this->assignableUsersForDutyForm(),
             'prefillInstitutionId' => $request->validated('institution_id'),
             'assignableTenants' => GetTenantsForUpserts::execute('duties.create.padalinys', $this->authorizer),
             'assignableDuties' => DutyService::getAssignableExOfficioDuties($this->authorizer),
@@ -304,7 +303,6 @@ class DutyController extends AdminController
             'exOfficioMembers' => $this->exOfficioMembersForDutyForm($duty, $canEditDuty ? null : $actingAssignableTenantIds),
             'dutyTypes' => GetAttachableTypesForDuty::execute()->values(),
             'assignableInstitutions' => DutyService::getInstitutionsForUpserts($this->authorizer),
-            'assignableUsers' => $this->assignableUsersForDutyForm(),
             'assignableTenants' => GetTenantsForUpserts::execute('duties.update.padalinys', $this->authorizer),
             'assignableDuties' => $canEditDuty ? DutyService::getAssignableExOfficioDuties($this->authorizer, $duty) : collect(),
         ]);
@@ -338,42 +336,6 @@ class DutyController extends AdminController
         }
 
         return back()->with('success', $this->entityMessage('updated', 'duty'));
-    }
-
-    /**
-     * Return all users with an `is_recent` flag (active or active within the last 12 months).
-     *
-     * A user is considered recent when any of the following is true:
-     * - has/had a dutiable row that is current or ended within the last 12 months
-     * - account was created within the last 12 months
-     * - `last_action` is within the last 12 months
-     *
-     * @return array<int, array{id: string, name: string, profile_photo_path: string|null, is_recent: bool}>
-     */
-    private function assignableUsersForDutyForm(): array
-    {
-        $cutoff = now()->subYear()->toDateTimeString();
-
-        return User::query()
-            ->select(['users.id', 'users.name', 'users.profile_photo_path'])
-            ->selectRaw(
-                '(users.created_at >= ? OR users.last_action >= ? OR EXISTS (
-                    SELECT 1 FROM dutiables d
-                    WHERE d.dutiable_id = users.id
-                      AND d.dutiable_type = ?
-                      AND (d.end_date IS NULL OR d.end_date >= ?)
-                )) AS is_recent',
-                [$cutoff, $cutoff, MorphMap::alias(User::class), $cutoff]
-            )
-            ->orderBy('users.name')
-            ->get()
-            ->map(fn (User $u) => [
-                'id' => $u->id,
-                'name' => $u->name,
-                'profile_photo_path' => $u->profile_photo_path,
-                'is_recent' => (bool) $u->getAttribute('is_recent'),
-            ])
-            ->all();
     }
 
     /**

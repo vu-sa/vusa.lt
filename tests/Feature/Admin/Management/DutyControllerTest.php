@@ -627,82 +627,17 @@ describe('duty search indexing (cross-tenant visibility)', function (): void {
     });
 });
 
-describe('assignable users is_recent flag', function (): void {
-    test('assignableUsers carries correct is_recent flag based on duty history and activity', function (): void {
-        // Has a current (open-ended) dutiable → recent
-        $currentDutyUser = User::factory()->create([
-            'created_at' => now()->subYears(3),
-            'last_action' => now()->subYears(2),
-        ]);
-        DB::table('dutiables')->insert([
-            'id' => (string) Str::ulid(),
-            'duty_id' => $this->dutyManagerDuty->id,
-            'dutiable_id' => $currentDutyUser->id,
-            'dutiable_type' => MorphMap::alias(User::class),
-            'start_date' => now()->subYear()->toDateString(),
-            'end_date' => null,
-            'created_at' => now()->subYear(),
-            'updated_at' => now()->subYear(),
-        ]);
-
-        // Duty ended 6 months ago (within 12-month window) → recent
-        $recentPastDutyUser = User::factory()->create([
-            'created_at' => now()->subYears(3),
-            'last_action' => now()->subYears(2),
-        ]);
-        DB::table('dutiables')->insert([
-            'id' => (string) Str::ulid(),
-            'duty_id' => $this->dutyManagerDuty->id,
-            'dutiable_id' => $recentPastDutyUser->id,
-            'dutiable_type' => MorphMap::alias(User::class),
-            'start_date' => now()->subMonths(9)->toDateString(),
-            'end_date' => now()->subMonths(6)->toDateString(),
-            'created_at' => now()->subMonths(9),
-            'updated_at' => now()->subMonths(9),
-        ]);
-
-        // Account created 2 months ago, no duties → recent
-        $newlyCreatedUser = User::factory()->create([
-            'created_at' => now()->subMonths(2),
-            'last_action' => null,
-        ]);
-
-        // Old account, last_action 6 months ago, no duties → recent
-        $recentlyActiveUser = User::factory()->create([
-            'created_at' => now()->subYears(3),
-            'last_action' => now()->subMonths(6),
-        ]);
-
-        // Duty ended 18 months ago, last_action 14 months ago, old account → NOT recent
-        $staleUser = User::factory()->create([
-            'created_at' => now()->subYears(3),
-            'last_action' => now()->subMonths(14),
-        ]);
-        DB::table('dutiables')->insert([
-            'id' => (string) Str::ulid(),
-            'duty_id' => $this->dutyManagerDuty->id,
-            'dutiable_id' => $staleUser->id,
-            'dutiable_type' => MorphMap::alias(User::class),
-            'start_date' => now()->subMonths(20)->toDateString(),
-            'end_date' => now()->subMonths(18)->toDateString(),
-            'created_at' => now()->subMonths(20),
-            'updated_at' => now()->subMonths(20),
-        ]);
+describe('duty form props', function (): void {
+    test('create and edit do not ship the whole user directory', function (): void {
+        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
 
         asUserWithInertia($this->dutyManager)->get(route('duties.create'))
             ->assertStatus(200)
-            ->assertInertia(fn ($page) => $page->where('assignableUsers', function ($users) use (
-                $currentDutyUser, $recentPastDutyUser, $newlyCreatedUser, $recentlyActiveUser, $staleUser
-            ) {
-                $byId = collect($users)->keyBy('id');
-                expect($byId[$currentDutyUser->id]['is_recent'])->toBeTrue()
-                    ->and($byId[$recentPastDutyUser->id]['is_recent'])->toBeTrue()
-                    ->and($byId[$newlyCreatedUser->id]['is_recent'])->toBeTrue()
-                    ->and($byId[$recentlyActiveUser->id]['is_recent'])->toBeTrue()
-                    ->and($byId[$staleUser->id]['is_recent'])->toBeFalse();
+            ->assertInertia(fn ($page) => $page->missing('assignableUsers'));
 
-                return true;
-            }));
+        asUserWithInertia($this->dutyManager)->get(route('duties.edit', $duty))
+            ->assertStatus(200)
+            ->assertInertia(fn ($page) => $page->missing('assignableUsers'));
     });
 });
 
