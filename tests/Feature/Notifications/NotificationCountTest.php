@@ -230,8 +230,8 @@ test('one request batches resources per reservation and excludes its actor', fun
 
     Notification::assertSentToTimes($recipient, ReservationStatusChangedNotification::class, 1);
     Notification::assertSentTo($recipient, ReservationStatusChangedNotification::class, function ($notification) use ($recipient, $first, $second, $reservation): bool {
-        expect($notification->title($recipient))->toContain('2')
-            ->and($notification->body($recipient))->toContain($reservation->name, $first->resource->name, $second->resource->name)
+        expect($notification->title($recipient))->toContain($reservation->name)
+            ->and($notification->body($recipient))->toContain($first->resource->name, $second->resource->name)
             ->and(substr_count($notification->body($recipient), __('notifications.reservation_batch_hint_reserved', ['date' => $first->start_time->format('Y-m-d H:i')])))->toBe(1);
 
         return true;

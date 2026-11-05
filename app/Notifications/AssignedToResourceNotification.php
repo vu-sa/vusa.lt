@@ -6,6 +6,7 @@ use App\Enums\NotificationType;
 use App\Models\User;
 use App\Notifications\Concerns\NamesObjectInTitle;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 /**
  * Notification sent when a user is assigned to a resource (reservation, task, etc.).
