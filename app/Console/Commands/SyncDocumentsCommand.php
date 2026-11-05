@@ -132,7 +132,7 @@ class SyncDocumentsCommand extends Command
 
         $query = $this->linkable()
             ->where('sync_status', 'failed')
-            ->where('sync_attempts', '<', 5) // Don't retry documents that have failed too many times
+            ->where('sync_attempts', '<=', 5)
             ->orderBy('last_sync_attempt_at', 'asc')
             ->limit($limit);
 

@@ -108,6 +108,7 @@ describe('.url shortcut resolution during sync', function (): void {
             'eTag' => 'old-etag',
             'anonymous_url' => 'https://sharepoint.example.com/document/1',
             'link_url' => null,
+            'sync_attempts' => 6,
         ]);
 
         $driveItem = makeDriveItem('drive-2', 'protokolas.pdf');
@@ -128,6 +129,8 @@ describe('.url shortcut resolution during sync', function (): void {
         expect($result)->not->toBeNull()
             ->and($result->link_url)->toBeNull()
             ->and($result->sync_status)->toBe('success');
+
+        expect($document->fresh()->sync_attempts)->toBe(0);
     });
 
     test('leaves link_url unchanged and sync succeeds when shortcut content is unparseable', function (): void {
@@ -249,6 +252,7 @@ describe('.url shortcut resolution during sync', function (): void {
             'eTag' => 'same-etag',
             'anonymous_url' => 'https://sharepoint.example.com/shortcut/7',
             'link_url' => 'https://ataskaita2023.vusa.lt',
+            'sync_attempts' => 255,
         ]);
 
         $graph = Mockery::mock(SharepointGraphService::class);
@@ -267,11 +271,44 @@ describe('.url shortcut resolution during sync', function (): void {
 
         $document->refresh();
         expect($document->link_url)->toBe('https://ataskaita2023.vusa.lt')
-            ->and($document->sync_status)->toBe('success');
+            ->and($document->sync_status)->toBe('success')
+            ->and($document->sync_attempts)->toBe(0);
     });
 });
 
 describe('link readiness', function (): void {
+    test('metadata-only sync resets failed attempts for unpublished documents', function (DocumentStatus $status): void {
+        $document = Document::factory()->create([
+            'status' => $status,
+            'anonymous_url' => null,
+            'eTag' => 'old',
+            'sync_attempts' => 5,
+        ]);
+
+        $graph = Mockery::mock(SharepointGraphService::class);
+        $graph->shouldReceive('getListItem')->once()->andReturn(makeFieldValueSet(['@odata.etag' => 'new']));
+        $graph->shouldNotReceive('getDriveItemByListItem');
+
+        mockSyncServiceWithGraph($graph)->sync($document);
+
+        expect($document->fresh())->sync_status->toBe('success')->sync_attempts->toBe(0);
+    })->with([DocumentStatus::Pending, DocumentStatus::Hidden]);
+
+    test('read-only sync resets failed attempts when no public link can be created', function (): void {
+        config(['app.env' => 'staging', 'app.sharepoint_read_only' => true]);
+        $document = Document::factory()->create(['anonymous_url' => null, 'sync_attempts' => 5]);
+
+        $graph = Mockery::mock(SharepointGraphService::class);
+        $graph->shouldReceive('getListItem')->once()->andReturn(makeFieldValueSet(['@odata.etag' => 'new']));
+        $graph->shouldReceive('getDriveItemByListItem')->once()->andReturn(makeDriveItem('drive-1'));
+        $graph->shouldReceive('getDriveItemPublicLink')->once()->andReturn(null);
+        $graph->shouldNotReceive('createPublicPermission');
+
+        mockSyncServiceWithGraph($graph)->sync($document);
+
+        expect($document->fresh())->sync_status->toBe('success')->sync_attempts->toBe(0);
+    });
+
     test('an unchanged published file without a link is not marked as synced; its link is created', function (): void {
         $document = Document::factory()->create(['name' => 'protokolas.pdf', 'eTag' => 'same', 'anonymous_url' => null, 'sync_status' => 'failed']);
 
@@ -290,7 +327,7 @@ describe('link readiness', function (): void {
 
 describe('publication changing during a sync', function (): void {
     test('a link created while the document was being hidden is deleted again, not kept', function (): void {
-        $document = Document::factory()->create(['name' => 'protokolas.pdf', 'eTag' => 'old', 'anonymous_url' => null]);
+        $document = Document::factory()->create(['name' => 'protokolas.pdf', 'eTag' => 'old', 'anonymous_url' => null, 'sync_attempts' => 5]);
 
         $graph = Mockery::mock(SharepointGraphService::class);
         $graph->shouldReceive('getListItem')->once()->andReturn(makeFieldValueSet(['@odata.etag' => 'new', 'Name' => 'protokolas.pdf']));
@@ -308,6 +345,8 @@ describe('publication changing during a sync', function (): void {
 
         expect($document->refresh()->status)->toBe(DocumentStatus::Hidden)
             ->and($document->anonymous_url)->toBeNull()
-            ->and($document->sharepoint_permission_id)->toBeNull();
+            ->and($document->sharepoint_permission_id)->toBeNull()
+            ->and($document->sync_status)->toBe('success')
+            ->and($document->sync_attempts)->toBe(0);
     });
 });
