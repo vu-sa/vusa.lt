@@ -1,6 +1,5 @@
 ---
 title: Platformos atnaujinimai
-coverage: ignore
 ---
 
 # Platformos atnaujinimai

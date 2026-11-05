@@ -66,7 +66,7 @@ export interface Frontmatter {
   reviewed: string | null
 }
 
-/** `docs:coverage` owns the full YAML contract. */
+/** The full frontmatter contract lives in `.ai/rules/docs.md`. */
 export function splitFrontmatter(source: string): { frontmatter: Frontmatter, body: string } {
   const match = source.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n/)
   const yaml = match?.[1] ?? ''

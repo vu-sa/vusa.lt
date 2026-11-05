@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Tipai ir kategorijos
-area: types
-models: [InstitutionType, DutyType, EventType, ResourceCategory, ProblemCategory]
 last_reviewed: 2026-11-03
 tests:
   - tests/Feature/Meetings/MeetingKindTest.php

@@ -1,6 +1,5 @@
 ---
 title: Platform updates
-coverage: ignore
 ---
 
 # Platform updates

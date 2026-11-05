@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Institucijos
-area: institutions
-models: [Institution, InstitutionCheckIn, InstitutionSecretary]
 last_reviewed: 2026-11-03
 tests:
   - tests/Feature/Admin/ModelMeta/TypeControllerTest.php

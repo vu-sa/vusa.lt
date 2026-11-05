@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Renginių tipai
-area: eventTypes
-models: [EventType]
 last_reviewed: 2026-10-01
 tests:
   - tests/Feature/Admin/Calendar/EventTypeControllerTest.php

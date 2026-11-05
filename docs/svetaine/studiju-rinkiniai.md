@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Studijų rinkiniai
-area: studySets
-models: [StudySet]
 last_reviewed: 2026-10-15
 tests:
   - tests/Browser/StudySetReviewsTest.php

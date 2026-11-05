@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Laikotarpių tvarkyklė
-area: dutiableTimeline
-models: [Dutiable, Cadence]
 last_reviewed: 2026-10-31
 tests:
   - tests/Feature/Admin/People/DutiableTimelineControllerTest.php

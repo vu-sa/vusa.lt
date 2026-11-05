@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Kategorijos
-area: resourceCategories
-models: [ResourceCategory]
 last_reviewed: 2026-09-30
 tests:
   - tests/Feature/Admin/Reservations/ResourceCategoryControllerTest.php

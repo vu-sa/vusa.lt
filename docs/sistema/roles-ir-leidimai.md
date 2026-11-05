@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Atsakomybės ir leidimai
-area: roles
-models: [Role, Permission, ResponsibilityGrant]
 last_reviewed: 2026-10-31
 tests:
   - tests/Feature/Permissions/MeetingPermissionsTest.php

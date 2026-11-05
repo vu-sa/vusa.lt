@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Komentarai
-area: comments
-models: [Comment]
 last_reviewed: 2026-11-05
 tests:
   - tests/Feature/Admin/Discussions/CommentAuthorizationTest.php

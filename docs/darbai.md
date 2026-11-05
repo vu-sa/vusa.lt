@@ -2,7 +2,6 @@
 title: Darbų gidas
 doc_status: reviewed
 last_reviewed: 2026-09-30
-coverage: ignore
 ---
 
 # Darbų gidas

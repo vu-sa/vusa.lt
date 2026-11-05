@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Padaliniai
-area: tenants
-models: [Tenant]
 last_reviewed: 2026-10-27
 tests:
   - tests/Unit/Models/TenantTimestampTest.php

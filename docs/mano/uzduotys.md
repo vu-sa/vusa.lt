@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Užduotys
-area: tasks
-models: [Task]
 last_reviewed: 2026-11-05
 tests:
   - tests/Browser/VisakOverviewPagesTest.php

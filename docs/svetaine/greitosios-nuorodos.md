@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Greitosios nuorodos
-area: quickLinks
-models: [QuickLink]
 last_reviewed: 2026-11-01
 tests:
   - tests/Browser/QuickLinkOrderingTest.php

@@ -1,7 +1,6 @@
 ---
 doc_status: reviewed
 title: Padaliniai
-area: visak
 last_reviewed: 2026-10-27
 tests:
   - tests/Feature/Api/Admin/RecordActivityStatusTest.php

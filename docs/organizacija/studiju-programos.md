@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Studijų programos
-area: studyPrograms
-models: [StudyProgram]
 last_reviewed: 2026-10-15
 tests:
   - tests/Feature/Admin/Management/StudyProgramControllerTest.php

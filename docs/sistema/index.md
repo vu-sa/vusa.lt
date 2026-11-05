@@ -2,7 +2,6 @@
 doc_status: reviewed
 last_reviewed: 2026-09-30
 title: Sistema
-coverage: ignore
 ---
 
 # Sistema

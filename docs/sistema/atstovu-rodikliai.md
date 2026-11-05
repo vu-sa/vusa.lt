@@ -1,7 +1,6 @@
 ---
 doc_status: reviewed
 title: Atstovų rodikliai
-area: repMetrics
 last_reviewed: 2026-10-25
 tests:
   - tests/Feature/Api/Admin/RecordActivityStatusTest.php

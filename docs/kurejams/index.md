@@ -2,7 +2,6 @@
 doc_status: reviewed
 last_reviewed: 2026-10-07
 title: Kūrėjams
-coverage: ignore
 ---
 
 # Kūrėjams

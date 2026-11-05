@@ -1,7 +1,6 @@
 ---
 doc_status: reviewed
 title: Padaliniai ir pareigybės
-coverage: ignore
 last_reviewed: 2026-09-30
 tests:
   - tests/Feature/Permissions/ScheduledDutyAuthorizationTest.php

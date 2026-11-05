@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Baneriai
-area: banners
-models: [Banner]
 last_reviewed: 2026-11-01
 tests:
   - resources/js/Components/Collection/__tests__/ContentCollectionPublishing.component.test.ts
