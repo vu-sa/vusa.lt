@@ -59,7 +59,8 @@ describe('base contract', function (): void {
 
         $data = $notification->toArray($user);
 
-        expect($data)->toHaveKeys(['primaryAction', 'secondaryAction', 'context', 'actions'])
+        expect($data)->toHaveKeys(['primaryAction', 'secondaryAction', 'context', 'actions', 'excerpt'])
+            ->and($data['excerpt'])->toBeNull()
             ->and($data['primaryAction'])->toBe($notification->primaryAction())
             ->and($data['secondaryAction'])->toBeNull()
             ->and($data['actions'])->toBe([$notification->primaryAction()]);
@@ -195,15 +196,14 @@ describe('act-tier context rows', function (): void {
         expect(collect($rows)->pluck('value'))->toContain($duty->name, now()->addDays(30)->format('Y-m-d'));
     });
 
-    test('CommentPosted lists the object and the author', function (): void {
+    test('CommentPosted does not repeat the object and author in context', function (): void {
         $notification = new CommentPostedNotification(
             'Sveiki',
             ['modelClass' => 'Task', 'name' => 'Užduotis X', 'url' => '/t/1', 'id' => '1'],
             ['modelClass' => 'User', 'name' => 'Jonas Jonaitis'],
         );
 
-        expect(collect($notification->context($this->user))->pluck('value')->all())
-            ->toBe(['Užduotis X', 'Jonas Jonaitis']);
+        expect($notification->context($this->user))->toBe([]);
     });
 });
 

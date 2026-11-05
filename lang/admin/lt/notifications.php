@@ -49,14 +49,16 @@ return [
     'view_all' => 'Rodyti visus pranešimus',
     'toast_fallback_title' => 'Naujas pranešimas',
 
+    'quote' => '„:text“',
+
     // Comment notifications
+    'comment_digest_group' => 'Nauji komentarai',
     'comment_posted_title' => 'Naujas komentaras: :name',
-    'comment_posted_body' => ':commenter paliko komentarą: :comment',
+    'comment_posted_body' => ':commenter paliko komentarą',
+    'comment_mentioned_body' => ':commenter paminėjo tave komentare',
+    'comment_poll_body' => ':commenter pradėjo apklausą',
     'commented_on' => 'pakomentavo',
     'changed_status_on' => 'pakeitė statusą',
-    'left_comment_on' => 'paliko komentarą',
-    'mentioned_you_in_comment' => 'paminėjo tave komentare',
-    'started_poll_on' => 'pradėjo apklausą',
 
     // Assignment notifications
     'assigned_to_resource_title' => 'Priskirta prie: :resource',

@@ -5,6 +5,10 @@
 
 {{ $body }}
 
+@if ($excerpt ?? null)
+<x-mail::quote :text="$excerpt" />
+@endif
+
 <x-mail::context :rows="$context" />
 
 <x-mail::button color="neutral" align="left" :url="$actionUrl">

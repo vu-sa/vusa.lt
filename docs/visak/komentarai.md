@@ -3,13 +3,15 @@ doc_status: reviewed
 title: Komentarai
 area: comments
 models: [Comment]
-last_reviewed: 2026-10-26
+last_reviewed: 2026-11-04
 tests:
   - tests/Feature/Admin/Discussions/CommentAuthorizationTest.php
   - tests/Feature/Admin/Discussions/CommentApiTest.php
   - tests/Feature/Admin/Discussions/CommentModelTest.php
   - tests/Feature/Admin/Discussions/PollVoteApiTest.php
   - tests/Feature/Notifications/CommentNotificationTest.php
+  - tests/Feature/Notifications/MailTemplateRenderTest.php
+  - tests/Unit/Notifications/CommentPostedNotificationTest.php
   - resources/js/Components/Discussions/__tests__/DiscussionPanel.component.test.ts
   - resources/js/Features/Admin/ActivityLogViewer/__tests__/RecordActivity.component.test.ts
   - resources/js/Components/Discussions/__tests__/CommentComposer.component.test.ts
@@ -120,6 +122,10 @@ komentarų trynimo teisės nepakanka. Savo komentarą gali trinti autorius, kit�
 redaguoti galintis narys arba visos platformos komentarų moderatorius.
 
 ## Pranešimai ir automatizavimas {#pranesimai}
+
+Laiško antraštė nurodo aptariamą įrašą, o viena eilutė – kas paliko komentarą, paminėjo narį ar pradėjo apklausą.
+Po ja rodoma trumpa komentaro citata be formatavimo. Citata pateikiama ir el. pašto suvestinėje,
+o pranešime į įrenginį rodoma trumpesnė ištrauka. Ilgą komentarą galima perskaityti atvėrus įrašą.
 
 - **Paminėjimai**: paminėtas narys numatytai gauna laišką iškart ir pranešimą į įrenginį, jei jame suteikė leidimą.
   Šias parinktis galima pakeisti [pranešimų nustatymuose](/pagrindai/pranesimai).

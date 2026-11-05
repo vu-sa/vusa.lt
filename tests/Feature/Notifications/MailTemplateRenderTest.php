@@ -396,3 +396,80 @@ test('meeting digest lines retain the notification type for followers', function
     expect($created->toDigestItem($this->recipient)['type'])->toBe('followed_institution_activity')
         ->and($completed->toDigestItem($this->recipient)['type'])->toBe('followed_institution_activity');
 });
+
+test('comment quotes render as escaped text without interpreting markdown', function (string $locale): void {
+    app()->setLocale($locale);
+    $notification = new CommentPostedNotification(
+        '<p>**Svarbu** &amp; &lt;img src=x onerror=alert(1)&gt; [nuoroda](https://untrusted.test)</p><p>Kitas sakinys.</p>',
+        ['modelClass' => 'Task', 'name' => 'Planavimas', 'url' => 'https://example.test/task'],
+        ['modelClass' => 'User', 'name' => 'Petras Komentatorius'],
+    );
+
+    $rendered = renderNotificationMail($notification, $this->recipient);
+
+    expect($rendered['html'])->toContain('**Svarbu**', '&amp;', '&lt;img', 'Kitas sakinys.')
+        ->not->toContain('&amp;amp;', '<img src="x"', '<strong>Svarbu</strong>', 'href="https://untrusted.test"', '<pre>')
+        ->and($rendered['text'])->toContain(
+            ($locale === 'lt' ? '„' : '“').'**Svarbu** & <img src=x onerror=alert(1)>',
+            'Kitas sakinys.'.($locale === 'lt' ? '“' : '”'),
+        );
+})->with(['lt', 'en']);
+
+test('comment excerpts render in single and grouped digests in html and text', function (bool $grouped, string $locale): void {
+    app()->setLocale($locale);
+    $notification = new CommentPostedNotification(
+        '<p>**Svarbu** &amp; aišku.</p>',
+        ['modelClass' => 'Task', 'name' => 'Planavimas', 'url' => 'https://example.test/task', 'id' => '1'],
+        ['modelClass' => 'User', 'name' => 'Petras'],
+    );
+    $items = [$notification->toDigestItem($this->recipient)];
+    if ($grouped) {
+        $items[] = $notification->toDigestItem($this->recipient);
+    }
+    $digest = new NotificationDigest($this->recipient, ['comment' => $items]);
+    $markdown = new Markdown(view(), config('mail.markdown'));
+
+    $html = (string) $markdown->render('emails.notification-digest', $digest->content()->with);
+    $text = (string) $markdown->renderText('emails.notification-digest', $digest->content()->with);
+
+    $quote = $locale === 'lt' ? '„**Svarbu** & aišku.“' : '“**Svarbu** & aišku.”';
+
+    expect(html_entity_decode($html))->toContain($quote)
+        ->and($html)->not->toContain('&amp;amp;', '<strong>Svarbu</strong>')
+        ->and($text)->toContain($quote);
+
+    if (! $grouped) {
+        expect($text)->toContain("\n  ".$quote);
+    }
+})->with([false, true])->with(['lt', 'en']);
+
+test('grouped comments keep each record in its own line under a generic heading', function (string $locale, string $heading, bool $isMention): void {
+    app()->setLocale($locale);
+    $first = new CommentPostedNotification(
+        '<p>First comment.</p>',
+        ['modelClass' => 'Task', 'name' => 'Record Alpha', 'url' => 'https://example.test/alpha'],
+        ['modelClass' => 'User', 'name' => 'Jonas'],
+        isMention: $isMention,
+    );
+    $second = new CommentPostedNotification(
+        '<p>Second comment.</p>',
+        ['modelClass' => 'Meeting', 'name' => 'Record Beta', 'url' => 'https://example.test/beta'],
+        ['modelClass' => 'User', 'name' => 'Ona'],
+        isMention: $isMention,
+    );
+    $items = [$first->toDigestItem($this->recipient), $second->toDigestItem($this->recipient)];
+    $digest = new NotificationDigest($this->recipient, ['comment' => $items]);
+    $markdown = new Markdown(view(), config('mail.markdown'));
+
+    foreach ($items as $index => $item) {
+        expect($item['digestGroupTitle'])->toBe($heading)
+            ->and(substr_count($item['digestLine'], $index === 0 ? 'Record Alpha' : 'Record Beta'))->toBe(1)
+            ->and($item['digestLine'])->not->toContain($index === 0 ? 'Record Beta' : 'Record Alpha');
+    }
+    foreach ([$markdown->render('emails.notification-digest', $digest->content()->with), $markdown->renderText('emails.notification-digest', $digest->content()->with)] as $part) {
+        $content = html_entity_decode((string) $part);
+        expect($content)->toContain($heading.' (2)', $items[0]['digestLine'], $items[1]['digestLine'])
+            ->and(substr_count($content, 'Record Alpha'))->toBe(1)
+            ->and(substr_count($content, 'Record Beta'))->toBe(1);
+    }
+})->with([['lt', 'Nauji komentarai'], ['en', 'New comments']])->with([false, true]);

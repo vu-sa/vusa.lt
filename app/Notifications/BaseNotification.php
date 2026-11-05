@@ -50,6 +50,11 @@ abstract class BaseNotification extends Notification implements ShouldQueue
      */
     abstract public function body(object $notifiable): string;
 
+    public function excerpt(object $notifiable): ?string
+    {
+        return null;
+    }
+
     /**
      * Get the URL to navigate to.
      */
@@ -218,6 +223,7 @@ abstract class BaseNotification extends Notification implements ShouldQueue
             'modelClass' => $this->modelClass() ?? $this->category()->modelEnumKey(),
             'title' => $this->title($notifiable),
             'body' => $this->body($notifiable),
+            'excerpt' => $this->excerpt($notifiable),
             'url' => $this->url(),
             'icon' => $this->icon(),
             'color' => $this->category()->color(),
@@ -252,6 +258,7 @@ abstract class BaseNotification extends Notification implements ShouldQueue
                 'recipientName' => $notifiable->name ?? null,
                 'title' => $this->title($notifiable),
                 'body' => $this->body($notifiable),
+                'excerpt' => $this->excerpt($notifiable),
                 'context' => $this->context($notifiable),
                 'secondaryAction' => $this->secondaryAction(),
                 'category' => __($this->category()->labelKey()),
@@ -266,10 +273,29 @@ abstract class BaseNotification extends Notification implements ShouldQueue
     {
         $action = $this->primaryAction() ?? ['label' => __('Peržiūrėti'), 'url' => $this->url()];
 
+        $body = strip_tags($this->body($notifiable));
+        $excerpt = $this->excerpt($notifiable);
+
+        $quoteLength = mb_strlen(__('notifications.quote', ['text' => '']));
+        $bodyLimit = $excerpt === null ? 120 : 120 - mb_strlen(' — ') - $quoteLength - 2;
+
+        if (mb_strlen($body) > $bodyLimit) {
+            $body = mb_substr($body, 0, $bodyLimit - 1).'…';
+        }
+
+        if ($excerpt !== null) {
+            $excerptLimit = 120 - mb_strlen($body.' — ') - $quoteLength;
+            if (mb_strlen($excerpt) > $excerptLimit) {
+                $excerpt = mb_substr($excerpt, 0, $excerptLimit - 1).'…';
+            }
+
+            $body .= ' — '.__('notifications.quote', ['text' => $excerpt]);
+        }
+
         return (new WebPushMessage)
             ->title($this->title($notifiable))
             ->icon('/images/icons/favicons/favicon-196x196.png')
-            ->body(Str::limit(strip_tags($this->body($notifiable)), 120))
+            ->body($body)
             ->action($action['label'], 'view')
             // Android defers normal-urgency pushes while the phone idles (Doze); an ask should not wait.
             ->options($this->urgency() === NotificationUrgency::Act
@@ -297,6 +323,7 @@ abstract class BaseNotification extends Notification implements ShouldQueue
             'digestGroupTitle' => $this->digestGroupTitle($notifiable),
             'title' => $this->title($notifiable),
             'body' => Str::limit(strip_tags($this->body($notifiable)), 200),
+            'excerpt' => $this->excerpt($notifiable),
             'url' => $this->url(),
             'icon' => $this->icon(),
             'context' => $this->context($notifiable),

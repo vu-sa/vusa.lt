@@ -22,6 +22,9 @@
 <td style="border-bottom: 1px solid #e4e4e7; padding: 14px 0;">
 <a href="{{ $item['url'] }}" style="font-size: 15px; font-weight: 600; color: #27272a; text-decoration: none;">{{ Str::limit($item['title'], 80) }}</a>
 <div style="font-size: 14px; color: #52525b; margin-top: 2px;">{{ Str::limit($item['body'], 120) }}</div>
+@if (! empty($item['excerpt']))
+<div style="font-size: 14px; color: #71717a; font-style: italic; margin-top: 6px;">{{ __('notifications.quote', ['text' => Str::limit($item['excerpt'], 160)]) }}</div>
+@endif
 @if (! empty($item['context']))
 <div style="font-size: 13px; color: #71717a; margin-top: 4px;">
 @foreach ($item['context'] as $row)

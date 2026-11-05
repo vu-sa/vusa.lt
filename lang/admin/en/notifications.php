@@ -49,14 +49,16 @@ return [
     'view_all' => 'View All Notifications',
     'toast_fallback_title' => 'New Notification',
 
+    'quote' => '“:text”',
+
     // Comment notifications
+    'comment_digest_group' => 'New comments',
     'comment_posted_title' => 'New comment: :name',
-    'comment_posted_body' => ':commenter left a comment: :comment',
+    'comment_posted_body' => ':commenter left a comment',
+    'comment_mentioned_body' => ':commenter mentioned you in a comment',
+    'comment_poll_body' => ':commenter started a poll',
     'commented_on' => 'commented on',
     'changed_status_on' => 'changed status on',
-    'left_comment_on' => 'left a comment on',
-    'mentioned_you_in_comment' => 'mentioned you in a comment on',
-    'started_poll_on' => 'started a poll on',
 
     // Assignment notifications
     'assigned_to_resource_title' => 'Assigned to: :resource',

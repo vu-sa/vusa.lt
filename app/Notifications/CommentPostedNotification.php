@@ -3,15 +3,8 @@
 namespace App\Notifications;
 
 use App\Enums\NotificationType;
-use App\Models\User;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-/**
- * Notification sent when a comment is posted on a model.
- *
- * Replaces the old ModelCommented notification with standardized structure.
- */
 class CommentPostedNotification extends BaseNotification
 {
     public function type(): NotificationType
@@ -20,52 +13,16 @@ class CommentPostedNotification extends BaseNotification
     }
 
     /**
-     * Create a new notification instance.
-     *
-     * @param  array{modelClass: string, name: string, url: string, id?: string}  $commentedObject
+     * @param  array{modelClass: string, name: string, url: string, id?: string|int}  $commentedObject
      * @param  array{modelClass: string, name: string, image?: string}  $commenter
      */
     public function __construct(
-        /**
-         * The comment text/content.
-         */
-        protected string $commentText,
-        /**
-         * The model that was commented on.
-         */
+        protected string $commentBody,
         protected array $commentedObject,
-        /**
-         * The user who posted the comment.
-         */
         protected array $commenter,
-        /**
-         * Whether the recipient was @-mentioned (asks for a reply) rather than following the thread.
-         */
-        protected bool $isMention = false
+        protected bool $isMention = false,
+        protected bool $isPoll = false,
     ) {}
-
-    /**
-     * Create from a comment model and related data.
-     */
-    public static function fromComment(string $text, Model $commentable, User $commenter): self
-    {
-        $objectName = $commentable->name ?? $commentable->title ?? __('objektas');
-
-        $object = [
-            'modelClass' => class_basename($commentable::class),
-            'name' => $objectName,
-            'url' => method_exists($commentable, 'getShowUrl') ? $commentable->getShowUrl() : '#',
-            'id' => $commentable->getKey(),
-        ];
-
-        $subject = [
-            'modelClass' => 'User',
-            'name' => $commenter->name,
-            'image' => $commenter->profile_photo_path,
-        ];
-
-        return new self($text, $object, $subject);
-    }
 
     public function title(object $notifiable): string
     {
@@ -76,10 +33,34 @@ class CommentPostedNotification extends BaseNotification
 
     public function body(object $notifiable): string
     {
-        return __('notifications.comment_posted_body', [
-            'commenter' => $this->commenter['name'],
-            'comment' => Str::limit(strip_tags($this->commentText), 150),
-        ]);
+        $key = match (true) {
+            $this->isMention => 'notifications.comment_mentioned_body',
+            $this->isPoll => 'notifications.comment_poll_body',
+            default => 'notifications.comment_posted_body',
+        };
+
+        return __($key, ['commenter' => $this->commenter['name']]);
+    }
+
+    public function excerpt(object $notifiable): ?string
+    {
+        $html = preg_replace('/(<\/(?:p|li|ul|ol|blockquote|div|h[1-6])\s*>|<br\b[^>]*>)/i', ' $1', $this->commentBody);
+        $text = Str::squish(html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+
+        return $text === '' ? null : Str::limit($text, 200);
+    }
+
+    public function digestLine(object $notifiable): string
+    {
+        $body = $this->body($notifiable).' · '.$this->commentedObject['name'];
+        $excerpt = $this->excerpt($notifiable);
+
+        return $excerpt === null ? $body : $body.' — '.__('notifications.quote', ['text' => $excerpt]);
+    }
+
+    public function digestGroupTitle(object $notifiable): string
+    {
+        return __('notifications.comment_digest_group');
     }
 
     public function url(): string
@@ -89,7 +70,6 @@ class CommentPostedNotification extends BaseNotification
 
     public function modelClass(): ?string
     {
-        // Map the commented object's model class to ModelEnum key
         $mapping = [
             'Reservation' => 'RESERVATION',
             'Meeting' => 'MEETING',
@@ -109,15 +89,6 @@ class CommentPostedNotification extends BaseNotification
     public function object(): ?array
     {
         return $this->commentedObject;
-    }
-
-    #[\Override]
-    public function context(object $notifiable): array
-    {
-        return $this->contextRows([
-            'object' => $this->commentedObject['name'],
-            'author' => $this->commenter['name'],
-        ]);
     }
 
     #[\Override]

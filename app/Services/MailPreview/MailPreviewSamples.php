@@ -89,8 +89,8 @@ class MailPreviewSamples
             new Notifications\ReservationStatusChangedNotification([$changes[0]], $user),
             new Notifications\AssignedToResourceNotification($actor, $object),
             new Notifications\ReservationDraftItemTakenNotification([$this->text('Projektorius', 'Projector')], '2026-11-05'),
-            new Notifications\CommentPostedNotification($this->text('Pavyzdinis komentaras.', 'A sample comment.'), $object, $actor),
-            new Notifications\CommentPostedNotification($this->text('Pavyzdinis paminėjimas.', 'A sample mention.'), $object, $actor, true),
+            new Notifications\CommentPostedNotification($this->text('<p>Manau, 3 punktą reikėtų perkelti į kitą posėdį.</p><p>Ar pritariate?</p>', '<p>I think item 3 should move to the next meeting.</p><p>Do you agree?</p>'), $object, $actor),
+            new Notifications\CommentPostedNotification($this->text('<p>@Ona, ar gali patikslinti siūlomą datą?</p>', '<p>@Ona, could you clarify the proposed date?</p>'), $object, $actor, true),
             new Notifications\DutyExpiringNotification($duty, (new Models\Pivots\Dutiable)->forceFill(['end_date' => '2026-11-30']), 30),
             new Notifications\AccessChangedNotification([[
                 'kind' => 'started', 'dutyName' => $this->text('Atstovas', 'Representative'), 'institutionName' => $institution->name,

@@ -15,15 +15,11 @@ class NotifyUsersOfComment implements ShouldQueue
 {
     public function __construct(protected CommentRecipientResolver $recipients) {}
 
-    /**
-     * Handle the event.
-     */
     public function handle(CommentPosted $event): void
     {
         $comment = $event->comment;
         $commentable = $comment->commentable;
 
-        // NOTE: in some cases, $commentable can be null, so we need to check if it's null
         if (! $commentable) {
             return;
         }
@@ -39,7 +35,6 @@ class NotifyUsersOfComment implements ShouldQueue
         $objectClassName = class_basename($commentable::class);
         $objectName = $commentable->name ?? $commentable->title ?? null;
 
-        // if class name is reservation_resource, then we need to get the name from the reservation
         if ($objectClassName === class_basename(ReservationResource::class)) {
             $objectName = $commentable->reservation->name;
         }
@@ -53,34 +48,20 @@ class NotifyUsersOfComment implements ShouldQueue
             'id' => $commentable->getKey(),
         ];
 
-        // Mentioned users get a personal notification ("X mentioned you …").
         $mentioned = $this->recipients->mentioned($comment);
 
         if ($mentioned->isNotEmpty()) {
-            $text = $this->text($user->name, $objectName, 'notifications.mentioned_you_in_comment');
-            Notification::send($mentioned, new CommentPostedNotification($text, $object, $subject, isMention: true));
+            Notification::send($mentioned, new CommentPostedNotification(
+                $comment->body, $object, $subject, isMention: true, isPoll: $comment->kind === CommentKind::Poll,
+            ));
         }
 
-        // The rest of the audience (reps for a root comment, thread participants
-        // for a reply) get the standard comment / poll notification.
         $audience = $this->recipients->audience($comment);
 
         if ($audience->isNotEmpty()) {
-            $action = $comment->kind === CommentKind::Poll
-                ? 'notifications.started_poll_on'
-                : 'notifications.left_comment_on';
-
-            $text = $this->text($user->name, $objectName, $action);
-
-            Notification::send($audience, new CommentPostedNotification($text, $object, $subject));
+            Notification::send($audience, new CommentPostedNotification(
+                $comment->body, $object, $subject, isPoll: $comment->kind === CommentKind::Poll,
+            ));
         }
-    }
-
-    /**
-     * Build the notification body fragment ("<b>X</b> {action} <b>Y</b>").
-     */
-    protected function text(string $authorName, ?string $objectName, string $actionKey): string
-    {
-        return "<p><strong>{$authorName}</strong> ".__($actionKey)." <strong>{$objectName}</strong></p>";
     }
 }
