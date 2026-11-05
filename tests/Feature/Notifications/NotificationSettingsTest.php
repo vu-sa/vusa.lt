@@ -8,7 +8,6 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Notifications\NotificationAudience;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
@@ -111,39 +110,6 @@ describe('muting', function (): void {
 
     test('only offers the listed durations', function (): void {
         asUser($this->user)->patch(route('profile.muteNotifications'), ['hours' => 10000])->assertSessionHasErrors('hours');
-    });
-});
-
-describe('converting the old category preferences', function (): void {
-    test('an unticked category channel turns that channel off for every type in its section', function (): void {
-        DB::table('users')->where('id', $this->user->id)->update(['notification_preferences' => json_encode([
-            'channels' => [
-                'task' => ['in_app' => true, 'push' => false, 'email_digest' => true],
-                'registration' => ['in_app' => true, 'push' => true, 'email_digest' => false],
-                'meeting' => ['in_app' => false, 'push' => true, 'email_digest' => false],
-            ],
-            'followed_institutions' => ['push' => false],
-            'digest_emails' => ['duty@vusa.lt'],
-            'digest_frequency_hours' => 12,
-            'muted_threads' => [['model_class' => 'Task', 'model_id' => '1', 'until' => null]],
-        ])]);
-
-        $migration = require database_path('migrations/2026_09_25_214955_convert_notification_preferences_to_types.php');
-        $migration->up();
-
-        $stored = json_decode(DB::table('users')->where('id', $this->user->id)->value('notification_preferences'), true);
-
-        expect($stored['types'])->toMatchArray([
-            'task_reminder' => ['push' => false],
-            'meeting_reminder' => ['email' => 'off'],
-            'meeting_created' => ['email' => 'off'],
-            'followed_institution_activity' => ['email' => 'off', 'push' => false],
-        ])
-            // Overdue does not push by default, so turning it off is no override.
-            ->and($stored['types'])->not->toHaveKeys(['task_assigned', 'task_overdue', 'member_registration'])
-            ->and($stored['emails'])->toBe(['duty@vusa.lt'])
-            ->and($stored['digest_frequency_hours'])->toBe(12)
-            ->and($stored)->not->toHaveKeys(['channels', 'muted_threads', 'followed_institutions', 'digest_emails']);
     });
 });
 

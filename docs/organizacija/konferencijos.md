@@ -6,7 +6,6 @@ tests:
   - tests/Feature/Admin/MailingLists/ResolveMailingListMembersTest.php
   - tests/Feature/Admin/MailingLists/SyncMailingListTest.php
   - tests/Feature/Admin/MailingLists/MailingListControllerTest.php
-  - tests/Feature/Admin/MailingLists/MailingListDeploymentTest.php
   - tests/Feature/Admin/MailingLists/FetchMailingListArchiveTest.php
   - tests/Feature/Admin/MailingLists/ImportMailingListsTest.php
   - tests/Feature/Admin/MailingLists/MailingListQueueTest.php

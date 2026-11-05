@@ -5,8 +5,6 @@ last_reviewed: 2026-10-18
 tests:
   - tests/Feature/Services/InstitutionRelationServiceTest.php
   - tests/Feature/Admin/Management/InstitutionLinkControllerTest.php
-  - tests/Feature/Migrations/ReplaceRelationshipsWithInstitutionLinksTest.php
-  - tests/Feature/Migrations/ReplaceCrossTenantWithScopeOnInstitutionTypeLinksTest.php
 ---
 
 # Ryšiai

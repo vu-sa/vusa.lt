@@ -7,7 +7,6 @@ tests:
   - tests/Feature/Permissions/DutyTypeAssignmentTest.php
   - tests/Feature/Responsibilities/ProjectDutyResponsibilitiesTest.php
   - tests/Feature/Admin/ModelMeta/TypeControllerTest.php
-  - tests/Feature/Migrations/SplitTypesTest.php
   - resources/js/Pages/Admin/ModelMeta/__tests__/IndexDomainTypes.test.ts
   - resources/js/Pages/Admin/ModelMeta/__tests__/ShowType.test.ts
   - tests/Browser/TypeDirectoryTest.php
