@@ -303,14 +303,13 @@ class FormController extends AdminController
         return redirect()->route('forms.index')->with('success', $this->entityMessage('deleted', 'form'));
     }
 
-    public function export(Form $form)
+    public function export(Request $request, Form $form)
     {
         $this->handleAuthorization('update', $form);
 
-        // slugify the form name up to 16 char, and add datetime
         $fileName = substr(Str::slug($form->getTranslation('name', app()->getLocale())), 0, 20).'-'.now()->format('Y-m-d-H-i-s');
 
-        return new FormRegistrationsExport($form)->download($fileName.'.xlsx');
+        return new FormRegistrationsExport($form, $request->user())->download($fileName.'.xlsx');
     }
 
     public function restore(Form $form): RedirectResponse

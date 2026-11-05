@@ -3,12 +3,14 @@
 namespace App\Exports;
 
 use App\Models\Form;
+use App\Models\User;
+use App\Services\FormRegistrationVisibilityService;
 use App\Support\Spreadsheet\SpreadsheetWriter;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FormRegistrationsExport
 {
-    public function __construct(public Form $form) {}
+    public function __construct(public Form $form, public User $user) {}
 
     public function download(string $filename): StreamedResponse
     {
@@ -20,7 +22,13 @@ class FormRegistrationsExport
      */
     public function rows(): array
     {
-        $this->form->load('formFields', 'registrations.fieldResponses.formField');
+        $this->form->load('formFields');
+
+        $registrations = app(FormRegistrationVisibilityService::class)
+            ->query($this->form, $this->user)
+            ->with('fieldResponses')
+            ->orderBy('id')
+            ->get();
 
         $finalArray = [];
 
@@ -28,7 +36,7 @@ class FormRegistrationsExport
 
         $finalArray[] = array_merge(['Registracijos ID'], $formFieldLabelArray);
 
-        $this->form->registrations->each(function ($registration) use (&$finalArray): void {
+        $registrations->each(function ($registration) use (&$finalArray): void {
             $registrationArray = [$registration->id];
 
             $this->form->formFields->each(function ($formField) use (&$registrationArray, $registration): void {

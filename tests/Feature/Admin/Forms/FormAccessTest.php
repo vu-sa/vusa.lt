@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\ResponsibilityPurpose;
+use App\Exports\FormRegistrationsExport;
 use App\Models\FieldResponse;
 use App\Models\Form;
 use App\Models\FormField;
@@ -305,6 +306,74 @@ describe('student rep registration form access', function (): void {
                 ->where('can.update', true)
                 ->where('can.export', true)
             );
+    });
+});
+
+describe('registration export visibility', function (): void {
+    test('a central tenant editor exports only visible member registrations in id order', function (): void {
+        $user = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->centralTenant);
+        $visible = Registration::factory()->for($this->memberForm)->create();
+        $hidden = Registration::factory()->for($this->memberForm)->create();
+        $laterVisible = Registration::factory()->for($this->memberForm)->create();
+
+        foreach ([$visible, $hidden, $laterVisible] as $registration) {
+            FieldResponse::factory()->for($registration)->for($this->memberTenantField, 'formField')->create([
+                'response' => ['value' => (string) ($registration->is($hidden) ? $this->tenant->id : $this->centralTenant->id)],
+            ]);
+        }
+
+        $rows = new FormRegistrationsExport($this->memberForm, $user)->rows();
+
+        expect(array_slice($rows, 1))->toBe([
+            [$visible->id, (string) $this->centralTenant->id],
+            [$laterVisible->id, (string) $this->centralTenant->id],
+        ]);
+
+        asUser($user)
+            ->get(route('forms.export', $this->memberForm))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    });
+
+    test('a central tenant editor exports only visible student representative registrations', function (): void {
+        $user = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->centralTenant);
+        $visibleInstitution = $user->duties()->first()->institution;
+        $hiddenInstitution = Institution::factory()->for($this->tenant)->create();
+        $visible = createInstitutionRegistration($this->studentRepForm, $this->studentInstitutionField, $visibleInstitution);
+        createInstitutionRegistration($this->studentRepForm, $this->studentInstitutionField, $hiddenInstitution);
+
+        $rows = new FormRegistrationsExport($this->studentRepForm, $user)->rows();
+
+        expect(array_column(array_slice($rows, 1), 0))->toBe([$visible->id]);
+    });
+
+    test('global readers and super administrators export member registrations from every tenant', function (bool $superAdmin): void {
+        $user = $superAdmin ? makeAdminUser() : makeUser($this->centralTenant);
+        if (! $superAdmin) {
+            $user->givePermissionTo('forms.read.*');
+        }
+
+        $registrations = [];
+        foreach ([$this->centralTenant, $this->tenant] as $tenant) {
+            $registration = Registration::factory()->for($this->memberForm)->create();
+            FieldResponse::factory()->for($registration)->for($this->memberTenantField, 'formField')->create([
+                'response' => ['value' => (string) $tenant->id],
+            ]);
+            $registrations[] = [$registration->id, (string) $tenant->id];
+        }
+
+        $rows = new FormRegistrationsExport($this->memberForm, $user)->rows();
+
+        expect(array_slice($rows, 1))->toBe($registrations);
+    })->with(['global reader' => false, 'super administrator' => true]);
+
+    test('a global reader without update permission cannot download an export', function (): void {
+        $user = makeUser($this->centralTenant);
+        $user->givePermissionTo('forms.read.*');
+
+        asUser($user)
+            ->get(route('forms.export', $this->memberForm))
+            ->assertForbidden();
     });
 });
 

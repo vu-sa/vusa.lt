@@ -170,7 +170,7 @@ Paspaudus formos pavadinimo atveriamas formos puslapis (`/mano/forms/{id}`):
 
 Formos puslapio viršuje esantis mygtukas **Eksportuoti** sugeneruoja ir atsiunčia Excel (`.xlsx`) failą:
 
-- Faile pateikiamos visos registracijos su tiksliomis datomis ir atsakymais į kiekvieną klausimą.
+- Faile pateikiamos tik naudotojui matomos registracijos su atsakymais į kiekvieną klausimą. Bendrose narių ir studentų atstovų anketose taikomos tos pačios padalinių ir institucijų ribos kaip peržiūroje.
 - Failo pavadinime automatiškai nurodomas formos pavadinimas ir eksporto laiko žyma.
 - Eksporto teisę turi tik administratoriai, galintys redaguoti formą (paprastas koordinatorius, peržiūrintis atstovų registracijas tik per atsakomybę, eksportuoti negali).
 
