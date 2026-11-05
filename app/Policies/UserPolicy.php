@@ -180,7 +180,9 @@ class UserPolicy extends ModelPolicy
             return false;
         }
 
-        $targetTenantIds = $target->tenants()->pluck('tenants.id')->unique();
+        $targetTenantIds = ($target->relationLoaded('tenants')
+            ? $target->tenants->pluck('id')
+            : $target->tenants()->pluck('tenants.id'))->unique();
 
         if ($targetTenantIds->isEmpty()) {
             return false;
@@ -196,7 +198,9 @@ class UserPolicy extends ModelPolicy
      */
     protected function isProtected(User $target): bool
     {
-        return $target->isSuperAdmin() || $target->roles()->exists();
+        return $target->isSuperAdmin() || ($target->relationLoaded('roles')
+            ? $target->roles->isNotEmpty()
+            : $target->roles()->exists());
     }
 
     /**
