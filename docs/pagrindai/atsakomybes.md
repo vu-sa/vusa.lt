@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Atsakomybės
 area: duties
 models: [Duty, Role, ResponsibilityGrant]
-last_reviewed: 2026-10-31
+last_reviewed: 2026-11-05
 tests:
   - tests/Feature/Responsibilities/ReservationHandlingTest.php
   - tests/Feature/Responsibilities/ResponsibilityResolverTest.php

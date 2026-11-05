@@ -1,5 +1,5 @@
-@component('mail::message')
-# {{ __('mail.student_rep.confirm.heading') }} ✅
+<x-mail::message>
+# {{ __('mail.student_rep.confirm.heading') }}
 
 {{ \App\Support\MailGreeting::forName($name) }}
 
@@ -16,4 +16,4 @@
 @endif
 
 {{ __('mail.student_rep.confirm.goodbye') }}
-@endcomponent
+</x-mail::message>

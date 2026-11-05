@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Enums\NotificationType;
 use App\Models\InstitutionActivityRequest;
+use App\Notifications\Concerns\NamesObjectInTitle;
 
 /**
  * Someone asked "Ar vyko posėdis?" says the institution is not theirs, so the secretaries or
@@ -11,6 +12,8 @@ use App\Models\InstitutionActivityRequest;
  */
 class InstitutionActivityNotMineNotification extends BaseNotification
 {
+    use NamesObjectInTitle;
+
     public function __construct(private readonly InstitutionActivityRequest $request) {}
 
     public function shouldSend(object $notifiable, string $channel): bool
@@ -32,7 +35,6 @@ class InstitutionActivityNotMineNotification extends BaseNotification
     {
         return __('notifications.activity_not_mine_body', [
             'name' => $this->request->recipient->name,
-            'institution' => $this->request->institution->name,
         ]);
     }
 
@@ -69,14 +71,5 @@ class InstitutionActivityNotMineNotification extends BaseNotification
     public function primaryAction(): ?array
     {
         return ['label' => __('notifications.action_open_institution'), 'url' => $this->url()];
-    }
-
-    #[\Override]
-    public function context(object $notifiable): array
-    {
-        return $this->contextRows([
-            'institution' => $this->request->institution->name,
-            'answered_by' => $this->request->recipient->name,
-        ]);
     }
 }

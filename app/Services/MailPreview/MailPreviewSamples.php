@@ -154,7 +154,13 @@ class MailPreviewSamples
 
         return match ($scenario) {
             'single' => ['meeting' => [$meeting]],
-            'grouped' => ['meeting' => [...array_slice($meetings, 0, 3), $item('meeting_agenda_completed')]],
+            'grouped' => [
+                'meeting' => [...array_slice($meetings, 0, 3), $item('meeting_agenda_completed')],
+                'task' => [
+                    $item('task_assigned'),
+                    (new Notifications\TaskAssignedNotification($this->task('Atnaujinti kontaktus', 'Update the contacts', $this->institution()), $this->user()))->toDigestItem($this->user()),
+                ],
+            ],
             'overflow' => ['meeting' => $meetings],
             'overdue' => ['task' => [$item('task_overdue')]],
             'legacy' => ['meeting' => [array_diff_key($meeting, array_flip(['type', 'digestLine', 'digestGroupTitle']))]],

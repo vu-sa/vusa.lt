@@ -4,43 +4,38 @@ namespace App\Notifications;
 
 use App\Enums\NotificationType;
 use App\Models\Meeting;
+use App\Notifications\Concerns\NamesObjectInTitle;
 
 /**
  * Notification sent to remind users about upcoming meetings.
  */
 class MeetingReminderNotification extends BaseNotification
 {
+    use NamesObjectInTitle;
+
     public function type(): NotificationType
     {
         return NotificationType::MeetingReminder;
     }
 
-    /**
-     * Create a new notification instance.
-     */
     public function __construct(protected Meeting $meeting, protected int $hoursUntil) {}
 
     public function title(object $notifiable): string
     {
         if ($this->hoursUntil <= 2) {
-            return __('notifications.meeting_reminder_soon_title');
+            return __('notifications.meeting_reminder_soon_title', ['meeting' => $this->object()['name']]);
         }
 
-        return __('notifications.meeting_reminder_title');
+        return __('notifications.meeting_reminder_title', ['meeting' => $this->object()['name']]);
     }
 
     public function body(object $notifiable): string
     {
-        $meetingName = $this->meeting->institutions->first()->name ?? __('Susitikimas');
-
         if ($this->hoursUntil <= 1) {
-            return __('notifications.meeting_reminder_body_one_hour', [
-                'meeting' => $meetingName,
-            ]);
+            return __('notifications.meeting_reminder_body_one_hour');
         }
 
         return __('notifications.meeting_reminder_body', [
-            'meeting' => $meetingName,
             'hours' => $this->hoursUntil,
         ]);
     }
@@ -74,11 +69,9 @@ class MeetingReminderNotification extends BaseNotification
     #[\Override]
     public function context(object $notifiable): array
     {
-        $institution = $this->meeting->institutions->first();
         $type = $this->meeting->type;
 
         return $this->contextRows([
-            'institution' => $institution?->name,
             'date' => $this->meeting->start_time->format($type?->isDateOnly() ? 'Y-m-d' : 'Y-m-d H:i'),
             'format' => $type?->label(app()->getLocale()),
         ]);

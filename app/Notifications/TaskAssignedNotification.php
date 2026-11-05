@@ -6,27 +6,25 @@ use App\Enums\NotificationType;
 use App\Models\Institution;
 use App\Models\Task;
 use App\Models\User;
+use App\Notifications\Concerns\NamesObjectInTitle;
 
 /**
  * Notification sent when a user is assigned to a new task.
- *
- * Replaces the old TaskCreatedNotification with standardized structure.
  */
 class TaskAssignedNotification extends BaseNotification
 {
+    use NamesObjectInTitle;
+
     public function type(): NotificationType
     {
         return NotificationType::TaskAssigned;
     }
 
-    /**
-     * Create a new notification instance.
-     */
     public function __construct(protected Task $task, protected ?User $assigner = null) {}
 
     public function title(object $notifiable): string
     {
-        return __('notifications.task_assigned_title');
+        return __('notifications.task_assigned_title', ['task' => $this->task->name]);
     }
 
     public function body(object $notifiable): string
@@ -34,13 +32,10 @@ class TaskAssignedNotification extends BaseNotification
         if ($this->assigner) {
             return __('notifications.task_assigned_body_with_assigner', [
                 'assigner' => $this->assigner->name,
-                'task' => $this->task->name,
             ]);
         }
 
-        return __('notifications.task_assigned_body', [
-            'task' => $this->task->name,
-        ]);
+        return __('notifications.task_assigned_body');
     }
 
     public function url(): string

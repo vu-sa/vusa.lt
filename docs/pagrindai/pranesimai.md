@@ -2,7 +2,7 @@
 doc_status: reviewed
 title: Pranešimai
 coverage: ignore
-last_reviewed: 2026-11-04
+last_reviewed: 2026-11-05
 tests:
   - tests/Feature/Notifications/NotificationFiringTest.php
   - tests/Feature/Tasks/Subscribers/MeetingTaskSubscriberTest.php

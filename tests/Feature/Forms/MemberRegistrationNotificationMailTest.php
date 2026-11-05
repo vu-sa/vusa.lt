@@ -31,10 +31,7 @@ beforeEach(function (): void {
     app()->forgetInstance(FormSettings::class);
 });
 
-// Mail::fake() cannot see this mailable: the notification's toMail() returns a
-// Mailable and the notification channel calls $mailable->send(), which hands
-// MailFake the rendered view array — the fake only records Mailable arguments.
-// The array transport holds the real envelopes instead.
+// Inspect delivered envelopes, including their actual recipients.
 function sentMail(): Collection
 {
     $transport = app('mail.manager')->mailer('array')->getSymfonyTransport();
@@ -47,11 +44,21 @@ function sentMail(): Collection
 
 function informChairMail(): array
 {
-    return sentMail()->first(fn (array $mail) => str_contains($mail['subject'], 'užsiregistravo'));
+    return sentMail()->first(fn (array $mail) => str_starts_with($mail['subject'], 'Nario registracija:'));
 }
 
 describe('coordinator mail recipient', function (): void {
-    test('mailable is created for the duty email, not the duty holder personal email', function (): void {
+    test('a vacant intake duty still receives the standard registration email', function (): void {
+        $duty = Duty::factory()->for($this->institution)->create(['email' => 'intake@vusa.lt']);
+        grantPurpose($duty, ResponsibilityPurpose::MemberRegistration, $this->tenant);
+
+        submitMemberRegistration($this->form, $this->tenant);
+
+        expect(informChairMail()['recipients'])->toBe(['intake@vusa.lt'])
+            ->and(sentMail())->toHaveCount(2);
+    });
+
+    test('notification is delivered to the intake duty inbox', function (): void {
         $user = User::factory()->create(['email' => 'personal@gmail.com']);
         $duty = Duty::factory()
             ->for($this->institution)
@@ -82,9 +89,6 @@ describe('coordinator mail recipient', function (): void {
             ->create(['name' => 'Naujų narių koordinatorius', 'email' => 'koordinatorius@mif.vusa.lt']);
         grantPurpose($coordinatorDuty, ResponsibilityPurpose::MemberRegistration, $this->tenant);
 
-        // Attached first on purpose: User::routeNotificationForMail() (via
-        // NotificationRouter) returns the first current duty with a @vusa.lt
-        // address, so if delivery ever routed through it, this address would win.
         Duty::factory()
             ->for($this->institution)
             ->hasAttached($user, $pivot)

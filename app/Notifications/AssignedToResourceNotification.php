@@ -4,16 +4,16 @@ namespace App\Notifications;
 
 use App\Enums\NotificationType;
 use App\Models\User;
+use App\Notifications\Concerns\NamesObjectInTitle;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 /**
  * Notification sent when a user is assigned to a resource (reservation, task, etc.).
- *
- * Replaces the old UserAttachedToModel notification with standardized structure.
  */
 class AssignedToResourceNotification extends BaseNotification
 {
+    use NamesObjectInTitle;
+
     public function type(): NotificationType
     {
         return NotificationType::AssignedToResource;
@@ -73,7 +73,6 @@ class AssignedToResourceNotification extends BaseNotification
     {
         return __('notifications.assigned_to_resource_body', [
             'assigner' => $this->assigner['name'],
-            'resource' => $this->resource['name'],
         ]);
     }
 
@@ -108,15 +107,6 @@ class AssignedToResourceNotification extends BaseNotification
     public function object(): ?array
     {
         return $this->resource;
-    }
-
-    #[\Override]
-    public function context(object $notifiable): array
-    {
-        return $this->contextRows([
-            'object' => $this->resource['name'],
-            'assigned_by' => $this->assigner['name'],
-        ]);
     }
 
     #[\Override]

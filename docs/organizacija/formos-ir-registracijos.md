@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Formos ir registracijos
 area: forms
 models: [Form, Registration]
-last_reviewed: 2026-10-27
+last_reviewed: 2026-11-05
 tests:
   - tests/Feature/Admin/Forms/FormControllerTest.php
   - tests/Feature/Admin/Forms/FormAccessTest.php
