@@ -57,6 +57,8 @@ return [
     'comment_posted_body' => ':commenter left a comment',
     'comment_mentioned_body' => ':commenter mentioned you in a comment',
     'comment_poll_body' => ':commenter started a poll',
+    'poll_posted_title' => 'New poll: :name',
+    'poll_mentioned_body' => ':commenter mentioned you in a poll',
     'commented_on' => 'commented on',
     'changed_status_on' => 'changed status on',
 

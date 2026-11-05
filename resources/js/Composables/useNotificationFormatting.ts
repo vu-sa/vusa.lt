@@ -39,6 +39,8 @@ export interface NotificationData {
   modelClass?: string;
   title?: string;
   body?: string;
+  /** Plain-text user content (e.g. the comment); render as text, never v-html. */
+  excerpt?: string | null;
   url?: string;
   icon?: string;
   color?: string;

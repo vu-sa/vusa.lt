@@ -32,15 +32,26 @@ test('the excerpt truncates long user content after 200 characters', function ()
     expect($notification->excerpt($this->recipient))->toBe(str_repeat('ą', 200).'...');
 });
 
-test('comment bodies distinguish activity, polls and mentions in both locales', function (string $locale, string $posted, string $poll, string $mention): void {
+test('comment bodies distinguish activity, polls and mentions in both locales', function (string $locale, string $posted, string $poll, string $mention, string $pollMention): void {
     app()->setLocale($locale);
 
     expect((new CommentPostedNotification('Tekstas', $this->object, $this->commenter))->body($this->recipient))->toBe($posted)
         ->and((new CommentPostedNotification('Tekstas', $this->object, $this->commenter, isPoll: true))->body($this->recipient))->toBe($poll)
-        ->and((new CommentPostedNotification('Tekstas', $this->object, $this->commenter, isMention: true, isPoll: true))->body($this->recipient))->toBe($mention);
+        ->and((new CommentPostedNotification('Tekstas', $this->object, $this->commenter, isMention: true))->body($this->recipient))->toBe($mention)
+        ->and((new CommentPostedNotification('Tekstas', $this->object, $this->commenter, isMention: true, isPoll: true))->body($this->recipient))->toBe($pollMention);
 })->with([
-    ['lt', 'Jonas paliko komentarą', 'Jonas pradėjo apklausą', 'Jonas paminėjo tave komentare'],
-    ['en', 'Jonas left a comment', 'Jonas started a poll', 'Jonas mentioned you in a comment'],
+    ['lt', 'Jonas paliko komentarą', 'Jonas pradėjo apklausą', 'Jonas paminėjo tave komentare', 'Jonas paminėjo tave apklausoje'],
+    ['en', 'Jonas left a comment', 'Jonas started a poll', 'Jonas mentioned you in a comment', 'Jonas mentioned you in a poll'],
+]);
+
+test('a poll has its own subject', function (string $locale, string $comment, string $poll): void {
+    app()->setLocale($locale);
+
+    expect((new CommentPostedNotification('Tekstas', $this->object, $this->commenter))->title($this->recipient))->toBe($comment)
+        ->and((new CommentPostedNotification('Tekstas', $this->object, $this->commenter, isPoll: true))->title($this->recipient))->toBe($poll);
+})->with([
+    ['lt', 'Naujas komentaras: Taryba', 'Nauja apklausa: Taryba'],
+    ['en', 'New comment: Taryba', 'New poll: Taryba'],
 ]);
 
 test('the bell, broadcast, digest and push receive the comment excerpt', function (): void {

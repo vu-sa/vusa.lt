@@ -57,6 +57,8 @@ return [
     'comment_posted_body' => ':commenter paliko komentarą',
     'comment_mentioned_body' => ':commenter paminėjo tave komentare',
     'comment_poll_body' => ':commenter pradėjo apklausą',
+    'poll_posted_title' => 'Nauja apklausa: :name',
+    'poll_mentioned_body' => ':commenter paminėjo tave apklausoje',
     'commented_on' => 'pakomentavo',
     'changed_status_on' => 'pakeitė statusą',
 

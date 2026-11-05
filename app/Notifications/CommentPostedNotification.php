@@ -26,7 +26,7 @@ class CommentPostedNotification extends BaseNotification
 
     public function title(object $notifiable): string
     {
-        return __('notifications.comment_posted_title', [
+        return __($this->isPoll ? 'notifications.poll_posted_title' : 'notifications.comment_posted_title', [
             'name' => $this->commentedObject['name'],
         ]);
     }
@@ -34,6 +34,7 @@ class CommentPostedNotification extends BaseNotification
     public function body(object $notifiable): string
     {
         $key = match (true) {
+            $this->isMention && $this->isPoll => 'notifications.poll_mentioned_body',
             $this->isMention => 'notifications.comment_mentioned_body',
             $this->isPoll => 'notifications.comment_poll_body',
             default => 'notifications.comment_posted_body',

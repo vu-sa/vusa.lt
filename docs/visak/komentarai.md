@@ -123,9 +123,9 @@ redaguoti galintis narys arba visos platformos komentarų moderatorius.
 
 ## Pranešimai ir automatizavimas {#pranesimai}
 
-Laiško antraštė nurodo aptariamą įrašą, o viena eilutė – kas paliko komentarą, paminėjo narį ar pradėjo apklausą.
-Po ja rodoma trumpa komentaro citata be formatavimo. Citata pateikiama ir el. pašto suvestinėje,
-o pranešime į įrenginį rodoma trumpesnė ištrauka. Ilgą komentarą galima perskaityti atvėrus įrašą.
+Laiško antraštė nurodo aptariamą įrašą (apklausai – „Nauja apklausa: …“), o viena eilutė – kas paliko komentarą, paminėjo narį ar pradėjo apklausą.
+Po ja rodoma trumpa komentaro citata be formatavimo. Citata pateikiama ir el. pašto suvestinėje bei
+pranešimų varpelyje, o pranešime į įrenginį rodoma trumpesnė ištrauka. Ilgą komentarą galima perskaityti atvėrus įrašą.
 
 - **Paminėjimai**: paminėtas narys numatytai gauna laišką iškart ir pranešimą į įrenginį, jei jame suteikė leidimą.
   Šias parinktis galima pakeisti [pranešimų nustatymuose](/pagrindai/pranesimai).

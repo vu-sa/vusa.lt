@@ -41,6 +41,10 @@
 
       <p v-if="message" class="line-clamp-2 text-sm text-muted-foreground" v-html="message" />
 
+      <p v-if="excerpt" class="line-clamp-3 border-l-2 border-border pl-2 text-sm text-muted-foreground" data-slot="notification-excerpt">
+        {{ excerpt }}
+      </p>
+
       <ContextFacts v-if="context.length" class="mt-2" data-slot="notification-context">
         <ContextFact v-for="row in context" :key="row.label" :label="row.label" :value="row.value" />
       </ContextFacts>
@@ -87,6 +91,7 @@ const colors = computed(() => getNotificationColorClasses(props.notification));
 const categoryTag = computed(() => getNotificationCategoryTag(props.notification));
 const title = computed(() => getNotificationTitle(props.notification));
 const message = computed(() => getNotificationMessage(props.notification));
+const excerpt = computed(() => props.notification.data.excerpt);
 const url = computed(() => getNotificationUrl(props.notification));
 const context = computed(() => getNotificationContext(props.notification));
 const formattedTime = computed(() => formatNotificationTime(props.notification));

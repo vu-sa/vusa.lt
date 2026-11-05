@@ -126,6 +126,14 @@
                 v-html="getNotificationMessage(notification)"
               />
 
+              <p
+                v-if="notification.data.excerpt"
+                class="mt-0.5 line-clamp-2 border-l-2 border-border pl-2 text-xs text-muted-foreground break-words"
+                data-slot="notification-excerpt"
+              >
+                {{ notification.data.excerpt }}
+              </p>
+
               <!-- Timestamp -->
               <p class="mt-1 text-xs text-muted-foreground">
                 {{ formatNotificationTime(notification) }}
