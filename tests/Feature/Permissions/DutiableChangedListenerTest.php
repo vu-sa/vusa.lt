@@ -1,23 +1,24 @@
 <?php
 
+use App\Listeners\SyncContactSearchIndexes;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\News;
+use App\Models\Permission;
 use App\Models\Pivots\Dutiable;
+use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Support\MorphMap;
+use Illuminate\Events\CallQueuedListener;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Queue;
 
 pest()->use(RefreshDatabase::class);
 
-/**
- * Unlike ExOfficioSyncTest, nothing here is faked and no listener is invoked by hand.
- * These tests drive the real path — Eloquent fires DutiableChanged, the queued
- * listeners are dispatched and executed — which is the only way to catch a payload
- * that cannot survive the trip through the queue.
- */
 beforeEach(function (): void {
     config(['queue.default' => 'sync']);
 
@@ -84,6 +85,32 @@ test('deleting a dutiable invalidates the holder permission caches', function ()
     // Losing a duty changes permissions, so the cached maps must not survive it.
     expect(Cache::has('index-permissions-'.$this->user->id))->toBeFalse()
         ->and(Cache::has('create-permissions-'.$this->user->id))->toBeFalse();
+});
+
+test('deleting a duty assignment revokes a warmed policy grant after commit without a worker', function (): void {
+    $this->freezeTime();
+    $role = Role::factory()->create();
+    $role->givePermissionTo(Permission::findOrCreate('news.update.padalinys', 'web'));
+    $this->sourceDuty->assignRole($role);
+    $source = Dutiable::factory()->forDuty($this->sourceDuty)->forUser($this->user)->create([
+        'start_date' => today()->subDay(),
+        'end_date' => null,
+    ]);
+    $news = News::factory()->for($this->tenant)->create();
+    $gate = Gate::forUser($this->user);
+
+    expect($gate->allows('update', $news))->toBeTrue();
+    expect(Cache::has('auth:duties:'.$this->user->id))->toBeTrue();
+    Queue::fake();
+
+    DB::transaction(function () use ($source): void {
+        $source->delete();
+
+        expect(Cache::has('auth:duties:'.$this->user->id))->toBeTrue();
+    });
+
+    expect($gate->allows('update', $news))->toBeFalse();
+    Queue::assertPushed(CallQueuedListener::class, fn (CallQueuedListener $job): bool => $job->class === SyncContactSearchIndexes::class);
 });
 
 test('a contact dutiable does not invalidate a user that shares its id', function (): void {

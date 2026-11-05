@@ -3,7 +3,6 @@
 namespace App\Actions;
 
 use App\Actions\Dutiables\ReconcileExOfficioSeats;
-use App\Listeners\HandleDutiableChange;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
@@ -94,7 +93,7 @@ class MergeDuties
                 $holderIds = $kept->dutiables()->where('dutiable_type', MorphMap::alias(User::class))->pluck('dutiable_id')->unique();
 
                 DB::afterCommit(function () use ($kept, $holderIds): void {
-                    $holderIds->each(fn (string $userId) => HandleDutiableChange::forgetUserAuthority($userId));
+                    ForgetUserAccess::execute($holderIds);
                     $kept->fresh()?->searchable();
                 });
 
