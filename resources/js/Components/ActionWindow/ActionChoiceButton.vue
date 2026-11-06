@@ -66,6 +66,7 @@ const props = withDefaults(defineProps<{
   tone?: StatusRole;
   /** Shows the chevron affordance; turn off for buttons that pick rather than navigate. */
   showChevron?: boolean;
+  /** Any boolean shows the check box; screens that advance pass `true | undefined` so only the earlier answer loses its chevron. */
   selected?: boolean;
   disabled?: boolean;
   class?: HTMLAttributes['class'];

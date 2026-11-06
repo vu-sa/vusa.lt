@@ -77,6 +77,9 @@ Lango pasirinkimų „Kaip studentų atstovas“, „Kaip VU SA narys“ ir „K
 pritaikomos pagal tavo profilio įvardžius, o jų nesant – pagal vardą. Pavyzdžiui, pasirinkus
 „ji / jos“, matysi „Kaip studentų atstovė“ ir „Kaip koordinatorė“.
 
+Lange atsakoma po vieną klausimą. Grįžus atgal rodykle lango viršuje, anksčiau pasirinktas atsakymas
+(institucija, data, laikotarpis ar prašymo rūšis) lieka pažymėtas, todėl matai, ką buvai pasirinkęs.
+
 ::: info Ko nematai – to neturi
 Sritys, skiltys ir veiksmai rodomi tik tada, kai turi teisę jais naudotis. Jie niekada nerodomi
 išjungti. Jei kolega mato skiltį, kurios tu nematai, skiriasi jūsų teisės (žr.

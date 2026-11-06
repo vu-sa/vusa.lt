@@ -13,10 +13,12 @@
         :title="preset.label"
         :description="preset.detail"
         :icon="preset.icon"
+        :selected="preset.selected"
         :show-chevron="false"
         @click="preset.pick()"
       />
       <ActionChoiceButton
+        :selected="pickedOtherDay || undefined"
         :title="$t('action_window.meeting.when.custom')"
         :icon="CalendarSearch"
         @click="goTo('meeting.date', { returnTo: current.params?.returnTo })"
@@ -128,8 +130,13 @@ interface WhenPreset {
   label: string;
   detail?: string;
   icon: LucideIcon;
+  selected: boolean;
   pick: () => void;
 }
+
+// Coming back to this screen shows the day already chosen.
+const chosenDay = computed(() => draft.meeting.start_time?.slice(0, 10));
+const isChosenDay = (date: Date) => toLocalDateTime(date).slice(0, 10) === chosenDay.value;
 
 const presets = computed<WhenPreset[]>(() => {
   const dayPresets: WhenPreset[] = [
@@ -140,6 +147,7 @@ const presets = computed<WhenPreset[]>(() => {
     label: $t(`action_window.meeting.when.${key}`),
     detail: dates.dayWithWeekday(daysFromToday(offset)),
     icon,
+    selected: isChosenDay(daysFromToday(offset)),
     pick: () => pickDay(daysFromToday(offset)),
   }));
 
@@ -162,12 +170,15 @@ const presets = computed<WhenPreset[]>(() => {
         ? $t('action_window.meeting.when.usual_hint')
         : $t('action_window.meeting.when.week_after_hint'),
       icon: CalendarDays,
+      selected: isChosenDay(date),
       pick: () => pickMoment(date),
     };
   });
 
   return [...dayPresets, ...upcoming];
 });
+
+const pickedOtherDay = computed(() => !!chosenDay.value && !presets.value.some(preset => preset.selected));
 
 const subtitle = computed(() => pattern.value ? $t('action_window.meeting.when.subtitle') : undefined);
 </script>
