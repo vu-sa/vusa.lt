@@ -23,7 +23,7 @@ tests:
   - resources/js/Pages/Admin/Dashboard/Composables/__tests__/statusFlow.test.ts
   - resources/js/Pages/Admin/Dashboard/Composables/__tests__/useTimelineFilters.test.ts
   - resources/js/Pages/Admin/Dashboard/Composables/__tests__/useTenantMeetings.test.ts
-  - resources/js/Pages/Admin/Dashboard/Composables/__tests__/useGanttSettings.test.ts
+  - resources/js/Components/Graphs/composables/__tests__/useGanttSettings.test.ts
   - resources/js/Pages/Admin/Dashboard/Components/__tests__/TenantTimelineSection.component.test.ts
   - resources/js/Components/Graphs/__tests__/MeetingsGantt.component.test.ts
   - resources/js/Components/Graphs/composables/__tests__/useGanttLayout.test.ts

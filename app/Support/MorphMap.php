@@ -109,6 +109,7 @@ final class MorphMap
         'duty_type_role' => Models\Pivots\DutyTypeRole::class,
         'typeable' => Models\Typeable::class,
         'user' => Models\User::class,
+        'user_microsoft_identity' => Models\UserMicrosoftIdentity::class,
         'vote' => Models\Vote::class,
     ];
 
