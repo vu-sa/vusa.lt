@@ -149,6 +149,7 @@ class TypesenseManager
                 'directInstitutionIds' => $data['direct_institution_ids'] ?? [],
                 'scope' => $data['scope'] ?? 'none',
                 'hasAccess' => $data['has_access'],
+                'excludedFields' => $data['excluded_fields'] ?? [],
             ];
         }
 

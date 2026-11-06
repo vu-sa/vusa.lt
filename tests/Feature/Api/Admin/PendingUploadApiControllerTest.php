@@ -100,3 +100,11 @@ test('on staging uploads go to staging\'s own media disk while shared folders st
         'path' => 'news',
     ])->assertForbidden();
 });
+
+test('staged images require an image filename as well as image contents', function (): void {
+    asUser($this->user)->postJson(route('api.v1.admin.pendingUploads.store'), [
+        'image' => UploadedFile::fake()->image('document.svg')->mimeType('image/jpeg'),
+    ])->assertUnprocessable()->assertJsonValidationErrors('image');
+
+    expect(PendingUpload::query()->whereBelongsTo($this->user)->exists())->toBeFalse();
+});

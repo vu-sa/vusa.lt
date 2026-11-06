@@ -1,3 +1,4 @@
+import { safeHref } from '@/Utils/safeHref';
 /**
  * useUIPreferences - Single source of truth for the admin's pinned and recently
  * visited pages.
@@ -108,7 +109,7 @@ function mapStoredPages(stored: StoredPageLike[]): RecentItem[] {
     const title = entry.title
       || (catalogEntry ? $t(catalogEntry.labelKey) : prettifyRoute(entry.route));
 
-    let href: string | undefined = entry.url ?? undefined;
+    let href: string | undefined = safeHref(entry.url);
     if (!href) {
       try {
         href = route(entry.route, entry.params ?? {});

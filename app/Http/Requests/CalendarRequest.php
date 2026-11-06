@@ -6,6 +6,7 @@ use App\Enums\CalendarHeroStyleEnum;
 use App\Http\Requests\Concerns\HasImageValidation;
 use App\Http\Requests\Concerns\ValidatesTenantScope;
 use App\Models\Calendar;
+use App\Rules\SafeUrl;
 use App\Rules\SoftDeleteRules;
 use App\Services\PublicUrlService;
 use App\Support\LocalizedRouteSlugs;
@@ -52,9 +53,9 @@ class CalendarRequest extends FormRequest
             'is_remote' => 'boolean',
             'organizer.lt' => 'nullable|string',
             'organizer.en' => 'nullable|string',
-            'cto_url.lt' => 'nullable|url',
-            'cto_url.en' => 'nullable|url',
-            'facebook_url' => 'nullable|url',
+            'cto_url.lt' => ['nullable', 'string', new SafeUrl],
+            'cto_url.en' => ['nullable', 'string', new SafeUrl],
+            'facebook_url' => ['nullable', 'string', new SafeUrl],
             'is_draft' => 'boolean',
             'is_all_day' => 'boolean',
             'is_international' => 'boolean',

@@ -25,13 +25,15 @@
           :title="preset.label"
           :description="preset.detail"
           :icon="CalendarOff"
-          :show-chevron="false"
+          indicator="check"
+          :selected="draft.checkIn.endDate === toIsoDate(preset.date)"
           @click="pick(from, preset.date)"
         />
         <ActionChoiceButton
           :title="$t('action_window.check_in.until.custom')"
           :description="$t('action_window.check_in.until.max_hint')"
           :icon="CalendarSearch"
+          :selected="pickedOtherEnd"
           @click="custom = true"
         />
       </ActionChoiceList>
@@ -188,6 +190,9 @@ const isValidRange = computed(() => endDate.value > startDate.value && endDate.v
 /** The server takes plain dates; sending an ISO datetime would fail `date_format`. */
 const toIsoDate = (date: Date): string =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+const pickedOtherEnd = computed(() => !!draft.checkIn.endDate
+  && !presets.value.some(preset => toIsoDate(preset.date) === draft.checkIn.endDate));
 
 const pick = (start: Date, end: Date) => {
   updateCheckIn({ startDate: toIsoDate(start), endDate: toIsoDate(end > maxDate ? maxDate : end) });

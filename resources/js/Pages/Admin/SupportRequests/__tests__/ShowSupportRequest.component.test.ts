@@ -24,7 +24,7 @@ describe('support request record', () => {
       props: {
         supportRequest: {
           ...request,
-          media: hasAttachments ? [{ id: 1, name: 'Screenshot', file_name: 'screenshot.png', mime_type: 'image/png', size: 100, original_url: '/screenshot.png' }] : [],
+          media: hasAttachments ? [{ id: 1, name: 'Screenshot', file_name: 'screenshot.png', mime_type: 'image/png', size: 100, original_url: '/mano/support-requests/request-1/evidence/1', thumb_url: '/mano/support-requests/request-1/evidence/1/thumb' }] : [],
         },
         availableStatuses: [],
         assignees: [],
@@ -46,5 +46,10 @@ describe('support request record', () => {
       expect(section.classes()).not.toContain('md:hidden');
     }
     expect(wrapper.find('button').exists()).toBe(false);
+    if (hasAttachments) {
+      const evidence = wrapper.get('[aria-labelledby="record-section-evidence"]');
+      expect(evidence.get('a').attributes('href')).toBe('/mano/support-requests/request-1/evidence/1');
+      expect(evidence.get('img').attributes('src')).toBe('/mano/support-requests/request-1/evidence/1/thumb');
+    }
   });
 });

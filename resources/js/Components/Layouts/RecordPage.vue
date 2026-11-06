@@ -138,15 +138,15 @@
                 </span>
               </template>
               <a
-                v-else-if="fact.href && fact.external"
-                :href="fact.href"
+                v-else-if="safeHref(fact.href) && fact.external"
+                :href="safeHref(fact.href)"
                 target="_blank"
                 rel="noopener noreferrer"
                 :class="FACT_LINK_CLASS"
               >
                 {{ fact.value }}
               </a>
-              <Link v-else-if="fact.href" :href="fact.href" :class="FACT_LINK_CLASS">
+              <Link v-else-if="safeHref(fact.href)" :href="safeHref(fact.href)" :class="FACT_LINK_CLASS">
                 {{ fact.value }}
               </Link>
               <span v-else>{{ fact.value }}</span>
@@ -251,6 +251,7 @@ import { Button } from '@/Components/ui/button';
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 import { statusRoleParts, type StatusPresentation } from '@/Constants/statusIcons';
+import { safeHref } from '@/Utils/safeHref';
 
 export interface RecordPageSection {
   value: string;

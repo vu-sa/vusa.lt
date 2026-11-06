@@ -5,12 +5,16 @@
         :title="$t('action_window.activity_request.mode.institutions')"
         :description="$t('action_window.activity_request.mode.institutions_hint')"
         :icon="Landmark"
+        indicator="check"
+        :selected="draft.activityRequest.mode === 'institutions'"
         @click="choose('institutions')"
       />
       <ActionChoiceButton
         :title="$t('action_window.activity_request.mode.people')"
         :description="$t('action_window.activity_request.mode.people_hint')"
         :icon="Users"
+        indicator="check"
+        :selected="draft.activityRequest.mode === 'people'"
         @click="choose('people')"
       />
     </ActionChoiceList>
@@ -26,7 +30,7 @@ import ActionWindowScreen from '../ActionWindowScreen.vue';
 
 import { useActionWindow } from '@/Composables/useActionWindow';
 
-const { advance, updateActivityRequest } = useActionWindow();
+const { draft, advance, updateActivityRequest } = useActionWindow();
 const choose = (mode: 'institutions' | 'people') => {
   updateActivityRequest({ mode, unchecked: [] });
   advance(mode === 'people' ? 'activity.people' : 'activity.institutions');

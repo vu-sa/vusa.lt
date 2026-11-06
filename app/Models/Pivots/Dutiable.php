@@ -3,6 +3,7 @@
 namespace App\Models\Pivots;
 
 use App\Actions\Dutiables\ReconcileExOfficioSeats;
+use App\Actions\Responsibilities\AuthorizeDutyAssignment;
 use App\Contracts\ImageMediaOwner;
 use App\Events\DutiableChanged;
 use App\Models\Duty;
@@ -113,6 +114,14 @@ class Dutiable extends MorphPivot implements ImageMediaOwner
             $duty = Duty::withTrashed()->find($this->duty_id);
             $institution = $duty ? Institution::withTrashed()->lockForUpdate()->find($duty->institution_id) : null;
             $stored = $this->exists ? self::query()->lockForUpdate()->find($this->id) : null;
+
+            $resumes = $stored?->end_date?->lt(today())
+                && ($this->end_date === null || $this->end_date->gte(today()));
+            if ((! $this->exists || $this->isDirty(['duty_id', 'dutiable_id', 'dutiable_type']) || $resumes)
+                && $duty !== null && $this->dutiable_type === MorphMap::alias(User::class)
+                && ($actor = auth()->user()) !== null) {
+                AuthorizeDutyAssignment::execute($actor, $duty, (string) $this->dutiable_id);
+            }
 
             if ($stored?->ended_by_institution_deactivation) {
                 if (! $this->isDirty('end_date')) {

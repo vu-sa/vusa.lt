@@ -40,7 +40,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, computed, nextTick } from 'vue';
 
-import { toInstagramEmbedUrl, type FacebookSDK, type InstagramSDK } from '../embedUrl';
+import { detectSocialPlatform, toInstagramEmbedUrl, type FacebookSDK, type InstagramSDK } from '../embedUrl';
 
 const props = defineProps<{
   url: string;
@@ -48,13 +48,15 @@ const props = defineProps<{
   showCaption?: boolean;
 }>();
 
+const platform = computed(() => detectSocialPlatform(props.url));
+
 const isLoading = ref(false);
 const hasRendered = ref(false);
 const fbContainer = ref<HTMLElement | null>(null);
 const igContainer = ref<HTMLElement | null>(null);
 
 const instagramEmbedUrl = computed(() => {
-  if (!props.url || props.platform !== 'instagram') return '';
+  if (!props.url || platform.value !== 'instagram') return '';
   return toInstagramEmbedUrl(props.url);
 });
 
@@ -153,7 +155,7 @@ async function loadInstagramEmbed(): Promise<InstagramSDK> {
 
 // Process embeds when URL/platform changes
 async function processEmbed() {
-  if (!props.url || !props.platform) return;
+  if (!props.url || !platform.value) return;
 
   isLoading.value = true;
 
@@ -163,14 +165,14 @@ async function processEmbed() {
     // Additional delay to ensure DOM is ready
     await new Promise(resolve => setTimeout(resolve, 200));
 
-    if (props.platform === 'facebook') {
+    if (platform.value === 'facebook') {
       const FB = await loadFacebookSDK();
       if (fbContainer.value && FB?.XFBML) {
         FB.XFBML.parse(fbContainer.value);
         hasRendered.value = true;
       }
     }
-    else if (props.platform === 'instagram') {
+    else if (platform.value === 'instagram') {
       const instgrm = await loadInstagramEmbed();
       if (instgrm?.Embeds) {
         instgrm.Embeds.process();
@@ -187,13 +189,13 @@ async function processEmbed() {
 }
 
 // Watch for changes and re-process
-watch(() => [props.url, props.platform, props.showCaption], () => {
+watch(() => [props.url, platform.value, props.showCaption], () => {
   hasRendered.value = false;
   processEmbed();
 }, { immediate: false });
 
 onMounted(() => {
-  if (props.url && props.platform) {
+  if (props.url && platform.value) {
     processEmbed();
   }
 });

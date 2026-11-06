@@ -123,8 +123,9 @@
               <p
                 v-if="getNotificationMessage(notification)"
                 class="mt-0.5 line-clamp-2 text-xs text-muted-foreground break-words"
-                v-html="getNotificationMessage(notification)"
-              />
+              >
+                {{ getNotificationMessage(notification) }}
+              </p>
 
               <p
                 v-if="notification.data.excerpt"

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\AnnounceMeetingInCalendar;
 use App\Actions\Documents\PendingMeetingDocuments;
+use App\Actions\GetAttachableMeetingInstitutions;
 use App\Actions\GetRecentlyChangedMeetings;
 use App\Actions\GetUserTenantShortnames;
 use App\Enums\InstitutionScope;
@@ -27,7 +28,6 @@ use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Services\AgendaItemPresenter;
 use App\Services\CheckInService;
-use App\Services\InstitutionRelationService;
 use App\Services\InstitutionScopeResolver;
 use App\Services\MeetingAccessService;
 use App\Services\MeetingCompletionService;
@@ -475,6 +475,7 @@ class MeetingController extends AdminController
             return back()->with('error', __('messages.meeting.institution_required'));
         }
 
+        $this->authorize('detachInstitution', [$meeting, $institution]);
         $meeting->detachAudited('institutions', $institution->id);
 
         return back()->with('success', __('messages.meeting.institution_detached'));
@@ -487,31 +488,7 @@ class MeetingController extends AdminController
      */
     private function getAvailableInstitutionsForAttach(Meeting $meeting): Collection
     {
-        $user = auth()->user();
-        $userInstitutionIds = $user->loadMissing('authorization_duties')
-            ->authorization_duties
-            ->pluck('institution_id')
-            ->filter()
-            ->unique();
-
-        $relations = app(InstitutionRelationService::class);
-        $relatedIds = $userInstitutionIds->flatMap(fn (string $id) => $relations->relatedTo($id)->pluck('institution_id'));
-
-        $attachedIds = $meeting->institutions->pluck('id')->toArray();
-
-        $allAvailableIds = $userInstitutionIds
-            ->merge($relatedIds)
-            ->unique()
-            ->diff($attachedIds)
-            ->values();
-
-        if ($allAvailableIds->isEmpty()) {
-            return collect();
-        }
-
-        return Institution::whereIn('id', $allAvailableIds)
-            ->with('tenant:id,shortname')
-            ->get()
+        return GetAttachableMeetingInstitutions::execute(auth()->user(), $meeting)
             ->map(fn (Institution $i) => [
                 'id' => $i->id,
                 'name' => $i->name,

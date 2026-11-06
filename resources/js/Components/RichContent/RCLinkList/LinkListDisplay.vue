@@ -13,7 +13,7 @@
           v-for="item in items" :key="item.id ?? item.href"
           :title="item.title" :cover-image="item.imageUrl"
           :image="item.image_media" :cover-alt="item.title"
-          :meta="publishedLabel(item.publishedAt)" :href="item.href"
+          :meta="publishedLabel(item.publishedAt)" :href="safeHref(item.href)"
         >
           <template #cover-fallback>
             <IFluentLink24Regular class="size-10 text-brand/50" />
@@ -24,7 +24,7 @@
       <!-- Compact style: a divided list, title left, date right. -->
       <ul v-else class="divide-y divide-border">
         <li v-for="item in items" :key="item.id ?? item.href">
-          <SmartLink :href="item.href" class="group flex items-center justify-between gap-4 py-3"
+          <SmartLink :href="safeHref(item.href)" class="group flex items-center justify-between gap-4 py-3"
             :rel="isExternal(item.href) ? 'noopener noreferrer' : undefined">
             <span class="truncate font-medium text-foreground transition-colors group-hover:text-brand">
               {{ item.title }}
@@ -60,6 +60,7 @@ import SmartLink from '@/Components/Public/SmartLink.vue';
 import { LocaleEnum } from '@/Types/enums';
 import type { LinkList, LinkListResolved } from '@/Types/contentParts';
 import { formatDateWith } from '@/Utils/dateTime';
+import { safeHref } from '@/Utils/safeHref';
 
 const props = defineProps<{
   element: models.ContentPart;

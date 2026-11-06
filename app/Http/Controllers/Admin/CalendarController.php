@@ -261,6 +261,8 @@ class CalendarController extends AdminController
     public function duplicate(Calendar $calendar)
     {
         $this->handleAuthorization('create', Calendar::class);
+        $this->handleAuthorization('view', $calendar);
+        abort_unless($this->authorizer->scope(auth()->user(), 'calendars.create.padalinys')->allowsTenant($calendar->tenant), 403);
 
         $newCalendar = DuplicateCalendarAction::execute($calendar);
 

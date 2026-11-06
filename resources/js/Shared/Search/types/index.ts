@@ -168,6 +168,7 @@ export interface TypesenseConfig extends SearchProfileConfig {
  * Admin scoped collection config
  */
 export interface ScopedCollectionConfig {
+  excludedFields?: string[];
   key: string;
   name: string;
   tenantIds: number[];

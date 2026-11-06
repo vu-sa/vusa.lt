@@ -6,7 +6,7 @@
       <SmartLink
         v-for="banner in banners"
         :key="banner.id"
-        :href="banner.link_url || null"
+        :href="safeHref(banner.link_url || null)"
         :aria-label="`${$t('accessibility.visit')} ${banner.title}`"
         :class="[
           'flex items-center justify-center px-4 py-8 text-center',
@@ -48,6 +48,7 @@ import MediaImage from '@/Components/Brand/MediaImage.vue';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import { EyebrowLabel, SectionBand } from '@/Components/Public/Base';
 import { RuledGrid } from '@/Components/Brand';
+import { safeHref } from '@/Utils/safeHref';
 
 defineProps<{
   banners: App.Entities.Banner[];

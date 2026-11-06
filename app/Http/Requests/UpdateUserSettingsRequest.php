@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\HasImageValidation;
+use App\Rules\SafeUrl;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -26,7 +27,7 @@ class UpdateUserSettingsRequest extends FormRequest
     {
         return [
             'phone' => ['nullable', 'string', 'max:255'],
-            'facebook_url' => ['nullable', 'string', 'max:255'],
+            'facebook_url' => ['nullable', 'string', 'max:255', new SafeUrl],
             ...$this->imageMediaRules('profile_photo_media', $this->user(), 'profile_photo'),
             'pronouns' => ['nullable', 'array'],
             'show_pronouns' => ['nullable', 'boolean'],

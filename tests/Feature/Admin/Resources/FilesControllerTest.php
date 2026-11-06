@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Models\ContentEditorDraft;
 use App\Models\Duty;
 use App\Models\File;
 use App\Models\Institution;
+use App\Models\News;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Tenant;
@@ -1397,3 +1399,53 @@ describe('Files Controller - Move', function (): void {
         expect(Storage::exists($this->forbiddenPath.'/theirs.pdf'))->toBeTrue();
     });
 });
+
+describe('image upload types', function (): void {
+    test('image uploads require an image filename as well as image contents', function (): void {
+        asUser($this->fileManager)->postJson(route('files.uploadImage'), [
+            'path' => $this->allowedPath,
+            'image' => UploadedFile::fake()->image('document.html')->mimeType('image/jpeg'),
+        ])->assertUnprocessable()->assertJsonValidationErrors('image');
+    });
+});
+
+test('single and bulk usage scans count restricted records without returning their details', function (bool $bulk): void {
+    $this->communicationCoordinatorRole->givePermissionTo('news.read.padalinys');
+    $path = $this->allowedPath.'/shared.pdf';
+    Storage::put($path, 'document');
+    $url = str_replace('public/', '/uploads/', $path);
+    $own = News::factory()->create([
+        'tenant_id' => $this->tenant->id,
+        'title' => 'Matomas įrašas',
+        'short' => '<a href="'.$url.'">Failas</a>',
+    ]);
+    $otherTenant = Tenant::query()->whereKeyNot($this->tenant->id)->first();
+    $other = News::factory()->create([
+        'tenant_id' => $otherTenant->id,
+        'title' => 'Kitas įrašas',
+        'short' => '<a href="'.$url.'">Failas</a>',
+    ]);
+    $other->delete();
+    ContentEditorDraft::create([
+        'user_id' => $this->regularUser->id,
+        'kind' => 'news',
+        'identity' => 'new',
+        'snapshot' => ['url' => $url],
+        'revision' => 1,
+    ]);
+
+    asUser($this->fileManager)->post(route($bulk ? 'files.scanUsageBulk' : 'files.scanUsage'),
+        $bulk ? ['paths' => [$path]] : ['path' => $path])
+        ->assertRedirect()->assertSessionHas('data', function (array $data) use ($bulk, $own): bool {
+            $result = $bulk ? $data['files'][0] : $data;
+
+            expect($result['total_usages'])->toBe(3)
+                ->and($result['hidden_usages'])->toBe(2)
+                ->and($result['is_safe_to_delete'])->toBeFalse()
+                ->and($result['usage_details'])->toHaveCount(1)
+                ->and($result['usage_details'][0]['id'])->toBe($own->id)
+                ->and($result['usage_details'][0]['title'])->toBe('Matomas įrašas');
+
+            return true;
+        });
+})->with([false, true]);

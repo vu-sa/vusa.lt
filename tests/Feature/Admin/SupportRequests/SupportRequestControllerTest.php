@@ -24,6 +24,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
+    Storage::fake('supportEvidence');
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
     $this->admin = makeAdminUser($this->tenant);
@@ -338,5 +339,67 @@ test('removing evidence deletes its files and leaves other requests\' evidence a
 
     expect($this->supportRequest->fresh()->getMedia('evidence'))->toBeEmpty()
         ->and($other->fresh()->getMedia('evidence'))->toHaveCount(1);
-    Storage::disk('spatieMediaLibrary')->assertMissing($ownPath);
+    Storage::disk('supportEvidence')->assertMissing($ownPath);
+});
+
+describe('evidence access', function (): void {
+    test('originals and previews are private and available to the reporter', function (string $variant): void {
+        Storage::fake('spatieMediaLibrary');
+        config(['media-library.queue_conversions_by_default' => false]);
+        $media = app(AddImageMedia::class)->execute($this->supportRequest, UploadedFile::fake()->image('screenshot.png'), 'evidence');
+        $path = $media->getPathRelativeToRoot($variant === 'original' ? '' : $variant);
+
+        expect($media->disk)->toBe('supportEvidence')
+            ->and($media->conversions_disk)->toBe('supportEvidence');
+        Storage::disk('supportEvidence')->assertExists($path);
+        Storage::disk('spatieMediaLibrary')->assertDirectoryEmpty('/');
+
+        $response = asUser($this->user)->get(route('supportRequests.evidence', [$this->supportRequest, $media->id, $variant]))
+            ->assertOk()->assertHeader('X-Content-Type-Options', 'nosniff');
+        expect($response->headers->get('Cache-Control'))->toContain('private', 'no-store');
+        expect($response->streamedContent())->toBe(Storage::disk('supportEvidence')->get($path));
+
+        asUserWithInertia($this->user)->get(route('supportRequests.show', $this->supportRequest))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('supportRequest.media.0.original_url', route('supportRequests.evidence', [$this->supportRequest, $media->id]))
+                ->where('supportRequest.media.0.thumb_url', route('supportRequests.evidence', [$this->supportRequest, $media->id, 'thumb'])));
+    })->with(['original', 'thumb', 'large']);
+
+    test('another tenant member cannot read private evidence', function (): void {
+        $media = app(AddImageMedia::class)->execute($this->supportRequest, UploadedFile::fake()->image('screenshot.png'), 'evidence');
+        $other = makeUser(Tenant::query()->whereKeyNot($this->tenant->id)->first());
+
+        foreach (['original', 'thumb', 'large'] as $variant) {
+            asUser($other)->get(route('supportRequests.evidence', [$this->supportRequest, $media->id, $variant]))->assertForbidden();
+        }
+    });
+
+    test('evidence ids are resolved through the requested support request', function (): void {
+        $other = SupportRequest::factory()->create();
+        $media = app(AddImageMedia::class)->execute($other, UploadedFile::fake()->image('screenshot.png'), 'evidence');
+
+        asUser($this->user)->get(route('supportRequests.evidence', [$this->supportRequest, $media->id]))->assertNotFound();
+    });
+
+    test('guests cannot read evidence', function (): void {
+        $media = app(AddImageMedia::class)->execute($this->supportRequest, UploadedFile::fake()->image('screenshot.png'), 'evidence');
+
+        $this->get(route('supportRequests.evidence', [$this->supportRequest, $media->id]))->assertRedirect();
+    });
+
+    test('reporters can read evidence while the parent is in trash', function (): void {
+        $media = app(AddImageMedia::class)->execute($this->supportRequest, UploadedFile::fake()->image('screenshot.png'), 'evidence');
+        $this->supportRequest->delete();
+
+        asUser($this->user)->get(route('supportRequests.evidence', [$this->supportRequest, $media->id]))->assertOk();
+    });
+
+    test('evidence can be written privately on staging', function (): void {
+        config(['app.env' => 'staging', 'app.files_read_only' => true, 'media-library.disk_name' => 'stagingMedia']);
+        $media = app(AddImageMedia::class)->execute($this->supportRequest, UploadedFile::fake()->image('screenshot.png'), 'evidence');
+
+        expect($media->disk)->toBe('supportEvidence')
+            ->and($media->conversions_disk)->toBe('supportEvidence');
+        Storage::disk('supportEvidence')->assertExists($media->getPathRelativeToRoot());
+    });
 });

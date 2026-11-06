@@ -18,115 +18,57 @@ export interface InstagramSDK {
   };
 }
 
-/**
- * Validates and identifies the platform of a social media URL (Facebook or Instagram).
- * Rejects lookalike domains, userinfo credentials, non-HTTP(S) protocols, and URLs without posts/paths.
- */
+const SPOTIFY_HOSTS = ['spotify.com', 'open.spotify.com'];
+const MIXCLOUD_HOSTS = ['mixcloud.com', 'www.mixcloud.com', 'player-widget.mixcloud.com'];
+const FACEBOOK_HOSTS = ['facebook.com', 'www.facebook.com', 'm.facebook.com', 'web.facebook.com', 'fb.watch', 'www.fb.watch'];
+const INSTAGRAM_HOSTS = ['instagram.com', 'www.instagram.com', 'm.instagram.com', 'instagr.am', 'www.instagr.am'];
+
+function providerUrl(rawUrl: string | null | undefined, hosts: string[]): URL | null {
+  if (typeof rawUrl !== 'string' || /[\\\x00-\x1f\x7f]/.test(rawUrl)) return null;
+  try {
+    const url = new URL(rawUrl.trim());
+    return url.protocol === 'https:' && !url.username && !url.password && !url.port && hosts.includes(url.hostname)
+      ? url : null;
+  }
+  catch {
+    return null;
+  }
+}
+
 export function detectSocialPlatform(rawUrl: string | null | undefined): SocialPlatform | null {
-  if (!rawUrl || typeof rawUrl !== 'string') return null;
+  const facebook = providerUrl(rawUrl, FACEBOOK_HOSTS);
+  if (facebook && (facebook.pathname.length > 1 || facebook.search.length > 1)) return 'facebook';
 
-  try {
-    const trimmed = rawUrl.trim();
-    if (!trimmed) return null;
-
-    const url = new URL(trimmed);
-    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-      return null;
-    }
-
-    if (url.username || url.password) {
-      return null;
-    }
-
-    const host = url.hostname.toLowerCase();
-
-    // Facebook hosts: facebook.com, *.facebook.com, fb.watch, *.fb.watch
-    const isFbHost = host === 'facebook.com' || host.endsWith('.facebook.com') || host === 'fb.watch' || host.endsWith('.fb.watch');
-    if (isFbHost) {
-      if (url.pathname.length > 1 || url.search.length > 1) {
-        return 'facebook';
-      }
-      return null;
-    }
-
-    // Instagram hosts: instagram.com, *.instagram.com, instagr.am, *.instagr.am
-    const isIgHost = host === 'instagram.com' || host.endsWith('.instagram.com') || host === 'instagr.am' || host.endsWith('.instagr.am');
-    if (isIgHost) {
-      if (/^\/(?:p|reel|reels|tv)\/[\w-]+/i.test(url.pathname)) {
-        return 'instagram';
-      }
-      return null;
-    }
-
-    return null;
-  }
-  catch {
-    return null;
-  }
+  const instagram = providerUrl(rawUrl, INSTAGRAM_HOSTS);
+  return instagram && /^\/(?:p|reel|reels|tv)\/[\w-]+/i.test(instagram.pathname) ? 'instagram' : null;
 }
 
-/** Cleans an Instagram post URL for embedding: strips query params and hash, ensures trailing slash. */
 export function toInstagramEmbedUrl(rawUrl: string | null | undefined): string {
-  if (!rawUrl) return '';
-  try {
-    const parsed = new URL(rawUrl.trim());
-    const cleanPath = parsed.pathname.replace(/\/+$/, '');
-    return `${parsed.origin}${cleanPath}/`;
-  }
-  catch {
-    const cleanUrl = (rawUrl.split('?')[0] || '').split('#')[0] || '';
-    return cleanUrl.endsWith('/') ? cleanUrl : `${cleanUrl}/`;
-  }
+  if (detectSocialPlatform(rawUrl) !== 'instagram') return '';
+  const parsed = providerUrl(rawUrl, INSTAGRAM_HOSTS)!;
+  return `${parsed.origin}${parsed.pathname.replace(/\/+$/, '')}/`;
 }
-
-// Base for relative input only (never a Mixcloud/Spotify URL). Not `window.location`: these run
-// during SSR, where reading it threw and the server rendered a different player than the client.
-const RELATIVE_URL_BASE = 'https://vusa.lt';
 
 export function isMixcloudUrl(url: string): boolean {
-  try {
-    const host = new URL(url, RELATIVE_URL_BASE).hostname.toLowerCase();
-    return host === 'mixcloud.com' || host === 'www.mixcloud.com' || host === 'player-widget.mixcloud.com';
-  }
-  catch {
-    return false;
-  }
+  return providerUrl(url, MIXCLOUD_HOSTS) !== null;
 }
 
-/** A raw Mixcloud page/track URL, or an existing widget URL, to the `player-widget` iframe src. */
 export function toMixcloudEmbedUrl(url: string, dark: boolean): string {
+  const parsed = providerUrl(url, MIXCLOUD_HOSTS);
+  if (!parsed) return '';
+
   const light = dark ? '0' : '1';
-
-  try {
-    const parsed = new URL(url);
-
-    if (parsed.hostname === 'player-widget.mixcloud.com') {
-      parsed.searchParams.set('light', light);
-      return parsed.toString();
-    }
-
-    return `https://player-widget.mixcloud.com/widget/iframe/?hide_cover=1&light=${light}&feed=${encodeURIComponent(parsed.pathname)}`;
-  }
-  catch {
-    return url;
-  }
-}
-
-/** Appends Spotify's `theme` param (dark/light iframe chrome); passes any other host through untouched. */
-export function toSpotifyEmbedUrl(url: string, dark: boolean): string {
-  const isSpotify = /^https?:\/\/(open\.)?spotify\.com\//.test(url);
-  if (!isSpotify) {
-    return url;
-  }
-
-  const themeParam = dark ? '0' : '1';
-
-  try {
-    const parsed = new URL(url, RELATIVE_URL_BASE);
-    parsed.searchParams.set('theme', themeParam);
+  if (parsed.hostname === 'player-widget.mixcloud.com') {
+    parsed.searchParams.set('light', light);
     return parsed.toString();
   }
-  catch {
-    return url.includes('?') ? `${url}&theme=${themeParam}` : `${url}?theme=${themeParam}`;
-  }
+
+  return `https://player-widget.mixcloud.com/widget/iframe/?hide_cover=1&light=${light}&feed=${encodeURIComponent(parsed.pathname)}`;
+}
+
+export function toSpotifyEmbedUrl(url: string, dark: boolean): string {
+  const parsed = providerUrl(url, SPOTIFY_HOSTS);
+  if (!parsed) return '';
+  parsed.searchParams.set('theme', dark ? '0' : '1');
+  return parsed.toString();
 }

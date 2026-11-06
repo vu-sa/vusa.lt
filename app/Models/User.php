@@ -206,8 +206,8 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
             'institution_ids' => $institutionIds,
             // Current duties are indexed (and weighted) above previous ones for search relevance.
             // Names + ids are kept index-aligned so the detail pane can render clickable links.
-            'pronouns_lt' => $this->getTranslation('pronouns', 'lt', false),
-            'pronouns_en' => $this->getTranslation('pronouns', 'en', false),
+            'pronouns_lt' => $this->show_pronouns ? $this->getTranslation('pronouns', 'lt', false) : '',
+            'pronouns_en' => $this->show_pronouns ? $this->getTranslation('pronouns', 'en', false) : '',
             'current_duty_names_lt' => $currentDuties->map(fn (Duty $duty) => $duty->getTranslation('name', 'lt'))->all(),
             'current_duty_names_en' => $currentDuties->map(fn (Duty $duty) => $duty->getTranslation('name', 'en'))->all(),
             'current_duty_use_original_names' => $currentDuties->map(fn (Duty $duty) => (bool) $duty->pivot?->use_original_duty_name)->all(),

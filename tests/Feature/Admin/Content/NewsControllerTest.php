@@ -307,7 +307,7 @@ describe('auth: news manager', function (): void {
     });
 
     test('can duplicate news', function (): void {
-        $news = News::query()->first();
+        $news = News::factory()->for($this->newsManager->duties()->firstOrFail()->institution->tenant)->create();
         $initialCount = News::count();
 
         // Send the POST request to duplicate the news
@@ -337,7 +337,7 @@ describe('auth: news manager', function (): void {
     });
 
     test('can duplicate news with tags', function (): void {
-        $news = News::query()->first();
+        $news = News::factory()->for($this->newsManager->duties()->firstOrFail()->institution->tenant)->create();
 
         // Add some tags to the original news
         $tags = Tag::factory()->count(2)->create();

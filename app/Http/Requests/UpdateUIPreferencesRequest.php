@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\SafeUrl;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -28,7 +29,7 @@ class UpdateUIPreferencesRequest extends FormRequest
             'pinned_pages.*.route' => ['required_with:pinned_pages', 'string'],
             'pinned_pages.*.params' => ['nullable', 'array'],
             'pinned_pages.*.title' => ['nullable', 'string', 'max:255'],
-            'pinned_pages.*.url' => ['nullable', 'string', 'max:2048'],
+            'pinned_pages.*.url' => ['nullable', 'string', 'max:2048', new SafeUrl],
         ];
     }
 }

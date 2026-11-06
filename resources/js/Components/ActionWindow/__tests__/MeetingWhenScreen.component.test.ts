@@ -248,4 +248,24 @@ describe('MeetingWhenScreen.vue', () => {
 
     expect(choices(wrapper)).toHaveLength(0);
   });
+
+  it('marks the day already chosen when the rep comes back to this screen', async () => {
+    const { wrapper, window } = mountScreen();
+    await flushPromises();
+
+    await wrapper.findAll('[data-slot="action-choice-button"]')[1]!.trigger('click');
+    window.goTo('meeting.when');
+    await flushPromises();
+
+    const pressed = wrapper.findAll('[data-slot="action-choice-button"]').map(button => button.attributes('aria-pressed'));
+    expect(pressed).toEqual(['false', 'true', undefined]);
+  });
+
+  it('marks the other-date choice when the chosen day is not among the suggestions', async () => {
+    const { wrapper, window } = mountScreen();
+    window.updateMeeting({ start_time: '2020-01-15T18:00:00' });
+    await flushPromises();
+
+    expect(wrapper.findAll('[data-slot="action-choice-button"]').at(-1)!.attributes('aria-current')).toBe('true');
+  });
 });

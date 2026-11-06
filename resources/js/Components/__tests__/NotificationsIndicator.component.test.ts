@@ -25,6 +25,20 @@ const popoverStubs = {
 };
 
 describe('NotificationsIndicator', () => {
+  it.each(['body', 'text', 'message'] as const)('renders a stored notification %s as text', (field) => {
+    const body = '<strong>Ataskaita</strong> & aptarimas';
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      auth: { user: { unreadNotifications: [{
+        id: 'text-body', type: 'App\\Notifications\\TaskOverdueNotification',
+        data: { title: 'Užduotis', category: 'task', [field]: body },
+        created_at: '2026-11-06T10:00:00Z', read_at: null,
+      }] } },
+    }));
+    const wrapper = mount(NotificationsIndicator, { global: { stubs: popoverStubs } });
+    expect(wrapper.text()).toContain(body);
+    expect(wrapper.find('strong').exists()).toBe(false);
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useRealtimeNotifications).mockReturnValue({

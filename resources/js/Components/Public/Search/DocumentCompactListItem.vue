@@ -1,7 +1,7 @@
 <template>
   <li class="group">
     <a
-      :href="documentUrl"
+      :href="safeHref(documentUrl)"
       target="_blank"
       rel="noopener noreferrer"
       :title="isShortcut ? $t('search.document_link_hint') : undefined"
@@ -133,6 +133,7 @@ import IFluentLink20Regular from '~icons/fluent/link-20-regular';
 import IFluentOpen20Regular from '~icons/fluent/open-20-regular';
 import IFluentWarning20Regular from '~icons/fluent/warning-20-regular';
 import { formatDateWith } from '@/Utils/dateTime';
+import { safeHref } from '@/Utils/safeHref';
 
 // Props
 interface Props {

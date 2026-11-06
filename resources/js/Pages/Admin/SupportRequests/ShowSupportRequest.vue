@@ -38,7 +38,7 @@
     <template #description>
       <div class="max-w-3xl space-y-6">
         <div v-if="supportRequest.context_url || supportRequest.selected_text" class="border border-border bg-card p-4 text-sm">
-          <a v-if="supportRequest.context_url" :href="supportRequest.context_url" target="_blank" rel="noopener noreferrer" class="break-all underline underline-offset-4">{{ supportRequest.context_url }}</a>
+          <a v-if="supportRequest.context_url" :href="safeHref(supportRequest.context_url)" target="_blank" rel="noopener noreferrer" class="break-all underline underline-offset-4">{{ supportRequest.context_url }}</a>
           <blockquote v-if="supportRequest.selected_text" class="mt-3 border-l-2 border-primary pl-3 italic">
             „{{ supportRequest.selected_text }}“
           </blockquote>
@@ -92,6 +92,7 @@ import { supportRequestStatuses } from '@/Constants/statusIcons';
 import type { SupportRequestStatus } from '@/Types/enums';
 import type { SupportRequestItem, SupportRequestUser } from '@/Types/supportRequests';
 import { formatDate } from '@/Utils/dateTime';
+import { safeHref } from '@/Utils/safeHref';
 
 const props = defineProps<{
   supportRequest: SupportRequestItem;

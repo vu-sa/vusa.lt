@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Actions\GetAttachableMeetingInstitutions;
 use App\Models\Meeting;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -23,7 +24,8 @@ class AttachMeetingInstitutionRequest extends FormRequest
             'institution_id' => [
                 'required',
                 'ulid',
-                Rule::exists('institutions', 'id'),
+                Rule::exists('institutions', 'id')->whereNull('deleted_at'),
+                Rule::in(GetAttachableMeetingInstitutions::execute($this->user(), $this->meeting())->modelKeys()),
                 // Attaching one twice would create a duplicate pivot row.
                 Rule::notIn($this->meeting()->institutions()->pluck('institutions.id')->all()),
             ],

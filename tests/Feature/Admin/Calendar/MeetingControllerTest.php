@@ -529,6 +529,10 @@ describe('joint meeting institution management', function (): void {
     });
 
     test('admin can attach an additional institution', function (): void {
+        InstitutionLink::factory()->create([
+            'source_institution_id' => $this->admin->duties()->first()->institution_id,
+            'target_institution_id' => $this->secondInstitution->id,
+        ]);
         asUser($this->admin)
             ->post(route('meetings.institutions.attach', $this->meeting), [
                 'institution_id' => $this->secondInstitution->id,

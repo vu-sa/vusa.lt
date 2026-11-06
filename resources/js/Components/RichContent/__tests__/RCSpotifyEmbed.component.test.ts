@@ -17,6 +17,11 @@ function makeElement(overrides: Partial<SpotifyEmbed['json_content']> = {}, opti
 }
 
 describe('RCSpotifyEmbed', () => {
+  it.each(['https://example.org/player', 'http://open.spotify.com/show/abc'])('omits an unsupported player at %s', async (url) => {
+    const wrapper = mount(RCSpotifyEmbed, { props: { element: makeElement({ url }) } });
+    await nextTick();
+    expect(wrapper.find('iframe').exists()).toBe(false);
+  });
   it('renders the plain bordered iframe for the default inline variant', async () => {
     const wrapper = mount(RCSpotifyEmbed, { props: { element: makeElement({ url: 'https://open.spotify.com/show/abc' }) } });
     await nextTick();

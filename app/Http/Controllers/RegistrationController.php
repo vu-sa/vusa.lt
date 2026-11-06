@@ -57,6 +57,7 @@ class RegistrationController extends Controller
                     // Extract the value from the field data array
                     $responseValue = $fieldData['value'] ?? null;
 
+                    /** @var FieldResponse $fieldResponse */
                     $fieldResponse = $formField->fieldResponses()->make([
                         'response' => ['value' => $responseValue],
                     ]);

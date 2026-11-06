@@ -544,7 +544,7 @@ describe('public records in every scoped key', function (): void {
         expect(scopedKeyFilter(keysFor($user)['meetings']['key']))->toContain("institution_type_ids:=[{$otherType->id}]");
     });
 
-    test('a key expires when one of the user\'s duties ends, not an hour later', function (): void {
+    test('a key expires when one of the user\'s duties ends before its usual lifetime', function (): void {
         $user = makeTenantUserWithRole('Studentų atstovas', Tenant::query()->first());
         $duty = $user->duties()->first();
         // The end date is the last day in office, so today's date ends access at midnight.
@@ -555,5 +555,62 @@ describe('public records in every scoped key', function (): void {
         $expiresAt = scopedKeyParams(keysFor($user)['meetings']['key'])['expires_at'];
 
         expect($expiresAt)->toBeLessThanOrEqual(now()->addMinutes(11)->timestamp);
+    });
+
+    test('keys last fifteen minutes and leave the cache before they expire', function (): void {
+        $this->freezeTime();
+        $user = User::factory()->create();
+        $keys = keysFor($user);
+        $cacheKey = TypesenseScopedKeyService::getCacheKey($user->id);
+
+        expect(TypesenseScopedKeyService::KEY_EXPIRY)->toBe(900);
+        expect(scopedKeyParams($keys['institutions']['key'])['expires_at'])->toBe(now()->addMinutes(15)->timestamp);
+        expect(cache()->has($cacheKey))->toBeTrue();
+
+        $this->travel(801)->seconds();
+
+        expect(cache()->has($cacheKey))->toBeFalse();
+        expect(scopedKeyParams($keys['institutions']['key'])['expires_at'])->toBeGreaterThan(now()->timestamp);
+    });
+
+    test('baseline institution keys withhold activity status and its facet', function (): void {
+        $user = User::factory()->create();
+        $params = scopedKeyParams(keysFor($user)['institutions']['key']);
+
+        expect($params['exclude_fields'])->toBe('activity_status');
+        expect(explode(',', $params['facet_by']))->not->toContain('activity_status');
+        expect(TypesenseManager::getAdminFrontendConfig($user)['collections']['institutions']['excludedFields'])
+            ->toBe(['activity_status']);
+    });
+
+    test('refreshing keys replaces the cached expiry with a fresh fifteen minute lifetime', function (): void {
+        $this->freezeTime();
+        $user = makeUser(Tenant::query()->first());
+        $oldExpiry = scopedKeyParams(keysFor($user)['institutions']['key'])['expires_at'];
+        $this->travel(2)->minutes();
+
+        $response = $this->actingAs($user)->postJson(route('api.v1.admin.search.refreshKey'));
+
+        $response->assertOk()->assertJsonPath('success', true)
+            ->assertJsonPath('config.expiresAt', now()->addMinutes(15)->timestamp);
+        expect(cache()->get(TypesenseScopedKeyService::getCacheKey($user->id))['expires_at'])
+            ->toBeGreaterThan($oldExpiry);
+    });
+
+    test('tenant institution readers still withhold activity status from public rows', function (): void {
+        $user = makeUser(Tenant::query()->first());
+        $user->givePermissionTo('institutions.read.padalinys');
+
+        expect(scopedKeyParams(keysFor($user)['institutions']['key'])['exclude_fields'])->toBe('activity_status');
+    });
+
+    test('global institution readers receive activity status', function (): void {
+        $user = User::factory()->create();
+        $user->givePermissionTo('institutions.read.*');
+        $params = scopedKeyParams(keysFor($user)['institutions']['key']);
+
+        expect($params)->not->toHaveKey('exclude_fields');
+        expect($params)->not->toHaveKey('facet_by');
+        expect(TypesenseManager::getAdminFrontendConfig($user)['collections']['institutions']['excludedFields'])->toBe([]);
     });
 });

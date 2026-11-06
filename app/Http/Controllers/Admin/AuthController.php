@@ -7,6 +7,7 @@ use App\Http\Requests\AuthenticateRequest;
 use App\Models\Duty;
 use App\Models\User;
 use App\Services\MicrosoftAccountResolver;
+use App\Services\Typesense\TypesenseScopedKeyService;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -169,6 +170,10 @@ class AuthController extends Controller
 
     private function logoutSession(Request $request): void
     {
+        if ($user = $request->user()) {
+            TypesenseScopedKeyService::invalidateForUser($user->id);
+        }
+
         Auth::logout();
 
         $request->session()->invalidate();

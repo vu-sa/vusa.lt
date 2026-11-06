@@ -44,7 +44,7 @@
           </a>
           <a
             v-else-if="institution.website"
-            :href="institution.website"
+            :href="safeHref(institution.website)"
             target="_blank"
             rel="noopener noreferrer"
             class="relative z-10 inline-flex max-w-full items-center gap-2 text-sm font-bold text-brand transition-colors hover:text-foreground"
@@ -57,7 +57,7 @@
         <div class="flex shrink-0 items-center gap-1.5">
           <a
             v-if="institution.facebook_url"
-            :href="institution.facebook_url"
+            :href="safeHref(institution.facebook_url)"
             target="_blank"
             rel="noopener noreferrer"
             :class="socialLinkClass"
@@ -67,7 +67,7 @@
           </a>
           <a
             v-if="institution.instagram_url"
-            :href="institution.instagram_url"
+            :href="safeHref(institution.instagram_url)"
             target="_blank"
             rel="noopener noreferrer"
             :class="socialLinkClass"
@@ -95,6 +95,7 @@ import IFluentMail16Regular from '~icons/fluent/mail-16-regular';
 import IFluentGlobe16Regular from '~icons/fluent/globe-16-regular';
 import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
 import ISimpleIconsInstagram from '~icons/simple-icons/instagram';
+import { safeHref } from '@/Utils/safeHref';
 
 const props = defineProps<{
   institution: InstitutionCardData | App.Entities.Institution;

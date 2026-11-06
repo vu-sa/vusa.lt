@@ -6,7 +6,7 @@
       variant="brand"
       size="lg"
       as="a"
-      :href="registrationUrl"
+      :href="safeHref(registrationUrl)"
       target="_blank"
       rel="noopener noreferrer"
     >
@@ -21,7 +21,7 @@
       voice="brand"
       size="lg"
       as="a"
-      :href="facebookUrl"
+      :href="safeHref(facebookUrl)"
       target="_blank"
       rel="noopener noreferrer"
     >
@@ -46,6 +46,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import Button from '@/Components/ui/button/Button.vue';
 import { useShareLink } from '@/Composables/useShareLink';
+import { safeHref } from '@/Utils/safeHref';
 
 const props = defineProps<{
   registrationUrl?: string | null;

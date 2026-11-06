@@ -1,3 +1,13 @@
+map $uri $uploads_nosniff {
+    default "";
+    ~*^/uploads/ nosniff;
+}
+
+map $uri $uploads_csp {
+    default "";
+    ~*^/uploads/.*\.(html?|xhtml|svg|xml)$ sandbox;
+}
+
 server {
     listen  80  default_server;
     server_name ${SERVER_NAME};
@@ -13,6 +23,9 @@ server {
     # Don't use them in a production server!
     ssl_certificate     /etc/nginx/certs/server.pem;
     ssl_certificate_key /etc/nginx/certs/server.key;
+
+    add_header X-Content-Type-Options $uploads_nosniff always;
+    add_header Content-Security-Policy $uploads_csp always;
 
     # WebSocket proxy for Laravel Reverb
     # Handles /app (WebSocket connections) and /apps (API requests)

@@ -14,8 +14,8 @@ class UploadImageRequest extends FilePathRequest
     public function rules(): array
     {
         return array_merge(parent::rules(), [
-            'image' => 'nullable|image|max:'.StoreFilesRequest::MAX_SIZE_KB,
-            'file' => 'nullable|image|max:'.StoreFilesRequest::MAX_SIZE_KB,
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp,bmp,avif|extensions:jpg,jpeg,png,gif,webp,bmp,avif|max:'.StoreFilesRequest::MAX_SIZE_KB,
+            'file' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp,bmp,avif|extensions:jpg,jpeg,png,gif,webp,bmp,avif|max:'.StoreFilesRequest::MAX_SIZE_KB,
             'name' => 'nullable|string|max:255',
         ]);
     }

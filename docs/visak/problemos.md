@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Problemos
-last_reviewed: 2026-11-01
+last_reviewed: 2026-11-06
 tests:
   - tests/Feature/Admin/Problems/ProblemControllerTest.php
   - tests/Feature/Admin/Problems/AgendaItemProblemControllerTest.php
@@ -109,6 +109,10 @@ jos problemos.
 **Atsakingas asmuo** – narys, kuris rūpinasi problemos sprendimu. Jį galima pasirinkti formoje
 (ieškoma pagal vardą, bent 2 simboliai). Sąrašo greitasis filtras **Man priskirtos** rodo
 problemas, kurių atsakingas asmuo esi tu.
+
+Rezultatai rodomi po paieškos lauku: prie vardo pateikiamas el. paštas, kai jis prieinamas,
+ir padaliniai. Rodyklėmis **↑ / ↓** galima pažymėti narį, o **Enter** jį pasirinkti.
+Pasirinktas narys rodomas atskirai; mygtuku **Pakeisti narį** pasirinkimas išvalomas.
 
 ### Kas mato problemas
 

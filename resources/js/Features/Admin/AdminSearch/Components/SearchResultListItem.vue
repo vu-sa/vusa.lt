@@ -15,26 +15,28 @@
     @keydown.enter.prevent="!disabled && $emit('toggle')"
     @keydown.space.prevent="!disabled && $emit('toggle')"
   >
-    <div class="shrink-0" @click.stop>
-      <Checkbox
-        v-if="multiple"
-        :model-value="checked"
-        :disabled
-        :aria-label="hit.title"
-        @update:model-value="!disabled && $emit('toggle')"
-      />
-      <button
-        v-else
-        type="button"
-        :disabled
-        class="flex size-8 items-center justify-center border border-border text-brand focus-visible:ring-2 focus-visible:ring-ring pointer-coarse:size-11"
-        :aria-label="hit.title"
-        :aria-pressed="checked"
-        @click="!disabled && $emit('toggle')"
+    <!-- One square mark for both modes (admin has no round controls); the 44px target is the button. -->
+    <button
+      type="button"
+      :role="multiple ? 'checkbox' : 'radio'"
+      :aria-checked="checked"
+      :aria-label="hit.title"
+      :disabled
+      class="-ml-1.5 flex size-8 shrink-0 items-center justify-center focus-visible:ring-2 focus-visible:ring-ring pointer-coarse:size-11"
+      @click.stop="!disabled && $emit('toggle')"
+    >
+      <span
+        aria-hidden="true"
+        :class="[
+          'flex size-4.5 items-center justify-center border transition-colors',
+          checked ? 'border-brand-fill' : 'border-input bg-card group-hover:border-brand/80',
+          checked && multiple && 'bg-brand-fill text-brand-foreground',
+        ]"
       >
-        <span v-if="checked" class="size-2 bg-brand-fill" />
-      </button>
-    </div>
+        <Check v-if="checked && multiple" class="size-3.5" />
+        <span v-else-if="checked" class="size-2.5 bg-brand-fill" />
+      </span>
+    </button>
     <SearchHitRow :hit :selected />
   </div>
 
@@ -53,18 +55,18 @@
 </template>
 
 <script setup lang="ts">
+import { Check } from '@lucide/vue';
+
 import type { NormalizedSearchHit } from '../Utils/searchHitMappers';
 
 import SearchHitRow from './SearchHitRow.vue';
-
-import { Checkbox } from '@/Components/ui/checkbox';
 
 const props = defineProps<{
   hit: NormalizedSearchHit;
   selected?: boolean;
   /** Enables the checkbox/radio selection affordance. */
   selectable?: boolean;
-  /** Multi-select renders a checkbox; single-select renders a radio dot. */
+  /** Multi-select marks with a check; single-select with a filled square. */
   multiple?: boolean;
   /** Whether this hit is currently part of the selection. */
   checked?: boolean;

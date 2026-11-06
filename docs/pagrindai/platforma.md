@@ -77,6 +77,9 @@ Lango pasirinkimų „Kaip studentų atstovas“, „Kaip VU SA narys“ ir „K
 pritaikomos pagal tavo profilio įvardžius, o jų nesant – pagal vardą. Pavyzdžiui, pasirinkus
 „ji / jos“, matysi „Kaip studentų atstovė“ ir „Kaip koordinatorė“.
 
+Lange atsakoma po vieną klausimą. Grįžus atgal rodykle lango viršuje, anksčiau pasirinktas atsakymas
+(institucija, data, laikotarpis ar prašymo rūšis) lieka pažymėtas, todėl matai, ką buvai pasirinkęs.
+
 ::: info Ko nematai – to neturi
 Sritys, skiltys ir veiksmai rodomi tik tada, kai turi teisę jais naudotis. Jie niekada nerodomi
 išjungti. Jei kolega mato skiltį, kurios tu nematai, skiriasi jūsų teisės (žr.
@@ -149,6 +152,10 @@ Plačiame ekrane sąrašą galima rodyti kaip **Peržiūrą**: kairėje lieka į
 Peržiūroje klavišais **↑** ir **↓** pereinama prie kito įrašo, o **Enter** atveria jo puslapį. Kol rašoma lauke, klavišai lieka laukui. Tokia pati peržiūra rodoma ir susijusių įrašų pasirinkimo languose; ten rodyklėmis galima judėti ir iš paieškos laukelio. Joje matoma tik santrauka: ilgi sąrašai, pvz., institucijos ryšiai, sutrumpinami, o visi duomenys ir jų tvarkymas lieka įrašo puslapyje.
 
 ### Pasirinkti susijusį įrašą
+
+Nario ir problemos atsakingo asmens paieškos rezultatai pateikiami tokiomis pačiomis eilutėmis
+kaip bendra paieška. Institucijų paieška veiksmų lange išlaiko pasirinkimo korteles, o sutapę
+žodžiai pavadinime ar aprašyme paryškinami.
 
 Kai forma prašo susieti kitą įrašą, pasirinkimo lange galima ieškoti, filtruoti ir peržiūrėti radinį prieš jį pridedant. Pažymėti įrašai patvirtinami lango apačioje; jei laukas neprivalomas, pasirinkimą galima išvalyti. Telefone peržiūrėjus radinį mygtuku „Atgal į sąrašą“ grįžtama prie rezultatų. Nepasiekiamą išteklių galima peržiūrėti, bet negalima pasirinkti.
 

@@ -31,12 +31,16 @@ describe('SearchResultListItem selection mode', () => {
 
   it('single mode renders a radio control that emits toggle', async () => {
     const wrapper = mountItem({ selectable: true, multiple: false });
-    // The radio dot is a plain button inside the selection affordance.
-    const radio = wrapper.find('button');
+    const radio = wrapper.get('[role="radio"]');
     expect(radio.attributes('aria-label')).toBe('Alpha');
-    expect(radio.attributes('aria-pressed')).toBe('false');
+    expect(radio.attributes('aria-checked')).toBe('false');
     await radio.trigger('click');
     expect(wrapper.emitted('toggle')).toHaveLength(1);
+  });
+
+  it('reports the selection on the control in both modes', () => {
+    expect(mountItem({ selectable: true, multiple: true, checked: true }).get('[role="checkbox"]').attributes('aria-checked')).toBe('true');
+    expect(mountItem({ selectable: true, multiple: false, checked: true }).get('[role="radio"]').attributes('aria-checked')).toBe('true');
   });
 
   it('multi-select row body click highlights for detail without toggling', async () => {

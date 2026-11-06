@@ -38,7 +38,7 @@
           </dd>
           <dd v-if="joinUrl" class="mt-2">
             <a
-              :href="joinUrl"
+              :href="safeHref(joinUrl)"
               target="_blank"
               rel="noopener noreferrer"
               class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-brand hover:underline"
@@ -101,7 +101,7 @@
       <Button
         v-if="effectiveRegistrationUrl && !isPast"
         as="a"
-        :href="effectiveRegistrationUrl"
+        :href="safeHref(effectiveRegistrationUrl)"
         target="_blank"
         rel="noopener noreferrer"
         variant="brand"
@@ -131,7 +131,7 @@
       <Button
         v-if="event.facebook_url"
         as="a"
-        :href="event.facebook_url"
+        :href="safeHref(event.facebook_url)"
         target="_blank"
         rel="noopener noreferrer"
         variant="outline"
@@ -165,6 +165,7 @@ import EventLocationMap from '@/Components/Calendar/EventLocationMap.vue';
 import { formatEventDateSpan } from '@/Utils/dateTime';
 import { useEventStatus } from '@/Composables/useEventStatus';
 import { LocaleEnum } from '@/Types/enums';
+import { safeHref } from '@/Utils/safeHref';
 
 const props = defineProps<{
   event: App.Entities.Calendar;

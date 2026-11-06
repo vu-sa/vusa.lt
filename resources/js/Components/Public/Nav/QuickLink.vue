@@ -1,7 +1,7 @@
 <template>
   <SmartLink
     v-if="quickLink?.link"
-    :href="quickLink.link"
+    :href="safeHref(quickLink.link)"
     prefetch
     class="plain inline-flex items-center gap-1.5 whitespace-nowrap text-sm transition-colors duration-200"
     :class="isImportant
@@ -26,6 +26,7 @@ import { Icon } from '@iconify/vue';
 import { usePage } from '@inertiajs/vue3';
 
 import SmartLink from '../SmartLink.vue';
+import { safeHref } from '@/Utils/safeHref';
 
 const props = defineProps<{
   quickLink: App.Entities.QuickLink | null;

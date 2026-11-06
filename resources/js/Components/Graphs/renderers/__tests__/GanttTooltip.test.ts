@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildMeetingTooltipContent, createGanttTooltip } from '../GanttTooltip';
+import { buildDateTooltipContent, buildMemberTooltipContent, buildMeetingTooltipContent, createGanttTooltip } from '../GanttTooltip';
 import { getGanttColors } from '../../ganttColors';
 
 function makeManager() {
@@ -101,5 +101,38 @@ describe('buildMeetingTooltipContent calendar indicator', () => {
     const html = build({ has_calendar_event: false });
 
     expect(html).not.toContain('meetings.announce');
+  });
+});
+
+describe('tooltip text', () => {
+  const date = new Date('2026-11-06T10:00:00Z');
+  const fmt = new Intl.DateTimeFormat('en-GB');
+  const value = '<strong>Record</strong> & "name"';
+
+  function expectText(content: Parameters<ReturnType<typeof makeManager>['show']>[0], occurrences: number) {
+    const manager = makeManager();
+    manager.show(content, 0, 0);
+    const element = manager.getElement().node()!;
+    expect(element.querySelector('strong')).toBeNull();
+    expect(element.textContent?.split(value).length).toBe(occurrences + 1);
+  }
+
+  it('renders meeting, institution and agenda titles as text', () => {
+    expectText(buildMeetingTooltipContent({
+      id: 1, institution_id: 1, date, title: value,
+      agenda_items: [{ id: '1', title: value }],
+    }, () => value, fmt), 3);
+  });
+
+  it('renders an email meeting institution as text', () => {
+    expectText(buildMeetingTooltipContent({ id: 1, institution_id: 1, date, type_slug: 'email' }, () => value, fmt), 1);
+  });
+
+  it('renders member names and activity labels as text', () => {
+    expectText(buildMemberTooltipContent({ user: { name: value }, startDate: date, endDate: null }, value), 2);
+  });
+
+  it('renders institution names and check-in notes as text', () => {
+    expectText(buildDateTooltipContent(value, date, fmt, fmt, { fromDate: date, untilDate: date, note: value }), 2);
   });
 });

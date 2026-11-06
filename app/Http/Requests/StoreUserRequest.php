@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\HasImageValidation;
 use App\Models\User;
+use App\Rules\SafeUrl;
 use App\Rules\SoftDeleteRules;
 use App\Rules\UniqueAmongTrashed;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -31,7 +32,7 @@ class StoreUserRequest extends FormRequest
         return [
             'name' => 'required',
             'email' => ['required', 'email', UniqueAmongTrashed::of('users', 'email')],
-            'facebook_url' => 'nullable|url',
+            'facebook_url' => ['nullable', 'string', new SafeUrl],
             'phone' => 'nullable|string',
             ...$this->imageMediaRules('profile_photo_media', new User, 'profile_photo'),
             'pronouns' => ['nullable', 'array'],

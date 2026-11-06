@@ -1,3 +1,5 @@
+import { stripHtml } from '@/Utils/html';
+
 export interface SearchMatch {
   field: string;
   segments: Array<{ text: string; matched: boolean }>;
@@ -22,10 +24,7 @@ export const PROSE_FIELDS = new Set(['body', 'short', 'summary', 'description', 
 function plainSnippet(value: string): string {
   let text = value.replace(/<mark>/g, '⟦').replace(/<\/mark>/g, '⟧');
   for (let pass = 0; pass < 3 && /[<&]/.test(text); pass++) {
-    const template = document.createElement('template');
-    template.innerHTML = text.replace(/<\/?(?:p|div|br|li|h[1-6])\b[^>]*>/gi, ' ');
-    template.content.querySelectorAll('script,style').forEach(element => element.remove());
-    text = template.content.textContent ?? '';
+    text = stripHtml(text.replace(/<\/?(?:p|div|br|li|h[1-6])\b[^>]*>/gi, ' '));
   }
   return text.replace(/\s+/g, ' ').trim();
 }

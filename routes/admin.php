@@ -197,6 +197,9 @@ Route::get('my-support-requests', [MySupportRequestController::class, 'index'])-
 Route::get('my-support-requests/create', [MySupportRequestController::class, 'create'])->name('mySupportRequests.create');
 Route::post('my-support-requests', [MySupportRequestController::class, 'store'])->name('mySupportRequests.store');
 
+Route::get('support-requests/{supportRequest}/evidence/{media}/{conversion?}', [SupportRequestController::class, 'evidence'])
+    ->whereNumber('media')->whereIn('conversion', ['original', 'thumb', 'large'])
+    ->name('supportRequests.evidence')->withTrashed();
 Route::patch('support-requests/{supportRequest}/status', [SupportRequestController::class, 'updateStatus'])->name('supportRequests.status.update');
 Route::patch('support-requests/{supportRequest}/assign', [SupportRequestController::class, 'assign'])->name('supportRequests.assign');
 Route::put('support-requests/{supportRequest}/involved-users', [SupportRequestController::class, 'syncInvolvedUsers'])->name('supportRequests.involvedUsers.sync');

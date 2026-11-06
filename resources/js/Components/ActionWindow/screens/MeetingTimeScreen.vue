@@ -7,8 +7,8 @@
         :title="option.time"
         :description="option.detail"
         :icon="Clock"
+        indicator="check"
         :selected="option.time === selectedTime"
-        :show-chevron="false"
         @click="pick(option.time)"
       />
       <ActionChoiceButton

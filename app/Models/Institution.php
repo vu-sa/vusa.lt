@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Actions\ForgetUserAccess;
 use App\Actions\GetInstitutionManagers;
 use App\Contracts\Commentable;
 use App\Contracts\GuardsForceDelete;
@@ -11,6 +12,7 @@ use App\Enums\MeetingKind;
 use App\Enums\TenantType;
 use App\Events\FileableNameUpdated;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Models\Pivots\Dutiable;
 use App\Models\Pivots\InstitutionInstitutionType;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasComments;
@@ -29,6 +31,7 @@ use App\Services\PublicUrlService;
 use App\Services\Typesense\SearchText;
 use App\Settings\MeetingSettings;
 use App\Support\LocalizedRouteSlugs;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Builder;
@@ -512,6 +515,10 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
         static::updated(function (Institution $institution): void {
             if ($institution->wasChanged('tenant_id')) {
                 InstitutionRelationService::flush();
+                ForgetUserAccess::execute(Dutiable::query()->current()
+                    ->where('dutiable_type', MorphMap::alias(User::class))
+                    ->whereIn('duty_id', $institution->duties()->select('id'))
+                    ->pluck('dutiable_id'));
             }
             if ($institution->wasChanged('is_active')) {
                 $institution->reindexDuties();

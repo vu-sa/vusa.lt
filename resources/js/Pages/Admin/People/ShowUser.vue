@@ -359,7 +359,7 @@ const recordFacts = computed<RecordFact[]>(() => {
   }
 
   if (props.user.facebook_url) {
-    facts.push({ key: 'facebook', label: 'Facebook', value: $t('Facebook'), href: props.user.facebook_url });
+    facts.push({ key: 'facebook', label: 'Facebook', value: $t('Facebook'), href: props.user.facebook_url, external: true });
   }
 
   if (yearSpan.value) {

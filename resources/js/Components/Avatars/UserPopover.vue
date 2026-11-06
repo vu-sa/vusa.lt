@@ -104,7 +104,7 @@
           <a
             v-if="user.facebook_url"
             class="flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
-            :href="user.facebook_url"
+            :href="safeHref(user.facebook_url)"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -134,6 +134,7 @@ import { useIsAdminContext } from '@/Composables/useIsAdminContext';
 import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/hover-card';
 import { avatarSizeClasses, mapPixelToSize, type AvatarSize } from '@/Components/ui/avatar';
+import { safeHref } from '@/Utils/safeHref';
 
 const props = withDefaults(defineProps<{
   showName?: boolean;

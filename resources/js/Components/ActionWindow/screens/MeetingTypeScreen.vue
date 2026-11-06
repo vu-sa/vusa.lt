@@ -10,8 +10,8 @@
         :title="option.label"
         :description="option.description"
         :icon="option.icon"
+        indicator="check"
         :selected="draft.meeting.type === option.value"
-        :show-chevron="false"
         @click="pick(option.value)"
       />
     </ActionChoiceList>

@@ -15,10 +15,9 @@
       <p class="truncate text-xs font-semibold text-foreground">
         {{ title }}
       </p>
-      <p
-        class="mt-0.5 line-clamp-2 text-xs text-muted-foreground"
-        v-html="message"
-      />
+      <p class="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
+        {{ message }}
+      </p>
     </div>
 
     <!-- View action -->

@@ -14,12 +14,11 @@ final class StagingProtection
     }
 
     /**
-     * Staging's own media disk is the one place staging may write files: it is not shared with
-     * production and is wiped on every database refresh.
+     * Staging may write only to its own public and private media disks.
      */
     public static function diskIsWritable(?string $disk): bool
     {
-        return ! self::filesAreReadOnly() || $disk === self::STAGING_MEDIA_DISK;
+        return ! self::filesAreReadOnly() || in_array($disk, [self::STAGING_MEDIA_DISK, 'supportEvidence'], true);
     }
 
     /**

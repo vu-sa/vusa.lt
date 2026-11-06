@@ -15,7 +15,10 @@
     </template>
     <template #option="{ item: user }">
       <UserAvatar :user="(user as unknown as App.Entities.User)" :size="24" class="shrink-0" />
-      <span class="min-w-0 truncate">{{ user.name }}</span>
+      <span class="flex min-w-0 flex-col">
+        <span class="truncate">{{ user.name }}</span>
+        <span v-if="user.email" class="truncate text-xs text-muted-foreground">{{ user.email }}</span>
+      </span>
     </template>
   </MultiSelect>
 </template>

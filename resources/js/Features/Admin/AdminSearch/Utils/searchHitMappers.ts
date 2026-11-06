@@ -132,6 +132,31 @@ export interface NormalizedSearchHit {
   raw: unknown;
 }
 
+export function normalizeUserApiHit(user: {
+  id: string;
+  name: string;
+  email?: string;
+  profile_photo_path?: string | null;
+  tenants?: string[];
+  is_current?: boolean;
+  last_term_year?: number | null;
+}, { taken = false }: { taken?: boolean } = {}): NormalizedSearchHit {
+  const tenants = user.tenants?.join(', ') || undefined;
+  return {
+    id: `users-${user.id}`,
+    recordId: String(user.id),
+    collection: 'users',
+    icon: UserIcon,
+    title: user.name,
+    imageUrl: user.profile_photo_path || undefined,
+    subtitle: taken ? $t('Jau eina šias pareigas') : user.email,
+    meta: user.is_current === false && user.last_term_year ? `${$t('Buvęs narys')} · ${user.last_term_year}` : undefined,
+    badge: tenants,
+    contextBadge: tenants,
+    raw: user,
+  };
+}
+
 /** Per-collection display metadata (icon + label + page tab). */
 export const COLLECTION_META: Record<SearchCollectionKey, {
   icon: Component;

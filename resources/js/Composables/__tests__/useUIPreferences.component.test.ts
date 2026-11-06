@@ -159,3 +159,15 @@ describe('pinned pages', () => {
     expect(body.pinned_pages).toHaveLength(0);
   });
 });
+
+it('uses the route fallback for a stored page with an unsupported URL', () => {
+  vi.mocked(usePage).mockReturnValue(createMockPage({
+    auth: { user: { ui_preferences: {
+      recent_pages: [{ route: 'meetings.index', params: {}, url: 'javascript:void(0)' }],
+    } } },
+  }));
+
+  const ctx = mountProvider();
+
+  expect(ctx.recentPages.value[0].href).toBe(route('meetings.index'));
+});

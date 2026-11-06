@@ -107,54 +107,14 @@
           :label="capitalize($tChoice('entities.problem.responsible_user', 1))"
           :error="form.errors.responsible_user_id"
         >
-          <Combobox
-            v-model="selectedUser"
-            ignore-filter
-            open-on-focus
-            open-on-click
+          <UserSearchField
+            input-id="problem-responsible-user"
+            :model-value="selectedUser"
+            :aria-label="capitalize($tChoice('entities.problem.responsible_user', 1))"
+            :placeholder="$t('problems.form.responsible_user_placeholder')"
+            :permission="isEditing ? 'problems.update.padalinys' : 'problems.create.padalinys'"
             @update:model-value="handleUserSelect"
-          >
-            <ComboboxAnchor class="flex min-h-11 w-full items-center justify-between gap-2 border border-border bg-card px-3 py-2 text-sm">
-              <ComboboxInput
-                :display-value="(val: unknown) => (val as UserOption)?.name ?? ''"
-                :placeholder="$t('problems.form.responsible_user_placeholder')"
-                class="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-                @input="onUserSearchInput"
-              />
-              <button
-                v-if="selectedUser"
-                type="button"
-                class="u-touch shrink-0 opacity-50 hover:opacity-100"
-                @click.prevent.stop="clearSelectedUser"
-              >
-                <X class="size-4" />
-              </button>
-              <ChevronsUpDown v-else class="size-4 shrink-0 opacity-50" />
-            </ComboboxAnchor>
-            <ComboboxList class="min-w-[var(--reka-popper-anchor-width)]">
-              <ComboboxViewport class="max-h-60">
-                <div v-if="userSearchTerm.length < 2 && !selectedUser" class="px-2 py-4 text-center text-sm text-muted-foreground">
-                  {{ $t('Įvesk bent 2 simbolius') }}
-                </div>
-                <div v-else-if="isSearchingUsers" class="px-2 py-4 text-center text-sm text-muted-foreground">
-                  {{ $t('Ieškoma...') }}
-                </div>
-                <template v-else>
-                  <ComboboxEmpty>{{ $t('Nerasta') }}</ComboboxEmpty>
-                  <ComboboxItem
-                    v-for="user in userOptions"
-                    :key="user.id"
-                    :value="user"
-                  >
-                    <span class="flex min-w-0 flex-col">
-                      <span class="truncate">{{ user.name }}</span>
-                      <span v-if="user.email" class="truncate text-xs text-muted-foreground">{{ user.email }}</span>
-                    </span>
-                  </ComboboxItem>
-                </template>
-              </ComboboxViewport>
-            </ComboboxList>
-          </Combobox>
+          />
         </FormFieldWrapper>
 
         <div class="grid gap-4 lg:grid-cols-2">
@@ -259,15 +219,8 @@
 
 <script setup lang="ts">
 import { Link, useForm } from '@inertiajs/vue3';
-import { useDebounceFn } from '@vueuse/core';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { ChevronsUpDown, CircleDot, Layers, Trash2, X } from '@lucide/vue';
-import {
-  ComboboxAnchor,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxRoot as Combobox,
-} from 'reka-ui';
+import { ChevronsUpDown, CircleDot, Layers, Trash2 } from '@lucide/vue';
 import { capitalize, computed, ref } from 'vue';
 
 import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
@@ -280,23 +233,11 @@ import FormPanel from '@/Components/Patterns/FormPanel.vue';
 import FormSegmentedControl, { type FormSegmentOption } from '@/Components/Patterns/FormSegmentedControl.vue';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { Button } from '@/Components/ui/button';
-import {
-  ComboboxItem,
-  ComboboxList,
-  ComboboxViewport,
-} from '@/Components/ui/combobox';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
 import { MultiSelect } from '@/Components/ui/multi-select';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/Components/ui/select';
-import { useApi } from '@/Composables/useApi';
 import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
+import UserSearchField, { type MemberHit } from '@/Features/Admin/AdminSearch/Components/Select/UserSearchField.vue';
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { ModelEnum } from '@/Types/enums';
@@ -304,12 +245,6 @@ import { ModelEnum } from '@/Types/enums';
 interface Translated {
   lt: string;
   en: string;
-}
-
-interface UserOption {
-  id: string;
-  name: string;
-  email?: string;
 }
 
 const props = defineProps<{
@@ -417,47 +352,11 @@ const onTenantChanged = (tenantId: number | null) => {
   form.tenant_id = tenantId;
 };
 
-// --- User search ---
-const userSearchTerm = ref('');
-const selectedUser = ref<UserOption | null>(props.initialResponsibleUser ?? null);
-const userSearchUrl = ref('');
+const selectedUser = ref<MemberHit | null>(props.initialResponsibleUser ?? null);
 
-const { data: searchedUsers, isFetching: isSearchingUsers, execute: executeUserSearch } = useApi<UserOption[]>(
-  userSearchUrl,
-  { immediate: false, showErrorToast: false },
-);
-
-const userOptions = computed<UserOption[]>(() => searchedUsers.value ?? []);
-
-const debouncedSearch = useDebounceFn(() => {
-  if (userSearchTerm.value.length >= 2) {
-    const params = new URLSearchParams({
-      search: userSearchTerm.value,
-      permission: isEditing.value ? 'problems.update.padalinys' : 'problems.create.padalinys',
-    });
-    userSearchUrl.value = `${route('api.v1.admin.users.search')}?${params.toString()}`;
-    executeUserSearch();
-  }
-}, 300);
-
-function onUserSearchInput(event: Event) {
-  const target = event.target as HTMLInputElement;
-  userSearchTerm.value = target.value;
-  if (userSearchTerm.value.length >= 2) {
-    debouncedSearch();
-  }
-}
-
-function handleUserSelect(val: unknown) {
-  const user = val as UserOption | null;
+function handleUserSelect(user: MemberHit | null) {
   selectedUser.value = user;
   form.responsible_user_id = user?.id ?? null;
-}
-
-function clearSelectedUser() {
-  selectedUser.value = null;
-  userSearchTerm.value = '';
-  form.responsible_user_id = null;
 }
 
 const categoryOptions = computed(() =>

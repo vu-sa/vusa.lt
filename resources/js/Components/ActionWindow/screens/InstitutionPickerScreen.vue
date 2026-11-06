@@ -28,6 +28,8 @@
         :title="institution.name"
         :icon="statusStyle(institution).icon"
         :tone="statusStyle(institution).tone"
+        indicator="check"
+        :selected="draft.institution?.id === institution.id"
         @click="pick(institution)"
       >
         <template #description>

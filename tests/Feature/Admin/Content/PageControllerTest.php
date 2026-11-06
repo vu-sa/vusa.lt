@@ -825,3 +825,33 @@ describe('bulk actions', function (): void {
         $this->assertNotSoftDeleted('pages', ['id' => $this->page->id]);
     });
 });
+
+test('page creation rejects an unsupported embed address', function (): void {
+    $data = getControllerTestData('Page')['valid'];
+    $data['tenant_id'] = $this->tenant->id;
+    $data['title'] = 'Embed validation';
+    $data['content']['parts'] = [[
+        'type' => 'spotify-embed', 'json_content' => ['url' => 'https://example.org/show/abc'],
+    ]];
+
+    asUser($this->admin)->post(route('pages.store'), $data)
+        ->assertSessionHasErrors('content.parts.0.json_content.url');
+
+    expect(Page::where('title', 'Embed validation')->exists())->toBeFalse();
+});
+
+test('page creation keeps a supported audio embed address', function (): void {
+    $data = getControllerTestData('Page')['valid'];
+    $data['tenant_id'] = $this->tenant->id;
+    $data['title'] = 'Audio page';
+    $url = 'https://www.mixcloud.com/startfm/tiesiogiai-is-vu-sa/';
+    $data['content']['parts'] = [[
+        'type' => 'spotify-embed', 'json_content' => ['url' => $url],
+    ]];
+
+    asUser($this->admin)->post(route('pages.store'), $data)
+        ->assertRedirect()->assertSessionHasNoErrors();
+
+    $page = Page::where('title', 'Audio page')->sole();
+    expect($page->content->parts->sole()->json_content['url'])->toBe($url);
+});

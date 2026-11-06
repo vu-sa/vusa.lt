@@ -46,8 +46,8 @@ describe('toSpotifyEmbedUrl', () => {
     expect(toSpotifyEmbedUrl('https://open.spotify.com/show/abc', true)).toBe('https://open.spotify.com/show/abc?theme=0');
   });
 
-  it('passes a non-Spotify URL through untouched', () => {
-    expect(toSpotifyEmbedUrl('https://www.mixcloud.com/startfm/episode/', true)).toBe('https://www.mixcloud.com/startfm/episode/');
+  it('returns no Spotify source for another provider', () => {
+    expect(toSpotifyEmbedUrl('https://www.mixcloud.com/startfm/episode/', true)).toBe('');
   });
 });
 
@@ -60,7 +60,7 @@ describe('detectSocialPlatform', () => {
     expect(detectSocialPlatform('https://facebook.com/reel/123456')).toBe('facebook');
     expect(detectSocialPlatform('https://facebook.com/share/p/123456/')).toBe('facebook');
     expect(detectSocialPlatform('https://fb.watch/xyz123/')).toBe('facebook');
-    expect(detectSocialPlatform('http://www.facebook.com/posts/123')).toBe('facebook');
+    expect(detectSocialPlatform('http://www.facebook.com/posts/123')).toBeNull();
   });
 
   it('detects Instagram post, reel, reels, tv, and short URLs', () => {
@@ -122,5 +122,50 @@ describe('toInstagramEmbedUrl', () => {
     expect(toInstagramEmbedUrl('')).toBe('');
     expect(toInstagramEmbedUrl(null)).toBe('');
     expect(toInstagramEmbedUrl(undefined)).toBe('');
+  });
+});
+
+describe('provider URL restrictions', () => {
+  it.each([
+    'http://open.spotify.com/embed/show/abc',
+    'https://open.spotify.com.example.org/embed/show/abc',
+    'https://user@open.spotify.com/embed/show/abc',
+    'https://open.spotify.com:8443/embed/show/abc',
+    '//open.spotify.com/embed/show/abc',
+    '/embed/show/abc',
+    'data:text/html,example',
+    'not-a-url',
+  ])('omits an unsupported Spotify source at %s', (url) => {
+    expect(toSpotifyEmbedUrl(url, false)).toBe('');
+  });
+
+  it.each([
+    'http://www.mixcloud.com/startfm/episode/',
+    'https://mixcloud.com.example.org/startfm/episode/',
+    'https://user@player-widget.mixcloud.com/widget/iframe/',
+    'https://mixcloud.com:8443/startfm/episode/',
+    'https://example.org/startfm/episode/',
+    '/startfm/episode/',
+    'not-a-url',
+  ])('omits an unsupported Mixcloud source at %s', (url) => {
+    expect(isMixcloudUrl(url)).toBe(false);
+    expect(toMixcloudEmbedUrl(url, false)).toBe('');
+  });
+
+  it.each([
+    'http://www.instagram.com/p/abc/',
+    'https://other.instagram.com/p/abc/',
+    'https://user@www.instagram.com/p/abc/',
+    'https://www.instagram.com:8443/p/abc/',
+    'https://example.org/p/abc/',
+    'not-a-url',
+  ])('omits an unsupported social source at %s', (url) => {
+    expect(detectSocialPlatform(url)).toBeNull();
+    expect(toInstagramEmbedUrl(url)).toBe('');
+  });
+
+  it('accepts only listed Facebook hosts', () => {
+    expect(detectSocialPlatform('https://other.facebook.com/posts/123')).toBeNull();
+    expect(detectSocialPlatform('https://user@www.facebook.com/posts/123')).toBeNull();
   });
 });

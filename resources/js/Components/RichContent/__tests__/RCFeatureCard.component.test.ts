@@ -22,3 +22,12 @@ describe('RCFeatureCard', () => {
     expect(wrapper.find('img[src="/a.jpg"]').exists()).toBe(true);
   });
 });
+
+it('keeps the card title without binding an unsupported destination', () => {
+  const wrapper = mount(RCFeatureCard, {
+    props: { title: 'Kortelė', href: 'javascript:void(0)' },
+  });
+
+  expect(wrapper.text()).toContain('Kortelė');
+  expect(wrapper.find('a').exists()).toBe(false);
+});

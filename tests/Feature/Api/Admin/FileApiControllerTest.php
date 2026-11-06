@@ -589,3 +589,41 @@ describe('path spelling', function (): void {
             ->assertStatus(400);
     });
 });
+
+describe('upload types', function (): void {
+    test('unsupported document formats are refused without storing a file', function (string $extension, string $contents): void {
+        $name = 'uploaded.'.$extension;
+        $fixture = UploadedFile::fake()->createWithContent($name, $contents);
+        $file = new UploadedFile($fixture->getPathname(), $name, test: true);
+
+        asUser($this->fileManager)->postJson(route('api.v1.admin.files.store'), [
+            'path' => $this->allowedPath,
+            'files' => [['file' => $file]],
+        ])->assertUnprocessable()->assertJsonValidationErrors('files.0.file');
+
+        Storage::assertMissing($this->allowedPath.'/'.$name);
+    })->with([
+        ['html', '<html><body>Document</body></html>'],
+        ['htm', '<html><body>Document</body></html>'],
+        ['xhtml', '<html xmlns="http://www.w3.org/1999/xhtml"><body>Document</body></html>'],
+        ['svg', '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"></svg>'],
+        ['js', 'const value = 1;'],
+        ['css', 'body { color: red; }'],
+        ['xml', '<?xml version="1.0"?><document>Text</document>'],
+        ['html', "%PDF-1.4\n1 0 obj\n<<>>\nendobj\n%%EOF"],
+        ['pdf', '<html><body>Document</body></html>'],
+    ]);
+
+    test('pdf and png files are accepted and stored', function (string $extension): void {
+        $file = $extension === 'png'
+            ? UploadedFile::fake()->image('uploaded.png', 10, 10)
+            : UploadedFile::fake()->createWithContent('uploaded.pdf', "%PDF-1.4\n1 0 obj\n<<>>\nendobj\n%%EOF");
+
+        $response = asUser($this->fileManager)->postJson(route('api.v1.admin.files.store'), [
+            'path' => $this->allowedPath,
+            'files' => [['file' => $file]],
+        ])->assertOk()->assertJsonCount(1, 'data.uploaded');
+
+        Storage::assertExists($response->json('data.uploaded.0.path'));
+    })->with(['pdf', 'png']);
+});
