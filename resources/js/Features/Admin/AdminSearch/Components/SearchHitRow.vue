@@ -82,7 +82,7 @@
 
     <!-- Arrow indicator -->
     <ChevronRight
-      v-else
+      v-else-if="trailing === 'chevron'"
       :class="[
         'size-4 shrink-0 transition-opacity',
         selected ? 'text-brand opacity-100' : 'text-muted-foreground/50 opacity-0 group-hover:opacity-100',
@@ -107,14 +107,17 @@ import EntityTypeMark from '@/Components/EntityTypeMark.vue';
 import { StatusBadge } from '@/Components/Patterns';
 import { Badge } from '@/Components/ui/badge';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   hit: NormalizedSearchHit;
   selected?: boolean;
+  trailing?: 'chevron' | 'none';
   /** Renders View/Edit icon buttons instead of the chevron (command palette rows). */
   showActions?: boolean;
   /** Names the record type on the context line, for lists that mix collections. */
   showType?: boolean;
-}>();
+}>(), {
+  trailing: 'chevron',
+});
 
 const matches = computed(() => props.hit.raw as SearchMatchDocument);
 const titleMatch = computed(() => matchTitle(props.hit.title, matches.value._searchTitleMatches));

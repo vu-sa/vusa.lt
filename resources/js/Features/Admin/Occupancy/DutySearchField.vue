@@ -73,20 +73,25 @@
           @click="choose(hit)"
           @keydown.enter.prevent="choose(hit)"
         >
-          <div class="min-w-0">
-            <p class="truncate text-sm font-medium text-foreground">
-              <InflectedDutyName :name="hit.name" />
-            </p>
-            <p v-if="hit.institutionName" class="truncate text-xs text-muted-foreground">
-              {{ hit.institutionName }}
-            </p>
-          </div>
-          <span
-            v-if="hit.tenantShortname"
-            class="shrink-0 border border-border bg-secondary px-1.5 py-0.5 text-xs font-medium text-muted-foreground"
-          >
-            {{ hit.tenantShortname }}
-          </span>
+          <SearchHitRow :hit="rows[index]" :selected="index === activeIndex" trailing="none" />
+        </li>
+        <li
+          v-if="collection.hasMoreResults.value"
+          :id="optionId(hits.length)"
+          role="option"
+          :aria-selected="activeIndex === hits.length"
+          :aria-disabled="isLoadingMore"
+          :class="[
+            'flex min-h-11 cursor-pointer items-center justify-center gap-2 px-3 py-2 text-sm hover:bg-accent',
+            activeIndex === hits.length && 'bg-accent',
+          ]"
+          tabindex="-1"
+          @mousedown.prevent
+          @click="loadMore"
+          @keydown.enter.prevent="loadMore"
+        >
+          <Loader2 v-if="isLoadingMore" class="size-4 animate-spin text-muted-foreground" aria-hidden="true" />
+          {{ $t('Rodyti daugiau (:shown iš :total)', { shown: hits.length, total: collection.totalHits.value }) }}
         </li>
         <li v-if="hits.length === 0" class="px-3 py-4 text-center text-sm text-muted-foreground">
           {{ isSearching ? $t('Ieškoma…') : $t('Pareigybių nerasta') }}
@@ -110,7 +115,9 @@ import EntityTypeMark from '@/Components/EntityTypeMark.vue';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
+import SearchHitRow from '@/Features/Admin/AdminSearch/Components/SearchHitRow.vue';
 import { useAdminCollectionSearch } from '@/Features/Admin/AdminSearch/Composables/useAdminCollectionSearch';
+import { normalizeHit, type MapperContext } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { ModelEnum } from '@/Types/enums';
 
 /** What the sheet needs from a `duties` search document. */
@@ -168,6 +175,12 @@ const query = ref('');
 
 const showList = computed(() => query.value.trim().length >= 2);
 const isSearching = computed(() => collection.isSearching.value);
+const isLoadingMore = computed(() => collection.status.value === 'loading-more');
+const mapperContext = computed<MapperContext>(() => ({
+  ownTenantIds: collection.adminSearch.getCollectionTenantIds('duties'),
+  isSuperAdmin: collection.adminSearch.isSuperAdmin.value,
+}));
+const rows = computed(() => collection.results.value.map(doc => normalizeHit('duties', doc, mapperContext.value)));
 const activeOptionId = computed(() => (activeIndex.value >= 0 ? optionId(activeIndex.value) : undefined));
 
 const hits = computed<DutyHit[]>(() => (showList.value
@@ -181,6 +194,7 @@ const hits = computed<DutyHit[]>(() => (showList.value
       isActive: doc.is_active !== false,
     }))
   : []));
+const optionCount = computed(() => hits.value.length + (collection.hasMoreResults.value ? 1 : 0));
 
 watch(query, (value) => {
   activeIndex.value = -1;
@@ -191,11 +205,13 @@ watch(query, (value) => {
 });
 
 const move = (step: 1 | -1) => {
-  if (hits.value.length === 0) {
+  if (optionCount.value === 0) {
     return;
   }
 
-  activeIndex.value = (activeIndex.value + step + hits.value.length) % hits.value.length;
+  activeIndex.value = activeIndex.value < 0
+    ? (step === 1 ? 0 : optionCount.value - 1)
+    : (activeIndex.value + step + optionCount.value) % optionCount.value;
 };
 
 const choose = (hit: DutyHit) => {
@@ -204,10 +220,21 @@ const choose = (hit: DutyHit) => {
 };
 
 const chooseActive = () => {
+  if (activeIndex.value === hits.value.length && collection.hasMoreResults.value) {
+    loadMore();
+    return;
+  }
+
   const hit = hits.value[activeIndex.value];
 
   if (hit) {
     choose(hit);
+  }
+};
+
+const loadMore = () => {
+  if (!isLoadingMore.value) {
+    collection.loadMore();
   }
 };
 

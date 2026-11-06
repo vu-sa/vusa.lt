@@ -175,7 +175,7 @@ Profilis suskirstytas į skirtukus:
    - *Dabartinės pareigos* – aktyvūs pareigybių laikotarpiai, institucija, kadencijos pradžia ir pabaiga.
    - *Būsimos pareigos* – pareigos, kurios prasidės ateityje.
    - *Buvusios pareigos* – visa istorinė asmens veikla VU SA.
-   - Mygtukas **Pridėti pareigybę** atidaro šoninį pareigybės priskyrimo langą (pasirenkama pareigybė, kadencijos datos ir studijų programa).
+   - Mygtukas **Pridėti pareigybę** atidaro [pareigybės pasirinkimo langą](/organizacija/pareigybes#priskirti-nari), kuriame pasirenkama pareigybė ir pareigų datos, o kuratoriams – ir studijų programa.
 2. **Prieiga** (matoma superadministratoriui arba kai narys pats yra superadministratorius):
    - Jungiklis **Super administratorius** suteikia arba atima visą prieigą prie platformos. Jį perjungti gali tik Superadministratorius; prieš išsaugant prašoma patvirtinti.
    - Kitas teises narys gauna per savo pareigybių atsakomybes. Anksčiau tiesiogiai paskyrai suteiktos atsakomybės matomos ir atimamos [atsakomybės skirtuke „Kam suteikta“](/sistema/roles-ir-leidimai#atsakomybes-suteikimas).

@@ -128,6 +128,22 @@ test('search text uses actual translations and excludes personal and institution
     expect(SearchText::forModel($user))->toBe(['search_text_lt' => '', 'search_text_en' => '']);
 });
 
+test('duty search text combines duty and institution names with the tenant shortname in each locale', function (): void {
+    $tenant = Tenant::query()->where('alias', 'mif')->firstOrFail();
+    $institution = Institution::factory()->for($tenant)->create([
+        'name' => ['lt' => 'Matematikos fakultetas', 'en' => 'Faculty of Mathematics'],
+    ]);
+    $duty = Duty::factory()->for($institution)->create([
+        'name' => ['lt' => 'Atstovas', 'en' => 'Representative'],
+        'description' => ['lt' => '', 'en' => ''],
+    ]);
+
+    $text = SearchText::forModel($duty);
+
+    expect($text['search_text_lt'])->toContain('Atstovas', 'Matematikos fakultetas', $tenant->shortname)
+        ->and($text['search_text_en'])->toContain('Representative', 'Faculty of Mathematics', $tenant->shortname);
+});
+
 test('committed block edits and removals update admin and public bodies', function (string $model, string $mirror): void {
     usesTypesense();
     config(['scout.queue' => false]);

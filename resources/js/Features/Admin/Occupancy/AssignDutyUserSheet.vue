@@ -35,6 +35,23 @@
         :error="form.errors.duty_id"
       />
 
+      <div class="flex items-start gap-2.5">
+        <Checkbox
+          id="use_original_duty_name"
+          class="mt-0.5"
+          :model-value="form.use_original_duty_name"
+          @update:model-value="form.use_original_duty_name = $event === true"
+        />
+        <div class="space-y-0.5">
+          <Label for="use_original_duty_name" class="cursor-pointer text-sm font-normal">
+            {{ $t('Viešame puslapyje naudoti originalų pareigybės pavadinimą') }}
+          </Label>
+          <p class="text-xs text-muted-foreground">
+            {{ $t('Matoma vusa.lt') }}
+          </p>
+        </div>
+      </div>
+
       <MemberSearchField
         v-if="pickMember"
         v-model="member"
@@ -244,23 +261,6 @@
             <p v-if="form.errors['study_program_note.lt'] || form.errors['study_program_note.en']" class="text-xs text-destructive">
               {{ form.errors['study_program_note.lt'] || form.errors['study_program_note.en'] }}
             </p>
-          </div>
-
-          <div class="flex items-start gap-2.5">
-            <Checkbox
-              id="use_original_duty_name"
-              class="mt-0.5"
-              :model-value="form.use_original_duty_name"
-              @update:model-value="form.use_original_duty_name = $event === true"
-            />
-            <div class="space-y-0.5">
-              <Label for="use_original_duty_name" class="cursor-pointer text-sm font-normal">
-                {{ $t('Viešame puslapyje naudoti originalų pareigybės pavadinimą') }}
-              </Label>
-              <p class="text-xs text-muted-foreground">
-                {{ $t('Matoma vusa.lt') }}
-              </p>
-            </div>
           </div>
 
           <div class="space-y-3 border-t border-border pt-4">
@@ -572,7 +572,6 @@ const descriptionLocale = ref<(typeof LOCALES)[number]>('lt');
 const hasExtras = () => hasDescription.value
   || form.additional_email.trim() !== ''
   || !!form.photo_media
-  || form.use_original_duty_name
   || !!form.study_program_id
   || hasText(form.study_program_note);
 
