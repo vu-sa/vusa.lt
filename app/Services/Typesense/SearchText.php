@@ -72,7 +72,7 @@ class SearchText
             }
             if ($model instanceof Duty) {
                 $parts[] = $model->institution?->getTranslations('name')[$locale] ?? '';
-                $parts[] = $model->institution?->tenant?->shortname ?? '';
+                $parts[] = $model->institution?->tenant->shortname ?? '';
             }
             $result['search_text_'.$locale] = self::plain(implode(' ', $parts));
         }
