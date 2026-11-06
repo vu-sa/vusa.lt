@@ -60,3 +60,18 @@ test('changing a page permalink demotes the old one to a legacy redirect, withou
     $this->get($oldUrl)->assertStatus(301)->assertRedirect($newUrl);
     $this->get($newUrl)->assertStatus(200);
 });
+
+test('a legacy page url whose page was deleted returns 404 instead of failing', function (): void {
+    $page = Page::factory()->for(Tenant::main())->create([
+        'permalink' => 'istrintas-puslapis',
+        'lang' => 'lt',
+        'is_active' => true,
+    ]);
+
+    $oldUrl = $page->publicUrl();
+
+    $page->update(['permalink' => 'istrintas-puslapis-2']);
+    $page->delete();
+
+    $this->get($oldUrl)->assertNotFound();
+});
