@@ -2,13 +2,12 @@
 
 namespace App\Support;
 
+use App\Models\Cadence;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 
 /**
- * When a cache of what a user may do has to end: after its usual lifetime, or as soon as one
- * of their duties ends, whichever comes first. A duty running out fires no event, so without
- * this a former member kept their access until the cache happened to expire.
+ * Date boundaries fire no events, so cached access must end when a duty or secretary term ends.
  */
 final class AuthorityCacheExpiry
 {
@@ -19,6 +18,10 @@ final class AuthorityCacheExpiry
         // The same relation authorization reads; the end date is the last day in office, so
         // access flips at the start of the next day.
         $nextEnd = $user->authorization_duties()->min('dutiables.end_date');
+        $secretaryEnd = Cadence::query()->containing(today()->toDateString())
+            ->whereHas('secretaryAssignments', fn ($query) => $query->where('user_id', $user->id))
+            ->min('end_date');
+        $nextEnd = collect([$nextEnd, $secretaryEnd])->filter()->min();
 
         if ($nextEnd === null) {
             return $cap;

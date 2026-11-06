@@ -233,6 +233,8 @@ return [
     ],
 
     'assign' => [
+        'global_responsibility' => 'Narius į šias pareigas gali paskirti tik atsakomybių administratorius.',
+        'self_responsibility' => 'Save gali paskirti tik į pareigas, kurių atsakomybes gali suteikti.',
         'already_assigned' => 'Šis narys tuo laikotarpiu jau eina šias pareigas.',
         'quota_exceeded' => 'Padalinio kvota (:quota) viršyta.',
         'quota_tenant_not_member' => ':name nepriklauso :tenant, todėl šio padalinio administratoriai šios vietos redaguoti negalės.',

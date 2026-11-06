@@ -30,6 +30,7 @@ function updateDutyActionData(Duty $duty, array $overrides = []): array
 }
 
 test('duty update persists attributes institution and types, leaving responsibilities to the record', function (): void {
+    asUser(makeAdminUser(Tenant::query()->first()));
     $duty = Duty::factory()->create();
     $institution = Institution::factory()->create();
     $role = Role::factory()->create();

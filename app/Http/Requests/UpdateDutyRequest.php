@@ -4,9 +4,11 @@ namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\ValidatesDutyTypeAssignments;
 use App\Models\Duty;
+use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
 use App\Rules\SoftDeleteRules;
+use App\Rules\WithinAuthorizedTenantScope;
 use App\Services\ModelAuthorizer;
 use App\Support\MorphMap;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -49,7 +51,12 @@ class UpdateDutyRequest extends FormRequest
             'description' => 'nullable',
             'email' => 'nullable|email',
             'current_users' => 'nullable|array',
-            'institution_id' => 'required',
+            'institution_id' => [
+                'bail', 'required', 'ulid', SoftDeleteRules::existsLive('institutions'),
+                ...($this->input('institution_id') !== $duty->institution_id
+                    ? [new WithinAuthorizedTenantScope(Institution::class, 'duties.update.padalinys')]
+                    : []),
+            ],
             'places_to_occupy' => 'sometimes|nullable|integer|min:1',
             'contacts_grouping' => 'required|in:none,study_program,tenant',
             'is_active' => 'sometimes|boolean',

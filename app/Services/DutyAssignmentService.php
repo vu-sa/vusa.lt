@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Actions\Responsibilities\AuthorizeDutyAssignment;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
@@ -40,6 +41,12 @@ class DutyAssignmentService
         $currentUserIds = (clone $query)->pluck('dutiable_id')->all();
         $toRemove = array_values(array_diff($currentUserIds, $userIds));
         $toAdd = array_values(array_unique(array_diff($userIds, $currentUserIds)));
+
+        if (($actor = auth()->user()) !== null) {
+            foreach ($toAdd as $userId) {
+                AuthorizeDutyAssignment::execute($actor, $duty, (string) $userId);
+            }
+        }
 
         if ($toRemove) {
             $this->endDateDutiables($query->whereIn('dutiable_id', $toRemove), now()->subDay());

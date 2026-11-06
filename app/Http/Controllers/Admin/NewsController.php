@@ -59,6 +59,8 @@ class NewsController extends AdminController
     public function duplicate(News $news)
     {
         $this->handleAuthorization('create', News::class);
+        $this->handleAuthorization('view', $news);
+        abort_unless($this->authorizer->scope(auth()->user(), 'news.create.padalinys')->allowsTenant($news->tenant), 403);
 
         $newNews = DuplicateNewsAction::execute($news);
 

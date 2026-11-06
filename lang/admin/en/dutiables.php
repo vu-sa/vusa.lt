@@ -233,6 +233,8 @@ return [
     ],
 
     'assign' => [
+        'global_responsibility' => 'Only a responsibility administrator can assign members to this duty.',
+        'self_responsibility' => 'You can assign yourself only to duties whose responsibilities you can grant.',
         'already_assigned' => 'This member already holds this duty during that period.',
         'quota_exceeded' => 'The tenant quota (:quota) has been exceeded.',
         'quota_tenant_not_member' => ':name is not part of :tenant, so that unit\'s admins will not be able to edit this seat.',

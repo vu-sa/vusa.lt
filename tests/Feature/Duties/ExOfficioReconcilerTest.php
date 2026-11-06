@@ -89,6 +89,7 @@ test('moving a target institution reconciles seats without ending them', functio
     SyncExOfficioTargets::execute($this->sourceDuty, [$this->targetDuty->id]);
     $source = reconcilerSource();
     $seat = $source->derivedDutiables()->sole();
+    asUser(makeAdminUser($this->tenant));
     app(UpdateDuty::class)->execute($this->targetDuty, ['institution_id' => $institution->id,
         'assignable_tenants' => [['tenant_id' => $this->tenant->id]]]);
 

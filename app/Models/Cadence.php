@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Actions\Cadences\CarrySecretariesIntoOverride;
 use App\Actions\Cadences\SyncCadenceDatesFromAnchors;
+use App\Actions\ForgetUserAccess;
 use App\Actions\ResyncTaskAssigneesForCadence;
 use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
@@ -62,6 +63,9 @@ class Cadence extends Model
      */
     public ?Collection $staffedInstitutions = null;
 
+    /** @var list<string> */
+    private array $secretaryUserIds = [];
+
     /**
      * Moving or dropping a term moves meetings in and out of it, and with them the tasks
      * its secretaries carry — task assignment is stored, not derived, so nothing else
@@ -87,6 +91,8 @@ class Cadence extends Model
                 return;
             }
 
+            ForgetUserAccess::execute($cadence->secretaryAssignments()->pluck('user_id'));
+
             $previousStart = Carbon::parse($cadence->getOriginal('start_date'));
             $previousEnd = Carbon::parse($cadence->getOriginal('end_date'));
 
@@ -99,10 +105,13 @@ class Cadence extends Model
         });
 
         static::deleting(function (Cadence $cadence): void {
+            // The database removes the secretary rows with the cadence.
+            $cadence->secretaryUserIds = $cadence->secretaryAssignments()->pluck('user_id')->all();
             $cadence->staffedInstitutions = ResyncTaskAssigneesForCadence::institutionsStaffedOn($cadence);
         });
 
         static::deleted(function (Cadence $cadence): void {
+            ForgetUserAccess::execute($cadence->secretaryUserIds);
             ResyncTaskAssigneesForCadence::forTerm(
                 $cadence,
                 $cadence->staffedInstitutions ?? collect(),
