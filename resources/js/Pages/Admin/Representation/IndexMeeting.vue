@@ -97,7 +97,7 @@ import MeetingOutcome from '@/Components/Meetings/MeetingOutcome.vue';
 import { titleOmitsDate } from '@/Components/Meetings/meetingTitle';
 import MeetingPreview from '@/Components/Meetings/MeetingPreview.vue';
 import { Button } from '@/Components/ui/button';
-import { meetingCompletionStatuses, type MeetingCompletionStatus } from '@/Constants/statuses';
+import { meetingCompletionStatuses, type MeetingCompletionStatus } from '@/Constants/statusIcons';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { useRowAbilities } from '@/Composables/useRowAbilities';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';

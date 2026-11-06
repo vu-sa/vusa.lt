@@ -8,7 +8,7 @@ import PreviewSection from './PreviewSection.vue';
 import StatusBadge from './StatusBadge.vue';
 
 import { Button } from '@/Components/ui/button';
-import { meetingCompletionStatuses } from '@/Constants/statuses';
+import { meetingCompletionStatuses } from '@/Constants/statusIcons';
 
 const meta: Meta<typeof PreviewPane> = {
   title: 'Patterns/Preview',

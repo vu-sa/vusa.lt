@@ -486,7 +486,7 @@ import { Checkbox } from '@/Components/ui/checkbox';
 import { ImageUpload } from '@/Components/ui/upload';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import VisualOptionSelect from '@/Components/FormItems/VisualOptionSelect.vue';
-import { contentStatuses } from '@/Constants/statuses';
+import { contentStatuses } from '@/Constants/statusIcons';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { resolveTenantPublicHost } from '@/Composables/useTenantSubdomain';
 

@@ -122,7 +122,7 @@ import { Mail as MailIcon, RefreshCw as RefreshCwIcon, Trash2 as Trash2Icon } fr
 
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
-import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { useDatabaseCollectionSource } from '@/Composables/useCollectionSource';

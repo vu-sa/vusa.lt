@@ -35,7 +35,7 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import type { RepresentativeUser } from '../types';
-import { getActivityDotClasses, getActivityTextClasses, getActivityLabel } from '../Composables/useActivityStatus';
+import { getActivityDotClasses, getActivityTextClasses, getActivityLabel } from '@/Components/Graphs/composables/useActivityStatus';
 
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import { formatNearDate } from '@/Utils/dateTime';

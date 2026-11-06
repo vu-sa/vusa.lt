@@ -3,7 +3,7 @@ import { ArrowUpRight, Check, Trash2 } from '@lucide/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { getNotificationPrimaryAction, getNotificationPrimaryActionIcon, getNotificationSecondaryAction, getNotificationUrl, type Notification } from '@/Composables/useNotificationFormatting';
-import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 
 export function notificationRowActions(notification: Notification): AdminRecordAction[] {
   const primary = getNotificationPrimaryAction(notification);

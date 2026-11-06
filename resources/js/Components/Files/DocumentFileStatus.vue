@@ -15,7 +15,7 @@ import { computed } from 'vue';
 import type { DocumentFolderRow } from './types';
 
 import CollectionStatusMenu, { type CollectionStatusOption } from '@/Components/Collection/CollectionStatusMenu.vue';
-import { documentStatuses } from '@/Constants/statuses';
+import { documentStatuses } from '@/Constants/statusIcons';
 import { DocumentStatus } from '@/Types/enums';
 
 const props = defineProps<{

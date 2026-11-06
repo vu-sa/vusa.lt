@@ -84,7 +84,7 @@ import { Link, router } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { computed, toRef } from 'vue';
 
-import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
@@ -95,7 +95,7 @@ import { EmptyState, StatusBadge } from '@/Components/Patterns';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { useLocalCollectionSource } from '@/Composables/useCollectionSource';
-import { goalStatuses } from '@/Constants/statuses';
+import { goalStatuses } from '@/Constants/statusIcons';
 import { translatedText, type Translated } from '@/Features/Admin/Goals/types';
 import type { GoalStatus } from '@/Types/enums';
 import { formatRecordDate } from '@/Utils/dateTime';

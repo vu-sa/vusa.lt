@@ -244,13 +244,13 @@ import { ChevronLeft, ChevronRight, History } from '@lucide/vue';
 import ActionControl from './RecordPageAction.vue';
 
 import RecordActionMenu from '@/Components/Patterns/RecordActionMenu.vue';
-import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import { RuledGrid, type RuledGridColumns } from '@/Components/Brand';
 import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
-import { statusRoleParts, type StatusPresentation } from '@/Constants/statuses';
+import { statusRoleParts, type StatusPresentation } from '@/Constants/statusIcons';
 
 export interface RecordPageSection {
   value: string;

@@ -37,7 +37,7 @@ import { Unlink } from '@lucide/vue';
 
 import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { problemStatuses, type ProblemStatus } from '@/Constants/statuses';
+import { problemStatuses, type ProblemStatus } from '@/Constants/statusIcons';
 import { formatDate } from '@/Utils/dateTime';
 
 /** `ProblemSummaryResource`: a problem as a line on another record. */

@@ -14,7 +14,7 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, type Component } from 'vue';
 
-import { statusRoleParts, type StatusPresentation } from '@/Constants/statuses';
+import { statusRoleParts, type StatusPresentation } from '@/Constants/statusIcons';
 
 /** A record's own icon carrying its status colour, where a badge would add one more tag to the header. */
 const props = defineProps<{

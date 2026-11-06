@@ -236,7 +236,7 @@ import { NativeSelect } from '@/Components/ui/native-select';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Textarea } from '@/Components/ui/textarea';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
-import { bannerStatuses } from '@/Constants/statuses';
+import { bannerStatuses } from '@/Constants/statusIcons';
 import { ModelEnum } from '@/Types/enums';
 
 interface CourseForm {

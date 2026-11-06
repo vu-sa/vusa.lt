@@ -50,7 +50,7 @@ import type { InstitutionActivityInsight } from './types';
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { institutionActivityStatuses } from '@/Constants/statuses';
+import { institutionActivityStatuses } from '@/Constants/statusIcons';
 import type { InstitutionActivityStatus } from '@/Types/enums';
 
 defineProps<{

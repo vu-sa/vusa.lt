@@ -125,7 +125,7 @@ import { CalendarIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { contentStatuses } from '@/Constants/statuses';
+import { contentStatuses } from '@/Constants/statusIcons';
 import { NativeSelect } from '@/Components/ui/native-select';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { isTrashView, useDatabaseCollectionSource, type DatabaseFacetDefinition } from '@/Composables/useCollectionSource';

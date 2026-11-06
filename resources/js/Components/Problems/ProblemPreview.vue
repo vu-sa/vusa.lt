@@ -52,7 +52,7 @@ import { computed } from 'vue';
 import { PreviewChipList, PreviewFact, PreviewFacts, PreviewPane, PreviewSection, StatusBadge, type PreviewChipItem } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
-import { problemStatuses, statusFor } from '@/Constants/statuses';
+import { problemStatuses, statusFor } from '@/Constants/statusIcons';
 import { formatDate } from '@/Utils/dateTime';
 
 const props = defineProps<{

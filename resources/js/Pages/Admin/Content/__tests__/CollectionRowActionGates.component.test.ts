@@ -12,7 +12,7 @@ import IndexDomainTypes from '../../ModelMeta/IndexDomainTypes.vue';
 import IndexStudyProgram from '../../People/IndexStudyProgram.vue';
 import IndexStudySet from '../../StudySets/IndexStudySet.vue';
 
-import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));

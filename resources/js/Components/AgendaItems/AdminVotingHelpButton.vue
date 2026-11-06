@@ -116,7 +116,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/Components/ui/dialog';
-import { agendaItemStatuses } from '@/Constants/statuses';
+import { agendaItemStatuses } from '@/Constants/statusIcons';
 import { agendaStatusExplanations, voteFieldExplanations } from '@/Constants/votingExplainer';
 
 const HEADING_CLASS = 'text-xs font-bold uppercase tracking-[0.18em] text-foreground';

@@ -247,7 +247,7 @@ import { SecretariesSection, type SecretaryRoster } from '@/Components/Instituti
 import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue';
 import UsersFactList from '@/Components/Avatars/UsersFactList.vue';
 import RecordPage, { type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
-import type { AdminRecordAction as ActionDescriptor } from '@/Features/Admin/RecordActions/types';
+import type { AdminRecordAction as ActionDescriptor } from '@/Types/AdminRecordAction';
 import { ConfirmDialog, EmptyState, OverviewSection } from '@/Components/Patterns';
 import ProblemSummaryList, { type ProblemSummary } from '@/Components/Problems/ProblemSummaryList.vue';
 import { RelationshipLinkList, type RelationKindOption, type RelationshipLinkRow } from '@/Components/Relationships';
@@ -257,7 +257,7 @@ import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import { enterInstitution } from '@/Composables/useRecordTrail';
 import { getSuggestedCheckInRange, type TaskDisplayData } from '@/Composables/useTaskPresentation';
 import { countIncompleteTasks } from '@/Composables/useTaskUrgency';
-import { inactiveInstitutionStatus, institutionActivityStatuses, type StatusPresentation } from '@/Constants/statuses';
+import { inactiveInstitutionStatus, institutionActivityStatuses, type StatusPresentation } from '@/Constants/statusIcons';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
 import { AssignDutyUserSheet } from '@/Features/Admin/Occupancy';
 import { FileableFilesPanel, type FileableFileItem } from '@/Components/Files';

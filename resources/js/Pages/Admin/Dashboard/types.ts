@@ -1,3 +1,7 @@
+import type { RepresentativeActivityCategory } from '@/Components/Graphs/types';
+
+export type { RepresentativeActivityCategory } from '@/Components/Graphs/types';
+
 export type AtstovavimasUser = Omit<App.Entities.User, 'authorization_duties'> & {
   authorization_duties?: Array<{
     institution?: AtstovavimasInstitution;
@@ -228,7 +232,6 @@ export interface InactivePeriod {
 }
 
 // Representative activity tracking types
-export type RepresentativeActivityCategory = 'today' | 'week' | 'month' | 'stale' | 'never';
 
 export interface RepresentativeUser {
   id: string;

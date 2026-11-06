@@ -126,7 +126,7 @@ import { CalendarIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { operatingStatuses } from '@/Constants/statuses';
+import { operatingStatuses } from '@/Constants/statusIcons';
 import { useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
 import EventTypeSheetForm from '@/Features/Admin/EventTypes/EventTypeSheetForm.vue';
 import { formatRecordDate } from '@/Utils/dateTime';

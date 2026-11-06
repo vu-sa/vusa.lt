@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import SearchHitRow from '../SearchHitRow.vue';
 import type { NormalizedSearchHit } from '../../Utils/searchHitMappers';
 
-import { deletedMemberStatus } from '@/Constants/statuses';
+import { deletedMemberStatus } from '@/Constants/statusIcons';
 import { documentWithMatch } from '@/Shared/Search/matches';
 
 const hit = {

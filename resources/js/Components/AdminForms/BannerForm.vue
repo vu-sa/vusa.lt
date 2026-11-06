@@ -127,7 +127,7 @@ import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
 import { ImageUpload } from '@/Components/ui/upload';
-import { contentStatuses, type StatusPresentation } from '@/Constants/statuses';
+import { contentStatuses, type StatusPresentation } from '@/Constants/statusIcons';
 
 const props = withDefaults(defineProps<{
   banner: Partial<App.Entities.Banner> & Record<string, unknown>;

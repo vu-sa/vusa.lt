@@ -18,7 +18,7 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, type HTMLAttributes } from 'vue';
 
-import { statusRoleClasses, type StatusPresentation } from '@/Constants/statuses';
+import { statusRoleClasses, type StatusPresentation } from '@/Constants/statusIcons';
 import { cn } from '@/Utils/Shadcn/utils';
 
 const props = defineProps<{

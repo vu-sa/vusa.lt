@@ -40,7 +40,7 @@ import type { CalendarEventPreviewModel } from './calendarEventPreview';
 
 import { PreviewFact, PreviewFacts, PreviewPane, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { contentStatuses } from '@/Constants/statuses';
+import { contentStatuses } from '@/Constants/statusIcons';
 
 const props = defineProps<{
   event: CalendarEventPreviewModel;

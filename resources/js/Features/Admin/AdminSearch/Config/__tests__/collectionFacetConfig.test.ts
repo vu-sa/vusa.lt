@@ -9,7 +9,7 @@ import {
 } from '../collectionFacetConfig';
 
 import { buildProfileParams } from '@/Shared/Search/profiles';
-import { institutionActivityStatuses } from '@/Constants/statuses';
+import { institutionActivityStatuses } from '@/Constants/statusIcons';
 
 describe('getCollectionSortOptions', () => {
   it.each(['meetings', 'institutions', 'news', 'pages'])('offers both directions of the record dates, so their %s table headers can sort', (collection) => {

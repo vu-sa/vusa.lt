@@ -159,24 +159,19 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
-      include: [
-        'resources/js/Utils/**/*.ts',
-        'resources/js/Services/**/*.ts',
-        'resources/js/Composables/**/*.ts',
-        'resources/js/Components/**/*.vue',
-        'resources/js/components/**/*.vue',
-      ],
+      include: ['resources/js/**/*.{ts,vue}'],
       exclude: [
         '**/*.d.ts',
-        '**/*.test.ts',
-        '**/*.component.test.ts',
-        '**/*.stories.ts',
+        '**/*.{test,spec,stories}.{ts,tsx,js,jsx,vue}',
+        '**/__tests__/**',
+        '**/__mocks__/**',
+        '**/*.mock.{ts,tsx,js,jsx,vue}',
+        'resources/js/mocks/**',
+        'resources/js/Types/**',
+        'resources/js/ziggy.js',
+        'resources/js/tests/**',
+        'tests/**',
       ],
-      // No thresholds are enforced. This previously read `thresholds: { global: { lines: 75, … } }`,
-      // an Istanbul-style shape that Vitest interprets as a glob named "global" — it matched no
-      // file, so the 75% gate never ran on any build. Actual coverage is ~36%. Enabling a real
-      // gate is a team decision, not a config fix; the flat shape it needs is:
-      //   thresholds: { lines: 36, functions: 33, branches: 29, statements: 36 },
     },
   },
 });

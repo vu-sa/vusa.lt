@@ -161,7 +161,7 @@ import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import ReservationResourceForm from '@/Components/AdminForms/ReservationResourceForm.vue';
 import RecordPage, { type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
-import type { AdminRecordAction as ActionDescriptor } from '@/Features/Admin/RecordActions/types';
+import type { AdminRecordAction as ActionDescriptor } from '@/Types/AdminRecordAction';
 import { ConfirmDialog } from '@/Components/Patterns';
 import ReservationDecisionDialog from '@/Components/Reservations/ReservationDecisionDialog.vue';
 import ReservationResourceList from '@/Components/Reservations/ReservationResourceList.vue';

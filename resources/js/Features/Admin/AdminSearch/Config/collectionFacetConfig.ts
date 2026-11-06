@@ -11,7 +11,7 @@ import { ADMIN_SEARCH_FALLBACKS } from './collectionSearchConfig';
 
 import type { CollectionFacetConfig, SortOption } from '../Types/AdminSearchTypes';
 
-import { institutionActivityStatuses, meetingCompletionStatuses } from '@/Constants/statuses';
+import { institutionActivityStatuses, meetingCompletionStatuses } from '@/Constants/statusIcons';
 
 /**
  * Meeting collection facet configuration

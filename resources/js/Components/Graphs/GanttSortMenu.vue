@@ -42,7 +42,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
-import { GANTT_SORT_OPTIONS, type GanttSortBy } from '@/Pages/Admin/Dashboard/Composables/useGanttSettings';
+import { GANTT_SORT_OPTIONS, type GanttSortBy } from '@/Components/Graphs/composables/useGanttSettings';
 
 const props = defineProps<{
   modelValue: GanttSortBy;

@@ -73,7 +73,7 @@ import { GANTT_ZOOM_STOPS } from './ganttZoom';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/ui/tooltip';
-import type { GanttGroupBy, GanttSortBy } from '@/Pages/Admin/Dashboard/Composables/useGanttSettings';
+import type { GanttGroupBy, GanttSortBy } from '@/Components/Graphs/composables/useGanttSettings';
 
 withDefaults(defineProps<{
   showLegend?: boolean;

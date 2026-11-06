@@ -217,7 +217,7 @@ import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
 import { useDocsHref } from '@/Composables/useDocsHref';
 import { RESERVATION_PLACEHOLDERS } from '@/Constants/I18n/Placeholders';
-import type { StatusPresentation } from '@/Constants/statuses';
+import type { StatusPresentation } from '@/Constants/statusIcons';
 import { ResourceSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
 import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { ModelEnum } from '@/Types/enums';

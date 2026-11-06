@@ -348,7 +348,7 @@ import { Textarea } from '@/Components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
 import FocalPointPicker from '@/Components/ui/upload/FocalPointPicker.vue';
 import { useApiMutation } from '@/Composables/useApi';
-import { bannerStatuses } from '@/Constants/statuses';
+import { bannerStatuses } from '@/Constants/statusIcons';
 import { MultiCollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
 import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 

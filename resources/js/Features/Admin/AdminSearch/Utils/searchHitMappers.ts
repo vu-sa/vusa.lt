@@ -23,7 +23,7 @@ import {
   statusFor,
   voteStatuses,
   type StatusPresentation,
-} from '@/Constants/statuses';
+} from '@/Constants/statusIcons';
 import { hasIdentityMatch, PROSE_FIELDS, type SearchMatchDocument } from '@/Shared/Search/matches';
 import { changeDutyNameEndings } from '@/Utils/String';
 import { termYearSpan } from '@/Features/Admin/Occupancy/occupancy';

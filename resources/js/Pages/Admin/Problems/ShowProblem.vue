@@ -195,7 +195,7 @@ import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection 
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
-import { problemStatuses, type ProblemStatus } from '@/Constants/statuses';
+import { problemStatuses, type ProblemStatus } from '@/Constants/statusIcons';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
 import LinkedGoalList from '@/Features/Admin/Goals/LinkedGoalList.vue';
 import ProblemStepsPanel from '@/Features/Admin/Goals/ProblemStepsPanel.vue';

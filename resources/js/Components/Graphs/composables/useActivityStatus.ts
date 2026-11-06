@@ -1,7 +1,3 @@
-/**
- * Activity status of a representative, on the shared status roles:
- * active (today / 7 days) → success, recent (30 days) → attention, stale → neutral, never → danger.
- */
 import { trans } from 'laravel-vue-i18n';
 
 import type { RepresentativeActivityCategory } from '../types';
@@ -74,20 +70,11 @@ export function getActivityTextClasses(category: RepresentativeActivityCategory 
   return statusRoleParts[getActivityRole(category)].text;
 }
 
-/**
- * Get localized label for activity status (used in tooltips)
- */
 export function getActivityLabel(category: RepresentativeActivityCategory | undefined): string {
   if (!category) return '';
   return trans(`activity.status.${category}`);
 }
 
-/**
- * Check if a duty member is currently active (for filtering Gantt chart rings)
- * A member is current if their duty period includes today:
- * - endDate is null (ongoing) OR endDate >= today
- * - AND startDate <= today
- */
 export function isDutyCurrentlyActive(startDate: Date, endDate: Date | null): boolean {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -95,15 +82,12 @@ export function isDutyCurrentlyActive(startDate: Date, endDate: Date | null): bo
   const start = new Date(startDate);
   start.setHours(0, 0, 0, 0);
 
-  // Start date must be in the past or today
   if (start > today) return false;
 
-  // If no end date, duty is ongoing
   if (!endDate) return true;
 
   const end = new Date(endDate);
   end.setHours(0, 0, 0, 0);
 
-  // End date must be today or in the future
   return end >= today;
 }
