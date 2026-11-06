@@ -7,6 +7,7 @@
         :title="option.time"
         :description="option.detail"
         :icon="Clock"
+        indicator="check"
         :selected="option.time === selectedTime"
         @click="pick(option.time)"
       />

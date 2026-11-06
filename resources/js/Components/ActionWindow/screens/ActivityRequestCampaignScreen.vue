@@ -14,6 +14,7 @@
             :title="$t(`activity_requests.campaigns.${campaign}`)"
             :description="$t(`activity_requests.descriptions.${campaign}`)"
             :icon="MailQuestion"
+            indicator="check"
             :selected="draft.activityRequest.campaignType === campaign"
             @click="choose(campaign)"
           />
@@ -23,6 +24,7 @@
           :title="$t(`activity_requests.campaigns.${campaign}`)"
           :description="$t(`activity_requests.descriptions.${campaign}`)"
           :icon="MailQuestion"
+          indicator="check"
           :selected="draft.activityRequest.campaignType === campaign"
           @click="choose(campaign)"
         />

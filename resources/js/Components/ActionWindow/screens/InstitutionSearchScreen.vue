@@ -33,6 +33,7 @@
           :title="hit.title"
           :description="hit.subtitle"
           :icon="Landmark"
+          indicator="check"
           :selected="draft.institution?.id === hit.recordId"
           @click="pick(hit)"
         >

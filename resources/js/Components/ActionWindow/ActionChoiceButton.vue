@@ -65,7 +65,7 @@ const props = withDefaults(defineProps<{
   icon?: LucideIcon | Component;
   /** Colours the icon tile with a status role; omit for the plain hairline tile. */
   tone?: StatusRole;
-  /** `chevron` for a step that moves on; `check` for a choice toggled in place, like a form field. */
+  /** `check` for an answer that fills in the record (institution, type, date); `chevron` for a menu or a screen that asks more. */
   indicator?: 'chevron' | 'check';
   /** The current answer: brand outline, and a filled check or brand chevron. */
   selected?: boolean;

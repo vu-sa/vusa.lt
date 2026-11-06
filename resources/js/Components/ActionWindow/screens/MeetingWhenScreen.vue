@@ -13,6 +13,7 @@
         :title="preset.label"
         :description="preset.detail"
         :icon="preset.icon"
+        indicator="check"
         :selected="preset.selected"
         @click="preset.pick()"
       />

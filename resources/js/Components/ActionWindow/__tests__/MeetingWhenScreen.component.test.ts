@@ -257,8 +257,8 @@ describe('MeetingWhenScreen.vue', () => {
     window.goTo('meeting.when');
     await flushPromises();
 
-    const pressed = wrapper.findAll('[data-slot="action-choice-button"]').map(button => button.attributes('aria-current'));
-    expect(pressed).toEqual([undefined, 'true', undefined]);
+    const pressed = wrapper.findAll('[data-slot="action-choice-button"]').map(button => button.attributes('aria-pressed'));
+    expect(pressed).toEqual(['false', 'true', undefined]);
   });
 
   it('marks the other-date choice when the chosen day is not among the suggestions', async () => {

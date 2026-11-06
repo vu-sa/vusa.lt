@@ -10,6 +10,7 @@
         :title="option.label"
         :description="option.description"
         :icon="option.icon"
+        indicator="check"
         :selected="draft.meeting.type === option.value"
         @click="pick(option.value)"
       />

@@ -25,6 +25,7 @@
           :title="preset.label"
           :description="preset.detail"
           :icon="CalendarOff"
+          indicator="check"
           :selected="draft.checkIn.endDate === toIsoDate(preset.date)"
           @click="pick(from, preset.date)"
         />
