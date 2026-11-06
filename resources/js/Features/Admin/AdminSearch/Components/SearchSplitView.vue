@@ -11,7 +11,7 @@
       <!-- List -->
       <div
         :class="[
-          'min-h-0 border border-border bg-background',
+          'min-h-0 border border-border bg-card',
           'w-full lg:w-2/5 lg:max-w-md',
           mobileShowsDetail ? 'hidden lg:block' : 'block',
         ]"
@@ -38,7 +38,7 @@
       <!-- Detail -->
       <div
         :class="[
-          'min-h-0 flex-1 border border-border bg-background',
+          'min-h-0 flex-1 border border-border bg-card',
           mobileShowsDetail ? 'block' : 'hidden lg:block',
         ]"
       >

@@ -366,16 +366,16 @@ Užbaigimo patvirtinimas aiškiai paaiškina, kad šiandien pareigos dar galioja
 ### Nario priskyrimas ir šalinimas {#priskirti-nari}
 
 Paspaudus **Priskirti** pareigybės puslapyje:
-1. Po pareigybės pavadinimu galima pažymėti **Viešame puslapyje naudoti originalų pareigybės pavadinimą**.
-   Ši parinktis matoma iškart, neatveriant papildomų nustatymų.
-2. Pasirenkamas narys. Paieškoje pirmiausia rodomi dabartiniai nariai, o buvę pažymimi „Buvęs narys · metai“.
+1. Pasirenkamas narys. Paieškoje pirmiausia rodomi dabartiniai nariai, o buvę pažymimi „Buvęs narys · metai“.
    Jei žmogaus sistemoje dar nėra, jį galima sukurti čia pat – užtenka vardo ir pavardės, o el. paštas
    nebūtinas (aktualu buvusiems nariams; be el. pašto jie tiesiog negauna laiškų). Sukurti naują narį
    gali tie, kurie turi teisę kurti narius.
-3. Pasirenkama **kadencija**. Pagal nutylėjimą – dabartinė: pradžia šiandien, pabaiga – kadencijos
+2. Pasirenkama **kadencija**. Pagal nutylėjimą – dabartinė: pradžia šiandien, pabaiga – kadencijos
    pabaiga. Pasirinkus ankstesnę kadenciją, datos užpildomos visam jos laikotarpiui. Kadencijos imamos
    iš institucijos [kadencijų](/sistema/nustatymai#kadencijos), o jei institucija savų neturi – iš bendrųjų.
-4. Jei reikia, datos pataisomos ranka – tada pasirinkimas tampa „Kitos datos“.
+3. Jei reikia, datos pataisomos ranka – tada pasirinkimas tampa „Kitos datos“.
+4. Po datomis galima pažymėti **Viešame puslapyje naudoti originalų pareigybės pavadinimą** –
+   parinktis matoma iškart, neatveriant papildomų nustatymų.
 5. **Papildomi nustatymai** (suskleisti): papildomas el. paštas, nuotrauka ir **Papildomas aprašymas**,
    rodomas viešame kontaktų sąraše vietoj pareigybės aprašymo.
    Kuratorių pareigybėms čia rodoma ir studijų programa bei jos pastaba.
@@ -390,7 +390,7 @@ parodo, kiek jau rodoma ir kiek iš viso rasta; ją pasirinkus sąrašas papildo
 
 Paieška randa pareigybes pagal kartu įrašytus pareigybės ir institucijos ar padalinio žodžius,
 o daugiau rezultatų galima parodyti tame pačiame sąraše. Originalaus pavadinimo parinktis matoma
-iškart po pareigybe. Nario paieškos rezultatuose, kaip ir kitose pasirinkimo vietose, rodomas vardas,
+iškart po pareigų datomis. Nario paieškos rezultatuose, kaip ir kitose pasirinkimo vietose, rodomas vardas,
 el. paštas, kai jis prieinamas, ir padaliniai.
 
 </ChangelogNote>

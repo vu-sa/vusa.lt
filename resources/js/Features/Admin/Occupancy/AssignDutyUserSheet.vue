@@ -35,23 +35,6 @@
         :error="form.errors.duty_id"
       />
 
-      <div class="flex items-start gap-2.5">
-        <Checkbox
-          id="use_original_duty_name"
-          class="mt-0.5"
-          :model-value="form.use_original_duty_name"
-          @update:model-value="form.use_original_duty_name = $event === true"
-        />
-        <div class="space-y-0.5">
-          <Label for="use_original_duty_name" class="cursor-pointer text-sm font-normal">
-            {{ $t('Viešame puslapyje naudoti originalų pareigybės pavadinimą') }}
-          </Label>
-          <p class="text-xs text-muted-foreground">
-            {{ $t('Matoma vusa.lt') }}
-          </p>
-        </div>
-      </div>
-
       <MemberSearchField
         v-if="pickMember"
         v-model="member"
@@ -128,6 +111,23 @@
           <DatePicker v-model="endDate" :disabled="isExOfficio" clearable />
           <p v-if="form.errors.end_date" class="text-xs text-destructive">
             {{ form.errors.end_date }}
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-2.5">
+        <Checkbox
+          id="use_original_duty_name"
+          class="mt-0.5"
+          :model-value="form.use_original_duty_name"
+          @update:model-value="form.use_original_duty_name = $event === true"
+        />
+        <div class="space-y-0.5">
+          <Label for="use_original_duty_name" class="cursor-pointer text-sm font-normal">
+            {{ $t('Viešame puslapyje naudoti originalų pareigybės pavadinimą') }}
+          </Label>
+          <p class="text-xs text-muted-foreground">
+            {{ $t('Matoma vusa.lt') }}
           </p>
         </div>
       </div>

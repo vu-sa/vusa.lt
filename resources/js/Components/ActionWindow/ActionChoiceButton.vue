@@ -6,7 +6,7 @@
     :aria-pressed="selected ? 'true' : undefined"
     :class="cn(
       'group relative flex w-full items-center justify-between gap-3.5 border p-3.5 sm:p-4 text-left min-h-14 transition-all duration-150',
-      'border-border/50 bg-secondary/35 hover:border-brand/60 hover:bg-secondary/60 dark:bg-secondary/20 dark:hover:bg-secondary/40',
+      'border-border bg-card hover:border-brand/60 hover:bg-secondary/40 dark:border-border/50 dark:bg-secondary/20 dark:hover:bg-secondary/40',
       'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
       'disabled:pointer-events-none disabled:opacity-50',
       selected && 'border-brand bg-brand/10 dark:bg-brand/20 hover:bg-brand/15 dark:hover:bg-brand/25',
