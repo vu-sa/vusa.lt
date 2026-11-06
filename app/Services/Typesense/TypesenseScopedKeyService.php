@@ -29,7 +29,7 @@ class TypesenseScopedKeyService
     public function __construct(protected Client $client, protected ModelAuthorizer $authorizer, protected InstitutionAccessService $institutionAccessService) {}
 
     /**
-     * @return array{collections: array<string, array{key: string, tenant_ids: array<int>, institution_ids?: array<int>, direct_institution_ids?: array<int>, scope?: string, has_access: bool}>, expires_at: int, is_super_admin: bool, header_key?: string, visibility_version: string}
+     * @return array{collections: array<string, array{key: string, tenant_ids: array<int>, institution_ids?: array<int>, direct_institution_ids?: array<int>, scope?: string, has_access: bool, excluded_fields?: array<string>}>, expires_at: int, is_super_admin: bool, header_key?: string, visibility_version: string}
      */
     public function generateScopedKeysForUser(User $user): array
     {
@@ -62,7 +62,7 @@ class TypesenseScopedKeyService
     }
 
     /**
-     * @return array{collections: array<string, array{key: string, tenant_ids: array<int>, institution_ids?: array<int>, direct_institution_ids?: array<int>, scope?: string, has_access: bool}>, expires_at: int, is_super_admin: bool, header_key?: string}
+     * @return array{collections: array<string, array{key: string, tenant_ids: array<int>, institution_ids?: array<int>, direct_institution_ids?: array<int>, scope?: string, has_access: bool, excluded_fields?: array<string>}>, expires_at: int, is_super_admin: bool, header_key?: string}
      */
     protected function buildScopedKeys(User $user): array
     {
