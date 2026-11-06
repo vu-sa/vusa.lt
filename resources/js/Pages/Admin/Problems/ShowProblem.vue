@@ -344,6 +344,7 @@ const handleStatusChange = (status: string) => {
   statusChanging.value = true;
   router.patch(route('problems.updateStatus', props.problem.id), { status }, {
     preserveScroll: true,
+    except: ['goalLinks'],
     onFinish: () => {
       statusChanging.value = false;
     },

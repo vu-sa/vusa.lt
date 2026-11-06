@@ -179,6 +179,18 @@ describe('ShowMeeting.vue', () => {
       expect(menuText({ meeting: announced, governanceScope: 'vusa' }))
         .toContain('Atsieti nuo kalendoriaus');
     });
+
+    it('unlinks without reloading the deferred document and task panels', async () => {
+      const wrapper = createWrapper({ meeting: { ...baseMeeting, calendar_event: { id: 7, is_draft: true } } });
+
+      wrapper.findComponent({ name: 'RecordPage' }).vm.$emit('action', 'unlink-calendar');
+      await wrapper.vm.$nextTick();
+
+      expect(router.delete).toHaveBeenCalledWith(
+        '/mocked/meetings.calendarEvent.destroy?meeting=meet1',
+        expect.objectContaining({ except: ['documents', 'tasks', 'pendingDocuments'] }),
+      );
+    });
   });
 
   it('lands on the agenda tab by default', () => {

@@ -454,6 +454,7 @@ const openAnnounceDialog = () => {
 const handleUnlinkCalendarEvent = () => {
   router.delete(route('meetings.calendarEvent.destroy', { meeting: props.meeting.id }), {
     preserveScroll: true,
+    except: ['documents', 'tasks', 'pendingDocuments'],
   });
 };
 
@@ -748,9 +749,12 @@ const handleAttachInstitution = () => {
   if (!addInstitutionId.value) {
     return;
   }
+  // Institutions decide which pending documents can be linked, and who the tasks reach.
   router.post(route('meetings.institutions.attach', props.meeting.id), {
     institution_id: addInstitutionId.value,
   }, {
+    preserveScroll: true,
+    except: ['documents'],
     onSuccess: () => {
       showAddInstitutionDialog.value = false;
       addInstitutionId.value = '';
@@ -759,7 +763,10 @@ const handleAttachInstitution = () => {
 };
 
 const handleDetachInstitution = (institutionId: string) => {
-  router.delete(route('meetings.institutions.detach', { meeting: props.meeting.id, institution: institutionId }));
+  router.delete(route('meetings.institutions.detach', { meeting: props.meeting.id, institution: institutionId }), {
+    preserveScroll: true,
+    except: ['documents'],
+  });
 };
 
 const handleMissingAction = (action: MeetingMissingAction) => {
@@ -836,6 +843,7 @@ const confirmAgendaItemDelete = () => {
   }
   router.delete(route('agendaItems.destroy', agendaItemPendingDelete.value.id), {
     preserveScroll: true,
+    except: ['documents', 'pendingDocuments'],
     onSuccess: () => {
       showAgendaItemDeleteDialog.value = false;
       agendaItemPendingDelete.value = null;
