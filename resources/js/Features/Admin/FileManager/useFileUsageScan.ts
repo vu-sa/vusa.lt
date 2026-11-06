@@ -14,6 +14,7 @@ export interface FileUsageDetail {
 export interface FileUsageResult {
   is_safe_to_delete: boolean;
   total_usages: number;
+  hidden_usages?: number;
   usage_details: FileUsageDetail[];
   scanned_models: string[];
 }

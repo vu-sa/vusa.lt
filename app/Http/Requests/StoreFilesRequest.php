@@ -89,10 +89,10 @@ class StoreFilesRequest extends FormRequest
     public static function getAllowedExtensions(): array
     {
         return [
-            'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg',
+            'jpg', 'jpeg', 'png', 'gif', 'webp',
             'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
             'txt', 'csv', 'zip', 'rar',
-            'html', 'css', 'js', 'json', 'xml',
+            'json',
             'mp3', 'mp4', 'avi', 'mov', 'webm',
         ];
     }

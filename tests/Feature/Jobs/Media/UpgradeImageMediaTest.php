@@ -8,6 +8,7 @@ use App\Models\Institution;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\PendingUpload;
+use App\Models\SupportRequest;
 use App\Models\Tenant;
 use App\Services\ContentResolution\ContentPartResolver;
 use App\Services\ImageUploadService;
@@ -344,4 +345,27 @@ test('image references and cached conversion URLs need no version query string',
         ->and($data['thumb'])->not->toContain('?')
         ->and($data['srcset'])->not->toContain('?')
         ->and(strlen($owner->fresh()->logo_url))->toBeLessThanOrEqual(125);
+});
+
+test('staging image upgrades preserve private evidence storage', function (): void {
+    Storage::fake('supportEvidence');
+    Storage::fake('stagingMedia');
+    $owner = SupportRequest::factory()->create();
+    $media = $owner->addMedia(UploadedFile::fake()->image('screenshot.png', 800, 400))
+        ->storingConversionsOnDisk('spatieMediaLibrary')
+        ->toMediaCollection('evidence', 'spatieMediaLibrary');
+    $path = $media->getPathRelativeToRoot();
+    $bytes = Storage::disk('spatieMediaLibrary')->get($path);
+    config(['app.env' => 'staging', 'app.files_read_only' => true, 'media-library.disk_name' => 'stagingMedia']);
+    app()->instance('env', 'staging');
+
+    upgradeMedia([$media->id]);
+    $media->refresh();
+
+    expect($media->disk)->toBe('supportEvidence')
+        ->and($media->conversions_disk)->toBe('supportEvidence')
+        ->and(Storage::disk('spatieMediaLibrary')->get($path))->toBe($bytes);
+    Storage::disk('supportEvidence')->assertExists($media->getPathRelativeToRoot());
+    Storage::disk('supportEvidence')->assertExists($media->getPathRelativeToRoot('thumb'));
+    Storage::disk('stagingMedia')->assertDirectoryEmpty('/');
 });

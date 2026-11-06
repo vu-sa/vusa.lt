@@ -60,7 +60,7 @@ class UpdateSupportRequestRequest extends FormRequest
             'description' => ['required', 'string', 'max:10000'],
             'context_url' => ['nullable', 'string', 'max:2000', new SafeUrl],
             'images' => ['nullable', 'array', 'max:5'],
-            'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
+            'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'extensions:jpg,jpeg,png,webp', 'max:10240'],
             'deleted_media_ids' => ['nullable', 'array'],
             'deleted_media_ids.*' => ['integer', Rule::exists('media', 'id')],
         ];

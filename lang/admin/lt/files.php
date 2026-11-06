@@ -187,6 +187,7 @@ return [
     ],
 
     'usage' => [
+        'hidden_count' => 'Dar :count įrašų naudoja šį failą. Neturi teisės matyti jų duomenų.',
         'scan_done' => 'Patikra baigta',
         'scan_failed' => 'Nepavyko patikrinti, kur naudojamas failas',
         'matched_blocks' => 'Turinio blokų: :count',

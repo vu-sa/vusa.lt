@@ -11,6 +11,10 @@
         : $t('files.messages.usage_found', { count: usage.total_usages }) }}
     </p>
 
+    <p v-if="usage.hidden_usages" class="text-muted-foreground">
+      {{ $t('files.usage.hidden_count', { count: usage.hidden_usages }) }}
+    </p>
+
     <ul v-if="usage.usage_details.length > 0" class="max-h-60 divide-y divide-border overflow-y-auto border-t border-border">
       <li v-for="detail in usage.usage_details" :key="`${detail.model_class}:${detail.id}`">
         <component

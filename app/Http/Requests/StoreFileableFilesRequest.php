@@ -30,7 +30,7 @@ class StoreFileableFilesRequest extends FormRequest
     {
         return [
             'files' => 'required|array|min:1|max:10',
-            'files.*.file' => 'required|file|mimes:pdf,docx,pptx,xlsx|max:51200',
+            'files.*.file' => 'required|file|mimes:pdf,docx,pptx,xlsx|extensions:pdf,docx,pptx,xlsx|max:51200',
             'files.*.type' => ['required', 'string', Rule::in(array_keys(FileableFile::fileTypes()))],
             'files.*.date' => 'required|date',
             'files.*.name' => ['nullable', 'string', 'max:200', 'not_regex:/[\\\\\/:*?"<>|#%]/'],

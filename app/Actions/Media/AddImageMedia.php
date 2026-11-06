@@ -23,7 +23,7 @@ class AddImageMedia
      */
     public function execute(HasMedia $owner, UploadedFile|string $source, string $collection, ?string $name = null, array $properties = []): Media
     {
-        StagingProtection::ensureDiskIsWritable(config('media-library.disk_name'));
+        StagingProtection::ensureDiskIsWritable($owner->getMediaCollection($collection)?->diskName ?: config('media-library.disk_name'));
 
         $name ??= $source instanceof UploadedFile ? pathinfo($source->getClientOriginalName(), PATHINFO_FILENAME) : 'image';
         $bytes = $source instanceof UploadedFile ? (string) file_get_contents($source->getRealPath()) : $source;

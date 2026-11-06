@@ -186,6 +186,7 @@ return [
     ],
 
     'usage' => [
+        'hidden_count' => 'Another :count records use this file. You do not have permission to view their details.',
         'scan_done' => 'Check complete',
         'scan_failed' => 'Could not check where the file is used',
         'matched_blocks' => 'Content blocks: :count',

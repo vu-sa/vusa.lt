@@ -60,7 +60,7 @@ class StoreSupportRequestRequest extends FormRequest
             'reporter_name' => ['nullable', 'string', 'max:255'],
             'reporter_email' => ['nullable', 'email', 'max:255'],
             'images' => ['nullable', 'array', 'max:5'],
-            'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
+            'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'extensions:jpg,jpeg,png,webp', 'max:10240'],
         ];
     }
 }

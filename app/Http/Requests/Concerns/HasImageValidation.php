@@ -6,29 +6,9 @@ use App\Contracts\ImageMediaOwner;
 use App\Rules\AttachableImageMedia;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Standardized image validation rules for form requests.
- *
- * Usage:
- *   use HasImageValidation;
- *
- *   public function rules(): array
- *   {
- *       return [
- *           'main_image' => $this->singleImageRules(required: true),
- *           'images.*' => $this->galleryImageRules(),
- *       ];
- *   }
- */
 trait HasImageValidation
 {
-    /**
-     * Get validation rules for a single image upload.
-     *
-     * @param  int  $maxMB  Maximum file size in MB
-     * @param  bool  $required  Whether the image is required
-     * @param  array  $additionalMimes  Additional mime types to allow
-     */
+    /** @param list<string> $additionalMimes */
     protected function singleImageRules(
         int $maxMB = 10,
         bool $required = false,
@@ -47,17 +27,12 @@ trait HasImageValidation
 
         $mimes = array_merge(['jpeg', 'jpg', 'png', 'webp'], $additionalMimes);
         $rules[] = 'mimes:'.implode(',', array_unique($mimes));
+        $rules[] = 'extensions:'.implode(',', array_unique($mimes));
 
         return $rules;
     }
 
-    /**
-     * Get validation rules for gallery/multiple image uploads.
-     *
-     * @param  int  $maxMB  Maximum file size in MB per image
-     * @param  int|null  $maxFiles  Maximum number of files allowed (null for unlimited)
-     * @param  array  $additionalMimes  Additional mime types to allow
-     */
+    /** @param list<string> $additionalMimes */
     protected function galleryImageRules(
         int $maxMB = 5,
         ?int $maxFiles = 20,
@@ -70,15 +45,11 @@ trait HasImageValidation
 
         $mimes = array_merge(['jpeg', 'jpg', 'png', 'webp'], $additionalMimes);
         $rules[] = 'mimes:'.implode(',', array_unique($mimes));
+        $rules[] = 'extensions:'.implode(',', array_unique($mimes));
 
         return $rules;
     }
 
-    /**
-     * Get validation rules for the images array itself.
-     *
-     * @param  int|null  $maxFiles  Maximum number of files allowed
-     */
     protected function imagesArrayRules(?int $maxFiles = 20): array
     {
         $rules = ['nullable', 'array'];
@@ -107,9 +78,6 @@ trait HasImageValidation
         ];
     }
 
-    /**
-     * Get all image validation messages.
-     */
     protected function imageValidationMessages(): array
     {
         return [
