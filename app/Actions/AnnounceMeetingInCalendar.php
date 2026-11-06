@@ -39,7 +39,7 @@ class AnnounceMeetingInCalendar
     /**
      * Matches how these events have been named by hand for a decade: "VU SA Parlamento posėdis".
      */
-    private static function title(Meeting $meeting, ?Institution $institution, string $locale): string
+    public static function title(Meeting $meeting, ?Institution $institution, string $locale): string
     {
         $name = $institution?->getTranslation('short_name', $locale)
             ?: $institution?->getTranslation('name', $locale)

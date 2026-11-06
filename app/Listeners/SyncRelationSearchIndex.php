@@ -22,7 +22,7 @@ class SyncRelationSearchIndex
     {
         $events->listen(SearchRelationChanged::class, fn (SearchRelationChanged $event) => $this->relationChanged($event));
         $events->listen('eloquent.updated: '.Institution::class, function (Institution $institution): void {
-            if ($institution->wasChanged(['is_active', 'meeting_kind'])) {
+            if ($institution->wasChanged('is_active')) {
                 $this->institutionFactsChanged($institution);
             }
         });
@@ -58,7 +58,6 @@ class SyncRelationSearchIndex
         $meetings = Meeting::query()->withTrashed()->whereHas('institutions', fn ($query) => $query->where('institutions.id', $institution->getKey()));
 
         (clone $meetings)->with('institutions.types')->chunkById(100, function ($chunk): void {
-            // Types and the meeting kind override decide what the meeting is called.
             $chunk->each(fn (Meeting $meeting) => $meeting->refreshTitle());
             $chunk->searchable();
             $chunk->each(fn (Meeting $meeting) => $meeting->syncPublicSearchIndex());

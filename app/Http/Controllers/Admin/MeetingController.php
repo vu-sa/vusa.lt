@@ -7,6 +7,7 @@ use App\Actions\Documents\PendingMeetingDocuments;
 use App\Actions\GetRecentlyChangedMeetings;
 use App\Actions\GetUserTenantShortnames;
 use App\Enums\InstitutionScope;
+use App\Enums\MeetingKind;
 use App\Events\MeetingFullyCreated;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\AttachMeetingInstitutionRequest;
@@ -229,7 +230,8 @@ class MeetingController extends AdminController
         return $this->inertiaResponse('Admin/Representation/ShowMeeting', [
             'meeting' => fn () => [
                 ...$loadMeeting()->toArray(),
-                'title_noun' => MeetingTitle::noun($loadMeeting()->type, app()->getLocale(), $loadMeeting()->meetingKind()),
+                'title_noun' => MeetingTitle::noun($loadMeeting()->type, app()->getLocale(), $loadMeeting()->meetingKind(), joint: $loadMeeting()->is_joint),
+                'inherited_meeting_kind' => $loadMeeting()->institutions->first()?->resolvedMeetingKind()->value ?? MeetingKind::Sitting->value,
                 'agenda_items' => $loadMeeting()->agendaItems->map(fn (AgendaItem $item): array => [
                     ...AgendaItemPresenter::forUser($item, request()->user()),
                     'can' => $agendaItemAbilities()->get((string) $item->getKey()),

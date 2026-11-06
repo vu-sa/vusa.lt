@@ -920,7 +920,6 @@ declare global {
       tenant_id?: number | null
       is_active: boolean
       meeting_periodicity_days?: unknown | null
-      meeting_kind?: MeetingKind | null
       created_at: string
       updated_at: string
       deleted_at?: string | null
@@ -1396,6 +1395,7 @@ declare global {
       id: string
       title: string
       type?: MeetingType | null
+      meeting_kind?: MeetingKind | null
       start_time: string
       end_time?: string | null
       created_at: string
@@ -1722,7 +1722,6 @@ declare global {
       tenant_id?: number | null
       is_active: boolean
       meeting_periodicity_days?: unknown | null
-      meeting_kind?: MeetingKind | null
       created_at: string
       updated_at: string
       deleted_at?: string | null
@@ -1814,6 +1813,7 @@ declare global {
       id: string
       title: string
       type?: MeetingType | null
+      meeting_kind?: MeetingKind | null
       start_time: string
       end_time?: string | null
       created_at: string

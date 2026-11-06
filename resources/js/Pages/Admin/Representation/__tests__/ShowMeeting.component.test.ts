@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
+import * as i18n from 'laravel-vue-i18n';
 
 import ShowMeeting from '@/Pages/Admin/Representation/ShowMeeting.vue';
 import { commonStubs } from '@/tests/stubs';
@@ -67,6 +68,43 @@ describe('ShowMeeting.vue', () => {
   beforeEach(() => {
     localStorage.clear();
     window.history.replaceState({}, '', '/');
+  });
+
+  it.each([
+    ['lt', 'Senatas', 'Senato posėdis'],
+    ['en', 'Senate', 'Senate meeting'],
+  ])('includes the institution in the heading in %s', (locale, name, ending) => {
+    const language = vi.spyOn(i18n, 'getActiveLanguage').mockReturnValue(locale);
+    const wrapper = createWrapper({
+      meeting: {
+        ...baseMeeting,
+        title_noun: locale === 'lt' ? 'posėdis' : 'meeting',
+        institutions: [{ id: 'i1', name }],
+      },
+    });
+
+    try {
+      expect(wrapper.get('[data-slot="record-title"]').text()).toMatch(new RegExp(`${ending}$`));
+      if (locale === 'en') expect(wrapper.get('[data-slot="record-title"]').text()).toContain('March');
+    } finally {
+      wrapper.unmount();
+      language.mockRestore();
+    }
+  });
+
+  it('uses the server’s joint noun without an institution prefix', () => {
+    const wrapper = createWrapper({
+      meeting: {
+        ...baseMeeting,
+        title_noun: 'jungtinė konferencija',
+        institutions: [{ id: 'i1', name: 'Senatas' }, { id: 'i2', name: 'Taryba' }],
+      },
+    });
+
+    const title = wrapper.get('[data-slot="record-title"]').text();
+    expect(title).toContain('jungtinė konferencija');
+    expect(title).not.toContain('Senato');
+    expect(title).not.toContain('Tarybos');
   });
 
   it('shows only representatives in the people fact', () => {

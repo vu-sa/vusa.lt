@@ -307,7 +307,7 @@
 import { ref, computed, watch, onMounted, defineAsyncComponent, nextTick } from 'vue';
 import { Deferred, Link, router } from '@inertiajs/vue3';
 import { useClipboard, useStorage } from '@vueuse/core';
-import { trans as $t } from 'laravel-vue-i18n';
+import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
 import { AlertTriangle, CalendarPlus, CalendarX, CircleCheck, CircleDashed, Copy, Edit, Globe, Link2, Plus, Trash2 } from '@lucide/vue';
 import { DialogDescription } from 'reka-ui';
 
@@ -315,7 +315,9 @@ import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitut
 import { preferredScrollBehavior } from '@/Composables/useAccessibilityPreferences';
 import { useToasts } from '@/Composables/useToasts';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
-import { InstitutionScope, ModelEnum } from '@/Types/enums';
+import { InstitutionScope, LocaleEnum, ModelEnum } from '@/Types/enums';
+import { genitivizeEveryWord } from '@/Utils/String';
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { formatMeetingDateTime, formatMeetingTimeOnly, isEmailMeeting } from '@/Utils/MeetingDisplay';
 import { useMeetingUrgency } from '@/Composables/useMeetingUrgency';
 import { meetingCompletionStatuses, type MeetingCompletionStatus } from '@/Constants/statuses';
@@ -708,17 +710,22 @@ onMounted(() => {
 const mainInstitution: App.Entities.Institution | string
   = props.meeting.institutions?.[0] ?? 'Be institucijos';
 
-// Date the way the record shows dates, noun from the server's MeetingTitle (the institution's
-// meeting kind, or "sprendimas el. paštu"); the institutions themselves are a fact below.
 const meetingTitle = computed(() => {
+  const locale = getActiveLanguage() === 'en' ? LocaleEnum.EN : LocaleEnum.LT;
   const datePart = formatMeetingDateTime(props.meeting, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
-  });
+  }, locale);
   const noun = (props.meeting as App.Entities.Meeting & { title_noun?: string }).title_noun ?? $t('posėdis');
 
-  return `${datePart} ${noun}`;
+  if ((props.meeting.institutions?.length ?? 0) > 1) return `${datePart} ${noun}`;
+
+  const institution = props.meeting.institutions?.[0];
+  const name = getTranslatedValue(institution?.name, locale);
+  const institutionName = locale === LocaleEnum.LT ? genitivizeEveryWord(name) : name;
+
+  return [datePart, institutionName, noun].filter(Boolean).join(' ');
 });
 
 watch(() => props.meeting.id, () => enterMeeting(props.meeting), { immediate: true });

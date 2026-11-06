@@ -23,6 +23,21 @@
     </FormFieldWrapper>
 
     <FormFieldWrapper
+      v-if="!isEmailMeeting(form.type)"
+      id="meeting-kind"
+      :label="$t('forms.fields.meeting_kind_override')"
+      :hint="$t('forms.helpers.meeting_kind_meeting_hint')"
+      :error="form.errors.meeting_kind"
+    >
+      <NativeSelect
+        id="meeting-kind"
+        v-model="meetingKind"
+        :aria-label="$t('forms.fields.meeting_kind_override')"
+        :options="meetingKindChoices"
+      />
+    </FormFieldWrapper>
+
+    <FormFieldWrapper
       id="meeting-start-time"
       :label="isEmailMeeting(form.type) ? $t('forms.fields.date') : `${$t('forms.fields.date')} / ${$t('forms.fields.time')}`"
       :error="form.errors.start_time"
@@ -63,7 +78,7 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import SimpleLocaleButton from '@/Components/Buttons/SimpleLocaleButton.vue';
@@ -71,14 +86,17 @@ import { SheetForm } from '@/Components/Patterns';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { DatePicker, DateTimePicker } from '@/Components/ui/date-picker';
 import { Label } from '@/Components/ui/label';
+import { NativeSelect } from '@/Components/ui/native-select';
 import { RadioGroup, RadioGroupItem } from '@/Components/ui/radio-group';
 import { Textarea } from '@/Components/ui/textarea';
 import { useMeetingForm } from '@/Composables/useMeetingForm';
+import { meetingKindLabel, meetingKindOptions } from '@/Constants/meetingKinds';
+import { MeetingKind } from '@/Types/enums';
 import type { MeetingTypeValue } from '@/Types/MeetingType';
 
 const props = defineProps<{
   open: boolean;
-  meeting: App.Entities.Meeting;
+  meeting: App.Entities.Meeting & { inherited_meeting_kind?: MeetingKind };
 }>();
 
 const emit = defineEmits<{
@@ -91,8 +109,25 @@ const form = useForm({
   start_time: initial.start_time as Date | undefined,
   type: (initial.type ?? '__null__') as MeetingTypeValue | '__null__',
   description: initial.description,
+  meeting_kind: (props.meeting.meeting_kind ?? null) as MeetingKind | null,
 });
 const descriptionLocale = ref<'lt' | 'en'>('lt');
+const FROM_INSTITUTION = '__institution__';
+const meetingKindChoices = computed(() => [
+  {
+    value: FROM_INSTITUTION,
+    label: $t('forms.options.meeting_kind_from_institution', {
+      kind: meetingKindLabel(props.meeting.inherited_meeting_kind ?? MeetingKind.Sitting),
+    }),
+  },
+  ...meetingKindOptions(),
+]);
+const meetingKind = computed({
+  get: () => form.meeting_kind ?? FROM_INSTITUTION,
+  set: (value: string | number | null | undefined) => {
+    form.meeting_kind = value === FROM_INSTITUTION ? null : value as MeetingKind;
+  },
+});
 
 function resetForm(): void {
   form.reset();
@@ -107,6 +142,7 @@ watch(() => props.open, (open) => {
     start_time: values.start_time,
     type: values.type ?? '__null__',
     description: values.description,
+    meeting_kind: props.meeting.meeting_kind ?? null,
   });
   resetForm();
 });
@@ -117,7 +153,10 @@ function save(): void {
     return;
   }
 
-  form.transform(data => formatMeetingData({ ...data, start_time: data.start_time!, type: data.type === '__null__' ? null : data.type }))
+  form.transform(data => ({
+    ...formatMeetingData({ ...data, start_time: data.start_time!, type: data.type === '__null__' ? null : data.type }),
+    meeting_kind: data.meeting_kind,
+  }))
     .patch(route('meetings.update', props.meeting.id), {
       preserveScroll: true,
       onSuccess: () => emit('update:open', false),

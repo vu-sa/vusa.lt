@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import MeetingForm from '../MeetingForm.vue';
 
 import { createMockForm, type MockForm } from '@/tests/helpers/createMockForm';
+import { MeetingKind } from '@/Types/enums';
 import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
@@ -13,6 +14,8 @@ const meeting = {
   id: 'meet-1',
   start_time: '2026-05-14 10:00:00',
   type: 'in-person',
+  meeting_kind: null as MeetingKind | null,
+  inherited_meeting_kind: MeetingKind.Assembly,
   description: { lt: 'Lietuviškas aprašymas', en: 'English description' },
 };
 
@@ -30,6 +33,7 @@ function factory(overrides: Record<string, unknown> = {}) {
   form = createMockForm({
     start_time: new Date(record.start_time),
     type: record.type,
+    meeting_kind: record.meeting_kind,
     description: typeof record.description === 'string'
       ? { lt: record.description, en: '' }
       : { ...record.description },
@@ -65,6 +69,37 @@ describe('MeetingForm', () => {
       type: 'in-person',
     });
     expect(form.patch).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ preserveScroll: true }));
+  });
+
+  it('sends the selected meeting kind', async () => {
+    const wrapper = factory();
+    await wrapper.get('select#meeting-kind').setValue(MeetingKind.Conference);
+    await wrapper.find('form').trigger('submit');
+
+    expect(transform(form.data())).toMatchObject({ meeting_kind: MeetingKind.Conference });
+  });
+
+  it('sends null when the institution default is selected', async () => {
+    const wrapper = factory({ meeting_kind: MeetingKind.Conference });
+    const select = wrapper.get('select#meeting-kind');
+    const inherited = select.findAll('option')[0];
+    await select.setValue(inherited.attributes('value'));
+    await wrapper.find('form').trigger('submit');
+
+    expect(transform(form.data())).toMatchObject({ meeting_kind: null });
+  });
+
+  it('hides the kind select for decisions by email', () => {
+    const wrapper = factory({ type: 'email' });
+    expect(wrapper.find('select#meeting-kind').exists()).toBe(false);
+  });
+
+  it('refreshes the kind defaults when the sheet opens', async () => {
+    const wrapper = factory();
+    await wrapper.setProps({ open: false });
+    await wrapper.setProps({ meeting: { ...meeting, meeting_kind: MeetingKind.Conference }, open: true });
+
+    expect(form.defaults).toHaveBeenCalledWith(expect.objectContaining({ meeting_kind: MeetingKind.Conference }));
   });
 
   it('requires a date before submitting', async () => {
