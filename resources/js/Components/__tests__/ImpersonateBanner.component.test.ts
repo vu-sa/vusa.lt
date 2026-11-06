@@ -1,10 +1,11 @@
 import { flushPromises, mount } from '@vue/test-utils';
-import { router, usePage } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ref } from 'vue';
 
 import ImpersonateBanner from '@/Components/ImpersonateBanner.vue';
 import { createMockPage } from '@/tests/helpers/createMockPage';
+import { reloadDocument } from '@/Utils/reloadDocument';
 
 const { jsonMock, useFetchMock } = vi.hoisted(() => ({
   jsonMock: vi.fn(),
@@ -12,6 +13,7 @@ const { jsonMock, useFetchMock } = vi.hoisted(() => ({
 }));
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
+vi.mock('@/Utils/reloadDocument', () => ({ reloadDocument: vi.fn() }));
 vi.mock('@vueuse/core', async (importOriginal) => {
   const actual = await importOriginal();
 
@@ -67,7 +69,7 @@ describe('ImpersonateBanner', () => {
     expect(document.body.querySelector('[data-slot="impersonation-launcher"]')).toBeNull();
   });
 
-  it('stops impersonation and reloads the page', async () => {
+  it('stops impersonation with a full reload, so the persistent layout drops the impersonated user\'s state', async () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({
       auth: {
         user: {
@@ -92,7 +94,7 @@ describe('ImpersonateBanner', () => {
       expect.objectContaining({ method: 'POST' }),
     );
     expect(jsonMock).toHaveBeenCalled();
-    expect(router.reload).toHaveBeenCalledOnce();
+    expect(reloadDocument).toHaveBeenCalledOnce();
   });
 
   it('shows the super-admin launcher in the shell flow', () => {
@@ -185,6 +187,6 @@ describe('ImpersonateBanner', () => {
     await flushPromises();
 
     expect(wrapper.get('[role="alert"]').text()).toBe('Could not return');
-    expect(router.reload).not.toHaveBeenCalled();
+    expect(reloadDocument).not.toHaveBeenCalled();
   });
 });

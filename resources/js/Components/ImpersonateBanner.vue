@@ -129,7 +129,7 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue';
 import { computed, ref } from 'vue';
-import { router, usePage } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 import { useDebounceFn, useFetch } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { LogOut, UserCog, X } from '@lucide/vue';
@@ -138,6 +138,7 @@ import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
+import { reloadDocument } from '@/Utils/reloadDocument';
 
 defineOptions({
   inheritAttrs: false,
@@ -231,7 +232,8 @@ async function startImpersonating(userId: string) {
     }
 
     popoverOpen.value = false;
-    router.reload();
+    // Not router.reload(): the persistent admin layout would keep the previous user's preferences and caches.
+    reloadDocument();
   }
   finally {
     starting.value = false;
@@ -260,7 +262,7 @@ async function stopImpersonating() {
       return;
     }
 
-    router.reload();
+    reloadDocument();
   }
   finally {
     stopping.value = false;
