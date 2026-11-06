@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Tipai ir kategorijos
-last_reviewed: 2026-11-03
+last_reviewed: 2026-11-06
 tests:
   - tests/Feature/Meetings/MeetingKindTest.php
   - tests/Feature/Permissions/DutyTypeAssignmentTest.php
@@ -48,7 +48,7 @@ pavadinimus bei aprašymus. Tėvinį tipą pasirink iš tos pačios rūšies są
 negali sudaryti rato. Iš institucijos tipo tėvų paveldima valdymo sritis, o pareigybės tipas
 paveldi tėvinių tipų atsakomybes. Institucijos tipe taip pat nurodoma, kaip vadinami jo institucijų
 posėdžiai (posėdis, susirinkimas, susitikimas ar konferencija); šis laukas iš tėvinio tipo
-nepaveldimas. [Kaip vadinami posėdžiai](/visak/institucijos#posedziu-pavadinimas). Visur, kur renkamasi tipą, sąrašas rodomas medžiu: potipiai
+nepaveldimas. Atskiram posėdžiui žodis keičiamas [posėdžio redagavimo lange](/visak/posedziai#posedzio-tipas-ir-pavadinimas). [Kaip vadinami posėdžiai](/visak/institucijos#posedziu-pavadinimas). Visur, kur renkamasi tipą, sąrašas rodomas medžiu: potipiai
 pateikiami po savo tėviniu tipu, o paieškoje matyti visas kelias, pvz., „Koordinatorius ›
 Administratorius“.
 
@@ -59,6 +59,13 @@ Pasirinktame sąraše taip pat gali spausti **Naujas institucijos tipas** arba
 Atidaręs tipo įrašą, skiltyje **Susieti įrašai** tvarkyk institucijas arba pareigybes.
 Viena institucija ar pareigybė gali turėti kelis tipus. Institucijos tipo skirtuke **Ryšiai** tvarkyk
 [tipų ryšius](/sistema/rysiai#tipu-rysio-kurimas). Failus rask tipo įrašo failų skiltyje; susieti įrašai gali paveldėti savo tipų ir jų tėvų failus.
+
+<ChangelogNote date="2026-11-02" title="Kaip vadinami posėdžiai">
+
+Institucijos tipo laukas **Kaip vadinami posėdžiai** nustato numatytąjį žodį.
+Atskiras posėdis gali turėti savo žodį, pasirinktą jo redagavimo lange.
+
+</ChangelogNote>
 
 ### Pareigybės tipo atsakomybės {#pareigybes-tipo-atsakomybes}
 
@@ -122,3 +129,7 @@ Paveldėjimą skaičiuoja `DutyType::withDescendantIds()` / `withAncestorIds()` 
 tipai); `ProjectDutyResponsibilities` juo perskaičiuoja `model_has_roles`. Perkėlimo apsauga –
 `DutyTypeRequest`, tipui leidžiamų teisių taisyklė – `TypeGrantablePermissions`. Tipų
 pasirinkimo komponentai – `resources/js/Components/AdminForms/TypeTree/`.
+
+Posėdžių žodis saugomas institucijos tipo `extra_attributes.meeting_kind`.
+`Institution::resolvedMeetingKind()` renkasi pirmą jį deklaruojantį tipą pagal `id`, o
+`Meeting::meetingKind()` pirmiausia tikrina `meetings.meeting_kind`.

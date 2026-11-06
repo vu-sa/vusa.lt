@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\MeetingKind;
 use App\Models\Pivots\InstitutionInstitutionType;
 use App\Services\PublicInstitutionSearchIndexBuilder;
 use App\Services\Typesense\SearchText;
@@ -41,7 +40,6 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property int|null $tenant_id
  * @property int $is_active
  * @property int|null $meeting_periodicity_days
- * @property MeetingKind|null $meeting_kind
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at

@@ -7,12 +7,7 @@ use App\Enums\MeetingType;
 use App\Models\Meeting;
 use Illuminate\Support\Carbon;
 
-/**
- * The one builder of a meeting's display name, per locale.
- *
- * `meetings.title` is not authored: Meeting::refreshTitle() stores the Lithuanian name, rebuilt
- * when the date, type or the institutions' meeting kind changes. Other locales render here.
- */
+/** Builds localized titles; the stored title is Lithuanian. */
 class MeetingTitle
 {
     public static function for(Meeting $meeting, string $locale): string
@@ -41,13 +36,15 @@ class MeetingTitle
     }
 
     /** The words after the date, for headings that show the date their own way. */
-    public static function noun(mixed $type, string $locale, MeetingKind $kind = MeetingKind::Sitting): string
+    public static function noun(mixed $type, string $locale, MeetingKind $kind = MeetingKind::Sitting, bool $joint = false): string
     {
         if (self::isEmail($type)) {
-            return $locale === 'en' ? 'decision by email' : 'sprendimas el. paštu';
+            $noun = $locale === 'en' ? 'decision by email' : 'sprendimas el. paštu';
+
+            return $joint ? ($locale === 'en' ? 'joint ' : 'jungtinis ').$noun : $noun;
         }
 
-        return $kind->noun($locale);
+        return $joint ? $kind->jointNoun($locale) : $kind->noun($locale);
     }
 
     private static function isEmail(mixed $type): bool

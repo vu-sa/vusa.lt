@@ -42,6 +42,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 /**
  * @property string $id
  * @property string $title
+ * @property MeetingKind|null $meeting_kind
  * @property MeetingType|null $type
  * @property Carbon $start_time
  * @property Carbon|null $end_time
@@ -122,6 +123,7 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
             // the pair alike (AnnounceMeetingInCalendar, syncCalendarEventTiming).
             'end_time' => 'datetime',
             'type' => MeetingType::class,
+            'meeting_kind' => MeetingKind::class,
         ];
     }
 
@@ -369,17 +371,12 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
         return $this->hasMany(AgendaItem::class);
     }
 
-    /** Named after the lead institution: the one whose folder and listings the meeting sits in. */
     public function meetingKind(): MeetingKind
     {
-        return $this->institutions->first()?->resolvedMeetingKind() ?? MeetingKind::Sitting;
+        return $this->meeting_kind ?? $this->institutions->first()?->resolvedMeetingKind() ?? MeetingKind::Sitting;
     }
 
-    /**
-     * Rewrite the stored title after its institutions or their meeting kind changed. Leaves
-     * `updated_at` alone, so a rename never surfaces the meeting as recently changed, and fires
-     * no events: callers reindex. Returns whether the title changed.
-     */
+    /** Preserves updated_at and fires no events; callers reindex when the title changes. */
     public function refreshTitle(): bool
     {
         $title = MeetingTitle::build($this->start_time, $this->type, 'lt', $this->meetingKind());
@@ -523,14 +520,12 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
                 FileableNameUpdated::dispatch($meeting);
             }
 
-            // A new meeting has no institutions yet; attaching them refreshes the title
-            // (SyncRelationSearchIndex), so until then it is a posėdis.
-            if (blank($meeting->title) || ($meeting->exists && $meeting->isDirty(['start_time', 'type']))) {
+            if (blank($meeting->title) || ($meeting->exists && $meeting->isDirty(['start_time', 'type', 'meeting_kind']))) {
                 $meeting->title = MeetingTitle::build(
                     $meeting->start_time,
                     $meeting->type,
                     'lt',
-                    $meeting->exists ? $meeting->meetingKind() : MeetingKind::Sitting,
+                    $meeting->meeting_kind ?? ($meeting->exists ? $meeting->meetingKind() : MeetingKind::Sitting),
                 );
             }
         });
@@ -610,12 +605,10 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
         SyncCadenceDatesFromAnchors::forMeeting($this);
     }
 
-    /**
-     * The meeting owns its timing; the announcement follows it, never the other way round.
-     */
+    /** The announcement follows the meeting’s timing and title wording. */
     private function syncCalendarEventTiming(): void
     {
-        if (! $this->wasChanged(['start_time', 'end_time'])) {
+        if (! $this->wasChanged(['start_time', 'end_time', 'type', 'meeting_kind'])) {
             return;
         }
 
@@ -625,11 +618,15 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
             return;
         }
 
-        // Saved through the model, not `$relation->update()`: a query-builder update fires no
-        // model events, so Calendar's own `saved` hooks — the calendar/iCal cache flush and the
-        // public search resync — would never run and the feeds would serve the old date.
+        if ($this->wasChanged(['type', 'meeting_kind'])) {
+            foreach (['lt', 'en'] as $locale) {
+                $event->setTranslation('title', $locale, AnnounceMeetingInCalendar::title($this, $this->institutions->first(), $locale));
+            }
+        }
+
         $event->date = $this->start_time;
         $event->end_date = $this->end_time;
+        // Model events refresh calendar caches and the public search index.
         $event->save();
     }
 }

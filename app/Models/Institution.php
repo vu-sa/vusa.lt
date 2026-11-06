@@ -68,7 +68,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property int|null $tenant_id
  * @property int $is_active
  * @property int|null $meeting_periodicity_days
- * @property MeetingKind|null $meeting_kind
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
@@ -566,22 +565,9 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
         });
     }
 
-    #[\Override]
-    protected function casts(): array
-    {
-        return ['meeting_kind' => MeetingKind::class];
-    }
-
-    /**
-     * What this institution's meetings are called: its own override, else the first of its
-     * types (by id) that declares one, else a posėdis.
-     */
+    /** The first type by id that declares a kind, otherwise a sitting. */
     public function resolvedMeetingKind(): MeetingKind
     {
-        if ($this->meeting_kind !== null) {
-            return $this->meeting_kind;
-        }
-
         $this->loadMissing('types');
 
         return $this->types

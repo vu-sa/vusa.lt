@@ -88,6 +88,20 @@ export const pluralizeLithuanian = (word: string): { word: string; visi: string 
   };
 };
 
+export const genitivize = (name: string | null | undefined): string => {
+  if (name == null) return '';
+
+  return name
+    .replace(/a$/, 'os')
+    .replace(/as$/, 'o')
+    .replace(/ė$/, 'ės')
+    .replace(/is$/, 'io')
+    .replace(/iai$/, 'ių');
+};
+
+export const genitivizeEveryWord = (name: string | null | undefined): string =>
+  name?.split(' ').map(genitivize).join(' ') ?? '';
+
 export const addressivize = (name: string | null | undefined) => {
   if (name === null || name === undefined) {
     return '';

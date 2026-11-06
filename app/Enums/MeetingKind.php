@@ -2,13 +2,7 @@
 
 namespace App\Enums;
 
-/**
- * What an institution's sittings are called. Naming only: whether votes and agenda tasks apply
- * stays with the governance scope.
- *
- * Declared on an institution type as `extra_attributes['meeting_kind']`, overridable per
- * institution (`institutions.meeting_kind`) — see Institution::resolvedMeetingKind().
- */
+/** Naming defaults to the institution type and can be overridden per meeting. */
 enum MeetingKind: string
 {
     /** Formal sitting of a governing body: Senatas, Taryba, Parlamentas. */
@@ -31,6 +25,15 @@ enum MeetingKind: string
             self::Meeting => $locale === 'en' ? 'meeting' : 'susitikimas',
             self::Conference => $locale === 'en' ? 'conference' : 'konferencija',
         };
+    }
+
+    public function jointNoun(string $locale = 'lt'): string
+    {
+        if ($locale === 'en') {
+            return 'joint '.$this->noun($locale);
+        }
+
+        return ($this === self::Conference ? 'jungtinė ' : 'jungtinis ').$this->noun($locale);
     }
 
     public function label(string $locale = 'lt'): string

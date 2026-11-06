@@ -1,8 +1,10 @@
 ---
 doc_status: reviewed
 title: Posėdžiai
-last_reviewed: 2026-11-03
+last_reviewed: 2026-11-06
 tests:
+  - resources/js/Pages/Admin/Representation/__tests__/ShowMeeting.component.test.ts
+  - resources/js/Components/AdminForms/__tests__/MeetingForm.component.test.ts
   - tests/Feature/Meetings/MeetingKindTest.php
   - tests/Unit/Services/Sharepoint/SharepointFileServiceTest.php
   - tests/Feature/Search/ListFreshnessTest.php
@@ -72,18 +74,31 @@ Posėdžių sąrašas pasiekiamas adresu `/mano/meetings`, o kiekvienas posėdis
 Posėdis būna **Gyvas posėdis**, **Nuotolinis posėdis**, **Sprendimas el. paštu** arba be tipo
 („Kita“). Pavadinimas sudaromas automatiškai iš datos, laiko ir žodžio, kuriuo vadinami
 institucijos posėdžiai, pvz., „2026 kovo 05 d. 16.30 val. posėdis“ arba „… susirinkimas“. Žodis –
-posėdis, susirinkimas, susitikimas arba konferencija – nustatomas institucijos tipe arba pačioje
-institucijoje ([Kaip vadinami posėdžiai](/visak/institucijos#posedziu-pavadinimas)). Sprendimui el.
-paštu laikas nerodomas, o pavadinimas baigiasi žodžiais „sprendimas el. paštu“. Pakeitus datą, tipą
-arba institucijos žodį, pavadinimas atnaujinamas, taip pat ir jau užfiksuotų posėdžių.
+posėdis, susirinkimas, susitikimas arba konferencija – pagal nutylėjimą nustatomas
+[institucijos tipe](/visak/institucijos#posedziu-pavadinimas).
+
+Posėdžio redagavimo lange po tipu yra laukas **Kaip vadinamas**. Pasirink **Susirinkimas**,
+**Susitikimas**, **Konferencija** arba **Posėdis**, jei šį posėdį reikia vadinti kitaip.
+Pasirinkus **Pagal instituciją: …**, vėl naudojamas pirmosios institucijos tipo žodis.
+Sprendimui el. paštu šis laukas nerodomas: laikas nerodomas, o pavadinimas visada baigiasi
+žodžiais „sprendimas el. paštu“.
+
+Posėdžio puslapio antraštėje po datos yra institucijos pavadinimas kilmininku, pvz.,
+„2026 m. lapkričio 6 d. Senato posėdis“. Angliškoje sąsajoje institucijos pavadinimas
+nelinksniuojamas. Bendro posėdžio antraštėje rašoma „jungtinis posėdis“, „jungtinis susirinkimas“,
+„jungtinis susitikimas“ arba „jungtinė konferencija“. Sąrašuose saugomas pavadinimas lieka be
+institucijos pavadinimo.
+
+Pakeitus datą, tipą arba posėdžio žodį, pavadinimas atnaujinamas. Pakeitus institucijos tipo žodį,
+atnaujinami ir jau užfiksuoti posėdžiai, kuriems nenurodytas atskiras žodis.
 Kalendoriaus skelbimo pavadinime prieš posėdžio žodį arba „sprendimas el. paštu“ paliekamas
-institucijos pavadinimas.
+institucijos pavadinimas; pakeitus posėdžio žodį ar tipą, skelbimo pavadinimas atnaujinamas.
 
 <ChangelogNote date="2026-11-02" title="Susirinkimai ir kiti posėdžių pavadinimai">
 
-Posėdžio pavadinimas baigiasi institucijai nustatytu žodžiu, pvz., „susirinkimas“, o sprendimai el.
-paštu vadinami „sprendimas el. paštu“. Posėdžio puslapio antraštėje nebelinksniuojamas institucijos
-pavadinimas – institucijos nurodytos faktuose.
+Žodis nustatomas institucijos tipui, o atskiram posėdžiui – posėdžio redagavimo lange.
+Posėdžio puslapio antraštėje rodoma ir institucija; bendram posėdžiui – „jungtinis …“ arba
+„jungtinė konferencija“. Sprendimai el. paštu vadinami „sprendimas el. paštu“.
 
 </ChangelogNote>
 
@@ -361,10 +376,13 @@ esminėmis narių mintimis. Jei protokolas neatsiunčiamas, ataskaita jį atstoj
 ### Kaip tai įgyvendinta
 
 - Pavadinimas: `App\Support\MeetingTitle`, žodis – `MeetingKind` per
-  `Institution::resolvedMeetingKind()` (pirmoji institucija). Saugomas `meetings.title`
-  atnaujinamas `Meeting::saving` (data ar tipas), `Meeting::refreshTitle()` per
-  `SyncRelationSearchIndex` (institucijos, jų tipai ar `meeting_kind`) ir `RefreshMeetingTitles`
-  (tipo `extra_attributes.meeting_kind`); `updated_at` nekeičiamas.
+  `Meeting::meetingKind()` – `meetings.meeting_kind` → pirmosios institucijos
+  `Institution::resolvedMeetingKind()` → `MeetingKind::Sitting`. Saugomas `meetings.title`
+  atnaujinamas `Meeting::saving` (data, tipas ar `meeting_kind`), `Meeting::refreshTitle()` per
+  `SyncRelationSearchIndex` (institucijos ar jų tipai) ir `RefreshMeetingTitles`
+  (tipo `extra_attributes.meeting_kind`); `refreshTitle()` nekeičia `updated_at`.
+  `MeetingController::show` siunčia bendram posėdžiui pritaikytą `title_noun` ir
+  `inherited_meeting_kind`; `ShowMeeting` instituciją linksniuoja tik lietuviškai.
 - Institucijų tvarka: `Meeting::institutions()` pagal pridėjimo laiką; SharePoint aplankas –
   pirmosios institucijos, pavadintas lietuviškai (`SharepointFileService::pathForFileableDriveItem()`).
 - Viešumas: `Meeting::is_public` pagal `MeetingSettings::public_meeting_institution_type_ids`.

@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Actions\GenerateInstitutionAlias;
-use App\Enums\MeetingKind;
 use App\Http\Requests\Concerns\HasImageValidation;
 use App\Http\Requests\Concerns\ValidatesTenantScope;
 use App\Models\Institution;
@@ -54,7 +53,6 @@ class InstitutionRequest extends FormRequest
             'types' => 'nullable|array',
             'types.*' => ['integer', 'distinct', SoftDeleteRules::existsLive('institution_types')],
             'meeting_periodicity_days' => 'nullable|integer|min:1|max:365',
-            'meeting_kind' => ['nullable', Rule::enum(MeetingKind::class)],
             ...$this->imageMediaRules('image_media', $this->institution() ?? new Institution, 'image'),
             ...$this->imageMediaRules('logo_media', $this->institution() ?? new Institution, 'logo'),
         ];
