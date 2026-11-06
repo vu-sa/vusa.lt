@@ -12,8 +12,8 @@
     table-fixed
     actions-width="w-44"
     table-min-width="min-w-[86rem]"
-    @row-action="(_item, key) => collectionActions.select(key)"
     :search-placeholder="$t('responsibilities.index.search')"
+    @row-action="(_item, key) => collectionActions.select(key)"
   >
     <template #actions>
       <Button v-if="canCreate" as-child variant="brand" size="lg">

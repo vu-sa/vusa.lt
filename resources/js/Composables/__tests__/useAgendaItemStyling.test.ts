@@ -74,7 +74,6 @@ describe('getAgendaItemStatus - several votes', () => {
   it('lets a main vote decide on its own', () => {
     expect(getAgendaItemStatus(itemWith({ ...misaligned, is_main: true }, aligned))).toBe('student_misaligned');
   });
-
 });
 
 describe('getAgendaItemStatusMeta - governance scope', () => {
@@ -100,8 +99,6 @@ describe('break agenda items', () => {
   it('is labelled as a break', () => {
     expect(getAgendaItemStatusMeta(breakItem() as never).label).toBe('Pertrauka');
   });
-
-
 });
 
 describe('withdrawn agenda items', () => {

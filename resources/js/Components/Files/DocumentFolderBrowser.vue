@@ -211,14 +211,14 @@
           >
             <CollectionRow :actions="documentFileActions(file)" class="px-3 py-2.5" @select="key => key === 'delete' && requestDelete([file])">
               <template #lead>
-              <Checkbox
-                v-if="isSelectable(file)"
-                class="pointer-coarse:size-6"
-                :model-value="selectedIds.has(file.id)"
-                :aria-label="$t('Pažymėti')"
-                @update:model-value="toggleSelected(file.id)"
-              />
-              <component :is="getFileIcon(file.name)" v-else class="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+                <Checkbox
+                  v-if="isSelectable(file)"
+                  class="pointer-coarse:size-6"
+                  :model-value="selectedIds.has(file.id)"
+                  :aria-label="$t('Pažymėti')"
+                  @update:model-value="toggleSelected(file.id)"
+                />
+                <component :is="getFileIcon(file.name)" v-else class="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
               </template>
               <div class="min-w-0 flex-1">
                 <component :is="fileHref(file) ? 'a' : 'span'" :href="fileHref(file)" class="block truncate font-medium hover:text-brand" data-collection-open>
@@ -551,7 +551,6 @@ const statusFilters = computed<CollectionQuickFilter[]>(() => [
     ? [{ id: 'removed', label: quickFilterLabel($t('Pašalinti iš SharePoint'), props.removedCount), active: status.value === 'removed' }]
     : []),
 ]);
-
 
 const emptyTitle = computed(() => {
   if (search.value) return $t('Nieko nerasta');

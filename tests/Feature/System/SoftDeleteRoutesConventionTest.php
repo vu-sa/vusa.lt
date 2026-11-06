@@ -78,5 +78,5 @@ test('every soft-delete action has a route that binds trashed models', function 
     }
 
     expect(softDeleteControllerActions())->not->toBeEmpty()
-        ->and($problems)->toBe([]);
+        ->and($problems)->toBeEmpty();
 });

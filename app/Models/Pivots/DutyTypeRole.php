@@ -16,7 +16,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Role $role
- * @property-read DutyType|null $type
+ * @property-read DutyType $type
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyTypeRole newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyTypeRole newQuery()

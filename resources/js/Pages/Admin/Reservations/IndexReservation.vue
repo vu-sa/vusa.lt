@@ -13,11 +13,11 @@
     table-fixed
     actions-width="w-44"
     table-min-width="min-w-[80rem]"
-    @row-action="(item, key) => openDecision(key as ReservationDecision, item)"
     :selectable="managesResources"
     :can-select="isReservationSelectable"
     :quick-filters
     :search-placeholder="$t('Ieškoti rezervacijų')"
+    @row-action="(item, key) => openDecision(key as ReservationDecision, item)"
     @quick-filter="toggleQuickFilter"
   >
     <template #actions>
@@ -34,7 +34,7 @@
     </template>
 
     <template #row="{ item, actions, view }">
-      <CollectionRow :spotlight="item === source?.items.value[0]" :actions="view === 'preview' ? [] : actions" @select="key => openDecision(key as ReservationDecision, item)" class="px-3 py-3 sm:px-4">
+      <CollectionRow :spotlight="item === source?.items.value[0]" :actions="view === 'preview' ? [] : actions" class="px-3 py-3 sm:px-4" @select="key => openDecision(key as ReservationDecision, item)">
         <div class="min-w-0 flex-1">
           <div class="flex items-start justify-between gap-3">
             <CollectionPrimaryCell :title="item.name" :href="route('reservations.show', item.id)" />
@@ -44,7 +44,6 @@
           <p class="mt-1.5 text-sm tabular-nums text-muted-foreground">
             {{ reservationPeriod(item) }}
           </p>
-
         </div>
       </CollectionRow>
     </template>

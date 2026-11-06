@@ -15,9 +15,9 @@
     actions-width="w-44"
     table-min-width="min-w-[48rem]"
     :selectable="mergeMode"
-    @row-action="(item, key) => actions.select(key, item.force_delete_blocked_reason)"
     :trash="{ count: deletedCount, active: isTrash }"
     :search-placeholder="$t('Ieškoti studijų programų')"
+    @row-action="(item, key) => actions.select(key, item.force_delete_blocked_reason)"
   >
     <template #actions>
       <Button v-if="canMerge && !isTrash" variant="outline" size="lg" :aria-pressed="mergeMode" @click="mergeMode = !mergeMode">

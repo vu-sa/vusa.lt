@@ -55,7 +55,6 @@ describe('tag deletion', () => {
   });
 });
 
-
 it('keeps the preview row free of actions and tags while the detail card carries the editor action', () => {
   const wrapper = mount(IndexTag, {
     props: {

@@ -160,7 +160,7 @@ test('comment mail names the author once and quotes the posted content', functio
         $html = html_entity_decode((string) $markdown->render($mail->markdown, $mail->data()));
 
         expect($notification->body($this->rep))->toBe('Petras Komentatorius '.$bodyText)
-            ->and($notification->context($this->rep))->toBe([])
+            ->and($notification->context($this->rep))->toBeEmpty()
             ->and($html)->toContain('Siūlau perkelti klausimą.')
             ->and(substr_count($html, 'Petras Komentatorius'))->toBe(1)
             ->and(substr_count($html, $bodyText))->toBe(1);

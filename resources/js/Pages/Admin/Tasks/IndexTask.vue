@@ -10,12 +10,12 @@
     :available-views="['preview', 'table', 'rows']"
     :item-key="taskKey"
     :columns
-    @row-action="(item, key) => runAction(item, key as TaskActionKey)"
     table-fixed
     actions-width="w-44"
     table-min-width="min-w-[60rem]"
     :quick-filters
     :search-placeholder="$t('tasks.collection.search')"
+    @row-action="(item, key) => runAction(item, key as TaskActionKey)"
     @quick-filter="toggleQuickFilter"
   >
     <template v-if="scope === 'mine' && canViewAllTasks" #actions>

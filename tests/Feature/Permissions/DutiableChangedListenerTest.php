@@ -99,8 +99,8 @@ test('deleting a duty assignment revokes a warmed policy grant after commit with
     $news = News::factory()->for($this->tenant)->create();
     $gate = Gate::forUser($this->user);
 
-    expect($gate->allows('update', $news))->toBeTrue();
-    expect(Cache::has('auth:duties:'.$this->user->id))->toBeTrue();
+    expect($gate->allows('update', $news))->toBeTrue()
+        ->and(Cache::has('auth:duties:'.$this->user->id))->toBeTrue();
     Queue::fake();
 
     DB::transaction(function () use ($source): void {

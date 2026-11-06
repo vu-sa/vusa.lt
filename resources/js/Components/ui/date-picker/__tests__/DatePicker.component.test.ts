@@ -20,8 +20,8 @@ describe('admin date and time pickers', () => {
   it('keeps partial keyboard input visible until a valid date commits', async () => {
     const wrapper = mount(DatePicker, {
       props: {
-        modelValue: '2026-09-19',
-        'onUpdate:modelValue': value => { void wrapper.setProps({ modelValue: value }); },
+        'modelValue': '2026-09-19',
+        'onUpdate:modelValue': (value) => { void wrapper.setProps({ modelValue: value }); },
       },
     });
     const input = wrapper.find('input');

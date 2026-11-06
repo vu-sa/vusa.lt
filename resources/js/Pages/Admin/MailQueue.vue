@@ -18,7 +18,9 @@
           :is-dismissed="previewSpotlight.isDismissed.value" @dismiss="previewSpotlight.dismiss"
         >
           <Button variant="outline" voice="sentence" as-child>
-            <Link :href="route('mailPreviews.index')" @click="previewSpotlight.dismiss">{{ $t('mail_previews.title') }}</Link>
+            <Link :href="route('mailPreviews.index')" @click="previewSpotlight.dismiss">
+              {{ $t('mail_previews.title') }}
+            </Link>
           </Button>
         </SpotlightPopover>
         <Button variant="outline" voice="sentence" @click="source.refresh()">
@@ -41,7 +43,9 @@
               <a v-if="recipient.user" :href="route('mailQueue.previewForUser', recipient.user_id)" target="_blank" rel="noopener noreferrer" data-collection-open class="block truncate text-sm font-semibold text-foreground hover:text-brand">
                 {{ recipient.user.name }}
               </a>
-              <p v-else class="truncate text-sm font-semibold text-foreground">{{ $t('Ištrintas naudotojas') }}</p>
+              <p v-else class="truncate text-sm font-semibold text-foreground">
+                {{ $t('Ištrintas naudotojas') }}
+              </p>
               <p class="truncate text-xs text-muted-foreground">
                 <span v-if="recipient.user?.email">{{ recipient.user.email }} · </span>
                 {{ $t('Seniausia') }}: {{ formatDate(recipient.oldest_at) }}
@@ -118,7 +122,6 @@ import { Mail as MailIcon, RefreshCw as RefreshCwIcon, Trash2 as Trash2Icon } fr
 
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
-
 import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';

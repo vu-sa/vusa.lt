@@ -14,11 +14,11 @@
     actions-width="w-44"
     table-min-width="min-w-[60rem]"
     :row-muted="isInactive"
-    @row-action="(item, key) => onRowAction(key, item)"
     :search-placeholder="$t('Ieškoti institucijų')"
     :trash="{ count: deletedCount, active: isTrash }"
     :quick-filters
     :selectable="!isTrash"
+    @row-action="(item, key) => onRowAction(key, item)"
     @quick-filter="toggleFollowedOnly"
   >
     <template #actions>

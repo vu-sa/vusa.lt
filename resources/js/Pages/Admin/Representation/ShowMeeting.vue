@@ -316,7 +316,7 @@ import { preferredScrollBehavior } from '@/Composables/useAccessibilityPreferenc
 import { useToasts } from '@/Composables/useToasts';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { InstitutionScope, ModelEnum } from '@/Types/enums';
-import { formatMeetingDateTime, formatMeetingTimeOnly } from '@/Utils/MeetingDisplay';
+import { formatMeetingDateTime, formatMeetingTimeOnly, isEmailMeeting } from '@/Utils/MeetingDisplay';
 import { useMeetingUrgency } from '@/Composables/useMeetingUrgency';
 import { meetingCompletionStatuses, type MeetingCompletionStatus } from '@/Constants/statuses';
 import RecordPage, { type RecordAction, type RecordFact, type RecordNavigationContext } from '@/Components/Layouts/RecordPage.vue';
@@ -329,7 +329,6 @@ import MeetingAgendaList from '@/Components/Meetings/MeetingAgendaList.vue';
 import { useApi } from '@/Composables/useApi';
 import type { EditableAgendaItemSource } from '@/Composables/useAgendaItemAutosave';
 import { formatNearDate, formatTime } from '@/Utils/dateTime';
-import { isEmailMeeting } from '@/Utils/MeetingDisplay';
 import AgendaItemEditSheet from '@/Components/AgendaItems/AgendaItemEditSheet.vue';
 import MeetingCompletionChecklist, { type MeetingMissingAction } from '@/Components/Meetings/MeetingCompletionChecklist.vue';
 import MeetingDatePlate from '@/Components/Meetings/MeetingDatePlate.vue';

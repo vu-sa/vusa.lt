@@ -15,8 +15,8 @@
     actions-width="w-44"
     table-min-width="min-w-[59rem]"
     :trash="{ count: deletedCount, active: isTrash }"
-    @row-action="(item, key) => actions.select(key)"
     :search-placeholder="$t('Ieškoti komplektų')"
+    @row-action="(item, key) => actions.select(key)"
   >
     <template #actions>
       <Button v-if="canCreate && !isTrash" as-child variant="brand" size="lg">

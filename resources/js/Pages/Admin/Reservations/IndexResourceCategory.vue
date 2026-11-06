@@ -23,7 +23,7 @@
     </template>
 
     <template #row="{ item, actions: recordActions, view }">
-      <CollectionRow :spotlight="item === source?.items.value[0]" :actions="view === 'preview' ? [] : recordActions" @select="key => selectRowAction(key, item)" class="px-3 py-3 sm:px-4">
+      <CollectionRow :spotlight="item === source?.items.value[0]" :actions="view === 'preview' ? [] : recordActions" class="px-3 py-3 sm:px-4" @select="key => selectRowAction(key, item)">
         <template v-if="item.icon" #lead>
           <Icon :icon="`fluent:${item.icon}`" class="size-5 text-muted-foreground" aria-hidden="true" />
         </template>

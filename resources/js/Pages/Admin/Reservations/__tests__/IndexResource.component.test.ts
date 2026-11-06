@@ -92,5 +92,4 @@ describe('resource managed quick filter', () => {
     ]));
     wrapper.unmount();
   });
-
 });

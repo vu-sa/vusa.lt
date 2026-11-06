@@ -72,9 +72,8 @@ test('a failed sync records its failure without saving the link it was preparing
     $service = Mockery::mock(DocumentSharepointSyncService::class)->makePartial()->shouldAllowMockingProtectedMethods();
     $service->shouldReceive('makeGraphService')->andReturn($graph);
 
-    expect(fn () => $service->sync($document, force: true))->toThrow(LogicException::class)->and($document->fresh())->sync_status->toBe('failed')->sync_error_message->toBe('Graph exploded')->eTag->not->toBe('new-etag');
-
-    expect($document->fresh()->sync_attempts)->toBe($expectedAttempts);
+    expect(fn () => $service->sync($document, force: true))->toThrow(LogicException::class)->and($document->fresh())->sync_status->toBe('failed')->sync_error_message->toBe('Graph exploded')->eTag->not->toBe('new-etag')
+        ->and($document->fresh()->sync_attempts)->toBe($expectedAttempts);
 })->with([
     'another consecutive failure' => [2, 3],
     'counter at the tinyint limit' => [255, 255],

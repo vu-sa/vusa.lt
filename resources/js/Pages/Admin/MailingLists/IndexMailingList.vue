@@ -34,7 +34,9 @@
           <Link :href="route('mailingLists.show', item.id)" data-collection-open class="block truncate font-medium hover:text-brand">
             {{ item.address }}
           </Link>
-          <p class="mt-1 text-xs text-muted-foreground">{{ rowFacts(item).join(' · ') }}</p>
+          <p class="mt-1 text-xs text-muted-foreground">
+            {{ rowFacts(item).join(' · ') }}
+          </p>
         </div>
         <div class="mt-2 flex flex-wrap gap-2">
           <StatusBadge v-if="item.last_sync_status && item.last_sync_status !== 'synced'" :status="mailingListSyncStatuses[item.last_sync_status]" />

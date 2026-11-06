@@ -10,13 +10,13 @@
     :item-key="meetingKey"
     :quick-filters
     :columns
-    @row-action="(item, key) => actions.select(key)"
     table-fixed
     actions-width="w-44"
     table-min-width="min-w-[68rem]"
     :pinned-items="pinnedMeetings"
     :search-placeholder="$t('Ieškoti posėdžių')"
     :trash="{ count: deletedCount, active: isTrash }"
+    @row-action="(item, key) => actions.select(key)"
     @quick-filter="toggleQuickFilter"
   >
     <template #actions>

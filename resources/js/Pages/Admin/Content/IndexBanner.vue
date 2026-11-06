@@ -10,13 +10,13 @@
     :available-views="['table', 'rows']"
     :item-key="bannerKey"
     :trash="{ count: deletedCount ?? 0, active: isDeleted }"
-    @row-action="(item, key) => selectRowAction(key, item)"
     :columns
     table-fixed
     actions-width="w-44"
     table-min-width="min-w-[56rem]"
     :quick-filters
     :search-placeholder="$t('Ieškoti banerių…')"
+    @row-action="(item, key) => selectRowAction(key, item)"
     @quick-filter="id => source.toggleFilter(id, '1')"
   >
     <template #actions>

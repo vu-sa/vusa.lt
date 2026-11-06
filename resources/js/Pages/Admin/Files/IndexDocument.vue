@@ -37,16 +37,16 @@
     default-view="table"
     :item-key="documentKey"
     :quick-filters
-    @row-action="(item, key) => selectRowAction(key, item)"
     :columns
     table-fixed
     actions-width="w-44"
     table-min-width="min-w-[72rem]"
     :search-placeholder="$t('Ieškoti dokumentų...')"
+    @row-action="(item, key) => selectRowAction(key, item)"
     @quick-filter="toggleQuickFilter"
   >
     <template #row="{ item, actions: recordActions, view }">
-      <CollectionRow :spotlight="item === source?.items.value[0]" :actions="view === 'preview' ? [] : recordActions" @select="key => selectRowAction(key, item)" class="px-3 py-3 sm:px-4" data-slot="document-collection-row">
+      <CollectionRow :spotlight="item === source?.items.value[0]" :actions="view === 'preview' ? [] : recordActions" class="px-3 py-3 sm:px-4" data-slot="document-collection-row" @select="key => selectRowAction(key, item)">
         <div class="flex min-w-0 flex-1 items-center gap-3">
           <div class="flex size-10 shrink-0 items-center justify-center border border-border bg-muted text-muted-foreground">
             <DocumentIcon class="size-5" />
@@ -55,7 +55,7 @@
             <div class="flex items-center gap-2">
               <component
                 :is="documentHref(item) ? 'a' : 'span'"
-          :href="documentHref(item)"
+                :href="documentHref(item)"
                 :data-collection-open="documentHref(item) ? '' : undefined"
                 class="inline-flex items-center gap-1.5 truncate font-medium hover:text-brand"
               >
@@ -220,10 +220,12 @@ const rowActions = (item: DocumentSearchResult): CollectionRowAction[] => {
   return [
     ...(canEdit ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, primary: true, href: route('documents.edit', item.id) }] : []),
     ...(item.anonymous_url ? [{ key: 'open', label: $t('Atidaryti'), icon: ExternalLink, role: 'open' as const, primary: !canEdit, menuOnly: canEdit, external: true, href: item.anonymous_url }] : []),
-    ...(canEdit ? [
-      { key: 'refresh', label: $t('Atnaujinti iš SharePoint'), icon: RefreshCw, loading: refreshingId.value === String(item.id) },
-      { key: 'hide', label: $t('Slėpti'), icon: EyeOff },
-    ] : []),
+    ...(canEdit
+      ? [
+          { key: 'refresh', label: $t('Atnaujinti iš SharePoint'), icon: RefreshCw, loading: refreshingId.value === String(item.id) },
+          { key: 'hide', label: $t('Slėpti'), icon: EyeOff },
+        ]
+      : []),
   ];
 };
 

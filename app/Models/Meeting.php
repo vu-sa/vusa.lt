@@ -59,6 +59,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, FileableFile> $fileableFiles
  * @property-read bool $has_protocol
  * @property-read bool $has_report
+ * @property-read array $outcome_summary
  * @property-read bool $requires_student_perspective
  * @property-read array $translatable_columns_from
  * @property-read mixed $has_calendar_event

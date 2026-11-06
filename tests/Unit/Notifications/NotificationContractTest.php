@@ -202,7 +202,7 @@ describe('act-tier context rows', function (): void {
             ['modelClass' => 'User', 'name' => 'Jonas Jonaitis'],
         );
 
-        expect($notification->context($this->user))->toBe([]);
+        expect($notification->context($this->user))->toBeEmpty();
     });
 });
 

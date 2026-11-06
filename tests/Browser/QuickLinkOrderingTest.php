@@ -20,8 +20,8 @@ it('opens ordering from a quick link menu and saves only its language group', fu
         ->click('[data-action=reorder]')
         ->assertVisible('#reorder-tenant')
         ->assertVisible('#reorder-language');
-    expect($page->script('document.querySelector("#reorder-tenant").value'))->toBe((string) $tenant->id);
-    expect($page->script('document.querySelector("#reorder-language").value'))->toBe('en');
+    expect($page->script('document.querySelector("#reorder-tenant").value'))->toBe((string) $tenant->id)
+        ->and($page->script('document.querySelector("#reorder-language").value'))->toBe('en');
     $page->assertSeeIn('[data-testid=reorder-list]', 'English first')
         ->assertDontSeeIn('[data-testid=reorder-list]', 'Lietuviška nuoroda');
 

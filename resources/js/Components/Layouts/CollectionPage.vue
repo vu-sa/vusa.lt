@@ -81,15 +81,15 @@
       :selected-key
       :selectable
       :can-select
-      @row-action="(item, key) => emit('rowAction', item, key)"
       :sort-by="source.sortBy.value"
-      @row-navigate="(item, key) => emit('rowNavigate', item, key)"
       :sort-options="source.sortOptions.value"
       :total="source.total.value"
       :table-fixed
       :actions-width
       :table-min-width
       :row-muted
+      @row-action="(item, key) => emit('rowAction', item, key)"
+      @row-navigate="(item, key) => emit('rowNavigate', item, key)"
       @clear="clearAll"
       @retry="source.refresh"
       @load-more="source.loadMore"

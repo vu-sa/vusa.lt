@@ -15,8 +15,8 @@
     actions-width="w-44"
     table-min-width="min-w-[53rem]"
     :trash="{ count: deletedCount, active: isTrash }"
-    @row-action="(item, key) => actions.select(key, item.force_delete_blocked_reason)"
     :search-placeholder="$t('Ieškoti tipų')"
+    @row-action="(item, key) => actions.select(key, item.force_delete_blocked_reason)"
   >
     <template #actions>
       <SpotlightPopover

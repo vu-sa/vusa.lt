@@ -128,9 +128,8 @@ describe('.url shortcut resolution during sync', function (): void {
 
         expect($result)->not->toBeNull()
             ->and($result->link_url)->toBeNull()
-            ->and($result->sync_status)->toBe('success');
-
-        expect($document->fresh()->sync_attempts)->toBe(0);
+            ->and($result->sync_status)->toBe('success')
+            ->and($document->fresh()->sync_attempts)->toBe(0);
     });
 
     test('leaves link_url unchanged and sync succeeds when shortcut content is unparseable', function (): void {

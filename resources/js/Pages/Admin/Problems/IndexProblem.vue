@@ -10,13 +10,13 @@
     :available-views="['preview', 'table', 'rows']"
     :item-key="problemKey"
     :trash="{ count: deletedCount ?? 0, active: isDeleted }"
-    @row-action="(item, key) => selectRowAction(key, item)"
     :columns
     table-fixed
     actions-width="w-44"
     table-min-width="min-w-[64rem]"
     :quick-filters
     :search-placeholder="$t('Ieškoti problemų…')"
+    @row-action="(item, key) => selectRowAction(key, item)"
     @quick-filter="toggleQuickFilter"
   >
     <template #lead>
@@ -39,7 +39,7 @@
     </template>
 
     <template #row="{ item, actions: recordActions, view }">
-      <CollectionRow :spotlight="item === source?.items.value[0]" :actions="view === 'preview' ? [] : recordActions" @select="key => selectRowAction(key, item)" class="px-3 py-3 sm:px-4">
+      <CollectionRow :spotlight="item === source?.items.value[0]" :actions="view === 'preview' ? [] : recordActions" class="px-3 py-3 sm:px-4" @select="key => selectRowAction(key, item)">
         <div class="min-w-0 flex-1">
           <div class="flex items-center gap-2">
             <Link

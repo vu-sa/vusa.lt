@@ -9,8 +9,8 @@
     default-view="rows"
     :available-views="['rows']"
     :item-key="item => item.id"
-    @row-action="(_item, key) => collectionActions.select(key)"
     :quick-filters="tabs"
+    @row-action="(_item, key) => collectionActions.select(key)"
     @quick-filter="changeTab"
   >
     <template #actions>

@@ -744,8 +744,8 @@ describe('detaching an orphaned ex officio seat', function (): void {
             'decision' => 'detach', 'acknowledge' => true,
         ])->assertUnprocessable();
 
-        expect($this->row->fresh()->getRawOriginal())->toBe($before);
-        expect(Activity::forSubject($this->row)->where('event', 'ex_officio_reviewed')->exists())->toBeFalse();
+        expect($this->row->fresh()->getRawOriginal())->toBe($before)
+            ->and(Activity::forSubject($this->row)->where('event', 'ex_officio_reviewed')->exists())->toBeFalse();
     });
 
     test('detach is 403 for an actor who cannot manage the seat', function (): void {

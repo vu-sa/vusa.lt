@@ -15,9 +15,9 @@
     actions-width="w-44"
     table-min-width="min-w-[56rem]"
     :quick-filters
-    @row-action="(item, key) => select(key, item)"
     :trash="{ count: deletedCount, active: isTrash }"
     :search-placeholder="$t('Ieškoti renginių')"
+    @row-action="(item, key) => select(key, item)"
     @quick-filter="id => source.toggleFilter(id, 'true')"
   >
     <template #actions>
@@ -37,7 +37,9 @@
         <div class="flex items-start justify-between gap-3">
           <CollectionPrimaryCell :title="titleOf(item)" :href="isTrash ? undefined : route('calendar.edit', item.id)" />
         </div>
-        <p class="mt-0.5 text-xs text-muted-foreground">{{ [dateOf(item), item.tenant?.shortname].filter(Boolean).join(' · ') }}</p>
+        <p class="mt-0.5 text-xs text-muted-foreground">
+          {{ [dateOf(item), item.tenant?.shortname].filter(Boolean).join(' · ') }}
+        </p>
       </CollectionRow>
     </template>
 

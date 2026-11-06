@@ -242,7 +242,7 @@ test('one request batches resources per reservation and excludes its actor', fun
 test('a failed request sends no reservation status notifications', function (): void {
     $recipient = $this->createUserWithPreferences();
     ['reservationResource' => $resource] = $this->createReservationWithResource($recipient);
-    Route::post('/mano/_test/reservation-failure', function () use ($resource) {
+    Route::post('/mano/_test/reservation-failure', function () use ($resource): void {
         $resource->state->transitionTo(Reserved::class);
         abort(500);
     })->middleware('web');
@@ -316,7 +316,7 @@ test('a single resource retains its full notification content', function (bool $
     expect($notification->title($recipient))->toBe(__('notifications.reservation_status_changed_title', ['reservation' => $reservation->name]))
         ->and($notification->body($recipient))->toBe($expectedBody)
         ->and($notification->icon())->toBe('✅')
-        ->and($notification->context($recipient))->toBe([])
+        ->and($notification->context($recipient))->toBeEmpty()
         ->and($notification->primaryAction())->toBe($action)
         ->and($notification->secondaryAction())->toBeNull()
         ->and($notification->subject())->toBe($actor ? ['modelClass' => 'User', 'name' => $actor->name, 'image' => $actor->profile_photo_path] : null)

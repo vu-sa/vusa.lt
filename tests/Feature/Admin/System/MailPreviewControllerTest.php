@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
@@ -110,10 +110,10 @@ test('every catalog key renders HTML and real plain text in both locales without
     foreach (array_keys($catalog->entries()) as $key) {
         foreach (['lt', 'en'] as $locale) {
             $rendered = $catalog->render($key, $locale);
-            expect($rendered['html'], $key.' '.$locale)->not->toBeEmpty()
-                ->not->toContain('Šio laiško peržiūrėti nepavyko', 'This email could not be previewed');
-            expect($rendered['text'], $key.' text '.$locale)->not->toBeEmpty()->not->toContain('<!DOCTYPE', '<html');
-            expect($rendered['subject'])->not->toBeEmpty();
+            expect($rendered['html'])->not->toBeEmpty()
+                ->not->toContain('Šio laiško peržiūrėti nepavyko', 'This email could not be previewed')
+                ->and($rendered['text'])->not->toBeEmpty()->not->toContain('<!DOCTYPE', '<html')
+                ->and($rendered['subject'])->not->toBeEmpty();
         }
     }
 

@@ -2,7 +2,7 @@
   <MemberTermsSummary
     v-if="total > 0"
     :duties="terms"
-    :current-count="currentCount"
+    :current-count
     :total-count="total"
     :loading="isFetching"
     :empty-text="$t('Narių nėra')"

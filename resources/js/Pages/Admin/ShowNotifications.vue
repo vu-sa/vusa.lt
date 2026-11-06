@@ -9,8 +9,8 @@
     default-view="rows"
     :available-views="['rows']"
     :item-key="item => item.id"
-    @row-navigate="markUnreadRowAsRead"
     :quick-filters
+    @row-navigate="markUnreadRowAsRead"
     @row-action="(item, key) => key === 'read' ? handleMarkAsRead(item.id) : handleDelete(item.id)"
     @quick-filter="toggleUnread"
   >

@@ -174,7 +174,7 @@ test('the chair registration email subject follows the recipient locale', functi
     $institution = (new Institution)->forceFill(['name' => ['lt' => 'Taryba', 'en' => 'Council'], 'short_name' => ['lt' => 'Taryba', 'en' => 'Council']]);
     app()->setLocale('en');
 
-    $mail = (new MemberRegistrationNotification(1, 'Jonas', $institution, 'chair@example.org', '1'))->toMail($this->recipient);
+    $mail = new MemberRegistrationNotification(1, 'Jonas', $institution, 'chair@example.org', '1')->toMail($this->recipient);
 
     expect($mail->subject)->toBe('Member registration: Jonas')
         ->and($mail->viewData['body'])->toContain('Council');
@@ -184,14 +184,14 @@ describe('digest email', function (): void {
     test('the overdue line lists the tasks without repeating the title or a false "and more"', function (): void {
         $tasks = fn (int $count) => collect(range(1, $count))->map(fn (int $index) => (new Task)->forceFill(['name' => "Užduotis {$index}"]));
 
-        expect((new TaskOverdueNotification($tasks(2)))->body($this->recipient))->toBe('Užduotis 1, Užduotis 2')
-            ->and((new TaskOverdueNotification($tasks(5)))->body($this->recipient))->toBe('Užduotis 1, Užduotis 2, Užduotis 3 ir dar 2');
+        expect(new TaskOverdueNotification($tasks(2))->body($this->recipient))->toBe('Užduotis 1, Užduotis 2')
+            ->and(new TaskOverdueNotification($tasks(5))->body($this->recipient))->toBe('Užduotis 1, Užduotis 2, Užduotis 3 ir dar 2');
     });
 
     test('its plain-text part shows links as text, not markdown', function (): void {
-        $text = (string) app(Markdown::class)->renderText('emails.notification-digest', (new NotificationDigest($this->recipient, [
+        $text = (string) app(Markdown::class)->renderText('emails.notification-digest', new NotificationDigest($this->recipient, [
             'task' => [['category' => 'task', 'title' => 'Užduotis', 'body' => 'Tekstas', 'url' => 'https://example.org/task']],
-        ]))->content()->with);
+        ])->content()->with);
 
         expect($text)->toContain(rtrim(__('notifications.digest_footer'), '.').': '.route('profile.notifications'))
             ->not->toContain('](');
@@ -525,7 +525,7 @@ test('support request status mail renders in English when delivery requests that
 test('grouped request digests retain every request name without using the first as the heading', function (): void {
     app()->setLocale('en');
     $actor = User::factory()->make(['name' => 'Ona']);
-    $items = collect(['Broken projector', 'Missing keys'])->map(fn (string $title) => (new SupportRequestAssignedNotification(SupportRequest::factory()->make(['id' => '01J00000000000000000000000', 'title' => $title]), $actor))->toDigestItem($this->recipient)
+    $items = collect(['Broken projector', 'Missing keys'])->map(fn (string $title) => new SupportRequestAssignedNotification(SupportRequest::factory()->make(['id' => '01J00000000000000000000000', 'title' => $title]), $actor)->toDigestItem($this->recipient)
     )->all();
     $digest = new NotificationDigest($this->recipient, ['system' => $items]);
     $markdown = app(Markdown::class);

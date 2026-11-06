@@ -81,7 +81,7 @@ class MailPreviewSamples
             new Notifications\TaskAutoCompletedNotification($task, $this->text('Sprendimas priimtas', 'Decision made'), $user),
             new Notifications\MeetingCreatedNotification($meeting),
             new Notifications\MeetingAgendaCompletedNotification($meeting, $user),
-            (new Notifications\MeetingCreatedNotification($meeting))->viaFollow(),
+            new Notifications\MeetingCreatedNotification($meeting)->viaFollow(),
             new Notifications\MeetingReminderNotification($meeting, 2),
             new Notifications\InstitutionActivityNotification(new Collection([$request])),
             new Notifications\InstitutionActivityNotMineNotification($request),
@@ -148,9 +148,9 @@ class MailPreviewSamples
             ['Fakulteto taryba', 'Faculty council'], ['Etikos komisija', 'Ethics commission'],
             ['Senatas', 'Senate'], ['Ginčų komisija', 'Disputes commission'],
             ['Stipendijų komisija', 'Scholarship commission'], ['Rektorato taryba', 'Rectorate council'],
-        ])->map(fn (array $names, int $index): array => (new Notifications\MeetingCreatedNotification(
+        ])->map(fn (array $names, int $index): array => new Notifications\MeetingCreatedNotification(
             $this->meeting($this->institution(...$names), '2026-11-0'.($index + 1).' 15:00:00')
-        ))->toDigestItem($this->user()))->all();
+        )->toDigestItem($this->user()))->all();
 
         return match ($scenario) {
             'single' => ['meeting' => [$meeting]],
@@ -158,7 +158,7 @@ class MailPreviewSamples
                 'meeting' => [...array_slice($meetings, 0, 3), $item('meeting_agenda_completed')],
                 'task' => [
                     $item('task_assigned'),
-                    (new Notifications\TaskAssignedNotification($this->task('Atnaujinti kontaktus', 'Update the contacts', $this->institution()), $this->user()))->toDigestItem($this->user()),
+                    new Notifications\TaskAssignedNotification($this->task('Atnaujinti kontaktus', 'Update the contacts', $this->institution()), $this->user())->toDigestItem($this->user()),
                 ],
             ],
             'overflow' => ['meeting' => $meetings],

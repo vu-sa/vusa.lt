@@ -14,10 +14,10 @@
     table-fixed
     actions-width="w-44"
     :table-min-width="isTrash ? 'min-w-[55rem]' : 'min-w-[48rem]'"
-    @row-action="(item, key) => actions.select(key, item.force_delete_blocked_reason)"
     :selectable="canBulkEdit"
     :trash="{ count: deletedCount, active: isTrash }"
     :search-placeholder="$t('Ieškoti pagal pavadinimą ar adresą')"
+    @row-action="(item, key) => actions.select(key, item.force_delete_blocked_reason)"
   >
     <template #actions>
       <DropdownMenu v-if="tenantOptions.length > 0 && !isTrash">
@@ -51,7 +51,9 @@
         <div class="flex items-start justify-between gap-3">
           <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches" :title="item.title" :href="isTrash ? undefined : route('pages.edit', item.id)" :clickable="isTrash && view === 'preview'" />
         </div>
-        <p class="mt-0.5 text-xs text-muted-foreground">{{ [dateOf(item), item.tenant_shortname, languageLabel(item.lang)].filter(Boolean).join(' · ') }}</p>
+        <p class="mt-0.5 text-xs text-muted-foreground">
+          {{ [dateOf(item), item.tenant_shortname, languageLabel(item.lang)].filter(Boolean).join(' · ') }}
+        </p>
       </CollectionRow>
     </template>
 

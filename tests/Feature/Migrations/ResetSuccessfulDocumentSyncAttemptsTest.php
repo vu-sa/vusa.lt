@@ -31,8 +31,8 @@ test('successful documents rejoin scheduled refresh without changing timestamps 
     $migration->up();
 
     expect((array) DB::table('documents')->where('id', $successful->id)->first())
-        ->toBe(array_replace($successfulBefore, ['sync_attempts' => 0]));
-    expect((array) DB::table('documents')->where('id', $failed->id)->first())->toBe($failedBefore);
+        ->toBe(array_replace($successfulBefore, ['sync_attempts' => 0]))
+        ->and((array) DB::table('documents')->where('id', $failed->id)->first())->toBe($failedBefore);
 
     (new SyncStaleDocumentsJob)->handle();
 

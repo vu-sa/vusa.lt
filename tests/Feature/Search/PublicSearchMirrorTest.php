@@ -55,7 +55,7 @@ beforeEach(function (): void {
 });
 
 test('every public search mirror is synced by its parent', function (string $mirror, string $parent): void {
-    $declared = (new ReflectionMethod($parent, 'publicSearchMirror'))->invoke(null);
+    $declared = new ReflectionMethod($parent, 'publicSearchMirror')->invoke(null);
 
     expect(class_uses_recursive($parent))->toContain(HasPublicSearchMirror::class)
         ->and($declared)->toBe($mirror);
@@ -64,7 +64,7 @@ test('every public search mirror is synced by its parent', function (string $mir
 test('the parent lifecycle keeps its public mirror in the index', function (Closure $makePublic, Closure $hide): void {
     /** @var Model $model */
     $model = $makePublic();
-    $mirrorClass = (new ReflectionMethod($model, 'publicSearchMirror'))->invoke(null);
+    $mirrorClass = new ReflectionMethod($model, 'publicSearchMirror')->invoke(null);
     $index = (new $mirrorClass)->searchableAs();
     $key = (string) $model->getKey();
 
@@ -105,7 +105,7 @@ test('the parent lifecycle keeps its public mirror in the index', function (Clos
 
             return $meeting;
         },
-        function (Meeting $meeting) {
+        function (Meeting $meeting): void {
             $meeting->institutions()->detach();
             $meeting->unsetRelation('institutions')->save();
         },

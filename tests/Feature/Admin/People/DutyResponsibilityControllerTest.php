@@ -62,9 +62,8 @@ test('a responsibility manager grants and removes a scoped responsibility with a
     $deleted = Activity::forSubject($this->coordination)->forEvent('relation_updated')->latest('id')->firstOrFail();
     expect($deleted->properties->get('detached')[0]['id'])->toBe($grant->id)
         ->and($deleted->properties->get('attached'))->toBe([])
-        ->and(Activity::forSubject($this->coordination)->forEvent('relation_updated')->count())->toBe(2);
-
-    expect($this->duty->responsibilityGrants()->exists())->toBeFalse()
+        ->and(Activity::forSubject($this->coordination)->forEvent('relation_updated')->count())->toBe(2)
+        ->and($this->duty->responsibilityGrants()->exists())->toBeFalse()
         ->and($this->duty->roles()->exists())->toBeFalse();
     $this->assertDatabaseHas('activity_log', ['subject_type' => 'role', 'subject_id' => $this->coordination->id, 'causer_id' => $this->manager->id, 'event' => 'relation_updated']);
 });

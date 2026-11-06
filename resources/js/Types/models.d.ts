@@ -920,6 +920,7 @@ declare global {
       tenant_id?: number | null
       is_active: boolean
       meeting_periodicity_days?: unknown | null
+      meeting_kind?: MeetingKind | null
       created_at: string
       updated_at: string
       deleted_at?: string | null
@@ -1404,6 +1405,7 @@ declare global {
       // mutators
       is_joint: unknown
       is_public: unknown
+      outcome_summary: Array<unknown>
       type_label: unknown
       type_slug: unknown
       completion_status: unknown
@@ -1720,6 +1722,7 @@ declare global {
       tenant_id?: number | null
       is_active: boolean
       meeting_periodicity_days?: unknown | null
+      meeting_kind?: MeetingKind | null
       created_at: string
       updated_at: string
       deleted_at?: string | null
@@ -1820,6 +1823,7 @@ declare global {
       // mutators
       is_joint: unknown
       is_public: unknown
+      outcome_summary: Array<unknown>
       type_label: unknown
       type_slug: unknown
       completion_status: unknown
@@ -2207,12 +2211,9 @@ declare global {
       role?: Role
       grantee?: ResponsibilityGrant
       scope?: ResponsibilityGrant
-      activities_as_subject?: Activity[]
       // counts
-      activities_as_subject_count: number
       // exists
       role_exists: boolean
-      activities_as_subject_exists: boolean
     }
 
     export interface Role {
@@ -2235,6 +2236,7 @@ declare global {
       current_users_through_duties?: User
       attachable_types?: DutyType[]
       types?: DutyType[]
+      activities_as_subject?: Activity[]
       permissions?: Permission[]
       users?: User[]
       // counts
@@ -2242,6 +2244,7 @@ declare global {
       duties_count: number
       attachable_types_count: number
       types_count: number
+      activities_as_subject_count: number
       permissions_count: number
       users_count: number
       // exists
@@ -2249,6 +2252,7 @@ declare global {
       duties_exists: boolean
       attachable_types_exists: boolean
       types_exists: boolean
+      activities_as_subject_exists: boolean
       permissions_exists: boolean
       users_exists: boolean
     }
@@ -2889,6 +2893,15 @@ declare global {
     } as const;
 
     export type GoalStatus = typeof GoalStatus[keyof typeof GoalStatus]
+
+    const MeetingKind = {
+      Sitting: 'sitting',
+      Assembly: 'assembly',
+      Meeting: 'meeting',
+      Conference: 'conference',
+    } as const;
+
+    export type MeetingKind = typeof MeetingKind[keyof typeof MeetingKind]
 
     const InstitutionActivityAnswer = {
       Met: 'met',

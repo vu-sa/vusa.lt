@@ -23,6 +23,7 @@
  */
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 /**
@@ -130,7 +131,7 @@ function rawRequestInputReads(string $source): array
 
     $requestAlias = null;
     foreach ($tokens as $at => $token) {
-        if ($token->is(T_USE) && $text($at + 1) === 'Illuminate\Http\Request') {
+        if ($token->is(T_USE) && $text($at + 1) === Request::class) {
             $requestAlias = isset($tokens[$at + 2]) && $tokens[$at + 2]->is(T_AS) ? $text($at + 3) : 'Request';
         }
     }
@@ -153,7 +154,7 @@ function rawRequestInputReads(string $source): array
                     break;
                 }
 
-                $isPlainRequest = $text($cursor) === $requestAlias || $text($cursor) === '\\Illuminate\\Http\\Request';
+                $isPlainRequest = $text($cursor) === $requestAlias || $text($cursor) === Request::class;
 
                 if ($isPlainRequest && isset($tokens[$cursor + 1]) && $tokens[$cursor + 1]->is(T_VARIABLE)) {
                     $requestVariables[] = $text($cursor + 1);

@@ -4,7 +4,6 @@
       :row-actions
       :source
       :quick-filters
-      @quick-filter="toggleQuickFilter"
       collection="resources"
       :eyebrow
       :title="capitalize($tChoice('entities.resource.model', 2))"
@@ -12,12 +11,13 @@
       default-view="cards"
       :available-views="['cards', 'rows', 'table', 'preview']"
       :item-key="resourceKey"
-      @row-action="(_item, key) => collectionActions.select(key)"
       :columns
       table-fixed
       actions-width="w-44"
+      @quick-filter="toggleQuickFilter"
       table-min-width="min-w-[68rem]"
       :search-placeholder="$t('Ieškoti išteklių')"
+      @row-action="(_item, key) => collectionActions.select(key)"
     >
       <template #actions>
         <Button
@@ -96,7 +96,7 @@
       </template>
 
       <template #row="{ item, actions: recordActions, view }">
-        <CollectionRow :spotlight="item === source?.items.value[0]" :actions="view === 'preview' ? [] : recordActions" @select="key => collectionActions.select(key)" class="px-3 py-3 sm:px-4" data-slot="resource-collection-row">
+        <CollectionRow :spotlight="item === source?.items.value[0]" :actions="view === 'preview' ? [] : recordActions" class="px-3 py-3 sm:px-4" data-slot="resource-collection-row" @select="key => collectionActions.select(key)">
           <Link
             :href="route('resources.show', item.id)"
             prefetch
@@ -267,16 +267,18 @@ const managedActive = computed(() => {
   return Array.isArray(selected) && selected.length === managedIds.value.length
     && managedIds.value.every(id => selected.map(String).includes(id));
 });
-const quickFilters = computed<CollectionQuickFilter[]>(() => managedIds.value.length > 0 ? [{
-  id: 'managed',
-  label: $t('Mano administruojami'),
-  active: managedActive.value,
-  spotlight: {
-    id: 'managed-resources-v1',
-    title: $t('Mano administruojami'),
-    description: $t('Rodyk išteklius tų padalinių, kurių rezervacijas administruoji.'),
-  },
-}] : []);
+const quickFilters = computed<CollectionQuickFilter[]>(() => managedIds.value.length > 0
+  ? [{
+      id: 'managed',
+      label: $t('Mano administruojami'),
+      active: managedActive.value,
+      spotlight: {
+        id: 'managed-resources-v1',
+        title: $t('Mano administruojami'),
+        description: $t('Rodyk išteklius tų padalinių, kurių rezervacijas administruoji.'),
+      },
+    }]
+  : []);
 
 function toggleQuickFilter(id: string): void {
   if (id === 'managed' && managedIds.value.length > 0) {

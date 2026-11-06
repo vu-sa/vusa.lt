@@ -54,7 +54,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon|null $checked_at
  * @property string $sync_status Status of SharePoint sync: pending, syncing, success, failed
  * @property string|null $sync_error_message Error message from failed sync attempts
- * @property int $sync_attempts Consecutive failed sync attempts (including an in-progress attempt), capped at 255
+ * @property int $sync_attempts Number of sync attempts made
  * @property Carbon|null $last_sync_attempt_at Timestamp of last sync attempt
  * @property Carbon $updated_at
  * @property Carbon|null $effective_date
