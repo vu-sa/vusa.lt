@@ -7,6 +7,8 @@
 
 import { trans } from 'laravel-vue-i18n';
 
+import { ADMIN_SEARCH_FALLBACKS } from './collectionSearchConfig';
+
 import type { CollectionFacetConfig, SortOption } from '../Types/AdminSearchTypes';
 
 import { institutionActivityStatuses, meetingCompletionStatuses } from '@/Constants/statusIcons';
@@ -16,8 +18,8 @@ import { institutionActivityStatuses, meetingCompletionStatuses } from '@/Consta
  */
 export const MEETING_FACET_CONFIG: CollectionFacetConfig = {
   facetBy: 'year,completion_status,vote_alignment_status,institution_type_title,tenant_shortnames',
-  queryBy: 'title,description,institution_name_lt,institution_name_en,institution_names,tenant_shortnames',
-  defaultSortBy: 'start_time:desc',
+  queryBy: ADMIN_SEARCH_FALLBACKS.meetings.queryBy,
+  defaultSortBy: ADMIN_SEARCH_FALLBACKS.meetings.defaultSort,
   fields: [
     {
       field: 'year',
@@ -76,8 +78,8 @@ export const MEETING_FACET_CONFIG: CollectionFacetConfig = {
  */
 export const AGENDA_ITEM_FACET_CONFIG: CollectionFacetConfig = {
   facetBy: 'meeting_year,type,student_vote,decision,has_student_position,student_benefit,is_complete,brought_by_students,vote_alignment_status,tenant_shortnames',
-  queryBy: 'title,description,student_benefit,meeting_title',
-  defaultSortBy: 'meeting_start_time:desc',
+  queryBy: ADMIN_SEARCH_FALLBACKS.agenda_items.queryBy,
+  defaultSortBy: ADMIN_SEARCH_FALLBACKS.agenda_items.defaultSort,
   fields: [
     {
       field: 'meeting_year',
@@ -168,8 +170,8 @@ export const AGENDA_ITEM_FACET_CONFIG: CollectionFacetConfig = {
  */
 export const NEWS_FACET_CONFIG: CollectionFacetConfig = {
   facetBy: 'lang,tenant_shortname,draft',
-  queryBy: 'title,short',
-  defaultSortBy: 'publish_time:desc',
+  queryBy: ADMIN_SEARCH_FALLBACKS.news.queryBy,
+  defaultSortBy: ADMIN_SEARCH_FALLBACKS.news.defaultSort,
   fields: [
     {
       field: 'lang',
@@ -204,8 +206,8 @@ export const NEWS_FACET_CONFIG: CollectionFacetConfig = {
  */
 export const PAGE_FACET_CONFIG: CollectionFacetConfig = {
   facetBy: 'lang,tenant_shortname,is_active',
-  queryBy: 'title,meta_description',
-  defaultSortBy: 'created_at:desc',
+  queryBy: ADMIN_SEARCH_FALLBACKS.pages.queryBy,
+  defaultSortBy: ADMIN_SEARCH_FALLBACKS.pages.defaultSort,
   fields: [
     {
       field: 'lang',
@@ -240,8 +242,8 @@ export const PAGE_FACET_CONFIG: CollectionFacetConfig = {
  */
 export const CALENDAR_FACET_CONFIG: CollectionFacetConfig = {
   facetBy: 'tenant_name,lang',
-  queryBy: 'title,title_lt,title_en',
-  defaultSortBy: 'date:desc',
+  queryBy: ADMIN_SEARCH_FALLBACKS.calendar.queryBy,
+  defaultSortBy: ADMIN_SEARCH_FALLBACKS.calendar.defaultSort,
   fields: [
     {
       field: 'tenant_name',
@@ -268,8 +270,8 @@ export const CALENDAR_FACET_CONFIG: CollectionFacetConfig = {
  */
 export const INSTITUTION_FACET_CONFIG: CollectionFacetConfig = {
   facetBy: 'tenant_shortname,type_titles,activity_status,is_active',
-  queryBy: 'name_lt,name_en,short_name_lt,short_name_en,alias,email',
-  defaultSortBy: 'created_at:desc',
+  queryBy: ADMIN_SEARCH_FALLBACKS.institutions.queryBy,
+  defaultSortBy: ADMIN_SEARCH_FALLBACKS.institutions.defaultSort,
   fields: [
     {
       field: 'tenant_shortname',
@@ -314,7 +316,7 @@ export const INSTITUTION_FACET_CONFIG: CollectionFacetConfig = {
  */
 export const RESOURCE_FACET_CONFIG: CollectionFacetConfig = {
   facetBy: 'category_name,tenant_shortname,is_reservable',
-  queryBy: 'name_lt,name_en,description_lt,description_en,location',
+  queryBy: ADMIN_SEARCH_FALLBACKS.resources.queryBy,
   defaultSortBy: 'main_tenant',
   fields: [
     {
@@ -355,8 +357,8 @@ export const RESOURCE_FACET_CONFIG: CollectionFacetConfig = {
  */
 export const DUTY_FACET_CONFIG: CollectionFacetConfig = {
   facetBy: 'tenant_shortname,type_titles',
-  queryBy: 'name_lt,name_en,email,former_names,institution_name_lt,institution_name_en,current_user_names,previous_user_names',
-  defaultSortBy: 'name_lt:asc',
+  queryBy: ADMIN_SEARCH_FALLBACKS.duties.queryBy,
+  defaultSortBy: ADMIN_SEARCH_FALLBACKS.duties.defaultSort,
   fields: [
     {
       field: 'tenant_shortname',
@@ -384,8 +386,8 @@ export const DUTY_FACET_CONFIG: CollectionFacetConfig = {
  */
 export const USER_FACET_CONFIG: CollectionFacetConfig = {
   facetBy: 'tenant_shortname,current_duty_names,is_active',
-  queryBy: 'name,email,phone,current_duty_names,previous_duty_names',
-  defaultSortBy: 'created_at:desc',
+  queryBy: ADMIN_SEARCH_FALLBACKS.users.queryBy,
+  defaultSortBy: ADMIN_SEARCH_FALLBACKS.users.defaultSort,
   fields: [
     {
       field: 'tenant_shortname',
@@ -421,8 +423,8 @@ export const USER_FACET_CONFIG: CollectionFacetConfig = {
  */
 export const DOCUMENT_FACET_CONFIG: CollectionFacetConfig = {
   facetBy: 'document_year,content_type_category,language_code,tenant_shortname,is_active',
-  queryBy: 'title,summary,content_type,document_year',
-  defaultSortBy: 'document_date:desc',
+  queryBy: ADMIN_SEARCH_FALLBACKS.documents.queryBy,
+  defaultSortBy: ADMIN_SEARCH_FALLBACKS.documents.defaultSort,
   fields: [
     {
       field: 'document_year',
