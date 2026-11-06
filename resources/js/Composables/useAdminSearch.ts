@@ -1,12 +1,13 @@
-import { ref, computed, customRef, type Ref } from 'vue';
+import { ref, computed, watch } from 'vue';
 
-import { buildProfileParams } from '@/Shared/Search/profiles';
+import { useAdminSearchSession } from '@/Features/Admin/AdminSearch/searchSession';
+import { buildAdminSearchParams, ADMIN_SEARCH_FALLBACKS } from '@/Features/Admin/AdminSearch/Config/collectionSearchConfig';
+
 import { documentWithMatch, type HighlightedHit } from '@/Shared/Search/matches';
 import { facetSearches, mergeDisjunctiveFacets } from '@/Shared/Search/facets';
-import { buildInfix } from '@/Features/Admin/AdminSearch/Utils/searchParams';
 import { ErrorUtils } from '@/Shared/Search/services/SearchErrorUtils';
 import { createEmptyMultiSearchResults } from '@/Shared/Search/utils/createEmptyMultiSearchResults';
-import type { AdminSearchConfig, MultiSearchResults } from '@/Shared/Search/types';
+import type { MultiSearchResults } from '@/Shared/Search/types';
 
 export type { MultiSearchResults } from '@/Shared/Search/types';
 
@@ -20,7 +21,7 @@ interface AdminSearchResult {
   start_time?: number;
   tenant_id?: number;
   tenant_name?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /** The part of a Typesense search result the admin search reads. */
@@ -39,36 +40,10 @@ interface SearchState {
   query: string;
 }
 
-/**
- * Composable for admin search with scoped Typesense API keys.
- *
- * This composable:
- * 1. Fetches a scoped API key from the backend (with tenant filtering embedded)
- * 2. Uses that key directly with Typesense for searches
- * 3. Handles key expiration and refresh
- *
- * The scoped key enforces authorization at the Typesense level - the key itself
- * contains filter_by constraints that cannot be bypassed by the client.
- */
-/** A computed would cache a `Date.now()` comparison until its refs change, so a deadline never passes. */
-const readAtAccess = (read: () => boolean): Readonly<Ref<boolean>> => customRef(track => ({
-  get: () => {
-    track();
-    return read();
-  },
-  set: () => {},
-}));
-
 export const useAdminSearch = () => {
-  // Config state
-  const config = ref<AdminSearchConfig | null>(null);
-  const isConfigLoading = ref(false);
-  const configError = ref<string | null>(null);
-
-  // Request guards to prevent duplicate/rapid requests
-  let configFetchPromise: Promise<void> | null = null;
+  const session = useAdminSearchSession();
+  const { config, isConfigLoading, configError, rateLimitedUntil, isRateLimited, hasExpired, fetchConfig, refreshConfig } = session;
   let searchAbortController: AbortController | null = null;
-  const rateLimitedUntil = ref<number>(0);
 
   // Search state
   const searchState = ref<SearchState>({
@@ -79,13 +54,13 @@ export const useAdminSearch = () => {
     query: '',
   });
 
+  watch(session.generation, () => {
+    searchAbortController?.abort();
+    searchState.value = { results: [], isLoading: false, error: null, totalHits: 0, query: '' };
+  }, { flush: 'sync' });
+
   // Computed
   const isReady = computed(() => config.value !== null && !configError.value);
-  const hasExpired = readAtAccess(() => {
-    if (!config.value?.expiresAt) return false;
-    return Date.now() / 1000 > config.value.expiresAt - 60; // 1 minute buffer
-  });
-
   /**
    * Get the list of collections the user has access to
    */
@@ -100,132 +75,6 @@ export const useAdminSearch = () => {
    * Check if user has any search access at all
    */
   const hasAnyAccess = computed(() => accessibleCollections.value.length > 0);
-
-  const isRateLimited = readAtAccess(() => Date.now() < rateLimitedUntil.value);
-
-  /**
-   * Fetch scoped config from backend (with deduplication)
-   */
-  const fetchConfig = async (): Promise<void> => {
-    // If already fetching, wait for that promise
-    if (configFetchPromise) {
-      return configFetchPromise;
-    }
-
-    // If we already have a valid config, skip
-    if (config.value && !hasExpired.value) {
-      return;
-    }
-
-    // Check rate limit
-    if (isRateLimited.value) {
-      configError.value = 'Too many requests. Please wait a moment.';
-      return;
-    }
-
-    isConfigLoading.value = true;
-    configError.value = null;
-
-    configFetchPromise = (async () => {
-      try {
-        const response = await fetch('/api/v1/admin/search/config', {
-          headers: {
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-          },
-        });
-
-        if (!response.ok) {
-          if (response.status === 401) {
-            configError.value = 'Unauthorized - please log in';
-          }
-          else if (response.status === 429) {
-            const retryAfter = parseInt(response.headers.get('retry-after') || '5', 10);
-            rateLimitedUntil.value = Date.now() + retryAfter * 1000;
-            configError.value = 'Too many requests. Please wait a moment.';
-          }
-          else if (response.status === 503) {
-            configError.value = 'Typesense search is not configured';
-          }
-          else {
-            configError.value = `Failed to load search configuration (HTTP ${response.status})`;
-          }
-          return;
-        }
-
-        config.value = await response.json();
-      }
-      catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'Failed to load search configuration';
-        configError.value = message;
-      }
-      finally {
-        isConfigLoading.value = false;
-        configFetchPromise = null;
-      }
-    })();
-
-    return configFetchPromise;
-  };
-
-  /**
-   * Refresh the scoped key (with deduplication)
-   */
-  const refreshConfig = async (): Promise<void> => {
-    // If already fetching config, wait for that
-    if (configFetchPromise) {
-      return configFetchPromise;
-    }
-
-    // Check rate limit
-    if (isRateLimited.value) {
-      configError.value = 'Too many requests. Please wait a moment.';
-      return;
-    }
-
-    isConfigLoading.value = true;
-    configError.value = null;
-
-    configFetchPromise = (async () => {
-      try {
-        const response = await fetch('/api/v1/admin/search/refresh-key', {
-          method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-          },
-        });
-
-        if (!response.ok) {
-          if (response.status === 429) {
-            const retryAfter = parseInt(response.headers.get('retry-after') || '5', 10);
-            rateLimitedUntil.value = Date.now() + retryAfter * 1000;
-            configError.value = 'Too many requests. Please wait a moment.';
-          }
-          else {
-            configError.value = `Failed to refresh search key (HTTP ${response.status})`;
-          }
-          return;
-        }
-
-        const data = await response.json();
-        if (data.success && data.config) {
-          config.value = data.config;
-        }
-      }
-      catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'Failed to refresh search key';
-        configError.value = message;
-      }
-      finally {
-        isConfigLoading.value = false;
-        configFetchPromise = null;
-      }
-    })();
-
-    return configFetchPromise;
-  };
 
   /**
    * Get the API key for a specific collection
@@ -289,10 +138,18 @@ export const useAdminSearch = () => {
     params: URLSearchParams,
     signal?: AbortSignal,
     facetFilters: Record<string, string> = {},
-  ): Promise<{ status: number; data?: CollectionSearchResult; errorText?: string; retryAfter?: string | null }> => {
+    initialFacetFilterBy?: string,
+  ): Promise<{ status: number; initialFacets?: CollectionSearchResult['facet_counts']; data?: CollectionSearchResult; errorText?: string; retryAfter?: string | null }> => {
     const base = Object.entries(config.value?.collections ?? {}).find(([, entry]) => entry.name === collectionName)?.[0] ?? collectionName;
-    const profiled = buildProfileParams(config.value?.searchProfiles?.[base], Object.fromEntries(params), config.value?.searchLocale);
-    const searches = facetSearches(profiled, facetFilters).map(search => ({ 'collection': collectionName, 'x-typesense-api-key': apiKey, ...search }));
+    const requestConfig = config.value;
+    const generation = session.generation.value;
+    const profiled = buildAdminSearchParams(base, requestConfig, Object.fromEntries(params));
+    const searches: Array<Record<string, unknown>> = facetSearches(profiled, facetFilters).map(search => ({ 'collection': collectionName, 'x-typesense-api-key': apiKey, ...search }));
+    const needsFacetUniverse = initialFacetFilterBy !== undefined
+      && (String(profiled.q).trim() !== '*' || String(profiled.filter_by ?? '') !== initialFacetFilterBy);
+    if (needsFacetUniverse) {
+      searches.push({ ...searches[0], q: '*', filter_by: initialFacetFilterBy, per_page: 0, page: 1, max_facet_values: 100 });
+    }
     const response = await fetch(`${baseUrl}/multi_search`, {
       method: 'POST',
       headers: {
@@ -305,20 +162,31 @@ export const useAdminSearch = () => {
       signal,
     });
 
+    session.assertCurrent(generation);
     if (!response.ok) {
+      if (response.status === 429) rateLimitedUntil.value = Date.now() + parseInt(response.headers.get('retry-after') || '5', 10) * 1000;
       return { status: response.status, errorText: await response.text(), retryAfter: response.headers.get('retry-after') };
     }
 
     const results = (await response.json())?.results ?? [];
+    session.assertCurrent(generation);
     const result = results[0];
 
     // multi_search answers 200 and reports each search's failure inside its result.
     if (!result || result.error) {
+      if (result?.code === 429) rateLimitedUntil.value = Date.now() + 5000;
       return { status: result?.code ?? 500, errorText: result?.error ?? 'Empty search response' };
     }
 
+    const universe = needsFacetUniverse ? results.at(-1) : result;
+    const failedFacet = results.slice(1).find((result: { error?: string; code?: number }) => result.error);
+    if (failedFacet) {
+      if (failedFacet.code === 429) rateLimitedUntil.value = Date.now() + 5000;
+      return { status: failedFacet.code ?? 500, errorText: failedFacet.error };
+    }
+    const initialFacets = initialFacetFilterBy !== undefined ? universe?.facet_counts ?? [] : undefined;
     if (Object.keys(facetFilters).length) result.facet_counts = mergeDisjunctiveFacets(result.facet_counts ?? [], Object.keys(facetFilters), results.slice(1));
-    return { status: 200, data: result };
+    return { status: 200, data: result, initialFacets };
   };
 
   /**
@@ -334,8 +202,14 @@ export const useAdminSearch = () => {
       perPage?: number;
       page?: number;
       facetBy?: string;
+      _retryCount?: number;
     } = {},
   ): Promise<void> => {
+    if (isRateLimited.value) {
+      searchState.value.error = 'Too many requests. Please wait a moment.';
+      return;
+    }
+
     // Ensure we have a valid config
     if (!config.value) {
       await fetchConfig();
@@ -375,7 +249,7 @@ export const useAdminSearch = () => {
 
       const searchParams = new URLSearchParams({
         q: query || '*',
-        query_by: options.queryBy || 'title',
+        ...(options.queryBy ? { query_by: options.queryBy } : {}),
         per_page: String(options.perPage || 20),
         page: String(options.page || 1),
       });
@@ -396,11 +270,11 @@ export const useAdminSearch = () => {
 
       if (response.status !== 200) {
         // Handle 401 - expired or invalid key
-        if (response.status === 401) {
+        if (response.status === 401 && (options._retryCount ?? 0) < 1) {
           await refreshConfig();
           // Retry the search once
           if (config.value) {
-            return search(collection, query, options);
+            return search(collection, query, { ...options, _retryCount: 1 });
           }
         }
 
@@ -436,9 +310,6 @@ export const useAdminSearch = () => {
     filterBy?: string;
   } = {}): Promise<void> => {
     return search('meetings', query, {
-      // Use only core fields that are guaranteed to exist
-      queryBy: 'title,description,institution_name_lt,institution_name_en',
-      sortBy: 'start_time:desc',
       ...options,
     });
   };
@@ -452,8 +323,6 @@ export const useAdminSearch = () => {
     filterBy?: string;
   } = {}): Promise<void> => {
     return search('agenda_items', query, {
-      queryBy: 'title,description,student_benefit,meeting_title',
-      sortBy: 'meeting_start_time:desc',
       ...options,
     });
   };
@@ -510,13 +379,6 @@ export const useAdminSearch = () => {
       throw new Error('Too many requests. Please wait a moment.');
     }
 
-    // Cancel any in-flight search
-    if (searchAbortController) {
-      searchAbortController.abort();
-    }
-    searchAbortController = new AbortController();
-    const { signal } = searchAbortController;
-
     // Ensure we have a valid config
     if (!config.value) {
       await fetchConfig();
@@ -531,6 +393,13 @@ export const useAdminSearch = () => {
       throw new Error(configError.value || 'No search configuration available');
     }
 
+    // Cancel any in-flight search
+    if (searchAbortController) {
+      searchAbortController.abort();
+    }
+    searchAbortController = new AbortController();
+    const { signal } = searchAbortController;
+
     // If user has no access to any collections, return empty results immediately
     if (!hasAnyAccess.value) {
       return emptyResults();
@@ -543,193 +412,25 @@ export const useAdminSearch = () => {
 
     const baseUrl = `${node.protocol}://${node.host}:${node.port}`;
 
-    // Collection configs
-    const meetingsConfig = config.value.collections['meetings'];
-    const agendaItemsConfig = config.value.collections['agenda_items'];
-    const newsConfig = config.value.collections['news'];
-    const pagesConfig = config.value.collections['pages'];
-    const calendarConfig = config.value.collections['calendar'];
-    const institutionsConfig = config.value.collections['institutions'];
-    const documentsConfig = config.value.collections['documents'];
-    const resourcesConfig = config.value.collections['resources'];
-    const dutiesConfig = config.value.collections['duties'];
-    const usersConfig = config.value.collections['users'];
-
-    // Build searches array with per-search API keys embedded
-    // This allows different scoped keys per collection in a single multi_search request
-    // Only include collections the user has access to
+    const requestConfig = config.value;
+    const generation = session.generation.value;
+    const limits: Record<string, number> = {
+      meetings: meetingsLimit, agenda_items: agendaItemsLimit, news: newsLimit,
+      pages: pagesLimit, calendar: calendarLimit, institutions: institutionsLimit,
+      documents: documentsLimit, resources: resourcesLimit, duties: dutiesLimit, users: usersLimit,
+    };
     const searches: Array<Record<string, unknown>> = [];
-    const searchOrder: string[] = []; // Track which collection each search corresponds to
-
-    // When a query is present, rank by Typesense relevance (text_match) with the
-    // collection's date field as a recency tiebreak; with no query, browse by date.
-    const hasQuery = !!query && query.trim() !== '';
-    const relevanceSort = (dateField: string, direction: 'asc' | 'desc' = 'desc'): string =>
-      hasQuery
-        ? `_text_match:desc,${dateField}:${direction}`
-        : `${dateField}:${direction}`;
-
-    // Fallback only: buildProfileParams replaces query_by, weights and tuning with the server's
-    // SearchProfiles (config/scout.php), so tune relevance there, not here.
-    const commonTuning = {
-      prioritize_exact_match: true,
-      prioritize_token_position: true,
-      num_typos: 2,
-      typo_tokens_threshold: 1,
-    } as const;
-
-    if (meetingsConfig?.hasAccess && meetingsConfig?.key) {
-      searches.push({
-        'collection': meetingsConfig.name,
-        'q': query || '*',
-        'query_by': 'title,description,institution_name_lt,institution_name_en',
-        'query_by_weights': '10,5,4,4',
-        'infix': buildInfix('title,description,institution_name_lt,institution_name_en', 'meetings'),
-        'sort_by': relevanceSort('start_time'),
-        ...commonTuning,
-        'per_page': meetingsLimit,
-        'x-typesense-api-key': meetingsConfig.key,
-      });
-      searchOrder.push('meetings');
-    }
-
-    if (agendaItemsConfig?.hasAccess && agendaItemsConfig?.key) {
-      searches.push({
-        'collection': agendaItemsConfig.name,
-        'q': query || '*',
-        'query_by': 'title,description,student_benefit,meeting_title',
-        'query_by_weights': '10,4,3,6',
-        'infix': buildInfix('title,description,student_benefit,meeting_title', 'agenda_items'),
-        'sort_by': relevanceSort('meeting_start_time'),
-        ...commonTuning,
-        'per_page': agendaItemsLimit,
-        'x-typesense-api-key': agendaItemsConfig.key,
-      });
-      searchOrder.push('agendaItems');
-    }
-
-    if (newsConfig?.hasAccess && newsConfig?.key) {
-      searches.push({
-        'collection': newsConfig.name,
-        'q': query || '*',
-        'query_by': 'title,short',
-        'query_by_weights': '10,5',
-        'infix': buildInfix('title,short', 'news'),
-        'sort_by': relevanceSort('publish_time'),
-        ...commonTuning,
-        'per_page': newsLimit,
-        'x-typesense-api-key': newsConfig.key,
-      });
-      searchOrder.push('news');
-    }
-
-    if (pagesConfig?.hasAccess && pagesConfig?.key) {
-      searches.push({
-        'collection': pagesConfig.name,
-        'q': query || '*',
-        'query_by': 'title,meta_description',
-        'query_by_weights': '10,4',
-        'infix': buildInfix('title,meta_description', 'pages'),
-        'sort_by': relevanceSort('created_at'),
-        ...commonTuning,
-        'per_page': pagesLimit,
-        'x-typesense-api-key': pagesConfig.key,
-      });
-      searchOrder.push('pages');
-    }
-
-    if (calendarConfig?.hasAccess && calendarConfig?.key) {
-      searches.push({
-        'collection': calendarConfig.name,
-        'q': query || '*',
-        'query_by': 'title,title_lt,title_en',
-        'query_by_weights': '10,8,8',
-        'infix': buildInfix('title,title_lt,title_en', 'calendar'),
-        'sort_by': relevanceSort('date'),
-        ...commonTuning,
-        'per_page': calendarLimit,
-        'x-typesense-api-key': calendarConfig.key,
-      });
-      searchOrder.push('calendar');
-    }
-
-    if (institutionsConfig?.hasAccess && institutionsConfig?.key) {
-      searches.push({
-        'collection': institutionsConfig.name,
-        'q': query || '*',
-        'query_by': 'name_lt,name_en,short_name_lt,short_name_en,alias,email',
-        'query_by_weights': '10,8,6,4,3,2',
-        'infix': buildInfix('name_lt,name_en,short_name_lt,short_name_en,alias,email', 'institutions'),
-        'sort_by': relevanceSort('created_at'),
-        ...commonTuning,
-        'per_page': institutionsLimit,
-        'x-typesense-api-key': institutionsConfig.key,
-      });
-      searchOrder.push('institutions');
-    }
-
-    if (documentsConfig?.hasAccess && documentsConfig?.key) {
-      searches.push({
-        'collection': documentsConfig.name,
-        'q': query || '*',
-        'query_by': 'title,summary,content_type,document_year',
-        'query_by_weights': '10,5,3,2',
-        'infix': buildInfix('title,summary,content_type,document_year', 'documents'),
-        'sort_by': relevanceSort('document_date'),
-        ...commonTuning,
-        'per_page': documentsLimit,
-        'x-typesense-api-key': documentsConfig.key,
-      });
-      searchOrder.push('documents');
-    }
-
-    if (resourcesConfig?.hasAccess && resourcesConfig?.key) {
-      searches.push({
-        'collection': resourcesConfig.name,
-        'q': query || '*',
-        'query_by': 'name_lt,name_en,description_lt,description_en,location',
-        'query_by_weights': '10,8,4,4,3',
-        'infix': buildInfix('name_lt,name_en,description_lt,description_en,location', 'resources'),
-        'sort_by': relevanceSort('created_at'),
-        ...commonTuning,
-        // Disable typo tolerance on the structured address field: fuzzy matching
-        // there adds no value and produces noise (e.g. a personal name matching a
-        // common street word one typo away). Order must match query_by.
-        'num_typos': '2,2,2,2,0',
-        'per_page': resourcesLimit,
-        'x-typesense-api-key': resourcesConfig.key,
-      });
-      searchOrder.push('resources');
-    }
-
-    if (dutiesConfig?.hasAccess && dutiesConfig?.key) {
-      searches.push({
-        'collection': dutiesConfig.name,
-        'q': query || '*',
-        'query_by': 'name_lt,name_en,email,former_names,institution_name_lt,institution_name_en,current_user_names,previous_user_names',
-        'query_by_weights': '10,8,4,4,4,3,3,2',
-        'infix': buildInfix('name_lt,name_en,email,former_names,institution_name_lt,institution_name_en,current_user_names,previous_user_names', 'duties'),
-        // Duties have no meaningful date; tiebreak alphabetically by name.
-        'sort_by': relevanceSort('name_lt', 'asc'),
-        ...commonTuning,
-        'per_page': dutiesLimit,
-        'x-typesense-api-key': dutiesConfig.key,
-      });
-      searchOrder.push('duties');
-    }
-
-    if (usersConfig?.hasAccess && usersConfig?.key) {
-      searches.push({
-        'collection': usersConfig.name,
-        'q': query || '*',
-        'query_by': 'name,email,phone,current_duty_names,previous_duty_names',
-        'query_by_weights': '10,6,4,3,2',
-        'sort_by': relevanceSort('created_at'),
-        ...commonTuning,
-        'per_page': usersLimit,
-        'x-typesense-api-key': usersConfig.key,
-      });
-      searchOrder.push('users');
+    const searchOrder: string[] = [];
+    for (const collection of Object.keys(ADMIN_SEARCH_FALLBACKS)) {
+      const entry = requestConfig.collections[collection];
+      if (!entry?.hasAccess || !entry.key) continue;
+      searches.push(buildAdminSearchParams(collection, requestConfig, {
+        collection: entry.name,
+        q: query || '*',
+        per_page: limits[collection],
+        'x-typesense-api-key': entry.key,
+      }));
+      searchOrder.push(collection);
     }
 
     // If no collections are accessible, return empty results
@@ -751,13 +452,11 @@ export const useAdminSearch = () => {
           'X-TYPESENSE-API-KEY': headerApiKey,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ searches: searches.map((search) => {
-          const base = Object.entries(config.value?.collections ?? {}).find(([, entry]) => entry.name === search.collection)?.[0];
-          return buildProfileParams(base ? config.value?.searchProfiles?.[base] : undefined, search, config.value?.searchLocale);
-        }) }),
+        body: JSON.stringify({ searches }),
         signal,
       });
 
+      session.assertCurrent(generation);
       if (!response.ok) {
         // Handle 401 - expired or invalid key (retry once only)
         if (response.status === 401 && _retryCount < 1) {
@@ -795,6 +494,7 @@ export const useAdminSearch = () => {
       }
 
       const data = await response.json();
+      session.assertCurrent(generation);
 
       // Initialize empty results
       const results: MultiSearchResults = emptyResults();
@@ -808,12 +508,7 @@ export const useAdminSearch = () => {
         }
 
         const key = collectionKey as keyof Omit<MultiSearchResults, 'counts'>;
-        // Attach the Typesense relevance score so the "All" tab can interleave
-        // results across collections by relevance.
-        // Use the string `text_match_info.score`, not the numeric `text_match`:
-        // the int64 score exceeds JS's safe-integer range, so the number form
-        // loses precision and collapses distinct scores into ties. The string is
-        // compared with BigInt downstream.
+        // The int64 score exceeds JS's safe-integer range; keep it as a string for BigInt comparison.
         const hits = searchResult?.hits?.map(
           (hit: {
             document: Record<string, unknown>;
@@ -843,7 +538,7 @@ export const useAdminSearch = () => {
       throw new Error(searchError.userMessage);
     }
     finally {
-      searchAbortController = null;
+      if (searchAbortController?.signal === signal) searchAbortController = null;
     }
   };
 
@@ -857,6 +552,8 @@ export const useAdminSearch = () => {
     options: {
       filterBy?: string; // Additional filters from facet selection
       facetFilters?: Record<string, string>;
+      includeInitialFacets?: boolean;
+      initialFacetFilterBy?: string;
       sortBy?: string; // Sort order
       facetBy: string; // Comma-separated facet fields
       queryBy?: string; // Fields to search (defaults by collection)
@@ -866,6 +563,7 @@ export const useAdminSearch = () => {
     },
   ): Promise<{
     hits: T[];
+    initialFacets?: NonNullable<CollectionSearchResult['facet_counts']>;
     totalHits: number;
     facets: Array<{
       field_name: string;
@@ -889,13 +587,6 @@ export const useAdminSearch = () => {
       throw new Error('Too many requests. Please wait a moment.');
     }
 
-    // Cancel any in-flight search
-    if (searchAbortController) {
-      searchAbortController.abort();
-    }
-    searchAbortController = new AbortController();
-    const { signal } = searchAbortController;
-
     // Ensure we have a valid config
     if (!config.value) {
       await fetchConfig();
@@ -909,6 +600,13 @@ export const useAdminSearch = () => {
     if (!config.value) {
       throw new Error(configError.value || 'No search configuration available');
     }
+
+    // Cancel any in-flight search
+    if (searchAbortController) {
+      searchAbortController.abort();
+    }
+    searchAbortController = new AbortController();
+    const { signal } = searchAbortController;
 
     // Get the API key for this collection
     const apiKey = getCollectionApiKey(collection);
@@ -929,11 +627,11 @@ export const useAdminSearch = () => {
     // Build search params
     const searchParams = new URLSearchParams({
       q: query || '*',
-      query_by: queryBy || 'title,description',
+      ...(queryBy ? { query_by: queryBy } : {}),
       per_page: String(perPage),
       page: String(page),
       facet_by: facetBy,
-      max_facet_values: '50',
+      max_facet_values: options.includeInitialFacets ? '100' : '50',
     });
 
     if (filterBy) {
@@ -944,14 +642,8 @@ export const useAdminSearch = () => {
       searchParams.append('sort_by', sortBy);
     }
 
-    // Partial in-word matching as a fallback when an exact search returns nothing.
-    const infix = buildInfix(queryBy || 'title,description', collection);
-    if (infix) {
-      searchParams.append('infix', infix);
-    }
-
     try {
-      const response = await postCollectionSearch(baseUrl, collectionName, apiKey, searchParams, signal, options.facetFilters);
+      const response = await postCollectionSearch(baseUrl, collectionName, apiKey, searchParams, signal, options.facetFilters, options.includeInitialFacets ? options.initialFacetFilterBy ?? '' : undefined);
 
       if (response.status !== 200) {
         // Handle 401 - expired or invalid key (retry once)
@@ -981,6 +673,7 @@ export const useAdminSearch = () => {
 
       return {
         hits: (data.hits?.map(hit => documentWithMatch(hit)) || []) as T[],
+        initialFacets: response.initialFacets,
         totalHits: data.found || 0,
         facets: data.facet_counts || [],
         page: data.page || page,
@@ -1054,7 +747,7 @@ export const useAdminSearch = () => {
     // Build params for facet-only query
     const searchParams = new URLSearchParams({
       q: '*',
-      query_by: options.queryBy || 'id', // Minimal query_by, we only need facets
+      ...(options.queryBy ? { query_by: options.queryBy } : {}),
       per_page: '0', // Don't need actual results
       facet_by: facetBy,
       max_facet_values: '100',
@@ -1126,12 +819,14 @@ export const useAdminSearch = () => {
   };
 
   const searchFacetValues = async (collection: string, field: string, text: string, options: { query: string; filterBy?: string; queryBy?: string; signal?: AbortSignal }) => {
-    if (!config.value || hasExpired.value) await refreshConfig();
+    if (isRateLimited.value) throw new Error('Too many requests. Please wait a moment.');
+    if (!config.value) await fetchConfig();
+    if (hasExpired.value) await refreshConfig();
     const cfg = config.value;
     const entry = cfg?.collections[collection];
     const node = cfg?.nodes[0];
     if (!entry?.key || !node) throw new Error('Search configuration unavailable');
-    const params = new URLSearchParams({ q: options.query, query_by: options.queryBy || 'title', facet_by: field, facet_query: `${field}:${text}`, per_page: '0', max_facet_values: '100', filter_by: options.filterBy || '' });
+    const params = new URLSearchParams({ q: options.query, ...(options.queryBy ? { query_by: options.queryBy } : {}), facet_by: field, facet_query: `${field}:${text}`, per_page: '0', max_facet_values: '100', filter_by: options.filterBy || '' });
     const response = await postCollectionSearch(`${node.protocol}://${node.host}:${node.port}`, entry.name, entry.key, params, options.signal);
     if (response.status !== 200) throw new Error(response.errorText || 'Facet search failed');
     return response.data?.facet_counts?.find(facet => facet.field_name === field)?.counts ?? [];
