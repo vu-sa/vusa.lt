@@ -1,10 +1,8 @@
 ---
 doc_status: reviewed
 title: Platforma
-last_reviewed: 2026-11-06
+last_reviewed: 2026-11-03
 tests:
-  - resources/js/Composables/__tests__/useAdminSearch.test.ts
-  - resources/js/Features/Admin/AdminSearch/Composables/__tests__/useAdminCollectionSearch.initial.test.ts
   - tests/Feature/Api/Admin/RecordAbilitiesApiControllerTest.php
   - resources/js/Utils/__tests__/dateTime.test.ts
   - resources/js/Utils/__tests__/formatMonthAbbr.test.ts
@@ -125,8 +123,6 @@ Pirmiausia rodomi atitikmenys paties įrašo varde ar pavadinime. Ieškant žmog
 </ChangelogNote>
 
 ### Grįžti prie sąrašo {#sarasai}
-
-Atvėrus sąrašo nuorodą su paieška ar filtrais, jie taikomi nuo pirmųjų rezultatų ir filtrų skaičių. Paieškos langas, sąrašai ir įrašų pasirinkimo langai dalijasi trumpa laukimo pauze, jei ieškoma per dažnai.
 
 Sąrašo paieška ir filtrai veikia tik tos rūšies įrašams. Pakeitus filtrus ar rikiavimą ir
 atvėrus įrašą, grįžus atgal sąrašas išlaiko pasirinktą būseną. Mygtukas **Išvalyti filtrus**

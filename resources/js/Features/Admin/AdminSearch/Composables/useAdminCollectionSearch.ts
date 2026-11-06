@@ -5,7 +5,7 @@
  * Handles state management, URL sync, facet merging, and search operations.
  */
 
-import { ref, computed, watch, onMounted, onUnmounted, shallowRef, toValue, type MaybeRefOrGetter } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, shallowRef, nextTick, toValue, type MaybeRefOrGetter } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { useUrlSearchParams, useDebounceFn } from '@vueuse/core';
 
@@ -15,6 +15,7 @@ import type {
   AdminSearchFilters,
   AdminSearchStatus,
   AdminSearchError,
+  CollectionFacetConfig,
   SortOption,
 } from '../Types/AdminSearchTypes';
 import {
@@ -121,10 +122,13 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
   const facets = shallowRef<AdminFacet[]>([]);
   const initialFacets = shallowRef<AdminFacet[]>([]);
   const initialFacetsLoaded = ref(false);
-  let initialFacetsPromise: Promise<void> | null = null;
+  const initialFacetsLoading = ref(false);
 
   // Error state
   const error = ref<AdminSearchError | null>(null);
+
+  // Abort controller for cleanup
+  const searchAbortController: AbortController | null = null;
 
   // Sort options for this collection
   const sortOptions = computed<SortOption[]>(() => getCollectionSortOptions(collection));
@@ -174,19 +178,13 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
   /**
    * Load initial facets (all available filter options)
    */
-  const loadInitialFacets = (): Promise<void> => {
-    if (initialFacetsPromise) return initialFacetsPromise;
-    if (initialFacetsLoaded.value) return Promise.resolve();
-    initialFacetsPromise = fetchInitialFacets().finally(() => {
-      initialFacetsPromise = null;
-    });
-    return initialFacetsPromise;
-  };
+  const loadInitialFacets = async () => {
+    if (initialFacetsLoaded.value || initialFacetsLoading.value) return;
 
-  const fetchInitialFacets = async () => {
     if (!validateCollectionAccess()) return;
 
     status.value = 'loading-facets';
+    initialFacetsLoading.value = true;
 
     try {
       const rawFacets = await adminSearch.loadInitialFacets(collection, facetConfig.facetBy, {
@@ -213,6 +211,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     }
     finally {
       status.value = 'idle';
+      initialFacetsLoading.value = false;
     }
   };
 
@@ -225,10 +224,8 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
   });
 
   let searchGeneration = 0;
-  const executeSearch = async (isLoadMore = false) => {
+  const performSearch = async (isLoadMore = false) => {
     const generation = ++searchGeneration;
-    if (initialFacetsPromise) await initialFacetsPromise;
-    if (generation !== searchGeneration) return;
     // Clear previous error
     if (!isLoadMore) {
       clearError();
@@ -255,8 +252,6 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     try {
       const searchResult = await adminSearch.searchWithFacets(collection, query.value || '*', {
         filterBy: filterString || undefined,
-        includeInitialFacets: loadFacetsOnMount && !initialFacetsLoaded.value,
-        initialFacetFilterBy: baseFilterBy.value,
         facetFilters: Object.fromEntries(facetConfig.fields.filter((field) => {
           const value = filters.value[field.field];
           return Array.isArray(value) ? value.length > 0 : value !== undefined && value !== null;
@@ -280,11 +275,6 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
 
       totalHits.value = searchResult.totalHits;
       totalPages.value = searchResult.totalPages;
-
-      if (!initialFacetsLoaded.value) {
-        initialFacets.value = parseFacets(searchResult.initialFacets ?? searchResult.facets, facetConfig, filters.value);
-        initialFacetsLoaded.value = true;
-      }
 
       // Update facets from search results
       facets.value = parseFacets(searchResult.facets, facetConfig, filters.value);
@@ -325,18 +315,6 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     finally {
       if (generation === searchGeneration) status.value = 'idle';
     }
-  };
-
-  const performSearch = (isLoadMore = false): Promise<void> => {
-    const request = executeSearch(isLoadMore);
-    if (loadFacetsOnMount && !initialFacetsLoaded.value) {
-      const pending = request.finally(() => {
-        if (initialFacetsPromise === pending) initialFacetsPromise = null;
-      });
-      initialFacetsPromise = pending;
-      return pending;
-    }
-    return request;
   };
 
   // Debounced search for user typing
@@ -508,10 +486,6 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     filters.value = isDecided ? urlFilters : withDefaultFilters(urlFilters);
     query.value = urlFilters.query || '';
 
-    if (!isSortUserSelected.value) {
-      sortBy.value = query.value.trim() ? RELEVANCE_SORT_VALUE : facetConfig.defaultSortBy;
-    }
-
     // Parse sort from URL
     const urlSort = params.get('sort');
     if (urlSort) {
@@ -523,6 +497,17 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     pagesToRestore = Number.isInteger(urlPages) && urlPages > 1 ? Math.min(urlPages, MAX_RESTORED_PAGES) : 1;
   };
 
+  // Watch for config changes to re-search
+  watch(
+    () => adminSearch.config.value,
+    (newConfig) => {
+      if (newConfig && !initialFacetsLoaded.value) {
+        if (!validateCollectionAccess()) return;
+        loadInitialFacets();
+      }
+    },
+  );
+
   let isMounted = false;
 
   // A new base filter is a new universe: its facets and first page are loaded again.
@@ -530,24 +515,35 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     if (!isMounted) return;
 
     initialFacetsLoaded.value = false;
-    initialFacets.value = [];
     facets.value = [];
+    if (loadFacetsOnMount) {
+      await loadInitialFacets();
+    }
     await performSearch(false);
   });
 
   // Initialize on mount
   onMounted(async () => {
-    if (syncToUrl) loadFromUrl();
+    isMounted = true;
 
     // Initialize admin search
     await adminSearch.initialize();
 
     if (!validateCollectionAccess()) return;
 
-    isMounted = true;
-    if (!searchOnMount && loadFacetsOnMount) await loadInitialFacets();
+    // Load state from URL if enabled
+    if (syncToUrl) {
+      loadFromUrl();
+    }
 
+    // Load initial facets
+    if (loadFacetsOnMount) {
+      await loadInitialFacets();
+    }
+
+    // Perform initial search
     if (searchOnMount) {
+      await nextTick();
       await performSearch(false);
 
       while (currentPage.value < pagesToRestore && hasMoreResults.value) {
@@ -559,8 +555,9 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
 
   // Cleanup on unmount
   onUnmounted(() => {
-    isMounted = false;
-    searchGeneration++;
+    if (searchAbortController) {
+      searchAbortController.abort();
+    }
     debouncedSearch.cancel();
   });
 
