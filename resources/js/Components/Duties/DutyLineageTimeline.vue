@@ -64,7 +64,7 @@ import InflectedDutyName from './InflectedDutyName.vue';
 import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
-import { operatingStatuses } from '@/Constants/statuses';
+import { operatingStatuses } from '@/Constants/statusIcons';
 
 export interface LineageLinkedDuty {
   id: string;

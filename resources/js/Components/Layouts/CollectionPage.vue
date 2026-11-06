@@ -139,7 +139,7 @@ import CollectionResults from '@/Components/Collection/CollectionResults.vue';
 import CollectionSelectionBar from '@/Components/Collection/CollectionSelectionBar.vue';
 import CollectionTitleBand from '@/Components/Collection/CollectionTitleBand.vue';
 import CollectionViewToggle from '@/Components/Collection/CollectionViewToggle.vue';
-import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import type { CollectionColumn, CollectionQuickFilter, CollectionTrash } from '@/Components/Collection/types';
 import type { CollectionChip, CollectionSource } from '@/Composables/useCollectionSource';
 import { useCollectionView, type CollectionViewMode } from '@/Composables/useCollectionView';

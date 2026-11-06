@@ -54,7 +54,7 @@ import {
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
-import { GANTT_GROUP_BY_OPTIONS, type GanttGroupBy } from '@/Pages/Admin/Dashboard/Composables/useGanttSettings';
+import { GANTT_GROUP_BY_OPTIONS, type GanttGroupBy } from '@/Components/Graphs/composables/useGanttSettings';
 
 const props = defineProps<{
   modelValue: GanttGroupBy;

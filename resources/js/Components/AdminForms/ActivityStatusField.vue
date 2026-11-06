@@ -11,7 +11,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 
 import { FormSegmentedControl } from '@/Components/Patterns';
-import { operatingStatuses, statusRoleClasses } from '@/Constants/statuses';
+import { operatingStatuses, statusRoleClasses } from '@/Constants/statusIcons';
 
 defineProps<{ id: string; error?: string; hint?: string }>();
 const active = defineModel<boolean>({ required: true });

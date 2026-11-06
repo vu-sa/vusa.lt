@@ -50,7 +50,7 @@ vi.mock('@/Pages/Admin/Dashboard/Composables/useAtstovavimasActions', () => ({
   }),
 }));
 
-vi.mock('@/Pages/Admin/Dashboard/Composables/useGanttSettings', () => ({
+vi.mock('@/Components/Graphs/composables/useGanttSettings', () => ({
   provideGanttSettings: vi.fn(),
 }));
 

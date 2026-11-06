@@ -3,7 +3,7 @@ import { computed, ref } from 'vue';
 
 import { useGanttLayout, type GanttInstitutionMeta } from '../useGanttLayout';
 
-import type { GanttGroupBy } from '@/Pages/Admin/Dashboard/Composables/useGanttSettings';
+import type { GanttGroupBy } from '@/Components/Graphs/composables/useGanttSettings';
 
 const institutions: GanttInstitutionMeta[] = [
   { id: 'senatas', tenant_id: 1, types: [{ id: 't-council', title: 'Taryba' }, { id: 't-senate', title: 'Senatas ir jo komitetai' }] },

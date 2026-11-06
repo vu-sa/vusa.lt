@@ -75,7 +75,7 @@ import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { controlVariants } from '@/Components/ui/control';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
-import { activityRequestStatuses } from '@/Constants/statuses';
+import { activityRequestStatuses } from '@/Constants/statusIcons';
 
 defineProps<{ request: ActivityRequestHistoryItem }>();
 const emit = defineEmits<{ answer: [] }>();

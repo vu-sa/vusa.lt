@@ -3,7 +3,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { computed, ref } from 'vue';
 
 import type { CollectionStatusOption } from '@/Components/Collection/CollectionStatusMenu.vue';
-import { contentStatuses } from '@/Constants/statuses';
+import { contentStatuses } from '@/Constants/statusIcons';
 import type { CollectionSource } from '@/Composables/useCollectionSource';
 
 interface PublishingOptions<T> {

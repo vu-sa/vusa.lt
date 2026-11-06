@@ -15,16 +15,7 @@ import { router, usePage, type InertiaForm } from '@inertiajs/vue3';
 
 import ResourceForm from '@/Components/AdminForms/ResourceForm.vue';
 import type { ResourceBooking } from '@/Components/Reservations/ResourceBookingRow.vue';
-import type { ResourceMediaEntry } from '@/Pages/Admin/Reservations/CreateResource.vue';
-
-export type ResourceEditType = Omit<
-  App.Entities.Resource,
-  'deleted_at' | 'name' | 'description'
-> & {
-  name: Record<'lt' | 'en', string>;
-  description: Record<'lt' | 'en', string>;
-  media: ResourceMediaEntry[];
-};
+import type { ResourceEditType } from '@/Components/AdminForms/resourceFormTypes';
 
 const { resource } = defineProps<{
   resource: ResourceEditType;

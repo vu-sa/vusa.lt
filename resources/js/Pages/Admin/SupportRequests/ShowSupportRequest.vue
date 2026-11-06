@@ -88,7 +88,7 @@ import InvolvedUsersPicker from '@/Components/SupportRequests/InvolvedUsersPicke
 import { supportRequestVisibility, supportRequestVisibilityLabel } from '@/Components/SupportRequests/visibility';
 import { Button } from '@/Components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { supportRequestStatuses } from '@/Constants/statuses';
+import { supportRequestStatuses } from '@/Constants/statusIcons';
 import type { SupportRequestStatus } from '@/Types/enums';
 import type { SupportRequestItem, SupportRequestUser } from '@/Types/supportRequests';
 import { formatDate } from '@/Utils/dateTime';

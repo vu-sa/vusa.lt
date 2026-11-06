@@ -81,7 +81,7 @@ import { InstitutionIcon } from '@/Components/icons';
 import { ContextFact, ContextFacts, PreviewChipList, PreviewPane, PreviewSection, StatusMark, type PreviewChipItem } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { usePreviewApi } from '@/Composables/usePreviewApi';
-import { operatingStatuses } from '@/Constants/statuses';
+import { operatingStatuses } from '@/Constants/statusIcons';
 import type { InstitutionSearchResult, MeetingSearchResult } from '@/Shared/Search/types';
 import { formatDate } from '@/Utils/dateTime';
 

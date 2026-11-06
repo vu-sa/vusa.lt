@@ -3,7 +3,7 @@ import { computed, ref } from 'vue';
 
 import { useGanttFiltering } from '../useGanttFiltering';
 
-import type { GanttSortBy } from '@/Pages/Admin/Dashboard/Composables/useGanttSettings';
+import type { GanttSortBy } from '@/Components/Graphs/composables/useGanttSettings';
 
 const institutions = [
   { id: 'own', name: 'VU SA Parlamentas', is_internal: true },

@@ -76,7 +76,7 @@ import { Link, router } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { computed, ref, toRef } from 'vue';
 
-import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import { useRowAbilities } from '@/Composables/useRowAbilities';
 import type { CollectionColumn } from '@/Components/Collection/types';
@@ -84,7 +84,7 @@ import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { EmptyState, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { useLocalCollectionSource } from '@/Composables/useCollectionSource';
-import { mailingListModes, mailingListSyncStatuses } from '@/Constants/statuses';
+import { mailingListModes, mailingListSyncStatuses } from '@/Constants/statusIcons';
 import MailingListSheetForm from '@/Features/Admin/MailingLists/MailingListSheetForm.vue';
 import type { MailingListSummary } from '@/Features/Admin/MailingLists/types';
 import { formatDate, formatNearDate, formatRecordDate } from '@/Utils/dateTime';

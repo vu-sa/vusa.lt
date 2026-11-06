@@ -60,7 +60,7 @@ import { notificationRowActions } from './notificationRowActions';
 
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import { ContextFact, ContextFacts } from '@/Components/Patterns';
-import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import {
   getNotificationIcon,
   getNotificationColorClasses,

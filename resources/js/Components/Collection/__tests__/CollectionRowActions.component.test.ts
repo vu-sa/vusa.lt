@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 import CollectionRowActions from '../CollectionRowActions.vue';
 
 import RecordActionMenu from '@/Components/Patterns/RecordActionMenu.vue';
-import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

@@ -230,7 +230,7 @@ import CollectionRowActions from './CollectionRowActions.vue';
 import CollectionLoadMore from './CollectionLoadMore.vue';
 import type { CollectionColumn } from './types';
 
-import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import { CollectionSkeleton, EmptyState, TopProgressBar } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';

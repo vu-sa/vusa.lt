@@ -56,7 +56,7 @@ import { newsStatus } from './newsStatus';
 
 import { PreviewFact, PreviewFacts, PreviewPane, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { contentStatuses } from '@/Constants/statuses';
+import { contentStatuses } from '@/Constants/statusIcons';
 import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import { stripHtml } from '@/Features/Admin/AdminSearch/Utils/html';
 import type { NewsSearchResult } from '@/Shared/Search/types';

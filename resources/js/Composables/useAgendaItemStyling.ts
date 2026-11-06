@@ -1,13 +1,8 @@
 import { trans as $t } from 'laravel-vue-i18n';
-import type { LucideIcon } from '@lucide/vue';
 
 import { agendaItemStatuses, statusRoleParts, type AgendaItemStatus, type StatusRole } from '@/Constants/statuses';
 
 export type { AgendaItemStatus };
-
-// ============================================================================
-// Type Definitions (exported for component usage)
-// ============================================================================
 
 export type VoteValue = 'positive' | 'negative' | 'neutral' | string | null | undefined;
 export type AgendaItemType = 'voting' | 'informational' | 'deferred' | 'break' | 'withdrawn' | string | null | undefined;
@@ -30,13 +25,9 @@ export interface AgendaItem {
   main_vote?: Vote | null;
 }
 
-/**
- * Status metadata for consistent display across components
- */
 export interface AgendaItemStatusMeta {
   status: AgendaItemStatus;
   role: StatusRole;
-  icon: LucideIcon;
   label: string;
   colorClass: string;
   bgClass: string;
@@ -44,22 +35,12 @@ export interface AgendaItemStatusMeta {
   dotClass: string;
 }
 
-/**
- * Calculate the status of an agenda item from its type and outcome votes: the shared status of
- * those votes, or 'mixed' when they disagree.
- *
- * @param item - The agenda item (can include votes array or main_vote directly)
- * @param requiresStudentPerspective - False for VU SA's own bodies: there is no
- *   student position to compare against, so a recorded decision alone means decided.
- * @returns The calculated status
- */
+/** Mirrors the backend outcome votes; internal bodies have no student position to compare. */
 export function getAgendaItemStatus(item: AgendaItem, requiresStudentPerspective = true): AgendaItemStatus {
-  // No type set - needs attention
   if (item.type === null || item.type === undefined) {
     return 'unset';
   }
 
-  // Non-voting types
   if (item.type === 'deferred') {
     return 'deferred';
   }
@@ -95,12 +76,10 @@ export function getVoteStatus(vote: Vote, requiresStudentPerspective = true): Ag
     return 'no_vote';
   }
 
-  // Consensus takes priority over the other statuses
   if (vote.is_consensus) {
     return 'consensus';
   }
 
-  // An internal body's vote has only an outcome: the decision is the whole story
   if (!requiresStudentPerspective) {
     if (vote.decision === 'positive') {
       return 'decision_positive';
@@ -119,14 +98,9 @@ export function getVoteStatus(vote: Vote, requiresStudentPerspective = true): Ag
     return vote.student_vote === vote.decision ? 'student_aligned' : 'student_misaligned';
   }
 
-  // Has decision but no student vote recorded - treat as incomplete
   return 'no_vote';
 }
 
-/**
- * Get full status metadata for an agenda item
- * Returns icon, label, and styling classes for the status
- */
 export function getAgendaItemStatusMeta(item: AgendaItem, requiresStudentPerspective = true): AgendaItemStatusMeta {
   const status = getAgendaItemStatus(item, requiresStudentPerspective);
   const presentation = agendaItemStatuses[status];
@@ -135,7 +109,6 @@ export function getAgendaItemStatusMeta(item: AgendaItem, requiresStudentPerspec
   return {
     status,
     role: presentation.role,
-    icon: presentation.icon,
     label: $t(presentation.label),
     colorClass: parts.text,
     bgClass: parts.surface,
@@ -156,16 +129,10 @@ export function getVoteValueRole(value: VoteValue): StatusRole | null {
 
 const MUTED_TEXT = 'text-muted-foreground';
 
-/**
- * Get the main vote from an agenda item
- * Supports both direct main_vote property and votes array lookup
- */
 export function getMainVote(item: AgendaItem): Vote | undefined {
-  // Prefer direct main_vote property if available
   if (item.main_vote) {
     return item.main_vote;
   }
-  // Fall back to finding in votes array
   return item.votes?.find(v => v.is_main);
 }
 
@@ -186,10 +153,6 @@ export function getOutcomeVote(item: AgendaItem): Vote | undefined {
   return outcomeVotes.length === 1 ? outcomeVotes[0] : undefined;
 }
 
-/**
- * Get number badge class based on item type and vote status
- * Used for the numbered badge next to agenda item titles
- */
 export function getNumberBadgeClass(item: AgendaItem, requiresStudentPerspective = true): string {
   const { role } = agendaItemStatuses[getAgendaItemStatus(item, requiresStudentPerspective)];
   const parts = statusRoleParts[role];
@@ -197,9 +160,6 @@ export function getNumberBadgeClass(item: AgendaItem, requiresStudentPerspective
   return `${parts.surface} ${parts.text}`;
 }
 
-/**
- * Get student vote label
- */
 export function getStudentVoteLabel(studentVote: VoteValue): string {
   switch (studentVote) {
     case 'positive': return $t('Pritarė');
@@ -209,9 +169,6 @@ export function getStudentVoteLabel(studentVote: VoteValue): string {
   }
 }
 
-/**
- * Get vote decision label
- */
 export function getDecisionLabel(decision: VoteValue): string {
   switch (decision) {
     case 'positive': return $t('Priimtas');
@@ -231,19 +188,11 @@ export function getDecisionTextColorClass(decision: VoteValue): string {
   return roleText(decision, 'text-foreground');
 }
 
-// ============================================================================
-// Shared Vote Display Utilities (for both admin and public components)
-// ============================================================================
-
 /** Ink for a vote value, e.g. in the public VoteStatusIndicator. */
 export function getVoteTextColorClass(value: VoteValue): string {
   return roleText(value, 'text-muted-foreground/60');
 }
 
-/**
- * Get localized label for a vote value (Už/Prieš/Susilaikė)
- * Short form for display in indicators
- */
 export function getVoteDisplayLabel(value: VoteValue): string {
   switch (value) {
     case 'positive':
@@ -257,9 +206,6 @@ export function getVoteDisplayLabel(value: VoteValue): string {
   }
 }
 
-/**
- * Get localized label for student benefit value
- */
 export function getStudentBenefitLabel(value: VoteValue): string {
   switch (value) {
     case 'positive':

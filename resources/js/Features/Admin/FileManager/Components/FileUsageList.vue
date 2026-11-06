@@ -43,7 +43,7 @@ import { CircleCheck, Link2 } from '@lucide/vue';
 import type { FileUsageResult } from '../useFileUsageScan';
 
 import { StatusBadge } from '@/Components/Patterns';
-import type { StatusPresentation } from '@/Constants/statuses';
+import type { StatusPresentation } from '@/Constants/statusIcons';
 
 const props = defineProps<{
   usage: FileUsageResult;

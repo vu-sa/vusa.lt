@@ -152,7 +152,7 @@ import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection 
 import { ConfirmDialog, OverviewSection } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { TypeTreeChecklist } from '@/Components/AdminForms/TypeTree';
-import type { StatusPresentation } from '@/Constants/statuses';
+import type { StatusPresentation } from '@/Constants/statusIcons';
 import PermissionMatrix from '@/Features/Admin/PermissionMatrix/PermissionMatrix.vue';
 import type { PermissionCatalog } from '@/Features/Admin/PermissionMatrix/types';
 import ResponsibilityGrants from '@/Features/Admin/Responsibilities/ResponsibilityGrants.vue';

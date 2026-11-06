@@ -14,7 +14,7 @@ import { computed } from 'vue';
 
 import { agendaItemTypeOptions } from './agendaItemTypes';
 
-import { agendaItemStatuses } from '@/Constants/statuses';
+import { agendaItemStatuses } from '@/Constants/statusIcons';
 
 const props = defineProps<{ type?: string | null }>();
 

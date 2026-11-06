@@ -9,7 +9,7 @@ import { trans } from 'laravel-vue-i18n';
 
 import type { CollectionFacetConfig, SortOption } from '../Types/AdminSearchTypes';
 
-import { institutionActivityStatuses, meetingCompletionStatuses } from '@/Constants/statuses';
+import { institutionActivityStatuses, meetingCompletionStatuses } from '@/Constants/statusIcons';
 
 /**
  * Meeting collection facet configuration

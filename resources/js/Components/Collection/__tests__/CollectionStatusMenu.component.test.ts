@@ -4,7 +4,7 @@ import { defineComponent, h } from 'vue';
 
 import CollectionStatusMenu from '../CollectionStatusMenu.vue';
 
-import { contentStatuses } from '@/Constants/statuses';
+import { contentStatuses } from '@/Constants/statusIcons';
 import { commonStubs } from '@/tests/stubs';
 
 const passthrough = defineComponent({ setup: (_, { slots }) => () => h('div', slots.default?.()) });

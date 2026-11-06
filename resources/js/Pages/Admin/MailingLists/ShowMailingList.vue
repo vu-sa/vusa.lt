@@ -103,7 +103,7 @@ import { toast } from 'vue-sonner';
 import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import { CollectionSkeleton, ConfirmDialog, RecordNextActions } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { mailingListModes, mailingListSyncStatuses } from '@/Constants/statuses';
+import { mailingListModes, mailingListSyncStatuses } from '@/Constants/statusIcons';
 import MailingListArchive from '@/Features/Admin/MailingLists/MailingListArchive.vue';
 import MailingListRecipients from '@/Features/Admin/MailingLists/MailingListRecipients.vue';
 import MailingListSheetForm from '@/Features/Admin/MailingLists/MailingListSheetForm.vue';

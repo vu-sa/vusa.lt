@@ -33,7 +33,7 @@ import type { HomeFollowedInstitutions } from './types';
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import { StatusBadge } from '@/Components/Patterns';
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
-import { institutionActivityStatuses } from '@/Constants/statuses';
+import { institutionActivityStatuses } from '@/Constants/statusIcons';
 import type { InstitutionActivityStatus } from '@/Types/enums';
 
 /** Only rendered when something is followed; following is discovered on the institution pages. */

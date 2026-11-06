@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { StatusBadge } from '..';
 
-import { contentStatuses, taskStatuses } from '@/Constants/statuses';
+import { contentStatuses, taskStatuses } from '@/Constants/statusIcons';
 
 describe('StatusBadge', () => {
   it('renders the canonical label and icon', () => {

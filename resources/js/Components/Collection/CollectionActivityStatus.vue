@@ -59,7 +59,7 @@ import { Button } from '@/Components/ui/button';
 import { useApi, useApiMutation } from '@/Composables/useApi';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
-import { operatingStatuses } from '@/Constants/statuses';
+import { operatingStatuses } from '@/Constants/statusIcons';
 
 const props = defineProps<{
   entity: 'institutions' | 'duties';

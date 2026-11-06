@@ -9,7 +9,7 @@ import {
   supportRequestStatuses,
   taskStatuses,
   voteStatuses,
-} from '@/Constants/statuses';
+} from '@/Constants/statusIcons';
 
 const meta: Meta<typeof StatusBadge> = {
   title: 'Patterns/StatusBadge',

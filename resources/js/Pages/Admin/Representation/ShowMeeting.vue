@@ -320,7 +320,7 @@ import { genitivizeEveryWord } from '@/Utils/String';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { formatMeetingDateTime, formatMeetingTimeOnly, isEmailMeeting } from '@/Utils/MeetingDisplay';
 import { useMeetingUrgency } from '@/Composables/useMeetingUrgency';
-import { meetingCompletionStatuses, type MeetingCompletionStatus } from '@/Constants/statuses';
+import { meetingCompletionStatuses, type MeetingCompletionStatus } from '@/Constants/statusIcons';
 import RecordPage, { type RecordAction, type RecordFact, type RecordNavigationContext } from '@/Components/Layouts/RecordPage.vue';
 import { Button } from '@/Components/ui/button';
 import { Skeleton } from '@/Components/ui/skeleton';

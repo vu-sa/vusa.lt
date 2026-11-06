@@ -95,11 +95,11 @@ import { reservationRowActions } from './reservationRowActions';
 import type { ReservationDecision } from './types';
 
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
-import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import { ResourceIcon } from '@/Components/icons';
 import { ConfirmDialog, EmptyState, StatusBadge } from '@/Components/Patterns';
 import ReservationPeriod from '@/Components/SmallElements/ReservationPeriod.vue';
-import { reservationResourceStatuses, type ReservationResourceStatus } from '@/Constants/statuses';
+import { reservationResourceStatuses, type ReservationResourceStatus } from '@/Constants/statusIcons';
 import type { DashboardReservation } from '@/Utils/ReservationStatus';
 import { formatDateTime } from '@/Utils/dateTime';
 

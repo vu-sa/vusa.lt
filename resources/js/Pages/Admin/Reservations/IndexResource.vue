@@ -211,7 +211,7 @@ import { useCollectionRecordActions } from '@/Composables/useCollectionRecordAct
 import { useRowAbilities } from '@/Composables/useRowAbilities';
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
-import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import { highlightText, matchTitle } from '@/Shared/Search/matches';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
@@ -229,7 +229,7 @@ import type { ReservationCart } from '@/Components/Reservations/types';
 import { useReservationCart } from '@/Components/Reservations/useReservationCart';
 import { Button } from '@/Components/ui/button';
 import { useTypesenseCollectionSource } from '@/Composables/useCollectionSource';
-import { notReservableStatus } from '@/Constants/statuses';
+import { notReservableStatus } from '@/Constants/statusIcons';
 import { useResourceAvailability } from '@/Features/Admin/AdminSearch/Composables/useResourceAvailability';
 import type { ResourceSearchResult } from '@/Shared/Search/types';
 import { formatRecordDate } from '@/Utils/dateTime';

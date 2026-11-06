@@ -1,7 +1,3 @@
-/**
- * Gantt display settings shared through provide/inject and persisted to localStorage.
- * Provided once by the page (provideGanttSettings); MeetingsGantt and its wrappers inject them.
- */
 import { computed, inject, provide, type InjectionKey, type Ref } from 'vue';
 import { useStorage } from '@vueuse/core';
 

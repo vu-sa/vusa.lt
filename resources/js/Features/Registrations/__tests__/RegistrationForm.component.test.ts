@@ -28,7 +28,9 @@ function createWrapper(overrides: { prefilledValues?: Record<string, { value: st
     attachTo: document.body,
     global: { stubs: {
       ...commonStubs,
-      ConfirmDialog: { props: ['open'], emits: ['confirm', 'update:open'], template: '<div v-if="open"><button data-testid="leave" @click="$emit(\'confirm\')">Leave</button><button data-testid="stay" @click="$emit(\'update:open\', false)">Stay</button></div>' },
+      AlertDialog: { props: ['open'], emits: ['update:open'], template: '<div v-if="open"><slot /><button data-testid="stay" @click="$emit(\'update:open\', false)">Stay</button></div>' },
+      AlertDialogContent: { template: '<div><slot /></div>' },
+      AlertDialogCancel: { template: '<button><slot /></button>' },
     } },
   });
   wrappers.push(wrapper);
@@ -157,7 +159,7 @@ describe('submission and navigation', () => {
     attemptVisit();
     await flushPromises();
     vi.mocked(router.visit).mockClear();
-    await wrapper.find('[data-testid="leave"]').trigger('click');
+    await wrapper.find('[data-slot="confirm-dialog-action"]').trigger('click');
     expect(router.visit).toHaveBeenCalledWith(visit.url, { method: 'get', prefetch: false, preserveScroll: true });
   });
 

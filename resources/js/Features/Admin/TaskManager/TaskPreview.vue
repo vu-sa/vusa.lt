@@ -35,7 +35,7 @@ import TaskDetails from './TaskDetails.vue';
 
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import { PreviewPane, StatusMark } from '@/Components/Patterns';
-import { taskStatuses } from '@/Constants/statuses';
+import { taskStatuses } from '@/Constants/statusIcons';
 import { getTaskActionIcon, getTaskActionLabel, getTaskStatus, getTaskableUrl, isOrphanedTask, type TaskDisplayData } from '@/Composables/useTaskPresentation';
 
 const props = defineProps<{

@@ -11,7 +11,7 @@ import IndexForm from '../../Forms/IndexForm.vue';
 import IndexDuty from '../../People/IndexDuty.vue';
 import IndexProblem from '../../Problems/IndexProblem.vue';
 
-import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 const permissions = vi.hoisted(() => ({ update: false, delete: false }));

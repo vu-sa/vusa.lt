@@ -172,7 +172,7 @@ import { Button } from '@/Components/ui/button';
 import { ProblemIcon } from '@/Components/icons';
 import { useDatabaseCollectionSource, type DatabaseFacetDefinition } from '@/Composables/useCollectionSource';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
-import { problemStatuses, type ProblemStatus } from '@/Constants/statuses';
+import { problemStatuses, type ProblemStatus } from '@/Constants/statusIcons';
 import { formatRecordDate, formatDate } from '@/Utils/dateTime';
 
 const props = defineProps<{

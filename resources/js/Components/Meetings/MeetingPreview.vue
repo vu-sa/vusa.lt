@@ -90,7 +90,7 @@ import { MeetingIcon } from '@/Components/icons';
 import { ContextFact, ContextFacts, PreviewPane, PreviewSection, StatusMark } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { usePreviewApi } from '@/Composables/usePreviewApi';
-import { inactiveInstitutionStatus, meetingCompletionStatuses, statusFor, statusRoleParts, voteStatuses } from '@/Constants/statuses';
+import { inactiveInstitutionStatus, meetingCompletionStatuses, statusFor, statusRoleParts, voteStatuses } from '@/Constants/statusIcons';
 import type { MeetingSearchResult } from '@/Shared/Search/types';
 import { formatDateTime, formatTime } from '@/Utils/dateTime';
 

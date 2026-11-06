@@ -102,7 +102,7 @@ import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { Button } from '@/Components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/Components/ui/sheet';
-import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 
 const props = defineProps<{ actions: AdminRecordAction[]; triggerSize?: 'compact' | 'default'; label?: string; spotlight?: boolean }>();
 const emit = defineEmits<{ select: [key: string]; navigate: [key: string] }>();

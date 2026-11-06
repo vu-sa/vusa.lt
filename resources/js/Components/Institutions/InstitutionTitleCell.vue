@@ -15,7 +15,7 @@
 
 <script setup lang="ts">
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
-import { operatingStatuses } from '@/Constants/statuses';
+import { operatingStatuses } from '@/Constants/statusIcons';
 import type { InstitutionSearchResult } from '@/Shared/Search/types';
 
 /** An institution's name in a collection; one that stopped working says so with a mark before it. */

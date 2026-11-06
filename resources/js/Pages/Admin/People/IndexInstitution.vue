@@ -171,7 +171,7 @@ import InstitutionTitleCell from '@/Components/Institutions/InstitutionTitleCell
 import InstitutionMembersSummary from '@/Components/Institutions/InstitutionMembersSummary.vue';
 import InstitutionPreview from '@/Components/Institutions/InstitutionPreview.vue';
 import { Button } from '@/Components/ui/button';
-import { institutionActivityStatuses, operatingStatuses, statusFor } from '@/Constants/statuses';
+import { institutionActivityStatuses, operatingStatuses, statusFor } from '@/Constants/statusIcons';
 import { useRowAbilities } from '@/Composables/useRowAbilities';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { useInstitutionSubscription } from '@/Composables/useInstitutionSubscription';

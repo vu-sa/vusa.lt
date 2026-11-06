@@ -23,7 +23,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { formatReservationPeriod } from './reservationPeriod';
 
 import { StatusBadge } from '@/Components/Patterns';
-import { reservationResourceStatuses, type ReservationResourceStatus } from '@/Constants/statuses';
+import { reservationResourceStatuses, type ReservationResourceStatus } from '@/Constants/statusIcons';
 
 /** One reservation line on a resource, as `ResourceController::reservationRow()` shapes it. */
 export interface ResourceBooking {

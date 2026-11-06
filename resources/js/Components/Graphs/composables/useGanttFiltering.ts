@@ -3,7 +3,7 @@
  */
 import { computed, type ComputedRef } from 'vue';
 
-import type { GanttSortBy } from '@/Pages/Admin/Dashboard/Composables/useGanttSettings';
+import type { GanttSortBy } from '@/Components/Graphs/composables/useGanttSettings';
 
 export interface ParsedMeeting {
   id: string | number;

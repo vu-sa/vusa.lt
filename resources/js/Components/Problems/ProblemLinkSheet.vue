@@ -55,7 +55,7 @@ import { StatusBadge } from '@/Components/Patterns';
 import { Input } from '@/Components/ui/input';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/Components/ui/sheet';
 import { useApi } from '@/Composables/useApi';
-import { problemStatuses, type ProblemStatus } from '@/Constants/statuses';
+import { problemStatuses, type ProblemStatus } from '@/Constants/statusIcons';
 
 interface Candidate {
   id: string;

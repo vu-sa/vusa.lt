@@ -183,7 +183,7 @@ import {
 import { useMotionAwareSortable } from '@/Composables/useMotionAwareSortable';
 import { EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { agendaItemStatuses, statusRoleParts } from '@/Constants/statuses';
+import { agendaItemStatuses, statusRoleParts } from '@/Constants/statusIcons';
 import {
   type AgendaItem as AgendaStatusItem,
   getAgendaItemStatus,
