@@ -15,8 +15,6 @@ tests:
   - tests/Browser/ContentEditorImageSaveTest.php
   - tests/Feature/Admin/Content/NewsTagsTest.php
 title: Naujienos
-area: news
-models: [News]
 ---
 
 # Naujienos

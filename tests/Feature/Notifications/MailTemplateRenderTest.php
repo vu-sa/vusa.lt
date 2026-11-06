@@ -1,13 +1,14 @@
 <?php
 
 use App\Enums\NotificationType;
-use App\Mail\InformChairAboutMemberRegistration;
+use App\Enums\SupportRequestStatus;
 use App\Mail\NotificationDigest;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\InstitutionActivityRequest;
 use App\Models\Meeting;
 use App\Models\ResponsibilityGrant;
+use App\Models\SupportRequest;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
@@ -16,12 +17,17 @@ use App\Notifications\CommentPostedNotification;
 use App\Notifications\InstitutionActivityNotification;
 use App\Notifications\MeetingAgendaCompletedNotification;
 use App\Notifications\MeetingCreatedNotification;
+use App\Notifications\MemberRegistrationNotification;
+use App\Notifications\StudentRepRegistrationNotification;
+use App\Notifications\SupportRequestAssignedNotification;
+use App\Notifications\SupportRequestStatusChangedNotification;
 use App\Notifications\TaskAssignedNotification;
 use App\Notifications\TaskAutoCompletedNotification;
 use App\Notifications\TaskOverdueNotification;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Mail\Markdown;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 
 pest()->use(RefreshDatabase::class);
@@ -81,7 +87,7 @@ describe('notification email', function (): void {
     });
 
     test('the subject is the title: short and without an emoji prefix', function (): void {
-        $notification = new TaskAssignedNotification(Task::factory()->create());
+        $notification = new TaskAssignedNotification(Task::factory()->create(['name' => 'Trumpa užduotis']));
 
         $subject = renderNotificationMail($notification, $this->recipient)['subject'];
 
@@ -90,14 +96,15 @@ describe('notification email', function (): void {
             ->and($subject)->toBe($notification->title($this->recipient));
     });
 
-    test('a long title is cut to 60 characters', function (): void {
-        $notification = new CommentPostedNotification(
-            'Sveiki',
-            ['modelClass' => 'Task', 'name' => str_repeat('Ilgas pavadinimas ', 8), 'url' => '/t/1', 'id' => '1'],
-            ['modelClass' => 'User', 'name' => 'Jonas'],
-        );
+    test('a long title stays complete while the email subject is cut to 60 characters', function (): void {
+        $task = Task::factory()->create(['name' => str_repeat('Ilgas pavadinimas ', 8)]);
+        $notification = new TaskAssignedNotification($task);
 
-        expect(mb_strlen(renderNotificationMail($notification, $this->recipient)['subject']))->toBeLessThanOrEqual(60);
+        $mail = $notification->toMail($this->recipient);
+
+        expect(mb_strlen($mail->subject))->toBeLessThanOrEqual(60)
+            ->and($notification->title($this->recipient))->toBe('Nauja užduotis: '.$task->name)
+            ->and($mail->viewData['title'])->toBe($notification->title($this->recipient));
     });
 
     test('"Ar vyko posėdis?" draws both answers as buttons and offers "not mine" as a link', function (): void {
@@ -164,12 +171,13 @@ describe('notification email', function (): void {
 });
 
 test('the chair registration email subject follows the recipient locale', function (): void {
-    $institution = (new Institution)->forceFill(['short_name' => ['lt' => 'Taryba', 'en' => 'Council']]);
+    $institution = (new Institution)->forceFill(['name' => ['lt' => 'Taryba', 'en' => 'Council'], 'short_name' => ['lt' => 'Taryba', 'en' => 'Council']]);
     app()->setLocale('en');
 
-    $mail = (new InformChairAboutMemberRegistration('1', 'Jonas', $institution, '1'))->build();
+    $mail = (new MemberRegistrationNotification(1, 'Jonas', $institution, 'chair@example.org', '1'))->toMail($this->recipient);
 
-    expect($mail->subject)->toBe('Jonas registered for Council');
+    expect($mail->subject)->toBe('Member registration: Jonas')
+        ->and($mail->viewData['body'])->toContain('Council');
 });
 
 describe('digest email', function (): void {
@@ -232,6 +240,9 @@ test('activity mail keeps both choices and the reporting period in HTML and text
         'note' => 'Please reply by Friday.',
     ]);
     $notification = new InstitutionActivityNotification(new EloquentCollection([$request]));
+
+    expect(collect($notification->context($this->recipient))->pluck('value'))->not->toContain($this->recipient->name)
+        ->and($notification->toDigestItem($this->recipient)['context'])->toBeEmpty();
 
     $rendered = renderNotificationMail($notification, $this->recipient);
 
@@ -395,4 +406,134 @@ test('meeting digest lines retain the notification type for followers', function
     $completed->viaFollow();
     expect($created->toDigestItem($this->recipient)['type'])->toBe('followed_institution_activity')
         ->and($completed->toDigestItem($this->recipient)['type'])->toBe('followed_institution_activity');
+});
+
+test('comment quotes render as escaped text without interpreting markdown', function (string $locale): void {
+    app()->setLocale($locale);
+    $notification = new CommentPostedNotification(
+        '<p>**Svarbu** &amp; &lt;img src=x onerror=alert(1)&gt; [nuoroda](https://untrusted.test)</p><p>Kitas sakinys.</p>',
+        ['modelClass' => 'Task', 'name' => 'Planavimas', 'url' => 'https://example.test/task'],
+        ['modelClass' => 'User', 'name' => 'Petras Komentatorius'],
+    );
+
+    $rendered = renderNotificationMail($notification, $this->recipient);
+
+    expect($rendered['html'])->toContain('**Svarbu**', '&amp;', '&lt;img', 'Kitas sakinys.')
+        ->not->toContain('&amp;amp;', '<img src="x"', '<strong>Svarbu</strong>', 'href="https://untrusted.test"', '<pre>')
+        ->and($rendered['text'])->toContain(
+            ($locale === 'lt' ? '„' : '“').'**Svarbu** & <img src=x onerror=alert(1)>',
+            'Kitas sakinys.'.($locale === 'lt' ? '“' : '”'),
+        );
+})->with(['lt', 'en']);
+
+test('comment excerpts render in single and grouped digests in html and text', function (bool $grouped, string $locale): void {
+    app()->setLocale($locale);
+    $notification = new CommentPostedNotification(
+        '<p>**Svarbu** &amp; aišku.</p>',
+        ['modelClass' => 'Task', 'name' => 'Planavimas', 'url' => 'https://example.test/task', 'id' => '1'],
+        ['modelClass' => 'User', 'name' => 'Petras'],
+    );
+    $items = [$notification->toDigestItem($this->recipient)];
+    if ($grouped) {
+        $items[] = $notification->toDigestItem($this->recipient);
+    }
+    $digest = new NotificationDigest($this->recipient, ['comment' => $items]);
+    $markdown = new Markdown(view(), config('mail.markdown'));
+
+    $html = (string) $markdown->render('emails.notification-digest', $digest->content()->with);
+    $text = (string) $markdown->renderText('emails.notification-digest', $digest->content()->with);
+
+    $quote = $locale === 'lt' ? '„**Svarbu** & aišku.“' : '“**Svarbu** & aišku.”';
+
+    expect(html_entity_decode($html))->toContain($quote)
+        ->and($html)->not->toContain('&amp;amp;', '<strong>Svarbu</strong>')
+        ->and($text)->toContain($quote);
+
+    if (! $grouped) {
+        expect($text)->toContain("\n  ".$quote);
+    }
+})->with([false, true])->with(['lt', 'en']);
+
+test('grouped comments keep each record in its own line under a generic heading', function (string $locale, string $heading, bool $isMention): void {
+    app()->setLocale($locale);
+    $first = new CommentPostedNotification(
+        '<p>First comment.</p>',
+        ['modelClass' => 'Task', 'name' => 'Record Alpha', 'url' => 'https://example.test/alpha'],
+        ['modelClass' => 'User', 'name' => 'Jonas'],
+        isMention: $isMention,
+    );
+    $second = new CommentPostedNotification(
+        '<p>Second comment.</p>',
+        ['modelClass' => 'Meeting', 'name' => 'Record Beta', 'url' => 'https://example.test/beta'],
+        ['modelClass' => 'User', 'name' => 'Ona'],
+        isMention: $isMention,
+    );
+    $items = [$first->toDigestItem($this->recipient), $second->toDigestItem($this->recipient)];
+    $digest = new NotificationDigest($this->recipient, ['comment' => $items]);
+    $markdown = new Markdown(view(), config('mail.markdown'));
+
+    foreach ($items as $index => $item) {
+        expect($item['digestGroupTitle'])->toBe($heading)
+            ->and(substr_count($item['digestLine'], $index === 0 ? 'Record Alpha' : 'Record Beta'))->toBe(1)
+            ->and($item['digestLine'])->not->toContain($index === 0 ? 'Record Beta' : 'Record Alpha');
+    }
+    foreach ([$markdown->render('emails.notification-digest', $digest->content()->with), $markdown->renderText('emails.notification-digest', $digest->content()->with)] as $part) {
+        $content = html_entity_decode((string) $part);
+        expect($content)->toContain($heading.' (2)', $items[0]['digestLine'], $items[1]['digestLine'])
+            ->and(substr_count($content, 'Record Alpha'))->toBe(1)
+            ->and(substr_count($content, 'Record Beta'))->toBe(1);
+    }
+})->with([['lt', 'Nauji komentarai'], ['en', 'New comments']])->with([false, true]);
+
+test('registration notifications render the standard footer and details in HTML and text', function (string $locale, string $kind): void {
+    app()->setLocale($locale);
+    $institution = Institution::factory()->make(['name' => ['lt' => 'Pavyzdinė taryba', 'en' => 'Sample council']]);
+    $notification = $kind === 'member'
+        ? new MemberRegistrationNotification(1, 'Jonas Jonaitis', $institution, 'chair@example.org', '1')
+        : new StudentRepRegistrationNotification('1', 'Jonas Jonaitis', $institution, '1');
+
+    $rendered = renderNotificationMail($notification, $this->recipient);
+
+    foreach (['html', 'text'] as $part) {
+        $content = html_entity_decode($rendered[$part]);
+        expect($content)->toContain('Jonas Jonaitis', $institution->name, __('notifications.mail.sign_off'), __('notifications.mail.settings_link'), route('profile.notifications'), $notification->url())
+            ->and(substr_count($content, 'Jonas Jonaitis'))->toBe(1);
+    }
+})->with(['lt', 'en'])->with(['member', 'student-rep']);
+
+test('support request status mail renders in English when delivery requests that locale', function (bool $withUpdater): void {
+    app()->setLocale('lt');
+    config(['mail.default' => 'array']);
+    $request = SupportRequest::factory()->make(['id' => '01J00000000000000000000000', 'title' => 'Broken projector']);
+    $notification = new SupportRequestStatusChangedNotification(
+        $request, SupportRequestStatus::New, SupportRequestStatus::InProgress,
+        $withUpdater ? User::factory()->make(['name' => 'Ona Onaitė']) : null,
+    );
+
+    Notification::sendNow($this->recipient, $notification->locale('en'), ['mail']);
+
+    $message = collect(app('mail.manager')->mailer('array')->getSymfonyTransport()->messages())->last()->getOriginalMessage();
+    expect($message->getSubject())->toBe('Request status: Broken projector');
+    foreach ([$message->getHtmlBody(), $message->getTextBody()] as $part) {
+        $content = html_entity_decode($part);
+        expect($content)->toContain('Broken projector', 'In progress')
+            ->not->toContain('Užklausos', 'pakeitė')
+            ->and(substr_count($content, 'Broken projector'))->toBe(1);
+    }
+})->with([false, true]);
+
+test('grouped request digests retain every request name without using the first as the heading', function (): void {
+    app()->setLocale('en');
+    $actor = User::factory()->make(['name' => 'Ona']);
+    $items = collect(['Broken projector', 'Missing keys'])->map(fn (string $title) => (new SupportRequestAssignedNotification(SupportRequest::factory()->make(['id' => '01J00000000000000000000000', 'title' => $title]), $actor))->toDigestItem($this->recipient)
+    )->all();
+    $digest = new NotificationDigest($this->recipient, ['system' => $items]);
+    $markdown = app(Markdown::class);
+
+    foreach ([$markdown->render('emails.notification-digest', $digest->content()->with), $markdown->renderText('emails.notification-digest', $digest->content()->with)] as $part) {
+        $content = html_entity_decode((string) $part);
+        expect($content)->toContain('Broken projector', 'Missing keys')
+            ->and(substr_count($content, 'Broken projector'))->toBe(1)
+            ->and(substr_count($content, 'Missing keys'))->toBe(1);
+    }
 });

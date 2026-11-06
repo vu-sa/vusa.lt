@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Kalendorius
-area: calendar
-models: [Calendar]
 last_reviewed: 2026-11-01
 tests:
   - resources/js/Components/Collection/__tests__/ContentCollectionPublishing.component.test.ts

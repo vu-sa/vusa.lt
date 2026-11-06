@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Failai
-area: files
-models: [File]
 last_reviewed: 2026-10-19
 tests:
   - tests/Browser/ContentEditorImageSaveTest.php

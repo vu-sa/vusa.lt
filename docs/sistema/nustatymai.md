@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Nustatymai
-area: settings
-models: [Cadence]
 last_reviewed: 2026-10-28
 tests:
   - tests/Feature/Admin/Settings/SystemPurposesSettingsTest.php

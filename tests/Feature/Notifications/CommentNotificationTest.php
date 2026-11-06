@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\CommentKind;
 use App\Enums\MeetingType;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -10,6 +11,7 @@ use App\Models\User;
 use App\Notifications\CommentPostedNotification;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Mail\Markdown;
 use Illuminate\Support\Facades\Notification;
 
 pest()->use(RefreshDatabase::class);
@@ -140,3 +142,33 @@ test('duty mailboxes of the audience are not emailed, current or ended', functio
     Notification::assertNotSentTo($endedDuty, CommentPostedNotification::class);
     Notification::assertNotSentTo($this->rep->duties()->first(), CommentPostedNotification::class);
 });
+
+test('comment mail names the author once and quotes the posted content', function (bool $isMention, bool $isPoll, string $bodyText): void {
+    app()->setLocale('lt');
+    $this->author->update(['name' => 'Petras Komentatorius']);
+    $this->actingAs($this->author);
+    $body = '<p>Siūlau perkelti klausimą.</p>';
+    if ($isMention) {
+        $body .= '<p><span data-id="'.$this->rep->id.'">@kolega</span></p>';
+    }
+
+    $this->agendaItem->comment($body, attributes: ['kind' => $isPoll ? CommentKind::Poll : CommentKind::Comment]);
+
+    Notification::assertSentTo($this->rep, CommentPostedNotification::class, function (CommentPostedNotification $notification) use ($bodyText): bool {
+        $mail = $notification->toMail($this->rep);
+        $markdown = new Markdown(view(), config('mail.markdown'));
+        $html = html_entity_decode((string) $markdown->render($mail->markdown, $mail->data()));
+
+        expect($notification->body($this->rep))->toBe('Petras Komentatorius '.$bodyText)
+            ->and($notification->context($this->rep))->toBe([])
+            ->and($html)->toContain('Siūlau perkelti klausimą.')
+            ->and(substr_count($html, 'Petras Komentatorius'))->toBe(1)
+            ->and(substr_count($html, $bodyText))->toBe(1);
+
+        return true;
+    });
+})->with([
+    'comment' => [false, false, 'paliko komentarą'],
+    'mention' => [true, false, 'paminėjo tave komentare'],
+    'poll' => [false, true, 'pradėjo apklausą'],
+]);

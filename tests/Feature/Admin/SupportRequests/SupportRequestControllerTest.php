@@ -141,7 +141,7 @@ describe('authorized manager access', function (): void {
             $this->user,
             SupportRequestStatusChangedNotification::class,
             fn (SupportRequestStatusChangedNotification $notification) => $notification->newStatus->value === 'done'
-                && $notification->body($this->user) === $this->admin->name.' pakeitė užklausos „'.$this->supportRequest->title.'“ būseną į Išspręsta.'
+                && $notification->body($this->user) === $this->admin->name.' pakeitė būseną į Išspręsta.'
         );
     });
 

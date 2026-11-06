@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Darbotvarkės klausimai
-area: agendaItems
-models: [AgendaItem, Vote]
 last_reviewed: 2026-11-01
 tests:
   - tests/Feature/Permissions/MeetingPermissionsTest.php

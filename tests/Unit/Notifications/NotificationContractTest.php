@@ -59,7 +59,8 @@ describe('base contract', function (): void {
 
         $data = $notification->toArray($user);
 
-        expect($data)->toHaveKeys(['primaryAction', 'secondaryAction', 'context', 'actions'])
+        expect($data)->toHaveKeys(['primaryAction', 'secondaryAction', 'context', 'actions', 'excerpt'])
+            ->and($data['excerpt'])->toBeNull()
             ->and($data['primaryAction'])->toBe($notification->primaryAction())
             ->and($data['secondaryAction'])->toBeNull()
             ->and($data['actions'])->toBe([$notification->primaryAction()]);
@@ -128,8 +129,7 @@ describe('act-tier context rows', function (): void {
 
         $rows = new TaskReminderNotification($task, 1)->context($this->user);
 
-        expect($rows)->toHaveCount(1)
-            ->and($rows[0]['value'])->toBe($task->name);
+        expect($rows)->toBeEmpty();
     });
 
     test('TaskOverdue reports the oldest deadline and how late it is', function (): void {
@@ -144,7 +144,7 @@ describe('act-tier context rows', function (): void {
         expect(collect($rows)->pluck('value'))->toContain(now()->subDays(10)->format('Y-m-d'));
     });
 
-    test('MeetingReminder lists institution, time and format', function (): void {
+    test('MeetingReminder lists time and format', function (): void {
         $institution = Institution::factory()->create();
         $meeting = Meeting::factory()->create(['type' => 'remote']);
         $meeting->institutions()->attach($institution);
@@ -152,7 +152,8 @@ describe('act-tier context rows', function (): void {
         $rows = new MeetingReminderNotification($meeting->refresh(), 24)->context($this->user);
 
         expectContextRows($rows);
-        expect(collect($rows)->pluck('value'))->toContain($institution->name, $meeting->start_time->format('Y-m-d H:i'));
+        expect(collect($rows)->pluck('value'))->toContain($meeting->start_time->format('Y-m-d H:i'))
+            ->not->toContain($institution->name);
     });
 
     test('InstitutionActivity lists the institution and days without activity', function (): void {
@@ -169,11 +170,11 @@ describe('act-tier context rows', function (): void {
     test('ApprovalRequested only shows the step after the first', function (): void {
         $task = Task::factory()->create();
 
-        expect(new ApprovalRequestedNotification($task, 1)->context($this->user))->toHaveCount(1)
-            ->and(new ApprovalRequestedNotification($task, 2)->context($this->user))->toHaveCount(2);
+        expect(new ApprovalRequestedNotification($task, 1)->context($this->user))->toBeEmpty()
+            ->and(new ApprovalRequestedNotification($task, 2)->context($this->user))->toHaveCount(1);
     });
 
-    test('AssignedToResource lists the object and who assigned it', function (): void {
+    test('AssignedToResource omits facts already in its title and body', function (): void {
         $notification = new AssignedToResourceNotification(
             ['modelClass' => 'User', 'name' => 'Ona Onaitė'],
             ['modelClass' => 'Reservation', 'name' => 'Salė 101', 'url' => '/r/1'],
@@ -181,29 +182,27 @@ describe('act-tier context rows', function (): void {
 
         $rows = $notification->context($this->user);
 
-        expectContextRows($rows);
-        expect(collect($rows)->pluck('value')->all())->toBe(['Salė 101', 'Ona Onaitė']);
+        expect($rows)->toBeEmpty();
     });
 
-    test('DutyExpiring lists the duty, institution and end date', function (): void {
+    test('DutyExpiring only lists the institution', function (): void {
         $duty = Duty::factory()->create();
         $dutiable = Dutiable::factory()->create(['duty_id' => $duty->id, 'end_date' => now()->addDays(30)]);
 
         $rows = new DutyExpiringNotification($duty, $dutiable, 30)->context($this->user);
 
         expectContextRows($rows);
-        expect(collect($rows)->pluck('value'))->toContain($duty->name, now()->addDays(30)->format('Y-m-d'));
+        expect(collect($rows)->pluck('value')->all())->toBe([$duty->institution->name]);
     });
 
-    test('CommentPosted lists the object and the author', function (): void {
+    test('CommentPosted does not repeat the object and author in context', function (): void {
         $notification = new CommentPostedNotification(
             'Sveiki',
             ['modelClass' => 'Task', 'name' => 'Užduotis X', 'url' => '/t/1', 'id' => '1'],
             ['modelClass' => 'User', 'name' => 'Jonas Jonaitis'],
         );
 
-        expect(collect($notification->context($this->user))->pluck('value')->all())
-            ->toBe(['Užduotis X', 'Jonas Jonaitis']);
+        expect($notification->context($this->user))->toBe([]);
     });
 });
 

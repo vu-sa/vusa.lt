@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Contracts\Approvable;
 use App\Enums\NotificationType;
+use App\Notifications\Concerns\NamesObjectInTitle;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -11,6 +12,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ApprovalRequestedNotification extends BaseNotification
 {
+    use NamesObjectInTitle;
+
     public function type(): NotificationType
     {
         return NotificationType::ApprovalRequested;
@@ -20,18 +23,12 @@ class ApprovalRequestedNotification extends BaseNotification
 
     public function title(object $notifiable): string
     {
-        return __('notifications.approval_requested_title');
+        return __('notifications.approval_requested_title', ['item' => $this->object()['name']]);
     }
 
     public function body(object $notifiable): string
     {
-        $displayName = $this->approvable instanceof Approvable
-            ? $this->approvable->getApprovalDisplayName()
-            : class_basename($this->approvable);
-
-        return __('notifications.approval_requested_body', [
-            'item' => $displayName,
-        ]);
+        return __('notifications.approval_requested_body');
     }
 
     public function url(): string
@@ -71,7 +68,6 @@ class ApprovalRequestedNotification extends BaseNotification
     public function context(object $notifiable): array
     {
         return $this->contextRows([
-            'object' => $this->object()['name'] ?? null,
             'step' => $this->step > 1 ? $this->step : null,
         ]);
     }

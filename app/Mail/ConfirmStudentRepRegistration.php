@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Str;
 
 class ConfirmStudentRepRegistration extends Mailable
 {
@@ -46,7 +47,7 @@ class ConfirmStudentRepRegistration extends Mailable
      */
     public function build()
     {
-        $mail = $this->subject('📝 '.__('mail.student_rep.confirm.title', ['institution' => $this->institution->maybe_short_name]))
+        $mail = $this->subject(Str::limit(__('mail.student_rep.confirm.title', ['institution' => $this->institution->maybe_short_name]), 59, '…'))
             ->markdown('emails.studentRepRegistration.confirm');
 
         if ($this->contactEmail) {

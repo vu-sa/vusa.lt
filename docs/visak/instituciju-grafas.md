@@ -1,7 +1,6 @@
 ---
 doc_status: reviewed
 title: Institucijų grafas
-area: institutionGraph
 last_reviewed: 2026-10-07
 tests:
   - tests/Feature/Admin/Core/DashboardControllerTest.php

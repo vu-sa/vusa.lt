@@ -14,8 +14,6 @@ tests:
   - tests/Browser/ContentEditorImageSaveTest.php
   - tests/Feature/Admin/Content/PageControllerTest.php
 title: Puslapiai
-area: pages
-models: [Page, Tag]
 ---
 
 # Puslapiai

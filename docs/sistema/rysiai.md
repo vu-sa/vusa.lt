@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Ryšiai
-area: institutionLinks
-models: [InstitutionLink, InstitutionTypeLink]
 last_reviewed: 2026-10-18
 tests:
   - tests/Feature/Services/InstitutionRelationServiceTest.php

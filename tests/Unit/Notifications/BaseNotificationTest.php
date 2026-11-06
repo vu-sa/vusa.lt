@@ -54,8 +54,8 @@ describe('toArray method', function (): void {
 
         $data = $notification->toArray($user);
 
-        expect($data)->toHaveKeys(['category', 'modelClass', 'title', 'body', 'url', 'icon', 'color', 'actions', 'subject', 'object'])
-            ->toMatchArray(['category' => NotificationCategory::Comment->value, 'subject' => ['modelClass' => 'User', 'name' => 'John Doe', 'image' => '/photo.jpg'], 'object' => ['modelClass' => 'Task', 'name' => 'Test Task', 'url' => '/tasks/1', 'id' => '1']]);
+        expect($data)->toHaveKeys(['category', 'modelClass', 'title', 'body', 'excerpt', 'url', 'icon', 'color', 'actions', 'subject', 'object'])
+            ->toMatchArray(['excerpt' => 'Test comment', 'category' => NotificationCategory::Comment->value, 'subject' => ['modelClass' => 'User', 'name' => 'John Doe', 'image' => '/photo.jpg'], 'object' => ['modelClass' => 'Task', 'name' => 'Test Task', 'url' => '/tasks/1', 'id' => '1']]);
     });
 
     test('toArray category is string value not enum', function (): void {
@@ -86,10 +86,10 @@ describe('toDigestItem method', function (): void {
 
         $digestItem = $notification->toDigestItem($user);
 
-        expect($digestItem)->toHaveKeys(['category', 'title', 'body', 'url', 'icon'])->not->toHaveKey('actions')->not->toHaveKey('subject')->not->toHaveKey('object');
+        expect($digestItem)->toHaveKeys(['category', 'title', 'body', 'excerpt', 'url', 'icon'])->not->toHaveKey('actions')->not->toHaveKey('subject')->not->toHaveKey('object');
     });
 
-    test('toDigestItem strips HTML from body', function (): void {
+    test('toDigestItem keeps comment text in the excerpt', function (): void {
         $user = $this->createUserWithPreferences();
 
         $notification = new CommentPostedNotification(
@@ -100,7 +100,7 @@ describe('toDigestItem method', function (): void {
 
         $digestItem = $notification->toDigestItem($user);
 
-        expect($digestItem['body'])->not->toContain('<p>')->not->toContain('<strong>')->not->toContain('<em>');
+        expect($digestItem['excerpt'])->toBe('Bold and italic text');
     });
 });
 

@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Ištekliai
-area: resources
-models: [Resource]
 last_reviewed: 2026-10-31
 tests:
   - tests/Feature/Admin/Reservations/ResourceControllerTest.php

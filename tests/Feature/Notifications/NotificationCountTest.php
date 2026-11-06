@@ -230,8 +230,8 @@ test('one request batches resources per reservation and excludes its actor', fun
 
     Notification::assertSentToTimes($recipient, ReservationStatusChangedNotification::class, 1);
     Notification::assertSentTo($recipient, ReservationStatusChangedNotification::class, function ($notification) use ($recipient, $first, $second, $reservation): bool {
-        expect($notification->title($recipient))->toContain('2')
-            ->and($notification->body($recipient))->toContain($reservation->name, $first->resource->name, $second->resource->name)
+        expect($notification->title($recipient))->toContain($reservation->name)
+            ->and($notification->body($recipient))->toContain($first->resource->name, $second->resource->name)
             ->and(substr_count($notification->body($recipient), __('notifications.reservation_batch_hint_reserved', ['date' => $first->start_time->format('Y-m-d H:i')])))->toBe(1);
 
         return true;
@@ -268,8 +268,8 @@ test('multiple transitions of one resource in a request keep only its final stat
     expect($resource->fresh()->state->getValue())->toBe('returned');
 
     Notification::assertSentToTimes($recipient, ReservationStatusChangedNotification::class, 1);
-    Notification::assertSentTo($recipient, ReservationStatusChangedNotification::class, function ($notification) use ($recipient): bool {
-        expect($notification->title($recipient))->toBe(__('notifications.reservation_status_changed_title', ['status' => __('state.status.returned')]))
+    Notification::assertSentTo($recipient, ReservationStatusChangedNotification::class, function ($notification) use ($recipient, $resource): bool {
+        expect($notification->title($recipient))->toBe(__('notifications.reservation_status_changed_title', ['reservation' => $resource->reservation->name]))
             ->and($notification->icon())->toBe('↩️');
 
         return true;
@@ -306,14 +306,14 @@ test('a single resource retains its full notification content', function (bool $
         ['resource' => $item, 'oldState' => 'created', 'newState' => 'reserved'],
     ], $actor);
     $expectedBody = __($hasActor ? 'notifications.reservation_status_changed_body_with_user' : 'notifications.reservation_status_changed_body', [
-        'reservation' => $reservation->name, 'resource' => $resource->name,
+        'resource' => $resource->name,
         'status' => __('state.status.reserved'), 'user' => $actor?->name,
     ]).' '.__('notifications.reservation_task_hint_pickup', [
-        'resource' => $resource->name, 'date' => $item->start_time->format('Y-m-d H:i'),
+        'date' => $item->start_time->format('Y-m-d H:i'),
     ]);
     $action = ['label' => __('notifications.action_view_reservation'), 'url' => route('reservations.show', $reservation)];
 
-    expect($notification->title($recipient))->toBe(__('notifications.reservation_status_changed_title', ['status' => __('state.status.reserved')]))
+    expect($notification->title($recipient))->toBe(__('notifications.reservation_status_changed_title', ['reservation' => $reservation->name]))
         ->and($notification->body($recipient))->toBe($expectedBody)
         ->and($notification->icon())->toBe('✅')
         ->and($notification->context($recipient))->toBe([])

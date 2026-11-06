@@ -1,7 +1,6 @@
 ---
 doc_status: reviewed
 title: Platforma
-area: actionWindow
 last_reviewed: 2026-11-03
 tests:
   - tests/Feature/Api/Admin/RecordAbilitiesApiControllerTest.php

@@ -143,7 +143,7 @@ describe('TaskReminderNotification', function (): void {
         expect($notification->category())->toBe(NotificationCategory::Task);
     });
 
-    test('returns correct title with days left', function (): void {
+    test('returns a reminder title', function (): void {
         $task = Task::factory()->create();
         $user = User::factory()->create();
         $notification = new TaskReminderNotification($task, 3);
@@ -151,7 +151,7 @@ describe('TaskReminderNotification', function (): void {
         expect($notification->title($user))->toBeString();
     });
 
-    test('body mentions task name and days left', function (): void {
+    test('body reports days left', function (): void {
         $task = Task::factory()->create(['name' => 'Important Task']);
         $user = User::factory()->create();
         $notification = new TaskReminderNotification($task, 3);
@@ -272,7 +272,7 @@ describe('DutyExpiringNotification', function (): void {
         expect($notification->category())->toBe(NotificationCategory::Duty);
     });
 
-    test('returns correct title with days', function (): void {
+    test('returns a duty title', function (): void {
         $duty = Duty::factory()->create();
         $dutiable = Dutiable::factory()->create([
             'duty_id' => $duty->id,
@@ -284,7 +284,7 @@ describe('DutyExpiringNotification', function (): void {
         expect($notification->title($user))->toBeString();
     });
 
-    test('body mentions duty name and date', function (): void {
+    test('body reports the final day in office', function (): void {
         $duty = Duty::factory()->create(['name' => 'Test Duty']);
         $dutiable = Dutiable::factory()->create([
             'duty_id' => $duty->id,
@@ -449,7 +449,7 @@ describe('MemberRegistrationNotification', function (): void {
         expect($notification->title($user))->toBeString();
     });
 
-    test('body mentions member name and institution', function (): void {
+    test('body names the institution and next steps', function (): void {
         $institution = Institution::factory()->create();
         $user = User::factory()->create();
         $notification = new MemberRegistrationNotification(
@@ -526,7 +526,7 @@ describe('StudentRepRegistrationNotification', function (): void {
         expect($notification->title($user))->toBeString();
     });
 
-    test('body mentions rep name and institution', function (): void {
+    test('body names the institution and next steps', function (): void {
         $institution = Institution::factory()->create();
         $user = User::factory()->create();
         $notification = new StudentRepRegistrationNotification(
@@ -692,7 +692,7 @@ describe('AssignedToResourceNotification', function (): void {
         expect($notification->title($user))->toBeString();
     });
 
-    test('body mentions assigner and resource', function (): void {
+    test('body names the assigner', function (): void {
         $assigner = ['modelClass' => 'User', 'name' => 'Assigner Name'];
         $resource = ['modelClass' => 'Task', 'name' => 'Task Name', 'url' => '/test'];
         $user = User::factory()->create();

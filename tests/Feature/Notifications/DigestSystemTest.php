@@ -117,7 +117,8 @@ describe('digest queuing via QueueNotificationForDigest listener', function (): 
 
         expect($item->category)->toBe('comment')
             ->and($item->notification_class)->toBe(CommentPostedNotification::class)
-            ->and($item->data)->toHaveKeys(['title', 'body', 'url', 'icon']);
+            ->and($item->data)->toHaveKeys(['title', 'body', 'excerpt', 'url', 'icon'])
+            ->and($item->data['excerpt'])->toBe('Test comment with HTML');
     });
 });
 

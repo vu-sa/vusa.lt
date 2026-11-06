@@ -3,7 +3,6 @@ doc_status: reviewed
 last_reviewed: 2026-09-30
 # https://vitepress.dev/reference/default-theme-home-page
 layout: home
-coverage: ignore
 
 hero:
   name: "vusa.lt gidas"

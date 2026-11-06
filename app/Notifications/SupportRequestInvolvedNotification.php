@@ -5,12 +5,15 @@ namespace App\Notifications;
 use App\Enums\NotificationType;
 use App\Models\SupportRequest;
 use App\Models\User;
+use App\Notifications\Concerns\NamesObjectInTitle;
 
 /**
  * Someone the reporter or a manager added because the problem concerns them too.
  */
 class SupportRequestInvolvedNotification extends BaseNotification
 {
+    use NamesObjectInTitle;
+
     public function __construct(public SupportRequest $supportRequest, public User $actor) {}
 
     public function type(): NotificationType
@@ -27,7 +30,6 @@ class SupportRequestInvolvedNotification extends BaseNotification
     {
         return __('notifications.support_request_involved_body', [
             'user' => $this->actor->name,
-            'title' => $this->supportRequest->title,
         ]);
     }
 

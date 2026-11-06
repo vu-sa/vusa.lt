@@ -5,9 +5,12 @@ namespace App\Notifications;
 use App\Enums\NotificationType;
 use App\Models\Pivots\ReservationResource;
 use App\Models\User;
+use App\Notifications\Concerns\NamesObjectInTitle;
 
 class ReservationStatusChangedNotification extends BaseNotification
 {
+    use NamesObjectInTitle;
+
     public function type(): NotificationType
     {
         return NotificationType::ReservationStatusChanged;
@@ -30,21 +33,15 @@ class ReservationStatusChangedNotification extends BaseNotification
 
     public function title(object $notifiable): string
     {
-        if (count($this->changes) > 1) {
-            return trans_choice('notifications.reservation_status_batch_title', count($this->changes), ['count' => count($this->changes)]);
-        }
-
         return __('notifications.reservation_status_changed_title', [
-            'status' => $this->getStateLabel($this->newState),
+            'reservation' => $this->reservationResource->reservation->name ?? __('Rezervacija'),
         ]);
     }
 
     public function body(object $notifiable): string
     {
-        $reservationName = $this->reservationResource->reservation->name ?? __('Rezervacija');
-
         if (count($this->changes) > 1) {
-            return $this->batchBody($reservationName);
+            return $this->batchBody();
         }
 
         $resourceName = $this->reservationResource->resource->name ?? __('Resursas');
@@ -52,20 +49,18 @@ class ReservationStatusChangedNotification extends BaseNotification
         $baseBody = '';
         if ($this->changedBy) {
             $baseBody = __('notifications.reservation_status_changed_body_with_user', [
-                'reservation' => $reservationName,
                 'resource' => $resourceName,
                 'status' => $this->getStateLabel($this->newState),
                 'user' => $this->changedBy->name,
             ]);
         } else {
             $baseBody = __('notifications.reservation_status_changed_body', [
-                'reservation' => $reservationName,
                 'resource' => $resourceName,
                 'status' => $this->getStateLabel($this->newState),
             ]);
         }
 
-        $taskHint = $this->getTaskHint($resourceName);
+        $taskHint = $this->getTaskHint();
         if ($taskHint) {
             $baseBody .= ' '.$taskHint;
         }
@@ -73,11 +68,11 @@ class ReservationStatusChangedNotification extends BaseNotification
         return $baseBody;
     }
 
-    private function batchBody(string $reservationName): string
+    private function batchBody(): string
     {
         $pairs = collect($this->changes)->map(fn (array $change): string => ($change['resource']->resource->name ?? __('Resursas')).' – '.$this->getStateLabel($change['newState']))->implode('; ');
         $body = __($this->changedBy ? 'notifications.reservation_status_batch_body_with_user' : 'notifications.reservation_status_batch_body', [
-            'reservation' => $reservationName, 'changes' => $pairs, 'user' => $this->changedBy?->name,
+            'changes' => $pairs, 'user' => $this->changedBy?->name,
         ]);
         foreach (['reserved', 'lent'] as $state) {
             $change = collect($this->changes)->firstWhere('newState', $state);
@@ -96,15 +91,13 @@ class ReservationStatusChangedNotification extends BaseNotification
     /**
      * Get a task hint for states that automatically create tasks.
      */
-    protected function getTaskHint(string $resourceName): ?string
+    protected function getTaskHint(): ?string
     {
         return match ($this->newState) {
             'reserved' => __('notifications.reservation_task_hint_pickup', [
-                'resource' => $resourceName,
                 'date' => $this->reservationResource->start_time?->format('Y-m-d H:i'),
             ]),
             'lent' => __('notifications.reservation_task_hint_return', [
-                'resource' => $resourceName,
                 'date' => $this->reservationResource->end_time?->format('Y-m-d H:i'),
             ]),
             default => null,

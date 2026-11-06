@@ -2,7 +2,6 @@
 doc_status: reviewed
 last_reviewed: 2026-10-25
 title: Rezervacijos
-coverage: ignore
 ---
 
 # Rezervacijos

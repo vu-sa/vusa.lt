@@ -70,8 +70,10 @@ describe('ConfirmMemberRegistration Mail', function (): void {
 
         $builtMail = $mail->build();
 
-        expect($builtMail->subject)->toContain('📝')
+        expect($builtMail->subject)->toStartWith('Gavome tavo registraciją: ')
+            ->not->toContain('📝')
             ->toContain($this->institution->maybe_short_name)
+            ->and(mb_strlen($builtMail->subject))->toBeLessThanOrEqual(60)
             ->and($builtMail->replyTo[0]['address'])->toBe($this->duty->email)
             ->and($builtMail->markdown)->toBe('emails.memberRegistration.confirm');
     });

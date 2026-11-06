@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Pareigybės
-area: duties
-models: [Duty, Role, Tenant, Type, Institution, ResponsibilityGrant]
 last_reviewed: 2026-11-01
 tests:
   - tests/Browser/CollectionTrashRefreshTest.php

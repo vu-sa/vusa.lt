@@ -30,13 +30,11 @@ class MeetingAgendaCompletedNotification extends BaseNotification
 
     public function title(object $notifiable): string
     {
-        return __('notifications.meeting_agenda_completed_title');
+        return __('notifications.meeting_agenda_completed_title', ['institution' => $this->object()['name']]);
     }
 
     public function body(object $notifiable): string
     {
-        $institutionName = $this->meeting->institutions->first()->name ?? __('Nežinoma institucija');
-
         $handler = app(AgendaCompletionTaskHandler::class);
         $typeCounts = $handler->getAgendaItemTypeCounts($this->meeting);
 
@@ -45,13 +43,11 @@ class MeetingAgendaCompletedNotification extends BaseNotification
 
         if ($this->completedBy) {
             $body = __('notifications.meeting_agenda_completed_body_with_user', [
-                'institution' => $institutionName,
                 'count' => $totalCount,
                 'user' => $this->completedBy->name,
             ]);
         } else {
             $body = __('notifications.meeting_agenda_completed_body', [
-                'institution' => $institutionName,
                 'count' => $totalCount,
             ]);
         }

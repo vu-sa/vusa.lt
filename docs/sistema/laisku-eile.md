@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Laiškų eilė
-area: mailQueue
-models: [NotificationDigestQueue]
 last_reviewed: 2026-10-31
 tests:
   - tests/Feature/Notifications/MailQueueControllerTest.php

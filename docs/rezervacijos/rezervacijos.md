@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Rezervacijos
-area: reservations
-models: [Reservation, ReservationResource, ReservationDraft, Approval]
 last_reviewed: 2026-10-25
 tests:
   - tests/Feature/Responsibilities/ReservationHandlingTest.php

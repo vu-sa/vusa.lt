@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Problemos
-area: problems
-models: [Problem, ProblemCategory]
 last_reviewed: 2026-11-01
 tests:
   - tests/Feature/Admin/Problems/ProblemControllerTest.php

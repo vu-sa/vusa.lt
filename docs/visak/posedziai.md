@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Posėdžiai
-area: meetings
-models: [Meeting]
 last_reviewed: 2026-11-03
 tests:
   - tests/Feature/Meetings/MeetingKindTest.php

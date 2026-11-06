@@ -1,7 +1,6 @@
 ---
 doc_status: reviewed
 title: Paskyra ir prieiga
-area: profile
 last_reviewed: 2026-11-01
 tests:
   - resources/js/Components/Institutions/__tests__/UserActivityRequestHistory.component.test.ts

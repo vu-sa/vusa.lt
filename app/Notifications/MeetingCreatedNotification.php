@@ -18,23 +18,18 @@ class MeetingCreatedNotification extends BaseNotification
         return $this->viaFollow ? NotificationType::FollowedInstitutionActivity : NotificationType::MeetingCreated;
     }
 
-    /**
-     * Create a new notification instance.
-     */
     public function __construct(protected Meeting $meeting) {}
 
     public function title(object $notifiable): string
     {
-        return __('notifications.meeting_created_title');
+        return __('notifications.meeting_created_title', ['institution' => $this->object()['name']]);
     }
 
     public function body(object $notifiable): string
     {
-        $institutionName = $this->meeting->institutions->first()->name ?? __('Nežinoma institucija');
         $meetingDate = $this->meeting->start_time->format('Y-m-d H:i');
 
         return __('notifications.meeting_created_body', [
-            'institution' => $institutionName,
             'date' => $meetingDate,
         ]);
     }

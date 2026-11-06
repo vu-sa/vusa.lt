@@ -38,7 +38,7 @@ export default defineConfig({
   outDir: '../public/gidas',
   cleanUrls: true,
 
-  // The generated coverage dashboard is read in-repo, never published; pdf/ holds the PDF build's sources.
+  // maintainers/ holds author templates read in-repo; pdf/ holds the PDF build's sources.
   srcExclude: ['maintainers/**', 'pdf/**'],
 
   // Global search configuration

@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Konferencijos
-area: mailingLists
-models: [MailingList]
 last_reviewed: 2026-10-27
 tests:
   - tests/Feature/Admin/MailingLists/ResolveMailingListMembersTest.php

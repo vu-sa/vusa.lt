@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Navigacija
-area: navigation
-models: [Navigation]
 last_reviewed: 2026-10-15
 tests:
   - tests/Feature/Admin/Navigation/NavigationControllerTest.php

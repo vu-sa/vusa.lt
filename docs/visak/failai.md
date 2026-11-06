@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Įrašų failai
-area: fileableFiles
-models: [FileableFile]
 last_reviewed: 2026-11-01
 tests:
   - tests/Feature/Admin/FileableFileControllerTest.php

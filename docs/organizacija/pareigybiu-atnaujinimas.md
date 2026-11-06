@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Pareigybių atnaujinimas
-area: duties
-models: [Duty, User, Dutiable]
 last_reviewed: 2026-10-25
 tests:
   - resources/js/Components/DutyUserWizard/__tests__/DutyReferenceCounts.component.test.ts

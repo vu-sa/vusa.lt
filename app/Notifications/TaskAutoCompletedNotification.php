@@ -5,6 +5,7 @@ namespace App\Notifications;
 use App\Enums\NotificationType;
 use App\Models\Task;
 use App\Models\User;
+use App\Notifications\Concerns\NamesObjectInTitle;
 
 /**
  * Notification sent to task assignees when a task is auto-completed by the system.
@@ -14,6 +15,8 @@ use App\Models\User;
  */
 class TaskAutoCompletedNotification extends BaseNotification
 {
+    use NamesObjectInTitle;
+
     public function type(): NotificationType
     {
         return NotificationType::TaskAutoCompleted;
@@ -29,28 +32,25 @@ class TaskAutoCompletedNotification extends BaseNotification
 
     public function title(object $notifiable): string
     {
-        return __('notifications.task_auto_completed_title');
+        return __('notifications.task_auto_completed_title', ['task' => $this->task->name]);
     }
 
     public function body(object $notifiable): string
     {
         if ($this->completedBy) {
             return __('notifications.task_auto_completed_body_with_user', [
-                'task' => $this->task->name,
                 'reason' => $this->completionReason,
                 'user' => $this->completedBy->name,
             ]);
         }
 
         return __('notifications.task_auto_completed_body', [
-            'task' => $this->task->name,
             'reason' => $this->completionReason,
         ]);
     }
 
     public function url(): string
     {
-        // Link to the taskable if available, otherwise to tasks list
         if ($this->task->taskable_type && $this->task->taskable_id) {
             return $this->getTaskableUrl();
         }

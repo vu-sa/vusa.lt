@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Dokumentai
-area: documents
-models: [Document]
 last_reviewed: 2026-11-01
 tests:
   - tests/Feature/Admin/Resources/DocumentControllerTest.php

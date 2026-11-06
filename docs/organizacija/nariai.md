@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Nariai
-area: users
-models: [User]
 last_reviewed: 2026-10-26
 tests:
   - tests/Feature/Admin/Management/UserActivityRequestsTest.php
