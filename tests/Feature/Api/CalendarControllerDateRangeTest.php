@@ -193,4 +193,11 @@ describe('calendar API date range filtering', function (): void {
         expect($eventIds)->toContain($thisTenantsEvent->id)
             ->toContain($otherTenantsEvent->id);
     });
+
+    test('rejects a date that is not Y-m-d instead of failing to parse it', function (): void {
+        $this->getJson(route('api.v1.tenants.calendar.index', [
+            'tenant' => $this->tenant->alias,
+            'date_from' => 'not-a-date',
+        ]))->assertUnprocessable()->assertJsonValidationErrors('date_from');
+    });
 });

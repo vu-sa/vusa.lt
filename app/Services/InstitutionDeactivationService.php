@@ -2,15 +2,12 @@
 
 namespace App\Services;
 
-use App\Events\DutiableChanged;
-use App\Listeners\HandleDutiableChange;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class InstitutionDeactivationService
@@ -64,12 +61,6 @@ class InstitutionDeactivationService
             today()->subDay(),
             institutionDeactivation: true,
         );
-
-        DB::afterCommit(function () use ($terms): void {
-            foreach ($terms->unique('dutiable_id') as $term) {
-                app(HandleDutiableChange::class)->handle(new DutiableChanged($term));
-            }
-        });
 
         return $terms->modelKeys();
     }

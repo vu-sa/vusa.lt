@@ -169,7 +169,7 @@ import { Label } from '@/Components/ui/label';
 import { NativeSelect } from '@/Components/ui/native-select';
 import SingleSelect from '@/Components/ui/single-select/SingleSelect.vue';
 import { Textarea } from '@/Components/ui/textarea';
-import { goalStatuses, statusRoleClasses } from '@/Constants/statuses';
+import { goalStatuses, statusRoleClasses } from '@/Constants/statusIcons';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { GoalStatus, ModelEnum } from '@/Types/enums';
 

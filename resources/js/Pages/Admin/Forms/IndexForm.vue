@@ -10,12 +10,12 @@
     :available-views="['table', 'rows']"
     :item-key="formKey"
     :trash="{ count: deletedCount ?? 0, active: isDeleted }"
-    @row-action="(item, key) => selectRowAction(key, item)"
     :columns
     table-fixed
     actions-width="w-44"
     table-min-width="min-w-[81rem]"
     :search-placeholder="$t('Ieškoti formų…')"
+    @row-action="(item, key) => selectRowAction(key, item)"
   >
     <template #actions>
       <Button v-if="can.create && !isDeleted" as-child variant="brand" size="lg">

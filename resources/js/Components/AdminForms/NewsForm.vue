@@ -271,7 +271,7 @@ import { Input } from '@/Components/ui/input';
 import { OrderedListInput } from '@/Components/ui/ordered-list-input';
 import { ImageUpload } from '@/Components/ui/upload';
 import type { ImageData } from '@/Types/media';
-import { contentStatuses } from '@/Constants/statuses';
+import { contentStatuses } from '@/Constants/statusIcons';
 import { resolveTenantPublicHost, resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import { usePermalinkPreview } from '@/Composables/usePermalinkPreview';
 import { newsTemplate } from '@/Types/formTemplates';

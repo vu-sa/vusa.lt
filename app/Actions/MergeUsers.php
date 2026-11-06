@@ -2,7 +2,6 @@
 
 namespace App\Actions;
 
-use App\Listeners\HandleDutiableChange;
 use App\Models\Comment;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
@@ -42,6 +41,7 @@ class MergeUsers
         ['support_requests', 'assigned_to'],
         ['support_requests', 'created_by'],
         ['text_box_submissions', 'user_id'],
+        ['user_microsoft_identities', 'user_id'],
     ];
 
     /**
@@ -120,7 +120,7 @@ class MergeUsers
 
             // Dutiables move by query, so no DutiableChanged fires for the kept user.
             DB::afterCommit(function () use ($keptUser): void {
-                HandleDutiableChange::forgetUserAuthority((string) $keptUser->id);
+                ForgetUserAccess::execute([$keptUser->id]);
                 $fresh = $keptUser->fresh();
                 $fresh?->searchable();
                 if ($fresh !== null) {

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetUserTenantShortnames;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\EditAgendaItemRequest;
 use App\Http\Requests\ReorderAgendaItemsRequest;
 use App\Http\Requests\StoreAgendaItemsRequest;
 use App\Http\Requests\UpdateAgendaItemRequest;
@@ -201,15 +202,11 @@ class AgendaItemController extends AdminController
     /**
      * The old editor URL, kept for links in sent emails and notifications.
      */
-    public function edit(Request $request, AgendaItem $agendaItem): RedirectResponse
+    public function edit(EditAgendaItemRequest $request, AgendaItem $agendaItem): RedirectResponse
     {
-        abort_if($agendaItem->meeting === null, 404);
-
-        $this->handleAuthorization('viewSummary', $agendaItem);
-
         return redirect()->route('agendaItems.show', [
             'agendaItem' => $agendaItem,
-            ...$request->only(['focus', 'action']),
+            ...$request->safe()->only(['focus', 'action']),
         ]);
     }
 

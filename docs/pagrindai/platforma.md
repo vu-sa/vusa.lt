@@ -1,10 +1,13 @@
 ---
 doc_status: reviewed
 title: Platforma
-area: actionWindow
-last_reviewed: 2026-11-01
+last_reviewed: 2026-11-06
 tests:
+  - resources/js/Composables/__tests__/useAdminSearch.test.ts
+  - resources/js/Features/Admin/AdminSearch/Composables/__tests__/useAdminCollectionSearch.initial.test.ts
   - tests/Feature/Api/Admin/RecordAbilitiesApiControllerTest.php
+  - resources/js/Utils/__tests__/dateTime.test.ts
+  - resources/js/Utils/__tests__/formatMonthAbbr.test.ts
   - resources/js/Composables/__tests__/useRowAbilities.test.ts
   - resources/js/Pages/Admin/Content/__tests__/RecordAbilityRowActions.component.test.ts
   - resources/js/Components/Collection/__tests__/CollectionRowActions.component.test.ts
@@ -123,6 +126,8 @@ Pirmiausia rodomi atitikmenys paties įrašo varde ar pavadinime. Ieškant žmog
 
 ### Grįžti prie sąrašo {#sarasai}
 
+Atvėrus sąrašo nuorodą su paieška ar filtrais, jie taikomi nuo pirmųjų rezultatų ir filtrų skaičių. Paieškos langas, sąrašai ir įrašų pasirinkimo langai dalijasi trumpa laukimo pauze, jei ieškoma per dažnai.
+
 Sąrašo paieška ir filtrai veikia tik tos rūšies įrašams. Pakeitus filtrus ar rikiavimą ir
 atvėrus įrašą, grįžus atgal sąrašas išlaiko pasirinktą būseną. Mygtukas **Išvalyti filtrus**
 praverčia, jei tikėtinas įrašas nerodomas. Prieš kartojant kūrimą verta patikrinti, ar įrašas jau nėra sukurtas.
@@ -197,6 +202,17 @@ VU SA platforma yra dvikalbė (lietuvių ir anglų k.):
 - **Formose su verčiamais laukais** kalbas perjungi LT ir EN valdikliu. Privalomos kalbos ir laukai priklauso nuo įrašo rūšies – vadovaujamasi forma bei jos gidu.
   Kalba perjungiama visai formai, todėl prie laukų pavadinimų kalba nerašoma. Privalomi laukai pažymėti žvaigždute (*), o formos pradžioje esanti pastaba primena, kad kitus galima praleisti.
 - **Verčiamų laukų peržiūroje** rodoma pasirinkta kalba; trūkstamas vertimas gali būti pakeičiamas atsargine kalba. Puslapiai ir naujienos turi [atskirus susietus įrašus kiekvienai kalbai](/svetaine/puslapiai#kalbu-versijos), todėl jų vertimas savaime nesukuriamas.
+
+### Datos ir laikas {#datos}
+
+<ChangelogNote date="2026-11-03" title="Vienodos datos">
+
+Datos ir laikas platformoje ir vusa.lt rodomi Vilniaus laiku, nepriklausomai nuo įrenginio laiko
+juostos. Netolimos datos rašomos trumpai – „prieš 2 val.“, „vakar“, „po 3 d.“, o senesnės nei
+savaitė rodomos kaip data (2026-09-19). Užduočių terminai skaičiuojami kalendorinėmis dienomis:
+„šiandien“, „rytoj“, „po 3 d.“.
+
+</ChangelogNote>
 
 ## Spalvos, ženklai ir formos {#spalvos-zenklai-ir-formos}
 

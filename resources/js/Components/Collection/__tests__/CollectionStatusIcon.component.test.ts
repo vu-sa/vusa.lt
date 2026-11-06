@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import CollectionStatusIcon from '../CollectionStatusIcon.vue';
 import CollectionRow from '../CollectionRow.vue';
 
-import { contentStatuses } from '@/Constants/statuses';
+import { contentStatuses } from '@/Constants/statusIcons';
 
 describe('compact collection row status', () => {
   it('shows an accessible green eye without badge chrome for published content', async () => {

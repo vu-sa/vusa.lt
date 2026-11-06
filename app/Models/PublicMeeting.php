@@ -43,6 +43,7 @@ use Laravel\Scout\Searchable;
  * @property-read Collection<int, FileableFile> $fileableFiles
  * @property-read bool $has_protocol
  * @property-read bool $has_report
+ * @property-read array $outcome_summary
  * @property-read bool $requires_student_perspective
  * @property-read array $translatable_columns_from
  * @property-read mixed $has_calendar_event
@@ -94,7 +95,9 @@ class PublicMeeting extends Meeting
     #[\Override]
     public function institutions(): BelongsToMany
     {
-        return $this->belongsToMany(Institution::class, 'institution_meeting', 'meeting_id', 'institution_id');
+        return $this->belongsToMany(Institution::class, 'institution_meeting', 'meeting_id', 'institution_id')
+            ->orderByPivot('created_at')
+            ->orderBy('institutions.id');
     }
 
     /**

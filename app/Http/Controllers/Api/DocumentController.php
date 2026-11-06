@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Requests\Api\IndexPublicDocumentsRequest;
 use App\Http\Requests\DocumentRecommendationSearchRequest;
 use App\Models\Document;
 use App\Services\Typesense\DocumentRecommendations;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class DocumentController extends ApiController
 {
@@ -18,21 +18,19 @@ class DocumentController extends ApiController
     /**
      * Search documents (public endpoint).
      */
-    public function index(Request $request): JsonResponse
+    public function index(IndexPublicDocumentsRequest $request): JsonResponse
     {
         $query = Document::query()
             ->published()
             ->select(['id', 'title', 'anonymous_url']);
 
-        // Search functionality
-        if ($request->has('search') && $request->search) {
-            $search = $request->search;
+        $search = $request->validated('search');
+
+        if (filled($search)) {
             $query->where('title', 'LIKE', "%{$search}%");
         }
 
-        // Limit results to prevent memory issues
-        $limit = min($request->input('limit', 20), 50); // Max 50 results
-        $documents = $query->limit($limit)->get();
+        $documents = $query->limit($request->limit())->get();
 
         return $this->jsonSuccess($documents);
     }

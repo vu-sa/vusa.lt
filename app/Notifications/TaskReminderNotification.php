@@ -4,32 +4,31 @@ namespace App\Notifications;
 
 use App\Enums\NotificationType;
 use App\Models\Task;
+use App\Notifications\Concerns\NamesObjectInTitle;
 
 /**
  * Notification sent to remind users about upcoming task deadlines.
  */
 class TaskReminderNotification extends BaseNotification
 {
+    use NamesObjectInTitle;
+
     public function type(): NotificationType
     {
         return NotificationType::TaskReminder;
     }
 
-    /**
-     * Create a new notification instance.
-     */
     public function __construct(protected Task $task, protected int $daysLeft) {}
 
     public function title(object $notifiable): string
     {
-        return __('notifications.task_reminder_title', ['days' => $this->daysLeft]);
+        return __('notifications.task_reminder_title', ['task' => $this->task->name]);
     }
 
     public function body(object $notifiable): string
     {
         return __('notifications.task_reminder_body', [
             'days' => $this->daysLeft,
-            'task' => $this->task->name,
         ]);
     }
 
@@ -63,7 +62,6 @@ class TaskReminderNotification extends BaseNotification
     public function context(object $notifiable): array
     {
         return $this->contextRows([
-            'task' => $this->task->name,
             'deadline' => $this->task->due_date?->format('Y-m-d'),
         ]);
     }

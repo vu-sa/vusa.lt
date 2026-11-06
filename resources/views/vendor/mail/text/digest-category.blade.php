@@ -10,6 +10,9 @@
 @else
 @foreach ($section['items'] as $item)
 - {{ $item['title'] }}: {{ $item['body'] }}
+@if (! empty($item['excerpt']))
+  {{ __('notifications.quote', ['text' => $item['excerpt']]) }}
+@endif
 @if (! empty($item['context']))
 @foreach ($item['context'] as $row)
   {{ $row['label'] }}: {{ $row['value'] }}

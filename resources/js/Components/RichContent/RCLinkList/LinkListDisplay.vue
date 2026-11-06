@@ -59,6 +59,7 @@ import type { BandResolution } from '../bandLayout';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import { LocaleEnum } from '@/Types/enums';
 import type { LinkList, LinkListResolved } from '@/Types/contentParts';
+import { formatDateWith } from '@/Utils/dateTime';
 
 const props = defineProps<{
   element: models.ContentPart;
@@ -108,9 +109,8 @@ const items = computed(() => {
 const isEmpty = computed(() => items.value.length === 0);
 
 function publishedLabel(iso: string | null): string {
-  if (!iso) return '';
-  return new Date(iso).toLocaleDateString(locale.value === LocaleEnum.EN ? 'en-GB' : 'lt-LT', {
-    year: 'numeric', month: 'short', day: 'numeric',
+  return formatDateWith(iso, { year: 'numeric', month: 'short', day: 'numeric' }, {
+    locale: locale.value === LocaleEnum.EN ? 'en-GB' : 'lt-LT',
   });
 }
 

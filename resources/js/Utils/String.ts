@@ -88,19 +88,19 @@ export const pluralizeLithuanian = (word: string): { word: string; visi: string 
   };
 };
 
-export const genitivize = (name: string | null) => {
-  if (name === null) {
-    return '';
-  }
+export const genitivize = (name: string | null | undefined): string => {
+  if (name == null) return '';
 
   return name
     .replace(/a$/, 'os')
     .replace(/as$/, 'o')
     .replace(/ė$/, 'ės')
     .replace(/is$/, 'io')
-    .replace(/iai$/, 'ių')
-    .replace(/ė$/, 'ės');
+    .replace(/iai$/, 'ių');
 };
+
+export const genitivizeEveryWord = (name: string | null | undefined): string =>
+  name?.split(' ').map(genitivize).join(' ') ?? '';
 
 export const addressivize = (name: string | null | undefined) => {
   if (name === null || name === undefined) {
@@ -113,21 +113,6 @@ export const addressivize = (name: string | null | undefined) => {
     .replace(/is$/, 'i')
     .replace(/us$/, 'au')
     .replace(/ys$/, 'y');
-};
-
-export const genitivizeEveryWord = (name: string | null) => {
-  if (name === null) {
-    return '';
-  }
-
-  // delimit by spaces
-  const words = name.split(' ');
-
-  // genitivize each word
-  const genitivizedWords = words.map(word => genitivize(word));
-
-  // join back together
-  return genitivizedWords.join(' ');
 };
 
 export const splitFileNameAndExtension = (fileName: string) => {

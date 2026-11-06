@@ -4,12 +4,15 @@ namespace App\Notifications;
 
 use App\Enums\NotificationType;
 use App\Models\SupportRequest;
+use App\Notifications\Concerns\NamesObjectInTitle;
 
 /**
  * A new support request for the people who triage the queue.
  */
 class SupportRequestCreatedNotification extends BaseNotification
 {
+    use NamesObjectInTitle;
+
     public function __construct(public SupportRequest $supportRequest) {}
 
     public function type(): NotificationType
@@ -26,7 +29,6 @@ class SupportRequestCreatedNotification extends BaseNotification
     {
         return __('notifications.support_request_created_body', [
             'user' => $this->authorName(),
-            'title' => $this->supportRequest->title,
         ]);
     }
 
@@ -45,7 +47,6 @@ class SupportRequestCreatedNotification extends BaseNotification
     public function context(object $notifiable): array
     {
         return $this->contextRows([
-            'author' => $this->authorName(),
             'type' => $this->supportRequest->type->getTranslation('name', app()->getLocale()),
             'visibility' => $this->supportRequest->visibility->label(),
         ]);

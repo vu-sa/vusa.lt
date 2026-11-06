@@ -138,7 +138,7 @@ import { ProblemIcon } from '@/Components/icons';
 import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import { ConfirmDialog, EmptyState, OverviewSection, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { goalStatuses, problemStatuses, type ProblemStatus } from '@/Constants/statuses';
+import { goalStatuses, problemStatuses, type ProblemStatus } from '@/Constants/statusIcons';
 import GoalStepList from '@/Features/Admin/Goals/GoalStepList.vue';
 import LinkProblemSheet from '@/Features/Admin/Goals/LinkProblemSheet.vue';
 import StepSheetForm from '@/Features/Admin/Goals/StepSheetForm.vue';

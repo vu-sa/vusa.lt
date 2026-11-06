@@ -55,21 +55,29 @@ test('a link refused because the document was hidden meanwhile is never stored, 
     Queue::assertPushed(RevokeSharepointPermissionJob::class, fn (RevokeSharepointPermissionJob $job): bool => $job->sharepointPermissionId === 'perm-new' && $job->documentId === $document->id);
 });
 
-test('a failed sync records its failure without saving the link it was preparing', function (): void {
-    $document = Document::factory()->create(['status' => DocumentStatus::Published, 'anonymous_url' => null, 'sync_status' => 'pending']);
+test('a failed sync records its failure without saving the link it was preparing', function (int $attempts, int $expectedAttempts): void {
+    $document = Document::factory()->create(['status' => DocumentStatus::Published, 'anonymous_url' => null, 'sync_status' => 'pending', 'sync_attempts' => $attempts]);
 
     $fields = new FieldValueSet;
     $fields->setAdditionalData(['@odata.etag' => 'new-etag', 'Name' => 'protokolas.pdf']);
 
     $graph = Mockery::mock(SharepointGraphService::class);
-    $graph->shouldReceive('getListItem')->andReturn($fields);
+    $graph->shouldReceive('getListItem')->andReturnUsing(function () use ($document, $expectedAttempts, $fields): FieldValueSet {
+        expect($document->fresh()->sync_attempts)->toBe($expectedAttempts);
+
+        return $fields;
+    });
     $graph->shouldReceive('getDriveItemByListItem')->andThrow(new LogicException('Graph exploded'));
 
     $service = Mockery::mock(DocumentSharepointSyncService::class)->makePartial()->shouldAllowMockingProtectedMethods();
     $service->shouldReceive('makeGraphService')->andReturn($graph);
 
-    expect(fn () => $service->sync($document, force: true))->toThrow(LogicException::class)->and($document->fresh())->sync_status->toBe('failed')->sync_error_message->toBe('Graph exploded')->eTag->not->toBe('new-etag');
-});
+    expect(fn () => $service->sync($document, force: true))->toThrow(LogicException::class)->and($document->fresh())->sync_status->toBe('failed')->sync_error_message->toBe('Graph exploded')->eTag->not->toBe('new-etag')
+        ->and($document->fresh()->sync_attempts)->toBe($expectedAttempts);
+})->with([
+    'another consecutive failure' => [2, 3],
+    'counter at the tinyint limit' => [255, 255],
+]);
 
 test('a revocation leaves alone a link the republished document uses again', function (DocumentStatus $status, bool $revokes): void {
     $document = Document::factory()->create(['status' => $status, 'sharepoint_permission_id' => $status === DocumentStatus::Published ? 'perm-1' : null]);

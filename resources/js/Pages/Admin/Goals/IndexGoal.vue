@@ -9,12 +9,12 @@
     default-view="rows"
     :available-views="['rows', 'table']"
     :item-key="goal => goal.id"
-    @row-action="(_item, key) => deleteActions.select(key)"
     :columns
     table-fixed
     actions-width="w-44"
     table-min-width="min-w-[68rem]"
     :search-placeholder="$t('goals.search')"
+    @row-action="(_item, key) => deleteActions.select(key)"
   >
     <template #actions>
       <Badge variant="outline" class="text-xs" :title="$t('goals.experimental_note')">
@@ -29,7 +29,7 @@
     </template>
 
     <template #row="{ item, actions: recordActions, view }">
-      <CollectionRow :spotlight="item === source?.items.value[0]" :actions="view === 'preview' ? [] : recordActions" @select="key => deleteActions.select(key)" class="px-3 py-3 sm:px-4">
+      <CollectionRow :spotlight="item === source?.items.value[0]" :actions="view === 'preview' ? [] : recordActions" class="px-3 py-3 sm:px-4" @select="key => deleteActions.select(key)">
         <div class="min-w-0 flex-1">
           <Link :href="route('goals.show', item.id)" data-collection-open class="block truncate font-medium hover:text-brand">
             {{ title(item) }}
@@ -84,7 +84,7 @@ import { Link, router } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { computed, toRef } from 'vue';
 
-import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
@@ -95,7 +95,7 @@ import { EmptyState, StatusBadge } from '@/Components/Patterns';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { useLocalCollectionSource } from '@/Composables/useCollectionSource';
-import { goalStatuses } from '@/Constants/statuses';
+import { goalStatuses } from '@/Constants/statusIcons';
 import { translatedText, type Translated } from '@/Features/Admin/Goals/types';
 import type { GoalStatus } from '@/Types/enums';
 import { formatRecordDate } from '@/Utils/dateTime';

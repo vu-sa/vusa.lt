@@ -82,6 +82,8 @@ describe('RCSmartTiptapToolbar', () => {
     const editor = makeMockEditor();
     const wrapper = mount(RCSmartTiptapToolbar, {
       props: { editor },
+      // isVisible() reads computed style, which jsdom only resolves for attached elements.
+      attachTo: document.body,
       global: {
         stubs: {
           TiptapFormattingButtons: true,
@@ -97,6 +99,7 @@ describe('RCSmartTiptapToolbar', () => {
 
     expect(wrapper.find('[data-rc-smart-toolbar]').isVisible()).toBe(false);
     expect(wrapper.find('[data-rc-smart-toolbar-trigger]').isVisible()).toBe(true);
+    wrapper.unmount();
   });
 
   it('repositions when a nested fullscreen viewport scrolls', async () => {

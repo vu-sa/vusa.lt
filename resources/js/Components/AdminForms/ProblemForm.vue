@@ -271,7 +271,7 @@ import {
 import { capitalize, computed, ref } from 'vue';
 
 import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
-import { problemStatuses, statusRoleClasses } from '@/Constants/statuses';
+import { problemStatuses, statusRoleClasses } from '@/Constants/statusIcons';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import TenantSelectField from '@/Components/AdminForms/TenantSelectField.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';

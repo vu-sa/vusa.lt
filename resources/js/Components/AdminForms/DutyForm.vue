@@ -438,7 +438,7 @@ import { Building2, ChevronsUpDown, History, Plus, SlidersHorizontal, Trash2, Us
 
 import ActivityStatusField from './ActivityStatusField.vue';
 
-import { operatingStatuses } from '@/Constants/statuses';
+import { operatingStatuses } from '@/Constants/statusIcons';
 import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';

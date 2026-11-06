@@ -4,12 +4,13 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Notifications\Contracts\SendsMailOnStaging;
+use App\Notifications\MemberRegistrationNotification;
 use Illuminate\Notifications\Notification;
 
 class NotificationRouter
 {
     /**
-     * Immediate mail goes where the digest goes: the addresses chosen on Pranešimų nustatymai.
+     * Immediate mail follows the chosen addresses, except locked member intake mail to its duty inbox.
      *
      * @return array<int, string>
      */
@@ -19,6 +20,10 @@ class NotificationRouter
             $address = $this->stagingMailAddress($notification);
 
             return $address === null ? [] : [$address];
+        }
+
+        if ($notification instanceof MemberRegistrationNotification) {
+            return [$notification->email];
         }
 
         return $user->notificationEmails();

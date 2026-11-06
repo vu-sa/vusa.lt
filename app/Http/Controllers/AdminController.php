@@ -2,19 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Middleware\HandleInertiaRequests;
+use App\Actions\ForgetUserAccess;
 use App\Http\Traits\TranslatesEntityMessages;
 use App\Models\User;
 use App\Services\AdminNavigation\AdminNavigationCatalog;
 use App\Services\Permissions\AccessChangeAnalyzer;
 use App\Services\Permissions\AccessChangeReport;
-use App\Services\Permissions\PermissionMapBuilder;
 use Closure;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Cache;
 use Inertia\Response as InertiaResponse;
 
 /**
@@ -190,15 +188,9 @@ abstract class AdminController extends Controller
         return null;
     }
 
-    /**
-     * Forget the acting user's cached admin permission maps so the next request
-     * reflects their post-change access. resetCache() does not touch these, and
-     * create-permissions in particular is otherwise never invalidated.
-     */
     private function forgetActorPermissionMaps(User $actor): void
     {
-        PermissionMapBuilder::forgetCachedMaps($actor->id);
-        Cache::forget(HandleInertiaRequests::adminNavigationCacheKey($actor->id));
+        ForgetUserAccess::execute([$actor->id]);
     }
 
     /**

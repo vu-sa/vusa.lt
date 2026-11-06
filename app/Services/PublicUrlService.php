@@ -106,7 +106,10 @@ class PublicUrlService
         };
     }
 
-    private function isPubliclyReachable(Model $model): bool
+    /**
+     * A null model is a retired URL whose record has since been deleted (morphTo hides soft-deleted ones).
+     */
+    private function isPubliclyReachable(?Model $model): bool
     {
         return match (true) {
             $model instanceof Calendar => ! $model->is_draft,

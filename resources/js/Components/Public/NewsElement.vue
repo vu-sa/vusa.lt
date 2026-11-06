@@ -115,7 +115,7 @@ import SmartLink from './SmartLink.vue';
 import { localizedRoute } from '@/Utils/LocalizedRoutes';
 import NewsCard from '@/Components/Public/News/NewsCard.vue';
 import type { News, NewsItem } from '@/Types/contentParts';
-import { formatStaticTime } from '@/Utils/IntlTime';
+import { formatDate } from '@/Utils/dateTime';
 import { useNewsFetch } from '@/Services/ContentService';
 import { EyebrowLabel, MediaFrame } from '@/Components/Public/Base';
 import { Skeleton } from '@/Components/ui/skeleton';
@@ -195,11 +195,7 @@ const featured = computed<NewsItem | undefined>(() => newsItems.value[0]);
 // a fourth row makes the two columns visibly uneven.
 const rest = computed<NewsItem[]>(() => newsItems.value.slice(1, 4));
 
-const longDate = (time: string) => formatStaticTime(
-  new Date(time),
-  { year: 'numeric', month: 'long', day: 'numeric' },
-  page.props.app.locale,
-);
+const longDate = (time: string) => formatDate(time, { format: 'full', locale: page.props.app.locale });
 
 const getNewsRoute = (item: NewsItem) => localizedRoute('news', {
   news: item.permalink ?? '',

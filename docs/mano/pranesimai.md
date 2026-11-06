@@ -1,9 +1,7 @@
 ---
 doc_status: reviewed
 title: Pranešimai
-area: notifications
-models: [DatabaseNotification]
-last_reviewed: 2026-10-28
+last_reviewed: 2026-11-05
 tests:
   - tests/Feature/Admin/Core/UserNotificationsControllerTest.php
   - tests/Feature/Notifications/NotificationCountTest.php

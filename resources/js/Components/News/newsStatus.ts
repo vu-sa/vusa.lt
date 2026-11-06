@@ -1,4 +1,4 @@
-import { contentStatuses, type StatusPresentation } from '@/Constants/statuses';
+import { contentStatuses, type StatusPresentation } from '@/Constants/statusIcons';
 import type { NewsSearchResult } from '@/Shared/Search/types';
 
 /** A published article waits in "Suplanuota" until its publish time arrives. */

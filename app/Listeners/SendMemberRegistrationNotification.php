@@ -99,7 +99,11 @@ class SendMemberRegistrationNotification implements ShouldQueue
 
             // A vacant duty still has an inbox; only the in-app notice needs a person.
             if ($holder === null) {
-                Mail::send($notification->toMail($mailableDuty));
+                Notification::sendNow(
+                    Notification::route('mail', $mailableDuty->email),
+                    $notification,
+                    ['mail'],
+                );
 
                 continue;
             }

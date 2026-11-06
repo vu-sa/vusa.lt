@@ -84,6 +84,23 @@ describe('index', function (): void {
             ->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $done->id);
     });
 
+    test('empty and invalid resolved filters leave all threads visible', function (string $filter): void {
+        $this->actingAs($this->coordinator);
+        $open = $this->agendaItem->comment('<p>Open</p>');
+        $done = $this->agendaItem->comment('<p>Done</p>');
+        $done->resolve($this->coordinator);
+
+        asUser($this->coordinator)->getJson($this->indexUrl.$filter)
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment(['id' => $open->id])
+            ->assertJsonFragment(['id' => $done->id]);
+    })->with(['empty' => '?resolved=', 'invalid' => '?resolved=invalid', 'array' => '?resolved[]=x']);
+
+    test('an outsider is forbidden before validating the resolved filter', function (): void {
+        asUser($this->outsider)->getJson($this->indexUrl.'?resolved[]=x')->assertForbidden();
+    });
+
     test('an outsider is forbidden (403)', function (): void {
         asUser($this->outsider)->getJson($this->indexUrl)->assertStatus(403);
     });

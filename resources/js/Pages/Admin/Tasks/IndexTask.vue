@@ -10,12 +10,12 @@
     :available-views="['preview', 'table', 'rows']"
     :item-key="taskKey"
     :columns
-    @row-action="(item, key) => runAction(item, key as TaskActionKey)"
     table-fixed
     actions-width="w-44"
     table-min-width="min-w-[60rem]"
     :quick-filters
     :search-placeholder="$t('tasks.collection.search')"
+    @row-action="(item, key) => runAction(item, key as TaskActionKey)"
     @quick-filter="toggleQuickFilter"
   >
     <template v-if="scope === 'mine' && canViewAllTasks" #actions>
@@ -127,7 +127,7 @@ import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { TaskIcon } from '@/Components/icons';
 import { useDatabaseCollectionSource, type DatabaseFacetDefinition } from '@/Composables/useCollectionSource';
-import { useDateLocale } from '@/Composables/useDateLocale';
+import { useDateFormatter } from '@/Composables/useDateFormatter';
 import { useTaskActionDialogs } from '@/Composables/useTaskActionDialogs';
 import {
   canCompleteByHand,
@@ -167,7 +167,7 @@ const props = defineProps<{
   tenants: { id: number; shortname: string }[];
 }>();
 
-const dateLocale = useDateLocale();
+const { locale: dateLocale } = useDateFormatter();
 const detailDialogs = useTaskActionDialogs();
 
 const eyebrow = computed(() => props.scope === 'tenant'

@@ -50,7 +50,7 @@ vi.mock('@/Pages/Admin/Dashboard/Composables/useAtstovavimasActions', () => ({
   }),
 }));
 
-vi.mock('@/Pages/Admin/Dashboard/Composables/useGanttSettings', () => ({
+vi.mock('@/Components/Graphs/composables/useGanttSettings', () => ({
   provideGanttSettings: vi.fn(),
 }));
 
@@ -84,6 +84,8 @@ const baseUser = { id: '1', name: 'Lina Žilinskaitė' } as unknown as Atstovavi
 
 function createWrapper(canViewTenantOverview: boolean, followedInstitutions?: HomeFollowedInstitutions, coordinators: { id: string; name: string }[] = []) {
   return mount(ShowAtstovavimas, {
+    // isVisible() reads computed style, which jsdom only resolves for attached elements.
+    attachTo: document.body,
     props: {
       user: baseUser,
       userInstitutions: [],

@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Pareigybės
-area: duties
-models: [Duty, Role, Tenant, Type, Institution, ResponsibilityGrant]
 last_reviewed: 2026-11-01
 tests:
   - tests/Browser/CollectionTrashRefreshTest.php
@@ -38,7 +36,6 @@ tests:
   - tests/Feature/Admin/People/DutyLifecycleTest.php
   - tests/Feature/Admin/Management/DutiableControllerTest.php
   - tests/Unit/Services/DutyNameNormalizerTest.php
-  - tests/Feature/Migrations/DateDutySuccessionsTest.php
   - tests/Browser/DutyResponsibilitiesLayoutTest.php
   - resources/js/Pages/Admin/People/__tests__/ShowDuty.component.test.ts
   - resources/js/Pages/Admin/People/__tests__/ShowUser.component.test.ts

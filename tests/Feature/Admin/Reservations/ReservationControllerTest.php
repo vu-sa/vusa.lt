@@ -257,6 +257,20 @@ describe('auth: reservation manager', function (): void {
             );
     });
 
+    test('ignores an invalid optional availability range on the record page', function (): void {
+        asUser($this->reservationManager)->get(route('reservations.show', [
+            'reservation' => $this->reservation,
+            'dateTimeRange' => ['start' => 'invalid'],
+            'except-resources' => [['invalid']],
+        ]))
+            ->assertOk()
+            ->assertSessionHasNoErrors()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Reservations/ShowReservation')
+                ->where('reservation.id', $this->reservation->id)
+            );
+    });
+
     test('can access existing reservation', function (): void {
         $response = asUser($this->reservationManager)->get(route('reservations.show', $this->reservation->id));
 
@@ -442,6 +456,31 @@ describe('auth: reservation manager', function (): void {
         asUser($this->reservationManager)->delete(route('reservations.destroy', $this->reservation))->assertForbidden();
 
         expect(Reservation::query()->find($this->reservation->id))->not->toBeNull();
+    });
+
+    test('adding users refuses ids that are not users', function (): void {
+        asUser($this->reservationManager)
+            ->put(route('reservations.add-users', $this->reservation->id), ['users' => ['not-a-user']])
+            ->assertSessionHasErrors('users.0');
+
+        expect($this->reservation->users()->count())->toBe(1);
+    });
+
+    test('reloading resources without a range measures capacity over the reservation itself', function (): void {
+        asUserWithInertia($this->reservationManager)->get(route('reservations.show', $this->reservation->id))
+            ->assertInertia(fn (Assert $page) => $page
+                ->missing('allResources')
+                ->reloadOnly('allResources', fn (Assert $reload) => $reload->has('allResources')));
+    });
+
+    test('a reversed resource range is ignored rather than breaking the page', function (): void {
+        asUser($this->reservationManager)
+            ->get(route('reservations.show', [
+                'reservation' => $this->reservation->id,
+                'dateTimeRange' => ['start' => 2_000, 'end' => 1_000],
+            ]))
+            ->assertOk()
+            ->assertSessionHasNoErrors();
     });
 });
 

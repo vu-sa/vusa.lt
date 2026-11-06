@@ -56,7 +56,7 @@ import type { UserPreviewModel } from './userPreview';
 
 import { PreviewChipList, PreviewFact, PreviewFacts, PreviewPane, PreviewSection, StatusBadge, type PreviewChipItem } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { deletedMemberStatus } from '@/Constants/statuses';
+import { deletedMemberStatus } from '@/Constants/statusIcons';
 
 const DUTY_LIMIT = 8;
 

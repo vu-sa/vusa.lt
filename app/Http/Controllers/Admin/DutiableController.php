@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\Media\SyncImageMedia;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\Dutiables\DestroyDutiableRequest;
 use App\Http\Requests\StoreDutiableRequest;
 use App\Http\Requests\UpdateDutiableRequest;
 use App\Models\Duty;
@@ -138,7 +139,7 @@ class DutiableController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Dutiable $dutiable, Request $request)
+    public function destroy(DestroyDutiableRequest $request, Dutiable $dutiable)
     {
         $this->authorize('manageDutiable', $dutiable);
 
@@ -154,7 +155,7 @@ class DutiableController extends AdminController
 
         // The timeline deletes rows in place and must not be navigated away from; a request
         // that came from the (now retired) standalone page has to leave, because its record is gone.
-        return $request->boolean('stay')
+        return $request->safe()->boolean('stay')
             ? back()->with('success', $message)
             : redirect()->route('users.show', $user)->with('success', $message);
     }

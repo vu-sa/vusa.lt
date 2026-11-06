@@ -21,7 +21,6 @@ Before planning or editing, find the row whose globs match the file's path and r
 | resources/js/Components/Tables/**, resources/js/Components/ui/data-table/** | .ai/rules/data-table.md |
 | .github/workflows/deploy*.yml, app/Console/Commands/Deployment*.php, app/Console/Commands/StagingRefreshDatabase.php, deployment/** | .ai/rules/deploy.md |
 | resources/js/Components/ui/alert-dialog/**, resources/js/Components/ui/dialog/** | .ai/rules/dialog.md |
-| app/Console/Commands/DocsCoverageCommand.php, app/Support/Docs/** | .ai/rules/docs-coverage.md |
 | docs/** | .ai/rules/docs.md |
 | app/Enums/** | .ai/rules/enums.md |
 | tests/Feature/** | .ai/rules/feature.md |

@@ -239,7 +239,7 @@ import { usePage } from '@inertiajs/vue3';
 
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import { useEventStatus } from '@/Composables/useEventStatus';
-import { formatMonthAbbr, formatStaticTime } from '@/Utils/IntlTime';
+import { formatDateWith, formatMonthAbbr } from '@/Utils/dateTime';
 import { LocaleEnum } from '@/Types/enums';
 import type { ImageData } from '@/Types/media';
 
@@ -277,11 +277,11 @@ const eventTitle = computed(() =>
 );
 
 const dayNumber = computed(() =>
-  props.event.date ? formatStaticTime(new Date(props.event.date), { day: 'numeric' }, locale.value) : '',
+  props.event.date ? formatDateWith(props.event.date, { day: 'numeric' }, { locale: locale.value }) : '',
 );
 
 const monthAbbr = computed(() =>
-  props.event.date ? formatMonthAbbr(new Date(props.event.date), locale.value) : '',
+  props.event.date ? formatMonthAbbr(props.event.date, { locale: locale.value }) : '',
 );
 
 const tagLabel = computed(() => {

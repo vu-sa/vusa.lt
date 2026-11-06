@@ -32,7 +32,7 @@ import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 
 import { StatusBadge } from '@/Components/Patterns';
-import { meetingAlignmentStatuses, meetingCompletionStatuses, statusFor, statusRoleParts, type StatusPresentation } from '@/Constants/statuses';
+import { meetingAlignmentStatuses, meetingCompletionStatuses, statusFor, statusRoleParts, type StatusPresentation } from '@/Constants/statusIcons';
 import type { MeetingSearchResult } from '@/Shared/Search/types';
 
 /**

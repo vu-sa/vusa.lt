@@ -66,7 +66,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import MeetingOutcomeIndicators from './MeetingOutcomeIndicators.vue';
 
-import { formatStaticTime } from '@/Utils/IntlTime';
+import { formatDateWith } from '@/Utils/dateTime';
 import { DatePlate } from '@/Components/Public/Base';
 import IFluentArrowRight20Regular from '~icons/fluent/arrow-right-20-regular';
 
@@ -155,13 +155,13 @@ const alignmentDotTitle = computed(() => {
 
 // Full localized date + time — DatePlate shows only day/month, so the archive (which spans many
 // years) still needs the year spelled out somewhere.
-const formatCompactDate = () => formatStaticTime(meetingDate.value, {
+const formatCompactDate = () => formatDateWith(meetingDate.value, {
   year: 'numeric',
   month: 'long',
   day: 'numeric',
   hour: '2-digit',
   minute: '2-digit',
-}, locale.value as 'lt' | 'en');
+}, { locale: locale.value });
 
 // Build meeting detail URL
 const getMeetingUrl = () => {

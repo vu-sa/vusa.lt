@@ -1,33 +1,31 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatMonthAbbr } from '../IntlTime';
-
-import { LocaleEnum } from '@/Types/enums';
+import { formatMonthAbbr } from '../dateTime';
 
 describe('formatMonthAbbr', () => {
   /**
-   * The reason this helper exists at all: Lithuanian has no abbreviated month names in CLDR, so
-   * Intl's `{ month: 'short' }` returns a bare number — which is why the older
-   * `formatMonthShort()` renders "09" on a date badge instead of a month.
+   * Lithuanian has no abbreviated month names in CLDR, so Intl's `{ month: 'short' }` returns
+   * "09" — a date plate would read as two numbers stacked.
    */
   it('uses the conventional Lithuanian abbreviations', () => {
-    expect(formatMonthAbbr(new Date(2026, 8, 4))).toBe('RGS');
-    expect(formatMonthAbbr(new Date(2026, 7, 12))).toBe('RGP');
-    expect(formatMonthAbbr(new Date(2026, 0, 1))).toBe('SAU');
-    expect(formatMonthAbbr(new Date(2026, 11, 24))).toBe('GRD');
+    expect(formatMonthAbbr('2026-09-04')).toBe('RGS');
+    expect(formatMonthAbbr('2026-08-12')).toBe('RGP');
+    expect(formatMonthAbbr('2026-01-01')).toBe('SAU');
+    expect(formatMonthAbbr('2026-12-24')).toBe('GRD');
   });
 
-  /**
-   * RGP/RGS and GRD are contractions, not truncations — truncating "rugpjūtis" and "rugsėjis"
-   * both give "RUG", which is exactly the collision the convention exists to avoid.
-   */
+  /** RGP/RGS are contractions: truncating "rugpjūtis" and "rugsėjis" both give "RUG". */
   it('keeps August and September distinct', () => {
-    expect(formatMonthAbbr(new Date(2026, 7, 1)))
-      .not.toBe(formatMonthAbbr(new Date(2026, 8, 1)));
+    expect(formatMonthAbbr('2026-08-01')).not.toBe(formatMonthAbbr('2026-09-01'));
+  });
+
+  it('takes the month from the Vilnius calendar', () => {
+    // 21:30 UTC on 31 August is already 1 September in Vilnius.
+    expect(formatMonthAbbr('2026-08-31T21:30:00Z')).toBe('RGS');
   });
 
   it('falls back to Intl for other locales', () => {
-    expect(formatMonthAbbr(new Date(2026, 8, 4), LocaleEnum.EN)).toBe('SEP');
+    expect(formatMonthAbbr('2026-09-04', { locale: 'en' })).toBe('SEP');
   });
 
   it('returns an empty string for a missing date', () => {

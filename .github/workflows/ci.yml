@@ -128,13 +128,10 @@ jobs:
         shard: [1, 2, 3, 4]
     permissions:
       contents: read
-      pull-requests: write
     steps:
     - uses: actions/checkout@v7
       with:
         ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
-        # docs:coverage --changed diffs against the PR base.
-        fetch-depth: 0
 
     - name: Download build artifacts
       uses: actions/download-artifact@v8
@@ -179,42 +176,6 @@ jobs:
         TYPESENSE_PROTOCOL: http
       run: php artisan test --ci --shard=${{ matrix.shard }}/4 --parallel --coverage --coverage-clover ./coverage.xml --log-junit ./test-results.xml
 
-    # Advisory report (feature areas documented, routes tested, the writing
-    # backlog, pages that may have drifted) lands in the job summary so nobody
-    # has to remember to run it. --strict is the only gate, and only for the one
-    # unambiguous breakage: a doc page citing a test file that no longer exists.
-    - name: Report and gate documentation coverage
-      if: always() && matrix.shard == 1
-      run: php artisan docs:coverage --strict --summary
-
-    # A judgement call is never a gate, so the reviewer gets it where they will
-    # actually read it — one sticky comment on the PR, rewritten each push. The
-    # report and the "docs to re-check" list are rebuilt into a temp file
-    # ($GITHUB_STEP_SUMMARY is per-step, so a later step cannot read the gate
-    # step's summary). Push runs look up the open PR, because the dev PR run
-    # only mirrors the push run and never reaches this job.
-    - name: Comment documentation coverage on the PR
-      if: always() && matrix.shard == 1
-      continue-on-error: true
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        PR_NUMBER: ${{ github.event.number }}
-        BASE_REF: ${{ github.base_ref }}
-      run: |
-        if [ -z "$PR_NUMBER" ]; then
-          read -r PR_NUMBER BASE_REF < <(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/pulls" \
-            --jq '[.[] | select(.state == "open")][0] // empty | "\(.number) \(.base.ref)"') || true
-        fi
-        if [ -z "$PR_NUMBER" ]; then
-          echo "No open pull request for $GITHUB_SHA; skipping the comment."
-          exit 0
-        fi
-        tmp="$(mktemp)"
-        GITHUB_STEP_SUMMARY="$tmp" php artisan docs:coverage --summary
-        GITHUB_STEP_SUMMARY="$tmp" php artisan docs:coverage --changed="origin/$BASE_REF" --summary
-        { echo "<!-- docs-coverage -->"; cat "$tmp"; } > pr-comment.md
-        gh pr comment "$PR_NUMBER" --edit-last --create-if-none --body-file pr-comment.md
-
     - name: Upload test results to Codecov
       if: always()
       uses: codecov/test-results-action@v1
@@ -250,9 +211,9 @@ jobs:
         fetch-depth: 0
 
     - name: Setup Node.js
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@v7
       with:
-        node-version: '22'
+        node-version: '24'
         cache: 'npm'
 
     - name: Install npm dependencies
@@ -324,9 +285,9 @@ jobs:
         php artisan typescript:transform
 
     - name: Setup Node.js
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@v7
       with:
-        node-version: lts/*
+        node-version: '24'
         cache: 'npm'
 
     - name: Install dependencies
@@ -373,9 +334,9 @@ jobs:
       run: chmod -R +x vendor/bin
 
     - name: Setup Node.js
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@v7
       with:
-        node-version: lts/*
+        node-version: '24'
         cache: 'npm'
 
     - name: Install dependencies
@@ -506,9 +467,9 @@ jobs:
       run: tar -xzf vendor.tar.gz
 
     - name: Setup Node.js
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@v7
       with:
-        node-version: '20'
+        node-version: '24'
         cache: 'npm'
 
     - name: Install npm dependencies
@@ -555,9 +516,9 @@ jobs:
       run: tar -xzf vendor.tar.gz
 
     - name: Setup Node.js
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@v7
       with:
-        node-version: '22'
+        node-version: '24'
         cache: 'npm'
 
     - name: Install npm dependencies

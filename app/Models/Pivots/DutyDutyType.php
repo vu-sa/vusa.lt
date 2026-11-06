@@ -12,8 +12,8 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 /**
  * @property string $duty_id
  * @property int $duty_type_id
- * @property-read Duty|null $duty
- * @property-read DutyType|null $type
+ * @property-read Duty $duty
+ * @property-read DutyType $type
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyDutyType newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyDutyType newQuery()

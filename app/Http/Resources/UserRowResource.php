@@ -14,7 +14,7 @@ class UserRowResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            ...$this->resource->makeVisible(['last_action'])->toArray(),
+            ...$this->resource->makeVisible(['last_action'])->makeHidden(['roles', 'tenants'])->toArray(),
             'can_update_identity' => (bool) $request->user()?->can('updateIdentity', $this->resource),
         ];
     }

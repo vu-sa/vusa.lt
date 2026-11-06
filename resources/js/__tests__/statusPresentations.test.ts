@@ -9,7 +9,7 @@ import {
   supportRequestStatuses,
   taskStatuses,
   voteStatuses,
-} from '@/Constants/statuses';
+} from '@/Constants/statusIcons';
 import { InstitutionActivityStatus, SupportRequestStatus, VoteValue } from '@/Types/enums';
 
 describe('status presentation maps', () => {

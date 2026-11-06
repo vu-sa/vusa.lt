@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
-import { inactiveInstitutionStatus } from '@/Constants/statuses';
+import { inactiveInstitutionStatus } from '@/Constants/statusIcons';
 
 defineProps<{ active?: boolean | number }>();
 </script>

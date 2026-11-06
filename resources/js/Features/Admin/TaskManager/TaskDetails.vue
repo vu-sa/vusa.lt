@@ -24,22 +24,21 @@
 </template>
 
 <script setup lang="ts">
-import { format, parseISO } from 'date-fns';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import { ContextFact, ContextFacts } from '@/Components/Patterns';
-import { useDateLocale } from '@/Composables/useDateLocale';
+import { useDateFormatter } from '@/Composables/useDateFormatter';
 import type { TaskDisplayData } from '@/Composables/useTaskPresentation';
 
 const props = defineProps<{
   task: TaskDisplayData;
 }>();
 
-const dateLocale = useDateLocale();
+const { formatDate: formatDateIn } = useDateFormatter();
 
-const formatDate = (date: string) => format(parseISO(date), 'PPP', { locale: dateLocale.value });
+const formatDate = (date: string) => formatDateIn(date, { format: 'full' });
 
 // A cancelled task carries `completed_at` too, but nobody completed it.
 const closedOn = computed(() => (props.task.completed_at && !props.task.cancelled_at ? formatDate(props.task.completed_at) : null));

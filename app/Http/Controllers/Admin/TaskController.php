@@ -7,12 +7,12 @@ use App\Events\TaskCreated;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexTasksRequest;
 use App\Http\Requests\StoreTaskRequest;
+use App\Http\Requests\UpdateTaskCompletionRequest;
 use App\Http\Resources\TaskResource;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
-use Illuminate\Http\Request;
 use Inertia\Response;
 
 class TaskController extends AdminController
@@ -68,7 +68,7 @@ class TaskController extends AdminController
         return back()->with('success', $this->entityMessage('deleted', 'task'));
     }
 
-    public function updateCompletionStatus(Request $request, Task $task)
+    public function updateCompletionStatus(UpdateTaskCompletionRequest $request, Task $task)
     {
         $this->handleAuthorization('update', $task);
 
@@ -77,11 +77,7 @@ class TaskController extends AdminController
             return back()->with('error', __('messages.task.automatic_not_markable'));
         }
 
-        if ($request->completed == true) {
-            $task->completed_at = now();
-        } else {
-            $task->completed_at = null;
-        }
+        $task->completed_at = $request->safe()->boolean('completed') ? now() : null;
 
         $task->save();
 

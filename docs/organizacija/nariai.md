@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Nariai
-area: users
-models: [User]
 last_reviewed: 2026-10-26
 tests:
   - tests/Feature/Admin/Management/UserActivityRequestsTest.php
@@ -17,6 +15,7 @@ tests:
   - tests/Feature/Admin/UserMergeTest.php
   - tests/Feature/System/UserMergeCoverageTest.php
   - tests/Feature/Auth/UserUpdateAuthorizationTest.php
+  - tests/Feature/Auth/AuthControllerTest.php
   - tests/Feature/Permissions/UserSelfLockoutTest.php
   - tests/Feature/Permissions/UserDestructiveAuthorizationTest.php
   - tests/Feature/Permissions/UserIdentityAuthorizationTest.php
@@ -68,6 +67,25 @@ Prisijungimo el. paštui rekomenduojama naudoti asmeninį studentinį adresą (p
 o ne pareigybinį `@vusa.lt`. Pareigybiniai el. paštai keičiantis kadencijoms perduodami kitiems nariams,
 todėl asmeninė paskyros istorija turi likti susieta su konkrečiu žmogumi.
 :::
+
+<ChangelogNote date="2026-11-06" title="Prisijungimas po VU el. pašto pakeitimo">
+
+Kai studentas įsidarbina VU, universitetas pervadina jo „Microsoft“ paskyrą (pvz.,
+`vardas.pavarde@gmc.stud.vu.lt` tampa `@gmc.vu.lt` arba `@cr.vu.lt`). Prisijungus per
+„Microsoft“, platforma įsimena pačią paskyrą, ne tik adresą, todėl vėliau pervadinus
+paskyrą narys ir toliau jungiasi prie tos pačios Mano VU SA paskyros.
+
+Jei paskyra pervadinta dar prieš pirmą tokį prisijungimą, naujas adresas priimamas tik tada,
+kai jis skiriasi vien domenu: to paties padalinio studento ir darbuotojo adresai (`@gmc.stud.vu.lt` ir `@gmc.vu.lt`)
+priima vienas kitą, o `@cr.vu.lt` priimamas vietoj bet kurio padalinio adreso. Be to, vardas ir pavardė „Microsoft“ paskyroje
+turi sutapti su nario vardu ir pavarde, o toks narys turi būti vienas. Paskyra, kurios prisijungimo el. paštas yra `@cr.vu.lt`,
+kitu adresu neatpažįstama. Kitais atvejais (pvz., perėjus į kitą padalinį ar adresui gavus `.2` galūnę)
+prisijungimo el. paštą pakeičia administratorius.
+
+Prisijungimo el. paštas po tokio prisijungimo nekeičiamas: senoji studentinė pašto dėžutė kartais
+lieka kaip bendroji dėžutė.
+
+</ChangelogNote>
 
 ### Nuotraukos {#nuotraukos}
 
@@ -341,6 +359,11 @@ nario padalinių prieiga arba kreipimasis į Centrinio biuro koordinatorių / Su
   (`forceDelete()`), nustato pasirinktą prisijungimo el. paštą, įrašo `users_merged` veiklos įrašą ir išvalo paliekamo
   nario teisių talpyklą. `UserMergeCoverageTest` neleidžia pridėti naujo `users` ryšio jo neįtraukus į `MergeUsers`.
 - Galimus dublikatus redagavimo formai (atidėtas `duplicates` laukas) pateikia `FindMergeableUserDuplicates`.
+- „Microsoft“ prisijungimą atpažįsta `MicrosoftAccountResolver`: pirmiausia pagal susietą paskyrą
+  (`user_microsoft_identities`, „Microsoft“ nuomininko `tid` ir objekto `oid`), tada pagal el. paštą, tada vieną kartą pagal
+  pervadintą VU adresą (padalinių pašto priešdėliai – `padalinys` padalinių `alias`, išimtys
+  `config/vusa.php` → `microsoft_login.faculty_mail_prefixes`, pvz., `filf` → `flf`). Sėkmingas atpažinimas susieja paskyrą;
+  atpažinimas pagal pervadintą adresą įrašo `microsoft_login_linked` veiklos įrašą. Prisijungimas per pareigybinį el. paštą paskyros nesusieja.
 - Galutinio trynimo apsauga `forceDeleteBlockedReason` tikrina išorinius ryšius: `Comment` (`user_id`),
   `InstitutionCheckIn` (`user_id`) ir `Problem` (`created_by`).
 - Savęs užsirakinimo apsaugą užtikrina `AdminController::guardSelfLockout` kartu su `UserPolicy::canActDestructively`

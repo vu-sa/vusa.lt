@@ -120,7 +120,7 @@ import {
 } from './renderers';
 
 import { useVacationPeriods } from '@/Composables/useVacationPeriods';
-import { useGanttSettings } from '@/Pages/Admin/Dashboard/Composables/useGanttSettings';
+import { useGanttSettings } from '@/Components/Graphs/composables/useGanttSettings';
 
 /** Rows = institutions (grouped by padalinys or type), icons = meetings, striped bars = check-ins. */
 

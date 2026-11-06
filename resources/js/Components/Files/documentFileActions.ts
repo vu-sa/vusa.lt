@@ -3,7 +3,7 @@ import { ExternalLink, Folder, Pencil, Trash2 } from '@lucide/vue';
 
 import type { DocumentFolderRow } from './types';
 
-import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 
 /** A document opens in its editor; without edit rights its public or SharePoint link takes the slot. */
 export function documentFileActions(file: DocumentFolderRow): AdminRecordAction[] {

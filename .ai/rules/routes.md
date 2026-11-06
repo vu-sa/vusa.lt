@@ -20,3 +20,6 @@ When adding a public route whose name would collide with an existing `Route::res
 - If the admin resource's `show`/other action route name isn't actually used anywhere (grep for `route('name'` and `route("name"` across app/, resources/js/, tests/), override just that name: `Route::resource(...)->names(['show' => 'calendar.view'])`.
 - If the public route is the one that should keep the natural name, prefix the public route instead, matching the existing `publicMeetings.show` (vs admin `meetings.show`) precedent.
 - Before merging any new route name, sanity check with `vendor/bin/sail artisan route:cache` locally — it fails fast on duplicate names instead of waiting for deploy.
+
+## Trash routes come from `Route::softDeletes()`
+A controller using `HandlesSoftDeletes` gets its restore (PATCH) and force-delete (DELETE) routes from `Route::softDeletes('news', NewsController::class)`, macro in `AppServiceProvider`. Pass the binding name as the third argument when it isn't the singular of the URI (`'type'` for `dutyTypes`). The macro adds `->withTrashed()`; without it the trashed record 404s. `tests/Feature/System/SoftDeleteRoutesConventionTest.php` fails for a controller with no such routes.

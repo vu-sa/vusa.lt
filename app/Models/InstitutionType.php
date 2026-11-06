@@ -7,6 +7,7 @@ use App\Contracts\SharepointFileableContract;
 use App\Enums\InstitutionScope;
 use App\Events\FileableNameUpdated;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Jobs\RefreshMeetingTitles;
 use App\Models\Pivots\InstitutionInstitutionType;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasSharepointFiles;
@@ -98,9 +99,23 @@ class InstitutionType extends Model implements GuardsForceDelete, SharepointFile
         };
 
         static::saved($flush);
+        static::saved(function (self $type): void {
+            if ($type->wasChanged('extra_attributes') && ($type->getOriginal('extra_attributes')['meeting_kind'] ?? null) !== ($type->extra_attributes['meeting_kind'] ?? null)) {
+                RefreshMeetingTitles::dispatch($type->institutions()->pluck('institutions.id')->all());
+            }
+        });
         static::deleted($flush);
         static::restored($flush);
         static::forceDeleted($flush);
+
+        $refreshMeetingTitles = function (self $type): void {
+            if ($type->extra_attributes['meeting_kind'] ?? null) {
+                RefreshMeetingTitles::dispatch($type->institutions()->pluck('institutions.id')->all());
+            }
+        };
+
+        static::deleted($refreshMeetingTitles);
+        static::restored($refreshMeetingTitles);
 
         static::deleted(fn () => InstitutionRelationService::flush());
         static::restored(fn () => InstitutionRelationService::flush());

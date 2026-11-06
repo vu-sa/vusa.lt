@@ -19,9 +19,11 @@ use Illuminate\Foundation\Http\Middleware\TrimStrings;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\Channels\DatabaseChannel;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 use Laravel\Head\Enums\OgType;
 use Laravel\Head\Enums\TwitterCard;
 use Laravel\Head\Facades\Head;
@@ -70,6 +72,8 @@ class AppServiceProvider extends ServiceProvider
 
         $this->configureRateLimiting();
 
+        $this->registerRouteMacros();
+
         // Load translations from split directories (shared, admin, public)
         // Laravel will merge these with the default translations
         $this->loadSplitTranslations();
@@ -117,6 +121,24 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Configure the rate limiters for the application.
      */
+    /**
+     * `Route::softDeletes('news', NewsController::class)` registers the trash actions that
+     * `useCollectionRecordActions` calls, binding trashed models so they do not 404.
+     */
+    private function registerRouteMacros(): void
+    {
+        Route::macro('softDeletes', function (string $name, string $controller, ?string $parameter = null): void {
+            $parameter ??= Str::singular($name);
+
+            Route::patch("{$name}/{{$parameter}}/restore", [$controller, 'restore'])
+                ->name("{$name}.restore")
+                ->withTrashed();
+            Route::delete("{$name}/{{$parameter}}/force-delete", [$controller, 'forceDelete'])
+                ->name("{$name}.forceDelete")
+                ->withTrashed();
+        });
+    }
+
     private function configureRateLimiting(): void
     {
         // `throttle:api` runs before the session starts, so it never sees a user: anonymous, per IP.

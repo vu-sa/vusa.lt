@@ -56,7 +56,7 @@ import { Building2, Calendar, Mail } from '@lucide/vue';
 
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { interactiveCardClass } from '@/Utils/interactiveCard';
-import { formatStaticTime } from '@/Utils/IntlTime';
+import { formatDateWith } from '@/Utils/dateTime';
 import { LocaleEnum } from '@/Types/enums';
 import type { DutyNameHolder } from '@/Utils/String';
 
@@ -107,11 +107,11 @@ const tenureLabel = computed(() => {
     return '';
   }
   const monthAndYear: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short' };
-  const startLabel = formatStaticTime(new Date(start), monthAndYear, locale.value);
+  const startLabel = formatDateWith(start, monthAndYear, { locale: locale.value });
   const end = props.duty.pivot?.end_date;
   if (!end || new Date(end) >= new Date()) {
     return `${startLabel} – ${$t('dabar')}`;
   }
-  return `${startLabel} – ${formatStaticTime(new Date(end), monthAndYear, locale.value)}`;
+  return `${startLabel} – ${formatDateWith(end, monthAndYear, { locale: locale.value })}`;
 });
 </script>

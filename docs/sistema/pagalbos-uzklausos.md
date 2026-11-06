@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Pagalbos užklausos
-area: supportRequests
-models: [SupportRequest, SupportRequestArea, SupportRequestType]
 last_reviewed: 2026-10-21
 tests:
   - tests/Feature/Admin/SupportRequests/SupportRequestControllerTest.php

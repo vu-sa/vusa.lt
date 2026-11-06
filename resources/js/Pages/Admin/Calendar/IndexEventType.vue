@@ -14,8 +14,8 @@
     table-fixed
     actions-width="w-44"
     table-min-width="min-w-[42rem]"
-    @row-action="(item, key) => selectRowAction(key, item)"
     :search-placeholder="$t('Ieškoti renginių tipų…')"
+    @row-action="(item, key) => selectRowAction(key, item)"
   >
     <template #actions>
       <Button v-if="canCreate && !isDeleted" variant="brand" size="lg" @click="openSheet()">
@@ -29,7 +29,7 @@
         <div class="min-w-0 flex-1">
           <div class="flex items-center gap-2">
             <component :is="operatingStatuses.inactive.icon" v-if="!item.is_active" class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-        <span v-if="!item.is_active" class="sr-only">{{ $t('Neaktyvus') }}:</span>
+            <span v-if="!item.is_active" class="sr-only">{{ $t('Neaktyvus') }}:</span>
             <button
               v-if="canUpdate && !isDeleted"
               type="button"
@@ -126,7 +126,7 @@ import { CalendarIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { operatingStatuses } from '@/Constants/statuses';
+import { operatingStatuses } from '@/Constants/statusIcons';
 import { useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
 import EventTypeSheetForm from '@/Features/Admin/EventTypes/EventTypeSheetForm.vue';
 import { formatRecordDate } from '@/Utils/dateTime';

@@ -13,9 +13,20 @@
       {{ $t('Pateikti') }}
     </Button>
   </form>
-  <ConfirmDialog :open="pendingVisit !== null" :title="$t('Neišsaugoti pakeitimai')"
-    :description="$t('Tai, ką įvedei formoje, nebus išsaugota.')" :cancel-label="$t('Likti puslapyje')"
-    :confirm-label="$t('Išeiti iš puslapio')" @update:open="handleDiscardDialogOpen" @confirm="continueNavigation" />
+  <AlertDialog :open="pendingVisit !== null" @update:open="handleDiscardDialogOpen">
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>{{ $t('Neišsaugoti pakeitimai') }}</AlertDialogTitle>
+        <AlertDialogDescription>{{ $t('Tai, ką įvedei formoje, nebus išsaugota.') }}</AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel class="u-touch">{{ $t('Likti puslapyje') }}</AlertDialogCancel>
+        <Button type="button" voice="brand" class="u-touch" data-slot="confirm-dialog-action" @click="continueNavigation">
+          {{ $t('Išeiti iš puslapio') }}
+        </Button>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
 </template>
 
 <script setup lang="ts">
@@ -27,7 +38,15 @@ import RegistrationField from './RegistrationField.vue';
 import { initialValue, type PrefilledValue, type RegistrationDefinition, type RegistrationValue } from './types';
 
 import { Button } from '@/Components/ui/button';
-import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/Components/ui/alert-dialog';
 import type { PageProps } from '@/Types';
 
 const props = defineProps<{

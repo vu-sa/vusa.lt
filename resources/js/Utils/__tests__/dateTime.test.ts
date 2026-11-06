@@ -5,8 +5,11 @@ import {
   formatDateFact,
   formatDateTime,
   formatNearDate,
+  formatDateWith,
   formatTime,
+  isSameDay,
   parseDate,
+  toNaiveDateTimeString,
 } from '../dateTime';
 
 describe('dateTime utilities (U9)', () => {
@@ -22,6 +25,75 @@ describe('dateTime utilities (U9)', () => {
       expect(parseDate(undefined)).toBeNull();
       expect(parseDate('')).toBeNull();
       expect(parseDate('invalid-date')).toBeNull();
+    });
+
+    // The backend serialises its casts as zone-less Europe/Vilnius wall-clock strings.
+    // Vitest runs in UTC, so these prove the runtime zone is not used.
+    it('reads zone-less strings as Vilnius wall-clock time', () => {
+      expect(parseDate('2026-09-19 10:00')?.toISOString()).toBe('2026-09-19T07:00:00.000Z');
+      expect(parseDate('2026-01-15 10:00:00')?.toISOString()).toBe('2026-01-15T08:00:00.000Z');
+      expect(parseDate('2026-09-19T10:00:00.000000')?.toISOString()).toBe('2026-09-19T07:00:00.000Z');
+      expect(parseDate('2026-09-19')?.toISOString()).toBe('2026-09-18T21:00:00.000Z');
+    });
+
+    it('keeps the offset of strings that carry one', () => {
+      expect(parseDate('2026-09-19T10:00:00Z')?.toISOString()).toBe('2026-09-19T10:00:00.000Z');
+      expect(parseDate('2026-09-19T10:00:00+02:00')?.toISOString()).toBe('2026-09-19T08:00:00.000Z');
+    });
+
+    it.each([
+      '2026-00-01',
+      '2026-13-01',
+      '2026-09-00',
+      '2026-09-31',
+      '2026-02-29',
+      '2024-02-30',
+      '2026-09-19 24:00',
+      '2026-09-19 25:00:00',
+      '2026-09-19T12:60:00',
+      '2026-09-19 12:00:60.123456',
+    ])('returns null for invalid zone-less fields in %s', (input) => {
+      expect(parseDate(input)).toBeNull();
+    });
+
+    it('accepts leap days and the last second of a day', () => {
+      expect(parseDate('2024-02-29')?.toISOString()).toBe('2024-02-28T22:00:00.000Z');
+      expect(parseDate('2026-09-30 23:59:59')?.toISOString()).toBe('2026-09-30T20:59:59.000Z');
+    });
+
+    it('honours the daylight saving switch', () => {
+      // Clocks go back at 04:00 EEST on 25 October 2026; 05:00 is already EET (UTC+2).
+      expect(parseDate('2026-10-25 02:00')?.toISOString()).toBe('2026-10-24T23:00:00.000Z');
+      expect(parseDate('2026-10-25 05:00')?.toISOString()).toBe('2026-10-25T03:00:00.000Z');
+    });
+  });
+
+  describe('isSameDay', () => {
+    it('compares calendar days in Vilnius', () => {
+      // 00:30 and 23:00 on 19 September in Vilnius, though different UTC days.
+      expect(isSameDay('2026-09-18T21:30:00Z', '2026-09-19T20:00:00Z')).toBe(true);
+      expect(isSameDay('2026-09-19 23:59', '2026-09-20 00:00')).toBe(false);
+    });
+
+    it('is false when either side is missing', () => {
+      expect(isSameDay(null, null)).toBe(false);
+    });
+  });
+
+  describe('formatDateWith', () => {
+    it('formats the requested fields in Vilnius', () => {
+      expect(formatDateWith('2026-09-18T22:30:00Z', { day: 'numeric' })).toBe('19');
+      expect(formatDateWith('2026-09-19 10:00', { year: 'numeric', month: 'short' }, { locale: 'en' })).toBe('Sep 2026');
+    });
+
+    it('keeps hours 24-hour in English', () => {
+      expect(formatDateWith('2026-09-19 18:00', { hour: '2-digit', minute: '2-digit' }, { locale: 'en' })).toBe('18:00');
+    });
+  });
+
+  describe('toNaiveDateTimeString', () => {
+    it('keeps the wall-clock time the user picked', () => {
+      expect(toNaiveDateTimeString(new Date(2026, 8, 9, 14, 5, 7))).toBe('2026-09-09 14:05:07');
     });
   });
 
@@ -87,6 +159,15 @@ describe('dateTime utilities (U9)', () => {
   describe('formatNearDate', () => {
     const now = new Date('2026-09-19T12:00:00Z');
 
+    it('keeps future direction for timestamps less than a minute away', () => {
+      const soon = new Date('2026-09-19T12:00:30Z');
+
+      expect(formatNearDate(soon, { now })).toBe('po 30 sek.');
+      expect(formatNearDate(soon, { now, locale: 'en' })).toBe('in 30 sec.');
+      expect(formatNearDate(now, { now })).toBe('ką tik');
+      expect(formatNearDate(now, { now, locale: 'en' })).toBe('just now');
+    });
+
     it('formats relative near dates in Lithuanian (prieš 2 val., po 3 d.)', () => {
       // < 1 min
       expect(formatNearDate(new Date('2026-09-19T11:59:45Z'), { now })).toBe('ką tik');
@@ -118,6 +199,31 @@ describe('dateTime utilities (U9)', () => {
       // 10 days ago (threshold 7)
       const tenDaysAgo = new Date('2026-09-09T12:00:00Z');
       expect(formatNearDate(tenDaysAgo, { now, thresholdDays: 7 })).toBe('2026-09-09');
+    });
+  });
+
+  describe('formatNearDate by calendar day', () => {
+    // 23:30 on 19 September in Vilnius.
+    const now = new Date('2026-09-19T20:30:00Z');
+
+    it('names today and tomorrow by the Vilnius calendar, not by hours', () => {
+      expect(formatNearDate('2026-09-19', { now, granularity: 'day' })).toBe('šiandien');
+      expect(formatNearDate('2026-09-20', { now, granularity: 'day' })).toBe('rytoj');
+      expect(formatNearDate('2026-09-18', { now, granularity: 'day', locale: 'en' })).toBe('yesterday');
+    });
+
+    it('counts whole days inside the threshold and falls back to the date beyond it', () => {
+      expect(formatNearDate('2026-09-22', { now, granularity: 'day' })).toBe('po 3 d.');
+      expect(formatNearDate('2026-09-16', { now, granularity: 'day', locale: 'en' })).toBe('3d ago');
+      expect(formatNearDate('2026-10-19', { now, granularity: 'day' })).toBe('2026-10-19');
+    });
+
+    it('uses the new Vilnius calendar day just after midnight', () => {
+      const afterMidnight = new Date('2026-09-18T21:15:00Z');
+
+      expect(formatNearDate('2026-09-19', { now: afterMidnight, granularity: 'day' })).toBe('šiandien');
+      expect(formatNearDate('2026-09-20', { now: afterMidnight, granularity: 'day' })).toBe('rytoj');
+      expect(formatNearDate('2026-09-18', { now: afterMidnight, granularity: 'day', locale: 'en' })).toBe('yesterday');
     });
   });
 

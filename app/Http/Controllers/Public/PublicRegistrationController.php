@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\PublicController;
+use App\Http\Requests\ShowRegistrationFormRequest;
 use App\Models\Form;
 use App\Models\FormField;
 use App\Services\FormOptionResolver;
@@ -11,7 +12,7 @@ use Inertia\Inertia;
 
 class PublicRegistrationController extends PublicController
 {
-    public function show(string $lang, string $registrationString, string $registrationForm, FormOptionResolver $optionResolver)
+    public function show(ShowRegistrationFormRequest $request, string $lang, string $registrationString, string $registrationForm, FormOptionResolver $optionResolver)
     {
         $this->getBanners();
         $this->getTenantLinks();
@@ -38,7 +39,7 @@ class PublicRegistrationController extends PublicController
             description: [$form->description, __('seo.registration_description', ['form' => $form->name, 'tenant' => $this->tenant->shortname])],
         );
 
-        $preselectedInstitutionId = request()->query('institution');
+        $preselectedInstitutionId = $request->validated('institution');
 
         return Inertia::render('Public/RegistrationPage', [
             'form' => [

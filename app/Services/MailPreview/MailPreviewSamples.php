@@ -29,7 +29,7 @@ class MailPreviewSamples
         return (new Models\Institution)->forceFill([
             'id' => self::ID, 'name' => ['lt' => $lt, 'en' => $en],
             'short_name' => ['lt' => $lt, 'en' => $en],
-        ]);
+        ])->setRelation('types', new Collection);
     }
 
     /** Sample text shown in the previewed locale, so English previews read as English. */
@@ -81,7 +81,7 @@ class MailPreviewSamples
             new Notifications\TaskAutoCompletedNotification($task, $this->text('Sprendimas priimtas', 'Decision made'), $user),
             new Notifications\MeetingCreatedNotification($meeting),
             new Notifications\MeetingAgendaCompletedNotification($meeting, $user),
-            (new Notifications\MeetingCreatedNotification($meeting))->viaFollow(),
+            new Notifications\MeetingCreatedNotification($meeting)->viaFollow(),
             new Notifications\MeetingReminderNotification($meeting, 2),
             new Notifications\InstitutionActivityNotification(new Collection([$request])),
             new Notifications\InstitutionActivityNotMineNotification($request),
@@ -89,8 +89,8 @@ class MailPreviewSamples
             new Notifications\ReservationStatusChangedNotification([$changes[0]], $user),
             new Notifications\AssignedToResourceNotification($actor, $object),
             new Notifications\ReservationDraftItemTakenNotification([$this->text('Projektorius', 'Projector')], '2026-11-05'),
-            new Notifications\CommentPostedNotification($this->text('Pavyzdinis komentaras.', 'A sample comment.'), $object, $actor),
-            new Notifications\CommentPostedNotification($this->text('Pavyzdinis paminėjimas.', 'A sample mention.'), $object, $actor, true),
+            new Notifications\CommentPostedNotification($this->text('<p>Manau, 3 punktą reikėtų perkelti į kitą posėdį.</p><p>Ar pritariate?</p>', '<p>I think item 3 should move to the next meeting.</p><p>Do you agree?</p>'), $object, $actor),
+            new Notifications\CommentPostedNotification($this->text('<p>@Ona, ar gali patikslinti siūlomą datą?</p>', '<p>@Ona, could you clarify the proposed date?</p>'), $object, $actor, true),
             new Notifications\DutyExpiringNotification($duty, (new Models\Pivots\Dutiable)->forceFill(['end_date' => '2026-11-30']), 30),
             new Notifications\AccessChangedNotification([[
                 'kind' => 'started', 'dutyName' => $this->text('Atstovas', 'Representative'), 'institutionName' => $institution->name,
@@ -148,13 +148,19 @@ class MailPreviewSamples
             ['Fakulteto taryba', 'Faculty council'], ['Etikos komisija', 'Ethics commission'],
             ['Senatas', 'Senate'], ['Ginčų komisija', 'Disputes commission'],
             ['Stipendijų komisija', 'Scholarship commission'], ['Rektorato taryba', 'Rectorate council'],
-        ])->map(fn (array $names, int $index): array => (new Notifications\MeetingCreatedNotification(
+        ])->map(fn (array $names, int $index): array => new Notifications\MeetingCreatedNotification(
             $this->meeting($this->institution(...$names), '2026-11-0'.($index + 1).' 15:00:00')
-        ))->toDigestItem($this->user()))->all();
+        )->toDigestItem($this->user()))->all();
 
         return match ($scenario) {
             'single' => ['meeting' => [$meeting]],
-            'grouped' => ['meeting' => [...array_slice($meetings, 0, 3), $item('meeting_agenda_completed')]],
+            'grouped' => [
+                'meeting' => [...array_slice($meetings, 0, 3), $item('meeting_agenda_completed')],
+                'task' => [
+                    $item('task_assigned'),
+                    new Notifications\TaskAssignedNotification($this->task('Atnaujinti kontaktus', 'Update the contacts', $this->institution()), $this->user())->toDigestItem($this->user()),
+                ],
+            ],
             'overflow' => ['meeting' => $meetings],
             'overdue' => ['task' => [$item('task_overdue')]],
             'legacy' => ['meeting' => [array_diff_key($meeting, array_flip(['type', 'digestLine', 'digestGroupTitle']))]],

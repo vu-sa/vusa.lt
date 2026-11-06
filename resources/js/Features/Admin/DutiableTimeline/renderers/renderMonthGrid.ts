@@ -4,7 +4,7 @@ import { MONTH_LABEL_MIN_WIDTH } from '../constants';
 import type { TimelineColors } from '../timelineColors';
 
 import type { GanttColors } from '@/Components/Graphs/ganttColors';
-import { formatMonthShort } from '@/Utils/IntlTime';
+import { formatMonthAbbr } from '@/Utils/dateTime';
 
 export interface MonthGridContext {
   g: d3.Selection<SVGGElement, unknown, null, undefined>;
@@ -124,5 +124,6 @@ export function renderMonthHeader(ctx: MonthHeaderContext): void {
     .attr('text-anchor', 'middle')
     .attr('fill', colors.monthHeaderText)
     .attr('font-size', 9)
-    .text(d => formatMonthShort(d));
+    // d3's month ticks are local midnights, so read the month in the browser's own zone.
+    .text(d => formatMonthAbbr(d, { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }));
 }

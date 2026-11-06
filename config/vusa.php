@@ -97,4 +97,23 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | VU account renames at Microsoft login
+    |--------------------------------------------------------------------------
+    |
+    | VU renames a person's account when they become staff (vardas.pavarde@gmc.stud.vu.lt →
+    | @gmc.vu.lt or @cr.vu.lt). Faculty mail prefixes are the padalinys tenant aliases, except
+    | where VU's prefix differs from the alias.
+    |
+    */
+
+    'microsoft_login' => [
+        'faculty_mail_prefixes' => [
+            'filf' => 'flf',
+        ],
+        'university_domain' => 'vu.lt',
+        'central_domain' => 'cr.vu.lt',
+    ],
+
 ];

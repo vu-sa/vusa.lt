@@ -232,6 +232,7 @@
           <span class="text-sm text-muted-foreground">{{ $t('dienų') }}</span>
         </div>
       </FormFieldWrapper>
+
     </template>
 
     <template v-if="isEditing && enableDelete" #danger-zone>
@@ -265,7 +266,7 @@ import { computed, ref } from 'vue';
 
 import ActivityStatusField from './ActivityStatusField.vue';
 
-import { operatingStatuses } from '@/Constants/statuses';
+import { operatingStatuses } from '@/Constants/statusIcons';
 import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import PermalinkField from '@/Components/AdminForms/PermalinkField.vue';

@@ -17,8 +17,8 @@ import {
   getActivityLabel,
   isDutyCurrentlyActive,
   type ActivityLevel,
-} from '@/Pages/Admin/Dashboard/Composables/useActivityStatus';
-import type { RepresentativeActivityCategory } from '@/Pages/Admin/Dashboard/types';
+} from '@/Components/Graphs/composables/useActivityStatus';
+import type { RepresentativeActivityCategory } from '@/Components/Graphs/types';
 
 interface ParsedDutyMember {
   institution_id: string | number;

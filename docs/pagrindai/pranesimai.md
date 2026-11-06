@@ -1,8 +1,7 @@
 ---
 doc_status: reviewed
 title: Pranešimai
-coverage: ignore
-last_reviewed: 2026-11-01
+last_reviewed: 2026-11-05
 tests:
   - tests/Feature/Notifications/NotificationFiringTest.php
   - tests/Feature/Tasks/Subscribers/MeetingTaskSubscriberTest.php
@@ -121,6 +120,9 @@ nereiškia, kad laiškas jau pristatytas. Užklausų istorija pateikiama
 nuorodas: veiklos klausime **Taip, vyko** / **Ne, nevyko**, papildymo klausime **Papildyti įrašus** /
 **Viskas užfiksuota**, abiem atvejais **Nesu šio organo narys (-ė)**. Papildymo klausime pateikiamos
 ir konkrečių neužpildytų posėdžių nuorodos. Jos yra ir tekstinėje laiško versijoje.
+
+Komentarų laiškuose ir suvestinėse po autoriaus veiksmo rodoma trumpa komentaro citata be formatavimo.
+Pranešimai į įrenginį taip pat turi ištrauką. Daugiau – [Komentarai](/visak/komentarai#pranesimai).
 
 Visi laiškai pasirašomi **Mano VU SA** vardu, ne koordinatoriaus.
 

@@ -19,6 +19,8 @@ final class BuildUserIndexQuery
         $query = User::query()
             // Institution names feed the row's quick list of where the person served.
             ->with([
+                'roles',
+                'tenants',
                 'duties:id,institution_id',
                 'duties.institution:id,name,short_name,tenant_id',
                 'duties.institution.tenant:id,shortname',

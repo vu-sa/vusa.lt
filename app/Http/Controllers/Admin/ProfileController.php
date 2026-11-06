@@ -8,6 +8,7 @@ use App\Actions\Media\SyncImageMedia;
 use App\Enums\NotificationType;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Concerns\ApiResponses;
+use App\Http\Requests\ActivityRequests\ActivityRequestHistoryRequest;
 use App\Http\Requests\MuteNotificationsRequest;
 use App\Http\Requests\UpdateNotificationPreferencesRequest;
 use App\Http\Requests\UpdatePasswordRequest;
@@ -18,7 +19,6 @@ use App\Notifications\TestPushNotification;
 use App\Services\NotificationRouter;
 use App\Services\Notifications\NotificationAudience;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -28,10 +28,10 @@ class ProfileController extends AdminController
 {
     use ApiResponses;
 
-    public function activityRequests(Request $request, GetUserActivityRequests $requests)
+    public function activityRequests(ActivityRequestHistoryRequest $request, GetUserActivityRequests $requests)
     {
         return $this->inertiaResponse('Admin/ShowMyActivityRequests', [
-            'activityRequests' => fn () => $requests->history($request->user(), $request->user(), max(1, $request->integer('activity_requests_page', 1))),
+            'activityRequests' => fn () => $requests->history($request->user(), $request->user(), $request->historyPage()),
         ]);
     }
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\AuthenticateRequest;
 use App\Models\Duty;
 use App\Models\User;
+use App\Services\MicrosoftAccountResolver;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Uri;
 use Inertia\Inertia;
+use Laravel\Socialite\Contracts\User as SocialiteUserContract;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\InvalidStateException;
 use SocialiteProviders\Microsoft\Provider as MicrosoftProvider;
@@ -23,7 +25,7 @@ class AuthController extends Controller
     /**
      * Handle Microsoft OAuth callback.
      */
-    public function storeFromMicrosoft(Request $request)
+    public function storeFromMicrosoft(Request $request, MicrosoftAccountResolver $accountResolver)
     {
         $isPopup = $request->session()->pull('oauth_popup', false);
 
@@ -33,19 +35,22 @@ class AuthController extends Controller
 
         $microsoftProvider = Socialite::driver('microsoft');
 
+        // The stateless retry sits inside the outer try so its failures (e.g. a callback without a code) are handled too.
         try {
-            $microsoftUser = $microsoftProvider->user();
-        } catch (InvalidStateException) {
-            Log::warning('Microsoft OAuth InvalidStateException, retrying with stateless', [
-                'user_ip' => $request->ip(),
-                'user_agent' => $request->userAgent(),
-                'session_id' => $request->session()->getId(),
-                'referer' => $request->headers->get('referer'),
-            ]);
+            try {
+                $microsoftUser = $microsoftProvider->user();
+            } catch (InvalidStateException) {
+                Log::warning('Microsoft OAuth InvalidStateException, retrying with stateless', [
+                    'user_ip' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                    'session_id' => $request->session()->getId(),
+                    'referer' => $request->headers->get('referer'),
+                ]);
 
-            /** @phpstan-ignore-next-line */
-            $microsoftProvider = Socialite::driver('microsoft')->stateless();
-            $microsoftUser = $microsoftProvider->user();
+                /** @phpstan-ignore-next-line */
+                $microsoftProvider = Socialite::driver('microsoft')->stateless();
+                $microsoftUser = $microsoftProvider->user();
+            }
         } catch (ClientException $e) {
             // e.g. a 400 from the token exchange
             Log::error('Microsoft OAuth ClientException', [
@@ -64,36 +69,11 @@ class AuthController extends Controller
             return $this->failLogin($isPopup, __('messages.auth.login_unexpected_error'));
         }
 
-        $this->rememberLogoutHint($request, $microsoftProvider);
+        $claims = $microsoftProvider instanceof MicrosoftProvider ? $microsoftProvider->getClaims() : null;
+        $this->rememberLogoutHint($request, $claims);
+        $microsoftTenantId = is_string($claims->tid ?? null) ? $claims->tid : null;
 
-        $email = $microsoftUser->getEmail();
-        $user = User::withTrashed()->where('email', $email)->first();
-
-        // A deleted account must not reinstate itself, nor fall through to the duty branch
-        // and be re-created — users_email_unique would reject that anyway.
-        if ($user?->trashed()) {
-            return $this->failLogin($isPopup, __('auth.account_deleted'));
-        }
-
-        $account = $user ?? $this->currentDutyHolder($email, $isPopup);
-
-        if ($account instanceof User) {
-            return $this->completeLogin($request, $account, $microsoftUser->token ?? null, $isPopup);
-        }
-
-        if ($account !== null) {
-            return $account;
-        }
-
-        $message = __('messages.auth.no_account_found');
-
-        if ($isPopup) {
-            return $this->handlePopupCallback(false, route('login'), $message);
-        }
-
-        return redirect()->route('login')->withErrors([
-            'email' => $message,
-        ]);
+        return $this->signIn($request, $accountResolver, $microsoftUser, $microsoftTenantId, $isPopup);
     }
 
     /**
@@ -147,6 +127,46 @@ class AuthController extends Controller
         return Inertia::location((string) $logoutUrl);
     }
 
+    /**
+     * The personal account first, then the single holder of a duty mailbox.
+     */
+    private function signIn(Request $request, MicrosoftAccountResolver $accountResolver, SocialiteUserContract $microsoftUser, ?string $microsoftTenantId, bool $isPopup)
+    {
+        $user = $accountResolver->resolve($microsoftUser, $microsoftTenantId);
+
+        // A deleted account must not reinstate itself, nor fall through to the duty branch
+        // and be re-created — users_email_unique would reject that anyway.
+        if ($user?->trashed()) {
+            return $this->failLogin($isPopup, __('auth.account_deleted'));
+        }
+
+        if ($user instanceof User) {
+            $accountResolver->link($user, $microsoftUser, $microsoftTenantId);
+
+            return $this->completeLogin($request, $user, $microsoftUser->token ?? null, $isPopup);
+        }
+
+        $account = $this->currentDutyHolder($microsoftUser->getEmail(), $isPopup);
+
+        if ($account instanceof User) {
+            return $this->completeLogin($request, $account, $microsoftUser->token ?? null, $isPopup);
+        }
+
+        if ($account !== null) {
+            return $account;
+        }
+
+        $message = __('messages.auth.no_account_found');
+
+        if ($isPopup) {
+            return $this->handlePopupCallback(false, route('login'), $message);
+        }
+
+        return redirect()->route('login')->withErrors([
+            'email' => $message,
+        ]);
+    }
+
     private function logoutSession(Request $request): void
     {
         Auth::logout();
@@ -178,15 +198,11 @@ class AuthController extends Controller
         return $this->failLogin($isPopup, __('messages.auth.login_error'));
     }
 
-    private function rememberLogoutHint(Request $request, mixed $microsoftProvider): void
+    private function rememberLogoutHint(Request $request, ?\stdClass $claims): void
     {
         $request->session()->forget('microsoft_logout_hint');
 
-        if (! $microsoftProvider instanceof MicrosoftProvider) {
-            return;
-        }
-
-        $logoutHint = $microsoftProvider->getClaims()->login_hint ?? null;
+        $logoutHint = $claims->login_hint ?? null;
 
         if (is_string($logoutHint) && $logoutHint !== '') {
             $request->session()->put('microsoft_logout_hint', $logoutHint);

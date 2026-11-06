@@ -42,6 +42,12 @@ describe('unauthorized access', function (): void {
         expect($response->status())->toBe(403);
     });
 
+    test('cannot open duty creation with a malformed prefill', function (): void {
+        asUser($this->regularUser)
+            ->get(route('duties.create', ['institution_id' => ['x']]))
+            ->assertForbidden();
+    });
+
     test('cannot create duties', function (): void {
         $response = asUser($this->regularUser)->post(route('duties.store'), [
             'name' => ['lt' => 'Test Duty', 'en' => 'Test Duty'],
@@ -64,6 +70,21 @@ describe('unauthorized access', function (): void {
 });
 
 describe('authorized access', function (): void {
+    test('loaded duty tenants preserve update and delete isolation', function (bool $eagerLoad): void {
+        $local = Duty::factory()->for($this->dutyManagerDuty->institution)->create();
+        $otherTenant = Tenant::query()->whereKeyNot($this->tenant->id)->firstOrFail();
+        $foreign = Duty::factory()->for(Institution::factory()->for($otherTenant))->create();
+        if ($eagerLoad) {
+            $local->load('tenants');
+            $foreign->load('tenants');
+        }
+
+        expect($this->dutyManager->can('update', $local))->toBeTrue()
+            ->and($this->dutyManager->can('delete', $local))->toBeTrue()
+            ->and($this->dutyManager->can('update', $foreign))->toBeFalse()
+            ->and($this->dutyManager->can('delete', $foreign))->toBeFalse();
+    })->with(['lazy' => false, 'eager' => true]);
+
     test('inline duty creation via API returns the created model', function (): void {
         $response = asUser($this->dutyManager)->postJson(route('api.v1.admin.duties.store'), [
             'name' => ['lt' => 'Vedlio pareigybė', 'en' => 'Wizard duty'],
@@ -80,6 +101,39 @@ describe('authorized access', function (): void {
         $response->assertOk();
         $response->assertInertia(fn ($page) => $page->component('Admin/People/IndexDuty'));
     });
+
+    test('index query count stays constant as more duty rows are returned', function (string $routeName, string $itemsPath): void {
+        Duty::factory()->for($this->dutyManagerDuty->institution)->count(10)->create();
+
+        $fetch = fn (int $perPage) => asUserWithInertia($this->dutyManager)
+            ->getJson(route($routeName, ['per_page' => $perPage]))->assertOk();
+
+        // Warm request-level infrastructure before comparing the two page sizes.
+        $fetch(3);
+        $fetch(10);
+
+        DB::enableQueryLog();
+        try {
+            DB::flushQueryLog();
+            $small = $fetch(3);
+            $smallCount = count(DB::getQueryLog());
+            DB::flushQueryLog();
+            $large = $fetch(10);
+            $largeCount = count(DB::getQueryLog());
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
+
+        $small->assertJsonCount(3, $itemsPath);
+        $large->assertJsonCount(10, $itemsPath)
+            ->assertJsonPath($itemsPath.'.0.can_update', true)
+            ->assertJsonPath($itemsPath.'.0.can_delete', true);
+        expect($largeCount)->toBe($smallCount);
+    })->with([
+        'page' => ['duties.index', 'props.duties.data'],
+        'API' => ['api.v1.admin.duties.index', 'data.items'],
+    ]);
 
     test('super admin can access duties index', function (): void {
         $admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
@@ -621,82 +675,17 @@ describe('duty search indexing (cross-tenant visibility)', function (): void {
     });
 });
 
-describe('assignable users is_recent flag', function (): void {
-    test('assignableUsers carries correct is_recent flag based on duty history and activity', function (): void {
-        // Has a current (open-ended) dutiable → recent
-        $currentDutyUser = User::factory()->create([
-            'created_at' => now()->subYears(3),
-            'last_action' => now()->subYears(2),
-        ]);
-        DB::table('dutiables')->insert([
-            'id' => (string) Str::ulid(),
-            'duty_id' => $this->dutyManagerDuty->id,
-            'dutiable_id' => $currentDutyUser->id,
-            'dutiable_type' => MorphMap::alias(User::class),
-            'start_date' => now()->subYear()->toDateString(),
-            'end_date' => null,
-            'created_at' => now()->subYear(),
-            'updated_at' => now()->subYear(),
-        ]);
-
-        // Duty ended 6 months ago (within 12-month window) → recent
-        $recentPastDutyUser = User::factory()->create([
-            'created_at' => now()->subYears(3),
-            'last_action' => now()->subYears(2),
-        ]);
-        DB::table('dutiables')->insert([
-            'id' => (string) Str::ulid(),
-            'duty_id' => $this->dutyManagerDuty->id,
-            'dutiable_id' => $recentPastDutyUser->id,
-            'dutiable_type' => MorphMap::alias(User::class),
-            'start_date' => now()->subMonths(9)->toDateString(),
-            'end_date' => now()->subMonths(6)->toDateString(),
-            'created_at' => now()->subMonths(9),
-            'updated_at' => now()->subMonths(9),
-        ]);
-
-        // Account created 2 months ago, no duties → recent
-        $newlyCreatedUser = User::factory()->create([
-            'created_at' => now()->subMonths(2),
-            'last_action' => null,
-        ]);
-
-        // Old account, last_action 6 months ago, no duties → recent
-        $recentlyActiveUser = User::factory()->create([
-            'created_at' => now()->subYears(3),
-            'last_action' => now()->subMonths(6),
-        ]);
-
-        // Duty ended 18 months ago, last_action 14 months ago, old account → NOT recent
-        $staleUser = User::factory()->create([
-            'created_at' => now()->subYears(3),
-            'last_action' => now()->subMonths(14),
-        ]);
-        DB::table('dutiables')->insert([
-            'id' => (string) Str::ulid(),
-            'duty_id' => $this->dutyManagerDuty->id,
-            'dutiable_id' => $staleUser->id,
-            'dutiable_type' => MorphMap::alias(User::class),
-            'start_date' => now()->subMonths(20)->toDateString(),
-            'end_date' => now()->subMonths(18)->toDateString(),
-            'created_at' => now()->subMonths(20),
-            'updated_at' => now()->subMonths(20),
-        ]);
+describe('duty form props', function (): void {
+    test('create and edit do not ship the whole user directory', function (): void {
+        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
 
         asUserWithInertia($this->dutyManager)->get(route('duties.create'))
             ->assertStatus(200)
-            ->assertInertia(fn ($page) => $page->where('assignableUsers', function ($users) use (
-                $currentDutyUser, $recentPastDutyUser, $newlyCreatedUser, $recentlyActiveUser, $staleUser
-            ) {
-                $byId = collect($users)->keyBy('id');
-                expect($byId[$currentDutyUser->id]['is_recent'])->toBeTrue()
-                    ->and($byId[$recentPastDutyUser->id]['is_recent'])->toBeTrue()
-                    ->and($byId[$newlyCreatedUser->id]['is_recent'])->toBeTrue()
-                    ->and($byId[$recentlyActiveUser->id]['is_recent'])->toBeTrue()
-                    ->and($byId[$staleUser->id]['is_recent'])->toBeFalse();
+            ->assertInertia(fn ($page) => $page->missing('assignableUsers'));
 
-                return true;
-            }));
+        asUserWithInertia($this->dutyManager)->get(route('duties.edit', $duty))
+            ->assertStatus(200)
+            ->assertInertia(fn ($page) => $page->missing('assignableUsers'));
     });
 });
 
@@ -973,4 +962,14 @@ describe('informational seat count', function (): void {
         expect($duty->fresh()->places_to_occupy)->toBe(38)
             ->and(Duty::where('name->lt', 'Netinkamas skaičius')->exists())->toBeFalse();
     })->with(['zero' => 0, 'negative' => -1, 'fraction' => 1.5, 'text' => 'invalid']);
+});
+
+test('duty creation ignores a malformed optional institution prefill', function (): void {
+    asUser($this->dutyManager)
+        ->get(route('duties.create', ['institution_id' => ['x']]))
+        ->assertOk()
+        ->assertSessionHasNoErrors()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('prefillInstitutionId', null)
+        );
 });

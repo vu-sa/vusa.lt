@@ -15,8 +15,8 @@
     actions-width="w-44"
     table-min-width="min-w-[59rem]"
     :trash="{ count: deletedCount, active: isTrash }"
-    @row-action="(item, key) => actions.select(key)"
     :search-placeholder="$t('Ieškoti komplektų')"
+    @row-action="(item, key) => actions.select(key)"
   >
     <template #actions>
       <Button v-if="canCreate && !isTrash" as-child variant="brand" size="lg">
@@ -67,7 +67,7 @@ import type { CollectionColumn } from '@/Components/Collection/types';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { contentStatuses } from '@/Constants/statuses';
+import { contentStatuses } from '@/Constants/statusIcons';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { isTrashView, useLocalCollectionSource } from '@/Composables/useCollectionSource';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';

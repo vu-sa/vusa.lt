@@ -55,7 +55,7 @@
  * `RCPresentationPicker` (hidden for `panel`, which ignores presentation entirely — same
  * gate `HeroForm.vue` already uses).
  */
-import { computed, h } from 'vue';
+import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import RCBlockToolbarShell from '../Editor/Fullscreen/RCBlockToolbarShell.vue';
@@ -65,6 +65,8 @@ import { withWidth } from '../Editor/blockWidth';
 import { getContentType, type BlockWidth, type ContentPart } from '../Types';
 import type { BlockPresentation } from '../bandLayout';
 import type { PlainPadding } from '../sectionClasses';
+
+import { BannerVariantIcon, CenteredVariantIcon, PanelVariantIcon, SplitVariantIcon } from './heroVariantIcons';
 
 import type { Hero } from '@/Types/contentParts';
 import { Field, FieldLabel } from '@/Components/ui/field';
@@ -112,33 +114,6 @@ function setPresentation(value: BlockPresentation): void {
 function setPlainPadding(value: PlainPadding): void {
   emit('update:content', { ...props.content, options: { ...heroOptions.value, plainPadding: value } });
 }
-
-// Variant skeleton icons — same simple SVG schematics as HeroForm.vue's picker, scaled
-// down for the toolbar's compact popover.
-const SplitVariantIcon = () => h('svg', { viewBox: '0 0 96 64', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, [
-  h('rect', { x: 6, y: 12, width: 34, height: 8, rx: 2 }),
-  h('rect', { x: 6, y: 26, width: 34, height: 14, rx: 2 }),
-  h('rect', { x: 6, y: 46, width: 16, height: 8, rx: 2 }),
-  h('rect', { x: 50, y: 8, width: 40, height: 48, rx: 3 }),
-]);
-
-const CenteredVariantIcon = () => h('svg', { viewBox: '0 0 96 64', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, [
-  h('rect', { x: 28, y: 12, width: 40, height: 8, rx: 2 }),
-  h('rect', { x: 20, y: 26, width: 56, height: 10, rx: 2 }),
-  h('rect', { x: 38, y: 42, width: 20, height: 8, rx: 2 }),
-]);
-
-const BannerVariantIcon = () => h('svg', { viewBox: '0 0 96 64', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, [
-  h('rect', { x: 4, y: 26, width: 60, height: 12, rx: 2 }),
-  h('rect', { x: 72, y: 26, width: 20, height: 12, rx: 2 }),
-]);
-
-const PanelVariantIcon = () => h('svg', { viewBox: '0 0 96 64', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, [
-  h('rect', { x: 2, y: 2, width: 92, height: 60, rx: 8 }),
-  h('rect', { x: 10, y: 16, width: 32, height: 32, rx: 6 }),
-  h('rect', { x: 50, y: 18, width: 36, height: 8, rx: 2 }),
-  h('rect', { x: 50, y: 30, width: 36, height: 14, rx: 2 }),
-]);
 
 const variantOptions: { value: NonNullable<Hero['options']['variant']>; icon: unknown }[] = [
   { value: 'split', icon: SplitVariantIcon },

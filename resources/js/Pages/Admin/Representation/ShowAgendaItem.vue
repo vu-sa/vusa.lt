@@ -334,7 +334,7 @@ import { Button } from '@/Components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/Components/ui/sheet';
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
-import { agendaItemStatuses } from '@/Constants/statuses';
+import { agendaItemStatuses } from '@/Constants/statusIcons';
 import { getAgendaItemStatus } from '@/Composables/useAgendaItemStyling';
 import { enterAgendaItem } from '@/Composables/useRecordTrail';
 import { agendaItemFormData, useAgendaItemAutosave, type AgendaItemFormData } from '@/Composables/useAgendaItemAutosave';

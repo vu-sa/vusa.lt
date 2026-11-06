@@ -14,8 +14,6 @@ elgsenos dalis. Vien testų ar sėkmingo build neužtenka būsenai `reviewed`.
 ---
 title: Skilties pavadinimas
 doc_status: draft
-area: featureArea
-models: [Model]
 ---
 
 # Skilties pavadinimas
@@ -53,7 +51,6 @@ Tik toms dalims gali pridėti `tests`. Patikrinęs visą parašytą puslapį, pa
 ---
 title: Atlikti konkretų darbą
 doc_status: draft
-coverage: ignore
 ---
 
 # Atlikti konkretų darbą
@@ -65,7 +62,7 @@ coverage: ignore
 ```
 
 Taisykles ir teisių lenteles susiek su autoritetingu skilties gidu. Jei puslapis aprašo
-testuojamą funkciją, vietoje `coverage: ignore` deklaruok atitinkamą `area` ir įrodymų failus.
+testuojamą funkciją, nurodyk įrodymų failus `tests` lauke.
 
 ## Sąvoka arba darbo srities apžvalga
 
@@ -73,7 +70,6 @@ testuojamą funkciją, vietoje `coverage: ignore` deklaruok atitinkamą `area` i
 ---
 title: Sąvoka arba darbo sritis
 doc_status: draft
-coverage: ignore
 ---
 
 # Sąvoka arba darbo sritis
@@ -89,9 +85,8 @@ Apžvalgos peržiūros data nepatvirtina visų jos nuorodomis pasiekiamų puslap
 - Palygink žingsnius su dabartine sąsaja, roles su seeders, policies ir rolių testais.
 - Atskirai įvardyk sistemos patikras, siūlomas reikšmes ir organizacinius susitarimus.
 - Patikrink statusą, įrodymų apimtį, nuorodas ir išsaugotus antraščių inkarus.
-- Paleisk `./vendor/bin/sail artisan docs:coverage --strict`.
+- Paleisk `./vendor/bin/sail artisan test --compact tests/Feature/Docs/DocTestCitationsTest.php`.
 - Sukurk PDF su `./vendor/bin/sail npm run docs:pdf`, tada svetainę su `./vendor/bin/sail npm run docs:build`.
 - Pakeitęs maketą patikrink 390, 820, 1180 ir 1440 px, abi temas, klaviatūrą ir lietimą.
 
-`docs:coverage` kredituoja deklaruotus `area` ir `models`, įskaitant juodraščius.
-Jo procentas nėra baigtų puslapių procentas. Parengtį nurodo `doc_status`.
+Parengtį nurodo `doc_status`.

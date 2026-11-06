@@ -8,7 +8,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import { horizontalScrollbarSize } from '../scrollbarSize';
 
-import type { GanttGroupBy } from '@/Pages/Admin/Dashboard/Composables/useGanttSettings';
+import type { GanttGroupBy } from '@/Components/Graphs/composables/useGanttSettings';
 
 export const GANTT_ROW_HEIGHT = 28;
 export const GANTT_AXIS_HEIGHT = 22;

@@ -10,13 +10,13 @@
     :item-key="meetingKey"
     :quick-filters
     :columns
-    @row-action="(item, key) => actions.select(key)"
     table-fixed
     actions-width="w-44"
     table-min-width="min-w-[68rem]"
     :pinned-items="pinnedMeetings"
     :search-placeholder="$t('Ieškoti posėdžių')"
     :trash="{ count: deletedCount, active: isTrash }"
+    @row-action="(item, key) => actions.select(key)"
     @quick-filter="toggleQuickFilter"
   >
     <template #actions>
@@ -97,7 +97,7 @@ import MeetingOutcome from '@/Components/Meetings/MeetingOutcome.vue';
 import { titleOmitsDate } from '@/Components/Meetings/meetingTitle';
 import MeetingPreview from '@/Components/Meetings/MeetingPreview.vue';
 import { Button } from '@/Components/ui/button';
-import { meetingCompletionStatuses, type MeetingCompletionStatus } from '@/Constants/statuses';
+import { meetingCompletionStatuses, type MeetingCompletionStatus } from '@/Constants/statusIcons';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { useRowAbilities } from '@/Composables/useRowAbilities';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';

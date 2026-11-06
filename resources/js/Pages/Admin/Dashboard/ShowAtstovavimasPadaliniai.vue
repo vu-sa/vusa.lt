@@ -146,7 +146,7 @@ import TenantTimelineSection from './Components/TenantTimelineSection.vue';
 import TimelineGanttSkeleton from './Components/TimelineGanttSkeleton.vue';
 import { useAtstovavimasActions } from './Composables/useAtstovavimasActions';
 import { useGanttChartData } from './Composables/useGanttChartData';
-import { provideGanttSettings } from './Composables/useGanttSettings';
+import { provideGanttSettings } from '@/Components/Graphs/composables/useGanttSettings';
 import { provideTimelineFilters } from './Composables/useTimelineFilters';
 import { useTenantMeetings } from './Composables/useTenantMeetings';
 import { useTenantStatusHistory } from './Composables/useTenantStatusHistory';

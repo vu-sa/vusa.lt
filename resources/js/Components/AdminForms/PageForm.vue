@@ -329,7 +329,7 @@ import ContentAnalyticsCard from '@/Components/Analytics/ContentAnalyticsCard.vu
 import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';
-import { contentStatuses, type StatusPresentation } from '@/Constants/statuses';
+import { contentStatuses, type StatusPresentation } from '@/Constants/statusIcons';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { OrderedListInput } from '@/Components/ui/ordered-list-input';

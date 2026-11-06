@@ -2,50 +2,20 @@
 
 namespace App\Listeners;
 
+use App\Actions\ForgetUserAccess;
 use App\Events\DutiableChanged;
-use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\User;
-use App\Observers\UserPermissionObserver;
-use App\Services\Permissions\PermissionMapBuilder;
 use App\Support\MorphMap;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Support\Facades\Cache;
 
-class HandleDutiableChange implements ShouldQueue
+class HandleDutiableChange
 {
-    use InteractsWithQueue;
-
-    /**
-     * Clearing the caches before the write commits just re-warms them from the old
-     * state, leaving the user's permissions stale for as long as the cache lives.
-     */
-    public $afterCommit = true;
-
-    /**
-     * Handle the event.
-     *
-     * This runs on deletion as well as saving: losing a duty changes a user's
-     * permissions just as much as gaining one, so their cached maps must go either way.
-     */
     public function handle(DutiableChanged $event): void
     {
-        // Only User dutiables carry permissions. Contacts and other morph types have
-        // none, and their id must not be used to look up a User that happens to share it.
+        // Other morph types may share an id with a user without carrying their access.
         if ($event->dutiableType !== MorphMap::alias(User::class)) {
             return;
         }
 
-        self::forgetUserAuthority($event->modelId);
-    }
-
-    /** Drop every cache derived from a user's duties; also called where dutiables move without model events. */
-    public static function forgetUserAuthority(string $userId): void
-    {
-        // resetCache() deliberately leaves these two maps alone, so forget them here.
-        PermissionMapBuilder::forgetCachedMaps($userId);
-        Cache::forget(HandleInertiaRequests::adminNavigationCacheKey($userId));
-
-        app(UserPermissionObserver::class)->invalidateUserCache($userId);
+        ForgetUserAccess::execute([$event->modelId]);
     }
 }

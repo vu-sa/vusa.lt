@@ -117,9 +117,4 @@ class Banner extends Model implements ImageMediaOwner
     {
         return $this->belongsTo(Tenant::class);
     }
-
-    public function tenants()
-    {
-        return $this->tenant();
-    }
 }

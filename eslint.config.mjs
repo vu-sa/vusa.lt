@@ -1,71 +1,43 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import pluginVue from 'eslint-plugin-vue';
 import pluginVueA11y from 'eslint-plugin-vuejs-accessibility';
-import importPlugin from 'eslint-plugin-import-x';
+import importPlugin, { createNodeResolver } from 'eslint-plugin-import-x';
 import stylistic from '@stylistic/eslint-plugin';
 import globals from 'globals';
 
-// Paths join this fence only after their redesign migration lands. Keeping the initial list empty
-// lets foundation work land without turning legacy debt into an unreviewable lint failure.
-export const MIGRATED_ADMIN_PATHS = [
-  'resources/js/Pages/Admin/MailPreviews.vue',
+const projectRoot = path.dirname(fileURLToPath(import.meta.url));
+const sourceResolver = createNodeResolver({
+  alias: { '@': [path.resolve(projectRoot, 'resources/js')] },
+  extensions: ['.ts', '.tsx', '.vue', '.js', '.jsx', '.mjs', '.json'],
+});
+
+export const LEGACY_ADMIN_EXCEPTIONS = [
+  'resources/js/Pages/Admin/Dashboard/Components/CoordinatorSkeleton.vue',
+  'resources/js/Pages/Admin/Dashboard/Components/RepresentativeActivitySkeleton.vue',
+  'resources/js/Pages/Admin/Dashboard/Components/RepresentativeDataTable.vue',
+];
+
+const MIGRATED_ADMIN_COMPONENT_PATHS = [
   'resources/js/Components/Layouts/Shell/**',
   'resources/js/Components/CommandPalette/**',
-  'resources/js/Pages/Admin/AccessDenied.vue',
-  'resources/js/Pages/Admin/LoginForm.vue',
   'resources/js/Components/Layouts/RecordPage*.vue',
   'resources/js/Components/Meetings/MeetingDatePlate.vue',
   'resources/js/Components/Meetings/MeetingCompletionChecklist.vue',
   'resources/js/Features/Admin/ActivityLogViewer/RecordActivity.vue',
-  'resources/js/Pages/Admin/ShowAdminHome.vue',
-  'resources/js/Pages/Admin/Representation/IndexMeeting.vue',
-  'resources/js/Pages/Admin/Dashboard/ShowAtstovavimas.vue',
-  'resources/js/Pages/Admin/Dashboard/ShowAtstovavimasPadaliniai.vue',
-  'resources/js/Pages/Admin/Dashboard/Components/RepresentativeActivitySection.vue',
-  'resources/js/Pages/Admin/Dashboard/Components/TenantInsightsTabs.vue',
-  'resources/js/Pages/Admin/Dashboard/Components/TenantTimelineSection.vue',
-  'resources/js/Pages/Admin/Dashboard/Components/TimelineGanttChart.vue',
-  'resources/js/Pages/Admin/Dashboard/Components/TimelineGanttSkeleton.vue',
-  'resources/js/Pages/Admin/Dashboard/Components/UserTimelineSection.vue',
   'resources/js/Components/Graphs/GanttZoomControl.vue',
   'resources/js/Components/Graphs/MeetingsGantt.vue',
   'resources/js/Components/Graphs/MeetingsGanttToolbar.vue',
-  'resources/js/Pages/Admin/Calendar/IndexCalendarEvents.vue',
-  'resources/js/Pages/Admin/Calendar/IndexEventType.vue',
-  'resources/js/Pages/Admin/Content/IndexBanner.vue',
-  'resources/js/Pages/Admin/Content/IndexNews.vue',
-  'resources/js/Pages/Admin/Content/IndexPages.vue',
-  'resources/js/Pages/Admin/Content/CreateNews.vue',
-  'resources/js/Pages/Admin/Content/EditNews.vue',
-  'resources/js/Pages/Admin/Content/CreatePage.vue',
-  'resources/js/Pages/Admin/Content/EditPage.vue',
-  'resources/js/Pages/Admin/Files/IndexDocument.vue',
-  'resources/js/Pages/Admin/Forms/IndexForm.vue',
-  'resources/js/Pages/Admin/ModelMeta/IndexRelationships.vue',
-  'resources/js/Pages/Admin/ModelMeta/IndexTypes.vue',
-  'resources/js/Pages/Admin/People/DutiableTimeline.vue',
   'resources/js/Features/Admin/DutiableTimeline/*.vue',
   'resources/js/Components/Patterns/FocusModeFrame.vue',
-  'resources/js/Pages/Admin/People/IndexDuty.vue',
-  'resources/js/Pages/Admin/People/IndexInstitution.vue',
-  'resources/js/Pages/Admin/People/IndexStudyProgram.vue',
-  'resources/js/Pages/Admin/People/IndexTenant.vue',
-  'resources/js/Pages/Admin/People/IndexUser.vue',
-  'resources/js/Pages/Admin/Permissions/IndexPermission.vue',
-  'resources/js/Pages/Admin/Permissions/IndexResponsibility.vue',
-  'resources/js/Pages/Admin/Problems/IndexProblem.vue',
-  'resources/js/Pages/Admin/Tasks/**',
   'resources/js/Features/Admin/TaskManager/TaskCompletionControl.vue',
   'resources/js/Features/Admin/TaskManager/TaskDetails.vue',
   'resources/js/Features/Admin/TaskManager/TaskRow.vue',
-  'resources/js/Pages/Admin/Reservations/IndexResource.vue',
-  'resources/js/Pages/Admin/Reservations/IndexResourceCategory.vue',
-  'resources/js/Pages/Admin/StudySets/IndexStudySet.vue',
   'resources/js/Components/Brand/**',
   'resources/js/Components/ui/control/**',
-  'resources/js/Pages/Admin/Representation/ShowMeeting.vue',
-  'resources/js/Pages/Admin/Representation/ShowAgendaItem.vue',
   'resources/js/Components/AgendaItems/**',
   'resources/js/Components/Meetings/**',
   'resources/js/Components/Discussions/**',
@@ -82,34 +54,15 @@ export const MIGRATED_ADMIN_PATHS = [
   'resources/js/Components/Patterns/ConfirmDialog.vue',
   'resources/js/Components/Patterns/FormSection.vue',
   'resources/js/Features/Admin/Occupancy/**',
-  'resources/js/Pages/Admin/People/ShowDuty.vue',
-  'resources/js/Pages/Admin/People/CreateDuty.vue',
-  'resources/js/Pages/Admin/People/EditDuty.vue',
   'resources/js/Components/AdminForms/DutyForm.vue',
-  'resources/js/Pages/Admin/Settings/**',
-  'resources/js/Pages/Admin/ModelMeta/**',
-  'resources/js/Pages/Admin/StudySets/**',
-  'resources/js/Pages/Admin/Content/IndexQuickLink.vue',
   'resources/js/Components/AdminForms/{RelationshipForm,TypeForm,StudySetForm}.vue',
-  'resources/js/Pages/Admin/Reservations/IndexReservation.vue',
-  'resources/js/Pages/Admin/Content/IndexTag.vue',
   'resources/js/Features/Admin/Tags/**',
   'resources/js/Components/Layouts/OverviewPage.vue',
-  'resources/js/Pages/Admin/ShowMyRoles.vue',
   'resources/js/Components/Duties/MyDutyTermRow.vue',
-  'resources/js/Pages/Admin/Search/SearchIndex.vue',
   'resources/js/Features/Admin/AdminSearch/Components/SearchResultGroup.vue',
   'resources/js/Features/Admin/AdminSearch/Components/Detail/MeetingDetailPreview.vue',
   'resources/js/Components/Overview/**',
   'resources/js/Components/Patterns/OverviewSection.vue',
-  'resources/js/Pages/Admin/Dashboard/ShowAtstovavimas.vue',
-  'resources/js/Pages/Admin/Dashboard/Components/InstitutionStatusTrendChart.vue',
-  'resources/js/Pages/Admin/Dashboard/ShowReservations.vue',
-  'resources/js/Pages/Admin/Dashboard/ShowSvetaine.vue',
-  'resources/js/Pages/Admin/Dashboard/ShowOrganizacija.vue',
-  'resources/js/Pages/Admin/Dashboard/ShowSistema.vue',
-  'resources/js/Pages/Admin/ShowAdministration.vue',
-  'resources/js/Pages/Admin/ShowRepMetrics.vue',
   'resources/js/Components/Reservations/**',
   'resources/js/Components/Duties/**',
   'resources/js/Components/Institutions/{AddCheckInDialog,InstitutionDutiesSection,InstitutionMeetingsList,InstitutionOverviewSection,RelatedInstitutionTile,SecretariesSection}.vue',
@@ -117,44 +70,24 @@ export const MIGRATED_ADMIN_PATHS = [
   'resources/js/Features/Admin/DutiableTimeline/**',
   'resources/js/Features/Admin/ResourceCategories/**',
   'resources/js/Features/Admin/Tenants/**',
-  'resources/js/Pages/Admin/People/{CreateInstitution,EditInstitution,ShowInstitution,IndexInstitution,CreateUser,EditUser,ShowUser,IndexUser,IndexDuty,DutyUserUpdateWizard,DutiableTimeline,CreateTenant,EditTenant,CreateStudyProgram,EditStudyProgram}.vue',
-  'resources/js/Pages/Admin/Reservations/{CreateReservation,ShowReservation,CreateResource,EditResource,IndexResource,IndexResourceCategory}.vue',
-  'resources/js/Pages/Admin/Problems/**',
   'resources/js/Components/AdminForms/ProblemForm.vue',
-  'resources/js/Pages/Admin/Forms/**',
   'resources/js/Components/AdminForms/{FormForm,FormFieldForm}.vue',
-  'resources/js/Pages/Admin/Content/{CreatePage,EditPage,CreateNews,EditNews,EditHomePage,IndexBanner,CreateBanner,EditBanner,IndexQuickLink,CreateQuickLink,EditQuickLink,CreateTag,EditTag}.vue',
-  'resources/js/Pages/Admin/Calendar/{CreateCalendarEvent,EditCalendarEvent,IndexEventType}.vue',
   'resources/js/Features/Admin/EventTypes/**',
-  'resources/js/Pages/Admin/Navigation/**',
   'resources/js/Features/Admin/NavigationBuilder/**',
   'resources/js/Components/AdminForms/{PageForm,NewsForm,CalendarForm,FormFieldWrapper,PermalinkField,PermalinkPreviewHint,SEOPreview,BannerForm,QuickLinkForm,NavigationForm,NavigationParentForm,TagForm}.vue',
   'resources/js/Components/Analytics/ContentAnalyticsCard.vue',
-  'resources/js/Pages/Admin/Files/**',
   'resources/js/Features/Admin/FileManager/**',
   'resources/js/Features/Admin/SharepointFileManager/**',
-  'resources/js/Pages/Admin/Permissions/ShowResponsibility.vue',
   'resources/js/Features/Admin/PermissionMatrix/**',
   'resources/js/Features/Admin/Responsibilities/**',
-  'resources/js/Pages/Admin/ModelMeta/{ShowType,ShowRelationship}.vue',
-  'resources/js/Pages/Admin/{SystemStatus,MailQueue}.vue',
-  'resources/js/Pages/Admin/SupportRequests/ShowSupportRequest.vue',
-  'resources/js/Pages/Admin/{ShowProfile,ShowNotificationSettings}.vue',
   'resources/js/Features/Admin/Notifications/{PushDeviceManagement,NotificationPreferences,DigestEmailSelector}.vue',
   'resources/js/Features/Admin/TaskManager/**',
-  'resources/js/Pages/Admin/ShowNotifications.vue',
   'resources/js/Features/Admin/Notifications/NotificationCard.vue',
-  'resources/js/Pages/Admin/Dashboard/ShowSupportRequests.vue',
-  'resources/js/Pages/Admin/Permissions/{CreateResponsibility,EditResponsibility}.vue',
-  'resources/js/Pages/Admin/Settings/EditSystemPurposesSettings.vue',
-  'resources/js/Pages/Admin/SupportRequests/{CreateSupportRequest,EditSupportRequest}.vue',
-  'resources/js/Pages/Admin/ShowInstitutionGraph.vue',
   'resources/js/Components/AdminForms/ResponsibilityForm.vue',
   'resources/js/Components/SupportRequests/SupportRequestForm.vue',
-  'resources/js/Pages/Admin/People/DutyUserUpdateWizard.vue',
   'resources/js/Components/DutyUserWizard/**',
-  'resources/js/Pages/Admin/MailingLists/**',
   'resources/js/Features/Admin/MailingLists/**',
+
 ];
 
 // Shared import restriction fragments — reused in per-surface blocks so the
@@ -164,6 +97,17 @@ const lodashImportPaths = [
 ];
 const lodashImportPatterns = [
   { group: ['lodash/*'], message: 'Import from "lodash-es/*" for tree-shaking.' },
+];
+// Dates render through @/Utils/dateTime (Europe/Vilnius); date-fns stays for arithmetic.
+const dateImportPaths = [
+  {
+    name: 'date-fns',
+    importNames: ['format', 'formatDistance', 'formatDistanceToNow', 'formatDistanceStrict', 'formatRelative'],
+    message: 'Display dates with @/Utils/dateTime or useDateFormatter (Europe/Vilnius). date-fns is for date arithmetic.',
+  },
+];
+const dateImportPatterns = [
+  { group: ['@/Utils/IntlTime'], message: 'IntlTime was removed. Use @/Utils/dateTime or useDateFormatter.' },
 ];
 // Icon sets that have been fully removed from the codebase.
 const removedIconPatterns = [
@@ -264,6 +208,9 @@ export default tseslint.config(
     plugins: {
       'import-x': importPlugin,
     },
+    settings: {
+      'import-x/resolver-next': [sourceResolver],
+    },
   },
   {
     files: ['**/*.{ts,tsx,vue,js,jsx,mjs}'],
@@ -325,8 +272,8 @@ export default tseslint.config(
       // Prevent full lodash imports (use lodash-es or @vueuse/core utilities)
       // Also ban icon sets that have been fully removed from the codebase.
       'no-restricted-imports': ['error', {
-        paths: [...lodashImportPaths],
-        patterns: [...lodashImportPatterns, ...removedIconPatterns],
+        paths: [...lodashImportPaths, ...dateImportPaths],
+        patterns: [...lodashImportPatterns, ...removedIconPatterns, ...dateImportPatterns],
       }],
 
       // TypeScript modern patterns
@@ -404,13 +351,50 @@ export default tseslint.config(
     },
   },
 
-  ...(MIGRATED_ADMIN_PATHS.length > 0
-    ? [{
-        files: MIGRATED_ADMIN_PATHS,
-        plugins: { 'admin-redesign': adminRedesignPlugin },
-        rules: { 'admin-redesign/no-legacy-utility': 'error' },
-      }]
-    : []),
+  {
+    files: ['resources/js/Pages/Admin/**/*.{vue,ts}'],
+    ignores: LEGACY_ADMIN_EXCEPTIONS,
+    plugins: { 'admin-redesign': adminRedesignPlugin },
+    rules: { 'admin-redesign/no-legacy-utility': 'error' },
+  },
+  {
+    files: MIGRATED_ADMIN_COMPONENT_PATHS,
+    plugins: { 'admin-redesign': adminRedesignPlugin },
+    rules: { 'admin-redesign/no-legacy-utility': 'error' },
+  },
+  {
+    files: ['resources/js/**/*.{vue,ts,tsx,js,jsx}'],
+    ignores: ['**/__tests__/**', '**/*.{test,spec,stories}.{ts,tsx,js,jsx}', 'resources/js/tests/**', 'resources/js/mocks/**'],
+    rules: {
+      'import-x/no-restricted-paths': ['error', {
+        basePath: projectRoot,
+        zones: [
+          {
+            target: ['Components', 'Composables', 'Constants', 'Utils', 'Types', 'Services', 'Shared', 'Features']
+              .map(folder => `resources/js/${folder}`),
+            from: 'resources/js/Pages',
+            message: 'Shared source cannot depend on page modules. Move the shared contract or implementation below Pages.',
+          },
+          {
+            target: 'resources/js/Components/ui',
+            from: 'resources/js/Components',
+            except: ['ui'],
+            message: 'UI primitives cannot depend on higher component tiers, features or pages.',
+          },
+          {
+            target: 'resources/js/Components/ui',
+            from: 'resources/js/Features',
+            message: 'UI primitives cannot depend on features.',
+          },
+          {
+            target: ['resources/js/Components/Public', 'resources/js/Pages/Public'],
+            from: ['resources/js/Components/Patterns', 'resources/js/Components/Layouts', 'resources/js/Features/Admin'],
+            message: 'Public surfaces use Public/Base and Public/Layouts instead of admin patterns, shells or features.',
+          },
+        ],
+      }],
+    },
+  },
 
   // Icon surface conventions (warn = migrate as you touch, not a hard block)
   // Admin surfaces must use Lucide; Fluent is for Public only.
@@ -421,10 +405,11 @@ export default tseslint.config(
     ],
     rules: {
       'no-restricted-imports': ['warn', {
-        paths: [...lodashImportPaths],
+        paths: [...lodashImportPaths, ...dateImportPaths],
         patterns: [
           ...lodashImportPatterns,
           ...removedIconPatterns,
+          ...dateImportPatterns,
           { group: ['~icons/fluent/*'], message: 'Admin uses Lucide (@lucide/vue). Fluent is reserved for Public surfaces.' },
         ],
       }],
@@ -440,10 +425,11 @@ export default tseslint.config(
       // lodash and Fluent-icon entries from the block above must be repeated here.
       // An error since no admin page imports ui/card any more.
       'no-restricted-imports': ['error', {
-        paths: [...lodashImportPaths],
+        paths: [...lodashImportPaths, ...dateImportPaths],
         patterns: [
           ...lodashImportPatterns,
           ...removedIconPatterns,
+          ...dateImportPatterns,
           { group: ['~icons/fluent/*'], message: 'Admin uses Lucide (@lucide/vue). Fluent is reserved for Public surfaces.' },
           {
             group: ['@/Components/ui/card', '@/Components/ui/card/*'],
@@ -465,10 +451,11 @@ export default tseslint.config(
       'no-restricted-imports': ['error', {
         paths: [
           ...lodashImportPaths,
+          ...dateImportPaths,
           { name: '@lucide/vue', message: 'Public uses Fluent (~icons/fluent/*) for a more stylized look. Lucide is reserved for Admin surfaces.' },
           { name: '@inertiajs/vue3', importNames: ['Head'], message: 'Public <head> comes from PublicController::applyPageHead() (.ai/rules/seo.md).' },
         ],
-        patterns: [...lodashImportPatterns, ...removedIconPatterns],
+        patterns: [...lodashImportPatterns, ...removedIconPatterns, ...dateImportPatterns],
       }],
     },
   },

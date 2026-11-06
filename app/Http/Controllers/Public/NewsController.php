@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Public;
 
 use App\Helpers\ContentHelper;
 use App\Http\Controllers\PublicController;
+use App\Http\Requests\IndexPublicNewsArchiveRequest;
 use App\Models\News;
 use App\Models\Tag;
 use App\Models\Tenant;
@@ -113,8 +114,10 @@ class NewsController extends PublicController
         ]);
     }
 
-    public function newsArchive()
+    public function newsArchive(IndexPublicNewsArchiveRequest $request)
     {
+        $tag = $request->validated('tag');
+
         $this->getBanners();
         $this->getTenantLinks();
 
@@ -125,9 +128,9 @@ class NewsController extends PublicController
             ->where('draft', false);
 
         // Match aliases and translated names so the initial list agrees with the browser filter.
-        if (request('tag')) {
-            $query->whereHas('tags', function (Builder $query): void {
-                $this->matchTagParam($query, request('tag'));
+        if (filled($tag)) {
+            $query->whereHas('tags', function (Builder $query) use ($tag): void {
+                $this->matchTagParam($query, $tag);
             });
         }
 
@@ -163,8 +166,8 @@ class NewsController extends PublicController
 
         // Get the current tag for display purposes
         $currentTag = null;
-        if (request('tag')) {
-            $currentTag = $this->matchTagParam(Tag::query(), request('tag'))->first();
+        if (filled($tag)) {
+            $currentTag = $this->matchTagParam(Tag::query(), $tag)->first();
         }
 
         $locale = app()->getLocale();

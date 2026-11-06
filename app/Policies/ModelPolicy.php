@@ -47,7 +47,7 @@ class ModelPolicy
      */
     public function view(User $user, Model $model): bool
     {
-        return $this->commonChecker($user, $model, CRUDEnum::READ->label(), $this->pluralModelName);
+        return $this->commonChecker($user, $model, CRUDEnum::READ->label());
     }
 
     /**
@@ -60,7 +60,7 @@ class ModelPolicy
      */
     public function update(User $user, Model $model): bool
     {
-        return $this->commonChecker($user, $model, CRUDEnum::UPDATE->label(), $this->pluralModelName);
+        return $this->commonChecker($user, $model, CRUDEnum::UPDATE->label());
     }
 
     /**
@@ -73,7 +73,7 @@ class ModelPolicy
      */
     public function delete(User $user, Model $model): Response|bool
     {
-        return $this->commonChecker($user, $model, CRUDEnum::DELETE->label(), $this->pluralModelName);
+        return $this->commonChecker($user, $model, CRUDEnum::DELETE->label());
     }
 
     /**
@@ -88,6 +88,6 @@ class ModelPolicy
      */
     public function forceDelete(User $user, Model $model): bool
     {
-        return $this->commonChecker($user, $model, CRUDEnum::FORCE_DELETE->label(), $this->pluralModelName, $this->hasManyTenants);
+        return $this->commonChecker($user, $model, CRUDEnum::FORCE_DELETE->label());
     }
 }

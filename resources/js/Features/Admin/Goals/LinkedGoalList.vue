@@ -30,7 +30,7 @@ import type { LinkedGoal } from './types';
 import { GoalIcon } from '@/Components/icons';
 import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { goalStatuses } from '@/Constants/statuses';
+import { goalStatuses } from '@/Constants/statusIcons';
 
 defineProps<{ goals: LinkedGoal[]; removable?: boolean }>();
 

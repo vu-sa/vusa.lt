@@ -120,7 +120,7 @@ import TimelineGanttSkeleton from './Components/TimelineGanttSkeleton.vue';
 import UserTimelineSection from './Components/UserTimelineSection.vue';
 import { useAtstovavimasActions } from './Composables/useAtstovavimasActions';
 import { useAtstovavimasData } from './Composables/useAtstovavimasData';
-import { provideGanttSettings } from './Composables/useGanttSettings';
+import { provideGanttSettings } from '@/Components/Graphs/composables/useGanttSettings';
 import { provideTimelineFilters } from './Composables/useTimelineFilters';
 import type { AtstovavimasInstitution, AtstovavimasMeeting, AtstovavimasUser, GanttActivityRequest } from './types';
 import {

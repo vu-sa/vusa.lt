@@ -28,7 +28,7 @@ class FeedbackMail extends Mailable implements ShouldQueue
     public function envelope()
     {
         return new Envelope(
-            subject: 'Feedback Mail',
+            subject: __('mail.feedback.subject'),
         );
     }
 

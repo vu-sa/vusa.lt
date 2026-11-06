@@ -9,8 +9,8 @@
     default-view="rows"
     :available-views="['rows']"
     :item-key="item => item.id"
-    @row-action="(_item, key) => collectionActions.select(key)"
     :quick-filters="tabs"
+    @row-action="(_item, key) => collectionActions.select(key)"
     @quick-filter="changeTab"
   >
     <template #actions>
@@ -61,14 +61,14 @@ import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAc
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { useRowAbilities } from '@/Composables/useRowAbilities';
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
-import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { EmptyState, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
-import { supportRequestStatuses } from '@/Constants/statuses';
+import { supportRequestStatuses } from '@/Constants/statusIcons';
 import { supportRequestVisibilityLabel } from '@/Components/SupportRequests/visibility';
 import type { SupportRequestItem, SupportRequestTaxonomyItem } from '@/Types/supportRequests';
 

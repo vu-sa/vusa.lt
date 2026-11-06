@@ -23,7 +23,7 @@
     </template>
 
     <template #row="{ item, actions: recordActions, view }">
-      <CollectionRow :spotlight="item === source?.items.value[0]" :actions="view === 'preview' ? [] : recordActions" @select="key => selectRowAction(key, item)" class="px-3 py-3 sm:px-4">
+      <CollectionRow :spotlight="item === source?.items.value[0]" :actions="view === 'preview' ? [] : recordActions" class="px-3 py-3 sm:px-4" @select="key => selectRowAction(key, item)">
         <div class="min-w-0 flex-1">
           <button type="button" class="block max-w-full text-left font-medium hover:text-brand" @click="openSheet(item)">
             {{ title(item) }}

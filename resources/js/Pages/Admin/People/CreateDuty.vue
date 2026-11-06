@@ -17,7 +17,6 @@ import DutyForm from '@/Components/AdminForms/DutyForm.vue';
 const props = defineProps<{
   dutyTypes: App.Entities.DutyType[];
   assignableInstitutions: App.Entities.Institution[];
-  assignableUsers?: App.Entities.User[];
   assignableTenants: { id: number; shortname: string; type?: string }[];
   assignableDuties: Array<{ id: string; name: string; institution?: App.Entities.Institution | Record<string, unknown> }>;
   prefillInstitutionId?: string | null;

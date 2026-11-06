@@ -104,7 +104,7 @@ class InstitutionActivityNotification extends BaseNotification implements SendsM
             'institution' => $this->isSingle() ? $request->institution->name : null,
             'since' => $this->isSingle() ? $request->period_start->toDateString().' – '.$request->periodEnd()->toDateString() : null,
             'days_since_activity' => $this->isSingle() && is_numeric($days) ? __('notifications.context.days_value', ['count' => (int) $days]) : null,
-            'asked_by' => $request->requestedBy?->name,
+            'asked_by' => $request->note === null ? $request->requestedBy?->name : null,
         ]);
     }
 
@@ -163,7 +163,7 @@ class InstitutionActivityNotification extends BaseNotification implements SendsM
 
     public function toDigestItem(object $notifiable): array
     {
-        return [...parent::toDigestItem($notifiable), 'context' => $this->contextRows(['asked_by' => $this->first()->requestedBy?->name]), 'activity_request_ids' => $this->requests->modelKeys(), 'activity_questions' => $this->questions()];
+        return [...parent::toDigestItem($notifiable), 'context' => $this->contextRows(['asked_by' => $this->first()->note === null ? $this->first()->requestedBy?->name : null]), 'activity_request_ids' => $this->requests->modelKeys(), 'activity_questions' => $this->questions()];
     }
 
     private function questions(): array

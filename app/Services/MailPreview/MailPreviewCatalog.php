@@ -22,7 +22,7 @@ class MailPreviewCatalog
         NotificationType::SupportRequestStatusChanged, NotificationType::Welcome,
     ];
 
-    public function __construct(private MailPreviewSamples $samples, private MailPreviewRenderer $renderer) {}
+    public function __construct(private readonly MailPreviewSamples $samples, private readonly MailPreviewRenderer $renderer) {}
 
     /** @return array<string, array{key: string, label: string, group: string, render: Closure}> */
     public function entries(): array
@@ -45,7 +45,7 @@ class MailPreviewCatalog
             $entries[$key] = [
                 'key' => $key, 'label' => 'mail_previews.scenarios.'.$key, 'group' => 'mail_previews.groups.other',
                 'render' => fn () => $key === 'reservation-batch'
-                    ? (new ReservationStatusChangedNotification($this->samples->reservationChanges(), $this->samples->user()))->toMail($this->samples->user())
+                    ? new ReservationStatusChangedNotification($this->samples->reservationChanges(), $this->samples->user())->toMail($this->samples->user())
                     : $this->samples->mailables()[$key],
             ];
         }

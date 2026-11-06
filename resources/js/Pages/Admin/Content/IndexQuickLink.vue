@@ -165,7 +165,7 @@ import { Button } from '@/Components/ui/button';
 import { NativeSelect } from '@/Components/ui/native-select';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { isTrashView, useLocalCollectionSource } from '@/Composables/useCollectionSource';
-import type { StatusPresentation } from '@/Constants/statuses';
+import type { StatusPresentation } from '@/Constants/statusIcons';
 import { formatRecordDate } from '@/Utils/dateTime';
 
 type QuickLinkRow = App.Entities.QuickLink;

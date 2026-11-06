@@ -5,32 +5,24 @@ namespace App\Notifications;
 use App\Enums\NotificationType;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
+use App\Notifications\Concerns\NamesObjectInTitle;
 use Illuminate\Support\Carbon;
 
-/**
- * Notification sent when a duty is expiring soon (30 days before end).
- *
- * Fixed at 30 days - sent once to remind the duty holder to prepare
- * for experience transfer to their successor.
- *
- * NOTE: If you're receiving this notification unexpectedly, it might indicate
- * a misconfiguration in the duty end dates. Please check the dutiable records.
- */
+/** A reminder to prepare the handover before the last day in office. */
 class DutyExpiringNotification extends BaseNotification
 {
+    use NamesObjectInTitle;
+
     public function type(): NotificationType
     {
         return NotificationType::DutyExpiring;
     }
 
-    /**
-     * Create a new notification instance.
-     */
     public function __construct(protected Duty $duty, protected Dutiable $dutiable, protected int $daysUntilExpiry = 30) {}
 
     public function title(object $notifiable): string
     {
-        return __('notifications.duty_expiring_title', ['days' => $this->daysUntilExpiry]);
+        return __('notifications.duty_expiring_title', ['duty' => $this->duty->name]);
     }
 
     public function body(object $notifiable): string
@@ -38,7 +30,6 @@ class DutyExpiringNotification extends BaseNotification
         $endDate = Carbon::parse($this->dutiable->end_date)->format('Y-m-d');
 
         return __('notifications.duty_expiring_body', [
-            'duty' => $this->duty->name,
             'date' => $endDate,
         ]);
     }
@@ -73,9 +64,7 @@ class DutyExpiringNotification extends BaseNotification
     public function context(object $notifiable): array
     {
         return $this->contextRows([
-            'duty' => $this->duty->name,
             'institution' => $this->duty->institution?->name,
-            'end_date' => Carbon::parse($this->dutiable->end_date)->format('Y-m-d'),
         ]);
     }
 

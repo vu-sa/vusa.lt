@@ -81,15 +81,15 @@
       :selected-key
       :selectable
       :can-select
-      @row-action="(item, key) => emit('rowAction', item, key)"
       :sort-by="source.sortBy.value"
-      @row-navigate="(item, key) => emit('rowNavigate', item, key)"
       :sort-options="source.sortOptions.value"
       :total="source.total.value"
       :table-fixed
       :actions-width
       :table-min-width
       :row-muted
+      @row-action="(item, key) => emit('rowAction', item, key)"
+      @row-navigate="(item, key) => emit('rowNavigate', item, key)"
       @clear="clearAll"
       @retry="source.refresh"
       @load-more="source.loadMore"
@@ -139,7 +139,7 @@ import CollectionResults from '@/Components/Collection/CollectionResults.vue';
 import CollectionSelectionBar from '@/Components/Collection/CollectionSelectionBar.vue';
 import CollectionTitleBand from '@/Components/Collection/CollectionTitleBand.vue';
 import CollectionViewToggle from '@/Components/Collection/CollectionViewToggle.vue';
-import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import type { CollectionColumn, CollectionQuickFilter, CollectionTrash } from '@/Components/Collection/types';
 import type { CollectionChip, CollectionSource } from '@/Composables/useCollectionSource';
 import { useCollectionView, type CollectionViewMode } from '@/Composables/useCollectionView';

@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
@@ -103,15 +103,17 @@ test('every catalog key renders HTML and real plain text in both locales without
     Notification::fake();
     $catalog = app(MailPreviewCatalog::class);
     $queries = [];
-    DB::listen(function ($query) use (&$queries): void { $queries[] = $query->sql; });
+    DB::listen(function ($query) use (&$queries): void {
+        $queries[] = $query->sql;
+    });
 
     foreach (array_keys($catalog->entries()) as $key) {
         foreach (['lt', 'en'] as $locale) {
             $rendered = $catalog->render($key, $locale);
-            expect($rendered['html'], $key.' '.$locale)->not->toBeEmpty()
-                ->not->toContain('Šio laiško peržiūrėti nepavyko', 'This email could not be previewed');
-            expect($rendered['text'], $key.' text '.$locale)->not->toBeEmpty()->not->toContain('<!DOCTYPE', '<html');
-            expect($rendered['subject'])->not->toBeEmpty();
+            expect($rendered['html'])->not->toBeEmpty()
+                ->not->toContain('Šio laiško peržiūrėti nepavyko', 'This email could not be previewed')
+                ->and($rendered['text'])->not->toBeEmpty()->not->toContain('<!DOCTYPE', '<html')
+                ->and($rendered['subject'])->not->toBeEmpty();
         }
     }
 
@@ -178,3 +180,15 @@ test('a rendering failure is reported and returns the small fallback page', func
     expect($rendered['html'])->toContain('Šio laiško peržiūrėti nepavyko')->not->toContain('Broken preview');
     Exceptions::assertReported(fn (RuntimeException $reported): bool => $reported === $exception);
 });
+
+test('registration previews use the standard footer in both parts and locales', function (string $key, string $locale): void {
+    $rendered = app(MailPreviewCatalog::class)->render($key, $locale);
+
+    foreach (['html', 'text'] as $part) {
+        expect(html_entity_decode($rendered[$part]))->toContain(
+            trans('notifications.mail.settings_link', [], $locale),
+            route('profile.notifications'),
+            'Mano VU SA',
+        );
+    }
+})->with(['member_registration', 'student_rep_registration'])->with(['lt', 'en']);

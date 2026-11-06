@@ -112,6 +112,8 @@ describe('Public/NewsArchive.vue', () => {
 
   function mountPage(props: Record<string, unknown> = {}) {
     return mount(NewsArchive, {
+      // isVisible() reads computed style, which jsdom only resolves for attached elements.
+      attachTo: document.body,
       props: {
         news: {
           data: sampleNews,
@@ -270,5 +272,6 @@ describe('Public/NewsArchive.vue', () => {
 
     const revisitedWrapper = mountPage();
     expect(revisitedWrapper.find('.border-t.border-border\\/60').isVisible()).toBe(true);
+    revisitedWrapper.unmount();
   });
 });

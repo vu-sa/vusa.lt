@@ -117,12 +117,12 @@ class PublicPageController extends PublicController
 
         // Old PKP pages live on as contacts pages.
         $isPkpAlias = Institution::query()
-            ->where('alias', request()->permalink)
+            ->where('alias', $this->permalink())
             ->whereHas('types', fn (Builder $query) => $query->where('slug', 'pkp'))
             ->exists();
 
         if ($isPkpAlias) {
-            return redirect()->route('contacts.alias', ['subdomain' => $this->subdomain, 'lang' => app()->getLocale(), 'institution' => request()->permalink]);
+            return redirect()->route('contacts.alias', ['subdomain' => $this->subdomain, 'lang' => app()->getLocale(), 'institution' => $this->permalink()]);
         }
 
         $this->getBanners();
@@ -139,10 +139,10 @@ class PublicPageController extends PublicController
             }
 
             // An old PKP page whose institution has since been renamed.
-            $renamedPkp = $publicUrls->resolveInstitutionAlias((string) request()->permalink)?->urlable;
+            $renamedPkp = $publicUrls->resolveInstitutionAlias($this->permalink())?->urlable;
 
             if ($renamedPkp instanceof Institution && $renamedPkp->types()->where('slug', 'pkp')->exists()) {
-                $destination = $publicUrls->institutionAliasDestination((string) request()->permalink, app()->getLocale());
+                $destination = $publicUrls->institutionAliasDestination($this->permalink(), app()->getLocale());
             }
 
             abort_if($destination === null, 404);
@@ -209,15 +209,23 @@ class PublicPageController extends PublicController
         ]);
     }
 
+    /**
+     * The route segment, not `request()->permalink`, which an input field of the same name overrides.
+     */
+    private function permalink(): string
+    {
+        return (string) request()->route('permalink');
+    }
+
     private function cachedPageData(): array|false
     {
         $locale = app()->getLocale();
-        $cacheKey = "page_content_{$this->tenant->id}_{$locale}_".md5(request()->permalink);
+        $cacheKey = "page_content_{$this->tenant->id}_{$locale}_".md5($this->permalink());
 
         return Cache::tags(['pages', PublicCacheTags::pages($this->tenant->id, $locale)])
             ->remember($cacheKey, 3600, function () {
                 $page = Page::query()->where([
-                    ['permalink', '=', request()->permalink],
+                    ['permalink', '=', $this->permalink()],
                     ['tenant_id', '=', $this->tenant->id],
                     ['is_active', '=', true],
                 ])->first();
@@ -342,7 +350,6 @@ class PublicPageController extends PublicController
     {
         $permalink = app()->getLocale() === 'en' ? 'programs-clubs-and-projects' : 'programos-klubai-projektai';
         request()->route()->setParameter('permalink', $permalink);
-        request()->merge(['permalink' => $permalink]);
 
         return $this->page();
     }

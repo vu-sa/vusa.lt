@@ -1,8 +1,6 @@
 ---
 doc_status: reviewed
 title: Failai
-area: files
-models: [File]
 last_reviewed: 2026-10-19
 tests:
   - tests/Browser/ContentEditorImageSaveTest.php
@@ -20,7 +18,6 @@ tests:
   - tests/Feature/Actions/Media/SyncImageMediaTest.php
   - tests/Feature/Console/MediaLegacyFilesCommandTest.php
   - tests/Feature/Console/MigrateImagesCommandTest.php
-  - tests/Feature/Migrations/DropLegacyImageColumnsTest.php
   - tests/Feature/Services/Media/LegacyImageBackfillTest.php
   - resources/js/Features/Admin/FileManager/__tests__/FilePropertiesDrawer.component.test.ts
   - resources/js/Features/Admin/FileManager/__tests__/FileManagerUpload.component.test.ts

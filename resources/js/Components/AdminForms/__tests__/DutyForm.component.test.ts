@@ -102,7 +102,6 @@ const mountForm = (duty = emptyDuty(), extraProps: Record<string, unknown> = {},
     props: {
       duty,
       dutyTypes: [],
-      assignableUsers: [],
       roles: [],
       assignableInstitutions: [],
       assignableTenants: [],
@@ -346,10 +345,6 @@ describe('DutyForm.vue — ex-officio seats in the assignable-tenants section', 
 
   it('does not render TransferList for member associations (Decision O21 / Forms rule 1 & 15)', () => {
     wrapper = mountForm(emptyDuty({ id: 'duty-1' }), {
-      assignableUsers: [
-        { id: 'user-ex', name: 'Jonas Jonaitis', is_recent: true },
-        { id: 'user-a', name: 'Ona Onaitė', is_recent: true },
-      ],
       exOfficioMembers: [{ ...exOfficioMember, tenant_id: null }],
     });
 

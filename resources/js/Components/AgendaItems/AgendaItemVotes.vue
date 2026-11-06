@@ -154,7 +154,7 @@ import {
 import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { Switch } from '@/Components/ui/switch';
-import { statusRoleClasses, type StatusPresentation, type StatusRole } from '@/Constants/statuses';
+import { statusRoleClasses, type StatusPresentation, type StatusRole } from '@/Constants/statusIcons';
 import { createVote, type AgendaItemFormData, type EditableVote, type VoteValue } from '@/Composables/useAgendaItemAutosave';
 
 const props = withDefaults(defineProps<{

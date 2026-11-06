@@ -132,6 +132,7 @@ import { TagChip } from '@/Components/Public/Base';
 import IFluentLink20Regular from '~icons/fluent/link-20-regular';
 import IFluentOpen20Regular from '~icons/fluent/open-20-regular';
 import IFluentWarning20Regular from '~icons/fluent/warning-20-regular';
+import { formatDateWith } from '@/Utils/dateTime';
 
 // Props
 interface Props {
@@ -164,23 +165,11 @@ const formatCompactDate = () => {
   const date = parseDocumentDate(props.document.document_date);
   if (!date) return '';
 
-  try {
-    const now = new Date();
-    const isCurrentYear = date.getFullYear() === now.getFullYear();
+  const year = formatDateWith(date, { year: 'numeric' });
 
-    if (isCurrentYear) {
-      return date.toLocaleDateString('lt-LT', {
-        month: 'short',
-        day: 'numeric',
-      });
-    }
-    else {
-      return date.getFullYear().toString();
-    }
-  }
-  catch {
-    return props.document.document_date;
-  }
+  return year === formatDateWith(new Date(), { year: 'numeric' })
+    ? formatDateWith(date, { month: 'short', day: 'numeric' }, { locale: 'lt-LT' })
+    : year;
 };
 
 const dateMatch = computed(() => documentDateMatch(props.document, formatCompactDate() ?? ''));

@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 pest()->use(RefreshDatabase::class);
 
@@ -84,6 +85,41 @@ describe('authorized access', function (): void {
                 ->has('deletedCount')
             );
     });
+
+    test('index query count stays constant as more user rows are returned', function (string $routeName, string $itemsPath): void {
+        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
+        User::factory()->count(10)->hasAttached($duty, ['start_date' => now()->subDay()])->create();
+
+        $fetch = fn (int $perPage) => asUserWithInertia($this->admin)
+            ->getJson(route($routeName, ['per_page' => $perPage]))->assertOk();
+
+        // Warm request-level infrastructure before comparing the two page sizes.
+        $fetch(3);
+        $fetch(10);
+
+        DB::enableQueryLog();
+        try {
+            DB::flushQueryLog();
+            $small = $fetch(3);
+            $smallCount = count(DB::getQueryLog());
+            DB::flushQueryLog();
+            $large = $fetch(10);
+            $largeCount = count(DB::getQueryLog());
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
+
+        $small->assertJsonCount(3, $itemsPath);
+        $large->assertJsonCount(10, $itemsPath)
+            ->assertJsonPath($itemsPath.'.0.can_update_identity', true)
+            ->assertJsonMissingPath($itemsPath.'.0.roles')
+            ->assertJsonMissingPath($itemsPath.'.0.tenants');
+        expect($largeCount)->toBe($smallCount);
+    })->with([
+        'page' => ['users.index', 'props.users.data'],
+        'API' => ['api.v1.admin.users.index', 'data.items'],
+    ]);
 
     test('separates current members from former ones', function (): void {
         $current = makeUser($this->tenant);

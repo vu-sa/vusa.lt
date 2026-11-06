@@ -260,6 +260,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/Components/ui/pagination';
+import { formatDateTime } from '@/Utils/dateTime';
 
 interface Submission {
   id: string;
@@ -346,13 +347,7 @@ watch(currentPage, () => {
 });
 
 function formatDate(isoString: string): string {
-  return new Date(isoString).toLocaleString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  return formatDateTime(isoString);
 }
 
 function confirmDeleteOne(id: string): void {

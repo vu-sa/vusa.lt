@@ -94,16 +94,22 @@ describe('useCommandActions', () => {
     expect(overviews.map(action => action.workspaceKey)).toEqual(['pradzia', 'svetaine']);
   });
 
-  it('opens the ActionWindow for a screen-target create action instead of doing nothing', () => {
+  // Every screen AdminNavigationCatalog emits; an unmapped one opens the bare persona screen.
+  it.each([
+    ['meeting.institution', 'meeting.create'],
+    ['checkin.institution', 'check-in'],
+    ['meeting.pick', 'meeting.complete'],
+    ['activity.campaign', 'activity.request'],
+  ])('opens the ActionWindow flow that starts at the %s screen', (screen, flow) => {
     vi.mocked(usePage).mockReturnValue(createMockPage({ adminNavigation: {
       workspaces: [workspace('atstovavimas', [section('posedziai', 'meetings.index', 'meeting')], [
-        { key: 'new_meeting', label: 'shell.actions.new_meeting.title', description: null, entityType: 'meeting', target: { kind: 'screen', screen: 'meeting.institution' } },
+        { key: 'screen_action', label: 'shell.actions.new_meeting.title', description: null, entityType: 'meeting', target: { kind: 'screen', screen } },
       ])],
     } }));
 
-    resolve().actions.value.find(action => action.id === 'create-new_meeting')?.action();
+    resolve().actions.value.find(action => action.id === 'create-screen_action')?.action();
 
-    expect(open).toHaveBeenCalledWith({ flow: 'meeting.create' });
+    expect(open).toHaveBeenCalledWith({ flow });
   });
 
   it('marks catalog sections as pinnable by their relative path', () => {

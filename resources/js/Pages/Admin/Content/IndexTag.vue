@@ -13,9 +13,9 @@
     table-fixed
     actions-width="w-44"
     table-min-width="min-w-[49rem]"
-    @row-action="(item, key) => selectRowAction(key, item)"
     :selectable="mergeMode"
     :search-placeholder="$t('Ieškoti žymų')"
+    @row-action="(item, key) => selectRowAction(key, item)"
   >
     <template #actions>
       <Button v-if="canMerge && !isDeleted" variant="outline" size="lg" :aria-pressed="mergeMode" @click="mergeMode = !mergeMode">

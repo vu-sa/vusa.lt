@@ -216,8 +216,7 @@ import { Textarea } from '@/Components/ui/textarea';
 import { ImageUpload } from '@/Components/ui/upload';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { RESOURCE_PLACEHOLDERS } from '@/Constants/I18n/Placeholders';
-import type { ResourceCreationTemplate, ResourceMediaEntry } from '@/Pages/Admin/Reservations/CreateResource.vue';
-import type { ResourceEditType } from '@/Pages/Admin/Reservations/EditResource.vue';
+import type { ResourceCreationTemplate, ResourceMediaEntry, ResourceEditType } from './resourceFormTypes';
 import { ModelEnum } from '@/Types/enums';
 
 const props = defineProps<{

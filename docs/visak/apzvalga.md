@@ -1,7 +1,6 @@
 ---
 doc_status: reviewed
 title: Apžvalga
-area: dashboard
 last_reviewed: 2026-10-19
 tests:
   - tests/Feature/Admin/Dashboard/AtstovavimasDashboardTest.php

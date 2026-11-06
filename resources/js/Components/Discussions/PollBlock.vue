@@ -58,7 +58,7 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { CheckCircle2, Circle, Clock, Lock } from '@lucide/vue';
 
-import { formatRelativeTime } from '@/Utils/IntlTime';
+import { useDateFormatter } from '@/Composables/useDateFormatter';
 import type { PollData, PollVoter } from '@/Types/discussions';
 
 const props = defineProps<{ poll: PollData }>();
@@ -93,10 +93,12 @@ function isMine(optionId: string): boolean {
   return props.poll.my_option_ids.includes(optionId);
 }
 
+const { formatNearDate } = useDateFormatter();
+
 const closesLabel = computed(() => {
   if (!props.poll.closes_at || props.poll.is_closed) {
     return '';
   }
-  return $t('Uždaroma :time', { time: formatRelativeTime(new Date(props.poll.closes_at)) });
+  return $t('Uždaroma :time', { time: formatNearDate(props.poll.closes_at) });
 });
 </script>

@@ -14,10 +14,10 @@
     table-fixed
     actions-width="w-44"
     table-min-width="min-w-[56rem]"
-    @row-action="(item, key) => actions.select(key, item.force_delete_blocked_reason)"
     :selectable="canBulkEdit"
     :trash="{ count: deletedCount, active: isTrash }"
     :search-placeholder="$t('Ieškoti naujienų')"
+    @row-action="(item, key) => actions.select(key, item.force_delete_blocked_reason)"
   >
     <template #actions>
       <Button v-if="canCreate && !isTrash" as-child variant="brand" size="lg">
@@ -36,7 +36,9 @@
         <div class="flex items-start justify-between gap-3">
           <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches" :title="item.title" :href="isTrash ? undefined : route('news.edit', item.id)" :sub="stripHtml(item.short)" />
         </div>
-        <p class="mt-0.5 text-xs text-muted-foreground">{{ [dateOf(item), item.tenant_shortname, languageLabel(item.lang)].filter(Boolean).join(' · ') }}</p>
+        <p class="mt-0.5 text-xs text-muted-foreground">
+          {{ [dateOf(item), item.tenant_shortname, languageLabel(item.lang)].filter(Boolean).join(' · ') }}
+        </p>
       </CollectionRow>
     </template>
 

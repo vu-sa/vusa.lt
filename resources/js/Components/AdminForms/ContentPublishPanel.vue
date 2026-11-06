@@ -47,7 +47,7 @@ import FormFieldWrapper from './FormFieldWrapper.vue';
 
 import { FormPanel, FormSegmentedControl, type FormSegmentOption } from '@/Components/Patterns';
 import DateTimePicker from '@/Components/ui/date-picker/DateTimePicker.vue';
-import { contentStatuses, statusRoleClasses, type StatusPresentation } from '@/Constants/statuses';
+import { contentStatuses, statusRoleClasses, type StatusPresentation } from '@/Constants/statusIcons';
 
 /** Draft ⇄ published, publish time and what that means for visitors, for a content editor's aside. */
 withDefaults(defineProps<{

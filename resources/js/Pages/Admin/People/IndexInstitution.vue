@@ -14,11 +14,11 @@
     actions-width="w-44"
     table-min-width="min-w-[60rem]"
     :row-muted="isInactive"
-    @row-action="(item, key) => onRowAction(key, item)"
     :search-placeholder="$t('Ieškoti institucijų')"
     :trash="{ count: deletedCount, active: isTrash }"
     :quick-filters
     :selectable="!isTrash"
+    @row-action="(item, key) => onRowAction(key, item)"
     @quick-filter="toggleFollowedOnly"
   >
     <template #actions>
@@ -171,7 +171,7 @@ import InstitutionTitleCell from '@/Components/Institutions/InstitutionTitleCell
 import InstitutionMembersSummary from '@/Components/Institutions/InstitutionMembersSummary.vue';
 import InstitutionPreview from '@/Components/Institutions/InstitutionPreview.vue';
 import { Button } from '@/Components/ui/button';
-import { institutionActivityStatuses, operatingStatuses, statusFor } from '@/Constants/statuses';
+import { institutionActivityStatuses, operatingStatuses, statusFor } from '@/Constants/statusIcons';
 import { useRowAbilities } from '@/Composables/useRowAbilities';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { useInstitutionSubscription } from '@/Composables/useInstitutionSubscription';

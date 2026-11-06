@@ -1,6 +1,6 @@
 import { LocaleEnum } from '@/Types/enums';
 import { MeetingType } from '@/Types/MeetingType';
-import { formatStaticTime } from '@/Utils/IntlTime';
+import { formatDateWith, formatTime } from '@/Utils/dateTime';
 
 type MeetingTypeLike
   = | string
@@ -55,7 +55,7 @@ export function formatMeetingDateTime(
   locale: LocaleEnum = LocaleEnum.LT,
 ): string {
   const finalOpts = isEmailMeeting(meeting) ? stripTimeKeys(opts) : opts;
-  return formatStaticTime(new Date(meeting.start_time), finalOpts, locale);
+  return formatDateWith(meeting.start_time, finalOpts, { locale });
 }
 
 /**
@@ -67,9 +67,5 @@ export function formatMeetingTimeOnly(
   locale: LocaleEnum = LocaleEnum.LT,
 ): string | null {
   if (isEmailMeeting(meeting)) return null;
-  return formatStaticTime(
-    new Date(meeting.start_time),
-    { hour: '2-digit', minute: '2-digit' },
-    locale,
-  );
+  return formatTime(meeting.start_time, { locale });
 }

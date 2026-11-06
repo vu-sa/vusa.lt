@@ -6,7 +6,7 @@ import IndexProblem from '../IndexProblem.vue';
 
 import type { CollectionColumn } from '@/Components/Collection/types';
 import type { CollectionSource } from '@/Composables/useCollectionSource';
-import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import { commonStubs } from '@/tests/stubs';
 
 describe('problem collection guidance', () => {

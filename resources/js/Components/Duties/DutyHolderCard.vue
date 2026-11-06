@@ -28,7 +28,7 @@ import { Calendar } from '@lucide/vue';
 
 import UserPopover from '@/Components/Avatars/UserPopover.vue';
 import { Badge } from '@/Components/ui/badge';
-import { formatStaticTime } from '@/Utils/IntlTime';
+import { formatDateWith } from '@/Utils/dateTime';
 import { interactiveCardClass } from '@/Utils/interactiveCard';
 
 const props = defineProps<{
@@ -43,11 +43,11 @@ const tenureLabel = computed(() => {
   if (!start) {
     return '';
   }
-  const startLabel = formatStaticTime(new Date(start), { year: 'numeric', month: 'short' });
+  const startLabel = formatDateWith(start, { year: 'numeric', month: 'short' });
   const end = props.member.pivot?.end_date;
   if (!end || new Date(end) >= new Date()) {
     return `${startLabel} – ${$t('dabar')}`;
   }
-  return `${startLabel} – ${formatStaticTime(new Date(end), { year: 'numeric', month: 'short' })}`;
+  return `${startLabel} – ${formatDateWith(end, { year: 'numeric', month: 'short' })}`;
 });
 </script>

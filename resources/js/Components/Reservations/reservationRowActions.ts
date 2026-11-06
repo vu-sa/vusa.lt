@@ -1,7 +1,7 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowUpRight, Ban, Check, Undo2, X } from '@lucide/vue';
 
-import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import { getBacktrackAction, getCancellablePivotIds, getPrimaryAction, type DashboardReservation } from '@/Utils/ReservationStatus';
 
 const primaryLabels: Record<string, string> = {

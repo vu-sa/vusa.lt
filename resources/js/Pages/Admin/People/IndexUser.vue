@@ -15,10 +15,10 @@
     actions-width="w-44"
     table-min-width="min-w-[64rem]"
     :selectable="mergeMode"
-    @row-action="(item, key) => actions.select(key, item.force_delete_blocked_reason)"
     :trash="{ count: deletedCount, active: isTrash }"
     :search-placeholder="$t('Ieškoti narių')"
     :quick-filters
+    @row-action="(item, key) => actions.select(key, item.force_delete_blocked_reason)"
     @quick-filter="toggleQuickFilter"
   >
     <template #actions>
@@ -36,9 +36,13 @@
 
     <template #row="{ item, actions: recordActions, view }">
       <CollectionRow :actions="view === 'preview' ? [] : recordActions" :spotlight="item === source.items.value[0]" class="px-3 py-2.5 sm:px-4" @select="key => actions.select(key, item.force_delete_blocked_reason)">
-        <template #lead><UserAvatar :user="item" :size="40" /></template>
+        <template #lead>
+          <UserAvatar :user="item" :size="40" />
+        </template>
         <CollectionPrimaryCell :title="item.name" :href="isTrash ? undefined : route('users.show', item.id)" />
-        <p class="mt-0.5 text-xs text-muted-foreground">{{ [item.email, !isTrash ? yearSpan(item) : null].filter(Boolean).join(' · ') }}</p>
+        <p class="mt-0.5 text-xs text-muted-foreground">
+          {{ [item.email, !isTrash ? yearSpan(item) : null].filter(Boolean).join(' · ') }}
+        </p>
         <StatusBadge v-if="view !== 'preview' && !isTrash && noUnit(item)" :status="withoutUnit" class="mt-1" />
         <MemberTermsSummary v-if="view !== 'preview' && !isTrash && !noUnit(item)" :duties="item.duties ?? []" :current-count="Number(item.current_duties_count ?? 0)" :total-count="Number(item.duties_count ?? 0)" class="mt-1" />
       </CollectionRow>
@@ -155,7 +159,7 @@ import { useAdminNavigation } from '@/Composables/useAdminNavigation';
 import { useRowAbilities } from '@/Composables/useRowAbilities';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { isTrashView, useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
-import type { StatusPresentation } from '@/Constants/statuses';
+import type { StatusPresentation } from '@/Constants/statusIcons';
 import { MemberTermsSummary, termYearSpan } from '@/Features/Admin/Occupancy';
 
 type UserRow = App.Entities.User & {

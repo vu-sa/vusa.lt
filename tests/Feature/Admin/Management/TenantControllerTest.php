@@ -125,6 +125,18 @@ describe('authorized access', function (): void {
         ]);
     });
 
+    test('homepage editor falls back to Lithuanian for an invalid locale', function (mixed $locale): void {
+        $url = route('tenants.editMainPage', ['tenant' => $this->tenant, 'locale' => $locale]);
+
+        asUser($this->admin)->withHeader('Referer', $url)->get($url)
+            ->assertOk()
+            ->assertSessionHasNoErrors()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('Admin/Content/EditHomePage')
+                ->where('locale', 'lt')
+            );
+    })->with(['unknown' => 'de', 'array' => [['en']]]);
+
     test('creates and updates homepage content for the selected locale only', function (): void {
         $otherContent = Content::factory()->create();
         $otherContent->parts()->create([

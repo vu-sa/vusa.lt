@@ -208,7 +208,7 @@ import { Briefcase, CalendarClock, CalendarRange, Copy, Edit3, History, KeyRound
 import UserActivityRequestHistory, { type UserActivityRequestHistory as RequestHistory } from '@/Components/Institutions/UserActivityRequestHistory.vue';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import RecordPage, { type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
-import type { AdminRecordAction as ActionDescriptor } from '@/Features/Admin/RecordActions/types';
+import type { AdminRecordAction as ActionDescriptor } from '@/Types/AdminRecordAction';
 import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
 import { CollectionSkeleton, ConfirmDialog, EmptyState, FormToggleRow, OverviewSection } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
@@ -221,8 +221,7 @@ import { AssignDutyUserSheet, MemberTermsSummary, UserTermRow, termStatus, termY
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
 import { ModelEnum } from '@/Types/enums';
 import { changeDutyNameEndings } from '@/Utils/String';
-import { formatStaticTime } from '@/Utils/IntlTime';
-import { todayIso } from '@/Utils/dateTime';
+import { formatDate, todayIso } from '@/Utils/dateTime';
 
 const TaskDetailDialog = defineAsyncComponent(() => import('@/Features/Admin/TaskManager/TaskDetailDialog.vue'));
 
@@ -368,7 +367,7 @@ const recordFacts = computed<RecordFact[]>(() => {
   }
 
   if (props.user.last_action) {
-    facts.push({ key: 'last_action', label: $t('Paskutinį kartą prisijungė'), value: formatStaticTime(props.user.last_action) });
+    facts.push({ key: 'last_action', label: $t('Paskutinį kartą prisijungė'), value: formatDate(props.user.last_action) });
   }
 
   return facts;

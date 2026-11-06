@@ -6,8 +6,6 @@ use App\Models\Calendar;
 use App\Models\Content;
 use App\Models\News;
 use App\Models\Page;
-use App\Models\PublicNews;
-use App\Models\PublicPage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
@@ -45,11 +43,7 @@ class SyncContentSearch
                 return;
             }
             $owner->shouldBeSearchable() ? $owner->searchable() : $owner->unsearchable();
-            $mirrorClass = $owner instanceof News ? PublicNews::class : PublicPage::class;
-            $mirror = $mirrorClass::withTrashed()->find($owner->id);
-            if ($mirror) {
-                $mirror->shouldBeSearchable() ? $mirror->searchable() : $mirror->unsearchable();
-            }
+            $owner->syncPublicSearchIndex();
         });
     }
 }

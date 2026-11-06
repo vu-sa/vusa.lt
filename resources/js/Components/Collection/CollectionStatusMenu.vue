@@ -45,7 +45,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
-import type { StatusPresentation } from '@/Constants/statuses';
+import type { StatusPresentation } from '@/Constants/statusIcons';
 
 export interface CollectionStatusOption {
   value: string;

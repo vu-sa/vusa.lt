@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
+import * as i18n from 'laravel-vue-i18n';
 
 import ShowMeeting from '@/Pages/Admin/Representation/ShowMeeting.vue';
 import { commonStubs } from '@/tests/stubs';
@@ -67,6 +68,43 @@ describe('ShowMeeting.vue', () => {
   beforeEach(() => {
     localStorage.clear();
     window.history.replaceState({}, '', '/');
+  });
+
+  it.each([
+    ['lt', 'Senatas', 'Senato posėdis'],
+    ['en', 'Senate', 'Senate meeting'],
+  ])('includes the institution in the heading in %s', (locale, name, ending) => {
+    const language = vi.spyOn(i18n, 'getActiveLanguage').mockReturnValue(locale);
+    const wrapper = createWrapper({
+      meeting: {
+        ...baseMeeting,
+        title_noun: locale === 'lt' ? 'posėdis' : 'meeting',
+        institutions: [{ id: 'i1', name }],
+      },
+    });
+
+    try {
+      expect(wrapper.get('[data-slot="record-title"]').text()).toMatch(new RegExp(`${ending}$`));
+      if (locale === 'en') expect(wrapper.get('[data-slot="record-title"]').text()).toContain('March');
+    } finally {
+      wrapper.unmount();
+      language.mockRestore();
+    }
+  });
+
+  it('uses the server’s joint noun without an institution prefix', () => {
+    const wrapper = createWrapper({
+      meeting: {
+        ...baseMeeting,
+        title_noun: 'jungtinė konferencija',
+        institutions: [{ id: 'i1', name: 'Senatas' }, { id: 'i2', name: 'Taryba' }],
+      },
+    });
+
+    const title = wrapper.get('[data-slot="record-title"]').text();
+    expect(title).toContain('jungtinė konferencija');
+    expect(title).not.toContain('Senato');
+    expect(title).not.toContain('Tarybos');
   });
 
   it('shows only representatives in the people fact', () => {
@@ -140,6 +178,18 @@ describe('ShowMeeting.vue', () => {
       expect(menuText({ meeting: announced })).toContain('Atsieti nuo kalendoriaus');
       expect(menuText({ meeting: announced, governanceScope: 'vusa' }))
         .toContain('Atsieti nuo kalendoriaus');
+    });
+
+    it('unlinks without reloading the deferred document and task panels', async () => {
+      const wrapper = createWrapper({ meeting: { ...baseMeeting, calendar_event: { id: 7, is_draft: true } } });
+
+      wrapper.findComponent({ name: 'RecordPage' }).vm.$emit('action', 'unlink-calendar');
+      await wrapper.vm.$nextTick();
+
+      expect(router.delete).toHaveBeenCalledWith(
+        '/mocked/meetings.calendarEvent.destroy?meeting=meet1',
+        expect.objectContaining({ except: ['documents', 'tasks', 'pendingDocuments'] }),
+      );
     });
   });
 
@@ -222,11 +272,18 @@ describe('ShowMeeting.vue', () => {
     expect(wrapper.find('[data-slot="record-title"]').text()).not.toContain('10:00');
   });
 
-  it('shows relative and clock time together after visibility', () => {
+  it('shows a far meeting as its date and Vilnius clock time after visibility', () => {
     const facts = createWrapper().findAll('dl > div');
 
     expect(facts[2].find('dt').text()).toBe('Laikas');
-    expect(facts[2].find('dd').text()).toMatch(/prieš .+ · 10:00/);
+    expect(facts[2].find('dd').text()).toBe('2026-03-04 · 12:00');
+  });
+
+  it('shows a near meeting relative to now', () => {
+    const startTime = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
+    const facts = createWrapper({ meeting: { ...baseMeeting, start_time: startTime } }).findAll('dl > div');
+
+    expect(facts[2].find('dd').text()).toMatch(/^prieš 2 d\. · \d{2}:\d{2}$/);
   });
 
   it('shows visibility next to status with a globe and a surface matching public access', () => {

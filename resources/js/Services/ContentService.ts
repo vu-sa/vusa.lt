@@ -1,6 +1,7 @@
 import { usePage } from '@inertiajs/vue3';
 import { useFetch } from '@vueuse/core';
 import { computed, ref } from 'vue';
+// eslint-disable-next-line no-restricted-imports -- builds Y-m-d query params from local dates, not display text
 import { format, subDays, addDays } from 'date-fns';
 
 import type { NewsItem } from '@/Types/contentParts';

@@ -35,6 +35,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string $guard_name
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, DutyType> $attachable_types
  * @property-read Collection<int, User> $currentUsersThroughDuties
  * @property-read Collection<int, Duty> $duties
@@ -52,14 +53,14 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static \Database\Factories\RoleFactory factory($count = null, $state = [])
  * @method static Builder<static>|Role newModelQuery()
  * @method static Builder<static>|Role newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Role permission($permissions, bool $without = false)
+ * @method static Builder<static>|Role permission($permissions, bool $without = false)
  * @method static Builder<static>|Role query()
  * @method static Builder<static>|Role whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
  * @method static Builder<static>|Role whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static Builder<static>|Role whereLocale(string $column, string $locale)
  * @method static Builder<static>|Role whereLocales(string $column, array $locales)
  * @method static Builder<static>|Role whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Role withoutPermission($permissions)
+ * @method static Builder<static>|Role withoutPermission($permissions)
  *
  * @mixin \Eloquent
  */

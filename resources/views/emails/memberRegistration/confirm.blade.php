@@ -1,5 +1,5 @@
-@component('mail::message')
-# {{ __('mail.confirm.heading') }} ✅
+<x-mail::message :public="true">
+# {{ __('mail.confirm.heading') }}
 
 {{ \App\Support\MailGreeting::forName($name) }}
 
@@ -12,4 +12,4 @@
 {{ __('mail.confirm.more_info1') }} [{{ $contactName }}](mailto:{{ $dutyContact->email }}), {{ __('mail.confirm.more_info2') }}
 
 {{ __('mail.confirm.goodbye') }}
-@endcomponent
+</x-mail::message>

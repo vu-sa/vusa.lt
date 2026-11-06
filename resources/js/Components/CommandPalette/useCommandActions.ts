@@ -31,6 +31,7 @@ const flowForScreen: Record<string, OpenOptions['flow']> = {
   'meeting.institution': 'meeting.create',
   'checkin.institution': 'check-in',
   'meeting.pick': 'meeting.complete',
+  'activity.campaign': 'activity.request',
 };
 
 export function useCommandActions() {

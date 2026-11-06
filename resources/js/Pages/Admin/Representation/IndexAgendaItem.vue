@@ -12,11 +12,11 @@
     table-fixed
     actions-width="w-44"
     table-min-width="min-w-[72rem]"
-    @row-action="(_item, key) => collectionActions.select(key)"
     :search-placeholder="$t('Ieškoti darbotvarkės klausimų')"
+    @row-action="(_item, key) => collectionActions.select(key)"
   >
     <template #row="{ item, actions: recordActions, view }">
-      <CollectionRow :spotlight="item === source?.items.value[0]" :actions="view === 'preview' ? [] : recordActions" @select="key => collectionActions.select(key)" class="px-3 py-3 sm:px-4">
+      <CollectionRow :spotlight="item === source?.items.value[0]" :actions="view === 'preview' ? [] : recordActions" class="px-3 py-3 sm:px-4" @select="key => collectionActions.select(key)">
         <div class="min-w-0 flex-1">
           <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches" :title="item.title || $t('Be pavadinimo')" :href="route('agendaItems.show', item.id)" :sub="[item.meeting_title, getSearchTranslation(item, 'institution_name')].filter(Boolean).join(' · ')" />
           <AgendaItemTypeMark class="mt-1 text-xs" :type="item.type" />

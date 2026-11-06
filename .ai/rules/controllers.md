@@ -21,6 +21,22 @@ Naming and layout follow what is already there: `Store*`/`Update*`/`Index*` flat
 `Store`/`Update` pair extends (`CalendarRequest`, `ProblemRequest`, `FilePathRequest`,
 `ApprovableRequest`).
 
+## Input arrives through a Form Request
+Any method that reads a request field type-hints a Form Request — `create()`/`edit()` prefills
+and page-load query flags included. A plain `Illuminate\Http\Request` (or `request()`) is fine
+for `->user()`, `->session()`, headers and `->route()`, and nothing else. The
+`controllers read input only through Form Requests` test in `ValidationConventionTest` scans for
+it; its exemption list names each holdout and why.
+
+Unchecked reads are where the bugs were: a public `limit=-1` lifted its own cap, `redirect_to`
+was an open redirect, `?tag[]=` 500'd a public page, and `"false" == true` completed a task.
+
+Rules for a page-load prefill stay lenient — `nullable`, a type and a length — and the
+controller keeps quietly ignoring an id the user cannot use (`ShowAdminHomeRequest`). A link
+from an email or a bookmark should not turn into a validation error. Query strings carry
+booleans as `"true"`/`"false"`, which the `boolean` rule rejects; normalize them with
+`Concerns\NormalizesBooleanFlags` in `prepareForValidation()` and read `$request->safe()->boolean()`.
+
 ## Read `validated()` / `safe()`, never raw input
 On a `FormRequest`, `$request->except()` and `$request->only()` are still `Request::except()` /
 `Request::only()` — they return **raw** input, so anything unvalidated is mass-assigned straight

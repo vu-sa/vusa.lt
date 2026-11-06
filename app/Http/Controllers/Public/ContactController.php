@@ -6,6 +6,7 @@ use App\Actions\GetPublicMeetingDocuments;
 use App\Enums\SystemDutyType;
 use App\Enums\TenantType;
 use App\Http\Controllers\PublicController;
+use App\Http\Requests\ShowInstitutionCategoryRequest;
 use App\Models\DutyType;
 use App\Models\Form;
 use App\Models\Institution;
@@ -353,7 +354,7 @@ class ContactController extends PublicController
      * @param  string  $lang
      * @return Response
      */
-    public function institutionCategory($subdomain, $lang, $contactsString, $contactCategoryString, InstitutionType $type)
+    public function institutionCategory(ShowInstitutionCategoryRequest $request, $subdomain, $lang, $contactsString, $contactCategoryString, InstitutionType $type)
     {
         $this->getTenantLinks();
 
@@ -396,7 +397,7 @@ class ContactController extends PublicController
         // Default to showing all tenants on www (pagrindinis), filter by tenant on padalinys subdomains
         // Can be overridden with ?all=1 or ?all=0 query parameter
         $isMainTenant = $this->tenant->isMain();
-        $showAllTenants = request()->has('all') ? request()->boolean('all') : $isMainTenant;
+        $showAllTenants = $request->validated('all') ?? $isMainTenant;
 
         $descendants->load(['institutions' => function ($query) use ($showAllTenants): void {
             $query

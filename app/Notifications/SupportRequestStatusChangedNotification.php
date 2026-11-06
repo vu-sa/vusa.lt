@@ -6,9 +6,12 @@ use App\Enums\NotificationType;
 use App\Enums\SupportRequestStatus;
 use App\Models\SupportRequest;
 use App\Models\User;
+use App\Notifications\Concerns\NamesObjectInTitle;
 
 class SupportRequestStatusChangedNotification extends BaseNotification
 {
+    use NamesObjectInTitle;
+
     public function type(): NotificationType
     {
         return NotificationType::SupportRequestStatusChanged;
@@ -23,21 +26,19 @@ class SupportRequestStatusChangedNotification extends BaseNotification
 
     public function title(object $notifiable): string
     {
-        return __('Užklausos būsena atnaujinta');
+        return __('notifications.support_request_status_changed_title', ['title' => $this->supportRequest->title]);
     }
 
     public function body(object $notifiable): string
     {
         if ($this->updater) {
-            return __(':user pakeitė užklausos „:title“ būseną į :status.', [
+            return __('notifications.support_request_status_changed_body_with_user', [
                 'user' => $this->updater->name,
-                'title' => $this->supportRequest->title,
                 'status' => $this->newStatus->label(),
             ]);
         }
 
-        return __('Užklausos „:title“ būsena pakeista į :status.', [
-            'title' => $this->supportRequest->title,
+        return __('notifications.support_request_status_changed_body', [
             'status' => $this->newStatus->label(),
         ]);
     }

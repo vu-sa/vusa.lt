@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Requests\Api\IndexTenantCalendarRequest;
 use App\Models\Calendar;
 use App\Models\Tenant;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class CalendarController extends ApiController
 {
@@ -34,19 +34,19 @@ class CalendarController extends ApiController
      * @queryParam date_from string ISO date (Y-m-d) for range start. Defaults to today - 7 days.
      * @queryParam date_to string ISO date (Y-m-d) for range end. Defaults to today + 21 days.
      */
-    public function index(Request $request, Tenant $tenant): JsonResponse
+    public function index(IndexTenantCalendarRequest $request, Tenant $tenant): JsonResponse
     {
-        $lang = $request->query('lang', app()->getLocale());
-        $allTenants = $request->boolean('all_tenants', false);
+        $lang = $request->validated('lang') ?? app()->getLocale();
+        $allTenants = $request->safe()->boolean('all_tenants');
 
         // Parse date range with defaults matching timeline component
         $today = Carbon::today();
-        $dateFrom = $request->query('date_from')
-            ? Carbon::parse($request->query('date_from'))->startOfDay()
+        $dateFrom = $request->validated('date_from')
+            ? Carbon::parse($request->validated('date_from'))->startOfDay()
             : $today->copy()->subDays(self::TIMELINE_DEFAULT_DAYS_PAST);
 
-        $dateTo = $request->query('date_to')
-            ? Carbon::parse($request->query('date_to'))->endOfDay()
+        $dateTo = $request->validated('date_to')
+            ? Carbon::parse($request->validated('date_to'))->endOfDay()
             : $today->copy()->addDays(self::TIMELINE_DEFAULT_DAYS_FUTURE)->endOfDay();
 
         // Enforce maximum range to prevent overly large queries

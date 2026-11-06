@@ -2,6 +2,8 @@
 
 use App\Enums\CalendarHeroStyleEnum;
 use App\Enums\InstitutionScope;
+use App\Enums\MeetingKind;
+use App\Enums\MeetingType;
 use App\Models\Calendar;
 use App\Models\Document;
 use App\Models\EventType;
@@ -73,6 +75,44 @@ test('announcing a meeting creates a draft event in the institution tenant', fun
         // A posėdis has no hero photo; the loud variants only look empty.
         ->and($event->hero_style)->toBe(CalendarHeroStyleEnum::MINIMAL)
         ->and($event->date->toDateTimeString())->toBe($this->meeting->start_time->toDateTimeString());
+});
+
+test('announcements keep the institution prefix and use the meeting title wording in both locales', function (MeetingType $type, string $lt, string $en): void {
+    $this->institution->update([
+        'short_name' => ['lt' => 'VU SA Parlamentas', 'en' => 'VU SR Parliament'],
+    ]);
+    $this->meeting->update(['type' => $type, 'meeting_kind' => MeetingKind::Assembly]);
+
+    asUser($this->admin)->post(route('meetings.calendarEvent.store', $this->meeting))
+        ->assertRedirect()->assertSessionHasNoErrors();
+
+    $event = $this->meeting->fresh()->calendarEvent;
+    expect($event->getTranslation('title', 'lt'))->toBe($lt)
+        ->and($event->getTranslation('title', 'en'))->toBe($en);
+})->with([
+    'email' => [MeetingType::Email, 'VU SA Parlamentas sprendimas el. paštu', 'VU SR Parliament decision by email'],
+    'in person' => [MeetingType::InPerson, 'VU SA Parlamentas susirinkimas', 'VU SR Parliament assembly'],
+]);
+
+test('changing a meeting kind or type updates both announcement title translations', function (): void {
+    $this->institution->update(['short_name' => ['lt' => 'VU SA Parlamentas', 'en' => 'VU SR Parliament']]);
+    $this->meeting->update(['type' => MeetingType::InPerson]);
+    asUser($this->admin)->post(route('meetings.calendarEvent.store', $this->meeting))->assertRedirect();
+    $event = $this->meeting->fresh()->calendarEvent;
+
+    $this->meeting->update(['meeting_kind' => MeetingKind::Conference]);
+
+    expect($event->fresh()->getTranslations('title'))->toBe([
+        'lt' => 'VU SA Parlamentas konferencija',
+        'en' => 'VU SR Parliament conference',
+    ]);
+
+    $this->meeting->update(['type' => MeetingType::Email]);
+
+    expect($event->fresh()->getTranslations('title'))->toBe([
+        'lt' => 'VU SA Parlamentas sprendimas el. paštu',
+        'en' => 'VU SR Parliament decision by email',
+    ]);
 });
 
 test('the calendar form is told which meeting the event announces', function (): void {

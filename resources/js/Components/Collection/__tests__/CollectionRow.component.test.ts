@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import CollectionRowActions from '../CollectionRowActions.vue';
 
-import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));

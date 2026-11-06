@@ -168,7 +168,7 @@ import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import { ConfirmDialog, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
-import type { StatusPresentation } from '@/Constants/statuses';
+import type { StatusPresentation } from '@/Constants/statusIcons';
 import { formatNearDate } from '@/Utils/dateTime';
 
 type ServiceStatus = Record<string, unknown> & { status?: string; error?: string; message?: string };

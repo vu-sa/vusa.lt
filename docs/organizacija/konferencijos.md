@@ -1,14 +1,11 @@
 ---
 doc_status: reviewed
 title: Konferencijos
-area: mailingLists
-models: [MailingList]
 last_reviewed: 2026-10-27
 tests:
   - tests/Feature/Admin/MailingLists/ResolveMailingListMembersTest.php
   - tests/Feature/Admin/MailingLists/SyncMailingListTest.php
   - tests/Feature/Admin/MailingLists/MailingListControllerTest.php
-  - tests/Feature/Admin/MailingLists/MailingListDeploymentTest.php
   - tests/Feature/Admin/MailingLists/FetchMailingListArchiveTest.php
   - tests/Feature/Admin/MailingLists/ImportMailingListsTest.php
   - tests/Feature/Admin/MailingLists/MailingListQueueTest.php

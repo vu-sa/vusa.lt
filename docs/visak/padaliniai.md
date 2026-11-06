@@ -1,7 +1,6 @@
 ---
 doc_status: reviewed
 title: Padaliniai
-area: visak
 last_reviewed: 2026-10-27
 tests:
   - tests/Feature/Api/Admin/RecordActivityStatusTest.php
@@ -24,7 +23,7 @@ tests:
   - resources/js/Pages/Admin/Dashboard/Composables/__tests__/statusFlow.test.ts
   - resources/js/Pages/Admin/Dashboard/Composables/__tests__/useTimelineFilters.test.ts
   - resources/js/Pages/Admin/Dashboard/Composables/__tests__/useTenantMeetings.test.ts
-  - resources/js/Pages/Admin/Dashboard/Composables/__tests__/useGanttSettings.test.ts
+  - resources/js/Components/Graphs/composables/__tests__/useGanttSettings.test.ts
   - resources/js/Pages/Admin/Dashboard/Components/__tests__/TenantTimelineSection.component.test.ts
   - resources/js/Components/Graphs/__tests__/MeetingsGantt.component.test.ts
   - resources/js/Components/Graphs/composables/__tests__/useGanttLayout.test.ts

@@ -84,7 +84,7 @@ import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import NewsCard from '@/Components/Public/News/NewsCard.vue';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
-import { formatEventDate } from '@/Utils/IntlTime';
+import { formatDateWith } from '@/Utils/dateTime';
 import { LocaleEnum } from '@/Types/enums';
 import type { NewsItem } from '@/Types/contentParts';
 import IFluentChevronRight16Regular from '~icons/fluent/chevron-right-16-regular';
@@ -132,7 +132,7 @@ const newsArchiveHref = computed(() => route('newsArchive', {
 }));
 
 function formatEventMeta(event: TopicEventItem): string {
-  const date = formatEventDate(new Date(event.date), locale.value);
+  const date = formatDateWith(event.date, { month: 'short', day: 'numeric' }, { locale: locale.value });
 
   return event.tenant_name ? `${date} · ${event.tenant_name}` : date;
 }

@@ -1,8 +1,6 @@
 <?php
 
 use App\Enums\ResponsibilityPurpose;
-use App\Events\DutiableChanged;
-use App\Listeners\HandleDutiableChange;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Meeting;
@@ -74,7 +72,6 @@ test('ending the only scheduled duty revokes access and clears every per-user ac
     Cache::put('typesense_scoped_keys:'.$this->actor->id, ['stale' => true]);
 
     $this->term->update(['end_date' => now()->subDay()->toDateString()]);
-    app(HandleDutiableChange::class)->handle(new DutiableChanged($this->term));
 
     expect($authorizer->allows($this->actor, 'news.update.padalinys'))->toBeFalse()
         ->and(Cache::get(InstitutionAccessService::getAccessCacheKey($this->actor->id)))->toBeNull()

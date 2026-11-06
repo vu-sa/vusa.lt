@@ -307,7 +307,7 @@ import { RadioGroup, RadioGroupItem } from '@/Components/ui/radio-group';
 import NativeSelect from '@/Components/ui/native-select/NativeSelect.vue';
 import { Textarea } from '@/Components/ui/textarea';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
-import { supportRequestStatuses } from '@/Constants/statuses';
+import { supportRequestStatuses } from '@/Constants/statusIcons';
 import type {
   SupportRequestItem,
   SupportRequestMediaFile,

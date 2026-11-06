@@ -2,7 +2,6 @@
 
 namespace App\Policies;
 
-use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
 use App\Models\Goal;
 use App\Models\User;
@@ -48,12 +47,12 @@ class GoalPolicy extends ModelPolicy
     #[\Override]
     public function update(User $user, Model $goal): bool
     {
-        return $this->view($user, $goal) && $this->commonChecker($user, $goal, CRUDEnum::UPDATE->label(), $this->pluralModelName, false);
+        return $this->view($user, $goal) && parent::update($user, $goal);
     }
 
     #[\Override]
     public function delete(User $user, Model $goal): Response|bool
     {
-        return $this->view($user, $goal) && $this->commonChecker($user, $goal, CRUDEnum::DELETE->label(), $this->pluralModelName, false);
+        return $this->view($user, $goal) && parent::delete($user, $goal);
     }
 }

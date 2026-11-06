@@ -2,8 +2,7 @@
 
 namespace App\Models;
 
-use App\Services\InstitutionAccessService;
-use App\Services\Typesense\TypesenseScopedKeyService;
+use App\Actions\ForgetUserAccess;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
@@ -43,16 +42,11 @@ class InstitutionSecretary extends Pivot
 {
     use HasFactory, HasUlids;
 
-    /**
-     * A nomination widens what its user may see (InstitutionAccessService feeds the
-     * `.own` scope and the Typesense scoped key), so both caches have to go with it.
-     */
     #[\Override]
     protected static function booted(): void
     {
         $invalidate = function (InstitutionSecretary $secretary): void {
-            InstitutionAccessService::invalidateForUser($secretary->user_id);
-            TypesenseScopedKeyService::invalidateForUser($secretary->user_id);
+            ForgetUserAccess::execute([$secretary->user_id]);
         };
 
         static::saved($invalidate);

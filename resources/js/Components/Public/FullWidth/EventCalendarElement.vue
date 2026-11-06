@@ -84,7 +84,7 @@
             >
               <span class="text-2xl font-bold leading-none tabular-nums">{{ dayOfMonth(event.date) }}</span>
               <span class="mt-1 text-[0.625rem] font-bold uppercase tracking-wide text-muted-foreground">
-                {{ formatMonthAbbr(new Date(event.date), locale) }}
+                {{ formatMonthAbbr(event.date, { locale }) }}
               </span>
             </div>
 
@@ -137,7 +137,7 @@ import { EyebrowLabel } from '@/Components/Public/Base';
 import CalendarSyncModal from '@/Components/Public/CalendarSyncModal.vue';
 import Skeleton from '@/Components/ui/skeleton/Skeleton.vue';
 import { useCalendarFetch } from '@/Services/ContentService';
-import { formatEventDateSpan, formatMonthAbbr } from '@/Utils/IntlTime';
+import { formatDateWith, formatEventDateSpan, formatMonthAbbr } from '@/Utils/dateTime';
 import { getCalendarEvent2Route } from '@/Utils/Route';
 import type { Calendar } from '@/Types/contentParts';
 import { LocaleEnum } from '@/Types/enums';
@@ -263,7 +263,7 @@ const upcomingEvents = computed<CalendarEvent[]>(() => {
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 });
 
-const dayOfMonth = (date: string) => new Date(date).getDate();
+const dayOfMonth = (date: string) => formatDateWith(date, { day: 'numeric' });
 
 const eventDateLabel = (event: CalendarEvent) => formatEventDateSpan(
   event.date,

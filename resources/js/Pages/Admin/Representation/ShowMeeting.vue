@@ -307,7 +307,7 @@
 import { ref, computed, watch, onMounted, defineAsyncComponent, nextTick } from 'vue';
 import { Deferred, Link, router } from '@inertiajs/vue3';
 import { useClipboard, useStorage } from '@vueuse/core';
-import { trans as $t } from 'laravel-vue-i18n';
+import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
 import { AlertTriangle, CalendarPlus, CalendarX, CircleCheck, CircleDashed, Copy, Edit, Globe, Link2, Plus, Trash2 } from '@lucide/vue';
 import { DialogDescription } from 'reka-ui';
 
@@ -315,12 +315,12 @@ import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitut
 import { preferredScrollBehavior } from '@/Composables/useAccessibilityPreferences';
 import { useToasts } from '@/Composables/useToasts';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
-import { InstitutionScope, ModelEnum } from '@/Types/enums';
-import { formatRelativeTime } from '@/Utils/IntlTime';
-import { formatMeetingDateTime, formatMeetingTimeOnly } from '@/Utils/MeetingDisplay';
+import { InstitutionScope, LocaleEnum, ModelEnum } from '@/Types/enums';
 import { genitivizeEveryWord } from '@/Utils/String';
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
+import { formatMeetingDateTime, formatMeetingTimeOnly, isEmailMeeting } from '@/Utils/MeetingDisplay';
 import { useMeetingUrgency } from '@/Composables/useMeetingUrgency';
-import { meetingCompletionStatuses, type MeetingCompletionStatus } from '@/Constants/statuses';
+import { meetingCompletionStatuses, type MeetingCompletionStatus } from '@/Constants/statusIcons';
 import RecordPage, { type RecordAction, type RecordFact, type RecordNavigationContext } from '@/Components/Layouts/RecordPage.vue';
 import { Button } from '@/Components/ui/button';
 import { Skeleton } from '@/Components/ui/skeleton';
@@ -330,8 +330,7 @@ import UsersFactList from '@/Components/Avatars/UsersFactList.vue';
 import MeetingAgendaList from '@/Components/Meetings/MeetingAgendaList.vue';
 import { useApi } from '@/Composables/useApi';
 import type { EditableAgendaItemSource } from '@/Composables/useAgendaItemAutosave';
-import { formatTime } from '@/Utils/dateTime';
-import { isEmailMeeting } from '@/Utils/MeetingDisplay';
+import { formatNearDate, formatTime } from '@/Utils/dateTime';
 import AgendaItemEditSheet from '@/Components/AgendaItems/AgendaItemEditSheet.vue';
 import MeetingCompletionChecklist, { type MeetingMissingAction } from '@/Components/Meetings/MeetingCompletionChecklist.vue';
 import MeetingDatePlate from '@/Components/Meetings/MeetingDatePlate.vue';
@@ -455,6 +454,7 @@ const openAnnounceDialog = () => {
 const handleUnlinkCalendarEvent = () => {
   router.delete(route('meetings.calendarEvent.destroy', { meeting: props.meeting.id }), {
     preserveScroll: true,
+    except: ['documents', 'tasks', 'pendingDocuments'],
   });
 };
 
@@ -463,7 +463,7 @@ const { hasProtocol, isPastMeeting } = useMeetingUrgency(() => props.meeting);
 
 // Hide HH:MM for email/electronic meetings (start_time is forced to 23:59 as a deadline marker)
 const meetingTimeLabel = computed(() => formatMeetingTimeOnly(props.meeting));
-const meetingRelativeTime = computed(() => formatRelativeTime(new Date(props.meeting.start_time)));
+const meetingRelativeTime = computed(() => formatNearDate(props.meeting.start_time));
 const meetingStatus = computed(() => meetingCompletionStatuses[props.completion.status]);
 const documentStatuses = computed(() => [
   {
@@ -711,31 +711,22 @@ onMounted(() => {
 const mainInstitution: App.Entities.Institution | string
   = props.meeting.institutions?.[0] ?? 'Be institucijos';
 
-const isJoint = computed(
-  () => (props.meeting as App.Entities.Meeting & { is_joint?: boolean }).is_joint
-    ?? (props.meeting.institutions?.length ?? 0) > 1,
-);
-
-// Always derive the displayed title from start_time + institution.
-// The stored `meeting.title` is auto-generated server-side and historically
-// embedded a 23.59 timestamp for email meetings — recomputing here keeps the
-// header/breadcrumb correct without a data backfill.
 const meetingTitle = computed(() => {
+  const locale = getActiveLanguage() === 'en' ? LocaleEnum.EN : LocaleEnum.LT;
   const datePart = formatMeetingDateTime(props.meeting, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
-  });
+  }, locale);
+  const noun = (props.meeting as App.Entities.Meeting & { title_noun?: string }).title_noun ?? $t('posėdis');
 
-  if (isJoint.value) {
-    return `${datePart} jungtinis posėdis`;
-  }
+  if ((props.meeting.institutions?.length ?? 0) > 1) return `${datePart} ${noun}`;
 
-  const institutionName = typeof mainInstitution === 'string'
-    ? mainInstitution
-    : mainInstitution.name;
+  const institution = props.meeting.institutions?.[0];
+  const name = getTranslatedValue(institution?.name, locale);
+  const institutionName = locale === LocaleEnum.LT ? genitivizeEveryWord(name) : name;
 
-  return `${datePart} ${genitivizeEveryWord(institutionName)} posėdis`;
+  return [datePart, institutionName, noun].filter(Boolean).join(' ');
 });
 
 watch(() => props.meeting.id, () => enterMeeting(props.meeting), { immediate: true });
@@ -758,9 +749,12 @@ const handleAttachInstitution = () => {
   if (!addInstitutionId.value) {
     return;
   }
+  // Institutions decide which pending documents can be linked, and who the tasks reach.
   router.post(route('meetings.institutions.attach', props.meeting.id), {
     institution_id: addInstitutionId.value,
   }, {
+    preserveScroll: true,
+    except: ['documents'],
     onSuccess: () => {
       showAddInstitutionDialog.value = false;
       addInstitutionId.value = '';
@@ -769,7 +763,10 @@ const handleAttachInstitution = () => {
 };
 
 const handleDetachInstitution = (institutionId: string) => {
-  router.delete(route('meetings.institutions.detach', { meeting: props.meeting.id, institution: institutionId }));
+  router.delete(route('meetings.institutions.detach', { meeting: props.meeting.id, institution: institutionId }), {
+    preserveScroll: true,
+    except: ['documents'],
+  });
 };
 
 const handleMissingAction = (action: MeetingMissingAction) => {
@@ -846,6 +843,7 @@ const confirmAgendaItemDelete = () => {
   }
   router.delete(route('agendaItems.destroy', agendaItemPendingDelete.value.id), {
     preserveScroll: true,
+    except: ['documents', 'pendingDocuments'],
     onSuccess: () => {
       showAgendaItemDeleteDialog.value = false;
       agendaItemPendingDelete.value = null;

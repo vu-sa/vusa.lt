@@ -14,10 +14,10 @@
     table-fixed
     actions-width="w-44"
     table-min-width="min-w-[64rem]"
-    @row-action="(item, key) => selectRowAction(key, item)"
     :selectable="mergeMode"
     :quick-filters
     :search-placeholder="$t('Ieškoti pareigybių')"
+    @row-action="(item, key) => selectRowAction(key, item)"
     @quick-filter="toggleQuickFilter"
   >
     <template #actions>
@@ -42,7 +42,9 @@
             <InflectedDutyName :name="title(item)" />
           </span>
         </CollectionPrimaryCell>
-        <p class="mt-0.5 text-xs text-muted-foreground">{{ rowFacts(item).join(' · ') }}</p>
+        <p class="mt-0.5 text-xs text-muted-foreground">
+          {{ rowFacts(item).join(' · ') }}
+        </p>
       </CollectionRow>
     </template>
 
@@ -102,7 +104,7 @@ import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { ArrowRight, Merge, Pencil, Plus, RotateCcw, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
-import { operatingStatuses } from '@/Constants/statuses';
+import { operatingStatuses } from '@/Constants/statusIcons';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import CollectionActivityStatus from '@/Components/Collection/CollectionActivityStatus.vue';

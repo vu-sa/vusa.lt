@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { pageStatus } from '../pageStatus';
 
-import { contentStatuses } from '@/Constants/statuses';
+import { contentStatuses } from '@/Constants/statusIcons';
 import type { PageSearchResult } from '@/Shared/Search/types';
 
 const page = (overrides: Partial<PageSearchResult>): PageSearchResult => ({

@@ -90,6 +90,19 @@ describe('SharepointFileService', function (): void {
             expect($path)->toBe('General/Padaliniai/test-tenant/Institutions/Test Institution/Meetings/2023-06-15 14.30');
         });
 
+        test('keeps a joint meeting in its first institution folder when another is attached', function (): void {
+            $joinedLater = Institution::factory()->for($this->tenant)->create(['name' => 'Ankstesnė institucija']);
+            $original = Institution::factory()->for($this->tenant)->create(['name' => 'Pirminė institucija']);
+            $meeting = Meeting::factory()->create(['start_time' => Carbon::create(2023, 6, 15, 14, 30)]);
+
+            // Stored out of order: MariaDB returns pivot rows by primary key, not by when they were attached.
+            $meeting->institutions()->attach($joinedLater->id, ['created_at' => now()]);
+            $meeting->institutions()->attach($original->id, ['created_at' => now()->subDay()]);
+
+            expect(SharepointFileService::pathForFileableDriveItem($meeting->fresh()))
+                ->toBe('General/Padaliniai/test-tenant/Institutions/Pirminė institucija/Meetings/2023-06-15 14.30');
+        });
+
         test('generates correct path for Meeting with empty title', function (): void {
             $institution = Institution::factory()->for($this->tenant)->create([
                 'name' => 'Test Institution',
@@ -138,6 +151,22 @@ describe('SharepointFileService', function (): void {
             $path = SharepointFileService::pathForFileableDriveItem($duty);
 
             expect($path)->toBe('General/Padaliniai/test-tenant/Institutions/Test Institution/Duties/Pareigybė');
+        });
+
+        test('names folders in Lithuanian whatever the request locale', function (): void {
+            app()->setLocale('en');
+
+            $type = InstitutionType::factory()->create(['title' => ['lt' => 'Komitetai', 'en' => 'Committees']]);
+            $institution = Institution::factory()->for($this->tenant)->create([
+                'name' => ['lt' => 'Studijų komitetas', 'en' => 'Study committee'],
+            ]);
+            $duty = Duty::factory()->for($institution)->create(['name' => ['lt' => 'Narys', 'en' => 'Member']]);
+            $meeting = Meeting::factory()->create(['start_time' => Carbon::create(2023, 6, 15, 14, 30)]);
+            $meeting->institutions()->attach($institution->id);
+
+            expect(SharepointFileService::pathForFileableDriveItem($type))->toBe('General/Types/Institutions/Komitetai')
+                ->and(SharepointFileService::pathForFileableDriveItem($meeting))->toBe('General/Padaliniai/test-tenant/Institutions/Studijų komitetas/Meetings/2023-06-15 14.30')
+                ->and(SharepointFileService::pathForFileableDriveItem($duty))->toBe('General/Padaliniai/test-tenant/Institutions/Studijų komitetas/Duties/Narys');
         });
 
         // Note: Duty has a NOT NULL constraint on institution_id in the database,

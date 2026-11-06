@@ -19,6 +19,54 @@ beforeEach(function (): void {
 });
 
 describe('Document Sync Jobs', function (): void {
+    test('excluded documents do not consume the rolling refresh quota', function (string $status, int $attempts, int $hoursSinceAttempt, int $eligibleAge): void {
+        $this->freezeTime();
+        $excluded = Document::factory()->create([
+            'checked_at' => now()->subDays(30),
+            'sync_status' => $status,
+            'sync_attempts' => $attempts,
+            'last_sync_attempt_at' => now()->subHours($hoursSinceAttempt),
+        ]);
+        $eligible = Document::factory()->create([
+            'checked_at' => now()->subDays($eligibleAge),
+            'sync_status' => 'success',
+        ]);
+
+        (new SyncStaleDocumentsJob)->handle();
+
+        Queue::assertPushed(SyncDocumentFromSharePointJob::class, 1);
+        Queue::assertPushed(SyncDocumentFromSharePointJob::class, fn ($job) => $job->document->is($eligible));
+        Queue::assertNotPushed(SyncDocumentFromSharePointJob::class, fn ($job) => $job->document->is($excluded));
+    })->with([
+        'over the failure cap' => ['failed', 6, 7],
+        'over the cap regardless of status' => ['success', 6, 7],
+        'cooling down at three failures' => ['failed', 3, 2],
+    ])->with([
+        'critical replacement' => 15,
+        'additional replacement' => 10,
+    ]);
+
+    test('rolling refresh retains eligible retry boundaries', function (string $status, int $attempts, ?int $hoursSinceAttempt): void {
+        $this->freezeTime();
+        $document = Document::factory()->create([
+            'checked_at' => now()->subDays(15),
+            'sync_status' => $status,
+            'sync_attempts' => $attempts,
+            'last_sync_attempt_at' => $hoursSinceAttempt === null ? null : now()->subHours($hoursSinceAttempt),
+        ]);
+
+        (new SyncStaleDocumentsJob)->handle();
+
+        Queue::assertPushed(SyncDocumentFromSharePointJob::class, 1);
+        Queue::assertPushed(SyncDocumentFromSharePointJob::class, fn ($job) => $job->document->is($document));
+    })->with([
+        'five failures exactly six hours ago' => ['failed', 5, 6],
+        'no last attempt timestamp' => ['failed', 3, null],
+        'only two recent failures' => ['failed', 2, 1],
+        'successful status does not cool down' => ['success', 3, 1],
+        'pending status does not cool down' => ['pending', 3, 1],
+    ]);
+
     test('individual sync job can be created and has correct properties', function (): void {
         $document = Document::factory()->create();
 
@@ -75,26 +123,25 @@ describe('Document Sync Jobs', function (): void {
         expect($pushedCount)->toBeGreaterThan(0);
     });
 
-    test('rolling refresh job skips documents with excessive failures', function (): void {
-        // Create document that has failed too many times (over the limit of 5)
+    test('rolling refresh job skips documents with excessive failures', function (int $age): void {
+        $this->freezeTime();
         Document::factory()->create([
-            'checked_at' => now()->subDays(15), // Old enough to be critical
+            'checked_at' => now()->subDays($age),
             'sync_status' => 'failed',
-            'sync_attempts' => 7, // Over the limit of 5
+            'sync_attempts' => 7,
             'last_sync_attempt_at' => now()->subHours(1),
         ]);
 
         $job = new SyncStaleDocumentsJob;
         $job->handle();
 
-        // No jobs should be dispatched for documents with excessive failures
         Queue::assertNothingPushed();
-    });
+    })->with([15, 10]);
 
-    test('rolling refresh job skips recently failed documents', function (): void {
-        // Create document that failed recently with multiple attempts
+    test('rolling refresh job skips recently failed documents', function (int $age): void {
+        $this->freezeTime();
         Document::factory()->create([
-            'checked_at' => now()->subDays(15), // Old enough to be critical
+            'checked_at' => now()->subDays($age),
             'sync_status' => 'failed',
             'sync_attempts' => 4, // Under failure limit but failed recently
             'last_sync_attempt_at' => now()->subHours(2), // Recent failure (within 6 hours)
@@ -103,9 +150,8 @@ describe('Document Sync Jobs', function (): void {
         $job = new SyncStaleDocumentsJob;
         $job->handle();
 
-        // Should skip recently failed documents
         Queue::assertNothingPushed();
-    });
+    })->with([15, 10]);
 
     test('rolling refresh job uses dynamic quota calculation', function (): void {
         // Create exactly 14 documents (one per day in cycle)
@@ -219,7 +265,7 @@ describe('Document Sync Command', function (): void {
         // Create failed documents with different attempt counts
         Document::factory()->create([
             'sync_status' => 'failed',
-            'sync_attempts' => 2, // Eligible for retry
+            'sync_attempts' => 5,
         ]);
 
         Document::factory()->create([

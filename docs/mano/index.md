@@ -1,7 +1,6 @@
 ---
 doc_status: reviewed
 title: Mano
-area: dashboard
 last_reviewed: 2026-10-26
 tests:
   - tests/Feature/Admin/Management/UserActivityRequestsTest.php

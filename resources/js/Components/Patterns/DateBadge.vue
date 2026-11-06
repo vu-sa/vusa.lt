@@ -20,7 +20,7 @@ import type { HTMLAttributes } from 'vue';
 import { computed } from 'vue';
 
 import { cn } from '@/Utils/Shadcn/utils';
-import { formatMonthShort, formatStaticTime } from '@/Utils/IntlTime';
+import { formatDateWith, formatMonthAbbr } from '@/Utils/dateTime';
 
 const props = withDefaults(defineProps<{
   /** Accepts an ISO string (what the API returns) or an already-parsed Date. */
@@ -30,8 +30,6 @@ const props = withDefaults(defineProps<{
   class: undefined,
 });
 
-const parsedDate = computed(() => (props.date instanceof Date ? props.date : new Date(props.date)));
-
-const monthLabel = computed(() => formatMonthShort(parsedDate.value));
-const dayLabel = computed(() => formatStaticTime(parsedDate.value, { day: 'numeric' }));
+const monthLabel = computed(() => formatMonthAbbr(props.date));
+const dayLabel = computed(() => formatDateWith(props.date, { day: 'numeric' }));
 </script>

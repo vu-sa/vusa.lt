@@ -18,7 +18,9 @@
           :is-dismissed="previewSpotlight.isDismissed.value" @dismiss="previewSpotlight.dismiss"
         >
           <Button variant="outline" voice="sentence" as-child>
-            <Link :href="route('mailPreviews.index')" @click="previewSpotlight.dismiss">{{ $t('mail_previews.title') }}</Link>
+            <Link :href="route('mailPreviews.index')" @click="previewSpotlight.dismiss">
+              {{ $t('mail_previews.title') }}
+            </Link>
           </Button>
         </SpotlightPopover>
         <Button variant="outline" voice="sentence" @click="source.refresh()">
@@ -41,7 +43,9 @@
               <a v-if="recipient.user" :href="route('mailQueue.previewForUser', recipient.user_id)" target="_blank" rel="noopener noreferrer" data-collection-open class="block truncate text-sm font-semibold text-foreground hover:text-brand">
                 {{ recipient.user.name }}
               </a>
-              <p v-else class="truncate text-sm font-semibold text-foreground">{{ $t('Ištrintas naudotojas') }}</p>
+              <p v-else class="truncate text-sm font-semibold text-foreground">
+                {{ $t('Ištrintas naudotojas') }}
+              </p>
               <p class="truncate text-xs text-muted-foreground">
                 <span v-if="recipient.user?.email">{{ recipient.user.email }} · </span>
                 {{ $t('Seniausia') }}: {{ formatDate(recipient.oldest_at) }}
@@ -114,20 +118,18 @@
 import { Link, router } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { computed, ref, watch } from 'vue';
-import { format, parseISO } from 'date-fns';
 import { Mail as MailIcon, RefreshCw as RefreshCwIcon, Trash2 as Trash2Icon } from '@lucide/vue';
 
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
-
-import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import { useDateLocale } from '@/Composables/useDateLocale';
+import { formatDateTime } from '@/Utils/dateTime';
 
 interface QueuedItem {
   id: number;
@@ -160,7 +162,6 @@ const props = defineProps<{
   totals: { items: number; recipients: number };
 }>();
 
-const dateLocale = useDateLocale();
 const source = useDatabaseCollectionSource<Recipient>({
   endpoint: route('api.v1.admin.mailQueue.index'),
   initial: {
@@ -182,8 +183,7 @@ watch(() => props.recipients, () => source.refresh());
 const busyKey = ref<string | number | null>(null);
 
 const formatDate = (value: string | null) => {
-  if (!value) return '—';
-  return format(parseISO(value), 'yyyy-MM-dd HH:mm', { locale: dateLocale.value });
+  return formatDateTime(value) || '—';
 };
 
 const submit = (url: string, key: string | number) => {

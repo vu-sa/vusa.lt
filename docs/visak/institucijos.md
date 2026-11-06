@@ -1,10 +1,10 @@
 ---
 doc_status: reviewed
 title: Institucijos
-area: institutions
-models: [Institution, InstitutionCheckIn, InstitutionSecretary]
-last_reviewed: 2026-11-01
+last_reviewed: 2026-11-06
 tests:
+  - tests/Feature/Admin/ModelMeta/TypeControllerTest.php
+  - tests/Feature/Meetings/MeetingKindTest.php
   - tests/Feature/Search/ListFreshnessTest.php
   - tests/Feature/Admin/Search/InstitutionMemberTermsApiTest.php
   - tests/Feature/Search/AdminSearchTranslationsTest.php
@@ -18,11 +18,9 @@ tests:
   - tests/Feature/Admin/Management/InstitutionCheckInTest.php
   - tests/Feature/Admin/People/InstitutionSecretaryTest.php
   - tests/Feature/InstitutionSubscriptionTest.php
-  - tests/Feature/Migrations/RemoveInstitutionNotificationMutesTest.php
   - tests/Feature/Institutions/InstitutionScopeTest.php
   - tests/Feature/Public/PublicMeetingVisibilityTest.php
   - tests/Feature/Public/ContactControllerTest.php
-  - tests/Feature/Migrations/NormalizeInstitutionAliasesTest.php
   - tests/Feature/Institutions/InstitutionDeactivationTest.php
   - tests/Browser/InstitutionDeactivationTest.php
   - tests/Feature/Search/ContactSearchIndexSyncTest.php
@@ -195,6 +193,28 @@ institucijos tipų periodiškumų, o jei ir jų nėra – **30 dienų**.
 Pagal periodiškumą skaičiuojama institucijos **veiklos būklė** (Vėluoja, Artėja terminas,
 Suplanuotas posėdis ir kt.). Kaip ji nustatoma, aprašyta [Apžvalgoje](/visak/apzvalga#busenos).
 Tais pačiais pavadinimais būklės rodomos ir institucijų sąrašo filtre **Aktyvumas**.
+
+### Kaip vadinami posėdžiai {#posedziu-pavadinimas}
+
+Posėdžio pavadinimas baigiasi žodžiu, kuriuo vadinami institucijos posėdžiai: **Posėdis**
+(numatytasis, pvz., Senatui ar Tarybai), **Susirinkimas** (pvz., padalinio ar klubo narių
+susirinkimams), **Susitikimas** (neformaliems susitikimams, pvz., su dekanu) arba **Konferencija**.
+Žodis nustatomas [institucijos tipe](/sistema/tipai) lauke **Kaip vadinami posėdžiai**. Jei
+institucija turi kelis tipus su skirtingais žodžiais, imamas anksčiausiai sukurto tipo žodis.
+Atskiram posėdžiui jį galima pakeisti [posėdžio redagavimo lange](/visak/posedziai#posedzio-tipas-ir-pavadinimas).
+
+Pakeitus žodį, priskyrus ar pašalinus tipą, taip pat ištrynus ar atkūrus tipą, pervadinami ir jau
+užfiksuoti institucijos posėdžiai, įskaitant esančius šiukšlinėje, jei jiems nenurodytas atskiras
+žodis. Tai tik pavadinimas: kokie
+balsavimo laukai rodomi ir kokios kuriamos užduotys, lemia institucijos [rūšis](#rusis-ir-tipai).
+Sprendimai el. paštu visada vadinami „sprendimas el. paštu“.
+
+<ChangelogNote date="2026-11-02" title="Kaip vadinami posėdžiai">
+
+Institucijos tipui galima nurodyti, kad jos posėdžiai vadinami susirinkimais, susitikimais ar
+konferencijomis. Atskiram posėdžiui žodis keičiamas posėdžio redagavimo lange.
+
+</ChangelogNote>
 
 ### Posėdžių viešumas {#viesumas}
 
@@ -607,6 +627,7 @@ Pranešimas apie tai, kad posėdžio nebus, suteikia atskirą pusės periodišku
 ### Kaip tai įgyvendinta
 
 - Periodiškumas: `Institution::meeting_periodicity_days` → `min(types)` → 30.
+- Posėdžių žodis: `Institution::resolvedMeetingKind()` – mažiausio `id` tipo `extra_attributes.meeting_kind` → `MeetingKind::Sitting`.
 - Viešumas: `Institution::has_public_meetings` lygina tipus su
   `MeetingSettings::public_meeting_institution_type_ids`.
 - Rūšis: `InstitutionScopeResolver` (artimiausias tipas su `governance_scope`; išorinis laimi).

@@ -12,8 +12,8 @@
     table-fixed
     actions-width="w-44"
     table-min-width="min-w-[86rem]"
-    @row-action="(_item, key) => collectionActions.select(key)"
     :search-placeholder="$t('responsibilities.index.search')"
+    @row-action="(_item, key) => collectionActions.select(key)"
   >
     <template #actions>
       <Button v-if="canCreate" as-child variant="brand" size="lg">
@@ -59,7 +59,7 @@ import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAc
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { useRowAbilities } from '@/Composables/useRowAbilities';
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
-import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import type { CollectionColumn } from '@/Components/Collection/types';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';

@@ -70,6 +70,18 @@ describe('NotificationCard', () => {
     expect(markNotificationRead).toHaveBeenCalledWith('n1');
   });
 
+  it('quotes the excerpt as plain text, not markup', () => {
+    const wrapper = mountCard(make({ body: 'Jonas paliko komentarą', excerpt: '<img src=x onerror=alert(1)> Siūlau' }));
+
+    const excerpt = wrapper.get('[data-slot="notification-excerpt"]');
+    expect(excerpt.text()).toBe('<img src=x onerror=alert(1)> Siūlau');
+    expect(excerpt.find('img').exists()).toBe(false);
+  });
+
+  it('shows no excerpt block when the notification has none', () => {
+    expect(mountCard(make({})).find('[data-slot="notification-excerpt"]').exists()).toBe(false);
+  });
+
   it('shows the action of a row stored before the contract existed', () => {
     const wrapper = mountCard(make({ actions: [{ label: 'Peržiūrėti', url: '/legacy' }] }));
 

@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import IndexDocument from '../IndexDocument.vue';
 
-import type { AdminRecordAction } from '@/Features/Admin/RecordActions/types';
+import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import type { DocumentSearchResult } from '@/Shared/Search/types';
 
 const abilityState = vi.hoisted(() => ({ allowed: true }));

@@ -97,7 +97,7 @@ import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
-import type { StatusPresentation } from '@/Constants/statuses';
+import type { StatusPresentation } from '@/Constants/statusIcons';
 import { formatDate } from '@/Utils/dateTime';
 
 interface NewsItem {

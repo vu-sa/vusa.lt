@@ -10,7 +10,9 @@ use App\Actions\SerializeReservationCart;
 use App\Actions\SerializeReservationsForTable;
 use App\Actions\SerializeResourceManagers;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\AddReservationUsersRequest;
 use App\Http\Requests\IndexReservationRequest;
+use App\Http\Requests\ShowReservationRequest;
 use App\Http\Requests\StoreReservationRequest;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Reservation;
@@ -20,7 +22,6 @@ use App\Notifications\AssignedToResourceNotification;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
 /* use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests; */
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
@@ -144,18 +145,20 @@ class ReservationController extends AdminController
     /**
      * Display the specified resource.
      */
-    public function show(Reservation $reservation)
+    public function show(ShowReservationRequest $request, Reservation $reservation)
     {
         $this->handleAuthorization('view', [Reservation::class, $reservation, $this->authorizer]);
 
         $modelName = Str::of(class_basename($reservation))->camel()->plural();
 
-        // TODO: this may need to be refactored to account for null
-        $dateTimeRange = request()->input('dateTimeRange');
-        $exceptReservations = collect(request()->input('except-reservations'))->unique()->toArray();
-        $exceptResources = collect(request()->input('except-resources'))->unique()->toArray();
+        $dateTimeRange = [
+            'start' => $request->validated('dateTimeRange.start') ?? $reservation->start_time,
+            'end' => $request->validated('dateTimeRange.end') ?? $reservation->end_time,
+        ];
+        $exceptReservations = $request->exceptIds('except-reservations');
+        $exceptResources = $request->exceptIds('except-resources');
 
-        $user = request()->user();
+        $user = $request->user();
 
         $reservation->load('users', 'resources.media', 'resources.tenant');
         LoadReservationResourceApprovals::execute([$reservation], ['approvals.user', 'approvals.revertedBy']);
@@ -222,13 +225,13 @@ class ReservationController extends AdminController
         return back()->with('success', $this->entityMessage('deleted', 'reservation'));
     }
 
-    public function addUsers(Reservation $reservation, Request $request)
+    public function addUsers(AddReservationUsersRequest $request, Reservation $reservation)
     {
         $this->handleAuthorization('addUsers', [Reservation::class, $reservation, $this->authorizer]);
 
         $old_users = $reservation->users;
 
-        $reservation->auditRelationChange('users', fn () => $reservation->users()->syncWithoutDetaching($request->input('users')));
+        $reservation->auditRelationChange('users', fn () => $reservation->users()->syncWithoutDetaching($request->validated('users')));
 
         Notification::send($reservation->refresh()->users->diff($old_users), AssignedToResourceNotification::fromModel($reservation, auth()->user()));
 
