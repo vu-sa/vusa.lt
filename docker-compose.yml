@@ -14,7 +14,7 @@ services:
         volumes:
             - 'sail-nginx:/etc/nginx/certs'
             - './docker/nginx/templates:/etc/nginx/templates'
-            - './vendor/ryoluo/sail-ssl/nginx/generate-ssl-cert.sh:/docker-entrypoint.d/99-generate-ssl-cert.sh'
+            - './docker/nginx/generate-ssl-cert.sh:/docker-entrypoint.d/99-generate-ssl-cert.sh'
         depends_on:
             - ${APP_SERVICE:-laravel.test}
             - reverb
