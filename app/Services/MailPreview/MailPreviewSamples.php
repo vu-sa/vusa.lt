@@ -29,7 +29,7 @@ class MailPreviewSamples
         return (new Models\Institution)->forceFill([
             'id' => self::ID, 'name' => ['lt' => $lt, 'en' => $en],
             'short_name' => ['lt' => $lt, 'en' => $en],
-        ]);
+        ])->setRelation('types', new Collection);
     }
 
     /** Sample text shown in the previewed locale, so English previews read as English. */

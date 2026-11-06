@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Enums\NotificationType;
 use App\Models\Meeting;
+use App\Notifications\Concerns\DescribesMeeting;
 use App\Notifications\Concerns\ReachesFollowers;
 
 /**
@@ -11,6 +12,7 @@ use App\Notifications\Concerns\ReachesFollowers;
  */
 class MeetingCreatedNotification extends BaseNotification
 {
+    use DescribesMeeting;
     use ReachesFollowers;
 
     public function type(): NotificationType
@@ -27,10 +29,10 @@ class MeetingCreatedNotification extends BaseNotification
 
     public function body(object $notifiable): string
     {
-        $meetingDate = $this->meeting->start_time->format('Y-m-d H:i');
-
-        return __('notifications.meeting_created_body', [
-            'date' => $meetingDate,
+        return __($this->meeting->start_time->isPast() ? 'notifications.meeting_created_body_past' : 'notifications.meeting_created_body', [
+            'meeting' => $this->meetingPhrase($this->meeting),
+            // "15.00 val." already ends the sentence.
+            'date' => rtrim($this->meetingDate($this->meeting), '.'),
         ]);
     }
 

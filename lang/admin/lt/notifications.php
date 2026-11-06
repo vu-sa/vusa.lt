@@ -98,9 +98,9 @@ return [
 
     // Registration notifications
     'member_registered_title' => 'Nario registracija: :name',
-    'member_registered_body' => 'Nori prisijungti prie :institution. Susisiek dėl tolesnių žingsnių – patvirtinimą jau išsiuntėme.',
+    'member_registered_body' => 'Nori prisijungti prie institucijos „:institution“. Susisiek dėl tolesnių žingsnių – patvirtinimą jau išsiuntėme.',
     'student_rep_registered_title' => 'Atstovavimo registracija: :name',
-    'student_rep_registered_body' => 'Nori atstovauti studentams institucijoje :institution. Susisiek dėl tolesnių žingsnių – patvirtinimą jau išsiuntėme.',
+    'student_rep_registered_body' => 'Nori atstovauti studentams institucijoje „:institution“. Susisiek dėl tolesnių žingsnių – patvirtinimą jau išsiuntėme.',
 
     // Reservation notifications
     'reservation_status_changed_title' => 'Rezervacijos būsena pasikeitė: :reservation',
@@ -120,18 +120,21 @@ return [
     // Meeting notifications
     'meeting_reminder_title' => 'Artėja posėdis: :meeting',
     'meeting_reminder_soon_title' => 'Posėdis netrukus: :meeting',
-    'meeting_reminder_body' => 'Prasidės po :hours val.',
-    'meeting_reminder_body_one_hour' => 'Prasidės po 1 val.',
+    'meeting_reminder_body' => ':meeting prasidės po :hours val.',
+    'meeting_reminder_body_one_hour' => ':meeting prasidės po valandos.',
     'meeting_created_title' => 'Naujas posėdis: :institution',
-    'meeting_created_body' => 'Vyks :date.',
+    'meeting_created_body' => ':meeting vyks :date.',
+    'meeting_created_body_past' => ':meeting vyko :date.',
+    'meeting_phrase' => 'Institucijos :institutions :noun',
+    'meeting_phrase_joint' => 'Institucijų :institutions :noun',
+    'meeting_phrase_without_institution' => ':Noun',
+    'meeting_agenda_items' => ':count klausimas|:count klausimai|:count klausimų',
+    'meeting_agenda_items_accusative' => ':count klausimą|:count klausimus|:count klausimų',
+    'quoted' => '„:text“',
+    'list_and' => 'ir',
     'meeting_agenda_completed_title' => 'Darbotvarkė užpildyta: :institution',
-    'meeting_agenda_completed_body' => 'Užpildyti visi :count klausimai.',
-    'meeting_agenda_completed_body_with_user' => ':user užpildė visus :count klausimus.',
-    'meeting_agenda_type_voting' => ':count balsavimu',
-    'meeting_agenda_type_informational' => ':count aptarimu',
-    'meeting_agenda_type_deferred' => ':count atidėtu',
-    'meeting_agenda_type_break' => ':count pertrauka',
-    'meeting_agenda_type_withdrawn' => ':count išbrauktu',
+    'meeting_agenda_completed_body' => 'Užpildyta visa darbotvarkė – :items.',
+    'meeting_agenda_completed_body_with_user' => ':user užpildė visą darbotvarkę – :items.',
     'meeting_agenda_additional_votes_note' => 'Jei buvo papildomų balsavimų, nepamiršk jų įtraukti.',
 
     // Duty notifications

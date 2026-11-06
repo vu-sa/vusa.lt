@@ -1,4 +1,4 @@
-<x-mail::message>
+<x-mail::message :public="true">
 # {{ __('mail.student_rep.confirm.heading') }}
 
 {{ \App\Support\MailGreeting::forName($name) }}

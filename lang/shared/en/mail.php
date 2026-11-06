@@ -4,6 +4,8 @@ return [
     'greeting_generic' => 'Hello!',
     'platform_description' => 'Mano VU SA is the internal platform for student representation.',
     'open_platform' => 'Open Mano VU SA',
+    'public_description' => "VU SR – Vilnius University Students' Representation.",
+    'open_public_site' => 'Open vusa.lt',
     'greeting' => 'Hello, :name!',
     'feedback' => [
         'subject' => 'Feedback',
@@ -32,7 +34,7 @@ return [
             'more_info1' => 'You will hear from',
             'more_info2' => 'and if you have questions, please reply to this email.',
             'will_contact' => 'A responsible person will contact you shortly.',
-            'goodbye' => 'See you soon and good luck representing student interests!',
+            'goodbye' => 'See you soon!',
         ],
     ],
 ];

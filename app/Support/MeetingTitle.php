@@ -15,24 +15,24 @@ class MeetingTitle
         return self::build($meeting->start_time, $meeting->type, $locale, $meeting->meetingKind());
     }
 
+    public static function build(mixed $startTime, mixed $type, string $locale, MeetingKind $kind = MeetingKind::Sitting): string
+    {
+        return self::date($startTime, $type, $locale).' '.self::noun($type, $locale, $kind);
+    }
+
     /**
      * Email meetings carry a 23:59 deadline marker in `start_time`, so the time is dropped
      * rather than shown as a misleading "23.59 val.", and they read as a decision, not a sitting.
      */
-    public static function build(mixed $startTime, mixed $type, string $locale, MeetingKind $kind = MeetingKind::Sitting): string
+    public static function date(mixed $startTime, mixed $type, string $locale): string
     {
         $isEmail = self::isEmail($type);
-        $noun = self::noun($type, $locale, $kind);
 
         if ($locale === 'en') {
-            $format = $isEmail ? 'D MMMM YYYY' : 'D MMMM YYYY HH.mm';
-
-            return Carbon::parse($startTime)->locale('en')->isoFormat($format).' '.$noun;
+            return Carbon::parse($startTime)->locale('en')->isoFormat($isEmail ? 'D MMMM YYYY' : 'D MMMM YYYY HH.mm');
         }
 
-        $format = $isEmail ? 'YYYY MMMM DD [d.]' : 'YYYY MMMM DD [d.] HH.mm [val.]';
-
-        return Carbon::parse($startTime)->locale('lt-LT')->isoFormat($format).' '.$noun;
+        return Carbon::parse($startTime)->locale('lt-LT')->isoFormat($isEmail ? 'YYYY MMMM DD [d.]' : 'YYYY MMMM DD [d.] HH.mm [val.]');
     }
 
     /** The words after the date, for headings that show the date their own way. */

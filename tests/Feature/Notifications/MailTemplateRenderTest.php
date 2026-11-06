@@ -7,6 +7,7 @@ use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\InstitutionActivityRequest;
 use App\Models\Meeting;
+use App\Models\Pivots\AgendaItem;
 use App\Models\ResponsibilityGrant;
 use App\Models\SupportRequest;
 use App\Models\Task;
@@ -24,6 +25,7 @@ use App\Notifications\SupportRequestStatusChangedNotification;
 use App\Notifications\TaskAssignedNotification;
 use App\Notifications\TaskAutoCompletedNotification;
 use App\Notifications\TaskOverdueNotification;
+use App\Services\MailPreview\MailPreviewCatalog;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Mail\Markdown;
@@ -537,3 +539,37 @@ test('grouped request digests retain every request name without using the first 
             ->and(substr_count($content, 'Missing keys'))->toBe(1);
     }
 });
+
+test('meeting emails name the meeting in the body, not only in the subject', function (): void {
+    app()->setLocale('lt');
+    $senate = Institution::factory()->create(['name' => ['lt' => 'Senatas', 'en' => 'Senate']]);
+    $council = Institution::factory()->create(['name' => ['lt' => 'Taryba', 'en' => 'Council']]);
+    $upcoming = Meeting::factory()->hasAttached($senate)->create(['start_time' => now()->addWeek()]);
+    $joint = Meeting::factory()->hasAttached($senate)->create(['start_time' => now()->subDay()]);
+    $joint->institutions()->attach($council);
+
+    expect((new MeetingCreatedNotification($upcoming))->body($this->recipient))->toStartWith('Institucijos „Senatas“ posėdis vyks ')
+        ->and((new MeetingCreatedNotification($joint->fresh()))->body($this->recipient))->toStartWith('Institucijų „Senatas“ ir „Taryba“ jungtinis posėdis vyko ');
+});
+
+test('the agenda summary agrees with the item count in Lithuanian', function (int $count, string $items): void {
+    app()->setLocale('lt');
+    $meeting = Meeting::factory()->hasAttached(Institution::factory())->create();
+    AgendaItem::factory()->count($count)->informational()->create(['meeting_id' => $meeting->id]);
+
+    expect((new MeetingAgendaCompletedNotification($meeting, User::factory()->create(['name' => 'Ona Onaitė'])))->body($this->recipient))
+        ->toBe("Ona Onaitė užpildė visą darbotvarkę – {$items} (aptarimas: {$count}).");
+})->with([
+    'one' => [1, '1 klausimą'],
+    'few' => [3, '3 klausimus'],
+    'many' => [11, '11 klausimų'],
+]);
+
+test('registration confirmations go to people without platform access, so they end with vusa.lt', function (string $preview, string $locale): void {
+    $rendered = app(MailPreviewCatalog::class)->render($preview, $locale);
+
+    app()->setLocale($locale);
+    expect($rendered['html'].$rendered['text'])
+        ->toContain(__('mail.public_description'), __('mail.open_public_site'))
+        ->not->toContain(__('mail.platform_description'), route('dashboard'));
+})->with(['member-confirmation', 'student-rep-confirmation'])->with(['lt', 'en']);

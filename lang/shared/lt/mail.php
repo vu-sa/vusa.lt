@@ -4,6 +4,8 @@ return [
     'greeting_generic' => 'Labas!',
     'platform_description' => 'Mano VU SA – vidinė studentų atstovavimo platforma.',
     'open_platform' => 'Atverti Mano VU SA',
+    'public_description' => 'VU SA – Vilniaus universiteto Studentų atstovybė.',
+    'open_public_site' => 'Atverti vusa.lt',
     'greeting' => 'Labas, :name!',
     'feedback' => [
         'subject' => 'Atsiliepimas',
@@ -32,7 +34,7 @@ return [
             'more_info1' => 'Lauk žinių iš',
             'more_info2' => 'o jei turi klausimų, tiesiog atsakyk į šį laišką.',
             'will_contact' => 'Su tavimi artimiausiu metu susisieks atsakingas asmuo.',
-            'goodbye' => 'Iki susitikimo ir sėkmės atstovaujant studentų interesams!',
+            'goodbye' => 'Iki susitikimo!',
         ],
     ],
 ];

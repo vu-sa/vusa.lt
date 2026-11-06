@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Enums\NotificationType;
 use App\Models\Meeting;
+use App\Notifications\Concerns\DescribesMeeting;
 use App\Notifications\Concerns\NamesObjectInTitle;
 
 /**
@@ -11,6 +12,7 @@ use App\Notifications\Concerns\NamesObjectInTitle;
  */
 class MeetingReminderNotification extends BaseNotification
 {
+    use DescribesMeeting;
     use NamesObjectInTitle;
 
     public function type(): NotificationType
@@ -32,10 +34,11 @@ class MeetingReminderNotification extends BaseNotification
     public function body(object $notifiable): string
     {
         if ($this->hoursUntil <= 1) {
-            return __('notifications.meeting_reminder_body_one_hour');
+            return __('notifications.meeting_reminder_body_one_hour', ['meeting' => $this->meetingPhrase($this->meeting)]);
         }
 
         return __('notifications.meeting_reminder_body', [
+            'meeting' => $this->meetingPhrase($this->meeting),
             'hours' => $this->hoursUntil,
         ]);
     }

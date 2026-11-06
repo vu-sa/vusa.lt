@@ -1,8 +1,9 @@
+@props(['public' => false])
 <x-mail::layout>
 {{-- Header --}}
 <x-slot:header>
 <x-mail::header :url="config('app.url')">
-Mano VU SA
+{{ $public ? 'VU SA' : 'Mano VU SA' }}
 </x-mail::header>
 </x-slot:header>
 
@@ -20,7 +21,7 @@ Mano VU SA
 
 {{-- Footer --}}
 <x-slot:footer>
-<x-mail::footer>
+<x-mail::footer :public="$public">
 © {{ date('Y') }} {{ config('app.name') }}. @lang('All rights reserved.')
 </x-mail::footer>
 </x-slot:footer>
