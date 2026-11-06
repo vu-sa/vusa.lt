@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Cache;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use Spatie\Activitylog\Support\LogOptions;
+use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
@@ -421,7 +422,7 @@ class Document extends Model
         return $this->belongsTo(Institution::class);
     }
 
-    public function tenant()
+    public function tenant(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->institution(), (new Institution)->tenant());
     }

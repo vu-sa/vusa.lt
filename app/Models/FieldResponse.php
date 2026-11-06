@@ -57,7 +57,7 @@ class FieldResponse extends Model
         return ! empty($this->response['value']);
     }
 
-    public function registration()
+    public function registration(): BelongsTo
     {
         return $this->belongsTo(Registration::class);
     }

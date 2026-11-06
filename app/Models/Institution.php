@@ -250,7 +250,7 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
         return $this->hasMany(InstitutionCheckIn::class);
     }
 
-    public function activeCheckIns()
+    public function activeCheckIns(): HasMany
     {
         return $this->checkIns()
             ->where('start_date', '<=', now())

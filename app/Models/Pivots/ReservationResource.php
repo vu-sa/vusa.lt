@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -98,7 +99,7 @@ class ReservationResource extends Pivot implements Approvable
     }
 
     // Used for notification purposes, but maybe will need to be refactored
-    public function users()
+    public function users(): BelongsToMany
     {
         return $this->reservation->users();
     }

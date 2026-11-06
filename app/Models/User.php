@@ -407,7 +407,7 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
         return $this->institutions()->where('institutions.id', $institution->id)->exists();
     }
 
-    public function reservations()
+    public function reservations(): BelongsToMany
     {
         return $this->belongsToMany(Reservation::class)->withTimestamps();
     }

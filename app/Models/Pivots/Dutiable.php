@@ -30,6 +30,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
@@ -262,7 +263,7 @@ class Dutiable extends MorphPivot implements ImageMediaOwner
      *
      * @return BelongsTo<User, $this>
      */
-    public function user()
+    public function user(): BelongsTo
     {
         $relation = $this->belongsTo(User::class, 'dutiable_id');
 
@@ -323,7 +324,7 @@ class Dutiable extends MorphPivot implements ImageMediaOwner
         return $this->hasMany(Dutiable::class, 'via_dutiable_id');
     }
 
-    public function tenants()
+    public function tenants(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->duty(), (new Duty)->tenants());
     }

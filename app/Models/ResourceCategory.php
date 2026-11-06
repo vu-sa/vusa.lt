@@ -6,8 +6,10 @@ use App\Models\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\Searchable;
+use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
@@ -42,17 +44,17 @@ class ResourceCategory extends Model
 
     public $translatable = ['name', 'description'];
 
-    public function resources()
+    public function resources(): HasMany
     {
         return $this->hasMany(Resource::class);
     }
 
-    public function tenant()
+    public function tenant(): HasManyDeep
     {
         return $this->hasManyDeep(Tenant::class, [Resource::class]);
     }
 
-    public function tenants()
+    public function tenants(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->resources(), (new Resource)->tenant());
     }

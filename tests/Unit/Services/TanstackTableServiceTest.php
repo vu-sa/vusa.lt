@@ -4,6 +4,7 @@ use App\Models\Duty;
 use App\Models\Form;
 use App\Models\Institution;
 use App\Models\News;
+use App\Models\Resource;
 use App\Models\ResourceCategory;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer;
@@ -11,6 +12,7 @@ use App\Services\TanstackTableService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 pest()->use(RefreshDatabase::class);
 
@@ -145,6 +147,28 @@ describe('filter key validation', function (): void {
 
         expect($result->count())->toBe($total)
             ->and(News::count())->toBe($total);
+    });
+
+    test('does not invoke model methods without a declared relation return type', function (): void {
+        $queries = 0;
+        DB::listen(function () use (&$queries): void {
+            $queries++;
+        });
+
+        $this->service->applySorting(News::query(), [['id' => 'getFeedItems.title', 'desc' => false]]);
+        $this->service->applyFiltering(News::query(), ['getFeedItems.title' => 'x']);
+
+        expect($queries)->toBe(0);
+    });
+
+    test('filters through a relation resolved by its declared return type', function (): void {
+        $category = ResourceCategory::factory()->create();
+        ResourceCategory::factory()->create();
+        $resource = Resource::factory()->create(['resource_category_id' => $category->id]);
+
+        $ids = $this->service->applyFiltering(ResourceCategory::query(), ['resources.id' => [$resource->id]])->pluck('id');
+
+        expect($ids->all())->toBe([$category->id]);
     });
 
     test('ignores relationship sort with SQL injection in column name', function (): void {
