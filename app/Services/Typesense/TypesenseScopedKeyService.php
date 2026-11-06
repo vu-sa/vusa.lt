@@ -21,10 +21,10 @@ use Typesense\Client;
 /** Scoped keys enforce visibility even when a browser supplies its own search filters. */
 class TypesenseScopedKeyService
 {
-    public const KEY_EXPIRY = 3600;
+    public const KEY_EXPIRY = 900;
 
     /** Refresh the cache before the credential itself expires. */
-    protected const CACHE_TTL = 3500;
+    protected const CACHE_TTL = 800;
 
     public function __construct(protected Client $client, protected ModelAuthorizer $authorizer, protected InstitutionAccessService $institutionAccessService) {}
 
@@ -53,6 +53,7 @@ class TypesenseScopedKeyService
     {
         return md5(implode(':', [
             'meeting-baseline-v2',
+            'search-fields-v1',
             config('scout.typesense.client-settings.admin_search_key'),
             Cache::get('agenda-privacy-version', ''),
             InstitutionRelationService::version(),
@@ -169,7 +170,7 @@ class TypesenseScopedKeyService
     /**
      * @param  array{permission: string|null, baseline_own?: true}  $config
      * @param  'meeting_types'|'active'  $publicRows
-     * @return array{key: string, tenant_ids: array, institution_ids: array, direct_institution_ids: array, has_access: bool, scope: string}
+     * @return array{key: string, excluded_fields: array<string>, tenant_ids: array, institution_ids: array, direct_institution_ids: array, has_access: bool, scope: string}
      */
     private function publicCollection(User $user, string $collection, array $config, string $publicRows, string $parentKey, int $expiresAt): array
     {
@@ -202,16 +203,25 @@ class TypesenseScopedKeyService
             $filter = $clauses ? '('.implode(' || ', $clauses).')' : 'id:=__no_access__';
         }
 
+        // A collection key also admits public rows outside the user's institution scope.
+        $hideActivityStatus = $collection === 'institutions'
+            && ! $this->authorizer->scope($user, 'institutions.read.padalinys')->isAllScope;
+
         $scopedKey = $this->scopedSearchKey($parentKey, [
             'collection' => $prefixedCollectionName,
             'filter_by' => $filter
                 // Nothing public and no permissions: an empty list, not a missing collection.
                 ?? 'tenant_ids:=-1',
             'expires_at' => $expiresAt,
+            ...($hideActivityStatus ? [
+                'exclude_fields' => 'activity_status',
+                'facet_by' => 'tenant_shortname,type_titles,is_active',
+            ] : []),
         ]);
 
         return [
             'key' => $scopedKey,
+            'excluded_fields' => $hideActivityStatus ? ['activity_status'] : [],
             'tenant_ids' => $tenantIds->toArray(),
             'institution_ids' => $institutionIds->toArray(),
             'direct_institution_ids' => $this->institutionAccessService->getUserDutyInstitutionIds($user)->toArray(),

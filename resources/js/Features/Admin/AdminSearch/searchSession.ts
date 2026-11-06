@@ -97,10 +97,14 @@ function createSearchSession() {
     return pending;
   }
 
-  return { config, isConfigLoading, configError, rateLimitedUntil, generation, hasExpired, isRateLimited, identify, assertCurrent, request };
+  return { config, isConfigLoading, configError, rateLimitedUntil, generation, hasExpired, isRateLimited, identify, reset, assertCurrent, request };
 }
 
 const browserSession = createSearchSession();
+
+export function clearAdminSearchSession() {
+  browserSession.reset();
+}
 
 export function useAdminSearchSession() {
   const page = usePage();

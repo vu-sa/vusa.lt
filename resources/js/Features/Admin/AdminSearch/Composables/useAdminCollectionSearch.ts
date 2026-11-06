@@ -84,10 +84,11 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
   const baseFilterBy = computed(() => toValue(options.baseFilterBy) || undefined);
 
   // Get the facet config for this collection
-  const facetConfig = getCollectionFacetConfig(collection);
-  if (!facetConfig) {
+  const configuredFacets = getCollectionFacetConfig(collection);
+  if (!configuredFacets) {
     throw new Error(`No facet configuration found for collection: ${collection}`);
   }
+  const facetConfig = { ...configuredFacets, fields: [...configuredFacets.fields] };
 
   // Get the base admin search composable
   const adminSearch = useAdminSearch();
@@ -537,12 +538,15 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
 
   // Initialize on mount
   onMounted(async () => {
-    if (syncToUrl) loadFromUrl();
-
     // Initialize admin search
     await adminSearch.initialize();
 
     if (!validateCollectionAccess()) return;
+
+    const excludedFields = adminSearch.config.value?.collections[collection]?.excludedFields ?? [];
+    facetConfig.fields = facetConfig.fields.filter(field => !excludedFields.includes(field.field));
+    facetConfig.facetBy = facetConfig.facetBy.split(',').filter(field => !excludedFields.includes(field)).join(',');
+    if (syncToUrl) loadFromUrl();
 
     isMounted = true;
     if (!searchOnMount && loadFacetsOnMount) await loadInitialFacets();
