@@ -26,14 +26,13 @@
           :description="preset.detail"
           :icon="CalendarOff"
           :selected="draft.checkIn.endDate === toIsoDate(preset.date)"
-          :show-chevron="false"
           @click="pick(from, preset.date)"
         />
         <ActionChoiceButton
           :title="$t('action_window.check_in.until.custom')"
           :description="$t('action_window.check_in.until.max_hint')"
           :icon="CalendarSearch"
-          :selected="pickedOtherEnd || undefined"
+          :selected="pickedOtherEnd"
           @click="custom = true"
         />
       </ActionChoiceList>

@@ -257,7 +257,7 @@ describe('MeetingWhenScreen.vue', () => {
     window.goTo('meeting.when');
     await flushPromises();
 
-    const pressed = wrapper.findAll('[data-slot="action-choice-button"]').map(button => button.attributes('aria-pressed'));
+    const pressed = wrapper.findAll('[data-slot="action-choice-button"]').map(button => button.attributes('aria-current'));
     expect(pressed).toEqual([undefined, 'true', undefined]);
   });
 
@@ -266,6 +266,6 @@ describe('MeetingWhenScreen.vue', () => {
     window.updateMeeting({ start_time: '2020-01-15T18:00:00' });
     await flushPromises();
 
-    expect(wrapper.findAll('[data-slot="action-choice-button"]').at(-1)!.attributes('aria-pressed')).toBe('true');
+    expect(wrapper.findAll('[data-slot="action-choice-button"]').at(-1)!.attributes('aria-current')).toBe('true');
   });
 });

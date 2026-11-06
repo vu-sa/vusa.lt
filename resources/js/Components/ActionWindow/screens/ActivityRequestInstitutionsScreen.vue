@@ -53,6 +53,7 @@
         :title="institution.name"
         :icon="institutionStatusStyle(institution.activity_status.status).icon"
         :tone="institutionStatusStyle(institution.activity_status.status).tone"
+        indicator="check"
         :selected="isSelected(institution.id)"
         :disabled="bulkSelecting || (!isSelected(institution.id) && (selected.length >= 100 || !!rowState(institution.id)?.blocked))"
         @click="toggle(institution)"

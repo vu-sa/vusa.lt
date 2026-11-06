@@ -14,11 +14,10 @@
         :description="preset.detail"
         :icon="preset.icon"
         :selected="preset.selected"
-        :show-chevron="false"
         @click="preset.pick()"
       />
       <ActionChoiceButton
-        :selected="pickedOtherDay || undefined"
+        :selected="pickedOtherDay"
         :title="$t('action_window.meeting.when.custom')"
         :icon="CalendarSearch"
         @click="goTo('meeting.date', { returnTo: current.params?.returnTo })"

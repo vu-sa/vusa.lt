@@ -28,7 +28,7 @@
         :title="institution.name"
         :icon="statusStyle(institution).icon"
         :tone="statusStyle(institution).tone"
-        :selected="draft.institution?.id === institution.id || undefined"
+        :selected="draft.institution?.id === institution.id"
         @click="pick(institution)"
       >
         <template #description>

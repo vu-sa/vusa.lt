@@ -27,7 +27,7 @@ describe('AgendaItemTypeDialog', () => {
 
     ['voting', 'informational', 'deferred', 'withdrawn', 'break'].forEach(value => expect(choice(wrapper, value).exists()).toBe(true));
     expect(choice(wrapper, 'informational').attributes('aria-pressed')).toBe('true');
-    expect(choice(wrapper, 'voting').attributes('aria-pressed')).toBeUndefined();
+    expect(choice(wrapper, 'voting').attributes('aria-pressed')).toBe('false');
   });
 
   it('records the choice and closes, since choosing is the whole answer', async () => {

@@ -41,9 +41,9 @@ export const WhenPresets: Story = {
     template: frame(`
       <ActionWindowScreen title="Kada vyko ar vyks posėdis?" subtitle="Šiandien, vakar arba pagal tai, kada ši institucija posėdžiaudavo iki šiol.">
         <ActionChoiceList>
-          <ActionChoiceButton title="Šiandien" description="šeštadienis, rugsėjo 19" :icon="CalendarDays" :show-chevron="false" />
-          <ActionChoiceButton title="Vakar" description="penktadienis, rugsėjo 18" :icon="History" :show-chevron="false" />
-          <ActionChoiceButton title="antradienis, rugsėjo 22, 18:30" description="Artimiausias įprastas laikas" :icon="CalendarDays" :show-chevron="false" />
+          <ActionChoiceButton title="Šiandien" description="šeštadienis, rugsėjo 19" :icon="CalendarDays" />
+          <ActionChoiceButton title="Vakar" description="penktadienis, rugsėjo 18" :icon="History" />
+          <ActionChoiceButton title="antradienis, rugsėjo 22, 18:30" description="Artimiausias įprastas laikas" :icon="CalendarDays" />
           <ActionChoiceButton title="Pasirinkti kitą datą…" :icon="CalendarSearch" />
         </ActionChoiceList>
       </ActionWindowScreen>`),

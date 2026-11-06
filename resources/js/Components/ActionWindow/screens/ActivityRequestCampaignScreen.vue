@@ -14,7 +14,7 @@
             :title="$t(`activity_requests.campaigns.${campaign}`)"
             :description="$t(`activity_requests.descriptions.${campaign}`)"
             :icon="MailQuestion"
-            :selected="draft.activityRequest.campaignType === campaign || undefined"
+            :selected="draft.activityRequest.campaignType === campaign"
             @click="choose(campaign)"
           />
         </SpotlightPopover>
@@ -23,7 +23,7 @@
           :title="$t(`activity_requests.campaigns.${campaign}`)"
           :description="$t(`activity_requests.descriptions.${campaign}`)"
           :icon="MailQuestion"
-          :selected="draft.activityRequest.campaignType === campaign || undefined"
+          :selected="draft.activityRequest.campaignType === campaign"
           @click="choose(campaign)"
         />
       </template>

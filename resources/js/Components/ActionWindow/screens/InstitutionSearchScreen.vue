@@ -33,7 +33,7 @@
           :title="hit.title"
           :description="hit.subtitle"
           :icon="Landmark"
-          :selected="draft.institution?.id === hit.recordId || undefined"
+          :selected="draft.institution?.id === hit.recordId"
           @click="pick(hit)"
         >
           <template #title>

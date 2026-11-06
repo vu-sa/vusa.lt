@@ -43,11 +43,29 @@ describe('ActionChoiceButton.vue', () => {
     expect(wrapper.emitted('click')).toBeUndefined();
   });
 
-  it('swaps the chevron for a check when it is a choice rather than a step', () => {
-    const picking = mountButton({ showChevron: false, selected: true });
+  it('is a step with a chevron by default, never a check box', () => {
+    const step = mountButton();
 
-    expect(picking.find('svg.lucide-check').exists()).toBe(true);
-    expect(picking.find('svg.lucide-chevron-right').exists()).toBe(false);
+    expect(step.find('svg.lucide-chevron-right').exists()).toBe(true);
+    expect(step.find('svg.lucide-check').exists()).toBe(false);
+    expect(step.attributes('aria-pressed')).toBeUndefined();
+  });
+
+  it('marks the earlier answer of a step without turning it into a check box', () => {
+    const step = mountButton({ selected: true });
+
+    expect(step.attributes('aria-current')).toBe('true');
+    expect(step.find('svg.lucide-chevron-right').exists()).toBe(true);
+    expect(step.find('svg.lucide-check').exists()).toBe(false);
+  });
+
+  it('shows a check box for a choice toggled in place', () => {
+    expect(mountButton({ indicator: 'check' }).attributes('aria-pressed')).toBe('false');
+
+    const picked = mountButton({ indicator: 'check', selected: true });
+    expect(picked.attributes('aria-pressed')).toBe('true');
+    expect(picked.find('svg.lucide-check').exists()).toBe(true);
+    expect(picked.find('svg.lucide-chevron-right').exists()).toBe(false);
   });
 
   it('a description slot overrides the prop, so screens can compose their own', () => {

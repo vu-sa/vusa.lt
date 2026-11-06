@@ -21,7 +21,7 @@
             :description="option.description"
             :icon="option.icon"
             :selected="option.value === form.type"
-            :show-chevron="false"
+            indicator="check"
             :data-testid="`agenda-item-type-${option.value}`"
             @click="choose(option.value)"
           />

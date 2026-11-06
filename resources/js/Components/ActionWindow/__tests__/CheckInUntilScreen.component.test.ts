@@ -131,10 +131,10 @@ describe('CheckInUntilScreen.vue', () => {
 
     await choices(wrapper)[1]!.trigger('click');
     await flushPromises();
-    expect(choices(wrapper).map(choice => choice.attributes('aria-pressed'))).toEqual([undefined, 'true', undefined]);
+    expect(choices(wrapper).map(choice => choice.attributes('aria-current'))).toEqual([undefined, 'true', undefined]);
 
     window.updateCheckIn({ endDate: '2026-12-01' });
     await flushPromises();
-    expect(choices(wrapper).map(choice => choice.attributes('aria-pressed'))).toEqual([undefined, undefined, 'true']);
+    expect(choices(wrapper).map(choice => choice.attributes('aria-current'))).toEqual([undefined, undefined, 'true']);
   });
 });

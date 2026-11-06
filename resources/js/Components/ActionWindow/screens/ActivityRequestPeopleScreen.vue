@@ -31,6 +31,7 @@
         :key="person.id"
         :title="person.name"
         :icon="UserRound"
+        indicator="check"
         :selected="isSelected(person.id)"
         :disabled="!isSelected(person.id) && (rowState(person)?.blocked || exceedsLimit(person))"
         @click="toggle(person)"
