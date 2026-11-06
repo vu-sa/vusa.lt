@@ -33,19 +33,22 @@ class AuthController extends Controller
 
         $microsoftProvider = Socialite::driver('microsoft');
 
+        // The stateless retry sits inside the outer try so its failures (e.g. a callback without a code) are handled too.
         try {
-            $microsoftUser = $microsoftProvider->user();
-        } catch (InvalidStateException) {
-            Log::warning('Microsoft OAuth InvalidStateException, retrying with stateless', [
-                'user_ip' => $request->ip(),
-                'user_agent' => $request->userAgent(),
-                'session_id' => $request->session()->getId(),
-                'referer' => $request->headers->get('referer'),
-            ]);
+            try {
+                $microsoftUser = $microsoftProvider->user();
+            } catch (InvalidStateException) {
+                Log::warning('Microsoft OAuth InvalidStateException, retrying with stateless', [
+                    'user_ip' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                    'session_id' => $request->session()->getId(),
+                    'referer' => $request->headers->get('referer'),
+                ]);
 
-            /** @phpstan-ignore-next-line */
-            $microsoftProvider = Socialite::driver('microsoft')->stateless();
-            $microsoftUser = $microsoftProvider->user();
+                /** @phpstan-ignore-next-line */
+                $microsoftProvider = Socialite::driver('microsoft')->stateless();
+                $microsoftUser = $microsoftProvider->user();
+            }
         } catch (ClientException $e) {
             // e.g. a 400 from the token exchange
             Log::error('Microsoft OAuth ClientException', [

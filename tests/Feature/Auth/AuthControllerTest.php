@@ -9,6 +9,7 @@ use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use GuzzleHttp\Psr7\Response as GuzzleResponse;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\InvalidStateException;
 use Laravel\Socialite\Two\User as SocialiteUser;
 use SocialiteProviders\Microsoft\Provider as MicrosoftProvider;
 
@@ -136,6 +137,21 @@ test('Microsoft login reports a failed token exchange', function (): void {
     $this->get(route('microsoft.callback'))
         ->assertRedirect(route('login'))
         ->assertSessionHas('error', __('messages.auth.login_failed'));
+});
+
+test('Microsoft login reports a failed stateless retry, e.g. a callback without a code', function (): void {
+    $statelessProvider = Mockery::mock(MicrosoftProvider::class);
+    $statelessProvider->shouldReceive('user')->andThrow(new ClientException('Bad Request', new GuzzleRequest('POST', 'token'), new GuzzleResponse(400)));
+    $provider = Mockery::mock(MicrosoftProvider::class);
+    $provider->shouldReceive('user')->andThrow(new InvalidStateException);
+    $provider->shouldReceive('stateless')->andReturn($statelessProvider);
+    Socialite::shouldReceive('driver')->with('microsoft')->andReturn($provider);
+
+    $this->get(route('microsoft.callback'))
+        ->assertRedirect(route('login'))
+        ->assertSessionHas('error', __('messages.auth.login_failed'));
+
+    $this->assertGuest();
 });
 
 test('Microsoft login refuses a deleted account', function (): void {
