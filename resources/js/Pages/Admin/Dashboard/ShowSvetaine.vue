@@ -69,7 +69,7 @@
 
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
-import { areaY, line, plot, ruleY } from '@observablehq/plot';
+import { area, axisBottom, axisLeft, max, scaleLinear, scaleTime, select } from 'd3';
 import { computed, nextTick, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
@@ -202,21 +202,62 @@ const trafficSummary = computed(() => {
   })} ${$t(`svetaine.overview.traffic.${trend.direction}`)}`;
 });
 
+const CHART_WIDTH = 720;
+const CHART_HEIGHT = 200;
+const CHART_MARGIN = { top: 20, right: 10, bottom: 30, left: 35 };
+
 // The brand token, not a hex: dark mode swaps it (red → amber) without this file knowing.
-const generateAnalyticsPlot = () => plot({
-  x: { type: 'time', label: null },
-  y: { grid: true, label: null, round: true, nice: true, ticks: 3 },
-  marks: [
-    ruleY([0]),
-    areaY(analyticsSeries.value, { x: 'date', y: 'pageviews', fill: 'var(--brand-fill)', fillOpacity: 0.15 }),
-    line(analyticsSeries.value, { x: 'date', y: 'pageviews', stroke: 'var(--brand-fill)', strokeWidth: 2 }),
-  ],
-  marginTop: 20,
-  marginBottom: 30,
-  marginLeft: 35,
-  width: 720,
-  height: 200,
-});
+const drawAnalyticsChart = (container: HTMLElement) => {
+  const series = analyticsSeries.value;
+  const first = series[0]?.date ?? new Date();
+  const last = series[series.length - 1]?.date ?? first;
+
+  const x = scaleTime()
+    .domain([first, last])
+    .range([CHART_MARGIN.left, CHART_WIDTH - CHART_MARGIN.right]);
+  const y = scaleLinear()
+    .domain([0, max(series, point => point.pageviews) ?? 0])
+    .nice(3)
+    .range([CHART_HEIGHT - CHART_MARGIN.bottom, CHART_MARGIN.top]);
+
+  const svg = select(container)
+    .append('svg')
+    .attr('viewBox', `0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`)
+    .attr('class', 'h-auto w-full');
+
+  const yAxis = svg.append('g')
+    .attr('transform', `translate(${CHART_MARGIN.left},0)`)
+    .call(axisLeft(y).ticks(3).tickFormat(value => `${Math.round(Number(value))}`)
+      .tickSize(-(CHART_WIDTH - CHART_MARGIN.left - CHART_MARGIN.right)));
+  yAxis.select('.domain').remove();
+  yAxis.selectAll('.tick line').attr('class', 'stroke-border');
+
+  const xAxis = svg.append('g')
+    .attr('transform', `translate(0,${CHART_HEIGHT - CHART_MARGIN.bottom})`)
+    .call(axisBottom(x).ticks(6));
+  xAxis.select('.domain').attr('class', 'stroke-muted-foreground');
+  xAxis.selectAll('.tick line').attr('class', 'stroke-border');
+
+  svg.selectAll('.tick text').attr('class', 'fill-muted-foreground text-[11px]');
+
+  const pageviewsArea = area<(typeof series)[number]>()
+    .x(point => x(point.date))
+    .y0(y(0))
+    .y1(point => y(point.pageviews));
+
+  svg.append('path')
+    .datum(series)
+    .attr('fill', 'var(--brand-fill)')
+    .attr('fill-opacity', 0.15)
+    .attr('d', pageviewsArea);
+
+  svg.append('path')
+    .datum(series)
+    .attr('fill', 'none')
+    .attr('stroke', 'var(--brand-fill)')
+    .attr('stroke-width', 2)
+    .attr('d', pageviewsArea.lineY1());
+};
 
 // The figure only exists once data has arrived, so wait for the DOM before drawing.
 watch(analyticsSeries, async () => {
@@ -227,6 +268,6 @@ watch(analyticsSeries, async () => {
   }
 
   analyticsWrapper.value.innerHTML = '';
-  analyticsWrapper.value.appendChild(generateAnalyticsPlot());
+  drawAnalyticsChart(analyticsWrapper.value);
 });
 </script>

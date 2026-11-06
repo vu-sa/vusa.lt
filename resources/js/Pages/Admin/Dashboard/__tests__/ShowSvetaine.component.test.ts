@@ -22,15 +22,6 @@ vi.mock('@/Composables/useApi', () => ({
   useApiMutation: vi.fn(),
 }));
 
-// Observable Plot needs real layout APIs that jsdom lacks; the chart itself is not what
-// these tests are about.
-vi.mock('@observablehq/plot', () => ({
-  plot: () => document.createElement('svg'),
-  areaY: vi.fn(),
-  line: vi.fn(),
-  ruleY: vi.fn(),
-}));
-
 vi.stubGlobal('route', (name?: string, params: Record<string, unknown> = {}) => {
   if (name === undefined) {
     return { current: () => false };
