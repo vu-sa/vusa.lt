@@ -4,25 +4,12 @@ namespace App\Http\Requests\Concerns;
 
 use App\Enums\ContentPartEnum;
 use App\Rules\ContentEmbedUrl;
+use App\Rules\SafeUrl;
 use App\Rules\SoftDeleteRules;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
-/**
- * Shared `content.parts.*` validation rules for StorePageRequest, UpdatePageRequest and
- * NewsRequest — before this existed, the same six rules were hand-copied across all
- * three, and had already drifted once (the update-branch of ContentService::
- * updateContentParts only validated on create).
- *
- * The dynamic-block option rules below are deliberately a *permissive union*, not a
- * strict per-type shape: Laravel has no first-class "validate this key only when
- * `type` is X" for a `content.parts.*` wildcard without `Rule::forEach()` (untested
- * in this codebase), and the real guard is the resolver's own clamping
- * (LinkListResolver / EventListResolver), which runs on every read regardless of
- * what passed validation at write time — including rows written before these rules
- * existed, or through `ContentService::updateContentParts()` directly. Validation
- * here exists to reject obviously-wrong input early, not as the security boundary.
- */
 trait ValidatesContentParts
 {
     /**
@@ -121,6 +108,8 @@ trait ValidatesContentParts
             'content.parts.*.json_content.*.title' => ['nullable', 'string', 'max:255'],
         ];
 
+        $rules += $this->contentPartUrlRules('content.parts', $prefix);
+
         $parts = $this->input($prefix, []);
         foreach (is_array($parts) ? $parts : [] as $index => $part) {
             $type = is_array($part) ? ($part['type'] ?? null) : null;
@@ -144,6 +133,23 @@ trait ValidatesContentParts
 
             return [$newKey => $newRule];
         })->all();
+    }
+
+    /** @return array<string, mixed> */
+    protected function contentPartUrlRules(string $prefix, ?string $inputPrefix = null): array
+    {
+        $rules = [];
+        $inputPrefix ??= $prefix;
+
+        foreach (array_keys(Arr::dot((array) $this->input($inputPrefix, []))) as $path) {
+            $key = last(explode('.', $path));
+
+            if (in_array($key, ['url', 'href', 'link'], true)) {
+                $rules[$prefix.'.'.$path] = ['nullable', 'string', new SafeUrl];
+            }
+        }
+
+        return $rules;
     }
 
     /**
