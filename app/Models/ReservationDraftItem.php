@@ -17,7 +17,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read ReservationDraft $draft
- * @property-read \App\Models\Resource $resource
+ * @property-read \App\Models\Resource|null $resource
  *
  * @method static \Database\Factories\ReservationDraftItemFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReservationDraftItem newModelQuery()
