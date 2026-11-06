@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
@@ -78,6 +79,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read mixed $has_password
  * @property-read Collection<int, Institution> $institutions
  * @property-read MediaCollection<int, Media> $media
+ * @property-read Collection<int, UserMicrosoftIdentity> $microsoftIdentities
  * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $notifications
  * @property-read Collection<int, Permission> $permissions
  * @property-read Collection<int, Duty> $previous_duties
@@ -253,6 +255,12 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
                     ->whereDate('dutiables.end_date', '<', today());
             })
             ->withTimestamps();
+    }
+
+    /** @return HasMany<UserMicrosoftIdentity, $this> */
+    public function microsoftIdentities(): HasMany
+    {
+        return $this->hasMany(UserMicrosoftIdentity::class);
     }
 
     /**

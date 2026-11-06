@@ -41,6 +41,7 @@ class MergeUsers
         ['support_requests', 'assigned_to'],
         ['support_requests', 'created_by'],
         ['text_box_submissions', 'user_id'],
+        ['user_microsoft_identities', 'user_id'],
     ];
 
     /**
