@@ -18,6 +18,7 @@ final class BuildDutyIndexQuery
     public static function execute(IndexDutyRequest $request, ModelAuthorizer $authorizer): Builder
     {
         $query = Duty::query()->with([
+            'tenants',
             'institution:id,name,short_name,tenant_id,is_active',
             'institution.tenant:id,shortname',
             'types:id,title',

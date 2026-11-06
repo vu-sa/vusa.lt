@@ -2,10 +2,11 @@
 
 namespace App\Actions;
 
-use App\Http\Middleware\HandleInertiaRequests;
-use App\Observers\UserPermissionObserver;
+use App\Facades\Permission;
+use App\Services\InstitutionAccessService;
 use App\Services\Permissions\PermissionMapBuilder;
-use Illuminate\Support\Facades\Cache;
+use App\Services\Typesense\TypesenseScopedKeyService;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Drops every cache derived from a user's access, after their roles or permissions change.
@@ -13,14 +14,20 @@ use Illuminate\Support\Facades\Cache;
 class ForgetUserAccess
 {
     /**
-     * @param  iterable<string>  $userIds
+     * @param  iterable<int|string>  $userIds
      */
     public static function execute(iterable $userIds): void
     {
-        foreach (collect($userIds)->unique() as $userId) {
-            app(UserPermissionObserver::class)->invalidateUserCache($userId);
-            PermissionMapBuilder::forgetCachedMaps($userId);
-            Cache::forget(HandleInertiaRequests::adminNavigationCacheKey($userId));
-        }
+        $userIds = collect($userIds)->map(strval(...))->filter()->unique()->values();
+
+        // Waiting for commit prevents another request from re-warming caches from the old state.
+        DB::afterCommit(function () use ($userIds): void {
+            foreach ($userIds as $userId) {
+                Permission::resetCache($userId);
+                PermissionMapBuilder::forgetCachedMaps($userId);
+                InstitutionAccessService::invalidateForUser($userId);
+                TypesenseScopedKeyService::invalidateForUser($userId);
+            }
+        });
     }
 }

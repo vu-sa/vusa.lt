@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Dokumentai
-last_reviewed: 2026-11-01
+last_reviewed: 2026-11-05
 tests:
   - tests/Feature/Admin/Resources/DocumentControllerTest.php
   - tests/Feature/Admin/Resources/DocumentPublicationTest.php
@@ -11,6 +11,7 @@ tests:
   - tests/Feature/Services/SharepointDocumentFieldsTest.php
   - tests/Feature/DocumentShortcutSyncTest.php
   - tests/Feature/DocumentSyncTest.php
+  - tests/Feature/Migrations/ResetSuccessfulDocumentSyncAttemptsTest.php
   - tests/Feature/DocumentPermissionRevocationTest.php
   - tests/Feature/DocumentSyncMissingModelTest.php
   - tests/Feature/Meetings/MeetingDocumentTest.php
@@ -253,6 +254,10 @@ trūkstama.
 
 Sinchronizavimo užduotys vykdomos fone. Jos atnaujina duomenis ir būseną;
 į eilę įtrauktas dokumentas, ištrintas iki užduoties vykdymo, nebeatkuriamas.
+Paskelbtų dokumentų nuorodos tikrinamos dalimis per 14 dienų ciklą. Sėkmingas patikrinimas
+anuliuoja nesėkmių skaitiklį, net jei duomenys nepasikeitė. Daugiau nei penkis kartus iš eilės
+nepavykę patikrinimai automatiškai nebekartojami; po bent trijų nesėkmių daroma šešių valandų
+pertrauka. Praleisti dokumentai nemažina kitų dokumentų dienos patikrinimų skaičiaus.
 Dokumentą paslėpus, atskira užduotis atšaukia SharePoint viešos prieigos leidimą. Jei dokumentas
 paslepiamas tuo metu, kai jo nuoroda dar kuriama, sukurta nuoroda panaikinama (nepavykus –
 pakartotinai fone). Vieno dokumento nuorodos užduotys vykdomos po vieną, todėl greitai vėl

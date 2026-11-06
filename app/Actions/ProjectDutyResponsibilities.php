@@ -5,6 +5,7 @@ namespace App\Actions;
 use App\Models\Duty;
 use App\Models\DutyType;
 use App\Models\Institution;
+use App\Models\Pivots\Dutiable;
 use App\Models\ResponsibilityGrant;
 use App\Models\User;
 use App\Support\MorphMap;
@@ -196,7 +197,7 @@ class ProjectDutyResponsibilities
      */
     private static function holderIds(array $dutyIds): Collection
     {
-        return DB::table('dutiables')
+        return Dutiable::query()
             ->where('dutiable_type', MorphMap::alias(User::class))
             ->whereIn('duty_id', $dutyIds)
             ->distinct()

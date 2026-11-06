@@ -18,6 +18,7 @@ use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\MailingListSource;
+use App\Models\Pivots\Dutiable;
 use App\Models\ResponsibilityGrant;
 use App\Models\Role;
 use App\Models\Tenant;
@@ -204,8 +205,6 @@ class ResponsibilityController extends AdminController
         if ($added->isNotEmpty() || $removed->isNotEmpty()) {
             $role->touch();
         }
-
-        ForgetUserAccess::execute($this->holderIds($role));
 
         $message = __('responsibilities.messages.permissions_saved', ['added' => $added->count(), 'removed' => $removed->count()]);
 
@@ -483,7 +482,11 @@ class ResponsibilityController extends AdminController
      */
     private function holderIds(Role $role): Collection
     {
-        return $role->usersThroughDuties()->pluck('users.id')
+        return Dutiable::query()
+            ->whereIn('duty_id', $role->duties()->select('duties.id'))
+            ->where('dutiable_type', MorphMap::alias(User::class))
+            ->distinct()
+            ->pluck('dutiable_id')
             ->merge($role->users()->pluck('users.id'))
             ->map(strval(...))
             ->unique()

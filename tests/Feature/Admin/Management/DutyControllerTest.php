@@ -70,6 +70,21 @@ describe('unauthorized access', function (): void {
 });
 
 describe('authorized access', function (): void {
+    test('loaded duty tenants preserve update and delete isolation', function (bool $eagerLoad): void {
+        $local = Duty::factory()->for($this->dutyManagerDuty->institution)->create();
+        $otherTenant = Tenant::query()->whereKeyNot($this->tenant->id)->firstOrFail();
+        $foreign = Duty::factory()->for(Institution::factory()->for($otherTenant))->create();
+        if ($eagerLoad) {
+            $local->load('tenants');
+            $foreign->load('tenants');
+        }
+
+        expect($this->dutyManager->can('update', $local))->toBeTrue()
+            ->and($this->dutyManager->can('delete', $local))->toBeTrue()
+            ->and($this->dutyManager->can('update', $foreign))->toBeFalse()
+            ->and($this->dutyManager->can('delete', $foreign))->toBeFalse();
+    })->with(['lazy' => false, 'eager' => true]);
+
     test('inline duty creation via API returns the created model', function (): void {
         $response = asUser($this->dutyManager)->postJson(route('api.v1.admin.duties.store'), [
             'name' => ['lt' => 'Vedlio pareigybė', 'en' => 'Wizard duty'],
@@ -86,6 +101,39 @@ describe('authorized access', function (): void {
         $response->assertOk();
         $response->assertInertia(fn ($page) => $page->component('Admin/People/IndexDuty'));
     });
+
+    test('index query count stays constant as more duty rows are returned', function (string $routeName, string $itemsPath): void {
+        Duty::factory()->for($this->dutyManagerDuty->institution)->count(10)->create();
+
+        $fetch = fn (int $perPage) => asUserWithInertia($this->dutyManager)
+            ->getJson(route($routeName, ['per_page' => $perPage]))->assertOk();
+
+        // Warm request-level infrastructure before comparing the two page sizes.
+        $fetch(3);
+        $fetch(10);
+
+        DB::enableQueryLog();
+        try {
+            DB::flushQueryLog();
+            $small = $fetch(3);
+            $smallCount = count(DB::getQueryLog());
+            DB::flushQueryLog();
+            $large = $fetch(10);
+            $largeCount = count(DB::getQueryLog());
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
+
+        $small->assertJsonCount(3, $itemsPath);
+        $large->assertJsonCount(10, $itemsPath)
+            ->assertJsonPath($itemsPath.'.0.can_update', true)
+            ->assertJsonPath($itemsPath.'.0.can_delete', true);
+        expect($largeCount)->toBe($smallCount);
+    })->with([
+        'page' => ['duties.index', 'props.duties.data'],
+        'API' => ['api.v1.admin.duties.index', 'data.items'],
+    ]);
 
     test('super admin can access duties index', function (): void {
         $admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);

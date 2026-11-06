@@ -153,6 +153,48 @@ test('coordinator can change the email of a fully contained user with no direct 
     expect($target->fresh()->email)->toBe('new.address@stud.vu.lt');
 });
 
+test('contained users keep identity and delete access with loaded policy relations', function (bool $eagerLoad): void {
+    $target = makeUser($this->tenant)->fresh();
+    if ($eagerLoad) {
+        $target->load(['roles', 'tenants']);
+    }
+
+    expect($this->coordinator->can('updateIdentity', $target))->toBeTrue()
+        ->and($this->coordinator->can('delete', $target))->toBeTrue();
+})->with(['lazy' => false, 'eager' => true]);
+
+test('ended foreign duties still block identity and delete access with loaded relations', function (bool $eagerLoad): void {
+    $target = makeUser($this->tenant);
+    $otherTenant = Tenant::query()->whereKeyNot($this->tenant->id)->firstOrFail();
+    $foreignDuty = Duty::factory()->for(Institution::factory()->for($otherTenant))->create();
+    $target->duties()->attach($foreignDuty, [
+        'start_date' => '2019-01-01',
+        'end_date' => '2020-01-01',
+        'tenant_id' => $this->tenant->id,
+    ]);
+    $target = $target->fresh();
+    if ($eagerLoad) {
+        $target->load(['roles', 'tenants']);
+    }
+
+    expect($this->coordinator->can('updateIdentity', $target))->toBeFalse()
+        ->and($this->coordinator->can('delete', $target))->toBeFalse();
+})->with(['lazy' => false, 'eager' => true]);
+
+test('direct roles still protect identity and deletion with loaded policy relations', function (bool $eagerLoad, bool $superAdmin): void {
+    $target = makeUser($this->tenant);
+    $target->assignRole($superAdmin
+        ? config('permission.super_admin_role_name')
+        : Role::firstOrCreate(['name' => 'Directly Assigned', 'guard_name' => 'web']));
+    $target = $target->fresh();
+    if ($eagerLoad) {
+        $target->load(['roles', 'tenants']);
+    }
+
+    expect($this->coordinator->can('updateIdentity', $target))->toBeFalse()
+        ->and($this->coordinator->can('delete', $target))->toBeFalse();
+})->with(['lazy' => false, 'eager' => true])->with(['ordinary role' => false, 'super admin' => true]);
+
 test('a super admin can change any email', function (): void {
     $admin = makeAdminUser($this->tenant);
     $target = makeUser($this->tenant);

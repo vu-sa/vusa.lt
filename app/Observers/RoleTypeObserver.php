@@ -2,12 +2,12 @@
 
 namespace App\Observers;
 
-use App\Http\Middleware\HandleInertiaRequests;
+use App\Actions\ForgetUserAccess;
 use App\Models\Duty;
+use App\Models\Pivots\Dutiable;
 use App\Models\RoleType;
-use App\Services\Permissions\PermissionMapBuilder;
+use App\Models\User;
 use App\Support\MorphMap;
-use Illuminate\Support\Facades\Cache;
 
 class RoleTypeObserver
 {
@@ -17,54 +17,41 @@ class RoleTypeObserver
 
         $type = $roleType->type;
 
-        $duties = [];
-
-        // get duties
-
         if ($type->model_type === MorphMap::alias(Duty::class)) {
             $duties = $type->duties;
         } else {
             return;
         }
 
-        // borrowed from RoleController
-        // sync duties
-
         $role->duties()->syncWithoutDetaching($duties);
 
-        $role->usersThroughDuties->each(function ($user): void {
-            PermissionMapBuilder::forgetCachedMaps($user->id);
-            Cache::forget(HandleInertiaRequests::adminNavigationCacheKey($user->id));
-        });
+        ForgetUserAccess::execute(Dutiable::query()
+            ->whereIn('duty_id', $duties->modelKeys())
+            ->where('dutiable_type', MorphMap::alias(User::class))
+            ->distinct()
+            ->pluck('dutiable_id'));
     }
 
-    /**
-     * Handle the RoleType "deleted" event.
-     */
     public function deleted(RoleType $roleType): void
     {
         $role = $roleType->role;
 
         $type = $roleType->type;
 
-        $duties = [];
-
-        // get duties
-
         if ($type->model_type === MorphMap::alias(Duty::class)) {
             $duties = $type->duties;
         } else {
             return;
         }
 
-        // borrowed from RoleController
-        // sync duties
+        $holderIds = Dutiable::query()
+            ->whereIn('duty_id', $duties->modelKeys())
+            ->where('dutiable_type', MorphMap::alias(User::class))
+            ->distinct()
+            ->pluck('dutiable_id');
 
         $role->duties()->detach($duties);
 
-        $role->usersThroughDuties->each(function ($user): void {
-            PermissionMapBuilder::forgetCachedMaps($user->id);
-            Cache::forget(HandleInertiaRequests::adminNavigationCacheKey($user->id));
-        });
+        ForgetUserAccess::execute($holderIds);
     }
 }

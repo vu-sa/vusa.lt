@@ -56,20 +56,8 @@ class SyncStaleDocumentsJob implements ShouldQueue
         ]);
 
         $successCount = 0;
-        $skippedCount = 0;
 
         foreach ($documentsToRefresh->values() as $document) {
-            // Skip documents that have failed too many times recently
-            if ($this->shouldSkipDocument($document)) {
-                $skippedCount++;
-                Log::debug('Skipping document due to recent failures', [
-                    'document_id' => $document->id,
-                    'sync_attempts' => $document->sync_attempts,
-                ]);
-
-                continue;
-            }
-
             SyncDocumentFromSharePointJob::dispatch($document)
                 ->delay(now()->addMilliseconds($successCount * $this->spacingMilliseconds));
             $successCount++;
@@ -77,7 +65,6 @@ class SyncStaleDocumentsJob implements ShouldQueue
 
         Log::info('Completed rolling document refresh dispatch', [
             'dispatched' => $successCount,
-            'skipped' => $skippedCount,
             'total_selected' => $documentsToRefresh->count(),
             'refresh_cycle' => '14-day rolling strategy',
         ]);
@@ -96,12 +83,11 @@ class SyncStaleDocumentsJob implements ShouldQueue
         ]);
 
         // Priority 1: Documents older than 14 days (critical refresh needed)
-        $criticalDocs = $this->refreshable()
+        $criticalDocs = $this->eligibleForRefresh()
             ->where(function ($query): void {
                 $query->whereNull('checked_at')
                     ->orWhere('checked_at', '<', now()->subDays(14));
             })
-            ->where('sync_status', '!=', 'syncing')
             // Documents that already have a public link come first
             ->orderByRaw('CASE WHEN anonymous_url IS NOT NULL THEN 1 ELSE 2 END')
             ->orderBy('checked_at', 'asc') // Oldest first within each priority
@@ -112,9 +98,8 @@ class SyncStaleDocumentsJob implements ShouldQueue
 
         // Priority 2: Fill remaining quota with documents from 7-14 day range (random selection)
         if ($remaining > 0) {
-            $additionalDocs = $this->refreshable()
+            $additionalDocs = $this->eligibleForRefresh()
                 ->whereBetween('checked_at', [now()->subDays(14), now()->subDays(7)])
-                ->where('sync_status', '!=', 'syncing')
                 ->inRandomOrder()
                 ->limit($remaining)
                 ->get();
@@ -213,25 +198,18 @@ class SyncStaleDocumentsJob implements ShouldQueue
         return $ageGroups;
     }
 
-    /**
-     * Determine if a document should be skipped due to recent failures
-     */
-    private function shouldSkipDocument(Document $document): bool
+    /** @return Builder<Document> */
+    private function eligibleForRefresh(): Builder
     {
-        // Skip if it has failed more than 5 times
-        if ($document->sync_attempts > 5) {
-            return true;
-        }
-
-        // Skip if it failed recently and has multiple attempts
-        if ($document->sync_status === 'failed' &&
-            $document->sync_attempts >= 3 &&
-            $document->last_sync_attempt_at &&
-            $document->last_sync_attempt_at > now()->subHours(6)) {
-            return true;
-        }
-
-        return false;
+        return $this->refreshable()
+            ->where('sync_status', '!=', 'syncing')
+            ->where('sync_attempts', '<=', 5)
+            ->where(function (Builder $query): void {
+                $query->where('sync_status', '!=', 'failed')
+                    ->orWhere('sync_attempts', '<', 3)
+                    ->orWhereNull('last_sync_attempt_at')
+                    ->orWhere('last_sync_attempt_at', '<=', now()->subHours(6));
+            });
     }
 
     /**

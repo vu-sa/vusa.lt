@@ -24,7 +24,8 @@ class DocumentSharepointSyncService
     public function sync(Document $document, bool $force = false): ?Document
     {
         $document->sync_status = 'syncing';
-        $document->sync_attempts = ($document->sync_attempts ?? 0) + 1;
+        // Saturate the tinyint so repeated manual retries can still reach SharePoint.
+        $document->sync_attempts = min(255, ($document->sync_attempts ?? 0) + 1);
         $document->last_sync_attempt_at = Carbon::now();
         $document->sync_error_message = null;
         $document->save();
@@ -61,6 +62,7 @@ class DocumentSharepointSyncService
                 Log::info('SharePoint document was already up to date', ['document_id' => $document->id]);
                 $document->checked_at = Carbon::now();
                 $document->sync_status = 'success';
+                $document->sync_attempts = 0;
                 $document->save();
 
                 return null;
@@ -87,6 +89,7 @@ class DocumentSharepointSyncService
             if (! $document->isPublished()) {
                 $document->checked_at = Carbon::now();
                 $document->sync_status = 'success';
+                $document->sync_attempts = 0;
                 $document->save();
 
                 return $document;
@@ -131,6 +134,7 @@ class DocumentSharepointSyncService
 
                     $document->checked_at = Carbon::now();
                     $document->sync_status = 'success';
+                    $document->sync_attempts = 0;
                     $document->save();
                     $document->refresh();
 
@@ -186,6 +190,7 @@ class DocumentSharepointSyncService
                 $document->sharepoint_permission_id = $permissionId;
                 $document->checked_at = Carbon::now();
                 $document->sync_status = 'success';
+                $document->sync_attempts = 0;
                 $document->save();
 
                 return true;
@@ -205,6 +210,7 @@ class DocumentSharepointSyncService
 
                 $document->checked_at = Carbon::now();
                 $document->sync_status = 'success';
+                $document->sync_attempts = 0;
                 $document->save();
 
                 return $document;
