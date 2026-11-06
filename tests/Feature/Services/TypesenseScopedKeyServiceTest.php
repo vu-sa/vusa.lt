@@ -521,6 +521,19 @@ describe('public records in every scoped key', function (): void {
         expect(scopedKeyFilter(keysFor($user)['meetings']['key']))->toBe('institution_ids:=[`'.$institutionId.'`]');
     });
 
+    test('every issued key carries the full embedded parameter set', function (): void {
+        $user = makeUser(Tenant::query()->first());
+        $client = new Client(['api_key' => 'test-admin-key', 'nodes' => config('scout.typesense.client-settings.nodes')]);
+        $result = new TypesenseScopedKeyService($client, app(ModelAuthorizer::class), app(InstitutionAccessService::class))
+            ->generateScopedKeysForUser($user);
+
+        $keys = [$result['header_key'], ...array_column($result['collections'], 'key')];
+
+        foreach ($keys as $key) {
+            expect(scopedKeyParams($key))->toHaveKey('filter_curated_hits', true);
+        }
+    });
+
     test('a settings change retires every cached key, with no reindex', function (): void {
         $user = makeUser(Tenant::query()->first());
         keysFor($user);

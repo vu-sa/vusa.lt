@@ -107,7 +107,7 @@ class TypesenseScopedKeyService
                     continue;
                 }
 
-                $scopedKey = $this->client->getKeys()->generateScopedSearchKey($parentKey, [
+                $scopedKey = $this->scopedSearchKey($parentKey, [
                     'collection' => $prefixedCollectionName,
                     'filter_by' => $filterBy,
                     'expires_at' => $expiresAt,
@@ -125,7 +125,7 @@ class TypesenseScopedKeyService
         }
 
         // Without a per-search key, the transport credential must never return records.
-        $headerKey = $this->client->getKeys()->generateScopedSearchKey($parentKey, [
+        $headerKey = $this->scopedSearchKey($parentKey, [
             'filter_by' => 'id:=__transport_only__',
             'expires_at' => $expiresAt,
         ]);
@@ -138,11 +138,24 @@ class TypesenseScopedKeyService
         ];
     }
 
+    /**
+     * Every scoped key goes through here so pinned results obey the embedded filter too.
+     *
+     * @param  array<string, mixed>  $params
+     */
+    private function scopedSearchKey(string $parentKey, array $params): string
+    {
+        return $this->client->getKeys()->generateScopedSearchKey($parentKey, [
+            ...$params,
+            'filter_curated_hits' => true,
+        ]);
+    }
+
     /** @return array{key: string, tenant_ids: array, institution_ids: array, has_access: bool, scope: string} */
     private function unrestrictedCollection(string $parentKey, string $collection, int $expiresAt, string $scope): array
     {
         return [
-            'key' => $this->client->getKeys()->generateScopedSearchKey($parentKey, [
+            'key' => $this->scopedSearchKey($parentKey, [
                 'collection' => $collection,
                 'expires_at' => $expiresAt,
             ]),
@@ -189,7 +202,7 @@ class TypesenseScopedKeyService
             $filter = $clauses ? '('.implode(' || ', $clauses).')' : 'id:=__no_access__';
         }
 
-        $scopedKey = $this->client->getKeys()->generateScopedSearchKey($parentKey, [
+        $scopedKey = $this->scopedSearchKey($parentKey, [
             'collection' => $prefixedCollectionName,
             'filter_by' => $filter
                 // Nothing public and no permissions: an empty list, not a missing collection.
