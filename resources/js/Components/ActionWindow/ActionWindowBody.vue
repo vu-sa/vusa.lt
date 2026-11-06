@@ -2,7 +2,7 @@
   <!-- flex-1, not h-full: the dialog gets its height from min-height, and a
        percentage height against that resolves to auto. -->
   <div data-slot="action-window-body" class="flex min-h-0 flex-1 flex-col">
-    <header class="flex shrink-0 items-start justify-between gap-3 border-b border-border p-4 sm:p-5">
+    <header class="flex shrink-0 items-center justify-between gap-3 border-b border-border p-4 sm:p-5">
       <div class="flex min-w-0 flex-1 items-center gap-3">
         <!-- Back button (when stack > 1) -->
         <button
