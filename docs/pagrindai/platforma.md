@@ -150,6 +150,10 @@ Peržiūroje klavišais **↑** ir **↓** pereinama prie kito įrašo, o **Ente
 
 ### Pasirinkti susijusį įrašą
 
+Nario ir problemos atsakingo asmens paieškos rezultatai pateikiami tokiomis pačiomis eilutėmis
+kaip bendra paieška. Institucijų paieška veiksmų lange išlaiko pasirinkimo korteles, o sutapę
+žodžiai pavadinime ar aprašyme paryškinami.
+
 Kai forma prašo susieti kitą įrašą, pasirinkimo lange galima ieškoti, filtruoti ir peržiūrėti radinį prieš jį pridedant. Pažymėti įrašai patvirtinami lango apačioje; jei laukas neprivalomas, pasirinkimą galima išvalyti. Telefone peržiūrėjus radinį mygtuku „Atgal į sąrašą“ grįžtama prie rezultatų. Nepasiekiamą išteklių galima peržiūrėti, bet negalima pasirinkti.
 
 Kuriant narį ar pareigybę, perspėjimas apie galimą dublikatą parodo sutapimus ir galimus veiksmus. Tai patarimas: sutampantys vardai savaime neuždraudžia išsaugoti įrašo. Atverti ar sujungti kitą įrašą siūloma tik tada, kai turi teisę jį tvarkyti.

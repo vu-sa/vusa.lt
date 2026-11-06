@@ -390,7 +390,8 @@ parodo, kiek jau rodoma ir kiek iš viso rasta; ją pasirinkus sąrašas papildo
 
 Paieška randa pareigybes pagal kartu įrašytus pareigybės ir institucijos ar padalinio žodžius,
 o daugiau rezultatų galima parodyti tame pačiame sąraše. Originalaus pavadinimo parinktis matoma
-iškart po pareigybe.
+iškart po pareigybe. Nario paieškos rezultatuose, kaip ir kitose pasirinkimo vietose, rodomas vardas,
+el. paštas, kai jis prieinamas, ir padaliniai.
 
 </ChangelogNote>
 
