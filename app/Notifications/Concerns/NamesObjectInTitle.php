@@ -9,7 +9,7 @@ trait NamesObjectInTitle
     #[\Override]
     public function digestLine(object $notifiable): string
     {
-        return Str::limit($this->title($notifiable).' — '.strip_tags($this->body($notifiable)), 200);
+        return Str::limit($this->title($notifiable).' — '.$this->body($notifiable), 200);
     }
 
     #[\Override]

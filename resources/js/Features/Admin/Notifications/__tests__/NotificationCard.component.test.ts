@@ -24,6 +24,13 @@ const mountCard = (notification: Notification) => mount(NotificationCard, {
 });
 
 describe('NotificationCard', () => {
+  it.each(['body', 'text', 'message'] as const)('renders a stored notification %s as text', (field) => {
+    const body = '<strong>Ataskaita</strong> & aptarimas';
+    const wrapper = mountCard(make({ body: undefined, [field]: body }));
+    expect(wrapper.text()).toContain(body);
+    expect(wrapper.find('strong').exists()).toBe(false);
+  });
+
   beforeEach(() => {
     vi.mocked(router.visit).mockClear();
     vi.mocked(markNotificationRead).mockClear();

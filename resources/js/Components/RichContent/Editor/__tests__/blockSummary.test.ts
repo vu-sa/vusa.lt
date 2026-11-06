@@ -46,6 +46,10 @@ describe('deriveBlockSummary', () => {
     expect(deriveBlockSummary(part('hero', { title: '<p>Prisijunk <b>dabar</b></p>' }))).toBe('Prisijunk dabar');
   });
 
+  it('omits script and style content from a hero summary', () => {
+    expect(deriveBlockSummary(part('hero', { title: '<style>p{}</style><script>void(0)</script><strong>Sveiki</strong>' }))).toBe('Sveiki');
+  });
+
   it('decodes HTML entities while stripping tags', () => {
     expect(deriveBlockSummary(part('hero', { title: '<p>&lt;Sveikas&gt; &amp; &quot;pasaulis&quot;</p>' }))).toBe('<Sveikas> & "pasaulis"');
   });

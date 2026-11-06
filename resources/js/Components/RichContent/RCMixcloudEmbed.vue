@@ -1,7 +1,7 @@
 <template>
   <!-- Hairline frame, square corners — same treatment as the Spotify embed beside it, so an
        audio player reads as a ruled block on the page rather than a floating rounded card. -->
-  <div class="my-8 w-full border border-border">
+  <div v-if="embedUrl" class="my-8 w-full border border-border">
     <iframe
       :src="mounted ? embedUrl : undefined"
       frameborder="0"

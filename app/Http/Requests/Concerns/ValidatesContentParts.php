@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Concerns;
 
 use App\Enums\ContentPartEnum;
+use App\Rules\ContentEmbedUrl;
 use App\Rules\SoftDeleteRules;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -119,6 +120,16 @@ trait ValidatesContentParts
             'content.parts.*.json_content.*.endTime' => ['nullable', 'string', 'max:8'],
             'content.parts.*.json_content.*.title' => ['nullable', 'string', 'max:255'],
         ];
+
+        $parts = $this->input($prefix, []);
+        foreach (is_array($parts) ? $parts : [] as $index => $part) {
+            $type = is_array($part) ? ($part['type'] ?? null) : null;
+            if (in_array($type, ['spotify-embed', 'social-embed'], true)) {
+                $rules["content.parts.{$index}.json_content.url"] = [
+                    'nullable', 'string', 'url:https', 'max:2048', new ContentEmbedUrl($type),
+                ];
+            }
+        }
 
         if ($prefix === 'content.parts') {
             return $rules;

@@ -137,6 +137,17 @@ describe('authorized access', function (): void {
             );
     })->with(['unknown' => 'de', 'array' => [['en']]]);
 
+    test('homepage rejects an unsupported social address', function (): void {
+        asUser($this->admin)->post(route('tenants.updateMainPage', $this->tenant), [
+            'locale' => 'en',
+            'parts' => [[
+                'type' => 'social-embed', 'json_content' => ['url' => 'http://www.facebook.com/posts/123'],
+            ]],
+        ])->assertSessionHasErrors('parts.0.json_content.url');
+
+        expect($this->tenant->homepageContents()->where('locale', 'en')->exists())->toBeFalse();
+    });
+
     test('creates and updates homepage content for the selected locale only', function (): void {
         $otherContent = Content::factory()->create();
         $otherContent->parts()->create([

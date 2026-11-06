@@ -31,7 +31,7 @@
     <RCMixcloudEmbed v-else-if="isMixcloud" :element />
     <!-- Hairline frame, square corners: an embed is still a block on this surface, so it is
          ruled off like every other one rather than floating as a rounded card. -->
-    <div v-else class="my-8 w-full border border-border">
+    <div v-else-if="embedUrl" class="my-8 w-full border border-border">
       <iframe
         class="block h-[352px] w-full"
         :class="[editable && 'pointer-events-none']"

@@ -1,5 +1,5 @@
 <template>
-  <div class="social-embed-container my-8 flex w-full justify-center">
+  <div v-if="platform || (editable && !element.json_content.url)" class="social-embed-container my-8 flex w-full justify-center">
     <!-- Loading state - only show initially before any render -->
     <div v-if="isLoading && !hasRendered" class="flex items-center justify-center py-8">
       <div class="h-6 w-6 animate-spin rounded-full border-2 border-border border-t-brand" />
@@ -45,17 +45,7 @@
       </blockquote>
     </div>
 
-    <!-- Fallback for invalid embeds -->
-    <div v-else-if="element.json_content.url" class="border border-border bg-secondary/40 p-4 text-center text-sm text-muted-foreground">
-      <a
-        :href="element.json_content.url"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="text-muted-foreground underline hover:text-brand"
-      >
-        Atidaryti įrašą naujame lange →
-      </a>
-    </div>
+
   </div>
 </template>
 

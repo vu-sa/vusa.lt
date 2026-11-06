@@ -273,7 +273,7 @@ abstract class BaseNotification extends Notification implements ShouldQueue
     {
         $action = $this->primaryAction() ?? ['label' => __('Peržiūrėti'), 'url' => $this->url()];
 
-        $body = strip_tags($this->body($notifiable));
+        $body = $this->body($notifiable);
         $excerpt = $this->excerpt($notifiable);
 
         $quoteLength = mb_strlen(__('notifications.quote', ['text' => '']));
@@ -306,7 +306,7 @@ abstract class BaseNotification extends Notification implements ShouldQueue
 
     public function digestLine(object $notifiable): string
     {
-        return Str::limit(strip_tags($this->body($notifiable)), 200);
+        return Str::limit($this->body($notifiable), 200);
     }
 
     public function digestGroupTitle(object $notifiable): string
@@ -322,7 +322,7 @@ abstract class BaseNotification extends Notification implements ShouldQueue
             'digestLine' => $this->digestLine($notifiable),
             'digestGroupTitle' => $this->digestGroupTitle($notifiable),
             'title' => $this->title($notifiable),
-            'body' => Str::limit(strip_tags($this->body($notifiable)), 200),
+            'body' => Str::limit($this->body($notifiable), 200),
             'excerpt' => $this->excerpt($notifiable),
             'url' => $this->url(),
             'icon' => $this->icon(),

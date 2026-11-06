@@ -39,7 +39,7 @@
         </h4>
       </div>
 
-      <p v-if="message" class="line-clamp-2 text-sm text-muted-foreground" v-html="message" />
+      <p v-if="message" class="line-clamp-2 text-sm text-muted-foreground">{{ message }}</p>
 
       <p v-if="excerpt" class="line-clamp-3 border-l-2 border-border pl-2 text-sm text-muted-foreground" data-slot="notification-excerpt">
         {{ excerpt }}

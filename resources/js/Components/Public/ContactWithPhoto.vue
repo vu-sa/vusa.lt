@@ -126,7 +126,6 @@
 </template>
 
 <script setup lang="ts">
-
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
@@ -138,6 +137,7 @@ import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { changeDutyNameEndings, type DutyPronouns } from '@/Utils/String';
+import { stripHtml } from '@/Utils/html';
 import IFluentPhone20Regular from '~icons/fluent/phone-20-regular';
 import IFluentPerson24Regular from '~icons/fluent/person-24-regular';
 import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
@@ -172,9 +172,7 @@ const hasDutyDescription = (duty: App.Entities.Duty): boolean => {
     return false;
   }
 
-  const container = document.createElement('div');
-  container.innerHTML = desc;
-  return (container.textContent ?? '').trim().length > 0;
+  return stripHtml(desc).trim().length > 0;
 };
 
 // Some users have multiple duties, so we need to show all of their emails AND duty name

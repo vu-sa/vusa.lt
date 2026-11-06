@@ -53,6 +53,7 @@ import { localizedRoute } from '@/Utils/LocalizedRoutes';
 import IFluentArrowRight16Regular from '~icons/fluent/arrow-right-16-regular';
 import IFluentArrowUpRight16Regular from '~icons/fluent/arrow-up-right-16-regular';
 import { formatDateWith } from '@/Utils/dateTime';
+import { stripHtml } from '@/Utils/html';
 
 interface Props {
   collection: SearchCollectionId;
@@ -84,12 +85,6 @@ const title = computed(() => {
 
 // -- Subtitle (snippet / type label) -----------------------------------------
 
-const stripHtml = (html: string): string => {
-  if (!html) return '';
-  const tmp = document.createElement('div');
-  tmp.innerHTML = html;
-  return tmp.textContent || tmp.innerText || '';
-};
 
 const subtitle = computed(() => {
   const { doc } = props;

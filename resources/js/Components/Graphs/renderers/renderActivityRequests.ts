@@ -11,6 +11,8 @@ import type { GanttColors } from '../ganttColors';
 import { TOOLTIP_PRIORITIES, type GanttTooltipManager } from './GanttTooltip';
 import { MAIL_QUESTION_PATH } from './renderMeetings';
 
+import { escapeHtml } from '@/Utils/String';
+
 export interface ParsedActivityRequest {
   institution_id: string | number;
   rowKey: string;
@@ -39,14 +41,14 @@ const CHIP_SIZE = 14;
 
 export function buildActivityRequestTooltipHtml(request: ParsedActivityRequest, fmtDate: Intl.DateTimeFormat): string {
   const rows = [
-    `<div class="font-medium text-[12px]">${$t('activity_requests.campaigns.activity_confirmation')}</div>`,
-    `<div class="opacity-80">${fmtDate.format(request.fromDate)} → ${fmtDate.format(request.untilDate)}</div>`,
-    `<div class="mt-1 opacity-70 text-[11px]">${$t('activity_requests.gantt.recipients', { count: String(request.recipients_count) })}</div>`,
+    `<div class="font-medium text-[12px]">${escapeHtml($t('activity_requests.campaigns.activity_confirmation'))}</div>`,
+    `<div class="opacity-80">${escapeHtml(fmtDate.format(request.fromDate))} → ${escapeHtml(fmtDate.format(request.untilDate))}</div>`,
+    `<div class="mt-1 opacity-70 text-[11px]">${escapeHtml($t('activity_requests.gantt.recipients', { count: String(request.recipients_count) }))}</div>`,
   ];
   if (request.sentAt) {
-    rows.push(`<div class="opacity-70 text-[11px]">${$t('activity_requests.gantt.sent', { date: fmtDate.format(request.sentAt) })}</div>`);
+    rows.push(`<div class="opacity-70 text-[11px]">${escapeHtml($t('activity_requests.gantt.sent', { date: fmtDate.format(request.sentAt) }))}</div>`);
   }
-  rows.push(`<div class="opacity-70 text-[11px]">${$t('activity_requests.gantt.expires', { date: fmtDate.format(request.expiresAt) })}</div>`);
+  rows.push(`<div class="opacity-70 text-[11px]">${escapeHtml($t('activity_requests.gantt.expires', { date: fmtDate.format(request.expiresAt) }))}</div>`);
 
   return rows.join('');
 }
