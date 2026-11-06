@@ -41,4 +41,21 @@ describe('useAdminSearch collection searches', () => {
 
     await expect(useAdminSearch().searchWithFacets('institutions', '*', { facetBy: 'tenant_shortname' })).rejects.toThrow();
   });
+
+  it('lets searches through again once the Retry-After window has passed', async () => {
+    vi.useFakeTimers();
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(json(config))
+      .mockResolvedValueOnce({ ok: false, status: 429, headers: new Headers({ 'retry-after': '2' }), json: async () => ({}), text: async () => '' });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const search = useAdminSearch();
+    await expect(search.searchWithFacets('institutions', '*', { facetBy: 'tenant_shortname' })).rejects.toThrow();
+    expect(search.isRateLimited.value).toBe(true);
+
+    vi.advanceTimersByTime(2001);
+
+    expect(search.isRateLimited.value).toBe(false);
+    vi.useRealTimers();
+  });
 });

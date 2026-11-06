@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue';
+import { ref, computed, customRef, type Ref } from 'vue';
 
 import { buildProfileParams } from '@/Shared/Search/profiles';
 import { documentWithMatch, type HighlightedHit } from '@/Shared/Search/matches';
@@ -50,6 +50,15 @@ interface SearchState {
  * The scoped key enforces authorization at the Typesense level - the key itself
  * contains filter_by constraints that cannot be bypassed by the client.
  */
+/** A computed would cache a `Date.now()` comparison until its refs change, so a deadline never passes. */
+const readAtAccess = (read: () => boolean): Readonly<Ref<boolean>> => customRef(track => ({
+  get: () => {
+    track();
+    return read();
+  },
+  set: () => {},
+}));
+
 export const useAdminSearch = () => {
   // Config state
   const config = ref<AdminSearchConfig | null>(null);
@@ -72,7 +81,7 @@ export const useAdminSearch = () => {
 
   // Computed
   const isReady = computed(() => config.value !== null && !configError.value);
-  const hasExpired = computed(() => {
+  const hasExpired = readAtAccess(() => {
     if (!config.value?.expiresAt) return false;
     return Date.now() / 1000 > config.value.expiresAt - 60; // 1 minute buffer
   });
@@ -92,10 +101,7 @@ export const useAdminSearch = () => {
    */
   const hasAnyAccess = computed(() => accessibleCollections.value.length > 0);
 
-  /**
-   * Check if we're currently rate limited
-   */
-  const isRateLimited = computed(() => Date.now() < rateLimitedUntil.value);
+  const isRateLimited = readAtAccess(() => Date.now() < rateLimitedUntil.value);
 
   /**
    * Fetch scoped config from backend (with deduplication)
