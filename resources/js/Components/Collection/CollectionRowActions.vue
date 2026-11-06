@@ -5,7 +5,7 @@
         :is="action.href && !action.external && !action.plain ? Link : action.href ? 'a' : 'button'"
         :data-action="action.key"
         :data-collection-row-action="action === labelledAction ? 'primary' : undefined"
-        :href="action.href"
+        :href="safeHref(action.href)"
         :type="action.href ? undefined : 'button'"
         :target="action.external ? '_blank' : undefined"
         :rel="action.external ? 'noopener noreferrer' : undefined"
@@ -37,6 +37,7 @@ import { computed } from 'vue';
 
 import RecordActionMenu from '@/Components/Patterns/RecordActionMenu.vue';
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
+import { safeHref } from '@/Utils/safeHref';
 
 export type CollectionRowAction = AdminRecordAction;
 

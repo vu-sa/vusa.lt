@@ -8,7 +8,7 @@
   <SmartLink
     v-else
     prefetch
-    :href="link.url"
+    :href="safeHref(link.url)"
     :target="link.new_tab ? '_blank' : undefined"
     :rel="link.new_tab ? 'noopener' : undefined"
     class="flex min-h-11 items-center gap-3 border-t border-border/50 px-4 py-3 transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
@@ -45,6 +45,7 @@ import type { NavLink } from '../types';
 import MediaImage from '@/Components/Brand/MediaImage.vue';
 import { Badge } from '@/Components/ui/badge';
 import IFluentOpen16Regular from '~icons/fluent/open-16-regular';
+import { safeHref } from '@/Utils/safeHref';
 
 defineProps<{
   link: NavLink;

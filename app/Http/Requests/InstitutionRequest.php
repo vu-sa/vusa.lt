@@ -6,6 +6,7 @@ use App\Actions\GenerateInstitutionAlias;
 use App\Http\Requests\Concerns\HasImageValidation;
 use App\Http\Requests\Concerns\ValidatesTenantScope;
 use App\Models\Institution;
+use App\Rules\SafeUrl;
 use App\Rules\SoftDeleteRules;
 use App\Rules\UniqueAmongTrashed;
 use App\Services\PublicUrlService;
@@ -41,14 +42,14 @@ class InstitutionRequest extends FormRequest
             'description.en' => 'nullable',
             'address.lt' => 'nullable|string',
             'address.en' => 'nullable|string',
-            'website' => 'nullable|string',
+            'website' => ['nullable', 'string', new SafeUrl],
             'email' => 'nullable|email',
             'working_hours.lt' => 'nullable|string|max:255',
             'working_hours.en' => 'nullable|string|max:255',
             'phone' => 'nullable|string',
             'tenant_id' => ['required', 'integer', 'exists:tenants,id', $this->tenantIdInAuthorizedScope($this->tenantScopePermission)],
-            'facebook_url' => 'nullable|string',
-            'instagram_url' => 'nullable|string',
+            'facebook_url' => ['nullable', 'string', new SafeUrl],
+            'instagram_url' => ['nullable', 'string', new SafeUrl],
             'is_active' => 'boolean',
             'types' => 'nullable|array',
             'types.*' => ['integer', 'distinct', SoftDeleteRules::existsLive('institution_types')],

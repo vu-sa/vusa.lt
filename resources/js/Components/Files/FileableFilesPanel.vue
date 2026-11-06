@@ -91,7 +91,7 @@
           <a :href="filesDocsHref" target="_blank" rel="noopener" class="underline underline-offset-4 hover:text-foreground">{{ $t('Plačiau') }}</a><template v-if="folderUrl">
             ·
             <a
-              :href="folderUrl"
+              :href="safeHref(folderUrl)"
               target="_blank"
               rel="noopener noreferrer"
               class="underline underline-offset-4 hover:text-foreground"
@@ -153,6 +153,7 @@ import { Skeleton } from '@/Components/ui/skeleton';
 import { type FileableFileType, fileTypeLabel } from '@/Constants/fileTypes';
 import { useDocsHref } from '@/Composables/useDocsHref';
 import { useToasts } from '@/Composables/useToasts';
+import { safeHref } from '@/Utils/safeHref';
 
 const props = withDefaults(defineProps<{
   fileable: { id: string | number; type: string };

@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\LocaleEnum;
 use App\Models\Navigation;
+use App\Rules\SafeUrl;
 use App\Services\NavigationService;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\Validator;
@@ -76,7 +77,7 @@ abstract class NavigationRequest extends FormRequest
 
         return [
             'name' => $isNameless ? 'nullable|string|max:100' : 'required|string|max:100',
-            'url' => $isOptionalUrlCategory ? 'nullable|string|max:500' : 'required|string|max:500',
+            'url' => [$isOptionalUrlCategory ? 'nullable' : 'required', 'string', 'max:500', new SafeUrl],
             'parent_id' => 'required|integer|min:0',
             'lang' => ['nullable', new Enum(LocaleEnum::class)],
             'padalinys_id' => 'nullable|integer|exists:tenants,id',

@@ -57,3 +57,14 @@ describe('Calendar/EventActions.vue', () => {
     expect(actions.some(action => action.text().includes('Dalinkis'))).toBe(true);
   });
 });
+
+it('omits unsupported registration and social destinations', () => {
+  const wrapper = mount(EventActions, {
+    props: {
+      registrationUrl: 'javascript:void(0)', facebookUrl: 'data:text/plain,hello',
+      shareTitle: 'Renginys', isPast: false, isLive: false,
+    },
+  });
+
+  expect(wrapper.find('a[href]').exists()).toBe(false);
+});

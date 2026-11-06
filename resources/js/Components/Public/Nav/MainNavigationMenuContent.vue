@@ -24,7 +24,7 @@
             v-else-if="link.image && link.image_render !== 'thumbnail'"
             :as="isUsedWithoutRoot ? undefined : linkComponent"
             prefetch
-            :href="link.url"
+            :href="safeHref(link.url)"
             :target="link.new_tab ? '_blank' : undefined"
             :rel="link.new_tab ? 'noopener' : undefined"
             :class="[
@@ -78,7 +78,7 @@
           <component :is="isUsedWithoutRoot ? linkComponent : NavigationMenuLink"
             v-else :as="isUsedWithoutRoot ? undefined : linkComponent"
             prefetch
-            :href="link.url"
+            :href="safeHref(link.url)"
             :target="link.new_tab ? '_blank' : undefined"
             :rel="link.new_tab ? 'noopener' : undefined"
             :class="[
@@ -143,6 +143,7 @@ import {
 } from '@/Components/ui/navigation-menu';
 import { Badge } from '@/Components/ui/badge';
 import IFluentOpen16Regular from '~icons/fluent/open-16-regular';
+import { safeHref } from '@/Utils/safeHref';
 
 const { isUsedWithoutRoot, areLinksDisabled, item } = defineProps<{
   isUsedWithoutRoot?: boolean;

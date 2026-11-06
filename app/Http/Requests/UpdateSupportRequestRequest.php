@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\SupportRequestVisibility;
 use App\Models\SupportRequest;
+use App\Rules\SafeUrl;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -57,7 +58,7 @@ class UpdateSupportRequestRequest extends FormRequest
             ],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string', 'max:10000'],
-            'context_url' => ['nullable', 'string', 'max:2000'],
+            'context_url' => ['nullable', 'string', 'max:2000', new SafeUrl],
             'images' => ['nullable', 'array', 'max:5'],
             'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
             'deleted_media_ids' => ['nullable', 'array'],

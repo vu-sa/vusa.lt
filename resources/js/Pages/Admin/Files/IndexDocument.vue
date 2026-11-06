@@ -55,7 +55,7 @@
             <div class="flex items-center gap-2">
               <component
                 :is="documentHref(item) ? 'a' : 'span'"
-                :href="documentHref(item)"
+                :href="safeHref(documentHref(item))"
                 :data-collection-open="documentHref(item) ? '' : undefined"
                 class="inline-flex items-center gap-1.5 truncate font-medium hover:text-brand"
               >
@@ -94,7 +94,7 @@
       <div v-else-if="column.key === 'title'" class="min-w-0">
         <component
           :is="documentHref(item) ? 'a' : 'span'"
-          :href="documentHref(item)"
+          :href="safeHref(documentHref(item))"
           :data-collection-open="documentHref(item) ? '' : undefined"
           class="inline-flex items-center gap-1.5 font-medium hover:text-brand"
         >
@@ -181,6 +181,7 @@ import FilePicker from '@/Features/Admin/SharepointFilePicker/FilePicker.vue';
 import { isPickerAvailable, pickedDocuments, type Item } from '@/Features/Admin/SharepointFilePicker/picker';
 import type { DocumentSearchResult } from '@/Shared/Search/types';
 import { formatRecordDate, formatDate, formatNearDate } from '@/Utils/dateTime';
+import { safeHref } from '@/Utils/safeHref';
 
 const props = defineProps<{
   importantContentTypes: string[];

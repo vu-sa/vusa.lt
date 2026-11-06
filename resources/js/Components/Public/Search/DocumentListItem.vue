@@ -4,7 +4,7 @@
          (-mx/px, equal and opposite) rather than boxing the row — the house idiom
          for full-width list rows, see .ai/rules/public.md. -->
     <a
-      :href="documentUrl"
+      :href="safeHref(documentUrl)"
       target="_blank"
       rel="noopener noreferrer"
       class="-mx-3 block px-3 py-4 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:-mx-4 sm:px-4 sm:py-5 hover:bg-secondary/50"
@@ -191,6 +191,7 @@ import IFluentDocument20Regular from '~icons/fluent/document-20-regular';
 import IFluentLink20Regular from '~icons/fluent/link-20-regular';
 import IFluentOpen20Regular from '~icons/fluent/open-20-regular';
 import IFluentWarning20Regular from '~icons/fluent/warning-20-regular';
+import { safeHref } from '@/Utils/safeHref';
 
 // Props
 interface Props {

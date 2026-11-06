@@ -64,7 +64,7 @@
           :is="item.href ? 'a' : 'div'"
           v-for="item in availableDetails"
           :key="item.label"
-          :href="item.href"
+          :href="safeHref(item.href)"
           :target="item.external ? '_blank' : undefined"
           :rel="item.external ? 'noopener noreferrer' : undefined"
           :class="[
@@ -276,6 +276,7 @@ import IFluentClock24Regular from '~icons/fluent/clock-24-regular';
 import IFluentLocation24Regular from '~icons/fluent/location-24-regular';
 import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
 import ISimpleIconsInstagram from '~icons/simple-icons/instagram';
+import { safeHref } from '@/Utils/safeHref';
 
 // Draws grid dividers only *between* cards (never on the grid's outer edge): the right
 // border is skipped on each row's last column, the bottom border on each column's last row —

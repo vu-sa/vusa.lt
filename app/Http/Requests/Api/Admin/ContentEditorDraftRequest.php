@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api\Admin;
 
+use App\Http\Requests\Concerns\ValidatesContentParts;
 use App\Http\Requests\Concerns\ValidatesTenantScope;
 use App\Models\News;
 use App\Models\Page;
@@ -9,6 +10,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class ContentEditorDraftRequest extends FormRequest
 {
+    use ValidatesContentParts;
     use ValidatesTenantScope;
 
     public function authorize(): bool
@@ -40,6 +42,7 @@ class ContentEditorDraftRequest extends FormRequest
                 'snapshot' => ['required', 'array:id,title,permalink,lang,tenant_id,parent_id,is_active,layout,show_table_of_contents,show_title,show_breadcrumbs,highlights,featured_image,featured_image_media,meta_description,draft,publish_time,short,image,image_author,image_media,tags,other_lang_id,pairing_confirmation,content_version,content'],
                 'snapshot.content' => ['nullable', 'array'],
                 'snapshot.content.parts' => ['nullable', 'array', 'max:100'],
+                ...$this->contentPartUrlRules('snapshot.content.parts'),
                 'snapshot.content_version' => ['nullable', 'string', 'max:64'],
             ];
             if (str_starts_with((string) $this->route('identity'), 'new-')) {

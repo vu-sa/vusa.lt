@@ -1,7 +1,7 @@
 <template>
   <a
     v-if="action.href && action.external"
-    :href="action.href"
+    :href="safeHref(action.href)"
     :class="buttonClass"
     target="_blank"
     rel="noopener noreferrer"
@@ -9,7 +9,7 @@
     <component :is="action.icon" v-if="action.icon" class="size-4" />
     {{ action.label }}
   </a>
-  <Link v-else-if="action.href" :href="action.href" :class="buttonClass">
+  <Link v-else-if="action.href" :href="safeHref(action.href)" :class="buttonClass">
     <component :is="action.icon" v-if="action.icon" class="size-4" />
     {{ action.label }}
   </Link>
@@ -26,6 +26,7 @@ import { Link } from '@inertiajs/vue3';
 import type { RecordAction } from './RecordPage.vue';
 
 import { Button, buttonVariants } from '@/Components/ui/button';
+import { safeHref } from '@/Utils/safeHref';
 
 const props = defineProps<{
   action: RecordAction;

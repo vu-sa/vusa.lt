@@ -110,7 +110,7 @@
 
             <a
               v-if="contact.facebook_url"
-              :href="contact.facebook_url"
+              :href="safeHref(contact.facebook_url)"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Facebook"
@@ -141,6 +141,7 @@ import { stripHtml } from '@/Utils/html';
 import IFluentPhone20Regular from '~icons/fluent/phone-20-regular';
 import IFluentPerson24Regular from '~icons/fluent/person-24-regular';
 import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
+import { safeHref } from '@/Utils/safeHref';
 
 const props = defineProps<{
   contact: App.Entities.User & { duty_pronouns?: DutyPronouns; profile_photo_media?: ImageData | null };

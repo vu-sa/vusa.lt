@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Http\Requests\Concerns\HasImageValidation;
 use App\Models\User;
 use App\Policies\UserPolicy;
+use App\Rules\SafeUrl;
 use App\Rules\SoftDeleteRules;
 use App\Rules\UniqueAmongTrashed;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -36,7 +37,7 @@ class UpdateUserRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'email', UniqueAmongTrashed::of('users', 'email')->ignore($user->id)],
-            'facebook_url' => ['nullable', 'url', 'max:255'],
+            'facebook_url' => ['nullable', 'string', 'max:255', new SafeUrl],
             'phone' => ['nullable', 'string', 'max:50'],
             ...$this->imageMediaRules('profile_photo_media', $this->route('user') instanceof User ? $this->route('user') : new User, 'profile_photo'),
             'pronouns' => ['nullable', 'array'],

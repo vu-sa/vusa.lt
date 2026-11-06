@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\SafeUrl;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -23,7 +24,7 @@ class SendFeedbackRequest extends FormRequest
     {
         return [
             'feedback' => 'required|string',
-            'href' => ['nullable', 'string'],
+            'href' => ['nullable', 'string', new SafeUrl],
             'selectedText' => ['nullable', 'string'],
             'anonymous' => ['nullable', 'boolean'],
         ];

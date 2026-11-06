@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\SupportRequestVisibility;
 use App\Models\SupportRequest;
+use App\Rules\SafeUrl;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -52,7 +53,7 @@ class StoreSupportRequestRequest extends FormRequest
             'involved_users.*' => ['string', 'distinct', Rule::exists('users', 'id')],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string', 'max:10000'],
-            'context_url' => ['nullable', 'string', 'max:2000'],
+            'context_url' => ['nullable', 'string', 'max:2000', new SafeUrl],
             'context' => ['nullable', 'array:viewport,browser'],
             'context.viewport' => ['nullable', 'string', 'max:32'],
             'context.browser' => ['nullable', 'string', 'max:1000'],

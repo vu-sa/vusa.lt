@@ -14,7 +14,7 @@
         :reference="rootRef ?? undefined"
         class="pointer-events-none absolute size-0 overflow-hidden"
       />
-      <SmartLink :href="button.link" class="w-fit">
+      <SmartLink :href="safeHref(button.link)" class="w-fit">
         <Button
           :variant="button.variant === 'outline' ? (onDark ? 'brand-outline-on-dark' : 'outline') : 'brand'"
           voice="brand"
@@ -109,6 +109,7 @@ import { Field, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';
 import { Popover, PopoverAnchor, PopoverContent } from '@/Components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { safeHref } from '@/Utils/safeHref';
 
 type HeroButton = NonNullable<Hero['json_content']['buttons']>[number];
 

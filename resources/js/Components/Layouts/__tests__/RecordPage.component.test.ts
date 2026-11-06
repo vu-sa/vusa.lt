@@ -286,3 +286,17 @@ describe('RecordPage', () => {
     vi.useRealTimers();
   });
 });
+
+it.each([false, true])('renders a fact with an unsupported URL as text when external is %s', (external) => {
+  const wrapper = mount(RecordPage, {
+    props: {
+      title: 'Kontaktai', entityType: 'user',
+      facts: [{ key: 'profile', label: 'Profilis', value: 'Facebook', href: 'java\tscript:void(0)', external }],
+    },
+    global: { stubs: commonStubs },
+  });
+
+  expect(wrapper.text()).toContain('Facebook');
+  expect(wrapper.find('a[href*="script"]').exists()).toBe(false);
+  wrapper.unmount();
+});

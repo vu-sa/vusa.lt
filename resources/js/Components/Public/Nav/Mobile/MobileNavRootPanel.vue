@@ -7,7 +7,7 @@
         v-for="link in tenantLinks"
         :key="link?.id"
         prefetch
-        :href="link?.link ?? '#'"
+        :href="safeHref(link?.link) ?? '#'"
         class="inline-flex items-center gap-1.5 border px-3 py-2 text-sm transition-colors"
         :class="link?.is_important
           ? 'border-brand font-bold text-brand'
@@ -74,6 +74,7 @@ import MobileTenantPanel from './MobileTenantPanel.vue';
 import { useTenantOptions } from '@/Composables/useTenantOptions';
 import IFluentAdd24Regular from '~icons/fluent/add-24-regular';
 import IFluentLocation24Regular from '~icons/fluent/location-24-regular';
+import { safeHref } from '@/Utils/safeHref';
 
 defineEmits<{
   close: [];

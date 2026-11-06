@@ -18,7 +18,7 @@
           </Link>
         </Button>
         <Button v-if="document.anonymous_url" as-child variant="outline" size="sm" voice="sentence">
-          <a :href="document.anonymous_url" target="_blank" rel="noopener noreferrer">
+          <a :href="safeHref(document.anonymous_url)" target="_blank" rel="noopener noreferrer">
             <ExternalLink aria-hidden="true" />
             {{ $t('Atidaryti failą') }}
           </a>
@@ -53,6 +53,7 @@ import { Button } from '@/Components/ui/button';
 import type { StatusPresentation } from '@/Constants/statusIcons';
 import type { DocumentSearchResult } from '@/Shared/Search/types';
 import { formatDate } from '@/Utils/dateTime';
+import { safeHref } from '@/Utils/safeHref';
 
 // An active document is the healthy default and gets no badge.
 const INACTIVE: StatusPresentation = { label: 'Neaktyvus', role: 'neutral', icon: CircleSlash };

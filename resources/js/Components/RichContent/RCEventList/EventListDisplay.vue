@@ -21,7 +21,7 @@
         <ul class="contents">
           <li v-for="event in group.items" :key="event.id">
             <SmartLink
-              :href="event.href"
+              :href="safeHref(event.href)"
               class="relative z-20 -mx-2.5 flex items-start gap-3 p-2.5 transition-colors hover:bg-secondary/60"
             >
               <div class="flex min-w-11 flex-col items-center justify-center border border-border px-2 py-1.5 text-center text-brand">
@@ -53,7 +53,7 @@
         :image="event.image_media"
         :cover-alt="event.title"
         :meta="dateSpan(event).primary"
-        :href="event.href"
+        :href="safeHref(event.href)"
       >
         <template #cover-fallback>
           <IFluentTent24Regular class="size-10 text-brand/50" />
@@ -70,7 +70,7 @@
     <ul v-else>
       <li v-for="event in items" :key="event.id">
         <SmartLink
-          :href="event.href"
+          :href="safeHref(event.href)"
           class="group flex items-center gap-4 border-b border-border py-5 transition-colors hover:bg-background sm:gap-6"
         >
           <div class="flex w-14 shrink-0 flex-col items-center justify-center border border-border bg-background py-2 text-foreground transition-colors group-hover:border-brand sm:w-16">
@@ -128,6 +128,7 @@ import type { EventListResolved, EventListResolvedItem } from '@/Types/contentPa
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import { formatDateWith, formatEventDateSpan, formatMonthAbbr } from '@/Utils/dateTime';
 import { LocaleEnum } from '@/Types/enums';
+import { safeHref } from '@/Utils/safeHref';
 
 const props = defineProps<{
   element: models.ContentPart;

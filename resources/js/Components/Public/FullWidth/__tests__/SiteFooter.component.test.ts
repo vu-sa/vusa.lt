@@ -75,3 +75,14 @@ describe('SiteFooter.vue', () => {
     expect(link.attributes('rel')).toBe('noopener noreferrer');
   });
 });
+
+it('keeps footer labels visible without binding unsupported URLs', () => {
+  const wrapper = mountFooter([
+    { id: 1, name: 'Apie mus', url: 'javascript:void(0)', links: [{ id: 11, name: 'Struktūra', url: 'data:text/plain,hello', new_tab: false }] },
+  ]);
+
+  expect(wrapper.text()).toContain('Apie mus');
+  expect(wrapper.text()).toContain('Struktūra');
+  expect(wrapper.find('[href="javascript:void(0)"]').exists()).toBe(false);
+  expect(wrapper.find('[href="data:text/plain,hello"]').exists()).toBe(false);
+});

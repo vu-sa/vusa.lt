@@ -65,3 +65,12 @@ describe('HeroButtons', () => {
     expect(wrapper.find('button').exists()).toBe(false);
   });
 });
+
+it('keeps button labels visible without binding unsupported links', () => {
+  const wrapper = mount(HeroButtons, {
+    props: { buttons: [makeButton({ link: 'javascript:void(0)' })] },
+  });
+
+  expect(wrapper.text()).toContain('Dalyvauk');
+  expect(wrapper.find('a').exists()).toBe(false);
+});

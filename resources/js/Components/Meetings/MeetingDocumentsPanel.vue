@@ -60,7 +60,7 @@
         <div class="min-w-0 flex-1">
           <a
             v-if="document.anonymous_url"
-            :href="document.anonymous_url"
+            :href="safeHref(document.anonymous_url)"
             target="_blank"
             rel="noopener noreferrer"
             class="block truncate text-sm font-medium hover:underline"
@@ -111,6 +111,7 @@ import CollectionSelectDialog from '@/Features/Admin/AdminSearch/Components/Sele
 import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import FilePicker from '@/Features/Admin/SharepointFilePicker/FilePicker.vue';
 import { isPickerAvailable, pickedDocuments, type Item } from '@/Features/Admin/SharepointFilePicker/picker';
+import { safeHref } from '@/Utils/safeHref';
 
 export interface MeetingDocument {
   id: number;

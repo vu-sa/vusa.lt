@@ -99,3 +99,12 @@ describe('PartnersBanner.vue', () => {
     expect(img.classes()).not.toContain('dark:group-hover:invert-0');
   });
 });
+
+it('renders the partner name without binding an unsupported link', () => {
+  const wrapper = mount(PartnersBanner, {
+    props: { banners: [makeBanner({ link_url: 'javascript:void(0)' })] },
+  });
+
+  expect(wrapper.text()).toContain('Teisės klinika');
+  expect(wrapper.find('a').exists()).toBe(false);
+});
