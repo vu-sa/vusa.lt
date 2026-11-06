@@ -126,14 +126,6 @@ class ContentPart extends Model
         ];
     }
 
-    /**
-     * `json_content` is persisted verbatim from the editor (see
-     * {@see ContentService::updateContentParts()}), and several block types carry
-     * raw HTML strings inside it that the public page renders with `v-html`:
-     * accordion items and the person quote (`html`), and the hero title.
-     * Sanitize those on write so every persistence path — controller, seeder,
-     * DuplicateNewsAction — is covered.
-     */
     #[\Override]
     protected static function booted(): void
     {
@@ -228,50 +220,70 @@ class ContentPart extends Model
         return $node;
     }
 
+    private const array HTML_CONTENT_PATHS = [
+        'shadcn-accordion' => ['*.html'],
+        'person-quote' => ['html'],
+        'hero' => ['title', 'description'],
+        'hero-carousel' => ['*.title', '*.description'],
+        'carousel-slide-deck' => ['*.description'],
+        'process-steps' => ['*.title', '*.text'],
+    ];
+
     /**
      * @param  array<array-key, mixed>  $content
      * @return array<array-key, mixed>
      */
-    private function sanitizeJsonContentHtml(array $content): array
+    public function sanitizeJsonContentHtml(array $content): array
     {
-        $sanitizer = app(HtmlSanitizerService::class);
+        // Any `html` key is markup whatever the block type, so a new block is covered by default.
+        $content = $this->sanitizeHtmlKeys($content);
 
-        $walk = function (array $node) use (&$walk, $sanitizer): array {
-            foreach ($node as $key => $value) {
-                if (is_array($value)) {
-                    $node[$key] = $walk($value);
-                } elseif ($key === 'html' && is_string($value)) {
-                    $node[$key] = $sanitizer->sanitizeRichContent($value);
-                }
-            }
-
-            return $node;
-        };
-
-        $content = $walk($content);
-
-        // HeroElement.vue renders json_content.title with `v-html` (authored with
-        // the `compact` preset, a subset of the `full` allowlist). Only the hero's
-        // own title — `title` on other blocks is plain text that sanitizing would
-        // mangle the moment it contained a bare `<`.
-        if ($this->type === 'hero' && isset($content['title']) && is_string($content['title'])) {
-            $content['title'] = $sanitizer->sanitizeRichContent($content['title']);
-        }
-
-        if ($this->type === 'process-steps') {
-            foreach ($content as $index => $step) {
-                if (is_array($step)) {
-                    if (isset($step['title']) && is_string($step['title'])) {
-                        $content[$index]['title'] = $sanitizer->sanitizeRichContent($step['title']);
-                    }
-                    if (isset($step['text']) && is_string($step['text'])) {
-                        $content[$index]['text'] = $sanitizer->sanitizeRichContent($step['text']);
-                    }
-                }
-            }
+        foreach (self::HTML_CONTENT_PATHS[$this->type] ?? [] as $path) {
+            $content = $this->sanitizeHtmlPath($content, explode('.', $path));
         }
 
         return $content;
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $node
+     * @return array<array-key, mixed>
+     */
+    private function sanitizeHtmlKeys(array $node): array
+    {
+        foreach ($node as $key => $value) {
+            if (is_array($value)) {
+                $node[$key] = $this->sanitizeHtmlKeys($value);
+            } elseif ($key === 'html' && is_string($value)) {
+                $node[$key] = app(HtmlSanitizerService::class)->sanitizeRichContent($value);
+            }
+        }
+
+        return $node;
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $node
+     * @param  list<string>  $path
+     * @return array<array-key, mixed>
+     */
+    private function sanitizeHtmlPath(array $node, array $path): array
+    {
+        $key = array_shift($path);
+
+        foreach ($node as $name => $value) {
+            if ($key !== '*' && $key !== $name) {
+                continue;
+            }
+
+            if ($path !== [] && is_array($value)) {
+                $node[$name] = $this->sanitizeHtmlPath($value, $path);
+            } elseif ($path === [] && is_string($value)) {
+                $node[$name] = app(HtmlSanitizerService::class)->sanitizeRichContent($value);
+            }
+        }
+
+        return $node;
     }
 
     public function content(): BelongsTo
