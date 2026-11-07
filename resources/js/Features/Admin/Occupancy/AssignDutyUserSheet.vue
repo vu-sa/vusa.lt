@@ -406,8 +406,8 @@ interface AssignmentDuty {
 }
 
 interface AssignmentUser {
-  id: string;
-  name: string;
+  id: string | number;
+  name?: string | null;
   email?: string | null;
   profile_photo_path?: string | null;
   profile_photo_focal_point?: string | null;
@@ -616,7 +616,9 @@ const member = ref<MemberHit | null>(null);
 const initialMember = (): MemberHit | null => {
   const known = props.user ?? props.dutiable?.user ?? props.dutiable?.dutiable ?? null;
 
-  return known ? { ...known, email: known.email ?? undefined } : null;
+  return known && typeof known.name === 'string'
+    ? { ...known, id: String(known.id), name: known.name, email: known.email ?? undefined }
+    : null;
 };
 
 watch(member, (hit) => {
