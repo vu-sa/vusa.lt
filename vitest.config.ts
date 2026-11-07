@@ -102,6 +102,7 @@ export default defineConfig({
           'resources/js/**/__tests__/**/*.test.ts',
           'resources/js/**/*.test.ts',
           'docs/.vitepress/theme/__tests__/**/*.test.ts',
+          'scripts/__tests__/typecheck-ratchet.test.mjs',
         ],
         [
           'resources/js/**/*.component.test.ts',
