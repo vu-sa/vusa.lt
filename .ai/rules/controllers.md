@@ -68,3 +68,8 @@ cap actually apply, and it stops every listing re-hardcoding its own default. Ov
 every permission and the sync diff detached the role's entire permission set. Constrain
 free route segments against something real — `SyncRolePermissionGroupRequest` checks the value
 against the resource prefixes that actually exist in the `permissions` table.
+
+## Render Inertia pages with `Inertia::render()` at the return
+Wayfinder types a page's props by reading the `Inertia::render()` call statically; a helper that
+forwards `$component, $props` hides the page from it (admin's old `inertiaResponse()` left 112 pages
+untyped). Build props in named mappers if they grow, but keep the render call in the action.

@@ -15,6 +15,7 @@ use App\Services\NavigationService;
 use App\Services\PostCreateRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
+use Inertia\Inertia;
 
 class NavigationController extends AdminController
 {
@@ -43,7 +44,7 @@ class NavigationController extends AdminController
                 ->get()
             : NavigationService::getTreeForAdmin($lang);
 
-        return $this->inertiaResponse('Admin/Navigation/IndexNavigation', [
+        return Inertia::render('Admin/Navigation/IndexNavigation', [
             'navigation' => $navigation,
             // The footer manager has its own, much simpler tree (no drag-and-drop, no
             // fixed 3-column shape) — see NavigationService::getFooterTreeForAdmin().
@@ -73,7 +74,7 @@ class NavigationController extends AdminController
             ? $this->resolveLocation($request->validated('location'))
             : $this->resolveLocation(Navigation::withTrashed()->find($parent_id)?->extra_attributes['location'] ?? null);
 
-        return $this->inertiaResponse('Admin/Navigation/CreateNavigation',
+        return Inertia::render('Admin/Navigation/CreateNavigation',
             [
                 'parent_id' => $parent_id,
                 'lang' => $this->resolveLang($request->validated('lang')),
@@ -124,7 +125,7 @@ class NavigationController extends AdminController
 
         $location = $this->resolveLocation($navigation->extra_attributes['location'] ?? null);
 
-        return $this->inertiaResponse('Admin/Navigation/EditNavigation', [
+        return Inertia::render('Admin/Navigation/EditNavigation', [
             'navigationElement' => $navigation,
             'parentElements' => $this->rootElementsForLocation($location)->where('lang', $navigation->lang)->values(),
             'topicOptions' => $this->getTopicOptions(),

@@ -21,6 +21,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Intervention\Image\Laravel\Facades\Image;
 
@@ -68,7 +69,7 @@ class FilesController extends AdminController
 
         $user = $request->user();
 
-        return $this->inertiaResponse('Admin/Files/Index', [
+        return Inertia::render('Admin/Files/Index', [
             'files' => $files,
             'directories' => $directories,
             'path' => $currentDirectory,

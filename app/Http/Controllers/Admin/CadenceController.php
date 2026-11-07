@@ -11,6 +11,7 @@ use App\Models\Meeting;
 use App\Settings\CadenceSettings;
 use App\Settings\SettingsSettings;
 use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
 /**
@@ -93,7 +94,7 @@ class CadenceController extends AdminController
             __('settings.messages.unauthorized'),
         );
 
-        return $this->inertiaResponse('Admin/Settings/EditCadenceSettings', [
+        return Inertia::render('Admin/Settings/EditCadenceSettings', [
             'canEdit' => $settingsSettings->canUserManageSettings(request()->user()),
             'cadences' => self::payload(),
             'settings' => [

@@ -45,7 +45,7 @@ class DocumentController extends AdminController
         $ownInstitutionIds = Document::ownInstitutionIds($user, 'documents.update.own');
         $manageable = fn () => Document::query()->manageableBy($user);
 
-        return $this->inertiaResponse('Admin/Files/IndexDocument', [
+        return Inertia::render('Admin/Files/IndexDocument', [
             'importantContentTypes' => $documentSettings->getImportantContentTypes()->toArray(),
             // Managers get the database-backed view of every file; others browse the published archive.
             'discovery' => $canCreate ? [

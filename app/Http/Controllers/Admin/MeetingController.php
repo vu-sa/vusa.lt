@@ -60,7 +60,7 @@ class MeetingController extends AdminController
 
         // Live rows come from Typesense (the scoped key carries the authorization) and the trash
         // from api.v1.admin.trash.index, so the page itself needs no rows.
-        return $this->inertiaResponse('Admin/Representation/IndexMeeting', [
+        return Inertia::render('Admin/Representation/IndexMeeting', [
             'deletedCount' => app(MeetingAccessService::class)->trashedMeetings(Meeting::onlyTrashed(), $request->user())->count(),
             'recentlyChanged' => $request->getShowDeleted() ? [] : GetRecentlyChangedMeetings::execute($request->user())->all(),
             'defaultTenantShortnames' => GetUserTenantShortnames::execute($request->user()),
@@ -227,7 +227,7 @@ class MeetingController extends AdminController
             ->all());
 
         // show meeting
-        return $this->inertiaResponse('Admin/Representation/ShowMeeting', [
+        return Inertia::render('Admin/Representation/ShowMeeting', [
             'meeting' => fn () => [
                 ...$loadMeeting()->toArray(),
                 'title_noun' => MeetingTitle::noun($loadMeeting()->type, app()->getLocale(), $loadMeeting()->meetingKind(), joint: $loadMeeting()->is_joint),

@@ -13,6 +13,7 @@ use App\Models\News;
 use App\Models\Tag;
 use App\Services\TanstackTableService;
 use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
 use Inertia\Response;
 
 class TagController extends AdminController
@@ -54,7 +55,7 @@ class TagController extends AdminController
         // Get the sorting state
         $sorting = $request->getSorting();
 
-        return $this->inertiaResponse('Admin/Content/IndexTag', [
+        return Inertia::render('Admin/Content/IndexTag', [
             'abilities' => [
                 'update' => $request->user()->can('update', new Tag),
                 'delete' => $request->user()->can('delete', new Tag),
@@ -89,7 +90,7 @@ class TagController extends AdminController
     {
         $this->handleAuthorization('create', Tag::class);
 
-        return $this->inertiaResponse('Admin/Content/CreateTag');
+        return Inertia::render('Admin/Content/CreateTag');
     }
 
     /**
@@ -114,7 +115,7 @@ class TagController extends AdminController
     {
         $this->handleAuthorization('view', $tag);
 
-        return $this->inertiaResponse('Admin/Content/ShowTag', [
+        return Inertia::render('Admin/Content/ShowTag', [
             'tag' => $tag->toFullArray(),
         ]);
     }
@@ -144,7 +145,7 @@ class TagController extends AdminController
                 ];
             });
 
-        return $this->inertiaResponse('Admin/Content/EditTag', [
+        return Inertia::render('Admin/Content/EditTag', [
             'postTag' => $tag->toFullArray(),
             'news' => $news,
         ]);

@@ -39,7 +39,7 @@ class ResourceController extends AdminController
     {
         $this->handleAuthorization('viewAny', Resource::class);
 
-        return $this->inertiaResponse('Admin/Reservations/IndexResource', [
+        return Inertia::render('Admin/Reservations/IndexResource', [
             'reservationCart' => SerializeReservationCart::execute(request()->user()),
             'mainTenantId' => Tenant::main()?->id,
             'managedTenantIds' => app(ResponsibilityResolver::class)
@@ -55,7 +55,7 @@ class ResourceController extends AdminController
     {
         $this->handleAuthorization('create', Resource::class);
 
-        return $this->inertiaResponse('Admin/Reservations/CreateResource', [
+        return Inertia::render('Admin/Reservations/CreateResource', [
             'assignableTenants' => GetTenantsForUpserts::execute('resources.create.padalinys', $this->authorizer),
             'categories' => ResourceCategory::all(),
         ]);
@@ -105,7 +105,7 @@ class ResourceController extends AdminController
 
         $row = fn (Reservation $reservation): array => $this->reservationRow($reservation, $user, $now);
 
-        return $this->inertiaResponse('Admin/Reservations/ShowResource', [
+        return Inertia::render('Admin/Reservations/ShowResource', [
             'resource' => [
                 'id' => $resource->id,
                 'name' => $resource->name,
@@ -174,7 +174,7 @@ class ResourceController extends AdminController
         $user = request()->user();
         $now = now();
 
-        return $this->inertiaResponse('Admin/Reservations/EditResource', [
+        return Inertia::render('Admin/Reservations/EditResource', [
             // The full history lives on the resource page; the form only shows what is newest.
             'recentReservations' => $resource->reservations()
                 ->orderByPivot('start_time', 'desc')

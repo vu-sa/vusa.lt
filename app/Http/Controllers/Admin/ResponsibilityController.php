@@ -49,7 +49,7 @@ class ResponsibilityController extends AdminController
         $this->handleAuthorization('viewAny', Role::class);
 
         // A short list sent whole: the collection searches, sorts and filters it in the browser.
-        return $this->inertiaResponse('Admin/Permissions/IndexResponsibility', [
+        return Inertia::render('Admin/Permissions/IndexResponsibility', [
             'responsibilities' => Role::query()->withCount(['permissions', 'duties'])->get()
                 ->map(fn (Role $role): array => [
                     'id' => $role->id,
@@ -74,7 +74,7 @@ class ResponsibilityController extends AdminController
     {
         $this->handleAuthorization('create', Role::class);
 
-        return $this->inertiaResponse('Admin/Permissions/CreateResponsibility');
+        return Inertia::render('Admin/Permissions/CreateResponsibility');
     }
 
     public function store(StoreRoleRequest $request, PostCreateRedirect $redirect): RedirectResponse
@@ -98,7 +98,7 @@ class ResponsibilityController extends AdminController
         $role->load('permissions:id,name', 'attachable_types:id');
         $held = $role->permissions->pluck('name');
 
-        return $this->inertiaResponse('Admin/Permissions/ShowResponsibility', [
+        return Inertia::render('Admin/Permissions/ShowResponsibility', [
             'responsibility' => [
                 ...$role->only(['id', 'name']),
                 'title' => $role->getTranslations('title'),
@@ -141,7 +141,7 @@ class ResponsibilityController extends AdminController
             return back()->with('info', __('messages.role.not_editable'));
         }
 
-        return $this->inertiaResponse('Admin/Permissions/EditResponsibility', [
+        return Inertia::render('Admin/Permissions/EditResponsibility', [
             'responsibility' => [
                 'id' => $role->id,
                 'title' => $role->getTranslations('title'),

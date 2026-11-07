@@ -18,6 +18,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
 
 class StudySetController extends AdminController
 {
@@ -40,7 +41,7 @@ class StudySetController extends AdminController
             $this->authorizer,
         );
 
-        return $this->inertiaResponse('Admin/StudySets/IndexStudySet', [
+        return Inertia::render('Admin/StudySets/IndexStudySet', [
             'studySets' => ($request->getShowDeleted() ? $query->onlyTrashed() : $query)->get()->map->toFullArray()->values(),
             'deletedCount' => $this->scopedTrashedCount(StudySet::query(), 'tenant', 'studySets.read.padalinys'),
         ]);
@@ -53,7 +54,7 @@ class StudySetController extends AdminController
     {
         $this->handleAuthorization('create', StudySet::class);
 
-        return $this->inertiaResponse('Admin/StudySets/CreateStudySet', [
+        return Inertia::render('Admin/StudySets/CreateStudySet', [
             'assignableTenants' => GetTenantsForUpserts::execute('studySets.create.padalinys', $this->authorizer),
         ]);
     }
@@ -96,7 +97,7 @@ class StudySetController extends AdminController
             'courses.reviews',
         ]);
 
-        return $this->inertiaResponse('Admin/StudySets/EditStudySet', [
+        return Inertia::render('Admin/StudySets/EditStudySet', [
             'studySet' => [
                 ...$studySet->toFullArray(),
                 'reviews' => $studySet->courses->flatMap(fn (StudySetCourse $course) => $course->reviews->map->toFullArray())->values(),

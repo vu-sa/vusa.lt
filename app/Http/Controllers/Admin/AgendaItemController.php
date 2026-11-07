@@ -32,7 +32,7 @@ class AgendaItemController extends AdminController
     {
         $this->handleAuthorization('viewAny', Meeting::class);
 
-        return $this->inertiaResponse('Admin/Representation/IndexAgendaItem', [
+        return Inertia::render('Admin/Representation/IndexAgendaItem', [
             'defaultTenantShortnames' => GetUserTenantShortnames::execute($request->user()),
         ]);
     }
@@ -91,7 +91,7 @@ class AgendaItemController extends AdminController
             $meeting = $agendaItem->meeting;
             $meeting->loadMissing(['institutions.types', 'institutions.tenant', 'agendaItems']);
 
-            return $this->inertiaResponse('Admin/Representation/ShowAgendaItem', [
+            return Inertia::render('Admin/Representation/ShowAgendaItem', [
                 'agendaItem' => AgendaItemPresenter::redacted($agendaItem),
                 'siblingAgendaItems' => $meeting->agendaItems->sortBy('order')->map(fn (AgendaItem $item): array => AgendaItemPresenter::publicItem($item)
                 )->values()->all(),
@@ -136,7 +136,7 @@ class AgendaItemController extends AdminController
                 ])
             ->values();
 
-        return $this->inertiaResponse('Admin/Representation/ShowAgendaItem', [
+        return Inertia::render('Admin/Representation/ShowAgendaItem', [
             // toFullArray(): the page writes translations, so it needs the whole `{lt, en}` map.
             'agendaItem' => [
                 ...$agendaItem->toFullArray(),

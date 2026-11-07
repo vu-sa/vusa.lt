@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Services\MailPreview\MailPreviewRenderer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 use Inertia\Response;
 
 /**
@@ -28,7 +29,7 @@ class MailQueueController extends AdminController
     {
         $this->handleAuthorization('viewAny', Role::class);
 
-        return $this->inertiaResponse('Admin/MailQueue', [
+        return Inertia::render('Admin/MailQueue', [
             'recipients' => $builder->execute($request),
             'canManage' => Auth::user()->isSuperAdmin(),
             'totals' => [

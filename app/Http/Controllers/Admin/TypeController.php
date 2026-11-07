@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
 use App\Services\AdminNavigation\AdminNavigationCatalog;
+use Inertia\Inertia;
 use Inertia\Response;
 
 class TypeController extends AdminController
@@ -13,7 +14,7 @@ class TypeController extends AdminController
         $destinations = $catalog->taxonomyDestinations(auth()->user());
         abort_if($destinations === [], 403);
 
-        return $this->inertiaResponse('Admin/ModelMeta/IndexTypes', [
+        return Inertia::render('Admin/ModelMeta/IndexTypes', [
             'destinations' => $destinations,
         ]);
     }

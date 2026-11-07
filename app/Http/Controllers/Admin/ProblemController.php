@@ -57,7 +57,7 @@ class ProblemController extends AdminController
 
         $problems = $query->paginate($request->getPerPage())->withQueryString();
 
-        return $this->inertiaResponse('Admin/Problems/IndexProblem', [
+        return Inertia::render('Admin/Problems/IndexProblem', [
             'data' => $problems->getCollection()->map(fn (Problem $problem): array => [
                 ...$problem->toArray(),
                 'can_update' => $request->user()->can('update', $problem),
@@ -95,7 +95,7 @@ class ProblemController extends AdminController
             ? $institution
             : null;
 
-        return $this->inertiaResponse('Admin/Problems/CreateProblem', [
+        return Inertia::render('Admin/Problems/CreateProblem', [
             'tenants' => $tenants,
             'categories' => ProblemCategory::orderBy('slug')->get()->map(fn ($category) => $category->toArray()),
             'problem' => $prefill ? ['tenant_id' => $prefill->tenant_id, 'institutions' => [$prefill->id]] : null,
@@ -139,7 +139,7 @@ class ProblemController extends AdminController
 
         $user = auth()->user();
 
-        return $this->inertiaResponse('Admin/Problems/ShowProblem', [
+        return Inertia::render('Admin/Problems/ShowProblem', [
             'problem' => [
                 ...$problem->load([
                     'tenant',
@@ -221,7 +221,7 @@ class ProblemController extends AdminController
 
         $tenants = GetTenantsForUpserts::execute('problems.update.padalinys', $this->authorizer);
 
-        return $this->inertiaResponse('Admin/Problems/EditProblem', [
+        return Inertia::render('Admin/Problems/EditProblem', [
             'problem' => $problemData,
             'tenants' => $tenants,
             'categories' => ProblemCategory::orderBy('slug')->get()->map(fn ($category) => $category->toArray()),

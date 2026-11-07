@@ -106,7 +106,7 @@ class DashboardController extends AdminController
             $secondary,
         );
 
-        return $this->inertiaResponse('Admin/ShowAdminHome', [
+        return Inertia::render('Admin/ShowAdminHome', [
             'activeActivityRequests' => fn () => $activityRequests->activeSummary($user()),
             'accessChanges' => fn () => GetRecentAccessChanges::execute($user(), self::ACCESS_BAND_DAYS),
             'actionWindowLaunch' => fn () => $request->actionWindowLaunch($user()),
@@ -171,7 +171,7 @@ class DashboardController extends AdminController
         $relations = app(InstitutionRelationService::class);
         $typeGraph = $relations->typeGraph();
 
-        return $this->inertiaResponse('Admin/ShowInstitutionGraph', [
+        return Inertia::render('Admin/ShowInstitutionGraph', [
             'institutions' => $institutions,
             'institutionRelationships' => $relations->institutionGraph(),
             'types' => $typeGraph['nodes'],

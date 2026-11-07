@@ -33,7 +33,7 @@ class ReservationsDashboardController extends AdminController
             ->pluck('id');
 
         // Counts are aggregates and stay on the first paint; the two lists are the secondary group.
-        return $this->inertiaResponse('Admin/Dashboard/ShowReservations', [
+        return Inertia::render('Admin/Dashboard/ShowReservations', [
             'managesResources' => $managedTenantIds->isNotEmpty(),
             'reservationCart' => SerializeReservationCart::execute($user),
             'counts' => [

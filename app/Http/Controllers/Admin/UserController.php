@@ -78,7 +78,7 @@ class UserController extends AdminController
         $collection = $users->getCollection();
         $collection->makeVisible(['last_action']);
 
-        return $this->inertiaResponse('Admin/People/IndexUser', [
+        return Inertia::render('Admin/People/IndexUser', [
             'users' => [
                 'data' => $collection->map(fn (User $user): array => UserRowResource::make($user)->resolve($request))->values(),
                 'meta' => [
@@ -104,7 +104,7 @@ class UserController extends AdminController
     {
         $this->handleAuthorization('create', User::class);
 
-        return $this->inertiaResponse('Admin/People/CreateUser', [
+        return Inertia::render('Admin/People/CreateUser', [
             'tenantsWithDuties' => UserDutyService::getTenantsWithDutiesForForm($this->authorizer),
             'permissableTenants' => UserDutyService::getPermissableTenants($this->authorizer, 'users.create.padalinys'),
         ]);
@@ -180,7 +180,7 @@ class UserController extends AdminController
 
         $actor = fn () => once(fn () => request()->user());
 
-        return $this->inertiaResponse('Admin/People/ShowUser', [
+        return Inertia::render('Admin/People/ShowUser', [
             'user' => fn () => $loadUser()->toFullArray(),
             'isSuperAdmin' => $user->isSuperAdmin(...),
             'activityRequests' => Inertia::defer(fn () => $activityRequests->history($user, $actor(), $request->historyPage()), 'activityRequests'),
@@ -211,7 +211,7 @@ class UserController extends AdminController
 
         $actor = Auth::user();
 
-        return $this->inertiaResponse('Admin/People/EditUser', [
+        return Inertia::render('Admin/People/EditUser', [
             'user' => [
                 ...$user->load('current_duties')->makeVisible(['last_action'])->append('has_password')->toFullArray(),
                 'profile_photo_media' => $user->imageData('profile_photo'),

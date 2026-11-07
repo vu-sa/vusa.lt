@@ -42,7 +42,7 @@ class OrganizacijaDashboardController extends AdminController
 
         $ending = $this->endingTerms($tenantIds);
 
-        return $this->inertiaResponse('Admin/Dashboard/ShowOrganizacija', [
+        return Inertia::render('Admin/Dashboard/ShowOrganizacija', [
             'counts' => [
                 'endingSoon' => $canSeeDuties ? (clone $ending)->count() : null,
                 'emptyDuties' => $canSeeDuties ? $this->duties($tenantIds)->whereDoesntHave('current_users')->count() : null,

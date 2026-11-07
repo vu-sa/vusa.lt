@@ -21,6 +21,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
 /**
@@ -56,7 +57,7 @@ class DutiableTimelineController extends AdminController
 
         $ownInstitutions = $this->ownInstitutions($request->user());
 
-        return $this->inertiaResponse('Admin/People/DutiableTimeline', [
+        return Inertia::render('Admin/People/DutiableTimeline', [
             // Landing on an empty state is a dead end for someone who only ever looks at
             // their own body, so the page opens on it. The client may still override this
             // from the institution it remembers.

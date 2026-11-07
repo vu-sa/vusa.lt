@@ -66,7 +66,7 @@ class DutyController extends AdminController
         $duties = $query->paginate($request->getPerPage())
             ->withQueryString();
 
-        return $this->inertiaResponse('Admin/People/IndexDuty', [
+        return Inertia::render('Admin/People/IndexDuty', [
             'duties' => [
                 'data' => $duties->getCollection()->map(function ($duty) {
                     /** @var Duty $duty */
@@ -95,7 +95,7 @@ class DutyController extends AdminController
      */
     public function create(CreateDutyRequest $request)
     {
-        return $this->inertiaResponse('Admin/People/CreateDuty', [
+        return Inertia::render('Admin/People/CreateDuty', [
             'dutyTypes' => GetAttachableTypesForDuty::execute()->values(),
             'assignableInstitutions' => DutyService::getInstitutionsForUpserts($this->authorizer),
             'prefillInstitutionId' => $request->validated('institution_id'),
@@ -147,7 +147,7 @@ class DutyController extends AdminController
         });
         $user = fn () => once(fn () => request()->user());
 
-        return $this->inertiaResponse('Admin/People/ShowDuty', [
+        return Inertia::render('Admin/People/ShowDuty', [
             'duty' => fn () => array_merge($loadDuty()->toArray(), [
                 'sharepointPath' => SharepointFileService::pathOrNull($duty),
                 'sharepointFolderUrl' => SharepointFileService::folderUrlOrNull($duty),
@@ -288,7 +288,7 @@ class DutyController extends AdminController
             ->groupBy('tenant_id')
             ->map(fn ($rows) => $rows->pluck('dutiable_id')->values()->all());
 
-        return $this->inertiaResponse('Admin/People/EditDuty', [
+        return Inertia::render('Admin/People/EditDuty', [
             'duty' => [
                 ...$duty->toFullArray(),
                 // Edited in both languages, so the localized relation serialization will not do.
@@ -476,7 +476,7 @@ class DutyController extends AdminController
         $assignableTenants = GetTenantsForUpserts::execute('institutions.create.padalinys', $this->authorizer);
         $institutionTypes = InstitutionType::query()->get();
 
-        return $this->inertiaResponse('Admin/People/DutyUserUpdateWizard', [
+        return Inertia::render('Admin/People/DutyUserUpdateWizard', [
             // Immediate data for Step 1
             // The wizard reads logo_url; it comes from the logo's media now.
             'institutions' => $institutions->load('media')->each(

@@ -88,7 +88,7 @@ class AtstovavimasDashboardController extends AdminController
             return $institutions;
         });
 
-        return $this->inertiaResponse('Admin/Dashboard/ShowAtstovavimas', [
+        return Inertia::render('Admin/Dashboard/ShowAtstovavimas', [
             // User with institutions - always included, even in partial reloads (ensures check-in data stays fresh)
             'user' => Inertia::always(fn () => [
                 ...$user()->toArray(),
@@ -184,7 +184,7 @@ class AtstovavimasDashboardController extends AdminController
         $statsTenants = $this->tenantOptions(app(AtstovavimasSettings::class)->getVisibleTenantIds($user));
         $ganttTenants = $this->tenantOptions(Tenant::query()->representational()->pluck('id'));
 
-        return $this->inertiaResponse('Admin/Dashboard/ShowAtstovavimasPadaliniai', [
+        return Inertia::render('Admin/Dashboard/ShowAtstovavimasPadaliniai', [
             'statsTenants' => $statsTenants,
             'ganttTenants' => $ganttTenants,
             'defaultGanttTenantIds' => $this->defaultGanttTenantIds($user, $statsTenants, $ganttTenants),

@@ -11,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class UserNotificationsController extends AdminController
 {
@@ -20,7 +21,7 @@ class UserNotificationsController extends AdminController
         $user = User::query()->findOrFail(Auth::id());
         $notifications = $user->notifications;
 
-        return $this->inertiaResponse('Admin/ShowNotifications', [
+        return Inertia::render('Admin/ShowNotifications', [
             'notifications' => $notifications,
         ]);
     }

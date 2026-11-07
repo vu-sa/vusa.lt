@@ -19,6 +19,7 @@ use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class PageController extends AdminController
 {
@@ -35,7 +36,7 @@ class PageController extends AdminController
 
         // Live rows come from Typesense (the scoped key carries the authorization) and the trash
         // from api.v1.admin.trash.index, so the page itself needs no rows.
-        return $this->inertiaResponse('Admin/Content/IndexPages', [
+        return Inertia::render('Admin/Content/IndexPages', [
             'deletedCount' => $this->scopedTrashedCount(Page::query(), 'tenant', 'pages.read.padalinys'),
         ]);
     }
@@ -47,7 +48,7 @@ class PageController extends AdminController
     {
         $this->handleAuthorization('create', Page::class);
 
-        return $this->inertiaResponse('Admin/Content/CreatePage',
+        return Inertia::render('Admin/Content/CreatePage',
             [
                 'availableTags' => Tag::orderBy('alias')->get()->map->toFullArray(),
                 'assignableTenants' => GetTenantsForUpserts::execute('pages.create.padalinys', $this->authorizer),
@@ -77,7 +78,7 @@ class PageController extends AdminController
 
         $page->load('tenant:id,alias,shortname', 'parent:id,title');
 
-        return $this->inertiaResponse('Admin/Content/EditPage', [
+        return Inertia::render('Admin/Content/EditPage', [
             'page' => [
                 ...app(ContentEditorService::class)->snapshot($page),
                 'public_urls' => $page->publicUrls()->get(['id', 'url', 'locale', 'created_at']),

@@ -65,7 +65,7 @@ class InstitutionController extends AdminController
 
         // Live rows come from Typesense (the scoped key carries the authorization) and the trash
         // from api.v1.admin.trash.index, so the page itself needs no rows.
-        return $this->inertiaResponse('Admin/People/IndexInstitution', [
+        return Inertia::render('Admin/People/IndexInstitution', [
             'statusUpdateScope' => fn () => [
                 'all' => request()->user()->isSuperAdmin() || $this->authorizer->scope(request()->user(), 'institutions.update.padalinys')->isAllScope,
                 'tenantIds' => $this->authorizer->tenants(request()->user(), 'institutions.update.padalinys')->pluck('id')->values(),
@@ -88,7 +88,7 @@ class InstitutionController extends AdminController
 
         Inertia::share('seo.title', 'Nauja institucija');
 
-        return $this->inertiaResponse('Admin/People/CreateInstitution', [
+        return Inertia::render('Admin/People/CreateInstitution', [
             'assignableTenants' => GetTenantsForUpserts::execute('institutions.create.padalinys', $this->authorizer),
             'institutionTypes' => InstitutionType::query()->get(),
         ]);
@@ -191,7 +191,7 @@ class InstitutionController extends AdminController
 
         $managers = fn () => once(fn () => $loadInstitution()->managers());
 
-        return $this->inertiaResponse('Admin/People/ShowInstitution', [
+        return Inertia::render('Admin/People/ShowInstitution', [
             'institution' => fn () => [
                 'id' => $loadInstitution()->id,
                 'name' => trim((string) $loadInstitution()->name) ?: __('Be pavadinimo').' · '.($institution->alias ?: $institution->id),
@@ -309,7 +309,7 @@ class InstitutionController extends AdminController
 
         Inertia::share('seo.title', $institution->name);
 
-        return $this->inertiaResponse('Admin/People/EditInstitution', [
+        return Inertia::render('Admin/People/EditInstitution', [
             'deactivation' => app(InstitutionDeactivationService::class)->summary($institution),
             'institution' => [
                 ...$institution->toFullArray(),
