@@ -2,7 +2,7 @@
   <div class="py-3" data-slot="duty-card">
     <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
       <Link :href="route('duties.show', duty.id)" class="font-medium text-foreground hover:text-brand hover:underline">
-        <InflectedDutyName :name="duty.name" />
+        <InflectedDutyName :name="getTranslatedValue(duty.name)" />
       </Link>
       <span class="flex items-center gap-3 text-xs text-muted-foreground">
         <span class="tabular-nums">
@@ -69,21 +69,10 @@ import UserPopover from '../Avatars/UserPopover.vue';
 
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { Button } from '@/Components/ui/button';
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { formatDate as formatIsoDate } from '@/Utils/dateTime';
 
-// User with pivot data from the duty relationship.
-export type UserWithPivot = App.Entities.User & {
-  pivot?: {
-    id?: string;
-    start_date?: string;
-    end_date?: string | null;
-  } | null;
-};
-
-export type DutyWithUsers = App.Entities.Duty & {
-  current_users?: UserWithPivot[];
-  previous_users?: UserWithPivot[];
-};
+import type { DutyWithUsers, UserWithPivot } from '@/Types/DutyAssignment';
 
 defineProps<{
   duty: DutyWithUsers;

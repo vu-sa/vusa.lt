@@ -398,42 +398,7 @@ import { useApi } from '@/Composables/useApi';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { formatDate, todayIso } from '@/Utils/dateTime';
 
-interface AssignmentDuty {
-  id: string;
-  name?: unknown;
-  institution?: { name?: unknown } | null;
-  types?: { id?: number | string | null }[] | null;
-}
-
-interface AssignmentUser {
-  id: string | number;
-  name?: string | null;
-  email?: string | null;
-  profile_photo_path?: string | null;
-  profile_photo_focal_point?: string | null;
-}
-
-interface Dutiable {
-  created_at?: string;
-  updated_at?: string;
-  id: string;
-  duty_id?: string;
-  dutiable_id?: string;
-  via_dutiable_id?: string | null;
-  tenant_id?: number | null;
-  start_date?: string | null;
-  end_date?: string | null;
-  study_program_id?: string | null;
-  study_program_note?: unknown;
-  description?: unknown;
-  additional_email?: string | null;
-  additional_photo?: string | null;
-  additional_photo_focal_point?: string | null;
-  use_original_duty_name?: boolean;
-  duty?: AssignmentDuty | null;
-  user?: AssignmentUser | null;
-  dutiable?: AssignmentUser | null;
-}
+import type { AssignmentDuty, AssignmentUser, AssignmentTerm } from '@/Types/DutyAssignment';
 
 interface CadenceOption {
   id: string;
@@ -471,7 +436,7 @@ const props = withDefaults(defineProps<{
   /** Fixed duty. Omit (with no `dutiable`) and the sheet asks which duty — the user-record entry point. */
   duty?: AssignmentDuty | null;
   /** The term being edited; omit to assign a new member. */
-  dutiable?: Dutiable | null;
+  dutiable?: AssignmentTerm | null;
   /** Pre-selected member. Without a fixed duty it is the fixed side and the sheet asks for the duty. */
   user?: AssignmentUser | MemberHit | null;
   /** Offered programmes; narrowed to the chosen duty's tenant when the duty is picked in the sheet. */

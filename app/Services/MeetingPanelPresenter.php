@@ -11,6 +11,7 @@ use App\Http\Resources\TaskResource;
 use App\Models\Document;
 use App\Models\Duty;
 use App\Models\Meeting;
+use App\Models\Task;
 use App\Models\User;
 use App\Tasks\Enums\ActionType;
 use Illuminate\Support\Collection;
@@ -80,12 +81,26 @@ class MeetingPanelPresenter
     /** @return list<array{id: string, name: string, description: string|null, due_date: string|null, completed_at: string|null, cancelled_at: string|null, created_at: string, updated_at: string, action_type: ActionType|null, metadata: array<string, mixed>|null, progress: array{current: int, total: int, percentage: int}|null, is_overdue: bool, can_be_manually_completed: bool, can_update: bool, icon: string, color: string, taskable: array{id: int|string, name: string|null, type: string}|null, taskable_type: string, taskable_id: string, users: list<array{id: string, name: string, profile_photo_path: string|null}>}> */
     public static function tasks(Meeting $meeting): array
     {
-        $tasks = [];
-        foreach ($meeting->tasks()->with('users:id,name,email,profile_photo_path', 'taskable', 'tenants')->get() as $task) {
-            $tasks[] = new TaskResource($task)->resolve(request());
+        return self::taskRows(
+            $meeting->tasks()->with('users:id,name,email,profile_photo_path', 'taskable', 'tenants')->get(),
+            request()->user(),
+        );
+    }
+
+    /**
+     * @param  Collection<int, Task>  $tasks
+     * @return list<array{id: string, name: string, description: string|null, due_date: string|null, completed_at: string|null, cancelled_at: string|null, created_at: string, updated_at: string, action_type: ActionType|null, metadata: array<string, mixed>|null, progress: array{current: int, total: int, percentage: int}|null, is_overdue: bool, can_be_manually_completed: bool, can_update: bool, icon: string, color: string, taskable: array{id: int|string, name: string|null, type: string}|null, taskable_type: string, taskable_id: string, users: list<array{id: string, name: string, profile_photo_path: string|null}>}>
+     */
+    public static function taskRows(Collection $tasks, User $user): array
+    {
+        $rows = [];
+        foreach ($tasks as $task) {
+            $row = TaskResource::forListing($task, $user);
+            unset($row['can_delete']);
+            $rows[] = $row;
         }
 
-        return $tasks;
+        return $rows;
     }
 
     /** @return list<array{id: int, name: string, title: string, document_date: string|null, institution_id: string|null, meeting_id: string|null, content_type: string|null, language: string|null, summary: string|null, anonymous_url: string|null, link_url: string|null, status: DocumentStatus, removed_from_sharepoint_at: string|null, published_at: string|null, sharepoint_modified_at: string|null, checked_at: string|null, sync_status: 'pending'|'syncing'|'success'|'failed'|'imported', sync_error_message: string|null, sync_attempts: int, last_sync_attempt_at: string|null, effective_date: string|null, expiration_date: string|null, language_code: string, institution: array{id: string, name: string|null, short_name: string|null, alias: string, description: string|null, address: string|null, phone: string|null, email: string|null, working_hours: string|null, website: string|null, logo_url: string|null, facebook_url: string|null, instagram_url: string|null, tenant_id: int|null, is_active: int, meeting_periodicity_days: int|null, created_at: string, updated_at: string, deleted_at: string|null, tenant: array{id: int, type: TenantType|null, fullname: string, shortname: string, alias: string, phone: string|null, email: string|null, address: string|null, shortname_vu: string|null, primary_institution_id: string|null, goals_enabled: bool, created_at: string|null, updated_at: string|null}|null}|null}|array{id: int, name: string, title: string, document_date: string|null, institution_id: string|null, meeting_id: string|null, content_type: string|null, language: string|null, summary: string|null, anonymous_url: string|null, link_url: string|null, status: DocumentStatus, removed_from_sharepoint_at: string|null, published_at: string|null, sharepoint_modified_at: string|null, checked_at: string|null, sync_status: 'pending'|'syncing'|'success'|'failed'|'imported', sync_error_message: string|null, sync_attempts: int, last_sync_attempt_at: string|null, effective_date: string|null, expiration_date: string|null, language_code: string, institution: array{id: string, name: string|null, short_name: string|null, alias: string, description: string|null, address: string|null, phone: string|null, email: string|null, working_hours: string|null, website: string|null, logo_url: string|null, facebook_url: string|null, instagram_url: string|null, tenant_id: int|null, is_active: int, meeting_periodicity_days: int|null, created_at: string, updated_at: string, deleted_at: string|null, tenant: array{id: int, type: TenantType|null, fullname: string, shortname: string, alias: string, phone: string|null, email: string|null, address: string|null, shortname_vu: string|null, primary_institution_id: string|null, goals_enabled: bool, created_at: string|null, updated_at: string|null}|null}|null, tenant: list<array<string, mixed>>}> */

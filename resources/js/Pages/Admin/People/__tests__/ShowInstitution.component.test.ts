@@ -4,6 +4,7 @@ import { usePage } from '@inertiajs/vue3';
 import { defineComponent, h } from 'vue';
 
 import ShowInstitution from '@/Pages/Admin/People/ShowInstitution.vue';
+import { InstitutionActivityStatus, InstitutionScope } from '@/Types/enums';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { createActionWindowProvider, type ActionWindowContext } from '@/Composables/useActionWindow';
 
@@ -60,44 +61,98 @@ const stubs = {
   Deferred: { template: '<div><slot /></div>' },
 };
 
-const baseInstitution = {
+type PageProps = InstanceType<typeof ShowInstitution>['$props'];
+type Institution = PageProps['institution'];
+type ActivityStatus = NonNullable<PageProps['overview']['activity_status']>;
+type WrapperProps = Partial<Institution> & {
+  can?: Partial<PageProps['can']>;
+  overview?: Partial<Omit<PageProps['overview'], 'activity_status'>> & { activity_status?: Partial<ActivityStatus> | null };
+  management?: PageProps['management'];
+  readOnly?: boolean;
+  subscription?: PageProps['subscription'];
+};
+
+const baseInstitution: Institution = {
   id: 'inst1',
   name: 'Studentų atstovybė',
+  is_active: true,
   short_name: 'SA',
+  description: null,
   types: [],
   managers: [],
   secretaries: [],
   sharepointPath: null,
+  sharepointFolderUrl: null,
+  has_public_meetings: false,
+  meeting_periodicity_days: 30,
+  governance_scope: InstitutionScope.University,
+  comments_count: 0,
   duties_count: 0,
   meetings_count: 0,
+  problems_count: 0,
   tasks_count: 0,
   related_institutions_count: 0,
   tenant: { id: 1, shortname: 'MIF' },
 };
 
-const createWrapper = (props: Record<string, unknown> = {}) => {
-  const {
-    can = { update: true, delete: true, recordMeeting: true, reportActivity: true },
-    overview = {},
-    management = null,
-    readOnly = false,
-    subscription = null,
-    ...institution
-  } = props;
+const baseActivityStatus: ActivityStatus = {
+  status: InstitutionActivityStatus.Healthy,
+  requires_action: false,
+  priority: 0,
+  periodicity_days: 30,
+  effective_days_since_activity: null,
+  progress_percentage: null,
+  last_activity_type: null,
+  last_activity_at: null,
+  last_meeting_at: null,
+  next_meeting_at: null,
+  active_check_in_until: null,
+  last_completed_check_in_at: null,
+};
+
+const manager = (id: string, name: string): Institution['managers'][number] => ({
+  id, name, email: null, phone: null, facebook_url: null, pronouns: null, show_pronouns: false,
+  is_active: 1, created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z',
+  profile_photo_path: null, profile_photo_focal_point: null, deleted_at: null,
+  pivot: {
+    id: `term-${id}`, duty_id: 'duty1', dutiable_id: id, dutiable_type: 'user',
+    via_dutiable_id: null, tenant_id: null, start_date: '2026-01-01', end_date: null,
+    additional_photo: null, additional_photo_focal_point: null, additional_email: null,
+    use_original_duty_name: false, description: null, study_program_id: null, study_program_note: null,
+    created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z',
+  },
+});
+
+const institutionType = (title: string): Institution['types'][number] => ({
+  id: 1, title, parent_id: null, description: null, slug: null, extra_attributes: null,
+  created_at: null, updated_at: null, deleted_at: null,
+  pivot: { institution_id: 'inst1', institution_type_id: 1 },
+});
+
+const createWrapper = (props: WrapperProps = {}) => {
+  const { can = {}, overview = {}, management = null, readOnly = false, subscription = null, ...institution } = props;
+  const { activity_status, ...overviewFields } = overview;
 
   return mount(ShowInstitution, {
     props: {
       institution: { ...baseInstitution, ...institution },
       overview: {
-        activity_status: { status: 'healthy' },
+        activity_status: activity_status === null ? null : { ...baseActivityStatus, ...activity_status },
         current_users: [],
         duties: [],
         recentMeetings: [],
         meetings_count: 0,
+        meetings_hidden: false,
         recentComments: [],
-        ...overview,
+        ...overviewFields,
       },
-      can,
+      can: {
+        update: true, delete: true, recordMeeting: true, reportActivity: true,
+        askAboutActivity: false, createProblem: false, manageLinks: false,
+        ...can,
+      },
+      canViewActivityRequests: false,
+      relationKinds: [],
       duties: [],
       meetings: [],
       tasks: [],
@@ -143,13 +198,13 @@ describe('ShowInstitution.vue', () => {
   });
 
   it('says under the status what it rests on, as the institution picker does', () => {
-    const wrapper = createWrapper({ overview: { activity_status: { status: 'healthy', next_meeting_at: '2026-10-15T10:00:00Z' } } });
+    const wrapper = createWrapper({ overview: { activity_status: { status: InstitutionActivityStatus.Healthy, next_meeting_at: '2026-10-15T10:00:00Z' } } });
 
     expect(statusFact(wrapper)).toMatchObject({ detail: 'action_window.institution.next_meeting' });
   });
 
   it('tones an overdue institution\'s status card as danger', () => {
-    const wrapper = createWrapper({ overview: { activity_status: { status: 'overdue' } } });
+    const wrapper = createWrapper({ overview: { activity_status: { status: InstitutionActivityStatus.Overdue } } });
 
     expect(statusFact(wrapper)).toMatchObject({ status: { label: 'Vėluoja', role: 'danger' } });
   });
@@ -181,13 +236,13 @@ describe('ShowInstitution.vue', () => {
 
   it('shows up to two coordinator names, then uses the expandable avatar group', () => {
     const twoCoordinators = createWrapper({ managers: [
-      { id: 1, name: 'Rūta' },
-      { id: 2, name: 'Jonas' },
+      manager('1', 'Rūta'),
+      manager('2', 'Jonas'),
     ] });
     const threeCoordinators = createWrapper({ managers: [
-      { id: 1, name: 'Rūta' },
-      { id: 2, name: 'Jonas' },
-      { id: 3, name: 'Ieva' },
+      manager('1', 'Rūta'),
+      manager('2', 'Jonas'),
+      manager('3', 'Ieva'),
     ] });
 
     expect(twoCoordinators.findAll('[data-slot="users-fact-list"] li')).toHaveLength(2);
@@ -198,8 +253,8 @@ describe('ShowInstitution.vue', () => {
 
   it('moves the type and governance scope to a fact and shows meeting visibility instead of periodicity', () => {
     const wrapper = createWrapper({
-      types: [{ title: 'Taryba' }],
-      governance_scope: 'vusa',
+      types: [institutionType('Taryba')],
+      governance_scope: InstitutionScope.Vusa,
       has_public_meetings: false,
       meeting_periodicity_days: 30,
     });
@@ -216,7 +271,7 @@ describe('ShowInstitution.vue', () => {
   });
 
   it('uses the muted burgundy surface for a VU organ', () => {
-    const facts = createWrapper({ governance_scope: 'vu', types: [{ title: 'Senatas' }] })
+    const facts = createWrapper({ governance_scope: InstitutionScope.University, types: [institutionType('Senatas')] })
       .findComponent({ name: 'RecordPage' }).props('facts') as Array<{ key: string; label: string; surfaceClass?: string }>;
 
     expect(facts.find(fact => fact.key === 'type')).toMatchObject({

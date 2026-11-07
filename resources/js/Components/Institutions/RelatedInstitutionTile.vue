@@ -29,7 +29,7 @@ import EntityTypeMark from '@/Components/EntityTypeMark.vue';
 
 export interface RelatedInstitutionItem {
   id: string | number;
-  name: string;
+  name: string | null;
   direction?: 'outgoing' | 'incoming' | 'mutual';
   via?: 'direct' | 'type';
   kind_label?: string;

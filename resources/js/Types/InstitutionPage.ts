@@ -1,3 +1,5 @@
+import type { AvatarUser } from '@/Components/Avatars/UserAvatar.vue';
+import type { DutyWithUsers } from '@/Types/DutyAssignment';
 import type { SecretaryUser } from '@/Components/Institutions';
 import type { InstitutionActivityStatus } from '@/Types/InstitutionActivity';
 
@@ -5,21 +7,21 @@ export interface InstitutionPageComment {
   id: string;
   body: string;
   kind?: string;
-  created_at: string;
+  created_at: string | null;
   replies_count?: number;
   user?: {
     id: string | number;
-    name: string;
+    name: string | null;
     profile_photo_path?: string | null;
   } | null;
 }
 
 export interface InstitutionPageDuty {
   id: string | number;
-  name: string;
+  name: string | null;
   email?: string | null;
   order?: number | null;
-  current_users?: App.Entities.User[];
+  current_users?: NonNullable<DutyWithUsers['current_users']>;
 }
 
 export interface InstitutionPageMeeting {
@@ -39,7 +41,7 @@ export interface InstitutionPageMeeting {
 
 export interface InstitutionPageTask {
   id: string;
-  name: string;
+  name: string | null;
   description?: string | null;
   due_date?: string | null;
   completed_at?: string | null;
@@ -62,13 +64,13 @@ export interface InstitutionPageTask {
   } | null;
   taskable_type: string;
   taskable_id: string;
-  users?: App.Entities.User[];
+  users?: AvatarUser[];
 }
 
 export interface InstitutionPageRelatedInstitution {
   is_active?: boolean;
   id: string | number;
-  name: string;
+  name: string | null;
   direction?: 'outgoing' | 'incoming' | 'mutual';
   via?: 'direct' | 'type';
   kind?: string;
@@ -77,7 +79,8 @@ export interface InstitutionPageRelatedInstitution {
   authorized?: boolean;
 }
 
-interface InstitutionPageType extends Omit<App.Entities.InstitutionType, 'title'> {
+interface InstitutionPageType {
+  id: number;
   title?: string | null;
 }
 
@@ -88,7 +91,7 @@ export interface InstitutionPageData {
   short_name?: string | null;
   description?: string | null;
   types: InstitutionPageType[];
-  managers: App.Entities.User[];
+  managers: AvatarUser[];
   secretaries?: SecretaryUser[];
   sharepointPath: string | null;
   sharepointFolderUrl?: string | null;
@@ -106,7 +109,7 @@ export interface InstitutionPageData {
 export interface InstitutionOverviewData {
   /** Null when withheld: the meetings it is read off are not public and the reader has no access. */
   activity_status: InstitutionActivityStatus | null;
-  current_users: App.Entities.User[];
+  current_users: AvatarUser[];
   duties: InstitutionPageDuty[];
   recentMeetings: InstitutionPageMeeting[];
   meetings_count: number;

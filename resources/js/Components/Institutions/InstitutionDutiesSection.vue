@@ -100,7 +100,8 @@ import { Link, router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowDown, ArrowDownUp, ArrowUp, Briefcase, Plus, Save } from '@lucide/vue';
 
-import DutyCard, { type DutyWithUsers, type UserWithPivot } from '@/Components/AdminForms/DutyCard.vue';
+import DutyCard from '@/Components/AdminForms/DutyCard.vue';
+import type { DutyWithUsers, UserWithPivot } from '@/Types/DutyAssignment';
 import { EmptyState, OverviewSection } from '@/Components/Patterns';
 import SortableDutiesTable from '@/Components/Tables/SortableDutiesTable.vue';
 import { Button } from '@/Components/ui/button';
@@ -142,7 +143,13 @@ const move = (index: number, step: -1 | 1) => {
   }
 
   const next = [...draft.value];
-  [next[index], next[target]] = [next[target], next[index]];
+  const currentDuty = next[index];
+  const targetDuty = next[target];
+
+  if (!currentDuty || !targetDuty) return;
+
+  next[index] = targetDuty;
+  next[target] = currentDuty;
   draft.value = next;
 };
 

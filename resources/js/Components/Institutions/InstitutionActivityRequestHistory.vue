@@ -14,7 +14,7 @@
             <span class="font-medium text-foreground">
               {{ sending.requester ? $t('activity_requests.history.sent_by', { name: sending.requester }) : $t('activity_requests.automatic') }}
             </span>
-            · <time :datetime="sending.sentAt">{{ formatDateTime(sending.sentAt) }}</time>
+            · <time :datetime="sending.sentAt ?? undefined">{{ formatDateTime(sending.sentAt) }}</time>
           </p>
         </div>
         <blockquote v-for="note in sending.notes" :key="note" class="border-l-2 border-brand pl-3 text-sm leading-relaxed text-foreground">
@@ -54,7 +54,7 @@ export interface ActivityRequestHistoryItem {
   note: string | null;
   status: ActivityRequestStatus;
   answer: string | null;
-  created_at: string;
+  created_at: string | null;
   answered_at: string | null;
   resolved_at: string | null;
   resolution_source: string | null;
@@ -90,7 +90,7 @@ const sendings = computed(() => batches.value.flatMap(batch => Object.entries(ba
   .map(([campaign, requests]) => ({
     key: `${batch.id}-${campaign}`,
     campaign,
-    requester: requests[0].requester,
+    requester: requests[0]?.requester,
     sentAt: requests.map(request => request.created_at).sort()[0],
     notes: [...new Set(requests.map(request => request.note).filter((note): note is string => Boolean(note)))],
     requests,

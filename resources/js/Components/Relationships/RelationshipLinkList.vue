@@ -108,7 +108,7 @@ const sheetOpen = ref(false);
 const editing = ref<RelationshipLinkRow | null>(null);
 const removeTarget = ref<RelationshipLinkRow | null>(null);
 
-function otherName(link: RelationshipLinkRow): string {
+function otherName(link: RelationshipLinkRow): string | null {
   return props.subject === 'type' && link.other.id === props.recordId ? $t('To paties tipo institucijos') : link.other.name;
 }
 

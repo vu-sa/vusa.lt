@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Problemos
-last_reviewed: 2026-11-06
+last_reviewed: 2026-11-07
 tests:
   - tests/Feature/Admin/Problems/ProblemControllerTest.php
   - tests/Feature/Admin/Problems/AgendaItemProblemControllerTest.php
