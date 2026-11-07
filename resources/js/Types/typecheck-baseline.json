@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "total": 2772,
+  "total": 2765,
   "fingerprints": {
     "docs/pdf/build-release.ts | TS2322 | Type 'string | undefined' is not assignable to type 'string'.": 1,
     "docs/pdf/build-release.ts | TS2345 | Argument of type 'string | undefined' is not assignable to parameter of type 'string'.": 1,
@@ -555,9 +555,6 @@
     "resources/js/Components/Public/Nav/navLinkStyles.ts | TS2322 | Type 'string | undefined' is not assignable to type 'string'.": 1,
     "resources/js/Components/Public/News.stories.ts | TS2739 | Type '{ app: { locale: string; subdomain: string; name: string; url: string; path: string; }; auth: { user: null; can: {}; }; tenant: { alias: string; shortname: string; subdomain: string; }; flash: {}; errors: {}; }' is missing the following properties from type '{ app: { locale: string; subdomain: string; name: string; url: string; path: string; }; organization: { contacts: { it: string; accounting: string; phone: string; }; social: { facebook: string; instagram: string; linkedin: string; }; legal: { ...; }; }; ... 5 more ...; typesenseConfig: { ...; }; }': organization, tenants, otherLangURL, typesenseConfig": 1,
     "resources/js/Components/Public/News/News.stories.ts | TS2739 | Type '{ app: { locale: string; subdomain: string; name: string; url: string; path: string; }; auth: { user: null; can: {}; }; tenant: { alias: string; shortname: string; subdomain: string; }; flash: {}; errors: {}; }' is missing the following properties from type '{ app: { locale: string; subdomain: string; name: string; url: string; path: string; }; organization: { contacts: { it: string; accounting: string; phone: string; }; social: { facebook: string; instagram: string; linkedin: string; }; legal: { ...; }; }; ... 5 more ...; typesenseConfig: { ...; }; }': organization, tenants, otherLangURL, typesenseConfig": 1,
-    "resources/js/Components/Public/News/NewsArticleLayout.vue | TS2339 | Property 'image' does not exist on type 'News & { reading_time?: number | null | undefined; image_media?: ImageData | null | undefined; }'.": 2,
-    "resources/js/Components/Public/News/NewsArticleLayout.vue | TS2339 | Property 'image_author' does not exist on type 'News & { reading_time?: number | null | undefined; image_media?: ImageData | null | undefined; }'.": 2,
-    "resources/js/Components/Public/News/NewsArticleLayout.vue | TS2339 | Property 'length' does not exist on type '{}'.": 1,
     "resources/js/Components/Public/News/NewsArticleLayout.vue | TS2769 | No overload matches this call.": 2,
     "resources/js/Components/Public/News/NewsCard.vue | TS2345 | Argument of type '{}' is not assignable to parameter of type '{ readonly news: PreviewNews; readonly size?: \"sm\" | \"lg\" | \"compact\" | \"featured\" | undefined; readonly showExcerpt?: boolean | undefined; readonly eager?: boolean | undefined; readonly inertia?: boolean | undefined; readonly headingTag?: \"h2\" | ... 1 more ... | undefined; } & VNodeProps & AllowedComponentProps & C...'.": 1,
     "resources/js/Components/Public/News/__tests__/NewsArticleLayout.component.test.ts | TS2698 | Spread types may only be created from object types.": 3,
@@ -1460,8 +1457,6 @@
     "resources/js/Utils/dateTime.ts | TS2769 | No overload matches this call.": 2,
     "resources/js/__tests__/designTokens.test.ts | TS2532 | Object is possibly 'undefined'.": 2,
     "resources/js/mocks/i18n.ts | TS18048 | 'text' is possibly 'undefined'.": 2,
-    "resources/js/mocks/i18n.ts | TS2307 | Cannot find module '../../../lang/php_admin_lt.json' or its corresponding type declarations.": 1,
-    "resources/js/mocks/i18n.ts | TS2307 | Cannot find module '../../../lang/php_public_lt.json' or its corresponding type declarations.": 1,
     "resources/js/mocks/i18n.ts | TS2532 | Object is possibly 'undefined'.": 1,
     "resources/js/ssr.ts | TS2769 | No overload matches this call.": 1
   }
