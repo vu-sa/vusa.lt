@@ -245,12 +245,12 @@ class MeetingController extends AdminController
                 : [],
             'governanceScope' => fn () => $this->governanceScopeFor($loadMeeting()),
             'recordNavigation' => fn () => $readOnly() || $primaryInstitution() === null ? null : $this->institutionMeetingNavigation($loadMeeting(), $primaryInstitution()),
-            'tasks' => $readOnly() ? [] : Inertia::defer(fn (): array => MeetingPanelPresenter::tasks($meeting), 'meetingPanels'),
+            'tasks' => $readOnly() ? [] : Inertia::defer(fn () => MeetingPanelPresenter::tasks($meeting), 'meetingPanels'),
             // A linked document that is not published reaches only those who may decide on it.
-            'documents' => $readOnly() ? [] : Inertia::defer(fn (): array => MeetingPanelPresenter::documents($meeting, request()->user()), 'meetingPanels'),
+            'documents' => $readOnly() ? [] : Inertia::defer(fn () => MeetingPanelPresenter::documents($meeting, request()->user()), 'meetingPanels'),
             'pendingDocuments' => $readOnly()
                 ? []
-                : Inertia::defer(fn (): array => MeetingPanelPresenter::pendingDocuments($meeting, request()->user()), 'meetingPanels'),
+                : Inertia::defer(fn () => MeetingPanelPresenter::pendingDocuments($meeting, request()->user()), 'meetingPanels'),
             // Loaded only when "Iš ankstesnio posėdžio" is opened in the add-items sheet.
             'recentAgendas' => Inertia::optional(fn () => $readOnly() ? [] : $this->recentAgendasFor($meeting)),
         ]);

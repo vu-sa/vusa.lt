@@ -34,9 +34,9 @@ unless they assert it. A nullable `array` cast is `array<…>|null`. Avoid optio
 ## Keep the render call literal and unchained
 `Inertia::render()` stays in the action (`.ai/rules/controllers.md`), and nothing is chained
 onto it. Assign `$response`, call `$response->withViewData(...)`, then return it.
-Deferred and optional props keep their wrapper; type the closure (`fn (): array =>`) and call a
-presenter inside it. `$cond ? [] : Inertia::defer(...)` currently loses the type in Wayfinder;
-that's known and accepted rather than a reason to change loading behaviour.
+Deferred and optional props keep their wrapper and call a presenter inside the closure. Give
+that closure **no** return type: in `Inertia::defer(fn (): array => …)` the declared `array`
+wins and the prop becomes `unknown[]`, while `fn () => …` takes the presenter's shape.
 
 ## Mirror the shape on the Vue page, test it on the PHP side
 - Replace `App.Entities.*` prop types with a local interface that matches the PHP shape
