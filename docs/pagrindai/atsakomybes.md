@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Atsakomybės
-last_reviewed: 2026-11-05
+last_reviewed: 2026-11-07
 tests:
   - tests/Feature/Responsibilities/ReservationHandlingTest.php
   - tests/Feature/Responsibilities/ResponsibilityResolverTest.php

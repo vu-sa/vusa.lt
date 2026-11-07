@@ -7,6 +7,7 @@ use App\Models\Duty;
 use App\Models\DutyName;
 use App\Models\Pivots\DutySuccession;
 use App\Models\User;
+use App\Services\UserPresenter;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
@@ -19,7 +20,7 @@ class BuildDutyLineage
     private const int MAX_DEPTH = 6;
 
     /**
-     * @return array{events: list<array<string, mixed>>, predecessorTerms: list<array<string, mixed>>, suggestedLinkDate: string}
+     * @return array{events: list<array{kind: 'rename', date: string, name: string|null}|array{kind: 'took_over', date: string, duties: list<array{id: string, link_id: int, name: string|null, is_active: bool, institution_name: string|null, can_fold: bool}>}|array{kind: 'handed_over', date: string, duties: list<array{id: string, link_id: int, name: string|null, is_active: bool, institution_name: string|null}>}>, predecessorTerms: list<array{id: string, name: string, profile_photo_path: string|null, pivot: array{id: string, start_date: string, end_date: string|null}, duty_name: string|null, via_duty_id: string}>, suggestedLinkDate: string}
      */
     public static function execute(Duty $duty, ?User $viewer = null): array
     {
@@ -30,7 +31,7 @@ class BuildDutyLineage
         ];
     }
 
-    /** @return list<array<string, mixed>> newest first */
+    /** @return list<array{kind: 'rename', date: string, name: string|null}|array{kind: 'took_over', date: string, duties: list<array{id: string, link_id: int, name: string|null, is_active: bool, institution_name: string|null, can_fold: bool}>}|array{kind: 'handed_over', date: string, duties: list<array{id: string, link_id: int, name: string|null, is_active: bool, institution_name: string|null}>}> newest first */
     private static function events(Duty $duty, ?User $viewer): array
     {
         $relations = ['institution:id,name,short_name'];
@@ -74,7 +75,7 @@ class BuildDutyLineage
      * handed over; a predecessor that itself came from this duty (merged, then split back) stops the
      * walk there, so the partners it was merged with do not enter this duty's history.
      *
-     * @return list<array<string, mixed>>
+     * @return list<array{id: string, name: string, profile_photo_path: string|null, pivot: array{id: string, start_date: string, end_date: string|null}, duty_name: string|null, via_duty_id: string}>
      */
     private static function predecessorTerms(Duty $origin): array
     {
@@ -117,21 +118,27 @@ class BuildDutyLineage
         return $terms->sortByDesc(fn (array $term) => $term['pivot']['start_date'] ?? '')->values()->all();
     }
 
-    /** @return list<array<string, mixed>> */
+    /** @return list<array{id: string, name: string, profile_photo_path: string|null, pivot: array{id: string, start_date: string, end_date: string|null}, duty_name: string|null, via_duty_id: string}> */
     private static function termsBefore(Duty $predecessor, Carbon $handedOverOn): array
     {
         return $predecessor->users
             ->filter(fn (User $holder) => Carbon::parse($holder->pivot->start_date)->lt($handedOverOn))
-            ->map(fn (User $holder) => [
-                ...$holder->only(['id', 'name', 'profile_photo_path']),
-                'pivot' => [
-                    'id' => $holder->pivot->id,
-                    'start_date' => Carbon::parse($holder->pivot->start_date)->toDateString(),
-                    'end_date' => $holder->pivot->end_date ? Carbon::parse($holder->pivot->end_date)->toDateString() : null,
-                ],
-                'duty_name' => self::localized($predecessor->nameOn($holder->pivot->start_date)),
-                'via_duty_id' => $predecessor->id,
-            ])
+            ->map(function (User $holder) use ($predecessor): array {
+                $avatar = UserPresenter::avatar($holder);
+
+                return [
+                    'id' => $avatar['id'],
+                    'name' => $avatar['name'],
+                    'profile_photo_path' => $avatar['profile_photo_path'],
+                    'pivot' => [
+                        'id' => $holder->pivot->id,
+                        'start_date' => Carbon::parse($holder->pivot->start_date)->toDateString(),
+                        'end_date' => $holder->pivot->end_date ? Carbon::parse($holder->pivot->end_date)->toDateString() : null,
+                    ],
+                    'duty_name' => self::localized($predecessor->nameOn($holder->pivot->start_date)),
+                    'via_duty_id' => $predecessor->id,
+                ];
+            })
             ->values()
             ->all();
     }
@@ -154,7 +161,7 @@ class BuildDutyLineage
         return ResolveCadenceForDuty::execute($duty)?->start_date->toDateString() ?? today()->toDateString();
     }
 
-    /** @return array<string, mixed> */
+    /** @return array{id: string, link_id: int, name: string|null, is_active: bool, institution_name: string|null} */
     private static function summary(Duty $linked, DutySuccession $link): array
     {
         return [

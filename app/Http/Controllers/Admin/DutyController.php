@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\BuildDutyIndexQuery;
 use App\Actions\Dutiables\SyncExOfficioTargets;
-use App\Actions\Duties\BuildDutyLineage;
 use App\Actions\GetAttachableTypesForDuty;
 use App\Actions\GetTenantsForUpserts;
 use App\Actions\GetTypeFiles;
@@ -26,14 +25,15 @@ use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\Pivots\Dutiable;
 use App\Models\StudyProgram;
-use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ContactPresentationService;
 use App\Services\DutyAssignmentService;
+use App\Services\DutyPanelPresenter;
+use App\Services\DutyPresenter;
+use App\Services\DutyResponsibilityPresenter;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use App\Services\ResourceServices\DutyService;
-use App\Services\ResourceServices\SharepointFileService;
 use App\Services\TanstackTableService;
 use App\Support\MorphMap;
 use Illuminate\Http\RedirectResponse;
@@ -148,71 +148,22 @@ class DutyController extends AdminController
         $user = fn () => once(fn () => request()->user());
 
         return Inertia::render('Admin/People/ShowDuty', [
-            'duty' => fn () => array_merge($loadDuty()->toArray(), [
-                'sharepointPath' => SharepointFileService::pathOrNull($duty),
-                'sharepointFolderUrl' => SharepointFileService::folderUrlOrNull($duty),
-            ]),
-            'files' => Inertia::defer(fn () => $duty->availableFiles()->orderByDesc('file_date')->get(), 'files'),
-            'typeFiles' => Inertia::defer(fn () => GetTypeFiles::forFileable($duty), 'files'),
-
-            // Per-record, not from `auth.can`: `duties.update.padalinys` is tenant-scoped,
-            // so a single global boolean would be wrong for every cross-tenant case.
-            'can' => fn () => [
-                'update' => (bool) $user()?->can('update', $duty),
-                'managePeople' => (bool) $user()?->can('managePeople', $duty),
-                'assignQuota' => (bool) $user()?->can('assignQuota', [Dutiable::class, $duty]),
-                'reviewExOfficio' => (bool) $user()?->can('managePeople', $duty)
-                    && ($duty->exOfficioTargetDuties()->exists() || $duty->exOfficioSourceDuties()->exists()),
-            ],
-            // Only the "Apie pareigybę" tab and the Priskirti sheet need these.
-            'otherDuties' => Inertia::defer(fn () => $duty->institution
-                ? $duty->institution->duties()
-                    ->where('id', '!=', $duty->id)
-                    ->orderBy('order')
-                    ->with('current_users:id,name,profile_photo_path')
-                    ->get(['id', 'name', 'institution_id', 'order'])
-                    ->map(fn (Duty $sibling) => $sibling->toArray())
-                    ->values()
-                    ->all()
-                : [], 'dutyPanels'),
-            'studyPrograms' => Inertia::defer(fn () => $this->studyProgramsFor($duty), 'dutyPanels'),
-            'lineage' => Inertia::defer(fn () => BuildDutyLineage::execute($duty, $user()), 'dutyPanels'),
-            'responsibilities' => Inertia::defer(fn () => DutyResponsibilityController::payload($duty), 'dutyPanels'),
-            'quotaTenants' => Inertia::defer(fn () => $this->quotaTenantsFor($duty), 'dutyPanels'),
+            'duty' => fn (): array => DutyPresenter::forShow($loadDuty()),
+            'files' => Inertia::defer(fn () => DutyPanelPresenter::files($duty->availableFiles()->orderByDesc('file_date')->get()), 'files'),
+            'typeFiles' => Inertia::defer(fn () => DutyPanelPresenter::typeFiles(GetTypeFiles::forFileable($duty)), 'files'),
+            'can' => fn (): array => DutyPanelPresenter::abilities($duty, $user()),
+            'otherDuties' => Inertia::defer(fn () => DutyPanelPresenter::otherDuties($duty), 'dutyPanels'),
+            'studyPrograms' => Inertia::defer(fn () => DutyPanelPresenter::studyPrograms($this->studyProgramsFor($duty)), 'dutyPanels'),
+            'lineage' => Inertia::defer(fn () => DutyPanelPresenter::lineage($duty, $user()), 'dutyPanels'),
+            'responsibilities' => Inertia::defer(fn () => DutyResponsibilityPresenter::payload($duty), 'dutyPanels'),
+            'quotaTenants' => Inertia::defer(fn () => DutyPanelPresenter::quotaTenants($duty), 'dutyPanels'),
             // Only the add sheet needs these; loaded when it opens.
-            'responsibilityOptions' => Inertia::optional(function () use ($user, $duty): array {
+            'responsibilityOptions' => Inertia::optional(function () use ($user, $duty) {
                 abort_unless($user()?->can('update', $duty), 403);
 
-                return DutyResponsibilityController::options($user());
+                return DutyResponsibilityPresenter::options($user());
             }),
         ]);
-    }
-
-    /**
-     * The padaliniai the duty offers seats to, with how many current seats count toward each.
-     *
-     * @return list<array{id: int, shortname: string, quota: int|null, occupied: int}>
-     */
-    private function quotaTenantsFor(Duty $duty): array
-    {
-        $occupied = Dutiable::query()
-            ->where('duty_id', $duty->id)
-            ->where('dutiable_type', MorphMap::alias(User::class))
-            ->whereNotNull('tenant_id')
-            ->current()
-            ->selectRaw('tenant_id, count(*) as seats')
-            ->groupBy('tenant_id')
-            ->pluck('seats', 'tenant_id');
-
-        /** @var \Illuminate\Database\Eloquent\Collection<int, Tenant> $tenants */
-        $tenants = $duty->assignableTenants()->orderBy('shortname')->get(['tenants.id', 'tenants.shortname']);
-
-        return $tenants->map(fn (Tenant $tenant) => [
-            'id' => $tenant->id,
-            'shortname' => $tenant->shortname,
-            'quota' => $tenant->getAttribute('pivot')?->quota,
-            'occupied' => (int) ($occupied[$tenant->id] ?? 0),
-        ])->values()->all();
     }
 
     /**

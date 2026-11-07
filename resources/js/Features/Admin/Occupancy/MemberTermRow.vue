@@ -53,7 +53,20 @@ import { Button } from '@/Components/ui/button';
 import { formatDateWith } from '@/Utils/dateTime';
 
 const props = defineProps<{
-  user: App.Entities.User;
+  user: {
+    id: string | number;
+    name: string;
+    email?: string | null;
+    profile_photo_path?: string | null;
+    profile_photo_focal_point?: string | null;
+    pivot?: {
+      start_date?: string | null;
+      end_date?: string | null;
+      via_dutiable_id?: string | null;
+      tenant_id?: number | null;
+      additional_email?: string | null;
+    };
+  };
   canManage: boolean;
   /** The duty's name during this term, when it differs from today's (a former name or a predecessor). */
   dutyName?: string | null;

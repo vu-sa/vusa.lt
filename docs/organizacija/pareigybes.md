@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Pareigybės
-last_reviewed: 2026-11-06
+last_reviewed: 2026-11-07
 tests:
   - tests/Browser/CollectionTrashRefreshTest.php
   - resources/js/Components/AdminForms/__tests__/DutyForm.component.test.ts

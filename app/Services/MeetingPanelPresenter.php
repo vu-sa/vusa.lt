@@ -10,7 +10,6 @@ use App\Http\Resources\DocumentRowResource;
 use App\Http\Resources\TaskResource;
 use App\Models\Document;
 use App\Models\Duty;
-use App\Models\FileableFile;
 use App\Models\Meeting;
 use App\Models\User;
 use App\Tasks\Enums\ActionType;
@@ -24,38 +23,11 @@ class MeetingPanelPresenter
         $files = [];
         if (! $readOnly) {
             foreach ($meeting->fileableFiles->whereNull('deleted_externally_at')->sortByDesc('file_date')->values() as $file) {
-                $files[] = self::file($file);
+                $files[] = FileableFilePresenter::file($file);
             }
         }
 
         return $files;
-    }
-
-    /** @return array{id: string, fileable_type: string, fileable_id: string, sharepoint_id: string, sharepoint_path: string|null, name: string, file_type: string|null, mime_type: string|null, size_bytes: int|null, file_date: string|null, description: string|null, public_link: string|null, public_link_expires_at: string|null, last_synced_at: string|null, deleted_externally_at: string|null, created_at: string|null, updated_at: string|null, formatted_size: string|null} */
-    private static function file(FileableFile $file): array
-    {
-        $attributes = $file->attributesToArray();
-
-        return [
-            'id' => $attributes['id'],
-            'fileable_type' => $attributes['fileable_type'],
-            'fileable_id' => $attributes['fileable_id'],
-            'sharepoint_id' => $attributes['sharepoint_id'],
-            'sharepoint_path' => $attributes['sharepoint_path'],
-            'name' => $attributes['name'],
-            'file_type' => $attributes['file_type'],
-            'mime_type' => $attributes['mime_type'],
-            'size_bytes' => $attributes['size_bytes'],
-            'file_date' => $attributes['file_date'],
-            'description' => $attributes['description'],
-            'public_link' => $attributes['public_link'],
-            'public_link_expires_at' => $attributes['public_link_expires_at'],
-            'last_synced_at' => $attributes['last_synced_at'],
-            'deleted_externally_at' => $attributes['deleted_externally_at'],
-            'created_at' => $attributes['created_at'],
-            'updated_at' => $attributes['updated_at'],
-            'formatted_size' => $attributes['formatted_size'],
-        ];
     }
 
     /** @param Collection<int, User> $users
@@ -73,28 +45,14 @@ class MeetingPanelPresenter
     /** @return array{id: string, email: string|null, phone: string|null, facebook_url: string|null, name: string, pronouns: string|null, show_pronouns: bool, is_active: int, updated_at: string, created_at: string, profile_photo_path: string|null, profile_photo_focal_point: string|null, deleted_at: string|null, duties: list<array{id: string, name: string|null, description: string|null, institution_id: string, order: int, email: string|null, contacts_grouping: string, places_to_occupy: int|null, is_active: bool, created_at: string, updated_at: string, deleted_at: string|null, pivot: array{dutiable_type: string, dutiable_id: string, duty_id: string, id: string, via_dutiable_id: string|null, tenant_id: int|null, start_date: string, end_date: string|null, additional_photo: string|null, additional_photo_focal_point: string|null, additional_email: string|null, use_original_duty_name: bool, description: string|null, study_program_id: string|null}}>} */
     private static function representative(User $user): array
     {
-        $attributes = $user->attributesToArray();
+        $payload = UserPresenter::user($user);
         $duties = [];
         foreach ($user->duties as $duty) {
             $duties[] = self::representativeDuty($duty);
         }
+        $payload['duties'] = $duties;
 
-        return [
-            'id' => $attributes['id'],
-            'email' => $attributes['email'],
-            'phone' => $attributes['phone'],
-            'facebook_url' => $attributes['facebook_url'],
-            'name' => $attributes['name'],
-            'pronouns' => $attributes['pronouns'] === null ? null : (string) $user->pronouns,
-            'show_pronouns' => $attributes['show_pronouns'],
-            'is_active' => $attributes['is_active'],
-            'updated_at' => $attributes['updated_at'],
-            'created_at' => $attributes['created_at'],
-            'profile_photo_path' => $attributes['profile_photo_path'],
-            'profile_photo_focal_point' => $attributes['profile_photo_focal_point'],
-            'deleted_at' => $attributes['deleted_at'],
-            'duties' => $duties,
-        ];
+        return $payload;
     }
 
     /** @return array{id: string, name: string|null, description: string|null, institution_id: string, order: int, email: string|null, contacts_grouping: string, places_to_occupy: int|null, is_active: bool, created_at: string, updated_at: string, deleted_at: string|null, pivot: array{dutiable_type: string, dutiable_id: string, duty_id: string, id: string, via_dutiable_id: string|null, tenant_id: int|null, start_date: string, end_date: string|null, additional_photo: string|null, additional_photo_focal_point: string|null, additional_email: string|null, use_original_duty_name: bool, description: string|null, study_program_id: string|null}} */

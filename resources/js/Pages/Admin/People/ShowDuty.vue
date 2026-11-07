@@ -164,7 +164,7 @@
               >
                 <div class="min-w-0">
                   <p class="truncate text-sm font-medium text-foreground">
-                    <InflectedDutyName :name="sibling.name" />
+                    <InflectedDutyName :name="sibling.name ?? ''" />
                   </p>
                   <p class="text-xs text-muted-foreground">
                     {{ sibling.current_users?.length ?? 0 }} {{ $t('narių') }}
@@ -352,7 +352,7 @@ import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarni
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
-import DutyLineageTimeline, { type DutyLineageEvent, type LineageLinkedDuty } from '@/Components/Duties/DutyLineageTimeline.vue';
+import DutyLineageTimeline, { type LineageLinkedDuty } from '@/Components/Duties/DutyLineageTimeline.vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import { DatePicker } from '@/Components/ui/date-picker';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
@@ -365,49 +365,252 @@ import { operatingStatuses, type StatusPresentation } from '@/Constants/statusIc
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
 import ExOfficioReviewSheet from '@/Features/Admin/DutiableTimeline/ExOfficioReviewSheet.vue';
 import { DutiableTimelineDialog } from '@/Features/Admin/DutiableTimeline';
-import { AssignDutyUserSheet, DutySearchField, MemberTermRow, dutyNameOn, termStatus, type DutyHit, type FormerDutyName, type QuotaTenant } from '@/Features/Admin/Occupancy';
+import { AssignDutyUserSheet, DutySearchField, MemberTermRow, dutyNameOn, termStatus, type DutyHit, type QuotaTenant } from '@/Features/Admin/Occupancy';
 import DutyResponsibilitiesSection from '@/Features/Admin/Responsibilities/DutyResponsibilitiesSection.vue';
-import type { DutyResponsibilitiesPayload, DutyResponsibilityOptions } from '@/Features/Admin/Responsibilities/types';
-import { FileableFilesPanel, type FileableFileItem } from '@/Components/Files';
+import { FileableFilesPanel } from '@/Components/Files';
+import type { TenantType, ResponsibilityPurpose, ResponsibilityScope } from '@/Types/enums';
 import { ModelEnum } from '@/Types/enums';
 import { formatDate, todayIso } from '@/Utils/dateTime';
 
-interface TranslatableText {
-  lt?: string;
-  en?: string;
+interface DutyTerm {
+  duty_id: string;
+  dutiable_id: string;
+  dutiable_type: string;
+  id: string;
+  via_dutiable_id: string | null;
+  tenant_id: number | null;
+  start_date: string;
+  end_date: string | null;
+  additional_photo: string | null;
+  additional_photo_focal_point: string | null;
+  additional_email: string | null;
+  use_original_duty_name: boolean;
+  description: string | null;
+  study_program_id: string | null;
+  study_program_note: string | null;
+  created_at: string;
+  updated_at: string;
+  tenant: { id: number; shortname: string } | null;
+  study_program: { id: string; name: string } | null;
 }
 
+interface DutyHolder {
+  id: string;
+  email: string | null;
+  phone: string | null;
+  facebook_url: string | null;
+  name: string;
+  pronouns: string | null;
+  show_pronouns: boolean;
+  is_active: number;
+  updated_at: string;
+  created_at: string;
+  profile_photo_path: string | null;
+  profile_photo_focal_point: string | null;
+  deleted_at: string | null;
+  pivot: DutyTerm;
+}
+
+interface DutyTenant {
+  id: number;
+  type: TenantType | null;
+  fullname: string;
+  shortname: string;
+  alias: string;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+  shortname_vu: string | null;
+  primary_institution_id: string | null;
+  goals_enabled: boolean;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+interface DutyInstitutionAttributes {
+  id: string;
+  name: string | null;
+  short_name: string | null;
+  alias: string;
+  description: string | null;
+  address: string | null;
+  phone: string | null;
+  email: string | null;
+  working_hours: string | null;
+  website: string | null;
+  logo_url: string | null;
+  facebook_url: string | null;
+  instagram_url: string | null;
+  tenant_id: number | null;
+  is_active: number;
+  meeting_periodicity_days: number;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  tenant: DutyTenant | null;
+}
+
+interface DutyInstitutionType {
+  id: number;
+  parent_id: number | null;
+  title: string | null;
+  description: string | null;
+  slug: string | null;
+  extra_attributes: Record<string, unknown> | null;
+  created_at: string | null;
+  updated_at: string | null;
+  deleted_at: string | null;
+  pivot: { institution_id: string; institution_type_id: number };
+}
+
+type DutyInstitution = DutyInstitutionAttributes | (DutyInstitutionAttributes & {
+  types: DutyInstitutionType[];
+});
+
+interface DutyType {
+  id: number;
+  parent_id: number | null;
+  title: string | null;
+  description: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  deleted_at: string | null;
+  extra_attributes: Record<string, unknown> | null;
+  pivot: { duty_id: string; duty_type_id: number };
+}
+
+interface DutyFormerName {
+  id: string;
+  duty_id: string;
+  name: string;
+  used_until: string;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+interface DutyRecordAttributes {
+  id: string;
+  name: string | null;
+  description: string | null;
+  institution_id: string;
+  order: number;
+  email: string | null;
+  contacts_grouping: string;
+  places_to_occupy: number | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  institution: DutyInstitution | null;
+  users: DutyHolder[];
+  types: DutyType[];
+  former_names: DutyFormerName[];
+  sharepointPath: string | null;
+  sharepointFolderUrl: string | null;
+}
+
+type DutyRecord = DutyRecordAttributes | (DutyRecordAttributes & {
+  tenants: (DutyTenant & { laravel_through_key: string })[];
+});
+
+interface DutySibling {
+  id: string;
+  name: string | null;
+  institution_id: string;
+  order: number;
+  current_users: {
+    id: string;
+    name: string;
+    profile_photo_path: string | null;
+    pivot: Omit<DutyTerm, 'tenant' | 'study_program'>;
+  }[];
+}
+
+interface DutyStudyProgram {
+  id: string;
+  name: string;
+  degree: string;
+  tenant_id: number;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+interface DutyFile {
+  id: string;
+  fileable_type: string;
+  fileable_id: string;
+  sharepoint_id: string;
+  sharepoint_path: string | null;
+  name: string;
+  file_type: string | null;
+  mime_type: string | null;
+  size_bytes: number | null;
+  file_date: string | null;
+  description: string | null;
+  public_link: string | null;
+  public_link_expires_at: string | null;
+  last_synced_at: string | null;
+  deleted_externally_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  formatted_size: string | null;
+}
+
+interface PredecessorTerm {
+  id: string;
+  name: string;
+  profile_photo_path: string | null;
+  pivot: { id: string; start_date: string; end_date: string | null };
+  duty_name: string | null;
+  via_duty_id: string;
+}
+
+type DutyLineageEvent =
+  | { kind: 'rename'; date: string; name: string | null }
+  | { kind: 'took_over'; date: string; duties: (LineageLinkedDuty & { can_fold: boolean })[] }
+  | { kind: 'handed_over'; date: string; duties: Omit<LineageLinkedDuty, 'can_fold'>[] };
+
 interface DutyLineage {
-  /** Renames and takeovers, newest first. */
   events: DutyLineageEvent[];
-  /** Holders of the predecessor duties from before each takeover, labelled with the name their duty had then. */
-  predecessorTerms: (App.Entities.User & { duty_name: string })[];
+  predecessorTerms: PredecessorTerm[];
   suggestedLinkDate: string;
 }
 
+interface DutyResponsibilitiesPayload {
+  items: {
+    id: string;
+    role_id: string;
+    title: string;
+    description: string | null;
+    purpose: ResponsibilityPurpose | null;
+    purpose_label: string | null;
+    source: 'duty' | 'duty_type' | 'institution';
+    source_name: string | null;
+    scope_type: ResponsibilityScope | 'own_tenant' | null;
+    scope_name: string | null;
+    missing_permissions: string[];
+  }[];
+}
+
+interface DutyResponsibilityOptions {
+  responsibilities: { id: string; title: string; description: string | null; purpose_label: string | null; scopes: ResponsibilityScope[] }[];
+  tenants: { id: number; shortname: string }[];
+  types: { id: string; title: string; parent_id: string | null }[];
+  institutions: { id: string; name: string }[];
+}
+
 const props = defineProps<{
-  duty: App.Entities.Duty & {
-    sharepointPath?: string | null;
-    sharepointFolderUrl?: string | null;
-    is_active?: boolean;
-    former_names?: FormerDutyName[];
-  };
-  can?: { update: boolean; managePeople: boolean; assignQuota?: boolean; reviewExOfficio?: boolean };
-  /** Deferred (`dutyPanels`): only the About tab needs siblings. */
-  otherDuties?: App.Entities.Duty[];
-  /** Deferred (`dutyPanels`): only the assignment sheet's picker needs them. */
-  studyPrograms?: App.Entities.StudyProgram[];
-  /** Deferred (`dutyPanels`): predecessor/successor links and the predecessors' holders. */
+  duty: DutyRecord;
+  can: { update: boolean; managePeople: boolean; assignQuota: boolean; reviewExOfficio: boolean };
+  otherDuties?: DutySibling[];
+  studyPrograms?: DutyStudyProgram[];
   lineage?: DutyLineage;
-  /** Deferred (`dutyPanels`): padaliniai the duty offers seats to, for the sheet and the delegated chip. */
   quotaTenants?: QuotaTenant[];
-  /** Deferred (`dutyPanels`): what the duty must handle, beside its roles. */
   responsibilities?: DutyResponsibilitiesPayload;
-  /** Optional: only the add-responsibility sheet needs these. */
   responsibilityOptions?: DutyResponsibilityOptions;
-  /** Deferred (`files`). */
-  files?: FileableFileItem[];
-  typeFiles?: FileableFileItem[];
+  files?: DutyFile[];
+  typeFiles?: (DutyFile & { fileable: { id: number; title: string | null } | null })[];
 }>();
 
 const currentSection = ref('members');
@@ -415,9 +618,9 @@ const assignSheetOpen = ref(false);
 const timelineOpen = ref(false);
 const exOfficioReviewOpen = ref(false);
 const deleteDutyOpen = ref(false);
-const endTenureTarget = ref<App.Entities.User | null>(null);
-const selectedDutiable = ref<(App.Entities.Dutiable & Record<string, unknown>) | null>(null);
-const selectedUserForSheet = ref<App.Entities.User | null>(null);
+const endTenureTarget = ref<DutyHolder | null>(null);
+const selectedDutiable = ref<DutyTerm | null>(null);
+const selectedUserForSheet = ref<DutyHolder | null>(null);
 
 const { report: accessWarningReport, open: accessWarningOpen, guardedSubmit, confirm: accessWarningConfirm, cancel: accessWarningCancel } = useAccessChangeGuard();
 
@@ -427,7 +630,7 @@ const canManageDuty = computed(() => props.can?.update ?? false);
 const holdersWhere = (wanted: ReturnType<typeof termStatus>) => {
   const today = todayIso();
 
-  return (props.duty.users ?? []).filter((user: App.Entities.User) =>
+  return (props.duty.users ?? []).filter((user: DutyHolder) =>
     !!user.pivot && termStatus(user.pivot, today) === wanted);
 };
 
@@ -436,7 +639,7 @@ const currentHolders = computed(() => holdersWhere('current'));
 const upcomingHolders = computed(() => holdersWhere('upcoming'));
 const termDay = (value?: string | null) => String(value ?? '').slice(0, 10);
 // Newest first: by the last day in office, then by when the term began.
-const historicalHolders = computed(() => holdersWhere('ended').sort((a: App.Entities.User, b: App.Entities.User) =>
+const historicalHolders = computed(() => holdersWhere('ended').sort((a: DutyHolder, b: DutyHolder) =>
   termDay(b.pivot?.end_date).localeCompare(termDay(a.pivot?.end_date))
   || termDay(b.pivot?.start_date).localeCompare(termDay(a.pivot?.start_date))));
 const isActive = computed(() => props.duty.is_active !== false);
@@ -444,8 +647,8 @@ const isActive = computed(() => props.duty.is_active !== false);
 const isVacant = computed(() => isActive.value && currentHolders.value.length === 0);
 
 const existingTerms = computed(() => (props.duty.users ?? [])
-  .filter((user: App.Entities.User) => !!user.pivot)
-  .map((user: App.Entities.User) => ({
+  .filter((user: DutyHolder) => !!user.pivot)
+  .map((user: DutyHolder) => ({
     user_id: String(user.id),
     start_date: user.pivot?.start_date ?? null,
     end_date: user.pivot?.end_date ?? null,
@@ -479,11 +682,7 @@ const otherDuties = computed(() => props.otherDuties ?? []);
 const hasTypeFiles = computed(() => (props.duty.types?.length ?? 0) > 0);
 const hasFiles = computed(() => !!props.duty.sharepointPath || hasTypeFiles.value);
 
-const dutyDescriptionHtml = computed(() => {
-  if (typeof props.duty.description === 'string') return props.duty.description;
-  const descObj = props.duty.description as TranslatableText | undefined;
-  return descObj?.lt || descObj?.en || null;
-});
+const dutyDescriptionHtml = computed(() => props.duty.description);
 
 const recordFacts = computed<RecordFact[]>(() => {
   const facts: RecordFact[] = [];
@@ -492,7 +691,7 @@ const recordFacts = computed<RecordFact[]>(() => {
     facts.push({
       key: 'institution',
       label: $t('Institucija'),
-      value: props.duty.institution.name,
+      value: props.duty.institution.name ?? '',
       href: route('institutions.show', props.duty.institution.id),
     });
   }
@@ -589,7 +788,7 @@ const handleRecordAction = (actionKey: string) => {
 
 const assignSpotlight = useFeatureSpotlight('assign-past-terms-v1');
 
-const openAssignSheet = (dutiable?: (App.Entities.Dutiable & Record<string, unknown>) | null, user?: App.Entities.User | null) => {
+const openAssignSheet = (dutiable?: DutyTerm | null, user?: DutyHolder | null) => {
   assignSpotlight.dismiss();
   selectedDutiable.value = dutiable ?? null;
   selectedUserForSheet.value = user ?? null;
@@ -605,7 +804,7 @@ onMounted(() => {
     return;
   }
 
-  const holder = (props.duty.users ?? []).find((user: App.Entities.User) => String(user.pivot?.id) === dutiableId);
+  const holder = (props.duty.users ?? []).find((user: DutyHolder) => String(user.pivot?.id) === dutiableId);
 
   if (holder?.pivot && props.can?.managePeople) {
     openAssignSheet(holder.pivot, holder);
@@ -658,7 +857,7 @@ const deleteDuty = () => {
 };
 
 const endTenure = () => {
-  const dutiable = endTenureTarget.value?.pivot as { id: string | number } | undefined;
+  const dutiable = endTenureTarget.value?.pivot;
   endTenureTarget.value = null;
 
   if (!dutiable) {
