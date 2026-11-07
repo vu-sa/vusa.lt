@@ -96,7 +96,16 @@ import type { MeetingTypeValue } from '@/Types/MeetingType';
 
 const props = defineProps<{
   open: boolean;
-  meeting: App.Entities.Meeting & { inherited_meeting_kind?: MeetingKind };
+  meeting: {
+    id: string;
+    start_time: string;
+    type: MeetingTypeValue;
+    meeting_kind: MeetingKind | null;
+    inherited_meeting_kind: MeetingKind;
+    description: { lt: string; en: string };
+    created_at: string;
+    updated_at: string;
+  };
 }>();
 
 const emit = defineEmits<{

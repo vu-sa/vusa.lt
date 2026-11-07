@@ -101,7 +101,7 @@
                 <component :is="statusOf(item).icon" class="size-3.5" aria-hidden="true" />
                 {{ $t(statusOf(item).label) }}
               </span>
-              <span v-if="item.brought_by_students" class="inline-flex items-center gap-1">
+              <span v-if="!item.is_redacted && item.brought_by_students" class="inline-flex items-center gap-1">
                 <Users class="size-3.5" aria-hidden="true" />
                 {{ $t('Studentų klausimas') }}
               </span>
@@ -190,11 +190,32 @@ import {
   getNumberBadgeClass,
 } from '@/Composables/useAgendaItemStyling';
 
-type AgendaListItem = App.Entities.AgendaItem & {
-  comments_count?: number;
-  has_notes?: boolean;
-  can?: { update?: boolean; delete?: boolean };
-};
+interface RedactedAgendaListItem {
+  id: string;
+  order: number;
+  title: string;
+  is_private: true;
+  is_redacted: true;
+  can: { update: boolean; delete: boolean };
+}
+
+interface FullAgendaListItem {
+  id: string;
+  order: number;
+  title: string | null;
+  is_private: boolean;
+  is_redacted?: never;
+  type: string | null;
+  brought_by_students: boolean;
+  start_time: string | null;
+  end_time: string | null;
+  votes: AgendaStatusItem['votes'];
+  comments_count: number;
+  has_notes: boolean;
+  can: { update: boolean; delete: boolean };
+}
+
+type AgendaListItem = RedactedAgendaListItem | FullAgendaListItem;
 
 const props = withDefaults(defineProps<{
   agendaItems: AgendaListItem[];
@@ -229,13 +250,14 @@ watch(
   { immediate: true, deep: true },
 );
 
-const statusOf = (item: App.Entities.AgendaItem) =>
-  agendaItemStatuses[getAgendaItemStatus(item as AgendaStatusItem, props.requiresStudentPerspective)];
-const voteCount = (item: App.Entities.AgendaItem) => item.votes?.length ?? 0;
-const commentsCount = (item: App.Entities.AgendaItem) => (item as AgendaListItem).comments_count ?? 0;
-const hasNotes = (item: App.Entities.AgendaItem) => Boolean((item as AgendaListItem).has_notes);
+const statusOf = (item: FullAgendaListItem) =>
+  agendaItemStatuses[getAgendaItemStatus({ id: item.id, type: item.type, votes: item.votes }, props.requiresStudentPerspective)];
+const voteCount = (item: AgendaListItem) => item.is_redacted ? 0 : (item.votes?.length ?? 0);
+const commentsCount = (item: AgendaListItem) => item.is_redacted ? 0 : item.comments_count;
+const hasNotes = (item: AgendaListItem) => !item.is_redacted && item.has_notes;
 
-const timeRange = (item: App.Entities.AgendaItem) => {
+const timeRange = (item: AgendaListItem) => {
+  if (item.is_redacted) return '';
   const start = item.start_time ? String(item.start_time).slice(0, 5) : null;
   const end = item.end_time ? String(item.end_time).slice(0, 5) : null;
 

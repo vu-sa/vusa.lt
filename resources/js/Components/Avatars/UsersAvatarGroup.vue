@@ -38,7 +38,7 @@
               {{ $t('Other users') }}
             </h4>
             <div class="grid gap-2">
-              <template v-for="user in hiddenUsers" :key="user.id || user.name">
+              <template v-for="(user, index) in hiddenUsers" :key="user.id || user.name || index">
                 <Link v-if="isClickable && user.id" :href="route('users.show', user.id)" class="contents">
                   <UserPopover show-name :size="popoverAvatarSize" :user :clickable="false">
                     <template #additional-info>
@@ -71,7 +71,7 @@
       </PopoverTrigger>
       <PopoverContent class="w-64 p-2" align="end">
         <div class="grid gap-1 max-h-72 overflow-y-auto pr-1">
-          <template v-for="user in users" :key="user.id || user.name">
+          <template v-for="(user, index) in users" :key="user.id || user.name || index">
             <Link v-if="isClickable && user.id" :href="route('users.show', user.id)" class="contents">
               <UserPopover show-name :size="popoverAvatarSize" :user :clickable="false">
                 <template #additional-info>
@@ -98,6 +98,7 @@ import { breakpointsTailwind, useBreakpoints } from '@vueuse/core';
 import { ChevronDown } from '@lucide/vue';
 
 import UserPopover from './UserPopover.vue';
+import type { AvatarUser } from './UserAvatar.vue';
 
 import { useIsAdminContext } from '@/Composables/useIsAdminContext';
 import { Avatar, AvatarFallback, avatarSizeClasses, mapPixelToSize, avatarTextSizes, type AvatarSize } from '@/Components/ui/avatar';
@@ -105,7 +106,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/h
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 
 const props = withDefaults(defineProps<{
-  users: App.Entities.User[];
+  users: AvatarUser[];
   max?: number;
   size?: number | AvatarSize;
   limitByScreen?: boolean;

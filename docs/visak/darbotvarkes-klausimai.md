@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Darbotvarkės klausimai
-last_reviewed: 2026-11-01
+last_reviewed: 2026-11-07
 tests:
   - tests/Feature/Permissions/MeetingPermissionsTest.php
   - tests/Feature/Admin/Search/SearchVisibilityParityTest.php

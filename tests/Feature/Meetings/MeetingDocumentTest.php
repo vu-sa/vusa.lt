@@ -135,6 +135,39 @@ test('the meeting page labels each linked document by language and date', functi
             ));
 });
 
+test('linked documents retain their typed record payload in the deferred panel', function (): void {
+    $document = Document::factory()->for($this->institution)->create([
+        'meeting_id' => $this->meeting->id,
+        'status' => DocumentStatus::Published,
+        'document_date' => '2025-02-03',
+        'language' => 'lt',
+    ]);
+
+    asUser($this->admin)->get(route('meetings.show', $this->meeting))
+        ->assertInertia(fn (Assert $page) => $page
+            ->missing('documents')
+            ->loadDeferredProps('meetingPanels', fn (Assert $panels) => $panels
+                ->has('documents', 1, fn (Assert $row) => $row
+                    ->where('id', $document->id)
+                    ->whereType('title', 'string')
+                    ->whereType('name', 'string')
+                    ->where('status', 'published')
+                    ->where('document_date', '2025-02-03')
+                    ->where('language_code', 'lt')
+                    ->where('meeting_id', $this->meeting->id)
+                    ->where('institution.id', $this->institution->id)
+                    ->whereType('institution.tenant.shortname', 'string')
+                    ->whereType('sync_attempts', 'integer')
+                    ->whereType('effective_date', 'string|null')
+                    ->whereType('expiration_date', 'string|null')
+                    ->missing('sharepoint_id')
+                    ->missing('sharepoint_permission_id')
+                    ->etc()
+                )
+            )
+        );
+});
+
 test('a document of unrecorded language carries no language claim', function (): void {
     Document::factory()->for($this->institution)->create([
         'meeting_id' => $this->meeting->id,
@@ -190,6 +223,23 @@ test('the meeting page offers pending files of its padalinys, meeting-day files 
                 ->has('pendingDocuments', 2)
                 ->where('pendingDocuments.0.id', $sameDay->id)
                 ->where('pendingDocuments.1.id', $older->id)
+                ->has('pendingDocuments.0', fn (Assert $row) => $row
+                    ->whereType('id', 'integer')
+                    ->whereType('title', 'string')
+                    ->whereType('name', 'string')
+                    ->where('status', 'pending')
+                    ->whereType('document_date', 'string|null')
+                    ->where('institution.id', $this->institution->id)
+                    ->whereType('institution.name', 'string')
+                    ->whereType('institution.tenant_shortname', 'string|null')
+                    ->whereType('sharepoint_path', 'string|null')
+                    ->whereType('sharepoint_web_url', 'string|null')
+                    ->whereType('sharepoint_modified_at', 'string|null')
+                    ->whereType('problems', 'array')
+                    ->whereType('can.update', 'boolean')
+                    ->where('public_url', null)
+                    ->etc()
+                )
             ));
 });
 

@@ -315,7 +315,7 @@ import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitut
 import { preferredScrollBehavior } from '@/Composables/useAccessibilityPreferences';
 import { useToasts } from '@/Composables/useToasts';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
-import { InstitutionScope, LocaleEnum, ModelEnum } from '@/Types/enums';
+import { InstitutionScope, LocaleEnum, ModelEnum, type ActionType, type AgendaItemType, type CalendarHeroStyleEnum, type CommentKind, type DocumentStatus, type MeetingKind, type MeetingType, type TenantType } from '@/Types/enums';
 import { genitivizeEveryWord } from '@/Utils/String';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { formatMeetingDateTime, formatMeetingTimeOnly, isEmailMeeting } from '@/Utils/MeetingDisplay';
@@ -341,7 +341,7 @@ import MeetingPublicVisibilityDialog from '@/Components/Meetings/MeetingPublicVi
 import { isShownPublicly, meetingVisibilityLabel, type MeetingPublicVisibility } from '@/Components/Meetings/meetingPublicVisibility';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import MeetingDocumentsPanel from '@/Components/Meetings/MeetingDocumentsPanel.vue';
-import { FileableFilesPanel, type DocumentFolderRow, type FileableFileItem } from '@/Components/Files';
+import { FileableFilesPanel, type DocumentFolderRow } from '@/Components/Files';
 import { MEETING_PRIMARY_FILE_TYPES, type FileableFileType } from '@/Constants/fileTypes';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
@@ -349,43 +349,406 @@ import { enterMeeting } from '@/Composables/useRecordTrail';
 import { useTaskActionDialogs } from '@/Composables/useTaskActionDialogs';
 import { countIncompleteTasks } from '@/Composables/useTaskUrgency';
 
+interface MeetingTenant {
+  id: number;
+  type: TenantType | null;
+  fullname: string;
+  shortname: string;
+  alias: string;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+  shortname_vu: string | null;
+  primary_institution_id: string | null;
+  goals_enabled: boolean;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+interface MeetingInstitutionType {
+  extra_attributes: Record<string, unknown> | unknown[] | null;
+  id: number;
+  parent_id: number | null;
+  title: string | null;
+  description: string | null;
+  slug: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  deleted_at: string | null;
+  pivot: { institution_id: string; institution_type_id: number };
+}
+
+interface MeetingInstitution {
+  id: string;
+  name: string | null;
+  short_name: string | null;
+  alias: string;
+  description: string | null;
+  address: string | null;
+  phone: string | null;
+  email: string | null;
+  working_hours: string | null;
+  website: string | null;
+  logo_url: string | null;
+  facebook_url: string | null;
+  instagram_url: string | null;
+  tenant_id: number | null;
+  is_active: number;
+  meeting_periodicity_days: number | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  types: Array<MeetingInstitutionType>;
+  tenant: MeetingTenant | null;
+  pivot: { meeting_id: string; institution_id: string };
+}
+
+interface MeetingImage {
+  id: number | null;
+  url: string;
+  thumb: string;
+  srcset: string | null;
+  width: number | null;
+  height: number | null;
+  focal_point: string | null;
+  alt: string | null;
+  author: string | null;
+}
+
+interface MeetingMedia {
+  id: number;
+  model_type: string;
+  model_id: string;
+  uuid: string | null;
+  collection_name: string;
+  name: string;
+  file_name: string;
+  mime_type: string | null;
+  disk: string;
+  conversions_disk: string | null;
+  size: number;
+  manipulations: Record<string, unknown> | unknown[];
+  custom_properties: Record<string, unknown> | unknown[];
+  generated_conversions: Record<string, boolean>;
+  responsive_images: Record<string, unknown> | unknown[];
+  order_column: number | null;
+  created_at: string | null;
+  updated_at: string | null;
+  original_url: string;
+  preview_url: string;
+}
+
+interface MeetingCalendarEvent {
+  id: number;
+  title: string | null;
+  permalink: string | null;
+  description: string | null;
+  location: string | null;
+  is_remote: boolean;
+  organizer: string | null;
+  cto_url: string | null;
+  facebook_url: string | null;
+  main_image_focal_point: string | null;
+  is_draft: boolean;
+  is_all_day: boolean;
+  is_international: boolean;
+  hero_style: CalendarHeroStyleEnum;
+  date: string;
+  end_date: string | null;
+  event_type_id: number | null;
+  tenant_id: number;
+  meeting_id: string | null;
+  created_at: string;
+  updated_at: string;
+  registration_form_id: number | null;
+  deleted_at: string | null;
+  main_image_url: string | null;
+  main_image_media: MeetingImage | null;
+  media: Array<MeetingMedia>;
+}
+
+interface MeetingFile {
+  id: string;
+  fileable_type: string;
+  fileable_id: string;
+  sharepoint_id: string;
+  sharepoint_path: string | null;
+  name: string;
+  file_type: string | null;
+  mime_type: string | null;
+  size_bytes: number | null;
+  file_date: string | null;
+  description: string | null;
+  public_link: string | null;
+  public_link_expires_at: string | null;
+  last_synced_at: string | null;
+  deleted_externally_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  formatted_size: string | null;
+}
+
+interface MeetingComment {
+  metadata: Record<string, unknown> | unknown[] | null;
+  mentioned_user_ids: string[] | null;
+  id: string;
+  parent_id: string | null;
+  thread_root_id: string | null;
+  commentable_type: string;
+  commentable_id: string;
+  user_id: string | null;
+  kind: CommentKind;
+  body: string;
+  resolved_at: string | null;
+  resolved_by: string | null;
+  edited_at: string | null;
+  erased_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  user: { id: string; name: string; profile_photo_path: string | null } | null;
+}
+
+interface MeetingVote {
+  id: string;
+  agenda_item_id: string;
+  is_main: boolean;
+  is_consensus: boolean;
+  student_vote: string | null;
+  decision: string | null;
+  student_benefit: string | null;
+  order: number;
+  created_at: string | null;
+  updated_at: string | null;
+  title: string | null;
+  note: string | null;
+}
+
+interface RedactedAgendaItem {
+  id: string;
+  order: number;
+  is_private: true;
+  is_redacted: true;
+  title: string;
+  can: { update: boolean; delete: boolean };
+}
+
+interface FullAgendaItem {
+  tenants: MeetingTenant[] | null;
+  meeting: Record<string, unknown> | null;
+  is_redacted?: never;
+  id: string;
+  meeting_id: string;
+  created_at: string;
+  updated_at: string;
+  order: number;
+  brought_by_students: boolean;
+  type: AgendaItemType | null;
+  start_time: string | null;
+  end_time: string | null;
+  title: string | null;
+  description: string | null;
+  student_position: string | null;
+  is_private: boolean;
+  public_title: string | null;
+  votes: Array<MeetingVote>;
+  comments_count: number;
+  has_notes: boolean;
+  can: { update: boolean; delete: boolean };
+}
+
+type AgendaListItem = RedactedAgendaItem | FullAgendaItem;
+
+interface MeetingRecord {
+  tenants: Array<Record<string, unknown>> | null;
+  type_label?: never;
+  id: string;
+  title: string;
+  meeting_kind: MeetingKind | null;
+  type: MeetingType | null;
+  start_time: string;
+  end_time: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  description: { lt: string; en: string };
+  title_noun: string;
+  inherited_meeting_kind: MeetingKind;
+  agenda_items: AgendaListItem[];
+  sharepointPath: string | null;
+  sharepointFolderUrl: string | null;
+  institutions: Array<MeetingInstitution>;
+  calendar_event: MeetingCalendarEvent | null;
+  is_public: boolean;
+  is_joint: boolean;
+  has_protocol: boolean;
+  has_report: boolean;
+}
+
+interface InternalMeetingRecord extends MeetingRecord {
+  comments_count: number;
+  tasks_count: number;
+  documents_count: number;
+  fileable_files: Array<MeetingFile>;
+  comments: Array<MeetingComment>;
+}
+
+interface MeetingRepresentativePivot {
+  dutiable_type: string;
+  dutiable_id: string;
+  duty_id: string;
+  id: string;
+  via_dutiable_id: string | null;
+  tenant_id: number | null;
+  start_date: string;
+  end_date: string | null;
+  additional_photo: string | null;
+  additional_photo_focal_point: string | null;
+  additional_email: string | null;
+  use_original_duty_name: boolean;
+  description: string | null;
+  study_program_id: string | null;
+}
+
+interface MeetingRepresentativeDuty {
+  id: string;
+  name: string | null;
+  description: string | null;
+  institution_id: string;
+  order: number;
+  email: string | null;
+  contacts_grouping: string;
+  places_to_occupy: number | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  pivot: MeetingRepresentativePivot;
+}
+
+interface MeetingRepresentative {
+  id: string;
+  email: string | null;
+  phone: string | null;
+  facebook_url: string | null;
+  name: string;
+  pronouns: string | null;
+  show_pronouns: boolean;
+  is_active: number;
+  updated_at: string;
+  created_at: string;
+  profile_photo_path: string | null;
+  profile_photo_focal_point: string | null;
+  deleted_at: string | null;
+  duties: Array<MeetingRepresentativeDuty>;
+}
+
+interface MeetingTask {
+  id: string;
+  name: string;
+  description: string | null;
+  due_date: string | null;
+  completed_at: string | null;
+  cancelled_at: string | null;
+  created_at: string;
+  updated_at: string;
+  action_type: ActionType | null;
+  metadata: Record<string, unknown> | null;
+  progress: { current: number; total: number; percentage: number } | null;
+  is_overdue: boolean;
+  can_be_manually_completed: boolean;
+  can_update: boolean;
+  icon: string;
+  color: string;
+  taskable: { id: number | string; name: string | null; type: string } | null;
+  taskable_type: string;
+  taskable_id: string;
+  users: Array<{ id: string; name: string; profile_photo_path: string | null }>;
+}
+
+interface AttachableMeetingInstitution {
+  id: string;
+  name: string | null;
+  is_active: boolean;
+  tenant_shortname: string | null;
+}
+
+interface MeetingSecretary {
+  id: string;
+  name: string;
+  email: string | null;
+  profile_photo_path: string | null;
+}
+
+type MeetingDocumentInstitution = Omit<MeetingInstitution, 'types' | 'pivot'>;
+
+interface LinkedMeetingDocumentFields {
+  id: number;
+  name: string;
+  title: string;
+  document_date: string | null;
+  institution_id: string | null;
+  meeting_id: string | null;
+  content_type: string | null;
+  language: string | null;
+  summary: string | null;
+  anonymous_url: string | null;
+  link_url: string | null;
+  status: DocumentStatus;
+  removed_from_sharepoint_at: string | null;
+  published_at: string | null;
+  sharepoint_modified_at: string | null;
+  checked_at: string | null;
+  sync_status: 'pending' | 'syncing' | 'success' | 'failed' | 'imported';
+  sync_error_message: string | null;
+  sync_attempts: number;
+  last_sync_attempt_at: string | null;
+  effective_date: string | null;
+  expiration_date: string | null;
+  language_code: string;
+  institution: MeetingDocumentInstitution | null;
+}
+
+type LinkedMeetingDocument = LinkedMeetingDocumentFields | (LinkedMeetingDocumentFields & { tenant: Array<Record<string, unknown>> });
+
 interface MeetingAbilities {
   update: boolean;
   delete: boolean;
-  discard?: boolean;
+  discard: boolean;
   createAgendaItems: boolean;
   reorderAgendaItems: boolean;
   attachInstitution: boolean;
 }
 
 interface MeetingCompletion {
-  status: MeetingCompletionStatus;
+  status: MeetingCompletionStatus | null;
   missingActions: MeetingMissingAction[];
 }
 
 const props = withDefaults(defineProps<{
-  meeting: App.Entities.Meeting;
-  representatives: App.Entities.User[];
-  availableInstitutionsForAttach?: { id: string; name: string; is_active?: boolean; tenant_shortname?: string | null }[] | null;
+  meeting: MeetingRecord | InternalMeetingRecord;
+  representatives: MeetingRepresentative[];
+  secretaries: MeetingSecretary[];
+  availableInstitutionsForAttach: AttachableMeetingInstitution[];
   governanceScope?: string;
-  abilities?: MeetingAbilities;
-  completion?: MeetingCompletion;
-  publicVisibility?: MeetingPublicVisibility;
+  abilities: MeetingAbilities;
+  completion: MeetingCompletion;
+  publicVisibility: MeetingPublicVisibility;
   recordNavigation?: RecordNavigationContext;
-  tasks?: InstanceType<typeof TaskManager>['$props']['tasks'];
-  documents?: NonNullable<App.Entities.Meeting['documents']>;
+  tasks?: MeetingTask[];
+  documents?: LinkedMeetingDocument[];
   /** Unpublished SharePoint files this meeting could link. */
   pendingDocuments?: DocumentFolderRow[];
   recentAgendas?: RecentAgenda[] | null;
-  files?: FileableFileItem[];
+  files: MeetingFile[];
   /** A public meeting outside the user's reach: its agenda only (MeetingPolicy::viewSummary). */
-  readOnly?: boolean;
+  readOnly: boolean;
 }>(), {
   availableInstitutionsForAttach: () => [],
   governanceScope: undefined,
   abilities: () => ({
     update: false,
     delete: false,
+    discard: false,
     createAgendaItems: false,
     reorderAgendaItems: false,
     attachInstitution: false,
@@ -464,7 +827,7 @@ const { hasProtocol, isPastMeeting } = useMeetingUrgency(() => props.meeting);
 // Hide HH:MM for email/electronic meetings (start_time is forced to 23:59 as a deadline marker)
 const meetingTimeLabel = computed(() => formatMeetingTimeOnly(props.meeting));
 const meetingRelativeTime = computed(() => formatNearDate(props.meeting.start_time));
-const meetingStatus = computed(() => meetingCompletionStatuses[props.completion.status]);
+const meetingStatus = computed(() => props.completion.status === null ? undefined : meetingCompletionStatuses[props.completion.status]);
 const documentStatuses = computed(() => [
   {
     key: 'protocol',
@@ -496,8 +859,7 @@ const openAgendaSheet = (mode: AddAgendaMode) => {
   showAgendaSheet.value = true;
 };
 
-// The list holds localized strings, so the sheet loads the item with every translation on opening.
-type AgendaListItem = App.Entities.AgendaItem & { can?: { update?: boolean; delete?: boolean } };
+// The edit sheet loads every translation when opened.
 
 const agendaItemEditorOpen = ref(false);
 const agendaItemBeingEdited = ref<AgendaListItem | null>(null);
@@ -507,7 +869,10 @@ const editableAgendaItemLoading = ref<string | null>(null);
 const editableAgendaItemUrl = ref('');
 const editableAgendaItemApi = useApi<EditableAgendaItemSource & { id: string; order: number }>(editableAgendaItemUrl, { immediate: false, refetch: false });
 
-const openAgendaItemEditor = async (item: AgendaListItem) => {
+const openAgendaItemEditor = async ({ id }: Pick<AgendaListItem, 'id'>) => {
+  const item = props.meeting.agenda_items.find(candidate => candidate.id === id);
+  if (!item) return;
+
   editableAgendaItemLoading.value = item.id;
   editableAgendaItemUrl.value = route('api.v1.admin.agendaItems.editable', item.id);
   await editableAgendaItemApi.execute();
@@ -534,7 +899,7 @@ const deleteFromEditor = () => {
 
 const previousItemEnd = (order: number): string | null => {
   const previous = (props.meeting.agenda_items ?? [])
-    .filter(item => item.order < order && item.end_time)
+    .filter((item): item is FullAgendaItem => !item.is_redacted && item.order < order && !!item.end_time)
     .sort((a, b) => b.order - a.order)[0];
 
   return previous?.end_time ? String(previous.end_time).slice(0, 5) : null;
@@ -708,7 +1073,7 @@ onMounted(() => {
 });
 
 // Computed values
-const mainInstitution: App.Entities.Institution | string
+const mainInstitution: MeetingInstitution | string
   = props.meeting.institutions?.[0] ?? 'Be institucijos';
 
 const meetingTitle = computed(() => {
@@ -718,7 +1083,7 @@ const meetingTitle = computed(() => {
     month: 'long',
     day: 'numeric',
   }, locale);
-  const noun = (props.meeting as App.Entities.Meeting & { title_noun?: string }).title_noun ?? $t('posėdis');
+  const noun = props.meeting.title_noun ?? $t('posėdis');
 
   if ((props.meeting.institutions?.length ?? 0) > 1) return `${datePart} ${noun}`;
 
@@ -729,14 +1094,17 @@ const meetingTitle = computed(() => {
   return [datePart, institutionName, noun].filter(Boolean).join(' ');
 });
 
-watch(() => props.meeting.id, () => enterMeeting(props.meeting), { immediate: true });
+watch(() => props.meeting.id, () => enterMeeting({
+  ...props.meeting,
+  institutions: props.meeting.institutions.map(institution => ({ id: institution.id, name: institution.name ?? '' })),
+}), { immediate: true });
 
 // Joint meeting — institution management
 const showAddInstitutionDialog = ref(false);
 const addInstitutionId = ref('');
 
 const availableInstitutionsToAdd = computed(() => {
-  const attached = new Set(props.meeting.institutions?.map((i: App.Entities.Institution) => i.id) ?? []);
+  const attached = new Set(props.meeting.institutions?.map((i) => i.id) ?? []);
   return (props.availableInstitutionsForAttach ?? [])
     .filter(inst => !attached.has(inst.id))
     .map(inst => ({
@@ -830,9 +1198,9 @@ const handleRecordAction = (action: string) => {
 // Event handlers
 // Agenda item deletion goes through a confirmation dialog
 const showAgendaItemDeleteDialog = ref(false);
-const agendaItemPendingDelete = ref<App.Entities.AgendaItem | null>(null);
+const agendaItemPendingDelete = ref<AgendaListItem | null>(null);
 
-const requestAgendaItemDelete = (agendaItem: App.Entities.AgendaItem) => {
+const requestAgendaItemDelete = (agendaItem: AgendaListItem) => {
   agendaItemPendingDelete.value = agendaItem;
   showAgendaItemDeleteDialog.value = true;
 };

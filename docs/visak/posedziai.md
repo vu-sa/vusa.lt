@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Posėdžiai
-last_reviewed: 2026-11-06
+last_reviewed: 2026-11-07
 tests:
   - resources/js/Pages/Admin/Representation/__tests__/ShowMeeting.component.test.ts
   - resources/js/Components/AdminForms/__tests__/MeetingForm.component.test.ts

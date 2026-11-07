@@ -31,8 +31,8 @@ export interface TaskDisplayData {
   can_update?: boolean;
   can_delete?: boolean;
   taskable?: {
-    id: string;
-    name?: string;
+    id: string | number;
+    name?: string | null;
     type?: string;
   } | null;
   taskable_type: string;
@@ -40,7 +40,7 @@ export interface TaskDisplayData {
   users?: Array<{
     id: string;
     name: string;
-    profile_photo_path?: string;
+    profile_photo_path?: string | null;
   }>;
 }
 
