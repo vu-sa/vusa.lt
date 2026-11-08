@@ -11,6 +11,7 @@ use App\Models\Meeting;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
 use App\Settings\AtstovavimasSettings;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Carbon;
@@ -158,7 +159,7 @@ class DutyService
      *
      * @see getInstitutionsForDashboard() for full access including coordinator tenants
      */
-    public static function getUserInstitutionsForDashboard(bool $activeOnly = false)
+    public static function getUserInstitutionsForDashboard(bool $activeOnly = false, ?CarbonInterface $meetingsFrom = null)
     {
         $user = request()->user();
 
@@ -178,7 +179,7 @@ class DutyService
             return collect();
         }
 
-        $institutions = self::buildInstitutionQuery()
+        $institutions = self::buildInstitutionQuery($meetingsFrom)
             ->when($activeOnly, fn ($query) => $query->active())
             ->whereIn('id', $userInstitutionIds)
             ->get();
@@ -311,7 +312,7 @@ class DutyService
     /**
      * Build the base query for dashboard institutions with all needed eager loading.
      */
-    private static function buildInstitutionQuery()
+    private static function buildInstitutionQuery(?CarbonInterface $meetingsFrom = null)
     {
         return Institution::select('id', 'name', 'alias', 'tenant_id', 'is_active', 'meeting_periodicity_days')
             ->whereHas('tenant', function ($query): void {
@@ -320,7 +321,8 @@ class DutyService
             ->with([
                 'tenant:id,shortname,type',
                 'types', // explicit since not auto-loaded
-                'meetings:id,title,start_time,type',
+                'meetings' => fn ($query) => $query->select('meetings.id', 'title', 'start_time', 'type')
+                    ->when($meetingsFrom, fn ($query) => $query->where('start_time', '>=', $meetingsFrom)),
                 'meetings.institutions:id',
                 'meetings.institutions.types',
                 'meetings.agendaItems:id,meeting_id,title,type,brought_by_students,order,is_private,public_title',

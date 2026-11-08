@@ -192,7 +192,7 @@ class ProblemController extends AdminController
     private function discussedIn(Problem $problem): array
     {
         return $problem->agendaItems()
-            ->with('meeting.institutions:id,name')
+            ->with(['meeting.institutions:id,name', 'meeting.institutions.types'])
             ->get()
             ->filter(fn (AgendaItem $item): bool => $item->meeting !== null && Gate::allows('viewSummary', $item)
                 && (! $item->is_private || Gate::allows('view', $item)))

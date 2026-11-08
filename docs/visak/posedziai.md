@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Posėdžiai
-last_reviewed: 2026-11-07
+last_reviewed: 2026-11-08
 tests:
   - resources/js/Pages/Admin/Representation/__tests__/ShowMeeting.component.test.ts
   - resources/js/Components/AdminForms/__tests__/MeetingForm.component.test.ts
@@ -187,7 +187,8 @@ Fiksuoti posėdį** (arba institucijos puslapyje **Fiksuoti veiklą**) ir veiksm
    renkasi iš institucijų, kuriose eina pareigas; koordinatorius gali ieškoti ir kitų savo padalinio
    institucijų;
 2. pasirink posėdžio tipą;
-3. nurodyk datą ir laiką – siūlomos šiandiena, vakar ir įprasta institucijos posėdžių diena;
+3. nurodyk datą ir laiką – siūlomos šiandiena, vakar ir įprasta institucijos posėdžių diena,
+   nustatyta pagal pastarųjų šešių mėnesių posėdžius;
    sprendimui el. paštu laikas nustatomas 23:59;
 4. įvesk darbotvarkės punktus (po vieną eilutę), pasirink įvesti juos vėliau arba praleisk;
 5. VU SA darinio posėdį gali iš karto **paskelbti kalendoriuje**.
@@ -199,7 +200,8 @@ Kiti **Veiksmai** veiksmai:
   [Institucijos](/visak/institucijos#posedzio-nebuvo)). Jei vėliau užregistruojamas posėdis tame
   laikotarpyje, pranešimas sutrumpinamas.
 - **Užbaigti posėdį** – papildyti jau užregistruotą praėjusį posėdį. Pirmiausia siūlomi posėdžiai
-  be darbotvarkės; būsimi posėdžiai nesiūlomi.
+  be darbotvarkės. Siūlomi pastarųjų šešių mėnesių posėdžiai; senesnį posėdį galima atverti
+  [posėdžių sąraše](app:/mano/meetings). Būsimi posėdžiai nesiūlomi.
 
 ### Darbotvarkės punktų pridėjimas
 

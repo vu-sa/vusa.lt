@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Atsakomybės ir leidimai
-last_reviewed: 2026-11-07
+last_reviewed: 2026-11-08
 tests:
   - tests/Feature/Permissions/MeetingPermissionsTest.php
   - tests/Feature/Console/SyncPermissionsTest.php

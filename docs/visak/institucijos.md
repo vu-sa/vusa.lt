@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Institucijos
-last_reviewed: 2026-11-07
+last_reviewed: 2026-11-08
 tests:
   - tests/Feature/Admin/ModelMeta/TypeControllerTest.php
   - tests/Feature/Meetings/MeetingKindTest.php

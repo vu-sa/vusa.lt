@@ -57,3 +57,15 @@ test('rolling back an access change preserves its caches', function (): void {
 
     expect(Cache::get($key))->toBe(['current']);
 });
+
+test('institution access invalidation also clears the memoized value', function (bool $includeRelated): void {
+    $user = User::factory()->create();
+    $key = InstitutionAccessService::getAccessCacheKey($user->id, $includeRelated);
+    Cache::put($key, collect(['stale-institution']), 60);
+    $service = app(InstitutionAccessService::class);
+    expect($service->getAccessibleInstitutionIds($user, $includeRelated)->all())->toBe(['stale-institution']);
+
+    InstitutionAccessService::invalidateForUser($user->id);
+
+    expect($service->getAccessibleInstitutionIds($user, $includeRelated))->toBeEmpty();
+})->with([true, false]);

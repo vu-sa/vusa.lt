@@ -6,6 +6,7 @@ use App\Notifications\Channels\IdempotentDatabaseChannel;
 use App\Notifications\ReservationStatusChangeBatch;
 use App\Services\InstitutionRelationService;
 use App\Services\InstitutionScopeResolver;
+use App\Services\MeetingAccessService;
 use App\Services\ModelAuthorizer;
 use App\Services\PermissionService;
 use App\Services\ResponsibilityResolver;
@@ -14,10 +15,12 @@ use App\Services\Typesense\MeetingSearchLock;
 use App\Support\LocalizedRouteSlugs;
 use App\Support\MorphMap;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Http\Middleware\TrimStrings;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\Channels\DatabaseChannel;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
@@ -49,6 +52,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(InstitutionScopeResolver::class);
         $this->app->scoped(ResponsibilityResolver::class);
         $this->app->scoped(SystemDutyTypes::class);
+        $this->app->scoped(MeetingAccessService::class);
         $this->app->scoped(MeetingSearchLock::class);
         $this->app->scoped(InstitutionRelationService::class);
         $this->app->scoped(ReservationStatusChangeBatch::class);
@@ -69,6 +73,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         Schema::defaultStringLength(125);
+
+        Model::preventLazyLoading(! app()->isProduction());
+        Model::handleLazyLoadingViolationUsing(static function (Model $model, string $relation): void {
+            Log::warning('Lazy loading detected.', ['model' => $model::class, 'relation' => $relation]);
+        });
 
         $this->configureRateLimiting();
 

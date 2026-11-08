@@ -143,9 +143,9 @@ class Task extends Model
      *
      * @return SupportCollection<int, User>
      */
-    public function notifiableUsers(): SupportCollection
+    public function notifiableUsers(?SupportCollection $audienceMemo = null): SupportCollection
     {
-        return ResolveTaskAudience::execute($this);
+        return ResolveTaskAudience::execute($this, $audienceMemo);
     }
 
     public function tenants(): HasManyDeep

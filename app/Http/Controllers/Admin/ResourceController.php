@@ -101,7 +101,7 @@ class ResourceController extends AdminController
 
         $resource->load(['tenant:id,shortname', 'category', 'media']);
 
-        $active = $resource->active_reservations()->orderByPivot('start_time')->get();
+        $active = $resource->active_reservations()->with(['users', 'resources.tenant', 'tenants'])->orderByPivot('start_time')->get();
 
         $row = fn (Reservation $reservation): array => $this->reservationRow($reservation, $user, $now);
 
@@ -124,6 +124,7 @@ class ResourceController extends AdminController
             'upcoming' => $active->filter(fn (Reservation $reservation) => $reservation->pivot->start_time?->gt($now))->take(10)->map($row)->values(),
             'managers' => SerializeResourceManagers::execute($resource),
             'history' => Inertia::defer(fn () => $resource->reservations()
+                ->with(['users', 'resources.tenant', 'tenants'])
                 ->wherePivotIn('state', ['returned', 'rejected', 'cancelled'])
                 ->orderByPivot('end_time', 'desc')
                 ->limit(50)
@@ -177,6 +178,7 @@ class ResourceController extends AdminController
         return Inertia::render('Admin/Reservations/EditResource', [
             // The full history lives on the resource page; the form only shows what is newest.
             'recentReservations' => $resource->reservations()
+                ->with(['users', 'resources.tenant', 'tenants'])
                 ->orderByPivot('start_time', 'desc')
                 ->limit(5)
                 ->get()

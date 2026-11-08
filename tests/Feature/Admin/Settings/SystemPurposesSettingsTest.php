@@ -121,3 +121,16 @@ test('whoever may update settings is told they can edit', function (): void {
     asUserWithInertia($this->admin)->get(route('settings.index'))
         ->assertOk()->assertInertia(fn (Assert $page) => $page->where('canEdit', true));
 });
+
+test('flushing system duty types refreshes descendant ids within the same request', function (): void {
+    $root = DutyType::factory()->create();
+    app(DutyTypeSettings::class)->fill([SystemDutyType::Coordinator->settingKey() => $root->id])->save();
+    $service = app(SystemDutyTypes::class);
+    $service->flush();
+    expect($service->idsWithDescendants(SystemDutyType::Coordinator))->toBe([$root->id]);
+    $child = DutyType::factory()->create(['parent_id' => $root->id]);
+
+    $service->flush();
+
+    expect($service->idsWithDescendants(SystemDutyType::Coordinator))->toBe([$root->id, $child->id]);
+});

@@ -11,12 +11,26 @@ use Illuminate\Support\Collection;
 
 class MeetingAccessService
 {
-    public function __construct(private readonly InstitutionAccessService $institutions, private readonly ModelAuthorizer $authorizer) {}
+    /** @var \WeakMap<Meeting, array<string, bool>> */
+    private \WeakMap $baselineAccess;
+
+    public function __construct(private readonly InstitutionAccessService $institutions, private readonly ModelAuthorizer $authorizer)
+    {
+        $this->baselineAccess = new \WeakMap;
+    }
 
     public function hasBaselineAccess(User $user, Meeting $meeting): bool
     {
-        return $meeting->hadMemberAtTheTime($user)
-            || $this->institutions->getAccessibleInstitutionIds($user)->intersect($meeting->institutions->modelKeys())->isNotEmpty();
+        $memo = $this->baselineAccess[$meeting] ?? [];
+        $key = $user->getKey().':'.$meeting->start_time->toDateString();
+
+        if (! array_key_exists($key, $memo)) {
+            $memo[$key] = $meeting->hadMemberAtTheTime($user)
+                || $this->institutions->getAccessibleInstitutionIds($user)->intersect($meeting->institutions->modelKeys())->isNotEmpty();
+            $this->baselineAccess[$meeting] = $memo;
+        }
+
+        return $memo[$key];
     }
 
     public function allows(User $user, Meeting $meeting, string $resource, string $ability): bool

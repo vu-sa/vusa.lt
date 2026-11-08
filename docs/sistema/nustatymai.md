@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Nustatymai
-last_reviewed: 2026-10-28
+last_reviewed: 2026-11-08
 tests:
   - tests/Feature/Admin/Settings/SystemPurposesSettingsTest.php
   - tests/Feature/Admin/Settings/CadenceControllerTest.php

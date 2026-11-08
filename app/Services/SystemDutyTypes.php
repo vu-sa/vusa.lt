@@ -17,6 +17,9 @@ class SystemDutyTypes
     /** @var array<string, int|null>|null */
     private ?array $ids = null;
 
+    /** @var array<string, list<int>> */
+    private array $descendantIds = [];
+
     public function id(SystemDutyType $part): ?int
     {
         return $this->ids()[$part->value] ?? null;
@@ -35,9 +38,7 @@ class SystemDutyTypes
     public function idsWithDescendants(SystemDutyType ...$parts): array
     {
         return collect($parts)
-            ->map(fn (SystemDutyType $part) => $this->type($part))
-            ->filter()
-            ->flatMap(fn (DutyType $type) => $type->getDescendantsAndSelf()->pluck('id'))
+            ->flatMap(fn (SystemDutyType $part) => $this->descendantIds[$part->value] ??= $this->type($part)?->getDescendantsAndSelf()->pluck('id')->all() ?? [])
             ->map(fn ($id): int => (int) $id)
             ->unique()
             ->values()
@@ -67,6 +68,7 @@ class SystemDutyTypes
     public function flush(): void
     {
         $this->ids = null;
+        $this->descendantIds = [];
         Cache::forget(self::CACHE_KEY);
         Cache::forget(self::CACHE_KEY.':curator_ids');
     }

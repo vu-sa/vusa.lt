@@ -95,15 +95,18 @@ trait HasCommonChecks
             return false;
         }
 
+        return $this->tenantsFor($model, $tenantRelation)->intersect($padalinysScope->tenants)->isNotEmpty();
+    }
+
+    protected function tenantsFor(Model $model, string $tenantRelation): Collection
+    {
         $modelTenants = $model->loadMissing($tenantRelation)->getRelation($tenantRelation);
 
-        $modelCollection = match (true) {
+        return match (true) {
             $modelTenants instanceof Collection => $modelTenants,
             $modelTenants instanceof Model => new Collection([$modelTenants]),
             default => new Collection,
         };
-
-        return $modelCollection->intersect($padalinysScope->tenants)->isNotEmpty();
     }
 
     /**

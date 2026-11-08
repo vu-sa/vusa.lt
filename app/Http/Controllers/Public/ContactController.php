@@ -454,7 +454,7 @@ class ContactController extends PublicController
             ->where('start_time', '<=', now())
             ->orderBy('start_time', 'desc')
             ->get()
-            ->each(fn (Meeting $meeting) => $meeting->append('completion_status', 'requires_student_perspective', 'outcome_summary'));
+            ->each(fn (Meeting $meeting) => $meeting->append('requires_student_perspective'));
     }
 
     /**

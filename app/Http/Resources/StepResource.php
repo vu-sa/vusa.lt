@@ -23,6 +23,7 @@ class StepResource extends JsonResource
         'createdBy:id,name',
         'performers:id,name',
         'agendaItem.meeting.institutions:id,name',
+        'agendaItem.meeting.institutions.types',
         'document:id,title,anonymous_url',
         'goal:id,title',
         'problem:id,title',

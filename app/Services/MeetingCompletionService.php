@@ -21,7 +21,7 @@ class MeetingCompletionService
     {
         $meetings = $meetings->filter(fn (Meeting $meeting) => $meeting->start_time->toDateString() >= $start->toDateString()
             && $meeting->start_time->toDateString() <= $end->toDateString());
-        $meetings->loadMissing(['agendaItems.votes', 'institutions']);
+        $meetings->loadMissing(['agendaItems.votes', 'institutions.types']);
 
         return $meetings->reject(fn (Meeting $meeting) => $this->calculate($meeting) === 'complete');
     }

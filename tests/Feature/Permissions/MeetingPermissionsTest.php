@@ -8,6 +8,8 @@ use App\Models\Tenant;
 use App\Services\ModelAuthorizer;
 use App\Settings\MeetingSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
@@ -167,4 +169,46 @@ test('former members navigation and agenda suggestions do not reveal meetings ou
             ->where('recordNavigation.meetings.0.id', (string) $earlier->id)
             ->reloadOnly('recentAgendas', fn (Assert $reload) => $reload->has('recentAgendas', 1)
                 ->where('recentAgendas.0.id', (string) $earlier->id)));
+});
+
+test('checking private agenda access does not add queries as the agenda grows', function (bool $memberAtTheTime): void {
+    $meeting = Meeting::factory()->hasAttached($this->institution)->create(['start_time' => $memberAtTheTime ? now() : now()->subYear()]);
+    AgendaItem::factory()->for($meeting)->count(2)->create(['is_private' => true]);
+    asUser($this->member);
+    Gate::allows('viewAny', Meeting::class);
+
+    $queryCount = function () use ($meeting): int {
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+
+        try {
+            $loaded = $meeting->fresh(['agendaItems']);
+            foreach ($loaded->agendaItems as $item) {
+                expect(Gate::allows('view', $item))->toBeTrue();
+            }
+
+            return count(DB::getQueryLog());
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
+    };
+
+    $smallAgendaQueries = $queryCount();
+    AgendaItem::factory()->for($meeting)->count(10)->create(['is_private' => true]);
+
+    expect($queryCount())->toBeLessThanOrEqual($smallAgendaQueries);
+})->with(['member at the meeting date' => true, 'access through a current duty' => false]);
+
+test('a meeting with its agenda can be serialized with the inverse meeting loaded', function (): void {
+    $meeting = Meeting::factory()->hasAttached($this->institution)->create();
+    $item = AgendaItem::factory()->for($meeting)->create(['is_private' => false]);
+    $loaded = $meeting->fresh(['agendaItems']);
+
+    expect($loaded->agendaItems->first()->meeting)->toBe($loaded);
+    $serialized = json_decode($loaded->toJson(), true, flags: JSON_THROW_ON_ERROR);
+
+    expect($serialized['agenda_items'][0]['id'])->toBe($item->id)
+        ->and($serialized['agenda_items'][0]['meeting']['id'])->toBe($meeting->id)
+        ->and($serialized['agenda_items'][0]['meeting'])->not->toHaveKey('agenda_items');
 });

@@ -58,7 +58,7 @@ class SharepointFileService
         }
 
         if ($fileable instanceof Institution) {
-            $tenant = $fileable->load('tenant')->tenant;
+            $tenant = $fileable->loadMissing('tenant')->tenant;
 
             if (! isset($tenant)) {
                 abort(500, 'Institution does not have a tenant. Tenant must be assigned.');
@@ -70,7 +70,7 @@ class SharepointFileService
         }
 
         if ($fileable instanceof Meeting) {
-            $institution = $fileable->load('institutions.tenant')->institutions->first();
+            $institution = $fileable->loadMissing('institutions.tenant')->institutions->first();
             $formattedDatetime = Carbon::parse($fileable->start_time)->format('Y-m-d H.i');
 
             if (! isset($institution)) {
@@ -91,7 +91,7 @@ class SharepointFileService
         }
 
         if ($fileable instanceof Duty) {
-            $institution = $fileable->load('institution.tenant')->institution;
+            $institution = $fileable->loadMissing('institution.tenant')->institution;
 
             if (! isset($institution)) {
                 abort(500, 'Duty does not have an institution. Institution must be assigned.');
@@ -118,11 +118,13 @@ class SharepointFileService
      */
     public static function pathOrNull(Model $fileable): ?string
     {
-        try {
-            return self::pathForFileableDriveItem($fileable);
-        } catch (HttpException) {
-            return null;
-        }
+        return once(static function () use ($fileable): ?string {
+            try {
+                return self::pathForFileableDriveItem($fileable);
+            } catch (HttpException) {
+                return null;
+            }
+        });
     }
 
     /**

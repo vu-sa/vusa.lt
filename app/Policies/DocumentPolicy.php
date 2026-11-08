@@ -6,6 +6,7 @@ use App\Enums\ModelEnum;
 use App\Models\Document;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
@@ -66,5 +67,19 @@ class DocumentPolicy extends ModelPolicy
     public function publish(User $user, Document $document): bool
     {
         return $this->update($user, $document);
+    }
+
+    #[\Override]
+    protected function tenantsFor(Model $model, string $tenantRelation): Collection
+    {
+        if ($model instanceof Document && $model->relationLoaded('institution')) {
+            $institution = $model->institution;
+
+            if ($institution === null || $institution->relationLoaded('tenant')) {
+                return new Collection($institution?->tenant === null ? [] : [$institution->tenant]);
+            }
+        }
+
+        return parent::tenantsFor($model, $tenantRelation);
     }
 }

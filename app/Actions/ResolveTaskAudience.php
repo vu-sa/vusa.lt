@@ -31,7 +31,7 @@ class ResolveTaskAudience
     /**
      * @return Collection<int, User>
      */
-    public static function execute(Task $task): Collection
+    public static function execute(Task $task, ?Collection $audienceMemo = null): Collection
     {
         $task->loadMissing('users');
 
@@ -51,10 +51,10 @@ class ResolveTaskAudience
         $today = Carbon::today();
         $taskDate = self::taskDateFor($task) ?? $today;
 
-        $eligibleIds = self::belongingIds($institutions, $today);
+        $eligibleIds = self::belongingIds($institutions, $today, $audienceMemo);
 
         if (! $taskDate->isSameDay($today)) {
-            $eligibleIds = $eligibleIds->intersect(self::belongingIds($institutions, $taskDate));
+            $eligibleIds = $eligibleIds->intersect(self::belongingIds($institutions, $taskDate, $audienceMemo));
         }
 
         return $assignees
@@ -68,12 +68,22 @@ class ResolveTaskAudience
      * @param  Collection<int, Institution>  $institutions
      * @return Collection<int, string>
      */
-    private static function belongingIds(Collection $institutions, Carbon $date): Collection
+    private static function belongingIds(Collection $institutions, Carbon $date, ?Collection $audienceMemo): Collection
     {
         return $institutions
-            ->flatMap(fn (Institution $institution) => GetInstitutionMembers::execute($institution, $date)
-                ->merge(GetInstitutionSecretaries::execute($institution, $date)))
-            ->pluck('id')
+            ->flatMap(function (Institution $institution) use ($date, $audienceMemo): Collection {
+                $key = $institution->getKey().':'.$date->toDateString();
+
+                if ($audienceMemo?->has($key)) {
+                    return $audienceMemo->get($key);
+                }
+
+                $ids = GetInstitutionMembers::execute($institution, $date)
+                    ->merge(GetInstitutionSecretaries::execute($institution, $date))->pluck('id');
+                $audienceMemo?->put($key, $ids);
+
+                return $ids;
+            })
             ->unique()
             ->values();
     }
