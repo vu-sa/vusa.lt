@@ -89,7 +89,7 @@ trait HasUIPreferences
 
         $preferences = $this->ui_preferences;
         $preferences['pinned_pages'] = array_slice($sanitized, 0, self::$maxPinnedPages);
-        $this->update(['ui_preferences' => $preferences]);
+        $this->saveUiPreferences($preferences);
     }
 
     /**
@@ -138,7 +138,7 @@ trait HasUIPreferences
         ]);
 
         $preferences['recent_pages'] = array_slice($recent, 0, $max);
-        $this->update(['ui_preferences' => $preferences]);
+        $this->saveUiPreferences($preferences);
     }
 
     /**
@@ -148,6 +148,16 @@ trait HasUIPreferences
     {
         $preferences = $this->ui_preferences;
         $preferences['recent_pages'] = [];
-        $this->update(['ui_preferences' => $preferences]);
+        $this->saveUiPreferences($preferences);
+    }
+
+    /**
+     * Written on every admin navigation, so it skips model events: no observer reacts to UI state.
+     *
+     * @param  array<string, mixed>  $preferences
+     */
+    private function saveUiPreferences(array $preferences): void
+    {
+        $this->fill(['ui_preferences' => $preferences])->saveQuietly();
     }
 }

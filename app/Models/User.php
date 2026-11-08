@@ -153,6 +153,28 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
     }
 
     /**
+     * Columns that record a user's own state rather than who they are or what they may access.
+     */
+    public const BOOKKEEPING_ATTRIBUTES = [
+        'ui_preferences', 'notification_preferences', 'tutorial_progress',
+        'last_action', 'last_changelog_check', 'remember_token', 'microsoft_token', 'updated_at',
+    ];
+
+    /**
+     * Whether the last save changed only bookkeeping columns, so access caches, search and syncs can skip it.
+     */
+    public function changedOnlyBookkeeping(): bool
+    {
+        return ! $this->wasRecentlyCreated
+            && array_diff(array_keys($this->getChanges()), self::BOOKKEEPING_ATTRIBUTES) === [];
+    }
+
+    public function searchIndexShouldBeUpdated(): bool
+    {
+        return ! $this->changedOnlyBookkeeping();
+    }
+
+    /**
      * notification_preferences and ui_preferences are large JSON blobs that
      * churn on every settings tweak; password is already covered by the
      * global default_except_attributes exclusion.

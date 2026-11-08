@@ -1,8 +1,13 @@
 <?php
 
+use App\Jobs\ReconcileReservationReviews;
+use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Tasks\Enums\ActionType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
@@ -127,6 +132,39 @@ describe('api.v1.admin.user-preferences.trackRecentPage endpoint', function (): 
 
         $this->user->refresh();
         expect($this->user->getRecentPages())->toBe([]);
+    });
+});
+
+describe('bookkeeping writes', function (): void {
+    beforeEach(function (): void {
+        // An open approval task is what makes a qualifying user save queue a reservation reconcile.
+        Task::factory()->withActionType(ActionType::Approval)->create();
+        Bus::fake([ReconcileReservationReviews::class]);
+        $this->accessKey = 'permission-maps:v1:'.$this->user->id;
+        Cache::put($this->accessKey, ['cached']);
+    });
+
+    test('recording a visited page keeps access caches and queues no reconcile', function (): void {
+        asUser($this->user)->patch(route('api.v1.admin.user-preferences.trackRecentPage'), [
+            'route' => 'meetings.index',
+            'params' => [],
+        ])->assertNoContent();
+
+        expect(Cache::get($this->accessKey))->toBe(['cached']);
+        Bus::assertNotDispatched(ReconcileReservationReviews::class);
+    });
+
+    test('a bookkeeping-only save skips the search index; an identity change does not', function (): void {
+        $user = $this->user->fresh();
+
+        $user->update(['notification_preferences' => ['muted_until' => null]]);
+        expect($user->searchIndexShouldBeUpdated())->toBeFalse()
+            ->and(Cache::get($this->accessKey))->toBe(['cached']);
+
+        $user->update(['name' => 'Renamed Person']);
+        expect($user->searchIndexShouldBeUpdated())->toBeTrue()
+            ->and(Cache::has($this->accessKey))->toBeFalse();
+        Bus::assertNotDispatched(ReconcileReservationReviews::class);
     });
 });
 
