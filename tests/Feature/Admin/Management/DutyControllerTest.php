@@ -1011,6 +1011,8 @@ describe('ShowDuty payload contract', function (): void {
         $typeFile = FileableFile::factory()->create([
             'fileable_type' => MorphMap::alias(DutyType::class), 'fileable_id' => (string) $type->id,
         ]);
+        // Otherwise UpdateLastAction bumps the holder's updated_at mid-request when a second ticks over.
+        $this->dutyManager->forceFill(['last_action' => now()])->save();
         app()->setLocale($locale);
         $expected = $duty->fresh()->load([
             'institution.tenant', 'users' => fn ($query) => $query->withPivot('created_at', 'updated_at'),
