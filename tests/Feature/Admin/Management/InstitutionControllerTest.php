@@ -266,7 +266,8 @@ describe('authorized access', function (): void {
         $institution->tasks()->create(['name' => 'Institution task']);
         $meeting->tasks()->create(['name' => 'Meeting task']);
         $institution->tasks()->create(['name' => 'Completed', 'completed_at' => now()]);
-        Task::factory()->create();
+        // The factory attaches to a random existing institution, which may be this one.
+        Task::factory()->create(['taskable_id' => Institution::factory()->create()->id]);
 
         asUserWithInertia($this->admin)->get(route('institutions.show', $institution))
             ->assertInertia(fn (Assert $page) => $page->where('incompleteTasksCount', 2)->missing('tasks'));
