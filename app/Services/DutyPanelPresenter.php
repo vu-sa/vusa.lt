@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Actions\Duties\BuildDutyLineage;
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\FileableFile;
+use App\Models\InstitutionType;
 use App\Models\Pivots\Dutiable;
 use App\Models\StudyProgram;
 use App\Models\Tenant;
@@ -38,9 +40,11 @@ class DutyPanelPresenter
         $payload = [];
         foreach ($files as $file) {
             $item = FileableFilePresenter::file($file);
-            $item['fileable'] = $file->fileable === null ? null : [
-                'id' => $file->fileable->id,
-                'title' => $file->fileable->title === null ? null : (string) $file->fileable->title,
+            /** @var DutyType|InstitutionType|null $fileable */
+            $fileable = $file->fileable;
+            $item['fileable'] = $fileable === null ? null : [
+                'id' => $fileable->id,
+                'title' => $fileable->title === null ? null : (string) $fileable->title,
             ];
             $payload[] = $item;
         }

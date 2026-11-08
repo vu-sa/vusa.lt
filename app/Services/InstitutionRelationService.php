@@ -77,7 +77,7 @@ class InstitutionRelationService
     /**
      * The related-institutions panel payload: one row per related institution, with its name.
      *
-     * @return list<array{id: string, name: mixed, direction: string, via: string, kind: string, kind_label: string, cross_tenant: bool, authorized: bool}>
+     * @return list<array{id: string, name: mixed, is_active: bool, direction: string, via: string, kind: string, kind_label: string, cross_tenant: bool, authorized: bool}>
      */
     public function summaryFor(Institution $institution): array
     {
@@ -104,7 +104,7 @@ class InstitutionRelationService
     /**
      * The direct links an institution takes part in, from its side, for editing on its record.
      *
-     * @return list<array{id: int, created_at: string|null, updated_at: string|null, other: array{id: string, name: mixed}, direction: 'outgoing'|'incoming', kind: string, kind_label: string, mutual: bool}>
+     * @return list<array{id: int, created_at: string|null, updated_at: string|null, other: array{id: string, name: mixed, is_active: bool}, direction: 'outgoing'|'incoming', kind: string, kind_label: string, mutual: bool}>
      */
     public function linksOf(Institution $institution): array
     {

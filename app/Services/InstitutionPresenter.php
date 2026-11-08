@@ -16,9 +16,11 @@ use App\Http\Controllers\Admin\CadenceController;
 use App\Http\Controllers\Admin\InstitutionSecretaryController;
 use App\Http\Resources\InstitutionMeetingResource;
 use App\Http\Resources\ProblemSummaryResource;
+use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\InstitutionLink;
+use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Problem;
 use App\Models\StudyProgram;
@@ -225,7 +227,9 @@ class InstitutionPresenter
         $rows = [];
         foreach (GetTypeFiles::forFileable($institution) as $file) {
             $row = FileableFilePresenter::file($file);
-            $row['fileable'] = $file->fileable ? ['id' => $file->fileable->id, 'title' => $file->fileable->getRawOriginal('title') === null ? null : (string) $file->fileable->title] : null;
+            /** @var DutyType|InstitutionType|null $fileable */
+            $fileable = $file->fileable;
+            $row['fileable'] = $fileable ? ['id' => $fileable->id, 'title' => $fileable->getRawOriginal('title') === null ? null : (string) $fileable->title] : null;
             $rows[] = $row;
         }
 

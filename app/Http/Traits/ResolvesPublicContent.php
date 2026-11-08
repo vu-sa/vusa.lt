@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Cache;
 trait ResolvesPublicContent
 {
     /**
-     * @return array<string, array<string, mixed>> resolved payloads keyed by content-part id
+     * @return array<int, array<string, mixed>> resolved payloads keyed by content-part id
      */
     protected function resolveContentParts(?Content $content): array
     {

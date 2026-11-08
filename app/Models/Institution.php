@@ -268,6 +268,7 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
         return $this->belongsToMany(Meeting::class);
     }
 
+    /** @return BelongsToMany<Problem, $this> */
     public function problems(): BelongsToMany
     {
         return $this->belongsToMany(Problem::class);
