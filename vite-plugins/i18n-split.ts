@@ -21,6 +21,8 @@ export interface I18nSplitOptions {
   langPath?: string;
   /** Languages to compile */
   languages?: string[];
+  /** Throw on an unreadable or unparsable file instead of warning; a build must not ship without its keys. */
+  strict?: boolean;
 }
 
 interface ParsedTranslations {
@@ -134,7 +136,7 @@ function convertToDotNotation(obj: unknown, prefix = ''): ParsedTranslations {
 /**
  * Parse PHP translation file content
  */
-function parsePhpContent(content: string): ParsedTranslations {
+function parsePhpContent(content: string, strict: boolean): ParsedTranslations {
   try {
     const ast = phpParser.parseCode(content, 'translation.php');
     const returnStatement = ast.children.find(
@@ -149,6 +151,7 @@ function parsePhpContent(content: string): ParsedTranslations {
     return convertToDotNotation(parsed);
   }
   catch (error) {
+    if (strict) throw error;
     console.warn('[i18n-split] Failed to parse PHP:', error);
     return {};
   }
@@ -158,7 +161,7 @@ function parsePhpContent(content: string): ParsedTranslations {
  * Read and parse all PHP translation files from a directory
  * Returns translations in dot notation format
  */
-function parseTranslationsFromDir(dirPath: string, locale: string): ParsedTranslations {
+function parseTranslationsFromDir(dirPath: string, locale: string, strict: boolean): ParsedTranslations {
   const result: ParsedTranslations = {};
   const localePath = join(dirPath, locale);
 
@@ -175,7 +178,7 @@ function parseTranslationsFromDir(dirPath: string, locale: string): ParsedTransl
 
       try {
         const content = readFileSync(filePath, 'utf-8');
-        const parsed = parsePhpContent(content);
+        const parsed = parsePhpContent(content, strict);
 
         // Add namespace prefix to all keys
         for (const [key, value] of Object.entries(parsed)) {
@@ -183,11 +186,13 @@ function parseTranslationsFromDir(dirPath: string, locale: string): ParsedTransl
         }
       }
       catch (parseError) {
+        if (strict) throw new Error(`[i18n-split] Failed to parse ${filePath}`, { cause: parseError });
         console.warn(`[i18n-split] Warning: Failed to parse ${filePath}:`, parseError);
       }
     }
   }
   catch (readError) {
+    if (strict) throw readError;
     console.warn(`[i18n-split] Warning: Failed to read directory ${localePath}:`, readError);
   }
 
@@ -211,11 +216,12 @@ export function generateI18nTranslationFiles(rootDir: string, options: I18nSplit
   const langPath = options.langPath || 'lang';
   const languages = options.languages || ['lt', 'en'];
   const langDir = resolve(rootDir, langPath);
+  const strict = options.strict ?? false;
 
   for (const lang of languages) {
-    const sharedTranslations = parseTranslationsFromDir(join(langDir, 'shared'), lang);
-    const adminTranslations = parseTranslationsFromDir(join(langDir, 'admin'), lang);
-    const publicTranslations = parseTranslationsFromDir(join(langDir, 'public'), lang);
+    const sharedTranslations = parseTranslationsFromDir(join(langDir, 'shared'), lang, strict);
+    const adminTranslations = parseTranslationsFromDir(join(langDir, 'admin'), lang, strict);
+    const publicTranslations = parseTranslationsFromDir(join(langDir, 'public'), lang, strict);
 
     const adminCombined = mergeTranslations(sharedTranslations, adminTranslations);
     writeFileSync(
@@ -242,14 +248,16 @@ export default function i18nSplit(options: I18nSplitOptions = {}): Plugin {
   const languages = options.languages || ['lt', 'en'];
 
   let rootDir: string;
+  let isBuild = false;
 
-  const generateTranslationFiles = () => generateI18nTranslationFiles(rootDir, options);
+  const generateTranslationFiles = () => generateI18nTranslationFiles(rootDir, { strict: isBuild, ...options });
 
   return {
     name: 'vite-plugin-i18n-split',
 
     configResolved(config) {
       rootDir = config.root;
+      isBuild = config.command === 'build';
     },
 
     buildStart() {
