@@ -12,6 +12,7 @@ use App\Services\PermissionService;
 use App\Services\ResponsibilityResolver;
 use App\Services\SystemDutyTypes;
 use App\Services\Typesense\MeetingSearchLock;
+use App\Support\AuthorityCacheExpiry;
 use App\Support\LocalizedRouteSlugs;
 use App\Support\MorphMap;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -53,6 +54,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->scoped(ResponsibilityResolver::class);
         $this->app->scoped(SystemDutyTypes::class);
         $this->app->scoped(MeetingAccessService::class);
+        $this->app->scoped(AuthorityCacheExpiry::class);
         $this->app->scoped(MeetingSearchLock::class);
         $this->app->scoped(InstitutionRelationService::class);
         $this->app->scoped(ReservationStatusChangeBatch::class);
