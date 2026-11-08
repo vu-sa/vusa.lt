@@ -135,17 +135,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, defineAsyncComponent, ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Lock, Maximize2, Users } from '@lucide/vue';
 
-import AgendaItemNotesEditor from '@/Components/AgendaItems/AgendaItemNotesEditor.vue';
 import SaveStatusChip from '@/Components/AgendaItems/NotesSaveStatusChip.vue';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { useAgendaItemNotes } from '@/Composables/useAgendaItemNotes';
+
+const AgendaItemNotesEditor = defineAsyncComponent(() => import('@/Components/AgendaItems/AgendaItemNotesEditor.vue'));
 
 // eslint-disable-next-line admin-redesign/no-legacy-utility -- circular: it sits in a row of avatars
 const OVERFLOW_AVATAR_CLASS = 'flex size-6 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground ring-2 ring-card';

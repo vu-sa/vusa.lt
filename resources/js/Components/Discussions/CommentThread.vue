@@ -47,12 +47,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { defineAsyncComponent, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import CommentComposer from '@/Components/Discussions/CommentComposer.vue';
 import CommentItem from '@/Components/Discussions/CommentItem.vue';
 import type { CommentData, MentionableUser } from '@/Types/discussions';
+
+const CommentComposer = defineAsyncComponent(() => import('@/Components/Discussions/CommentComposer.vue'));
 
 const props = withDefaults(defineProps<{
   comment: CommentData;

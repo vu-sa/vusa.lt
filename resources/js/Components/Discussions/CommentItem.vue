@@ -112,19 +112,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, defineAsyncComponent, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Ban, CheckCircle2, CornerDownRight, MoreHorizontal, Pencil, RotateCcw, Trash2 } from '@lucide/vue';
 
 import './comment-content.css';
 
-import CommentComposer from '@/Components/Discussions/CommentComposer.vue';
 import CommentReactions from '@/Components/Discussions/CommentReactions.vue';
 import PollBlock from '@/Components/Discussions/PollBlock.vue';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
 import type { CommentData, MentionableUser, PollData } from '@/Types/discussions';
+
+const CommentComposer = defineAsyncComponent(() => import('@/Components/Discussions/CommentComposer.vue'));
 
 const props = withDefaults(defineProps<{
   comment: CommentData;
