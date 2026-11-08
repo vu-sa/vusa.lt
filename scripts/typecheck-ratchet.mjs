@@ -141,6 +141,9 @@ export async function main(args = process.argv.slice(2)) {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   try {
+    // mocks/i18n.ts imports the gitignored catalogues; without them CI and local baselines diverge.
+    const { generateI18nTranslationFiles } = await import('../vite-plugins/i18n-split.ts');
+    generateI18nTranslationFiles(repoRoot);
     process.exitCode = await main();
   } catch (error) {
     console.error(error.message);
