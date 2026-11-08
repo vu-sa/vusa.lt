@@ -1,6 +1,7 @@
 import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import { toast } from 'vue-sonner';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import IndexTag from '../IndexTag.vue';
@@ -51,6 +52,20 @@ describe('tag deletion', () => {
     expect(router.delete).toHaveBeenCalledWith(route('tags.destroy', tag.id), expect.objectContaining({ preserveScroll: true }));
     vi.mocked(router.delete).mock.calls.at(-1)?.[1].onSuccess(createMockPage());
     expect(sourceSpies.refresh).toHaveBeenCalledOnce();
+    wrapper.unmount();
+  });
+
+  it('shows the row again when the toast undo restores the tag', () => {
+    const success = vi.spyOn(toast, 'success');
+    const wrapper = mountPage();
+    const collection = wrapper.findComponent({ name: 'CollectionPage' });
+    collection.vm.$emit('rowAction', tag, 'delete');
+    vi.mocked(router.delete).mock.calls.at(-1)?.[1]?.onSuccess?.(createMockPage(), {} as never);
+    const action = success.mock.calls.at(-1)?.[1]?.action as { onClick: (event: MouseEvent) => void };
+    action.onClick(new MouseEvent('click'));
+    expect(router.patch).toHaveBeenCalledWith(route('tags.restore', tag.id), {}, expect.anything());
+    vi.mocked(router.patch).mock.calls.at(-1)?.[2]?.onSuccess?.(createMockPage(), {} as never);
+    expect(collection.props('source').items.value).toEqual([tag]);
     wrapper.unmount();
   });
 

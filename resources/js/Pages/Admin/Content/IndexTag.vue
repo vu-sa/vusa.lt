@@ -218,7 +218,11 @@ function remove(tag: Tag): void {
       toast.success($t('Žyma ištrinta.'), {
         action: {
           label: $t('Atšaukti'),
-          onClick: () => router.patch(route('tags.restore', tag.id), {}, { preserveScroll: true, onSuccess: () => source.refresh() }),
+          // The hide outlives a successful delete, so the restored row stays hidden until released.
+          onClick: () => router.patch(route('tags.restore', tag.id), {}, { preserveScroll: true, onSuccess: () => {
+            undo();
+            source.refresh();
+          } }),
         },
       });
     },
