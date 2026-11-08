@@ -16,9 +16,9 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue';
 
-import { cardVariants, type CardVariants } from './index';
-
 import { cn } from '@/Utils/Shadcn/utils';
+
+import { cardVariants, type CardVariants } from './index';
 
 const props = withDefaults(defineProps<{
   variant?: CardVariants['variant'];

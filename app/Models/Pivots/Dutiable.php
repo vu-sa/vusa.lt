@@ -65,6 +65,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read mixed $translations
  * @property-read User|null $user
  * @property-read Dutiable|null $viaDutiable
+ * @property-read int|null $tenants_count
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable activeOn(?string $date = null)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable current()

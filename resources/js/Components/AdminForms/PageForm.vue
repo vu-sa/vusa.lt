@@ -306,21 +306,6 @@ import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { AlertTriangle, ChevronDown, LayoutTemplate, ListTree, Trash2 } from '@lucide/vue';
 
-import RichContentFormElement from '../RichContent/RichContentFormElement.vue';
-import { getContentType, type BlockWidth } from '../RichContent/Types';
-import VisualOptionSelect from '../FormItems/VisualOptionSelect.vue';
-
-import ContentRecoveryPanel from './ContentRecoveryPanel.vue';
-import ContentLanguagePanel from './ContentLanguagePanel.vue';
-import ContentPublishPanel from './ContentPublishPanel.vue';
-import FormFieldWrapper from './FormFieldWrapper.vue';
-import PermalinkField from './PermalinkField.vue';
-import PermalinkPreviewHint from './PermalinkPreviewHint.vue';
-import PublicUrlHistoryCard from './PublicUrlHistoryCard.vue';
-import SEOPreview from './SEOPreview.vue';
-import TagMultiSelect from './TagMultiSelect.vue';
-import TenantSelectField, { pickDefaultTenantId } from './TenantSelectField.vue';
-
 import { CONTENT_EDITOR_CONTEXT, type ContentEditorContext } from '@/Components/RichContent/contentEditorContext';
 import { useContentEditor } from '@/Composables/useContentEditor';
 import FormPage from '@/Components/Layouts/FormPage.vue';
@@ -339,6 +324,21 @@ import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { Textarea } from '@/Components/ui/textarea';
 import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
+
+import VisualOptionSelect from '../FormItems/VisualOptionSelect.vue';
+import { getContentType, type BlockWidth } from '../RichContent/Types';
+import RichContentFormElement from '../RichContent/RichContentFormElement.vue';
+
+import TenantSelectField, { pickDefaultTenantId } from './TenantSelectField.vue';
+import TagMultiSelect from './TagMultiSelect.vue';
+import SEOPreview from './SEOPreview.vue';
+import PublicUrlHistoryCard from './PublicUrlHistoryCard.vue';
+import PermalinkPreviewHint from './PermalinkPreviewHint.vue';
+import PermalinkField from './PermalinkField.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import ContentPublishPanel from './ContentPublishPanel.vue';
+import ContentLanguagePanel from './ContentLanguagePanel.vue';
+import ContentRecoveryPanel from './ContentRecoveryPanel.vue';
 
 const props = withDefaults(defineProps<{
   // `descendant_ids` is server-computed (Page::descendantIds()), not a real relation —

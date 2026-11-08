@@ -5,10 +5,10 @@
 
 import { defineAsyncComponent, type AsyncComponentLoader, type Component } from 'vue';
 
-import ScreenLoading from './ScreenLoading.vue';
-
 import type { ScreenId } from '@/Composables/useActionWindow';
 import { ModelEnum } from '@/Types/enums';
+
+import ScreenLoading from './ScreenLoading.vue';
 
 /**
  * `delay` keeps the spinner off screen for chunks that arrive quickly, which is

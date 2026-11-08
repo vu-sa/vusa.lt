@@ -24,13 +24,13 @@ import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { Editor, EditorContent } from '@tiptap/vue-3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import TiptapDisplay from './TiptapDisplay.vue';
-
 import RCSmartTiptapToolbar from '@/Components/TipTap/RCSmartTiptapToolbar.vue';
 import TiptapContextMenus from '@/Components/TipTap/TiptapContextMenus.vue';
 import { useTiptapFileUpload } from '@/Components/TipTap/composables/useTiptapFileUpload';
 import { createFullExtensions } from '@/Components/TipTap/extensions/presets';
 import { normalizeContent } from '@/Components/TipTap/normalizeContent';
+
+import TiptapDisplay from './TiptapDisplay.vue';
 import '@/Components/TipTap/tiptap-base.css';
 
 const props = withDefaults(defineProps<{

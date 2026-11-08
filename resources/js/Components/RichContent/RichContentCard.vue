@@ -45,9 +45,9 @@
 import { computed, defineAsyncComponent } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import RCInlineText from './Editor/Fullscreen/RCInlineText.vue';
-
 import type { ShadcnCard } from '@/Types/contentParts';
+
+import RCInlineText from './Editor/Fullscreen/RCInlineText.vue';
 
 const TiptapEditor = defineAsyncComponent(() => import('@/Components/TipTap/TiptapEditor.vue'));
 // Lazy-loaded: both only ever mounted while `editable` — public rendering uses the

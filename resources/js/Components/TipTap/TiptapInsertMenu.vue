@@ -50,11 +50,6 @@ import type { Editor } from '@tiptap/core';
 import { ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import ImageSelector from './ImageSelector.vue';
-import TiptapYoutubeButton from './TiptapYoutubeButton.vue';
-import { useTiptapCommands } from './composables/useTiptapCommands';
-import type { ToolbarTools } from './toolbarProfiles';
-
 import { Button } from '@/Components/ui/button';
 import {
   DropdownMenu,
@@ -62,6 +57,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
+
+import ImageSelector from './ImageSelector.vue';
+import TiptapYoutubeButton from './TiptapYoutubeButton.vue';
+import { useTiptapCommands } from './composables/useTiptapCommands';
+import type { ToolbarTools } from './toolbarProfiles';
+
 import IFluentAdd20Regular from '~icons/fluent/add20-regular';
 import IFluentImage24Regular from '~icons/fluent/image24-regular';
 import IFluentLineHorizontal120Regular from '~icons/fluent/line-horizontal-1-20-regular';

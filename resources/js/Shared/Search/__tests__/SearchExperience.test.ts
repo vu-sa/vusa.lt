@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
+import SearchMatch from '@/Components/ui/SearchMatch.vue';
+
 import { buildProfileParams, splitSortExpressions, type SearchProfile } from '../profiles';
 import { descriptionMatch, documentWithMatch, highlightText, matchTitle, type SearchMatchDocument } from '../matches';
 import { SearchClientFactory } from '../services/SearchClientFactory';
-
-import SearchMatch from '@/Components/ui/SearchMatch.vue';
 
 const profile: SearchProfile = {
   version: 2,

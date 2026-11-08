@@ -41,8 +41,8 @@ test('pinned results obey the user visibility filter', function (string $credent
     $user = User::factory()->create();
     $institution = Institution::factory()->for(Tenant::query()->first())->create(['is_active' => false]);
     $collection = $institution->searchableAs();
-    expect($this->client->collections[$collection]->documents[$institution->id]->retrieve()['id'])->toBe((string) $institution->id);
-    expect(Gate::forUser($user)->allows('viewSummary', $institution))->toBeFalse();
+    expect($this->client->collections[$collection]->documents[$institution->id]->retrieve()['id'])->toBe((string) $institution->id)
+        ->and(Gate::forUser($user)->allows('viewSummary', $institution))->toBeFalse();
 
     $keys = app(TypesenseScopedKeyService::class)->generateScopedKeysForUser($user);
     $client = new Client([
@@ -59,9 +59,9 @@ test('pinned results obey the user visibility filter', function (string $credent
         ...($credential === 'per-search' ? ['x-typesense-api-key' => $keys['collections']['institutions']['key']] : []),
     ]]])['results'][0];
 
-    expect($result)->not->toHaveKey('error');
-    expect($result['found'])->toBe(0);
-    expect($result['hits'])->toBe([]);
+    expect($result)->not->toHaveKey('error')
+        ->and($result['found'])->toBe(0)
+        ->and($result['hits'])->toBe([]);
 })->with(['transport', 'collection', 'per-search']);
 
 test('baseline institution searches omit activity status while global readers receive it', function (): void {
@@ -89,11 +89,11 @@ test('baseline institution searches omit activity status while global readers re
 
         expect($result['found'])->toBe(1);
         if ($user->is($baseline)) {
-            expect($result['hits'][0]['document'])->not->toHaveKey('activity_status');
-            expect(array_column($result['facet_counts'], 'field_name'))->not->toContain('activity_status');
+            expect($result['hits'][0]['document'])->not->toHaveKey('activity_status')
+                ->and(array_column($result['facet_counts'], 'field_name'))->not->toContain('activity_status');
         } else {
-            expect($result['hits'][0]['document']['activity_status'])->toBe($status);
-            expect(array_column($result['facet_counts'], 'field_name'))->toContain('activity_status');
+            expect($result['hits'][0]['document']['activity_status'])->toBe($status)
+                ->and(array_column($result['facet_counts'], 'field_name'))->toContain('activity_status');
         }
     }
 });

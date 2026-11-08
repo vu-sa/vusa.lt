@@ -2,10 +2,10 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 import { h } from 'vue';
 
+import { commonStubs } from '@/tests/stubs';
+
 import SearchSelectDialog from '../SearchSelectDialog.vue';
 import type { NormalizedSearchHit } from '../../../Utils/searchHitMappers';
-
-import { commonStubs } from '@/tests/stubs';
 
 const hitA = { id: 'r-1', recordId: '1', collection: 'resources', title: 'Alpha', icon: {}, raw: {} } as unknown as NormalizedSearchHit;
 const hitB = { id: 'r-2', recordId: '2', collection: 'resources', title: 'Beta', icon: {}, raw: {} } as unknown as NormalizedSearchHit;

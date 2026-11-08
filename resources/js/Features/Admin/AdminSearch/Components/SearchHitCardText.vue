@@ -12,12 +12,13 @@
 </template>
 
 <script setup lang="ts">
-import { useSearchHitMatches } from '../Composables/useSearchHitMatches';
-import type { NormalizedSearchHit } from '../Utils/searchHitMappers';
 
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import { StatusBadge } from '@/Components/Patterns';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
+
+import type { NormalizedSearchHit } from '../Utils/searchHitMappers';
+import { useSearchHitMatches } from '../Composables/useSearchHitMatches';
 
 const props = defineProps<{
   hit: NormalizedSearchHit;

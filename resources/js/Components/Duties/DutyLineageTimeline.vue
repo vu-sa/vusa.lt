@@ -59,12 +59,12 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Merge, X } from '@lucide/vue';
 
-import InflectedDutyName from './InflectedDutyName.vue';
-
 import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
 import { operatingStatuses } from '@/Constants/statusIcons';
+
+import InflectedDutyName from './InflectedDutyName.vue';
 
 export interface LineageLinkedDuty {
   id: string;

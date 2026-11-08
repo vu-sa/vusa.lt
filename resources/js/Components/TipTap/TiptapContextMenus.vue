@@ -105,6 +105,8 @@ import { computed, useTemplateRef } from 'vue';
 import { BubbleMenu } from '@tiptap/vue-3/menus';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { Separator } from '@/Components/ui/separator';
+
 import TiptapFormattingButtons from './TiptapFormattingButtons.vue';
 import TiptapImageMenu from './TiptapImageMenu.vue';
 import TiptapLinkButton from './TiptapLinkButton.vue';
@@ -116,7 +118,6 @@ import {
   shouldShowTextBubbleMenu,
 } from './bubbleMenuVisibility';
 
-import { Separator } from '@/Components/ui/separator';
 import IFluentDelete20Regular from '~icons/fluent/delete20-regular';
 import IFluentEdit20Regular from '~icons/fluent/edit20-regular';
 import IFluentLink24Regular from '~icons/fluent/link24-regular';

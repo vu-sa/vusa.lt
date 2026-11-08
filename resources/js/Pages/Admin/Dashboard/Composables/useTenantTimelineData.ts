@@ -1,8 +1,8 @@
 import { computed, ref } from 'vue';
 
-import type { AtstovavimasTenantTimelineData } from '../types';
-
 import { useApi } from '@/Composables/useApi';
+
+import type { AtstovavimasTenantTimelineData } from '../types';
 
 /** Loads a tenant-keyed ViSAK payload: the stats timeline by default, or the Gantt rows or its activity requests. */
 export function useTenantTimelineData<T = AtstovavimasTenantTimelineData>(

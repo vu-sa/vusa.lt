@@ -43,11 +43,11 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Info, Send } from '@lucide/vue';
 
-import FormFieldWrapper from './FormFieldWrapper.vue';
-
 import { FormPanel, FormSegmentedControl, type FormSegmentOption } from '@/Components/Patterns';
 import DateTimePicker from '@/Components/ui/date-picker/DateTimePicker.vue';
 import { contentStatuses, statusRoleClasses, type StatusPresentation } from '@/Constants/statusIcons';
+
+import FormFieldWrapper from './FormFieldWrapper.vue';
 
 /** Draft ⇄ published, publish time and what that means for visitors, for a content editor's aside. */
 withDefaults(defineProps<{

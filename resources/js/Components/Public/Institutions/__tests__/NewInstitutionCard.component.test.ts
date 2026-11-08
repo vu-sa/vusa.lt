@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import NewInstitutionCard from '../NewInstitutionCard.vue';
-
 import { ssrRoundTrip } from '@/tests/helpers/ssrRoundTrip';
+
+import NewInstitutionCard from '../NewInstitutionCard.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

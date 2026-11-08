@@ -3,6 +3,9 @@ import { mount } from '@vue/test-utils';
 import { ref, type Component } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { AdminRecordAction } from '@/Types/AdminRecordAction';
+import { createMockPage } from '@/tests/helpers/createMockPage';
+
 import IndexBanner from '../IndexBanner.vue';
 import IndexNews from '../IndexNews.vue';
 import IndexPages from '../IndexPages.vue';
@@ -11,9 +14,6 @@ import IndexEventType from '../../Calendar/IndexEventType.vue';
 import IndexDomainTypes from '../../ModelMeta/IndexDomainTypes.vue';
 import IndexStudyProgram from '../../People/IndexStudyProgram.vue';
 import IndexStudySet from '../../StudySets/IndexStudySet.vue';
-
-import type { AdminRecordAction } from '@/Types/AdminRecordAction';
-import { createMockPage } from '@/tests/helpers/createMockPage';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 vi.mock('@/Composables/useAdminNavigation', () => ({

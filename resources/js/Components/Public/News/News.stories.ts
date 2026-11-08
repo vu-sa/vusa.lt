@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
-import NewsArticleLayout from './NewsArticleLayout.vue';
-import NewsCard from './NewsCard.vue';
-
 import { usePage } from '@/mocks/inertia.storybook';
 import type { NewsItem } from '@/Types/contentParts';
+
+import NewsArticleLayout from './NewsArticleLayout.vue';
+import NewsCard from './NewsCard.vue';
 
 /**
  * The news article, end to end.

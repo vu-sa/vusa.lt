@@ -146,14 +146,6 @@ import {
   SearchX,
 } from '@lucide/vue';
 
-import PaletteDialog from './PaletteDialog.vue';
-import { useCommandActions } from './useCommandActions';
-import ActionResult from './results/ActionResult.vue';
-import PaletteGroup from './results/PaletteGroup.vue';
-import PaletteRow from './results/PaletteRow.vue';
-import { paletteRowClass } from './results/paletteRowClass';
-import PinButton from './results/PinButton.vue';
-
 import { useAdminSearch, type MultiSearchResults } from '@/Composables/useAdminSearch';
 import { createEmptyMultiSearchResults } from '@/Shared/Search/utils/createEmptyMultiSearchResults';
 import { useCommandPalette, type RecentItem } from '@/Composables/useCommandPalette';
@@ -169,6 +161,14 @@ import SearchHitRow from '@/Features/Admin/AdminSearch/Components/SearchHitRow.v
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import { TopProgressBar } from '@/Components/Patterns';
 import { CommandList, CommandItem } from '@/Components/ui/command';
+
+import PinButton from './results/PinButton.vue';
+import { paletteRowClass } from './results/paletteRowClass';
+import PaletteRow from './results/PaletteRow.vue';
+import PaletteGroup from './results/PaletteGroup.vue';
+import ActionResult from './results/ActionResult.vue';
+import { useCommandActions } from './useCommandActions';
+import PaletteDialog from './PaletteDialog.vue';
 
 /** Search collection → the catalog `entityType` whose section owns it, for workspace ranking. */
 const collectionEntityType: Record<SearchCollectionKey, string> = {

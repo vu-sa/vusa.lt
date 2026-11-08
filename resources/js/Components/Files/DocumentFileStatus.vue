@@ -12,11 +12,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import type { DocumentFolderRow } from './types';
-
 import CollectionStatusMenu, { type CollectionStatusOption } from '@/Components/Collection/CollectionStatusMenu.vue';
 import { documentStatuses } from '@/Constants/statusIcons';
 import { DocumentStatus } from '@/Types/enums';
+
+import type { DocumentFolderRow } from './types';
 
 const props = defineProps<{
   file: DocumentFolderRow;

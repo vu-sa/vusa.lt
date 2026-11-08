@@ -188,8 +188,6 @@ import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, watch } from 'vue';
 
-import type { MailingListSourceOptions } from './types';
-
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import { FormSegmentedControl, SheetForm, type FormSegmentOption } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
@@ -202,6 +200,8 @@ import { NativeSelect } from '@/Components/ui/native-select';
 import { SingleSelect } from '@/Components/ui/single-select';
 import DutySearchField, { type DutyHit } from '@/Features/Admin/Occupancy/DutySearchField.vue';
 import { MailingListAddressMode, MailingListSourceType, MailingListTenantScope, TenantType } from '@/Types/enums';
+
+import type { MailingListSourceOptions } from './types';
 
 const props = defineProps<{
   mailingListId: string;

@@ -17,9 +17,9 @@
 <script setup lang="ts">
 import type { Component } from 'vue';
 
-import DutySummaryCard, { type DutySummaryHolder, type SummaryDuty } from './DutySummaryCard.vue';
-
 import { SectionHeading } from '@/Components/Patterns';
+
+import DutySummaryCard, { type DutySummaryHolder, type SummaryDuty } from './DutySummaryCard.vue';
 
 /**
  * A titled grid of duty cards. Used for both the current and the previous

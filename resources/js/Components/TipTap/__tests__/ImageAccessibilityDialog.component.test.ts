@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import ImageAccessibilityDialog from '../ImageAccessibilityDialog.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import ImageAccessibilityDialog from '../ImageAccessibilityDialog.vue';
 
 /**
  * Mounted closed, then opened — the dialog seeds its fields from a watcher on

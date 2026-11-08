@@ -40,9 +40,9 @@
 <script setup lang="ts">
 import { computed, useId } from 'vue';
 
-import Input from './Input.vue';
-
 import { cn } from '@/Utils/Shadcn/utils';
+
+import Input from './Input.vue';
 
 interface Props {
   modelValue?: string | number | null;

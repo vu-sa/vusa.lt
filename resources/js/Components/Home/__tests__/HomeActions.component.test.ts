@@ -3,12 +3,12 @@ import { mount } from '@vue/test-utils';
 import type { Component } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import CreateShortcuts from '../CreateShortcuts.vue';
-import QuickAccess from '../QuickAccess.vue';
-
 import type { CommandAction } from '@/Components/CommandPalette/useCommandActions';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { atstovavimas, pradzia, rezervacijos } from '@/Components/Layouts/Shell/__tests__/fixtures';
+
+import QuickAccess from '../QuickAccess.vue';
+import CreateShortcuts from '../CreateShortcuts.vue';
 
 const state = vi.hoisted(() => ({ actions: [] as CommandAction[] }));
 

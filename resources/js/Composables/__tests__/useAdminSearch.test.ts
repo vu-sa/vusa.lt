@@ -40,7 +40,6 @@ afterEach(() => {
 });
 
 describe('useAdminSearch collection searches', () => {
-
   it('refreshes fifteen minute keys before the next search reaches their expiry', async () => {
     vi.useFakeTimers();
     const initial = { ...config, expiresAt: Math.floor(Date.now() / 1000) + 900 };
@@ -95,7 +94,7 @@ describe('useAdminSearch collection searches', () => {
 
   it('does not restore an old user config when its request finishes late', async () => {
     let resolveOld!: (response: ReturnType<typeof json>) => void;
-    const fetchMock = vi.fn().mockImplementationOnce(() => new Promise(resolve => { resolveOld = resolve; }))
+    const fetchMock = vi.fn().mockImplementationOnce(() => new Promise((resolve) => { resolveOld = resolve; }))
       .mockResolvedValueOnce(json({ ...config, headerKey: 'new-user-header' }));
     vi.stubGlobal('fetch', fetchMock);
     const search = createSearch();
@@ -169,8 +168,8 @@ describe('useAdminSearch collection searches', () => {
     const { searches } = JSON.parse(fetchMock.mock.calls[1][1].body);
     expect(searches).toHaveLength(2);
     expect(searches).toEqual(expect.arrayContaining([
-      expect.objectContaining({ collection: 'admin_meetings', 'x-typesense-api-key': 'meeting-key' }),
-      expect.objectContaining({ collection: 'institutions', 'x-typesense-api-key': 'scoped-key' }),
+      expect.objectContaining({ 'collection': 'admin_meetings', 'x-typesense-api-key': 'meeting-key' }),
+      expect.objectContaining({ 'collection': 'institutions', 'x-typesense-api-key': 'scoped-key' }),
     ]));
   });
 

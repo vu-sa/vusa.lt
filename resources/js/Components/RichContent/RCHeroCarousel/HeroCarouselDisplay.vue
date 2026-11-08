@@ -145,17 +145,18 @@
 import { computed, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { asBoolean } from '../booleanish';
-import type { BandResolution } from '../bandLayout';
-
-import HeroCarouselSlideView from './HeroCarouselSlideView.vue';
-
 import { useMotionAwareAutoplay } from '@/Composables/useMotionAwareAutoplay';
 import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
 import { Button } from '@/Components/ui/button';
 import { Carousel, CarouselContent, CarouselItem } from '@/Components/ui/carousel';
 import type { UnwrapRefCarouselApi } from '@/Components/ui/carousel/interface';
 import type { HeroCarousel } from '@/Types/contentParts';
+
+import type { BandResolution } from '../bandLayout';
+import { asBoolean } from '../booleanish';
+
+import HeroCarouselSlideView from './HeroCarouselSlideView.vue';
+
 import IFluentAdd12Regular from '~icons/fluent/add12-regular';
 import IFluentArrowLeft24Regular from '~icons/fluent/arrow-left24-regular';
 import IFluentArrowRight24Regular from '~icons/fluent/arrow-right24-regular';

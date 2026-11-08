@@ -93,8 +93,6 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Building2, ChevronDown } from '@lucide/vue';
 
-import type { AtstovavimasTenant } from '../types';
-
 import { Button } from '@/Components/ui/button';
 import {
   DropdownMenu,
@@ -104,6 +102,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
+
+import type { AtstovavimasTenant } from '../types';
 
 const props = defineProps<{
   tenants: AtstovavimasTenant[];

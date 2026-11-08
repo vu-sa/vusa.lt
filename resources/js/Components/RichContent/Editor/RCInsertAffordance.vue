@@ -41,10 +41,11 @@
  */
 import { trans as $t } from 'laravel-vue-i18n';
 
-import type { ContentType } from '../Types';
-
 import { Badge } from '@/Components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
+
+import type { ContentType } from '../Types';
+
 import IFluentAdd24Regular from '~icons/fluent/add24-regular';
 import IFluentMoreHorizontal24Regular from '~icons/fluent/more-horizontal24-regular';
 

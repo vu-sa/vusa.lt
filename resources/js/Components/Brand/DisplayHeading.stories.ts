@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
-import DisplayHeading from './DisplayHeading.vue';
-
 import SectionBand from '@/Components/Public/Base/SectionBand.vue';
+
+import DisplayHeading from './DisplayHeading.vue';
 
 /**
  * The signature headline block. Switch the toolbar's Theme to see the brand rule move between

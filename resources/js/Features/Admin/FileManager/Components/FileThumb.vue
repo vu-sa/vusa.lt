@@ -22,9 +22,9 @@
 <script setup lang="ts">
 import { computed, ref, watch, type HTMLAttributes } from 'vue';
 
-import { imageSrc, isPreviewableImage, isThumbnailable, publicUrl } from '../utils';
-
 import { getFileIcon } from '@/Utils/fileIcons';
+
+import { imageSrc, isPreviewableImage, isThumbnailable, publicUrl } from '../utils';
 
 const props = withDefaults(defineProps<{
   path: string;

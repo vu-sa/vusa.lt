@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import ContentGridDisplay from '../ContentGridDisplay.vue';
-
 import { waitForSelector } from '@/tests/helpers/waitForSelector';
 import type { ContentGrid } from '@/Types/contentParts';
+
+import ContentGridDisplay from '../ContentGridDisplay.vue';
 
 const TiptapEditorStub = {
   props: ['modelValue', 'preset', 'proseStyle', 'placeholder'],

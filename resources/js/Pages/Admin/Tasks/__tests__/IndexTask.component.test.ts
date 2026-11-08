@@ -2,11 +2,11 @@ import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
 
-import IndexTask from '../IndexTask.vue';
-
 import type { TaskDisplayData } from '@/Composables/useTaskPresentation';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
+
+import IndexTask from '../IndexTask.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

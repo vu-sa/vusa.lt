@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import StatTile from '../StatTile.vue';
-
 import { urgencyPalette } from '@/Composables/useDashboardCardStyles';
+
+import StatTile from '../StatTile.vue';
 
 const mountTile = (props: Record<string, unknown> = {}, slots: Record<string, string> = {}) =>
   mount(StatTile, { props: { value: 12, ...props }, slots });

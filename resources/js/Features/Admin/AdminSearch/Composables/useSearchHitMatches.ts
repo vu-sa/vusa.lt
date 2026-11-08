@@ -1,8 +1,8 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue';
 
-import type { NormalizedSearchHit } from '../Utils/searchHitMappers';
-
 import { highlightText, matchTitle, type SearchMatchDocument } from '@/Shared/Search/matches';
+
+import type { NormalizedSearchHit } from '../Utils/searchHitMappers';
 
 export function useSearchHitMatches(hit: MaybeRefOrGetter<NormalizedSearchHit>) {
   const matches = computed(() => toValue(hit).raw as SearchMatchDocument);

@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 
-import ContentGridEditor from '../ContentGridEditor.vue';
-
 import type { ContentGrid } from '@/Types/contentParts';
+
+import ContentGridEditor from '../ContentGridEditor.vue';
 
 const stubs = {
   TiptapEditor: { template: '<div class="tiptap-stub" />' },

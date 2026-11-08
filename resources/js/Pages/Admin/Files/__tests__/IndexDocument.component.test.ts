@@ -2,10 +2,10 @@ import { mount } from '@vue/test-utils';
 import { ref } from 'vue';
 import { describe, expect, it, vi } from 'vitest';
 
-import IndexDocument from '../IndexDocument.vue';
-
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import type { DocumentSearchResult } from '@/Shared/Search/types';
+
+import IndexDocument from '../IndexDocument.vue';
 
 const abilityState = vi.hoisted(() => ({ allowed: true }));
 vi.mock('@/Composables/useRowAbilities', () => ({ useRowAbilities: () => ({ can: () => abilityState.allowed, invalidate: vi.fn() }) }));

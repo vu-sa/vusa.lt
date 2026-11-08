@@ -85,9 +85,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Link } from '@inertiajs/vue3';
 import { Pencil, Plus, Trash2 } from '@lucide/vue';
 
-import NavigationLinkCard from './NavigationLinkCard.vue';
-import type { AdminFooterColumn, AdminNavigationLink } from './types';
-
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
 import {
@@ -101,6 +98,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/Components/ui/alert-dialog';
+
+import type { AdminFooterColumn, AdminNavigationLink } from './types';
+import NavigationLinkCard from './NavigationLinkCard.vue';
 
 defineProps<{
   columns: AdminFooterColumn[];

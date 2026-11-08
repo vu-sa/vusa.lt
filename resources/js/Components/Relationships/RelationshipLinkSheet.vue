@@ -115,8 +115,6 @@ import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowLeft, ChevronsUpDown } from '@lucide/vue';
 
-import type { RelationKindOption, RelationshipLinkRow, RelationshipSubject, RelationshipTypeOption } from './types';
-
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import { SheetForm } from '@/Components/Patterns';
 import FormSegmentedControl, { type FormSegmentOption } from '@/Components/Patterns/FormSegmentedControl.vue';
@@ -128,6 +126,8 @@ import { Switch } from '@/Components/ui/switch';
 import { InstitutionTypeLinkScope } from '@/Types/enums';
 import { InlineCollectionSelect } from '@/Features/Admin/AdminSearch/Components/Select';
 import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+
+import type { RelationKindOption, RelationshipLinkRow, RelationshipSubject, RelationshipTypeOption } from './types';
 
 const props = defineProps<{
   subject: RelationshipSubject;

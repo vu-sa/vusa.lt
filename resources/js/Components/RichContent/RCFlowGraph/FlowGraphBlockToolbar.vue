@@ -15,11 +15,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
+import type { FlowGraph } from '@/Types/contentParts';
+
 import RCBlockToolbarShell from '../Editor/Fullscreen/RCBlockToolbarShell.vue';
 import FlowGraphEditor from '../Types/FlowGraphEditor.vue';
 import type { ContentPart } from '../Types';
-
-import type { FlowGraph } from '@/Types/contentParts';
 
 const props = defineProps<{
   content: ContentPart;

@@ -48,8 +48,9 @@ import { ref, computed, onMounted } from 'vue';
 import { useEventListener, useThrottleFn } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import IFluentTextBulletListLtr24Regular from '~icons/fluent/text-bullet-list-ltr-24-regular';
 import { preferredScrollBehavior } from '@/Composables/useAccessibilityPreferences';
+
+import IFluentTextBulletListLtr24Regular from '~icons/fluent/text-bullet-list-ltr-24-regular';
 
 interface AnchorLink {
   title: string;

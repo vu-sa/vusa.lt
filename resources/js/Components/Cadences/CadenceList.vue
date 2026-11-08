@@ -103,8 +103,6 @@ import { CalendarClock, Pencil, Trash2 } from '@lucide/vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import CadenceRowForm, { type CadenceAnchor, type CadenceDraft } from './CadenceRowForm.vue';
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -118,6 +116,8 @@ import {
 } from '@/Components/ui/alert-dialog';
 import { Button } from '@/Components/ui/button';
 import { DateBadge } from '@/Components/Patterns';
+
+import CadenceRowForm, { type CadenceAnchor, type CadenceDraft } from './CadenceRowForm.vue';
 
 export interface CadenceRow {
   id: string;

@@ -3,15 +3,15 @@
 use App\Models\Task;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 test('progress increments from stale instances and completes at the total', function (): void {
     $this->freezeSecond();
     $task = Task::factory()->withProgress(0, 3)->create();
     $stale = Task::query()->findOrFail($task->id);
 
-    expect($task->incrementProgress())->toBeFalse();
-    expect($stale->incrementProgress(2))->toBeTrue();
+    expect($task->incrementProgress())->toBeFalse()
+        ->and($stale->incrementProgress(2))->toBeTrue();
 
     $task->refresh();
     expect($task->metadata['items_completed'])->toBe(3)

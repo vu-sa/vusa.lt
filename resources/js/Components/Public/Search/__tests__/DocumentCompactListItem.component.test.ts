@@ -1,11 +1,11 @@
 import { describe, test, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import DocumentCompactListItem from '../DocumentCompactListItem.vue';
-
 import { stubIcon } from '@/tests/stubs';
 import { documentWithMatch, type SearchMatchDocument } from '@/Shared/Search/matches';
 import type { DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
+
+import DocumentCompactListItem from '../DocumentCompactListItem.vue';
 
 // Icons are stubbed per the project's "real components by default" policy —
 // @iconify/vue's <Icon> fetches icon data at runtime, which is unnecessary

@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
+import { buildProfileParams } from '@/Shared/Search/profiles';
+import { institutionActivityStatuses } from '@/Constants/statusIcons';
+
 import {
   getCollectionFacetConfig,
   getCollectionSortOptions,
@@ -7,9 +10,6 @@ import {
   RELEVANCE_SORT_VALUE,
   resolveSortValue,
 } from '../collectionFacetConfig';
-
-import { buildProfileParams } from '@/Shared/Search/profiles';
-import { institutionActivityStatuses } from '@/Constants/statusIcons';
 
 describe('getCollectionSortOptions', () => {
   it.each(['meetings', 'institutions', 'news', 'pages'])('offers both directions of the record dates, so their %s table headers can sort', (collection) => {

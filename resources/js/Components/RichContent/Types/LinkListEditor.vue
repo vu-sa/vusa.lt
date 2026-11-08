@@ -12,11 +12,11 @@
  * `LinkListOptionsFields.vue`, shared with `LinkListBlockToolbar.vue`'s full-screen
  * options popover so the two surfaces can't drift apart.
  */
+import type { LinkList } from '@/Types/contentParts';
+
 import RCSectionOptions from '../Editor/RCSectionOptions.vue';
 
 import LinkListOptionsFields from './LinkListOptionsFields.vue';
-
-import type { LinkList } from '@/Types/contentParts';
 
 const content = defineModel<LinkList['json_content']>({ required: true });
 const options = defineModel<LinkList['options']>('options', { required: true });

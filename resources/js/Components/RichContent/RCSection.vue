@@ -57,15 +57,15 @@
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import SectionHeader from '@/Components/RichContent/SectionHeader.vue';
+import { EyebrowLabel } from '@/Components/Public/Base';
+import { latinizeId } from '@/Utils/String';
+
 import RCInlineText from './Editor/Fullscreen/RCInlineText.vue';
 import type { BandResolution } from './bandLayout';
 import {
   INNER_CLASS, SECTION_HEADING_SIZE_CLASS, type SectionHeadingLevel, type SectionInner,
 } from './sectionClasses';
-
-import SectionHeader from '@/Components/RichContent/SectionHeader.vue';
-import { EyebrowLabel } from '@/Components/Public/Base';
-import { latinizeId } from '@/Utils/String';
 
 const props = withDefaults(defineProps<{
   title?: string;

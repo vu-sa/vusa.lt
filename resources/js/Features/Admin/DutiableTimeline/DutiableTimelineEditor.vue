@@ -168,6 +168,14 @@ import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { PanelRight } from '@lucide/vue';
 
+import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
+import { Button } from '@/Components/ui/button';
+import { Skeleton } from '@/Components/ui/skeleton';
+import { Alert, AlertDescription } from '@/Components/ui/alert';
+import { EmptyState } from '@/Components/Patterns';
+import { isDarkModeActive } from '@/Components/Graphs/ganttColors';
+import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
+
 import { bandLadder } from './cadencePools';
 import DutiableGantt from './DutiableGantt.vue';
 import DutiableTimelineDiffSheet from './DutiableTimelineDiffSheet.vue';
@@ -187,14 +195,6 @@ import {
   DEFAULT_MONTH_WIDTH, MAX_MONTH_WIDTH, MIN_MONTH_WIDTH, VIEW_STORAGE_KEY,
 } from './constants';
 import type { ParsedRow, StagedDates, TimelineOperation, TimelineScopeType } from './types';
-
-import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
-import { Button } from '@/Components/ui/button';
-import { Skeleton } from '@/Components/ui/skeleton';
-import { Alert, AlertDescription } from '@/Components/ui/alert';
-import { EmptyState } from '@/Components/Patterns';
-import { isDarkModeActive } from '@/Components/Graphs/ganttColors';
-import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
 
 const props = withDefaults(defineProps<{
   scopeType: TimelineScopeType;

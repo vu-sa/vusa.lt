@@ -20,9 +20,9 @@ import { Check, Minus } from '@lucide/vue';
 import { CheckboxIndicator, CheckboxRoot, useForwardPropsEmits } from 'reka-ui';
 import { computed, type HTMLAttributes } from 'vue';
 
-import { checkboxVariants, type CheckboxVariants } from './index';
-
 import { cn } from '@/Utils/Shadcn/utils';
+
+import { checkboxVariants, type CheckboxVariants } from './index';
 
 const props = defineProps<CheckboxRootProps & { size?: CheckboxVariants['size']; class?: HTMLAttributes['class'] }>();
 const emits = defineEmits<CheckboxRootEmits>();

@@ -119,16 +119,16 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { usePage } from '@inertiajs/vue3';
 
-import RCSection from '../RCSection.vue';
-import RCFeatureCard from '../RCFeatureCard.vue';
-import { smartGridCols } from '../gridStacking';
-import type { BandResolution } from '../bandLayout';
-
 import type { EventListResolved, EventListResolvedItem } from '@/Types/contentParts';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import { formatDateWith, formatEventDateSpan, formatMonthAbbr } from '@/Utils/dateTime';
 import { LocaleEnum } from '@/Types/enums';
 import { safeHref } from '@/Utils/safeHref';
+
+import type { BandResolution } from '../bandLayout';
+import { smartGridCols } from '../gridStacking';
+import RCFeatureCard from '../RCFeatureCard.vue';
+import RCSection from '../RCSection.vue';
 
 const props = defineProps<{
   element: models.ContentPart;

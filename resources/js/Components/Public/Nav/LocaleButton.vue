@@ -48,9 +48,6 @@ import { computed, ref, watch } from 'vue';
 import { loadLanguageAsync } from 'laravel-vue-i18n';
 import { usePage } from '@inertiajs/vue3';
 
-import LocaleFlag from './LocaleFlag.vue';
-
-import IFluentChevronDown24Regular from '~icons/fluent/chevron-down-24-regular';
 import { LocaleEnum } from '@/Types/enums';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import { Button } from '@/Components/ui/button';
@@ -61,6 +58,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
+
+import LocaleFlag from './LocaleFlag.vue';
+
+import IFluentChevronDown24Regular from '~icons/fluent/chevron-down-24-regular';
 
 interface Props {
   /** Current locale for the application */

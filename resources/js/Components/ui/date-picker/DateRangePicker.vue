@@ -42,13 +42,13 @@ import { computed, type HTMLAttributes } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { DateRange } from 'reka-ui';
 
-import DatePicker from './DatePicker.vue';
-
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { RangeCalendar } from '@/Components/ui/range-calendar';
 import { Button } from '@/Components/ui/button';
 import { cn } from '@/Utils/Shadcn/utils';
 import { useCoarsePointer } from '@/Composables/useCoarsePointer';
+
+import DatePicker from './DatePicker.vue';
 
 // Define component props
 const props = defineProps<{

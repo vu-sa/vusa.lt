@@ -63,11 +63,11 @@ import { useManualRefHistory } from '@vueuse/core';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { Pencil } from '@lucide/vue';
 
+import { Button } from '@/Components/ui/button';
+
 import RCFullscreenEditor from './Editor/Fullscreen/RCFullscreenEditor.vue';
 import { deriveBlockSummary } from './Editor/blockSummary';
 import { getContentType, type ContentPart } from './Types';
-
-import { Button } from '@/Components/ui/button';
 
 defineProps<{
   maxContentBlocks?: number;

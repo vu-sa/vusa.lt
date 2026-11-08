@@ -77,16 +77,16 @@ import { Link, router } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import { Eye, Pencil, Plus } from '@lucide/vue';
 
-import NavigationRootItem from './NavigationRootItem.vue';
-import NavigationPreview from './NavigationPreview.vue';
-import type { AdminNavigationLink, AdminNavigationRoot, TranslationSummary } from './types';
-
 import { withOptimisticRollback } from '@/Composables/useOptimisticVisit';
 import { useMotionAwareSortable } from '@/Composables/useMotionAwareSortable';
 import { Button } from '@/Components/ui/button';
 import { Label } from '@/Components/ui/label';
 import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
 import { Alert, AlertDescription } from '@/Components/ui/alert';
+
+import type { AdminNavigationLink, AdminNavigationRoot, TranslationSummary } from './types';
+import NavigationPreview from './NavigationPreview.vue';
+import NavigationRootItem from './NavigationRootItem.vue';
 
 const props = defineProps<{
   roots: AdminNavigationRoot[];
@@ -195,12 +195,12 @@ function settleMutations() {
         const byId = new Map(fresh.map(root => [root.id, root]));
         suppressNextOrderSave = true;
         contents.value = orderQueued
-          ? local.flatMap(root => {
+          ? local.flatMap((root) => {
               const server = byId.get(root.id);
               if (!server) return [];
               byId.delete(root.id);
               const links = new Map(server.links.flat().map(link => [link.id, link]));
-              server.links = root.links.map(column => column.flatMap(link => {
+              server.links = root.links.map(column => column.flatMap((link) => {
                 const found = links.get(link.id);
                 links.delete(link.id);
                 return found ? [found] : [];
@@ -211,7 +211,8 @@ function settleMutations() {
           : fresh;
       },
     });
-  } else if (orderQueued) persistOrder();
+  }
+  else if (orderQueued) persistOrder();
 }
 
 const persistOrder = useDebounceFn(() => {

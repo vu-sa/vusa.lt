@@ -78,14 +78,14 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
+import { HeaderWordmark } from '@/Components/Public/Base';
+import { useCookieConsent } from '@/Composables/useCookieConsent';
+import { safeHref } from '@/Utils/safeHref';
+
 import type { NavFooterColumn } from '../Nav/types';
 import FacebookButton from '../Nav/FacebookButton.vue';
 import InstagramButton from '../Nav/InstagramButton.vue';
 import StartFM from '../Nav/StartFM.vue';
-
-import { HeaderWordmark } from '@/Components/Public/Base';
-import { useCookieConsent } from '@/Composables/useCookieConsent';
-import { safeHref } from '@/Utils/safeHref';
 
 const { reopen } = useCookieConsent();
 

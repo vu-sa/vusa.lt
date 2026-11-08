@@ -44,15 +44,15 @@
 import { ref } from 'vue';
 import { ChevronLeft, ClipboardPaste, ListPlus, SkipForward } from '@lucide/vue';
 
+import { useActionWindow } from '@/Composables/useActionWindow';
+import { Button } from '@/Components/ui/button';
+import type { AgendaItemFormData } from '@/Composables/useMeetingCreation';
+
 import ActionChoiceButton from '../ActionChoiceButton.vue';
 import ActionChoiceList from '../ActionChoiceList.vue';
 import ActionWindowPrimaryButton from '../ActionWindowPrimaryButton.vue';
 import ActionWindowScreen from '../ActionWindowScreen.vue';
 import AgendaItemsEditor from '../AgendaItemsEditor.vue';
-
-import { useActionWindow } from '@/Composables/useActionWindow';
-import { Button } from '@/Components/ui/button';
-import type { AgendaItemFormData } from '@/Composables/useMeetingCreation';
 
 const { draft, advance, setAgendaItems, updateMeeting } = useActionWindow();
 

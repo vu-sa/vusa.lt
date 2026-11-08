@@ -15,9 +15,9 @@ vi.mock('@vueuse/core', async importOriginal => ({
   useTransition: vi.fn((source: Ref<number>) => source),
 }));
 
-import RCNumberCounter from '../RCNumberCounter.vue';
-
 import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
+
+import RCNumberCounter from '../RCNumberCounter.vue';
 
 describe('RCNumberCounter', () => {
   it('disables interpolation when the motion preference changes', async () => {

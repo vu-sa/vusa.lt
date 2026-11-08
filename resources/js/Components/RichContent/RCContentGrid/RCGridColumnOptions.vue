@@ -85,12 +85,13 @@
 import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { injectActiveHotspot } from '../Editor/Fullscreen/useActiveHotspot';
-
 import { Button } from '@/Components/ui/button';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Popover, PopoverAnchor, PopoverContent } from '@/Components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+
+import { injectActiveHotspot } from '../Editor/Fullscreen/useActiveHotspot';
+
 import IFluentArrowLeft24Regular from '~icons/fluent/arrow-left24-regular';
 import IFluentArrowRight24Regular from '~icons/fluent/arrow-right24-regular';
 import IFluentDelete24Regular from '~icons/fluent/delete24-regular';

@@ -4,9 +4,9 @@ import { mount } from '@vue/test-utils';
 import { createSSRApp, h } from 'vue';
 import { renderToString } from 'vue/server-renderer';
 
-import SmartLink from '../SmartLink.vue';
-
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import SmartLink from '../SmartLink.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

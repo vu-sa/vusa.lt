@@ -6,4 +6,3 @@ export const meetingKindLabel = (kind: MeetingKind): string => $t(`forms.options
 
 export const meetingKindOptions = (): Array<{ value: MeetingKind; label: string }> =>
   Object.values(MeetingKind).map(kind => ({ value: kind, label: meetingKindLabel(kind) }));
-

@@ -2,10 +2,10 @@ import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { usePage } from '@inertiajs/vue3';
 
-import NewsPreview from '../NewsPreview.vue';
-
 import { commonStubs } from '@/tests/stubs';
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import NewsPreview from '../NewsPreview.vue';
 
 const baseNews = {
   id: 'n1',

@@ -40,13 +40,13 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { useDebounceFn } from '@vueuse/core';
 import { LoaderCircle, Search } from '@lucide/vue';
 
-import SearchSplitView from '../SearchSplitView.vue';
-import { collectAllTabHits, type NormalizedSearchHit } from '../../Utils/searchHitMappers';
-import type { AdminCollection } from '../../Types/AdminSearchTypes';
-
 import { useAdminSearch } from '@/Composables/useAdminSearch';
 import type { MultiSearchResults } from '@/Shared/Search/types';
 import { createEmptyMultiSearchResults } from '@/Shared/Search/utils/createEmptyMultiSearchResults';
+
+import SearchSplitView from '../SearchSplitView.vue';
+import { collectAllTabHits, type NormalizedSearchHit } from '../../Utils/searchHitMappers';
+import type { AdminCollection } from '../../Types/AdminSearchTypes';
 
 const props = defineProps<{
   /** Which collections to search and offer — everything else is filtered out of the

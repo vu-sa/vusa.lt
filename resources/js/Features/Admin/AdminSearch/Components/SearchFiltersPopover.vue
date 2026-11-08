@@ -39,13 +39,13 @@ import { ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { SlidersHorizontal } from '@lucide/vue';
 
-import type { AdminFacet, AdminSearchFilters, CollectionFacetConfig } from '../Types/AdminSearchTypes';
-
-import AdminFacetSidebar from './AdminFacetSidebar.vue';
-
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
+
+import type { AdminFacet, AdminSearchFilters, CollectionFacetConfig } from '../Types/AdminSearchTypes';
+
+import AdminFacetSidebar from './AdminFacetSidebar.vue';
 
 defineProps<{
   facets: AdminFacet[];

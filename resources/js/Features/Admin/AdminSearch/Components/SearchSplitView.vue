@@ -63,13 +63,13 @@ import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronLeft } from '@lucide/vue';
 
+import { Button } from '@/Components/ui/button';
+import { useListDetailSelection } from '@/Composables/useListDetailSelection';
+
 import type { NormalizedSearchHit } from '../Utils/searchHitMappers';
 
 import SearchResultList from './SearchResultList.vue';
 import SearchDetailPane from './SearchDetailPane.vue';
-
-import { Button } from '@/Components/ui/button';
-import { useListDetailSelection } from '@/Composables/useListDetailSelection';
 
 const props = withDefaults(defineProps<{
   hits: NormalizedSearchHit[];

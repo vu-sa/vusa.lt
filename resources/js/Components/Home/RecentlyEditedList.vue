@@ -25,11 +25,11 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { History } from '@lucide/vue';
 
-import type { HomeRecentRecord } from './types';
-
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 import EntityTypeMark from '@/Components/EntityTypeMark.vue';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
+
+import type { HomeRecentRecord } from './types';
 
 defineProps<{
   records: HomeRecentRecord[];

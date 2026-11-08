@@ -1,12 +1,12 @@
 import { mount } from '@vue/test-utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import ShowProfile from '../ShowProfile.vue';
-
 import { commonStubs } from '@/tests/stubs';
 import { ModelEnum } from '@/Types/enums';
 import { Dialog } from '@/Components/ui/dialog';
 import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
+
+import ShowProfile from '../ShowProfile.vue';
 
 const patchCalls: Array<{ url: string; options?: Record<string, unknown> }> = [];
 

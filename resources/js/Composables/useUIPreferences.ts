@@ -1,4 +1,3 @@
-import { safeHref } from '@/Utils/safeHref';
 /**
  * useUIPreferences - Single source of truth for the admin's pinned and recently
  * visited pages.
@@ -26,6 +25,7 @@ import {
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { safeHref } from '@/Utils/safeHref';
 import { resolveActive, type AdminWorkspace } from '@/Composables/useAdminNavigation';
 import type { RecentItem } from '@/Composables/useCommandPalette';
 

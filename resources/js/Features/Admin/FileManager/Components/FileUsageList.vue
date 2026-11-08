@@ -44,10 +44,10 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { CircleCheck, Link2 } from '@lucide/vue';
 
-import type { FileUsageResult } from '../useFileUsageScan';
-
 import { StatusBadge } from '@/Components/Patterns';
 import type { StatusPresentation } from '@/Constants/statusIcons';
+
+import type { FileUsageResult } from '../useFileUsageScan';
 
 const props = defineProps<{
   usage: FileUsageResult;

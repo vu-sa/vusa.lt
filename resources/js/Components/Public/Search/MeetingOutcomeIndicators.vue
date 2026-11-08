@@ -44,6 +44,7 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
+
 import IFluentCheckmark12Regular from '~icons/fluent/checkmark-12-regular';
 import IFluentDismiss12Regular from '~icons/fluent/dismiss-12-regular';
 import IFluentSubtract12Regular from '~icons/fluent/subtract-12-regular';

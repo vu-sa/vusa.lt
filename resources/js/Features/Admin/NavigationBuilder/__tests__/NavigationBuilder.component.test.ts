@@ -3,7 +3,6 @@ import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
 
 import { createMockPage } from '@/tests/helpers/createMockPage';
-
 import NavigationBuilder from '@/Features/Admin/NavigationBuilder/NavigationBuilder.vue';
 import type { AdminNavigationRoot } from '@/Features/Admin/NavigationBuilder/types';
 
@@ -306,7 +305,8 @@ describe('NavigationBuilder.vue', () => {
       expect(vi.mocked(router.post).mock.calls.at(-1)?.[1]).toEqual({
         navigation: [{ id: 1, links: [[{ id: 10 }, { id: 11 }], [], []] }],
       });
-    } finally {
+    }
+    finally {
       vi.useRealTimers();
     }
   });

@@ -56,8 +56,6 @@ class GetFollowedInstitutions
         // Include the request in the memo key when a worker handles several requests.
         $request = request();
 
-        return once(function () use ($user): Collection {
-            return $user->followedInstitutions()->pluck('institutions.id')->map(fn ($id): string => (string) $id);
-        });
+        return once(fn (): Collection => $user->followedInstitutions()->pluck('institutions.id')->map(fn ($id): string => (string) $id));
     }
 }

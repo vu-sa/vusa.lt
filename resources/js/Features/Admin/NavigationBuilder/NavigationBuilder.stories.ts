@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
+import { TooltipProvider } from '@/Components/ui/tooltip';
+
 import NavigationBuilder from './NavigationBuilder.vue';
 import type { AdminNavigationLink, AdminNavigationRoot } from './types';
-
-import { TooltipProvider } from '@/Components/ui/tooltip';
 
 /** Inline so the story needs no server to render the background-image card. */
 const heroImage = `data:image/svg+xml;utf8,${encodeURIComponent(

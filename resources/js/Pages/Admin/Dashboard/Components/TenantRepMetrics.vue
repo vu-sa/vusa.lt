@@ -43,11 +43,11 @@
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import type { TenantRepMetrics } from '../types';
-
 import RepMetricTable from '@/Components/Overview/RepMetricTable.vue';
 import { Skeleton } from '@/Components/ui/skeleton';
 import { formatDate } from '@/Utils/dateTime';
+
+import type { TenantRepMetrics } from '../types';
 
 const props = defineProps<{ data: TenantRepMetrics | null; loading: boolean }>();
 const compactPeriod = (label?: string) => label?.replace(/(\d{4})–(\d{4})/, (_, start: string, end: string) => `${start}–${end.slice(2)}`) ?? '—';

@@ -37,12 +37,12 @@
  */
 import { computed } from 'vue';
 
-import RCIcon from '../RCIcon.vue';
-
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import { Button } from '@/Components/ui/button';
 import type { Hero } from '@/Types/contentParts';
 import { safeHref } from '@/Utils/safeHref';
+
+import RCIcon from '../RCIcon.vue';
 
 const props = defineProps<{
   buttons?: Hero['json_content']['buttons'];

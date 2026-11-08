@@ -19,6 +19,7 @@ import SmartLink from '@/Components/Public/SmartLink.vue';
 import { buttonVariants } from '@/Components/ui/button';
 import type { ButtonVariants } from '@/Components/ui/button';
 import { cn } from '@/Utils/Shadcn/utils';
+
 import IFluentSearch20Regular from '~icons/fluent/search-20-filled';
 
 const props = withDefaults(defineProps<{

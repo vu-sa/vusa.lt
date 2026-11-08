@@ -563,24 +563,23 @@ describe('public records in every scoped key', function (): void {
         $keys = keysFor($user);
         $cacheKey = TypesenseScopedKeyService::getCacheKey($user->id);
 
-        expect(TypesenseScopedKeyService::KEY_EXPIRY)->toBe(900);
-        expect(scopedKeyParams($keys['institutions']['key'])['expires_at'])->toBe(now()->addMinutes(15)->timestamp);
-        expect(cache()->has($cacheKey))->toBeTrue();
+        expect(TypesenseScopedKeyService::KEY_EXPIRY)->toBe(900)
+            ->and(scopedKeyParams($keys['institutions']['key'])['expires_at'])->toBe(now()->addMinutes(15)->timestamp)
+            ->and(cache()->has($cacheKey))->toBeTrue();
 
         $this->travel(801)->seconds();
 
-        expect(cache()->has($cacheKey))->toBeFalse();
-        expect(scopedKeyParams($keys['institutions']['key'])['expires_at'])->toBeGreaterThan(now()->timestamp);
+        expect(cache()->has($cacheKey))->toBeFalse()
+            ->and(scopedKeyParams($keys['institutions']['key'])['expires_at'])->toBeGreaterThan(now()->timestamp);
     });
 
     test('baseline institution keys withhold activity status and its facet', function (): void {
         $user = User::factory()->create();
         $params = scopedKeyParams(keysFor($user)['institutions']['key']);
 
-        expect($params['exclude_fields'])->toBe('activity_status');
-        expect(explode(',', $params['facet_by']))->not->toContain('activity_status');
-        expect(TypesenseManager::getAdminFrontendConfig($user)['collections']['institutions']['excludedFields'])
-            ->toBe(['activity_status']);
+        expect($params['exclude_fields'])->toBe('activity_status')
+            ->and(explode(',', $params['facet_by']))->not->toContain('activity_status')
+            ->and(TypesenseManager::getAdminFrontendConfig($user)['collections']['institutions']['excludedFields'])->toBe(['activity_status']);
     });
 
     test('refreshing keys replaces the cached expiry with a fresh fifteen minute lifetime', function (): void {
@@ -609,8 +608,7 @@ describe('public records in every scoped key', function (): void {
         $user->givePermissionTo('institutions.read.*');
         $params = scopedKeyParams(keysFor($user)['institutions']['key']);
 
-        expect($params)->not->toHaveKey('exclude_fields');
-        expect($params)->not->toHaveKey('facet_by');
-        expect(TypesenseManager::getAdminFrontendConfig($user)['collections']['institutions']['excludedFields'])->toBe([]);
+        expect($params)->not->toHaveKey('exclude_fields')->not->toHaveKey('facet_by')
+            ->and(TypesenseManager::getAdminFrontendConfig($user)['collections']['institutions']['excludedFields'])->toBe([]);
     });
 });

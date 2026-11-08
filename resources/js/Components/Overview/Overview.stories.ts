@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
-import OverviewChart from './OverviewChart.vue';
-import OverviewNumbers from './OverviewNumbers.vue';
-
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
+
+import OverviewChart from './OverviewChart.vue';
+import OverviewNumbers from './OverviewNumbers.vue';
 
 const meta: Meta = {
   title: 'Overview/Apžvalga',

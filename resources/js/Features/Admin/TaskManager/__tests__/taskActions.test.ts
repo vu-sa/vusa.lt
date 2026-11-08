@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { getTaskActions, getTaskRowActions } from '../taskActions';
-
 import type { TaskDisplayData } from '@/Composables/useTaskPresentation';
 import { TaskActionType } from '@/Types/TaskTypes';
+
+import { getTaskActions, getTaskRowActions } from '../taskActions';
 
 const task = (overrides: Partial<TaskDisplayData> = {}): TaskDisplayData => ({
   id: 'task-1',

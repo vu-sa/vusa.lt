@@ -9,6 +9,10 @@ import { ref, computed, watch, onMounted, onUnmounted, shallowRef, toValue, type
 import { usePage } from '@inertiajs/vue3';
 import { useUrlSearchParams, useDebounceFn } from '@vueuse/core';
 
+import { provideFacetSearch } from '@/Shared/Search/facets';
+import { useAdminSearch } from '@/Composables/useAdminSearch';
+import { useCollectionFilterMemory } from '@/Composables/collectionFilterMemory';
+
 import type {
   AdminCollection,
   AdminFacet,
@@ -30,10 +34,6 @@ import {
 } from '../Services/AdminSearchService';
 import { mergeFacets, sortFacetsByConfig } from '../Services/AdminFacetMerger';
 import { getCollectionFacetConfig, getCollectionSortOptions, resolveSortValue, RELEVANCE_SORT_VALUE } from '../Config/collectionFacetConfig';
-
-import { provideFacetSearch } from '@/Shared/Search/facets';
-import { useAdminSearch } from '@/Composables/useAdminSearch';
-import { useCollectionFilterMemory } from '@/Composables/collectionFilterMemory';
 
 /** Bounds the replay of `?pages=`, so a hand-edited URL cannot fan out into hundreds of requests. */
 const MAX_RESTORED_PAGES = 10;

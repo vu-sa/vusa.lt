@@ -12,6 +12,7 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
+
 import { safeHref } from '@/Utils/safeHref';
 
 const props = defineProps<{
@@ -32,7 +33,8 @@ const useInertiaRouter = computed(() => {
       : new URL(window.location.href);
     const destination = new URL(safeUrl.value, current);
     return destination.origin === current.origin;
-  } catch {
+  }
+  catch {
     return false;
   }
 });

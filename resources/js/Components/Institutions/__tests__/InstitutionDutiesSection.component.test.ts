@@ -2,9 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
 
-import InstitutionDutiesSection from '../InstitutionDutiesSection.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import InstitutionDutiesSection from '../InstitutionDutiesSection.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

@@ -10,9 +10,9 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue';
 
-import { cardContentVariants, type CardContentVariants } from './index';
-
 import { cn } from '@/Utils/Shadcn/utils';
+
+import { cardContentVariants, type CardContentVariants } from './index';
 
 const props = withDefaults(defineProps<{
   size?: CardContentVariants['size'];

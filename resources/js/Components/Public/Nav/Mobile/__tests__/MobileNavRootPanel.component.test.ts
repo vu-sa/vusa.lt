@@ -3,9 +3,9 @@ import { mount } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
 import { Icon } from '@iconify/vue';
 
-import MobileNavRootPanel from '../MobileNavRootPanel.vue';
-
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import MobileNavRootPanel from '../MobileNavRootPanel.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

@@ -1,10 +1,10 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
+import { commonStubs, stubPopover, stubPopoverAnchor, stubPopoverContent } from '@/tests/stubs';
+
 import RCImageHotspot from '../RCImageHotspot.vue';
 import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from '../useActiveHotspot';
-
-import { commonStubs, stubPopover, stubPopoverAnchor, stubPopoverContent } from '@/tests/stubs';
 
 const stubs = {
   ...commonStubs,

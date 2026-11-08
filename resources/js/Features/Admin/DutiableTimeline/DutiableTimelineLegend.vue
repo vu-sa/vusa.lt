@@ -55,10 +55,10 @@
 import { computed } from 'vue';
 import { Info } from '@lucide/vue';
 
-import type { TimelineColors } from './timelineColors';
-
 import { Button } from '@/Components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
+
+import type { TimelineColors } from './timelineColors';
 
 const props = defineProps<{
   colors: TimelineColors;

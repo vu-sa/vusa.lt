@@ -22,11 +22,11 @@
 <script setup lang="ts" generic="T extends TreeType">
 import { computed, type HTMLAttributes } from 'vue';
 
-import TypeTreeOptionLabel from './TypeTreeOptionLabel.vue';
-import { useTypeTreeNodes } from './useTypeTreeNodes';
-
 import { MultiSelect } from '@/Components/ui/multi-select';
 import { type TreeType, type TypeId, typePath } from '@/Utils/typeTree';
+
+import TypeTreeOptionLabel from './TypeTreeOptionLabel.vue';
+import { useTypeTreeNodes } from './useTypeTreeNodes';
 
 const props = withDefaults(defineProps<{
   types: T[];

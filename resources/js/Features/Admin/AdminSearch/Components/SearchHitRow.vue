@@ -91,9 +91,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronRight, Link as LinkIcon, Clock, Eye, Pencil } from '@lucide/vue';
 import { computed } from 'vue';
 
-import type { NormalizedSearchHit, SearchCollectionKey } from '../Utils/searchHitMappers';
-import { useSearchHitMatches } from '../Composables/useSearchHitMatches';
-
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
@@ -101,6 +98,9 @@ import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import EntityTypeMark from '@/Components/EntityTypeMark.vue';
 import { StatusBadge } from '@/Components/Patterns';
 import { Badge } from '@/Components/ui/badge';
+
+import { useSearchHitMatches } from '../Composables/useSearchHitMatches';
+import type { NormalizedSearchHit, SearchCollectionKey } from '../Utils/searchHitMappers';
 
 const props = withDefaults(defineProps<{
   hit: NormalizedSearchHit;

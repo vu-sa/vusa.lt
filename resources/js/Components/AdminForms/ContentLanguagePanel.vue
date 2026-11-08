@@ -100,9 +100,6 @@ import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowUpRight, ChevronDown, Columns2, Languages, Plus } from '@lucide/vue';
 
-import ContentTranslationWorkspace from './ContentTranslationWorkspace.vue';
-import FormFieldWrapper from './FormFieldWrapper.vue';
-
 import { contentEditorHttp as http } from '@/Composables/contentEditorHttp';
 import { CONTENT_EDITOR_CONTEXT } from '@/Components/RichContent/contentEditorContext';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
@@ -114,6 +111,9 @@ import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import ContentTranslationWorkspace from './ContentTranslationWorkspace.vue';
 
 type ContentLang = 'lt' | 'en';
 

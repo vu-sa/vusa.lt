@@ -100,8 +100,8 @@ describe('stored titles', function (): void {
         ])->assertRedirect()->assertSessionHasNoErrors();
 
         expect($meeting->fresh())->meeting_kind->toBe(MeetingKind::Meeting)
-            ->title->toBe('2026 rugsėjo 12 d. 14.00 val. susitikimas');
-        expect($other->fresh()->title)->toBe('2026 rugsėjo 12 d. 14.00 val. susirinkimas');
+            ->title->toBe('2026 rugsėjo 12 d. 14.00 val. susitikimas')
+            ->and($other->fresh()->title)->toBe('2026 rugsėjo 12 d. 14.00 val. susirinkimas');
 
         asUser($admin)->patch(route('meetings.update', $meeting), [
             'start_time' => '2026-09-12 14:00:00',
@@ -154,8 +154,8 @@ describe('stored titles', function (): void {
         $this->assemblyType->update(['extra_attributes' => ['meeting_kind' => MeetingKind::Conference->value]]);
 
         expect($meeting->fresh())->title->toBe('2026 rugsėjo 12 d. 14.00 val. konferencija')
-            ->updated_at->toEqual($updatedAt);
-        expect($overridden->fresh()->title)->toBe('2026 rugsėjo 12 d. 14.00 val. susitikimas');
+            ->updated_at->toEqual($updatedAt)
+            ->and($overridden->fresh()->title)->toBe('2026 rugsėjo 12 d. 14.00 val. susitikimas');
     });
 });
 

@@ -50,14 +50,14 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Users } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
+import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
+import { Button } from '@/Components/ui/button';
+import { useDateFormatter } from '@/Composables/useDateFormatter';
+
 import type { RepresentativeActivityStats, RepresentativeUser } from '../types';
 
 import RepresentativeDataTable from './RepresentativeDataTable.vue';
 import RepresentativeActivitySkeleton from './RepresentativeActivitySkeleton.vue';
-
-import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
-import { Button } from '@/Components/ui/button';
-import { useDateFormatter } from '@/Composables/useDateFormatter';
 
 const props = defineProps<{
   stats: RepresentativeActivityStats;

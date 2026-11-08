@@ -15,10 +15,10 @@
 import { ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
+import { Label } from '@/Components/ui/label';
+
 import TiptapEditor from '../TipTap/TiptapEditor.vue';
 import SimpleLocaleButton from '../Buttons/SimpleLocaleButton.vue';
-
-import { Label } from '@/Components/ui/label';
 
 defineProps<{
   /** Omit when a FormFieldWrapper already labels the field. */

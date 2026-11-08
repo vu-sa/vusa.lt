@@ -111,10 +111,6 @@ import { useMediaQuery, useMounted } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { DialogContent as MobileDialogContent, DialogOverlay, DialogRoot, DialogTitle as MobileDialogTitle, DialogTrigger } from 'reka-ui';
 
-import SmartLink from '../../SmartLink.vue';
-
-import MobileNavRootPanel from './MobileNavRootPanel.vue';
-
 import LocaleButton from '@/Components/Public/Nav/LocaleButton.vue';
 import SearchButton from '@/Components/Public/Nav/SearchButton.vue';
 import { AccessibilityMenu, HeaderWordmark } from '@/Components/Public/Base';
@@ -122,6 +118,11 @@ import DarkModeButton from '@/Components/Buttons/DarkModeButton.vue';
 import { Button } from '@/Components/ui/button';
 import { cn } from '@/Utils/Shadcn/utils';
 import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
+
+import SmartLink from '../../SmartLink.vue';
+
+import MobileNavRootPanel from './MobileNavRootPanel.vue';
+
 import LineHorizontal320Filled from '~icons/fluent/line-horizontal-3-20-filled';
 import IFluentDismiss24Regular from '~icons/fluent/dismiss-24-regular';
 import IFluentGrid24Filled from '~icons/fluent/grid-24-filled';

@@ -293,7 +293,6 @@ const ImageCropper = defineAsyncComponent(() => import('@/Components/ui/upload/I
 import Upload from '@/Components/ui/upload/Upload.vue';
 import UploadDropzone from '@/Components/ui/upload/UploadDropzone.vue';
 import type { UploadFile } from '@/Components/ui/upload/variants';
-
 import { useImageCompression, type CompressionOptions, type CompressionResult } from '@/Composables/useImageCompression';
 import { cn } from '@/Utils/Shadcn/utils';
 import { Button } from '@/Components/ui/button';

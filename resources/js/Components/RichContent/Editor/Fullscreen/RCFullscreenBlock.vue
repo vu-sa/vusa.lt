@@ -76,6 +76,9 @@
 import { computed, ref, type Component } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import type { SectionOptions } from '@/Types/contentParts';
+import { FieldLabel } from '@/Components/ui/field';
+
 import SectionDisplay from '../../RCSection/SectionDisplay.vue';
 import BlockPreviewRenderer from '../BlockPreviewRenderer.vue';
 import RCPresentationPicker from '../RCPresentationPicker.vue';
@@ -108,9 +111,6 @@ import RCSectionToolbarOptions from '../RCSectionToolbarOptions.vue';
 import RCImageListBlockToolbar from './RCImageListBlockToolbar.vue';
 import { injectActiveHotspot } from './useActiveHotspot';
 import RCBlockToolbarShell from './RCBlockToolbarShell.vue';
-
-import type { SectionOptions } from '@/Types/contentParts';
-import { FieldLabel } from '@/Components/ui/field';
 
 const props = defineProps<{
   content: ContentPart;

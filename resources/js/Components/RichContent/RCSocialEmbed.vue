@@ -44,8 +44,6 @@
         </div>
       </blockquote>
     </div>
-
-
   </div>
 </template>
 
@@ -53,10 +51,11 @@
 import { ref, computed, onMounted, nextTick } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import type { SocialEmbed } from '@/Types/contentParts';
+
 import { detectSocialPlatform, toInstagramEmbedUrl } from './embedUrl';
 
 import SocialIcon from '~icons/fluent/share-24-regular';
-import type { SocialEmbed } from '@/Types/contentParts';
 
 const props = defineProps<{
   element: SocialEmbed;

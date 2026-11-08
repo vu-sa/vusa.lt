@@ -65,14 +65,13 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { CalendarCog, UserPlus } from '@lucide/vue';
 
-import UserPopover from '../Avatars/UserPopover.vue';
-
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { Button } from '@/Components/ui/button';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { formatDate as formatIsoDate } from '@/Utils/dateTime';
-
 import type { DutyWithUsers, UserWithPivot } from '@/Types/DutyAssignment';
+
+import UserPopover from '../Avatars/UserPopover.vue';
 
 defineProps<{
   duty: DutyWithUsers;

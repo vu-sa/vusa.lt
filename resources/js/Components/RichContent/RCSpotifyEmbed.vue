@@ -50,13 +50,14 @@ import { computed } from 'vue';
 import { useDark, useMounted } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import type { SpotifyEmbed } from '@/Types/contentParts';
+
 import RCMixcloudEmbed from './RCMixcloudEmbed.vue';
 import RCSpotifyPromoDisplay from './RCSpotifyPromoDisplay.vue';
 import { isMixcloudUrl, toSpotifyEmbedUrl } from './embedUrl';
 import type { BandResolution } from './bandLayout';
 
 import SpotifyIcon from '~icons/simple-icons/spotify';
-import type { SpotifyEmbed } from '@/Types/contentParts';
 
 const props = defineProps<{
   element: SpotifyEmbed;

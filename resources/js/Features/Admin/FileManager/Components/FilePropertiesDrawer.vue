@@ -166,19 +166,19 @@ import {
   Trash2,
 } from '@lucide/vue';
 
-import type { FileEntry, FileManagerAbilities } from '../types';
-import { useFileUsageScan } from '../useFileUsageScan';
-import { formatBytes, formatDate, isPreviewableImage, previewKind, publicUrl, relativeToRoot } from '../utils';
-
-import FileThumb from './FileThumb.vue';
-import FileUsageList from './FileUsageList.vue';
-
 import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
 import { Button } from '@/Components/ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/Components/ui/sheet';
 import { Spinner } from '@/Components/ui/spinner';
 import { useIsMobile } from '@/Composables/useIsMobile';
 import { getFileExtension } from '@/Utils/fileIcons';
+
+import { formatBytes, formatDate, isPreviewableImage, previewKind, publicUrl, relativeToRoot } from '../utils';
+import { useFileUsageScan } from '../useFileUsageScan';
+import type { FileEntry, FileManagerAbilities } from '../types';
+
+import FileUsageList from './FileUsageList.vue';
+import FileThumb from './FileThumb.vue';
 
 const props = withDefaults(defineProps<{
   file: FileEntry | null;

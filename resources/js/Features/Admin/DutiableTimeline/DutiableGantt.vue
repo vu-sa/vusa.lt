@@ -210,22 +210,6 @@ import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowDownNarrowWide, ChevronRight, ChevronsDownUp, ChevronsUpDown, Link2 } from '@lucide/vue';
 
-import { timelineDutyName } from './dutyNames';
-import { formatDuration } from './duration';
-import { getTimelineColors } from './timelineColors';
-import DutiableExtrasBadge from './DutiableExtrasBadge.vue';
-import { renderCadenceBands, renderCadenceLabels } from './renderers/renderCadenceBands';
-import { renderCollapsedGroupBars } from './renderers/renderCollapsedGroupBars';
-import { renderDragGhost } from './renderers/renderDragGhost';
-import { renderDutiableBars } from './renderers/renderDutiableBars';
-import { renderMonthGrid, renderMonthHeader } from './renderers/renderMonthGrid';
-import { renderTimelineDiagnostics } from './renderers/renderTimelineDiagnostics';
-import { useBarDrag, type BarDragState, type DragEntry } from './composables/useBarDrag';
-import type { GroupSummary, RowSortMode } from './composables/useDutiableLayout';
-import { toDateString } from './composables/useDutiableTimelineData';
-import { TIMELINE_HEADER_HEIGHT as HEADER_HEIGHT, DEFAULT_MONTH_WIDTH } from './constants';
-import type { ParsedCadence, ParsedRow, StagedDates, TimelineLayoutRow } from './types';
-
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { renderTodayLine } from '@/Components/Graphs/renderers/renderTodayLine';
 import { renderBackground } from '@/Components/Graphs/renderers/renderBackground';
@@ -243,6 +227,22 @@ import {
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
+
+import { timelineDutyName } from './dutyNames';
+import { formatDuration } from './duration';
+import { getTimelineColors } from './timelineColors';
+import DutiableExtrasBadge from './DutiableExtrasBadge.vue';
+import { renderCadenceBands, renderCadenceLabels } from './renderers/renderCadenceBands';
+import { renderCollapsedGroupBars } from './renderers/renderCollapsedGroupBars';
+import { renderDragGhost } from './renderers/renderDragGhost';
+import { renderDutiableBars } from './renderers/renderDutiableBars';
+import { renderMonthGrid, renderMonthHeader } from './renderers/renderMonthGrid';
+import { renderTimelineDiagnostics } from './renderers/renderTimelineDiagnostics';
+import { useBarDrag, type BarDragState, type DragEntry } from './composables/useBarDrag';
+import type { GroupSummary, RowSortMode } from './composables/useDutiableLayout';
+import { toDateString } from './composables/useDutiableTimelineData';
+import { TIMELINE_HEADER_HEIGHT as HEADER_HEIGHT, DEFAULT_MONTH_WIDTH } from './constants';
+import type { ParsedCadence, ParsedRow, StagedDates, TimelineLayoutRow } from './types';
 
 const props = withDefaults(defineProps<{
   layoutRows: TimelineLayoutRow[];

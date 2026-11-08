@@ -1,7 +1,5 @@
 import { defineAsyncComponent, type Component } from 'vue';
 
-import type { NormalizedSearchHit, SearchCollectionKey } from '../Utils/searchHitMappers';
-
 import { calendarEventPreviewFromSearch } from '@/Components/Calendar/calendarEventPreview';
 import { dutyPreviewFromSearch } from '@/Components/Duties/dutyPreview';
 import { userPreviewFromSearch } from '@/Components/Users/userPreview';
@@ -17,6 +15,8 @@ import type {
   ResourceSearchResult,
   UserSearchResult,
 } from '@/Shared/Search/types';
+
+import type { NormalizedSearchHit, SearchCollectionKey } from '../Utils/searchHitMappers';
 
 interface PreviewEntry {
   component: Component;

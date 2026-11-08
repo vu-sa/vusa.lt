@@ -46,11 +46,12 @@
 import { computed, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import type { SectionOptions } from '@/Types/contentParts';
+import { Button } from '@/Components/ui/button';
+
 import RCSectionOptionsFields from './RCSectionOptionsFields.vue';
 import RCPresentationPicker from './RCPresentationPicker.vue';
 
-import type { SectionOptions } from '@/Types/contentParts';
-import { Button } from '@/Components/ui/button';
 import IFluentAdd12Regular from '~icons/fluent/add12-regular';
 import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
 

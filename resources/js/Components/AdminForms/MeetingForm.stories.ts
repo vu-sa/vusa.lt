@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
-import MeetingForm from './MeetingForm.vue';
-
 import { MeetingKind, MeetingType } from '@/Types/enums';
+
+import MeetingForm from './MeetingForm.vue';
 
 const meeting: InstanceType<typeof MeetingForm>['$props']['meeting'] = {
   id: '01K5K4HMGJMV7A1TX15BQVH4PC',

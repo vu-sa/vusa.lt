@@ -1,9 +1,9 @@
 import { flushPromises, mount } from '@vue/test-utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import UserMergeDutyEmails from '../UserMergeDutyEmails.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import UserMergeDutyEmails from '../UserMergeDutyEmails.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

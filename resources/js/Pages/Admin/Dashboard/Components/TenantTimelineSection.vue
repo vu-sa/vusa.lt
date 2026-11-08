@@ -74,6 +74,9 @@ import { ref, onMounted } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { CalendarRange } from '@lucide/vue';
 
+import FocusModeFrame from '@/Components/Patterns/FocusModeFrame.vue';
+import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
+
 import type {
   GanttMeeting,
   AtstovavimasGap,
@@ -90,9 +93,6 @@ import TimelineGanttChart from './TimelineGanttChart.vue';
 import TimelineGanttSkeleton from './TimelineGanttSkeleton.vue';
 import GanttFilterDropdown from './GanttFilterDropdown.vue';
 import TenantScopeSelector from './TenantScopeSelector.vue';
-
-import FocusModeFrame from '@/Components/Patterns/FocusModeFrame.vue';
-import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 
 defineProps<{
   availableTenants: AtstovavimasTenant[];

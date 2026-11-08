@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 
-import FileManager from '../FileManager.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import FileManager from '../FileManager.vue';
 
 const wrappers: ReturnType<typeof mount>[] = [];
 const mockFetch = vi.fn();

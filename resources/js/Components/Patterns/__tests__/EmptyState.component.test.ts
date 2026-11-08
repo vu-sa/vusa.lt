@@ -2,9 +2,9 @@ import { defineComponent, markRaw } from 'vue';
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
-import EmptyState from '../EmptyState.vue';
-
 import TurtleMascot from '@/Components/Empty/TurtleMascot.vue';
+
+import EmptyState from '../EmptyState.vue';
 
 describe('EmptyState (Patterns)', () => {
   const defaultProps = {

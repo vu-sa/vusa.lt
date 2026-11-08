@@ -204,9 +204,6 @@ import { useForm, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Briefcase, Clock, Lock, UserCheck } from '@lucide/vue';
 
-import DuplicateUserWarning, { type DuplicateUserMatch } from './DuplicateUserWarning.vue';
-import FormFieldWrapper from './FormFieldWrapper.vue';
-
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
@@ -220,6 +217,9 @@ import type { ImageData } from '@/Types/media';
 import { useDuplicateUserCheck } from '@/Composables/useDuplicateUserCheck';
 import { ModelEnum } from '@/Types/enums';
 import { formatDate } from '@/Utils/dateTime';
+
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import DuplicateUserWarning, { type DuplicateUserMatch } from './DuplicateUserWarning.vue';
 
 const props = withDefaults(defineProps<{
   user: App.Entities.User;

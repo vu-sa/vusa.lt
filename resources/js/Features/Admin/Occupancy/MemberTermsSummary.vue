@@ -49,9 +49,9 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
-import { termStatus, termYearSpan, type TermStatus } from './occupancy';
-
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
+
+import { termStatus, termYearSpan, type TermStatus } from './occupancy';
 
 interface MemberTerm {
   /** Names the line itself, for a list of people rather than institutions. */

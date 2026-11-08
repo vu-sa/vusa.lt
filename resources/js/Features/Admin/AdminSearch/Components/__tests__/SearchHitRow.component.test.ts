@@ -2,11 +2,11 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 import { ChevronRight } from '@lucide/vue';
 
-import SearchHitRow from '../SearchHitRow.vue';
-import type { NormalizedSearchHit } from '../../Utils/searchHitMappers';
-
 import { deletedMemberStatus } from '@/Constants/statusIcons';
 import { documentWithMatch } from '@/Shared/Search/matches';
+
+import SearchHitRow from '../SearchHitRow.vue';
+import type { NormalizedSearchHit } from '../../Utils/searchHitMappers';
 
 const hit = {
   id: 'users-1',

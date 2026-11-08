@@ -63,14 +63,14 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 
-import AgendaItemTypeMark from './AgendaItemTypeMark.vue';
-
 import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import { PreviewFact, PreviewFacts, PreviewPane, PreviewSection, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { statusFor, studentBenefitStatuses, voteStatuses } from '@/Constants/statusIcons';
 import type { AgendaItemSearchResult } from '@/Shared/Search/types';
 import { formatDate } from '@/Utils/dateTime';
+
+import AgendaItemTypeMark from './AgendaItemTypeMark.vue';
 
 const props = defineProps<{
   item: AgendaItemSearchResult;

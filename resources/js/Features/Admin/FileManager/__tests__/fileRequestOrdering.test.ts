@@ -22,7 +22,7 @@ describe('file request ordering', () => {
   it('keeps the latest search results when an older response finishes last', async () => {
     let resolveOld!: (value: ReturnType<typeof payload>) => void;
     vi.mocked(getFilesJson)
-      .mockImplementationOnce(() => new Promise(resolve => { resolveOld = resolve; }))
+      .mockImplementationOnce(() => new Promise((resolve) => { resolveOld = resolve; }))
       .mockResolvedValueOnce(payload('latest'));
     const search = useFileSearch();
 
@@ -37,7 +37,7 @@ describe('file request ordering', () => {
 
   it('ignores a search response after clearing the query', async () => {
     let resolveSearch!: (value: ReturnType<typeof payload>) => void;
-    vi.mocked(getFilesJson).mockImplementationOnce(() => new Promise(resolve => { resolveSearch = resolve; }));
+    vi.mocked(getFilesJson).mockImplementationOnce(() => new Promise((resolve) => { resolveSearch = resolve; }));
     const search = useFileSearch();
     const pending = search.search('older', 'public/files');
 
@@ -52,7 +52,7 @@ describe('file request ordering', () => {
   it('keeps the latest folder when the initial listing finishes last', async () => {
     let resolveInitial!: (value: ReturnType<typeof payload>) => void;
     vi.mocked(getFilesJson)
-      .mockImplementationOnce(() => new Promise(resolve => { resolveInitial = resolve; }))
+      .mockImplementationOnce(() => new Promise((resolve) => { resolveInitial = resolve; }))
       .mockResolvedValueOnce(payload('latest'));
     const listing = useFileListing();
 

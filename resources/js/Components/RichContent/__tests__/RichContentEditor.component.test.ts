@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import RichContentEditor from '../RichContentEditor.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import RichContentEditor from '../RichContentEditor.vue';
 
 const stubs = {
   ...commonStubs,

@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
-import MainNavigation from './MainNavigation.vue';
-
 import { usePage } from '@/mocks/inertia.storybook';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import SiteFooter from '@/Components/Public/FullWidth/SiteFooter.vue';
 import MainNavigationMenuContent from '@/Components/Public/Nav/MainNavigationMenuContent.vue';
 import SecondMenu from '@/Components/Public/Nav/SecondMenu.vue';
 import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
+
+import MainNavigation from './MainNavigation.vue';
 
 /**
  * The public chrome, migrated to the design system. This exists so the header, secondary bar,

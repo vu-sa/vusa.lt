@@ -76,15 +76,15 @@ import { Link, router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowLeft, ArrowLeftRight, ArrowRight, Link2, Plus } from '@lucide/vue';
 
-import RelationshipLinkSheet from './RelationshipLinkSheet.vue';
-import type { RelationKindOption, RelationshipLinkRow, RelationshipSubject, RelationshipTypeOption } from './types';
-
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { ConfirmDialog, OverviewSection } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { InstitutionTypeLinkScope } from '@/Types/enums';
+
+import type { RelationKindOption, RelationshipLinkRow, RelationshipSubject, RelationshipTypeOption } from './types';
+import RelationshipLinkSheet from './RelationshipLinkSheet.vue';
 
 const props = defineProps<{
   subject: RelationshipSubject;

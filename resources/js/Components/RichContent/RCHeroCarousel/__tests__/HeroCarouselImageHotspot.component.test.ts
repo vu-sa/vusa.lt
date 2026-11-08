@@ -3,11 +3,11 @@ import { mount } from '@vue/test-utils';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-import HeroCarouselImageHotspot from '../HeroCarouselImageHotspot.vue';
-import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from '../../Editor/Fullscreen/useActiveHotspot';
-
 import type { HeroCarousel } from '@/Types/contentParts';
 import { commonStubs, stubPopover, stubPopoverAnchor, stubPopoverContent } from '@/tests/stubs';
+
+import HeroCarouselImageHotspot from '../HeroCarouselImageHotspot.vue';
+import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from '../../Editor/Fullscreen/useActiveHotspot';
 
 type Slide = HeroCarousel['json_content'][number];
 

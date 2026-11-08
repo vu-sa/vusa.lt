@@ -2,9 +2,9 @@ import { flushPromises, mount } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import CommentComposer from '../CommentComposer.vue';
-
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import CommentComposer from '../CommentComposer.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import CadenceRowForm from '../CadenceRowForm.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import CadenceRowForm from '../CadenceRowForm.vue';
 
 const stubs = {
   ...commonStubs,

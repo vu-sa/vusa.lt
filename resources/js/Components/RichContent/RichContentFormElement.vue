@@ -34,10 +34,10 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { Loader2 } from '@lucide/vue';
 
+import { Skeleton } from '@/Components/ui/skeleton';
+
 import RichContentEditor from './RichContentEditor.vue';
 import type { ContentPart } from './Types';
-
-import { Skeleton } from '@/Components/ui/skeleton';
 
 const contentParts = defineModel<ContentPart[]>();
 

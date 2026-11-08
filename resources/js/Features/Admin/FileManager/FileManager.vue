@@ -261,6 +261,25 @@ import {
   Trash2,
 } from '@lucide/vue';
 
+import CollectionSelectionBar from '@/Components/Collection/CollectionSelectionBar.vue';
+import FileUploadArea from '@/Components/FileUpload/FileUploadArea.vue';
+import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
+import TopProgressBar from '@/Components/Patterns/TopProgressBar.vue';
+import { Button } from '@/Components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/Components/ui/dialog';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { uploadFiles, type UploadedFileResult } from '@/Composables/useFileUpload';
+import { useToasts } from '@/Composables/useToasts';
+import { getFileExtension, getFileKind } from '@/Utils/fileIcons';
+
 import DeleteFilesDialog from './Components/DeleteFilesDialog.vue';
 import FileGrid from './Components/FileGrid.vue';
 import FileManagerHeader from './Components/FileManagerHeader.vue';
@@ -284,25 +303,6 @@ import type {
 import { useFileChecks } from './useFileChecks';
 import { useStarredFiles } from './useStarredFiles';
 import { matchesTypeFilter, previewKind, publicUrl, relativeToRoot, TYPE_FILTER_KINDS } from './utils';
-
-import CollectionSelectionBar from '@/Components/Collection/CollectionSelectionBar.vue';
-import FileUploadArea from '@/Components/FileUpload/FileUploadArea.vue';
-import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
-import TopProgressBar from '@/Components/Patterns/TopProgressBar.vue';
-import { Button } from '@/Components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/Components/ui/dialog';
-import { Input } from '@/Components/ui/input';
-import { Label } from '@/Components/ui/label';
-import { uploadFiles, type UploadedFileResult } from '@/Composables/useFileUpload';
-import { useToasts } from '@/Composables/useToasts';
-import { getFileExtension, getFileKind } from '@/Utils/fileIcons';
 
 type FolderLike = Pick<DirectoryEntry, 'path' | 'name' | 'items'>;
 

@@ -62,13 +62,13 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 
-import RCSectionOptions from '../Editor/RCSectionOptions.vue';
-
 import type { ProcessSteps } from '@/Types/contentParts';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+
+import RCSectionOptions from '../Editor/RCSectionOptions.vue';
 
 const content = defineModel<ProcessSteps['json_content']>();
 const options = defineModel<ProcessSteps['options']>('options');

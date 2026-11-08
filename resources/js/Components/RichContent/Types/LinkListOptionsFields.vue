@@ -303,8 +303,6 @@
 import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import RCTopicAliasSelect from '../Editor/RCTopicAliasSelect.vue';
-
 import type { LinkList } from '@/Types/contentParts';
 import CollectionSelectDialog from '@/Features/Admin/AdminSearch/Components/Select/CollectionSelectDialog.vue';
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
@@ -317,6 +315,9 @@ import { NumberField } from '@/Components/ui/number-field';
 import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import ImageSelector from '@/Components/TipTap/ImageSelector.vue';
+
+import RCTopicAliasSelect from '../Editor/RCTopicAliasSelect.vue';
+
 import IFluentAdd12Regular from '~icons/fluent/add12-regular';
 import IFluentArrowDown24Regular from '~icons/fluent/arrow-down24-regular';
 import IFluentArrowUp24Regular from '~icons/fluent/arrow-up24-regular';

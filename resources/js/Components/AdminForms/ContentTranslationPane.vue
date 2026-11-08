@@ -60,10 +60,6 @@ import { useForm } from '@inertiajs/vue3';
 import { useManualRefHistory } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import ContentRecoveryPanel from './ContentRecoveryPanel.vue';
-import ContentRecoveryStatus from './ContentRecoveryStatus.vue';
-import FormFieldWrapper from './FormFieldWrapper.vue';
-
 import { cloneTranslation, TRANSLATION_TEXT_FIELDS, useContentEditor, type ContentEditorData, type ContentKind } from '@/Composables/useContentEditor';
 import { CONTENT_EDITOR_CONTEXT, type ContentEditorContext } from '@/Components/RichContent/contentEditorContext';
 import type { ContentPart } from '@/Components/RichContent/Types';
@@ -75,6 +71,10 @@ import { Textarea } from '@/Components/ui/textarea';
 import { OrderedListInput } from '@/Components/ui/ordered-list-input';
 import DateTimePicker from '@/Components/ui/date-picker/DateTimePicker.vue';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
+
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import ContentRecoveryStatus from './ContentRecoveryStatus.vue';
+import ContentRecoveryPanel from './ContentRecoveryPanel.vue';
 
 const props = defineProps<{ kind: ContentKind; initial?: ContentEditorData; existing?: ContentEditorContext; source?: ContentEditorContext; draftIdentity?: string; afterSave?: (data: ContentEditorData) => Promise<void> }>();
 const form = props.existing ? null : useForm<ContentEditorData>({ id: undefined, content_version: undefined, permalink: '', pairing_confirmation: undefined, ...props.initial });

@@ -2,9 +2,9 @@ import { afterEach, describe, it, expect } from 'vitest';
 import { defineComponent } from 'vue';
 import { mount } from '@vue/test-utils';
 
-import ImageSelector from '../ImageSelector.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import ImageSelector from '../ImageSelector.vue';
 
 // The real file manager needs a backend; this only has to hand back a path.
 const FileSelectorStub = defineComponent({

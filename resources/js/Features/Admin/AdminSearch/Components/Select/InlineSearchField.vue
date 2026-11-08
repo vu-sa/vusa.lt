@@ -53,7 +53,7 @@
           @click="choose(hit)"
           @keydown.enter.prevent="choose(hit)"
         >
-          <SearchHitRow :hit="hit" :selected="index === activeIndex" trailing="none" />
+          <SearchHitRow :hit :selected="index === activeIndex" trailing="none" />
         </li>
         <li
           v-if="hasMore"
@@ -79,7 +79,9 @@
         <slot name="after-hits" />
       </ul>
     </slot>
-    <p v-if="error" class="text-xs text-destructive">{{ error }}</p>
+    <p v-if="error" class="text-xs text-destructive">
+      {{ error }}
+    </p>
   </div>
 </template>
 
@@ -88,12 +90,12 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Loader2, Search, X } from '@lucide/vue';
 import { computed, ref, useId, watch } from 'vue';
 
-import SearchHitRow from '../SearchHitRow.vue';
-import type { NormalizedSearchHit } from '../../Utils/searchHitMappers';
-
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
+
+import type { NormalizedSearchHit } from '../../Utils/searchHitMappers';
+import SearchHitRow from '../SearchHitRow.vue';
 
 const props = defineProps<{
   label?: string;

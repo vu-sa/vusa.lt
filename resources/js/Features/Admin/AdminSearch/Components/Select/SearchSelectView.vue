@@ -107,6 +107,10 @@ import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { LoaderCircle, X, Search } from '@lucide/vue';
 
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+
 import SearchSplitView from '../SearchSplitView.vue';
 import SearchDetailPane from '../SearchDetailPane.vue';
 import SearchFiltersPopover from '../SearchFiltersPopover.vue';
@@ -115,10 +119,6 @@ import type { AdminCollectionSearchController } from '../../Composables/useAdmin
 import type { NormalizedSearchHit } from '../../Utils/searchHitMappers';
 
 import type { SelectSearchController } from './types';
-
-import { Badge } from '@/Components/ui/badge';
-import { Button } from '@/Components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 
 const props = defineProps<{
   controller: SelectSearchController;

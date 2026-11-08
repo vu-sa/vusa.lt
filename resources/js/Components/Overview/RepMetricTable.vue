@@ -55,9 +55,9 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { repMetricStatus, repMetricStatusClass, repMetricTrend, repMetricTrendClass } from './repMetricStatus';
-
 import { formatDate } from '@/Utils/dateTime';
+
+import { repMetricStatus, repMetricStatusClass, repMetricTrend, repMetricTrendClass } from './repMetricStatus';
 
 interface Metric {
   key: string;

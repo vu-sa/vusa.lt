@@ -36,15 +36,15 @@ import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { CheckCircle2, FileQuestion, ListX } from '@lucide/vue';
 
-import ActionChoiceButton from '../ActionChoiceButton.vue';
-import ActionChoiceList from '../ActionChoiceList.vue';
-import ActionWindowScreen from '../ActionWindowScreen.vue';
-import { useWindowDates } from '../useWindowDates';
-
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { useActionWindowData, type ActionWindowMeeting } from '@/Composables/useActionWindowData';
 import { EmptyState } from '@/Components/Patterns';
 import { Skeleton } from '@/Components/ui/skeleton';
+
+import ActionChoiceButton from '../ActionChoiceButton.vue';
+import ActionChoiceList from '../ActionChoiceList.vue';
+import ActionWindowScreen from '../ActionWindowScreen.vue';
+import { useWindowDates } from '../useWindowDates';
 
 const { close } = useActionWindow();
 const { meetings, isLoading, error, load } = useActionWindowData();

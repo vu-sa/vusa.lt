@@ -92,8 +92,9 @@ import SmartLink from '@/Components/Public/SmartLink.vue';
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import type { GoalStatus } from '@/Types/enums';
 import { formatDate } from '@/Utils/dateTime';
-import IFluentArrowLeft16Regular from '~icons/fluent/arrow-left-16-regular';
 import { safeHref } from '@/Utils/safeHref';
+
+import IFluentArrowLeft16Regular from '~icons/fluent/arrow-left-16-regular';
 
 const props = defineProps<{
   goal: {

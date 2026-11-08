@@ -37,8 +37,6 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowRight, Bell } from '@lucide/vue';
 
-import NotificationLink from './NotificationLink.vue';
-
 import {
   getNotificationIcon,
   getNotificationColorClasses,
@@ -48,6 +46,8 @@ import {
   notificationColors,
   type Notification,
 } from '@/Composables/useNotificationFormatting';
+
+import NotificationLink from './NotificationLink.vue';
 
 const props = defineProps<{
   notification?: Notification;

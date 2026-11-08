@@ -241,8 +241,6 @@ import { useResizeObserver } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronLeft, ChevronRight, History } from '@lucide/vue';
 
-import ActionControl from './RecordPageAction.vue';
-
 import RecordActionMenu from '@/Components/Patterns/RecordActionMenu.vue';
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import { RuledGrid, type RuledGridColumns } from '@/Components/Brand';
@@ -252,6 +250,8 @@ import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 import { statusRoleParts, type StatusPresentation } from '@/Constants/statusIcons';
 import { safeHref } from '@/Utils/safeHref';
+
+import ActionControl from './RecordPageAction.vue';
 
 export interface RecordPageSection {
   value: string;

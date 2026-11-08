@@ -1,10 +1,10 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
-import ShowSupportRequest from '../ShowSupportRequest.vue';
-
 import { commonStubs } from '@/tests/stubs';
 import type { SupportRequestItem } from '@/Types/supportRequests';
+
+import ShowSupportRequest from '../ShowSupportRequest.vue';
 
 const request: SupportRequestItem = {
   id: 'request-1',

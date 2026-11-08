@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
-import NewsElement from './NewsElement.vue';
-
 import { usePage } from '@/mocks/inertia.storybook';
 import type { NewsItem } from '@/Types/contentParts';
+
+import NewsElement from './NewsElement.vue';
 
 /**
  * The `news` block: one featured article and a hairline list beside it.

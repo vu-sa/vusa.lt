@@ -418,6 +418,7 @@ import { controlCountClass, controlVariants, searchFieldClass, segmentGroupClass
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import type { DocumentFacet, DocumentSearchSort } from '@/Types/DocumentSearchTypes';
 import { TenantType } from '@/Types/enums';
+
 import IFluentArrowSort24Regular from '~icons/fluent/arrow-sort-24-regular';
 import IFluentArrowSortDownLines24Regular from '~icons/fluent/arrow-sort-down-lines-24-regular';
 import IFluentArrowSortUpLines24Regular from '~icons/fluent/arrow-sort-up-lines-24-regular';

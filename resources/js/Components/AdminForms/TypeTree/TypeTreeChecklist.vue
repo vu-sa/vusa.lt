@@ -14,10 +14,11 @@
 </template>
 
 <script setup lang="ts" generic="T extends TreeType">
-import { useTypeTreeNodes } from './useTypeTreeNodes';
 
 import { Checkbox } from '@/Components/ui/checkbox';
 import type { TreeType, TypeId } from '@/Utils/typeTree';
+
+import { useTypeTreeNodes } from './useTypeTreeNodes';
 
 const props = withDefaults(defineProps<{
   types: T[];

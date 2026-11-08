@@ -29,9 +29,9 @@ import type { HTMLAttributes } from 'vue';
 import { computed, provide, ref, readonly, triggerRef, shallowRef } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
-import { uploadVariants, type UploadFile, type UploadVariants } from './variants';
-
 import { cn } from '@/Utils/Shadcn/utils';
+
+import { uploadVariants, type UploadFile, type UploadVariants } from './variants';
 
 interface Props {
   /** Maximum number of files allowed. Use 1 for single file upload */

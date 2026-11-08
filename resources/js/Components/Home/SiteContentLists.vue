@@ -18,11 +18,11 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { CalendarDays, Megaphone } from '@lucide/vue';
 
-import type { HomeCalendarPreview, HomeNewsPreview } from './types';
-
 import EventCard from '@/Components/Calendar/EventCard.vue';
 import NewsCard from '@/Components/News/NewsCard.vue';
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
+
+import type { HomeCalendarPreview, HomeNewsPreview } from './types';
 
 defineProps<{
   events: HomeCalendarPreview[];

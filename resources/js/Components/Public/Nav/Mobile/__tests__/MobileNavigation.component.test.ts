@@ -3,12 +3,12 @@ import { flushPromises, mount } from '@vue/test-utils';
 import { reactive } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
-import MobileNavigation from '../MobileNavigation.vue';
-
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { ssrRoundTrip } from '@/tests/helpers/ssrRoundTrip';
 import { commonStubs } from '@/tests/stubs';
 import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
+
+import MobileNavigation from '../MobileNavigation.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

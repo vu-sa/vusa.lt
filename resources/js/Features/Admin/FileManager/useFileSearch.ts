@@ -1,9 +1,9 @@
 import { ref } from 'vue';
 
+import { useToasts } from '@/Composables/useToasts';
+
 import type { FileEntry } from './types';
 import { getFilesJson } from './fileApi';
-
-import { useToasts } from '@/Composables/useToasts';
 
 // Shared by the props-backed admin page and the self-fetching file picker.
 export function useFileSearch(extensions?: string[]) {

@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
+import DecorativeElement from '@/Components/RichContent/DecorativeElement.vue';
+
 import ContentGridDisplay from '../ContentGridDisplay.vue';
 import { resolveBand } from '../../bandLayout';
-
-import DecorativeElement from '@/Components/RichContent/DecorativeElement.vue';
 
 describe('ContentGridDisplay', () => {
   it('renders a card cell through RCFeatureCard', () => {

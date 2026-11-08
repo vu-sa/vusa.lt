@@ -39,8 +39,6 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { MoreHorizontal } from '@lucide/vue';
 
-import type { ItemAction } from '../types';
-
 import { Button } from '@/Components/ui/button';
 import {
   DropdownMenu,
@@ -49,6 +47,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
+
+import type { ItemAction } from '../types';
 
 defineProps<{
   /** Name of the file or folder, for the trigger's accessible label. */

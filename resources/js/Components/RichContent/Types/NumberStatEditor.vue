@@ -43,7 +43,6 @@
 </template>
 
 <script setup lang="ts">
-import RCSectionOptions from '../Editor/RCSectionOptions.vue';
 
 import type { NumberStatSection } from '@/Types/contentParts';
 import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
@@ -51,6 +50,8 @@ import { Field, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';
 import { NumberField } from '@/Components/ui/number-field';
 import { Switch } from '@/Components/ui/switch';
+
+import RCSectionOptions from '../Editor/RCSectionOptions.vue';
 
 const content = defineModel<NumberStatSection['json_content']>();
 const options = defineModel<NumberStatSection['options']>('options');

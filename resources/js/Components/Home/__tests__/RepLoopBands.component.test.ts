@@ -1,9 +1,9 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
-import CoordinatorCard from '../CoordinatorCard.vue';
-
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
+
+import CoordinatorCard from '../CoordinatorCard.vue';
 
 describe('CoordinatorCard compact', () => {
   const coordinator = { name: 'Jonas Jonaitis', email: 'jonas@vusa.lt', profile_photo_path: null, duty: 'Koordinatorius' };

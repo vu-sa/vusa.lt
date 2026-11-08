@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
+import type { ImageData } from '@/Types/media';
+
 import MediaFrame from './MediaFrame.vue';
 import MediaImage from './MediaImage.vue';
-
-import type { ImageData } from '@/Types/media';
 
 const image: ImageData = {
   id: 1,

@@ -45,13 +45,13 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { NotebookPen } from '@lucide/vue';
 
-import type { InstitutionActivityInsight } from './types';
-
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { institutionActivityStatuses } from '@/Constants/statusIcons';
 import type { InstitutionActivityStatus } from '@/Types/enums';
+
+import type { InstitutionActivityInsight } from './types';
 
 defineProps<{
   institutions: InstitutionActivityInsight[];

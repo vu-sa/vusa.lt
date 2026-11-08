@@ -38,8 +38,8 @@ test('problem dates survive editing with the dates received from Inertia', funct
             'resolved_at' => $received['resolved_at'],
         ])->assertRedirect()->assertSessionHasNoErrors();
 
-        expect($problem->fresh()->occurred_at->toDateString())->toBe($occurredAt);
-        expect($problem->fresh()->resolved_at?->toDateString())->toBe($resolvedAt);
+        expect($problem->fresh()->occurred_at->toDateString())->toBe($occurredAt)
+            ->and($problem->fresh()->resolved_at?->toDateString())->toBe($resolvedAt);
     }
 })->with([
     'winter offset' => ['2026-03-15', '2026-03-16'],

@@ -2,12 +2,12 @@ import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
 
-import DutiableTimelineSelectionPanel from '../DutiableTimelineSelectionPanel.vue';
-import type { ParsedCadence, ParsedRow, StagedDates } from '../types';
-
 import { commonStubs } from '@/tests/stubs';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { globalProgress } from '@/Composables/useTutorialProgress';
+
+import type { ParsedCadence, ParsedRow, StagedDates } from '../types';
+import DutiableTimelineSelectionPanel from '../DutiableTimelineSelectionPanel.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

@@ -3,9 +3,9 @@ import { defineComponent } from 'vue';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { usePage } from '@inertiajs/vue3';
 
-import { useAdminCollectionSearch } from '../useAdminCollectionSearch';
-
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import { useAdminCollectionSearch } from '../useAdminCollectionSearch';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -85,7 +85,7 @@ describe('collection first request', () => {
   it('awaits the first search when facets are requested while it is in flight', async () => {
     let resolveSearch!: (response: ReturnType<typeof json>) => void;
     const fetchMock = vi.fn().mockResolvedValueOnce(json(config))
-      .mockImplementationOnce(() => new Promise(resolve => { resolveSearch = resolve; }));
+      .mockImplementationOnce(() => new Promise((resolve) => { resolveSearch = resolve; }));
     vi.stubGlobal('fetch', fetchMock);
     const search = await mountSearch();
     let finished = false;

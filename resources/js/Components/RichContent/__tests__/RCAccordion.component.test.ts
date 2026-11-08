@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import RCAccordion from '../RCAccordion.vue';
-
 import type { ShadcnAccordion } from '@/Types/contentParts';
 import { waitForSelector } from '@/tests/helpers/waitForSelector';
+
+import RCAccordion from '../RCAccordion.vue';
 
 function emptyDoc(): ShadcnAccordion['json_content'][number]['content'] {
   return { type: 'doc', content: [] } as ShadcnAccordion['json_content'][number]['content'];

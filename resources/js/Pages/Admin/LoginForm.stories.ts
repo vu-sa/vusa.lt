@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
-import LoginForm from './LoginForm.vue';
-
 import { usePage } from '@/mocks/inertia.storybook';
+
+import LoginForm from './LoginForm.vue';
 
 const meta: Meta<typeof LoginForm> = {
   title: 'Pages/Admin/LoginForm',

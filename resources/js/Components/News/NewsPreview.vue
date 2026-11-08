@@ -52,8 +52,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ExternalLink } from '@lucide/vue';
 import { computed } from 'vue';
 
-import { newsStatus } from './newsStatus';
-
 import { PreviewFact, PreviewFacts, PreviewPane, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { contentStatuses } from '@/Constants/statusIcons';
@@ -62,6 +60,8 @@ import { stripHtml } from '@/Features/Admin/AdminSearch/Utils/html';
 import type { NewsSearchResult } from '@/Shared/Search/types';
 import { formatDate } from '@/Utils/dateTime';
 import { localizedRoute } from '@/Utils/LocalizedRoutes';
+
+import { newsStatus } from './newsStatus';
 
 const props = defineProps<{
   news: NewsSearchResult;

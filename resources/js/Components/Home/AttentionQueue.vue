@@ -42,11 +42,11 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ClipboardList } from '@lucide/vue';
 import { computed } from 'vue';
 
-import type { HomeTask } from './types';
-
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 import { getMeetingAgendaUrl, getTaskableUrl } from '@/Composables/useTaskPresentation';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
+
+import type { HomeTask } from './types';
 
 const props = defineProps<{
   tasks: HomeTask[];

@@ -94,9 +94,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { GraduationCap, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
-import FormFieldWrapper from './FormFieldWrapper.vue';
-import TenantSelectField from './TenantSelectField.vue';
-
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog, FormPanel } from '@/Components/Patterns';
@@ -106,6 +103,9 @@ import { NativeSelect } from '@/Components/ui/native-select';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { getDegreeOptions } from '@/Utils/Degrees';
 import { ModelEnum } from '@/Types/enums';
+
+import TenantSelectField from './TenantSelectField.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
 
 const props = defineProps<{
   studyProgram: App.Entities.StudyProgram;

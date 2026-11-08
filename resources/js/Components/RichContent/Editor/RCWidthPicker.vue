@@ -22,9 +22,10 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
+
 import type { BlockWidth } from '../Types';
 
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
 import IFluentChevronDown12Regular from '~icons/fluent/chevron-down12-regular';
 import IFluentCheckmark12Regular from '~icons/fluent/checkmark12-regular';
 import IFluentTextColumnTwo24Regular from '~icons/fluent/text-column-two24-regular';

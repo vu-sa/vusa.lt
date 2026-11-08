@@ -5,10 +5,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+
 import { documentFileActions } from './documentFileActions';
 import type { DocumentFolderRow } from './types';
-
-import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 
 const props = defineProps<{
   file: DocumentFolderRow;

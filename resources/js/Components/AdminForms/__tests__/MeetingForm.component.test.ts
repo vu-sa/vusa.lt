@@ -2,12 +2,12 @@ import { useForm } from '@inertiajs/vue3';
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import MeetingForm from '../MeetingForm.vue';
-
 import { createMockForm, type MockForm } from '@/tests/helpers/createMockForm';
 import { MeetingKind, MeetingType } from '@/Types/enums';
 import { useMeetingForm } from '@/Composables/useMeetingForm';
 import { commonStubs } from '@/tests/stubs';
+
+import MeetingForm from '../MeetingForm.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

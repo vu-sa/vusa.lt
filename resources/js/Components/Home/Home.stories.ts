@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
+import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
+
 import AttentionQueue from './AttentionQueue.vue';
 import CoordinatorCard from './CoordinatorCard.vue';
 import RecentlyEditedList from './RecentlyEditedList.vue';
-
-import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 
 const meta: Meta = {
   title: 'Home/Pradžia',

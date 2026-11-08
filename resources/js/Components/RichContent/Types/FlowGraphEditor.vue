@@ -31,6 +31,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import type { FlowGraph } from '@/Types/contentParts';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { RadioGroup, RadioGroupItem } from '@/Components/ui/radio-group';
+
 import IFluentOrganization24Regular from '~icons/fluent/organization24-regular';
 
 const modelValue = defineModel<FlowGraph['json_content']>();

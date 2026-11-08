@@ -61,8 +61,6 @@
 import { ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import type { NormalizedSearchHit } from '../../Utils/searchHitMappers';
-
 import {
   Dialog,
   DialogContent,
@@ -73,6 +71,8 @@ import {
   DialogTrigger,
 } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';
+
+import type { NormalizedSearchHit } from '../../Utils/searchHitMappers';
 
 const props = defineProps<{
   open: boolean;

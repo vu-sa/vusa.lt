@@ -74,6 +74,8 @@ import { useDark } from '@vueuse/core';
 import { computed, toRef } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
+
 import ContentEditorFactory from '../ContentEditorFactory.vue';
 import { useLiveBlockPreview } from '../composables/useLiveBlockPreview';
 import { getContentType, type BlockWidth, type ContentPart } from '../Types';
@@ -82,7 +84,6 @@ import BlockPreviewRenderer from './BlockPreviewRenderer.vue';
 import { withWidth } from './blockWidth';
 import RCWidthPicker from './RCWidthPicker.vue';
 
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import IFluentWeatherMoon24Regular from '~icons/fluent/weather-moon24-regular';
 import IFluentWeatherSunny24Regular from '~icons/fluent/weather-sunny24-regular';
 

@@ -2,12 +2,12 @@ import { mount } from '@vue/test-utils';
 import { ArrowUpRight } from '@lucide/vue';
 import { describe, expect, it } from 'vitest';
 
-import IndexProblem from '../IndexProblem.vue';
-
 import type { CollectionColumn } from '@/Components/Collection/types';
 import type { CollectionSource } from '@/Composables/useCollectionSource';
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import { commonStubs } from '@/tests/stubs';
+
+import IndexProblem from '../IndexProblem.vue';
 
 describe('problem collection guidance', () => {
   it('links internal support requests to the support request list', () => {

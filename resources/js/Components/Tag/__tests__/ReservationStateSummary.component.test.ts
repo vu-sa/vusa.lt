@@ -2,10 +2,10 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 import { defineComponent } from 'vue';
 
+import type { ReservationStateCount } from '@/Utils/ReservationStatus';
+
 import ReservationResourceStateTag from '../ReservationResourceStateTag.vue';
 import ReservationStateSummary from '../ReservationStateSummary.vue';
-
-import type { ReservationStateCount } from '@/Utils/ReservationStatus';
 
 // HoverCard positions with popper, which jsdom cannot do; render the slots inline instead so the
 // breakdown is assertable.

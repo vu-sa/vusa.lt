@@ -152,8 +152,8 @@ test('a moved duty uses its destination responsibilities when assigning members'
         'contacts_grouping' => 'none', 'current_users' => [$actor->id],
     ])->assertUnprocessable()->assertJsonValidationErrors('user_id');
 
-    expect($duty->fresh()->institution_id)->toBe($duty->institution_id);
-    expect($duty->users()->whereKey($actor->id)->exists())->toBeFalse();
+    expect($duty->fresh()->institution_id)->toBe($duty->institution_id)
+        ->and($duty->users()->whereKey($actor->id)->exists())->toBeFalse();
 });
 
 test('derived seats apply the same responsibility limits as manual seats', function (): void {
@@ -170,8 +170,8 @@ test('derived seats apply the same responsibility limits as manual seats', funct
     asUser($actor)->postJson(route('dutiables.store'), ['duty_id' => $source->id, 'user_id' => $member->id])
         ->assertUnprocessable()->assertJsonValidationErrors('user_id');
 
-    expect($source->users()->whereKey($member->id)->exists())->toBeFalse();
-    expect($target->users()->whereKey($member->id)->exists())->toBeFalse();
+    expect($source->users()->whereKey($member->id)->exists())->toBeFalse()
+        ->and($target->users()->whereKey($member->id)->exists())->toBeFalse();
 });
 
 test('ordinary derived seats can be reconciled for another member without holding their responsibilities', function (): void {
@@ -201,8 +201,8 @@ test('a new derived seat for the actor requires grantable responsibilities and r
     asUser($actor)->postJson(route('dutiables.store'), ['duty_id' => $source->id, 'user_id' => $actor->id])
         ->assertUnprocessable()->assertJsonPath('errors.user_id.0', __('dutiables.assign.self_responsibility'));
 
-    expect($source->users()->whereKey($actor->id)->exists())->toBeFalse();
-    expect($target->users()->whereKey($actor->id)->exists())->toBeFalse();
+    expect($source->users()->whereKey($actor->id)->exists())->toBeFalse()
+        ->and($target->users()->whereKey($actor->id)->exists())->toBeFalse();
 });
 
 test('saving an existing scheduled membership does not apply the new assignment ceiling', function (): void {
@@ -217,8 +217,8 @@ test('saving an existing scheduled membership does not apply the new assignment 
     asUser($actor)->patchJson(route('dutiables.update', $row), ['additional_email' => 'member@example.com'])
         ->assertRedirect();
 
-    expect($row->fresh()->additional_email)->toBe('member@example.com');
-    expect($row->fresh()->end_date)->toBeNull();
+    expect($row->fresh()->additional_email)->toBe('member@example.com')
+        ->and($row->fresh()->end_date)->toBeNull();
 });
 
 test('resuming an own membership is allowed when its responsibilities are already held', function (): void {

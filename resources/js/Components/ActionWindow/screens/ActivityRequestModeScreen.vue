@@ -24,11 +24,11 @@
 <script setup lang="ts">
 import { Landmark, Users } from '@lucide/vue';
 
+import { useActionWindow } from '@/Composables/useActionWindow';
+
 import ActionChoiceButton from '../ActionChoiceButton.vue';
 import ActionChoiceList from '../ActionChoiceList.vue';
 import ActionWindowScreen from '../ActionWindowScreen.vue';
-
-import { useActionWindow } from '@/Composables/useActionWindow';
 
 const { draft, advance, updateActivityRequest } = useActionWindow();
 const choose = (mode: 'institutions' | 'people') => {

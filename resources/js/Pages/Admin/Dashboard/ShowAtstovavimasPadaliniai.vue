@@ -135,6 +135,18 @@ import { useIntersectionObserver, useMediaQuery } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, onMounted, ref, watch } from 'vue';
 
+import { provideGanttSettings } from '@/Components/Graphs/composables/useGanttSettings';
+import OverviewNumbers, { type OverviewNumberItem } from '@/Components/Overview/OverviewNumbers.vue';
+import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
+import WorkspaceSectionTiles from '@/Components/Overview/WorkspaceSectionTiles.vue';
+import type { InstitutionActivityInsight } from '@/Components/Home/types';
+import InstitutionsNeedingAttention from '@/Components/Home/InstitutionsNeedingAttention.vue';
+import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue';
+import { useActionWindow } from '@/Composables/useActionWindow';
+import { InstitutionScope } from '@/Types/enums';
+import { useApi } from '@/Composables/useApi';
+import { OverviewSection } from '@/Components/Patterns';
+
 import InstitutionAttentionSkeleton from './Components/InstitutionAttentionSkeleton.vue';
 import OverviewNumbersSkeleton from './Components/OverviewNumbersSkeleton.vue';
 import RepresentativeActivitySection from './Components/RepresentativeActivitySection.vue';
@@ -146,23 +158,11 @@ import TenantTimelineSection from './Components/TenantTimelineSection.vue';
 import TimelineGanttSkeleton from './Components/TimelineGanttSkeleton.vue';
 import { useAtstovavimasActions } from './Composables/useAtstovavimasActions';
 import { useGanttChartData } from './Composables/useGanttChartData';
-import { provideGanttSettings } from '@/Components/Graphs/composables/useGanttSettings';
 import { provideTimelineFilters } from './Composables/useTimelineFilters';
 import { useTenantMeetings } from './Composables/useTenantMeetings';
 import { useTenantStatusHistory } from './Composables/useTenantStatusHistory';
 import { useTenantTimelineData } from './Composables/useTenantTimelineData';
 import type { AtstovavimasInstitution, AtstovavimasTenant, GanttActivityRequest, InstitutionStatusSummaryData, TenantRepMetrics as TenantRepMetricsData } from './types';
-
-import OverviewNumbers, { type OverviewNumberItem } from '@/Components/Overview/OverviewNumbers.vue';
-import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
-import WorkspaceSectionTiles from '@/Components/Overview/WorkspaceSectionTiles.vue';
-import type { InstitutionActivityInsight } from '@/Components/Home/types';
-import InstitutionsNeedingAttention from '@/Components/Home/InstitutionsNeedingAttention.vue';
-import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue';
-import { useActionWindow } from '@/Composables/useActionWindow';
-import { InstitutionScope } from '@/Types/enums';
-import { useApi } from '@/Composables/useApi';
-import { OverviewSection } from '@/Components/Patterns';
 
 const props = defineProps<{
   /** The padaliniai the user manages: the statistics are theirs alone. Empty for a rep. */

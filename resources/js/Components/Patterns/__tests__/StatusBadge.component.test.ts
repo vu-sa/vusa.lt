@@ -1,9 +1,9 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
-import { StatusBadge } from '..';
-
 import { contentStatuses, taskStatuses } from '@/Constants/statusIcons';
+
+import { StatusBadge } from '..';
 
 describe('StatusBadge', () => {
   it('renders the canonical label and icon', () => {

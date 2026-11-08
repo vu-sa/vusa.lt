@@ -9,12 +9,12 @@
 import * as d3 from 'd3';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { getAgendaItemStatus, type AgendaItemStatus, type AgendaItemType, type Vote } from '@/Composables/useAgendaItemStyling';
+import { escapeHtml } from '@/Utils/String';
+
 import type { GanttColors } from '../ganttColors';
 
 import { ganttMeetingStatus } from './meetingStatus';
-
-import { getAgendaItemStatus, type AgendaItemStatus, type AgendaItemType, type Vote } from '@/Composables/useAgendaItemStyling';
-import { escapeHtml } from '@/Utils/String';
 
 export type TooltipContentType = 'meeting' | 'member' | 'gap' | 'date' | 'request' | 'none';
 
@@ -240,7 +240,6 @@ const agendaItemStatusIcons: Record<AgendaItemStatus, string> = {
 function getAgendaItemStatusIcon(status: AgendaItemStatus): string {
   return agendaItemStatusIcons[status];
 }
-
 
 /**
  * Build file status HTML for protocol and report indicators

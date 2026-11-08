@@ -69,11 +69,6 @@ import { computed, ref, useId } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowLeft, Settings2 } from '@lucide/vue';
 
-import RCImageTileGrid from '../Editor/RCImageTileGrid.vue';
-import RCSectionOptions from '../Editor/RCSectionOptions.vue';
-
-import PhotoGalleryTileSettingsFields from './PhotoGalleryTileSettingsFields.vue';
-
 import type { PhotoGalleryGrid } from '@/Types/contentParts';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { DropdownMenuItem } from '@/Components/ui/dropdown-menu';
@@ -82,6 +77,11 @@ import FormSegmentedControl from '@/Components/Patterns/FormSegmentedControl.vue
 import { Button } from '@/Components/ui/button';
 import { Switch } from '@/Components/ui/switch';
 import { useIsMobile } from '@/Composables/useIsMobile';
+
+import RCSectionOptions from '../Editor/RCSectionOptions.vue';
+import RCImageTileGrid from '../Editor/RCImageTileGrid.vue';
+
+import PhotoGalleryTileSettingsFields from './PhotoGalleryTileSettingsFields.vue';
 
 const options = defineModel<PhotoGalleryGrid['options']>('options', {
   default: () => ({ columns: '4', gap: 'medium', showLightbox: true }),

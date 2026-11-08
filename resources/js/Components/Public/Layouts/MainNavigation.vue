@@ -64,17 +64,17 @@ import { breakpointsTailwind, useBreakpoints } from '@vueuse/core';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { AccessibilityMenu, HeaderWordmark } from '@/Components/Public/Base';
+import { cn } from '@/Utils/Shadcn/utils';
+import DarkModeSwitch from '@/Components/Buttons/DarkModeButton.vue';
+import { useSecondMenu } from '@/Composables/useSecondMenu';
+
 import MainMenu from '../Nav/MainMenu.vue';
 import MobileNavigation from '../Nav/Mobile/MobileNavigation.vue';
 import PadalinysSelector from '../Nav/PadalinysSelector.vue';
 import SearchButton from '../Nav/SearchButton.vue';
 import SecondMenu from '../Nav/SecondMenu.vue';
 import SmartLink from '../SmartLink.vue';
-
-import { AccessibilityMenu, HeaderWordmark } from '@/Components/Public/Base';
-import { cn } from '@/Utils/Shadcn/utils';
-import DarkModeSwitch from '@/Components/Buttons/DarkModeButton.vue';
-import { useSecondMenu } from '@/Composables/useSecondMenu';
 
 defineProps<{
   isThemeDark: boolean;

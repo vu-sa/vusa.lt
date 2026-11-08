@@ -207,9 +207,6 @@ import {
 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
-import IFluentAccessibility24Regular from '~icons/fluent/accessibility-24-regular';
-import ISimpleIconsGithub from '~icons/simple-icons/github';
-import ISimpleIconsMicrosoft from '~icons/simple-icons/microsoft';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogTitle } from '@/Components/ui/dialog';
@@ -229,6 +226,10 @@ import { useStartFm } from '@/Composables/useStartFm';
 import { useTour } from '@/Composables/useTourProvider';
 import { useDocsUpdateIndicator } from '@/Composables/useDocsUpdateIndicator';
 import AccessibilitySettings from '@/Components/Public/Base/AccessibilitySettings.vue';
+
+import ISimpleIconsMicrosoft from '~icons/simple-icons/microsoft';
+import ISimpleIconsGithub from '~icons/simple-icons/github';
+import IFluentAccessibility24Regular from '~icons/fluent/accessibility-24-regular';
 
 const page = usePage<PageProps>();
 const user = computed(() => page.props.auth?.user);

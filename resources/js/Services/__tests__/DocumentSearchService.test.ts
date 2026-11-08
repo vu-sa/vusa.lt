@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 
-import { DocumentSearchService } from '../DocumentSearchService';
-
 import type { DocumentSearchFilters } from '@/Types/DocumentSearchTypes';
+
+import { DocumentSearchService } from '../DocumentSearchService';
 
 // Define interfaces to match actual implementation
 interface SearchClient {

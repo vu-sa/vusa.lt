@@ -42,9 +42,9 @@
 import { computed, onMounted, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import UserMergeDutyEmails from './UserMergeDutyEmails.vue';
-
 import { RadioGroup, RadioGroupItem } from '@/Components/ui/radio-group';
+
+import UserMergeDutyEmails from './UserMergeDutyEmails.vue';
 
 const props = defineProps<{
   records: { id: string | number; email?: string | null; can_update_identity: boolean }[];

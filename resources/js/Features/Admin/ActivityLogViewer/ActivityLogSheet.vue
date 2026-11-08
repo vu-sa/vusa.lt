@@ -66,14 +66,14 @@ import { computed, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { History } from '@lucide/vue';
 
-import ActivityLogFeed from './ActivityLogFeed.vue';
-
 import { Button } from '@/Components/ui/button';
 import { ScrollArea } from '@/Components/ui/scroll-area';
 import { NativeSelect } from '@/Components/ui/native-select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/Components/ui/sheet';
 import { useActivityLog } from '@/Composables/useActivityLog';
 import { useIsMobile } from '@/Composables/useIsMobile';
+
+import ActivityLogFeed from './ActivityLogFeed.vue';
 
 const props = defineProps<{
   subjectType: string;

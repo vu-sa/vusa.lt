@@ -80,16 +80,6 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { Landmark } from '@lucide/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import ActivityRequestFilters from '../ActivityRequestFilters.vue';
-import { useActivityRequestScope } from '../useActivityRequestScope';
-import ActionChoiceButton from '../ActionChoiceButton.vue';
-import ActionChoiceList from '../ActionChoiceList.vue';
-import ActionWindowPrimaryButton from '../ActionWindowPrimaryButton.vue';
-import ActionWindowScreen from '../ActionWindowScreen.vue';
-import { institutionStatusStyle } from '../institutionStatusStyle';
-import { skipLabel, useActivityRequestAskability } from '../useActivityRequestAskability';
-import { useWindowDates } from '../useWindowDates';
-
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { useActionWindow, type ActionWindowInstitutionRef } from '@/Composables/useActionWindow';
@@ -101,6 +91,16 @@ import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Skeleton } from '@/Components/ui/skeleton';
 import type { InstitutionActivityStatus } from '@/Types/InstitutionActivity';
+
+import { useWindowDates } from '../useWindowDates';
+import { skipLabel, useActivityRequestAskability } from '../useActivityRequestAskability';
+import { institutionStatusStyle } from '../institutionStatusStyle';
+import ActionWindowScreen from '../ActionWindowScreen.vue';
+import ActionWindowPrimaryButton from '../ActionWindowPrimaryButton.vue';
+import ActionChoiceList from '../ActionChoiceList.vue';
+import ActionChoiceButton from '../ActionChoiceButton.vue';
+import { useActivityRequestScope } from '../useActivityRequestScope';
+import ActivityRequestFilters from '../ActivityRequestFilters.vue';
 
 interface Candidate extends ActionWindowInstitutionRef {
   id: string;

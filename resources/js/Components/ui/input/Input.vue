@@ -10,9 +10,9 @@
 import type { HTMLAttributes } from 'vue';
 import { useVModel } from '@vueuse/core';
 
-import { inputVariants, type InputVariants } from './index';
-
 import { cn } from '@/Utils/Shadcn/utils';
+
+import { inputVariants, type InputVariants } from './index';
 
 const props = withDefaults(defineProps<{
   defaultValue?: string | number;

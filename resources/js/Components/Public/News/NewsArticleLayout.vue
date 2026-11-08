@@ -136,6 +136,13 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Link, usePage } from '@inertiajs/vue3';
 
+import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
+import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
+import SmartLink from '@/Components/Public/SmartLink.vue';
+import { EyebrowLabel, MediaFrame, ReadingSizeControl, ShareButton, TagChip } from '@/Components/Public/Base';
+import type { ImageData } from '@/Types/media';
+import { formatDate, parseDate } from '@/Utils/dateTime';
+
 import HighlightsCallout from './HighlightsCallout.vue';
 import NewsCard from './NewsCard.vue';
 
@@ -144,12 +151,6 @@ import IFluentArrowUpRight16Regular from '~icons/fluent/arrow-up-right-16-regula
 import IFluentCalendarLtr16Regular from '~icons/fluent/calendar-ltr-16-regular';
 import IFluentClock24Regular from '~icons/fluent/clock-24-regular';
 import IFluentOrganization16Regular from '~icons/fluent/organization-16-regular';
-import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
-import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
-import SmartLink from '@/Components/Public/SmartLink.vue';
-import { EyebrowLabel, MediaFrame, ReadingSizeControl, ShareButton, TagChip } from '@/Components/Public/Base';
-import type { ImageData } from '@/Types/media';
-import { formatDate, parseDate } from '@/Utils/dateTime';
 
 interface Article {
   id: number;

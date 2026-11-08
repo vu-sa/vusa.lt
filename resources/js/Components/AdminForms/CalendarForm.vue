@@ -460,15 +460,6 @@ import {
   WandSparkles,
 } from '@lucide/vue';
 
-import ContentPublishPanel from './ContentPublishPanel.vue';
-import FormFieldWrapper from './FormFieldWrapper.vue';
-import PermalinkField from './PermalinkField.vue';
-import PermalinkPreviewHint from './PermalinkPreviewHint.vue';
-import PublicUrlHistoryCard, { type PublicUrlRow } from './PublicUrlHistoryCard.vue';
-import TagMultiSelect from './TagMultiSelect.vue';
-import TenantSelectField, { pickDefaultTenantId } from './TenantSelectField.vue';
-
-import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog, FormPanel, FormSegmentedControl, StatusBadge, type FormSegmentOption } from '@/Components/Patterns';
 import { isSameDay, toNaiveDateTimeString } from '@/Utils/dateTime';
@@ -488,6 +479,16 @@ import VisualOptionSelect from '@/Components/FormItems/VisualOptionSelect.vue';
 import { contentStatuses } from '@/Constants/statusIcons';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { resolveTenantPublicHost } from '@/Composables/useTenantSubdomain';
+
+import TenantSelectField, { pickDefaultTenantId } from './TenantSelectField.vue';
+import TagMultiSelect from './TagMultiSelect.vue';
+import PublicUrlHistoryCard, { type PublicUrlRow } from './PublicUrlHistoryCard.vue';
+import PermalinkPreviewHint from './PermalinkPreviewHint.vue';
+import PermalinkField from './PermalinkField.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import ContentPublishPanel from './ContentPublishPanel.vue';
+
+import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
 
 const props = withDefaults(defineProps<{
   calendar: CalendarEventForm;

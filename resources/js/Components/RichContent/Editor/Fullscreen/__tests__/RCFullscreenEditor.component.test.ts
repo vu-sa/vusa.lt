@@ -12,9 +12,9 @@ vi.mock('../../../composables/useContentPartPreview', () => ({
   useContentPartPreview: () => ({ debouncedFetchPreview: fetchPreviewMock }),
 }));
 
-import RCFullscreenEditor from '../RCFullscreenEditor.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import RCFullscreenEditor from '../RCFullscreenEditor.vue';
 
 const stubs = {
   ...commonStubs,

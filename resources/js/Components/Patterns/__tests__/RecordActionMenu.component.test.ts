@@ -2,9 +2,9 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 import { Link } from '@inertiajs/vue3';
 
-import RecordActionMenu from '../RecordActionMenu.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import RecordActionMenu from '../RecordActionMenu.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

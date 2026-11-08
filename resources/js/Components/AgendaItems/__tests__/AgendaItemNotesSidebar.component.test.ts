@@ -2,9 +2,9 @@ import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ref } from 'vue';
 
-import AgendaItemNotesSidebar from '../AgendaItemNotesSidebar.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import AgendaItemNotesSidebar from '../AgendaItemNotesSidebar.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

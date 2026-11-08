@@ -94,17 +94,17 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronDown } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
-import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
-import MultiLocaleTiptapFormItem from '../FormItems/MultiLocaleTiptapFormItem.vue';
-
-import FormFieldWrapper from './FormFieldWrapper.vue';
-
 import { Button } from '@/Components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
 import { Input } from '@/Components/ui/input';
 import { NativeSelect } from '@/Components/ui/native-select';
+
+import MultiLocaleTiptapFormItem from '../FormItems/MultiLocaleTiptapFormItem.vue';
+import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
+
+import FormFieldWrapper from './FormFieldWrapper.vue';
 
 const props = defineProps<{
   formField: App.Entities.FormField | Record<string, unknown>;

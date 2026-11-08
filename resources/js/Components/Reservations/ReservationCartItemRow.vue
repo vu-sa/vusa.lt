@@ -77,13 +77,13 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { AlertTriangle, Trash2 } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 
-import type { ReservationCartItem } from './types';
-import { useReservationCart } from './useReservationCart';
-
 import EntityTypeMark from '@/Components/EntityTypeMark.vue';
 import { Button } from '@/Components/ui/button';
 import { NumberField } from '@/Components/ui/number-field';
 import { ModelEnum } from '@/Types/enums';
+
+import { useReservationCart } from './useReservationCart';
+import type { ReservationCartItem } from './types';
 
 const props = defineProps<{
   item: ReservationCartItem;

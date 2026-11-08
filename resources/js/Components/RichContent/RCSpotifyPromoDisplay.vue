@@ -139,6 +139,10 @@ import { computed, defineAsyncComponent } from 'vue';
 import { useDark, useMounted } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import MediaImage from '@/Components/Brand/MediaImage.vue';
+import { EyebrowLabel } from '@/Components/Public/Base';
+import type { SpotifyEmbed } from '@/Types/contentParts';
+
 import RichContentTiptapHTML from './RichContentTiptapHTML.vue';
 import HeroButtons from './RCHeroSection/HeroButtons.vue';
 import HeroButtonsEditable from './RCHeroSection/HeroButtonsEditable.vue';
@@ -147,11 +151,8 @@ import RCAddPlaceholder from './Editor/Fullscreen/RCAddPlaceholder.vue';
 import { isMixcloudUrl, toMixcloudEmbedUrl, toSpotifyEmbedUrl } from './embedUrl';
 import type { BandResolution } from './bandLayout';
 
-import MediaImage from '@/Components/Brand/MediaImage.vue';
-import { EyebrowLabel } from '@/Components/Public/Base';
 import IconHeadphones from '~icons/fluent/headphones24-regular';
 import SpotifyIcon from '~icons/simple-icons/spotify';
-import type { SpotifyEmbed } from '@/Types/contentParts';
 
 const TiptapEditor = defineAsyncComponent(() => import('@/Components/TipTap/TiptapEditor.vue'));
 

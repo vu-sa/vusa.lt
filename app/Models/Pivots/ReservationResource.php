@@ -51,6 +51,7 @@ use Illuminate\Support\Collection;
  * @property-read resource|null $resource
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Comment> $rootComments
  * @property-read mixed $state_properties
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, User> $users
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReservationResource newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReservationResource newQuery()
@@ -98,10 +99,11 @@ class ReservationResource extends Pivot implements Approvable
         return $this->belongsTo(Resource::class);
     }
 
-    // Used for notification purposes, but maybe will need to be refactored
+    /** @return BelongsToMany<User, $this> */
     public function users(): BelongsToMany
     {
-        return $this->reservation->users();
+        return $this->belongsToMany(User::class, 'reservation_user', 'reservation_id', 'user_id', 'reservation_id')
+            ->withTimestamps();
     }
 
     /**

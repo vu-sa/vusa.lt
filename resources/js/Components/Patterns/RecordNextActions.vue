@@ -25,10 +25,10 @@
 <script setup lang="ts">
 import { computed, inject, type Component } from 'vue';
 
+import { Button } from '@/Components/ui/button';
+
 import FillActionButton from './FillActionButton.vue';
 import { OVERVIEW_STATUS_KEY, type OverviewStatusEntry } from './overviewStatus';
-
-import { Button } from '@/Components/ui/button';
 
 export interface RecordNextAction {
   key: string;

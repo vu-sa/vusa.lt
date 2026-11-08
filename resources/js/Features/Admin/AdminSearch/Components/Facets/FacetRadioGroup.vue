@@ -51,12 +51,12 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { X } from '@lucide/vue';
 
-import type { AdminFacetValue } from '../../Types/AdminSearchTypes';
-
 import { Label } from '@/Components/ui/label';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/Components/ui/radio-group';
+
+import type { AdminFacetValue } from '../../Types/AdminSearchTypes';
 
 interface Props {
   values: AdminFacetValue[];

@@ -10,11 +10,11 @@ vi.mock('@vueuse/core', async (importOriginal) => {
   return { ...actual, useDark: () => darkRef };
 });
 
+import type { SpotifyEmbed } from '@/Types/contentParts';
+
 import RCSpotifyPromoDisplay from '../RCSpotifyPromoDisplay.vue';
 import { createContentItem, getContentType } from '../Types';
 import { resolveBand } from '../bandLayout';
-
-import type { SpotifyEmbed } from '@/Types/contentParts';
 
 function makeElement(overrides: Partial<SpotifyEmbed['json_content']> = {}, optionOverrides: SpotifyEmbed['options'] = {}): SpotifyEmbed {
   const item = createContentItem('spotify-embed');

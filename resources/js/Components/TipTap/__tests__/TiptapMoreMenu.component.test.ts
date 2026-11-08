@@ -2,10 +2,10 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 import type { Editor } from '@tiptap/core';
 
+import { commonStubs } from '@/tests/stubs';
+
 import TiptapMoreMenu from '../TiptapMoreMenu.vue';
 import { toolsFor } from '../toolbarProfiles';
-
-import { commonStubs } from '@/tests/stubs';
 
 function makeEditor(active: string[] = []): Editor {
   return {

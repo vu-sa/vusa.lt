@@ -39,15 +39,15 @@
  */
 import { computed, provide } from 'vue';
 
+import { cmsImageSrcsetsKey } from '@/Types/media';
+import type { Section } from '@/Types/contentParts';
+
 import { groupContent } from './groupContent';
 import { getDisplayType } from './Types/display';
 import { blockLayoutClasses } from './blockLayout';
 import { endsSectionWrapping, resolveBandRole, resolveBands, type BandResolution } from './bandLayout';
 import RichContentBlock from './RichContentBlock.vue';
 import SectionDisplay from './RCSection/SectionDisplay.vue';
-
-import { cmsImageSrcsetsKey } from '@/Types/media';
-import type { Section } from '@/Types/contentParts';
 
 const props = defineProps<{
   content: models.ContentPart[];

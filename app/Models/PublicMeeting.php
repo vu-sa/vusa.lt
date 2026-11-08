@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\MeetingKind;
 use App\Enums\MeetingType;
 use App\Models\Pivots\AgendaItem;
 use App\Services\Typesense\MeetingSearchEngine;
@@ -27,6 +28,7 @@ use Laravel\Scout\Searchable;
  * @property string $id
  * @property string $title
  * @property MeetingType|null $type
+ * @property MeetingKind|null $meeting_kind
  * @property Carbon $start_time
  * @property Carbon|null $end_time
  * @property Carbon $created_at

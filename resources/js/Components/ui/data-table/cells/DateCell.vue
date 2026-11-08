@@ -9,8 +9,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import CellTooltip from './CellTooltip.vue';
-
 import {
   DEFAULT_LOCALE,
   formatDate,
@@ -19,6 +17,8 @@ import {
   formatNearDate,
   type DateInput,
 } from '@/Utils/dateTime';
+
+import CellTooltip from './CellTooltip.vue';
 
 const props = withDefaults(defineProps<{
   date?: DateInput;

@@ -11,10 +11,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
 
-import Search from '../Search.vue';
-
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
+
+import Search from '../Search.vue';
 
 /** One result per requested collection, keyed by collection name — mirrors the composable's own test fake. */
 const fakeMultiSearchResponse = (searches: Array<{ collection: string }>) => ({

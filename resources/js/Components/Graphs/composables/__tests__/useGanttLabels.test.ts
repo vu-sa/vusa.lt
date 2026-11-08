@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import { computed } from 'vue';
 
-import { useGanttLabels } from '../useGanttLabels';
-
 import type { GanttSortBy } from '@/Components/Graphs/composables/useGanttSettings';
+
+import { useGanttLabels } from '../useGanttLabels';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

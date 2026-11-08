@@ -566,10 +566,10 @@ interface PredecessorTerm {
   via_duty_id: string;
 }
 
-type DutyLineageEvent =
-  | { kind: 'rename'; date: string; name: string | null }
-  | { kind: 'took_over'; date: string; duties: (LineageLinkedDuty & { can_fold: boolean })[] }
-  | { kind: 'handed_over'; date: string; duties: Omit<LineageLinkedDuty, 'can_fold'>[] };
+type DutyLineageEvent
+  = | { kind: 'rename'; date: string; name: string | null }
+    | { kind: 'took_over'; date: string; duties: (LineageLinkedDuty & { can_fold: boolean })[] }
+    | { kind: 'handed_over'; date: string; duties: Omit<LineageLinkedDuty, 'can_fold'>[] };
 
 interface DutyLineage {
   events: DutyLineageEvent[];

@@ -76,18 +76,18 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { CalendarOff, CalendarSearch, ChevronLeft, Info } from '@lucide/vue';
 
-import ActionChoiceButton from '../ActionChoiceButton.vue';
-import ActionChoiceList from '../ActionChoiceList.vue';
-import ActionWindowPrimaryButton from '../ActionWindowPrimaryButton.vue';
-import ActionWindowScreen from '../ActionWindowScreen.vue';
-import { toPickerDate, useWindowDates } from '../useWindowDates';
-
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { useActionWindowData } from '@/Composables/useActionWindowData';
 import { Button } from '@/Components/ui/button';
 import { DatePicker } from '@/Components/ui/date-picker';
 import { Label } from '@/Components/ui/label';
 import { Skeleton } from '@/Components/ui/skeleton';
+
+import { toPickerDate, useWindowDates } from '../useWindowDates';
+import ActionWindowScreen from '../ActionWindowScreen.vue';
+import ActionWindowPrimaryButton from '../ActionWindowPrimaryButton.vue';
+import ActionChoiceList from '../ActionChoiceList.vue';
+import ActionChoiceButton from '../ActionChoiceButton.vue';
 
 /** StoreInstitutionCheckInRequest refuses an end date beyond this. */
 const MAX_MONTHS_AHEAD = 3;

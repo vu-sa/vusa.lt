@@ -58,6 +58,13 @@ import { computed, ref, watch } from 'vue';
 import { UserRound, Users } from '@lucide/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { useActionWindow, type ActionWindowPersonRef } from '@/Composables/useActionWindow';
+import { useApi } from '@/Composables/useApi';
+import { EmptyState } from '@/Components/Patterns';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Skeleton } from '@/Components/ui/skeleton';
+
 import ActionChoiceButton from '../ActionChoiceButton.vue';
 import ActionChoiceList from '../ActionChoiceList.vue';
 import ActionWindowPrimaryButton from '../ActionWindowPrimaryButton.vue';
@@ -65,13 +72,6 @@ import ActionWindowScreen from '../ActionWindowScreen.vue';
 import { skipLabel, useActivityRequestAskability } from '../useActivityRequestAskability';
 import ActivityRequestFilters from '../ActivityRequestFilters.vue';
 import { useActivityRequestScope } from '../useActivityRequestScope';
-
-import { useActionWindow, type ActionWindowPersonRef } from '@/Composables/useActionWindow';
-import { useApi } from '@/Composables/useApi';
-import { EmptyState } from '@/Components/Patterns';
-import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
-import { Skeleton } from '@/Components/ui/skeleton';
 
 const PAGE = 20;
 

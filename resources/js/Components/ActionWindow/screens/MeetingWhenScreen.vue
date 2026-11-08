@@ -32,16 +32,16 @@ import { computed, onMounted } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { CalendarDays, CalendarSearch, History, type LucideIcon } from '@lucide/vue';
 
-import ActionChoiceButton from '../ActionChoiceButton.vue';
-import ActionChoiceList from '../ActionChoiceList.vue';
-import ActionWindowScreen from '../ActionWindowScreen.vue';
-import { useWindowDates } from '../useWindowDates';
-
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { useActionWindowData } from '@/Composables/useActionWindowData';
 import { toLocalDateTime } from '@/Composables/useMeetingCreation';
 import { Skeleton } from '@/Components/ui/skeleton';
 import { isDateOnlyMeetingType } from '@/Types/MeetingType';
+
+import { useWindowDates } from '../useWindowDates';
+import ActionWindowScreen from '../ActionWindowScreen.vue';
+import ActionChoiceList from '../ActionChoiceList.vue';
+import ActionChoiceButton from '../ActionChoiceButton.vue';
 
 const DEFAULT_TIME = '18:00';
 

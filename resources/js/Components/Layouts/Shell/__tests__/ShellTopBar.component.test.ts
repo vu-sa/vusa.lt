@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
+import { SHELL_FORM_BAR_ID } from '@/Composables/useShellFocus';
+
 import ShellTopBar from '../ShellTopBar.vue';
 
 import { pradzia } from './fixtures';
-
-import { SHELL_FORM_BAR_ID } from '@/Composables/useShellFocus';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 // `virtual:pwa-register` only exists inside a Vite build.

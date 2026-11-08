@@ -41,6 +41,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
+import MeetingsGantt from '@/Components/Graphs/MeetingsGantt.vue';
+import GanttLegendModal from '@/Components/Graphs/GanttLegendModal.vue';
+
 import type {
   GanttMeeting,
   GanttInstitution,
@@ -49,9 +52,6 @@ import type {
   GanttActivityRequest,
   InactivePeriod,
 } from '../types';
-
-import MeetingsGantt from '@/Components/Graphs/MeetingsGantt.vue';
-import GanttLegendModal from '@/Components/Graphs/GanttLegendModal.vue';
 
 defineProps<{
   institutions: GanttInstitution[];

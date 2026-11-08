@@ -2,14 +2,14 @@ import { mount, flushPromises } from '@vue/test-utils';
 import { usePage, router } from '@inertiajs/vue3';
 import { describe, expect, it, vi } from 'vitest';
 
-import CollectionStatusMenu from '../CollectionStatusMenu.vue';
-
 import IndexNews from '@/Pages/Admin/Content/IndexNews.vue';
 import IndexPages from '@/Pages/Admin/Content/IndexPages.vue';
 import IndexBanner from '@/Pages/Admin/Content/IndexBanner.vue';
 import IndexCalendarEvents from '@/Pages/Admin/Calendar/IndexCalendarEvents.vue';
 import { commonStubs } from '@/tests/stubs';
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import CollectionStatusMenu from '../CollectionStatusMenu.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

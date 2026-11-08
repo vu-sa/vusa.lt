@@ -2,9 +2,9 @@ import { describe, it, expect, vi } from 'vitest';
 import { defineComponent, h } from 'vue';
 import { mount } from '@vue/test-utils';
 
-import PublicBreadcrumbs from '../Public/PublicBreadcrumbs.vue';
-
 import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
+
+import PublicBreadcrumbs from '../Public/PublicBreadcrumbs.vue';
 
 // Mock the import.meta.env for development mode
 vi.stubGlobal('import', {

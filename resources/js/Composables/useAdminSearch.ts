@@ -2,7 +2,6 @@ import { ref, computed, watch } from 'vue';
 
 import { useAdminSearchSession } from '@/Features/Admin/AdminSearch/searchSession';
 import { buildAdminSearchParams, ADMIN_SEARCH_FALLBACKS } from '@/Features/Admin/AdminSearch/Config/collectionSearchConfig';
-
 import { documentWithMatch, type HighlightedHit } from '@/Shared/Search/matches';
 import { facetSearches, mergeDisjunctiveFacets } from '@/Shared/Search/facets';
 import { ErrorUtils } from '@/Shared/Search/services/SearchErrorUtils';
@@ -425,9 +424,9 @@ export const useAdminSearch = () => {
       const entry = requestConfig.collections[collection];
       if (!entry?.hasAccess || !entry.key) continue;
       searches.push(buildAdminSearchParams(collection, requestConfig, {
-        collection: entry.name,
-        q: query || '*',
-        per_page: limits[collection],
+        'collection': entry.name,
+        'q': query || '*',
+        'per_page': limits[collection],
         'x-typesense-api-key': entry.key,
       }));
       searchOrder.push(collection);

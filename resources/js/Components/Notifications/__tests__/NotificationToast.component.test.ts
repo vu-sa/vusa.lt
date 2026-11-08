@@ -2,9 +2,9 @@ import { Link, router } from '@inertiajs/vue3';
 import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 
-import NotificationToast from '../NotificationToast.vue';
-
 import type { Notification } from '@/Composables/useNotificationFormatting';
+
+import NotificationToast from '../NotificationToast.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

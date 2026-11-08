@@ -84,15 +84,15 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Eye, Star } from '@lucide/vue';
 
+import { Button } from '@/Components/ui/button';
+import { Checkbox } from '@/Components/ui/checkbox';
+import { getFileExtension } from '@/Utils/fileIcons';
+
 import type { FileEntry, ItemAction } from '../types';
 import { formatBytes, relativeToRoot } from '../utils';
 
 import FileThumb from './FileThumb.vue';
 import ItemActionsMenu from './ItemActionsMenu.vue';
-
-import { Button } from '@/Components/ui/button';
-import { Checkbox } from '@/Components/ui/checkbox';
-import { getFileExtension } from '@/Utils/fileIcons';
 
 const props = withDefaults(defineProps<{
   item: FileEntry;

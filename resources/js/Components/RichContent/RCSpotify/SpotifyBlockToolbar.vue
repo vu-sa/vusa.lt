@@ -106,12 +106,6 @@
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import RCBlockToolbarShell from '../Editor/Fullscreen/RCBlockToolbarShell.vue';
-import RCPresentationPicker from '../Editor/RCPresentationPicker.vue';
-import RCWidthPicker from '../Editor/RCWidthPicker.vue';
-import { withWidth } from '../Editor/blockWidth';
-import { getContentType, type BlockWidth, type ContentPart } from '../Types';
-
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
 import { Button } from '@/Components/ui/button';
 import { Field, FieldDescription, FieldLabel } from '@/Components/ui/field';
@@ -119,6 +113,13 @@ import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Switch } from '@/Components/ui/switch';
 import type { SpotifyEmbed } from '@/Types/contentParts';
+
+import { getContentType, type BlockWidth, type ContentPart } from '../Types';
+import { withWidth } from '../Editor/blockWidth';
+import RCWidthPicker from '../Editor/RCWidthPicker.vue';
+import RCPresentationPicker from '../Editor/RCPresentationPicker.vue';
+import RCBlockToolbarShell from '../Editor/Fullscreen/RCBlockToolbarShell.vue';
+
 import IFluentCheckmark12Regular from '~icons/fluent/checkmark12-regular';
 
 const props = defineProps<{

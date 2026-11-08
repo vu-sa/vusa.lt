@@ -50,8 +50,8 @@ test('duplication preserves the source tenant when both permissions allow it', f
 
     asUser($actor)->postJson(route($routeName, $source))->assertRedirect();
 
-    expect($model::count())->toBe($before + 1);
-    expect($model::query()->whereKeyNot($source->id)->where('tenant_id', $tenant->id)->exists())->toBeTrue();
+    expect($model::count())->toBe($before + 1)
+        ->and($model::query()->whereKeyNot($source->id)->where('tenant_id', $tenant->id)->exists())->toBeTrue();
 })->with([
     'news' => [News::class, 'news', 'news.duplicate'],
     'calendar' => [Calendar::class, 'calendars', 'calendar.duplicate'],

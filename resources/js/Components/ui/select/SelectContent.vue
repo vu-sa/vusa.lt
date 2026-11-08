@@ -31,9 +31,9 @@ import {
 } from 'reka-ui';
 import { computed, type HTMLAttributes } from 'vue';
 
-import { SelectScrollDownButton, SelectScrollUpButton } from '.';
-
 import { cn } from '@/Utils/Shadcn/utils';
+
+import { SelectScrollDownButton, SelectScrollUpButton } from '.';
 
 defineOptions({
   inheritAttrs: false,

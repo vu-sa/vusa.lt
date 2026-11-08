@@ -30,7 +30,7 @@ describe('base search request ordering', () => {
   it('runs a query typed during a search and ignores the older response', async () => {
     const { search, performSearch } = createSearch();
     let resolveOld!: (value: ProcessedSearchResult<BaseFacet>) => void;
-    performSearch.mockImplementationOnce(() => new Promise(resolve => { resolveOld = resolve; }))
+    performSearch.mockImplementationOnce(() => new Promise((resolve) => { resolveOld = resolve; }))
       .mockResolvedValueOnce(response('latest'));
     search.search('older', true);
 
@@ -57,8 +57,8 @@ describe('base search request ordering', () => {
     let resolveMore!: (value: ProcessedSearchResult<BaseFacet>) => void;
     let resolveReset!: (value: ProcessedSearchResult<BaseFacet>) => void;
     performSearch
-      .mockImplementationOnce(() => new Promise(resolve => { resolveMore = resolve; }))
-      .mockImplementationOnce(() => new Promise(resolve => { resolveReset = resolve; }));
+      .mockImplementationOnce(() => new Promise((resolve) => { resolveMore = resolve; }))
+      .mockImplementationOnce(() => new Promise((resolve) => { resolveReset = resolve; }));
     search.loadMore();
     search.search('reset', true);
     search.loadMore();

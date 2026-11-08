@@ -136,17 +136,18 @@
 import { computed, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import RCBlockToolbarShell from '../Editor/Fullscreen/RCBlockToolbarShell.vue';
-import RCWidthPicker from '../Editor/RCWidthPicker.vue';
-import { withWidth } from '../Editor/blockWidth';
-import { getContentType, type BlockWidth, type ContentPart } from '../Types';
-
 import { useApi } from '@/Composables/useApi';
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';
 import type { Timetable } from '@/Types/contentParts';
+
+import { getContentType, type BlockWidth, type ContentPart } from '../Types';
+import { withWidth } from '../Editor/blockWidth';
+import RCWidthPicker from '../Editor/RCWidthPicker.vue';
+import RCBlockToolbarShell from '../Editor/Fullscreen/RCBlockToolbarShell.vue';
+
 import IFluentArrowImport24Regular from '~icons/fluent/arrow-import-24-regular';
 import IFluentAdd12Regular from '~icons/fluent/add-12-regular';
 import IFluentArrowUp12Regular from '~icons/fluent/arrow-up-12-regular';

@@ -119,19 +119,20 @@
 import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { getContentType, type BlockWidth, type ContentPart } from '../../Types';
-import { withWidth } from '../blockWidth';
-import RCSectionToolbarOptions from '../RCSectionToolbarOptions.vue';
-import RCWidthPicker from '../RCWidthPicker.vue';
-
-import RCBlockToolbarShell from './RCBlockToolbarShell.vue';
-
 import ImageSelector from '@/Components/TipTap/ImageSelector.vue';
 import { Button } from '@/Components/ui/button';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Switch } from '@/Components/ui/switch';
 import type { ImageGrid, PhotoGalleryGrid } from '@/Types/contentParts';
+
+import RCWidthPicker from '../RCWidthPicker.vue';
+import RCSectionToolbarOptions from '../RCSectionToolbarOptions.vue';
+import { withWidth } from '../blockWidth';
+import { getContentType, type BlockWidth, type ContentPart } from '../../Types';
+
+import RCBlockToolbarShell from './RCBlockToolbarShell.vue';
+
 import IFluentAdd12Regular from '~icons/fluent/add12-regular';
 import IFluentArrowDown24Regular from '~icons/fluent/arrow-down24-regular';
 import IFluentArrowUp24Regular from '~icons/fluent/arrow-up24-regular';

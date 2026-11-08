@@ -42,10 +42,10 @@ import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { AlertTriangle, ArrowRight } from '@lucide/vue';
 import { computed } from 'vue';
 
+import { Button } from '@/Components/ui/button';
+
 import { formatReservationPeriod } from './reservationPeriod';
 import { useReservationCart } from './useReservationCart';
-
-import { Button } from '@/Components/ui/button';
 
 const { cart, items, period, openSheet } = useReservationCart();
 

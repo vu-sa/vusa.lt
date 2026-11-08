@@ -36,11 +36,11 @@ import { computed, ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import ActivityRequestHistoryRow from './ActivityRequestHistoryRow.vue';
-
 import { Button } from '@/Components/ui/button';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
 import type { ActivityRequestStatus } from '@/Constants/statuses';
+
+import ActivityRequestHistoryRow from './ActivityRequestHistoryRow.vue';
 
 export interface ActivityRequestHistoryItem {
   id: string;

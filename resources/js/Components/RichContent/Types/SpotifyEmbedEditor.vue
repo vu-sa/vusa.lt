@@ -157,9 +157,6 @@
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import RCIconSelect from '../RCIconSelect.vue';
-import RCPresentationPicker from '../Editor/RCPresentationPicker.vue';
-
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
 import type { SpotifyEmbed } from '@/Types/contentParts';
@@ -169,6 +166,10 @@ import { Field, FieldDescription, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Switch } from '@/Components/ui/switch';
+
+import RCPresentationPicker from '../Editor/RCPresentationPicker.vue';
+import RCIconSelect from '../RCIconSelect.vue';
+
 import IFluentCheckmark24Regular from '~icons/fluent/checkmark24-regular';
 import IFluentDismiss20Regular from '~icons/fluent/dismiss20-regular';
 

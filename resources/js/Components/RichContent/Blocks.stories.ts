@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
+import { usePage } from '@/mocks/inertia.storybook';
+
 import BlockPreviewRenderer from './Editor/BlockPreviewRenderer.vue';
 import { contentSamples } from './Types/samples';
-
-import { usePage } from '@/mocks/inertia.storybook';
 
 /**
  * The RichContent block displays, on the public surface.

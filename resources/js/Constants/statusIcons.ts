@@ -32,9 +32,9 @@ import {
   UserX,
 } from '@lucide/vue';
 
-import * as data from './statuses';
-
 import { DocumentStatus, GoalStatus, InstitutionActivityStatus, MailingListMode, MailingListSyncStatus, SupportRequestStatus, VoteValue } from '@/Types/enums';
+
+import * as data from './statuses';
 
 export * from './statuses';
 

@@ -16,13 +16,13 @@
 </template>
 
 <script setup lang="ts">
+import { useCommandPalette } from '@/Composables/useCommandPalette';
+import { useUIPreferences } from '@/Composables/useUIPreferences';
+
 import type { CommandAction } from '../useCommandActions';
 
 import PaletteRow from './PaletteRow.vue';
 import PinButton from './PinButton.vue';
-
-import { useCommandPalette } from '@/Composables/useCommandPalette';
-import { useUIPreferences } from '@/Composables/useUIPreferences';
 
 const props = defineProps<{
   action: CommandAction;

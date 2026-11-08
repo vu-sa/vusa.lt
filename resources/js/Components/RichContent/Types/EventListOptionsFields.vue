@@ -127,13 +127,13 @@
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import RCEventTypeSelect from '../Editor/RCEventTypeSelect.vue';
-
 import type { EventList } from '@/Types/contentParts';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';
 import { NumberField } from '@/Components/ui/number-field';
 import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
+
+import RCEventTypeSelect from '../Editor/RCEventTypeSelect.vue';
 
 const options = defineModel<EventList['options']>('options', { required: true });
 

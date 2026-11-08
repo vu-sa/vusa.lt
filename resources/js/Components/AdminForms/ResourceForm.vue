@@ -198,9 +198,6 @@ import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { ArrowRight, Boxes, MapPin, Trash2 } from '@lucide/vue';
 import { capitalize, computed, ref, watch } from 'vue';
 
-import FormFieldWrapper from './FormFieldWrapper.vue';
-import TenantSelectField from './TenantSelectField.vue';
-
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog, FormPanel } from '@/Components/Patterns';
 import ResourceBookingRow, { type ResourceBooking } from '@/Components/Reservations/ResourceBookingRow.vue';
@@ -215,8 +212,11 @@ import { Textarea } from '@/Components/ui/textarea';
 import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { RESOURCE_PLACEHOLDERS } from '@/Constants/I18n/Placeholders';
-import type { ResourceCreationTemplate, ResourceMediaEntry, ResourceEditType } from './resourceFormTypes';
 import { ModelEnum } from '@/Types/enums';
+
+import type { ResourceCreationTemplate, ResourceMediaEntry, ResourceEditType } from './resourceFormTypes';
+import TenantSelectField from './TenantSelectField.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
 
 const props = defineProps<{
   resource: ResourceCreationTemplate | ResourceEditType;

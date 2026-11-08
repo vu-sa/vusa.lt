@@ -30,12 +30,12 @@ import { Inbox } from '@lucide/vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import ReservationRowActions from './ReservationRowActions.vue';
-import type { ReservationDecision } from './types';
-
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 import { formatDate } from '@/Utils/dateTime';
 import type { DashboardReservation } from '@/Utils/ReservationStatus';
+
+import type { ReservationDecision } from './types';
+import ReservationRowActions from './ReservationRowActions.vue';
 
 defineProps<{
   reservations: DashboardReservation[];

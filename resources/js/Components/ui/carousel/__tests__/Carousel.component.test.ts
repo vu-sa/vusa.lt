@@ -3,9 +3,9 @@ import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 import emblaCarouselVue from 'embla-carousel-vue';
 
-import Carousel from '../Carousel.vue';
-
 import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
+
+import Carousel from '../Carousel.vue';
 
 const api = vi.hoisted(() => ({
   on: vi.fn(),

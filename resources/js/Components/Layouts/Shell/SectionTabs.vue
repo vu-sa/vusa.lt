@@ -146,8 +146,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronDown, Ellipsis, LayoutGrid } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
-import TaskCountBadge from './TaskCountBadge.vue';
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -165,6 +163,8 @@ import { useOverflowingItems } from '@/Composables/useOverflowingItems';
 import { useRecordTrail } from '@/Composables/useRecordTrail';
 import { sectionIcon } from '@/Constants/adminSections';
 import { ariaCurrent } from '@/Utils/ariaCurrent';
+
+import TaskCountBadge from './TaskCountBadge.vue';
 
 const props = defineProps<{
   workspace?: AdminWorkspace;

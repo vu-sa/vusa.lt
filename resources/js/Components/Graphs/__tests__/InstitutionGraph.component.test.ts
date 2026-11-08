@@ -2,9 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 
-import InstitutionGraph from '../InstitutionGraph.vue';
-
 import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
+
+import InstitutionGraph from '../InstitutionGraph.vue';
 
 const preferences = useAccessibilityPreferences();
 let wrapper: ReturnType<typeof mount>;

@@ -42,12 +42,12 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { Mail, UserRound } from '@lucide/vue';
 
-import type { HomeCoordinator } from './types';
-
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 import { Button } from '@/Components/ui/button';
+
+import type { HomeCoordinator } from './types';
 
 defineProps<{
   /** The institution managers the rep asks when stuck (O22), one per padalinys; empty when none is configured. */

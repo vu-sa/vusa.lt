@@ -2,11 +2,11 @@ import { mount } from '@vue/test-utils';
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import ShowNotificationSettings from '../ShowNotificationSettings.vue';
-
 import { Select } from '@/Components/ui/select';
 import { commonStubs } from '@/tests/stubs';
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import ShowNotificationSettings from '../ShowNotificationSettings.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 // The real composable imports `virtual:pwa-register`; this reads the same shared prop it does.

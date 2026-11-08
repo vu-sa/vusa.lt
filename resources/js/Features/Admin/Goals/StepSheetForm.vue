@@ -124,8 +124,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Link2, Users, X } from '@lucide/vue';
 import { capitalize, computed, ref, toRaw, watch } from 'vue';
 
-import type { GoalStep, LinkOption, StepParent, Translated } from './types';
-
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 import SheetForm from '@/Components/Patterns/SheetForm.vue';
 import { Button } from '@/Components/ui/button';
@@ -137,6 +135,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import MultiCollectionSelectDialog from '@/Features/Admin/AdminSearch/Components/Select/MultiCollectionSelectDialog.vue';
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { formatDate, todayIso } from '@/Utils/dateTime';
+
+import type { GoalStep, LinkOption, StepParent, Translated } from './types';
 
 const props = defineProps<{
   open: boolean;

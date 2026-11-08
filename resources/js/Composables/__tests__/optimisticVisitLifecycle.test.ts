@@ -3,9 +3,9 @@ import type { HttpRequestConfig, HttpResponse, Page } from '@inertiajs/core';
 import { flushPromises } from '@vue/test-utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { withOptimisticRollback } from '../useOptimisticVisit';
-
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import { withOptimisticRollback } from '../useOptimisticVisit';
 
 const initialPage = (): Page => ({
   ...createMockPage(),
@@ -72,7 +72,7 @@ describe('optimistic visit request lifecycle', () => {
     const reconcile = vi.fn();
     router.post('/write', {}, withOptimisticRollback(undo, {
       onSuccess: success, onFinish: finish,
-      onBeforeUpdate: page => { page.props.flash.error = null; },
+      onBeforeUpdate: (page) => { page.props.flash.error = null; },
       onHttpException: () => false,
       onNetworkError: () => false,
     }, reconcile));

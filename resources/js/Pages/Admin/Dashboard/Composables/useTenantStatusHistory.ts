@@ -1,9 +1,9 @@
 import { computed, ref } from 'vue';
 import { tryOnScopeDispose } from '@vueuse/core';
 
-import type { InstitutionStatusHistory } from '../types';
-
 import { useApi } from '@/Composables/useApi';
+
+import type { InstitutionStatusHistory } from '../types';
 
 const POLL_BASE_MS = 5000;
 const POLL_MAX_MS = 60000;

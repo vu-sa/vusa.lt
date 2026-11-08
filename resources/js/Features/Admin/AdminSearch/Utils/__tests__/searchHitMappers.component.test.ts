@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import { usePage } from '@inertiajs/vue3';
 
+import { createMockPage } from '@/tests/helpers/createMockPage';
+import { meetingCompletionStatuses } from '@/Constants/statusIcons';
+import type { MultiSearchResults } from '@/Shared/Search/types';
+import { createEmptyMultiSearchResults } from '@/Shared/Search/utils/createEmptyMultiSearchResults';
+
 import {
   adminCollectionToKey,
   collectAllTabHits,
@@ -10,11 +15,6 @@ import {
   normalizeHit,
   getUserDuties,
 } from '../searchHitMappers';
-
-import { createMockPage } from '@/tests/helpers/createMockPage';
-import { meetingCompletionStatuses } from '@/Constants/statusIcons';
-import type { MultiSearchResults } from '@/Shared/Search/types';
-import { createEmptyMultiSearchResults } from '@/Shared/Search/utils/createEmptyMultiSearchResults';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

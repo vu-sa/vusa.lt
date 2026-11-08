@@ -12,9 +12,9 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 
-import { agendaItemTypeOptions } from './agendaItemTypes';
-
 import { agendaItemStatuses } from '@/Constants/statusIcons';
+
+import { agendaItemTypeOptions } from './agendaItemTypes';
 
 const props = defineProps<{ type?: string | null }>();
 

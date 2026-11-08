@@ -105,11 +105,12 @@
 import { computed, defineAsyncComponent, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import type { ShadcnAccordion } from '@/Types/contentParts';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/Components/ui/accordion';
+
 import RCSection from './RCSection.vue';
 import type { BandResolution } from './bandLayout';
 
-import type { ShadcnAccordion } from '@/Types/contentParts';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/Components/ui/accordion';
 import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
 
 const RichContentTiptapHTML = defineAsyncComponent(() => import('./RichContentTiptapHTML.vue'));

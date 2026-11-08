@@ -133,6 +133,7 @@ import { computed, defineAsyncComponent } from 'vue';
 
 import type { Timetable } from '@/Types/contentParts';
 import { Button } from '@/Components/ui/button';
+
 import IFluentClock20Regular from '~icons/fluent/clock20-regular';
 import IFluentAdd12Regular from '~icons/fluent/add-12-regular';
 import IFluentArrowUp12Regular from '~icons/fluent/arrow-up-12-regular';

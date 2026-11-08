@@ -22,10 +22,10 @@
 import type { HTMLAttributes } from 'vue';
 import { computed } from 'vue';
 
-import MediaImage from './MediaImage.vue';
-
 import type { ImageData } from '@/Types/media';
 import { cn } from '@/Utils/Shadcn/utils';
+
+import MediaImage from './MediaImage.vue';
 
 const props = withDefaults(defineProps<{
   /** Preferred over `src`: adds srcset and carries its own focal point. */

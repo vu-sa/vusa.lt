@@ -738,7 +738,7 @@ const currentTab = ref(getInitialTab());
 
 type OptionalPanelProp = 'files' | 'tasks' | 'documents' | 'pendingDocuments' | 'availableInstitutionsForAttach';
 const optionalPanelProps: OptionalPanelProp[] = ['files', 'tasks', 'documents', 'pendingDocuments', 'availableInstitutionsForAttach'];
-const stopPreservingUnopenedPanels = router.on('before', event => {
+const stopPreservingUnopenedPanels = router.on('before', (event) => {
   if (!['post', 'put', 'patch', 'delete'].includes(event.detail.visit.method)) return;
   event.detail.visit.except = [...new Set([
     ...(event.detail.visit.except ?? []),
@@ -923,13 +923,12 @@ watch(() => props.meeting.id, () => enterMeeting({
 // Joint meeting — institution management
 const showAddInstitutionDialog = ref(false);
 const addInstitutionId = ref('');
-watch(showAddInstitutionDialog, open => {
+watch(showAddInstitutionDialog, (open) => {
   if (open) loadOptionalProps(['availableInstitutionsForAttach']);
 });
 
-
 const availableInstitutionsToAdd = computed(() => {
-  const attached = new Set(props.meeting.institutions?.map((i) => i.id) ?? []);
+  const attached = new Set(props.meeting.institutions?.map(i => i.id) ?? []);
   return (props.availableInstitutionsForAttach ?? [])
     .filter(inst => !attached.has(inst.id))
     .map(inst => ({

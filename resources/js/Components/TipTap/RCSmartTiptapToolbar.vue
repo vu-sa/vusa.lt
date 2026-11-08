@@ -141,6 +141,10 @@ import type { Editor } from '@tiptap/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Link, Undo2, Redo2, Quote, Table2, ImagePlus, X, Type } from '@lucide/vue';
 
+import { Button } from '@/Components/ui/button';
+import { Separator } from '@/Components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+
 import TiptapFormattingButtons from './TiptapFormattingButtons.vue';
 import TiptapListButtons from './TiptapListButtons.vue';
 import TiptapLinkButton from './TiptapLinkButton.vue';
@@ -150,10 +154,6 @@ import { useTiptapCommands } from './composables/useTiptapCommands';
 import { toolsFor } from './toolbarProfiles';
 import TiptapImageButton from './TiptapImageButton.vue';
 import { SMART_TIPTAP_TOOLBAR_PORTAL_KEY } from './smartToolbarPortal';
-
-import { Button } from '@/Components/ui/button';
-import { Separator } from '@/Components/ui/separator';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 
 const props = withDefaults(defineProps<{
   editor: Editor;

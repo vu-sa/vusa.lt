@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import ContentGridBlockToolbar from '../ContentGridBlockToolbar.vue';
-import type { ContentPart } from '../../Types';
-
 import { Select } from '@/Components/ui/select';
 import { Switch } from '@/Components/ui/switch';
+
+import ContentGridBlockToolbar from '../ContentGridBlockToolbar.vue';
+import type { ContentPart } from '../../Types';
 
 const stubs = {
   RCBlockToolbarShell: {

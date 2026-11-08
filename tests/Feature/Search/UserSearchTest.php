@@ -13,8 +13,8 @@ test('search documents include pronouns only when the user shows them', function
 
     $document = $user->toSearchableArray();
 
-    expect($document['pronouns_lt'])->toBe($lt);
-    expect($document['pronouns_en'])->toBe($en);
+    expect($document['pronouns_lt'])->toBe($lt)
+        ->and($document['pronouns_en'])->toBe($en);
 })->with([
     'shown' => [true, 'Jie/jų', 'They/them'],
     'hidden' => [false, '', ''],

@@ -78,7 +78,7 @@
             :status="newsStatus(item)"
             :model-value="publishing.statusValue(item)"
             :options="publishing.statusOptions"
-          :pending="publishing.isPending([String(item.id)])"
+            :pending="publishing.isPending([String(item.id)])"
             :editable="canBulkEdit"
             @update:model-value="value => publishing.setPublished([String(item.id)], value === 'published')"
           />

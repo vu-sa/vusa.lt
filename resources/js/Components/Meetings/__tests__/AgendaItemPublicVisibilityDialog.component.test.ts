@@ -1,9 +1,9 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
-import AgendaItemPublicVisibilityDialog from '../AgendaItemPublicVisibilityDialog.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import AgendaItemPublicVisibilityDialog from '../AgendaItemPublicVisibilityDialog.vue';
 
 const render = (mode: string, isPrivate: boolean) => mount(AgendaItemPublicVisibilityDialog, {
   props: { open: true, mode, isPrivate } as never,

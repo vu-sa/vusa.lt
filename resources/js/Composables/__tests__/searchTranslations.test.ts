@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { getSearchTranslation, getSearchTranslations } from '../useTranslatedTitle';
-
 import { getCollectionSortOptions, resolveSortValue } from '@/Features/Admin/AdminSearch/Config/collectionFacetConfig';
+
+import { getSearchTranslation, getSearchTranslations } from '../useTranslatedTitle';
 
 describe('search display translations', () => {
   it('selects the requested language without changing indexed fields', () => {

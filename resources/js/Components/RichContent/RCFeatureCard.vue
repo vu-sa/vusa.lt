@@ -45,8 +45,9 @@
 import MediaImage from '@/Components/Brand/MediaImage.vue';
 import type { ImageData } from '@/Types/media';
 import SmartLink from '@/Components/Public/SmartLink.vue';
-import IFluentImage24Regular from '~icons/fluent/image24-regular';
 import { safeHref } from '@/Utils/safeHref';
+
+import IFluentImage24Regular from '~icons/fluent/image24-regular';
 
 withDefaults(defineProps<{
   title: string;

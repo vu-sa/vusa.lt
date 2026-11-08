@@ -45,12 +45,12 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Calendar, CalendarCheck, Edit3 } from '@lucide/vue';
 import { computed } from 'vue';
 
-import { termStatus } from './occupancy';
-
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { Button } from '@/Components/ui/button';
 import { formatDateWith } from '@/Utils/dateTime';
+
+import { termStatus } from './occupancy';
 
 const props = defineProps<{
   user: {

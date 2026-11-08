@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
+import { commonStubs } from '@/tests/stubs';
+
 import CadenceSection from '../CadenceSection.vue';
 import type { CadenceRow } from '../CadenceList.vue';
-
-import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

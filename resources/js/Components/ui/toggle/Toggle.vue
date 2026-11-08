@@ -15,10 +15,10 @@ import type { HTMLAttributes } from 'vue';
 import { reactiveOmit } from '@vueuse/core';
 import { Toggle, useForwardPropsEmits } from 'reka-ui';
 
+import { cn } from '@/Utils/Shadcn/utils';
+
 import type { ToggleVariants } from '.';
 import { toggleVariants } from '.';
-
-import { cn } from '@/Utils/Shadcn/utils';
 
 const props = withDefaults(defineProps<ToggleProps & {
   class?: HTMLAttributes['class'];

@@ -54,14 +54,14 @@
  */
 import { computed, provide, toRef } from 'vue';
 
+import { Skeleton } from '@/Components/ui/skeleton';
+
 import { getContentType } from './Types';
 import type { VerticalSpacing } from './sectionClasses';
 import BlockPreviewRenderer from './Editor/BlockPreviewRenderer.vue';
 import { SECTION_PRESENTATION_DISABLED } from './Editor/sectionPresentation';
 import RCPresentationPicker from './Editor/RCPresentationPicker.vue';
 import { useLiveBlockPreview } from './composables/useLiveBlockPreview';
-
-import { Skeleton } from '@/Components/ui/skeleton';
 
 interface ContentData {
   type: string;

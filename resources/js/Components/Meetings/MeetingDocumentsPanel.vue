@@ -101,8 +101,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { FileText, FileUp, Link2, X } from '@lucide/vue';
 import { toast } from 'vue-sonner';
 
-import MeetingPendingDocumentsDialog from './MeetingPendingDocumentsDialog.vue';
-
 import type { DocumentFolderRow } from '@/Components/Files';
 import { EmptyState, SectionCard } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
@@ -112,6 +110,8 @@ import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/sea
 import FilePicker from '@/Features/Admin/SharepointFilePicker/FilePicker.vue';
 import { isPickerAvailable, pickedDocuments, type Item } from '@/Features/Admin/SharepointFilePicker/picker';
 import { safeHref } from '@/Utils/safeHref';
+
+import MeetingPendingDocumentsDialog from './MeetingPendingDocumentsDialog.vue';
 
 export interface MeetingDocument {
   id: number;

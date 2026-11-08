@@ -54,9 +54,9 @@
 import { ExternalLink, Paperclip } from '@lucide/vue';
 import { ref } from 'vue';
 
-import type { MailingListMessageItem } from './types';
-
 import { formatDate } from '@/Utils/dateTime';
+
+import type { MailingListMessageItem } from './types';
 
 defineProps<{
   messages: MailingListMessageItem[];

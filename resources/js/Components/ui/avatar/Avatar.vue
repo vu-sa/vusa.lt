@@ -11,9 +11,9 @@
 import type { HTMLAttributes } from 'vue';
 import { AvatarRoot } from 'reka-ui';
 
-import { avatarVariants, type AvatarSize } from '.';
-
 import { cn } from '@/Utils/Shadcn/utils';
+
+import { avatarVariants, type AvatarSize } from '.';
 
 const props = withDefaults(defineProps<{
   class?: HTMLAttributes['class'];

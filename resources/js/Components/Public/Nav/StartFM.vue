@@ -15,10 +15,11 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { socialIconButtonClass } from './socialIconButtonClass';
-
 import { Button } from '@/Components/ui/button';
 import { useStartFm } from '@/Composables/useStartFm';
+
+import { socialIconButtonClass } from './socialIconButtonClass';
+
 import IFluentMusicNote24Regular from '~icons/fluent/music-note-24-regular';
 
 defineProps<{ size?: 'sm' | 'default' | 'lg' | 'icon' | null; iconOnly?: boolean }>();

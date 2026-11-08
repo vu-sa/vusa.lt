@@ -163,14 +163,14 @@ import { computed, ref, toRef } from 'vue';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { Lock, Search } from '@lucide/vue';
 
+import { Button } from '@/Components/ui/button';
+import { controlCountClass, controlVariants } from '@/Components/ui/control';
+import { Input } from '@/Components/ui/input';
+
 import PermissionCell from './PermissionCell.vue';
 import { ABILITIES, abilityLabel, permissionLabel, resourceIcon, resourceLabel } from './permissionLabels';
 import type { CatalogResource, PermissionAbility, PermissionCatalog, PermissionScope } from './types';
 import { usePermissionDraft } from './usePermissionDraft';
-
-import { Button } from '@/Components/ui/button';
-import { controlCountClass, controlVariants } from '@/Components/ui/control';
-import { Input } from '@/Components/ui/input';
 
 const props = defineProps<{
   catalog: PermissionCatalog;

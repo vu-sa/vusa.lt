@@ -99,12 +99,12 @@ import { computed } from 'vue';
 import { ChevronLeft, ClipboardList, X } from '@lucide/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { ACTION_WINDOW_SCREENS, flowIdentity, flowProgress } from './screenRegistry';
-
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import EntityTypeMark from '@/Components/EntityTypeMark.vue';
 import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
+
+import { ACTION_WINDOW_SCREENS, flowIdentity, flowProgress } from './screenRegistry';
 
 const { stack, current, canGoBack, back, close, skippedScreens } = useActionWindow();
 

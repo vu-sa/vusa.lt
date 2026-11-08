@@ -2,11 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { router, usePage } from '@inertiajs/vue3';
 
+import { createMockPage } from '@/tests/helpers/createMockPage';
+
 import MobileBottomBar from '../MobileBottomBar.vue';
 
 import { atstovavimas, pradzia } from './fixtures';
-
-import { createMockPage } from '@/tests/helpers/createMockPage';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

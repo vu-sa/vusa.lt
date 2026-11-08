@@ -15,10 +15,10 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowUpRight, Boxes, Landmark, UserPlus, Users } from '@lucide/vue';
 import { computed } from 'vue';
 
-import type { HomeRegistrationForm } from './types';
-
 import { NavigationTiles, type NavigationTileItem } from '@/Components/Patterns';
 import { useAdminNavigation, workspaceHref } from '@/Composables/useAdminNavigation';
+
+import type { HomeRegistrationForm } from './types';
 
 const props = withDefaults(defineProps<{
   /** Shared registration forms the user may open (members, student reps). */

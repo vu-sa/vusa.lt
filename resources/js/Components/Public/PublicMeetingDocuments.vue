@@ -32,9 +32,10 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
 
+import { safeHref } from '@/Utils/safeHref';
+
 import IFluentDocument20Regular from '~icons/fluent/document20-regular';
 import IFluentOpen20Regular from '~icons/fluent/open-20-regular';
-import { safeHref } from '@/Utils/safeHref';
 
 export interface PublicMeetingDocument {
   id: number;

@@ -61,9 +61,6 @@ import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { Link2, Target } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
-import LinkedGoalList from './LinkedGoalList.vue';
-import type { LinkedGoal } from './types';
-
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 import SheetForm from '@/Components/Patterns/SheetForm.vue';
 import { Badge } from '@/Components/ui/badge';
@@ -72,6 +69,9 @@ import { Label } from '@/Components/ui/label';
 import SingleSelect from '@/Components/ui/single-select/SingleSelect.vue';
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import { ModelEnum } from '@/Types/enums';
+
+import type { LinkedGoal } from './types';
+import LinkedGoalList from './LinkedGoalList.vue';
 
 const props = defineProps<{
   agendaItemId: string;

@@ -31,9 +31,9 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue';
 
-import SectionBand from './SectionBand.vue';
-
 import { DisplayHeading } from '@/Components/Brand';
+
+import SectionBand from './SectionBand.vue';
 
 /**
  * The band every listing and detail page opens with: eyebrow, ruled `h1`, lead, and an optional

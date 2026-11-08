@@ -2,9 +2,9 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-import { toPlainText, useInstitutionCard } from '../useInstitutionCard';
-
 import { TenantType } from '@/Types/enums';
+
+import { toPlainText, useInstitutionCard } from '../useInstitutionCard';
 
 describe('toPlainText', () => {
   it('keeps paragraphs apart and decodes common entities', () => {

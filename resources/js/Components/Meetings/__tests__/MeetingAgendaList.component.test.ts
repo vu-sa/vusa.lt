@@ -1,9 +1,9 @@
 import { mount } from '@vue/test-utils';
 import { describe, it, expect } from 'vitest';
 
-import MeetingAgendaList from '../MeetingAgendaList.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import MeetingAgendaList from '../MeetingAgendaList.vue';
 
 const baseStubs = {
   ...commonStubs,

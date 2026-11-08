@@ -66,15 +66,16 @@ import { computed, ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { Icon } from '@iconify/vue';
 
+import { useTenantOptions } from '@/Composables/useTenantOptions';
+import { safeHref } from '@/Utils/safeHref';
+
 import SmartLink from '../../SmartLink.vue';
 
 import MobileNavSectionPanel from './MobileNavSectionPanel.vue';
 import MobileTenantPanel from './MobileTenantPanel.vue';
 
-import { useTenantOptions } from '@/Composables/useTenantOptions';
 import IFluentAdd24Regular from '~icons/fluent/add-24-regular';
 import IFluentLocation24Regular from '~icons/fluent/location-24-regular';
-import { safeHref } from '@/Utils/safeHref';
 
 defineEmits<{
   close: [];

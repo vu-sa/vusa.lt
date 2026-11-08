@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import TaskDetailDialog from '../TaskDetailDialog.vue';
-
 import { commonStubs } from '@/tests/stubs';
 import type { TaskDisplayData } from '@/Composables/useTaskPresentation';
 import { TaskActionType } from '@/Types/TaskTypes';
+
+import TaskDetailDialog from '../TaskDetailDialog.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

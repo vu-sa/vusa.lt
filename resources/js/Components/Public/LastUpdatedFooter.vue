@@ -23,9 +23,10 @@ import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import IFluentClock24Regular from '~icons/fluent/clock-24-regular';
 import { formatDate, parseDate } from '@/Utils/dateTime';
 import { LocaleEnum } from '@/Types/enums';
+
+import IFluentClock24Regular from '~icons/fluent/clock-24-regular';
 
 const props = defineProps<{
   /** Raw ISO-ish date string (`last_edited_at` or `updated_at`) — `null` hides the footer entirely. */

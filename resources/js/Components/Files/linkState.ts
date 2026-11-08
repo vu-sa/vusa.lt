@@ -1,6 +1,6 @@
-import type { DocumentFolderRow } from './types';
-
 import { DocumentStatus } from '@/Types/enums';
+
+import type { DocumentFolderRow } from './types';
 
 /**
  * Published without a link: `pending` while the queued sync may still create it, `failed` once it

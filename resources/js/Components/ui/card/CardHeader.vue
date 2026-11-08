@@ -10,9 +10,9 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue';
 
-import { cardHeaderVariants, type CardHeaderVariants } from './index';
-
 import { cn } from '@/Utils/Shadcn/utils';
+
+import { cardHeaderVariants, type CardHeaderVariants } from './index';
 
 const props = withDefaults(defineProps<{
   size?: CardHeaderVariants['size'];

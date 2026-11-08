@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 
-import BlockPickerDialog from '../BlockPickerDialog.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import BlockPickerDialog from '../BlockPickerDialog.vue';
 
 const BlockPreviewRendererStub = {
   props: ['element'],

@@ -38,10 +38,10 @@
           @click="pick(hit)"
         >
           <template #title>
-            <SearchHitCardText :hit="hit" field="title" />
+            <SearchHitCardText :hit field="title" />
           </template>
           <template #description>
-            <SearchHitCardText :hit="hit" field="description" />
+            <SearchHitCardText :hit field="description" />
           </template>
         </ActionChoiceButton>
       </ActionChoiceList>
@@ -64,10 +64,6 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Landmark } from '@lucide/vue';
 
-import ActionChoiceButton from '../ActionChoiceButton.vue';
-import ActionChoiceList from '../ActionChoiceList.vue';
-import ActionWindowScreen from '../ActionWindowScreen.vue';
-
 import SearchHitCardText from '@/Features/Admin/AdminSearch/Components/SearchHitCardText.vue';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { useActionWindowData } from '@/Composables/useActionWindowData';
@@ -77,6 +73,10 @@ import { EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Skeleton } from '@/Components/ui/skeleton';
+
+import ActionWindowScreen from '../ActionWindowScreen.vue';
+import ActionChoiceList from '../ActionChoiceList.vue';
+import ActionChoiceButton from '../ActionChoiceButton.vue';
 
 const { draft, advance, setInstitution } = useActionWindow();
 const { institutionSearch } = useActionWindowData();

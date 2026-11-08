@@ -126,13 +126,14 @@ import { highlightText, matchTitle, type SearchMatchDocument } from '@/Shared/Se
 import DatePlate from '@/Components/Public/Base/DatePlate.vue';
 import { formatEventDateSpan, parseDate } from '@/Utils/dateTime';
 import { getCalendarEvent2Route } from '@/Utils/Route';
+import { imageFromSearch } from '@/Types/media';
+import type { ImageData } from '@/Types/media';
+
 import IFluentCalendarLtr20Regular from '~icons/fluent/calendar-ltr-20-regular';
 import IFluentCalendarLtr24Regular from '~icons/fluent/calendar-ltr-24-regular';
 import IFluentLocation16Regular from '~icons/fluent/location-16-regular';
 import IFluentGlobe20Regular from '~icons/fluent/globe-20-regular';
 import IFluentArrowUpRight20Regular from '~icons/fluent/arrow-up-right-20-regular';
-import { imageFromSearch } from '@/Types/media';
-import type { ImageData } from '@/Types/media';
 
 interface CalendarEventLike extends SearchMatchDocument {
   id: number | string;

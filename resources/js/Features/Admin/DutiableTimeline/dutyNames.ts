@@ -1,6 +1,6 @@
-import type { TimelineChange, TimelineRow } from './types';
-
 import { changeDutyNameEndings } from '@/Utils/String';
+
+import type { TimelineChange, TimelineRow } from './types';
 
 export function timelineDutyName(row: TimelineRow | TimelineChange, locale: string): string {
   return changeDutyNameEndings(

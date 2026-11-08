@@ -84,9 +84,6 @@ import { Link } from '@inertiajs/vue3';
 import { insertNodeAt, removeNode } from '@vueuse/integrations/useSortable';
 import { GripVertical, Pencil, Plus, Trash2 } from '@lucide/vue';
 
-import NavigationColumn from './NavigationColumn.vue';
-import type { AdminNavigationLink, AdminNavigationRoot } from './types';
-
 import { useMotionAwareSortable } from '@/Composables/useMotionAwareSortable';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
@@ -103,6 +100,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/Components/ui/alert-dialog';
+
+import type { AdminNavigationLink, AdminNavigationRoot } from './types';
+import NavigationColumn from './NavigationColumn.vue';
 
 const props = defineProps<{
   pending?: boolean;

@@ -890,7 +890,8 @@ const openAssignment = (duty: DutyWithUsers, user: UserWithPivot | null) => {
   ];
   if (only.length) {
     router.reload({ only, onSuccess: open });
-  } else {
+  }
+  else {
     open();
   }
 };

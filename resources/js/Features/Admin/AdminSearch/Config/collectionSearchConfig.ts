@@ -1,7 +1,7 @@
-import { buildInfix } from '../Utils/searchParams';
-
 import { buildProfileParams } from '@/Shared/Search/profiles';
 import type { AdminSearchConfig } from '@/Shared/Search/types';
+
+import { buildInfix } from '../Utils/searchParams';
 
 interface CollectionSearchFallback {
   queryBy: string;

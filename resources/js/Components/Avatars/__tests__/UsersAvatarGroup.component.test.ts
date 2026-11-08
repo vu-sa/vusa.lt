@@ -2,10 +2,10 @@ import { mount } from '@vue/test-utils';
 import { describe, it, expect, vi } from 'vitest';
 import { usePage } from '@inertiajs/vue3';
 
-import UsersAvatarGroup from '../UsersAvatarGroup.vue';
-
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
+
+import UsersAvatarGroup from '../UsersAvatarGroup.vue';
 
 const makeUsers = (n: number): App.Entities.User[] =>
   Array.from({ length: n }, (_, i) => ({

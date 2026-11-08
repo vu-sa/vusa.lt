@@ -4,10 +4,10 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-import TextBoxDisplay from '../../Types/TextBoxDisplay.vue';
-
 import { ssrRoundTrip } from '@/tests/helpers/ssrRoundTrip';
 import type { TextBox } from '@/Types/contentParts';
+
+import TextBoxDisplay from '../../Types/TextBoxDisplay.vue';
 
 function makeElement(options: TextBox['options'] = null): TextBox & { id: number } {
   return {

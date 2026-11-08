@@ -232,7 +232,6 @@
           <span class="text-sm text-muted-foreground">{{ $t('dienų') }}</span>
         </div>
       </FormFieldWrapper>
-
     </template>
 
     <template v-if="isEditing && enableDelete" #danger-zone>
@@ -264,8 +263,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Building2, Layers, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
-import ActivityStatusField from './ActivityStatusField.vue';
-
 import { operatingStatuses } from '@/Constants/statusIcons';
 import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
@@ -291,6 +288,8 @@ import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
 import { usePermalinkPreview } from '@/Composables/usePermalinkPreview';
 import { InstitutionScope, ModelEnum } from '@/Types/enums';
+
+import ActivityStatusField from './ActivityStatusField.vue';
 
 interface Translated { lt: string; en: string }
 

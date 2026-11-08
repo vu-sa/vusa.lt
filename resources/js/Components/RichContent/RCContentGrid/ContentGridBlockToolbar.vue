@@ -92,16 +92,16 @@
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import type { ContentGrid, SectionOptions } from '@/Types/contentParts';
+import { FieldLabel } from '@/Components/ui/field';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Switch } from '@/Components/ui/switch';
+
 import RCBlockToolbarShell from '../Editor/Fullscreen/RCBlockToolbarShell.vue';
 import RCSectionToolbarOptions from '../Editor/RCSectionToolbarOptions.vue';
 import RCWidthPicker from '../Editor/RCWidthPicker.vue';
 import { withWidth } from '../Editor/blockWidth';
 import { getContentType, type BlockWidth, type ContentPart } from '../Types';
-
-import type { ContentGrid, SectionOptions } from '@/Types/contentParts';
-import { FieldLabel } from '@/Components/ui/field';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { Switch } from '@/Components/ui/switch';
 
 const props = defineProps<{
   content: ContentPart;

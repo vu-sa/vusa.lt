@@ -42,8 +42,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 /**
  * @property string $id
  * @property string $title
- * @property MeetingKind|null $meeting_kind
  * @property MeetingType|null $type
+ * @property MeetingKind|null $meeting_kind
  * @property Carbon $start_time
  * @property Carbon|null $end_time
  * @property Carbon $created_at

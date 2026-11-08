@@ -19,9 +19,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import TruncatedBadge from './TruncatedBadge.vue';
-
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
+
+import TruncatedBadge from './TruncatedBadge.vue';
 
 const props = withDefaults(defineProps<{
   items: Array<Record<string, any>>;

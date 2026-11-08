@@ -1,11 +1,11 @@
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 
+import { useToasts } from '@/Composables/useToasts';
+
 import type { DirectoryEntry, FileEntry, ListingPayload } from './types';
 import { getFilesJson } from './fileApi';
 import { useFileSearch } from './useFileSearch';
-
-import { useToasts } from '@/Composables/useToasts';
 
 export type { DirectoryEntry, FileEntry } from './types';
 

@@ -2,9 +2,9 @@ import { describe, it, expect, vi } from 'vitest';
 import { mount, config } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
 
-import SecondMenu from '../SecondMenu.vue';
-
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import SecondMenu from '../SecondMenu.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

@@ -2,13 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import { ref } from 'vue';
 
-import AdminCommandPalette from '../AdminCommandPalette.vue';
-import { useCommandActions } from '../useCommandActions';
-
 import { useAdminSearch } from '@/Composables/useAdminSearch';
 import { useCommandPalette } from '@/Composables/useCommandPalette';
 import { useUIPreferences } from '@/Composables/useUIPreferences';
 import { createEmptyMultiSearchResults } from '@/Shared/Search/utils/createEmptyMultiSearchResults';
+
+import { useCommandActions } from '../useCommandActions';
+import AdminCommandPalette from '../AdminCommandPalette.vue';
 
 vi.mock('@/Composables/useAdminSearch', () => ({ useAdminSearch: vi.fn() }));
 vi.mock('@/Composables/useCommandPalette', () => ({ useCommandPalette: vi.fn() }));

@@ -39,13 +39,14 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue';
 
+import MediaImage from '@/Components/Brand/MediaImage.vue';
+import { Badge } from '@/Components/ui/badge';
+import { safeHref } from '@/Utils/safeHref';
+
 import SmartLink from '../../SmartLink.vue';
 import type { NavLink } from '../types';
 
-import MediaImage from '@/Components/Brand/MediaImage.vue';
-import { Badge } from '@/Components/ui/badge';
 import IFluentOpen16Regular from '~icons/fluent/open-16-regular';
-import { safeHref } from '@/Utils/safeHref';
 
 defineProps<{
   link: NavLink;

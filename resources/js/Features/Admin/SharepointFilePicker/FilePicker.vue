@@ -23,10 +23,10 @@ import { combine } from '@pnp/core';
 import { usePage } from '@inertiajs/vue3';
 import { ref, watch, nextTick } from 'vue';
 
-import type { FilePickerOptions, Item } from './picker.ts';
-
 import { Button, type ButtonVariants } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from '@/Components/ui/dialog';
+
+import type { FilePickerOptions, Item } from './picker.ts';
 
 defineProps<{
   loading?: boolean;

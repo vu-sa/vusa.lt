@@ -16,12 +16,12 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 
+import { useActionWindow } from '@/Composables/useActionWindow';
+import { useActionWindowCatalog } from '@/Composables/useActionWindowCatalog';
+
 import ActionChoiceButton from '../ActionChoiceButton.vue';
 import ActionChoiceList from '../ActionChoiceList.vue';
 import ActionWindowScreen from '../ActionWindowScreen.vue';
-
-import { useActionWindow } from '@/Composables/useActionWindow';
-import { useActionWindowCatalog } from '@/Composables/useActionWindowCatalog';
 
 const { goTo, replace } = useActionWindow();
 const { personas } = useActionWindowCatalog();

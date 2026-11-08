@@ -2,7 +2,7 @@
   <InlineSearchField
     v-model:query="query"
     :label
-    :input-id="inputId"
+    :input-id
     :aria-label
     :placeholder="placeholder ?? $t('Ieškok pagal vardą ar el. paštą…')"
     :hits="rows"
@@ -12,7 +12,7 @@
     :empty-message="$t('Narių nerasta')"
     :hide-empty="allowCreate"
     :searching="isFetching"
-    :is-disabled="isDisabled"
+    :is-disabled
     :error
     @choose="choose"
     @clear="emit('update:modelValue', null)"
@@ -88,9 +88,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Check, UserPlus } from '@lucide/vue';
 import { computed, reactive, ref, useId, watch } from 'vue';
 
-import InlineSearchField from './InlineSearchField.vue';
-import { normalizeUserApiHit, type NormalizedSearchHit } from '../../Utils/searchHitMappers';
-
 import DuplicateUserWarning from '@/Components/AdminForms/DuplicateUserWarning.vue';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import { Button } from '@/Components/ui/button';
@@ -98,6 +95,10 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { useApi } from '@/Composables/useApi';
 import { useDuplicateUserCheck } from '@/Composables/useDuplicateUserCheck';
+
+import { normalizeUserApiHit, type NormalizedSearchHit } from '../../Utils/searchHitMappers';
+
+import InlineSearchField from './InlineSearchField.vue';
 
 /** What `api.v1.admin.users.search` returns — not a full User entity. */
 export interface MemberHit {

@@ -17,11 +17,11 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 
-import CalendarOptionsFields from './CalendarOptionsFields.vue';
-
 import type { Calendar } from '@/Types/contentParts';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';
+
+import CalendarOptionsFields from './CalendarOptionsFields.vue';
 
 const modelValue = defineModel<Calendar['json_content']>();
 const options = defineModel<Calendar['options']>('options', { required: true });

@@ -131,19 +131,20 @@
 import { computed, markRaw } from 'vue';
 import { Icon } from '@iconify/vue';
 
-import SmartLink from '../SmartLink.vue';
-
-import type { NavItem, NavLink, NavLinkType } from './types';
-import { resolveColSpan, resolveCols, resolveImageBlur, resolveImageGradient, resolveImageOverlay } from './navLinkStyles';
-
 import MediaImage from '@/Components/Brand/MediaImage.vue';
 import {
   NavigationMenuContent,
   NavigationMenuLink,
 } from '@/Components/ui/navigation-menu';
 import { Badge } from '@/Components/ui/badge';
-import IFluentOpen16Regular from '~icons/fluent/open-16-regular';
 import { safeHref } from '@/Utils/safeHref';
+
+import SmartLink from '../SmartLink.vue';
+
+import type { NavItem, NavLink, NavLinkType } from './types';
+import { resolveColSpan, resolveCols, resolveImageBlur, resolveImageGradient, resolveImageOverlay } from './navLinkStyles';
+
+import IFluentOpen16Regular from '~icons/fluent/open-16-regular';
 
 const { isUsedWithoutRoot, areLinksDisabled, item } = defineProps<{
   isUsedWithoutRoot?: boolean;

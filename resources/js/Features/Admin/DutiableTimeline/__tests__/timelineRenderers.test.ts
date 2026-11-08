@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import * as d3 from 'd3';
 
+import { getGanttColors } from '@/Components/Graphs/ganttColors';
+
 import { renderCadenceBands } from '../renderers/renderCadenceBands';
 import { renderCollapsedGroupBars } from '../renderers/renderCollapsedGroupBars';
 import { renderDutiableBars } from '../renderers/renderDutiableBars';
 import { getTimelineColors } from '../timelineColors';
 import type { ParsedCadence, ParsedRow, TimelineGroup, TimelineLayoutRow } from '../types';
-
-import { getGanttColors } from '@/Components/Graphs/ganttColors';
 
 /**
  * The renderers draw from a d3 scale, not from layout, so jsdom sees the same attributes a

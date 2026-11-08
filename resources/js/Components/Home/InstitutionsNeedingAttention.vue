@@ -72,15 +72,15 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Landmark, List, MailQuestion, Search } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
-import InstitutionAttentionList from './InstitutionAttentionList.vue';
-import type { InstitutionActivityInsight } from './types';
-
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
+
+import type { InstitutionActivityInsight } from './types';
+import InstitutionAttentionList from './InstitutionAttentionList.vue';
 
 const props = defineProps<{
   institutions: InstitutionActivityInsight[];

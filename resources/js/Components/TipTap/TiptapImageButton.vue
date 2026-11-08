@@ -17,9 +17,10 @@
 import { ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { Button, type ButtonVariants } from '@/Components/ui/button';
+
 import ImageSelector from './ImageSelector.vue';
 
-import { Button, type ButtonVariants } from '@/Components/ui/button';
 import IFluentImage24Regular from '~icons/fluent/image24-regular';
 
 withDefaults(defineProps<{

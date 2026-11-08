@@ -25,8 +25,9 @@ import { computed } from 'vue';
 import { Icon } from '@iconify/vue';
 import { usePage } from '@inertiajs/vue3';
 
-import SmartLink from '../SmartLink.vue';
 import { safeHref } from '@/Utils/safeHref';
+
+import SmartLink from '../SmartLink.vue';
 
 const props = defineProps<{
   quickLink: App.Entities.QuickLink | null;

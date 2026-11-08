@@ -28,9 +28,9 @@ export function pickDefaultTenantId(tenants: Pick<App.Entities.Tenant, 'id' | 't
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import FormFieldWrapper from './FormFieldWrapper.vue';
-
 import { NativeSelect } from '@/Components/ui/native-select';
+
+import FormFieldWrapper from './FormFieldWrapper.vue';
 
 const props = withDefaults(defineProps<{
   tenants: App.Entities.Tenant[];

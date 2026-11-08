@@ -2,10 +2,10 @@ import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { usePage } from '@inertiajs/vue3';
 
-import PagePreview from '../PagePreview.vue';
-
 import { commonStubs } from '@/tests/stubs';
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import PagePreview from '../PagePreview.vue';
 
 const basePage = {
   id: 'p1',

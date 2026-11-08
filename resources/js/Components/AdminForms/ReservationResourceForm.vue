@@ -85,8 +85,6 @@ import { computed, ref, watch, onMounted } from 'vue';
 import { CalendarDateTime, getLocalTimeZone, today, type DateValue } from '@internationalized/date';
 import type { DateRange } from 'reka-ui';
 
-import FormFieldWrapper from './FormFieldWrapper.vue';
-
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
 import { Spinner } from '@/Components/ui/spinner';
@@ -96,6 +94,8 @@ import { capitalize } from '@/Utils/String';
 import { ResourceIcon } from '@/Components/icons';
 import { ResourceSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+
+import FormFieldWrapper from './FormFieldWrapper.vue';
 
 const props = defineProps<{
   reservationResourceForm: InertiaForm<{

@@ -76,13 +76,13 @@ import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronRight, Folder } from '@lucide/vue';
 
-import type { DirectoryEntry, ItemAction } from '../types';
-
-import ItemActionsMenu from './ItemActionsMenu.vue';
-
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
+
+import type { DirectoryEntry, ItemAction } from '../types';
+
+import ItemActionsMenu from './ItemActionsMenu.vue';
 
 type FolderLike = Pick<DirectoryEntry, 'path' | 'name' | 'items'>;
 

@@ -1,10 +1,10 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 
-import CollectionRowActions from '../CollectionRowActions.vue';
-
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import { commonStubs } from '@/tests/stubs';
+
+import CollectionRowActions from '../CollectionRowActions.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

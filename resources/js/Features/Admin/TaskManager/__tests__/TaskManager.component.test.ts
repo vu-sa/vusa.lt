@@ -3,11 +3,11 @@ import { mount } from '@vue/test-utils';
 import { router, usePage } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
 
-import TaskManager from '../TaskManager.vue';
-
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
 import type { TaskDisplayData } from '@/Composables/useTaskPresentation';
+
+import TaskManager from '../TaskManager.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 vi.mock('vue-sonner', () => ({ toast: { info: vi.fn(), success: vi.fn(), error: vi.fn() } }));

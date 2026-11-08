@@ -177,8 +177,6 @@ import {
   ChevronsRight,
 } from '@lucide/vue';
 
-import DataTable from './DataTable.vue';
-
 import { Input } from '@/Components/ui/input';
 import {
   Pagination,
@@ -189,6 +187,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/Components/ui/pagination';
+
+import DataTable from './DataTable.vue';
 
 const props = defineProps<{
   // Data props

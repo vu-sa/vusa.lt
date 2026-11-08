@@ -374,10 +374,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Briefcase, CalendarCheck, ChevronDown, Sparkles, Trash2 } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 
-import DutySearchField, { type DutyHit } from './DutySearchField.vue';
-import MemberSearchField, { type MemberHit } from './MemberSearchField.vue';
-import { isCuratorDuty, termStatus } from './occupancy';
-
 import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
@@ -397,8 +393,11 @@ import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 import { useApi } from '@/Composables/useApi';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { formatDate, todayIso } from '@/Utils/dateTime';
-
 import type { AssignmentDuty, AssignmentUser, AssignmentTerm } from '@/Types/DutyAssignment';
+
+import { isCuratorDuty, termStatus } from './occupancy';
+import MemberSearchField, { type MemberHit } from './MemberSearchField.vue';
+import DutySearchField, { type DutyHit } from './DutySearchField.vue';
 
 interface CadenceOption {
   id: string;

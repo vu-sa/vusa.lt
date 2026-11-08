@@ -37,8 +37,8 @@ test('existing rich fields are cleaned without changing timestamps or plain text
         ->and($stored[0]['description'])->toContain('<em>Aprašymas</em>')->not->toContain('onload')
         ->and($stored[0]['subtitle'])->toBe('A < B');
     unset($before['json_content'], $after['json_content']);
-    expect((array) DB::table('content_parts')->where('id', $unchanged->id)->first())->toBe($unchangedBefore);
-    expect($after)->toBe($before)
+    expect((array) DB::table('content_parts')->where('id', $unchanged->id)->first())->toBe($unchangedBefore)
+        ->and($after)->toBe($before)
         ->and(Cache::tags(['pages'])->get('old-page'))->toBeNull()
         ->and(Cache::tags(['homepage'])->get('old-homepage'))->toBeNull()
         ->and(Cache::get('unrelated-content'))->toBe('keep');

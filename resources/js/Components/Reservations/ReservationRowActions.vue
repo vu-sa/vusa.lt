@@ -3,11 +3,11 @@
 </template>
 
 <script setup lang="ts">
-import { reservationRowActions } from './reservationRowActions';
-import type { ReservationDecision } from './types';
-
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import type { DashboardReservation } from '@/Utils/ReservationStatus';
+
+import { reservationRowActions } from './reservationRowActions';
+import type { ReservationDecision } from './types';
 
 defineProps<{ reservation: DashboardReservation; disabled?: boolean }>();
 const emit = defineEmits<{ decide: [decision: ReservationDecision, reservation: DashboardReservation] }>();

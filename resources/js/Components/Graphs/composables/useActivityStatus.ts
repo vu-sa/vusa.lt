@@ -1,8 +1,8 @@
 import { trans } from 'laravel-vue-i18n';
 
-import type { RepresentativeActivityCategory } from '../types';
-
 import { statusRoleParts, type StatusRole } from '@/Constants/statuses';
+
+import type { RepresentativeActivityCategory } from '../types';
 
 /** The five backend categories fold into four levels ('today' and 'week' are both active). */
 export type ActivityLevel = 'active' | 'recent' | 'stale' | 'never';

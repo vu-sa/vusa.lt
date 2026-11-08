@@ -356,8 +356,8 @@ describe('evidence access', function (): void {
 
         $response = asUser($this->user)->get(route('supportRequests.evidence', [$this->supportRequest, $media->id, $variant]))
             ->assertOk()->assertHeader('X-Content-Type-Options', 'nosniff');
-        expect($response->headers->get('Cache-Control'))->toContain('private', 'no-store');
-        expect($response->streamedContent())->toBe(Storage::disk('supportEvidence')->get($path));
+        expect($response->headers->get('Cache-Control'))->toContain('private', 'no-store')
+            ->and($response->streamedContent())->toBe(Storage::disk('supportEvidence')->get($path));
 
         asUserWithInertia($this->user)->get(route('supportRequests.show', $this->supportRequest))
             ->assertInertia(fn (Assert $page) => $page

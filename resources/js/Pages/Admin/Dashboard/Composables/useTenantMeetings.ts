@@ -9,10 +9,10 @@ import { computed, ref, shallowRef, type ComputedRef } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import type { AtstovavimasTenantMeeting, GanttMeeting } from '../types';
-
 import { useToasts } from '@/Composables/useToasts';
 import { toNaiveDateTimeString } from '@/Utils/dateTime';
+
+import type { AtstovavimasTenantMeeting, GanttMeeting } from '../types';
 
 /** Smallest padding fetched beyond the visible range; wide views pad a quarter of their span. */
 const MIN_BUFFER_DAYS = 30;

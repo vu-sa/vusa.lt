@@ -3,9 +3,9 @@ import { computed, type ComputedRef } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import type { GanttInstitutionMeta, LayoutRow } from './useGanttLayout';
-
 import type { GanttSortBy } from '@/Components/Graphs/composables/useGanttSettings';
+
+import type { GanttInstitutionMeta, LayoutRow } from './useGanttLayout';
 
 /** What the date beside an institution's name is. */
 export type GanttRowDateKind = 'last_activity' | 'next_meeting' | 'last_meeting' | 'check_in_end';

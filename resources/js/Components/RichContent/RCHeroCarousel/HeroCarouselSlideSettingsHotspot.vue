@@ -82,12 +82,12 @@
 import { ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { injectActiveHotspot } from '../Editor/Fullscreen/useActiveHotspot';
-
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Popover, PopoverAnchor, PopoverContent } from '@/Components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import type { HeroCarousel } from '@/Types/contentParts';
+
+import { injectActiveHotspot } from '../Editor/Fullscreen/useActiveHotspot';
 
 type Slide = HeroCarousel['json_content'][number];
 

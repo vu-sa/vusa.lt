@@ -81,11 +81,13 @@ const mapperContext = computed<MapperContext>(() => ({
   isSuperAdmin: collection.adminSearch.isSuperAdmin.value,
 }));
 const rows = computed(() => collection.results.value.map(doc => normalizeHit('duties', doc, mapperContext.value)));
-const selected = computed(() => props.modelValue ? normalizeHit('duties', {
-  id: props.modelValue.id,
-  name_lt: props.modelValue.name,
-  institution_name_lt: props.modelValue.institutionName,
-}, mapperContext.value) : null);
+const selected = computed(() => props.modelValue
+  ? normalizeHit('duties', {
+      id: props.modelValue.id,
+      name_lt: props.modelValue.name,
+      institution_name_lt: props.modelValue.institutionName,
+    }, mapperContext.value)
+  : null);
 
 const hits = computed<DutyHit[]>(() => (showList.value
   ? (collection.results.value as DutyDocument[]).map(doc => ({

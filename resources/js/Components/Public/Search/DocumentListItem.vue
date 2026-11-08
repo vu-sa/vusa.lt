@@ -184,6 +184,8 @@ import { Button } from '@/Components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { TagChip } from '@/Components/Public/Base';
 import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
+import { safeHref } from '@/Utils/safeHref';
+
 import IFluentArrowDownload20Regular from '~icons/fluent/arrow-download-20-regular';
 import IFluentBuilding20Regular from '~icons/fluent/building-20-regular';
 import IFluentCalendarLtr20Regular from '~icons/fluent/calendar-ltr-20-regular';
@@ -191,7 +193,6 @@ import IFluentDocument20Regular from '~icons/fluent/document-20-regular';
 import IFluentLink20Regular from '~icons/fluent/link-20-regular';
 import IFluentOpen20Regular from '~icons/fluent/open-20-regular';
 import IFluentWarning20Regular from '~icons/fluent/warning-20-regular';
-import { safeHref } from '@/Utils/safeHref';
 
 // Props
 interface Props {

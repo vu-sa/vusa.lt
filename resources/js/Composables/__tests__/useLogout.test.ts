@@ -2,10 +2,10 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { effectScope, type EffectScope } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 
+import { createMockPage } from '@/tests/helpers/createMockPage';
+
 import { useLogout } from '../useLogout';
 import { useAdminSearch } from '../useAdminSearch';
-
-import { createMockPage } from '@/tests/helpers/createMockPage';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -44,7 +44,7 @@ it.each(['logout', 'logoutMicrosoft'] as const)('clears shared search credential
 
 it('does not restore credentials from a request that finishes after logout', async () => {
   let resolve!: (response: { ok: boolean; json: () => Promise<ReturnType<typeof config>> }) => void;
-  vi.stubGlobal('fetch', vi.fn(() => new Promise(response => { resolve = response; })));
+  vi.stubGlobal('fetch', vi.fn(() => new Promise((response) => { resolve = response; })));
   const search = scope.run(() => useAdminSearch())!;
   const pending = search.initialize();
   const rejected = expect(pending).rejects.toMatchObject({ name: 'AbortError' });

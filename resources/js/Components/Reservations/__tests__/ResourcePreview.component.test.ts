@@ -2,10 +2,10 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { ref } from 'vue';
 
-import ResourcePreview from '../ResourcePreview.vue';
-
 import ReservationResourceStateTag from '@/Components/Tag/ReservationResourceStateTag.vue';
 import { commonStubs } from '@/tests/stubs';
+
+import ResourcePreview from '../ResourcePreview.vue';
 
 const baseResource = {
   id: 'r1',

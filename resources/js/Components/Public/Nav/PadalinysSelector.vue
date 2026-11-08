@@ -177,13 +177,6 @@ import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { FocusOutsideEvent, PointerDownOutsideEvent } from 'reka-ui';
 
-import PadalinysMap from './PadalinysMap.vue';
-
-import IFluentCheckmark24Regular from '~icons/fluent/checkmark-24-regular';
-import IFluentChevronDown24Regular from '~icons/fluent/chevron-down-24-regular';
-import IFluentLocation24Regular from '~icons/fluent/location-24-regular';
-import IFluentMap24Regular from '~icons/fluent/map-24-regular';
-import IFluentList24Regular from '~icons/fluent/list-24-regular';
 import type { TenantOption } from '@/Composables/useTenantOptions';
 import { useTenantOptions } from '@/Composables/useTenantOptions';
 import { useHoverPopover } from '@/Composables/useHoverPopover';
@@ -192,6 +185,14 @@ import { ScrollArea } from '@/Components/ui/scroll-area';
 import { Popover, PopoverTrigger, PopoverContent } from '@/Components/ui/popover';
 import { Avatar, AvatarFallback } from '@/Components/ui/avatar';
 import { Skeleton } from '@/Components/ui/skeleton';
+
+import PadalinysMap from './PadalinysMap.vue';
+
+import IFluentList24Regular from '~icons/fluent/list-24-regular';
+import IFluentMap24Regular from '~icons/fluent/map-24-regular';
+import IFluentLocation24Regular from '~icons/fluent/location-24-regular';
+import IFluentChevronDown24Regular from '~icons/fluent/chevron-down-24-regular';
+import IFluentCheckmark24Regular from '~icons/fluent/checkmark-24-regular';
 
 interface Props {
   /** Button size variant - affects padding and height */

@@ -227,6 +227,7 @@ import { formatDateWith } from '@/Utils/dateTime';
 import { getCalendarEvent2Route } from '@/Utils/Route';
 import type { PhotoGalleryGrid } from '@/Types/contentParts';
 import { LocaleEnum } from '@/Types/enums';
+
 import IFluentArrowLeft20Regular from '~icons/fluent/arrow-left-20-regular';
 import IFluentArrowRight20Regular from '~icons/fluent/arrow-right-20-regular';
 import IFluentCalendarLtr24Regular from '~icons/fluent/calendar-ltr-24-regular';

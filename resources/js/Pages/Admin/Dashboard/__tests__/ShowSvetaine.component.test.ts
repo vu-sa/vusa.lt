@@ -2,10 +2,10 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { ref } from 'vue';
 
-import ShowSvetaine from '../ShowSvetaine.vue';
-
 import { commonStubs } from '@/tests/stubs';
 import type { AnalyticsOverviewData } from '@/Types/api.d';
+
+import ShowSvetaine from '../ShowSvetaine.vue';
 
 const mockController = {
   data: ref<AnalyticsOverviewData | null>(null),

@@ -304,9 +304,6 @@
 <script setup lang="ts">
 import { defineModel, computed, onMounted, ref, watch } from 'vue';
 
-import RCSectionOptions from '../Editor/RCSectionOptions.vue';
-import RCDecorationListEditor from '../Editor/RCDecorationListEditor.vue';
-
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
 import type { ContentGrid } from '@/Types/contentParts';
@@ -319,6 +316,9 @@ import { Switch } from '@/Components/ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FocalPointPicker from '@/Components/ui/upload/FocalPointPicker.vue';
+
+import RCDecorationListEditor from '../Editor/RCDecorationListEditor.vue';
+import RCSectionOptions from '../Editor/RCSectionOptions.vue';
 
 const json_content = defineModel<ContentGrid['json_content']>();
 const options = defineModel<ContentGrid['options']>('options');

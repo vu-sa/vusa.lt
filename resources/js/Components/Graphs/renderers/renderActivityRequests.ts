@@ -6,12 +6,12 @@
 import type * as d3 from 'd3';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { escapeHtml } from '@/Utils/String';
+
 import type { GanttColors } from '../ganttColors';
 
 import { TOOLTIP_PRIORITIES, type GanttTooltipManager } from './GanttTooltip';
 import { MAIL_QUESTION_PATH } from './renderMeetings';
-
-import { escapeHtml } from '@/Utils/String';
 
 export interface ParsedActivityRequest {
   institution_id: string | number;

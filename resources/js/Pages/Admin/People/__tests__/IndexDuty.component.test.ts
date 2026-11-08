@@ -3,10 +3,10 @@ import { ref } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { router, usePage } from '@inertiajs/vue3';
 
-import IndexDuty from '../IndexDuty.vue';
-
 import { commonStubs } from '@/tests/stubs';
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import IndexDuty from '../IndexDuty.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

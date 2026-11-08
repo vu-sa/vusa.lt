@@ -32,14 +32,14 @@
 import { computed, ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
-import MainNavigationMenuContent from './MainNavigationMenuContent.vue';
-
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuList,
   NavigationMenuTrigger,
 } from '@/Components/ui/navigation-menu';
+
+import MainNavigationMenuContent from './MainNavigationMenuContent.vue';
 
 const activeMenuItem = ref(undefined);
 

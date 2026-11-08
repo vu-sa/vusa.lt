@@ -64,10 +64,11 @@ import { computed } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import MeetingOutcomeIndicators from './MeetingOutcomeIndicators.vue';
-
 import { formatDateWith } from '@/Utils/dateTime';
 import { DatePlate } from '@/Components/Public/Base';
+
+import MeetingOutcomeIndicators from './MeetingOutcomeIndicators.vue';
+
 import IFluentArrowRight20Regular from '~icons/fluent/arrow-right-20-regular';
 
 // Typesense search result document structure

@@ -3,9 +3,9 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-import HeroButtons from '../HeroButtons.vue';
-
 import type { Hero } from '@/Types/contentParts';
+
+import HeroButtons from '../HeroButtons.vue';
 
 type HeroButton = NonNullable<Hero['json_content']['buttons']>[number];
 

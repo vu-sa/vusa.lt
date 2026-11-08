@@ -2,9 +2,9 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 import { ref } from 'vue';
 
-import IndexTypes from '../IndexTypes.vue';
-
 import type { AdminSection } from '@/Composables/useAdminNavigation';
+
+import IndexTypes from '../IndexTypes.vue';
 
 const dismiss = vi.fn();
 vi.mock('@/Composables/useFeatureSpotlight', () => ({

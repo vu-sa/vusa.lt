@@ -21,6 +21,7 @@ import FeedbackPopover from '@/Components/Public/FeedbackPopover.vue';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import NewsArticleLayout from '@/Components/Public/News/NewsArticleLayout.vue';
 import type { ImageData } from '@/Types/media';
+
 import IFluentNews24Regular from '~icons/fluent/news-24-regular';
 
 interface NewsArticleTag {

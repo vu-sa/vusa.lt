@@ -23,9 +23,9 @@
 import { useElementSize } from '@vueuse/core';
 import { useTemplateRef } from 'vue';
 
-import CollectionRowActions from './CollectionRowActions.vue';
-
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
+
+import CollectionRowActions from './CollectionRowActions.vue';
 
 /**
  * A rows-view item whose title must keep the width. A narrow row is content plus ⋯, with the primary

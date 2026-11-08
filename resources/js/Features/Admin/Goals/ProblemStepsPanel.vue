@@ -47,13 +47,13 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ListChecks, Plus } from '@lucide/vue';
 import { ref } from 'vue';
 
-import GoalStepList from './GoalStepList.vue';
-import StepSheetForm from './StepSheetForm.vue';
-import type { GoalStep, LinkedGoal } from './types';
-
 import { ConfirmDialog, OverviewSection } from '@/Components/Patterns';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
+
+import GoalStepList from './GoalStepList.vue';
+import StepSheetForm from './StepSheetForm.vue';
+import type { GoalStep, LinkedGoal } from './types';
 
 const props = defineProps<{
   problemId: string;

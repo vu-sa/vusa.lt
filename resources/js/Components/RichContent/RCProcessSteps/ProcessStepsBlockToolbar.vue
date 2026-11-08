@@ -159,12 +159,6 @@
 import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import RCBlockToolbarShell from '../Editor/Fullscreen/RCBlockToolbarShell.vue';
-import RCSectionToolbarOptions from '../Editor/RCSectionToolbarOptions.vue';
-import RCWidthPicker from '../Editor/RCWidthPicker.vue';
-import { withWidth } from '../Editor/blockWidth';
-import { getContentType, type BlockWidth, type ContentPart } from '../Types';
-
 import type { ProcessSteps, SectionOptions } from '@/Types/contentParts';
 import { stripHtmlTags } from '@/Utils/String';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
@@ -172,6 +166,13 @@ import { Button } from '@/Components/ui/button';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
+
+import { getContentType, type BlockWidth, type ContentPart } from '../Types';
+import { withWidth } from '../Editor/blockWidth';
+import RCWidthPicker from '../Editor/RCWidthPicker.vue';
+import RCSectionToolbarOptions from '../Editor/RCSectionToolbarOptions.vue';
+import RCBlockToolbarShell from '../Editor/Fullscreen/RCBlockToolbarShell.vue';
+
 import IFluentAdd12Regular from '~icons/fluent/add12-regular';
 import IFluentArrowDown24Regular from '~icons/fluent/arrow-down24-regular';
 import IFluentArrowUp24Regular from '~icons/fluent/arrow-up24-regular';

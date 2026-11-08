@@ -103,12 +103,13 @@
 import { computed, defineAsyncComponent } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import RCSection from '../RCSection.vue';
-import type { BandResolution } from '../bandLayout';
-
 import type { ProcessSteps } from '@/Types/contentParts';
 import { hasHtmlText } from '@/Utils/String';
 import { Button } from '@/Components/ui/button';
+
+import type { BandResolution } from '../bandLayout';
+import RCSection from '../RCSection.vue';
+
 import IFluentAdd12Regular from '~icons/fluent/add12-regular';
 import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
 

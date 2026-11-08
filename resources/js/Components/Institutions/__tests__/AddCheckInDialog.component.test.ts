@@ -2,10 +2,10 @@ import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import AddCheckInDialog from '../AddCheckInDialog.vue';
-
 import { DatePicker } from '@/Components/ui/date-picker';
 import { commonStubs } from '@/tests/stubs';
+
+import AddCheckInDialog from '../AddCheckInDialog.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

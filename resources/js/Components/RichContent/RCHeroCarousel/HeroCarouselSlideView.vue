@@ -179,20 +179,22 @@
 import { computed, defineAsyncComponent, inject } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import RichContentTiptapHTML from '../RichContentTiptapHTML.vue';
-import HeroButtons from '../RCHeroSection/HeroButtons.vue';
 // NOT lazy-loaded, unlike its siblings below: eyebrow/subtitle show it whenever they
 // have content, on public pages too (`v-if="slide.eyebrow || editable"`), not only
 // while editable. RCInlineText is zero-cost when `editable` is false anyway (see its
 // own docblock) — async-loading it here would only delay public rendering.
-import RCInlineText from '../Editor/Fullscreen/RCInlineText.vue';
-import { ACTIVE_HOTSPOT_KEY } from '../Editor/Fullscreen/useActiveHotspot';
 
 import MediaImage from '@/Components/Brand/MediaImage.vue';
 import { Button } from '@/Components/ui/button';
 import { EyebrowLabel } from '@/Components/Public/Base';
 import type { HeroCarousel } from '@/Types/contentParts';
 import { hasHtmlText, stripHtmlTags } from '@/Utils/String';
+
+import { ACTIVE_HOTSPOT_KEY } from '../Editor/Fullscreen/useActiveHotspot';
+import RCInlineText from '../Editor/Fullscreen/RCInlineText.vue';
+import HeroButtons from '../RCHeroSection/HeroButtons.vue';
+import RichContentTiptapHTML from '../RichContentTiptapHTML.vue';
+
 import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
 import IFluentImage24Regular from '~icons/fluent/image24-regular';
 

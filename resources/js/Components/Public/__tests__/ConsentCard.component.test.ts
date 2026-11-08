@@ -2,9 +2,9 @@ import { mount } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import ConsentCard from '../ConsentCard.vue';
-
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import ConsentCard from '../ConsentCard.vue';
 
 const acknowledge = vi.fn();
 

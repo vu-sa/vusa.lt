@@ -17,9 +17,9 @@
  */
 import type * as d3 from 'd3';
 
-import type { GanttColors } from '../ganttColors';
-
 import type { VacationPeriod } from '@/Composables/useVacationPeriods';
+
+import type { GanttColors } from '../ganttColors';
 
 interface LayoutRow {
   key: string | number;

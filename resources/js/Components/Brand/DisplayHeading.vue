@@ -26,9 +26,9 @@
 import type { HTMLAttributes } from 'vue';
 import { computed } from 'vue';
 
-import EyebrowLabel from './EyebrowLabel.vue';
-
 import { cn } from '@/Utils/Shadcn/utils';
+
+import EyebrowLabel from './EyebrowLabel.vue';
 
 /**
  * The signature device of the public design: a headline block hung off a brand-coloured vertical

@@ -73,8 +73,6 @@ import { area, axisBottom, axisLeft, max, scaleLinear, scaleTime, select } from 
 import { computed, nextTick, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { summarizeTrafficTrend } from './Composables/trafficTrend';
-
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import OverviewChart from '@/Components/Overview/OverviewChart.vue';
 import OverviewNumbers, { type OverviewNumberItem } from '@/Components/Overview/OverviewNumbers.vue';
@@ -85,6 +83,8 @@ import { NativeSelect } from '@/Components/ui/native-select';
 import { Skeleton } from '@/Components/ui/skeleton';
 import { useApi } from '@/Composables/useApi';
 import type { AnalyticsOverviewData } from '@/Types/api.d';
+
+import { summarizeTrafficTrend } from './Composables/trafficTrend';
 
 const props = defineProps<{
   tenants: App.Entities.Tenant[];

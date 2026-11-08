@@ -107,13 +107,13 @@ import { computed, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronLeft, ChevronRight, Download, ExternalLink, Info, Link2, X } from '@lucide/vue';
 
-import type { FileEntry } from '../types';
-import { formatBytes, formatDate, imageSrc, isThumbnailable, previewKind, publicUrl } from '../utils';
-
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from '@/Components/ui/dialog';
 import { Spinner } from '@/Components/ui/spinner';
 import { getFileExtension } from '@/Utils/fileIcons';
+
+import { formatBytes, formatDate, imageSrc, isThumbnailable, previewKind, publicUrl } from '../utils';
+import type { FileEntry } from '../types';
 
 const props = defineProps<{
   /** The previewable files the arrows step through, in the order the list shows them. */

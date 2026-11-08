@@ -2,9 +2,9 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 import { trans } from 'laravel-vue-i18n';
 
-import FileUsageList from '../FileUsageList.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import FileUsageList from '../FileUsageList.vue';
 
 describe('file usage details', () => {
   it('shows the count of restricted records alongside visible references', () => {

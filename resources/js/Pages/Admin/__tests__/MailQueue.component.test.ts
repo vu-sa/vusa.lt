@@ -3,11 +3,11 @@ import { mount } from '@vue/test-utils';
 import { defineComponent, h } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import MailQueue from '../MailQueue.vue';
-
 import { commonStubs } from '@/tests/stubs';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import CollectionTitleBand from '@/Components/Collection/CollectionTitleBand.vue';
+
+import MailQueue from '../MailQueue.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 vi.mock('@/Composables/useFeatureSpotlight', async () => {

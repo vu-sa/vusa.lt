@@ -1,6 +1,5 @@
 import { shallowReactive } from 'vue';
 
-
 /** "Rodyti daugiau" loads this many at a time (.ai/rules/js-pages-admin.md). */
 export const PAGE_SIZE = 50;
 

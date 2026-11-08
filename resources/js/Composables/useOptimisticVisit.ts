@@ -1,7 +1,7 @@
 import type { Page, VisitOptions } from '@inertiajs/core';
 
 function hasFlashError(page: Page): boolean {
-  const flash = page.props.flash;
+  const { flash } = page.props;
   return Boolean(flash && typeof flash === 'object' && 'error' in flash && flash.error);
 }
 

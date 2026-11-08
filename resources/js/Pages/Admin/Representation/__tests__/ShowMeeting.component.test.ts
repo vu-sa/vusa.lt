@@ -175,7 +175,8 @@ describe('ShowMeeting.vue', () => {
     try {
       expect(wrapper.get('[data-slot="record-title"]').text()).toMatch(new RegExp(`${ending}$`));
       if (locale === 'en') expect(wrapper.get('[data-slot="record-title"]').text()).toContain('March');
-    } finally {
+    }
+    finally {
       wrapper.unmount();
       language.mockRestore();
     }

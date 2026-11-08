@@ -2,9 +2,9 @@ import { createInjectionState } from '@vueuse/core';
 import emblaCarouselVue from 'embla-carousel-vue';
 import { computed, onMounted, ref, toValue, watch } from 'vue';
 
-import type { UnwrapRefCarouselApi as CarouselApi, CarouselEmits, CarouselProps } from './interface';
-
 import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
+
+import type { UnwrapRefCarouselApi as CarouselApi, CarouselEmits, CarouselProps } from './interface';
 
 const [useProvideCarousel, useInjectCarousel] = createInjectionState(
   (props: CarouselProps, emits: CarouselEmits) => {

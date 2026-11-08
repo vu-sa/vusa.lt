@@ -3,13 +3,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 import { reactive } from 'vue';
 
-import SectionTabs from '../SectionTabs.vue';
-
-import { atstovavimas, pradzia, rezervacijos, section, workspace } from './fixtures';
-
 import { clearTrail, enterAgendaItem } from '@/Composables/useRecordTrail';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
+
+import SectionTabs from '../SectionTabs.vue';
+
+import { atstovavimas, pradzia, rezervacijos, section, workspace } from './fixtures';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

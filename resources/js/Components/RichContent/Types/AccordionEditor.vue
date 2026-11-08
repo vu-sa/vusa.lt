@@ -37,13 +37,14 @@
 </template>
 
 <script setup lang="ts">
-import RCSectionOptions from '../Editor/RCSectionOptions.vue';
 
 import type { ShadcnAccordion } from '@/Types/contentParts';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';
+
+import RCSectionOptions from '../Editor/RCSectionOptions.vue';
 
 const modelValue = defineModel<ShadcnAccordion['json_content']>();
 const options = defineModel<NonNullable<ShadcnAccordion['options']>>('options', { default: () => ({}) });

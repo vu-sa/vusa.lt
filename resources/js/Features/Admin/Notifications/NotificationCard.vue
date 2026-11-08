@@ -39,7 +39,9 @@
         </h4>
       </div>
 
-      <p v-if="message" class="line-clamp-2 text-sm text-muted-foreground">{{ message }}</p>
+      <p v-if="message" class="line-clamp-2 text-sm text-muted-foreground">
+        {{ message }}
+      </p>
 
       <p v-if="excerpt" class="line-clamp-3 border-l-2 border-border pl-2 text-sm text-muted-foreground" data-slot="notification-excerpt">
         {{ excerpt }}
@@ -55,8 +57,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-
-import { notificationRowActions } from './notificationRowActions';
 
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import { ContextFact, ContextFacts } from '@/Components/Patterns';
@@ -74,6 +74,8 @@ import {
 } from '@/Composables/useNotificationFormatting';
 import NotificationLink from '@/Components/Notifications/NotificationLink.vue';
 import { markNotificationRead } from '@/Composables/markNotificationRead';
+
+import { notificationRowActions } from './notificationRowActions';
 
 const props = defineProps<{
   notification: Notification;

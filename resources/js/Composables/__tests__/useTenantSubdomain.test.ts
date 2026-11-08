@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { usePage } from '@inertiajs/vue3';
 
-import { resolveTenantSubdomain } from '../useTenantSubdomain';
-
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import { resolveTenantSubdomain } from '../useTenantSubdomain';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

@@ -112,7 +112,7 @@
                every `data-[state=...]` Tailwind class the Switch relies on for color. -->
           <span class="inline-flex">
             <Switch
-                :disabled="pending"
+              :disabled="pending"
               :model-value="link.is_active"
               @update:model-value="val => $emit('toggle-active', val)"
             />
@@ -175,8 +175,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Link } from '@inertiajs/vue3';
 import { GripVertical, Image as ImageIcon, Link as LinkIcon, Minus, Pencil, Square, Star, Trash2, Type } from '@lucide/vue';
 
-import type { AdminNavigationLink } from './types';
-
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
 import { Switch } from '@/Components/ui/switch';
@@ -193,6 +191,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/Components/ui/alert-dialog';
+
+import type { AdminNavigationLink } from './types';
 
 const props = defineProps<{
   pending?: boolean;

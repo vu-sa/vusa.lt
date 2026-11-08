@@ -66,6 +66,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read string $language_code
  * @property-read Meeting|null $meeting
  * @property-read Collection<int, Tenant> $tenant
+ * @property-read int|null $tenant_count
  *
  * @method static Builder<static>|Document browsableBy(\App\Models\User $user)
  * @method static \Database\Factories\DocumentFactory factory($count = null, $state = [])

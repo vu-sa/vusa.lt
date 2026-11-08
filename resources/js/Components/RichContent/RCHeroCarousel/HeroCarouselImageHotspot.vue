@@ -86,8 +86,6 @@
 import { ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { injectActiveHotspot } from '../Editor/Fullscreen/useActiveHotspot';
-
 import ImageSelector from '@/Components/TipTap/ImageSelector.vue';
 import { Button } from '@/Components/ui/button';
 import { Field, FieldLabel } from '@/Components/ui/field';
@@ -95,6 +93,9 @@ import { Input } from '@/Components/ui/input';
 import { Popover, PopoverAnchor, PopoverContent } from '@/Components/ui/popover';
 import FocalPointPicker from '@/Components/ui/upload/FocalPointPicker.vue';
 import type { HeroCarousel } from '@/Types/contentParts';
+
+import { injectActiveHotspot } from '../Editor/Fullscreen/useActiveHotspot';
+
 import IFluentImage24Regular from '~icons/fluent/image24-regular';
 
 type Slide = HeroCarousel['json_content'][number];

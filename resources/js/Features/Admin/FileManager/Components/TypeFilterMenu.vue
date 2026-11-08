@@ -44,9 +44,6 @@ import { computed, type Component } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Check, ChevronDown, Files, Folder } from '@lucide/vue';
 
-import type { TypeFilter } from '../types';
-import { extensionsForKind, TYPE_FILTER_KINDS } from '../utils';
-
 import { controlVariants } from '@/Components/ui/control';
 import {
   DropdownMenu,
@@ -55,6 +52,9 @@ import {
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 import { getFileKindIcon } from '@/Utils/fileIcons';
+
+import { extensionsForKind, TYPE_FILTER_KINDS } from '../utils';
+import type { TypeFilter } from '../types';
 
 interface TypeOption {
   id: TypeFilter;

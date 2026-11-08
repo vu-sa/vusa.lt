@@ -67,8 +67,8 @@ test('the duty action also refuses a move outside the update scope', function ()
         'name' => ['lt' => 'Pakeista', 'en' => 'Changed'],
         'institution_id' => $destination->id,
         'contacts_grouping' => 'none',
-    ]))->toThrow(ValidationException::class);
-    expect($duty->fresh()->institution_id)->toBe($duty->institution_id);
+    ]))->toThrow(ValidationException::class)
+        ->and($duty->fresh()->institution_id)->toBe($duty->institution_id);
 });
 
 test('a member without duty update access receives 403', function (): void {
@@ -119,9 +119,8 @@ test('the duty action refuses a trashed destination even with global access', fu
     expect(fn () => app(UpdateDuty::class)->execute($duty, [
         'name' => ['lt' => 'Pakeista', 'en' => 'Changed'],
         'institution_id' => $destination->id, 'contacts_grouping' => 'none',
-    ]))->toThrow(ValidationException::class);
-
-    expect($duty->fresh()->institution_id)->toBe($duty->institution_id);
+    ]))->toThrow(ValidationException::class)
+        ->and($duty->fresh()->institution_id)->toBe($duty->institution_id);
 });
 
 test('moving a duty without an actor returns a validation error', function (): void {
@@ -130,7 +129,6 @@ test('moving a duty without an actor returns a validation error', function (): v
     $destination = Institution::factory()->for($tenant)->create();
 
     expect(fn () => app(UpdateDuty::class)->execute($duty, ['institution_id' => $destination->id]))
-        ->toThrow(ValidationException::class);
-
-    expect($duty->fresh()->institution_id)->toBe($duty->institution_id);
+        ->toThrow(ValidationException::class)
+        ->and($duty->fresh()->institution_id)->toBe($duty->institution_id);
 });

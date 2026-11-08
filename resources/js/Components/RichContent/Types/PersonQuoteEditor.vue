@@ -68,9 +68,6 @@
 import { computed, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import RCSectionOptions from '../Editor/RCSectionOptions.vue';
-import { useUserAttributionLookup } from '../composables/useUserAttributionLookup';
-
 import type { PersonQuote } from '@/Types/contentParts';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import CollectionSelectDialog from '@/Features/Admin/AdminSearch/Components/Select/CollectionSelectDialog.vue';
@@ -79,6 +76,9 @@ import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';
+
+import { useUserAttributionLookup } from '../composables/useUserAttributionLookup';
+import RCSectionOptions from '../Editor/RCSectionOptions.vue';
 
 const content = defineModel<PersonQuote['json_content']>({ required: true });
 const options = defineModel<PersonQuote['options']>('options', { required: true });

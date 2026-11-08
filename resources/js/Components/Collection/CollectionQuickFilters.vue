@@ -33,10 +33,10 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { controlVariants } from '@/Components/ui/control';
+
 import type { CollectionQuickFilter } from './types';
 import CollectionQuickFilterSpotlight from './CollectionQuickFilterSpotlight.vue';
-
-import { controlVariants } from '@/Components/ui/control';
 
 defineProps<{
   filters: CollectionQuickFilter[];

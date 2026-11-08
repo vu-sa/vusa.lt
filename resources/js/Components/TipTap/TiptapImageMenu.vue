@@ -68,10 +68,6 @@ import { BubbleMenu } from '@tiptap/vue-3/menus';
 import type { Editor } from '@tiptap/vue-3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import ImageAccessibilityDialog from './ImageAccessibilityDialog.vue';
-import { useTiptapImageControls, type ImageAlignment, type ImageSizePreset } from './composables/useTiptapImageControls';
-import { shouldShowImageBubbleMenu } from './bubbleMenuVisibility';
-
 import { Button } from '@/Components/ui/button';
 import { ButtonGroup } from '@/Components/ui/button-group';
 import { Separator } from '@/Components/ui/separator';
@@ -81,6 +77,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
+
+import { shouldShowImageBubbleMenu } from './bubbleMenuVisibility';
+import { useTiptapImageControls, type ImageAlignment, type ImageSizePreset } from './composables/useTiptapImageControls';
+import ImageAccessibilityDialog from './ImageAccessibilityDialog.vue';
+
 import IFluentTextAlignLeft24Regular from '~icons/fluent/text-align-left24-regular';
 import IFluentTextAlignCenter24Regular from '~icons/fluent/text-align-center24-regular';
 import IFluentTextAlignRight24Regular from '~icons/fluent/text-align-right24-regular';

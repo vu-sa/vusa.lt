@@ -125,16 +125,17 @@ import { computed, ref, watch } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { Mail, Phone } from '@lucide/vue';
 
-import UserAvatar, { type AvatarUser } from './UserAvatar.vue';
-
 import MediaImage from '@/Components/Brand/MediaImage.vue';
 import { useApi } from '@/Composables/useApi';
 import type { ImageData } from '@/Types/media';
 import { useIsAdminContext } from '@/Composables/useIsAdminContext';
-import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/hover-card';
 import { avatarSizeClasses, mapPixelToSize, type AvatarSize } from '@/Components/ui/avatar';
 import { safeHref } from '@/Utils/safeHref';
+
+import UserAvatar, { type AvatarUser } from './UserAvatar.vue';
+
+import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
 
 interface PopoverUser extends AvatarUser {
   email?: string | null;

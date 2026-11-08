@@ -28,9 +28,10 @@
 <script setup lang="ts">
 import { computed, useId, type HTMLAttributes } from 'vue';
 
-import IFluentCheckmark24Filled from '~icons/fluent/checkmark-24-filled';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { cn } from '@/Utils/Shadcn/utils';
+
+import IFluentCheckmark24Filled from '~icons/fluent/checkmark-24-filled';
 
 /** Use this square, full-row control instead of a pill switch on the public surface. */
 defineOptions({ inheritAttrs: false });

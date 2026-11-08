@@ -16,9 +16,9 @@
 import { computed } from 'vue';
 import { useDark, useMounted } from '@vueuse/core';
 
-import { toMixcloudEmbedUrl } from './embedUrl';
-
 import type { SpotifyEmbed } from '@/Types/contentParts';
+
+import { toMixcloudEmbedUrl } from './embedUrl';
 
 const props = defineProps<{
   element: SpotifyEmbed;

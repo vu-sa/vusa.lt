@@ -15,9 +15,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import CellTooltip from './CellTooltip.vue';
-
 import { useIsTruncated } from '@/Composables/useIsTruncated';
+
+import CellTooltip from './CellTooltip.vue';
 
 const props = withDefaults(defineProps<{
   text?: string | null;

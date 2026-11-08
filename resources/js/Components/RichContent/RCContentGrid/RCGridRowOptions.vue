@@ -52,10 +52,11 @@
 import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { injectActiveHotspot } from '../Editor/Fullscreen/useActiveHotspot';
-
 import { Button } from '@/Components/ui/button';
 import { Popover, PopoverAnchor, PopoverContent } from '@/Components/ui/popover';
+
+import { injectActiveHotspot } from '../Editor/Fullscreen/useActiveHotspot';
+
 import IFluentArrowDown24Regular from '~icons/fluent/arrow-down24-regular';
 import IFluentArrowUp24Regular from '~icons/fluent/arrow-up24-regular';
 import IFluentDelete24Regular from '~icons/fluent/delete24-regular';

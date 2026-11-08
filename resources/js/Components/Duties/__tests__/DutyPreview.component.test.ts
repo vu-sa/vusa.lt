@@ -1,10 +1,10 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
+import { commonStubs } from '@/tests/stubs';
+
 import DutyPreview from '../DutyPreview.vue';
 import { dutyPreviewFromRecord, dutyPreviewFromSearch } from '../dutyPreview';
-
-import { commonStubs } from '@/tests/stubs';
 
 const baseDuty = {
   id: 'du1',

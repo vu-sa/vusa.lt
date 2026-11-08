@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { CalendarDays, CalendarSearch, History, Landmark } from '@lucide/vue';
 
+import EntityTypeMark from '@/Components/EntityTypeMark.vue';
+
 import ActionChoiceButton from './ActionChoiceButton.vue';
 import ActionChoiceList from './ActionChoiceList.vue';
 import ActionWindowPrimaryButton from './ActionWindowPrimaryButton.vue';
 import ActionWindowScreen from './ActionWindowScreen.vue';
 import ReviewRow from './ReviewRow.vue';
-
-import EntityTypeMark from '@/Components/EntityTypeMark.vue';
 
 const meta: Meta = {
   title: 'ActionWindow/Guided flow',

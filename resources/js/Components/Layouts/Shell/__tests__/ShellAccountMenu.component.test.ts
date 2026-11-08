@@ -2,11 +2,11 @@ import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { loadLanguageAsync } from 'laravel-vue-i18n';
 
-import ShellAccountMenu from '../ShellAccountMenu.vue';
-
 import { commonStubs } from '@/tests/stubs';
 import { router } from '@/mocks/inertia.mock';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+
+import ShellAccountMenu from '../ShellAccountMenu.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

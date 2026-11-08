@@ -23,12 +23,12 @@ import { computed } from 'vue';
 import { trans as $t, getActiveLanguage } from 'laravel-vue-i18n';
 import { CircleDashed, Mail, Users, Video } from '@lucide/vue';
 
+import { useActionWindow } from '@/Composables/useActionWindow';
+import { getMeetingTypeOptions, isDateOnlyMeetingType, MeetingType, type MeetingTypeValue } from '@/Types/MeetingType';
+
 import ActionChoiceButton from '../ActionChoiceButton.vue';
 import ActionChoiceList from '../ActionChoiceList.vue';
 import ActionWindowScreen from '../ActionWindowScreen.vue';
-
-import { useActionWindow } from '@/Composables/useActionWindow';
-import { getMeetingTypeOptions, isDateOnlyMeetingType, MeetingType, type MeetingTypeValue } from '@/Types/MeetingType';
 
 const { current, draft, advance, goTo, isDateLocked, updateMeeting } = useActionWindow();
 

@@ -226,10 +226,6 @@ import { useEventListener, useResizeObserver } from '@vueuse/core';
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, Columns3 } from '@lucide/vue';
 import { computed, nextTick, ref, toRef, watch } from 'vue';
 
-import CollectionRowActions from './CollectionRowActions.vue';
-import CollectionLoadMore from './CollectionLoadMore.vue';
-import type { CollectionColumn } from './types';
-
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import { CollectionSkeleton, EmptyState, TopProgressBar } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
@@ -246,6 +242,10 @@ import type { CollectionSortOption } from '@/Composables/useCollectionSource';
 import { capitalize } from '@/Utils/String';
 import { ACTIONS_COLUMN_ID, SELECT_COLUMN_ID, useCollectionTable } from '@/Composables/useCollectionTable';
 import type { CollectionViewMode } from '@/Composables/useCollectionView';
+
+import type { CollectionColumn } from './types';
+import CollectionLoadMore from './CollectionLoadMore.vue';
+import CollectionRowActions from './CollectionRowActions.vue';
 
 const props = withDefaults(defineProps<{
   collection: string;

@@ -201,8 +201,6 @@ import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { CloudCheck, ExternalLink, Info, Loader2, Plus, Save, Search, Send, Trash2 } from '@lucide/vue';
 import { capitalize, computed, onMounted, ref, watch } from 'vue';
 
-import FormFieldWrapper from './FormFieldWrapper.vue';
-
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog, FormPanel, StatusBadge } from '@/Components/Patterns';
 import ReservationCartItemRow from '@/Components/Reservations/ReservationCartItemRow.vue';
@@ -221,6 +219,8 @@ import type { StatusPresentation } from '@/Constants/statusIcons';
 import { ResourceSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
 import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { ModelEnum } from '@/Types/enums';
+
+import FormFieldWrapper from './FormFieldWrapper.vue';
 
 // The checkout of the reservation cart: the draft holds the items and is saved as the user types,
 // so the form only submits what the draft already says.

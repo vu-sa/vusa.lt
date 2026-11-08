@@ -1,6 +1,8 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
+import { commonStubs } from '@/tests/stubs';
+
 import CollectionActiveChips from '../CollectionActiveChips.vue';
 import CollectionFacetOptions from '../CollectionFacetOptions.vue';
 import CollectionControlRow from '../CollectionControlRow.vue';
@@ -8,8 +10,6 @@ import CollectionFilterBar from '../CollectionFilterBar.vue';
 import CollectionPrimaryCell from '../CollectionPrimaryCell.vue';
 import CollectionResults from '../CollectionResults.vue';
 import CollectionViewToggle from '../CollectionViewToggle.vue';
-
-import { commonStubs } from '@/tests/stubs';
 
 describe('collection controls', () => {
   it('capitalizes category options and selected chips while preserving acronyms and values', async () => {

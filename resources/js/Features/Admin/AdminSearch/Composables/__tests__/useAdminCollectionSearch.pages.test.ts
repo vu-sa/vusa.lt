@@ -3,9 +3,9 @@ import { defineComponent, ref } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { usePage } from '@inertiajs/vue3';
 
-import { useAdminCollectionSearch } from '../useAdminCollectionSearch';
-
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import { useAdminCollectionSearch } from '../useAdminCollectionSearch';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -257,8 +257,8 @@ describe('overlapping collection searches', () => {
     let resolveOld!: (value: ReturnType<typeof response>) => void;
     let resolveNew!: (value: ReturnType<typeof response>) => void;
     search.searchWithFacets
-      .mockImplementationOnce(() => new Promise(resolve => { resolveOld = resolve; }))
-      .mockImplementationOnce(() => new Promise(resolve => { resolveNew = resolve; }));
+      .mockImplementationOnce(() => new Promise((resolve) => { resolveOld = resolve; }))
+      .mockImplementationOnce(() => new Promise((resolve) => { resolveNew = resolve; }));
     controller.search('old', true);
 
     vi.useFakeTimers();
@@ -284,8 +284,8 @@ describe('overlapping collection searches', () => {
     let resolveMore!: (value: ReturnType<typeof response>) => void;
     let resolveReset!: (value: ReturnType<typeof response>) => void;
     search.searchWithFacets
-      .mockImplementationOnce(() => new Promise(resolve => { resolveMore = resolve; }))
-      .mockImplementationOnce(() => new Promise(resolve => { resolveReset = resolve; }));
+      .mockImplementationOnce(() => new Promise((resolve) => { resolveMore = resolve; }))
+      .mockImplementationOnce(() => new Promise((resolve) => { resolveReset = resolve; }));
 
     const more = controller.loadMore();
     controller.search('reset', true);

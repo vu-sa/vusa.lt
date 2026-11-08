@@ -1,8 +1,8 @@
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 
-import type { ContentPart } from '../Types';
-
 import { stripHtml } from '@/Utils/html';
+
+import type { ContentPart } from '../Types';
 
 /** Recursively pull the first text node out of a Tiptap JSON document. */
 function firstTiptapText(json: unknown): string {

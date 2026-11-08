@@ -65,16 +65,17 @@
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { Field, FieldDescription, FieldLabel } from '@/Components/ui/field';
+import { Input } from '@/Components/ui/input';
+import { Switch } from '@/Components/ui/switch';
+import type { SocialEmbed } from '@/Types/contentParts';
+
 import RCBlockToolbarShell from '../Editor/Fullscreen/RCBlockToolbarShell.vue';
 import RCWidthPicker from '../Editor/RCWidthPicker.vue';
 import { withWidth } from '../Editor/blockWidth';
 import { detectSocialPlatform } from '../embedUrl';
 import { getContentType, type BlockWidth, type ContentPart } from '../Types';
 
-import { Field, FieldDescription, FieldLabel } from '@/Components/ui/field';
-import { Input } from '@/Components/ui/input';
-import { Switch } from '@/Components/ui/switch';
-import type { SocialEmbed } from '@/Types/contentParts';
 import FacebookIcon from '~icons/simple-icons/facebook';
 import InstagramIcon from '~icons/simple-icons/instagram';
 

@@ -23,10 +23,10 @@
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 
-import type { RecordAction } from './RecordPage.vue';
-
 import { Button, buttonVariants } from '@/Components/ui/button';
 import { safeHref } from '@/Utils/safeHref';
+
+import type { RecordAction } from './RecordPage.vue';
 
 const props = defineProps<{
   action: RecordAction;

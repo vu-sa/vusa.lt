@@ -71,6 +71,7 @@ import type { NewsItem } from '@/Types/contentParts';
 import { formatDate } from '@/Utils/dateTime';
 import { localizedRoute } from '@/Utils/LocalizedRoutes';
 import { unwrapLinks } from '@/Utils/String';
+
 import IFluentArrowUpRight16Regular from '~icons/fluent/arrow-up-right-16-regular';
 import IFluentImage24Regular from '~icons/fluent/image24-regular';
 

@@ -183,15 +183,15 @@
 import { computed, defineAsyncComponent } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import RichContentTiptapHTML from '../RichContentTiptapHTML.vue';
-import RCFeatureCard from '../RCFeatureCard.vue';
-import RCSection from '../RCSection.vue';
-import type { BandResolution } from '../bandLayout';
-
 import MediaImage from '@/Components/Brand/MediaImage.vue';
 import ImageWithDecorations from '@/Components/RichContent/ImageWithDecorations.vue';
 import type { DecorationConfig } from '@/Types/contentParts';
 import { safeHref } from '@/Utils/safeHref';
+
+import RichContentTiptapHTML from '../RichContentTiptapHTML.vue';
+import RCFeatureCard from '../RCFeatureCard.vue';
+import RCSection from '../RCSection.vue';
+import type { BandResolution } from '../bandLayout';
 
 // Lazy-loaded: only needed while a tiptap cell is actually being edited in the
 // full-screen editor. A static import would bundle it into every public page

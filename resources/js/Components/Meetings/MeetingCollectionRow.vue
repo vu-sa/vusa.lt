@@ -35,12 +35,12 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 
-import MeetingOutcome from './MeetingOutcome.vue';
-
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import type { MeetingSearchResult } from '@/Shared/Search/types';
 import { MeetingType } from '@/Types/MeetingType';
+
+import MeetingOutcome from './MeetingOutcome.vue';
 
 const props = defineProps<{
   meeting: MeetingSearchResult;

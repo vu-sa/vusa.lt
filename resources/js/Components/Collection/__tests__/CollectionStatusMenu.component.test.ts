@@ -2,10 +2,10 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 import { defineComponent, h } from 'vue';
 
-import CollectionStatusMenu from '../CollectionStatusMenu.vue';
-
 import { contentStatuses } from '@/Constants/statusIcons';
 import { commonStubs } from '@/tests/stubs';
+
+import CollectionStatusMenu from '../CollectionStatusMenu.vue';
 
 const passthrough = defineComponent({ setup: (_, { slots }) => () => h('div', slots.default?.()) });
 const RadioGroup = defineComponent({

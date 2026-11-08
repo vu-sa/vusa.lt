@@ -70,16 +70,16 @@ import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { Field, FieldDescription, FieldLabel } from '@/Components/ui/field';
+import { Input } from '@/Components/ui/input';
+import { Switch } from '@/Components/ui/switch';
+import type { TextBox } from '@/Types/contentParts';
+
 import RCBlockToolbarShell from '../Editor/Fullscreen/RCBlockToolbarShell.vue';
 import RCWidthPicker from '../Editor/RCWidthPicker.vue';
 import { withWidth } from '../Editor/blockWidth';
 import TextBoxSubmissionsDialog from '../Types/TextBoxSubmissionsDialog.vue';
 import { getContentType, type BlockWidth, type ContentPart } from '../Types';
-
-import { Field, FieldDescription, FieldLabel } from '@/Components/ui/field';
-import { Input } from '@/Components/ui/input';
-import { Switch } from '@/Components/ui/switch';
-import type { TextBox } from '@/Types/contentParts';
 
 const props = defineProps<{
   content: ContentPart;

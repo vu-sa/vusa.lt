@@ -28,7 +28,8 @@ function providerUrl(rawUrl: string | null | undefined, hosts: string[]): URL | 
   try {
     const url = new URL(rawUrl.trim());
     return url.protocol === 'https:' && !url.username && !url.password && !url.port && hosts.includes(url.hostname)
-      ? url : null;
+      ? url
+      : null;
   }
   catch {
     return null;

@@ -12,7 +12,6 @@
 import { usePage, type InertiaForm } from '@inertiajs/vue3';
 
 import ResourceForm from '@/Components/AdminForms/ResourceForm.vue';
-
 import type { ResourceCreationTemplate } from '@/Components/AdminForms/resourceFormTypes';
 
 defineProps<{

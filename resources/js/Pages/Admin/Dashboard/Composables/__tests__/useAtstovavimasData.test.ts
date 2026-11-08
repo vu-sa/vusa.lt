@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
+import type { InstitutionActivityStatusName } from '@/Types/InstitutionActivity';
+
 import { useAtstovavimasData } from '../useAtstovavimasData';
 import type { AtstovavimasInstitution, AtstovavimasUser } from '../../types';
-
-import type { InstitutionActivityStatusName } from '@/Types/InstitutionActivity';
 
 const institution = (
   id: string,

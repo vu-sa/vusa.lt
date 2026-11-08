@@ -2,10 +2,10 @@ import { mount } from '@vue/test-utils';
 import { describe, it, expect, vi } from 'vitest';
 import { router } from '@inertiajs/vue3';
 
+import { commonStubs } from '@/tests/stubs';
+
 import InstitutionActivityRequestHistory from '../InstitutionActivityRequestHistory.vue';
 import type { ActivityRequestHistory, ActivityRequestHistoryItem } from '../InstitutionActivityRequestHistory.vue';
-
-import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

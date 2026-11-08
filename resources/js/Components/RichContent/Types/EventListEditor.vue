@@ -12,11 +12,11 @@
  * `EventListOptionsFields.vue`, shared with `EventListBlockToolbar.vue`'s full-screen
  * options popover so the two surfaces can't drift apart.
  */
+import type { EventList } from '@/Types/contentParts';
+
 import RCSectionOptions from '../Editor/RCSectionOptions.vue';
 
 import EventListOptionsFields from './EventListOptionsFields.vue';
-
-import type { EventList } from '@/Types/contentParts';
 
 defineModel<EventList['json_content']>({ required: true });
 const options = defineModel<EventList['options']>('options', { required: true });

@@ -340,12 +340,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { router, Link, usePage } from '@inertiajs/vue3';
 import { CalendarCheck, CalendarX, ExternalLink, Merge, Trash2 } from '@lucide/vue';
 
-import { timelineDutyName, timelineSourceDutyName } from './dutyNames';
-import DutiableExtrasBadge from './DutiableExtrasBadge.vue';
-import TimelineDateField from './TimelineDateField.vue';
-import { resolveCadenceFor } from './composables/useDutiableDiagnostics';
-import type { ParsedCadence, ParsedRow, StagedDates } from './types';
-
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 import { useApiMutation } from '@/Composables/useApi';
@@ -367,6 +361,12 @@ import { Button } from '@/Components/ui/button';
 import { Label } from '@/Components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { Switch } from '@/Components/ui/switch';
+
+import type { ParsedCadence, ParsedRow, StagedDates } from './types';
+import { resolveCadenceFor } from './composables/useDutiableDiagnostics';
+import TimelineDateField from './TimelineDateField.vue';
+import DutiableExtrasBadge from './DutiableExtrasBadge.vue';
+import { timelineDutyName, timelineSourceDutyName } from './dutyNames';
 
 const props = defineProps<{
   row: ParsedRow | null;

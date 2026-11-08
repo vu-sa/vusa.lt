@@ -11,8 +11,6 @@ import type { Component } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import type { AdminCollection } from '../Types/AdminSearchTypes';
-
 import { newsStatus } from '@/Components/News/newsStatus';
 import { getTranslatedValue, getSearchTranslation, getSearchTranslations } from '@/Composables/useTranslatedTitle';
 import {
@@ -53,6 +51,8 @@ import type {
   UserSearchResult,
 } from '@/Shared/Search/types';
 import { formatDateWith } from '@/Utils/dateTime';
+
+import type { AdminCollection } from '../Types/AdminSearchTypes';
 
 export function getUserDuties(user: UserSearchResult, kind: 'current' | 'previous', locale: string) {
   return (user[`${kind}_duty_names`] ?? []).map((storedName, index) => ({

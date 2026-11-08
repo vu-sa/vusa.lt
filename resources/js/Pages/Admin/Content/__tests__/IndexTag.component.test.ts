@@ -4,9 +4,9 @@ import { ref } from 'vue';
 import { toast } from 'vue-sonner';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import IndexTag from '../IndexTag.vue';
-
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import IndexTag from '../IndexTag.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 vi.mock('@/Composables/useAdminNavigation', () => ({ useAdminNavigation: () => ({ hasCollectionAction: () => false }) }));

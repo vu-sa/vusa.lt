@@ -35,7 +35,6 @@ export interface AssignmentTerm {
   dutiable?: AssignmentUser | null;
 }
 
-
 export interface UserWithPivot {
   id: string | number;
   name: string;
@@ -50,4 +49,3 @@ export interface DutyWithUsers {
   current_users?: UserWithPivot[];
   previous_users?: UserWithPivot[];
 }
-

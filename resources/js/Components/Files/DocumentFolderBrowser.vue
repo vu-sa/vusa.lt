@@ -344,12 +344,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { CircleX, ChevronRight, Eye, EyeOff, Folder, FolderTree, List, Search, Trash2, TriangleAlert } from '@lucide/vue';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
-import DocumentFileActions from './DocumentFileActions.vue';
-import { documentFileActions } from './documentFileActions';
-import DocumentFileStatus from './DocumentFileStatus.vue';
-import { linkState } from './linkState';
-import type { DocumentFolderListing, DocumentFolderRow, DocumentProblem, DocumentStatusFilter } from './types';
-
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import { quickFilterLabel } from '@/Components/Collection/quickFilterLabel';
 import CollectionQuickFilters from '@/Components/Collection/CollectionQuickFilters.vue';
@@ -371,6 +365,12 @@ import { DocumentStatus } from '@/Types/enums';
 import { formatDate } from '@/Utils/dateTime';
 import { getFileIcon } from '@/Utils/fileIcons';
 import { safeHref } from '@/Utils/safeHref';
+
+import type { DocumentFolderListing, DocumentFolderRow, DocumentProblem, DocumentStatusFilter } from './types';
+import { linkState } from './linkState';
+import DocumentFileStatus from './DocumentFileStatus.vue';
+import { documentFileActions } from './documentFileActions';
+import DocumentFileActions from './DocumentFileActions.vue';
 
 const fileHref = (file: DocumentFolderRow) => file.can.update && !file.removed_from_sharepoint_at
   ? route('documents.edit', file.id)

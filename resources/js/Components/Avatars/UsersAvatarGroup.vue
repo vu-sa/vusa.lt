@@ -97,13 +97,13 @@ import { Link, usePage } from '@inertiajs/vue3';
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core';
 import { ChevronDown } from '@lucide/vue';
 
-import UserPopover from './UserPopover.vue';
-import type { AvatarUser } from './UserAvatar.vue';
-
 import { useIsAdminContext } from '@/Composables/useIsAdminContext';
 import { Avatar, AvatarFallback, avatarSizeClasses, mapPixelToSize, avatarTextSizes, type AvatarSize } from '@/Components/ui/avatar';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/hover-card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
+
+import type { AvatarUser } from './UserAvatar.vue';
+import UserPopover from './UserPopover.vue';
 
 const props = withDefaults(defineProps<{
   users: AvatarUser[];

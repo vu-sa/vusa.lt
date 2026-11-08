@@ -177,15 +177,15 @@ import { computed, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowLeft, Maximize2, X } from '@lucide/vue';
 
-import BlockPreviewRenderer from './Editor/BlockPreviewRenderer.vue';
-import { getAllContentTypes, getContentType, type BlockCategory, type ContentType } from './Types';
-import { getContentSample, getContentSampleVariants } from './Types/samples';
-
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
 import { useIsMobile } from '@/Composables/useIsMobile';
+
+import { getContentSample, getContentSampleVariants } from './Types/samples';
+import { getAllContentTypes, getContentType, type BlockCategory, type ContentType } from './Types';
+import BlockPreviewRenderer from './Editor/BlockPreviewRenderer.vue';
 
 // Wide enough that section-chrome blocks (hero, card-stack, …) render at something
 // close to their real proportions before being scaled down to fit the pane.

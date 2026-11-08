@@ -3,11 +3,11 @@ import { flushPromises, mount } from '@vue/test-utils';
 import { router as coreRouter } from '@inertiajs/core';
 import { router, useForm, usePage, type InertiaPrecognitiveForm } from '@inertiajs/vue3';
 
-import RegistrationForm from '../RegistrationForm.vue';
-import type { RegistrationFieldDefinition, RegistrationValue } from '../types';
-
 import { commonStubs } from '@/tests/stubs';
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import RegistrationForm from '../RegistrationForm.vue';
+import type { RegistrationFieldDefinition, RegistrationValue } from '../types';
 
 const real = await vi.importActual<{ useForm: typeof useForm }>('@inertiajs/vue3');
 type FormState = InertiaPrecognitiveForm<{ responses: Record<string, { value: RegistrationValue }> }>;

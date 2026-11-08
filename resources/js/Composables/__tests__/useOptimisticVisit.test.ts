@@ -1,9 +1,9 @@
 import type { HttpResponse } from '@inertiajs/core';
 import { describe, expect, it, vi } from 'vitest';
 
-import { withOptimisticRollback } from '../useOptimisticVisit';
-
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import { withOptimisticRollback } from '../useOptimisticVisit';
 
 describe('withOptimisticRollback', () => {
   it.each(['validation', 'flash', 'http', 'network'] as const)('rolls back on %s failure', (failure) => {

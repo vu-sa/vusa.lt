@@ -50,14 +50,14 @@ test('moving an institution clears non-ended holders access after commit', funct
     DB::transaction(function () use ($institution, $destination, $holder): void {
         $institution->update(['tenant_id' => $destination->id]);
 
-        expect(Cache::has('auth:duties:'.$holder->id))->toBeTrue();
-        expect(Cache::has('create-permissions-'.$holder->id))->toBeTrue();
+        expect(Cache::has('auth:duties:'.$holder->id))->toBeTrue()
+            ->and(Cache::has('create-permissions-'.$holder->id))->toBeTrue();
     });
 
-    expect(Cache::has('auth:duties:'.$holder->id))->toBeFalse();
-    expect(Cache::has('create-permissions-'.$holder->id))->toBeFalse();
-    expect(Cache::has('create-permissions-'.$unrelated->id))->toBeTrue();
-    expect($authorizer->tenants($holder, 'news.update.padalinys')->modelKeys())->toBe([$destination->id]);
+    expect(Cache::has('auth:duties:'.$holder->id))->toBeFalse()
+        ->and(Cache::has('create-permissions-'.$holder->id))->toBeFalse()
+        ->and(Cache::has('create-permissions-'.$unrelated->id))->toBeTrue()
+        ->and($authorizer->tenants($holder, 'news.update.padalinys')->modelKeys())->toBe([$destination->id]);
 })->with(['current holder' => false, 'scheduled holder' => true]);
 
 test('cadence changes clear its secretaries access after commit', function (string $change): void {
@@ -82,9 +82,9 @@ test('cadence changes clear its secretaries access after commit', function (stri
         expect(Cache::has('index-permissions-'.$secretary->id))->toBeTrue();
     });
 
-    expect(Cache::has('auth:duties:'.$secretary->id))->toBeFalse();
-    expect(Cache::has('index-permissions-'.$secretary->id))->toBeFalse();
-    expect(Cache::has('index-permissions-'.$other->id))->toBeTrue();
+    expect(Cache::has('auth:duties:'.$secretary->id))->toBeFalse()
+        ->and(Cache::has('index-permissions-'.$secretary->id))->toBeFalse()
+        ->and(Cache::has('index-permissions-'.$other->id))->toBeTrue();
     if ($change === 'delete') {
         expect(InstitutionSecretary::query()->where('cadence_id', $cadence->id)->exists())->toBeFalse();
     }
@@ -100,11 +100,10 @@ test('rolling back a cadence change keeps the secretaries cached access', functi
     expect(fn () => DB::transaction(function () use ($cadence): void {
         $cadence->delete();
         throw new RuntimeException('Cancel cadence change.');
-    }))->toThrow(RuntimeException::class, 'Cancel cadence change.');
-
-    expect(Cache::has('index-permissions-'.$secretary->id))->toBeTrue();
-    expect(Cadence::query()->find($cadence->id))->not->toBeNull();
-    expect(InstitutionSecretary::query()->where('cadence_id', $cadence->id)->where('user_id', $secretary->id)->exists())->toBeTrue();
+    }))->toThrow(RuntimeException::class, 'Cancel cadence change.')
+        ->and(Cache::has('index-permissions-'.$secretary->id))->toBeTrue()
+        ->and(Cadence::query()->find($cadence->id))->not->toBeNull()
+        ->and(InstitutionSecretary::query()->where('cadence_id', $cadence->id)->where('user_id', $secretary->id)->exists())->toBeTrue();
 });
 
 test('authority cache expires after the last day of an active secretary cadence', function (): void {

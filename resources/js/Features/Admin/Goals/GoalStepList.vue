@@ -54,12 +54,12 @@ import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
 import { ExternalLink, Pencil, Trash2 } from '@lucide/vue';
 import type { Component } from 'vue';
 
-import { translatedText, type GoalStep } from './types';
-
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import { AgendaItemIcon, DocumentIcon, GoalIcon, ProblemIcon } from '@/Components/icons';
 import { formatDate } from '@/Utils/dateTime';
 import { safeHref } from '@/Utils/safeHref';
+
+import { translatedText, type GoalStep } from './types';
 
 const props = defineProps<{
   steps: GoalStep[];

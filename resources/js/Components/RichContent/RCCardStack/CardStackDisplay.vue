@@ -124,16 +124,17 @@
 import { computed, defineAsyncComponent, inject, onScopeDispose, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import type { CardStack } from '@/Types/contentParts';
+import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
+import { useMotionAwareAutoplay } from '@/Composables/useMotionAwareAutoplay';
+import { Button } from '@/Components/ui/button';
+
 import RCSection from '../RCSection.vue';
 import RCIcon from '../RCIcon.vue';
 import { ACTIVE_HOTSPOT_KEY } from '../Editor/Fullscreen/useActiveHotspot';
 import { asBoolean } from '../booleanish';
 import type { BandResolution } from '../bandLayout';
 
-import type { CardStack } from '@/Types/contentParts';
-import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
-import { useMotionAwareAutoplay } from '@/Composables/useMotionAwareAutoplay';
-import { Button } from '@/Components/ui/button';
 import IFluentAdd12Regular from '~icons/fluent/add12-regular';
 import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
 import IFluentChevronLeft24Regular from '~icons/fluent/chevron-left-24-regular';

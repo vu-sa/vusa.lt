@@ -51,16 +51,16 @@
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
-import RCSection from '../RCSection.vue';
-import RCFeatureCard from '../RCFeatureCard.vue';
-import { smartGridCols } from '../gridStacking';
-import type { BandResolution } from '../bandLayout';
-
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import { LocaleEnum } from '@/Types/enums';
 import type { LinkList, LinkListResolved } from '@/Types/contentParts';
 import { formatDateWith } from '@/Utils/dateTime';
 import { safeHref } from '@/Utils/safeHref';
+
+import type { BandResolution } from '../bandLayout';
+import { smartGridCols } from '../gridStacking';
+import RCFeatureCard from '../RCFeatureCard.vue';
+import RCSection from '../RCSection.vue';
 
 const props = defineProps<{
   element: models.ContentPart;

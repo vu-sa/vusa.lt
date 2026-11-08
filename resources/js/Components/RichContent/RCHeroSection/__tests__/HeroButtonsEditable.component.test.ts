@@ -4,10 +4,10 @@ import type { Component } from 'vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
+import { commonStubs } from '@/tests/stubs';
+
 import HeroButtonsEditable from '../HeroButtonsEditable.vue';
 import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from '../../Editor/Fullscreen/useActiveHotspot';
-
-import { commonStubs } from '@/tests/stubs';
 
 const stubs = {
   ...commonStubs,

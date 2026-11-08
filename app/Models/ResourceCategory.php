@@ -24,6 +24,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Tenant> $tenant
  * @property-read Collection<int, Tenant> $tenants
  * @property-read mixed $translations
+ * @property-read int|null $tenant_count
+ * @property-read int|null $tenants_count
  *
  * @method static \Database\Factories\ResourceCategoryFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ResourceCategory newModelQuery()

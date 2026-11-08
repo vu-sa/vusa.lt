@@ -2,9 +2,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { useHttp } from '@inertiajs/vue3';
 
-import FileUploadArea from '../FileUploadArea.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import FileUploadArea from '../FileUploadArea.vue';
 
 const wrappers: ReturnType<typeof mount>[] = [];
 

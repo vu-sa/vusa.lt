@@ -63,8 +63,6 @@ import { computed, h, defineAsyncComponent, onMounted, ref, watch, nextTick } fr
 import { useDark, useElementSize } from '@vueuse/core';
 import { usePage, router } from '@inertiajs/vue3';
 
-import SiteFooter from '../FullWidth/SiteFooter.vue';
-
 import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
 import StagingWatermark from '@/Components/StagingWatermark.vue';
 import StartFmPlayer from '@/Components/StartFmPlayer.vue';
@@ -78,6 +76,8 @@ import { usePublicStagingToast } from '@/Composables/usePublicStagingToast';
 import { useSecondMenu } from '@/Composables/useSecondMenu';
 import MainNavigation from '@/Components/Public/Layouts/MainNavigation.vue';
 import { Skeleton } from '@/Components/ui/skeleton';
+
+import SiteFooter from '../FullWidth/SiteFooter.vue';
 import 'vue-sonner/style.css';
 
 // Non-critical components - load asynchronously

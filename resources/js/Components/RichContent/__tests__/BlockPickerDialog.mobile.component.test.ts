@@ -1,9 +1,9 @@
 import { flushPromises, mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 
-import BlockPickerDialog from '../BlockPickerDialog.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import BlockPickerDialog from '../BlockPickerDialog.vue';
 
 vi.mock('@/Composables/useIsMobile', () => ({ useIsMobile: () => ({ value: true }) }));
 

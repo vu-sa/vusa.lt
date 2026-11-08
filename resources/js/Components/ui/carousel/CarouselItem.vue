@@ -14,10 +14,10 @@
 </template>
 
 <script setup lang="ts">
+import { cn } from '@/Utils/Shadcn/utils';
+
 import type { WithClassAsProps } from './interface';
 import { useCarousel } from './useCarousel';
-
-import { cn } from '@/Utils/Shadcn/utils';
 
 const props = defineProps<WithClassAsProps>();
 

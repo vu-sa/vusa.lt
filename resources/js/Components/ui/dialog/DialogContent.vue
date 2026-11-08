@@ -36,9 +36,9 @@ import {
 } from 'reka-ui';
 import { computed, type HTMLAttributes } from 'vue';
 
-import DialogOverlay from './DialogOverlay.vue';
-
 import { cn } from '@/Utils/Shadcn/utils';
+
+import DialogOverlay from './DialogOverlay.vue';
 
 // The root is a portal, so attributes like data-slot have to be placed on the content by hand.
 defineOptions({
