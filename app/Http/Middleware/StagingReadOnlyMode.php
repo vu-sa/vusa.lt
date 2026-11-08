@@ -29,7 +29,6 @@ class StagingReadOnlyMode
         'files.compress',
         'files.rename',
         'files.move',
-        'files.uploadImage',
         'api.v1.admin.files.store',
     ];
 

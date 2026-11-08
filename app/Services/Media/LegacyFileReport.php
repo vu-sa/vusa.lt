@@ -17,7 +17,7 @@ use Symfony\Component\Finder\SplFileInfo;
  */
 class LegacyFileReport
 {
-    /** The folders `files.uploadImage` wrote form images into. */
+    /** The folders the retired form-image upload route wrote images into. */
     public const array SHARED_FOLDERS = ['banners', 'calendar', 'contacts', 'institutions', 'news', 'pages', 'resources', 'uploads'];
 
     /** A reference the scanner cannot see (bare file names) may hide in these until Release 2 drops them. */
