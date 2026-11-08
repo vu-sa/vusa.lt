@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "total": 2651,
+  "total": 2650,
   "fingerprints": {
     "docs/pdf/build-release.ts | TS2322 | Type 'string | undefined' is not assignable to type 'string'.": 1,
     "docs/pdf/build-release.ts | TS2345 | Argument of type 'string | undefined' is not assignable to parameter of type 'string'.": 1,
@@ -453,7 +453,6 @@
     "resources/js/Components/Home/__tests__/AttentionQueue.component.test.ts | TS2532 | Object is possibly 'undefined'.": 6,
     "resources/js/Components/Home/__tests__/HomeActions.component.test.ts | TS2352 | Conversion of type 'string' to type 'Component' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.": 1,
     "resources/js/Components/Home/__tests__/HomeActions.component.test.ts | TS2532 | Object is possibly 'undefined'.": 7,
-    "resources/js/Components/Home/__tests__/SiteContentLists.component.test.ts | TS2352 | Conversion of type '{ id: number; title: string; date: string; public_url: string; }[]' to type 'Calendar[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.": 1,
     "resources/js/Components/Institutions/AddCheckInDialog.vue | TS2345 | Argument of type '{ only?: string[] | undefined; data?: Record<string, unknown> | undefined; }' is not assignable to parameter of type 'ReloadOptions<RequestPayload>'.": 1,
     "resources/js/Components/Institutions/InstitutionPreview.vue | TS2322 | Type '{ id: string; name: string; profile_photo_path: string | null; }[]' is not assignable to type 'User[]'.": 1,
     "resources/js/Components/Institutions/InstitutionPreview.vue | TS2367 | This comparison appears to be unintentional because the types 'boolean | undefined' and 'number' have no overlap.": 1,
