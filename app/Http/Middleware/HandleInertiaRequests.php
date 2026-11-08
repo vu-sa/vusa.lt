@@ -16,6 +16,7 @@ use App\Services\SystemDutyTypes;
 use App\Services\Typesense\TypesenseManager;
 use App\Settings\SiteSettings;
 use App\Support\AuthorityCacheExpiry;
+use App\Support\ContentKeyedOnceProp;
 use Closure;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
@@ -102,12 +103,12 @@ class HandleInertiaRequests extends Middleware
     {
         $onAdmin = $request->is('mano', 'mano/*');
         $catalogs = [
-            'tenants' => $this->getTenantsForInertia()->toArray(),
-            'tags' => $onAdmin ? $this->getTagsForInertia()->toArray() : [],
-            'eventTypes' => $onAdmin ? $this->getEventTypesForInertia()->toArray() : [],
-            'institutionTypes' => $this->getInstitutionTypesForInertia()->toArray(),
-            'curatorDutyTypeIds' => $onAdmin ? app(SystemDutyTypes::class)->curatorIds() : [],
-            'organization' => [
+            'tenants' => fn () => $this->getTenantsForInertia()->toArray(),
+            'tags' => fn () => $onAdmin ? $this->getTagsForInertia()->toArray() : [],
+            'eventTypes' => fn () => $onAdmin ? $this->getEventTypesForInertia()->toArray() : [],
+            'institutionTypes' => fn () => $this->getInstitutionTypesForInertia()->toArray(),
+            'curatorDutyTypeIds' => fn () => $onAdmin ? app(SystemDutyTypes::class)->curatorIds() : [],
+            'organization' => fn () => [
                 'contacts' => config('vusa.contacts'),
                 'social' => config('vusa.social'),
                 'legal' => config('vusa.legal'),
@@ -116,9 +117,8 @@ class HandleInertiaRequests extends Middleware
         ];
         $props = ['map' => fn () => ['cartoApiKey' => config('services.carto.api_key')]];
 
-        foreach ($catalogs as $name => $value) {
-            $key = $name.':'.app()->getLocale().':'.hash('xxh128', json_encode($value, JSON_THROW_ON_ERROR));
-            $props[$name] = Inertia::once(fn () => $value)->as($key);
+        foreach ($catalogs as $name => $callback) {
+            $props[$name] = new ContentKeyedOnceProp($name, $callback);
         }
 
         return $props;
