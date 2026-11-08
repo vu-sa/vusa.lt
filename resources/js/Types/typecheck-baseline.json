@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "total": 2625,
+  "total": 2623,
   "fingerprints": {
     "docs/pdf/build-release.ts | TS2322 | Type 'string | undefined' is not assignable to type 'string'.": 1,
     "docs/pdf/build-release.ts | TS2345 | Argument of type 'string | undefined' is not assignable to parameter of type 'string'.": 1,
@@ -435,6 +435,8 @@
     "resources/js/Components/DutyUserWizard/Step4Review.vue | TS2322 | Type 'readonly Readonly<unknown>[] | null | undefined' is not assignable to type 'string'.": 1,
     "resources/js/Components/DutyUserWizard/__tests__/DutyReferenceCounts.component.test.ts | TS2532 | Object is possibly 'undefined'.": 2,
     "resources/js/Components/DutyUserWizard/__tests__/Step3UserAssignment.component.test.ts | TS2322 | Type 'null' is not assignable to type 'number'.": 1,
+    "resources/js/Components/FileUpload/__tests__/ImageUploadMedia.component.test.ts | TS2339 | Property 'exists' does not exist on type 'Omit<DOMWrapper<Element>, \"exists\">'.": 1,
+    "resources/js/Components/FileUpload/__tests__/ImageUploadMedia.component.test.ts | TS2550 | Property 'withResolvers' does not exist on type 'PromiseConstructor'. Do you need to change your target library? Try changing the 'lib' compiler option to 'es2024' or later.": 6,
     "resources/js/Components/Files/DocumentFolderBrowser.vue | TS2322 | Type 'number' is not assignable to type 'string'.": 3,
     "resources/js/Components/Files/__tests__/DocumentFileActions.component.test.ts | TS7006 | Parameter 'action' implicitly has an 'any' type.": 6,
     "resources/js/Components/Files/__tests__/DocumentFolderBrowser.component.test.ts | TS18048 | 'dialog' is possibly 'undefined'.": 2,
@@ -837,9 +839,6 @@
     "resources/js/Components/ui/upload/ImageCropper.vue | TS2345 | Argument of type 'number | undefined' is not assignable to parameter of type 'number'.": 1,
     "resources/js/Components/ui/upload/ImageCropper.vue | TS2532 | Object is possibly 'undefined'.": 2,
     "resources/js/Components/ui/upload/MediaUpload.vue | TS2345 | Argument of type '{ id: string; name: string; size: number; type: string; url?: string | undefined; file?: { readonly lastModified: number; readonly name: string; readonly webkitRelativePath: string; readonly size: number; ... 5 more ...; text: () => Promise<...>; } | undefined; status: \"error\" | ... 2 more ... | \"uploading\"; progres...' is not assignable to parameter of type 'UploadFile'.": 1,
-    "resources/js/Components/ui/upload/MultiImageUpload.vue | TS2532 | Object is possibly 'undefined'.": 2,
-    "resources/js/Components/ui/upload/__tests__/ImageUploadMedia.component.test.ts | TS2339 | Property 'exists' does not exist on type 'Omit<DOMWrapper<Element>, \"exists\">'.": 1,
-    "resources/js/Components/ui/upload/__tests__/ImageUploadMedia.component.test.ts | TS2550 | Property 'withResolvers' does not exist on type 'PromiseConstructor'. Do you need to change your target library? Try changing the 'lib' compiler option to 'es2024' or later.": 6,
     "resources/js/Composables/__tests__/useAdminSearch.test.ts | TS2488 | Type 'any[] | undefined' must have a '[Symbol.iterator]()' method that returns an iterator.": 1,
     "resources/js/Composables/__tests__/useAdminSearch.test.ts | TS2532 | Object is possibly 'undefined'.": 9,
     "resources/js/Composables/__tests__/useCalendarSearch.test.ts | TS2532 | Object is possibly 'undefined'.": 1,

@@ -2,7 +2,7 @@ import { flushPromises, mount } from '@vue/test-utils';
 import { defineComponent } from 'vue';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 
-import ImageUpload from '@/Components/ui/upload/ImageUpload.vue';
+import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
 import type { ImageData } from '@/Types/media';
 import { commonStubs } from '@/tests/stubs';
 import { route } from '@/mocks/route';
@@ -70,7 +70,8 @@ describe('upload feedback', () => {
     wrapper.unmount();
   });
 
-  it.each(['media', 'immediate'] as const)('shows the preview and busy status immediately in %s mode', async (mode) => {
+  it('shows the preview and busy status while a media upload is staged', async () => {
+    const mode = 'media';
     const pending = Promise.withResolvers<Response>();
     const fetchMock = vi.fn(() => pending.promise);
     vi.stubGlobal('fetch', fetchMock);
@@ -86,12 +87,12 @@ describe('upload feedback', () => {
     await chooseFile(wrapper);
     expect(fetchMock).toHaveBeenCalledTimes(1);
 
-    pending.resolve(new Response(JSON.stringify({ success: true, data: staged, url: staged.url }), { status: 201 }));
+    pending.resolve(new Response(JSON.stringify({ success: true, data: staged }), { status: 201 }));
     await flushPromises();
 
     expect(wrapper.find('[role="status"]').exists()).toBe(false);
     expect(wrapper.get('[data-slot="image-upload-success"]').exists()).toBe(true);
-    expect(wrapper.emitted(mode === 'media' ? 'update:image' : 'update:url')?.at(-1)?.[0]).toEqual(mode === 'media' ? staged : staged.url);
+    expect(wrapper.emitted('update:image')?.at(-1)?.[0]).toEqual(staged);
     wrapper.unmount();
   });
 

@@ -58,7 +58,6 @@
         v-model:files="mediaFiles"
         :max="10"
         mode="deferred"
-        folder="resources"
         accept="image/jpg,image/jpeg,image/png,image/webp"
         :existing-urls="existingMediaItems"
         @remove:existing="handleRemoveExistingMedia"
@@ -213,7 +212,7 @@ import { Label } from '@/Components/ui/label';
 import { NativeSelect } from '@/Components/ui/native-select';
 import { NumberField } from '@/Components/ui/number-field';
 import { Textarea } from '@/Components/ui/textarea';
-import { ImageUpload } from '@/Components/ui/upload';
+import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { RESOURCE_PLACEHOLDERS } from '@/Constants/I18n/Placeholders';
 import type { ResourceCreationTemplate, ResourceMediaEntry, ResourceEditType } from './resourceFormTypes';

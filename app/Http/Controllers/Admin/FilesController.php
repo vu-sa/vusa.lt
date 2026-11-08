@@ -27,7 +27,7 @@ use Intervention\Image\Laravel\Facades\Image;
 
 class FilesController extends AdminController
 {
-    // Transitional(legacy-images): remove with ImageUpload's immediate mode; forms upload to media now.
+    // Transitional(legacy-images): no frontend caller since ImageUpload dropped its immediate mode; remove with its tests.
     /** @var list<string> Shared form-image folders use the class-level create ability. */
     private const array SHARED_IMAGE_FOLDERS = [
         'banners',

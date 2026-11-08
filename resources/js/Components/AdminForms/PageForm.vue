@@ -338,7 +338,7 @@ import { usePermalinkPreview } from '@/Composables/usePermalinkPreview';
 import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { Textarea } from '@/Components/ui/textarea';
-import { ImageUpload } from '@/Components/ui/upload';
+import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
 
 const props = withDefaults(defineProps<{
   // `descendant_ids` is server-computed (Page::descendantIds()), not a real relation —

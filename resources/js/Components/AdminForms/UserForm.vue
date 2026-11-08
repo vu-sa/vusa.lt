@@ -215,7 +215,7 @@ import { Checkbox } from '@/Components/ui/checkbox';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { MultiSelect } from '@/Components/ui/multi-select';
-import { ImageUpload } from '@/Components/ui/upload';
+import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
 import type { ImageData } from '@/Types/media';
 import { useDuplicateUserCheck } from '@/Composables/useDuplicateUserCheck';
 import { ModelEnum } from '@/Types/enums';

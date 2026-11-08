@@ -388,7 +388,7 @@ import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { DatePicker } from '@/Components/ui/date-picker';
 import { Input } from '@/Components/ui/input';
-import { ImageUpload } from '@/Components/ui/upload';
+import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
 import { imageFromCachedUrl } from '@/Types/media';
 import { Label } from '@/Components/ui/label';
 import { NativeSelect, type NativeSelectOption } from '@/Components/ui/native-select';
