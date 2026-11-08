@@ -1,8 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { mount } from '@vue/test-utils';
-import { usePage } from '@inertiajs/vue3';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { enableAutoUnmount, mount } from '@vue/test-utils';
+import { router, usePage, WhenVisible } from '@inertiajs/vue3';
 import { defineComponent, h } from 'vue';
 
+import { router as mockRouter } from '@/mocks/inertia.mock';
 import ShowInstitution from '@/Pages/Admin/People/ShowInstitution.vue';
 import { InstitutionActivityStatus, InstitutionScope } from '@/Types/enums';
 import { createMockPage } from '@/tests/helpers/createMockPage';
@@ -10,13 +11,15 @@ import { createActionWindowProvider, type ActionWindowContext } from '@/Composab
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
+enableAutoUnmount(afterEach);
+
 vi.stubGlobal('route', (name?: string) => (name === undefined ? { current: () => false } : `/mocked/${name}`));
 
 /** RecordPage is stubbed so the test can read what the page hands it and fire its emits. */
 const stubs = {
   RecordPage: {
     name: 'RecordPage',
-    props: ['title', 'status', 'facts', 'sections', 'primaryAction', 'overflowActions', 'actionsBesideTitle'],
+    props: ['title', 'status', 'facts', 'sections', 'primaryAction', 'overflowActions', 'actionsBesideTitle', 'section'],
     emits: ['action', 'update:section'],
     template: `
       <div>
@@ -28,9 +31,9 @@ const stubs = {
         <button v-if="primaryAction" data-testid="primary" @click="$emit('action', primaryAction.key)">{{ primaryAction.label }}</button>
         <button v-for="a in overflowActions" :key="a.key" :data-testid="'overflow-' + a.key" @click="$emit('action', a.key)">{{ a.label }}</button>
         <slot name="subtitle" />
-        <slot name="overview" />
-        <slot name="duties" />
-        <slot name="terms" />
+        <template v-for="section in sections" :key="section.value">
+          <slot :name="section.value" />
+        </template>
         <slot name="activity" />
       </div>
     `,
@@ -41,7 +44,9 @@ const stubs = {
     template: '<button data-testid="goto-duties" @click="$emit(\'navigate-tab\', \'duties\')" />',
   },
   InstitutionDutiesSection: {
+    name: 'InstitutionDutiesSection',
     props: ['duties', 'institutionId', 'canManage'],
+    emits: ['assign', 'edit-term'],
     template: '<div data-testid="duties-section" :data-can-manage="canManage" />',
   },
   InstitutionMeetingsList: true,
@@ -50,7 +55,7 @@ const stubs = {
   InstitutionScopeBadge: true,
   CadenceSection: { template: '<div data-testid="cadences" />' },
   SecretariesSection: { template: '<div data-testid="secretaries" />' },
-  AssignDutyUserSheet: { props: ['open', 'duty', 'dutiable'], template: '<div data-testid="assign-sheet" :data-open="open" />' },
+  AssignDutyUserSheet: { name: 'AssignDutyUserSheet', props: ['open', 'duty', 'dutiable'], template: '<div data-testid="assign-sheet" :data-open="open" />' },
   AddCheckInDialog: true,
   ConfirmDialog: true,
   RecordActivity: { template: '<div data-testid="record-activity" />' },
@@ -58,7 +63,9 @@ const stubs = {
   FileableFilesPanel: true,
   RelatedInstitutions: true,
   EmptyState: true,
-  Deferred: { template: '<div><slot /></div>' },
+  InstitutionActivityRequestHistory: true,
+  RelationshipLinkList: true,
+  ProblemSummaryList: true,
 };
 
 type PageProps = InstanceType<typeof ShowInstitution>['$props'];
@@ -76,7 +83,6 @@ const baseInstitution: Institution = {
   id: 'inst1',
   name: 'Studentų atstovybė',
   is_active: true,
-  short_name: 'SA',
   description: null,
   types: [],
   managers: [],
@@ -84,13 +90,10 @@ const baseInstitution: Institution = {
   sharepointPath: null,
   sharepointFolderUrl: null,
   has_public_meetings: false,
-  meeting_periodicity_days: 30,
   governance_scope: InstitutionScope.University,
-  comments_count: 0,
   duties_count: 0,
   meetings_count: 0,
   problems_count: 0,
-  tasks_count: 0,
   related_institutions_count: 0,
   tenant: { id: 1, shortname: 'MIF' },
 };
@@ -111,16 +114,8 @@ const baseActivityStatus: ActivityStatus = {
 };
 
 const manager = (id: string, name: string): Institution['managers'][number] => ({
-  id, name, email: null, phone: null, facebook_url: null, pronouns: null, show_pronouns: false,
-  is_active: 1, created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z',
-  profile_photo_path: null, profile_photo_focal_point: null, deleted_at: null,
-  pivot: {
-    id: `term-${id}`, duty_id: 'duty1', dutiable_id: id, dutiable_type: 'user',
-    via_dutiable_id: null, tenant_id: null, start_date: '2026-01-01', end_date: null,
-    additional_photo: null, additional_photo_focal_point: null, additional_email: null,
-    use_original_duty_name: false, description: null, study_program_id: null, study_program_note: null,
-    created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z',
-  },
+  id, name, profile_photo_path: null, profile_photo_focal_point: null,
+  pivot: { id: `term-${id}`, start_date: '2026-01-01', end_date: null },
 });
 
 const institutionType = (title: string): Institution['types'][number] => ({
@@ -139,11 +134,9 @@ const createWrapper = (props: WrapperProps = {}) => {
       overview: {
         activity_status: activity_status === null ? null : { ...baseActivityStatus, ...activity_status },
         current_users: [],
-        duties: [],
         recentMeetings: [],
         meetings_count: 0,
         meetings_hidden: false,
-        recentComments: [],
         ...overviewFields,
       },
       can: {
@@ -152,6 +145,7 @@ const createWrapper = (props: WrapperProps = {}) => {
         ...can,
       },
       canViewActivityRequests: false,
+      incompleteTasksCount: 0,
       relationKinds: [],
       duties: [],
       meetings: [],
@@ -170,6 +164,7 @@ const tabs = (wrapper: ReturnType<typeof mount>) => wrapper.find('[data-testid="
 describe('ShowInstitution.vue', () => {
   beforeEach(() => {
     localStorage.clear();
+    vi.mocked(router.reload).mockClear();
     vi.mocked(usePage).mockReturnValue({
       ...createMockPage({ auth: { can: { 'meetings.create.padalinys': true } } }),
       url: '/mano/institutions/inst1',
@@ -256,7 +251,6 @@ describe('ShowInstitution.vue', () => {
       types: [institutionType('Taryba')],
       governance_scope: InstitutionScope.Vusa,
       has_public_meetings: false,
-      meeting_periodicity_days: 30,
     });
     const facts = wrapper.findComponent({ name: 'RecordPage' }).props('facts') as Array<{ key: string; value?: string }>;
 
@@ -331,7 +325,7 @@ describe('ShowInstitution.vue', () => {
     expect(createWrapper({ can: { update: false, delete: false } }).find('[data-testid="duties-section"]').attributes('data-can-manage')).toBe('false');
   });
 
-  it('renders the terms and secretaries once the deferred management group arrives', () => {
+  it('renders the terms and secretaries once the optional management data arrives', () => {
     const before = createWrapper();
     const after = createWrapper({
       management: {
@@ -346,5 +340,116 @@ describe('ShowInstitution.vue', () => {
     expect(before.find('[data-testid="cadences"]').exists()).toBe(false);
     expect(after.find('[data-testid="cadences"]').exists()).toBe(true);
     expect(after.find('[data-testid="secretaries"]').exists()).toBe(true);
+  });
+
+  it.each<[string, string | string[]]>([
+    ['duties', 'duties'],
+    ['meetings', 'meetings'],
+    ['terms', 'management'],
+    ['related', ['relatedInstitutions', 'institutionLinks']],
+    ['problems', 'problems'],
+    ['files', ['files', 'typeFiles']],
+    ['tasks', 'tasks'],
+    ['activityRequests', 'activityRequests'],
+  ])('loads the %s panel through visibility with a skeleton and no repeated polling', async (tab, data) => {
+    const wrapper = createWrapper({ related_institutions_count: 1, problems_count: 1 });
+    await wrapper.setProps({ canViewActivityRequests: true });
+    const panel = wrapper.findAllComponents(WhenVisible)
+      .find(component => JSON.stringify(component.props('data')) === JSON.stringify(data));
+
+    expect(panel).toBeDefined();
+    expect(panel!.props()).toMatchObject({ data, buffer: 0, always: false });
+    expect(panel!.vm.$slots.fallback).toBeTypeOf('function');
+
+    wrapper.findComponent({ name: 'RecordPage' }).vm.$emit('update:section', tab);
+    await wrapper.vm.$nextTick();
+
+    expect(router.reload).not.toHaveBeenCalled();
+  });
+
+  it('does not mount an activity-history visibility loader without permission', () => {
+    const wrapper = createWrapper();
+
+    expect(wrapper.findAllComponents(WhenVisible).some(panel => panel.props('data') === 'activityRequests')).toBe(false);
+  });
+
+  it.each(['post', 'patch', 'delete'])('keeps loaded panels in the partial response after a %s', (method) => {
+    const wrapper = createWrapper();
+    const visit = { method, only: [] as string[], except: ['institutionLinks'] };
+
+    mockRouter.__triggerBefore({ detail: { visit } });
+
+    expect(visit.except).toEqual(expect.arrayContaining([
+      'institutionLinks', 'problems', 'files', 'typeFiles', 'activityRequests', 'assignmentTerms',
+    ]));
+    expect(visit.except).not.toContain('duties');
+    expect(visit.except).not.toContain('meetings');
+    expect(visit.except).not.toContain('tasks');
+    expect(visit.except).not.toContain('management');
+
+    wrapper.unmount();
+    const afterUnmount = { method: 'patch', only: [] as string[], except: [] as string[] };
+    mockRouter.__triggerBefore({ detail: { visit: afterUnmount } });
+    expect(afterUnmount.except).toEqual([]);
+  });
+
+  it('leaves navigation and explicit partial mutations unchanged', () => {
+    createWrapper();
+    const navigation = { method: 'get', only: [] as string[], except: [] as string[] };
+    const partialMutation = { method: 'post', only: ['subscription'], except: [] as string[] };
+
+    mockRouter.__triggerBefore({ detail: { visit: navigation } });
+    mockRouter.__triggerBefore({ detail: { visit: partialMutation } });
+
+    expect(navigation).toEqual({ method: 'get', only: [], except: [] });
+    expect(partialMutation).toEqual({ method: 'post', only: ['subscription'], except: [] });
+  });
+
+  it('waits for the complete term before mounting its editor', async () => {
+    const wrapper = createWrapper();
+    const user = manager('member1', 'Rūta');
+    const duty = { id: 'duty1', name: 'Narys', current_users: [user] };
+    wrapper.findComponent({ name: 'InstitutionDutiesSection' }).vm.$emit('edit-term', duty, user);
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find('[data-testid="assign-sheet"]').exists()).toBe(false);
+    expect(router.reload).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ only: ['assignmentTerms'] }));
+
+    const term: NonNullable<PageProps['assignmentTerms']>[number] = {
+      id: user.pivot.id, duty_id: duty.id, dutiable_id: user.id, dutiable_type: 'user',
+      via_dutiable_id: 'source-term', tenant_id: 1, start_date: '2026-01-01', end_date: null,
+      additional_photo: null, additional_photo_focal_point: null, additional_email: 'term@example.test',
+      use_original_duty_name: true, description: { lt: 'Aprašymas', en: 'Description' },
+      study_program_id: null, study_program_note: null,
+      created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z',
+    };
+    await wrapper.setProps({ assignmentTerms: [term] });
+    vi.mocked(router.reload).mock.calls[0]?.[0]?.onSuccess?.(createMockPage());
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.findComponent({ name: 'AssignDutyUserSheet' }).props('dutiable')).toEqual(term);
+  });
+
+  it('selects a deep-linked tab so its visibility loader can load it', () => {
+    vi.mocked(usePage).mockReturnValue({
+      ...createMockPage(), url: '/mano/institutions/inst1?tab=files',
+    });
+
+    const wrapper = createWrapper();
+
+    expect(wrapper.findComponent({ name: 'RecordPage' }).props('section')).toBe('files');
+    expect(wrapper.findAllComponents(WhenVisible).some(panel => JSON.stringify(panel.props('data')) === JSON.stringify(['files', 'typeFiles']))).toBe(true);
+    expect(router.reload).not.toHaveBeenCalled();
+  });
+
+  it('ignores a deep link to a tab the reader cannot access', () => {
+    vi.mocked(usePage).mockReturnValue({
+      ...createMockPage(), url: '/mano/institutions/inst1?tab=files',
+    });
+
+    const wrapper = createWrapper({ readOnly: true });
+
+    expect(wrapper.findComponent({ name: 'RecordPage' }).props('section')).toBe('overview');
+    expect(router.reload).not.toHaveBeenCalled();
   });
 });

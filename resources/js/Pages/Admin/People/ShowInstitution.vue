@@ -32,17 +32,17 @@
       />
     </template>
 
-    <template #activityRequests>
-      <Deferred data="activityRequests">
+    <template v-if="canViewActivityRequests" #activityRequests>
+      <WhenVisible :key="institution.id" :buffer="0" :always="false" data="activityRequests">
         <template #fallback>
           <div class="h-32 animate-pulse border-y border-border bg-secondary" />
         </template>
         <InstitutionActivityRequestHistory v-if="activityRequests" :key="institution.id" :history="activityRequests" />
-      </Deferred>
+      </WhenVisible>
     </template>
 
     <template #duties>
-      <Deferred data="duties">
+      <WhenVisible :key="institution.id" :buffer="0" :always="false" data="duties">
         <template #fallback>
           <div class="space-y-3" data-testid="duties-skeleton">
             <div v-for="n in 3" :key="n" class="h-14 animate-pulse border border-border bg-secondary/60" />
@@ -55,11 +55,11 @@
           @assign="openAssignSheet"
           @edit-term="openTermSheet"
         />
-      </Deferred>
+      </WhenVisible>
     </template>
 
     <template #meetings>
-      <Deferred data="meetings">
+      <WhenVisible :key="institution.id" :buffer="0" :always="false" data="meetings">
         <template #fallback>
           <div class="space-y-3">
             <div v-for="n in 3" :key="n" class="h-12 animate-pulse border border-border bg-secondary/60" />
@@ -81,11 +81,11 @@
           :action-label="can.recordMeeting ? $t('Suplanuoti susitikimą') : undefined"
           @action="openMeetingWindow"
         />
-      </Deferred>
+      </WhenVisible>
     </template>
 
     <template #terms>
-      <Deferred data="management">
+      <WhenVisible :key="institution.id" :buffer="0" :always="false" data="management">
         <template #fallback>
           <div class="space-y-3">
             <div v-for="n in 2" :key="n" class="h-16 animate-pulse border border-border bg-secondary/60" />
@@ -106,11 +106,11 @@
             />
           </OverviewSection>
         </div>
-      </Deferred>
+      </WhenVisible>
     </template>
 
     <template #related>
-      <Deferred :data="['relatedInstitutions', 'institutionLinks']">
+      <WhenVisible :key="institution.id" :buffer="0" :always="false" :data="['relatedInstitutions', 'institutionLinks']">
         <template #fallback>
           <div class="space-y-3">
             <div v-for="n in 3" :key="n" class="h-12 animate-pulse border border-border bg-secondary/60" />
@@ -128,11 +128,11 @@
             :kinds="relationKinds ?? []"
           />
         </div>
-      </Deferred>
+      </WhenVisible>
     </template>
 
     <template #problems>
-      <Deferred data="problems">
+      <WhenVisible :key="institution.id" :buffer="0" :always="false" data="problems">
         <template #fallback>
           <div class="space-y-3">
             <div v-for="n in 2" :key="n" class="h-12 animate-pulse border border-border bg-secondary/60" />
@@ -149,22 +149,29 @@
           </div>
           <ProblemSummaryList :problems="problems ?? []" />
         </div>
-      </Deferred>
+      </WhenVisible>
     </template>
 
     <template #files>
-      <FileableFilesPanel
-        :fileable="{ id: institution.id, type: 'Institution' }"
-        :files
-        :type-files
-        :can-upload="can.update && !!institution.sharepointPath"
-        :folder-url="institution.sharepointFolderUrl"
-        :can-delete="can.update"
-      />
+      <WhenVisible :key="institution.id" :data="['files', 'typeFiles']" :buffer="0" :always="false">
+        <template #fallback>
+          <div class="space-y-3" data-testid="files-skeleton">
+            <div v-for="n in 3" :key="n" class="h-12 animate-pulse border border-border bg-secondary/60" />
+          </div>
+        </template>
+        <FileableFilesPanel
+          :fileable="{ id: institution.id, type: 'Institution' }"
+          :files
+          :type-files
+          :can-upload="can.update && !!institution.sharepointPath"
+          :folder-url="institution.sharepointFolderUrl"
+          :can-delete="can.update"
+        />
+      </WhenVisible>
     </template>
 
     <template #tasks>
-      <Deferred data="tasks">
+      <WhenVisible :key="institution.id" :buffer="0" :always="false" data="tasks">
         <template #fallback>
           <div class="space-y-3">
             <div v-for="n in 2" :key="n" class="h-14 animate-pulse border border-border bg-secondary/60" />
@@ -175,7 +182,7 @@
           :taskable="{ id: institution.id, type: ModelEnum.INSTITUTION }"
           @open-task-detail="openTaskDetail"
         />
-      </Deferred>
+      </WhenVisible>
     </template>
 
     <template v-if="!readOnly" #activity>
@@ -184,6 +191,7 @@
   </RecordPage>
 
   <AssignDutyUserSheet
+    v-if="assignSheetOpen"
     v-model:open="assignSheetOpen"
     :duty="sheetDuty"
     :dutiable="sheetDutiable"
@@ -198,6 +206,7 @@
     :institution-id="institution.id"
     :initial-start-date="checkInRange.start"
     :initial-end-date="checkInRange.end"
+    :reload-props="['institution', 'overview', 'incompleteTasksCount']"
     @close="showCheckInModal = false"
   />
 
@@ -220,8 +229,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, ref, watch } from 'vue';
-import { Deferred, Link, router, usePage } from '@inertiajs/vue3';
+import { computed, defineAsyncComponent, onUnmounted, ref, watch } from 'vue';
+import { WhenVisible, Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
   Calendar as CalendarIcon,
@@ -256,32 +265,20 @@ import { useActionWindow } from '@/Composables/useActionWindow';
 import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import { enterInstitution } from '@/Composables/useRecordTrail';
 import { getSuggestedCheckInRange, type TaskDisplayData } from '@/Composables/useTaskPresentation';
-import { countIncompleteTasks } from '@/Composables/useTaskUrgency';
 import { inactiveInstitutionStatus, institutionActivityStatuses, type StatusPresentation } from '@/Constants/statusIcons';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
-import { AssignDutyUserSheet } from '@/Features/Admin/Occupancy';
 import type { AssignmentDuty, AssignmentTerm, AssignmentUser, DutyWithUsers, UserWithPivot } from '@/Types/DutyAssignment';
-import { FileableFilesPanel } from '@/Components/Files';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
 import { useInstitutionSubscription } from '@/Composables/useInstitutionSubscription';
 import { InstitutionScope, ModelEnum } from '@/Types/enums';
-import type { ActionType, CommentKind, InstitutionActivityAnswer, InstitutionActivityCampaign, InstitutionActivityStatus, InstitutionRelationKind, MeetingType } from '@/Types/enums';
+import type { ActionType, InstitutionActivityAnswer, InstitutionActivityCampaign, InstitutionActivityStatus, InstitutionRelationKind, MeetingType } from '@/Types/enums';
 import { formatDate } from '@/Utils/dateTime';
 
 interface InstitutionUser {
   id: string;
-  email: string | null;
-  phone: string | null;
-  facebook_url: string | null;
   name: string;
-  pronouns: string | null;
-  show_pronouns: boolean;
-  is_active: number;
-  updated_at: string;
-  created_at: string;
   profile_photo_path: string | null;
   profile_photo_focal_point: string | null;
-  deleted_at: string | null;
 }
 
 interface InstitutionMemberTerm {
@@ -297,15 +294,15 @@ interface InstitutionMemberTerm {
   additional_photo_focal_point: string | null;
   additional_email: string | null;
   use_original_duty_name: boolean;
-  description: string | null;
+  description: { lt: string; en: string } | null;
   study_program_id: string | null;
-  study_program_note: string | null;
+  study_program_note: { lt: string; en: string } | null;
   created_at: string;
   updated_at: string;
 }
 
 interface InstitutionMember extends InstitutionUser {
-  pivot: InstitutionMemberTerm;
+  pivot: Pick<InstitutionMemberTerm, 'id' | 'start_date' | 'end_date'>;
 }
 
 interface InstitutionPageDuty {
@@ -341,18 +338,14 @@ interface InstitutionPageData {
   id: string;
   name: string;
   is_active: boolean;
-  short_name: string | null;
   description: string | null;
   tenant: { id: number; shortname: string } | null;
   types: InstitutionPageType[];
   has_public_meetings: boolean;
-  meeting_periodicity_days: number;
   governance_scope: InstitutionScope;
-  comments_count: number;
   duties_count: number;
   meetings_count: number;
   problems_count: number;
-  tasks_count: number;
   related_institutions_count: number;
   managers: InstitutionMember[];
   secretaries: InstitutionSecretary[];
@@ -366,22 +359,12 @@ interface InstitutionPageMeeting {
   start_time: string;
   type: MeetingType | null;
   agenda_items_count: number;
-  agenda_item_titles: string[];
   vote_matches: number;
   vote_mismatches: number;
   incomplete_vote_data: number;
   has_protocol: boolean;
   has_report: boolean;
   can_discard: boolean;
-}
-
-interface InstitutionPageComment {
-  id: string;
-  body: string;
-  kind: CommentKind;
-  created_at: string | null;
-  replies_count: number;
-  user: { id: string; name: string; profile_photo_path: string | null } | null;
 }
 
 interface InstitutionActivityData {
@@ -402,11 +385,9 @@ interface InstitutionActivityData {
 interface InstitutionOverviewData {
   activity_status: InstitutionActivityData | null;
   current_users: InstitutionMember[];
-  duties: ({ id: string; name: string | null; order: number; current_users: InstitutionMember[] })[];
   recentMeetings: InstitutionPageMeeting[];
   meetings_count: number;
   meetings_hidden: boolean;
-  recentComments: InstitutionPageComment[];
 }
 
 interface InstitutionProblem {
@@ -567,6 +548,8 @@ const props = defineProps<{
   meetings?: InstitutionPageMeeting[];
   problems?: InstitutionProblem[];
   tasks?: InstitutionTask[];
+  incompleteTasksCount: number;
+  assignmentTerms?: InstitutionMemberTerm[];
   relatedInstitutions?: InstitutionPageRelatedInstitution[];
   institutionLinks?: InstitutionLinkRow[];
   relationKinds: { value: InstitutionRelationKind; label: string }[];
@@ -579,12 +562,14 @@ const props = defineProps<{
 
 watch(() => props.institution.id, () => enterInstitution(props.institution), { immediate: true });
 
+const AssignDutyUserSheet = defineAsyncComponent(() => import('@/Features/Admin/Occupancy/AssignDutyUserSheet.vue'));
+const FileableFilesPanel = defineAsyncComponent(() => import('@/Components/Files/FileableFilesPanel.vue'));
 const TaskDetailDialog = defineAsyncComponent(() => import('@/Features/Admin/TaskManager/TaskDetailDialog.vue'));
 const RelatedInstitutions = defineAsyncComponent(() => import('@/Components/Carousels/RelatedInstitutions.vue'));
 
 // --- Sections ---------------------------------------------------------------------------------
 
-const currentSection = ref('overview');
+const currentSection = ref(new URL(usePage().url, 'http://localhost').searchParams.get('tab') ?? 'overview');
 
 const problemsTab = computed<RecordPageSection[]>(() => (props.institution.problems_count ?? 0) > 0
   ? [{ value: 'problems', label: $t('Problemos'), count: props.institution.problems_count }]
@@ -616,7 +601,7 @@ const tabs = computed<RecordPageSection[]>(() => {
     ...problemsTab.value,
     { value: 'files', label: $t('Failai') },
     ...(props.canViewActivityRequests ? [{ value: 'activityRequests', label: $t('activity_requests.history_title') }] : []),
-    { value: 'tasks', label: $t('Užduotys'), count: countIncompleteTasks(props.tasks ?? []) },
+    { value: 'tasks', label: $t('Užduotys'), count: props.incompleteTasksCount },
   ];
 });
 
@@ -626,6 +611,25 @@ watch([tabs, currentSection], () => {
     currentSection.value = 'overview';
   }
 }, { immediate: true });
+
+const optionalProps = [
+  'duties', 'meetings', 'tasks', 'problems', 'management', 'relatedInstitutions',
+  'institutionLinks', 'files', 'typeFiles', 'activityRequests', 'assignmentTerms',
+] as const;
+
+const stopPreservingPanels = router.on('before', ({ detail: { visit } }) => {
+  if (visit.method === 'get' || visit.only.length) return;
+
+  visit.except = [...new Set([...visit.except, ...optionalProps.filter(key => props[key] === undefined)])];
+  if (!visit.except.length) {
+    visit.only = Object.keys(usePage().props);
+  }
+});
+onUnmounted(stopPreservingPanels);
+
+watch(() => props.institution.id, () => {
+  currentSection.value = new URL(usePage().url, 'http://localhost').searchParams.get('tab') ?? 'overview';
+});
 
 // --- Title band -------------------------------------------------------------------------------
 
@@ -870,17 +874,27 @@ const sheetUser = ref<AssignmentUser | null>(null);
 const holdsNow = (duty: { current_users?: UserWithPivot[] } | null) => (duty?.current_users ?? []);
 const takenIds = computed(() => holdsNow(sheetDuty.value).map(user => String(user.id)));
 
-const openAssignSheet = (duty: DutyWithUsers) => {
-  sheetDuty.value = duty;
-  sheetDutiable.value = null;
-  sheetUser.value = null;
-  assignSheetOpen.value = true;
+const openAssignment = (duty: DutyWithUsers, user: UserWithPivot | null) => {
+  const open = () => {
+    const term = user ? props.assignmentTerms?.find(term => term.id === user.pivot?.id) : null;
+    if (user && !term) return;
+
+    sheetDuty.value = duty;
+    sheetDutiable.value = term ?? null;
+    sheetUser.value = user;
+    assignSheetOpen.value = true;
+  };
+  const only = [
+    ...(props.management === undefined ? ['management'] : []),
+    ...(user ? ['assignmentTerms'] : []),
+  ];
+  if (only.length) {
+    router.reload({ only, onSuccess: open });
+  } else {
+    open();
+  }
 };
 
-const openTermSheet = (duty: DutyWithUsers, user: UserWithPivot) => {
-  sheetDuty.value = duty;
-  sheetDutiable.value = user.pivot ?? null;
-  sheetUser.value = user;
-  assignSheetOpen.value = true;
-};
+const openAssignSheet = (duty: DutyWithUsers) => openAssignment(duty, null);
+const openTermSheet = (duty: DutyWithUsers, user: UserWithPivot) => openAssignment(duty, user);
 </script>

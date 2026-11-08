@@ -358,7 +358,7 @@ test('private relationships and copied step content do not disclose information 
 test('shared meeting statistics omit private votes for public-only readers', function (): void {
     asUser($this->outsider);
     $resource = new InstitutionMeetingResource($this->meeting->load('agendaItems.votes'))->resolve(request());
-    expect($resource['vote_matches'])->toBe(0)->and($resource['agenda_item_titles'])->toBe(['Darbo klausimas']);
+    expect($resource['vote_matches'])->toBe(0)->and($resource)->not->toHaveKey('agenda_item_titles');
 
     asUser($this->coordinator);
     request()->setUserResolver(fn () => $this->coordinator);

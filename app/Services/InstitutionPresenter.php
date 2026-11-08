@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Actions\ActivityRequests\GetInstitutionActivityRequestHistory;
 use App\Actions\GetInstitutionSecretaries;
 use App\Actions\GetTypeFiles;
-use App\Enums\CommentKind;
 use App\Enums\InstitutionActivityAnswer;
 use App\Enums\InstitutionActivityCampaign;
 use App\Enums\InstitutionActivityStatus;
@@ -35,7 +34,7 @@ use Illuminate\Support\Collection;
 
 class InstitutionPresenter
 {
-    /** @return array{id: string, name: string, is_active: bool, short_name: string|null, description: string|null, tenant: array{id: int, shortname: string}|null, types: list<array{id: int, parent_id: int|null, title: string|null, description: string|null, slug: string|null, extra_attributes: array<array-key, mixed>|null, created_at: string|null, updated_at: string|null, deleted_at: string|null, pivot: array{institution_id: string, institution_type_id: int}}>, has_public_meetings: bool, meeting_periodicity_days: int, governance_scope: InstitutionScope, comments_count: int, duties_count: int, meetings_count: int, problems_count: int, tasks_count: int, related_institutions_count: int, managers: list<array{id: string, email: string|null, phone: string|null, facebook_url: string|null, name: string, pronouns: string|null, show_pronouns: bool, is_active: int, updated_at: string, created_at: string, profile_photo_path: string|null, profile_photo_focal_point: string|null, deleted_at: string|null, pivot: array{duty_id: string, dutiable_id: string, dutiable_type: string, id: string, via_dutiable_id: string|null, tenant_id: int|null, start_date: string, end_date: string|null, additional_photo: string|null, additional_photo_focal_point: string|null, additional_email: string|null, use_original_duty_name: bool, description: string|null, study_program_id: string|null, study_program_note: string|null, created_at: string, updated_at: string}}>, secretaries: list<array{id: string, name: string, email: string|null, profile_photo_path: string|null}>, sharepointPath: string|null, sharepointFolderUrl: string|null} */
+    /** @return array{id: string, name: string, is_active: bool, description: string|null, tenant: array{id: int, shortname: string}|null, types: list<array{id: int, parent_id: int|null, title: string|null, description: string|null, slug: string|null, extra_attributes: array<array-key, mixed>|null, created_at: string|null, updated_at: string|null, deleted_at: string|null, pivot: array{institution_id: string, institution_type_id: int}}>, has_public_meetings: bool, governance_scope: InstitutionScope, duties_count: int, meetings_count: int, problems_count: int, related_institutions_count: int, managers: list<array{id: string, name: string, profile_photo_path: string|null, profile_photo_focal_point: string|null, pivot: array{id: string, start_date: string, end_date: string|null}}>, secretaries: list<array{id: string, name: string, email: string|null, profile_photo_path: string|null}>, sharepointPath: string|null, sharepointFolderUrl: string|null} */
     public static function forShow(Institution $institution, bool $readOnly): array
     {
         $types = [];
@@ -51,18 +50,14 @@ class InstitutionPresenter
             'id' => $institution->id,
             'name' => trim((string) $institution->name) ?: __('Be pavadinimo').' · '.($institution->alias ?: $institution->id),
             'is_active' => (bool) $institution->is_active,
-            'short_name' => $institution->short_name,
             'description' => $institution->description,
             'tenant' => $institution->tenant ? ['id' => $institution->tenant->id, 'shortname' => $institution->tenant->shortname] : null,
             'types' => $types,
             'has_public_meetings' => $institution->has_public_meetings,
-            'meeting_periodicity_days' => $institution->meeting_periodicity_days,
             'governance_scope' => $institution->governance_scope,
-            'comments_count' => (int) $institution->getAttribute('comments_count'),
             'duties_count' => (int) $institution->getAttribute('duties_count'),
             'meetings_count' => (int) $institution->getAttribute('meetings_count'),
             'problems_count' => (int) $institution->getAttribute('problems_count'),
-            'tasks_count' => (int) $institution->getAttribute('tasks_count') + (int) $institution->getAttribute('tasks_from_meetings_count'),
             'related_institutions_count' => app(InstitutionRelationService::class)->relatedTo($institution->id)->count(),
             'managers' => $managers,
             'secretaries' => $readOnly ? [] : InstitutionSecretaryController::usersPayload(GetInstitutionSecretaries::execute($institution)),
@@ -71,12 +66,42 @@ class InstitutionPresenter
         ];
     }
 
-    /** @return array{id: string, email: string|null, phone: string|null, facebook_url: string|null, name: string, pronouns: string|null, show_pronouns: bool, is_active: int, updated_at: string, created_at: string, profile_photo_path: string|null, profile_photo_focal_point: string|null, deleted_at: string|null, pivot: array{duty_id: string, dutiable_id: string, dutiable_type: string, id: string, via_dutiable_id: string|null, tenant_id: int|null, start_date: string, end_date: string|null, additional_photo: string|null, additional_photo_focal_point: string|null, additional_email: string|null, use_original_duty_name: bool, description: string|null, study_program_id: string|null, study_program_note: string|null, created_at: string, updated_at: string}} */
+    /** @return array{id: string, name: string, profile_photo_path: string|null, profile_photo_focal_point: string|null, pivot: array{id: string, start_date: string, end_date: string|null}} */
     public static function member(User $user): array
     {
-        $payload = UserPresenter::user($user);
         $pivot = $user->pivot->attributesToArray();
-        $payload['pivot'] = [
+
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'profile_photo_path' => $user->profile_photo_path,
+            'profile_photo_focal_point' => $user->profile_photo_focal_point,
+            'pivot' => [
+                'id' => $pivot['id'],
+                'start_date' => $pivot['start_date'],
+                'end_date' => $pivot['end_date'],
+            ],
+        ];
+    }
+
+    /** @return list<array{duty_id: string, dutiable_id: string, dutiable_type: string, id: string, via_dutiable_id: string|null, tenant_id: int|null, start_date: string, end_date: string|null, additional_photo: string|null, additional_photo_focal_point: string|null, additional_email: string|null, use_original_duty_name: bool, description: array{lt: string, en: string}|null, study_program_id: string|null, study_program_note: array{lt: string, en: string}|null, created_at: string, updated_at: string}> */
+    public static function assignmentTerms(Institution $institution): array
+    {
+        $terms = [];
+        foreach ($institution->duties()->with('current_users:id')->get() as $duty) {
+            foreach ($duty->current_users as $user) {
+                $terms[] = self::assignmentTerm($user);
+            }
+        }
+
+        return $terms;
+    }
+
+    /** @return array{duty_id: string, dutiable_id: string, dutiable_type: string, id: string, via_dutiable_id: string|null, tenant_id: int|null, start_date: string, end_date: string|null, additional_photo: string|null, additional_photo_focal_point: string|null, additional_email: string|null, use_original_duty_name: bool, description: array{lt: string, en: string}|null, study_program_id: string|null, study_program_note: array{lt: string, en: string}|null, created_at: string, updated_at: string} */
+    private static function assignmentTerm(User $user): array
+    {
+        $pivot = $user->pivot->attributesToArray();
+        $term = [
             'duty_id' => $pivot['duty_id'],
             'dutiable_id' => $pivot['dutiable_id'],
             'dutiable_type' => $pivot['dutiable_type'],
@@ -89,21 +114,27 @@ class InstitutionPresenter
             'additional_photo_focal_point' => $pivot['additional_photo_focal_point'],
             'additional_email' => $pivot['additional_email'],
             'use_original_duty_name' => $pivot['use_original_duty_name'],
-            'description' => $user->pivot->getRawOriginal('description') === null ? null : (string) $user->pivot->description,
+            'description' => $user->pivot->getRawOriginal('description') === null ? null : [
+                'lt' => (string) $user->pivot->getTranslation('description', 'lt'),
+                'en' => (string) $user->pivot->getTranslation('description', 'en'),
+            ],
             'study_program_id' => $pivot['study_program_id'],
-            'study_program_note' => $user->pivot->getRawOriginal('study_program_note') === null ? null : (string) $user->pivot->study_program_note,
+            'study_program_note' => $user->pivot->getRawOriginal('study_program_note') === null ? null : [
+                'lt' => (string) $user->pivot->getTranslation('study_program_note', 'lt'),
+                'en' => (string) $user->pivot->getTranslation('study_program_note', 'en'),
+            ],
             'created_at' => $pivot['created_at'],
             'updated_at' => $pivot['updated_at'],
         ];
 
-        return $payload;
+        return $term;
     }
 
-    /** @return list<array{id: string, name: string|null, description: string|null, institution_id: string, order: int, email: string|null, contacts_grouping: string, places_to_occupy: int|null, is_active: bool, created_at: string, updated_at: string, deleted_at: string|null, current_users: list<array{id: string, email: string|null, phone: string|null, facebook_url: string|null, name: string, pronouns: string|null, show_pronouns: bool, is_active: int, updated_at: string, created_at: string, profile_photo_path: string|null, profile_photo_focal_point: string|null, deleted_at: string|null, pivot: array{duty_id: string, dutiable_id: string, dutiable_type: string, id: string, via_dutiable_id: string|null, tenant_id: int|null, start_date: string, end_date: string|null, additional_photo: string|null, additional_photo_focal_point: string|null, additional_email: string|null, use_original_duty_name: bool, description: string|null, study_program_id: string|null, study_program_note: string|null, created_at: string, updated_at: string}}>}> */
+    /** @return list<array{id: string, name: string|null, description: string|null, institution_id: string, order: int, email: string|null, contacts_grouping: string, places_to_occupy: int|null, is_active: bool, created_at: string, updated_at: string, deleted_at: string|null, current_users: list<array{id: string, name: string, profile_photo_path: string|null, profile_photo_focal_point: string|null, pivot: array{id: string, start_date: string, end_date: string|null}}>}> */
     public static function duties(Institution $institution): array
     {
         $duties = [];
-        foreach ($institution->duties()->with('current_users')->orderBy('order')->get() as $duty) {
+        foreach ($institution->duties()->with('current_users:id,name,profile_photo_path,profile_photo_focal_point')->orderBy('order')->get() as $duty) {
             $attributes = $duty->attributesToArray();
             $users = [];
             foreach ($duty->current_users as $user) {
@@ -129,7 +160,7 @@ class InstitutionPresenter
         return $duties;
     }
 
-    /** @return list<array{id: string, title: string, start_time: string, type: MeetingType|null, agenda_items_count: int, agenda_item_titles: list<string>, vote_matches: int, vote_mismatches: int, incomplete_vote_data: int, has_protocol: bool, has_report: bool, can_discard: bool}> */
+    /** @return list<array{id: string, title: string, start_time: string, type: MeetingType|null, agenda_items_count: int, vote_matches: int, vote_mismatches: int, incomplete_vote_data: int, has_protocol: bool, has_report: bool, can_discard: bool}> */
     public static function meetings(Collection $meetings): array
     {
         $rows = [];
@@ -141,7 +172,6 @@ class InstitutionPresenter
                 'start_time' => $row['start_time'],
                 'type' => $meeting->type,
                 'agenda_items_count' => $row['agenda_items_count'],
-                'agenda_item_titles' => $row['agenda_item_titles'],
                 'vote_matches' => $row['vote_matches'],
                 'vote_mismatches' => $row['vote_mismatches'],
                 'incomplete_vote_data' => $row['incomplete_vote_data'],
@@ -154,8 +184,8 @@ class InstitutionPresenter
         return $rows;
     }
 
-    /** @return array{activity_status: array{status: InstitutionActivityStatus, requires_action: bool, priority: int, periodicity_days: int, effective_days_since_activity: int|null, progress_percentage: int|null, last_activity_type: 'meeting'|'check_in'|null, last_activity_at: string|null, last_meeting_at: string|null, next_meeting_at: string|null, active_check_in_until: string|null, last_completed_check_in_at: string|null}|null, current_users: list<array{id: string, email: string|null, phone: string|null, facebook_url: string|null, name: string, pronouns: string|null, show_pronouns: bool, is_active: int, updated_at: string, created_at: string, profile_photo_path: string|null, profile_photo_focal_point: string|null, deleted_at: string|null, pivot: array{duty_id: string, dutiable_id: string, dutiable_type: string, id: string, via_dutiable_id: string|null, tenant_id: int|null, start_date: string, end_date: string|null, additional_photo: string|null, additional_photo_focal_point: string|null, additional_email: string|null, use_original_duty_name: bool, description: string|null, study_program_id: string|null, study_program_note: string|null, created_at: string, updated_at: string}}>, duties: list<array{id: string, name: string|null, order: int, current_users: list<array{id: string, email: string|null, phone: string|null, facebook_url: string|null, name: string, pronouns: string|null, show_pronouns: bool, is_active: int, updated_at: string, created_at: string, profile_photo_path: string|null, profile_photo_focal_point: string|null, deleted_at: string|null, pivot: array{duty_id: string, dutiable_id: string, dutiable_type: string, id: string, via_dutiable_id: string|null, tenant_id: int|null, start_date: string, end_date: string|null, additional_photo: string|null, additional_photo_focal_point: string|null, additional_email: string|null, use_original_duty_name: bool, description: string|null, study_program_id: string|null, study_program_note: string|null, created_at: string, updated_at: string}}>}>, recentMeetings: list<array{id: string, title: string, start_time: string, type: MeetingType|null, agenda_items_count: int, agenda_item_titles: list<string>, vote_matches: int, vote_mismatches: int, incomplete_vote_data: int, has_protocol: bool, has_report: bool, can_discard: bool}>, meetings_count: int, meetings_hidden: bool, recentComments: list<array{id: string, body: string, kind: CommentKind, created_at: string|null, replies_count: int, user: array{id: string, name: string, profile_photo_path: string|null}|null}>} */
-    public static function overview(Institution $institution, bool $readOnly, bool $showsMeetings, InstitutionActivityStatusData $status, Collection $meetings): array
+    /** @return array{activity_status: array{status: InstitutionActivityStatus, requires_action: bool, priority: int, periodicity_days: int, effective_days_since_activity: int|null, progress_percentage: int|null, last_activity_type: 'meeting'|'check_in'|null, last_activity_at: string|null, last_meeting_at: string|null, next_meeting_at: string|null, active_check_in_until: string|null, last_completed_check_in_at: string|null}|null, current_users: list<array{id: string, name: string, profile_photo_path: string|null, profile_photo_focal_point: string|null, pivot: array{id: string, start_date: string, end_date: string|null}}>, recentMeetings: list<array{id: string, title: string, start_time: string, type: MeetingType|null, agenda_items_count: int, vote_matches: int, vote_mismatches: int, incomplete_vote_data: int, has_protocol: bool, has_report: bool, can_discard: bool}>, meetings_count: int, meetings_hidden: bool} */
+    public static function overview(Institution $institution, bool $showsMeetings, InstitutionActivityStatusData $status, Collection $meetings): array
     {
         $activity = $status->toArray();
         $activity['status'] = $status->status;
@@ -163,38 +193,23 @@ class InstitutionPresenter
         foreach ($institution->duties->pluck('current_users')->flatten()->unique('id')->values() as $user) {
             $users[] = self::member($user);
         }
-        $duties = [];
-        foreach ($institution->duties->sortBy('order') as $duty) {
-            $members = [];
-            foreach ($duty->current_users as $user) {
-                $members[] = self::member($user);
-            }
-            $duties[] = ['id' => $duty->id, 'name' => $duty->name, 'order' => $duty->order, 'current_users' => $members];
-        }
-        $comments = [];
-        if (! $readOnly) {
-            foreach ($institution->comments()->roots()->notErased()->with('user:id,name,profile_photo_path')
-                ->withCount(['replies' => fn ($query) => $query->notErased()])->latest()->limit(3)->get() as $comment) {
-                $comments[] = [
-                    'id' => $comment->id,
-                    'body' => $comment->body,
-                    'kind' => $comment->kind,
-                    'created_at' => $comment->created_at?->toISOString(),
-                    'replies_count' => (int) $comment->getAttribute('replies_count'),
-                    'user' => $comment->user ? UserPresenter::avatar($comment->user) : null,
-                ];
-            }
-        }
 
         return [
             'activity_status' => $showsMeetings ? $activity : null,
             'current_users' => $users,
-            'duties' => $duties,
             'recentMeetings' => self::meetings($meetings),
             'meetings_count' => $showsMeetings ? (int) $institution->getAttribute('meetings_count') : 0,
             'meetings_hidden' => ! $showsMeetings && $institution->meetings_count > 0,
-            'recentComments' => $comments,
         ];
+    }
+
+    public static function incompleteTasksCount(Institution $institution): int
+    {
+        return Task::query()->incomplete()->where(fn ($query) => $query
+            ->where(fn ($own) => $own->where('taskable_type', MorphMap::alias(Institution::class))->where('taskable_id', $institution->id))
+            ->orWhere(fn ($meetings) => $meetings->where('taskable_type', MorphMap::alias(Meeting::class))
+                ->whereIn('taskable_id', $institution->meetings()->select('meetings.id'))))
+            ->count();
     }
 
     /** @return list<array{id: string, name: string, description: string|null, due_date: string|null, completed_at: string|null, cancelled_at: string|null, created_at: string, updated_at: string, action_type: ActionType|null, metadata: array<string, mixed>|null, progress: array{current: int, total: int, percentage: int}|null, is_overdue: bool, can_be_manually_completed: bool, can_update: bool, icon: string, color: string, taskable: array{id: int|string, name: string|null, type: string}|null, taskable_type: string, taskable_id: string, users: list<array{id: string, name: string, profile_photo_path: string|null}>}> */

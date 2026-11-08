@@ -105,6 +105,9 @@ describe('unauthorized access', function (): void {
     test('reads an active institution outside their reach as its public face only', function (): void {
         $institution = Institution::factory()->for(Tenant::factory())->create(['is_active' => 1]);
         $institution->tasks()->create(['name' => 'Internal task']);
+        $duty = Duty::factory()->for($institution)->create();
+        $member = User::factory()->create(['email' => 'private@example.test', 'phone' => '+37060000000']);
+        $duty->users()->attach($member, ['start_date' => today()->subDay(), 'additional_email' => 'term@example.test']);
 
         asUserWithInertia($this->user)->get(route('institutions.show', $institution))
             ->assertOk()
@@ -114,18 +117,28 @@ describe('unauthorized access', function (): void {
                 ->where('can.update', false)
                 ->where('can.recordMeeting', false)
                 ->where('can.reportActivity', false)
-                ->where('files', [])
-                ->where('tasks', [])
-                ->where('relatedInstitutions', [])
+                ->missing('files')
+                ->missing('tasks')
+                ->missing('relatedInstitutions')
                 ->where('institution.secretaries', [])
                 ->where('institution.sharepointPath', null)
-                ->where('overview.recentComments', [])
+                ->missing('overview.recentComments')
                 ->whereType('institution.id', 'string')
                 ->whereType('institution.is_active', 'boolean')
-                ->whereType('institution.meeting_periodicity_days', 'integer')
+                ->missing('institution.meeting_periodicity_days')
                 ->whereType('overview.current_users', 'array')
+                ->where('overview.current_users.0.id', $member->id)
+                ->missing('overview.current_users.0.email')
+                ->missing('overview.current_users.0.phone')
+                ->missing('overview.current_users.0.pivot.additional_email')
                 ->missing('duties')
-                ->loadDeferredProps('institutionPanels', fn (Assert $panels) => $panels
+                ->where('canViewActivityRequests', false)
+                ->missing('activityRequests')
+                ->reload(only: ['activityRequests'], callback: fn (Assert $history) => $history->missing('activityRequests'))
+                ->reloadOnly(['files', 'typeFiles', 'tasks', 'relatedInstitutions', 'institutionLinks', 'assignmentTerms'], fn (Assert $hidden) => $hidden
+                    ->where('files', [])->where('typeFiles', [])->where('tasks', [])
+                    ->where('relatedInstitutions', [])->where('institutionLinks', [])->where('assignmentTerms', []))
+                ->reloadOnly(['duties', 'problems', 'management'], fn (Assert $panels) => $panels
                     ->whereType('duties', 'array')
                     ->whereType('problems', 'array')
                     ->where('management', null))
@@ -141,7 +154,7 @@ describe('unauthorized access', function (): void {
                 ->where('overview.meetings_hidden', true)
                 ->where('overview.recentMeetings', [])
                 ->where('overview.activity_status', null)
-                ->where('meetings', [])
+                ->missing('meetings')
                 // Nothing to hear about, so nothing to follow
                 ->where('subscription', null)
             );
@@ -164,13 +177,13 @@ describe('unauthorized access', function (): void {
                 ->where('institution.has_public_meetings', true)
                 ->where('overview.recentMeetings.0.id', $meeting->id)
                 ->whereType('overview.activity_status.status', 'string')
-                ->where('files', [])
-                ->where('tasks', [])
+                ->missing('files')
+                ->missing('tasks')
                 ->missing('meetings')
-                ->loadDeferredProps('institutionPanels', fn (Assert $panels) => $panels
+                ->reloadOnly(['meetings', 'management'], fn (Assert $panels) => $panels
                     ->where('meetings.0.id', $meeting->id)
                     ->where('meetings.0.type', null)
-                    ->whereType('meetings.0.agenda_item_titles', 'array')
+                    ->missing('meetings.0.agenda_item_titles')
                     ->whereType('meetings.0.has_protocol', 'boolean')
                     ->where('management', null)));
     });
@@ -223,9 +236,88 @@ describe('authorized access', function (): void {
         $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
     });
 
-    // Terms, secretary rosters and the sheet's programme picker are edited on the record, so they
-    // ride a deferred group: absent on the first paint, and only ever sent to someone who may update.
-    test('the record carries per-record permissions and defers the management group', function (): void {
+    test('each optional tab returns only the props explicitly requested', function (array $only): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+        InstitutionActivityRequest::factory()->create(['institution_id' => $institution->id, 'recipient_id' => $this->admin->id]);
+        $optional = ['duties', 'meetings', 'tasks', 'problems', 'management', 'relatedInstitutions', 'institutionLinks', 'files', 'typeFiles', 'activityRequests', 'assignmentTerms'];
+
+        asUserWithInertia($this->admin)->get(route('institutions.show', $institution))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('overview')
+                ->missingAll($optional)
+                ->reloadOnly($only, fn (Assert $tab) => $tab
+                    ->missing('overview')
+                    ->missingAll(array_values(array_diff($optional, $only)))));
+    })->with([
+        'duties' => [['duties']],
+        'meetings' => [['meetings']],
+        'tasks' => [['tasks']],
+        'problems' => [['problems']],
+        'terms' => [['management']],
+        'relations' => [['relatedInstitutions', 'institutionLinks']],
+        'files' => [['files', 'typeFiles']],
+        'activity requests' => [['activityRequests']],
+    ]);
+
+    test('the task badge counts incomplete institution and meeting tasks without loading the tab', function (): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+        $meeting = Meeting::factory()->hasAttached($institution)->create();
+        $institution->tasks()->create(['name' => 'Institution task']);
+        $meeting->tasks()->create(['name' => 'Meeting task']);
+        $institution->tasks()->create(['name' => 'Completed', 'completed_at' => now()]);
+        Task::factory()->create();
+
+        asUserWithInertia($this->admin)->get(route('institutions.show', $institution))
+            ->assertInertia(fn (Assert $page) => $page->where('incompleteTasksCount', 2)->missing('tasks'));
+    });
+
+    test('meeting summaries keep outcomes and available-file badges with the compact query', function (): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+        $meeting = Meeting::factory()->hasAttached($institution)->create();
+        $item = $meeting->agendaItems()->create(['type' => 'voting', 'title' => ['lt' => 'Klausimas', 'en' => 'Question'], 'order' => 1]);
+        $item->votes()->create(['is_main' => true, 'is_consensus' => false, 'decision' => 'positive', 'student_vote' => 'positive', 'student_benefit' => 'positive']);
+        FileableFile::factory()->protocol()->create(['fileable_type' => MorphMap::alias(Meeting::class), 'fileable_id' => $meeting->id]);
+        FileableFile::factory()->report()->create([
+            'fileable_type' => MorphMap::alias(Meeting::class), 'fileable_id' => $meeting->id, 'deleted_externally_at' => now(),
+        ]);
+
+        asUserWithInertia($this->admin)->get(route('institutions.show', $institution))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('overview.recentMeetings.0.vote_matches', 1)
+                ->where('overview.recentMeetings.0.has_protocol', true)
+                ->where('overview.recentMeetings.0.has_report', false)
+                ->reloadOnly('meetings', fn (Assert $meetings) => $meetings
+                    ->where('meetings.0.agenda_items_count', 1)
+                    ->where('meetings.0.vote_matches', 1)
+                    ->where('meetings.0.has_protocol', true)
+                    ->where('meetings.0.has_report', false)
+                    ->where('meetings.0.can_discard', false)));
+    });
+
+    test('term editing loads full metadata separately from member lists', function (): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+        $duty = Duty::factory()->for($institution)->create();
+        $member = User::factory()->create(['email' => 'member@example.test', 'phone' => '+37060000000']);
+        $duty->users()->attach($member, [
+            'start_date' => today()->subDay(),
+            'additional_email' => 'term@example.test',
+            'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
+        ]);
+
+        asUserWithInertia($this->admin)->get(route('institutions.show', $institution))
+            ->assertInertia(fn (Assert $page) => $page
+                ->missing('assignmentTerms')
+                ->missing('overview.current_users.0.email')
+                ->missing('overview.current_users.0.phone')
+                ->missing('overview.current_users.0.pivot.additional_email')
+                ->reloadOnly('assignmentTerms', fn (Assert $terms) => $terms
+                    ->where('assignmentTerms.0.additional_email', 'term@example.test')
+                    ->where('assignmentTerms.0.description', ['lt' => 'Aprašymas', 'en' => 'Description'])
+                    ->whereType('assignmentTerms.0.start_date', 'string')));
+    });
+
+    test('the record carries per-record permissions and loads management only when requested', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
         asUserWithInertia($this->admin)->get(route('institutions.show', $institution))
@@ -235,14 +327,14 @@ describe('authorized access', function (): void {
                 ->where('can.update', true)
                 ->where('can.recordMeeting', true)
                 ->missing('management')
-                ->loadDeferredProps('institutionPanels', fn ($panels) => $panels
+                ->reloadOnly('management', fn ($panels) => $panels
                     ->has('management.cadences')
                     ->has('management.globalCadences')
                     ->has('management.secretaryRosters')
                     ->has('management.studyPrograms')));
     });
 
-    test('the record payload preserves localized values and types every deferred panel', function (string $locale, string $name, string $dutyName): void {
+    test('the record payload preserves localized values and types every optional panel', function (string $locale, string $name, string $dutyName): void {
         $institution = Institution::factory()->create([
             'tenant_id' => $this->tenant->id,
             'name' => ['lt' => 'Taryba', 'en' => 'Council'],
@@ -280,27 +372,38 @@ describe('authorized access', function (): void {
         asUser($this->admin);
         app()->setLocale($locale);
         $loaded = $institution->fresh()->loadMissing('tenant:id,shortname', 'types', 'duties.current_users', 'checkIns', 'meetings:id,start_time')
-            ->loadCount(['comments' => fn ($query) => $query->notErased(), 'duties', 'meetings', 'problems', 'tasks', 'tasksFromMeetings'])
+            ->loadCount(['duties', 'meetings', 'problems'])
             ->append(['has_public_meetings', 'meeting_periodicity_days', 'governance_scope']);
         $json = fn ($value): array => json_decode(json_encode($value, JSON_THROW_ON_ERROR), true, flags: JSON_THROW_ON_ERROR);
+        $memberRow = fn (User $user): array => [
+            'id' => $user->id,
+            'name' => $user->name,
+            'profile_photo_path' => $user->profile_photo_path,
+            'profile_photo_focal_point' => $user->profile_photo_focal_point,
+            'pivot' => [
+                'id' => $user->pivot->id,
+                'start_date' => $user->pivot->attributesToArray()['start_date'],
+                'end_date' => $user->pivot->attributesToArray()['end_date'],
+            ],
+        ];
+        $expectedDuties = $loaded->duties()->with('current_users')->orderBy('order')->get()
+            ->map(fn (Duty $row): array => array_replace($row->toArray(), [
+                'current_users' => $row->current_users->map($memberRow)->all(),
+            ]));
         $expectedInstitution = $json([
             'id' => $loaded->id,
             'name' => trim((string) $loaded->name) ?: __('Be pavadinimo').' · '.($loaded->alias ?: $loaded->id),
             'is_active' => (bool) $loaded->is_active,
-            'short_name' => $loaded->short_name,
             'description' => $loaded->description,
             'tenant' => $loaded->tenant,
             'types' => $loaded->types,
             'has_public_meetings' => $loaded->has_public_meetings,
-            'meeting_periodicity_days' => $loaded->meeting_periodicity_days,
             'governance_scope' => $loaded->governance_scope,
-            'comments_count' => $loaded->comments_count,
             'duties_count' => $loaded->duties_count,
             'meetings_count' => $loaded->meetings_count,
             'problems_count' => $loaded->problems_count,
-            'tasks_count' => (int) $loaded->getAttribute('tasks_count') + (int) $loaded->getAttribute('tasks_from_meetings_count'),
             'related_institutions_count' => app(InstitutionRelationService::class)->relatedTo($loaded->id)->count(),
-            'managers' => $loaded->managers(),
+            'managers' => $loaded->managers()->map($memberRow),
             'secretaries' => InstitutionSecretaryController::usersPayload(GetInstitutionSecretaries::execute($loaded)),
             'sharepointPath' => SharepointFileService::pathOrNull($loaded),
             'sharepointFolderUrl' => SharepointFileService::folderUrlOrNull($loaded),
@@ -309,22 +412,12 @@ describe('authorized access', function (): void {
             ->with(['agendaItems.votes', 'fileableFiles', 'institutions.types'])
             ->orderByDesc('start_time')->get()->each->append(['has_report', 'has_protocol']);
         $expectedMeetings = $json(InstitutionMeetingResource::collection($meetingRows)->resolve());
-        $comments = $loaded->comments()->roots()->notErased()->with('user:id,name,profile_photo_path')
-            ->withCount(['replies' => fn ($query) => $query->notErased()])->latest()->limit(3)->get();
         $expectedOverview = $json([
             'activity_status' => app(InstitutionActivityStatusService::class)->resolve($loaded)->toArray(),
-            'current_users' => $loaded->duties->pluck('current_users')->flatten()->unique('id')->values(),
-            'duties' => $loaded->duties->sortBy('order')->map(fn (Duty $row) => [
-                'id' => $row->id, 'name' => $row->name, 'order' => $row->order, 'current_users' => $row->current_users,
-            ])->values(),
+            'current_users' => $loaded->duties->pluck('current_users')->flatten()->unique('id')->values()->map($memberRow),
             'recentMeetings' => array_slice($expectedMeetings, 0, 3),
             'meetings_count' => $loaded->meetings_count,
             'meetings_hidden' => false,
-            'recentComments' => $comments->map(fn (Comment $row) => [
-                'id' => $row->id, 'body' => $row->body, 'kind' => $row->kind->value,
-                'created_at' => $row->created_at->toISOString(), 'replies_count' => $row->replies_count,
-                'user' => $row->user ? ['id' => $row->user->id, 'name' => $row->user->name, 'profile_photo_path' => $row->user->profile_photo_path] : null,
-            ]),
         ]);
         $taskRows = $loaded->tasks()->with('users:id,name,email,profile_photo_path', 'taskable', 'tenants')->get()
             ->merge(Task::query()->where('taskable_type', MorphMap::alias(Meeting::class))
@@ -370,32 +463,35 @@ describe('authorized access', function (): void {
                 ->where('institution.name', $name)
                 ->whereType('institution.id', 'string')
                 ->whereType('institution.is_active', 'boolean')
-                ->whereType('institution.short_name', 'string|null')
+                ->missing('institution.short_name')
                 ->whereType('institution.description', 'string|null')
                 ->whereType('institution.types.0.id', 'integer')
                 ->where('institution.types.0.extra_attributes', null)
                 ->whereType('institution.governance_scope', 'string')
-                ->whereType('institution.tasks_count', 'integer')
+                ->missing('institution.tasks_count')
+                ->missing('institution.comments_count')
                 ->whereType('institution.secretaries.0.id', 'string')
                 ->where('institution.secretaries.0.email', null)
                 ->whereType('overview.current_users.0.id', 'string')
-                ->where('overview.current_users.0.email', null)
+                ->missing('overview.current_users.0.email')
+                ->missing('overview.current_users.0.phone')
                 ->where('overview.current_users.0.pivot.end_date', null)
-                ->where('overview.duties.0.name', $dutyName)
+                ->missing('overview.duties')
                 ->whereType('overview.activity_status.status', 'string')
                 ->whereType('overview.activity_status.requires_action', 'boolean')
                 ->where('overview.recentMeetings.0.id', $meeting->id)
                 ->where('overview.recentMeetings.0.type', null)
                 ->missing('duties')->missing('tasks')->missing('files')->missing('management')->missing('activityRequests')
-                ->loadDeferredProps('institutionPanels', fn (Assert $panels) => $panels
-                    ->where('duties', $loaded->duties()->with('current_users')->orderBy('order')->get()->toArray())
+                ->reloadOnly(['duties', 'meetings', 'tasks', 'problems', 'relatedInstitutions', 'institutionLinks', 'management'], fn (Assert $panels) => $panels
+                    ->where('duties', $json($expectedDuties))
                     ->where('meetings', $expectedMeetings)
                     ->where('tasks', $expectedTasks)
                     ->where('problems', $expectedProblems)
                     ->where('relatedInstitutions', app(InstitutionRelationService::class)->summaryFor($loaded))
                     ->where('institutionLinks', app(InstitutionRelationService::class)->linksOf($loaded))
                     ->where('management', $expectedManagement)
-                    ->where('duties.0', $duty->fresh()->load('current_users')->toArray())
+                    ->missing('duties.0.current_users.0.email')
+                    ->missing('duties.0.current_users.0.pivot.additional_email')
                     ->where('duties.0.name', $dutyName)
                     ->where('duties.0.description', '')
                     ->whereType('duties.0.current_users.0.pivot.start_date', 'string')
@@ -414,7 +510,7 @@ describe('authorized access', function (): void {
                     ->where('management.cadences.0.start_meeting', null)
                     ->whereType('management.secretaryRosters.0.is_current', 'boolean')
                     ->whereType('management.studyPrograms.0.name', 'string'))
-                ->loadDeferredProps('files', fn (Assert $files) => $files
+                ->reloadOnly(['files', 'typeFiles'], fn (Assert $files) => $files
                     ->where('files', [$file->fresh()->toArray()])
                     ->where('typeFiles', [$typeFile->fresh()->load('fileable:id,title')->toArray()])
                     ->missing('files.0.deleted_at')
@@ -425,7 +521,7 @@ describe('authorized access', function (): void {
                     ->where('typeFiles.0.id', $typeFile->id)
                     ->where('typeFiles.0.fileable.id', $type->id)
                     ->whereType('typeFiles.0.fileable.title', 'string'))
-                ->loadDeferredProps('activityRequests', fn (Assert $requests) => $requests
+                ->reloadOnly('activityRequests', fn (Assert $requests) => $requests
                     ->where('activityRequests', $expectedHistory)
                     ->where('activityRequests.data.0.id', $history->send_id)
                     ->where('activityRequests.data.0.campaigns.activity_confirmation.0.campaign_type', 'activity_confirmation')
@@ -449,7 +545,7 @@ describe('authorized access', function (): void {
                 ->where('can.update', false)
                 ->where('can.recordMeeting', true)
                 ->where('can.reportActivity', true)
-                ->loadDeferredProps('institutionPanels', fn ($panels) => $panels->where('management', null)));
+                ->reloadOnly('management', fn ($panels) => $panels->where('management', null)));
     });
 
     test('the problems tab lists the institution\'s problems, unresolved first, after the first paint', function (): void {
@@ -464,7 +560,7 @@ describe('authorized access', function (): void {
             ->assertInertia(fn ($page) => $page
                 ->where('institution.problems_count', 2)
                 ->missing('problems')
-                ->loadDeferredProps('institutionPanels', fn ($panels) => $panels
+                ->reloadOnly('problems', fn ($panels) => $panels
                     ->where('problems.0.id', $open->id)
                     ->where('problems.1.id', $resolved->id)
                     ->has('problems', 2)));
@@ -519,7 +615,7 @@ describe('authorized access', function (): void {
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/People/ShowInstitution')
                 ->missing('tasks')
-                ->loadDeferredProps('institutionPanels', fn ($page) => $page
+                ->reloadOnly('tasks', fn ($page) => $page
                     ->has('tasks', 1)
                     ->where('tasks.0.taskable.name', 'Test Meeting Title')
                     ->where('tasks.0.taskable.type', 'meeting')
@@ -527,7 +623,7 @@ describe('authorized access', function (): void {
             );
     });
 
-    test('exposes institution type and recent comments for the overview', function (): void {
+    test('keeps institution types but omits unused overview comments', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
         $type = InstitutionType::factory()->create([]);
@@ -547,15 +643,11 @@ describe('authorized access', function (): void {
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/People/ShowInstitution')
                 ->has('institution.types', 1)
-                ->has('overview.recentComments', 1)
-                ->where('overview.recentComments.0.body', '<p>Hello overview</p>')
-                ->where('overview.recentComments.0.replies_count', 0)
-                ->where('overview.recentComments.0.created_at', null)
-                ->whereType('overview.recentComments.0.kind', 'string')
+                ->missing('overview.recentComments')
             );
     });
 
-    test('exposes the first agenda item titles of a meeting', function (): void {
+    test('sends meeting counts without unused agenda titles', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
         $meeting = Meeting::factory()->create(['start_time' => now()->addDay()]);
@@ -569,7 +661,7 @@ describe('authorized access', function (): void {
 
         $response->assertStatus(200)
             ->assertInertia(fn ($page) => $page
-                ->where('overview.recentMeetings.0.agenda_item_titles', ['Pirmas', 'Antras', 'Trecias'])
+                ->missing('overview.recentMeetings.0.agenda_item_titles')
                 ->where('overview.recentMeetings.0.agenda_items_count', 4)
                 ->missing('overview.recentMeetings.0.agenda_items')
             );
@@ -979,7 +1071,7 @@ describe('meeting_periodicity_days', function (): void {
         expect($institution->meeting_periodicity_days)->toBe(30);
     });
 
-    test('show endpoint includes meeting_periodicity_days in response', function (): void {
+    test('show endpoint keeps periodicity in the rendered activity summary', function (): void {
         $institution = Institution::factory()->create([
             'tenant_id' => $this->tenant->id,
             'meeting_periodicity_days' => 21,
@@ -990,7 +1082,8 @@ describe('meeting_periodicity_days', function (): void {
         $response->assertStatus(200)
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/People/ShowInstitution')
-                ->where('institution.meeting_periodicity_days', 21)
+                ->missing('institution.meeting_periodicity_days')
+                ->where('overview.activity_status.periodicity_days', 21)
             );
     });
 
@@ -1010,7 +1103,8 @@ describe('meeting_periodicity_days', function (): void {
         $response->assertStatus(200)
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/People/ShowInstitution')
-                ->where('institution.meeting_periodicity_days', 7)
+                ->missing('institution.meeting_periodicity_days')
+                ->where('overview.activity_status.periodicity_days', 7)
             );
     });
 

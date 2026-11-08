@@ -343,11 +343,11 @@ test('an automatic task asks whether a meeting happened when no records are miss
     Notification::assertSentToTimes($this->rep, InstitutionActivityNotification::class, 1);
 });
 
-test('history is deferred and contains no signed answer links', function (): void {
+test('history loads on request and contains no signed answer links', function (): void {
     InstitutionActivityRequest::factory()->create(['institution_id' => $this->institution->id, 'recipient_id' => $this->rep->id]);
     asUserWithInertia($this->coordinator)->get(route('institutions.show', $this->institution))
         ->assertInertia(fn (AssertableInertia $page) => $page->where('canViewActivityRequests', true)->missing('activityRequests')
-            ->loadDeferredProps('activityRequests', fn ($reload) => $reload->has('activityRequests.data', 1)));
+            ->reloadOnly('activityRequests', fn ($reload) => $reload->has('activityRequests.data', 1)));
     $history = app(GetInstitutionActivityRequestHistory::class)->execute($this->institution, $this->coordinator);
     expect(json_encode($history))->not->toContain('signature=', '/atsakymas/');
 });

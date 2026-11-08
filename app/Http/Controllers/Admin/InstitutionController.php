@@ -17,6 +17,7 @@ use App\Http\Requests\UpdateInstitutionRequest;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Duty;
+use App\Models\FileableFile;
 use App\Models\Institution;
 use App\Models\InstitutionLink;
 use App\Models\InstitutionType;
@@ -107,9 +108,9 @@ class InstitutionController extends AdminController
         $readOnly = fn (): bool => once(fn () => ! Gate::allows('view', $institution));
 
         $loadInstitution = fn (): Institution => once(function () use ($institution): Institution {
-            $institution->loadMissing('tenant:id,shortname', 'types', 'duties.current_users', 'checkIns', 'meetings:id,start_time')
-                ->loadCount(['comments' => fn ($query) => $query->notErased(), 'duties', 'meetings', 'problems', 'tasks', 'tasksFromMeetings'])
-                ->append(['has_public_meetings', 'meeting_periodicity_days', 'governance_scope']);
+            $institution->loadMissing('tenant:id,shortname', 'types', 'duties.current_users:id,name,profile_photo_path,profile_photo_focal_point', 'checkIns', 'meetings:id,start_time')
+                ->loadCount(['duties', 'meetings', 'problems'])
+                ->append(['has_public_meetings', 'governance_scope']);
 
             return $institution;
         });
@@ -117,40 +118,44 @@ class InstitutionController extends AdminController
         $showsMeetings = fn (): bool => once(fn () => ! $readOnly() || $loadInstitution()->has_public_meetings);
         $activityStatus = fn () => once(fn () => $this->activityStatusService->resolve($loadInstitution()));
 
-        $overviewMeetings = fn () => once(fn () => ! $showsMeetings() ? collect() : $institution->meetings()
+        $meetingQuery = fn () => $institution->meetings()
+            ->select(['meetings.id', 'title', 'start_time', 'type', 'meetings.created_at'])
             ->withCount('agendaItems')
-            ->with(['agendaItems.votes', 'fileableFiles', 'institutions.types'])
-            ->orderByDesc('start_time')
-            ->limit(3)
-            ->get()
-            ->each->append(['has_report', 'has_protocol']));
+            ->with([
+                'agendaItems' => fn ($query) => $query->select(['id', 'meeting_id', 'order', 'is_private', 'type'])->chaperone('meeting'),
+                'agendaItems.votes:id,agenda_item_id,is_main,decision,student_vote,student_benefit,is_consensus',
+                'institutions:id',
+                'institutions.types:id',
+            ])
+            ->withExists([
+                'availableFiles as protocol_exists' => fn ($query) => $query->where('file_type', FileableFile::TYPE_PROTOCOL),
+                'availableFiles as report_exists' => fn ($query) => $query->where('file_type', FileableFile::TYPE_REPORT),
+            ])
+            ->orderByDesc('start_time');
+        $overviewMeetings = fn () => once(fn () => ! $showsMeetings() ? collect() : $meetingQuery()->limit(3)->get());
+        $canViewActivityRequests = app(GetInstitutionActivityRequestHistory::class)->visible($institution, $request->user());
 
         return Inertia::render('Admin/People/ShowInstitution', [
-            'institution' => fn (): array => InstitutionPresenter::forShow($loadInstitution(), $readOnly()),
-            'canViewActivityRequests' => app(GetInstitutionActivityRequestHistory::class)->visible($institution, request()->user()),
-            'activityRequests' => Inertia::defer(fn () => InstitutionPresenter::activityRequests($institution, $request->user(), $request->historyPage()), 'activityRequests'),
+            'institution' => fn () => InstitutionPresenter::forShow($loadInstitution(), $readOnly()),
+            'canViewActivityRequests' => $canViewActivityRequests,
+            ...($canViewActivityRequests ? ['activityRequests' => Inertia::optional(fn () => InstitutionPresenter::activityRequests($institution, $request->user(), $request->historyPage()))] : []),
             'readOnly' => fn (): bool => $readOnly(),
-            'overview' => fn (): array => InstitutionPresenter::overview($loadInstitution(), $readOnly(), $showsMeetings(), $activityStatus(), $overviewMeetings()),
-            'files' => $readOnly() ? [] : Inertia::defer(fn () => InstitutionPresenter::files($institution), 'files'),
-            'typeFiles' => $readOnly() ? [] : Inertia::defer(fn () => InstitutionPresenter::typeFiles($institution), 'files'),
-            'duties' => Inertia::defer(fn () => InstitutionPresenter::duties($institution), 'institutionPanels'),
-            'meetings' => ! $showsMeetings() ? [] : Inertia::defer(fn () => InstitutionPresenter::meetings(
-                $institution->meetings()
-                    ->withCount('agendaItems')
-                    ->with(['agendaItems.votes', 'fileableFiles', 'institutions.types'])
-                    ->orderByDesc('start_time')
-                    ->get()
-                    ->each->append(['has_report', 'has_protocol'])
-            ), 'institutionPanels'),
-            'tasks' => $readOnly() ? [] : Inertia::defer(fn () => InstitutionPresenter::tasks($institution), 'institutionPanels'),
-            'problems' => Inertia::defer(fn () => InstitutionPresenter::problems($institution), 'institutionPanels'),
-            'relatedInstitutions' => $readOnly() ? [] : Inertia::defer(fn () => InstitutionPresenter::relatedInstitutions($institution), 'institutionPanels'),
-            'institutionLinks' => $readOnly() ? [] : Inertia::defer(fn () => InstitutionPresenter::institutionLinks($institution), 'institutionPanels'),
-            'relationKinds' => fn (): array => InstitutionPresenter::relationKinds($request->user()->can('create', InstitutionLink::class)),
-            'can' => fn (): array => InstitutionPresenter::abilities($institution, $request->user(), $readOnly()),
-            'management' => Inertia::defer(fn () => $request->user()->can('update', $institution)
-                ? InstitutionPresenter::management($institution) : null, 'institutionPanels'),
-            'subscription' => fn (): ?array => InstitutionPresenter::subscription($institution, $request->user()),
+            'overview' => fn () => InstitutionPresenter::overview($loadInstitution(), $showsMeetings(), $activityStatus(), $overviewMeetings()),
+            'files' => Inertia::optional(fn () => $readOnly() ? [] : InstitutionPresenter::files($institution)),
+            'typeFiles' => Inertia::optional(fn () => $readOnly() ? [] : InstitutionPresenter::typeFiles($institution)),
+            'duties' => Inertia::optional(fn () => InstitutionPresenter::duties($institution)),
+            'meetings' => Inertia::optional(fn () => ! $showsMeetings() ? [] : InstitutionPresenter::meetings($meetingQuery()->get())),
+            'incompleteTasksCount' => fn () => $readOnly() ? 0 : InstitutionPresenter::incompleteTasksCount($institution),
+            'tasks' => Inertia::optional(fn () => $readOnly() ? [] : InstitutionPresenter::tasks($institution)),
+            'problems' => Inertia::optional(fn () => InstitutionPresenter::problems($institution)),
+            'relatedInstitutions' => Inertia::optional(fn () => $readOnly() ? [] : InstitutionPresenter::relatedInstitutions($institution)),
+            'institutionLinks' => Inertia::optional(fn () => $readOnly() ? [] : InstitutionPresenter::institutionLinks($institution)),
+            'relationKinds' => fn () => InstitutionPresenter::relationKinds($request->user()->can('create', InstitutionLink::class)),
+            'can' => fn () => InstitutionPresenter::abilities($institution, $request->user(), $readOnly()),
+            'management' => Inertia::optional(fn () => $request->user()->can('update', $institution)
+                ? InstitutionPresenter::management($institution) : null),
+            'assignmentTerms' => Inertia::optional(fn () => $request->user()->can('update', $institution) ? InstitutionPresenter::assignmentTerms($institution) : []),
+            'subscription' => fn () => InstitutionPresenter::subscription($institution, $request->user()),
         ]);
     }
 

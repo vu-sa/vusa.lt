@@ -71,6 +71,10 @@ puslapį `/mano/institutions/{id}`.
 
 Institucijų sąraše pavadinimai ir tipai rodomi pasirinkta Mano VU SA kalba. Jei vertimo nėra, rodomas lietuviškas arba kitas turimas pavadinimas. Padalinio trumpinys nesikeičia perjungus kalbą.
 
+### Institucijos puslapis {#puslapis}
+
+Atvėrus instituciją iškart rodoma apžvalga, nariai ir paskutiniai posėdžiai. Kitų skirtukų turinys įkeliamas juos pirmą kartą pasirinkus; kol lauki, rodomas įkėlimo vietaženklis. Telefone skiltys rodomos viena po kitos, o jų turinys įkeliamas slenkant iki skilties. Nuoroda su pasirinktu skirtuku iškart atveria tą skiltį.
+
 ### Institucijų sąrašas {#sarasas}
 
 Eilutėje rodomas pavadinimas, padalinys, tipai ir narių skaičius. Greitasis filtras **Sekamos** palieka tavo sekamas institucijas, o skiltyje **Filtrai** galima rinktis padalinį, tipą, **Aktyvumą** ir **Būseną**.
