@@ -122,6 +122,26 @@ export function agendaItemFormData(item: EditableAgendaItemSource): AgendaItemFo
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'dirty';
 
 /**
+ * Give votes created by a save the ids the server assigned (in payload order), or the next
+ * autosave sends them without an id and the server recreates them.
+ */
+function adoptCreatedVoteIds(baseline: AgendaItemFormData, sentVotes: EditableVote[], voteIds: unknown): void {
+  if (!Array.isArray(voteIds)) {
+    return;
+  }
+
+  sentVotes.forEach((vote, index) => {
+    const id = voteIds[index];
+    if (vote.id || typeof id !== 'string') {
+      return;
+    }
+    baseline.votes[index]!.id = id;
+    // A vote removed meanwhile is detached here, and the next save deletes it by leaving it out.
+    vote.id = id;
+  });
+}
+
+/**
  * Debounced auto-save for the agenda item editor.
  *
  * `flush()` performs an immediate save of any pending changes — call it before
@@ -151,7 +171,8 @@ export function useAgendaItemAutosave(
 
     // Edits made while the request is in flight must stay dirty, so the saved
     // snapshot — not the form as it is on success — becomes the new baseline.
-    const sent = snapshot();
+    let sent = snapshot();
+    const sentVotes = [...form.votes];
     let saved = false;
 
     form
@@ -163,9 +184,12 @@ export function useAgendaItemAutosave(
         preserveScroll: true,
         preserveState: true,
         except,
-        onSuccess: () => {
+        onSuccess: (page) => {
           saved = true;
-          form.defaults(JSON.parse(sent) as AgendaItemFormData);
+          const baseline = JSON.parse(sent) as AgendaItemFormData;
+          adoptCreatedVoteIds(baseline, sentVotes, page.props.flash?.data?.voteIds);
+          sent = JSON.stringify(baseline);
+          form.defaults(baseline);
           lastSavedAt.value = new Date();
         },
         onFinish: () => {

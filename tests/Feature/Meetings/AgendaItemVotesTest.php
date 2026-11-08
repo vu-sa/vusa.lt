@@ -65,3 +65,16 @@ test('a payload marking two main votes keeps only the first', function (): void 
 
     expect($votes->pluck('is_main')->all())->toBe([true, false]);
 });
+
+test('a save hands back the vote ids in payload order, so the editor stops recreating new votes', function (): void {
+    $existing = Vote::factory()->for($this->agendaItem, 'agendaItem')->create(['order' => 0]);
+
+    $response = submitVotes($this->agendaItem, [
+        ['id' => $existing->id, 'decision' => 'positive', 'order' => 0],
+        ['decision' => 'negative', 'order' => 1],
+    ])->assertSessionHasNoErrors();
+
+    $created = $this->agendaItem->votes()->whereKeyNot($existing->id)->sole();
+
+    $response->assertSessionHas('data', ['voteIds' => [$existing->id, $created->id]]);
+});

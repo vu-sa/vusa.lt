@@ -2,10 +2,10 @@ import { effectScope, reactive } from 'vue';
 import { describe, expect, it, vi } from 'vitest';
 import type { InertiaForm } from '@inertiajs/vue3';
 
-import { useAgendaItemAutosave, type AgendaItemFormData } from '../useAgendaItemAutosave';
+import { createVote, useAgendaItemAutosave, type AgendaItemFormData, type EditableVote } from '../useAgendaItemAutosave';
 
 interface PatchOptions {
-  onSuccess: () => void;
+  onSuccess: (page?: { props: { flash: { data: unknown } } }) => void;
   onFinish: () => void;
 }
 
@@ -14,10 +14,11 @@ function fakeForm() {
   const requests: PatchOptions[] = [];
   const form = reactive({
     type: null as AgendaItemFormData['type'],
+    votes: [] as EditableVote[],
     isDirty: false,
     processing: false,
     data() {
-      return { type: form.type };
+      return { type: form.type, votes: form.votes };
     },
     transform() {
       return form;
@@ -29,10 +30,10 @@ function fakeForm() {
     }),
   });
 
-  const respond = (success = true) => {
+  const respond = (success = true, flashData: unknown = null) => {
     const options = requests.at(-1)!;
     if (success) {
-      options.onSuccess();
+      options.onSuccess({ props: { flash: { data: flashData } } });
     }
     form.processing = false;
     options.onFinish();
@@ -95,7 +96,7 @@ describe('useAgendaItemAutosave', () => {
     respond();
 
     expect(navigate).toHaveBeenCalledOnce();
-    expect(form.defaults).toHaveBeenLastCalledWith({ type: 'informational' });
+    expect(form.defaults).toHaveBeenLastCalledWith({ type: 'informational', votes: [] });
   });
 
   it('stays on a save the server rejected', () => {
@@ -108,5 +109,33 @@ describe('useAgendaItemAutosave', () => {
     respond(false);
 
     expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('keeps the ids the server gave new votes, so the next save updates them instead of recreating them', () => {
+    const { form, autosave, respond, requests } = setup();
+    form.votes = [{ ...createVote(), id: 'vote-old' }, createVote()];
+    form.isDirty = true;
+    autosave.submit();
+
+    respond(true, { voteIds: ['vote-old', 'vote-new'] });
+
+    expect(form.votes.map(vote => vote.id)).toEqual(['vote-old', 'vote-new']);
+    expect(form.defaults).toHaveBeenLastCalledWith(expect.objectContaining({
+      votes: [expect.objectContaining({ id: 'vote-old' }), expect.objectContaining({ id: 'vote-new' })],
+    }));
+    expect(requests).toHaveLength(1);
+  });
+
+  it('gives a vote added while a save was in flight no id of its own, and saves it next', () => {
+    const { form, autosave, respond, requests } = setup();
+    form.votes = [createVote()];
+    form.isDirty = true;
+    autosave.submit();
+
+    form.votes.push(createVote());
+    respond(true, { voteIds: ['vote-first'] });
+
+    expect(form.votes.map(vote => vote.id)).toEqual(['vote-first', null]);
+    expect(requests).toHaveLength(2);
   });
 });
