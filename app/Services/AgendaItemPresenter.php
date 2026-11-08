@@ -25,6 +25,39 @@ class AgendaItemPresenter
         ];
     }
 
+    /** @return array{id: string, order: int, is_private: true, is_redacted: true, title: string}|array{id: string, order: int, brought_by_students: bool, type: AgendaItemType|null, start_time: string|null, end_time: string|null, title: string|null, is_private: bool, votes: list<array{is_main: bool, is_consensus: bool, student_vote: string|null, decision: string|null, student_benefit: string|null}>, comments_count: int, has_notes: bool} */
+    public static function forMeetingList(AgendaItem $item, ?User $user): array
+    {
+        if ($item->is_private && ! self::canRead($item, $user)) {
+            return self::redacted($item);
+        }
+
+        $votes = [];
+        foreach ($item->votes as $vote) {
+            $votes[] = [
+                'is_main' => $vote->is_main,
+                'is_consensus' => $vote->is_consensus,
+                'student_vote' => $vote->student_vote,
+                'decision' => $vote->decision,
+                'student_benefit' => $vote->student_benefit,
+            ];
+        }
+
+        return [
+            'id' => $item->id,
+            'order' => $item->order,
+            'title' => $item->getRawOriginal('title') === null ? null : (string) $item->title,
+            'is_private' => (bool) $item->is_private,
+            'type' => $item->type,
+            'start_time' => $item->start_time,
+            'end_time' => $item->end_time,
+            'brought_by_students' => (bool) $item->brought_by_students,
+            'votes' => $votes,
+            'comments_count' => (int) $item->getAttribute('comments_count'),
+            'has_notes' => (bool) $item->getAttribute('has_notes'),
+        ];
+    }
+
     public static function canRead(AgendaItem $item, ?User $user): bool
     {
         return $user !== null && Gate::forUser($user)->allows('view', $item);

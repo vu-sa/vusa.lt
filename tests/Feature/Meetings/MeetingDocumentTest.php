@@ -128,14 +128,13 @@ test('the meeting page labels each linked document by language and date', functi
         ->get(route('meetings.show', $this->meeting))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            // `language_code` is derived, so it only reaches the panel if it is appended.
-            ->loadDeferredProps('meetingPanels', fn (Assert $page) => $page
+            ->reloadOnly(['documents', 'pendingDocuments'], fn (Assert $page) => $page
                 ->where('documents.0.language_code', 'lt')
                 ->where('documents.0.document_date', '2026-07-23')
             ));
 });
 
-test('linked documents retain their typed record payload in the deferred panel', function (): void {
+test('linked documents expose only the fields rendered in the optional panel', function (): void {
     $document = Document::factory()->for($this->institution)->create([
         'meeting_id' => $this->meeting->id,
         'status' => DocumentStatus::Published,
@@ -146,23 +145,17 @@ test('linked documents retain their typed record payload in the deferred panel',
     asUser($this->admin)->get(route('meetings.show', $this->meeting))
         ->assertInertia(fn (Assert $page) => $page
             ->missing('documents')
-            ->loadDeferredProps('meetingPanels', fn (Assert $panels) => $panels
+            ->reloadOnly(['documents', 'pendingDocuments'], fn (Assert $panels) => $panels
                 ->has('documents', 1, fn (Assert $row) => $row
                     ->where('id', $document->id)
                     ->whereType('title', 'string')
                     ->whereType('name', 'string')
-                    ->where('status', 'published')
                     ->where('document_date', '2025-02-03')
                     ->where('language_code', 'lt')
-                    ->where('meeting_id', $this->meeting->id)
-                    ->where('institution.id', $this->institution->id)
-                    ->whereType('institution.tenant.shortname', 'string')
-                    ->whereType('sync_attempts', 'integer')
-                    ->whereType('effective_date', 'string|null')
-                    ->whereType('expiration_date', 'string|null')
+                    ->whereType('content_type', 'string|null')
+                    ->whereType('anonymous_url', 'string|null')
                     ->missing('sharepoint_id')
                     ->missing('sharepoint_permission_id')
-                    ->etc()
                 )
             )
         );
@@ -178,7 +171,7 @@ test('a document of unrecorded language carries no language claim', function ():
         ->get(route('meetings.show', $this->meeting))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->loadDeferredProps('meetingPanels', fn (Assert $page) => $page
+            ->reloadOnly(['documents', 'pendingDocuments'], fn (Assert $page) => $page
                 ->where('documents.0.language_code', 'unknown')
             ));
 });
@@ -219,7 +212,7 @@ test('the meeting page offers pending files of its padalinys, meeting-day files 
         ->get(route('meetings.show', $this->meeting))
         ->assertInertia(fn (Assert $page) => $page
             ->missing('pendingDocuments')
-            ->loadDeferredProps('meetingPanels', fn (Assert $page) => $page
+            ->reloadOnly(['documents', 'pendingDocuments'], fn (Assert $page) => $page
                 ->has('pendingDocuments', 2)
                 ->where('pendingDocuments.0.id', $sameDay->id)
                 ->where('pendingDocuments.1.id', $older->id)
@@ -270,7 +263,7 @@ test('a linked document that is not published reaches only those who may manage 
         ->get(route('meetings.show', $this->meeting))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->loadDeferredProps('meetingPanels', fn (Assert $page) => $page
+            ->reloadOnly(['documents', 'pendingDocuments'], fn (Assert $page) => $page
                 ->has('documents', 1)
                 ->where('documents.0.id', $published->id)
             ));

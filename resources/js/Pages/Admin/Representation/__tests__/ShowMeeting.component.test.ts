@@ -5,7 +5,7 @@ import * as i18n from 'laravel-vue-i18n';
 
 import ShowMeeting from '@/Pages/Admin/Representation/ShowMeeting.vue';
 import { commonStubs } from '@/tests/stubs';
-import { ActionType, AgendaItemType, CalendarHeroStyleEnum, MeetingKind, MeetingType } from '@/Types/enums';
+import { ActionType, AgendaItemType, MeetingKind, MeetingType } from '@/Types/enums';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -39,23 +39,16 @@ const stubs = {
 
 type PageProps = InstanceType<typeof ShowMeeting>['$props'];
 type Meeting = PageProps['meeting'];
-type FullAgendaItem = Extract<Meeting['agenda_items'][number], { meeting_id: string }>;
+type FullAgendaItem = Extract<Meeting['agenda_items'][number], { votes: unknown[] }>;
 type Institution = Meeting['institutions'][number];
-type CalendarEvent = NonNullable<Meeting['calendar_event']>;
 type Representative = PageProps['representatives'][number];
 type Task = NonNullable<PageProps['tasks']>[number];
 
 const makeAgendaItem = (overrides: Partial<FullAgendaItem> = {}): FullAgendaItem => ({
   id: 'a1',
-  meeting_id: 'meet1',
-  created_at: '2026-03-01T09:00:00.000Z',
-  updated_at: '2026-03-01T09:00:00.000Z',
   order: 1,
   title: 'Studijų klausimai',
   type: AgendaItemType.Informational,
-  description: null,
-  student_position: null,
-  public_title: null,
   is_private: false,
   brought_by_students: false,
   start_time: null,
@@ -63,8 +56,6 @@ const makeAgendaItem = (overrides: Partial<FullAgendaItem> = {}): FullAgendaItem
   votes: [],
   comments_count: 0,
   has_notes: false,
-  tenants: null,
-  meeting: null,
   can: { update: true, delete: true },
   ...overrides,
 });
@@ -72,56 +63,10 @@ const makeAgendaItem = (overrides: Partial<FullAgendaItem> = {}): FullAgendaItem
 const makeInstitution = (overrides: Partial<Institution> = {}): Institution => ({
   id: 'i1',
   name: 'VU SA MIF',
-  short_name: null,
-  alias: 'vusa-mif',
-  description: null,
-  address: null,
-  phone: null,
-  email: null,
-  working_hours: null,
-  website: null,
-  logo_url: null,
-  facebook_url: null,
-  instagram_url: null,
   tenant_id: null,
-  is_active: 1,
-  meeting_periodicity_days: null,
-  created_at: '2026-03-01T09:00:00.000Z',
-  updated_at: '2026-03-01T09:00:00.000Z',
-  deleted_at: null,
-  types: [],
+  is_active: true,
   tenant: null,
-  pivot: { meeting_id: 'meet1', institution_id: overrides.id ?? 'i1' },
   ...overrides,
-});
-
-const makeCalendarEvent = (): CalendarEvent => ({
-  id: 7,
-  title: 'Senato posėdis',
-  permalink: 'senato-posedis',
-  description: null,
-  location: null,
-  is_remote: false,
-  organizer: null,
-  cto_url: null,
-  facebook_url: null,
-  main_image_focal_point: null,
-  is_draft: true,
-  is_all_day: false,
-  is_international: false,
-  hero_style: CalendarHeroStyleEnum.CARD,
-  date: '2026-03-04 12:00',
-  end_date: null,
-  event_type_id: null,
-  tenant_id: 1,
-  meeting_id: 'meet1',
-  created_at: '2026-03-01 11:00:00',
-  updated_at: '2026-03-01 11:00:00',
-  registration_form_id: null,
-  deleted_at: null,
-  main_image_url: null,
-  main_image_media: null,
-  media: [],
 });
 
 const makeRepresentative = (overrides: Partial<Representative> = {}): Representative => ({
@@ -132,13 +77,8 @@ const makeRepresentative = (overrides: Partial<Representative> = {}): Representa
   facebook_url: null,
   pronouns: null,
   show_pronouns: false,
-  is_active: 1,
-  created_at: '2026-03-01T09:00:00.000Z',
-  updated_at: '2026-03-01T09:00:00.000Z',
   profile_photo_path: null,
   profile_photo_focal_point: null,
-  deleted_at: null,
-  duties: [],
   ...overrides,
 });
 
@@ -173,7 +113,6 @@ const baseMeeting: Meeting = {
   end_time: null,
   created_at: '2026-03-01T09:00:00.000Z',
   updated_at: '2026-03-01T09:00:00.000Z',
-  deleted_at: null,
   type: MeetingType.InPerson,
   meeting_kind: null,
   inherited_meeting_kind: MeetingKind.Sitting,
@@ -183,24 +122,16 @@ const baseMeeting: Meeting = {
   agenda_items: [makeAgendaItem(), makeAgendaItem({ id: 'a2', order: 2 })],
   sharepointPath: null,
   sharepointFolderUrl: null,
-  calendar_event: null,
-  tenants: null,
-  is_public: false,
-  is_joint: false,
+  has_calendar_event: false,
+  type_label: 'Gyvas posėdis',
   has_protocol: false,
-  has_report: false,
-  comments_count: 0,
-  tasks_count: 0,
-  documents_count: 0,
-  fileable_files: [],
-  comments: [],
 };
 
 const createWrapper = (overrides: Partial<PageProps> = {}) => {
   const props: PageProps = {
     meeting: baseMeeting,
     representatives: [],
-    secretaries: [],
+    incompleteTasksCount: 0,
     files: [],
     availableInstitutionsForAttach: [],
     readOnly: false,
@@ -222,6 +153,7 @@ const createWrapper = (overrides: Partial<PageProps> = {}) => {
 
 describe('ShowMeeting.vue', () => {
   beforeEach(() => {
+    vi.mocked(router.reload).mockClear();
     localStorage.clear();
     window.history.replaceState({}, '', '/');
   });
@@ -266,7 +198,6 @@ describe('ShowMeeting.vue', () => {
   it('shows only representatives in the people fact', () => {
     const wrapper = createWrapper({
       representatives: [makeRepresentative()],
-      secretaries: [{ id: 'u2', name: 'Rūta Petraitė', email: null, profile_photo_path: null }],
     });
 
     const peopleFact = wrapper.findAll('dl > div')[4];
@@ -329,15 +260,15 @@ describe('ShowMeeting.vue', () => {
     });
 
     it('offers unlinking once an announcement exists, whatever the body', () => {
-      const announced = { ...baseMeeting, calendar_event: makeCalendarEvent() };
+      const announced = { ...baseMeeting, has_calendar_event: true };
 
       expect(menuText({ meeting: announced })).toContain('Atsieti nuo kalendoriaus');
       expect(menuText({ meeting: announced, governanceScope: 'vusa' }))
         .toContain('Atsieti nuo kalendoriaus');
     });
 
-    it('unlinks without reloading the deferred document and task panels', async () => {
-      const wrapper = createWrapper({ meeting: { ...baseMeeting, calendar_event: makeCalendarEvent() } });
+    it('unlinks without reloading the document and task panels', async () => {
+      const wrapper = createWrapper({ meeting: { ...baseMeeting, has_calendar_event: true } });
 
       wrapper.findComponent({ name: 'RecordPage' }).vm.$emit('action', 'unlink-calendar');
       await wrapper.vm.$nextTick();
@@ -347,6 +278,70 @@ describe('ShowMeeting.vue', () => {
         expect.objectContaining({ except: ['documents', 'tasks', 'pendingDocuments'] }),
       );
     });
+  });
+
+  it.each([
+    ['files', ['files']],
+    ['tasks', ['tasks']],
+    ['documents', ['documents', 'pendingDocuments']],
+  ] as const)('loads %s only on its first opening', async (tab, only) => {
+    const wrapper = createWrapper({ files: undefined, governanceScope: 'vusa' });
+    const record = wrapper.findComponent({ name: 'RecordPage' });
+    expect(router.reload).not.toHaveBeenCalled();
+
+    record.vm.$emit('update:section', tab);
+    await wrapper.vm.$nextTick();
+    expect(router.reload).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ only: [...only] }));
+    const finish = vi.mocked(router.reload).mock.calls[0]?.[0]?.onFinish;
+    if (tab === 'files') await wrapper.setProps({ files: [] });
+    if (tab === 'tasks') await wrapper.setProps({ tasks: [] });
+    if (tab === 'documents') await wrapper.setProps({ documents: [], pendingDocuments: [] });
+    // Inertia merges the returned props before completing the visit.
+    finish?.({} as Parameters<NonNullable<typeof finish>>[0]);
+    record.vm.$emit('update:section', 'agenda');
+    await wrapper.vm.$nextTick();
+    record.vm.$emit('update:section', tab);
+    await wrapper.vm.$nextTick();
+    expect(router.reload).toHaveBeenCalledTimes(1);
+    wrapper.unmount();
+  });
+
+  it.each([
+    ['files', ['files']],
+    ['tasks', ['tasks']],
+    ['documents', ['documents', 'pendingDocuments']],
+  ] as const)('loads the %s deep link on mount', (tab, only) => {
+    window.history.replaceState({}, '', `/?tab=${tab}`);
+    const wrapper = createWrapper({ files: undefined, governanceScope: 'vusa' });
+    expect(router.reload).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ only: [...only] }));
+    wrapper.unmount();
+  });
+
+  it('keeps unopened panels out of mutation responses and refreshes loaded tasks', () => {
+    const wrapper = createWrapper({ files: undefined, tasks: [] });
+    const before = [...vi.mocked(router.on).mock.calls].reverse().find(([event]) => event === 'before')?.[1];
+    expect(before).toBeDefined();
+    const event = new CustomEvent('inertia:before', {
+      detail: { visit: { method: 'patch', except: [] } },
+    });
+    before?.(event as Parameters<NonNullable<typeof before>>[0]);
+    expect(event.detail.visit.except).toEqual(['files', 'documents', 'pendingDocuments', 'recentAgendas']);
+    wrapper.unmount();
+  });
+
+  it('shows the meeting type supplied by the server', () => {
+    const wrapper = createWrapper();
+    expect(wrapper.findComponent({ name: 'RecordPage' }).props('eyebrowSuffix')).toBe('Gyvas posėdis');
+    wrapper.unmount();
+  });
+
+  it('loads attach options when the dialog opens', async () => {
+    const wrapper = createWrapper({ availableInstitutionsForAttach: undefined });
+    expect(router.reload).not.toHaveBeenCalled();
+    wrapper.findComponent({ name: 'RecordPage' }).vm.$emit('action', 'attach-institution');
+    await wrapper.vm.$nextTick();
+    expect(router.reload).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ only: ['availableInstitutionsForAttach'] }));
+    wrapper.unmount();
   });
 
   it('lands on the agenda tab by default', () => {

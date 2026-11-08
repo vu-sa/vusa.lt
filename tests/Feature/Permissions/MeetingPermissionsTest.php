@@ -166,7 +166,8 @@ test('former members navigation and agenda suggestions do not reveal meetings ou
 
     asUser($this->member)->get(route('meetings.show', $during))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('recordNavigation.total', 2)
-            ->where('recordNavigation.meetings.0.id', (string) $earlier->id)
+            ->where('recordNavigation.previousHref', route('meetings.show', $earlier))
+            ->missing('recordNavigation.meetings')
             ->reloadOnly('recentAgendas', fn (Assert $reload) => $reload->has('recentAgendas', 1)
                 ->where('recentAgendas.0.id', (string) $earlier->id)));
 });

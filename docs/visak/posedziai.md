@@ -71,6 +71,9 @@ Posėdžių sąrašas pasiekiamas adresu `/mano/meetings`, o kiekvienas posėdis
 
 ### Posėdžio tipas ir pavadinimas
 
+Posėdžio tipas rodomas šalia puslapio antraštės. Failai, užduotys ir dokumentai įkeliami atidarius
+atitinkamą skiltį; kol duomenys kraunami, rodoma laukimo vieta. Nuoroda į konkrečią skiltį ją atidaro ir įkelia jos duomenis.
+
 Posėdis būna **Gyvas posėdis**, **Nuotolinis posėdis**, **Sprendimas el. paštu** arba be tipo
 („Kita“). Pavadinimas sudaromas automatiškai iš datos, laiko ir žodžio, kuriuo vadinami
 institucijos posėdžiai, pvz., „2026 kovo 05 d. 16.30 val. posėdis“ arba „… susirinkimas“. Žodis –

@@ -17,6 +17,7 @@ use App\Http\Requests\UpdateMeetingRequest;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Calendar;
+use App\Models\FileableFile;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
@@ -27,6 +28,7 @@ use App\Services\MeetingAccessService;
 use App\Services\MeetingCompletionService;
 use App\Services\MeetingPanelPresenter;
 use App\Services\MeetingPresenter;
+use App\Services\MeetingRepresentativeResolver;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
@@ -160,38 +162,32 @@ class MeetingController extends AdminController
     {
         $this->handleAuthorization('viewSummary', $meeting);
 
-        // A public meeting outside the user's reach opens as its agenda only: no files, tasks,
-        // documents or discussion, and nothing that would lead to non-public siblings.
+        // Public summaries expose the agenda without internal panels or sibling navigation.
         $readOnly = fn (): bool => once(fn (): bool => ! Gate::allows('view', $meeting));
 
-        $loadMeeting = fn () => once(function () use ($meeting, $readOnly) {
-            $meeting->loadMissing($readOnly()
-                ? ['institutions.types', 'institutions.tenant', 'calendarEvent']
-                : ['institutions.types', 'institutions.tenant', 'fileableFiles', 'comments', 'calendarEvent']
-            )->loadMissing([
+        $loadMeeting = fn () => once(function () use ($meeting) {
+            $meeting->loadMissing([
+                'institutions.types',
+                'institutions.tenant',
                 'agendaItems' => function ($query): void {
                     $query->with('votes')->withCount(['comments' => fn ($query) => $query->notErased()])
                         ->withExists(['note as has_notes' => fn ($note) => $note->whereNotNull('notes_html')])
                         ->orderBy('order');
                 },
+            ])->loadExists([
+                'calendarEvent as calendar_event_exists',
+                'availableFiles as protocol_exists' => fn ($query) => $query->where('file_type', FileableFile::TYPE_PROTOCOL),
             ]);
-
-            if (! $readOnly()) {
-                $meeting->loadCount(['comments', 'tasks', 'documents']);
-            }
-
-            // Append is_public, is_joint and file status now that relations are loaded (avoids N+1)
-            $meeting->append(['is_public', 'is_joint', 'has_protocol', 'has_report']);
 
             return $meeting;
         });
 
-        // Get representatives who were active at meeting time
-        $representatives = fn () => once(fn () => $loadMeeting()->getRepresentativesActiveAt());
+        $representatives = fn () => once(fn () => app(MeetingRepresentativeResolver::class)->resolve($loadMeeting(), withDuties: false));
 
         // The primary institution determines the canonical public host.
         $primaryInstitution = fn () => once(fn () => $loadMeeting()->institutions->first());
 
+        $canDelete = fn () => once(fn () => ! $readOnly() && Gate::allows('delete', $meeting));
         $canUpdate = fn () => once(fn () => ! $readOnly() && Gate::allows('update', $meeting));
         $canCreateAgendaItems = fn () => once(fn () => Gate::allows('createFor', [AgendaItem::class, $meeting]));
 
@@ -219,49 +215,39 @@ class MeetingController extends AdminController
             ->values()
             ->all());
 
-        // show meeting
         return Inertia::render('Admin/Representation/ShowMeeting', [
-            'meeting' => fn (): array => MeetingPresenter::forShow($loadMeeting(), request()->user(), $readOnly(), $agendaItemAbilities),
+            'meeting' => fn () => MeetingPresenter::forShow($loadMeeting(), request()->user(), $readOnly(), $agendaItemAbilities),
             'readOnly' => fn (): bool => $readOnly(),
-            'files' => fn (): array => MeetingPanelPresenter::files($loadMeeting(), $readOnly()),
-            'representatives' => fn (): array => MeetingPanelPresenter::representatives($representatives()),
-            // Nominated for the term the meeting fell in (O22). When present, these are the
-            // people the agenda tasks went to instead of the whole membership.
-            'secretaries' => fn (): array => $readOnly() ? [] : InstitutionSecretaryController::forMeetingPayload($meeting),
-            'abilities' => fn (): array => MeetingPresenter::abilities(
+            'files' => Inertia::optional(fn () => MeetingPanelPresenter::files($meeting, $readOnly())),
+            'representatives' => fn () => MeetingPanelPresenter::representatives($representatives()),
+            'abilities' => fn () => MeetingPresenter::abilities(
                 $canUpdate(),
-                ! $readOnly() && Gate::allows('delete', $meeting),
-                ! $readOnly() && Gate::allows('delete', $meeting) && $meeting->isDiscardable(),
+                $canDelete(),
+                $canDelete() && $meeting->isDiscardable(),
                 $canCreateAgendaItems(),
             ),
-            'completion' => fn (): array => MeetingPresenter::completion(
+            'completion' => fn () => MeetingPresenter::completion(
                 $readOnly() && $loadMeeting()->agendaItems->contains(fn ($item) => $item->is_private)
                     ? null : $this->meetingCompletionService->calculate($loadMeeting()),
                 $missingActions(),
             ),
-            'publicVisibility' => fn (): array => MeetingPresenter::publicVisibility($loadMeeting(), app()->getLocale()),
-            'availableInstitutionsForAttach' => fn (): array => $canUpdate()
+            'publicVisibility' => fn () => MeetingPresenter::publicVisibility($loadMeeting(), app()->getLocale()),
+            'availableInstitutionsForAttach' => Inertia::optional(fn () => $canUpdate()
                 ? MeetingPanelPresenter::availableInstitutionsForAttach($meeting, request()->user())
-                : [],
+                : []),
             'governanceScope' => fn () => $this->governanceScopeFor($loadMeeting()),
             'recordNavigation' => fn () => $readOnly() || $primaryInstitution() === null ? null : $this->institutionMeetingNavigation($loadMeeting(), $primaryInstitution()),
-            'tasks' => $readOnly() ? [] : Inertia::defer(fn () => MeetingPanelPresenter::tasks($meeting), 'meetingPanels'),
+            'tasks' => Inertia::optional(fn () => $readOnly() ? [] : MeetingPanelPresenter::tasks($meeting)),
+            'incompleteTasksCount' => fn () => $readOnly() ? 0 : $meeting->tasks()->whereNull('completed_at')->count(),
             // A linked document that is not published reaches only those who may decide on it.
-            'documents' => $readOnly() ? [] : Inertia::defer(fn () => MeetingPanelPresenter::documents($meeting, request()->user()), 'meetingPanels'),
-            'pendingDocuments' => $readOnly()
-                ? []
-                : Inertia::defer(fn () => MeetingPanelPresenter::pendingDocuments($meeting, request()->user()), 'meetingPanels'),
+            'documents' => Inertia::optional(fn () => $readOnly() ? [] : MeetingPanelPresenter::documents($meeting, request()->user())),
+            'pendingDocuments' => Inertia::optional(fn () => $readOnly() ? [] : MeetingPanelPresenter::pendingDocuments($meeting, request()->user())),
             // Loaded only when "Iš ankstesnio posėdžio" is opened in the add-items sheet.
             'recentAgendas' => Inertia::optional(fn () => $readOnly() ? [] : $this->recentAgendasFor($meeting)),
         ]);
     }
 
-    /**
-     * ‹ › through the primary institution's meetings in date order, labelled with the neighbours'
-     * dates, plus the whole list for the header's meeting picker.
-     *
-     * @return array{position: int, total: int, previousHref: string|null, nextHref: string|null, previousLabel: string|null, nextLabel: string|null, meetings: list<array{id: string, start_time: string, href: string}>}|null
-     */
+    /** @return array{position: int, total: int, previousHref: string|null, nextHref: string|null, previousLabel: string|null, nextLabel: string|null}|null */
     private function institutionMeetingNavigation(Meeting $meeting, Institution $institution): ?array
     {
         $meetings = app(MeetingAccessService::class)->visibleMeetings($institution->meetings()->getQuery(), request()->user())
@@ -291,7 +277,6 @@ class MeetingController extends AdminController
             'nextHref' => $next['href'] ?? null,
             'previousLabel' => $this->shortMeetingDate($previous['start_time'] ?? null),
             'nextLabel' => $this->shortMeetingDate($next['start_time'] ?? null),
-            'meetings' => $meetings->all(),
         ];
     }
 

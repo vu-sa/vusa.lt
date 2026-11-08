@@ -460,53 +460,49 @@ describe('meeting show payload', function (): void {
 
         asUser($this->admin)->get(route('meetings.show', $meeting))
             ->assertInertia(fn (Assert $page) => $page
-                ->has('files', 1, fn (Assert $row) => $row
-                    ->where('id', $file->id)
-                    ->whereType('name', 'string')
-                    ->where('file_type', FileableFile::TYPE_PROTOCOL)
-                    ->whereType('file_date', 'string')
-                    ->where('size_bytes', 2048)
-                    ->where('formatted_size', '2 KB')
-                    ->where('public_link', null)
-                    ->missing('public_link_permission_id')
-                    ->etc()
+                ->missing('files')
+                ->reloadOnly('files', fn (Assert $files) => $files
+                    ->has('files', 1, fn (Assert $row) => $row
+                        ->where('id', $file->id)
+                        ->whereType('name', 'string')
+                        ->where('file_type', FileableFile::TYPE_PROTOCOL)
+                        ->whereType('file_date', 'string')
+                        ->where('size_bytes', 2048)
+                        ->where('formatted_size', '2 KB')
+                        ->where('public_link', null)
+                        ->missing('public_link_permission_id')
+                        ->etc()
+                    )
                 )
                 ->has('representatives', 1, fn (Assert $row) => $row
                     ->where('id', $representative->id)
                     ->whereType('name', 'string')
-                    ->whereType('email', 'string|null')
                     ->where('profile_photo_path', null)
-                    ->whereType('show_pronouns', 'boolean')
+                    ->whereType('profile_photo_focal_point', 'string|null')
+                    ->whereType('email', 'string|null')
+                    ->whereType('phone', 'string|null')
+                    ->whereType('facebook_url', 'string|null')
                     ->whereType('pronouns', 'string|null')
-                    ->has('duties', 1, fn (Assert $dutyRow) => $dutyRow
-                        ->where('id', $duty->id)
-                        ->where('institution_id', $this->institution->id)
-                        ->whereType('name', 'string|null')
-                        ->whereType('is_active', 'boolean')
-                        ->whereType('pivot.start_date', 'string')
-                        ->where('pivot.end_date', null)
-                        ->etc()
-                    )
+                    ->whereType('show_pronouns', 'boolean')
+                    ->missing('duties')
                     ->missing('password')
                     ->missing('notification_preferences')
                     ->etc()
                 )
-                ->has('secretaries', 1, fn (Assert $row) => $row
-                    ->where('id', $secretary->id)
-                    ->where('name', $secretary->name)
-                    ->where('email', $secretary->email)
-                    ->where('profile_photo_path', null)
+                ->missing('secretaries')
+                ->missing('availableInstitutionsForAttach')
+                ->reloadOnly('availableInstitutionsForAttach', fn (Assert $options) => $options
+                    ->where('availableInstitutionsForAttach', fn ($rows) => collect($rows)->contains(
+                        fn ($row) => $row['id'] === $attachable->id
+                            && is_string($row['name'])
+                            && is_bool($row['is_active'])
+                            && $row['tenant_shortname'] === $this->tenant->shortname
+                    ))
                 )
-                ->where('availableInstitutionsForAttach', fn ($rows) => collect($rows)->contains(
-                    fn ($row) => $row['id'] === $attachable->id
-                        && is_string($row['name'])
-                        && is_bool($row['is_active'])
-                        && $row['tenant_shortname'] === $this->tenant->shortname
-                ))
             );
     });
 
-    test('defers task and document panels', function (): void {
+    test('loads task and document panels only when requested', function (): void {
         $meeting = Meeting::factory()->create(['start_time' => now()->addDay()]);
         $meeting->institutions()->attach($this->institution);
         $task = $meeting->tasks()->create([
@@ -529,7 +525,11 @@ describe('meeting show payload', function (): void {
             ->missing('meeting.documents')
             ->missing('tasks')
             ->missing('documents')
-            ->loadDeferredProps('meetingPanels', fn ($page) => $page
+            ->missing('pendingDocuments')
+            ->missing('files')
+            ->missing('availableInstitutionsForAttach')
+            ->whereType('incompleteTasksCount', 'integer')
+            ->reloadOnly(['tasks', 'documents', 'pendingDocuments'], fn ($page) => $page
                 ->has('tasks', 1)
                 ->where('tasks.0.name', 'Deferred task')
                 ->has('tasks.0', fn (Assert $row) => $row
@@ -575,10 +575,10 @@ describe('read-only public meeting record', function (): void {
                 ->component('Admin/Representation/ShowMeeting')
                 ->where('readOnly', true)
                 ->has('meeting.agenda_items', 1)
-                ->where('files', [])
-                ->where('tasks', [])
-                ->where('documents', [])
-                ->where('secretaries', [])
+                ->missing('files')
+                ->missing('tasks')
+                ->missing('documents')
+                ->missing('secretaries')
                 ->where('recordNavigation', null)
                 ->where('abilities.update', false)
                 ->where('meeting.agenda_items.0.can.update', false)
@@ -1058,9 +1058,7 @@ describe('institution meeting navigation', function (): void {
                 ->where('recordNavigation.nextHref', route('meetings.show', $later))
                 ->where('recordNavigation.previousLabel', '01-10')
                 ->where('recordNavigation.nextLabel', '03-10')
-                ->has('recordNavigation.meetings', 3)
-                ->where('recordNavigation.meetings.0.id', $earlier->id)
-                ->where('recordNavigation.meetings.2.href', route('meetings.show', $later))
+                ->missing('recordNavigation.meetings')
             );
     });
 
