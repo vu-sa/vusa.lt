@@ -90,12 +90,13 @@ import { useHttp, usePage } from '@inertiajs/vue3';
 import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import RCInlineText from '../Editor/Fullscreen/RCInlineText.vue';
-
 import type { TextBox } from '@/Types/contentParts';
 import type { ApiResponse } from '@/Types/api.d';
 import { Button } from '@/Components/ui/button';
 import { Textarea } from '@/Components/ui/textarea';
+
+import RCInlineText from '../Editor/Fullscreen/RCInlineText.vue';
+
 import IFluentCheckmark12Regular from '~icons/fluent/checkmark12-regular';
 
 const MAX_LENGTH = 5000;

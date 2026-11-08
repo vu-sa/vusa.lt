@@ -4,7 +4,7 @@
   <article class="group relative flex h-full flex-col overflow-hidden border border-border bg-card transition-colors duration-300 hover:border-brand">
     <!-- Stretched link: the whole card is clickable, but content underneath (e.g. a
          footer list of per-event links) can still carry its own, higher-stacked links. -->
-    <SmartLink v-if="href" :href class="absolute inset-0 z-10" :aria-label="title" />
+    <SmartLink v-if="safeHref(href)" :href="safeHref(href)" class="absolute inset-0 z-10" :aria-label="title" />
 
     <!-- Cover — omitted entirely (not even the fallback placeholder) when there's no
          image and the card wasn't asked to always reserve a cover slot. Grids that mix
@@ -45,6 +45,8 @@
 import MediaImage from '@/Components/Brand/MediaImage.vue';
 import type { ImageData } from '@/Types/media';
 import SmartLink from '@/Components/Public/SmartLink.vue';
+import { safeHref } from '@/Utils/safeHref';
+
 import IFluentImage24Regular from '~icons/fluent/image24-regular';
 
 withDefaults(defineProps<{

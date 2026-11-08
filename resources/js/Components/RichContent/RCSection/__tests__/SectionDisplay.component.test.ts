@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import SectionDisplay from '../SectionDisplay.vue';
-
 import type { Section } from '@/Types/contentParts';
+
+import SectionDisplay from '../SectionDisplay.vue';
 
 function makeElement(options: Partial<Section['options']> = {}): Section {
   return {

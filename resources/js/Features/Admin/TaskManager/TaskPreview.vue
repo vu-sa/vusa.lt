@@ -30,13 +30,13 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 
-import type { TaskAction, TaskActionKey } from './taskActions';
-import TaskDetails from './TaskDetails.vue';
-
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import { PreviewPane, StatusMark } from '@/Components/Patterns';
 import { taskStatuses } from '@/Constants/statusIcons';
 import { getTaskActionIcon, getTaskActionLabel, getTaskStatus, getTaskableUrl, isOrphanedTask, type TaskDisplayData } from '@/Composables/useTaskPresentation';
+
+import TaskDetails from './TaskDetails.vue';
+import type { TaskAction, TaskActionKey } from './taskActions';
 
 const props = defineProps<{
   task: TaskDisplayData;

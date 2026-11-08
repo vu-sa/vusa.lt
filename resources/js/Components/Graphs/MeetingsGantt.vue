@@ -84,6 +84,9 @@ import { trans as $t } from 'laravel-vue-i18n';
 import * as d3 from 'd3';
 import { Globe, Link2, Lock, MailQuestion } from '@lucide/vue';
 
+import { useVacationPeriods } from '@/Composables/useVacationPeriods';
+import { useGanttSettings } from '@/Components/Graphs/composables/useGanttSettings';
+
 import { getGanttColors, isDarkModeActive } from './ganttColors';
 import MeetingsGanttToolbar from './MeetingsGanttToolbar.vue';
 import {
@@ -118,9 +121,6 @@ import {
   type CenterLineManager,
   type ParsedActivityRequest,
 } from './renderers';
-
-import { useVacationPeriods } from '@/Composables/useVacationPeriods';
-import { useGanttSettings } from '@/Components/Graphs/composables/useGanttSettings';
 
 /** Rows = institutions (grouped by padalinys or type), icons = meetings, striped bars = check-ins. */
 

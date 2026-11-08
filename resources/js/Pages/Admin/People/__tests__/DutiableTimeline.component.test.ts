@@ -2,9 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
 
-import DutiableTimeline from '../DutiableTimeline.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import DutiableTimeline from '../DutiableTimeline.vue';
 
 const stubs = {
   ...commonStubs,

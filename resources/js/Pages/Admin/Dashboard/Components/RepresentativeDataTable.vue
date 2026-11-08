@@ -102,19 +102,19 @@ import { watchDebounced } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Users, Search } from '@lucide/vue';
 
-import type {
-  RepresentativeActivityStats,
-  RepresentativePageData,
-} from '../types';
-
-import RepresentativeUserRow from './RepresentativeUserRow.vue';
-
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Skeleton } from '@/Components/ui/skeleton';
 import { useApi } from '@/Composables/useApi';
+
+import type {
+  RepresentativeActivityStats,
+  RepresentativePageData,
+} from '../types';
+
+import RepresentativeUserRow from './RepresentativeUserRow.vue';
 
 interface Props {
   tenantIds: string[];

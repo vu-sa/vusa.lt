@@ -8,9 +8,9 @@ vi.mock('@vueuse/core', async (importOriginal) => {
   return { ...actual, useDark: () => darkRef };
 });
 
-import RCSideBySideDialog from '../RCSideBySideDialog.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import RCSideBySideDialog from '../RCSideBySideDialog.vue';
 
 const ContentEditorFactoryStub = {
   props: ['content'],

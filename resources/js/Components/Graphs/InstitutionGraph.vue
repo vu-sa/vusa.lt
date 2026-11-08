@@ -118,10 +118,10 @@ import {
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowLeftRight, ArrowRight, Maximize, Minus, Plus } from '@lucide/vue';
 
-import { EDGE_TYPE_STYLES, edgeCategory, edgeTypeColor, type RelationshipType, type RelationshipScope, SCOPE_STYLES, scopeColor } from './relationshipColors';
-
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
+
+import { EDGE_TYPE_STYLES, edgeCategory, edgeTypeColor, type RelationshipType, type RelationshipScope, SCOPE_STYLES, scopeColor } from './relationshipColors';
 
 const { isReducedMotion } = useAccessibilityPreferences();
 

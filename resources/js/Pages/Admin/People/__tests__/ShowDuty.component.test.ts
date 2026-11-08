@@ -43,27 +43,52 @@ const stubs = {
   RecordActivity: { template: '<div data-testid="record-activity" />' },
 };
 
-const holder = (id: string, name: string, pivot: Record<string, unknown>) => ({
+type DutyProps = InstanceType<typeof ShowDuty>['$props'];
+type DutyRecord = DutyProps['duty'];
+type DutyHolder = DutyRecord['users'][number];
+
+const holder = (id: string, name: string, pivot: Partial<DutyHolder['pivot']>): DutyHolder => ({
   id,
   name,
   email: `${id}@vusa.lt`,
-  pivot: { id: `dutiable-${id}`, duty_id: 'duty-1', dutiable_id: id, end_date: null, ...pivot },
+  phone: null, facebook_url: null, pronouns: null, show_pronouns: false, is_active: 1,
+  updated_at: '2026-01-01', created_at: '2026-01-01', profile_photo_path: null,
+  profile_photo_focal_point: null, deleted_at: null,
+  pivot: {
+    id: `dutiable-${id}`, duty_id: 'duty-1', dutiable_id: id, dutiable_type: 'user',
+    start_date: '2026-01-01', end_date: null, via_dutiable_id: null, tenant_id: null,
+    additional_photo: null, additional_photo_focal_point: null, additional_email: null,
+    use_original_duty_name: false, description: null, study_program_id: null, study_program_note: null,
+    created_at: '2026-01-01', updated_at: '2026-01-01', tenant: null, study_program: null, ...pivot,
+  },
 });
 
-const baseDuty = {
+const baseDuty: DutyRecord = {
   id: 'duty-1',
-  name: { lt: 'Komunikacijos koordinatorius', en: 'Communication Coordinator' },
+  name: 'Komunikacijos koordinatorius',
   email: 'komunikacija@vusa.lt',
   places_to_occupy: 2,
   description: '<p>Aprašymas</p>',
-  institution: { id: 'inst-1', name: 'VU SA MIF', tenant: { id: 11, shortname: 'MIF' } },
+  institution_id: 'inst-1', order: 0, contacts_grouping: 'none', is_active: true,
+  created_at: '2026-01-01', updated_at: '2026-01-01', deleted_at: null, former_names: [],
+  sharepointPath: null, sharepointFolderUrl: null,
+  institution: {
+    id: 'inst-1', name: 'VU SA MIF', short_name: null, alias: 'mif', description: null, address: null,
+    phone: null, email: null, working_hours: null, website: null, logo_url: null,
+    facebook_url: null, instagram_url: null, tenant_id: 11, is_active: 1, meeting_periodicity_days: 30,
+    created_at: '2026-01-01', updated_at: '2026-01-01', deleted_at: null,
+    tenant: { id: 11, shortname: 'MIF', type: null, fullname: 'VU SA MIF', alias: 'mif', phone: null,
+      email: null, address: null, shortname_vu: null, primary_institution_id: null, goals_enabled: false,
+      created_at: null, updated_at: null },
+  },
   users: [holder('current', 'Dabartinis Narys', { start_date: '2026-01-01' })],
-  types: [{ id: 1, title: 'Koordinatoriai' }],
+  types: [{ id: 1, title: 'Koordinatoriai', description: null, parent_id: null, extra_attributes: null,
+    created_at: null, updated_at: null, deleted_at: null, pivot: { duty_id: 'duty-1', duty_type_id: 1 } }],
 };
 
 const mountPage = (props: Record<string, unknown> = {}) =>
   mount(ShowDuty, {
-    props: { duty: baseDuty, can: { update: true, managePeople: true }, ...props },
+    props: { duty: baseDuty, can: { update: true, managePeople: true, assignQuota: true, reviewExOfficio: false }, ...props },
     global: { stubs },
   });
 
@@ -80,7 +105,7 @@ describe('ShowDuty.vue', () => {
 
   it('renders both gender endings in the record heading', () => {
     const wrapper = mount(ShowDuty, {
-      props: { duty: baseDuty, can: { update: true, managePeople: true } },
+      props: { duty: baseDuty, can: { update: true, managePeople: true, assignQuota: true, reviewExOfficio: false } },
       global: { stubs: { ...stubs, InflectedDutyName: false } },
     });
 
@@ -128,9 +153,9 @@ describe('ShowDuty.vue', () => {
     const wrapper = mountPage({ can: { update: true, managePeople: true, reviewExOfficio: true } });
     await wrapper.get('[data-testid="overflow-ex-officio-review"]').trigger('click');
     expect(wrapper.findComponent({ name: 'ExOfficioReviewSheet' }).exists()).toBe(true);
-    await wrapper.setProps({ can: { update: true, managePeople: false, reviewExOfficio: true } });
+    await wrapper.setProps({ can: { update: true, managePeople: false, assignQuota: false, reviewExOfficio: true } });
     expect(wrapper.find('[data-testid="overflow-ex-officio-review"]').exists()).toBe(false);
-    await wrapper.setProps({ can: { update: true, managePeople: true, reviewExOfficio: false } });
+    await wrapper.setProps({ can: { update: true, managePeople: true, assignQuota: true, reviewExOfficio: false } });
     expect(wrapper.find('[data-testid="overflow-ex-officio-review"]').exists()).toBe(false);
     wrapper.unmount();
   });
@@ -246,7 +271,7 @@ describe('ShowDuty.vue', () => {
     const rows = wrapper.findAll('[data-slot="member-term-row"]');
 
     expect(rows.map(row => row.text().split(/\s/)[0])).toEqual(['Žydrūnas', 'Agnė']);
-    expect(rows[0].text()).toContain('Deleguota · FSF');
+    expect(rows[0]?.text()).toContain('Deleguota · FSF');
   });
 
   it('splits members into current, upcoming and history by term', () => {
@@ -319,7 +344,7 @@ describe('ShowDuty.vue', () => {
     await wrapper.find('[data-testid="confirm-Užbaigti pareigas"] [data-testid="confirm-yes"]').trigger('click');
 
     expect(router.patch).toHaveBeenCalledTimes(1);
-    const [url, payload] = vi.mocked(router.patch).mock.calls[0];
+    const [url, payload] = vi.mocked(router.patch).mock.calls[0]!;
     expect(url).toContain('dutiables.update');
     expect(payload).toMatchObject({ end_date: '2026-09-20', acknowledge_access_change: false });
   });
@@ -345,7 +370,7 @@ describe('ShowDuty.vue', () => {
 
   it('lists sibling duties once the deferred panel has loaded', () => {
     const wrapper = mountPage({
-      otherDuties: [{ id: 'duty-2', name: { lt: 'Sekretorius' }, current_users: [{ id: 'u' }] }],
+      otherDuties: [{ id: 'duty-2', name: 'Sekretorius', current_users: [{ id: 'u' }] }],
     });
 
     expect(wrapper.text()).toContain('Kitos pareigybės šioje institucijoje');

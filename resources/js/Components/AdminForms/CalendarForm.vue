@@ -228,7 +228,6 @@
           :existing-urls="existingGalleryImages"
           cropper
           :compress="false"
-          folder="calendar"
           @remove:existing="removeExistingImage"
         />
         <div v-else-if="existingGalleryImages.length" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -461,15 +460,6 @@ import {
   WandSparkles,
 } from '@lucide/vue';
 
-import ContentPublishPanel from './ContentPublishPanel.vue';
-import FormFieldWrapper from './FormFieldWrapper.vue';
-import PermalinkField from './PermalinkField.vue';
-import PermalinkPreviewHint from './PermalinkPreviewHint.vue';
-import PublicUrlHistoryCard, { type PublicUrlRow } from './PublicUrlHistoryCard.vue';
-import TagMultiSelect from './TagMultiSelect.vue';
-import TenantSelectField, { pickDefaultTenantId } from './TenantSelectField.vue';
-
-import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog, FormPanel, FormSegmentedControl, StatusBadge, type FormSegmentOption } from '@/Components/Patterns';
 import { isSameDay, toNaiveDateTimeString } from '@/Utils/dateTime';
@@ -483,12 +473,22 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { NativeSelect } from '@/Components/ui/native-select';
 import { Checkbox } from '@/Components/ui/checkbox';
-import { ImageUpload } from '@/Components/ui/upload';
+import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import VisualOptionSelect from '@/Components/FormItems/VisualOptionSelect.vue';
 import { contentStatuses } from '@/Constants/statusIcons';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { resolveTenantPublicHost } from '@/Composables/useTenantSubdomain';
+
+import TenantSelectField, { pickDefaultTenantId } from './TenantSelectField.vue';
+import TagMultiSelect from './TagMultiSelect.vue';
+import PublicUrlHistoryCard, { type PublicUrlRow } from './PublicUrlHistoryCard.vue';
+import PermalinkPreviewHint from './PermalinkPreviewHint.vue';
+import PermalinkField from './PermalinkField.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import ContentPublishPanel from './ContentPublishPanel.vue';
+
+import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
 
 const props = withDefaults(defineProps<{
   calendar: CalendarEventForm;

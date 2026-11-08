@@ -35,12 +35,12 @@
 <script setup lang="ts">
 import { VisuallyHidden } from 'reka-ui';
 
-import ActionWindowBody from './ActionWindowBody.vue';
-
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { useIsMobile } from '@/Composables/useIsMobile';
 import { Dialog, DialogContent, DialogTitle } from '@/Components/ui/dialog';
 import { Drawer, DrawerContent, DrawerTitle } from '@/Components/ui/drawer';
+
+import ActionWindowBody from './ActionWindowBody.vue';
 
 const { isOpen, close } = useActionWindow();
 

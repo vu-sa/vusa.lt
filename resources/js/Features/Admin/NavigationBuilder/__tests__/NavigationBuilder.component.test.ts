@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
 
+import { createMockPage } from '@/tests/helpers/createMockPage';
 import NavigationBuilder from '@/Features/Admin/NavigationBuilder/NavigationBuilder.vue';
 import type { AdminNavigationRoot } from '@/Features/Admin/NavigationBuilder/types';
 
@@ -202,7 +203,7 @@ describe('NavigationBuilder.vue', () => {
     const confirmButtons = wrapper.findAll('.confirm-delete');
     await confirmButtons[1].trigger('click');
 
-    expect(router.delete).toHaveBeenCalledWith(expect.stringContaining('navigation.destroy'), { preserveScroll: true });
+    expect(router.delete).toHaveBeenCalledWith(expect.stringContaining('navigation.destroy'), expect.objectContaining({ preserveScroll: true }));
   });
 
   it('removes the link from the UI immediately when deleted', async () => {
@@ -214,6 +215,124 @@ describe('NavigationBuilder.vue', () => {
     await confirmButtons[1].trigger('click');
 
     expect(wrapper.text()).not.toContain('Dokumentai');
+  });
+
+  it('restores a removed link after a network failure', async () => {
+    wrapper = createWrapper();
+    await wrapper.findAll('.confirm-delete')[1]!.trigger('click');
+
+    vi.mocked(router.delete).mock.calls.at(-1)?.[1]?.onNetworkError?.(new Error('Offline'));
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.text()).toContain('Dokumentai');
+  });
+
+  it('restores a removed root after validation fails', async () => {
+    wrapper = createWrapper();
+    await wrapper.findAll('.confirm-delete')[0]!.trigger('click');
+
+    vi.mocked(router.delete).mock.calls.at(-1)?.[1]?.onError?.({ name: 'Invalid' });
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.text()).toContain('Studentams');
+    expect(wrapper.text()).toContain('Dokumentai');
+  });
+
+  it('rolls back only the failed link while preserving a pending reorder', async () => {
+    vi.useFakeTimers();
+    try {
+      const root = makeRoot();
+      root.links[0]!.push({ ...root.links[0]![0]!, id: 11, name: 'Kontaktai' });
+      wrapper = createWrapper({ roots: [root] });
+      const item = wrapper.findComponent({ name: 'NavigationRootItem' });
+      (item.props('root') as AdminNavigationRoot).links[0]!.reverse();
+      await wrapper.vm.$nextTick();
+      await wrapper.findAll('button[role="switch"]')[1]!.trigger('click');
+
+      vi.mocked(router.patch).mock.calls.at(-1)?.[2]?.onError?.({ name: 'Invalid' });
+      vi.mocked(router.patch).mock.calls.at(-1)?.[2]?.onFinish?.({} as never);
+      await wrapper.vm.$nextTick();
+      await vi.advanceTimersByTimeAsync(850);
+
+      expect((item.props('root') as AdminNavigationRoot).links[0]!.map(link => link.id)).toEqual([11, 10]);
+      expect(wrapper.findAll('button[role="switch"]')[1]!.attributes('aria-checked')).toBe('true');
+      expect(router.post).toHaveBeenCalledWith(expect.stringContaining('navigation.updateOrder'), {
+        navigation: [{ id: 1, links: [[{ id: 11 }, { id: 10 }], [], []] }],
+      }, expect.objectContaining({ preserveScroll: true }));
+    }
+    finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('blocks a second mutation in the same root until the first finishes', async () => {
+    wrapper = createWrapper();
+    await wrapper.findAll('button[role="switch"]')[1]!.trigger('click');
+    const first = vi.mocked(router.patch).mock.calls.at(-1)?.[2];
+    const item = wrapper.findComponent({ name: 'NavigationRootItem' });
+    item.vm.$emit('toggle-active', item.props('root'), false);
+    expect(router.patch).toHaveBeenCalledTimes(1);
+    first?.onFinish?.({} as never);
+    item.vm.$emit('toggle-active', item.props('root'), false);
+    expect(router.patch).toHaveBeenCalledTimes(2);
+  });
+
+  it('waits for a deletion and saves only the latest order after an in-flight save', async () => {
+    vi.useFakeTimers();
+    try {
+      const root = makeRoot();
+      root.links[0]!.push({ ...root.links[0]![0]!, id: 11, name: 'Kontaktai' });
+      wrapper = createWrapper({ roots: [root] });
+      const item = wrapper.findComponent({ name: 'NavigationRootItem' });
+      const tree = item.props('root') as AdminNavigationRoot;
+      tree.links[0]!.reverse();
+      await wrapper.vm.$nextTick();
+      await wrapper.findAll('.confirm-delete')[1]!.trigger('click');
+      await vi.advanceTimersByTimeAsync(850);
+      expect(router.post).not.toHaveBeenCalled();
+      const deletion = vi.mocked(router.delete).mock.calls.at(-1)?.[1];
+      deletion?.onNetworkError?.(new Error('Offline'));
+      deletion?.onFinish?.({} as never);
+      await vi.advanceTimersByTimeAsync(850);
+      expect(router.post).toHaveBeenCalledTimes(1);
+      tree.links[0]!.reverse();
+      await wrapper.vm.$nextTick();
+      await vi.advanceTimersByTimeAsync(850);
+      expect(router.post).toHaveBeenCalledTimes(1);
+      vi.mocked(router.post).mock.calls.at(-1)?.[2]?.onFinish?.({} as never);
+      await vi.advanceTimersByTimeAsync(850);
+      expect(router.post).toHaveBeenCalledTimes(2);
+      expect(vi.mocked(router.post).mock.calls.at(-1)?.[1]).toEqual({
+        navigation: [{ id: 1, links: [[{ id: 10 }, { id: 11 }], [], []] }],
+      });
+    }
+    finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('reconciles a cancelled toggle without losing unsaved ordering', async () => {
+    const root = makeRoot();
+    root.links[0]!.push({ ...root.links[0]![0]!, id: 11, name: 'Kontaktai' });
+    wrapper = createWrapper({ roots: [root] });
+    const item = wrapper.findComponent({ name: 'NavigationRootItem' });
+    (item.props('root') as AdminNavigationRoot).links[0]!.reverse();
+    await wrapper.vm.$nextTick();
+    await wrapper.findAll('button[role="switch"]')[1]!.trigger('click');
+    const mutation = vi.mocked(router.patch).mock.calls.at(-1)?.[2];
+    mutation?.onCancel?.();
+    mutation?.onFinish?.({} as never);
+    expect(router.reload).toHaveBeenCalledWith(expect.objectContaining({ only: ['navigation'] }));
+    const fresh = structuredClone(root);
+    fresh.links[0]![1]!.is_active = false;
+    const reload = vi.mocked(router.reload).mock.calls.at(-1)?.[0];
+    reload?.onSuccess?.(createMockPage({ navigation: [fresh] }));
+    reload?.onFinish?.({} as never);
+    await wrapper.vm.$nextTick();
+    const reconciled = item.props('root') as AdminNavigationRoot;
+    expect(reconciled.links[0]!.map(link => link.id)).toEqual([11, 10]);
+    expect(reconciled.links[0]![0]!.is_active).toBe(false);
+    wrapper.unmount();
   });
 
   it('links "add link" and "add root" to the create route with the right parent', () => {

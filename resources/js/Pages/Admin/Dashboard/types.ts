@@ -4,7 +4,7 @@ export type { RepresentativeActivityCategory } from '@/Components/Graphs/types';
 
 export type AtstovavimasUser = Omit<App.Entities.User, 'authorization_duties'> & {
   authorization_duties?: Array<{
-    institution?: AtstovavimasInstitution;
+    institution_id: string | null;
   }>;
 };
 

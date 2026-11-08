@@ -21,11 +21,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import { getTaskActions, type TaskAction, type TaskActionKey } from './taskActions';
-import TaskPreview from './TaskPreview.vue';
-
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/Components/ui/dialog';
 import type { TaskDisplayData } from '@/Composables/useTaskPresentation';
+
+import { getTaskActions, type TaskAction, type TaskActionKey } from './taskActions';
+import TaskPreview from './TaskPreview.vue';
 
 const props = defineProps<{
   open: boolean;

@@ -31,7 +31,7 @@
           >
             <component
               :is="action.href ? (action.external || action.plain ? 'a' : Link) : 'span'"
-              :href="action.href"
+              :href="safeHref(action.href)"
               :aria-disabled="action.disabled || action.loading || undefined"
               :tabindex="action.disabled || action.loading ? -1 : undefined"
               :target="action.external ? '_blank' : undefined"
@@ -72,7 +72,7 @@
             >
               <component
                 :is="action.href ? (action.external || action.plain ? 'a' : Link) : 'span'"
-                :href="action.href"
+                :href="safeHref(action.href)"
                 :aria-disabled="action.disabled || action.loading || undefined"
                 :tabindex="action.disabled || action.loading ? -1 : undefined"
                 :target="action.external ? '_blank' : undefined"
@@ -103,6 +103,7 @@ import { Button } from '@/Components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/Components/ui/sheet';
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
+import { safeHref } from '@/Utils/safeHref';
 
 const props = defineProps<{ actions: AdminRecordAction[]; triggerSize?: 'compact' | 'default'; label?: string; spotlight?: boolean }>();
 const emit = defineEmits<{ select: [key: string]; navigate: [key: string] }>();

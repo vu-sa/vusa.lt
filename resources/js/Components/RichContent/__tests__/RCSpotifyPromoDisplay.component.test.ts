@@ -10,11 +10,11 @@ vi.mock('@vueuse/core', async (importOriginal) => {
   return { ...actual, useDark: () => darkRef };
 });
 
+import type { SpotifyEmbed } from '@/Types/contentParts';
+
 import RCSpotifyPromoDisplay from '../RCSpotifyPromoDisplay.vue';
 import { createContentItem, getContentType } from '../Types';
 import { resolveBand } from '../bandLayout';
-
-import type { SpotifyEmbed } from '@/Types/contentParts';
 
 function makeElement(overrides: Partial<SpotifyEmbed['json_content']> = {}, optionOverrides: SpotifyEmbed['options'] = {}): SpotifyEmbed {
   const item = createContentItem('spotify-embed');
@@ -36,6 +36,11 @@ function mountDisplay(element: SpotifyEmbed, anchorId?: number) {
 }
 
 describe('RCSpotifyPromoDisplay', () => {
+  it.each(['https://example.org/player', 'http://www.mixcloud.com/startfm/episode/'])('omits an unsupported player at %s', async (url) => {
+    const wrapper = mountDisplay(makeElement({ url }));
+    await nextTick();
+    expect(wrapper.find('iframe').exists()).toBe(false);
+  });
   it('spotify-embed registry entry stays self-consistent with the promo variant added', () => {
     const entry = getContentType('spotify-embed');
     expect(entry.value).toBe('spotify-embed');

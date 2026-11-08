@@ -33,12 +33,12 @@
  */
 import { trans as $t } from 'laravel-vue-i18n';
 
-import RCEventTypeSelect from '../Editor/RCEventTypeSelect.vue';
-import RCTenantMultiSelect from '../Editor/RCTenantMultiSelect.vue';
-
 import type { Calendar } from '@/Types/contentParts';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { NumberField } from '@/Components/ui/number-field';
+
+import RCTenantMultiSelect from '../Editor/RCTenantMultiSelect.vue';
+import RCEventTypeSelect from '../Editor/RCEventTypeSelect.vue';
 
 const options = defineModel<Calendar['options']>({ required: true });
 

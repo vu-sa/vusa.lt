@@ -10,12 +10,12 @@
 </template>
 
 <script setup lang="ts">
-import UserAvatar from './UserAvatar.vue';
+import UserAvatar, { type AvatarUser } from './UserAvatar.vue';
 import UsersAvatarGroup from './UsersAvatarGroup.vue';
 
 /** People in a record's key-facts strip: named when few, a stack that expands when many. */
 withDefaults(defineProps<{
-  users: App.Entities.User[];
+  users: AvatarUser[];
   inlineLimit?: number;
 }>(), {
   inlineLimit: 3,

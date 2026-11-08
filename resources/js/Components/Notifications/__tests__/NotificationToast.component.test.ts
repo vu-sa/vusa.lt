@@ -2,13 +2,24 @@ import { Link, router } from '@inertiajs/vue3';
 import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 
-import NotificationToast from '../NotificationToast.vue';
-
 import type { Notification } from '@/Composables/useNotificationFormatting';
+
+import NotificationToast from '../NotificationToast.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 describe('NotificationToast', () => {
+  it.each(['body', 'text', 'message'] as const)('renders a stored notification %s as text', (field) => {
+    const body = '<strong>Ataskaita</strong> & aptarimas';
+    const notification: Notification = {
+      id: 'text-body', type: 'App\\Notifications\\TaskOverdueNotification',
+      data: { title: 'Užduotis', category: 'task', [field]: body },
+      created_at: '2026-11-06T10:00:00Z', read_at: null,
+    };
+    const wrapper = mount(NotificationToast, { props: { notification } });
+    expect(wrapper.text()).toContain(body);
+    expect(wrapper.find('strong').exists()).toBe(false);
+  });
   it.each([
     ['/atsakymas/1?answer=met&signature=abc', false],
     ['/lt/naujiena/sveiki', false],

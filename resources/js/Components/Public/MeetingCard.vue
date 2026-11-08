@@ -77,20 +77,21 @@ import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { statusRoleClasses, type StatusRole } from '@/Constants/statuses';
+import { formatMeetingDateTime } from '@/Utils/MeetingDisplay';
+import { agendaItemStatuses } from '@/Constants/statuses';
+import { getAgendaItemStatus, getOutcomeVote, showsVoteOutcome, type AgendaItem } from '@/Composables/useAgendaItemStyling';
+
 import AgendaOutcomeIndicators from './AgendaOutcomeIndicators.vue';
 import VoteStatusIndicator from './VoteStatusIndicator.vue';
 import SmartLink from './SmartLink.vue';
 
-import { statusRoleClasses, type StatusRole } from '@/Constants/statuses';
-import { formatMeetingDateTime } from '@/Utils/MeetingDisplay';
 import IFluentArrowRight24Regular from '~icons/fluent/arrow-right-24-regular';
 import IFluentCheckmark24Regular from '~icons/fluent/checkmark-24-regular';
 import IFluentDismiss24Regular from '~icons/fluent/dismiss-24-regular';
 import IFluentPeople24Regular from '~icons/fluent/people-24-regular';
 import IFluentSubtract24Regular from '~icons/fluent/subtract-24-regular';
 import IFluentWarning24Regular from '~icons/fluent/warning-24-regular';
-import { agendaItemStatuses } from '@/Constants/statuses';
-import { getAgendaItemStatus, getOutcomeVote, showsVoteOutcome, type AgendaItem } from '@/Composables/useAgendaItemStyling';
 
 const $page = usePage();
 

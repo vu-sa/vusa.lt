@@ -1,13 +1,20 @@
 <?php
 
 use App\Models\Duty;
+use App\Models\DutyName;
 use App\Models\DutyType;
+use App\Models\FileableFile;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\News;
+use App\Models\Pivots\Dutiable;
 use App\Models\ResponsibilityGrant;
 use App\Models\Role;
+use App\Models\StudyProgram;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\ContactPresentationService;
+use App\Services\ResourceServices\SharepointFileService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -909,6 +916,17 @@ describe('show page', function (): void {
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('can.update', false)
                 ->where('can.managePeople', false)
+                ->whereType('can.assignQuota', 'boolean')
+                ->whereType('can.reviewExOfficio', 'boolean')
+                ->whereType('duty.id', 'string')
+                ->whereType('duty.users', 'array')
+                ->whereType('duty.tenants.0.id', 'integer')
+                ->whereType('duty.tenants.0.laravel_through_key', 'string')
+                ->missing('responsibilityOptions')
+                ->loadDeferredProps('dutyPanels', fn (AssertableInertia $panels) => $panels
+                    ->whereType('lineage.events', 'array')
+                    ->whereType('lineage.predecessorTerms', 'array')
+                    ->whereType('responsibilities.items', 'array'))
             );
     });
 });
@@ -972,4 +990,208 @@ test('duty creation ignores a malformed optional institution prefill', function 
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('prefillInstitutionId', null)
         );
+});
+
+describe('ShowDuty payload contract', function (): void {
+    test('localized record and file panels preserve the existing JSON', function (string $locale, bool $isHolder): void {
+        $duty = $isHolder ? $this->dutyManagerDuty : Duty::factory()->for($this->dutyManagerDuty->institution)->create();
+        if (! $isHolder) {
+            Dutiable::factory()->forDuty($duty)->forUser($this->regularUser)->create([
+                'start_date' => '2025-01-01', 'end_date' => null, 'study_program_id' => null,
+            ]);
+        }
+        $duty->update(['name' => ['lt' => 'Koordinatorius', 'en' => 'Coordinator']]);
+        $type = DutyType::factory()->create(['title' => ['lt' => 'Kategorija', 'en' => 'Category']]);
+        $duty->types()->attach($type);
+        DutyName::factory()->for($duty)->create();
+        $file = FileableFile::factory()->create([
+            'fileable_type' => MorphMap::alias(Duty::class), 'fileable_id' => $duty->id,
+            'size_bytes' => null, 'file_date' => null, 'description' => null,
+        ]);
+        $typeFile = FileableFile::factory()->create([
+            'fileable_type' => MorphMap::alias(DutyType::class), 'fileable_id' => (string) $type->id,
+        ]);
+        // Otherwise UpdateLastAction bumps the holder's updated_at mid-request when a second ticks over.
+        $this->dutyManager->forceFill(['last_action' => now()])->save();
+        app()->setLocale($locale);
+        $expected = $duty->fresh()->load([
+            'institution.tenant', 'users' => fn ($query) => $query->withPivot('created_at', 'updated_at'),
+            'types', 'formerNames',
+        ]);
+        $this->dutyManager->can('view', $expected);
+        $expected->setRelation('users', app(ContactPresentationService::class)->sortHolders($expected, $expected->users));
+        $record = $expected->toArray();
+        $record['sharepointPath'] = SharepointFileService::pathOrNull($expected);
+        $record['sharepointFolderUrl'] = SharepointFileService::folderUrlOrNull($expected);
+        $expectedTypeFile = $typeFile->fresh()->load('fileable:id,title')->toArray();
+
+        asUserWithInertia($this->dutyManager)->withSession(['lang' => $locale])
+            ->get(route('duties.show', $duty))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('Admin/People/ShowDuty')
+                ->where('duty', $record)
+                ->where('duty.name', $locale === 'lt' ? 'Koordinatorius' : 'Coordinator')
+                ->whereType('duty.id', 'string')
+                ->whereType('duty.description', 'string|null')
+                ->whereType('duty.places_to_occupy', 'integer|null')
+                ->whereType('duty.is_active', 'boolean')
+                ->whereType('duty.institution.tenant.type', 'string|null')
+                ->where('duty.institution.types', [])
+                ->whereType('duty.users.0.email', 'string|null')
+                ->whereType('duty.users.0.pronouns', 'string|null')
+                ->whereType('duty.users.0.is_active', 'integer')
+                ->whereType('duty.users.0.show_pronouns', 'boolean')
+                ->whereType('duty.users.0.pivot.start_date', 'string')
+                ->whereType('duty.users.0.pivot.end_date', 'string|null')
+                ->whereType('duty.users.0.pivot.description', 'string|null')
+                ->whereType('duty.users.0.pivot.study_program_note', 'string|null')
+                ->whereType('duty.users.0.pivot.tenant', 'array|null')
+                ->whereType('duty.users.0.pivot.study_program', 'array|null')
+                ->whereType('duty.former_names.0.name', 'string')
+                ->whereType('duty.types.0.title', 'string')
+                ->whereType('can.update', 'boolean')
+                ->whereType('can.managePeople', 'boolean')
+                ->whereType('can.assignQuota', 'boolean')
+                ->whereType('can.reviewExOfficio', 'boolean')
+                ->missing('files')->missing('typeFiles')->missing('lineage')->missing('responsibilityOptions')
+                ->loadDeferredProps('files', fn (AssertableInertia $files) => $files
+                    ->where('files', [$file->fresh()->toArray()])
+                    ->where('typeFiles', [$expectedTypeFile])
+                    ->whereType('files.0.size_bytes', 'null')
+                    ->whereType('files.0.file_date', 'null')
+                    ->whereType('typeFiles.0.fileable.id', 'integer')
+                    ->where('typeFiles.0.fileable.title', $locale === 'lt' ? 'Kategorija' : 'Category'))
+                ->reloadOnly('responsibilityOptions', fn (AssertableInertia $options) => $options
+                    ->whereType('responsibilityOptions.responsibilities', 'array')
+                    ->whereType('responsibilityOptions.tenants', 'array')
+                    ->whereType('responsibilityOptions.types', 'array')
+                    ->whereType('responsibilityOptions.institutions', 'array')));
+    })->with(['lt', 'en'])->with(['holder' => true, 'tenant manager' => false]);
+
+    test('institution types and periodicity preserve the previous serialization', function (?int $periodicity): void {
+        $duty = $this->dutyManagerDuty;
+        $institution = $duty->institution;
+        $type = InstitutionType::factory()->create([
+            'title' => ['lt' => 'Taryba', 'en' => 'Council'],
+            'description' => ['lt' => 'Tarybos tipas', 'en' => 'Council type'],
+            'extra_attributes' => ['meeting_periodicity_days' => 21],
+        ]);
+        $institution->types()->attach($type);
+        $institution->update(['meeting_periodicity_days' => $periodicity]);
+        $expected = $institution->fresh()->load('tenant')->toArray();
+
+        asUserWithInertia($this->dutyManager)->get(route('duties.show', $duty))->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('duty.institution', $expected)
+                ->where('duty.institution.meeting_periodicity_days', $periodicity ?? 21));
+    })->with(['inherited from type' => null, 'explicit override' => 14]);
+
+    test('nullable database values stay null in the record payload', function (): void {
+        $duty = $this->dutyManagerDuty;
+        DB::table('duties')->where('id', $duty->id)->update([
+            'name' => null, 'description' => null, 'email' => null, 'places_to_occupy' => null,
+        ]);
+        DB::table('institutions')->where('id', $duty->institution_id)->update([
+            'tenant_id' => null, 'name' => null, 'short_name' => null, 'description' => null,
+            'address' => null, 'working_hours' => null,
+        ]);
+        DB::table('dutiables')->where('duty_id', $duty->id)->update([
+            'description' => null, 'study_program_note' => null, 'study_program_id' => null, 'tenant_id' => null,
+        ]);
+
+        asUserWithInertia($this->dutyManager)->get(route('duties.show', $duty))->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('duty.name', null)
+                ->where('duty.description', null)
+                ->where('duty.email', null)
+                ->where('duty.places_to_occupy', null)
+                ->where('duty.institution.name', null)
+                ->where('duty.institution.short_name', null)
+                ->where('duty.institution.description', null)
+                ->where('duty.institution.address', null)
+                ->where('duty.institution.working_hours', null)
+                ->where('duty.institution.tenant', null)
+                ->where('duty.users.0.pivot.description', null)
+                ->where('duty.users.0.pivot.study_program_note', null)
+                ->where('duty.users.0.pivot.tenant', null)
+                ->where('duty.users.0.pivot.study_program', null)
+                ->where('duty.sharepointPath', null)
+                ->where('duty.sharepointFolderUrl', null));
+    });
+
+    test('a holder without management permissions receives a typed read-only record', function (): void {
+        $duty = $this->regularUser->duties()->firstOrFail();
+
+        asUserWithInertia($this->regularUser)->get(route('duties.show', $duty))->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('Admin/People/ShowDuty')
+                ->whereType('duty.id', 'string')
+                ->whereType('duty.name', 'string|null')
+                ->whereType('duty.users.0.pivot.id', 'string')
+                ->where('can.update', false)
+                ->where('can.managePeople', false)
+                ->where('can.assignQuota', false)
+                ->where('can.reviewExOfficio', false)
+                ->missing('responsibilityOptions')
+                ->loadDeferredProps('dutyPanels', fn (AssertableInertia $panels) => $panels
+                    ->whereType('lineage.events', 'array')
+                    ->whereType('responsibilities.items', 'array')));
+
+        asUserWithInertia($this->regularUser)->withHeaders([
+            'X-Inertia-Partial-Component' => 'Admin/People/ShowDuty',
+            'X-Inertia-Partial-Data' => 'responsibilityOptions',
+        ])->get(route('duties.show', $duty))->assertRedirect()->assertSessionHas('error');
+    });
+
+    test('a non-holder without read permission cannot receive a record', function (): void {
+        asUser($this->regularUser)->get(route('duties.show', $this->dutyManagerDuty))->assertForbidden();
+    });
+
+    test('deferred panels type siblings programmes quota and lineage variants', function (): void {
+        $duty = $this->dutyManagerDuty;
+        $predecessor = Duty::factory()->for($duty->institution)->create(['name' => ['lt' => 'Ankstesnė', 'en' => 'Previous']]);
+        $successor = Duty::factory()->for($duty->institution)->create();
+        Dutiable::factory()->forDuty($successor)->forUser($this->regularUser)->create([
+            'start_date' => '2025-01-01', 'end_date' => null, 'study_program_id' => null,
+        ]);
+        $duty->predecessors()->attach($predecessor, ['effective_on' => '2025-01-01']);
+        $duty->successors()->attach($successor, ['effective_on' => '2026-01-01']);
+        DutyName::factory()->for($duty)->create(['used_until' => '2024-01-01']);
+        Dutiable::factory()->forDuty($predecessor)->forUser($this->regularUser)->create([
+            'start_date' => '2023-01-01', 'end_date' => '2024-12-31', 'study_program_id' => null,
+        ]);
+        $program = StudyProgram::factory()->forTenant($this->tenant)->create();
+        $duty->assignableTenants()->attach($this->tenant, ['quota' => null]);
+
+        asUserWithInertia($this->dutyManager)->get(route('duties.show', $duty))->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->missing('otherDuties')->missing('studyPrograms')->missing('quotaTenants')->missing('responsibilities')
+                ->loadDeferredProps('dutyPanels', fn (AssertableInertia $panels) => $panels
+                    ->whereType('otherDuties.0.id', 'string')
+                    ->whereType('otherDuties.0.name', 'string')
+                    ->whereType('otherDuties.0.current_users', 'array')
+                    ->where('otherDuties', fn ($siblings) => collect($siblings)->contains(fn ($item) => $item['id'] === $successor->id
+                        && is_string($item['current_users'][0]['pivot']['created_at'])
+                        && is_string($item['current_users'][0]['pivot']['updated_at'])))
+                    ->where('studyPrograms', fn ($programs) => collect($programs)->contains(fn ($item) => $item['id'] === $program->id && is_string($item['name']) && is_int($item['tenant_id'])))
+                    ->whereType('quotaTenants.0.id', 'integer')
+                    ->whereType('quotaTenants.0.shortname', 'string')
+                    ->where('quotaTenants.0.quota', null)
+                    ->whereType('quotaTenants.0.occupied', 'integer')
+                    ->where('lineage.events.0.kind', 'handed_over')
+                    ->missing('lineage.events.0.duties.0.can_fold')
+                    ->where('lineage.events.1.kind', 'took_over')
+                    ->whereType('lineage.events.1.duties.0.can_fold', 'boolean')
+                    ->whereType('lineage.events.1.duties.0.link_id', 'integer')
+                    ->where('lineage.events.2.kind', 'rename')
+                    ->whereType('lineage.events.2.name', 'string')
+                    ->whereType('lineage.predecessorTerms.0.id', 'string')
+                    ->whereType('lineage.predecessorTerms.0.profile_photo_path', 'string|null')
+                    ->whereType('lineage.predecessorTerms.0.duty_name', 'string')
+                    ->whereType('lineage.predecessorTerms.0.via_duty_id', 'string')
+                    ->whereType('lineage.predecessorTerms.0.pivot.end_date', 'string')
+                    ->whereType('lineage.suggestedLinkDate', 'string')
+                    ->whereType('responsibilities.items', 'array')));
+    });
 });

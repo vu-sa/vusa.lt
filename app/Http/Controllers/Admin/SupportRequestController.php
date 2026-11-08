@@ -19,8 +19,11 @@ use App\Notifications\SupportRequestStatusChangedNotification;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SupportRequestController extends AdminController
 {
@@ -39,14 +42,31 @@ class SupportRequestController extends AdminController
     {
         $this->authorize('view', $supportRequest);
 
-        return $this->inertiaResponse('Admin/SupportRequests/ShowSupportRequest', $this->showPayload($supportRequest));
+        return Inertia::render('Admin/SupportRequests/ShowSupportRequest', $this->showPayload($supportRequest));
+    }
+
+    public function evidence(SupportRequest $supportRequest, int $media, string $conversion = 'original'): StreamedResponse
+    {
+        $this->authorize('view', $supportRequest);
+
+        $item = $supportRequest->media()->where('collection_name', 'evidence')->findOrFail($media);
+        abort_unless(in_array($conversion, ['original', 'thumb', 'large'], true), 404);
+        $conversion = $conversion !== 'original' && $item->hasGeneratedConversion($conversion) ? $conversion : '';
+        $disk = Storage::disk($conversion === '' ? $item->disk : $item->conversions_disk);
+        $path = $item->getPathRelativeToRoot($conversion);
+        abort_unless($disk->exists($path), 404);
+
+        return $disk->response($path, $item->file_name, [
+            'Cache-Control' => 'private, no-store',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 
     public function edit(SupportRequest $supportRequest): Response
     {
         $this->authorize('update', $supportRequest);
 
-        return $this->inertiaResponse('Admin/SupportRequests/EditSupportRequest', [
+        return Inertia::render('Admin/SupportRequests/EditSupportRequest', [
             ...$this->showPayload($supportRequest),
             'isEditing' => true,
         ]);
@@ -81,9 +101,9 @@ class SupportRequestController extends AdminController
             'file_name' => $m->file_name,
             'mime_type' => $m->mime_type,
             'size' => $m->size,
-            'original_url' => $m->getUrl(),
-            'thumb_url' => $m->hasGeneratedConversion('thumb') ? $m->getUrl('thumb') : $m->getUrl(),
-            'preview_url' => $m->hasGeneratedConversion('large') ? $m->getUrl('large') : $m->getUrl(),
+            'original_url' => route('supportRequests.evidence', [$supportRequest, $m->id]),
+            'thumb_url' => route('supportRequests.evidence', [$supportRequest, $m->id, 'thumb']),
+            'preview_url' => route('supportRequests.evidence', [$supportRequest, $m->id, 'large']),
         ]);
 
         $assignees = User::query()

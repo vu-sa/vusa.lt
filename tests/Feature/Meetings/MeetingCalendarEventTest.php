@@ -290,8 +290,9 @@ test('the admin meeting page renders the linked event and the documents tab', fu
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('Admin/Representation/ShowMeeting')
-            ->has('meeting.calendar_event')
-            ->loadDeferredProps('meetingPanels', fn (Assert $page) => $page
+            ->where('meeting.has_calendar_event', true)
+            ->missing('meeting.calendar_event')
+            ->reloadOnly('documents', fn (Assert $page) => $page
                 ->has('documents', 1)
             )
             ->where('governanceScope', InstitutionScope::Vusa->value));

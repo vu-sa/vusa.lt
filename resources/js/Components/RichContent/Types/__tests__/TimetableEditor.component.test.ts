@@ -2,10 +2,10 @@ import { mount } from '@vue/test-utils';
 import { ref } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import TimetableEditor from '../TimetableEditor.vue';
-
 import { useApi } from '@/Composables/useApi';
 import { commonStubs } from '@/tests/stubs';
+
+import TimetableEditor from '../TimetableEditor.vue';
 
 vi.mock('@/Composables/useApi', () => ({ useApi: vi.fn() }));
 vi.mock('@/Composables/useIsMobile', () => ({ useIsMobile: () => ({ value: true }) }));

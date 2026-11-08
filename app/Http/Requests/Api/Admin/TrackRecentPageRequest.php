@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api\Admin;
 
+use App\Rules\SafeUrl;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -21,7 +22,7 @@ class TrackRecentPageRequest extends FormRequest
             'route' => 'required_without:clear|nullable|string',
             'params' => 'nullable|array',
             'title' => 'nullable|string|max:255',
-            'url' => 'nullable|string|max:2048',
+            'url' => ['nullable', 'string', 'max:2048', new SafeUrl],
             'clear' => 'nullable|boolean',
         ];
     }

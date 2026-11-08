@@ -38,7 +38,7 @@ class StoreResourceRequest extends FormRequest
             'is_reservable' => 'required|boolean',
             'resource_category_id' => 'nullable|integer|exists:resource_categories,id',
             'media' => 'array|nullable',
-            'media.*.file' => 'file|mimes:jpg,jpeg,png,webp|max:10240',
+            'media.*.file' => 'file|mimes:jpg,jpeg,png,webp|extensions:jpg,jpeg,png,webp|max:10240',
         ];
     }
 }

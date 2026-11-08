@@ -72,7 +72,7 @@
           :hint="isFooterRoot ? $t('navigation.form.footer_category_url_hint') : $t('navigation.form.link_target_manual')">
           <div class="flex gap-1.5">
             <Input id="url" v-model="form.url" type="text" :class="['h-11', fieldSurfaceClass]" />
-            <Button variant="outline" size="icon" as="a" :href="form.url" target="_blank" rel="noopener noreferrer" class="size-11 shrink-0">
+            <Button variant="outline" size="icon" as="a" :href="safeHref(form.url)" target="_blank" rel="noopener noreferrer" class="size-11 shrink-0">
               <ExternalLink class="size-4" />
             </Button>
           </div>
@@ -351,6 +351,7 @@ import { useApiMutation } from '@/Composables/useApi';
 import { bannerStatuses } from '@/Constants/statusIcons';
 import { MultiCollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
 import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import { safeHref } from '@/Utils/safeHref';
 
 interface TopicOption {
   id: number;

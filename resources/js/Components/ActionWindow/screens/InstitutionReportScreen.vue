@@ -21,11 +21,11 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { CalendarOff, CalendarPlus } from '@lucide/vue';
 
+import { useActionWindow } from '@/Composables/useActionWindow';
+
 import ActionChoiceButton from '../ActionChoiceButton.vue';
 import ActionChoiceList from '../ActionChoiceList.vue';
 import ActionWindowScreen from '../ActionWindowScreen.vue';
-
-import { useActionWindow } from '@/Composables/useActionWindow';
 
 // The institution is already known (a periodicity task names it), so both answers skip its picker.
 const { draft, goTo } = useActionWindow();

@@ -2,10 +2,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
 
+import type { DashboardReservation, ReservationPivot, ReservationResourceState } from '@/Utils/ReservationStatus';
+
 import ReservationDecisionDialog from '../ReservationDecisionDialog.vue';
 import type { ReservationDecision } from '../types';
-
-import type { DashboardReservation, ReservationPivot, ReservationResourceState } from '@/Utils/ReservationStatus';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

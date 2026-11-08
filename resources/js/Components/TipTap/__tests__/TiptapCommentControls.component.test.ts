@@ -3,12 +3,12 @@ import { mount, flushPromises } from '@vue/test-utils';
 import { Editor } from '@tiptap/core';
 import { markRaw } from 'vue';
 
+import { commonStubs } from '@/tests/stubs';
+
 import TiptapFormattingButtons from '../TiptapFormattingButtons.vue';
 import TiptapListButtons from '../TiptapListButtons.vue';
 import TiptapLinkPopover from '../TiptapLinkPopover.vue';
 import { createCommentExtensions, createMarksExtensions } from '../extensions/presets';
-
-import { commonStubs } from '@/tests/stubs';
 
 const editors: Editor[] = [];
 const wrappers: ReturnType<typeof mount>[] = [];

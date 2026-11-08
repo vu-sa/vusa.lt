@@ -25,13 +25,15 @@
           :title="preset.label"
           :description="preset.detail"
           :icon="CalendarOff"
-          :show-chevron="false"
+          indicator="check"
+          :selected="draft.checkIn.endDate === toIsoDate(preset.date)"
           @click="pick(from, preset.date)"
         />
         <ActionChoiceButton
           :title="$t('action_window.check_in.until.custom')"
           :description="$t('action_window.check_in.until.max_hint')"
           :icon="CalendarSearch"
+          :selected="pickedOtherEnd"
           @click="custom = true"
         />
       </ActionChoiceList>
@@ -74,18 +76,18 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { CalendarOff, CalendarSearch, ChevronLeft, Info } from '@lucide/vue';
 
-import ActionChoiceButton from '../ActionChoiceButton.vue';
-import ActionChoiceList from '../ActionChoiceList.vue';
-import ActionWindowPrimaryButton from '../ActionWindowPrimaryButton.vue';
-import ActionWindowScreen from '../ActionWindowScreen.vue';
-import { toPickerDate, useWindowDates } from '../useWindowDates';
-
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { useActionWindowData } from '@/Composables/useActionWindowData';
 import { Button } from '@/Components/ui/button';
 import { DatePicker } from '@/Components/ui/date-picker';
 import { Label } from '@/Components/ui/label';
 import { Skeleton } from '@/Components/ui/skeleton';
+
+import { toPickerDate, useWindowDates } from '../useWindowDates';
+import ActionWindowScreen from '../ActionWindowScreen.vue';
+import ActionWindowPrimaryButton from '../ActionWindowPrimaryButton.vue';
+import ActionChoiceList from '../ActionChoiceList.vue';
+import ActionChoiceButton from '../ActionChoiceButton.vue';
 
 /** StoreInstitutionCheckInRequest refuses an end date beyond this. */
 const MAX_MONTHS_AHEAD = 3;
@@ -188,6 +190,9 @@ const isValidRange = computed(() => endDate.value > startDate.value && endDate.v
 /** The server takes plain dates; sending an ISO datetime would fail `date_format`. */
 const toIsoDate = (date: Date): string =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+const pickedOtherEnd = computed(() => !!draft.checkIn.endDate
+  && !presets.value.some(preset => toIsoDate(preset.date) === draft.checkIn.endDate));
 
 const pick = (start: Date, end: Date) => {
   updateCheckIn({ startDate: toIsoDate(start), endDate: toIsoDate(end > maxDate ? maxDate : end) });

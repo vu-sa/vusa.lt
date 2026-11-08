@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import RichContentTiptapHTML from '../RichContentTiptapHTML.vue';
-
 import { ssrRoundTrip } from '@/tests/helpers/ssrRoundTrip';
+
+import RichContentTiptapHTML from '../RichContentTiptapHTML.vue';
 
 const tableDoc = {
   type: 'doc',

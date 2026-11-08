@@ -2,11 +2,11 @@ import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import FileManager from '../FileManager.vue';
-import type { DirectoryEntry, FileEntry } from '../types';
-
 import CollectionSelectionBar from '@/Components/Collection/CollectionSelectionBar.vue';
 import { commonStubs } from '@/tests/stubs';
+
+import FileManager from '../FileManager.vue';
+import type { DirectoryEntry, FileEntry } from '../types';
 
 const directories: DirectoryEntry[] = [
   { path: 'public/files/images', name: 'images', type: 'directory', items: 3 },

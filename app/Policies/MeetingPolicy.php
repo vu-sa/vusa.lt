@@ -9,6 +9,7 @@ use App\Models\Meeting;
 use App\Models\User;
 use App\Services\MeetingAccessService;
 use App\Services\ModelAuthorizer;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
@@ -60,16 +61,6 @@ class MeetingPolicy extends ModelPolicy
         return $meeting->is_public || $this->view($user, $meeting);
     }
 
-    /** @var array<string, bool> */
-    private array $hadMemberMemo = [];
-
-    private function hadMemberAtTheTime(Meeting $meeting, User $user): bool
-    {
-        $key = "{$meeting->getKey()}:{$user->getKey()}";
-
-        return $this->hadMemberMemo[$key] ??= $meeting->hadMemberAtTheTime($user);
-    }
-
     /** @param Meeting $meeting */
     #[\Override]
     public function view(User $user, Model $meeting): bool
@@ -82,11 +73,28 @@ class MeetingPolicy extends ModelPolicy
     #[\Override]
     public function update(User $user, Model $meeting): bool
     {
-        if ($this->hadMemberAtTheTime($meeting, $user)) {
+        if ($meeting->hadMemberAtTheTime($user)) {
             return true;
         }
 
         return $this->commonChecker($user, $meeting, CRUDEnum::UPDATE->label());
+    }
+
+    public function detachInstitution(User $user, Meeting $meeting, Institution $institution): bool
+    {
+        $remaining = $meeting->institutions()->whereKeyNot($institution->id)->with('tenant')->get();
+        $date = $meeting->start_time->toDateString();
+        $wasMember = $user->duties()->whereIn('duties.institution_id', $remaining->modelKeys())
+            ->whereDate('dutiables.start_date', '<=', $date)
+            ->where(fn ($query) => $query->whereNull('dutiables.end_date')->orWhereDate('dutiables.end_date', '>=', $date))
+            ->exists();
+
+        // Evaluate the remaining institutions without cached membership or own-model ids.
+        $after = clone $meeting;
+        $after->setRelation('institutions', $remaining);
+        $after->setRelation('tenants', new Collection($remaining->pluck('tenant')->filter()->unique('id')->all()));
+
+        return $wasMember || $this->meetingAccess->allows($user, $after, 'meetings', 'update');
     }
 
     /** @param Meeting $meeting */
@@ -100,7 +108,7 @@ class MeetingPolicy extends ModelPolicy
     /** @param Meeting $meeting */
     public function addParticipants(User $user, Model $meeting): bool
     {
-        if ($this->hadMemberAtTheTime($meeting, $user)) {
+        if ($meeting->hadMemberAtTheTime($user)) {
             return true;
         }
 

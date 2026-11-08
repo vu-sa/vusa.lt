@@ -21,7 +21,7 @@
             {{ $t('Pareigybė') }}
           </p>
           <p class="truncate text-sm font-semibold text-foreground">
-            <InflectedDutyName :name="dutyContext.name" />
+            <InflectedDutyName :name="getTranslatedValue(dutyContext.name)" />
           </p>
           <p v-if="dutyContext.institution?.name" class="truncate text-xs text-muted-foreground">
             {{ dutyContext.institution.name }}
@@ -115,6 +115,23 @@
         </div>
       </div>
 
+      <div class="flex items-start gap-2.5">
+        <Checkbox
+          id="use_original_duty_name"
+          class="mt-0.5"
+          :model-value="form.use_original_duty_name"
+          @update:model-value="form.use_original_duty_name = $event === true"
+        />
+        <div class="space-y-0.5">
+          <Label for="use_original_duty_name" class="cursor-pointer text-sm font-normal">
+            {{ $t('Viešame puslapyje naudoti originalų pareigybės pavadinimą') }}
+          </Label>
+          <p class="text-xs text-muted-foreground">
+            {{ $t('Matoma vusa.lt') }}
+          </p>
+        </div>
+      </div>
+
       <div v-if="showQuotaTenant" class="space-y-1.5" data-testid="assign-quota-tenant">
         <Label for="assign-quota-tenant" class="text-sm font-medium">
           {{ $t('Kieno kvotai skaičiuojama') }}
@@ -202,7 +219,7 @@
                   {{ $t('Nenurodyta') }}
                 </SelectItem>
                 <SelectItem v-for="program in availableStudyPrograms" :key="program.id" :value="String(program.id)">
-                  {{ program.name }}
+                  {{ getTranslatedValue(program.name) }}
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -244,23 +261,6 @@
             <p v-if="form.errors['study_program_note.lt'] || form.errors['study_program_note.en']" class="text-xs text-destructive">
               {{ form.errors['study_program_note.lt'] || form.errors['study_program_note.en'] }}
             </p>
-          </div>
-
-          <div class="flex items-start gap-2.5">
-            <Checkbox
-              id="use_original_duty_name"
-              class="mt-0.5"
-              :model-value="form.use_original_duty_name"
-              @update:model-value="form.use_original_duty_name = $event === true"
-            />
-            <div class="space-y-0.5">
-              <Label for="use_original_duty_name" class="cursor-pointer text-sm font-normal">
-                {{ $t('Viešame puslapyje naudoti originalų pareigybės pavadinimą') }}
-              </Label>
-              <p class="text-xs text-muted-foreground">
-                {{ $t('Matoma vusa.lt') }}
-              </p>
-            </div>
           </div>
 
           <div class="space-y-3 border-t border-border pt-4">
@@ -374,10 +374,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Briefcase, CalendarCheck, ChevronDown, Sparkles, Trash2 } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 
-import DutySearchField, { type DutyHit } from './DutySearchField.vue';
-import MemberSearchField, { type MemberHit } from './MemberSearchField.vue';
-import { isCuratorDuty, termStatus } from './occupancy';
-
 import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
@@ -388,16 +384,20 @@ import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { DatePicker } from '@/Components/ui/date-picker';
 import { Input } from '@/Components/ui/input';
-import { ImageUpload } from '@/Components/ui/upload';
+import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
 import { imageFromCachedUrl } from '@/Types/media';
 import { Label } from '@/Components/ui/label';
 import { NativeSelect, type NativeSelectOption } from '@/Components/ui/native-select';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 import { useApi } from '@/Composables/useApi';
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { formatDate, todayIso } from '@/Utils/dateTime';
+import type { AssignmentDuty, AssignmentUser, AssignmentTerm } from '@/Types/DutyAssignment';
 
-type Dutiable = App.Entities.Dutiable & Record<string, unknown>;
+import { isCuratorDuty, termStatus } from './occupancy';
+import MemberSearchField, { type MemberHit } from './MemberSearchField.vue';
+import DutySearchField, { type DutyHit } from './DutySearchField.vue';
 
 interface CadenceOption {
   id: string;
@@ -433,13 +433,13 @@ const CUSTOM_DATES = 'custom';
 const props = withDefaults(defineProps<{
   open: boolean;
   /** Fixed duty. Omit (with no `dutiable`) and the sheet asks which duty — the user-record entry point. */
-  duty?: (App.Entities.Duty & Record<string, unknown>) | null;
+  duty?: AssignmentDuty | null;
   /** The term being edited; omit to assign a new member. */
-  dutiable?: Dutiable | null;
+  dutiable?: AssignmentTerm | null;
   /** Pre-selected member. Without a fixed duty it is the fixed side and the sheet asks for the duty. */
-  user?: (App.Entities.User & Record<string, unknown>) | MemberHit | null;
+  user?: AssignmentUser | MemberHit | null;
   /** Offered programmes; narrowed to the chosen duty's tenant when the duty is picked in the sheet. */
-  studyPrograms?: (App.Entities.StudyProgram & { tenant_id?: number | null })[];
+  studyPrograms?: { id: string; name: unknown; tenant_id?: number | null }[];
   /** Members who already hold the duty right now; used when `existingTerms` is not given. */
   takenIds?: string[];
   /** Every term on the duty, so only people holding it during the chosen dates are blocked. */
@@ -471,7 +471,7 @@ const pickMember = computed(() => !isEditing.value && !(pickDuty.value && props.
 const chosenDuty = ref<DutyHit | null>(null);
 const isExOfficio = computed(() => !!props.dutiable?.via_dutiable_id);
 const dutyContext = computed(() => props.duty ?? props.dutiable?.duty ?? null);
-const canEndTerm = computed(() => !!props.dutiable && termStatus(props.dutiable as { start_date?: string; end_date?: string | null }) === 'current');
+const canEndTerm = computed(() => !!props.dutiable && termStatus(props.dutiable ?? {}) === 'current');
 
 const sheetTitle = computed(() => {
   if (isEditing.value) {
@@ -499,7 +499,7 @@ const dutyTypeIds = computed<number[] | null>(() => {
     return chosenDuty.value?.typeIds ?? null;
   }
 
-  const types = (dutyContext.value as { types?: { id?: number | string | null }[] } | null)?.types;
+  const types = dutyContext.value?.types;
 
   return Array.isArray(types)
     ? types.map(type => Number(type.id)).filter((id): id is number => Number.isInteger(id))
@@ -572,7 +572,6 @@ const descriptionLocale = ref<(typeof LOCALES)[number]>('lt');
 const hasExtras = () => hasDescription.value
   || form.additional_email.trim() !== ''
   || !!form.photo_media
-  || form.use_original_duty_name
   || !!form.study_program_id
   || hasText(form.study_program_note);
 
@@ -581,7 +580,9 @@ const member = ref<MemberHit | null>(null);
 const initialMember = (): MemberHit | null => {
   const known = props.user ?? props.dutiable?.user ?? props.dutiable?.dutiable ?? null;
 
-  return known ? (known as MemberHit) : null;
+  return known && typeof known.name === 'string'
+    ? { ...known, id: String(known.id), name: known.name, email: known.email ?? undefined }
+    : null;
 };
 
 watch(member, (hit) => {

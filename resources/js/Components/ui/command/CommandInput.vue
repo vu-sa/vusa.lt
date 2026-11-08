@@ -19,9 +19,9 @@ import { Search } from '@lucide/vue';
 import { ListboxFilter, type ListboxFilterProps, useForwardProps } from 'reka-ui';
 import { computed, type HTMLAttributes } from 'vue';
 
-import { useCommand } from '.';
-
 import { cn } from '@/Utils/Shadcn/utils';
+
+import { useCommand } from '.';
 
 defineOptions({
   inheritAttrs: false,

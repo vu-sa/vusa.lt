@@ -296,9 +296,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 
-import RCIconSelect from '../RCIconSelect.vue';
-import { asBoolean } from '../booleanish';
-
 import type { HeroCarousel } from '@/Types/contentParts';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
@@ -310,6 +307,9 @@ import { Field, FieldLabel } from '@/Components/ui/field';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
 import FocalPointPicker from '@/Components/ui/upload/FocalPointPicker.vue';
+
+import { asBoolean } from '../booleanish';
+import RCIconSelect from '../RCIconSelect.vue';
 
 const options = defineModel<HeroCarousel['options']>('options', {
   default: () => ({ autoplay: true, autoplayDelay: 8000, showArrows: true, showIndicators: true, scrim: 'medium', height: 'md' }),

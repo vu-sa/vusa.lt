@@ -104,11 +104,6 @@ import { router } from '@inertiajs/vue3';
 import { Send, MailX } from '@lucide/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import ActionWindowPrimaryButton from '../ActionWindowPrimaryButton.vue';
-import ActionWindowScreen from '../ActionWindowScreen.vue';
-import { skipLabel, type ActivityPreviewEntry, type ActivityPreviewRecipient, type ActivityRecipientPair } from '../useActivityRequestAskability';
-import { useWindowDates } from '../useWindowDates';
-
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { useApiMutation } from '@/Composables/useApi';
 import StagingNote from '@/Components/StagingNote.vue';
@@ -119,6 +114,11 @@ import { Checkbox } from '@/Components/ui/checkbox';
 import { Label } from '@/Components/ui/label';
 import { Skeleton } from '@/Components/ui/skeleton';
 import { Textarea } from '@/Components/ui/textarea';
+
+import { useWindowDates } from '../useWindowDates';
+import { skipLabel, type ActivityPreviewEntry, type ActivityPreviewRecipient, type ActivityRecipientPair } from '../useActivityRequestAskability';
+import ActionWindowScreen from '../ActionWindowScreen.vue';
+import ActionWindowPrimaryButton from '../ActionWindowPrimaryButton.vue';
 
 interface Row { key: string; institution: { id: string; name: string }; recipient: ActivityPreviewRecipient; activityStatus?: InstitutionActivityStatus | null }
 

@@ -6,12 +6,6 @@
  */
 import type * as d3 from 'd3';
 
-import type { GanttColors } from '../ganttColors';
-import { isDarkModeActive } from '../ganttColors';
-
-import type { GanttTooltipManager } from './GanttTooltip';
-import { buildMemberTooltipContent } from './GanttTooltip';
-
 import {
   getActivityRingColor,
   getActivityLabel,
@@ -19,6 +13,12 @@ import {
   type ActivityLevel,
 } from '@/Components/Graphs/composables/useActivityStatus';
 import type { RepresentativeActivityCategory } from '@/Components/Graphs/types';
+
+import type { GanttColors } from '../ganttColors';
+import { isDarkModeActive } from '../ganttColors';
+
+import type { GanttTooltipManager } from './GanttTooltip';
+import { buildMemberTooltipContent } from './GanttTooltip';
 
 interface ParsedDutyMember {
   institution_id: string | number;

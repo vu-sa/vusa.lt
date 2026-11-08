@@ -17,12 +17,12 @@
 import { computed } from 'vue';
 import { router } from '@inertiajs/vue3';
 
+import { useActionWindow } from '@/Composables/useActionWindow';
+import { useActionWindowCatalog, type ActionWindowAction, type PersonaKey } from '@/Composables/useActionWindowCatalog';
+
 import ActionChoiceButton from '../ActionChoiceButton.vue';
 import ActionChoiceList from '../ActionChoiceList.vue';
 import ActionWindowScreen from '../ActionWindowScreen.vue';
-
-import { useActionWindow } from '@/Composables/useActionWindow';
-import { useActionWindowCatalog, type ActionWindowAction, type PersonaKey } from '@/Composables/useActionWindowCatalog';
 
 const props = defineProps<{ params?: Record<string, unknown> }>();
 

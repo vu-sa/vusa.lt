@@ -1,10 +1,10 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
+import SectionBand from '@/Components/Public/Base/SectionBand.vue';
+
 import DisplayHeading from '../DisplayHeading.vue';
 import TagChip from '../TagChip.vue';
-
-import SectionBand from '@/Components/Public/Base/SectionBand.vue';
 
 /**
  * These assert wiring only — which classes and elements are produced. Whether the brand rule

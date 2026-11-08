@@ -215,7 +215,7 @@ test('saving an institution removes and restores its public search document with
 
 test('user search presentation stays aligned when pronouns, assignment overrides and duty translations change', function (): void {
     $duty = Duty::factory()->create(['name' => ['lt' => 'Koordinatorius', 'en' => 'Coordinator']]);
-    $user = User::factory()->create(['pronouns' => ['lt' => 'jis/jo', 'en' => 'he/him']]);
+    $user = User::factory()->create(['pronouns' => ['lt' => 'jis/jo', 'en' => 'he/him'], 'show_pronouns' => true]);
     $assignment = Dutiable::factory()->forDuty($duty)->forUser($user)->create([
         'start_date' => now()->subMonth(), 'end_date' => null, 'use_original_duty_name' => false,
     ]);

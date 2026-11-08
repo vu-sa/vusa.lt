@@ -3,9 +3,9 @@ import { mount } from '@vue/test-utils';
 import { defineComponent, h } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
-import AdminLayout from '../AdminLayout.vue';
-
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import AdminLayout from '../AdminLayout.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 // `virtual:pwa-register` only exists inside a Vite build.

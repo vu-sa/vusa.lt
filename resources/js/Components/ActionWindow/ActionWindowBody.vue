@@ -2,7 +2,7 @@
   <!-- flex-1, not h-full: the dialog gets its height from min-height, and a
        percentage height against that resolves to auto. -->
   <div data-slot="action-window-body" class="flex min-h-0 flex-1 flex-col">
-    <header class="flex shrink-0 items-start justify-between gap-3 border-b border-border p-4 sm:p-5">
+    <header class="flex shrink-0 items-center justify-between gap-3 border-b border-border p-4 sm:p-5">
       <div class="flex min-w-0 flex-1 items-center gap-3">
         <!-- Back button (when stack > 1) -->
         <button
@@ -99,12 +99,12 @@ import { computed } from 'vue';
 import { ChevronLeft, ClipboardList, X } from '@lucide/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { ACTION_WINDOW_SCREENS, flowIdentity, flowProgress } from './screenRegistry';
-
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import EntityTypeMark from '@/Components/EntityTypeMark.vue';
 import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
+
+import { ACTION_WINDOW_SCREENS, flowIdentity, flowProgress } from './screenRegistry';
 
 const { stack, current, canGoBack, back, close, skippedScreens } = useActionWindow();
 

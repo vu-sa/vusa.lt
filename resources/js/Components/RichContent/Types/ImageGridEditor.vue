@@ -23,10 +23,11 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 
-import RCImageTileGrid from '../Editor/RCImageTileGrid.vue';
-
 import type { ImageGrid } from '@/Types/contentParts';
 import { DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/Components/ui/dropdown-menu';
+
+import RCImageTileGrid from '../Editor/RCImageTileGrid.vue';
+
 import IFluentCheckmark12Regular from '~icons/fluent/checkmark12-regular';
 
 type GridImage = ImageGrid['json_content'][number];

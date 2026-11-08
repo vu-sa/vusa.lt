@@ -7,6 +7,7 @@ use App\Models\Goal;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Problem;
 use App\Models\Step;
+use App\Rules\SafeUrl;
 use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Model;
@@ -42,7 +43,7 @@ class StepRequest extends FormRequest
             'performers.*' => ['string', SoftDeleteRules::existsLive('users')],
             'agenda_item_id' => ['nullable', 'string', 'exists:agenda_items,id', $this->openableReference('agenda_item_id', AgendaItem::class, 'viewSummary')],
             'document_id' => ['nullable', 'integer', 'exists:documents,id', $this->openableReference('document_id', Document::class, 'view')],
-            'url' => 'nullable|url:http,https|max:2048',
+            'url' => ['nullable', 'url:http,https', 'max:2048', new SafeUrl],
             ...($parent instanceof Goal
                 ? ['problem_id' => ['nullable', 'string', Rule::in($parent->problems()->pluck('problems.id')->all())]]
                 : ['goal_id' => ['nullable', 'string', Rule::in($parent->goals()->whereHas('tenant', fn ($query) => $query->where('goals_enabled', true))->pluck('goals.id')->all())]]),

@@ -151,6 +151,13 @@
 import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import ImageSelector from '@/Components/TipTap/ImageSelector.vue';
+import { Button } from '@/Components/ui/button';
+import { FieldLabel } from '@/Components/ui/field';
+import { Input } from '@/Components/ui/input';
+import { Switch } from '@/Components/ui/switch';
+import type { CarouselSlideDeck, SectionOptions } from '@/Types/contentParts';
+
 import { asBoolean } from '../booleanish';
 import RCBlockToolbarShell from '../Editor/Fullscreen/RCBlockToolbarShell.vue';
 import RCSectionToolbarOptions from '../Editor/RCSectionToolbarOptions.vue';
@@ -158,12 +165,6 @@ import RCWidthPicker from '../Editor/RCWidthPicker.vue';
 import { withWidth } from '../Editor/blockWidth';
 import { getContentType, type BlockWidth, type ContentPart } from '../Types';
 
-import ImageSelector from '@/Components/TipTap/ImageSelector.vue';
-import { Button } from '@/Components/ui/button';
-import { FieldLabel } from '@/Components/ui/field';
-import { Input } from '@/Components/ui/input';
-import { Switch } from '@/Components/ui/switch';
-import type { CarouselSlideDeck, SectionOptions } from '@/Types/contentParts';
 import IFluentAdd12Regular from '~icons/fluent/add12-regular';
 import IFluentArrowDown24Regular from '~icons/fluent/arrow-down24-regular';
 import IFluentArrowUp24Regular from '~icons/fluent/arrow-up24-regular';

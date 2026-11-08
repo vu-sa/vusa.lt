@@ -85,7 +85,7 @@ import RecentlyEditedList from '@/Components/Home/RecentlyEditedList.vue';
 import SiteContentLists from '@/Components/Home/SiteContentLists.vue';
 import UpcomingMeetingsList from '@/Components/Home/UpcomingMeetingsList.vue';
 import type {
-  HomeAccessChange,
+  HomeCalendarPreview,
   HomeFollowedInstitutions,
   HomeHeroImage,
   HomeMeeting,
@@ -114,7 +114,6 @@ interface TaskStats {
 // The first response carries the queue and upcoming meetings; the rest arrives as one deferred group.
 const props = defineProps<{
   activeActivityRequests: ActiveActivityRequests;
-  accessChanges: HomeAccessChange[];
   /** Set when the URL asked for the ActionWindow (a reminder's answer buttons, U21). */
   actionWindowLaunch: { flow: 'meeting.create' | 'check-in'; institution: ActionWindowInstitutionRef } | null;
   taskStats: TaskStats;
@@ -124,7 +123,7 @@ const props = defineProps<{
   followedInstitutions?: HomeFollowedInstitutions;
   heroImage: HomeHeroImage | null;
   institutionsNeedingAttention?: InstitutionActivityInsight[];
-  upcomingCalendarEvents?: App.Entities.Calendar[];
+  upcomingCalendarEvents?: HomeCalendarPreview[];
   latestNews?: HomeNewsPreview[];
   recentlyEdited?: HomeRecentRecord[];
   registrationForms: HomeRegistrationForm[];

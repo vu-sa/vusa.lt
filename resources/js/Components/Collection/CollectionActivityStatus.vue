@@ -50,8 +50,6 @@ import { computed, ref, watch } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import CollectionStatusMenu from './CollectionStatusMenu.vue';
-
 import type { InstitutionDeactivationSummary } from '@/Components/AdminForms/InstitutionForm.vue';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { ConfirmDialog } from '@/Components/Patterns';
@@ -60,6 +58,8 @@ import { useApi, useApiMutation } from '@/Composables/useApi';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { operatingStatuses } from '@/Constants/statusIcons';
+
+import CollectionStatusMenu from './CollectionStatusMenu.vue';
 
 const props = defineProps<{
   entity: 'institutions' | 'duties';

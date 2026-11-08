@@ -96,13 +96,13 @@ import { computed, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronRight, Wrench } from '@lucide/vue';
 
-import { timelineDutyName } from './dutyNames';
-import { fixOperationFor } from './composables/useDutiableDiagnostics';
-import type { ParsedRow, TimelineDiagnostic, TimelineOperation } from './types';
-
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
+
+import { timelineDutyName } from './dutyNames';
+import { fixOperationFor } from './composables/useDutiableDiagnostics';
+import type { ParsedRow, TimelineDiagnostic, TimelineOperation } from './types';
 
 const props = defineProps<{
   findings: TimelineDiagnostic[];

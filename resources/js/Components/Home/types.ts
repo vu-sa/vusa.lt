@@ -90,3 +90,12 @@ export interface HomeRegistrationForm {
   key: 'member' | 'student_rep';
   href: string;
 }
+
+export interface HomeCalendarPreview {
+  id: number;
+  title: string;
+  date: string;
+  end_date: string | null;
+  is_all_day: boolean;
+  public_url: string | null;
+}

@@ -1,10 +1,10 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
-import ImageGridEditor from '../ImageGridEditor.vue';
-
 import { commonStubs } from '@/tests/stubs';
 import type { ImageGrid } from '@/Types/contentParts';
+
+import ImageGridEditor from '../ImageGridEditor.vue';
 
 /**
  * TiptapImageButton opens a full file-picker dialog internally — irrelevant to what

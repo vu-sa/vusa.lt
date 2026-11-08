@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
+import type { Hero } from '@/Types/contentParts';
+
 import HeroForm from '../HeroForm.vue';
 import { createContentItem } from '../../Types';
-
-import type { Hero } from '@/Types/contentParts';
 
 const stubs = {
   TiptapEditor: { template: '<div class="tiptap-stub" />' },

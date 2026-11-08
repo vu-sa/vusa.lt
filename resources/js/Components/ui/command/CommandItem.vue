@@ -20,9 +20,9 @@ import { useCurrentElement } from '@vueuse/core';
 import { ListboxItem, useForwardPropsEmits, useId } from 'reka-ui';
 import { computed, type HTMLAttributes, onMounted, onUnmounted, ref } from 'vue';
 
-import { useCommand, useCommandGroup } from '.';
-
 import { cn } from '@/Utils/Shadcn/utils';
+
+import { useCommand, useCommandGroup } from '.';
 
 const props = defineProps<ListboxItemProps & { class?: HTMLAttributes['class'] }>();
 const emits = defineEmits<ListboxItemEmits>();

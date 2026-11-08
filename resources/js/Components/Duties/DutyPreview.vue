@@ -72,12 +72,12 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Building2 } from '@lucide/vue';
 import { computed } from 'vue';
 
-import type { DutyPreviewModel } from './dutyPreview';
-import InflectedDutyName from './InflectedDutyName.vue';
-
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import { PreviewChipList, PreviewFact, PreviewFacts, PreviewPane, PreviewSection, type PreviewChipItem } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
+
+import InflectedDutyName from './InflectedDutyName.vue';
+import type { DutyPreviewModel } from './dutyPreview';
 
 const MEMBER_LIMIT = 8;
 

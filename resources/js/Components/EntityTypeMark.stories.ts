@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
-import EntityTypeMark from './EntityTypeMark.vue';
-
 import { entityTypeRegistry } from '@/Constants/entityTypes';
+
+import EntityTypeMark from './EntityTypeMark.vue';
 
 const meta: Meta<typeof EntityTypeMark> = {
   title: 'Components/EntityTypeMark',

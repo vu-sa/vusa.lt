@@ -58,7 +58,7 @@
             as-child
             class="size-11 shrink-0"
           >
-            <a :href="form.link_url" target="_blank" rel="noopener noreferrer" :aria-label="$t('Atidaryti nuorodą')">
+            <a :href="safeHref(form.link_url)" target="_blank" rel="noopener noreferrer" :aria-label="$t('Atidaryti nuorodą')">
               <ExternalLink class="size-4" />
             </a>
           </Button>
@@ -126,8 +126,9 @@ import { ConfirmDialog, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
-import { ImageUpload } from '@/Components/ui/upload';
+import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
 import { contentStatuses, type StatusPresentation } from '@/Constants/statusIcons';
+import { safeHref } from '@/Utils/safeHref';
 
 const props = withDefaults(defineProps<{
   banner: Partial<App.Entities.Banner> & Record<string, unknown>;

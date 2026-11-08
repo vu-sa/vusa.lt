@@ -28,11 +28,11 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Users } from '@lucide/vue';
 
-import type { ResponsibilityPerson } from './types';
-
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { OverviewSection } from '@/Components/Patterns';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
+
+import type { ResponsibilityPerson } from './types';
 
 defineProps<{
   people: ResponsibilityPerson[];

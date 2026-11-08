@@ -62,7 +62,7 @@
           sizes="256px"
           class="h-full w-full object-cover"
           :src="photo"
-          :alt="user.name"
+          :alt="user.name ?? ''"
           loading="lazy"
           :focal-point
           @error="imageError = true" />
@@ -104,7 +104,7 @@
           <a
             v-if="user.facebook_url"
             class="flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
-            :href="user.facebook_url"
+            :href="safeHref(user.facebook_url)"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -125,20 +125,31 @@ import { computed, ref, watch } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { Mail, Phone } from '@lucide/vue';
 
-import UserAvatar from './UserAvatar.vue';
-
 import MediaImage from '@/Components/Brand/MediaImage.vue';
 import { useApi } from '@/Composables/useApi';
 import type { ImageData } from '@/Types/media';
 import { useIsAdminContext } from '@/Composables/useIsAdminContext';
-import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/hover-card';
 import { avatarSizeClasses, mapPixelToSize, type AvatarSize } from '@/Components/ui/avatar';
+import { safeHref } from '@/Utils/safeHref';
+
+import UserAvatar, { type AvatarUser } from './UserAvatar.vue';
+
+import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
+
+interface PopoverUser extends AvatarUser {
+  email?: string | null;
+  phone?: string | null;
+  facebook_url?: string | null;
+  src?: string | null;
+  show_pronouns?: boolean | null;
+  pronouns?: unknown;
+}
 
 const props = withDefaults(defineProps<{
   showName?: boolean;
   size?: number | AvatarSize;
-  user: Record<string, any>;
+  user: PopoverUser;
   /** Whether the avatar/name should link to the admin user profile page.
    *  Defaults to true when rendered inside `/mano/*` and the user has view permission. */
   clickable?: boolean;
@@ -196,7 +207,7 @@ const avatarWrapperClass = computed(() => {
 
 const photoEndpoint = computed(() => props.user.id ? route('api.v1.admin.users.photo', { user: props.user.id }) : '');
 const { data: preview, execute: fetchPhoto, isFetching: photoFetching } = useApi<{ image: ImageData | null }>(photoEndpoint, { immediate: false, showErrorToast: false });
-let fetchedPhotoFor: string | null = null;
+let fetchedPhotoFor: string | number | null = null;
 async function loadPhoto(open: boolean) {
   if (!open || !isAdminContext.value || !canViewUserProfile.value || !props.user.id || photoFetching.value || fetchedPhotoFor === props.user.id) return;
   fetchedPhotoFor = props.user.id;

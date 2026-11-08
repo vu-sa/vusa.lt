@@ -20,7 +20,9 @@
         <AlertDialogDescription>{{ $t('Tai, ką įvedei formoje, nebus išsaugota.') }}</AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>
-        <AlertDialogCancel class="u-touch">{{ $t('Likti puslapyje') }}</AlertDialogCancel>
+        <AlertDialogCancel class="u-touch">
+          {{ $t('Likti puslapyje') }}
+        </AlertDialogCancel>
         <Button type="button" voice="brand" class="u-touch" data-slot="confirm-dialog-action" @click="continueNavigation">
           {{ $t('Išeiti iš puslapio') }}
         </Button>
@@ -34,9 +36,6 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef } from 
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import type { PendingVisit } from '@inertiajs/core';
 
-import RegistrationField from './RegistrationField.vue';
-import { initialValue, type PrefilledValue, type RegistrationDefinition, type RegistrationValue } from './types';
-
 import { Button } from '@/Components/ui/button';
 import {
   AlertDialog,
@@ -47,6 +46,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/Components/ui/alert-dialog';
+
+import RegistrationField from './RegistrationField.vue';
+import { initialValue, type PrefilledValue, type RegistrationDefinition, type RegistrationValue } from './types';
+
 import type { PageProps } from '@/Types';
 
 const props = defineProps<{

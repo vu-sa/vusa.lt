@@ -83,15 +83,16 @@
 </template>
 
 <script setup lang="ts">
-import RCSectionOptions from '../Editor/RCSectionOptions.vue';
-import RCIconSelect from '../RCIconSelect.vue';
-import { asBoolean } from '../booleanish';
 
 import type { CardStack } from '@/Types/contentParts';
 import { Switch } from '@/Components/ui/switch';
 import { Input } from '@/Components/ui/input';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
+
+import { asBoolean } from '../booleanish';
+import RCIconSelect from '../RCIconSelect.vue';
+import RCSectionOptions from '../Editor/RCSectionOptions.vue';
 
 const options = defineModel<CardStack['options']>('options', { default: () => ({ autoplay: true, autoplayDelay: 5000, hintText: '' }) });
 const json_content = defineModel<CardStack['json_content']>({ default: () => [] });

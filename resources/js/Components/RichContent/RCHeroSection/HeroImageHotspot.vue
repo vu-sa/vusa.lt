@@ -243,11 +243,6 @@
 import { computed, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import RCAddPlaceholder from '../Editor/Fullscreen/RCAddPlaceholder.vue';
-import RCDecorationListEditor from '../Editor/RCDecorationListEditor.vue';
-import RCInlineText from '../Editor/Fullscreen/RCInlineText.vue';
-import { injectActiveHotspot } from '../Editor/Fullscreen/useActiveHotspot';
-
 import type { DecorationConfig, Hero } from '@/Types/contentParts';
 import ImageWithDecorations from '@/Components/RichContent/ImageWithDecorations.vue';
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
@@ -258,6 +253,11 @@ import { Input } from '@/Components/ui/input';
 import { Popover, PopoverAnchor, PopoverContent } from '@/Components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Switch } from '@/Components/ui/switch';
+
+import { injectActiveHotspot } from '../Editor/Fullscreen/useActiveHotspot';
+import RCInlineText from '../Editor/Fullscreen/RCInlineText.vue';
+import RCDecorationListEditor from '../Editor/RCDecorationListEditor.vue';
+import RCAddPlaceholder from '../Editor/Fullscreen/RCAddPlaceholder.vue';
 
 const props = defineProps<{
   content: Hero;

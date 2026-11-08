@@ -47,9 +47,9 @@ import { computed, type Component } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { AtSign, GraduationCap, Image, Tag, Text, Users } from '@lucide/vue';
 
-import type { ParsedRow } from './types';
-
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/ui/tooltip';
+
+import type { ParsedRow } from './types';
 
 const props = withDefaults(defineProps<{
   extras: ParsedRow['extras'];

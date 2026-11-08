@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Institucijų grafas
-last_reviewed: 2026-10-07
+last_reviewed: 2026-11-08
 tests:
   - tests/Feature/Admin/Core/DashboardControllerTest.php
   - tests/Feature/Services/InstitutionRelationServiceTest.php
@@ -43,7 +43,8 @@ kortelės skirtuke **Ryšiai** (žr. [Ryšiai](/sistema/rysiai)). Mazgų pertemp
 
 ## Kas ką gali {#teises}
 
-Meniu nuorodą mato padalinio institucijas peržiūrintys nariai ir **Super Admin**.
+Grafą atverti ir meniu nuorodą matyti gali padalinio institucijas peržiūrintys nariai ir **Super Admin**.
+Ši prieiga būtina ir atveriant tiesioginę nuorodą.
 Tai nėra atskiras leidimas keisti institucijas ar tipus. Redagavimą visada sprendžia
 to įrašo teisės. Dalis papildomų ryšio paaiškinimų rodoma užvedus žymeklį;
 ši funkcija nėra pilnas klaviatūros ar telefono įrašų redaktorius.
@@ -58,8 +59,8 @@ puslapyje, grafą reikia atnaujinti.
 
 - `DashboardController::institutionGraph()` pateikia institucijas, narių skaičius ir abu ryšių rinkinius.
 - Meniu nuorodą riboja `AdminNavigationCatalog` tikrinama `institutions.read.padalinys` teisė.
-  Pats GET maršrutas turi prisijungimo apsaugą, bet valdiklis papildomos šios teisės patikros neatlieka;
-  meniu matomumas nėra tiesioginio adreso autorizacijos įrodymas.
+  Tą pačią teisę tikrina ir valdiklis, prieš pateikdamas grafo duomenis.
 - Vaizdą generuoja `InstitutionGraph.vue`; ryšius pateikia `InstitutionRelationService` – tas pats, kuris sprendžia prieigą.
 - `DashboardControllerTest` tikrina grafo atsakymą ir narių skaičius administratoriaus paskyrai;
-  `InstitutionRelationServiceTest` – ryšių sudarymą. Šie testai nepatvirtina visų grafo valdiklių ar prieigos ribojimo.
+  taip pat 403 atsakymą neturinčiam prieigos naudotojui; `InstitutionRelationServiceTest` – ryšių sudarymą.
+  Šie testai nepatvirtina visų grafo valdiklių veikimo.

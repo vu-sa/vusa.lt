@@ -2,11 +2,11 @@ import { mount } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import AttentionQueue from '../AttentionQueue.vue';
-import type { HomeTask } from '../types';
-
 import { OVERVIEW_STATUS_KEY } from '@/Components/Patterns/overviewStatus';
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import AttentionQueue from '../AttentionQueue.vue';
+import type { HomeTask } from '../types';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

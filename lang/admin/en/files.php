@@ -149,9 +149,6 @@ return [
         'directory_name_required' => 'The folder name is required.',
         'directory_name_max' => 'The folder name cannot be longer than :max characters.',
         'directory_name_regex' => 'The folder name may only contain letters, numbers, underscores, hyphens and spaces.',
-        'file_name_max' => 'The file name is too long.',
-        'image_invalid' => 'The file must be an image.',
-        'image_max' => 'The image cannot be larger than 50MB.',
         'paths_required' => 'No files were selected for deletion.',
         'paths_max' => 'Too many files selected. The maximum is :max.',
         'files_required' => 'No files were selected for upload.',
@@ -186,6 +183,7 @@ return [
     ],
 
     'usage' => [
+        'hidden_count' => 'Another :count records use this file. You do not have permission to view their details.',
         'scan_done' => 'Check complete',
         'scan_failed' => 'Could not check where the file is used',
         'matched_blocks' => 'Content blocks: :count',
@@ -228,8 +226,6 @@ return [
         'no_directory_access' => 'You do not have permission to view this folder.',
         'fetch_failed' => 'Could not load the file list. Please try again.',
         'fetch_failed_after_redirect' => 'Could not load the file list after redirecting.',
-        'image_missing' => 'No image was provided.',
-        'file_name_missing' => 'No file name was provided.',
         'invalid_directory_path' => 'Invalid folder path.',
         'no_upload_permission' => 'You do not have permission to upload files to this folder.',
         'no_create_directory_permission' => 'You do not have permission to create folders here.',

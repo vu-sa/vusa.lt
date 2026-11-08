@@ -3,9 +3,9 @@ import { defineComponent } from 'vue';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { usePage } from '@inertiajs/vue3';
 
-import { useAdminCollectionSearch } from '../useAdminCollectionSearch';
-
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import { useAdminCollectionSearch } from '../useAdminCollectionSearch';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -32,11 +32,11 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-async function mountSearch(baseFilterBy?: string) {
+async function mountSearch(baseFilterBy?: string, collection: 'meetings' | 'institutions' = 'meetings') {
   let search!: ReturnType<typeof useAdminCollectionSearch>;
   wrapper = mount(defineComponent({
     setup() {
-      search = useAdminCollectionSearch({ collection: 'meetings', baseFilterBy });
+      search = useAdminCollectionSearch({ collection, baseFilterBy });
       return () => null;
     },
   }));
@@ -45,6 +45,26 @@ async function mountSearch(baseFilterBy?: string) {
 }
 
 describe('collection first request', () => {
+  it.each([true, false])('respects activity field visibility when excluded is %s', async (excluded) => {
+    window.history.replaceState({}, '', '/mano/institutions?activity_status=overdue');
+    const fetchMock = vi.fn().mockResolvedValueOnce(json({ ...config, collections: {
+      institutions: { name: 'institutions', key: 'institution-key', hasAccess: true, excludedFields: excluded ? ['activity_status'] : [] },
+    } })).mockResolvedValueOnce(json({ results: [{
+      hits: [{ document: { id: 'i1', name_lt: 'Taryba' } }], found: 1,
+      facet_counts: excluded ? [] : [{ field_name: 'activity_status', counts: [{ value: 'overdue', count: 1 }] }],
+    }] }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const search = await mountSearch(undefined, 'institutions');
+
+    const { searches } = JSON.parse(fetchMock.mock.calls[1][1].body);
+    expect(searches[0].facet_by.includes('activity_status')).toBe(!excluded);
+    expect((searches[0].filter_by ?? '').includes('activity_status')).toBe(!excluded);
+    expect(search.facets.value.some(facet => facet.field === 'activity_status')).toBe(!excluded);
+    expect(search.results.value).toEqual([{ id: 'i1', name_lt: 'Taryba' }]);
+    expect(search.error.value).toBeNull();
+  });
+
   it('loads rows and initial facets in one search on an unfiltered visit', async () => {
     const fetchMock = vi.fn().mockResolvedValueOnce(json(config)).mockResolvedValueOnce(json({
       results: [{ hits: [{ document: { id: 'm1' } }], found: 1, facet_counts: [yearFacet([{ value: '2025', count: 1 }])] }],
@@ -65,7 +85,7 @@ describe('collection first request', () => {
   it('awaits the first search when facets are requested while it is in flight', async () => {
     let resolveSearch!: (response: ReturnType<typeof json>) => void;
     const fetchMock = vi.fn().mockResolvedValueOnce(json(config))
-      .mockImplementationOnce(() => new Promise(resolve => { resolveSearch = resolve; }));
+      .mockImplementationOnce(() => new Promise((resolve) => { resolveSearch = resolve; }));
     vi.stubGlobal('fetch', fetchMock);
     const search = await mountSearch();
     let finished = false;

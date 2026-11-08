@@ -2,46 +2,26 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Exceptions\StagingResourceReadOnlyException;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\Files\BulkDeleteFilesRequest;
 use App\Http\Requests\Files\CreateDirectoryRequest;
 use App\Http\Requests\Files\FilePathRequest;
 use App\Http\Requests\Files\IndexFilesRequest;
-use App\Http\Requests\Files\UploadImageRequest;
 use App\Models\File;
-use App\Models\User;
 use App\Services\FileStorageService;
-use App\Services\ImageUploadService;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Support\StoragePath;
 use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Intervention\Image\Laravel\Facades\Image;
 
 class FilesController extends AdminController
 {
-    // Transitional(legacy-images): remove with ImageUpload's immediate mode; forms upload to media now.
-    /** @var list<string> Shared form-image folders use the class-level create ability. */
-    private const array SHARED_IMAGE_FOLDERS = [
-        'banners',
-        'calendar',
-        'contacts',
-        'institutions',
-        'news',
-        'pages',
-        'resources',
-        'uploads',
-    ];
-
     public function __construct(
         public Authorizer $authorizer,
-        protected ImageUploadService $imageUploadService,
         protected FileStorageService $fileStorage
     ) {}
 
@@ -68,7 +48,7 @@ class FilesController extends AdminController
 
         $user = $request->user();
 
-        return $this->inertiaResponse('Admin/Files/Index', [
+        return Inertia::render('Admin/Files/Index', [
             'files' => $files,
             'directories' => $directories,
             'path' => $currentDirectory,
@@ -127,111 +107,6 @@ class FilesController extends AdminController
 
             return back()->withErrors(['error' => __('files.errors.create_directory_failed')]);
         }
-    }
-
-    public function uploadImage(UploadImageRequest $request): JsonResponse
-    {
-        $file = $request->file('image') ?? $request->file('file');
-
-        if (! $file instanceof UploadedFile) {
-            return response()->json(['error' => __('files.errors.image_missing')], 400);
-        }
-
-        $originalName = $file->getClientOriginalName() ?: (string) $request->validated('name');
-
-        if ($originalName === '') {
-            return response()->json(['error' => __('files.errors.file_name_missing')], 400);
-        }
-
-        $path = (string) $request->validated('path');
-
-        if (StoragePath::hasTraversal($path)) {
-            return response()->json(['error' => __('files.errors.invalid_directory_path')], 422);
-        }
-
-        try {
-            if ($this->isSharedImageFolder($path)) {
-                // Form images target shared folders rather than a tenant's file-manager tree.
-                if (! $this->mayUploadToSharedFolder($request->user(), $path)) {
-                    return response()->json(['error' => __('files.errors.no_upload_permission')], 403);
-                }
-            } elseif (! $this->isTipTapUpload($path)) {
-                if (! $request->user()->can('createInDirectory', [File::class, $this->fileStorage->normalizeFilePath($path)])) {
-                    return response()->json(['error' => __('files.errors.no_upload_permission')], 403);
-                }
-            }
-
-            $directory = $this->resolveUploadDirectory($path, $request->user());
-            $result = $this->imageUploadService->processAndSave($file, $directory, $originalName);
-        } catch (AuthorizationException|StagingResourceReadOnlyException $e) {
-            throw $e;
-        } catch (\InvalidArgumentException) {
-            return response()->json(['error' => __('files.errors.invalid_directory_path')], 422);
-        } catch (\Exception $e) {
-            Log::error('Image upload failed', [
-                'error' => $e->getMessage(),
-                'user_id' => $request->user()->id,
-                'request_data' => $request->only(['name', 'path']),
-            ]);
-
-            return response()->json(['error' => __('files.errors.upload_failed')], 500);
-        }
-
-        Log::info('Image uploaded via FilesController', [
-            'original_name' => $originalName,
-            'processed_name' => $result['name'],
-            'directory' => $directory,
-            'original_size' => $result['originalSize'],
-            'compressed_size' => $result['compressedSize'],
-            'compression_ratio' => $result['compressionRatio'],
-            'user_id' => $request->user()->id,
-        ]);
-
-        return response()->json([
-            'url' => $result['url'],
-            'name' => $result['name'],
-            'originalSize' => $result['originalSize'],
-            'compressedSize' => $result['compressedSize'],
-            'compressionRatio' => $result['compressionRatio'],
-            'message' => ImageUploadService::shortenFilename($originalName).' optimized and converted to WebP',
-        ]);
-    }
-
-    protected function resolveUploadDirectory(string $path, User $user): string
-    {
-        if ($this->isTipTapUpload($path)) {
-            return $this->resolveTipTapDirectory($user);
-        }
-
-        if ($this->isSharedImageFolder($path)) {
-            return $path;
-        }
-
-        return $this->fileStorage->normalizeFilePath($path);
-    }
-
-    protected function resolveTipTapDirectory(User $user): string
-    {
-        return $this->fileStorage->resolveTipTapDirectory($user, $this->authorizer);
-    }
-
-    protected function isTipTapUpload(string $path): bool
-    {
-        return FileStorageService::isTipTapPath($path);
-    }
-
-    protected function isSharedImageFolder(string $path): bool
-    {
-        return in_array($path, self::SHARED_IMAGE_FOLDERS, true);
-    }
-
-    /**
-     * Every member uploads their own profile photo to `contacts`, as do duty managers for
-     * occupancy photos, so that folder needs no file permission.
-     */
-    protected function mayUploadToSharedFolder(User $user, string $path): bool
-    {
-        return $user->can('create', File::class);
     }
 
     public function compressImage(FilePathRequest $request): RedirectResponse

@@ -9,6 +9,10 @@ import { ref, computed, watch, onMounted, onUnmounted, shallowRef, toValue, type
 import { usePage } from '@inertiajs/vue3';
 import { useUrlSearchParams, useDebounceFn } from '@vueuse/core';
 
+import { provideFacetSearch } from '@/Shared/Search/facets';
+import { useAdminSearch } from '@/Composables/useAdminSearch';
+import { useCollectionFilterMemory } from '@/Composables/collectionFilterMemory';
+
 import type {
   AdminCollection,
   AdminFacet,
@@ -30,10 +34,6 @@ import {
 } from '../Services/AdminSearchService';
 import { mergeFacets, sortFacetsByConfig } from '../Services/AdminFacetMerger';
 import { getCollectionFacetConfig, getCollectionSortOptions, resolveSortValue, RELEVANCE_SORT_VALUE } from '../Config/collectionFacetConfig';
-
-import { provideFacetSearch } from '@/Shared/Search/facets';
-import { useAdminSearch } from '@/Composables/useAdminSearch';
-import { useCollectionFilterMemory } from '@/Composables/collectionFilterMemory';
 
 /** Bounds the replay of `?pages=`, so a hand-edited URL cannot fan out into hundreds of requests. */
 const MAX_RESTORED_PAGES = 10;
@@ -84,10 +84,11 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
   const baseFilterBy = computed(() => toValue(options.baseFilterBy) || undefined);
 
   // Get the facet config for this collection
-  const facetConfig = getCollectionFacetConfig(collection);
-  if (!facetConfig) {
+  const configuredFacets = getCollectionFacetConfig(collection);
+  if (!configuredFacets) {
     throw new Error(`No facet configuration found for collection: ${collection}`);
   }
+  const facetConfig = { ...configuredFacets, fields: [...configuredFacets.fields] };
 
   // Get the base admin search composable
   const adminSearch = useAdminSearch();
@@ -227,6 +228,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
   let searchGeneration = 0;
   const executeSearch = async (isLoadMore = false) => {
     const generation = ++searchGeneration;
+    status.value = isLoadMore ? 'loading-more' : 'searching';
     if (initialFacetsPromise) await initialFacetsPromise;
     if (generation !== searchGeneration) return;
     // Clear previous error
@@ -341,9 +343,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
 
   // Debounced search for user typing
   const debouncedSearch = useDebounceFn(() => {
-    if (status.value === 'idle' || status.value === 'error') {
-      performSearch(false);
-    }
+    performSearch(false);
   }, debounceMs);
 
   /**
@@ -424,7 +424,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
    * Load more results
    */
   const loadMore = async () => {
-    if (status.value !== 'loading-more' && hasMoreResults.value) {
+    if (status.value === 'idle' && hasMoreResults.value) {
       await performSearch(true);
     }
   };
@@ -537,12 +537,15 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
 
   // Initialize on mount
   onMounted(async () => {
-    if (syncToUrl) loadFromUrl();
-
     // Initialize admin search
     await adminSearch.initialize();
 
     if (!validateCollectionAccess()) return;
+
+    const excludedFields = adminSearch.config.value?.collections[collection]?.excludedFields ?? [];
+    facetConfig.fields = facetConfig.fields.filter(field => !excludedFields.includes(field.field));
+    facetConfig.facetBy = facetConfig.facetBy.split(',').filter(field => !excludedFields.includes(field)).join(',');
+    if (syncToUrl) loadFromUrl();
 
     isMounted = true;
     if (!searchOnMount && loadFacetsOnMount) await loadInitialFacets();

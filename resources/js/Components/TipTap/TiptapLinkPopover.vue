@@ -28,13 +28,13 @@ import type { Editor } from '@tiptap/core';
 import { Link } from '@lucide/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { Button } from '@/Components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
+
 import TiptapLinkForm from './TiptapLinkForm.vue';
 import TiptapToolButton from './TiptapToolButton.vue';
 import { useTiptapCommands } from './composables/useTiptapCommands';
 import { isValidTiptapLink } from './linkUrl';
-
-import { Button } from '@/Components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 
 const props = defineProps<{ editor: Editor }>();
 const emit = defineEmits<{ engage: [] }>();

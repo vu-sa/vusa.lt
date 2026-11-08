@@ -78,6 +78,7 @@ class SitemapController extends Controller
 
                 // Add pages using model-based approach
                 $pages = Page::where('tenant_id', $tenant->id)
+                    ->with(['media', 'otherLanguagePage'])
                     ->where('is_active', true)
                     ->get();
 
@@ -115,6 +116,7 @@ class SitemapController extends Controller
 
                 // Add individual news articles using model-based approach
                 $news = News::where('tenant_id', $tenant->id)
+                    ->with(['tenant', 'media', 'other_language_news'])
                     ->where('draft', false)
                     ->where('permalink', '!=', '')
                     ->orderBy('publish_time', 'desc')

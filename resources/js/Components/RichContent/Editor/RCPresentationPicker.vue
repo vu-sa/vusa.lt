@@ -48,12 +48,12 @@
 import { computed, inject } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { Field, FieldLabel } from '@/Components/ui/field';
+
 import type { BlockPresentation } from '../bandLayout';
 import type { PlainPadding } from '../sectionClasses';
 
 import { SECTION_PRESENTATION_DISABLED } from './sectionPresentation';
-
-import { Field, FieldLabel } from '@/Components/ui/field';
 
 const props = withDefaults(defineProps<{
   modelValue?: BlockPresentation;

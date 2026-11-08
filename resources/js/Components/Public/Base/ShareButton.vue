@@ -19,11 +19,12 @@
 import type { HTMLAttributes } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import IFluentShare24Regular from '~icons/fluent/share-24-regular';
 import { Button } from '@/Components/ui/button';
 import type { ButtonVariants } from '@/Components/ui/button';
 import { useShareLink } from '@/Composables/useShareLink';
 import { cn } from '@/Utils/Shadcn/utils';
+
+import IFluentShare24Regular from '~icons/fluent/share-24-regular';
 
 /**
  * Share this page — the native share sheet where the browser has one, a copied link where it

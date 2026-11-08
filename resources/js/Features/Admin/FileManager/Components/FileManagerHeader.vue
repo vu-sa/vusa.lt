@@ -125,12 +125,6 @@ import {
   X,
 } from '@lucide/vue';
 
-import type { FileViewMode, SortDir, SortKey, TypeFilter } from '../types';
-import { relativeToRoot, ROOT_PATH } from '../utils';
-
-import PathBreadcrumb from './PathBreadcrumb.vue';
-import TypeFilterMenu from './TypeFilterMenu.vue';
-
 import CollectionViewToggle from '@/Components/Collection/CollectionViewToggle.vue';
 import { Button } from '@/Components/ui/button';
 import { controlVariants } from '@/Components/ui/control';
@@ -141,6 +135,12 @@ import {
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 import { Spinner } from '@/Components/ui/spinner';
+
+import { relativeToRoot, ROOT_PATH } from '../utils';
+import type { FileViewMode, SortDir, SortKey, TypeFilter } from '../types';
+
+import TypeFilterMenu from './TypeFilterMenu.vue';
+import PathBreadcrumb from './PathBreadcrumb.vue';
 
 const props = withDefaults(defineProps<{
   path: string;

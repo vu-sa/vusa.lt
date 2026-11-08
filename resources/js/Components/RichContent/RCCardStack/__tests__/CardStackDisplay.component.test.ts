@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import CardStackDisplay from '../CardStackDisplay.vue';
-import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from '../../Editor/Fullscreen/useActiveHotspot';
-
 import { stubPopover, stubPopoverAnchor, stubPopoverContent } from '@/tests/stubs';
 import { waitForSelector } from '@/tests/helpers/waitForSelector';
 import type { CardStack } from '@/Types/contentParts';
 import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
+
+import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from '../../Editor/Fullscreen/useActiveHotspot';
+import CardStackDisplay from '../CardStackDisplay.vue';
 
 function makeElement(cards: Partial<CardStack['json_content'][number]>[] = []): CardStack {
   return {

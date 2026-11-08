@@ -97,13 +97,6 @@ import { usePage } from '@inertiajs/vue3';
 import { useElementSize, useEventListener, useLocalStorage } from '@vueuse/core';
 import { computed, ref, watch } from 'vue';
 
-import MobileBottomBar from './MobileBottomBar.vue';
-import MobileContextBar from './MobileContextBar.vue';
-import MobileMenuPanel from './MobileMenuPanel.vue';
-import SectionTabs from './SectionTabs.vue';
-import ShellTopBar from './ShellTopBar.vue';
-import SystemAnnouncement from './SystemAnnouncement.vue';
-
 import ImpersonateBanner from '@/Components/ImpersonateBanner.vue';
 import StagingBanner from '@/Components/StagingBanner.vue';
 import StagingWatermark from '@/Components/StagingWatermark.vue';
@@ -112,6 +105,13 @@ import { useAdminNavigation } from '@/Composables/useAdminNavigation';
 import StartFmPlayer from '@/Components/StartFmPlayer.vue';
 import { useStartFm } from '@/Composables/useStartFm';
 import { SHELL_MOBILE_ACTIONS_ID, useShellFocus } from '@/Composables/useShellFocus';
+
+import SystemAnnouncement from './SystemAnnouncement.vue';
+import ShellTopBar from './ShellTopBar.vue';
+import SectionTabs from './SectionTabs.vue';
+import MobileMenuPanel from './MobileMenuPanel.vue';
+import MobileContextBar from './MobileContextBar.vue';
+import MobileBottomBar from './MobileBottomBar.vue';
 
 const radio = useStartFm();
 const bottomStack = ref<HTMLElement | null>(null);

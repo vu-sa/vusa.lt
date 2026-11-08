@@ -1,5 +1,7 @@
 import { computed, type MaybeRefOrGetter, toValue } from 'vue';
 
+import { getOutcomeVotes } from '@/Composables/useAgendaItemStyling';
+
 import type {
   AtstovavimasUser,
   AtstovavimasInstitution,
@@ -11,20 +13,19 @@ import type {
   AtstovavimasGap,
 } from '../types';
 
-import { getOutcomeVotes } from '@/Composables/useAgendaItemStyling';
-
 export function useAtstovavimasData(
   userGetter: MaybeRefOrGetter<AtstovavimasUser>,
   userInstitutionsGetter: MaybeRefOrGetter<AtstovavimasInstitution[]> = [],
 ) {
-  // User's direct institutions, including duties that begin later, then the ones they
-  // look after as secretary (`is_secretary`), which no duty reaches.
+  // Secretary institutions may have no duty to join through.
   const institutions = computed<AtstovavimasInstitution[]>(() => {
     const user = toValue(userGetter);
-    const secretaried = (toValue(userInstitutionsGetter) ?? []).filter(institution => institution.is_secretary ?? institution.is_administered);
+    const userInstitutions = toValue(userInstitutionsGetter) ?? [];
+    const institutionsById = new Map(userInstitutions.map(institution => [String(institution.id), institution]));
+    const secretaried = userInstitutions.filter(institution => institution.is_secretary ?? institution.is_administered);
 
     return [
-      ...(user?.authorization_duties ?? []).map(duty => duty.institution ?? null),
+      ...(user?.authorization_duties ?? []).map(duty => institutionsById.get(String(duty.institution_id)) ?? null),
       ...secretaried,
     ]
       .filter((institution): institution is AtstovavimasInstitution => institution !== null && institution !== undefined)
@@ -34,7 +35,6 @@ export function useAtstovavimasData(
           ? inst.meetings.some(meeting => new Date(meeting.start_time) > new Date())
           : false,
       }))
-      // unique by id
       .filter((institution: AtstovavimasInstitution, index: number, self: AtstovavimasInstitution[]) =>
         index === self.findIndex((t: AtstovavimasInstitution) => t && institution && t.id === institution.id),
       );
@@ -90,8 +90,8 @@ export function useAtstovavimasData(
     return institutions.value.flatMap((inst: AtstovavimasInstitution) => {
       return (inst.check_ins ?? []).map(checkIn => ({
         institution_id: inst.id,
-        from: new Date(checkIn.start_date),
-        until: new Date(checkIn.end_date),
+        from: new Date(`${checkIn.start_date}T00:00:00`),
+        until: new Date(`${checkIn.end_date}T00:00:00`),
         mode: 'no_meetings', // All check-ins represent "no meetings"
         note: checkIn.note || undefined,
       }));

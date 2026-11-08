@@ -193,10 +193,6 @@
 import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { asBoolean } from '../booleanish';
-import RCBlockToolbarShell from '../Editor/Fullscreen/RCBlockToolbarShell.vue';
-import type { ContentPart } from '../Types';
-
 import ImageSelector from '@/Components/TipTap/ImageSelector.vue';
 import { Button } from '@/Components/ui/button';
 import { Field, FieldLabel } from '@/Components/ui/field';
@@ -204,6 +200,11 @@ import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Switch } from '@/Components/ui/switch';
 import type { HeroCarousel } from '@/Types/contentParts';
+
+import type { ContentPart } from '../Types';
+import RCBlockToolbarShell from '../Editor/Fullscreen/RCBlockToolbarShell.vue';
+import { asBoolean } from '../booleanish';
+
 import IFluentAdd12Regular from '~icons/fluent/add12-regular';
 import IFluentArrowDown24Regular from '~icons/fluent/arrow-down24-regular';
 import IFluentArrowUp24Regular from '~icons/fluent/arrow-up24-regular';

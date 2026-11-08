@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Institucijos
-last_reviewed: 2026-11-06
+last_reviewed: 2026-11-08
 tests:
   - tests/Feature/Admin/ModelMeta/TypeControllerTest.php
   - tests/Feature/Meetings/MeetingKindTest.php
@@ -70,6 +70,10 @@ puslapį `/mano/institutions/{id}`.
 ## Kaip tai veikia
 
 Institucijų sąraše pavadinimai ir tipai rodomi pasirinkta Mano VU SA kalba. Jei vertimo nėra, rodomas lietuviškas arba kitas turimas pavadinimas. Padalinio trumpinys nesikeičia perjungus kalbą.
+
+### Institucijos puslapis {#puslapis}
+
+Atvėrus instituciją iškart rodoma apžvalga, nariai ir paskutiniai posėdžiai. Kitų skirtukų turinys įkeliamas juos pirmą kartą pasirinkus; kol lauki, rodomas įkėlimo vietaženklis. Telefone skiltys rodomos viena po kitos, o jų turinys įkeliamas slenkant iki skilties. Nuoroda su pasirinktu skirtuku iškart atveria tą skiltį.
 
 ### Institucijų sąrašas {#sarasas}
 

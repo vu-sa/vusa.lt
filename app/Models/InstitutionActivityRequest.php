@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\DateOnly;
 use App\Enums\InstitutionActivityAnswer;
 use App\Enums\InstitutionActivityCampaign;
 use App\Services\MeetingCompletionService;
@@ -74,8 +75,8 @@ class InstitutionActivityRequest extends Model
     protected function casts(): array
     {
         return [
-            'period_start' => 'date',
-            'period_end' => 'date',
+            'period_start' => DateOnly::class,
+            'period_end' => DateOnly::class,
             'campaign_type' => InstitutionActivityCampaign::class,
             'answer' => InstitutionActivityAnswer::class,
             'answered_at' => 'datetime',

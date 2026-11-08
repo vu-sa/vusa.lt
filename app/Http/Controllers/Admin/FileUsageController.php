@@ -36,7 +36,7 @@ class FileUsageController extends AdminController
         }
 
         try {
-            $usageData = $scanner->scanFileUsage($path);
+            $usageData = $scanner->scanFileUsage($path, $request->user());
 
             Log::info('File usage scanned', [
                 'file_path' => $path,
@@ -86,7 +86,7 @@ class FileUsageController extends AdminController
 
         $files = collect($paths)
             ->filter(fn (string $path): bool => Storage::fileExists($path))
-            ->map(fn (string $path): array => ['path' => $path, ...$scanner->scanFileUsage($path)])
+            ->map(fn (string $path): array => ['path' => $path, ...$scanner->scanFileUsage($path, $request->user())])
             ->values()
             ->all();
 

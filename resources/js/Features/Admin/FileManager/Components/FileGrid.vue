@@ -167,6 +167,12 @@ import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { FolderOpen, Star, Upload } from '@lucide/vue';
 
+import CollectionLoadMore from '@/Components/Collection/CollectionLoadMore.vue';
+import EmptyState from '@/Components/Patterns/EmptyState.vue';
+import { Checkbox } from '@/Components/ui/checkbox';
+import { Skeleton } from '@/Components/ui/skeleton';
+import { getFileExtension } from '@/Utils/fileIcons';
+
 import type { DirectoryEntry, FileEntry, FileViewMode, ItemAction } from '../types';
 import { formatBytes, formatDate, relativeToRoot } from '../utils';
 
@@ -174,12 +180,6 @@ import FileItem from './FileItem.vue';
 import FileThumb from './FileThumb.vue';
 import FolderStrip from './FolderStrip.vue';
 import ItemActionsMenu from './ItemActionsMenu.vue';
-
-import CollectionLoadMore from '@/Components/Collection/CollectionLoadMore.vue';
-import EmptyState from '@/Components/Patterns/EmptyState.vue';
-import { Checkbox } from '@/Components/ui/checkbox';
-import { Skeleton } from '@/Components/ui/skeleton';
-import { getFileExtension } from '@/Utils/fileIcons';
 
 type FolderLike = Pick<DirectoryEntry, 'path' | 'name' | 'items'>;
 

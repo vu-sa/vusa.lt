@@ -2,6 +2,8 @@ import { usePage } from '@inertiajs/vue3';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { effectScope, nextTick, reactive } from 'vue';
 
+import { createMockPage } from '@/tests/helpers/createMockPage';
+
 import {
   clearTrail,
   enterAgendaItem,
@@ -9,8 +11,6 @@ import {
   enterMeeting,
   useRecordTrail,
 } from '../useRecordTrail';
-
-import { createMockPage } from '@/tests/helpers/createMockPage';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

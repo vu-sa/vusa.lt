@@ -5,9 +5,9 @@ import { transChoice } from 'laravel-vue-i18n';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-import StudentRepInstitutionCard from '../StudentRepInstitutionCard.vue';
-
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import StudentRepInstitutionCard from '../StudentRepInstitutionCard.vue';
 
 const stubs = {
   SmartLink: {

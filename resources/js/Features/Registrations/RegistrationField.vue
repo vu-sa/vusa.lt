@@ -24,13 +24,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import { fieldOptions, localizedLabel, type RegistrationFieldDefinition, type RegistrationValue } from './types';
-
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
 import { NativeSelect } from '@/Components/ui/native-select';
+
+import { fieldOptions, localizedLabel, type RegistrationFieldDefinition, type RegistrationValue } from './types';
 
 const props = defineProps<{
   field: RegistrationFieldDefinition;

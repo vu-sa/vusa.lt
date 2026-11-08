@@ -81,9 +81,6 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 
-import { titleOmitsDate } from './meetingTitle';
-import MeetingOutcome from './MeetingOutcome.vue';
-
 import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import RepresentativesList from '@/Components/Avatars/RepresentativesList.vue';
 import { MeetingIcon } from '@/Components/icons';
@@ -93,6 +90,9 @@ import { usePreviewApi } from '@/Composables/usePreviewApi';
 import { inactiveInstitutionStatus, meetingCompletionStatuses, statusFor, statusRoleParts, voteStatuses } from '@/Constants/statusIcons';
 import type { MeetingSearchResult } from '@/Shared/Search/types';
 import { formatDateTime, formatTime } from '@/Utils/dateTime';
+
+import MeetingOutcome from './MeetingOutcome.vue';
+import { titleOmitsDate } from './meetingTitle';
 
 interface MeetingPreviewData {
   outcome?: Partial<MeetingSearchResult>;

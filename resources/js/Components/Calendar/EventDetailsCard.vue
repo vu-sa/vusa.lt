@@ -38,7 +38,7 @@
           </dd>
           <dd v-if="joinUrl" class="mt-2">
             <a
-              :href="joinUrl"
+              :href="safeHref(joinUrl)"
               target="_blank"
               rel="noopener noreferrer"
               class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-brand hover:underline"
@@ -101,7 +101,7 @@
       <Button
         v-if="effectiveRegistrationUrl && !isPast"
         as="a"
-        :href="effectiveRegistrationUrl"
+        :href="safeHref(effectiveRegistrationUrl)"
         target="_blank"
         rel="noopener noreferrer"
         variant="brand"
@@ -131,7 +131,7 @@
       <Button
         v-if="event.facebook_url"
         as="a"
-        :href="event.facebook_url"
+        :href="safeHref(event.facebook_url)"
         target="_blank"
         rel="noopener noreferrer"
         variant="outline"
@@ -151,6 +151,13 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
+import Button from '@/Components/ui/button/Button.vue';
+import EventLocationMap from '@/Components/Calendar/EventLocationMap.vue';
+import { formatEventDateSpan } from '@/Utils/dateTime';
+import { useEventStatus } from '@/Composables/useEventStatus';
+import { LocaleEnum } from '@/Types/enums';
+import { safeHref } from '@/Utils/safeHref';
+
 import IFluentCalendarLtr20Regular from '~icons/fluent/calendar-ltr-20-regular';
 import IFluentCalendarAdd20Regular from '~icons/fluent/calendar-add-20-regular';
 import IFluentLocation20Regular from '~icons/fluent/location-20-regular';
@@ -160,11 +167,6 @@ import IFluentOpen20Regular from '~icons/fluent/open-20-regular';
 import IFluentPlay20Filled from '~icons/fluent/play-20-filled';
 import IFluentTicket20Regular from '~icons/fluent/ticket-20-regular';
 import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
-import Button from '@/Components/ui/button/Button.vue';
-import EventLocationMap from '@/Components/Calendar/EventLocationMap.vue';
-import { formatEventDateSpan } from '@/Utils/dateTime';
-import { useEventStatus } from '@/Composables/useEventStatus';
-import { LocaleEnum } from '@/Types/enums';
 
 const props = defineProps<{
   event: App.Entities.Calendar;

@@ -8,15 +8,15 @@ import { ref, computed, nextTick, watch, type ComputedRef } from 'vue';
 import { useLocalStorage } from '@vueuse/core';
 import { usePage } from '@inertiajs/vue3';
 
-import type { DocumentSearchFilters, DocumentSearchSort, DocumentFacet, DocumentSearchPreferences, DocumentSearchController, SearchState, SearchError } from '../Types/DocumentSearchTypes';
-import { DocumentSearchService } from '../Services/DocumentSearchService';
-
-import { createTypesenseClients } from './useSearchClient';
-
 import { useBaseSearch, type BaseSearchService } from '@/Shared/Search/composables/useBaseSearch';
 import { FilterUtils } from '@/Shared/Search/services/FilterUtils';
 import { createSearchReporter } from '@/Shared/Search/searchReporter';
 import type { ProcessedSearchResult } from '@/Shared/Search/types';
+
+import { DocumentSearchService } from '../Services/DocumentSearchService';
+import type { DocumentSearchFilters, DocumentSearchSort, DocumentFacet, DocumentSearchPreferences, DocumentSearchController, SearchState, SearchError } from '../Types/DocumentSearchTypes';
+
+import { createTypesenseClients } from './useSearchClient';
 
 // ============================================================================
 // Types

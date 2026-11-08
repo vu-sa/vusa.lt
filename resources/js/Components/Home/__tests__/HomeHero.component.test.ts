@@ -1,9 +1,9 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 
-import HomeHero from '../HomeHero.vue';
-
 import { communityPhotos } from '@/Constants/communityPhotos';
+
+import HomeHero from '../HomeHero.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

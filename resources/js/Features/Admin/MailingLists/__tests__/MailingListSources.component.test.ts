@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import MailingListSources from '../MailingListSources.vue';
-import type { MailingListSourceItem } from '../types';
-
 import { MailingListAddressMode, MailingListSourceType, MailingListTenantScope } from '@/Types/enums';
 import { commonStubs } from '@/tests/stubs';
+
+import MailingListSources from '../MailingListSources.vue';
+import type { MailingListSourceItem } from '../types';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

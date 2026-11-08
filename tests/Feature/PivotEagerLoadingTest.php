@@ -94,6 +94,39 @@ describe('reservation resource query loading', function (): void {
         }
     });
 
+    test('an empty reservation resource has no users', function (): void {
+        expect((new ReservationResource)->users()->get())->toBeEmpty();
+    });
+
+    test('loads only the users of the resource reservation', function (): void {
+        $otherReservation = Reservation::factory()->create();
+        $otherReservation->users()->attach(User::factory()->create());
+
+        expect($this->pivots->first()->users()->get()->modelKeys())->toBe([$this->user->id]);
+    });
+
+    test('eager loads reservation users for resource rows', function (): void {
+        $otherReservation = Reservation::factory()->create();
+        $otherUser = User::factory()->create();
+        $otherReservation->users()->attach($otherUser);
+        $otherReservation->resources()->attach($this->pivots->first()->resource_id, [
+            'start_time' => $otherReservation->start_time,
+            'end_time' => $otherReservation->end_time,
+            'quantity' => 1,
+            'state' => 'created',
+        ]);
+
+        $pivots = ReservationResource::query()
+            ->whereIn('reservation_id', [$this->reservation->id, $otherReservation->id])
+            ->with('users')->get();
+
+        expect($pivots)->toHaveCount(3);
+        foreach ($pivots as $pivot) {
+            $expectedUser = $pivot->reservation_id === $this->reservation->id ? $this->user : $otherUser;
+            expect($pivot->users->modelKeys())->toBe([$expectedUser->id]);
+        }
+    });
+
     test('explicitly loads comments and approvals in batches', function (int $count): void {
         $this->expectsDatabaseQueryCount(4);
 

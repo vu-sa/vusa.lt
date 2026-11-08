@@ -3,9 +3,9 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-import InstitutionListDisplay from '../InstitutionListDisplay.vue';
-
 import type { InstitutionList, InstitutionListItem } from '@/Types/contentParts';
+
+import InstitutionListDisplay from '../InstitutionListDisplay.vue';
 
 function makeItem(overrides: Partial<InstitutionListItem> = {}): InstitutionListItem {
   return {

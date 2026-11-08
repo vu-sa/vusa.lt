@@ -19,10 +19,10 @@
 <script setup lang="ts">
 import { computed, type HTMLAttributes } from 'vue';
 
+import { cn } from '@/Utils/Shadcn/utils';
+
 import TableCell from './TableCell.vue';
 import TableRow from './TableRow.vue';
-
-import { cn } from '@/Utils/Shadcn/utils';
 
 const props = withDefaults(defineProps<{
   class?: HTMLAttributes['class'];

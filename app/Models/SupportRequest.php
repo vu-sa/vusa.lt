@@ -187,7 +187,9 @@ class SupportRequest extends Model implements Commentable, ImageMediaOwner
 
     public function registerMediaCollections(): void
     {
-        $this->registerImageCollection('evidence', single: false);
+        $this->registerImageCollection('evidence', single: false)
+            ->useDisk('supportEvidence')
+            ->storeConversionsOnDisk('supportEvidence');
     }
 
     public function isResolved(): bool

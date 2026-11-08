@@ -64,7 +64,7 @@
               <component :is="type.icon" class="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
               <span class="min-w-0 flex-1">
                 <span class="flex items-center gap-1.5">
-                  <span class="truncate text-sm font-medium text-foreground">{{ type.label }}</span>
+                  <span class="truncate text-sm font-medium text-foreground">{{ $t(type.label) }}</span>
                   <Badge
                     v-if="type.isNew"
                     variant="success"
@@ -84,7 +84,7 @@
                   </Badge>
                 </span>
                 <span v-if="type.description" class="line-clamp-1 text-xs text-muted-foreground">
-                  {{ type.description }}
+                  {{ $t(type.description) }}
                 </span>
               </span>
             </button>
@@ -138,7 +138,7 @@
             <div class="min-w-0">
               <div class="flex items-center gap-1.5">
                 <p class="truncate text-sm font-medium text-foreground">
-                  {{ previewedContentType.label }}
+                  {{ $t(previewedContentType.label) }}
                 </p>
                 <Badge
                   v-if="previewedContentType.isNew"
@@ -159,7 +159,7 @@
                 </Badge>
               </div>
               <p v-if="previewedContentType.description" class="truncate text-xs text-muted-foreground">
-                {{ previewedContentType.description }}
+                {{ $t(previewedContentType.description) }}
               </p>
             </div>
             <Button variant="brand" size="sm" @click="choose(previewedContentType.value)">
@@ -177,15 +177,15 @@ import { computed, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowLeft, Maximize2, X } from '@lucide/vue';
 
-import BlockPreviewRenderer from './Editor/BlockPreviewRenderer.vue';
-import { getAllContentTypes, getContentType, type BlockCategory, type ContentType } from './Types';
-import { getContentSample, getContentSampleVariants } from './Types/samples';
-
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
 import { useIsMobile } from '@/Composables/useIsMobile';
+
+import { getContentSample, getContentSampleVariants } from './Types/samples';
+import { getAllContentTypes, getContentType, type BlockCategory, type ContentType } from './Types';
+import BlockPreviewRenderer from './Editor/BlockPreviewRenderer.vue';
 
 // Wide enough that section-chrome blocks (hero, card-stack, …) render at something
 // close to their real proportions before being scaled down to fit the pane.
@@ -231,8 +231,8 @@ const filteredTypes = computed(() => {
   const query = searchTerm.value.trim().toLowerCase();
   if (query) {
     types = types.filter(t =>
-      t.label.toLowerCase().includes(query)
-      || t.description?.toLowerCase().includes(query)
+      $t(t.label).toLowerCase().includes(query)
+      || (t.description ? $t(t.description).toLowerCase().includes(query) : false)
       || (t.inlineEditable && ('ekranas'.includes(query) || 'fullscreen'.includes(query))),
     );
   }

@@ -9,11 +9,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import CellTooltip from './CellTooltip.vue';
-
 import { Badge } from '@/Components/ui/badge';
 import { useIsTruncated } from '@/Composables/useIsTruncated';
 import type { BadgeVariants } from '@/Components/ui/badge';
+
+import CellTooltip from './CellTooltip.vue';
 
 const props = withDefaults(defineProps<{
   text?: string | null;

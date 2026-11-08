@@ -93,14 +93,14 @@ import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { EyeOff } from '@lucide/vue';
 
+import GanttZoomControl from '@/Components/Graphs/GanttZoomControl.vue';
+import { DropdownMenuCheckboxItem, DropdownMenuLabel } from '@/Components/ui/dropdown-menu';
+
 import DutiableTimelineFilterMenu, { type FilterOption } from './DutiableTimelineFilterMenu.vue';
 import DutiableTimelineLegend from './DutiableTimelineLegend.vue';
 import { MAX_MONTH_WIDTH, MIN_MONTH_WIDTH } from './constants';
 import type { TimelineColors } from './timelineColors';
 import type { TimelineScope } from './types';
-
-import GanttZoomControl from '@/Components/Graphs/GanttZoomControl.vue';
-import { DropdownMenuCheckboxItem, DropdownMenuLabel } from '@/Components/ui/dropdown-menu';
 
 /** One slider notch. Eight px is roughly one readable step at either end of the range. */
 const ZOOM_STEP = 8;

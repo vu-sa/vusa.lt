@@ -7,11 +7,11 @@
 
 import { trans } from 'laravel-vue-i18n';
 
-import { ADMIN_SEARCH_FALLBACKS } from './collectionSearchConfig';
+import { institutionActivityStatuses, meetingCompletionStatuses } from '@/Constants/statusIcons';
 
 import type { CollectionFacetConfig, SortOption } from '../Types/AdminSearchTypes';
 
-import { institutionActivityStatuses, meetingCompletionStatuses } from '@/Constants/statusIcons';
+import { ADMIN_SEARCH_FALLBACKS } from './collectionSearchConfig';
 
 /**
  * Meeting collection facet configuration

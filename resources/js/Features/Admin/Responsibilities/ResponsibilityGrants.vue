@@ -261,8 +261,6 @@ import { Link, router, useForm } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { Briefcase, Landmark, Plus, Tags, TriangleAlert, UserRound } from '@lucide/vue';
 
-import type { GrantScopeValue, ResponsibilityGrantOptions, ResponsibilityGrantsPayload, ResponsibilityScopeValue } from './types';
-
 import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
@@ -274,6 +272,8 @@ import { SingleSelect } from '@/Components/ui/single-select';
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 import DutySearchField, { type DutyHit } from '@/Features/Admin/Occupancy/DutySearchField.vue';
 import { permissionLabel } from '@/Features/Admin/PermissionMatrix/permissionLabels';
+
+import type { GrantScopeValue, ResponsibilityGrantOptions, ResponsibilityGrantsPayload, ResponsibilityScopeValue } from './types';
 
 const DUTY = 'duty';
 const DUTY_TYPE = 'duty_type';

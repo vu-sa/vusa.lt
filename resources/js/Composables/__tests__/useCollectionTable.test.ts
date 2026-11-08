@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { nextTick, ref } from 'vue';
 
-import { ACTIONS_COLUMN_ID, SELECT_COLUMN_ID, useCollectionTable } from '../useCollectionTable';
-
 import type { CollectionColumn } from '@/Components/Collection/types';
+
+import { ACTIONS_COLUMN_ID, SELECT_COLUMN_ID, useCollectionTable } from '../useCollectionTable';
 
 interface Row {
   id: string;

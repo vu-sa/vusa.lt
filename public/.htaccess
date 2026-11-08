@@ -24,3 +24,12 @@
 # </IfModule>
 
 SetEnvIf X-Forwarded-Proto https HTTPS=on
+
+<IfModule mod_headers.c>
+    <If "%{REQUEST_URI} =~ m#(?i)^/uploads/#">
+        Header always set X-Content-Type-Options "nosniff"
+        <If "%{REQUEST_FILENAME} =~ m#(?i)\.(html?|xhtml|svg|xml)$#">
+            Header always set Content-Security-Policy "sandbox"
+        </If>
+    </If>
+</IfModule>

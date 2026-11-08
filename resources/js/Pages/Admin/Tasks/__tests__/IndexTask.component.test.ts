@@ -2,10 +2,11 @@ import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
 
-import IndexTask from '../IndexTask.vue';
-
 import type { TaskDisplayData } from '@/Composables/useTaskPresentation';
+import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
+
+import IndexTask from '../IndexTask.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -92,7 +93,7 @@ describe('IndexTask', () => {
     expect(wrapper.find('[data-slot="task-completion-control"] button').exists()).toBe(false);
   });
 
-  it('completes a task in place and reloads only the counts', async () => {
+  it('completes a task in place and reloads counts and flash', async () => {
     const wrapper = mountPage();
 
     await wrapper.find('[data-slot="task-completion-control"] button').trigger('click');
@@ -100,9 +101,22 @@ describe('IndexTask', () => {
     expect(router.post).toHaveBeenCalledWith(
       expect.stringContaining('tasks.updateCompletionStatus'),
       { completed: true },
-      expect.objectContaining({ only: ['taskCounts'] }),
+      expect.objectContaining({ only: ['taskCounts', 'flash'] }),
     );
     expect(wrapper.find('[data-testid="row"] .line-through').exists()).toBe(true);
+  });
+
+  it('restores completion when the server refuses with a flash error', async () => {
+    const wrapper = mountPage();
+    await wrapper.find('[data-slot="task-completion-control"] button').trigger('click');
+
+    const options = vi.mocked(router.post).mock.calls.at(-1)?.[2];
+    options?.onSuccess?.(createMockPage({ flash: { error: 'Forbidden' } }));
+    options?.onFinish?.({} as never);
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find('[data-testid="row"] .line-through').exists()).toBe(false);
+    wrapper.unmount();
   });
 
   it('deletes a task in place and reloads the flash with the counts, so the toast shows', async () => {
@@ -116,6 +130,23 @@ describe('IndexTask', () => {
       expect.stringContaining('tasks.destroy'),
       expect.objectContaining({ only: ['taskCounts', 'flash'] }),
     );
+  });
+
+  it.each(['flash', 'http', 'network'] as const)('restores a task after a %s delete failure', async (failure) => {
+    const wrapper = mountPage({ data: [task({ can_delete: true })] });
+    wrapper.findComponent({ name: 'TaskRow' }).vm.$emit('action', 'delete');
+    await wrapper.vm.$nextTick();
+    wrapper.findComponent({ name: 'ConfirmDialog' }).vm.$emit('confirm');
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('[data-testid="row"]').exists()).toBe(false);
+    const options = vi.mocked(router.delete).mock.calls.at(-1)?.[1];
+    if (failure === 'flash') options?.onSuccess?.(createMockPage({ flash: { error: 'Forbidden' } }));
+    if (failure === 'http') options?.onHttpException?.({ status: 500 } as never);
+    if (failure === 'network') options?.onNetworkError?.(new Error('Offline'));
+    options?.onFinish?.({} as never);
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('[data-testid="row"]').exists()).toBe(true);
+    wrapper.unmount();
   });
 
   it.each([null, '2026-01-01T00:00:00Z'])('keeps completion/reopening in the preview without an open action (%s)', (completedAt) => {

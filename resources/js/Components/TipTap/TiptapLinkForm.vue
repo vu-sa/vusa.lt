@@ -36,10 +36,10 @@
 import { computed, useId } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { isValidTiptapLink } from './linkUrl';
-
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
+
+import { isValidTiptapLink } from './linkUrl';
 
 defineProps<{ hasSelectedText?: boolean }>();
 const emit = defineEmits<{ submit: []; cancel: [] }>();

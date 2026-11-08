@@ -26,13 +26,14 @@ import { computed, type HTMLAttributes } from 'vue';
 import { useMounted } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import AccessibilitySettings from './AccessibilitySettings.vue';
-
-import IFluentAccessibility24Regular from '~icons/fluent/accessibility-24-regular';
 import { Button } from '@/Components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { cn } from '@/Utils/Shadcn/utils';
 import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
+
+import AccessibilitySettings from './AccessibilitySettings.vue';
+
+import IFluentAccessibility24Regular from '~icons/fluent/accessibility-24-regular';
 
 const props = withDefaults(defineProps<{
   class?: HTMLAttributes['class'];

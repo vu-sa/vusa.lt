@@ -4,44 +4,30 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\ActivityRequests\GetInstitutionActivityRequestHistory;
 use App\Actions\GenerateInstitutionAlias;
-use App\Actions\GetInstitutionSecretaries;
 use App\Actions\GetTenantsForUpserts;
-use App\Actions\GetTypeFiles;
 use App\Actions\GetUserTenantShortnames;
 use App\Actions\Media\SyncImageMedia;
 use App\Actions\UpdateInstitution;
-use App\Enums\InstitutionRelationKind;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\ActivityRequests\ActivityRequestHistoryRequest;
 use App\Http\Requests\IndexInstitutionRequest;
 use App\Http\Requests\ReorderDutiesRequest;
 use App\Http\Requests\StoreInstitutionRequest;
 use App\Http\Requests\UpdateInstitutionRequest;
-use App\Http\Resources\InstitutionMeetingResource;
-use App\Http\Resources\ProblemSummaryResource;
-use App\Http\Resources\TaskResource;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
-use App\Models\Comment;
 use App\Models\Duty;
+use App\Models\FileableFile;
 use App\Models\Institution;
-use App\Models\InstitutionCheckIn;
 use App\Models\InstitutionLink;
 use App\Models\InstitutionType;
-use App\Models\Meeting;
-use App\Models\Problem;
 use App\Models\PublicUrl;
-use App\Models\StudyProgram;
-use App\Models\Task;
 use App\Services\InstitutionActivityStatusService;
 use App\Services\InstitutionDeactivationService;
-use App\Services\InstitutionRelationService;
+use App\Services\InstitutionPresenter;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
-use App\Services\ResourceServices\SharepointFileService;
-use App\Settings\CadenceSettings;
 use App\Settings\MeetingSettings;
-use App\Support\MorphMap;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -65,7 +51,7 @@ class InstitutionController extends AdminController
 
         // Live rows come from Typesense (the scoped key carries the authorization) and the trash
         // from api.v1.admin.trash.index, so the page itself needs no rows.
-        return $this->inertiaResponse('Admin/People/IndexInstitution', [
+        return Inertia::render('Admin/People/IndexInstitution', [
             'statusUpdateScope' => fn () => [
                 'all' => request()->user()->isSuperAdmin() || $this->authorizer->scope(request()->user(), 'institutions.update.padalinys')->isAllScope,
                 'tenantIds' => $this->authorizer->tenants(request()->user(), 'institutions.update.padalinys')->pluck('id')->values(),
@@ -88,7 +74,7 @@ class InstitutionController extends AdminController
 
         Inertia::share('seo.title', 'Nauja institucija');
 
-        return $this->inertiaResponse('Admin/People/CreateInstitution', [
+        return Inertia::render('Admin/People/CreateInstitution', [
             'assignableTenants' => GetTenantsForUpserts::execute('institutions.create.padalinys', $this->authorizer),
             'institutionTypes' => InstitutionType::query()->get(),
         ]);
@@ -115,186 +101,61 @@ class InstitutionController extends AdminController
     /**
      * Display the specified resource.
      */
-    public function show(ActivityRequestHistoryRequest $request, Institution $institution)
+    public function show(ActivityRequestHistoryRequest $request, Institution $institution): Response
     {
         // An active institution outside the user's reach opens as its public face: overview,
         // members and (public) meetings — no discussion, files, tasks, relations or management.
-        $readOnly = fn () => once(fn () => ! Gate::allows('view', $institution));
+        $readOnly = fn (): bool => once(fn () => ! Gate::allows('view', $institution));
 
-        $loadInstitution = fn () => once(function () use ($institution) {
-            $institution->loadMissing('tenant:id,shortname', 'types', 'duties.current_users', 'checkIns', 'meetings:id,start_time')
-                ->loadCount(['comments' => fn ($query) => $query->notErased(), 'duties', 'meetings', 'problems', 'tasks', 'tasksFromMeetings'])
-                ->append(['has_public_meetings', 'meeting_periodicity_days', 'governance_scope']);
+        $loadInstitution = fn (): Institution => once(function () use ($institution): Institution {
+            $institution->loadMissing('tenant:id,shortname', 'types', 'duties.current_users:id,name,profile_photo_path,profile_photo_focal_point', 'checkIns', 'meetings:id,start_time')
+                ->loadCount(['duties', 'meetings', 'problems'])
+                ->append(['has_public_meetings', 'governance_scope']);
 
             return $institution;
         });
 
-        $showsMeetings = fn () => once(fn () => ! $readOnly() || $loadInstitution()->has_public_meetings);
-        $activityStatus = fn () => once(fn () => $this->activityStatusService->resolve($loadInstitution())->toArray());
+        $showsMeetings = fn (): bool => once(fn () => ! $readOnly() || $loadInstitution()->has_public_meetings);
+        $activityStatus = fn () => once(fn () => $this->activityStatusService->resolve($loadInstitution()));
 
-        $recentComments = fn () => once(fn () => $readOnly() ? collect() : $institution->comments()
-            ->roots()
-            ->notErased()
-            ->with('user:id,name,profile_photo_path')
-            ->withCount(['replies' => fn ($query) => $query->notErased()])
-            ->latest()
-            ->limit(3)
-            ->get()
-            ->map(fn (Comment $comment) => [
-                'id' => $comment->id,
-                'body' => $comment->body,
-                'kind' => $comment->kind->value,
-                'created_at' => $comment->created_at->toISOString(),
-                'replies_count' => $comment->replies_count,
-                'user' => $comment->user ? [
-                    'id' => $comment->user->id,
-                    'name' => $comment->user->name,
-                    'profile_photo_path' => $comment->user->profile_photo_path,
-                ] : null,
-            ]));
-
-        $overviewMeetings = fn () => once(fn () => ! $showsMeetings() ? collect() : $institution->meetings()
+        $meetingQuery = fn () => $institution->meetings()
+            ->select(['meetings.id', 'title', 'start_time', 'type', 'meetings.created_at'])
             ->withCount('agendaItems')
-            ->with(['agendaItems.votes', 'fileableFiles', 'institutions.types'])
-            ->orderByDesc('start_time')
-            ->limit(3)
-            ->get()
-            ->each->append(['has_report', 'has_protocol']));
-
-        $overviewDuties = fn () => once(fn () => $loadInstitution()->duties
-            ->sortBy('order')
-            ->map(fn (Duty $duty) => [
-                'id' => $duty->id,
-                'name' => $duty->name,
-                'order' => $duty->order,
-                'current_users' => $duty->current_users,
+            ->with([
+                'agendaItems' => fn ($query) => $query->select(['id', 'meeting_id', 'order', 'is_private', 'type'])->chaperone('meeting'),
+                'agendaItems.votes:id,agenda_item_id,is_main,decision,student_vote,student_benefit,is_consensus',
+                'institutions:id',
+                'institutions.types:id',
             ])
-            ->values());
+            ->withExists([
+                'availableFiles as protocol_exists' => fn ($query) => $query->where('file_type', FileableFile::TYPE_PROTOCOL),
+                'availableFiles as report_exists' => fn ($query) => $query->where('file_type', FileableFile::TYPE_REPORT),
+            ])
+            ->orderByDesc('start_time');
+        $overviewMeetings = fn () => once(fn () => ! $showsMeetings() ? collect() : $meetingQuery()->limit(3)->get());
+        $canViewActivityRequests = app(GetInstitutionActivityRequestHistory::class)->visible($institution, $request->user());
 
-        // Get subscription status for the current user
-        $user = fn () => once(fn () => request()->user());
-
-        // Offered where following is allowed, or to let an existing follower stop.
-        $subscriptionStatus = fn () => once(function () use ($institution, $user) {
-            $u = $user();
-            if (! $u) {
-                return null;
-            }
-
-            $isFollowed = $u->follows($institution);
-
-            return $isFollowed || $u->can('follow', $institution) ? [
-                'is_followed' => $isFollowed,
-                'is_duty_based' => $u->hasInstitution($institution),
-            ] : null;
-        });
-
-        $managers = fn () => once(fn () => $loadInstitution()->managers());
-
-        return $this->inertiaResponse('Admin/People/ShowInstitution', [
-            'institution' => fn () => [
-                'id' => $loadInstitution()->id,
-                'name' => trim((string) $loadInstitution()->name) ?: __('Be pavadinimo').' · '.($institution->alias ?: $institution->id),
-                'is_active' => (bool) $loadInstitution()->is_active,
-                'short_name' => $loadInstitution()->short_name,
-                'description' => $loadInstitution()->description,
-                'tenant' => $loadInstitution()->tenant,
-                'types' => $loadInstitution()->types,
-                'has_public_meetings' => $loadInstitution()->has_public_meetings,
-                'meeting_periodicity_days' => $loadInstitution()->meeting_periodicity_days,
-                'governance_scope' => $loadInstitution()->governance_scope,
-                'comments_count' => $loadInstitution()->comments_count,
-                'duties_count' => $loadInstitution()->duties_count,
-                'meetings_count' => $loadInstitution()->meetings_count,
-                'problems_count' => $loadInstitution()->problems_count,
-                'tasks_count' => (int) $loadInstitution()->getAttribute('tasks_count') + (int) $loadInstitution()->getAttribute('tasks_from_meetings_count'),
-                'related_institutions_count' => app(InstitutionRelationService::class)->relatedTo($institution->id)->count(),
-                'managers' => $managers(),
-                'secretaries' => $readOnly() ? [] : InstitutionSecretaryController::usersPayload(
-                    GetInstitutionSecretaries::execute($institution)
-                ),
-                'sharepointPath' => $readOnly() ? null : SharepointFileService::pathOrNull($institution),
-                'sharepointFolderUrl' => $readOnly() ? null : SharepointFileService::folderUrlOrNull($institution),
-            ],
-            'canViewActivityRequests' => app(GetInstitutionActivityRequestHistory::class)->visible($institution, request()->user()),
-            'activityRequests' => Inertia::defer(fn () => app(GetInstitutionActivityRequestHistory::class)
-                ->execute($institution, request()->user(), $request->historyPage()), 'activityRequests'),
-            'readOnly' => fn () => $readOnly(),
-            'overview' => fn () => [
-                // The status is read off the meetings, so it is withheld with them.
-                'activity_status' => $showsMeetings() ? $activityStatus() : null,
-                'current_users' => $loadInstitution()->duties->pluck('current_users')->flatten()->unique('id')->values(),
-                'duties' => $overviewDuties(),
-                'recentMeetings' => InstitutionMeetingResource::collection($overviewMeetings())->resolve(),
-                'meetings_count' => $showsMeetings() ? $loadInstitution()->meetings_count : 0,
-                // Say that meetings exist but are not public, rather than an empty "no meetings".
-                'meetings_hidden' => ! $showsMeetings() && $loadInstitution()->meetings_count > 0,
-                'recentComments' => $recentComments(),
-            ],
-            'files' => $readOnly() ? [] : Inertia::defer(fn () => $institution->availableFiles()->orderByDesc('file_date')->get(), 'files'),
-            'typeFiles' => $readOnly() ? [] : Inertia::defer(fn () => GetTypeFiles::forFileable($institution), 'files'),
-            'duties' => Inertia::defer(fn () => $institution->duties()
-                ->with('current_users')
-                ->orderBy('order')
-                ->get()
-                ->toArray(), 'institutionPanels'),
-            'meetings' => ! $showsMeetings() ? [] : Inertia::defer(fn () => InstitutionMeetingResource::collection(
-                $institution->meetings()
-                    ->withCount('agendaItems')
-                    ->with(['agendaItems.votes', 'fileableFiles', 'institutions.types'])
-                    ->orderByDesc('start_time')
-                    ->get()
-                    ->each->append(['has_report', 'has_protocol'])
-            )->resolve(), 'institutionPanels'),
-            'tasks' => $readOnly() ? [] : Inertia::defer(fn () => TaskResource::collection(
-                $institution->tasks()
-                    ->with('users:id,name,email,profile_photo_path', 'taskable', 'tenants')
-                    ->get()
-                    ->merge(Task::query()
-                        ->where('taskable_type', MorphMap::alias(Meeting::class))
-                        ->whereIn('taskable_id', $institution->meetings()->select('meetings.id'))
-                        ->with('users:id,name,email,profile_photo_path', 'taskable', 'tenants')
-                        ->get())
-                    ->sortByDesc('created_at')
-                    ->values()
-            )->resolve(), 'institutionPanels'),
-            // Problems are a knowledge base every member reads, so the public face shows them too.
-            'problems' => Inertia::defer(fn () => ProblemSummaryResource::collection(
-                $institution->problems()
-                    ->with(['tenant:id,shortname', 'responsibleUser:id,name'])
-                    ->orderByRaw("status = 'resolved'")
-                    ->orderByDesc('occurred_at')
-                    ->get()
-            )->resolve(), 'institutionPanels'),
-            'relatedInstitutions' => $readOnly() ? [] : Inertia::defer(fn () => app(InstitutionRelationService::class)->summaryFor($institution), 'institutionPanels'),
-            'institutionLinks' => $readOnly() ? [] : Inertia::defer(fn () => app(InstitutionRelationService::class)->linksOf($institution), 'institutionPanels'),
-            'relationKinds' => fn () => (bool) $user()?->can('create', InstitutionLink::class) ? InstitutionRelationKind::options() : [],
-            // Per-record, not from `auth.can`: `institutions.update.padalinys` is tenant-scoped.
-            'can' => fn () => [
-                'update' => (bool) $user()?->can('update', $institution),
-                'delete' => (bool) $user()?->can('delete', $institution),
-                'recordMeeting' => ! $readOnly() && ((bool) $user()?->can('createFor', [Meeting::class, $institution])),
-                'createProblem' => (bool) $user()?->can('create', Problem::class),
-                'reportActivity' => ! $readOnly() && ((bool) $user()?->can('create', [InstitutionCheckIn::class, $institution])),
-                'manageLinks' => ! $readOnly() && ((bool) $user()?->can('create', InstitutionLink::class)),
-                'askAboutActivity' => ! $readOnly() && ((bool) $user()?->can('askAboutActivity', [InstitutionCheckIn::class, $institution])),
-            ],
-            // Terms and secretary rosters are associations, edited on the record rather than in the
-            // form (O22, Forms rule 15). Only someone who may update the institution needs them.
-            'management' => Inertia::defer(fn () => $user()?->can('update', $institution) ? [
-                'cadences' => CadenceController::payload($institution->id),
-                'globalCadences' => CadenceController::payload(globalOnly: true),
-                'cadenceDefaults' => [
-                    'default_start_month_day' => app(CadenceSettings::class)->default_start_month_day,
-                    'default_end_month_day' => app(CadenceSettings::class)->default_end_month_day,
-                ],
-                'secretaryRosters' => InstitutionSecretaryController::payload($institution),
-                // The Priskirti sheet's programme picker, narrowed to this institution's tenant.
-                'studyPrograms' => StudyProgram::query()
-                    ->where('tenant_id', $institution->tenant_id)
-                    ->get(['id', 'name', 'degree', 'tenant_id']),
-            ] : null, 'institutionPanels'),
-            'subscription' => fn () => $subscriptionStatus(),
+        return Inertia::render('Admin/People/ShowInstitution', [
+            'institution' => fn () => InstitutionPresenter::forShow($loadInstitution(), $readOnly()),
+            'canViewActivityRequests' => $canViewActivityRequests,
+            ...($canViewActivityRequests ? ['activityRequests' => Inertia::optional(fn () => InstitutionPresenter::activityRequests($institution, $request->user(), $request->historyPage()))] : []),
+            'readOnly' => fn (): bool => $readOnly(),
+            'overview' => fn () => InstitutionPresenter::overview($loadInstitution(), $showsMeetings(), $activityStatus(), $overviewMeetings()),
+            'files' => Inertia::optional(fn () => $readOnly() ? [] : InstitutionPresenter::files($institution)),
+            'typeFiles' => Inertia::optional(fn () => $readOnly() ? [] : InstitutionPresenter::typeFiles($institution)),
+            'duties' => Inertia::optional(fn () => InstitutionPresenter::duties($institution)),
+            'meetings' => Inertia::optional(fn () => ! $showsMeetings() ? [] : InstitutionPresenter::meetings($meetingQuery()->get())),
+            'incompleteTasksCount' => fn () => $readOnly() ? 0 : InstitutionPresenter::incompleteTasksCount($institution),
+            'tasks' => Inertia::optional(fn () => $readOnly() ? [] : InstitutionPresenter::tasks($institution)),
+            'problems' => Inertia::optional(fn () => InstitutionPresenter::problems($institution)),
+            'relatedInstitutions' => Inertia::optional(fn () => $readOnly() ? [] : InstitutionPresenter::relatedInstitutions($institution)),
+            'institutionLinks' => Inertia::optional(fn () => $readOnly() ? [] : InstitutionPresenter::institutionLinks($institution)),
+            'relationKinds' => fn () => InstitutionPresenter::relationKinds($request->user()->can('create', InstitutionLink::class)),
+            'can' => fn () => InstitutionPresenter::abilities($institution, $request->user(), $readOnly()),
+            'management' => Inertia::optional(fn () => $request->user()->can('update', $institution)
+                ? InstitutionPresenter::management($institution) : null),
+            'assignmentTerms' => Inertia::optional(fn () => $request->user()->can('update', $institution) ? InstitutionPresenter::assignmentTerms($institution) : []),
+            'subscription' => fn () => InstitutionPresenter::subscription($institution, $request->user()),
         ]);
     }
 
@@ -309,7 +170,7 @@ class InstitutionController extends AdminController
 
         Inertia::share('seo.title', $institution->name);
 
-        return $this->inertiaResponse('Admin/People/EditInstitution', [
+        return Inertia::render('Admin/People/EditInstitution', [
             'deactivation' => app(InstitutionDeactivationService::class)->summary($institution),
             'institution' => [
                 ...$institution->toFullArray(),

@@ -30,7 +30,7 @@ use Illuminate\Support\Facades\DB;
  * @property string|null $scope_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Model|null $grantee
+ * @property-read \Illuminate\Database\Eloquent\Model $grantee
  * @property-read Role $role
  * @property-read \Illuminate\Database\Eloquent\Model|null $scope
  *
@@ -67,6 +67,7 @@ class ResponsibilityGrant extends Model
         $labels = [];
 
         foreach (['lt', 'en'] as $locale) {
+            /** @var \Illuminate\Database\Eloquent\Model|null $grantee */
             $grantee = $this->grantee;
             $label = $grantee?->getAttribute('title') ?? $grantee?->getAttribute('name') ?? $this->grantee_id;
 

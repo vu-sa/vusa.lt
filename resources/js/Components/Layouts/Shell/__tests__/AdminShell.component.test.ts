@@ -3,12 +3,12 @@ import { mount } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
 import { defineComponent, h } from 'vue';
 
+import { createShellFocusProvider, type ShellFocusContext } from '@/Composables/useShellFocus';
+import { createMockPage } from '@/tests/helpers/createMockPage';
+
 import AdminShell from '../AdminShell.vue';
 
 import { atstovavimas, pradzia } from './fixtures';
-
-import { createShellFocusProvider, type ShellFocusContext } from '@/Composables/useShellFocus';
-import { createMockPage } from '@/tests/helpers/createMockPage';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 // `virtual:pwa-register` only exists inside a Vite build.

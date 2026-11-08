@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-import { InstitutionSearchService } from '../InstitutionSearchService';
-
 import type { InstitutionSearchFilters } from '@/Types/InstitutionSearchTypes';
+
+import { InstitutionSearchService } from '../InstitutionSearchService';
 
 interface MockSearchClient {
   search: ReturnType<typeof vi.fn>;

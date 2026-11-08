@@ -106,8 +106,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowRight, ChevronDown } from '@lucide/vue';
 import { computed } from 'vue';
 
-import TaskCountBadge from './TaskCountBadge.vue';
-
 import { Button } from '@/Components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { workspaceIcon } from '@/Constants/adminWorkspaces';
@@ -120,6 +118,8 @@ import {
 } from '@/Composables/useAdminNavigation';
 import { useHoverPopover } from '@/Composables/useHoverPopover';
 import { ariaCurrent } from '@/Utils/ariaCurrent';
+
+import TaskCountBadge from './TaskCountBadge.vue';
 
 const props = defineProps<{
   workspaces: AdminWorkspace[];

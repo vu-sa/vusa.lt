@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
+import { commonStubs, stubPopover, stubPopoverAnchor, stubPopoverContent } from '@/tests/stubs';
+
 import RCGridColumnOptions from '../RCGridColumnOptions.vue';
 import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from '../../Editor/Fullscreen/useActiveHotspot';
-
-import { commonStubs, stubPopover, stubPopoverAnchor, stubPopoverContent } from '@/tests/stubs';
 
 const stubs = {
   ...commonStubs,

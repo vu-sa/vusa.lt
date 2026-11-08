@@ -14,10 +14,10 @@ import type { PrimitiveProps } from 'reka-ui';
 import type { HTMLAttributes } from 'vue';
 import { Primitive } from 'reka-ui';
 
+import { cn } from '@/Utils/Shadcn/utils';
+
 import type { ButtonVariants } from '.';
 import { buttonVariants } from '.';
-
-import { cn } from '@/Utils/Shadcn/utils';
 
 interface Props extends PrimitiveProps {
   variant?: ButtonVariants['variant'];

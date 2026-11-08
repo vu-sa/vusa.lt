@@ -69,14 +69,18 @@ class PublicPageController extends PublicController
             Head::link('preload', $firstNewsImageUrl, ['as' => 'image', 'fetchpriority' => 'high']);
         }
 
-        return Inertia::render('Public/HomePage', [
+        $response = Inertia::render('Public/HomePage', [
             'tenantSwitchTarget' => 'same-page',
             'heading' => $heading,
             'content' => $content,
             'resolvedParts' => (object) $resolvedParts,
-        ])->withViewData([
+        ]);
+
+        $response->withViewData([
             'JSONLD_Schemas' => [$this->getWebSiteSchema($this->tenant)],
         ]);
+
+        return $response;
     }
 
     /**
@@ -179,7 +183,7 @@ class PublicPageController extends PublicController
         $locale = app()->getLocale();
         $breadcrumbs = $this->pageBreadcrumbs($page, $ancestors);
 
-        return Inertia::render('Public/ContentPage', [
+        $response = Inertia::render('Public/ContentPage', [
             'navigationItemId' => $navigation_item?->id,
             // Server-resolved dynamic blocks (link-list, event-list, the news/calendar
             // bridge) — outside the page cache above, since resolution can be
@@ -204,9 +208,13 @@ class PublicPageController extends PublicController
                     ]),
                 ], $ancestors),
             ],
-        ])->withViewData([
+        ]);
+
+        $response->withViewData([
             'JSONLD_Schemas' => [$this->getBreadcrumbSchema($breadcrumbs)],
         ]);
+
+        return $response;
     }
 
     /**
@@ -715,7 +723,7 @@ class PublicPageController extends PublicController
             ],
         ];
 
-        return Inertia::render('Public/CalendarEvent', [
+        $response = Inertia::render('Public/CalendarEvent', [
             'event' => [
                 ...$calendar->toArray(),
                 'images' => $calendar->getMedia('images'),
@@ -727,14 +735,15 @@ class PublicPageController extends PublicController
             'meeting' => $meeting,
             'previousMeetingEvent' => $previousMeetingEvent,
             'nextMeetingEvent' => $nextMeetingEvent,
-        ])
-            ->withViewData(
-                [
-                    'JSONLD_Schemas' => [
-                        $this->getBreadcrumbSchema($breadcrumbs),
-                        $calendar->toEventSchema(),
-                    ],
-                ]
-            );
+        ]);
+
+        $response->withViewData([
+            'JSONLD_Schemas' => [
+                $this->getBreadcrumbSchema($breadcrumbs),
+                $calendar->toEventSchema(),
+            ],
+        ]);
+
+        return $response;
     }
 }

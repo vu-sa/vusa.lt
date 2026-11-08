@@ -21,9 +21,9 @@ import {
 } from 'reka-ui';
 import { computed, type HTMLAttributes } from 'vue';
 
-import { navigationMenuTriggerStyle } from '.';
-
 import { cn } from '@/Utils/Shadcn/utils';
+
+import { navigationMenuTriggerStyle } from '.';
 
 const props = defineProps<NavigationMenuTriggerProps & { class?: HTMLAttributes['class'] }>();
 

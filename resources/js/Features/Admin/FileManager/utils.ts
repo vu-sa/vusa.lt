@@ -1,7 +1,7 @@
-import type { FileEntry, TypeFilter } from './types';
-
 import { EXTENSIONS_BY_KIND, getFileExtension, getFileKind } from '@/Utils/fileIcons';
 import { formatDateWith } from '@/Utils/dateTime';
+
+import type { FileEntry, TypeFilter } from './types';
 
 export const ROOT_PATH = 'public/files';
 

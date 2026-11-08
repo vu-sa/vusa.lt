@@ -230,9 +230,6 @@ import {
 } from '@lucide/vue';
 import { computed, nextTick, ref, watch } from 'vue';
 
-import TaskCountBadge from './TaskCountBadge.vue';
-
-import ISimpleIconsMicrosoft from '~icons/simple-icons/microsoft';
 import { Button } from '@/Components/ui/button';
 import { workspaceIcon } from '@/Constants/adminWorkspaces';
 import {
@@ -246,6 +243,10 @@ import { useLogout } from '@/Composables/useLogout';
 import { useStartFm } from '@/Composables/useStartFm';
 import { useTour } from '@/Composables/useTourProvider';
 import { ariaCurrent } from '@/Utils/ariaCurrent';
+
+import TaskCountBadge from './TaskCountBadge.vue';
+
+import ISimpleIconsMicrosoft from '~icons/simple-icons/microsoft';
 
 const props = defineProps<{
   workspaces: AdminWorkspace[];

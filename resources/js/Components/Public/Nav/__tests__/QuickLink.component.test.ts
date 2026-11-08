@@ -3,10 +3,10 @@ import { mount } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
 import { Icon } from '@iconify/vue';
 
-import QuickLink from '../QuickLink.vue';
-
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { ssrRoundTrip } from '@/tests/helpers/ssrRoundTrip';
+
+import QuickLink from '../QuickLink.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

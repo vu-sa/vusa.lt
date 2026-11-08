@@ -8,6 +8,8 @@ use Database\Factories\FormFieldFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -93,12 +95,12 @@ class FormField extends Model
         ];
     }
 
-    public function form()
+    public function form(): BelongsTo
     {
         return $this->belongsTo(Form::class);
     }
 
-    public function fieldResponses()
+    public function fieldResponses(): HasMany
     {
         return $this->hasMany(FieldResponse::class);
     }

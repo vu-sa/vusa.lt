@@ -3,11 +3,11 @@ import { defineComponent, h } from 'vue';
 import { mount } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
 
-import ContentPage from '../ContentPage.vue';
-
 import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
+
+import ContentPage from '../ContentPage.vue';
 
 /**
  * Covers the two behaviour changes made to this page: the last-updated line moved out

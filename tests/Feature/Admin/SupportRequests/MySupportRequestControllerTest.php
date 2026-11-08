@@ -20,6 +20,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
+    Storage::fake('supportEvidence');
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
 

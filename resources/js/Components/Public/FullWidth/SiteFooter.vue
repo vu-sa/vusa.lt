@@ -40,13 +40,13 @@
         <nav v-if="footerColumns.length > 0" :aria-label="$t('navigation.footer_navigation')"
           class="grid grid-cols-2 gap-8 sm:grid-cols-4">
           <div v-for="column in footerColumns" :key="column.id">
-            <component :is="hasColumnLink(column) ? 'a' : 'span'" :href="hasColumnLink(column) ? column.url : undefined"
+            <component :is="hasColumnLink(column) ? 'a' : 'span'" :href="safeHref(hasColumnLink(column) ? column.url : undefined)"
               class="u-eyebrow block border-b border-border pb-2 no-underline hover:underline">
               {{ column.name }}
             </component>
             <ul v-if="column.links.length > 0" class="mt-4 space-y-2.5">
               <li v-for="link in column.links" :key="link.id">
-                <a :href="link.url" :target="link.new_tab ? '_blank' : undefined"
+                <a :href="safeHref(link.url)" :target="link.new_tab ? '_blank' : undefined"
                   :rel="link.new_tab ? 'noopener noreferrer' : undefined"
                   class="text-sm text-muted-foreground no-underline transition-colors hover:text-foreground hover:underline">
                   {{ link.name }}
@@ -78,13 +78,14 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
+import { HeaderWordmark } from '@/Components/Public/Base';
+import { useCookieConsent } from '@/Composables/useCookieConsent';
+import { safeHref } from '@/Utils/safeHref';
+
 import type { NavFooterColumn } from '../Nav/types';
 import FacebookButton from '../Nav/FacebookButton.vue';
 import InstagramButton from '../Nav/InstagramButton.vue';
 import StartFM from '../Nav/StartFM.vue';
-
-import { HeaderWordmark } from '@/Components/Public/Base';
-import { useCookieConsent } from '@/Composables/useCookieConsent';
 
 const { reopen } = useCookieConsent();
 
@@ -99,6 +100,6 @@ const footerColumns = computed(() => page.props.footerNavigation ?? []);
 // is the placeholder every new navigation row is created with (CreateNavigation.vue),
 // so it counts as "no link" too rather than rendering a dead anchor.
 function hasColumnLink(column: NavFooterColumn): boolean {
-  return !!column.url && column.url !== '#';
+  return !!safeHref(column.url) && column.url !== '#';
 }
 </script>

@@ -3,9 +3,9 @@ import { mount, config } from '@vue/test-utils';
 import { defineComponent, h } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
-import PadalinysSelector from '../PadalinysSelector.vue';
-
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import PadalinysSelector from '../PadalinysSelector.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

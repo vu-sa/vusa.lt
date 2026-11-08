@@ -1,9 +1,9 @@
 import { mount } from '@vue/test-utils';
 import { describe, it, expect } from 'vitest';
 
-import MeetingAgendaList from '../MeetingAgendaList.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import MeetingAgendaList from '../MeetingAgendaList.vue';
 
 const baseStubs = {
   ...commonStubs,
@@ -11,12 +11,18 @@ const baseStubs = {
   AdminVotingHelpButton: { template: '<div />' },
 };
 
-const makeItem = (overrides: Record<string, unknown> = {}) => ({
+type FullAgendaItem = Extract<InstanceType<typeof MeetingAgendaList>['$props']['agendaItems'][number], { type: string | null }>;
+
+const makeItem = (overrides: Partial<FullAgendaItem> = {}): FullAgendaItem => ({
   id: 'item-1',
-  meeting_id: 'm1',
   title: 'Test agenda item',
   order: 1,
   brought_by_students: false,
+  is_private: false,
+  start_time: null,
+  end_time: null,
+  comments_count: 0,
+  has_notes: false,
   type: 'voting',
   votes: [],
   can: { update: true, delete: true },
@@ -26,7 +32,7 @@ const makeItem = (overrides: Record<string, unknown> = {}) => ({
 describe('MeetingAgendaList', () => {
   it('links every row to the agenda item record', () => {
     const wrapper = mount(MeetingAgendaList, {
-      props: { agendaItems: [makeItem()] as App.Entities.AgendaItem[], meetingId: 'm1' },
+      props: { agendaItems: [makeItem()], meetingId: 'm1' },
       global: { stubs: baseStubs },
     });
 
@@ -36,9 +42,9 @@ describe('MeetingAgendaList', () => {
   });
 
   it('offers editing only on items the user may update, beside the record link', async () => {
-    const editable = makeItem({ can: { update: true } });
+    const editable = makeItem({ can: { update: true, delete: true } });
     const wrapper = mount(MeetingAgendaList, {
-      props: { agendaItems: [editable, makeItem({ id: 'item-2', order: 2, can: { update: false } })] as App.Entities.AgendaItem[], meetingId: 'm1' },
+      props: { agendaItems: [editable, makeItem({ id: 'item-2', order: 2, can: { update: false, delete: false } })], meetingId: 'm1' },
       global: { stubs: baseStubs },
     });
 
@@ -53,7 +59,7 @@ describe('MeetingAgendaList', () => {
   it('has no delete control, and shows drag handles only while ordering', async () => {
     const wrapper = mount(MeetingAgendaList, {
       props: {
-        agendaItems: [makeItem(), makeItem({ id: 'item-2', order: 2 })] as App.Entities.AgendaItem[],
+        agendaItems: [makeItem(), makeItem({ id: 'item-2', order: 2 })],
         meetingId: 'm1',
         canReorder: true,
       },
@@ -73,7 +79,7 @@ describe('MeetingAgendaList', () => {
   /** A compact coloured word, not a boxed badge or a "Trūksta: …" line under every title. */
   it('shows each item\'s status as one compact word', () => {
     const wrapper = mount(MeetingAgendaList, {
-      props: { agendaItems: [makeItem({ type: null })] as App.Entities.AgendaItem[], meetingId: 'm1' },
+      props: { agendaItems: [makeItem({ type: null })], meetingId: 'm1' },
       global: { stubs: baseStubs },
     });
 
@@ -84,7 +90,7 @@ describe('MeetingAgendaList', () => {
   /** A pasted agenda is the usual way an empty meeting gets filled, so it leads. */
   it('offers pasting first, then line-by-line, from the empty state', async () => {
     const wrapper = mount(MeetingAgendaList, {
-      props: { agendaItems: [] as App.Entities.AgendaItem[], meetingId: 'm1', canAdd: true },
+      props: { agendaItems: [], meetingId: 'm1', canAdd: true },
       global: { stubs: baseStubs },
     });
 
@@ -97,7 +103,7 @@ describe('MeetingAgendaList', () => {
 
   it('offers no add affordance to someone who cannot add', () => {
     const wrapper = mount(MeetingAgendaList, {
-      props: { agendaItems: [] as App.Entities.AgendaItem[], meetingId: 'm1' },
+      props: { agendaItems: [], meetingId: 'm1' },
       global: { stubs: baseStubs },
     });
 
@@ -108,7 +114,7 @@ describe('MeetingAgendaList', () => {
   it('shows the vote count label only when there is more than one vote', () => {
     const single = mount(MeetingAgendaList, {
       props: {
-        agendaItems: [makeItem({ votes: [{ id: 'v1', is_main: true, decision: 'positive' }] })] as App.Entities.AgendaItem[],
+        agendaItems: [makeItem({ votes: [{ id: 'v1', is_main: true, decision: 'positive' }] })],
         meetingId: 'm1',
       },
       global: { stubs: baseStubs },
@@ -122,7 +128,7 @@ describe('MeetingAgendaList', () => {
             { id: 'v1', is_main: true, decision: 'positive' },
             { id: 'v2', is_main: false, decision: 'negative' },
           ],
-        })] as App.Entities.AgendaItem[],
+        })],
         meetingId: 'm1',
       },
       global: { stubs: baseStubs },
@@ -136,13 +142,13 @@ describe('MeetingAgendaList', () => {
    */
   it('marks notes with a neutral icon, only when the item has them', () => {
     const without = mount(MeetingAgendaList, {
-      props: { agendaItems: [makeItem()] as App.Entities.AgendaItem[], meetingId: 'm1' },
+      props: { agendaItems: [makeItem()], meetingId: 'm1' },
       global: { stubs: baseStubs },
     });
     expect(without.find('[aria-label="Yra pastabų"]').exists()).toBe(false);
 
     const withNotes = mount(MeetingAgendaList, {
-      props: { agendaItems: [makeItem({ has_notes: true })] as App.Entities.AgendaItem[], meetingId: 'm1' },
+      props: { agendaItems: [makeItem({ has_notes: true })], meetingId: 'm1' },
       global: { stubs: baseStubs },
     });
     expect(withNotes.find('[aria-label="Yra pastabų"]').exists()).toBe(true);
@@ -155,14 +161,14 @@ describe('MeetingAgendaList', () => {
     ];
 
     const internal = mount(MeetingAgendaList, {
-      props: { agendaItems: items as App.Entities.AgendaItem[], meetingId: 'm1', requiresStudentPerspective: false },
+      props: { agendaItems: items, meetingId: 'm1', requiresStudentPerspective: false },
       global: { stubs: baseStubs },
     });
     expect(internal.find('[data-slot="agenda-status"]').text()).toBe('Priimtas');
 
     // External bodies still wait for the student perspective before calling a vote discussed
     const external = mount(MeetingAgendaList, {
-      props: { agendaItems: items as App.Entities.AgendaItem[], meetingId: 'm1' },
+      props: { agendaItems: items, meetingId: 'm1' },
       global: { stubs: baseStubs },
     });
     expect(external.find('[data-slot="agenda-status"]').text()).not.toBe('Priimtas');

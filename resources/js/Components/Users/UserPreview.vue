@@ -52,11 +52,11 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 
-import type { UserPreviewModel } from './userPreview';
-
 import { PreviewChipList, PreviewFact, PreviewFacts, PreviewPane, PreviewSection, StatusBadge, type PreviewChipItem } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { deletedMemberStatus } from '@/Constants/statusIcons';
+
+import type { UserPreviewModel } from './userPreview';
 
 const DUTY_LIMIT = 8;
 

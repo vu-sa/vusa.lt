@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect, userEvent, within } from 'storybook/test';
 
+import { usePage } from '@/mocks/inertia.storybook';
+
 import MobileBottomBar from './MobileBottomBar.vue';
 import MobileMenuPanel from './MobileMenuPanel.vue';
 import SectionTabs from './SectionTabs.vue';
 import WorkspacePicker from './WorkspacePicker.vue';
 import { atstovavimas, pradzia, rezervacijos, workspace, section } from './__tests__/fixtures';
-
-import { usePage } from '@/mocks/inertia.storybook';
 
 const svetaine = workspace('svetaine', ['puslapiai', 'naujienos', 'kalendorius', 'baneriai', 'dokumentai', 'darbotvarkes_klausimai']
   .map(key => section(key, `${key}.index`)));

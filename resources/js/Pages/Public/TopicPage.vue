@@ -87,6 +87,7 @@ import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcru
 import { formatDateWith } from '@/Utils/dateTime';
 import { LocaleEnum } from '@/Types/enums';
 import type { NewsItem } from '@/Types/contentParts';
+
 import IFluentChevronRight16Regular from '~icons/fluent/chevron-right-16-regular';
 import IFluentPage from '~icons/fluent/document-text20-regular';
 import IFluentNews from '~icons/fluent/news20-regular';

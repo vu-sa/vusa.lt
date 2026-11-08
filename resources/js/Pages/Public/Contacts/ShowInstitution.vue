@@ -64,7 +64,7 @@
           :is="item.href ? 'a' : 'div'"
           v-for="item in availableDetails"
           :key="item.label"
-          :href="item.href"
+          :href="safeHref(item.href)"
           :target="item.external ? '_blank' : undefined"
           :rel="item.external ? 'noopener noreferrer' : undefined"
           :class="[
@@ -267,6 +267,8 @@ import SmartLink from '@/Components/Public/SmartLink.vue';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import { RuledGrid, type RuledGridColumns } from '@/Components/Brand';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
+import { safeHref } from '@/Utils/safeHref';
+
 import IFluentChevronDown16Regular from '~icons/fluent/chevron-down-16-regular';
 import IFluentGlobe24Regular from '~icons/fluent/globe-24-regular';
 import IFluentInfo16Regular from '~icons/fluent/info-16-regular';

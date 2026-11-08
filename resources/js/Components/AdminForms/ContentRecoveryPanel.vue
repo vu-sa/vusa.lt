@@ -91,13 +91,13 @@
 import { computed, ref } from 'vue';
 import { CircleAlert, Cloud, GitCompareArrows, HardDrive, RotateCcw, Trash2 } from '@lucide/vue';
 
-import ContentRecoveryStatus from './ContentRecoveryStatus.vue';
-
 import { ConfirmDialog } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import type { useContentEditor } from '@/Composables/useContentEditor';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { formatDateTime } from '@/Utils/dateTime';
+
+import ContentRecoveryStatus from './ContentRecoveryStatus.vue';
 
 const props = defineProps<{
   editor: ReturnType<typeof useContentEditor>;

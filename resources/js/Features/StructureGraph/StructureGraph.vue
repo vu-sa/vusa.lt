@@ -46,10 +46,10 @@ import { VueFlow, type Edge, type Node, type VueFlowStore } from '@vue-flow/core
 import { Controls, ControlButton } from '@vue-flow/controls';
 import { ref, computed, shallowRef, watch } from 'vue';
 
+import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
+
 import MultipleHandleNode from './MultipleHandleNode.vue';
 import ParentNode from './ParentNode.vue';
-
-import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
 
 const props = defineProps<{
   animated?: boolean;

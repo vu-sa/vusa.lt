@@ -25,12 +25,12 @@
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import type { LinkedGoal } from './types';
-
 import { GoalIcon } from '@/Components/icons';
 import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { goalStatuses } from '@/Constants/statusIcons';
+
+import type { LinkedGoal } from './types';
 
 defineProps<{ goals: LinkedGoal[]; removable?: boolean }>();
 

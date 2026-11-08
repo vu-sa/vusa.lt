@@ -2,9 +2,9 @@ import { mount, flushPromises } from '@vue/test-utils';
 import { ref } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import RecordActivity from '../RecordActivity.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import RecordActivity from '../RecordActivity.vue';
 
 const fetchThread = vi.fn();
 const fetchMentionables = vi.fn();

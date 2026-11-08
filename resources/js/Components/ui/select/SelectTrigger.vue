@@ -18,9 +18,9 @@ import { reactiveOmit } from '@vueuse/core';
 import { ChevronDown } from '@lucide/vue';
 import { SelectIcon, SelectTrigger, type SelectTriggerProps, useForwardProps } from 'reka-ui';
 
-import { selectTriggerVariants, type SelectTriggerVariants } from './index';
-
 import { cn } from '@/Utils/Shadcn/utils';
+
+import { selectTriggerVariants, type SelectTriggerVariants } from './index';
 
 const props = withDefaults(
   defineProps<SelectTriggerProps & {

@@ -13,6 +13,7 @@ use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
+use Inertia\Inertia;
 use Inertia\Response;
 
 class TaskController extends AdminController
@@ -110,7 +111,7 @@ class TaskController extends AdminController
             ? BuildTaskIndexQuery::base($scope, $user, $this->authorizer)->with(['taskable', 'users:id,name,email,profile_photo_path', 'tenants'])->find($itemId)
             : null;
 
-        return $this->inertiaResponse('Admin/Tasks/IndexTask', [
+        return Inertia::render('Admin/Tasks/IndexTask', [
             'scope' => $scope,
             'data' => $tasks->getCollection()->map(fn (Task $task) => TaskResource::forListing($task, $user))->values(),
             'meta' => [

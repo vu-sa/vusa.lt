@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateResourceCategoryRequest;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\ResourceCategory;
 use App\Services\TanstackTableService;
+use Inertia\Inertia;
 
 class ResourceCategoryController extends AdminController
 {
@@ -37,7 +38,7 @@ class ResourceCategoryController extends AdminController
         $resourceCategories = $query->paginate($request->getPerPage())
             ->withQueryString();
 
-        return $this->inertiaResponse('Admin/Reservations/IndexResourceCategory', [
+        return Inertia::render('Admin/Reservations/IndexResourceCategory', [
             'abilities' => [
                 'update' => $request->user()->can('update', new ResourceCategory),
                 'delete' => $request->user()->can('delete', new ResourceCategory),

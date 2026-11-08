@@ -96,15 +96,16 @@
 import { computed, defineAsyncComponent, inject, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
+import { Button } from '@/Components/ui/button';
+import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+
 import RCSection from '../RCSection.vue';
 import RichContentTiptapHTML from '../RichContentTiptapHTML.vue';
 import { ACTIVE_HOTSPOT_KEY } from '../Editor/Fullscreen/useActiveHotspot';
 import { useUserAttributionLookup } from '../composables/useUserAttributionLookup';
 import type { BandResolution } from '../bandLayout';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
-import { Button } from '@/Components/ui/button';
-import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import IFluentChevronDown24Regular from '~icons/fluent/chevron-down24-regular';
 
 // Lazy-loaded: only mounts while the quote field is claimed in the full-screen editor.

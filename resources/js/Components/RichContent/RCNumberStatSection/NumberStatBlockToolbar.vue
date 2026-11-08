@@ -20,14 +20,14 @@
 import { computed, onMounted } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import type { NumberStatSection } from '@/Types/contentParts';
+import { FieldLabel } from '@/Components/ui/field';
+
 import RCBlockToolbarShell from '../Editor/Fullscreen/RCBlockToolbarShell.vue';
 import RCSectionToolbarOptions from '../Editor/RCSectionToolbarOptions.vue';
 import RCWidthPicker from '../Editor/RCWidthPicker.vue';
 import { withWidth } from '../Editor/blockWidth';
 import { getContentType, type BlockWidth, type ContentPart } from '../Types';
-
-import type { NumberStatSection } from '@/Types/contentParts';
-import { FieldLabel } from '@/Components/ui/field';
 
 const props = defineProps<{
   content: ContentPart;

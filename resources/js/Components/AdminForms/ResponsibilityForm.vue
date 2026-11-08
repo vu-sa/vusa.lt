@@ -49,14 +49,14 @@ import { ref } from 'vue';
 import { useForm, type InertiaForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import FormFieldWrapper from './FormFieldWrapper.vue';
-
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { FormSection } from '@/Components/Patterns';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
 import { Textarea } from '@/Components/ui/textarea';
 import { ModelEnum } from '@/Types/enums';
+
+import FormFieldWrapper from './FormFieldWrapper.vue';
 
 interface Translations { lt: string; en: string }
 

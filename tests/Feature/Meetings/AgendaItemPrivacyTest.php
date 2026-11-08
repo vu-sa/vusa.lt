@@ -1,6 +1,8 @@
 <?php
 
 use App\Enums\AgendaItemType;
+use App\Enums\MeetingKind;
+use App\Enums\MeetingType;
 use App\Http\Resources\InstitutionMeetingResource;
 use App\Http\Resources\StepResource;
 use App\Models\Calendar;
@@ -119,6 +121,152 @@ test('a public-only reader gets a minimal direct record and redacted siblings', 
         );
 });
 
+test('the meeting record exposes localized private content and typed completion only to its readers', function (): void {
+    $this->meeting->update([
+        'description' => ['lt' => 'Posėdžio aprašymas', 'en' => 'Meeting description'],
+        'type' => MeetingType::Remote,
+        'meeting_kind' => MeetingKind::Assembly,
+    ]);
+    $this->item->votes()->first()->update(['note' => ['lt' => 'Vidaus pastaba', 'en' => 'Internal note'], 'decision' => null]);
+
+    asUser($this->coordinator)->get(route('meetings.show', $this->meeting))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/Representation/ShowMeeting')
+            ->where('readOnly', false)
+            ->has('meeting', fn (Assert $meeting) => $meeting
+                ->whereType('id', 'string')
+                ->whereType('title', 'string')
+                ->whereType('start_time', 'string')
+                ->whereType('created_at', 'string')
+                ->whereType('updated_at', 'string')
+                ->whereType('title_noun', 'string')
+                ->whereType('inherited_meeting_kind', 'string')
+                ->where('type', 'remote')
+                ->where('type_label', 'Nuotolinis posėdis')
+                ->whereType('has_calendar_event', 'boolean')
+                ->missing('calendar_event')
+                ->missing('comments')
+                ->missing('fileable_files')
+                ->where('meeting_kind', 'assembly')
+                ->missing('is_public')
+                ->missing('is_joint')
+                ->whereType('has_protocol', 'boolean')
+                ->missing('has_report')
+                ->missing('comments_count')
+                ->missing('tasks_count')
+                ->missing('documents_count')
+                ->where('description', ['lt' => 'Posėdžio aprašymas', 'en' => 'Meeting description'])
+                ->has('institutions', 1, fn (Assert $institution) => $institution
+                    ->whereType('id', 'string')
+                    ->whereType('name', 'string|null')
+                    ->whereType('is_active', 'boolean')
+                    ->whereType('tenant_id', 'integer|null')
+                    ->has('tenant', fn (Assert $tenant) => $tenant->whereType('shortname', 'string'))
+                )
+                ->has('agenda_items', 1, fn (Assert $item) => $item
+                    ->where('id', $this->item->id)
+                    ->missing('meeting_id')
+                    ->missing('created_at')
+                    ->missing('updated_at')
+                    ->where('title', 'Originalus neviešas pavadinimas')
+                    ->missing('description')
+                    ->missing('student_position')
+                    ->missing('public_title')
+                    ->where('type', 'voting')
+                    ->where('is_private', true)
+                    ->whereType('order', 'integer')
+                    ->whereType('brought_by_students', 'boolean')
+                    ->whereType('comments_count', 'integer')
+                    ->whereType('has_notes', 'boolean')
+                    ->whereType('can.update', 'boolean')
+                    ->whereType('can.delete', 'boolean')
+                    ->missing('votes.0.note')
+                    ->has('votes.0', fn (Assert $vote) => $vote
+                        ->whereType('is_main', 'boolean')
+                        ->whereType('is_consensus', 'boolean')
+                        ->whereType('decision', 'string|null')
+                        ->whereType('student_vote', 'string|null')
+                        ->whereType('student_benefit', 'string|null')
+                    )
+                    ->missing('meeting')
+                    ->missing('tenants')
+                    ->missing('is_redacted')
+                    ->etc()
+                )
+                ->etc()
+            )
+            ->has('abilities', fn (Assert $abilities) => $abilities
+                ->whereType('update', 'boolean')
+                ->whereType('delete', 'boolean')
+                ->whereType('discard', 'boolean')
+                ->whereType('createAgendaItems', 'boolean')
+                ->whereType('reorderAgendaItems', 'boolean')
+                ->whereType('attachInstitution', 'boolean')
+            )
+            ->where('completion.status', 'incomplete')
+            ->has('completion.missingActions', 1, fn (Assert $action) => $action
+                ->where('type', 'agenda_item_vote_missing')
+                ->where('agenda_item_id', $this->item->id)
+                ->where('title', 'Originalus neviešas pavadinimas')
+                ->where('position', 1)
+                ->where('missing_fields', ['decision'])
+            )
+            ->missing('tasks')
+            ->missing('documents')
+            ->reloadOnly(['tasks', 'documents', 'pendingDocuments'], fn (Assert $panels) => $panels
+                ->has('tasks')
+                ->has('documents')
+                ->has('pendingDocuments')
+            )
+        );
+});
+
+test('the read-only meeting record contains exactly the redacted agenda contract', function (): void {
+    $this->meeting->forgetTranslations('description');
+    $this->meeting->setTranslations('description', ['lt' => 'Tik lietuviškai'])->save();
+    $response = asUser($this->outsider)->get(route('meetings.show', $this->meeting));
+
+    $response->assertInertia(fn (Assert $page) => $page
+        ->component('Admin/Representation/ShowMeeting')
+        ->where('readOnly', true)
+        ->where('meeting.description', ['lt' => 'Tik lietuviškai', 'en' => ''])
+        ->has('meeting.agenda_items', 1, fn (Assert $item) => $item
+            ->where('id', $this->item->id)
+            ->where('order', 2)
+            ->where('is_private', true)
+            ->where('is_redacted', true)
+            ->where('title', 'Darbo klausimas')
+            ->has('can', fn (Assert $can) => $can
+                ->where('update', false)
+                ->where('delete', false)
+            )
+        )
+        ->where('completion.status', null)
+        ->where('completion.missingActions', [])
+        ->missing('meeting.comments')
+        ->missing('meeting.fileable_files')
+        ->missing('meeting.comments_count')
+        ->missing('meeting.tasks_count')
+        ->missing('meeting.documents_count')
+        ->where('meeting.sharepointPath', null)
+        ->where('meeting.sharepointFolderUrl', null)
+        ->missing('tasks')
+        ->missing('documents')
+        ->missing('pendingDocuments')
+        ->missing('files')
+        ->missing('secretaries')
+        ->missing('availableInstitutionsForAttach')
+        ->reloadOnly(['files', 'tasks', 'documents', 'pendingDocuments', 'availableInstitutionsForAttach'], fn (Assert $panels) => $panels
+            ->where('files', [])
+            ->where('tasks', [])
+            ->where('documents', [])
+            ->where('pendingDocuments', [])
+            ->where('availableInstitutionsForAttach', [])
+        )
+    );
+    $response->assertDontSee('Originalus neviešas pavadinimas')->assertDontSee('Neviešo turinio žymuo');
+});
+
 test('coordinators and members at the meeting date retain their existing full access', function (): void {
     $member = User::factory()->create();
     $duty = Duty::factory()->for($this->institution)->create();
@@ -210,7 +358,7 @@ test('private relationships and copied step content do not disclose information 
 test('shared meeting statistics omit private votes for public-only readers', function (): void {
     asUser($this->outsider);
     $resource = new InstitutionMeetingResource($this->meeting->load('agendaItems.votes'))->resolve(request());
-    expect($resource['vote_matches'])->toBe(0)->and($resource['agenda_item_titles'])->toBe(['Darbo klausimas']);
+    expect($resource['vote_matches'])->toBe(0)->and($resource)->not->toHaveKey('agenda_item_titles');
 
     asUser($this->coordinator);
     request()->setUserResolver(fn () => $this->coordinator);

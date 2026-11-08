@@ -44,10 +44,10 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { Users, UserPlus, UserX } from '@lucide/vue';
 
-import DutyHolderCard from './DutyHolderCard.vue';
-
 import { SectionCard } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
+
+import DutyHolderCard from './DutyHolderCard.vue';
 
 withDefaults(defineProps<{
   holders: App.Entities.User[];

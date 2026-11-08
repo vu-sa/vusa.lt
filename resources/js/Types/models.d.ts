@@ -83,6 +83,7 @@ declare global {
       agenda_item_id: string
       yjs_state?: string | null
       notes_html?: string | null
+      version: number
       updated_by?: string | null
       created_at?: string | null
       updated_at?: string | null
@@ -438,6 +439,7 @@ declare global {
       // relations
       meeting?: Meeting
       institution?: Institution
+      tenant?: Tenant
       activities_as_subject?: Activity[]
       // counts
       activities_as_subject_count: number
@@ -479,6 +481,7 @@ declare global {
       tenant?: Tenant
       via_dutiable?: Dutiable
       derived_dutiables?: Dutiable[]
+      tenants?: Tenant
       media?: Media[]
       // counts
       derived_dutiables_count: number
@@ -942,6 +945,7 @@ declare global {
       tenants?: Tenant
       documents?: Document[]
       check_ins?: InstitutionCheckIn[]
+      active_check_ins?: InstitutionCheckIn[]
       meetings?: Meeting[]
       problems?: Problem[]
       tasks_from_meetings?: Task
@@ -966,6 +970,7 @@ declare global {
       public_urls_count: number
       documents_count: number
       check_ins_count: number
+      active_check_ins_count: number
       meetings_count: number
       problems_count: number
       followers_count: number
@@ -990,6 +995,7 @@ declare global {
       tenants_exists: boolean
       documents_exists: boolean
       check_ins_exists: boolean
+      active_check_ins_exists: boolean
       meetings_exists: boolean
       problems_exists: boolean
       followers_exists: boolean
@@ -1745,6 +1751,7 @@ declare global {
       tenants?: Tenant
       documents?: Document[]
       check_ins?: InstitutionCheckIn[]
+      active_check_ins?: InstitutionCheckIn[]
       problems?: Problem[]
       tasks_from_meetings?: Task
       users?: User
@@ -1769,6 +1776,7 @@ declare global {
       public_urls_count: number
       documents_count: number
       check_ins_count: number
+      active_check_ins_count: number
       problems_count: number
       followers_count: number
       secretaries_count: number
@@ -1793,6 +1801,7 @@ declare global {
       tenants_exists: boolean
       documents_exists: boolean
       check_ins_exists: boolean
+      active_check_ins_exists: boolean
       problems_exists: boolean
       followers_exists: boolean
       secretaries_exists: boolean
@@ -2127,16 +2136,19 @@ declare global {
       // relations
       reservation?: Reservation
       resource?: Resource
+      users?: User[]
       approvals?: Approval[]
       comments?: Comment[]
       root_comments?: Comment[]
       // counts
+      users_count: number
       approvals_count: number
       comments_count: number
       root_comments_count: number
       // exists
       reservation_exists: boolean
       resource_exists: boolean
+      users_exists: boolean
       approvals_exists: boolean
       comments_exists: boolean
       root_comments_exists: boolean
@@ -2191,6 +2203,8 @@ declare global {
       translations: unknown
       // relations
       resources?: Resource[]
+      tenant?: Tenant
+      tenants?: Tenant
       // counts
       resources_count: number
       // exists
@@ -2746,6 +2760,7 @@ declare global {
       // relations
       duties?: Duty[]
       previous_duties?: Duty[]
+      microsoft_identities?: UserMicrosoftIdentity[]
       current_duties?: Duty[]
       authorization_duties?: Duty[]
       upcoming_duties?: Duty[]
@@ -2767,6 +2782,7 @@ declare global {
       // counts
       duties_count: number
       previous_duties_count: number
+      microsoft_identities_count: number
       current_duties_count: number
       authorization_duties_count: number
       upcoming_duties_count: number
@@ -2785,6 +2801,7 @@ declare global {
       // exists
       duties_exists: boolean
       previous_duties_exists: boolean
+      microsoft_identities_exists: boolean
       current_duties_exists: boolean
       authorization_duties_exists: boolean
       upcoming_duties_exists: boolean
@@ -2801,6 +2818,23 @@ declare global {
       permissions_exists: boolean
       activities_as_subject_exists: boolean
       notifications_exists: boolean
+    }
+
+    export interface UserMicrosoftIdentity {
+      // columns
+      id: number
+      user_id: string
+      microsoft_tenant_id: string
+      microsoft_object_id: string
+      principal_name: string
+      last_login_at?: string | null
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      user?: User
+      // counts
+      // exists
+      user_exists: boolean
     }
 
     export interface Vote {
@@ -2894,15 +2928,6 @@ declare global {
 
     export type GoalStatus = typeof GoalStatus[keyof typeof GoalStatus]
 
-    const MeetingKind = {
-      Sitting: 'sitting',
-      Assembly: 'assembly',
-      Meeting: 'meeting',
-      Conference: 'conference',
-    } as const;
-
-    export type MeetingKind = typeof MeetingKind[keyof typeof MeetingKind]
-
     const InstitutionActivityAnswer = {
       Met: 'met',
       NotMet: 'not_met',
@@ -2979,6 +3004,15 @@ declare global {
     } as const;
 
     export type MeetingType = typeof MeetingType[keyof typeof MeetingType]
+
+    const MeetingKind = {
+      Sitting: 'sitting',
+      Assembly: 'assembly',
+      Meeting: 'meeting',
+      Conference: 'conference',
+    } as const;
+
+    export type MeetingKind = typeof MeetingKind[keyof typeof MeetingKind]
 
     const ResponsibilityPurpose = {
       StudentRepresentation: 'student_representation',

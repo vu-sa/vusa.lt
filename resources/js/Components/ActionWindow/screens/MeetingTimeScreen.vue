@@ -7,8 +7,8 @@
         :title="option.time"
         :description="option.detail"
         :icon="Clock"
+        indicator="check"
         :selected="option.time === selectedTime"
-        :show-chevron="false"
         @click="pick(option.time)"
       />
       <ActionChoiceButton
@@ -39,18 +39,18 @@ import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronLeft, Clock, Clock4 } from '@lucide/vue';
 
-import ActionChoiceButton from '../ActionChoiceButton.vue';
-import ActionChoiceList from '../ActionChoiceList.vue';
-import ActionWindowPrimaryButton from '../ActionWindowPrimaryButton.vue';
-import ActionWindowScreen from '../ActionWindowScreen.vue';
-import { useWindowDates } from '../useWindowDates';
-
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { useActionWindowData } from '@/Composables/useActionWindowData';
 import { toLocalDateTime } from '@/Composables/useMeetingCreation';
 import { Button } from '@/Components/ui/button';
 import { TimePicker } from '@/Components/ui/time-picker';
 import type { TimeValue } from '@/Components/ui/time-picker/types';
+
+import { useWindowDates } from '../useWindowDates';
+import ActionWindowScreen from '../ActionWindowScreen.vue';
+import ActionWindowPrimaryButton from '../ActionWindowPrimaryButton.vue';
+import ActionChoiceList from '../ActionChoiceList.vue';
+import ActionChoiceButton from '../ActionChoiceButton.vue';
 
 /** Student bodies meet after lectures; these are the hours the archive is thickest at. */
 const COMMON_TIMES = ['12:00', '15:00', '17:00', '18:00', '19:00'];

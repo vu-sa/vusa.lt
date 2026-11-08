@@ -39,6 +39,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import type { TenantOption } from '@/Composables/useTenantOptions';
 import { useTenantOptions } from '@/Composables/useTenantOptions';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
+
 import IFluentCheckmark24Regular from '~icons/fluent/checkmark-24-regular';
 
 const { options, isActive, switchTenant } = useTenantOptions();

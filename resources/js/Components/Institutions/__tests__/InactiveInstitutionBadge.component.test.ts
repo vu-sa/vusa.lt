@@ -1,9 +1,9 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
-import InactiveInstitutionBadge from '../InactiveInstitutionBadge.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import InactiveInstitutionBadge from '../InactiveInstitutionBadge.vue';
 
 describe('InactiveInstitutionBadge', () => {
   it.each([false, 0])('labels an explicitly inactive institution (%s)', (active) => {

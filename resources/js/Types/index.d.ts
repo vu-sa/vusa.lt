@@ -1,8 +1,8 @@
 import type { IconifyIcon } from '@iconify/vue';
 
-import type { LocaleEnum, ModelEnum } from './enums';
-
 import type { NavFooterColumn, NavItem } from '@/Components/Public/Nav/types';
+
+import type { LocaleEnum, ModelEnum } from './enums';
 
 interface User extends Omit<App.Entities.User, 'tenants'> {
   tenants: Pick<App.Entities.Tenant, 'id' | 'shortname'>[];

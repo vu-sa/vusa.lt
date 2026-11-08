@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { effectScope, ref } from 'vue';
 
-import { useDatabaseCollectionSource, type DatabaseFacetDefinition } from '../useCollectionSource';
-
 import { router as mockRouter } from '@/mocks/inertia.mock';
+
+import { useDatabaseCollectionSource, type DatabaseFacetDefinition } from '../useCollectionSource';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

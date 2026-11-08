@@ -136,6 +136,13 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Link, usePage } from '@inertiajs/vue3';
 
+import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
+import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
+import SmartLink from '@/Components/Public/SmartLink.vue';
+import { EyebrowLabel, MediaFrame, ReadingSizeControl, ShareButton, TagChip } from '@/Components/Public/Base';
+import type { ImageData } from '@/Types/media';
+import { formatDate, parseDate } from '@/Utils/dateTime';
+
 import HighlightsCallout from './HighlightsCallout.vue';
 import NewsCard from './NewsCard.vue';
 
@@ -144,29 +151,40 @@ import IFluentArrowUpRight16Regular from '~icons/fluent/arrow-up-right-16-regula
 import IFluentCalendarLtr16Regular from '~icons/fluent/calendar-ltr-16-regular';
 import IFluentClock24Regular from '~icons/fluent/clock-24-regular';
 import IFluentOrganization16Regular from '~icons/fluent/organization-16-regular';
-import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
-import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
-import SmartLink from '@/Components/Public/SmartLink.vue';
-import { EyebrowLabel, MediaFrame, ReadingSizeControl, ShareButton, TagChip } from '@/Components/Public/Base';
-import type { NewsItem } from '@/Types/contentParts';
-import type { ImageData } from '@/Types/media';
-import { formatDate, parseDate } from '@/Utils/dateTime';
 
-/**
- * The news article, in one design.
- *
- * It used to be four near-duplicated layout branches (`modern`/`classic`/`immersive`/`headline`)
- * behind a `news.layout` column that 1189 of 1191 articles left on `modern`. The column is gone
- * with the branches — the design has one article treatment, and four ways to render the same
- * thing is four places for it to drift.
- */
+interface Article {
+  id: number;
+  title: string;
+  tenant: string;
+  publish_time: string | null;
+  reading_time: number;
+  image: string | null;
+  image_media: ImageData | null;
+  image_author: string | null;
+  short: string;
+  highlights: unknown[] | Record<string, unknown> | null;
+  tags: { id: number; name: string; alias: string }[];
+}
+
+interface RelatedArticle {
+  id: number;
+  title: string;
+  short: string;
+  lang: string;
+  image: string | null;
+  image_media: ImageData | null;
+  permalink: string | null;
+  publish_time: string | null;
+  url: string;
+}
+
 const props = withDefaults(defineProps<{
-  article: App.Entities.News & { reading_time?: number | null; image_media?: ImageData | null };
+  article: Article;
   otherLangURL?: string;
   locale?: string;
   /** Author-controlled (Advanced Settings in NewsForm) — the band still renders, just untrailed. */
   showBreadcrumbs?: boolean;
-  relatedArticles?: NewsItem[];
+  relatedArticles?: RelatedArticle[];
   className?: string;
 }>(), {
   otherLangURL: undefined,
@@ -195,12 +213,8 @@ const archiveHref = computed(() => route('newsArchive', {
   lang: props.locale,
 }));
 
-/**
- * A tag's name is either a plain string or a `{ lt, en }` translation object, depending on
- * whether the payload came through `toArray()` or `toFullArray()`. Resolved once here so the
- * template does not carry the branch.
- */
-function tagName(tag: App.Entities.Tag): string {
+// Keep translation-object support for callers outside the public article page.
+function tagName(tag: { name: unknown }): string {
   if (typeof tag.name === 'string') return tag.name;
 
   if (tag.name && typeof tag.name === 'object' && !Array.isArray(tag.name)) {

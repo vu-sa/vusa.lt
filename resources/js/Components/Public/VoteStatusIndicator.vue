@@ -12,6 +12,7 @@
 import { computed } from 'vue';
 
 import { getVoteTextColorClass, getVoteDisplayLabel, type VoteValue } from '@/Composables/useAgendaItemStyling';
+
 import IFluentCheckmark24Regular from '~icons/fluent/checkmark-24-regular';
 import IFluentDismiss24Regular from '~icons/fluent/dismiss-24-regular';
 import IFluentQuestionCircle24Regular from '~icons/fluent/question-circle-24-regular';

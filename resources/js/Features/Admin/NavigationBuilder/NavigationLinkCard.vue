@@ -34,6 +34,7 @@
           <TooltipTrigger as-child>
             <span class="inline-flex">
               <Switch
+                :disabled="pending"
                 :model-value="link.is_active"
                 @update:model-value="val => $emit('toggle-active', val)"
               />
@@ -52,7 +53,7 @@
 
         <AlertDialog>
           <AlertDialogTrigger as-child>
-            <Button size="icon-xs" variant="ghost" class="text-destructive hover:text-destructive">
+            <Button :disabled="pending" size="icon-xs" variant="ghost" class="text-destructive hover:text-destructive">
               <Trash2 class="size-3.5" />
             </Button>
           </AlertDialogTrigger>
@@ -63,7 +64,7 @@
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>{{ $t('forms.cancel') }}</AlertDialogCancel>
-              <AlertDialogAction @click="$emit('delete')">
+              <AlertDialogAction :disabled="pending" @click="$emit('delete')">
                 {{ $t('forms.delete') }}
               </AlertDialogAction>
             </AlertDialogFooter>
@@ -111,6 +112,7 @@
                every `data-[state=...]` Tailwind class the Switch relies on for color. -->
           <span class="inline-flex">
             <Switch
+              :disabled="pending"
               :model-value="link.is_active"
               @update:model-value="val => $emit('toggle-active', val)"
             />
@@ -129,7 +131,7 @@
 
       <AlertDialog>
         <AlertDialogTrigger as-child>
-          <Button size="icon-xs" variant="ghost" class="text-destructive hover:text-destructive">
+          <Button :disabled="pending" size="icon-xs" variant="ghost" class="text-destructive hover:text-destructive">
             <Trash2 class="size-3.5" />
           </Button>
         </AlertDialogTrigger>
@@ -140,7 +142,7 @@
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{{ $t('forms.cancel') }}</AlertDialogCancel>
-            <AlertDialogAction @click="$emit('delete')">
+            <AlertDialogAction :disabled="pending" @click="$emit('delete')">
               {{ $t('forms.delete') }}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -173,8 +175,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Link } from '@inertiajs/vue3';
 import { GripVertical, Image as ImageIcon, Link as LinkIcon, Minus, Pencil, Square, Star, Trash2, Type } from '@lucide/vue';
 
-import type { AdminNavigationLink } from './types';
-
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
 import { Switch } from '@/Components/ui/switch';
@@ -192,7 +192,10 @@ import {
   AlertDialogTrigger,
 } from '@/Components/ui/alert-dialog';
 
+import type { AdminNavigationLink } from './types';
+
 const props = defineProps<{
+  pending?: boolean;
   link: AdminNavigationLink;
 }>();
 

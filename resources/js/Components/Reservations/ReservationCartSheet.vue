@@ -105,14 +105,14 @@ import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { ArrowRight } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
-import ReservationCartItemRow from './ReservationCartItemRow.vue';
-import ReservationPeriodFields from './ReservationPeriodFields.vue';
-import { useReservationCart } from './useReservationCart';
-
 import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
 import { Button } from '@/Components/ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/Components/ui/sheet';
 import { useIsMobile } from '@/Composables/useIsMobile';
+
+import { useReservationCart } from './useReservationCart';
+import ReservationPeriodFields from './ReservationPeriodFields.vue';
+import ReservationCartItemRow from './ReservationCartItemRow.vue';
 
 const { cart, items, period, sheetOpen, setPeriod, clear } = useReservationCart();
 

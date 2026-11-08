@@ -15,12 +15,12 @@ import { ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import ActivityRequestHistoryRow from './ActivityRequestHistoryRow.vue';
-import type { ActivityRequestHistoryItem } from './InstitutionActivityRequestHistory.vue';
-
 import { EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
+
+import type { ActivityRequestHistoryItem } from './InstitutionActivityRequestHistory.vue';
+import ActivityRequestHistoryRow from './ActivityRequestHistoryRow.vue';
 
 export interface UserActivityRequestHistory {
   data: ActivityRequestHistoryItem[];

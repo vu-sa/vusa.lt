@@ -26,10 +26,11 @@
 import type { HTMLAttributes } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { cn } from '@/Utils/Shadcn/utils';
+
 import { tagChipVariants, type TagChipVariants } from './tagChip';
 
 import IFluentDismiss16Regular from '~icons/fluent/dismiss-16-regular';
-import { cn } from '@/Utils/Shadcn/utils';
 
 /**
  * The tag/topic marker on a news card, event tile or article header. Square by design — the

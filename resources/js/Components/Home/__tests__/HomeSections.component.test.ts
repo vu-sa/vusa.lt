@@ -2,14 +2,14 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 import { ClipboardList } from '@lucide/vue';
 
+import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
+import { commonStubs } from '@/tests/stubs';
+
 import CoordinatorCard from '../CoordinatorCard.vue';
 import FollowedInstitutionsList from '../FollowedInstitutionsList.vue';
 import InstitutionsNeedingAttention from '../InstitutionsNeedingAttention.vue';
 import RecentlyEditedList from '../RecentlyEditedList.vue';
 import UpcomingMeetingsList from '../UpcomingMeetingsList.vue';
-
-import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
-import { commonStubs } from '@/tests/stubs';
 
 describe('OverviewSection', () => {
   it('collapses an empty section to one line instead of an empty box', () => {

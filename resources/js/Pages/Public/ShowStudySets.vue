@@ -276,6 +276,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/Components/ui/badge';
 import { formatVuFacultyShortname } from '@/Utils/Tenant';
 import { TenantType } from '@/Types/enums';
+
 import IFluentDocumentDismiss24Regular from '~icons/fluent/document-dismiss-24-regular';
 import IFluentHatGraduation24Regular from '~icons/fluent/hat-graduation-24-regular';
 import IFluentHatGraduation16Regular from '~icons/fluent/hat-graduation-16-regular';

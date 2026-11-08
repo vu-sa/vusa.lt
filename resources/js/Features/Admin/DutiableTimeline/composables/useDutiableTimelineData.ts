@@ -1,8 +1,8 @@
 import { computed, ref, watch, type Ref } from 'vue';
 
-import type { ParsedCadence, ParsedRow, TimelinePayload, TimelineScopeType } from '../types';
-
 import { useApi } from '@/Composables/useApi';
+
+import type { ParsedCadence, ParsedRow, TimelinePayload, TimelineScopeType } from '../types';
 
 /** Dates arrive as `YYYY-MM-DD`; parse at noon so a timezone shift cannot roll the day. */
 export function parseTimelineDate(value: string): Date {

@@ -1,9 +1,9 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
-import UserMergeDetails from '../UserMergeDetails.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import UserMergeDetails from '../UserMergeDetails.vue';
 
 const records = [
   { id: 'protected', email: 'protected@stud.vu.lt', can_update_identity: false },

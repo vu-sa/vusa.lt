@@ -1,6 +1,8 @@
 <?php
 
+use App\Enums\TenantType;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Models\Tag;
 use App\Models\Tenant;
 use App\Services\Permissions\PermissionMapBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -66,6 +68,51 @@ test('admin pages share the data the admin shell needs', function (): void {
         );
 });
 
+test('admin pages omit public head defaults while public pages retain them', function (): void {
+    asUserWithInertia($this->user)->get(route('dashboard'))->assertOk()
+        ->assertJsonPath('props.head', []);
+
+    $public = $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']))->assertOk();
+
+    expect(implode('', $public->json('props.head')))
+        ->toContain('og:site_name', 'twitter:card', 'name="description"');
+});
+
+test('notification previews contain only bell fields and retain legacy display data', function (): void {
+    $notification = $this->user->unreadNotifications()->first();
+    $notification->update(['data' => [
+        'category' => 'comment',
+        'text' => 'Sveikas',
+        'excerpt' => 'Komentaras',
+        'subject' => ['name' => 'Vardas', 'image' => '/avatar.jpg', 'id' => 'private-id'],
+        'object' => ['modelClass' => 'Meeting', 'name' => 'Posėdis', 'url' => '/mano/meetings/1', 'id' => 'private-id'],
+        'actions' => [['label' => 'Atverti', 'url' => '/mano/meetings/1'], ['label' => 'Kita', 'url' => '/other']],
+        'context' => [['label' => 'Nereikalinga', 'value' => 'Papildoma']],
+        'internal' => 'not rendered',
+    ]]);
+    DB::enableQueryLog();
+
+    asUserWithInertia($this->user)->get(route('dashboard'))->assertOk()
+        ->assertJsonCount(1, 'props.auth.user.unreadNotifications')
+        ->assertJsonPath('props.auth.user.unreadNotificationsCount', 1)
+        ->assertJsonPath('props.auth.user.unreadNotifications.0.data', [
+            'category' => 'comment',
+            'text' => 'Sveikas',
+            'excerpt' => 'Komentaras',
+            'subject' => ['name' => 'Vardas', 'image' => '/avatar.jpg'],
+            'object' => ['modelClass' => 'Meeting', 'name' => 'Posėdis', 'url' => '/mano/meetings/1'],
+            'primaryAction' => ['label' => 'Atverti', 'url' => '/mano/meetings/1'],
+        ])
+        ->assertJsonMissingPath('props.auth.user.unreadNotifications.0.notifiable_id')
+        ->assertJsonMissingPath('props.auth.user.unreadNotifications.0.notifiable_type')
+        ->assertJsonMissingPath('props.auth.user.unreadNotifications.0.updated_at');
+
+    $countQueries = collect(DB::getQueryLog())->filter(fn (array $query) => str_contains(strtolower($query['query']), 'count(')
+        && str_contains($query['query'], 'notifications')
+    );
+    expect($countQueries)->toBeEmpty();
+});
+
 test('the unread count covers notifications beyond the shared list', function (): void {
     foreach (range(1, HandleInertiaRequests::NOTIFICATION_PREVIEW_LIMIT) as $index) {
         DatabaseNotification::query()->create([
@@ -103,12 +150,67 @@ test('JSON visits support Inertia assertions and ordinary visits clear their hea
     asUser($this->user)->get(route('dashboard'))->assertOk()->assertHeaderMissing('X-Inertia');
 });
 
-test('once configuration is omitted on subsequent visits while locale data stays fresh', function (): void {
+test('catalogs are sent once while request-specific configuration stays fresh', function (): void {
     config(['services.carto.api_key' => 'test-map-key']);
     $first = asUserWithInertia($this->user)->get(route('dashboard'))->assertOk();
-    $first->assertJsonPath('props.map.cartoApiKey', 'test-map-key');
-    $this->withHeader('X-Inertia-Except-Once-Props', 'map')->get(route('dashboard'))->assertOk()
-        ->assertJsonMissingPath('props.map')->assertJsonStructure(['props' => ['organization', 'tenants', 'typesenseConfig', 'ziggyContext']]);
+    $catalogs = ['tenants', 'tags', 'eventTypes', 'institutionTypes', 'curatorDutyTypeIds', 'organization'];
+    $first->assertJsonPath('props.map.cartoApiKey', 'test-map-key')
+        ->assertJsonStructure(['props' => $catalogs]);
+    expect(array_column($first->json('onceProps'), 'prop'))->toContain('map', ...$catalogs);
+
+    $next = $this->withHeader('X-Inertia-Except-Once-Props', implode(',', array_keys($first->json('onceProps'))))
+        ->get(route('dashboard'))->assertOk()
+        ->assertJsonMissingPath('props.map')
+        ->assertJsonStructure(['props' => ['typesenseConfig', 'ziggyContext', 'auth']]);
+
+    foreach ($catalogs as $prop) {
+        $next->assertJsonMissingPath('props.'.$prop);
+    }
+});
+
+test('a changed catalog is resent on the next visit', function (): void {
+    $first = asUserWithInertia($this->user)->get(route('dashboard'))->assertOk();
+    $tag = Tag::factory()->create(['name' => ['lt' => 'Nauja žyma', 'en' => 'New tag']]);
+
+    $next = $this->withHeader('X-Inertia-Except-Once-Props', implode(',', array_keys($first->json('onceProps'))))
+        ->get(route('dashboard'))->assertOk()
+        ->assertJsonMissingPath('props.tenants')
+        ->assertJsonMissingPath('props.organization');
+
+    expect(collect($next->json('props.tags'))->firstWhere('id', $tag->id)['name'])->toBe('Nauja žyma');
+});
+
+test('public catalogs remain available on first visits and use locale-specific once keys', function (): void {
+    $first = asUserWithInertia($this->user)
+        ->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']))->assertOk()
+        ->assertJsonStructure(['props' => ['tenants', 'organization', 'institutionTypes']]);
+    $header = implode(',', array_keys($first->json('onceProps')));
+
+    $this->withHeader('X-Inertia-Except-Once-Props', $header)
+        ->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']))->assertOk()
+        ->assertJsonMissingPath('props.tenants')
+        ->assertJsonMissingPath('props.organization');
+
+    $this->get(route('home', ['subdomain' => 'www', 'lang' => 'en']))->assertOk()
+        ->assertJsonPath('props.app.locale', 'en')
+        ->assertJsonStructure(['props' => ['tenants', 'organization', 'institutionTypes']]);
+});
+
+test('page-specific tenant lists override the once catalog without claiming its key', function (): void {
+    $first = asUserWithInertia($this->user)
+        ->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']))->assertOk();
+
+    $studySets = $this->withHeader('X-Inertia-Except-Once-Props', implode(',', array_keys($first->json('onceProps'))))
+        ->get(route('studySets', ['lang' => 'lt']))->assertOk();
+
+    expect(array_column($studySets->json('onceProps'), 'prop'))->not->toContain('tenants')
+        ->and(array_column($studySets->json('props.tenants'), 'id'))->toBe(
+            Tenant::query()->where('type', TenantType::Padalinys)->orderBy('shortname_vu')->pluck('id')->all()
+        );
+
+    $this->withHeader('X-Inertia-Except-Once-Props', implode(',', array_keys($studySets->json('onceProps'))))
+        ->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']))->assertOk()
+        ->assertJsonCount(Tenant::query()->count(), 'props.tenants');
 });
 
 test('permission map invalidation refreshes the combined payload', function (): void {

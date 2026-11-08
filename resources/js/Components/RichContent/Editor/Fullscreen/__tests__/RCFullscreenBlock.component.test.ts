@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
+import type { ContentPart } from '@/Components/RichContent/Types';
+
 import RCFullscreenBlock from '../RCFullscreenBlock.vue';
 import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from '../useActiveHotspot';
-
-import type { ContentPart } from '@/Components/RichContent/Types';
 
 const stubs = {
   BlockPreviewRenderer: {

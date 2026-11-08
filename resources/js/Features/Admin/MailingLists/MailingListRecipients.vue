@@ -82,9 +82,9 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
 
-import type { MailingListDiffPayload, MailingListRosterEntry } from './types';
-
 import { Button } from '@/Components/ui/button';
+
+import type { MailingListDiffPayload, MailingListRosterEntry } from './types';
 
 const props = defineProps<{
   mailingListId: string;

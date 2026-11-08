@@ -1,10 +1,10 @@
 import { mount } from '@vue/test-utils';
 import { expect, it } from 'vitest';
 
-import ActivityStatusField from '../ActivityStatusField.vue';
-
 import FormSegmentedControl from '@/Components/Patterns/FormSegmentedControl.vue';
 import { commonStubs } from '@/tests/stubs';
+
+import ActivityStatusField from '../ActivityStatusField.vue';
 
 it('uses publishing-style segments with activity labels, icons and semantic colours', () => {
   const wrapper = mount(ActivityStatusField, {

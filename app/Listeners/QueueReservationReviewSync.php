@@ -38,8 +38,13 @@ class QueueReservationReviewSync
             $model instanceof DutyType => ['parent_id'],
             $model instanceof DutyDutyType => ['duty_id', 'duty_type_id'],
             $model instanceof Institution, $model instanceof Resource => ['tenant_id'],
-            default => [],
+            default => null,
         };
+
+        // An empty list would make wasChanged() true for any change, e.g. a user's UI preferences.
+        if ($fields === null) {
+            return;
+        }
 
         if ($model->wasChanged($fields) || (($model instanceof ResponsibilityGrant || $model instanceof DutyDutyType) && $model->wasRecentlyCreated)) {
             $this->queue();

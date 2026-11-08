@@ -70,12 +70,12 @@ import { ref, computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronDown } from '@lucide/vue';
 
-import type { FilterOption, FacetValue } from './types';
-
 import { useFacetOptions } from '@/Shared/Search/useFacetOptions';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
+
+import type { FilterOption, FacetValue } from './types';
 
 interface Props {
   field?: string;

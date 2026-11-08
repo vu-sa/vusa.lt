@@ -194,6 +194,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import CopyToClipboardButton from '@/Components/Buttons/CopyToClipboardButton.vue';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+
 import ISimpleIconsGoogle from '~icons/simple-icons/google';
 import ISimpleIconsMicrosoftoutlook from '~icons/simple-icons/microsoftoutlook';
 import IFluentInfo16Regular from '~icons/fluent/info-16-regular';

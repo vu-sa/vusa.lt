@@ -1,14 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
+import { Button } from '@/Components/ui/button';
+import { meetingCompletionStatuses } from '@/Constants/statusIcons';
+
 import PreviewChipList from './PreviewChipList.vue';
 import PreviewFact from './PreviewFact.vue';
 import PreviewFacts from './PreviewFacts.vue';
 import PreviewPane from './PreviewPane.vue';
 import PreviewSection from './PreviewSection.vue';
 import StatusBadge from './StatusBadge.vue';
-
-import { Button } from '@/Components/ui/button';
-import { meetingCompletionStatuses } from '@/Constants/statusIcons';
 
 const meta: Meta<typeof PreviewPane> = {
   title: 'Patterns/Preview',

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import RCNumberSection from '../RCNumberSection.vue';
-
 import type { NumberStatSection } from '@/Types/contentParts';
+
+import RCNumberSection from '../RCNumberSection.vue';
 
 function makeElement(content: NumberStatSection['json_content'] = []): NumberStatSection {
   return { json_content: content, options: { title: '' } };

@@ -2,12 +2,12 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect, userEvent, within } from 'storybook/test';
 import { onMounted, ref } from 'vue';
 
+import { createStartFmProvider, type StartFmStatus } from '@/Composables/useStartFm';
+
 import StartFmPlayer from './StartFmPlayer.vue';
 import StartFM from './Public/Nav/StartFM.vue';
 import MobileBottomBar from './Layouts/Shell/MobileBottomBar.vue';
 import { pradzia } from './Layouts/Shell/__tests__/fixtures';
-
-import { createStartFmProvider, type StartFmStatus } from '@/Composables/useStartFm';
 
 const meta: Meta = {
   title: 'Media/START FM',

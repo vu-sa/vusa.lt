@@ -35,10 +35,10 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 
-import ActivityLogEntry from './ActivityLogEntry.vue';
-
 import { Button } from '@/Components/ui/button';
 import type { ActivityEntry } from '@/Types/activityLog';
+
+import ActivityLogEntry from './ActivityLogEntry.vue';
 
 withDefaults(defineProps<{
   entries: ActivityEntry[];

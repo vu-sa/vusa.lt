@@ -39,7 +39,7 @@ class UpdateResourceRequest extends FormRequest
             'media' => 'array|nullable',
             'media.*.id' => 'nullable|integer',
             'media.*.status' => 'nullable|string|in:pending,finished',
-            'media.*.file' => 'file|mimes:jpg,jpeg,png,webp|max:10240',
+            'media.*.file' => 'file|mimes:jpg,jpeg,png,webp|extensions:jpg,jpeg,png,webp|max:10240',
         ];
     }
 }

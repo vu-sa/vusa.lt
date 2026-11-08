@@ -213,9 +213,6 @@
 </template>
 
 <script setup lang="ts">
-import RCIconSelect from '../RCIconSelect.vue';
-import RCSectionOptions from '../Editor/RCSectionOptions.vue';
-import { asBoolean } from '../booleanish';
 
 import type { CarouselSlideDeck } from '@/Types/contentParts';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
@@ -226,6 +223,10 @@ import { Input } from '@/Components/ui/input';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
+
+import { asBoolean } from '../booleanish';
+import RCSectionOptions from '../Editor/RCSectionOptions.vue';
+import RCIconSelect from '../RCIconSelect.vue';
 
 const options = defineModel<CarouselSlideDeck['options']>('options', {
   default: () => ({ autoplay: true, autoplayDelay: 8000, showNavigation: true, showThumbnails: true }),

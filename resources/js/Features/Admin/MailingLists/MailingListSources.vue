@@ -97,14 +97,14 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Layers, Plus, UserX } from '@lucide/vue';
 import { ref } from 'vue';
 
-import MailingListSourceSheet from './MailingListSourceSheet.vue';
-import type { MailingListExclusionItem, MailingListSourceItem, MailingListSourceOptions } from './types';
-
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import { ConfirmDialog, EmptyState, OverviewSection } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { formatDate } from '@/Utils/dateTime';
+
+import type { MailingListExclusionItem, MailingListSourceItem, MailingListSourceOptions } from './types';
+import MailingListSourceSheet from './MailingListSourceSheet.vue';
 
 const props = defineProps<{
   mailingListId: string;

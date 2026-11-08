@@ -119,9 +119,10 @@
 
     {{-- CSS and JS --}}
     @vite(['resources/css/app.css', 'resources/js/app.ts'])
-    {{-- Page and layout CSS up front, instead of after app.ts → surface → page import hops. --}}
+    {{-- Page and layout CSS and modules up front, instead of after app.ts → surface → page import hops. --}}
     @if ($designSurface)
         {{ \App\Support\PageStylesheets::for($designSurface, $page['component']) }}
+        {{ \App\Support\PageModulePreloads::for($designSurface, $page['component']) }}
     @endif
 
     {{-- Umami analytics: cookieless, public pages only. Absent when unconfigured (staging, CI). --}}

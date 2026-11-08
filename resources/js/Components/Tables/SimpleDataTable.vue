@@ -54,10 +54,10 @@ import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { Circle } from '@lucide/vue';
 
-import DataTableProvider from '../ui/data-table/DataTableProvider.vue';
-
 import { Input } from '@/Components/ui/input';
 import type { SimpleTableProps } from '@/Types/TableConfigTypes';
+
+import DataTableProvider from '../ui/data-table/DataTableProvider.vue';
 
 // Props using the simplified interface
 const props = withDefaults(defineProps<SimpleTableProps<TData>>(), {

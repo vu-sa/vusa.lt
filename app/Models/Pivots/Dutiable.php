@@ -3,6 +3,7 @@
 namespace App\Models\Pivots;
 
 use App\Actions\Dutiables\ReconcileExOfficioSeats;
+use App\Actions\Responsibilities\AuthorizeDutyAssignment;
 use App\Contracts\ImageMediaOwner;
 use App\Events\DutiableChanged;
 use App\Models\Duty;
@@ -30,6 +31,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
@@ -63,6 +65,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read mixed $translations
  * @property-read User|null $user
  * @property-read Dutiable|null $viaDutiable
+ * @property-read int|null $tenants_count
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable activeOn(?string $date = null)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable current()
@@ -112,6 +115,14 @@ class Dutiable extends MorphPivot implements ImageMediaOwner
             $duty = Duty::withTrashed()->find($this->duty_id);
             $institution = $duty ? Institution::withTrashed()->lockForUpdate()->find($duty->institution_id) : null;
             $stored = $this->exists ? self::query()->lockForUpdate()->find($this->id) : null;
+
+            $resumes = $stored?->end_date?->lt(today())
+                && ($this->end_date === null || $this->end_date->gte(today()));
+            if ((! $this->exists || $this->isDirty(['duty_id', 'dutiable_id', 'dutiable_type']) || $resumes)
+                && $duty !== null && $this->dutiable_type === MorphMap::alias(User::class)
+                && ($actor = auth()->user()) !== null) {
+                AuthorizeDutyAssignment::execute($actor, $duty, (string) $this->dutiable_id);
+            }
 
             if ($stored?->ended_by_institution_deactivation) {
                 if (! $this->isDirty('end_date')) {
@@ -262,7 +273,7 @@ class Dutiable extends MorphPivot implements ImageMediaOwner
      *
      * @return BelongsTo<User, $this>
      */
-    public function user()
+    public function user(): BelongsTo
     {
         $relation = $this->belongsTo(User::class, 'dutiable_id');
 
@@ -323,7 +334,7 @@ class Dutiable extends MorphPivot implements ImageMediaOwner
         return $this->hasMany(Dutiable::class, 'via_dutiable_id');
     }
 
-    public function tenants()
+    public function tenants(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->duty(), (new Duty)->tenants());
     }

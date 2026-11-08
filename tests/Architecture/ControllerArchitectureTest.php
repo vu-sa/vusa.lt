@@ -23,10 +23,9 @@ arch('all controllers extend base Controller')
     ->classes()
     ->toExtend(Controller::class);
 
-arch('AdminController provides Inertia helpers')
+arch('AdminController provides response helpers')
     ->expect(AdminController::class)
     ->toHaveMethods([
-        'inertiaResponse',
         'redirectResponse',
         'redirectBack',
         'handleAuthorization',

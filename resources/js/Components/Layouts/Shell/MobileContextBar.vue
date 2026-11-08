@@ -94,8 +94,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowRight, ChevronDown, LayoutGrid, Search } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 
-import TaskCountBadge from './TaskCountBadge.vue';
-
 import { Button } from '@/Components/ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/Components/ui/sheet';
 import { sectionHref, SHELL_PREFETCH_CACHE_FOR, type AdminSection, type AdminWorkspace } from '@/Composables/useAdminNavigation';
@@ -104,6 +102,8 @@ import { useRecordTrail } from '@/Composables/useRecordTrail';
 import { sectionIcon } from '@/Constants/adminSections';
 import { workspaceIcon } from '@/Constants/adminWorkspaces';
 import { ariaCurrent } from '@/Utils/ariaCurrent';
+
+import TaskCountBadge from './TaskCountBadge.vue';
 
 const props = defineProps<{
   activeWorkspace?: AdminWorkspace;

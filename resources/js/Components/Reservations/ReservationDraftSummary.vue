@@ -16,9 +16,9 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { ShoppingBasket } from '@lucide/vue';
 
-import ReservationDraftRow, { type ReservationDraftSummaryData } from './ReservationDraftRow.vue';
-
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
+
+import ReservationDraftRow, { type ReservationDraftSummaryData } from './ReservationDraftRow.vue';
 
 withDefaults(defineProps<{
   draft: ReservationDraftSummaryData;

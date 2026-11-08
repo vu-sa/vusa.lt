@@ -22,6 +22,12 @@ class StagingMediaStore
      */
     public function rootError(): ?string
     {
+        $privateRoot = realpath((string) config('filesystems.disks.supportEvidence.root'));
+        $privateParent = realpath(storage_path('app/private'));
+        if ($privateRoot !== false && ($privateParent === false || ! str_starts_with($privateRoot, $privateParent.DIRECTORY_SEPARATOR))) {
+            return 'The support evidence disk must live inside this application\'s private storage directory.';
+        }
+
         $root = realpath($this->root());
 
         if ($root === false) {
@@ -50,6 +56,11 @@ class StagingMediaStore
 
         if (File::isDirectory($this->root())) {
             File::cleanDirectory($this->root());
+        }
+
+        $privateRoot = (string) config('filesystems.disks.supportEvidence.root');
+        if (File::isDirectory($privateRoot)) {
+            File::cleanDirectory($privateRoot);
         }
 
         return true;

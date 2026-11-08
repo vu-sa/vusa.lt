@@ -30,3 +30,17 @@ describe('Calendar/EventDetailsCard.vue', () => {
     expect(wrapper.text()).not.toContain('Į kalendorių');
   });
 });
+
+it('omits unsupported event destinations while keeping the event information', () => {
+  const wrapper = mount(EventDetailsCard, {
+    props: {
+      event: {
+        id: 1, title: 'Renginys', date: '2099-01-01T18:00:00+00:00', is_remote: true,
+        cto_url: 'javascript:void(0)', facebook_url: 'data:text/plain,hello',
+      },
+    },
+  });
+
+  expect(wrapper.find('[href="javascript:void(0)"]').exists()).toBe(false);
+  expect(wrapper.find('[href="data:text/plain,hello"]').exists()).toBe(false);
+});

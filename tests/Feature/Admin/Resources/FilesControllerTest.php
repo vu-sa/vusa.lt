@@ -1,15 +1,16 @@
 <?php
 
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Models\ContentEditorDraft;
 use App\Models\Duty;
 use App\Models\File;
 use App\Models\Institution;
+use App\Models\News;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -546,175 +547,6 @@ describe('Files Controller - Bulk Delete', function (): void {
     });
 });
 
-describe('Files Controller - Image Upload', function (): void {
-    test('single image uploads preserve a nested folder named public', function (): void {
-        Storage::fake();
-        $directory = $this->allowedPath.'/public/photos';
-
-        asUser($this->fileManager)->postJson(route('files.uploadImage'), [
-            'file' => UploadedFile::fake()->image('photo.png', 10, 10),
-            'path' => $directory,
-        ])->assertOk()->assertJsonPath('url', '/uploads/'.substr($directory, strlen('public/')).'/photo.webp');
-
-        Storage::assertExists($directory.'/photo.webp');
-    });
-
-    test('can upload and process image', function (): void {
-        $image = UploadedFile::fake()->image('test.jpg', 2000, 2000);
-
-        $response = asUser($this->fileManager)->postJson(route('files.uploadImage'), [
-            'file' => $image,
-            'path' => 'files/padaliniai/vusa'.$this->tenant->alias,
-        ]);
-
-        // Image processing may fail if intervention/image is not properly configured
-        // so we'll accept either success or failure
-        expect($response->status())->toBeIn([200, 500]);
-
-        if ($response->status() === 200) {
-            expect($response->json('message'))->toContain('optimized and converted to WebP')
-                ->and($response->json('url'))->toContain('.webp')
-                ->and($response->json('name'))->toContain('.webp');
-        }
-    });
-
-    test('image upload validates required fields', function (): void {
-        $response = asUser($this->fileManager)->postJson(route('files.uploadImage'), [
-            'path' => 'files/test',
-        ]);
-
-        expect($response->status())->toBe(400)
-            ->and($response->json('error'))->toContain('Nepateiktas paveikslėlis');
-    });
-
-    test('image upload handles data URL format', function (): void {
-        $base64Image = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
-
-        $response = asUser($this->fileManager)->postJson(route('files.uploadImage'), [
-            'image' => $base64Image,
-            'name' => 'test-data-url.png',
-            'path' => 'files/padaliniai/vusa'.$this->tenant->alias,
-        ]);
-
-        // Image processing may fail if intervention/image is not properly configured
-        // Also, data URL format might not be supported by the new validation rules
-        expect($response->status())->toBeIn([200, 400, 422, 500]);
-
-        if ($response->status() === 200) {
-            expect($response->json('name'))->toContain('.webp');
-        }
-    });
-
-    test('ImageUpload uploads go to correct directory structure', function (): void {
-        $image = UploadedFile::fake()->image('banner.jpg', 800, 600);
-
-        $response = asUser($this->fileManager)->postJson(route('files.uploadImage'), [
-            'file' => $image,
-            'path' => 'banners',  // Simple folder name = ImageUpload
-        ]);
-
-        // Image processing may fail, so we accept both success and failure
-        expect($response->status())->toBeIn([200, 500]);
-
-        if ($response->status() === 200) {
-            expect($response->json('url'))->toStartWith('/uploads/banners/')
-                ->and($response->json('name'))->toContain('.webp');
-
-            // Verify file is stored in correct location: public/banners/ (not public/files/banners/)
-            $filename = $response->json('name');
-            Storage::assertExists('public/banners/'.$filename);
-            Storage::assertMissing('public/files/banners/'.$filename);
-        }
-    });
-
-    test('FileManager uploads maintain existing behavior', function (): void {
-        $image = UploadedFile::fake()->image('filemanager.jpg', 800, 600);
-
-        $response = asUser($this->fileManager)->postJson(route('files.uploadImage'), [
-            'file' => $image,
-            'path' => 'public/files/padaliniai/vusa'.$this->tenant->alias,  // Full path = FileManager
-        ]);
-
-        expect($response->status())->toBeIn([200, 500]);
-
-        if ($response->status() === 200) {
-            expect($response->json('url'))->toStartWith('/uploads/files/')
-                ->and($response->json('name'))->toContain('.webp');
-
-            $filename = $response->json('name');
-            Storage::assertExists('public/files/padaliniai/vusa'.$this->tenant->alias.'/'.$filename);
-        }
-    });
-
-    test('TipTap uploads maintain existing behavior', function (): void {
-        $image = UploadedFile::fake()->image('content.jpg', 800, 600);
-
-        $response = asUser($this->fileManager)->postJson(route('files.uploadImage'), [
-            'file' => $image,
-            'path' => 'content/'.date('Y/m'),  // content/ prefix = TipTap
-        ]);
-
-        expect($response->status())->toBeIn([200, 500]);
-
-        if ($response->status() === 200) {
-            // For tenant users, uploads go to tenant-specific content directory
-            expect($response->json('url'))->toStartWith('/uploads/files/padaliniai/vusa'.$this->tenant->alias.'/content/');
-            expect($response->json('name'))->toContain('.webp');
-
-            $filename = $response->json('name');
-            Storage::assertExists('public/files/padaliniai/vusa'.$this->tenant->alias.'/content/'.date('Y/m').'/'.$filename);
-        }
-    });
-
-    test('TipTap uploads for super admin go to global content directory', function (): void {
-        $image = UploadedFile::fake()->image('admin-content.jpg', 800, 600);
-
-        $response = asUser($this->superAdmin)->postJson(route('files.uploadImage'), [
-            'file' => $image,
-            'path' => 'content/'.date('Y/m'),  // content/ prefix = TipTap
-        ]);
-
-        expect($response->status())->toBeIn([200, 500]);
-
-        if ($response->status() === 200) {
-            // Super admins upload to global content directory
-            expect($response->json('url'))->toStartWith('/uploads/files/content/');
-            expect($response->json('name'))->toContain('.webp');
-
-            $filename = $response->json('name');
-            Storage::assertExists('public/files/content/'.date('Y/m').'/'.$filename);
-        }
-    });
-
-    test('different ImageUpload folders work correctly', function (): void {
-        $testCases = [
-            'banners' => '/uploads/banners/',
-            'news' => '/uploads/news/',
-            'institutions' => '/uploads/institutions/',
-            'contacts' => '/uploads/contacts/',
-        ];
-
-        foreach ($testCases as $folder => $expectedUrlPrefix) {
-            $image = UploadedFile::fake()->image($folder.'.jpg', 400, 400);
-
-            $response = asUser($this->fileManager)->postJson(route('files.uploadImage'), [
-                'file' => $image,
-                'path' => $folder,
-            ]);
-
-            expect($response->status())->toBeIn([200, 500]);
-
-            if ($response->status() === 200) {
-                expect($response->json('url'))->toStartWith($expectedUrlPrefix);
-
-                $filename = $response->json('name');
-                Storage::assertExists('public/'.$folder.'/'.$filename);
-                Storage::assertMissing('public/files/'.$folder.'/'.$filename);
-            }
-        }
-    });
-});
-
 describe('Files Controller - API Endpoints', function (): void {
     test('can get allowed file types', function (): void {
         $response = asUser($this->fileManager)->getJson('/api/v1/admin/files/allowed-types');
@@ -1064,61 +896,6 @@ describe('Files Controller - File Usage Scanning', function (): void {
     });
 });
 
-describe('Files Controller - Image Upload Path Hardening', function (): void {
-    /**
-     * `uploadImage` used to skip validateAndNormalizePath() for any path that was neither a
-     * `content/` TipTap path nor a recognised FileManager path, and both normalisers stripped
-     * `../` with a single-pass str_replace that `....//` collapses straight back into. Together
-     * those let any authenticated user write outside storage/app.
-     */
-    test('traversal paths are rejected rather than escaping the storage root', function (string $path): void {
-        $image = UploadedFile::fake()->image('evil.jpg', 10, 10);
-
-        $response = asUser($this->fileManager)->postJson(route('files.uploadImage'), [
-            'file' => $image,
-            'path' => $path,
-        ]);
-
-        expect($response->status())->toBeIn([403, 422]);
-    })->with([
-        '....//....//evil',
-        '..././..././evil',
-        '../../evil',
-        'public/files/../../../evil',
-    ]);
-
-    test('an undeclared bare folder name falls through to the directory policy', function (): void {
-        $image = UploadedFile::fake()->image('stray.jpg', 10, 10);
-
-        // Not in SHARED_IMAGE_FOLDERS, so it is treated as a FileManager path
-        // (public/files/some-folder-nobody-declared) and denied by FilePolicy::viewDirectory.
-        asUser($this->fileManager)->postJson(route('files.uploadImage'), [
-            'file' => $image,
-            'path' => 'some-folder-nobody-declared',
-        ])->assertStatus(403);
-    });
-
-    test('a user without file permissions cannot upload to a shared image folder', function (): void {
-        $image = UploadedFile::fake()->image('banner.jpg', 10, 10);
-
-        asUser($this->regularUser)->postJson(route('files.uploadImage'), [
-            'file' => $image,
-            'path' => 'banners',
-        ])->assertStatus(403);
-    });
-
-    test('a user without file permissions cannot upload to the shared contacts folder', function (): void {
-        $image = UploadedFile::fake()->image('photo.jpg', 10, 10);
-
-        asUser($this->regularUser)->postJson(route('files.uploadImage'), [
-            'file' => $image,
-            'path' => 'contacts',
-        ])->assertForbidden();
-
-        expect(Storage::allFiles('public/contacts'))->toBeEmpty();
-    });
-});
-
 describe('Files Controller - Deletion requires the delete permission', function (): void {
     beforeEach(function (): void {
         // The controller reads and deletes files through the default disk, which the outer
@@ -1221,17 +998,6 @@ describe('Files Controller - Creation requires the create permission', function 
         $response->assertForbidden();
         expect(Storage::disk('public')->directoryExists('files/padaliniai/vusa'.$this->tenant->alias.'/new-folder'))
             ->toBeFalse();
-    });
-
-    test('read-only actor cannot upload an image into a directory they may browse', function (): void {
-        $reader = makeFileReader($this->institution);
-
-        $response = asUser($reader)->postJson(route('files.uploadImage'), [
-            'path' => $this->allowedPath,
-            'image' => UploadedFile::fake()->image('photo.jpg'),
-        ]);
-
-        expect($response->status())->toBe(403);
     });
 
     test('an actor holding files.create.padalinys can create a directory', function (): void {
@@ -1397,3 +1163,44 @@ describe('Files Controller - Move', function (): void {
         expect(Storage::exists($this->forbiddenPath.'/theirs.pdf'))->toBeTrue();
     });
 });
+
+test('single and bulk usage scans count restricted records without returning their details', function (bool $bulk): void {
+    $this->communicationCoordinatorRole->givePermissionTo('news.read.padalinys');
+    $path = $this->allowedPath.'/shared.pdf';
+    Storage::put($path, 'document');
+    $url = str_replace('public/', '/uploads/', $path);
+    $own = News::factory()->create([
+        'tenant_id' => $this->tenant->id,
+        'title' => 'Matomas įrašas',
+        'short' => '<a href="'.$url.'">Failas</a>',
+    ]);
+    $otherTenant = Tenant::query()->whereKeyNot($this->tenant->id)->first();
+    $other = News::factory()->create([
+        'tenant_id' => $otherTenant->id,
+        'title' => 'Kitas įrašas',
+        'short' => '<a href="'.$url.'">Failas</a>',
+    ]);
+    $other->delete();
+    ContentEditorDraft::create([
+        'user_id' => $this->regularUser->id,
+        'kind' => 'news',
+        'identity' => 'new',
+        'snapshot' => ['url' => $url],
+        'revision' => 1,
+    ]);
+
+    asUser($this->fileManager)->post(route($bulk ? 'files.scanUsageBulk' : 'files.scanUsage'),
+        $bulk ? ['paths' => [$path]] : ['path' => $path])
+        ->assertRedirect()->assertSessionHas('data', function (array $data) use ($bulk, $own): bool {
+            $result = $bulk ? $data['files'][0] : $data;
+
+            expect($result['total_usages'])->toBe(3)
+                ->and($result['hidden_usages'])->toBe(2)
+                ->and($result['is_safe_to_delete'])->toBeFalse()
+                ->and($result['usage_details'])->toHaveCount(1)
+                ->and($result['usage_details'][0]['id'])->toBe($own->id)
+                ->and($result['usage_details'][0]['title'])->toBe('Matomas įrašas');
+
+            return true;
+        });
+})->with([false, true]);

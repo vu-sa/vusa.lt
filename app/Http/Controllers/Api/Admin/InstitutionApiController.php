@@ -43,7 +43,7 @@ class InstitutionApiController extends ApiController
         ]);
 
         $meetings = $institution->meetings()
-            ->with(['institutions', 'agendaItems.votes'])
+            ->with(['institutions.types', 'agendaItems.votes'])
             ->orderByDesc('start_time')
             ->limit(5)
             ->get();

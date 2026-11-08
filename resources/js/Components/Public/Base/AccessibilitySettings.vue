@@ -86,6 +86,8 @@
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { type FontScaleKey, useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
+
 import CheckControl from './CheckControl.vue';
 
 import IFluentAccessibility24Regular from '~icons/fluent/accessibility-24-regular';
@@ -93,7 +95,6 @@ import IFluentAdd24Regular from '~icons/fluent/add-24-regular';
 import IFluentArrowReset24Regular from '~icons/fluent/arrow-reset-24-regular';
 import IFluentSubtract24Regular from '~icons/fluent/subtract-24-regular';
 import IFluentTextFontSize24Regular from '~icons/fluent/text-font-size-24-regular';
-import { type FontScaleKey, useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
 
 const { fontScale, contrast, underlineLinks, reduceMotion, isReducedMotion, isDefault, reset } = useAccessibilityPreferences();
 

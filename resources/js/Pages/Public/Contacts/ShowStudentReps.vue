@@ -225,6 +225,7 @@ import PadalinysSelector from '@/Components/Public/Nav/PadalinysSelector.vue';
 import { pluralizeLithuanian } from '@/Utils/String';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { TypeIcon } from '@/Components/icons';
+
 import IFluentSearch16Regular from '~icons/fluent/search-16-regular';
 import IFluentDismiss16Regular from '~icons/fluent/dismiss-16-regular';
 import IFluentGlobe20Regular from '~icons/fluent/globe-20-regular';

@@ -3,10 +3,10 @@ import { usePage } from '@inertiajs/vue3';
 import { describe, expect, it, vi } from 'vitest';
 import Leaflet from 'leaflet';
 
-import PadalinysMap from '../PadalinysMap.vue';
-
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
+
+import PadalinysMap from '../PadalinysMap.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

@@ -122,6 +122,7 @@ const candidates = ref<MergeRecord[]>([]);
 const targetId = ref<string | number | null>(null);
 const isSearching = ref(false);
 const isSubmitting = ref(false);
+let searchGeneration = 0;
 let searchTimeout: ReturnType<typeof setTimeout> | undefined;
 
 const sourceIds = computed(() => props.records
@@ -132,6 +133,9 @@ const isKeepable = (record: MergeRecord) =>
   !props.keepableIds || props.keepableIds.some(id => String(id) === String(record.id));
 
 watch(() => props.open, (open) => {
+  searchGeneration += 1;
+  clearTimeout(searchTimeout);
+  isSearching.value = false;
   if (!open) {
     return;
   }
@@ -145,7 +149,9 @@ watch(() => props.open, (open) => {
 }, { immediate: true });
 
 const search = () => {
+  const generation = ++searchGeneration;
   clearTimeout(searchTimeout);
+  isSearching.value = false;
 
   if (query.value.trim().length < 2) {
     candidates.value = [];
@@ -163,10 +169,10 @@ const search = () => {
       });
       const response = await fetch(url, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' });
       const body = await response.json() as { data?: MergeRecord[] };
-      candidates.value = body.data ?? [];
+      if (generation === searchGeneration) candidates.value = body.data ?? [];
     }
     finally {
-      isSearching.value = false;
+      if (generation === searchGeneration) isSearching.value = false;
     }
   }, 250);
 };

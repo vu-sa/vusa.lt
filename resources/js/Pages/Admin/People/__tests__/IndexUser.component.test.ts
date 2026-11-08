@@ -2,9 +2,9 @@ import { mount } from '@vue/test-utils';
 import { ref } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import IndexUser from '../IndexUser.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import IndexUser from '../IndexUser.vue';
 
 const rowAbilityState = vi.hoisted(() => ({ update: false, delete: false }));
 vi.mock('@/Composables/useRowAbilities', () => ({

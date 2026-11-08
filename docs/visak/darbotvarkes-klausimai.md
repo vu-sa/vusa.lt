@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Darbotvarkės klausimai
-last_reviewed: 2026-11-01
+last_reviewed: 2026-11-08
 tests:
   - tests/Feature/Permissions/MeetingPermissionsTest.php
   - tests/Feature/Admin/Search/SearchVisibilityParityTest.php
@@ -208,7 +208,9 @@ dar kažko trūksta, rodo posėdžio **Nepilnų punktų** sąrašas.
 - **Iškėlė: Studentų atstovai** – žymima, jei klausimą į darbotvarkę įtraukė studentai.
 - **Atstovų pastabos** (privačios) – bendras atstovų užrašų laukas. Jį mato visi, kas gali matyti
   visą klausimo puslapį, o pildo – galintys redaguoti klausimą. Jame galima paminėti posėdžio
-  atstovus (@). Pastabos nerodomos viešai ir tiems, kas mato tik viešą posėdį.
+  atstovus (@). Pastabos nerodomos viešai ir tiems, kas mato tik viešą posėdį. Keli atstovai
+  gali rašyti vienu metu: kiekvieno pakeitimai sujungiami, o ne perrašomi. Jei pastabų nepavyksta
+  įkelti, laukas lieka užrakintas, kol spaudi **Bandyti dar kartą**.
 
 ## Veiksmai
 

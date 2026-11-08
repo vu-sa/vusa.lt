@@ -234,6 +234,20 @@ describe('AssignDutyUserSheet.vue', () => {
   describe('extras', () => {
     const programmes = [{ id: 1, name: 'Ekonomika', tenant_id: 5 }];
 
+    it('shows the original duty title option outside extras without opening them', () => {
+      const wrapper = mountSheet({
+        dutiable: { id: 'd-1', duty_id: 'duty-1', start_date: '2026-01-01', use_original_duty_name: true, duty },
+        duty: null,
+      });
+      const checkbox = wrapper.find('#use_original_duty_name');
+      const extras = wrapper.find('[data-testid="assign-extras"]');
+
+      expect(checkbox.exists()).toBe(true);
+      expect(checkbox.attributes('aria-checked')).toBe('true');
+      expect(extras.find('#use_original_duty_name').exists()).toBe(false);
+      expect(extras.attributes('open')).toBeUndefined();
+    });
+
     it('keeps the extra settings folded away for a plain term', () => {
       const wrapper = mountSheet();
 

@@ -84,7 +84,7 @@ class UpgradeImageMedia implements ShouldQueue
         try {
             self::moveCalendarFocalPoint($media, $owner);
             if ($readOnly || (int) $media->getCustomProperty('image_policy') < ImageConversions::VERSION) {
-                $this->replaceMaster($media, $readOnly, $images, $resolver);
+                $this->replaceMaster($media, $owner, $readOnly, $images, $resolver);
             }
             $files->createDerivedFiles($media, array_keys(ImageConversions::WIDTHS));
             $media->refresh();
@@ -101,7 +101,7 @@ class UpgradeImageMedia implements ShouldQueue
     }
 
     /** Re-encodes the best available source beside the old master, which stays until cleanup. */
-    private function replaceMaster(Media $media, bool $readOnly, ImageUploadService $images, LegacyImageResolver $resolver): void
+    private function replaceMaster(Media $media, ImageMediaOwner $owner, bool $readOnly, ImageUploadService $images, LegacyImageResolver $resolver): void
     {
         $source = $media->getPath();
         $legacy = $resolver->resolve($media->getCustomProperty('legacy_source'));
@@ -117,10 +117,11 @@ class UpgradeImageMedia implements ShouldQueue
         $name = AddImageMedia::fileName(Str::substr(pathinfo($media->file_name, PATHINFO_FILENAME), 0, 54).'-v'.ImageConversions::VERSION);
 
         if ($readOnly) {
-            // Staging reads production's disk: the upgrade goes to its own disk instead.
-            $media->disk = config('media-library.disk_name');
-            $media->conversions_disk = config('media-library.disk_name');
+            $collection = $owner->getMediaCollection($media->collection_name);
+            $media->disk = $collection?->diskName ?: config('media-library.disk_name');
+            $media->conversions_disk = $collection?->conversionsDiskName ?: $media->disk;
             StagingProtection::ensureDiskIsWritable($media->disk);
+            StagingProtection::ensureDiskIsWritable($media->conversions_disk);
         } else {
             $media->setCustomProperty('superseded_file', $media->file_name);
         }

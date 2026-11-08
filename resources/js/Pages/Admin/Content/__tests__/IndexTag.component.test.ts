@@ -1,7 +1,10 @@
 import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import { toast } from 'vue-sonner';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { createMockPage } from '@/tests/helpers/createMockPage';
 
 import IndexTag from '../IndexTag.vue';
 
@@ -9,9 +12,17 @@ vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 vi.mock('@/Composables/useAdminNavigation', () => ({ useAdminNavigation: () => ({ hasCollectionAction: () => false }) }));
 const sourceSpies = vi.hoisted(() => ({ refresh: vi.fn() }));
 vi.mock('@/Composables/useCollectionSource', () => ({
-  useDatabaseCollectionSource: (options: { initial: { items: unknown[] } }) => {
+  useDatabaseCollectionSource: (options: { initial: { items: { id: string }[] } }) => {
     const items = ref(options.initial.items);
-    return { items, replaceItems: (next: unknown[]) => { items.value = next; }, refresh: sourceSpies.refresh };
+    return {
+      items,
+      hideItems: (ids: string[]) => {
+        const before = items.value;
+        items.value = items.value.filter(item => !ids.includes(String(item.id)));
+        return () => { items.value = before; };
+      },
+      refresh: sourceSpies.refresh,
+    };
   },
 }));
 
@@ -39,8 +50,23 @@ describe('tag deletion', () => {
     expect(collection.props('source').items.value).toEqual([]);
     expect(sourceSpies.refresh).not.toHaveBeenCalled();
     expect(router.delete).toHaveBeenCalledWith(route('tags.destroy', tag.id), expect.objectContaining({ preserveScroll: true }));
-    vi.mocked(router.delete).mock.calls.at(-1)?.[1].onSuccess();
+    vi.mocked(router.delete).mock.calls.at(-1)?.[1].onSuccess(createMockPage());
     expect(sourceSpies.refresh).toHaveBeenCalledOnce();
+    wrapper.unmount();
+  });
+
+  it('shows the row again when the toast undo restores the tag', () => {
+    const success = vi.spyOn(toast, 'success');
+    const wrapper = mountPage();
+    const collection = wrapper.findComponent({ name: 'CollectionPage' });
+    collection.vm.$emit('rowAction', tag, 'delete');
+    vi.mocked(router.delete).mock.calls.at(-1)?.[1]?.onSuccess?.(createMockPage(), {} as never);
+    vi.mocked(router.delete).mock.calls.at(-1)?.[1]?.onFinish?.({} as never);
+    const action = success.mock.calls.at(-1)?.[1]?.action as { onClick: (event: MouseEvent) => void };
+    action.onClick(new MouseEvent('click'));
+    expect(router.patch).toHaveBeenCalledWith(route('tags.restore', tag.id), {}, expect.anything());
+    vi.mocked(router.patch).mock.calls.at(-1)?.[2]?.onSuccess?.(createMockPage(), {} as never);
+    expect(collection.props('source').items.value).toEqual([tag]);
     wrapper.unmount();
   });
 
@@ -48,7 +74,7 @@ describe('tag deletion', () => {
     const wrapper = mountPage();
     const collection = wrapper.findComponent({ name: 'CollectionPage' });
     collection.vm.$emit('rowAction', tag, 'delete');
-    vi.mocked(router.delete).mock.calls.at(-1)?.[1].onError();
+    vi.mocked(router.delete).mock.calls.at(-1)?.[1].onError({ name: 'Invalid' });
     expect(collection.props('source').items.value).toEqual([tag]);
     expect(sourceSpies.refresh).not.toHaveBeenCalled();
     wrapper.unmount();

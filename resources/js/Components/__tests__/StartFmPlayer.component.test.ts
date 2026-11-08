@@ -2,10 +2,10 @@ import { mount, flushPromises } from '@vue/test-utils';
 import { defineComponent, h } from 'vue';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { createStartFmProvider, type StartFmContext } from '@/Composables/useStartFm';
+
 import StartFmPlayer from '../StartFmPlayer.vue';
 import StartFM from '../Public/Nav/StartFM.vue';
-
-import { createStartFmProvider, type StartFmContext } from '@/Composables/useStartFm';
 
 let radio: StartFmContext;
 let wrapper: ReturnType<typeof mount>;

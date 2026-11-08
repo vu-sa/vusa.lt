@@ -65,15 +65,15 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { Globe, Info, LoaderCircle, Maximize2, Minimize2 } from '@lucide/vue';
 
-import GanttGroupByMenu from './GanttGroupByMenu.vue';
-import GanttSortMenu from './GanttSortMenu.vue';
-import GanttZoomControl from './GanttZoomControl.vue';
-import { GANTT_ZOOM_STOPS } from './ganttZoom';
-
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/ui/tooltip';
 import type { GanttGroupBy, GanttSortBy } from '@/Components/Graphs/composables/useGanttSettings';
+
+import GanttGroupByMenu from './GanttGroupByMenu.vue';
+import GanttSortMenu from './GanttSortMenu.vue';
+import GanttZoomControl from './GanttZoomControl.vue';
+import { GANTT_ZOOM_STOPS } from './ganttZoom';
 
 withDefaults(defineProps<{
   showLegend?: boolean;

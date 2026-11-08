@@ -1,9 +1,9 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
-import ContactCard from '../ContactWithPhoto.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import ContactCard from '../ContactWithPhoto.vue';
 
 // InfoPopover is stubbed to a marker so presence/absence reflects the component's
 // own v-if decision (the gating logic is what we want to assert, not the popover internals).
@@ -89,6 +89,13 @@ describe('ContactWithPhoto', () => {
   });
 
   describe('duty info popover', () => {
+    it('hides the popover for a description without readable text', () => {
+      wrapper = mountCard(makeContact(), [makeDuty({
+        pivot: { description: '<style>p{}</style><script>void(0)</script><img src="/photo.png" onload="void(0)">' },
+      })]);
+      expect(wrapper.find('.info-popover').exists()).toBe(false);
+    });
+
     it('hides the popover when the pivot description is an empty paragraph', () => {
       // Regression: duty.description is non-empty, so the old v-if showed the button,
       // but the rendered (pivot) description was "<p></p>" — an empty popover.

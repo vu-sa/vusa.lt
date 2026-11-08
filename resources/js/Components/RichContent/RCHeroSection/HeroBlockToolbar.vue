@@ -58,6 +58,9 @@
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import type { Hero } from '@/Types/contentParts';
+import { Field, FieldLabel } from '@/Components/ui/field';
+
 import RCBlockToolbarShell from '../Editor/Fullscreen/RCBlockToolbarShell.vue';
 import RCPresentationPicker from '../Editor/RCPresentationPicker.vue';
 import RCWidthPicker from '../Editor/RCWidthPicker.vue';
@@ -68,8 +71,6 @@ import type { PlainPadding } from '../sectionClasses';
 
 import { BannerVariantIcon, CenteredVariantIcon, PanelVariantIcon, SplitVariantIcon } from './heroVariantIcons';
 
-import type { Hero } from '@/Types/contentParts';
-import { Field, FieldLabel } from '@/Components/ui/field';
 import IFluentCheckmark12Regular from '~icons/fluent/checkmark12-regular';
 
 const props = defineProps<{

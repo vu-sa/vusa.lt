@@ -33,10 +33,15 @@
           :title="hit.title"
           :description="hit.subtitle"
           :icon="Landmark"
+          indicator="check"
+          :selected="draft.institution?.id === hit.recordId"
           @click="pick(hit)"
         >
+          <template #title>
+            <SearchHitCardText :hit field="title" />
+          </template>
           <template #description>
-            {{ hit.subtitle }} <InactiveInstitutionBadge v-if="hit.inactiveInstitution" :active="false" />
+            <SearchHitCardText :hit field="description" />
           </template>
         </ActionChoiceButton>
       </ActionChoiceList>
@@ -59,11 +64,7 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Landmark } from '@lucide/vue';
 
-import ActionChoiceButton from '../ActionChoiceButton.vue';
-import ActionChoiceList from '../ActionChoiceList.vue';
-import ActionWindowScreen from '../ActionWindowScreen.vue';
-
-import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
+import SearchHitCardText from '@/Features/Admin/AdminSearch/Components/SearchHitCardText.vue';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { useActionWindowData } from '@/Composables/useActionWindowData';
 import { useAdminCollectionSearch } from '@/Features/Admin/AdminSearch/Composables/useAdminCollectionSearch';
@@ -73,14 +74,17 @@ import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Skeleton } from '@/Components/ui/skeleton';
 
+import ActionWindowScreen from '../ActionWindowScreen.vue';
+import ActionChoiceList from '../ActionChoiceList.vue';
+import ActionChoiceButton from '../ActionChoiceButton.vue';
+
 const { draft, advance, setInstitution } = useActionWindow();
 const { institutionSearch } = useActionWindowData();
 
 /**
  * The tenants the caller may file a meeting under. All-scope callers send no tenant filter —
- * the scoped Typesense key still bounds what they may read, and StoreMeetingRequest is what
- * actually decides. From a calendar event, only VU SA's own bodies (mirrors
- * InstitutionScopeResolver::forInstitution()).
+ * the scoped Typesense key still bounds what they may read, and StoreMeetingRequest decides.
+ * From a calendar event, only VU SA's own bodies (mirrors InstitutionScopeResolver::forInstitution()).
  */
 const buildBaseFilterBy = (): string | undefined => {
   const { tenant_ids, internal_type_ids, external_type_ids } = institutionSearch.value;
@@ -103,8 +107,6 @@ const buildBaseFilterBy = (): string | undefined => {
 
 const baseFilterBy = buildBaseFilterBy();
 
-// A plain list, not the admin search page's split view: this window is one question
-// per screen, and facets/detail panes have no room in it.
 const controller = useAdminCollectionSearch({
   collection: 'institutions',
   syncToUrl: false,

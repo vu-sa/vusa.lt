@@ -2,6 +2,10 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { ref } from 'vue';
 import { ArrowUpRight, Pencil, Trash2 } from '@lucide/vue';
 
+import MeetingCollectionRow from '@/Components/Meetings/MeetingCollectionRow.vue';
+import { CollectionSkeleton, EmptyState } from '@/Components/Patterns';
+import type { CollectionFacet } from '@/Composables/useCollectionSource';
+
 import CollectionRowActions from './CollectionRowActions.vue';
 import CollectionResults from './CollectionResults.vue';
 import CollectionActiveChips from './CollectionActiveChips.vue';
@@ -9,10 +13,6 @@ import CollectionFilterBar from './CollectionFilterBar.vue';
 import CollectionQuickFilters from './CollectionQuickFilters.vue';
 import CollectionTitleBand from './CollectionTitleBand.vue';
 import CollectionViewToggle from './CollectionViewToggle.vue';
-
-import MeetingCollectionRow from '@/Components/Meetings/MeetingCollectionRow.vue';
-import { CollectionSkeleton, EmptyState } from '@/Components/Patterns';
-import type { CollectionFacet } from '@/Composables/useCollectionSource';
 
 const meta: Meta = {
   title: 'Collection/Anatomy',

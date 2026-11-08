@@ -2,9 +2,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { defineComponent, nextTick, shallowRef } from 'vue';
 
-import StructureGraph from '../StructureGraph.vue';
-
 import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
+
+import StructureGraph from '../StructureGraph.vue';
 
 afterEach(() => useAccessibilityPreferences().reset());
 

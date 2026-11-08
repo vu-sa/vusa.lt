@@ -1,8 +1,9 @@
 ---
 doc_status: reviewed
 title: Navigacija
-last_reviewed: 2026-10-15
+last_reviewed: 2026-11-08
 tests:
+  - resources/js/Features/Admin/NavigationBuilder/__tests__/NavigationBuilder.component.test.ts
   - tests/Feature/Admin/Navigation/NavigationControllerTest.php
   - tests/Feature/Api/Admin/NavigationLinkApiControllerTest.php
   - tests/Feature/SoftDelete/NavigationCascadeTest.php
@@ -25,6 +26,8 @@ Skiltis pasiekiama adresu `/mano/navigation`.
 :::
 
 ## Kaip tai veikia
+
+Nepavykus pakeisti nuorodos matomumo, grąžinama tik tos nuorodos būsena, išlaikant tuo metu keičiamą išdėstymą. Nepavykus pašalinti nuorodos ar kategorijos, ji grąžinama į meniu.
 
 Sukūrus meniu punktą ar poraštės nuorodą, atveriama jo redagavimo forma.
 
@@ -110,3 +113,5 @@ Padalinių komunikacijos koordinatoriai negali tiesiogiai redaguoti bendros svet
 - Valdiklis: `App\Http\Controllers\Admin\NavigationController`.
 - Meniu medis generuojamas per `App\Services\NavigationService::getTreeForAdmin()` ir `getFooterTreeForAdmin()`.
 - Viešasis atvaizdavimas: `App\Services\NavigationService::getNavigationForPublic()` ir `getFooterNavigationForPublic()`.
+
+Kol pakeitimas saugomas, susiję veiksmai palaukia, o kitus įrašus gali keisti toliau. Nepavykę pakeitimai grąžinami į ankstesnę būseną.

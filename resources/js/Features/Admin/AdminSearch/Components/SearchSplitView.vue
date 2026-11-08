@@ -11,7 +11,7 @@
       <!-- List -->
       <div
         :class="[
-          'min-h-0 border border-border bg-background',
+          'min-h-0 border border-border bg-card',
           'w-full lg:w-2/5 lg:max-w-md',
           mobileShowsDetail ? 'hidden lg:block' : 'block',
         ]"
@@ -38,7 +38,7 @@
       <!-- Detail -->
       <div
         :class="[
-          'min-h-0 flex-1 border border-border bg-background',
+          'min-h-0 flex-1 border border-border bg-card',
           mobileShowsDetail ? 'block' : 'hidden lg:block',
         ]"
       >
@@ -63,13 +63,13 @@ import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronLeft } from '@lucide/vue';
 
+import { Button } from '@/Components/ui/button';
+import { useListDetailSelection } from '@/Composables/useListDetailSelection';
+
 import type { NormalizedSearchHit } from '../Utils/searchHitMappers';
 
 import SearchResultList from './SearchResultList.vue';
 import SearchDetailPane from './SearchDetailPane.vue';
-
-import { Button } from '@/Components/ui/button';
-import { useListDetailSelection } from '@/Composables/useListDetailSelection';
 
 const props = withDefaults(defineProps<{
   hits: NormalizedSearchHit[];

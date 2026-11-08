@@ -2,12 +2,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
 
-import ContentPage from '../ContentPage.vue';
-import HomePage from '../HomePage.vue';
-
 import PublicLayout from '@/Components/Public/Layouts/PublicLayout.vue';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
+
+import HomePage from '../HomePage.vue';
+import ContentPage from '../ContentPage.vue';
 
 const heroes = [1, 2].map(id => ({
   id,

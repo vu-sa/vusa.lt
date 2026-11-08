@@ -47,13 +47,13 @@
 <script setup lang="ts">
 import { TriangleAlert } from '@lucide/vue';
 
-import ReservationResourceStateTag from './ReservationResourceStateTag.vue';
-
 import { Badge } from '@/Components/ui/badge';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/hover-card';
 import { capitalize } from '@/Utils/String';
 import type { ReservationStateCount } from '@/Utils/ReservationStatus';
 import { getStatusDotClass } from '@/Utils/ReservationStatus';
+
+import ReservationResourceStateTag from './ReservationResourceStateTag.vue';
 
 /**
  * A reservation's overall state. Its items can sit in several states at once, so more than one

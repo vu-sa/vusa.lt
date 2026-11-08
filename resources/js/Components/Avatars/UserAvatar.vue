@@ -33,8 +33,15 @@ import { computed } from 'vue';
 
 import { Avatar, AvatarImage, AvatarFallback, mapPixelToSize, avatarTextSizes, type AvatarSize } from '@/Components/ui/avatar';
 
+export interface AvatarUser {
+  id?: string | number;
+  name?: string | null;
+  profile_photo_path?: string | null;
+  profile_photo_focal_point?: string | null;
+}
+
 const props = defineProps<{
-  user?: App.Entities.User;
+  user?: AvatarUser;
   size?: number | AvatarSize;
   interactive?: boolean;
   border?: boolean;
@@ -62,11 +69,11 @@ const textSizeClass = computed(() => {
   return avatarTextSizes[avatarSize.value];
 });
 
-const userInitials = (name: string | null) => {
+const userInitials = (name: string | null | undefined) => {
   if (!name) return '';
 
   const words = name.split(' ');
-  if (words.length === 1) return words[0].substring(0, 2).toUpperCase();
-  return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
+  if (words.length === 1) return (words[0] ?? '').substring(0, 2).toUpperCase();
+  return ((words[0] ?? '').charAt(0) + (words[words.length - 1] ?? '').charAt(0)).toUpperCase();
 };
 </script>

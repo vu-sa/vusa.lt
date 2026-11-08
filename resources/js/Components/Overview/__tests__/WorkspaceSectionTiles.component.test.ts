@@ -2,10 +2,10 @@ import { usePage } from '@inertiajs/vue3';
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import WorkspaceSectionTiles from '../WorkspaceSectionTiles.vue';
-
 import { atstovavimas, pradzia, workspace } from '@/Components/Layouts/Shell/__tests__/fixtures';
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import WorkspaceSectionTiles from '../WorkspaceSectionTiles.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

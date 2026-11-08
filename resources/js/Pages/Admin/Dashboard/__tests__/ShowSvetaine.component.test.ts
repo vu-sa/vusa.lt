@@ -2,10 +2,10 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { ref } from 'vue';
 
-import ShowSvetaine from '../ShowSvetaine.vue';
-
 import { commonStubs } from '@/tests/stubs';
 import type { AnalyticsOverviewData } from '@/Types/api.d';
+
+import ShowSvetaine from '../ShowSvetaine.vue';
 
 const mockController = {
   data: ref<AnalyticsOverviewData | null>(null),
@@ -20,15 +20,6 @@ const mockController = {
 vi.mock('@/Composables/useApi', () => ({
   useApi: vi.fn(() => mockController),
   useApiMutation: vi.fn(),
-}));
-
-// Observable Plot needs real layout APIs that jsdom lacks; the chart itself is not what
-// these tests are about.
-vi.mock('@observablehq/plot', () => ({
-  plot: () => document.createElement('svg'),
-  areaY: vi.fn(),
-  line: vi.fn(),
-  ruleY: vi.fn(),
 }));
 
 vi.stubGlobal('route', (name?: string, params: Record<string, unknown> = {}) => {

@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
+import { commonStubs } from '@/tests/stubs';
+
 import RCInsertAffordance from '../RCInsertAffordance.vue';
 import { getContentType } from '../../Types';
-
-import { commonStubs } from '@/tests/stubs';
 
 describe('RCInsertAffordance', () => {
   const quickAddTypes = [getContentType('tiptap'), getContentType('shadcn-card')];

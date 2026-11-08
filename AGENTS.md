@@ -85,7 +85,7 @@ A transient Sail failure is not a blocker: retry the command and run `./vendor/b
 
 Note: `composer phpmd` has no baseline, so it lists every existing finding; CI runs it only on the PHP files a change touches, existing findings included — fix what you touch where reasonable. Pass paths to narrow it (`composer phpmd -- app/Models/Foo.php`). If numbers look stale, delete pdepend's cache (`~/.cache/pdepend` in the container).
 
-Note: `npm run typecheck` (`vue-tsc --noEmit`) is available and runs in CI, but is currently **non-blocking** (advisory only). Don't run ESLint fixes or chase typecheck findings unless explicitly asked — verify frontend changes with Vitest instead.
+Note: `npm run typecheck:ratchet` blocks CI on new TypeScript errors; `npm run typecheck` still lists all findings. Never grow the baseline to make CI pass: fix the error, or use `--allow-increase` with justification in the PR. After fixing errors, run `npm run typecheck:baseline` to lock in the improvement (CI requires it). Don't run ESLint fixes or chase unrelated existing findings unless explicitly asked — verify frontend changes with Vitest.
 
 ### Working in a Git worktree
 

@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { defineComponent } from 'vue';
 import { mount } from '@vue/test-utils';
 
-import TiptapLinkButton from '../TiptapLinkButton.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import TiptapLinkButton from '../TiptapLinkButton.vue';
 
 /**
  * Minimal stand-in for a Tiptap editor covering only the surface this dialog

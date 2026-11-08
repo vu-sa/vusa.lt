@@ -56,12 +56,12 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { CalendarDays, List } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
-import type { HomeMeeting } from './types';
-import UpcomingMeetingRow from './UpcomingMeetingRow.vue';
-
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
+
+import UpcomingMeetingRow from './UpcomingMeetingRow.vue';
+import type { HomeMeeting } from './types';
 
 const props = withDefaults(defineProps<{
   meetings: HomeMeeting[];

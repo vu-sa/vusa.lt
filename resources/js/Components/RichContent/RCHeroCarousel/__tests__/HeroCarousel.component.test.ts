@@ -4,13 +4,13 @@ import { defineComponent, nextTick } from 'vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
+import type { HeroCarousel } from '@/Types/contentParts';
+import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
+
 import HeroCarouselDisplay from '../HeroCarouselDisplay.vue';
 import HeroCarouselEditor from '../../Types/HeroCarouselEditor.vue';
 import { createContentItem } from '../../Types';
 import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from '../../Editor/Fullscreen/useActiveHotspot';
-
-import type { HeroCarousel } from '@/Types/contentParts';
-import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
 
 /**
  * Embla layout is stubbed because jsdom cannot measure slide geometry.

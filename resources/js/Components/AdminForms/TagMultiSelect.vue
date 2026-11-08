@@ -14,10 +14,10 @@
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import FormFieldWrapper from './FormFieldWrapper.vue';
-
 import { MultiSelect } from '@/Components/ui/multi-select';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
+
+import FormFieldWrapper from './FormFieldWrapper.vue';
 
 const { availableTags = [], label = undefined, hint = undefined, disabled } = defineProps<{
   availableTags?: App.Entities.Tag[];

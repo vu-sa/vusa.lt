@@ -46,13 +46,13 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ExternalLink } from '@lucide/vue';
 import { computed } from 'vue';
 
-import { pageStatus } from './pageStatus';
-
 import { PreviewFact, PreviewFacts, PreviewPane, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import { stripHtml } from '@/Features/Admin/AdminSearch/Utils/html';
 import type { PageSearchResult } from '@/Shared/Search/types';
+
+import { pageStatus } from './pageStatus';
 
 const props = defineProps<{
   page: PageSearchResult;

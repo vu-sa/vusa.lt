@@ -2,11 +2,11 @@ import { defineComponent } from 'vue';
 import { afterEach, describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
+import { commonStubs } from '@/tests/stubs';
+
 import MeetingsGanttToolbar from '../MeetingsGanttToolbar.vue';
 import GanttZoomControl from '../GanttZoomControl.vue';
 import { GANTT_ZOOM_STOPS } from '../ganttZoom';
-
-import { commonStubs } from '@/tests/stubs';
 
 // reka-ui's Slider relies on ResizeObserver, which jsdom doesn't implement.
 // Stub it with a minimal component that preserves the model-value contract.

@@ -65,9 +65,9 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { CalendarPlus, Check, Plus } from '@lucide/vue';
 import { computed } from 'vue';
 
-import { useReservationCart } from './useReservationCart';
-
 import { Button, type ButtonVariants } from '@/Components/ui/button';
+
+import { useReservationCart } from './useReservationCart';
 
 const props = withDefaults(defineProps<{
   resourceId: string;

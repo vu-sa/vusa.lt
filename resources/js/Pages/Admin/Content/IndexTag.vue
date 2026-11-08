@@ -1,6 +1,6 @@
 <template>
   <CollectionPage
-    :row-actions="() => rowActions"
+    :row-actions="item => actionsFor(item, rowActions)"
     :source
     collection="tags"
     :eyebrow="$t('shell.workspaces.svetaine.title')"
@@ -45,7 +45,7 @@
     <template #preview="{ item, actions: recordActions }">
       <TagPreview :key="item.id" :tag="item">
         <template #actions>
-          <CollectionRowActions :actions="recordActions" emphasis full-labels @select="key => selectRowAction(key, item)" />
+          <CollectionRowActions :actions="actionsFor(item, recordActions)" emphasis full-labels @select="key => selectRowAction(key, item)" />
         </template>
       </TagPreview>
     </template>
@@ -95,9 +95,10 @@
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Merge, Pencil, Plus, RotateCcw, Trash2 } from '@lucide/vue';
-import { computed, ref } from 'vue';
+import { computed, ref, reactive } from 'vue';
 import { toast } from 'vue-sonner';
 
+import { withOptimisticRollback } from '@/Composables/useOptimisticVisit';
 import type { CollectionColumn } from '@/Components/Collection/types';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import type { CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
@@ -141,7 +142,18 @@ const rowActions = computed<CollectionRowAction[]>(() => isDeleted.value
       ...(canDelete.value ? [{ key: 'delete', label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
     ]);
 
+const pendingIds = reactive(new Set<string>());
+const actionsFor = (item: Tag, actions: CollectionRowAction[]) => actions.map(action => ({
+  ...action, loading: pendingIds.has(String(item.id)),
+}));
+function begin(id: string | number): boolean {
+  const key = String(id);
+  if (pendingIds.has(key)) return false;
+  pendingIds.add(key);
+  return true;
+}
 function selectRowAction(key: string, item: Tag): void {
+  if (pendingIds.has(String(item.id))) return;
   if (key === 'edit') openSheet(item);
   if (key === 'delete') remove(item);
   if (key === 'restore') restoreTag(item);
@@ -206,37 +218,40 @@ function merged(): void {
 }
 
 function remove(tag: Tag): void {
-  const before = [...source.items.value];
-  source.replaceItems(source.items.value.filter(item => item.id !== tag.id));
-  router.delete(route('tags.destroy', tag.id), {
+  if (!begin(tag.id)) return;
+  const undo = source.hideItems([String(tag.id)]);
+  router.delete(route('tags.destroy', tag.id), withOptimisticRollback(() => {
+    undo();
+    toast.error($t('Nepavyko ištrinti žymos.'));
+  }, {
     preserveScroll: true,
+    onFinish: () => pendingIds.delete(String(tag.id)),
     onSuccess: () => {
       source.refresh();
       toast.success($t('Žyma ištrinta.'), {
         action: {
           label: $t('Atšaukti'),
-          onClick: () => router.patch(route('tags.restore', tag.id), {}, { preserveScroll: true, onSuccess: () => source.refresh() }),
+          // The hide outlives a successful delete, so the restored row stays hidden until released.
+          onClick: () => restoreTag(tag, undo),
         },
       });
     },
-    onError: () => {
-      source.replaceItems(before);
-      toast.error($t('Nepavyko ištrinti žymos.'));
-    },
-  });
+  }, () => source.refresh()));
 }
 
-function restoreTag(tag: Tag): void {
-  router.patch(route('tags.restore', tag.id), {}, {
+function restoreTag(tag: Tag, restored?: () => void): void {
+  if (!begin(tag.id)) return;
+  router.patch(route('tags.restore', tag.id), {}, withOptimisticRollback(() => {
+    toast.error($t('Nepavyko atkurti žymos.'));
+  }, {
     preserveScroll: true,
+    onFinish: () => pendingIds.delete(String(tag.id)),
     onSuccess: () => {
       source.refresh();
+      restored?.();
       toast.success($t('Žyma atkurta.'));
     },
-    onError: () => {
-      toast.error($t('Nepavyko atkurti žymos.'));
-    },
-  });
+  }, () => source.refresh()));
 }
 
 function forceDeleteTag(): void {
@@ -244,15 +259,16 @@ function forceDeleteTag(): void {
   const { id } = targetTagToForceDelete.value;
   targetTagToForceDelete.value = null;
 
-  router.delete(route('tags.forceDelete', id), {
+  if (!begin(id)) return;
+  router.delete(route('tags.forceDelete', id), withOptimisticRollback(() => {
+    toast.error($t('Nepavyko ištrinti žymos.'));
+  }, {
     preserveScroll: true,
+    onFinish: () => pendingIds.delete(String(id)),
     onSuccess: () => {
       source.refresh();
       toast.success($t('Žyma ištrinta visam laikui.'));
     },
-    onError: () => {
-      toast.error($t('Nepavyko ištrinti žymos.'));
-    },
-  });
+  }, () => source.refresh()));
 }
 </script>

@@ -125,10 +125,10 @@
 import type { HTMLAttributes } from 'vue';
 import { inject, computed } from 'vue';
 
-import type { UploadFile } from './variants';
-
 import { cn } from '@/Utils/Shadcn/utils';
 import { Button } from '@/Components/ui/button';
+
+import type { UploadFile } from './variants';
 
 interface Props {
   file: UploadFile;

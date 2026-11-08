@@ -16,9 +16,9 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { usePage } from '@inertiajs/vue3';
 
-import { socialIconButtonClass } from './socialIconButtonClass';
-
 import { Button } from '@/Components/ui/button';
+
+import { socialIconButtonClass } from './socialIconButtonClass';
 
 /** `iconOnly` renders the square bordered treatment used in the footer's social row. */
 defineProps<{

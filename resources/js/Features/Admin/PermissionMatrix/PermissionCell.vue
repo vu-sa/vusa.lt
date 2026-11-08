@@ -33,10 +33,10 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Lock } from '@lucide/vue';
 
+import { NativeSelect } from '@/Components/ui/native-select';
+
 import { abilityLabel, resourceLabel, scopeLabel } from './permissionLabels';
 import type { CatalogResource, PermissionAbility, PermissionScope } from './types';
-
-import { NativeSelect } from '@/Components/ui/native-select';
 
 const props = defineProps<{
   resource: CatalogResource;

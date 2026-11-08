@@ -143,17 +143,17 @@
  */
 import { computed } from 'vue';
 
-import { withCompactPadding, type BandResolution } from '../bandLayout';
-
-import HeroButtons from './HeroButtons.vue';
-import { heroButtonsClass, heroDescriptionClass, heroTitleAlignmentClass, heroTitleClass } from './heroLayout';
-
 import MediaImage from '@/Components/Brand/MediaImage.vue';
 import ImageWithDecorations from '@/Components/RichContent/ImageWithDecorations.vue';
 import { EyebrowLabel } from '@/Components/Public/Base';
 import { useBlockHeadingLevel } from '@/Composables/usePageHeading';
 import type { Hero } from '@/Types/contentParts';
 import { hasHtmlText } from '@/Utils/String';
+
+import { withCompactPadding, type BandResolution } from '../bandLayout';
+
+import { heroButtonsClass, heroDescriptionClass, heroTitleAlignmentClass, heroTitleClass } from './heroLayout';
+import HeroButtons from './HeroButtons.vue';
 
 // `inlineEditable: true` makes BlockPreviewRenderer start passing real values for props
 // this component doesn't declare (it has no server-resolved data, so never needs the

@@ -65,7 +65,7 @@ class ReservationController extends AdminController
             ->tenants($request->user(), config('permission.resource_managership_indicating_permission'))
             ->isNotEmpty());
 
-        return $this->inertiaResponse('Admin/Reservations/IndexReservation', [
+        return Inertia::render('Admin/Reservations/IndexReservation', [
             'reservations' => fn () => [
                 'data' => SerializeReservationsForTable::execute($reservations()->getCollection(), $request->user(), $this->authorizer),
                 'meta' => [
@@ -92,7 +92,7 @@ class ReservationController extends AdminController
     {
         $this->handleAuthorization('create', [Reservation::class, $this->authorizer]);
 
-        return $this->inertiaResponse('Admin/Reservations/CreateReservation', [
+        return Inertia::render('Admin/Reservations/CreateReservation', [
             'reservationCart' => SerializeReservationCart::execute(request()->user()),
             'defaultDateTimeRange' => [
                 'start' => (int) now()->setTimeFromTimeString('09:00')->addDay()->format('Uv'),
@@ -163,7 +163,7 @@ class ReservationController extends AdminController
         $reservation->load('users', 'resources.media', 'resources.tenant');
         LoadReservationResourceApprovals::execute([$reservation], ['approvals.user', 'approvals.revertedBy']);
 
-        return $this->inertiaResponse('Admin/Reservations/ShowReservation', [
+        return Inertia::render('Admin/Reservations/ShowReservation', [
             'reservation' => [
                 ...$reservation->toArray(),
                 'resources' => $reservation->resources->map(function ($resource) use ($reservation, $user) {

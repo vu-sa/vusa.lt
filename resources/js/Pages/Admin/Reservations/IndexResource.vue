@@ -14,9 +14,9 @@
       :columns
       table-fixed
       actions-width="w-44"
-      @quick-filter="toggleQuickFilter"
       table-min-width="min-w-[68rem]"
       :search-placeholder="$t('Ieškoti išteklių')"
+      @quick-filter="toggleQuickFilter"
       @row-action="(_item, key) => collectionActions.select(key)"
     >
       <template #actions>

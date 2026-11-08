@@ -74,13 +74,14 @@
 import { computed, defineAsyncComponent, inject, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import type { NumberStatSection } from '@/Types/contentParts';
+
 import RCSection from '../RCSection.vue';
 import { ACTIVE_HOTSPOT_KEY } from '../Editor/Fullscreen/useActiveHotspot';
 import type { BandResolution } from '../bandLayout';
 
 import NumberStatistic from './RCNumberStatistic.vue';
 
-import type { NumberStatSection } from '@/Types/contentParts';
 import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
 
 // Lazy-loaded: only ever mounted while `editable` — a static import would bundle the

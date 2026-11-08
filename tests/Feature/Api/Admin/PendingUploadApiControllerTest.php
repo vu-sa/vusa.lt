@@ -79,7 +79,7 @@ test('a failed upload leaves no empty staged row', function (): void {
     expect(PendingUpload::query()->whereBelongsTo($this->user)->exists())->toBeFalse();
 });
 
-test('on staging uploads go to staging\'s own media disk while shared folders stay read-only', function (): void {
+test('on staging uploads go to staging\'s own media disk', function (): void {
     Storage::fake('stagingMedia');
     Storage::fake('spatieMediaLibrary');
     config([
@@ -94,9 +94,12 @@ test('on staging uploads go to staging\'s own media disk while shared folders st
     ])->assertCreated();
 
     expect(PendingUpload::query()->sole()->getFirstMedia(PendingUpload::COLLECTION)->disk)->toBe('stagingMedia');
+});
 
-    asUser($this->user)->postJson(route('files.uploadImage'), [
-        'image' => UploadedFile::fake()->image('photo.jpg'),
-        'path' => 'news',
-    ])->assertForbidden();
+test('staged images require an image filename as well as image contents', function (): void {
+    asUser($this->user)->postJson(route('api.v1.admin.pendingUploads.store'), [
+        'image' => UploadedFile::fake()->image('document.svg')->mimeType('image/jpeg'),
+    ])->assertUnprocessable()->assertJsonValidationErrors('image');
+
+    expect(PendingUpload::query()->whereBelongsTo($this->user)->exists())->toBeFalse();
 });

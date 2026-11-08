@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Cache;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use Spatie\Activitylog\Support\LogOptions;
+use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
@@ -65,6 +66,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read string $language_code
  * @property-read Meeting|null $meeting
  * @property-read Collection<int, Tenant> $tenant
+ * @property-read int|null $tenant_count
  *
  * @method static Builder<static>|Document browsableBy(\App\Models\User $user)
  * @method static \Database\Factories\DocumentFactory factory($count = null, $state = [])
@@ -421,7 +423,7 @@ class Document extends Model
         return $this->belongsTo(Institution::class);
     }
 
-    public function tenant()
+    public function tenant(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->institution(), (new Institution)->tenant());
     }

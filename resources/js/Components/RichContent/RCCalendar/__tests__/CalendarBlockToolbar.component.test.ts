@@ -5,10 +5,10 @@ vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 import { usePage } from '@inertiajs/vue3';
 
+import { createMockPage } from '@/tests/helpers/createMockPage';
+
 import CalendarBlockToolbar from '../CalendarBlockToolbar.vue';
 import type { ContentPart } from '../../Types';
-
-import { createMockPage } from '@/tests/helpers/createMockPage';
 
 vi.mocked(usePage).mockReturnValue(createMockPage({
   tenants: [

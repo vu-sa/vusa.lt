@@ -1,9 +1,9 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 
-import GoalForm from '../GoalForm.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import GoalForm from '../GoalForm.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

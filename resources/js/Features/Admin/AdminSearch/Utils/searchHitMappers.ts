@@ -11,8 +11,6 @@ import type { Component } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import type { AdminCollection } from '../Types/AdminSearchTypes';
-
 import { newsStatus } from '@/Components/News/newsStatus';
 import { getTranslatedValue, getSearchTranslation, getSearchTranslations } from '@/Composables/useTranslatedTitle';
 import {
@@ -53,6 +51,8 @@ import type {
   UserSearchResult,
 } from '@/Shared/Search/types';
 import { formatDateWith } from '@/Utils/dateTime';
+
+import type { AdminCollection } from '../Types/AdminSearchTypes';
 
 export function getUserDuties(user: UserSearchResult, kind: 'current' | 'previous', locale: string) {
   return (user[`${kind}_duty_names`] ?? []).map((storedName, index) => ({
@@ -130,6 +130,31 @@ export interface NormalizedSearchHit {
   isRecent?: boolean;
   /** Original Typesense document for the detail pane. */
   raw: unknown;
+}
+
+export function normalizeUserApiHit(user: {
+  id: string;
+  name: string;
+  email?: string;
+  profile_photo_path?: string | null;
+  tenants?: string[];
+  is_current?: boolean;
+  last_term_year?: number | null;
+}, { taken = false }: { taken?: boolean } = {}): NormalizedSearchHit {
+  const tenants = user.tenants?.join(', ') || undefined;
+  return {
+    id: `users-${user.id}`,
+    recordId: String(user.id),
+    collection: 'users',
+    icon: UserIcon,
+    title: user.name,
+    imageUrl: user.profile_photo_path || undefined,
+    subtitle: taken ? $t('Jau eina šias pareigas') : user.email,
+    meta: user.is_current === false && user.last_term_year ? `${$t('Buvęs narys')} · ${user.last_term_year}` : undefined,
+    badge: tenants,
+    contextBadge: tenants,
+    raw: user,
+  };
 }
 
 /** Per-collection display metadata (icon + label + page tab). */

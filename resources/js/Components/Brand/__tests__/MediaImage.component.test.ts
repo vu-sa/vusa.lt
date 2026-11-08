@@ -2,10 +2,10 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 import { computed } from 'vue';
 
+import { cmsImageSrcsetsKey, type ImageData } from '@/Types/media';
+
 import MediaFrame from '../MediaFrame.vue';
 import MediaImage from '../MediaImage.vue';
-
-import { cmsImageSrcsetsKey, type ImageData } from '@/Types/media';
 
 const image: ImageData = {
   id: 1,

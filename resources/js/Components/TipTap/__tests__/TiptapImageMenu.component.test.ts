@@ -2,9 +2,9 @@ import { describe, it, expect, vi } from 'vitest';
 import { defineComponent } from 'vue';
 import { mount } from '@vue/test-utils';
 
-import TiptapImageMenu from '../TiptapImageMenu.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import TiptapImageMenu from '../TiptapImageMenu.vue';
 
 /**
  * BubbleMenu positions itself through floating-ui against a live ProseMirror view, so

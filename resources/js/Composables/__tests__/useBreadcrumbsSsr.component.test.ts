@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { createSSRApp, defineComponent, h } from 'vue';
 import { renderToString } from 'vue/server-renderer';
 
-import { createBreadcrumbState, usePageBreadcrumbs } from '../useBreadcrumbsUnified';
-
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
+
+import { createBreadcrumbState, usePageBreadcrumbs } from '../useBreadcrumbsUnified';
 
 /** Renders layout → page → trail the way the SSR server does: no mount hooks ever run. */
 function renderPage(trail: string[]) {

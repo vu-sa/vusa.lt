@@ -35,13 +35,13 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowUpDown, History, Pencil, Plus, Trash2, Users } from '@lucide/vue';
 
-import ActivityChangeRow from './ActivityChangeRow.vue';
-import ActivityRelationChange from './ActivityRelationChange.vue';
-
 import UserPopover from '@/Components/Avatars/UserPopover.vue';
 import { Badge } from '@/Components/ui/badge';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
 import type { ActivityEntry, ActivityEvent } from '@/Types/activityLog';
+
+import ActivityRelationChange from './ActivityRelationChange.vue';
+import ActivityChangeRow from './ActivityChangeRow.vue';
 
 const props = defineProps<{
   entry: ActivityEntry;

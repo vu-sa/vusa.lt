@@ -37,7 +37,7 @@ class InstitutionTypeController extends AdminController
             ->orderBy('id')
             ->get();
 
-        return $this->inertiaResponse('Admin/ModelMeta/IndexDomainTypes', [
+        return Inertia::render('Admin/ModelMeta/IndexDomainTypes', [
             'typeKind' => 'institutionType',
             'types' => $this->appendForceDeleteBlockedReason($types, $request)->values(),
             'deletedCount' => InstitutionType::onlyTrashed()->count(),
@@ -48,7 +48,7 @@ class InstitutionTypeController extends AdminController
     {
         $this->handleAuthorization('create', InstitutionType::class);
 
-        return $this->inertiaResponse('Admin/ModelMeta/CreateType', [
+        return Inertia::render('Admin/ModelMeta/CreateType', [
             'typeKind' => 'institutionType',
             'contentTypes' => InstitutionType::select('id', 'title', 'parent_id')->get(),
         ]);
@@ -97,7 +97,7 @@ class InstitutionTypeController extends AdminController
             'institutions' => fn ($query) => $query->select('id', 'name'),
         ]);
 
-        return $this->inertiaResponse('Admin/ModelMeta/ShowType', [
+        return Inertia::render('Admin/ModelMeta/ShowType', [
             'typeKind' => 'institutionType',
             'contentType' => $type->toFullArray(),
             'attachedModels' => $type->institutions->map(fn ($model): array => [
@@ -129,7 +129,7 @@ class InstitutionTypeController extends AdminController
     {
         $this->handleAuthorization('update', $type);
 
-        return $this->inertiaResponse('Admin/ModelMeta/EditType', [
+        return Inertia::render('Admin/ModelMeta/EditType', [
             'typeKind' => 'institutionType',
             'contentType' => $type->toFullArray(),
             'contentTypes' => InstitutionType::select('id', 'title', 'parent_id')->get(),

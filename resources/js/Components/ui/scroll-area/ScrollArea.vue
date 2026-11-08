@@ -33,9 +33,9 @@ import {
 } from 'reka-ui';
 import { computed, type HTMLAttributes } from 'vue';
 
-import ScrollBar from './ScrollBar.vue';
-
 import { cn } from '@/Utils/Shadcn/utils';
+
+import ScrollBar from './ScrollBar.vue';
 
 // Extend props to include orientation control for horizontal scrolling
 const props = withDefaults(defineProps<

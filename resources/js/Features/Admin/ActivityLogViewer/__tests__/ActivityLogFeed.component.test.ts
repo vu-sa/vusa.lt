@@ -1,10 +1,10 @@
 import { describe, test, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import ActivityLogFeed from '../ActivityLogFeed.vue';
-
 import { commonStubs } from '@/tests/stubs';
 import type { ActivityEntry } from '@/Types/activityLog';
+
+import ActivityLogFeed from '../ActivityLogFeed.vue';
 
 function makeEntry(id: number): ActivityEntry {
   return {

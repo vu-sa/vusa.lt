@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { computed, ref } from 'vue';
 
-import { useGanttFiltering } from '../useGanttFiltering';
-
 import type { GanttSortBy } from '@/Components/Graphs/composables/useGanttSettings';
+
+import { useGanttFiltering } from '../useGanttFiltering';
 
 const institutions = [
   { id: 'own', name: 'VU SA Parlamentas', is_internal: true },

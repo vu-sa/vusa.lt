@@ -2,12 +2,12 @@ import { mount } from '@vue/test-utils';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { router } from '@inertiajs/vue3';
 
+import MyActivityRequests from '@/Components/Home/MyActivityRequests.vue';
+import { commonStubs } from '@/tests/stubs';
+
 import UserActivityRequestHistory from '../UserActivityRequestHistory.vue';
 import ActivityRequestHistoryRow from '../ActivityRequestHistoryRow.vue';
 import type { ActivityRequestHistoryItem } from '../InstitutionActivityRequestHistory.vue';
-
-import MyActivityRequests from '@/Components/Home/MyActivityRequests.vue';
-import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 const { dismiss } = vi.hoisted(() => ({ dismiss: vi.fn() }));

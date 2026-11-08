@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import CadenceRowForm from '../CadenceRowForm.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import CadenceRowForm from '../CadenceRowForm.vue';
 
 const stubs = {
   ...commonStubs,
@@ -100,6 +100,20 @@ describe('CadenceRowForm', () => {
       start_meeting_id: 'meeting-1',
       end_meeting_id: null,
     });
+  });
+
+  it('takes the Vilnius calendar day of a meeting just after midnight', async () => {
+    const wrapper = mountForm({ institutionId: 'inst-1' });
+
+    await wrapper.findAll('button').find(button => button.text().includes('link_meeting'))!.trigger('click');
+    await wrapper.findComponent({ name: 'CollectionSelectDialog' }).vm.$emit('confirm', [{
+      recordId: 'meeting-midnight',
+      title: 'Posėdis',
+      raw: { start_time: Date.parse('2026-03-14T22:30:00Z') / 1000 },
+    }]);
+
+    expect((wrapper.findAll('input[type="date"]')[0]!.element as HTMLInputElement).value).toBe('2026-03-15');
+    wrapper.unmount();
   });
 
   it('unlinking hands the boundary back to the date field', async () => {

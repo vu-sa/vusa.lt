@@ -137,14 +137,14 @@
  */
 import { trans as $t } from 'laravel-vue-i18n';
 
-import RCPresentationPicker from '../Editor/RCPresentationPicker.vue';
-
 import type { Section } from '@/Types/contentParts';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/Components/ui/accordion';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Switch } from '@/Components/ui/switch';
+
+import RCPresentationPicker from '../Editor/RCPresentationPicker.vue';
 
 defineModel<Section['json_content']>({ required: true });
 const options = defineModel<Section['options']>('options', { required: true });

@@ -289,7 +289,9 @@ export function useBaseSearch<
   // Search Methods
   // ============================================================================
 
+  let searchGeneration = 0;
   const performSearch = async (isLoadMore = false, attempt = 1) => {
+    const generation = ++searchGeneration;
     // Clear previous errors on new search attempts
     if (!isLoadMore && attempt === 1) {
       clearError();
@@ -302,6 +304,7 @@ export function useBaseSearch<
 
     // Check network connectivity
     if (!isOnline.value) {
+      status.value = 'error';
       error.value = ErrorUtils.createSearchError(
         'network',
         'No internet connection',
@@ -339,6 +342,8 @@ export function useBaseSearch<
         currentPage.value,
       );
 
+      if (generation !== searchGeneration) return;
+
       // Update state with results
       if (isLoadMore) {
         results.value = [...results.value, ...result.hits] as TResult[];
@@ -368,6 +373,7 @@ export function useBaseSearch<
       status.value = 'idle';
     }
     catch (err) {
+      if (generation !== searchGeneration) return;
       if (!ErrorUtils.isAbortError(err)) {
         handleSearchError(err, `search attempt ${attempt}`);
 
@@ -377,7 +383,7 @@ export function useBaseSearch<
 
           const delay = ErrorUtils.getRetryDelay(attempt);
           setTimeout(() => {
-            performSearch(isLoadMore, attempt + 1);
+            if (generation === searchGeneration) performSearch(isLoadMore, attempt + 1);
           }, delay);
           return;
         }
@@ -388,9 +394,7 @@ export function useBaseSearch<
 
   // Debounced search
   const debouncedSearch = useDebounceFn(() => {
-    if (status.value === 'idle' || status.value === 'error') {
-      performSearch(false);
-    }
+    performSearch(false);
   }, debounceDelay);
 
   const search = (newQuery: string, immediate = false) => {
@@ -415,7 +419,7 @@ export function useBaseSearch<
   };
 
   const loadMore = () => {
-    if (status.value !== 'loading-more' && hasMoreResults.value) {
+    if (status.value === 'idle' && hasMoreResults.value) {
       performSearch(true);
     }
   };
@@ -476,7 +480,9 @@ export function useBaseSearch<
       return;
     }
 
-    status.value = 'loading-facets';
+    const generation = searchGeneration;
+    const wasIdle = status.value === 'idle';
+    if (wasIdle) status.value = 'loading-facets';
 
     try {
       const facetResults = await searchService.value.loadInitialFacets();
@@ -493,7 +499,9 @@ export function useBaseSearch<
       initialFacets.value = [];
     }
     finally {
-      status.value = 'idle';
+      if (wasIdle && generation === searchGeneration && status.value === 'loading-facets') {
+        status.value = 'idle';
+      }
     }
   };
 

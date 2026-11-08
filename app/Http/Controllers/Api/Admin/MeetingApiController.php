@@ -121,13 +121,12 @@ class MeetingApiController extends ApiController
             return $this->jsonError('Unauthorized', 401);
         }
 
-        $userInstitutions = DutyService::getUserInstitutionsForDashboard();
+        $sixMonthsAgo = now()->subMonths(6);
+        $userInstitutions = DutyService::getUserInstitutionsForDashboard(meetingsFrom: $sixMonthsAgo);
 
         if ($userInstitutions->isEmpty()) {
             return $this->jsonSuccess([]);
         }
-
-        $sixMonthsAgo = now()->subMonths(6);
 
         $recentMeetings = $userInstitutions
             ->flatMap(fn ($institution) => $institution->meetings

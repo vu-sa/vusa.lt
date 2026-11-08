@@ -15,6 +15,9 @@ use Illuminate\Support\Str;
 
 class TanstackTableService
 {
+    /** @var array<string, array<string, int>> */
+    private array $columns = [];
+
     /**
      * Apply sorting to a query builder from Tanstack Table sorting format
      *
@@ -43,7 +46,7 @@ class TanstackTableService
 
                     $relationObj = $this->resolveRelation($model, $relation);
 
-                    if ($relationObj instanceof Relation && Schema::hasColumn($relationObj->getRelated()->getTable(), $column)) {
+                    if ($relationObj instanceof Relation && $this->hasColumn($relationObj->getRelated()->getTable(), $column)) {
                         $relatedTable = $relationObj->getRelated()->getTable();
 
                         // Handle different relationship types
@@ -318,7 +321,7 @@ class TanstackTableService
 
             // Both the relation and the column come from the request, so the
             // column must exist on the related table before it may be used.
-            if (! $relationObj instanceof Relation || ! Schema::hasColumn($relationObj->getRelated()->getTable(), $column)) {
+            if (! $relationObj instanceof Relation || ! $this->hasColumn($relationObj->getRelated()->getTable(), $column)) {
                 return;
             }
 
@@ -337,7 +340,7 @@ class TanstackTableService
         }
 
         // Handle direct column filters
-        if (Schema::hasColumn($modelTable, $key)) {
+        if ($this->hasColumn($modelTable, $key)) {
             if (is_array($value)) {
                 // Handle array values (multi-select)
                 $query->whereIn($key, $value);
@@ -365,7 +368,7 @@ class TanstackTableService
         $modelTable = $model->getTable();
 
         // Allow sorting by actual table columns
-        if (Schema::hasColumn($modelTable, $key)) {
+        if ($this->hasColumn($modelTable, $key)) {
             return $key;
         }
 
@@ -380,7 +383,7 @@ class TanstackTableService
             if ($relationObj instanceof Relation) {
                 $relatedTable = $relationObj->getRelated()->getTable();
 
-                if (Schema::hasColumn($relatedTable, $column)) {
+                if ($this->hasColumn($relatedTable, $column)) {
                     return "{$relatedTable}.{$column}";
                 }
             }
@@ -401,7 +404,7 @@ class TanstackTableService
         $model = $query->getModel();
         $table = $model->getTable();
 
-        if (Schema::hasColumn($table, $id)) {
+        if ($this->hasColumn($table, $id)) {
             $isTranslatable = method_exists($model, 'isTranslatableAttribute') && $model->isTranslatableAttribute($id);
 
             return $isTranslatable ? "{$table}.{$id}->".app()->getLocale() : "{$table}.{$id}";
@@ -421,12 +424,9 @@ class TanstackTableService
     }
 
     /**
-     * Resolve a request-supplied relation name to an Eloquent relation.
-     *
-     * Filter and sorting keys come straight from the request, so the name must
-     * never be invoked blindly — `method_exists()` also matches methods such as
-     * `save()` or `delete()`. Only methods that declare a Relation return type,
-     * or untyped zero-argument methods defined in application code, are invoked.
+     * Resolve a request-supplied relation name to an Eloquent relation. Only public instance
+     * methods declaring a Relation return type are invoked, so a request key cannot run any
+     * other model method (`delete()`, a query helper, a future side-effecting method).
      */
     protected function resolveRelation(Model $model, string $relation): ?Relation
     {
@@ -435,18 +435,12 @@ class TanstackTableService
         }
 
         $method = new \ReflectionMethod($model, $relation);
-
-        if ($method->getNumberOfRequiredParameters() > 0) {
-            return null;
-        }
-
         $returnType = $method->getReturnType();
 
-        if ($returnType === null) {
-            if (! str_starts_with((string) $method->getFileName(), app_path())) {
-                return null;
-            }
-        } elseif (! $returnType instanceof \ReflectionNamedType
+        if (! $method->isPublic()
+            || $method->isStatic()
+            || $method->getNumberOfRequiredParameters() > 0
+            || ! $returnType instanceof \ReflectionNamedType
             || $returnType->isBuiltin()
             || ! is_a($returnType->getName(), Relation::class, true)
         ) {
@@ -460,5 +454,16 @@ class TanstackTableService
         }
 
         return $result instanceof Relation ? $result : null;
+    }
+
+    /**
+     * Column listings are memoized per table: sort and filter keys check columns repeatedly, and
+     * each Schema::hasColumn() call is a separate information_schema query.
+     */
+    protected function hasColumn(string $table, string $column): bool
+    {
+        $this->columns[$table] ??= array_flip(Schema::getColumnListing($table));
+
+        return isset($this->columns[$table][$column]);
     }
 }

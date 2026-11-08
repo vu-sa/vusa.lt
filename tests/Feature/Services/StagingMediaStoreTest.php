@@ -44,3 +44,26 @@ test('a missing root needs no wiping', function (): void {
 
     expect(app(StagingMediaStore::class)->wipe())->toBeTrue();
 });
+
+test('refresh also empties evidence from its own private storage', function (): void {
+    $privateRoot = storage_path('app/private/staging-test-'.Str::random(8));
+    File::ensureDirectoryExists($privateRoot.'/12/conversions');
+    config(['filesystems.disks.supportEvidence.root' => $privateRoot]);
+    File::put($privateRoot.'/12/conversions/screenshot.webp', 'contents');
+
+    try {
+        expect(app(StagingMediaStore::class)->wipe())->toBeTrue()
+            ->and(File::allFiles($privateRoot))->toBeEmpty();
+    } finally {
+        File::deleteDirectory($privateRoot);
+    }
+});
+
+test('refresh refuses evidence storage outside the private directory', function (): void {
+    config(['filesystems.disks.supportEvidence.root' => $this->root]);
+    File::put($this->root.'/screenshot.webp', 'contents');
+
+    expect(app(StagingMediaStore::class)->rootError())->toContain('private storage directory')
+        ->and(app(StagingMediaStore::class)->wipe())->toBeFalse()
+        ->and(File::exists($this->root.'/screenshot.webp'))->toBeTrue();
+});

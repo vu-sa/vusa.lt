@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\DateOnly;
 use App\Contracts\Commentable;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Traits\HasComments;
@@ -193,8 +194,8 @@ class Problem extends Model implements Commentable
     protected function casts(): array
     {
         return [
-            'occurred_at' => 'date',
-            'resolved_at' => 'date',
+            'occurred_at' => DateOnly::class,
+            'resolved_at' => DateOnly::class,
         ];
     }
 }

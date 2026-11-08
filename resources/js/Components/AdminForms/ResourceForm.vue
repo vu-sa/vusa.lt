@@ -58,7 +58,6 @@
         v-model:files="mediaFiles"
         :max="10"
         mode="deferred"
-        folder="resources"
         accept="image/jpg,image/jpeg,image/png,image/webp"
         :existing-urls="existingMediaItems"
         @remove:existing="handleRemoveExistingMedia"
@@ -199,9 +198,6 @@ import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { ArrowRight, Boxes, MapPin, Trash2 } from '@lucide/vue';
 import { capitalize, computed, ref, watch } from 'vue';
 
-import FormFieldWrapper from './FormFieldWrapper.vue';
-import TenantSelectField from './TenantSelectField.vue';
-
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog, FormPanel } from '@/Components/Patterns';
 import ResourceBookingRow, { type ResourceBooking } from '@/Components/Reservations/ResourceBookingRow.vue';
@@ -213,11 +209,14 @@ import { Label } from '@/Components/ui/label';
 import { NativeSelect } from '@/Components/ui/native-select';
 import { NumberField } from '@/Components/ui/number-field';
 import { Textarea } from '@/Components/ui/textarea';
-import { ImageUpload } from '@/Components/ui/upload';
+import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { RESOURCE_PLACEHOLDERS } from '@/Constants/I18n/Placeholders';
-import type { ResourceCreationTemplate, ResourceMediaEntry, ResourceEditType } from './resourceFormTypes';
 import { ModelEnum } from '@/Types/enums';
+
+import type { ResourceCreationTemplate, ResourceMediaEntry, ResourceEditType } from './resourceFormTypes';
+import TenantSelectField from './TenantSelectField.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
 
 const props = defineProps<{
   resource: ResourceCreationTemplate | ResourceEditType;

@@ -162,9 +162,6 @@ import { Link, router, useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Compass, Plus, TriangleAlert } from '@lucide/vue';
 
-import PurposeChip from './PurposeChip.vue';
-import type { DutyResponsibilityItem, DutyResponsibilityOptions, ResponsibilityScopeValue } from './types';
-
 import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
@@ -176,6 +173,9 @@ import { TypeTreeSelect } from '@/Components/AdminForms/TypeTree';
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { permissionLabel } from '@/Features/Admin/PermissionMatrix/permissionLabels';
+
+import type { DutyResponsibilityItem, DutyResponsibilityOptions, ResponsibilityScopeValue } from './types';
+import PurposeChip from './PurposeChip.vue';
 
 const props = defineProps<{
   dutyId: string;

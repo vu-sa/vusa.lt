@@ -4,10 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\ActivityRequests\GetUserActivityRequests;
 use App\Actions\GetFollowedInstitutions;
-use App\Actions\GetRecentAccessChanges;
 use App\Actions\GetRecentlyEditedRecords;
 use App\Actions\GetUpcomingMeetingsForUser;
-use App\Actions\GetUserCoordinators;
 use App\Actions\SerializeReservationCart;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Concerns\ApiResponses;
@@ -15,7 +13,9 @@ use App\Http\Requests\ShowAdminHomeRequest;
 use App\Models\Calendar;
 use App\Models\Form;
 use App\Models\Institution;
+use App\Models\Meeting;
 use App\Models\News;
+use App\Models\Reservation;
 use App\Models\Task;
 use App\Models\User;
 use App\Services\InstitutionActivityStatusService;
@@ -23,15 +23,14 @@ use App\Services\InstitutionRelationService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RepStatisticsScope;
 use App\Settings\FormSettings;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
 class DashboardController extends AdminController
 {
     use ApiResponses;
-
-    /** How long a duty change stays a band on Pradžia; the history on *Mano rolės* keeps it longer. */
-    private const int ACCESS_BAND_DAYS = 14;
 
     /** "Sekamos institucijos" rows before the list links to the full, filtered collection. */
     public const int FOLLOWED_PREVIEW_COUNT = 5;
@@ -51,11 +50,16 @@ class DashboardController extends AdminController
             return $u;
         });
 
-        $heroInstitution = fn () => once(fn () => $loadUserDuties()->current_duties
+        $heroImage = fn () => once(fn () => $loadUserDuties()->current_duties
             ->map(fn ($duty) => $duty->institution?->tenant?->primary_institution)
-            ->first(fn ($institution) => $institution?->imageData('image') !== null));
+            ->filter()->unique('id')->lazy()
+            ->map(fn (Institution $institution) => $institution->imageData('image'))
+            ->first(fn ($image) => $image !== null));
 
-        // Get task statistics for the dashboard in a single query
+        $currentInstitutionIds = fn () => once(fn () => $user()->relationLoaded('current_duties')
+            ? $user()->current_duties->pluck('institution_id')->filter()->unique()
+            : $user()->current_duties()->pluck('duties.institution_id')->filter()->unique());
+
         $taskStats = fn () => once(function () use ($user) {
             $counts = Task::openTaskCountsFor($user());
 
@@ -70,13 +74,12 @@ class DashboardController extends AdminController
 
         $upcomingMeetings = fn () => once(fn () => GetUpcomingMeetingsForUser::execute($user()));
 
-        // Everything below the attention queue and upcoming meetings is deferred so the first
-        // paint stays cheap (U19). One group: these panels are always wanted together.
+        // These panels share a deferred request to keep the attention queue available first.
         $secondary = 'secondary';
 
         $institutionsNeedingAttention = Inertia::defer(
             fn () => $this->institutionsNeedingAttention(
-                $loadUserDuties()->current_duties->pluck('institution_id')->filter()->unique()
+                $currentInstitutionIds()
             ),
             $secondary,
         );
@@ -101,21 +104,15 @@ class DashboardController extends AdminController
             $secondary,
         );
 
-        $coordinator = Inertia::defer(
-            fn () => GetUserCoordinators::execute($user())[0] ?? null,
-            $secondary,
-        );
-
-        return $this->inertiaResponse('Admin/ShowAdminHome', [
+        return Inertia::render('Admin/ShowAdminHome', [
             'activeActivityRequests' => fn () => $activityRequests->activeSummary($user()),
-            'accessChanges' => fn () => GetRecentAccessChanges::execute($user(), self::ACCESS_BAND_DAYS),
             'actionWindowLaunch' => fn () => $request->actionWindowLaunch($user()),
             'taskStats' => fn () => $taskStats(),
             'upcomingTasks' => fn () => $upcomingTasks(),
             'upcomingMeetings' => fn () => $upcomingMeetings()['items'],
             'upcomingMeetingsTotal' => fn () => $upcomingMeetings()['total'],
-            'heroImage' => function () use ($heroInstitution): ?array {
-                $image = $heroInstitution()?->imageData('image');
+            'heroImage' => function () use ($heroImage): ?array {
+                $image = $heroImage();
 
                 return $image === null ? null : ['url' => $image['url'], 'srcset' => $image['srcset'], 'focalPoint' => $image['focal_point']];
             },
@@ -124,7 +121,6 @@ class DashboardController extends AdminController
             'latestNews' => $latestNews,
             'recentlyEdited' => $recentlyEdited,
             'followedInstitutions' => $followedInstitutions,
-            'coordinator' => $coordinator,
             'registrationForms' => fn () => $this->registrationForms($user()),
             'reservationDraft' => fn () => SerializeReservationCart::summary($user()),
         ]);
@@ -134,13 +130,16 @@ class DashboardController extends AdminController
     {
         return $user->tasks()
             ->whereNull('completed_at')
-            ->where(function ($query): void {
-                $query->where('due_date', '<=', now()->addDays(14))
-                    ->orWhere('due_date', '<', now());
-            })
-            ->orderByDesc('due_date')
-            ->with('taskable')
-            ->take(10)
+            ->where('due_date', '<=', now()->addDays(14))
+            ->orderBy('due_date')
+            ->orderBy('tasks.id')
+            ->with(['taskable' => fn (MorphTo $morphTo) => $morphTo->constrain([
+                Institution::class => fn ($query) => $query->select('id', 'name'),
+                Meeting::class => fn ($query) => $query->select('id', 'title'),
+                Reservation::class => fn ($query) => $query->select('id', 'name'),
+                User::class => fn ($query) => $query->select('id', 'name'),
+            ])])
+            ->take(3)
             ->get()
             ->map(fn (Task $task) => [
                 'id' => $task->id,
@@ -149,33 +148,32 @@ class DashboardController extends AdminController
                 'is_overdue' => $task->isOverdue(),
                 'taskable_type' => $task->taskable_type ?? '',
                 'taskable_id' => $task->taskable_id,
-                // What the task is about, so a row can say "Senato posėdis" and link to it.
                 'taskable' => $task->taskable === null ? null : [
                     'id' => (string) $task->taskable_id,
                     'name' => $task->taskable->getAttribute('title') ?? $task->taskable->getAttribute('name'),
                 ],
                 'action_type' => $task->action_type?->value,
-                'metadata' => $task->metadata,
-                'progress' => $task->getProgress(),
-                'can_be_manually_completed' => $task->canBeManuallyCompleted(),
-                'icon' => $task->icon,
-                'color' => $task->color,
             ]);
     }
 
     public function institutionGraph()
     {
+        abort_unless($this->authorizer->allows(auth()->user(), 'institutions.read.padalinys'), 403);
+
         // Only the fields the graph actually renders (id, name, users_count, tenant for grouping).
         $institutions = Institution::withCount('users')->get(['id', 'name', 'tenant_id', 'is_active']);
 
         $relations = app(InstitutionRelationService::class);
-        $typeGraph = $relations->typeGraph();
+        $graphs = Cache::remember('dashboard:institution-graphs:'.app()->getLocale().':'.InstitutionRelationService::version(), now()->addDay(), fn () => [
+            'institutions' => $relations->institutionGraph(),
+            'types' => $relations->typeGraph(),
+        ]);
 
-        return $this->inertiaResponse('Admin/ShowInstitutionGraph', [
+        return Inertia::render('Admin/ShowInstitutionGraph', [
             'institutions' => $institutions,
-            'institutionRelationships' => $relations->institutionGraph(),
-            'types' => $typeGraph['nodes'],
-            'typeRelationships' => $typeGraph['edges'],
+            'institutionRelationships' => $graphs['institutions'],
+            'types' => $graphs['types']['nodes'],
+            'typeRelationships' => $graphs['types']['edges'],
         ]);
     }
 
@@ -187,14 +185,8 @@ class DashboardController extends AdminController
      */
     private function institutionsNeedingAttention(Collection $userInstitutionIds): array
     {
-        $userInstitutions = Institution::query()
-            ->whereIn('id', $userInstitutionIds)
-            ->with([
-                'meetings:id,start_time',
-                'types',
-                // Keep completed check-ins so activity status agrees with the representation page.
-                'checkIns',
-            ])
+        $userInstitutions = $this->activityStatusService->withSummary(Institution::query()
+            ->whereIn('id', $userInstitutionIds))
             ->get()
             ->filter(RepStatisticsScope::counts(...));
 
@@ -245,7 +237,7 @@ class DashboardController extends AdminController
     }
 
     /**
-     * Upcoming published calendar events, as full models for the EventCard component.
+     * Upcoming published calendar events for the compact EventCard.
      *
      * @return array<int, array<string, mixed>>
      */
@@ -254,12 +246,15 @@ class DashboardController extends AdminController
         return Calendar::query()
             ->where('is_draft', false)
             ->where('date', '>=', now())
-            ->with(['tenant:id,shortname', 'eventType:id,name'])
             ->orderBy('date')
             ->take(3)
-            ->get()
+            ->get(['id', 'title', 'date', 'end_date', 'is_all_day', 'permalink'])
             ->map(fn (Calendar $event) => [
-                ...$event->toArray(),
+                'id' => $event->id,
+                'title' => $event->title,
+                'date' => $event->date->toISOString(),
+                'end_date' => $event->end_date?->toISOString(),
+                'is_all_day' => (bool) $event->is_all_day,
                 'public_url' => $event->publicUrl(app()->getLocale()),
             ])
             ->all();
@@ -284,7 +279,6 @@ class DashboardController extends AdminController
                 'publish_time' => $news->publish_time,
                 'image' => $news->getImageUrl(),
                 'public_url' => $news->publicUrl(),
-                'tenant' => $news->tenant,
             ])
             ->all();
     }

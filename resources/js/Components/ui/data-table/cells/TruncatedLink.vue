@@ -33,9 +33,9 @@
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 
-import CellTooltip from './CellTooltip.vue';
-
 import { useIsTruncated } from '@/Composables/useIsTruncated';
+
+import CellTooltip from './CellTooltip.vue';
 
 const props = withDefaults(defineProps<{
   href: string;

@@ -72,6 +72,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import { Button } from '@/Components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/Components/ui/sheet';
+
 import IFluentLightbulb24Regular from '~icons/fluent/lightbulb-24-regular';
 
 defineProps<{

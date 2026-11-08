@@ -39,15 +39,15 @@
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 
-import ActionWindowPrimaryButton from '../ActionWindowPrimaryButton.vue';
-import ActionWindowScreen from '../ActionWindowScreen.vue';
-import ReviewRow from '../ReviewRow.vue';
-import { useWindowDates } from '../useWindowDates';
-
 import { useActionWindow, type ScreenId } from '@/Composables/useActionWindow';
 import { invalidateActionWindowData } from '@/Composables/useActionWindowData';
 import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
+
+import ActionWindowPrimaryButton from '../ActionWindowPrimaryButton.vue';
+import ActionWindowScreen from '../ActionWindowScreen.vue';
+import ReviewRow from '../ReviewRow.vue';
+import { useWindowDates } from '../useWindowDates';
 
 const { draft, stack, editFromHere, close, updateCheckIn } = useActionWindow();
 

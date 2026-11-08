@@ -82,10 +82,6 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronDown, Trash2 } from '@lucide/vue';
 
-import CollectionFacetOptions from './CollectionFacetOptions.vue';
-import CollectionQuickFilters from './CollectionQuickFilters.vue';
-import type { CollectionQuickFilter, CollectionTrash } from './types';
-
 import { Button } from '@/Components/ui/button';
 import { controlCountClass, controlVariants } from '@/Components/ui/control';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
@@ -99,6 +95,10 @@ import {
 } from '@/Components/ui/sheet';
 import type { CollectionFacet } from '@/Composables/useCollectionSource';
 import { capitalize } from '@/Utils/String';
+
+import type { CollectionQuickFilter, CollectionTrash } from './types';
+import CollectionQuickFilters from './CollectionQuickFilters.vue';
+import CollectionFacetOptions from './CollectionFacetOptions.vue';
 
 defineProps<{
   facets: CollectionFacet[];

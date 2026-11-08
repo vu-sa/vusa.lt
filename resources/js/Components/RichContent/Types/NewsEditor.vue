@@ -17,11 +17,11 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 
-import NewsOptionsFields from './NewsOptionsFields.vue';
-
 import type { News } from '@/Types/contentParts';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';
+
+import NewsOptionsFields from './NewsOptionsFields.vue';
 
 const modelValue = defineModel<News['json_content']>();
 const options = defineModel<News['options']>('options', { required: true });

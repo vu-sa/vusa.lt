@@ -2,9 +2,9 @@ import { mount } from '@vue/test-utils';
 import { router, usePage } from '@inertiajs/vue3';
 import { describe, expect, it, vi } from 'vitest';
 
-import MeetingDocumentsPanel from '../MeetingDocumentsPanel.vue';
-
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import MeetingDocumentsPanel from '../MeetingDocumentsPanel.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

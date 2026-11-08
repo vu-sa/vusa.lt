@@ -69,13 +69,13 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { CalendarDays, CalendarX } from '@lucide/vue';
 
-import type { ActivityRequestHistoryItem } from './InstitutionActivityRequestHistory.vue';
-
 import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { controlVariants } from '@/Components/ui/control';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
 import { activityRequestStatuses } from '@/Constants/statusIcons';
+
+import type { ActivityRequestHistoryItem } from './InstitutionActivityRequestHistory.vue';
 
 defineProps<{ request: ActivityRequestHistoryItem }>();
 const emit = defineEmits<{ answer: [] }>();

@@ -2,9 +2,9 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 import { ref } from 'vue';
 
-import InstitutionPreview from '../InstitutionPreview.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import InstitutionPreview from '../InstitutionPreview.vue';
 
 const related = Array.from({ length: 12 }, (_, i) => ({ id: `i${i}`, name: `Taryba ${i}`, kind_label: 'Pavaldi' }));
 

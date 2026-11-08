@@ -96,6 +96,7 @@ test('an ended delegation cannot be used but an assignment ending today still ca
     asUser($this->actor)->put(route('dutyTypes.models.sync', $this->type), ['models' => [$this->actorDuty->id]])->assertForbidden();
     expect(GetAttachableTypesForDuty::execute()->contains('id', $this->type->id))->toBeFalse();
 
+    asUser(makeAdminUser($this->tenant));
     $this->actor->dutiables()->where('duty_id', $oldDuty->id)->firstOrFail()->update(['end_date' => today()]);
     asUser($this->actor->fresh())->put(route('dutyTypes.models.sync', $this->type), ['models' => [$this->actorDuty->id]])->assertSessionHasNoErrors();
 });

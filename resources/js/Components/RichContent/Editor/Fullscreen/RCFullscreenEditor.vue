@@ -67,7 +67,7 @@
         <div class="relative flex min-h-0 flex-1">
           <nav v-if="outlineOpen" :aria-label="$t('editor.outline')" class="absolute inset-y-0 left-0 z-40 w-72 max-w-[85vw] overflow-y-auto border-r border-border bg-background p-3 shadow-lg">
             <Button v-for="part in contents ?? []" :key="getBlockKey(part)" type="button" variant="ghost" class="min-h-11 w-full justify-start whitespace-normal text-left" @click="scrollToBlock(getBlockKey(part)); outlineOpen = false">
-              {{ getContentType(part.type).label }} · {{ deriveBlockSummary(part) }}
+              {{ $t(getContentType(part.type).label) }} · {{ deriveBlockSummary(part) }}
             </Button>
             <Button v-for="anchor in outlineAnchors" :key="anchor.href" type="button" variant="ghost" class="min-h-11 w-full justify-start" @click="scrollToAnchor(anchor.href)">
               {{ anchor.title }}
@@ -124,6 +124,15 @@ import { ListTree } from '@lucide/vue';
 import { moveArrayElement } from '@vueuse/integrations/useSortable';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { preferredScrollBehavior } from '@/Composables/useAccessibilityPreferences';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
+import { SMART_TIPTAP_TOOLBAR_PORTAL_KEY } from '@/Components/TipTap/smartToolbarPortal';
+import { Button } from '@/Components/ui/button';
+import { ButtonGroup } from '@/Components/ui/button-group';
+import DarkModeButton from '@/Components/Buttons/DarkModeButton.vue';
+import { Dialog, DialogContent, DialogTitle } from '@/Components/ui/dialog';
+
 import { CONTENT_EDITOR_CONTEXT } from '../../contentEditorContext';
 import { groupContent } from '../../groupContent';
 import { collectHeadingIds, normalizeHeadingAnchors } from '../../headingAnchors';
@@ -140,14 +149,6 @@ import { resolveBands, type BandResolution } from '../../bandLayout';
 import RCFullscreenCanvasGroup from './RCFullscreenCanvasGroup.vue';
 import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from './useActiveHotspot';
 
-import { preferredScrollBehavior } from '@/Composables/useAccessibilityPreferences';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
-import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
-import { SMART_TIPTAP_TOOLBAR_PORTAL_KEY } from '@/Components/TipTap/smartToolbarPortal';
-import { Button } from '@/Components/ui/button';
-import { ButtonGroup } from '@/Components/ui/button-group';
-import DarkModeButton from '@/Components/Buttons/DarkModeButton.vue';
-import { Dialog, DialogContent, DialogTitle } from '@/Components/ui/dialog';
 import IFluentDismiss24Regular from '~icons/fluent/dismiss24-regular';
 import IFluentArrowUndo24Filled from '~icons/fluent/arrow-undo24-filled';
 import IFluentArrowRedo24Filled from '~icons/fluent/arrow-redo24-filled';

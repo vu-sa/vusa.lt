@@ -11,10 +11,11 @@
 </template>
 
 <script setup lang="ts">
-import InflectedDutyName from './InflectedDutyName.vue';
 
 import { Badge } from '@/Components/ui/badge';
 import type { DutyNameHolder } from '@/Utils/String';
+
+import InflectedDutyName from './InflectedDutyName.vue';
 
 /** Disambiguate a duty with its institution and tenant. */
 export interface DutyLabelDuty {

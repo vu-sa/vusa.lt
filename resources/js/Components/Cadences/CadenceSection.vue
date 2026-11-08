@@ -60,12 +60,12 @@
 import { computed, ref } from 'vue';
 import { Pencil, Plus } from '@lucide/vue';
 
+import { Button } from '@/Components/ui/button';
+
 import CadenceList from './CadenceList.vue';
 import { prefillFrom, useCadenceCrud } from './useCadenceCrud';
 
 import type { CadenceDraft, CadenceRow } from './index';
-
-import { Button } from '@/Components/ui/button';
 
 const props = defineProps<{
   institutionId: string;

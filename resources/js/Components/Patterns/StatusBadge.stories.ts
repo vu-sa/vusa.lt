@@ -1,7 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
-import StatusBadge from './StatusBadge.vue';
-
 import {
   contentStatuses,
   reservationResourceStatuses,
@@ -10,6 +8,8 @@ import {
   taskStatuses,
   voteStatuses,
 } from '@/Constants/statusIcons';
+
+import StatusBadge from './StatusBadge.vue';
 
 const meta: Meta<typeof StatusBadge> = {
   title: 'Patterns/StatusBadge',

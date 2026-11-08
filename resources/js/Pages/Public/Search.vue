@@ -148,6 +148,14 @@ import { onMounted, computed, type Component } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
+import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
+import SmartLink from '@/Components/Public/SmartLink.vue';
+import UnifiedResultItem from '@/Components/Public/Search/UnifiedResultItem.vue';
+import { Button } from '@/Components/ui/button';
+import { usePublicMultiSearch, type SearchCollectionId } from '@/Composables/usePublicMultiSearch';
+import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
+
 import IFluentSearch16Regular from '~icons/fluent/search16-regular';
 import IFluentSearch24Regular from '~icons/fluent/search-24-regular';
 import IFluentDismiss16Regular from '~icons/fluent/dismiss-16-regular';
@@ -158,13 +166,6 @@ import IFluentDocument from '~icons/fluent/document20-regular';
 import IFluentNews from '~icons/fluent/news20-regular';
 import IFluentPage from '~icons/fluent/document-text20-regular';
 import IFluentCalendar from '~icons/fluent/calendar20-regular';
-import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
-import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
-import SmartLink from '@/Components/Public/SmartLink.vue';
-import UnifiedResultItem from '@/Components/Public/Search/UnifiedResultItem.vue';
-import { Button } from '@/Components/ui/button';
-import { usePublicMultiSearch, type SearchCollectionId } from '@/Composables/usePublicMultiSearch';
-import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 
 const props = defineProps<{
   initialQuery?: string;

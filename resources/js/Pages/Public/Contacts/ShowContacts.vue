@@ -318,6 +318,7 @@ import NewInstitutionCard from '@/Components/Public/Institutions/NewInstitutionC
 import StudentRepInstitutionCard from '@/Components/Public/Institutions/StudentRepInstitutionCard.vue';
 import InstitutionResultsSkeleton from '@/Components/Public/Search/InstitutionResultsSkeleton.vue';
 import { TenantType } from '@/Types/enums';
+
 import IFluentSearch16Regular from '~icons/fluent/search-16-regular';
 import IFluentDismiss16Regular from '~icons/fluent/dismiss-16-regular';
 import IFluentFilter20Regular from '~icons/fluent/filter-20-regular';

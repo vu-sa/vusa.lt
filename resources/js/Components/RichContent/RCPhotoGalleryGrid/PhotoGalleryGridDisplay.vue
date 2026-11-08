@@ -118,12 +118,12 @@ import { computed, defineAsyncComponent, inject, nextTick, ref } from 'vue';
 import VueEasyLightbox from 'vue-easy-lightbox';
 import { useMounted } from '@vueuse/core';
 
+import ImageWithDecorations from '@/Components/RichContent/ImageWithDecorations.vue';
+import type { PhotoGalleryGrid } from '@/Types/contentParts';
+
 import RCSection from '../RCSection.vue';
 import type { BandResolution } from '../bandLayout';
 import { ACTIVE_HOTSPOT_KEY } from '../Editor/Fullscreen/useActiveHotspot';
-
-import ImageWithDecorations from '@/Components/RichContent/ImageWithDecorations.vue';
-import type { PhotoGalleryGrid } from '@/Types/contentParts';
 
 // Lazy-loaded: only ever mounted while `editable` — a static import would bundle the
 // hotspot's image picker/focal-point UI, the decoration-list editor, and the

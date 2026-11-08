@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
+import type { LinkList } from '@/Types/contentParts';
+
 import LinkListEditor from '../LinkListEditor.vue';
 import { createContentItem } from '../index';
-
-import type { LinkList } from '@/Types/contentParts';
 
 const stubs = {
   CollectionSelectDialog: { template: '<div />' },

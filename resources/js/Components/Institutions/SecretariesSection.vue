@@ -90,13 +90,13 @@
 import { computed, ref } from 'vue';
 import { UserPlus, X } from '@lucide/vue';
 
-import { useSecretaryRoster } from './useSecretaryRoster';
-import type { SecretaryRoster, SecretaryUser } from './secretaryTypes';
-
 import { Button } from '@/Components/ui/button';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import MultiCollectionSelectDialog from '@/Features/Admin/AdminSearch/Components/Select/MultiCollectionSelectDialog.vue';
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+
+import type { SecretaryRoster, SecretaryUser } from './secretaryTypes';
+import { useSecretaryRoster } from './useSecretaryRoster';
 
 const props = defineProps<{
   institutionId: string;

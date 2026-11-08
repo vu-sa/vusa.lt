@@ -13,9 +13,9 @@ import type { ListboxRootEmits, ListboxRootProps } from 'reka-ui';
 import { ListboxRoot, useFilter, useForwardPropsEmits } from 'reka-ui';
 import { computed, type HTMLAttributes, reactive, ref, watch } from 'vue';
 
-import { provideCommandContext } from '.';
-
 import { cn } from '@/Utils/Shadcn/utils';
+
+import { provideCommandContext } from '.';
 
 defineOptions({ name: 'CommandPalette' });
 

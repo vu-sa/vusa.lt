@@ -38,6 +38,7 @@ use App\Settings\SettingsSettings;
 use App\Settings\SiteSettings;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
 class SettingsController extends AdminController
@@ -61,7 +62,7 @@ class SettingsController extends AdminController
 
         abort_if(! $settings->canUserViewSettings($user), 403, __('settings.messages.unauthorized'));
 
-        return $this->inertiaResponse($component, [...$props, 'canEdit' => $settings->canUserManageSettings($user)]);
+        return Inertia::render($component, [...$props, 'canEdit' => $settings->canUserManageSettings($user)]);
     }
 
     /**

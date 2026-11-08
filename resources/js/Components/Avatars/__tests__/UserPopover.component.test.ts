@@ -2,9 +2,9 @@ import { mount } from '@vue/test-utils';
 import { describe, it, expect, vi } from 'vitest';
 import { usePage } from '@inertiajs/vue3';
 
-import UserPopover from '../UserPopover.vue';
-
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import UserPopover from '../UserPopover.vue';
 
 const adminPage = createMockPage({
   app: { path: '/mano/users' },

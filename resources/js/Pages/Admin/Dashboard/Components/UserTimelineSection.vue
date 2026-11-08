@@ -50,6 +50,9 @@ import { computed, ref, onMounted, watch, toRef } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { CalendarRange } from '@lucide/vue';
 
+import FocusModeFrame from '@/Components/Patterns/FocusModeFrame.vue';
+import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
+
 import type {
   AtstovavimasInstitution,
   GanttMeeting,
@@ -64,9 +67,6 @@ import { useUserTimelineData } from '../Composables/useUserTimelineData';
 import TimelineGanttChart from './TimelineGanttChart.vue';
 import TimelineGanttSkeleton from './TimelineGanttSkeleton.vue';
 import GanttFilterDropdown from './GanttFilterDropdown.vue';
-
-import FocusModeFrame from '@/Components/Patterns/FocusModeFrame.vue';
-import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 
 interface Props {
   institutions: AtstovavimasInstitution[];

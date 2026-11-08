@@ -21,9 +21,9 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { CARD_ICON_OPTIONS } from './cardIcons';
-
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+
+import { CARD_ICON_OPTIONS } from './cardIcons';
 
 // Reka's Select can't bind an empty string as a value (it reads as "unset"), so an
 // explicit sentinel represents "no icon" and is translated back to '' on the way out.

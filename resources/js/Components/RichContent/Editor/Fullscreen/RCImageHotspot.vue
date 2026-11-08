@@ -69,14 +69,15 @@
 import { computed, nextTick, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { injectActiveHotspot } from './useActiveHotspot';
-
 import ImageSelector from '@/Components/TipTap/ImageSelector.vue';
 import { Button } from '@/Components/ui/button';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';
 import { Popover, PopoverAnchor, PopoverContent } from '@/Components/ui/popover';
 import FocalPointPicker from '@/Components/ui/upload/FocalPointPicker.vue';
+
+import { injectActiveHotspot } from './useActiveHotspot';
+
 import IFluentArrowDown24Regular from '~icons/fluent/arrow-down24-regular';
 import IFluentArrowUp24Regular from '~icons/fluent/arrow-up24-regular';
 

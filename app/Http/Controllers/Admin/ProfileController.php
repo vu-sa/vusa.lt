@@ -22,6 +22,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use Inertia\Inertia;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 class ProfileController extends AdminController
@@ -30,7 +31,7 @@ class ProfileController extends AdminController
 
     public function activityRequests(ActivityRequestHistoryRequest $request, GetUserActivityRequests $requests)
     {
-        return $this->inertiaResponse('Admin/ShowMyActivityRequests', [
+        return Inertia::render('Admin/ShowMyActivityRequests', [
             'activityRequests' => fn () => $requests->history($request->user(), $request->user(), $request->historyPage()),
         ]);
     }
@@ -42,7 +43,7 @@ class ProfileController extends AdminController
         // The roles list moved to `profile.roles` (PR 5.9); only the shallow relations stay in the payload.
         $user->load('roles:id,name', 'current_duties:id,name,institution_id')->makeVisible(['show_pronouns']);
 
-        return $this->inertiaResponse('Admin/ShowProfile', [
+        return Inertia::render('Admin/ShowProfile', [
             'user' => [...$user->append('has_password')->toFullArray(), 'profile_photo_media' => $user->imageData('profile_photo')],
         ]);
     }
@@ -54,7 +55,7 @@ class ProfileController extends AdminController
     {
         $user = User::query()->find(Auth::id()) ?? abort(404);
 
-        return $this->inertiaResponse('Admin/ShowMyRoles', [
+        return Inertia::render('Admin/ShowMyRoles', [
             'access' => GetUserAccessSummary::execute($user),
         ]);
     }
@@ -67,7 +68,7 @@ class ProfileController extends AdminController
         $user = User::query()->find(Auth::id()) ?? abort(404);
         $preferences = $user->notification_preferences;
 
-        return $this->inertiaResponse('Admin/ShowNotificationSettings', [
+        return Inertia::render('Admin/ShowNotificationSettings', [
             'notificationTypes' => array_map(fn (NotificationType $type): array => [
                 'value' => $type->value,
                 'section' => $type->section()->value,

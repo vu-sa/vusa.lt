@@ -1,9 +1,9 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
-import NotificationTypeRow from '../NotificationTypeRow.vue';
-
 import { NativeSelect } from '@/Components/ui/native-select';
+
+import NotificationTypeRow from '../NotificationTypeRow.vue';
 
 const type = {
   value: 'task_reminder',

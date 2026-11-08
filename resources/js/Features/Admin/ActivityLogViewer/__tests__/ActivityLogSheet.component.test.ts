@@ -3,10 +3,10 @@ import { mount } from '@vue/test-utils';
 import { defineComponent } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
-import ActivityLogSheet from '../ActivityLogSheet.vue';
-
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
+
+import ActivityLogSheet from '../ActivityLogSheet.vue';
 
 const mockFetch = vi.fn();
 vi.stubGlobal('fetch', mockFetch);

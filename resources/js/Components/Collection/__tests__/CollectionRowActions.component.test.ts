@@ -3,10 +3,10 @@ import { Link } from '@inertiajs/vue3';
 import { ArrowUpRight, Pencil, RefreshCw, Trash2 } from '@lucide/vue';
 import { describe, expect, it, vi } from 'vitest';
 
-import CollectionRowActions from '../CollectionRowActions.vue';
-
 import RecordActionMenu from '@/Components/Patterns/RecordActionMenu.vue';
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
+
+import CollectionRowActions from '../CollectionRowActions.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

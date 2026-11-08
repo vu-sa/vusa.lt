@@ -30,12 +30,12 @@
 <script setup lang="ts" generic="T extends TreeType">
 import { computed, type HTMLAttributes } from 'vue';
 
-import TypeTreeOptionLabel from './TypeTreeOptionLabel.vue';
-import { useTypeTreeNodes } from './useTypeTreeNodes';
-
 import { NativeSelect } from '@/Components/ui/native-select';
 import { SingleSelect } from '@/Components/ui/single-select';
 import { type TreeType, type TypeId, typePath } from '@/Utils/typeTree';
+
+import { useTypeTreeNodes } from './useTypeTreeNodes';
+import TypeTreeOptionLabel from './TypeTreeOptionLabel.vue';
 
 /** Past this many options the picker becomes searchable (pickers.md). */
 const NATIVE_LIMIT = 16;

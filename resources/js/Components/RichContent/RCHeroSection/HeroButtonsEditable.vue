@@ -35,12 +35,12 @@
 import { computed, nextTick } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import type { Hero } from '@/Types/contentParts';
+
 import RCAddPlaceholder from '../Editor/Fullscreen/RCAddPlaceholder.vue';
 import { injectActiveHotspot } from '../Editor/Fullscreen/useActiveHotspot';
 
 import HeroButtonHotspot from './HeroButtonHotspot.vue';
-
-import type { Hero } from '@/Types/contentParts';
 
 type HeroButton = NonNullable<Hero['json_content']['buttons']>[number];
 

@@ -3,9 +3,9 @@ import { defineComponent, ref } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { usePage } from '@inertiajs/vue3';
 
-import { useAdminCollectionSearch } from '../useAdminCollectionSearch';
-
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import { useAdminCollectionSearch } from '../useAdminCollectionSearch';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -246,5 +246,59 @@ describe('useAdminCollectionSearch — remembered filters', () => {
     const second = await mountController({ defaultFilters: { tenant_shortnames: ['VU SA MIF'] } });
 
     expect(second.filters.value.tenant_shortnames).toBeUndefined();
+  });
+});
+
+describe('overlapping collection searches', () => {
+  const response = (id: string) => ({ hits: [{ id }], totalHits: 4, totalPages: 2, facets: [] });
+
+  it('runs a query typed during a request and keeps its results when the old response arrives', async () => {
+    const controller = await mountController({ debounceMs: 10 });
+    let resolveOld!: (value: ReturnType<typeof response>) => void;
+    let resolveNew!: (value: ReturnType<typeof response>) => void;
+    search.searchWithFacets
+      .mockImplementationOnce(() => new Promise((resolve) => { resolveOld = resolve; }))
+      .mockImplementationOnce(() => new Promise((resolve) => { resolveNew = resolve; }));
+    controller.search('old', true);
+
+    vi.useFakeTimers();
+    try {
+      controller.search('new');
+      await vi.advanceTimersByTimeAsync(10);
+      expect(search.searchWithFacets.mock.calls.at(-1)?.[1]).toBe('new');
+
+      resolveNew(response('new'));
+      await flushPromises();
+      resolveOld(response('old'));
+      await flushPromises();
+
+      expect(controller.results.value).toEqual([{ id: 'new' }]);
+    }
+    finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('blocks load more during a reset and discards a previous load-more response', async () => {
+    const controller = await mountController();
+    let resolveMore!: (value: ReturnType<typeof response>) => void;
+    let resolveReset!: (value: ReturnType<typeof response>) => void;
+    search.searchWithFacets
+      .mockImplementationOnce(() => new Promise((resolve) => { resolveMore = resolve; }))
+      .mockImplementationOnce(() => new Promise((resolve) => { resolveReset = resolve; }));
+
+    const more = controller.loadMore();
+    controller.search('reset', true);
+    const calls = search.searchWithFacets.mock.calls.length;
+    await controller.loadMore();
+    expect(search.searchWithFacets).toHaveBeenCalledTimes(calls);
+
+    resolveMore(response('stale-more'));
+    await more;
+    expect(controller.status.value).toBe('searching');
+    resolveReset(response('reset'));
+    await flushPromises();
+
+    expect(controller.results.value).toEqual([{ id: 'reset' }]);
   });
 });

@@ -122,10 +122,6 @@ import { isLoaded, loadLanguageAsync, trans as $t } from 'laravel-vue-i18n';
 import { Building2, SlidersHorizontal } from '@lucide/vue';
 import { computed, onMounted, ref } from 'vue';
 
-import TiptapEditor from '../TipTap/TiptapEditor.vue';
-
-import FormFieldWrapper from './FormFieldWrapper.vue';
-
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import FormPanel from '@/Components/Patterns/FormPanel.vue';
 import FormSection from '@/Components/Patterns/FormSection.vue';
@@ -137,6 +133,10 @@ import { TypeTreeSelect } from '@/Components/AdminForms/TypeTree';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { meetingKindOptions } from '@/Constants/meetingKinds';
 import { InstitutionScope, MeetingKind, ModelEnum } from '@/Types/enums';
+
+import TiptapEditor from '../TipTap/TiptapEditor.vue';
+
+import FormFieldWrapper from './FormFieldWrapper.vue';
 
 defineEmits<(event: 'submit:form', form: unknown) => void>();
 

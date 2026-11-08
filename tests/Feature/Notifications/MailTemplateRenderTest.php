@@ -548,8 +548,8 @@ test('meeting emails name the meeting in the body, not only in the subject', fun
     $joint = Meeting::factory()->hasAttached($senate)->create(['start_time' => now()->subDay()]);
     $joint->institutions()->attach($council);
 
-    expect((new MeetingCreatedNotification($upcoming))->body($this->recipient))->toStartWith('Institucijos „Senatas“ posėdis vyks ')
-        ->and((new MeetingCreatedNotification($joint->fresh()))->body($this->recipient))->toStartWith('Institucijų „Senatas“ ir „Taryba“ jungtinis posėdis vyko ');
+    expect(new MeetingCreatedNotification($upcoming)->body($this->recipient))->toStartWith('Institucijos „Senatas“ posėdis vyks ')
+        ->and(new MeetingCreatedNotification($joint->fresh())->body($this->recipient))->toStartWith('Institucijų „Senatas“ ir „Taryba“ jungtinis posėdis vyko ');
 });
 
 test('the agenda summary agrees with the item count in Lithuanian', function (int $count, string $items): void {
@@ -557,7 +557,7 @@ test('the agenda summary agrees with the item count in Lithuanian', function (in
     $meeting = Meeting::factory()->hasAttached(Institution::factory())->create();
     AgendaItem::factory()->count($count)->informational()->create(['meeting_id' => $meeting->id]);
 
-    expect((new MeetingAgendaCompletedNotification($meeting, User::factory()->create(['name' => 'Ona Onaitė'])))->body($this->recipient))
+    expect(new MeetingAgendaCompletedNotification($meeting, User::factory()->create(['name' => 'Ona Onaitė']))->body($this->recipient))
         ->toBe("Ona Onaitė užpildė visą darbotvarkę – {$items} (aptarimas: {$count}).");
 })->with([
     'one' => [1, '1 klausimą'],

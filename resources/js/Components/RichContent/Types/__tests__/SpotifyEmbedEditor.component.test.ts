@@ -1,10 +1,10 @@
 import { mount, type VueWrapper } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
+import type { SpotifyEmbed } from '@/Types/contentParts';
+
 import SpotifyEmbedEditor from '../SpotifyEmbedEditor.vue';
 import { createContentItem } from '../index';
-
-import type { SpotifyEmbed } from '@/Types/contentParts';
 
 const stubs = {
   TiptapEditor: { template: '<div class="tiptap-stub" />' },

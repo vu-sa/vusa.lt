@@ -4,7 +4,7 @@
          (-mx/px, equal and opposite) rather than boxing the row — the house idiom
          for full-width list rows, see .ai/rules/public.md. -->
     <a
-      :href="documentUrl"
+      :href="safeHref(documentUrl)"
       target="_blank"
       rel="noopener noreferrer"
       class="-mx-3 block px-3 py-4 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:-mx-4 sm:px-4 sm:py-5 hover:bg-secondary/50"
@@ -184,6 +184,8 @@ import { Button } from '@/Components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { TagChip } from '@/Components/Public/Base';
 import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
+import { safeHref } from '@/Utils/safeHref';
+
 import IFluentArrowDownload20Regular from '~icons/fluent/arrow-download-20-regular';
 import IFluentBuilding20Regular from '~icons/fluent/building-20-regular';
 import IFluentCalendarLtr20Regular from '~icons/fluent/calendar-ltr-20-regular';

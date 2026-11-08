@@ -2,10 +2,10 @@ import { nextTick } from 'vue';
 import { flushPromises, mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
+import TiptapLinkButton from '@/Components/TipTap/TiptapLinkButton.vue';
+
 import TiptapDisplay from '../TiptapDisplay.vue';
 import TiptapEditable from '../TiptapEditable.vue';
-
-import TiptapLinkButton from '@/Components/TipTap/TiptapLinkButton.vue';
 
 function makeElement(html: string | null = '<p>Test paragraph</p>', json_content: Record<string, unknown> | null = {}) {
   return {

@@ -6,9 +6,9 @@
 import { computed, type ComputedRef, type Ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { horizontalScrollbarSize } from '../scrollbarSize';
-
 import type { GanttGroupBy } from '@/Components/Graphs/composables/useGanttSettings';
+
+import { horizontalScrollbarSize } from '../scrollbarSize';
 
 export const GANTT_ROW_HEIGHT = 28;
 export const GANTT_AXIS_HEIGHT = 22;

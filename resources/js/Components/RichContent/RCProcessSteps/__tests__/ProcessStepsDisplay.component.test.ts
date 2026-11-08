@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import ProcessStepsDisplay from '../ProcessStepsDisplay.vue';
-
 import { ssrRoundTrip } from '@/tests/helpers/ssrRoundTrip';
 import { waitForSelector } from '@/tests/helpers/waitForSelector';
 import type { ProcessSteps } from '@/Types/contentParts';
+
+import ProcessStepsDisplay from '../ProcessStepsDisplay.vue';
 
 function makeElement(steps: Partial<ProcessSteps['json_content'][number]>[] = []): ProcessSteps {
   return {

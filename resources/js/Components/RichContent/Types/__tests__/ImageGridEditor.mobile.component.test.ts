@@ -1,9 +1,9 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 
-import ImageGridEditor from '../ImageGridEditor.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import ImageGridEditor from '../ImageGridEditor.vue';
 
 vi.mock('@/Composables/useIsMobile', () => ({ useIsMobile: () => ({ value: true }) }));
 

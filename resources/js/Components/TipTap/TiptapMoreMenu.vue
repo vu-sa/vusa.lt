@@ -134,18 +134,6 @@ import type { Editor } from '@tiptap/core';
 import { ref, type Ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import ImageSelector from './ImageSelector.vue';
-import TiptapYoutubeButton from './TiptapYoutubeButton.vue';
-import { useTiptapCommands } from './composables/useTiptapCommands';
-import {
-  alignmentOptions,
-  headingAccentOptions,
-  headingSizeOptions,
-  headingSpacingOptions,
-  tagColorOptions,
-} from './toolbarOptions';
-import type { ToolbarTools } from './toolbarProfiles';
-
 import { Button } from '@/Components/ui/button';
 import {
   DropdownMenu,
@@ -158,6 +146,19 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
+
+import ImageSelector from './ImageSelector.vue';
+import TiptapYoutubeButton from './TiptapYoutubeButton.vue';
+import { useTiptapCommands } from './composables/useTiptapCommands';
+import {
+  alignmentOptions,
+  headingAccentOptions,
+  headingSizeOptions,
+  headingSpacingOptions,
+  tagColorOptions,
+} from './toolbarOptions';
+import type { ToolbarTools } from './toolbarProfiles';
+
 import IFluentArrowRedo20Regular from '~icons/fluent/arrow-redo20-regular';
 import IFluentArrowUndo20Regular from '~icons/fluent/arrow-undo20-regular';
 import IFluentCheckmark12Regular from '~icons/fluent/checkmark12-regular';

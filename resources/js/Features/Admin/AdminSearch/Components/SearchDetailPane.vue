@@ -23,12 +23,12 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { MousePointerClick } from '@lucide/vue';
 import { computed } from 'vue';
 
-import { previewRegistry } from '../Config/previewRegistry';
-import type { NormalizedSearchHit } from '../Utils/searchHitMappers';
-
 import { EmptyState } from '@/Components/Patterns';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import type { SearchMatchDocument } from '@/Shared/Search/matches';
+
+import type { NormalizedSearchHit } from '../Utils/searchHitMappers';
+import { previewRegistry } from '../Config/previewRegistry';
 
 const props = defineProps<{
   hit: NormalizedSearchHit | null;

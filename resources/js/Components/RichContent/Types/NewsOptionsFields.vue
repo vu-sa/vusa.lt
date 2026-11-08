@@ -41,14 +41,14 @@
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import RCTagAliasSelect from '../Editor/RCTagAliasSelect.vue';
-import RCTopicAliasSelect from '../Editor/RCTopicAliasSelect.vue';
-import RCTenantMultiSelect from '../Editor/RCTenantMultiSelect.vue';
-
 import type { News } from '@/Types/contentParts';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { NumberField } from '@/Components/ui/number-field';
 import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
+
+import RCTenantMultiSelect from '../Editor/RCTenantMultiSelect.vue';
+import RCTopicAliasSelect from '../Editor/RCTopicAliasSelect.vue';
+import RCTagAliasSelect from '../Editor/RCTagAliasSelect.vue';
 
 const options = defineModel<News['options']>({ required: true });
 

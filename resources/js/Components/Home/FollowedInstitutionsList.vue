@@ -28,13 +28,13 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Eye } from '@lucide/vue';
 
-import type { HomeFollowedInstitutions } from './types';
-
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import { StatusBadge } from '@/Components/Patterns';
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 import { institutionActivityStatuses } from '@/Constants/statusIcons';
 import type { InstitutionActivityStatus } from '@/Types/enums';
+
+import type { HomeFollowedInstitutions } from './types';
 
 /** Only rendered when something is followed; following is discovered on the institution pages. */
 defineProps<{

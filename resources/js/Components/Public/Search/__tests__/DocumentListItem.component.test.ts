@@ -11,11 +11,11 @@ vi.mock('vue-sonner', () => ({
 }));
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-import DocumentListItem from '../DocumentListItem.vue';
-
 import { commonStubs, stubIcon } from '@/tests/stubs';
 import { documentWithMatch, type SearchMatchDocument } from '@/Shared/Search/matches';
 import type { DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
+
+import DocumentListItem from '../DocumentListItem.vue';
 
 // Icons are stubbed per the project's "real components by default" policy —
 // @iconify/vue's <Icon> fetches icon data at runtime, which is unnecessary

@@ -14,10 +14,10 @@ vi.mock('@/Composables/useApi', () => ({
   })),
 }));
 
+import { stubPopover, stubPopoverAnchor, stubPopoverContent } from '@/tests/stubs';
+
 import PersonQuoteDisplay from '../PersonQuoteDisplay.vue';
 import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from '../../Editor/Fullscreen/useActiveHotspot';
-
-import { stubPopover, stubPopoverAnchor, stubPopoverContent } from '@/tests/stubs';
 
 /** Stands in for CollectionSelectDialog — a real search-backed dialog is out of scope here. */
 const collectionSelectDialogStub = {

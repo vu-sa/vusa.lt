@@ -1,5 +1,5 @@
 <template>
-  <section :id="anchorElementId" :class="band?.classes ?? []">
+  <section v-if="!content.url || resolvedEmbedUrl || editable" :id="anchorElementId" :class="band?.classes ?? []">
     <div class="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
       <div class="grid items-stretch gap-8 lg:grid-cols-2 lg:gap-14">
         <!-- Text side -->
@@ -109,7 +109,7 @@
             </div>
 
             <iframe
-              v-if="content.url"
+              v-if="resolvedEmbedUrl"
               :src="mounted ? resolvedEmbedUrl : undefined"
               frameborder="0"
               allowtransparency="true"
@@ -135,19 +135,13 @@
 </template>
 
 <script setup lang="ts">
-/**
- * `spotify-embed`'s `promo` variant (v0: `podcast-section.tsx`). Unlike the original mockup's
- * fake play button + static waveform, the right-hand panel embeds the real Spotify/Mixcloud
- * iframe — that's the only way a visitor can actually start playback, and it's not full-bleed so
- * it reads as a panel beside the copy rather than taking over the row.
- *
- * Chrome comes entirely from the `band` prop (bandLayout.ts) — this type's `bandRole` resolves
- * to `'band'` only for the `promo` variant (see Types/index.ts), so it participates in the
- * page's automatic tint alternation exactly like every other band-capable block now.
- */
 import { computed, defineAsyncComponent } from 'vue';
 import { useDark, useMounted } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
+
+import MediaImage from '@/Components/Brand/MediaImage.vue';
+import { EyebrowLabel } from '@/Components/Public/Base';
+import type { SpotifyEmbed } from '@/Types/contentParts';
 
 import RichContentTiptapHTML from './RichContentTiptapHTML.vue';
 import HeroButtons from './RCHeroSection/HeroButtons.vue';
@@ -157,11 +151,8 @@ import RCAddPlaceholder from './Editor/Fullscreen/RCAddPlaceholder.vue';
 import { isMixcloudUrl, toMixcloudEmbedUrl, toSpotifyEmbedUrl } from './embedUrl';
 import type { BandResolution } from './bandLayout';
 
-import MediaImage from '@/Components/Brand/MediaImage.vue';
-import { EyebrowLabel } from '@/Components/Public/Base';
 import IconHeadphones from '~icons/fluent/headphones24-regular';
 import SpotifyIcon from '~icons/simple-icons/spotify';
-import type { SpotifyEmbed } from '@/Types/contentParts';
 
 const TiptapEditor = defineAsyncComponent(() => import('@/Components/TipTap/TiptapEditor.vue'));
 

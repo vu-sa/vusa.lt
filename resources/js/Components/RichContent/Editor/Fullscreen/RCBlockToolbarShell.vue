@@ -72,6 +72,8 @@
 import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { Popover, PopoverAnchor, PopoverContent } from '@/Components/ui/popover';
+
 import type { ContentPart } from '../../Types';
 import type { VerticalSpacing } from '../../sectionClasses';
 import { resolveBandRole } from '../../bandLayout';
@@ -79,7 +81,6 @@ import RCPresentationPicker from '../RCPresentationPicker.vue';
 
 import { injectActiveHotspot } from './useActiveHotspot';
 
-import { Popover, PopoverAnchor, PopoverContent } from '@/Components/ui/popover';
 import IFluentMoreVertical24Regular from '~icons/fluent/more-vertical24-regular';
 import IFluentArrowUp24Regular from '~icons/fluent/arrow-up24-regular';
 import IFluentArrowDown24Regular from '~icons/fluent/arrow-down24-regular';

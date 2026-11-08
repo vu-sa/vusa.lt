@@ -4,9 +4,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createSSRApp, h } from 'vue';
 import { renderToString } from 'vue/server-renderer';
 
-import NotificationLink from '../NotificationLink.vue';
-
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import NotificationLink from '../NotificationLink.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

@@ -234,3 +234,69 @@ describe('owners and freshness', function (): void {
         expect(scanUsage($this->relativePath)['is_safe_to_delete'])->toBeFalse();
     });
 });
+
+test('content references are shown only when their owning page can be viewed', function (): void {
+    $tenant = Tenant::query()->first();
+    $viewer = makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant);
+    $ownPart = makeTiptapImagePart($this->url);
+    $own = Page::factory()->create([
+        'tenant_id' => $tenant->id,
+        'content_id' => $ownPart->content_id,
+        'title' => 'Matomas puslapis',
+    ]);
+    $otherPart = makeTiptapImagePart($this->url);
+    $other = Page::factory()->create([
+        'tenant_id' => Tenant::query()->whereKeyNot($tenant->id)->first()->id,
+        'content_id' => $otherPart->content_id,
+    ]);
+    $other->delete();
+
+    $result = $this->scanner->scanFileUsage('public/files/'.$this->relativePath, $viewer);
+
+    expect($result['total_usages'])->toBe(2)
+        ->and($result['hidden_usages'])->toBe(1)
+        ->and($result['is_safe_to_delete'])->toBeFalse()
+        ->and($result['usage_details'])->toHaveCount(1)
+        ->and($result['usage_details'][0]['id'])->toBe($own->id)
+        ->and($result['usage_details'][0]['title'])->toBe('Matomas puslapis');
+});
+
+test('unowned content still counts without exposing record details', function (): void {
+    makeTiptapImagePart($this->url);
+    $viewer = makeUser(Tenant::query()->first());
+
+    $result = $this->scanner->scanFileUsage('public/files/'.$this->relativePath, $viewer);
+
+    expect($result['total_usages'])->toBe(1)
+        ->and($result['hidden_usages'])->toBe(1)
+        ->and($result['is_safe_to_delete'])->toBeFalse()
+        ->and($result['usage_details'])->toBeEmpty();
+});
+
+test('a saved draft requires ownership and current permission to edit its record', function (): void {
+    $tenant = Tenant::query()->first();
+    $viewer = makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant);
+    $own = News::factory()->create(['tenant_id' => $tenant->id]);
+    $other = News::factory()->create(['tenant_id' => Tenant::query()->whereKeyNot($tenant->id)->first()->id]);
+    $visible = ContentEditorDraft::create([
+        'user_id' => $viewer->id,
+        'kind' => 'news',
+        'identity' => 'record-'.$own->id,
+        'snapshot' => ['image' => $this->url],
+        'revision' => 1,
+    ]);
+    ContentEditorDraft::create([
+        'user_id' => $viewer->id,
+        'kind' => 'news',
+        'identity' => 'record-'.$other->id,
+        'snapshot' => ['image' => $this->url],
+        'revision' => 1,
+    ]);
+
+    $result = $this->scanner->scanFileUsage('public/files/'.$this->relativePath, $viewer);
+
+    expect($result['total_usages'])->toBe(2)
+        ->and($result['hidden_usages'])->toBe(1)
+        ->and($result['usage_details'])->toHaveCount(1)
+        ->and($result['usage_details'][0]['id'])->toBe($visible->id);
+});

@@ -26,6 +26,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class CalendarController extends AdminController
@@ -44,7 +45,7 @@ class CalendarController extends AdminController
         $calendar = BuildCalendarIndexQuery::execute($request, $this->tableService)
             ->paginate($request->getPerPage());
 
-        return $this->inertiaResponse('Admin/Calendar/IndexCalendarEvents', [
+        return Inertia::render('Admin/Calendar/IndexCalendarEvents', [
             'calendar' => [
                 'data' => $calendar->getCollection()->map(fn (Calendar $event): array => $event->toFullArray())->values(),
                 'meta' => [
@@ -65,7 +66,7 @@ class CalendarController extends AdminController
     {
         $this->handleAuthorization('create', Calendar::class);
 
-        return $this->inertiaResponse('Admin/Calendar/CreateCalendarEvent', [
+        return Inertia::render('Admin/Calendar/CreateCalendarEvent', [
             'assignableTenants' => GetTenantsForUpserts::execute('calendars.create.padalinys', $this->authorizer),
             'eventTypes' => EventType::query()->orderBy('sort_order')->get(),
             'availableTags' => Tag::orderBy('alias')->get()->map->toFullArray(),
@@ -120,7 +121,7 @@ class CalendarController extends AdminController
         $canUpdate = $request->user()->can('update', $calendar);
         $calendar->loadMissing('tenant:id,type,shortname');
 
-        return $this->inertiaResponse('Admin/Calendar/EditCalendarEvent', [
+        return Inertia::render('Admin/Calendar/EditCalendarEvent', [
             'calendar' => [
                 ...$calendar->toFullArray(),
                 'main_image_media' => $calendar->imageData('main_image'),
@@ -261,6 +262,8 @@ class CalendarController extends AdminController
     public function duplicate(Calendar $calendar)
     {
         $this->handleAuthorization('create', Calendar::class);
+        $this->handleAuthorization('view', $calendar);
+        abort_unless($this->authorizer->scope(auth()->user(), 'calendars.create.padalinys')->allowsTenant($calendar->tenant), 403);
 
         $newCalendar = DuplicateCalendarAction::execute($calendar);
 

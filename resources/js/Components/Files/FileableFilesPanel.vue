@@ -91,7 +91,7 @@
           <a :href="filesDocsHref" target="_blank" rel="noopener" class="underline underline-offset-4 hover:text-foreground">{{ $t('Plačiau') }}</a><template v-if="folderUrl">
             ·
             <a
-              :href="folderUrl"
+              :href="safeHref(folderUrl)"
               target="_blank"
               rel="noopener noreferrer"
               class="underline underline-offset-4 hover:text-foreground"
@@ -142,10 +142,6 @@ import { useClipboard, useDropZone } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { CircleDashed, FolderOpen, Upload } from '@lucide/vue';
 
-import FileRow from './FileableFileRow.vue';
-import FileableUploadSheet from './FileableUploadSheet.vue';
-import type { FileableFileItem } from './types';
-
 import { ConfirmDialog, EmptyState, SectionCard } from '@/Components/Patterns';
 import StagingNote from '@/Components/StagingNote.vue';
 import { Button } from '@/Components/ui/button';
@@ -153,6 +149,11 @@ import { Skeleton } from '@/Components/ui/skeleton';
 import { type FileableFileType, fileTypeLabel } from '@/Constants/fileTypes';
 import { useDocsHref } from '@/Composables/useDocsHref';
 import { useToasts } from '@/Composables/useToasts';
+import { safeHref } from '@/Utils/safeHref';
+
+import type { FileableFileItem } from './types';
+import FileableUploadSheet from './FileableUploadSheet.vue';
+import FileRow from './FileableFileRow.vue';
 
 const props = withDefaults(defineProps<{
   fileable: { id: string | number; type: string };

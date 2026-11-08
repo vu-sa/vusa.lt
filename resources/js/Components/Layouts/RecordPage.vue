@@ -138,15 +138,15 @@
                 </span>
               </template>
               <a
-                v-else-if="fact.href && fact.external"
-                :href="fact.href"
+                v-else-if="safeHref(fact.href) && fact.external"
+                :href="safeHref(fact.href)"
                 target="_blank"
                 rel="noopener noreferrer"
                 :class="FACT_LINK_CLASS"
               >
                 {{ fact.value }}
               </a>
-              <Link v-else-if="fact.href" :href="fact.href" :class="FACT_LINK_CLASS">
+              <Link v-else-if="safeHref(fact.href)" :href="safeHref(fact.href)" :class="FACT_LINK_CLASS">
                 {{ fact.value }}
               </Link>
               <span v-else>{{ fact.value }}</span>
@@ -241,8 +241,6 @@ import { useResizeObserver } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronLeft, ChevronRight, History } from '@lucide/vue';
 
-import ActionControl from './RecordPageAction.vue';
-
 import RecordActionMenu from '@/Components/Patterns/RecordActionMenu.vue';
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import { RuledGrid, type RuledGridColumns } from '@/Components/Brand';
@@ -251,6 +249,9 @@ import { Button } from '@/Components/ui/button';
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 import { statusRoleParts, type StatusPresentation } from '@/Constants/statusIcons';
+import { safeHref } from '@/Utils/safeHref';
+
+import ActionControl from './RecordPageAction.vue';
 
 export interface RecordPageSection {
   value: string;

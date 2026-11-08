@@ -112,10 +112,10 @@ import {
 } from 'd3';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { Skeleton } from '@/Components/ui/skeleton';
+
 import type { InstitutionStatusHistoryPoint } from '../types';
 import { groupStatusFlows, type StatusFlowBucket } from '../Composables/statusFlow';
-
-import { Skeleton } from '@/Components/ui/skeleton';
 
 type StatusKey = 'current' | 'recent_check_in' | 'approaching' | 'overdue' | 'no_activity';
 

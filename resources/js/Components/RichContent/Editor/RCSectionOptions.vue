@@ -52,11 +52,11 @@ import { ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronDown, SlidersHorizontal } from '@lucide/vue';
 
-import RCSectionOptionsFields from './RCSectionOptionsFields.vue';
-
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import type { SectionOptions } from '@/Types/contentParts';
+
+import RCSectionOptionsFields from './RCSectionOptionsFields.vue';
 
 // Default-true is intentional: every editor using this wants collapse-by-default,
 // and only SectionEditor opts out via `:collapsible="false"`. Vue coerces an absent

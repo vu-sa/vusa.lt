@@ -1,5 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
+import { TagChip } from '@/Components/Brand';
+import { Button } from '@/Components/ui/button';
+
 import AccessibilityMenu from './AccessibilityMenu.vue';
 import CheckControl from './CheckControl.vue';
 import DatePlate from './DatePlate.vue';
@@ -11,9 +14,6 @@ import ReadingSizeControl from './ReadingSizeControl.vue';
 import SectionBand from './SectionBand.vue';
 import ShareButton from './ShareButton.vue';
 import StatCell from './StatCell.vue';
-
-import { TagChip } from '@/Components/Brand';
-import { Button } from '@/Components/ui/button';
 
 /**
  * The public primitives, side by side. This page is the catalogue: check here before building a

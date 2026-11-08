@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
+import { commonStubs, stubPopover, stubPopoverAnchor, stubPopoverContent } from '@/tests/stubs';
+
 import RCBlockToolbarShell from '../RCBlockToolbarShell.vue';
 import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from '../useActiveHotspot';
 import type { ContentPart } from '../../../Types';
-
-import { commonStubs, stubPopover, stubPopoverAnchor, stubPopoverContent } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

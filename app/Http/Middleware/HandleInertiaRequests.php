@@ -16,9 +16,12 @@ use App\Services\SystemDutyTypes;
 use App\Services\Typesense\TypesenseManager;
 use App\Settings\SiteSettings;
 use App\Support\AuthorityCacheExpiry;
+use App\Support\ContentKeyedOnceProp;
 use Closure;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Uri;
@@ -98,7 +101,27 @@ class HandleInertiaRequests extends Middleware
     #[\Override]
     public function shareOnce(Request $request): array
     {
-        return ['map' => fn () => ['cartoApiKey' => config('services.carto.api_key')]];
+        $onAdmin = $request->is('mano', 'mano/*');
+        $catalogs = [
+            'tenants' => fn () => $this->getTenantsForInertia()->toArray(),
+            'tags' => fn () => $onAdmin ? $this->getTagsForInertia()->toArray() : [],
+            'eventTypes' => fn () => $onAdmin ? $this->getEventTypesForInertia()->toArray() : [],
+            'institutionTypes' => fn () => $this->getInstitutionTypesForInertia()->toArray(),
+            'curatorDutyTypeIds' => fn () => $onAdmin ? app(SystemDutyTypes::class)->curatorIds() : [],
+            'organization' => fn () => [
+                'contacts' => config('vusa.contacts'),
+                'social' => config('vusa.social'),
+                'legal' => config('vusa.legal'),
+                'privacyPageUrl' => SiteSettings::cachedPrivacyPageUrl(app()->getLocale()),
+            ],
+        ];
+        $props = ['map' => fn () => ['cartoApiKey' => config('services.carto.api_key')]];
+
+        foreach ($catalogs as $name => $callback) {
+            $props[$name] = new ContentKeyedOnceProp($name, $callback);
+        }
+
+        return $props;
     }
 
     /**
@@ -134,17 +157,8 @@ class HandleInertiaRequests extends Middleware
                 'port' => Uri::of(url('/'))->port(),
                 'defaults' => app('url')->getDefaultParameters(),
             ],
-            // Organisation-level facts (contact addresses, social profiles, registry details)
-            // so the footer, error pages and navigation buttons stop hardcoding their own
-            // copies. See config/vusa.php.
-            'organization' => fn () => [
-                'contacts' => config('vusa.contacts'),
-                'social' => config('vusa.social'),
-                'legal' => config('vusa.legal'),
-                // Resolved server-side so the cookie banner links to the right language
-                // record without knowing anything about permalinks. Null when unconfigured.
-                'privacyPageUrl' => SiteSettings::cachedPrivacyPageUrl(app()->getLocale()),
-            ],
+            // AdminLayout owns its title; Laravel Head's defaults belong to public pages.
+            ...($onAdmin ? ['head' => fn () => []] : []),
             'auth' => is_null($user) ? null : [
                 'can' => fn () => $onAdmin ? $this->getAllPermissionsMap($user) : ['index' => [], 'create' => [], 'forceDelete' => []],
                 'user' => fn () => [
@@ -156,9 +170,10 @@ class HandleInertiaRequests extends Middleware
                     'tenants' => $onAdmin
                         ? $user->tenants()->distinct()->get(['tenants.id', 'tenants.shortname', 'tenants.alias'])
                         : [],
-                    // Newest first; the badge reads the count, so the list can stay short.
-                    'unreadNotifications' => $onAdmin ? $user->unreadNotifications()->limit(self::NOTIFICATION_PREVIEW_LIMIT)->get() : [],
-                    'unreadNotificationsCount' => $onAdmin ? $user->unreadNotifications()->count() : 0,
+                    ...($onAdmin ? $this->getNotificationPreview($user) : [
+                        'unreadNotifications' => [],
+                        'unreadNotificationsCount' => 0,
+                    ]),
                     'tutorial_progress' => $user->tutorial_progress ?? [],
                     'ui_preferences' => $user->ui_preferences ?? [],
                 ],
@@ -179,18 +194,6 @@ class HandleInertiaRequests extends Middleware
                 'title' => fn () => $request->session()->get('seo.title'),
             ],
             'search' => fn () => $request->session()->get('search'),
-            // 'tenants' property is shared in public pages from \App\Http\Controllers\PublicController.php
-            // 'tenant.banners' property is shared in public pages from \App\Http\Controllers\PublicController.php
-            'tenants' => $this->getTenantsForInertia(...),
-            // Global, not tenant-scoped, a handful of rows repo-wide — cheap enough to
-            // always share rather than thread an `eventTypes` prop through every
-            // controller/form that needs an event-type picker (Calendar admin form,
-            // RichContent's event-list/calendar block editors). See QuickLinkController's
-            // identical "not worth a search endpoint" rationale for topics.
-            'eventTypes' => fn () => $onAdmin ? $this->getEventTypesForInertia() : [],
-            'tags' => fn () => $onAdmin ? $this->getTagsForInertia() : [],
-            'curatorDutyTypeIds' => fn () => $onAdmin ? app(SystemDutyTypes::class)->curatorIds() : [],
-            'institutionTypes' => $this->getInstitutionTypesForInertia(...),
             'typesenseConfig' => TypesenseManager::getFrontendConfig(...),
             'pwa' => [
                 'vapidPublicKey' => fn () => config('webpush.vapid.public_key'),
@@ -204,6 +207,39 @@ class HandleInertiaRequests extends Middleware
                 ? app(AdminNavigationCatalog::class)->for($user)
                 : null,
         ]);
+    }
+
+    /** @return array{unreadNotifications: array, unreadNotificationsCount: int} */
+    private function getNotificationPreview(User $user): array
+    {
+        $notifications = $user->unreadNotifications()
+            ->limit(self::NOTIFICATION_PREVIEW_LIMIT)
+            ->get(['id', 'type', 'data', 'created_at', 'read_at']);
+        $count = $notifications->count() < self::NOTIFICATION_PREVIEW_LIMIT
+            ? $notifications->count()
+            : $user->unreadNotifications()->count();
+
+        return [
+            'unreadNotifications' => $notifications->map(function (DatabaseNotification $notification): array {
+                $data = $notification->data;
+                $preview = Arr::only($data, ['category', 'modelClass', 'title', 'body', 'excerpt', 'url', 'color', 'text', 'message']);
+
+                foreach (['subject' => ['name', 'image'], 'object' => ['modelClass', 'name', 'url']] as $key => $fields) {
+                    if (isset($data[$key]) && is_array($data[$key])) {
+                        $preview[$key] = Arr::only($data[$key], $fields);
+                    }
+                }
+
+                $action = $data['primaryAction'] ?? $data['actions'][0] ?? null;
+                $preview['primaryAction'] = is_array($action) ? Arr::only($action, ['label', 'url']) : null;
+
+                return [
+                    ...$notification->only(['id', 'type', 'created_at', 'read_at']),
+                    'data' => $preview,
+                ];
+            })->all(),
+            'unreadNotificationsCount' => $count,
+        ];
     }
 
     /**

@@ -8,15 +8,20 @@ vi.mock('@vueuse/core', async (importOriginal) => {
   return { ...actual, useDark: () => darkRef };
 });
 
-import RCSpotifyEmbed from '../RCSpotifyEmbed.vue';
-
 import type { SpotifyEmbed } from '@/Types/contentParts';
+
+import RCSpotifyEmbed from '../RCSpotifyEmbed.vue';
 
 function makeElement(overrides: Partial<SpotifyEmbed['json_content']> = {}, options: SpotifyEmbed['options'] = null): SpotifyEmbed {
   return { json_content: { url: '', ...overrides }, options };
 }
 
 describe('RCSpotifyEmbed', () => {
+  it.each(['https://example.org/player', 'http://open.spotify.com/show/abc'])('omits an unsupported player at %s', async (url) => {
+    const wrapper = mount(RCSpotifyEmbed, { props: { element: makeElement({ url }) } });
+    await nextTick();
+    expect(wrapper.find('iframe').exists()).toBe(false);
+  });
   it('renders the plain bordered iframe for the default inline variant', async () => {
     const wrapper = mount(RCSpotifyEmbed, { props: { element: makeElement({ url: 'https://open.spotify.com/show/abc' }) } });
     await nextTick();

@@ -13,10 +13,12 @@
         :title="preset.label"
         :description="preset.detail"
         :icon="preset.icon"
-        :show-chevron="false"
+        indicator="check"
+        :selected="preset.selected"
         @click="preset.pick()"
       />
       <ActionChoiceButton
+        :selected="pickedOtherDay"
         :title="$t('action_window.meeting.when.custom')"
         :icon="CalendarSearch"
         @click="goTo('meeting.date', { returnTo: current.params?.returnTo })"
@@ -30,16 +32,16 @@ import { computed, onMounted } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { CalendarDays, CalendarSearch, History, type LucideIcon } from '@lucide/vue';
 
-import ActionChoiceButton from '../ActionChoiceButton.vue';
-import ActionChoiceList from '../ActionChoiceList.vue';
-import ActionWindowScreen from '../ActionWindowScreen.vue';
-import { useWindowDates } from '../useWindowDates';
-
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { useActionWindowData } from '@/Composables/useActionWindowData';
 import { toLocalDateTime } from '@/Composables/useMeetingCreation';
 import { Skeleton } from '@/Components/ui/skeleton';
 import { isDateOnlyMeetingType } from '@/Types/MeetingType';
+
+import { useWindowDates } from '../useWindowDates';
+import ActionWindowScreen from '../ActionWindowScreen.vue';
+import ActionChoiceList from '../ActionChoiceList.vue';
+import ActionChoiceButton from '../ActionChoiceButton.vue';
 
 const DEFAULT_TIME = '18:00';
 
@@ -128,8 +130,13 @@ interface WhenPreset {
   label: string;
   detail?: string;
   icon: LucideIcon;
+  selected: boolean;
   pick: () => void;
 }
+
+// Coming back to this screen shows the day already chosen.
+const chosenDay = computed(() => draft.meeting.start_time?.slice(0, 10));
+const isChosenDay = (date: Date) => toLocalDateTime(date).slice(0, 10) === chosenDay.value;
 
 const presets = computed<WhenPreset[]>(() => {
   const dayPresets: WhenPreset[] = [
@@ -140,6 +147,7 @@ const presets = computed<WhenPreset[]>(() => {
     label: $t(`action_window.meeting.when.${key}`),
     detail: dates.dayWithWeekday(daysFromToday(offset)),
     icon,
+    selected: isChosenDay(daysFromToday(offset)),
     pick: () => pickDay(daysFromToday(offset)),
   }));
 
@@ -162,12 +170,15 @@ const presets = computed<WhenPreset[]>(() => {
         ? $t('action_window.meeting.when.usual_hint')
         : $t('action_window.meeting.when.week_after_hint'),
       icon: CalendarDays,
+      selected: isChosenDay(date),
       pick: () => pickMoment(date),
     };
   });
 
   return [...dayPresets, ...upcoming];
 });
+
+const pickedOtherDay = computed(() => !!chosenDay.value && !presets.value.some(preset => preset.selected));
 
 const subtitle = computed(() => pattern.value ? $t('action_window.meeting.when.subtitle') : undefined);
 </script>

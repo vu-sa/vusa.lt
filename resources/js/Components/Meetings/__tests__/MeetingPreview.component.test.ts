@@ -2,9 +2,9 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 import { ref } from 'vue';
 
-import MeetingPreview from '../MeetingPreview.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import MeetingPreview from '../MeetingPreview.vue';
 
 vi.mock('@/Composables/usePreviewApi', () => ({
   usePreviewApi: () => ({

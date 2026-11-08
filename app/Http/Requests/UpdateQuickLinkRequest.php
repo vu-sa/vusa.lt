@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\ValidatesTenantScope;
+use App\Rules\SafeUrl;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -23,7 +24,7 @@ class UpdateQuickLinkRequest extends FormRequest
     {
         return [
             'text' => 'required|string',
-            'link' => 'required|string|max:255',
+            'link' => ['required', 'string', 'max:255', new SafeUrl],
             'lang' => ['nullable', 'string', Rule::in(config('app.locales'))],
             'icon' => 'nullable|string|max:125',
             'is_important' => 'boolean',

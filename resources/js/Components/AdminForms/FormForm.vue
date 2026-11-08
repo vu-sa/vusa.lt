@@ -282,11 +282,6 @@ import {
   Type,
 } from '@lucide/vue';
 
-import FormFieldForm from './FormFieldForm.vue';
-import FormFieldWrapper from './FormFieldWrapper.vue';
-import PermalinkField from './PermalinkField.vue';
-import TenantSelectField from './TenantSelectField.vue';
-
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/Components/ui/sheet';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog, FormPanel } from '@/Components/Patterns';
@@ -301,6 +296,11 @@ import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { ModelEnum } from '@/Types/enums';
 import { localizedSlug } from '@/Utils/LocalizedRoutes';
 import { generateSlug } from '@/Utils/String';
+
+import TenantSelectField from './TenantSelectField.vue';
+import PermalinkField from './PermalinkField.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import FormFieldForm from './FormFieldForm.vue';
 
 type Locale = 'lt' | 'en';
 

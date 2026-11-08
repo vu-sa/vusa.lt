@@ -1,10 +1,10 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
+import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
+
 import OverviewChart from '../OverviewChart.vue';
 import OverviewNumbers from '../OverviewNumbers.vue';
-
-import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 
 describe('OverviewNumbers', () => {
   const numbers = [

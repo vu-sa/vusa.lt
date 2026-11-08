@@ -17,6 +17,7 @@ use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class StudyProgramController extends AdminController
 {
@@ -39,7 +40,7 @@ class StudyProgramController extends AdminController
             ['dutiables'],
         );
 
-        return $this->inertiaResponse('Admin/People/IndexStudyProgram', [
+        return Inertia::render('Admin/People/IndexStudyProgram', [
             'studyPrograms' => $this->appendForceDeleteBlockedReason($query->get(), $request)->values(),
             'deletedCount' => StudyProgram::onlyTrashed()->count(),
             'degreeOptions' => DegreeEnum::getFormOptions(),
@@ -53,7 +54,7 @@ class StudyProgramController extends AdminController
     {
         $this->handleAuthorization('create', StudyProgram::class);
 
-        return $this->inertiaResponse('Admin/People/CreateStudyProgram', [
+        return Inertia::render('Admin/People/CreateStudyProgram', [
             'tenants' => GetTenantsForUpserts::execute('studyPrograms.create.padalinys', $this->authorizer),
             'degreeOptions' => DegreeEnum::getFormOptions(),
         ]);
@@ -79,7 +80,7 @@ class StudyProgramController extends AdminController
     {
         $this->handleAuthorization('update', $studyProgram);
 
-        return $this->inertiaResponse('Admin/People/EditStudyProgram', [
+        return Inertia::render('Admin/People/EditStudyProgram', [
             'studyProgram' => $studyProgram->load('tenant')->toFullArray(),
             'tenants' => GetTenantsForUpserts::execute('studyPrograms.update.padalinys', $this->authorizer),
             'degreeOptions' => DegreeEnum::getFormOptions(),

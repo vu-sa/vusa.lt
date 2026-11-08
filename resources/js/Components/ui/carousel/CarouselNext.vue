@@ -23,11 +23,11 @@
 <script setup lang="ts">
 import { ArrowRight } from '@lucide/vue';
 
-import type { WithClassAsProps } from './interface';
-import { useCarousel } from './useCarousel';
-
 import { cn } from '@/Utils/Shadcn/utils';
 import { Button, type ButtonVariants } from '@/Components/ui/button';
+
+import type { WithClassAsProps } from './interface';
+import { useCarousel } from './useCarousel';
 
 const props = withDefaults(defineProps<{
   variant?: ButtonVariants['variant'];

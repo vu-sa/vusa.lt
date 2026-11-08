@@ -34,13 +34,13 @@
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import RCTypeSlugSelect from '../Editor/RCTypeSlugSelect.vue';
-import RCTenantMultiSelect from '../Editor/RCTenantMultiSelect.vue';
-
 import type { InstitutionList } from '@/Types/contentParts';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { NumberField } from '@/Components/ui/number-field';
 import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
+
+import RCTenantMultiSelect from '../Editor/RCTenantMultiSelect.vue';
+import RCTypeSlugSelect from '../Editor/RCTypeSlugSelect.vue';
 
 const options = defineModel<InstitutionList['options']>({ required: true });
 

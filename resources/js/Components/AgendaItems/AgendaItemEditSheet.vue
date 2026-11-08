@@ -19,9 +19,9 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
 
-import AgendaItemSheetForm from './AgendaItemSheetForm.vue';
-
 import { agendaItemFormData, useAgendaItemAutosave, type AgendaItemFormData, type EditableAgendaItemSource } from '@/Composables/useAgendaItemAutosave';
+
+import AgendaItemSheetForm from './AgendaItemSheetForm.vue';
 
 /** The agenda item sheet for a page that lists items and has no form of its own. */
 const props = withDefaults(defineProps<{

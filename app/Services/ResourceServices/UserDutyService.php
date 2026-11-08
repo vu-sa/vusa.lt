@@ -2,6 +2,7 @@
 
 namespace App\Services\ResourceServices;
 
+use App\Actions\Responsibilities\AuthorizeDutyAssignment;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
@@ -11,6 +12,7 @@ use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class UserDutyService
@@ -64,6 +66,10 @@ class UserDutyService
             ]);
         }
 
+        foreach ($newDutyIds as $dutyId) {
+            AuthorizeDutyAssignment::execute(Auth::user(), $duties->get($dutyId), (string) $user->id);
+        }
+
         foreach ($removedDutyIds as $dutyId) {
             $rows = Dutiable::query()->where('duty_id', $dutyId)
                 ->where('dutiable_type', MorphMap::alias(User::class))->where('dutiable_id', $user->id)->current()->get();
@@ -73,7 +79,7 @@ class UserDutyService
         }
 
         // Log duty changes as a single relation_updated activity on the user.
-        $user->auditRelationChange('current_duties', function () use ($newDutyIds, $removedDutyIds, $duties, $user): void {
+        DB::transaction(fn () => $user->auditRelationChange('current_duties', function () use ($newDutyIds, $removedDutyIds, $duties, $user): void {
             foreach ($newDutyIds as $dutyId) {
                 // Prevent duplicate active duty rows from concurrent saves.
                 $alreadyActive = Dutiable::query()
@@ -104,7 +110,7 @@ class UserDutyService
                     ->get()
                     ->each(fn (Dutiable $dutiable) => $dutiable->update(['end_date' => now()->subDay()]));
             }
-        });
+        }));
     }
 
     /**

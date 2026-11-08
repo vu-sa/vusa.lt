@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import NewsArticleLayout from '../NewsArticleLayout.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import NewsArticleLayout from '../NewsArticleLayout.vue';
 
 /**
  * The article header, which used to be four near-duplicated layout branches and is now one.

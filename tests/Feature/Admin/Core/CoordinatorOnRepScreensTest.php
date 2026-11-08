@@ -175,12 +175,12 @@ describe('the coordinator is one tap away on rep screens (R-g)', function (): vo
         );
     });
 
-    test('the meeting record leaves the coordinators out, even among its deferred panels', function (): void {
+    test('the meeting record leaves the coordinators out, even among its optional panels', function (): void {
         $meeting = Meeting::factory()->hasAttached($this->institution)->create();
 
         asUserWithInertia(makeAdminUser())->get(route('meetings.show', $meeting))->assertInertia(fn (Assert $page) => $page
             ->missing('coordinators')
-            ->loadDeferredProps('meetingPanels', fn (Assert $page) => $page->missing('coordinators'))
+            ->reloadOnly(['tasks', 'documents', 'pendingDocuments'], fn (Assert $page) => $page->missing('coordinators'))
         );
     });
 });

@@ -60,7 +60,7 @@ class InstitutionAccessService
     ): Collection {
         $cacheKey = self::getAccessCacheKey($user->id, $includeRelated);
 
-        return Cache::remember($cacheKey, fn () => AuthorityCacheExpiry::for($user, self::CACHE_TTL), function () use ($user, $includeRelated) {
+        return Cache::memo()->remember($cacheKey, fn () => AuthorityCacheExpiry::for($user, self::CACHE_TTL), function () use ($user, $includeRelated) {
             $institutionIds = collect();
 
             // 1. Direct duty institutions
@@ -213,7 +213,7 @@ class InstitutionAccessService
      */
     public static function invalidateForUser(string $userId): void
     {
-        Cache::forget(self::getAccessCacheKey($userId));
-        Cache::forget(self::getAccessCacheKey($userId, includeRelated: false));
+        Cache::memo()->forget(self::getAccessCacheKey($userId));
+        Cache::memo()->forget(self::getAccessCacheKey($userId, includeRelated: false));
     }
 }

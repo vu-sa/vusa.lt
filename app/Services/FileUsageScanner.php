@@ -29,17 +29,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * Finds every record that references a File Manager file, so the admin can
- * tell whether deleting it would break a page, image or link.
- *
- * Two stages: an SQL pre-filter on substrings every encoding of the path keeps
- * (FileReferenceMatcher::coarseNeedles()), then an exact check of each
- * candidate value in PHP (FileReferenceMatcher::matches()).
- */
+/** Counts live, draft and trashed references so deleting a file cannot silently break stored content. */
 class FileUsageScanner
 {
     /**
@@ -98,9 +92,9 @@ class FileUsageScanner
 
     /**
      * @param  string  $filePath  a File Manager path: `public/files/…`, `uploads/files/…` or relative to `files/`
-     * @return array{file_url: string, total_usages: int, is_safe_to_delete: bool, file_exists: bool, usage_details: list<array<string, mixed>>, scanned_models: list<string>, scanned_at: string}
+     * @return array{file_url: string, total_usages: int, is_safe_to_delete: bool, file_exists: bool, hidden_usages: int, usage_details: list<array<string, mixed>>, scanned_models: list<string>, scanned_at: string}
      */
-    public function scanFileUsage(string $filePath): array
+    public function scanFileUsage(string $filePath, ?User $viewer = null): array
     {
         $relativePath = $this->relativePath($filePath);
 
@@ -118,9 +112,9 @@ class FileUsageScanner
             }
 
             $details = $key === 'contentParts'
-                ? $this->contentPartDetails($ids)
+                ? $this->contentPartDetails($ids, $viewer)
                 : self::queryIncludingTrashed($modelClass)->whereKey($ids)->get()
-                    ->map(fn (Model $model): array => $this->detail($key, $model))
+                    ->map(fn (Model $model): ?array => $this->detail($key, $model, $viewer))
                     ->all();
 
             array_push($usageDetails, ...$details);
@@ -131,7 +125,8 @@ class FileUsageScanner
             'total_usages' => count($usageDetails),
             'is_safe_to_delete' => $usageDetails === [],
             'file_exists' => Storage::exists('public/files/'.$relativePath),
-            'usage_details' => $usageDetails,
+            'usage_details' => array_values(array_filter($usageDetails)),
+            'hidden_usages' => count($usageDetails) - count(array_filter($usageDetails)),
             'scanned_models' => array_keys(self::targets()),
             'scanned_at' => now()->toISOString(),
         ];
@@ -213,20 +208,20 @@ class FileUsageScanner
      * Content blocks are reported once per owning page, article or tenant homepage.
      *
      * @param  list<int|string>  $ids
-     * @return list<array<string, mixed>>
+     * @return list<array<string, mixed>|null>
      */
-    private function contentPartDetails(array $ids): array
+    private function contentPartDetails(array $ids, ?User $viewer): array
     {
         return ContentPart::query()
             ->whereKey($ids)
             ->with(['content.news', 'content.page', 'content.tenantHomepageContent.tenant'])
             ->get()
             ->groupBy('content_id')
-            ->map(function ($parts, $contentId): array {
+            ->map(function ($parts, $contentId) use ($viewer): ?array {
                 $owner = $parts->first()->content->owner();
 
                 $detail = $owner !== null
-                    ? $this->detail(strtolower(class_basename($owner)), $owner)
+                    ? $this->detail(strtolower(class_basename($owner)), $owner, $viewer)
                     : [
                         'model_type' => 'content',
                         'model_class' => ContentPart::class,
@@ -237,17 +232,23 @@ class FileUsageScanner
                         'updated_at' => null,
                     ];
 
-                return [...$detail, 'matched_parts_count' => $parts->count()];
+                return $detail === null || ($owner === null && $viewer !== null)
+                    ? null
+                    : [...$detail, 'matched_parts_count' => $parts->count()];
             })
             ->values()
             ->all();
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<string, mixed>|null
      */
-    private function detail(string $modelType, Model $model): array
+    private function detail(string $modelType, Model $model, ?User $viewer = null): ?array
     {
+        if ($viewer !== null && ! $this->canView($viewer, $model)) {
+            return null;
+        }
+
         return [
             'model_type' => $modelType,
             'model_class' => $model::class,
@@ -257,6 +258,51 @@ class FileUsageScanner
             'created_at' => $model->getAttribute('created_at'),
             'updated_at' => $model->getAttribute('updated_at'),
         ];
+    }
+
+    private function canView(User $viewer, Model $model): bool
+    {
+        if ($model instanceof ContentEditorDraft) {
+            if ($model->user_id !== $viewer->id) {
+                return false;
+            }
+
+            $class = match ($model->kind) {
+                'pages' => Page::class,
+                'news' => News::class,
+                default => null,
+            };
+            if ($class === null) {
+                return false;
+            }
+
+            if (preg_match('/^record-([1-9][0-9]*)$/', $model->identity, $matches) === 1) {
+                $record = self::queryIncludingTrashed($class)->find($matches[1]);
+
+                return $record !== null && Gate::forUser($viewer)->allows('update', $record);
+            }
+
+            return preg_match('/^new-[0-9a-f-]{36}$/', $model->identity) === 1
+                && Gate::forUser($viewer)->allows('create', $class);
+        }
+
+        $record = match (true) {
+            $model instanceof FormField => self::queryIncludingTrashed(Form::class)->find($model->form_id),
+            $model instanceof Step => $model->goal_id !== null
+                ? self::queryIncludingTrashed(Goal::class)->find($model->goal_id)
+                : self::queryIncludingTrashed(Problem::class)->find($model->problem_id),
+            $model instanceof Dutiable => self::queryIncludingTrashed(Duty::class)->find($model->duty_id),
+            default => $model,
+        };
+
+        if ($record === null) {
+            return false;
+        }
+
+        $policy = Gate::getPolicyFor($record);
+        $ability = $policy !== null && method_exists($policy, 'view') ? 'view' : 'update';
+
+        return Gate::forUser($viewer)->allows($ability, $record);
     }
 
     private function title(Model $model): string

@@ -2,10 +2,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
 
+import { createMockForm } from '@/tests/helpers/createMockForm';
+
 import CreateDuty from '../CreateDuty.vue';
 import CreateInstitution from '../CreateInstitution.vue';
-
-import { createMockForm } from '@/tests/helpers/createMockForm';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

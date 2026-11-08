@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexPermissionRequest;
 use App\Models\Permission;
+use Inertia\Inertia;
 use Inertia\Response;
 
 class PermissionController extends AdminController
@@ -17,7 +18,7 @@ class PermissionController extends AdminController
         $this->handleAuthorization('viewAny', Permission::class);
 
         // A short list sent whole: the collection searches, sorts and filters it in the browser.
-        return $this->inertiaResponse('Admin/Permissions/IndexPermission', [
+        return Inertia::render('Admin/Permissions/IndexPermission', [
             'permissions' => Permission::query()->orderBy('name')->get(['id', 'name', 'created_at', 'updated_at']),
         ]);
     }

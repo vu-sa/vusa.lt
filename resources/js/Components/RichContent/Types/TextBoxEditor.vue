@@ -46,6 +46,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
+
 import IFluentInfoIcon from '~icons/fluent/info-24-regular';
 
 const modelValue = defineModel<TextBox['json_content']>();

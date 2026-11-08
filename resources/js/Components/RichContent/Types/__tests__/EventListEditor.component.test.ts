@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
+import type { EventList } from '@/Types/contentParts';
+
 import EventListEditor from '../EventListEditor.vue';
 import { createContentItem } from '../index';
-
-import type { EventList } from '@/Types/contentParts';
 
 function makeItem(): { json_content: EventList['json_content']; options: EventList['options'] } {
   const item = createContentItem('event-list');

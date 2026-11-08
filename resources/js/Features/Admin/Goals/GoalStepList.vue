@@ -16,7 +16,7 @@
           <li v-for="reference in references(step)" :key="reference.key">
             <component
               :is="reference.external ? 'a' : Link"
-              :href="reference.href"
+              :href="safeHref(reference.href)"
               v-bind="reference.external ? { target: '_blank', rel: 'noopener' } : {}"
               class="inline-flex min-h-6 items-center gap-1 text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline pointer-coarse:min-h-11"
             >
@@ -54,11 +54,12 @@ import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
 import { ExternalLink, Pencil, Trash2 } from '@lucide/vue';
 import type { Component } from 'vue';
 
-import { translatedText, type GoalStep } from './types';
-
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import { AgendaItemIcon, DocumentIcon, GoalIcon, ProblemIcon } from '@/Components/icons';
 import { formatDate } from '@/Utils/dateTime';
+import { safeHref } from '@/Utils/safeHref';
+
+import { translatedText, type GoalStep } from './types';
 
 const props = defineProps<{
   steps: GoalStep[];

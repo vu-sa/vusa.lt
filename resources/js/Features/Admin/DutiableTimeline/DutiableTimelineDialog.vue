@@ -22,10 +22,10 @@
 
 <script setup lang="ts">
 
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
+
 import DutiableTimelineEditor from './DutiableTimelineEditor.vue';
 import type { TimelineScopeType } from './types';
-
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 
 defineProps<{
   open: boolean;

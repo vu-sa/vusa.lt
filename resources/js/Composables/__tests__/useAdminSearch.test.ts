@@ -40,6 +40,27 @@ afterEach(() => {
 });
 
 describe('useAdminSearch collection searches', () => {
+  it('refreshes fifteen minute keys before the next search reaches their expiry', async () => {
+    vi.useFakeTimers();
+    const initial = { ...config, expiresAt: Math.floor(Date.now() / 1000) + 900 };
+    const refreshed = { ...initial, headerKey: 'new-header', expiresAt: initial.expiresAt + 841,
+      collections: { institutions: { ...initial.collections.institutions, key: 'new-key' } } };
+    const fetchMock = vi.fn().mockResolvedValueOnce(json(initial))
+      .mockResolvedValueOnce(json({ success: true, config: refreshed }))
+      .mockResolvedValueOnce(json({ results: [{ hits: [{ document: { id: 'i1' } }], found: 1 }] }));
+    vi.stubGlobal('fetch', fetchMock);
+    const search = createSearch();
+    await search.initialize();
+
+    vi.advanceTimersByTime(841_000);
+    const result = await search.searchWithFacets('institutions', '*', { facetBy: 'tenant_shortname' });
+
+    expect(fetchMock.mock.calls[1][0]).toBe('/api.v1.admin.search.refreshKey');
+    expect(fetchMock.mock.calls[1][1]).toMatchObject({ method: 'POST', headers: { 'X-CSRF-TOKEN': 'csrf-token' } });
+    expect(fetchMock.mock.calls[2][1].headers['X-TYPESENSE-API-KEY']).toBe('new-header');
+    expect(JSON.parse(fetchMock.mock.calls[2][1].body).searches[0]['x-typesense-api-key']).toBe('new-key');
+    expect(result.hits).toEqual([{ id: 'i1' }]);
+  });
 
   it('shares a single config request between callers', async () => {
     const fetchMock = vi.fn().mockResolvedValue(json(config));
@@ -73,7 +94,7 @@ describe('useAdminSearch collection searches', () => {
 
   it('does not restore an old user config when its request finishes late', async () => {
     let resolveOld!: (response: ReturnType<typeof json>) => void;
-    const fetchMock = vi.fn().mockImplementationOnce(() => new Promise(resolve => { resolveOld = resolve; }))
+    const fetchMock = vi.fn().mockImplementationOnce(() => new Promise((resolve) => { resolveOld = resolve; }))
       .mockResolvedValueOnce(json({ ...config, headerKey: 'new-user-header' }));
     vi.stubGlobal('fetch', fetchMock);
     const search = createSearch();
@@ -147,8 +168,8 @@ describe('useAdminSearch collection searches', () => {
     const { searches } = JSON.parse(fetchMock.mock.calls[1][1].body);
     expect(searches).toHaveLength(2);
     expect(searches).toEqual(expect.arrayContaining([
-      expect.objectContaining({ collection: 'admin_meetings', 'x-typesense-api-key': 'meeting-key' }),
-      expect.objectContaining({ collection: 'institutions', 'x-typesense-api-key': 'scoped-key' }),
+      expect.objectContaining({ 'collection': 'admin_meetings', 'x-typesense-api-key': 'meeting-key' }),
+      expect.objectContaining({ 'collection': 'institutions', 'x-typesense-api-key': 'scoped-key' }),
     ]));
   });
 

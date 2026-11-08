@@ -31,8 +31,9 @@ class SendTaskOverdueReminders extends Command
             ->get();
 
         $tasksByUser = [];
+        $audienceMemo = collect();
         foreach ($overdueTasks as $task) {
-            foreach ($task->notifiableUsers() as $user) {
+            foreach ($task->notifiableUsers($audienceMemo) as $user) {
                 $tasksByUser[$user->id][] = $task;
             }
         }

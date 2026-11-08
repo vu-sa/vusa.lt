@@ -69,6 +69,10 @@
 import { computed, defineAsyncComponent } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { EyebrowLabel } from '@/Components/Public/Base';
+import type { Hero } from '@/Types/contentParts';
+import { hasHtmlText } from '@/Utils/String';
+
 import RCInlineText from '../Editor/Fullscreen/RCInlineText.vue';
 import { injectActiveHotspot } from '../Editor/Fullscreen/useActiveHotspot';
 import type { BandResolution } from '../bandLayout';
@@ -77,10 +81,6 @@ import HeroElement from './HeroElement.vue';
 import HeroButtonsEditable from './HeroButtonsEditable.vue';
 import HeroImageHotspot from './HeroImageHotspot.vue';
 import { heroButtonsClass, heroDescriptionClass, heroTitleAlignmentClass, heroTitleClass } from './heroLayout';
-
-import { EyebrowLabel } from '@/Components/Public/Base';
-import type { Hero } from '@/Types/contentParts';
-import { hasHtmlText } from '@/Utils/String';
 
 // Lazy-loaded: title/description only ever mount a *live* TiptapEditor while claimed.
 const TiptapEditor = defineAsyncComponent(() => import('@/Components/TipTap/TiptapEditor.vue'));

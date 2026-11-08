@@ -42,3 +42,9 @@ Extends the picker rules above.
 - Several of many → `MultiSelect` chips; tags → `TagMultiSelect`.
 - One picker per data kind, so never a second date picker. The trigger shows readable text plus context, never an id. Optional fields get "Išvalyti". Lithuanian locale: Monday first, 24h.
 - No dialog inside a dialog: on mobile, a picker opened from a sheet replaces the sheet's content, with a back action.
+
+## One search-hit presentation, contextual shells
+Search hits render `SearchHitRow` from a `NormalizedSearchHit`; do not hand-roll result rows.
+Use `SearchResultList` for dialogs and `CommandItem` for the palette.
+Use `InlineSearchField` for inline pickers in sheets/forms, with `UserSearchField` for people from the users API.
+Keep ActionWindow cards contextual, sharing matches through `useSearchHitMatches`.

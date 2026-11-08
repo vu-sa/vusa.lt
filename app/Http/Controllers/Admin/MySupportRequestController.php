@@ -17,20 +17,21 @@ use App\Notifications\SupportRequestCreatedNotification;
 use App\Notifications\SupportRequestInvolvedNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Notification;
+use Inertia\Inertia;
 use Inertia\Response;
 
 class MySupportRequestController extends AdminController
 {
     public function index(IndexSupportRequestRequest $request, BuildSupportRequestCollection $builder): Response
     {
-        return $this->inertiaResponse('Admin/Dashboard/ShowSupportRequests', $builder->execute($request));
+        return Inertia::render('Admin/Dashboard/ShowSupportRequests', $builder->execute($request));
     }
 
     public function create()
     {
         $this->authorize('create', SupportRequest::class);
 
-        return $this->inertiaResponse('Admin/SupportRequests/CreateSupportRequest', [
+        return Inertia::render('Admin/SupportRequests/CreateSupportRequest', [
             ...static::formOptions(),
             'users' => User::query()->orderBy('name')->get(['id', 'name', 'profile_photo_path']),
         ]);

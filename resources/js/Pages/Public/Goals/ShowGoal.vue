@@ -50,12 +50,12 @@
                 </SmartLink>
               </li>
               <li v-if="step.document">
-                <a :href="step.document.url" target="_blank" rel="noopener" class="inline-flex min-h-11 items-center gap-1 text-muted-foreground underline underline-offset-4 hover:text-brand sm:min-h-0">
+                <a :href="safeHref(step.document.url)" target="_blank" rel="noopener" class="inline-flex min-h-11 items-center gap-1 text-muted-foreground underline underline-offset-4 hover:text-brand sm:min-h-0">
                   {{ step.document.title }}
                 </a>
               </li>
               <li v-if="step.url">
-                <a :href="step.url" target="_blank" rel="noopener" class="inline-flex min-h-11 items-center gap-1 text-muted-foreground underline underline-offset-4 hover:text-brand sm:min-h-0">
+                <a :href="safeHref(step.url)" target="_blank" rel="noopener" class="inline-flex min-h-11 items-center gap-1 text-muted-foreground underline underline-offset-4 hover:text-brand sm:min-h-0">
                   {{ $t('goals.public.link') }}
                 </a>
               </li>
@@ -92,6 +92,8 @@ import SmartLink from '@/Components/Public/SmartLink.vue';
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import type { GoalStatus } from '@/Types/enums';
 import { formatDate } from '@/Utils/dateTime';
+import { safeHref } from '@/Utils/safeHref';
+
 import IFluentArrowLeft16Regular from '~icons/fluent/arrow-left-16-regular';
 
 const props = defineProps<{

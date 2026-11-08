@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { computed, ref } from 'vue';
 
-import { useGanttLayout, type GanttInstitutionMeta } from '../useGanttLayout';
-
 import type { GanttGroupBy } from '@/Components/Graphs/composables/useGanttSettings';
+
+import { useGanttLayout, type GanttInstitutionMeta } from '../useGanttLayout';
 
 const institutions: GanttInstitutionMeta[] = [
   { id: 'senatas', tenant_id: 1, types: [{ id: 't-council', title: 'Taryba' }, { id: 't-senate', title: 'Senatas ir jo komitetai' }] },

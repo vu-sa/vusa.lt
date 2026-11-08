@@ -1,10 +1,10 @@
 import { CalendarClock } from '@lucide/vue';
 import { describe, expect, it } from 'vitest';
 
-import { newsStatus } from '../newsStatus';
-
 import { contentStatuses } from '@/Constants/statusIcons';
 import type { NewsSearchResult } from '@/Shared/Search/types';
+
+import { newsStatus } from '../newsStatus';
 
 const news = (overrides: Partial<NewsSearchResult>): NewsSearchResult => ({
   id: '1',

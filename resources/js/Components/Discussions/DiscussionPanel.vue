@@ -103,13 +103,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { BarChart3, MessagesSquare } from '@lucide/vue';
 
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
-import CommentComposer from '@/Components/Discussions/CommentComposer.vue';
 import CommentThread from '@/Components/Discussions/CommentThread.vue';
 import PollComposer from '@/Components/Discussions/PollComposer.vue';
 import { Button } from '@/Components/ui/button';
@@ -123,6 +122,8 @@ import {
 } from '@/Components/ui/dialog';
 import { useDiscussionThread } from '@/Composables/useDiscussionThread';
 import type { PollDraft } from '@/Types/discussions';
+
+const CommentComposer = defineAsyncComponent(() => import('@/Components/Discussions/CommentComposer.vue'));
 
 const props = withDefaults(defineProps<{
   commentableType: string;

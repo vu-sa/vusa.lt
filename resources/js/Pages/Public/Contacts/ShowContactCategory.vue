@@ -83,6 +83,7 @@ import NewInstitutionCard from '@/Components/Public/Institutions/NewInstitutionC
 import { toPlainText } from '@/Components/Public/Institutions/useInstitutionCard';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { TypeIcon } from '@/Components/icons';
+
 import IFluentPeople16Regular from '~icons/fluent/people-16-regular';
 import IFluentArrowRight16Regular from '~icons/fluent/arrow-right-16-regular';
 

@@ -1,9 +1,9 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
-import CollectionPrimaryCell from '../CollectionPrimaryCell.vue';
-
 import { documentWithMatch, type SearchMatchDocument } from '@/Shared/Search/matches';
+
+import CollectionPrimaryCell from '../CollectionPrimaryCell.vue';
 
 describe('CollectionPrimaryCell', () => {
   it('highlights the existing title and shows a distinct excerpt in place of the sub-line', () => {

@@ -89,11 +89,6 @@ import { Link, router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronRight, Pencil, Trash2 } from '@lucide/vue';
 
-import ReservationDecisionDialog from './ReservationDecisionDialog.vue';
-import ResourceManagers, { type ResourceManagerContact } from './ResourceManagers.vue';
-import { reservationRowActions } from './reservationRowActions';
-import type { ReservationDecision } from './types';
-
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import { ResourceIcon } from '@/Components/icons';
@@ -102,6 +97,11 @@ import ReservationPeriod from '@/Components/SmallElements/ReservationPeriod.vue'
 import { reservationResourceStatuses, type ReservationResourceStatus } from '@/Constants/statusIcons';
 import type { DashboardReservation } from '@/Utils/ReservationStatus';
 import { formatDateTime } from '@/Utils/dateTime';
+
+import type { ReservationDecision } from './types';
+import { reservationRowActions } from './reservationRowActions';
+import ResourceManagers, { type ResourceManagerContact } from './ResourceManagers.vue';
+import ReservationDecisionDialog from './ReservationDecisionDialog.vue';
 
 interface ApprovalRow {
   id: string;

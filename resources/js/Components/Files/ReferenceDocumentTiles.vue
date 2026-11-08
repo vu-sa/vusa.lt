@@ -37,11 +37,11 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { BookOpen, ExternalLink, FileText } from '@lucide/vue';
 
-import type { FileableFileItem } from './types';
-
 import { RuledGrid } from '@/Components/Brand';
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 import { fileTypeLabel } from '@/Constants/fileTypes';
+
+import type { FileableFileItem } from './types';
 
 defineProps<{
   files: FileableFileItem[];

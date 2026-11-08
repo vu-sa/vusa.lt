@@ -110,7 +110,7 @@
 
             <a
               v-if="contact.facebook_url"
-              :href="contact.facebook_url"
+              :href="safeHref(contact.facebook_url)"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Facebook"
@@ -126,11 +126,8 @@
 </template>
 
 <script setup lang="ts">
-
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
-
-import InfoPopover from '../Buttons/InfoPopover.vue';
 
 import type { ImageData } from '@/Types/media';
 import MediaImage from '@/Components/Brand/MediaImage.vue';
@@ -138,9 +135,14 @@ import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { changeDutyNameEndings, type DutyPronouns } from '@/Utils/String';
-import IFluentPhone20Regular from '~icons/fluent/phone-20-regular';
-import IFluentPerson24Regular from '~icons/fluent/person-24-regular';
+import { stripHtml } from '@/Utils/html';
+import { safeHref } from '@/Utils/safeHref';
+
+import InfoPopover from '../Buttons/InfoPopover.vue';
+
 import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
+import IFluentPerson24Regular from '~icons/fluent/person-24-regular';
+import IFluentPhone20Regular from '~icons/fluent/phone-20-regular';
 
 const props = defineProps<{
   contact: App.Entities.User & { duty_pronouns?: DutyPronouns; profile_photo_media?: ImageData | null };
@@ -172,9 +174,7 @@ const hasDutyDescription = (duty: App.Entities.Duty): boolean => {
     return false;
   }
 
-  const container = document.createElement('div');
-  container.innerHTML = desc;
-  return (container.textContent ?? '').trim().length > 0;
+  return stripHtml(desc).trim().length > 0;
 };
 
 // Some users have multiple duties, so we need to show all of their emails AND duty name

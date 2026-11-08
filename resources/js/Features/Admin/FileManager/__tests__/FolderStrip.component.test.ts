@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import FolderStrip from '../Components/FolderStrip.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import FolderStrip from '../Components/FolderStrip.vue';
 
 const wrappers: ReturnType<typeof mount>[] = [];
 

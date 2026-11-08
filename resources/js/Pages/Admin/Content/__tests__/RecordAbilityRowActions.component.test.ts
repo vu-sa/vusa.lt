@@ -2,6 +2,8 @@ import { mount } from '@vue/test-utils';
 import { ref, type Component } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { AdminRecordAction } from '@/Types/AdminRecordAction';
+
 import IndexAgendaItem from '../../Representation/IndexAgendaItem.vue';
 import IndexResource from '../../Reservations/IndexResource.vue';
 import IndexResponsibility from '../../Permissions/IndexResponsibility.vue';
@@ -10,8 +12,6 @@ import IndexGoal from '../../Goals/IndexGoal.vue';
 import IndexForm from '../../Forms/IndexForm.vue';
 import IndexDuty from '../../People/IndexDuty.vue';
 import IndexProblem from '../../Problems/IndexProblem.vue';
-
-import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 const permissions = vi.hoisted(() => ({ update: false, delete: false }));

@@ -153,6 +153,28 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
     }
 
     /**
+     * Columns that record a user's own state rather than who they are or what they may access.
+     */
+    public const BOOKKEEPING_ATTRIBUTES = [
+        'ui_preferences', 'notification_preferences', 'tutorial_progress',
+        'last_action', 'last_changelog_check', 'remember_token', 'microsoft_token', 'updated_at',
+    ];
+
+    /**
+     * Whether the last save changed only bookkeeping columns, so access caches, search and syncs can skip it.
+     */
+    public function changedOnlyBookkeeping(): bool
+    {
+        return ! $this->wasRecentlyCreated
+            && array_diff(array_keys($this->getChanges()), self::BOOKKEEPING_ATTRIBUTES) === [];
+    }
+
+    public function searchIndexShouldBeUpdated(): bool
+    {
+        return ! $this->changedOnlyBookkeeping();
+    }
+
+    /**
      * notification_preferences and ui_preferences are large JSON blobs that
      * churn on every settings tweak; password is already covered by the
      * global default_except_attributes exclusion.
@@ -206,8 +228,8 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
             'institution_ids' => $institutionIds,
             // Current duties are indexed (and weighted) above previous ones for search relevance.
             // Names + ids are kept index-aligned so the detail pane can render clickable links.
-            'pronouns_lt' => $this->getTranslation('pronouns', 'lt', false),
-            'pronouns_en' => $this->getTranslation('pronouns', 'en', false),
+            'pronouns_lt' => $this->show_pronouns ? $this->getTranslation('pronouns', 'lt', false) : '',
+            'pronouns_en' => $this->show_pronouns ? $this->getTranslation('pronouns', 'en', false) : '',
             'current_duty_names_lt' => $currentDuties->map(fn (Duty $duty) => $duty->getTranslation('name', 'lt'))->all(),
             'current_duty_names_en' => $currentDuties->map(fn (Duty $duty) => $duty->getTranslation('name', 'en'))->all(),
             'current_duty_use_original_names' => $currentDuties->map(fn (Duty $duty) => (bool) $duty->pivot?->use_original_duty_name)->all(),
@@ -407,7 +429,7 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
         return $this->institutions()->where('institutions.id', $institution->id)->exists();
     }
 
-    public function reservations()
+    public function reservations(): BelongsToMany
     {
         return $this->belongsToMany(Reservation::class)->withTimestamps();
     }

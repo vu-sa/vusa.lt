@@ -4,6 +4,7 @@ namespace App\Services\Typesense;
 
 use App\Models\Calendar;
 use App\Models\Content;
+use App\Models\Duty;
 use App\Models\News;
 use App\Models\Page;
 use App\Services\ContentService;
@@ -21,6 +22,9 @@ class SearchText
     public static function forModel(Model $model): array
     {
         $result = [];
+        if ($model instanceof Duty) {
+            $model->loadMissing('institution.tenant');
+        }
         if ($model instanceof News || $model instanceof Page) {
             $model->loadMissing('content.parts', 'tags');
             $content = $model->getRelation('content');
@@ -65,6 +69,10 @@ class SearchText
                 foreach ($model->tags as $tag) {
                     $parts[] = $tag->getTranslations('name')[$locale] ?? '';
                 }
+            }
+            if ($model instanceof Duty) {
+                $parts[] = $model->institution?->getTranslations('name')[$locale] ?? '';
+                $parts[] = $model->institution?->tenant->shortname ?? '';
             }
             $result['search_text_'.$locale] = self::plain(implode(' ', $parts));
         }

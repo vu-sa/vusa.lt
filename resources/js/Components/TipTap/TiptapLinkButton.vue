@@ -102,9 +102,6 @@ import { computed, ref } from 'vue';
 import type { Editor } from '@tiptap/core';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import TiptapLinkForm from './TiptapLinkForm.vue';
-import { isValidTiptapLink } from './linkUrl';
-
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
@@ -114,6 +111,9 @@ import FileSelector from '@/Features/Admin/FileManager/FileSelector.vue';
 import { InlineCollectionSelect } from '@/Features/Admin/AdminSearch/Components/Select';
 import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { Spinner } from '@/Components/ui/spinner';
+
+import { isValidTiptapLink } from './linkUrl';
+import TiptapLinkForm from './TiptapLinkForm.vue';
 
 const props = defineProps<{
   editor?: Editor | null;

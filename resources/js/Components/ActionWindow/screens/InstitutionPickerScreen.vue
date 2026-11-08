@@ -28,6 +28,8 @@
         :title="institution.name"
         :icon="statusStyle(institution).icon"
         :tone="statusStyle(institution).tone"
+        indicator="check"
+        :selected="draft.institution?.id === institution.id"
         @click="pick(institution)"
       >
         <template #description>
@@ -54,12 +56,6 @@ import { computed, onMounted, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Landmark, Search as SearchIcon } from '@lucide/vue';
 
-import ActionChoiceButton from '../ActionChoiceButton.vue';
-import ActionChoiceList from '../ActionChoiceList.vue';
-import ActionWindowScreen from '../ActionWindowScreen.vue';
-import { institutionStatusStyle } from '../institutionStatusStyle';
-import { useWindowDates } from '../useWindowDates';
-
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { useActionWindowData, type ActionWindowInstitution } from '@/Composables/useActionWindowData';
@@ -67,6 +63,12 @@ import { describeInstitutionActivity } from '@/Components/Institutions/instituti
 import { EmptyState } from '@/Components/Patterns';
 import { Input } from '@/Components/ui/input';
 import { Skeleton } from '@/Components/ui/skeleton';
+
+import { useWindowDates } from '../useWindowDates';
+import { institutionStatusStyle } from '../institutionStatusStyle';
+import ActionWindowScreen from '../ActionWindowScreen.vue';
+import ActionChoiceList from '../ActionChoiceList.vue';
+import ActionChoiceButton from '../ActionChoiceButton.vue';
 
 /** Above this many institutions, scanning beats scrolling. */
 const SEARCH_THRESHOLD = 8;

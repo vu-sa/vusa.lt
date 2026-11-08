@@ -2,10 +2,10 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { ref } from 'vue';
 
-import ContentAnalyticsCard from '../ContentAnalyticsCard.vue';
-
 import { commonStubs } from '@/tests/stubs';
 import type { ContentAnalyticsData } from '@/Types/api.d';
+
+import ContentAnalyticsCard from '../ContentAnalyticsCard.vue';
 
 const mockController = {
   data: ref<ContentAnalyticsData | null>(null),

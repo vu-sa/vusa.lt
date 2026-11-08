@@ -134,6 +134,7 @@ import { useFacetOptions } from '@/Shared/Search/useFacetOptions';
 import { controlCountClass, controlVariants } from '@/Components/ui/control';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { cn } from '@/Utils/Shadcn/utils';
+
 import IFluentChevronDown16Regular from '~icons/fluent/chevron-down-16-regular';
 import IFluentCheckmark16Filled from '~icons/fluent/checkmark-16-filled';
 import IFluentSearch16Regular from '~icons/fluent/search-16-regular';

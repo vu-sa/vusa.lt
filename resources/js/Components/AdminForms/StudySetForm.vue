@@ -219,9 +219,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Plus, SlidersHorizontal, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
-import FormFieldWrapper from './FormFieldWrapper.vue';
-import TenantSelectField from './TenantSelectField.vue';
-
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog } from '@/Components/Patterns';
 import FormPanel from '@/Components/Patterns/FormPanel.vue';
@@ -238,6 +235,9 @@ import { Textarea } from '@/Components/ui/textarea';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { bannerStatuses } from '@/Constants/statusIcons';
 import { ModelEnum } from '@/Types/enums';
+
+import TenantSelectField from './TenantSelectField.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
 
 interface CourseForm {
   id?: string;

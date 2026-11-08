@@ -27,9 +27,6 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 
-import { getTaskRowActions, type TaskActionKey } from './taskActions';
-import TaskCompletionControl from './TaskCompletionControl.vue';
-
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import type { CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
@@ -40,6 +37,9 @@ import {
   isOrphanedTask,
   type TaskDisplayData,
 } from '@/Composables/useTaskPresentation';
+
+import TaskCompletionControl from './TaskCompletionControl.vue';
+import { getTaskRowActions, type TaskActionKey } from './taskActions';
 
 /**
  * One task as a list row: the collection's rows view and every embedded task list on a record

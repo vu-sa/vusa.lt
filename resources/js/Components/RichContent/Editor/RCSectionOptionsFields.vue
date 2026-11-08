@@ -72,13 +72,13 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 
-import RCPresentationPicker from './RCPresentationPicker.vue';
-
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Switch } from '@/Components/ui/switch';
 import type { SectionOptions } from '@/Types/contentParts';
+
+import RCPresentationPicker from './RCPresentationPicker.vue';
 
 defineProps<{ presentationDisabled?: boolean }>();
 

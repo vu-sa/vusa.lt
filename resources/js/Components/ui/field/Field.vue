@@ -15,10 +15,10 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue';
 
+import { cn } from '@/Utils/Shadcn/utils';
+
 import type { FieldVariants } from '.';
 import { fieldVariants } from '.';
-
-import { cn } from '@/Utils/Shadcn/utils';
 
 const props = defineProps<{
   class?: HTMLAttributes['class'];

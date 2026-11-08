@@ -28,13 +28,13 @@ import { computed, inject, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { usePage } from '@inertiajs/vue3';
 
-import ContentTranslationPane from './ContentTranslationPane.vue';
-
 import { contentEditorHttp as http } from '@/Composables/contentEditorHttp';
 import { CONTENT_EDITOR_CONTEXT } from '@/Components/RichContent/contentEditorContext';
 import { blankTranslation, type ContentEditorData } from '@/Composables/useContentEditor';
 import { Dialog, DialogContent, DialogTitle } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';
+
+import ContentTranslationPane from './ContentTranslationPane.vue';
 
 const props = defineProps<{ counterpartId?: number | null }>();
 const open = defineModel<boolean>('open', { default: false });

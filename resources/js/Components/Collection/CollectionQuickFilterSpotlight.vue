@@ -18,11 +18,12 @@
 </template>
 
 <script setup lang="ts">
-import type { CollectionQuickFilter } from './types';
 
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { controlVariants } from '@/Components/ui/control';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
+
+import type { CollectionQuickFilter } from './types';
 
 const props = defineProps<{
   filter: CollectionQuickFilter;

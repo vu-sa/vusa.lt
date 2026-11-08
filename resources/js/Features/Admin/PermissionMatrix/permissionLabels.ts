@@ -2,11 +2,11 @@ import { trans as $t } from 'laravel-vue-i18n';
 import type { Component } from 'vue';
 import { Settings2 } from '@lucide/vue';
 
-import type { PermissionAbility, PermissionScope } from './types';
-
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import { ModelEnum } from '@/Types/enums';
 import { pluralizeModels } from '@/Utils/String';
+
+import type { PermissionAbility, PermissionScope } from './types';
 
 export const ABILITIES: PermissionAbility[] = ['read', 'create', 'update', 'delete', 'forceDelete'];
 export const SCOPES: PermissionScope[] = ['own', 'padalinys', '*'];

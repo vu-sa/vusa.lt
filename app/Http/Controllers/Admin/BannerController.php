@@ -17,6 +17,7 @@ use App\Services\PostCreateRedirect;
 use App\Services\TanstackTableService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Cache;
+use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
 class BannerController extends AdminController
@@ -53,7 +54,7 @@ class BannerController extends AdminController
         $banners = $query->paginate($request->getPerPage())
             ->withQueryString();
 
-        return $this->inertiaResponse('Admin/Content/IndexBanner', [
+        return Inertia::render('Admin/Content/IndexBanner', [
             'banners' => [
                 'data' => $banners->getCollection()->map(fn (Banner $banner): array => [
                     ...$banner->withoutRelations()->toArray(),
@@ -83,7 +84,7 @@ class BannerController extends AdminController
     {
         $this->handleAuthorization('create', Banner::class);
 
-        return $this->inertiaResponse('Admin/Content/CreateBanner');
+        return Inertia::render('Admin/Content/CreateBanner');
     }
 
     /**
@@ -119,7 +120,7 @@ class BannerController extends AdminController
     {
         $this->handleAuthorization('update', $banner);
 
-        return $this->inertiaResponse('Admin/Content/EditBanner', [
+        return Inertia::render('Admin/Content/EditBanner', [
             'banner' => [...$banner->toArray(), 'image_media' => $banner->imageData('image')],
         ]);
     }

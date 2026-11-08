@@ -2,11 +2,11 @@ import { mount, flushPromises } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ref } from 'vue';
 
-import CollectionActivityStatus from '../CollectionActivityStatus.vue';
-import CollectionStatusMenu from '../CollectionStatusMenu.vue';
-
 import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
 import { commonStubs } from '@/tests/stubs';
+
+import CollectionActivityStatus from '../CollectionActivityStatus.vue';
+import CollectionStatusMenu from '../CollectionStatusMenu.vue';
 
 const apiMocks = vi.hoisted(() => ({ get: vi.fn(), mutate: vi.fn(), dismiss: vi.fn() }));
 vi.mock('@/Composables/useApi', () => ({ useApi: apiMocks.get, useApiMutation: apiMocks.mutate }));

@@ -25,12 +25,12 @@ import {
   TriangleAlert,
 } from '@lucide/vue';
 
-import InfoPopover from '../Buttons/InfoPopover.vue';
-
 import type { BadgeVariants } from '@/Components/ui/badge';
 import { Badge } from '@/Components/ui/badge';
 import { capitalize } from '@/Utils/String';
 import type { ReservationResourceState } from '@/Utils/ReservationStatus';
+
+import InfoPopover from '../Buttons/InfoPopover.vue';
 
 const props = defineProps<{
   state: ReservationResourceState;

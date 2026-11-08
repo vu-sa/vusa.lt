@@ -17,7 +17,7 @@
         <ul class="mt-1">
           <li v-for="linked in event.duties" :key="linked.link_id" class="flex min-h-11 flex-wrap items-center justify-between gap-x-2">
             <Link :href="route('duties.show', linked.id)" class="min-w-0 truncate font-medium hover:underline">
-              <InflectedDutyName :name="linked.name" />
+              <InflectedDutyName :name="linked.name ?? ''" />
               <span v-if="linked.institution_name" class="font-normal text-muted-foreground"> · {{ linked.institution_name }}</span>
             </Link>
             <span class="flex shrink-0 items-center gap-1">
@@ -59,17 +59,17 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Merge, X } from '@lucide/vue';
 
-import InflectedDutyName from './InflectedDutyName.vue';
-
 import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
 import { operatingStatuses } from '@/Constants/statusIcons';
 
+import InflectedDutyName from './InflectedDutyName.vue';
+
 export interface LineageLinkedDuty {
   id: string;
   link_id: number;
-  name: string;
+  name: string | null;
   is_active: boolean;
   institution_name: string | null;
   can_fold?: boolean;

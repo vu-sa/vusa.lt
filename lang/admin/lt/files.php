@@ -149,9 +149,6 @@ return [
         'directory_name_required' => 'Aplanko pavadinimas yra privalomas.',
         'directory_name_max' => 'Aplanko pavadinimas negali būti ilgesnis nei :max simbolių.',
         'directory_name_regex' => 'Aplanko pavadinimas gali turėti tik raides, skaičius, pabraukimus, brūkšnelius ir tarpus.',
-        'file_name_max' => 'Failo pavadinimas per ilgas.',
-        'image_invalid' => 'Failas turi būti paveikslėlis.',
-        'image_max' => 'Paveikslėlis negali būti didesnis nei 50MB.',
         'paths_required' => 'Nepasirinktas nei vienas failas trinimui.',
         'paths_max' => 'Per daug failų pasirinkta. Maksimalus kiekis: :max.',
         'files_required' => 'Nepasirinktas nei vienas failas įkėlimui.',
@@ -187,6 +184,7 @@ return [
     ],
 
     'usage' => [
+        'hidden_count' => 'Dar :count įrašų naudoja šį failą. Neturi teisės matyti jų duomenų.',
         'scan_done' => 'Patikra baigta',
         'scan_failed' => 'Nepavyko patikrinti, kur naudojamas failas',
         'matched_blocks' => 'Turinio blokų: :count',
@@ -229,8 +227,6 @@ return [
         'no_directory_access' => 'Neturi teisių peržiūrėti šio aplanko.',
         'fetch_failed' => 'Nepavyko gauti failų sąrašo. Bandyk dar kartą.',
         'fetch_failed_after_redirect' => 'Nepavyko gauti failų sąrašo po nukreipimo.',
-        'image_missing' => 'Nepateiktas paveikslėlis.',
-        'file_name_missing' => 'Nepateiktas failo pavadinimas.',
         'invalid_directory_path' => 'Neteisingas katalogo kelias.',
         'no_upload_permission' => 'Neturi teisių įkelti failų į šį aplanką.',
         'no_create_directory_permission' => 'Neturi teisių kurti aplankų šioje vietoje.',

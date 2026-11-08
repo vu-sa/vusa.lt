@@ -5,9 +5,9 @@ vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 import { usePage } from '@inertiajs/vue3';
 
-import RCTenantMultiSelect from '../RCTenantMultiSelect.vue';
-
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import RCTenantMultiSelect from '../RCTenantMultiSelect.vue';
 
 // The shared `tenants` mock fixture (inertia.mock.ts) uses string ids for an unrelated
 // consumer (the tenant switcher) — this component's contract is `App.Entities.Tenant`'s

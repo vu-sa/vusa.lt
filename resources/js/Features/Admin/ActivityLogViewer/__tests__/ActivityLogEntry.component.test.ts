@@ -1,10 +1,10 @@
 import { describe, test, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import ActivityLogEntry from '../ActivityLogEntry.vue';
-
 import { commonStubs } from '@/tests/stubs';
 import type { ActivityEntry, ActivityEvent } from '@/Types/activityLog';
+
+import ActivityLogEntry from '../ActivityLogEntry.vue';
 
 function makeEntry(overrides: Partial<ActivityEntry> = {}): ActivityEntry {
   return {

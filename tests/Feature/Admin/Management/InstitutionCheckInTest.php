@@ -32,8 +32,8 @@ test('allows creating check-in with past start date', function (): void {
     $this->assertDatabaseHas('institution_check_ins', [
         'institution_id' => $institution->id,
         'user_id' => $user->id,
-        'start_date' => $startDateTime->toDateTimeString(),
-        'end_date' => $endDateTime->toDateTimeString(),
+        'start_date' => $startDateTime->toDateString(),
+        'end_date' => $endDateTime->toDateString(),
     ]);
 });
 

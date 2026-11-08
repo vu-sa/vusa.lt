@@ -3,11 +3,11 @@ import { computed, ref } from 'vue';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { router } from '@inertiajs/vue3';
 
-import CollectionPage from '../CollectionPage.vue';
-
 import CollectionResults from '@/Components/Collection/CollectionResults.vue';
 import type { CollectionSource } from '@/Composables/useCollectionSource';
 import { commonStubs } from '@/tests/stubs';
+
+import CollectionPage from '../CollectionPage.vue';
 
 const media = vi.hoisted(() => ({ md: true, xl: false }));
 

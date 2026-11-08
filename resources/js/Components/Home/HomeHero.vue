@@ -37,11 +37,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import type { HomeHeroImage } from './types';
-
 import { useDateFormatter } from '@/Composables/useDateFormatter';
 import { communityPhotos } from '@/Constants/communityPhotos';
 import { VILNIUS_TIMEZONE } from '@/Utils/dateTime';
+
+import type { HomeHeroImage } from './types';
 
 const props = defineProps<{
   greeting: string;

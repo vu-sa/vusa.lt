@@ -36,6 +36,7 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import SmartLink from '@/Components/Public/SmartLink.vue';
+
 import IFluentPeople24Regular from '~icons/fluent/people-24-regular';
 import IFluentPersonAdd20Regular from '~icons/fluent/person-add-20-regular';
 

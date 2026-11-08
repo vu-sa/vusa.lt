@@ -130,7 +130,7 @@
                     :title="cardValue(column).title || ''"
                     :cover-image="cardValue(column).image || null"
                     :cover-alt="cardValue(column).imageAlt || cardValue(column).title"
-                    :href="cardValue(column).href || null"
+                    :href="safeHref(cardValue(column).href || null)"
                     :show-cover-fallback="false"
                     :class="processedOptions.equalHeight ? 'h-full' : ''"
                   >
@@ -183,14 +183,15 @@
 import { computed, defineAsyncComponent } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import MediaImage from '@/Components/Brand/MediaImage.vue';
+import ImageWithDecorations from '@/Components/RichContent/ImageWithDecorations.vue';
+import type { DecorationConfig } from '@/Types/contentParts';
+import { safeHref } from '@/Utils/safeHref';
+
 import RichContentTiptapHTML from '../RichContentTiptapHTML.vue';
 import RCFeatureCard from '../RCFeatureCard.vue';
 import RCSection from '../RCSection.vue';
 import type { BandResolution } from '../bandLayout';
-
-import MediaImage from '@/Components/Brand/MediaImage.vue';
-import ImageWithDecorations from '@/Components/RichContent/ImageWithDecorations.vue';
-import type { DecorationConfig } from '@/Types/contentParts';
 
 // Lazy-loaded: only needed while a tiptap cell is actually being edited in the
 // full-screen editor. A static import would bundle it into every public page

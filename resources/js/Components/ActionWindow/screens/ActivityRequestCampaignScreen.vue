@@ -14,6 +14,8 @@
             :title="$t(`activity_requests.campaigns.${campaign}`)"
             :description="$t(`activity_requests.descriptions.${campaign}`)"
             :icon="MailQuestion"
+            indicator="check"
+            :selected="draft.activityRequest.campaignType === campaign"
             @click="choose(campaign)"
           />
         </SpotlightPopover>
@@ -22,6 +24,8 @@
           :title="$t(`activity_requests.campaigns.${campaign}`)"
           :description="$t(`activity_requests.descriptions.${campaign}`)"
           :icon="MailQuestion"
+          indicator="check"
+          :selected="draft.activityRequest.campaignType === campaign"
           @click="choose(campaign)"
         />
       </template>
@@ -32,13 +36,13 @@
 <script setup lang="ts">
 import { MailQuestion } from '@lucide/vue';
 
-import ActionWindowScreen from '../ActionWindowScreen.vue';
-import ActionChoiceList from '../ActionChoiceList.vue';
-import ActionChoiceButton from '../ActionChoiceButton.vue';
-
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+
+import ActionWindowScreen from '../ActionWindowScreen.vue';
+import ActionChoiceList from '../ActionChoiceList.vue';
+import ActionChoiceButton from '../ActionChoiceButton.vue';
 
 const { draft, advance, updateActivityRequest } = useActionWindow();
 const spotlight = useFeatureSpotlight('activity-request-ended-check-in-v1');

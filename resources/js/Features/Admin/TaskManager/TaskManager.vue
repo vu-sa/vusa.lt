@@ -90,9 +90,6 @@ import { router } from '@inertiajs/vue3';
 import { AlertCircleIcon, RotateCwIcon, CheckCircleIcon } from '@lucide/vue';
 import { toast } from 'vue-sonner';
 
-import type { TaskActionKey } from './taskActions';
-import TaskRow from './TaskRow.vue';
-
 import { useTaskActionDialogs } from '@/Composables/useTaskActionDialogs';
 import type { TaskDisplayData } from '@/Composables/useTaskPresentation';
 import { Badge } from '@/Components/ui/badge';
@@ -108,6 +105,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/Components/ui/alert-dialog';
+
+import TaskRow from './TaskRow.vue';
+import type { TaskActionKey } from './taskActions';
 
 // Use async component for the dialog to improve initial load performance
 const CreateTaskDialog = defineAsyncComponent(() => import('./CreateTaskDialog.vue'));

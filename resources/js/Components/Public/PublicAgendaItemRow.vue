@@ -143,6 +143,7 @@ import {
   getVoteTextColorClass,
   showsVoteOutcome,
 } from '@/Composables/useAgendaItemStyling';
+
 import IFluentChevronDown20Regular from '~icons/fluent/chevron-down-20-regular';
 import IFluentChevronUp20Regular from '~icons/fluent/chevron-up-20-regular';
 import IFluentPeople20Regular from '~icons/fluent/people-20-regular';

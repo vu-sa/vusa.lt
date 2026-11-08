@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { ref } from 'vue';
 
-import RCSectionToolbarOptions from '../RCSectionToolbarOptions.vue';
-
 import type { SectionOptions } from '@/Types/contentParts';
+
+import RCSectionToolbarOptions from '../RCSectionToolbarOptions.vue';
 
 const stubs = {
   RCSectionOptionsFields: {

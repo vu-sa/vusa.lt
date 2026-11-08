@@ -43,7 +43,7 @@
     <!-- Nominated for the current term (O22). Distinct from the body's members: a secretary
          need not hold a duty here at all. -->
     <OverviewSection v-if="secretaries.length" variant="home" :title="$t('secretaries.label')" :icon="UserCheck">
-      <UsersAvatarGroup :users="(secretaries as unknown as App.Entities.User[])" :max="5" size="xxs" />
+      <UsersAvatarGroup :users="secretaries" :max="5" size="xxs" />
     </OverviewSection>
   </div>
 </template>
@@ -53,11 +53,11 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Calendar as CalendarIcon, ChevronRight, Info, Lock, UserCheck } from '@lucide/vue';
 
-import InstitutionMeetingsList from './InstitutionMeetingsList.vue';
-
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import { EmptyState, OverviewSection } from '@/Components/Patterns';
 import type { InstitutionOverviewData, InstitutionPageData, InstitutionPageMeeting } from '@/Types/InstitutionPage';
+
+import InstitutionMeetingsList from './InstitutionMeetingsList.vue';
 
 const props = defineProps<{
   institution: InstitutionPageData;

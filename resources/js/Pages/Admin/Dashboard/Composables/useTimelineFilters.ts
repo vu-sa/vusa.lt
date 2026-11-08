@@ -14,9 +14,9 @@ import { computed, inject, provide, ref, watch, type InjectionKey, type Ref } fr
 import { router } from '@inertiajs/vue3';
 import { useStorage } from '@vueuse/core';
 
-import type { AtstovavimasInstitution, AtstovavimasTenant } from '../types';
-
 import { TenantType } from '@/Types/enums';
+
+import type { AtstovavimasInstitution, AtstovavimasTenant } from '../types';
 
 const STORAGE_KEY = 'atstovavimas-timeline-filters';
 

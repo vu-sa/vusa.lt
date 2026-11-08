@@ -97,15 +97,15 @@ import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { ArrowRight, TriangleAlert } from '@lucide/vue';
 
-import { timelineDutyName } from './dutyNames';
-import type { TimelinePlanPayload } from './types';
-
 import { Alert, AlertDescription } from '@/Components/ui/alert';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { ScrollArea } from '@/Components/ui/scroll-area';
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/Components/ui/sheet';
 import { Skeleton } from '@/Components/ui/skeleton';
+
+import type { TimelinePlanPayload } from './types';
+import { timelineDutyName } from './dutyNames';
 
 const props = defineProps<{
   open: boolean;

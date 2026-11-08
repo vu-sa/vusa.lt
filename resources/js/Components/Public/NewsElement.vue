@@ -110,8 +110,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ref, computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
-import SmartLink from './SmartLink.vue';
-
 import { localizedRoute } from '@/Utils/LocalizedRoutes';
 import NewsCard from '@/Components/Public/News/NewsCard.vue';
 import type { News, NewsItem } from '@/Types/contentParts';
@@ -122,6 +120,9 @@ import { Skeleton } from '@/Components/ui/skeleton';
 import RCInlineText from '@/Components/RichContent/Editor/Fullscreen/RCInlineText.vue';
 import type { BandResolution } from '@/Components/RichContent/bandLayout';
 import { BAND_GROUND_CLASS, BAND_PADDING } from '@/Components/RichContent/sectionClasses';
+
+import SmartLink from './SmartLink.vue';
+
 import IFluentImage24Regular from '~icons/fluent/image24-regular';
 
 // Props - element is from content parts. `resolved` is the server-resolved payload

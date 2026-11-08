@@ -4,10 +4,10 @@ import { defineComponent, h } from 'vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-import HeroElement from '../HeroElement.vue';
-
 import { providePageHeading } from '@/Composables/usePageHeading';
 import type { Hero } from '@/Types/contentParts';
+
+import HeroElement from '../HeroElement.vue';
 
 function makeElement(overrides: Partial<Hero['options']> = {}, jsonOverrides: Partial<Hero['json_content']> = {}): Hero {
   return {

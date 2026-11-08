@@ -53,7 +53,7 @@ class InstitutionActivityNotification extends BaseNotification implements SendsM
         $this->requests = InstitutionActivityRequest::query()->open()->whereKey($this->requests->modelKeys())
             ->whereHas('institution')->whereHas('recipient')->with(['institution.meetings', 'institution.checkIns', 'institution.types', 'recipient', 'requestedBy', 'task'])->get();
         $this->requests->where('campaign_type', InstitutionActivityCampaign::MissingMeetings)
-            ->loadMissing(['institution.meetings.agendaItems.votes', 'institution.meetings.institutions']);
+            ->loadMissing(['institution.meetings.agendaItems.votes', 'institution.meetings.institutions.types']);
         $eligibility = app(ResolveActivityRequestEligibility::class);
         $this->requests = $this->requests->filter($eligibility->shouldDeliver(...));
 
@@ -169,7 +169,7 @@ class InstitutionActivityNotification extends BaseNotification implements SendsM
     private function questions(): array
     {
         $this->requests->where('campaign_type', InstitutionActivityCampaign::MissingMeetings)
-            ->loadMissing(['institution.meetings.agendaItems.votes', 'institution.meetings.institutions']);
+            ->loadMissing(['institution.meetings.agendaItems.votes', 'institution.meetings.institutions.types']);
 
         return $this->requests->map(function (InstitutionActivityRequest $request): array {
             $missing = $request->campaign_type === InstitutionActivityCampaign::MissingMeetings;

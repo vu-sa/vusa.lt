@@ -13,9 +13,9 @@ import type { PrimitiveProps } from 'reka-ui';
 import { Primitive } from 'reka-ui';
 import { computed, type HTMLAttributes } from 'vue';
 
-import { useCommand } from '.';
-
 import { cn } from '@/Utils/Shadcn/utils';
+
+import { useCommand } from '.';
 
 const props = defineProps<PrimitiveProps & { class?: HTMLAttributes['class'] }>();
 

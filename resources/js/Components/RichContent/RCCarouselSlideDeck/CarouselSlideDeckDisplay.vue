@@ -288,14 +288,6 @@
 import { computed, defineAsyncComponent, inject, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import RCIcon from '../RCIcon.vue';
-import RCIconSelect from '../RCIconSelect.vue';
-import RCSection from '../RCSection.vue';
-import RichContentTiptapHTML from '../RichContentTiptapHTML.vue';
-import { ACTIVE_HOTSPOT_KEY } from '../Editor/Fullscreen/useActiveHotspot';
-import { asBoolean } from '../booleanish';
-import type { BandResolution } from '../bandLayout';
-
 import MediaImage from '@/Components/Brand/MediaImage.vue';
 import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
 import { useMotionAwareAutoplay } from '@/Composables/useMotionAwareAutoplay';
@@ -307,6 +299,15 @@ import ImageSelector from '@/Components/TipTap/ImageSelector.vue';
 import ImageWithDecorations from '@/Components/RichContent/ImageWithDecorations.vue';
 import type { CarouselSlideDeck } from '@/Types/contentParts';
 import { hasHtmlText } from '@/Utils/String';
+
+import type { BandResolution } from '../bandLayout';
+import { asBoolean } from '../booleanish';
+import { ACTIVE_HOTSPOT_KEY } from '../Editor/Fullscreen/useActiveHotspot';
+import RichContentTiptapHTML from '../RichContentTiptapHTML.vue';
+import RCSection from '../RCSection.vue';
+import RCIconSelect from '../RCIconSelect.vue';
+import RCIcon from '../RCIcon.vue';
+
 import IFluentAdd12Regular from '~icons/fluent/add12-regular';
 import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
 import IFluentImage24Regular from '~icons/fluent/image24-regular';

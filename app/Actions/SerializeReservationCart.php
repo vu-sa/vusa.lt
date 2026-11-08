@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\Models\ReservationDraft;
 use App\Models\ReservationDraftItem;
+use App\Models\Resource;
 use App\Models\User;
 
 /**
@@ -73,6 +74,7 @@ class SerializeReservationCart
      */
     private static function item(ReservationDraftItem $item, ReservationDraft $draft): array
     {
+        /** @var Resource|null $resource */
         $resource = $item->resource;
 
         if ($resource === null || $resource->trashed()) {

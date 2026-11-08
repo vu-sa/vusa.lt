@@ -114,23 +114,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowRight, Eye } from '@lucide/vue';
 import { computed, onMounted, ref } from 'vue';
 
-import CoordinatorSkeleton from './Components/CoordinatorSkeleton.vue';
-import TenantScopeSelector from './Components/TenantScopeSelector.vue';
-import TimelineGanttSkeleton from './Components/TimelineGanttSkeleton.vue';
-import UserTimelineSection from './Components/UserTimelineSection.vue';
-import { useAtstovavimasActions } from './Composables/useAtstovavimasActions';
-import { useAtstovavimasData } from './Composables/useAtstovavimasData';
 import { provideGanttSettings } from '@/Components/Graphs/composables/useGanttSettings';
-import { provideTimelineFilters } from './Composables/useTimelineFilters';
-import type { AtstovavimasInstitution, AtstovavimasMeeting, AtstovavimasUser, GanttActivityRequest } from './types';
-import {
-  buildInstitutionNamesMap,
-  buildInstitutionPeriodicityMap,
-  buildInstitutionPublicMeetingsMap,
-  calculateInactivePeriods,
-  extractDutyMembers,
-} from './utils/ganttHelpers';
-
 import { Button } from '@/Components/ui/button';
 import { OverviewStatusList } from '@/Components/Patterns';
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
@@ -147,6 +131,22 @@ import { useActionWindow } from '@/Composables/useActionWindow';
 import { useIsMobile } from '@/Composables/useIsMobile';
 import { useProductTour } from '@/Composables/useProductTour';
 import { provideTour } from '@/Composables/useTourProvider';
+
+import {
+  buildInstitutionNamesMap,
+  buildInstitutionPeriodicityMap,
+  buildInstitutionPublicMeetingsMap,
+  calculateInactivePeriods,
+  extractDutyMembers,
+} from './utils/ganttHelpers';
+import type { AtstovavimasInstitution, AtstovavimasMeeting, AtstovavimasUser, GanttActivityRequest } from './types';
+import { provideTimelineFilters } from './Composables/useTimelineFilters';
+import { useAtstovavimasData } from './Composables/useAtstovavimasData';
+import { useAtstovavimasActions } from './Composables/useAtstovavimasActions';
+import UserTimelineSection from './Components/UserTimelineSection.vue';
+import TimelineGanttSkeleton from './Components/TimelineGanttSkeleton.vue';
+import TenantScopeSelector from './Components/TenantScopeSelector.vue';
+import CoordinatorSkeleton from './Components/CoordinatorSkeleton.vue';
 
 const props = defineProps<{
   user: AtstovavimasUser;

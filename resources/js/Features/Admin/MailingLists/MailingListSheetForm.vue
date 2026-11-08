@@ -44,13 +44,13 @@
 import { useForm } from '@inertiajs/vue3';
 import { watch } from 'vue';
 
-import type { MailingListSummary } from './types';
-
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import TenantSelectField, { pickDefaultTenantId } from '@/Components/AdminForms/TenantSelectField.vue';
 import { SheetForm } from '@/Components/Patterns';
 import { Input } from '@/Components/ui/input';
 import { Textarea } from '@/Components/ui/textarea';
+
+import type { MailingListSummary } from './types';
 
 const props = defineProps<{
   tenants: App.Entities.Tenant[];

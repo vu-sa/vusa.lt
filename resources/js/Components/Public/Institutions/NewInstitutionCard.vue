@@ -44,7 +44,7 @@
           </a>
           <a
             v-else-if="institution.website"
-            :href="institution.website"
+            :href="safeHref(institution.website)"
             target="_blank"
             rel="noopener noreferrer"
             class="relative z-10 inline-flex max-w-full items-center gap-2 text-sm font-bold text-brand transition-colors hover:text-foreground"
@@ -57,7 +57,7 @@
         <div class="flex shrink-0 items-center gap-1.5">
           <a
             v-if="institution.facebook_url"
-            :href="institution.facebook_url"
+            :href="safeHref(institution.facebook_url)"
             target="_blank"
             rel="noopener noreferrer"
             :class="socialLinkClass"
@@ -67,7 +67,7 @@
           </a>
           <a
             v-if="institution.instagram_url"
-            :href="institution.instagram_url"
+            :href="safeHref(institution.instagram_url)"
             target="_blank"
             rel="noopener noreferrer"
             :class="socialLinkClass"
@@ -83,13 +83,15 @@
 </template>
 
 <script setup lang="ts">
+import { imageFromSearch } from '@/Types/media';
+import MediaFrame from '@/Components/Public/Base/MediaFrame.vue';
+import { safeHref } from '@/Utils/safeHref';
+
 import InstitutionCardArrow from './InstitutionCardArrow.vue';
 import InstitutionCardDescription from './InstitutionCardDescription.vue';
 import InstitutionCardHeading from './InstitutionCardHeading.vue';
 import { type InstitutionCardData, useInstitutionCard } from './useInstitutionCard';
 
-import { imageFromSearch } from '@/Types/media';
-import MediaFrame from '@/Components/Public/Base/MediaFrame.vue';
 import IFluentBuilding24Regular from '~icons/fluent/building-24-regular';
 import IFluentMail16Regular from '~icons/fluent/mail-16-regular';
 import IFluentGlobe16Regular from '~icons/fluent/globe-16-regular';

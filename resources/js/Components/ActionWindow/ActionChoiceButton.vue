@@ -3,10 +3,11 @@
     type="button"
     data-slot="action-choice-button"
     :disabled
-    :aria-pressed="selected ? 'true' : undefined"
+    :aria-pressed="indicator === 'check' ? String(!!selected) : undefined"
+    :aria-current="indicator === 'chevron' && selected ? 'true' : undefined"
     :class="cn(
       'group relative flex w-full items-center justify-between gap-3.5 border p-3.5 sm:p-4 text-left min-h-14 transition-all duration-150',
-      'border-border/50 bg-secondary/35 hover:border-brand/60 hover:bg-secondary/60 dark:bg-secondary/20 dark:hover:bg-secondary/40',
+      'border-border bg-card hover:border-brand/60 hover:bg-secondary/40 dark:border-border/50 dark:bg-secondary/20 dark:hover:bg-secondary/40',
       'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
       'disabled:pointer-events-none disabled:opacity-50',
       selected && 'border-brand bg-brand/10 dark:bg-brand/20 hover:bg-brand/15 dark:hover:bg-brand/25',
@@ -34,7 +35,7 @@
     </span>
 
     <span
-      v-if="!showChevron || selected !== undefined"
+      v-if="indicator === 'check'"
       class="flex size-6 shrink-0 items-center justify-center border transition-colors"
       :class="selected
         ? 'border-brand bg-brand-fill text-brand-foreground'
@@ -44,8 +45,8 @@
       <Check class="size-3.5" />
     </span>
     <ChevronRight
-      v-else-if="showChevron"
-      class="size-4 shrink-0 text-muted-foreground/70 transition-colors group-hover:text-foreground"
+      v-else
+      :class="cn('size-4 shrink-0 transition-colors', selected ? 'text-brand' : 'text-muted-foreground/70 group-hover:text-foreground')"
       aria-hidden="true"
     />
   </button>
@@ -64,14 +65,15 @@ const props = withDefaults(defineProps<{
   icon?: LucideIcon | Component;
   /** Colours the icon tile with a status role; omit for the plain hairline tile. */
   tone?: StatusRole;
-  /** Shows the chevron affordance; turn off for buttons that pick rather than navigate. */
-  showChevron?: boolean;
+  /** `check` for an answer that fills in the record (institution, type, date); `chevron` for a menu or a screen that asks more. */
+  indicator?: 'chevron' | 'check';
+  /** The current answer: brand outline, and a filled check or brand chevron. */
   selected?: boolean;
   disabled?: boolean;
   class?: HTMLAttributes['class'];
 }>(), {
   tone: 'neutral',
-  showChevron: true,
+  indicator: 'chevron',
 });
 
 const toneClasses: Record<StatusRole, string> = {

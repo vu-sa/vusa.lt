@@ -222,12 +222,6 @@
 import { computed, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import RCDecorationListEditor from '../Editor/RCDecorationListEditor.vue';
-import RCPresentationPicker from '../Editor/RCPresentationPicker.vue';
-import RCIconSelect from '../RCIconSelect.vue';
-
-import { BannerVariantIcon, CenteredVariantIcon, PanelVariantIcon, SplitVariantIcon } from './heroVariantIcons';
-
 import type { Hero } from '@/Types/contentParts';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
@@ -240,6 +234,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
 import FocalPointPicker from '@/Components/ui/upload/FocalPointPicker.vue';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/Components/ui/accordion';
+
+import RCIconSelect from '../RCIconSelect.vue';
+import RCPresentationPicker from '../Editor/RCPresentationPicker.vue';
+import RCDecorationListEditor from '../Editor/RCDecorationListEditor.vue';
+
+import { BannerVariantIcon, CenteredVariantIcon, PanelVariantIcon, SplitVariantIcon } from './heroVariantIcons';
+
 import IFluentCrop24Regular from '~icons/fluent/crop24-regular';
 import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
 import IFluentImage24Regular from '~icons/fluent/image24-regular';

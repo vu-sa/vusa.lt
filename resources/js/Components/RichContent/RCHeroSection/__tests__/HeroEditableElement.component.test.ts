@@ -3,11 +3,11 @@ import { mount } from '@vue/test-utils';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-import HeroEditableElement from '../HeroEditableElement.vue';
-import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from '../../Editor/Fullscreen/useActiveHotspot';
-
 import type { Hero } from '@/Types/contentParts';
 import { commonStubs, stubPopover, stubPopoverAnchor, stubPopoverContent } from '@/tests/stubs';
+
+import HeroEditableElement from '../HeroEditableElement.vue';
+import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from '../../Editor/Fullscreen/useActiveHotspot';
 
 function makeElement(overrides: Partial<Hero['options']> = {}, jsonOverrides: Partial<Hero['json_content']> = {}): Hero {
   return {

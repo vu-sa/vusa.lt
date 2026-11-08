@@ -69,10 +69,6 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { SearchCheck } from '@lucide/vue';
 
-import { useFilesUsageScan } from '../useFileUsageScan';
-
-import FileUsageList from './FileUsageList.vue';
-
 import { Button } from '@/Components/ui/button';
 import {
   Dialog,
@@ -83,6 +79,10 @@ import {
   DialogTitle,
 } from '@/Components/ui/dialog';
 import { Spinner } from '@/Components/ui/spinner';
+
+import { useFilesUsageScan } from '../useFileUsageScan';
+
+import FileUsageList from './FileUsageList.vue';
 
 /** Deleting stays locked until the usage check has run, so a link on some page is not broken unseen. */
 const props = defineProps<{

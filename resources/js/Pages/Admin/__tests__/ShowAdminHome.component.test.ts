@@ -38,7 +38,6 @@ const stubs = {
 const baseProps = {
   activeActivityRequests: { total: 0, data: [] },
   upcomingMeetingsTotal: 0,
-  accessChanges: [],
   actionWindowLaunch: null,
   taskStats: { total: 0, overdue: 0, dueSoon: 0 },
   upcomingTasks: [],
@@ -74,7 +73,6 @@ describe('ShowAdminHome', () => {
       upcomingMeetings: [{ id: '1', title: 'Meeting' }],
       upcomingTasks: [{ id: 'task-1' }],
       taskStats: { total: 1, overdue: 0, dueSoon: 0 },
-      coordinator: { name: 'Jonas', email: 'jonas@vusa.lt', profile_photo_path: null, duty: null },
     });
     const tasks = wrapper.find('attention-queue-stub');
     const quickAccess = wrapper.find('quick-access-stub');

@@ -65,7 +65,7 @@
               <span v-if="item.tenant?.shortname && item.link_url">·</span>
               <a
                 v-if="item.link_url"
-                :href="item.link_url"
+                :href="safeHref(item.link_url)"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="inline-flex max-w-[16rem] items-center gap-1 truncate hover:underline"
@@ -115,7 +115,7 @@
       <div v-else-if="column.key === 'link_url'" class="truncate">
         <a
           v-if="item.link_url"
-          :href="item.link_url"
+          :href="safeHref(item.link_url)"
           target="_blank"
           rel="noopener noreferrer"
           class="inline-flex max-w-[18rem] items-center gap-1 text-sm hover:underline"
@@ -185,6 +185,7 @@ import { bannerStatuses } from '@/Constants/statusIcons';
 import { BannerIcon } from '@/Components/icons';
 import { useDatabaseCollectionSource, type DatabaseFacetDefinition } from '@/Composables/useCollectionSource';
 import { formatRecordDate } from '@/Utils/dateTime';
+import { safeHref } from '@/Utils/safeHref';
 
 type BannerRow = App.Entities.Banner;
 

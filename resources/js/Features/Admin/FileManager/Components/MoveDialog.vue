@@ -65,11 +65,6 @@ import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronRight, Folder } from '@lucide/vue';
 
-import { useFileListing } from '../useFileListing';
-import { relativeToRoot, ROOT_PATH } from '../utils';
-
-import PathBreadcrumb from './PathBreadcrumb.vue';
-
 import { Button } from '@/Components/ui/button';
 import {
   Dialog,
@@ -81,6 +76,11 @@ import {
 } from '@/Components/ui/dialog';
 import { Skeleton } from '@/Components/ui/skeleton';
 import { Spinner } from '@/Components/ui/spinner';
+
+import { relativeToRoot, ROOT_PATH } from '../utils';
+import { useFileListing } from '../useFileListing';
+
+import PathBreadcrumb from './PathBreadcrumb.vue';
 
 const props = defineProps<{
   paths: string[];

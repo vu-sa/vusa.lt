@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Dokumentai
-last_reviewed: 2026-11-05
+last_reviewed: 2026-11-07
 tests:
   - tests/Feature/Admin/Resources/DocumentControllerTest.php
   - tests/Feature/Admin/Resources/DocumentPublicationTest.php

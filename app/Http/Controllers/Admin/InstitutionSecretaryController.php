@@ -68,12 +68,7 @@ class InstitutionSecretaryController extends AdminController
             ->all();
     }
 
-    /**
-     * The secretaries shown beside a meeting: every one of its institutions,
-     * resolved at the meeting's own date.
-     *
-     * @return array<int, array<string, mixed>>
-     */
+    /** @return list<array{id: string, name: string, email: string|null, profile_photo_path: string|null}> */
     public static function forMeetingPayload(Meeting $meeting): array
     {
         return self::usersPayload(GetInstitutionSecretaries::forMeeting($meeting));
@@ -83,7 +78,7 @@ class InstitutionSecretaryController extends AdminController
      * Users in the shape the avatar groups want.
      *
      * @param  Collection<int, User>  $users
-     * @return array<int, array<string, mixed>>
+     * @return list<array{id: string, name: string, email: string|null, profile_photo_path: string|null}>
      */
     public static function usersPayload(Collection $users): array
     {

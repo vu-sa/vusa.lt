@@ -72,8 +72,6 @@ import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { Ban, Check, CheckCheck, Undo2, X } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 
-import type { ReservationDecision } from './types';
-
 import { Button } from '@/Components/ui/button';
 import {
   Dialog,
@@ -93,6 +91,8 @@ import {
   type DashboardReservation,
   type ReservationResourceState,
 } from '@/Utils/ReservationStatus';
+
+import type { ReservationDecision } from './types';
 
 const props = defineProps<{
   open: boolean;

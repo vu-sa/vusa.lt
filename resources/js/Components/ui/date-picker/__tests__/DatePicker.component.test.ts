@@ -3,12 +3,12 @@ import { CalendarDateTime } from '@internationalized/date';
 import { computed } from 'vue';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { useCoarsePointer } from '@/Composables/useCoarsePointer';
+
 import DatePicker from '../DatePicker.vue';
 import DateTimePicker from '../DateTimePicker.vue';
 import DateRangePicker from '../DateRangePicker.vue';
 import TimePicker from '../../time-picker/TimePicker.vue';
-
-import { useCoarsePointer } from '@/Composables/useCoarsePointer';
 
 vi.mock('@/Composables/useCoarsePointer', () => ({
   useCoarsePointer: vi.fn(() => computed(() => false)),

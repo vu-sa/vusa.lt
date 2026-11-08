@@ -3,10 +3,10 @@ import { mount } from '@vue/test-utils';
 import { ref, toValue, type MaybeRefOrGetter } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 
-import IndexInstitution from '../IndexInstitution.vue';
-
 import { commonStubs } from '@/tests/stubs';
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import IndexInstitution from '../IndexInstitution.vue';
 
 const rowAbilityState = vi.hoisted(() => ({ update: false, delete: false }));
 vi.mock('@/Composables/useRowAbilities', () => ({

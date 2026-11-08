@@ -1,9 +1,9 @@
 import { describe, test, expect } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 
-import ActivityChangeRow from '../ActivityChangeRow.vue';
-
 import type { ActivityChange } from '@/Types/activityLog';
+
+import ActivityChangeRow from '../ActivityChangeRow.vue';
 
 function makeChange(overrides: Partial<ActivityChange> = {}): ActivityChange {
   return {

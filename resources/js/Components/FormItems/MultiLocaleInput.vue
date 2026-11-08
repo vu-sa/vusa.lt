@@ -35,11 +35,11 @@
 import { computed, ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
-import SimpleLocaleButton from '../Buttons/SimpleLocaleButton.vue';
-
 import { Input } from '@/Components/ui/input';
 import { Textarea } from '@/Components/ui/textarea';
 import { LocaleEnum } from '@/Types/enums';
+
+import SimpleLocaleButton from '../Buttons/SimpleLocaleButton.vue';
 
 const props = withDefaults(defineProps<{
   inputType?: 'text' | 'textarea';

@@ -32,10 +32,10 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Eye } from '@lucide/vue';
 
-import type { HomeMeeting } from './types';
-
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
+
+import type { HomeMeeting } from './types';
 
 defineProps<{
   meeting: HomeMeeting;

@@ -436,8 +436,6 @@ import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Building2, ChevronsUpDown, History, Plus, SlidersHorizontal, Trash2, Users } from '@lucide/vue';
 
-import ActivityStatusField from './ActivityStatusField.vue';
-
 import { operatingStatuses } from '@/Constants/statusIcons';
 import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
@@ -464,6 +462,8 @@ import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSe
 import { formatDate, todayIso } from '@/Utils/dateTime';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
+
+import ActivityStatusField from './ActivityStatusField.vue';
 
 interface AssignableTenantRow {
   tenant_id: number;

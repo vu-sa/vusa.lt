@@ -3,9 +3,9 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-import NewsElement from '../NewsElement.vue';
-
 import type { News, NewsItem } from '@/Types/contentParts';
+
+import NewsElement from '../NewsElement.vue';
 
 /**
  * The news block is a featured article plus a hairline list — no carousel. These cover that

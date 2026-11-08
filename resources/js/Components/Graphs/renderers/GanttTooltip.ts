@@ -9,11 +9,12 @@
 import * as d3 from 'd3';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { getAgendaItemStatus, type AgendaItemStatus, type AgendaItemType, type Vote } from '@/Composables/useAgendaItemStyling';
+import { escapeHtml } from '@/Utils/String';
+
 import type { GanttColors } from '../ganttColors';
 
 import { ganttMeetingStatus } from './meetingStatus';
-
-import { getAgendaItemStatus, type AgendaItemStatus, type AgendaItemType, type Vote } from '@/Composables/useAgendaItemStyling';
 
 export type TooltipContentType = 'meeting' | 'member' | 'gap' | 'date' | 'request' | 'none';
 
@@ -154,7 +155,7 @@ export function buildMeetingTooltipContent(
 ): TooltipContent {
   const name = labelFor(meeting.institution_id);
   const status = ganttMeetingStatus(meeting);
-  const statusBadge = status ? `<span class="${status.tone}">${escapeHtml(status.label)}</span>` : '';
+  const statusBadge = status ? `<span class="${escapeHtml(status.tone)}">${escapeHtml(status.label)}</span>` : '';
 
   // Build agenda items section if available (only for authorized meetings)
   let agendaHtml = '';
@@ -164,7 +165,7 @@ export function buildMeetingTooltipContent(
 
     agendaHtml = `
       <div class="mt-1.5 pt-1.5 border-t border-current/20">
-        <div class="text-[10px] uppercase tracking-wide opacity-60 mb-1">Darbotvarkė (${totalCount})</div>
+        <div class="text-[10px] uppercase tracking-wide opacity-60 mb-1">Darbotvarkė (${escapeHtml(String(totalCount))})</div>
         <div class="space-y-0.5">
           ${itemsToShow.map((item) => {
             const statusIcon = getAgendaItemStatusIcon(getAgendaItemStatus(item, meeting.requires_student_perspective ?? true));
@@ -195,10 +196,10 @@ export function buildMeetingTooltipContent(
 
   const html = `
     <div class="font-medium text-[12px] leading-tight flex items-center gap-1">
-      ${heading} ${statusBadge}
+      ${escapeHtml(heading)} ${statusBadge}
     </div>
-    <div class="opacity-80">${dateFmt.format(meeting.date)}</div>
-    ${!isEmail && meeting.title ? `<div class="opacity-70">${name}</div>` : ''}
+    <div class="opacity-80">${escapeHtml(dateFmt.format(meeting.date))}</div>
+    ${!isEmail && meeting.title ? `<div class="opacity-70">${escapeHtml(name)}</div>` : ''}
     ${fileStatusHtml}
     ${agendaHtml}
   `;
@@ -241,15 +242,6 @@ function getAgendaItemStatusIcon(status: AgendaItemStatus): string {
 }
 
 /**
- * Escape HTML to prevent XSS in tooltips
- */
-function escapeHtml(text: string): string {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-/**
  * Build file status HTML for protocol and report indicators
  * Uses ScrollText for protocol and FileBarChart for report icons
  * Green = has file, Amber = missing file
@@ -273,7 +265,7 @@ function buildFileStatusHtml(
   // announcement, which nobody outside the admin can see. Absent entirely when not announced —
   // most meetings never are, so a permanent "missing" mark would be noise, unlike the files.
   const calendarHtml = hasCalendarEvent
-    ? `<div class="flex items-center gap-1" title="${calendarEventIsDraft ? $t('meetings.announce.draft_hint') : $t('meetings.announce.published_hint')}">
+    ? `<div class="flex items-center gap-1" title="${escapeHtml(calendarEventIsDraft ? $t('meetings.announce.draft_hint') : $t('meetings.announce.published_hint'))}">
         <svg class="w-3.5 h-3.5 ${calendarEventIsDraft ? 'text-amber-500 dark:text-amber-400' : 'text-green-600 dark:text-green-400'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>
       </div>`
     : '';
@@ -299,13 +291,13 @@ export function buildMemberTooltipContent(
   const endStr = member.endDate ? member.endDate.toLocaleDateString() : 'Present';
 
   let html = `
-    <div class="font-medium text-[12px]">${member.user.name}</div>
-    <div class="opacity-70">${startStr} → ${endStr}</div>
+    <div class="font-medium text-[12px]">${escapeHtml(member.user.name)}</div>
+    <div class="opacity-70">${escapeHtml(startStr)} → ${escapeHtml(endStr)}</div>
   `;
 
   // Add activity status if provided
   if (activityLabel) {
-    html += `<div class="mt-1 text-[10px] opacity-80">${activityLabel}</div>`;
+    html += `<div class="mt-1 text-[10px] opacity-80">${escapeHtml(activityLabel)}</div>`;
   }
 
   return {
@@ -326,8 +318,8 @@ export function buildDateTooltipContent(
   gap?: { fromDate: Date; untilDate: Date; note?: string } | null,
 ): TooltipContent {
   let html = `
-    <div class="font-medium text-[12px] leading-tight">${institutionName}</div>
-    <div class="opacity-80">${fmtDateWithYear.format(date)}</div>
+    <div class="font-medium text-[12px] leading-tight">${escapeHtml(institutionName)}</div>
+    <div class="opacity-80">${escapeHtml(fmtDateWithYear.format(date))}</div>
   `;
 
   if (gap) {
@@ -335,8 +327,8 @@ export function buildDateTooltipContent(
     html += `
       <div class="mt-1.5 pt-1.5 border-t border-current/20">
         <div class="text-[10px] uppercase tracking-wide opacity-60 mb-0.5">Check-in</div>
-        ${gap.note ? `<div class="line-clamp-2 text-[11px]">${gap.note}</div>` : ''}
-        <div class="opacity-70 text-[10px]">${gapDateRange}</div>
+        ${gap.note ? `<div class="line-clamp-2 text-[11px]">${escapeHtml(gap.note)}</div>` : ''}
+        <div class="opacity-70 text-[10px]">${escapeHtml(gapDateRange)}</div>
       </div>
     `;
   }

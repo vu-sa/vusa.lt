@@ -419,6 +419,7 @@ import CalendarFilterPopover, { type FilterOption } from '@/Components/Calendar/
 import CalendarSyncModal from '@/Components/Public/CalendarSyncModal.vue';
 import { Button } from '@/Components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
+
 import IFluentCalendarLtr24Regular from '~icons/fluent/calendar-ltr-24-regular';
 import IFluentArrowSync20Regular from '~icons/fluent/arrow-sync-20-regular';
 import IFluentSearch16Regular from '~icons/fluent/search-16-regular';

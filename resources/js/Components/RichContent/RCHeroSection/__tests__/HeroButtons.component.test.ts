@@ -3,9 +3,9 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-import HeroButtons from '../HeroButtons.vue';
-
 import type { Hero } from '@/Types/contentParts';
+
+import HeroButtons from '../HeroButtons.vue';
 
 type HeroButton = NonNullable<Hero['json_content']['buttons']>[number];
 
@@ -64,4 +64,13 @@ describe('HeroButtons', () => {
 
     expect(wrapper.find('button').exists()).toBe(false);
   });
+});
+
+it('keeps button labels visible without binding unsupported links', () => {
+  const wrapper = mount(HeroButtons, {
+    props: { buttons: [makeButton({ link: 'javascript:void(0)' })] },
+  });
+
+  expect(wrapper.text()).toContain('Dalyvauk');
+  expect(wrapper.find('a').exists()).toBe(false);
 });

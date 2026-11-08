@@ -1,5 +1,7 @@
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 
+import { stripHtml } from '@/Utils/html';
+
 import type { ContentPart } from '../Types';
 
 /** Recursively pull the first text node out of a Tiptap JSON document. */
@@ -14,14 +16,6 @@ function firstTiptapText(json: unknown): string {
     }
   }
   return '';
-}
-
-function stripHtml(html: string): string {
-  if (!html) return '';
-
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-
-  return (doc.body?.textContent ?? '').trim();
 }
 
 function truncate(text: string, max = 60): string {

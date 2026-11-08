@@ -6,6 +6,7 @@ use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\UserMicrosoftIdentity;
+use App\Services\Typesense\TypesenseScopedKeyService;
 use App\Support\MorphMap;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
@@ -21,6 +22,8 @@ pest()->use(RefreshDatabase::class);
 
 test('local logout ends only the application session', function (): void {
     $user = User::factory()->create();
+    $cacheKey = TypesenseScopedKeyService::getCacheKey($user->id);
+    cache()->put($cacheKey, ['collections' => []], 900);
 
     $this->from(route('dashboard'))
         ->actingAs($user)
@@ -28,6 +31,7 @@ test('local logout ends only the application session', function (): void {
         ->assertRedirect(route('dashboard'));
 
     $this->assertGuest();
+    expect(cache()->has($cacheKey))->toBeFalse();
 });
 
 test('Microsoft logout ends the application session and starts federated logout', function (): void {
@@ -40,6 +44,8 @@ test('Microsoft logout ends the application session and starts federated logout'
     ]);
 
     $user = User::factory()->create();
+    $cacheKey = TypesenseScopedKeyService::getCacheKey($user->id);
+    cache()->put($cacheKey, ['collections' => []], 900);
 
     $response = $this->actingAs($user)
         ->withSession(['microsoft_logout_hint' => 'opaque-login-hint'])
@@ -48,6 +54,7 @@ test('Microsoft logout ends the application session and starts federated logout'
 
     $response->assertConflict()->assertHeader('X-Inertia-Location');
     $this->assertGuest();
+    expect(cache()->has($cacheKey))->toBeFalse();
 
     $location = $response->headers->get('X-Inertia-Location');
     expect($location)->toBeString()->toStartWith('https://login.microsoftonline.com/common/oauth2/v2.0/logout?');

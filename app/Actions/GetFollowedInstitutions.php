@@ -5,6 +5,7 @@ namespace App\Actions;
 use App\Models\Institution;
 use App\Models\User;
 use App\Services\InstitutionActivityStatusService;
+use Illuminate\Support\Collection;
 
 /**
  * "Sekamos institucijos" on Pradžia and ViSAK: the institutions a user chose to follow.
@@ -18,10 +19,16 @@ class GetFollowedInstitutions
      */
     public static function execute(User $user, ?int $limit = null): array
     {
+        $institutionIds = self::institutionIds($user);
+
+        if ($institutionIds->isEmpty()) {
+            return ['items' => [], 'total' => 0];
+        }
+
         $query = Institution::query()
-            ->whereHas('followers', fn ($query) => $query->whereKey($user->getKey()))
+            ->whereKey($institutionIds)
             ->orderBy('name->lt');
-        $total = (clone $query)->count();
+        $total = $institutionIds->count();
 
         if ($limit !== null) {
             $query->limit($limit);
@@ -29,8 +36,7 @@ class GetFollowedInstitutions
 
         $activityStatusService = app(InstitutionActivityStatusService::class);
 
-        // All check-ins, not only current ones: resolve() needs completed ones for lastActivityAt.
-        $items = $query->with(['types', 'meetings:id,start_time', 'checkIns'])
+        $items = $activityStatusService->withSummary($query)
             ->get()
             ->map(fn (Institution $institution): array => [
                 'id' => (string) $institution->id,
@@ -42,5 +48,14 @@ class GetFollowedInstitutions
             ->all();
 
         return ['items' => $items, 'total' => $total];
+    }
+
+    /** @return Collection<int, string> */
+    public static function institutionIds(User $user): Collection
+    {
+        // Include the request in the memo key when a worker handles several requests.
+        $request = request();
+
+        return once(fn (): Collection => $user->followedInstitutions()->pluck('institutions.id')->map(fn ($id): string => (string) $id));
     }
 }

@@ -2,12 +2,12 @@ import { flushPromises, mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import DocumentFolderBrowser from '../DocumentFolderBrowser.vue';
-import type { DocumentFolderListing, DocumentFolderRow } from '../types';
-
 import { Checkbox } from '@/Components/ui/checkbox';
 import { DocumentStatus } from '@/Types/enums';
 import { commonStubs } from '@/tests/stubs';
+
+import type { DocumentFolderListing, DocumentFolderRow } from '../types';
+import DocumentFolderBrowser from '../DocumentFolderBrowser.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

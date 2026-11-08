@@ -17,11 +17,11 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 
-import InstitutionListOptionsFields from './InstitutionListOptionsFields.vue';
-
 import type { InstitutionList } from '@/Types/contentParts';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';
+
+import InstitutionListOptionsFields from './InstitutionListOptionsFields.vue';
 
 const modelValue = defineModel<InstitutionList['json_content']>({ required: true });
 const options = defineModel<InstitutionList['options']>('options', { required: true });

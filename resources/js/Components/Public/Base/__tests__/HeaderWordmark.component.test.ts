@@ -2,10 +2,10 @@ import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
 
-import HeaderWordmark from '../HeaderWordmark.vue';
-
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { ssrRoundTrip } from '@/tests/helpers/ssrRoundTrip';
+
+import HeaderWordmark from '../HeaderWordmark.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

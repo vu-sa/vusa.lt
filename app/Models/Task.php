@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection as SupportCollection;
+use Illuminate\Support\Facades\DB;
 use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
@@ -143,9 +144,9 @@ class Task extends Model
      *
      * @return SupportCollection<int, User>
      */
-    public function notifiableUsers(): SupportCollection
+    public function notifiableUsers(?SupportCollection $audienceMemo = null): SupportCollection
     {
-        return ResolveTaskAudience::execute($this);
+        return ResolveTaskAudience::execute($this, $audienceMemo);
     }
 
     public function tenants(): HasManyDeep
@@ -245,25 +246,29 @@ class Task extends Model
      */
     public function incrementProgress(int $amount = 1): bool
     {
-        if (! $this->metadata || ! isset($this->metadata['items_total'])) {
-            return false;
-        }
+        return DB::transaction(function () use ($amount): bool {
+            $locked = $this->newQuery()->whereKey($this->getKey())->lockForUpdate()->firstOrFail();
+            $this->setRawAttributes($locked->getAttributes(), true);
 
-        $metadata = $this->metadata;
-        $metadata['items_completed'] = ($metadata['items_completed'] ?? 0) + $amount;
+            if (! $this->metadata || ! isset($this->metadata['items_total'])) {
+                return false;
+            }
 
-        $this->metadata = $metadata;
-        $this->save();
+            $metadata = $this->metadata;
+            $metadata['items_completed'] = ($metadata['items_completed'] ?? 0) + $amount;
 
-        // Auto-complete if all items are done
-        if ($metadata['items_completed'] >= $metadata['items_total']) {
-            $this->completed_at = now();
+            $this->metadata = $metadata;
             $this->save();
 
-            return true; // Task was completed
-        }
+            if ($metadata['items_completed'] >= $metadata['items_total']) {
+                $this->completed_at = now();
+                $this->save();
 
-        return false; // Task still in progress
+                return true;
+            }
+
+            return false;
+        });
     }
 
     /**

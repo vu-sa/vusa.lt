@@ -54,10 +54,6 @@ import { computed, onMounted, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { useFileUsageScan } from '../useFileUsageScan';
-
-import FileUsageList from './FileUsageList.vue';
-
 import { Button } from '@/Components/ui/button';
 import {
   Dialog,
@@ -71,6 +67,10 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Spinner } from '@/Components/ui/spinner';
 import { getFileExtension } from '@/Utils/fileIcons';
+
+import { useFileUsageScan } from '../useFileUsageScan';
+
+import FileUsageList from './FileUsageList.vue';
 
 const props = defineProps<{
   path: string;

@@ -3,10 +3,10 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-import EventCalendarElement from '../EventCalendarElement.vue';
-
 import { resolveBand } from '@/Components/RichContent/bandLayout';
 import type { Calendar } from '@/Types/contentParts';
+
+import EventCalendarElement from '../EventCalendarElement.vue';
 
 /**
  * The calendar band's title used to be a hardcoded string, ignoring `element.json_content.title`

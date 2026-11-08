@@ -53,6 +53,7 @@ describe('agenda item notes API', function (): void {
             ->putJson(route('api.v1.admin.agendaItems.note.update', $this->agendaItem->id), [
                 'yjs_state' => base64_encode('binary-yjs-update'),
                 'notes_html' => '<p>Bendros pastabos</p>',
+                'base_version' => null,
             ]);
 
         $response->assertOk()->assertJsonPath('success', true);
@@ -86,6 +87,7 @@ describe('agenda item notes API', function (): void {
         asUser($outsider)
             ->putJson(route('api.v1.admin.agendaItems.note.update', $this->agendaItem->id), [
                 'yjs_state' => base64_encode('x'),
+                'base_version' => null,
             ])
             ->assertStatus(403);
 
@@ -109,6 +111,49 @@ describe('agenda item notes API', function (): void {
             ->assertJsonPath('data.representatives.0.id', (string) $representative->id)
             ->assertJsonPath('data.representatives.0.name', 'Atstovė Ona');
     });
+
+    test('each save bumps the version the client saves against next', function (): void {
+        $save = fn (?int $baseVersion) => asUser($this->admin)
+            ->putJson(route('api.v1.admin.agendaItems.note.update', $this->agendaItem->id), [
+                'yjs_state' => base64_encode('state'),
+                'notes_html' => '<p>Pastabos</p>',
+                'base_version' => $baseVersion,
+            ]);
+
+        $save(null)->assertOk()->assertJsonPath('data.version', 1);
+        $save(1)->assertOk()->assertJsonPath('data.version', 2);
+
+        asUser($this->admin)
+            ->getJson(route('api.v1.admin.agendaItems.note.show', $this->agendaItem->id))
+            ->assertJsonPath('data.version', 2);
+    });
+
+    test('a save based on an older version is refused with the stored state, leaving the notes intact', function (?int $baseVersion): void {
+        AgendaItemNote::factory()->create([
+            'agenda_item_id' => $this->agendaItem->id,
+            'yjs_state' => base64_encode('stored-state'),
+            'notes_html' => '<p>Kito atstovo pastabos</p>',
+            'version' => 3,
+        ]);
+
+        asUser($this->admin)
+            ->putJson(route('api.v1.admin.agendaItems.note.update', $this->agendaItem->id), [
+                'yjs_state' => base64_encode('stale-state'),
+                'notes_html' => '<p></p>',
+                'base_version' => $baseVersion,
+            ])
+            ->assertStatus(409)
+            ->assertJsonPath('data.yjs_state', base64_encode('stored-state'))
+            ->assertJsonPath('data.version', 3);
+
+        $note = $this->agendaItem->note()->first();
+        expect($note->yjs_state)->toBe(base64_encode('stored-state'))
+            ->and($note->notes_html)->toBe('<p>Kito atstovo pastabos</p>');
+    })->with([
+        'an older version' => [2],
+        // A client whose load failed has never seen the stored notes.
+        'never loaded' => [null],
+    ]);
 
     test('raw yjs_state is never exposed via default model serialization', function (): void {
         $note = AgendaItemNote::factory()->create([
@@ -146,6 +191,7 @@ describe('html sanitization', function (): void {
         asUser($this->admin)
             ->putJson(route('api.v1.admin.agendaItems.note.update', $this->agendaItem->id), [
                 'yjs_state' => base64_encode('state'),
+                'base_version' => null,
                 'notes_html' => '<p>Pastaba</p><script>alert(1)</script><img src=x onerror="alert(2)">',
             ])
             ->assertOk();
@@ -162,6 +208,7 @@ describe('html sanitization', function (): void {
         asUser($this->admin)
             ->putJson(route('api.v1.admin.agendaItems.note.update', $this->agendaItem->id), [
                 'yjs_state' => base64_encode('state'),
+                'base_version' => null,
                 'notes_html' => '<h2 id="a">Tema</h2><ul><li><strong>Punktas</strong></li></ul>',
             ])
             ->assertOk();
@@ -181,6 +228,7 @@ describe('html sanitization', function (): void {
         asUser($this->admin)
             ->putJson(route('api.v1.admin.agendaItems.note.update', $this->agendaItem->id), [
                 'yjs_state' => base64_encode('state'),
+                'base_version' => null,
                 'notes_html' => '<p></p>',
             ])
             ->assertOk();
@@ -194,6 +242,7 @@ describe('html sanitization', function (): void {
         asUser($this->admin)
             ->putJson(route('api.v1.admin.agendaItems.note.update', $this->agendaItem->id), [
                 'yjs_state' => base64_encode('state'),
+                'base_version' => null,
                 'notes_html' => '<p>&nbsp;</p><p><br></p>',
             ])
             ->assertOk();
@@ -207,6 +256,7 @@ describe('html sanitization', function (): void {
         asUser($this->admin)
             ->putJson(route('api.v1.admin.agendaItems.note.update', $this->agendaItem->id), [
                 'yjs_state' => base64_encode('state'),
+                'base_version' => null,
                 'notes_html' => '<p><img src="https://vusa.lt/a.png" alt=""></p>',
             ])
             ->assertOk();
@@ -220,6 +270,7 @@ describe('html sanitization', function (): void {
         asUser($this->admin)
             ->putJson(route('api.v1.admin.agendaItems.note.update', $this->agendaItem->id), [
                 'yjs_state' => base64_encode('state'),
+                'base_version' => null,
             ])
             ->assertOk();
 

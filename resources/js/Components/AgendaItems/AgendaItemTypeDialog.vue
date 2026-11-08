@@ -21,7 +21,7 @@
             :description="option.description"
             :icon="option.icon"
             :selected="option.value === form.type"
-            :show-chevron="false"
+            indicator="check"
             :data-testid="`agenda-item-type-${option.value}`"
             @click="choose(option.value)"
           />
@@ -36,14 +36,6 @@ import type { InertiaForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { VisuallyHidden } from 'reka-ui';
 
-import {
-  agendaItemTypeOptions,
-  agendaItemTypeQuestion,
-  applyAgendaItemType,
-  type AgendaItemType,
-  type AgendaItemTypeMeeting,
-} from './agendaItemTypes';
-
 import ActionChoiceButton from '@/Components/ActionWindow/ActionChoiceButton.vue';
 import ActionChoiceList from '@/Components/ActionWindow/ActionChoiceList.vue';
 import ActionWindowScreen from '@/Components/ActionWindow/ActionWindowScreen.vue';
@@ -51,6 +43,14 @@ import { Dialog, DialogContent, DialogTitle } from '@/Components/ui/dialog';
 import { Drawer, DrawerContent, DrawerTitle } from '@/Components/ui/drawer';
 import type { AgendaItemFormData } from '@/Composables/useAgendaItemAutosave';
 import { useIsMobile } from '@/Composables/useIsMobile';
+
+import {
+  agendaItemTypeOptions,
+  agendaItemTypeQuestion,
+  applyAgendaItemType,
+  type AgendaItemType,
+  type AgendaItemTypeMeeting,
+} from './agendaItemTypes';
 
 const props = defineProps<{
   open: boolean;

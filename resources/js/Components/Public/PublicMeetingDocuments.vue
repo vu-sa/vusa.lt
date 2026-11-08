@@ -2,7 +2,7 @@
   <ul class="divide-y divide-border border-y border-border">
     <li v-for="document in documents" :key="document.id">
       <a
-        :href="documentUrl(document)"
+        :href="safeHref(documentUrl(document))"
         target="_blank"
         rel="noopener noreferrer"
         class="flex items-start gap-3 px-1 py-3 transition-colors hover:bg-secondary/60 sm:px-2"
@@ -31,6 +31,8 @@
 
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
+
+import { safeHref } from '@/Utils/safeHref';
 
 import IFluentDocument20Regular from '~icons/fluent/document20-regular';
 import IFluentOpen20Regular from '~icons/fluent/open-20-regular';

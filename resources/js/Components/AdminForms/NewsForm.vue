@@ -246,19 +246,6 @@ import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronDown, LayoutTemplate, Tags, Trash2 } from '@lucide/vue';
 
-import RichContentFormElement from '../RichContent/RichContentFormElement.vue';
-
-import ContentRecoveryPanel from './ContentRecoveryPanel.vue';
-import ContentLanguagePanel from './ContentLanguagePanel.vue';
-import ContentPublishPanel from './ContentPublishPanel.vue';
-import FormFieldWrapper from './FormFieldWrapper.vue';
-import PermalinkField from './PermalinkField.vue';
-import PermalinkPreviewHint from './PermalinkPreviewHint.vue';
-import PublicUrlHistoryCard from './PublicUrlHistoryCard.vue';
-import SEOPreview from './SEOPreview.vue';
-import TagMultiSelect from './TagMultiSelect.vue';
-import TenantSelectField, { pickDefaultTenantId } from './TenantSelectField.vue';
-
 import { CONTENT_EDITOR_CONTEXT, type ContentEditorContext } from '@/Components/RichContent/contentEditorContext';
 import { useContentEditor } from '@/Composables/useContentEditor';
 import FormPage from '@/Components/Layouts/FormPage.vue';
@@ -269,7 +256,7 @@ import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
 import { OrderedListInput } from '@/Components/ui/ordered-list-input';
-import { ImageUpload } from '@/Components/ui/upload';
+import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
 import type { ImageData } from '@/Types/media';
 import { contentStatuses } from '@/Constants/statusIcons';
 import { resolveTenantPublicHost, resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
@@ -278,6 +265,19 @@ import { newsTemplate } from '@/Types/formTemplates';
 import { formatDateTime } from '@/Utils/dateTime';
 import { localizedRoute, localizedSlug } from '@/Utils/LocalizedRoutes';
 import { stripHtmlTags } from '@/Utils/String';
+
+import RichContentFormElement from '../RichContent/RichContentFormElement.vue';
+
+import TenantSelectField, { pickDefaultTenantId } from './TenantSelectField.vue';
+import TagMultiSelect from './TagMultiSelect.vue';
+import SEOPreview from './SEOPreview.vue';
+import PublicUrlHistoryCard from './PublicUrlHistoryCard.vue';
+import PermalinkPreviewHint from './PermalinkPreviewHint.vue';
+import PermalinkField from './PermalinkField.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import ContentPublishPanel from './ContentPublishPanel.vue';
+import ContentLanguagePanel from './ContentLanguagePanel.vue';
+import ContentRecoveryPanel from './ContentRecoveryPanel.vue';
 
 const props = withDefaults(defineProps<{
   news?: App.Entities.News;

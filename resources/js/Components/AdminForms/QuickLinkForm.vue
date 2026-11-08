@@ -99,7 +99,7 @@
             as-child
             class="size-11 shrink-0"
           >
-            <a :href="form.link" target="_blank" rel="noopener noreferrer" :aria-label="$t('Atidaryti nuorodą')">
+            <a :href="safeHref(form.link)" target="_blank" rel="noopener noreferrer" :aria-label="$t('Atidaryti nuorodą')">
               <ExternalLink class="size-4" />
             </a>
           </Button>
@@ -188,6 +188,7 @@ import { useApiMutation } from '@/Composables/useApi';
 import type { StatusPresentation } from '@/Constants/statusIcons';
 import { MultiCollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
 import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import { safeHref } from '@/Utils/safeHref';
 
 interface TopicOption {
   id: number;

@@ -65,14 +65,15 @@ import type { BandResolution } from '../bandLayout';
 // full-screen editor's inline-text control into every public page that renders a
 // section marker, which never reaches this branch at all.
 const RCInlineText = defineAsyncComponent(() => import('../Editor/Fullscreen/RCInlineText.vue'));
-import {
-  INNER_CLASS, SECTION_HEADING_SIZE_CLASS, type SectionHeadingLevel,
-} from '../sectionClasses';
 
 import SectionHeader from '@/Components/RichContent/SectionHeader.vue';
 import { EyebrowLabel } from '@/Components/Public/Base';
 import { latinizeId } from '@/Utils/String';
 import type { Section } from '@/Types/contentParts';
+
+import {
+  INNER_CLASS, SECTION_HEADING_SIZE_CLASS, type SectionHeadingLevel,
+} from '../sectionClasses';
 
 const props = defineProps<{
   element: Section;

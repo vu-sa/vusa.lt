@@ -15,10 +15,9 @@
       <p class="truncate text-xs font-semibold text-foreground">
         {{ title }}
       </p>
-      <p
-        class="mt-0.5 line-clamp-2 text-xs text-muted-foreground"
-        v-html="message"
-      />
+      <p class="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
+        {{ message }}
+      </p>
     </div>
 
     <!-- View action -->
@@ -38,8 +37,6 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowRight, Bell } from '@lucide/vue';
 
-import NotificationLink from './NotificationLink.vue';
-
 import {
   getNotificationIcon,
   getNotificationColorClasses,
@@ -49,6 +46,8 @@ import {
   notificationColors,
   type Notification,
 } from '@/Composables/useNotificationFormatting';
+
+import NotificationLink from './NotificationLink.vue';
 
 const props = defineProps<{
   notification?: Notification;

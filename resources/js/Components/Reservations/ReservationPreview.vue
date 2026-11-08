@@ -38,13 +38,13 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 
-import ReservationResourceChips from './ReservationResourceChips.vue';
-
 import { PreviewFact, PreviewFacts, PreviewPane, PreviewSection } from '@/Components/Patterns';
 import ReservationStateSummary from '@/Components/Tag/ReservationStateSummary.vue';
 import { Button } from '@/Components/ui/button';
 import { formatDate } from '@/Utils/dateTime';
 import { getReservationStates, isReservationUnresolved, type DashboardReservation } from '@/Utils/ReservationStatus';
+
+import ReservationResourceChips from './ReservationResourceChips.vue';
 
 const props = defineProps<{
   reservation: DashboardReservation;

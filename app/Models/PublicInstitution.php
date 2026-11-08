@@ -43,6 +43,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
+ * @property-read Collection<int, InstitutionCheckIn> $activeCheckIns
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Collection<int, Cadence> $cadences

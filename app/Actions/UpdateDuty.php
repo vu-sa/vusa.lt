@@ -8,10 +8,14 @@ use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
+use App\Rules\SoftDeleteRules;
+use App\Rules\WithinAuthorizedTenantScope;
 use App\Services\DutyAssignmentService;
 use App\Support\MorphMap;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class UpdateDuty
 {
@@ -29,14 +33,19 @@ class UpdateDuty
             Institution::withTrashed()->whereIn('id', [$duty->institution_id, $data['institution_id']])
                 ->orderBy('id')->lockForUpdate()->get();
             $institutionChanged = $duty->institution_id !== $data['institution_id'];
+            if ($institutionChanged && auth()->user() === null) {
+                throw ValidationException::withMessages(['institution_id' => __('validation.outside_tenant_scope')]);
+            }
+            Validator::make($data, [
+                'institution_id' => [
+                    'bail', 'required', 'ulid', SoftDeleteRules::existsLive('institutions'),
+                    ...($institutionChanged ? [new WithinAuthorizedTenantScope(Institution::class, 'duties.update.padalinys')] : []),
+                ],
+            ])->validate();
             $duty->update(Arr::only($data, ['name', 'description', 'email', 'places_to_occupy', 'contacts_grouping', 'is_active']));
 
             if (array_key_exists('former_names', $data)) {
                 $this->syncFormerNames($duty, $data['former_names'] ?? []);
-            }
-
-            if (isset($data['current_users'])) {
-                $this->assignments->syncRepresentatives($duty, $data['current_users']);
             }
 
             $duty->institution()->disassociate();
@@ -47,6 +56,10 @@ class UpdateDuty
                 ...($data['types'] ?? []),
                 ...$duty->types()->onlyTrashed()->pluck('duty_types.id')->all(),
             ]);
+
+            if (isset($data['current_users'])) {
+                $this->assignments->syncRepresentatives($duty, $data['current_users']);
+            }
 
             SyncExOfficioTargets::execute($duty, array_values(array_filter($data['ex_officio_target_duty_ids'] ?? [])));
 

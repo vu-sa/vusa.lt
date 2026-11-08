@@ -14,7 +14,7 @@
         :reference="rootRef ?? undefined"
         class="pointer-events-none absolute size-0 overflow-hidden"
       />
-      <SmartLink :href="button.link" class="w-fit">
+      <SmartLink :href="safeHref(button.link)" class="w-fit">
         <Button
           :variant="button.variant === 'outline' ? (onDark ? 'brand-outline-on-dark' : 'outline') : 'brand'"
           voice="brand"
@@ -98,10 +98,6 @@
 import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { injectActiveHotspot } from '../Editor/Fullscreen/useActiveHotspot';
-import RCIconSelect from '../RCIconSelect.vue';
-import RCIcon from '../RCIcon.vue';
-
 import type { Hero } from '@/Types/contentParts';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import { Button } from '@/Components/ui/button';
@@ -109,6 +105,11 @@ import { Field, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';
 import { Popover, PopoverAnchor, PopoverContent } from '@/Components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { safeHref } from '@/Utils/safeHref';
+
+import RCIcon from '../RCIcon.vue';
+import RCIconSelect from '../RCIconSelect.vue';
+import { injectActiveHotspot } from '../Editor/Fullscreen/useActiveHotspot';
 
 type HeroButton = NonNullable<Hero['json_content']['buttons']>[number];
 

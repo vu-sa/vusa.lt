@@ -20,6 +20,7 @@ use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class NewsController extends AdminController
 {
@@ -36,7 +37,7 @@ class NewsController extends AdminController
 
         // Live rows come from Typesense (the scoped key carries the authorization) and the trash
         // from api.v1.admin.trash.index, so the page itself needs no rows.
-        return $this->inertiaResponse('Admin/Content/IndexNews', [
+        return Inertia::render('Admin/Content/IndexNews', [
             'deletedCount' => $this->scopedTrashedCount(News::query(), 'tenant', 'news.read.padalinys'),
         ]);
     }
@@ -50,7 +51,7 @@ class NewsController extends AdminController
 
         $tags = Tag::orderBy('alias')->get();
 
-        return $this->inertiaResponse('Admin/Content/CreateNews', [
+        return Inertia::render('Admin/Content/CreateNews', [
             'availableTags' => $tags->map->toFullArray(),
             'assignableTenants' => GetTenantsForUpserts::execute('news.create.padalinys', $this->authorizer),
         ]);
@@ -59,6 +60,8 @@ class NewsController extends AdminController
     public function duplicate(News $news)
     {
         $this->handleAuthorization('create', News::class);
+        $this->handleAuthorization('view', $news);
+        abort_unless($this->authorizer->scope(auth()->user(), 'news.create.padalinys')->allowsTenant($news->tenant), 403);
 
         $newNews = DuplicateNewsAction::execute($news);
 
@@ -85,7 +88,7 @@ class NewsController extends AdminController
 
         $tags = Tag::orderBy('alias')->get();
 
-        return $this->inertiaResponse('Admin/Content/EditNews', [
+        return Inertia::render('Admin/Content/EditNews', [
             'news' => [
                 ...app(ContentEditorService::class)->snapshot($news),
                 'public_urls' => $news->publicUrls()->get(['id', 'url', 'locale', 'created_at']),

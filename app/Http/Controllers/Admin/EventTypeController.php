@@ -11,6 +11,7 @@ use App\Http\Traits\HasTanstackTables;
 use App\Models\EventType;
 use App\Services\TanstackTableService;
 use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
 use Inertia\Response;
 
 class EventTypeController extends AdminController
@@ -50,7 +51,7 @@ class EventTypeController extends AdminController
 
         $this->appendForceDeleteBlockedReason($eventTypes->getCollection(), $request);
 
-        return $this->inertiaResponse('Admin/Calendar/IndexEventType', [
+        return Inertia::render('Admin/Calendar/IndexEventType', [
             'abilities' => [
                 'update' => $request->user()->can('update', new EventType),
                 'delete' => $request->user()->can('delete', new EventType),

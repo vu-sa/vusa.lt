@@ -114,6 +114,11 @@ import { Link, Undo2, Redo2 } from '@lucide/vue';
 
 import './accessible-image-commands.d.ts';
 
+import { collectHeadingIds } from '@/Components/RichContent/headingAnchors';
+import { Separator } from '@/Components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { latinizeId } from '@/Utils/String';
+
 import { type EditorPreset, getExtensionsForPreset } from './extensions/presets';
 import { useTiptapFileUpload } from './composables/useTiptapFileUpload';
 import { useTiptapCommands } from './composables/useTiptapCommands';
@@ -126,11 +131,6 @@ import TiptapListButtons from './TiptapListButtons.vue';
 import TiptapInsertMenu from './TiptapInsertMenu.vue';
 import TiptapMoreMenu from './TiptapMoreMenu.vue';
 import TiptapToolButton from './TiptapToolButton.vue';
-
-import { collectHeadingIds } from '@/Components/RichContent/headingAnchors';
-import { Separator } from '@/Components/ui/separator';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { latinizeId } from '@/Utils/String';
 
 import './tiptap-base.css';
 

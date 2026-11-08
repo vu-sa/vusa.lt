@@ -1,11 +1,12 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
-
-import SearchHitRow from '../SearchHitRow.vue';
-import type { NormalizedSearchHit } from '../../Utils/searchHitMappers';
+import { ChevronRight } from '@lucide/vue';
 
 import { deletedMemberStatus } from '@/Constants/statusIcons';
 import { documentWithMatch } from '@/Shared/Search/matches';
+
+import SearchHitRow from '../SearchHitRow.vue';
+import type { NormalizedSearchHit } from '../../Utils/searchHitMappers';
 
 const hit = {
   id: 'users-1',
@@ -21,6 +22,16 @@ const hit = {
 } as NormalizedSearchHit;
 
 describe('SearchHitRow', () => {
+  it('keeps the chevron by default and allows pickers to hide it', async () => {
+    const wrapper = mount(SearchHitRow, { props: { hit }, global: { stubs: { EntityTypeMark: true } } });
+
+    expect(wrapper.findComponent(ChevronRight).exists()).toBe(true);
+
+    await wrapper.setProps({ trailing: 'none' });
+
+    expect(wrapper.findComponent(ChevronRight).exists()).toBe(false);
+  });
+
   it('explains an unseen match in place of the subtitle and names the type', () => {
     const wrapper = mount(SearchHitRow, {
       props: { hit: { ...hit, subtitle: 'jonas@vusa.lt', raw: { _searchMatch: { field: 'body', segments: [{ text: 'Petras Petraitis', matched: true }] } } }, showType: true },

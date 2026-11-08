@@ -42,8 +42,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 /**
  * @property string $id
  * @property string $title
- * @property MeetingKind|null $meeting_kind
  * @property MeetingType|null $type
+ * @property MeetingKind|null $meeting_kind
  * @property Carbon $start_time
  * @property Carbon|null $end_time
  * @property Carbon $created_at
@@ -96,6 +96,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 class Meeting extends Model implements Commentable, SharepointFileableContract
 {
     use HasComments, HasFactory, HasPublicSearchMirror, HasRelationships, HasSharepointFiles, HasTasks, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable, SoftDeletes;
+
+    /** @var array<string, bool> */
+    private array $hadMemberMemo = [];
 
     /**
      * `title` stays a plain column: it is generated ({@see MeetingTitle}), never authored, so it
@@ -368,7 +371,7 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
     /** @return HasMany<AgendaItem, $this> */
     public function agendaItems(): HasMany
     {
-        return $this->hasMany(AgendaItem::class);
+        return $this->hasMany(AgendaItem::class)->chaperone();
     }
 
     public function meetingKind(): MeetingKind
@@ -437,7 +440,7 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
     {
         $date = $this->start_time->toDateString();
 
-        return $user->duties()
+        return $this->hadMemberMemo[$user->getKey().':'.$date] ??= $user->duties()
             ->whereIn('duties.institution_id', $this->institutions()->select('institutions.id'))
             ->whereDate('dutiables.start_date', '<=', $date)
             ->where(fn ($query) => $query->whereNull('dutiables.end_date')->orWhereDate('dutiables.end_date', '>=', $date))

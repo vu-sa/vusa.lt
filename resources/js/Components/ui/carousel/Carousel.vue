@@ -12,10 +12,10 @@
 </template>
 
 <script setup lang="ts">
+import { cn } from '@/Utils/Shadcn/utils';
+
 import type { CarouselEmits, CarouselProps, WithClassAsProps } from './interface';
 import { useProvideCarousel } from './useCarousel';
-
-import { cn } from '@/Utils/Shadcn/utils';
 
 const props = withDefaults(defineProps<CarouselProps & WithClassAsProps>(), {
   orientation: 'horizontal',

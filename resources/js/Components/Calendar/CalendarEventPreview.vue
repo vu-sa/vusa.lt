@@ -36,11 +36,11 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 
-import type { CalendarEventPreviewModel } from './calendarEventPreview';
-
 import { PreviewFact, PreviewFacts, PreviewPane, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { contentStatuses } from '@/Constants/statusIcons';
+
+import type { CalendarEventPreviewModel } from './calendarEventPreview';
 
 const props = defineProps<{
   event: CalendarEventPreviewModel;

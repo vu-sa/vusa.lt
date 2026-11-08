@@ -3,11 +3,11 @@ import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ref } from 'vue';
 
-import IndexDomainTypes from '../IndexDomainTypes.vue';
-
 import type { CollectionColumn } from '@/Components/Collection/types';
 import type { CollectionSource } from '@/Composables/useCollectionSource';
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import IndexDomainTypes from '../IndexDomainTypes.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

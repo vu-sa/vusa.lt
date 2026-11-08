@@ -21,15 +21,15 @@ use Typesense\Client;
 /** Scoped keys enforce visibility even when a browser supplies its own search filters. */
 class TypesenseScopedKeyService
 {
-    public const KEY_EXPIRY = 3600;
+    public const KEY_EXPIRY = 900;
 
     /** Refresh the cache before the credential itself expires. */
-    protected const CACHE_TTL = 3500;
+    protected const CACHE_TTL = 800;
 
     public function __construct(protected Client $client, protected ModelAuthorizer $authorizer, protected InstitutionAccessService $institutionAccessService) {}
 
     /**
-     * @return array{collections: array<string, array{key: string, tenant_ids: array<int>, institution_ids?: array<int>, direct_institution_ids?: array<int>, scope?: string, has_access: bool}>, expires_at: int, is_super_admin: bool, header_key?: string, visibility_version: string}
+     * @return array{collections: array<string, array{key: string, tenant_ids: array<int>, institution_ids?: array<int>, direct_institution_ids?: array<int>, scope?: string, has_access: bool, excluded_fields?: array<string>}>, expires_at: int, is_super_admin: bool, header_key?: string, visibility_version: string}
      */
     public function generateScopedKeysForUser(User $user): array
     {
@@ -53,6 +53,7 @@ class TypesenseScopedKeyService
     {
         return md5(implode(':', [
             'meeting-baseline-v2',
+            'search-fields-v1',
             config('scout.typesense.client-settings.admin_search_key'),
             Cache::get('agenda-privacy-version', ''),
             InstitutionRelationService::version(),
@@ -61,7 +62,7 @@ class TypesenseScopedKeyService
     }
 
     /**
-     * @return array{collections: array<string, array{key: string, tenant_ids: array<int>, institution_ids?: array<int>, direct_institution_ids?: array<int>, scope?: string, has_access: bool}>, expires_at: int, is_super_admin: bool, header_key?: string}
+     * @return array{collections: array<string, array{key: string, tenant_ids: array<int>, institution_ids?: array<int>, direct_institution_ids?: array<int>, scope?: string, has_access: bool, excluded_fields?: array<string>}>, expires_at: int, is_super_admin: bool, header_key?: string}
      */
     protected function buildScopedKeys(User $user): array
     {
@@ -107,7 +108,7 @@ class TypesenseScopedKeyService
                     continue;
                 }
 
-                $scopedKey = $this->client->getKeys()->generateScopedSearchKey($parentKey, [
+                $scopedKey = $this->scopedSearchKey($parentKey, [
                     'collection' => $prefixedCollectionName,
                     'filter_by' => $filterBy,
                     'expires_at' => $expiresAt,
@@ -125,7 +126,7 @@ class TypesenseScopedKeyService
         }
 
         // Without a per-search key, the transport credential must never return records.
-        $headerKey = $this->client->getKeys()->generateScopedSearchKey($parentKey, [
+        $headerKey = $this->scopedSearchKey($parentKey, [
             'filter_by' => 'id:=__transport_only__',
             'expires_at' => $expiresAt,
         ]);
@@ -138,11 +139,24 @@ class TypesenseScopedKeyService
         ];
     }
 
+    /**
+     * Every scoped key goes through here so pinned results obey the embedded filter too.
+     *
+     * @param  array<string, mixed>  $params
+     */
+    private function scopedSearchKey(string $parentKey, array $params): string
+    {
+        return $this->client->getKeys()->generateScopedSearchKey($parentKey, [
+            ...$params,
+            'filter_curated_hits' => true,
+        ]);
+    }
+
     /** @return array{key: string, tenant_ids: array, institution_ids: array, has_access: bool, scope: string} */
     private function unrestrictedCollection(string $parentKey, string $collection, int $expiresAt, string $scope): array
     {
         return [
-            'key' => $this->client->getKeys()->generateScopedSearchKey($parentKey, [
+            'key' => $this->scopedSearchKey($parentKey, [
                 'collection' => $collection,
                 'expires_at' => $expiresAt,
             ]),
@@ -156,7 +170,7 @@ class TypesenseScopedKeyService
     /**
      * @param  array{permission: string|null, baseline_own?: true}  $config
      * @param  'meeting_types'|'active'  $publicRows
-     * @return array{key: string, tenant_ids: array, institution_ids: array, direct_institution_ids: array, has_access: bool, scope: string}
+     * @return array{key: string, excluded_fields: array<string>, tenant_ids: array, institution_ids: array, direct_institution_ids: array, has_access: bool, scope: string}
      */
     private function publicCollection(User $user, string $collection, array $config, string $publicRows, string $parentKey, int $expiresAt): array
     {
@@ -189,16 +203,25 @@ class TypesenseScopedKeyService
             $filter = $clauses ? '('.implode(' || ', $clauses).')' : 'id:=__no_access__';
         }
 
-        $scopedKey = $this->client->getKeys()->generateScopedSearchKey($parentKey, [
+        // A collection key also admits public rows outside the user's institution scope.
+        $hideActivityStatus = $collection === 'institutions'
+            && ! $this->authorizer->scope($user, 'institutions.read.padalinys')->isAllScope;
+
+        $scopedKey = $this->scopedSearchKey($parentKey, [
             'collection' => $prefixedCollectionName,
             'filter_by' => $filter
                 // Nothing public and no permissions: an empty list, not a missing collection.
                 ?? 'tenant_ids:=-1',
             'expires_at' => $expiresAt,
+            ...($hideActivityStatus ? [
+                'exclude_fields' => 'activity_status',
+                'facet_by' => 'tenant_shortname,type_titles,is_active',
+            ] : []),
         ]);
 
         return [
             'key' => $scopedKey,
+            'excluded_fields' => $hideActivityStatus ? ['activity_status'] : [],
             'tenant_ids' => $tenantIds->toArray(),
             'institution_ids' => $institutionIds->toArray(),
             'direct_institution_ids' => $this->institutionAccessService->getUserDutyInstitutionIds($user)->toArray(),

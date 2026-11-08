@@ -32,7 +32,7 @@ class AgendaItemController extends AdminController
     {
         $this->handleAuthorization('viewAny', Meeting::class);
 
-        return $this->inertiaResponse('Admin/Representation/IndexAgendaItem', [
+        return Inertia::render('Admin/Representation/IndexAgendaItem', [
             'defaultTenantShortnames' => GetUserTenantShortnames::execute($request->user()),
         ]);
     }
@@ -45,27 +45,29 @@ class AgendaItemController extends AdminController
         if ($request->has('agendaItemTitles')) {
             $validatedData = $request->safe();
 
-            // Get the highest order for this meeting
-            $maxOrder = AgendaItem::where('meeting_id', $validatedData['meeting_id'])
-                ->max('order') ?? 0;
+            // Serialised per meeting: two reps adding items at once would otherwise read the same max order.
+            app(MeetingSearchLock::class)->run($validatedData['meeting_id'], fn () => DB::transaction(function () use ($validatedData): void {
+                $maxOrder = AgendaItem::where('meeting_id', $validatedData['meeting_id'])
+                    ->max('order') ?? 0;
 
-            $broughtByStudentsFlags = $validatedData['broughtByStudentsFlags'] ?? [];
-            $startTimes = $validatedData['startTimes'] ?? [];
-            $endTimes = $validatedData['endTimes'] ?? [];
+                $broughtByStudentsFlags = $validatedData['broughtByStudentsFlags'] ?? [];
+                $startTimes = $validatedData['startTimes'] ?? [];
+                $endTimes = $validatedData['endTimes'] ?? [];
 
-            foreach ($validatedData['agendaItemTitles'] as $index => $agendaItemTitle) {
-                AgendaItem::create([
-                    'meeting_id' => $validatedData['meeting_id'],
-                    // Pinned to `lt`, not the request locale: the paste box is always fed
-                    // Lithuanian, including by an admin whose interface is in English.
-                    'title' => ['lt' => $agendaItemTitle],
-                    'order' => $maxOrder + $index + 1,
-                    'brought_by_students' => $broughtByStudentsFlags[$index] ?? false,
-                    'is_private' => $validatedData['privateFlags'][$index] ?? false,
-                    'start_time' => $startTimes[$index] ?? null,
-                    'end_time' => $endTimes[$index] ?? null,
-                ]);
-            }
+                foreach ($validatedData['agendaItemTitles'] as $index => $agendaItemTitle) {
+                    AgendaItem::create([
+                        'meeting_id' => $validatedData['meeting_id'],
+                        // Pinned to `lt`, not the request locale: the paste box is always fed
+                        // Lithuanian, including by an admin whose interface is in English.
+                        'title' => ['lt' => $agendaItemTitle],
+                        'order' => $maxOrder + $index + 1,
+                        'brought_by_students' => $broughtByStudentsFlags[$index] ?? false,
+                        'is_private' => $validatedData['privateFlags'][$index] ?? false,
+                        'start_time' => $startTimes[$index] ?? null,
+                        'end_time' => $endTimes[$index] ?? null,
+                    ]);
+                }
+            }));
         }
 
         return back()->with(['success' => __('messages.agenda_item.created_many')]);
@@ -91,7 +93,7 @@ class AgendaItemController extends AdminController
             $meeting = $agendaItem->meeting;
             $meeting->loadMissing(['institutions.types', 'institutions.tenant', 'agendaItems']);
 
-            return $this->inertiaResponse('Admin/Representation/ShowAgendaItem', [
+            return Inertia::render('Admin/Representation/ShowAgendaItem', [
                 'agendaItem' => AgendaItemPresenter::redacted($agendaItem),
                 'siblingAgendaItems' => $meeting->agendaItems->sortBy('order')->map(fn (AgendaItem $item): array => AgendaItemPresenter::publicItem($item)
                 )->values()->all(),
@@ -136,7 +138,7 @@ class AgendaItemController extends AdminController
                 ])
             ->values();
 
-        return $this->inertiaResponse('Admin/Representation/ShowAgendaItem', [
+        return Inertia::render('Admin/Representation/ShowAgendaItem', [
             // toFullArray(): the page writes translations, so it needs the whole `{lt, en}` map.
             'agendaItem' => [
                 ...$agendaItem->toFullArray(),
@@ -215,25 +217,30 @@ class AgendaItemController extends AdminController
      */
     public function update(UpdateAgendaItemRequest $request, AgendaItem $agendaItem)
     {
-        app(MeetingSearchLock::class)->run($agendaItem->meeting_id, fn () => DB::transaction(function () use ($request, $agendaItem): void {
-            // Update agenda item fields (excluding votes)
+        $voteIds = app(MeetingSearchLock::class)->run($agendaItem->meeting_id, fn () => DB::transaction(function () use ($request, $agendaItem): ?array {
             $agendaItem->fill($request->safe()->except('votes'));
             $agendaItem->save();
 
-            // Handle votes if provided
-            if ($request->has('votes')) {
-                // validated(), not input(): raw input would carry through anything unvalidated.
-                $this->syncVotes($agendaItem, $request->validated('votes') ?? []);
+            if (! $request->has('votes')) {
+                return null;
             }
+
+            // validated(), not input(): raw input would carry through anything unvalidated.
+            return $this->syncVotes($agendaItem, $request->validated('votes') ?? []);
         }));
 
-        return back()->with('success', $this->entityMessage('updated', 'agendaItem'));
+        $response = back()->with('success', $this->entityMessage('updated', 'agendaItem'));
+
+        // The editor adopts the ids of votes it created, or its next autosave would create them again.
+        return $voteIds === null ? $response : $response->with('data', ['voteIds' => $voteIds]);
     }
 
     /**
      * Sync votes for an agenda item.
+     *
+     * @return list<string> the saved vote ids, in payload order
      */
-    protected function syncVotes(AgendaItem $agendaItem, array $votes): void
+    protected function syncVotes(AgendaItem $agendaItem, array $votes): array
     {
         $existingVoteIds = $agendaItem->votes()->pluck('id')->toArray();
         $updatedVoteIds = [];
@@ -281,6 +288,8 @@ class AgendaItemController extends AdminController
         }
 
         $this->ensureSingleMainVote($agendaItem);
+
+        return $updatedVoteIds;
     }
 
     /**

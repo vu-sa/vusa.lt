@@ -19,10 +19,10 @@
 <script setup lang="ts">
 import type { Component } from 'vue';
 
-import { paletteRowClass } from './paletteRowClass';
-
 import EntityTypeMark from '@/Components/EntityTypeMark.vue';
 import { CommandItem } from '@/Components/ui/command';
+
+import { paletteRowClass } from './paletteRowClass';
 
 defineProps<{
   value: string;

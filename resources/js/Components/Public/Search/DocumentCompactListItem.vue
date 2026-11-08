@@ -1,7 +1,7 @@
 <template>
   <li class="group">
     <a
-      :href="documentUrl"
+      :href="safeHref(documentUrl)"
       target="_blank"
       rel="noopener noreferrer"
       :title="isShortcut ? $t('search.document_link_hint') : undefined"
@@ -129,10 +129,12 @@ import { documentDateMatch, highlightText, matchTitle } from '@/Shared/Search/ma
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import { useDocumentDisplay, getDocumentTargetUrl, parseDocumentDate, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
 import { TagChip } from '@/Components/Public/Base';
+import { formatDateWith } from '@/Utils/dateTime';
+import { safeHref } from '@/Utils/safeHref';
+
 import IFluentLink20Regular from '~icons/fluent/link-20-regular';
 import IFluentOpen20Regular from '~icons/fluent/open-20-regular';
 import IFluentWarning20Regular from '~icons/fluent/warning-20-regular';
-import { formatDateWith } from '@/Utils/dateTime';
 
 // Props
 interface Props {

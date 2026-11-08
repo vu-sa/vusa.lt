@@ -108,11 +108,6 @@ import { computed, shallowRef } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import SmartLink from '../SmartLink.vue';
-
-import QuickLink from './QuickLink.vue';
-import LocaleButton from './LocaleButton.vue';
-
 import { Button } from '@/Components/ui/button';
 import {
   DropdownMenu,
@@ -121,6 +116,12 @@ import {
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 import { useOverflowingItems } from '@/Composables/useOverflowingItems';
+
+import SmartLink from '../SmartLink.vue';
+
+import QuickLink from './QuickLink.vue';
+import LocaleButton from './LocaleButton.vue';
+
 import IFluentGrid24Filled from '~icons/fluent/grid-24-filled';
 import IFluentGrid24Regular from '~icons/fluent/grid-24-regular';
 

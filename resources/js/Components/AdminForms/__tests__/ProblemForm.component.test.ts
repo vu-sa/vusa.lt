@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { afterEach, describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import type { InertiaForm } from '@inertiajs/vue3';
-import { ComboboxRoot } from 'reka-ui';
 import { defineComponent, markRaw, nextTick } from 'vue';
 
 import ProblemForm from '@/Components/AdminForms/ProblemForm.vue';
+import UserSearchField from '@/Features/Admin/AdminSearch/Components/Select/UserSearchField.vue';
 import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { createMockForm } from '@/tests/helpers/createMockForm';
 import { commonStubs } from '@/tests/stubs';
@@ -70,6 +70,27 @@ const institutionHit = (id: string, title: string): NormalizedSearchHit => ({
   icon: markRaw(defineComponent({ template: '<i />' })),
   title,
   raw: {},
+});
+
+describe('ProblemForm.vue — calendar dates', () => {
+  afterEach(() => vi.useRealTimers());
+
+  it.each(['2026-03-15', '2026-03-15T00:00:00+02:00'])('preserves the existing occurred date %s', (occurred_at) => {
+    const wrapper = mountForm({ problem: { ...emptyProblem(), occurred_at, resolved_at: '2026-03-16' } });
+
+    expect((wrapper.get('#problem-occurred-at').element as HTMLInputElement).value).toBe('2026-03-15');
+    expect((wrapper.get('#problem-resolved-at').element as HTMLInputElement).value).toBe('2026-03-16');
+    wrapper.unmount();
+  });
+
+  it('defaults to today in Vilnius just after midnight', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-03-14T22:30:00Z'));
+    const wrapper = mountForm();
+
+    expect((wrapper.get('#problem-occurred-at').element as HTMLInputElement).value).toBe('2026-03-15');
+    wrapper.unmount();
+  });
 });
 
 describe('ProblemForm.vue — mobile field spacing', () => {
@@ -193,17 +214,22 @@ describe('ProblemForm.vue — status selection', () => {
 });
 
 describe('ProblemForm.vue — responsible member picker', () => {
-  it('shows server matches without a second local filter and saves the selected user', async () => {
+  it('uses scoped user search and saves or clears the selected user', async () => {
     const wrapper = mountForm();
-    const picker = wrapper.findComponent(ComboboxRoot);
+    const picker = wrapper.getComponent(UserSearchField);
 
-    expect(picker.props('ignoreFilter')).toBe(true);
-    expect(picker.props('openOnFocus')).toBe(true);
-    expect(picker.props('openOnClick')).toBe(true);
+    expect(picker.props('permission')).toBe('problems.create.padalinys');
+    expect(picker.props('scope')).toBeUndefined();
+    expect(wrapper.get('input#problem-responsible-user').attributes('role')).toBe('combobox');
 
     picker.vm.$emit('update:modelValue', { id: 'user-1', name: 'Jonas Jonaitis' });
     await nextTick();
 
     expect((wrapper.vm as unknown as { form: { responsible_user_id: string | null } }).form.responsible_user_id).toBe('user-1');
+    expect(wrapper.get('[data-testid="member-search-selected"]').text()).toContain('Jonas Jonaitis');
+
+    await wrapper.get('[data-testid="member-search-selected"] button').trigger('click');
+    expect((wrapper.vm as unknown as { form: { responsible_user_id: string | null } }).form.responsible_user_id).toBeNull();
+    wrapper.unmount();
   });
 });

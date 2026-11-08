@@ -2,10 +2,10 @@ import { mount } from '@vue/test-utils';
 import { ref } from 'vue';
 import { describe, expect, it, vi } from 'vitest';
 
-import TextBoxSubmissionsDialog from '../TextBoxSubmissionsDialog.vue';
-
 import { useApi, useApiMutation } from '@/Composables/useApi';
 import { commonStubs } from '@/tests/stubs';
+
+import TextBoxSubmissionsDialog from '../TextBoxSubmissionsDialog.vue';
 
 vi.mock('@/Composables/useApi', () => ({ useApi: vi.fn(), useApiMutation: vi.fn() }));
 vi.mock('@/Composables/useToasts', () => ({ useToasts: () => ({ success: vi.fn(), error: vi.fn() }) }));

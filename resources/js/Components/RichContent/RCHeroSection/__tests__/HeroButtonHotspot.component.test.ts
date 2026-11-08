@@ -3,10 +3,10 @@ import { mount } from '@vue/test-utils';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
+import { commonStubs, stubPopover, stubPopoverAnchor, stubPopoverContent } from '@/tests/stubs';
+
 import HeroButtonHotspot from '../HeroButtonHotspot.vue';
 import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from '../../Editor/Fullscreen/useActiveHotspot';
-
-import { commonStubs, stubPopover, stubPopoverAnchor, stubPopoverContent } from '@/tests/stubs';
 
 const stubs = {
   ...commonStubs,

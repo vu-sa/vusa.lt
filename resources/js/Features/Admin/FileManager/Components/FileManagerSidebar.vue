@@ -92,12 +92,12 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Clock, Files, Folder, FolderOpen, FolderPlus, Home, Star } from '@lucide/vue';
 
+import { Button } from '@/Components/ui/button';
+
 import type { ActiveView, DirectoryEntry, ItemAction } from '../types';
 import { formatBytes, relativeToRoot, ROOT_PATH } from '../utils';
 
 import ItemActionsMenu from './ItemActionsMenu.vue';
-
-import { Button } from '@/Components/ui/button';
 
 interface TreeNode {
   path: string;

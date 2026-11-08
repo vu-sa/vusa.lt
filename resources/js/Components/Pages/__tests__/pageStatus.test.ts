@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { pageStatus } from '../pageStatus';
-
 import { contentStatuses } from '@/Constants/statusIcons';
 import type { PageSearchResult } from '@/Shared/Search/types';
+
+import { pageStatus } from '../pageStatus';
 
 const page = (overrides: Partial<PageSearchResult>): PageSearchResult => ({
   id: '1',

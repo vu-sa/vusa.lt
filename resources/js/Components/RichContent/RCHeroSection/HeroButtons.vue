@@ -8,7 +8,7 @@
     ]"
   >
     <template v-for="(button, index) in buttons" :key="index">
-      <SmartLink :href="button.link" class="w-fit">
+      <SmartLink :href="safeHref(button.link)" class="w-fit">
         <!-- No `mr-2` on the icon: Button's base already applies `gap-2`, and adding a margin
              on top is what made the icon-to-label spacing differ between controls. -->
         <Button
@@ -37,11 +37,12 @@
  */
 import { computed } from 'vue';
 
-import RCIcon from '../RCIcon.vue';
-
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import { Button } from '@/Components/ui/button';
 import type { Hero } from '@/Types/contentParts';
+import { safeHref } from '@/Utils/safeHref';
+
+import RCIcon from '../RCIcon.vue';
 
 const props = defineProps<{
   buttons?: Hero['json_content']['buttons'];
