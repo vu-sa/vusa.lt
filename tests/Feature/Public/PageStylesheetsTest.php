@@ -32,3 +32,15 @@ it('still renders the page when the component is missing from the manifest', fun
 
     expect($html)->toContain(app(Vite::class)->asset('resources/css/app.css'));
 });
+
+it('preloads the surface entry and page chunk without running them as entry scripts', function (string $component, string $surface): void {
+    $html = renderAppView($component);
+    $vite = app(Vite::class);
+
+    preg_match_all('/<link rel="modulepreload" href="([^"]+)"/', $html, $preloads);
+
+    expect($preloads[1])->toContain($vite->asset("resources/js/{$surface}.ts"))
+        ->toContain($vite->asset("resources/js/Pages/{$component}.vue"))
+        ->not->toContain($vite->asset('resources/js/app.ts'))
+        ->and(substr_count($html, '<script type="module"'))->toBe(1);
+})->with([['Public/HomePage', 'public'], ['Admin/ShowAdminHome', 'admin']]);
