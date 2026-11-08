@@ -4,7 +4,7 @@ title: Failai
 last_reviewed: 2026-10-19
 tests:
   - tests/Browser/ContentEditorImageSaveTest.php
-  - resources/js/Components/ui/upload/__tests__/ImageUploadMedia.component.test.ts
+  - resources/js/Components/FileUpload/__tests__/ImageUploadMedia.component.test.ts
   - tests/Feature/Jobs/Media/UpgradeImageMediaTest.php
   - tests/Feature/Public/ResizedImageControllerTest.php
   - resources/js/Components/Brand/__tests__/MediaImage.component.test.ts
