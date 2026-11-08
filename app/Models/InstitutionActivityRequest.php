@@ -74,8 +74,8 @@ class InstitutionActivityRequest extends Model
     protected function casts(): array
     {
         return [
-            'period_start' => 'date',
-            'period_end' => 'date',
+            'period_start' => 'date:Y-m-d',
+            'period_end' => 'date:Y-m-d',
             'campaign_type' => InstitutionActivityCampaign::class,
             'answer' => InstitutionActivityAnswer::class,
             'answered_at' => 'datetime',

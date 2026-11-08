@@ -29,6 +29,17 @@ const institution = (
 });
 
 describe('useAtstovavimasData', () => {
+  it('places check-in date-only values at local calendar midnight', () => {
+    const user = { authorization_duties: [{ institution_id: '1' }] } as AtstovavimasUser;
+    const data = useAtstovavimasData(user, [{
+      ...institution('1', 'healthy', 0),
+      check_ins: [{ id: 'check-in', institution_id: '1', user_id: 'user-1', start_date: '2026-03-15', end_date: '2026-03-29' }],
+    }]);
+
+    expect(data.userGaps.value[0]!.from).toEqual(new Date(2026, 2, 15));
+    expect(data.userGaps.value[0]!.until).toEqual(new Date(2026, 2, 29));
+  });
+
   it('orders attention insights by backend priority', () => {
     const user = {
       authorization_duties: [

@@ -90,7 +90,7 @@ class MailingListSource extends Model
             'type' => MailingListSourceType::class,
             'address_mode' => MailingListAddressMode::class,
             'filters' => 'array',
-            'expires_on' => 'date',
+            'expires_on' => 'date:Y-m-d',
         ];
     }
 }

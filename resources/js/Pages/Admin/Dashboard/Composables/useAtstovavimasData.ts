@@ -90,8 +90,8 @@ export function useAtstovavimasData(
     return institutions.value.flatMap((inst: AtstovavimasInstitution) => {
       return (inst.check_ins ?? []).map(checkIn => ({
         institution_id: inst.id,
-        from: new Date(checkIn.start_date),
-        until: new Date(checkIn.end_date),
+        from: new Date(`${checkIn.start_date}T00:00:00`),
+        until: new Date(`${checkIn.end_date}T00:00:00`),
         mode: 'no_meetings', // All check-ins represent "no meetings"
         note: checkIn.note || undefined,
       }));

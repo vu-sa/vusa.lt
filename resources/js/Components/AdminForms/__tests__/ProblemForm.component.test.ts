@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { afterEach, describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import type { InertiaForm } from '@inertiajs/vue3';
 import { defineComponent, markRaw, nextTick } from 'vue';
@@ -70,6 +70,27 @@ const institutionHit = (id: string, title: string): NormalizedSearchHit => ({
   icon: markRaw(defineComponent({ template: '<i />' })),
   title,
   raw: {},
+});
+
+describe('ProblemForm.vue — calendar dates', () => {
+  afterEach(() => vi.useRealTimers());
+
+  it.each(['2026-03-15', '2026-03-15T00:00:00+02:00'])('preserves the existing occurred date %s', (occurred_at) => {
+    const wrapper = mountForm({ problem: { ...emptyProblem(), occurred_at, resolved_at: '2026-03-16' } });
+
+    expect((wrapper.get('#problem-occurred-at').element as HTMLInputElement).value).toBe('2026-03-15');
+    expect((wrapper.get('#problem-resolved-at').element as HTMLInputElement).value).toBe('2026-03-16');
+    wrapper.unmount();
+  });
+
+  it('defaults to today in Vilnius just after midnight', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-03-14T22:30:00Z'));
+    const wrapper = mountForm();
+
+    expect((wrapper.get('#problem-occurred-at').element as HTMLInputElement).value).toBe('2026-03-15');
+    wrapper.unmount();
+  });
 });
 
 describe('ProblemForm.vue — mobile field spacing', () => {

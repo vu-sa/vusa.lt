@@ -116,7 +116,7 @@ class Step extends Model
     protected function casts(): array
     {
         return [
-            'happened_on' => 'date',
+            'happened_on' => 'date:Y-m-d',
         ];
     }
 }

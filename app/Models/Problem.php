@@ -193,8 +193,8 @@ class Problem extends Model implements Commentable
     protected function casts(): array
     {
         return [
-            'occurred_at' => 'date',
-            'resolved_at' => 'date',
+            'occurred_at' => 'date:Y-m-d',
+            'resolved_at' => 'date:Y-m-d',
         ];
     }
 }
