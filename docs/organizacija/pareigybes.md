@@ -386,7 +386,7 @@ pvz., „atstovas matematikos“ arba „pirmininkas MIF“. Sutapę žodžiai p
 rodomi ją šiuo metu einantys nariai. Jei rezultatų daugiau, paskutinė eilutė **Rodyti daugiau**
 parodo, kiek jau rodoma ir kiek iš viso rasta; ją pasirinkus sąrašas papildomas.
 
-<ChangelogNote date="2026-11-06" title="Pareigybės pasirinkimas">
+<ChangelogNote date="2026-11-08" title="Pareigybės pasirinkimas">
 
 Paieška randa pareigybes pagal kartu įrašytus pareigybės ir institucijos ar padalinio žodžius,
 o daugiau rezultatų galima parodyti tame pačiame sąraše. Originalaus pavadinimo parinktis matoma
