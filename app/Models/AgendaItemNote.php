@@ -24,6 +24,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property string $agenda_item_id
  * @property string|null $yjs_state
  * @property string|null $notes_html
+ * @property int $version
  * @property string|null $updated_by
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -87,11 +88,18 @@ class AgendaItemNote extends Model
 
     /**
      * yjs_state is the binary CRDT document state — huge and unreadable in a
-     * change log. notes_html is the human-facing rendered snapshot instead.
+     * change log, and version only counts saves. notes_html is the human-facing snapshot.
      */
     public function getActivitylogOptions(): LogOptions
     {
-        return $this->defaultActivitylogOptions()->logExcept(['yjs_state']);
+        return $this->defaultActivitylogOptions()->logExcept(['yjs_state', 'version']);
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'version' => 'integer',
+        ];
     }
 
     public function agendaItem(): BelongsTo

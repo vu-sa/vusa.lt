@@ -66,6 +66,7 @@ return [
         'created_many' => 'Darbotvarkės punktai sukurti sėkmingai!',
         'reordered' => 'Darbotvarkės punktų tvarka pakeista sėkmingai!',
         'notes_saved' => 'Pastabos išsaugotos.',
+        'notes_conflict' => 'Pastabos tuo metu pasikeitė. Sujungiame ir išsaugome dar kartą.',
     ],
 
     'vote' => [

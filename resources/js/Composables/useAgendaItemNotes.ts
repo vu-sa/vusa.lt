@@ -68,6 +68,8 @@ export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUse
   const connectionState = ref<'idle' | 'connecting' | 'connected' | 'error'>('idle');
   const saveStatus = ref<NotesSaveStatus>('idle');
   const isHydrating = ref(true);
+  /** The stored notes could not be loaded; editing stays off so an empty doc cannot be saved over them. */
+  const loadFailed = ref(false);
   const notesHtml = ref<string>('');
   const representatives = ref<NotesMentionUser[]>([]);
 
@@ -81,6 +83,10 @@ export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUse
 
   let saveTimer: ReturnType<typeof setTimeout> | null = null;
   let dirty = false;
+  /** The stored version this doc last loaded or saved; null until a load succeeds. */
+  let baseVersion: number | null = null;
+  let saving = false;
+  let saveAgain = false;
   let channel: any = null;
   let destroyed = false;
 
@@ -111,6 +117,11 @@ export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUse
     if (destroyed) {
       return;
     }
+    if (saving && !opts.keepalive) {
+      saveAgain = true;
+      return;
+    }
+    saving = true;
     saveStatus.value = 'saving';
     try {
       const response = await fetch(route('api.v1.admin.agendaItems.note.update', agendaItemId), {
@@ -126,16 +137,40 @@ export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUse
         body: JSON.stringify({
           yjs_state: bytesToBase64(Y.encodeStateAsUpdate(doc)),
           notes_html: currentHtml,
+          base_version: baseVersion,
         }),
       });
+      if (response.status === 409) {
+        mergeStoredState(await response.json());
+        return;
+      }
       if (response.ok) {
         dirty = false;
+        const version = (await response.json())?.data?.version;
+        baseVersion = typeof version === 'number' ? version : baseVersion;
       }
       saveStatus.value = response.ok ? 'saved' : 'dirty';
     }
     catch {
       saveStatus.value = 'dirty';
     }
+    finally {
+      saving = false;
+      if (saveAgain && !destroyed) {
+        saveAgain = false;
+        void persist();
+      }
+    }
+  }
+
+  /** Someone saved since this doc's version: merge their state (a CRDT merge keeps both) and save the union. */
+  function mergeStoredState(json: { data?: { yjs_state?: string | null; version?: number } } | null): void {
+    const state = json?.data?.yjs_state;
+    if (state) {
+      Y.applyUpdate(doc, base64ToBytes(state), HYDRATE_ORIGIN);
+    }
+    baseVersion = json?.data?.version ?? baseVersion;
+    scheduleSave();
   }
 
   function scheduleSave(): void {
@@ -170,6 +205,8 @@ export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUse
   doc.on('update', onLocalUpdate);
 
   async function hydrate(): Promise<void> {
+    isHydrating.value = true;
+    loadFailed.value = false;
     try {
       const response = await fetch(route('api.v1.admin.agendaItems.note.show', agendaItemId), {
         credentials: 'same-origin',
@@ -188,7 +225,14 @@ export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUse
         if (Array.isArray(json?.data?.representatives)) {
           representatives.value = json.data.representatives;
         }
+        baseVersion = typeof json?.data?.version === 'number' ? json.data.version : null;
       }
+      else {
+        loadFailed.value = true;
+      }
+    }
+    catch {
+      loadFailed.value = true;
     }
     finally {
       isHydrating.value = false;
@@ -285,6 +329,8 @@ export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUse
     connectionState,
     saveStatus,
     isHydrating,
+    loadFailed,
+    retryLoad: hydrate,
     notesHtml,
     representatives,
     currentUserColor: colorForUser(currentUser.id),

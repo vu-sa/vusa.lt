@@ -7,6 +7,7 @@ use App\Http\Requests\Api\Admin\UpdateAgendaItemNoteRequest;
 use App\Models\AgendaItemNote;
 use App\Models\Pivots\AgendaItem;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Persistence endpoints for the private collaborative agenda-item notes.
@@ -46,6 +47,7 @@ class AgendaItemNoteApiController extends ApiController
         return $this->jsonSuccess([
             'yjs_state' => $note?->yjs_state,
             'notes_html' => $note?->notes_html,
+            'version' => $note?->version,
             'updated_by' => $note?->updated_by,
             'updated_at' => $note?->updated_at?->toISOString(),
             'representatives' => $representatives,
@@ -54,21 +56,44 @@ class AgendaItemNoteApiController extends ApiController
 
     /**
      * Persist the debounced Y.js snapshot + rendered HTML.
+     *
+     * Each client sends its whole document, so a save based on an older version than the stored
+     * one gets a 409 with the stored state; the client merges it (a CRDT merge loses nothing) and saves again.
      */
     public function update(UpdateAgendaItemNoteRequest $request, AgendaItem $agendaItem): JsonResponse
     {
         $validated = $request->validated();
 
-        /** @var AgendaItemNote $note */
-        $note = $agendaItem->note()->updateOrCreate([], [
-            'yjs_state' => $validated['yjs_state'],
-            'notes_html' => $validated['notes_html'] ?? null,
-            'updated_by' => $request->user()?->id,
-        ]);
+        return DB::transaction(function () use ($validated, $request, $agendaItem): JsonResponse {
+            // Locks the item rather than the note, so two first saves cannot both create it.
+            AgendaItem::query()->whereKey($agendaItem->getKey())->lockForUpdate()->first();
 
-        return $this->jsonSuccess([
-            'updated_by' => $note->updated_by,
-            'updated_at' => $note->updated_at?->toISOString(),
-        ], __('messages.agenda_item.notes_saved'));
+            /** @var AgendaItemNote|null $note */
+            $note = $agendaItem->note()->first();
+            $baseVersion = $validated['base_version'] === null ? null : (int) $validated['base_version'];
+
+            if ($note !== null && $note->version !== $baseVersion) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('messages.agenda_item.notes_conflict'),
+                    'code' => 'notes_conflict',
+                    'data' => ['yjs_state' => $note->yjs_state, 'version' => $note->version],
+                ], 409);
+            }
+
+            $note ??= $agendaItem->note()->make();
+            $note->fill([
+                'yjs_state' => $validated['yjs_state'],
+                'notes_html' => $validated['notes_html'] ?? null,
+                'updated_by' => $request->user()?->id,
+                'version' => ($note->version ?? 0) + 1,
+            ])->save();
+
+            return $this->jsonSuccess([
+                'version' => $note->version,
+                'updated_by' => $note->updated_by,
+                'updated_at' => $note->updated_at?->toISOString(),
+            ], __('messages.agenda_item.notes_saved'));
+        });
     }
 }

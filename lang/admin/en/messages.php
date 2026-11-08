@@ -64,6 +64,7 @@ return [
         'created_many' => 'Agenda items created successfully!',
         'reordered' => 'Agenda item order updated successfully!',
         'notes_saved' => 'Notes saved.',
+        'notes_conflict' => 'The notes changed in the meantime. Merging and saving again.',
     ],
 
     'vote' => [

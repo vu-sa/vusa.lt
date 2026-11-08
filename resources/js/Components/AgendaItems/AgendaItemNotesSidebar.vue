@@ -12,7 +12,7 @@
           <Lock class="h-3 w-3" />
           {{ $t('PRIVATU') }}
         </span>
-        <Button variant="ghost" size="icon" class="h-7 w-7" :title="$t('Atverti didesnį langą')" @click="expanded = true">
+        <Button v-if="!notes.loadFailed.value" variant="ghost" size="icon" class="h-7 w-7" :title="$t('Atverti didesnį langą')" @click="expanded = true">
           <Maximize2 class="h-4 w-4" />
         </Button>
       </div>
@@ -51,6 +51,15 @@
         <div class="h-3 w-2/3 animate-pulse bg-muted" />
       </div>
 
+      <div v-else-if="notes.loadFailed.value" role="alert" class="flex flex-wrap items-center justify-between gap-2 px-2 py-3">
+        <p class="text-sm text-muted-foreground">
+          {{ $t('Nepavyko įkelti pastabų.') }}
+        </p>
+        <Button variant="outline" size="sm" @click="notes.retryLoad()">
+          {{ $t('Bandyti dar kartą') }}
+        </Button>
+      </div>
+
       <!-- While the dialog holds the live editor, the sidebar shows a snapshot. -->
       <div v-else-if="expanded" class="px-2">
         <div
@@ -77,7 +86,7 @@
         />
       </div>
 
-      <p v-if="!notes.isHydrating.value && !expanded" class="px-2 pt-2 text-xs leading-relaxed text-muted-foreground">
+      <p v-if="!notes.isHydrating.value && !notes.loadFailed.value && !expanded" class="px-2 pt-2 text-xs leading-relaxed text-muted-foreground">
         <span class="font-semibold">{{ $t('Eksperimentinė funkcija') }}.</span>
         {{ $t('Pažymėk tekstą formatavimui, „/" atveria blokų meniu, „@" pamini atstovą.') }}
       </p>
