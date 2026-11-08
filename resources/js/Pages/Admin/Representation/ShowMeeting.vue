@@ -124,50 +124,59 @@
     </template>
 
     <template #documents>
-      <div v-if="documents === undefined || pendingDocuments === undefined" class="space-y-3">
-        <Skeleton class="h-10 w-full" />
-        <Skeleton class="h-24 w-full" />
-      </div>
-      <MeetingDocumentsPanel
-        v-else
-        :meeting-id="meeting.id"
-        :documents
-        :pending-documents
-        :institution-ids
-        :tenant-shortnames
-        :can-update="abilities.update"
-      />
+      <WhenVisible v-if="!readOnly" :data="['documents', 'pendingDocuments']">
+        <template #fallback>
+          <div class="space-y-3">
+            <Skeleton class="h-10 w-full" />
+            <Skeleton class="h-24 w-full" />
+          </div>
+        </template>
+        <MeetingDocumentsPanel
+          :meeting-id="meeting.id"
+          :documents="documents ?? []"
+          :pending-documents
+          :institution-ids
+          :tenant-shortnames
+          :can-update="abilities.update"
+        />
+      </WhenVisible>
     </template>
 
     <template #files>
-      <div v-if="files === undefined" class="space-y-3">
-        <Skeleton class="h-10 w-full" />
-        <Skeleton class="h-24 w-full" />
-      </div>
-      <FileableFilesPanel
-        v-else
-        ref="filesPanel"
-        :fileable="{ id: meeting.id, type: 'Meeting' }"
-        :files
-        :can-upload="canUploadFiles"
-        :folder-url="meeting.sharepointFolderUrl"
-        :can-delete="abilities.update"
-        :primary-types="MEETING_PRIMARY_FILE_TYPES"
-        :default-date="meeting.start_time"
-      />
+      <WhenVisible v-if="!readOnly" data="files">
+        <template #fallback>
+          <div class="space-y-3">
+            <Skeleton class="h-10 w-full" />
+            <Skeleton class="h-24 w-full" />
+          </div>
+        </template>
+        <FileableFilesPanel
+          ref="filesPanel"
+          :fileable="{ id: meeting.id, type: 'Meeting' }"
+          :files
+          :can-upload="canUploadFiles"
+          :folder-url="meeting.sharepointFolderUrl"
+          :can-delete="abilities.update"
+          :primary-types="MEETING_PRIMARY_FILE_TYPES"
+          :default-date="meeting.start_time"
+        />
+      </WhenVisible>
     </template>
 
     <template #tasks>
-      <div v-if="tasks === undefined" class="space-y-3">
-        <Skeleton class="h-10 w-full" />
-        <Skeleton class="h-24 w-full" />
-      </div>
-      <TaskManager
-        v-else
-        :taskable="{ id: meeting.id, type: ModelEnum.MEETING }"
-        :tasks
-        @open-task-detail="openTaskDetail"
-      />
+      <WhenVisible v-if="!readOnly" data="tasks">
+        <template #fallback>
+          <div class="space-y-3">
+            <Skeleton class="h-10 w-full" />
+            <Skeleton class="h-24 w-full" />
+          </div>
+        </template>
+        <TaskManager
+          :taskable="{ id: meeting.id, type: ModelEnum.MEETING }"
+          :tasks="tasks ?? []"
+          @open-task-detail="openTaskDetail"
+        />
+      </WhenVisible>
     </template>
 
     <template v-if="!readOnly" #activity>
@@ -305,7 +314,7 @@
 
 <script setup lang="tsx">
 import { ref, computed, watch, onMounted, onUnmounted, defineAsyncComponent, nextTick } from 'vue';
-import { Link, router } from '@inertiajs/vue3';
+import { Link, router, WhenVisible } from '@inertiajs/vue3';
 import { useClipboard, useStorage } from '@vueuse/core';
 import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
 import { AlertTriangle, CalendarPlus, CalendarX, CircleCheck, CircleDashed, Copy, Edit, Globe, Link2, Plus, Trash2 } from '@lucide/vue';
@@ -622,7 +631,7 @@ const pendingUploadType = ref<FileableFileType | null>(null);
 const openFilesUpload = async (type: FileableFileType) => {
   pendingUploadType.value = type;
   currentTab.value = 'files';
-  loadTab('files');
+  loadOptionalProps(['files']);
   await nextTick();
   openPendingUpload();
 };
@@ -751,16 +760,7 @@ const loadOptionalProps = (keys: OptionalPanelProp[]) => {
   });
 };
 
-const loadTab = (tab: string) => {
-  if (tab === 'files' || tab === 'tasks') loadOptionalProps([tab]);
-  if (tab === 'documents') loadOptionalProps(['documents', 'pendingDocuments']);
-};
-watch(currentTab, loadTab);
-onMounted(() => loadTab(currentTab.value));
-watch(() => props.meeting.id, () => {
-  requestedProps.clear();
-  loadTab(currentTab.value);
-});
+watch(() => props.meeting.id, () => requestedProps.clear());
 
 // Sync tab state to URL without page reload
 watch(currentTab, (newTab) => {

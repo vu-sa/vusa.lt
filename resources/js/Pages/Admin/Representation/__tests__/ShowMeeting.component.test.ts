@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { router } from '@inertiajs/vue3';
+import { router, WhenVisible } from '@inertiajs/vue3';
 import * as i18n from 'laravel-vue-i18n';
 
 import ShowMeeting from '@/Pages/Admin/Representation/ShowMeeting.vue';
@@ -27,6 +27,7 @@ const stubs = {
   DiscussionPanel: { template: '<div />' },
   FileableFilesPanel: { name: 'FileableFilesPanel', template: '<div data-testid="files-panel" />' },
   TaskManager: { name: 'TaskManager', template: '<div data-testid="task-manager" />' },
+  MeetingDocumentsPanel: { name: 'MeetingDocumentsPanel', template: '<div data-testid="documents-panel" />' },
   MeetingForm: { name: 'MeetingForm', props: ['open'], template: '<div />' },
   AddAgendaItemsSheet: {
     name: 'AddAgendaItemsSheet',
@@ -281,39 +282,52 @@ describe('ShowMeeting.vue', () => {
   });
 
   it.each([
-    ['files', ['files']],
-    ['tasks', ['tasks']],
+    ['files', 'files'],
+    ['tasks', 'tasks'],
     ['documents', ['documents', 'pendingDocuments']],
-  ] as const)('loads %s only on its first opening', async (tab, only) => {
+  ] as const)('loads the %s section through WhenVisible without selecting its tab', (section, data) => {
     const wrapper = createWrapper({ files: undefined, governanceScope: 'vusa' });
-    const record = wrapper.findComponent({ name: 'RecordPage' });
-    expect(router.reload).not.toHaveBeenCalled();
+    const panel = wrapper.findAllComponents(WhenVisible)
+      .find(component => component.element.closest('section')?.getAttribute('aria-labelledby') === `record-section-${section}`);
 
-    record.vm.$emit('update:section', tab);
-    await wrapper.vm.$nextTick();
-    expect(router.reload).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ only: [...only] }));
-    const finish = vi.mocked(router.reload).mock.calls[0]?.[0]?.onFinish;
-    if (tab === 'files') await wrapper.setProps({ files: [] });
-    if (tab === 'tasks') await wrapper.setProps({ tasks: [] });
-    if (tab === 'documents') await wrapper.setProps({ documents: [], pendingDocuments: [] });
-    // Inertia merges the returned props before completing the visit.
-    finish?.({} as Parameters<NonNullable<typeof finish>>[0]);
-    record.vm.$emit('update:section', 'agenda');
-    await wrapper.vm.$nextTick();
-    record.vm.$emit('update:section', tab);
-    await wrapper.vm.$nextTick();
-    expect(router.reload).toHaveBeenCalledTimes(1);
+    expect(panel).toBeDefined();
+    expect(panel?.props('data')).toEqual(data);
+    expect(panel?.props('always')).toBe(false);
+    expect(panel?.props('buffer')).toBe(0);
+    expect(panel?.vm.$slots.fallback).toBeTypeOf('function');
+    expect(router.reload).not.toHaveBeenCalled();
     wrapper.unmount();
   });
 
   it.each([
-    ['files', ['files']],
-    ['tasks', ['tasks']],
+    ['files', 'files'],
+    ['tasks', 'tasks'],
     ['documents', ['documents', 'pendingDocuments']],
-  ] as const)('loads the %s deep link on mount', (tab, only) => {
+  ] as const)('keeps the %s deep link ready for visibility loading', (tab, data) => {
     window.history.replaceState({}, '', `/?tab=${tab}`);
     const wrapper = createWrapper({ files: undefined, governanceScope: 'vusa' });
-    expect(router.reload).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ only: [...only] }));
+    const record = wrapper.findComponent({ name: 'RecordPage' });
+    const panel = wrapper.findAllComponents(WhenVisible)
+      .find(component => component.element.closest('section')?.getAttribute('aria-labelledby') === `record-section-${tab}`);
+
+    expect(record.props('section')).toBe(tab);
+    expect(panel?.props('data')).toEqual(data);
+    expect(panel?.element.closest('section')?.className).toContain('md:block');
+    expect(router.reload).not.toHaveBeenCalled();
+    wrapper.unmount();
+  });
+
+  it('keeps internal panels out of the read-only agenda view', () => {
+    window.history.replaceState({}, '', '/?tab=files');
+    const wrapper = createWrapper({ readOnly: true, files: undefined, governanceScope: 'vusa' });
+
+    expect(wrapper.findComponent({ name: 'RecordPage' }).props('section')).toBe('agenda');
+    expect(wrapper.findAllComponents(WhenVisible)).toHaveLength(0);
+    expect(wrapper.find('[data-testid="agenda-list"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="files-panel"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="task-manager"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="documents-panel"]').exists()).toBe(false);
+    expect(router.reload).not.toHaveBeenCalled();
     wrapper.unmount();
   });
 
