@@ -11,6 +11,7 @@ use App\Services\SystemMaintenanceService;
 use App\Services\SystemMonitorService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class SystemStatusController extends AdminController
 {
@@ -23,7 +24,7 @@ class SystemStatusController extends AdminController
     {
         $this->handleAuthorization('viewAny', Role::class);
 
-        return $this->inertiaResponse('Admin/SystemStatus', [
+        return Inertia::render('Admin/SystemStatus', [
             'lastUpdated' => now()->toISOString(),
             'status' => $this->monitor->getAllStatus(),
             'deviceMetrics' => $this->deviceMetrics->getRecentMetrics(30),

@@ -26,6 +26,7 @@ use App\Support\LocalizedRouteSlugs;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 use Inertia\Response;
 
 class FormController extends AdminController
@@ -98,7 +99,7 @@ class FormController extends AdminController
 
         $sorting = $request->getSorting();
 
-        return $this->inertiaResponse('Admin/Forms/IndexForm', [
+        return Inertia::render('Admin/Forms/IndexForm', [
             'forms' => [
                 'data' => SerializeFormsForTable::execute($forms->getCollection(), $user, $this->registrationVisibility),
                 'meta' => [
@@ -127,7 +128,7 @@ class FormController extends AdminController
     {
         $this->handleAuthorization('create', Form::class);
 
-        return $this->inertiaResponse('Admin/Forms/CreateForm', [
+        return Inertia::render('Admin/Forms/CreateForm', [
             'assignableTenants' => GetTenantsForUpserts::execute('forms.create.padalinys', $this->authorizer),
             ...$this->fieldModelChoices(),
         ]);
@@ -205,7 +206,7 @@ class FormController extends AdminController
 
         $canUpdate = $request->user()->can('update', $form);
 
-        return $this->inertiaResponse('Admin/Forms/ShowForm', [
+        return Inertia::render('Admin/Forms/ShowForm', [
             'form' => $form,
             'registrations' => $registrations->values(),
             'institutions' => $institutions,
@@ -240,7 +241,7 @@ class FormController extends AdminController
     {
         $this->handleAuthorization('update', $form);
 
-        return $this->inertiaResponse('Admin/Forms/EditForm', [
+        return Inertia::render('Admin/Forms/EditForm', [
             'form' => [
                 ...$form->toFullArray(),
                 'form_fields' => $form->formFields()->orderBy('order')->get()

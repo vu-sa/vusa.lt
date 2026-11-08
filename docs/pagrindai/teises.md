@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Teisės ir atsakomybės
-last_reviewed: 2026-10-21
+last_reviewed: 2026-11-08
 tests:
   - tests/Feature/Permissions/MeetingPermissionsTest.php
   - tests/Feature/Admin/Search/SearchVisibilityParityTest.php

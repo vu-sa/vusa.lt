@@ -11,7 +11,6 @@
         </DialogDescription>
       </DialogHeader>
 
-      <!-- Info banner explaining what this does -->
       <div class="border border-border bg-secondary p-3">
         <div class="flex gap-3">
           <InfoIcon class="mt-0.5 size-4 shrink-0 text-muted-foreground" />
@@ -35,12 +34,12 @@
         <div class="grid grid-cols-2 gap-4">
           <div class="space-y-2">
             <Label>{{ $t('Pradžios data') }}</Label>
-            <DatePicker v-model="startDate" />
+            <DatePicker v-model="startPickerDate" />
           </div>
 
           <div class="space-y-2">
             <Label>{{ $t('Pabaigos data') }}</Label>
-            <DatePicker v-model="endDate" />
+            <DatePicker v-model="endPickerDate" />
           </div>
         </div>
 
@@ -69,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { CalendarOff as CalendarOffIcon, Info as InfoIcon, Building as BuildingIcon } from '@lucide/vue';
 
@@ -78,6 +77,8 @@ import { Button } from '@/Components/ui/button';
 import { DatePicker } from '@/Components/ui/date-picker';
 import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
+import { toPickerDate } from '@/Components/ActionWindow/useWindowDates';
+import { todayIso, toNaiveDateTimeString } from '@/Utils/dateTime';
 
 const props = defineProps<{
   institutionId: string;
@@ -93,11 +94,23 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<(e: 'close') => void>();
 
-const startDate = ref<Date>(props.initialStartDate ?? new Date(Date.now()));
-const endDate = ref<Date>(props.initialEndDate ?? new Date(Date.now() + 14 * 24 * 60 * 60 * 1000));
+const today = new Date(`${todayIso()}T12:00:00`);
+const startDate = ref<Date>(props.initialStartDate ?? today);
+const endDate = ref<Date>(props.initialEndDate ?? new Date(today.getFullYear(), today.getMonth(), today.getDate() + 14, 12));
 const note = ref('');
 
-// Update dates when props change (dialog opens with new values)
+function pickerDate(date: { value: Date }) {
+  return computed({
+    get: () => toPickerDate(date.value),
+    set: (value: Date | undefined) => {
+      if (value) date.value = new Date(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate(), 12);
+    },
+  });
+}
+
+const startPickerDate = pickerDate(startDate);
+const endPickerDate = pickerDate(endDate);
+
 watch(() => props.initialStartDate, (newVal) => {
   if (newVal) startDate.value = newVal;
 });
@@ -105,19 +118,14 @@ watch(() => props.initialEndDate, (newVal) => {
   if (newVal) endDate.value = newVal;
 });
 
-function formatDate(date: Date): string {
-  return date.toISOString().split('T')[0] as string;
-}
-
 function submit() {
   router.post(route('institutions.check-ins.store', props.institutionId), {
-    start_date: formatDate(startDate.value),
-    end_date: formatDate(endDate.value),
+    start_date: toNaiveDateTimeString(startDate.value).slice(0, 10),
+    end_date: toNaiveDateTimeString(endDate.value).slice(0, 10),
     note: note.value || undefined,
   }, {
     onSuccess: () => {
       emit('close');
-      // Build reload options with explicit props to refresh
       const reloadOptions: { only?: string[]; data?: Record<string, unknown> } = {};
       if (props.reloadProps && props.reloadProps.length > 0) {
         reloadOptions.only = props.reloadProps;

@@ -1,13 +1,13 @@
 <template>
-  <Button v-if="canPublish" variant="outline" size="sm" data-slot="collection-publish" @click="emit('publish')">
+  <Button v-if="canPublish" :disabled="pending" variant="outline" size="sm" data-slot="collection-publish" @click="emit('publish')">
     <Eye aria-hidden="true" />
     {{ $t('Paskelbti') }}
   </Button>
-  <Button v-if="canDraft" variant="outline" size="sm" data-slot="collection-draft" @click="emit('draft')">
+  <Button v-if="canDraft" :disabled="pending" variant="outline" size="sm" data-slot="collection-draft" @click="emit('draft')">
     <FilePenLine aria-hidden="true" />
     {{ $t('Į juodraščius') }}
   </Button>
-  <Button variant="destructive" size="sm" data-slot="collection-delete" @click="emit('delete')">
+  <Button :disabled="pending" variant="destructive" size="sm" data-slot="collection-delete" @click="emit('delete')">
     <Trash2 aria-hidden="true" />
     {{ $t('Ištrinti') }}
   </Button>
@@ -21,6 +21,7 @@ import { Button } from '@/Components/ui/button';
 
 /** The selection bar's publishing actions; a status every selected row already has is not offered. */
 defineProps<{
+  pending?: boolean;
   canPublish: boolean;
   canDraft: boolean;
 }>();

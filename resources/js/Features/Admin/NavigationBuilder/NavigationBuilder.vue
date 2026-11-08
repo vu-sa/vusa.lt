@@ -52,6 +52,7 @@
           v-for="root in contents"
           :key="root.id"
           :root
+          :pending="pendingRoots.has(root.id) || orderSaving || reconciling"
           @toggle-link-active="handleToggleLinkActive"
           @toggle-active="handleToggleRootActive"
           @delete-link="handleDeleteLink"
@@ -70,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, toRaw } from 'vue';
+import { computed, ref, watch, toRaw, reactive, onBeforeUnmount } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Link, router } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
@@ -80,6 +81,7 @@ import NavigationRootItem from './NavigationRootItem.vue';
 import NavigationPreview from './NavigationPreview.vue';
 import type { AdminNavigationLink, AdminNavigationRoot, TranslationSummary } from './types';
 
+import { withOptimisticRollback } from '@/Composables/useOptimisticVisit';
 import { useMotionAwareSortable } from '@/Composables/useMotionAwareSortable';
 import { Button } from '@/Components/ui/button';
 import { Label } from '@/Components/ui/label';
@@ -98,21 +100,15 @@ const mode = ref<'edit' | 'preview'>('edit');
 const rootsEl = ref<HTMLElement | null>(null);
 const saveState = ref<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
-// Local editable buffer — the source of truth while dragging. Deliberately not kept in
-// sync with `props.roots` after mount: a debounced save round-trip with
-// `preserveState: true` (see below) never overwrites it, so a fresh reference from a
-// *different* Inertia visit (e.g. the language switch) is the only thing that should
-// reset it, which the `lang` watcher below does explicitly.
+// The editable buffer while dragging: saves return with `preserveState`, so only a different
+// visit (the language switch, below) resets it from `props.roots`.
 const contents = ref<AdminNavigationRoot[]>(structuredClone(toRaw(props.roots)));
 
 watch(() => props.lang, () => {
   contents.value = structuredClone(toRaw(props.roots));
 });
 
-// `watchElement: true` rebinds Sortable to the new element whenever the roots list
-// is remounted — e.g. toggling `mode` to 'preview' and back unmounts and recreates
-// the `<TransitionGroup>` this is attached to, and without the watcher Sortable
-// stays bound to the discarded element, silently killing root drag afterward.
+// Preview remounts the roots list; without rebinding, root drag silently stops working.
 useMotionAwareSortable(rootsEl, contents, {
   watchElement: true,
   handle: '.nav-root-handle',
@@ -142,18 +138,8 @@ const driftMessage = computed(() => {
   });
 });
 
-// `router.patch`/`router.delete` default `preserveState: true` (see Inertia's own
-// `visit()` wrapper), so a successful is_active toggle or delete does NOT remount
-// this component or re-sync `contents` from the fresh `props.roots` — the request
-// lands in the database, but the local buffer never reflects it. These mutations are
-// simple enough (flip a boolean, remove an id) to apply optimistically instead of
-// waiting on a round-trip.
-//
-// Each optimistic mutation also touches `contents`, which the deep watcher below
-// would otherwise read as "the order changed" and fire an unrelated updateOrder
-// request for. `suppressNextOrderSave` is consumed (reset to false) by the very next
-// watcher invocation, so it survives Vue's async watcher flush without racing a
-// nextTick callback.
+// Toggles and deletes apply optimistically and touch `contents`; the order watcher consumes this
+// flag so they do not also send an order save.
 let suppressNextOrderSave = false;
 
 function findLinkLocation(id: number): { column: AdminNavigationLink[]; index: number } | null {
@@ -168,7 +154,71 @@ function findLinkLocation(id: number): { column: AdminNavigationLink[]; index: n
   return null;
 }
 
+const pendingRoots = reactive(new Set<number>());
+const orderSaving = ref(false);
+let orderQueued = false;
+let needsReconcile = false;
+const reconciling = ref(false);
+let disposed = false;
+
+function beginMutation(id: number): boolean {
+  if (pendingRoots.has(id) || orderSaving.value || reconciling.value) return false;
+  pendingRoots.add(id);
+  return true;
+}
+
+function mutationOptions(id: number, rollback: () => void) {
+  return withOptimisticRollback(rollback, {
+    preserveScroll: true,
+    onFinish: () => {
+      pendingRoots.delete(id);
+      settleMutations();
+    },
+  }, () => { needsReconcile = true; });
+}
+
+function settleMutations() {
+  if (disposed || pendingRoots.size || orderSaving.value || reconciling.value) return;
+  if (needsReconcile) {
+    needsReconcile = false;
+    reconciling.value = true;
+    router.reload({
+      only: ['navigation'],
+      onFinish: () => {
+        reconciling.value = false;
+        if (!disposed && orderQueued) persistOrder();
+      },
+      onSuccess: (page) => {
+        if (disposed) return;
+        const local = contents.value;
+        const fresh = structuredClone(page.props.navigation as AdminNavigationRoot[]);
+        const byId = new Map(fresh.map(root => [root.id, root]));
+        suppressNextOrderSave = true;
+        contents.value = orderQueued
+          ? local.flatMap(root => {
+              const server = byId.get(root.id);
+              if (!server) return [];
+              byId.delete(root.id);
+              const links = new Map(server.links.flat().map(link => [link.id, link]));
+              server.links = root.links.map(column => column.flatMap(link => {
+                const found = links.get(link.id);
+                links.delete(link.id);
+                return found ? [found] : [];
+              }));
+              server.links[0]?.push(...links.values());
+              return [server];
+            }).concat([...byId.values()])
+          : fresh;
+      },
+    });
+  } else if (orderQueued) persistOrder();
+}
+
 const persistOrder = useDebounceFn(() => {
+  orderQueued = true;
+  if (disposed || pendingRoots.size || orderSaving.value || reconciling.value) return;
+  orderQueued = false;
+  orderSaving.value = true;
   saveState.value = 'saving';
 
   router.post(route('navigation.updateOrder'), {
@@ -176,9 +226,13 @@ const persistOrder = useDebounceFn(() => {
       id: root.id,
       links: root.links.map(column => column.map(link => ({ id: link.id }))),
     })),
-  }, {
+  }, withOptimisticRollback(() => { saveState.value = 'error'; }, {
     preserveScroll: true,
     preserveState: true,
+    onFinish: () => {
+      orderSaving.value = false;
+      settleMutations();
+    },
     onSuccess: () => {
       saveState.value = 'saved';
       setTimeout(() => {
@@ -190,18 +244,24 @@ const persistOrder = useDebounceFn(() => {
     onError: () => {
       saveState.value = 'error';
     },
-  });
+  }, () => { needsReconcile = true; }));
 }, 800);
+
+onBeforeUnmount(() => {
+  disposed = true;
+  persistOrder.cancel();
+});
 
 watch(contents, () => {
   if (suppressNextOrderSave) {
     suppressNextOrderSave = false;
     return;
   }
+  orderQueued = true;
   persistOrder();
 }, { deep: true });
 
-const patchLink = (link: AdminNavigationLink, changes: Partial<AdminNavigationLink>) => {
+const patchLink = (link: AdminNavigationLink, changes: Partial<AdminNavigationLink>, rollback: () => void) => {
   router.patch(route('navigation.update', { navigation: link.id }), {
     name: link.name,
     url: link.url,
@@ -210,50 +270,64 @@ const patchLink = (link: AdminNavigationLink, changes: Partial<AdminNavigationLi
     is_active: link.is_active,
     extra_attributes: link.extra_attributes ?? {},
     ...changes,
-  }, {
-    preserveScroll: true,
-    onError: () => {
-      // Give up and resync from the server rather than leaving an optimistic change
-      // the backend actually rejected sitting in the UI.
-      suppressNextOrderSave = true;
-      contents.value = cloneDeep(props.roots);
-    },
-  });
+  }, mutationOptions(link.parent_id || link.id, rollback));
 };
 
 const handleToggleLinkActive = (link: AdminNavigationLink, value: boolean) => {
   const location = findLinkLocation(link.id);
-  if (location) {
-    suppressNextOrderSave = true;
-    location.column[location.index].is_active = value;
-  }
-  patchLink(link, { is_active: value });
+  const target = location?.column[location.index];
+  if (!target) return;
+  if (!beginMutation(link.parent_id)) return;
+  const previous = target.is_active;
+  suppressNextOrderSave = true;
+  target.is_active = value;
+  patchLink(link, { is_active: value }, () => {
+    const current = findLinkLocation(link.id);
+    const reverted = current?.column[current.index];
+    if (reverted) {
+      suppressNextOrderSave = true;
+      reverted.is_active = previous;
+    }
+  });
 };
 
 const handleToggleRootActive = (root: AdminNavigationRoot, value: boolean) => {
-  const index = contents.value.findIndex(r => r.id === root.id);
-  if (index !== -1) {
-    suppressNextOrderSave = true;
-    contents.value[index].is_active = value;
-  }
-  patchLink(root, { is_active: value });
+  const current = contents.value.find(item => item.id === root.id);
+  if (!current) return;
+  if (!beginMutation(root.id)) return;
+  const previous = current.is_active;
+  suppressNextOrderSave = true;
+  current.is_active = value;
+  patchLink(root, { is_active: value }, () => {
+    const item = contents.value.find(item => item.id === root.id);
+    if (item) {
+      suppressNextOrderSave = true;
+      item.is_active = previous;
+    }
+  });
 };
 
 const handleDeleteLink = (link: AdminNavigationLink) => {
   const location = findLinkLocation(link.id);
-  if (location) {
+  if (!location || !beginMutation(link.parent_id)) return;
+  suppressNextOrderSave = true;
+  const [removed] = location.column.splice(location.index, 1);
+  if (!removed) return;
+  router.delete(route('navigation.destroy', { navigation: link.id }), mutationOptions(link.parent_id, () => {
     suppressNextOrderSave = true;
-    location.column.splice(location.index, 1);
-  }
-  router.delete(route('navigation.destroy', { navigation: link.id }), { preserveScroll: true });
+    location.column.splice(Math.min(location.index, location.column.length), 0, removed);
+  }));
 };
 
 const handleDeleteRoot = (root: AdminNavigationRoot) => {
   const index = contents.value.findIndex(r => r.id === root.id);
-  if (index !== -1) {
+  if (index === -1 || !beginMutation(root.id)) return;
+  suppressNextOrderSave = true;
+  const [removed] = contents.value.splice(index, 1);
+  if (!removed) return;
+  router.delete(route('navigation.destroy', { navigation: root.id }), mutationOptions(root.id, () => {
     suppressNextOrderSave = true;
-    contents.value.splice(index, 1);
-  }
-  router.delete(route('navigation.destroy', { navigation: root.id }), { preserveScroll: true });
+    contents.value.splice(Math.min(index, contents.value.length), 0, removed);
+  }));
 };
 </script>

@@ -1,10 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { router } from '@inertiajs/vue3';
+import { router, WhenVisible } from '@inertiajs/vue3';
 import * as i18n from 'laravel-vue-i18n';
 
 import ShowMeeting from '@/Pages/Admin/Representation/ShowMeeting.vue';
 import { commonStubs } from '@/tests/stubs';
+import { ActionType, AgendaItemType, MeetingKind, MeetingType } from '@/Types/enums';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -26,6 +27,7 @@ const stubs = {
   DiscussionPanel: { template: '<div />' },
   FileableFilesPanel: { name: 'FileableFilesPanel', template: '<div data-testid="files-panel" />' },
   TaskManager: { name: 'TaskManager', template: '<div data-testid="task-manager" />' },
+  MeetingDocumentsPanel: { name: 'MeetingDocumentsPanel', template: '<div data-testid="documents-panel" />' },
   MeetingForm: { name: 'MeetingForm', props: ['open'], template: '<div />' },
   AddAgendaItemsSheet: {
     name: 'AddAgendaItemsSheet',
@@ -36,36 +38,123 @@ const stubs = {
   RecordActivity: { template: '<div data-testid="record-activity" />' },
 };
 
-const baseMeeting = {
+type PageProps = InstanceType<typeof ShowMeeting>['$props'];
+type Meeting = PageProps['meeting'];
+type FullAgendaItem = Extract<Meeting['agenda_items'][number], { votes: unknown[] }>;
+type Institution = Meeting['institutions'][number];
+type Representative = PageProps['representatives'][number];
+type Task = NonNullable<PageProps['tasks']>[number];
+
+const makeAgendaItem = (overrides: Partial<FullAgendaItem> = {}): FullAgendaItem => ({
+  id: 'a1',
+  order: 1,
+  title: 'Studijų klausimai',
+  type: AgendaItemType.Informational,
+  is_private: false,
+  brought_by_students: false,
+  start_time: null,
+  end_time: null,
+  votes: [],
+  comments_count: 0,
+  has_notes: false,
+  can: { update: true, delete: true },
+  ...overrides,
+});
+
+const makeInstitution = (overrides: Partial<Institution> = {}): Institution => ({
+  id: 'i1',
+  name: 'VU SA MIF',
+  tenant_id: null,
+  is_active: true,
+  tenant: null,
+  ...overrides,
+});
+
+const makeRepresentative = (overrides: Partial<Representative> = {}): Representative => ({
+  id: 'u1',
+  name: 'Jonas Jonaitis',
+  email: 'jonas@example.com',
+  phone: null,
+  facebook_url: null,
+  pronouns: null,
+  show_pronouns: false,
+  profile_photo_path: null,
+  profile_photo_focal_point: null,
+  ...overrides,
+});
+
+const makeTask = (overrides: Partial<Task> = {}): Task => ({
+  id: 't1',
+  name: 'Papildyk posėdžio darbotvarkę',
+  description: null,
+  due_date: null,
+  completed_at: null,
+  cancelled_at: null,
+  created_at: '2026-03-01T09:00:00.000Z',
+  updated_at: '2026-03-01T09:00:00.000Z',
+  action_type: ActionType.Manual,
+  metadata: null,
+  progress: null,
+  is_overdue: false,
+  can_be_manually_completed: true,
+  can_update: true,
+  icon: 'clipboard-check',
+  color: 'zinc',
+  taskable: { id: 'meet1', name: 'Senato posėdis', type: 'meeting' },
+  taskable_type: 'meeting',
+  taskable_id: 'meet1',
+  users: [],
+  ...overrides,
+});
+
+const baseMeeting: Meeting = {
   id: 'meet1',
   title: 'Senato posėdis',
   start_time: '2026-03-04T10:00:00.000Z',
+  end_time: null,
+  created_at: '2026-03-01T09:00:00.000Z',
+  updated_at: '2026-03-01T09:00:00.000Z',
+  type: MeetingType.InPerson,
+  meeting_kind: null,
+  inherited_meeting_kind: MeetingKind.Sitting,
+  title_noun: 'posėdis',
+  description: { lt: '', en: '' },
   institutions: [],
-  agenda_items: [{ id: 'a1' }, { id: 'a2' }],
+  agenda_items: [makeAgendaItem(), makeAgendaItem({ id: 'a2', order: 2 })],
   sharepointPath: null,
+  sharepointFolderUrl: null,
+  has_calendar_event: false,
+  type_label: 'Gyvas posėdis',
+  has_protocol: false,
 };
 
-const createWrapper = (props: Record<string, unknown> = {}) =>
-  mount(ShowMeeting, {
-    props: {
-      meeting: baseMeeting,
-      representatives: [],
-      secretaries: [],
-      abilities: {
-        update: true,
-        delete: true,
-        createAgendaItems: true,
-        reorderAgendaItems: true,
-        attachInstitution: true,
-      },
-      completion: { status: 'complete', missingActions: [] },
-      ...props,
+const createWrapper = (overrides: Partial<PageProps> = {}) => {
+  const props: PageProps = {
+    meeting: baseMeeting,
+    representatives: [],
+    incompleteTasksCount: 0,
+    files: [],
+    availableInstitutionsForAttach: [],
+    readOnly: false,
+    publicVisibility: { mode: 'internal', url: null },
+    abilities: {
+      update: true,
+      delete: true,
+      discard: false,
+      createAgendaItems: true,
+      reorderAgendaItems: true,
+      attachInstitution: true,
     },
-    global: { stubs },
-  });
+    completion: { status: 'complete', missingActions: [] },
+    ...overrides,
+  };
+
+  return mount(ShowMeeting, { props, global: { stubs } });
+};
 
 describe('ShowMeeting.vue', () => {
   beforeEach(() => {
+    vi.mocked(router.reload).mockClear();
     localStorage.clear();
     window.history.replaceState({}, '', '/');
   });
@@ -79,7 +168,7 @@ describe('ShowMeeting.vue', () => {
       meeting: {
         ...baseMeeting,
         title_noun: locale === 'lt' ? 'posėdis' : 'meeting',
-        institutions: [{ id: 'i1', name }],
+        institutions: [makeInstitution({ id: 'i1', name })],
       },
     });
 
@@ -97,7 +186,7 @@ describe('ShowMeeting.vue', () => {
       meeting: {
         ...baseMeeting,
         title_noun: 'jungtinė konferencija',
-        institutions: [{ id: 'i1', name: 'Senatas' }, { id: 'i2', name: 'Taryba' }],
+        institutions: [makeInstitution({ id: 'i1', name: 'Senatas' }), makeInstitution({ id: 'i2', name: 'Taryba' })],
       },
     });
 
@@ -109,8 +198,7 @@ describe('ShowMeeting.vue', () => {
 
   it('shows only representatives in the people fact', () => {
     const wrapper = createWrapper({
-      representatives: [{ id: 'u1', name: 'Jonas Jonaitis' }],
-      secretaries: [{ id: 'u2', name: 'Rūta Petraitė', email: null, profile_photo_path: null }],
+      representatives: [makeRepresentative()],
     });
 
     const peopleFact = wrapper.findAll('dl > div')[4];
@@ -123,7 +211,7 @@ describe('ShowMeeting.vue', () => {
 
   it('keeps the expandable avatar group for multiple representatives', () => {
     const peopleFact = createWrapper({
-      representatives: [{ id: 'u1', name: 'Jonas Jonaitis' }, { id: 'u2', name: 'Rūta Petraitė' }],
+      representatives: [makeRepresentative(), makeRepresentative({ id: 'u2', name: 'Rūta Petraitė' })],
     }).findAll('dl > div')[4];
 
     expect(peopleFact.find('[data-testid="users-avatar-group"]').attributes('data-user-ids')).toBe('u1,u2');
@@ -155,7 +243,7 @@ describe('ShowMeeting.vue', () => {
    * The v-else offered unlinking on every such meeting.
    */
   describe('the calendar menu item', () => {
-    const menuText = (props: Record<string, unknown> = {}) =>
+    const menuText = (props: Partial<PageProps> = {}) =>
       createWrapper(props).find('[data-testid="dropdown-menu-content"]').text();
 
     it('offers neither option for an external body with no announcement', () => {
@@ -173,15 +261,15 @@ describe('ShowMeeting.vue', () => {
     });
 
     it('offers unlinking once an announcement exists, whatever the body', () => {
-      const announced = { ...baseMeeting, calendar_event: { id: 7, is_draft: true } };
+      const announced = { ...baseMeeting, has_calendar_event: true };
 
       expect(menuText({ meeting: announced })).toContain('Atsieti nuo kalendoriaus');
       expect(menuText({ meeting: announced, governanceScope: 'vusa' }))
         .toContain('Atsieti nuo kalendoriaus');
     });
 
-    it('unlinks without reloading the deferred document and task panels', async () => {
-      const wrapper = createWrapper({ meeting: { ...baseMeeting, calendar_event: { id: 7, is_draft: true } } });
+    it('unlinks without reloading the document and task panels', async () => {
+      const wrapper = createWrapper({ meeting: { ...baseMeeting, has_calendar_event: true } });
 
       wrapper.findComponent({ name: 'RecordPage' }).vm.$emit('action', 'unlink-calendar');
       await wrapper.vm.$nextTick();
@@ -191,6 +279,83 @@ describe('ShowMeeting.vue', () => {
         expect.objectContaining({ except: ['documents', 'tasks', 'pendingDocuments'] }),
       );
     });
+  });
+
+  it.each([
+    ['files', 'files'],
+    ['tasks', 'tasks'],
+    ['documents', ['documents', 'pendingDocuments']],
+  ] as const)('loads the %s section through WhenVisible without selecting its tab', (section, data) => {
+    const wrapper = createWrapper({ files: undefined, governanceScope: 'vusa' });
+    const panel = wrapper.findAllComponents(WhenVisible)
+      .find(component => component.element.closest('section')?.getAttribute('aria-labelledby') === `record-section-${section}`);
+
+    expect(panel).toBeDefined();
+    expect(panel?.props('data')).toEqual(data);
+    expect(panel?.props('always')).toBe(false);
+    expect(panel?.props('buffer')).toBe(0);
+    expect(panel?.vm.$slots.fallback).toBeTypeOf('function');
+    expect(router.reload).not.toHaveBeenCalled();
+    wrapper.unmount();
+  });
+
+  it.each([
+    ['files', 'files'],
+    ['tasks', 'tasks'],
+    ['documents', ['documents', 'pendingDocuments']],
+  ] as const)('keeps the %s deep link ready for visibility loading', (tab, data) => {
+    window.history.replaceState({}, '', `/?tab=${tab}`);
+    const wrapper = createWrapper({ files: undefined, governanceScope: 'vusa' });
+    const record = wrapper.findComponent({ name: 'RecordPage' });
+    const panel = wrapper.findAllComponents(WhenVisible)
+      .find(component => component.element.closest('section')?.getAttribute('aria-labelledby') === `record-section-${tab}`);
+
+    expect(record.props('section')).toBe(tab);
+    expect(panel?.props('data')).toEqual(data);
+    expect(panel?.element.closest('section')?.className).toContain('md:block');
+    expect(router.reload).not.toHaveBeenCalled();
+    wrapper.unmount();
+  });
+
+  it('keeps internal panels out of the read-only agenda view', () => {
+    window.history.replaceState({}, '', '/?tab=files');
+    const wrapper = createWrapper({ readOnly: true, files: undefined, governanceScope: 'vusa' });
+
+    expect(wrapper.findComponent({ name: 'RecordPage' }).props('section')).toBe('agenda');
+    expect(wrapper.findAllComponents(WhenVisible)).toHaveLength(0);
+    expect(wrapper.find('[data-testid="agenda-list"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="files-panel"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="task-manager"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="documents-panel"]').exists()).toBe(false);
+    expect(router.reload).not.toHaveBeenCalled();
+    wrapper.unmount();
+  });
+
+  it('keeps unopened panels out of mutation responses and refreshes loaded tasks', () => {
+    const wrapper = createWrapper({ files: undefined, tasks: [] });
+    const before = [...vi.mocked(router.on).mock.calls].reverse().find(([event]) => event === 'before')?.[1];
+    expect(before).toBeDefined();
+    const event = new CustomEvent('inertia:before', {
+      detail: { visit: { method: 'patch', except: [] } },
+    });
+    before?.(event as Parameters<NonNullable<typeof before>>[0]);
+    expect(event.detail.visit.except).toEqual(['files', 'documents', 'pendingDocuments', 'recentAgendas']);
+    wrapper.unmount();
+  });
+
+  it('shows the meeting type supplied by the server', () => {
+    const wrapper = createWrapper();
+    expect(wrapper.findComponent({ name: 'RecordPage' }).props('eyebrowSuffix')).toBe('Gyvas posėdis');
+    wrapper.unmount();
+  });
+
+  it('loads attach options when the dialog opens', async () => {
+    const wrapper = createWrapper({ availableInstitutionsForAttach: undefined });
+    expect(router.reload).not.toHaveBeenCalled();
+    wrapper.findComponent({ name: 'RecordPage' }).vm.$emit('action', 'attach-institution');
+    await wrapper.vm.$nextTick();
+    expect(router.reload).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ only: ['availableInstitutionsForAttach'] }));
+    wrapper.unmount();
   });
 
   it('lands on the agenda tab by default', () => {
@@ -262,13 +427,12 @@ describe('ShowMeeting.vue', () => {
 
   it('links each institution fact to the institution page instead of repeating it under the title', () => {
     const wrapper = createWrapper({
-      meeting: { ...baseMeeting, type_label: 'Nuotolinis', institutions: [{ id: 'i1', name: 'VU SA MIF' }] },
+      meeting: { ...baseMeeting, institutions: [makeInstitution({ id: 'i1', name: 'VU SA MIF' })] },
     });
 
     const link = wrapper.findAll('a').find(anchor => anchor.text() === 'VU SA MIF');
 
     expect(link?.attributes('href')).toContain('institutions.show');
-    expect(wrapper.find('[data-slot="record-eyebrow"]').text()).toContain('Nuotolinis');
     expect(wrapper.find('[data-slot="record-title"]').text()).not.toContain('10:00');
   });
 
@@ -369,8 +533,8 @@ describe('ShowMeeting.vue', () => {
    */
   it('labels the edit button and keeps attaching an institution in the menu', () => {
     const wrapper = createWrapper({
-      meeting: { ...baseMeeting, institutions: [{ id: 'i1', name: 'VU SA MIF' }] },
-      availableInstitutionsForAttach: [{ id: 'i2', name: 'VU SA CHGF' }],
+      meeting: { ...baseMeeting, institutions: [makeInstitution({ id: 'i1', name: 'VU SA MIF' })] },
+      availableInstitutionsForAttach: [{ id: 'i2', name: 'VU SA CHGF', is_active: true, tenant_shortname: null }],
     });
 
     const menu = wrapper.find('[data-testid="dropdown-menu-content"]');
@@ -400,9 +564,9 @@ describe('ShowMeeting.vue', () => {
       const wrapper = createWrapper({
         meeting: { ...baseMeeting },
         tasks: [
-          { id: 't1', completed_at: null },
-          { id: 't2', completed_at: '2026-03-04T10:00:00.000Z' },
-          { id: 't3', completed_at: null },
+          makeTask({ id: 't1', completed_at: null }),
+          makeTask({ id: 't2', completed_at: '2026-03-04T10:00:00.000Z' }),
+          makeTask({ id: 't3', completed_at: null }),
         ],
       });
 
@@ -413,7 +577,7 @@ describe('ShowMeeting.vue', () => {
     it('shows no number once every task is done', () => {
       const wrapper = createWrapper({
         meeting: { ...baseMeeting },
-        tasks: [{ id: 't1', completed_at: '2026-03-04T10:00:00.000Z' }],
+        tasks: [makeTask({ id: 't1', completed_at: '2026-03-04T10:00:00.000Z' })],
       });
 
       expect(tasksTabText(wrapper)).not.toContain('1');
@@ -453,7 +617,7 @@ describe('ShowMeeting.vue', () => {
 
 it.each([true, false])('opens the meeting edit sheet from action=edit only for editors (%s)', async (allowed) => {
   window.history.replaceState({}, '', '/mano/meetings/meet1?action=edit&tab=agenda');
-  const wrapper = createWrapper({ abilities: { update: allowed, delete: false, createAgendaItems: false, reorderAgendaItems: false, attachInstitution: false } });
+  const wrapper = createWrapper({ abilities: { update: allowed, delete: false, discard: false, createAgendaItems: false, reorderAgendaItems: false, attachInstitution: false } });
   await wrapper.vm.$nextTick();
   expect(wrapper.findComponent({ name: 'MeetingForm' }).props('open')).toBe(allowed);
   if (allowed) expect(new URLSearchParams(window.location.search).has('action')).toBe(false);

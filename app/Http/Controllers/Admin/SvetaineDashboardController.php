@@ -11,6 +11,7 @@ use App\Models\News;
 use App\Models\Page;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
+use Inertia\Inertia;
 
 class SvetaineDashboardController extends AdminController
 {
@@ -46,7 +47,7 @@ class SvetaineDashboardController extends AdminController
             ? Tenant::query()->find($selectedTenant['id'], ['id', 'alias', 'shortname', 'type'])
             : null;
 
-        return $this->inertiaResponse('Admin/Dashboard/ShowSvetaine', [
+        return Inertia::render('Admin/Dashboard/ShowSvetaine', [
             'tenants' => $tenants,
             'providedTenant' => $providedTenant,
             'counts' => $this->counts($providedTenant),

@@ -8,10 +8,10 @@ use App\Http\Requests\IndexPublicNewsArchiveRequest;
 use App\Models\News;
 use App\Models\Tag;
 use App\Models\Tenant;
+use App\Services\NewsArticlePresenter;
 use App\Services\PublicUrlService;
 use App\Support\LocalizedRouteSlugs;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Collection;
 use Inertia\Inertia;
 
 class NewsController extends PublicController
@@ -85,33 +85,21 @@ class NewsController extends PublicController
             ],
         ];
 
-        return Inertia::render('Public/NewsPage', [
-            // See PublicPageController::page() — a link-list of related articles is
-            // the most obvious use of the new dynamic block types inside a news body.
+        $response = Inertia::render('Public/NewsPage', [
+            // Empty resolved content must serialize as {}.
             'resolvedParts' => (object) $this->resolveContentParts($news->content),
-            'article' => [
-                ...$news->only('id', 'title', 'short', 'lang', 'other_lang_id', 'permalink', 'publish_time', 'content', 'important', 'main_points', 'read_more', 'show_breadcrumbs', 'highlights'),
-                'image_author' => $news->imageData('image')['author'] ?? null,
-                'tags' => $news->tags->map(fn ($tag) => [
-                    'id' => $tag->id,
-                    'name' => $tag->name,
-                    'alias' => $tag->alias,
-                ]),
-                'content' => $news->content,
-                'reading_time' => $news->readingTimeMinutes(),
-                // getImageUrl() checks the file actually exists and returns null otherwise —
-                // NewsArticleLayout skips the hero image entirely rather than show a placeholder.
-                'image' => $imageUrl,
-                'image_media' => $news->imageData('image'),
-                'tenant' => $news->tenant->shortname,
-            ],
+            'article' => NewsArticlePresenter::article($news, $imageUrl),
             'relatedArticles' => $relatedArticles,
-        ])->withViewData([
+        ]);
+
+        $response->withViewData([
             'JSONLD_Schemas' => [
                 $news->toNewsArticleSchema(),
                 $this->getBreadcrumbSchema($breadcrumbs),
             ],
         ]);
+
+        return $response;
     }
 
     public function newsArchive(IndexPublicNewsArchiveRequest $request)
@@ -189,22 +177,26 @@ class NewsController extends PublicController
 
         $breadcrumbs = $this->archiveBreadcrumbs($currentTag);
 
-        return Inertia::render('Public/NewsArchive', [
+        $response = Inertia::render('Public/NewsArchive', [
             'tenantSwitchTarget' => 'same-page',
             'news' => $news,
             'currentTag' => $currentTag,
             'allTenants' => $allTenants,
-        ])->withViewData(
+        ]);
+
+        $response->withViewData(
             [
                 'JSONLD_Schemas' => [$this->getBreadcrumbSchema($breadcrumbs)],
             ]
         );
+
+        return $response;
     }
 
-    /** @return Collection<int, covariant array<string, mixed>> */
-    private function relatedArticles(News $news): Collection
+    /** @return list<array{id: int, title: string, short: string, lang: string, image: string|null, image_media: array{id: int|null, url: string, thumb: string, srcset: string|null, width: int|null, height: int|null, focal_point: string|null, alt: string|null, author: string|null}|null, permalink: string|null, publish_time: string|null, url: string}> */
+    private function relatedArticles(News $news): array
     {
-        return News::where('tenant_id', $news->tenant_id)
+        $articles = News::where('tenant_id', $news->tenant_id)
             ->where('id', '!=', $news->id)
             ->where('lang', $news->lang)
             ->where('draft', false)
@@ -212,21 +204,9 @@ class NewsController extends PublicController
             ->orderByDesc('publish_time')
             ->take(3)
             ->with('media')
-            ->get(['id', 'title', 'short', 'permalink', 'publish_time', 'lang'])
-            ->map(fn ($article) => [
-                'id' => $article->id,
-                'title' => $article->title,
-                'short' => $article->short,
-                'lang' => $article->lang,
-                'image' => $article->getImageUrl(),
-                'image_media' => $article->imageData('image'),
-                'permalink' => $article->permalink,
-                'publish_time' => $article->publish_time,
-                'url' => LocalizedRouteSlugs::route('news', [
-                    'subdomain' => $this->subdomain,
-                    'news' => $article->permalink,
-                ], $article->lang),
-            ]);
+            ->get(['id', 'title', 'short', 'permalink', 'publish_time', 'lang']);
+
+        return NewsArticlePresenter::relatedArticles($articles, $this->subdomain);
     }
 
     private function archiveBreadcrumbs(?Tag $currentTag): array

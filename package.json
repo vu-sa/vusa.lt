@@ -28,6 +28,8 @@
     "storybook": "STORYBOOK=true storybook dev -p 6006 --no-open",
     "storybook:build": "STORYBOOK=true storybook build",
     "typecheck": "vue-tsc --noEmit",
+    "typecheck:ratchet": "node scripts/typecheck-ratchet.mjs",
+    "typecheck:baseline": "node scripts/typecheck-ratchet.mjs --update",
     "knip": "knip",
     "lint": "eslint resources/js",
     "lint:file": "eslint",

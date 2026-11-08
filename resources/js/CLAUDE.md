@@ -88,6 +88,10 @@ expect(event.preventDefault).toHaveBeenCalled();
 
 ## Type Safety
 
+`npm run typecheck:ratchet` blocks CI on new errors; leave unrelated existing findings alone.
+After fixing errors, run `npm run typecheck:baseline`. Never grow it to pass CI; an intentional
+`--allow-increase` requires justification in the PR. `npm run typecheck` still lists all findings.
+
 Always type `wrapper` with `ReturnType<typeof mount>` instead of `any`:
 
 ```typescript

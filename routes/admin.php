@@ -218,7 +218,6 @@ Route::post('approvals/backtrack', [ApprovalController::class, 'backtrack'])->na
 // GET endpoints moved to API: route('api.v1.admin.files.index'), route('api.v1.admin.files.allowedTypes')
 Route::post('files/createDirectory', [FilesController::class, 'createDirectory'])->name('files.createDirectory');
 Route::delete('files/deleteDirectory', [FilesController::class, 'deleteDirectory'])->name('files.deleteDirectory');
-Route::post('files/upload-image', [FilesController::class, 'uploadImage'])->name('files.uploadImage');
 Route::delete('files/delete', [FilesController::class, 'delete'])->name('files.delete');
 Route::delete('files/bulk-delete', [FilesController::class, 'bulkDelete'])->name('files.bulkDelete');
 Route::post('files/rename', [FileOrganizationController::class, 'rename'])->name('files.rename');

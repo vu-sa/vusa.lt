@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use App\Models\Task;
 use App\Models\User;
+use App\Tasks\Enums\ActionType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -13,11 +14,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  */
 class TaskResource extends JsonResource
 {
-    /**
-     * A row of the task collection: the resource plus whether this user may delete it.
-     *
-     * @return array<string, mixed>
-     */
+    /** @return array{id: string, name: string, description: string|null, due_date: string|null, completed_at: string|null, cancelled_at: string|null, created_at: string, updated_at: string, action_type: ActionType|null, metadata: array<string, mixed>|null, progress: array{current: int, total: int, percentage: int}|null, is_overdue: bool, can_be_manually_completed: bool, can_update: bool, icon: string, color: string, taskable: array{id: int|string, name: string|null, type: string}|null, taskable_type: string, taskable_id: string, users: list<array{id: string, name: string, profile_photo_path: string|null}>, can_delete: bool} */
     public static function forListing(Task $task, User $user): array
     {
         return [
@@ -26,9 +23,7 @@ class TaskResource extends JsonResource
         ];
     }
 
-    /**
-     * @return array<string, mixed>
-     */
+    /** @return array{id: string, name: string, description: string|null, due_date: string|null, completed_at: string|null, cancelled_at: string|null, created_at: string, updated_at: string, action_type: ActionType|null, metadata: array<string, mixed>|null, progress: array{current: int, total: int, percentage: int}|null, is_overdue: bool, can_be_manually_completed: bool, can_update: bool, icon: string, color: string, taskable: array{id: int|string, name: string|null, type: string}|null, taskable_type: string, taskable_id: string, users: list<array{id: string, name: string, profile_photo_path: string|null}>} */
     #[\Override]
     public function toArray(Request $request): array
     {
@@ -44,7 +39,7 @@ class TaskResource extends JsonResource
             'cancelled_at' => $this->cancelled_at?->toISOString(),
             'created_at' => $this->created_at->toISOString(),
             'updated_at' => $this->updated_at->toISOString(),
-            'action_type' => $this->action_type?->value,
+            'action_type' => $this->action_type,
             'metadata' => $this->metadata,
             'progress' => $this->getProgress(),
             'is_overdue' => $this->isOverdue(),

@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => ({
   unresolveComment: vi.fn(),
   updateComment: vi.fn(),
   deleteComment: vi.fn(),
+  resetComposer: vi.fn(),
 }));
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
@@ -28,14 +29,19 @@ vi.mock('@/Composables/useDiscussionChannel', () => ({
 }));
 
 // The Tiptap-based composer is heavy; stub it to a button that emits submit.
-vi.mock('@/Components/Discussions/CommentComposer.vue', () => ({
-  default: {
-    name: 'CommentComposer',
-    emits: ['submit', 'cancel'],
-    methods: { reset: vi.fn() },
-    template: '<button class="composer-stub" @click="$emit(\'submit\', \'<p>new</p>\')">composer</button>',
-  },
-}));
+vi.mock('@/Components/Discussions/CommentComposer.vue', async () => {
+  const { defineComponent } = await import('vue');
+
+  return {
+    __esModule: true,
+    default: defineComponent({
+      name: 'CommentComposer',
+      emits: ['submit', 'cancel'],
+      methods: { reset: mocks.resetComposer },
+      template: '<button class="composer-stub" @click="$emit(\'submit\', \'<p>new</p>\')">composer</button>',
+    }),
+  };
+});
 
 import DiscussionPanel from '@/Components/Discussions/DiscussionPanel.vue';
 
@@ -127,6 +133,7 @@ describe('DiscussionPanel', () => {
 
     expect(mocks.postComment).toHaveBeenCalledWith('<p>new</p>');
     expect(wrapper.html()).toContain('Posted');
+    expect(mocks.resetComposer).toHaveBeenCalledOnce();
   });
 
   it('filters out resolved threads when toggled to open-only', async () => {
@@ -199,10 +206,33 @@ describe('DiscussionPanel', () => {
     });
     await flushPromises();
     await wrapper.findAll('button').find(button => button.text() === 'Atsakyti')!.trigger('click');
+    await flushPromises();
     await wrapper.findAll('.composer-stub')[1]!.trigger('click');
     await flushPromises();
 
     expect(mocks.postComment).toHaveBeenCalledWith('<p>new</p>', 'root1');
+    wrapper.unmount();
+  });
+
+  it('loads composers asynchronously and mounts the reply editor only after opening a reply', async () => {
+    mocks.fetchThread.mockResolvedValue([makeComment()]);
+    const wrapper = mount(DiscussionPanel, {
+      props: { commentableType: 'meeting', commentableId: 'm1' },
+      global: { stubs },
+    });
+    await flushPromises();
+    expect(wrapper.findAll('.composer-stub')).toHaveLength(1);
+
+    await wrapper.findAll('button').find(button => button.text() === 'Atsakyti')!.trigger('click');
+    await flushPromises();
+
+    const composers = wrapper.findAllComponents({ name: 'CommentComposer' });
+    expect(composers).toHaveLength(2);
+    for (const composer of composers) {
+      const parentType = composer.vm.$.parent?.type as { __asyncLoader?: unknown };
+      expect(parentType.__asyncLoader).toBeTypeOf('function');
+    }
+    expect(composers[1]!.attributes()).toHaveProperty('autofocus');
     wrapper.unmount();
   });
 });

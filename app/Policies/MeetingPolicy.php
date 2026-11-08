@@ -61,16 +61,6 @@ class MeetingPolicy extends ModelPolicy
         return $meeting->is_public || $this->view($user, $meeting);
     }
 
-    /** @var array<string, bool> */
-    private array $hadMemberMemo = [];
-
-    private function hadMemberAtTheTime(Meeting $meeting, User $user): bool
-    {
-        $key = "{$meeting->getKey()}:{$user->getKey()}";
-
-        return $this->hadMemberMemo[$key] ??= $meeting->hadMemberAtTheTime($user);
-    }
-
     /** @param Meeting $meeting */
     #[\Override]
     public function view(User $user, Model $meeting): bool
@@ -83,7 +73,7 @@ class MeetingPolicy extends ModelPolicy
     #[\Override]
     public function update(User $user, Model $meeting): bool
     {
-        if ($this->hadMemberAtTheTime($meeting, $user)) {
+        if ($meeting->hadMemberAtTheTime($user)) {
             return true;
         }
 
@@ -118,7 +108,7 @@ class MeetingPolicy extends ModelPolicy
     /** @param Meeting $meeting */
     public function addParticipants(User $user, Model $meeting): bool
     {
-        if ($this->hadMemberAtTheTime($meeting, $user)) {
+        if ($meeting->hadMemberAtTheTime($user)) {
             return true;
         }
 

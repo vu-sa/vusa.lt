@@ -5,13 +5,7 @@ import { getFilesJson } from './fileApi';
 
 import { useToasts } from '@/Composables/useToasts';
 
-/**
- * Recursive filename search beneath a directory.
- *
- * Split out of useFileListing because the two entry points need it on different terms: the
- * admin page keeps its listing in Inertia props (so the URL tracks the folder), while the
- * Tiptap dialog fetches its own. Search is identical for both.
- */
+// Shared by the props-backed admin page and the self-fetching file picker.
 export function useFileSearch(extensions?: string[]) {
   const toasts = useToasts();
 
@@ -19,12 +13,15 @@ export function useFileSearch(extensions?: string[]) {
   const searching = ref(false);
   const truncated = ref(false);
 
+  let latestRequest = 0;
+
   async function search(query: string, path: string) {
     if (query.trim().length < 2) {
       clear();
       return;
     }
 
+    const request = ++latestRequest;
     searching.value = true;
 
     try {
@@ -37,20 +34,25 @@ export function useFileSearch(extensions?: string[]) {
         route('api.v1.admin.files.search', params),
       );
 
+      if (request !== latestRequest) return;
+
       results.value = data?.files ?? [];
       truncated.value = meta.truncated === true;
     }
     catch (e: unknown) {
+      if (request !== latestRequest) return;
       toasts.error(e instanceof Error ? e.message : 'Search failed');
       results.value = [];
       truncated.value = false;
     }
     finally {
-      searching.value = false;
+      if (request === latestRequest) searching.value = false;
     }
   }
 
   function clear() {
+    latestRequest += 1;
+    searching.value = false;
     results.value = null;
     truncated.value = false;
   }

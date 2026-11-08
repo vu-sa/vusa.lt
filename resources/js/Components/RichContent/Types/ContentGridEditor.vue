@@ -4,7 +4,7 @@
     <div v-if="!isModelValueInitialized" class="flex justify-center">
       <Button @click="initializeModelValue">
         <IFluentAdd24Filled />
-        Sukurti tinklelį
+        {{ $t('Sukurti tinklelį') }}
       </Button>
     </div>
 
@@ -13,28 +13,28 @@
 
       <!-- Grid Options -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <FormFieldWrapper id="gap" label="Tarpai">
+        <FormFieldWrapper id="gap" :label="$t('Tarpai')">
           <Select v-model="options.gap">
             <SelectTrigger>
-              <SelectValue placeholder="Pasirink tarpą" />
+              <SelectValue :placeholder="$t('Pasirink tarpą')" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem v-for="opt in gapOptions" :key="opt.value" :value="opt.value">
-                {{ opt.label }}
+                {{ $t(opt.label) }}
               </SelectItem>
             </SelectContent>
           </Select>
         </FormFieldWrapper>
-        <FormFieldWrapper id="mobileStacking" label="Mobilusis vaizdas">
+        <FormFieldWrapper id="mobileStacking" :label="$t('Mobilusis vaizdas')">
           <div class="flex items-center gap-2">
             <Switch :model-value="options.mobileStacking" @update:model-value="val => options.mobileStacking = val" />
-            <span class="text-sm">Dėti stulpelius vertikaliai</span>
+            <span class="text-sm">{{ $t('Dėti stulpelius vertikaliai') }}</span>
           </div>
         </FormFieldWrapper>
-        <FormFieldWrapper id="equalHeight" label="Vienodas aukštis">
+        <FormFieldWrapper id="equalHeight" :label="$t('Vienodas aukštis')">
           <div class="flex items-center gap-2">
             <Switch :model-value="options.equalHeight" @update:model-value="val => options.equalHeight = val" />
-            <span class="text-sm">Vienodo aukščio stulpeliai</span>
+            <span class="text-sm">{{ $t('Vienodo aukščio stulpeliai') }}</span>
           </div>
         </FormFieldWrapper>
         <FormFieldWrapper id="dividers" :label="$t('rich-content.grid_dividers')"
@@ -72,7 +72,7 @@
         <div
           class="flex w-full items-center gap-4 rounded-md border bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-800/30">
           <h4 class="font-medium">
-            Eilutė {{ rowIndex + 1 }}
+            {{ $t('Eilutė :number', { number: String(rowIndex + 1) }) }}
           </h4>
           <div class="flex-grow" />
           <ButtonGroup>
@@ -96,14 +96,14 @@
             <div v-for="(column, colIndex) in row.columns" :key="colIndex"
               :class="[column.width, 'flex flex-col gap-2 rounded-md border bg-zinc-50/70 p-4 dark:border-zinc-700 dark:bg-zinc-800/20']">
               <div class="flex items-center gap-4">
-                <FormFieldWrapper id="`width-${rowIndex}-${colIndex}`" label="Plotis" class="max-w-[140px]">
+                <FormFieldWrapper id="`width-${rowIndex}-${colIndex}`" :label="$t('Plotis')" class="max-w-[140px]">
                   <Select v-model="column.width">
                     <SelectTrigger>
-                      <SelectValue placeholder="Plotis" />
+                      <SelectValue :placeholder="$t('Plotis')" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem v-for="opt in columnWidthOptions" :key="opt.value" :value="opt.value">
-                        {{ opt.label }}
+                        {{ $t(opt.label) }}
                       </SelectItem>
                     </SelectContent>
                   </Select>
@@ -124,14 +124,14 @@
               </div>
 
               <!-- Column content type selector -->
-              <FormFieldWrapper :id="`content-type-${rowIndex}-${colIndex}`" label="Turinio tipas">
+              <FormFieldWrapper :id="`content-type-${rowIndex}-${colIndex}`" :label="$t('Turinio tipas')">
                 <Select v-model="column.content.type">
                   <SelectTrigger>
-                    <SelectValue placeholder="Turinio tipas" />
+                    <SelectValue :placeholder="$t('Turinio tipas')" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem v-for="opt in columnContentOptions" :key="opt.value" :value="opt.value">
-                      {{ opt.label }}
+                      {{ $t(opt.label) }}
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -257,7 +257,7 @@
           <div class="mt-2 flex justify-center">
             <Button variant="ghost" :disabled="isMaxColumnsReached(row)" @click="addColumn(rowIndex)">
               <IFluentAdd24Filled />
-              Pridėti stulpelį
+              {{ $t('Pridėti stulpelį') }}
             </Button>
             <TooltipProvider v-if="isMaxColumnsReached(row)">
               <Tooltip>
@@ -267,7 +267,7 @@
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  Maksimalus stulpelių skaičius: {{ MAX_COLUMNS }}
+                  {{ $t('Maksimalus stulpelių skaičius: :count', { count: String(MAX_COLUMNS) }) }}
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -279,7 +279,7 @@
       <div class="mt-2 flex justify-center">
         <Button variant="ghost" @click="addRow">
           <IFluentAdd24Filled />
-          Pridėti eilutę
+          {{ $t('Pridėti eilutę') }}
         </Button>
       </div>
     </template>

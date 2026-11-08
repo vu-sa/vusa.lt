@@ -192,13 +192,11 @@ export default defineConfig(({ command, isSsrBuild }) => {
         // Admin home page and layout
         'assets/ShowAdminHome-*.js',
         'assets/AdminLayout*.js',
-        // UI primitives heavily used by admin home
-        'assets/Card*.js',
         'assets/Separator*.js',
-        // date-fns locales for greeting/date formatting
-        'assets/lt-*.js',
         'assets/format-*.js',
-        // Translation bundles
+        // Translation bundles: lang/{lt,en}.json and the admin PHP namespaces
+        'assets/lt-*.js',
+        'assets/en-*.js',
         'assets/php_admin_lt-*.js',
         'assets/php_admin_en-*.js',
       ],

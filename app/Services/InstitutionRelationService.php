@@ -31,12 +31,12 @@ class InstitutionRelationService
 
     public static function version(): string
     {
-        return (string) Cache::get(self::VERSION_KEY, '');
+        return (string) Cache::memo()->get(self::VERSION_KEY, '');
     }
 
     public static function flush(): void
     {
-        DB::afterCommit(fn () => Cache::forever(self::VERSION_KEY, (string) Str::uuid()));
+        DB::afterCommit(fn () => Cache::memo()->forever(self::VERSION_KEY, (string) Str::uuid()));
     }
 
     /**
@@ -77,7 +77,7 @@ class InstitutionRelationService
     /**
      * The related-institutions panel payload: one row per related institution, with its name.
      *
-     * @return list<array{id: string, name: mixed, direction: string, via: string, kind: string, kind_label: string, cross_tenant: bool, authorized: bool}>
+     * @return list<array{id: string, name: mixed, is_active: bool, direction: string, via: string, kind: string, kind_label: string, cross_tenant: bool, authorized: bool}>
      */
     public function summaryFor(Institution $institution): array
     {
@@ -104,7 +104,7 @@ class InstitutionRelationService
     /**
      * The direct links an institution takes part in, from its side, for editing on its record.
      *
-     * @return list<array{id: int, created_at: string|null, updated_at: string|null, other: array{id: string, name: mixed}, direction: 'outgoing'|'incoming', kind: string, kind_label: string, mutual: bool}>
+     * @return list<array{id: int, created_at: string|null, updated_at: string|null, other: array{id: string, name: mixed, is_active: bool}, direction: 'outgoing'|'incoming', kind: string, kind_label: string, mutual: bool}>
      */
     public function linksOf(Institution $institution): array
     {
@@ -200,7 +200,7 @@ class InstitutionRelationService
             return new EloquentCollection;
         }
 
-        $base = ['types', 'meetings:id,title,start_time,type', 'meetings.fileableFiles:id,fileable_id,fileable_type,file_type,deleted_externally_at', 'tenant:id,shortname', 'duties.users:id,name,profile_photo_path,last_action', 'duties.types:id,title', 'checkIns'];
+        $base = ['types', 'meetings:id,title,start_time,type', 'meetings.institutions.types', 'meetings.fileableFiles:id,fileable_id,fileable_type,file_type,deleted_externally_at', 'tenant:id,shortname', 'duties.users:id,name,profile_photo_path,last_action', 'duties.types:id,title', 'checkIns'];
         $authorizedIds = array_keys(array_filter($picked, fn (array $entry) => $entry['authorized']));
         $restrictedIds = array_keys(array_filter($picked, fn (array $entry) => ! $entry['authorized']));
 

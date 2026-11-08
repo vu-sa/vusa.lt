@@ -272,3 +272,16 @@ describe('wider institution search', function (): void {
             ->not->toContain($vusa->id);
     });
 });
+
+test('it limits agenda suggestions to six months while retaining historical activity dates', function (): void {
+    $this->freezeTime();
+    $old = pastMeetingFor($this->institution, 400)->refresh();
+    $this->user->duties()->first()->pivot->update(['start_date' => now()->subYears(2)->toDateString()]);
+
+    $response = asUser($this->user)->getJson(route('api.v1.admin.actionWindow.context'))->assertOk();
+
+    expect($response->json('data.meetingsNeedingAttention'))->toBeEmpty()
+        ->and($response->json('data.institutions.0.meeting_pattern'))->toBeNull()
+        ->and($response->json('data.institutions.0.activity_status.last_meeting_at'))->toBe($old->start_time->toISOString())
+        ->and($response->json('data.institutions.0.check_in_from'))->toBe($old->start_time->addDay()->toDateString());
+});

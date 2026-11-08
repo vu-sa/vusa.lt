@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Mano
-last_reviewed: 2026-10-26
+last_reviewed: 2026-11-08
 tests:
   - tests/Feature/Admin/Management/UserActivityRequestsTest.php
   - resources/js/Pages/Admin/__tests__/ShowAdminHome.component.test.ts
@@ -35,6 +35,10 @@ posėdžius ir jų užduotis, išteklių valdytojas – tvirtinimo laukiančias 
 jo viešas puslapis atveriamas tame pačiame naršyklės skirtuke; atgal galima grįžti naršyklės mygtuku.
 
 ## Pradėti ir grįžti prie darbo {#pradzia}
+
+Pradžioje rodomos iki trijų neužbaigtų užduočių, kurių terminas jau praėjęs arba sueis per
+artimiausias 14 dienų. Pirmiausia rodoma anksčiausią terminą turinti užduotis, todėl vėluojančios
+užduotys pateikiamos prieš būsimas. Likusių užduočių skaičius apima visas tavo neužbaigtas užduotis.
 
 <ChangelogNote date="2026-10-02" title="Pradžia rodo tai, ką turi padaryti">
 

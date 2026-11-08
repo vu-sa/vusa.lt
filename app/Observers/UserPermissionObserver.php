@@ -15,7 +15,7 @@ class UserPermissionObserver
     public function updated(Model $model): void
     {
         match (true) {
-            $model instanceof User => ForgetUserAccess::execute([$model->id]),
+            $model instanceof User => $model->changedOnlyBookkeeping() ? null : ForgetUserAccess::execute([$model->id]),
             $model instanceof Duty => $this->updatedDuty($model),
             default => null,
         };

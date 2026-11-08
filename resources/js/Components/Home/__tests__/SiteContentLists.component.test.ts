@@ -13,7 +13,7 @@ describe('SiteContentLists', () => {
   ])('renders compact event and news previews with native public links on %s', (origin) => {
     const wrapper = mount(SiteContentLists, {
       props: {
-        events: [{ id: 1, title: 'Renginys', date: '2026-09-25T10:00:00Z', public_url: `${origin}/lt/renginys` }] as App.Entities.Calendar[],
+        events: [{ id: 1, title: 'Renginys', date: '2026-09-25T10:00:00Z', end_date: null, is_all_day: false, public_url: `${origin}/lt/renginys` }],
         news: [{ id: 2, title: 'Naujiena', lang: 'lt', permalink: 'naujiena', image: null, publish_time: '2026-09-23T10:00:00Z', public_url: `${origin}/lt/naujiena` }],
       },
     });

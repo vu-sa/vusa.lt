@@ -81,6 +81,7 @@ import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
+import { formatDate } from '@/Utils/dateTime';
 
 type Side = 'start' | 'end';
 
@@ -207,9 +208,7 @@ function onPicked(hits: NormalizedSearchHit[]): void {
 function toDateString(value: number | string | undefined): string | null {
   if (value === undefined || value === '') return null;
 
-  const date = new Date(Number(value) * 1000);
-
-  return Number.isNaN(date.getTime()) ? null : date.toISOString().slice(0, 10);
+  return formatDate(Number(value) * 1000) || null;
 }
 
 // The server also enforces `end_date` after `start_date`; this only keeps the button

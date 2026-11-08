@@ -2,7 +2,7 @@ import { mount } from '@vue/test-utils';
 import { defineComponent, nextTick } from 'vue';
 import { describe, expect, it, vi } from 'vitest';
 
-import ImageUpload from '@/Components/ui/upload/ImageUpload.vue';
+import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
 import { commonStubs } from '@/tests/stubs';
 
 const compression = vi.hoisted(() => ({

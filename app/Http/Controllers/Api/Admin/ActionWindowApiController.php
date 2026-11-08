@@ -12,7 +12,9 @@ use App\Services\InstitutionActivityStatusService;
 use App\Services\InstitutionScopeResolver;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ResourceServices\DutyService;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 /**
@@ -46,8 +48,8 @@ class ActionWindowApiController extends ApiController
         InstitutionScopeResolver $scopes,
         ResolveCheckInStarts $checkInStarts,
     ): JsonResponse {
-        $institutions = DutyService::getUserInstitutionsForDashboard();
-        $starts = $checkInStarts->execute(request()->user(), $institutions);
+        $institutions = DutyService::getUserInstitutionsForDashboard(meetingsFrom: now()->subMonths(6));
+        $starts = $checkInStarts->execute(request()->user(), $institutions->map($this->institutionForActivityStatus(...)));
 
         return $this->jsonSuccess([
             'institutions' => $this->institutionPayload($institutions, $activityStatus, $starts),
@@ -110,7 +112,7 @@ class ActionWindowApiController extends ApiController
                 // Decides whether the window may offer to announce the meeting publicly.
                 'is_internal' => $institution->governance_scope->isInternal(),
                 'meeting_pattern' => $this->meetingPattern($institution),
-                'activity_status' => $activityStatus->resolve($institution)->toArray(),
+                'activity_status' => $activityStatus->resolve($this->institutionForActivityStatus($institution))->toArray(),
                 'check_in_from' => $checkInStarts[(string) $institution->id]['from'] ?? null,
                 'check_in_from_reason' => $checkInStarts[(string) $institution->id]['reason'] ?? null,
             ])
@@ -121,6 +123,23 @@ class ActionWindowApiController extends ApiController
             ])
             ->values()
             ->all();
+    }
+
+    private function institutionForActivityStatus(Institution $institution): Institution
+    {
+        $copy = clone $institution;
+        $meetings = new EloquentCollection;
+
+        foreach (['last_meeting_date', 'next_meeting_date'] as $attribute) {
+            if ($date = $institution->getAttribute($attribute)) {
+                // The date is ISO UTC; Eloquent would store its wall time unconverted.
+                $meetings->push(new Meeting(['start_time' => Carbon::parse($date)->setTimezone(config('app.timezone'))]));
+            }
+        }
+
+        $copy->setRelation('meetings', $meetings);
+
+        return $copy;
     }
 
     /**

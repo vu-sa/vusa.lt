@@ -241,6 +241,7 @@ import UserSearchField, { type MemberHit } from '@/Features/Admin/AdminSearch/Co
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { ModelEnum } from '@/Types/enums';
+import { formatDate, todayIso } from '@/Utils/dateTime';
 
 interface Translated {
   lt: string;
@@ -278,14 +279,8 @@ const asTranslated = (value: unknown): Translated => {
 
 function formatDateForPicker(dateValue: string | null | undefined): string | null {
   if (!dateValue) return null;
-  try {
-    const date = new Date(dateValue);
-    if (isNaN(date.getTime())) return null;
-    return date.toISOString().split('T')[0] || null;
-  }
-  catch {
-    return null;
-  }
+  if (/^\d{4}-\d{2}-\d{2}/.test(dateValue)) return dateValue.slice(0, 10);
+  return formatDate(dateValue) || null;
 }
 
 const source = (props.problem ?? props.form ?? {}) as Record<string, unknown>;
@@ -298,7 +293,7 @@ const initial = () => ({
   steps_taken: asTranslated(source.steps_taken),
   tenant_id: (source.tenant_id ?? null) as number | null,
   responsible_user_id: (source.responsible_user_id ?? null) as string | null,
-  occurred_at: (source.occurred_at ? formatDateForPicker(source.occurred_at as string) : new Date().toISOString().split('T')[0]) as string,
+  occurred_at: (source.occurred_at ? formatDateForPicker(source.occurred_at as string) : todayIso()) as string,
   resolved_at: (source.resolved_at ? formatDateForPicker(source.resolved_at as string) : null) as string | null,
   status: (source.status ?? 'open') as string,
   categories: (Array.isArray(source.categories) ? source.categories.map((c: unknown) => (c && typeof c === 'object' && 'id' in c ? c.id : c)) : []) as number[],

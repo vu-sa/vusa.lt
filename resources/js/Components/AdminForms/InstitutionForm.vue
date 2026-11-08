@@ -285,7 +285,7 @@ import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
 import { TypeTreeMultiSelect } from '@/Components/AdminForms/TypeTree';
 import { Textarea } from '@/Components/ui/textarea';
-import { ImageUpload } from '@/Components/ui/upload';
+import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
 import type { ImageData } from '@/Types/media';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { useDateFormatter } from '@/Composables/useDateFormatter';

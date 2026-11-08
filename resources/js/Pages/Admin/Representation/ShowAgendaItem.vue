@@ -306,7 +306,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, provide, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, nextTick, onMounted, onUnmounted, provide, ref, watch } from 'vue';
 import { Deferred, Link, router, useForm } from '@inertiajs/vue3';
 import { useClipboard, useMediaQuery } from '@vueuse/core';
 import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
@@ -315,7 +315,6 @@ import { AlertCircle, Check, CircleDashed, Copy, ExternalLink, FileText, Globe, 
 import { useToasts } from '@/Composables/useToasts';
 import AgendaItemBody from '@/Components/AgendaItems/AgendaItemBody.vue';
 import AgendaItemTypeDialog from '@/Components/AgendaItems/AgendaItemTypeDialog.vue';
-import AgendaItemNotesSidebar from '@/Components/AgendaItems/AgendaItemNotesSidebar.vue';
 import AgendaItemSheetForm from '@/Components/AgendaItems/AgendaItemSheetForm.vue';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
@@ -342,6 +341,9 @@ import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vu
 import { ModelEnum } from '@/Types/enums';
 import { formatDate, formatTime } from '@/Utils/dateTime';
 import { isEmailMeeting } from '@/Utils/MeetingDisplay';
+
+// Yjs and the Reverb provider load with the notes, not with the page.
+const AgendaItemNotesSidebar = defineAsyncComponent(() => import('@/Components/AgendaItems/AgendaItemNotesSidebar.vue'));
 
 /**
  * `AgendaItemController::show()` sends `toFullArray()`, so the translatable fields arrive as

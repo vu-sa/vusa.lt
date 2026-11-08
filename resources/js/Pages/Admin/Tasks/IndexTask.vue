@@ -117,6 +117,7 @@ import { ArrowRight } from '@lucide/vue';
 import { computed, defineAsyncComponent, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 
+import { withOptimisticRollback } from '@/Composables/useOptimisticVisit';
 import { formatRecordDate } from '@/Utils/dateTime';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import { quickFilterLabel } from '@/Components/Collection/quickFilterLabel';
@@ -361,19 +362,18 @@ function toggleCompletion(task: TaskDisplayData): void {
   loadingTaskId.value = task.id;
   pendingActionKey.value = 'complete';
 
-  router.post(route('tasks.updateCompletionStatus', task.id), { completed }, {
-    only: ['taskCounts'],
+  router.post(route('tasks.updateCompletionStatus', task.id), { completed }, withOptimisticRollback(() => {
+    undo();
+    toast.error($t('tasks.collection.completing_failed'));
+  }, {
+    only: ['taskCounts', 'flash'],
     preserveScroll: true,
     preserveState: true,
-    onError: () => {
-      undo();
-      toast.error($t('tasks.collection.completing_failed'));
-    },
     onFinish: () => {
       loadingTaskId.value = null;
       pendingActionKey.value = null;
     },
-  });
+  }, () => source.refresh()));
 }
 
 const taskPendingDeletion = ref<TaskDisplayData | null>(null);
@@ -389,15 +389,14 @@ function deleteTask(): void {
   pendingActionKey.value = 'delete';
   const undo = source.hideItems([String(task.id)]);
 
-  router.delete(route('tasks.destroy', task.id), {
+  router.delete(route('tasks.destroy', task.id), withOptimisticRollback(undo, {
     only: ['taskCounts', 'flash'],
     preserveScroll: true,
     preserveState: true,
-    onError: () => undo(),
     onFinish: () => {
       loadingTaskId.value = null;
       pendingActionKey.value = null;
     },
-  });
+  }, () => source.refresh()));
 }
 </script>

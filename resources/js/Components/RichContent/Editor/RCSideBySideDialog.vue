@@ -4,7 +4,7 @@
       <DialogHeader class="border-b border-zinc-100 px-4 py-3 dark:border-zinc-800">
         <DialogTitle class="flex items-center gap-2 text-base">
           <component :is="contentType.icon" class="h-4 w-4 text-zinc-500" />
-          {{ contentType.label }}
+          {{ $t(contentType.label) }}
         </DialogTitle>
         <DialogDescription class="sr-only">
           {{ $t('rich-content.side_by_side_description') }}

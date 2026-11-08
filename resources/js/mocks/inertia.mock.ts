@@ -250,6 +250,18 @@ export const Deferred = defineComponent({
   },
 });
 
+export const WhenVisible = defineComponent({
+  name: 'WhenVisible',
+  props: {
+    data: [String, Array],
+    buffer: { type: Number, default: 0 },
+    always: { type: Boolean, default: false },
+  },
+  setup(_, { slots }) {
+    return () => h('div', { 'data-testid': 'inertia-when-visible' }, slots.default?.({ fetching: false }));
+  },
+});
+
 // Export default
 export default {
   usePage,
@@ -259,4 +271,5 @@ export default {
   Head,
   Link,
   Deferred,
+  WhenVisible,
 };

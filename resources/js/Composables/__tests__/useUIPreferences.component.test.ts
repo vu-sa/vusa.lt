@@ -35,6 +35,9 @@ beforeEach(() => {
   vi.mocked(usePage).mockReturnValue(
     createMockPage({
       csrf_token: 'test-token',
+      adminNavigation: {
+        workspaces: [{ key: 'visak', sections: [{ key: 'meetings', label: 'Posėdžiai', routeName: 'meetings.index', routeParams: {}, matches: ['meetings.*'] }] }],
+      },
       auth: {
         user: {
           ui_preferences: {
@@ -59,6 +62,8 @@ describe('recentPages', () => {
     expect(recent[0].type).toBe('page');
     expect(recent[0].href).toContain('meetings.index');
     expect(recent[0].id).toBe(recent[0].href); // identity is the path
+    // An untitled entry takes the label of the navigation section its route belongs to.
+    expect(recent[0]?.title).toBe('Posėdžiai');
     // Non-catalogued route is still kept, with a prettified fallback title.
     expect(recent[1].routeName).toBe('gone.route');
     expect(recent[1].title).toBe('Gone route');

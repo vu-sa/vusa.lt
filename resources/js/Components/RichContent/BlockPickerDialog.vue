@@ -64,7 +64,7 @@
               <component :is="type.icon" class="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
               <span class="min-w-0 flex-1">
                 <span class="flex items-center gap-1.5">
-                  <span class="truncate text-sm font-medium text-foreground">{{ type.label }}</span>
+                  <span class="truncate text-sm font-medium text-foreground">{{ $t(type.label) }}</span>
                   <Badge
                     v-if="type.isNew"
                     variant="success"
@@ -84,7 +84,7 @@
                   </Badge>
                 </span>
                 <span v-if="type.description" class="line-clamp-1 text-xs text-muted-foreground">
-                  {{ type.description }}
+                  {{ $t(type.description) }}
                 </span>
               </span>
             </button>
@@ -138,7 +138,7 @@
             <div class="min-w-0">
               <div class="flex items-center gap-1.5">
                 <p class="truncate text-sm font-medium text-foreground">
-                  {{ previewedContentType.label }}
+                  {{ $t(previewedContentType.label) }}
                 </p>
                 <Badge
                   v-if="previewedContentType.isNew"
@@ -159,7 +159,7 @@
                 </Badge>
               </div>
               <p v-if="previewedContentType.description" class="truncate text-xs text-muted-foreground">
-                {{ previewedContentType.description }}
+                {{ $t(previewedContentType.description) }}
               </p>
             </div>
             <Button variant="brand" size="sm" @click="choose(previewedContentType.value)">
@@ -231,8 +231,8 @@ const filteredTypes = computed(() => {
   const query = searchTerm.value.trim().toLowerCase();
   if (query) {
     types = types.filter(t =>
-      t.label.toLowerCase().includes(query)
-      || t.description?.toLowerCase().includes(query)
+      $t(t.label).toLowerCase().includes(query)
+      || (t.description ? $t(t.description).toLowerCase().includes(query) : false)
       || (t.inlineEditable && ('ekranas'.includes(query) || 'fullscreen'.includes(query))),
     );
   }

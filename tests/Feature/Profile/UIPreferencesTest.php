@@ -1,8 +1,13 @@
 <?php
 
+use App\Jobs\ReconcileReservationReviews;
+use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Tasks\Enums\ActionType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
@@ -17,6 +22,36 @@ describe('HasUIPreferences trait', function (): void {
         expect($this->user->ui_preferences)->toBeArray()
             ->and($this->user->getPinnedPages())->toBe([])
             ->and($this->user->getRecentPages())->toBe([]);
+    });
+
+    test('pin and recent writes preserve each other on stale instances', function (bool $pinFirst): void {
+        $stale = User::query()->findOrFail($this->user->id);
+        $pin = fn () => $this->user->setPinnedPages([['route' => 'users.index']]);
+        $visit = fn () => $stale->pushRecentPage('news.index');
+
+        if ($pinFirst) {
+            $pin();
+            $visit();
+        } else {
+            $visit();
+            $pin();
+        }
+
+        $this->user->refresh();
+        expect(array_column($this->user->getPinnedPages(), 'route'))->toBe(['users.index'])
+            ->and(array_column($this->user->getRecentPages(), 'route'))->toBe(['news.index']);
+    })->with([true, false]);
+
+    test('clearing recent pages on a stale instance preserves pins', function (): void {
+        $this->user->pushRecentPage('news.index');
+        $stale = User::query()->findOrFail($this->user->id);
+        $this->user->setPinnedPages([['route' => 'users.index']]);
+
+        $stale->clearRecentPages();
+
+        $this->user->refresh();
+        expect($this->user->getRecentPages())->toBe([])
+            ->and(array_column($this->user->getPinnedPages(), 'route'))->toBe(['users.index']);
     });
 
     test('pushRecentPage dedupes and caps the list', function (): void {
@@ -127,6 +162,39 @@ describe('api.v1.admin.user-preferences.trackRecentPage endpoint', function (): 
 
         $this->user->refresh();
         expect($this->user->getRecentPages())->toBe([]);
+    });
+});
+
+describe('bookkeeping writes', function (): void {
+    beforeEach(function (): void {
+        // An open approval task is what makes a qualifying user save queue a reservation reconcile.
+        Task::factory()->withActionType(ActionType::Approval)->create();
+        Bus::fake([ReconcileReservationReviews::class]);
+        $this->accessKey = 'permission-maps:v1:'.$this->user->id;
+        Cache::put($this->accessKey, ['cached']);
+    });
+
+    test('recording a visited page keeps access caches and queues no reconcile', function (): void {
+        asUser($this->user)->patch(route('api.v1.admin.user-preferences.trackRecentPage'), [
+            'route' => 'meetings.index',
+            'params' => [],
+        ])->assertNoContent();
+
+        expect(Cache::get($this->accessKey))->toBe(['cached']);
+        Bus::assertNotDispatched(ReconcileReservationReviews::class);
+    });
+
+    test('a bookkeeping-only save skips the search index; an identity change does not', function (): void {
+        $user = $this->user->fresh();
+
+        $user->update(['notification_preferences' => ['muted_until' => null]]);
+        expect($user->searchIndexShouldBeUpdated())->toBeFalse()
+            ->and(Cache::get($this->accessKey))->toBe(['cached']);
+
+        $user->update(['name' => 'Renamed Person']);
+        expect($user->searchIndexShouldBeUpdated())->toBeTrue()
+            ->and(Cache::has($this->accessKey))->toBeFalse();
+        Bus::assertNotDispatched(ReconcileReservationReviews::class);
     });
 });
 

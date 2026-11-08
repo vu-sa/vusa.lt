@@ -5,17 +5,22 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import MeetingForm from '../MeetingForm.vue';
 
 import { createMockForm, type MockForm } from '@/tests/helpers/createMockForm';
-import { MeetingKind } from '@/Types/enums';
+import { MeetingKind, MeetingType } from '@/Types/enums';
+import { useMeetingForm } from '@/Composables/useMeetingForm';
 import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-const meeting = {
+type Meeting = InstanceType<typeof MeetingForm>['$props']['meeting'];
+
+const meeting: Meeting = {
   id: 'meet-1',
   start_time: '2026-05-14 10:00:00',
-  type: 'in-person',
-  meeting_kind: null as MeetingKind | null,
+  type: MeetingType.InPerson,
+  meeting_kind: null,
   inherited_meeting_kind: MeetingKind.Assembly,
+  created_at: '2026-05-01T09:00:00.000Z',
+  updated_at: '2026-05-01T09:00:00.000Z',
   description: { lt: 'Lietuviškas aprašymas', en: 'English description' },
 };
 
@@ -28,15 +33,13 @@ const SheetFormStub = {
 let form: MockForm;
 let transform: (data: Record<string, unknown>) => unknown;
 
-function factory(overrides: Record<string, unknown> = {}) {
+function factory(overrides: Partial<Meeting> = {}) {
   const record = { ...meeting, ...overrides };
   form = createMockForm({
     start_time: new Date(record.start_time),
     type: record.type,
     meeting_kind: record.meeting_kind,
-    description: typeof record.description === 'string'
-      ? { lt: record.description, en: '' }
-      : { ...record.description },
+    description: { ...record.description },
   });
   form.transform.mockImplementation((callback) => {
     transform = callback;
@@ -90,7 +93,7 @@ describe('MeetingForm', () => {
   });
 
   it('hides the kind select for decisions by email', () => {
-    const wrapper = factory({ type: 'email' });
+    const wrapper = factory({ type: MeetingType.Email });
     expect(wrapper.find('select#meeting-kind').exists()).toBe(false);
   });
 
@@ -123,7 +126,8 @@ describe('MeetingForm', () => {
   });
 
   it('accepts a localized string as the Lithuanian description', () => {
-    const wrapper = factory({ description: 'Senas formatas' });
-    expect((wrapper.find('textarea').element as HTMLTextAreaElement).value).toBe('Senas formatas');
+    const { getInitialValues } = useMeetingForm();
+    expect(getInitialValues({ ...meeting, description: 'Senas formatas' }).description)
+      .toEqual({ lt: 'Senas formatas', en: '' });
   });
 });

@@ -6,6 +6,7 @@ use App\Facades\Permission;
 use App\Services\InstitutionAccessService;
 use App\Services\Permissions\PermissionMapBuilder;
 use App\Services\Typesense\TypesenseScopedKeyService;
+use App\Support\AuthorityCacheExpiry;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -27,6 +28,7 @@ class ForgetUserAccess
                 PermissionMapBuilder::forgetCachedMaps($userId);
                 InstitutionAccessService::invalidateForUser($userId);
                 TypesenseScopedKeyService::invalidateForUser($userId);
+                AuthorityCacheExpiry::forget($userId);
             }
         });
     }

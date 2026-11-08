@@ -55,7 +55,7 @@ class GoalController extends AdminController
                 'can_delete' => $user->can('delete', $goal),
             ]);
 
-        return $this->inertiaResponse('Admin/Goals/IndexGoal', [
+        return Inertia::render('Admin/Goals/IndexGoal', [
             'goals' => $goals,
             'canCreate' => $user->can('create', Goal::class),
         ]);
@@ -68,7 +68,7 @@ class GoalController extends AdminController
         $tenants = GetTenantsForUpserts::execute('goals.create.padalinys', $this->authorizer)
             ->whereIn('id', GoalsExperiment::enabledTenantIds())->values();
 
-        return $this->inertiaResponse('Admin/Goals/CreateGoal', [
+        return Inertia::render('Admin/Goals/CreateGoal', [
             ...$this->formOptions($tenants),
             'goal' => [
                 'tenant_id' => $tenants->count() === 1 ? $tenants->first()['id'] : null,
@@ -94,7 +94,7 @@ class GoalController extends AdminController
         $user = $request->user();
         $goal->load(['tenant', 'cadence', 'responsibleDuty.current_users', 'createdBy:id,name']);
 
-        return $this->inertiaResponse('Admin/Goals/ShowGoal', [
+        return Inertia::render('Admin/Goals/ShowGoal', [
             'goal' => [
                 ...$goal->toFullArray(),
                 'status' => $goal->status->value,
@@ -139,7 +139,7 @@ class GoalController extends AdminController
     {
         $this->handleAuthorization('update', $goal);
 
-        return $this->inertiaResponse('Admin/Goals/EditGoal', [
+        return Inertia::render('Admin/Goals/EditGoal', [
             ...$this->formOptions(GetTenantsForUpserts::execute('goals.update.padalinys', $this->authorizer)
                 ->whereIn('id', GoalsExperiment::enabledTenantIds())->values()),
             'goal' => [

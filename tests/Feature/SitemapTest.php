@@ -4,9 +4,11 @@ use App\Http\Controllers\SitemapController;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Tenant;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Spatie\Sitemap\Tags\Url;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -387,4 +389,38 @@ describe('Model Sitemap Integration', function (): void {
             ->and($sitemapTag->priority)->toBe(0.7)
             ->and($sitemapTag->changeFrequency)->toBe('monthly');
     });
+});
+
+it('generates an uncached news sitemap without adding queries for each article', function (): void {
+    $this->freezeTime();
+    $articles = News::factory()->count(2)->create([
+        'tenant_id' => $this->tenant->id, 'draft' => false, 'lang' => 'lt',
+    ]);
+    $controller = app(SitemapController::class);
+    $request = Request::create('http://www.vusa.test/sitemap-news.xml');
+    $queryCount = function (Collection $articles) use ($controller, $request): int {
+        Cache::tags(['sitemap'])->flush();
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+
+        try {
+            $response = $controller->news($request);
+            expect($response->getStatusCode())->toBe(200);
+            foreach ($articles as $article) {
+                expect($response->getContent())->toContain($article->permalink);
+            }
+
+            return count(DB::getQueryLog());
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
+    };
+
+    $smallSitemapQueries = $queryCount($articles);
+    $articles = $articles->merge(News::factory()->count(4)->create([
+        'tenant_id' => $this->tenant->id, 'draft' => false, 'lang' => 'lt',
+    ]));
+
+    expect($queryCount($articles))->toBeLessThanOrEqual($smallSitemapQueries);
 });

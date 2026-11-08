@@ -126,7 +126,7 @@ import { ConfirmDialog, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
-import { ImageUpload } from '@/Components/ui/upload';
+import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
 import { contentStatuses, type StatusPresentation } from '@/Constants/statusIcons';
 import { safeHref } from '@/Utils/safeHref';
 

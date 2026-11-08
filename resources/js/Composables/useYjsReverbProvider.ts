@@ -8,8 +8,8 @@
  *   - a tiny state-vector sync handshake so late joiners catch unsaved edits.
  *
  * Durable hydration of the full document comes from the DB snapshot via the API
- * (see {@link useAgendaItemNotes}); only small deltas ever travel over the socket,
- * staying well under Reverb's ~10KB client-message limit.
+ * (see {@link useAgendaItemNotes}). A big paste or a sync reply can exceed Reverb's
+ * `max_message_size` and be dropped; the versioned save merges it back on persist.
  *
  * The class is transport-agnostic (it depends only on {@link WhisperTransport}),
  * which keeps it unit-testable with a fake whisper bus.

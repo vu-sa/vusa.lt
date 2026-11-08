@@ -15,6 +15,24 @@ use Illuminate\Support\Facades\DB;
 
 pest()->use(RefreshDatabase::class);
 
+test('authority boundaries are queried once per request or job while each cache keeps its own lifetime', function (): void {
+    $this->travelTo('2026-11-06 12:00:00');
+    $user = User::factory()->create();
+    DB::enableQueryLog();
+
+    $longExpiry = AuthorityCacheExpiry::for($user, 3600);
+    $shortExpiry = AuthorityCacheExpiry::for($user, 600);
+
+    expect($longExpiry->toDateTimeString())->toBe('2026-11-06 13:00:00')
+        ->and($shortExpiry->toDateTimeString())->toBe('2026-11-06 12:10:00')
+        ->and(DB::getQueryLog())->toHaveCount(2);
+
+    app()->forgetScopedInstances();
+    AuthorityCacheExpiry::for($user, 3600);
+
+    expect(DB::getQueryLog())->toHaveCount(4);
+});
+
 test('moving an institution clears non-ended holders access after commit', function (bool $scheduled): void {
     $tenant = Tenant::query()->first();
     $holder = makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant);

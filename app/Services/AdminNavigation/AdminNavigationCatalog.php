@@ -297,28 +297,29 @@ class AdminNavigationCatalog
     private function registrationSections(User $user): array
     {
         $settings = app(FormSettings::class);
-        $sections = [];
+        $formIds = array_filter([
+            $settings->member_registration_form_id,
+            $settings->student_rep_registration_form_id,
+        ]);
 
-        if ($id = $this->viewableFormId($user, $settings->member_registration_form_id)) {
-            $sections[] = new Section('registracija_nariai', 'shell.sections.registracija_nariai', 'forms.show', ['form' => $id], 'form', Visibility::always(), descriptionKey: 'shell.section_descriptions.registracija_nariai');
+        if ($formIds === []) {
+            return [];
         }
 
-        if ($id = $this->viewableFormId($user, $settings->student_rep_registration_form_id)) {
-            $sections[] = new Section('registracija_atstovai', 'shell.sections.registracija_atstovai', 'forms.show', ['form' => $id], 'form', Visibility::always(), descriptionKey: 'shell.section_descriptions.registracija_atstovai');
+        $forms = Form::query()->whereIn('id', $formIds)->get()->keyBy('id');
+        $sections = [];
+
+        $memberForm = $forms->get($settings->member_registration_form_id);
+        if ($memberForm && $user->can('view', $memberForm)) {
+            $sections[] = new Section('registracija_nariai', 'shell.sections.registracija_nariai', 'forms.show', ['form' => $memberForm->id], 'form', Visibility::always(), descriptionKey: 'shell.section_descriptions.registracija_nariai');
+        }
+
+        $studentRepForm = $forms->get($settings->student_rep_registration_form_id);
+        if ($studentRepForm && $user->can('view', $studentRepForm)) {
+            $sections[] = new Section('registracija_atstovai', 'shell.sections.registracija_atstovai', 'forms.show', ['form' => $studentRepForm->id], 'form', Visibility::always(), descriptionKey: 'shell.section_descriptions.registracija_atstovai');
         }
 
         return $sections;
-    }
-
-    private function viewableFormId(User $user, ?string $formId): ?string
-    {
-        if (! $formId) {
-            return null;
-        }
-
-        $form = Form::find($formId);
-
-        return $form && $user->can('view', $form) ? $form->id : null;
     }
 
     /**

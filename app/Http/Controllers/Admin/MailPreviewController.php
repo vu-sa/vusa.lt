@@ -8,6 +8,7 @@ use App\Models\Role;
 use App\Services\MailPreview\MailPreviewCatalog;
 use App\Services\MailPreview\MailPreviewRenderer;
 use Illuminate\Http\Response;
+use Inertia\Inertia;
 
 class MailPreviewController extends AdminController
 {
@@ -15,7 +16,7 @@ class MailPreviewController extends AdminController
     {
         $this->handleAuthorization('viewAny', Role::class);
 
-        return $this->inertiaResponse('Admin/MailPreviews', ['previews' => $catalog->index()]);
+        return Inertia::render('Admin/MailPreviews', ['previews' => $catalog->index()]);
     }
 
     public function render(RenderMailPreviewRequest $request, string $preview, MailPreviewCatalog $catalog, MailPreviewRenderer $renderer): Response

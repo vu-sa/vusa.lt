@@ -43,7 +43,7 @@ class SistemaDashboardController extends AdminController
         $canSeeRoles = $user->can('viewAny', Role::class);
         $canSeeUsers = $user->can('viewAny', User::class);
 
-        return $this->inertiaResponse('Admin/Dashboard/ShowSistema', [
+        return Inertia::render('Admin/Dashboard/ShowSistema', [
             'counts' => [
                 'openRequests' => $canSeeRequests ? SupportRequest::query()->open()->count() : null,
                 'queuedMail' => $canSeeRoles ? NotificationDigestQueue::query()->count() : null,

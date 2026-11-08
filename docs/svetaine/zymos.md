@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Žymos
-last_reviewed: 2026-11-01
+last_reviewed: 2026-11-08
 tests:
   - resources/js/Pages/Admin/Content/__tests__/IndexTag.component.test.ts
   - tests/Browser/AdminCollectionPagesTest.php
@@ -18,6 +18,8 @@ tests:
 Skiltis pasiekiama adresu `/mano/tags`.
 
 ## Kaip tai veikia
+
+Jei žymos pašalinti nepavyksta, ji grąžinama į sąrašą. Apie atkūrimą ar ištrynimą visam laikui pranešama tik serveriui patvirtinus veiksmą.
 
 ### Skirtingų įrašų žymėjimas
 
@@ -117,3 +119,5 @@ Puslapio viršuje spausk **Nauja žyma** (arba eik adresu `/mano/tags/create`):
 - Valdiklis: `App\Http\Controllers\Admin\TagController`.
 - Žymų sujungimas: valdiklio metodas `processMergeTags()` perkelia ryšius iš `merged_tag_ids` į `target_tag_id` ir atlieka `delete()` prijungtoms žymoms.
 - Viešasis temos puslapis: maršrutas `/tema/{alias}` atvaizduojamas per `App\Http\Controllers\Public\PublicPageController::topic()`.
+
+Kol žyma atkuriama ar ištrinama, jos veiksmai palaukia išsaugojimo. Jei veiksmas nepavyksta, gali bandyti dar kartą.

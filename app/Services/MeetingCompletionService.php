@@ -21,22 +21,12 @@ class MeetingCompletionService
     {
         $meetings = $meetings->filter(fn (Meeting $meeting) => $meeting->start_time->toDateString() >= $start->toDateString()
             && $meeting->start_time->toDateString() <= $end->toDateString());
-        $meetings->loadMissing(['agendaItems.votes', 'institutions']);
+        $meetings->loadMissing(['agendaItems.votes', 'institutions.types']);
 
         return $meetings->reject(fn (Meeting $meeting) => $this->calculate($meeting) === 'complete');
     }
 
-    /**
-     * Return the concrete work still required to complete a meeting agenda.
-     *
-     * @return array<int, array{
-     *     type: 'agenda_missing'|'agenda_item_type_missing'|'agenda_item_vote_missing',
-     *     agenda_item_id?: string,
-     *     title?: string,
-     *     position?: int,
-     *     missing_fields?: array<int, 'decision'|'student_vote'|'student_benefit'>
-     * }>
-     */
+    /** @return list<array{type: 'agenda_missing'}|array{type: 'agenda_item_type_missing', agenda_item_id: string, title: string, position: int}|array{type: 'agenda_item_vote_missing', agenda_item_id: string, title: string, position: int, missing_fields: list<'decision'|'student_vote'|'student_benefit'>}> */
     public function missingActions(Meeting $meeting): array
     {
         if (! $meeting->relationLoaded('agendaItems')) {
@@ -92,7 +82,7 @@ class MeetingCompletionService
     /**
      * Calculate the completion status of a meeting based on its agenda items and votes.
      *
-     * @return string 'complete'|'incomplete'|'no_items'
+     * @return 'complete'|'incomplete'|'no_items'
      */
     public function calculate(Meeting $meeting): string
     {

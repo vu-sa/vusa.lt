@@ -17,7 +17,7 @@ import { generateI18nTranslationFiles } from './vite-plugins/i18n-split';
 
 // Storybook imports the generated catalogues through its i18n mock, but CI checkouts do not
 // contain ignored generated files. Generate them before Vitest discovers any stories.
-generateI18nTranslationFiles(__dirname);
+generateI18nTranslationFiles(__dirname, { strict: true });
 
 const alias = {
   '@': path.resolve(__dirname, 'resources/js'),
@@ -102,6 +102,8 @@ export default defineConfig({
           'resources/js/**/__tests__/**/*.test.ts',
           'resources/js/**/*.test.ts',
           'docs/.vitepress/theme/__tests__/**/*.test.ts',
+          'scripts/__tests__/typecheck-ratchet.test.mjs',
+          'vite-plugins/__tests__/**/*.test.ts',
         ],
         [
           'resources/js/**/*.component.test.ts',

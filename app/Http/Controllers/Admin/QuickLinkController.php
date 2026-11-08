@@ -18,6 +18,7 @@ use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class QuickLinkController extends AdminController
 {
@@ -50,7 +51,7 @@ class QuickLinkController extends AdminController
         $reorderTenants = GetTenantsForUpserts::execute('quickLinks.update.padalinys', $this->authorizer)
             ->whereIn('id', $tenants->pluck('id'))->values();
 
-        return $this->inertiaResponse('Admin/Content/IndexQuickLink', [
+        return Inertia::render('Admin/Content/IndexQuickLink', [
             'quickLinks' => $quickLinks,
             'tenant' => $tenant,
             'tenants' => $tenants,
@@ -72,7 +73,7 @@ class QuickLinkController extends AdminController
         $requestedTenantId = $request->safe()->integer('tenant');
         $requestedLang = $request->validated('lang');
 
-        return $this->inertiaResponse('Admin/Content/CreateQuickLink', [
+        return Inertia::render('Admin/Content/CreateQuickLink', [
             'topicOptions' => $this->getTopicOptions(),
             'tenantOptions' => $tenantOptions,
             'defaultTenantId' => $tenantOptions->contains('id', $requestedTenantId) ? $requestedTenantId : null,
@@ -107,7 +108,7 @@ class QuickLinkController extends AdminController
     {
         $this->handleAuthorization('update', $quickLink);
 
-        return $this->inertiaResponse('Admin/Content/EditQuickLink', [
+        return Inertia::render('Admin/Content/EditQuickLink', [
             'quickLink' => $quickLink,
             'tenantOptions' => GetTenantsForUpserts::execute('quickLinks.update.padalinys', $this->authorizer),
             'topicOptions' => $this->getTopicOptions(),

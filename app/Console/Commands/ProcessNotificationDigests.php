@@ -47,12 +47,13 @@ class ProcessNotificationDigests extends Command
             return self::SUCCESS;
         }
 
+        $users = User::query()->whereKey($usersWithPendingDigests)->get()->keyBy('id');
         $sentCount = 0;
         $skippedCount = 0;
         $failedCount = 0;
 
         foreach ($usersWithPendingDigests as $userId) {
-            $user = User::find($userId);
+            $user = $users->get($userId);
 
             if (! $user) {
                 // Clean up orphaned digest items
@@ -121,7 +122,7 @@ class ProcessNotificationDigests extends Command
             ->where('recipient_id', $user->id)->whereHas('institution')->whereHas('recipient')
             ->with(['institution.meetings', 'institution.checkIns', 'institution.types', 'recipient', 'requestedBy', 'task'])->get()->keyBy('id');
         $activityRequests->where('campaign_type', InstitutionActivityCampaign::MissingMeetings)
-            ->loadMissing(['institution.meetings.agendaItems.votes', 'institution.meetings.institutions']);
+            ->loadMissing(['institution.meetings.agendaItems.votes', 'institution.meetings.institutions.types']);
 
         return $digestItems->filter(function ($item) use ($user, $activityRequests, $eligibility): bool {
             if ($item->notification_class !== InstitutionActivityNotification::class || ! isset($item->data['activity_request_ids'])) {

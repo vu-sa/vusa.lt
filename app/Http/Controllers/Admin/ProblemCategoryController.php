@@ -9,6 +9,7 @@ use App\Models\ProblemCategory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 use Inertia\Response;
 
 class ProblemCategoryController extends AdminController
@@ -17,7 +18,7 @@ class ProblemCategoryController extends AdminController
     {
         $this->handleAuthorization('viewAny', ProblemCategory::class);
 
-        return $this->inertiaResponse('Admin/Problems/IndexProblemCategory', [
+        return Inertia::render('Admin/Problems/IndexProblemCategory', [
             'problemCategories' => ProblemCategory::query()
                 // Trashed problems count too: restoring one would bring its categories back.
                 ->withCount(['problems' => fn ($query) => $query->withTrashed()])

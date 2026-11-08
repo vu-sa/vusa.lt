@@ -91,7 +91,7 @@ class MailingListController extends AdminController
                 'sources_count' => $list->sources_count,
             ]);
 
-        return $this->inertiaResponse('Admin/MailingLists/IndexMailingList', [
+        return Inertia::render('Admin/MailingLists/IndexMailingList', [
             'mailingLists' => $lists,
             'canCreate' => $user->can('create', MailingList::class),
             'canImport' => $this->authorizer->scope($user, 'mailingLists.create.padalinys')->isAllScope,
@@ -152,7 +152,7 @@ class MailingListController extends AdminController
         $canUpdate = $user->can('update', $mailingList);
         $mailingList->load($canView ? ['tenant:id,shortname', 'sources', 'exclusions'] : ['tenant:id,shortname']);
 
-        return $this->inertiaResponse('Admin/MailingLists/ShowMailingList', [
+        return Inertia::render('Admin/MailingLists/ShowMailingList', [
             'mailingList' => [
                 ...$this->summary($mailingList),
                 'last_sync_error' => $mailingList->last_sync_status === MailingListSyncStatus::Failed ? __('mailing_lists.messages.sync_failed') : null,

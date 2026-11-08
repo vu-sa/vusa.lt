@@ -21,7 +21,7 @@
             {{ $t('Pareigybė') }}
           </p>
           <p class="truncate text-sm font-semibold text-foreground">
-            <InflectedDutyName :name="dutyContext.name" />
+            <InflectedDutyName :name="getTranslatedValue(dutyContext.name)" />
           </p>
           <p v-if="dutyContext.institution?.name" class="truncate text-xs text-muted-foreground">
             {{ dutyContext.institution.name }}
@@ -219,7 +219,7 @@
                   {{ $t('Nenurodyta') }}
                 </SelectItem>
                 <SelectItem v-for="program in availableStudyPrograms" :key="program.id" :value="String(program.id)">
-                  {{ program.name }}
+                  {{ getTranslatedValue(program.name) }}
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -388,16 +388,17 @@ import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { DatePicker } from '@/Components/ui/date-picker';
 import { Input } from '@/Components/ui/input';
-import { ImageUpload } from '@/Components/ui/upload';
+import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
 import { imageFromCachedUrl } from '@/Types/media';
 import { Label } from '@/Components/ui/label';
 import { NativeSelect, type NativeSelectOption } from '@/Components/ui/native-select';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 import { useApi } from '@/Composables/useApi';
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { formatDate, todayIso } from '@/Utils/dateTime';
 
-type Dutiable = App.Entities.Dutiable & Record<string, unknown>;
+import type { AssignmentDuty, AssignmentUser, AssignmentTerm } from '@/Types/DutyAssignment';
 
 interface CadenceOption {
   id: string;
@@ -433,13 +434,13 @@ const CUSTOM_DATES = 'custom';
 const props = withDefaults(defineProps<{
   open: boolean;
   /** Fixed duty. Omit (with no `dutiable`) and the sheet asks which duty — the user-record entry point. */
-  duty?: (App.Entities.Duty & Record<string, unknown>) | null;
+  duty?: AssignmentDuty | null;
   /** The term being edited; omit to assign a new member. */
-  dutiable?: Dutiable | null;
+  dutiable?: AssignmentTerm | null;
   /** Pre-selected member. Without a fixed duty it is the fixed side and the sheet asks for the duty. */
-  user?: (App.Entities.User & Record<string, unknown>) | MemberHit | null;
+  user?: AssignmentUser | MemberHit | null;
   /** Offered programmes; narrowed to the chosen duty's tenant when the duty is picked in the sheet. */
-  studyPrograms?: (App.Entities.StudyProgram & { tenant_id?: number | null })[];
+  studyPrograms?: { id: string; name: unknown; tenant_id?: number | null }[];
   /** Members who already hold the duty right now; used when `existingTerms` is not given. */
   takenIds?: string[];
   /** Every term on the duty, so only people holding it during the chosen dates are blocked. */
@@ -471,7 +472,7 @@ const pickMember = computed(() => !isEditing.value && !(pickDuty.value && props.
 const chosenDuty = ref<DutyHit | null>(null);
 const isExOfficio = computed(() => !!props.dutiable?.via_dutiable_id);
 const dutyContext = computed(() => props.duty ?? props.dutiable?.duty ?? null);
-const canEndTerm = computed(() => !!props.dutiable && termStatus(props.dutiable as { start_date?: string; end_date?: string | null }) === 'current');
+const canEndTerm = computed(() => !!props.dutiable && termStatus(props.dutiable ?? {}) === 'current');
 
 const sheetTitle = computed(() => {
   if (isEditing.value) {
@@ -499,7 +500,7 @@ const dutyTypeIds = computed<number[] | null>(() => {
     return chosenDuty.value?.typeIds ?? null;
   }
 
-  const types = (dutyContext.value as { types?: { id?: number | string | null }[] } | null)?.types;
+  const types = dutyContext.value?.types;
 
   return Array.isArray(types)
     ? types.map(type => Number(type.id)).filter((id): id is number => Number.isInteger(id))
@@ -580,7 +581,9 @@ const member = ref<MemberHit | null>(null);
 const initialMember = (): MemberHit | null => {
   const known = props.user ?? props.dutiable?.user ?? props.dutiable?.dutiable ?? null;
 
-  return known ? (known as MemberHit) : null;
+  return known && typeof known.name === 'string'
+    ? { ...known, id: String(known.id), name: known.name, email: known.email ?? undefined }
+    : null;
 };
 
 watch(member, (hit) => {

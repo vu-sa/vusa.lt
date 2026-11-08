@@ -1,6 +1,4 @@
 <template>
-  <!-- The title band, the share row and the related grid all belong to the article, so the page
-       itself is only the composition. -->
   <NewsArticleLayout
     :article
     :other-lang-u-r-l="$page.props.otherLangURL ?? undefined"
@@ -22,28 +20,66 @@ import RichContentParser from '@/Components/RichContent/RichContentParser.vue';
 import FeedbackPopover from '@/Components/Public/FeedbackPopover.vue';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import NewsArticleLayout from '@/Components/Public/News/NewsArticleLayout.vue';
-import type { NewsItem } from '@/Types/contentParts';
+import type { ImageData } from '@/Types/media';
 import IFluentNews24Regular from '~icons/fluent/news-24-regular';
 
+interface NewsArticleTag {
+  id: number;
+  name: string;
+  alias: string;
+}
+
+interface NewsArticle {
+  id: number;
+  title: string;
+  short: string;
+  lang: string;
+  other_lang_id: number | null;
+  permalink: string | null;
+  publish_time: string | null;
+  content: App.Entities.Content;
+  important: number;
+  main_points: string | null;
+  read_more: string | null;
+  show_breadcrumbs: boolean;
+  highlights: unknown[] | Record<string, unknown> | null;
+  image_author: string | null;
+  tags: NewsArticleTag[];
+  reading_time: number;
+  image: string | null;
+  image_media: ImageData | null;
+  tenant: string;
+}
+
+interface RelatedArticle {
+  id: number;
+  title: string;
+  short: string;
+  lang: string;
+  image: string | null;
+  image_media: ImageData | null;
+  permalink: string | null;
+  publish_time: string | null;
+  url: string;
+}
+
+interface ResolvedParts {
+  [partId: string]: Record<string, unknown>;
+}
+
 const props = defineProps<{
-  article: App.Entities.News & { reading_time?: number | null };
-  relatedArticles?: NewsItem[];
-  /** Server-resolved dynamic blocks (link-list, event-list, …) keyed by content-part id. */
-  resolvedParts?: Record<number, unknown>;
+  article: NewsArticle;
+  relatedArticles: RelatedArticle[];
+  resolvedParts: ResolvedParts;
 }>();
 
 const page = usePage();
 
-// An author can hide the breadcrumb trail on a news article (Advanced Settings in
-// NewsForm) — the title band still carries the headline, it just goes untrailed.
 const showBreadcrumbs = computed(() => props.article.show_breadcrumbs !== false);
 
-// Set breadcrumbs for news article page.
-//
-// `placement: 'band'` — the trail belongs inside the article's ink masthead, so PublicLayout
-// skips the bar it draws above page content for every other route. One trail, not two.
+// The article masthead owns this trail, so PublicLayout skips its breadcrumb bar.
 usePageBreadcrumbs(() => {
-  // Author disabled breadcrumbs for this article — an empty trail clears the previous page's.
+  // An empty trail clears the previous page's breadcrumbs.
   if (!showBreadcrumbs.value) return [];
 
   return BreadcrumbHelpers.publicContent([

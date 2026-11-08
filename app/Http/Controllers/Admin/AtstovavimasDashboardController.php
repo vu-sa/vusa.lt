@@ -88,20 +88,14 @@ class AtstovavimasDashboardController extends AdminController
             return $institutions;
         });
 
-        return $this->inertiaResponse('Admin/Dashboard/ShowAtstovavimas', [
-            // User with institutions - always included, even in partial reloads (ensures check-in data stays fresh)
-            'user' => Inertia::always(fn () => [
-                ...$user()->toArray(),
-                'authorization_duties' => $user()->authorization_duties->map(function ($duty) use ($userInstitutions) {
-                    $institution = $userInstitutions()->firstWhere('id', $duty->institution_id);
-
-                    return [
-                        ...$duty->toArray(),
-                        'institution' => $institution,
-                    ];
-                }),
-            ]),
-            // User's own institutions - always included, even in partial reloads (ensures check-in data stays fresh)
+        return Inertia::render('Admin/Dashboard/ShowAtstovavimas', [
+            'user' => fn () => [
+                ...$user()->withoutRelations()->toArray(),
+                'authorization_duties' => $user()->authorization_duties->map(fn ($duty) => [
+                    'id' => $duty->id,
+                    'institution_id' => $duty->institution_id,
+                ])->values(),
+            ],
             'userInstitutions' => Inertia::always(fn () => $userInstitutions()->values()),
             // Quick flag to show/hide related institutions filter (lazy data may not be loaded yet)
             'mayHaveRelatedInstitutions' => fn () => $userInstitutions()->isNotEmpty(),
@@ -184,7 +178,7 @@ class AtstovavimasDashboardController extends AdminController
         $statsTenants = $this->tenantOptions(app(AtstovavimasSettings::class)->getVisibleTenantIds($user));
         $ganttTenants = $this->tenantOptions(Tenant::query()->representational()->pluck('id'));
 
-        return $this->inertiaResponse('Admin/Dashboard/ShowAtstovavimasPadaliniai', [
+        return Inertia::render('Admin/Dashboard/ShowAtstovavimasPadaliniai', [
             'statsTenants' => $statsTenants,
             'ganttTenants' => $ganttTenants,
             'defaultGanttTenantIds' => $this->defaultGanttTenantIds($user, $statsTenants, $ganttTenants),

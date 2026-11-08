@@ -13,7 +13,6 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Inertia\Response as InertiaResponse;
 
 /**
  * Base controller for admin routes with proper return types
@@ -24,14 +23,6 @@ use Inertia\Response as InertiaResponse;
 abstract class AdminController extends Controller
 {
     use TranslatesEntityMessages;
-
-    /**
-     * Return an Inertia response for admin pages
-     */
-    protected function inertiaResponse(string $component, array $props = []): InertiaResponse
-    {
-        return inertia($component, $props);
-    }
 
     /**
      * Return a redirect response

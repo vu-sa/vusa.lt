@@ -22,6 +22,8 @@ trait HasSharepointFiles
     /**
      * Files with local metadata storage.
      * Enables instant queries without SharePoint API calls.
+     *
+     * @return MorphMany<FileableFile, $this>
      */
     public function fileableFiles(): MorphMany
     {
@@ -30,6 +32,8 @@ trait HasSharepointFiles
 
     /**
      * Get only available files (not externally deleted).
+     *
+     * @return MorphMany<FileableFile, $this>
      */
     public function availableFiles(): MorphMany
     {

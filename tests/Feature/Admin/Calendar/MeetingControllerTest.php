@@ -1,11 +1,14 @@
 <?php
 
 use App\Enums\InstitutionScope;
+use App\Enums\ResponsibilityPurpose;
+use App\Models\Cadence;
 use App\Models\Calendar;
 use App\Models\Duty;
 use App\Models\FileableFile;
 use App\Models\Institution;
 use App\Models\InstitutionLink;
+use App\Models\InstitutionSecretary;
 use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
@@ -14,8 +17,10 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Settings\MeetingSettings;
 use App\Support\MorphMap;
+use App\Tasks\Enums\ActionType;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
 
@@ -415,10 +420,97 @@ describe('meeting show payload', function (): void {
             );
     });
 
-    test('defers task and document panels', function (): void {
+    test('types file, people and attachable institution payloads', function (): void {
         $meeting = Meeting::factory()->create(['start_time' => now()->addDay()]);
         $meeting->institutions()->attach($this->institution);
-        $meeting->tasks()->create(['name' => 'Deferred task']);
+        $duty = Duty::factory()->for($this->institution)->create();
+        grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
+        $representative = User::factory()->create(['profile_photo_path' => null]);
+        $representative->duties()->attach($duty, ['start_date' => now()->subMonth()->toDateString(), 'end_date' => null]);
+
+        $cadence = Cadence::factory()->create([
+            'institution_id' => $this->institution->id,
+            'start_date' => now()->subMonth()->toDateString(),
+            'end_date' => now()->addMonth()->toDateString(),
+        ]);
+        $secretary = User::factory()->create(['profile_photo_path' => null]);
+        InstitutionSecretary::create([
+            'institution_id' => $this->institution->id,
+            'cadence_id' => $cadence->id,
+            'user_id' => $secretary->id,
+        ]);
+
+        $attachable = Institution::factory()->for($this->tenant)->create();
+        $adminDuty = Duty::factory()->for($attachable)->create();
+        $this->admin->duties()->attach($adminDuty, ['start_date' => now()->subMonth()->toDateString(), 'end_date' => null]);
+
+        $file = FileableFile::factory()->protocol()->create([
+            'fileable_type' => MorphMap::alias(Meeting::class),
+            'fileable_id' => $meeting->id,
+            'file_date' => '2025-02-01',
+            'size_bytes' => 2048,
+            'public_link' => null,
+            'public_link_permission_id' => 'private-permission-id',
+        ]);
+        FileableFile::factory()->deletedExternally()->create([
+            'fileable_type' => MorphMap::alias(Meeting::class),
+            'fileable_id' => $meeting->id,
+            'file_date' => '2025-03-01',
+        ]);
+
+        asUser($this->admin)->get(route('meetings.show', $meeting))
+            ->assertInertia(fn (Assert $page) => $page
+                ->missing('files')
+                ->reloadOnly('files', fn (Assert $files) => $files
+                    ->has('files', 1, fn (Assert $row) => $row
+                        ->where('id', $file->id)
+                        ->whereType('name', 'string')
+                        ->where('file_type', FileableFile::TYPE_PROTOCOL)
+                        ->whereType('file_date', 'string')
+                        ->where('size_bytes', 2048)
+                        ->where('formatted_size', '2 KB')
+                        ->where('public_link', null)
+                        ->missing('public_link_permission_id')
+                        ->etc()
+                    )
+                )
+                ->has('representatives', 1, fn (Assert $row) => $row
+                    ->where('id', $representative->id)
+                    ->whereType('name', 'string')
+                    ->where('profile_photo_path', null)
+                    ->whereType('profile_photo_focal_point', 'string|null')
+                    ->whereType('email', 'string|null')
+                    ->whereType('phone', 'string|null')
+                    ->whereType('facebook_url', 'string|null')
+                    ->whereType('pronouns', 'string|null')
+                    ->whereType('show_pronouns', 'boolean')
+                    ->missing('duties')
+                    ->missing('password')
+                    ->missing('notification_preferences')
+                    ->etc()
+                )
+                ->missing('secretaries')
+                ->missing('availableInstitutionsForAttach')
+                ->reloadOnly('availableInstitutionsForAttach', fn (Assert $options) => $options
+                    ->where('availableInstitutionsForAttach', fn ($rows) => collect($rows)->contains(
+                        fn ($row) => $row['id'] === $attachable->id
+                            && is_string($row['name'])
+                            && is_bool($row['is_active'])
+                            && $row['tenant_shortname'] === $this->tenant->shortname
+                    ))
+                )
+            );
+    });
+
+    test('loads task and document panels only when requested', function (): void {
+        $meeting = Meeting::factory()->create(['start_time' => now()->addDay()]);
+        $meeting->institutions()->attach($this->institution);
+        $task = $meeting->tasks()->create([
+            'name' => 'Deferred task',
+            'action_type' => ActionType::Manual,
+            'metadata' => ['items_total' => 2, 'items_completed' => 1],
+        ]);
+        $task->users()->attach($this->admin);
 
         $response = asUser($this->admin)->get(route('meetings.show', $meeting));
 
@@ -433,9 +525,29 @@ describe('meeting show payload', function (): void {
             ->missing('meeting.documents')
             ->missing('tasks')
             ->missing('documents')
-            ->loadDeferredProps('meetingPanels', fn ($page) => $page
+            ->missing('pendingDocuments')
+            ->missing('files')
+            ->missing('availableInstitutionsForAttach')
+            ->whereType('incompleteTasksCount', 'integer')
+            ->reloadOnly(['tasks', 'documents', 'pendingDocuments'], fn ($page) => $page
                 ->has('tasks', 1)
                 ->where('tasks.0.name', 'Deferred task')
+                ->has('tasks.0', fn (Assert $row) => $row
+                    ->where('id', $task->id)
+                    ->where('action_type', 'manual')
+                    ->whereType('created_at', 'string')
+                    ->whereType('updated_at', 'string')
+                    ->whereType('due_date', 'string|null')
+                    ->where('progress', ['current' => 1, 'total' => 2, 'percentage' => 50])
+                    ->whereType('can_update', 'boolean')
+                    ->whereType('is_overdue', 'boolean')
+                    ->whereType('can_be_manually_completed', 'boolean')
+                    ->where('taskable.id', $meeting->id)
+                    ->where('users.0.id', $this->admin->id)
+                    ->whereType('users.0.profile_photo_path', 'string|null')
+                    ->missing('can_delete')
+                    ->etc()
+                )
                 ->has('documents')
             )
         );
@@ -463,10 +575,10 @@ describe('read-only public meeting record', function (): void {
                 ->component('Admin/Representation/ShowMeeting')
                 ->where('readOnly', true)
                 ->has('meeting.agenda_items', 1)
-                ->where('files', [])
-                ->where('tasks', [])
-                ->where('documents', [])
-                ->where('secretaries', [])
+                ->missing('files')
+                ->missing('tasks')
+                ->missing('documents')
+                ->missing('secretaries')
                 ->where('recordNavigation', null)
                 ->where('abilities.update', false)
                 ->where('meeting.agenda_items.0.can.update', false)
@@ -946,9 +1058,7 @@ describe('institution meeting navigation', function (): void {
                 ->where('recordNavigation.nextHref', route('meetings.show', $later))
                 ->where('recordNavigation.previousLabel', '01-10')
                 ->where('recordNavigation.nextLabel', '03-10')
-                ->has('recordNavigation.meetings', 3)
-                ->where('recordNavigation.meetings.0.id', $earlier->id)
-                ->where('recordNavigation.meetings.2.href', route('meetings.show', $later))
+                ->missing('recordNavigation.meetings')
             );
     });
 

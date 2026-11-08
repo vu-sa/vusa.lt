@@ -29,7 +29,7 @@
     </template>
 
     <template #row="{ item, actions: recordActions, view }">
-      <CollectionRow :actions="view === 'preview' ? [] : recordActions" :spotlight="item === source?.items.value[0]" class="px-3 py-2.5 sm:px-4" @select="key => actions.select(key, item.force_delete_blocked_reason)">
+      <CollectionRow :actions="view === 'preview' ? [] : recordActions" :spotlight="item === source?.items.value[0]" class="px-3 py-2.5 sm:px-4" @select="key => !publishing.isPending([String(item.id)]) && actions.select(key, item.force_delete_blocked_reason)">
         <template v-if="view !== 'preview'" #lead>
           <CollectionStatusIcon :status="newsStatus(item)" />
         </template>
@@ -56,6 +56,7 @@
           :status="newsStatus(item)"
           :model-value="publishing.statusValue(item)"
           :options="publishing.statusOptions"
+          :pending="publishing.isPending([String(item.id)])"
           :editable="canBulkEdit"
           @update:model-value="value => publishing.setPublished([String(item.id)], value === 'published')"
         />
@@ -77,15 +78,16 @@
             :status="newsStatus(item)"
             :model-value="publishing.statusValue(item)"
             :options="publishing.statusOptions"
+          :pending="publishing.isPending([String(item.id)])"
             :editable="canBulkEdit"
             @update:model-value="value => publishing.setPublished([String(item.id)], value === 'published')"
           />
         </template>
         <template #actions>
           <CollectionRowActions
-            :actions="recordActions"
+            :actions="recordActions.map(action => ({ ...action, loading: publishing.isPending([String(item.id)]) }))"
             emphasis full-labels
-            @select="key => actions.select(key, item.force_delete_blocked_reason)"
+            @select="key => !publishing.isPending([String(item.id)]) && actions.select(key, item.force_delete_blocked_reason)"
           />
         </template>
       </NewsPreview>
@@ -93,6 +95,7 @@
 
     <template #bulk-actions="{ selected, clear }">
       <CollectionPublishActions
+        :pending="publishing.isPending(publishing.idsOf(selected))"
         :can-publish="publishing.bulkChoices(selected).publish"
         :can-draft="publishing.bulkChoices(selected).draft"
         @publish="publishing.setPublished(publishing.idsOf(selected), true, clear)"

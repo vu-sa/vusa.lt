@@ -17,7 +17,7 @@
         <ul class="mt-1">
           <li v-for="linked in event.duties" :key="linked.link_id" class="flex min-h-11 flex-wrap items-center justify-between gap-x-2">
             <Link :href="route('duties.show', linked.id)" class="min-w-0 truncate font-medium hover:underline">
-              <InflectedDutyName :name="linked.name" />
+              <InflectedDutyName :name="linked.name ?? ''" />
               <span v-if="linked.institution_name" class="font-normal text-muted-foreground"> · {{ linked.institution_name }}</span>
             </Link>
             <span class="flex shrink-0 items-center gap-1">
@@ -69,7 +69,7 @@ import { operatingStatuses } from '@/Constants/statusIcons';
 export interface LineageLinkedDuty {
   id: string;
   link_id: number;
-  name: string;
+  name: string | null;
   is_active: boolean;
   institution_name: string | null;
   can_fold?: boolean;

@@ -82,16 +82,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { defineAsyncComponent, ref } from 'vue';
 import { getLocalTimeZone, today } from '@internationalized/date';
 import { trans as $t } from 'laravel-vue-i18n';
 import { BarChart3, Plus, X } from '@lucide/vue';
 
-import CommentComposer from '@/Components/Discussions/CommentComposer.vue';
 import { DateTimePicker } from '@/Components/ui/date-picker';
 import { Input } from '@/Components/ui/input';
 import { Switch } from '@/Components/ui/switch';
 import type { MentionableUser, PollDraft } from '@/Types/discussions';
+
+const CommentComposer = defineAsyncComponent(() => import('@/Components/Discussions/CommentComposer.vue'));
 
 withDefaults(defineProps<{
   mentionables?: MentionableUser[];

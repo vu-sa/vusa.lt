@@ -34,7 +34,7 @@ class DutyTypeController extends AdminController
             ->orderBy('id')
             ->get();
 
-        return $this->inertiaResponse('Admin/ModelMeta/IndexDomainTypes', [
+        return Inertia::render('Admin/ModelMeta/IndexDomainTypes', [
             'typeKind' => 'dutyType',
             'types' => $this->appendForceDeleteBlockedReason($types, $request)->values(),
             'deletedCount' => DutyType::onlyTrashed()->count(),
@@ -45,7 +45,7 @@ class DutyTypeController extends AdminController
     {
         $this->handleAuthorization('create', DutyType::class);
 
-        return $this->inertiaResponse('Admin/ModelMeta/CreateType', [
+        return Inertia::render('Admin/ModelMeta/CreateType', [
             'typeKind' => 'dutyType',
             'contentTypes' => DutyType::select('id', 'title', 'parent_id')->get(),
         ]);
@@ -84,7 +84,7 @@ class DutyTypeController extends AdminController
             && collect(['duties.update.*', 'duties.update.padalinys', 'duties.update.own'])
                 ->contains(fn (string $permission): bool => app(ModelAuthorizer::class)->allows($actor, $permission));
 
-        return $this->inertiaResponse('Admin/ModelMeta/ShowType', [
+        return Inertia::render('Admin/ModelMeta/ShowType', [
             'typeKind' => 'dutyType',
             'contentType' => [
                 ...$type->withoutRelations()->toFullArray(),
@@ -131,7 +131,7 @@ class DutyTypeController extends AdminController
     {
         $this->handleAuthorization('update', $type);
 
-        return $this->inertiaResponse('Admin/ModelMeta/EditType', [
+        return Inertia::render('Admin/ModelMeta/EditType', [
             'typeKind' => 'dutyType',
             'contentType' => $type->toFullArray(),
             'contentTypes' => DutyType::select('id', 'title', 'parent_id')->get(),

@@ -29,22 +29,37 @@ const institution = (
 });
 
 describe('useAtstovavimasData', () => {
+  it('places check-in date-only values at local calendar midnight', () => {
+    const user = { authorization_duties: [{ institution_id: '1' }] } as AtstovavimasUser;
+    const data = useAtstovavimasData(user, [{
+      ...institution('1', 'healthy', 0),
+      check_ins: [{ id: 'check-in', institution_id: '1', user_id: 'user-1', start_date: '2026-03-15', end_date: '2026-03-29' }],
+    }]);
+
+    expect(data.userGaps.value[0]!.from).toEqual(new Date(2026, 2, 15));
+    expect(data.userGaps.value[0]!.until).toEqual(new Date(2026, 2, 29));
+  });
+
   it('orders attention insights by backend priority', () => {
     const user = {
       authorization_duties: [
-        { institution: institution('1', 'approaching', 30) },
-        { institution: institution('2', 'healthy', 0) },
-        { institution: institution('3', 'overdue', 50) },
+        { institution_id: '1' },
+        { institution_id: '2' },
+        { institution_id: '3' },
       ],
     } as AtstovavimasUser;
 
-    const data = useAtstovavimasData(user);
+    const data = useAtstovavimasData(user, [
+      institution('1', 'approaching', 30),
+      institution('2', 'healthy', 0),
+      institution('3', 'overdue', 50),
+    ]);
 
     expect(data.institutionsInsights.value.attention.map(item => item.id)).toEqual(['3', '1']);
   });
 
   it('adds the institutions the user serves as secretary for, once, next to their duty ones', () => {
-    const user = { authorization_duties: [{ institution: institution('1', 'healthy', 0) }] } as AtstovavimasUser;
+    const user = { authorization_duties: [{ institution_id: '1' }] } as AtstovavimasUser;
     const userInstitutions = [
       institution('1', 'healthy', 0),
       { ...institution('2', 'overdue', 50), is_secretary: true },

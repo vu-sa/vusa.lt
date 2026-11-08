@@ -16,6 +16,8 @@ const notesState = {
   connectionState: ref('connected'),
   saveStatus: ref<'idle' | 'saving' | 'saved' | 'dirty'>('idle'),
   isHydrating: ref(false),
+  loadFailed: ref(false),
+  retryLoad: vi.fn(),
   notesHtml: ref(''),
   representatives: ref<Array<{ id: string; name: string }>>([]),
   currentUserColor: '#ef4444',
@@ -46,7 +48,17 @@ describe('AgendaItemNotesSidebar', () => {
     notesState.participants.value = [];
     notesState.saveStatus.value = 'idle';
     notesState.isHydrating.value = false;
+    notesState.loadFailed.value = false;
     notesState.notesHtml.value = '';
+  });
+
+  it('offers a retry instead of an editor when the notes could not be loaded', async () => {
+    notesState.loadFailed.value = true;
+    const wrapper = mountSidebar();
+
+    expect(wrapper.find('.notes-editor-stub').exists()).toBe(false);
+    await wrapper.find('[role="alert"] button').trigger('click');
+    expect(notesState.retryLoad).toHaveBeenCalledOnce();
   });
 
   it('shows the private notes header', () => {

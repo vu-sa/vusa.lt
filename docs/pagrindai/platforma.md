@@ -1,8 +1,13 @@
 ---
 doc_status: reviewed
 title: Platforma
-last_reviewed: 2026-11-06
+last_reviewed: 2026-11-08
 tests:
+  - resources/js/Composables/__tests__/useOptimisticVisit.test.ts
+  - resources/js/Composables/__tests__/useCollectionSource.test.ts
+  - resources/js/Features/Admin/AdminSearch/Composables/__tests__/useAdminCollectionSearch.pages.test.ts
+  - resources/js/Shared/Search/__tests__/useBaseSearch.test.ts
+  - tests/Feature/Profile/UIPreferencesTest.php
   - resources/js/Composables/__tests__/useAdminSearch.test.ts
   - resources/js/Features/Admin/AdminSearch/Composables/__tests__/useAdminCollectionSearch.initial.test.ts
   - tests/Feature/Api/Admin/RecordAbilitiesApiControllerTest.php
@@ -115,6 +120,7 @@ turi aiškų pavadinimą ekrano skaitytuvui, o telefone jų paspaudimo vieta yra
 Viršutinėje juostoje paspaudus paiešką arba klavišus **⌘/Ctrl + K**, atidaroma komandų paletė.
 Joje pateikiamos prieinamos skiltys, veiksmai ir įrašų paieška. Žvaigždute galima prisegti dažnai
 naudojamą puslapį – prisegtos nuorodos rodomos paletės pradžioje. Telefone paieška pasiekiama iš navigacijos.
+Puslapio prisegimas ir neseniai lankytų puslapių atnaujinimas išsaugomi nepriklausomai vienas nuo kito.
 
 Paletėje rezultatai pateikiami vienu sąrašu: pirmiausia įrašai, kurių vardas ar pavadinimas sutapo, o kiekviena eilutė nurodo įrašo rūšį (pvz., Narys, Pareigybė, Naujiena). **Rodyti visus** nuveda į atitinkamą sąrašą, kuriame galima tikslinti paiešką ir filtrus.
 Paieška nesuteikia naujų teisių: kitų įrašų ar jų veiksmų prieiga priklauso nuo tavo pareigų ir rolių.
@@ -128,6 +134,10 @@ Pirmiausia rodomi atitikmenys paties įrašo varde ar pavadinime. Ieškant žmog
 </ChangelogNote>
 
 ### Grįžti prie sąrašo {#sarasai}
+
+Rašant paiešką ar keičiant filtrus, pateikiami naujausio pasirinkimo rezultatai, net jei ankstesnė paieška dar nebaigta. Kol įkeliami nauji pirmieji rezultatai, **Rodyti daugiau** nepapildo jų ankstesnės paieškos įrašais.
+
+Užduoties pažymėjimas, turinio publikavimas ir žymos šalinimas sąraše parodomi iškart. Jei serveris veiksmo nepatvirtina arba nutrūksta ryšys, grąžinama ankstesnė būsena; kitų tuo metu atliekamų veiksmų pakeitimai lieka.
 
 Atvėrus sąrašo nuorodą su paieška ar filtrais, jie taikomi nuo pirmųjų rezultatų ir filtrų skaičių. Paieškos langas, sąrašai ir įrašų pasirinkimo langai dalijasi trumpa laukimo pauze, jei ieškoma per dažnai.
 
@@ -318,3 +328,5 @@ Kompiuteryje grotuvas rodomas apatiniame dešiniajame kampe. Telefone jis yra vi
 meniu arba formos išsaugojimo juostos. Pereinant tarp tos pačios svetainės puslapių klausymas
 tęsiasi. Perkrovus puslapį arba perėjus tarp viešos svetainės ir Mano VU SA, radiją reikia
 įjungti iš naujo. Nepavykus prisijungti, grotuve galima bandyti dar kartą.
+
+Kol pakeitimas saugomas, susiję veiksmai palaukia, o kitus įrašus gali keisti toliau. Nepavykę pakeitimai grąžinami į ankstesnę būseną.

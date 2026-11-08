@@ -1,8 +1,9 @@
 ---
 doc_status: reviewed
 title: Užduotys
-last_reviewed: 2026-11-05
+last_reviewed: 2026-11-08
 tests:
+  - tests/Feature/Tasks/TaskProgressTest.php
   - tests/Browser/VisakOverviewPagesTest.php
   - tests/Feature/Admin/Dashboard/UserTasksTest.php
   - tests/Feature/Tasks/TaskCompletionTest.php
@@ -35,6 +36,8 @@ padalinio atstovams yra ViSAK srityje – žr. [Užduočių suvestinė](/visak/u
 <DocScreenshot name="tasks-index" alt="Užduočių sąrašas: greitieji filtrai Vėluoja, Automatinės ir Atliktos, užduotys su terminais ir pažymėtos užduoties peržiūra" caption="Atstovės užduotys: viena vėluoja, dauguma bus užbaigtos automatiškai." />
 
 ## Kaip tai veikia
+
+Užduoties pažymėjimas atlikta ar grąžinimas į neatliktas sąraše matomas iškart. Jei išsaugoti nepavyksta, atkuriama ankstesnė užduoties būsena.
 
 Kiekviena užduotis turi:
 
@@ -167,3 +170,5 @@ nebėra. Rankinės užduoties priminimus gauna visi, kuriuos priskyrė žmogus.
   užduočių užklausos jos nebemato, o `RepStatisticsScope::tasks()` ją praleidžia. Priminimus
   siunčia `TaskNotifier::notifyDaysLeft` (išskyrus `periodicity_gap`) ir
   `notifications:task-overdue-reminders` gavėjams iš `Task::notifiableUsers()` (`ResolveTaskAudience`).
+
+Kol pakeitimas saugomas, to paties įrašo veiksmai palaukia. Kitus įrašus gali keisti toliau. Nepavykęs pakeitimas grąžinamas į ankstesnę būseną; tai taikoma ir užduoties ištrynimui.

@@ -14,6 +14,7 @@ use App\Models\Tenant;
 use App\Services\ContentService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 use Inertia\Response;
 
 class TenantController extends AdminController
@@ -26,7 +27,7 @@ class TenantController extends AdminController
         $this->handleAuthorization('viewAny', Tenant::class);
 
         // A short list sent whole: the collection searches, sorts and filters it in the browser.
-        return $this->inertiaResponse('Admin/People/IndexTenant', [
+        return Inertia::render('Admin/People/IndexTenant', [
             'tenants' => Tenant::query()->orderBy('fullname')
                 ->with(['primary_institution:id,name,tenant_id,is_active', 'primary_institution.tenant:id,shortname'])
                 ->get(['id', 'fullname', 'shortname', 'alias', 'type', 'shortname_vu', 'primary_institution_id', 'goals_enabled', 'created_at', 'updated_at'])
@@ -94,7 +95,7 @@ class TenantController extends AdminController
             ->with('content.parts')
             ->first()?->content;
 
-        return $this->inertiaResponse('Admin/Content/EditHomePage', [
+        return Inertia::render('Admin/Content/EditHomePage', [
             'tenant' => $tenant,
             'content' => $content,
             'locale' => $locale->value,

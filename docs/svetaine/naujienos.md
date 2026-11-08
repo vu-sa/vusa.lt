@@ -1,6 +1,6 @@
 ---
 doc_status: reviewed
-last_reviewed: 2026-11-01
+last_reviewed: 2026-11-07
 tests:
   - tests/Feature/Public/NewsArticlePayloadTest.php
   - resources/js/Components/News/__tests__/NewsPreview.component.test.ts

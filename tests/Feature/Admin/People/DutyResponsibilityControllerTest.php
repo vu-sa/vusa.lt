@@ -153,7 +153,29 @@ test('the duty page defers its responsibilities, labelling those it gets through
                 ->has('responsibilities.items', 2)
                 ->where('responsibilities.items.0.purpose', 'student_rep_coordination')
                 ->where('responsibilities.items.1.source', 'duty_type')
-                ->where('responsibilities.items.1.role_id', $typeRole->id)));
+                ->where('responsibilities.items.1.role_id', $typeRole->id)
+                ->whereType('responsibilities.items.0.id', 'string')
+                ->whereType('responsibilities.items.0.role_id', 'string')
+                ->whereType('responsibilities.items.0.title', 'string')
+                ->whereType('responsibilities.items.0.description', 'string|null')
+                ->whereType('responsibilities.items.0.purpose', 'string')
+                ->whereType('responsibilities.items.0.purpose_label', 'string')
+                ->whereType('responsibilities.items.0.source', 'string')
+                ->where('responsibilities.items.0.source_name', null)
+                ->where('responsibilities.items.0.scope_type', 'tenant')
+                ->whereType('responsibilities.items.0.scope_name', 'string')
+                ->whereType('responsibilities.items.0.missing_permissions', 'array')
+                ->where('responsibilities.items.1.purpose', null))
+            ->reloadOnly('responsibilityOptions', fn (Assert $options) => $options
+                ->whereType('responsibilityOptions.responsibilities.0.id', 'string')
+                ->whereType('responsibilityOptions.responsibilities.0.title', 'string')
+                ->whereType('responsibilityOptions.responsibilities.0.description', 'string|null')
+                ->whereType('responsibilityOptions.responsibilities.0.purpose_label', 'string|null')
+                ->whereType('responsibilityOptions.responsibilities.0.scopes', 'array')
+                ->whereType('responsibilityOptions.tenants.0.id', 'integer')
+                ->whereType('responsibilityOptions.tenants.0.shortname', 'string')
+                ->whereType('responsibilityOptions.types', 'array')
+                ->whereType('responsibilityOptions.institutions', 'array')));
 
     asUser($this->member)
         ->withHeaders([

@@ -20,6 +20,8 @@ class UpdateAgendaItemNoteRequest extends FormRequest
         return [
             'yjs_state' => ['required', 'string'],
             'notes_html' => ['nullable', 'string'],
+            // The version the client last loaded or saved; null when it never loaded the notes.
+            'base_version' => ['present', 'nullable', 'integer', 'min:0'],
         ];
     }
 }

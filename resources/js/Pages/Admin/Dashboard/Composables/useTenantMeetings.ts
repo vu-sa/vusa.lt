@@ -12,6 +12,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import type { AtstovavimasTenantMeeting, GanttMeeting } from '../types';
 
 import { useToasts } from '@/Composables/useToasts';
+import { toNaiveDateTimeString } from '@/Utils/dateTime';
 
 /** Smallest padding fetched beyond the visible range; wide views pad a quarter of their span. */
 const MIN_BUFFER_DAYS = 30;
@@ -118,8 +119,8 @@ export function useTenantMeetings(tenantIds: () => Array<string | number>) {
 
     const params = new URLSearchParams();
     ids.forEach(id => params.append('tenant_ids[]', id));
-    params.set('from', new Date(window.from).toISOString().slice(0, 10));
-    params.set('until', new Date(window.until).toISOString().slice(0, 10));
+    params.set('from', toNaiveDateTimeString(new Date(window.from)).slice(0, 10));
+    params.set('until', toNaiveDateTimeString(new Date(window.until)).slice(0, 10));
     if (refresh) params.set('refresh', '1');
 
     const response = await fetch(`${route('api.v1.admin.visak.meetings')}?${params}`, {

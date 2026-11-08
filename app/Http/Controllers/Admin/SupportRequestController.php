@@ -20,6 +20,7 @@ use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -41,7 +42,7 @@ class SupportRequestController extends AdminController
     {
         $this->authorize('view', $supportRequest);
 
-        return $this->inertiaResponse('Admin/SupportRequests/ShowSupportRequest', $this->showPayload($supportRequest));
+        return Inertia::render('Admin/SupportRequests/ShowSupportRequest', $this->showPayload($supportRequest));
     }
 
     public function evidence(SupportRequest $supportRequest, int $media, string $conversion = 'original'): StreamedResponse
@@ -65,7 +66,7 @@ class SupportRequestController extends AdminController
     {
         $this->authorize('update', $supportRequest);
 
-        return $this->inertiaResponse('Admin/SupportRequests/EditSupportRequest', [
+        return Inertia::render('Admin/SupportRequests/EditSupportRequest', [
             ...$this->showPayload($supportRequest),
             'isEditing' => true,
         ]);

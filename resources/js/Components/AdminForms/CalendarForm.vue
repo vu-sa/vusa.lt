@@ -228,7 +228,6 @@
           :existing-urls="existingGalleryImages"
           cropper
           :compress="false"
-          folder="calendar"
           @remove:existing="removeExistingImage"
         />
         <div v-else-if="existingGalleryImages.length" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -483,7 +482,7 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { NativeSelect } from '@/Components/ui/native-select';
 import { Checkbox } from '@/Components/ui/checkbox';
-import { ImageUpload } from '@/Components/ui/upload';
+import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import VisualOptionSelect from '@/Components/FormItems/VisualOptionSelect.vue';
 import { contentStatuses } from '@/Constants/statusIcons';
