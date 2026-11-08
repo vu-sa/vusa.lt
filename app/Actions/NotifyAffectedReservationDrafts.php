@@ -39,17 +39,20 @@ class NotifyAffectedReservationDrafts
         foreach ($drafts as $draft) {
             $taken = $draft->items
                 ->filter(function (ReservationDraftItem $item) use ($draft, $reservedQuantities): bool {
-                    if ($item->resource === null) {
+                    /** @var Resource|null $resource */
+                    $resource = $item->resource;
+
+                    if ($resource === null) {
                         return false;
                     }
 
-                    $available = SerializeResourceAvailability::available($item->resource, $draft->start_time, $draft->end_time);
+                    $available = SerializeResourceAvailability::available($resource, $draft->start_time, $draft->end_time);
 
                     // Only this reservation's doing: the item fitted before it took its share.
                     return $item->quantity > $available
                         && $item->quantity <= $available + $reservedQuantities->get((string) $item->resource_id, 0);
                 })
-                ->map(fn (ReservationDraftItem $item) => (string) $item->resource?->name)
+                ->map(fn (ReservationDraftItem $item) => (string) $item->resource->name)
                 ->values()
                 ->all();
 

@@ -67,6 +67,7 @@ class ResponsibilityGrant extends Model
         $labels = [];
 
         foreach (['lt', 'en'] as $locale) {
+            /** @var \Illuminate\Database\Eloquent\Model|null $grantee */
             $grantee = $this->grantee;
             $label = $grantee?->getAttribute('title') ?? $grantee?->getAttribute('name') ?? $this->grantee_id;
 
