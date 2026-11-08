@@ -6,7 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 test('progress increments from stale instances and completes at the total', function (): void {
-    $this->freezeTime();
+    $this->freezeSecond();
     $task = Task::factory()->withProgress(0, 3)->create();
     $stale = Task::query()->findOrFail($task->id);
 

@@ -13,8 +13,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection as SupportCollection;
+use Illuminate\Support\Facades\DB;
 use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
@@ -246,7 +246,7 @@ class Task extends Model
      */
     public function incrementProgress(int $amount = 1): bool
     {
-        return DB::transaction(function (): bool {
+        return DB::transaction(function () use ($amount): bool {
             $locked = $this->newQuery()->whereKey($this->getKey())->lockForUpdate()->firstOrFail();
             $this->setRawAttributes($locked->getAttributes(), true);
 

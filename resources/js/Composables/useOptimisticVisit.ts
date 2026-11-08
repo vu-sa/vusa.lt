@@ -5,6 +5,10 @@ function hasFlashError(page: Page): boolean {
   return Boolean(flash && typeof flash === 'object' && 'error' in flash && flash.error);
 }
 
+/**
+ * Undo an optimistic change on any refusal: validation errors, a flashed `error` (how a 403 reaches
+ * an Inertia visit), a server error or a network failure. An interrupted visit is not undone: it may have landed.
+ */
 export function withOptimisticRollback(rollback: () => void, options: VisitOptions = {}): VisitOptions {
   let rolledBack = false;
   let refused = false;
@@ -40,10 +44,6 @@ export function withOptimisticRollback(rollback: () => void, options: VisitOptio
     onNetworkError: (error) => {
       undo();
       return options.onNetworkError?.(error);
-    },
-    onCancel: () => {
-      undo();
-      return options.onCancel?.();
     },
   };
 }

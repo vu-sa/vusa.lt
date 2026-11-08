@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "total": 2650,
+  "total": 2645,
   "fingerprints": {
     "docs/pdf/build-release.ts | TS2322 | Type 'string | undefined' is not assignable to type 'string'.": 1,
     "docs/pdf/build-release.ts | TS2345 | Argument of type 'string | undefined' is not assignable to parameter of type 'string'.": 1,
@@ -1026,9 +1026,7 @@
     "resources/js/Features/Admin/MailingLists/MailingListSourceSheet.vue | TS2345 | Argument of type '{ modelValue: MailingListAddressMode; options: FormSegmentOption<MailingListAddressMode>[]; 'aria-label': string; testIdPrefix: string; }' is not assignable to parameter of type 'VNodeProps & AllowedComponentProps & ComponentCustomProps & { options: FormSegmentOption<string | number | boolean>[]; ... 7 more ...; \"onUpdate:modelValue\"?: ((value: string | ... 1 more ... | boolean) => any) | undefined; } & Record<...>'.": 1,
     "resources/js/Features/Admin/MailingLists/MailingListSourceSheet.vue | TS2345 | Argument of type '{ modelValue: MailingListTenantScope; options: FormSegmentOption<MailingListTenantScope>[]; 'aria-label': string; testIdPrefix: string; }' is not assignable to parameter of type 'VNodeProps & AllowedComponentProps & ComponentCustomProps & { options: FormSegmentOption<string | number | boolean>[]; ... 7 more ...; \"onUpdate:modelValue\"?: ((value: string | ... 1 more ... | boolean) => any) | undefined; } & Record<...>'.": 1,
     "resources/js/Features/Admin/MailingLists/__tests__/MailingListSourceSheet.component.test.ts | TS2741 | Property 'responsibilities' is missing in type '{ globalScope: false; tenants: { id: number; shortname: string; type: TenantType.Padalinys; }[]; institutionTypes: { id: number; title: string; parent_id: null; }[]; dutyTypes: { id: number; title: string; parent_id: null; }[]; institutions: { ...; }[]; mailingLists: { ...; }[]; }' but required in type 'MailingListSourceOptions'.": 1,
-    "resources/js/Features/Admin/NavigationBuilder/NavigationBuilder.vue | TS2304 | Cannot find name 'cloneDeep'.": 1,
     "resources/js/Features/Admin/NavigationBuilder/NavigationBuilder.vue | TS2322 | Type 'AdminNavigationExtraAttributes' is not assignable to type 'FormDataConvertible'.": 1,
-    "resources/js/Features/Admin/NavigationBuilder/NavigationBuilder.vue | TS2532 | Object is possibly 'undefined'.": 2,
     "resources/js/Features/Admin/NavigationBuilder/NavigationBuilder.vue | TS2769 | No overload matches this call.": 1,
     "resources/js/Features/Admin/NavigationBuilder/NavigationRootItem.vue | TS18048 | 'sourceColumn' is possibly 'undefined'.": 1,
     "resources/js/Features/Admin/NavigationBuilder/NavigationRootItem.vue | TS18048 | 'targetColumn' is possibly 'undefined'.": 3,
@@ -1106,7 +1104,6 @@
     "resources/js/Pages/Admin/Content/__tests__/IndexQuickLink.component.test.ts | TS2532 | Object is possibly 'undefined'.": 8,
     "resources/js/Pages/Admin/Content/__tests__/IndexQuickLink.component.test.ts | TS2741 | Property 'type' is missing in type '{ id: number; shortname: string; }' but required in type 'TenantOption'.": 1,
     "resources/js/Pages/Admin/Content/__tests__/IndexTag.component.test.ts | TS2532 | Object is possibly 'undefined'.": 2,
-    "resources/js/Pages/Admin/Content/__tests__/IndexTag.component.test.ts | TS2554 | Expected 1-2 arguments, but got 0.": 2,
     "resources/js/Pages/Admin/Content/__tests__/IndexTag.component.test.ts | TS2722 | Cannot invoke an object which is possibly 'undefined'.": 2,
     "resources/js/Pages/Admin/Dashboard/Components/InstitutionStatusTrendChart.vue | TS2322 | Type 'number' is not assignable to type 'string'.": 2,
     "resources/js/Pages/Admin/Dashboard/Components/InstitutionStatusTrendChart.vue | TS2345 | Argument of type 'number | undefined' is not assignable to parameter of type 'number'.": 1,

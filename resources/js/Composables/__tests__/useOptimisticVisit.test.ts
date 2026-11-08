@@ -6,7 +6,7 @@ import { withOptimisticRollback } from '../useOptimisticVisit';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
 describe('withOptimisticRollback', () => {
-  it.each(['validation', 'flash', 'http', 'network', 'cancel'] as const)('rolls back on %s failure', (failure) => {
+  it.each(['validation', 'flash', 'http', 'network'] as const)('rolls back on %s failure', (failure) => {
     const rollback = vi.fn();
     const success = vi.fn();
     const options = withOptimisticRollback(rollback, { onSuccess: success });
@@ -15,7 +15,6 @@ describe('withOptimisticRollback', () => {
     if (failure === 'flash') options.onSuccess?.(createMockPage({ flash: { error: 'Forbidden' } }));
     if (failure === 'http') options.onHttpException?.({ status: 500 } as HttpResponse);
     if (failure === 'network') options.onNetworkError?.(new Error('Offline'));
-    if (failure === 'cancel') options.onCancel?.();
 
     expect(rollback).toHaveBeenCalledOnce();
     expect(success).not.toHaveBeenCalled();
@@ -46,6 +45,14 @@ describe('withOptimisticRollback', () => {
     expect(success).not.toHaveBeenCalled();
   });
 
+  it('keeps the change when a newer visit interrupts this one, since it may have landed', () => {
+    const rollback = vi.fn();
+
+    withOptimisticRollback(rollback).onCancel?.();
+
+    expect(rollback).not.toHaveBeenCalled();
+  });
+
   it('rolls back once and preserves exception callback return values', () => {
     const rollback = vi.fn();
     const error = new Error('Offline');
@@ -53,7 +60,7 @@ describe('withOptimisticRollback', () => {
     const options = withOptimisticRollback(rollback, { onNetworkError });
 
     expect(options.onNetworkError?.(error)).toBe(false);
-    options.onCancel?.();
+    options.onHttpException?.({ status: 500 } as HttpResponse);
 
     expect(rollback).toHaveBeenCalledOnce();
     expect(onNetworkError).toHaveBeenCalledWith(error);

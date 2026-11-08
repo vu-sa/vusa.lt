@@ -85,6 +85,7 @@ trait HasUIPreferences
      */
     public function getRecentPages(): array
     {
+        // Read directly: the default is an empty list, so the accessor's recursive merge leaves it intact.
         return $this->ui_preferences['recent_pages'] ?? [];
     }
 
@@ -99,6 +100,7 @@ trait HasUIPreferences
         int $max = 15
     ): void {
         $this->saveUiPreferences('recent_pages', function (array $recent) use ($route, $params, $title, $url, $max): array {
+            // The path when known, so the same page never duplicates over its query string.
             $newIdentity = $url ?? ($route.'|'.json_encode($params));
             $recent = array_values(array_filter($recent, function ($entry) use ($newIdentity) {
                 $entryIdentity = ($entry['url'] ?? null)
@@ -127,6 +129,12 @@ trait HasUIPreferences
         $this->saveUiPreferences('recent_pages', fn () => []);
     }
 
+    /**
+     * Written on every admin navigation, so it skips model events. Re-reads the row under a lock
+     * and changes only `$key`, so a recent-page write cannot erase a pin saved at the same moment.
+     *
+     * @param  callable(array<int, mixed>): array<int, mixed>  $update
+     */
     private function saveUiPreferences(string $key, callable $update): void
     {
         DB::transaction(function () use ($key, $update): void {

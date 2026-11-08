@@ -9,7 +9,10 @@ import { useToasts } from '@/Composables/useToasts';
 
 export type { DirectoryEntry, FileEntry } from './types';
 
-// The file picker fetches locally to keep the page behind its dialog in place.
+/**
+ * Self-fetching listing for the file picker dialog, where a page visit would navigate the page
+ * behind it. `extensions` filters server-side; the admin page keeps its listing in Inertia props.
+ */
 export function useFileListing(initialPath = 'public/files', extensions?: string[]) {
   const toasts = useToasts();
 
@@ -61,6 +64,7 @@ export function useFileListing(initialPath = 'public/files', extensions?: string
       directoriesRaw.value = [];
     }
     finally {
+      // In finally: a throw once pinned FileSelector's overlay spinner for the session.
       if (request === latestRequest) loading.value = false;
     }
   }

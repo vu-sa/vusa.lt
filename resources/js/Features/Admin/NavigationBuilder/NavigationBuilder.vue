@@ -99,13 +99,15 @@ const mode = ref<'edit' | 'preview'>('edit');
 const rootsEl = ref<HTMLElement | null>(null);
 const saveState = ref<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
-// Keep pending reorders when a mutation returns fresh props.
+// The editable buffer while dragging: saves return with `preserveState`, so only a different
+// visit (the language switch, below) resets it from `props.roots`.
 const contents = ref<AdminNavigationRoot[]>(structuredClone(toRaw(props.roots)));
 
 watch(() => props.lang, () => {
   contents.value = structuredClone(toRaw(props.roots));
 });
 
+// Preview remounts the roots list; without rebinding, root drag silently stops working.
 useMotionAwareSortable(rootsEl, contents, {
   watchElement: true,
   handle: '.nav-root-handle',
@@ -135,6 +137,8 @@ const driftMessage = computed(() => {
   });
 });
 
+// Toggles and deletes apply optimistically and touch `contents`; the order watcher consumes this
+// flag so they do not also send an order save.
 let suppressNextOrderSave = false;
 
 function findLinkLocation(id: number): { column: AdminNavigationLink[]; index: number } | null {
@@ -196,15 +200,17 @@ const patchLink = (link: AdminNavigationLink, changes: Partial<AdminNavigationLi
 
 const handleToggleLinkActive = (link: AdminNavigationLink, value: boolean) => {
   const location = findLinkLocation(link.id);
-  if (!location) return;
-  const previous = location.column[location.index].is_active;
+  const target = location?.column[location.index];
+  if (!target) return;
+  const previous = target.is_active;
   suppressNextOrderSave = true;
-  location.column[location.index].is_active = value;
+  target.is_active = value;
   patchLink(link, { is_active: value }, () => {
     const current = findLinkLocation(link.id);
-    if (current) {
+    const reverted = current?.column[current.index];
+    if (reverted) {
       suppressNextOrderSave = true;
-      current.column[current.index].is_active = previous;
+      reverted.is_active = previous;
     }
   });
 };
@@ -229,6 +235,7 @@ const handleDeleteLink = (link: AdminNavigationLink) => {
   if (!location) return;
   suppressNextOrderSave = true;
   const [removed] = location.column.splice(location.index, 1);
+  if (!removed) return;
   router.delete(route('navigation.destroy', { navigation: link.id }), withOptimisticRollback(() => {
     suppressNextOrderSave = true;
     location.column.splice(Math.min(location.index, location.column.length), 0, removed);
@@ -240,6 +247,7 @@ const handleDeleteRoot = (root: AdminNavigationRoot) => {
   if (index === -1) return;
   suppressNextOrderSave = true;
   const [removed] = contents.value.splice(index, 1);
+  if (!removed) return;
   router.delete(route('navigation.destroy', { navigation: root.id }), withOptimisticRollback(() => {
     suppressNextOrderSave = true;
     contents.value.splice(Math.min(index, contents.value.length), 0, removed);
