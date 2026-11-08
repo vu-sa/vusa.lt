@@ -252,7 +252,7 @@ class DashboardController extends AdminController
             ->map(fn (Calendar $event) => [
                 'id' => $event->id,
                 'title' => $event->title,
-                'date' => $event->date?->toISOString(),
+                'date' => $event->date->toISOString(),
                 'end_date' => $event->end_date?->toISOString(),
                 'is_all_day' => (bool) $event->is_all_day,
                 'public_url' => $event->publicUrl(app()->getLocale()),

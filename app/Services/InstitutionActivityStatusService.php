@@ -19,7 +19,10 @@ class InstitutionActivityStatusService
         private readonly AcademicCalendarService $academicCalendar,
     ) {}
 
-    /** @param  Builder<Institution>  $query */
+    /**
+     * @param  Builder<Institution>  $query
+     * @return Builder<Institution>
+     */
     public function withSummary(Builder $query): Builder
     {
         $meeting = fn () => Meeting::query()->select('start_time')
