@@ -26,7 +26,7 @@ import {
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { resolveCatalogEntryByRoute } from '@/Composables/adminPageCatalog';
+import { resolveActive, type AdminWorkspace } from '@/Composables/useAdminNavigation';
 import type { RecentItem } from '@/Composables/useCommandPalette';
 
 interface StoredRecentPage {
@@ -93,21 +93,18 @@ interface StoredPageLike {
   visited_at?: string;
 }
 
-/**
- * Map stored page entries (recent or pinned) to navigable `RecentItem`s,
- * resolving titles/icons from the catalog and skipping entries whose URL
- * can't be resolved. Shared by `recentPages` and `pinnedPages`.
- */
-function mapStoredPages(stored: StoredPageLike[]): RecentItem[] {
+function navigationWorkspaces(): AdminWorkspace[] {
+  return (usePage().props.adminNavigation?.workspaces ?? []) as AdminWorkspace[];
+}
+
+/** Stored recent or pinned pages as navigable items, skipping those whose URL no longer resolves. */
+function mapStoredPages(stored: StoredPageLike[], workspaces: AdminWorkspace[]): RecentItem[] {
   const items: RecentItem[] = [];
 
   for (const entry of stored) {
-    const catalogEntry = resolveCatalogEntryByRoute(entry.route);
-
-    // Prefer the title captured at store time; fall back to the catalog
-    // label (clean i18n string) and finally the route name.
-    const title = entry.title
-      || (catalogEntry ? $t(catalogEntry.labelKey) : prettifyRoute(entry.route));
+    // The title captured at store time, else the navigation section the route belongs to.
+    const section = entry.title ? undefined : resolveActive(workspaces, entry.route).section;
+    const title = entry.title || (section ? $t(section.label) : prettifyRoute(entry.route));
 
     let href: string | undefined = safeHref(entry.url);
     if (!href) {
@@ -174,9 +171,9 @@ export function createUIPreferencesProvider(): UIPreferencesContext {
   // Pinned pages — local mirror, seeded from server, kept in sync optimistically.
   const pinnedRaw = ref<StoredPinnedPage[]>([...server.pinned]);
 
-  const recentPages = computed<RecentItem[]>(() => mapStoredPages(recentRaw.value));
+  const recentPages = computed<RecentItem[]>(() => mapStoredPages(recentRaw.value, navigationWorkspaces()));
 
-  const pinnedPages = computed<RecentItem[]>(() => mapStoredPages(pinnedRaw.value));
+  const pinnedPages = computed<RecentItem[]>(() => mapStoredPages(pinnedRaw.value, navigationWorkspaces()));
 
   const pinnedIdentity = (e: StoredPinnedPage) =>
     e.url ?? `${e.route}|${JSON.stringify(e.params ?? {})}`;

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "total": 2623,
+  "total": 2621,
   "fingerprints": {
     "docs/pdf/build-release.ts | TS2322 | Type 'string | undefined' is not assignable to type 'string'.": 1,
     "docs/pdf/build-release.ts | TS2345 | Argument of type 'string | undefined' is not assignable to parameter of type 'string'.": 1,
@@ -870,7 +870,6 @@
     "resources/js/Composables/__tests__/useUIPreferences.component.test.ts | TS18048 | 'call' is possibly 'undefined'.": 2,
     "resources/js/Composables/__tests__/useUIPreferences.component.test.ts | TS2532 | Object is possibly 'undefined'.": 14,
     "resources/js/Composables/__tests__/useVacationPeriods.test.ts | TS2532 | Object is possibly 'undefined'.": 3,
-    "resources/js/Composables/adminPageCatalog.ts | TS2538 | Type 'undefined' cannot be used as an index type.": 2,
     "resources/js/Composables/collectionSource/database.ts | TS2322 | Type '(T | UnwrapRefSimple<T>)[]' is not assignable to type 'T[] | UnwrapRefSimple<T>[]'.": 1,
     "resources/js/Composables/collectionSource/database.ts | TS2345 | Argument of type 'string | undefined' is not assignable to parameter of type 'string'.": 1,
     "resources/js/Composables/collectionSource/local.ts | TS2345 | Argument of type 'string | undefined' is not assignable to parameter of type 'string'.": 1,

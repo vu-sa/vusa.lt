@@ -157,7 +157,7 @@ import PinButton from './results/PinButton.vue';
 import { useAdminSearch, type MultiSearchResults } from '@/Composables/useAdminSearch';
 import { createEmptyMultiSearchResults } from '@/Shared/Search/utils/createEmptyMultiSearchResults';
 import { useCommandPalette, type RecentItem } from '@/Composables/useCommandPalette';
-import { resolvePageIcon } from '@/Composables/adminPageCatalog';
+import { resolvePageIcon } from '@/Composables/pageIcons';
 import { useUIPreferences } from '@/Composables/useUIPreferences';
 import {
   collectAllTabHits,
