@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "total": 2645,
+  "total": 2625,
   "fingerprints": {
     "docs/pdf/build-release.ts | TS2322 | Type 'string | undefined' is not assignable to type 'string'.": 1,
     "docs/pdf/build-release.ts | TS2345 | Argument of type 'string | undefined' is not assignable to parameter of type 'string'.": 1,
@@ -894,7 +894,6 @@
     "resources/js/Composables/useContentEditor.ts | TS2352 | Conversion of type '{ id: number | undefined; content_version: string | undefined; permalink: string | undefined; title?: string; lang?: string; tenant_id?: number | null; parent_id?: number | null; translated_parent_id?: number | null; ... 12 more ...; content?: { parts: Array<{ id?: number; key?: string; [key: string]: unknown; }>; }...' to type 'Partial<T>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.": 1,
     "resources/js/Composables/useContentEditor.ts | TS2352 | Conversion of type '{ other_lang_id: number | null | undefined; content_version: string | undefined; }' to type 'Partial<T>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.": 1,
     "resources/js/Composables/useContentEditor.ts | TS2532 | Object is possibly 'undefined'.": 2,
-    "resources/js/Composables/useDataTableColumns.ts | TS2344 | Type 'T' does not satisfy the constraint 'RowData'.": 18,
     "resources/js/Composables/useDocumentSearch.ts | TS18048 | 'baseSearch.filters.value' is possibly 'undefined'.": 9,
     "resources/js/Composables/useDocumentSearch.ts | TS2322 | Type '{ contentTypes: string[]; query?: string | undefined; tenants?: string[] | undefined; languages?: string[] | undefined; dateRange?: { from?: Date; to?: Date; preset?: \"recent\" | \"1year\" | \"year-range\" | \"custom\"; } | undefined; sort?: DocumentSearchSort; effectStatuses?: DocumentEffectStatusValue[]; }' is not assignable to type 'DocumentSearchFilters'.": 1,
     "resources/js/Composables/useDocumentSearch.ts | TS2322 | Type '{ dateRange: { from: Date | undefined; to: Date | undefined; preset: DocumentSearchFilters[\"dateRange\"][\"preset\"]; }; query?: string | undefined; tenants?: string[] | undefined; contentTypes?: string[] | undefined; languages?: string[] | undefined; sort?: DocumentSearchSort; effectStatuses?: DocumentEffectStatusValu...' is not assignable to type 'DocumentSearchFilters'.": 1,
@@ -1155,7 +1154,6 @@
     "resources/js/Pages/Admin/Forms/ShowForm.vue | TS18048 | 'props.form.form_fields' is possibly 'undefined'.": 6,
     "resources/js/Pages/Admin/Forms/ShowForm.vue | TS18048 | 'registration.field_responses' is possibly 'undefined'.": 2,
     "resources/js/Pages/Admin/Forms/ShowForm.vue | TS2322 | Type 'ColumnDef<TableFeatures, Record<string, unknown>, unknown>[]' is not assignable to type 'ColumnDef<any, Record<string, unknown>, any>[]'.": 1,
-    "resources/js/Pages/Admin/Forms/ShowForm.vue | TS2322 | Type 'ColumnDef<any, Record<string, unknown>, any>' is not assignable to type 'ColumnDef<TableFeatures, Record<string, unknown>, unknown>'.": 2,
     "resources/js/Pages/Admin/Forms/ShowForm.vue | TS2322 | Type 'FieldOption[] | null' is not assignable to type 'FilterOption[]'.": 1,
     "resources/js/Pages/Admin/Forms/ShowForm.vue | TS2322 | Type '{ value: string | number; label: string | undefined; }[]' is not assignable to type 'FieldOption[]'.": 1,
     "resources/js/Pages/Admin/Forms/ShowForm.vue | TS2322 | Type '{ variant: \"ghost\"; size: \"sm\"; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & { readonly variant?: \"link\" | \"default\" | \"brand\" | \"outline\" | \"secondary\" | \"ghost\" | \"destructive\" | \"success\" | \"warning\" | \"brand-outline-on-dark\" | null | undefined; ... 4 more ...; readonly as?: AsTag | ... 1 more ... | undefined; } & VNodeProps & AllowedComponentProps & ComponentCustomP...'.": 1,

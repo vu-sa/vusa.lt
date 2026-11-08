@@ -151,6 +151,7 @@ import SimpleDataTable from '@/Components/Tables/SimpleDataTable.vue';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
+import { DateCell, TruncatedText } from '@/Components/ui/data-table/cells';
 import {
   Dialog,
   DialogContent,
@@ -159,11 +160,10 @@ import {
   DialogTitle,
 } from '@/Components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
-import { createIdColumn, createTimestampColumn } from '@/Composables/useDataTableColumns';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
 import { ModelEnum } from '@/Types/enums';
-import { formatDateTime } from '@/Utils/dateTime';
+import { formatDateTime, parseDate } from '@/Utils/dateTime';
 
 interface FieldOption {
   value: string | number;
@@ -443,11 +443,23 @@ const registrationColumns = computed<ColumnDef<TableFeatures, Record<string, unk
       size: 50,
       enableSorting: false,
     },
-    createTimestampColumn('created_at', {
-      title: $t('Sukūrimo laikas'),
-      width: 160,
-    }),
-    createIdColumn({ width: 60 }),
+    {
+      accessorKey: 'created_at',
+      header: () => $t('Sukūrimo laikas'),
+      cell: ({ row }: CellContext<TableFeatures, Record<string, unknown>, unknown>) => {
+        const date = parseDate(row.original.created_at as string);
+        return date
+          ? <DateCell date={date} mode="absolute" format={{ year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }} />
+          : <TruncatedText text={null} />;
+      },
+      size: 160,
+    },
+    {
+      accessorKey: 'id',
+      header: () => 'ID',
+      cell: ({ row }: CellContext<TableFeatures, Record<string, unknown>, unknown>) => <TruncatedText text={String(row.original.id)} />,
+      size: 60,
+    },
     ...props.form.form_fields.map((field) => {
       const columnWidth = field.type === 'enum' ? 180 : 130;
 
