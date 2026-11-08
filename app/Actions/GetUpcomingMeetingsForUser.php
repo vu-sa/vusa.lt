@@ -17,8 +17,8 @@ class GetUpcomingMeetingsForUser
      */
     public static function execute(User $user, int $limit = 20): array
     {
-        $dutyInstitutionIds = $user->authorization_duties()->pluck('duties.institution_id')->filter()->unique()->map(fn ($id): string => (string) $id);
-        $followedInstitutionIds = $user->followedInstitutions()->pluck('institutions.id')->map(fn ($id): string => (string) $id);
+        $dutyInstitutionIds = $user->authorization_duties->pluck('institution_id')->filter()->unique()->map(fn ($id): string => (string) $id);
+        $followedInstitutionIds = GetFollowedInstitutions::institutionIds($user);
         $institutionIds = $dutyInstitutionIds->merge($followedInstitutionIds)->unique()->values();
 
         if ($institutionIds->isEmpty()) {
@@ -30,7 +30,7 @@ class GetUpcomingMeetingsForUser
             ->where('start_time', '>=', now()->startOfDay())
             ->where('start_time', '<', now()->addMonths(2));
 
-        $total = (clone $query)->count();
+        $countQuery = clone $query;
 
         $items = $query->orderBy('start_time')
             ->with(['institutions:id,name,tenant_id,is_active'])
@@ -56,6 +56,6 @@ class GetUpcomingMeetingsForUser
             ->values()
             ->all();
 
-        return ['items' => $items, 'total' => $total];
+        return ['items' => $items, 'total' => count($items) < $limit ? count($items) : $countQuery->count()];
     }
 }

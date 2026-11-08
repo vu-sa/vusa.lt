@@ -89,19 +89,13 @@ class AtstovavimasDashboardController extends AdminController
         });
 
         return Inertia::render('Admin/Dashboard/ShowAtstovavimas', [
-            // User with institutions - always included, even in partial reloads (ensures check-in data stays fresh)
-            'user' => Inertia::always(fn () => [
-                ...$user()->toArray(),
-                'authorization_duties' => $user()->authorization_duties->map(function ($duty) use ($userInstitutions) {
-                    $institution = $userInstitutions()->firstWhere('id', $duty->institution_id);
-
-                    return [
-                        ...$duty->toArray(),
-                        'institution' => $institution,
-                    ];
-                }),
-            ]),
-            // User's own institutions - always included, even in partial reloads (ensures check-in data stays fresh)
+            'user' => fn () => [
+                ...$user()->withoutRelations()->toArray(),
+                'authorization_duties' => $user()->authorization_duties->map(fn ($duty) => [
+                    'id' => $duty->id,
+                    'institution_id' => $duty->institution_id,
+                ])->values(),
+            ],
             'userInstitutions' => Inertia::always(fn () => $userInstitutions()->values()),
             // Quick flag to show/hide related institutions filter (lazy data may not be loaded yet)
             'mayHaveRelatedInstitutions' => fn () => $userInstitutions()->isNotEmpty(),

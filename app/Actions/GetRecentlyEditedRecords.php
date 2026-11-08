@@ -3,8 +3,12 @@
 namespace App\Actions;
 
 use App\Models\Activity;
+use App\Models\Duty;
+use App\Models\Institution;
+use App\Models\Meeting;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Collection;
 
 /**
@@ -42,17 +46,23 @@ class GetRecentlyEditedRecords
      */
     public static function execute(User $user, int $limit = 3, ?array $types = null): Collection
     {
-        // A handful of activities usually share a root (one meeting, many vote edits), so
-        // over-read and dedupe instead of paging until $limit distinct roots turn up.
         $activities = Activity::query()
             ->causedBy($user)
             ->whereIn('root_subject_type', $types === null ? array_keys(self::ROUTES) : array_intersect($types, array_keys(self::ROUTES)))
             ->whereNotNull('root_subject_id')
-            ->latest()
+            ->select('root_subject_type', 'root_subject_id')
+            ->selectRaw('MAX(created_at) as created_at')
+            ->groupBy('root_subject_type', 'root_subject_id')
+            ->orderByDesc('created_at')
+            ->orderBy('root_subject_type')
+            ->orderBy('root_subject_id')
             ->limit($limit * 15)
-            ->with('rootSubject')
-            ->get()
-            ->unique(fn (Activity $activity): string => $activity->root_subject_type.':'.$activity->root_subject_id);
+            ->with(['rootSubject' => fn (MorphTo $morphTo) => $morphTo->morphWith([
+                Meeting::class => ['institutions', 'tenants'],
+                Duty::class => ['institution.tenant'],
+                Institution::class => ['tenant'],
+            ])])
+            ->get();
 
         /** @var Collection<int, array{type: string, id: string, title: string, href: string, changed_at: string}> $records */
         $records = new Collection;

@@ -59,7 +59,7 @@ describe('dashboard access', function (): void {
                     ->has('upcomingCalendarEvents')
                     ->has('latestNews')
                     ->has('recentlyEdited')
-                    ->has('coordinator')
+                    ->missing('coordinator')
                     ->has('followedInstitutions')
                 )
             );
@@ -176,11 +176,14 @@ describe('dashboard performance', function (): void {
 });
 
 describe('dashboard tasks with due dates', function (): void {
-    test('shows later due dates before older and overdue tasks', function (): void {
+    test('keeps an overdue task first when more than three tasks are due', function (): void {
+        $this->freezeTime();
+
         foreach ([
             'Overdue' => now()->subDays(2),
             'Soon' => now()->addDay(),
             'Later' => now()->addDays(12),
+            'Last' => now()->addDays(13),
         ] as $name => $dueDate) {
             $task = Task::factory()->create([
                 'name' => $name,
@@ -193,9 +196,11 @@ describe('dashboard tasks with due dates', function (): void {
         asUserWithInertia($this->admin)
             ->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page
-                ->where('upcomingTasks.0.name', 'Later')
+                ->has('upcomingTasks', 3)
+                ->where('taskStats.total', 4)
+                ->where('upcomingTasks.0.name', 'Overdue')
                 ->where('upcomingTasks.1.name', 'Soon')
-                ->where('upcomingTasks.2.name', 'Overdue')
+                ->where('upcomingTasks.2.name', 'Later')
             );
     });
 
@@ -634,11 +639,15 @@ describe('Pradžia secondary panels', function (): void {
             );
     });
 
-    test('recently edited collapses many edits of one record into one row', function (): void {
+    test('recently edited keeps distinct records when one record has many edits', function (): void {
         $institution = $this->user->duties()->first()->institution;
         $meeting = Meeting::factory()->hasAttached($institution)->create(['title' => 'Vienas posėdis']);
 
-        foreach (range(1, 4) as $ignored) {
+        $older = Meeting::factory()->hasAttached($institution)->create(['title' => 'Senesnis posėdis']);
+        activity()->performedOn($older)->causedBy($this->user)->log('updated');
+        $this->travel(1)->minute();
+
+        foreach (range(1, 46) as $ignored) {
             activity()->performedOn($meeting)->causedBy($this->user)->log('updated');
         }
 
@@ -646,12 +655,14 @@ describe('Pradžia secondary panels', function (): void {
             ->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page
                 ->loadDeferredProps('secondary', fn (Assert $page) => $page
-                    ->has('recentlyEdited', 1)
+                    ->has('recentlyEdited', 2)
+                    ->where('recentlyEdited.0.title', 'Vienas posėdis')
+                    ->where('recentlyEdited.1.title', 'Senesnis posėdis')
                 )
             );
     });
 
-    test('the coordinator is whoever coordinates the user\'s padalinys, never the user', function (): void {
+    test('the retired coordinator prop is absent for representatives and coordinators', function (): void {
         $manager = makeUser($this->tenant);
         $duty = $manager->duties()->first();
         $duty->pivot->end_date = null;
@@ -665,23 +676,22 @@ describe('Pradžia secondary panels', function (): void {
             ->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page
                 ->loadDeferredProps('secondary', fn (Assert $page) => $page
-                    ->where('coordinator.name', $manager->name)
+                    ->missing('coordinator')
                 )
             );
 
-        // A manager is not their own coordinator.
         asUserWithInertia($manager)
             ->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page
-                ->loadDeferredProps('secondary', fn (Assert $page) => $page->where('coordinator', null))
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page->missing('coordinator'))
             );
     });
 
-    test('the coordinator is absent when nobody coordinates the padalinys', function (): void {
+    test('the retired coordinator prop is absent when nobody coordinates the padalinys', function (): void {
         asUserWithInertia($this->user)
             ->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page
-                ->loadDeferredProps('secondary', fn (Assert $page) => $page->where('coordinator', null))
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page->missing('coordinator'))
             );
     });
 
@@ -728,6 +738,10 @@ describe('Sparčioji prieiga registration forms', function (): void {
 });
 
 describe('institution graph', function (): void {
+    test('a user without institution read permission receives 403', function (): void {
+        asUser($this->user)->get(route('institutionGraph'))->assertForbidden();
+    });
+
     test('authenticated user can access institution graph', function (): void {
         asUserWithInertia($this->admin)
             ->get(route('institutionGraph'))

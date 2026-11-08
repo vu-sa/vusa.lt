@@ -17,14 +17,15 @@ export function useAtstovavimasData(
   userGetter: MaybeRefOrGetter<AtstovavimasUser>,
   userInstitutionsGetter: MaybeRefOrGetter<AtstovavimasInstitution[]> = [],
 ) {
-  // User's direct institutions, including duties that begin later, then the ones they
-  // look after as secretary (`is_secretary`), which no duty reaches.
+  // Secretary institutions may have no duty to join through.
   const institutions = computed<AtstovavimasInstitution[]>(() => {
     const user = toValue(userGetter);
-    const secretaried = (toValue(userInstitutionsGetter) ?? []).filter(institution => institution.is_secretary ?? institution.is_administered);
+    const userInstitutions = toValue(userInstitutionsGetter) ?? [];
+    const institutionsById = new Map(userInstitutions.map(institution => [String(institution.id), institution]));
+    const secretaried = userInstitutions.filter(institution => institution.is_secretary ?? institution.is_administered);
 
     return [
-      ...(user?.authorization_duties ?? []).map(duty => duty.institution ?? null),
+      ...(user?.authorization_duties ?? []).map(duty => institutionsById.get(String(duty.institution_id)) ?? null),
       ...secretaried,
     ]
       .filter((institution): institution is AtstovavimasInstitution => institution !== null && institution !== undefined)
@@ -34,7 +35,6 @@ export function useAtstovavimasData(
           ? inst.meetings.some(meeting => new Date(meeting.start_time) > new Date())
           : false,
       }))
-      // unique by id
       .filter((institution: AtstovavimasInstitution, index: number, self: AtstovavimasInstitution[]) =>
         index === self.findIndex((t: AtstovavimasInstitution) => t && institution && t.id === institution.id),
       );

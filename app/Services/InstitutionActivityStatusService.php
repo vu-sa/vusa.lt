@@ -9,6 +9,7 @@ use App\Models\Meeting;
 use App\ValueObjects\InstitutionActivityStatusData;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Builder;
 
 class InstitutionActivityStatusService
 {
@@ -18,11 +19,40 @@ class InstitutionActivityStatusService
         private readonly AcademicCalendarService $academicCalendar,
     ) {}
 
+    /** @param  Builder<Institution>  $query */
+    public function withSummary(Builder $query): Builder
+    {
+        $meeting = fn () => Meeting::query()->select('start_time')
+            ->join('institution_meeting', 'meetings.id', '=', 'institution_meeting.meeting_id')
+            ->whereColumn('institution_meeting.institution_id', 'institutions.id')
+            ->limit(1);
+
+        $latestCompletedEnd = InstitutionCheckIn::query()
+            ->from('institution_check_ins as completed_check_ins')
+            ->select('completed_check_ins.end_date')
+            ->whereColumn('completed_check_ins.institution_id', 'institution_check_ins.institution_id')
+            ->whereDate('completed_check_ins.end_date', '<', today())
+            ->orderByDesc('completed_check_ins.end_date')->limit(1);
+
+        return $query->addSelect([
+            'activity_next_meeting_at' => $meeting()->where('start_time', '>', now())->orderBy('start_time'),
+            'activity_last_meeting_at' => $meeting()->where('start_time', '<=', now())->orderByDesc('start_time'),
+        ])->with([
+            'types',
+            'checkIns' => fn ($checkIns) => $checkIns
+                ->select('id', 'institution_id', 'start_date', 'end_date')
+                ->where(fn ($relevant) => $relevant
+                    ->where(fn ($active) => $active->whereDate('start_date', '<=', today())->whereDate('end_date', '>=', today()))
+                    ->orWhere('end_date', $latestCompletedEnd)),
+        ]);
+    }
+
     public function resolve(
         Institution $institution,
         ?CarbonInterface $at = null,
     ): InstitutionActivityStatusData {
-        $institution->loadMissing(['meetings', 'checkIns', 'types']);
+        $hasSummary = $at === null && array_key_exists('activity_next_meeting_at', $institution->getAttributes());
+        $institution->loadMissing($hasSummary ? ['checkIns', 'types'] : ['meetings', 'checkIns', 'types']);
 
         $moment = $at
             ? CarbonImmutable::instance($at)
@@ -30,10 +60,12 @@ class InstitutionActivityStatusService
         $today = $moment->startOfDay();
         $periodicityDays = $institution->meeting_periodicity_days;
 
-        $nextMeeting = $institution->meetings
-            ->filter(fn (Meeting $meeting): bool => $meeting->start_time->gt($moment))
-            ->sortBy(fn (Meeting $meeting): int => $meeting->start_time->getTimestamp())
-            ->first();
+        $nextMeetingDate = $hasSummary
+            ? ($institution->getAttribute('activity_next_meeting_at') === null ? null : CarbonImmutable::parse($institution->getAttribute('activity_next_meeting_at')))
+            : $institution->meetings
+                ->filter(fn (Meeting $meeting): bool => $meeting->start_time->gt($moment))
+                ->sortBy(fn (Meeting $meeting): int => $meeting->start_time->getTimestamp())
+                ->first()?->start_time->toImmutable();
 
         $activeCheckIn = $institution->checkIns
             ->first(fn (InstitutionCheckIn $checkIn): bool => $checkIn->start_date->lte($today)
@@ -44,12 +76,12 @@ class InstitutionActivityStatusService
             ->sortByDesc(fn (InstitutionCheckIn $checkIn): int => $checkIn->end_date->getTimestamp())
             ->first();
 
-        $lastMeeting = $institution->meetings
-            ->filter(fn (Meeting $meeting): bool => $meeting->start_time->lte($moment))
-            ->sortByDesc(fn (Meeting $meeting): int => $meeting->start_time->getTimestamp())
-            ->first();
-
-        $lastMeetingDate = $lastMeeting?->start_time->toImmutable();
+        $lastMeetingDate = $hasSummary
+            ? ($institution->getAttribute('activity_last_meeting_at') === null ? null : CarbonImmutable::parse($institution->getAttribute('activity_last_meeting_at')))
+            : $institution->meetings
+                ->filter(fn (Meeting $meeting): bool => $meeting->start_time->lte($moment))
+                ->sortByDesc(fn (Meeting $meeting): int => $meeting->start_time->getTimestamp())
+                ->first()?->start_time->toImmutable();
         $completedCheckInEnd = $latestCompletedCheckIn?->end_date->toImmutable()->startOfDay();
         $meetingDays = $lastMeetingDate
             ? $this->academicCalendar->effectiveDaysBetween($lastMeetingDate, $moment)
@@ -65,7 +97,7 @@ class InstitutionActivityStatusService
             : null;
 
         $status = $this->classify(
-            hasUpcomingMeeting: $nextMeeting !== null,
+            hasUpcomingMeeting: $nextMeetingDate !== null,
             hasActiveCheckIn: $activeCheckIn !== null,
             effectiveMeetingDays: $meetingDays,
             effectiveCheckInDays: $checkInDays,
@@ -81,7 +113,7 @@ class InstitutionActivityStatusService
             lastActivityAt: $lastActivityAt,
             lastMeetingAt: $lastMeetingDate,
             lastCompletedCheckInAt: $completedCheckInEnd,
-            nextMeetingAt: $nextMeeting?->start_time->toImmutable(),
+            nextMeetingAt: $nextMeetingDate,
             activeCheckInUntil: $activeCheckIn?->end_date->toImmutable(),
         );
     }

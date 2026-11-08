@@ -46,9 +46,12 @@ class GetUserActivityRequests
     {
         $query = InstitutionActivityRequest::query()->where('recipient_id', $recipient->id)->open()->whereHas('institution');
 
+        $countQuery = clone $query;
+        $requests = $query->with('institution')->orderBy('expires_at')->orderBy('id')->limit(3)->get();
+
         return [
-            'total' => (clone $query)->count(),
-            'data' => $query->with('institution')->orderBy('expires_at')->orderBy('id')->limit(3)->get()
+            'total' => $requests->count() < 3 ? $requests->count() : $countQuery->count(),
+            'data' => $requests
                 ->map(fn (InstitutionActivityRequest $request) => [
                     'id' => $request->id,
                     'institution_name' => $request->institution->name,
