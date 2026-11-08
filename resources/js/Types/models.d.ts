@@ -1020,7 +1020,7 @@ declare global {
       recipient_id: string
       requested_by_id?: string | null
       task_id?: string | null
-      period_start: unknown
+      period_start: string
       note?: string | null
       answer?: InstitutionActivityAnswer | null
       answered_at?: string | null
@@ -1031,7 +1031,7 @@ declare global {
       created_at?: string | null
       updated_at?: string | null
       campaign_type: InstitutionActivityCampaign
-      period_end?: unknown | null
+      period_end?: string | null
       locale?: string | null
       resolution_source?: string | null
       resolved_by_request_id?: string | null
@@ -1066,8 +1066,8 @@ declare global {
       tenant_id?: number | null
       institution_id: string
       user_id: string
-      start_date: unknown
-      end_date: unknown
+      start_date: string
+      end_date: string
       note?: string | null
       created_at?: string | null
       updated_at?: string | null
@@ -1382,7 +1382,7 @@ declare global {
       email?: string | null
       display_name?: string | null
       note?: string | null
-      expires_on?: unknown | null
+      expires_on?: string | null
       created_by?: string | null
       created_at?: string | null
       updated_at?: string | null
@@ -1647,8 +1647,8 @@ declare global {
       tenant_id: number
       created_by: string
       responsible_user_id?: string | null
-      occurred_at: unknown
-      resolved_at?: unknown | null
+      occurred_at: string
+      resolved_at?: string | null
       status: string
       created_at: string
       updated_at: string
@@ -2303,7 +2303,7 @@ declare global {
       problem_id?: string | null
       title: Array<unknown>
       description?: Array<unknown> | null
-      happened_on: unknown
+      happened_on: string
       agenda_item_id?: string | null
       document_id?: number | null
       url?: string | null

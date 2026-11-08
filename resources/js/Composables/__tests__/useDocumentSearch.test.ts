@@ -36,8 +36,9 @@ vi.mock('../useSearchClient', () => ({
 }));
 
 vi.mock('../../Services/DocumentSearchService', () => ({
-  // The composable constructs the service with `new`.
-  DocumentSearchService: vi.fn().mockImplementation(() => {
+  // The composable constructs the service with `new`, so this must stay a `function`, not an arrow.
+  // eslint-disable-next-line prefer-arrow-callback
+  DocumentSearchService: vi.fn().mockImplementation(function () {
     return {
       performSearch: vi.fn(() => Promise.resolve({
         hits: [],
