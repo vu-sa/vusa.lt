@@ -156,8 +156,8 @@ interface TypesenseSourceOptions {
  * the request succeeds the patch is the server's truth, and a lagging index must not undo it.
  */
 function useOptimisticOverlay<T>() {
-  const patches = shallowReactive(new Map<string, Partial<T>>());
-  const hidden = shallowReactive(new Set<string>());
+  const patches = shallowReactive(new Map<symbol, { ids: Set<string>; patch: Partial<T> }>());
+  const hidden = shallowReactive(new Map<symbol, Set<string>>());
   const keyOf = (item: T) => String((item as { id?: unknown }).id);
 
   function apply(items: readonly T[]): T[] {
@@ -166,26 +166,26 @@ function useOptimisticOverlay<T>() {
     }
 
     return items
-      .filter(item => !hidden.has(keyOf(item)))
+      .filter(item => ![...hidden.values()].some(ids => ids.has(keyOf(item))))
       .map((item) => {
-        const patch = patches.get(keyOf(item));
-
-        return patch ? { ...item, ...patch } : item;
+        let result = item;
+        for (const { ids, patch } of patches.values()) {
+          if (ids.has(keyOf(item))) result = { ...result, ...patch };
+        }
+        return result;
       });
   }
 
   function patchItems(ids: string[], patch: Partial<T>): () => void {
-    const previous = ids.map(id => [id, patches.get(id)] as const);
-    ids.forEach(id => patches.set(id, { ...patches.get(id), ...patch }));
-
-    return () => previous.forEach(([id, before]) => (before ? patches.set(id, before) : patches.delete(id)));
+    const token = Symbol();
+    patches.set(token, { ids: new Set(ids), patch: { ...patch } });
+    return () => { patches.delete(token); };
   }
 
   function hideItems(ids: string[]): () => void {
-    const added = ids.filter(id => !hidden.has(id));
-    added.forEach(id => hidden.add(id));
-
-    return () => added.forEach(id => hidden.delete(id));
+    const token = Symbol();
+    hidden.set(token, new Set(ids));
+    return () => { hidden.delete(token); };
   }
 
   return { apply, patchItems, hideItems };
@@ -623,7 +623,7 @@ export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSource
       void fetchPage(1, false);
     },
     loadMore: () => {
-      if (hasMore.value && !isLoadingMore.value) {
+      if (hasMore.value && !isLoading.value && !isLoadingMore.value) {
         void fetchPage(currentPage.value + 1, true);
       }
     },

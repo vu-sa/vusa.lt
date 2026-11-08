@@ -202,7 +202,7 @@ describe('NavigationBuilder.vue', () => {
     const confirmButtons = wrapper.findAll('.confirm-delete');
     await confirmButtons[1].trigger('click');
 
-    expect(router.delete).toHaveBeenCalledWith(expect.stringContaining('navigation.destroy'), { preserveScroll: true });
+    expect(router.delete).toHaveBeenCalledWith(expect.stringContaining('navigation.destroy'), expect.objectContaining({ preserveScroll: true }));
   });
 
   it('removes the link from the UI immediately when deleted', async () => {
@@ -214,6 +214,53 @@ describe('NavigationBuilder.vue', () => {
     await confirmButtons[1].trigger('click');
 
     expect(wrapper.text()).not.toContain('Dokumentai');
+  });
+
+  it('restores a removed link after a network failure', async () => {
+    wrapper = createWrapper();
+    await wrapper.findAll('.confirm-delete')[1].trigger('click');
+
+    vi.mocked(router.delete).mock.calls.at(-1)?.[1]?.onNetworkError?.(new Error('Offline'));
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.text()).toContain('Dokumentai');
+  });
+
+  it('restores a removed root after validation fails', async () => {
+    wrapper = createWrapper();
+    await wrapper.findAll('.confirm-delete')[0].trigger('click');
+
+    vi.mocked(router.delete).mock.calls.at(-1)?.[1]?.onError?.({ name: 'Invalid' });
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.text()).toContain('Studentams');
+    expect(wrapper.text()).toContain('Dokumentai');
+  });
+
+  it('rolls back only the failed link while preserving a pending reorder', async () => {
+    vi.useFakeTimers();
+    try {
+      const root = makeRoot();
+      root.links[0].push({ ...root.links[0][0], id: 11, name: 'Kontaktai' });
+      wrapper = createWrapper({ roots: [root] });
+      const item = wrapper.findComponent({ name: 'NavigationRootItem' });
+      (item.props('root') as AdminNavigationRoot).links[0].reverse();
+      await wrapper.vm.$nextTick();
+      await wrapper.findAll('button[role="switch"]')[1].trigger('click');
+
+      vi.mocked(router.patch).mock.calls.at(-1)?.[2]?.onError?.({ name: 'Invalid' });
+      await wrapper.vm.$nextTick();
+      await vi.advanceTimersByTimeAsync(850);
+
+      expect((item.props('root') as AdminNavigationRoot).links[0].map(link => link.id)).toEqual([11, 10]);
+      expect(wrapper.findAll('button[role="switch"]')[1].attributes('aria-checked')).toBe('true');
+      expect(router.post).toHaveBeenCalledWith(expect.stringContaining('navigation.updateOrder'), {
+        navigation: [{ id: 1, links: [[{ id: 11 }, { id: 10 }], [], []] }],
+      }, expect.objectContaining({ preserveScroll: true }));
+    }
+    finally {
+      vi.useRealTimers();
+    }
   });
 
   it('links "add link" and "add root" to the create route with the right parent', () => {

@@ -2,6 +2,7 @@ import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, ref } from 'vue';
 
+import { withOptimisticRollback } from '@/Composables/useOptimisticVisit';
 import type { CollectionStatusOption } from '@/Components/Collection/CollectionStatusMenu.vue';
 import { contentStatuses } from '@/Constants/statusIcons';
 import type { CollectionSource } from '@/Composables/useCollectionSource';
@@ -40,12 +41,11 @@ export function useCollectionPublishing<T extends { id: string | number }>(optio
   function setPublished(ids: string[], published: boolean, onDone?: () => void): void {
     const undo = options.source.patchItems(ids, options.patchFor(published));
 
-    router.patch(route(`${options.routePrefix}.bulkStatus`), { ids: ids.map(Number), published }, {
+    router.patch(route(`${options.routePrefix}.bulkStatus`), { ids: ids.map(Number), published }, withOptimisticRollback(undo, {
       preserveScroll: true,
       preserveState: true,
       onSuccess: () => onDone?.(),
-      onError: undo,
-    });
+    }));
   }
 
   const bulkChoices = (selected: readonly T[]) => publishChoices(selected, options.isPublished);
@@ -68,13 +68,12 @@ export function useCollectionPublishing<T extends { id: string | number }>(optio
     }
 
     const undo = options.source.hideItems(pending.ids);
-    router.delete(route(`${options.routePrefix}.bulkDestroy`), {
+    router.delete(route(`${options.routePrefix}.bulkDestroy`), withOptimisticRollback(undo, {
       data: { ids: pending.ids.map(Number) },
       preserveScroll: true,
       preserveState: true,
       onSuccess: pending.clear,
-      onError: undo,
-    });
+    }));
   }
 
   return {

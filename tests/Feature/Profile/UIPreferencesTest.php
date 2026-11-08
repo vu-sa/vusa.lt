@@ -24,6 +24,36 @@ describe('HasUIPreferences trait', function (): void {
             ->and($this->user->getRecentPages())->toBe([]);
     });
 
+    test('pin and recent writes preserve each other on stale instances', function (bool $pinFirst): void {
+        $stale = User::query()->findOrFail($this->user->id);
+        $pin = fn () => $this->user->setPinnedPages([['route' => 'users.index']]);
+        $visit = fn () => $stale->pushRecentPage('news.index');
+
+        if ($pinFirst) {
+            $pin();
+            $visit();
+        } else {
+            $visit();
+            $pin();
+        }
+
+        $this->user->refresh();
+        expect(array_column($this->user->getPinnedPages(), 'route'))->toBe(['users.index'])
+            ->and(array_column($this->user->getRecentPages(), 'route'))->toBe(['news.index']);
+    })->with([true, false]);
+
+    test('clearing recent pages on a stale instance preserves pins', function (): void {
+        $this->user->pushRecentPage('news.index');
+        $stale = User::query()->findOrFail($this->user->id);
+        $this->user->setPinnedPages([['route' => 'users.index']]);
+
+        $stale->clearRecentPages();
+
+        $this->user->refresh();
+        expect($this->user->getRecentPages())->toBe([])
+            ->and(array_column($this->user->getPinnedPages(), 'route'))->toBe(['users.index']);
+    });
+
     test('pushRecentPage dedupes and caps the list', function (): void {
         for ($i = 0; $i < 18; $i++) {
             $this->user->pushRecentPage("route.{$i}", []);

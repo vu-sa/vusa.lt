@@ -98,6 +98,7 @@ import { Merge, Pencil, Plus, RotateCcw, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
+import { withOptimisticRollback } from '@/Composables/useOptimisticVisit';
 import type { CollectionColumn } from '@/Components/Collection/types';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import type { CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
@@ -206,9 +207,11 @@ function merged(): void {
 }
 
 function remove(tag: Tag): void {
-  const before = [...source.items.value];
-  source.replaceItems(source.items.value.filter(item => item.id !== tag.id));
-  router.delete(route('tags.destroy', tag.id), {
+  const undo = source.hideItems([String(tag.id)]);
+  router.delete(route('tags.destroy', tag.id), withOptimisticRollback(() => {
+    undo();
+    toast.error($t('Nepavyko ištrinti žymos.'));
+  }, {
     preserveScroll: true,
     onSuccess: () => {
       source.refresh();
@@ -219,24 +222,19 @@ function remove(tag: Tag): void {
         },
       });
     },
-    onError: () => {
-      source.replaceItems(before);
-      toast.error($t('Nepavyko ištrinti žymos.'));
-    },
-  });
+  }));
 }
 
 function restoreTag(tag: Tag): void {
-  router.patch(route('tags.restore', tag.id), {}, {
+  router.patch(route('tags.restore', tag.id), {}, withOptimisticRollback(() => {
+    toast.error($t('Nepavyko atkurti žymos.'));
+  }, {
     preserveScroll: true,
     onSuccess: () => {
       source.refresh();
       toast.success($t('Žyma atkurta.'));
     },
-    onError: () => {
-      toast.error($t('Nepavyko atkurti žymos.'));
-    },
-  });
+  }));
 }
 
 function forceDeleteTag(): void {
@@ -244,15 +242,14 @@ function forceDeleteTag(): void {
   const { id } = targetTagToForceDelete.value;
   targetTagToForceDelete.value = null;
 
-  router.delete(route('tags.forceDelete', id), {
+  router.delete(route('tags.forceDelete', id), withOptimisticRollback(() => {
+    toast.error($t('Nepavyko ištrinti žymos.'));
+  }, {
     preserveScroll: true,
     onSuccess: () => {
       source.refresh();
       toast.success($t('Žyma ištrinta visam laikui.'));
     },
-    onError: () => {
-      toast.error($t('Nepavyko ištrinti žymos.'));
-    },
-  });
+  }));
 }
 </script>

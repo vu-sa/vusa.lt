@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Žymos
-last_reviewed: 2026-11-01
+last_reviewed: 2026-11-08
 tests:
   - resources/js/Pages/Admin/Content/__tests__/IndexTag.component.test.ts
   - tests/Browser/AdminCollectionPagesTest.php
@@ -18,6 +18,8 @@ tests:
 Skiltis pasiekiama adresu `/mano/tags`.
 
 ## Kaip tai veikia
+
+Jei žymos pašalinti nepavyksta, ji grąžinama į sąrašą. Apie atkūrimą ar ištrynimą visam laikui pranešama tik serveriui patvirtinus veiksmą.
 
 ### Skirtingų įrašų žymėjimas
 

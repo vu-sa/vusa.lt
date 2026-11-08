@@ -2,13 +2,9 @@
 
 namespace App\Models\Traits;
 
+use Illuminate\Support\Facades\DB;
+
 /**
- * Trait for managing user UI preferences (pinned and recently visited pages).
- *
- * Add to User model:
- * - Use this trait
- * - Add 'ui_preferences' to $casts as 'array'
- *
  * @property array $ui_preferences
  */
 trait HasUIPreferences
@@ -18,12 +14,7 @@ trait HasUIPreferences
      */
     public static int $maxPinnedPages = 10;
 
-    /**
-     * Default UI preferences structure.
-     *
-     * Note: `recent_pages` is intentionally kept empty here. `array_replace_recursive`
-     * merges lists element-wise, so a non-empty default would corrupt the stored list.
-     */
+    // Non-empty list defaults would merge into stored entries by index.
     protected function getDefaultUIPreferences(): array
     {
         return [
@@ -53,9 +44,6 @@ trait HasUIPreferences
     }
 
     /**
-     * Replace the pinned pages list. Sanitizes each entry (requires a string
-     * route), dedupes by path/route identity, and caps at $maxPinnedPages.
-     *
      * @param  array<int, mixed>  $pages
      */
     public function setPinnedPages(array $pages): void
@@ -87,9 +75,7 @@ trait HasUIPreferences
             ];
         }
 
-        $preferences = $this->ui_preferences;
-        $preferences['pinned_pages'] = array_slice($sanitized, 0, self::$maxPinnedPages);
-        $this->saveUiPreferences($preferences);
+        $this->saveUiPreferences('pinned_pages', fn () => array_slice($sanitized, 0, self::$maxPinnedPages));
     }
 
     /**
@@ -99,14 +85,10 @@ trait HasUIPreferences
      */
     public function getRecentPages(): array
     {
-        // Read directly: the default is an empty list, so the recursive merge in
-        // the accessor leaves the stored list intact.
         return $this->ui_preferences['recent_pages'] ?? [];
     }
 
     /**
-     * Push a page onto the recently visited list (dedupes by route + params).
-     *
      * @param  array<string, mixed>  $params
      */
     public function pushRecentPage(
@@ -116,29 +98,25 @@ trait HasUIPreferences
         ?string $url = null,
         int $max = 15
     ): void {
-        $preferences = $this->ui_preferences;
-        $recent = $preferences['recent_pages'] ?? [];
+        $this->saveUiPreferences('recent_pages', function (array $recent) use ($route, $params, $title, $url, $max): array {
+            $newIdentity = $url ?? ($route.'|'.json_encode($params));
+            $recent = array_values(array_filter($recent, function ($entry) use ($newIdentity) {
+                $entryIdentity = ($entry['url'] ?? null)
+                    ?? (($entry['route'] ?? '').'|'.json_encode($entry['params'] ?? []));
 
-        // Identity is the path when known (query string excluded, so the
-        // same page never duplicates); otherwise route + params.
-        $newIdentity = $url ?? ($route.'|'.json_encode($params));
-        $recent = array_values(array_filter($recent, function ($entry) use ($newIdentity) {
-            $entryIdentity = ($entry['url'] ?? null)
-                ?? (($entry['route'] ?? '').'|'.json_encode($entry['params'] ?? []));
+                return $entryIdentity !== $newIdentity;
+            }));
 
-            return $entryIdentity !== $newIdentity;
-        }));
+            array_unshift($recent, [
+                'route' => $route,
+                'params' => $params,
+                'title' => $title,
+                'url' => $url,
+                'visited_at' => now()->toIso8601String(),
+            ]);
 
-        array_unshift($recent, [
-            'route' => $route,
-            'params' => $params,
-            'title' => $title,
-            'url' => $url,
-            'visited_at' => now()->toIso8601String(),
-        ]);
-
-        $preferences['recent_pages'] = array_slice($recent, 0, $max);
-        $this->saveUiPreferences($preferences);
+            return array_slice($recent, 0, $max);
+        });
     }
 
     /**
@@ -146,18 +124,18 @@ trait HasUIPreferences
      */
     public function clearRecentPages(): void
     {
-        $preferences = $this->ui_preferences;
-        $preferences['recent_pages'] = [];
-        $this->saveUiPreferences($preferences);
+        $this->saveUiPreferences('recent_pages', fn () => []);
     }
 
-    /**
-     * Written on every admin navigation, so it skips model events: no observer reacts to UI state.
-     *
-     * @param  array<string, mixed>  $preferences
-     */
-    private function saveUiPreferences(array $preferences): void
+    private function saveUiPreferences(string $key, callable $update): void
     {
-        $this->fill(['ui_preferences' => $preferences])->saveQuietly();
+        DB::transaction(function () use ($key, $update): void {
+            $locked = $this->newQuery()->whereKey($this->getKey())->lockForUpdate()->firstOrFail();
+            $preferences = $locked->ui_preferences;
+            $preferences[$key] = $update($preferences[$key] ?? []);
+            $locked->fill(['ui_preferences' => $preferences])->saveQuietly();
+            $this->setAttribute('ui_preferences', $preferences);
+            $this->syncOriginalAttribute('ui_preferences');
+        });
     }
 }

@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection as SupportCollection;
 use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
@@ -245,25 +246,29 @@ class Task extends Model
      */
     public function incrementProgress(int $amount = 1): bool
     {
-        if (! $this->metadata || ! isset($this->metadata['items_total'])) {
-            return false;
-        }
+        return DB::transaction(function (): bool {
+            $locked = $this->newQuery()->whereKey($this->getKey())->lockForUpdate()->firstOrFail();
+            $this->setRawAttributes($locked->getAttributes(), true);
 
-        $metadata = $this->metadata;
-        $metadata['items_completed'] = ($metadata['items_completed'] ?? 0) + $amount;
+            if (! $this->metadata || ! isset($this->metadata['items_total'])) {
+                return false;
+            }
 
-        $this->metadata = $metadata;
-        $this->save();
+            $metadata = $this->metadata;
+            $metadata['items_completed'] = ($metadata['items_completed'] ?? 0) + $amount;
 
-        // Auto-complete if all items are done
-        if ($metadata['items_completed'] >= $metadata['items_total']) {
-            $this->completed_at = now();
+            $this->metadata = $metadata;
             $this->save();
 
-            return true; // Task was completed
-        }
+            if ($metadata['items_completed'] >= $metadata['items_total']) {
+                $this->completed_at = now();
+                $this->save();
 
-        return false; // Task still in progress
+                return true;
+            }
+
+            return false;
+        });
     }
 
     /**

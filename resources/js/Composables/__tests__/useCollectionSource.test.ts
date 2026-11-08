@@ -162,6 +162,39 @@ describe('useTypesenseCollectionSource', () => {
     expect(source.items.value[0]).toEqual({ id: 'a', is_active: true });
   });
 
+  it('keeps a later patch when an earlier overlapping operation fails', () => {
+    const { source } = build();
+    const undoFirst = source.patchItems(['a'], { name: 'First', is_active: false });
+    const undoSecond = source.patchItems(['a'], { name: 'Second' });
+
+    undoFirst();
+    expect(source.items.value).toEqual([{ id: 'a', name: 'Second' }]);
+
+    undoSecond();
+    expect(source.items.value).toEqual([{ id: 'a' }]);
+  });
+
+  it('reveals the earlier patch when the later operation fails', () => {
+    const { source } = build();
+    source.patchItems(['a'], { name: 'First' });
+    const undoSecond = source.patchItems(['a'], { name: 'Second' });
+
+    undoSecond();
+
+    expect(source.items.value).toEqual([{ id: 'a', name: 'First' }]);
+  });
+
+  it('keeps a row hidden until both overlapping deletions are undone', () => {
+    const { source } = build();
+    const undoFirst = source.hideItems(['a']);
+    const undoSecond = source.hideItems(['a']);
+
+    undoFirst();
+    expect(source.items.value).toEqual([]);
+    undoSecond();
+    expect(source.items.value).toEqual([{ id: 'a' }]);
+  });
+
   it('leaves hidden rows out of the list until undone', () => {
     const { fake, source } = build();
     fake.results.value = [{ id: 'a' }, { id: 'b' }] as never;

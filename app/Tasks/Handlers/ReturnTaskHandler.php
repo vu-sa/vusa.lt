@@ -9,6 +9,7 @@ use App\Tasks\Enums\ActionType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class ReturnTaskHandler extends BaseTaskHandler
 {
@@ -80,20 +81,25 @@ class ReturnTaskHandler extends BaseTaskHandler
 
     protected function incrementTotalItems(Task $task, ?string $dueDate): Task
     {
-        $metadata = $task->metadata ?? ['items_total' => 0, 'items_completed' => 0];
-        $metadata['items_total'] = ($metadata['items_total'] ?? 0) + 1;
-        $task->metadata = $metadata;
+        return DB::transaction(function () use ($task, $dueDate): Task {
+            $locked = Task::query()->whereKey($task->getKey())->lockForUpdate()->firstOrFail();
+            $task->setRawAttributes($locked->getAttributes(), true);
 
-        // Return tasks use latest end time.
-        if ($dueDate) {
-            $parsedDueDate = Carbon::parse($dueDate);
-            if (! $task->due_date || $parsedDueDate->greaterThan($task->due_date)) {
-                $task->due_date = $parsedDueDate;
+            $metadata = $task->metadata ?? ['items_total' => 0, 'items_completed' => 0];
+            $metadata['items_total'] = ($metadata['items_total'] ?? 0) + 1;
+            $task->metadata = $metadata;
+
+            // Return tasks use latest end time.
+            if ($dueDate) {
+                $parsedDueDate = Carbon::parse($dueDate);
+                if (! $task->due_date || $parsedDueDate->greaterThan($task->due_date)) {
+                    $task->due_date = $parsedDueDate;
+                }
             }
-        }
 
-        $task->save();
+            $task->save();
 
-        return $task;
+            return $task;
+        });
     }
 }

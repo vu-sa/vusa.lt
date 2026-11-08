@@ -228,6 +228,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
   let searchGeneration = 0;
   const executeSearch = async (isLoadMore = false) => {
     const generation = ++searchGeneration;
+    status.value = isLoadMore ? 'loading-more' : 'searching';
     if (initialFacetsPromise) await initialFacetsPromise;
     if (generation !== searchGeneration) return;
     // Clear previous error
@@ -342,9 +343,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
 
   // Debounced search for user typing
   const debouncedSearch = useDebounceFn(() => {
-    if (status.value === 'idle' || status.value === 'error') {
-      performSearch(false);
-    }
+    performSearch(false);
   }, debounceMs);
 
   /**
@@ -425,7 +424,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
    * Load more results
    */
   const loadMore = async () => {
-    if (status.value !== 'loading-more' && hasMoreResults.value) {
+    if (status.value === 'idle' && hasMoreResults.value) {
       await performSearch(true);
     }
   };
