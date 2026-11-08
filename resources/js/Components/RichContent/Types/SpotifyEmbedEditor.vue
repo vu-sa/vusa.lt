@@ -23,30 +23,29 @@
     </div>
 
     <Field>
-      <FieldLabel>Rodymo būdas</FieldLabel>
+      <FieldLabel>{{ $t('Rodymo būdas') }}</FieldLabel>
       <Select :model-value="options?.variant ?? 'inline'" @update:model-value="options = { ...options, variant: $event }">
         <SelectTrigger>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="inline">
-            Įprastas įterpimas
+            {{ $t('Įprastas įterpimas') }}
           </SelectItem>
           <SelectItem value="promo">
-            Reklaminė sekcija
+            {{ $t('Reklaminė sekcija') }}
           </SelectItem>
         </SelectContent>
       </Select>
       <FieldDescription>
-        Įprastas įterpimas — įrėmintas grotuvas teksto viduje. Reklaminė sekcija — tekstas ir
-        mygtukai šalia grotuvo, atskira juosta per visą pločio.
+        {{ $t('Įprastas įterpimas — įrėmintas grotuvas teksto viduje. Reklaminė sekcija — tekstas ir mygtukai šalia grotuvo, atskira juosta per visą pločio.') }}
       </FieldDescription>
     </Field>
 
     <template v-if="options?.variant === 'promo'">
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field>
-          <FieldLabel>Ženkliukas</FieldLabel>
+          <FieldLabel>{{ $t('Ženkliukas') }}</FieldLabel>
           <Input :model-value="modelValue.eyebrow" type="text" placeholder="START FM 94.2"
             @update:model-value="patch({ eyebrow: String($event) })" />
         </Field>
@@ -58,19 +57,19 @@
       </div>
 
       <Field>
-        <FieldLabel>Tekstas</FieldLabel>
+        <FieldLabel>{{ $t('Tekstas') }}</FieldLabel>
         <TiptapEditor :model-value="modelValue.body ?? {}" preset="compact"
           @update:model-value="patch({ body: $event })" />
       </Field>
 
       <Field>
-        <FieldLabel>Etiketė virš grotuvo</FieldLabel>
-        <Input :model-value="modelValue.panelLabel" type="text" placeholder="Naujausias epizodas"
+        <FieldLabel>{{ $t('Etiketė virš grotuvo') }}</FieldLabel>
+        <Input :model-value="modelValue.panelLabel" type="text" :placeholder="$t('Naujausias epizodas')"
           @update:model-value="patch({ panelLabel: String($event) })" />
       </Field>
 
       <Field>
-        <FieldLabel>Fono nuotrauka (neprivaloma)</FieldLabel>
+        <FieldLabel>{{ $t('Fono nuotrauka (neprivaloma)') }}</FieldLabel>
         <div>
           <TiptapImageButton v-if="!modelValue.panelImage" @submit:object="img => patch({ panelImage: img.src })">
             {{ $t('rich-content.select_image') }}
@@ -144,11 +143,11 @@
       <Field>
         <div class="flex items-center justify-between">
           <FieldLabel class="mb-0">
-            Grotuvas dešinėje
+            {{ $t('Grotuvas dešinėje') }}
           </FieldLabel>
           <Switch :model-value="options?.textLeft !== false" @update:model-value="options = { ...options, textLeft: $event }" />
         </div>
-        <FieldDescription>Kai išjungta, tekstas ir grotuvas sukeičiami vietomis darbalaukyje.</FieldDescription>
+        <FieldDescription>{{ $t('Kai išjungta, tekstas ir grotuvas sukeičiami vietomis darbalaukyje.') }}</FieldDescription>
       </Field>
     </template>
   </div>

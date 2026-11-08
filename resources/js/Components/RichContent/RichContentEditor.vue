@@ -47,7 +47,7 @@
           class="flex items-center gap-1.5 border border-border bg-secondary/40 px-2.5 py-1 text-xs text-foreground"
         >
           <component :is="getContentType(item.type).icon" class="size-3.5 text-muted-foreground" />
-          <span class="font-medium">{{ getContentType(item.type).label }}</span>
+          <span class="font-medium">{{ $t(getContentType(item.type).label) }}</span>
           <span v-if="deriveBlockSummary(item) !== '—'" class="max-w-[14rem] truncate text-muted-foreground">
             · {{ deriveBlockSummary(item) }}
           </span>

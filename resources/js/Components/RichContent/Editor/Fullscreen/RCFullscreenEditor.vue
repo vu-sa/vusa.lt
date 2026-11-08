@@ -67,7 +67,7 @@
         <div class="relative flex min-h-0 flex-1">
           <nav v-if="outlineOpen" :aria-label="$t('editor.outline')" class="absolute inset-y-0 left-0 z-40 w-72 max-w-[85vw] overflow-y-auto border-r border-border bg-background p-3 shadow-lg">
             <Button v-for="part in contents ?? []" :key="getBlockKey(part)" type="button" variant="ghost" class="min-h-11 w-full justify-start whitespace-normal text-left" @click="scrollToBlock(getBlockKey(part)); outlineOpen = false">
-              {{ getContentType(part.type).label }} · {{ deriveBlockSummary(part) }}
+              {{ $t(getContentType(part.type).label) }} · {{ deriveBlockSummary(part) }}
             </Button>
             <Button v-for="anchor in outlineAnchors" :key="anchor.href" type="button" variant="ghost" class="min-h-11 w-full justify-start" @click="scrollToAnchor(anchor.href)">
               {{ anchor.title }}
