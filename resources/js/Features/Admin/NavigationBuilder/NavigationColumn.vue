@@ -9,6 +9,7 @@
       v-for="link in links"
       :key="link.id"
       :link
+      :pending
       @toggle-active="val => $emit('toggle-active', link, val)"
       @delete="$emit('delete', link)"
     />
@@ -26,6 +27,7 @@ import NavigationLinkCard from './NavigationLinkCard.vue';
 import type { AdminNavigationLink } from './types';
 
 const props = defineProps<{
+  pending?: boolean;
   links: AdminNavigationLink[];
   index: number;
 }>();

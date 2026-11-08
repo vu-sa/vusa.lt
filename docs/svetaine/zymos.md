@@ -119,3 +119,5 @@ Puslapio viršuje spausk **Nauja žyma** (arba eik adresu `/mano/tags/create`):
 - Valdiklis: `App\Http\Controllers\Admin\TagController`.
 - Žymų sujungimas: valdiklio metodas `processMergeTags()` perkelia ryšius iš `merged_tag_ids` į `target_tag_id` ir atlieka `delete()` prijungtoms žymoms.
 - Viešasis temos puslapis: maršrutas `/tema/{alias}` atvaizduojamas per `App\Http\Controllers\Public\PublicPageController::topic()`.
+
+Kol žyma atkuriama ar ištrinama, jos veiksmai palaukia išsaugojimo. Jei veiksmas nepavyksta, gali bandyti dar kartą.

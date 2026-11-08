@@ -373,7 +373,7 @@ function toggleCompletion(task: TaskDisplayData): void {
       loadingTaskId.value = null;
       pendingActionKey.value = null;
     },
-  }));
+  }, () => source.refresh()));
 }
 
 const taskPendingDeletion = ref<TaskDisplayData | null>(null);
@@ -389,15 +389,14 @@ function deleteTask(): void {
   pendingActionKey.value = 'delete';
   const undo = source.hideItems([String(task.id)]);
 
-  router.delete(route('tasks.destroy', task.id), {
+  router.delete(route('tasks.destroy', task.id), withOptimisticRollback(undo, {
     only: ['taskCounts', 'flash'],
     preserveScroll: true,
     preserveState: true,
-    onError: () => undo(),
     onFinish: () => {
       loadingTaskId.value = null;
       pendingActionKey.value = null;
     },
-  });
+  }, () => source.refresh()));
 }
 </script>

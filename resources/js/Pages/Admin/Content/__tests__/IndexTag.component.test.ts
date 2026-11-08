@@ -61,6 +61,7 @@ describe('tag deletion', () => {
     const collection = wrapper.findComponent({ name: 'CollectionPage' });
     collection.vm.$emit('rowAction', tag, 'delete');
     vi.mocked(router.delete).mock.calls.at(-1)?.[1]?.onSuccess?.(createMockPage(), {} as never);
+    vi.mocked(router.delete).mock.calls.at(-1)?.[1]?.onFinish?.({} as never);
     const action = success.mock.calls.at(-1)?.[1]?.action as { onClick: (event: MouseEvent) => void };
     action.onClick(new MouseEvent('click'));
     expect(router.patch).toHaveBeenCalledWith(route('tags.restore', tag.id), {}, expect.anything());

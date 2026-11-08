@@ -18,6 +18,7 @@
                  own `data-state` (checked/unchecked) and blank out its color classes. -->
             <span class="inline-flex">
               <Switch
+                :disabled="pending"
                 :model-value="root.is_active"
                 @update:model-value="val => $emit('toggle-active', root, val)"
               />
@@ -34,7 +35,7 @@
         </Link>
         <AlertDialog>
           <AlertDialogTrigger as-child>
-            <Button size="icon-xs" variant="ghost" class="text-destructive hover:text-destructive">
+            <Button :disabled="pending" size="icon-xs" variant="ghost" class="text-destructive hover:text-destructive">
               <Trash2 class="size-3.5" />
             </Button>
           </AlertDialogTrigger>
@@ -45,7 +46,7 @@
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>{{ $t('forms.cancel') }}</AlertDialogCancel>
-              <AlertDialogAction @click="$emit('delete', root)">
+              <AlertDialogAction :disabled="pending" @click="$emit('delete', root)">
                 {{ $t('forms.delete') }}
               </AlertDialogAction>
             </AlertDialogFooter>
@@ -59,6 +60,7 @@
         v-for="(column, index) in root.links"
         :key="index"
         :ref="(instance) => setColumnRef(instance, index)"
+        :pending
         :links="column"
         :index
         @toggle-active="(link, val) => $emit('toggle-link-active', link, val)"
@@ -103,6 +105,7 @@ import {
 } from '@/Components/ui/alert-dialog';
 
 const props = defineProps<{
+  pending?: boolean;
   root: AdminNavigationRoot;
 }>();
 

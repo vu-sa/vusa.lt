@@ -75,7 +75,7 @@ watch(open, (isOpen) => {
 });
 
 function choose(value: unknown): void {
-  if (typeof value === 'string' && value !== props.modelValue) {
+  if (!props.pending && typeof value === 'string' && value !== props.modelValue) {
     emit('update:modelValue', value);
   }
 }

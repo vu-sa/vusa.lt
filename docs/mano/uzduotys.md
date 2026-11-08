@@ -170,3 +170,5 @@ nebėra. Rankinės užduoties priminimus gauna visi, kuriuos priskyrė žmogus.
   užduočių užklausos jos nebemato, o `RepStatisticsScope::tasks()` ją praleidžia. Priminimus
   siunčia `TaskNotifier::notifyDaysLeft` (išskyrus `periodicity_gap`) ir
   `notifications:task-overdue-reminders` gavėjams iš `Task::notifiableUsers()` (`ResolveTaskAudience`).
+
+Kol pakeitimas saugomas, to paties įrašo veiksmai palaukia. Kitus įrašus gali keisti toliau. Nepavykęs pakeitimas grąžinamas į ankstesnę būseną; tai taikoma ir užduoties ištrynimui.

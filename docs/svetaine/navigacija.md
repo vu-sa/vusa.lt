@@ -113,3 +113,5 @@ Padalinių komunikacijos koordinatoriai negali tiesiogiai redaguoti bendros svet
 - Valdiklis: `App\Http\Controllers\Admin\NavigationController`.
 - Meniu medis generuojamas per `App\Services\NavigationService::getTreeForAdmin()` ir `getFooterTreeForAdmin()`.
 - Viešasis atvaizdavimas: `App\Services\NavigationService::getNavigationForPublic()` ir `getFooterNavigationForPublic()`.
+
+Kol pakeitimas saugomas, susiję veiksmai palaukia, o kitus įrašus gali keisti toliau. Nepavykę pakeitimai grąžinami į ankstesnę būseną.

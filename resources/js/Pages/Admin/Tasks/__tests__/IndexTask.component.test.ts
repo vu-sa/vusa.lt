@@ -132,6 +132,23 @@ describe('IndexTask', () => {
     );
   });
 
+  it.each(['flash', 'http', 'network'] as const)('restores a task after a %s delete failure', async (failure) => {
+    const wrapper = mountPage({ data: [task({ can_delete: true })] });
+    wrapper.findComponent({ name: 'TaskRow' }).vm.$emit('action', 'delete');
+    await wrapper.vm.$nextTick();
+    wrapper.findComponent({ name: 'ConfirmDialog' }).vm.$emit('confirm');
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('[data-testid="row"]').exists()).toBe(false);
+    const options = vi.mocked(router.delete).mock.calls.at(-1)?.[1];
+    if (failure === 'flash') options?.onSuccess?.(createMockPage({ flash: { error: 'Forbidden' } }));
+    if (failure === 'http') options?.onHttpException?.({ status: 500 } as never);
+    if (failure === 'network') options?.onNetworkError?.(new Error('Offline'));
+    options?.onFinish?.({} as never);
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('[data-testid="row"]').exists()).toBe(true);
+    wrapper.unmount();
+  });
+
   it.each([null, '2026-01-01T00:00:00Z'])('keeps completion/reopening in the preview without an open action (%s)', (completedAt) => {
     const wrapper = mountPreview({ completed_at: completedAt });
     const complete = wrapper.get('[data-slot="preview-pane"] [data-action="complete"]');

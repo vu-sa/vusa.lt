@@ -328,3 +328,5 @@ Kompiuteryje grotuvas rodomas apatiniame dešiniajame kampe. Telefone jis yra vi
 meniu arba formos išsaugojimo juostos. Pereinant tarp tos pačios svetainės puslapių klausymas
 tęsiasi. Perkrovus puslapį arba perėjus tarp viešos svetainės ir Mano VU SA, radiją reikia
 įjungti iš naujo. Nepavykus prisijungti, grotuve galima bandyti dar kartą.
+
+Kol pakeitimas saugomas, susiję veiksmai palaukia, o kitus įrašus gali keisti toliau. Nepavykę pakeitimai grąžinami į ankstesnę būseną.

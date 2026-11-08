@@ -45,12 +45,16 @@ describe('withOptimisticRollback', () => {
     expect(success).not.toHaveBeenCalled();
   });
 
-  it('keeps the change when a newer visit interrupts this one, since it may have landed', () => {
+  it('reverts an unconfirmed cancelled change and reconciles', () => {
     const rollback = vi.fn();
 
-    withOptimisticRollback(rollback).onCancel?.();
+    const reconcile = vi.fn();
+    const options = withOptimisticRollback(rollback, {}, reconcile);
+    expect(options.async).toBe(true);
+    options.onCancel?.();
 
-    expect(rollback).not.toHaveBeenCalled();
+    expect(rollback).toHaveBeenCalledOnce();
+    expect(reconcile).toHaveBeenCalledOnce();
   });
 
   it('rolls back once and preserves exception callback return values', () => {

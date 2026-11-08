@@ -44,6 +44,13 @@ describe('CollectionStatusMenu', () => {
     expect(wrapper.text()).toContain('Paskelbta');
   });
 
+  it('blocks an already-open menu while its row is saving', () => {
+    const wrapper = mountMenu({ editable: true, pending: true });
+    expect(wrapper.get('button').attributes('disabled')).toBeDefined();
+    wrapper.findComponent(RadioGroup).vm.$emit('update:modelValue', 'draft');
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+  });
+
   it('offers every option and emits a different choice only', async () => {
     const wrapper = mountMenu({ editable: true });
 

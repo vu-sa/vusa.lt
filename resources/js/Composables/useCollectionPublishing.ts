@@ -1,6 +1,6 @@
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { computed, ref } from 'vue';
+import { computed, ref, reactive } from 'vue';
 
 import { withOptimisticRollback } from '@/Composables/useOptimisticVisit';
 import type { CollectionStatusOption } from '@/Components/Collection/CollectionStatusMenu.vue';
@@ -35,17 +35,27 @@ export function publishChoices<T>(selected: readonly T[], isPublished: (item: T)
  * selection bar — and bulk soft delete. Rows change optimistically and roll back on error.
  */
 export function useCollectionPublishing<T extends { id: string | number }>(options: PublishingOptions<T>) {
+  const pendingIds = reactive(new Set<string>());
+  const isPending = (ids: readonly string[]) => ids.some(id => pendingIds.has(id));
+  function begin(ids: string[]): boolean {
+    if (isPending(ids)) return false;
+    ids.forEach(id => pendingIds.add(id));
+    return true;
+  }
+  const finish = (ids: string[]) => { ids.forEach(id => pendingIds.delete(id)); };
   const idsOf = (items: readonly T[]) => items.map(item => String(item.id));
   const statusValue = (item: T) => (options.isPublished(item) ? 'published' : 'draft');
 
   function setPublished(ids: string[], published: boolean, onDone?: () => void): void {
+    if (!begin(ids)) return;
     const undo = options.source.patchItems(ids, options.patchFor(published));
 
     router.patch(route(`${options.routePrefix}.bulkStatus`), { ids: ids.map(Number), published }, withOptimisticRollback(undo, {
       preserveScroll: true,
       preserveState: true,
       onSuccess: () => onDone?.(),
-    }));
+      onFinish: () => finish(ids),
+    }, () => options.source.refresh()));
   }
 
   const bulkChoices = (selected: readonly T[]) => publishChoices(selected, options.isPublished);
@@ -67,16 +77,19 @@ export function useCollectionPublishing<T extends { id: string | number }>(optio
       return;
     }
 
+    if (!begin(pending.ids)) return;
     const undo = options.source.hideItems(pending.ids);
     router.delete(route(`${options.routePrefix}.bulkDestroy`), withOptimisticRollback(undo, {
       data: { ids: pending.ids.map(Number) },
       preserveScroll: true,
       preserveState: true,
       onSuccess: pending.clear,
-    }));
+      onFinish: () => finish(pending.ids),
+    }, () => options.source.refresh()));
   }
 
   return {
+    isPending,
     statusOptions,
     statusValue,
     idsOf,
