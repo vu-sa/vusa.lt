@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\DateOnly;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -39,8 +40,8 @@ class InstitutionCheckIn extends Model
     protected function casts(): array
     {
         return [
-            'start_date' => 'date:Y-m-d',
-            'end_date' => 'date:Y-m-d',
+            'start_date' => DateOnly::class,
+            'end_date' => DateOnly::class,
         ];
     }
 

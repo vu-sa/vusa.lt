@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Actions\ResolveMailingListMembers;
+use App\Casts\DateOnly;
 use App\Enums\MailingListAddressMode;
 use App\Enums\MailingListSourceType;
 use App\Models\Traits\LogsModelActivity;
@@ -90,7 +91,7 @@ class MailingListSource extends Model
             'type' => MailingListSourceType::class,
             'address_mode' => MailingListAddressMode::class,
             'filters' => 'array',
-            'expires_on' => 'date:Y-m-d',
+            'expires_on' => DateOnly::class,
         ];
     }
 }

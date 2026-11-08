@@ -112,7 +112,7 @@ describe('CadenceRowForm', () => {
       raw: { start_time: Date.parse('2026-03-14T22:30:00Z') / 1000 },
     }]);
 
-    expect((wrapper.findAll('input[type="date"]')[0].element as HTMLInputElement).value).toBe('2026-03-15');
+    expect((wrapper.findAll('input[type="date"]')[0]!.element as HTMLInputElement).value).toBe('2026-03-15');
     wrapper.unmount();
   });
 

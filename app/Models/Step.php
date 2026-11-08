@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\DateOnly;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
@@ -116,7 +117,7 @@ class Step extends Model
     protected function casts(): array
     {
         return [
-            'happened_on' => 'date:Y-m-d',
+            'happened_on' => DateOnly::class,
         ];
     }
 }
