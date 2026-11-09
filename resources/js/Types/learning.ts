@@ -45,18 +45,44 @@ export interface LearningPathData {
   totals: LearningTotals;
 }
 
+export type LearningCuratorFlag = 'expired_document' | 'updated_document' | 'missing_source';
+
 export interface LearningLibraryStep {
   id: string;
   title: string;
   kind: LearningStepKind;
   layer: LearningLayer;
+  layerLabel: string;
   stage: LearningStage | null;
   importance: LearningImportance;
   isActive: boolean;
+  canUpdate: boolean;
+  flags: LearningCuratorFlag[];
+}
+
+export interface LearningDocumentSearchHit {
+  id: number;
+  title: string;
+  status: DocumentStatus;
+  date: string | null;
+}
+
+export interface LearningTypeOption {
+  id: number;
+  title: string;
+  parent_id: number | null;
+}
+
+export interface LearningTenantOption {
+  id: number;
+  shortname: string;
+  fullname?: string;
+  type?: string | null;
 }
 
 export interface LearningStepEditData {
   id: string;
+  key?: string | null;
   title: { lt: string; en: string };
   description: { lt: string; en: string };
   kind: LearningStepKind;
@@ -71,6 +97,7 @@ export interface LearningStepEditData {
   is_active: boolean;
   is_system: boolean;
   sources: Record<string, { document_id: number | null; url: string | null }>;
+  source_documents?: Record<string, LearningDocumentSearchHit>;
 }
 
 export interface LearningCoordinator {
@@ -88,6 +115,11 @@ export interface GlossaryTermData {
   id: string;
   term: string;
   definition: string;
+  stepsCount: number;
+  translations: {
+    term: { lt: string; en: string };
+    definition: { lt: string; en: string };
+  };
 }
 
 export interface HandoverNoteData {

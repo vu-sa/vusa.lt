@@ -1,14 +1,22 @@
-<script setup lang="ts">
-import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
-import EmptyState from '@/Components/Patterns/EmptyState.vue';
-import LearningTabs from '@/Features/Admin/Learning/LearningTabs.vue';
-
-defineProps<{  canSeeReps: boolean }>();
-</script>
-
 <template>
-  <OverviewPage :title="$t('learning.pages.create')">
-    <LearningTabs :can-see-reps="canSeeReps" />
-    <EmptyState :title="$t('learning.empty.title')" :description="$t('learning.empty.description')" />
-  </OverviewPage>
+  <LearningStepForm
+    :layers="layers"
+    :tenants="tenants"
+    :institution-types="institutionTypes"
+    :duty-types="dutyTypes"
+  />
 </template>
+
+<script setup lang="ts">
+import LearningStepForm from '@/Features/Admin/Learning/LearningStepForm.vue';
+import type { LearningLayer } from '@/Types/enums';
+import type { LearningTenantOption, LearningTypeOption } from '@/Types/learning';
+
+defineProps<{
+  layers?: LearningLayer[];
+  tenants?: LearningTenantOption[];
+  institutionTypes?: LearningTypeOption[];
+  dutyTypes?: LearningTypeOption[];
+  canSeeReps?: boolean;
+}>();
+</script>

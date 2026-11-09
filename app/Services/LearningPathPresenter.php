@@ -52,12 +52,7 @@ class LearningPathPresenter
     {
         $step = $item->step;
         $definition = $step->is_system ? (SystemStepRegistry::definitions()[$step->key] ?? null) : null;
-        $label = match ($step->layer) {
-            LearningLayer::InstitutionType => (string) $step->institutionType?->getTranslation('title', $locale),
-            LearningLayer::DutyType => (string) $step->dutyType?->getTranslation('title', $locale),
-            LearningLayer::Tenant => $step->tenant->shortname ?? '',
-            default => (string) __("learning.layers.{$step->layer->value}", [], $locale),
-        };
+        $label = self::layerLabel($step, $locale);
         $route = $definition['actionRoute'] ?? null;
         if ($definition !== null && $route === null) {
             $route = match ($step->key) {
@@ -111,35 +106,86 @@ class LearningPathPresenter
         return null;
     }
 
-    /** @return list<array{id: string, title: string, kind: LearningStepKind, layer: LearningLayer, stage: LearningStage|null, importance: LearningImportance, isActive: bool}> */
-    public static function library(string $locale): array
+    /** @return list<array{id: string, title: string, kind: LearningStepKind, layer: LearningLayer, layerLabel: string, stage: LearningStage|null, importance: LearningImportance, isActive: bool, canUpdate: bool, flags: list<'expired_document'|'updated_document'|'missing_source'>}> */
+    public static function library(string $locale, ?User $viewer = null): array
     {
+        $user = $viewer ?? auth()->user();
         $result = [];
-        foreach (LearningStep::query()->ordered()->get() as $step) {
+        foreach (LearningStep::query()->ordered()->with(['sources.document', 'institutionType', 'dutyType', 'tenant'])->get() as $step) {
             $definition = $step->is_system ? (SystemStepRegistry::definitions()[$step->key] ?? null) : null;
+            $canUpdate = $user instanceof User && $user->can('update', $step);
             $result[] = [
-                'id' => $step->id, 'title' => $definition ? (string) __($definition['title'], [], $locale) : (string) $step->getTranslation('title', $locale),
-                'kind' => $step->kind, 'layer' => $step->layer, 'stage' => $step->stage, 'importance' => $step->importance, 'isActive' => $step->is_active,
+                'id' => $step->id,
+                'title' => $definition ? (string) __($definition['title'], [], $locale) : (string) $step->getTranslation('title', $locale),
+                'kind' => $step->kind,
+                'layer' => $step->layer,
+                'layerLabel' => self::layerLabel($step, $locale),
+                'stage' => $step->stage,
+                'importance' => $step->importance,
+                'isActive' => $step->is_active,
+                'canUpdate' => $canUpdate,
+                'flags' => ($user === null || $canUpdate) ? self::flags($step) : [],
             ];
         }
 
         return $result;
     }
 
-    /** @return array{id: string, title: array{lt: string, en: string}, description: array{lt: string, en: string}, kind: LearningStepKind, layer: LearningLayer, stage: LearningStage|null, importance: LearningImportance, institution_type_id: int|null, duty_type_id: int|null, tenant_id: int|null, per_term: bool, order: int, is_active: bool, is_system: bool, sources: array<string, array{document_id: int|null, url: string|null}>} */
+    /** @return array{id: string, key: string|null, title: array{lt: string, en: string}, description: array{lt: string, en: string}, kind: LearningStepKind, layer: LearningLayer, stage: LearningStage|null, importance: LearningImportance, institution_type_id: int|null, duty_type_id: int|null, tenant_id: int|null, per_term: bool, order: int, is_active: bool, is_system: bool, sources: array<string, array{document_id: int|null, url: string|null}>, source_documents: array<string, array{id: int, title: string, status: string, date: string|null}>} */
     public static function edit(LearningStep $step): array
     {
         $sources = [];
+        $sourceDocuments = [];
         foreach ($step->sources as $source) {
             $sources[$source->locale] = ['document_id' => $source->document_id, 'url' => $source->url];
+            if ($source->document !== null) {
+                $sourceDocuments[$source->locale] = [
+                    'id' => $source->document->id,
+                    'title' => (string) $source->document->title,
+                    'status' => $source->document->status->value,
+                    'date' => $source->document->document_date?->toDateString(),
+                ];
+            }
         }
 
         return [
-            'id' => $step->id, 'title' => ['lt' => (string) $step->getTranslation('title', 'lt', false), 'en' => (string) $step->getTranslation('title', 'en', false)],
+            'id' => $step->id, 'key' => $step->key,
+            'title' => ['lt' => (string) $step->getTranslation('title', 'lt', false), 'en' => (string) $step->getTranslation('title', 'en', false)],
             'description' => ['lt' => (string) $step->getTranslation('description', 'lt', false), 'en' => (string) $step->getTranslation('description', 'en', false)],
             'kind' => $step->kind, 'layer' => $step->layer, 'stage' => $step->stage, 'importance' => $step->importance,
             'institution_type_id' => $step->institution_type_id, 'duty_type_id' => $step->duty_type_id, 'tenant_id' => $step->tenant_id,
-            'per_term' => $step->per_term, 'order' => $step->order, 'is_active' => $step->is_active, 'is_system' => $step->is_system, 'sources' => $sources,
+            'per_term' => $step->per_term, 'order' => $step->order, 'is_active' => $step->is_active, 'is_system' => $step->is_system,
+            'sources' => $sources, 'source_documents' => $sourceDocuments,
         ];
+    }
+
+    private static function layerLabel(LearningStep $step, string $locale): string
+    {
+        return match ($step->layer) {
+            LearningLayer::InstitutionType => (string) $step->institutionType?->getTranslation('title', $locale),
+            LearningLayer::DutyType => (string) $step->dutyType?->getTranslation('title', $locale),
+            LearningLayer::Tenant => $step->tenant->shortname ?? '',
+            default => (string) __("learning.layers.{$step->layer->value}", [], $locale),
+        };
+    }
+
+    /** @return list<'expired_document'|'updated_document'|'missing_source'> */
+    private static function flags(LearningStep $step): array
+    {
+        $flags = [];
+        $baseline = $step->reviewed_at ?? $step->updated_at;
+        $documents = $step->sources->map(fn ($source) => $source->document)->filter();
+
+        if ($documents->contains(fn ($document): bool => $document->is_in_effect === false)) {
+            $flags[] = 'expired_document';
+        }
+        if ($documents->contains(fn ($document): bool => $document->sharepoint_modified_at !== null && ($baseline === null || $document->sharepoint_modified_at->gt($baseline)))) {
+            $flags[] = 'updated_document';
+        }
+        if ($step->kind === LearningStepKind::Knowledge && $step->sources->filter(fn ($source): bool => $source->document_id !== null || filled($source->url))->isEmpty()) {
+            $flags[] = 'missing_source';
+        }
+
+        return $flags;
     }
 }

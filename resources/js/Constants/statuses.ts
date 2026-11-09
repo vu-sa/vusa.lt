@@ -1,4 +1,4 @@
-import { DocumentStatus, GoalStatus, InstitutionActivityStatus, MailingListMode, MailingListSyncStatus, SupportRequestStatus, VoteValue } from '@/Types/enums';
+import { DocumentStatus, GoalStatus, InstitutionActivityStatus, LearningImportance, LearningStage, LearningStepKind, MailingListMode, MailingListSyncStatus, SupportRequestStatus, VoteValue } from '@/Types/enums';
 
 export type StatusRole = 'neutral' | 'info' | 'progress' | 'attention' | 'success' | 'danger';
 
@@ -194,6 +194,33 @@ export const activityRequestStatuses: Record<ActivityRequestStatus, StatusPresen
   answered: status('activity_requests.answered', 'success'),
   resolved: status('activity_requests.resolved', 'success'),
   expired: status('activity_requests.expired', 'neutral'),
+};
+
+export type LearningCuratorFlag = 'expired_document' | 'updated_document' | 'missing_source';
+
+export const learningStepKinds: Record<LearningStepKind, StatusPresentation> = {
+  [LearningStepKind.Knowledge]: status('learning.kinds.knowledge', 'info'),
+  [LearningStepKind.Action]: status('learning.kinds.action', 'progress'),
+  [LearningStepKind.MeetingPrep]: status('learning.kinds.meeting_prep', 'neutral'),
+};
+
+export const learningStepStages: Record<LearningStage, StatusPresentation> = {
+  [LearningStage.BeforeStart]: status('learning.stages.before_start', 'info'),
+  [LearningStage.FirstMonths]: status('learning.stages.first_months', 'progress'),
+  [LearningStage.WholeTerm]: status('learning.stages.whole_term', 'neutral'),
+  [LearningStage.TermEnd]: status('learning.stages.term_end', 'attention'),
+};
+
+export const learningStepImportances: Record<LearningImportance, StatusPresentation> = {
+  [LearningImportance.Essential]: status('learning.importance.essential', 'attention'),
+  [LearningImportance.Recommended]: status('learning.importance.recommended', 'info'),
+  [LearningImportance.Optional]: status('learning.importance.optional', 'neutral'),
+};
+
+export const learningCuratorFlags: Record<LearningCuratorFlag, StatusPresentation> = {
+  expired_document: status('learning_library.library.flags.expired_document', 'danger'),
+  updated_document: status('learning_library.library.flags.updated_document', 'attention'),
+  missing_source: status('learning_library.library.flags.missing_source', 'attention'),
 };
 
 function status(label: string, role: StatusRole, uppercase = false): StatusPresentation {

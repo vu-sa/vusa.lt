@@ -1,6 +1,7 @@
 import type { LucideIcon } from '@lucide/vue';
 import {
   Ban,
+  BookOpen,
   CalendarCheck,
   CalendarClock,
   Circle,
@@ -32,7 +33,7 @@ import {
   UserX,
 } from '@lucide/vue';
 
-import { DocumentStatus, GoalStatus, InstitutionActivityStatus, MailingListMode, MailingListSyncStatus, SupportRequestStatus, VoteValue } from '@/Types/enums';
+import { DocumentStatus, GoalStatus, InstitutionActivityStatus, LearningImportance, LearningStage, LearningStepKind, MailingListMode, MailingListSyncStatus, SupportRequestStatus, VoteValue } from '@/Types/enums';
 
 import * as data from './statuses';
 
@@ -173,6 +174,31 @@ export const activityRequestStatuses = {
   answered: withIcon(data.activityRequestStatuses.answered, CircleCheck),
   resolved: withIcon(data.activityRequestStatuses.resolved, CalendarCheck),
   expired: withIcon(data.activityRequestStatuses.expired, CircleSlash),
+};
+
+export const learningStepKinds = {
+  [LearningStepKind.Knowledge]: withIcon(data.learningStepKinds[LearningStepKind.Knowledge], BookOpen),
+  [LearningStepKind.Action]: withIcon(data.learningStepKinds[LearningStepKind.Action], CircleCheck),
+  [LearningStepKind.MeetingPrep]: withIcon(data.learningStepKinds[LearningStepKind.MeetingPrep], CalendarCheck),
+};
+
+export const learningStepStages = {
+  [LearningStage.BeforeStart]: withIcon(data.learningStepStages[LearningStage.BeforeStart], Clock3),
+  [LearningStage.FirstMonths]: withIcon(data.learningStepStages[LearningStage.FirstMonths], CalendarClock),
+  [LearningStage.WholeTerm]: withIcon(data.learningStepStages[LearningStage.WholeTerm], RefreshCw),
+  [LearningStage.TermEnd]: withIcon(data.learningStepStages[LearningStage.TermEnd], CalendarCheck),
+};
+
+export const learningStepImportances = {
+  [LearningImportance.Essential]: withIcon(data.learningStepImportances[LearningImportance.Essential], CircleDot),
+  [LearningImportance.Recommended]: withIcon(data.learningStepImportances[LearningImportance.Recommended], CircleCheck),
+  [LearningImportance.Optional]: withIcon(data.learningStepImportances[LearningImportance.Optional], CircleDashed),
+};
+
+export const learningCuratorFlags = {
+  expired_document: withIcon(data.learningCuratorFlags.expired_document, CircleX),
+  updated_document: withIcon(data.learningCuratorFlags.updated_document, RefreshCw),
+  missing_source: withIcon(data.learningCuratorFlags.missing_source, TriangleAlert),
 };
 
 export const inactiveInstitutionStatus = withIcon(data.inactiveInstitutionStatus, CircleSlash);

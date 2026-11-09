@@ -1,15 +1,26 @@
-<script setup lang="ts">
-import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
-import EmptyState from '@/Components/Patterns/EmptyState.vue';
-import LearningTabs from '@/Features/Admin/Learning/LearningTabs.vue';
-import type { LearningStepEditData } from '@/Types/learning';
-
-defineProps<{ step: LearningStepEditData; canSeeReps: boolean }>();
-</script>
-
 <template>
-  <OverviewPage :title="$t('learning.pages.edit')">
-    <LearningTabs :can-see-reps="canSeeReps" />
-    <EmptyState :title="$t('learning.empty.title')" :description="$t('learning.empty.description')" />
-  </OverviewPage>
+  <LearningStepForm
+    :step="step"
+    :layers="layers"
+    :tenants="tenants"
+    :institution-types="institutionTypes"
+    :duty-types="dutyTypes"
+    :can-delete="canDelete"
+  />
 </template>
+
+<script setup lang="ts">
+import LearningStepForm from '@/Features/Admin/Learning/LearningStepForm.vue';
+import type { LearningLayer } from '@/Types/enums';
+import type { LearningStepEditData, LearningTenantOption, LearningTypeOption } from '@/Types/learning';
+
+defineProps<{
+  step: LearningStepEditData;
+  layers?: LearningLayer[];
+  tenants?: LearningTenantOption[];
+  institutionTypes?: LearningTypeOption[];
+  dutyTypes?: LearningTypeOption[];
+  canDelete?: boolean;
+  canSeeReps?: boolean;
+}>();
+</script>

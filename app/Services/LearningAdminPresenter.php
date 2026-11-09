@@ -26,13 +26,28 @@ class LearningAdminPresenter
         return ['id' => $user->id, 'name' => $user->name];
     }
 
-    /** @return list<array{id: string, term: string, definition: string}> */
+    /** @return list<array{id: string, term: string, definition: string, stepsCount: int, translations: array{term: array{lt: string, en: string}, definition: array{lt: string, en: string}}}> */
     public static function glossary(string $locale): array
     {
         $result = [];
-        foreach (GlossaryTerm::query()->get() as $term) {
+        foreach (GlossaryTerm::query()->withCount('steps')->get() as $term) {
             /** @var GlossaryTerm $term */
-            $result[] = ['id' => $term->id, 'term' => (string) $term->getTranslation('term', $locale), 'definition' => (string) $term->getTranslation('definition', $locale)];
+            $result[] = [
+                'id' => $term->id,
+                'term' => (string) $term->getTranslation('term', $locale),
+                'definition' => (string) $term->getTranslation('definition', $locale),
+                'stepsCount' => (int) $term->steps_count,
+                'translations' => [
+                    'term' => [
+                        'lt' => (string) $term->getTranslation('term', 'lt', false),
+                        'en' => (string) $term->getTranslation('term', 'en', false),
+                    ],
+                    'definition' => [
+                        'lt' => (string) $term->getTranslation('definition', 'lt', false),
+                        'en' => (string) $term->getTranslation('definition', 'en', false),
+                    ],
+                ],
+            ];
         }
 
         return $result;

@@ -154,6 +154,14 @@ export function buildPersonas(): ActionWindowPersona[] {
           target: { kind: 'route', route: 'goals.create' },
         },
         {
+          key: 'new_learning_step',
+          title: $t('shell.actions.new_learning_step.title'),
+          description: $t('shell.actions.new_learning_step.description'),
+          icon: GraduationCap,
+          requiresPermission: can => !!can.create.learningStep,
+          target: { kind: 'route', route: 'learningSteps.create' },
+        },
+        {
           key: 'duty_update',
           title: $t('action_window.actions.duty_update.title'),
           description: $t('action_window.actions.duty_update.description'),

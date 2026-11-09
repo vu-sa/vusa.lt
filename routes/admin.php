@@ -366,6 +366,8 @@ Route::patch('learning/handover-notes/{handoverNote}', [HandoverNoteController::
 Route::get('learning/reps', [LearningRepsController::class, 'index'])->name('learningPath.reps');
 Route::get('learning/reps/{user}', [LearningRepsController::class, 'show'])->name('learningPath.rep');
 Route::get('learning/library', [LearningStepController::class, 'index'])->name('learningSteps.index');
+Route::get('learning/documents/search', [LearningStepController::class, 'searchDocuments'])->name('learningSteps.documentSearch');
 Route::post('learning/steps/{learningStep}/progress', [LearningStepProgressController::class, 'store'])->name('learningSteps.progress');
+Route::put('learning/steps/{learningStep}/glossary', [LearningStepController::class, 'syncGlossary'])->name('learningSteps.glossary.sync');
 Route::resource('learning/steps', LearningStepController::class)->parameters(['steps' => 'learningStep'])->names('learningSteps')->except('index');
 Route::resource('learning/glossary', GlossaryTermController::class)->parameters(['glossary' => 'glossaryTerm'])->names('glossaryTerms')->only(['index', 'store', 'update', 'destroy']);

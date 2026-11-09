@@ -2,15 +2,25 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\GetTenantsForUpserts;
 use App\Actions\GetUserCoordinators;
 use App\Actions\ResolveLearningPath;
+use App\Enums\LearningLayer;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\LearningStepRequest;
+use App\Http\Requests\SearchLearningDocumentsRequest;
+use App\Http\Requests\SyncLearningStepGlossaryRequest;
+use App\Models\Document;
+use App\Models\DutyType;
+use App\Models\InstitutionType;
 use App\Models\LearningStep;
+use App\Models\User;
 use App\Services\Learning\ResolvedLearningStep;
 use App\Services\LearningAdminPresenter;
 use App\Services\LearningInstitutionContactsPresenter;
 use App\Services\LearningPathPresenter;
+use App\Services\ModelAuthorizer;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,12 +29,15 @@ use Inertia\Response;
 
 class LearningStepController extends AdminController
 {
+    public function __construct(private readonly ModelAuthorizer $authorizer) {}
+
     public function index(Request $request): Response
     {
         $this->authorize('viewAny', LearningStep::class);
 
         return Inertia::render('Admin/Learning/IndexLearningStep', [
-            'steps' => LearningPathPresenter::library(app()->getLocale()),
+            'steps' => LearningPathPresenter::library(app()->getLocale(), $request->user()),
+            'canCreate' => $request->user()->can('create', LearningStep::class),
             'canSeeReps' => LearningAdminPresenter::canSeeReps($request->user()),
         ]);
     }
@@ -49,7 +62,7 @@ class LearningStepController extends AdminController
     {
         $this->authorize('create', LearningStep::class);
 
-        return Inertia::render('Admin/Learning/CreateLearningStep', ['canSeeReps' => LearningAdminPresenter::canSeeReps($request->user())]);
+        return Inertia::render('Admin/Learning/CreateLearningStep', $this->formOptions($request->user(), 'create'));
     }
 
     public function edit(Request $request, LearningStep $learningStep): Response
@@ -57,8 +70,9 @@ class LearningStepController extends AdminController
         $this->authorize('update', $learningStep);
 
         return Inertia::render('Admin/Learning/EditLearningStep', [
-            'step' => LearningPathPresenter::edit($learningStep->load('sources')),
-            'canSeeReps' => LearningAdminPresenter::canSeeReps($request->user()),
+            'step' => LearningPathPresenter::edit($learningStep->load('sources.document')),
+            'canDelete' => $request->user()->can('delete', $learningStep),
+            ...$this->formOptions($request->user(), 'update'),
         ]);
     }
 
@@ -66,7 +80,11 @@ class LearningStepController extends AdminController
     {
         $this->authorize('create', LearningStep::class);
         $step = DB::transaction(function () use ($request): LearningStep {
-            $step = LearningStep::create([...$request->safe()->except('sources'), 'created_by' => $request->user()->id]);
+            $step = LearningStep::create([
+                ...$request->safe()->except('sources'),
+                'reviewed_at' => now(),
+                'created_by' => $request->user()->id,
+            ]);
             $this->syncSources($step, $request->validated('sources', []));
 
             return $step;
@@ -79,7 +97,10 @@ class LearningStepController extends AdminController
     {
         $this->authorize('update', $learningStep);
         DB::transaction(function () use ($request, $learningStep): void {
-            $learningStep->update($request->safe()->except('sources'));
+            $learningStep->update([
+                ...$request->safe()->except('sources'),
+                'reviewed_at' => now(),
+            ]);
             if (! $learningStep->is_system && array_key_exists('sources', $request->validated())) {
                 $this->syncSources($learningStep, $request->validated('sources'));
             }
@@ -94,6 +115,65 @@ class LearningStepController extends AdminController
         $learningStep->delete();
 
         return to_route('learningSteps.index')->with('success', $this->entityMessage('deleted', 'learningStep'));
+    }
+
+    public function searchDocuments(SearchLearningDocumentsRequest $request): JsonResponse
+    {
+        $this->authorize('create', LearningStep::class);
+        $query = trim((string) ($request->validated('q') ?? ''));
+
+        $documents = Document::query()
+            ->browsableBy($request->user())
+            ->when($query !== '', fn ($builder) => $builder->where('title', 'like', "%{$query}%"))
+            ->orderByDesc('document_date')
+            ->orderByDesc('id')
+            ->limit(20)
+            ->get(['id', 'title', 'status', 'document_date']);
+
+        return response()->json($documents->map(fn (Document $document): array => [
+            'id' => $document->id,
+            'title' => (string) $document->title,
+            'status' => $document->status->value,
+            'date' => $document->document_date?->toDateString(),
+        ])->values()->all());
+    }
+
+    public function syncGlossary(SyncLearningStepGlossaryRequest $request, LearningStep $learningStep): RedirectResponse
+    {
+        $this->authorize('update', $learningStep);
+        $learningStep->glossaryTerms()->sync($request->validated('term_ids') ?? []);
+
+        return back()->with('success', $this->entityMessage('updated', 'learningStep'));
+    }
+
+    /** @return array{layers: list<string>, tenants: list<array{id: int, shortname: string, fullname: string, type: string|null}>, institutionTypes: list<array{id: int, title: string, parent_id: int|null}>, dutyTypes: list<array{id: int, title: string, parent_id: int|null}>, canSeeReps: bool} */
+    private function formOptions(User $user, string $ability): array
+    {
+        $locale = app()->getLocale();
+        $scope = $this->authorizer->scope($user, "learningSteps.{$ability}.padalinys");
+        $layers = $scope->isAllScope
+            ? array_map(fn (LearningLayer $layer): string => $layer->value, LearningLayer::cases())
+            : ($scope->granted ? [LearningLayer::Tenant->value] : []);
+
+        return [
+            'layers' => $layers,
+            'tenants' => GetTenantsForUpserts::execute("learningSteps.{$ability}.padalinys", $this->authorizer)->all(),
+            'institutionTypes' => $scope->isAllScope
+                ? InstitutionType::query()->get(['id', 'title', 'parent_id'])->map(fn (InstitutionType $type): array => [
+                    'id' => $type->id,
+                    'title' => (string) $type->getTranslation('title', $locale),
+                    'parent_id' => $type->parent_id,
+                ])->values()->all()
+                : [],
+            'dutyTypes' => $scope->isAllScope
+                ? DutyType::query()->get(['id', 'title', 'parent_id'])->map(fn (DutyType $type): array => [
+                    'id' => $type->id,
+                    'title' => (string) $type->getTranslation('title', $locale),
+                    'parent_id' => $type->parent_id,
+                ])->values()->all()
+                : [],
+            'canSeeReps' => LearningAdminPresenter::canSeeReps($user),
+        ];
     }
 
     /** @param array<string, array{document_id?: int|null, url?: string|null}> $sources */
