@@ -113,9 +113,12 @@ class ResolveLearningPath
         };
     }
 
+    /** Incoming reps prepare before their term starts, so per-term work done in the lead-up still counts. */
+    private const int TERM_LEAD_IN_DAYS = 90;
+
     private static function completionIsCurrent(LearningStep $step, ?Carbon $date, ?Carbon $termStart): bool
     {
-        return $date !== null && (! $step->per_term || $termStart === null || $date->gte($termStart));
+        return $date !== null && (! $step->per_term || $termStart === null || $date->gte($termStart->copy()->subDays(self::TERM_LEAD_IN_DAYS)));
     }
 
     private static function resolveStep(LearningStep $step, ?LearningStepProgress $progress, ?Carbon $termStart, bool $detected, ?Carbon $writtenAt): ResolvedLearningStep

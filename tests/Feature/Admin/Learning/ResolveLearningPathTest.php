@@ -88,7 +88,7 @@ test('per term progress expires while ordinary progress and skips remain resolve
     $skip = LearningStep::factory()->create();
     foreach ([$term, $done, $skip] as $step) {
         LearningStepProgress::factory()->for($user)->create([
-            'learning_step_id' => $step->id, 'completed_at' => today()->subMonth(),
+            'learning_step_id' => $step->id, 'completed_at' => today()->subMonths(6),
             'status' => $step->is($skip) ? LearningProgressStatus::Skipped : LearningProgressStatus::Done,
         ]);
     }
@@ -99,6 +99,14 @@ test('per term progress expires while ordinary progress and skips remain resolve
     expect($states[$done->id]->state)->toBe('done');
     expect($states[$skip->id]->state)->toBe('skipped');
     expect($path->totals()['allDone'])->toBe(2);
+});
+
+test('an incoming rep keeps per term progress made before the term starts', function (): void {
+    $this->freezeTime();
+    [$user] = learningRep(start: today()->addMonth()->toDateString());
+    $step = LearningStep::factory()->create(['per_term' => true]);
+    LearningStepProgress::factory()->for($user)->create(['learning_step_id' => $step->id, 'completed_at' => now(), 'status' => LearningProgressStatus::Done]);
+    expect(ResolveLearningPath::execute($user)->steps->firstWhere('step.id', $step->id)->state)->toBe('done');
 });
 
 test('received handover unlocks reading and meeting preparation stays outside progress', function (): void {
@@ -133,7 +141,7 @@ test('knowledge becomes updated when the SharePoint source changes after complet
 test('only handover written during the current term automatically completes writing', function (): void {
     $this->freezeTime();
     [$user, $duty] = learningRep();
-    $note = HandoverNote::factory()->for($duty)->for($user, 'author')->create(['created_at' => today()->subMonths(2)]);
+    $note = HandoverNote::factory()->for($duty)->for($user, 'author')->create(['created_at' => today()->subMonths(6)]);
     $key = fn () => ResolveLearningPath::execute($user)->steps->first(fn ($item) => $item->step->key === 'write_handover');
     expect($key()->state)->toBe('pending');
     $note->forceFill(['created_at' => now()])->save();

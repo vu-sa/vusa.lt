@@ -109,12 +109,17 @@ export interface WritableHandoverDuty {
 export interface LearningRepresentative {
   id: string;
   name: string;
+  incoming: boolean;
+  lastActivity: string | null;
   institutions: { id: string; title: string }[];
   totals: LearningTotals;
 }
 
 export interface LearningRepsSummary extends LearningTotals {
   representatives: number;
+  essentialsFinished: number;
+  notStarted: number;
+  averageEssentialProgress: number;
 }
 
 export interface LearningInstitutionContacts {

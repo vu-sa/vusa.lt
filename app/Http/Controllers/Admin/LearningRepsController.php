@@ -32,6 +32,7 @@ class LearningRepsController extends AdminController
         return Inertia::render('Admin/Learning/ShowLearningRep', [
             'path' => LearningPathPresenter::path(ResolveLearningPath::execute($user), app()->getLocale()),
             'rep' => LearningAdminPresenter::member($user), 'canSeeReps' => true,
+            'notes' => LearningAdminPresenter::representativeNotes($user, $request->user(), app()->getLocale()),
         ]);
     }
 }

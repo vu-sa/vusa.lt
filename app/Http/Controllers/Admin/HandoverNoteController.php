@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\ResolveLearningPath;
+use App\Enums\LearningProgressStatus;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\HandoverNoteRequest;
 use App\Models\Duty;
 use App\Models\HandoverNote;
+use App\Models\LearningStepProgress;
 use App\Services\LearningAdminPresenter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,10 +20,22 @@ class HandoverNoteController extends AdminController
     public function index(Request $request): Response
     {
         $this->authorize('viewAny', HandoverNote::class);
+        $user = $request->user();
+        $received = LearningAdminPresenter::received($user, app()->getLocale());
+        if ($received !== []) {
+            $path = ResolveLearningPath::execute($user);
+            $step = $path->steps->first(fn ($item): bool => $item->step->key === 'read_handover');
+            if ($step !== null && $step->state !== 'done') {
+                LearningStepProgress::query()->updateOrCreate(
+                    ['user_id' => $user->id, 'learning_step_id' => $step->step->id],
+                    ['status' => LearningProgressStatus::Done, 'completed_at' => now()],
+                );
+            }
+        }
 
         return Inertia::render('Admin/Learning/ShowHandover', [
             'writable' => LearningAdminPresenter::writable($request->user(), app()->getLocale()),
-            'received' => LearningAdminPresenter::received($request->user(), app()->getLocale()),
+            'received' => $received,
             'canSeeReps' => LearningAdminPresenter::canSeeReps($request->user()),
         ]);
     }
