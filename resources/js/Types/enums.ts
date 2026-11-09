@@ -1,30 +1,3 @@
-export enum LearningStepKind {
-    Knowledge = 'knowledge',
-    Action = 'action',
-    MeetingPrep = 'meeting_prep',
-}
-export enum LearningLayer {
-    Platform = 'platform',
-    Foundation = 'foundation',
-    InstitutionType = 'institution_type',
-    DutyType = 'duty_type',
-    Tenant = 'tenant',
-}
-export enum LearningStage {
-    BeforeStart = 'before_start',
-    FirstMonths = 'first_months',
-    WholeTerm = 'whole_term',
-    TermEnd = 'term_end',
-}
-export enum LearningImportance {
-    Essential = 'essential',
-    Recommended = 'recommended',
-    Optional = 'optional',
-}
-export enum LearningProgressStatus {
-    Done = 'done',
-    Skipped = 'skipped',
-}
 export enum ActionType {
     Manual = 'manual',
     Approval = 'approval',
@@ -173,6 +146,33 @@ export enum InstitutionTypeLinkScope {
     SameTenant = 'same_tenant',
     MainToUnits = 'main_to_units',
     AllTenants = 'all_tenants',
+}
+export enum LearningImportance {
+    Essential = 'essential',
+    Recommended = 'recommended',
+    Optional = 'optional',
+}
+export enum LearningLayer {
+    Platform = 'platform',
+    Foundation = 'foundation',
+    InstitutionType = 'institution_type',
+    DutyType = 'duty_type',
+    Tenant = 'tenant',
+}
+export enum LearningProgressStatus {
+    Done = 'done',
+    Skipped = 'skipped',
+}
+export enum LearningStage {
+    BeforeStart = 'before_start',
+    FirstMonths = 'first_months',
+    WholeTerm = 'whole_term',
+    TermEnd = 'term_end',
+}
+export enum LearningStepKind {
+    Knowledge = 'knowledge',
+    Action = 'action',
+    MeetingPrep = 'meeting_prep',
 }
 export enum LocaleEnum {
     LT = 'lt',

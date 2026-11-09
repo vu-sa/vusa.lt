@@ -28,11 +28,12 @@ class HandoverNoteRequest extends FormRequest
 
     public function attributes(): array
     {
-        $attributes = [];
-        foreach (['situation', 'open_issues', 'people', 'resources', 'advice'] as $field) {
-            $attributes[$field] = __('learning_people.fields.'.$field.'.label');
-        }
-
-        return $attributes;
+        return [
+            'situation' => __('learning_people.fields.situation.label'),
+            'open_issues' => __('learning_people.fields.open_issues.label'),
+            'people' => __('learning_people.fields.people.label'),
+            'resources' => __('learning_people.fields.resources.label'),
+            'advice' => __('learning_people.fields.advice.label'),
+        ];
     }
 }
