@@ -1,136 +1,135 @@
 <template>
-  <CollectionPage
-    collection="glossaryTerms"
-    :eyebrow="$t('shell.workspaces.pradzia.title')"
-    :title="$t('learning.pages.glossary')"
-    :lead="$t('learning_library.glossary.lead')"
-    :source
-    :columns
-    :item-key="termKey"
-    :row-actions="rowActions"
-    default-view="table"
-    table-fixed
-    actions-width="w-36"
-    table-min-width="min-w-[48rem]"
-    :search-placeholder="$t('learning_library.glossary.search_placeholder')"
-    @row-action="(item, key) => selectRowAction(key, item)"
-  >
-    <template #header>
-      <LearningTabs :can-see-reps="canSeeReps" />
-    </template>
-
-    <template #actions>
-      <Button v-if="canManageTerms" variant="brand" data-testid="create-glossary-term" @click="openSheet()">
-        <Plus aria-hidden="true" />
-        {{ $t('learning_library.glossary.new_term') }}
-      </Button>
-    </template>
-
-    <template #row="{ item, actions: recordActions, view }">
-      <CollectionRow
-        :spotlight="item === source.items.value[0]"
-        :actions="view === 'preview' ? [] : recordActions"
-        class="px-3 py-3 sm:px-4"
-        @select="key => selectRowAction(key, item)"
-      >
-        <div class="min-w-0 flex-1">
-          <div class="flex flex-wrap items-baseline justify-between gap-2">
-            <button
-              v-if="canManageTerms"
-              type="button"
-              class="text-left font-medium text-foreground hover:text-brand"
-              @click="openSheet(item)"
-            >
-              {{ item.term }}
-            </button>
-            <span v-else class="font-medium text-foreground">{{ item.term }}</span>
-            <span class="text-xs tabular-nums text-muted-foreground" data-testid="glossary-term-steps-count">
-              {{ $tChoice('learning_library.glossary.steps_usage', item.stepsCount, { count: item.stepsCount }) }}
-            </span>
-          </div>
-          <p class="mt-0.5 whitespace-pre-line text-sm text-muted-foreground">
-            {{ item.definition }}
-          </p>
-        </div>
-      </CollectionRow>
-    </template>
-
-    <template #cell="{ item, column }">
-      <template v-if="column.key === 'term'">
-        <button
-          v-if="canManageTerms"
-          type="button"
-          class="text-left font-medium text-foreground hover:text-brand"
-          @click="openSheet(item)"
-        >
-          {{ item.term }}
-        </button>
-        <span v-else class="font-medium text-foreground">{{ item.term }}</span>
+  <div>
+    <LearningTabs :can-see-reps="canSeeReps" />
+    <CollectionPage
+      collection="glossaryTerms"
+      :eyebrow="$t('shell.workspaces.pradzia.title')"
+      :title="$t('learning.pages.glossary')"
+      :lead="$t('learning_library.glossary.lead')"
+      :source
+      :columns
+      :item-key="termKey"
+      :row-actions="rowActions"
+      default-view="table"
+      table-fixed
+      actions-width="w-36"
+      table-min-width="min-w-[48rem]"
+      :search-placeholder="$t('learning_library.glossary.search_placeholder')"
+      @row-action="(item, key) => selectRowAction(key, item)"
+    >
+      <template #actions>
+        <Button v-if="canManageTerms" variant="brand" data-testid="create-glossary-term" @click="openSheet()">
+          <Plus aria-hidden="true" />
+          {{ $t('learning_library.glossary.new_term') }}
+        </Button>
       </template>
-      <span v-else-if="column.key === 'definition'" class="whitespace-pre-line text-sm text-muted-foreground">
-        {{ item.definition }}
-      </span>
-      <span v-else-if="column.key === 'stepsCount'" class="tabular-nums text-sm text-muted-foreground" data-testid="glossary-term-steps-count">
-        {{ item.stepsCount }}
-      </span>
-    </template>
 
-    <template #empty>
-      <EmptyState
-        mode="empty"
-        :icon="BookA"
-        :title="$t('learning_library.glossary.empty_title')"
-        :description="$t('learning_library.glossary.empty_description')"
-        :action-label="canManageTerms ? $t('learning_library.glossary.new_term') : undefined"
-        @action="openSheet()"
-      />
-    </template>
-  </CollectionPage>
+      <template #row="{ item, actions: recordActions, view }">
+        <CollectionRow
+          :spotlight="item === source.items.value[0]"
+          :actions="view === 'preview' ? [] : recordActions"
+          class="px-3 py-3 sm:px-4"
+          @select="key => selectRowAction(key, item)"
+        >
+          <div class="min-w-0 flex-1">
+            <div class="flex flex-wrap items-baseline justify-between gap-2">
+              <button
+                v-if="canManageTerms"
+                type="button"
+                class="text-left font-medium text-foreground hover:text-brand"
+                @click="openSheet(item)"
+              >
+                {{ item.term }}
+              </button>
+              <span v-else class="font-medium text-foreground">{{ item.term }}</span>
+              <span class="text-xs tabular-nums text-muted-foreground" data-testid="glossary-term-steps-count">
+                {{ $tChoice('learning_library.glossary.steps_usage', item.stepsCount, { count: String(item.stepsCount) }) }}
+              </span>
+            </div>
+            <p class="mt-0.5 whitespace-pre-line text-sm text-muted-foreground">
+              {{ item.definition }}
+            </p>
+          </div>
+        </CollectionRow>
+      </template>
 
-  <SheetForm
-    v-if="canManageTerms"
-    v-model:open="sheetOpen"
-    required-note
-    :title="editing ? $t('learning_library.glossary.edit_term') : $t('learning_library.glossary.new_term')"
-    :description="$t('learning_library.glossary.sheet_description')"
-    :processing="form.processing"
-    :dirty="form.isDirty"
-    @cancel="resetForm"
-    @submit="submitForm"
-  >
-    <FormFieldWrapper
-      id="glossary-term-input"
-      :label="$t('learning_library.glossary.term')"
-      :error="form.errors['term.lt'] || form.errors['term.en'] || form.errors.term"
-      required
+      <template #cell="{ item, column }">
+        <template v-if="column.key === 'term'">
+          <button
+            v-if="canManageTerms"
+            type="button"
+            class="text-left font-medium text-foreground hover:text-brand"
+            @click="openSheet(item)"
+          >
+            {{ item.term }}
+          </button>
+          <span v-else class="font-medium text-foreground">{{ item.term }}</span>
+        </template>
+        <span v-else-if="column.key === 'definition'" class="whitespace-pre-line text-sm text-muted-foreground">
+          {{ item.definition }}
+        </span>
+        <span v-else-if="column.key === 'stepsCount'" class="tabular-nums text-sm text-muted-foreground" data-testid="glossary-term-steps-count">
+          {{ item.stepsCount }}
+        </span>
+      </template>
+
+      <template #empty>
+        <EmptyState
+          mode="empty"
+          :icon="BookA"
+          :title="$t('learning_library.glossary.empty_title')"
+          :description="$t('learning_library.glossary.empty_description')"
+          :action-label="canManageTerms ? $t('learning_library.glossary.new_term') : undefined"
+          @action="openSheet()"
+        />
+      </template>
+    </CollectionPage>
+
+    <SheetForm
+      v-if="canManageTerms"
+      v-model:open="sheetOpen"
+      required-note
+      :title="editing ? $t('learning_library.glossary.edit_term') : $t('learning_library.glossary.new_term')"
+      :description="$t('learning_library.glossary.sheet_description')"
+      :processing="form.processing"
+      :dirty="form.isDirty"
+      @cancel="resetForm"
+      @submit="submitForm"
     >
-      <MultiLocaleInput id="glossary-term-input" v-model:input="form.term" />
-    </FormFieldWrapper>
+      <FormFieldWrapper
+        id="glossary-term-input"
+        :label="$t('learning_library.glossary.term')"
+        :error="form.errors['term.lt'] || form.errors['term.en'] || form.errors.term"
+        required
+      >
+        <MultiLocaleInput id="glossary-term-input" v-model:input="form.term" />
+      </FormFieldWrapper>
 
-    <FormFieldWrapper
-      id="glossary-definition-input"
-      :label="$t('learning_library.glossary.definition')"
-      :error="form.errors['definition.lt'] || form.errors['definition.en'] || form.errors.definition"
-      required
-    >
-      <MultiLocaleInput
+      <FormFieldWrapper
         id="glossary-definition-input"
-        v-model:input="form.definition"
-        input-type="textarea"
-      />
-    </FormFieldWrapper>
-  </SheetForm>
+        :label="$t('learning_library.glossary.definition')"
+        :error="form.errors['definition.lt'] || form.errors['definition.en'] || form.errors.definition"
+        required
+      >
+        <MultiLocaleInput
+          id="glossary-definition-input"
+          v-model:input="form.definition"
+          input-type="textarea"
+        />
+      </FormFieldWrapper>
+    </SheetForm>
 
-  <ConfirmDialog
-    v-if="canManageTerms"
-    :open="toDelete !== null"
-    :title="$t('learning_library.glossary.delete_title')"
-    :description="$t('learning_library.glossary.delete_description')"
-    :confirm-label="$t('learning_library.glossary.delete_confirm')"
-    destructive
-    @update:open="!$event && (toDelete = null)"
-    @confirm="removeTerm"
-  />
+    <ConfirmDialog
+      v-if="canManageTerms"
+      :open="toDelete !== null"
+      :title="$t('learning_library.glossary.delete_title')"
+      :description="$t('learning_library.glossary.delete_description')"
+      :confirm-label="$t('learning_library.glossary.delete_confirm')"
+      destructive
+      @update:open="!$event && (toDelete = null)"
+      @confirm="removeTerm"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">

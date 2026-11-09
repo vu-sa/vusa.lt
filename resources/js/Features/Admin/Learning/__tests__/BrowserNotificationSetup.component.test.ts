@@ -34,7 +34,7 @@ describe('BrowserNotificationSetup', () => {
     await wrapper.find('[data-testid="enable-browser-notifications"]').trigger('click');
     expect(pwa.subscribeToPush).toHaveBeenCalledOnce();
     await flushPromises();
-    expect(router.reload).toHaveBeenCalledWith(expect.objectContaining({ only: ['path', 'step'] }));
+    expect(router.reload).toHaveBeenCalledWith({ only: ['path', 'step'] });
   });
 
   it('offers recovery for denied permission and an explanation for unsupported browsers', () => {

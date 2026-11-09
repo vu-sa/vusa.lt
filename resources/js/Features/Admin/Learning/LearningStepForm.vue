@@ -6,7 +6,7 @@
     :dirty="form.isDirty"
     :processing="form.processing"
     :errors="form.errors"
-    max-width="3xl"
+    max-width="4xl"
     @submit="submit"
     @cancel="cancel"
   >
@@ -30,7 +30,7 @@
           <FormSegmentedControl
             v-model="stageModel"
             :options="stageOptions"
-            :aria-label="$t('learning_library.fields.stage')"
+            :ariaLabel="$t('learning_library.fields.stage')"
             test-id-prefix="step-stage"
           />
         </FormFieldWrapper>
@@ -78,7 +78,7 @@
           <FormSegmentedControl
             v-model="form.kind"
             :options="kindOptions"
-            :aria-label="$t('learning_library.fields.kind')"
+            :ariaLabel="$t('learning_library.fields.kind')"
             test-id-prefix="step-kind"
           />
         </FormFieldWrapper>
@@ -92,7 +92,7 @@
           <FormSegmentedControl
             v-model="form.importance"
             :options="importanceOptions"
-            :aria-label="$t('learning_library.fields.importance')"
+            :ariaLabel="$t('learning_library.fields.importance')"
             test-id-prefix="step-importance"
           />
         </FormFieldWrapper>
@@ -133,7 +133,7 @@
           <FormSegmentedControl
             v-model="form.layer"
             :options="layerOptions"
-            :aria-label="$t('learning_library.fields.layer')"
+            :ariaLabel="$t('learning_library.fields.layer')"
             test-id-prefix="step-layer"
           />
         </FormFieldWrapper>
@@ -222,7 +222,7 @@
             v-else
             v-model="stageModel"
             :options="stageOptions"
-            :aria-label="$t('learning_library.fields.stage')"
+            :ariaLabel="$t('learning_library.fields.stage')"
             test-id-prefix="step-stage"
           />
         </FormFieldWrapper>
@@ -290,7 +290,7 @@
               <FormSegmentedControl
                 :model-value="sourceModes[locale]"
                 :options="sourceModeOptions"
-                :aria-label="$t(`learning_library.source.locale_${locale}`)"
+                :ariaLabel="$t(`learning_library.source.locale_${locale}`)"
                 :test-id-prefix="`source-mode-${locale}`"
                 @update:model-value="mode => setSourceMode(locale, mode)"
               />

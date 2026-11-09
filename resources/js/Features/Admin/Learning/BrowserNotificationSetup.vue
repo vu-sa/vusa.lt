@@ -65,7 +65,7 @@ async function enable() {
   activationFailed.value = false;
   try {
     activationFailed.value = !(await subscribeToPush());
-    if (!activationFailed.value) router.reload({ only: ['path', 'step'], preserveScroll: true });
+    if (!activationFailed.value) router.reload({ only: ['path', 'step'] });
   }
   catch {
     activationFailed.value = true;

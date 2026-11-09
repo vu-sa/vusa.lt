@@ -1,7 +1,7 @@
 ---
 title: Mano kelias
 doc_status: reviewed
-last_reviewed: 2026-11-09
+last_reviewed: 2026-11-10
 tests:
   - tests/Feature/Admin/Learning/ResolveLearningPathTest.php
   - tests/Feature/Admin/Learning/LearningRoutesTest.php
@@ -13,6 +13,8 @@ tests:
   - tests/Feature/Admin/Learning/LearningPathPresenterTest.php
   - tests/Feature/Admin/Learning/SystemStepDetectorsTest.php
   - tests/Feature/Seeders/LearningPathPilotSeederTest.php
+  - resources/js/Features/Admin/Learning/__tests__/LearningLibrary.component.test.ts
+  - resources/js/Features/Admin/Learning/__tests__/BrowserNotificationSetup.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/LearningTabs.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/LearningPathView.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/LearningStepRow.component.test.ts
@@ -94,7 +96,10 @@ Jei šaltinio dokumentas Archyve atnaujinamas jau perskaičius, žingsnis pažym
 ### Skirtukai
 
 - **Mano kelias** – tavo žingsniai ir pažanga.
-- **Žinynas** – visi žingsniai su paieška ir filtrais. Turinio kūrėjams rodomos žymos: dokumentas
+- **Žinynas** – visi žingsniai su paieška ir filtrais pagal sluoksnį, rūšį ir svarbą. Greitieji filtrai
+  siaurina sąrašą; tame pačiame filtre pasirinktos reikšmės jungiamos, o skirtingi filtrai taikomi kartu.
+  Paspausk pasirinktą filtrą dar kartą, kad jį nuimtum, arba **Išvalyti visus**.
+  Turinio kūrėjams rodomos žymos: dokumentas
   nebegalioja, dokumentas atnaujintas po peržiūros, nėra šaltinio.
 - **Sąvokos** – žodynėlis (SPK, akreditacija, kvorumas…). Sąvokos susiejamos su žingsniais ir rodomos
   žingsnio puslapyje.

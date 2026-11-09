@@ -33,7 +33,7 @@ import { NativeSelect } from '@/Components/ui/native-select';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 
 const props = withDefaults(defineProps<{
-  tenants: App.Entities.Tenant[];
+  tenants: (Pick<App.Entities.Tenant, 'id' | 'shortname'> & Partial<Pick<App.Entities.Tenant, 'fullname'>>)[];
   id?: string;
   disabled?: boolean;
   error?: string;
@@ -49,7 +49,7 @@ const model = defineModel<number | null>({ default: null });
 const tenantOptions = computed(() =>
   props.tenants.map(tenant => ({
     value: tenant.id,
-    label: tenant.shortname || tenant.fullname,
+    label: tenant.shortname || tenant.fullname || '',
   })),
 );
 </script>

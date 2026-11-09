@@ -19,10 +19,6 @@ const stubs = {
     props: ['input'],
     template: '<input />',
   },
-  TenantSelectField: {
-    props: ['modelValue', 'tenants'],
-    template: '<div data-testid="tenant-select" />',
-  },
   ConfirmDialog: true,
 };
 
@@ -56,6 +52,9 @@ describe('LearningStepForm', () => {
     expect(wrapper.find('[data-testid="step-stage-before_start"]').exists()).toBe(false);
     expect(wrapper.find('[data-testid="stage-fixed-tenant"]').exists()).toBe(true);
     expect(wrapper.get('[data-testid="stage-fixed-tenant"]').text()).toBe('learning_library.fields.stage_fixed_before_start');
+    const tenant = wrapper.get<HTMLSelectElement>('select#step-tenant');
+    expect(tenant.element.value).toBe('1');
+    expect(tenant.findAll('option').map(option => option.text())).toContain('MIF');
   });
 
   it('switches source between document and URL and clears the opposite field', async () => {

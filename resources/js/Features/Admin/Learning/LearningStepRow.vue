@@ -33,7 +33,7 @@ defineProps<{
     <div class="space-y-3 pb-5 sm:pl-8">
       <LearningStepContent :step="step" :readonly="readonly" :coordinators="coordinators" :institution-contacts="institutionContacts" />
       <Link :href="route('learningSteps.show', step.id) + '?tab=insights'" class="inline-flex min-h-11 items-center text-sm underline underline-offset-4">
-        {{ $t('learning.path.insights_count', { count: step.insightsCount }) }}
+        {{ $t('learning.path.insights_count', { count: String(step.insightsCount) }) }}
       </Link>
     </div>
   </details>
