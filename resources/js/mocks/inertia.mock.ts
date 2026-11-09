@@ -1,6 +1,6 @@
 import { fn } from 'storybook/test';
 import { vi } from 'vitest';
-import { defineComponent, h, reactive } from 'vue';
+import { defineComponent, h, reactive, ref } from 'vue';
 
 /**
  * Centralized Inertia.js mock for Storybook and Vitest
@@ -15,6 +15,8 @@ const isVitest = typeof vi !== 'undefined';
 const mockFn = (isVitest ? vi.fn : fn) as <T extends (...args: any[]) => any>(impl?: T) => T;
 
 // Mock usePage() function returning commonly used page props
+export const useRemember = mockFn((data: object) => ref(data));
+
 export const usePage = mockFn(() => ({
   props: {
     app: {

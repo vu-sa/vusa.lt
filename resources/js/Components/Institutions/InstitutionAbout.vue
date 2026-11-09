@@ -1,12 +1,12 @@
 <template>
-  <div v-if="plainText" class="max-w-prose" data-slot="institution-about">
+  <div v-if="description?.trim()" class="max-w-prose" data-slot="institution-about">
     <!-- eslint-disable-next-line vue/no-v-html -- sanitised on write (Institution::sanitizedHtmlTranslations) -->
     <div v-if="expanded" class="prose prose-sm dark:prose-invert max-w-none text-muted-foreground" v-html="description" />
     <p v-else ref="clamped" class="line-clamp-2 text-sm text-muted-foreground">
       {{ plainText }}
     </p>
     <button
-      v-if="overflows || expanded"
+      v-if="overflows || expanded || hasRichContent"
       type="button"
       class="mt-1 text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline pointer-coarse:min-h-11"
       :aria-expanded="expanded"
@@ -26,6 +26,7 @@ const props = defineProps<{
   description?: string | null;
 }>();
 
+const hasRichContent = computed(() => /<(?:a|img|video|iframe|table|ul|ol)\b/i.test(props.description ?? ''));
 const expanded = ref(false);
 const overflows = ref(false);
 const clamped = ref<HTMLElement | null>(null);

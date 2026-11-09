@@ -1,5 +1,8 @@
 <template>
   <div class="flex flex-col gap-10" data-slot="institution-overview">
+    <OverviewSection v-if="upcomingMeeting" variant="home" :title="$t('Artimiausias posėdis')" :icon="CalendarIcon">
+      <MeetingCard :meeting="upcomingMeeting" :href="route('meetings.show', upcomingMeeting.id)" />
+    </OverviewSection>
     <OverviewSection
       variant="home"
       :title="$t('Paskutiniai posėdžiai')"
@@ -41,8 +44,10 @@
       <InstitutionDutiesSection
         v-if="duties"
         :duties
+        preview
+        @view-all="$emit('navigate-tab', 'duties')"
         :institution-id="institution.id"
-        :can-manage
+        :can-manage="false"
         @assign="$emit('assign', $event)"
         @edit-term="(duty, user) => $emit('edit-term', duty, user)"
       />
@@ -77,6 +82,7 @@ const props = defineProps<{
   canManage?: boolean;
   /** Whether a Posėdžiai tab exists for "Visi posėdžiai" to open. */
   meetingsTab?: boolean;
+  upcomingMeeting?: import('@/Types/InstitutionPage').InstitutionPageMeeting | null;
 }>();
 
 defineEmits<{

@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\CadenceController;
 use App\Http\Controllers\Admin\InstitutionSecretaryController;
 use App\Http\Resources\InstitutionMeetingResource;
 use App\Http\Resources\ProblemSummaryResource;
+use App\Models\Duty;
 use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
@@ -136,10 +137,10 @@ class InstitutionPresenter
     }
 
     /** @return list<array{id: string, name: string|null, description: string|null, institution_id: string, order: int, email: string|null, contacts_grouping: string, places_to_occupy: int|null, is_active: bool, created_at: string, updated_at: string, deleted_at: string|null, current_users: list<array{id: string, name: string, profile_photo_path: string|null, profile_photo_focal_point: string|null, pivot: array{id: string, start_date: string, end_date: string|null}}>}> */
-    public static function duties(Institution $institution): array
+    public static function duties(Institution $institution, ?int $limit = null): array
     {
         $duties = [];
-        foreach ($institution->duties()->with('current_users:id,name,profile_photo_path,profile_photo_focal_point')->orderBy('order')->get() as $duty) {
+        foreach ($institution->duties()->with('current_users:id,name,profile_photo_path,profile_photo_focal_point')->orderBy('order')->when($limit !== null, fn ($query) => $query->limit($limit))->get() as $duty) {
             $attributes = $duty->attributesToArray();
             $users = [];
             foreach ($duty->current_users as $user) {
@@ -352,7 +353,7 @@ class InstitutionPresenter
         return $options;
     }
 
-    /** @return array{update: bool, delete: bool, recordMeeting: bool, createProblem: bool, reportActivity: bool, manageLinks: bool, askAboutActivity: bool} */
+    /** @return array{update: bool, delete: bool, recordMeeting: bool, createProblem: bool, createDuty: bool, reportActivity: bool, manageLinks: bool, askAboutActivity: bool} */
     public static function abilities(Institution $institution, User $user, bool $readOnly): array
     {
         return [
@@ -360,6 +361,7 @@ class InstitutionPresenter
             'delete' => $user->can('delete', $institution),
             'recordMeeting' => ! $readOnly && $user->can('createFor', [Meeting::class, $institution]),
             'createProblem' => $user->can('create', Problem::class),
+            'createDuty' => ! $readOnly && $user->can('create', Duty::class),
             'reportActivity' => ! $readOnly && $user->can('create', [InstitutionCheckIn::class, $institution]),
             'manageLinks' => ! $readOnly && $user->can('create', InstitutionLink::class),
             'askAboutActivity' => ! $readOnly && $user->can('askAboutActivity', [InstitutionCheckIn::class, $institution]),

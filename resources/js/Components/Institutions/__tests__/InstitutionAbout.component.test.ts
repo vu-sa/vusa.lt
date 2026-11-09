@@ -31,3 +31,12 @@ describe('InstitutionAbout', () => {
     expect(wrapper.find('.prose em').text()).toBe('kuris netelpa');
   });
 });
+
+ it('keeps a short link and media-only descriptions accessible', async () => {
+  const wrapper = mount(InstitutionAbout, { props: { description: '<p><a href="https://vusa.lt">VU SA</a></p>' } });
+  await wrapper.get('[data-testid="institution-about-toggle"]').trigger('click');
+  expect(wrapper.get('a').attributes('href')).toBe('https://vusa.lt');
+  await wrapper.setProps({ description: '<p><img src="/image.png" alt="Schema"></p>' });
+  await wrapper.get('[data-testid="institution-about-toggle"]').trigger('click');
+  expect(wrapper.get('img').attributes('alt')).toBe('Schema');
+});

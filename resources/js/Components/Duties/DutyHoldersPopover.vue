@@ -11,7 +11,8 @@
         :aria-label="triggerLabel"
         data-slot="duty-holders-trigger"
       >
-        <span v-if="holders.length" class="flex items-center">
+        <span>{{ $t('Nariai') }} · {{ holders.length }}</span>
+        <span v-if="holders.length" class="hidden items-center sm:flex">
           <UserAvatar
             v-for="(user, index) in visibleHolders"
             :key="user.id"
@@ -31,7 +32,7 @@
       </button>
     </PopoverTrigger>
 
-    <PopoverContent align="end" class="w-72 p-0" data-slot="duty-holders-popover">
+    <PopoverContent align="end" class="w-[min(24rem,calc(100vw-2rem))] p-0" data-slot="duty-holders-popover">
       <p class="border-b border-border px-3 py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
         {{ $t('Užima') }} · {{ holders.length }}
       </p>
@@ -50,20 +51,21 @@
             v-if="canManage && user.pivot?.id"
             type="button"
             variant="ghost"
-            size="icon-sm"
-            class="shrink-0 pointer-coarse:size-11"
+            size="sm"
+            class="shrink-0 pointer-coarse:min-h-11"
             :aria-label="`${$t('Redaguoti pareigybės laikotarpį')}: ${user.name}`"
             :title="$t('Redaguoti pareigybės laikotarpį')"
             @click="editTerm(user)"
           >
             <CalendarCog class="size-4 text-muted-foreground" aria-hidden="true" />
+            {{ $t('Keisti laikotarpį') }}
           </Button>
         </li>
       </ul>
       <p v-else class="px-3 py-3 text-sm text-status-attention">
         {{ $t('Neužimta') }}
       </p>
-      <PopoverFooterAction v-if="canManage" class="border-t border-border" data-slot="duty-holders-assign" @click="assign">
+      <PopoverFooterAction v-if="canManage" voice="sentence" class="border-t border-border" data-slot="duty-holders-assign" @click="assign">
         <UserPlus class="size-4" aria-hidden="true" />
         {{ $t('Pridėti asmenį') }}
       </PopoverFooterAction>

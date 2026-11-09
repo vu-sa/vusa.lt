@@ -86,9 +86,10 @@
 <script setup lang="ts" generic="T">
 import { useMediaQuery } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { computed, ref, watch } from 'vue';
+import { computed } from 'vue';
 
 import type { CollectionSource } from '@/Composables/useCollectionSource';
+import { useCollectionControls } from '@/Composables/useCollectionControls';
 import { useCollectionView, type CollectionViewMode } from '@/Composables/useCollectionView';
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 
@@ -146,26 +147,7 @@ const { view, availableViews, setView, filtersOpen } = useCollectionView({
   syncToUrl: false,
 });
 
-const sheetOpen = ref(false);
-
-function toggleFilters(): void {
-  if (isAtLeastMd.value) {
-    filtersOpen.value = !filtersOpen.value;
-  }
-  else {
-    sheetOpen.value = true;
-  }
-}
-
-watch(
-  () => (isAtLeastMd.value ? filtersOpen.value : sheetOpen.value),
-  (open) => {
-    if (open) {
-      props.source.loadFacets?.();
-    }
-  },
-  { immediate: true },
-);
+const { sheetOpen, toggleFilters } = useCollectionControls(isAtLeastMd, filtersOpen, () => { props.source.loadFacets?.(); });
 
 const isFiltered = computed(() => props.source.query.value.trim() !== '' || props.source.activeFilterCount.value > 0);
 

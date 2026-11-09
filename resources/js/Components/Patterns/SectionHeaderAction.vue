@@ -12,7 +12,7 @@
       tone === 'brand' ? 'text-brand hover:text-foreground' : 'text-muted-foreground hover:text-foreground',
       'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
       'disabled:pointer-events-none disabled:opacity-50',
-      'pointer-coarse:before:absolute pointer-coarse:before:-inset-x-2 pointer-coarse:before:-inset-y-3 pointer-coarse:before:content-[\'\']',
+      'pointer-coarse:min-h-11 pointer-coarse:min-w-11',
       props.class,
     )"
     data-slot="section-header-action"

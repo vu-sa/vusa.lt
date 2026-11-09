@@ -4,7 +4,8 @@
     type="button"
     :class="cn(
       'flex h-10 w-full items-center justify-center gap-2 bg-secondary/20 pointer-coarse:h-11',
-      'text-xs font-bold uppercase tracking-wide transition-colors hover:bg-secondary/60',
+      'text-xs font-bold transition-colors hover:bg-secondary/60',
+      voice === 'brand' && 'uppercase tracking-wide',
       'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
       'disabled:pointer-events-none disabled:opacity-50',
       tone === 'brand' ? 'text-brand' : 'text-muted-foreground hover:text-foreground',
@@ -24,9 +25,11 @@ import { cn } from '@/Utils/Shadcn/utils';
 const props = withDefaults(defineProps<{
   /** `brand` for the action the popover is for, `muted` for a secondary one beside it. */
   tone?: 'brand' | 'muted';
+  voice?: 'brand' | 'sentence';
   class?: HTMLAttributes['class'];
 }>(), {
   tone: 'brand',
+  voice: 'brand',
   class: undefined,
 });
 </script>

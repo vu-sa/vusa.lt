@@ -6,14 +6,15 @@
     :count="duties.length"
     data-slot="institution-duties-section"
   >
-    <template v-if="canManage" #actions>
+    <template v-if="canManage || canCreate || preview" #actions>
+      <SectionHeaderAction v-if="preview" :label="$t('Visos pareigybės')" trailing-chevron @click="$emit('view-all')" />
       <template v-if="reordering">
         <SectionHeaderAction tone="muted" :label="$t('Atšaukti')" :disabled="saving" @click="cancelReorder" />
         <SectionHeaderAction :icon="Save" :label="$t('Išsaugoti tvarką')" :disabled="saving || !changed" @click="saveOrder" />
       </template>
-      <template v-else>
-        <SectionHeaderAction v-if="duties.length > 1" tone="muted" :icon="ArrowDownUp" :label="$t('Keisti tvarką')" @click="startReorder" />
-        <SectionHeaderAction :icon="Plus" :label="$t('Nauja pareigybė')" :href="route('duties.create', { institution_id: institutionId })" />
+      <template v-else-if="!preview">
+        <SectionHeaderAction v-if="canManage && duties.length > 1" tone="muted" :icon="ArrowDownUp" :label="$t('Keisti tvarką')" @click="startReorder" />
+        <SectionHeaderAction v-if="canCreate" :icon="Plus" :label="$t('Nauja pareigybė')" :href="route('duties.create', { institution_id: institutionId })" />
       </template>
     </template>
 
@@ -22,8 +23,8 @@
       :title="$t('Nėra pareigybių')"
       :description="$t('Šiai institucijai dar nėra priskirta pareigybių.')"
       :icon="Briefcase"
-      :action-label="canManage ? $t('Sukurti pirmą pareigybę') : undefined"
-      :action-href="canManage ? route('duties.create', { institution_id: institutionId }) : undefined"
+      :action-label="canCreate ? $t('Sukurti pirmą pareigybę') : undefined"
+      :action-href="canCreate ? route('duties.create', { institution_id: institutionId }) : undefined"
     />
 
     <SortableDutiesTable v-else-if="reordering" v-model="draft">
@@ -131,9 +132,12 @@ const props = defineProps<{
   institutionId: string | number;
   /** `institutions.update` on this record: reordering and assigning both hang off it. */
   canManage?: boolean;
+  canCreate?: boolean;
+  preview?: boolean;
 }>();
 
 const emit = defineEmits<{
+  'view-all': [];
   'assign': [duty: DutyWithUsers];
   'edit-term': [duty: DutyWithUsers, user: UserWithPivot];
 }>();

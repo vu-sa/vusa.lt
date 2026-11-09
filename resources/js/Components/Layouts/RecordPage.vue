@@ -182,12 +182,12 @@
         <div ref="tabList" role="tablist" class="flex overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <button
             v-for="section in sections"
-            :id="`record-tab-${section.value}`"
+            :id="`record-tab-${recordId}-${section.value}`"
             :key="section.value"
             type="button"
             role="tab"
             :aria-selected="section.value === currentSection"
-            :aria-controls="`record-panel-${section.value}`"
+            :aria-controls="`record-panel-${recordId}-${section.value}`"
             :tabindex="section.value === currentSection ? 0 : -1"
             :data-section="section.value"
             :class="[
@@ -207,12 +207,12 @@
         </div>
       </nav>
 
-      <!-- Below md every section stacks; the select narrows a long record to the one section you came for. -->
-      <div v-if="hasTabs" class="mt-8 md:hidden" data-slot="record-section-switcher">
+      <!-- The phone selector and desktop tabs share the same section state. -->
+      <div v-if="hasTabs" class="sticky top-[var(--shell-chrome-height,0px)] z-30 mt-8 border-b border-border bg-background py-3 md:hidden" data-slot="record-section-switcher">
         <label :for="switcherId" class="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
           {{ $t('Rodyti') }}
         </label>
-        <NativeSelect :id="switcherId" :model-value="mobileSection" :options="switcherOptions" @update:model-value="pickMobileSection" />
+        <NativeSelect :id="switcherId" :model-value="mobileSection" :options="switcherOptions" @update:model-value="pickMobileSection" @change="selectSection(($event.target as HTMLSelectElement).value)" />
       </div>
 
       <div :class="$slots.aside ? 'lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-10' : undefined">
@@ -225,21 +225,22 @@
           >
             <section
               v-for="section in sections"
-              :id="`record-panel-${section.value}`"
+              :id="`record-panel-${recordId}-${section.value}`"
               :key="section.value"
               :class="[
                 sectionLayout === 'stacked' ? undefined : section.value === currentSection ? 'md:block' : 'md:hidden',
-                hasTabs && mobileSection !== ALL_SECTIONS && section.value !== mobileSection && 'max-md:hidden',
+                hasTabs && section.value !== mobileSection && 'max-md:hidden',
                 'scroll-mt-[calc(var(--shell-chrome-height,0px)+1rem)]',
               ]"
-              :aria-labelledby="`record-section-${section.value}`"
+              :role="hasTabs && isDesktop ? 'tabpanel' : undefined"
+              :aria-labelledby="hasTabs && isDesktop ? `record-tab-${recordId}-${section.value}` : `record-section-${recordId}-${section.value}`"
             >
               <h2
-                :id="`record-section-${section.value}`"
+                :id="`record-section-${recordId}-${section.value}`"
                 :class="[
                   'mb-4 flex items-center gap-2 text-xl font-semibold text-foreground',
                   sectionLayout !== 'stacked' && 'md:hidden',
-                  hasTabs && mobileSection !== ALL_SECTIONS && 'max-md:sr-only',
+                  hasTabs && 'max-md:sr-only',
                 ]"
               >
                 <component :is="section.icon" v-if="section.icon" class="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
@@ -255,7 +256,7 @@
             class="mt-12"
             :class="{
               'md:hidden': hasTabs && currentSection !== sections[0]?.value,
-              'max-md:hidden': hasTabs && mobileSection !== ALL_SECTIONS && mobileSection !== sections[0]?.value,
+              'max-md:hidden': hasTabs && mobileSection !== sections[0]?.value,
             }"
             data-slot="record-activity"
           >
@@ -379,8 +380,9 @@ const emit = defineEmits<{
   action: [key: string];
 }>();
 
+const recordId = useId();
 const currentSection = defineModel<string>('section', { default: '' });
-const hasTabs = computed(() => props.sectionLayout !== 'stacked' && props.sections.length >= 3);
+const hasTabs = computed(() => props.sectionLayout !== 'stacked' && props.sections.length >= 2);
 
 if (!currentSection.value && props.sections.length) {
   currentSection.value = props.sections[0]!.value;
@@ -394,15 +396,11 @@ if (props.sectionQueryKey) {
   }
 }
 
-const ALL_SECTIONS = '__all';
 const isDesktop = useMediaQuery('(min-width: 768px)');
 const switcherId = useId();
 // A link to a section other than the first (`?tab=`) opens just that section on a phone too.
-const mobileSection = ref(currentSection.value && currentSection.value !== props.sections[0]?.value
-  ? currentSection.value
-  : ALL_SECTIONS);
+const mobileSection = computed({ get: () => currentSection.value, set: value => { currentSection.value = value; } });
 const switcherOptions = computed(() => [
-  { value: ALL_SECTIONS, label: $t('Visi skyriai') },
   ...props.sections.map(section => ({
     value: section.value,
     label: section.count ? `${section.label} · ${section.count}` : section.label,
@@ -411,7 +409,13 @@ const switcherOptions = computed(() => [
 
 watch(() => props.sections, (sections) => {
   if (!sections.some(section => section.value === mobileSection.value)) {
-    mobileSection.value = ALL_SECTIONS;
+    const fallback = sections[0]?.value ?? '';
+    if (props.sectionQueryKey) {
+      const url = new URL(page.url, window.location.origin);
+      url.searchParams.delete(props.sectionQueryKey);
+      router.replace({ url: `${url.pathname}${url.search}${url.hash}`, preserveState: true, preserveScroll: true });
+    }
+    currentSection.value = fallback;
   }
 });
 
@@ -429,19 +433,15 @@ const sectionInUrl = (url: string) => {
 };
 
 /** A section the reader picked: shown, and remembered as a step in the browser history. */
-const selectSection = (value: string) => {
-  currentSection.value = value;
+const selectSection = (value: string) => { currentSection.value = value; };
+
+const recordSection = (value: string) => {
 
   if (!props.sectionQueryKey) {
     return;
   }
   const url = new URL(page.url, window.location.origin);
-  if (value === props.sections[0]?.value) {
-    url.searchParams.delete(props.sectionQueryKey);
-  }
-  else {
-    url.searchParams.set(props.sectionQueryKey, value);
-  }
+  url.searchParams.set(props.sectionQueryKey, value);
   const next = `${url.pathname}${url.search}${url.hash}`;
   if (next !== page.url) {
     // A client-side entry: no request, and the reveal below decides the scroll.
@@ -451,17 +451,20 @@ const selectSection = (value: string) => {
 
 // Back and forward restore the URL; follow it without pushing again.
 watch(() => page.url, (url) => {
+  const requested = props.sectionQueryKey ? new URL(url, window.location.origin).searchParams.get(props.sectionQueryKey) : null;
+  if (requested && !props.sections.some(section => section.value === requested)) {
+    const normalized = new URL(url, window.location.origin);
+    normalized.searchParams.delete(props.sectionQueryKey!);
+    router.replace({ url: `${normalized.pathname}${normalized.search}${normalized.hash}`, preserveState: true, preserveScroll: true });
+  }
   const value = sectionInUrl(url);
   if (value && value !== currentSection.value) {
     currentSection.value = value;
   }
-});
+}, { immediate: true });
 
 const pickMobileSection = (value: string | number | null | undefined) => {
-  mobileSection.value = String(value ?? ALL_SECTIONS);
-  if (mobileSection.value !== ALL_SECTIONS) {
-    selectSection(mobileSection.value);
-  }
+  if (value != null) selectSection(String(value));
 };
 
 const tabsAnchor = ref<HTMLElement | null>(null);
@@ -470,12 +473,7 @@ const tabList = ref<HTMLElement | null>(null);
 /** Keeps the new section's top in view: a stuck tab bar would otherwise leave the reader mid-page or below a short section. */
 const revealSection = (value: string) => {
   if (!isDesktop.value) {
-    if (mobileSection.value === ALL_SECTIONS) {
-      document.getElementById(`record-panel-${value}`)?.scrollIntoView({ block: 'start' });
-    }
-    else {
-      mobileSection.value = value;
-    }
+    document.getElementById(`record-panel-${recordId}-${value}`)?.scrollIntoView({ block: 'start' });
     return;
   }
 
@@ -502,6 +500,7 @@ const revealSection = (value: string) => {
 };
 
 watch(currentSection, (value, previous) => {
+  if (value && previous && value !== sectionInUrl(page.url)) recordSection(value);
   if (hasTabs.value && value && previous) {
     void nextTick(() => revealSection(value));
   }

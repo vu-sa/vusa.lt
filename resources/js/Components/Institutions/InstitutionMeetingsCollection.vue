@@ -68,6 +68,7 @@ const emit = defineEmits<{
 
 const source = useTypesenseCollectionSource<MeetingSearchResult>({
   collection: 'meetings',
+  rememberKey: `institution-meetings:${props.institutionId}`,
   syncToUrl: false,
   baseFilterBy: () => `institution_ids:=[\`${props.institutionId}\`]`,
   // The institution and its padalinys are the page itself.

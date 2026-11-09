@@ -12,8 +12,10 @@
     actions-beside-title
     @action="handleRecordAction"
   >
-    <template v-if="fillActions.length" #next-actions>
+    <template v-if="fillActions.length || assignmentLoading || (!readOnly && incompleteTasksCount)" #next-actions>
+      <SectionHeaderAction v-if="!readOnly && incompleteTasksCount" :label="`${$t('Nebaigtos užduotys')} · ${incompleteTasksCount}`" class="mb-3" @click="currentSection = 'tasks'" />
       <RecordNextActions :fill="fillActions" />
+      <p v-if="assignmentLoading" role="status" class="mt-3 text-sm text-muted-foreground">{{ $t('Kraunami duomenys') }}</p>
     </template>
 
     <template v-if="hasDescription" #lead>
@@ -36,7 +38,8 @@
       <InstitutionOverviewSection
         :institution
         :overview
-        :duties="dutiesInOverview && (institution.duties_count > 0 || can.update) ? sortedDuties : null"
+        :upcoming-meeting="upcomingMeeting"
+        :duties="overviewDuties ?? []"
         :can-manage="can.update"
         :meetings-tab="tabs.some(tab => tab.value === 'meetings')"
         @navigate-tab="currentSection = $event"
@@ -64,6 +67,7 @@
         <InstitutionDutiesSection
           :duties="sortedDuties"
           :institution-id="institution.id"
+          :can-create="can.createDuty"
           :can-manage="can.update"
           @assign="openAssignSheet"
           @edit-term="openTermSheet"
@@ -181,7 +185,7 @@
       </WhenVisible>
     </template>
 
-    <template v-if="!readOnly" #activity>
+    <template v-if="!readOnly" #comments>
       <RecordActivity commentable-type="institution" :commentable-id="institution.id" />
     </template>
   </RecordPage>
@@ -246,6 +250,7 @@ import {
   EyeOff,
   LayoutGrid,
   MailQuestion,
+  MessageSquare,
   Plus,
   UserCheck,
 } from '@lucide/vue';
@@ -295,17 +300,17 @@ const InstitutionRelationsList = defineAsyncComponent(() => import('@/Components
 
 const currentSection = ref(new URL(usePage().url, 'http://localhost').searchParams.get('tab') ?? 'overview');
 
-/** Up to three duties sit in the overview; more earn a tab of their own. */
-const DUTIES_IN_OVERVIEW = 3;
-const dutiesInOverview = computed(() => props.institution.duties_count <= DUTIES_IN_OVERVIEW);
 
 const entityIcon = (type: ModelEnum) => getEntityTypeDefinition(type)?.icon;
 
+const visitedOptionalSections = ref(new Set<string>());
+watch(currentSection, value => {
+  if (value === 'files' || value === 'related') visitedOptionalSections.value.add(value);
+}, { immediate: true });
+
 const tabs = computed<RecordPageSection[]>(() => {
   const overview: RecordPageSection = { value: 'overview', label: $t('Santrauka'), icon: LayoutGrid };
-  const duties: RecordPageSection[] = dutiesInOverview.value
-    ? []
-    : [{ value: 'duties', label: $t('Pareigybės'), count: props.institution.duties_count, icon: entityIcon(ModelEnum.DUTY) }];
+  const duties: RecordPageSection[] = [{ value: 'duties', label: $t('Pareigybės'), count: props.institution.duties_count, icon: entityIcon(ModelEnum.DUTY) }];
   const meetings: RecordPageSection = { value: 'meetings', label: $t('Posėdžiai'), count: props.institution.meetings_count, icon: entityIcon(ModelEnum.MEETING) };
   const problems: RecordPageSection[] = (props.institution.problems_count ?? 0) > 0
     ? [{ value: 'problems', label: $t('Problemos'), count: props.institution.problems_count, icon: entityIcon(ModelEnum.PROBLEM) }]
@@ -333,12 +338,13 @@ const tabs = computed<RecordPageSection[]>(() => {
     { value: 'tasks', label: $t('Užduotys'), count: props.incompleteTasksCount, icon: entityIcon(ModelEnum.TASK) },
     ...problems,
     // An empty Ryšiai or Failai tab gives way to an "add" action under the facts (see fillActions).
-    ...(props.institution.related_institutions_count > 0
+    ...((props.institution.related_institutions_count > 0 || visitedOptionalSections.value.has('related'))
       ? [{ value: 'related', label: $t('Ryšiai'), count: props.institution.related_institutions_count, icon: entityIcon(ModelEnum.RELATIONSHIP) }]
       : []),
-    ...(props.institution.has_files ? [{ value: 'files', label: $t('Failai'), icon: entityIcon(ModelEnum.FILE) }] : []),
+    ...((props.institution.has_files || visitedOptionalSections.value.has('files')) ? [{ value: 'files', label: $t('Failai'), icon: entityIcon(ModelEnum.FILE) }] : []),
     ...activityRequests,
     ...(props.can.update ? [{ value: 'terms', label: $t('Kadencijos ir sekretoriai'), icon: CalendarRange }] : []),
+    { value: 'comments', label: $t('Komentarai'), icon: MessageSquare },
   ];
 });
 
@@ -643,6 +649,7 @@ const sortedDuties = computed(() =>
 
 const {
   open: assignSheetOpen,
+  loading: assignmentLoading,
   duty: sheetDuty,
   dutiable: sheetDutiable,
   user: sheetUser,

@@ -213,19 +213,19 @@ describe('ShowInstitution.vue', () => {
   });
 
   it('offers the sections an editor can act on, and only those', () => {
-    expect(tabs(createWrapper())).toEqual(['overview', 'meetings', 'tasks', 'files', 'terms']);
-    expect(tabs(createWrapper({ can: { update: false, delete: false } }))).toEqual(['overview', 'meetings', 'tasks', 'files']);
+    expect(tabs(createWrapper())).toEqual(['overview', 'duties', 'meetings', 'tasks', 'files', 'terms', 'comments']);
+    expect(tabs(createWrapper({ can: { update: false, delete: false } }))).toEqual(['overview', 'duties', 'meetings', 'tasks', 'files', 'comments']);
   });
 
-  it('keeps up to three duties in the overview and gives more a tab of their own', () => {
+  it('keeps the duties destination stable regardless of count', () => {
     const few = createWrapper({ duties_count: 3 });
     const overview = few.findComponent({ name: 'InstitutionOverviewSection' });
 
-    expect(tabs(few)).not.toContain('duties');
+    expect(tabs(few)).toContain('duties');
     expect(overview.props('duties')).toEqual([]);
     expect(overview.props('canManage')).toBe(true);
     expect(tabs(createWrapper({ duties_count: 4 })).slice(0, 2)).toEqual(['overview', 'duties']);
-    expect(createWrapper({ duties_count: 4 }).findComponent({ name: 'InstitutionOverviewSection' }).props('duties')).toBeNull();
+    expect(createWrapper({ duties_count: 4 }).findComponent({ name: 'InstitutionOverviewSection' }).props('duties')).toEqual([]);
   });
 
   it('gives every section an icon', () => {
@@ -238,8 +238,8 @@ describe('ShowInstitution.vue', () => {
   it('shows a reader outside the institution its public face: meetings only where they are public', () => {
     const readOnly = { readOnly: true, can: { update: false, delete: false, recordMeeting: false, reportActivity: false }, related_institutions_count: 2 };
 
-    expect(tabs(createWrapper({ ...readOnly, has_public_meetings: true }))).toEqual(['overview', 'meetings']);
-    expect(tabs(createWrapper({ ...readOnly, has_public_meetings: false }))).toEqual(['overview']);
+    expect(tabs(createWrapper({ ...readOnly, has_public_meetings: true }))).toEqual(['overview', 'duties', 'meetings']);
+    expect(tabs(createWrapper({ ...readOnly, has_public_meetings: false }))).toEqual(['overview', 'duties']);
     expect(tabs(createWrapper({ ...readOnly, duties_count: 5, has_public_meetings: false }))).toEqual(['overview', 'duties']);
     expect(createWrapper(readOnly).find('[data-testid="overflow-timeline"]').exists()).toBe(false);
   });

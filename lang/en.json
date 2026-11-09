@@ -1645,5 +1645,11 @@
   "Tiesioginis ryšys": "Direct link",
   "Pašalinti ryšį": "Remove link",
   "Santrauka": "Summary",
-  "Pridėti failą": "Add a file"
+  "Pridėti failą": "Add a file",
+    "Keisti laikotarpį": "Change term",
+    "Nebaigtos užduotys": "Incomplete tasks",
+    "Artimiausias posėdis": "Next meeting",
+    "Visos pareigybės": "All duties",
+    "Nepavyko atverti laikotarpio. Atnaujink puslapį ir bandyk dar kartą.": "Could not open the term. Refresh the page and try again.",
+    "Nepavyko įkelti duomenų. Bandyk dar kartą.": "Could not load data. Try again."
 }

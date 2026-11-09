@@ -55,7 +55,7 @@ describe('InstitutionDutiesSection', () => {
   it('lists the duties and offers to create the first one when there are none', () => {
     expect(mountSection().findAll('[data-slot="institution-duty-row"]')).toHaveLength(3);
 
-    const empty = mountSection({ duties: [] });
+    const empty = mountSection({ duties: [], canCreate: true });
     expect(empty.find('[data-testid="empty"]').exists()).toBe(true);
     expect(empty.text()).toContain('Sukurti pirmą pareigybę');
   });
@@ -158,4 +158,16 @@ describe('InstitutionDutiesSection', () => {
     expect(mountSection({ canManage: false }).find('[data-testid="spotlight"]').exists()).toBe(false);
     spotlightDismissed.value = true;
   });
+});
+
+it('keeps an overview preview free of management actions', () => {
+  const wrapper = mount(InstitutionDutiesSection, { props: { institutionId: '1', duties: [], preview: true }, global: { stubs: commonStubs } });
+  expect(wrapper.text()).toContain('Visos pareigybės');
+  expect(wrapper.text()).not.toContain('Nauja pareigybė');
+});
+
+it('does not offer duty creation just because institution management is allowed', () => {
+  const wrapper = mountSection({ duties: [], canManage: true, canCreate: false });
+  expect(wrapper.text()).not.toContain('Sukurti pirmą pareigybę');
+  expect(wrapper.text()).not.toContain('Nauja pareigybė');
 });

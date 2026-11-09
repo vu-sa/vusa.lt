@@ -9,6 +9,7 @@ import { PAGE_SIZE, useOptimisticOverlay } from './shared';
 
 interface TypesenseSourceOptions {
   collection: AdminCollection;
+  rememberKey?: string;
   /** Query-string keys the page owns (`view`, `item`) that a new search must not wipe. */
   preserveUrlKeys?: string[];
   perPage?: number;
@@ -32,6 +33,7 @@ interface TypesenseSourceOptions {
 export function useTypesenseCollectionSource<T = unknown>(options: TypesenseSourceOptions): TypesenseCollectionSource<T> {
   const controller = useAdminCollectionSearch({
     collection: options.collection,
+    rememberKey: options.rememberKey,
     loadFacetsOnMount: true,
     searchOnMount: true,
     syncToUrl: options.syncToUrl ?? true,

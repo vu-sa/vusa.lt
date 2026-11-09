@@ -132,8 +132,8 @@ describe('unauthorized access', function (): void {
                 ->missing('overview.current_users.0.email')
                 ->missing('overview.current_users.0.phone')
                 ->missing('overview.current_users.0.pivot.additional_email')
-                ->has('duties', 1)
-                ->missing('duties.0.current_users.0.email')
+                ->has('overviewDuties', 1)
+                ->missing('overviewDuties.0.current_users.0.email')
                 ->where('canViewActivityRequests', false)
                 ->missing('activityRequests')
                 ->reload(only: ['activityRequests'], callback: fn (Assert $history) => $history->missing('activityRequests'))
@@ -261,12 +261,12 @@ describe('authorized access', function (): void {
         'activity requests' => [['activityRequests']],
     ]);
 
-    test('a few duties come with the page for the overview, more wait for their tab', function (): void {
+    test('the overview preview stays bounded while full duties wait for their tab', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
         Duty::factory()->for($institution)->count(InstitutionPresenter::OVERVIEW_DUTY_LIMIT)->create();
 
         asUserWithInertia($this->admin)->get(route('institutions.show', $institution))
-            ->assertInertia(fn (Assert $page) => $page->has('duties', InstitutionPresenter::OVERVIEW_DUTY_LIMIT));
+            ->assertInertia(fn (Assert $page) => $page->missing('duties')->has('overviewDuties', InstitutionPresenter::OVERVIEW_DUTY_LIMIT));
 
         Duty::factory()->for($institution)->create();
 
@@ -274,6 +274,21 @@ describe('authorized access', function (): void {
             ->assertInertia(fn (Assert $page) => $page
                 ->missing('duties')
                 ->reloadOnly('duties', fn (Assert $tab) => $tab->has('duties', InstitutionPresenter::OVERVIEW_DUTY_LIMIT + 1)));
+    });
+
+    test('separates the nearest upcoming meeting from bounded past meetings', function (): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+        foreach ([-4, -3, -2, -1, 1, 9] as $days) {
+            $meeting = Meeting::factory()->create(['start_time' => now()->addDays($days)]);
+            $meeting->institutions()->attach($institution);
+            if ($days === 1) {
+                $upcomingId = $meeting->id;
+            }
+        }
+        asUserWithInertia($this->admin)->get(route('institutions.show', $institution))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('upcomingMeeting.id', $upcomingId)
+                ->has('overview.recentMeetings', 3));
     });
 
     test('says whether there are files, so an empty Failai tab can give way to an add action', function (): void {
@@ -479,6 +494,7 @@ describe('authorized access', function (): void {
                     'delete' => $this->admin->can('delete', $loaded),
                     'recordMeeting' => $this->admin->can('createFor', [Meeting::class, $loaded]),
                     'createProblem' => $this->admin->can('create', Problem::class),
+                    'createDuty' => $this->admin->can('create', Duty::class),
                     'reportActivity' => $this->admin->can('create', [InstitutionCheckIn::class, $loaded]),
                     'manageLinks' => $this->admin->can('create', InstitutionLink::class),
                     'askAboutActivity' => $this->admin->can('askAboutActivity', [InstitutionCheckIn::class, $loaded]),
@@ -685,7 +701,8 @@ describe('authorized access', function (): void {
         $response->assertStatus(200)
             ->assertInertia(fn ($page) => $page
                 ->missing('overview.recentMeetings.0.agenda_item_titles')
-                ->where('overview.recentMeetings.0.agenda_items_count', 4)
+                ->where('upcomingMeeting.agenda_items_count', 4)
+                ->where('overview.recentMeetings', [])
                 ->missing('overview.recentMeetings.0.agenda_items')
             );
     });

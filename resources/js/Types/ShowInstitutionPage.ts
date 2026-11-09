@@ -268,11 +268,13 @@ export interface InstitutionStudyProgram {
 
 /** The props of `Pages/Admin/People/ShowInstitution.vue`, as `InstitutionController::show` sends them. */
 export interface ShowInstitutionPageProps {
+  overviewDuties?: InstitutionPageDuty[];
+  upcomingMeeting?: InstitutionPageMeeting | null;
   institution: InstitutionPageData;
   overview: InstitutionOverviewData;
   activityRequests?: InstitutionHistory;
   canViewActivityRequests: boolean;
-  can: { update: boolean; delete: boolean; recordMeeting: boolean; reportActivity: boolean; askAboutActivity: boolean; createProblem: boolean; manageLinks: boolean };
+  can: { update: boolean; delete: boolean; recordMeeting: boolean; reportActivity: boolean; askAboutActivity: boolean; createProblem: boolean; createDuty?: boolean; manageLinks: boolean };
   duties?: InstitutionPageDuty[];
   problems?: InstitutionProblem[];
   tasks?: InstitutionTask[];

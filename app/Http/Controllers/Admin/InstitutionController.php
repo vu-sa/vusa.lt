@@ -132,7 +132,7 @@ class InstitutionController extends AdminController
                 'availableFiles as report_exists' => fn ($query) => $query->where('file_type', FileableFile::TYPE_REPORT),
             ])
             ->orderByDesc('start_time');
-        $overviewMeetings = fn () => once(fn () => ! $showsMeetings() ? collect() : $meetingQuery()->limit(3)->get());
+        $overviewMeetings = fn () => once(fn () => ! $showsMeetings() ? collect() : $meetingQuery()->where('start_time', '<=', now())->limit(3)->get());
         $canViewActivityRequests = app(GetInstitutionActivityRequestHistory::class)->visible($institution, $request->user());
 
         return Inertia::render('Admin/People/ShowInstitution', [
@@ -143,10 +143,9 @@ class InstitutionController extends AdminController
             'overview' => fn () => InstitutionPresenter::overview($loadInstitution(), $showsMeetings(), $activityStatus(), $overviewMeetings()),
             'files' => Inertia::optional(fn () => $readOnly() ? [] : InstitutionPresenter::files($institution)),
             'typeFiles' => Inertia::optional(fn () => $readOnly() ? [] : InstitutionPresenter::typeFiles($institution)),
-            // A few duties sit in the overview, so they come with the page; more get a tab of their own.
-            'duties' => $loadInstitution()->duties_count <= InstitutionPresenter::OVERVIEW_DUTY_LIMIT
-                ? fn () => InstitutionPresenter::duties($institution)
-                : Inertia::optional(fn () => InstitutionPresenter::duties($institution)),
+            'overviewDuties' => fn () => InstitutionPresenter::duties($loadInstitution(), 3),
+            'upcomingMeeting' => fn () => $showsMeetings() ? InstitutionPresenter::meetings($meetingQuery()->where('start_time', '>', now())->reorder('start_time')->limit(1)->get())[0] ?? null : null,
+            'duties' => Inertia::optional(fn () => InstitutionPresenter::duties($institution)),
             'incompleteTasksCount' => fn () => $readOnly() ? 0 : InstitutionPresenter::incompleteTasksCount($institution),
             'tasks' => Inertia::optional(fn () => $readOnly() ? [] : InstitutionPresenter::tasks($institution)),
             'problems' => Inertia::optional(fn () => InstitutionPresenter::problems($institution)),
