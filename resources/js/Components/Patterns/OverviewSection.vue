@@ -19,16 +19,15 @@
             {{ count }}
           </span>
         </h2>
+        <SectionHeaderAction v-if="href && variant === 'home'" :href :label="hrefLabel" />
         <Link
-          v-if="href"
+          v-else-if="href"
           :href
-          :class="variant === 'home'
-            ? 'shrink-0 text-sm font-semibold text-brand hover:text-foreground'
-            : 'text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline'"
+          class="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
         >
           {{ hrefLabel }}
         </Link>
-        <div v-else-if="$slots.actions" class="flex shrink-0 flex-wrap items-center gap-2">
+        <div v-else-if="$slots.actions" class="flex shrink-0 flex-wrap items-center justify-end gap-x-4 gap-y-2">
           <slot name="actions" />
         </div>
       </header>
@@ -42,6 +41,7 @@ import { Link } from '@inertiajs/vue3';
 import { computed, inject, onBeforeUnmount, useId, watchEffect, type Component } from 'vue';
 
 import { OVERVIEW_STATUS_KEY, type OverviewStatusEntry } from './overviewStatus';
+import SectionHeaderAction from './SectionHeaderAction.vue';
 
 const props = withDefaults(defineProps<{
   title: string;

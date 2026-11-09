@@ -11,6 +11,10 @@
     actions-beside-title
     @action="handleRecordAction"
   >
+    <template v-if="hasDescription" #lead>
+      <InstitutionAbout :description="institution.description" />
+    </template>
+
     <template v-if="institution.is_active === false" #subtitle>
       <InactiveInstitutionBadge :active="institution.is_active" />
     </template>
@@ -27,8 +31,12 @@
       <InstitutionOverviewSection
         :institution
         :overview
+        :duties="dutiesInOverview && (institution.duties_count > 0 || can.update) ? sortedDuties : null"
+        :can-manage="can.update"
+        :meetings-tab="tabs.some(tab => tab.value === 'meetings')"
         @navigate-tab="currentSection = $event"
-        @view-meeting="(meeting) => router.visit(route('meetings.show', meeting.id))"
+        @assign="openAssignSheet"
+        @edit-term="openTermSheet"
       />
     </template>
 
@@ -240,12 +248,14 @@ import {
   ExternalLink,
   Eye,
   EyeOff,
+  LayoutGrid,
   MailQuestion,
   Plus,
   UserCheck,
 } from '@lucide/vue';
 
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
+import InstitutionAbout from '@/Components/Institutions/InstitutionAbout.vue';
 import InstitutionActivityRequestHistory from '@/Components/Institutions/InstitutionActivityRequestHistory.vue';
 import { CadenceSection } from '@/Components/Cadences';
 import InstitutionDutiesSection from '@/Components/Institutions/InstitutionDutiesSection.vue';
@@ -265,6 +275,7 @@ import { useActionWindow } from '@/Composables/useActionWindow';
 import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import { enterInstitution } from '@/Composables/useRecordTrail';
 import { getSuggestedCheckInRange, type TaskDisplayData } from '@/Composables/useTaskPresentation';
+import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import { inactiveInstitutionStatus, institutionActivityStatuses, type StatusPresentation } from '@/Constants/statusIcons';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
 import type { AssignmentDuty, AssignmentTerm, AssignmentUser, DutyWithUsers, UserWithPivot } from '@/Types/DutyAssignment';
@@ -571,37 +582,49 @@ const RelatedInstitutions = defineAsyncComponent(() => import('@/Components/Caro
 
 const currentSection = ref(new URL(usePage().url, 'http://localhost').searchParams.get('tab') ?? 'overview');
 
-const problemsTab = computed<RecordPageSection[]>(() => (props.institution.problems_count ?? 0) > 0
-  ? [{ value: 'problems', label: $t('Problemos'), count: props.institution.problems_count }]
-  : []);
+/** Up to three duties sit in the overview; more earn a tab of their own. */
+const DUTIES_IN_OVERVIEW = 3;
+const dutiesInOverview = computed(() => props.institution.duties_count <= DUTIES_IN_OVERVIEW);
 
-/** Dropped rather than disabled when there is nothing to show — a tab that cannot be opened is worse than none. */
+const entityIcon = (type: ModelEnum) => getEntityTypeDefinition(type)?.icon;
+
 const tabs = computed<RecordPageSection[]>(() => {
+  const overview: RecordPageSection = { value: 'overview', label: $t('Apžvalga'), icon: LayoutGrid };
+  const duties: RecordPageSection[] = dutiesInOverview.value
+    ? []
+    : [{ value: 'duties', label: $t('Pareigybės'), count: props.institution.duties_count, icon: entityIcon(ModelEnum.DUTY) }];
+  const meetings: RecordPageSection = { value: 'meetings', label: $t('Posėdžiai'), count: props.institution.meetings_count, icon: entityIcon(ModelEnum.MEETING) };
+  const problems: RecordPageSection[] = (props.institution.problems_count ?? 0) > 0
+    ? [{ value: 'problems', label: $t('Problemos'), count: props.institution.problems_count, icon: entityIcon(ModelEnum.PROBLEM) }]
+    : [];
+  const activityRequests: RecordPageSection[] = props.canViewActivityRequests
+    ? [{ value: 'activityRequests', label: $t('activity_requests.history_title'), icon: MailQuestion }]
+    : [];
+
   // A reader outside the institution gets its public face; meetings only where they are public.
   if (props.readOnly) {
     return [
-      { value: 'overview', label: $t('Apžvalga') },
-      { value: 'duties', label: $t('Pareigybės'), count: props.institution.duties_count },
-      ...(props.institution.has_public_meetings
-        ? [{ value: 'meetings', label: $t('Posėdžiai'), count: props.institution.meetings_count }]
-        : []),
-      ...(props.canViewActivityRequests ? [{ value: 'activityRequests', label: $t('activity_requests.history_title') }] : []),
-      ...problemsTab.value,
+      overview,
+      ...duties,
+      ...(props.institution.has_public_meetings ? [meetings] : []),
+      ...problems,
+      ...activityRequests,
     ];
   }
 
+  // The work first, the configuration last.
   return [
-    { value: 'overview', label: $t('Apžvalga') },
-    { value: 'duties', label: $t('Pareigybės'), count: props.institution.duties_count },
-    { value: 'meetings', label: $t('Posėdžiai'), count: props.institution.meetings_count },
-    ...(props.can.update ? [{ value: 'terms', label: $t('Kadencijos ir sekretoriai') }] : []),
+    overview,
+    ...duties,
+    meetings,
+    { value: 'tasks', label: $t('Užduotys'), count: props.incompleteTasksCount, icon: entityIcon(ModelEnum.TASK) },
+    ...problems,
     ...(props.institution.related_institutions_count > 0 || props.can.manageLinks
-      ? [{ value: 'related', label: $t('Ryšiai'), count: props.institution.related_institutions_count }]
+      ? [{ value: 'related', label: $t('Ryšiai'), count: props.institution.related_institutions_count, icon: entityIcon(ModelEnum.RELATIONSHIP) }]
       : []),
-    ...problemsTab.value,
-    { value: 'files', label: $t('Failai') },
-    ...(props.canViewActivityRequests ? [{ value: 'activityRequests', label: $t('activity_requests.history_title') }] : []),
-    { value: 'tasks', label: $t('Užduotys'), count: props.incompleteTasksCount },
+    { value: 'files', label: $t('Failai'), icon: entityIcon(ModelEnum.FILE) },
+    ...activityRequests,
+    ...(props.can.update ? [{ value: 'terms', label: $t('Kadencijos ir sekretoriai'), icon: CalendarRange }] : []),
   ];
 });
 
@@ -632,6 +655,8 @@ watch(() => props.institution.id, () => {
 });
 
 // --- Title band -------------------------------------------------------------------------------
+
+const hasDescription = computed(() => typeof props.institution.description === 'string' && props.institution.description.trim() !== '');
 
 const primaryType = computed(() => {
   const type = props.institution.types?.[0];

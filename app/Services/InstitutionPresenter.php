@@ -34,6 +34,9 @@ use Illuminate\Support\Collection;
 
 class InstitutionPresenter
 {
+    /** Up to this many duties show in the overview instead of a tab (`DUTIES_IN_OVERVIEW` in ShowInstitution.vue). */
+    public const int OVERVIEW_DUTY_LIMIT = 3;
+
     /** @return array{id: string, name: string, is_active: bool, description: string|null, tenant: array{id: int, shortname: string}|null, types: list<array{id: int, parent_id: int|null, title: string|null, description: string|null, slug: string|null, extra_attributes: array<array-key, mixed>|null, created_at: string|null, updated_at: string|null, deleted_at: string|null, pivot: array{institution_id: string, institution_type_id: int}}>, has_public_meetings: bool, governance_scope: InstitutionScope, duties_count: int, meetings_count: int, problems_count: int, related_institutions_count: int, managers: list<array{id: string, name: string, profile_photo_path: string|null, profile_photo_focal_point: string|null, pivot: array{id: string, start_date: string, end_date: string|null}}>, secretaries: list<array{id: string, name: string, email: string|null, profile_photo_path: string|null}>, sharepointPath: string|null, sharepointFolderUrl: string|null} */
     public static function forShow(Institution $institution, bool $readOnly): array
     {

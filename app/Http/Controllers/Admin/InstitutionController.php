@@ -143,7 +143,10 @@ class InstitutionController extends AdminController
             'overview' => fn () => InstitutionPresenter::overview($loadInstitution(), $showsMeetings(), $activityStatus(), $overviewMeetings()),
             'files' => Inertia::optional(fn () => $readOnly() ? [] : InstitutionPresenter::files($institution)),
             'typeFiles' => Inertia::optional(fn () => $readOnly() ? [] : InstitutionPresenter::typeFiles($institution)),
-            'duties' => Inertia::optional(fn () => InstitutionPresenter::duties($institution)),
+            // A few duties sit in the overview, so they come with the page; more get a tab of their own.
+            'duties' => $loadInstitution()->duties_count <= InstitutionPresenter::OVERVIEW_DUTY_LIMIT
+                ? fn () => InstitutionPresenter::duties($institution)
+                : Inertia::optional(fn () => InstitutionPresenter::duties($institution)),
             'meetings' => Inertia::optional(fn () => ! $showsMeetings() ? [] : InstitutionPresenter::meetings($meetingQuery()->get())),
             'incompleteTasksCount' => fn () => $readOnly() ? 0 : InstitutionPresenter::incompleteTasksCount($institution),
             'tasks' => Inertia::optional(fn () => $readOnly() ? [] : InstitutionPresenter::tasks($institution)),

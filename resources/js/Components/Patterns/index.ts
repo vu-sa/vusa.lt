@@ -26,6 +26,7 @@ export { default as PreviewPane } from './PreviewPane.vue';
 export { default as PreviewSection } from './PreviewSection.vue';
 export { default as RecordNextActions } from './RecordNextActions.vue';
 export type { RecordNextAction } from './RecordNextActions.vue';
+export { default as SectionHeaderAction } from './SectionHeaderAction.vue';
 export { default as SectionHeading } from './SectionHeading.vue';
 export { default as ShowPageGrid } from './ShowPageGrid.vue';
 export { default as StatCard } from './StatCard.vue';

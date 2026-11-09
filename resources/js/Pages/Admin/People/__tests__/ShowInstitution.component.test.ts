@@ -39,8 +39,9 @@ const stubs = {
     `,
   },
   InstitutionOverviewSection: {
-    props: ['institution', 'overview'],
-    emits: ['navigate-tab'],
+    name: 'InstitutionOverviewSection',
+    props: ['institution', 'overview', 'duties', 'canManage', 'meetingsTab'],
+    emits: ['navigate-tab', 'assign', 'edit-term'],
     template: '<button data-testid="goto-duties" @click="$emit(\'navigate-tab\', \'duties\')" />',
   },
   InstitutionDutiesSection: {
@@ -205,15 +206,34 @@ describe('ShowInstitution.vue', () => {
   });
 
   it('offers the sections an editor can act on, and only those', () => {
-    expect(tabs(createWrapper())).toEqual(['overview', 'duties', 'meetings', 'terms', 'files', 'tasks']);
-    expect(tabs(createWrapper({ can: { update: false, delete: false } }))).toEqual(['overview', 'duties', 'meetings', 'files', 'tasks']);
+    expect(tabs(createWrapper())).toEqual(['overview', 'meetings', 'tasks', 'files', 'terms']);
+    expect(tabs(createWrapper({ can: { update: false, delete: false } }))).toEqual(['overview', 'meetings', 'tasks', 'files']);
+  });
+
+  it('keeps up to three duties in the overview and gives more a tab of their own', () => {
+    const few = createWrapper({ duties_count: 3 });
+    const overview = few.findComponent({ name: 'InstitutionOverviewSection' });
+
+    expect(tabs(few)).not.toContain('duties');
+    expect(overview.props('duties')).toEqual([]);
+    expect(overview.props('canManage')).toBe(true);
+    expect(tabs(createWrapper({ duties_count: 4 })).slice(0, 2)).toEqual(['overview', 'duties']);
+    expect(createWrapper({ duties_count: 4 }).findComponent({ name: 'InstitutionOverviewSection' }).props('duties')).toBeNull();
+  });
+
+  it('gives every section an icon', () => {
+    const sections = createWrapper({ duties_count: 4, related_institutions_count: 1, problems_count: 1 })
+      .findComponent({ name: 'RecordPage' }).props('sections') as Array<{ icon?: unknown }>;
+
+    expect(sections.every(section => section.icon)).toBe(true);
   });
 
   it('shows a reader outside the institution its public face: meetings only where they are public', () => {
     const readOnly = { readOnly: true, can: { update: false, delete: false, recordMeeting: false, reportActivity: false }, related_institutions_count: 2 };
 
-    expect(tabs(createWrapper({ ...readOnly, has_public_meetings: true }))).toEqual(['overview', 'duties', 'meetings']);
-    expect(tabs(createWrapper({ ...readOnly, has_public_meetings: false }))).toEqual(['overview', 'duties']);
+    expect(tabs(createWrapper({ ...readOnly, has_public_meetings: true }))).toEqual(['overview', 'meetings']);
+    expect(tabs(createWrapper({ ...readOnly, has_public_meetings: false }))).toEqual(['overview']);
+    expect(tabs(createWrapper({ ...readOnly, duties_count: 5, has_public_meetings: false }))).toEqual(['overview', 'duties']);
     expect(createWrapper(readOnly).find('[data-testid="overflow-timeline"]').exists()).toBe(false);
   });
 
@@ -321,8 +341,8 @@ describe('ShowInstitution.vue', () => {
   });
 
   it('passes the per-record permission down to the duties section, not a tenant-agnostic flag', () => {
-    expect(createWrapper().find('[data-testid="duties-section"]').attributes('data-can-manage')).toBe('true');
-    expect(createWrapper({ can: { update: false, delete: false } }).find('[data-testid="duties-section"]').attributes('data-can-manage')).toBe('false');
+    expect(createWrapper({ duties_count: 4 }).find('[data-testid="duties-section"]').attributes('data-can-manage')).toBe('true');
+    expect(createWrapper({ duties_count: 4, can: { update: false, delete: false } }).find('[data-testid="duties-section"]').attributes('data-can-manage')).toBe('false');
   });
 
   it('renders the terms and secretaries once the optional management data arrives', () => {
@@ -352,7 +372,7 @@ describe('ShowInstitution.vue', () => {
     ['tasks', 'tasks'],
     ['activityRequests', 'activityRequests'],
   ])('loads the %s panel through visibility with a skeleton and no repeated polling', async (tab, data) => {
-    const wrapper = createWrapper({ related_institutions_count: 1, problems_count: 1 });
+    const wrapper = createWrapper({ duties_count: 4, related_institutions_count: 1, problems_count: 1 });
     await wrapper.setProps({ canViewActivityRequests: true });
     const panel = wrapper.findAllComponents(WhenVisible)
       .find(component => JSON.stringify(component.props('data')) === JSON.stringify(data));
@@ -406,7 +426,7 @@ describe('ShowInstitution.vue', () => {
   });
 
   it('waits for the complete term before mounting its editor', async () => {
-    const wrapper = createWrapper();
+    const wrapper = createWrapper({ duties_count: 4 });
     const user = manager('member1', 'Rūta');
     const duty = { id: 'duty1', name: 'Narys', current_users: [user] };
     wrapper.findComponent({ name: 'InstitutionDutiesSection' }).vm.$emit('edit-term', duty, user);

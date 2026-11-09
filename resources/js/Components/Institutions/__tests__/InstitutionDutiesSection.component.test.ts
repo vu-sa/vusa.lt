@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
 
-import { commonStubs } from '@/tests/stubs';
+import { commonStubs, stubPopover, stubPopoverContent } from '@/tests/stubs';
 
 import InstitutionDutiesSection from '../InstitutionDutiesSection.vue';
 
@@ -12,6 +12,9 @@ vi.stubGlobal('route', (name?: string) => (name === undefined ? { current: () =>
 
 const stubs = {
   ...commonStubs,
+  Popover: stubPopover,
+  PopoverTrigger: { template: '<div><slot /></div>' },
+  PopoverContent: stubPopoverContent,
   // The real one drives Sortable on the DOM; the up/down buttons are what a test can reach.
   SortableDutiesTable: {
     props: ['modelValue'],
@@ -42,18 +45,45 @@ describe('InstitutionDutiesSection', () => {
   });
 
   it('lists the duties and offers to create the first one when there are none', () => {
-    expect(mountSection().findAll('.duty-card')).toHaveLength(3);
+    expect(mountSection().findAll('[data-slot="institution-duty-row"]')).toHaveLength(3);
 
     const empty = mountSection({ duties: [] });
     expect(empty.find('[data-testid="empty"]').exists()).toBe(true);
     expect(empty.text()).toContain('Sukurti pirmą pareigybę');
   });
 
-  it('hides ordering and creating from someone who may not update the institution', () => {
+  it('hides ordering, creating and assigning from someone who may not update the institution', () => {
     const wrapper = mountSection({ canManage: false });
 
     expect(button(wrapper, 'Keisti tvarką')).toBeUndefined();
-    expect(button(wrapper, 'Nauja pareigybė')).toBeUndefined();
+    expect(wrapper.text()).not.toContain('Nauja pareigybė');
+    expect(wrapper.text()).not.toContain('Pridėti asmenį');
+  });
+
+  it('says how full a duty is and where to write, but not the institution it belongs to', () => {
+    const wrapper = mountSection({
+      duties: [
+        { id: 'a', name: 'Pirmininkas', email: 'pirm@vusa.lt', places_to_occupy: 2, current_users: [{ id: 'u1', name: 'Rūta', pivot: { id: 't1', start_date: '2025-09-01' } }] },
+        { id: 'b', name: 'Sekretorius', current_users: [] },
+      ],
+    });
+    const rows = wrapper.findAll('[data-slot="institution-duty-row"]');
+
+    expect(rows[0]!.text()).toContain('Užimta :count iš :places');
+    expect(rows[0]!.text()).toContain('pirm@vusa.lt');
+    expect(rows[1]!.find('.text-status-attention').text()).toBe('Neužimta');
+  });
+
+  it('edits a holder\'s term from the avatars and assigns from the row', async () => {
+    const holder = { id: 'u1', name: 'Rūta', pivot: { id: 't1', start_date: '2025-09-01' } };
+    const wrapper = mountSection({ duties: [{ id: 'a', name: 'Pirmininkas', current_users: [holder] }] });
+
+    await wrapper.get('[data-slot="duty-holders-trigger"]').trigger('click');
+    await button(wrapper, 'Redaguoti pareigybės laikotarpį')!.trigger('click');
+    expect(wrapper.emitted('edit-term')?.[0]).toEqual([expect.objectContaining({ id: 'a' }), holder]);
+
+    await wrapper.get('[data-slot="institution-duty-row"] [data-action="assign"]').trigger('click');
+    expect(wrapper.emitted('assign')?.[0]).toEqual([expect.objectContaining({ id: 'a' })]);
   });
 
   it('does not offer ordering for a single duty', () => {

@@ -25,6 +25,7 @@ use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\InstitutionActivityStatusService;
+use App\Services\InstitutionPresenter;
 use App\Services\InstitutionRelationService;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Settings\CadenceSettings;
@@ -131,7 +132,8 @@ describe('unauthorized access', function (): void {
                 ->missing('overview.current_users.0.email')
                 ->missing('overview.current_users.0.phone')
                 ->missing('overview.current_users.0.pivot.additional_email')
-                ->missing('duties')
+                ->has('duties', 1)
+                ->missing('duties.0.current_users.0.email')
                 ->where('canViewActivityRequests', false)
                 ->missing('activityRequests')
                 ->reload(only: ['activityRequests'], callback: fn (Assert $history) => $history->missing('activityRequests'))
@@ -239,6 +241,7 @@ describe('authorized access', function (): void {
     test('each optional tab returns only the props explicitly requested', function (array $only): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
         InstitutionActivityRequest::factory()->create(['institution_id' => $institution->id, 'recipient_id' => $this->admin->id]);
+        Duty::factory()->for($institution)->count(InstitutionPresenter::OVERVIEW_DUTY_LIMIT + 1)->create();
         $optional = ['duties', 'meetings', 'tasks', 'problems', 'management', 'relatedInstitutions', 'institutionLinks', 'files', 'typeFiles', 'activityRequests', 'assignmentTerms'];
 
         asUserWithInertia($this->admin)->get(route('institutions.show', $institution))
@@ -259,6 +262,21 @@ describe('authorized access', function (): void {
         'files' => [['files', 'typeFiles']],
         'activity requests' => [['activityRequests']],
     ]);
+
+    test('a few duties come with the page for the overview, more wait for their tab', function (): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+        Duty::factory()->for($institution)->count(InstitutionPresenter::OVERVIEW_DUTY_LIMIT)->create();
+
+        asUserWithInertia($this->admin)->get(route('institutions.show', $institution))
+            ->assertInertia(fn (Assert $page) => $page->has('duties', InstitutionPresenter::OVERVIEW_DUTY_LIMIT));
+
+        Duty::factory()->for($institution)->create();
+
+        asUserWithInertia($this->admin)->get(route('institutions.show', $institution))
+            ->assertInertia(fn (Assert $page) => $page
+                ->missing('duties')
+                ->reloadOnly('duties', fn (Assert $tab) => $tab->has('duties', InstitutionPresenter::OVERVIEW_DUTY_LIMIT + 1)));
+    });
 
     test('the task badge counts incomplete institution and meeting tasks without loading the tab', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
@@ -482,7 +500,7 @@ describe('authorized access', function (): void {
                 ->whereType('overview.activity_status.requires_action', 'boolean')
                 ->where('overview.recentMeetings.0.id', $meeting->id)
                 ->where('overview.recentMeetings.0.type', null)
-                ->missing('duties')->missing('tasks')->missing('files')->missing('management')->missing('activityRequests')
+                ->missing('tasks')->missing('files')->missing('management')->missing('activityRequests')
                 ->reloadOnly(['duties', 'meetings', 'tasks', 'problems', 'relatedInstitutions', 'institutionLinks', 'management'], fn (Assert $panels) => $panels
                     ->where('duties', $json($expectedDuties))
                     ->where('meetings', $expectedMeetings)

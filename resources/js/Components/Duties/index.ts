@@ -12,3 +12,4 @@ export { default as DutyMeetingMiniCard } from './DutyMeetingMiniCard.vue';
 export { default as DutyOtherDutiesCard } from './DutyOtherDutiesCard.vue';
 export { default as DutyInstitutionCard } from './DutyInstitutionCard.vue';
 export { default as MyDutyTermRow } from './MyDutyTermRow.vue';
+export { default as DutyHoldersPopover } from './DutyHoldersPopover.vue';

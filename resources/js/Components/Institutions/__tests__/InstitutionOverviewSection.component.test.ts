@@ -7,7 +7,7 @@ import InstitutionOverviewSection from '../InstitutionOverviewSection.vue';
 // compiled) by the section, so this also acts as a compile smoke-test.
 const stubs = {
   UsersAvatarGroup: true,
-  InstitutionMeetingsList: true,
+  InstitutionDutiesSection: { props: ['duties'], template: '<div data-testid="duties">{{ duties.length }}</div>' },
 };
 
 type InstitutionProp = InstanceType<typeof InstitutionOverviewSection>['$props']['institution'];
@@ -54,25 +54,6 @@ const makeOverview = (overrides: Record<string, unknown> = {}): OverviewProp => 
 }) as unknown as OverviewProp;
 
 describe('InstitutionOverviewSection', () => {
-  it('renders the About section when a description is present', () => {
-    const wrapper = mount(InstitutionOverviewSection, {
-      props: { institution: makeInstitution(), overview: makeOverview() },
-      global: { stubs },
-    });
-
-    expect(wrapper.text()).toContain('Apie');
-    expect(wrapper.text()).toContain('A short description.');
-  });
-
-  it('hides the About section when there is no description', () => {
-    const wrapper = mount(InstitutionOverviewSection, {
-      props: { institution: makeInstitution({ description: '' }), overview: makeOverview() },
-      global: { stubs },
-    });
-
-    expect(wrapper.text()).not.toContain('Apie');
-  });
-
   it('keeps members, tasks and related institutions out of the overview — each has its own section', () => {
     const wrapper = mount(InstitutionOverviewSection, {
       props: { institution: makeInstitution(), overview: makeOverview() },
@@ -123,7 +104,9 @@ describe('InstitutionOverviewSection', () => {
       global: { stubs },
     });
 
-    expect(wrapper.text()).toContain('Nėra susitikimų');
+    // An empty section is one line (visual budget), with no second way to plan a meeting.
+    expect(wrapper.text()).toContain('Šiai institucijai dar nėra suplanuota susitikimų.');
+    expect(wrapper.find('[data-slot="institution-recent-meetings"]').exists()).toBe(false);
     expect(wrapper.text()).not.toContain('Suplanuoti susitikimą');
   });
 
@@ -134,6 +117,7 @@ describe('InstitutionOverviewSection', () => {
         overview: makeOverview({
           recentMeetings: [{ id: 'm1', start_time: '2025-11-01T10:00:00.000Z', title: 'Posėdis' }],
         }),
+        meetingsTab: true,
       },
       global: { stubs },
     });
@@ -141,6 +125,42 @@ describe('InstitutionOverviewSection', () => {
     await wrapper.findAll('button').find(b => b.text().includes('Visi posėdžiai'))!.trigger('click');
 
     expect(wrapper.emitted('navigate-tab')?.[0]).toEqual(['meetings']);
+  });
+
+  it('shows the three newest meetings as cards', () => {
+    const meeting = (id: string, start: string) => ({ id, start_time: start, title: `${id} posėdis` });
+    const wrapper = mount(InstitutionOverviewSection, {
+      props: {
+        institution: makeInstitution(),
+        overview: makeOverview({
+          recentMeetings: [
+            meeting('old', '2025-01-01T10:00:00.000Z'),
+            meeting('newest', '2025-11-01T10:00:00.000Z'),
+            meeting('middle', '2025-06-01T10:00:00.000Z'),
+            meeting('older', '2025-03-01T10:00:00.000Z'),
+          ],
+        }),
+      },
+      global: { stubs },
+    });
+
+    const cards = wrapper.findAll('[data-slot="meeting-card"]');
+    expect(cards.map(card => card.text().match(/([a-z]+) posėdis/)?.[1])).toEqual(['newest', 'middle', 'older']);
+  });
+
+  it('shows the duties only when the page hands them to the overview', () => {
+    const duties = [{ id: 'd1', name: 'Pirmininkas', current_users: [] }];
+    const without = mount(InstitutionOverviewSection, {
+      props: { institution: makeInstitution(), overview: makeOverview() },
+      global: { stubs },
+    });
+    const withDuties = mount(InstitutionOverviewSection, {
+      props: { institution: makeInstitution(), overview: makeOverview(), duties },
+      global: { stubs },
+    });
+
+    expect(without.find('[data-testid="duties"]').exists()).toBe(false);
+    expect(withDuties.get('[data-testid="duties"]').text()).toBe('1');
   });
 
   it('shows current-term secretaries without repeating coordinators from the key facts', () => {
