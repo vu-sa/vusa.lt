@@ -19,6 +19,7 @@ class MergeDuties
     public const array REPOINT = [
         ['duty_names', 'duty_id'],
         ['goals', 'responsible_duty_id'],
+        ['handover_notes', 'duty_id'],
     ];
 
     /** duty_id columns repointed only where the kept duty has no row sharing these columns. */
