@@ -1,6 +1,7 @@
 <template>
   <RecordPage
     v-model:section="currentSection"
+    section-query-key="tab"
     :aria-busy="processing"
     :history-subject="canView ? { type: 'mailing_list', id: mailingList.id } : undefined"
     :title="mailingList.display_name"

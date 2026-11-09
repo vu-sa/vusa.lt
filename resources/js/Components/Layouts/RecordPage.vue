@@ -151,6 +151,9 @@
                 {{ fact.value }}
               </Link>
               <span v-else>{{ fact.value }}</span>
+              <span v-if="!fact.status && fact.detail" class="mt-0.5 block text-xs font-normal text-muted-foreground" data-slot="fact-detail">
+                {{ fact.detail }}
+              </span>
             </slot>
           </dd>
         </div>
@@ -249,7 +252,7 @@
           <!-- Hidden, not unmounted, so the thread and any draft survive a tab switch. -->
           <section
             v-if="$slots.activity"
-            class="mt-12 border-t border-border pt-8"
+            class="mt-12"
             :class="{
               'md:hidden': hasTabs && currentSection !== sections[0]?.value,
               'max-md:hidden': hasTabs && mobileSection !== ALL_SECTIONS && mobileSection !== sections[0]?.value,
@@ -319,7 +322,7 @@ export interface RecordFact {
   external?: boolean;
   /** Renders the fact as a status: the cell takes the role's surface, the value its icon and ink. */
   status?: StatusPresentation;
-  /** A quiet line under a status, e.g. what the status rests on. */
+  /** A quiet line under the value, e.g. what a status rests on. */
   detail?: string | null;
 }
 
@@ -381,6 +384,14 @@ const hasTabs = computed(() => props.sectionLayout !== 'stacked' && props.sectio
 
 if (!currentSection.value && props.sections.length) {
   currentSection.value = props.sections[0]!.value;
+}
+
+// A deep link (`?tab=files`) opens that section, whatever the page would start on.
+if (props.sectionQueryKey) {
+  const linked = new URL(usePage().url, window.location.origin).searchParams.get(props.sectionQueryKey);
+  if (linked && linked !== currentSection.value && props.sections.some(section => section.value === linked)) {
+    currentSection.value = linked;
+  }
 }
 
 const ALL_SECTIONS = '__all';

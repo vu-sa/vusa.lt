@@ -25,6 +25,13 @@ Record next actions — three action tiers: 1 CTA (brand fill, one per region: t
 ## Row actions in a rows view
 One action set on rows, tables and the detail card: **Atidaryti** (`role: 'open'`, `primary: true`) + ⋯, with Redaguoti in ⋯ (`menuOnly: true`). A workflow step takes the labelled slot instead when one is due. In the detail card it is the region's brand fill (`emphasis`). Narrow rows are content plus a bordered ⋯: the title opens the record and the primary action leads the menu, never a boxed button under the content, which reads as a separate object. A row at least 672px wide shows the labelled action beside ⋯; `Collection/CollectionRow` measures its own width because the same row runs full-width, beside a preview and inside a record section, and a menu in a portal cannot follow a container query.
 
+## Record sections share one row and header vocabulary
+- A section header's action is `Patterns/SectionHeaderAction` (text-sized, brand; `tone="muted"` beside another), never a `ui/button`: a button makes the header taller than its siblings.
+- A list inside a record section is `Collection/CollectionRowList` + `CollectionRow` (`ROW_PADDING_CLASS`), never a hand-rolled `ul`: `frame="attached"` right under an `OverviewSection` header, whose rule is the box's top; `frame="box"` under a subheading. Plain top-and-bottom rules belong to collection views. The header gap and the attached box's pull share `Patterns/sectionSpacing.ts`.
+- A record with tabs passes `sectionQueryKey` (usually `tab`) to `RecordPage`, so each tab is a history entry and a deep link.
+- A meeting's result, wherever it is summarised (row, card, preview), is `Meetings/MeetingOutcome` over the `Meeting::outcomeSummary()` fields, never hand-rolled agenda counts or check marks.
+- A popover's own action is `ui/popover/PopoverFooterAction`: a full-width foot, uppercase like the date-time picker's „Dabar / Gerai“ (`tone="muted"` for the secondary). It is the one uppercase non-primary button, because it ends the popover rather than sitting among content.
+
 ## Index views say each fact once
 - Nothing repeats within a view: a tag never sits beside the counts it sums up, a column never repeats another, and a detail card never restates what its own section lists.
 - The left item beside a detail card is the row with less: no buttons and no tags (`view === 'preview'`). The card carries them.
@@ -53,7 +60,8 @@ The `admin-redesign/no-legacy-utility` error rule applies to all `Pages/Admin/**
 
 ## Scroll regions and navigation scroll
 The admin shell uses an inner scroll container (`div[data-slot="admin-scroll-area"]`) with the `scroll-region` attribute. Inertia resets scroll to top (`(0, 0)`) by default on all page visits (`<Link>`, `router.visit`).
-- **Default off**: Never add `preserveScroll: true` to navigation links, tabs, breadcrumbs, or catalog items.
+- **Default off**: Never add `preserveScroll: true` to navigation links, tabs, breadcrumbs, or catalog items that make a server visit.
+- **Record tabs are the exception**: `RecordPage`'s `sectionQueryKey` turns a tab change into a client-side history entry (`router.push`, no request), so Back returns to the previous tab. It preserves scroll because the page does not change; `RecordPage` itself brings the new section's top into view.
 - **When `preserveScroll: true` is allowed**:
   1. Inline table mutations (restoring, toggling status, task completion).
   2. Submitting drawer/sheet forms (`SheetForm`) over a base collection or record.

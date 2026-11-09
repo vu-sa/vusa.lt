@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
+import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 
 import { commonStubs, stubPopover, stubPopoverContent } from '@/tests/stubs';
@@ -7,11 +8,18 @@ import { commonStubs, stubPopover, stubPopoverContent } from '@/tests/stubs';
 import InstitutionDutiesSection from '../InstitutionDutiesSection.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
+vi.mock('@/Composables/useFeatureSpotlight', () => ({
+  useFeatureSpotlight: () => ({ isDismissed: ref(spotlightDismissed.value), dismiss: spotlightDismiss }),
+}));
+
+const spotlightDismissed = vi.hoisted(() => ({ value: true }));
+const spotlightDismiss = vi.hoisted(() => vi.fn());
 
 vi.stubGlobal('route', (name?: string) => (name === undefined ? { current: () => false } : `/mocked/${name}`));
 
 const stubs = {
   ...commonStubs,
+  SpotlightPopover: { name: 'SpotlightPopover', props: ['isDismissed'], template: '<div data-testid="spotlight" :data-dismissed="isDismissed"><slot /></div>' },
   Popover: stubPopover,
   PopoverTrigger: { template: '<div><slot /></div>' },
   PopoverContent: stubPopoverContent,
@@ -135,5 +143,19 @@ describe('InstitutionDutiesSection', () => {
 
     expect(router.post).not.toHaveBeenCalled();
     expect(button(wrapper, 'Keisti tvarką')).toBeDefined();
+  });
+
+  it('points a manager at the holders on the first duty only, and stops once they open it', async () => {
+    spotlightDismissed.value = false;
+    const holder = { id: 'u1', name: 'Rūta', pivot: { id: 't1', start_date: '2025-09-01' } };
+    const wrapper = mountSection({ duties: [{ id: 'a', name: 'Pirmininkas', current_users: [holder] }, { id: 'b', name: 'Narys', current_users: [] }] });
+
+    expect(wrapper.findAll('[data-testid="spotlight"]')).toHaveLength(1);
+    // Opening the holders is engaging the feature, so the hint goes away.
+    wrapper.findComponent({ name: 'DutyHoldersPopover' }).vm.$emit('opened');
+    expect(spotlightDismiss).toHaveBeenCalled();
+
+    expect(mountSection({ canManage: false }).find('[data-testid="spotlight"]').exists()).toBe(false);
+    spotlightDismissed.value = true;
   });
 });

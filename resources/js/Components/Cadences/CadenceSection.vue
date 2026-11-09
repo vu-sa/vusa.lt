@@ -9,14 +9,13 @@
         </span>
       </p>
 
-      <Button v-if="!editing" type="button" size="xs" variant="ghost" voice="sentence" @click="startEditing">
-        <Pencil v-if="hasOwn" class="size-3.5" />
-        <Plus v-else class="size-3.5" />
-        {{ hasOwn ? $t('cadences.institution.manage') : $t('cadences.institution.customize') }}
-      </Button>
-      <Button v-else type="button" size="xs" variant="ghost" voice="sentence" @click="stopEditing">
-        {{ $t('cadences.institution.done') }}
-      </Button>
+      <SectionHeaderAction
+        v-if="!editing"
+        :icon="hasOwn ? Pencil : Plus"
+        :label="hasOwn ? $t('cadences.institution.manage') : $t('cadences.institution.customize')"
+        @click="startEditing"
+      />
+      <SectionHeaderAction v-else tone="muted" :label="$t('cadences.institution.done')" @click="stopEditing" />
     </div>
 
     <div v-if="editing" class="space-y-3">
@@ -40,18 +39,12 @@
         @delete="crud.destroy"
       />
 
-      <Button
+      <FillActionButton
         v-if="hasOwn && !crud.adding.value"
-        type="button"
-        size="xs"
-        variant="outline"
-        voice="sentence"
+        :label="$t('cadences.actions.add')"
         :disabled="crud.processing.value"
         @click="startAdding"
-      >
-        <Plus class="size-3.5" />
-        {{ $t('cadences.actions.add') }}
-      </Button>
+      />
     </div>
   </div>
 </template>
@@ -60,7 +53,7 @@
 import { computed, ref } from 'vue';
 import { Pencil, Plus } from '@lucide/vue';
 
-import { Button } from '@/Components/ui/button';
+import { FillActionButton, SectionHeaderAction } from '@/Components/Patterns';
 
 import CadenceList from './CadenceList.vue';
 import { prefillFrom, useCadenceCrud } from './useCadenceCrud';

@@ -1,6 +1,7 @@
 <template>
   <RecordPage
     v-model:section="currentTab"
+    section-query-key="tab"
     :title="meetingTitle"
     :entity-type="ModelEnum.MEETING"
     :eyebrow-suffix="meeting.type_label"

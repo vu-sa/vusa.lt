@@ -1,6 +1,7 @@
 <template>
   <RecordPage
     v-model:section="section"
+    section-query-key="tab"
     :title="responsibility.display_title"
     :entity-type="ModelEnum.ROLE"
     :status="purposeStatus"

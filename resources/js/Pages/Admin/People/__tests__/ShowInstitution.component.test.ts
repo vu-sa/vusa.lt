@@ -269,13 +269,13 @@ describe('ShowInstitution.vue', () => {
     expect(threeCoordinators.find('users-avatar-group-stub').attributes('expandable')).toBe('true');
   });
 
-  it('moves the type and governance scope to a fact and shows meeting visibility instead of periodicity', () => {
+  it('moves the type and governance scope to a fact, with meeting visibility under it instead of periodicity', () => {
     const wrapper = createWrapper({
       types: [institutionType('Taryba')],
       governance_scope: InstitutionScope.Vusa,
       has_public_meetings: false,
     });
-    const facts = wrapper.findComponent({ name: 'RecordPage' }).props('facts') as Array<{ key: string; value?: string }>;
+    const facts = wrapper.findComponent({ name: 'RecordPage' }).props('facts') as Array<{ key: string; value?: string; detail?: string }>;
 
     expect(facts.find(fact => fact.key === 'type')).toMatchObject({
       label: 'forms.options.governance_scope_vusa',
@@ -283,7 +283,9 @@ describe('ShowInstitution.vue', () => {
       surfaceClass: 'bg-brand/5',
     });
     expect(facts[1]?.key).toBe('type');
-    expect(facts.find(fact => fact.key === 'visibility')?.value).toBe('Nevieši posėdžiai');
+    // Visibility reads under the type rather than taking a fact of its own.
+    expect(facts.find(fact => fact.key === 'type')?.detail).toBe('Nevieši posėdžiai');
+    expect(facts.map(fact => fact.key)).not.toContain('visibility');
     expect(facts.map(fact => fact.key)).not.toContain('periodicity');
   });
 

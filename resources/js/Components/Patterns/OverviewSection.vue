@@ -1,7 +1,7 @@
 <template>
   <!-- Inside an OverviewPage an empty section moves to the page's status list; elsewhere it
        collapses to one line (visual budget 7). -->
-  <section v-if="!(empty && statusRegistry)" class="flex flex-col gap-3" data-slot="overview-section">
+  <section v-if="!(empty && statusRegistry)" :class="['flex flex-col', SECTION_BODY_GAP_CLASS]" data-slot="overview-section">
     <p v-if="empty" :class="['flex items-center gap-2 text-sm text-muted-foreground', variant === 'home' ? 'border-b border-border pb-3' : 'border-t border-border pt-3']">
       <component :is="icon" v-if="icon" class="size-4 shrink-0 text-brand" aria-hidden="true" />
       <span>
@@ -42,6 +42,7 @@ import { computed, inject, onBeforeUnmount, useId, watchEffect, type Component }
 
 import { OVERVIEW_STATUS_KEY, type OverviewStatusEntry } from './overviewStatus';
 import SectionHeaderAction from './SectionHeaderAction.vue';
+import { SECTION_BODY_GAP_CLASS } from './sectionSpacing';
 
 const props = withDefaults(defineProps<{
   title: string;

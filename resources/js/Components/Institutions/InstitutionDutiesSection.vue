@@ -73,7 +73,25 @@
                 </template>
               </template>
             </CollectionPrimaryCell>
+            <!-- Term editing used to sit beside each person; the first row says where it went. -->
+            <SpotlightPopover
+              v-if="canManage && duty === duties[0]"
+              :title="$t('dutiables.holders_spotlight.title')"
+              :description="$t('dutiables.holders_spotlight.description')"
+              :is-dismissed="holdersSpotlight.isDismissed.value"
+              align="end"
+              @dismiss="holdersSpotlight.dismiss()"
+            >
+              <DutyHoldersPopover
+                :holders="duty.current_users ?? []"
+                can-manage
+                @opened="holdersSpotlight.dismiss()"
+                @assign="$emit('assign', duty)"
+                @edit-term="user => $emit('edit-term', duty, user)"
+              />
+            </SpotlightPopover>
             <DutyHoldersPopover
+              v-else
               :holders="duty.current_users ?? []"
               :can-manage
               @assign="$emit('assign', duty)"
@@ -99,6 +117,8 @@ import CollectionRowList from '@/Components/Collection/CollectionRowList.vue';
 import { ROW_PADDING_CLASS } from '@/Components/Collection/rowList';
 import DutyHoldersPopover from '@/Components/Duties/DutyHoldersPopover.vue';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import type { DutyWithUsers, UserWithPivot } from '@/Types/DutyAssignment';
@@ -117,6 +137,8 @@ const emit = defineEmits<{
   'assign': [duty: DutyWithUsers];
   'edit-term': [duty: DutyWithUsers, user: UserWithPivot];
 }>();
+
+const holdersSpotlight = useFeatureSpotlight('duty-holders-popover-v1');
 
 const dutyName = (duty: DutyWithUsers) => getTranslatedValue(duty.name, undefined, '—');
 

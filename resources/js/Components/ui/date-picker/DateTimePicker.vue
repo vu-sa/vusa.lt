@@ -57,20 +57,12 @@
             </div>
           </div>
           <div class="grid grid-cols-2 divide-x divide-border">
-            <button
-              type="button"
-              class="h-9 text-xs font-bold uppercase tracking-wide text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
-              @click="setNow"
-            >
+            <PopoverFooterAction tone="muted" class="bg-transparent" @click="setNow">
               {{ $t('Dabar') }}
-            </button>
-            <button
-              type="button"
-              class="h-9 text-xs font-bold uppercase tracking-wide text-brand transition-colors hover:bg-secondary/60"
-              @click="isOpen = false"
-            >
+            </PopoverFooterAction>
+            <PopoverFooterAction class="bg-transparent" @click="isOpen = false">
               {{ $t('Gerai') }}
-            </button>
+            </PopoverFooterAction>
           </div>
         </div>
       </PopoverContent>
@@ -110,7 +102,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import { Button } from '@/Components/ui/button';
 import { Calendar } from '@/Components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
+import { Popover, PopoverContent, PopoverFooterAction, PopoverTrigger } from '@/Components/ui/popover';
 import { TimePicker, type TimeValue } from '@/Components/ui/time-picker';
 import { formatDateTime } from '@/Utils/dateTime';
 import { cn } from '@/Utils/Shadcn/utils';

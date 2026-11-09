@@ -63,21 +63,10 @@
       <p v-else class="px-3 py-3 text-sm text-status-attention">
         {{ $t('Neužimta') }}
       </p>
-      <!-- The popover's own footer action, as the date-time picker closes its popover. -->
-      <button
-        v-if="canManage"
-        type="button"
-        :class="[
-          'flex h-10 w-full items-center justify-center gap-2 border-t border-border bg-secondary/20 pointer-coarse:h-11',
-          'text-xs font-bold uppercase tracking-wide text-brand transition-colors hover:bg-secondary/60',
-          'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
-        ]"
-        data-slot="duty-holders-assign"
-        @click="assign"
-      >
+      <PopoverFooterAction v-if="canManage" class="border-t border-border" data-slot="duty-holders-assign" @click="assign">
         <UserPlus class="size-4" aria-hidden="true" />
         {{ $t('Pridėti asmenį') }}
-      </button>
+      </PopoverFooterAction>
     </PopoverContent>
   </Popover>
 </template>
@@ -86,12 +75,12 @@
 import { Link } from '@inertiajs/vue3';
 import { CalendarCog, ChevronDown, UserPlus } from '@lucide/vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import { Avatar, AvatarFallback } from '@/Components/ui/avatar';
 import { Button } from '@/Components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
+import { Popover, PopoverContent, PopoverFooterAction, PopoverTrigger } from '@/Components/ui/popover';
 import type { UserWithPivot } from '@/Types/DutyAssignment';
 import { formatDate } from '@/Utils/dateTime';
 
@@ -107,9 +96,15 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   'assign': [];
   'edit-term': [user: UserWithPivot];
+  'opened': [];
 }>();
 
 const open = ref(false);
+watch(open, (value) => {
+  if (value) {
+    emit('opened');
+  }
+});
 
 const visibleHolders = computed(() => props.holders.slice(0, props.max));
 const hiddenCount = computed(() => Math.max(0, props.holders.length - props.max));

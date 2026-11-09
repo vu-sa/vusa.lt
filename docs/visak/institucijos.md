@@ -242,8 +242,8 @@ viešumas**. Kalendoriuje paskelbtas posėdis pats savaime viešu netampa.
 
 Narių ir sekretorių nuotraukos rodomos mažos, kad sąrašuose ir kortelėse daugiau vietos liktų vardams bei pareigoms.
 
-Viršuje – veiklos būklė, rūšis ir tipas, padalinys, dabartinių narių skaičius, posėdžių
-viešumas ir koordinatoriai. Skirtukai:
+Viršuje – veiklos būklė, rūšis ir tipas (po juo – ar posėdžiai vieši), padalinys, dabartinių
+narių skaičius ir koordinatoriai. Skirtukai:
 
 | Skirtukas | Kas jame |
 |---|---|
@@ -533,7 +533,8 @@ Pareigybės ir jų nariai rodomi skirtuke **Santrauka**, o kai pareigybių yra k
 skirtuke **Pareigybės**. Eilutėje matyti, kiek vietų užimta, ir pareigybės el. paštas; nariai
 rodomi nuotraukomis. Paspaudus nuotraukas atsiveria narių sąrašas su datomis, nuo kada jie eina
 pareigas; ten redaguoti galintys gali pakeisti nario pareigų laikotarpį arba **Pridėti asmenį**.
-Asmenį pridėti galima ir eilutės veiksmu. Redaguoti galintys taip pat keičia pareigybių tvarką
+Asmenį pridėti galima ir eilutės veiksmu. Pirmą kartą atvėrus puslapį, redaguoti galintiems
+nuotraukas parodo trumpas patarimas. Redaguoti galintys taip pat keičia pareigybių tvarką
 (**Keisti tvarką**, rodyklėmis, tada **Išsaugoti tvarką**). Pareigybės kuriamos ir tvarkomos
 [Pareigybių](/organizacija/pareigybes) skiltyje.
 

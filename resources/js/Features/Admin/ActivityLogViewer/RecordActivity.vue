@@ -6,7 +6,7 @@
       <span v-if="discussion.comments.value.length" class="text-muted-foreground">({{ discussion.comments.value.length }})</span>
     </h2>
 
-    <div class="mt-6 flex items-center gap-3 border-b border-border pb-6">
+    <div class="mt-6 flex items-center gap-3">
       <UserAvatar v-if="currentUser" :user="currentUser" :size="32" class="shrink-0" />
       <CommentComposer
         ref="rootComposer"
@@ -47,7 +47,7 @@
       <Skeleton v-for="index in 3" :key="index" class="h-20 w-full" />
     </div>
 
-    <div v-else-if="discussion.comments.value.length" class="divide-y divide-border border-b border-border">
+    <div v-else-if="discussion.comments.value.length" class="mt-2 divide-y divide-border">
       <div v-for="comment in discussion.comments.value" :key="comment.id" class="py-5">
         <CommentThread
           :comment

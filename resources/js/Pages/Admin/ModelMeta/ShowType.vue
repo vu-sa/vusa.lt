@@ -1,6 +1,7 @@
 <template>
   <RecordPage
     v-model:section="section"
+    section-query-key="tab"
     :title
     :entity-type
     :facts

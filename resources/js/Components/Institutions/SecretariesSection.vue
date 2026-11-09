@@ -8,16 +8,16 @@
       {{ $t('secretaries.institution.no_cadences_hint') }}
     </p>
 
-    <ul v-if="editable.length" class="space-y-3">
+    <ul v-if="editable.length" :class="ROW_LIST_BOX_CLASS">
       <li
         v-for="roster in editable"
         :key="roster.cadence_id"
         data-slot="secretary-roster"
         :data-cadence-id="roster.cadence_id"
-        class="flex flex-col gap-2 sm:flex-row sm:items-center"
+        :class="[ROW_ITEM_CLASS, ROW_PADDING_CLASS, 'flex-col gap-2 sm:flex-row sm:items-center']"
       >
         <div class="flex shrink-0 items-baseline gap-2 sm:w-36">
-          <span class="text-sm font-medium">{{ roster.label }}</span>
+          <span class="font-bold text-foreground">{{ roster.label }}</span>
           <span class="text-xs text-muted-foreground">
             {{ roster.is_current ? $t('secretaries.institution.current_term') : $t('secretaries.institution.next_term') }}
           </span>
@@ -57,10 +57,12 @@
             @confirm="hits => onConfirm(roster, hits)"
           >
             <template #trigger>
-              <Button type="button" size="xs" variant="ghost" voice="sentence" :disabled="processingCadenceId !== null">
-                <UserPlus class="size-3.5" />
-                {{ roster.secretaries.length ? $t('secretaries.actions.manage') : $t('secretaries.actions.add') }}
-              </Button>
+              <SectionHeaderAction
+                :icon="UserPlus"
+                :label="roster.secretaries.length ? $t('secretaries.actions.manage') : $t('secretaries.actions.add')"
+                :disabled="processingCadenceId !== null"
+                class="ml-1"
+              />
             </template>
           </MultiCollectionSelectDialog>
         </div>
@@ -90,8 +92,9 @@
 import { computed, ref } from 'vue';
 import { UserPlus, X } from '@lucide/vue';
 
-import { Button } from '@/Components/ui/button';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
+import { ROW_ITEM_CLASS, ROW_LIST_BOX_CLASS, ROW_PADDING_CLASS } from '@/Components/Collection/rowList';
+import { SectionHeaderAction } from '@/Components/Patterns';
 import MultiCollectionSelectDialog from '@/Features/Admin/AdminSearch/Components/Select/MultiCollectionSelectDialog.vue';
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 
