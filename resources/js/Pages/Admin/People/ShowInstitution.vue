@@ -115,18 +115,15 @@
             <div v-for="n in 3" :key="n" class="h-12 animate-pulse border border-border bg-secondary/60" />
           </div>
         </template>
-        <div class="grid gap-10 xl:grid-cols-2 xl:gap-16" data-testid="institution-relationships">
-          <RelatedInstitutions :items="relatedInstitutions ?? []" />
-          <RelationshipLinkList
-            v-if="can.manageLinks || institutionLinks?.length"
-            subject="institution"
-            :record-id="institution.id"
-            :record-name="institution.name"
-            :links="institutionLinks ?? []"
-            :can-manage="!!can.manageLinks"
-            :kinds="relationKinds ?? []"
-          />
-        </div>
+        <InstitutionRelationsList
+          :related="relatedInstitutions ?? []"
+          :links="institutionLinks ?? []"
+          :record-id="String(institution.id)"
+          :record-name="institution.name"
+          :can-manage="!!can.manageLinks"
+          :kinds="relationKinds ?? []"
+          data-testid="institution-relationships"
+        />
       </WhenVisible>
     </template>
 
@@ -252,7 +249,6 @@ import RecordPage, { type RecordFact, type RecordPageSection } from '@/Component
 import type { AdminRecordAction as ActionDescriptor } from '@/Types/AdminRecordAction';
 import { OverviewSection } from '@/Components/Patterns';
 import ProblemSummaryList from '@/Components/Problems/ProblemSummaryList.vue';
-import { RelationshipLinkList } from '@/Components/Relationships';
 import { Button } from '@/Components/ui/button';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
@@ -558,7 +554,7 @@ watch(() => props.institution.id, () => enterInstitution(props.institution), { i
 const AssignDutyUserSheet = defineAsyncComponent(() => import('@/Features/Admin/Occupancy/AssignDutyUserSheet.vue'));
 const FileableFilesPanel = defineAsyncComponent(() => import('@/Components/Files/FileableFilesPanel.vue'));
 const TaskDetailDialog = defineAsyncComponent(() => import('@/Features/Admin/TaskManager/TaskDetailDialog.vue'));
-const RelatedInstitutions = defineAsyncComponent(() => import('@/Components/Carousels/RelatedInstitutions.vue'));
+const InstitutionRelationsList = defineAsyncComponent(() => import('@/Components/Institutions/InstitutionRelationsList.vue'));
 
 // --- Sections ---------------------------------------------------------------------------------
 

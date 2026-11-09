@@ -1641,5 +1641,7 @@
   "Kai išjungta, tekstas ir grotuvas sukeičiami vietomis darbalaukyje.": "When off, the text and player swap places on desktop.",
   "Visi skyriai": "All sections",
   "Užimta :count iš :places": "Filled :count of :places",
-  "Užima": "Held by"
+  "Užima": "Held by",
+  "Tiesioginis ryšys": "Direct link",
+  "Pašalinti ryšį": "Remove link"
 }

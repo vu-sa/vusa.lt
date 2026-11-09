@@ -67,10 +67,9 @@ const stubs = {
   RecordActivity: { template: '<div data-testid="record-activity" />' },
   TaskManager: true,
   FileableFilesPanel: true,
-  RelatedInstitutions: true,
+  InstitutionRelationsList: true,
   EmptyState: true,
   InstitutionActivityRequestHistory: true,
-  RelationshipLinkList: true,
   ProblemSummaryList: true,
 };
 
