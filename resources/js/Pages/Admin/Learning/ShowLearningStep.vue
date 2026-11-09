@@ -45,7 +45,7 @@ const facts = computed<RecordFact[]>(() => [
 <template>
   <div>
     <LearningTabs :can-see-reps="canSeeReps" />
-    <RecordPage :key="step.id" :title="step.title" entity-type="learning_step" title-voice="sentence" :facts="facts" :sections="sections" :overflow-actions="overflowActions">
+    <RecordPage :key="step.id" :title="step.title" entity-type="learning_step" title-voice="sentence" :facts="facts" :sections="sections" :overflow-actions="overflowActions" section-query-key="tab">
       <template #subtitle>
         <StatusBadge v-if="inPath" :status="learningProgressStatuses[step.state]" voice="sentence" />
       </template>
