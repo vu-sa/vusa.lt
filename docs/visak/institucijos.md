@@ -253,7 +253,7 @@ narių skaičius ir koordinatoriai. Skirtukai:
 | **Užduotys** | Institucijos ir jos posėdžių užduotys; skaičius rodo neatliktas. Greitieji filtrai **Vėluoja**, **Automatinės** ir **Atliktos** – kaip užduočių sąraše |
 | **Problemos** | Su institucija susietos problemos, pirmiau neišspręstos (tik jei jų yra, žr. [Problemos](/visak/problemos#posedziai)) |
 | **Ryšiai** | Visos susijusios institucijos viename sąraše, sugrupuotos pagal kryptį; rodomas, kai ryšių yra (žr. [Ryšiai](/sistema/rysiai)) |
-| **Failai** | Institucijos ir jos tipų darbo failai SharePoint; viešai nerodomi, skirtukas rodomas, kai failų yra (žr. [Įrašų failai](/visak/failai)) |
+| **Failai** | Institucijos darbo failai SharePoint; viešai nerodomi, skirtukas rodomas, kai failų yra (žr. [Įrašų failai](/visak/failai)) |
 | **Užklausos atstovams** | Išsiųsti klausimai, ar vyko posėdis, ir atsakymai (žr. [Užklausos atstovams](#uzklausos)) |
 | **Kadencijos ir sekretoriai** | Kadencijos ir kiekvienos jų sekretoriai (tik galintiems redaguoti) |
 

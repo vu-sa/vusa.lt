@@ -3,7 +3,6 @@
 use App\Events\FileableNameUpdated;
 use App\Listeners\UpdateSharepointFolder;
 use App\Models\Institution;
-use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -117,56 +116,6 @@ describe('UpdateSharepointFolder Listener', function (): void {
         $institution->save();
 
         expect($eventFiredBeforeCommit)->toBeTrue();
-    });
-});
-
-describe('InstitutionType SharePoint folder renaming', function (): void {
-    test('event is dispatched when existing InstitutionType title changes', function (): void {
-        // Create type first (without faking events for creation)
-        $type = InstitutionType::factory()->create([
-            'title' => ['lt' => 'Originalus Pavadinimas', 'en' => 'Original Title'],
-        ]);
-
-        // Now fake events for the update
-        Event::fake([FileableNameUpdated::class]);
-
-        $type->title = ['lt' => 'Naujas Pavadinimas', 'en' => 'New Title'];
-        $type->save();
-
-        Event::assertDispatched(FileableNameUpdated::class, fn ($event) => $event->fileable->is($type));
-    });
-
-    test('event is NOT dispatched when InstitutionType title does not change', function (): void {
-        // Create type first (without faking events for creation)
-        $type = InstitutionType::factory()->create([
-            'title' => ['lt' => 'Originalus Pavadinimas', 'en' => 'Original Title'],
-        ]);
-
-        // Now fake events for the update
-        Event::fake([FileableNameUpdated::class]);
-
-        // Change a different field
-        $type->description = ['lt' => 'Naujas aprašymas', 'en' => 'New description'];
-        $type->save();
-
-        Event::assertNotDispatched(FileableNameUpdated::class);
-    });
-
-    test('listener skips when InstitutionType old and new titles are the same', function (): void {
-        $type = InstitutionType::factory()->create([
-            'title' => ['lt' => 'Same Title', 'en' => 'Same Title EN'],
-        ]);
-
-        // Set the same Lithuanian title (which is used for folder names)
-        $type->title = ['lt' => 'Same Title', 'en' => 'Different EN'];
-
-        $event = new FileableNameUpdated($type);
-        $listener = new UpdateSharepointFolder;
-
-        // Should not throw - listener skips when titles are the same
-        $listener->handle($event);
-
-        expect(true)->toBeTrue();
     });
 });
 

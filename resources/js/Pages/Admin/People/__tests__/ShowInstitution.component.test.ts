@@ -406,7 +406,7 @@ describe('ShowInstitution.vue', () => {
     ['terms', 'management'],
     ['related', ['relatedInstitutions', 'institutionLinks']],
     ['problems', 'problems'],
-    ['files', ['files', 'typeFiles']],
+    ['files', 'files'],
     ['tasks', 'tasks'],
     ['activityRequests', 'activityRequests'],
   ])('loads the %s panel through visibility with a skeleton and no repeated polling', async (tab, data) => {
@@ -466,7 +466,7 @@ describe('ShowInstitution.vue', () => {
     mockRouter.__triggerBefore({ detail: { visit } });
 
     expect(visit.except).toEqual(expect.arrayContaining([
-      'institutionLinks', 'problems', 'files', 'typeFiles', 'activityRequests', 'assignmentTerms',
+      'institutionLinks', 'problems', 'files', 'activityRequests', 'assignmentTerms',
     ]));
     expect(visit.except).not.toContain('duties');
     expect(visit.except).not.toContain('meetings');
@@ -524,7 +524,7 @@ describe('ShowInstitution.vue', () => {
     const wrapper = createWrapper();
 
     expect(wrapper.findComponent({ name: 'RecordPage' }).props('section')).toBe('files');
-    expect(wrapper.findAllComponents(WhenVisible).some(panel => JSON.stringify(panel.props('data')) === JSON.stringify(['files', 'typeFiles']))).toBe(true);
+    expect(wrapper.findAllComponents(WhenVisible).some(panel => panel.props('data') === 'files')).toBe(true);
     expect(router.reload).not.toHaveBeenCalled();
   });
 

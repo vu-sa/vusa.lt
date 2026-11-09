@@ -32,8 +32,6 @@ export enum AllowedFileablesEnum {
     DUTY = 'Duty',
     INSTITUTION = 'Institution',
     MEETING = 'Meeting',
-    INSTITUTION_TYPE = 'InstitutionType',
-    DUTY_TYPE = 'DutyType',
 }
 export enum ApprovalDecision {
     Approved = 'approved',
@@ -328,7 +326,6 @@ export enum SharepointFieldEnum {
 export enum SharepointFolderEnum {
     GENERAL = 'GENERAL',
     PADALINIAI = 'PADALINIAI',
-    TYPES = 'TYPES',
     INSTITUTIONS = 'INSTITUTIONS',
     MEETINGS = 'MEETINGS',
 }

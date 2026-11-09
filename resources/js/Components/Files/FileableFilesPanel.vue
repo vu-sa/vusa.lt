@@ -54,16 +54,6 @@
             @delete="fileToDelete = $event" @revoke="linkToRevoke = $event"
           />
         </ul>
-
-        <section v-if="typeFiles?.length" data-slot="fileable-type-files">
-          <h3 class="mb-2 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-            {{ $t('Tipo dokumentai') }} · {{ typeFiles.length }}
-          </h3>
-          <!-- Directly under the header when the record has no files of its own. -->
-          <ul :class="primaryTypes.length || otherFiles.length ? ROW_LIST_BOX_CLASS : ROW_LIST_BOXED_CLASS">
-            <FileRow v-for="file in typeFiles" :key="file.id" :file :can-delete="false" @copy="copyLink" />
-          </ul>
-        </section>
       </div>
 
       <p class="mt-1 text-xs text-muted-foreground" data-slot="fileable-files-privacy">
@@ -126,7 +116,7 @@ import { useClipboard, useDropZone } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { CircleDashed, FolderOpen, Upload } from '@lucide/vue';
 
-import { ROW_LIST_BOX_CLASS, ROW_LIST_BOXED_CLASS, ROW_PADDING_CLASS } from '@/Components/Collection/rowList';
+import { ROW_LIST_BOXED_CLASS, ROW_PADDING_CLASS } from '@/Components/Collection/rowList';
 import { ConfirmDialog, FillActionButton, OverviewSection, SectionHeaderAction } from '@/Components/Patterns';
 import StagingNote from '@/Components/StagingNote.vue';
 import { Skeleton } from '@/Components/ui/skeleton';
@@ -143,8 +133,6 @@ const props = withDefaults(defineProps<{
   fileable: { id: string | number; type: string };
   /** Undefined while a deferred prop is still loading. */
   files?: FileableFileItem[];
-  /** Read-only reference files from the record's types. */
-  typeFiles?: FileableFileItem[];
   canUpload?: boolean;
   canDelete?: boolean;
   /** Always shown, as a slot to fill when missing (a meeting's protocol and report). */
@@ -154,7 +142,6 @@ const props = withDefaults(defineProps<{
   folderUrl?: string | null;
 }>(), {
   files: undefined,
-  typeFiles: undefined,
   folderUrl: null,
   primaryTypes: () => [],
   defaultDate: undefined,
@@ -173,7 +160,7 @@ const dropZoneRef = ref<HTMLElement | null>(null);
 
 const loading = computed(() => props.files === undefined);
 const allFiles = computed(() => props.files ?? []);
-const isEmpty = computed(() => allFiles.value.length === 0 && props.primaryTypes.length === 0 && !props.typeFiles?.length);
+const isEmpty = computed(() => allFiles.value.length === 0 && props.primaryTypes.length === 0);
 const existingTypes = computed(() => allFiles.value.map(file => file.file_type).filter((type): type is string => !!type));
 
 const filesOfType = (type: string) => allFiles.value.filter(file => file.file_type === type);

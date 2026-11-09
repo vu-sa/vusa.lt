@@ -137,8 +137,8 @@ describe('unauthorized access', function (): void {
                 ->where('canViewActivityRequests', false)
                 ->missing('activityRequests')
                 ->reload(only: ['activityRequests'], callback: fn (Assert $history) => $history->missing('activityRequests'))
-                ->reloadOnly(['files', 'typeFiles', 'tasks', 'relatedInstitutions', 'institutionLinks', 'assignmentTerms'], fn (Assert $hidden) => $hidden
-                    ->where('files', [])->where('typeFiles', [])->where('tasks', [])
+                ->reloadOnly(['files', 'tasks', 'relatedInstitutions', 'institutionLinks', 'assignmentTerms'], fn (Assert $hidden) => $hidden
+                    ->where('files', [])->where('tasks', [])
                     ->where('relatedInstitutions', [])->where('institutionLinks', [])->where('assignmentTerms', []))
                 ->reloadOnly(['duties', 'problems', 'management'], fn (Assert $panels) => $panels
                     ->whereType('duties', 'array')
@@ -241,7 +241,7 @@ describe('authorized access', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
         InstitutionActivityRequest::factory()->create(['institution_id' => $institution->id, 'recipient_id' => $this->admin->id]);
         Duty::factory()->for($institution)->count(InstitutionPresenter::OVERVIEW_DUTY_LIMIT + 1)->create();
-        $optional = ['duties', 'tasks', 'problems', 'management', 'relatedInstitutions', 'institutionLinks', 'files', 'typeFiles', 'activityRequests', 'assignmentTerms'];
+        $optional = ['duties', 'tasks', 'problems', 'management', 'relatedInstitutions', 'institutionLinks', 'files', 'activityRequests', 'assignmentTerms'];
 
         asUserWithInertia($this->admin)->get(route('institutions.show', $institution))
             ->assertOk()
@@ -257,7 +257,7 @@ describe('authorized access', function (): void {
         'problems' => [['problems']],
         'terms' => [['management']],
         'relations' => [['relatedInstitutions', 'institutionLinks']],
-        'files' => [['files', 'typeFiles']],
+        'files' => [['files']],
         'activity requests' => [['activityRequests']],
     ]);
 
@@ -396,7 +396,6 @@ describe('authorized access', function (): void {
         $problem = Problem::factory()->create(['tenant_id' => $this->tenant->id, 'responsible_user_id' => null]);
         $institution->problems()->attach($problem);
         $file = FileableFile::factory()->create(['fileable_type' => 'institution', 'fileable_id' => $institution->id, 'public_link' => null]);
-        $typeFile = FileableFile::factory()->create(['fileable_type' => MorphMap::alias(InstitutionType::class), 'fileable_id' => $type->id]);
         $cadence = Cadence::factory()->create(['institution_id' => $institution->id, 'start_date' => today()->subMonth(), 'end_date' => today()->addMonth()]);
         InstitutionSecretary::create(['institution_id' => $institution->id, 'cadence_id' => $cadence->id, 'user_id' => $member->id]);
         StudyProgram::factory()->create(['tenant_id' => $this->tenant->id, 'name' => ['lt' => 'Matematika', 'en' => 'Mathematics']]);
@@ -549,17 +548,12 @@ describe('authorized access', function (): void {
                     ->where('management.cadences.0.start_meeting', null)
                     ->whereType('management.secretaryRosters.0.is_current', 'boolean')
                     ->whereType('management.studyPrograms.0.name', 'string'))
-                ->reloadOnly(['files', 'typeFiles'], fn (Assert $files) => $files
+                ->reloadOnly(['files'], fn (Assert $files) => $files
                     ->where('files', [$file->fresh()->toArray()])
-                    ->where('typeFiles', [$typeFile->fresh()->load('fileable:id,title')->toArray()])
                     ->missing('files.0.deleted_at')
                     ->where('files.0.id', $file->id)
                     ->where('files.0.public_link', null)
-                    ->whereType('files.0.formatted_size', 'string')
-                    ->where('typeFiles.0', $typeFile->fresh()->load('fileable:id,title')->toArray())
-                    ->where('typeFiles.0.id', $typeFile->id)
-                    ->where('typeFiles.0.fileable.id', $type->id)
-                    ->whereType('typeFiles.0.fileable.title', 'string'))
+                    ->whereType('files.0.formatted_size', 'string'))
                 ->reloadOnly('activityRequests', fn (Assert $requests) => $requests
                     ->where('activityRequests', $expectedHistory)
                     ->where('activityRequests.data.0.id', $history->send_id)

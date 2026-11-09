@@ -3,7 +3,6 @@
 use App\Enums\SharepointFolderEnum;
 use App\Models\Duty;
 use App\Models\Institution;
-use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Tenant;
 use App\Services\ResourceServices\SharepointFileService;
@@ -43,16 +42,6 @@ describe('SharepointFileService', function (): void {
 
             expect(fn () => SharepointFileService::pathForFileableDriveItem($modelWithoutTrait))
                 ->toThrow(Exception::class, 'Model does not have HasSharepointFiles trait');
-        });
-
-        test('generates correct path for InstitutionType model', function (): void {
-            $type = InstitutionType::factory()->create([
-                'title' => 'Test InstitutionType',
-            ]);
-
-            $path = SharepointFileService::pathForFileableDriveItem($type);
-
-            expect($path)->toBe('General/Types/Institutions/Test InstitutionType');
         });
 
         test('generates correct path for Institution model', function (): void {
@@ -156,7 +145,6 @@ describe('SharepointFileService', function (): void {
         test('names folders in Lithuanian whatever the request locale', function (): void {
             app()->setLocale('en');
 
-            $type = InstitutionType::factory()->create(['title' => ['lt' => 'Komitetai', 'en' => 'Committees']]);
             $institution = Institution::factory()->for($this->tenant)->create([
                 'name' => ['lt' => 'Studijų komitetas', 'en' => 'Study committee'],
             ]);
@@ -164,8 +152,7 @@ describe('SharepointFileService', function (): void {
             $meeting = Meeting::factory()->create(['start_time' => Carbon::create(2023, 6, 15, 14, 30)]);
             $meeting->institutions()->attach($institution->id);
 
-            expect(SharepointFileService::pathForFileableDriveItem($type))->toBe('General/Types/Institutions/Komitetai')
-                ->and(SharepointFileService::pathForFileableDriveItem($meeting))->toBe('General/Padaliniai/test-tenant/Institutions/Studijų komitetas/Meetings/2023-06-15 14.30')
+            expect(SharepointFileService::pathForFileableDriveItem($meeting))->toBe('General/Padaliniai/test-tenant/Institutions/Studijų komitetas/Meetings/2023-06-15 14.30')
                 ->and(SharepointFileService::pathForFileableDriveItem($duty))->toBe('General/Padaliniai/test-tenant/Institutions/Studijų komitetas/Duties/Narys');
         });
 
@@ -174,11 +161,11 @@ describe('SharepointFileService', function (): void {
         // at the service level when the institution relationship returns null.
 
         test('uses SharepointFolderEnum constants', function (): void {
-            $type = InstitutionType::factory()->create([
-                'title' => 'Test InstitutionType',
+            $institution = Institution::factory()->for($this->tenant)->create([
+                'name' => 'Test Institution',
             ]);
 
-            $path = SharepointFileService::pathForFileableDriveItem($type);
+            $path = SharepointFileService::pathForFileableDriveItem($institution);
 
             expect($path)->toStartWith(SharepointFolderEnum::GENERAL->label());
         });

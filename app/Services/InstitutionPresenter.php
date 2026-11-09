@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Actions\ActivityRequests\GetInstitutionActivityRequestHistory;
 use App\Actions\GetInstitutionSecretaries;
-use App\Actions\GetTypeFiles;
 use App\Enums\InstitutionActivityAnswer;
 use App\Enums\InstitutionActivityCampaign;
 use App\Enums\InstitutionActivityStatus;
@@ -16,11 +15,9 @@ use App\Http\Controllers\Admin\InstitutionSecretaryController;
 use App\Http\Resources\InstitutionMeetingResource;
 use App\Http\Resources\ProblemSummaryResource;
 use App\Models\Duty;
-use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\InstitutionLink;
-use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Problem;
 use App\Models\StudyProgram;
@@ -63,8 +60,8 @@ class InstitutionPresenter
             'meetings_count' => (int) $institution->getAttribute('meetings_count'),
             'problems_count' => (int) $institution->getAttribute('problems_count'),
             'related_institutions_count' => app(InstitutionRelationService::class)->relatedTo($institution->id)->count(),
-            // Its own files or its types' reference files: without either, the Failai tab gives way to an "add" action.
-            'has_files' => ! $readOnly && ($institution->availableFiles()->exists() || GetTypeFiles::forFileable($institution, 1)->isNotEmpty()),
+            // Without files, the Failai tab gives way to an "add" action.
+            'has_files' => ! $readOnly && $institution->availableFiles()->exists(),
             'managers' => $managers,
             'secretaries' => $readOnly ? [] : InstitutionSecretaryController::usersPayload(GetInstitutionSecretaries::execute($institution)),
             'sharepointPath' => $readOnly ? null : SharepointFileService::pathOrNull($institution),
@@ -237,21 +234,6 @@ class InstitutionPresenter
         $rows = [];
         foreach ($institution->availableFiles()->orderByDesc('file_date')->get() as $file) {
             $row = FileableFilePresenter::file($file);
-            $rows[] = $row;
-        }
-
-        return $rows;
-    }
-
-    /** @return list<array{id: string, fileable_type: string, fileable_id: string, sharepoint_id: string, sharepoint_path: string|null, name: string, file_type: string|null, mime_type: string|null, size_bytes: int|null, file_date: string|null, description: string|null, public_link: string|null, public_link_expires_at: string|null, last_synced_at: string|null, deleted_externally_at: string|null, created_at: string|null, updated_at: string|null, formatted_size: string|null, fileable: array{id: int, title: string|null}|null}> */
-    public static function typeFiles(Institution $institution): array
-    {
-        $rows = [];
-        foreach (GetTypeFiles::forFileable($institution) as $file) {
-            $row = FileableFilePresenter::file($file);
-            /** @var DutyType|InstitutionType|null $fileable */
-            $fileable = $file->fileable;
-            $row['fileable'] = $fileable ? ['id' => $fileable->id, 'title' => $fileable->getRawOriginal('title') === null ? null : (string) $fileable->title] : null;
             $rows[] = $row;
         }
 

@@ -142,7 +142,6 @@ class InstitutionController extends AdminController
             'readOnly' => fn (): bool => $readOnly(),
             'overview' => fn () => InstitutionPresenter::overview($loadInstitution(), $showsMeetings(), $activityStatus(), $overviewMeetings()),
             'files' => Inertia::optional(fn () => $readOnly() ? [] : InstitutionPresenter::files($institution)),
-            'typeFiles' => Inertia::optional(fn () => $readOnly() ? [] : InstitutionPresenter::typeFiles($institution)),
             'overviewDuties' => fn () => InstitutionPresenter::duties($loadInstitution(), 3),
             'upcomingMeeting' => fn () => $showsMeetings() ? InstitutionPresenter::meetings($meetingQuery()->where('start_time', '>', now())->reorder('start_time')->limit(1)->get())[0] ?? null : null,
             'duties' => Inertia::optional(fn () => InstitutionPresenter::duties($institution)),

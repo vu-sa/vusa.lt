@@ -6,7 +6,6 @@ use App\Actions\BuildDutyIndexQuery;
 use App\Actions\Dutiables\SyncExOfficioTargets;
 use App\Actions\GetAttachableTypesForDuty;
 use App\Actions\GetTenantsForUpserts;
-use App\Actions\GetTypeFiles;
 use App\Actions\MergeDuties;
 use App\Actions\UpdateDuty;
 use App\Http\Controllers\AdminController;
@@ -150,7 +149,6 @@ class DutyController extends AdminController
         return Inertia::render('Admin/People/ShowDuty', [
             'duty' => fn (): array => DutyPresenter::forShow($loadDuty()),
             'files' => Inertia::defer(fn () => DutyPanelPresenter::files($duty->availableFiles()->orderByDesc('file_date')->get()), 'files'),
-            'typeFiles' => Inertia::defer(fn () => DutyPanelPresenter::typeFiles(GetTypeFiles::forFileable($duty)), 'files'),
             'can' => fn (): array => DutyPanelPresenter::abilities($duty, $user()),
             'otherDuties' => Inertia::defer(fn () => DutyPanelPresenter::otherDuties($duty), 'dutyPanels'),
             'studyPrograms' => Inertia::defer(fn () => DutyPanelPresenter::studyPrograms($this->studyProgramsFor($duty)), 'dutyPanels'),

@@ -153,7 +153,7 @@
     </template>
 
     <template #files>
-      <WhenVisible :key="institution.id" :data="['files', 'typeFiles']" :buffer="0" :always="false">
+      <WhenVisible :key="institution.id" data="files" :buffer="0" :always="false">
         <template #fallback>
           <div class="space-y-3" data-testid="files-skeleton">
             <div v-for="n in 3" :key="n" class="h-12 animate-pulse border border-border bg-secondary/60" />
@@ -162,7 +162,6 @@
         <FileableFilesPanel
           :fileable="{ id: institution.id, type: 'Institution' }"
           :files
-          :type-files
           :can-upload="can.update && !!institution.sharepointPath"
           :folder-url="institution.sharepointFolderUrl"
           :can-delete="can.update"
@@ -409,7 +408,7 @@ watch([tabs, currentSection], () => {
 
 const optionalProps = [
   'duties', 'tasks', 'problems', 'management', 'relatedInstitutions',
-  'institutionLinks', 'files', 'typeFiles', 'activityRequests', 'assignmentTerms',
+  'institutionLinks', 'files', 'activityRequests', 'assignmentTerms',
 ] as const;
 
 const stopPreservingPanels = router.on('before', ({ detail: { visit } }) => {

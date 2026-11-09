@@ -13,7 +13,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Files a record keeps in SharePoint (meeting protocols, institution and type documents).
+ * Files a record keeps in SharePoint (meeting protocols, institution and duty documents).
  * SharePoint is only storage here: files go in and come out through the app.
  */
 class FileableFileController extends AdminController

@@ -234,7 +234,6 @@
       <FileableFilesPanel
         :fileable="{ id: duty.id, type: 'Duty' }"
         :files
-        :type-files
         :can-upload="canManageDuty && !!duty.sharepointPath"
         :folder-url="duty.sharepointFolderUrl"
         :can-delete="canManageDuty"
@@ -611,7 +610,6 @@ const props = defineProps<{
   responsibilities?: DutyResponsibilitiesPayload;
   responsibilityOptions?: DutyResponsibilityOptions;
   files?: DutyFile[];
-  typeFiles?: (DutyFile & { fileable: { id: number; title: string | null } | null })[];
 }>();
 
 const currentSection = ref('members');
@@ -680,8 +678,7 @@ const dutyStatus = computed<StatusPresentation | undefined>(() => {
 });
 
 const otherDuties = computed(() => props.otherDuties ?? []);
-const hasTypeFiles = computed(() => (props.duty.types?.length ?? 0) > 0);
-const hasFiles = computed(() => !!props.duty.sharepointPath || hasTypeFiles.value);
+const hasFiles = computed(() => !!props.duty.sharepointPath);
 
 const dutyDescriptionHtml = computed(() => props.duty.description);
 

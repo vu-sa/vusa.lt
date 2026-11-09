@@ -188,7 +188,6 @@ return [
         'pronouns_self_set' => 'A person can set their own pronouns by logging in to mano.vusa.lt in their settings. You can also set them',
         'type_main_info' => 'Basic information about the content type.',
         'type_parameters_desc' => 'Parameters',
-        'type_files_desc' => 'Files related to this type. These files are shown in the relevant places next to the models that belong to this type.',
         'type_models_desc' => 'Models that belong to this type.',
         'type_duty_roles_desc' => 'Every duty of this type receives these responsibilities.',
         'institution_settings_desc' => 'Settings applied to all institutions of this type.',

@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Pareigybės
-last_reviewed: 2026-11-07
+last_reviewed: 2026-11-09
 tests:
   - tests/Browser/CollectionTrashRefreshTest.php
   - resources/js/Components/AdminForms/__tests__/DutyForm.component.test.ts
@@ -346,7 +346,7 @@ suskirstytas į skirtukus:
    - Padaliniai, institucijų tipai ar konkretūs organai, kuriuos ši pareigybė koordinuoja.
    - Mygtukas **Pridėti atsakomybę** leidžia priskirti naują koordinavimo sritį.
    - Rodomos ir per tipą ar instituciją gautos atsakomybės; jų teisės lemia, ką pareigybė gali daryti platformoje.
-4. **Failai** (rodoma, jei pareigybė turi SharePoint aplanką ar kategoriją):
+4. **Failai** (rodoma, jei pareigybė turi SharePoint aplanką):
    - Su pareigybe susieti dokumentai ir ataskaitos.
 
 ### Laikotarpio datos {#laikotarpio-datos}

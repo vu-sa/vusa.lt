@@ -17,7 +17,6 @@ use App\Models\InstitutionType;
 use App\Models\InstitutionTypeLink;
 use App\Models\ResponsibilityGrant;
 use App\Services\InstitutionRelationService;
-use App\Services\ResourceServices\SharepointFileService;
 use App\Support\MorphMap;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -107,9 +106,6 @@ class InstitutionTypeController extends AdminController
             'modelOptions' => Inertia::optional(fn () => Institution::query()->select(['id', 'name'])->with('tenants')->orderBy('name')->get()),
             // Duties responsible for every institution of this type (e.g. VU Senatas → CB coordinator).
             'responsibleDuties' => $responsibleDuties,
-            'sharepointPath' => SharepointFileService::pathOrNull($type),
-            'sharepointFolderUrl' => SharepointFileService::folderUrlOrNull($type),
-            'files' => Inertia::defer(fn () => $type->availableFiles()->orderByDesc('file_date')->get(), 'files'),
             'typeLinks' => app(InstitutionRelationService::class)->typeLinksOf($type),
             'relationKinds' => fn () => $canManageLinks ? InstitutionRelationKind::options() : [],
             'typeOptions' => fn () => $canManageLinks

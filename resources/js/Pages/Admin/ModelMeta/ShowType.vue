@@ -139,24 +139,6 @@
         />
       </div>
     </template>
-    <template #files>
-      <div class="max-w-4xl">
-        <Deferred data="files">
-          <template #fallback>
-            <p class="py-6 text-sm text-muted-foreground">
-              {{ $t('Įkeliama…') }}
-            </p>
-          </template>
-          <FileableFilesPanel
-            :fileable="{ id: contentType.id, type: fileableType }"
-            :files
-            :can-upload="can.update && !!sharepointPath"
-            :folder-url="sharepointFolderUrl"
-            :can-delete="can.update"
-          />
-        </Deferred>
-      </div>
-    </template>
   </RecordPage>
   <SheetForm v-model:open="modelsOpen" :title="$t('Susieti įrašai')" :processing="modelsProcessing" :disabled="!modelOptions" @submit="saveModels">
     <p v-if="!modelOptions" class="text-sm text-muted-foreground">
@@ -180,14 +162,13 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Deferred, Link, router } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
 import { Compass, Edit, FileText, Link2, Shield, Trash2 } from '@lucide/vue';
 
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
-import { FileableFilesPanel, type FileableFileItem } from '@/Components/Files';
 import { ConfirmDialog, OverviewSection, SheetForm } from '@/Components/Patterns';
 import { RelationshipLinkList, type RelationKindOption, type RelationshipLinkRow, type RelationshipTypeOption } from '@/Components/Relationships';
 import { Button } from '@/Components/ui/button';
@@ -212,10 +193,6 @@ const props = withDefaults(defineProps<{
     needs_scope: boolean;
   }>;
   responsibleDuties?: Array<{ id: string; duty_id: string; duty: string; label: string }>;
-  sharepointPath?: string | null;
-  sharepointFolderUrl?: string | null;
-  /** Deferred (`files`). */
-  files?: FileableFileItem[];
   /** Institution types only. */
   typeLinks?: RelationshipLinkRow[];
   relationKinds?: RelationKindOption[];
@@ -225,9 +202,6 @@ const props = withDefaults(defineProps<{
   responsibilityGrants: () => [],
   modelOptions: undefined,
   responsibleDuties: () => [],
-  sharepointPath: null,
-  sharepointFolderUrl: null,
-  files: undefined,
   typeLinks: undefined,
   relationKinds: undefined,
   typeOptions: undefined,
@@ -236,7 +210,6 @@ const grantSpotlight = useFeatureSpotlight('type-responsibility-grants-v1');
 const canManageAssignments = computed(() => props.typeKind === 'dutyType' ? props.can.manageAssignments === true : props.can.update);
 const resource = props.typeKind === 'institutionType' ? 'institutionTypes' : 'dutyTypes';
 const entityType = props.typeKind === 'institutionType' ? ModelEnum.INSTITUTION_TYPE : ModelEnum.DUTY_TYPE;
-const fileableType = props.typeKind === 'institutionType' ? 'InstitutionType' : 'DutyType';
 const section = ref('overview');
 const deleteOpen = ref(false);
 const modelsOpen = ref(false);
@@ -261,7 +234,6 @@ function saveModels(): void {
   modelsProcessing.value = true;
   router.put(route(`${resource}.models.sync`, props.contentType.id), { models: modelIds.value }, {
     preserveScroll: true,
-    except: ['files'],
     onSuccess: () => { modelsOpen.value = false; },
     onFinish: () => { modelsProcessing.value = false; },
   });
@@ -277,9 +249,6 @@ const sections = computed<RecordPageSection[]>(() => [
   ...(props.typeKind === 'institutionType' && (props.typeLinks?.length || props.can.manageLinks)
     ? [{ value: 'relationships', label: $t('Ryšiai'), count: props.typeLinks?.length ?? 0 }]
     : []),
-  // Type files are reference documents for every duty or institution of the type, so anyone who can
-  // see the type reads them; only uploading needs update and a folder.
-  { value: 'files', label: $t('Failai') },
 ]);
 const primaryAction = computed<RecordAction | undefined>(() => props.can.update ? { key: 'edit', label: $t('Redaguoti'), icon: Edit } : undefined);
 const overflowActions = computed<RecordAction[]>(() => props.can.delete ? [{ key: 'delete', label: $t('Šalinti'), icon: Trash2, destructive: true }] : []);

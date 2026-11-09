@@ -188,7 +188,6 @@ return [
         'pronouns_self_set' => 'Asmens įvardžius gali nusistatyti pats asmuo, prisijungęs prie mano.vusa.lt, savo nustatymų lange. Taip pat galima nustatyti',
         'type_main_info' => 'Pagrindinė informacija apie turinio tipą.',
         'type_parameters_desc' => 'Parametrai',
-        'type_files_desc' => 'Failai, susiję su šiuo tipu. Šie failai rodomi atitinkamose vietose prie modelių, kurie priklauso šiam tipui.',
         'type_models_desc' => 'Modeliai, kurie priklauso šiam tipui.',
         'type_duty_roles_desc' => 'Šias atsakomybes automatiškai gauna visos šio tipo pareigybės.',
         'institution_settings_desc' => 'Nustatymai, taikomi visoms šio tipo institucijoms.',

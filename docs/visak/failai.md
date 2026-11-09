@@ -1,13 +1,12 @@
 ---
 doc_status: reviewed
 title: Įrašų failai
-last_reviewed: 2026-11-01
+last_reviewed: 2026-11-09
 tests:
   - tests/Feature/Admin/FileableFileControllerTest.php
   - tests/Feature/SyncFileableFilesJobTest.php
   - tests/Unit/Models/FileableFileTest.php
   - tests/Feature/Admin/Resources/FileableFilePolicyTest.php
-  - tests/Feature/Admin/ModelMeta/TypeControllerTest.php
   - tests/Unit/Services/Sharepoint/SharepointFileServiceTest.php
   - resources/js/Components/Files/__tests__/FileableFilesPanel.component.test.ts
   - resources/js/Components/Meetings/__tests__/MeetingPublicVisibilityDialog.component.test.ts
@@ -15,7 +14,7 @@ tests:
 
 # Įrašų failai
 
-Posėdžiai, institucijos, pareigybės ir jų tipai turi skirtuką **Failai**. Jame laikomi įrašo
+Posėdžiai, institucijos ir pareigybės turi skirtuką **Failai**. Jame laikomi įrašo
 darbo failai: posėdžio protokolas ir ataskaita, darbotvarkė, pristatymai, metodinė medžiaga ir
 kiti dokumentai.
 
@@ -42,11 +41,6 @@ mygtukas nerodomas, verta patikrinti, ar institucija priskirta padaliniui.
 **Pristatymai**, **Metodinė medžiaga**, **Šablonai**, **Veiklą reglamentuojantys dokumentai**
 arba **Kita**. Posėdžio protokolas rodomas atskirai, o jo būsena matoma posėdžio
 lauke **Po posėdžio** (žr. [Posėdžiai](/visak/posedziai#protokolas)).
-
-Institucijos ir pareigybės skirtuke **Failai** po jų pačių failais rodomi ir jų tipo failai
-(**Tipo dokumentai**), pvz., visų komitetų bendri šablonai. Įtraukiami ir tėvinių tipų failai.
-Tipo failus įkelia tipo įraše (**Sistema → Institucijų tipai** arba **Pareigybių tipai**, skirtukas
-**Failai**) tipą redaguojantys.
 
 ### Nuoroda į failą {#nuoroda}
 
@@ -113,7 +107,6 @@ Failų teisės seka paties įrašo teises:
 |---|---|
 | Matyti failus, juos atverti ir kopijuoti nuorodą | Kas mato visą įrašo puslapį (ne tik viešą jo pusę) |
 | Įkelti, ištrinti failus ir atšaukti nuorodas | Kas gali redaguoti įrašą |
-| Atverti tipo failą | Kas mato tipo įrašą, eina to tipo (ar jo vaikinio tipo) pareigas, yra tokios institucijos narys arba mato tokią instituciją savo padalinyje |
 
 Kas mato ir redaguoja posėdžius bei institucijas, aprašyta puslapiuose
 [Posėdžiai](/visak/posedziai#teises) ir [Institucijos](/visak/institucijos#teises).

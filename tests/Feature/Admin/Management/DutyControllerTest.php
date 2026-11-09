@@ -1008,9 +1008,6 @@ describe('ShowDuty payload contract', function (): void {
             'fileable_type' => MorphMap::alias(Duty::class), 'fileable_id' => $duty->id,
             'size_bytes' => null, 'file_date' => null, 'description' => null,
         ]);
-        $typeFile = FileableFile::factory()->create([
-            'fileable_type' => MorphMap::alias(DutyType::class), 'fileable_id' => (string) $type->id,
-        ]);
         // Otherwise UpdateLastAction bumps the holder's updated_at mid-request when a second ticks over.
         $this->dutyManager->forceFill(['last_action' => now()])->save();
         app()->setLocale($locale);
@@ -1023,7 +1020,6 @@ describe('ShowDuty payload contract', function (): void {
         $record = $expected->toArray();
         $record['sharepointPath'] = SharepointFileService::pathOrNull($expected);
         $record['sharepointFolderUrl'] = SharepointFileService::folderUrlOrNull($expected);
-        $expectedTypeFile = $typeFile->fresh()->load('fileable:id,title')->toArray();
 
         asUserWithInertia($this->dutyManager)->withSession(['lang' => $locale])
             ->get(route('duties.show', $duty))
@@ -1054,14 +1050,11 @@ describe('ShowDuty payload contract', function (): void {
                 ->whereType('can.managePeople', 'boolean')
                 ->whereType('can.assignQuota', 'boolean')
                 ->whereType('can.reviewExOfficio', 'boolean')
-                ->missing('files')->missing('typeFiles')->missing('lineage')->missing('responsibilityOptions')
+                ->missing('files')->missing('lineage')->missing('responsibilityOptions')
                 ->loadDeferredProps('files', fn (AssertableInertia $files) => $files
                     ->where('files', [$file->fresh()->toArray()])
-                    ->where('typeFiles', [$expectedTypeFile])
                     ->whereType('files.0.size_bytes', 'null')
-                    ->whereType('files.0.file_date', 'null')
-                    ->whereType('typeFiles.0.fileable.id', 'integer')
-                    ->where('typeFiles.0.fileable.title', $locale === 'lt' ? 'Kategorija' : 'Category'))
+                    ->whereType('files.0.file_date', 'null'))
                 ->reloadOnly('responsibilityOptions', fn (AssertableInertia $options) => $options
                     ->whereType('responsibilityOptions.responsibilities', 'array')
                     ->whereType('responsibilityOptions.tenants', 'array')

@@ -14,7 +14,6 @@ use App\Models\DutyType;
 use App\Models\ResponsibilityGrant;
 use App\Models\Role;
 use App\Services\ModelAuthorizer;
-use App\Services\ResourceServices\SharepointFileService;
 use App\Support\MorphMap;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -115,9 +114,6 @@ class DutyTypeController extends AdminController
                     ->sortBy('name')->values()
                 : []),
             'responsibleDuties' => [],
-            'sharepointPath' => SharepointFileService::pathOrNull($type),
-            'sharepointFolderUrl' => SharepointFileService::folderUrlOrNull($type),
-            'files' => Inertia::defer(fn () => $type->availableFiles()->orderByDesc('file_date')->get(), 'files'),
             'can' => [
                 'update' => auth()->user()?->can('update', $type) ?? false,
                 'delete' => auth()->user()?->can('delete', $type) ?? false,

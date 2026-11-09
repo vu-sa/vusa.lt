@@ -73,7 +73,7 @@ export interface InstitutionPageData {
   meetings_count: number;
   problems_count: number;
   related_institutions_count: number;
-  /** Own or type files exist; without them the Failai tab gives way to an "add" action. */
+  /** Own files exist; without them the Failai tab gives way to an "add" action. */
   has_files: boolean;
   managers: InstitutionMember[];
   secretaries: InstitutionSecretary[];
@@ -284,7 +284,6 @@ export interface ShowInstitutionPageProps {
   institutionLinks?: InstitutionLinkRow[];
   relationKinds: { value: InstitutionRelationKind; label: string }[];
   files?: InstitutionFile[];
-  typeFiles?: (InstitutionFile & { fileable: { id: number; title: string | null } | null })[];
   management?: InstitutionManagement | null;
   subscription: { is_followed: boolean; is_duty_based: boolean } | null;
   readOnly: boolean;

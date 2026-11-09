@@ -58,7 +58,7 @@ const select = (key: string) => {
 };
 
 const meta = computed(() => [
-  props.file.fileable?.title ?? $t(fileTypeLabel(props.file.file_type)),
+  $t(fileTypeLabel(props.file.file_type)),
   props.file.file_date?.slice(0, 10),
   props.file.formatted_size,
 ].filter(Boolean).join(' · '));
