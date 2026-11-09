@@ -4,6 +4,7 @@
       variant="home"
       :title="$t('Paskutiniai posėdžiai')"
       :icon="CalendarIcon"
+      content-ruled
       :empty="noMeetings"
       :empty-text="$t('Šiai institucijai dar nėra suplanuota susitikimų.')"
     >

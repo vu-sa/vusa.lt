@@ -1,5 +1,5 @@
 <template>
-  <CollectionRowList :items="problems" :item-key="problem => problem.id" data-slot="problem-summary-list">
+  <CollectionRowList :frame :items="problems" :item-key="problem => problem.id" data-slot="problem-summary-list">
     <template #default="{ item: problem }">
       <ProblemRow
         :problem
@@ -17,6 +17,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Unlink } from '@lucide/vue';
 
 import CollectionRowList from '@/Components/Collection/CollectionRowList.vue';
+import type { RowListFrame } from '@/Components/Collection/rowList';
 
 import ProblemRow from './ProblemRow.vue';
 
@@ -31,6 +32,6 @@ export interface ProblemSummary {
   responsible_user?: { id: string; name: string } | null;
 }
 
-defineProps<{ problems: ProblemSummary[]; removable?: boolean }>();
+defineProps<{ problems: ProblemSummary[]; removable?: boolean; frame?: RowListFrame }>();
 defineEmits<{ remove: [problem: ProblemSummary] }>();
 </script>

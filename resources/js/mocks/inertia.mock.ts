@@ -126,6 +126,8 @@ export const router = {
   }),
   restore: mockFn(),
   remember: mockFn(),
+  push: mockFn(),
+  replace: mockFn(),
   reload: mockFn((options?: any) => {
     console.log('Inertia router reload:', options);
     return Promise.resolve();

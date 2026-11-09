@@ -17,7 +17,7 @@
           <h3 class="mb-2 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
             {{ group.label }} · {{ group.rows.length }}
           </h3>
-          <CollectionRowList :items="group.rows" :item-key="row => row.id" :row-muted="row => row.authorized === false">
+          <CollectionRowList frame="box" :items="group.rows" :item-key="row => row.id" :row-muted="row => row.authorized === false">
             <template #default="{ item: row }">
               <CollectionRow :actions="rowActions(row)" :class="ROW_PADDING_CLASS" data-testid="relationship-row" @select="key => selectAction(key, row)">
                 <template #lead>

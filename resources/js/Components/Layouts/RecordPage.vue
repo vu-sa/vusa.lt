@@ -166,8 +166,7 @@
       </div>
 
       <div v-if="hasTabs" ref="tabsAnchor" aria-hidden="true" />
-      <!-- Sticky under the shell chrome, at its section tabs' height, so a long section never strands its tabs off screen.
-           The outer tabs drop their side padding so the row starts and ends with the content. -->
+      <!-- Sticky under the shell chrome, at its section tabs' height and padding, so a long section never strands its tabs off screen. -->
       <nav
         v-if="hasTabs"
         ref="tabsNav"
@@ -189,13 +188,13 @@
             :tabindex="section.value === currentSection ? 0 : -1"
             :data-section="section.value"
             :class="[
-              '-mb-px inline-flex h-10 shrink-0 items-center gap-2 border-b-2 px-3 first:pl-0 last:pr-0 pointer-coarse:h-11',
+              '-mb-px inline-flex h-10 shrink-0 items-center gap-2 border-b-2 px-3 pointer-coarse:h-11',
               'text-xs font-bold uppercase tracking-wide whitespace-nowrap',
               section.value === currentSection
                 ? 'border-brand text-foreground'
                 : 'border-transparent text-muted-foreground hover:text-foreground',
             ]"
-            @click="currentSection = section.value"
+            @click="selectSection(section.value)"
             @keydown="onTabKeydown"
           >
             <component :is="section.icon" v-if="section.icon" class="size-4 shrink-0" aria-hidden="true" />
@@ -210,18 +209,15 @@
         <label :for="switcherId" class="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
           {{ $t('Rodyti') }}
         </label>
-        <NativeSelect :id="switcherId" v-model="mobileSection" :options="switcherOptions" />
+        <NativeSelect :id="switcherId" :model-value="mobileSection" :options="switcherOptions" @update:model-value="pickMobileSection" />
       </div>
 
       <div :class="$slots.aside ? 'lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-10' : undefined">
-        <div class="min-w-0">
-          <!-- At least a screen tall below the tabs, so a short section never pulls the page up under the reader. -->
+        <!-- At least a screen tall below the tabs, so a short section never pulls the page up under the reader;
+             the comments count towards it, so they follow the first section instead of a screen below it. -->
+        <div :class="['min-w-0', hasTabs && 'md:min-h-[calc(var(--shell-scroll-height,100svh)-var(--shell-chrome-height,0px)-4.5rem)]']" data-slot="record-body">
           <div
-            :class="[
-              'mt-8 space-y-10',
-              sectionLayout !== 'stacked' && 'md:space-y-0',
-              hasTabs && 'md:min-h-[calc(var(--shell-scroll-height,100svh)-var(--shell-chrome-height,0px)-4.5rem)]',
-            ]"
+            :class="['mt-8 space-y-10', sectionLayout !== 'stacked' && 'md:space-y-0']"
             data-slot="record-sections"
           >
             <section
@@ -286,7 +282,7 @@
 <script setup lang="ts">
 import type { Component } from 'vue';
 import { computed, nextTick, ref, useId, watch } from 'vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { useMediaQuery, useResizeObserver } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronLeft, ChevronRight, History } from '@lucide/vue';
@@ -360,6 +356,8 @@ const props = withDefaults(defineProps<{
   titleVoice?: 'display' | 'sentence';
   /** Keeps short record titles and their actions on one row at desktop widths. */
   actionsBesideTitle?: boolean;
+  /** Query key (e.g. `tab`) that records the open section, so a tab change is a step back can undo. */
+  sectionQueryKey?: string;
 }>(), {
   status: undefined,
   eyebrowSuffix: undefined,
@@ -371,6 +369,7 @@ const props = withDefaults(defineProps<{
   navigation: undefined,
   historySubject: undefined,
   titleVoice: 'display',
+  sectionQueryKey: undefined,
 });
 
 const emit = defineEmits<{
@@ -405,11 +404,54 @@ watch(() => props.sections, (sections) => {
   }
 });
 
-watch(mobileSection, (value) => {
-  if (value !== ALL_SECTIONS) {
+// --- The open section in the URL: each tab change is a history entry --------------------------
+
+const page = usePage();
+
+const sectionInUrl = (url: string) => {
+  if (!props.sectionQueryKey) {
+    return null;
+  }
+  const value = new URL(url, window.location.origin).searchParams.get(props.sectionQueryKey);
+
+  return props.sections.some(section => section.value === value) ? value : props.sections[0]?.value ?? null;
+};
+
+/** A section the reader picked: shown, and remembered as a step in the browser history. */
+const selectSection = (value: string) => {
+  currentSection.value = value;
+
+  if (!props.sectionQueryKey) {
+    return;
+  }
+  const url = new URL(page.url, window.location.origin);
+  if (value === props.sections[0]?.value) {
+    url.searchParams.delete(props.sectionQueryKey);
+  }
+  else {
+    url.searchParams.set(props.sectionQueryKey, value);
+  }
+  const next = `${url.pathname}${url.search}${url.hash}`;
+  if (next !== page.url) {
+    // A client-side entry: no request, and the reveal below decides the scroll.
+    router.push({ url: next, preserveScroll: true, preserveState: true });
+  }
+};
+
+// Back and forward restore the URL; follow it without pushing again.
+watch(() => page.url, (url) => {
+  const value = sectionInUrl(url);
+  if (value && value !== currentSection.value) {
     currentSection.value = value;
   }
 });
+
+const pickMobileSection = (value: string | number | null | undefined) => {
+  mobileSection.value = String(value ?? ALL_SECTIONS);
+  if (mobileSection.value !== ALL_SECTIONS) {
+    selectSection(mobileSection.value);
+  }
+};
 
 const tabsAnchor = ref<HTMLElement | null>(null);
 const tabList = ref<HTMLElement | null>(null);
@@ -468,7 +510,7 @@ const onTabKeydown = (event: KeyboardEvent) => {
   }
 
   event.preventDefault();
-  currentSection.value = props.sections[next]!.value;
+  selectSection(props.sections[next]!.value);
   void nextTick(() => tabList.value?.querySelector<HTMLElement>('[aria-selected="true"]')?.focus());
 };
 

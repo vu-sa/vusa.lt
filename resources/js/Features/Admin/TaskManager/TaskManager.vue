@@ -3,7 +3,7 @@
     <!-- The same chips the task list offers, counting from what this record holds. -->
     <CollectionQuickFilters :filters="quickFilters" wrap @toggle="toggleQuickFilter" />
 
-    <ul v-if="filteredTasks.length > 0" :class="ROW_LIST_CLASS">
+    <ul v-if="filteredTasks.length > 0" :class="ROW_LIST_BOX_CLASS">
       <li v-for="task in filteredTasks" :key="task.id" :class="ROW_ITEM_CLASS">
         <TaskRow
           class="flex-1"
@@ -70,7 +70,7 @@ import { useTaskActionDialogs } from '@/Composables/useTaskActionDialogs';
 import type { TaskDisplayData } from '@/Composables/useTaskPresentation';
 import CollectionQuickFilters from '@/Components/Collection/CollectionQuickFilters.vue';
 import { quickFilterLabel } from '@/Components/Collection/quickFilterLabel';
-import { ROW_ITEM_CLASS, ROW_LIST_CLASS } from '@/Components/Collection/rowList';
+import { ROW_ITEM_CLASS, ROW_LIST_BOX_CLASS } from '@/Components/Collection/rowList';
 import type { CollectionQuickFilter } from '@/Components/Collection/types';
 import { buttonVariants } from '@/Components/ui/button';
 import {

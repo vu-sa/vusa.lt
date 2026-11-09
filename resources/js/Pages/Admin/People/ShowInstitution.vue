@@ -1,6 +1,7 @@
 <template>
   <RecordPage
     v-model:section="currentSection"
+    section-query-key="tab"
     :history-subject="readOnly ? undefined : { type: 'institution', id: institution.id }"
     :title="institution.name"
     :entity-type="ModelEnum.INSTITUTION"
@@ -20,11 +21,11 @@
     </template>
 
     <template #fact-members>
-      <UsersFactList :users="overview.current_users" :inline-limit="2" class="mt-1" />
+      <UsersFactList :users="overview.current_users" :inline-limit="2" />
     </template>
 
     <template #fact-managers>
-      <UsersFactList :users="institution.managers ?? []" :inline-limit="2" class="mt-1" />
+      <UsersFactList :users="institution.managers ?? []" :inline-limit="2" />
     </template>
 
     <template #overview>
@@ -138,7 +139,7 @@
           <template v-if="can.createProblem" #actions>
             <SectionHeaderAction :icon="Plus" :label="$t('Nauja problema')" :href="route('problems.create', { institution: institution.id })" />
           </template>
-          <ProblemSummaryList :problems="problems ?? []" />
+          <ProblemSummaryList :problems="problems ?? []" frame="attached" />
         </OverviewSection>
       </WhenVisible>
     </template>

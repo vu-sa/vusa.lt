@@ -1,7 +1,7 @@
 <template>
   <div data-slot="user-activity-request-history">
     <EmptyState v-if="!requests.length" :title="$t('activity_requests.personal.empty_title')" :description="$t('activity_requests.personal.empty_description')" />
-    <ul v-else :class="ROW_LIST_CLASS">
+    <ul v-else :class="ROW_LIST_BOX_CLASS">
       <ActivityRequestHistoryRow v-for="request in requests" :key="request.id" :request @answer="spotlight.dismiss()" />
     </ul>
     <Button v-if="history.next_page" variant="outline" voice="sentence" class="mt-4" :disabled="loading" @click="loadMore">
@@ -16,7 +16,7 @@ import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { EmptyState } from '@/Components/Patterns';
-import { ROW_LIST_CLASS } from '@/Components/Collection/rowList';
+import { ROW_LIST_BOX_CLASS } from '@/Components/Collection/rowList';
 import { Button } from '@/Components/ui/button';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 

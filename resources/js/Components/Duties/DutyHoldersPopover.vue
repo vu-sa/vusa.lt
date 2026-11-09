@@ -63,9 +63,21 @@
       <p v-else class="px-3 py-3 text-sm text-status-attention">
         {{ $t('Neužimta') }}
       </p>
-      <div v-if="canManage" class="border-t border-border px-3 py-2">
-        <SectionHeaderAction :icon="UserPlus" :label="$t('Pridėti asmenį')" @click="assign" />
-      </div>
+      <!-- The popover's own footer action, as the date-time picker closes its popover. -->
+      <button
+        v-if="canManage"
+        type="button"
+        :class="[
+          'flex h-10 w-full items-center justify-center gap-2 border-t border-border bg-secondary/20 pointer-coarse:h-11',
+          'text-xs font-bold uppercase tracking-wide text-brand transition-colors hover:bg-secondary/60',
+          'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
+        ]"
+        data-slot="duty-holders-assign"
+        @click="assign"
+      >
+        <UserPlus class="size-4" aria-hidden="true" />
+        {{ $t('Pridėti asmenį') }}
+      </button>
     </PopoverContent>
   </Popover>
 </template>
@@ -77,7 +89,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { computed, ref } from 'vue';
 
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
-import { SectionHeaderAction } from '@/Components/Patterns';
 import { Avatar, AvatarFallback } from '@/Components/ui/avatar';
 import { Button } from '@/Components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';

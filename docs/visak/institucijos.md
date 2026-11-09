@@ -76,7 +76,7 @@ Institucijų sąraše pavadinimai ir tipai rodomi pasirinkta Mano VU SA kalba. J
 
 ### Institucijos puslapis {#puslapis}
 
-Atvėrus instituciją iškart rodoma **Santrauka**: aprašymas po pavadinimu (dvi eilutės, visas tekstas – paspaudus **Skaityti daugiau**), trys paskutiniai posėdžiai kortelėmis ir, jei pareigybių yra ne daugiau kaip trys, pačios pareigybės. Kitų skirtukų turinys įkeliamas juos pirmą kartą pasirinkus; kol lauki, rodomas įkėlimo vietaženklis. Skirtukų juosta lieka matoma slenkant, o perjungus skirtuką puslapis nebeperšoka į kitą vietą.
+Atvėrus instituciją iškart rodoma **Santrauka**: aprašymas po pavadinimu (dvi eilutės, visas tekstas – paspaudus **Skaityti daugiau**), trys paskutiniai posėdžiai kortelėmis ir, jei pareigybių yra ne daugiau kaip trys, pačios pareigybės. Kitų skirtukų turinys įkeliamas juos pirmą kartą pasirinkus; kol lauki, rodomas įkėlimo vietaženklis. Skirtukų juosta lieka matoma slenkant, o perjungus skirtuką puslapis nebeperšoka į kitą vietą. Naršyklės mygtukas „Atgal“ grąžina į ankstesnį skirtuką.
 
 Telefone skiltys rodomos viena po kitos, o jų turinys įkeliamas slenkant iki skilties. Laukelyje **Rodyti** galima palikti vieną skiltį arba vėl rodyti **Visi skyriai**. Nuoroda su pasirinktu skirtuku iškart atveria tą skiltį – ir telefone.
 

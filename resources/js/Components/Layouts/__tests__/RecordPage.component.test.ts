@@ -1,9 +1,11 @@
 import { mount } from '@vue/test-utils';
 import { CircleCheck } from '@lucide/vue';
 import { describe, expect, it, vi } from 'vitest';
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
+import { reactive } from 'vue';
 
 import RecordPage from '@/Components/Layouts/RecordPage.vue';
+import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
@@ -117,7 +119,7 @@ describe('RecordPage', () => {
     const tabs = () => wrapper.findAll('[role="tab"]');
 
     expect(wrapper.find('[role="tablist"]').exists()).toBe(true);
-    expect(tabs()[0]!.attributes()).toMatchObject({ 'aria-controls': 'record-panel-agenda', tabindex: '0' });
+    expect(tabs()[0]!.attributes()).toMatchObject({ 'aria-controls': 'record-panel-agenda', 'tabindex': '0' });
     expect(tabs()[1]!.attributes('tabindex')).toBe('-1');
     expect(wrapper.find('#record-panel-files').exists()).toBe(true);
 
@@ -128,10 +130,13 @@ describe('RecordPage', () => {
     expect(tabs()[0]!.attributes('aria-selected')).toBe('true');
   });
 
-  it('keeps the sections at least a screen tall so a short tab cannot pull the page up', () => {
+  it('keeps the sections and comments at least a screen tall so a short tab cannot pull the page up', () => {
     const wrapper = createWrapper();
+    const body = wrapper.get('[data-slot="record-body"]');
 
-    expect(wrapper.get('[data-slot="record-sections"]').classes().some(name => name.startsWith('md:min-h-'))).toBe(true);
+    expect(body.classes().some(name => name.startsWith('md:min-h-'))).toBe(true);
+    // The comments sit inside the reserved height, right after the first section.
+    expect(body.find('[data-slot="record-activity"]').exists()).toBe(true);
   });
 
   /** Phones have no tabs: the select narrows the stacked sections to one, or shows them all. */
@@ -173,6 +178,39 @@ describe('RecordPage', () => {
     expect((select.element as HTMLSelectElement).value).toBe('tasks');
     expect(select.text()).toContain('Užduotys · 4');
     expect(wrapper.get('#record-panel-agenda').classes()).toContain('max-md:hidden');
+  });
+
+  /** Each tab a reader opens is a step back can undo, without a request. */
+  it('records the open section in the URL as a history entry and follows back navigation', async () => {
+    const page = reactive({ ...createMockPage(), url: '/mano/institutions/1' });
+    vi.mocked(usePage).mockReturnValue(page as unknown as ReturnType<typeof usePage>);
+    vi.mocked(router.push).mockClear();
+    const wrapper = createWrapper();
+    await wrapper.setProps({ sectionQueryKey: 'tab' });
+
+    await wrapper.findAll('[role="tab"]')[2]!.trigger('click');
+    expect(router.push).toHaveBeenCalledWith(expect.objectContaining({ url: '/mano/institutions/1?tab=tasks', preserveState: true }));
+
+    page.url = '/mano/institutions/1?tab=files';
+    await wrapper.vm.$nextTick();
+    expect(wrapper.findAll('[role="tab"]')[1]!.attributes('aria-selected')).toBe('true');
+
+    vi.mocked(router.push).mockClear();
+    await wrapper.findAll('[role="tab"]')[0]!.trigger('click');
+    expect(router.push).toHaveBeenCalledWith(expect.objectContaining({ url: '/mano/institutions/1' }));
+
+    page.url = '/mano/institutions/1';
+    await wrapper.vm.$nextTick();
+    expect(router.push).toHaveBeenCalledTimes(1);
+    expect(wrapper.findAll('[role="tab"]')[0]!.attributes('aria-selected')).toBe('true');
+  });
+
+  it('leaves the URL alone without a section key', async () => {
+    vi.mocked(router.push).mockClear();
+    const wrapper = createWrapper();
+
+    await wrapper.findAll('[role="tab"]')[1]!.trigger('click');
+    expect(router.push).not.toHaveBeenCalled();
   });
 
   it('fits four facts into one wide row while retaining smaller breakpoint columns', () => {
