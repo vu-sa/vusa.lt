@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
 
+import type { PageProps } from '@/Types';
+
 import LearningTabs from './LearningTabs.vue';
 
 defineProps<{ canSeeReps?: boolean }>();
-const page = usePage<{ learningNavigation?: { canSeeReps: boolean; canManage: boolean } }>();
+const page = usePage<PageProps>();
 </script>
 
 <template>

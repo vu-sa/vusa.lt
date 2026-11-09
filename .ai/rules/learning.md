@@ -28,8 +28,11 @@ paths:
 ## System steps are code, completion is read-time
 System steps (`is_system`, keys in `SystemStepRegistry`) are inserted by a migration and only their stage, order and `is_active` are editable. A detector answers `doneFor(userIds)` in one query; detected completion is computed when the path is read and never written to `learning_step_progress`, so revoking the underlying fact (removing a photo) reopens the step. `per_term` steps count when completed no earlier than 90 days before the current term starts.
 
+## The library table is for curators
+Reps get the path, Dokumentai (every knowledge step of their path, by section) and Sąvokos with the steps each term appears in. The step table ("Tvarkyti") is gated by `LearningStepPolicy::manage`; step record pages stay open to everyone for Įžvalgos.
+
 ## Sources live in the Archive
 A step points at an archive `Document` or a URL per locale (`lt` required for knowledge steps, `en` only when it differs). There is no upload path for learning material — files go to the SharePoint "Dokumentų sistema" first. Hidden documents may be chosen; members then see "Dokumentas dar neviešas" instead of a link.
 
 ## Progress and handover visibility
-Coordinators see a rep's progress only through `GetCoordinatedRepresentatives` (their `StudentRepCoordination` institutions); never widen it to tenant permissions. Handover notes are one per author, duty and term (upsert), readable by the author, holders of the seat and its successor seats, responsible coordinators and tenant duty managers — `HandoverNotePolicy` is the single gate.
+Coordinators see a rep's progress only through `GetCoordinatedRepresentatives` (their `StudentRepCoordination` institutions); never widen it to tenant permissions. Handover notes are five plain-text fields, one entry per author, seat and cadence (`ResolveCadenceForDuty` at the author's term start; upsert), shown as a per-seat cadence timeline; only holders write them, readable by the author, holders of the seat and its successor seats, responsible coordinators and tenant duty managers — `HandoverNotePolicy` is the single gate.

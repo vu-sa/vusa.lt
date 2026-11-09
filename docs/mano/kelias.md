@@ -34,7 +34,7 @@ tests:
 sudaromas pagal tavo pareigas, todėl Studijų programos komiteto atstovas mato kitus žingsnius nei
 Senato narys. Čia pat saugomos sąvokos ir pirmtakų perdavimo užrašai.
 
-<ChangelogNote date="2026-11-09" title="Mano kelias">
+<ChangelogNote date="2026-11-10" title="Mano kelias">
 
 Mano kelias pakeitė pareigybių ir institucijų tipų failus: vietoj failų sąrašo – žingsniai su
 paaiškinimu, kam jų reikia, ir pažanga, kurią mato koordinatorius.
@@ -122,10 +122,14 @@ Buvęs „Žinynas“ vadinamas „Tvarkyti“ ir pasiekiamas tik turinio kūrė
 
 ### Perdavimo užrašai
 
-Kadencijos pabaigoje pareigas einantis narys parašo užrašus įpėdiniui (ką verta žinoti, neužbaigti
-klausimai, žmonės, naudingos nuorodos, patarimai). Vienai kadencijai – vieni užrašai; juos galima
-pildyti iki 60 dienų po kadencijos pabaigos. Įpėdinis užrašus mato skirtuke „Perdavimas“, o jų
-perskaitymas pasižymi kelyje.
+Perdavimo užrašai pildomi penkiais laukais: **Kas vyksta institucijoje**, **Neužbaigti klausimai**,
+**Žmonės**, **Naudingi dokumentai ir nuorodos**, **Patarimai**. Vienas pareigybės narys vienai
+institucijos kadencijai (pvz., 2025–2026) turi vienus užrašus; juos galima pildyti iki 60 dienų po savo
+pareigų pabaigos.
+
+Skirtuke „Perdavimas“ kiekviena pareigybė rodoma kaip kadencijų laiko juosta – naujausia viršuje:
+tavo dabartinės kadencijos užrašai redaguojami vietoje, ankstesni ir pirmtakų užrašai tik skaitomi.
+Atvėrus pirmtakų užrašus, kelio žingsnis „Perskaityk pirmtako užrašus“ pasižymi pats.
 
 ## Veiksmai
 
@@ -150,14 +154,15 @@ perskaitymas pasižymi kelyje.
 ### Parašyti perdavimo užrašus
 
 1. Atverk [Perdavimą](app:/mano/learning/handover).
-2. Prie savo pareigybės užpildyk pateiktus klausimus ir išsaugok.
+2. Savo pareigybės laiko juostoje, prie dabartinės kadencijos, užpildyk bent vieną lauką ir spausk
+   **Išsaugoti**.
 
 ## Kas ką gali {#teises}
 
 | Kas | Ką gali |
 |---|---|
 | Kiekvienas narys | Matyti savo kelią, žymėti pažangą, skaityti savo dokumentus ir sąvokas, rašyti įžvalgas |
-| Pareigas einantis ar neseniai baigęs narys | Rašyti perdavimo užrašus savo pareigybei; matyti pirmtakų užrašus |
+| Pareigas einantis ar neseniai baigęs narys | Rašyti savo kadencijos perdavimo užrašus; matyti pirmtakų užrašus |
 | Studentų atstovų koordinatorius (atsakingas už institucijas) | Matyti „Mano atstovai“: savo atstovų pažangą ir jų kelius, jų perdavimo užrašus |
 | Studentų atstovų koordinatorius | Atverti „Tvarkyti“, kurti ir redaguoti savo padalinio sluoksnio žingsnius |
 | Centrinio biuro studentų atstovų koordinatorius | Kurti ir redaguoti visų sluoksnių žingsnius ir sąvokas |
