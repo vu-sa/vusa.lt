@@ -231,3 +231,17 @@ test('glossary payload includes stepsCount and full translations for editing', f
         ->where('terms.0.translations.term.lt', 'Senatas')
         ->where('terms.0.translations.term.en', 'Senate'));
 });
+
+test('the step page offers the glossary editor only to curators who may update the step', function (): void {
+    $tenant = Tenant::query()->firstOrFail();
+    $step = LearningStep::factory()->create(['layer' => LearningLayer::Foundation]);
+    GlossaryTerm::factory()->create(['term' => ['lt' => 'Kvorumas', 'en' => 'Quorum']]);
+    $member = makeUser($tenant);
+    $curator = makeUser($tenant);
+    $curator->givePermissionTo(Permission::findOrCreate('learningSteps.update.*', 'web'));
+
+    asUser($member)->get(route('learningSteps.show', $step))->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('canUpdate', false)->where('glossaryOptions', []));
+    asUser($curator)->get(route('learningSteps.show', $step))->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('canUpdate', true)->has('glossaryOptions', 1)->where('glossaryOptions.0.term', 'Kvorumas'));
+});

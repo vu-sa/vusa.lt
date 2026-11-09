@@ -55,6 +55,8 @@ class LearningStepController extends AdminController
             'coordinators' => GetUserCoordinators::execute($request->user()),
             'institutionContacts' => LearningInstitutionContactsPresenter::forUser($request->user(), app()->getLocale()),
             'canSeeReps' => LearningAdminPresenter::canSeeReps($request->user()),
+            'canUpdate' => $request->user()->can('update', $learningStep),
+            'glossaryOptions' => $request->user()->can('update', $learningStep) ? LearningAdminPresenter::glossaryOptions(app()->getLocale()) : [],
         ]);
     }
 

@@ -8,96 +8,158 @@ tests:
   - tests/Feature/Admin/Learning/LearningPoliciesTest.php
   - tests/Feature/Admin/Learning/LearningWritesTest.php
   - tests/Feature/Admin/Learning/LearningStepProgressControllerTest.php
+  - tests/Feature/Admin/Learning/LearningLibraryTest.php
+  - tests/Feature/Admin/Learning/LearningPeopleTest.php
+  - tests/Feature/Admin/Learning/LearningPathPresenterTest.php
   - tests/Feature/Admin/Learning/SystemStepDetectorsTest.php
+  - tests/Feature/Seeders/LearningPathPilotSeederTest.php
   - resources/js/Features/Admin/Learning/__tests__/LearningTabs.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/LearningPathView.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/LearningStepRow.component.test.ts
-  - resources/js/Features/Admin/Learning/__tests__/BrowserNotificationSetup.component.test.ts
-  - resources/js/Features/Admin/Learning/__tests__/InstallationInstructions.component.test.ts
+  - resources/js/Features/Admin/Learning/__tests__/LearningStepForm.component.test.ts
+  - resources/js/Features/Admin/Learning/__tests__/LearningStepGlossaryEditor.component.test.ts
+  - resources/js/Features/Admin/Learning/__tests__/LearningRepList.component.test.ts
+  - resources/js/Features/Admin/Learning/__tests__/HandoverEditor.component.test.ts
+  - resources/js/Features/Admin/Learning/__tests__/HandoverNotes.component.test.ts
 ---
 
 # Mano kelias
 
-<ChangelogNote date="2026-11-09" title="Mano kelias ir pažanga">
+**Mano kelias** padeda pasiruošti pareigoms: ką verta perskaityti, ką padaryti ir kada. Kelias
+sudaromas pagal tavo pareigas, todėl Studijų programos komiteto atstovas mato kitus žingsnius nei
+Senato narys. Čia pat saugomos sąvokos ir pirmtakų perdavimo užrašai.
 
-Mano kelyje žingsniai išdėstyti pagal kadencijos etapus. Galima pažymėti pažangą,
-atverti šaltinį, peržiūrėti sąvokas ir dalytis įžvalgomis prie žingsnio.
+<ChangelogNote date="2026-11-09" title="Mano kelias">
+
+Mano kelias pakeitė pareigybių ir institucijų tipų failus: vietoj failų sąrašo – žingsniai su
+paaiškinimu, kam jų reikia, ir pažanga, kurią mato koordinatorius.
 
 </ChangelogNote>
 
 ## Susitarimai
 
-Mokymosi žingsniai, sąvokos ir patirties perdavimas telkiami vienoje vietoje.
-Skiltis skirta pasiruošti pareigoms ir išsaugoti patirtį kitam atstovui.
+- **Šaltiniai laikomi Archyve.** Naujas dokumentas pirmiausia įkeliamas į SharePoint „Dokumentų
+  sistemą“ (Archyvą), o žingsnis į jį nurodo. Vieši teisės aktai (pvz., įstatymai) susiejami nuoroda.
+- **Kiekvienas žingsnis paaiškina, kam jis reikalingas.** Vienas–du sakiniai „Kodėl verta“ svarbesni už
+  patį failą.
+- **Esminių žingsnių nedaug.** Vienam sluoksniui užtenka kelių esminių žingsnių; visa kita –
+  rekomenduojama arba papildoma.
+- **Įžvalgos – autoriaus nuomonė.** Prie žingsnio rašoma, kas dokumente svarbiausia ir kur žiūrėti;
+  įžvalga pasirašyta ir su data, nes kontekstas keičiasi.
 
 ## Kaip tai veikia
 
-Atvėrus [Mano kelią](app:/mano/learning), matomi skirtukai „Mano kelias“, „Žinynas“,
-„Sąvokos“ ir „Perdavimas“. Atsakingam koordinatoriui taip pat matomas skirtukas „Mano atstovai“.
+### Sluoksniai
 
-Dabartinis etapas pažymėtas „dabar“ ir išskleistas. Kiti etapai suskleisti, bet juos galima
-atverti bet kada. Prie kiekvieno etapo rodomas atliktų ir visų žingsnių skaičius.
-Žingsniai sugrupuoti pagal pagrindą, institucijos ar pareigų tipą ir padalinį.
+Kiekvienam nariui kelias sudedamas iš sluoksnių:
 
-Atvėrus žingsnį matoma, kam jo reikia, ir nuoroda į šaltinį. Jei dokumentas dar neviešas,
-nuoroda nerodoma. „Įžvalgos“ atveria žingsnio puslapio diskusiją. Žingsnio puslapyje taip pat
-matomi susietų sąvokų paaiškinimai: paspaudus sąvoką atsiveria apibrėžimas.
+| Sluoksnis | Kam rodoma |
+|---|---|
+| Platforma | Visiems nariams: paskyros, pranešimų ir programėlės nustatymai |
+| Pagrindas | Visiems studentų atstovams ir jų koordinatoriams |
+| Institucijos tipas | Tų tipų institucijų nariams, pvz., Studijų programos komitetui; paveldima iš aukštesnio tipo |
+| Pareigos | Pagal pareigybės tipą |
+| Padalinys | Padalinio atstovams; visada etape „Prieš pradedant“ |
 
-Po keliu pateikiamas pasiruošimas kiekvienam posėdžiui pagal institucijos tipą. Tai kartojamas
-priminimas, todėl atlikimo žymų jame nėra.
+Būsimos pareigos įskaitomos iš karto, todėl išrinktas, bet dar nepradėjęs atstovas jau mato etapą
+„Prieš pradedant“.
+
+### Etapai ir svarba
+
+Žingsniai išdėstyti pagal kadencijos etapus: **Prieš pradedant**, **Pirmieji mėnesiai** (pirmos 60
+dienų), **Visą kadenciją** ir **Kadencijos pabaiga** (paskutinės 45 dienos). Dabartinis etapas
+pažymėtas „dabar“ ir išskleistas.
+
+Svarba nusako turinį, ne terminą: **Esminis** (būtina žinoti), **Rekomenduojamas**, **Papildomas**.
+Esminio žingsnio praleisti negalima.
+
+Žingsnio rūšys:
+
+- **Žinios** – perskaityti dokumentą ar nuorodą.
+- **Veiksmas** – ką nors padaryti, pvz., susipažinti su koordinatoriumi ar perskaityti praeitų
+  posėdžių protokolus. Dalis veiksmų pasižymi patys pagal veiklą platformoje (įkelta nuotrauka,
+  sekama institucija, užfiksuotas pirmas posėdis); tokie pažymėti „auto“.
+- **Pasiruošimas posėdžiui** – kartojamas sąrašas po keliu, pvz., perskaityti medžiagą, pasiklausti
+  kursiokų. Jame pažangos žymų nėra.
+
+### Šaltiniai ir kalba
+
+Žingsnis vienas abiem kalboms, bet anglų kalbai galima nurodyti kitą dokumentą ar nuorodą; jei jos nėra,
+rodomas lietuviškas šaltinis. Šaltiniu gali būti ir Archyve paslėptas dokumentas – tada atstovai mato
+žingsnį ir paaiškinimą, o vietoj nuorodos – „Dokumentas dar neviešas“.
+
+Jei šaltinio dokumentas Archyve atnaujinamas jau perskaičius, žingsnis pažymimas
+„Atnaujinta – peržiūrėk“.
+
+### Skirtukai
+
+- **Mano kelias** – tavo žingsniai ir pažanga.
+- **Žinynas** – visi žingsniai su paieška ir filtrais. Turinio kūrėjams rodomos žymos: dokumentas
+  nebegalioja, dokumentas atnaujintas po peržiūros, nėra šaltinio.
+- **Sąvokos** – žodynėlis (SPK, akreditacija, kvorumas…). Sąvokos susiejamos su žingsniais ir rodomos
+  žingsnio puslapyje.
+- **Perdavimas** – pirmtakų užrašai ir tavo užrašai įpėdiniui.
+- **Mano atstovai** – tik studentų atstovų koordinatoriams.
+
+### Perdavimo užrašai
+
+Kadencijos pabaigoje pareigas einantis narys parašo užrašus įpėdiniui (ką verta žinoti, neužbaigti
+klausimai, žmonės, naudingos nuorodos, patarimai). Vienai kadencijai – vieni užrašai; juos galima
+pildyti iki 60 dienų po kadencijos pabaigos. Įpėdinis užrašus mato skirtuke „Perdavimas“, o jų
+perskaitymas pasižymi kelyje.
 
 ## Veiksmai
 
-1. Atverk [Mano kelią](app:/mano/learning) ir išskleisk žingsnį.
-2. Perskaityk paaiškinimą, atverk šaltinį arba atlik nurodytą veiksmą.
-3. Spausk **Perskaičiau** arba **Atlikau**. Rekomenduojamą ar papildomą žingsnį galima **Praleisti**.
-4. Savo žymą galima panaikinti paspaudus **Grąžinti**. Automatiškai atliktas žingsnis taip ir pažymėtas;
-   jo žyma priklauso nuo veiklos platformoje.
+### Eiti savo keliu
 
-Diegimo žingsnyje pateiktos telefono ir kompiuterio instrukcijos. Naršyklės pranešimų leidimo
-prašoma tik paspaudus įjungimo mygtuką. Kontaktų žingsniuose rodomi koordinatoriai ir savo
-atstovaujamų institucijų pirmininkai bei dabartinės kadencijos sekretoriai.
+1. Atverk [Mano kelią](app:/mano/learning) ir išskleisk žingsnį.
+2. Perskaityk „Kodėl verta“, atverk šaltinį arba atlik veiksmą.
+3. Spausk **Perskaičiau** arba **Atlikau**. Rekomenduojamą ar papildomą žingsnį gali **Praleisti**.
+4. Savo žymą panaikink mygtuku **Grąžinti**.
+
+### Pridėti žingsnį
+
+1. **+ Sukurti** → **Naujas mokymosi žingsnis** (arba **Žinynas** → **Naujas žingsnis**).
+2. Pasirink rūšį, svarbą, įrašyk pavadinimą ir „Kodėl verta“.
+3. Skiltyje **Kam** pasirink sluoksnį ir, jei reikia, institucijos ar pareigybės tipą arba padalinį.
+4. Pasirink etapą ir šaltinį: dokumentą iš Archyvo arba nuorodą. Anglišką šaltinį nurodyk tik tada,
+   kai jis skiriasi.
+5. Išsaugok. Žingsnio puslapyje gali susieti sąvokas.
+
+### Parašyti perdavimo užrašus
+
+1. Atverk [Perdavimą](app:/mano/learning/handover).
+2. Prie savo pareigybės užpildyk pateiktus klausimus ir išsaugok.
 
 ## Kas ką gali {#teises}
 
-| Kas | Kas prieinama dabar |
+| Kas | Ką gali |
 |---|---|
-| Kiekvienas prisijungęs narys | Savo kelias ir pažangos žymos, žingsnio puslapis, sąvokų paaiškinimai ir įžvalgos |
-| Atsakingas studentų atstovų koordinatorius | Papildomai „Mano atstovai“ ir atstovo kelio peržiūra be pažangos keitimo |
-| Mokymosi turinį kurti galintis narys | „Sukurti mokymosi žingsnį“ per „+ Sukurti“; forma dar ruošiama |
+| Kiekvienas narys | Matyti savo kelią, žymėti pažangą, skaityti žinyną ir sąvokas, rašyti įžvalgas |
+| Pareigas einantis ar neseniai baigęs narys | Rašyti perdavimo užrašus savo pareigybei; matyti pirmtakų užrašus |
+| Studentų atstovų koordinatorius (atsakingas už institucijas) | Matyti „Mano atstovai“: savo atstovų pažangą ir jų kelius, jų perdavimo užrašus |
+| Studentų atstovų koordinatorius | Kurti ir redaguoti savo padalinio sluoksnio žingsnius |
+| Centrinio biuro studentų atstovų koordinatorius | Kurti ir redaguoti visų sluoksnių žingsnius ir sąvokas |
 
-## Pažangos būsenos
-
-| Būsena | Ką reiškia |
-|---|---|
-| Laukia | Žingsnis dar neatliktas |
-| Atlikta | Pažymėta paties nario arba automatiškai pagal veiklą |
-| Praleista | Narys praleido rekomenduojamą ar papildomą žingsnį |
-| Atnaujinta — peržiūrėk | Po perskaitymo pakeistas žinių šaltinis; jį galima peržiūrėti ir pažymėti iš naujo |
-
-Antraštėje esminiai žingsniai skaičiuojami atskirai nuo bendros pažangos.
-Tavo pažangą matantys koordinatoriai nurodomi po antrašte, jei jie priskirti.
+Tavo pažangą matantys koordinatoriai nurodomi po kelio antrašte.
 
 ## Pranešimai ir automatizavimas
 
-Ši skiltis naujų pranešimų nesiunčia.
+Ši skiltis pranešimų nesiunčia. Automatiškai pasižymintys žingsniai tikrinami kiekvieną kartą
+atvėrus kelią.
 
 ## Techninė informacija
 
-Pagrindas apima sluoksniais sudaromą kelią, paveldimus institucijų ir pareigų tipus bei
-dabartines ir būsimas pareigas. Etapai: prieš pradžią, pirmieji 60 dienų, visa kadencija,
-paskutinės 45 dienos. Nežinoma pabaiga tikrinama per esamą kadencijų sprendiklį.
-
-Pažangos būsenos: `pending`, `done`, `skipped`, `updated`. Papildomą ar rekomenduojamą
-žingsnį praleidus, jis įskaitomas į bendrą atliktų žingsnių skaičių; esminio praleisti negalima.
-Kadencijai kartojami žingsniai skaičiuojami nuo ankstyviausios nepasibaigusios atstovavimo
-pareigybės pradžios. Automatinis atlikimas skaičiuojamas skaitant ir atskirai nesaugomas.
-
-Žinių šaltinio `documents.sharepoint_modified_at` pakeitimas po atlikimo reiškia `updated`.
-Perdavimo pastabas mato autorius, dabartiniai ir būsimi tos ar ją perėmusios pareigybės
-nariai, atsakingas koordinatorius ir pareigybės padalinį administruoti galintys nariai.
-Redaguoti pastabą gali tik autorius. Šios taisyklės paruoštos serverio pusėje.
-
-Kuravimo teisės priklauso `learningSteps`: `padalinys` apima tik savo padalinio sluoksnio
-žingsnius, `*` – visus. Sisteminiai žingsniai neištrinami; keičiami tik etapas, tvarka ir
-aktyvumas. Sąvokų tvarkymas remiasi `learningSteps.update.*`.
+- Kelias: `ResolveLearningPath` (sluoksniai iš `authorization_duties`; atstovo pareigos – su
+  `StudentRepresentation` ar `StudentRepCoordination` atsakomybe; tipai su protėviais per
+  `getParentsAndSelf()`). Pateikimas – `LearningPathPresenter`.
+- Etapas: pagal anksčiausios atstovo pareigybės pradžią; pabaiga – iš pareigų datų arba kadencijos
+  (`ResolveCadenceForDuty`).
+- Kadencijai kartojami žingsniai (`per_term`) įskaitomi, jei atlikti ne anksčiau kaip 90 dienų iki
+  kadencijos pradžios. `updated` – kai `documents.sharepoint_modified_at` vėlesnis už atlikimą.
+- Sisteminiai žingsniai (`is_system`, raktai `SystemStepRegistry`) įrašomi migracija; jų atlikimas
+  skaičiuojamas skaitant ir nesaugomas. Kuratoriai keičia tik etapą, tvarką ir rodymą; ištrinti negalima.
+- Teisės: `learningSteps.*.padalinys` – tik padalinio sluoksnis, `learningSteps.*.*` – visi; sąvokos –
+  `learningSteps.update.*`. Perdavimo užrašai – `HandoverNotePolicy`; „Mano atstovai“ –
+  `GetCoordinatedRepresentatives` per `ResponsibilityResolver`.
+- Bandomasis turinys: `LearningPathPilotSeeder` (paleidžiamas ranka, kartojant nieko nedubliuoja).

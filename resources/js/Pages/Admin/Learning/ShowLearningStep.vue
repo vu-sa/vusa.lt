@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
+import { Pencil } from '@lucide/vue';
 
 import DiscussionPanel from '@/Components/Discussions/DiscussionPanel.vue';
-import RecordPage, { type RecordFact } from '@/Components/Layouts/RecordPage.vue';
+import RecordPage, { type RecordAction, type RecordFact } from '@/Components/Layouts/RecordPage.vue';
 import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
 import { Button } from '@/Components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
 import { learningImportanceStatuses, learningProgressStatuses } from '@/Constants/statusIcons';
 import LearningStepContent from '@/Features/Admin/Learning/LearningStepContent.vue';
+import LearningStepGlossaryEditor, { type GlossaryTermOption } from '@/Features/Admin/Learning/LearningStepGlossaryEditor.vue';
 import LearningTabs from '@/Features/Admin/Learning/LearningTabs.vue';
 import type { LearningStepData, LearningCoordinator, LearningInstitutionContacts } from '@/Types/learning';
 
@@ -19,7 +21,12 @@ const props = defineProps<{
   coordinators: LearningCoordinator[];
   institutionContacts: LearningInstitutionContacts[];
   canSeeReps: boolean;
+  canUpdate: boolean;
+  glossaryOptions: GlossaryTermOption[];
 }>();
+const overflowActions = computed<RecordAction[]>(() => (props.canUpdate
+  ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, href: route('learningSteps.edit', props.step.id) }]
+  : []));
 const { formatDate } = useDateFormatter();
 const sections = computed(() => [
   { value: 'about', label: $t('learning.path.about') },
@@ -38,7 +45,7 @@ const facts = computed<RecordFact[]>(() => [
 <template>
   <div>
     <LearningTabs :can-see-reps="canSeeReps" />
-    <RecordPage :key="step.id" :title="step.title" entity-type="learning_step" title-voice="sentence" :facts="facts" :sections="sections">
+    <RecordPage :key="step.id" :title="step.title" entity-type="learning_step" title-voice="sentence" :facts="facts" :sections="sections" :overflow-actions="overflowActions">
       <template #subtitle>
         <StatusBadge v-if="inPath" :status="learningProgressStatuses[step.state]" voice="sentence" />
       </template>
@@ -60,6 +67,10 @@ const facts = computed<RecordFact[]>(() => [
               </PopoverContent>
             </Popover>
           </div>
+        </div>
+        <div v-if="canUpdate" class="mt-6 space-y-3" data-slot="step-glossary-editor">
+          <h3 class="text-sm font-semibold">{{ $t('learning_library.step_glossary.title') }}</h3>
+          <LearningStepGlossaryEditor :step-id="step.id" :selected="step.glossaryTerms.map(term => ({ id: term.id, term: term.term }))" :options="glossaryOptions" />
         </div>
       </template>
       <template #insights>

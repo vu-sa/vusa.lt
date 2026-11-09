@@ -53,6 +53,19 @@ class LearningAdminPresenter
         return $result;
     }
 
+    /** @return list<array{id: string, term: string}> */
+    public static function glossaryOptions(string $locale): array
+    {
+        $options = [];
+        foreach (GlossaryTerm::query()->get() as $term) {
+            /** @var GlossaryTerm $term */
+            $options[] = ['id' => $term->id, 'term' => (string) $term->getTranslation('term', $locale)];
+        }
+        usort($options, fn (array $a, array $b): int => strcoll($a['term'], $b['term']));
+
+        return $options;
+    }
+
     /** @return array{id: string, dutyId: string, duty: string, author: array{id: string, name: string}, body: string, createdAt: string|null, updatedAt: string|null} */
     public static function note(HandoverNote $note, string $locale): array
     {
