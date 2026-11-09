@@ -30,7 +30,7 @@ beforeEach(() => {
   vi.stubGlobal('route', (name: string) => `/mocked/${name}`);
   localStorage.clear();
   window.history.replaceState({}, '', '/mano/learning/library?view=rows');
-  vi.mocked(usePage).mockReturnValue({ ...createMockPage(), url: '/mano/learning/library' });
+  vi.mocked(usePage).mockReturnValue({ ...createMockPage({ learningNavigation: { canManage: true, canSeeReps: false } }), url: '/mano/learning/library' });
   vi.stubGlobal('matchMedia', (query: string) => ({
     matches: query.includes('min-width'), media: query, onchange: null,
     addListener: vi.fn(), removeListener: vi.fn(),
@@ -103,6 +103,29 @@ describe('learning library', () => {
     await flushPromises();
     expect(wrapper.findComponent(LearningTabs).exists()).toBe(true);
     expect(wrapper.get('nav [aria-current="page"]').text()).toBe('learning.tabs.glossary');
+    wrapper.unmount();
+  });
+
+  it('shows glossary definitions and related document links in rows for a member', async () => {
+    window.history.replaceState({}, '', '/mano/learning/glossary?view=table');
+    vi.mocked(usePage).mockReturnValue({ ...createMockPage(), url: '/mano/learning/glossary' });
+    const wrapper = mount(IndexGlossaryTerm, {
+      props: {
+        terms: [{
+          id: 'quorum', term: 'Kvorumas', definition: 'Būtinas narių skaičius.', stepsCount: 1,
+          translations: { term: { lt: 'Kvorumas', en: 'Quorum' }, definition: { lt: 'Būtinas narių skaičius.', en: 'Required members.' } },
+          steps: [{ id: 'rules', title: 'Senato reglamentas', url: 'https://example.test/rules', isDocument: true }],
+        }],
+        canManage: false, canSeeReps: false,
+      },
+      global: { stubs: commonStubs },
+    });
+    await flushPromises();
+    const row = wrapper.get('[data-slot="collection-row"]');
+    expect(row.text()).toContain('Būtinas narių skaičius.');
+    expect(row.text()).toContain('learning.glossary.where_used');
+    expect(row.get('a[href="https://example.test/rules"]').text()).toBe('Senato reglamentas');
+    expect(wrapper.find('[data-testid="create-glossary-term"]').exists()).toBe(false);
     wrapper.unmount();
   });
 

@@ -47,6 +47,19 @@ class LearningPathPresenter
         return ['currentStage' => $path->currentStage, 'termStart' => $path->termStart?->toDateString(), 'stages' => $stages, 'meetingPrep' => $meetingPrep, 'totals' => $path->totals()];
     }
 
+    /** @return list<array{id: string, key: string|null, isSystem: bool, kind: LearningStepKind, layer: LearningLayer, layerLabel: string, stage: LearningStage|null, importance: LearningImportance, title: string, description: string, source: array{type: 'document'|'url', url: string|null, documentId: int|null, documentStatus: DocumentStatus|null, title: string|null}|null, actionUrl: string|null, state: 'pending'|'done'|'skipped'|'updated', autoCompleted: bool, completedAt: string|null, skippable: bool, insightsCount: int, reviewedAt: string|null, glossaryTerms: list<array{id: string, term: string, definition: string}>}> */
+    public static function documents(LearningPath $path, string $locale): array
+    {
+        $items = $path->steps->filter(fn (ResolvedLearningStep $item): bool => $item->step->kind === LearningStepKind::Knowledge);
+        (new EloquentCollection($items->map(fn (ResolvedLearningStep $item): LearningStep => $item->step)->all()))->loadMissing('glossaryTerms');
+        $documents = [];
+        foreach ($items as $item) {
+            $documents[] = self::step($item, $path->user, $locale);
+        }
+
+        return $documents;
+    }
+
     /** @return array{id: string, key: string|null, isSystem: bool, kind: LearningStepKind, layer: LearningLayer, layerLabel: string, stage: LearningStage|null, importance: LearningImportance, title: string, description: string, source: array{type: 'document'|'url', url: string|null, documentId: int|null, documentStatus: DocumentStatus|null, title: string|null}|null, actionUrl: string|null, state: 'pending'|'done'|'skipped'|'updated', autoCompleted: bool, completedAt: string|null, skippable: bool, insightsCount: int, reviewedAt: string|null, glossaryTerms: list<array{id: string, term: string, definition: string}>} */
     public static function step(ResolvedLearningStep $item, User $viewer, string $locale): array
     {
@@ -85,7 +98,7 @@ class LearningPathPresenter
     }
 
     /** @return array{type: 'document'|'url', url: string|null, documentId: int|null, documentStatus: DocumentStatus|null, title: string|null}|null */
-    private static function source(LearningStep $step, User $viewer, string $locale): ?array
+    public static function source(LearningStep $step, User $viewer, string $locale): ?array
     {
         $source = $step->sourceFor($locale);
         if ($source === null) {

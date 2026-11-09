@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\ShareLearningNavigation;
 use App\Http\Middleware\UpdateLastAction;
 use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
 use Illuminate\Support\Facades\Route;
@@ -359,15 +360,18 @@ Route::resource('dutyTypes', DutyTypeController::class)->parameters(['dutyTypes'
 Route::put('institutionTypes/{type}/models', [InstitutionTypeController::class, 'syncModels'])->name('institutionTypes.models.sync');
 Route::put('dutyTypes/{type}/models', [DutyTypeController::class, 'syncModels'])->name('dutyTypes.models.sync');
 
-Route::get('learning', [LearningPathController::class, 'show'])->name('learningPath.show');
-Route::get('learning/handover', [HandoverNoteController::class, 'index'])->name('learningPath.handover');
-Route::post('learning/handover/{duty}', [HandoverNoteController::class, 'store'])->name('handoverNotes.store');
-Route::patch('learning/handover-notes/{handoverNote}', [HandoverNoteController::class, 'update'])->name('handoverNotes.update');
-Route::get('learning/reps', [LearningRepsController::class, 'index'])->name('learningPath.reps');
-Route::get('learning/reps/{user}', [LearningRepsController::class, 'show'])->name('learningPath.rep');
-Route::get('learning/library', [LearningStepController::class, 'index'])->name('learningSteps.index');
-Route::get('learning/documents/search', [LearningStepController::class, 'searchDocuments'])->name('learningSteps.documentSearch');
-Route::post('learning/steps/{learningStep}/progress', [LearningStepProgressController::class, 'store'])->name('learningSteps.progress');
-Route::put('learning/steps/{learningStep}/glossary', [LearningStepController::class, 'syncGlossary'])->name('learningSteps.glossary.sync');
-Route::resource('learning/steps', LearningStepController::class)->parameters(['steps' => 'learningStep'])->names('learningSteps')->except('index');
-Route::resource('learning/glossary', GlossaryTermController::class)->parameters(['glossary' => 'glossaryTerm'])->names('glossaryTerms')->only(['index', 'store', 'update', 'destroy']);
+Route::middleware(ShareLearningNavigation::class)->group(function (): void {
+    Route::get('learning', [LearningPathController::class, 'show'])->name('learningPath.show');
+    Route::get('learning/documents', [LearningPathController::class, 'documents'])->name('learningPath.documents');
+    Route::get('learning/handover', [HandoverNoteController::class, 'index'])->name('learningPath.handover');
+    Route::post('learning/handover/{duty}', [HandoverNoteController::class, 'store'])->name('handoverNotes.store');
+    Route::patch('learning/handover-notes/{handoverNote}', [HandoverNoteController::class, 'update'])->name('handoverNotes.update');
+    Route::get('learning/reps', [LearningRepsController::class, 'index'])->name('learningPath.reps');
+    Route::get('learning/reps/{user}', [LearningRepsController::class, 'show'])->name('learningPath.rep');
+    Route::get('learning/library', [LearningStepController::class, 'index'])->name('learningSteps.index');
+    Route::get('learning/documents/search', [LearningStepController::class, 'searchDocuments'])->name('learningSteps.documentSearch');
+    Route::post('learning/steps/{learningStep}/progress', [LearningStepProgressController::class, 'store'])->name('learningSteps.progress');
+    Route::put('learning/steps/{learningStep}/glossary', [LearningStepController::class, 'syncGlossary'])->name('learningSteps.glossary.sync');
+    Route::resource('learning/steps', LearningStepController::class)->parameters(['steps' => 'learningStep'])->names('learningSteps')->except('index');
+    Route::resource('learning/glossary', GlossaryTermController::class)->parameters(['glossary' => 'glossaryTerm'])->names('glossaryTerms')->only(['index', 'store', 'update', 'destroy']);
+});

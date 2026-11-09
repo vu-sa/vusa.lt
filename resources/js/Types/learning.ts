@@ -34,7 +34,7 @@ export interface LearningStepData {
   skippable: boolean;
   insightsCount: number;
   reviewedAt: string | null;
-  glossaryTerms: GlossaryTermData[];
+  glossaryTerms: Pick<GlossaryTermData, 'id' | 'term' | 'definition'>[];
 }
 
 export interface LearningPathData {
@@ -116,6 +116,7 @@ export interface GlossaryTermData {
   term: string;
   definition: string;
   stepsCount: number;
+  steps: { id: string; title: string; url: string | null; isDocument: boolean }[];
   translations: {
     term: { lt: string; en: string };
     definition: { lt: string; en: string };

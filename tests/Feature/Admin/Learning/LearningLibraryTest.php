@@ -68,10 +68,7 @@ test('library payload includes curator flags for expired document, updated docum
         ->and($steps[$missingSourceStep->id]['flags'])->toContain('missing_source');
 
     $member = makeUser($tenant);
-    $memberSteps = collect(asUser($member)->get(route('learningSteps.index'))->assertOk()->viewData('page')['props']['steps'])->keyBy('id');
-
-    expect($memberSteps[$expiredStep->id]['canUpdate'])->toBeFalse()
-        ->and($memberSteps[$expiredStep->id]['flags'])->toBe([]);
+    asUser($member)->get(route('learningSteps.index'))->assertForbidden();
 });
 
 test('create and edit pages pass only tenant layer and managed tenants to a padalinys curator, and all options to a global curator', function (): void {
@@ -134,7 +131,7 @@ test('store and update set reviewed_at to now', function (): void {
         'is_active' => true,
     ])->assertRedirect();
 
-    $step = LearningStep::query()->latest('created_at')->firstOrFail();
+    $step = LearningStep::query()->where('is_system', false)->latest('created_at')->firstOrFail();
     expect($step->reviewed_at?->toIso8601String())->toBe(now()->toIso8601String());
 
     $step->update(['reviewed_at' => now()->subDays(10)]);
@@ -228,6 +225,10 @@ test('glossary payload includes stepsCount and full translations for editing', f
         ->has('terms', 1)
         ->where('terms.0.id', $term->id)
         ->where('terms.0.stepsCount', 2)
+        ->has('terms.0.steps', 2)
+        ->whereType('terms.0.steps.0.id', 'string')
+        ->whereType('terms.0.steps.0.title', 'string')
+        ->whereType('terms.0.steps.0.isDocument', 'boolean')
         ->where('terms.0.translations.term.lt', 'Senatas')
         ->where('terms.0.translations.term.en', 'Senate'));
 });
@@ -244,4 +245,39 @@ test('the step page offers the glossary editor only to curators who may update t
         ->where('canUpdate', false)->where('glossaryOptions', []));
     asUser($curator)->get(route('learningSteps.show', $step))->assertOk()->assertInertia(fn (Assert $page) => $page
         ->where('canUpdate', true)->has('glossaryOptions', 1)->where('glossaryOptions.0.term', 'Kvorumas'));
+});
+
+test('a padalinys curator can manage the library with create or update permission', function (string $ability): void {
+    $curator = makeUser(Tenant::query()->firstOrFail());
+    $curator->givePermissionTo(Permission::findOrCreate("learningSteps.{$ability}.padalinys", 'web'));
+
+    asUser($curator)->get(route('learningSteps.index'))->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->component('Admin/Learning/IndexLearningStep')
+        ->where('learningNavigation.canManage', true)
+        ->has('steps'));
+})->with(['create', 'update']);
+
+test('glossary step links open readable documents and fall back to step records for hidden sources and tasks', function (): void {
+    $viewer = makeUser(Tenant::query()->firstOrFail());
+    $term = GlossaryTerm::factory()->create();
+    $published = Document::factory()->create(['status' => DocumentStatus::Published, 'anonymous_url' => 'https://example.test/guide']);
+    $hidden = Document::factory()->create(['status' => DocumentStatus::Hidden, 'anonymous_url' => null]);
+    $readableStep = LearningStep::factory()->create(['kind' => LearningStepKind::Knowledge]);
+    $hiddenStep = LearningStep::factory()->create(['kind' => LearningStepKind::Knowledge]);
+    $action = LearningStep::factory()->create(['kind' => LearningStepKind::Action]);
+    $readableStep->sources()->create(['locale' => 'lt', 'document_id' => $published->id]);
+    $hiddenStep->sources()->create(['locale' => 'lt', 'document_id' => $hidden->id]);
+    $term->steps()->attach([$readableStep->id, $hiddenStep->id, $action->id]);
+
+    $response = asUser($viewer)->get(route('glossaryTerms.index'))->assertOk();
+    $steps = collect($response->viewData('page')['props']['terms'][0]['steps'])->keyBy('id');
+
+    expect($steps)->toHaveCount(3);
+    expect($steps[$readableStep->id])->toBe([
+        'id' => $readableStep->id, 'title' => $readableStep->getTranslation('title', app()->getLocale()),
+        'url' => route('documents.show', $published), 'isDocument' => true,
+    ]);
+    expect($steps[$hiddenStep->id]['url'])->toBe(route('learningSteps.show', $hiddenStep));
+    expect($steps[$action->id]['url'])->toBe(route('learningSteps.show', $action));
+    expect($steps[$action->id]['isDocument'])->toBeFalse();
 });

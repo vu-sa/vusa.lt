@@ -9,6 +9,7 @@ tests:
   - tests/Feature/Admin/Learning/LearningWritesTest.php
   - tests/Feature/Admin/Learning/LearningStepProgressControllerTest.php
   - tests/Feature/Admin/Learning/LearningLibraryTest.php
+  - tests/Feature/Admin/Learning/LearningDocumentsTest.php
   - tests/Feature/Admin/Learning/LearningPeopleTest.php
   - tests/Feature/Admin/Learning/LearningPathPresenterTest.php
   - tests/Feature/Admin/Learning/SystemStepDetectorsTest.php
@@ -16,6 +17,8 @@ tests:
   - resources/js/Features/Admin/Learning/__tests__/LearningLibrary.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/BrowserNotificationSetup.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/LearningTabs.component.test.ts
+  - resources/js/Features/Admin/Learning/__tests__/LearningDocuments.component.test.ts
+  - resources/js/Features/Admin/Learning/__tests__/LearningGlossarySteps.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/LearningPathView.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/LearningStepRow.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/LearningStepForm.component.test.ts
@@ -70,7 +73,9 @@ Būsimos pareigos įskaitomos iš karto, todėl išrinktas, bet dar nepradėjęs
 
 Žingsniai išdėstyti pagal kadencijos etapus: **Prieš pradedant**, **Pirmieji mėnesiai** (pirmos 60
 dienų), **Visą kadenciją** ir **Kadencijos pabaiga** (paskutinės 45 dienos). Dabartinis etapas
-pažymėtas „dabar“ ir išskleistas.
+pažymėtas „dabar“. Visi etapai ir jų žingsniai rodomi iš karto. Žingsnio kairėje esantis langelis
+žymi pažangą; varnelę galima uždėti ir nuimti tiesiog eilutėje. Tik programėlės diegimo, naršyklės
+pranešimų ir susipažinimo su koordinatoriumi ar institucijos kontaktais žingsniuose yra „Daugiau“.
 
 Svarba nusako turinį, ne terminą: **Esminis** (būtina žinoti), **Rekomenduojamas**, **Papildomas**.
 Esminio žingsnio praleisti negalima.
@@ -88,7 +93,8 @@ Esminio žingsnio praleisti negalima.
 
 Žingsnis vienas abiem kalboms, bet anglų kalbai galima nurodyti kitą dokumentą ar nuorodą; jei jos nėra,
 rodomas lietuviškas šaltinis. Šaltiniu gali būti ir Archyve paslėptas dokumentas – tada atstovai mato
-žingsnį ir paaiškinimą, o vietoj nuorodos – „Dokumentas dar neviešas“.
+žingsnį ir paaiškinimą, o vietoj nuorodos – „neviešas“. Dokumento pavadinimas atveria šaltinį naujame skirtuke. Veiksmo pavadinimas
+rodomas kaip tekstas, o šalia jo – nuoroda veiksmui atlikti, jei tokia yra.
 
 Jei šaltinio dokumentas Archyve atnaujinamas jau perskaičius, žingsnis pažymimas
 „Atnaujinta – peržiūrėk“.
@@ -96,15 +102,23 @@ Jei šaltinio dokumentas Archyve atnaujinamas jau perskaičius, žingsnis pažym
 ### Skirtukai
 
 - **Mano kelias** – tavo žingsniai ir pažanga.
-- **Žinynas** – visi žingsniai su paieška ir filtrais pagal sluoksnį, rūšį ir svarbą. Greitieji filtrai
-  siaurina sąrašą; tame pačiame filtre pasirinktos reikšmės jungiamos, o skirtingi filtrai taikomi kartu.
-  Paspausk pasirinktą filtrą dar kartą, kad jį nuimtum, arba **Išvalyti visus**.
-  Turinio kūrėjams rodomos žymos: dokumentas
-  nebegalioja, dokumentas atnaujintas po peržiūros, nėra šaltinio.
-- **Sąvokos** – žodynėlis (SPK, akreditacija, kvorumas…). Sąvokos susiejamos su žingsniais ir rodomos
-  žingsnio puslapyje.
+- **Dokumentai** – tavo kelio dokumentai vienoje vietoje, suskirstyti pagal sluoksnį: Pagrindas,
+  institucijų tipai, Pareigos, Padalinys, Platforma. Prie dokumento galima pažymėti pažangą ir
+  atverti susietų sąvokų paaiškinimus.
+- **Sąvokos** – žodynėlis (SPK, akreditacija, kvorumas…). Po apibrėžimu „Kur sutinkama“ rodo
+  susietus žingsnius: nuoroda atveria dokumentą arba žingsnio puslapį su įžvalgomis.
 - **Perdavimas** – pirmtakų užrašai ir tavo užrašai įpėdiniui.
 - **Mano atstovai** – tik studentų atstovų koordinatoriams.
+- **Tvarkyti** – tik žingsnių kūrėjams ir redaktoriams. Čia rodomi visi žingsniai su paieška ir
+  filtrais pagal sluoksnį, rūšį ir svarbą. Redaguojamuose žingsniuose matomos žymos: dokumentas
+  nebegalioja, dokumentas atnaujintas po peržiūros arba nėra šaltinio.
+
+<ChangelogNote date="2026-11-10" title="Dokumentai ir aiškesnis kelias">
+
+Žingsniai rodomi be išskleidimo, dokumentai turi savo skirtuką, o sąvokos – nuorodas į susietus žingsnius.
+Buvęs „Žinynas“ vadinamas „Tvarkyti“ ir pasiekiamas tik turinio kūrėjams bei redaktoriams.
+
+</ChangelogNote>
 
 ### Perdavimo užrašai
 
@@ -117,14 +131,16 @@ perskaitymas pasižymi kelyje.
 
 ### Eiti savo keliu
 
-1. Atverk [Mano kelią](app:/mano/learning) ir išskleisk žingsnį.
-2. Perskaityk „Kodėl verta“, atverk šaltinį arba atlik veiksmą.
-3. Spausk **Perskaičiau** arba **Atlikau**. Rekomenduojamą ar papildomą žingsnį gali **Praleisti**.
-4. Savo žymą panaikink mygtuku **Grąžinti**.
+1. Atverk [Mano kelią](app:/mano/learning).
+2. Perskaityk paaiškinimą po pavadinimu, atverk dokumentą arba atlik veiksmą.
+3. Pažymėk langelį kairėje. Rekomenduojamą ar papildomą žingsnį gali **Praleisti** per **⋯** meniu.
+4. Savo žymą panaikink nuimdamas varnelę. Automatiškai pažymėto langelio keisti negalima.
+5. Dokumentus rask ir skirtuke [Dokumentai](app:/mano/learning/documents); įžvalgas atverk per
+   jų skaičių prie žingsnio.
 
 ### Pridėti žingsnį
 
-1. **+ Sukurti** → **Naujas mokymosi žingsnis** (arba **Žinynas** → **Naujas žingsnis**).
+1. **+ Sukurti** → **Naujas mokymosi žingsnis** (arba **Tvarkyti** → **Naujas žingsnis**).
 2. Pasirink rūšį, svarbą, įrašyk pavadinimą ir „Kodėl verta“.
 3. Skiltyje **Kam** pasirink sluoksnį ir, jei reikia, institucijos ar pareigybės tipą arba padalinį.
 4. Pasirink etapą ir šaltinį: dokumentą iš Archyvo arba nuorodą. Anglišką šaltinį nurodyk tik tada,
@@ -140,10 +156,10 @@ perskaitymas pasižymi kelyje.
 
 | Kas | Ką gali |
 |---|---|
-| Kiekvienas narys | Matyti savo kelią, žymėti pažangą, skaityti žinyną ir sąvokas, rašyti įžvalgas |
+| Kiekvienas narys | Matyti savo kelią, žymėti pažangą, skaityti savo dokumentus ir sąvokas, rašyti įžvalgas |
 | Pareigas einantis ar neseniai baigęs narys | Rašyti perdavimo užrašus savo pareigybei; matyti pirmtakų užrašus |
 | Studentų atstovų koordinatorius (atsakingas už institucijas) | Matyti „Mano atstovai“: savo atstovų pažangą ir jų kelius, jų perdavimo užrašus |
-| Studentų atstovų koordinatorius | Kurti ir redaguoti savo padalinio sluoksnio žingsnius |
+| Studentų atstovų koordinatorius | Atverti „Tvarkyti“, kurti ir redaguoti savo padalinio sluoksnio žingsnius |
 | Centrinio biuro studentų atstovų koordinatorius | Kurti ir redaguoti visų sluoksnių žingsnius ir sąvokas |
 
 Tavo pažangą matantys koordinatoriai nurodomi po kelio antrašte.

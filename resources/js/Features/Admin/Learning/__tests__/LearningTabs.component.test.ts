@@ -7,10 +7,10 @@ import LearningTabs from '../LearningTabs.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-function render(canSeeReps: boolean, url = '/mano/learning') {
+function render(canSeeReps: boolean, url = '/mano/learning', canManage = false) {
   vi.mocked(usePage).mockReturnValue({ ...createMockPage(), url });
   return mount(LearningTabs, {
-    props: { canSeeReps },
+    props: { canSeeReps, canManage },
     global: { stubs: { Link: { props: ['href'], template: '<a :href="href"><slot /></a>' } } },
   });
 }
@@ -25,8 +25,19 @@ describe('LearningTabs', () => {
     coordinator.unmount();
   });
 
+  it('hides Manage from members and keeps Documents before Glossary', () => {
+    const member = render(false);
+    expect(member.text()).not.toContain('learning.tabs.library');
+    expect(member.findAll('a').map(link => link.text())).toEqual(['learning.tabs.path', 'learning.tabs.documents', 'learning.tabs.glossary', 'learning.tabs.handover']);
+    member.unmount();
+    const curator = render(true, '/mano/learning/documents', true);
+    expect(curator.findAll('a').map(link => link.text())).toEqual(['learning.tabs.path', 'learning.tabs.documents', 'learning.tabs.glossary', 'learning.tabs.handover', 'learning.tabs.reps', 'learning.tabs.library']);
+    expect(curator.get('[aria-current="page"]').text()).toBe('learning.tabs.documents');
+    curator.unmount();
+  });
+
   it('keeps the library active on a step record', () => {
-    const wrapper = render(false, '/mano/learning/steps/01STEP');
+    const wrapper = render(false, '/mano/learning/steps/01STEP', true);
     expect(wrapper.get('[aria-current="page"]').attributes('href')).toContain('learningSteps.index');
     expect(wrapper.findAll('[aria-current="page"]')).toHaveLength(1);
     wrapper.unmount();

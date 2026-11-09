@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
-import { ChevronDown, RefreshCw } from '@lucide/vue';
+import { computed } from 'vue';
+import { RefreshCw } from '@lucide/vue';
 
 import EmptyState from '@/Components/Patterns/EmptyState.vue';
 import type { LearningCoordinator, LearningInstitutionContacts, LearningPathData, LearningStepData } from '@/Types/learning';
@@ -13,11 +13,6 @@ const props = defineProps<{
   coordinators?: LearningCoordinator[];
   institutionContacts?: LearningInstitutionContacts[];
 }>();
-const opened = ref<Record<string, boolean>>({});
-watch(() => props.path.currentStage, stage => {
-  const initial = stage ?? props.path.stages.find(station => station.steps.some(step => step.state === 'pending' || step.state === 'updated'))?.stage;
-  if (initial) opened.value[initial] = true;
-}, { immediate: true });
 const hasSteps = computed(() => props.path.stages.some(stage => stage.steps.length));
 const done = (steps: LearningStepData[]) => steps.filter(step => step.state === 'done' || step.state === 'skipped').length;
 function groups(steps: LearningStepData[]) {
@@ -29,9 +24,6 @@ function groups(steps: LearningStepData[]) {
   }
   return [...layers].map(([label, items]) => ({ label, steps: items }));
 }
-function toggle(stage: string, event: Event) {
-  opened.value[stage] = (event.target as HTMLDetailsElement).open;
-}
 </script>
 
 <template>
@@ -39,18 +31,17 @@ function toggle(stage: string, event: Event) {
     <ol v-if="hasSteps" class="ml-2 border-l border-border pl-5 sm:pl-7">
       <li v-for="station in path.stages" :key="station.stage" class="relative pb-6 last:pb-0">
         <span :class="['absolute -left-[1.6rem] top-4 size-3 border-2 sm:-left-[2.1rem]', path.currentStage === station.stage ? 'border-foreground bg-background' : 'border-border bg-background']" aria-hidden="true" />
-        <details :open="opened[station.stage] ?? false" :data-stage="station.stage" @toggle="toggle(station.stage, $event)">
-          <summary class="flex min-h-11 cursor-pointer list-none flex-wrap items-center gap-x-3 gap-y-1 py-2 focus-visible:outline-2 focus-visible:outline-ring">
+        <section :data-stage="station.stage">
+          <header class="flex min-h-11 flex-wrap items-center gap-x-3 gap-y-1 py-2">
             <h2 class="text-base font-semibold">{{ $t(`learning.path.stages.${station.stage}`) }}</h2>
-            <span v-if="path.currentStage === station.stage" class="border border-border px-2 py-1 text-xs text-muted-foreground" data-slot="current-stage" aria-current="step">{{ $t('learning.path.now') }}</span>
+            <span v-if="path.currentStage === station.stage" class="text-xs text-muted-foreground" data-slot="current-stage" aria-current="step">{{ $t('learning.path.now') }}</span>
             <span class="ml-auto text-xs tabular-nums text-muted-foreground">{{ done(station.steps) }}/{{ station.steps.length }}</span>
-            <ChevronDown class="size-4 text-muted-foreground" aria-hidden="true" />
-          </summary>
+          </header>
           <div v-for="group in groups(station.steps)" :key="group.label" class="pt-4">
             <h3 class="border-b border-border pb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">{{ group.label }}</h3>
             <LearningStepRow v-for="step in group.steps" :key="step.id" :step="step" :readonly="readonly" :coordinators="coordinators" :institution-contacts="institutionContacts" />
           </div>
-        </details>
+        </section>
       </li>
     </ol>
     <EmptyState v-else :title="$t('learning.path.empty_title')" :description="$t('learning.path.empty_description')" />

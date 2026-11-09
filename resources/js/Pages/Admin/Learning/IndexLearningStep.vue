@@ -1,6 +1,5 @@
 <template>
-  <div>
-    <LearningTabs :can-see-reps="canSeeReps" />
+  <LearningPageFrame :can-see-reps="canSeeReps">
     <CollectionPage
       collection="learningSteps"
       :eyebrow="$t('shell.workspaces.pradzia.title')"
@@ -99,7 +98,7 @@
         />
       </template>
     </CollectionPage>
-  </div>
+  </LearningPageFrame>
 </template>
 
 <script setup lang="ts">
@@ -123,7 +122,7 @@ import {
   learningStepKinds,
   learningStepStages,
 } from '@/Constants/statusIcons';
-import LearningTabs from '@/Features/Admin/Learning/LearningTabs.vue';
+import LearningPageFrame from '@/Features/Admin/Learning/LearningPageFrame.vue';
 import type { LearningLibraryStep } from '@/Types/learning';
 
 const props = defineProps<{

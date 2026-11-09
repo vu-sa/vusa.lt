@@ -33,7 +33,7 @@ class LearningStepController extends AdminController
 
     public function index(Request $request): Response
     {
-        $this->authorize('viewAny', LearningStep::class);
+        $this->authorize('manage', LearningStep::class);
 
         return Inertia::render('Admin/Learning/IndexLearningStep', [
             'steps' => LearningPathPresenter::library(app()->getLocale(), $request->user()),

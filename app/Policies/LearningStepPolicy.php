@@ -23,6 +23,12 @@ class LearningStepPolicy extends ModelPolicy
         return true;
     }
 
+    public function manage(User $user): bool
+    {
+        return $this->authorizer->scope($user, 'learningSteps.create.padalinys')->granted
+            || $this->authorizer->scope($user, 'learningSteps.update.padalinys')->granted;
+    }
+
     public function view(User $user, Model $model): bool
     {
         return true;

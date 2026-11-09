@@ -1,6 +1,5 @@
 <template>
-  <div>
-    <LearningTabs :can-see-reps="canSeeReps" />
+  <LearningPageFrame :can-see-reps="canSeeReps">
     <CollectionPage
       collection="glossaryTerms"
       :eyebrow="$t('shell.workspaces.pradzia.title')"
@@ -10,7 +9,8 @@
       :columns
       :item-key="termKey"
       :row-actions="rowActions"
-      default-view="table"
+      default-view="rows"
+      :available-views="['rows']"
       table-fixed
       actions-width="w-36"
       table-min-width="min-w-[48rem]"
@@ -26,6 +26,7 @@
 
       <template #row="{ item, actions: recordActions, view }">
         <CollectionRow
+          :id="`term-${item.id}`"
           :spotlight="item === source.items.value[0]"
           :actions="view === 'preview' ? [] : recordActions"
           class="px-3 py-3 sm:px-4"
@@ -49,6 +50,7 @@
             <p class="mt-0.5 whitespace-pre-line text-sm text-muted-foreground">
               {{ item.definition }}
             </p>
+            <LearningGlossarySteps :steps="item.steps" />
           </div>
         </CollectionRow>
       </template>
@@ -65,9 +67,10 @@
           </button>
           <span v-else class="font-medium text-foreground">{{ item.term }}</span>
         </template>
-        <span v-else-if="column.key === 'definition'" class="whitespace-pre-line text-sm text-muted-foreground">
-          {{ item.definition }}
-        </span>
+        <div v-else-if="column.key === 'definition'" class="space-y-2">
+          <p class="whitespace-pre-line text-sm text-muted-foreground">{{ item.definition }}</p>
+          <LearningGlossarySteps :steps="item.steps" />
+        </div>
         <span v-else-if="column.key === 'stepsCount'" class="tabular-nums text-sm text-muted-foreground" data-testid="glossary-term-steps-count">
           {{ item.stepsCount }}
         </span>
@@ -129,7 +132,7 @@
       @update:open="!$event && (toDelete = null)"
       @confirm="removeTerm"
     />
-  </div>
+  </LearningPageFrame>
 </template>
 
 <script setup lang="ts">
@@ -147,7 +150,8 @@ import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { ConfirmDialog, EmptyState, SheetForm } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { useLocalCollectionSource } from '@/Composables/useCollectionSource';
-import LearningTabs from '@/Features/Admin/Learning/LearningTabs.vue';
+import LearningGlossarySteps from '@/Features/Admin/Learning/LearningGlossarySteps.vue';
+import LearningPageFrame from '@/Features/Admin/Learning/LearningPageFrame.vue';
 import type { GlossaryTermData } from '@/Types/learning';
 
 interface GlossaryFormState {

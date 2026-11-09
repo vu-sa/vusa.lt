@@ -2,19 +2,20 @@
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
-defineProps<{ canSeeReps: boolean }>();
+const props = defineProps<{ canSeeReps: boolean; canManage?: boolean }>();
 
 const page = usePage();
 const tabs = [
   { key: 'path', route: 'learningPath.show', segment: '/learning' },
-  { key: 'library', route: 'learningSteps.index', segment: '/learning/library' },
+  { key: 'documents', route: 'learningPath.documents', segment: '/learning/documents' },
   { key: 'glossary', route: 'glossaryTerms.index', segment: '/learning/glossary' },
   { key: 'handover', route: 'learningPath.handover', segment: '/learning/handover' },
   { key: 'reps', route: 'learningPath.reps', segment: '/learning/reps' },
+  { key: 'library', route: 'learningSteps.index', segment: '/learning/library' },
 ] as const;
 const active = computed(() => {
   const path = page.url.split('?')[0] ?? '';
-  if (path.includes('/learning/steps')) return 'library';
+  if (path.includes('/learning/steps')) return props.canManage ? 'library' : 'path';
   return [...tabs].reverse().find(tab => path.endsWith(tab.segment) || path.includes(tab.segment + '/'))?.key ?? 'path';
 });
 </script>
@@ -23,7 +24,7 @@ const active = computed(() => {
   <nav :aria-label="$t('learning.pages.path')" class="flex overflow-x-auto border-b border-border">
     <template v-for="tab in tabs" :key="tab.key">
       <Link
-        v-if="tab.key !== 'reps' || canSeeReps"
+        v-if="(tab.key !== 'reps' || canSeeReps) && (tab.key !== 'library' || canManage)"
         :href="route(tab.route)"
         :aria-current="active === tab.key ? 'page' : undefined"
         :class="[

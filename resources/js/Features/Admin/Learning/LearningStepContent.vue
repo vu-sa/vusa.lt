@@ -13,6 +13,7 @@ import LearningStepProgress from './LearningStepProgress.vue';
 withDefaults(defineProps<{
   step: LearningStepData;
   readonly?: boolean;
+  detailsOnly?: boolean;
   coordinators?: LearningCoordinator[];
   institutionContacts?: LearningInstitutionContacts[];
 }>(), { coordinators: () => [], institutionContacts: () => [] });
@@ -20,14 +21,14 @@ withDefaults(defineProps<{
 
 <template>
   <div class="space-y-4">
-    <p v-if="step.description" class="max-w-prose whitespace-pre-line text-sm leading-relaxed text-muted-foreground">{{ step.description }}</p>
-    <Button v-if="safeHref(step.source?.url)" as-child variant="outline" voice="sentence" class="h-auto min-h-11 max-w-full whitespace-normal">
+    <p v-if="!detailsOnly && step.description" class="max-w-prose whitespace-pre-line text-sm leading-relaxed text-muted-foreground">{{ step.description }}</p>
+    <Button v-if="!detailsOnly && safeHref(step.source?.url)" as-child variant="outline" voice="sentence" class="h-auto min-h-11 max-w-full whitespace-normal">
       <a :href="safeHref(step.source?.url)" target="_blank" rel="noopener noreferrer">
         {{ $t('learning.path.open') }}<ArrowUpRight class="size-4 shrink-0" aria-hidden="true" />
       </a>
     </Button>
-    <p v-else-if="step.source?.type === 'document'" class="text-sm text-muted-foreground">{{ $t('learning.path.document_private') }}</p>
-    <Button v-if="safeHref(step.actionUrl)" as-child variant="outline" voice="sentence" class="h-auto min-h-11 max-w-full whitespace-normal">
+    <p v-else-if="!detailsOnly && step.source?.type === 'document'" class="text-sm text-muted-foreground">{{ $t('learning.path.document_private') }}</p>
+    <Button v-if="!detailsOnly && safeHref(step.actionUrl)" as-child variant="outline" voice="sentence" class="h-auto min-h-11 max-w-full whitespace-normal">
       <Link :href="safeHref(step.actionUrl)!">{{ $t(step.isSystem && step.key ? `learning.system_steps.${step.key}.action` : 'learning.path.open') }}</Link>
     </Button>
 
@@ -57,6 +58,6 @@ withDefaults(defineProps<{
     </template>
     <InstallationInstructions v-if="!readonly && step.key === 'install_app'" />
     <BrowserNotificationSetup v-if="!readonly && step.key === 'browser_push'" />
-    <LearningStepProgress :step="step" :readonly="readonly" />
+    <LearningStepProgress v-if="!detailsOnly" :step="step" :readonly="readonly" />
   </div>
 </template>

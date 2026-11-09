@@ -9,10 +9,10 @@ import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
 import { Button } from '@/Components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
-import { learningImportanceStatuses, learningProgressStatuses } from '@/Constants/statusIcons';
+import { learningImportanceStatuses } from '@/Constants/statusIcons';
 import LearningStepContent from '@/Features/Admin/Learning/LearningStepContent.vue';
 import LearningStepGlossaryEditor, { type GlossaryTermOption } from '@/Features/Admin/Learning/LearningStepGlossaryEditor.vue';
-import LearningTabs from '@/Features/Admin/Learning/LearningTabs.vue';
+import LearningPageFrame from '@/Features/Admin/Learning/LearningPageFrame.vue';
 import type { LearningStepData, LearningCoordinator, LearningInstitutionContacts } from '@/Types/learning';
 
 const props = defineProps<{
@@ -43,12 +43,8 @@ const facts = computed<RecordFact[]>(() => [
 </script>
 
 <template>
-  <div>
-    <LearningTabs :can-see-reps="canSeeReps" />
+  <LearningPageFrame :can-see-reps="canSeeReps">
     <RecordPage :key="step.id" :title="step.title" entity-type="learning_step" title-voice="sentence" :facts="facts" :sections="sections" :overflow-actions="overflowActions" section-query-key="tab">
-      <template #subtitle>
-        <StatusBadge v-if="inPath" :status="learningProgressStatuses[step.state]" voice="sentence" />
-      </template>
       <template #fact-importance>
         <StatusBadge :status="learningImportanceStatuses[step.importance]" voice="sentence" />
       </template>
@@ -77,5 +73,5 @@ const facts = computed<RecordFact[]>(() => [
         <DiscussionPanel :key="step.id" commentable-type="learningStep" :commentable-id="step.id" />
       </template>
     </RecordPage>
-  </div>
+  </LearningPageFrame>
 </template>

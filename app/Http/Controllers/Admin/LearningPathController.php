@@ -15,6 +15,16 @@ use Inertia\Response;
 
 class LearningPathController extends AdminController
 {
+    public function documents(Request $request): Response
+    {
+        $this->authorize('viewAny', LearningStep::class);
+
+        return Inertia::render('Admin/Learning/ShowLearningDocuments', [
+            'documents' => LearningPathPresenter::documents(ResolveLearningPath::execute($request->user()), app()->getLocale()),
+            'canSeeReps' => LearningAdminPresenter::canSeeReps($request->user()),
+        ]);
+    }
+
     public function show(Request $request): Response
     {
         $this->authorize('viewAny', LearningStep::class);

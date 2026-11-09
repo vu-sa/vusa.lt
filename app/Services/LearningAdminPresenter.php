@@ -5,16 +5,25 @@ namespace App\Services;
 use App\Actions\GetReceivedHandoverNotes;
 use App\Actions\ResolveLearningPath;
 use App\Enums\LearningStage;
+use App\Enums\LearningStepKind;
 use App\Enums\ResponsibilityPurpose;
 use App\Models\Duty;
 use App\Models\GlossaryTerm;
 use App\Models\HandoverNote;
+use App\Models\LearningStep;
 use App\Models\LearningStepProgress;
 use App\Models\User;
+use App\Services\Learning\SystemSteps\SystemStepRegistry;
 use Illuminate\Support\Collection;
 
 class LearningAdminPresenter
 {
+    /** @return array{canSeeReps: bool, canManage: bool} */
+    public static function navigation(User $user): array
+    {
+        return ['canSeeReps' => self::canSeeReps($user), 'canManage' => $user->can('manage', LearningStep::class)];
+    }
+
     public static function canSeeReps(User $user): bool
     {
         return $user->isSuperAdmin() || app(ResponsibilityResolver::class)->holdsAnywhere($user, ResponsibilityPurpose::StudentRepCoordination);
@@ -26,17 +35,29 @@ class LearningAdminPresenter
         return ['id' => $user->id, 'name' => $user->name];
     }
 
-    /** @return list<array{id: string, term: string, definition: string, stepsCount: int, translations: array{term: array{lt: string, en: string}, definition: array{lt: string, en: string}}}> */
-    public static function glossary(string $locale): array
+    /** @return list<array{id: string, term: string, definition: string, stepsCount: int, steps: list<array{id: string, title: string, url: string|null, isDocument: bool}>, translations: array{term: array{lt: string, en: string}, definition: array{lt: string, en: string}}}> */
+    public static function glossary(string $locale, ?User $viewer = null): array
     {
         $result = [];
-        foreach (GlossaryTerm::query()->withCount('steps')->get() as $term) {
+        foreach (GlossaryTerm::query()->with(['steps.sources.document.institution.tenant'])->withCount('steps')->get() as $term) {
             /** @var GlossaryTerm $term */
+            $steps = [];
+            foreach ($term->steps as $step) {
+                $source = LearningPathPresenter::source($step, $viewer ?? auth()->user(), $locale);
+                $definition = $step->is_system ? (SystemStepRegistry::definitions()[$step->key] ?? null) : null;
+                $steps[] = [
+                    'id' => $step->id,
+                    'title' => $definition ? (string) __($definition['title'], [], $locale) : (string) $step->getTranslation('title', $locale),
+                    'url' => ($step->kind === LearningStepKind::Knowledge ? $source['url'] ?? null : null) ?? route('learningSteps.show', $step),
+                    'isDocument' => $step->kind === LearningStepKind::Knowledge,
+                ];
+            }
             $result[] = [
                 'id' => $term->id,
                 'term' => (string) $term->getTranslation('term', $locale),
                 'definition' => (string) $term->getTranslation('definition', $locale),
                 'stepsCount' => (int) $term->steps_count,
+                'steps' => $steps,
                 'translations' => [
                     'term' => [
                         'lt' => (string) $term->getTranslation('term', 'lt', false),
