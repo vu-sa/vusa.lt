@@ -3,6 +3,7 @@
 use App\Enums\LearningImportance;
 use App\Enums\LearningProgressStatus;
 use App\Enums\ResponsibilityPurpose;
+use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\HandoverNote;
 use App\Models\Institution;
@@ -108,7 +109,7 @@ test('a representative page includes received and written notes only when the co
 
     asUser($coordinator)->get(route('learningPath.rep', $rep))->assertOk()->assertInertia(fn (Assert $page) => $page
         ->where('rep.id', $rep->id)->has('notes', 2)->has('path.totals')
-        ->whereType('notes.0.body', 'string')->whereType('notes.0.author.name', 'string')
+        ->whereType('notes.0.situation', 'string')->whereType('notes.0.author.name', 'string')
         ->where('notes', fn ($notes): bool => collect($notes)->pluck('id')->sort()->values()->all() === collect([$received->id, $written->id])->sort()->values()->all()));
 });
 
@@ -123,9 +124,9 @@ test('handover reading is recorded only with received notes and preserves a comp
     HandoverNote::factory()->for($duty)->for($rep, 'author')->create();
     asUser($rep)->get(route('learningPath.handover'))->assertOk();
     $this->assertDatabaseMissing('learning_step_progress', ['user_id' => $rep->id, 'learning_step_id' => $step->id]);
-    $received = HandoverNote::factory()->for($duty)->create(['body' => '<p>Take this forward.</p>']);
+    $received = HandoverNote::factory()->for($duty)->create(['situation' => '<p>Take this forward.</p>']);
     asUser($rep)->get(route('learningPath.handover'))->assertOk()->assertInertia(fn (Assert $page) => $page
-        ->has('received', 1)->where('received.0.id', $received->id)->where('received.0.body', '<p>Take this forward.</p>'));
+        ->has('received', 1)->where('received.0.id', $received->id)->where('received.0.situation', '<p>Take this forward.</p>'));
     $progress = LearningStepProgress::query()->where('user_id', $rep->id)->where('learning_step_id', $step->id)->sole();
     expect($progress->status)->toBe(LearningProgressStatus::Done);
     $completed = $progress->completed_at->toIso8601String();
@@ -165,14 +166,44 @@ test('a returning holder gets a new note for the new term and saves upsert withi
     $this->freezeTime();
     $user = User::factory()->create();
     $duty = Duty::factory()->create();
+    $oldCadence = Cadence::factory()->create(['institution_id' => $duty->institution_id, 'start_date' => today()->subYears(2), 'end_date' => today()->subYear()]);
+    $cadence = Cadence::factory()->create(['institution_id' => $duty->institution_id, 'start_date' => today()->subMonths(2), 'end_date' => today()->addMonths(10)]);
     $oldTerm = Dutiable::factory()->forUser($user)->forDuty($duty)->create(['start_date' => today()->subYears(2), 'end_date' => today()->subYear()]);
-    $oldNote = HandoverNote::factory()->for($user, 'author')->for($duty)->create(['dutiable_id' => $oldTerm->id]);
+    $oldNote = HandoverNote::factory()->for($user, 'author')->for($duty)->create(['dutiable_id' => $oldTerm->id, 'cadence_id' => $oldCadence->id]);
     $term = Dutiable::factory()->forUser($user)->forDuty($duty)->create(['start_date' => today()->subMonth(), 'end_date' => null]);
     asUser($user)->get(route('learningPath.handover'))->assertOk()->assertInertia(fn (Assert $page) => $page->has('writable', 1)->where('writable.0.note', null));
-    asUser($user)->post(route('handoverNotes.store', $duty), ['body' => '<p>First</p>'])->assertRedirect();
-    asUser($user)->post(route('handoverNotes.store', $duty), ['body' => '<p>Second</p>'])->assertRedirect();
+    asUser($user)->post(route('handoverNotes.store', $duty), ['situation' => '<p>First</p>'])->assertRedirect();
+    asUser($user)->post(route('handoverNotes.store', $duty), ['situation' => '<p>Second</p>'])->assertRedirect();
     $note = HandoverNote::query()->where('dutiable_id', $term->id)->sole();
-    expect($note->body)->toBe('<p>Second</p>');
-    expect($oldNote->fresh()->body)->toBe($oldNote->body);
+    expect($note->situation)->toBe('<p>Second</p>');
+    expect($note->cadence_id)->toBe($cadence->id);
+    expect($oldNote->fresh()->situation)->toBe($oldNote->situation);
     asUser($user)->get(route('learningPath.handover'))->assertOk()->assertInertia(fn (Assert $page) => $page->where('writable.0.note.id', $note->id));
+});
+
+test('handover timelines put cadences before edit dates and group a predecessor under its successor seat', function (): void {
+    $this->freezeTime();
+    $rep = User::factory()->create();
+    $old = Duty::factory()->create();
+    $seat = Duty::factory()->create(['institution_id' => $old->institution_id]);
+    $old->successors()->attach($seat, ['effective_on' => today()->subMonth()]);
+    $oldCadence = Cadence::factory()->forYear(2025)->create(['institution_id' => $seat->institution_id]);
+    $cadence = Cadence::factory()->forYear(2026)->create(['institution_id' => $seat->institution_id]);
+    Dutiable::factory()->forUser($rep)->forDuty($seat)->create(['start_date' => '2026-07-01', 'end_date' => null]);
+    $previous = HandoverNote::factory()->for($old)->create(['cadence_id' => $oldCadence->id, 'created_at' => '2025-12-01', 'updated_at' => now()]);
+    $current = HandoverNote::factory()->for($seat)->create(['cadence_id' => $cadence->id, 'created_at' => '2026-09-01', 'updated_at' => '2026-09-01']);
+    $old->delete();
+    $coordinator = makeUser($seat->institution->tenant);
+    grantPurpose($coordinator->authorization_duties()->firstOrFail(), ResponsibilityPurpose::StudentRepCoordination, $seat->institution->tenant);
+
+    asUser($rep)->get(route('learningPath.handover'))->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->has('received', 2)->where('received.0.id', $current->id)->where('received.1.id', $previous->id)
+        ->where('received.1.seatDutyId', $seat->id)->where('received.1.cadenceLabel', '2025–2026')
+        ->where('writable.0.notes.0.id', $current->id)->where('writable.0.notes.1.id', $previous->id)
+        ->where('writable.0.cadenceId', $cadence->id)
+        ->whereType('received.0.situation', 'string')->whereType('received.0.open_issues', 'null')
+        ->missing('received.0.body'));
+    $notes = LearningAdminPresenter::representativeNotes($rep, $coordinator, 'lt');
+    expect(array_column($notes, 'id'))->toBe([$current->id, $previous->id]);
+    expect($notes[1]['seatDutyId'])->toBe($seat->id);
 });

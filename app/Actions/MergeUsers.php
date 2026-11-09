@@ -26,7 +26,6 @@ class MergeUsers
         ['comments', 'user_id'],
         ['documents', 'published_by'],
         ['goals', 'created_by'],
-        ['handover_notes', 'user_id'],
         ['institution_activity_requests', 'recipient_id'],
         ['institution_activity_requests', 'requested_by_id'],
         ['institution_check_ins', 'user_id'],
@@ -51,6 +50,7 @@ class MergeUsers
      * columns; the merged account's duplicate is dropped instead.
      */
     public const array REPOINT_DEDUPED = [
+        'handover_notes' => ['duty_id', 'cadence_id'],
         'comment_poll_votes' => ['comment_id'],
         'comment_reactions' => ['comment_id', 'emoji'],
         'content_editor_drafts' => ['kind', 'identity'],

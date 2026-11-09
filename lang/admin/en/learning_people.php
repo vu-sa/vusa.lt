@@ -23,15 +23,15 @@ return [
     'handover_notes' => 'Handover notes',
     'readers' => 'Your successors and coordinators will be able to read these',
     'no_writable' => 'You can write notes once you start your duties',
-    'save' => 'Save notes',
+    'save' => 'Save',
     'saved' => 'Notes saved',
     'save_failed' => 'Could not save your notes. Try again.',
-    'editor_placeholder' => 'Share what will help your successor…',
-    'prompts' => [
-        'institution' => 'What is happening in the institution',
-        'unfinished' => 'Unfinished matters',
-        'people' => 'People worth getting to know',
-        'documents' => 'Useful documents and links',
-        'advice' => 'Advice',
+    'fill_one' => 'Fill in at least one field; each holds up to 5000 characters.',
+    'fields' => [
+        'situation' => ['label' => 'Current situation', 'hint' => 'Describe the current situation and the key decisions.'],
+        'open_issues' => ['label' => 'Open issues', 'hint' => 'Explain what still needs to be finished and by when.'],
+        'people' => ['label' => 'People', 'hint' => 'List who to contact and what they can help with.'],
+        'resources' => ['label' => 'Documents and links', 'hint' => 'Include the names and links of useful documents.'],
+        'advice' => ['label' => 'Advice', 'hint' => 'Share what you wish you had known when starting your duties.'],
     ],
 ];

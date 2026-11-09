@@ -2,6 +2,7 @@
 
 use App\Actions\GetReceivedHandoverNotes;
 use App\Enums\ResponsibilityPurpose;
+use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\HandoverNote;
 use App\Models\Institution;
@@ -82,8 +83,8 @@ test('a non author including a super admin cannot overwrite a handover note', fu
     $tenant = Tenant::query()->firstOrFail();
     $admin = makeAdminUser($tenant);
     $note = HandoverNote::factory()->create();
-    asUser($admin)->patch(route('handoverNotes.update', $note), ['body' => '<p>Changed</p>'])->assertForbidden();
-    expect($note->fresh()->body)->toBe($note->body);
+    asUser($admin)->patch(route('handoverNotes.update', $note), ['situation' => '<p>Changed</p>'])->assertForbidden();
+    expect($note->fresh()->situation)->toBe($note->situation);
 });
 
 test('a duty manager and incoming holder can read a handover but an unrelated member cannot edit it', function (): void {
@@ -99,5 +100,37 @@ test('a duty manager and incoming holder can read a handover but an unrelated me
     expect($holder->can('view', $note))->toBeTrue();
     expect($holder->can('create', [HandoverNote::class, $duty]))->toBeFalse();
     expect($manager->can('view', $note))->toBeTrue();
-    asUser($holder)->patch(route('handoverNotes.update', $note), ['body' => 'Overwrite'])->assertForbidden();
+    asUser($holder)->patch(route('handoverNotes.update', $note), ['situation' => 'Overwrite'])->assertForbidden();
+});
+
+test('an authors old cadence stays readable but cannot be edited in a later cadence', function (): void {
+    $this->freezeTime();
+    $user = User::factory()->create();
+    $duty = Duty::factory()->create();
+    $old = Cadence::factory()->create(['institution_id' => $duty->institution_id, 'start_date' => today()->subYears(2), 'end_date' => today()->subYear()]);
+    $current = Cadence::factory()->create(['institution_id' => $duty->institution_id, 'start_date' => today()->subMonth(), 'end_date' => today()->addYear()]);
+    Dutiable::factory()->forUser($user)->forDuty($duty)->create(['start_date' => today()->subDay(), 'end_date' => null]);
+    $previous = HandoverNote::factory()->for($user, 'author')->for($duty)->create(['cadence_id' => $old->id]);
+    $note = HandoverNote::factory()->for($user, 'author')->for($duty)->create(['cadence_id' => $current->id]);
+    expect($user->can('view', $previous))->toBeTrue();
+    expect($user->can('update', $note))->toBeTrue();
+    asUser($user)->patch(route('handoverNotes.update', $previous), ['situation' => 'Overwrite'])->assertForbidden();
+});
+
+test('authors can update a recently ended cadence only during the sixty day window', function (int $days, bool $allowed): void {
+    $this->freezeTime();
+    $user = User::factory()->create();
+    $duty = Duty::factory()->create();
+    Dutiable::factory()->forUser($user)->forDuty($duty)->create(['start_date' => today()->subYear(), 'end_date' => today()->subDays($days)]);
+    $note = HandoverNote::factory()->for($user, 'author')->for($duty)->create();
+    expect($user->can('view', $note))->toBeTrue();
+    expect($user->can('update', $note))->toBe($allowed);
+})->with(['last editable day' => [60, true], 'read only' => [61, false]]);
+
+test('coordinating a duty does not allow writing a handover as its holder', function (): void {
+    $tenant = Tenant::query()->firstOrFail();
+    $coordinator = makeUser($tenant);
+    grantPurpose($coordinator->authorization_duties()->firstOrFail(), ResponsibilityPurpose::StudentRepCoordination, $tenant);
+    $duty = Duty::factory()->for(Institution::factory()->for($tenant))->create();
+    asUser($coordinator)->post(route('handoverNotes.store', $duty), ['situation' => 'Overwrite'])->assertForbidden();
 });

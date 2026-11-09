@@ -1,11 +1,18 @@
 <?php
 
+use App\Actions\MergeDuties;
+use App\Actions\MergeUsers;
 use App\Enums\LearningStage;
+use App\Models\Cadence;
+use App\Models\Duty;
 use App\Models\GlossaryTerm;
 use App\Models\HandoverNote;
 use App\Models\LearningStep;
 use App\Models\Permission;
+use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
+use App\Models\User;
+use App\Services\LearningAdminPresenter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -53,24 +60,107 @@ test('a global curator can create update and delete a glossary term', function (
     $this->assertDatabaseMissing('glossary_terms', ['id' => $term->id]);
 });
 
-test('handover writes bind author and term server side and sanitize the body', function (): void {
-    $user = makeUser(Tenant::query()->firstOrFail());
-    $duty = $user->current_duties()->firstOrFail();
-    asUser($user)->post(route('handoverNotes.store', $duty), ['body' => '<p>Pastaba</p><script>alert(1)</script>', 'user_id' => 'other', 'dutiable_id' => 'other'])->assertRedirect();
-    $note = HandoverNote::query()->where('duty_id', $duty->id)->firstOrFail();
+test('handover writes resolve the authors cadence from term start and preserve plain text', function (): void {
+    $this->freezeTime();
+    $user = User::factory()->create();
+    $duty = Duty::factory()->create();
+    $old = Cadence::factory()->create(['institution_id' => $duty->institution_id, 'start_date' => today()->subYear(), 'end_date' => today()->subDays(10)]);
+    Cadence::factory()->create(['institution_id' => $duty->institution_id, 'start_date' => today()->subDays(9), 'end_date' => today()->addYear()]);
+    $term = Dutiable::factory()->forUser($user)->forDuty($duty)->create(['start_date' => today()->subYear(), 'end_date' => today()->subDays(10)]);
+    $text = "Pirma eilutė\nAntra eilutė <script>plain text</script>";
+    asUser($user)->post(route('handoverNotes.store', $duty), [
+        'situation' => $text, 'people' => 'Rūta', 'user_id' => 'other', 'dutiable_id' => 'other', 'cadence_id' => 'other',
+    ])->assertRedirect();
+    $note = HandoverNote::query()->where('duty_id', $duty->id)->sole();
     expect($note->user_id)->toBe($user->id);
-    expect($note->dutiable_id)->toBe($duty->pivot->id);
-    expect($note->body)->toContain('Pastaba')->not->toContain('<script');
-    asUser($user)->patch(route('handoverNotes.update', $note), ['body' => '<p>Papildyta</p>'])->assertRedirect();
-    expect($note->fresh()->body)->toBe('<p>Papildyta</p>');
+    expect($note->dutiable_id)->toBe($term->id);
+    expect($note->cadence_id)->toBe($old->id);
+    expect($note->situation)->toBe($text);
+    asUser($user)->patch(route('handoverNotes.update', $note), ['advice' => 'Pasitark su koordinatoriumi.'])->assertRedirect();
+    expect($note->fresh()->advice)->toBe('Pasitark su koordinatoriumi.');
 });
 
-test('saving the same handover twice keeps one note for the term', function (): void {
+test('saving twice in one cadence upserts even if the holders dated term row changes', function (): void {
+    $this->freezeTime();
+    $user = User::factory()->create();
+    $duty = Duty::factory()->create();
+    $cadence = Cadence::factory()->create(['institution_id' => $duty->institution_id, 'start_date' => today()->subYear(), 'end_date' => today()->addYear()]);
+    $first = Dutiable::factory()->forUser($user)->forDuty($duty)->create(['start_date' => today()->subMonth(), 'end_date' => today()->subDays(2)]);
+    asUser($user)->post(route('handoverNotes.store', $duty), ['situation' => 'Pirma'])->assertRedirect();
+    $id = HandoverNote::query()->where('duty_id', $duty->id)->sole()->id;
+    $second = Dutiable::factory()->forUser($user)->forDuty($duty)->create(['start_date' => today()->subDay(), 'end_date' => null]);
+    asUser($user)->post(route('handoverNotes.store', $duty), ['situation' => 'Antra'])->assertRedirect();
+    $note = HandoverNote::query()->where('duty_id', $duty->id)->sole();
+    expect($note->id)->toBe($id);
+    expect($note->cadence_id)->toBe($cadence->id);
+    expect($note->dutiable_id)->toBe($second->id)->not->toBe($first->id);
+    expect($note->situation)->toBe('Antra');
+});
+
+test('handover without an available cadence keeps one entry and labels it with term years', function (): void {
+    $this->freezeTime();
+    $user = User::factory()->create();
+    $duty = Duty::factory()->create();
+    $term = Dutiable::factory()->forUser($user)->forDuty($duty)->create(['start_date' => today()->subMonth(), 'end_date' => today()->addYear()]);
+    asUser($user)->post(route('handoverNotes.store', $duty), ['people' => 'Rūta'])->assertRedirect();
+    asUser($user)->post(route('handoverNotes.store', $duty), ['people' => 'Jonas'])->assertRedirect();
+    $note = HandoverNote::query()->where('duty_id', $duty->id)->sole();
+    expect($note->cadence_id)->toBeNull();
+    expect($note->people)->toBe('Jonas');
+    $years = implode('–', array_unique([$term->start_date->year, $term->end_date->year]));
+    expect(LearningAdminPresenter::note($note, 'lt')['cadenceLabel'])->toBe($years);
+});
+
+test('handover fields require some content and cap every field at five thousand characters', function (array $payload, array $errors): void {
     $user = makeUser(Tenant::query()->firstOrFail());
     $duty = $user->current_duties()->firstOrFail();
-    asUser($user)->post(route('handoverNotes.store', $duty), ['body' => '<p>Pirma</p>'])->assertRedirect();
-    asUser($user)->post(route('handoverNotes.store', $duty), ['body' => '<p>Antra</p>'])->assertRedirect();
-    expect(HandoverNote::query()->where('duty_id', $duty->id)->pluck('body')->all())->toBe(['<p>Antra</p>']);
+    asUser($user)->postJson(route('handoverNotes.store', $duty), $payload)->assertUnprocessable()->assertJsonValidationErrors($errors);
+    expect(HandoverNote::query()->where('duty_id', $duty->id)->exists())->toBeFalse();
+})->with([
+    'empty' => [[], ['situation', 'open_issues', 'people', 'resources', 'advice']],
+    'blank' => [['situation' => " \n ", 'people' => null], ['situation']],
+    'too long' => [array_fill_keys(['situation', 'open_issues', 'people', 'resources', 'advice'], str_repeat('ą', 5001)), ['situation', 'open_issues', 'people', 'resources', 'advice']],
+    'wrong type' => [['resources' => ['url']], ['resources']],
+]);
+
+test('any single handover field is sufficient on store and update', function (string $field): void {
+    $user = makeUser(Tenant::query()->firstOrFail());
+    $duty = $user->current_duties()->firstOrFail();
+    asUser($user)->postJson(route('handoverNotes.store', $duty), [$field => str_repeat('ą', 5000)])->assertRedirect();
+    $note = HandoverNote::query()->where('duty_id', $duty->id)->sole();
+    asUser($user)->patchJson(route('handoverNotes.update', $note), [])->assertUnprocessable()->assertJsonValidationErrors('situation');
+    asUser($user)->patch(route('handoverNotes.update', $note), [$field => 'Papildyta'])->assertRedirect();
+    expect($note->fresh()->getAttribute($field))->toBe('Papildyta');
+})->with(['situation', 'open_issues', 'people', 'resources', 'advice']);
+
+test('merging duplicate users preserves distinct cadence notes and keeps the existing twin', function (): void {
+    $kept = User::factory()->create();
+    $source = User::factory()->create();
+    $duty = Duty::factory()->create();
+    $cadence = Cadence::factory()->forYear(2025)->create();
+    $other = Cadence::factory()->forYear(2026)->create();
+    $keptNote = HandoverNote::factory()->for($kept, 'author')->for($duty)->create(['cadence_id' => $cadence->id]);
+    HandoverNote::factory()->for($source, 'author')->for($duty)->create(['cadence_id' => $cadence->id]);
+    $moved = HandoverNote::factory()->for($source, 'author')->for($duty)->create(['cadence_id' => $other->id]);
+    MergeUsers::execute($kept, collect([$source]), $kept->email);
+    expect($keptNote->fresh())->not->toBeNull();
+    expect($moved->fresh()->user_id)->toBe($kept->id);
+    expect(HandoverNote::query()->where('duty_id', $duty->id)->count())->toBe(2);
+});
+
+test('merging duplicate duties preserves distinct cadence notes and keeps the existing twin', function (): void {
+    $kept = Duty::factory()->create();
+    $source = Duty::factory()->create(['institution_id' => $kept->institution_id]);
+    $author = User::factory()->create();
+    $cadence = Cadence::factory()->forYear(2025)->create();
+    $other = Cadence::factory()->forYear(2026)->create();
+    $keptNote = HandoverNote::factory()->for($kept)->for($author, 'author')->create(['cadence_id' => $cadence->id]);
+    HandoverNote::factory()->for($source)->for($author, 'author')->create(['cadence_id' => $cadence->id]);
+    $moved = HandoverNote::factory()->for($source)->for($author, 'author')->create(['cadence_id' => $other->id]);
+    MergeDuties::execute($kept, collect([$source]));
+    expect($keptNote->fresh())->not->toBeNull();
+    expect($moved->fresh()->duty_id)->toBe($kept->id);
+    expect(HandoverNote::query()->where('user_id', $author->id)->count())->toBe(2);
 });
 
 test('moving a step to another layer clears the previous target', function (): void {
@@ -100,4 +190,17 @@ test('a tenant curator cannot move an editable step into another unit', function
         'stage' => 'before_start', 'importance' => 'recommended', 'title' => ['lt' => 'Žingsnis', 'en' => 'Step'],
     ])->assertForbidden();
     expect($step->fresh()->tenant_id)->toBe($tenant->id);
+});
+
+test('removing a cadence keeps the handover text and falls back to the holders term years', function (): void {
+    $user = User::factory()->create();
+    $duty = Duty::factory()->create();
+    $cadence = Cadence::factory()->forYear(2026)->create();
+    $term = Dutiable::factory()->forUser($user)->forDuty($duty)->create(['start_date' => '2026-07-01', 'end_date' => '2027-06-30']);
+    $note = HandoverNote::factory()->for($user, 'author')->for($duty)->create(['cadence_id' => $cadence->id, 'dutiable_id' => $term->id, 'situation' => "First line\nSecond line"]);
+    $cadence->delete();
+    $note->refresh();
+    expect($note->cadence_id)->toBeNull();
+    expect($note->situation)->toBe("First line\nSecond line");
+    expect(LearningAdminPresenter::note($note, 'lt')['cadenceLabel'])->toBe('2026–2027');
 });

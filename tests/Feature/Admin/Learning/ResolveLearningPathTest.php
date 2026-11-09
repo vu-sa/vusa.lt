@@ -5,6 +5,7 @@ use App\Enums\LearningLayer;
 use App\Enums\LearningProgressStatus;
 use App\Enums\LearningStage;
 use App\Enums\ResponsibilityPurpose;
+use App\Models\Cadence;
 use App\Models\Document;
 use App\Models\Duty;
 use App\Models\DutyType;
@@ -16,6 +17,7 @@ use App\Models\LearningStepProgress;
 use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\Learning\SystemSteps\WriteHandoverDetector;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -187,3 +189,30 @@ test('term stages follow the first months and final forty five day boundaries', 
     'forty six days left' => [100, 46, LearningStage::WholeTerm],
     'forty five days left' => [100, 45, LearningStage::TermEnd],
 ]);
+
+test('handover completion requires this rep duties cadence even when another cadence note was just edited', function (): void {
+    $this->freezeTime();
+    [$user, $duty] = learningRep();
+    $old = Cadence::factory()->create(['institution_id' => $duty->institution_id, 'start_date' => today()->subYears(2), 'end_date' => today()->subYear()]);
+    $current = Cadence::factory()->create(['institution_id' => $duty->institution_id, 'start_date' => today()->subMonth(), 'end_date' => today()->addYear()]);
+    HandoverNote::factory()->for($duty)->for($user, 'author')->create(['cadence_id' => $old->id]);
+    $item = fn () => ResolveLearningPath::execute($user)->steps->first(fn ($step) => $step->step->key === 'write_handover');
+    expect($item()->state)->toBe('pending');
+    expect(app(WriteHandoverDetector::class)->doneFor(collect([$user->id])))->toBeEmpty();
+    $note = HandoverNote::factory()->for($duty)->for($user, 'author')->create(['cadence_id' => $current->id]);
+    expect($item()->autoCompleted)->toBeTrue();
+    expect(app(WriteHandoverDetector::class)->doneFor(collect([$user->id]))->all())->toBe([$user->id]);
+    $note->delete();
+    expect($item()->state)->toBe('pending');
+});
+
+test('a current cadence handover in the ninety day lead in counts for an incoming rep', function (int $daysBeforeStart, bool $completed): void {
+    $this->freezeTime();
+    [$user, $duty] = learningRep(start: today()->addMonth()->toDateString());
+    $start = $user->dutiables()->where('duty_id', $duty->id)->sole()->start_date;
+    $cadence = Cadence::factory()->create(['institution_id' => $duty->institution_id, 'start_date' => $start, 'end_date' => $start->copy()->addYear()]);
+    HandoverNote::factory()->for($duty)->for($user, 'author')->create(['cadence_id' => $cadence->id, 'created_at' => $start->copy()->subDays($daysBeforeStart)]);
+    $item = ResolveLearningPath::execute($user)->steps->first(fn ($step) => $step->step->key === 'write_handover');
+    expect($item->autoCompleted)->toBe($completed);
+    expect(app(WriteHandoverDetector::class)->doneFor(collect([$user->id]))->contains($user->id))->toBe($completed);
+})->with(['ninety days' => [90, true], 'older' => [91, false]]);

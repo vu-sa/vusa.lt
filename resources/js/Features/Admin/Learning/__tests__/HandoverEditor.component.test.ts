@@ -2,9 +2,8 @@ import { mount } from '@vue/test-utils';
 import { router, usePage } from '@inertiajs/vue3';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { HandoverNoteData, WritableHandoverDuty } from '@/Types/learning';
+import { handoverFields, type HandoverNoteData, type WritableHandoverDuty } from '@/Types/learning';
 import { createMockPage } from '@/tests/helpers/createMockPage';
-import CommentComposer from '@/Components/Discussions/CommentComposer.vue';
 import HandoverEditor from '../HandoverEditor.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
@@ -15,71 +14,73 @@ beforeEach(() => {
 });
 
 function render(note: HandoverNoteData | null = null) {
-  const duty: WritableHandoverDuty = { dutyId: 'duty-1', title: 'Representative', note };
-  return mount(HandoverEditor, {
-    props: { duty },
-    global: { stubs: {
-      CommentComposer: {
-        props: ['content', 'submitting', 'submitLabel'],
-        emits: ['submit'],
-        template: '<button :disabled="submitting" @click="$emit(\'submit\', \'<p>My notes</p>\')">{{ submitLabel }}</button>',
-      },
-    } },
-  });
+  const duty: WritableHandoverDuty = {
+    dutyId: 'duty-1', title: 'Representative', note, notes: note ? [note] : [],
+    cadenceId: 'cadence', cadenceLabel: '2026–2027', termStart: '2026-07-01', author: { id: 'author', name: 'Author' },
+  };
+  return mount(HandoverEditor, { props: { duty } });
 }
 
 const existing: HandoverNoteData = {
-  id: 'note-1', dutyId: 'duty-1', duty: 'Representative', author: { id: 'author', name: 'Author' },
-  body: '<p>Keep my existing notes.</p>', createdAt: null, updatedAt: null,
+  id: 'note-1', dutyId: 'duty-1', duty: 'Representative', seatDutyId: 'duty-1', seatTitle: 'Representative',
+  cadenceId: 'cadence', cadenceLabel: '2026–2027', termStart: '2026-07-01', author: { id: 'author', name: 'Author' },
+  situation: 'Keep my existing notes.\nSecond line.', open_issues: null, people: 'Rūta', resources: null, advice: null,
+  createdAt: null, updatedAt: null,
 };
 
 describe('HandoverEditor', () => {
-  it('prefills the five guided prompts only for a new note', () => {
+  it('renders five empty fields with labels and hints and prefills saved plain text', () => {
     const fresh = render();
-    const template = fresh.getComponent(CommentComposer).props('content');
-    for (const key of ['institution', 'unfinished', 'people', 'documents', 'advice']) {
-      expect(template).toContain(`<strong>learning_people.prompts.${key}</strong>`);
+    expect(fresh.findAll('textarea')).toHaveLength(5);
+    for (const field of handoverFields) {
+      const textarea = fresh.get<HTMLTextAreaElement>(`textarea[name="${field}"]`);
+      expect(textarea.element.value).toBe('');
+      expect(textarea.attributes('maxlength')).toBe('5000');
+      expect(fresh.get(`label[for="${textarea.attributes('id')}"]`).text()).toBeTruthy();
+      expect(fresh.get(`#${textarea.attributes('aria-describedby')}`).text()).toBeTruthy();
     }
-    expect(fresh.text()).toContain('learning_people.readers');
     fresh.unmount();
     const saved = render(existing);
-    expect(saved.getComponent(CommentComposer).props('content')).toBe(existing.body);
+    expect(saved.get<HTMLTextAreaElement>('textarea[name="situation"]').element.value).toBe(existing.situation);
+    expect(saved.get<HTMLTextAreaElement>('textarea[name="people"]').element.value).toBe('Rūta');
+    expect(saved.get<HTMLTextAreaElement>('textarea[name="advice"]').element.value).toBe('');
     saved.unmount();
-    const blank = render({ ...existing, body: '' });
-    expect(blank.getComponent(CommentComposer).props('content')).toBe('');
-    blank.unmount();
   });
 
-  it('posts a new note against its duty and blocks duplicate submits', async () => {
+  it('posts five fields against the duty and blocks duplicate submits', async () => {
     const wrapper = render();
-    await wrapper.get('button').trigger('click');
-    expect(router.post).toHaveBeenCalledWith(route('handoverNotes.store', 'duty-1'), { body: '<p>My notes</p>' }, expect.objectContaining({ preserveScroll: true }));
+    await wrapper.get('textarea[name="situation"]').setValue('My notes\nSecond line');
+    await wrapper.get('form').trigger('submit');
+    expect(router.post).toHaveBeenCalledWith(route('handoverNotes.store', 'duty-1'), {
+      situation: 'My notes\nSecond line', open_issues: '', people: '', resources: '', advice: '',
+    }, expect.objectContaining({ preserveScroll: true }));
+    await wrapper.get('form').trigger('submit');
+    expect(router.post).toHaveBeenCalledTimes(1);
     expect(router.patch).not.toHaveBeenCalled();
-    expect(wrapper.get('button').attributes('disabled')).toBeDefined();
+    expect(wrapper.get('button[type="submit"]').attributes('disabled')).toBeDefined();
     wrapper.unmount();
   });
 
-  it('patches an existing note rather than creating another', async () => {
+  it('patches the current entry and keeps the draft after a field validation error', async () => {
     const wrapper = render(existing);
-    await wrapper.get('button').trigger('click');
-    expect(router.patch).toHaveBeenCalledWith(route('handoverNotes.update', 'note-1'), { body: '<p>My notes</p>' }, expect.any(Object));
+    await wrapper.get('textarea[name="advice"]').setValue('Ask your coordinator.');
+    await wrapper.get('form').trigger('submit');
+    expect(router.patch).toHaveBeenCalledWith(route('handoverNotes.update', 'note-1'), {
+      situation: existing.situation, open_issues: '', people: 'Rūta', resources: '', advice: 'Ask your coordinator.',
+    }, expect.any(Object));
     expect(router.post).not.toHaveBeenCalled();
-    wrapper.unmount();
-  });
-
-  it('keeps the draft after validation errors and makes retry available', async () => {
-    const wrapper = render(existing);
-    await wrapper.get('button').trigger('click');
     const callbacks = vi.mocked(router.patch).mock.calls[0]?.[2] as {
       onError: (errors: Record<string, string>) => void;
       onFinish: () => void;
     };
-    callbacks.onError({ body: 'Write a shorter note.' });
+    callbacks.onError({ advice: 'Write a shorter note.' });
     callbacks.onFinish();
     await wrapper.vm.$nextTick();
-    expect(wrapper.get('[role="alert"]').text()).toBe('Write a shorter note.');
-    expect(wrapper.getComponent(CommentComposer).props('content')).toBe(existing.body);
-    expect(wrapper.get('button').attributes('disabled')).toBeUndefined();
+    expect(wrapper.text()).toContain('Write a shorter note.');
+    expect(wrapper.find('[role="alert"]').exists()).toBe(true);
+    expect(wrapper.get('textarea[name="advice"]').attributes('aria-invalid')).toBe('true');
+    expect(wrapper.get<HTMLTextAreaElement>('textarea[name="advice"]').element.value).toBe('Ask your coordinator.');
+    expect(wrapper.get('button[type="submit"]').attributes('disabled')).toBeUndefined();
     wrapper.unmount();
   });
 });

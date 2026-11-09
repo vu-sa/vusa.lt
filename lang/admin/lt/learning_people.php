@@ -23,15 +23,15 @@ return [
     'handover_notes' => 'Perdavimo užrašai',
     'readers' => 'Matys tavo įpėdiniai ir koordinatoriai',
     'no_writable' => 'Užrašus galėsi rašyti, kai eisi pareigas',
-    'save' => 'Išsaugoti užrašus',
+    'save' => 'Išsaugoti',
     'saved' => 'Užrašai išsaugoti',
     'save_failed' => 'Nepavyko išsaugoti užrašų. Pabandyk dar kartą.',
-    'editor_placeholder' => 'Pasidalyk tuo, kas padės tavo įpėdiniui…',
-    'prompts' => [
-        'institution' => 'Kas vyksta institucijoje',
-        'unfinished' => 'Neužbaigti klausimai',
-        'people' => 'Žmonės, kuriuos verta pažinti',
-        'documents' => 'Naudingi dokumentai ir nuorodos',
-        'advice' => 'Patarimai',
+    'fill_one' => 'Užpildyk bent vieną lauką; kiekviename telpa iki 5000 ženklų.',
+    'fields' => [
+        'situation' => ['label' => 'Kas vyksta', 'hint' => 'Aprašyk dabartinę padėtį ir svarbiausius sprendimus.'],
+        'open_issues' => ['label' => 'Neužbaigti klausimai', 'hint' => 'Parašyk, ką dar reikia užbaigti ir iki kada.'],
+        'people' => ['label' => 'Žmonės', 'hint' => 'Nurodyk, į ką ir kokiais klausimais verta kreiptis.'],
+        'resources' => ['label' => 'Dokumentai ir nuorodos', 'hint' => 'Įrašyk reikalingų dokumentų pavadinimus ir nuorodas.'],
+        'advice' => ['label' => 'Patarimai', 'hint' => 'Pasidalyk tuo, ką norėtum žinoti pradėdamas pareigas.'],
     ],
 ];

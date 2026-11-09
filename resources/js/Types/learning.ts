@@ -123,12 +123,24 @@ export interface GlossaryTermData {
   };
 }
 
+export const handoverFields = ['situation', 'open_issues', 'people', 'resources', 'advice'] as const;
+export type HandoverField = typeof handoverFields[number];
+
 export interface HandoverNoteData {
   id: string;
   dutyId: string;
   duty: string;
   author: { id: string; name: string };
-  body: string;
+  seatDutyId: string;
+  seatTitle: string;
+  cadenceId: string | null;
+  cadenceLabel: string;
+  termStart: string | null;
+  situation: string | null;
+  open_issues: string | null;
+  people: string | null;
+  resources: string | null;
+  advice: string | null;
   createdAt: string | null;
   updatedAt: string | null;
 }
@@ -136,7 +148,12 @@ export interface HandoverNoteData {
 export interface WritableHandoverDuty {
   dutyId: string;
   title: string;
+  cadenceId: string | null;
+  cadenceLabel: string;
+  termStart: string;
+  author: { id: string; name: string };
   note: HandoverNoteData | null;
+  notes: HandoverNoteData[];
 }
 
 export interface LearningRepresentative {

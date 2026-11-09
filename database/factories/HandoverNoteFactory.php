@@ -14,6 +14,16 @@ class HandoverNoteFactory extends Factory
 
     public function definition(): array
     {
-        return ['duty_id' => Duty::factory(), 'user_id' => User::factory(), 'dutiable_id' => null, 'body' => '<p>'.fake()->paragraph().'</p>'];
+        return [
+            'duty_id' => Duty::factory(),
+            'user_id' => User::factory(),
+            'dutiable_id' => null,
+            'cadence_id' => null,
+            'situation' => fake()->paragraph(),
+            'open_issues' => null,
+            'people' => null,
+            'resources' => null,
+            'advice' => null,
+        ];
     }
 }

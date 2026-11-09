@@ -1,40 +1,62 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { reactive, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import CommentComposer from '@/Components/Discussions/CommentComposer.vue';
-import type { WritableHandoverDuty } from '@/Types/learning';
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
+import { Button } from '@/Components/ui/button';
+import { Textarea } from '@/Components/ui/textarea';
+import { handoverFields, type HandoverField, type WritableHandoverDuty } from '@/Types/learning';
 
 const props = defineProps<{ duty: WritableHandoverDuty }>();
 const saving = ref(false);
-const error = ref('');
+const errors = ref<Record<string, string>>({});
 const saved = ref(false);
-const template = ['institution', 'unfinished', 'people', 'documents', 'advice']
-  .map(key => `<p><strong>${$t(`learning_people.prompts.${key}`)}</strong></p><p></p>`).join('');
-const content = props.duty.note?.body ?? template;
+const fields = reactive<Record<HandoverField, string>>({
+  situation: props.duty.note?.situation ?? '',
+  open_issues: props.duty.note?.open_issues ?? '',
+  people: props.duty.note?.people ?? '',
+  resources: props.duty.note?.resources ?? '',
+  advice: props.duty.note?.advice ?? '',
+});
 
-function save(body: string) {
+function save() {
   if (saving.value) return;
   saving.value = true;
   saved.value = false;
-  error.value = '';
+  errors.value = {};
   const options = {
     preserveScroll: true,
-    onError: (errors: Record<string, string>) => { error.value = errors.body || $t('learning_people.save_failed'); },
+    onError: (validationErrors: Record<string, string>) => { errors.value = validationErrors; },
     onSuccess: () => { saved.value = true; },
     onFinish: () => { saving.value = false; },
   };
-  if (props.duty.note) router.patch(route('handoverNotes.update', props.duty.note.id), { body }, options);
-  else router.post(route('handoverNotes.store', props.duty.dutyId), { body }, options);
+  if (props.duty.note) router.patch(route('handoverNotes.update', props.duty.note.id), { ...fields }, options);
+  else router.post(route('handoverNotes.store', props.duty.dutyId), { ...fields }, options);
 }
 </script>
 
 <template>
-  <div class="space-y-3" :aria-busy="saving" data-slot="handover-editor">
-    <p class="text-sm text-muted-foreground">{{ $t('learning_people.readers') }}</p>
-    <CommentComposer :content="content" :submit-label="$t('learning_people.save')" :placeholder="$t('learning_people.editor_placeholder')" :submitting="saving" quiet-mentions @submit="save" />
-    <p v-if="error" role="alert" class="text-sm text-destructive">{{ error }}</p>
-    <p v-else-if="saved" role="status" class="text-sm text-muted-foreground">{{ $t('learning_people.saved') }}</p>
-  </div>
+  <form class="max-w-2xl space-y-5" :aria-busy="saving" data-slot="handover-editor" @submit.prevent="save">
+    <p class="text-sm text-muted-foreground">{{ $t('learning_people.readers') }}. {{ $t('learning_people.fill_one') }}</p>
+    <FormFieldWrapper
+      v-for="field in handoverFields" :id="`handover-${duty.dutyId}-${field}`" :key="field"
+      :label="$t(`learning_people.fields.${field}.label`)" :hint="$t(`learning_people.fields.${field}.hint`)"
+      :error="errors[field]"
+    >
+      <Textarea
+        :id="`handover-${duty.dutyId}-${field}`" :model-value="fields[field]" @update:model-value="fields[field] = String($event)" :name="field" :rows="3" :maxlength="5000"
+        :aria-invalid="Boolean(errors[field])" :aria-describedby="`handover-${duty.dutyId}-${field}-help`"
+        class="min-h-24 resize-y"
+      />
+      <span :id="`handover-${duty.dutyId}-${field}-help`" class="sr-only">
+        {{ $t(`learning_people.fields.${field}.hint`) }}<template v-if="errors[field]"> {{ errors[field] }}</template>
+      </span>
+    </FormFieldWrapper>
+    <div class="flex min-h-11 flex-wrap items-center gap-3">
+      <Button type="submit" :disabled="saving" voice="sentence" class="min-h-11">{{ $t('learning_people.save') }}</Button>
+      <p v-if="Object.keys(errors).length" role="alert" class="text-sm text-destructive">{{ $t('learning_people.save_failed') }}</p>
+      <p v-else-if="saved" role="status" class="text-sm text-muted-foreground">{{ $t('learning_people.saved') }}</p>
+    </div>
+  </form>
 </template>

@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Actions\Cadences\ResolveCadenceForDuty;
 use App\Enums\ResponsibilityPurpose;
 use App\Models\Duty;
 use App\Models\HandoverNote;
@@ -27,21 +28,28 @@ class HandoverNotePolicy
         $ids = $duty->successors()->withTrashed()->pluck('duties.id')->push($duty->id);
         $scope = $this->authorizer->scope($user, 'duties.update.padalinys');
 
-        return $user->authorization_duties()->whereIn('duties.id', $ids)->exists()
+        return $user->duties()->whereIn('duties.id', $ids)
+            ->where(fn ($query) => $query->whereNull('dutiables.end_date')->orWhereDate('dutiables.end_date', '>=', today()->subDays(60)))->exists()
             || $this->coordinates($user, $duty)
             || ($scope->granted && ($scope->isAllScope || $scope->tenantIds()->contains($duty->institution?->tenant_id)));
     }
 
     public function create(User $user, Duty $duty): bool
     {
-        return $user->isSuperAdmin() || $this->coordinates($user, $duty)
-            || $user->dutiables()->where('duty_id', $duty->id)->whereDate('start_date', '<=', today())
-                ->where(fn ($query) => $query->whereNull('end_date')->orWhereDate('end_date', '>=', today()->subDays(60)))->exists();
+        return $user->dutiables()->where('duty_id', $duty->id)->whereDate('start_date', '<=', today())
+            ->where(fn ($query) => $query->whereNull('end_date')->orWhereDate('end_date', '>=', today()->subDays(60)))->exists();
     }
 
     public function update(User $user, HandoverNote $note): bool
     {
-        return $note->user_id === $user->id;
+        if ($note->user_id !== $user->id) {
+            return false;
+        }
+        $term = $user->dutiables()->where('duty_id', $note->duty_id)->whereDate('start_date', '<=', today())
+            ->where(fn ($query) => $query->whereNull('end_date')->orWhereDate('end_date', '>=', today()->subDays(60)))
+            ->latest('start_date')->first();
+
+        return $term !== null && $note->cadence_id === ResolveCadenceForDuty::execute($note->duty, $term->start_date)?->id;
     }
 
     private function coordinates(User $user, Duty $duty): bool

@@ -64,9 +64,12 @@ return new class extends Migration
             $table->foreignUlid('duty_id')->constrained()->cascadeOnDelete();
             $table->foreignUlid('user_id')->constrained()->cascadeOnDelete();
             $table->foreignUlid('dutiable_id')->nullable()->constrained('dutiables')->nullOnDelete();
-            $table->longText('body');
+            $table->foreignUlid('cadence_id')->nullable()->constrained('cadences')->nullOnDelete();
+            foreach (['situation', 'open_issues', 'people', 'resources', 'advice'] as $field) {
+                $table->text($field)->nullable();
+            }
             $table->timestamps();
-            $table->index('duty_id');
+            $table->unique(['duty_id', 'user_id', 'cadence_id']);
         });
     }
 

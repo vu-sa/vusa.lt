@@ -16,6 +16,23 @@ class HandoverNoteRequest extends FormRequest
 
     public function rules(): array
     {
-        return ['body' => ['required', 'string', 'max:100000']];
+        $fields = ['situation', 'open_issues', 'people', 'resources', 'advice'];
+        $rules = [];
+        foreach ($fields as $field) {
+            $others = array_diff($fields, [$field]);
+            $rules[$field] = ['nullable', 'required_without_all:'.implode(',', $others), 'string', 'max:5000'];
+        }
+
+        return $rules;
+    }
+
+    public function attributes(): array
+    {
+        $attributes = [];
+        foreach (['situation', 'open_issues', 'people', 'resources', 'advice'] as $field) {
+            $attributes[$field] = __('learning_people.fields.'.$field.'.label');
+        }
+
+        return $attributes;
     }
 }

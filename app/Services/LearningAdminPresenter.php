@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Actions\Cadences\ResolveCadenceForDuty;
 use App\Actions\GetReceivedHandoverNotes;
 use App\Actions\ResolveLearningPath;
 use App\Enums\LearningStage;
@@ -14,6 +15,7 @@ use App\Models\LearningStep;
 use App\Models\LearningStepProgress;
 use App\Models\User;
 use App\Services\Learning\SystemSteps\SystemStepRegistry;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 class LearningAdminPresenter
@@ -87,59 +89,102 @@ class LearningAdminPresenter
         return $options;
     }
 
-    /** @return array{id: string, dutyId: string, duty: string, author: array{id: string, name: string}, body: string, createdAt: string|null, updatedAt: string|null} */
-    public static function note(HandoverNote $note, string $locale): array
+    /** @return array{id: string, dutyId: string, duty: string, seatDutyId: string, seatTitle: string, cadenceId: string|null, cadenceLabel: string, termStart: string|null, author: array{id: string, name: string}, situation: string|null, open_issues: string|null, people: string|null, resources: string|null, advice: string|null, createdAt: string|null, updatedAt: string|null} */
+    public static function note(HandoverNote $note, string $locale, ?Duty $seat = null): array
     {
+        $seat ??= $note->duty;
+        $start = $note->cadence->start_date ?? $note->dutiable->start_date ?? $note->created_at;
+        $end = $note->cadence->end_date ?? $note->dutiable->end_date ?? $start;
+
         return [
             'id' => $note->id, 'dutyId' => $note->duty_id, 'duty' => (string) $note->duty->getTranslation('name', $locale),
-            'author' => ['id' => $note->author->id, 'name' => $note->author->name], 'body' => $note->body,
+            'seatDutyId' => $seat->id, 'seatTitle' => (string) $seat->getTranslation('name', $locale),
+            'cadenceId' => $note->cadence_id,
+            'cadenceLabel' => $note->cadence !== null ? (string) $note->cadence->label : self::termYears($start, $end),
+            'termStart' => $start?->toDateString(),
+            'author' => self::member($note->author),
+            'situation' => $note->situation, 'open_issues' => $note->open_issues, 'people' => $note->people,
+            'resources' => $note->resources, 'advice' => $note->advice,
             'createdAt' => $note->created_at?->toIso8601String(), 'updatedAt' => $note->updated_at?->toIso8601String(),
         ];
     }
 
-    /** @return list<array{dutyId: string, title: string, note: array{id: string, dutyId: string, duty: string, author: array{id: string, name: string}, body: string, createdAt: string|null, updatedAt: string|null}|null}> */
+    private static function termYears(?Carbon $start, ?Carbon $end): string
+    {
+        return implode('–', array_unique(array_filter([$start?->year, $end?->year])));
+    }
+
+    /** @return list<array{dutyId: string, title: string, cadenceId: string|null, cadenceLabel: string, termStart: string, author: array{id: string, name: string}, note: array{id: string, dutyId: string, duty: string, seatDutyId: string, seatTitle: string, cadenceId: string|null, cadenceLabel: string, termStart: string|null, author: array{id: string, name: string}, situation: string|null, open_issues: string|null, people: string|null, resources: string|null, advice: string|null, createdAt: string|null, updatedAt: string|null}|null, notes: list<array{id: string, dutyId: string, duty: string, seatDutyId: string, seatTitle: string, cadenceId: string|null, cadenceLabel: string, termStart: string|null, author: array{id: string, name: string}, situation: string|null, open_issues: string|null, people: string|null, resources: string|null, advice: string|null, createdAt: string|null, updatedAt: string|null}>}> */
     public static function writable(User $user, string $locale): array
     {
         $result = [];
         $duties = $user->duties()->wherePivot('start_date', '<=', today())
-            ->where(fn ($query) => $query->whereNull('dutiables.end_date')->orWhere('dutiables.end_date', '>=', today()->subDays(60)))
-            ->orderByDesc('dutiables.start_date')
-            ->get()->unique('id')->values();
-        $notes = HandoverNote::query()->where('user_id', $user->id)->whereIn('duty_id', $duties->pluck('id'))->with(['duty', 'author'])->latest()->get();
+            ->where(fn ($query) => $query->whereNull('dutiables.end_date')->orWhereDate('dutiables.end_date', '>=', today()->subDays(60)))
+            ->with(['predecessors' => fn ($query) => $query->withTrashed()])
+            ->orderByDesc('dutiables.start_date')->get()->unique('id')->values();
+        $ids = $duties->flatMap(fn (Duty $duty) => $duty->predecessors->pluck('id')->push($duty->id))->unique();
+        $notes = HandoverNote::query()->whereIn('duty_id', $ids)->with(['duty.institution', 'author', 'cadence', 'dutiable'])->get();
         foreach ($duties as $duty) {
-            if ($user->can('create', [HandoverNote::class, $duty])) {
-                $note = $notes->first(fn (HandoverNote $note): bool => $note->duty_id === $duty->id && $note->dutiable_id === $duty->pivot->id);
-                $result[] = ['dutyId' => $duty->id, 'title' => (string) $duty->getTranslation('name', $locale), 'note' => $note ? self::note($note, $locale) : null];
+            if (! $user->can('create', [HandoverNote::class, $duty])) {
+                continue;
             }
+            $cadence = ResolveCadenceForDuty::execute($duty, $duty->pivot->start_date);
+            $note = $notes->first(fn (HandoverNote $note): bool => $note->duty_id === $duty->id
+                && $note->user_id === $user->id && $note->cadence_id === $cadence?->id);
+            $visibleIds = $duty->predecessors->pluck('id')->push($duty->id);
+            $history = [];
+            foreach ($notes->whereIn('duty_id', $visibleIds) as $entry) {
+                if ($user->can('view', $entry)) {
+                    $history[] = self::note($entry, $locale, $duty);
+                }
+            }
+            usort($history, fn (array $a, array $b): int => strcmp($b['termStart'] ?? '', $a['termStart'] ?? '') ?: strcmp($b['createdAt'] ?? '', $a['createdAt'] ?? ''));
+            $result[] = [
+                'dutyId' => $duty->id, 'title' => (string) $duty->getTranslation('name', $locale),
+                'cadenceId' => $cadence?->id,
+                'cadenceLabel' => $cadence !== null ? (string) $cadence->label : self::termYears($duty->pivot->start_date, $duty->pivot->end_date ?? $duty->pivot->start_date),
+                'termStart' => ($cadence->start_date ?? $duty->pivot->start_date)->toDateString(),
+                'author' => self::member($user), 'note' => $note ? self::note($note, $locale, $duty) : null, 'notes' => $history,
+            ];
         }
 
         return $result;
     }
 
-    /** @return list<array{id: string, dutyId: string, duty: string, author: array{id: string, name: string}, body: string, createdAt: string|null, updatedAt: string|null}> */
+    /** @return list<array{id: string, dutyId: string, duty: string, seatDutyId: string, seatTitle: string, cadenceId: string|null, cadenceLabel: string, termStart: string|null, author: array{id: string, name: string}, situation: string|null, open_issues: string|null, people: string|null, resources: string|null, advice: string|null, createdAt: string|null, updatedAt: string|null}> */
     public static function received(User $user, string $locale): array
     {
         $result = [];
         foreach (GetReceivedHandoverNotes::execute($user) as $note) {
-            $result[] = self::note($note, $locale);
+            foreach ($user->duties->unique('id') as $seat) {
+                if (($seat->id === $note->duty_id || $seat->predecessors->contains('id', $note->duty_id)) && $user->can('view', $note)) {
+                    $result[] = self::note($note, $locale, $seat);
+                }
+            }
         }
 
         return $result;
     }
 
-    /** @return list<array{id: string, dutyId: string, duty: string, author: array{id: string, name: string}, body: string, createdAt: string|null, updatedAt: string|null}> */
+    /** @return list<array{id: string, dutyId: string, duty: string, seatDutyId: string, seatTitle: string, cadenceId: string|null, cadenceLabel: string, termStart: string|null, author: array{id: string, name: string}, situation: string|null, open_issues: string|null, people: string|null, resources: string|null, advice: string|null, createdAt: string|null, updatedAt: string|null}> */
     public static function representativeNotes(User $rep, User $viewer, string $locale): array
     {
         $received = GetReceivedHandoverNotes::execute($rep);
         $written = HandoverNote::query()->where('user_id', $rep->id)
-            ->whereIn('duty_id', $rep->authorization_duties->pluck('id'))
-            ->with(['author', 'duty.institution'])->get();
+            ->whereIn('duty_id', $rep->duties->pluck('id'))
+            ->with(['author', 'duty.institution', 'cadence', 'dutiable'])->get();
         $result = [];
-        foreach ($received->concat($written)->unique('id')->sortByDesc('updated_at') as $note) {
-            if ($viewer->can('view', $note)) {
-                $result[] = self::note($note, $locale);
+        foreach ($received->concat($written)->unique('id') as $note) {
+            if (! $viewer->can('view', $note)) {
+                continue;
+            }
+            foreach ($rep->duties->unique('id') as $seat) {
+                if ($seat->id === $note->duty_id || $seat->predecessors->contains('id', $note->duty_id)) {
+                    $result[] = self::note($note, $locale, $seat);
+                }
             }
         }
+        usort($result, fn (array $a, array $b): int => strcmp($b['termStart'] ?? '', $a['termStart'] ?? '') ?: strcmp($b['createdAt'] ?? '', $a['createdAt'] ?? ''));
 
         return $result;
     }

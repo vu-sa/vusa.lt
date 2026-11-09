@@ -10,7 +10,6 @@ use App\Enums\LearningStepKind;
 use App\Enums\ResponsibilityPurpose;
 use App\Models\Duty;
 use App\Models\DutyType;
-use App\Models\HandoverNote;
 use App\Models\InstitutionType;
 use App\Models\LearningStep;
 use App\Models\LearningStepProgress;
@@ -18,6 +17,7 @@ use App\Models\User;
 use App\Services\Learning\LearningPath;
 use App\Services\Learning\ResolvedLearningStep;
 use App\Services\Learning\SystemSteps\SystemStepRegistry;
+use App\Services\Learning\SystemSteps\WriteHandoverDetector;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -55,12 +55,13 @@ class ResolveLearningPath
         $progress = LearningStepProgress::query()->whereIn('user_id', $users->pluck('id'))->get()->groupBy('user_id');
         $detections = [];
         foreach (SystemStepRegistry::definitions() as $key => $definition) {
-            if ($definition['detector'] !== null) {
+            if ($definition['detector'] !== null && $key !== 'write_handover') {
                 $detections[$key] = app($definition['detector'])->doneFor($users->pluck('id')->values())->flip();
             }
         }
         $received = GetReceivedHandoverNotes::forUsers($users);
-        $written = HandoverNote::query()->whereIn('user_id', $users->pluck('id'))->get(['user_id', 'duty_id', 'created_at'])->groupBy('user_id');
+        $handoverRepIds = Duty::query()->whereIn('id', $repIds)->holdingPurpose(ResponsibilityPurpose::StudentRepresentation)->pluck('id');
+        $written = WriteHandoverDetector::completionDates($users, $handoverRepIds);
         $paths = collect();
         foreach ($users as $user) {
             $userDuties = $user->authorization_duties;
@@ -75,7 +76,7 @@ class ResolveLearningPath
             $userProgress = $progress->get($user->id, collect())->keyBy('learning_step_id');
             $resolved = collect();
             $meetingPrep = collect();
-            $writtenAt = $written->get($user->id, collect())->whereIn('duty_id', $repDuties->pluck('id'))->max('created_at');
+            $writtenAt = $written->get($user->id);
             foreach ($steps as $step) {
                 $included = self::inAudience($step, $repDuties, $institutionTypeIds, $dutyTypeIds, $tenantIds);
                 if (! $included || ($step->key === 'read_handover' && $received->get($user->id, collect())->isEmpty())) {
@@ -87,7 +88,7 @@ class ResolveLearningPath
                     continue;
                 }
                 $resolved->push(self::resolveStep($step, $userProgress->get($step->id), $termStart,
-                    $step->is_system && isset($detections[$step->key][$user->id]),
+                    $step->is_system && ($step->key === 'write_handover' ? $writtenAt !== null : isset($detections[$step->key][$user->id])),
                     $writtenAt));
             }
             $paths->put($user->id, new LearningPath($user, self::stage($first !== null, $termStart, $end), $termStart, $resolved, $meetingPrep));

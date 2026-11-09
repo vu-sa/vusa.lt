@@ -4,9 +4,7 @@ namespace App\Models;
 
 use App\Models\Pivots\Dutiable;
 use App\Models\Traits\LogsModelActivity;
-use App\Services\HtmlSanitizerService;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,14 +15,20 @@ use Illuminate\Support\Carbon;
  * @property string $duty_id
  * @property string $user_id
  * @property string|null $dutiable_id
- * @property string $body
+ * @property string|null $cadence_id
+ * @property string|null $situation
+ * @property string|null $open_issues
+ * @property string|null $people
+ * @property string|null $resources
+ * @property string|null $advice
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Duty $duty
  * @property-read User $author
  * @property-read Dutiable|null $dutiable
+ * @property-read Cadence|null $cadence
  */
-#[Fillable(['duty_id', 'user_id', 'dutiable_id', 'body'])]
+#[Fillable(['duty_id', 'user_id', 'dutiable_id', 'cadence_id', 'situation', 'open_issues', 'people', 'resources', 'advice'])]
 class HandoverNote extends Model
 {
     use HasFactory, HasUlids, LogsModelActivity;
@@ -47,8 +51,9 @@ class HandoverNote extends Model
         return $this->belongsTo(Dutiable::class);
     }
 
-    protected function body(): Attribute
+    /** @return BelongsTo<Cadence, $this> */
+    public function cadence(): BelongsTo
     {
-        return Attribute::make(set: fn (string $value): string => app(HtmlSanitizerService::class)->sanitizeCommentBody($value));
+        return $this->belongsTo(Cadence::class);
     }
 }
