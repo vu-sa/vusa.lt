@@ -13,6 +13,7 @@ use App\Models\Goal;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\InstitutionType;
+use App\Models\LearningStep;
 use App\Models\MailingList;
 use App\Models\Meeting;
 use App\Models\Navigation;
@@ -46,7 +47,7 @@ use Illuminate\Support\Facades\Cache;
 class AdminNavigationCatalog
 {
     /** Bump the suffix when the payload shape or a gate changes, so a deploy never serves the old menu from cache. */
-    public const string CACHE_PREFIX = 'admin-navigation-v10-';
+    public const string CACHE_PREFIX = 'admin-navigation-v11-';
 
     private const int CACHE_TTL = 1800;
 
@@ -177,6 +178,10 @@ class AdminNavigationCatalog
                 new Section('pranesimai', 'shell.sections.pranesimai', 'notifications.index', [], null, Visibility::always(), descriptionKey: 'shell.section_descriptions.pranesimai'),
                 new Section('atsakomybes', 'shell.sections.atsakomybes', 'profile.roles', [], null, Visibility::always(), descriptionKey: 'shell.section_descriptions.atsakomybes'),
                 new Section('veiklos_uzklausos', 'shell.sections.veiklos_uzklausos', 'profile.activityRequests', [], null, Visibility::always(), descriptionKey: 'shell.section_descriptions.veiklos_uzklausos'),
+                new Section('kelias', 'shell.sections.kelias', 'learningPath.show', [], null, Visibility::always(), matches: ['learningPath.*', 'learningSteps.*', 'glossaryTerms.*', 'handoverNotes.*'], descriptionKey: 'shell.section_descriptions.kelias'),
+            ],
+            createActions: [
+                CreateAction::route('new_learning_step', 'shell.actions.new_learning_step.title', 'shell.actions.new_learning_step.description', 'learning_step', 'learningSteps.create', Visibility::can('create', LearningStep::class)),
             ],
         );
     }

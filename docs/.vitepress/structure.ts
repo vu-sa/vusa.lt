@@ -48,6 +48,7 @@ export const guide: GuideChapter[] = [
       { text: 'Užduotys', link: '/mano/uzduotys' },
       { text: 'Pranešimai', link: '/mano/pranesimai' },
       { text: 'Paskyra ir prieiga', link: '/mano/paskyra-ir-prieiga' },
+      { text: 'Mano kelias', link: '/mano/kelias' },
     ],
   },
   {

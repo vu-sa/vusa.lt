@@ -8,6 +8,7 @@ use App\Models\Duty;
 use App\Models\Form;
 use App\Models\Institution;
 use App\Models\InstitutionLink;
+use App\Models\LearningStep;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Problem;
@@ -542,6 +543,7 @@ describe('reply destinations', function (): void {
     test('root comments and nested replies round trip on every discussion record', function (string $type): void {
         Event::fake([CommentBroadcast::class]);
         $commentable = match ($type) {
+            'learningStep' => LearningStep::factory()->create(),
             'meeting' => $this->meeting,
             'agendaItem' => $this->agendaItem,
             'institution' => $this->institution,

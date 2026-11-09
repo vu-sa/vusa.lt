@@ -1,3 +1,30 @@
+export enum LearningStepKind {
+    Knowledge = 'knowledge',
+    Action = 'action',
+    MeetingPrep = 'meeting_prep',
+}
+export enum LearningLayer {
+    Platform = 'platform',
+    Foundation = 'foundation',
+    InstitutionType = 'institution_type',
+    DutyType = 'duty_type',
+    Tenant = 'tenant',
+}
+export enum LearningStage {
+    BeforeStart = 'before_start',
+    FirstMonths = 'first_months',
+    WholeTerm = 'whole_term',
+    TermEnd = 'term_end',
+}
+export enum LearningImportance {
+    Essential = 'essential',
+    Recommended = 'recommended',
+    Optional = 'optional',
+}
+export enum LearningProgressStatus {
+    Done = 'done',
+    Skipped = 'skipped',
+}
 export enum ActionType {
     Manual = 'manual',
     Approval = 'approval',
@@ -203,6 +230,7 @@ export enum ModelEnum {
     FILE = 'file',
     FORM = 'form',
     GOAL = 'goal',
+    LEARNING_STEP = 'learning_step',
     INSTITUTION = 'institution',
     INSTITUTION_TYPE = 'institution_type',
     MAILING_LIST = 'mailing_list',

@@ -358,3 +358,14 @@ Route::resource('institutionTypes', InstitutionTypeController::class)->parameter
 Route::resource('dutyTypes', DutyTypeController::class)->parameters(['dutyTypes' => 'type']);
 Route::put('institutionTypes/{type}/models', [InstitutionTypeController::class, 'syncModels'])->name('institutionTypes.models.sync');
 Route::put('dutyTypes/{type}/models', [DutyTypeController::class, 'syncModels'])->name('dutyTypes.models.sync');
+
+Route::get('learning', [LearningPathController::class, 'show'])->name('learningPath.show');
+Route::get('learning/handover', [HandoverNoteController::class, 'index'])->name('learningPath.handover');
+Route::post('learning/handover/{duty}', [HandoverNoteController::class, 'store'])->name('handoverNotes.store');
+Route::patch('learning/handover-notes/{handoverNote}', [HandoverNoteController::class, 'update'])->name('handoverNotes.update');
+Route::get('learning/reps', [LearningRepsController::class, 'index'])->name('learningPath.reps');
+Route::get('learning/reps/{user}', [LearningRepsController::class, 'show'])->name('learningPath.rep');
+Route::get('learning/library', [LearningStepController::class, 'index'])->name('learningSteps.index');
+Route::post('learning/steps/{learningStep}/progress', [LearningStepProgressController::class, 'store'])->name('learningSteps.progress');
+Route::resource('learning/steps', LearningStepController::class)->parameters(['steps' => 'learningStep'])->names('learningSteps')->except('index');
+Route::resource('learning/glossary', GlossaryTermController::class)->parameters(['glossary' => 'glossaryTerm'])->names('glossaryTerms')->only(['index', 'store', 'update', 'destroy']);

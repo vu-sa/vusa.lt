@@ -90,6 +90,7 @@ return [
     ],
 
     'sections' => [
+        'kelias' => 'My path',
         'apzvalga' => 'Overview',
         'padaliniu_apzvalga' => 'Units',
         'uzduotys' => 'Tasks',
@@ -142,6 +143,7 @@ return [
     ],
 
     'section_descriptions' => [
+        'kelias' => 'Your learning steps and handover notes.',
         'uzduotys' => 'Work assigned to you and its deadlines',
         'pranesimai' => 'All your notifications',
         'atsakomybes' => 'Your duties and what they let you do',
@@ -193,6 +195,7 @@ return [
     ],
 
     'actions' => [
+        'new_learning_step' => ['title' => 'New learning step', 'description' => 'Knowledge or an action for the path'],
         'new_institution_type' => ['title' => 'New institution type', 'description' => 'Institution grouping, representation and relationships'],
         'new_duty_type' => ['title' => 'New duty type', 'description' => 'Duty grouping and granted responsibilities'],
         'merge' => [

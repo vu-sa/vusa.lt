@@ -19,6 +19,7 @@ final class PermissionCatalog
     private const array RESOURCE_AREAS = [
         'tasks' => 'pradzia',
         'comments' => 'pradzia',
+        'learningSteps' => 'pradzia',
         'institutions' => 'atstovavimas',
         'meetings' => 'atstovavimas',
         'agendaItems' => 'atstovavimas',

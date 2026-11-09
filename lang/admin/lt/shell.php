@@ -90,6 +90,7 @@ return [
     ],
 
     'sections' => [
+        'kelias' => 'Mano kelias',
         'apzvalga' => 'Apžvalga',
         'padaliniu_apzvalga' => 'Padaliniai',
         'uzduotys' => 'Užduotys',
@@ -142,6 +143,7 @@ return [
     ],
 
     'section_descriptions' => [
+        'kelias' => 'Tavo mokymosi žingsniai ir patirties perdavimas.',
         'uzduotys' => 'Tau priskirti darbai ir terminai',
         'pranesimai' => 'Visi tau skirti pranešimai',
         'atsakomybes' => 'Tavo pareigybės ir ką jos leidžia',
@@ -193,6 +195,7 @@ return [
     ],
 
     'actions' => [
+        'new_learning_step' => ['title' => 'Naujas mokymosi žingsnis', 'description' => 'Žinios ar veiksmas atstovų keliui'],
         'new_institution_type' => ['title' => 'Naujas institucijos tipas', 'description' => 'Institucijų grupavimas, atstovavimas ir ryšiai'],
         'new_duty_type' => ['title' => 'Naujas pareigybės tipas', 'description' => 'Pareigybių grupavimas ir suteikiamos atsakomybės'],
         'merge' => [

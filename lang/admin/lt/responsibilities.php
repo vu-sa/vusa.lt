@@ -115,6 +115,7 @@ return [
             'all' => 'Visur',
         ],
         'resources' => [
+            'learningSteps' => 'Mokymosi žingsniai',
             'settings' => 'Nustatymai',
         ],
     ],

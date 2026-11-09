@@ -115,3 +115,11 @@ test('the editor is told which resources have a trash', function (): void {
     expect($resources['news']['softDeletes'])->toBeTrue()
         ->and($resources['mailingLists']['softDeletes'])->toBeFalse();
 });
+
+test('learning curation is scoped while reading belongs to every member', function (): void {
+    expect(PermissionCatalog::abilities()['learningSteps']['update'])->toBe(['padalinys', '*']);
+    expect(PermissionCatalog::areaOf('learningSteps'))->toBe('pradzia');
+    expect(PermissionCatalog::isGrantable('learningSteps.read.padalinys'))->toBeFalse();
+    expect(PermissionCatalog::isGrantable('learningSteps.update.own'))->toBeFalse();
+    expect(BaselineAccess::RESOURCES)->toContain('learningSteps');
+});

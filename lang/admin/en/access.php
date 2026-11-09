@@ -60,6 +60,7 @@ return [
         ],
     ],
     'baseline' => [
+        'learningSteps' => 'Every member can view the library and their path and mark their own progress.',
         'title' => 'Every member, even without a responsibility',
         'locked' => 'Every member',
         'locked_own' => 'Own – every member',

@@ -6,6 +6,7 @@ use App\Contracts\Commentable;
 use App\Models\Duty;
 use App\Models\Form;
 use App\Models\Institution;
+use App\Models\LearningStep;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Problem;
@@ -25,6 +26,7 @@ class Commentables
      * @var array<string, class-string<Model&Commentable>>
      */
     public const TYPES = [
+        'learningStep' => LearningStep::class,
         'meeting' => Meeting::class,
         'agendaItem' => AgendaItem::class,
         'institution' => Institution::class,
