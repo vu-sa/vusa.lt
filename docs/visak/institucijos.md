@@ -76,7 +76,7 @@ Institucijų sąraše pavadinimai ir tipai rodomi pasirinkta Mano VU SA kalba. J
 
 ### Institucijos puslapis {#puslapis}
 
-Atvėrus instituciją iškart rodoma **Santrauka**: aprašymas po pavadinimu (dvi eilutės, visas tekstas – paspaudus **Skaityti daugiau**), trys paskutiniai posėdžiai kortelėmis ir iki trijų pareigybių peržiūra; visos pareigybės visada turi atskirą skirtuką. Kitų skirtukų turinys įkeliamas juos pirmą kartą pasirinkus; kol lauki, rodomas įkėlimo vietaženklis. Skirtukų juosta lieka matoma slenkant, o perjungus skirtuką puslapis nebeperšoka į kitą vietą. Naršyklės mygtukas „Atgal“ grąžina į ankstesnį skirtuką.
+Atvėrus instituciją iškart rodoma **Santrauka**: aprašymas po pavadinimu (dvi eilutės, visas tekstas – paspaudus **Skaityti daugiau**), iki trijų posėdžių kortelių (artimiausias būsimas ir du paskutiniai įvykę arba trys įvykę, jei būsimo nėra) ir iki trijų pareigybių peržiūra; visos pareigybės visada turi atskirą skirtuką. Kitų skirtukų turinys įkeliamas juos pirmą kartą pasirinkus; kol lauki, rodomas įkėlimo vietaženklis. Skirtukų juosta lieka matoma slenkant, o perjungus skirtuką puslapis nebeperšoka į kitą vietą. Naršyklės mygtukas „Atgal“ grąžina į ankstesnį skirtuką.
 
 Telefone iš pradžių rodoma Santrauka. Prisegtame laukelyje **Rodyti** galima pasirinkti vieną skiltį. Nuoroda su pasirinktu skirtuku iškart atveria tą skiltį – ir telefone.
 
@@ -681,8 +681,10 @@ Pranešimas apie tai, kad posėdžio nebus, suteikia atskirą pusės periodišku
 
 ## Institucijos santrauka ir skyriai
 
-Santraukoje rodoma artimiausio posėdžio informacija, iki trijų paskutinių posėdžių ir pareigybių peržiūra. Nebaigtų užduočių nuoroda rodoma virš skyrių. Pareigybės visada turi atskirą skyrių; komentarai yra bendras institucijos skyrius.
+Santraukoje rodoma iki trijų posėdžių kortelių: artimiausias būsimas ir du paskutiniai įvykę posėdžiai, o jei būsimo posėdžio nėra – trys paskutiniai įvykę. Kitų metų posėdžiuose nurodomi metai. Pareigybių peržiūroje matomas bendras ir likusių pareigybių skaičius. Nebaigtų užduočių nuoroda rodoma virš skyrių. Pareigybės visada turi atskirą skyrių; komentarai yra bendras institucijos skyrius.
 
 Telefone iš pradžių rodoma Santrauka. Prisegtas skyrių pasirinkimas atveria vieną skyrių; jo nuorodą galima nukopijuoti, o naršyklės „Atgal“ grąžina ankstesnį skyrių. Ištrynus paskutinį failą ar ryšį, atvertas skyrius lieka iki išėjimo iš įrašo.
 
 Narių valdiklyje rodoma, kas eina pareigas. Turint teisę tvarkyti sudėtį, galima priskirti asmenį arba keisti jo laikotarpį. Visa laikotarpių istorija pateikiama pareigybės įraše.
+
+Keičiant pareigybių tvarką, išlieka tos pačios eilutės. Tvarką galima keisti tempimo rankenėle arba rodyklėmis, tada išsaugoti arba atšaukti. Išskleidžiama narių grupė atveriama paspaudus bet kurią jos vietą; ilgas sąrašas slenkamas išskleidimo viduje.

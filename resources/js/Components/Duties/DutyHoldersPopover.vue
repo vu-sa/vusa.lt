@@ -5,7 +5,7 @@
         type="button"
         :class="[
           'flex min-w-0 shrink-0 items-center gap-2 px-1 py-1 text-left text-sm text-muted-foreground transition-colors',
-          'hover:bg-secondary hover:text-foreground pointer-coarse:min-h-11',
+          'hover:bg-secondary hover:text-foreground data-[state=open]:bg-secondary data-[state=open]:text-foreground pointer-coarse:min-h-11',
           'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
         ]"
         :aria-label="triggerLabel"
@@ -36,7 +36,7 @@
       <p class="border-b border-border px-3 py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
         {{ $t('Užima') }} · {{ holders.length }}
       </p>
-      <ul v-if="holders.length" class="max-h-72 divide-y divide-border/60 overflow-y-auto">
+      <ul v-if="holders.length" class="max-h-72 divide-y divide-border/60 overflow-y-auto overscroll-contain">
         <li v-for="user in holders" :key="user.id" class="flex min-h-11 items-center gap-2 py-1.5 pr-1 pl-3">
           <Link :href="route('users.show', user.id)" class="flex min-w-0 flex-1 items-center gap-2 hover:text-brand">
             <UserAvatar :user size="xs" />

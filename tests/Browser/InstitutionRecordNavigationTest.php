@@ -2,6 +2,7 @@
 
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\Meeting;
 use App\Models\Pivots\Dutiable;
 use App\Models\Role;
 use App\Models\User;
@@ -14,8 +15,14 @@ it('keeps institution sections reachable on phones and desktops', function () {
     $user = User::factory()->create();
     $user->assignRole(config('permission.super_admin_role_name'));
     $institution = Institution::factory()->create();
-    $duty = Duty::factory()->for($institution)->create();
-    Dutiable::factory()->forDuty($duty)->active()->create();
+    foreach (range(1, 5) as $order) {
+        $duty = Duty::factory()->for($institution)->create(['order' => $order]);
+        Dutiable::factory()->forDuty($duty)->active()->count($order === 1 ? 8 : 1)->create();
+    }
+    foreach ([-3, -2, -1, 1] as $days) {
+        $meeting = Meeting::factory()->create(['start_time' => now()->addDays($days)]);
+        $meeting->institutions()->attach($institution);
+    }
     $page = loginAsAdmin($user, "/mano/institutions/{$institution->id}", 390, 844);
     waitForInertiaRender($page, '[data-slot="record-title"]');
     foreach ([390, 820, 1180, 1440] as $width) {
@@ -46,5 +53,18 @@ it('keeps institution sections reachable on phones and desktops', function () {
         $page->script("document.documentElement.classList.remove('dark')");
         $page->screenshot(filename: "institution-record-{$width}");
     }
+    $page->resize(1440, 900);
+    $page->click('[role="tab"][data-section="duties"]');
+    $page->assertPresent('[data-slot="institution-duty-row"]');
+    $page->click('button:has-text("Keisti tvarką")');
+    $page->assertPresent('[data-slot="sortable-duties"] .handle');
+    $page->screenshot(filename: 'institution-duty-reorder');
+    $before = $page->script("document.querySelector('[data-slot=sortable-duties] a').href");
+    $page->page()->locator('[data-slot="sortable-duties"] li:nth-child(1) .handle')->dragTo($page->page()->locator('[data-slot="sortable-duties"] li:nth-child(3) .handle'), ['steps' => 20]);
+    $page->assertScript("document.querySelector('[data-slot=sortable-duties] a').href !== ".json_encode($before));
+    $page->click('button:has-text("Atšaukti")');
+    $page->click('[data-slot="record-facts"] button[data-slot="users-avatar-group"]');
+    $page->assertVisible('[data-slot="users-avatar-group-popover"]');
+    $page->screenshot(filename: 'institution-people-popover');
     $page->assertNoJavaScriptErrors();
 });

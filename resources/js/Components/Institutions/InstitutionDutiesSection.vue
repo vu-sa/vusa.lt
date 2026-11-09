@@ -3,11 +3,11 @@
     variant="home"
     :title="$t('Pareigybės')"
     :icon="Briefcase"
-    :count="duties.length"
+    :count="totalCount ?? duties.length"
     data-slot="institution-duties-section"
   >
     <template v-if="canManage || canCreate || preview" #actions>
-      <SectionHeaderAction v-if="preview" :label="$t('Visos pareigybės')" trailing-chevron @click="$emit('view-all')" />
+      <SectionHeaderAction v-if="preview" :label="remainingCount ? `${$t('Visos pareigybės')} · +${remainingCount}` : $t('Visos pareigybės')" trailing-chevron @click="$emit('view-all')" />
       <template v-if="reordering">
         <SectionHeaderAction tone="muted" :label="$t('Atšaukti')" :disabled="saving" @click="cancelReorder" />
         <SectionHeaderAction :icon="Save" :label="$t('Išsaugoti tvarką')" :disabled="saving || !changed" @click="saveOrder" />
@@ -27,43 +27,22 @@
       :action-href="canCreate ? route('duties.create', { institution_id: institutionId }) : undefined"
     />
 
-    <SortableDutiesTable v-else-if="reordering" v-model="draft">
-      <template #default="{ model, index }">
-        <div class="flex items-start gap-2">
-          <div class="min-w-0 flex-1">
-            <DutyCard :duty="(model as DutyWithUsers)" compact />
-          </div>
-          <div class="flex shrink-0 items-center py-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              class="size-8 p-0 pointer-coarse:size-11"
-              :disabled="index === 0"
-              :aria-label="$t('Perkelti aukščiau')"
-              @click="move(index, -1)"
-            >
-              <ArrowUp class="size-4" aria-hidden="true" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              class="size-8 p-0 pointer-coarse:size-11"
-              :disabled="index === draft.length - 1"
-              :aria-label="$t('Perkelti žemiau')"
-              @click="move(index, 1)"
-            >
-              <ArrowDown class="size-4" aria-hidden="true" />
-            </Button>
-          </div>
-        </div>
-      </template>
-    </SortableDutiesTable>
-
-    <CollectionRowList v-else frame="attached" :items="duties" :item-key="duty => String(duty.id)" :row-muted="duty => duty.is_active === false">
-      <template #default="{ item: duty }">
-        <CollectionRow :actions="rowActions(duty)" :class="ROW_PADDING_CLASS" data-slot="institution-duty-row" @select="key => selectRowAction(key, duty)">
+    <component
+      :is="reordering ? SortableDutiesTable : CollectionRowList"
+      v-else
+      :items="reordering ? draft : duties"
+      frame="attached"
+      :item-key="(duty: DutyWithUsers) => String(duty.id)"
+      :row-muted="(duty: DutyWithUsers) => duty.is_active === false"
+      @update:items="draft = $event"
+    >
+      <template #default="{ item: duty, index }">
+        <CollectionRow :actions="reordering ? [] : rowActions(duty)" :class="ROW_PADDING_CLASS" data-slot="institution-duty-row" @select="key => selectRowAction(key, duty)">
+          <template v-if="reordering" #lead>
+            <button type="button" class="handle flex min-h-11 w-6 cursor-grab items-center justify-center text-muted-foreground active:cursor-grabbing" :aria-label="$t('Tempti, kad pakeistum tvarką')" tabindex="-1" :disabled="saving">
+              <GripVertical class="size-4" aria-hidden="true" />
+            </button>
+          </template>
           <div class="flex items-center gap-3">
             <CollectionPrimaryCell :title="dutyName(duty)" :href="route('duties.show', duty.id)" class="flex-1">
               <InflectedDutyName :name="dutyName(duty)" />
@@ -76,7 +55,7 @@
             </CollectionPrimaryCell>
             <!-- Term editing used to sit beside each person; the first row says where it went. -->
             <SpotlightPopover
-              v-if="canManage && duty === duties[0]"
+              v-if="canManage && !reordering && duty === duties[0]"
               :title="$t('dutiables.holders_spotlight.title')"
               :description="$t('dutiables.holders_spotlight.description')"
               :is-dismissed="holdersSpotlight.isDismissed.value"
@@ -94,14 +73,18 @@
             <DutyHoldersPopover
               v-else
               :holders="duty.current_users ?? []"
-              :can-manage
+              :can-manage="canManage && !reordering"
               @assign="$emit('assign', duty)"
               @edit-term="user => $emit('edit-term', duty, user)"
             />
+            <div v-if="reordering" class="flex shrink-0 items-center">
+              <Button variant="ghost" size="icon-sm" :disabled="saving || index === 0" :aria-label="$t('Perkelti aukščiau')" @click="move(index, -1)"><ArrowUp class="size-4" /></Button>
+              <Button variant="ghost" size="icon-sm" :disabled="saving || index === draft.length - 1" :aria-label="$t('Perkelti žemiau')" @click="move(index, 1)"><ArrowDown class="size-4" /></Button>
+            </div>
           </div>
         </CollectionRow>
       </template>
-    </CollectionRowList>
+    </component>
   </OverviewSection>
 </template>
 
@@ -109,9 +92,8 @@
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowDown, ArrowDownUp, ArrowUp, Briefcase, Pencil, Plus, Save, UserPlus } from '@lucide/vue';
+import { ArrowDown, ArrowDownUp, ArrowUp, Briefcase, GripVertical, Pencil, Plus, Save, UserPlus } from '@lucide/vue';
 
-import DutyCard from '@/Components/AdminForms/DutyCard.vue';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import CollectionRowList from '@/Components/Collection/CollectionRowList.vue';
@@ -134,6 +116,7 @@ const props = defineProps<{
   canManage?: boolean;
   canCreate?: boolean;
   preview?: boolean;
+  totalCount?: number;
 }>();
 
 const emit = defineEmits<{
@@ -141,6 +124,8 @@ const emit = defineEmits<{
   'assign': [duty: DutyWithUsers];
   'edit-term': [duty: DutyWithUsers, user: UserWithPivot];
 }>();
+
+const remainingCount = computed(() => Math.max(0, (props.totalCount ?? props.duties.length) - props.duties.length));
 
 const holdersSpotlight = useFeatureSpotlight('duty-holders-popover-v1');
 

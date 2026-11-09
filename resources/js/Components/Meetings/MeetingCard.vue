@@ -23,6 +23,7 @@
         </p>
         <p class="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground">
           <span class="first-letter:uppercase">{{ when }}</span>
+          <span v-if="otherYear" data-slot="meeting-card-year">· {{ otherYear }}</span>
           <template v-if="upcoming">
             <span aria-hidden="true">·</span>
             <span class="font-semibold text-status-info" data-slot="meeting-card-upcoming">{{ $t('meetings.card.upcoming') }}</span>
@@ -94,12 +95,14 @@ const month = computed(() => formatMonthAbbr(props.meeting.start_time));
 const day = computed(() => formatDateWith(props.meeting.start_time, { day: 'numeric' }));
 const isEmail = computed(() => props.meeting.type === MeetingType.Email);
 
+const otherYear = computed(() => {
+  const year = formatDateWith(props.meeting.start_time, { year: 'numeric' });
+  return year && year !== formatDateWith(new Date(), { year: 'numeric' }) ? year : null;
+});
+
 const when = computed(() => {
-  const start = parseDate(props.meeting.start_time);
-  const otherYear = start && start.getFullYear() !== new Date().getFullYear();
   const fields: Intl.DateTimeFormatOptions = {
     weekday: 'long',
-    ...(otherYear ? { year: 'numeric' } : {}),
     ...(isEmail.value ? {} : { hour: '2-digit', minute: '2-digit' }),
   };
 

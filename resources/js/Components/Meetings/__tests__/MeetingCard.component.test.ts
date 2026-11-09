@@ -68,3 +68,10 @@ describe('MeetingCard', () => {
     expect(past.find('[data-slot="meeting-card-upcoming"]').exists()).toBe(false);
   });
 });
+
+it('shows a separate year only for meetings outside the current year', () => {
+  const year = new Date().getFullYear();
+  const make = (value: number) => mount(MeetingCard, { props: { meeting: { id: '1', title: 'Meeting', start_time: `${value}-06-01 12:00:00` }, href: '/m' } });
+  expect(make(year - 1).get('[data-slot="meeting-card-year"]').text()).toContain(String(year - 1));
+  expect(make(year).find('[data-slot="meeting-card-year"]').exists()).toBe(false);
+});

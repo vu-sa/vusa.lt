@@ -203,3 +203,18 @@ describe('InstitutionOverviewSection — non-public meetings', () => {
     expect(wrapper.find('[data-testid="institution-meetings-hidden"]').exists()).toBe(false);
   });
 });
+
+it.each([true, false])('keeps the meeting summary to three cards with upcoming=%s', (hasUpcoming) => {
+  const meeting = (id: string, start_time: string) => ({ id, title: id, start_time });
+  const wrapper = mount(InstitutionOverviewSection, {
+    props: {
+      institution: makeInstitution(), meetingsTab: true,
+      overview: makeOverview({ recentMeetings: [meeting('past1', '2025-11-03'), meeting('past2', '2025-11-02'), meeting('past3', '2025-11-01')] }),
+      upcomingMeeting: hasUpcoming ? meeting('next', '2999-01-01') : null,
+    }, global: { stubs },
+  });
+  const cards = wrapper.findAll('[data-slot="meeting-card"]');
+  expect(cards).toHaveLength(3);
+  expect(cards[0]!.text()).toContain(hasUpcoming ? 'next' : 'past1');
+  expect(wrapper.text().includes('past3')).toBe(!hasUpcoming);
+});

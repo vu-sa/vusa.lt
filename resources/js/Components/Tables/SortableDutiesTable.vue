@@ -1,38 +1,27 @@
 <template>
-  <!-- Order mode of an institution's Pareigybės section (Forms rule 16): the handle is for a mouse,
-       the caller's row slot adds ↑/↓ for keyboards and phones, where dragging is unreliable. -->
-  <TransitionGroup ref="el" tag="div" class="divide-y divide-border border-y border-border" data-slot="sortable-duties">
-    <div
-      v-for="(model, index) in contents"
-      :key="model?.id || model?.name"
-      class="group/row flex items-start gap-2 px-2 transition-colors hover:bg-accent/40 sm:px-3"
-    >
-      <button
-        type="button"
-        class="handle mt-2.5 flex size-6 shrink-0 cursor-grab items-center justify-center text-muted-foreground active:cursor-grabbing pointer-coarse:hidden"
-        :aria-label="$t('Tempti, kad pakeistum tvarką')"
-        tabindex="-1"
-      >
-        <GripVertical class="size-4" />
-      </button>
-      <div class="min-w-0 flex-1">
-        <slot :model :index />
-      </div>
-    </div>
-  </TransitionGroup>
+  <div ref="el" data-slot="sortable-duties">
+    <CollectionRowList :items="contents" :item-key :row-muted :frame>
+      <template #default="{ item, index }">
+        <slot :item :model="item" :index />
+      </template>
+    </CollectionRowList>
+  </div>
 </template>
 
-<script setup lang="ts">
-import { ref } from 'vue';
-import { GripVertical } from '@lucide/vue';
+<script setup lang="ts" generic="T">
+import { computed, ref } from 'vue';
 
+import CollectionRowList from '@/Components/Collection/CollectionRowList.vue';
+import type { RowListFrame } from '@/Components/Collection/rowList';
 import { useMotionAwareSortable } from '@/Composables/useMotionAwareSortable';
 
-const contents = defineModel<Record<string, any>[]>();
-
-const el = ref(null);
-
-useMotionAwareSortable(el, contents, {
-  handle: '.handle', forceFallback: true, animation: 100,
-});
+const contents = defineModel<T[]>('items', { default: () => [] });
+defineProps<{
+  itemKey?: (item: T) => string | number;
+  rowMuted?: (item: T) => boolean;
+  frame?: RowListFrame;
+}>();
+const el = ref<HTMLElement | null>(null);
+const list = computed(() => el.value?.querySelector('ul') ?? null);
+useMotionAwareSortable(list, contents, { handle: '.handle', forceFallback: true, animation: 100, watchElement: true });
 </script>

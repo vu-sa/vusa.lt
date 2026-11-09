@@ -1,30 +1,27 @@
 <template>
   <div class="flex flex-col gap-10" data-slot="institution-overview">
-    <OverviewSection v-if="upcomingMeeting" variant="home" :title="$t('Artimiausias posėdis')" :icon="CalendarIcon">
-      <MeetingCard :meeting="upcomingMeeting" :href="route('meetings.show', upcomingMeeting.id)" />
-    </OverviewSection>
     <OverviewSection
       variant="home"
-      :title="$t('Paskutiniai posėdžiai')"
+      :title="upcomingMeeting ? $t('Posėdžiai') : $t('Paskutiniai posėdžiai')"
       :icon="CalendarIcon"
       content-ruled
       :empty="noMeetings"
       :empty-text="$t('Šiai institucijai dar nėra suplanuota susitikimų.')"
     >
-      <template v-if="recentMeetings.length > 0 && meetingsTab" #actions>
+      <template v-if="displayMeetings.length > 0 && meetingsTab" #actions>
         <SectionHeaderAction :label="$t('Visi posėdžiai')" trailing-chevron @click="$emit('navigate-tab', 'meetings')" />
       </template>
 
       <!-- Cards from md; below it a swipeable row, so three cards never make the phone overview three screens long. -->
       <ul
-        v-if="recentMeetings.length > 0"
+        v-if="displayMeetings.length > 0"
         :class="[
           'flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1 [scrollbar-width:thin]',
           'md:grid md:grid-cols-3 md:gap-4 md:overflow-visible md:pb-0',
         ]"
         data-slot="institution-recent-meetings"
       >
-        <li v-for="meeting in recentMeetings" :key="meeting.id" class="w-[85%] max-w-80 shrink-0 snap-start md:w-auto md:max-w-none">
+        <li v-for="meeting in displayMeetings" :key="meeting.id" class="w-[85%] max-w-80 shrink-0 snap-start md:w-auto md:max-w-none">
           <MeetingCard :meeting :href="route('meetings.show', meeting.id)" />
         </li>
       </ul>
@@ -44,6 +41,7 @@
       <InstitutionDutiesSection
         v-if="duties"
         :duties
+        :total-count="institution.duties_count"
         preview
         @view-all="$emit('navigate-tab', 'duties')"
         :institution-id="institution.id"
@@ -77,7 +75,7 @@ import InstitutionDutiesSection from './InstitutionDutiesSection.vue';
 const props = defineProps<{
   institution: InstitutionPageData;
   overview: InstitutionOverviewData;
-  /** Shown here only while there are few enough to need no tab of their own. */
+  /** Bounded preview; the full list lives in Pareigybės. */
   duties?: DutyWithUsers[] | null;
   canManage?: boolean;
   /** Whether a Posėdžiai tab exists for "Visi posėdžiai" to open. */
@@ -100,5 +98,10 @@ const recentMeetings = computed(() => [...props.overview.recentMeetings]
   .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime())
   .slice(0, 3));
 
-const noMeetings = computed(() => recentMeetings.value.length === 0 && !props.overview.meetings_hidden);
+const displayMeetings = computed(() => [
+  ...(props.upcomingMeeting ? [props.upcomingMeeting] : []),
+  ...recentMeetings.value.slice(0, props.upcomingMeeting ? 2 : 3),
+]);
+
+const noMeetings = computed(() => displayMeetings.value.length === 0 && !props.overview.meetings_hidden);
 </script>

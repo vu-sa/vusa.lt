@@ -25,8 +25,8 @@ const stubs = {
   PopoverContent: stubPopoverContent,
   // The real one drives Sortable on the DOM; the up/down buttons are what a test can reach.
   SortableDutiesTable: {
-    props: ['modelValue'],
-    template: '<div><div v-for="(model, index) in modelValue" :key="model.id" :data-row="model.id"><slot :model="model" :index="index" /></div></div>',
+    props: ['items'],
+    template: '<div><div v-for="(model, index) in items" :key="model.id" :data-row="model.id"><slot :model="model" :item="model" :index="index" /></div></div>',
   },
   DutyCard: { props: ['duty', 'canManage'], template: '<div class="duty-card">{{ duty.name }}</div>' },
   EmptyState: { props: ['title', 'actionLabel'], template: '<div data-testid="empty">{{ title }}<span v-if="actionLabel">{{ actionLabel }}</span></div>' },
@@ -170,4 +170,21 @@ it('does not offer duty creation just because institution management is allowed'
   const wrapper = mountSection({ duties: [], canManage: true, canCreate: false });
   expect(wrapper.text()).not.toContain('Sukurti pirmą pareigybę');
   expect(wrapper.text()).not.toContain('Nauja pareigybė');
+});
+
+it('keeps duty rows and holder controls when entering order mode', async () => {
+  const wrapper = mountSection();
+  const before = wrapper.findAll('[data-slot="institution-duty-row"]').map(row => row.text());
+  await button(wrapper, 'Keisti tvarką')!.trigger('click');
+  expect(wrapper.findAll('[data-slot="institution-duty-row"]')).toHaveLength(3);
+  expect(wrapper.find('.duty-card').exists()).toBe(false);
+  expect(wrapper.findAll('.handle')).toHaveLength(3);
+  expect(wrapper.text()).toContain('Pirmininkas');
+  expect(before).toHaveLength(3);
+});
+
+it('shows the total and the number of duties outside the preview', () => {
+  const wrapper = mountSection({ preview: true, canManage: false, totalCount: 8 });
+  expect(wrapper.get('[data-slot="overview-section-count"]').text()).toBe('8');
+  expect(wrapper.text()).toContain('Visos pareigybės · +5');
 });
