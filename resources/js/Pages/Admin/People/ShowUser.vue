@@ -130,8 +130,6 @@
     <template #tasks>
       <TaskManager
         :tasks
-        :task-stats
-        :disabled="false"
         @open-task-detail="openTaskDetail"
       />
     </template>

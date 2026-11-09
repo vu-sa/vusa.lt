@@ -21,7 +21,7 @@
       </p>
 
       <div v-else class="space-y-6">
-        <ul v-if="primaryTypes.length || otherFiles.length" :class="ROW_LIST_CLASS" data-slot="fileable-primary-files">
+        <ul v-if="primaryTypes.length || otherFiles.length" :class="ROW_LIST_BOXED_CLASS" data-slot="fileable-primary-files">
           <template v-for="type in primaryTypes" :key="type">
             <FileRow
               v-for="file in filesOfType(type)"
@@ -59,7 +59,8 @@
           <h3 class="mb-2 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
             {{ $t('Tipo dokumentai') }} · {{ typeFiles.length }}
           </h3>
-          <ul :class="ROW_LIST_CLASS">
+          <!-- Directly under the header when the record has no files of its own. -->
+          <ul :class="primaryTypes.length || otherFiles.length ? ROW_LIST_BOX_CLASS : ROW_LIST_BOXED_CLASS">
             <FileRow v-for="file in typeFiles" :key="file.id" :file :can-delete="false" @copy="copyLink" />
           </ul>
         </section>
@@ -125,7 +126,7 @@ import { useClipboard, useDropZone } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { CircleDashed, FolderOpen, Upload } from '@lucide/vue';
 
-import { ROW_LIST_CLASS, ROW_PADDING_CLASS } from '@/Components/Collection/rowList';
+import { ROW_LIST_BOX_CLASS, ROW_LIST_BOXED_CLASS, ROW_PADDING_CLASS } from '@/Components/Collection/rowList';
 import { ConfirmDialog, FillActionButton, OverviewSection, SectionHeaderAction } from '@/Components/Patterns';
 import StagingNote from '@/Components/StagingNote.vue';
 import { Skeleton } from '@/Components/ui/skeleton';

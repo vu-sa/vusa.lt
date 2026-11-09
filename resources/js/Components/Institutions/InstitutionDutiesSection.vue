@@ -60,7 +60,7 @@
       </template>
     </SortableDutiesTable>
 
-    <CollectionRowList v-else :items="duties" :item-key="duty => String(duty.id)" :row-muted="duty => duty.is_active === false">
+    <CollectionRowList v-else boxed :items="duties" :item-key="duty => String(duty.id)" :row-muted="duty => duty.is_active === false">
       <template #default="{ item: duty }">
         <CollectionRow :actions="rowActions(duty)" :class="ROW_PADDING_CLASS" data-slot="institution-duty-row" @select="key => selectRowAction(key, duty)">
           <div class="flex items-center gap-3">

@@ -163,7 +163,7 @@ class InstitutionPresenter
         return $duties;
     }
 
-    /** @return list<array{id: string, title: string, start_time: string, type: MeetingType|null, agenda_items_count: int, vote_matches: int, vote_mismatches: int, incomplete_vote_data: int, has_protocol: bool, has_report: bool, can_discard: bool}> */
+    /** @return list<array{id: string, title: string, start_time: string, type: MeetingType|null, agenda_items_count: int, vote_matches: int, vote_mismatches: int, incomplete_vote_data: int, outcome: array<string, int|string|null>, has_protocol: bool, has_report: bool, can_discard: bool}> */
     public static function meetings(Collection $meetings): array
     {
         $rows = [];
@@ -178,6 +178,7 @@ class InstitutionPresenter
                 'vote_matches' => $row['vote_matches'],
                 'vote_mismatches' => $row['vote_mismatches'],
                 'incomplete_vote_data' => $row['incomplete_vote_data'],
+                'outcome' => $row['outcome'],
                 'has_protocol' => $row['has_protocol'],
                 'has_report' => $row['has_report'],
                 'can_discard' => $row['can_discard'],
@@ -187,7 +188,7 @@ class InstitutionPresenter
         return $rows;
     }
 
-    /** @return array{activity_status: array{status: InstitutionActivityStatus, requires_action: bool, priority: int, periodicity_days: int, effective_days_since_activity: int|null, progress_percentage: int|null, last_activity_type: 'meeting'|'check_in'|null, last_activity_at: string|null, last_meeting_at: string|null, next_meeting_at: string|null, active_check_in_until: string|null, last_completed_check_in_at: string|null}|null, current_users: list<array{id: string, name: string, profile_photo_path: string|null, profile_photo_focal_point: string|null, pivot: array{id: string, start_date: string, end_date: string|null}}>, recentMeetings: list<array{id: string, title: string, start_time: string, type: MeetingType|null, agenda_items_count: int, vote_matches: int, vote_mismatches: int, incomplete_vote_data: int, has_protocol: bool, has_report: bool, can_discard: bool}>, meetings_count: int, meetings_hidden: bool} */
+    /** @return array{activity_status: array{status: InstitutionActivityStatus, requires_action: bool, priority: int, periodicity_days: int, effective_days_since_activity: int|null, progress_percentage: int|null, last_activity_type: 'meeting'|'check_in'|null, last_activity_at: string|null, last_meeting_at: string|null, next_meeting_at: string|null, active_check_in_until: string|null, last_completed_check_in_at: string|null}|null, current_users: list<array{id: string, name: string, profile_photo_path: string|null, profile_photo_focal_point: string|null, pivot: array{id: string, start_date: string, end_date: string|null}}>, recentMeetings: list<array{id: string, title: string, start_time: string, type: MeetingType|null, agenda_items_count: int, vote_matches: int, vote_mismatches: int, incomplete_vote_data: int, outcome: array<string, int|string|null>, has_protocol: bool, has_report: bool, can_discard: bool}>, meetings_count: int, meetings_hidden: bool} */
     public static function overview(Institution $institution, bool $showsMeetings, InstitutionActivityStatusData $status, Collection $meetings): array
     {
         $activity = $status->toArray();

@@ -76,7 +76,7 @@ Institucijų sąraše pavadinimai ir tipai rodomi pasirinkta Mano VU SA kalba. J
 
 ### Institucijos puslapis {#puslapis}
 
-Atvėrus instituciją iškart rodoma apžvalga: aprašymas po pavadinimu (dvi eilutės, visas tekstas – paspaudus **Skaityti daugiau**), trys paskutiniai posėdžiai kortelėmis ir, jei pareigybių yra ne daugiau kaip trys, pačios pareigybės. Kitų skirtukų turinys įkeliamas juos pirmą kartą pasirinkus; kol lauki, rodomas įkėlimo vietaženklis. Skirtukų juosta lieka matoma slenkant, o perjungus skirtuką puslapis nebeperšoka į kitą vietą.
+Atvėrus instituciją iškart rodoma **Santrauka**: aprašymas po pavadinimu (dvi eilutės, visas tekstas – paspaudus **Skaityti daugiau**), trys paskutiniai posėdžiai kortelėmis ir, jei pareigybių yra ne daugiau kaip trys, pačios pareigybės. Kitų skirtukų turinys įkeliamas juos pirmą kartą pasirinkus; kol lauki, rodomas įkėlimo vietaženklis. Skirtukų juosta lieka matoma slenkant, o perjungus skirtuką puslapis nebeperšoka į kitą vietą.
 
 Telefone skiltys rodomos viena po kitos, o jų turinys įkeliamas slenkant iki skilties. Laukelyje **Rodyti** galima palikti vieną skiltį arba vėl rodyti **Visi skyriai**. Nuoroda su pasirinktu skirtuku iškart atveria tą skiltį – ir telefone.
 
@@ -247,10 +247,10 @@ viešumas ir koordinatoriai. Skirtukai:
 
 | Skirtukas | Kas jame |
 |---|---|
-| **Apžvalga** | Trys paskutiniai posėdžiai, pareigybės (jei jų ne daugiau kaip trys), dabartiniai sekretoriai |
+| **Santrauka** | Trys paskutiniai posėdžiai (ar užpildyti, kaip sutapo balsavimai, protokolas ir ataskaita), pareigybės (jei jų ne daugiau kaip trys), dabartiniai sekretoriai |
 | **Pareigybės** | Rodomas, kai pareigybių yra keturios ar daugiau: pareigybės ir jų nariai; čia keičiama pareigybių tvarka |
 | **Posėdžiai** | Institucijos posėdžiai su paieška, filtrais (metai, būsena, balsavimo atitikimas) ir eilučių arba lentelės vaizdu – kaip [posėdžių sąraše](/visak/posedziai) |
-| **Užduotys** | Institucijos ir jos posėdžių užduotys; skaičius rodo neatliktas |
+| **Užduotys** | Institucijos ir jos posėdžių užduotys; skaičius rodo neatliktas. Greitieji filtrai **Vėluoja**, **Automatinės** ir **Atliktos** – kaip užduočių sąraše |
 | **Problemos** | Su institucija susietos problemos, pirmiau neišspręstos (tik jei jų yra, žr. [Problemos](/visak/problemos#posedziai)) |
 | **Ryšiai** | Visos susijusios institucijos viename sąraše, sugrupuotos pagal kryptį; rodomas, kai ryšių yra arba juos gali tvarkyti (žr. [Ryšiai](/sistema/rysiai)) |
 | **Failai** | Institucijos darbo failai SharePoint; viešai nerodomi (žr. [Įrašų failai](/visak/failai)) |
@@ -529,7 +529,7 @@ Kuo sekretorius skiriasi nuo koordinatoriaus, aprašyta [ViSAK](/visak/#koordina
 
 ### Pareigybės
 
-Pareigybės ir jų nariai rodomi apžvalgoje, o kai pareigybių yra keturios ar daugiau – atskirame
+Pareigybės ir jų nariai rodomi skirtuke **Santrauka**, o kai pareigybių yra keturios ar daugiau – atskirame
 skirtuke **Pareigybės**. Eilutėje matyti, kiek vietų užimta, ir pareigybės el. paštas; nariai
 rodomi nuotraukomis. Paspaudus nuotraukas atsiveria narių sąrašas su datomis, nuo kada jie eina
 pareigas; ten redaguoti galintys gali pakeisti nario pareigų laikotarpį arba **Pridėti asmenį**.

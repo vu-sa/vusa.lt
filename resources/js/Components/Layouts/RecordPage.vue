@@ -166,7 +166,8 @@
       </div>
 
       <div v-if="hasTabs" ref="tabsAnchor" aria-hidden="true" />
-      <!-- Sticky under the shell chrome so a long section never strands its tabs off screen. -->
+      <!-- Sticky under the shell chrome, at its section tabs' height, so a long section never strands its tabs off screen.
+           The outer tabs drop their side padding so the row starts and ends with the content. -->
       <nav
         v-if="hasTabs"
         ref="tabsNav"
@@ -187,10 +188,13 @@
             :aria-controls="`record-panel-${section.value}`"
             :tabindex="section.value === currentSection ? 0 : -1"
             :data-section="section.value"
-            class="-mb-px inline-flex h-12 shrink-0 items-center gap-2 border-b-2 px-4 text-xs font-bold uppercase tracking-wide whitespace-nowrap"
-            :class="section.value === currentSection
-              ? 'border-brand text-foreground'
-              : 'border-transparent text-muted-foreground hover:text-foreground'"
+            :class="[
+              '-mb-px inline-flex h-10 shrink-0 items-center gap-2 border-b-2 px-3 first:pl-0 last:pr-0 pointer-coarse:h-11',
+              'text-xs font-bold uppercase tracking-wide whitespace-nowrap',
+              section.value === currentSection
+                ? 'border-brand text-foreground'
+                : 'border-transparent text-muted-foreground hover:text-foreground',
+            ]"
             @click="currentSection = section.value"
             @keydown="onTabKeydown"
           >
@@ -216,7 +220,7 @@
             :class="[
               'mt-8 space-y-10',
               sectionLayout !== 'stacked' && 'md:space-y-0',
-              hasTabs && 'md:min-h-[calc(var(--shell-scroll-height,100svh)-var(--shell-chrome-height,0px)-5rem)]',
+              hasTabs && 'md:min-h-[calc(var(--shell-scroll-height,100svh)-var(--shell-chrome-height,0px)-4.5rem)]',
             ]"
             data-slot="record-sections"
           >

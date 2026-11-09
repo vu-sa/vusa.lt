@@ -561,7 +561,7 @@ const dutiesInOverview = computed(() => props.institution.duties_count <= DUTIES
 const entityIcon = (type: ModelEnum) => getEntityTypeDefinition(type)?.icon;
 
 const tabs = computed<RecordPageSection[]>(() => {
-  const overview: RecordPageSection = { value: 'overview', label: $t('Apžvalga'), icon: LayoutGrid };
+  const overview: RecordPageSection = { value: 'overview', label: $t('Santrauka'), icon: LayoutGrid };
   const duties: RecordPageSection[] = dutiesInOverview.value
     ? []
     : [{ value: 'duties', label: $t('Pareigybės'), count: props.institution.duties_count, icon: entityIcon(ModelEnum.DUTY) }];

@@ -8,7 +8,7 @@
     <button
       v-if="overflows || expanded"
       type="button"
-      class="mt-1 text-sm font-semibold text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground pointer-coarse:min-h-11"
+      class="mt-1 text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline pointer-coarse:min-h-11"
       :aria-expanded="expanded"
       data-testid="institution-about-toggle"
       @click="expanded = !expanded"

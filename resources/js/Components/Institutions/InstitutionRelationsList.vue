@@ -12,11 +12,7 @@
         </SpotlightPopover>
       </template>
 
-      <p class="text-xs text-muted-foreground">
-        {{ $t('Ryšys leidžia vienos institucijos nariams matyti kitos posėdžius ir darbotvarkes.') }}
-      </p>
-
-      <div v-if="rows.length" class="mt-2 flex flex-col gap-6">
+      <div v-if="rows.length" class="flex flex-col gap-6">
         <section v-for="group in groups" :key="group.key" :data-group="group.key">
           <h3 class="mb-2 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
             {{ group.label }} · {{ group.rows.length }}
@@ -39,6 +35,11 @@
       </div>
       <p v-else class="text-sm text-muted-foreground">
         {{ $t('Ryšių nėra.') }}
+      </p>
+
+      <p class="mt-1 text-xs text-muted-foreground" data-slot="institution-relations-note">
+        {{ $t('Ryšys leidžia vienos institucijos nariams matyti kitos posėdžius ir darbotvarkes.') }}
+        <a :href="relationsDocsHref" target="_blank" rel="noopener noreferrer" class="underline underline-offset-4 hover:text-foreground">{{ $t('Plačiau') }}</a>
       </p>
     </OverviewSection>
 
@@ -79,6 +80,7 @@ import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { ConfirmDialog, OverviewSection, SectionHeaderAction } from '@/Components/Patterns';
 import RelationshipLinkSheet from '@/Components/Relationships/RelationshipLinkSheet.vue';
 import type { RelationKindOption, RelationshipLinkRow } from '@/Components/Relationships/types';
+import { useDocsHref } from '@/Composables/useDocsHref';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 
@@ -125,6 +127,7 @@ const props = defineProps<{
 
 // The editor moved here from the retired Sistema → Ryšiai section.
 const spotlight = useFeatureSpotlight('relationship-links-v1');
+const relationsDocsHref = useDocsHref('/sistema/rysiai');
 
 const rows = computed<RelationRow[]>(() => {
   const linksByOther = new Map<string, RelationshipLinkRow[]>();

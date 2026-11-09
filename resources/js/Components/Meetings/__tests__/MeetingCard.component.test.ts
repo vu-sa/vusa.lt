@@ -27,8 +27,7 @@ describe('MeetingCard', () => {
     title: '2026 balandžio 23 d. 15.00 val. posėdis',
     start_time: '2026-04-23 15:00:00',
     agenda_items_count: 4,
-    vote_matches: 2,
-    vote_mismatches: 1,
+    outcome: { completion_status: 'complete', vote_alignment_status: 'mixed', outcome_aligned: 2, outcome_misaligned: 1, outcome_discussed: 1 },
     has_protocol: true,
     has_report: false,
   };
@@ -42,13 +41,21 @@ describe('MeetingCard', () => {
     expect(wrapper.get('time').attributes('datetime')).toBe(meeting.start_time);
   });
 
-  it('sums up the agenda, the votes and the documents', () => {
+  it('says how it went as the meetings list does, and which documents it has', () => {
     const wrapper = mount(MeetingCard, { props: { meeting, href: '/mano/meetings/m1' } });
 
-    expect(wrapper.text()).toContain('meetings.card.agenda_items');
-    expect(wrapper.get('[data-slot="meeting-card-votes"]').text()).toContain('2');
-    expect(wrapper.text()).toContain('Protokolas');
+    expect(wrapper.find('[data-slot="meeting-outcome"]').exists()).toBe(true);
+    expect(wrapper.find('[data-slot="meeting-completion"]').exists()).toBe(true);
+    expect(wrapper.get('[data-slot="meeting-card-documents"]').text()).toContain('Protokolas');
     expect(wrapper.text()).not.toContain('Ataskaita');
+  });
+
+  it('names a meeting with its own title by that title, and a remote one as remote', () => {
+    const custom = mount(MeetingCard, { props: { meeting: { ...meeting, title: 'Metinė konferencija' }, href: '/m' } });
+    const remote = mount(MeetingCard, { props: { meeting: { ...meeting, type: 'remote' }, href: '/m' } });
+
+    expect(custom.text()).toContain('Metinė konferencija');
+    expect(remote.text()).toContain('Nuotolinis posėdis');
   });
 
   it('marks a meeting still to come', () => {
@@ -56,6 +63,8 @@ describe('MeetingCard', () => {
     const past = mount(MeetingCard, { props: { meeting, href: '/m' } });
 
     expect(upcoming.find('[data-slot="meeting-card-upcoming"]').exists()).toBe(true);
+    expect(upcoming.find('[data-slot="meeting-outcome"]').exists()).toBe(false);
+    expect(upcoming.text()).toContain('meetings.card.agenda_items');
     expect(past.find('[data-slot="meeting-card-upcoming"]').exists()).toBe(false);
   });
 });

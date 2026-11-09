@@ -1,5 +1,6 @@
 import type { AvatarUser } from '@/Components/Avatars/UserAvatar.vue';
 import type { SecretaryUser } from '@/Components/Institutions';
+import type { MeetingSearchResult } from '@/Shared/Search/types';
 import type { InstitutionActivityStatus } from '@/Types/InstitutionActivity';
 
 export interface InstitutionPageMeeting {
@@ -10,6 +11,8 @@ export interface InstitutionPageMeeting {
   vote_matches?: number;
   vote_mismatches?: number;
   incomplete_vote_data?: number;
+  /** `Meeting::outcomeSummary()` for the reader, as the meetings index shows it. */
+  outcome?: Partial<MeetingSearchResult>;
   agenda_items_count?: number;
   has_protocol?: boolean;
   has_report?: boolean;
