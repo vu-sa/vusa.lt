@@ -12,6 +12,10 @@
     actions-beside-title
     @action="handleRecordAction"
   >
+    <template v-if="fillActions.length" #next-actions>
+      <RecordNextActions :fill="fillActions" />
+    </template>
+
     <template v-if="hasDescription" #lead>
       <InstitutionAbout :description="institution.description" />
     </template>
@@ -192,6 +196,22 @@
     :taken-ids
   />
 
+  <RelationshipLinkSheet
+    v-if="linkSheetMounted"
+    v-model:open="linkSheetOpen"
+    subject="institution"
+    :record-id="String(institution.id)"
+    :record-name="institution.name"
+    :link="null"
+    :kinds="relationKinds ?? []"
+  />
+
+  <FileableUploadSheet
+    v-if="uploadSheetMounted"
+    v-model:open="uploadSheetOpen"
+    :fileable="{ id: institution.id, type: 'Institution' }"
+  />
+
   <AddCheckInDialog
     v-if="showCheckInModal"
     :open="showCheckInModal"
@@ -243,7 +263,7 @@ import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue';
 import UsersFactList from '@/Components/Avatars/UsersFactList.vue';
 import RecordPage, { type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import type { AdminRecordAction as ActionDescriptor } from '@/Types/AdminRecordAction';
-import { OverviewSection, SectionHeaderAction } from '@/Components/Patterns';
+import { OverviewSection, RecordNextActions, SectionHeaderAction, type RecordNextAction } from '@/Components/Patterns';
 import ProblemSummaryList from '@/Components/Problems/ProblemSummaryList.vue';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
@@ -266,6 +286,8 @@ watch(() => props.institution.id, () => enterInstitution(props.institution), { i
 
 const AssignDutyUserSheet = defineAsyncComponent(() => import('@/Features/Admin/Occupancy/AssignDutyUserSheet.vue'));
 const FileableFilesPanel = defineAsyncComponent(() => import('@/Components/Files/FileableFilesPanel.vue'));
+const FileableUploadSheet = defineAsyncComponent(() => import('@/Components/Files/FileableUploadSheet.vue'));
+const RelationshipLinkSheet = defineAsyncComponent(() => import('@/Components/Relationships/RelationshipLinkSheet.vue'));
 const TaskDetailDialog = defineAsyncComponent(() => import('@/Features/Admin/TaskManager/TaskDetailDialog.vue'));
 const InstitutionRelationsList = defineAsyncComponent(() => import('@/Components/Institutions/InstitutionRelationsList.vue'));
 
@@ -310,13 +332,66 @@ const tabs = computed<RecordPageSection[]>(() => {
     meetings,
     { value: 'tasks', label: $t('Užduotys'), count: props.incompleteTasksCount, icon: entityIcon(ModelEnum.TASK) },
     ...problems,
-    ...(props.institution.related_institutions_count > 0 || props.can.manageLinks
+    // An empty Ryšiai or Failai tab gives way to an "add" action under the facts (see fillActions).
+    ...(props.institution.related_institutions_count > 0
       ? [{ value: 'related', label: $t('Ryšiai'), count: props.institution.related_institutions_count, icon: entityIcon(ModelEnum.RELATIONSHIP) }]
       : []),
-    { value: 'files', label: $t('Failai'), icon: entityIcon(ModelEnum.FILE) },
+    ...(props.institution.has_files ? [{ value: 'files', label: $t('Failai'), icon: entityIcon(ModelEnum.FILE) }] : []),
     ...activityRequests,
     ...(props.can.update ? [{ value: 'terms', label: $t('Kadencijos ir sekretoriai'), icon: CalendarRange }] : []),
   ];
+});
+
+// --- Adding the first link or file: no empty tab, an action instead ------------------------------
+
+const linkSheetOpen = ref(false);
+const linkSheetMounted = ref(false);
+const uploadSheetOpen = ref(false);
+const uploadSheetMounted = ref(false);
+/** The tab the first link or file will bring back, opened once the reload shows it. */
+const revealAfterAdding = ref<'related' | 'files' | null>(null);
+
+const fillActions = computed<RecordNextAction[]>(() => [
+  ...(props.can.manageLinks && props.institution.related_institutions_count === 0
+    ? [{
+        key: 'add-link',
+        label: $t('Pridėti ryšį'),
+        icon: entityIcon(ModelEnum.RELATIONSHIP),
+        run: () => {
+          linkSheetMounted.value = true;
+          linkSheetOpen.value = true;
+          revealAfterAdding.value = 'related';
+        },
+      }]
+    : []),
+  ...(props.can.update && props.institution.sharepointPath && !props.institution.has_files
+    ? [{
+        key: 'add-file',
+        label: $t('Pridėti failą'),
+        icon: entityIcon(ModelEnum.FILE),
+        run: () => {
+          uploadSheetMounted.value = true;
+          uploadSheetOpen.value = true;
+          revealAfterAdding.value = 'files';
+        },
+      }]
+    : []),
+]);
+
+// Closed without adding anything: nothing to reveal. A save closes the sheet after the reload, so the tab is back by then.
+watch([linkSheetOpen, uploadSheetOpen], ([linkOpen, uploadOpen]) => {
+  const target = revealAfterAdding.value;
+  if (!linkOpen && !uploadOpen && target && !tabs.value.some(tab => tab.value === target)) {
+    revealAfterAdding.value = null;
+  }
+});
+
+watch(tabs, (current) => {
+  const target = revealAfterAdding.value;
+  if (target && current.some(tab => tab.value === target)) {
+    currentSection.value = target;
+    revealAfterAdding.value = null;
+  }
 });
 
 // A tab remembered from a fuller visit may not exist here.

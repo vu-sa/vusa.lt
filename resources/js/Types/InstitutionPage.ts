@@ -80,6 +80,8 @@ export interface InstitutionPageData {
   meetings_count: number;
   problems_count?: number;
   related_institutions_count: number;
+  /** Own or type files exist; without them the Failai tab gives way to an "add" action. */
+  has_files?: boolean;
 }
 
 export interface InstitutionOverviewData {

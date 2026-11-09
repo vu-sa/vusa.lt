@@ -276,6 +276,18 @@ describe('authorized access', function (): void {
                 ->reloadOnly('duties', fn (Assert $tab) => $tab->has('duties', InstitutionPresenter::OVERVIEW_DUTY_LIMIT + 1)));
     });
 
+    test('says whether there are files, so an empty Failai tab can give way to an add action', function (): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        asUserWithInertia($this->admin)->get(route('institutions.show', $institution))
+            ->assertInertia(fn (Assert $page) => $page->where('institution.has_files', false));
+
+        FileableFile::factory()->create(['fileable_type' => MorphMap::alias(Institution::class), 'fileable_id' => $institution->id]);
+
+        asUserWithInertia($this->admin)->get(route('institutions.show', $institution))
+            ->assertInertia(fn (Assert $page) => $page->where('institution.has_files', true));
+    });
+
     test('the task badge counts incomplete institution and meeting tasks without loading the tab', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
         $meeting = Meeting::factory()->hasAttached($institution)->create();
@@ -416,6 +428,7 @@ describe('authorized access', function (): void {
             'meetings_count' => $loaded->meetings_count,
             'problems_count' => $loaded->problems_count,
             'related_institutions_count' => app(InstitutionRelationService::class)->relatedTo($loaded->id)->count(),
+            'has_files' => true,
             'managers' => $loaded->managers()->map($memberRow),
             'secretaries' => InstitutionSecretaryController::usersPayload(GetInstitutionSecretaries::execute($loaded)),
             'sharepointPath' => SharepointFileService::pathOrNull($loaded),

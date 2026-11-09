@@ -178,6 +178,8 @@ describe('InstitutionOverviewSection', () => {
 
     expect(wrapper.text()).toContain('secretaries.label');
     expect(wrapper.text()).not.toContain('Koordinatoriai');
+    // Named and reachable, as the coordinators are on the representation overview.
+    expect(wrapper.get('[data-slot="people-contact-list"]').text()).toContain('Rūta');
   });
 });
 

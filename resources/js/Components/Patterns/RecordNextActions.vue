@@ -17,7 +17,7 @@
     </li>
     <li v-if="actions.length && fillActions.length" role="separator" aria-orientation="vertical" class="mx-1 h-6 w-px bg-border" />
     <li v-for="entry in fillActions" :key="entry.id">
-      <FillActionButton :label="entry.action.label" :icon="entry.action.icon" @click="entry.action.run()" />
+      <FillActionButton :label="entry.action.label" :icon="entry.action.icon" :data-testid="`record-fill-action-${entry.id}`" @click="entry.action.run()" />
     </li>
   </ul>
 </template>
@@ -39,18 +39,24 @@ export interface RecordNextAction {
   run: () => void;
 }
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   /** Steps the record needs, ahead of the empty sections' fill-in actions. */
   actions?: RecordNextAction[];
+  /** Fill-ins for parts the page hides while empty (a tab), beside those empty sections register. */
+  fill?: RecordNextAction[];
 }>(), {
   actions: () => [],
+  fill: () => [],
 });
 
 // Empty `OverviewSection`s register here through the page's status registry; one without an action
 // (a viewer who cannot fill it) is simply left out.
 const registry = inject(OVERVIEW_STATUS_KEY, null);
 
-const fillActions = computed(() => [...(registry?.entries ?? [])]
-  .filter((pair): pair is [string, OverviewStatusEntry & { action: NonNullable<OverviewStatusEntry['action']> }] => Boolean(pair[1].action))
-  .map(([id, entry]) => ({ id, action: entry.action })));
+const fillActions = computed(() => [
+  ...props.fill.map(action => ({ id: action.key, action: { label: action.label, icon: action.icon, run: action.run } })),
+  ...[...(registry?.entries ?? [])]
+    .filter((pair): pair is [string, OverviewStatusEntry & { action: NonNullable<OverviewStatusEntry['action']> }] => Boolean(pair[1].action))
+    .map(([id, entry]) => ({ id, action: entry.action })),
+]);
 </script>

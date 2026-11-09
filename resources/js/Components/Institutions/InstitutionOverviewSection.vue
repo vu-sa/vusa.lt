@@ -50,7 +50,7 @@
       <!-- Nominated for the current term (O22). Distinct from the body's members: a secretary
            need not hold a duty here at all. -->
       <OverviewSection v-if="secretaries.length" variant="home" :title="$t('secretaries.label')" :icon="UserCheck">
-        <UsersAvatarGroup :users="secretaries" :max="5" size="xs" expandable />
+        <PeopleContactList :people="secretaries" compact />
       </OverviewSection>
     </div>
   </div>
@@ -61,7 +61,7 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Calendar as CalendarIcon, Lock, UserCheck } from '@lucide/vue';
 
-import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
+import PeopleContactList from '@/Components/Avatars/PeopleContactList.vue';
 import MeetingCard from '@/Components/Meetings/MeetingCard.vue';
 import { EmptyState, OverviewSection, SectionHeaderAction } from '@/Components/Patterns';
 import type { DutyWithUsers, UserWithPivot } from '@/Types/DutyAssignment';

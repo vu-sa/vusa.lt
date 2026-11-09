@@ -252,10 +252,15 @@ narių skaičius ir koordinatoriai. Skirtukai:
 | **Posėdžiai** | Institucijos posėdžiai su paieška, filtrais (metai, būsena, balsavimo atitikimas) ir eilučių arba lentelės vaizdu – kaip [posėdžių sąraše](/visak/posedziai) |
 | **Užduotys** | Institucijos ir jos posėdžių užduotys; skaičius rodo neatliktas. Greitieji filtrai **Vėluoja**, **Automatinės** ir **Atliktos** – kaip užduočių sąraše |
 | **Problemos** | Su institucija susietos problemos, pirmiau neišspręstos (tik jei jų yra, žr. [Problemos](/visak/problemos#posedziai)) |
-| **Ryšiai** | Visos susijusios institucijos viename sąraše, sugrupuotos pagal kryptį; rodomas, kai ryšių yra arba juos gali tvarkyti (žr. [Ryšiai](/sistema/rysiai)) |
-| **Failai** | Institucijos darbo failai SharePoint; viešai nerodomi (žr. [Įrašų failai](/visak/failai)) |
+| **Ryšiai** | Visos susijusios institucijos viename sąraše, sugrupuotos pagal kryptį; rodomas, kai ryšių yra (žr. [Ryšiai](/sistema/rysiai)) |
+| **Failai** | Institucijos ir jos tipų darbo failai SharePoint; viešai nerodomi, skirtukas rodomas, kai failų yra (žr. [Įrašų failai](/visak/failai)) |
 | **Užklausos atstovams** | Išsiųsti klausimai, ar vyko posėdis, ir atsakymai (žr. [Užklausos atstovams](#uzklausos)) |
 | **Kadencijos ir sekretoriai** | Kadencijos ir kiekvienos jų sekretoriai (tik galintiems redaguoti) |
+
+Kol ryšių ar failų nėra, tuščio skirtuko nerodoma: kas gali juos pridėti, po faktais mato mygtuką
+**Pridėti ryšį** arba **Pridėti failą**. Išsaugojus pirmąjį ryšį ar failą, skirtukas atsiranda ir atveriamas.
+Sekretoriai skirtuke **Santrauka** rodomi su vardu ir mygtuku **Parašyti**, kaip koordinatoriai
+atstovavimo apžvalgoje.
 
 Posėdžių skirtuke rodomi tie patys posėdžiai, kuriuos matytum posėdžių sąraše: jei kurio nors posėdžio matyti negali, jis nerodomas ir čia.
 

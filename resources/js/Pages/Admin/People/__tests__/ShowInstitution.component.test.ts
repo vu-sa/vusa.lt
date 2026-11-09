@@ -26,6 +26,7 @@ const stubs = {
         <h1>{{ title }}</h1>
         <div v-if="status" data-testid="status">{{ status.label }}</div>
         <div data-testid="tabs">{{ sections.map(s => s.value).join('|') }}</div>
+        <slot name="next-actions" />
         <div data-testid="facts">{{ facts.map(f => f.key).join('|') }}</div>
         <slot name="fact-managers" />
         <button v-if="primaryAction" data-testid="primary" @click="$emit('action', primaryAction.key)">{{ primaryAction.label }}</button>
@@ -63,6 +64,8 @@ const stubs = {
   SecretariesSection: { template: '<div data-testid="secretaries" />' },
   AssignDutyUserSheet: { name: 'AssignDutyUserSheet', props: ['open', 'duty', 'dutiable'], template: '<div data-testid="assign-sheet" :data-open="open" />' },
   AddCheckInDialog: true,
+  RelationshipLinkSheet: { name: 'RelationshipLinkSheet', props: ['open'], template: '<div data-testid="link-sheet" :data-open="open" />' },
+  FileableUploadSheet: { name: 'FileableUploadSheet', props: ['open'], template: '<div data-testid="upload-sheet" :data-open="open" />' },
   ConfirmDialog: true,
   RecordActivity: { template: '<div data-testid="record-activity" />' },
   TaskManager: true,
@@ -94,6 +97,7 @@ const baseInstitution: Institution = {
   secretaries: [],
   sharepointPath: null,
   sharepointFolderUrl: null,
+  has_files: true,
   has_public_meetings: false,
   governance_scope: InstitutionScope.University,
   duties_count: 0,
@@ -243,7 +247,37 @@ describe('ShowInstitution.vue', () => {
   it('offers the relations section when there are related institutions, or to someone who can link them', () => {
     expect(tabs(createWrapper())).not.toContain('related');
     expect(tabs(createWrapper({ related_institutions_count: 2 }))).toContain('related');
-    expect(tabs(createWrapper({ can: { update: true, delete: true, recordMeeting: true, reportActivity: true, manageLinks: true } }))).toContain('related');
+    expect(tabs(createWrapper({ can: { update: true, delete: true, recordMeeting: true, reportActivity: true, manageLinks: true } }))).not.toContain('related');
+  });
+
+  /** An empty Ryšiai or Failai tab is clutter: whoever can fill it gets an action instead. */
+  it('offers to add the first link or file instead of an empty tab, only to those who can', async () => {
+    const manager = createWrapper({
+      has_files: false,
+      sharepointPath: '/Institucijos/SA',
+      can: { update: true, delete: true, recordMeeting: true, reportActivity: true, manageLinks: true },
+    });
+
+    expect(tabs(manager)).not.toContain('files');
+    expect(tabs(manager)).not.toContain('related');
+
+    await manager.get('[data-testid="record-fill-action-add-link"]').trigger('click');
+    expect(manager.get('[data-testid="link-sheet"]').attributes('data-open')).toBe('true');
+    await manager.get('[data-testid="record-fill-action-add-file"]').trigger('click');
+    expect(manager.get('[data-testid="upload-sheet"]').attributes('data-open')).toBe('true');
+
+    const reader = createWrapper({ has_files: false, can: { update: false, delete: false, manageLinks: false } });
+    expect(reader.find('[data-slot="record-next-action-list"]').exists()).toBe(false);
+  });
+
+  it('opens the tab the first link brings back once the page reloads with it', async () => {
+    const wrapper = createWrapper({ can: { update: true, delete: true, recordMeeting: true, reportActivity: true, manageLinks: true } });
+
+    await wrapper.get('[data-testid="record-fill-action-add-link"]').trigger('click');
+    await wrapper.setProps({ institution: { ...wrapper.props('institution'), related_institutions_count: 1 } });
+
+    expect(tabs(wrapper)).toContain('related');
+    expect(wrapper.findComponent({ name: 'RecordPage' }).props('section')).toBe('related');
   });
 
   it('shows the tenant and the member count as key facts', () => {
