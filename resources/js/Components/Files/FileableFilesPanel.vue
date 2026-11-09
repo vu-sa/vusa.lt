@@ -5,32 +5,23 @@
     :class="['relative', isOverDropZone && canUpload && 'outline-1 outline-dashed outline-brand outline-offset-4']"
   >
     <StagingNote v-if="canUpload" topic="sharepoint" class="mb-3" />
-    <SectionCard
-      :title="$t('Failai')"
-      :icon="FolderOpen"
-      :count="files?.length || undefined"
-      :empty="!loading && isEmpty"
-    >
-      <template v-if="canUpload" #action>
-        <Button type="button" variant="outline" size="sm" voice="sentence" @click="openUpload()">
-          <Upload class="size-3.5" />
-          {{ $t('Įkelti failus') }}
-        </Button>
-      </template>
-
-      <template #empty>
-        <EmptyState
-          :title="$t('Failų dar nėra')"
-          :description="canUpload ? $t('Nutempk failus čia arba spausk „Įkelti failus“.') : undefined"
-        />
+    <OverviewSection variant="home" :title="$t('Failai')" :icon="FolderOpen" :count="files?.length || undefined">
+      <template v-if="canUpload" #actions>
+        <SectionHeaderAction :icon="Upload" :label="$t('Įkelti failus')" @click="openUpload()" />
       </template>
 
       <div v-if="loading" class="space-y-2">
-        <Skeleton v-for="n in 3" :key="n" class="h-10 w-full" />
+        <Skeleton v-for="n in 3" :key="n" class="h-12 w-full" />
       </div>
 
-      <div v-else class="space-y-5">
-        <ul v-if="primaryTypes.length" class="divide-y divide-border" data-slot="fileable-primary-files">
+      <p v-else-if="isEmpty" class="text-sm text-muted-foreground" data-slot="fileable-files-empty">
+        {{ $t('Failų dar nėra') }}<template v-if="canUpload">
+          — {{ $t('Nutempk failus čia arba spausk „Įkelti failus“.') }}
+        </template>
+      </p>
+
+      <div v-else class="space-y-6">
+        <ul v-if="primaryTypes.length || otherFiles.length" :class="ROW_LIST_CLASS" data-slot="fileable-primary-files">
           <template v-for="type in primaryTypes" :key="type">
             <FileRow
               v-for="file in filesOfType(type)"
@@ -40,31 +31,20 @@
               @copy="copyLink"
               @delete="fileToDelete = $event" @revoke="linkToRevoke = $event"
             />
-            <li v-if="filesOfType(type).length === 0" class="py-1.5">
-              <button
+            <li v-if="filesOfType(type).length === 0" :class="ROW_PADDING_CLASS">
+              <FillActionButton
                 v-if="canUpload"
-                type="button"
                 :data-missing-type="type"
-                :class="[
-                  'flex min-h-11 w-full items-center gap-3 border border-dashed border-border px-3 text-left text-sm',
-                  'text-muted-foreground transition-colors hover:border-brand hover:text-foreground',
-                  'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
-                ]"
+                :label="`${$t('Neįkelta')}: ${$t(fileTypeLabel(type)).toLowerCase()}`"
+                :icon="Upload"
                 @click="openUpload(type)"
-              >
-                <CircleDashed class="size-4 shrink-0" aria-hidden="true" />
-                <span class="flex-1">{{ $t('Neįkelta') }}: {{ $t(fileTypeLabel(type)).toLowerCase() }}</span>
-                <span class="font-medium text-foreground">{{ $t('Įkelti') }}</span>
-              </button>
-              <p v-else class="flex min-h-11 items-center gap-3 px-3 text-sm text-muted-foreground">
+              />
+              <p v-else class="flex min-h-9 items-center gap-2 text-sm text-muted-foreground">
                 <CircleDashed class="size-4 shrink-0" aria-hidden="true" />
                 {{ $t('Neįkelta') }}: {{ $t(fileTypeLabel(type)).toLowerCase() }}
               </p>
             </li>
           </template>
-        </ul>
-
-        <ul v-if="otherFiles.length" class="divide-y divide-border" data-slot="fileable-other-files">
           <FileRow
             v-for="file in otherFiles"
             :key="file.id"
@@ -75,32 +55,35 @@
           />
         </ul>
 
-        <section v-if="typeFiles?.length" class="space-y-1" data-slot="fileable-type-files">
-          <h3 class="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-            {{ $t('Tipo dokumentai') }}
+        <section v-if="typeFiles?.length" data-slot="fileable-type-files">
+          <h3 class="mb-2 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+            {{ $t('Tipo dokumentai') }} · {{ typeFiles.length }}
           </h3>
-          <ul class="divide-y divide-border">
+          <ul :class="ROW_LIST_CLASS">
             <FileRow v-for="file in typeFiles" :key="file.id" :file :can-delete="false" @copy="copyLink" />
           </ul>
         </section>
       </div>
 
-      <template #footer>
-        <p class="text-xs text-muted-foreground" data-slot="fileable-files-privacy">
-          {{ $t('files.record.privacy_note') }}
-          <a :href="filesDocsHref" target="_blank" rel="noopener" class="underline underline-offset-4 hover:text-foreground">{{ $t('Plačiau') }}</a><template v-if="folderUrl">
-            ·
-            <a
-              :href="safeHref(folderUrl)"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="underline underline-offset-4 hover:text-foreground"
-              data-slot="fileable-sharepoint-folder"
-            >{{ $t('files.record.open_in_sharepoint') }}</a>
-          </template>
-        </p>
-      </template>
-    </SectionCard>
+      <p class="mt-1 text-xs text-muted-foreground" data-slot="fileable-files-privacy">
+        {{ $t('files.record.privacy_note') }}
+        <a
+          :href="filesDocsHref"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="underline underline-offset-4 hover:text-foreground"
+        >{{ $t('Plačiau') }}</a><template v-if="folderUrl">
+          ·
+          <a
+            :href="safeHref(folderUrl)"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="underline underline-offset-4 hover:text-foreground"
+            data-slot="fileable-sharepoint-folder"
+          >{{ $t('files.record.open_in_sharepoint') }}</a>
+        </template>
+      </p>
+    </OverviewSection>
 
     <FileableUploadSheet
       v-if="canUpload"
@@ -142,9 +125,9 @@ import { useClipboard, useDropZone } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { CircleDashed, FolderOpen, Upload } from '@lucide/vue';
 
-import { ConfirmDialog, EmptyState, SectionCard } from '@/Components/Patterns';
+import { ROW_LIST_CLASS, ROW_PADDING_CLASS } from '@/Components/Collection/rowList';
+import { ConfirmDialog, FillActionButton, OverviewSection, SectionHeaderAction } from '@/Components/Patterns';
 import StagingNote from '@/Components/StagingNote.vue';
-import { Button } from '@/Components/ui/button';
 import { Skeleton } from '@/Components/ui/skeleton';
 import { type FileableFileType, fileTypeLabel } from '@/Constants/fileTypes';
 import { useDocsHref } from '@/Composables/useDocsHref';

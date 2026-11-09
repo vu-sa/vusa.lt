@@ -17,7 +17,7 @@
       <div v-if="anchorable" class="flex items-center gap-1">
         <template v-if="anchorFor(side)">
           <CalendarClock class="size-3 shrink-0 text-muted-foreground" />
-          <span class="min-w-0 truncate text-[11px] text-muted-foreground" :title="anchorTitle(anchorFor(side)!)">
+          <span class="min-w-0 truncate text-xs text-muted-foreground" :title="anchorTitle(anchorFor(side)!)">
             {{ anchorFor(side)!.title ?? $t('cadences.fields.anchor_untitled') }}
           </span>
           <!-- Only when the sitting belongs to another body: for its own, the name is noise. -->

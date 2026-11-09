@@ -134,17 +134,12 @@
             <div v-for="n in 2" :key="n" class="h-12 animate-pulse border border-border bg-secondary/60" />
           </div>
         </template>
-        <div class="space-y-4" data-testid="institution-problems">
-          <div v-if="can.createProblem" class="flex justify-end">
-            <Button as-child variant="outline" size="sm" voice="sentence">
-              <Link :href="route('problems.create', { institution: institution.id })">
-                <Plus aria-hidden="true" />
-                {{ $t('Nauja problema') }}
-              </Link>
-            </Button>
-          </div>
+        <OverviewSection variant="home" :title="$t('Problemos')" :icon="getEntityTypeDefinition(ModelEnum.PROBLEM)?.icon" :count="problems?.length" data-testid="institution-problems">
+          <template v-if="can.createProblem" #actions>
+            <SectionHeaderAction :icon="Plus" :label="$t('Nauja problema')" :href="route('problems.create', { institution: institution.id })" />
+          </template>
           <ProblemSummaryList :problems="problems ?? []" />
-        </div>
+        </OverviewSection>
       </WhenVisible>
     </template>
 
@@ -218,7 +213,7 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, onUnmounted, ref, watch } from 'vue';
 import { useIntersectionObserver } from '@vueuse/core';
-import { WhenVisible, Link, router, usePage } from '@inertiajs/vue3';
+import { WhenVisible, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
   Calendar as CalendarIcon,
@@ -247,9 +242,8 @@ import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue';
 import UsersFactList from '@/Components/Avatars/UsersFactList.vue';
 import RecordPage, { type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import type { AdminRecordAction as ActionDescriptor } from '@/Types/AdminRecordAction';
-import { OverviewSection } from '@/Components/Patterns';
+import { OverviewSection, SectionHeaderAction } from '@/Components/Patterns';
 import ProblemSummaryList from '@/Components/Problems/ProblemSummaryList.vue';
-import { Button } from '@/Components/ui/button';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import { enterInstitution } from '@/Composables/useRecordTrail';

@@ -65,16 +65,13 @@
           </Button>
         </div>
         <div class="grid grid-cols-[1fr_auto] gap-2 pl-6">
-          <Select :model-value="row.type" @update:model-value="setType(row, String($event))">
-            <SelectTrigger size="sm" :aria-label="$t('Tipas')">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="option in typeOptions" :key="option.value" :value="option.value">
-                {{ $t(option.label) }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          <NativeSelect
+            :model-value="row.type"
+            size="sm"
+            :aria-label="$t('Tipas')"
+            :options="typeOptions.map(option => ({ value: option.value, label: $t(option.label) }))"
+            @update:model-value="setType(row, String($event))"
+          />
           <DatePicker v-model="row.date" size="sm" class="w-44" :placeholder="$t('Data')" />
         </div>
         <p v-if="rowError(index)" class="pl-6 text-xs text-destructive">
@@ -96,7 +93,7 @@ import { SheetForm } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { DatePicker } from '@/Components/ui/date-picker';
 import { Input } from '@/Components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { NativeSelect } from '@/Components/ui/native-select';
 import {
   FILEABLE_FILE_ACCEPT,
   FILEABLE_FILE_TYPES,

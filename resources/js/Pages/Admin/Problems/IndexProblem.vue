@@ -39,35 +39,15 @@
     </template>
 
     <template #row="{ item, actions: recordActions, view }">
-      <CollectionRow :spotlight="item === source?.items.value[0]" :actions="view === 'preview' ? [] : recordActions" class="px-3 py-3 sm:px-4" @select="key => selectRowAction(key, item)">
-        <div class="min-w-0 flex-1">
-          <div class="flex items-center gap-2">
-            <Link
-              v-if="!isDeleted"
-              :href="route('problems.show', item.id)"
-              data-collection-open
-              class="truncate font-medium hover:text-brand"
-            >
-              {{ localizedTitle(item) }}
-            </Link>
-            <span v-else class="truncate font-medium text-muted-foreground">{{ localizedTitle(item) }}</span>
-            <StatusBadge
-              v-if="view !== 'preview' && item.status && problemStatuses[item.status as ProblemStatus]"
-              :status="problemStatuses[item.status as ProblemStatus]"
-              class="shrink-0"
-            />
-          </div>
-          <div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-            <span v-if="item.tenant?.shortname" class="font-medium">{{ item.tenant.shortname }}</span>
-            <span v-if="item.tenant?.shortname">·</span>
-            <span class="tabular-nums">{{ formatDate(new Date(item.occurred_at)) }}</span>
-            <template v-if="item.responsible_user?.name">
-              <span>·</span>
-              <span>{{ item.responsible_user.name }}</span>
-            </template>
-          </div>
-        </div>
-      </CollectionRow>
+      <ProblemCollectionRow
+        :problem="item"
+        :title="localizedTitle(item)"
+        :href="isDeleted ? undefined : route('problems.show', item.id)"
+        :actions="view === 'preview' ? [] : recordActions"
+        :spotlight="item === source?.items.value[0]"
+        :show-status="view !== 'preview'"
+        @select="key => selectRowAction(key, item)"
+      />
     </template>
 
     <template #cell="{ item, column }">
@@ -162,7 +142,7 @@ import { toast } from 'vue-sonner';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
-import CollectionRow from '@/Components/Collection/CollectionRow.vue';
+import ProblemCollectionRow from '@/Components/Problems/ProblemRow.vue';
 import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import ProblemPreview from '@/Components/Problems/ProblemPreview.vue';

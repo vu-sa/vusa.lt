@@ -20,7 +20,7 @@
         <blockquote v-for="note in sending.notes" :key="note" class="border-l-2 border-brand pl-3 text-sm leading-relaxed text-foreground">
           {{ note }}
         </blockquote>
-        <ul class="divide-y divide-border border-y border-border">
+        <ul :class="ROW_LIST_CLASS">
           <ActivityRequestHistoryRow v-for="request in sending.requests" :key="request.id" :request />
         </ul>
       </li>
@@ -36,6 +36,7 @@ import { computed, ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { ROW_LIST_CLASS } from '@/Components/Collection/rowList';
 import { Button } from '@/Components/ui/button';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
 import type { ActivityRequestStatus } from '@/Constants/statuses';

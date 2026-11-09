@@ -32,7 +32,7 @@
               </p>
               <!-- Where the boundary came from, so a date nobody typed is not a mystery. -->
               <p v-if="cadence.start_meeting || cadence.end_meeting"
-                class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground">
+                class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
                 <Link
                   v-for="anchor in [cadence.start_meeting, cadence.end_meeting].filter(Boolean)"
                   :key="anchor!.id"

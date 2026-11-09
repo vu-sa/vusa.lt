@@ -1,20 +1,13 @@
 <template>
   <div class="space-y-4">
     <div class="flex flex-wrap items-center gap-2">
-      <template v-if="taskStats">
-        <Badge v-if="taskStats.overdue > 0" variant="rose" class="gap-1 text-xs">
-          <AlertCircleIcon class="h-3 w-3" />
-          {{ taskStats.overdue }} {{ $t('overdue') }}
-        </Badge>
-        <Badge v-if="taskStats.autoCompleting > 0" variant="secondary" class="gap-1 text-xs">
-          <RotateCwIcon class="h-3 w-3" />
-          {{ taskStats.autoCompleting }} {{ $t('tasks.manager.auto_completing_count') }}
-        </Badge>
-        <Badge v-if="taskStats.completed > 0" variant="secondary" class="gap-1 text-xs">
-          <CheckCircleIcon class="h-3 w-3" />
-          {{ taskStats.completed }} {{ $t('completed') }}
-        </Badge>
-      </template>
+      <!-- A quiet count line, like a collection's "Rasta N": status colour only where something is late. -->
+      <p v-if="statParts.length" class="flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground" data-slot="task-stats">
+        <template v-for="(part, index) in statParts" :key="part.key">
+          <span v-if="index > 0" aria-hidden="true">·</span>
+          <span :class="part.class">{{ part.text }}</span>
+        </template>
+      </p>
 
       <!-- Open tasks by default; completed ones only on request. -->
       <button
@@ -28,8 +21,8 @@
       </button>
     </div>
 
-    <ul v-if="filteredTasks.length > 0" class="divide-y divide-border border-y border-border">
-      <li v-for="task in filteredTasks" :key="task.id">
+    <ul v-if="filteredTasks.length > 0" :class="ROW_LIST_CLASS">
+      <li v-for="task in filteredTasks" :key="task.id" :class="ROW_ITEM_CLASS">
         <TaskRow
           :task
           :loading="loadingTaskId === task.id"
@@ -87,12 +80,12 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, defineAsyncComponent, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { AlertCircleIcon, RotateCwIcon, CheckCircleIcon } from '@lucide/vue';
+import { CheckCircleIcon } from '@lucide/vue';
 import { toast } from 'vue-sonner';
 
 import { useTaskActionDialogs } from '@/Composables/useTaskActionDialogs';
 import type { TaskDisplayData } from '@/Composables/useTaskPresentation';
-import { Badge } from '@/Components/ui/badge';
+import { ROW_ITEM_CLASS, ROW_LIST_CLASS } from '@/Components/Collection/rowList';
 import { controlVariants } from '@/Components/ui/control';
 import { buttonVariants } from '@/Components/ui/button';
 import {
@@ -134,6 +127,19 @@ const emit = defineEmits<{
 }>();
 
 const { openReportWindow } = useTaskActionDialogs();
+
+const statParts = computed(() => {
+  const stats = props.taskStats;
+  if (!stats) {
+    return [];
+  }
+
+  return [
+    stats.overdue > 0 ? { key: 'overdue', text: `${stats.overdue} ${$t('overdue')}`, class: 'font-medium text-status-danger' } : null,
+    stats.autoCompleting > 0 ? { key: 'auto', text: `${stats.autoCompleting} ${$t('tasks.manager.auto_completing_count')}`, class: undefined } : null,
+    stats.completed > 0 ? { key: 'completed', text: `${stats.completed} ${$t('completed')}`, class: undefined } : null,
+  ].filter((part): part is { key: string; text: string; class: string | undefined } => part !== null);
+});
 
 // Component state
 const showCreateTaskDialog = ref(false);
