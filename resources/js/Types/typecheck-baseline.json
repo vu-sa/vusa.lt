@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "total": 2621,
+  "total": 2620,
   "fingerprints": {
     "docs/pdf/build-release.ts | TS2322 | Type 'string | undefined' is not assignable to type 'string'.": 1,
     "docs/pdf/build-release.ts | TS2345 | Argument of type 'string | undefined' is not assignable to parameter of type 'string'.": 1,
@@ -1223,7 +1223,6 @@
     "resources/js/Pages/Admin/Permissions/ShowResponsibility.vue | TS2322 | Type 'number' is not assignable to type 'string'.": 4,
     "resources/js/Pages/Admin/Problems/ShowProblem.vue | TS2352 | Conversion of type 'unknown[] | null | undefined' to type 'Record<string, string>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.": 2,
     "resources/js/Pages/Admin/Problems/ShowProblem.vue | TS2352 | Conversion of type 'unknown[]' to type 'Record<string, string>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.": 2,
-    "resources/js/Pages/Admin/Representation/IndexMeeting.vue | TS7053 | Element implicitly has an 'any' type because expression of type '\"created_at\" | \"updated_at\"' can't be used to index type 'MeetingSearchResult'.": 1,
     "resources/js/Pages/Admin/Representation/ShowAgendaItem.vue | TS2322 | Type 'unknown[] | null | undefined' is not assignable to type 'string | undefined'.": 1,
     "resources/js/Pages/Admin/Representation/ShowAgendaItem.vue | TS2322 | Type '{ id: string | undefined; is_main?: boolean | undefined; is_consensus?: boolean | undefined; title: TranslatedField; note: TranslatedField; student_vote?: VoteValue | undefined; decision?: VoteValue | undefined; student_benefit?: VoteValue | undefined; order?: number | undefined; }[]' is not assignable to type 'Vote[]'.": 1,
     "resources/js/Pages/Admin/Representation/ShowAgendaItem.vue | TS2345 | Argument of type 'Meeting | undefined' is not assignable to parameter of type 'TrailMeeting | undefined'.": 1,

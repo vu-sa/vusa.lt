@@ -76,14 +76,14 @@ nuorodą. Failai, užduotys ir komentarai nerodomi niekada.
 
 ### Atverti ir pasidalinti
 
-Paspausk failo pavadinimą – failas atsidarys naujame lange. Mygtukas **Kopijuoti nuorodą**
-nukopijuoja tą pačią [nuorodą](#nuoroda), kurią gali persiųsti.
+Paspausk failo pavadinimą – failas atsidarys naujame lange. Failo eilutės meniu **⋯** veiksmas
+**Kopijuoti nuorodą** nukopijuoja tą pačią [nuorodą](#nuoroda), kurią gali persiųsti.
 
 ### Atšaukti nuorodą {#atsaukti}
 
 Jei nuoroda pateko ne tiems žmonėms ar failas nebeturi būti pasiekiamas buvusiems gavėjams:
 
-1. Failo eilutėje spausk **Atšaukti nuorodą** (rodoma tik failams, kurių nuoroda jau sukurta).
+1. Failo eilutės meniu **⋯** spausk **Atšaukti nuorodą** (rodoma tik failams, kurių nuoroda jau sukurta).
 2. Patvirtink. Senoji nuoroda nustoja veikti iš karto.
 
 Kitą kartą atvėrus failą sukuriama nauja nuoroda, kuria prireikus galima pasidalyti iš naujo.
@@ -96,7 +96,7 @@ Iki v3 kartą sukurta failo nuoroda veikdavo tol, kol failas būdavo ištrintas.
 
 ### Ištrinti failą
 
-Failo eilutėje spausk **Ištrinti** ir patvirtink. Failas perkeliamas į SharePoint šiukšlinę, o jo
+Failo eilutės meniu **⋯** spausk **Ištrinti** ir patvirtink. Failas perkeliamas į SharePoint šiukšlinę, o jo
 nuoroda nustoja veikti. Jei SharePoint laikinai nepasiekiamas, failas pažymimas kaip ištrintas
 ir iš sąrašo dingsta.
 

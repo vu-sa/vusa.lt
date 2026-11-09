@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Institucijos
-last_reviewed: 2026-11-08
+last_reviewed: 2026-11-09
 tests:
   - tests/Feature/Admin/ModelMeta/TypeControllerTest.php
   - tests/Feature/Meetings/MeetingKindTest.php
@@ -9,6 +9,9 @@ tests:
   - tests/Feature/Admin/Search/InstitutionMemberTermsApiTest.php
   - tests/Feature/Search/AdminSearchTranslationsTest.php
   - resources/js/Pages/Admin/People/__tests__/IndexInstitution.component.test.ts
+  - resources/js/Pages/Admin/People/__tests__/ShowInstitution.component.test.ts
+  - resources/js/Components/Institutions/__tests__/InstitutionMeetingsCollection.component.test.ts
+  - tests/Feature/Admin/Management/InstitutionControllerTest.php
   - resources/js/Composables/__tests__/searchTranslations.test.ts
   - resources/js/Pages/Admin/Dashboard/__tests__/ShowAtstovavimasPadaliniai.component.test.ts
   - tests/Browser/CollectionTrashRefreshTest.php
@@ -73,7 +76,15 @@ Institucijų sąraše pavadinimai ir tipai rodomi pasirinkta Mano VU SA kalba. J
 
 ### Institucijos puslapis {#puslapis}
 
-Atvėrus instituciją iškart rodoma apžvalga, nariai ir paskutiniai posėdžiai. Kitų skirtukų turinys įkeliamas juos pirmą kartą pasirinkus; kol lauki, rodomas įkėlimo vietaženklis. Telefone skiltys rodomos viena po kitos, o jų turinys įkeliamas slenkant iki skilties. Nuoroda su pasirinktu skirtuku iškart atveria tą skiltį.
+Atvėrus instituciją iškart rodoma apžvalga: aprašymas po pavadinimu (dvi eilutės, visas tekstas – paspaudus **Skaityti daugiau**), trys paskutiniai posėdžiai kortelėmis ir, jei pareigybių yra ne daugiau kaip trys, pačios pareigybės. Kitų skirtukų turinys įkeliamas juos pirmą kartą pasirinkus; kol lauki, rodomas įkėlimo vietaženklis. Skirtukų juosta lieka matoma slenkant, o perjungus skirtuką puslapis nebeperšoka į kitą vietą.
+
+Telefone skiltys rodomos viena po kitos, o jų turinys įkeliamas slenkant iki skilties. Laukelyje **Rodyti** galima palikti vieną skiltį arba vėl rodyti **Visi skyriai**. Nuoroda su pasirinktu skirtuku iškart atveria tą skiltį – ir telefone.
+
+<ChangelogNote date="2026-11-09" title="Atnaujintas institucijos puslapis">
+
+Iki 2026-11-09 aprašymas buvo apžvalgos skiltyje, posėdžiai – sąrašu, o pareigybės visada turėjo atskirą skirtuką.
+
+</ChangelogNote>
 
 ### Institucijų sąrašas {#sarasas}
 
@@ -236,14 +247,17 @@ viešumas ir koordinatoriai. Skirtukai:
 
 | Skirtukas | Kas jame |
 |---|---|
-| **Apžvalga** | Aprašymas, paskutiniai posėdžiai su pirmais darbotvarkės punktais, dabartiniai sekretoriai |
-| **Pareigybės** | Institucijos pareigybės ir jų nariai; čia keičiama pareigybių tvarka |
-| **Posėdžiai** | Visi institucijos posėdžiai |
-| **Kadencijos ir sekretoriai** | Kadencijos ir kiekvienos jų sekretoriai (tik galintiems redaguoti) |
-| **Ryšiai** | Susijusios institucijos ir tiesioginiai ryšiai; rodomas, kai ryšių yra arba juos gali tvarkyti (žr. [Ryšiai](/sistema/rysiai)) |
-| **Problemos** | Su institucija susietos problemos, pirmiau neišspręstos (tik jei jų yra, žr. [Problemos](/visak/problemos#posedziai)) |
-| **Failai** | Institucijos darbo failai SharePoint; viešai nerodomi (žr. [Įrašų failai](/visak/failai)) |
+| **Apžvalga** | Trys paskutiniai posėdžiai, pareigybės (jei jų ne daugiau kaip trys), dabartiniai sekretoriai |
+| **Pareigybės** | Rodomas, kai pareigybių yra keturios ar daugiau: pareigybės ir jų nariai; čia keičiama pareigybių tvarka |
+| **Posėdžiai** | Institucijos posėdžiai su paieška, filtrais (metai, būsena, balsavimo atitikimas) ir eilučių arba lentelės vaizdu – kaip [posėdžių sąraše](/visak/posedziai) |
 | **Užduotys** | Institucijos ir jos posėdžių užduotys; skaičius rodo neatliktas |
+| **Problemos** | Su institucija susietos problemos, pirmiau neišspręstos (tik jei jų yra, žr. [Problemos](/visak/problemos#posedziai)) |
+| **Ryšiai** | Visos susijusios institucijos viename sąraše, sugrupuotos pagal kryptį; rodomas, kai ryšių yra arba juos gali tvarkyti (žr. [Ryšiai](/sistema/rysiai)) |
+| **Failai** | Institucijos darbo failai SharePoint; viešai nerodomi (žr. [Įrašų failai](/visak/failai)) |
+| **Užklausos atstovams** | Išsiųsti klausimai, ar vyko posėdis, ir atsakymai (žr. [Užklausos atstovams](#uzklausos)) |
+| **Kadencijos ir sekretoriai** | Kadencijos ir kiekvienos jų sekretoriai (tik galintiems redaguoti) |
+
+Posėdžių skirtuke rodomi tie patys posėdžiai, kuriuos matytum posėdžių sąraše: jei kurio nors posėdžio matyti negali, jis nerodomas ir čia.
 
 **Savo** institucija (kurioje eini ar netrukus pradėsi eiti pareigas) matoma pilnai, net be rolės.
 **Kitą aktyvią** instituciją gali atidaryti kiekvienas narys, bet mato tik viešą jos pusę: apžvalgą, pareigybes ir – jei posėdžiai vieši – posėdžius. Jei posėdžiai nevieši,
@@ -515,9 +529,13 @@ Kuo sekretorius skiriasi nuo koordinatoriaus, aprašyta [ViSAK](/visak/#koordina
 
 ### Pareigybės
 
-Skirtuke **Pareigybės** matyti institucijos pareigybės ir jų nariai. Redaguoti galintys gali keisti
-pareigybių tvarką (rodyklėmis, tada **Išsaugoti**) ir priskirti žmogų pareigybei. Pareigybės
-kuriamos ir tvarkomos [Pareigybių](/organizacija/pareigybes) skiltyje.
+Pareigybės ir jų nariai rodomi apžvalgoje, o kai pareigybių yra keturios ar daugiau – atskirame
+skirtuke **Pareigybės**. Eilutėje matyti, kiek vietų užimta, ir pareigybės el. paštas; nariai
+rodomi nuotraukomis. Paspaudus nuotraukas atsiveria narių sąrašas su datomis, nuo kada jie eina
+pareigas; ten redaguoti galintys gali pakeisti nario pareigų laikotarpį arba **Pridėti asmenį**.
+Asmenį pridėti galima ir eilutės veiksmu. Redaguoti galintys taip pat keičia pareigybių tvarką
+(**Keisti tvarką**, rodyklėmis, tada **Išsaugoti tvarką**). Pareigybės kuriamos ir tvarkomos
+[Pareigybių](/organizacija/pareigybes) skiltyje.
 
 ### Sekti ir nebesekti {#sekti}
 

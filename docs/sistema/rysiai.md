@@ -82,7 +82,7 @@ Galimi pobūdžiai: *Patariamasis*, *Tvirtina sudėtį*, *Klausimai keliauja tol
 ### Tiesioginio ryšio kūrimas {#tiesioginio-rysio-kurimas}
 
 1. Atverk institucijos kortelę ir pereik į skirtuką **Ryšiai**.
-2. Skiltyje **Tiesioginiai ryšiai** spausk **Pridėti ryšį**.
+2. Spausk **Pridėti ryšį** skilties antraštėje.
 3. Pasirink kitą instituciją, kryptį („Ši → kita“ arba „Kita → ši“) ir ryšio pobūdį. Jei reikia,
    pažymėk **Abipusis ryšys**.
 4. Spausk **Išsaugoti**.
@@ -99,8 +99,11 @@ Ryšys rodomas abiejų institucijų kortelėse ir tvarkomas iš bet kurios jų.
 
 ### Ryšio keitimas ir šalinimas
 
-Prie ryšio spausk **Redaguoti**, kad pakeistum pobūdį ar abipusiškumą. Norėdamas susieti kitą
-instituciją, pakeisti kryptį ar apimtį, pašalink ryšį (**Pašalinti**) ir sukurk naują.
+Institucijos kortelėje tiesioginiai ryšiai ir ryšiai per tipą rodomi viename sąraše; tiesioginis
+ryšys pažymėtas „Tiesioginis ryšys“, ir tik jį galima keisti iš institucijos kortelės. Jo eilutės
+meniu **⋯** spausk **Redaguoti ryšį** (tipo kortelėje – **Redaguoti**), kad pakeistum pobūdį ar
+abipusiškumą. Norėdamas susieti kitą
+instituciją, pakeisti kryptį ar apimtį, pašalink ryšį (**Pašalinti ryšį**, tipo kortelėje – **Pašalinti**) ir sukurk naują.
 Šalinimas galutinis – šiukšlinė nenaudojama.
 
 Institucijos kortelės skirtukas **Ryšiai** rodo ir visas susijusias institucijas, taip pat atsiradusias

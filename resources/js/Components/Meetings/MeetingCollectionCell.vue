@@ -12,7 +12,7 @@
   <MeetingOutcome v-else-if="column.key === 'status'" :outcome="item" show="completion" show-complete />
   <MeetingOutcome v-else-if="column.key === 'alignment'" :outcome="item" show="alignment" />
   <MeetingOutcome v-else-if="column.key === 'outcome'" :outcome="item" show="counts" />
-  <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
+  <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(timestampOf(column.key)) }}</span>
 </template>
 
 <script setup lang="ts">
@@ -26,7 +26,7 @@ import MeetingOutcome from './MeetingOutcome.vue';
 import { titleOmitsDate } from './meetingTitle';
 
 /** One table cell of a meetings collection (`meetingColumns`). */
-defineProps<{
+const props = defineProps<{
   item: MeetingSearchResult;
   column: CollectionColumn;
   /** Inside the institution's own record, the title column shows the meeting, not the institution. */
@@ -34,4 +34,8 @@ defineProps<{
   /** Trashed rows cannot be opened. */
   linkless?: boolean;
 }>();
+
+// The index sends both timestamps, though the shared search type does not declare them.
+const timestampOf = (key: 'created_at' | 'updated_at') =>
+  (props.item as unknown as Record<string, number | string | null | undefined>)[key];
 </script>
