@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\GetUserCoordinators;
 use App\Actions\ResolveLearningPath;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\LearningStepRequest;
 use App\Models\LearningStep;
 use App\Services\Learning\ResolvedLearningStep;
 use App\Services\LearningAdminPresenter;
+use App\Services\LearningInstitutionContactsPresenter;
 use App\Services\LearningPathPresenter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,12 +32,15 @@ class LearningStepController extends AdminController
     public function show(Request $request, LearningStep $learningStep): Response
     {
         $this->authorize('view', $learningStep);
-        $learningStep->load(['sources.document.institution.tenant', 'institutionType', 'dutyType', 'tenant'])->loadCount('comments');
+        $learningStep->load(['sources.document.institution.tenant', 'institutionType', 'dutyType', 'tenant', 'glossaryTerms'])->loadCount('comments');
         $path = ResolveLearningPath::execute($request->user());
         $item = $path->steps->concat($path->meetingPrep)->first(fn (ResolvedLearningStep $item): bool => $item->step->id === $learningStep->id) ?? new ResolvedLearningStep($learningStep);
 
         return Inertia::render('Admin/Learning/ShowLearningStep', [
             'step' => LearningPathPresenter::step($item, $request->user(), app()->getLocale()),
+            'inPath' => $path->contains($learningStep->id),
+            'coordinators' => GetUserCoordinators::execute($request->user()),
+            'institutionContacts' => LearningInstitutionContactsPresenter::forUser($request->user(), app()->getLocale()),
             'canSeeReps' => LearningAdminPresenter::canSeeReps($request->user()),
         ]);
     }

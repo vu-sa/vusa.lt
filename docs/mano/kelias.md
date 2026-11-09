@@ -10,13 +10,18 @@ tests:
   - tests/Feature/Admin/Learning/LearningStepProgressControllerTest.php
   - tests/Feature/Admin/Learning/SystemStepDetectorsTest.php
   - resources/js/Features/Admin/Learning/__tests__/LearningTabs.component.test.ts
+  - resources/js/Features/Admin/Learning/__tests__/LearningPathView.component.test.ts
+  - resources/js/Features/Admin/Learning/__tests__/LearningStepRow.component.test.ts
+  - resources/js/Features/Admin/Learning/__tests__/BrowserNotificationSetup.component.test.ts
+  - resources/js/Features/Admin/Learning/__tests__/InstallationInstructions.component.test.ts
 ---
 
 # Mano kelias
 
-<ChangelogNote date="2026-11-09" title="Ruošiama mokymosi erdvė">
+<ChangelogNote date="2026-11-09" title="Mano kelias ir pažanga">
 
-Pradžioje pridėta skiltis „Mano kelias“. Kol ruošiami mokymosi ir redagavimo puslapiai, skirtukuose rodoma informacija apie ruošiamą turinį.
+Mano kelyje žingsniai išdėstyti pagal kadencijos etapus. Galima pažymėti pažangą,
+atverti šaltinį, peržiūrėti sąvokas ir dalytis įžvalgomis prie žingsnio.
 
 </ChangelogNote>
 
@@ -30,20 +35,48 @@ Skiltis skirta pasiruošti pareigoms ir išsaugoti patirtį kitam atstovui.
 Atvėrus [Mano kelią](app:/mano/learning), matomi skirtukai „Mano kelias“, „Žinynas“,
 „Sąvokos“ ir „Perdavimas“. Atsakingam koordinatoriui taip pat matomas skirtukas „Mano atstovai“.
 
-Šiame etape puslapiai dar nerodo mokymosi žingsnių ir neleidžia redaguoti turinio.
-Mokymosi ir perdavimo sąsajos bus pildomos toliau.
+Dabartinis etapas pažymėtas „dabar“ ir išskleistas. Kiti etapai suskleisti, bet juos galima
+atverti bet kada. Prie kiekvieno etapo rodomas atliktų ir visų žingsnių skaičius.
+Žingsniai sugrupuoti pagal pagrindą, institucijos ar pareigų tipą ir padalinį.
+
+Atvėrus žingsnį matoma, kam jo reikia, ir nuoroda į šaltinį. Jei dokumentas dar neviešas,
+nuoroda nerodoma. „Įžvalgos“ atveria žingsnio puslapio diskusiją. Žingsnio puslapyje taip pat
+matomi susietų sąvokų paaiškinimai: paspaudus sąvoką atsiveria apibrėžimas.
+
+Po keliu pateikiamas pasiruošimas kiekvienam posėdžiui pagal institucijos tipą. Tai kartojamas
+priminimas, todėl atlikimo žymų jame nėra.
 
 ## Veiksmai
 
-Pasirink Pradžia → Mano kelias ir atverk norimą skirtuką.
+1. Atverk [Mano kelią](app:/mano/learning) ir išskleisk žingsnį.
+2. Perskaityk paaiškinimą, atverk šaltinį arba atlik nurodytą veiksmą.
+3. Spausk **Perskaičiau** arba **Atlikau**. Rekomenduojamą ar papildomą žingsnį galima **Praleisti**.
+4. Savo žymą galima panaikinti paspaudus **Grąžinti**. Automatiškai atliktas žingsnis taip ir pažymėtas;
+   jo žyma priklauso nuo veiklos platformoje.
+
+Diegimo žingsnyje pateiktos telefono ir kompiuterio instrukcijos. Naršyklės pranešimų leidimo
+prašoma tik paspaudus įjungimo mygtuką. Kontaktų žingsniuose rodomi koordinatoriai ir savo
+atstovaujamų institucijų pirmininkai bei dabartinės kadencijos sekretoriai.
 
 ## Kas ką gali {#teises}
 
 | Kas | Kas prieinama dabar |
 |---|---|
-| Kiekvienas prisijungęs narys | Mano kelio, žinyno, sąvokų ir perdavimo skirtukai |
-| Atsakingas studentų atstovų koordinatorius | Papildomai „Mano atstovai“ |
+| Kiekvienas prisijungęs narys | Savo kelias ir pažangos žymos, žingsnio puslapis, sąvokų paaiškinimai ir įžvalgos |
+| Atsakingas studentų atstovų koordinatorius | Papildomai „Mano atstovai“ ir atstovo kelio peržiūra be pažangos keitimo |
 | Mokymosi turinį kurti galintis narys | „Sukurti mokymosi žingsnį“ per „+ Sukurti“; forma dar ruošiama |
+
+## Pažangos būsenos
+
+| Būsena | Ką reiškia |
+|---|---|
+| Laukia | Žingsnis dar neatliktas |
+| Atlikta | Pažymėta paties nario arba automatiškai pagal veiklą |
+| Praleista | Narys praleido rekomenduojamą ar papildomą žingsnį |
+| Atnaujinta — peržiūrėk | Po perskaitymo pakeistas žinių šaltinis; jį galima peržiūrėti ir pažymėti iš naujo |
+
+Antraštėje esminiai žingsniai skaičiuojami atskirai nuo bendros pažangos.
+Tavo pažangą matantys koordinatoriai nurodomi po antrašte, jei jie priskirti.
 
 ## Pranešimai ir automatizavimas
 

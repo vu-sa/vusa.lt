@@ -204,3 +204,16 @@ function status(label: string, role: StatusRole, uppercase = false): StatusPrese
 export function statusFor<K extends string, T extends StatusPresentation>(map: Record<K, T>, value: string | null | undefined): T | null {
   return value && Object.hasOwn(map, value) ? map[value as K]! : null;
 }
+
+export const learningImportanceStatuses = {
+  essential: status('learning.importance.essential', 'info'),
+  recommended: status('learning.importance.recommended', 'neutral'),
+  optional: status('learning.importance.optional', 'neutral'),
+};
+
+export const learningProgressStatuses = {
+  pending: status('learning.states.pending', 'neutral'),
+  done: status('learning.states.done', 'success'),
+  skipped: status('learning.states.skipped', 'neutral'),
+  updated: status('learning.path.updated', 'info'),
+};

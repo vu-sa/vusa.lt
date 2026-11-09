@@ -184,3 +184,16 @@ export const deletedMemberStatus = withIcon(data.deletedMemberStatus, UserX);
 function withIcon(presentation: data.StatusPresentation, icon: LucideIcon): StatusPresentation {
   return { ...presentation, icon };
 }
+
+export const learningImportanceStatuses = {
+  essential: withIcon(data.learningImportanceStatuses.essential, CircleDot),
+  recommended: withIcon(data.learningImportanceStatuses.recommended, Circle),
+  optional: withIcon(data.learningImportanceStatuses.optional, CircleDashed),
+};
+
+export const learningProgressStatuses = {
+  pending: withIcon(data.learningProgressStatuses.pending, Circle),
+  done: withIcon(data.learningProgressStatuses.done, CircleCheck),
+  skipped: withIcon(data.learningProgressStatuses.skipped, CircleMinus),
+  updated: withIcon(data.learningProgressStatuses.updated, RefreshCw),
+};

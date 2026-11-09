@@ -33,6 +33,8 @@ export interface LearningStepData {
   completedAt: string | null;
   skippable: boolean;
   insightsCount: number;
+  reviewedAt: string | null;
+  glossaryTerms: GlossaryTermData[];
 }
 
 export interface LearningPathData {
@@ -113,4 +115,10 @@ export interface LearningRepresentative {
 
 export interface LearningRepsSummary extends LearningTotals {
   representatives: number;
+}
+
+export interface LearningInstitutionContacts {
+  id: string;
+  title: string;
+  contacts: { name: string; role: string; email: string | null }[];
 }

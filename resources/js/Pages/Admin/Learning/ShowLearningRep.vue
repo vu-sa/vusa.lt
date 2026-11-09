@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
-import EmptyState from '@/Components/Patterns/EmptyState.vue';
+import LearningPathView from '@/Features/Admin/Learning/LearningPathView.vue';
 import LearningTabs from '@/Features/Admin/Learning/LearningTabs.vue';
 import type { LearningPathData } from '@/Types/learning';
 
@@ -8,8 +8,8 @@ defineProps<{ path: LearningPathData; rep: { id: string; name: string }; canSeeR
 </script>
 
 <template>
-  <OverviewPage :title="$t('learning.pages.rep')">
+  <OverviewPage :title="$t('learning.pages.rep')" :eyebrow="rep.name">
     <LearningTabs :can-see-reps="canSeeReps" />
-    <EmptyState :title="$t('learning.empty.title')" :description="$t('learning.empty.description')" />
+    <LearningPathView :path="path" readonly />
   </OverviewPage>
 </template>
