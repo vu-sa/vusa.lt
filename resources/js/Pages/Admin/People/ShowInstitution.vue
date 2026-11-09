@@ -67,29 +67,20 @@
     </template>
 
     <template #meetings>
-      <WhenVisible :key="institution.id" :buffer="0" :always="false" data="meetings">
-        <template #fallback>
-          <div class="space-y-3">
-            <div v-for="n in 3" :key="n" class="h-12 animate-pulse border border-border bg-secondary/60" />
-          </div>
-        </template>
-        <InstitutionMeetingsList
-          v-if="meetings?.length"
-          :meetings
-          :institution-name="institution.name"
-          :can-delete="canDeleteMeetings"
-          @select="(meeting) => router.visit(route('meetings.show', meeting.id))"
-          @delete="askDeleteMeeting"
+      <!-- Mounted once the section is in view, so the page never searches for a tab nobody opens. -->
+      <div ref="meetingsAnchor">
+        <InstitutionMeetingsCollection
+          v-if="meetingsSeen"
+          :key="institution.id"
+          :institution-id="String(institution.id)"
+          :can-record-meeting="can.recordMeeting"
+          @record="openMeetingWindow"
         />
-        <EmptyState
-          v-else
-          :title="$t('Nėra susitikimų')"
-          :description="$t('Šiai institucijai dar nėra suplanuota susitikimų.')"
-          :icon="CalendarIcon"
-          :action-label="can.recordMeeting ? $t('Suplanuoti susitikimą') : undefined"
-          @action="openMeetingWindow"
-        />
-      </WhenVisible>
+        <div v-else class="space-y-3" data-testid="meetings-skeleton">
+          <div class="h-14 animate-pulse border-y border-border bg-secondary/60" />
+          <div v-for="n in 3" :key="n" class="h-14 animate-pulse bg-secondary/40" />
+        </div>
+      </div>
     </template>
 
     <template #terms>
@@ -225,19 +216,11 @@
     @close="closeTaskDetail"
     @report="reportFromDetail"
   />
-
-  <ConfirmDialog
-    v-model:open="deleteMeetingOpen"
-    :title="$t('Ištrinti posėdį?')"
-    :description="meetingToDelete?.can_discard ? $t('Posėdis tuščias ir ką tik sukurtas, todėl bus ištrintas visam laikui.') : $t('Posėdis bus perkeltas į šiukšlinę.')"
-    :confirm-label="$t('Ištrinti')"
-    destructive
-    @confirm="deleteMeeting"
-  />
 </template>
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, onUnmounted, ref, watch } from 'vue';
+import { useIntersectionObserver } from '@vueuse/core';
 import { WhenVisible, Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
@@ -259,7 +242,7 @@ import InstitutionAbout from '@/Components/Institutions/InstitutionAbout.vue';
 import InstitutionActivityRequestHistory from '@/Components/Institutions/InstitutionActivityRequestHistory.vue';
 import { CadenceSection } from '@/Components/Cadences';
 import InstitutionDutiesSection from '@/Components/Institutions/InstitutionDutiesSection.vue';
-import InstitutionMeetingsList from '@/Components/Institutions/InstitutionMeetingsList.vue';
+import InstitutionMeetingsCollection from '@/Components/Institutions/InstitutionMeetingsCollection.vue';
 import InstitutionOverviewSection from '@/Components/Institutions/InstitutionOverviewSection.vue';
 import { describeInstitutionActivity } from '@/Components/Institutions/institutionActivity';
 import { SecretariesSection } from '@/Components/Institutions';
@@ -267,7 +250,7 @@ import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue';
 import UsersFactList from '@/Components/Avatars/UsersFactList.vue';
 import RecordPage, { type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import type { AdminRecordAction as ActionDescriptor } from '@/Types/AdminRecordAction';
-import { ConfirmDialog, EmptyState, OverviewSection } from '@/Components/Patterns';
+import { OverviewSection } from '@/Components/Patterns';
 import ProblemSummaryList from '@/Components/Problems/ProblemSummaryList.vue';
 import { RelationshipLinkList } from '@/Components/Relationships';
 import { Button } from '@/Components/ui/button';
@@ -556,7 +539,6 @@ const props = defineProps<{
   canViewActivityRequests: boolean;
   can: { update: boolean; delete: boolean; recordMeeting: boolean; reportActivity: boolean; askAboutActivity: boolean; createProblem: boolean; manageLinks: boolean };
   duties?: InstitutionPageDuty[];
-  meetings?: InstitutionPageMeeting[];
   problems?: InstitutionProblem[];
   tasks?: InstitutionTask[];
   incompleteTasksCount: number;
@@ -636,7 +618,7 @@ watch([tabs, currentSection], () => {
 }, { immediate: true });
 
 const optionalProps = [
-  'duties', 'meetings', 'tasks', 'problems', 'management', 'relatedInstitutions',
+  'duties', 'tasks', 'problems', 'management', 'relatedInstitutions',
   'institutionLinks', 'files', 'typeFiles', 'activityRequests', 'assignmentTerms',
 ] as const;
 
@@ -723,11 +705,6 @@ const recordFacts = computed<RecordFact[]>(() => {
 
   return facts;
 });
-
-// --- Permissions ------------------------------------------------------------------------------
-
-const permissions = computed(() => usePage().props.auth?.can as Record<string, boolean> | undefined);
-const canDeleteMeetings = computed(() => permissions.value?.['meetings.delete.padalinys'] ?? false);
 
 // --- Subscription (Sekti / Nebesekti) ---------------------------------------------------------
 
@@ -871,19 +848,13 @@ const reportFromDetail = () => {
 
 // --- Meetings tab -----------------------------------------------------------------------------
 
-const deleteMeetingOpen = ref(false);
-const meetingToDelete = ref<{ id: string; can_discard?: boolean } | null>(null);
-
-const askDeleteMeeting = (meeting: { id: string; can_discard?: boolean }) => {
-  meetingToDelete.value = meeting;
-  deleteMeetingOpen.value = true;
-};
-
-const deleteMeeting = () => {
-  if (meetingToDelete.value) {
-    router.delete(route('meetings.destroy', meetingToDelete.value.id), { preserveScroll: true });
+const meetingsAnchor = ref<HTMLElement | null>(null);
+const meetingsSeen = ref(false);
+useIntersectionObserver(meetingsAnchor, ([entry]) => {
+  if (entry?.isIntersecting) {
+    meetingsSeen.value = true;
   }
-};
+});
 
 // --- Duties tab and the Priskirti sheet (O21) -------------------------------------------------
 

@@ -147,7 +147,6 @@ class InstitutionController extends AdminController
             'duties' => $loadInstitution()->duties_count <= InstitutionPresenter::OVERVIEW_DUTY_LIMIT
                 ? fn () => InstitutionPresenter::duties($institution)
                 : Inertia::optional(fn () => InstitutionPresenter::duties($institution)),
-            'meetings' => Inertia::optional(fn () => ! $showsMeetings() ? [] : InstitutionPresenter::meetings($meetingQuery()->get())),
             'incompleteTasksCount' => fn () => $readOnly() ? 0 : InstitutionPresenter::incompleteTasksCount($institution),
             'tasks' => Inertia::optional(fn () => $readOnly() ? [] : InstitutionPresenter::tasks($institution)),
             'problems' => Inertia::optional(fn () => InstitutionPresenter::problems($institution)),

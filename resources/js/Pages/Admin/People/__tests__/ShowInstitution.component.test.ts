@@ -50,7 +50,12 @@ const stubs = {
     emits: ['assign', 'edit-term'],
     template: '<div data-testid="duties-section" :data-can-manage="canManage" />',
   },
-  InstitutionMeetingsList: true,
+  InstitutionMeetingsCollection: {
+    name: 'InstitutionMeetingsCollection',
+    props: ['institutionId', 'canRecordMeeting'],
+    emits: ['record'],
+    template: '<div data-testid="meetings-collection" />',
+  },
   UserAvatar: true,
   UsersAvatarGroup: true,
   InstitutionScopeBadge: true,
@@ -149,7 +154,6 @@ const createWrapper = (props: WrapperProps = {}) => {
       incompleteTasksCount: 0,
       relationKinds: [],
       duties: [],
-      meetings: [],
       tasks: [],
       relatedInstitutions: [],
       management,
@@ -364,7 +368,6 @@ describe('ShowInstitution.vue', () => {
 
   it.each<[string, string | string[]]>([
     ['duties', 'duties'],
-    ['meetings', 'meetings'],
     ['terms', 'management'],
     ['related', ['relatedInstitutions', 'institutionLinks']],
     ['problems', 'problems'],
@@ -385,6 +388,34 @@ describe('ShowInstitution.vue', () => {
     await wrapper.vm.$nextTick();
 
     expect(router.reload).not.toHaveBeenCalled();
+  });
+
+  it('searches the meetings only once their section comes into view', async () => {
+    let reveal: ((entries: Array<{ isIntersecting: boolean }>) => void) | undefined;
+    vi.stubGlobal('IntersectionObserver', class {
+      constructor(callback: typeof reveal) {
+        reveal = callback;
+      }
+
+      observe() {}
+      disconnect() {}
+      unobserve() {}
+    });
+
+    const wrapper = createWrapper();
+    expect(wrapper.find('[data-testid="meetings-collection"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="meetings-skeleton"]').exists()).toBe(true);
+
+    // The observer attaches once the anchor element is in the DOM.
+    await wrapper.vm.$nextTick();
+    expect(reveal).toBeTypeOf('function');
+    reveal!([{ isIntersecting: true }]);
+    await wrapper.vm.$nextTick();
+
+    const collection = wrapper.findComponent({ name: 'InstitutionMeetingsCollection' });
+    expect(collection.props()).toMatchObject({ institutionId: 'inst1', canRecordMeeting: true });
+    vi.unstubAllGlobals();
+    vi.stubGlobal('route', (name?: string) => (name === undefined ? { current: () => false } : `/mocked/${name}`));
   });
 
   it('does not mount an activity-history visibility loader without permission', () => {

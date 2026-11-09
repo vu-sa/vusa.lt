@@ -181,13 +181,12 @@ describe('unauthorized access', function (): void {
                 ->whereType('overview.activity_status.status', 'string')
                 ->missing('files')
                 ->missing('tasks')
+                ->where('overview.recentMeetings.0.type', null)
+                ->missing('overview.recentMeetings.0.agenda_item_titles')
+                ->whereType('overview.recentMeetings.0.has_protocol', 'boolean')
+                // The meetings tab searches the index with the reader's own scoped key.
                 ->missing('meetings')
-                ->reloadOnly(['meetings', 'management'], fn (Assert $panels) => $panels
-                    ->where('meetings.0.id', $meeting->id)
-                    ->where('meetings.0.type', null)
-                    ->missing('meetings.0.agenda_item_titles')
-                    ->whereType('meetings.0.has_protocol', 'boolean')
-                    ->where('management', null)));
+                ->reloadOnly('management', fn (Assert $panels) => $panels->where('management', null)));
     });
 
     test('cannot open an inactive institution outside their reach', function (): void {
@@ -242,7 +241,7 @@ describe('authorized access', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
         InstitutionActivityRequest::factory()->create(['institution_id' => $institution->id, 'recipient_id' => $this->admin->id]);
         Duty::factory()->for($institution)->count(InstitutionPresenter::OVERVIEW_DUTY_LIMIT + 1)->create();
-        $optional = ['duties', 'meetings', 'tasks', 'problems', 'management', 'relatedInstitutions', 'institutionLinks', 'files', 'typeFiles', 'activityRequests', 'assignmentTerms'];
+        $optional = ['duties', 'tasks', 'problems', 'management', 'relatedInstitutions', 'institutionLinks', 'files', 'typeFiles', 'activityRequests', 'assignmentTerms'];
 
         asUserWithInertia($this->admin)->get(route('institutions.show', $institution))
             ->assertOk()
@@ -254,7 +253,6 @@ describe('authorized access', function (): void {
                     ->missingAll(array_values(array_diff($optional, $only)))));
     })->with([
         'duties' => [['duties']],
-        'meetings' => [['meetings']],
         'tasks' => [['tasks']],
         'problems' => [['problems']],
         'terms' => [['management']],
@@ -306,12 +304,8 @@ describe('authorized access', function (): void {
                 ->where('overview.recentMeetings.0.vote_matches', 1)
                 ->where('overview.recentMeetings.0.has_protocol', true)
                 ->where('overview.recentMeetings.0.has_report', false)
-                ->reloadOnly('meetings', fn (Assert $meetings) => $meetings
-                    ->where('meetings.0.agenda_items_count', 1)
-                    ->where('meetings.0.vote_matches', 1)
-                    ->where('meetings.0.has_protocol', true)
-                    ->where('meetings.0.has_report', false)
-                    ->where('meetings.0.can_discard', false)));
+                ->where('overview.recentMeetings.0.agenda_items_count', 1)
+                ->where('overview.recentMeetings.0.can_discard', false));
     });
 
     test('term editing loads full metadata separately from member lists', function (): void {
@@ -501,9 +495,8 @@ describe('authorized access', function (): void {
                 ->where('overview.recentMeetings.0.id', $meeting->id)
                 ->where('overview.recentMeetings.0.type', null)
                 ->missing('tasks')->missing('files')->missing('management')->missing('activityRequests')
-                ->reloadOnly(['duties', 'meetings', 'tasks', 'problems', 'relatedInstitutions', 'institutionLinks', 'management'], fn (Assert $panels) => $panels
+                ->reloadOnly(['duties', 'tasks', 'problems', 'relatedInstitutions', 'institutionLinks', 'management'], fn (Assert $panels) => $panels
                     ->where('duties', $json($expectedDuties))
-                    ->where('meetings', $expectedMeetings)
                     ->where('tasks', $expectedTasks)
                     ->where('problems', $expectedProblems)
                     ->where('relatedInstitutions', app(InstitutionRelationService::class)->summaryFor($loaded))
@@ -514,8 +507,6 @@ describe('authorized access', function (): void {
                     ->where('duties.0.name', $dutyName)
                     ->where('duties.0.description', '')
                     ->whereType('duties.0.current_users.0.pivot.start_date', 'string')
-                    ->where('meetings.0.type', null)
-                    ->whereType('meetings.0.agenda_items_count', 'integer')
                     ->where('tasks.0.id', $task->id)
                     ->where('tasks.0.users.0.profile_photo_path', null)
                     ->whereType('tasks.0.can_update', 'boolean')

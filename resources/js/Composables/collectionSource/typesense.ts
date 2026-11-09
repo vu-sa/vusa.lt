@@ -23,6 +23,10 @@ interface TypesenseSourceOptions {
   baseFilterBy?: MaybeRefOrGetter<string | undefined>;
   /** Clearable filters a visit without URL filters starts with, e.g. the user's padaliniai. */
   defaultFilters?: Record<string, string[]>;
+  /** Off for a collection embedded in another page, whose URL it must not rewrite. */
+  syncToUrl?: boolean;
+  /** Offers only these facets, e.g. not the institution's type inside that institution's record. */
+  facetFields?: string[];
 }
 
 export function useTypesenseCollectionSource<T = unknown>(options: TypesenseSourceOptions): TypesenseCollectionSource<T> {
@@ -30,7 +34,7 @@ export function useTypesenseCollectionSource<T = unknown>(options: TypesenseSour
     collection: options.collection,
     loadFacetsOnMount: true,
     searchOnMount: true,
-    syncToUrl: true,
+    syncToUrl: options.syncToUrl ?? true,
     preserveUrlKeys: options.preserveUrlKeys,
     perPage: options.perPage ?? PAGE_SIZE,
     baseFilterBy: options.baseFilterBy,
@@ -56,6 +60,7 @@ export function useTypesenseCollectionSource<T = unknown>(options: TypesenseSour
   const facets = computed<CollectionFacet[]>(() =>
     controller.facets.value
       .filter(facet => facet.type === 'checkbox' || facet.type === 'year-pills')
+      .filter(facet => !options.facetFields || options.facetFields.includes(facet.field))
       .map(facet => ({
         field: facet.field,
         remote: true,
