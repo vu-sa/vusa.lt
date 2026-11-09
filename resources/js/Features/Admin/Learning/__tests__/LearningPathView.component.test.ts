@@ -10,9 +10,9 @@ vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 beforeEach(() => vi.mocked(usePage).mockReturnValue(createMockPage()));
 
 describe('LearningPathView', () => {
-  it('shows every station and its rows without disclosures', () => {
+  it('shows every stage that has steps, with its rows and no disclosures', () => {
     const wrapper = mount(LearningPathView, { props: { path: path() } });
-    expect(wrapper.findAll('[data-stage]')).toHaveLength(4);
+    expect(wrapper.findAll('[data-stage]')).toHaveLength(3);
     expect(wrapper.get('[data-slot="current-stage"]').text()).toBe('learning.path.now');
     expect(wrapper.get('[data-slot="current-stage"]').attributes('aria-current')).toBe('step');
     expect(wrapper.findAll('details')).toHaveLength(0);

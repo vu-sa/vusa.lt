@@ -27,9 +27,14 @@ const sections = computed(() => {
 <template>
   <LearningPageFrame :can-see-reps="canSeeReps">
     <OverviewPage :title="$t('learning.pages.documents')">
-      <section v-for="section in sections" :key="section.key" class="space-y-2" data-slot="document-section">
-        <h2 class="border-b border-border pb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">{{ section.label }}</h2>
-        <LearningStepRow v-for="step in section.steps" :key="step.id" :step="step" show-glossary />
+      <section v-for="section in sections" :key="section.key" data-slot="document-section" :aria-labelledby="`documents-${section.key}`">
+        <h2 :id="`documents-${section.key}`" class="flex items-baseline gap-2 text-xl font-bold leading-tight text-foreground sm:text-2xl">
+          {{ section.label }}
+          <span class="text-sm font-normal tabular-nums text-muted-foreground">{{ section.steps.length }}</span>
+        </h2>
+        <ul class="mt-3 divide-y divide-border border-y border-border">
+          <LearningStepRow v-for="step in section.steps" :key="step.id" :step="step" show-glossary />
+        </ul>
       </section>
       <EmptyState v-if="!sections.length" :title="$t('learning.documents.empty_title')" :description="$t('learning.documents.empty_description')" />
     </OverviewPage>

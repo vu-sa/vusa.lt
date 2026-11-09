@@ -29,7 +29,7 @@ describe('Learning documents', () => {
       global: { stubs: commonStubs },
     });
     const sections = wrapper.findAll('[data-slot="document-section"]');
-    expect(sections.map(section => section.get('h2').text())).toEqual(['Pagrindas', 'Senatas', 'Pareigos', 'VU SA MIF', 'Platforma']);
+    expect(sections.map(section => section.get('h2').text().replace(/\s+\d+$/, ''))).toEqual(['Pagrindas', 'Senatas', 'Pareigos', 'VU SA MIF', 'Platforma']);
     expect(sections[0]?.findAll('[data-step]')).toHaveLength(2);
     expect(wrapper.findAllComponents(LearningStepRow)).toHaveLength(6);
     expect(wrapper.findAllComponents(LearningStepRow).every(row => row.props('showGlossary'))).toBe(true);
