@@ -101,9 +101,78 @@ describe('RecordPage', () => {
     await wrapper.setProps({ actionsBesideTitle: true });
 
     expect(wrapper.find('[data-slot="record-title"]').classes()).toContain('lg:row-start-2');
-    expect(wrapper.find('header').html()).toContain('lg:min-h-42');
+    expect(wrapper.find('[data-slot="record-identity"]').classes()).not.toContain('lg:min-h-42');
     expect(wrapper.find('header').html()).toContain('lg:items-start');
     expect(wrapper.find('header').html()).toContain('lg:col-start-2 lg:row-start-2');
+  });
+
+  it('reserves room for a three-line title only when the actions sit under it', () => {
+    const wrapper = createWrapper();
+
+    expect(wrapper.find('[data-slot="record-identity"]').classes()).toContain('lg:min-h-42');
+  });
+
+  it('wires the tabs to their panels and moves between them with the arrow keys', async () => {
+    const wrapper = createWrapper();
+    const tabs = () => wrapper.findAll('[role="tab"]');
+
+    expect(wrapper.find('[role="tablist"]').exists()).toBe(true);
+    expect(tabs()[0]!.attributes()).toMatchObject({ 'aria-controls': 'record-panel-agenda', tabindex: '0' });
+    expect(tabs()[1]!.attributes('tabindex')).toBe('-1');
+    expect(wrapper.find('#record-panel-files').exists()).toBe(true);
+
+    await tabs()[0]!.trigger('keydown', { key: 'ArrowLeft' });
+    expect(tabs()[2]!.attributes('aria-selected')).toBe('true');
+
+    await tabs()[2]!.trigger('keydown', { key: 'Home' });
+    expect(tabs()[0]!.attributes('aria-selected')).toBe('true');
+  });
+
+  it('keeps the sections at least a screen tall so a short tab cannot pull the page up', () => {
+    const wrapper = createWrapper();
+
+    expect(wrapper.get('[data-slot="record-sections"]').classes().some(name => name.startsWith('md:min-h-'))).toBe(true);
+  });
+
+  /** Phones have no tabs: the select narrows the stacked sections to one, or shows them all. */
+  it('narrows the phone view to the section picked in the switcher', async () => {
+    const wrapper = createWrapper();
+    const sectionOf = (key: string) => wrapper.get(`#record-panel-${key}`).classes();
+    const select = wrapper.get('[data-slot="record-section-switcher"] select');
+
+    expect((select.element as HTMLSelectElement).value).toBe('__all');
+    expect(sectionOf('files')).not.toContain('max-md:hidden');
+
+    await select.setValue('files');
+
+    expect(sectionOf('files')).not.toContain('max-md:hidden');
+    expect(sectionOf('agenda')).toContain('max-md:hidden');
+    expect(wrapper.get('[data-slot="record-activity"]').classes()).toContain('max-md:hidden');
+    expect(wrapper.emitted('update:section')?.at(-1)).toEqual(['files']);
+
+    await select.setValue('__all');
+    expect(sectionOf('agenda')).not.toContain('max-md:hidden');
+  });
+
+  it('opens a phone on the section a link points to', () => {
+    const wrapper = mount(RecordPage, {
+      props: {
+        title: 'Senato posėdis',
+        entityType: 'meeting',
+        section: 'tasks',
+        sections: [
+          { value: 'agenda', label: 'Darbotvarkė' },
+          { value: 'files', label: 'Failai' },
+          { value: 'tasks', label: 'Užduotys', count: 4 },
+        ],
+      },
+      global: { stubs: commonStubs },
+    });
+
+    const select = wrapper.get('[data-slot="record-section-switcher"] select');
+    expect((select.element as HTMLSelectElement).value).toBe('tasks');
+    expect(select.text()).toContain('Užduotys · 4');
+    expect(wrapper.get('#record-panel-agenda').classes()).toContain('max-md:hidden');
   });
 
   it('fits four facts into one wide row while retaining smaller breakpoint columns', () => {

@@ -6,8 +6,9 @@
 
     <div class="mx-auto w-full max-w-[90rem]">
       <header class="border-b border-border pt-6 pb-6 sm:pt-10 sm:pb-8">
-        <!-- Holds three clamped title lines plus the fold toggle on desktop so the facts strip and aside below do not jump between records. -->
-        <div class="flex min-w-0 items-start gap-4 lg:min-h-42">
+        <!-- Holds three clamped title lines plus the fold toggle on desktop so the facts strip and aside below do not jump between records.
+             Beside-title actions keep the title to one row, where that reserve is only empty space. -->
+        <div :class="['flex min-w-0 items-start gap-4', !actionsBesideTitle && 'lg:min-h-42']" data-slot="record-identity">
           <div v-if="$slots.identity" class="shrink-0">
             <slot name="identity" />
           </div>
@@ -164,37 +165,79 @@
         <slot name="next-actions" />
       </div>
 
-      <nav v-if="hasTabs" class="mt-8 hidden border-b border-border md:flex" :aria-label="$t('Įrašo skyriai')">
-        <button
-          v-for="section in sections"
-          :key="section.value"
-          type="button"
-          role="tab"
-          :aria-selected="section.value === currentSection"
-          class="-mb-px inline-flex h-12 items-center gap-2 border-b-2 px-4 text-xs font-bold uppercase tracking-wide"
-          :class="section.value === currentSection
-            ? 'border-brand text-foreground'
-            : 'border-transparent text-muted-foreground hover:text-foreground'"
-          @click="currentSection = section.value"
-        >
-          <component :is="section.icon" v-if="section.icon" class="size-4 shrink-0" aria-hidden="true" />
-          {{ section.label }}
-          <span v-if="section.count" class="text-xs font-normal">{{ section.count }}</span>
-        </button>
+      <div v-if="hasTabs" ref="tabsAnchor" aria-hidden="true" />
+      <!-- Sticky under the shell chrome so a long section never strands its tabs off screen. -->
+      <nav
+        v-if="hasTabs"
+        ref="tabsNav"
+        :class="[
+          'sticky top-[var(--shell-chrome-height,0px)] z-30 mt-8 hidden border-b border-border md:block',
+          'bg-background/95 backdrop-blur-sm [.a11y-contrast_&]:bg-background [.a11y-contrast_&]:backdrop-blur-none',
+        ]"
+        :aria-label="$t('Įrašo skyriai')"
+      >
+        <div ref="tabList" role="tablist" class="flex overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <button
+            v-for="section in sections"
+            :id="`record-tab-${section.value}`"
+            :key="section.value"
+            type="button"
+            role="tab"
+            :aria-selected="section.value === currentSection"
+            :aria-controls="`record-panel-${section.value}`"
+            :tabindex="section.value === currentSection ? 0 : -1"
+            :data-section="section.value"
+            class="-mb-px inline-flex h-12 shrink-0 items-center gap-2 border-b-2 px-4 text-xs font-bold uppercase tracking-wide whitespace-nowrap"
+            :class="section.value === currentSection
+              ? 'border-brand text-foreground'
+              : 'border-transparent text-muted-foreground hover:text-foreground'"
+            @click="currentSection = section.value"
+            @keydown="onTabKeydown"
+          >
+            <component :is="section.icon" v-if="section.icon" class="size-4 shrink-0" aria-hidden="true" />
+            {{ section.label }}
+            <span v-if="section.count" class="text-xs font-normal">{{ section.count }}</span>
+          </button>
+        </div>
       </nav>
+
+      <!-- Below md every section stacks; the select narrows a long record to the one section you came for. -->
+      <div v-if="hasTabs" class="mt-8 md:hidden" data-slot="record-section-switcher">
+        <label :for="switcherId" class="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+          {{ $t('Rodyti') }}
+        </label>
+        <NativeSelect :id="switcherId" v-model="mobileSection" :options="switcherOptions" />
+      </div>
 
       <div :class="$slots.aside ? 'lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-10' : undefined">
         <div class="min-w-0">
-          <div :class="['mt-8 space-y-10', sectionLayout !== 'stacked' && 'md:space-y-0']">
+          <!-- At least a screen tall below the tabs, so a short section never pulls the page up under the reader. -->
+          <div
+            :class="[
+              'mt-8 space-y-10',
+              sectionLayout !== 'stacked' && 'md:space-y-0',
+              hasTabs && 'md:min-h-[calc(var(--shell-scroll-height,100svh)-var(--shell-chrome-height,0px)-5rem)]',
+            ]"
+            data-slot="record-sections"
+          >
             <section
               v-for="section in sections"
+              :id="`record-panel-${section.value}`"
               :key="section.value"
-              :class="sectionLayout === 'stacked' ? undefined : section.value === currentSection ? 'md:block' : 'md:hidden'"
+              :class="[
+                sectionLayout === 'stacked' ? undefined : section.value === currentSection ? 'md:block' : 'md:hidden',
+                hasTabs && mobileSection !== ALL_SECTIONS && section.value !== mobileSection && 'max-md:hidden',
+                'scroll-mt-[calc(var(--shell-chrome-height,0px)+1rem)]',
+              ]"
               :aria-labelledby="`record-section-${section.value}`"
             >
               <h2
                 :id="`record-section-${section.value}`"
-                :class="['mb-4 flex items-center gap-2 text-xl font-semibold text-foreground', sectionLayout !== 'stacked' && 'md:hidden']"
+                :class="[
+                  'mb-4 flex items-center gap-2 text-xl font-semibold text-foreground',
+                  sectionLayout !== 'stacked' && 'md:hidden',
+                  hasTabs && mobileSection !== ALL_SECTIONS && 'max-md:sr-only',
+                ]"
               >
                 <component :is="section.icon" v-if="section.icon" class="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
                 {{ section.label }}
@@ -207,7 +250,10 @@
           <section
             v-if="$slots.activity"
             class="mt-12 border-t border-border pt-8"
-            :class="{ 'md:hidden': hasTabs && currentSection !== sections[0]?.value }"
+            :class="{
+              'md:hidden': hasTabs && currentSection !== sections[0]?.value,
+              'max-md:hidden': hasTabs && mobileSection !== ALL_SECTIONS && mobileSection !== sections[0]?.value,
+            }"
             data-slot="record-activity"
           >
             <slot name="activity" />
@@ -235,9 +281,9 @@
 
 <script setup lang="ts">
 import type { Component } from 'vue';
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, useId, watch } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { useResizeObserver } from '@vueuse/core';
+import { useMediaQuery, useResizeObserver } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronLeft, ChevronRight, History } from '@lucide/vue';
 
@@ -246,6 +292,7 @@ import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import { RuledGrid, type RuledGridColumns } from '@/Components/Brand';
 import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
+import { NativeSelect } from '@/Components/ui/native-select';
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 import { statusRoleParts, type StatusPresentation } from '@/Constants/statusIcons';
@@ -332,6 +379,94 @@ const hasTabs = computed(() => props.sectionLayout !== 'stacked' && props.sectio
 if (!currentSection.value && props.sections.length) {
   currentSection.value = props.sections[0]!.value;
 }
+
+const ALL_SECTIONS = '__all';
+const isDesktop = useMediaQuery('(min-width: 768px)');
+const switcherId = useId();
+// A link to a section other than the first (`?tab=`) opens just that section on a phone too.
+const mobileSection = ref(currentSection.value && currentSection.value !== props.sections[0]?.value
+  ? currentSection.value
+  : ALL_SECTIONS);
+const switcherOptions = computed(() => [
+  { value: ALL_SECTIONS, label: $t('Visi skyriai') },
+  ...props.sections.map(section => ({
+    value: section.value,
+    label: section.count ? `${section.label} · ${section.count}` : section.label,
+  })),
+]);
+
+watch(() => props.sections, (sections) => {
+  if (!sections.some(section => section.value === mobileSection.value)) {
+    mobileSection.value = ALL_SECTIONS;
+  }
+});
+
+watch(mobileSection, (value) => {
+  if (value !== ALL_SECTIONS) {
+    currentSection.value = value;
+  }
+});
+
+const tabsAnchor = ref<HTMLElement | null>(null);
+const tabList = ref<HTMLElement | null>(null);
+
+/** Keeps the new section's top in view: a stuck tab bar would otherwise leave the reader mid-page or below a short section. */
+const revealSection = (value: string) => {
+  if (!isDesktop.value) {
+    if (mobileSection.value === ALL_SECTIONS) {
+      document.getElementById(`record-panel-${value}`)?.scrollIntoView({ block: 'start' });
+    }
+    else {
+      mobileSection.value = value;
+    }
+    return;
+  }
+
+  const anchor = tabsAnchor.value;
+  const scrollArea = anchor?.closest<HTMLElement>('[data-slot="admin-scroll-area"]');
+  if (anchor && scrollArea) {
+    const chrome = Number.parseFloat(getComputedStyle(scrollArea).getPropertyValue('--shell-chrome-height')) || 0;
+    const anchorTop = scrollArea.scrollTop + anchor.getBoundingClientRect().top - scrollArea.getBoundingClientRect().top - chrome;
+    if (scrollArea.scrollTop > anchorTop) {
+      scrollArea.scrollTop = anchorTop;
+    }
+  }
+
+  const list = tabList.value;
+  const tab = [...(list?.querySelectorAll<HTMLElement>('[role="tab"]') ?? [])].find(element => element.dataset.section === value);
+  if (list && tab) {
+    if (tab.offsetLeft < list.scrollLeft) {
+      list.scrollLeft = tab.offsetLeft;
+    }
+    else if (tab.offsetLeft + tab.offsetWidth > list.scrollLeft + list.clientWidth) {
+      list.scrollLeft = tab.offsetLeft + tab.offsetWidth - list.clientWidth;
+    }
+  }
+};
+
+watch(currentSection, (value, previous) => {
+  if (hasTabs.value && value && previous) {
+    void nextTick(() => revealSection(value));
+  }
+});
+
+const onTabKeydown = (event: KeyboardEvent) => {
+  const index = props.sections.findIndex(section => section.value === currentSection.value);
+  const last = props.sections.length - 1;
+  const next = {
+    ArrowRight: index >= last ? 0 : index + 1,
+    ArrowLeft: index <= 0 ? last : index - 1,
+    Home: 0,
+    End: last,
+  }[event.key];
+  if (next === undefined) {
+    return;
+  }
+
+  event.preventDefault();
+  currentSection.value = props.sections[next]!.value;
+  void nextTick(() => tabList.value?.querySelector<HTMLElement>('[aria-selected="true"]')?.focus());
+};
 
 const historyOpen = ref(false);
 
