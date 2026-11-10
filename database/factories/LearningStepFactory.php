@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\LearningAudienceType;
+use App\Enums\LearningStage;
 use App\Enums\LearningStepKind;
 use App\Enums\ResponsibilityPurpose;
 use App\Models\DutyType;
@@ -41,7 +42,9 @@ class LearningStepFactory extends Factory
     public function audience(array $attributes): static
     {
         return $this->withoutAfterCreating()->afterCreating(function (LearningStep $step) use ($attributes): void {
-            LearningStepAudience::factory()->for($step, 'step')->create($attributes);
+            // Only actions sit on the term timeline.
+            $stage = $step->kind === LearningStepKind::Action ? LearningStage::BeforeStart : null;
+            LearningStepAudience::factory()->for($step, 'step')->create(['stage' => $stage, ...$attributes]);
         });
     }
 

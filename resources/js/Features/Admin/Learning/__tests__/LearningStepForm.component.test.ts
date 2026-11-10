@@ -108,7 +108,7 @@ describe('LearningStepForm', () => {
     const payload = transform(stepForm);
     expect(payload.audiences).toEqual([{
       type: LearningAudienceType.Everyone, source_id: null, tenant_id: null,
-      importance: LearningImportance.Essential, stage: LearningStage.BeforeStart,
+      importance: LearningImportance.Essential, stage: null,
       description: { lt: '', en: '' }, order: 0,
     }]);
     expect(stepForm.post).toHaveBeenCalled();

@@ -193,6 +193,8 @@ return [
         'insights_count' => 'Įžvalgos (:count)',
         'insights' => 'Įžvalgos',
         'about' => 'Apie',
+        'about_step' => 'Apie žingsnį',
+        'reviewed_on' => 'Turinys peržiūrėtas :date',
         'meeting_prep' => 'Pasiruošimas posėdžiui',
         'empty_title' => 'Tavo kelyje kol kas nėra žingsnių',
         'empty_description' => 'Grįžk vėliau arba kreipkis į savo koordinatorių.',

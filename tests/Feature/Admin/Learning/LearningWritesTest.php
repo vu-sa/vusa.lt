@@ -40,11 +40,12 @@ test('system updates ignore authored fields and preserve their identity', functi
 test('step writes reject incompatible targets and ambiguous sources', function (array $changes, string $error): void {
     $user = makeUser(Tenant::query()->firstOrFail());
     $user->givePermissionTo(Permission::findOrCreate('learningSteps.create.*', 'web'));
-    $payload = ['kind' => 'knowledge', 'audiences' => [['type' => 'everyone', 'stage' => 'before_start', 'importance' => 'recommended']], 'title' => ['lt' => 'Žingsnis', 'en' => 'Step']];
+    $payload = ['kind' => 'action', 'audiences' => [['type' => 'everyone', 'stage' => 'before_start', 'importance' => 'recommended']], 'title' => ['lt' => 'Žingsnis', 'en' => 'Step']];
     asUser($user)->postJson(route('learningSteps.store'), array_replace($payload, $changes))->assertUnprocessable()->assertJsonValidationErrors($error);
 })->with([
     'missing type' => [['audiences' => [['type' => 'institution_type', 'stage' => 'before_start', 'importance' => 'recommended']]], 'audiences.0.source_id'],
     'meeting prep stage' => [['kind' => 'meeting_prep'], 'audiences.0.stage'],
+    'document stage' => [['kind' => 'knowledge'], 'audiences.0.stage'],
     'missing title' => [['title' => ['en' => 'Step']], 'title.lt'],
     'empty source' => [['sources' => ['lt' => []]], 'sources.lt'],
     'unsafe URL' => [['sources' => ['lt' => ['url' => 'javascript:alert(1)']]], 'sources.lt.url'],
@@ -197,7 +198,7 @@ test('a tenant curator cannot move an editable step into another unit', function
     $other = Tenant::factory()->create();
     asUser($user)->patch(route('learningSteps.update', $step), [
         'kind' => 'knowledge', 'title' => ['lt' => 'Žingsnis', 'en' => 'Step'],
-        'audiences' => [['type' => 'everyone', 'tenant_id' => $other->id, 'stage' => 'before_start', 'importance' => 'recommended']],
+        'audiences' => [['type' => 'everyone', 'tenant_id' => $other->id, 'importance' => 'recommended']],
     ])->assertForbidden();
     expect($step->fresh()->audiences->sole()->tenant_id)->toBe($tenant->id);
 });

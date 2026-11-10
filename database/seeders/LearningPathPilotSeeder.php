@@ -47,7 +47,7 @@ class LearningPathPilotSeeder extends Seeder
             [
                 'key' => 'pilot_vusa_statute',
                 'kind' => LearningStepKind::Knowledge, 'audience' => LearningAudienceType::Purpose,
-                'stage' => LearningStage::BeforeStart, 'importance' => LearningImportance::Essential, 'order' => 10,
+                'stage' => null, 'importance' => LearningImportance::Essential, 'order' => 10,
                 'title' => ['lt' => 'VU SA įstatai', 'en' => 'VU SR statute'],
                 'description' => [
                     'lt' => 'Pagrindinis VU SA dokumentas: kas yra Studentų atstovybė, kokie jos organai ir kaip jie renkami. Iš čia kyla ir tavo, kaip atstovo, įgaliojimai.',
@@ -58,7 +58,7 @@ class LearningPathPilotSeeder extends Seeder
             [
                 'key' => 'pilot_vusa_rules_of_procedure',
                 'kind' => LearningStepKind::Knowledge, 'audience' => LearningAudienceType::Purpose,
-                'stage' => LearningStage::FirstMonths, 'importance' => LearningImportance::Recommended, 'order' => 20,
+                'stage' => null, 'importance' => LearningImportance::Recommended, 'order' => 20,
                 'title' => ['lt' => 'VU SA darbo reglamentas', 'en' => 'VU SR rules of procedure'],
                 'description' => [
                     'lt' => 'Kaip VU SA priima sprendimus, rengia posėdžius ir deleguoja atstovus. Verta žinoti, kai teiksi klausimą ar ieškosi, kas už ką atsakingas.',
@@ -69,7 +69,7 @@ class LearningPathPilotSeeder extends Seeder
             [
                 'key' => 'pilot_vu_statute',
                 'kind' => LearningStepKind::Knowledge, 'audience' => LearningAudienceType::Purpose,
-                'stage' => LearningStage::FirstMonths, 'importance' => LearningImportance::Recommended, 'order' => 30,
+                'stage' => null, 'importance' => LearningImportance::Recommended, 'order' => 30,
                 'title' => ['lt' => 'Vilniaus universiteto statutas', 'en' => 'Statute of Vilnius University'],
                 'description' => [
                     'lt' => 'Kaip valdomas universitetas: Senatas, Taryba, rektorius, padaliniai ir kur juose dalyvauja studentų atstovai. Padeda suprasti, kur priimamas sprendimas, apie kurį kalbi.',
@@ -80,7 +80,7 @@ class LearningPathPilotSeeder extends Seeder
             [
                 'key' => 'pilot_law_on_higher_education',
                 'kind' => LearningStepKind::Knowledge, 'audience' => LearningAudienceType::Purpose,
-                'stage' => LearningStage::WholeTerm, 'importance' => LearningImportance::Optional, 'order' => 40,
+                'stage' => null, 'importance' => LearningImportance::Optional, 'order' => 40,
                 'title' => ['lt' => 'Mokslo ir studijų įstatymas', 'en' => 'Law on Higher Education and Research'],
                 'description' => [
                     'lt' => 'Valstybės lygio taisyklės: studentų teisės, studijų kokybė, atstovybių vaidmuo. Atsiversk, kai universiteto dokumentas remiasi įstatymu ar kai klausimas peržengia universiteto ribas.',
@@ -99,7 +99,7 @@ class LearningPathPilotSeeder extends Seeder
         return [
             [
                 ...$type, 'key' => 'pilot_spk_regulations',
-                'kind' => LearningStepKind::Knowledge, 'stage' => LearningStage::BeforeStart,
+                'kind' => LearningStepKind::Knowledge, 'stage' => null,
                 'importance' => LearningImportance::Essential, 'order' => 10,
                 'title' => ['lt' => 'Studijų programos komiteto nuostatai', 'en' => 'Regulations of the study programme committee'],
                 'description' => [
@@ -140,7 +140,7 @@ class LearningPathPilotSeeder extends Seeder
             ],
             [
                 ...$type, 'key' => 'pilot_spk_activity_plan',
-                'kind' => LearningStepKind::Knowledge, 'stage' => LearningStage::WholeTerm,
+                'kind' => LearningStepKind::Knowledge, 'stage' => null,
                 'importance' => LearningImportance::Optional, 'order' => 50,
                 'title' => ['lt' => 'Studentų atstovo komitete veiklos plano pavyzdys', 'en' => 'Example activity plan of a committee representative'],
                 'description' => [
@@ -247,7 +247,7 @@ class LearningPathPilotSeeder extends Seeder
             $this->upsertStep([
                 'key' => "pilot_unit_regulations_{$tenant->alias}",
                 'kind' => LearningStepKind::Knowledge, 'audience' => LearningAudienceType::Everyone, 'tenant_id' => $tenant->id,
-                'stage' => LearningStage::BeforeStart, 'importance' => LearningImportance::Essential, 'order' => 10,
+                'stage' => null, 'importance' => LearningImportance::Essential, 'order' => 10,
                 'title' => ['lt' => "{$tenant->shortname} nuostatai", 'en' => "{$tenant->shortname} regulations"],
                 'description' => [
                     'lt' => 'Tavo padalinio taisyklės: kas jame renkama, kaip veikia jo valdymo organas ir kaip skiriami atstovai fakultete.',

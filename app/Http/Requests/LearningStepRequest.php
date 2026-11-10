@@ -99,7 +99,10 @@ class LearningStepRequest extends FormRequest
             $tables = ['duty_type' => 'duty_types', 'institution_type' => 'institution_types', 'responsibility' => 'roles', 'duty' => 'duties', 'institution' => 'institutions'];
             foreach ($data['audiences'] as $index => $audience) {
                 $type = LearningAudienceType::from($audience['type']);
-                if ($meetingPrep ? (! in_array($type, [LearningAudienceType::InstitutionType, LearningAudienceType::Institution], true) || ($audience['stage'] ?? null) !== null) : empty($audience['stage'])) {
+                // Only actions sit on the term timeline; documents and meeting prep have no stage.
+                $hasStage = filled($audience['stage'] ?? null);
+                $wrongPrepAudience = $meetingPrep && ! in_array($type, [LearningAudienceType::InstitutionType, LearningAudienceType::Institution], true);
+                if ($wrongPrepAudience || $hasStage !== ($data['kind'] === LearningStepKind::Action->value)) {
                     $validator->errors()->add("audiences.{$index}.stage", __('learning.validation.stage'));
                 }
                 if ($type === LearningAudienceType::Purpose) {

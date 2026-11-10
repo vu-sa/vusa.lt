@@ -18,7 +18,6 @@ withDefaults(defineProps<{
   <div class="space-y-5">
     <p v-if="step.description" class="max-w-prose whitespace-pre-line text-base leading-relaxed text-foreground">{{ step.description }}</p>
     <LearningAudienceNotes :notes="step.audienceNotes" />
-    <p v-if="step.source?.type === 'document' && !step.source.url" class="text-sm text-muted-foreground">{{ $t('learning.path.document_private') }}</p>
 
     <LearningCoordinators v-if="step.key === 'meet_coordinator'" :coordinators="coordinators" />
     <template v-if="step.key === 'meet_institution_contacts'">

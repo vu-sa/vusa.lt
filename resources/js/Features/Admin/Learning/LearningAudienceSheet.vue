@@ -34,6 +34,7 @@ const pickingInstitution = ref(false);
 const targetLabel = ref('');
 const selectedDuty = ref<DutyHit | null>(null);
 const meetingPrep = computed(() => props.kind === LearningStepKind.MeetingPrep);
+const hasStage = computed(() => props.kind === LearningStepKind.Action);
 const fixedTarget = computed(() => props.isSystem || props.audience?.type === LearningAudienceType.Purpose);
 const types = computed(() => props.audienceTypes.filter(type => type !== LearningAudienceType.Purpose && (!meetingPrep.value || [LearningAudienceType.InstitutionType, LearningAudienceType.Institution].includes(type))));
 const typeOptions = computed(() => types.value.map(type => ({ value: type, label: $t(`learning.audience_types.${type}`) })));
@@ -60,7 +61,7 @@ watch(open, value => {
   form.source_id = audience?.source_id ?? null;
   form.tenant_id = audience?.tenant_id ?? (!props.canTargetEverywhere && props.tenants.length === 1 ? props.tenants[0]!.id : null);
   form.importance = audience?.importance ?? LearningImportance.Essential;
-  form.stage = meetingPrep.value ? null : audience?.stage ?? LearningStage.BeforeStart;
+  form.stage = hasStage.value ? audience?.stage ?? LearningStage.BeforeStart : null;
   form.description = { lt: audience?.description.lt ?? '', en: audience?.description.en ?? '' };
   form.order = audience?.order ?? 0;
   form.label = audience?.label ?? '';
@@ -83,7 +84,7 @@ function save() {
   emit('save', {
     ...(props.audience?.id ? { id: props.audience.id } : {}),
     type: form.type, source_id: form.type === LearningAudienceType.Everyone ? null : form.source_id,
-    tenant_id: form.tenant_id, importance: form.importance, stage: meetingPrep.value ? null : form.stage,
+    tenant_id: form.tenant_id, importance: form.importance, stage: hasStage.value ? form.stage : null,
     description: { ...form.description }, order: form.order, label,
   });
   form.defaults();
@@ -122,7 +123,7 @@ function save() {
       <FormFieldWrapper v-if="!isSystem" id="audience-importance" :label="$t('learning_library.fields.importance')" :hint="$t('learning_library.fields.importance_hint')" required>
         <NativeSelect id="audience-importance" v-model="form.importance" :options="importanceOptions" />
       </FormFieldWrapper>
-      <FormFieldWrapper v-if="!meetingPrep" id="audience-stage" :label="$t('learning_library.fields.stage')" required>
+      <FormFieldWrapper v-if="hasStage" id="audience-stage" :label="$t('learning_library.fields.stage')" required>
         <NativeSelect id="audience-stage" v-model="form.stage" :options="stageOptions" data-testid="audience-stage" />
       </FormFieldWrapper>
       <template v-if="!isSystem">

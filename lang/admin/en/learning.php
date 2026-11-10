@@ -193,6 +193,8 @@ return [
         'insights_count' => 'Insights (:count)',
         'insights' => 'Insights',
         'about' => 'About',
+        'about_step' => 'About this step',
+        'reviewed_on' => 'Content reviewed :date',
         'meeting_prep' => 'Meeting preparation',
         'empty_title' => 'There are no steps in your path yet',
         'empty_description' => 'Come back later or contact your coordinator.',

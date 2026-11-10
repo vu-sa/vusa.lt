@@ -64,7 +64,7 @@ paaiškinimu, kam jų reikia, ir pažanga, kurią mato koordinatorius.
 
 Žingsniui gali būti priskirtos kelios auditorijos: visi nariai, pareigybės ar institucijos tipas
 (įskaitant potipius), atsakomybė, konkreti pareigybė arba institucija. Kiekviena auditorija turi
-savo svarbą, etapą ir paaiškinimą. Auditoriją galima apriboti padaliniu – tada ją turi atitikti tavo
+savo svarbą, paaiškinimą ir, jei tai veiksmas, kadencijos etapą. Auditoriją galima apriboti padaliniu – tada ją turi atitikti tavo
 pareigos būtent tame padalinyje.
 
 Jei atitinki kelias auditorijas, rodoma didžiausia svarba ir tos auditorijos etapas. Vienodai
@@ -173,7 +173,8 @@ Atvėrus pirmtakų užrašus, kelio žingsnis „Perskaityk pirmtako užrašus�
 2. Pasirink rūšį, įrašyk pavadinimą ir „Kodėl verta“.
 3. Skiltyje **Kam skirta** spausk **Pridėti auditoriją**. Pasirink auditorijos tipą ir tikslą,
    svarbą, etapą ir, jei reikia, padalinį bei paaiškinimus lietuviškai ir angliškai. Jei gali tvarkyti
-   tik savo padalinio žingsnius, padalinys privalomas. Pasiruošimui posėdžiui rinkis instituciją arba jos tipą; etapo čia nėra.
+   tik savo padalinio žingsnius, padalinys privalomas. Etapą renkiesi tik veiksmams: dokumentai
+   rikiuojami pagal svarbą ir skyrius, o pasiruošimui posėdžiui rinkis instituciją arba jos tipą.
    Išsaugojęs auditoriją grįši į žingsnio formą – pats žingsnis išsaugomas tik jos mygtuku **Išsaugoti**.
 4. Dokumentui gali pasirinkti skyrių. Pasirink šaltinį: dokumentą iš Archyvo arba nuorodą. Anglišką šaltinį nurodyk tik tada,
    kai jis skiriasi.

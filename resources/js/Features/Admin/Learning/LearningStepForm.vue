@@ -518,7 +518,7 @@ function audienceErrors(index: number) {
 }
 watch(() => form.kind, kind => {
   for (const audience of form.audiences) {
-    audience.stage = kind === LearningStepKind.MeetingPrep ? null : audience.stage ?? LearningStage.BeforeStart;
+    audience.stage = kind === LearningStepKind.Action ? audience.stage ?? LearningStage.BeforeStart : null;
   }
   if (kind !== LearningStepKind.Knowledge) form.learning_section_id = null;
 });
@@ -596,7 +596,7 @@ function buildPayload(data: LearningStepFormState): Record<string, unknown> {
   return {
     kind: data.kind,
     audiences: data.audiences.map(({ label, ...audience }) => ({
-      ...audience, stage: data.kind === LearningStepKind.MeetingPrep ? null : audience.stage,
+      ...audience, stage: data.kind === LearningStepKind.Action ? audience.stage : null,
     })),
     learning_section_id: data.kind === LearningStepKind.Knowledge ? data.learning_section_id : null,
     title: data.title,
