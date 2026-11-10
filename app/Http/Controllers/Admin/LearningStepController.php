@@ -5,7 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\GetTenantsForUpserts;
 use App\Actions\GetUserCoordinators;
 use App\Actions\ResolveLearningPath;
-use App\Enums\LearningLayer;
+use App\Enums\LearningAudienceType;
+use App\Enums\LearningImportance;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\LearningStepRequest;
 use App\Http\Requests\SearchLearningDocumentsRequest;
@@ -13,7 +14,10 @@ use App\Http\Requests\SyncLearningStepGlossaryRequest;
 use App\Models\Document;
 use App\Models\DutyType;
 use App\Models\InstitutionType;
+use App\Models\LearningSection;
 use App\Models\LearningStep;
+use App\Models\LearningStepAudience;
+use App\Models\Role;
 use App\Models\User;
 use App\Services\Learning\ResolvedLearningStep;
 use App\Services\LearningAdminPresenter;
@@ -37,6 +41,7 @@ class LearningStepController extends AdminController
 
         return Inertia::render('Admin/Learning/IndexLearningStep', [
             'steps' => LearningPathPresenter::library(app()->getLocale(), $request->user()),
+            'sections' => $this->sectionOptions($request->user(), $this->authorizer->scope($request->user(), 'learningSteps.update.padalinys')->granted ? 'update' : 'create'),
             'canCreate' => $request->user()->can('create', LearningStep::class),
             'canSeeReps' => LearningAdminPresenter::canSeeReps($request->user()),
         ]);
@@ -45,9 +50,9 @@ class LearningStepController extends AdminController
     public function show(Request $request, LearningStep $learningStep): Response
     {
         $this->authorize('view', $learningStep);
-        $learningStep->load(['sources.document.institution.tenant', 'institutionType', 'dutyType', 'tenant', 'glossaryTerms'])->loadCount('comments');
+        $learningStep->load(['sources.document.institution.tenant', 'section', 'glossaryTerms', 'audiences' => fn ($query) => $query->with(LearningStepAudience::LABEL_RELATIONS)])->loadCount('comments');
         $path = ResolveLearningPath::execute($request->user());
-        $item = $path->steps->concat($path->meetingPrep)->first(fn (ResolvedLearningStep $item): bool => $item->step->id === $learningStep->id) ?? new ResolvedLearningStep($learningStep);
+        $item = $path->steps->concat($path->documents)->concat($path->meetingPrep)->first(fn (ResolvedLearningStep $item): bool => $item->step->id === $learningStep->id) ?? new ResolvedLearningStep($learningStep, importance: $learningStep->audiences->first()?->importance ?? LearningImportance::Recommended, stage: $learningStep->audiences->first()?->stage, audienceLabel: $learningStep->audiences->first()?->label(app()->getLocale()) ?? '');
 
         return Inertia::render('Admin/Learning/ShowLearningStep', [
             'step' => LearningPathPresenter::step($item, $request->user(), app()->getLocale()),
@@ -72,7 +77,7 @@ class LearningStepController extends AdminController
         $this->authorize('update', $learningStep);
 
         return Inertia::render('Admin/Learning/EditLearningStep', [
-            'step' => LearningPathPresenter::edit($learningStep->load('sources.document')),
+            'step' => LearningPathPresenter::edit($learningStep->load(['sources.document', 'audiences' => fn ($query) => $query->with(LearningStepAudience::LABEL_RELATIONS)])),
             'canDelete' => $request->user()->can('delete', $learningStep),
             ...$this->formOptions($request->user(), 'update'),
         ]);
@@ -83,10 +88,11 @@ class LearningStepController extends AdminController
         $this->authorize('create', LearningStep::class);
         $step = DB::transaction(function () use ($request): LearningStep {
             $step = LearningStep::create([
-                ...$request->safe()->except('sources'),
+                ...$request->safe()->except(['sources', 'audiences']),
                 'reviewed_at' => now(),
                 'created_by' => $request->user()->id,
             ]);
+            $this->syncAudiences($step, $request->validated('audiences'));
             $this->syncSources($step, $request->validated('sources', []));
 
             return $step;
@@ -100,9 +106,12 @@ class LearningStepController extends AdminController
         $this->authorize('update', $learningStep);
         DB::transaction(function () use ($request, $learningStep): void {
             $learningStep->update([
-                ...$request->safe()->except('sources'),
-                'reviewed_at' => now(),
+                ...$request->safe()->except(['sources', 'audiences']),
+                ...(! $learningStep->is_system ? ['learning_section_id' => $request->validated('learning_section_id'), 'reviewed_at' => now()] : []),
             ]);
+            if (array_key_exists('audiences', $request->validated())) {
+                $this->syncAudiences($learningStep, $request->validated('audiences'));
+            }
             if (! $learningStep->is_system && array_key_exists('sources', $request->validated())) {
                 $this->syncSources($learningStep, $request->validated('sources'));
             }
@@ -148,34 +157,69 @@ class LearningStepController extends AdminController
         return back()->with('success', $this->entityMessage('updated', 'learningStep'));
     }
 
-    /** @return array{layers: list<string>, tenants: list<array{id: int, shortname: string, fullname: string, type: string|null}>, institutionTypes: list<array{id: int, title: string, parent_id: int|null}>, dutyTypes: list<array{id: int, title: string, parent_id: int|null}>, canSeeReps: bool} */
     private function formOptions(User $user, string $ability): array
     {
         $locale = app()->getLocale();
         $scope = $this->authorizer->scope($user, "learningSteps.{$ability}.padalinys");
-        $layers = $scope->isAllScope
-            ? array_map(fn (LearningLayer $layer): string => $layer->value, LearningLayer::cases())
-            : ($scope->granted ? [LearningLayer::Tenant->value] : []);
 
         return [
-            'layers' => $layers,
+            'audienceTypes' => array_values(array_map(fn (LearningAudienceType $type): string => $type->value,
+                array_filter(LearningAudienceType::cases(), fn (LearningAudienceType $type): bool => $type !== LearningAudienceType::Purpose))),
+            'canTargetEverywhere' => $scope->isAllScope,
             'tenants' => GetTenantsForUpserts::execute("learningSteps.{$ability}.padalinys", $this->authorizer)->all(),
-            'institutionTypes' => $scope->isAllScope
-                ? InstitutionType::query()->get(['id', 'title', 'parent_id'])->map(fn (InstitutionType $type): array => [
-                    'id' => $type->id,
-                    'title' => (string) $type->getTranslation('title', $locale),
-                    'parent_id' => $type->parent_id,
-                ])->values()->all()
-                : [],
-            'dutyTypes' => $scope->isAllScope
-                ? DutyType::query()->get(['id', 'title', 'parent_id'])->map(fn (DutyType $type): array => [
-                    'id' => $type->id,
-                    'title' => (string) $type->getTranslation('title', $locale),
-                    'parent_id' => $type->parent_id,
-                ])->values()->all()
-                : [],
+            'institutionTypes' => InstitutionType::query()->get(['id', 'title', 'parent_id'])->map(fn (InstitutionType $type): array => [
+                'id' => $type->id, 'title' => (string) $type->getTranslation('title', $locale), 'parent_id' => $type->parent_id,
+            ])->values()->all(),
+            'dutyTypes' => DutyType::query()->get(['id', 'title', 'parent_id'])->map(fn (DutyType $type): array => [
+                'id' => $type->id, 'title' => (string) $type->getTranslation('title', $locale), 'parent_id' => $type->parent_id,
+            ])->values()->all(),
+            'responsibilities' => Role::query()->exceptSuperAdmin()->get()->map(fn (Role $role): array => [
+                'id' => $role->id, 'title' => $role->displayTitle($locale),
+            ])->sortBy('title')->values()->all(),
+            'sections' => $this->sectionOptions($user, $ability),
             'canSeeReps' => LearningAdminPresenter::canSeeReps($user),
         ];
+    }
+
+    private function sectionOptions(User $user, string $ability): array
+    {
+        $scope = $this->authorizer->scope($user, "learningSteps.{$ability}.padalinys");
+
+        return LearningSection::query()->with('tenant')->when(! $scope->isAllScope,
+            fn ($query) => $query->whereIn('tenant_id', $scope->tenantIds()))->orderBy('order')->orderBy('id')->get()
+            ->map(fn (LearningSection $section): array => [
+                'id' => $section->id, 'title' => $section->getTranslations('title'),
+                'description' => $section->getTranslations('description'), 'order' => $section->order,
+                'tenant_id' => $section->tenant_id,
+                'tenant' => $section->tenant ? ['id' => $section->tenant->id, 'shortname' => $section->tenant->shortname] : null,
+            ])->all();
+    }
+
+    private function syncAudiences(LearningStep $step, array $audiences): void
+    {
+        $kept = [];
+        foreach ($audiences as $data) {
+            $id = $data['id'] ?? null;
+            $audience = $id !== null ? $step->audiences()->find($id) : null;
+            abort_if($id !== null && $audience === null, 403);
+            unset($data['id']);
+            if ($step->is_system) {
+                abort_if($audience === null, 403);
+                $audience->update(collect($data)->only(['stage', 'order'])->all());
+            } else {
+                $data = array_replace(['tenant_id' => null, 'stage' => null, 'description' => null, 'order' => 0], $data);
+                $data['source_id'] = $data['type'] === LearningAudienceType::Everyone->value ? null : $data['source_id'];
+                if ($audience !== null) {
+                    $audience->update($data);
+                } else {
+                    $audience = $step->audiences()->create($data);
+                }
+            }
+            $kept[] = $audience->id;
+        }
+        if (! $step->is_system) {
+            $step->audiences()->whereNotIn('id', $kept)->delete();
+        }
     }
 
     /** @param array<string, array{document_id?: int|null, url?: string|null}> $sources */

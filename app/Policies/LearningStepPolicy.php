@@ -3,7 +3,6 @@
 namespace App\Policies;
 
 use App\Actions\GetCoordinatedRepresentatives;
-use App\Enums\LearningLayer;
 use App\Models\LearningStep;
 use App\Models\User;
 use App\Services\LearningAdminPresenter;
@@ -36,17 +35,12 @@ class LearningStepPolicy extends ModelPolicy
 
     public function update(User $user, Model $model): bool
     {
-        return $model instanceof LearningStep && $this->allowsLayer($user, $model->layer, $model->tenant_id, 'update');
+        return $model instanceof LearningStep && $this->manageAudiences($user, $model->audiences, 'update');
     }
 
     public function delete(User $user, Model $model): bool
     {
-        return $model instanceof LearningStep && ! $model->is_system && $this->allowsLayer($user, $model->layer, $model->tenant_id, 'delete');
-    }
-
-    public function manageLayer(User $user, LearningLayer $layer, ?int $tenantId, string $ability = 'update'): bool
-    {
-        return $this->allowsLayer($user, $layer, $tenantId, $ability);
+        return $model instanceof LearningStep && ! $model->is_system && $this->manageAudiences($user, $model->audiences, 'delete');
     }
 
     public function viewReps(User $user): bool
@@ -59,10 +53,22 @@ class LearningStepPolicy extends ModelPolicy
         return $coordinator->isSuperAdmin() || GetCoordinatedRepresentatives::isCoordinatorOf($coordinator, $rep);
     }
 
-    private function allowsLayer(User $user, LearningLayer $layer, ?int $tenantId, string $ability): bool
+    public function manageAudiences(User $user, iterable $audiences, string $ability): bool
     {
         $scope = $this->authorizer->scope($user, "learningSteps.{$ability}.padalinys");
+        if ($scope->isAllScope) {
+            return true;
+        }
+        if (! $scope->granted) {
+            return false;
+        }
+        foreach ($audiences as $audience) {
+            $tenantId = data_get($audience, 'tenant_id');
+            if ($tenantId === null || ! $scope->tenantIds()->contains($tenantId)) {
+                return false;
+            }
+        }
 
-        return $scope->isAllScope || ($scope->granted && $layer === LearningLayer::Tenant && $tenantId !== null && $scope->tenantIds()->contains($tenantId));
+        return true;
     }
 }

@@ -1,4 +1,4 @@
-import type { DocumentStatus, LearningImportance, LearningLayer, LearningStage, LearningStepKind } from './enums';
+import type { DocumentStatus, LearningImportance, LearningAudienceType, LearningStage, LearningStepKind } from './enums';
 
 export interface LearningTotals {
   essentialDone: number;
@@ -20,8 +20,9 @@ export interface LearningStepData {
   key: string | null;
   isSystem: boolean;
   kind: LearningStepKind;
-  layer: LearningLayer;
-  layerLabel: string;
+  audienceLabel: string;
+  audienceNotes: { label: string; description: string }[];
+  section: { id: string; title: string } | null;
   stage: LearningStage | null;
   importance: LearningImportance;
   title: string;
@@ -42,7 +43,8 @@ export interface LearningPathData {
   currentStage: LearningStage | null;
   termStart: string | null;
   stages: { stage: LearningStage; steps: LearningStepData[] }[];
-  meetingPrep: { institutionType: { id: number; title: string }; steps: LearningStepData[] }[];
+  meetingPrep: { audience: { id: string; label: string }; steps: LearningStepData[] }[];
+  documents: LearningDocumentTotals & { next: LearningStepData[] };
   totals: LearningTotals;
 }
 
@@ -52,10 +54,10 @@ export interface LearningLibraryStep {
   id: string;
   title: string;
   kind: LearningStepKind;
-  layer: LearningLayer;
-  layerLabel: string;
-  stage: LearningStage | null;
-  importance: LearningImportance;
+  audiences: { id: string; type: LearningAudienceType; label: string; importance: LearningImportance; stage: LearningStage | null }[];
+  audienceTypes: LearningAudienceType[];
+  section: { id: string; title: string } | null;
+  order: number;
   isActive: boolean;
   canUpdate: boolean;
   flags: LearningCuratorFlag[];
@@ -87,12 +89,8 @@ export interface LearningStepEditData {
   title: { lt: string; en: string };
   description: { lt: string; en: string };
   kind: LearningStepKind;
-  layer: LearningLayer;
-  stage: LearningStage | null;
-  importance: LearningImportance;
-  institution_type_id: number | null;
-  duty_type_id: number | null;
-  tenant_id: number | null;
+  learning_section_id: string | null;
+  audiences: LearningAudienceEditData[];
   per_term: boolean;
   order: number;
   is_active: boolean;
@@ -177,4 +175,28 @@ export interface LearningInstitutionContacts {
   id: string;
   title: string;
   contacts: { name: string; role: string; email: string | null }[];
+}
+
+export interface LearningAudienceEditData {
+  id: string;
+  type: LearningAudienceType;
+  source_id: string | null;
+  tenant_id: number | null;
+  importance: LearningImportance;
+  stage: LearningStage | null;
+  description: { lt: string; en: string };
+  order: number;
+  label: string;
+}
+
+export interface LearningDocumentTotals {
+  essentialDone: number;
+  essentialTotal: number;
+  done: number;
+  total: number;
+}
+
+export interface LearningDocumentsData {
+  sections: { id: string; title: string; description: string; order: number }[];
+  documents: LearningStepData[];
 }

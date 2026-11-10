@@ -147,17 +147,19 @@ export enum InstitutionTypeLinkScope {
     MainToUnits = 'main_to_units',
     AllTenants = 'all_tenants',
 }
+export enum LearningAudienceType {
+    Everyone = 'everyone',
+    DutyType = 'duty_type',
+    InstitutionType = 'institution_type',
+    Responsibility = 'responsibility',
+    Duty = 'duty',
+    Institution = 'institution',
+    Purpose = 'purpose',
+}
 export enum LearningImportance {
     Essential = 'essential',
     Recommended = 'recommended',
     Optional = 'optional',
-}
-export enum LearningLayer {
-    Platform = 'platform',
-    Foundation = 'foundation',
-    InstitutionType = 'institution_type',
-    DutyType = 'duty_type',
-    Tenant = 'tenant',
 }
 export enum LearningProgressStatus {
     Done = 'done',

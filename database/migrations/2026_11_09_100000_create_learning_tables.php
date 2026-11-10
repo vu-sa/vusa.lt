@@ -8,18 +8,22 @@ return new class extends Migration
 {
     public function up(): void
     {
+        Schema::create('learning_sections', function (Blueprint $table): void {
+            $table->ulid('id')->primary();
+            $table->json('title');
+            $table->json('description')->nullable();
+            $table->unsignedInteger('order')->default(0);
+            $table->unsignedInteger('tenant_id')->nullable();
+            $table->foreign('tenant_id')->references('id')->on('tenants')->cascadeOnDelete();
+            $table->foreignUlid('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamps();
+        });
         Schema::create('learning_steps', function (Blueprint $table): void {
             $table->ulid('id')->primary();
             $table->string('key')->nullable()->unique();
             $table->boolean('is_system')->default(false);
             $table->string('kind');
-            $table->string('layer');
-            $table->foreignId('institution_type_id')->nullable()->constrained()->cascadeOnDelete();
-            $table->foreignId('duty_type_id')->nullable()->constrained()->cascadeOnDelete();
-            $table->unsignedInteger('tenant_id')->nullable();
-            $table->foreign('tenant_id')->references('id')->on('tenants')->cascadeOnDelete();
-            $table->string('stage')->nullable();
-            $table->string('importance');
+            $table->foreignUlid('learning_section_id')->nullable()->constrained('learning_sections')->nullOnDelete();
             $table->json('title')->nullable();
             $table->json('description')->nullable();
             $table->boolean('per_term')->default(false);
@@ -28,7 +32,20 @@ return new class extends Migration
             $table->timestamp('reviewed_at')->nullable();
             $table->foreignUlid('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
-            $table->index(['layer', 'is_active']);
+        });
+        Schema::create('learning_step_audiences', function (Blueprint $table): void {
+            $table->ulid('id')->primary();
+            $table->foreignUlid('learning_step_id')->constrained()->cascadeOnDelete();
+            $table->string('type');
+            $table->string('source_id', 26)->nullable();
+            $table->unsignedInteger('tenant_id')->nullable();
+            $table->foreign('tenant_id')->references('id')->on('tenants')->cascadeOnDelete();
+            $table->string('importance');
+            $table->string('stage')->nullable();
+            $table->json('description')->nullable();
+            $table->unsignedInteger('order')->default(0);
+            $table->timestamps();
+            $table->index(['type', 'source_id']);
         });
         Schema::create('learning_step_sources', function (Blueprint $table): void {
             $table->id();
@@ -75,7 +92,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        foreach (['handover_notes', 'glossary_term_learning_step', 'glossary_terms', 'learning_step_progress', 'learning_step_sources', 'learning_steps'] as $table) {
+        foreach (['handover_notes', 'glossary_term_learning_step', 'glossary_terms', 'learning_step_progress', 'learning_step_sources', 'learning_step_audiences', 'learning_steps', 'learning_sections'] as $table) {
             Schema::dropIfExists($table);
         }
     }

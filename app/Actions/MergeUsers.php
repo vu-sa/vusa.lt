@@ -30,6 +30,7 @@ class MergeUsers
         ['institution_activity_requests', 'requested_by_id'],
         ['institution_check_ins', 'user_id'],
         ['learning_steps', 'created_by'],
+        ['learning_sections', 'created_by'],
         ['mailing_list_exclusions', 'created_by'],
         ['mailing_list_members', 'user_id'],
         ['mailing_list_sources', 'created_by'],

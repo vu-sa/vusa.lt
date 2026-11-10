@@ -3,6 +3,7 @@
 use App\Enums\LearningImportance;
 use App\Models\InstitutionType;
 use App\Models\LearningStep;
+use App\Models\LearningStepAudience;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -22,7 +23,7 @@ test('a member can tick skip and clear their own step progress', function (): vo
 
 test('skipping an essential step returns 422', function (): void {
     $user = makeUser(Tenant::query()->firstOrFail());
-    $step = LearningStep::factory()->create(['importance' => LearningImportance::Essential]);
+    $step = LearningStep::factory()->audience(['importance' => LearningImportance::Essential])->create();
     asUser($user)->postJson(route('learningSteps.progress', $step), ['status' => 'skipped'])->assertUnprocessable()->assertJsonValidationErrors('status');
     $this->assertDatabaseMissing('learning_step_progress', ['user_id' => $user->id, 'learning_step_id' => $step->id]);
 });
@@ -42,4 +43,12 @@ test('meeting preparation cannot receive progress and returns 422', function ():
     $step = LearningStep::factory()->meetingPrep($type)->create();
     asUser($user)->postJson(route('learningSteps.progress', $step), ['status' => 'done'])->assertUnprocessable()->assertJsonValidationErrors('status');
     $this->assertDatabaseMissing('learning_step_progress', ['learning_step_id' => $step->id]);
+});
+
+test('skipping uses the winning audience importance rather than the first audience', function (): void {
+    $user = makeUser(Tenant::query()->firstOrFail());
+    $step = LearningStep::factory()->audience(['importance' => LearningImportance::Optional])->create();
+    LearningStepAudience::factory()->for($step, 'step')->create(['importance' => LearningImportance::Essential]);
+    asUser($user)->postJson(route('learningSteps.progress', $step), ['status' => 'skipped'])->assertUnprocessable()->assertJsonValidationErrors('status');
+    $this->assertDatabaseMissing('learning_step_progress', ['learning_step_id' => $step->id, 'user_id' => $user->id]);
 });

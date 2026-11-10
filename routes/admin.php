@@ -368,6 +368,7 @@ Route::middleware(ShareLearningNavigation::class)->group(function (): void {
     Route::patch('learning/handover-notes/{handoverNote}', [HandoverNoteController::class, 'update'])->name('handoverNotes.update');
     Route::get('learning/reps', [LearningRepsController::class, 'index'])->name('learningPath.reps');
     Route::get('learning/reps/{user}', [LearningRepsController::class, 'show'])->name('learningPath.rep');
+    Route::resource('learning/sections', LearningSectionController::class)->parameters(['sections' => 'learningSection'])->names('learningSections')->only(['store', 'update', 'destroy']);
     Route::get('learning/library', [LearningStepController::class, 'index'])->name('learningSteps.index');
     Route::get('learning/documents/search', [LearningStepController::class, 'searchDocuments'])->name('learningSteps.documentSearch');
     Route::post('learning/steps/{learningStep}/progress', [LearningStepProgressController::class, 'store'])->name('learningSteps.progress');

@@ -27,14 +27,18 @@ test('a tenant curator can only create and edit tenant steps in their own unit',
     expect($user->can('update', $own))->toBeTrue();
     expect($user->can('update', $other))->toBeFalse();
     expect($user->can('update', $global))->toBeFalse();
-    $payload = ['kind' => 'knowledge', 'layer' => 'tenant', 'tenant_id' => $other->tenant_id, 'stage' => 'before_start', 'importance' => 'recommended', 'title' => ['lt' => 'Žingsnis', 'en' => 'Step']];
+    $payload = ['kind' => 'knowledge', 'audiences' => [['type' => 'everyone', 'tenant_id' => $other->audiences->first()->tenant_id,
+        'stage' => 'before_start', 'importance' => 'recommended']], 'title' => ['lt' => 'Žingsnis', 'en' => 'Step']];
     asUser($user)->post(route('learningSteps.store'), $payload)->assertForbidden();
-    $payload['tenant_id'] = $tenant->id;
+    $payload['audiences'][0]['tenant_id'] = null;
+    asUser($user)->post(route('learningSteps.store'), $payload)->assertForbidden();
+    $payload['audiences'][0]['tenant_id'] = $tenant->id;
     asUser($user)->post(route('learningSteps.store'), $payload)->assertRedirect();
-    $this->assertDatabaseHas('learning_steps', ['created_by' => $user->id, 'tenant_id' => $tenant->id]);
+    $created = LearningStep::query()->where('created_by', $user->id)->sole();
+    expect($created->audiences->sole()->tenant_id)->toBe($tenant->id);
 });
 
-test('global curators edit any layer but nobody deletes system steps', function (): void {
+test('global curators edit any audience but nobody deletes system steps', function (): void {
     $user = makeUser(Tenant::query()->firstOrFail());
     $user->givePermissionTo(Permission::findOrCreate('learningSteps.update.*', 'web'));
     $user->givePermissionTo(Permission::findOrCreate('learningSteps.delete.*', 'web'));

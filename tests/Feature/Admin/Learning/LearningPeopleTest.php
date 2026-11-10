@@ -2,12 +2,14 @@
 
 use App\Enums\LearningImportance;
 use App\Enums\LearningProgressStatus;
+use App\Enums\LearningStepKind;
 use App\Enums\ResponsibilityPurpose;
 use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\HandoverNote;
 use App\Models\Institution;
 use App\Models\LearningStep;
+use App\Models\LearningStepAudience;
 use App\Models\LearningStepProgress;
 use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
@@ -31,8 +33,13 @@ test('the representatives overview scopes people and batches totals and latest a
     $outsider = User::factory()->create();
     Dutiable::factory()->forUser($outsider)->forDuty($otherDuty)->active()->create();
     LearningStep::query()->update(['is_active' => false]);
-    $step = LearningStep::factory()->create(['importance' => LearningImportance::Essential]);
-    $second = LearningStep::factory()->create(['importance' => LearningImportance::Essential]);
+    $step = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->audience(['importance' => LearningImportance::Essential])->create();
+    $second = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->audience(['importance' => LearningImportance::Essential])->create();
+    $responsibility = $duty->roles()->where('purpose', ResponsibilityPurpose::StudentRepresentation->value)->sole();
+    $document = LearningStep::factory()->withoutAudiences()->create();
+    LearningStepAudience::factory()->for($document, 'step')->responsibility($responsibility)->create([
+        'description' => ['lt' => 'Atstovo dokumentas', 'en' => 'Representative document'],
+    ]);
     $reps = User::factory()->count(2)->create();
     foreach ($reps as $rep) {
         Dutiable::factory()->forUser($rep)->forDuty($duty)->create(['start_date' => today()->subMonth(), 'end_date' => null]);

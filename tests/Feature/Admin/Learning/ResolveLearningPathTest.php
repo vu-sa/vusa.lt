@@ -1,9 +1,11 @@
 <?php
 
 use App\Actions\ResolveLearningPath;
-use App\Enums\LearningLayer;
+use App\Enums\LearningAudienceType;
+use App\Enums\LearningImportance;
 use App\Enums\LearningProgressStatus;
 use App\Enums\LearningStage;
+use App\Enums\LearningStepKind;
 use App\Enums\ResponsibilityPurpose;
 use App\Models\Cadence;
 use App\Models\Document;
@@ -13,6 +15,7 @@ use App\Models\HandoverNote;
 use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\LearningStep;
+use App\Models\LearningStepAudience;
 use App\Models\LearningStepProgress;
 use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
@@ -32,7 +35,7 @@ function learningRep(?Institution $institution = null, ?string $start = null): a
     return [$user, $duty];
 }
 
-test('a representative receives inherited institution and own tenant layers only', function (): void {
+test('a representative receives inherited institution and own tenant audiences only', function (): void {
     $this->freezeTime();
     $parent = InstitutionType::factory()->create();
     $type = InstitutionType::factory()->create(['parent_id' => $parent->id]);
@@ -40,13 +43,13 @@ test('a representative receives inherited institution and own tenant layers only
     $institution = Institution::factory()->for($tenant)->create();
     $institution->types()->sync([$type->id]);
     [$user] = learningRep($institution);
-    $platform = LearningStep::factory()->create();
-    $foundation = LearningStep::factory()->create(['layer' => LearningLayer::Foundation]);
-    $inherited = LearningStep::factory()->forInstitutionType($parent)->create();
-    $own = LearningStep::factory()->forTenant($tenant)->create();
-    $foreign = LearningStep::factory()->forTenant()->create();
-    $unrelated = LearningStep::factory()->forInstitutionType()->create();
-    $inactive = LearningStep::factory()->create(['is_active' => false]);
+    $platform = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->create();
+    $foundation = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->audience(['type' => LearningAudienceType::Purpose, 'source_id' => ResponsibilityPurpose::StudentRepresentation->value])->create();
+    $inherited = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->forInstitutionType($parent)->create();
+    $own = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->forTenant($tenant)->create();
+    $foreign = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->forTenant()->create();
+    $unrelated = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->forInstitutionType()->create();
+    $inactive = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->create(['is_active' => false]);
     $path = ResolveLearningPath::execute($user);
     $ids = $path->steps->pluck('step.id')->all();
 
@@ -63,9 +66,9 @@ test('a non representative receives platform and inherited duty type steps', fun
     $type = DutyType::factory()->create(['parent_id' => $parent->id]);
     $duty->types()->attach($type);
     Dutiable::factory()->forUser($user)->create(['duty_id' => $duty->id, 'start_date' => today(), 'end_date' => null]);
-    $platform = LearningStep::factory()->create();
-    $ownType = LearningStep::factory()->forDutyType($parent)->create();
-    $foundation = LearningStep::factory()->create(['layer' => LearningLayer::Foundation]);
+    $platform = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->create();
+    $ownType = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->forDutyType($parent)->create();
+    $foundation = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->audience(['type' => LearningAudienceType::Purpose, 'source_id' => ResponsibilityPurpose::StudentRepresentation->value])->create();
     $path = ResolveLearningPath::execute($user);
 
     expect($path->steps->pluck('step.id')->all())->toContain($platform->id, $ownType->id)->not->toContain($foundation->id);
@@ -75,7 +78,7 @@ test('a non representative receives platform and inherited duty type steps', fun
 test('an incoming representative gets foundation before their term starts', function (): void {
     $this->freezeTime();
     [$user] = learningRep(start: today()->addMonth()->toDateString());
-    $step = LearningStep::factory()->create(['layer' => LearningLayer::Foundation]);
+    $step = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->audience(['type' => LearningAudienceType::Purpose, 'source_id' => ResponsibilityPurpose::StudentRepresentation->value])->create();
     $path = ResolveLearningPath::execute($user);
 
     expect($path->currentStage)->toBe(LearningStage::BeforeStart);
@@ -85,9 +88,9 @@ test('an incoming representative gets foundation before their term starts', func
 test('per term progress expires while ordinary progress and skips remain resolved', function (): void {
     $this->freezeTime();
     [$user] = learningRep();
-    $term = LearningStep::factory()->create(['per_term' => true]);
-    $done = LearningStep::factory()->create();
-    $skip = LearningStep::factory()->create();
+    $term = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->create(['per_term' => true]);
+    $done = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->create();
+    $skip = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->create();
     foreach ([$term, $done, $skip] as $step) {
         LearningStepProgress::factory()->for($user)->create([
             'learning_step_id' => $step->id, 'completed_at' => today()->subMonths(6),
@@ -106,7 +109,7 @@ test('per term progress expires while ordinary progress and skips remain resolve
 test('an incoming rep keeps per term progress made before the term starts', function (): void {
     $this->freezeTime();
     [$user] = learningRep(start: today()->addMonth()->toDateString());
-    $step = LearningStep::factory()->create(['per_term' => true]);
+    $step = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->create(['per_term' => true]);
     LearningStepProgress::factory()->for($user)->create(['learning_step_id' => $step->id, 'completed_at' => now(), 'status' => LearningProgressStatus::Done]);
     expect(ResolveLearningPath::execute($user)->steps->firstWhere('step.id', $step->id)->state)->toBe('done');
 });
@@ -117,7 +120,7 @@ test('received handover unlocks reading and meeting preparation stays outside pr
     $read = LearningStep::query()->where('key', 'read_handover')->firstOrFail();
     $type = InstitutionType::factory()->create();
     $duty->institution->types()->attach($type);
-    $prep = LearningStep::factory()->meetingPrep($type)->create();
+    $prep = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->meetingPrep($type)->create();
     expect(ResolveLearningPath::execute($user)->contains($read->id))->toBeFalse();
     HandoverNote::factory()->for($duty)->create();
     $user->unsetRelation('authorization_duties');
@@ -137,7 +140,7 @@ test('knowledge becomes updated when the SharePoint source changes after complet
     LearningStepProgress::factory()->for($user)->create(['learning_step_id' => $step->id, 'completed_at' => now()->subDay()]);
     $path = ResolveLearningPath::execute($user);
 
-    expect($path->steps->firstWhere('step.id', $step->id)->state)->toBe('updated');
+    expect($path->documents->firstWhere('step.id', $step->id)->state)->toBe('updated');
 });
 
 test('only handover written during the current term automatically completes writing', function (): void {
@@ -216,3 +219,65 @@ test('a current cadence handover in the ninety day lead in counts for an incomin
     expect($item->autoCompleted)->toBe($completed);
     expect(app(WriteHandoverDetector::class)->doneFor(collect([$user->id]))->contains($user->id))->toBe($completed);
 })->with(['ninety days' => [90, true], 'older' => [91, false]]);
+
+test('the highest importance audience wins its stage and every matching note is returned', function (): void {
+    [$user, $duty] = learningRep();
+    $step = LearningStep::factory()->withoutAudiences()->create(['kind' => LearningStepKind::Action]);
+    LearningStepAudience::factory()->for($step, 'step')->everyone()->create([
+        'importance' => 'recommended', 'stage' => 'before_start', 'description' => ['lt' => 'Visiems nariams', 'en' => 'For all members'],
+    ]);
+    $winner = LearningStepAudience::factory()->for($step, 'step')->duty($duty)->create([
+        'importance' => 'essential', 'stage' => 'whole_term', 'description' => ['lt' => 'Tavo pareigoms', 'en' => 'For your duty'],
+    ]);
+    $item = ResolveLearningPath::execute($user)->steps->firstWhere('step.id', $step->id);
+
+    expect($item->importance)->toBe(LearningImportance::Essential);
+    expect($item->stage)->toBe(LearningStage::WholeTerm);
+    expect($item->audienceId)->toBe($winner->id);
+    expect(array_column($item->audienceNotes, 'description'))->toBe(['Visiems nariams', 'Tavo pareigoms']);
+    expect($item->audienceLabel)->toBe($winner->label('lt'));
+});
+
+test('equal importance chooses the earliest stage then lowest audience order', function (): void {
+    [$user] = learningRep();
+    $step = LearningStep::factory()->withoutAudiences()->create();
+    foreach ([['whole_term', 0], ['before_start', 5], ['before_start', 1]] as [$stage, $order]) {
+        $winner = LearningStepAudience::factory()->for($step, 'step')->create(['stage' => $stage, 'order' => $order]);
+    }
+    expect(ResolveLearningPath::execute($user)->documents->firstWhere('step.id', $step->id)->audienceId)->toBe($winner->id);
+});
+
+test('tenant filtering requires the matching fact to come from a duty in that tenant', function (): void {
+    $own = Tenant::query()->firstOrFail();
+    $other = Tenant::factory()->create();
+    $type = InstitutionType::factory()->create();
+    $institution = Institution::factory()->for($own)->create();
+    $institution->types()->attach($type);
+    [$user] = learningRep($institution);
+    $unrelated = Duty::factory()->for(Institution::factory()->for($other))->create();
+    Dutiable::factory()->forUser($user)->forDuty($unrelated)->create(['end_date' => null]);
+    $matching = LearningStep::factory()->withoutAudiences()->create();
+    LearningStepAudience::factory()->for($matching, 'step')->institutionType($type)->create(['tenant_id' => $own->id]);
+    $foreign = LearningStep::factory()->withoutAudiences()->create();
+    LearningStepAudience::factory()->for($foreign, 'step')->institutionType($type)->create(['tenant_id' => $other->id]);
+    $path = ResolveLearningPath::execute($user);
+
+    expect($path->contains($matching->id))->toBeTrue();
+    expect($path->contains($foreign->id))->toBeFalse();
+});
+
+test('responsibility ids and system purposes match the holders of the role', function (): void {
+    [$holder, $duty] = learningRep();
+    $role = $duty->roles()->where('purpose', ResponsibilityPurpose::StudentRepresentation->value)->sole();
+    $byRole = LearningStep::factory()->withoutAudiences()->create();
+    LearningStepAudience::factory()->for($byRole, 'step')->responsibility($role)->create();
+    $byPurpose = LearningStep::factory()->withoutAudiences()->create();
+    LearningStepAudience::factory()->for($byPurpose, 'step')->purpose()->create();
+    $outsider = User::factory()->create();
+    $paths = ResolveLearningPath::forUsers(collect([$holder, $outsider]));
+
+    expect($paths[$holder->id]->contains($byRole->id))->toBeTrue();
+    expect($paths[$holder->id]->contains($byPurpose->id))->toBeTrue();
+    expect($paths[$outsider->id]->contains($byRole->id))->toBeFalse();
+    expect($paths[$outsider->id]->contains($byPurpose->id))->toBeFalse();
+});

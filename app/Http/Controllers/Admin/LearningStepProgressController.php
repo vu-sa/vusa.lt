@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\ResolveLearningPath;
 use App\Enums\LearningProgressStatus;
 use App\Enums\LearningStepKind;
 use App\Http\Controllers\AdminController;
@@ -15,8 +16,10 @@ class LearningStepProgressController extends AdminController
     public function store(LearningStepProgressRequest $request, LearningStep $learningStep): RedirectResponse
     {
         $this->authorize('view', $learningStep);
+        $path = ResolveLearningPath::execute($request->user());
+        $item = $path->steps->concat($path->documents)->firstWhere('step.id', $learningStep->id);
         $status = $request->validated('status');
-        if ($learningStep->kind === LearningStepKind::MeetingPrep || ($status === LearningProgressStatus::Skipped->value && ! $learningStep->importance->isSkippable())) {
+        if ($learningStep->kind === LearningStepKind::MeetingPrep || ($status === LearningProgressStatus::Skipped->value && ! $item?->importance->isSkippable())) {
             throw ValidationException::withMessages(['status' => __('learning.validation.progress')]);
         }
         $progress = $request->user()->learningProgress();

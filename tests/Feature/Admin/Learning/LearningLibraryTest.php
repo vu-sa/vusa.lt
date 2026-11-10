@@ -1,10 +1,11 @@
 <?php
 
 use App\Enums\DocumentStatus;
+use App\Enums\LearningAudienceType;
 use App\Enums\LearningImportance;
-use App\Enums\LearningLayer;
 use App\Enums\LearningStage;
 use App\Enums\LearningStepKind;
+use App\Enums\ResponsibilityPurpose;
 use App\Models\Document;
 use App\Models\DutyType;
 use App\Models\GlossaryTerm;
@@ -71,7 +72,7 @@ test('library payload includes curator flags for expired document, updated docum
     asUser($member)->get(route('learningSteps.index'))->assertForbidden();
 });
 
-test('create and edit pages pass only tenant layer and managed tenants to a padalinys curator, and all options to a global curator', function (): void {
+test('create and edit pages offer audience types with managed tenants and identify global curators', function (): void {
     $ownTenant = Tenant::query()->firstOrFail();
     $otherTenant = Tenant::factory()->create();
     InstitutionType::factory()->create();
@@ -81,23 +82,20 @@ test('create and edit pages pass only tenant layer and managed tenants to a pada
     $padalinysCurator->givePermissionTo(Permission::findOrCreate('learningSteps.create.padalinys', 'web'));
     $padalinysCurator->givePermissionTo(Permission::findOrCreate('learningSteps.update.padalinys', 'web'));
 
-    $tenantStep = LearningStep::factory()->create([
-        'layer' => LearningLayer::Tenant,
-        'tenant_id' => $ownTenant->id,
-        'stage' => LearningStage::BeforeStart,
-    ]);
+    $tenantStep = LearningStep::factory()->forTenant($ownTenant)->create();
 
     asUser($padalinysCurator)->get(route('learningSteps.create'))->assertOk()->assertInertia(fn (Assert $page) => $page
         ->component('Admin/Learning/CreateLearningStep')
-        ->where('layers', [LearningLayer::Tenant->value])
+        ->where('canTargetEverywhere', false)
+        ->has('audienceTypes', 6)
         ->has('tenants', 1)
         ->where('tenants.0.id', $ownTenant->id)
-        ->where('institutionTypes', [])
-        ->where('dutyTypes', []));
+        ->has('institutionTypes')->has('dutyTypes'));
 
     asUser($padalinysCurator)->get(route('learningSteps.edit', $tenantStep))->assertOk()->assertInertia(fn (Assert $page) => $page
         ->component('Admin/Learning/EditLearningStep')
-        ->where('layers', [LearningLayer::Tenant->value])
+        ->where('canTargetEverywhere', false)
+        ->has('audienceTypes', 6)
         ->has('tenants', 1)
         ->where('tenants.0.id', $ownTenant->id));
 
@@ -106,7 +104,8 @@ test('create and edit pages pass only tenant layer and managed tenants to a pada
     $globalCurator->givePermissionTo(Permission::findOrCreate('learningSteps.update.*', 'web'));
 
     $createProps = asUser($globalCurator)->get(route('learningSteps.create'))->assertOk()->viewData('page')['props'];
-    expect($createProps['layers'])->toBe(array_map(fn (LearningLayer $layer): string => $layer->value, LearningLayer::cases()))
+    expect($createProps['canTargetEverywhere'])->toBeTrue()
+        ->and($createProps['audienceTypes'])->not->toContain('purpose')
         ->and(collect($createProps['tenants'])->pluck('id')->all())->toContain($ownTenant->id, $otherTenant->id)
         ->and($createProps['institutionTypes'])->not->toBeEmpty()
         ->and($createProps['dutyTypes'])->not->toBeEmpty();
@@ -121,9 +120,7 @@ test('store and update set reviewed_at to now', function (): void {
 
     asUser($curator)->post(route('learningSteps.store'), [
         'kind' => LearningStepKind::Action->value,
-        'layer' => LearningLayer::Foundation->value,
-        'stage' => LearningStage::BeforeStart->value,
-        'importance' => LearningImportance::Essential->value,
+        'audiences' => [['type' => 'everyone', 'stage' => LearningStage::BeforeStart->value, 'importance' => LearningImportance::Essential->value]],
         'title' => ['lt' => 'Naujas žingsnis', 'en' => 'New step'],
         'description' => ['lt' => 'Kodėl verta', 'en' => 'Why useful'],
         'per_term' => true,
@@ -139,9 +136,7 @@ test('store and update set reviewed_at to now', function (): void {
 
     asUser($curator)->put(route('learningSteps.update', $step), [
         'kind' => LearningStepKind::Action->value,
-        'layer' => LearningLayer::Foundation->value,
-        'stage' => LearningStage::FirstMonths->value,
-        'importance' => LearningImportance::Recommended->value,
+        'audiences' => [['type' => 'everyone', 'stage' => LearningStage::FirstMonths->value, 'importance' => LearningImportance::Recommended->value]],
         'title' => ['lt' => 'Atnaujintas žingsnis', 'en' => 'Updated step'],
         'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
         'per_term' => false,
@@ -187,7 +182,7 @@ test('document search returns hidden documents only to their manager and publish
 
 test('glossary sync authorizes update on the step and rejects foreign ids', function (): void {
     $tenant = Tenant::query()->firstOrFail();
-    $step = LearningStep::factory()->create(['layer' => LearningLayer::Foundation]);
+    $step = LearningStep::factory()->audience(['type' => LearningAudienceType::Purpose, 'source_id' => ResponsibilityPurpose::StudentRepresentation->value])->create();
     $termA = GlossaryTerm::factory()->create();
     $termB = GlossaryTerm::factory()->create();
 
@@ -235,7 +230,7 @@ test('glossary payload includes stepsCount and full translations for editing', f
 
 test('the step page offers the glossary editor only to curators who may update the step', function (): void {
     $tenant = Tenant::query()->firstOrFail();
-    $step = LearningStep::factory()->create(['layer' => LearningLayer::Foundation]);
+    $step = LearningStep::factory()->audience(['type' => LearningAudienceType::Purpose, 'source_id' => ResponsibilityPurpose::StudentRepresentation->value])->create();
     GlossaryTerm::factory()->create(['term' => ['lt' => 'Kvorumas', 'en' => 'Quorum']]);
     $member = makeUser($tenant);
     $curator = makeUser($tenant);

@@ -27,12 +27,21 @@ return [
         'action' => 'Veiksmas',
         'meeting_prep' => 'Pasiruošimas posėdžiui',
     ],
-    'layers' => [
-        'platform' => 'Platforma',
-        'foundation' => 'Pagrindas',
+    'audience_types' => [
+        'everyone' => 'Visi',
+        'duty_type' => 'Pareigybės tipas',
         'institution_type' => 'Institucijos tipas',
-        'duty_type' => 'Pareigos',
-        'tenant' => 'Padalinys',
+        'responsibility' => 'Atsakomybė',
+        'duty' => 'Pareigybė',
+        'institution' => 'Institucija',
+        'purpose' => 'Sistemos atsakomybė',
+    ],
+    'sections' => [
+        'title' => 'Dokumentų grupės',
+        'create' => 'Sukurk grupę',
+        'created' => 'Grupė sukurta.',
+        'updated' => 'Grupė atnaujinta.',
+        'deleted' => 'Grupė ištrinta.',
     ],
     'stages' => [
         'before_start' => 'Prieš pradžią',
@@ -57,6 +66,7 @@ return [
         'description' => 'Ruošiame žingsnius, sąvokas ir patirties perdavimą.',
     ],
     'validation' => [
+        'audience_source' => 'Pasirink galiojančią auditoriją.',
         'stage' => 'Pasirink šiam žingsniui tinkamą etapą.',
         'source' => 'Pasirink dokumentą arba įrašyk nuorodą.',
         'progress' => 'Šio žingsnio taip pažymėti negali.',
@@ -194,6 +204,13 @@ return [
         'reviewed' => 'Peržiūrėta',
         'not_reviewed' => 'Dar neperžiūrėta',
         'terms' => 'Sąvokos',
+        'sections' => [
+            'title' => 'Dokumentų grupės',
+            'create' => 'Sukurk grupę',
+            'created' => 'Grupė sukurta.',
+            'updated' => 'Grupė atnaujinta.',
+            'deleted' => 'Grupė ištrinta.',
+        ],
         'stages' => [
             'before_start' => 'Prieš pradedant',
             'first_months' => 'Pirmieji mėnesiai',

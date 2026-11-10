@@ -10,6 +10,7 @@ tests:
   - tests/Feature/Admin/Learning/LearningStepProgressControllerTest.php
   - tests/Feature/Admin/Learning/LearningLibraryTest.php
   - tests/Feature/Admin/Learning/LearningDocumentsTest.php
+  - tests/Feature/Admin/Learning/LearningSectionsTest.php
   - tests/Feature/Admin/Learning/LearningPeopleTest.php
   - tests/Feature/Admin/Learning/LearningPathPresenterTest.php
   - tests/Feature/Admin/Learning/SystemStepDetectorsTest.php
@@ -48,31 +49,34 @@ paaiškinimu, kam jų reikia, ir pažanga, kurią mato koordinatorius.
   sistemą“ (Archyvą), o žingsnis į jį nurodo. Vieši teisės aktai (pvz., įstatymai) susiejami nuoroda.
 - **Kiekvienas žingsnis paaiškina, kam jis reikalingas.** Vienas–du sakiniai „Kodėl verta“ svarbesni už
   patį failą.
-- **Esminių žingsnių nedaug.** Vienam sluoksniui užtenka kelių esminių žingsnių; visa kita –
+- **Esminių žingsnių nedaug.** Vienai auditorijai užtenka kelių esminių žingsnių; visa kita –
   rekomenduojama arba papildoma.
 - **Įžvalgos – autoriaus nuomonė.** Prie žingsnio rašoma, kas dokumente svarbiausia ir kur žiūrėti;
   įžvalga pasirašyta ir su data, nes kontekstas keičiasi.
 
 ## Kaip tai veikia
 
-### Sluoksniai
+### Auditorijos
 
-Kiekvienam nariui kelias sudedamas iš sluoksnių:
+Žingsniui gali būti priskirtos kelios auditorijos: visi nariai, pareigybės ar institucijos tipas
+(įskaitant potipius), atsakomybė, konkreti pareigybė arba institucija. Kiekviena auditorija turi
+savo svarbą, etapą ir paaiškinimą. Auditoriją galima apriboti padaliniu – tada ją turi atitikti tavo
+pareigos būtent tame padalinyje.
 
-| Sluoksnis | Kam rodoma |
-|---|---|
-| Platforma | Visiems nariams: paskyros, pranešimų ir programėlės nustatymai |
-| Pagrindas | Visiems studentų atstovams ir jų koordinatoriams |
-| Institucijos tipas | Tų tipų institucijų nariams, pvz., Studijų programos komitetui; paveldima iš aukštesnio tipo |
-| Pareigos | Pagal pareigybės tipą |
-| Padalinys | Padalinio atstovams; visada etape „Prieš pradedant“ |
+Jei atitinki kelias auditorijas, rodoma didžiausia svarba ir tos auditorijos etapas. Vienodai
+svarbioms auditorijoms pirmiau pasirenkamas ankstesnis etapas, tada mažesnis eilės numeris.
+Matai visų tau tinkančių auditorijų paaiškinimus. Būsimos pareigos įskaitomos iš karto.
 
-Būsimos pareigos įskaitomos iš karto, todėl išrinktas, bet dar nepradėjęs atstovas jau mato etapą
-„Prieš pradedant“.
+### Dokumentų grupės
+
+Kadencijos etapų juostoje yra tik veiksmai. Dokumentų pažanga skaičiuojama atskirai; kelio
+santraukoje siūlomi iki dviejų neperskaitytų dokumentų, pirmiausia esminiai, paskui rekomenduojami.
+Kuratoriai dokumentus gali jungti į grupes, pvz., „Įvadiniai mokymai“. Ištrynus grupę dokumentai lieka.
+Pasiruošimas posėdžiui rodomas atskirai pagal tau tinkančią auditoriją ir neturi pažangos žymų.
 
 ### Etapai ir svarba
 
-Žingsniai išdėstyti pagal kadencijos etapus: **Prieš pradedant**, **Pirmieji mėnesiai** (pirmos 60
+Veiksmai išdėstyti pagal kadencijos etapus: **Prieš pradedant**, **Pirmieji mėnesiai** (pirmos 60
 dienų), **Visą kadenciją** ir **Kadencijos pabaiga** (paskutinės 45 dienos). Dabartinis etapas
 pažymėtas „dabar“. Visi etapai ir jų žingsniai rodomi iš karto. Žingsnio kairėje esantis langelis
 žymi pažangą; varnelę galima uždėti ir nuimti tiesiog eilutėje. Ilgesnius paaiškinimus ir diegimo, pranešimų ar institucijos kontaktų informaciją išskleisk per „Daugiau“. Koordinatoriaus nuotrauka, pareigos ir mygtukas „Parašyti“ rodomi tiesiai prie susipažinimo žingsnio.
@@ -102,15 +106,14 @@ Jei šaltinio dokumentas Archyve atnaujinamas jau perskaičius, žingsnis pažym
 ### Skirtukai
 
 - **Mano kelias** – tavo žingsniai ir pažanga.
-- **Dokumentai** – tavo kelio dokumentai vienoje vietoje, suskirstyti pagal sluoksnį: Pagrindas,
-  institucijų tipai, Pareigos, Padalinys, Platforma. Prie dokumento galima pažymėti pažangą ir
+- **Dokumentai** – tavo kelio dokumentai vienoje vietoje, suskirstyti į kuratorių sukurtas grupes. Prie dokumento galima pažymėti pažangą ir
   atverti susietų sąvokų paaiškinimus.
 - **Sąvokos** – žodynėlis (SPK, akreditacija, kvorumas…). Po apibrėžimu „Kur sutinkama“ rodo
   susietus žingsnius: nuoroda atveria dokumentą arba žingsnio puslapį su įžvalgomis.
 - **Perdavimas** – pirmtakų užrašai ir tavo užrašai įpėdiniui.
 - **Mano atstovai** – tik studentų atstovų koordinatoriams.
 - **Tvarkyti** – tik žingsnių kūrėjams ir redaktoriams. Čia rodomi visi žingsniai su paieška ir
-  filtrais pagal sluoksnį, rūšį ir svarbą. Redaguojamuose žingsniuose matomos žymos: dokumentas
+  filtrais pagal auditorijos tipą, dokumentų grupę ir rūšį. Redaguojamuose žingsniuose matomos žymos: dokumentas
   nebegalioja, dokumentas atnaujintas po peržiūros arba nėra šaltinio.
 
 <ChangelogNote date="2026-11-10" title="Dokumentai ir aiškesnis kelias">
@@ -145,9 +148,9 @@ Atvėrus pirmtakų užrašus, kelio žingsnis „Perskaityk pirmtako užrašus�
 ### Pridėti žingsnį
 
 1. **+ Sukurti** → **Naujas mokymosi žingsnis** (arba **Tvarkyti** → **Naujas žingsnis**).
-2. Pasirink rūšį, svarbą, įrašyk pavadinimą ir „Kodėl verta“.
-3. Skiltyje **Kam** pasirink sluoksnį ir, jei reikia, institucijos ar pareigybės tipą arba padalinį.
-4. Pasirink etapą ir šaltinį: dokumentą iš Archyvo arba nuorodą. Anglišką šaltinį nurodyk tik tada,
+2. Pasirink rūšį, įrašyk pavadinimą ir „Kodėl verta“.
+3. Pridėk auditorijas; kiekvienai nurodyk svarbą, etapą ir, jei reikia, padalinį bei paaiškinimą.
+4. Dokumentui gali pasirinkti grupę. Pasirink šaltinį: dokumentą iš Archyvo arba nuorodą. Anglišką šaltinį nurodyk tik tada,
    kai jis skiriasi.
 5. Išsaugok. Žingsnio puslapyje gali susieti sąvokas.
 
@@ -164,8 +167,8 @@ Atvėrus pirmtakų užrašus, kelio žingsnis „Perskaityk pirmtako užrašus�
 | Kiekvienas narys | Matyti savo kelią, žymėti pažangą, skaityti savo dokumentus ir sąvokas, rašyti įžvalgas |
 | Pareigas einantis ar neseniai baigęs narys | Rašyti savo kadencijos perdavimo užrašus; matyti pirmtakų užrašus |
 | Studentų atstovų koordinatorius (atsakingas už institucijas) | Matyti „Mano atstovai“: savo atstovų pažangą ir jų kelius, jų perdavimo užrašus |
-| Studentų atstovų koordinatorius | Atverti „Tvarkyti“, kurti ir redaguoti savo padalinio sluoksnio žingsnius |
-| Centrinio biuro studentų atstovų koordinatorius | Kurti ir redaguoti visų sluoksnių žingsnius ir sąvokas |
+| Studentų atstovų koordinatorius | Atverti „Tvarkyti“, kurti ir redaguoti žingsnius, kurių visos auditorijos apribotos savo padaliniu, ir savo padalinio dokumentų grupes |
+| Centrinio biuro studentų atstovų koordinatorius | Kurti ir redaguoti visų auditorijų žingsnius, dokumentų grupes ir sąvokas |
 
 Tavo pažangą matantys koordinatoriai nurodomi po kelio antrašte.
 
@@ -176,7 +179,7 @@ atvėrus kelią.
 
 ## Techninė informacija
 
-- Kelias: `ResolveLearningPath` (sluoksniai iš `authorization_duties`; atstovo pareigos – su
+- Kelias: `ResolveLearningPath` (auditorijos iš `authorization_duties`; atstovo pareigos – su
   `StudentRepresentation` ar `StudentRepCoordination` atsakomybe; tipai su protėviais per
   `getParentsAndSelf()`). Pateikimas – `LearningPathPresenter`.
 - Etapas: pagal anksčiausios atstovo pareigybės pradžią; pabaiga – iš pareigų datų arba kadencijos
@@ -185,7 +188,7 @@ atvėrus kelią.
   kadencijos pradžios. `updated` – kai `documents.sharepoint_modified_at` vėlesnis už atlikimą.
 - Sisteminiai žingsniai (`is_system`, raktai `SystemStepRegistry`) įrašomi migracija; jų atlikimas
   skaičiuojamas skaitant ir nesaugomas. Kuratoriai keičia tik etapą, tvarką ir rodymą; ištrinti negalima.
-- Teisės: `learningSteps.*.padalinys` – tik padalinio sluoksnis, `learningSteps.*.*` – visi; sąvokos –
+- Teisės: `learningSteps.*.padalinys` – tik savo padaliniu apribotos auditorijos ir grupės, `learningSteps.*.*` – visi; sąvokos –
   `learningSteps.update.*`. Perdavimo užrašai – `HandoverNotePolicy`; „Mano atstovai“ –
   `GetCoordinatedRepresentatives` per `ResponsibilityResolver`.
 - Bandomasis turinys: `LearningPathPilotSeeder` (paleidžiamas ranka, kartojant nieko nedubliuoja).

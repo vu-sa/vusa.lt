@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\LearningLayer;
+use App\Enums\LearningAudienceType;
 use App\Models\Document;
 use App\Models\GlossaryTerm;
 use App\Models\InstitutionType;
@@ -11,7 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
 
-test('seeds the pilot once, links archive documents by title and keeps curator edits on rerun', function (): void {
+test('seeds the pilot once, links archive documents by title and replaces audiences on rerun', function (): void {
     $spk = InstitutionType::query()->where('slug', 'spk')->first() ?? InstitutionType::factory()->create(['slug' => 'spk']);
     $statute = Document::factory()->create(['title' => 'VU SA Įstatai (nuo 2025 m.)']);
     $tenant = Tenant::query()->where('type', 'padalinys')->firstOrFail();
@@ -21,9 +21,12 @@ test('seeds the pilot once, links archive documents by title and keeps curator e
 
     $step = LearningStep::query()->where('key', 'pilot_vusa_statute')->sole();
     expect($step->sourceFor('lt')->document_id)->toBe($statute->id);
-    expect(LearningStep::query()->where('institution_type_id', $spk->id)->count())->toBe(9);
+    expect(LearningStep::query()->whereHas('audiences', fn ($query) => $query->where('type', 'institution_type')->where('source_id', (string) $spk->id))->count())->toBe(9);
     $unitStep = LearningStep::query()->where('key', "pilot_unit_regulations_{$tenant->alias}")->sole();
-    expect($unitStep->layer)->toBe(LearningLayer::Tenant);
+    expect($unitStep->audiences->sole()->type)->toBe(LearningAudienceType::Everyone);
+    expect($unitStep->audiences->sole()->tenant_id)->toBe($tenant->id);
+    expect($step->section->getTranslation('title', 'en'))->toBe('Introductory training');
+    expect($step->audiences)->toHaveCount(2);
     expect($unitStep->sourceFor('lt')->document_id)->toBe($unitRegulations->id);
     expect(LearningStep::query()->where('key', 'pilot_spk_regulations')->sole()->glossaryTerms)->toHaveCount(5);
 
@@ -32,6 +35,7 @@ test('seeds the pilot once, links archive documents by title and keeps curator e
     $this->seed(LearningPathPilotSeeder::class);
 
     expect([LearningStep::query()->count(), GlossaryTerm::query()->count()])->toBe($counts);
-    expect($step->fresh()->order)->toBe(99);
-    expect($step->fresh()->getTranslation('title', 'lt'))->toBe('Kuratoriaus pavadinimas');
+    expect($step->fresh()->order)->toBe(10);
+    expect($step->fresh()->getTranslation('title', 'lt'))->toBe('VU SA įstatai');
+    expect($step->fresh()->audiences)->toHaveCount(2);
 });

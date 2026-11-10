@@ -2,19 +2,37 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\LearningAudienceType;
 use App\Enums\LearningImportance;
-use App\Enums\LearningLayer;
 use App\Enums\LearningStage;
 use App\Enums\LearningStepKind;
+use App\Enums\ResponsibilityPurpose;
 use App\Models\Document;
+use App\Models\LearningSection;
 use App\Models\LearningStep;
+use App\Policies\LearningSectionPolicy;
 use App\Policies\LearningStepPolicy;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 class LearningStepRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        $audiences = $this->input('audiences');
+        if (! is_array($audiences)) {
+            return;
+        }
+        foreach ($audiences as &$audience) {
+            if (is_array($audience) && (is_string($audience['source_id'] ?? null) || is_int($audience['source_id'] ?? null))) {
+                $audience['source_id'] = strtolower(trim((string) $audience['source_id']));
+            }
+        }
+        $this->merge(['audiences' => $audiences]);
+    }
+
     public function authorize(): bool
     {
         $step = $this->route('learningStep');
@@ -25,17 +43,30 @@ class LearningStepRequest extends FormRequest
     public function rules(): array
     {
         if ($this->route('learningStep')?->is_system) {
-            return ['stage' => ['sometimes', 'required', Rule::enum(LearningStage::class)], 'order' => ['sometimes', 'integer', 'min:0'], 'is_active' => ['sometimes', 'boolean']];
+            return [
+                'order' => ['sometimes', 'integer', 'min:0'], 'is_active' => ['sometimes', 'boolean'],
+                'audiences' => ['sometimes', 'array', 'min:1'],
+                'audiences.*' => ['array:id,stage,order'],
+                'audiences.*.id' => ['required', 'string'],
+                'audiences.*.stage' => ['sometimes', 'required', Rule::enum(LearningStage::class)],
+                'audiences.*.order' => ['sometimes', 'integer', 'min:0'],
+            ];
         }
 
         return [
             'kind' => ['required', Rule::enum(LearningStepKind::class)],
-            'layer' => ['required', Rule::enum(LearningLayer::class)],
-            'institution_type_id' => ['nullable', 'integer', 'exists:institution_types,id,deleted_at,NULL', 'required_if:layer,institution_type'],
-            'duty_type_id' => ['nullable', 'integer', 'exists:duty_types,id,deleted_at,NULL', 'required_if:layer,duty_type'],
-            'tenant_id' => ['nullable', 'integer', 'exists:tenants,id', 'required_if:layer,tenant'],
-            'stage' => ['nullable', Rule::enum(LearningStage::class), 'required_unless:kind,meeting_prep'],
-            'importance' => ['required', Rule::enum(LearningImportance::class)],
+            'learning_section_id' => ['exclude_unless:kind,knowledge', 'nullable', 'exists:learning_sections,id'],
+            'audiences' => ['required', 'array', 'min:1'],
+            'audiences.*' => ['array:id,type,source_id,tenant_id,importance,stage,description,order'],
+            'audiences.*.id' => ['nullable', 'string'],
+            'audiences.*.type' => ['required', Rule::enum(LearningAudienceType::class)],
+            'audiences.*.source_id' => ['nullable', 'string', 'max:26', 'required_unless:audiences.*.type,everyone'],
+            'audiences.*.tenant_id' => ['nullable', 'integer', 'exists:tenants,id'],
+            'audiences.*.importance' => ['required', Rule::enum(LearningImportance::class)],
+            'audiences.*.stage' => ['nullable', Rule::enum(LearningStage::class)],
+            'audiences.*.description' => ['nullable', 'array:lt,en'],
+            'audiences.*.description.*' => ['nullable', 'string', 'max:20000'],
+            'audiences.*.order' => ['sometimes', 'integer', 'min:0'],
             'title' => ['required', 'array:lt,en'],
             'title.lt' => ['required', 'string', 'max:255'],
             'title.en' => ['nullable', 'string', 'max:255'],
@@ -59,12 +90,39 @@ class LearningStepRequest extends FormRequest
                 return;
             }
             $data = $validator->validated();
-            $layer = LearningLayer::from($data['layer']);
-            abort_unless(app(LearningStepPolicy::class)->manageLayer($this->user(), $layer, $data['tenant_id'] ?? null, $this->route('learningStep') ? 'update' : 'create'), 403);
+            abort_unless(app(LearningStepPolicy::class)->manageAudiences($this->user(), $data['audiences'], $this->route('learningStep') ? 'update' : 'create'), 403);
+            if (filled($data['learning_section_id'] ?? null)) {
+                $section = LearningSection::findOrFail($data['learning_section_id']);
+                abort_unless(app(LearningSectionPolicy::class)->target($this->user(), $section->tenant_id, $this->route('learningStep') ? 'update' : 'create'), 403);
+            }
             $meetingPrep = $data['kind'] === LearningStepKind::MeetingPrep->value;
-            if (($meetingPrep && ($layer !== LearningLayer::InstitutionType || ($data['stage'] ?? null) !== null))
-                || ($layer === LearningLayer::Tenant && ($data['stage'] ?? null) !== LearningStage::BeforeStart->value)) {
-                $validator->errors()->add('stage', __('learning.validation.stage'));
+            $tables = ['duty_type' => 'duty_types', 'institution_type' => 'institution_types', 'responsibility' => 'roles', 'duty' => 'duties', 'institution' => 'institutions'];
+            foreach ($data['audiences'] as $index => $audience) {
+                $type = LearningAudienceType::from($audience['type']);
+                if ($meetingPrep ? (! in_array($type, [LearningAudienceType::InstitutionType, LearningAudienceType::Institution], true) || ($audience['stage'] ?? null) !== null) : empty($audience['stage'])) {
+                    $validator->errors()->add("audiences.{$index}.stage", __('learning.validation.stage'));
+                }
+                if ($type === LearningAudienceType::Purpose) {
+                    if (ResponsibilityPurpose::tryFrom((string) $audience['source_id']) === null) {
+                        $validator->errors()->add("audiences.{$index}.source_id", __('learning.validation.audience_source'));
+                    }
+
+                    continue;
+                }
+                if ($type !== LearningAudienceType::Everyone) {
+                    if (in_array($type, [LearningAudienceType::DutyType, LearningAudienceType::InstitutionType], true) && ! ctype_digit($audience['source_id'])) {
+                        $validator->errors()->add("audiences.{$index}.source_id", __('learning.validation.audience_source'));
+
+                        continue;
+                    }
+                    $query = DB::table($tables[$type->value])->where('id', $audience['source_id']);
+                    if (in_array($type, [LearningAudienceType::DutyType, LearningAudienceType::InstitutionType, LearningAudienceType::Duty, LearningAudienceType::Institution], true)) {
+                        $query->whereNull('deleted_at');
+                    }
+                    if (! $query->exists()) {
+                        $validator->errors()->add("audiences.{$index}.source_id", __('learning.validation.audience_source'));
+                    }
+                }
             }
             $this->validateSources($validator, $data['sources'] ?? []);
         }];

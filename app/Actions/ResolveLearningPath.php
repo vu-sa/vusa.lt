@@ -3,7 +3,8 @@
 namespace App\Actions;
 
 use App\Actions\Cadences\ResolveCadenceForDuty;
-use App\Enums\LearningLayer;
+use App\Enums\LearningAudienceType;
+use App\Enums\LearningImportance;
 use App\Enums\LearningProgressStatus;
 use App\Enums\LearningStage;
 use App\Enums\LearningStepKind;
@@ -12,6 +13,7 @@ use App\Models\Duty;
 use App\Models\DutyType;
 use App\Models\InstitutionType;
 use App\Models\LearningStep;
+use App\Models\LearningStepAudience;
 use App\Models\LearningStepProgress;
 use App\Models\User;
 use App\Services\Learning\LearningPath;
@@ -42,6 +44,7 @@ class ResolveLearningPath
         (new EloquentCollection($users->all()))->load([
             'authorization_duties.institution.types',
             'authorization_duties.types',
+            'authorization_duties.roles',
             'authorization_duties.predecessors' => fn ($query) => $query->withTrashed(),
         ]);
         $duties = $users->flatMap(fn (User $user) => $user->authorization_duties)->unique('id')->values();
@@ -51,7 +54,7 @@ class ResolveLearningPath
         $cadences = ResolveCadenceForDuty::forDuties($duties);
         $institutionTypes = self::ancestry(InstitutionType::all());
         $dutyTypes = self::ancestry(DutyType::all());
-        $steps = LearningStep::query()->active()->ordered()->with(['sources.document.institution.tenant', 'institutionType', 'dutyType', 'tenant'])->withCount('comments')->get();
+        $steps = LearningStep::query()->active()->ordered()->with(['sources.document.institution.tenant', 'section', 'audiences' => fn ($query) => $query->with(LearningStepAudience::LABEL_RELATIONS)])->withCount('comments')->get();
         $progress = LearningStepProgress::query()->whereIn('user_id', $users->pluck('id'))->get()->groupBy('user_id');
         $detections = [];
         foreach (SystemStepRegistry::definitions() as $key => $definition) {
@@ -69,49 +72,69 @@ class ResolveLearningPath
             $first = $repDuties->first();
             $termStart = $first?->pivot->start_date;
             $end = $first?->pivot->end_date ?? ($first ? ($cadences[$first->id] ?? null)?->end_date : null);
-            $institutionTypeIds = $userDuties->flatMap(fn (Duty $duty) => $duty->institution?->types->pluck('id') ?? collect())
-                ->flatMap(fn (int $id): array => $institutionTypes[$id] ?? [$id])->unique();
-            $dutyTypeIds = $userDuties->flatMap(fn (Duty $duty) => $duty->types->pluck('id'))->flatMap(fn (int $id): array => $dutyTypes[$id] ?? [$id])->unique();
-            $tenantIds = $repDuties->pluck('institution.tenant_id')->filter()->unique();
+            $facts = [];
+            foreach ($userDuties as $duty) {
+                $tenant = $duty->institution?->tenant_id;
+                $values = [
+                    'everyone' => ['*'],
+                    'duty' => [$duty->id],
+                    'institution' => $duty->institution ? [$duty->institution->id] : [],
+                    'institution_type' => $duty->institution?->types->flatMap(fn ($type) => $institutionTypes[$type->id] ?? [$type->id])->all() ?? [],
+                    'duty_type' => $duty->types->flatMap(fn ($type) => $dutyTypes[$type->id] ?? [$type->id])->all(),
+                    'responsibility' => $duty->roles->pluck('id')->all(),
+                    'purpose' => $duty->roles->pluck('purpose')->filter()->map(fn (ResponsibilityPurpose $purpose) => $purpose->value)->all(),
+                ];
+                foreach ($values as $type => $ids) {
+                    foreach ($ids as $id) {
+                        $facts[$type][(string) $id]['all'] = true;
+                        if ($tenant !== null) {
+                            $facts[$type][(string) $id][$tenant] = true;
+                        }
+                    }
+                }
+            }
             $userProgress = $progress->get($user->id, collect())->keyBy('learning_step_id');
             $resolved = collect();
             $meetingPrep = collect();
+            $documents = collect();
             $writtenAt = $written->get($user->id);
             foreach ($steps as $step) {
-                $included = self::inAudience($step, $repDuties, $institutionTypeIds, $dutyTypeIds, $tenantIds);
-                if (! $included || ($step->key === 'read_handover' && $received->get($user->id, collect())->isEmpty())) {
+                $matched = $step->audiences->filter(fn (LearningStepAudience $audience): bool => self::inAudience($audience, $facts));
+                if ($matched->isEmpty() || ($step->key === 'read_handover' && $received->get($user->id, collect())->isEmpty())) {
                     continue;
                 }
-                if ($step->kind === LearningStepKind::MeetingPrep) {
-                    $meetingPrep->push(new ResolvedLearningStep($step));
-
-                    continue;
-                }
-                $resolved->push(self::resolveStep($step, $userProgress->get($step->id), $termStart,
+                $winner = $matched->sortBy(fn (LearningStepAudience $audience): array => [
+                    array_search($audience->importance, LearningImportance::cases(), true),
+                    $audience->stage?->order() ?? 4, $audience->order, $audience->id,
+                ])->first();
+                $locale = app()->getLocale();
+                $notes = $matched->filter(fn (LearningStepAudience $audience): bool => filled($audience->getTranslation('description', $locale, false)))
+                    ->map(fn (LearningStepAudience $audience): array => ['label' => $audience->label($locale), 'description' => (string) $audience->getTranslation('description', $locale, false)])->values()->all();
+                $item = self::resolveStep($step, $winner, $notes, $userProgress->get($step->id), $termStart,
                     $step->is_system && ($step->key === 'write_handover' ? $writtenAt !== null : isset($detections[$step->key][$user->id])),
-                    $writtenAt));
+                    $writtenAt);
+                match ($step->kind) {
+                    LearningStepKind::Action => $resolved->push($item),
+                    LearningStepKind::Knowledge => $documents->push($item),
+                    LearningStepKind::MeetingPrep => $meetingPrep->push($item),
+                };
             }
-            $paths->put($user->id, new LearningPath($user, self::stage($first !== null, $termStart, $end), $termStart, $resolved, $meetingPrep));
+            $sort = fn (ResolvedLearningStep $item): array => [$item->stage?->order() ?? 4, $item->step->order, $item->step->id];
+            $paths->put($user->id, new LearningPath($user, self::stage($first !== null, $termStart, $end), $termStart,
+                $resolved->sortBy($sort)->values(), $documents->sortBy($sort)->values(), $meetingPrep->sortBy($sort)->values()));
         }
 
         return $paths;
     }
 
-    /**
-     * @param  Collection<int, Duty>  $repDuties
-     * @param  Collection<int, int>  $institutionTypes
-     * @param  Collection<int, int>  $dutyTypes
-     * @param  Collection<int, int>  $tenants
-     */
-    private static function inAudience(LearningStep $step, Collection $repDuties, Collection $institutionTypes, Collection $dutyTypes, Collection $tenants): bool
+    private static function inAudience(LearningStepAudience $audience, array $facts): bool
     {
-        return match ($step->layer) {
-            LearningLayer::Platform => true,
-            LearningLayer::Foundation => $repDuties->isNotEmpty(),
-            LearningLayer::InstitutionType => $institutionTypes->contains($step->institution_type_id),
-            LearningLayer::DutyType => $dutyTypes->contains($step->duty_type_id),
-            LearningLayer::Tenant => $tenants->contains($step->tenant_id),
-        };
+        if ($audience->type === LearningAudienceType::Everyone && $audience->tenant_id === null) {
+            return true;
+        }
+        $source = $audience->type === LearningAudienceType::Everyone ? '*' : $audience->source_id;
+
+        return isset($facts[$audience->type->value][$source][$audience->tenant_id ?? 'all']);
     }
 
     /** Incoming reps prepare before their term starts, so per-term work done in the lead-up still counts. */
@@ -122,12 +145,12 @@ class ResolveLearningPath
         return $date !== null && (! $step->per_term || $termStart === null || $date->gte($termStart->copy()->subDays(self::TERM_LEAD_IN_DAYS)));
     }
 
-    private static function resolveStep(LearningStep $step, ?LearningStepProgress $progress, ?Carbon $termStart, bool $detected, ?Carbon $writtenAt): ResolvedLearningStep
+    private static function resolveStep(LearningStep $step, LearningStepAudience $winner, array $notes, ?LearningStepProgress $progress, ?Carbon $termStart, bool $detected, ?Carbon $writtenAt): ResolvedLearningStep
     {
         $completedAt = self::completionIsCurrent($step, $progress?->completed_at, $termStart) ? $progress->completed_at : null;
         $state = 'pending';
         if ($completedAt !== null) {
-            $state = $progress->status === LearningProgressStatus::Done ? 'done' : ($step->importance->isSkippable() ? 'skipped' : 'pending');
+            $state = $progress->status === LearningProgressStatus::Done ? 'done' : ($winner->importance->isSkippable() ? 'skipped' : 'pending');
         }
         if ($detected && $step->key === 'write_handover') {
             $detected = self::completionIsCurrent($step, $writtenAt, $termStart);
@@ -136,13 +159,13 @@ class ResolveLearningPath
             }
         }
         if ($detected) {
-            return new ResolvedLearningStep($step, 'done', true, $completedAt);
+            return new ResolvedLearningStep($step, 'done', true, $completedAt, $winner->importance, $winner->stage, $winner->label(app()->getLocale()), $notes, $winner->id);
         }
         if (self::sourceUpdated($step, $state, $completedAt)) {
             $state = 'updated';
         }
 
-        return new ResolvedLearningStep($step, $state, false, $completedAt);
+        return new ResolvedLearningStep($step, $state, false, $completedAt, $winner->importance, $winner->stage, $winner->label(app()->getLocale()), $notes, $winner->id);
     }
 
     private static function sourceUpdated(LearningStep $step, string $state, ?Carbon $completedAt): bool

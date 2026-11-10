@@ -2,22 +2,20 @@
 
 namespace Database\Seeders;
 
+use App\Enums\LearningAudienceType;
 use App\Enums\LearningImportance;
-use App\Enums\LearningLayer;
 use App\Enums\LearningStage;
 use App\Enums\LearningStepKind;
+use App\Enums\ResponsibilityPurpose;
 use App\Models\Document;
 use App\Models\GlossaryTerm;
 use App\Models\InstitutionType;
+use App\Models\LearningSection;
 use App\Models\LearningStep;
 use App\Models\Tenant;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Pilot content for Mano kelias: the base layer, the study programme committee type and a glossary.
- * Idempotent on step keys and Lithuanian terms; run by hand (`db:seed --class=LearningPathPilotSeeder --force`).
- */
 class LearningPathPilotSeeder extends Seeder
 {
     private const string SPK_TYPE = 'spk';
@@ -27,9 +25,15 @@ class LearningPathPilotSeeder extends Seeder
     public function run(): void
     {
         DB::transaction(function (): void {
+            $section = LearningSection::query()->firstOrCreate(['title->lt' => 'Įvadiniai mokymai'], [
+                'title' => ['lt' => 'Įvadiniai mokymai', 'en' => 'Introductory training'], 'order' => 0,
+            ]);
             $steps = [...$this->foundationSteps(), ...$this->spkSteps()];
             foreach ($steps as $definition) {
-                $this->upsertStep($definition);
+                $step = $this->upsertStep($definition);
+                if ($step !== null && in_array($step->key, ['pilot_vusa_statute', 'pilot_vusa_rules_of_procedure'], true)) {
+                    $step->update(['learning_section_id' => $section->id]);
+                }
             }
             $this->seedUnitRegulations();
             $this->seedGlossary();
@@ -42,7 +46,7 @@ class LearningPathPilotSeeder extends Seeder
         return [
             [
                 'key' => 'pilot_vusa_statute',
-                'kind' => LearningStepKind::Knowledge, 'layer' => LearningLayer::Foundation,
+                'kind' => LearningStepKind::Knowledge, 'audience' => LearningAudienceType::Purpose,
                 'stage' => LearningStage::BeforeStart, 'importance' => LearningImportance::Essential, 'order' => 10,
                 'title' => ['lt' => 'VU SA įstatai', 'en' => 'VU SR statute'],
                 'description' => [
@@ -53,7 +57,7 @@ class LearningPathPilotSeeder extends Seeder
             ],
             [
                 'key' => 'pilot_vusa_rules_of_procedure',
-                'kind' => LearningStepKind::Knowledge, 'layer' => LearningLayer::Foundation,
+                'kind' => LearningStepKind::Knowledge, 'audience' => LearningAudienceType::Purpose,
                 'stage' => LearningStage::FirstMonths, 'importance' => LearningImportance::Recommended, 'order' => 20,
                 'title' => ['lt' => 'VU SA darbo reglamentas', 'en' => 'VU SR rules of procedure'],
                 'description' => [
@@ -64,7 +68,7 @@ class LearningPathPilotSeeder extends Seeder
             ],
             [
                 'key' => 'pilot_vu_statute',
-                'kind' => LearningStepKind::Knowledge, 'layer' => LearningLayer::Foundation,
+                'kind' => LearningStepKind::Knowledge, 'audience' => LearningAudienceType::Purpose,
                 'stage' => LearningStage::FirstMonths, 'importance' => LearningImportance::Recommended, 'order' => 30,
                 'title' => ['lt' => 'Vilniaus universiteto statutas', 'en' => 'Statute of Vilnius University'],
                 'description' => [
@@ -75,7 +79,7 @@ class LearningPathPilotSeeder extends Seeder
             ],
             [
                 'key' => 'pilot_law_on_higher_education',
-                'kind' => LearningStepKind::Knowledge, 'layer' => LearningLayer::Foundation,
+                'kind' => LearningStepKind::Knowledge, 'audience' => LearningAudienceType::Purpose,
                 'stage' => LearningStage::WholeTerm, 'importance' => LearningImportance::Optional, 'order' => 40,
                 'title' => ['lt' => 'Mokslo ir studijų įstatymas', 'en' => 'Law on Higher Education and Research'],
                 'description' => [
@@ -90,7 +94,7 @@ class LearningPathPilotSeeder extends Seeder
     /** @return list<array<string, mixed>> */
     private function spkSteps(): array
     {
-        $type = ['layer' => LearningLayer::InstitutionType, 'institution_type' => self::SPK_TYPE];
+        $type = ['audience' => LearningAudienceType::InstitutionType, 'institution_type' => self::SPK_TYPE];
 
         return [
             [
@@ -201,22 +205,24 @@ class LearningPathPilotSeeder extends Seeder
 
         /** @var LearningStep $step */
         $step = LearningStep::query()->firstOrNew(['key' => $definition['key']]);
-        if ($step->exists) {
-            return $step;
-        }
 
         $step->fill([
             'kind' => $definition['kind'],
-            'layer' => $definition['layer'],
-            'institution_type_id' => $institutionTypeId,
-            'tenant_id' => $definition['tenant_id'] ?? null,
-            'stage' => $definition['stage'],
-            'importance' => $definition['importance'],
             'order' => $definition['order'],
             'title' => $definition['title'],
             'description' => $definition['description'],
         ]);
         $step->save();
+        $step->audiences()->delete();
+        $sources = $definition['audience'] === LearningAudienceType::Purpose
+            ? [ResponsibilityPurpose::StudentRepresentation->value, ResponsibilityPurpose::StudentRepCoordination->value]
+            : [$institutionTypeId === null ? null : (string) $institutionTypeId];
+        foreach ($sources as $source) {
+            $step->audiences()->create([
+                'type' => $definition['audience'], 'source_id' => $source, 'tenant_id' => $definition['tenant_id'] ?? null,
+                'stage' => $definition['stage'], 'importance' => $definition['importance'], 'order' => 0,
+            ]);
+        }
 
         $sources = $definition['sources'] ?? [];
         if (isset($definition['document'])) {
@@ -229,7 +235,7 @@ class LearningPathPilotSeeder extends Seeder
             $sources['lt'] = ['url' => $definition['url']];
         }
         foreach ($sources as $locale => $source) {
-            $step->sources()->create(['locale' => $locale, 'document_id' => $source['document_id'] ?? null, 'url' => $source['url'] ?? null]);
+            $step->sources()->updateOrCreate(['locale' => $locale], ['document_id' => $source['document_id'] ?? null, 'url' => $source['url'] ?? null]);
         }
 
         return $step;
@@ -240,7 +246,7 @@ class LearningPathPilotSeeder extends Seeder
         foreach (Tenant::query()->where('type', 'padalinys')->get() as $tenant) {
             $this->upsertStep([
                 'key' => "pilot_unit_regulations_{$tenant->alias}",
-                'kind' => LearningStepKind::Knowledge, 'layer' => LearningLayer::Tenant, 'tenant_id' => $tenant->id,
+                'kind' => LearningStepKind::Knowledge, 'audience' => LearningAudienceType::Everyone, 'tenant_id' => $tenant->id,
                 'stage' => LearningStage::BeforeStart, 'importance' => LearningImportance::Essential, 'order' => 10,
                 'title' => ['lt' => "{$tenant->shortname} nuostatai", 'en' => "{$tenant->shortname} regulations"],
                 'description' => [

@@ -1,8 +1,12 @@
 <?php
 
+use App\Actions\ResolveLearningPath;
 use App\Enums\DocumentStatus;
+use App\Enums\LearningStepKind;
 use App\Models\Document;
+use App\Models\InstitutionType;
 use App\Models\LearningStep;
+use App\Models\LearningStepProgress;
 use App\Models\Permission;
 use App\Models\Tenant;
 use App\Services\Learning\ResolvedLearningStep;
@@ -17,7 +21,7 @@ test('sources fall back to Lithuanian and expose published document links', func
     $step = LearningStep::factory()->create();
     $document = Document::factory()->create(['status' => DocumentStatus::Published, 'anonymous_url' => 'https://example.test/shared']);
     $step->sources()->create(['locale' => 'lt', 'document_id' => $document->id]);
-    $step->load(['sources.document', 'institutionType', 'dutyType', 'tenant'])->loadCount('comments');
+    $step->load(['sources.document', 'section', 'audiences'])->loadCount('comments');
     $data = LearningPathPresenter::step(new ResolvedLearningStep($step), $viewer, 'en');
 
     expect($data['source']['url'])->toBe(route('documents.show', $document->id));
@@ -30,7 +34,7 @@ test('hidden sources expose no link to members and an edit link to curators', fu
     $step = LearningStep::factory()->create();
     $document = Document::factory()->create(['status' => DocumentStatus::Hidden, 'anonymous_url' => null]);
     $step->sources()->create(['locale' => 'lt', 'document_id' => $document->id]);
-    $step->load(['sources.document', 'institutionType', 'dutyType', 'tenant'])->loadCount('comments');
+    $step->load(['sources.document', 'section', 'audiences'])->loadCount('comments');
     $item = new ResolvedLearningStep($step);
     expect(LearningPathPresenter::step($item, $viewer, 'lt')['source']['url'])->toBeNull();
     $viewer->givePermissionTo(Permission::findOrCreate('documents.update.*', 'web'));
@@ -61,4 +65,28 @@ test('automatic tracking is exposed before a system step is completed', function
         expect($data['automaticallyTracked'])->toBe($tracked)
             ->and($data['autoCompleted'])->toBeFalse();
     }
+});
+
+test('path separates document progress and groups meeting preparation by the winning audience', function (): void {
+    $user = makeUser(Tenant::query()->firstOrFail());
+    LearningStep::query()->update(['is_active' => false]);
+    $duty = $user->authorization_duties()->firstOrFail();
+    $type = InstitutionType::factory()->create();
+    $duty->institution->types()->attach($type);
+    $action = LearningStep::factory()->create(['kind' => LearningStepKind::Action]);
+    $essential = LearningStep::factory()->audience(['importance' => 'essential'])->create();
+    $done = LearningStep::factory()->audience(['importance' => 'essential'])->create();
+    LearningStep::factory()->audience(['importance' => 'recommended'])->create();
+    LearningStepProgress::factory()->for($user)->create(['learning_step_id' => $done->id]);
+    $prep = LearningStep::factory()->meetingPrep($type)->create();
+    $path = ResolveLearningPath::execute($user);
+    $payload = LearningPathPresenter::path($path, 'lt');
+
+    expect(collect($payload['stages'])->flatMap(fn (array $stage) => $stage['steps'])->pluck('id')->all())->toBe([$action->id]);
+    expect($payload['totals']['allTotal'])->toBe(1);
+    expect($payload['documents'])->toMatchArray(['essentialDone' => 1, 'essentialTotal' => 2, 'done' => 1, 'total' => 3]);
+    expect($payload['documents']['next'])->toHaveCount(2);
+    expect($payload['documents']['next'][0]['id'])->toBe($essential->id);
+    expect($payload['meetingPrep'][0]['audience'])->toBe(['id' => $prep->audiences->sole()->id, 'label' => $type->getTranslation('title', 'lt')]);
+    expect($payload['meetingPrep'][0]['steps'][0]['id'])->toBe($prep->id);
 });

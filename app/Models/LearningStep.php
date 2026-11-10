@@ -3,9 +3,6 @@
 namespace App\Models;
 
 use App\Contracts\Commentable;
-use App\Enums\LearningImportance;
-use App\Enums\LearningLayer;
-use App\Enums\LearningStage;
 use App\Enums\LearningStepKind;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasTranslations;
@@ -19,21 +16,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
-use Illuminate\Validation\ValidationException;
 
 /**
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property string|null $learning_section_id
+ * @property-read LearningSection|null $section
+ * @property-read Collection<int, LearningStepAudience> $audiences
  * @property string $id
  * @property string|null $key
  * @property bool $is_system
  * @property LearningStepKind $kind
- * @property LearningLayer $layer
- * @property LearningStage|null $stage
- * @property LearningImportance $importance
- * @property int|null $institution_type_id
- * @property int|null $duty_type_id
- * @property int|null $tenant_id
  * @property array|string|null $title
  * @property array|string|null $description
  * @property bool $per_term
@@ -45,13 +38,10 @@ use Illuminate\Validation\ValidationException;
  * @property-read Collection<int, Comment> $comments
  * @property-read Collection<int, LearningStepSource> $sources
  * @property-read Collection<int, LearningStepProgress> $progress
- * @property-read InstitutionType|null $institutionType
- * @property-read DutyType|null $dutyType
- * @property-read Tenant|null $tenant
  * @property-read Collection<int, GlossaryTerm> $glossaryTerms
  * @property-read User|null $createdBy
  */
-#[Fillable(['key', 'is_system', 'kind', 'layer', 'stage', 'importance', 'institution_type_id', 'duty_type_id', 'tenant_id', 'title', 'description', 'per_term', 'order', 'is_active', 'reviewed_at', 'created_by'])]
+#[Fillable(['key', 'is_system', 'kind', 'learning_section_id', 'title', 'description', 'per_term', 'order', 'is_active', 'reviewed_at', 'created_by'])]
 class LearningStep extends Model implements Commentable
 {
     use HasComments, HasFactory, HasTranslations, HasUlids, LogsModelActivity;
@@ -70,22 +60,16 @@ class LearningStep extends Model implements Commentable
         return $this->hasMany(LearningStepProgress::class);
     }
 
-    /** @return BelongsTo<InstitutionType, $this> */
-    public function institutionType(): BelongsTo
+    /** @return HasMany<LearningStepAudience, $this> */
+    public function audiences(): HasMany
     {
-        return $this->belongsTo(InstitutionType::class);
+        return $this->hasMany(LearningStepAudience::class)->orderBy('order')->orderBy('id');
     }
 
-    /** @return BelongsTo<DutyType, $this> */
-    public function dutyType(): BelongsTo
+    /** @return BelongsTo<LearningSection, $this> */
+    public function section(): BelongsTo
     {
-        return $this->belongsTo(DutyType::class);
-    }
-
-    /** @return BelongsTo<Tenant, $this> */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
+        return $this->belongsTo(LearningSection::class, 'learning_section_id');
     }
 
     /** @return BelongsToMany<GlossaryTerm, $this> */
@@ -102,33 +86,7 @@ class LearningStep extends Model implements Commentable
 
     protected function casts(): array
     {
-        return ['kind' => LearningStepKind::class, 'layer' => LearningLayer::class, 'stage' => LearningStage::class, 'importance' => LearningImportance::class, 'is_system' => 'boolean', 'per_term' => 'boolean', 'is_active' => 'boolean', 'reviewed_at' => 'datetime', 'order' => 'integer'];
-    }
-
-    protected static function booted(): void
-    {
-        static::saving(function (self $step): void {
-            $target = match ($step->layer) {
-                LearningLayer::InstitutionType => 'institution_type_id',
-                LearningLayer::DutyType => 'duty_type_id',
-                LearningLayer::Tenant => 'tenant_id',
-                default => null,
-            };
-            foreach (['institution_type_id', 'duty_type_id', 'tenant_id'] as $column) {
-                if ($column !== $target) {
-                    $step->{$column} = null;
-                }
-            }
-            if ($target !== null && $step->{$target} === null) {
-                throw ValidationException::withMessages([$target => __('validation.required', ['attribute' => $target])]);
-            }
-            $valid = $step->kind === LearningStepKind::MeetingPrep
-                ? $step->layer === LearningLayer::InstitutionType && $step->stage === null
-                : $step->stage !== null;
-            if (! $valid || ($step->layer === LearningLayer::Tenant && $step->stage !== LearningStage::BeforeStart)) {
-                throw ValidationException::withMessages(['stage' => __('learning.validation.stage')]);
-            }
-        });
+        return ['kind' => LearningStepKind::class, 'is_system' => 'boolean', 'per_term' => 'boolean', 'is_active' => 'boolean', 'reviewed_at' => 'datetime', 'order' => 'integer'];
     }
 
     /** @param Builder<static> $query */
@@ -140,7 +98,7 @@ class LearningStep extends Model implements Commentable
     /** @param Builder<static> $query */
     public function scopeOrdered(Builder $query): void
     {
-        $query->orderByRaw("CASE stage WHEN 'before_start' THEN 0 WHEN 'first_months' THEN 1 WHEN 'whole_term' THEN 2 WHEN 'term_end' THEN 3 ELSE 4 END")->orderBy('order')->orderBy('id');
+        $query->orderBy('order')->orderBy('id');
     }
 
     public function sourceFor(string $locale): ?LearningStepSource

@@ -27,12 +27,21 @@ return [
         'action' => 'Action',
         'meeting_prep' => 'Meeting preparation',
     ],
-    'layers' => [
-        'platform' => 'Platform',
-        'foundation' => 'Foundation',
+    'audience_types' => [
+        'everyone' => 'Everyone',
+        'duty_type' => 'Duty type',
         'institution_type' => 'Institution type',
-        'duty_type' => 'Duties',
-        'tenant' => 'Unit',
+        'responsibility' => 'Responsibility',
+        'duty' => 'Duty',
+        'institution' => 'Institution',
+        'purpose' => 'System responsibility',
+    ],
+    'sections' => [
+        'title' => 'Document sections',
+        'create' => 'Create section',
+        'created' => 'Section created.',
+        'updated' => 'Section updated.',
+        'deleted' => 'Section deleted.',
     ],
     'stages' => [
         'before_start' => 'Before the start',
@@ -57,6 +66,7 @@ return [
         'description' => 'We are preparing the steps, glossary and handover.',
     ],
     'validation' => [
+        'audience_source' => 'Choose an existing audience source.',
         'stage' => 'Choose a valid stage for this step.',
         'source' => 'Choose either a document or a URL.',
         'progress' => 'This progress change is not allowed.',
@@ -194,6 +204,13 @@ return [
         'reviewed' => 'Reviewed',
         'not_reviewed' => 'Not reviewed yet',
         'terms' => 'Terms',
+        'sections' => [
+            'title' => 'Document sections',
+            'create' => 'Create section',
+            'created' => 'Section created.',
+            'updated' => 'Section updated.',
+            'deleted' => 'Section deleted.',
+        ],
         'stages' => [
             'before_start' => 'Before you start',
             'first_months' => 'First months',

@@ -20,7 +20,7 @@ class LearningPathController extends AdminController
         $this->authorize('viewAny', LearningStep::class);
 
         return Inertia::render('Admin/Learning/ShowLearningDocuments', [
-            'documents' => LearningPathPresenter::documents(ResolveLearningPath::execute($request->user()), app()->getLocale()),
+            ...LearningPathPresenter::documents(ResolveLearningPath::execute($request->user()), app()->getLocale()),
             'canSeeReps' => LearningAdminPresenter::canSeeReps($request->user()),
         ]);
     }

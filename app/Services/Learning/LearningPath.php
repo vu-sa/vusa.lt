@@ -11,6 +11,7 @@ final readonly class LearningPath
 {
     /**
      * @param  Collection<int, ResolvedLearningStep>  $steps
+     * @param  Collection<int, ResolvedLearningStep>  $documents
      * @param  Collection<int, ResolvedLearningStep>  $meetingPrep
      */
     public function __construct(
@@ -18,13 +19,14 @@ final readonly class LearningPath
         public ?LearningStage $currentStage,
         public ?Carbon $termStart,
         public Collection $steps,
+        public Collection $documents,
         public Collection $meetingPrep,
     ) {}
 
     /** @return array{essentialDone: int, essentialTotal: int, allDone: int, allTotal: int} */
     public function totals(): array
     {
-        $essential = $this->steps->filter(fn (ResolvedLearningStep $item): bool => ! $item->step->importance->isSkippable());
+        $essential = $this->steps->filter(fn (ResolvedLearningStep $item): bool => ! $item->importance->isSkippable());
 
         return [
             'essentialDone' => $essential->where('state', 'done')->count(),
@@ -34,9 +36,23 @@ final readonly class LearningPath
         ];
     }
 
+    /** @return array{essentialDone: int, essentialTotal: int, done: int, total: int} */
+    public function documentTotals(): array
+    {
+        $essential = $this->documents->filter(fn (ResolvedLearningStep $item): bool => ! $item->importance->isSkippable());
+
+        return [
+            'essentialDone' => $essential->where('state', 'done')->count(),
+            'essentialTotal' => $essential->count(),
+            'done' => $this->documents->filter(fn (ResolvedLearningStep $item): bool => in_array($item->state, ['done', 'skipped'], true))->count(),
+            'total' => $this->documents->count(),
+        ];
+    }
+
     public function contains(string $id): bool
     {
-        return $this->steps->contains(fn (ResolvedLearningStep $item): bool => $item->step->id === $id)
+        return $this->documents->contains(fn (ResolvedLearningStep $item): bool => $item->step->id === $id)
+            || $this->steps->contains(fn (ResolvedLearningStep $item): bool => $item->step->id === $id)
             || $this->meetingPrep->contains(fn (ResolvedLearningStep $item): bool => $item->step->id === $id);
     }
 }
