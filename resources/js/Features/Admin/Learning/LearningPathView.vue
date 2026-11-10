@@ -42,6 +42,7 @@ function groups(steps: LearningStepData[]) {
 <template>
   <div class="space-y-12" data-slot="learning-path">
     <LearningDocumentsEntry :documents="path.documents" :readonly="readonly" />
+    <slot name="after-documents" />
 
     <ol v-if="hasSteps" class="relative">
       <li
@@ -113,8 +114,6 @@ function groups(steps: LearningStepData[]) {
       </li>
     </ol>
     <EmptyState v-else :title="$t('learning.path.empty_title')" :description="$t('learning.path.empty_description')" />
-
-    <slot name="before-meeting-prep" />
 
     <section v-if="path.meetingPrep.length" data-slot="meeting-prep" aria-labelledby="meeting-prep-title">
       <header class="flex flex-wrap items-center gap-x-3 gap-y-2">

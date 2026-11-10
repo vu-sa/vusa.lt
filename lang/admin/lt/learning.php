@@ -70,9 +70,9 @@ return [
             'action' => 'Peržiūrėti pareigas',
         ],
         'review_contacts' => [
-            'summary' => 'Patikrink, kaip kolegos gali su tavimi susisiekti.',
+            'summary' => 'Patikrink savo kontaktus ir nuotrauką, kad kolegos galėtų tave atpažinti ir susisiekti.',
             'title' => 'Peržiūrėk savo kontaktinius duomenis',
-            'description' => 'Paskyroje gali pataisyti kontaktus, nuotrauką ir kreipinį. Prisijungimo el. paštas čia nekeičiamas, o vardą gali pataisyti tik vieną kartą. Nuotrauka ir telefono numeris šiam žingsniui neprivalomi.',
+            'description' => 'Paskyroje gali pataisyti kontaktus, nuotrauką ir kreipinį. Prisijungimo el. paštas čia nekeičiamas, o vardą gali pataisyti tik vieną kartą. Taip pat patikrink nuotrauką – ją kartais jau būna įkėlęs atstovų koordinatorius. Nuotrauka ir telefono numeris šiam žingsniui neprivalomi.',
             'action' => 'Atverti paskyrą',
         ],
         'notification_settings' => [

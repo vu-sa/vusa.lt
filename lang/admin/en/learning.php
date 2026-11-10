@@ -70,9 +70,9 @@ return [
             'action' => 'Review duties',
         ],
         'review_contacts' => [
-            'summary' => 'Check how colleagues can reach you.',
+            'summary' => 'Check your contact details and photo so colleagues can recognise and reach you.',
             'title' => 'Review your contact details',
-            'description' => 'Account settings let you update your contacts, photo and form of address. Your login email cannot be changed here, and your name can only be corrected once. A photo and phone number are optional.',
+            'description' => 'Account settings let you update your contacts, photo and form of address. Your login email cannot be changed here, and your name can only be corrected once. Also check your photo – your representative coordinator may have already uploaded one. A photo and phone number are optional.',
             'action' => 'Open account',
         ],
         'notification_settings' => [

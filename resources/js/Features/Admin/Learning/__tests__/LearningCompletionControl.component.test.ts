@@ -12,7 +12,7 @@ describe('LearningCompletionControl', () => {
     const checkbox = wrapper.get('[role="checkbox"]');
     expect(checkbox.classes()).toContain('border-dashed');
     expect(checkbox.classes()).toContain('cursor-pointer');
-    expect(checkbox.classes()).toContain('pointer-coarse:before:-inset-2.5');
+    expect(checkbox.classes()).toContain('pointer-coarse:before:-inset-3');
     expect(wrapper.classes()).not.toContain('cursor-pointer');
     expect(checkbox.classes()).toContain('enabled:hover:bg-muted');
     await checkbox.trigger('click');
@@ -24,7 +24,7 @@ describe('LearningCompletionControl', () => {
     const wrapper = mount(LearningCompletionControl, { props: { step: step({ automaticallyTracked: true, autoCompleted: checked }), modelValue: checked }, global: { stubs: commonStubs } });
     expect(wrapper.get('[role="img"]').attributes('aria-label')).toBe(checked ? 'learning.path.auto_help' : 'learning.path.auto_pending');
     expect(wrapper.get('[role="checkbox"]').attributes('aria-checked')).toBe(String(checked));
-    expect(wrapper.get('[role="img"]').classes().includes('fill-current')).toBe(checked);
+    expect(wrapper.get('[role="img"]').classes()).not.toContain('fill-current');
     expect(wrapper.get('[role="checkbox"]').attributes('aria-readonly')).toBe('true');
     expect(wrapper.find('[data-slot="checkbox-indicator"]').exists()).toBe(false);
     await wrapper.get('[role="checkbox"]').trigger('click');
@@ -32,12 +32,12 @@ describe('LearningCompletionControl', () => {
     wrapper.unmount();
   });
 
-  it('uses brand colors for essential borders, automatic lightning and completed fills', async () => {
+  it('keeps essential outlines distinct and automatic completion in success colors', async () => {
     const wrapper = mount(LearningCompletionControl, { props: { step: step({ importance: LearningImportance.Essential, automaticallyTracked: true }), modelValue: false }, global: { stubs: commonStubs } });
     expect(wrapper.get('[role="checkbox"]').classes()).toContain('text-brand');
     await wrapper.setProps({ modelValue: true });
-    expect(wrapper.get('[role="checkbox"]').classes()).toContain('bg-brand-fill');
-    expect(wrapper.get('[role="checkbox"]').classes()).toContain('text-brand-foreground');
+    expect(wrapper.get('[role="checkbox"]').classes()).toContain('bg-status-success-surface');
+    expect(wrapper.get('[role="checkbox"]').classes()).toContain('text-status-success');
     await wrapper.setProps({ step: step({ importance: LearningImportance.Essential }) });
     expect(wrapper.get('[role="checkbox"]').classes()).toContain('data-[state=checked]:bg-brand-fill');
     wrapper.unmount();

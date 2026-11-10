@@ -58,14 +58,14 @@ describe('LearningStepRow', () => {
     wrapper.unmount();
   });
 
-  it('uses the document title as the safe source link and links directly to insights', () => {
+  it('links the title to the step and places the insights count beside it', () => {
     const data = step({ source: { type: 'url', url: 'https://example.test/guide', documentId: null, documentStatus: null, title: null } });
     const wrapper = render(data);
-    const source = wrapper.get('a[target="_blank"]');
-    expect(source.text()).toBe(data.title);
-    expect(source.attributes('href')).toBe(data.source?.url);
-    expect(source.attributes('rel')).toBe('noopener noreferrer');
-    expect(wrapper.findAll('a').some(link => link.attributes('href')?.endsWith('#insights'))).toBe(true);
+    const links = wrapper.get('[data-slot="step-title-row"]').findAll('a');
+    expect(links[0]!.text()).toBe(data.title);
+    expect(links[0]!.attributes('href')).toBe(wrapper.get('a[aria-label="learning.path.open_step"]').attributes('href'));
+    expect(links[1]!.attributes('href')).toBe(links[0]!.attributes('href') + '#insights');
+    expect(wrapper.get('[data-slot="learning-step-action"]').attributes('href')).toBe(data.source?.url);
     wrapper.unmount();
   });
 

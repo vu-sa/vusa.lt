@@ -34,7 +34,7 @@ const tiles = computed(() => [
       </dl>
     </template>
     <LearningPathView :path="path" :coordinators="coordinators" :institution-contacts="institutionContacts">
-      <template #before-meeting-prep>
+      <template #after-documents>
         <NavigationTiles :items="tiles" :columns="2" :arrow-icon="ArrowUpRight" />
       </template>
     </LearningPathView>

@@ -7,7 +7,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { rowActionIconClass, rowActionHoverClass } from '@/Components/Collection/rowActionClasses';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
 import type { LearningCoordinator, LearningInstitutionContacts, LearningStepData } from '@/Types/learning';
-import { safeHref } from '@/Utils/safeHref';
 
 import LearningCoordinators from './LearningCoordinators.vue';
 import LearningCompletionControl from './LearningCompletionControl.vue';
@@ -24,7 +23,7 @@ const props = defineProps<{
 }>();
 const { saving, failed, canSkip, checked, save } = useStepProgress(toRef(props, 'step'), toRef(props, 'readonly'));
 const isDocument = computed(() => props.step.kind === 'knowledge');
-const documentHref = computed(() => isDocument.value ? safeHref(props.step.source?.url) : undefined);
+const hasDocumentSource = computed(() => Boolean(props.step.source?.url));
 const isResolved = computed(() => props.step.state === 'done' || props.step.state === 'skipped');
 const SUMMARY_KEYS = ['check_access', 'review_contacts', 'notification_settings', 'install_app', 'browser_push', 'orientation'];
 const summary = computed(() => props.step.isSystem && SUMMARY_KEYS.includes(props.step.key ?? '') ? $t(`learning.system_steps.${props.step.key}.summary`) : props.step.description);
@@ -34,18 +33,17 @@ const summary = computed(() => props.step.isSystem && SUMMARY_KEYS.includes(prop
   <li :data-step="step.id" :aria-busy="saving" class="grid grid-cols-[2.75rem_minmax(0,1fr)_auto] items-start gap-x-3 px-4 py-4">
     <LearningCompletionControl v-model="checked" :step="step" :disabled="saving || readonly" />
     <div class="min-w-0">
-      <div class="flex min-h-6 items-center gap-2 text-lg font-bold leading-6">
+      <div class="flex min-h-6 items-start gap-2" data-slot="step-title-row">
         <FileText v-if="isDocument" class="size-5 shrink-0 text-muted-foreground" role="img" :aria-label="$t('learning.path.kind_document')" />
-        <a v-if="documentHref" :href="documentHref" target="_blank" rel="noopener noreferrer" :class="['underline decoration-border underline-offset-4 hover:decoration-foreground', isResolved ? 'text-muted-foreground' : 'text-foreground']">{{ step.title }}</a>
-        <span v-else :class="isResolved ? 'text-muted-foreground' : 'text-foreground'">{{ step.title }}</span>
-      </div>
-      <div v-if="(isDocument && step.source?.type === 'document' && !documentHref) || step.state === 'updated' || step.state === 'skipped' || step.insightsCount > 0" class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-        <span v-if="isDocument && step.source?.type === 'document' && !documentHref">{{ $t('learning.path.document_private') }}</span>
-        <span v-if="step.state === 'updated'" class="font-semibold text-status-attention">{{ $t('learning.path.updated') }}</span>
-        <span v-if="step.state === 'skipped'">{{ $t('learning.path.skipped') }}</span>
-        <Link v-if="step.insightsCount > 0" :href="route('learningSteps.show', step.id) + '#insights'" class="inline-flex min-h-11 items-center gap-1 hover:text-foreground" :aria-label="$t('learning.path.insights_count', { count: String(step.insightsCount) })">
+        <Link :href="route('learningSteps.show', step.id)" :class="['min-w-0 text-lg font-bold leading-6 underline decoration-border underline-offset-4 hover:decoration-foreground', isResolved ? 'text-muted-foreground' : 'text-foreground']">{{ step.title }}</Link>
+        <Link v-if="step.insightsCount > 0" :href="route('learningSteps.show', step.id) + '#insights'" class="-my-2.5 inline-flex min-h-11 shrink-0 items-center gap-1 text-xs text-muted-foreground hover:text-foreground" :aria-label="$t('learning.path.insights_count', { count: String(step.insightsCount) })">
           <MessageSquare class="size-3.5" aria-hidden="true" />{{ step.insightsCount }}
         </Link>
+      </div>
+      <div v-if="(isDocument && step.source?.type === 'document' && !hasDocumentSource) || step.state === 'updated' || step.state === 'skipped'" class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+        <span v-if="isDocument && step.source?.type === 'document' && !hasDocumentSource">{{ $t('learning.path.document_private') }}</span>
+        <span v-if="step.state === 'updated'" class="font-semibold text-status-attention">{{ $t('learning.path.updated') }}</span>
+        <span v-if="step.state === 'skipped'">{{ $t('learning.path.skipped') }}</span>
       </div>
       <p v-if="summary" class="mt-1 line-clamp-2 max-w-prose whitespace-pre-line text-sm leading-relaxed text-muted-foreground">{{ summary }}</p>
       <LearningCoordinators v-if="step.key === 'meet_coordinator' && coordinators?.length" :coordinators="coordinators" class="mt-3" />

@@ -12,9 +12,11 @@ const hintId = useId();
 const automatic = computed(() => props.step.automaticallyTracked || props.step.autoCompleted);
 const branded = computed(() => props.step.importance === 'essential');
 const appearance = computed(() => [
-  'relative flex size-6 shrink-0 items-center justify-center border-2 bg-clip-padding',
-  "pointer-coarse:before:absolute pointer-coarse:before:-inset-2.5 pointer-coarse:before:content-['']",
-  branded.value ? 'border-brand data-[state=checked]:border-brand-fill' : 'border-muted-foreground data-[state=checked]:border-foreground',
+  'relative flex size-5 shrink-0 items-center justify-center border bg-clip-padding',
+  'pointer-coarse:before:absolute pointer-coarse:before:-inset-3 pointer-coarse:before:content-[\'\']',
+  automatic.value && checked.value === true
+    ? 'border-status-success-border'
+    : branded.value ? 'border-brand data-[state=checked]:border-brand-fill' : 'border-muted-foreground data-[state=checked]:border-foreground',
   props.step.importance === 'optional' && 'border-dashed',
 ]);
 </script>
@@ -36,11 +38,11 @@ const appearance = computed(() => [
             ...appearance,
             'cursor-default outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40',
             checked
-              ? (branded ? 'border-brand-fill bg-brand-fill text-brand-foreground' : 'bg-foreground text-background')
+              ? 'bg-status-success-surface text-status-success'
               : (branded ? 'bg-background text-brand' : 'bg-background text-muted-foreground'),
           ]"
         >
-          <Zap :class="['size-4', checked && 'fill-current']" role="img" :aria-label="$t(checked ? 'learning.path.auto_help' : 'learning.path.auto_pending')" />
+          <Zap class="size-3.5" role="img" :aria-label="$t(checked ? 'learning.path.auto_help' : 'learning.path.auto_pending')" />
         </span>
       </TooltipTrigger>
       <TooltipContent>{{ $t('learning.path.auto_tracking') }}</TooltipContent>
@@ -54,7 +56,7 @@ const appearance = computed(() => [
       data-testid="step-checkbox"
       :class="[
         ...appearance,
-        'cursor-pointer disabled:cursor-default [&_svg]:size-4',
+        'cursor-pointer disabled:cursor-default [&_svg]:size-3.5',
         branded
           ? 'enabled:hover:border-brand enabled:hover:bg-brand/10 data-[state=checked]:bg-brand-fill data-[state=checked]:text-brand-foreground data-[state=checked]:enabled:hover:bg-brand-fill/90'
           : 'enabled:hover:border-foreground enabled:hover:bg-muted data-[state=checked]:bg-foreground data-[state=checked]:text-background data-[state=checked]:enabled:hover:bg-foreground/80',

@@ -1,9 +1,10 @@
 ---
 title: Mano kelias
 doc_status: reviewed
-last_reviewed: 2026-11-10
+last_reviewed: 2026-11-11
 tests:
   - tests/Feature/Admin/Learning/ResolveLearningPathTest.php
+  - resources/js/Features/Admin/Learning/__tests__/ShowLearningStep.component.test.ts
   - tests/Feature/Admin/Learning/LearningRoutesTest.php
   - tests/Feature/Admin/Learning/LearningPoliciesTest.php
   - tests/Feature/Admin/Learning/LearningWritesTest.php
@@ -95,7 +96,7 @@ o apačioje – pasiruošimas posėdžiui. Žingsnio puslapyje prie „Tau tai r
 Veiksmai išdėstyti pagal kadencijos etapus: **Prieš pradedant**, **Pirmieji mėnesiai** (pirmos 60
 dienų), **Visą kadenciją** ir **Kadencijos pabaiga** (paskutinės 45 dienos). Dabartinis etapas
 pažymėtas „dabar“. Visi etapai ir jų žingsniai rodomi iš karto. Žingsnio kairėje esantis langelis
-žymi pažangą; varnelę galima uždėti ir nuimti tiesiog eilutėje. Ilgesni paaiškinimai, diegimo, pranešimų ir institucijos kontaktų informacija pasiekiami per „Atidaryti žingsnį“. Žingsnio puslapyje pažangą galima žymėti prie pavadinimo, o įžvalgos rodomos po turiniu. Sąvokos atveriamos paspaudus jų žymas; jas tvarkantys nariai redaktorių atveria per ⋯ → „Tvarkyti sąvokas“. Koordinatoriaus nuotrauka, pareigos ir mygtukas „Parašyti“ rodomi tiesiai prie susipažinimo žingsnio.
+žymi pažangą; varnelę galima uždėti ir nuimti tiesiog eilutėje. Ilgesni paaiškinimai, diegimo ir pranešimų informacija pasiekiami paspaudus žingsnio pavadinimą arba „Atidaryti žingsnį“. Įžvalgų skaičius rodomas šalia pavadinimo. Žingsnio puslapyje pažangą galima žymėti prie pavadinimo, veiksmų mygtukai pateikiami antraštės dešinėje, o įžvalgos rodomos po turiniu. Sąvokos atveriamos paspaudus jų žymas; jas tvarkantys nariai redaktorių atveria per ⋯ → „Tvarkyti sąvokas“. Koordinatoriaus nuotrauka, pareigos ir mygtukas „Parašyti“ rodomi tiesiai prie susipažinimo žingsnio.
 
 Svarba nusako turinį, ne terminą: **Esminis** (būtina žinoti), **Rekomenduojamas**, **Papildomas**.
 Esminio žingsnio praleisti negalima.
@@ -104,17 +105,21 @@ Esminio žingsnio praleisti negalima.
 
 - **Žinios** – perskaityti dokumentą ar nuorodą.
 - **Veiksmas** – ką nors padaryti, pvz., susipažinti su koordinatoriumi ar perskaityti praeitų
-  posėdžių protokolus. Dalis veiksmų pasižymi patys pagal veiklą platformoje (įkelta nuotrauka,
+  posėdžių protokolus. Dalis veiksmų pasižymi patys pagal veiklą platformoje (pasirinkti pranešimų nustatymai,
   sekama institucija, užfiksuotas pirmas posėdis); tokie pažymėti žaibo piktograma.
 - **Pasiruošimas posėdžiui** – kartojamas sąrašas kelio apačioje, pvz., perskaityti medžiagą, pasiklausti
   kursiokų. Jame pažangos žymų nėra.
+
+Peržiūrėdamas kontaktinius duomenis taip pat patikrink savo nuotrauką – ją gali būti įkėlęs atstovų
+koordinatorius. Atskiro nuotraukos įkėlimo žingsnio nėra, o nuotrauka neprivaloma.
+
+Sąvokų ir patirties perdavimo kortelės rodomos iš karto po dokumentų bloku, prieš kadencijos etapus.
 
 ### Šaltiniai ir kalba
 
 Žingsnis vienas abiem kalboms, bet anglų kalbai galima nurodyti kitą dokumentą ar nuorodą; jei jos nėra,
 rodomas lietuviškas šaltinis. Šaltiniu gali būti ir Archyve paslėptas dokumentas – tada atstovai mato
-žingsnį ir paaiškinimą, o vietoj nuorodos – „neviešas“. Dokumento pavadinimas atveria šaltinį naujame skirtuke. Veiksmo pavadinimas
-rodomas kaip tekstas, o šalia jo – nuoroda veiksmui atlikti, jei tokia yra.
+žingsnį ir paaiškinimą, o vietoj nuorodos – „neviešas“. Žingsnio pavadinimas atveria žingsnio puslapį. Šalia esantis „Skaityti dokumentą“ atveria šaltinį naujame skirtuke; veiksmo nuoroda rodoma, jei tokia yra.
 
 Jei šaltinio dokumentas Archyve atnaujinamas jau perskaičius, žingsnis pažymimas
 „Atnaujinta – peržiūrėk“.

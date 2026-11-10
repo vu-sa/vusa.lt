@@ -163,19 +163,19 @@ test('a handover written for another duty does not complete writing for the rep 
 });
 
 test('detected completion is read time only and a manual tick also completes a system step', function (): void {
-    $first = User::factory()->create(['profile_photo_path' => '/avatar.jpg']);
-    $second = User::factory()->create(['profile_photo_path' => null]);
-    $photo = LearningStep::query()->where('key', 'profile_photo')->firstOrFail();
-    LearningStepProgress::factory()->for($second)->create(['learning_step_id' => $photo->id]);
+    $first = User::factory()->create(['notification_preferences' => ['digest' => 'daily']]);
+    $second = User::factory()->create(['notification_preferences' => null]);
+    $notification = LearningStep::query()->where('key', 'notification_settings')->firstOrFail();
+    LearningStepProgress::factory()->for($second)->create(['learning_step_id' => $notification->id]);
     $paths = ResolveLearningPath::forUsers(collect([$first, $second]));
-    $automatic = $paths[$first->id]->steps->firstWhere('step.id', $photo->id);
-    $manual = $paths[$second->id]->steps->firstWhere('step.id', $photo->id);
+    $automatic = $paths[$first->id]->steps->firstWhere('step.id', $notification->id);
+    $manual = $paths[$second->id]->steps->firstWhere('step.id', $notification->id);
 
     expect($automatic->state)->toBe('done');
     expect($automatic->autoCompleted)->toBeTrue();
     expect($manual->state)->toBe('done');
     expect($manual->autoCompleted)->toBeFalse();
-    $this->assertDatabaseMissing('learning_step_progress', ['user_id' => $first->id, 'learning_step_id' => $photo->id]);
+    $this->assertDatabaseMissing('learning_step_progress', ['user_id' => $first->id, 'learning_step_id' => $notification->id]);
 });
 
 test('term stages follow the first months and final forty five day boundaries', function (int $startedDaysAgo, int $endsInDays, LearningStage $stage): void {
@@ -280,4 +280,14 @@ test('responsibility ids and system purposes match the holders of the role', fun
     expect($paths[$holder->id]->contains($byPurpose->id))->toBeTrue();
     expect($paths[$outsider->id]->contains($byRole->id))->toBeFalse();
     expect($paths[$outsider->id]->contains($byPurpose->id))->toBeFalse();
+});
+
+test('retired system tasks are absent from the path', function (): void {
+    $user = User::factory()->create(['profile_photo_path' => '/avatar.jpg']);
+    $path = ResolveLearningPath::execute($user);
+
+    expect($path->steps->pluck('step.key'))->not->toContain('profile_photo', 'meet_institution_contacts')
+        ->toContain('review_contacts');
+    $this->assertDatabaseMissing('learning_steps', ['key' => 'profile_photo']);
+    $this->assertDatabaseMissing('learning_steps', ['key' => 'meet_institution_contacts']);
 });

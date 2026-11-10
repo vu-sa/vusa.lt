@@ -67,3 +67,13 @@ it('opens the glossary editor in a sheet through the manager menu', async () => 
   expect(wrapper.find('[role="dialog"] [data-slot="learning-step-glossary-editor"]').exists()).toBe(true);
   wrapper.unmount();
 });
+
+it('places primary and manager actions in the page header beside the heading', async () => {
+  const wrapper = render(true, true);
+  await wrapper.setProps({ step: step({ actionUrl: '/mano/profile' }) });
+  const header = wrapper.get('[data-slot="overview-title-band"]');
+  expect(header.find('[data-slot="step-heading"]').exists()).toBe(true);
+  expect(header.find('[data-slot="step-actions"]').exists()).toBe(true);
+  expect(wrapper.get('[data-slot="step-heading"]').find('[data-slot="step-actions"]').exists()).toBe(false);
+  wrapper.unmount();
+});

@@ -15,7 +15,7 @@ test('system step seed can be rerun without changing curator choices or progress
     $step->audiences()->update(['stage' => LearningStage::WholeTerm->value]);
     $step->update(['order' => 31, 'is_active' => false]);
     $progress = LearningStepProgress::factory()->create(['learning_step_id' => $step->id]);
-    $missing = LearningStep::query()->where('key', 'profile_photo')->firstOrFail();
+    $missing = LearningStep::query()->where('key', 'browser_push')->firstOrFail();
     $missing->delete();
     $migration->up();
     $audienceCount = LearningStepAudience::query()->count();
@@ -27,5 +27,5 @@ test('system step seed can be rerun without changing curator choices or progress
     expect($step->fresh()->audiences->sole()->stage)->toBe(LearningStage::WholeTerm);
     expect($step->fresh()->order)->toBe(31);
     expect($step->fresh()->is_active)->toBeFalse();
-    expect(LearningStep::query()->where('key', 'profile_photo')->count())->toBe(1);
+    expect(LearningStep::query()->where('key', 'browser_push')->count())->toBe(1);
 });

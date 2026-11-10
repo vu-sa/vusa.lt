@@ -57,7 +57,7 @@ watch(() => props.step.id, () => {
 </script>
 
 <template>
-  <OverviewPage :title="step.title" class="gap-8! lg:gap-10!">
+  <OverviewPage :title="step.title" class="gap-8! lg:gap-10! sm:[&>[data-slot=overview-title-band]]:items-start">
     <template #heading>
       <div class="grid grid-cols-[2.75rem_minmax(0,1fr)] gap-x-3" data-slot="step-heading">
         <LearningCompletionControl v-model="checked" :step="step" :disabled="saving || !inPath || step.kind === 'meeting_prep'" class="mt-1.5 sm:mt-2.5" />
@@ -72,12 +72,14 @@ watch(() => props.step.id, () => {
             <span aria-hidden="true">·</span>
             <span>{{ $t(`learning.kinds.${step.kind}`) }}</span>
           </p>
-          <div v-if="hasAction || actions.length" class="mt-4 flex flex-wrap items-center gap-2" data-slot="step-actions">
-            <LearningStepAction :step="step" />
-            <RecordActionMenu :actions="actions" trigger-size="compact" @select="key => key === 'glossary' && (glossaryOpen = true)" />
-          </div>
           <p v-if="failed" role="alert" class="mt-2 text-sm text-destructive">{{ $t('learning.path.save_failed') }}</p>
         </div>
+      </div>
+    </template>
+    <template v-if="hasAction || actions.length" #actions>
+      <div class="flex flex-wrap items-center gap-2" data-slot="step-actions">
+        <LearningStepAction :step="step" />
+        <RecordActionMenu :actions="actions" trigger-size="compact" @select="key => key === 'glossary' && (glossaryOpen = true)" />
       </div>
     </template>
 
