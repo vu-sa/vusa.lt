@@ -15,15 +15,15 @@ const allPercent = computed(() => percent(props.path.totals.allDone, props.path.
 
 <template>
   <LearningPageFrame :can-see-reps="canSeeReps">
-    <OverviewPage :title="$t('learning.pages.path')">
+    <OverviewPage class="gap-6! lg:gap-8! [&_[data-slot=overview-title-band]]:pt-4" :title="$t('learning.pages.path')">
       <section
-        class="grid grid-cols-2 gap-x-6 gap-y-5 border-y border-border py-6 sm:grid-cols-[minmax(0,14rem)_minmax(0,14rem)_minmax(0,1fr)] sm:items-end sm:gap-10"
+        class="grid grid-cols-2 gap-x-6 gap-y-4 border-y border-border py-4 sm:grid-cols-[minmax(0,14rem)_minmax(0,14rem)_minmax(0,1fr)] sm:items-end sm:gap-10"
         data-slot="learning-summary"
         :aria-label="$t('learning.path.summary')"
       >
         <div>
           <p class="text-sm font-semibold text-foreground">{{ $t('learning.path.summary_essential') }}</p>
-          <p class="u-display mt-1 text-4xl sm:text-5xl tabular-nums leading-none text-foreground">
+          <p class="u-display mt-1 text-3xl sm:text-4xl tabular-nums leading-none text-foreground">
             {{ path.totals.essentialDone }}<span class="text-muted-foreground">/{{ path.totals.essentialTotal }}</span>
           </p>
           <div class="mt-3 h-2 bg-muted" role="progressbar" :aria-valuenow="essentialPercent" aria-valuemin="0" aria-valuemax="100" :aria-label="$t('learning.path.summary_essential')">
@@ -32,14 +32,14 @@ const allPercent = computed(() => percent(props.path.totals.allDone, props.path.
         </div>
         <div>
           <p class="text-sm font-semibold text-foreground">{{ $t('learning.path.summary_all') }}</p>
-          <p class="u-display mt-1 text-4xl sm:text-5xl tabular-nums leading-none text-muted-foreground">
+          <p class="u-display mt-1 text-3xl sm:text-4xl tabular-nums leading-none text-muted-foreground">
             {{ path.totals.allDone }}<span>/{{ path.totals.allTotal }}</span>
           </p>
           <div class="mt-3 h-2 bg-muted" role="progressbar" :aria-valuenow="allPercent" aria-valuemin="0" aria-valuemax="100" :aria-label="$t('learning.path.summary_all')">
             <div class="h-full bg-foreground" :style="{ width: `${allPercent}%` }" />
           </div>
         </div>
-        <div class="col-span-2 space-y-1 text-sm text-muted-foreground sm:col-span-1 sm:text-right">
+        <div v-if="path.currentStage || coordinators.length" class="col-span-2 space-y-1 text-sm text-muted-foreground sm:col-span-1 sm:text-right">
           <p v-if="path.currentStage">
             {{ $t('learning.path.summary_now') }}
             <span class="font-semibold text-foreground">{{ $t(`learning.path.stages.${path.currentStage}`) }}</span>

@@ -52,3 +52,13 @@ test('system text is localized and raw URLs preserve the source contract', funct
         'type' => 'url', 'url' => 'https://example.test/learn', 'documentId' => null, 'documentStatus' => null, 'title' => null,
     ]);
 });
+
+test('automatic tracking is exposed before a system step is completed', function (): void {
+    $viewer = makeUser(Tenant::query()->firstOrFail());
+    foreach (['profile_photo' => true, 'notification_settings' => true, 'check_access' => false] as $key => $tracked) {
+        $step = LearningStep::query()->where('key', $key)->firstOrFail();
+        $data = LearningPathPresenter::step(new ResolvedLearningStep($step), $viewer, 'lt');
+        expect($data['automaticallyTracked'])->toBe($tracked)
+            ->and($data['autoCompleted'])->toBeFalse();
+    }
+});

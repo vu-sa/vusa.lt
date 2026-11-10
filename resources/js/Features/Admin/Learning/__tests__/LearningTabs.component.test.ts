@@ -1,4 +1,4 @@
-import { usePage } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -48,4 +48,13 @@ describe('LearningTabs', () => {
     expect(wrapper.get('[aria-current="page"]').attributes('href')).toContain('learningPath.reps');
     wrapper.unmount();
   });
+});
+
+it('navigates from the mobile picker and excludes restricted sections', async () => {
+  const wrapper = render(false);
+  const select = wrapper.get('select');
+  expect(select.findAll('option')).toHaveLength(4);
+  await select.setValue('documents');
+  expect(router.visit).toHaveBeenCalledWith(route('learningPath.documents'));
+  wrapper.unmount();
 });

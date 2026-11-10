@@ -17,7 +17,7 @@
       <BellPlus class="size-4" aria-hidden="true" />{{ $t('learning.path.push.enable') }}
     </Button>
     <Button class="h-auto min-h-11 max-w-full whitespace-normal text-left" as-child variant="link" voice="sentence">
-      <Link :href="route('profile.notifications')">{{ $t('learning.path.push.manage') }}</Link>
+      <Link :href="route('profile.notifications')"><BellPlus class="size-4" aria-hidden="true" />{{ $t('learning.path.push.manage') }}</Link>
     </Button>
     <Button
       v-if="hasPushSubscription && needsConfirmation"

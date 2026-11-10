@@ -32,7 +32,7 @@ const sections = computed(() => {
           {{ section.label }}
           <span class="text-sm font-normal tabular-nums text-muted-foreground">{{ section.steps.length }}</span>
         </h2>
-        <ul class="mt-3 divide-y divide-border border-y border-border">
+        <ul class="mt-3 divide-y divide-border border border-border">
           <LearningStepRow v-for="step in section.steps" :key="step.id" :step="step" show-glossary />
         </ul>
       </section>

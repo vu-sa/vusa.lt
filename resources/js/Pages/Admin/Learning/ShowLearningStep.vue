@@ -6,8 +6,7 @@ import { Pencil } from '@lucide/vue';
 import DiscussionPanel from '@/Components/Discussions/DiscussionPanel.vue';
 import RecordPage, { type RecordAction, type RecordFact } from '@/Components/Layouts/RecordPage.vue';
 import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
-import { Button } from '@/Components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
+import LearningTerms from '@/Features/Admin/Learning/LearningTerms.vue';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
 import { learningImportanceStatuses } from '@/Constants/statusIcons';
 import LearningStepContent from '@/Features/Admin/Learning/LearningStepContent.vue';
@@ -50,20 +49,7 @@ const facts = computed<RecordFact[]>(() => [
       </template>
       <template #about>
         <LearningStepContent :step="step" :readonly="!inPath" :coordinators="coordinators" :institution-contacts="institutionContacts" />
-        <div v-if="step.glossaryTerms.length" class="mt-6 space-y-3">
-          <h3 class="text-sm font-semibold">{{ $t('learning.path.terms') }}</h3>
-          <div class="flex flex-wrap gap-2">
-            <Popover v-for="term in step.glossaryTerms" :key="term.id">
-              <PopoverTrigger as-child>
-                <Button variant="outline" voice="sentence" class="h-auto min-h-11 max-w-full whitespace-normal">{{ term.term }}</Button>
-              </PopoverTrigger>
-              <PopoverContent class="max-w-[calc(100vw-2rem)]">
-                <p class="font-semibold">{{ term.term }}</p>
-                <p class="mt-2 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">{{ term.definition }}</p>
-              </PopoverContent>
-            </Popover>
-          </div>
-        </div>
+        <LearningTerms :terms="step.glossaryTerms" class="mt-6" />
         <div v-if="canUpdate" class="mt-6 space-y-3" data-slot="step-glossary-editor">
           <h3 class="text-sm font-semibold">{{ $t('learning_library.step_glossary.title') }}</h3>
           <LearningStepGlossaryEditor :step-id="step.id" :selected="step.glossaryTerms.map(term => ({ id: term.id, term: term.term }))" :options="glossaryOptions" />

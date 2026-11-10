@@ -20,6 +20,7 @@ tests:
   - resources/js/Features/Admin/Learning/__tests__/LearningDocuments.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/LearningGlossarySteps.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/LearningPathView.component.test.ts
+  - resources/js/Features/Admin/Learning/__tests__/LearningCompletionControl.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/LearningStepRow.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/LearningStepForm.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/LearningStepGlossaryEditor.component.test.ts
@@ -74,8 +75,7 @@ Būsimos pareigos įskaitomos iš karto, todėl išrinktas, bet dar nepradėjęs
 Žingsniai išdėstyti pagal kadencijos etapus: **Prieš pradedant**, **Pirmieji mėnesiai** (pirmos 60
 dienų), **Visą kadenciją** ir **Kadencijos pabaiga** (paskutinės 45 dienos). Dabartinis etapas
 pažymėtas „dabar“. Visi etapai ir jų žingsniai rodomi iš karto. Žingsnio kairėje esantis langelis
-žymi pažangą; varnelę galima uždėti ir nuimti tiesiog eilutėje. Tik programėlės diegimo, naršyklės
-pranešimų ir susipažinimo su koordinatoriumi ar institucijos kontaktais žingsniuose yra „Daugiau“.
+žymi pažangą; varnelę galima uždėti ir nuimti tiesiog eilutėje. Ilgesnius paaiškinimus ir diegimo, pranešimų ar institucijos kontaktų informaciją išskleisk per „Daugiau“. Koordinatoriaus nuotrauka, pareigos ir mygtukas „Parašyti“ rodomi tiesiai prie susipažinimo žingsnio.
 
 Svarba nusako turinį, ne terminą: **Esminis** (būtina žinoti), **Rekomenduojamas**, **Papildomas**.
 Esminio žingsnio praleisti negalima.
@@ -85,7 +85,7 @@ Esminio žingsnio praleisti negalima.
 - **Žinios** – perskaityti dokumentą ar nuorodą.
 - **Veiksmas** – ką nors padaryti, pvz., susipažinti su koordinatoriumi ar perskaityti praeitų
   posėdžių protokolus. Dalis veiksmų pasižymi patys pagal veiklą platformoje (įkelta nuotrauka,
-  sekama institucija, užfiksuotas pirmas posėdis); tokie pažymėti „auto“.
+  sekama institucija, užfiksuotas pirmas posėdis); tokie pažymėti žaibo piktograma.
 - **Pasiruošimas posėdžiui** – kartojamas sąrašas po keliu, pvz., perskaityti medžiagą, pasiklausti
   kursiokų. Jame pažangos žymų nėra.
 
@@ -189,3 +189,5 @@ atvėrus kelią.
   `learningSteps.update.*`. Perdavimo užrašai – `HandoverNotePolicy`; „Mano atstovai“ –
   `GetCoordinatedRepresentatives` per `ResponsibilityResolver`.
 - Bandomasis turinys: `LearningPathPilotSeeder` (paleidžiamas ranka, kartojant nieko nedubliuoja).
+
+Žingsnių svarbą rodo pažangos langelis: VU SA spalvos kraštas – esminis, vientisas – rekomenduojamas, punktyrinis – papildomas. Žaibo langelis ranka nekeičiamas; užvedus pelę arba sufokusavus rodomas paaiškinimas. Žaibas langelio viduje žymi automatiškai stebimą žingsnį: šviesus langelis – dar neatliktas, užpildytas – atliktas. Ilgesnius paaiškinimus išskleisk per „Daugiau“. Prie dokumentų susijusios sąvokos atveria apibrėžimus.

@@ -63,19 +63,22 @@ return [
     ],
     'system_steps' => [
         'check_access' => [
+            'summary' => 'Patikrink, ar matai savo pareigas ir reikiamas skiltis.',
             'title' => 'Patikrink savo pareigas ir prieigą',
             'description' => 'Patikrink institucijas, pareigas, jų datas ir prieinamas skiltis. Jei ko nors trūksta ar matai klaidą, pranešk administratoriui.',
-            'action' => 'Peržiūrėti savo atsakomybes ir pareigas',
+            'action' => 'Peržiūrėti pareigas',
         ],
         'review_contacts' => [
+            'summary' => 'Patikrink, kaip kolegos gali su tavimi susisiekti.',
             'title' => 'Peržiūrėk savo kontaktinius duomenis',
             'description' => 'Paskyroje gali pataisyti kontaktus, nuotrauką ir kreipinį. Prisijungimo el. paštas čia nekeičiamas, o vardą gali pataisyti tik vieną kartą. Nuotrauka ir telefono numeris šiam žingsniui neprivalomi.',
             'action' => 'Atverti paskyrą',
         ],
         'notification_settings' => [
+            'summary' => 'Pasirink, kur ir kaip dažnai gauti pranešimus.',
             'title' => 'Pasirink, kaip gauti pranešimus',
             'description' => 'Patikrink, kuriais el. pašto adresais gausi laiškus, pasirink suvestinės dažnumą ir svarbias pranešimų rūšis. Numatytuosius nustatymus gali palikti. Jei nori, nustatymuose išsiųsk bandomąjį laišką.',
-            'action' => 'Peržiūrėti pranešimų nustatymus',
+            'action' => 'Nustatyti pranešimus',
         ],
         'profile_photo' => [
             'title' => 'Pridėk savo nuotrauką',
@@ -83,19 +86,22 @@ return [
             'action' => 'Atverti paskyrą',
         ],
         'install_app' => [
+            'summary' => 'Atverk Mano VU SA vienu paspaudimu iš savo įrenginio.',
             'title' => 'Įsidiek Mano VU SA',
             'description' => 'Pridėk Mano VU SA prie telefono pradžios ekrano arba kompiuterio programų, kad kitą kartą atvertum vienu paspaudimu. Įdiegti neprivaloma – gali naudotis naršykle.',
             'action' => 'Įdiegti',
         ],
         'browser_push' => [
+            'summary' => 'Gauk priminimus tiesiai į šį įrenginį.',
             'title' => 'Įjunk naršyklės pranešimus',
             'description' => 'Gauk priminimus ir kitus pasirinktus pranešimus tiesiai į šį įrenginį. Naršyklė leidimo paklaus tik tau paspaudus įjungimo mygtuką. Atsisakius laiškų ir pranešimų platformoje nustatymai nesikeičia.',
             'action' => 'Įjungti pranešimus',
         ],
         'orientation' => [
+            'summary' => 'Rask savo darbus, darbo sritis ir pagalbą.',
             'title' => 'Sužinok, nuo ko pradėti',
             'description' => 'Pradžioje pirmiausia matysi darbus, kuriems reikia tavo dėmesio. Darbo sričių meniu rodo tik tau prieinamas skiltis. Pagalba, gidas ir interaktyvus turas pasiekiami paskyros meniu.',
-            'action' => 'Peržiūrėti savo užduotis',
+            'action' => 'Atverti užduotis',
         ],
         'meet_coordinator' => [
             'title' => 'Susipažink su koordinatoriumi',
@@ -134,6 +140,7 @@ return [
         'empty_description' => 'Grįžk vėliau arba kreipkis į koordinatorių.',
     ],
     'path' => [
+        'related_terms' => 'Susijusios sąvokos',
         'auto_label' => 'pažymėta automatiškai',
         'kind_document' => 'Dokumentas',
         'kind_task' => 'Užduotis',
@@ -158,6 +165,8 @@ return [
         'now' => 'dabar',
         'updated' => 'Atnaujinta — peržiūrėk',
         'auto' => 'Auto',
+        'auto_tracking' => 'Ši užduotis atliekama automatiškai pagal tavo veiklą.',
+        'auto_pending' => 'Šio žingsnio atlikimas patikrinamas automatiškai pagal tavo veiklą.',
         'auto_help' => 'Šis žingsnis pažymėtas automatiškai pagal tavo veiklą.',
         'read' => 'Perskaičiau',
         'complete' => 'Atlikau',

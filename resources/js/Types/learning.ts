@@ -30,6 +30,7 @@ export interface LearningStepData {
   actionUrl: string | null;
   state: 'pending' | 'done' | 'skipped' | 'updated';
   autoCompleted: boolean;
+  automaticallyTracked: boolean;
   completedAt: string | null;
   skippable: boolean;
   insightsCount: number;

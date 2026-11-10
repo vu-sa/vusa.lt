@@ -58,7 +58,7 @@ function groups(steps: LearningStepData[]) {
           v-if="index < stations.length - 1"
           aria-hidden="true"
           :class="[
-            'absolute bottom-0 left-5 top-10 w-0.5 -translate-x-1/2 sm:left-6 sm:top-12',
+            'absolute bottom-0 left-5 top-10 hidden w-0.5 sm:block -translate-x-1/2 sm:left-6 sm:top-12',
             index < currentIndex ? 'bg-brand-fill' : 'bg-border',
           ]"
         />
@@ -66,7 +66,7 @@ function groups(steps: LearningStepData[]) {
         <span
           aria-hidden="true"
           :class="[
-            'relative z-10 flex size-10 items-center justify-center border-2 text-base font-bold tabular-nums sm:size-12 sm:text-lg',
+            'relative z-10 col-start-1 row-start-1 flex size-10 items-center justify-center border-2 text-base font-bold tabular-nums sm:size-12 sm:text-lg',
             stateOf(index, station.steps) === 'done' && 'border-foreground bg-foreground text-background',
             stateOf(index, station.steps) === 'now' && 'border-brand-fill bg-brand-fill text-brand-foreground',
             stateOf(index, station.steps) === 'behind' && 'border-foreground bg-background text-foreground',
@@ -77,8 +77,8 @@ function groups(steps: LearningStepData[]) {
           <template v-else>{{ index + 1 }}</template>
         </span>
 
-        <section class="min-w-0" :aria-labelledby="`stage-${station.stage}`">
-          <header class="flex min-h-10 flex-wrap items-center gap-x-4 gap-y-2 sm:min-h-12">
+        <section class="col-span-2 col-start-1 row-start-1 min-w-0 sm:col-span-1 sm:col-start-2" :aria-labelledby="`stage-${station.stage}`">
+          <header class="flex min-h-10 flex-wrap pl-13 sm:pl-0 items-center gap-x-4 gap-y-2 sm:min-h-12">
             <h2 :id="`stage-${station.stage}`" class="text-xl font-bold leading-tight text-foreground sm:text-2xl">
               {{ $t(`learning.path.stages.${station.stage}`) }}
             </h2>
@@ -95,14 +95,14 @@ function groups(steps: LearningStepData[]) {
               {{ $t('learning.path.stage_progress', { done: String(resolved(station.steps)), total: String(station.steps.length) }) }}
             </span>
           </header>
-          <p class="mt-1 max-w-prose text-sm text-muted-foreground">{{ $t(`learning.path.stage_hints.${station.stage}`) }}</p>
+          <p class="mt-1 max-w-prose pl-13 text-sm text-muted-foreground sm:pl-0">{{ $t(`learning.path.stage_hints.${station.stage}`) }}</p>
 
-          <div v-for="group in groups(station.steps)" :key="group.label" class="mt-6">
+          <div v-for="group in groups(station.steps)" :key="group.label" class="mt-4">
             <h3 class="flex items-baseline gap-2 text-sm font-semibold text-foreground">
               {{ group.label }}
               <span class="text-xs font-normal tabular-nums text-muted-foreground">{{ resolved(group.steps) }}/{{ group.steps.length }}</span>
             </h3>
-            <ul class="mt-2 divide-y divide-border border-y border-border">
+            <ul class="mt-2 divide-y divide-border border border-border">
               <LearningStepRow
                 v-for="step in group.steps"
                 :key="step.id"

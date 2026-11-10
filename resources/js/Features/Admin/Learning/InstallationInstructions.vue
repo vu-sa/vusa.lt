@@ -12,18 +12,19 @@
     <Button
       v-else-if="canInstall"
       class="h-auto min-h-11 max-w-full whitespace-normal text-left"
-      variant="outline"
+      variant="default"
       voice="sentence"
       :disabled="installing"
       @click="install"
     >
-      {{ $t('learning.path.installation.install') }}
+      <Download class="size-4" aria-hidden="true" />{{ $t('learning.path.installation.install') }}
     </Button>
     <p v-if="installFailed" role="alert" class="text-sm text-destructive">{{ $t('learning.path.installation.failed') }}</p>
   </div>
 </template>
 
 <script setup lang="ts">
+import { Download } from '@lucide/vue';
 import { computed, onMounted, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 

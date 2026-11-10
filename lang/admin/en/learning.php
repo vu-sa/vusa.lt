@@ -63,39 +63,45 @@ return [
     ],
     'system_steps' => [
         'check_access' => [
+            'summary' => 'Check your duties and access to the sections you need.',
             'title' => 'Check your duties and access',
             'description' => 'Check your institutions, duties, dates and available sections. Report anything missing or incorrect to an administrator.',
-            'action' => 'Review my responsibilities and duties',
+            'action' => 'Review duties',
         ],
         'review_contacts' => [
+            'summary' => 'Check how colleagues can reach you.',
             'title' => 'Review your contact details',
             'description' => 'Account settings let you update your contacts, photo and form of address. Your login email cannot be changed here, and your name can only be corrected once. A photo and phone number are optional.',
-            'action' => 'Open account settings',
+            'action' => 'Open account',
         ],
         'notification_settings' => [
+            'summary' => 'Choose where and how often to receive notifications.',
             'title' => 'Choose how to receive notifications',
             'description' => 'Check which email addresses receive notifications, the digest frequency and the notification types you need. You can keep the defaults. You can also send a test email from the settings page.',
-            'action' => 'Review notification settings',
+            'action' => 'Set notifications',
         ],
         'profile_photo' => [
             'title' => 'Add your photo',
             'description' => 'A photo helps colleagues recognise you. You can change it in your account.',
-            'action' => 'Open account settings',
+            'action' => 'Open account',
         ],
         'install_app' => [
+            'summary' => 'Open Mano VU SA from your device with one tap.',
             'title' => 'Install Mano VU SA',
             'description' => 'Add Mano VU SA to your phone’s home screen or computer’s applications for quick access. Installation is optional; you can continue using your browser.',
             'action' => 'Install',
         ],
         'browser_push' => [
+            'summary' => 'Receive reminders directly on this device.',
             'title' => 'Enable browser notifications',
             'description' => 'Receive reminders and other notifications you choose on this device. Your browser only asks for permission after you press the enable button. Declining leaves your email and in-app notification settings unchanged.',
             'action' => 'Enable notifications',
         ],
         'orientation' => [
+            'summary' => 'Find your tasks, workspaces and help.',
             'title' => 'Learn where to start',
             'description' => 'Home shows work needing your attention first. The workspace menu lists sections you can access. Help, the guide and the interactive tour are available through your account menu.',
-            'action' => 'Review my tasks',
+            'action' => 'Open tasks',
         ],
         'meet_coordinator' => [
             'title' => 'Meet your coordinator',
@@ -134,6 +140,7 @@ return [
         'empty_description' => 'Come back later or contact your coordinator.',
     ],
     'path' => [
+        'related_terms' => 'Related terms',
         'auto_label' => 'ticked automatically',
         'kind_document' => 'Document',
         'kind_task' => 'Task',
@@ -158,6 +165,8 @@ return [
         'now' => 'now',
         'updated' => 'Updated — review again',
         'auto' => 'Auto',
+        'auto_tracking' => 'This task is completed automatically based on your activity.',
+        'auto_pending' => 'Completion is checked automatically from your activity.',
         'auto_help' => 'This step is marked automatically based on your activity.',
         'read' => 'I have read it',
         'complete' => 'I have done it',

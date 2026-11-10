@@ -78,9 +78,9 @@ describe('LearningStepRow', () => {
     wrapper.unmount();
   });
 
-  it.each(['install_app', 'browser_push', 'meet_coordinator', 'meet_institution_contacts', 'check_access', 'review_contacts', 'notification_settings', 'profile_photo', 'orientation', 'follow_institution', 'record_first_meeting', 'read_handover', 'write_handover', null])('only discloses rich system content: %s', key => {
+  it.each(['install_app', 'browser_push', 'meet_institution_contacts', 'check_access', 'review_contacts', 'notification_settings', 'profile_photo', 'orientation', 'follow_institution', 'record_first_meeting', 'read_handover', 'write_handover', null])('discloses system summaries and rich content: %s', key => {
     const wrapper = render(step({ key, isSystem: key !== null }), true);
-    expect(wrapper.find('details').exists()).toBe(['install_app', 'browser_push', 'meet_coordinator', 'meet_institution_contacts'].includes(key ?? ''));
+    expect(wrapper.find('details').exists()).toBe(['install_app', 'browser_push', 'meet_institution_contacts', 'check_access', 'review_contacts', 'notification_settings', 'orientation'].includes(key ?? ''));
     wrapper.unmount();
   });
 
@@ -102,8 +102,8 @@ describe('LearningStepRow', () => {
   it('shows a checked disabled box and accessible auto icon without an undo', async () => {
     const wrapper = render(step({ state: 'done', autoCompleted: true }));
     expect(wrapper.get('[role="checkbox"]').attributes('aria-checked')).toBe('true');
-    expect(wrapper.get('[role="checkbox"]').attributes('disabled')).toBeDefined();
-    expect(wrapper.get('[role="img"]').attributes('aria-label')).toBe('learning.path.auto_help');
+    expect(wrapper.get('[role="checkbox"]').attributes('aria-disabled')).toBe('true');
+    expect(wrapper.get('[role="img"][aria-label="learning.path.auto_help"]').attributes('aria-label')).toBe('learning.path.auto_help');
     await wrapper.get('[role="checkbox"]').trigger('click');
     expect(router.post).not.toHaveBeenCalled();
     expect(wrapper.find('[data-testid="skip-step"]').exists()).toBe(false);
@@ -127,4 +127,34 @@ describe('LearningStepRow', () => {
     expect(router.post).toHaveBeenCalledTimes(2);
     wrapper.unmount();
   });
+});
+
+ it('uses a document icon and labeled terms without redundant type text', () => {
+    const wrapper = mount(LearningStepRow, { props: { step: step({ glossaryTerms: [{ id: 'term-1', term: 'Mandatas', definition: 'Atstovavimo laikotarpis' }] }), showGlossary: true }, global: { stubs: commonStubs } });
+    expect(wrapper.find('[aria-label="learning.path.kind_document"]').exists()).toBe(true);
+    expect(wrapper.text()).toContain('learning.path.related_terms');
+    expect(wrapper.text()).not.toContain('learning.path.kind_task');
+    expect(wrapper.text()).not.toContain('learning.path.kind_document');
+    wrapper.unmount();
+ });
+
+it('expands a concise system summary into the full instructions', async () => {
+  const wrapper = render(step({ key: 'review_contacts', isSystem: true, description: 'Full account instructions.' }));
+  expect(wrapper.text()).toContain('learning.system_steps.review_contacts.summary');
+  const details = wrapper.get('details');
+  (details.element as HTMLDetailsElement).open = true;
+  await details.trigger('toggle');
+  expect(wrapper.text()).toContain('Full account instructions.');
+  wrapper.unmount();
+});
+
+it('shows coordinator contacts beside the step without a disclosure', () => {
+  const wrapper = mount(LearningStepRow, {
+    props: { step: step({ key: 'meet_coordinator', isSystem: true }), coordinators: [{ id: 'coordinator', name: 'Rūta', email: 'ruta@example.test', profile_photo_path: null, duty: 'Koordinatorius', pronouns: {}, use_original_duty_name: true, institutions: [] }] },
+    global: { stubs: commonStubs },
+  });
+  expect(wrapper.find('details').exists()).toBe(false);
+  expect(wrapper.get('[data-slot="learning-coordinators"]').text()).toContain('Rūta');
+  expect(wrapper.find('a[href="mailto:ruta@example.test"]').exists()).toBe(true);
+  wrapper.unmount();
 });
