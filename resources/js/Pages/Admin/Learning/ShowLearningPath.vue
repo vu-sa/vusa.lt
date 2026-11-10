@@ -23,15 +23,15 @@ const tiles = computed(() => [
 <template>
   <OverviewPage class="gap-6! lg:gap-8!" :title="$t('learning.pages.path')">
     <template #actions>
-      <div class="grid grid-cols-2 gap-6" data-slot="learning-summary" :aria-label="$t('learning.path.summary')">
-        <div v-for="figure in figures" :key="figure.key" class="min-w-28">
-          <p class="text-xs text-muted-foreground">{{ figure.label }}</p>
-          <p class="mt-1 text-lg font-bold tabular-nums">{{ figure.done }}<span class="font-normal text-muted-foreground">/{{ figure.total }}</span></p>
-          <div class="mt-2 h-1 bg-muted" role="progressbar" :aria-valuenow="percent(figure.done, figure.total)" :aria-valuemin="0" :aria-valuemax="100" :aria-label="figure.label">
-            <div :class="['h-full', figure.fill]" :style="{ width: `${percent(figure.done, figure.total)}%` }" />
-          </div>
+      <dl class="grid w-full grid-cols-2 gap-x-8 sm:w-auto" data-slot="learning-summary" :aria-label="$t('learning.path.summary')">
+        <div v-for="figure in figures" :key="figure.key" class="flex min-w-0 flex-col sm:w-36">
+          <dt class="order-2 mt-1.5 text-xs text-muted-foreground">{{ figure.label }}</dt>
+          <dd class="u-display order-1 text-4xl leading-none tabular-nums">{{ figure.done }}<span class="text-muted-foreground">/{{ figure.total }}</span></dd>
+          <dd class="order-3 mt-2 h-1.5 bg-muted" role="progressbar" :aria-valuenow="percent(figure.done, figure.total)" :aria-valuemin="0" :aria-valuemax="100" :aria-label="figure.label">
+            <div :class="['h-full transition-[width]', figure.fill]" :style="{ width: `${percent(figure.done, figure.total)}%` }" />
+          </dd>
         </div>
-      </div>
+      </dl>
     </template>
     <LearningPathView :path="path" :coordinators="coordinators" :institution-contacts="institutionContacts">
       <template #before-meeting-prep>

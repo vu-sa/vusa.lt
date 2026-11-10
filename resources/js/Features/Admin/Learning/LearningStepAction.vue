@@ -21,9 +21,9 @@ const label = computed(() => external.value ? 'learning.path.read_document'
     :href="href"
     :target="external ? '_blank' : undefined"
     :rel="external ? 'noopener noreferrer' : undefined"
-    :class="[rowActionLabelledClass, rowActionHoverClass, 'border-border text-foreground']"
+    :class="[rowActionLabelledClass, rowActionHoverClass, 'min-w-0 border-border text-foreground']"
     data-slot="learning-step-action"
   >
-    {{ $t(label) }}<ArrowUpRight class="size-4 shrink-0" aria-hidden="true" />
+    <span class="min-w-0 truncate">{{ $t(label) }}</span><ArrowUpRight class="size-4 shrink-0" aria-hidden="true" />
   </component>
 </template>

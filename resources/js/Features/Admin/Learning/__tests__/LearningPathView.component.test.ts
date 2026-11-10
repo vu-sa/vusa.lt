@@ -53,7 +53,7 @@ it('places documents before the timeline and the page slot before meeting prep',
   expect(blocks.at(-2)!.attributes('data-slot')).toBe('tiles');
   expect(blocks.at(-1)!.attributes('data-slot')).toBe('meeting-prep');
   const prep = wrapper.get('[data-slot="meeting-prep"]');
-  expect(prep.findAll('ol > li > span').map(number => number.text())).toEqual(['1.', '2.']);
+  expect(prep.findAll('ol > li > span').map(number => number.text())).toEqual(['1', '2']);
   wrapper.unmount();
 });
 

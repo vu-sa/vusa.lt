@@ -137,7 +137,9 @@ return [
     ],
     'glossary' => ['where_used' => 'Kur sutinkama'],
     'documents' => [
-        'next' => 'Rekomenduojama perskaityti toliau',
+        'next' => 'Toliau skaityk',
+        'essential_read' => 'svarbiausių perskaityta',
+        'all_essential_read' => 'Visi svarbiausi dokumentai perskaityti.',
         'essential' => 'Būtina',
         'recommended' => 'Rekomenduojama',
         'optional' => 'Papildoma',

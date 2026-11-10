@@ -52,7 +52,7 @@ const summary = computed(() => props.step.isSystem && SUMMARY_KEYS.includes(prop
       <LearningTerms v-if="showGlossary" :terms="step.glossaryTerms" class="mt-2" />
       <p v-if="failed" role="alert" class="mt-2 text-sm text-destructive">{{ $t('learning.path.save_failed') }}</p>
     </div>
-    <div class="col-start-2 row-start-2 flex flex-wrap items-start gap-2 pt-3 sm:col-start-3 sm:row-start-1 sm:-mt-1.5 sm:pt-0 sm:pointer-coarse:-mt-2.5">
+    <div class="col-start-2 row-start-2 flex min-w-0 flex-nowrap items-start gap-2 pt-3 sm:col-start-3 sm:row-start-1 sm:justify-end sm:-mt-1.5 sm:pt-0 sm:pointer-coarse:-mt-2.5">
       <LearningStepAction :step="step" />
       <Link :href="route('learningSteps.show', step.id)" :class="[rowActionIconClass, rowActionHoverClass]" :aria-label="$t('learning.path.open_step')" :title="$t('learning.path.open_step')">
         <Eye class="size-4" aria-hidden="true" />
@@ -67,6 +67,8 @@ const summary = computed(() => props.step.isSystem && SUMMARY_KEYS.includes(prop
           <DropdownMenuItem data-testid="skip-step" @select="save('skipped')">{{ $t('learning.path.skip') }}</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      <!-- Keeps the eye button in one column whether or not the step can be skipped. -->
+      <span v-else class="hidden size-9 shrink-0 sm:block pointer-coarse:size-11" aria-hidden="true" />
     </div>
   </li>
 </template>

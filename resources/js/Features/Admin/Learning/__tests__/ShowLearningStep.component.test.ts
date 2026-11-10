@@ -33,7 +33,9 @@ it('puts completion beside the title and insights immediately after the full ins
   const wrapper = render();
   expect(wrapper.findAll('h1')).toHaveLength(1);
   expect(wrapper.get('h1').text()).toBe('Read the guide');
-  expect(wrapper.get('h1').element.previousElementSibling?.getAttribute('data-slot')).toBe('learning-completion-control');
+  const heading = wrapper.get('[data-slot="step-heading"]');
+  expect(heading.element.firstElementChild?.getAttribute('data-slot')).toBe('learning-completion-control');
+  expect(heading.find('h1').exists()).toBe(true);
   expect(wrapper.get('#insights h2').text()).toBe('learning.path.insights');
   expect(wrapper.text()).toContain('Prepare to represent students.');
   expect(wrapper.find('[role="tablist"]').exists()).toBe(false);

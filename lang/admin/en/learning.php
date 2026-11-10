@@ -137,7 +137,9 @@ return [
     ],
     'glossary' => ['where_used' => 'Where it appears'],
     'documents' => [
-        'next' => 'Recommended to read next',
+        'next' => 'Read next',
+        'essential_read' => 'essential read',
+        'all_essential_read' => 'You have read every essential document.',
         'essential' => 'Essential',
         'recommended' => 'Recommended',
         'optional' => 'Optional',

@@ -25,10 +25,10 @@ describe('LearningDocumentsEntry', () => {
     wrapper.unmount();
   });
 
-  it('keeps the full document link without a recommendation and hides an empty block', async () => {
+  it('says every essential document is read, keeps the full link and hides an empty block', async () => {
     const documents = { ...path().documents, nextDocument: null };
     const wrapper = mount(LearningDocumentsEntry, { props: { documents }, global: { stubs: commonStubs } });
-    expect(wrapper.find('[data-slot="next-document"]').exists()).toBe(false);
+    expect(wrapper.get('[data-slot="next-document"]').text()).toContain('learning.documents.all_essential_read');
     expect(wrapper.find('[data-slot="all-documents"]').exists()).toBe(true);
     await wrapper.setProps({ documents: { ...documents, total: 0 } });
     expect(wrapper.find('section').exists()).toBe(false);

@@ -15,8 +15,8 @@ withDefaults(defineProps<{
 </script>
 
 <template>
-  <div class="space-y-4">
-    <p v-if="step.description" class="max-w-prose whitespace-pre-line text-sm leading-relaxed text-muted-foreground">{{ step.description }}</p>
+  <div class="space-y-5">
+    <p v-if="step.description" class="max-w-prose whitespace-pre-line text-base leading-relaxed text-foreground">{{ step.description }}</p>
     <LearningAudienceNotes :notes="step.audienceNotes" />
     <p v-if="step.source?.type === 'document' && !step.source.url" class="text-sm text-muted-foreground">{{ $t('learning.path.document_private') }}</p>
 
