@@ -20,7 +20,6 @@ class GlossaryTermController extends AdminController
         return Inertia::render('Admin/Learning/IndexGlossaryTerm', [
             'terms' => LearningAdminPresenter::glossary(app()->getLocale(), $request->user()),
             'canManage' => $request->user()->can('create', GlossaryTerm::class),
-            'canSeeReps' => LearningAdminPresenter::canSeeReps($request->user()),
         ]);
     }
 

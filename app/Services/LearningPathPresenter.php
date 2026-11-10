@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\Collection as EloquentCollection;
  */
 class LearningPathPresenter
 {
-    /** @return array{currentStage: LearningStage|null, termStart: string|null, stages: list<array{stage: LearningStage, steps: list<StepPayload>}>, meetingPrep: list<array{audience: array{id: string|null, label: string}, steps: list<StepPayload>}>, documents: array{essentialDone: int, essentialTotal: int, done: int, total: int, next: list<StepPayload>}, totals: array{essentialDone: int, essentialTotal: int, allDone: int, allTotal: int}} */
+    /** @return array{currentStage: LearningStage|null, termStart: string|null, stages: list<array{stage: LearningStage, steps: list<StepPayload>}>, meetingPrep: list<array{audience: array{id: string, label: string}, steps: list<StepPayload>}>, documents: array{essentialDone: int, essentialTotal: int, done: int, total: int, nextDocument: StepPayload|null}, totals: array{essentialDone: int, essentialTotal: int, allDone: int, allTotal: int}} */
     public static function path(LearningPath $path, string $locale): array
     {
         (new EloquentCollection($path->steps->concat($path->documents)->concat($path->meetingPrep)->map(fn (ResolvedLearningStep $item): LearningStep => $item->step)->all()))->loadMissing('glossaryTerms');
@@ -37,21 +37,24 @@ class LearningPathPresenter
             $stages[] = ['stage' => $stage, 'steps' => $steps];
         }
         $meetingPrep = [];
-        foreach ($path->meetingPrep->groupBy(fn (ResolvedLearningStep $item): string => $item->audienceLabel.'|'.$item->audienceId) as $id => $items) {
+        foreach ($path->meetingPrep->groupBy(fn (ResolvedLearningStep $item): string => $item->audienceKey) as $id => $items) {
             $steps = [];
             foreach ($items as $item) {
                 $steps[] = self::step($item, auth()->user() ?? $path->user, $locale);
             }
             $meetingPrep[] = [
-                'audience' => ['id' => $items->first()->audienceId, 'label' => $items->first()->audienceLabel],
+                'audience' => ['id' => $id, 'label' => $items->first()->audienceLabel],
                 'steps' => $steps,
             ];
         }
 
-        return ['currentStage' => $path->currentStage, 'termStart' => $path->termStart?->toDateString(), 'stages' => $stages, 'meetingPrep' => $meetingPrep, 'documents' => [...$path->documentTotals(), 'next' => $path->documents
+        $nextDocument = $path->documents
             ->filter(fn (ResolvedLearningStep $item): bool => in_array($item->state, ['pending', 'updated'], true) && $item->importance !== LearningImportance::Optional)
-            ->sortBy(fn (ResolvedLearningStep $item): int => $item->importance === LearningImportance::Essential ? 0 : 1)->take(2)
-            ->map(fn (ResolvedLearningStep $item): array => self::step($item, auth()->user() ?? $path->user, $locale))->values()->all()], 'totals' => $path->totals()];
+            ->sortBy(fn (ResolvedLearningStep $item): int => $item->importance === LearningImportance::Essential ? 0 : 1)->first();
+
+        return ['currentStage' => $path->currentStage, 'termStart' => $path->termStart?->toDateString(), 'stages' => $stages, 'meetingPrep' => $meetingPrep,
+            'documents' => [...$path->documentTotals(), 'nextDocument' => $nextDocument ? self::step($nextDocument, auth()->user() ?? $path->user, $locale) : null],
+            'totals' => $path->totals()];
     }
 
     /** @return array{sections: list<array{id: string, title: string, description: string, order: int}>, documents: list<StepPayload>} */

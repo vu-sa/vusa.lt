@@ -2,14 +2,6 @@
 
 return [
     'entity' => ['singular' => 'Learning step', 'plural' => 'Learning steps'],
-    'tabs' => [
-        'documents' => 'Documents',
-        'path' => 'My path',
-        'library' => 'Manage',
-        'glossary' => 'Glossary',
-        'handover' => 'Handover',
-        'reps' => 'My representatives',
-    ],
     'pages' => [
         'documents' => 'Documents',
         'path' => 'My path',
@@ -60,7 +52,6 @@ return [
         'skipped' => 'Skipped',
         'updated' => 'Updated',
     ],
-    'transparency' => 'Your coordinator can see your progress: :names',
     'empty' => [
         'title' => 'Your learning space will be here',
         'description' => 'We are preparing the steps, glossary and handover.',
@@ -146,6 +137,7 @@ return [
     ],
     'glossary' => ['where_used' => 'Where it appears'],
     'documents' => [
+        'next' => 'Recommended to read next',
         'essential' => 'Essential',
         'recommended' => 'Recommended',
         'optional' => 'Optional',
@@ -153,14 +145,16 @@ return [
         'by_sections' => 'By section',
         'other' => 'Other',
         'essential_progress' => 'Essential reading completed',
-        'read_total' => 'Read',
         'all' => 'All documents',
-        'spotlight_title' => 'Documents in one place',
-        'spotlight_description' => 'Find your reading progress and complete document list here.',
         'empty_title' => 'There are no documents in your path yet',
         'empty_description' => 'Come back later or contact your coordinator.',
     ],
     'path' => [
+        'open_step' => 'Open step',
+        'manage_terms' => 'Manage terms',
+        'glossary_description' => 'Definitions of related terms.',
+        'handover_title' => 'Experience handover',
+        'handover_description' => 'Notes from predecessors and your experience for the next representative.',
         'audience_notes' => 'What it means for you',
         'related_terms' => 'Related terms',
         'auto_label' => 'ticked automatically',
@@ -171,7 +165,6 @@ return [
         'summary' => 'Your progress',
         'summary_essential' => 'Essential steps',
         'summary_all' => 'All steps',
-        'summary_now' => 'Now:',
         'stage_progress' => ':done of :total',
         'meeting_prep_hint' => 'Repeat before every meeting of your institution.',
         'stage_hints' => [
@@ -180,7 +173,6 @@ return [
             'whole_term' => 'What you will need all term – come back when you need it.',
             'term_end' => 'The last weeks: pass your experience on to your successor.',
         ],
-        'more' => 'More',
         'actions' => 'Step actions',
         'optional' => 'optional',
         'totals' => 'Essential :essentialDone/:essentialTotal · Total :allDone/:allTotal',

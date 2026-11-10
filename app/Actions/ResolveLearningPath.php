@@ -159,13 +159,13 @@ class ResolveLearningPath
             }
         }
         if ($detected) {
-            return new ResolvedLearningStep($step, 'done', true, $completedAt, $winner->importance, $winner->stage, $winner->label(app()->getLocale()), $notes, $winner->id);
+            return new ResolvedLearningStep($step, 'done', true, $completedAt, $winner->importance, $winner->stage, $winner->label(app()->getLocale()), $notes, $winner->id, $winner->type->value.':'.$winner->source_id.':'.$winner->tenant_id);
         }
         if (self::sourceUpdated($step, $state, $completedAt)) {
             $state = 'updated';
         }
 
-        return new ResolvedLearningStep($step, $state, false, $completedAt, $winner->importance, $winner->stage, $winner->label(app()->getLocale()), $notes, $winner->id);
+        return new ResolvedLearningStep($step, $state, false, $completedAt, $winner->importance, $winner->stage, $winner->label(app()->getLocale()), $notes, $winner->id, $winner->type->value.':'.$winner->source_id.':'.$winner->tenant_id);
     }
 
     private static function sourceUpdated(LearningStep $step, string $state, ?Carbon $completedAt): bool

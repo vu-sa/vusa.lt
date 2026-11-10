@@ -12,6 +12,7 @@ describe('LearningCompletionControl', () => {
     const checkbox = wrapper.get('[role="checkbox"]');
     expect(checkbox.classes()).toContain('border-dashed');
     expect(checkbox.classes()).toContain('cursor-pointer');
+    expect(checkbox.classes()).toContain('pointer-coarse:before:-inset-2.5');
     expect(wrapper.classes()).not.toContain('cursor-pointer');
     expect(checkbox.classes()).toContain('enabled:hover:bg-muted');
     await checkbox.trigger('click');

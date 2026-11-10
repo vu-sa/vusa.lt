@@ -20,7 +20,7 @@ uses(RefreshDatabase::class);
 test('members can open learning pages with their typed payloads', function (string $routeName, string $component, string $prop): void {
     $user = makeUser(Tenant::query()->firstOrFail());
     asUser($user)->get(route($routeName))->assertOk()->assertInertia(fn (Assert $page) => $page
-        ->component('Admin/Learning/'.$component)->has($prop)->whereType('canSeeReps', 'boolean')->where('learningNavigation.canManage', false));
+        ->component('Admin/Learning/'.$component)->has($prop)->missing('canSeeReps')->missing('learningNavigation'));
 })->with([
     'path' => ['learningPath.show', 'ShowLearningPath', 'path.stages'],
     'documents' => ['learningPath.documents', 'ShowLearningDocuments', 'documents'],

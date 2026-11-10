@@ -6,7 +6,6 @@ use App\Actions\GetUserCoordinators;
 use App\Actions\ResolveLearningPath;
 use App\Http\Controllers\AdminController;
 use App\Models\LearningStep;
-use App\Services\LearningAdminPresenter;
 use App\Services\LearningInstitutionContactsPresenter;
 use App\Services\LearningPathPresenter;
 use Illuminate\Http\Request;
@@ -21,7 +20,6 @@ class LearningPathController extends AdminController
 
         return Inertia::render('Admin/Learning/ShowLearningDocuments', [
             'documents' => LearningPathPresenter::documents(ResolveLearningPath::execute($request->user()), app()->getLocale()),
-            'canSeeReps' => LearningAdminPresenter::canSeeReps($request->user()),
         ]);
     }
 
@@ -33,7 +31,6 @@ class LearningPathController extends AdminController
             'path' => LearningPathPresenter::path(ResolveLearningPath::execute($request->user()), app()->getLocale()),
             'coordinators' => GetUserCoordinators::execute($request->user()),
             'institutionContacts' => LearningInstitutionContactsPresenter::forUser($request->user(), app()->getLocale()),
-            'canSeeReps' => LearningAdminPresenter::canSeeReps($request->user()),
         ]);
     }
 }

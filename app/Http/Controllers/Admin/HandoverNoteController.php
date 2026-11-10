@@ -38,7 +38,6 @@ class HandoverNoteController extends AdminController
         return Inertia::render('Admin/Learning/ShowHandover', [
             'writable' => LearningAdminPresenter::writable($request->user(), app()->getLocale()),
             'received' => $received,
-            'canSeeReps' => LearningAdminPresenter::canSeeReps($request->user()),
         ]);
     }
 

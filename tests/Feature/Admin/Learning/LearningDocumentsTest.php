@@ -41,7 +41,7 @@ test('documents contains only knowledge in the members resolved path with progre
         ->where('documents.documents.0.state', 'done')
         ->where('documents.documents.0.source.url', route('documents.show', $document))
         ->where('documents.documents.0.glossaryTerms.0.id', $term->id)
-        ->where('learningNavigation.canManage', false));
+        ->missing('learningNavigation'));
 });
 
 test('documents keeps hidden sources unlinked and supports an empty path', function (): void {

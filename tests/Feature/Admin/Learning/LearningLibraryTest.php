@@ -248,7 +248,7 @@ test('a padalinys curator can manage the library with create or update permissio
 
     asUser($curator)->get(route('learningSteps.index'))->assertOk()->assertInertia(fn (Assert $page) => $page
         ->component('Admin/Learning/IndexLearningStep')
-        ->where('learningNavigation.canManage', true)
+        ->missing('learningNavigation')
         ->has('steps'));
 })->with(['create', 'update']);
 

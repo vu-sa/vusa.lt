@@ -41,28 +41,19 @@ describe('LearningPathView', () => {
   });
 });
 
-it('places meeting prep and documents before the task timeline', () => {
-  const wrapper = mount(LearningPathView, { props: { path: path() }, global: { stubs: commonStubs } });
-  const blocks = wrapper.findAll('[data-slot="meeting-prep"], [data-slot="documents-entry"], [data-stage]');
-  expect(blocks[0]!.attributes('data-slot')).toBe('meeting-prep');
-  expect(blocks[1]!.attributes('data-slot')).toBe('documents-entry');
-  expect(blocks[2]!.attributes('data-stage')).toBe('before_start');
-  wrapper.unmount();
-});
-
-it('shows document counts, limits next links to two and hides an empty entry', async () => {
+it('places documents before the timeline and the page slot before meeting prep', () => {
   const data = path();
-  data.documents.next = [step({ id: 'one', title: 'One', source: { type: 'url', url: 'https://example.test/one', documentId: null, documentStatus: null, title: null } }), step({ id: 'two', title: 'Two' }), step({ id: 'three', title: 'Three' })];
-  const wrapper = mount(LearningPathView, { props: { path: data }, global: { stubs: commonStubs } });
-  const entry = wrapper.get('[data-slot="documents-entry"]');
-  expect(entry.text()).toContain('learning.documents.essential_progress 1/2');
-  expect(entry.text()).toContain('learning.documents.read_total 2/4');
-  expect(entry.get('[role="progressbar"]').attributes('aria-valuenow')).toBe('50');
-  expect(entry.get('a[href="https://example.test/one"]').text()).toContain('One');
-  expect(entry.findAll('li')).toHaveLength(2);
-  expect(entry.text()).not.toContain('Three');
-  await wrapper.setProps({ path: { ...data, documents: { ...data.documents, total: 0 } } });
-  expect(wrapper.find('[data-slot="documents-entry"]').exists()).toBe(false);
+  data.meetingPrep[0]!.steps.push(step({ id: 'prep-two', title: 'Second preparation' }));
+  const wrapper = mount(LearningPathView, {
+    props: { path: data }, slots: { 'before-meeting-prep': '<div data-slot="tiles">Tiles</div>' }, global: { stubs: commonStubs },
+  });
+  const blocks = wrapper.findAll('[data-slot="documents-entry"], [data-stage], [data-slot="tiles"], [data-slot="meeting-prep"]');
+  expect(blocks[0]!.attributes('data-slot')).toBe('documents-entry');
+  expect(blocks[1]!.attributes('data-stage')).toBe('before_start');
+  expect(blocks.at(-2)!.attributes('data-slot')).toBe('tiles');
+  expect(blocks.at(-1)!.attributes('data-slot')).toBe('meeting-prep');
+  const prep = wrapper.get('[data-slot="meeting-prep"]');
+  expect(prep.findAll('ol > li > span').map(number => number.text())).toEqual(['1.', '2.']);
   wrapper.unmount();
 });
 

@@ -8,7 +8,6 @@ import { LearningAudienceType, LearningImportance, LearningStage, LearningStepKi
 import type { LearningLibraryStep } from '@/Types/learning';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
-import LearningTabs from '../LearningTabs.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -30,7 +29,7 @@ beforeEach(() => {
   vi.stubGlobal('route', (name: string) => `/mocked/${name}`);
   localStorage.clear();
   window.history.replaceState({}, '', '/mano/learning/library?view=rows');
-  vi.mocked(usePage).mockReturnValue({ ...createMockPage({ learningNavigation: { canManage: true, canSeeReps: false } }), url: '/mano/learning/library' });
+  vi.mocked(usePage).mockReturnValue({ ...createMockPage(), url: '/mano/learning/library' });
   vi.stubGlobal('matchMedia', (query: string) => ({
     matches: query.includes('min-width'), media: query, onchange: null,
     addListener: vi.fn(), removeListener: vi.fn(),
@@ -46,7 +45,7 @@ afterEach(() => {
 
 function render(canCreate = false) {
   return mount(IndexLearningStep, {
-    props: { steps, canCreate, canSeeReps: false },
+    props: { steps, canCreate },
     global: { stubs: {
       ...commonStubs,
       Sheet: commonStubs.Dialog, SheetContent: commonStubs.DialogContent,
@@ -64,12 +63,11 @@ describe('learning library', () => {
     ['kind', 'knowledge', 'Read the guide'],
     ['importance', 'essential', 'Read the guide'],
     ['section', 's1', 'Read the guide'],
-  ])('renders the learning tabs and narrows rows with the %s quick filter', async (field, value, title) => {
+  ])('narrows rows with the %s quick filter', async (field, value, title) => {
     const filter = `${field}:${value}`;
     const wrapper = render();
     await flushPromises();
-    expect(wrapper.findComponent(LearningTabs).exists()).toBe(true);
-    expect(wrapper.get('nav [aria-current="page"]').text()).toBe('learning.tabs.library');
+    expect(wrapper.find('[data-slot=learning-tabs]').exists()).toBe(false);
     expect(rowTitles(wrapper)).toEqual(['Read the guide', 'Meet your team']);
 
     await wrapper.get(`[data-filter-id="${filter}"]`).trigger('click');
@@ -99,15 +97,14 @@ describe('learning library', () => {
     wrapper.unmount();
   });
 
-  it('renders the learning tabs above the glossary collection', async () => {
+  it('renders the glossary collection without local tabs', async () => {
     vi.mocked(usePage).mockReturnValue({ ...createMockPage(), url: '/mano/learning/glossary' });
     const wrapper = mount(IndexGlossaryTerm, {
-      props: { terms: [], canManage: false, canSeeReps: false },
+      props: { terms: [], canManage: false },
       global: { stubs: commonStubs },
     });
     await flushPromises();
-    expect(wrapper.findComponent(LearningTabs).exists()).toBe(true);
-    expect(wrapper.get('nav [aria-current="page"]').text()).toBe('learning.tabs.glossary');
+    expect(wrapper.find('[data-slot=learning-tabs]').exists()).toBe(false);
     wrapper.unmount();
   });
 
@@ -121,7 +118,7 @@ describe('learning library', () => {
           translations: { term: { lt: 'Kvorumas', en: 'Quorum' }, definition: { lt: 'Būtinas narių skaičius.', en: 'Required members.' } },
           steps: [{ id: 'rules', title: 'Senato reglamentas', url: 'https://example.test/rules', isDocument: true }],
         }],
-        canManage: false, canSeeReps: false,
+        canManage: false,
       },
       global: { stubs: commonStubs },
     });

@@ -21,7 +21,7 @@ export function path(): LearningPathData {
       { stage: LearningStage.TermEnd, steps: [step({ id: 'end', kind: LearningStepKind.Action })] },
     ],
     meetingPrep: [{ audience: { id: 'audience-spk', label: 'SPK' }, steps: [step({ id: 'prep', kind: LearningStepKind.MeetingPrep, stage: null, title: 'Read the agenda' })] }],
-    documents: { essentialDone: 1, essentialTotal: 2, done: 2, total: 4, next: [step({ id: 'document-next' })] },
+    documents: { essentialDone: 1, essentialTotal: 2, done: 2, total: 4, nextDocument: step({ id: 'document-next' }) },
     totals: { essentialDone: 0, essentialTotal: 0, allDone: 1, allTotal: 3 },
   };
 }

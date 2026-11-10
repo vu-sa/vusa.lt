@@ -12,7 +12,8 @@ const hintId = useId();
 const automatic = computed(() => props.step.automaticallyTracked || props.step.autoCompleted);
 const branded = computed(() => props.step.importance === 'essential');
 const appearance = computed(() => [
-  'flex size-6 shrink-0 items-center justify-center border-2 bg-clip-padding',
+  'relative flex size-6 shrink-0 items-center justify-center border-2 bg-clip-padding',
+  "pointer-coarse:before:absolute pointer-coarse:before:-inset-2.5 pointer-coarse:before:content-['']",
   branded.value ? 'border-brand data-[state=checked]:border-brand-fill' : 'border-muted-foreground data-[state=checked]:border-foreground',
   props.step.importance === 'optional' && 'border-dashed',
 ]);

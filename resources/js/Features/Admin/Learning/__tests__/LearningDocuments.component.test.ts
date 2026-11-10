@@ -29,7 +29,7 @@ const data = () => ({
   ],
 });
 function render() {
-  return mount(ShowLearningDocuments, { props: { documents: data(), canSeeReps: false }, global: { stubs: commonStubs } });
+  return mount(ShowLearningDocuments, { props: { documents: data() }, global: { stubs: commonStubs } });
 }
 
 describe('Learning documents', () => {
@@ -67,7 +67,7 @@ describe('Learning documents', () => {
   });
 
   it('hides empty importance groups and teaches the empty state', () => {
-    const wrapper = mount(ShowLearningDocuments, { props: { documents: { sections: [], documents: [] }, canSeeReps: false }, global: { stubs: commonStubs } });
+    const wrapper = mount(ShowLearningDocuments, { props: { documents: { sections: [], documents: [] } }, global: { stubs: commonStubs } });
     expect(wrapper.findAll('[data-slot="document-section"]')).toHaveLength(0);
     expect(wrapper.get('[data-slot="empty-state"]').text()).toContain('learning.documents.empty_title');
     wrapper.unmount();

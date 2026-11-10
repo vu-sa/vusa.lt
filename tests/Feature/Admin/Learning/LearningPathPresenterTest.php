@@ -85,8 +85,37 @@ test('path separates document progress and groups meeting preparation by the win
     expect(collect($payload['stages'])->flatMap(fn (array $stage) => $stage['steps'])->pluck('id')->all())->toBe([$action->id]);
     expect($payload['totals']['allTotal'])->toBe(1);
     expect($payload['documents'])->toMatchArray(['essentialDone' => 1, 'essentialTotal' => 2, 'done' => 1, 'total' => 3]);
-    expect($payload['documents']['next'])->toHaveCount(2);
-    expect($payload['documents']['next'][0]['id'])->toBe($essential->id);
-    expect($payload['meetingPrep'][0]['audience'])->toBe(['id' => $prep->audiences->sole()->id, 'label' => $type->getTranslation('title', 'lt')]);
+    expect($payload['documents']['nextDocument']['id'])->toBe($essential->id)
+        ->and($payload['documents'])->not->toHaveKey('next');
+    expect($payload['meetingPrep'][0]['audience'])->toBe(['id' => 'institution_type:'.$type->id.':', 'label' => $type->getTranslation('title', 'lt')]);
     expect($payload['meetingPrep'][0]['steps'][0]['id'])->toBe($prep->id);
+});
+
+test('meeting prep steps for the same institution type form one group', function (): void {
+    $user = makeUser(Tenant::query()->firstOrFail());
+    LearningStep::query()->update(['is_active' => false]);
+    $type = InstitutionType::factory()->create();
+    $user->authorization_duties()->firstOrFail()->institution->types()->attach($type);
+    $first = LearningStep::factory()->meetingPrep($type)->create(['order' => 1]);
+    $second = LearningStep::factory()->meetingPrep($type)->create(['order' => 2]);
+    $path = ResolveLearningPath::execute($user);
+    $key = 'institution_type:'.$type->id.':';
+
+    expect($path->meetingPrep->pluck('audienceKey')->all())->toBe([$key, $key]);
+    $payload = LearningPathPresenter::path($path, 'lt');
+
+    expect($payload['meetingPrep'])->toHaveCount(1)
+        ->and($payload['meetingPrep'][0]['audience']['id'])->toBe($key)
+        ->and(array_column($payload['meetingPrep'][0]['steps'], 'id'))->toBe([$first->id, $second->id]);
+});
+
+test('the next document is null when nothing remains to recommend', function (): void {
+    $user = makeUser(Tenant::query()->firstOrFail());
+    LearningStep::query()->update(['is_active' => false]);
+    LearningStep::factory()->audience(['importance' => 'optional'])->create();
+
+    $payload = LearningPathPresenter::path(ResolveLearningPath::execute($user), 'lt');
+
+    expect($payload['documents']['total'])->toBe(1)
+        ->and($payload['documents']['nextDocument'])->toBeNull();
 });

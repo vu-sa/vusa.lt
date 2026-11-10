@@ -21,7 +21,7 @@ class LearningRepsController extends AdminController
         $reps = LearningAdminPresenter::representatives(GetCoordinatedRepresentatives::execute($request->user()), app()->getLocale());
 
         return Inertia::render('Admin/Learning/IndexLearningReps', [
-            'reps' => $reps, 'summary' => LearningAdminPresenter::summary($reps), 'canSeeReps' => true,
+            'reps' => $reps, 'summary' => LearningAdminPresenter::summary($reps),
         ]);
     }
 
@@ -31,7 +31,7 @@ class LearningRepsController extends AdminController
 
         return Inertia::render('Admin/Learning/ShowLearningRep', [
             'path' => LearningPathPresenter::path(ResolveLearningPath::execute($user), app()->getLocale()),
-            'rep' => LearningAdminPresenter::member($user), 'canSeeReps' => true,
+            'rep' => LearningAdminPresenter::member($user),
             'notes' => LearningAdminPresenter::representativeNotes($user, $request->user(), app()->getLocale()),
         ]);
     }

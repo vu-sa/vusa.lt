@@ -65,7 +65,7 @@ describe('LearningStepRow', () => {
     expect(source.text()).toBe(data.title);
     expect(source.attributes('href')).toBe(data.source?.url);
     expect(source.attributes('rel')).toBe('noopener noreferrer');
-    expect(wrapper.findAll('a').some(link => link.attributes('href')?.endsWith('?tab=insights'))).toBe(true);
+    expect(wrapper.findAll('a').some(link => link.attributes('href')?.endsWith('#insights'))).toBe(true);
     wrapper.unmount();
   });
 
@@ -78,24 +78,26 @@ describe('LearningStepRow', () => {
     wrapper.unmount();
   });
 
-  it.each(['install_app', 'browser_push', 'meet_institution_contacts', 'check_access', 'review_contacts', 'notification_settings', 'profile_photo', 'orientation', 'follow_institution', 'record_first_meeting', 'read_handover', 'write_handover', null])('discloses system summaries and rich content: %s', key => {
-    const wrapper = render(step({ key, isSystem: key !== null }), true);
-    expect(wrapper.find('details').exists()).toBe(['install_app', 'browser_push', 'meet_institution_contacts', 'check_access', 'review_contacts', 'notification_settings', 'orientation'].includes(key ?? ''));
+  it.each(['install_app', 'browser_push', 'meet_institution_contacts', 'check_access', 'review_contacts', null])('keeps rich instructions on the step page: %s', key => {
+    const data = step({ key, isSystem: key !== null, audienceNotes: [{ label: 'SPK', description: 'Audience instructions' }] });
+    const wrapper = render(data, true);
+    expect(wrapper.find('details').exists()).toBe(false);
+    expect(wrapper.find('[data-slot="audience-notes"]').exists()).toBe(false);
+    expect(wrapper.get('a[aria-label="learning.path.open_step"]').attributes('href')).toMatch(/^\/mocked-route\/learningSteps\.show/);
+    expect(wrapper.findComponent({ name: 'LearningStepContent' }).exists()).toBe(false);
     wrapper.unmount();
   });
 
-  it('shows institution contacts with their role and email', () => {
-    const wrapper = mount(LearningStepRow, {
-      props: {
-        step: step({ key: 'meet_institution_contacts', isSystem: true }),
-        institutionContacts: [{ id: 'institution', title: 'SPK', contacts: [{ name: 'Rūta', role: 'Sekretorius', email: 'ruta@example.test' }] }],
-      },
-      global: { stubs: commonStubs },
-    });
-    expect(wrapper.text()).toContain('SPK');
-    expect(wrapper.text()).toContain('Rūta');
-    expect(wrapper.text()).toContain('Sekretorius');
-    expect(wrapper.get('a[href="mailto:ruta@example.test"]').text()).toBe('ruta@example.test');
+  it.each([
+    { source: { type: 'url' as const, url: 'https://example.test/read', documentId: null, documentStatus: null, title: null } },
+    { kind: LearningStepKind.Action, actionUrl: '/mano/profile' },
+  ])('puts the primary action label before its arrow and keeps an eye link', overrides => {
+    const wrapper = render(step(overrides));
+    const action = wrapper.get('[data-slot="learning-step-action"]');
+    expect(action.element.firstChild?.textContent?.trim()).toMatch(/learning.path.(read_document|open)/);
+    expect(action.element.lastElementChild?.tagName.toLowerCase()).toBe('svg');
+    expect(action.classes()).toContain('hover:border-brand');
+    expect(wrapper.get('a[aria-label="learning.path.open_step"]').attributes('title')).toBe('learning.path.open_step');
     wrapper.unmount();
   });
 
@@ -138,13 +140,12 @@ describe('LearningStepRow', () => {
     wrapper.unmount();
  });
 
-it('expands a concise system summary into the full instructions', async () => {
+it('clamps the system summary and leaves full instructions on the step page', () => {
   const wrapper = render(step({ key: 'review_contacts', isSystem: true, description: 'Full account instructions.' }));
   expect(wrapper.text()).toContain('learning.system_steps.review_contacts.summary');
-  const details = wrapper.get('details');
-  (details.element as HTMLDetailsElement).open = true;
-  await details.trigger('toggle');
-  expect(wrapper.text()).toContain('Full account instructions.');
+  expect(wrapper.text()).not.toContain('Full account instructions.');
+  expect(wrapper.find('details').exists()).toBe(false);
+  expect(wrapper.find('p.line-clamp-2').exists()).toBe(true);
   wrapper.unmount();
 });
 
@@ -159,15 +160,3 @@ it('shows coordinator contacts beside the step without a disclosure', () => {
   wrapper.unmount();
 });
 
-it('renders audience notes beneath the expanded description', async () => {
-  const wrapper = render(step({ audienceNotes: [{ label: 'SPK', description: 'Aptark studijų kokybę.' }] }));
-  expect(wrapper.find('[data-slot="audience-notes"]').exists()).toBe(false);
-  const details = wrapper.get('details');
-  (details.element as HTMLDetailsElement).open = true;
-  await details.trigger('toggle');
-  const notes = wrapper.get('[data-slot="audience-notes"]');
-  expect(notes.text()).toContain('learning.path.audience_notes');
-  expect(notes.text()).toContain('SPK');
-  expect(notes.text()).toContain('Aptark studijų kokybę.');
-  wrapper.unmount();
-});

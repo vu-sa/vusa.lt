@@ -5,7 +5,7 @@
     :entity-type="ModelEnum.LEARNING_STEP"
     required-note
     :back-href="backHref"
-    :back-label="$t('learning.tabs.library')"
+    :back-label="$t('learning.pages.library')"
     :dirty="form.isDirty"
     :processing="form.processing"
     :errors="form.errors"

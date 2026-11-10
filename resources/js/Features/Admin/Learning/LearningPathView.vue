@@ -41,33 +41,6 @@ function groups(steps: LearningStepData[]) {
 
 <template>
   <div class="space-y-12" data-slot="learning-path">
-    <section
-      v-if="path.meetingPrep.length"
-      class="grid gap-6 border border-border p-5 sm:grid-cols-[3rem_minmax(0,1fr)] sm:gap-x-6 sm:p-6"
-      data-slot="meeting-prep"
-    >
-      <span class="flex size-10 items-center justify-center border-2 border-border sm:size-12" aria-hidden="true">
-        <RefreshCw class="size-5 text-muted-foreground" />
-      </span>
-      <div class="min-w-0">
-        <h2 class="text-xl font-bold leading-tight sm:text-2xl">{{ $t('learning.path.meeting_prep') }}</h2>
-        <p class="mt-1 max-w-prose text-sm text-muted-foreground">{{ $t('learning.path.meeting_prep_hint') }}</p>
-        <div v-for="group in path.meetingPrep" :key="group.audience.id" class="mt-5">
-          <h3 class="text-sm font-semibold">{{ group.audience.label }}</h3>
-          <ol class="mt-2 space-y-3">
-            <li v-for="(step, stepIndex) in group.steps" :key="step.id" class="grid grid-cols-[1.75rem_minmax(0,1fr)] gap-x-2">
-              <span class="pt-px text-sm font-bold tabular-nums text-muted-foreground">{{ stepIndex + 1 }}.</span>
-              <div class="min-w-0">
-                <p class="text-sm font-semibold">{{ step.title }}</p>
-                <p v-if="step.description" class="mt-0.5 max-w-prose text-sm leading-relaxed text-muted-foreground">{{ step.description }}</p>
-                <LearningAudienceNotes :notes="step.audienceNotes" class="mt-2" />
-              </div>
-            </li>
-          </ol>
-        </div>
-      </div>
-    </section>
-
     <LearningDocumentsEntry :documents="path.documents" :readonly="readonly" />
 
     <ol v-if="hasSteps" class="relative">
@@ -141,6 +114,34 @@ function groups(steps: LearningStepData[]) {
     </ol>
     <EmptyState v-else :title="$t('learning.path.empty_title')" :description="$t('learning.path.empty_description')" />
 
+    <slot name="before-meeting-prep" />
+
+    <section
+      v-if="path.meetingPrep.length"
+      class="grid gap-6 border border-border p-5 sm:grid-cols-[3rem_minmax(0,1fr)] sm:gap-x-6 sm:p-6"
+      data-slot="meeting-prep"
+    >
+      <span class="flex size-10 items-center justify-center border-2 border-border sm:size-12" aria-hidden="true">
+        <RefreshCw class="size-5 text-muted-foreground" />
+      </span>
+      <div class="min-w-0">
+        <h2 class="text-xl font-bold leading-tight sm:text-2xl">{{ $t('learning.path.meeting_prep') }}</h2>
+        <p class="mt-1 max-w-prose text-sm text-muted-foreground">{{ $t('learning.path.meeting_prep_hint') }}</p>
+        <div v-for="group in path.meetingPrep" :key="group.audience.id" class="mt-5">
+          <h3 class="text-sm font-semibold">{{ group.audience.label }}</h3>
+          <ol class="mt-2 space-y-3">
+            <li v-for="(step, stepIndex) in group.steps" :key="step.id" class="grid grid-cols-[1.75rem_minmax(0,1fr)] gap-x-2">
+              <span class="pt-px text-sm font-bold tabular-nums text-muted-foreground">{{ stepIndex + 1 }}.</span>
+              <div class="min-w-0">
+                <p class="text-sm font-semibold">{{ step.title }}</p>
+                <p v-if="step.description" class="mt-0.5 max-w-prose text-sm leading-relaxed text-muted-foreground">{{ step.description }}</p>
+                <LearningAudienceNotes :notes="step.audienceNotes" class="mt-2" />
+              </div>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </section>
 
   </div>
 </template>

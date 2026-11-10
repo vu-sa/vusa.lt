@@ -1,107 +1,102 @@
 <template>
-  <LearningPageFrame :can-see-reps="canSeeReps">
-    <CollectionPage
-      collection="learningSteps"
-      :eyebrow="$t('shell.workspaces.pradzia.title')"
-      :title="$t('learning.pages.library')"
-      :lead="$t('learning_library.library.lead')"
-      :source
-      :columns
-      :item-key="stepKey"
-      :row-actions="rowActions"
-      :quick-filters="quickFilters"
-      default-view="table"
-      table-fixed
-      actions-width="w-32"
-      table-min-width="min-w-[56rem]"
-      :search-placeholder="$t('learning_library.library.search_placeholder')"
-      @quick-filter="toggleQuickFilter"
-      @row-action="(item, key) => selectRowAction(key, item)"
-    >
-      <template #actions>
-        <SpotlightPopover :is-dismissed="sectionsDismissed" :title="$t('learning_library.section_manager.title')" :description="$t('learning_library.section_manager.spotlight')" @dismiss="dismissSections">
-          <Button variant="outline" voice="sentence" class="min-h-11" data-testid="manage-sections" @click="sectionsOpen = true; dismissSections()">{{ $t('learning_library.section_manager.title') }}</Button>
-        </SpotlightPopover>
-        <Button v-if="canCreateStep" as-child variant="brand" data-testid="create-learning-step">
-          <Link :href="route('learningSteps.create')">
-            <Plus aria-hidden="true" />
-            {{ $t('learning_library.library.new_step') }}
-          </Link>
-        </Button>
-      </template>
+  <CollectionPage
+    collection="learningSteps"
+    :eyebrow="$t('shell.workspaces.pradzia.title')"
+    :title="$t('learning.pages.library')"
+    :lead="$t('learning_library.library.lead')"
+    :source
+    :columns
+    :item-key="stepKey"
+    :row-actions="rowActions"
+    :quick-filters="quickFilters"
+    default-view="table"
+    table-fixed
+    actions-width="w-32"
+    table-min-width="min-w-[56rem]"
+    :search-placeholder="$t('learning_library.library.search_placeholder')"
+    @quick-filter="toggleQuickFilter"
+    @row-action="(item, key) => selectRowAction(key, item)"
+  >
+    <template #actions>
+      <Button variant="outline" voice="sentence" class="min-h-11" data-testid="manage-sections" @click="sectionsOpen = true">{{ $t('learning_library.section_manager.title') }}</Button>
+      <Button v-if="canCreateStep" as-child variant="brand" data-testid="create-learning-step">
+        <Link :href="route('learningSteps.create')">
+          <Plus aria-hidden="true" />
+          {{ $t('learning_library.library.new_step') }}
+        </Link>
+      </Button>
+    </template>
 
-      <template #row="{ item, actions: recordActions, view }">
-        <CollectionRow
-          :spotlight="item === source.items.value[0]"
-          :actions="view === 'preview' ? [] : recordActions"
-          class="px-3 py-3 sm:px-4"
-          @select="key => selectRowAction(key, item)"
-        >
-          <div class="min-w-0 flex-1 space-y-1.5">
-            <div class="flex flex-wrap items-center gap-2">
-              <Link :href="route('learningSteps.show', item.id)" class="font-medium text-foreground hover:text-brand">
-                {{ item.title }}
-              </Link>
-              <StatusBadge v-if="!item.isActive" :status="bannerStatuses.inactive" voice="sentence" data-testid="step-inactive-badge" />
-            </div>
-            <div class="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
-              <StatusBadge :status="learningStepKinds[item.kind]" voice="sentence" />
-              <span>· {{ audienceSummary(item) }}</span>
-              <span v-if="item.section">· {{ item.section.title }}</span>
-              <StatusBadge :status="learningStepImportances[highestImportance(item)]" voice="sentence" />
-              <template v-if="item.canUpdate && item.flags.length">
-                <StatusBadge
-                  v-for="flag in item.flags"
-                  :key="flag"
-                  :status="learningCuratorFlags[flag]"
-                  voice="sentence"
-                  :data-testid="`curator-flag-${flag}`"
-                />
-              </template>
-            </div>
-          </div>
-        </CollectionRow>
-      </template>
-
-      <template #cell="{ item, column }">
-        <div v-if="column.key === 'title'" class="space-y-1">
+    <template #row="{ item, actions: recordActions, view }">
+      <CollectionRow
+        :actions="view === 'preview' ? [] : recordActions"
+        class="px-3 py-3 sm:px-4"
+        @select="key => selectRowAction(key, item)"
+      >
+        <div class="min-w-0 flex-1 space-y-1.5">
           <div class="flex flex-wrap items-center gap-2">
             <Link :href="route('learningSteps.show', item.id)" class="font-medium text-foreground hover:text-brand">
               {{ item.title }}
             </Link>
             <StatusBadge v-if="!item.isActive" :status="bannerStatuses.inactive" voice="sentence" data-testid="step-inactive-badge" />
           </div>
-          <div v-if="item.canUpdate && item.flags.length" class="flex flex-wrap items-center gap-1.5">
-            <StatusBadge
-              v-for="flag in item.flags"
-              :key="flag"
-              :status="learningCuratorFlags[flag]"
-              voice="sentence"
-              :data-testid="`curator-flag-${flag}`"
-            />
+          <div class="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+            <StatusBadge :status="learningStepKinds[item.kind]" voice="sentence" />
+            <span>· {{ audienceSummary(item) }}</span>
+            <span v-if="item.section">· {{ item.section.title }}</span>
+            <StatusBadge :status="learningStepImportances[highestImportance(item)]" voice="sentence" />
+            <template v-if="item.canUpdate && item.flags.length">
+              <StatusBadge
+                v-for="flag in item.flags"
+                :key="flag"
+                :status="learningCuratorFlags[flag]"
+                voice="sentence"
+                :data-testid="`curator-flag-${flag}`"
+              />
+            </template>
           </div>
         </div>
-        <StatusBadge v-else-if="column.key === 'kind'" :status="learningStepKinds[item.kind]" voice="sentence" />
-        <span v-else-if="column.key === 'audience'" class="text-sm text-muted-foreground">{{ audienceSummary(item) || '—' }}</span>
-        <span v-else-if="column.key === 'section'" class="text-sm text-muted-foreground">{{ item.section?.title || '—' }}</span>
-        <StatusBadge v-else-if="column.key === 'importance'" :status="learningStepImportances[highestImportance(item)]" voice="sentence" />
-      </template>
+      </CollectionRow>
+    </template>
 
-      <template #empty>
-        <EmptyState
-          mode="empty"
-          :icon="BookOpen"
-          :title="$t('learning_library.library.empty_title')"
-          :description="$t('learning_library.library.empty_description')"
-          :action-label="canCreateStep ? $t('learning_library.library.new_step') : undefined"
-          @action="router.visit(route('learningSteps.create'))"
-        />
-      </template>
-    </CollectionPage>
-    <LearningSectionsSheet
-      v-model:open="sectionsOpen" :sections="sections" :scopes="sectionScopes" :locale="locale" :can-create="canCreateStep"
-    />
-  </LearningPageFrame>
+    <template #cell="{ item, column }">
+      <div v-if="column.key === 'title'" class="space-y-1">
+        <div class="flex flex-wrap items-center gap-2">
+          <Link :href="route('learningSteps.show', item.id)" class="font-medium text-foreground hover:text-brand">
+            {{ item.title }}
+          </Link>
+          <StatusBadge v-if="!item.isActive" :status="bannerStatuses.inactive" voice="sentence" data-testid="step-inactive-badge" />
+        </div>
+        <div v-if="item.canUpdate && item.flags.length" class="flex flex-wrap items-center gap-1.5">
+          <StatusBadge
+            v-for="flag in item.flags"
+            :key="flag"
+            :status="learningCuratorFlags[flag]"
+            voice="sentence"
+            :data-testid="`curator-flag-${flag}`"
+          />
+        </div>
+      </div>
+      <StatusBadge v-else-if="column.key === 'kind'" :status="learningStepKinds[item.kind]" voice="sentence" />
+      <span v-else-if="column.key === 'audience'" class="text-sm text-muted-foreground">{{ audienceSummary(item) || '—' }}</span>
+      <span v-else-if="column.key === 'section'" class="text-sm text-muted-foreground">{{ item.section?.title || '—' }}</span>
+      <StatusBadge v-else-if="column.key === 'importance'" :status="learningStepImportances[highestImportance(item)]" voice="sentence" />
+    </template>
+
+    <template #empty>
+      <EmptyState
+        mode="empty"
+        :icon="BookOpen"
+        :title="$t('learning_library.library.empty_title')"
+        :description="$t('learning_library.library.empty_description')"
+        :action-label="canCreateStep ? $t('learning_library.library.new_step') : undefined"
+        @action="router.visit(route('learningSteps.create'))"
+      />
+    </template>
+  </CollectionPage>
+  <LearningSectionsSheet
+    v-model:open="sectionsOpen" :sections="sections" :scopes="sectionScopes" :locale="locale" :can-create="canCreateStep"
+  />
 </template>
 
 <script setup lang="ts">
@@ -124,11 +119,8 @@ import {
   learningStepImportances,
   learningStepKinds,
 } from '@/Constants/statusIcons';
-import LearningPageFrame from '@/Features/Admin/Learning/LearningPageFrame.vue';
 import type { LearningLibraryStep } from '@/Types/learning';
 import { LearningImportance, LearningAudienceType } from '@/Types/enums';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
-import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import LearningSectionsSheet from '@/Features/Admin/Learning/LearningSectionsSheet.vue';
 import type { LearningSectionOption, LearningSectionScopes } from '@/Features/Admin/Learning/types';
 
@@ -138,12 +130,10 @@ const props = withDefaults(defineProps<{
   audienceTypes?: LearningAudienceType[];
   sectionScopes?: LearningSectionScopes;
   canCreate?: boolean;
-  canSeeReps: boolean;
 }>(), { sections: () => [], audienceTypes: () => Object.values(LearningAudienceType), sectionScopes: () => ({ create: { canTargetEverywhere: false, tenants: [] }, update: { canTargetEverywhere: false, tenants: [] } }) });
 const page = usePage();
 const locale = computed<'lt' | 'en'>(() => page.props.app.locale === 'en' ? 'en' : 'lt');
 const sectionsOpen = ref(false);
-const { isDismissed: sectionsDismissed, dismiss: dismissSections } = useFeatureSpotlight('learning-sections-v1');
 function audienceSummary(step: LearningLibraryStep) {
   return step.audiences.slice(0, 2).map(audience => audience.label).join(', ') + (step.audiences.length > 2 ? ` +${step.audiences.length - 2}` : '');
 }

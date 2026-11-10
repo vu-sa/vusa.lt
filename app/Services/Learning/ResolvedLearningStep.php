@@ -23,5 +23,6 @@ final readonly class ResolvedLearningStep
         public string $audienceLabel = '',
         public array $audienceNotes = [],
         public ?string $audienceId = null,
+        public string $audienceKey = '',
     ) {}
 }

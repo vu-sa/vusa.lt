@@ -11,7 +11,6 @@ use App\Enums\ResponsibilityPurpose;
 use App\Models\Duty;
 use App\Models\GlossaryTerm;
 use App\Models\HandoverNote;
-use App\Models\LearningStep;
 use App\Models\LearningStepProgress;
 use App\Models\User;
 use App\Services\Learning\SystemSteps\SystemStepRegistry;
@@ -20,12 +19,6 @@ use Illuminate\Support\Collection;
 
 class LearningAdminPresenter
 {
-    /** @return array{canSeeReps: bool, canManage: bool} */
-    public static function navigation(User $user): array
-    {
-        return ['canSeeReps' => self::canSeeReps($user), 'canManage' => $user->can('manage', LearningStep::class)];
-    }
-
     public static function canSeeReps(User $user): bool
     {
         return $user->isSuperAdmin() || app(ResponsibilityResolver::class)->holdsAnywhere($user, ResponsibilityPurpose::StudentRepCoordination);

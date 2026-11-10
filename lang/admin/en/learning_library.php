@@ -18,7 +18,6 @@ return [
         'title_en' => 'Title in English',
         'delete_title' => 'Delete section?',
         'delete_description' => 'Documents will remain without this section.',
-        'spotlight' => 'Create document sections and change their titles and order.',
     ],
     'library' => [
         'lead' => 'All representative learning steps by audience, kind and importance.',

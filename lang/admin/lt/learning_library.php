@@ -18,7 +18,6 @@ return [
         'title_en' => 'Pavadinimas angliškai',
         'delete_title' => 'Ištrinti skyrių?',
         'delete_description' => 'Dokumentai liks, tik nebebus priskirti šiam skyriui.',
-        'spotlight' => 'Sukurk dokumentų skyrius ir keisk jų pavadinimus bei eilę.',
     ],
     'library' => [
         'lead' => 'Visi atstovų mokymosi žingsniai pagal auditoriją, rūšį ir svarbą.',

@@ -48,7 +48,6 @@ class LearningStepController extends AdminController
                 'tenants' => GetTenantsForUpserts::execute("learningSteps.{$ability}.padalinys", $this->authorizer)->all(),
             ]])->all(),
             'canCreate' => $request->user()->can('create', LearningStep::class),
-            'canSeeReps' => LearningAdminPresenter::canSeeReps($request->user()),
         ]);
     }
 
@@ -64,7 +63,6 @@ class LearningStepController extends AdminController
             'inPath' => $path->contains($learningStep->id),
             'coordinators' => GetUserCoordinators::execute($request->user()),
             'institutionContacts' => LearningInstitutionContactsPresenter::forUser($request->user(), app()->getLocale()),
-            'canSeeReps' => LearningAdminPresenter::canSeeReps($request->user()),
             'canUpdate' => $request->user()->can('update', $learningStep),
             'glossaryOptions' => $request->user()->can('update', $learningStep) ? LearningAdminPresenter::glossaryOptions(app()->getLocale()) : [],
         ]);
@@ -182,7 +180,6 @@ class LearningStepController extends AdminController
                 'id' => $role->id, 'title' => $role->displayTitle($locale),
             ])->sortBy('title')->values()->all(),
             'sections' => $this->sectionOptions($user, $ability),
-            'canSeeReps' => LearningAdminPresenter::canSeeReps($user),
         ];
     }
 

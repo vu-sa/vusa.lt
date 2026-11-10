@@ -17,7 +17,10 @@ tests:
   - tests/Feature/Seeders/LearningPathPilotSeederTest.php
   - resources/js/Features/Admin/Learning/__tests__/LearningLibrary.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/BrowserNotificationSetup.component.test.ts
-  - resources/js/Features/Admin/Learning/__tests__/LearningTabs.component.test.ts
+  - tests/Feature/System/AdminNavigationCatalogTest.php
+  - resources/js/Components/Layouts/Shell/__tests__/SectionTabs.component.test.ts
+  - resources/js/Components/Layouts/Shell/__tests__/MobileContextBar.component.test.ts
+  - resources/js/Components/Layouts/Shell/__tests__/MobileMenuPanel.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/LearningDocuments.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/LearningGlossarySteps.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/LearningPathView.component.test.ts
@@ -70,11 +73,11 @@ Matai visų tau tinkančių auditorijų paaiškinimus. Būsimos pareigos įskait
 
 ### Dokumentai ir skyriai
 
-Kadencijos etapų juostoje yra tik užduotys. Dokumentai turi savo skirtuką ir savo pažangą, o kelyje
-rodomas tik jų blokas: kiek esminių jau perskaityta ir iki dviejų dar neperskaitytų dokumentų.
+Kadencijos etapų juostoje yra tik užduotys. Dokumentai turi savo puslapį ir savo pažangą, o kelyje
+rodomas jų blokas: kiek svarbiausių jau perskaityta ir vienas rekomenduojamas dokumentas.
 Tie, kas gali tvarkyti žingsnius, dokumentus gali sudėti į skyrius, pvz., po mokymų – „Įvadiniai mokymai“. Ištrynus
-skyrių dokumentai lieka. Pasiruošimas posėdžiui rodomas pačiame kelio viršuje, atskirai kiekvienai
-tau tinkančiai auditorijai, ir neturi pažangos žymų.
+skyrių dokumentai lieka. Pasiruošimas posėdžiui rodomas kelio apačioje, atskirai kiekvienai
+tau tinkančiai auditorijai. Vienos auditorijos veiksmai numeruojami iš eilės ir neturi pažangos žymų.
 
 Dokumentų sąraše **Pagal svarbą** pirmiausia rodo neperskaitytus dokumentus, suskirstytus į
 **Būtina**, **Rekomenduojama** ir **Papildoma**. **Pagal skyrius** rodo skyrių aprašymus ir jų dokumentus;
@@ -82,8 +85,8 @@ be skyriaus likę dokumentai yra sąrašo gale, prie **Kita**. Pasirinktas rodin
 
 <ChangelogNote date="2026-11-10" title="Auditorijos ir dokumentų skyriai">
 
-Kelio viršuje rasi pasiruošimą posėdžiui, po juo – dokumentų pažangą ir nuorodą „Visi dokumentai“.
-Išskleidęs žingsnį prie „Tau tai reiškia“ matysi paaiškinimus tavo auditorijoms.
+Dokumentų blokas rodomas prieš etapų juostą. Po ja yra nuorodos į sąvokas ir patirties perdavimą,
+o apačioje – pasiruošimas posėdžiui. Žingsnio puslapyje prie „Tau tai reiškia“ matomi paaiškinimai tavo auditorijoms.
 
 </ChangelogNote>
 
@@ -92,7 +95,7 @@ Išskleidęs žingsnį prie „Tau tai reiškia“ matysi paaiškinimus tavo aud
 Veiksmai išdėstyti pagal kadencijos etapus: **Prieš pradedant**, **Pirmieji mėnesiai** (pirmos 60
 dienų), **Visą kadenciją** ir **Kadencijos pabaiga** (paskutinės 45 dienos). Dabartinis etapas
 pažymėtas „dabar“. Visi etapai ir jų žingsniai rodomi iš karto. Žingsnio kairėje esantis langelis
-žymi pažangą; varnelę galima uždėti ir nuimti tiesiog eilutėje. Ilgesnius paaiškinimus ir diegimo, pranešimų ar institucijos kontaktų informaciją išskleisk per „Daugiau“. Koordinatoriaus nuotrauka, pareigos ir mygtukas „Parašyti“ rodomi tiesiai prie susipažinimo žingsnio.
+žymi pažangą; varnelę galima uždėti ir nuimti tiesiog eilutėje. Ilgesni paaiškinimai, diegimo, pranešimų ir institucijos kontaktų informacija pasiekiami per „Atidaryti žingsnį“. Žingsnio puslapyje pažangą galima žymėti prie pavadinimo, o įžvalgos rodomos po turiniu. Sąvokos atveriamos paspaudus jų žymas; jas tvarkantys nariai redaktorių atveria per ⋯ → „Tvarkyti sąvokas“. Koordinatoriaus nuotrauka, pareigos ir mygtukas „Parašyti“ rodomi tiesiai prie susipažinimo žingsnio.
 
 Svarba nusako turinį, ne terminą: **Esminis** (būtina žinoti), **Rekomenduojamas**, **Papildomas**.
 Esminio žingsnio praleisti negalima.
@@ -103,7 +106,7 @@ Esminio žingsnio praleisti negalima.
 - **Veiksmas** – ką nors padaryti, pvz., susipažinti su koordinatoriumi ar perskaityti praeitų
   posėdžių protokolus. Dalis veiksmų pasižymi patys pagal veiklą platformoje (įkelta nuotrauka,
   sekama institucija, užfiksuotas pirmas posėdis); tokie pažymėti žaibo piktograma.
-- **Pasiruošimas posėdžiui** – kartojamas sąrašas kelio viršuje, pvz., perskaityti medžiagą, pasiklausti
+- **Pasiruošimas posėdžiui** – kartojamas sąrašas kelio apačioje, pvz., perskaityti medžiagą, pasiklausti
   kursiokų. Jame pažangos žymų nėra.
 
 ### Šaltiniai ir kalba
@@ -116,23 +119,29 @@ rodomas kaip tekstas, o šalia jo – nuoroda veiksmui atlikti, jei tokia yra.
 Jei šaltinio dokumentas Archyve atnaujinamas jau perskaičius, žingsnis pažymimas
 „Atnaujinta – peržiūrėk“.
 
-### Skirtukai
+### Skiltys {#skirtukai}
+
+Mokymosi puslapiai pasiekiami antrajame darbo srities meniu.
+
+Pradžios srityje **Mano kelias** yra antras skyrius. Rodyklė šalia jo pavadinimo atveria
+žemiau išvardytus puslapius; skirtuko pavadinimas atitinka atvertą puslapį, o žingsnio puslapyje –
+žingsnio pavadinimą. Telefone šie puslapiai pasiekiami dabartinio skyriaus pasirinkime ir per **Meniu**.
 
 - **Mano kelias** – tavo žingsniai ir pažanga.
 - **Dokumentai** – tavo kelio dokumentai vienoje vietoje, pagal svarbą tau arba pagal skyrius. Prie dokumento galima pažymėti pažangą ir
   atverti susietų sąvokų paaiškinimus.
 - **Sąvokos** – žodynėlis (SPK, akreditacija, kvorumas…). Po apibrėžimu „Kur sutinkama“ rodo
   susietus žingsnius: nuoroda atveria dokumentą arba žingsnio puslapį su įžvalgomis.
-- **Perdavimas** – pirmtakų užrašai ir tavo užrašai įpėdiniui.
-- **Mano atstovai** – tik studentų atstovų koordinatoriams.
-- **Tvarkyti** – tik tiems, kas gali tvarkyti žingsnius (žr. [Kas ką gali](#teises)). Čia rodomi visi žingsniai su paieška ir
+- **Patirties perdavimas** – pirmtakų užrašai ir tavo užrašai įpėdiniui.
+- **Atstovai** – tik studentų atstovų koordinatoriams ir superadministratoriams.
+- **Biblioteka** – tik tiems, kas gali tvarkyti žingsnius (žr. [Kas ką gali](#teises)). Čia rodomi visi žingsniai su paieška ir
   filtrais pagal auditorijos tipą, skyrių ir rūšį. Redaguojamuose žingsniuose matomos žymos: dokumentas
   nebegalioja, dokumentas atnaujintas po peržiūros arba nėra šaltinio.
 
 <ChangelogNote date="2026-11-10" title="Dokumentai ir aiškesnis kelias">
 
 Žingsniai rodomi be išskleidimo, dokumentai turi savo skirtuką, o sąvokos – nuorodas į susietus žingsnius.
-Buvęs „Žinynas“ vadinamas „Tvarkyti“ ir pasiekiamas tik tiems, kas gali tvarkyti žingsnius.
+Biblioteka pasiekiama per rodyklę šalia skyriaus pavadinimo tik tiems, kas gali tvarkyti žingsnius.
 
 </ChangelogNote>
 

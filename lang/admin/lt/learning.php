@@ -2,14 +2,6 @@
 
 return [
     'entity' => ['singular' => 'Mokymosi žingsnis', 'plural' => 'Mokymosi žingsniai'],
-    'tabs' => [
-        'documents' => 'Dokumentai',
-        'path' => 'Mano kelias',
-        'library' => 'Tvarkyti',
-        'glossary' => 'Sąvokos',
-        'handover' => 'Perdavimas',
-        'reps' => 'Mano atstovai',
-    ],
     'pages' => [
         'documents' => 'Dokumentai',
         'path' => 'Mano kelias',
@@ -60,7 +52,6 @@ return [
         'skipped' => 'Praleista',
         'updated' => 'Atnaujinta',
     ],
-    'transparency' => 'Tavo pažangą mato koordinatorius: :names',
     'empty' => [
         'title' => 'Čia bus tavo mokymosi erdvė',
         'description' => 'Ruošiame žingsnius, sąvokas ir patirties perdavimą.',
@@ -146,6 +137,7 @@ return [
     ],
     'glossary' => ['where_used' => 'Kur sutinkama'],
     'documents' => [
+        'next' => 'Rekomenduojama perskaityti toliau',
         'essential' => 'Būtina',
         'recommended' => 'Rekomenduojama',
         'optional' => 'Papildoma',
@@ -153,14 +145,16 @@ return [
         'by_sections' => 'Pagal skyrius',
         'other' => 'Kita',
         'essential_progress' => 'Svarbiausi perskaityti',
-        'read_total' => 'Perskaityta',
         'all' => 'Visi dokumentai',
-        'spotlight_title' => 'Dokumentai vienoje vietoje',
-        'spotlight_description' => 'Čia rasi tavo dokumentų pažangą ir visą skaitymo sąrašą.',
         'empty_title' => 'Tavo kelyje dokumentų dar nėra',
         'empty_description' => 'Grįžk vėliau arba kreipkis į koordinatorių.',
     ],
     'path' => [
+        'open_step' => 'Atidaryti žingsnį',
+        'manage_terms' => 'Tvarkyti sąvokas',
+        'glossary_description' => 'Susijusių sąvokų paaiškinimai.',
+        'handover_title' => 'Patirties perdavimas',
+        'handover_description' => 'Pirmtakų pastabos ir tavo patirtis kitam atstovui.',
         'audience_notes' => 'Tau tai reiškia',
         'related_terms' => 'Susijusios sąvokos',
         'auto_label' => 'pažymėta automatiškai',
@@ -171,7 +165,6 @@ return [
         'summary' => 'Tavo pažanga',
         'summary_essential' => 'Esminiai žingsniai',
         'summary_all' => 'Visi žingsniai',
-        'summary_now' => 'Dabar:',
         'stage_progress' => ':done iš :total',
         'meeting_prep_hint' => 'Kartok prieš kiekvieną savo institucijos posėdį.',
         'stage_hints' => [
@@ -180,7 +173,6 @@ return [
             'whole_term' => 'Ko prireiks visą kadenciją – grįžk, kai reikės.',
             'term_end' => 'Paskutinės savaitės: perduok patirtį įpėdiniui.',
         ],
-        'more' => 'Daugiau',
         'actions' => 'Žingsnio veiksmai',
         'optional' => 'papildomas',
         'totals' => 'Esminiai :essentialDone/:essentialTotal · Iš viso :allDone/:allTotal',

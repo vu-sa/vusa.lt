@@ -44,7 +44,7 @@ export interface LearningPathData {
   termStart: string | null;
   stages: { stage: LearningStage; steps: LearningStepData[] }[];
   meetingPrep: { audience: { id: string; label: string }; steps: LearningStepData[] }[];
-  documents: LearningDocumentTotals & { next: LearningStepData[] };
+  documents: LearningDocumentTotals & { nextDocument: LearningStepData | null };
   totals: LearningTotals;
 }
 
