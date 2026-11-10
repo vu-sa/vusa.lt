@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import IndexGlossaryTerm from '@/Pages/Admin/Learning/IndexGlossaryTerm.vue';
 import IndexLearningStep from '@/Pages/Admin/Learning/IndexLearningStep.vue';
-import { LearningImportance, LearningLayer, LearningStage, LearningStepKind } from '@/Types/enums';
+import { LearningAudienceType, LearningImportance, LearningStage, LearningStepKind } from '@/Types/enums';
 import type { LearningLibraryStep } from '@/Types/learning';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
@@ -16,13 +16,13 @@ const originalUrl = window.location.href;
 const steps: LearningLibraryStep[] = [
   {
     id: 'guide', title: 'Read the guide', kind: LearningStepKind.Knowledge,
-    layer: LearningLayer.Foundation, layerLabel: 'Foundation', stage: LearningStage.BeforeStart,
-    importance: LearningImportance.Essential, isActive: true, canUpdate: false, flags: [],
+    audiences: [{ id: 'a1', type: LearningAudienceType.Everyone, label: 'Visi', stage: LearningStage.BeforeStart, importance: LearningImportance.Essential }],
+    audienceTypes: [LearningAudienceType.Everyone], section: { id: 's1', title: 'Pagrindai' }, order: 0, isActive: true, canUpdate: false, flags: [],
   },
   {
     id: 'action', title: 'Meet your team', kind: LearningStepKind.Action,
-    layer: LearningLayer.Tenant, layerLabel: 'Tenant', stage: LearningStage.BeforeStart,
-    importance: LearningImportance.Recommended, isActive: true, canUpdate: true, flags: [],
+    audiences: [{ id: 'a2', type: LearningAudienceType.InstitutionType, label: 'Taryba', stage: LearningStage.BeforeStart, importance: LearningImportance.Recommended }],
+    audienceTypes: [LearningAudienceType.InstitutionType], section: null, order: 1, isActive: true, canUpdate: true, flags: [],
   },
 ];
 
@@ -47,7 +47,11 @@ afterEach(() => {
 function render(canCreate = false) {
   return mount(IndexLearningStep, {
     props: { steps, canCreate, canSeeReps: false },
-    global: { stubs: commonStubs },
+    global: { stubs: {
+      ...commonStubs,
+      Sheet: commonStubs.Dialog, SheetContent: commonStubs.DialogContent,
+      SheetHeader: commonStubs.DialogHeader, SheetTitle: commonStubs.DialogTitle, SheetDescription: commonStubs.DialogDescription,
+    } },
   });
 }
 
@@ -56,9 +60,10 @@ const rowTitles = (wrapper: ReturnType<typeof render>) =>
 
 describe('learning library', () => {
   it.each([
-    ['layer', 'tenant', 'Meet your team'],
+    ['audience', 'institution_type', 'Meet your team'],
     ['kind', 'knowledge', 'Read the guide'],
     ['importance', 'essential', 'Read the guide'],
+    ['section', 's1', 'Read the guide'],
   ])('renders the learning tabs and narrows rows with the %s quick filter', async (field, value, title) => {
     const filter = `${field}:${value}`;
     const wrapper = render();
@@ -80,16 +85,16 @@ describe('learning library', () => {
   it('combines filters across fields and lets the active chips clear them', async () => {
     const wrapper = render();
     await flushPromises();
-    await wrapper.get('[data-filter-id="layer:tenant"]').trigger('click');
+    await wrapper.get('[data-filter-id="audience:institution_type"]').trigger('click');
     await wrapper.get('[data-filter-id="kind:action"]').trigger('click');
     expect(rowTitles(wrapper)).toEqual(['Meet your team']);
-    expect(new URLSearchParams(window.location.search).get('layer')).toBe('tenant');
+    expect(new URLSearchParams(window.location.search).get('audience')).toBe('institution_type');
     expect(new URLSearchParams(window.location.search).get('kind')).toBe('action');
     const clear = wrapper.get('[data-slot="collection-active-chips"]').findAll('button').find(button => button.text() === 'Išvalyti visus');
     expect(clear).toBeDefined();
     await clear!.trigger('click');
     expect(rowTitles(wrapper)).toEqual(['Read the guide', 'Meet your team']);
-    expect(window.location.search).not.toContain('layer=');
+    expect(window.location.search).not.toContain('audience=');
     expect(window.location.search).not.toContain('kind=');
     wrapper.unmount();
   });
@@ -136,4 +141,27 @@ describe('learning library', () => {
     expect(wrapper.get('[data-testid="create-learning-step"]').attributes('href')).toContain('learningSteps.create');
     wrapper.unmount();
   });
+});
+
+it('shows only two audience labels plus a remainder and uses the highest importance', async () => {
+  const wrapper = render();
+  const base = steps[1]!;
+  await wrapper.setProps({ steps: [{ ...base, audiences: [
+    { ...base.audiences[0]!, label: 'Viena', importance: LearningImportance.Optional },
+    { ...base.audiences[0]!, id: 'a3', label: 'Antra', importance: LearningImportance.Essential },
+    { ...base.audiences[0]!, id: 'a4', label: 'Trečia', importance: LearningImportance.Recommended },
+  ] }] });
+  await flushPromises();
+  const row = wrapper.get('[data-slot="collection-row"]');
+  expect(row.text()).toContain('Viena, Antra +1');
+  expect(row.text()).not.toContain('Trečia');
+  expect(row.text()).toContain('learning.importance.essential');
+  wrapper.unmount();
+});
+
+it('opens sections from the library header', async () => {
+  const wrapper = render(true);
+  await wrapper.get('[data-testid="manage-sections"]').trigger('click');
+  expect(wrapper.findComponent({ name: 'LearningSectionsSheet' }).props('open')).toBe(true);
+  wrapper.unmount();
 });

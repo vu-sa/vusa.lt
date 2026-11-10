@@ -32,15 +32,15 @@ test('documents contains only knowledge in the members resolved path with progre
 
     asUser($member)->get(route('learningPath.documents'))->assertOk()->assertInertia(fn (Assert $page) => $page
         ->component('Admin/Learning/ShowLearningDocuments')
-        ->has('documents', 1)
-        ->where('documents.0.id', $knowledge->id)
-        ->where('documents.0.kind', 'knowledge')
-        ->whereType('documents.0.audienceLabel', 'string')
-        ->whereType('documents.0.title', 'string')
-        ->whereType('documents.0.description', 'string')
-        ->where('documents.0.state', 'done')
-        ->where('documents.0.source.url', route('documents.show', $document))
-        ->where('documents.0.glossaryTerms.0.id', $term->id)
+        ->has('documents.documents', 1)
+        ->where('documents.documents.0.id', $knowledge->id)
+        ->where('documents.documents.0.kind', 'knowledge')
+        ->whereType('documents.documents.0.audienceLabel', 'string')
+        ->whereType('documents.documents.0.title', 'string')
+        ->whereType('documents.documents.0.description', 'string')
+        ->where('documents.documents.0.state', 'done')
+        ->where('documents.documents.0.source.url', route('documents.show', $document))
+        ->where('documents.documents.0.glossaryTerms.0.id', $term->id)
         ->where('learningNavigation.canManage', false));
 });
 
@@ -52,10 +52,10 @@ test('documents keeps hidden sources unlinked and supports an empty path', funct
     $step->sources()->create(['locale' => 'lt', 'document_id' => $hidden->id]);
 
     asUser($member)->get(route('learningPath.documents'))->assertOk()->assertInertia(fn (Assert $page) => $page
-        ->has('documents', 1)->where('documents.0.source.url', null));
+        ->has('documents.documents', 1)->where('documents.documents.0.source.url', null));
 
     $step->update(['is_active' => false]);
-    asUser($member)->get(route('learningPath.documents'))->assertOk()->assertInertia(fn (Assert $page) => $page->where('documents', []));
+    asUser($member)->get(route('learningPath.documents'))->assertOk()->assertInertia(fn (Assert $page) => $page->where('documents.documents', [])->where('documents.sections', []));
 });
 
 test('document payload includes only relevant sections and each documents section', function (): void {
@@ -68,8 +68,8 @@ test('document payload includes only relevant sections and each documents sectio
     $response = asUser($member)->get(route('learningPath.documents'))->assertOk();
     $props = $response->viewData('page')['props'];
 
-    expect($props['sections'])->toBe([['id' => $section->id, 'title' => 'Įvadiniai mokymai', 'description' => 'Mokymų dokumentai', 'order' => 4]]);
-    $documents = collect($props['documents'])->keyBy('id');
+    expect($props['documents']['sections'])->toBe([['id' => $section->id, 'title' => 'Įvadiniai mokymai', 'description' => 'Mokymų dokumentai', 'order' => 4]]);
+    $documents = collect($props['documents']['documents'])->keyBy('id');
     expect($documents[$document->id]['section'])->toBe(['id' => $section->id, 'title' => 'Įvadiniai mokymai']);
     expect($documents[$ungrouped->id]['section'])->toBeNull();
 });

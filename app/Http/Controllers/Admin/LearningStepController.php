@@ -42,6 +42,11 @@ class LearningStepController extends AdminController
         return Inertia::render('Admin/Learning/IndexLearningStep', [
             'steps' => LearningPathPresenter::library(app()->getLocale(), $request->user()),
             'sections' => $this->sectionOptions($request->user(), $this->authorizer->scope($request->user(), 'learningSteps.update.padalinys')->granted ? 'update' : 'create'),
+            'audienceTypes' => array_map(fn (LearningAudienceType $type): string => $type->value, LearningAudienceType::cases()),
+            'sectionScopes' => collect(['create', 'update'])->mapWithKeys(fn (string $ability): array => [$ability => [
+                'canTargetEverywhere' => $this->authorizer->scope($request->user(), "learningSteps.{$ability}.padalinys")->isAllScope,
+                'tenants' => GetTenantsForUpserts::execute("learningSteps.{$ability}.padalinys", $this->authorizer)->all(),
+            ]])->all(),
             'canCreate' => $request->user()->can('create', LearningStep::class),
             'canSeeReps' => LearningAdminPresenter::canSeeReps($request->user()),
         ]);
@@ -191,6 +196,8 @@ class LearningStepController extends AdminController
                 'id' => $section->id, 'title' => $section->getTranslations('title'),
                 'description' => $section->getTranslations('description'), 'order' => $section->order,
                 'tenant_id' => $section->tenant_id,
+                'canUpdate' => $user->can('update', $section),
+                'canDelete' => $user->can('delete', $section),
                 'tenant' => $section->tenant ? ['id' => $section->tenant->id, 'shortname' => $section->tenant->shortname] : null,
             ])->all();
     }

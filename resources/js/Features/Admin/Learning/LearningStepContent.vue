@@ -10,6 +10,7 @@ import BrowserNotificationSetup from './BrowserNotificationSetup.vue';
 import InstallationInstructions from './InstallationInstructions.vue';
 import LearningCoordinators from './LearningCoordinators.vue';
 import LearningStepProgress from './LearningStepProgress.vue';
+import LearningAudienceNotes from './LearningAudienceNotes.vue';
 
 withDefaults(defineProps<{
   step: LearningStepData;
@@ -23,6 +24,7 @@ withDefaults(defineProps<{
 <template>
   <div class="space-y-4">
     <p v-if="!detailsOnly && step.description" class="max-w-prose whitespace-pre-line text-sm leading-relaxed text-muted-foreground">{{ step.description }}</p>
+    <LearningAudienceNotes v-if="!detailsOnly" :notes="step.audienceNotes" />
     <Button v-if="!detailsOnly && safeHref(step.source?.url)" as-child variant="default" voice="sentence" class="h-auto min-h-11 max-w-full whitespace-normal">
       <a :href="safeHref(step.source?.url)" target="_blank" rel="noopener noreferrer">
         {{ $t('learning.path.open') }}<ArrowUpRight class="size-4 shrink-0" aria-hidden="true" />

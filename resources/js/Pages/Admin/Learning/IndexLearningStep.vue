@@ -19,6 +19,9 @@
       @row-action="(item, key) => selectRowAction(key, item)"
     >
       <template #actions>
+        <SpotlightPopover :is-dismissed="sectionsDismissed" :title="$t('learning_library.section_manager.title')" :description="$t('learning_library.section_manager.spotlight')" @dismiss="dismissSections">
+          <Button variant="outline" voice="sentence" class="min-h-11" data-testid="manage-sections" @click="sectionsOpen = true; dismissSections()">{{ $t('learning_library.section_manager.title') }}</Button>
+        </SpotlightPopover>
         <Button v-if="canCreateStep" as-child variant="brand" data-testid="create-learning-step">
           <Link :href="route('learningSteps.create')">
             <Plus aria-hidden="true" />
@@ -43,9 +46,9 @@
             </div>
             <div class="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
               <StatusBadge :status="learningStepKinds[item.kind]" voice="sentence" />
-              <span>· {{ item.layerLabel }}</span>
-              <StatusBadge v-if="item.stage" :status="learningStepStages[item.stage]" voice="sentence" />
-              <StatusBadge :status="learningStepImportances[item.importance]" voice="sentence" />
+              <span>· {{ audienceSummary(item) }}</span>
+              <span v-if="item.section">· {{ item.section.title }}</span>
+              <StatusBadge :status="learningStepImportances[highestImportance(item)]" voice="sentence" />
               <template v-if="item.canUpdate && item.flags.length">
                 <StatusBadge
                   v-for="flag in item.flags"
@@ -79,12 +82,9 @@
           </div>
         </div>
         <StatusBadge v-else-if="column.key === 'kind'" :status="learningStepKinds[item.kind]" voice="sentence" />
-        <span v-else-if="column.key === 'layer'" class="text-sm text-muted-foreground">{{ item.layerLabel || '—' }}</span>
-        <template v-else-if="column.key === 'stage'">
-          <StatusBadge v-if="item.stage" :status="learningStepStages[item.stage]" voice="sentence" />
-          <span v-else class="text-muted-foreground">—</span>
-        </template>
-        <StatusBadge v-else-if="column.key === 'importance'" :status="learningStepImportances[item.importance]" voice="sentence" />
+        <span v-else-if="column.key === 'audience'" class="text-sm text-muted-foreground">{{ audienceSummary(item) || '—' }}</span>
+        <span v-else-if="column.key === 'section'" class="text-sm text-muted-foreground">{{ item.section?.title || '—' }}</span>
+        <StatusBadge v-else-if="column.key === 'importance'" :status="learningStepImportances[highestImportance(item)]" voice="sentence" />
       </template>
 
       <template #empty>
@@ -98,14 +98,17 @@
         />
       </template>
     </CollectionPage>
+    <LearningSectionsSheet
+      v-model:open="sectionsOpen" :sections="sections" :scopes="sectionScopes" :locale="locale" :can-create="canCreateStep"
+    />
   </LearningPageFrame>
 </template>
 
 <script setup lang="ts">
-import { Link, router } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { BookOpen, Eye, Pencil, Plus } from '@lucide/vue';
-import { computed, toRef } from 'vue';
+import { computed, ref, toRef } from 'vue';
 
 import { quickFilterLabel } from '@/Components/Collection/quickFilterLabel';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
@@ -120,33 +123,51 @@ import {
   learningCuratorFlags,
   learningStepImportances,
   learningStepKinds,
-  learningStepStages,
 } from '@/Constants/statusIcons';
 import LearningPageFrame from '@/Features/Admin/Learning/LearningPageFrame.vue';
 import type { LearningLibraryStep } from '@/Types/learning';
+import { LearningImportance, LearningAudienceType } from '@/Types/enums';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
+import LearningSectionsSheet from '@/Features/Admin/Learning/LearningSectionsSheet.vue';
+import type { LearningSectionOption, LearningSectionScopes } from '@/Features/Admin/Learning/types';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   steps: LearningLibraryStep[];
+  sections?: LearningSectionOption[];
+  audienceTypes?: LearningAudienceType[];
+  sectionScopes?: LearningSectionScopes;
   canCreate?: boolean;
   canSeeReps: boolean;
-}>();
+}>(), { sections: () => [], audienceTypes: () => Object.values(LearningAudienceType), sectionScopes: () => ({ create: { canTargetEverywhere: false, tenants: [] }, update: { canTargetEverywhere: false, tenants: [] } }) });
+const page = usePage();
+const locale = computed<'lt' | 'en'>(() => page.props.app.locale === 'en' ? 'en' : 'lt');
+const sectionsOpen = ref(false);
+const { isDismissed: sectionsDismissed, dismiss: dismissSections } = useFeatureSpotlight('learning-sections-v1');
+function audienceSummary(step: LearningLibraryStep) {
+  return step.audiences.slice(0, 2).map(audience => audience.label).join(', ') + (step.audiences.length > 2 ? ` +${step.audiences.length - 2}` : '');
+}
+function highestImportance(step: LearningLibraryStep): LearningImportance {
+  return Object.values(LearningImportance).find(importance => step.audiences.some(audience => audience.importance === importance)) ?? LearningImportance.Optional;
+}
 
 const canCreateStep = computed(() => Boolean(props.canCreate));
 const stepKey = (step: LearningLibraryStep) => step.id;
 
 const source = useLocalCollectionSource<LearningLibraryStep>({
   items: toRef(props, 'steps'),
-  searchText: step => [step.title, step.layerLabel],
+  searchText: step => [step.title, ...step.audiences.map(audience => audience.label), step.section?.title],
   defaultSort: 'order:asc',
   sortOptions: () => [
-    { value: 'order:asc', label: $t('learning_library.library.sort.order_asc'), by: (_step) => 0 },
+    { value: 'order:asc', label: $t('learning_library.library.sort.order_asc'), by: step => step.order },
     { value: 'title:asc', label: $t('learning_library.library.sort.title_asc'), by: step => step.title },
     { value: 'title:desc', label: $t('learning_library.library.sort.title_desc'), by: step => step.title },
   ],
   facets: [
-    { field: 'layer', label: $t('learning_library.library.filters.layer'), get: step => step.layer, valueLabel: value => $t(`learning.layers.${value}`) },
+    { field: 'audience', label: $t('learning_library.library.filters.audience'), get: step => step.audienceTypes.filter(type => props.audienceTypes.includes(type)), valueLabel: value => $t(`learning.audience_types.${value}`) },
+    { field: 'section', label: $t('learning_library.library.filters.section'), get: step => step.section?.id, valueLabel: value => props.sections.find(section => section.id === value)?.title[locale.value] || props.steps.find(step => step.section?.id === value)?.section?.title || value },
     { field: 'kind', label: $t('learning_library.library.filters.kind'), get: step => step.kind, valueLabel: value => $t(`learning.kinds.${value}`) },
-    { field: 'importance', label: $t('learning_library.library.filters.importance'), get: step => step.importance, valueLabel: value => $t(`learning.importance.${value}`) },
+    { field: 'importance', label: $t('learning_library.library.filters.importance'), get: step => highestImportance(step), valueLabel: value => $t(`learning.importance.${value}`) },
   ],
 });
 
@@ -168,8 +189,8 @@ function toggleQuickFilter(id: string): void {
 const columns = computed<CollectionColumn[]>(() => [
   { key: 'title', label: $t('learning_library.library.columns.title'), sortField: 'title' },
   { key: 'kind', label: $t('learning_library.library.columns.kind'), class: 'w-44' },
-  { key: 'layer', label: $t('learning_library.library.columns.layer'), class: 'w-44' },
-  { key: 'stage', label: $t('learning_library.library.columns.stage'), class: 'w-44' },
+  { key: 'audience', label: $t('learning_library.library.columns.audience'), class: 'w-44' },
+  { key: 'section', label: $t('learning_library.library.columns.section'), class: 'w-44' },
   { key: 'importance', label: $t('learning_library.library.columns.importance'), class: 'w-40' },
 ]);
 

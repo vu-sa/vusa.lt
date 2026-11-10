@@ -13,6 +13,7 @@ import { safeHref } from '@/Utils/safeHref';
 import LearningCoordinators from './LearningCoordinators.vue';
 import LearningCompletionControl from './LearningCompletionControl.vue';
 import LearningStepContent from './LearningStepContent.vue';
+import LearningAudienceNotes from './LearningAudienceNotes.vue';
 import { useStepProgress } from './composables/useStepProgress';
 
 const props = defineProps<{
@@ -40,7 +41,7 @@ const summary = computed(() => props.step.isSystem && SUMMARY_KEYS.includes(prop
 const expanded = ref(false);
 const description = ref<HTMLElement>();
 const overflows = ref(false);
-const hasDetails = computed(() => hasWidgets.value || overflows.value || summary.value !== props.step.description);
+const hasDetails = computed(() => props.step.audienceNotes.length > 0 || hasWidgets.value || overflows.value || summary.value !== props.step.description);
 let observer: ResizeObserver | undefined;
 function measureDescription() {
   if (!expanded.value && description.value) overflows.value = description.value.scrollHeight > description.value.clientHeight;
@@ -107,6 +108,7 @@ watch(() => props.step.description, async () => {
         <LearningCoordinators v-if="step.key === 'meet_coordinator' && coordinators?.length" :coordinators="coordinators" class="min-w-0 flex-1 basis-64" />
       </div>
 
+      <LearningAudienceNotes v-if="expanded" :notes="step.audienceNotes" class="mt-3" />
       <LearningTerms v-if="showGlossary" :terms="step.glossaryTerms" class="mt-2" />
       <details v-if="hasDetails" class="group" data-slot="step-details" @toggle="expanded = ($event.target as HTMLDetailsElement).open">
         <summary class="inline-flex min-h-11 cursor-pointer list-none items-center gap-1 text-sm font-medium focus-visible:outline-2 focus-visible:outline-ring">

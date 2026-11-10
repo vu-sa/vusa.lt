@@ -114,7 +114,7 @@
                 type="button"
                 variant="ghost"
                 size="icon"
-                class="size-8 shrink-0"
+                class="size-11 shrink-0"
                 :aria-label="$t('learning_library.source.clear')"
                 :data-testid="`clear-document-${activeLocale}`"
                 @click="clearDocument(activeLocale)"
@@ -155,7 +155,7 @@
                   :key="doc.id"
                   type="button"
                   role="option"
-                  class="flex w-full items-center justify-between gap-2 border-b border-border px-3 py-2 text-left text-sm last:border-b-0 hover:bg-accent"
+                  class="flex min-h-11 w-full items-center justify-between gap-2 border-b border-border px-3 py-2 text-left text-sm last:border-b-0 hover:bg-accent"
                   :data-testid="`document-hit-${activeLocale}-${doc.id}`"
                   @click="selectDocument(activeLocale, doc)"
                 >
@@ -197,138 +197,37 @@
       </FormFieldWrapper>
     </template>
 
+    <section id="step-audiences" class="space-y-3" data-testid="step-audiences">
+      <h2 class="text-lg font-semibold">{{ $t('learning_library.fields.audience') }}</h2>
+      <p v-if="form.errors.audiences" class="text-sm text-destructive" role="alert">{{ form.errors.audiences }}</p>
+      <ul class="divide-y divide-border border-y border-border">
+        <li v-for="(audience, index) in form.audiences" :key="audience.id ?? index" class="flex flex-wrap items-start gap-2 py-3" data-slot="audience-row">
+          <div class="min-w-0 flex-1 basis-52 space-y-1">
+            <p class="break-words text-sm font-semibold">{{ audience.label }}</p>
+            <p class="text-xs text-muted-foreground">
+              {{ $t(`learning.importance.${audience.importance}`) }}
+              <template v-if="audience.stage"> · {{ $t(`learning.stages.${audience.stage}`) }}</template>
+            </p>
+            <p v-if="audience.description[activeLocale]" class="line-clamp-2 text-sm text-muted-foreground">{{ audience.description[activeLocale] }}</p>
+            <p v-for="(error, key) in audienceErrors(index)" :key="key" class="text-sm text-destructive" role="alert">{{ error }}</p>
+          </div>
+          <div class="flex gap-1">
+            <Button type="button" variant="ghost" voice="sentence" class="min-h-11" :aria-label="`${$t('Redaguoti')}: ${audience.label}`" @click="editAudience(index)">{{ $t('Redaguoti') }}</Button>
+            <Button v-if="!isSystem" type="button" variant="ghost" voice="sentence" class="min-h-11" :aria-label="`${$t('Pašalinti')}: ${audience.label}`" @click="form.audiences.splice(index, 1)">{{ $t('Pašalinti') }}</Button>
+          </div>
+        </li>
+      </ul>
+      <Button v-if="!isSystem" type="button" variant="outline" voice="sentence" class="min-h-11" data-testid="add-audience" @click="editAudience(null)">
+        <Plus class="size-4" aria-hidden="true" />{{ $t('learning_library.audiences.add') }}
+      </Button>
+    </section>
+
+    <FormFieldWrapper v-if="!isSystem && form.kind === LearningStepKind.Knowledge" id="step-section" :label="$t('learning_library.fields.section')" :error="form.errors.learning_section_id">
+      <SingleSelect v-if="sectionOptions.length > 16" v-model="selectedSection" :options="sectionOptions" label-field="title" value-field="id" :placeholder="$t('learning_library.audiences.no_section')" />
+      <NativeSelect v-else id="step-section" v-model="form.learning_section_id" :placeholder-value="null" placeholder-selectable :options="sectionOptions.map(section => ({ value: section.id, label: section.title }))" :placeholder="$t('learning_library.audiences.no_section')" data-testid="step-section" />
+    </FormFieldWrapper>
+
     <template #aside>
-      <FormPanel
-        v-if="!isSystem"
-        :title="$t('learning_library.sections.who')"
-        :icon="Users"
-        data-testid="panel-who"
-      >
-        <FormFieldWrapper
-          v-if="!isTenantOnlyCurator"
-          id="step-layer"
-          :label="$t('learning_library.fields.layer')"
-          :hint="$t(`learning_library.layer_hints.${form.layer}`)"
-          :error="form.errors.layer"
-          required
-        >
-          <FormSegmentedControl
-            v-model="form.layer"
-            :options="layerOptions"
-            :ariaLabel="$t('learning_library.fields.layer')"
-            test-id-prefix="step-layer"
-            class="h-auto grid-cols-1 pointer-coarse:h-auto [&>button]:min-h-10 [&>button]:justify-start [&>button]:px-3 pointer-coarse:[&>button]:min-h-11"
-          />
-        </FormFieldWrapper>
-
-        <FormFieldWrapper
-          v-if="form.layer === LearningLayer.InstitutionType"
-          id="step-institution-type"
-          :label="$t('learning_library.fields.institution_type')"
-          :error="form.errors.institution_type_id"
-          required
-        >
-          <SingleSelect
-            v-if="institutionTypes.length > 16"
-            v-model="selectedInstitutionType"
-            :options="institutionTypes"
-            label-field="title"
-            value-field="id"
-            :placeholder="$t('learning_library.fields.institution_type_placeholder')"
-          />
-          <NativeSelect
-            v-else
-            id="step-institution-type"
-            v-model="institutionTypeIdString"
-            :options="institutionTypes.map(type => ({ value: String(type.id), label: type.title }))"
-            :placeholder="$t('learning_library.fields.institution_type_placeholder')"
-            data-testid="step-institution-type"
-          />
-        </FormFieldWrapper>
-
-        <FormFieldWrapper
-          v-else-if="form.layer === LearningLayer.DutyType"
-          id="step-duty-type"
-          :label="$t('learning_library.fields.duty_type')"
-          :error="form.errors.duty_type_id"
-          required
-        >
-          <SingleSelect
-            v-if="dutyTypes.length > 16"
-            v-model="selectedDutyType"
-            :options="dutyTypes"
-            label-field="title"
-            value-field="id"
-            :placeholder="$t('learning_library.fields.duty_type_placeholder')"
-          />
-          <NativeSelect
-            v-else
-            id="step-duty-type"
-            v-model="dutyTypeIdString"
-            :options="dutyTypes.map(type => ({ value: String(type.id), label: type.title }))"
-            :placeholder="$t('learning_library.fields.duty_type_placeholder')"
-            data-testid="step-duty-type"
-          />
-        </FormFieldWrapper>
-
-        <TenantSelectField
-          v-else-if="form.layer === LearningLayer.Tenant"
-          id="step-tenant"
-          v-model="form.tenant_id"
-          :tenants="tenants"
-          :error="form.errors.tenant_id"
-          required
-        />
-      </FormPanel>
-
-      <FormPanel
-        :title="$t('learning_library.sections.when')"
-        :icon="Clock"
-        data-testid="panel-when"
-      >
-        <FormFieldWrapper
-          v-if="isSystem || form.kind !== LearningStepKind.MeetingPrep"
-          id="step-stage"
-          :label="$t('learning_library.fields.stage')"
-          :hint="!isSystem && form.layer === LearningLayer.Tenant ? $t('learning_library.fields.stage_fixed_hint') : undefined"
-          :error="form.errors.stage"
-          required
-        >
-          <p
-            v-if="!isSystem && form.layer === LearningLayer.Tenant"
-            data-testid="stage-fixed-tenant"
-            class="text-sm font-medium text-foreground"
-          >
-            {{ $t('learning_library.fields.stage_fixed_before_start') }}
-          </p>
-          <FormSegmentedControl
-            v-else
-            v-model="stageModel"
-            :options="stageOptions"
-            :ariaLabel="$t('learning_library.fields.stage')"
-            test-id-prefix="step-stage"
-            class="h-auto grid-cols-1 pointer-coarse:h-auto [&>button]:min-h-10 [&>button]:justify-start [&>button]:px-3 pointer-coarse:[&>button]:min-h-11"
-          />
-        </FormFieldWrapper>
-
-        <FormFieldWrapper
-          v-if="!isSystem"
-          id="step-importance"
-          :label="$t('learning_library.fields.importance')"
-          :hint="$t('learning_library.fields.importance_hint')"
-          :error="form.errors.importance"
-          required
-        >
-          <FormSegmentedControl
-            v-model="form.importance"
-            :options="importanceOptions"
-            :ariaLabel="$t('learning_library.fields.importance')"
-            test-id-prefix="step-importance"
-            class="h-auto grid-cols-1 pointer-coarse:h-auto [&>button]:min-h-10 [&>button]:justify-start [&>button]:px-3 pointer-coarse:[&>button]:min-h-11"
-          />
-        </FormFieldWrapper>
-      </FormPanel>
-
       <FormPanel
         :title="$t('learning_library.sections.additional')"
         :icon="SlidersHorizontal"
@@ -389,6 +288,20 @@
     </template>
   </FormPage>
 
+  <LearningAudienceSheet
+    v-model:open="audienceSheetOpen"
+    :audience="audienceIndex === null ? null : form.audiences[audienceIndex]"
+    :kind="form.kind"
+    :is-system="isSystem"
+    :audience-types="audienceTypes"
+    :can-target-everywhere="canTargetEverywhere"
+    :tenants="tenants"
+    :institution-types="institutionTypes"
+    :duty-types="dutyTypes"
+    :responsibilities="responsibilities"
+    @save="saveAudience"
+  />
+
   <ConfirmDialog
     v-if="isEdit && !isSystem && canDelete"
     v-model:open="deleteDialogOpen"
@@ -403,11 +316,10 @@
 <script setup lang="ts">
 import { router, useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Clock, Search, SlidersHorizontal, Trash2, Users, X } from '@lucide/vue';
+import { Plus, Search, SlidersHorizontal, Trash2, X } from '@lucide/vue';
 import { computed, reactive, ref, watch } from 'vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
-import TenantSelectField from '@/Components/AdminForms/TenantSelectField.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog, FormPanel, FormSegmentedControl, StatusBadge, type FormSegmentOption } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
@@ -421,8 +333,7 @@ import { Textarea } from '@/Components/ui/textarea';
 import { documentStatuses } from '@/Constants/statusIcons';
 import {
   DocumentStatus,
-  LearningImportance,
-  LearningLayer,
+  LearningAudienceType,
   LearningStage,
   LearningStepKind,
   ModelEnum,
@@ -434,52 +345,39 @@ import type {
   LearningTypeOption,
 } from '@/Types/learning';
 
+import LearningAudienceSheet from './LearningAudienceSheet.vue';
+import type { LearningAudienceDraft, LearningSectionOption } from './types';
+
 type LocaleKey = 'lt' | 'en';
 type SourceMode = 'document' | 'url';
 
 interface LearningStepFormState {
   kind: LearningStepKind;
-  layer: LearningLayer;
-  stage: LearningStage | null;
-  importance: LearningImportance;
+  audiences: LearningAudienceDraft[];
+  learning_section_id: string | null;
   title: { lt: string; en: string };
   description: { lt: string; en: string };
-  institution_type_id: number | null;
-  duty_type_id: number | null;
-  tenant_id: number | null;
   per_term: boolean;
   order: number;
   is_active: boolean;
   sources: Record<LocaleKey, { document_id: number | null; url: string }>;
 }
 
-const ALL_LAYERS: LearningLayer[] = [
-  LearningLayer.Platform,
-  LearningLayer.Foundation,
-  LearningLayer.InstitutionType,
-  LearningLayer.DutyType,
-  LearningLayer.Tenant,
-];
-
 const props = withDefaults(defineProps<{
   step?: LearningStepEditData | null;
-  layers?: LearningLayer[];
+  audienceTypes?: LearningAudienceType[];
+  canTargetEverywhere?: boolean;
   tenants?: LearningTenantOption[];
   institutionTypes?: LearningTypeOption[];
   dutyTypes?: LearningTypeOption[];
+  responsibilities?: { id: string; title: string }[];
+  sections?: LearningSectionOption[];
   canDelete?: boolean;
 }>(), {
   step: null,
-  layers: () => [
-    LearningLayer.Platform,
-    LearningLayer.Foundation,
-    LearningLayer.InstitutionType,
-    LearningLayer.DutyType,
-    LearningLayer.Tenant,
-  ],
-  tenants: () => [],
-  institutionTypes: () => [],
-  dutyTypes: () => [],
+  audienceTypes: () => Object.values(LearningAudienceType).filter(type => type !== LearningAudienceType.Purpose),
+  canTargetEverywhere: false,
+  tenants: () => [], institutionTypes: () => [], dutyTypes: () => [], responsibilities: () => [], sections: () => [],
   canDelete: false,
 });
 
@@ -488,22 +386,10 @@ const isEdit = computed(() => Boolean(props.step?.id));
 const isSystem = computed(() => Boolean(props.step?.is_system));
 const backHref = computed(() => (props.step?.id ? route('learningSteps.show', props.step.id) : route('learningSteps.index')));
 
-const allowedLayers = computed<LearningLayer[]>(() => (props.layers.length ? props.layers : ALL_LAYERS));
-const isTenantOnlyCurator = computed(
-  () => allowedLayers.value.length === 1 && allowedLayers.value[0] === LearningLayer.Tenant,
-);
-const initialLayer = computed<LearningLayer>(() => {
-  if (props.step?.layer && allowedLayers.value.includes(props.step.layer)) {
-    return props.step.layer;
-  }
-  return allowedLayers.value[0] ?? LearningLayer.Foundation;
-});
-
 const form = useForm<LearningStepFormState>({
   kind: props.step?.kind ?? LearningStepKind.Knowledge,
-  layer: initialLayer.value,
-  stage: props.step ? props.step.stage : LearningStage.BeforeStart,
-  importance: props.step?.importance ?? LearningImportance.Essential,
+  audiences: props.step?.audiences.map(audience => ({ ...audience, description: { ...audience.description } })) ?? [],
+  learning_section_id: props.step?.learning_section_id ?? null,
   title: {
     lt: props.step?.title?.lt ?? '',
     en: props.step?.title?.en ?? '',
@@ -512,9 +398,6 @@ const form = useForm<LearningStepFormState>({
     lt: props.step?.description?.lt ?? '',
     en: props.step?.description?.en ?? '',
   },
-  institution_type_id: props.step?.institution_type_id ?? null,
-  duty_type_id: props.step?.duty_type_id ?? null,
-  tenant_id: props.step?.tenant_id ?? (initialLayer.value === LearningLayer.Tenant && props.tenants.length === 1 ? props.tenants[0]!.id : null),
   per_term: props.step?.per_term ?? false,
   order: props.step?.order ?? 0,
   is_active: props.step?.is_active ?? true,
@@ -538,12 +421,8 @@ const fieldIds: Record<string, string> = {
   'description.lt': 'step-description',
   'description.en': 'step-description',
   'kind': 'step-kind',
-  'layer': 'step-layer',
-  'institution_type_id': 'step-institution-type',
-  'duty_type_id': 'step-duty-type',
-  'tenant_id': 'step-tenant',
-  'stage': 'step-stage',
-  'importance': 'step-importance',
+  'audiences': 'step-audiences',
+  'learning_section_id': 'step-section',
   'order': 'step-order',
   'sources.lt': 'step-source',
   'sources.lt.document_id': 'step-source',
@@ -614,93 +493,34 @@ const kindOptions = computed<FormSegmentOption<LearningStepKind>[]>(() => [
   { value: LearningStepKind.MeetingPrep, label: $t('learning.kinds.meeting_prep') },
 ]);
 
-const importanceOptions = computed<FormSegmentOption<LearningImportance>[]>(() => [
-  { value: LearningImportance.Essential, label: $t('learning.importance.essential') },
-  { value: LearningImportance.Recommended, label: $t('learning.importance.recommended') },
-  { value: LearningImportance.Optional, label: $t('learning.importance.optional') },
-]);
-
-const layerOptions = computed<FormSegmentOption<LearningLayer>[]>(() =>
-  allowedLayers.value.map(layer => ({
-    value: layer,
-    label: $t(`learning.layers.${layer}`),
-  })));
-
-const stageOptions = computed<FormSegmentOption<LearningStage>[]>(() => [
-  { value: LearningStage.BeforeStart, label: $t('learning.stages.before_start') },
-  { value: LearningStage.FirstMonths, label: $t('learning.stages.first_months') },
-  { value: LearningStage.WholeTerm, label: $t('learning.stages.whole_term') },
-  { value: LearningStage.TermEnd, label: $t('learning.stages.term_end') },
-]);
-
 const sourceModeOptions = computed<FormSegmentOption<SourceMode>[]>(() => [
   { value: 'document', label: $t('learning_library.source.mode_document') },
   { value: 'url', label: $t('learning_library.source.mode_url') },
 ]);
 
-const stageModel = computed<LearningStage>({
-  get: () => form.stage ?? LearningStage.BeforeStart,
-  set: (value: LearningStage) => {
-    form.stage = value;
-  },
+const sectionOptions = computed(() => props.sections.map(section => ({ id: section.id, title: section.title[activeLocale.value] || section.title.lt || section.title.en || '' })));
+const selectedSection = computed({
+  get: () => sectionOptions.value.find(section => section.id === form.learning_section_id) ?? null,
+  set: (section: { id: string; title: string } | null) => { form.learning_section_id = section?.id ?? null; },
 });
-
-const institutionTypeIdString = computed({
-  get: () => (form.institution_type_id !== null ? String(form.institution_type_id) : ''),
-  set: (value: string) => {
-    form.institution_type_id = value ? Number(value) : null;
-  },
-});
-
-const dutyTypeIdString = computed({
-  get: () => (form.duty_type_id !== null ? String(form.duty_type_id) : ''),
-  set: (value: string) => {
-    form.duty_type_id = value ? Number(value) : null;
-  },
-});
-
-const selectedInstitutionType = computed({
-  get: () => props.institutionTypes.find(type => type.id === form.institution_type_id) ?? null,
-  set: (type: LearningTypeOption | null) => {
-    form.institution_type_id = type?.id ?? null;
-  },
-});
-
-const selectedDutyType = computed({
-  get: () => props.dutyTypes.find(type => type.id === form.duty_type_id) ?? null,
-  set: (type: LearningTypeOption | null) => {
-    form.duty_type_id = type?.id ?? null;
-  },
-});
-
-watch(() => form.kind, (kind) => {
-  if (kind === LearningStepKind.MeetingPrep) {
-    form.stage = null;
-    if (allowedLayers.value.includes(LearningLayer.InstitutionType)) {
-      form.layer = LearningLayer.InstitutionType;
-    }
+const audienceSheetOpen = ref(false);
+const audienceIndex = ref<number | null>(null);
+function editAudience(index: number | null) {
+  audienceIndex.value = index;
+  audienceSheetOpen.value = true;
+}
+function saveAudience(audience: LearningAudienceDraft) {
+  if (audienceIndex.value === null) form.audiences.push({ ...audience, order: Math.max(-1, ...form.audiences.map(row => row.order)) + 1 });
+  else form.audiences[audienceIndex.value] = audience;
+}
+function audienceErrors(index: number) {
+  return Object.fromEntries(Object.entries(form.errors).filter(([key]) => key === `audiences.${index}` || key.startsWith(`audiences.${index}.`)));
+}
+watch(() => form.kind, kind => {
+  for (const audience of form.audiences) {
+    audience.stage = kind === LearningStepKind.MeetingPrep ? null : audience.stage ?? LearningStage.BeforeStart;
   }
-  else if (form.stage === null) {
-    form.stage = LearningStage.BeforeStart;
-  }
-});
-
-watch(() => form.layer, (layer) => {
-  if (layer !== LearningLayer.InstitutionType) {
-    form.institution_type_id = null;
-  }
-  if (layer !== LearningLayer.DutyType) {
-    form.duty_type_id = null;
-  }
-  if (layer !== LearningLayer.Tenant) {
-    form.tenant_id = null;
-  }
-  if (layer === LearningLayer.Tenant) {
-    form.stage = LearningStage.BeforeStart;
-    if (props.tenants.length === 1 && form.tenant_id === null) {
-      form.tenant_id = props.tenants[0]!.id;
-    }
-  }
+  if (kind !== LearningStepKind.Knowledge) form.learning_section_id = null;
 });
 
 function setSourceMode(locale: LocaleKey, mode: SourceMode): void {
@@ -757,7 +577,7 @@ async function runDocumentSearch(locale: LocaleKey): Promise<void> {
 function buildPayload(data: LearningStepFormState): Record<string, unknown> {
   if (isSystem.value) {
     return {
-      stage: data.stage,
+      audiences: data.audiences.map(({ id, stage, order }) => ({ id, stage, order })),
       order: data.order,
       is_active: data.is_active,
     };
@@ -775,14 +595,12 @@ function buildPayload(data: LearningStepFormState): Record<string, unknown> {
 
   return {
     kind: data.kind,
-    layer: data.layer,
-    stage: data.kind === LearningStepKind.MeetingPrep ? null : (data.layer === LearningLayer.Tenant ? LearningStage.BeforeStart : data.stage),
-    importance: data.importance,
+    audiences: data.audiences.map(({ label, ...audience }) => ({
+      ...audience, stage: data.kind === LearningStepKind.MeetingPrep ? null : audience.stage,
+    })),
+    learning_section_id: data.kind === LearningStepKind.Knowledge ? data.learning_section_id : null,
     title: data.title,
     description: data.description,
-    institution_type_id: data.layer === LearningLayer.InstitutionType ? data.institution_type_id : null,
-    duty_type_id: data.layer === LearningLayer.DutyType ? data.duty_type_id : null,
-    tenant_id: data.layer === LearningLayer.Tenant ? data.tenant_id : null,
     per_term: data.per_term,
     order: data.order,
     is_active: data.is_active,
@@ -799,6 +617,7 @@ function submit(): void {
   };
 
   form.transform(data => buildPayload(data));
+  form.defaults();
 
   if (props.step?.id) {
     form.put(route('learningSteps.update', props.step.id), options);

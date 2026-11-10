@@ -158,3 +158,16 @@ it('shows coordinator contacts beside the step without a disclosure', () => {
   expect(wrapper.find('a[href="mailto:ruta@example.test"]').exists()).toBe(true);
   wrapper.unmount();
 });
+
+it('renders audience notes beneath the expanded description', async () => {
+  const wrapper = render(step({ audienceNotes: [{ label: 'SPK', description: 'Aptark studijų kokybę.' }] }));
+  expect(wrapper.find('[data-slot="audience-notes"]').exists()).toBe(false);
+  const details = wrapper.get('details');
+  (details.element as HTMLDetailsElement).open = true;
+  await details.trigger('toggle');
+  const notes = wrapper.get('[data-slot="audience-notes"]');
+  expect(notes.text()).toContain('learning.path.audience_notes');
+  expect(notes.text()).toContain('SPK');
+  expect(notes.text()).toContain('Aptark studijų kokybę.');
+  wrapper.unmount();
+});

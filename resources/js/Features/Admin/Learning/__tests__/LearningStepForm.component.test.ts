@@ -1,13 +1,23 @@
 import { flushPromises, mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { nextTick } from 'vue';
+import { useForm } from '@inertiajs/vue3';
+import LearningAudienceSheet from '../LearningAudienceSheet.vue';
+import { audience, editStep } from './fixtures';
+
+vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 import LearningStepForm from '@/Features/Admin/Learning/LearningStepForm.vue';
-import { DocumentStatus, LearningImportance, LearningLayer, LearningStage, LearningStepKind } from '@/Types/enums';
+import { DocumentStatus, LearningAudienceType, LearningImportance, LearningStage, LearningStepKind } from '@/Types/enums';
 import { commonStubs } from '@/tests/stubs';
 
 const stubs = {
   ...commonStubs,
+  Sheet: commonStubs.Dialog,
+  SheetContent: commonStubs.DialogContent,
+  SheetHeader: commonStubs.DialogHeader,
+  SheetTitle: commonStubs.DialogTitle,
+  SheetDescription: commonStubs.DialogDescription,
   ConfirmDialog: true,
 };
 
@@ -24,12 +34,8 @@ describe('LearningStepForm', () => {
           title: { lt: 'LT pavadinimas', en: 'EN title' },
           description: { lt: 'LT paaiškinimas', en: 'EN explanation' },
           kind: LearningStepKind.Knowledge,
-          layer: LearningLayer.Foundation,
-          stage: LearningStage.BeforeStart,
-          importance: LearningImportance.Essential,
-          institution_type_id: null,
-          duty_type_id: null,
-          tenant_id: null,
+          learning_section_id: null,
+          audiences: [audience()],
           per_term: false,
           order: 1,
           is_active: true,
@@ -84,80 +90,116 @@ describe('LearningStepForm', () => {
     expect(wrapper.get<HTMLInputElement>('[data-testid="source-url-en"]').element.value).toBe('https://vusa.lt/en-updated');
   });
 
-  it('hides stage for meeting_prep and fixes stage to before_start for tenant layer', async () => {
+  it('adds an audience through the sheet and submits the audience payload', async () => {
     const wrapper = mount(LearningStepForm, {
-      props: {
-        tenants: [{ id: 1, shortname: 'MIF' }],
-        institutionTypes: [{ id: 10, title: 'Taryba', parent_id: null }],
-      },
+      props: { audienceTypes: [LearningAudienceType.Everyone], canTargetEverywhere: true },
       global: { stubs },
     });
-
-    expect(wrapper.find('[data-testid="step-stage-before_start"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="stage-fixed-tenant"]').exists()).toBe(false);
-
-    await wrapper.get('[data-testid="step-kind-meeting_prep"]').trigger('click');
+    const stepForm = vi.mocked(useForm).mock.results[0]!.value;
+    await wrapper.get('[data-testid="add-audience"]').trigger('click');
+    const sheet = wrapper.getComponent(LearningAudienceSheet);
+    expect(sheet.props('open')).toBe(true);
+    await sheet.findComponent({ name: 'SheetForm' }).vm.$emit('submit');
     await nextTick();
-
-    expect(wrapper.find('[data-testid="step-stage-before_start"]').exists()).toBe(false);
-    expect(wrapper.find('[data-testid="stage-fixed-tenant"]').exists()).toBe(false);
-
-    await wrapper.get('[data-testid="step-kind-knowledge"]').trigger('click');
-    await wrapper.get('[data-testid="step-layer-tenant"]').trigger('click');
-    await nextTick();
-
-    expect(wrapper.find('[data-testid="step-stage-before_start"]').exists()).toBe(false);
-    expect(wrapper.find('[data-testid="stage-fixed-tenant"]').exists()).toBe(true);
-    expect(wrapper.get('[data-testid="stage-fixed-tenant"]').text()).toBe('learning_library.fields.stage_fixed_before_start');
-    const tenant = wrapper.get<HTMLSelectElement>('select#step-tenant');
-    expect(tenant.element.value).toBe('1');
-    expect(tenant.findAll('option').map(option => option.text())).toContain('MIF');
+    expect(wrapper.findAll('[data-slot="audience-row"]')).toHaveLength(1);
+    expect(wrapper.get('[data-slot="audience-row"]').text()).toContain('learning.audience_types.everyone');
+    await wrapper.findComponent({ name: 'FormPage' }).vm.$emit('submit');
+    const transform = stepForm.transform.mock.calls[0]![0];
+    const payload = transform(stepForm);
+    expect(payload.audiences).toEqual([{
+      type: LearningAudienceType.Everyone, source_id: null, tenant_id: null,
+      importance: LearningImportance.Essential, stage: LearningStage.BeforeStart,
+      description: { lt: '', en: '' }, order: 0,
+    }]);
+    expect(stepForm.post).toHaveBeenCalled();
+    wrapper.unmount();
   });
 
-  it('shows only the tenant selector for a padalinys curator and limits system steps to read-only title plus stage, order and active', () => {
-    const curatorWrapper = mount(LearningStepForm, {
+  it('labels a new targeted audience and shows collection and per-row validation errors', async () => {
+    const wrapper = mount(LearningStepForm, {
       props: {
-        layers: [LearningLayer.Tenant],
+        audienceTypes: [LearningAudienceType.InstitutionType],
+        institutionTypes: [{ id: 10, title: 'Taryba', parent_id: null }],
         tenants: [{ id: 1, shortname: 'MIF' }],
-      },
+      }, global: { stubs },
+    });
+    const stepForm = vi.mocked(useForm).mock.results[0]!.value;
+    await wrapper.get('[data-testid="add-audience"]').trigger('click');
+    const sheet = wrapper.getComponent(LearningAudienceSheet);
+    await sheet.get('select#audience-target').setValue('10');
+    await sheet.get('#audience-description-lt').setValue('Aptark pasiūlymus');
+    await sheet.findComponent({ name: 'SheetForm' }).vm.$emit('submit');
+    await nextTick();
+    expect(wrapper.get('[data-slot="audience-row"]').text()).toContain('learning.audience_types.institution_type: Taryba · MIF');
+    stepForm.errors = { audiences: 'Pridėk auditoriją', 'audiences.0.source_id': 'Pasirink kitą instituciją' };
+    await nextTick();
+    expect(wrapper.get('[data-testid="step-audiences"]').text()).toContain('Pridėk auditoriją');
+    expect(wrapper.get('[data-slot="audience-row"]').text()).toContain('Pasirink kitą instituciją');
+    wrapper.unmount();
+  });
+
+  it('clears stages for meeting prep and shows the section picker only for knowledge', async () => {
+    const wrapper = mount(LearningStepForm, {
+      props: { step: editStep({ audiences: [audience({ type: LearningAudienceType.InstitutionType, source_id: '10' })] }), institutionTypes: [{ id: 10, title: 'Taryba', parent_id: null }] },
       global: { stubs },
     });
+    const stepForm = vi.mocked(useForm).mock.results[0]!.value;
+    expect(wrapper.find('[data-testid="step-section"]').exists()).toBe(true);
+    await wrapper.get('[data-testid="step-kind-meeting_prep"]').trigger('click');
+    expect(wrapper.find('[data-testid="step-section"]').exists()).toBe(false);
+    await wrapper.get('[data-slot="audience-row"] button').trigger('click');
+    const sheet = wrapper.getComponent(LearningAudienceSheet);
+    expect(sheet.find('[data-testid="audience-stage"]').exists()).toBe(false);
+    await wrapper.findComponent({ name: 'FormPage' }).vm.$emit('submit');
+    const payload = stepForm.transform.mock.calls[0]![0](stepForm);
+    expect(payload.audiences[0].stage).toBeNull();
+    expect(payload.learning_section_id).toBeNull();
+    await wrapper.get('[data-testid="step-kind-action"]').trigger('click');
+    expect(wrapper.find('[data-testid="step-section"]').exists()).toBe(false);
+    await wrapper.get('[data-testid="step-kind-knowledge"]').trigger('click');
+    expect(wrapper.find('[data-testid="step-section"]').exists()).toBe(true);
+    wrapper.unmount();
+  });
 
-    expect(curatorWrapper.find('[data-testid="step-layer-tenant"]').exists()).toBe(false);
-    expect(curatorWrapper.get<HTMLSelectElement>('select#step-tenant').element.value).toBe('1');
-
-    const systemWrapper = mount(LearningStepForm, {
-      props: {
-        step: {
-          id: 'sys-1',
-          key: 'check_access',
-          title: { lt: '', en: '' },
-          description: { lt: '', en: '' },
-          kind: LearningStepKind.Action,
-          layer: LearningLayer.Platform,
-          stage: LearningStage.BeforeStart,
-          importance: LearningImportance.Essential,
-          institution_type_id: null,
-          duty_type_id: null,
-          tenant_id: null,
-          per_term: false,
-          order: 2,
-          is_active: true,
-          is_system: true,
-          sources: {},
-        },
-      },
+  it('locks system audiences and submits only their id, stage and order', async () => {
+    const wrapper = mount(LearningStepForm, {
+      props: { step: editStep({ key: 'check_access', is_system: true, kind: LearningStepKind.Action, audiences: [audience({ type: LearningAudienceType.Purpose, label: 'Atstovas' })] }) },
       global: { stubs },
     });
+    const stepForm = vi.mocked(useForm).mock.results[0]!.value;
+    expect(wrapper.get('[data-testid="system-step-title"]').text()).toBe('learning.system_steps.check_access.title');
+    expect(wrapper.find('[data-testid="step-title"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="add-audience"]').exists()).toBe(false);
+    expect(wrapper.get('[data-slot="audience-row"]').findAll('button')).toHaveLength(1);
+    await wrapper.get('[data-slot="audience-row"] button').trigger('click');
+    const sheet = wrapper.getComponent(LearningAudienceSheet);
+    expect(sheet.find('#audience-type').exists()).toBe(false);
+    expect(sheet.find('#audience-importance').exists()).toBe(false);
+    expect(sheet.find('#audience-description-lt').exists()).toBe(false);
+    await sheet.get('#audience-stage').setValue(LearningStage.TermEnd);
+    await sheet.get('#audience-order').setValue(3);
+    await sheet.findComponent({ name: 'SheetForm' }).vm.$emit('submit');
+    await nextTick();
+    await wrapper.findComponent({ name: 'FormPage' }).vm.$emit('submit');
+    const payload = stepForm.transform.mock.calls[0]![0](stepForm);
+    expect(payload).toEqual({ audiences: [{ id: 'audience-1', stage: LearningStage.TermEnd, order: 3 }], order: 1, is_active: true });
+    wrapper.unmount();
+  });
 
-    expect(systemWrapper.get('[data-testid="system-step-title"]').text()).toBe('learning.system_steps.check_access.title');
-    expect(systemWrapper.find('[data-testid="step-title"]').exists()).toBe(false);
-    expect(systemWrapper.find('[data-testid="panel-who"]').exists()).toBe(false);
-    expect(systemWrapper.find('[data-testid="step-importance-essential"]').exists()).toBe(false);
-    expect(systemWrapper.find('[data-testid="step-per-term"]').exists()).toBe(false);
-    expect(systemWrapper.find('[data-testid="step-stage-before_start"]').exists()).toBe(true);
-    expect(systemWrapper.find('[data-testid="step-order"]').exists()).toBe(true);
-    expect(systemWrapper.find('[data-testid="step-is-active"]').exists()).toBe(true);
+  it('keeps a purpose target fixed while allowing its explanation and importance to change', async () => {
+    const wrapper = mount(LearningStepForm, {
+      props: { step: editStep({ audiences: [audience({ type: LearningAudienceType.Purpose, label: 'Atstovas' })] }) },
+      global: { stubs },
+    });
+    await wrapper.get('[data-slot="audience-row"] button').trigger('click');
+    const sheet = wrapper.getComponent(LearningAudienceSheet);
+    expect(sheet.find('#audience-type').exists()).toBe(false);
+    expect(sheet.find('#audience-importance').exists()).toBe(true);
+    await sheet.get('#audience-description-lt').setValue('Tau svarbu');
+    await sheet.findComponent({ name: 'SheetForm' }).vm.$emit('submit');
+    await nextTick();
+    expect(wrapper.get('[data-slot="audience-row"]').text()).toContain('Tau svarbu');
+    wrapper.unmount();
   });
 
   it('switches source between document and URL and clears the opposite field', async () => {
@@ -168,12 +210,8 @@ describe('LearningStepForm', () => {
           title: { lt: 'Žingsnis', en: 'Step' },
           description: { lt: '', en: '' },
           kind: LearningStepKind.Knowledge,
-          layer: LearningLayer.Foundation,
-          stage: LearningStage.BeforeStart,
-          importance: LearningImportance.Essential,
-          institution_type_id: null,
-          duty_type_id: null,
-          tenant_id: null,
+          learning_section_id: null,
+          audiences: [audience()],
           per_term: false,
           order: 1,
           is_active: true,

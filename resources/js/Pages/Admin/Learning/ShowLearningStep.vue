@@ -33,7 +33,7 @@ const sections = computed(() => [
 ]);
 const facts = computed<RecordFact[]>(() => [
   { key: 'kind', label: $t('learning.path.kind'), value: $t(`learning.kinds.${props.step.kind}`) },
-  { key: 'layer', label: $t('learning.path.layer'), value: props.step.layerLabel },
+  { key: 'audience', label: $t('learning_library.fields.audience'), value: props.step.audienceLabel },
   { key: 'stage', label: $t('learning.path.stage'), value: props.step.stage ? $t(`learning.path.stages.${props.step.stage}`) : $t('learning.path.meeting_prep') },
   { key: 'importance', label: $t('learning.path.importance'), value: $t(`learning.importance.${props.step.importance}`) },
   { key: 'source', label: $t('learning.path.source'), value: props.step.source?.title ?? (props.step.source ? $t(`learning.path.source_${props.step.source.type}`) : '—'), href: props.step.source?.url ?? undefined, external: true },

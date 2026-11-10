@@ -3,10 +3,11 @@ import { computed } from 'vue';
 import { Check, RefreshCw } from '@lucide/vue';
 
 import EmptyState from '@/Components/Patterns/EmptyState.vue';
-import { LearningLayer } from '@/Types/enums';
 import type { LearningCoordinator, LearningInstitutionContacts, LearningPathData, LearningStepData } from '@/Types/learning';
 
 import LearningStepRow from './LearningStepRow.vue';
+import LearningDocumentsEntry from './LearningDocumentsEntry.vue';
+import LearningAudienceNotes from './LearningAudienceNotes.vue';
 
 const props = defineProps<{
   path: LearningPathData;
@@ -15,16 +16,12 @@ const props = defineProps<{
   institutionContacts?: LearningInstitutionContacts[];
 }>();
 
-/** The role's own material first; account housekeeping (Platforma) last. */
-const LAYER_ORDER: LearningLayer[] = [LearningLayer.Foundation, LearningLayer.InstitutionType, LearningLayer.DutyType, LearningLayer.Tenant, LearningLayer.Platform];
-
 const stations = computed(() => props.path.stages.filter(station => station.steps.length));
 const currentIndex = computed(() => stations.value.findIndex(station => station.stage === props.path.currentStage));
 const hasSteps = computed(() => stations.value.length > 0);
 
 const resolved = (steps: LearningStepData[]) => steps.filter(step => step.state === 'done' || step.state === 'skipped').length;
 
-/** done: everything ticked · now: the rep's stage · behind: an earlier stage with steps left · ahead: later. */
 function stateOf(index: number, steps: LearningStepData[]): 'done' | 'now' | 'behind' | 'ahead' {
   if (resolved(steps) === steps.length) return 'done';
   if (index === currentIndex.value) return 'now';
@@ -32,20 +29,47 @@ function stateOf(index: number, steps: LearningStepData[]): 'done' | 'now' | 'be
 }
 
 function groups(steps: LearningStepData[]) {
-  const layers = new Map<string, { layer: LearningLayer; steps: LearningStepData[] }>();
+  const audiences = new Map<string, LearningStepData[]>();
   for (const step of steps) {
-    const group = layers.get(step.layerLabel) ?? { layer: step.layer, steps: [] };
-    group.steps.push(step);
-    layers.set(step.layerLabel, group);
+    const rows = audiences.get(step.audienceLabel) ?? [];
+    rows.push(step);
+    audiences.set(step.audienceLabel, rows);
   }
-  return [...layers]
-    .map(([label, group]) => ({ label, ...group }))
-    .sort((a, b) => LAYER_ORDER.indexOf(a.layer) - LAYER_ORDER.indexOf(b.layer));
+  return [...audiences].map(([label, steps]) => ({ label, steps }));
 }
 </script>
 
 <template>
   <div class="space-y-12" data-slot="learning-path">
+    <section
+      v-if="path.meetingPrep.length"
+      class="grid gap-6 border border-border p-5 sm:grid-cols-[3rem_minmax(0,1fr)] sm:gap-x-6 sm:p-6"
+      data-slot="meeting-prep"
+    >
+      <span class="flex size-10 items-center justify-center border-2 border-border sm:size-12" aria-hidden="true">
+        <RefreshCw class="size-5 text-muted-foreground" />
+      </span>
+      <div class="min-w-0">
+        <h2 class="text-xl font-bold leading-tight sm:text-2xl">{{ $t('learning.path.meeting_prep') }}</h2>
+        <p class="mt-1 max-w-prose text-sm text-muted-foreground">{{ $t('learning.path.meeting_prep_hint') }}</p>
+        <div v-for="group in path.meetingPrep" :key="group.audience.id" class="mt-5">
+          <h3 class="text-sm font-semibold">{{ group.audience.label }}</h3>
+          <ol class="mt-2 space-y-3">
+            <li v-for="(step, stepIndex) in group.steps" :key="step.id" class="grid grid-cols-[1.75rem_minmax(0,1fr)] gap-x-2">
+              <span class="pt-px text-sm font-bold tabular-nums text-muted-foreground">{{ stepIndex + 1 }}.</span>
+              <div class="min-w-0">
+                <p class="text-sm font-semibold">{{ step.title }}</p>
+                <p v-if="step.description" class="mt-0.5 max-w-prose text-sm leading-relaxed text-muted-foreground">{{ step.description }}</p>
+                <LearningAudienceNotes :notes="step.audienceNotes" class="mt-2" />
+              </div>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <LearningDocumentsEntry :documents="path.documents" :readonly="readonly" />
+
     <ol v-if="hasSteps" class="relative">
       <li
         v-for="(station, index) in stations"
@@ -53,7 +77,6 @@ function groups(steps: LearningStepData[]) {
         :data-stage="station.stage"
         class="relative grid grid-cols-[2.5rem_minmax(0,1fr)] gap-x-3 pb-10 last:pb-0 sm:grid-cols-[3rem_minmax(0,1fr)] sm:gap-x-6"
       >
-        <!-- The spine: brand up to where the rep is now, hairline after. -->
         <span
           v-if="index < stations.length - 1"
           aria-hidden="true"
@@ -118,30 +141,6 @@ function groups(steps: LearningStepData[]) {
     </ol>
     <EmptyState v-else :title="$t('learning.path.empty_title')" :description="$t('learning.path.empty_description')" />
 
-    <section
-      v-if="path.meetingPrep.length"
-      class="grid gap-6 border border-border p-5 sm:grid-cols-[3rem_minmax(0,1fr)] sm:gap-x-6 sm:p-6"
-      data-slot="meeting-prep"
-    >
-      <span class="flex size-10 items-center justify-center border-2 border-border sm:size-12" aria-hidden="true">
-        <RefreshCw class="size-5 text-muted-foreground" />
-      </span>
-      <div class="min-w-0">
-        <h2 class="text-xl font-bold leading-tight sm:text-2xl">{{ $t('learning.path.meeting_prep') }}</h2>
-        <p class="mt-1 max-w-prose text-sm text-muted-foreground">{{ $t('learning.path.meeting_prep_hint') }}</p>
-        <div v-for="group in path.meetingPrep" :key="group.institutionType.id" class="mt-5">
-          <h3 class="text-sm font-semibold">{{ group.institutionType.title }}</h3>
-          <ol class="mt-2 space-y-3">
-            <li v-for="(step, stepIndex) in group.steps" :key="step.id" class="grid grid-cols-[1.75rem_minmax(0,1fr)] gap-x-2">
-              <span class="pt-px text-sm font-bold tabular-nums text-muted-foreground">{{ stepIndex + 1 }}.</span>
-              <div class="min-w-0">
-                <p class="text-sm font-semibold">{{ step.title }}</p>
-                <p v-if="step.description" class="mt-0.5 max-w-prose text-sm leading-relaxed text-muted-foreground">{{ step.description }}</p>
-              </div>
-            </li>
-          </ol>
-        </div>
-      </div>
-    </section>
+
   </div>
 </template>
