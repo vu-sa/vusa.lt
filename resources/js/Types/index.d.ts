@@ -58,8 +58,6 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
     user: User;
   } | null;
   csrf_token: string;
-  /** Shared on Mano kelias routes only (ShareLearningNavigation). */
-  learningNavigation?: { canSeeReps: boolean; canManage: boolean };
   flash: {
     data: any;
     info: string | null;
@@ -104,6 +102,7 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
         matches: string[];
         /** Draw a separator before this section. */
         startsGroup: boolean;
+        children?: Array<{ key: string; label: string; routeName: string }>;
       }>;
       createActions: Array<{
         key: string;

@@ -89,6 +89,17 @@ return [
         'results' => 'Rezultatai',
     ],
 
+    'section_children' => [
+        'kelias' => [
+            'path' => 'Mano kelias',
+            'documents' => 'Dokumentai',
+            'glossary' => 'Sąvokos',
+            'handover' => 'Patirties perdavimas',
+            'reps' => 'Atstovai',
+            'library' => 'Biblioteka',
+        ],
+    ],
+
     'sections' => [
         'kelias' => 'Mano kelias',
         'apzvalga' => 'Apžvalga',

@@ -3,7 +3,7 @@ import { flushPromises, mount } from '@vue/test-utils';
 
 import MobileMenuPanel from '../MobileMenuPanel.vue';
 
-import { atstovavimas, pradzia, rezervacijos } from './fixtures';
+import { atstovavimas, kelias, learning, pradzia, rezervacijos } from './fixtures';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -27,12 +27,33 @@ const mountPanel = (props: Record<string, unknown> = {}) => mount(MobileMenuPane
 });
 
 afterEach(() => {
+  vi.restoreAllMocks();
   document.body.innerHTML = '';
   tour.available = false;
   tour.start.mockClear();
 });
 
 describe('MobileMenuPanel', () => {
+  it('lists children under their section, marks the active child and closes on navigation', async () => {
+    const originalRoute = route;
+    vi.spyOn(globalThis, 'route').mockImplementation(((name?: string) => name
+      ? originalRoute(name)
+      : { current: (pattern: string) => pattern === 'learningPath.documents' }) as typeof route);
+    const wrapper = mountPanel({ workspaces: [learning], activeWorkspace: learning, activeSection: kelias });
+    const links = wrapper.findAll('[data-slot="mobile-menu-section-child"]');
+
+    expect(links.map(link => link.text())).toEqual([
+      'shell.section_children.kelias.path', 'shell.section_children.kelias.documents',
+      'shell.section_children.kelias.glossary', 'shell.section_children.kelias.handover',
+      'shell.section_children.kelias.reps', 'shell.section_children.kelias.library',
+    ]);
+    expect(links[1]!.attributes('href')).toBe('/mocked-route/learningPath.documents');
+    expect(links.map(link => link.attributes('aria-current'))).toEqual([undefined, 'page', undefined, undefined, undefined, undefined]);
+    await links[1]!.trigger('click');
+
+    expect(wrapper.emitted('update:open')?.at(-1)).toEqual([false]);
+  });
+
   it('renders nothing while closed', () => {
     expect(mountPanel({ open: false }).find('[role="dialog"]').exists()).toBe(false);
   });

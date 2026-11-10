@@ -89,6 +89,17 @@ return [
         'results' => 'Results',
     ],
 
+    'section_children' => [
+        'kelias' => [
+            'path' => 'My path',
+            'documents' => 'Documents',
+            'glossary' => 'Glossary',
+            'handover' => 'Handover',
+            'reps' => 'Representatives',
+            'library' => 'Library',
+        ],
+    ],
+
     'sections' => [
         'kelias' => 'My path',
         'apzvalga' => 'Overview',

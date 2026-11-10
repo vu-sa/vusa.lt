@@ -32,3 +32,17 @@ export const atstovavimas = workspace('atstovavimas', [
 ]);
 
 export const rezervacijos = workspace('rezervacijos', [section('rezervacijos', 'reservations.index')]);
+
+export const kelias: AdminSection = {
+  ...section('kelias', 'learningPath.show'),
+  children: [
+    { key: 'path', label: 'shell.section_children.kelias.path', routeName: 'learningPath.show' },
+    { key: 'documents', label: 'shell.section_children.kelias.documents', routeName: 'learningPath.documents' },
+    { key: 'glossary', label: 'shell.section_children.kelias.glossary', routeName: 'glossaryTerms.index' },
+    { key: 'handover', label: 'shell.section_children.kelias.handover', routeName: 'learningPath.handover' },
+    { key: 'reps', label: 'shell.section_children.kelias.reps', routeName: 'learningPath.reps' },
+    { key: 'library', label: 'shell.section_children.kelias.library', routeName: 'learningSteps.index' },
+  ],
+};
+
+export const learning = workspace('pradzia', [section('apzvalga', 'dashboard'), kelias]);

@@ -1,5 +1,5 @@
 import { usePage } from '@inertiajs/vue3';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { effectScope, nextTick, reactive } from 'vue';
 
 import { createMockPage } from '@/tests/helpers/createMockPage';
@@ -8,6 +8,7 @@ import {
   clearTrail,
   enterAgendaItem,
   enterInstitution,
+  enterLearningStep,
   enterMeeting,
   useRecordTrail,
 } from '../useRecordTrail';
@@ -32,6 +33,8 @@ function mountTrail() {
 }
 
 describe('useRecordTrail', () => {
+  afterEach(() => vi.restoreAllMocks());
+
   beforeEach(() => {
     clearTrail();
     page.component = 'Admin/Representation/ShowMeeting';
@@ -49,6 +52,27 @@ describe('useRecordTrail', () => {
     expect(crumbFor('posedziai')).toMatchObject({ href: '/mocked-route/meetings.show?meeting=m1', label: '2026-09-12' });
     expect(crumbFor('darbotvarkes_klausimai')).toMatchObject({ href: '/mocked-route/agendaItems.show?agendaItem=a1', title: 'Dėl studijų programų' });
     expect(crumbFor('apzvalga')).toBeUndefined();
+  });
+
+  it('uses a learning step as the Mano kelias crumb and forgets it on leaving the record', async () => {
+    page.component = 'Admin/Learning/ShowLearningStep';
+    const { crumbFor } = mountTrail();
+    const routeSpy = vi.spyOn(globalThis, 'route');
+
+    enterLearningStep({ id: 42, title: 'Pasiruošk posėdžiui' });
+
+    expect(routeSpy).toHaveBeenCalledWith('learningSteps.show', 42);
+    expect(crumbFor('kelias')).toEqual({
+      id: '42',
+      href: '/mocked-route/learningSteps.show',
+      label: 'Pasiruošk posėdžiui',
+      title: 'Pasiruošk posėdžiui',
+    });
+
+    page.component = 'Admin/Learning/Documents';
+    await nextTick();
+
+    expect(crumbFor('kelias')).toBeUndefined();
   });
 
   it('names the agenda item crumb with translations that arrive after it was entered', () => {
