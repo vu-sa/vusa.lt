@@ -32,7 +32,7 @@
         @select="key => selectRowAction(key, item)"
       >
         <div class="min-w-0 flex-1">
-          <div class="flex flex-wrap items-baseline justify-between gap-2">
+          <div class="flex flex-wrap items-baseline gap-2">
             <button
               v-if="canManageTerms"
               type="button"
@@ -42,7 +42,8 @@
               {{ item.term }}
             </button>
             <span v-else class="font-medium text-foreground">{{ item.term }}</span>
-            <span class="text-xs tabular-nums text-muted-foreground" data-testid="glossary-term-steps-count">
+            <abbr v-if="item.abbreviation" :title="item.term" :class="abbreviationClass" data-testid="glossary-term-abbreviation">{{ item.abbreviation }}</abbr>
+            <span class="ml-auto text-xs tabular-nums text-muted-foreground" data-testid="glossary-term-steps-count">
               {{ $tChoice('learning_library.glossary.steps_usage', item.stepsCount, { count: String(item.stepsCount) }) }}
             </span>
           </div>
@@ -65,6 +66,7 @@
           {{ item.term }}
         </button>
         <span v-else class="font-medium text-foreground">{{ item.term }}</span>
+        <abbr v-if="item.abbreviation" :title="item.term" :class="[abbreviationClass, 'ml-2']">{{ item.abbreviation }}</abbr>
       </template>
       <div v-else-if="column.key === 'definition'" class="space-y-2">
         <p class="whitespace-pre-line text-sm text-muted-foreground">{{ item.definition }}</p>
@@ -105,6 +107,15 @@
       required
     >
       <MultiLocaleInput id="glossary-term-input" v-model:input="form.term" />
+    </FormFieldWrapper>
+
+    <FormFieldWrapper
+      id="glossary-abbreviation-input"
+      :label="$t('learning_library.glossary.abbreviation')"
+      :hint="$t('learning_library.glossary.abbreviation_hint')"
+      :error="form.errors['abbreviation.lt'] || form.errors['abbreviation.en']"
+    >
+      <MultiLocaleInput id="glossary-abbreviation-input" v-model:input="form.abbreviation" />
     </FormFieldWrapper>
 
     <FormFieldWrapper
@@ -153,6 +164,7 @@ import type { GlossaryTermData } from '@/Types/learning';
 
 interface GlossaryFormState {
   term: { lt: string; en: string };
+  abbreviation: { lt: string; en: string };
   definition: { lt: string; en: string };
 }
 
@@ -163,11 +175,15 @@ const props = defineProps<{
 
 const canManageTerms = computed(() => Boolean(props.canManage));
 const termKey = (item: GlossaryTermData) => item.id;
+const abbreviationClass = 'inline-flex items-center border border-border px-1.5 text-xs font-bold tracking-wide text-foreground no-underline';
 
 const source = useLocalCollectionSource<GlossaryTermData>({
   items: toRef(props, 'terms'),
   searchText: item => [
     item.term,
+    item.abbreviation,
+    item.translations?.abbreviation?.lt,
+    item.translations?.abbreviation?.en,
     item.definition,
     item.translations?.term?.lt,
     item.translations?.term?.en,
@@ -203,6 +219,7 @@ const toDelete = ref<GlossaryTermData | null>(null);
 
 const blank = (): GlossaryFormState => ({
   term: { lt: '', en: '' },
+  abbreviation: { lt: '', en: '' },
   definition: { lt: '', en: '' },
 });
 
@@ -213,6 +230,7 @@ function openSheet(item: GlossaryTermData | null = null): void {
   const next: GlossaryFormState = item
     ? {
         term: structuredClone(toRaw(item.translations?.term ?? { lt: item.term, en: '' })),
+        abbreviation: structuredClone(toRaw(item.translations?.abbreviation ?? { lt: item.abbreviation ?? '', en: '' })),
         definition: structuredClone(toRaw(item.translations?.definition ?? { lt: item.definition, en: '' })),
       }
     : blank();

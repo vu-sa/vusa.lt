@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { computed, toRef } from 'vue';
-import { Eye, FileText, MessageSquare, MoreHorizontal } from '@lucide/vue';
-import { trans as $t } from 'laravel-vue-i18n';
+import { FileText, MessageSquare, MoreHorizontal } from '@lucide/vue';
 
 import { rowActionIconClass, rowActionHoverClass } from '@/Components/Collection/rowActionClasses';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
@@ -25,15 +24,16 @@ const { saving, failed, canSkip, checked, save } = useStepProgress(toRef(props, 
 const isDocument = computed(() => props.step.kind === 'knowledge');
 const hasDocumentSource = computed(() => Boolean(props.step.source?.url));
 const isResolved = computed(() => props.step.state === 'done' || props.step.state === 'skipped');
-const SUMMARY_KEYS = ['check_access', 'review_contacts', 'notification_settings', 'install_app', 'browser_push', 'orientation'];
-const summary = computed(() => props.step.isSystem && SUMMARY_KEYS.includes(props.step.key ?? '') ? $t(`learning.system_steps.${props.step.key}.summary`) : props.step.description);
 </script>
 
 <template>
-  <li :data-step="step.id" :aria-busy="saving" class="grid grid-cols-[2.75rem_minmax(0,1fr)_auto] items-start gap-x-3 px-4 py-4">
-    <LearningCompletionControl v-model="checked" :step="step" :disabled="saving || readonly" />
+  <li :data-step="step.id" :aria-busy="saving" class="grid grid-cols-[2.75rem_minmax(0,1fr)_auto] items-start gap-x-3 px-4 py-3">
+    <!-- The checkbox and title share the action buttons' height, so single-line rows centre on one axis. -->
+    <div class="flex min-h-9 items-center pointer-coarse:min-h-11">
+      <LearningCompletionControl v-model="checked" :step="step" :disabled="saving || readonly" />
+    </div>
     <div class="min-w-0">
-      <div class="flex min-h-6 items-start gap-2" data-slot="step-title-row">
+      <div class="flex min-h-9 items-center gap-2 pointer-coarse:min-h-11" data-slot="step-title-row">
         <FileText v-if="isDocument" class="size-5 shrink-0 text-muted-foreground" role="img" :aria-label="$t('learning.path.kind_document')" />
         <Link :href="route('learningSteps.show', step.id)" :class="['min-w-0 text-lg font-bold leading-6 underline decoration-border underline-offset-4 hover:decoration-foreground', isResolved ? 'text-muted-foreground' : 'text-foreground']">{{ step.title }}</Link>
         <Link v-if="step.insightsCount > 0" :href="route('learningSteps.show', step.id) + '#insights'" class="-my-2.5 inline-flex min-h-11 shrink-0 items-center gap-1 text-xs text-muted-foreground hover:text-foreground" :aria-label="$t('learning.path.insights_count', { count: String(step.insightsCount) })">
@@ -45,16 +45,12 @@ const summary = computed(() => props.step.isSystem && SUMMARY_KEYS.includes(prop
         <span v-if="step.state === 'updated'" class="font-semibold text-status-attention">{{ $t('learning.path.updated') }}</span>
         <span v-if="step.state === 'skipped'">{{ $t('learning.path.skipped') }}</span>
       </div>
-      <p v-if="summary" class="mt-1 line-clamp-2 max-w-prose whitespace-pre-line text-sm leading-relaxed text-muted-foreground">{{ summary }}</p>
       <LearningCoordinators v-if="step.key === 'meet_coordinator' && coordinators?.length" :coordinators="coordinators" class="mt-3" />
       <LearningTerms v-if="showGlossary" :terms="step.glossaryTerms" class="mt-2" />
       <p v-if="failed" role="alert" class="mt-2 text-sm text-destructive">{{ $t('learning.path.save_failed') }}</p>
     </div>
-    <div class="col-start-2 row-start-2 flex min-w-0 flex-nowrap items-start gap-2 pt-3 sm:col-start-3 sm:row-start-1 sm:justify-end sm:-mt-1.5 sm:pt-0 sm:pointer-coarse:-mt-2.5">
+    <div class="col-start-2 row-start-2 flex min-w-0 flex-nowrap items-start gap-2 pt-2 sm:col-start-3 sm:row-start-1 sm:justify-end sm:pt-0">
       <LearningStepAction :step="step" />
-      <Link :href="route('learningSteps.show', step.id)" :class="[rowActionIconClass, rowActionHoverClass]" :aria-label="$t('learning.path.open_step')" :title="$t('learning.path.open_step')">
-        <Eye class="size-4" aria-hidden="true" />
-      </Link>
       <DropdownMenu v-if="canSkip">
         <DropdownMenuTrigger as-child>
           <button type="button" :class="[rowActionIconClass, rowActionHoverClass]" :disabled="saving" :aria-label="$t('learning.path.actions')">
@@ -65,7 +61,7 @@ const summary = computed(() => props.step.isSystem && SUMMARY_KEYS.includes(prop
           <DropdownMenuItem data-testid="skip-step" @select="save('skipped')">{{ $t('learning.path.skip') }}</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <!-- Keeps the eye button in one column whether or not the step can be skipped. -->
+      <!-- Keeps the action buttons in one column whether or not the step can be skipped. -->
       <span v-else class="hidden size-9 shrink-0 sm:block pointer-coarse:size-11" aria-hidden="true" />
     </div>
   </li>

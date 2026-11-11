@@ -1,29 +1,48 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
-import { ArrowUpRight } from '@lucide/vue';
+import { ArrowRight, ArrowUpRight } from '@lucide/vue';
+import { trans as $t } from 'laravel-vue-i18n';
 
-import { rowActionLabelledClass, rowActionHoverClass } from '@/Components/Collection/rowActionClasses';
+import { buttonVariants } from '@/Components/ui/button';
+import { LearningImportance } from '@/Types/enums';
 import type { LearningStepData } from '@/Types/learning';
 import { safeHref } from '@/Utils/safeHref';
 
 const props = defineProps<{ step: LearningStepData }>();
-const external = computed(() => props.step.kind === 'knowledge');
-const href = computed(() => safeHref(external.value ? props.step.source?.url : props.step.actionUrl));
-const label = computed(() => external.value ? 'learning.path.read_document'
-  : props.step.isSystem && props.step.key ? `learning.system_steps.${props.step.key}.action` : 'learning.path.open');
+const isDocument = computed(() => props.step.kind === 'knowledge');
+const href = computed(() => safeHref(isDocument.value ? props.step.source?.url : props.step.actionUrl));
+const label = computed(() => {
+  if (isDocument.value) return $t('learning.path.read_document');
+  return props.step.actionLabel || $t('learning.path.open');
+});
+// Documents and other sites open in a new tab (↗); platform pages stay in the app (→).
+const opensElsewhere = computed(() => {
+  if (isDocument.value) return true;
+  if (!href.value || typeof window === 'undefined') return false;
+  return new URL(href.value, window.location.origin).origin !== window.location.origin;
+});
+
+// Importance sets the weight: essential is the brand fill, recommended an uppercase outline, optional plain text.
+const buttonClass = computed(() => {
+  if (props.step.importance === LearningImportance.Essential) return buttonVariants({ variant: 'brand', size: 'sm' });
+  if (props.step.importance === LearningImportance.Optional) return buttonVariants({ variant: 'ghost', voice: 'sentence', size: 'sm' });
+  return buttonVariants({ variant: 'outline', voice: 'brand', size: 'sm' });
+});
 </script>
 
 <template>
   <component
-    :is="external ? 'a' : Link"
+    :is="opensElsewhere ? 'a' : Link"
     v-if="href"
     :href="href"
-    :target="external ? '_blank' : undefined"
-    :rel="external ? 'noopener noreferrer' : undefined"
-    :class="[rowActionLabelledClass, rowActionHoverClass, 'min-w-0 border-border text-foreground']"
+    :target="opensElsewhere ? '_blank' : undefined"
+    :rel="opensElsewhere ? 'noopener noreferrer' : undefined"
+    :class="[buttonClass, 'min-w-0']"
+    :data-importance="step.importance"
     data-slot="learning-step-action"
   >
-    <span class="min-w-0 truncate">{{ $t(label) }}</span><ArrowUpRight class="size-4 shrink-0" aria-hidden="true" />
+    <span class="min-w-0 truncate">{{ label }}</span>
+    <component :is="opensElsewhere ? ArrowUpRight : ArrowRight" class="size-4 shrink-0" aria-hidden="true" />
   </component>
 </template>

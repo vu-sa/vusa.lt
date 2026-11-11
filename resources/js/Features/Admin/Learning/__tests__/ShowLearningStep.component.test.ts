@@ -77,3 +77,11 @@ it('places primary and manager actions in the page header beside the heading', a
   expect(wrapper.get('[data-slot="step-heading"]').find('[data-slot="step-actions"]').exists()).toBe(false);
   wrapper.unmount();
 });
+
+it('renders the step description as rich content', async () => {
+  const wrapper = render();
+  await wrapper.setProps({ step: step({ description: '<p><strong>Žiūrėk</strong></p><div data-youtube-video><iframe src="https://www.youtube-nocookie.com/embed/abc"></iframe></div>' }) });
+  const description = wrapper.get('[data-slot="step-description"]');
+  expect(description.find('strong').text()).toBe('Žiūrėk');
+  expect(description.find('iframe').attributes('src')).toContain('youtube-nocookie.com/embed/abc');
+});

@@ -15,7 +15,6 @@
 return [
     'learningStep' => ['model' => '{1} mokymosi žingsnis|[2,9] mokymosi žingsniai|[10,*] mokymosi žingsnių', 'gender' => 'm'],
     'glossaryTerm' => ['model' => '{1} sąvoka|[2,9] sąvokos|[10,*] sąvokų', 'gender' => 'f'],
-    'handoverNote' => ['model' => '{1} perdavimo pastaba|[2,9] perdavimo pastabos|[10,*] perdavimo pastabų', 'gender' => 'f'],
 
     'document' => [
         'model' => '{1} dokumentas|[2,9] dokumentai|[10,*] dokumentų',

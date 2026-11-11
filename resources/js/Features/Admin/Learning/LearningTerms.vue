@@ -13,10 +13,10 @@ defineProps<{ terms: LearningStepData['glossaryTerms'] }>();
     <div class="flex flex-wrap gap-2">
       <Popover v-for="term in terms" :key="term.id">
         <PopoverTrigger as-child>
-          <button type="button" :class="[controlVariants({ size: 'sm', voice: 'sentence' }), 'max-w-full whitespace-normal text-left pointer-coarse:min-h-11']">{{ term.term }}</button>
+          <button type="button" :class="[controlVariants({ size: 'sm', voice: 'sentence' }), 'max-w-full whitespace-normal text-left pointer-coarse:min-h-11']" :title="term.abbreviation ? term.term : undefined">{{ term.abbreviation || term.term }}</button>
         </PopoverTrigger>
         <PopoverContent class="max-w-[calc(100vw-2rem)]">
-          <p class="font-semibold">{{ term.term }}</p>
+          <p class="font-semibold">{{ term.term }}<span v-if="term.abbreviation" class="font-normal text-muted-foreground"> ({{ term.abbreviation }})</span></p>
           <p class="mt-2 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">{{ term.definition }}</p>
         </PopoverContent>
       </Popover>

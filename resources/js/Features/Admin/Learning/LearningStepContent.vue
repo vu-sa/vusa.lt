@@ -16,7 +16,9 @@ withDefaults(defineProps<{
 
 <template>
   <div class="space-y-5">
-    <p v-if="step.description" class="max-w-prose whitespace-pre-line text-base leading-relaxed text-foreground">{{ step.description }}</p>
+    <!-- Sanitized on write (LearningStep::sanitizedHtmlTranslations). -->
+    <!-- eslint-disable-next-line vue/no-v-html -->
+    <div v-if="step.description" class="rc-prose max-w-prose text-foreground [&_iframe]:aspect-video [&_iframe]:h-auto [&_iframe]:w-full" data-slot="step-description" v-html="step.description" />
     <LearningAudienceNotes :notes="step.audienceNotes" />
 
     <LearningCoordinators v-if="step.key === 'meet_coordinator'" :coordinators="coordinators" />

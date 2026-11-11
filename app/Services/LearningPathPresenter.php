@@ -7,7 +7,6 @@ use App\Enums\LearningAudienceType;
 use App\Enums\LearningImportance;
 use App\Enums\LearningStage;
 use App\Enums\LearningStepKind;
-use App\Models\Institution;
 use App\Models\LearningStep;
 use App\Models\LearningStepAudience;
 use App\Models\Meeting;
@@ -18,7 +17,7 @@ use App\Services\Learning\SystemSteps\SystemStepRegistry;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
 /**
- * @phpstan-type StepPayload array{id: string, key: string|null, isSystem: bool, kind: LearningStepKind, audienceLabel: string, audienceNotes: list<array{label: string, description: string}>, stage: LearningStage|null, importance: LearningImportance, section: array{id: string, title: string}|null, title: string, description: string, source: array{type: 'document'|'url', url: string|null, documentId: int|null, documentStatus: DocumentStatus|null, title: string|null}|null, actionUrl: string|null, state: string, autoCompleted: bool, automaticallyTracked: bool, completedAt: string|null, skippable: bool, insightsCount: int, reviewedAt: string|null, glossaryTerms: list<array{id: string, term: string, definition: string}>}
+ * @phpstan-type StepPayload array{id: string, key: string|null, isSystem: bool, kind: LearningStepKind, audienceLabel: string, audienceNotes: list<array{label: string, description: string}>, stage: LearningStage|null, importance: LearningImportance, section: array{id: string, title: string}|null, title: string, description: string, source: array{type: 'document'|'url', url: string|null, documentId: int|null, documentStatus: DocumentStatus|null, title: string|null}|null, actionUrl: string|null, actionLabel: string|null, state: string, autoCompleted: bool, automaticallyTracked: bool, completedAt: string|null, skippable: bool, insightsCount: int, reviewedAt: string|null, glossaryTerms: list<array{id: string, term: string, abbreviation: string, definition: string}>}
  */
 class LearningPathPresenter
 {
@@ -79,18 +78,19 @@ class LearningPathPresenter
     {
         $step = $item->step;
         $definition = $step->is_system ? (SystemStepRegistry::definitions()[$step->key] ?? null) : null;
-        $route = $definition['actionRoute'] ?? null;
-        if ($definition !== null && $route === null) {
-            $route = match ($step->key) {
-                'read_handover', 'write_handover' => 'learningPath.handover',
-                'follow_institution' => $viewer->can('viewAny', Institution::class) ? 'institutions.index' : null,
-                'record_first_meeting' => $viewer->can('viewAny', Meeting::class) ? 'meetings.index' : null,
-                default => null,
-            };
+        $route = $definition === null ? null : match ($step->key) {
+            'record_first_meeting' => $viewer->can('viewAny', Meeting::class) ? 'meetings.index' : null,
+            default => null,
+        };
+        $actionUrl = $route ? route($route) : null;
+        $actionLabel = $definition ? (string) __($definition['action'], [], $locale) : null;
+        if ($definition === null && $step->kind === LearningStepKind::Action) {
+            $actionUrl = filled($step->getTranslation('action_url', $locale)) ? (string) $step->getTranslation('action_url', $locale) : null;
+            $actionLabel = filled($step->getTranslation('action_label', $locale)) ? (string) $step->getTranslation('action_label', $locale) : null;
         }
         $glossaryTerms = [];
         foreach ($step->loadMissing('glossaryTerms')->glossaryTerms as $term) {
-            $glossaryTerms[] = ['id' => $term->id, 'term' => (string) $term->getTranslation('term', $locale), 'definition' => (string) $term->getTranslation('definition', $locale)];
+            $glossaryTerms[] = ['id' => $term->id, 'term' => (string) $term->getTranslation('term', $locale), 'abbreviation' => (string) $term->getTranslation('abbreviation', $locale), 'definition' => (string) $term->getTranslation('definition', $locale)];
         }
 
         return [
@@ -99,9 +99,10 @@ class LearningPathPresenter
             'stage' => $item->stage, 'importance' => $item->importance,
             'section' => $step->section ? ['id' => $step->section->id, 'title' => (string) $step->section->getTranslation('title', $locale)] : null,
             'title' => $definition ? (string) __($definition['title'], [], $locale) : (string) $step->getTranslation('title', $locale),
-            'description' => $definition ? (string) __($definition['description'], [], $locale) : (string) $step->getTranslation('description', $locale),
+            // System text is plain; authored descriptions are rich HTML sanitized on write.
+            'description' => $definition ? '<p>'.e(__($definition['description'], [], $locale)).'</p>' : (string) $step->getTranslation('description', $locale),
             'source' => self::source($step, $viewer, $locale),
-            'actionUrl' => $route ? route($route) : null,
+            'actionUrl' => $actionUrl, 'actionLabel' => $actionLabel,
             'state' => $item->state, 'autoCompleted' => $item->autoCompleted,
             'automaticallyTracked' => ($definition['detector'] ?? null) !== null,
             'completedAt' => $item->completedAt?->toIso8601String(),
@@ -162,7 +163,7 @@ class LearningPathPresenter
         return $result;
     }
 
-    /** @return array{id: string, key: string|null, title: array{lt: string, en: string}, description: array{lt: string, en: string}, kind: LearningStepKind, learning_section_id: string|null, audiences: list<array{id: string, type: LearningAudienceType, source_id: string|null, tenant_id: int|null, importance: LearningImportance, stage: LearningStage|null, description: array{lt: string, en: string}, order: int, label: string}>, per_term: bool, order: int, is_active: bool, is_system: bool, sources: array<string, array{document_id: int|null, url: string|null}>, source_documents: array<string, array{id: int, title: string, status: string, date: string|null}>} */
+    /** @return array{id: string, key: string|null, title: array{lt: string, en: string}, description: array{lt: string, en: string}, action_label: array{lt: string, en: string}, action_url: array{lt: string, en: string}, kind: LearningStepKind, learning_section_id: string|null, audiences: list<array{id: string, type: LearningAudienceType, source_id: string|null, tenant_id: int|null, importance: LearningImportance, stage: LearningStage|null, description: array{lt: string, en: string}, order: int, label: string}>, per_term: bool, order: int, is_active: bool, is_system: bool, sources: array<string, array{document_id: int|null, url: string|null}>, source_documents: array<string, array{id: int, title: string, status: string, date: string|null}>} */
     public static function edit(LearningStep $step): array
     {
         $sources = [];
@@ -183,6 +184,8 @@ class LearningPathPresenter
             'id' => $step->id, 'key' => $step->key,
             'title' => ['lt' => (string) $step->getTranslation('title', 'lt', false), 'en' => (string) $step->getTranslation('title', 'en', false)],
             'description' => ['lt' => (string) $step->getTranslation('description', 'lt', false), 'en' => (string) $step->getTranslation('description', 'en', false)],
+            'action_label' => ['lt' => (string) $step->getTranslation('action_label', 'lt', false), 'en' => (string) $step->getTranslation('action_label', 'en', false)],
+            'action_url' => ['lt' => (string) $step->getTranslation('action_url', 'lt', false), 'en' => (string) $step->getTranslation('action_url', 'en', false)],
             'kind' => $step->kind, 'learning_section_id' => $step->learning_section_id,
             'audiences' => $step->audiences->map(fn (LearningStepAudience $audience): array => [
                 'id' => $audience->id, 'type' => $audience->type, 'source_id' => $audience->source_id,

@@ -7,7 +7,6 @@ return [
         'path' => 'Mano kelias',
         'library' => 'Tvarkyti',
         'glossary' => 'Sąvokos',
-        'handover' => 'Perdavimas',
         'reps' => 'Mano atstovai',
         'step' => 'Mokymosi žingsnis',
         'create' => 'Sukurti mokymosi žingsnį',
@@ -54,7 +53,7 @@ return [
     ],
     'empty' => [
         'title' => 'Čia bus tavo mokymosi erdvė',
-        'description' => 'Ruošiame žingsnius, sąvokas ir patirties perdavimą.',
+        'description' => 'Ruošiame žingsnius ir sąvokas.',
     ],
     'validation' => [
         'audience_source' => 'Pasirink galiojančią auditoriją.',
@@ -63,56 +62,20 @@ return [
         'progress' => 'Šio žingsnio taip pažymėti negali.',
     ],
     'system_steps' => [
-        'check_access' => [
-            'summary' => 'Patikrink, ar matai savo pareigas ir reikiamas skiltis.',
-            'title' => 'Patikrink savo pareigas ir prieigą',
-            'description' => 'Patikrink institucijas, pareigas, jų datas ir prieinamas skiltis. Jei ko nors trūksta ar matai klaidą, pranešk administratoriui.',
-            'action' => 'Peržiūrėti pareigas',
-        ],
-        'review_contacts' => [
-            'summary' => 'Patikrink savo kontaktus ir nuotrauką, kad kolegos galėtų tave atpažinti ir susisiekti.',
-            'title' => 'Peržiūrėk savo kontaktinius duomenis',
-            'description' => 'Paskyroje gali pataisyti kontaktus, nuotrauką ir kreipinį. Prisijungimo el. paštas čia nekeičiamas, o vardą gali pataisyti tik vieną kartą. Taip pat patikrink nuotrauką – ją kartais jau būna įkėlęs atstovų koordinatorius. Nuotrauka ir telefono numeris šiam žingsniui neprivalomi.',
-            'action' => 'Atverti paskyrą',
-        ],
-        'notification_settings' => [
-            'summary' => 'Pasirink, kur ir kaip dažnai gauti pranešimus.',
-            'title' => 'Pasirink, kaip gauti pranešimus',
-            'description' => 'Patikrink, kuriais el. pašto adresais gausi laiškus, pasirink suvestinės dažnumą ir svarbias pranešimų rūšis. Numatytuosius nustatymus gali palikti. Jei nori, nustatymuose išsiųsk bandomąjį laišką.',
-            'action' => 'Nustatyti pranešimus',
-        ],
-        'profile_photo' => [
-            'title' => 'Pridėk savo nuotrauką',
-            'description' => 'Nuotrauka padės kolegoms tave atpažinti. Ją gali pakeisti savo paskyroje.',
-            'action' => 'Atverti paskyrą',
-        ],
         'install_app' => [
-            'summary' => 'Atverk Mano VU SA vienu paspaudimu iš savo įrenginio.',
             'title' => 'Įsidiek Mano VU SA',
             'description' => 'Pridėk Mano VU SA prie telefono pradžios ekrano arba kompiuterio programų, kad kitą kartą atvertum vienu paspaudimu. Įdiegti neprivaloma – gali naudotis naršykle.',
             'action' => 'Įdiegti',
         ],
         'browser_push' => [
-            'summary' => 'Gauk priminimus tiesiai į šį įrenginį.',
             'title' => 'Įjunk naršyklės pranešimus',
             'description' => 'Gauk priminimus ir kitus pasirinktus pranešimus tiesiai į šį įrenginį. Naršyklė leidimo paklaus tik tau paspaudus įjungimo mygtuką. Atsisakius laiškų ir pranešimų platformoje nustatymai nesikeičia.',
             'action' => 'Įjungti pranešimus',
-        ],
-        'orientation' => [
-            'summary' => 'Rask savo darbus, darbo sritis ir pagalbą.',
-            'title' => 'Sužinok, nuo ko pradėti',
-            'description' => 'Pradžioje pirmiausia matysi darbus, kuriems reikia tavo dėmesio. Darbo sričių meniu rodo tik tau prieinamas skiltis. Pagalba, gidas ir interaktyvus turas pasiekiami paskyros meniu.',
-            'action' => 'Atverti užduotis',
         ],
         'meet_coordinator' => [
             'title' => 'Susipažink su koordinatoriumi',
             'description' => 'Susitark, kaip bendrausite ir kur kreipsiesi prireikus pagalbos.',
             'action' => 'Susisiekti',
-        ],
-        'follow_institution' => [
-            'title' => 'Sek savo instituciją',
-            'description' => 'Sek institucijos veiklą, kad gautum tau svarbius pranešimus.',
-            'action' => 'Sekti instituciją',
         ],
         'meet_institution_contacts' => [
             'title' => 'Susipažink su institucijos kontaktais',
@@ -123,16 +86,6 @@ return [
             'title' => 'Užfiksuok pirmą posėdį',
             'description' => 'Po posėdžio užfiksuok svarstytus klausimus ir priimtus sprendimus.',
             'action' => 'Fiksuoti posėdį',
-        ],
-        'read_handover' => [
-            'title' => 'Perskaityk perduotas pastabas',
-            'description' => 'Peržiūrėk ankstesnio atstovo patirtį, nebaigtus darbus ir patarimus.',
-            'action' => 'Skaityti pastabas',
-        ],
-        'write_handover' => [
-            'title' => 'Perduok patirtį kitam atstovui',
-            'description' => 'Aprašyk nebaigtus darbus, naudingus kontaktus ir tai, ką verta žinoti tavo įpėdiniui.',
-            'action' => 'Rašyti pastabas',
         ],
     ],
     'glossary' => ['where_used' => 'Kur sutinkama'],
@@ -155,8 +108,6 @@ return [
         'open_step' => 'Atidaryti žingsnį',
         'manage_terms' => 'Tvarkyti sąvokas',
         'glossary_description' => 'Susijusių sąvokų paaiškinimai.',
-        'handover_title' => 'Patirties perdavimas',
-        'handover_description' => 'Pirmtakų pastabos ir tavo patirtis kitam atstovui.',
         'audience_notes' => 'Tau tai reiškia',
         'related_terms' => 'Susijusios sąvokos',
         'auto_label' => 'pažymėta automatiškai',

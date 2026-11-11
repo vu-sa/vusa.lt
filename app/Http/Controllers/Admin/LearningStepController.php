@@ -7,6 +7,7 @@ use App\Actions\GetUserCoordinators;
 use App\Actions\ResolveLearningPath;
 use App\Enums\LearningAudienceType;
 use App\Enums\LearningImportance;
+use App\Enums\LearningStepKind;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\LearningStepRequest;
 use App\Http\Requests\SearchLearningDocumentsRequest;
@@ -54,7 +55,7 @@ class LearningStepController extends AdminController
     public function show(Request $request, LearningStep $learningStep): Response
     {
         $this->authorize('view', $learningStep);
-        $learningStep->load(['sources.document.institution.tenant', 'section', 'glossaryTerms', 'audiences' => fn ($query) => $query->with(LearningStepAudience::LABEL_RELATIONS)])->loadCount('comments');
+        $learningStep->load(['sources.document.institution.tenant', 'section', 'glossaryTerms', 'audiences' => fn ($query) => $query->with(LearningStepAudience::LABEL_RELATIONS)])->loadCount(['comments' => fn ($query) => $query->notErased()]);
         $path = ResolveLearningPath::execute($request->user());
         $item = $path->steps->concat($path->documents)->concat($path->meetingPrep)->first(fn (ResolvedLearningStep $item): bool => $item->step->id === $learningStep->id) ?? new ResolvedLearningStep($learningStep, importance: $learningStep->audiences->first()?->importance ?? LearningImportance::Recommended, stage: $learningStep->audiences->first()?->stage, audienceLabel: $learningStep->audiences->first()?->label(app()->getLocale()) ?? '');
 
@@ -108,6 +109,9 @@ class LearningStepController extends AdminController
     {
         $this->authorize('update', $learningStep);
         DB::transaction(function () use ($request, $learningStep): void {
+            if (! $learningStep->is_system && $request->validated('kind') !== LearningStepKind::Action->value) {
+                $learningStep->forgetTranslations('action_label', true)->forgetTranslations('action_url', true);
+            }
             $learningStep->update([
                 ...$request->safe()->except(['sources', 'audiences']),
                 ...(! $learningStep->is_system ? ['learning_section_id' => $request->validated('learning_section_id'), 'reviewed_at' => now()] : []),

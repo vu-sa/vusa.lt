@@ -26,6 +26,8 @@ return new class extends Migration
             $table->foreignUlid('learning_section_id')->nullable()->constrained('learning_sections')->nullOnDelete();
             $table->json('title')->nullable();
             $table->json('description')->nullable();
+            $table->json('action_label')->nullable();
+            $table->json('action_url')->nullable();
             $table->boolean('per_term')->default(false);
             $table->unsignedInteger('order')->default(0);
             $table->boolean('is_active')->default(true);
@@ -68,6 +70,7 @@ return new class extends Migration
         Schema::create('glossary_terms', function (Blueprint $table): void {
             $table->ulid('id')->primary();
             $table->json('term');
+            $table->json('abbreviation')->nullable();
             $table->json('definition');
             $table->timestamps();
         });
@@ -76,23 +79,11 @@ return new class extends Migration
             $table->foreignUlid('learning_step_id')->constrained()->cascadeOnDelete();
             $table->primary(['glossary_term_id', 'learning_step_id']);
         });
-        Schema::create('handover_notes', function (Blueprint $table): void {
-            $table->ulid('id')->primary();
-            $table->foreignUlid('duty_id')->constrained()->cascadeOnDelete();
-            $table->foreignUlid('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignUlid('dutiable_id')->nullable()->constrained('dutiables')->nullOnDelete();
-            $table->foreignUlid('cadence_id')->nullable()->constrained('cadences')->nullOnDelete();
-            foreach (['situation', 'open_issues', 'people', 'resources', 'advice'] as $field) {
-                $table->text($field)->nullable();
-            }
-            $table->timestamps();
-            $table->unique(['duty_id', 'user_id', 'cadence_id']);
-        });
     }
 
     public function down(): void
     {
-        foreach (['handover_notes', 'glossary_term_learning_step', 'glossary_terms', 'learning_step_progress', 'learning_step_sources', 'learning_step_audiences', 'learning_steps', 'learning_sections'] as $table) {
+        foreach (['glossary_term_learning_step', 'glossary_terms', 'learning_step_progress', 'learning_step_sources', 'learning_step_audiences', 'learning_steps', 'learning_sections'] as $table) {
             Schema::dropIfExists($table);
         }
     }

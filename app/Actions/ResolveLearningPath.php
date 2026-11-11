@@ -19,7 +19,6 @@ use App\Models\User;
 use App\Services\Learning\LearningPath;
 use App\Services\Learning\ResolvedLearningStep;
 use App\Services\Learning\SystemSteps\SystemStepRegistry;
-use App\Services\Learning\SystemSteps\WriteHandoverDetector;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -54,17 +53,14 @@ class ResolveLearningPath
         $cadences = ResolveCadenceForDuty::forDuties($duties);
         $institutionTypes = self::ancestry(InstitutionType::all());
         $dutyTypes = self::ancestry(DutyType::all());
-        $steps = LearningStep::query()->active()->ordered()->with(['sources.document.institution.tenant', 'section', 'audiences' => fn ($query) => $query->with(LearningStepAudience::LABEL_RELATIONS)])->withCount('comments')->get();
+        $steps = LearningStep::query()->active()->ordered()->with(['sources.document.institution.tenant', 'section', 'audiences' => fn ($query) => $query->with(LearningStepAudience::LABEL_RELATIONS)])->withCount(['comments' => fn ($query) => $query->notErased()])->get();
         $progress = LearningStepProgress::query()->whereIn('user_id', $users->pluck('id'))->get()->groupBy('user_id');
         $detections = [];
         foreach (SystemStepRegistry::definitions() as $key => $definition) {
-            if ($definition['detector'] !== null && $key !== 'write_handover') {
+            if ($definition['detector'] !== null) {
                 $detections[$key] = app($definition['detector'])->doneFor($users->pluck('id')->values())->flip();
             }
         }
-        $received = GetReceivedHandoverNotes::forUsers($users);
-        $handoverRepIds = Duty::query()->whereIn('id', $repIds)->holdingPurpose(ResponsibilityPurpose::StudentRepresentation)->pluck('id');
-        $written = WriteHandoverDetector::completionDates($users, $handoverRepIds);
         $paths = collect();
         foreach ($users as $user) {
             $userDuties = $user->authorization_duties;
@@ -97,10 +93,9 @@ class ResolveLearningPath
             $resolved = collect();
             $meetingPrep = collect();
             $documents = collect();
-            $writtenAt = $written->get($user->id);
             foreach ($steps as $step) {
                 $matched = $step->audiences->filter(fn (LearningStepAudience $audience): bool => self::inAudience($audience, $facts));
-                if ($matched->isEmpty() || ($step->key === 'read_handover' && $received->get($user->id, collect())->isEmpty())) {
+                if ($matched->isEmpty()) {
                     continue;
                 }
                 $winner = $matched->sortBy(fn (LearningStepAudience $audience): array => [
@@ -111,8 +106,7 @@ class ResolveLearningPath
                 $notes = $matched->filter(fn (LearningStepAudience $audience): bool => filled($audience->getTranslation('description', $locale, false)))
                     ->map(fn (LearningStepAudience $audience): array => ['label' => $audience->label($locale), 'description' => (string) $audience->getTranslation('description', $locale, false)])->values()->all();
                 $item = self::resolveStep($step, $winner, $notes, $userProgress->get($step->id), $termStart,
-                    $step->is_system && ($step->key === 'write_handover' ? $writtenAt !== null : isset($detections[$step->key][$user->id])),
-                    $writtenAt);
+                    $step->is_system && isset($detections[$step->key][$user->id]));
                 match ($step->kind) {
                     LearningStepKind::Action => $resolved->push($item),
                     LearningStepKind::Knowledge => $documents->push($item),
@@ -145,18 +139,12 @@ class ResolveLearningPath
         return $date !== null && (! $step->per_term || $termStart === null || $date->gte($termStart->copy()->subDays(self::TERM_LEAD_IN_DAYS)));
     }
 
-    private static function resolveStep(LearningStep $step, LearningStepAudience $winner, array $notes, ?LearningStepProgress $progress, ?Carbon $termStart, bool $detected, ?Carbon $writtenAt): ResolvedLearningStep
+    private static function resolveStep(LearningStep $step, LearningStepAudience $winner, array $notes, ?LearningStepProgress $progress, ?Carbon $termStart, bool $detected): ResolvedLearningStep
     {
         $completedAt = self::completionIsCurrent($step, $progress?->completed_at, $termStart) ? $progress->completed_at : null;
         $state = 'pending';
         if ($completedAt !== null) {
             $state = $progress->status === LearningProgressStatus::Done ? 'done' : ($winner->importance->isSkippable() ? 'skipped' : 'pending');
-        }
-        if ($detected && $step->key === 'write_handover') {
-            $detected = self::completionIsCurrent($step, $writtenAt, $termStart);
-            if ($detected) {
-                $completedAt = $writtenAt;
-            }
         }
         if ($detected) {
             return new ResolvedLearningStep($step, 'done', true, $completedAt, $winner->importance, $winner->stage, $winner->label(app()->getLocale()), $notes, $winner->id, $winner->type->value.':'.$winner->source_id.':'.$winner->tenant_id);

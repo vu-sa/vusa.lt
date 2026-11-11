@@ -129,7 +129,9 @@ function groups(steps: LearningStepData[]) {
             <span class="mx-auto flex size-6 items-center justify-center border-2 border-border text-xs font-bold tabular-nums text-muted-foreground" aria-hidden="true">{{ stepIndex + 1 }}</span>
             <div class="min-w-0">
               <p class="text-lg font-bold leading-6">{{ step.title }}</p>
-              <p v-if="step.description" class="mt-1 max-w-prose text-sm leading-relaxed text-muted-foreground">{{ step.description }}</p>
+              <!-- Sanitized on write (LearningStep::sanitizedHtmlTranslations). -->
+              <!-- eslint-disable-next-line vue/no-v-html -->
+              <div v-if="step.description" class="rc-prose mt-1 max-w-prose text-sm text-muted-foreground" data-slot="step-description" v-html="step.description" />
               <LearningAudienceNotes :notes="step.audienceNotes" class="mt-2" />
             </div>
           </li>

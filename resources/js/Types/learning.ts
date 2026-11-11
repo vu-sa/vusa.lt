@@ -29,6 +29,7 @@ export interface LearningStepData {
   description: string;
   source: LearningSource | null;
   actionUrl: string | null;
+  actionLabel: string | null;
   state: 'pending' | 'done' | 'skipped' | 'updated';
   autoCompleted: boolean;
   automaticallyTracked: boolean;
@@ -36,7 +37,7 @@ export interface LearningStepData {
   skippable: boolean;
   insightsCount: number;
   reviewedAt: string | null;
-  glossaryTerms: Pick<GlossaryTermData, 'id' | 'term' | 'definition'>[];
+  glossaryTerms: Pick<GlossaryTermData, 'id' | 'term' | 'abbreviation' | 'definition'>[];
 }
 
 export interface LearningPathData {
@@ -88,6 +89,8 @@ export interface LearningStepEditData {
   key?: string | null;
   title: { lt: string; en: string };
   description: { lt: string; en: string };
+  action_label?: { lt: string; en: string };
+  action_url?: { lt: string; en: string };
   kind: LearningStepKind;
   learning_section_id: string | null;
   audiences: LearningAudienceEditData[];
@@ -113,46 +116,15 @@ export interface LearningCoordinator {
 export interface GlossaryTermData {
   id: string;
   term: string;
+  abbreviation: string;
   definition: string;
   stepsCount: number;
   steps: { id: string; title: string; url: string | null; isDocument: boolean }[];
   translations: {
     term: { lt: string; en: string };
+    abbreviation?: { lt: string; en: string };
     definition: { lt: string; en: string };
   };
-}
-
-export const handoverFields = ['situation', 'open_issues', 'people', 'resources', 'advice'] as const;
-export type HandoverField = typeof handoverFields[number];
-
-export interface HandoverNoteData {
-  id: string;
-  dutyId: string;
-  duty: string;
-  author: { id: string; name: string };
-  seatDutyId: string;
-  seatTitle: string;
-  cadenceId: string | null;
-  cadenceLabel: string;
-  termStart: string | null;
-  situation: string | null;
-  open_issues: string | null;
-  people: string | null;
-  resources: string | null;
-  advice: string | null;
-  createdAt: string | null;
-  updatedAt: string | null;
-}
-
-export interface WritableHandoverDuty {
-  dutyId: string;
-  title: string;
-  cadenceId: string | null;
-  cadenceLabel: string;
-  termStart: string;
-  author: { id: string; name: string };
-  note: HandoverNoteData | null;
-  notes: HandoverNoteData[];
 }
 
 export interface LearningRepresentative {

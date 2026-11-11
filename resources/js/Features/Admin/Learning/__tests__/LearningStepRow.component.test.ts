@@ -63,7 +63,7 @@ describe('LearningStepRow', () => {
     const wrapper = render(data);
     const links = wrapper.get('[data-slot="step-title-row"]').findAll('a');
     expect(links[0]!.text()).toBe(data.title);
-    expect(links[0]!.attributes('href')).toBe(wrapper.get('a[aria-label="learning.path.open_step"]').attributes('href'));
+    expect(links[0]!.attributes('href')).toMatch(/^\/mocked-route\/learningSteps\.show/);
     expect(links[1]!.attributes('href')).toBe(links[0]!.attributes('href') + '#insights');
     expect(wrapper.get('[data-slot="learning-step-action"]').attributes('href')).toBe(data.source?.url);
     wrapper.unmount();
@@ -78,26 +78,49 @@ describe('LearningStepRow', () => {
     wrapper.unmount();
   });
 
-  it.each(['install_app', 'browser_push', 'meet_institution_contacts', 'check_access', 'review_contacts', null])('keeps rich instructions on the step page: %s', key => {
+  it.each(['install_app', 'browser_push', 'meet_institution_contacts', null])('keeps rich instructions on the step page: %s', key => {
     const data = step({ key, isSystem: key !== null, audienceNotes: [{ label: 'SPK', description: 'Audience instructions' }] });
     const wrapper = render(data, true);
     expect(wrapper.find('details').exists()).toBe(false);
     expect(wrapper.find('[data-slot="audience-notes"]').exists()).toBe(false);
-    expect(wrapper.get('a[aria-label="learning.path.open_step"]').attributes('href')).toMatch(/^\/mocked-route\/learningSteps\.show/);
     expect(wrapper.findComponent({ name: 'LearningStepContent' }).exists()).toBe(false);
     wrapper.unmount();
   });
 
-  it.each([
-    { source: { type: 'url' as const, url: 'https://example.test/read', documentId: null, documentStatus: null, title: null } },
-    { kind: LearningStepKind.Action, actionUrl: '/mano/profile' },
-  ])('puts the primary action label before its arrow and keeps an eye link', overrides => {
-    const wrapper = render(step(overrides));
+  it('puts the primary action label before its arrow and opens documents in a new tab', () => {
+    const wrapper = render(step({ source: { type: 'url', url: 'https://example.test/read', documentId: null, documentStatus: null, title: null } }));
     const action = wrapper.get('[data-slot="learning-step-action"]');
-    expect(action.element.firstChild?.textContent?.trim()).toMatch(/learning.path.(read_document|open)/);
+    expect(action.element.firstChild?.textContent?.trim()).toBe('learning.path.read_document');
     expect(action.element.lastElementChild?.tagName.toLowerCase()).toBe('svg');
-    expect(action.classes()).toContain('hover:border-brand');
-    expect(wrapper.get('a[aria-label="learning.path.open_step"]').attributes('title')).toBe('learning.path.open_step');
+    expect(action.attributes('target')).toBe('_blank');
+    wrapper.unmount();
+  });
+
+  it('labels an action with its own button text and keeps platform pages in the app', () => {
+    const wrapper = render(step({ kind: LearningStepKind.Action, actionUrl: '/mano/profile/notifications', actionLabel: 'Nustatyti pranešimus' }));
+    const action = wrapper.get('[data-slot="learning-step-action"]');
+    expect(action.text()).toBe('Nustatyti pranešimus');
+    expect(action.attributes('target')).toBeUndefined();
+    expect(action.find('svg').exists()).toBe(true);
+    wrapper.unmount();
+  });
+
+  it.each([
+    [LearningImportance.Essential, 'bg-brand-fill', 'uppercase'],
+    [LearningImportance.Recommended, 'border-border', 'uppercase'],
+    [LearningImportance.Optional, 'hover:bg-accent', 'normal-case'],
+  ])('weighs the %s action button by importance', (importance, look, voice) => {
+    const wrapper = render(step({ kind: LearningStepKind.Action, actionUrl: '/mano/profile', importance }));
+    const classes = wrapper.get('[data-slot="learning-step-action"]').classes();
+    expect(classes).toContain(look);
+    expect(classes).toContain(voice);
+    wrapper.unmount();
+  });
+
+  it('leaves the description to the step page and has no separate open button', () => {
+    const wrapper = render(step({ description: 'Full instructions.' }));
+    expect(wrapper.text()).not.toContain('Full instructions.');
+    expect(wrapper.find('a[aria-label="learning.path.open_step"]').exists()).toBe(false);
     wrapper.unmount();
   });
 
@@ -132,31 +155,10 @@ describe('LearningStepRow', () => {
 });
 
  it('uses a document icon and labeled terms without redundant type text', () => {
-    const wrapper = mount(LearningStepRow, { props: { step: step({ glossaryTerms: [{ id: 'term-1', term: 'Mandatas', definition: 'Atstovavimo laikotarpis' }] }), showGlossary: true }, global: { stubs: commonStubs } });
+    const wrapper = mount(LearningStepRow, { props: { step: step({ glossaryTerms: [{ id: 'term-1', term: 'Mandatas', abbreviation: '', definition: 'Atstovavimo laikotarpis' }] }), showGlossary: true }, global: { stubs: commonStubs } });
     expect(wrapper.find('[aria-label="learning.path.kind_document"]').exists()).toBe(true);
     expect(wrapper.text()).toContain('learning.path.related_terms');
     expect(wrapper.text()).not.toContain('learning.path.kind_task');
     expect(wrapper.text()).not.toContain('learning.path.kind_document');
     wrapper.unmount();
  });
-
-it('clamps the system summary and leaves full instructions on the step page', () => {
-  const wrapper = render(step({ key: 'review_contacts', isSystem: true, description: 'Full account instructions.' }));
-  expect(wrapper.text()).toContain('learning.system_steps.review_contacts.summary');
-  expect(wrapper.text()).not.toContain('Full account instructions.');
-  expect(wrapper.find('details').exists()).toBe(false);
-  expect(wrapper.find('p.line-clamp-2').exists()).toBe(true);
-  wrapper.unmount();
-});
-
-it('shows coordinator contacts beside the step without a disclosure', () => {
-  const wrapper = mount(LearningStepRow, {
-    props: { step: step({ key: 'meet_coordinator', isSystem: true }), coordinators: [{ id: 'coordinator', name: 'Rūta', email: 'ruta@example.test', profile_photo_path: null, duty: 'Koordinatorius', pronouns: {}, use_original_duty_name: true, institutions: [] }] },
-    global: { stubs: commonStubs },
-  });
-  expect(wrapper.find('details').exists()).toBe(false);
-  expect(wrapper.get('[data-slot="learning-coordinators"]').text()).toContain('Rūta');
-  expect(wrapper.find('a[href="mailto:ruta@example.test"]').exists()).toBe(true);
-  wrapper.unmount();
-});
-

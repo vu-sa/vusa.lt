@@ -210,7 +210,7 @@ class LearningPathPilotSeeder extends Seeder
             'kind' => $definition['kind'],
             'order' => $definition['order'],
             'title' => $definition['title'],
-            'description' => $definition['description'],
+            'description' => array_map(fn (string $text): string => '<p>'.nl2br(e($text), false).'</p>', $definition['description']),
         ]);
         $step->save();
         $step->audiences()->delete();
@@ -264,7 +264,7 @@ class LearningPathPilotSeeder extends Seeder
             'pilot_spk_regulations' => ['Studijų programos komitetas', 'Kvorumas', 'Socialiniai partneriai', 'Studijų rezultatai', 'Kamieninis akademinis padalinys'],
             'pilot_spk_programme' => ['Studijų programos aprašas', 'Dalyko (modulio) aprašas', 'Kreditas', 'Studijų rezultatai'],
             'pilot_vu_statute' => ['Senatas', 'Taryba', 'Kamieninis akademinis padalinys'],
-            'pilot_law_on_higher_education' => ['Akreditacija', 'SKVC'],
+            'pilot_law_on_higher_education' => ['Akreditacija', 'Studijų kokybės vertinimo centras'],
             'pilot_vusa_statute' => ['Kadencija'],
         ];
 
@@ -281,17 +281,17 @@ class LearningPathPilotSeeder extends Seeder
         }
     }
 
-    /** @return list<array{term: array{lt: string, en: string}, definition: array{lt: string, en: string}}> */
+    /** @return list<array{term: array{lt: string, en: string}, abbreviation?: array{lt?: string, en?: string}, definition: array{lt: string, en: string}}> */
     private function glossaryTerms(): array
     {
         return [
-            ['term' => ['lt' => 'Studijų programos komitetas', 'en' => 'Study programme committee'], 'definition' => ['lt' => 'Akademinis darinys, kuris koordinuoja studijų programą ir prižiūri jos vykdymą. Sutrumpinimas – SPK.', 'en' => 'The academic body that coordinates a study programme and oversees how it is run. Abbreviated SPK.']],
+            ['term' => ['lt' => 'Studijų programos komitetas', 'en' => 'Study programme committee'], 'abbreviation' => ['lt' => 'SPK', 'en' => 'SPC'], 'definition' => ['lt' => 'Akademinis darinys, kuris koordinuoja studijų programą ir prižiūri jos vykdymą. Sutrumpinimas – SPK.', 'en' => 'The academic body that coordinates a study programme and oversees how it is run. Abbreviated SPK.']],
             ['term' => ['lt' => 'Studijų programos aprašas', 'en' => 'Study programme description'], 'definition' => ['lt' => 'Dokumentas, kuriame aprašyti programos tikslai, studijų rezultatai, struktūra ir dalykai.', 'en' => 'The document describing a programme\'s aims, learning outcomes, structure and courses.']],
             ['term' => ['lt' => 'Dalyko (modulio) aprašas', 'en' => 'Course unit (module) description'], 'definition' => ['lt' => 'Vieno dalyko turinys, studijų rezultatai, vertinimo tvarka ir krūvis.', 'en' => 'The content, learning outcomes, assessment and workload of one course.']],
             ['term' => ['lt' => 'Studijų rezultatai', 'en' => 'Learning outcomes'], 'definition' => ['lt' => 'Ką studentas turi žinoti ir gebėti baigęs dalyką ar programą.', 'en' => 'What a student should know and be able to do after a course or programme.']],
             ['term' => ['lt' => 'Kreditas', 'en' => 'Credit'], 'definition' => ['lt' => 'Studijų apimties vienetas (ECTS); vienas kreditas atitinka apie 25–30 valandų studento darbo.', 'en' => 'A unit of study workload (ECTS); one credit is about 25–30 hours of student work.']],
             ['term' => ['lt' => 'Akreditacija', 'en' => 'Accreditation'], 'definition' => ['lt' => 'Išorinio vertinimo rezultatas: leidimas vykdyti studijų kryptį tam tikram laikotarpiui.', 'en' => 'The outcome of external evaluation: permission to run a study field for a set period.']],
-            ['term' => ['lt' => 'SKVC', 'en' => 'SKVC'], 'definition' => ['lt' => 'Studijų kokybės vertinimo centras – institucija, kuri organizuoja studijų krypčių išorinį vertinimą ir akreditaciją.', 'en' => 'Centre for Quality Assessment in Higher Education – organises external evaluation and accreditation of study fields.']],
+            ['term' => ['lt' => 'Studijų kokybės vertinimo centras', 'en' => 'Centre for Quality Assessment in Higher Education'], 'abbreviation' => ['lt' => 'SKVC'], 'definition' => ['lt' => 'Institucija, kuri organizuoja studijų krypčių išorinį vertinimą ir akreditaciją.', 'en' => 'Organises external evaluation and accreditation of study fields.']],
             ['term' => ['lt' => 'Senatas', 'en' => 'Senate'], 'definition' => ['lt' => 'Universiteto akademinių reikalų valdymo organas: tvirtina studijų tvarką, programas ir kitus akademinius sprendimus.', 'en' => 'The university body governing academic matters: approves study rules, programmes and other academic decisions.']],
             ['term' => ['lt' => 'Taryba', 'en' => 'Council'], 'definition' => ['lt' => 'Universiteto strateginio valdymo organas: strategija, biudžetas, rektoriaus rinkimai.', 'en' => 'The university\'s strategic governing body: strategy, budget, election of the Rector.']],
             ['term' => ['lt' => 'Kamieninis akademinis padalinys', 'en' => 'Core academic unit'], 'definition' => ['lt' => 'Fakultetas, institutas ar centras, vykdantis studijas. Sutrumpinimas – KAP.', 'en' => 'A faculty, institute or centre that runs studies. Abbreviated KAP.']],

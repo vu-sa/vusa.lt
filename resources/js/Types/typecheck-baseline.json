@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "total": 2618,
+  "total": 2612,
   "fingerprints": {
     "docs/pdf/build-release.ts | TS2322 | Type 'string | undefined' is not assignable to type 'string'.": 1,
     "docs/pdf/build-release.ts | TS2345 | Argument of type 'string | undefined' is not assignable to parameter of type 'string'.": 1,
@@ -415,12 +415,7 @@
     "resources/js/Components/CommandPalette/useCommandActions.ts | TS7006 | Parameter 'action' implicitly has an 'any' type.": 1,
     "resources/js/Components/CommandPalette/useCommandActions.ts | TS7006 | Parameter 'section' implicitly has an 'any' type.": 2,
     "resources/js/Components/CommandPalette/useCommandActions.ts | TS7006 | Parameter 'workspace' implicitly has an 'any' type.": 3,
-    "resources/js/Components/Discussions/DiscussionPanel.vue | TS2322 | Type 'number' is not assignable to type 'string'.": 1,
     "resources/js/Components/Discussions/DiscussionPanel.vue | TS2352 | Conversion of type '{ can: { index: { agenda_item?: boolean | undefined; banner?: boolean | undefined; calendar?: boolean | undefined; comment?: boolean | undefined; document?: boolean | undefined; dutiable?: boolean | undefined; ... 27 more ...; user?: boolean | undefined; }; create: { ...; }; forceDelete: { ...; }; }; changes: { ...;...' to type '{ user?: User | undefined; } | undefined' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.": 1,
-    "resources/js/Components/Discussions/PollBlock.vue | TS2322 | Type 'number' is not assignable to type 'string'.": 1,
-    "resources/js/Components/Discussions/PollComposer.vue | TS2322 | Type 'number' is not assignable to type 'string'.": 1,
-    "resources/js/Components/Discussions/__tests__/CommentComposer.component.test.ts | TS2322 | Type '{ id: string; name: string; }[]' is not assignable to type 'MentionableUser[]'.": 1,
-    "resources/js/Components/Discussions/__tests__/CommentComposer.component.test.ts | TS2532 | Object is possibly 'undefined'.": 1,
     "resources/js/Components/Discussions/__tests__/PollBlock.component.test.ts | TS2532 | Object is possibly 'undefined'.": 2,
     "resources/js/Components/Duties/MyDutyTermRow.vue | TS2322 | Type 'User | {}' is not assignable to type 'DutyNameHolder | null | undefined'.": 2,
     "resources/js/Components/Duties/__tests__/DutyHolderCard.component.test.ts | TS2352 | Conversion of type '{ id: string; name: string; pivot: Record<string, unknown>; }' to type 'User' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.": 1,
@@ -941,7 +936,6 @@
     "resources/js/Composables/useToasts.ts | TS2339 | Property 'toast_duration' does not exist on type '{ data: any; info: string | null; success: string | null; error: string | null; }'.": 4,
     "resources/js/Composables/useTutorialProgress.ts | TS2322 | Type 'string | null' is not assignable to type 'number | null'.": 1,
     "resources/js/Composables/useUnreadNotificationCount.ts | TS2304 | Cannot find name 'PageProps'.": 1,
-    "resources/js/Features/Admin/ActivityLogViewer/RecordActivity.vue | TS2352 | Conversion of type '{ can: { index: { agenda_item?: boolean | undefined; banner?: boolean | undefined; calendar?: boolean | undefined; comment?: boolean | undefined; document?: boolean | undefined; dutiable?: boolean | undefined; ... 27 more ...; user?: boolean | undefined; }; create: { ...; }; forceDelete: { ...; }; }; changes: { ...;...' to type '{ user?: User | undefined; } | undefined' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.": 1,
     "resources/js/Features/Admin/ActivityLogViewer/__tests__/ActivityLogSheet.component.test.ts | TS2532 | Object is possibly 'undefined'.": 1,
     "resources/js/Features/Admin/AdminSearch/Components/AdminFacetSidebar.vue | TS2322 | Type 'LucideIcon | undefined' is not assignable to type 'LucideIcon'.": 2,
     "resources/js/Features/Admin/AdminSearch/Components/Facets/FacetRadioGroup.vue | TS2345 | Argument of type 'AcceptableValue' is not assignable to parameter of type 'string'.": 1,

@@ -180,11 +180,10 @@ class AdminNavigationCatalog
             descriptionKey: 'shell.workspaces.pradzia.description',
             sections: [
                 new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard', [], null, Visibility::always()),
-                new Section('kelias', 'shell.sections.kelias', 'learningPath.show', [], null, Visibility::always(), matches: ['learningPath.*', 'learningSteps.*', 'glossaryTerms.*', 'handoverNotes.*'], descriptionKey: 'shell.section_descriptions.kelias', children: [
+                new Section('kelias', 'shell.sections.kelias', 'learningPath.show', [], null, Visibility::always(), matches: ['learningPath.*', 'learningSteps.*', 'glossaryTerms.*'], descriptionKey: 'shell.section_descriptions.kelias', children: [
                     new SectionLink('path', 'shell.section_children.kelias.path', 'learningPath.show', Visibility::always()),
                     new SectionLink('documents', 'shell.section_children.kelias.documents', 'learningPath.documents', Visibility::always()),
                     new SectionLink('glossary', 'shell.section_children.kelias.glossary', 'glossaryTerms.index', Visibility::always()),
-                    new SectionLink('handover', 'shell.section_children.kelias.handover', 'learningPath.handover', Visibility::always()),
                     new SectionLink('reps', 'shell.section_children.kelias.reps', 'learningPath.reps', Visibility::callback(fn (User $user): bool => LearningAdminPresenter::canSeeReps($user))),
                     new SectionLink('library', 'shell.section_children.kelias.library', 'learningSteps.index', Visibility::can('manage', LearningStep::class)),
                 ]),

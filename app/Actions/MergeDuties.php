@@ -23,7 +23,6 @@ class MergeDuties
 
     /** duty_id columns repointed only where the kept duty has no row sharing these columns. */
     public const array REPOINT_DEDUPED = [
-        'handover_notes' => ['user_id', 'cadence_id'],
         'duty_duty_type' => ['duty_type_id'],
         'duty_responsibilities' => ['responsibility', 'scope_type', 'scope_id'],
     ];

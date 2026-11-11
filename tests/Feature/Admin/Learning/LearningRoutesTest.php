@@ -25,7 +25,6 @@ test('members can open learning pages with their typed payloads', function (stri
     'path' => ['learningPath.show', 'ShowLearningPath', 'path.stages'],
     'documents' => ['learningPath.documents', 'ShowLearningDocuments', 'documents'],
     'glossary' => ['glossaryTerms.index', 'IndexGlossaryTerm', 'terms'],
-    'handover' => ['learningPath.handover', 'ShowHandover', 'received'],
 ]);
 
 test('a member can open a library step and its presenter contract', function (): void {

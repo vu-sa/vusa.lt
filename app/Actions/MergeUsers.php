@@ -51,7 +51,6 @@ class MergeUsers
      * columns; the merged account's duplicate is dropped instead.
      */
     public const array REPOINT_DEDUPED = [
-        'handover_notes' => ['duty_id', 'cadence_id'],
         'comment_poll_votes' => ['comment_id'],
         'comment_reactions' => ['comment_id', 'emoji'],
         'content_editor_drafts' => ['kind', 'identity'],

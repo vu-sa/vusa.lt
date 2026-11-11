@@ -9,28 +9,21 @@ use App\Enums\ResponsibilityPurpose;
 
 final class SystemStepRegistry
 {
-    /** @return array<string, array{audience: LearningAudienceType|ResponsibilityPurpose, stage: LearningStage, importance: LearningImportance, per_term: bool, skippable: bool, actionRoute: string|null, detector: class-string<SystemStepDetector>|null, title: string, description: string, action: string}> */
+    /** @return array<string, array{audience: LearningAudienceType|ResponsibilityPurpose, stage: LearningStage, importance: LearningImportance, per_term: bool, skippable: bool, detector: class-string<SystemStepDetector>|null, title: string, description: string, action: string}> */
     public static function definitions(): array
     {
         $definitions = [
-            'check_access' => [LearningAudienceType::Everyone, LearningStage::BeforeStart, LearningImportance::Essential, false, 'profile.roles', null],
-            'review_contacts' => [LearningAudienceType::Everyone, LearningStage::BeforeStart, LearningImportance::Recommended, false, 'profile', null],
-            'notification_settings' => [LearningAudienceType::Everyone, LearningStage::BeforeStart, LearningImportance::Recommended, false, 'profile.notifications', NotificationSettingsDetector::class],
-            'install_app' => [LearningAudienceType::Everyone, LearningStage::BeforeStart, LearningImportance::Optional, false, null, null],
-            'browser_push' => [LearningAudienceType::Everyone, LearningStage::BeforeStart, LearningImportance::Optional, false, null, BrowserPushDetector::class],
-            'orientation' => [LearningAudienceType::Everyone, LearningStage::BeforeStart, LearningImportance::Recommended, false, 'tasks.index', null],
-            'meet_coordinator' => [ResponsibilityPurpose::StudentRepresentation, LearningStage::BeforeStart, LearningImportance::Essential, true, null, null],
-            'follow_institution' => [ResponsibilityPurpose::StudentRepresentation, LearningStage::BeforeStart, LearningImportance::Recommended, false, null, InstitutionFollowDetector::class],
-            'record_first_meeting' => [ResponsibilityPurpose::StudentRepresentation, LearningStage::FirstMonths, LearningImportance::Essential, false, null, RecordedMeetingDetector::class],
-            'read_handover' => [ResponsibilityPurpose::StudentRepresentation, LearningStage::BeforeStart, LearningImportance::Essential, true, null, null],
-            'write_handover' => [ResponsibilityPurpose::StudentRepresentation, LearningStage::TermEnd, LearningImportance::Essential, true, null, WriteHandoverDetector::class],
+            'install_app' => [LearningAudienceType::Everyone, LearningStage::BeforeStart, LearningImportance::Optional, false, null],
+            'browser_push' => [LearningAudienceType::Everyone, LearningStage::BeforeStart, LearningImportance::Optional, false, BrowserPushDetector::class],
+            'meet_coordinator' => [ResponsibilityPurpose::StudentRepresentation, LearningStage::BeforeStart, LearningImportance::Essential, true, null],
+            'record_first_meeting' => [ResponsibilityPurpose::StudentRepresentation, LearningStage::FirstMonths, LearningImportance::Essential, false, RecordedMeetingDetector::class],
         ];
         $result = [];
-        foreach ($definitions as $key => [$audience, $stage, $importance, $perTerm, $route, $detector]) {
+        foreach ($definitions as $key => [$audience, $stage, $importance, $perTerm, $detector]) {
             $result[$key] = [
                 'audience' => $audience, 'stage' => $stage, 'importance' => $importance,
                 'per_term' => $perTerm, 'skippable' => $importance->isSkippable(),
-                'actionRoute' => $route, 'detector' => $detector,
+                'detector' => $detector,
                 'title' => "learning.system_steps.{$key}.title",
                 'description' => "learning.system_steps.{$key}.description",
                 'action' => "learning.system_steps.{$key}.action",

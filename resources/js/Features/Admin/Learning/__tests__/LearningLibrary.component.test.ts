@@ -114,7 +114,7 @@ describe('learning library', () => {
     const wrapper = mount(IndexGlossaryTerm, {
       props: {
         terms: [{
-          id: 'quorum', term: 'Kvorumas', definition: 'Būtinas narių skaičius.', stepsCount: 1,
+          id: 'quorum', term: 'Kvorumas', abbreviation: '', definition: 'Būtinas narių skaičius.', stepsCount: 1,
           translations: { term: { lt: 'Kvorumas', en: 'Quorum' }, definition: { lt: 'Būtinas narių skaičius.', en: 'Required members.' } },
           steps: [{ id: 'rules', title: 'Senato reglamentas', url: 'https://example.test/rules', isDocument: true }],
         }],

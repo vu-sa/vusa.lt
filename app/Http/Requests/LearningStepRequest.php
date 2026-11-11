@@ -72,6 +72,11 @@ class LearningStepRequest extends FormRequest
             'title.en' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'array:lt,en'],
             'description.*' => ['nullable', 'string', 'max:20000'],
+            'action_label' => ['exclude_unless:kind,action', 'nullable', 'array:lt,en'],
+            'action_label.*' => ['nullable', 'string', 'max:60'],
+            'action_url' => ['exclude_unless:kind,action', 'nullable', 'array:lt,en'],
+            // A page inside the platform ("/mano/…") or a full web address.
+            'action_url.*' => ['nullable', 'string', 'max:2048', 'regex:#^(https?://[^\s]+|/(?!/)[^\s]*)$#i'],
             'per_term' => ['sometimes', 'boolean'],
             'order' => ['sometimes', 'integer', 'min:0'],
             'is_active' => ['sometimes', 'boolean'],

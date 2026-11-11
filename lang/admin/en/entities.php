@@ -11,7 +11,6 @@
 return [
     'learningStep' => ['model' => '{1} learning step|[2,*] learning steps', 'gender' => 'm'],
     'glossaryTerm' => ['model' => '{1} glossary term|[2,*] glossary terms', 'gender' => 'f'],
-    'handoverNote' => ['model' => '{1} handover note|[2,*] handover notes', 'gender' => 'f'],
 
     'duty' => [
         'model' => '{1} duty|[2,*] duties',

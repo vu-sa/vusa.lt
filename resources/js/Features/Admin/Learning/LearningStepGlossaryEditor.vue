@@ -4,8 +4,8 @@
       <div class="min-w-0 flex-1">
         <MultiSelect
           v-model="selectedItems"
-          :options="options"
-          label-field="term"
+          :options="labelledOptions"
+          label-field="label"
           value-field="id"
           :placeholder="$t('learning_library.step_glossary.placeholder')"
           :search-placeholder="$t('learning_library.step_glossary.search_placeholder')"
@@ -30,7 +30,7 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import { Button } from '@/Components/ui/button';
 import { MultiSelect } from '@/Components/ui/multi-select';
@@ -38,6 +38,7 @@ import { MultiSelect } from '@/Components/ui/multi-select';
 export interface GlossaryTermOption {
   id: string;
   term: string;
+  abbreviation?: string;
 }
 
 const props = defineProps<{
@@ -51,14 +52,17 @@ const emit = defineEmits<{
   'update:selected': [items: GlossaryTermOption[]];
 }>();
 
-const selectedItems = ref<GlossaryTermOption[]>([...props.selected]);
+// Pickers search the abbreviation too, since that is how a term usually appears in documents.
+const withLabel = (item: GlossaryTermOption) => ({ ...item, label: item.abbreviation ? `${item.term} (${item.abbreviation})` : item.term });
+const labelledOptions = computed(() => props.options.map(withLabel));
+const selectedItems = ref<GlossaryTermOption[]>(props.selected.map(withLabel));
 
 const form = useForm<{ term_ids: string[] }>({
   term_ids: props.selected.map(item => item.id),
 });
 
 watch(() => props.selected, (next) => {
-  selectedItems.value = [...next];
+  selectedItems.value = next.map(withLabel);
   form.term_ids = next.map(item => item.id);
 }, { deep: true });
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { ArrowUpRight, BookOpen, NotebookPen } from '@lucide/vue';
+import { ArrowUpRight, BookOpen } from '@lucide/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
@@ -16,7 +16,6 @@ const figures = computed(() => [
 ]);
 const tiles = computed(() => [
   { key: 'glossary', label: $t('learning.pages.glossary'), description: $t('learning.path.glossary_description'), href: route('glossaryTerms.index'), icon: BookOpen },
-  { key: 'handover', label: $t('learning.path.handover_title'), description: $t('learning.path.handover_description'), href: route('learningPath.handover'), icon: NotebookPen },
 ]);
 </script>
 

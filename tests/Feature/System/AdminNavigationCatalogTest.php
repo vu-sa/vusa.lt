@@ -168,11 +168,10 @@ describe('per-persona visibility', function (): void {
             'description' => 'shell.workspaces.pradzia.description',
             'sections' => [
                 ['key' => 'apzvalga', 'label' => 'shell.sections.apzvalga', 'routeName' => 'dashboard', 'routeParams' => [], 'entityType' => null, 'description' => null, 'collectionActions' => [], 'matches' => ['dashboard'], 'startsGroup' => false, 'children' => []],
-                ['key' => 'kelias', 'label' => 'shell.sections.kelias', 'routeName' => 'learningPath.show', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.kelias', 'collectionActions' => [], 'matches' => ['learningPath.*', 'learningSteps.*', 'glossaryTerms.*', 'handoverNotes.*'], 'startsGroup' => false, 'children' => [
+                ['key' => 'kelias', 'label' => 'shell.sections.kelias', 'routeName' => 'learningPath.show', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.kelias', 'collectionActions' => [], 'matches' => ['learningPath.*', 'learningSteps.*', 'glossaryTerms.*'], 'startsGroup' => false, 'children' => [
                     ['key' => 'path', 'label' => 'shell.section_children.kelias.path', 'routeName' => 'learningPath.show'],
                     ['key' => 'documents', 'label' => 'shell.section_children.kelias.documents', 'routeName' => 'learningPath.documents'],
                     ['key' => 'glossary', 'label' => 'shell.section_children.kelias.glossary', 'routeName' => 'glossaryTerms.index'],
-                    ['key' => 'handover', 'label' => 'shell.section_children.kelias.handover', 'routeName' => 'learningPath.handover'],
                 ]],
                 ['key' => 'uzduotys', 'label' => 'shell.sections.uzduotys', 'routeName' => 'tasks.index', 'routeParams' => [], 'entityType' => 'task', 'description' => 'shell.section_descriptions.uzduotys', 'collectionActions' => [], 'matches' => ['tasks.index'], 'startsGroup' => false, 'children' => []],
                 ['key' => 'pranesimai', 'label' => 'shell.sections.pranesimai', 'routeName' => 'notifications.index', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.pranesimai', 'collectionActions' => [], 'matches' => ['notifications.*'], 'startsGroup' => false, 'children' => []],
@@ -268,9 +267,9 @@ describe('per-persona visibility', function (): void {
         $adminWorkspace = $this->catalog->for($admin)['workspaces'][0];
 
         expect($plainWorkspace['sections'][1]['key'])->toBe('kelias')
-            ->and(array_column($plainWorkspace['sections'][1]['children'], 'key'))->toBe(['path', 'documents', 'glossary', 'handover'])
+            ->and(array_column($plainWorkspace['sections'][1]['children'], 'key'))->toBe(['path', 'documents', 'glossary'])
             ->and($adminWorkspace['sections'][1]['key'])->toBe('kelias')
-            ->and(array_column($adminWorkspace['sections'][1]['children'], 'key'))->toBe(['path', 'documents', 'glossary', 'handover', 'reps', 'library']);
+            ->and(array_column($adminWorkspace['sections'][1]['children'], 'key'))->toBe(['path', 'documents', 'glossary', 'reps', 'library']);
 
         $cached = Cache::get(AdminNavigationCatalog::CACHE_PREFIX.$plain->id);
         expect($cached['payload']['workspaces'][0]['sections'][1]['children'])->toBe($plainWorkspace['sections'][1]['children']);

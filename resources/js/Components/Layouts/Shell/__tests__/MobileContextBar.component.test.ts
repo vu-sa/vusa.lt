@@ -53,11 +53,11 @@ describe('MobileContextBar', () => {
     const links = [...switcher()!.querySelectorAll('[data-slot="mobile-section-child"]')];
     expect(links.map(link => link.textContent?.trim())).toEqual([
       'shell.section_children.kelias.path', 'shell.section_children.kelias.documents',
-      'shell.section_children.kelias.glossary', 'shell.section_children.kelias.handover',
+      'shell.section_children.kelias.glossary',
       'shell.section_children.kelias.reps', 'shell.section_children.kelias.library',
     ]);
     expect(links[1]!.getAttribute('href')).toBe('/mano/learningPath.documents');
-    expect(links.map(link => link.getAttribute('aria-current'))).toEqual([null, 'page', null, null, null, null]);
+    expect(links.map(link => link.getAttribute('aria-current'))).toEqual([null, 'page', null, null, null]);
     (links[1] as HTMLElement).click();
     await flushPromises();
 

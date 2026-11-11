@@ -94,7 +94,6 @@ return [
             'path' => 'My path',
             'documents' => 'Documents',
             'glossary' => 'Glossary',
-            'handover' => 'Handover',
             'reps' => 'Representatives',
             'library' => 'Library',
         ],
@@ -154,7 +153,7 @@ return [
     ],
 
     'section_descriptions' => [
-        'kelias' => 'Your learning steps and handover notes.',
+        'kelias' => 'Your learning steps, documents and glossary.',
         'uzduotys' => 'Work assigned to you and its deadlines',
         'pranesimai' => 'All your notifications',
         'atsakomybes' => 'Your duties and what they let you do',

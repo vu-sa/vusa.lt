@@ -6,7 +6,7 @@ export function step(overrides: Partial<LearningStepData> = {}): LearningStepDat
     id: 'step-1', key: null, isSystem: false, kind: LearningStepKind.Knowledge,
     audienceLabel: 'Pagrindas', audienceNotes: [], section: null, stage: LearningStage.FirstMonths,
     importance: LearningImportance.Recommended, title: 'Read the guide', description: 'Prepare to represent students.',
-    source: null, actionUrl: null, state: 'pending', autoCompleted: false, automaticallyTracked: false, completedAt: null,
+    source: null, actionUrl: null, actionLabel: null, state: 'pending', autoCompleted: false, automaticallyTracked: false, completedAt: null,
     skippable: true, insightsCount: 2, reviewedAt: null, glossaryTerms: [], ...overrides,
   };
 }

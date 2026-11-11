@@ -29,6 +29,8 @@ use Illuminate\Support\Carbon;
  * @property LearningStepKind $kind
  * @property array|string|null $title
  * @property array|string|null $description
+ * @property array|string|null $action_label
+ * @property array|string|null $action_url
  * @property bool $per_term
  * @property int $order
  * @property bool $is_active
@@ -41,12 +43,18 @@ use Illuminate\Support\Carbon;
  * @property-read Collection<int, GlossaryTerm> $glossaryTerms
  * @property-read User|null $createdBy
  */
-#[Fillable(['key', 'is_system', 'kind', 'learning_section_id', 'title', 'description', 'per_term', 'order', 'is_active', 'reviewed_at', 'created_by'])]
+#[Fillable(['key', 'is_system', 'kind', 'learning_section_id', 'title', 'description', 'action_label', 'action_url', 'per_term', 'order', 'is_active', 'reviewed_at', 'created_by'])]
 class LearningStep extends Model implements Commentable
 {
     use HasComments, HasFactory, HasTranslations, HasUlids, LogsModelActivity;
 
-    public $translatable = ['title', 'description'];
+    public $translatable = ['title', 'description', 'action_label', 'action_url'];
+
+    /** @return list<string> */
+    protected function sanitizedHtmlTranslations(): array
+    {
+        return ['description'];
+    }
 
     /** @return HasMany<LearningStepSource, $this> */
     public function sources(): HasMany

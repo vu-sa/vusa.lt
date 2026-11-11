@@ -47,17 +47,11 @@
 
       <FormFieldWrapper
         id="step-description"
-        :label="$t('learning_library.fields.why_useful')"
-        :hint="$t('learning_library.fields.why_useful_hint')"
+        :label="$t('learning_library.fields.description')"
+        :hint="$t('learning_library.fields.description_hint')"
         :error="form.errors[`description.${activeLocale}`] || form.errors.description"
       >
-        <Textarea
-          id="step-description"
-          v-model="form.description[activeLocale]"
-          rows="3"
-          :class="fieldSurfaceClass"
-          data-testid="step-description"
-        />
+        <TiptapEditor :key="activeLocale" v-model="form.description[activeLocale]" tools="description" html data-testid="step-description" />
       </FormFieldWrapper>
 
       <FormFieldWrapper
@@ -73,6 +67,35 @@
           :ariaLabel="$t('learning_library.fields.kind')"
           test-id-prefix="step-kind"
         />
+      </FormFieldWrapper>
+
+      <FormFieldWrapper
+        v-if="form.kind === LearningStepKind.Action"
+        id="step-action-label"
+        :label="$t('learning_library.fields.action')"
+        :hint="$t('learning_library.fields.action_hint')"
+        :error="form.errors[`action_label.${activeLocale}`] || form.errors[`action_url.${activeLocale}`]"
+      >
+        <div class="grid gap-2 sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+          <Input
+            id="step-action-label"
+            v-model="form.action_label[activeLocale]"
+            maxlength="60"
+            :aria-label="$t('learning_library.fields.action_label')"
+            :placeholder="$t('learning_library.fields.action_label')"
+            :class="['h-11', fieldSurfaceClass]"
+            data-testid="step-action-label"
+          />
+          <Input
+            id="step-action-url"
+            v-model="form.action_url[activeLocale]"
+            inputmode="url"
+            :aria-label="$t('learning_library.fields.action_url')"
+            :placeholder="$t('learning_library.fields.action_url_hint')"
+            :class="['h-11', fieldSurfaceClass]"
+            data-testid="step-action-url"
+          />
+        </div>
       </FormFieldWrapper>
 
       <FormFieldWrapper
@@ -326,10 +349,10 @@ import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
+import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { Label } from '@/Components/ui/label';
 import { NativeSelect } from '@/Components/ui/native-select';
 import { SingleSelect } from '@/Components/ui/single-select';
-import { Textarea } from '@/Components/ui/textarea';
 import { documentStatuses } from '@/Constants/statusIcons';
 import {
   DocumentStatus,
@@ -357,6 +380,8 @@ interface LearningStepFormState {
   learning_section_id: string | null;
   title: { lt: string; en: string };
   description: { lt: string; en: string };
+  action_label: { lt: string; en: string };
+  action_url: { lt: string; en: string };
   per_term: boolean;
   order: number;
   is_active: boolean;
@@ -398,6 +423,8 @@ const form = useForm<LearningStepFormState>({
     lt: props.step?.description?.lt ?? '',
     en: props.step?.description?.en ?? '',
   },
+  action_label: { lt: props.step?.action_label?.lt ?? '', en: props.step?.action_label?.en ?? '' },
+  action_url: { lt: props.step?.action_url?.lt ?? '', en: props.step?.action_url?.en ?? '' },
   per_term: props.step?.per_term ?? false,
   order: props.step?.order ?? 0,
   is_active: props.step?.is_active ?? true,
@@ -421,6 +448,10 @@ const fieldIds: Record<string, string> = {
   'description.lt': 'step-description',
   'description.en': 'step-description',
   'kind': 'step-kind',
+  'action_label.lt': 'step-action-label',
+  'action_label.en': 'step-action-label',
+  'action_url.lt': 'step-action-url',
+  'action_url.en': 'step-action-url',
   'audiences': 'step-audiences',
   'learning_section_id': 'step-section',
   'order': 'step-order',
@@ -432,6 +463,8 @@ const fieldIds: Record<string, string> = {
   'sources.en.url': 'source-url-en',
 };
 
+const hasText = (html: string) => html.replace(/<[^>]*>/g, '').trim() !== '' || /<(img|iframe|video)\b/i.test(html);
+
 const missingLocaleCounts = computed<Record<LocaleKey, number>>(() => {
   if (isSystem.value) {
     return { lt: 0, en: 0 };
@@ -439,7 +472,7 @@ const missingLocaleCounts = computed<Record<LocaleKey, number>>(() => {
   return {
     lt: form.title.lt.trim() === '' ? 1 : 0,
     en: (form.title.en.trim() === '' ? 1 : 0)
-      + (form.description.lt.trim() !== '' && form.description.en.trim() === '' ? 1 : 0),
+      + (hasText(form.description.lt) && !hasText(form.description.en) ? 1 : 0),
   };
 });
 
@@ -601,6 +634,8 @@ function buildPayload(data: LearningStepFormState): Record<string, unknown> {
     learning_section_id: data.kind === LearningStepKind.Knowledge ? data.learning_section_id : null,
     title: data.title,
     description: data.description,
+    action_label: { lt: data.action_label.lt.trim(), en: data.action_label.en.trim() },
+    action_url: { lt: data.action_url.lt.trim(), en: data.action_url.en.trim() },
     per_term: data.per_term,
     order: data.order,
     is_active: data.is_active,

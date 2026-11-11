@@ -61,10 +61,10 @@ describe('SectionTabs', () => {
 
       expect(links.map(link => link.attributes('href'))).toEqual([
         '/mocked-route/learningPath.show', '/mocked-route/learningPath.documents',
-        '/mocked-route/glossaryTerms.index', '/mocked-route/learningPath.handover',
+        '/mocked-route/glossaryTerms.index',
         '/mocked-route/learningPath.reps', '/mocked-route/learningSteps.index',
       ]);
-      expect(links.map(link => link.attributes('aria-current'))).toEqual([undefined, 'page', undefined, undefined, undefined, undefined]);
+      expect(links.map(link => link.attributes('aria-current'))).toEqual([undefined, 'page', undefined, undefined, undefined]);
     });
 
     it('lets the trail crumb win over the active child', () => {

@@ -46,7 +46,6 @@ use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
- * @property-read Collection<int, HandoverNote> $handoverNotes
  * @property string $id
  * @property array|string|null $name
  * @property array|string|null $description
@@ -544,11 +543,5 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
     protected function reindexRelatedSearchDocuments(): void
     {
         app(ContactSearchIndexSynchronizer::class)->dutyChanged($this);
-    }
-
-    /** @return HasMany<HandoverNote, $this> */
-    public function handoverNotes(): HasMany
-    {
-        return $this->hasMany(HandoverNote::class);
     }
 }

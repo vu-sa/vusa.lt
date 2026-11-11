@@ -6,7 +6,6 @@ use App\Actions\ResolveForbiddenExplanation;
 use App\Enums\ModelEnum;
 use App\Models\FileableFile;
 use App\Models\Goal;
-use App\Models\HandoverNote;
 use App\Models\InstitutionCheckIn;
 use App\Models\LearningStep;
 use App\Models\User;
@@ -45,8 +44,7 @@ class AuthServiceProvider extends ServiceProvider
         Gate::before(function (User $user, $ability, array $arguments) {
             // These policies enforce invariants even for super admins.
             if (($arguments[0] ?? null) === Goal::class || ($arguments[0] ?? null) instanceof Goal
-                || ($arguments[0] ?? null) instanceof LearningStep
-                || ($arguments[0] ?? null) instanceof HandoverNote) {
+                || ($arguments[0] ?? null) instanceof LearningStep) {
                 return null;
             }
 

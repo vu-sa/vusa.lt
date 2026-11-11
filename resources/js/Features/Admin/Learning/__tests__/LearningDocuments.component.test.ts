@@ -22,7 +22,7 @@ const data = () => ({
   ],
   documents: [
     step({ id: 'done', state: 'done', importance: LearningImportance.Essential, section: { id: 'second', title: 'Antras' } }),
-    step({ id: 'recommended', section: { id: 'first', title: 'Pirmas' }, glossaryTerms: [{ id: 'quorum', term: 'Kvorumas', definition: 'Būtinas narių skaičius.' }] }),
+    step({ id: 'recommended', section: { id: 'first', title: 'Pirmas' }, glossaryTerms: [{ id: 'quorum', term: 'Kvorumas', abbreviation: '', definition: 'Būtinas narių skaičius.' }] }),
     step({ id: 'unread', state: 'updated', importance: LearningImportance.Essential }),
     step({ id: 'optional', importance: LearningImportance.Optional }),
     step({ id: 'skipped', state: 'skipped', importance: LearningImportance.Essential }),

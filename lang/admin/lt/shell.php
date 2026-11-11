@@ -94,7 +94,6 @@ return [
             'path' => 'Mano kelias',
             'documents' => 'Dokumentai',
             'glossary' => 'Sąvokos',
-            'handover' => 'Patirties perdavimas',
             'reps' => 'Atstovai',
             'library' => 'Biblioteka',
         ],
@@ -154,7 +153,7 @@ return [
     ],
 
     'section_descriptions' => [
-        'kelias' => 'Tavo mokymosi žingsniai ir patirties perdavimas.',
+        'kelias' => 'Tavo mokymosi žingsniai, dokumentai ir sąvokos.',
         'uzduotys' => 'Tau priskirti darbai ir terminai',
         'pranesimai' => 'Visi tau skirti pranešimai',
         'atsakomybes' => 'Tavo pareigybės ir ką jos leidžia',

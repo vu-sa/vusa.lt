@@ -3,7 +3,9 @@
 use App\Actions\ResolveLearningPath;
 use App\Enums\DocumentStatus;
 use App\Enums\LearningStepKind;
+use App\Models\Comment;
 use App\Models\Document;
+use App\Models\GlossaryTerm;
 use App\Models\InstitutionType;
 use App\Models\LearningStep;
 use App\Models\LearningStepProgress;
@@ -45,10 +47,10 @@ test('hidden sources expose no link to members and an edit link to curators', fu
 
 test('system text is localized and raw URLs preserve the source contract', function (): void {
     $viewer = makeUser(Tenant::query()->firstOrFail());
-    $step = LearningStep::query()->where('key', 'check_access')->with('sources')->withCount('comments')->firstOrFail();
+    $step = LearningStep::query()->where('key', 'install_app')->with('sources')->withCount('comments')->firstOrFail();
     $data = LearningPathPresenter::step(new ResolvedLearningStep($step), $viewer, 'en');
-    expect($data['title'])->toBe(__('learning.system_steps.check_access.title', [], 'en'));
-    expect($data['actionUrl'])->toBe(route('profile.roles'));
+    expect($data['title'])->toBe(__('learning.system_steps.install_app.title', [], 'en'));
+    expect($data['actionLabel'])->toBe(__('learning.system_steps.install_app.action', [], 'en'));
     $custom = LearningStep::factory()->create();
     $custom->sources()->create(['locale' => 'en', 'url' => 'https://example.test/learn']);
     $custom->load('sources.document')->loadCount('comments');
@@ -57,9 +59,46 @@ test('system text is localized and raw URLs preserve the source contract', funct
     ]);
 });
 
+test('an authored task carries its own button text and link per language', function (): void {
+    $viewer = makeUser(Tenant::query()->firstOrFail());
+    $step = LearningStep::factory()->create([
+        'kind' => LearningStepKind::Action,
+        'action_label' => ['lt' => 'Nustatyti pranešimus', 'en' => 'Set notifications'],
+        'action_url' => ['lt' => '/mano/profile/notifications'],
+    ]);
+    $step->loadCount('comments');
+
+    $data = LearningPathPresenter::step(new ResolvedLearningStep($step), $viewer, 'en');
+    expect($data['actionLabel'])->toBe('Set notifications')
+        ->and($data['actionUrl'])->toBe('/mano/profile/notifications')
+        ->and($data['automaticallyTracked'])->toBeFalse();
+});
+
+test('the insights count leaves out deleted comments', function (): void {
+    $user = makeUser(Tenant::query()->firstOrFail());
+    LearningStep::query()->update(['is_active' => false]);
+    $step = LearningStep::factory()->create(['kind' => LearningStepKind::Action]);
+    Comment::factory()->for($step, 'commentable')->count(2)->create();
+    Comment::factory()->for($step, 'commentable')->create()->erase();
+
+    $item = ResolveLearningPath::execute($user)->steps->firstWhere('step.id', $step->id);
+    expect(LearningPathPresenter::step($item, $user, 'lt')['insightsCount'])->toBe(2);
+});
+
+test('system descriptions arrive as escaped paragraphs and terms carry their abbreviation', function (): void {
+    $viewer = makeUser(Tenant::query()->firstOrFail());
+    $step = LearningStep::query()->where('key', 'install_app')->firstOrFail();
+    $step->glossaryTerms()->attach(GlossaryTerm::factory()->create(['term' => ['lt' => 'Studijų programos komitetas'], 'abbreviation' => ['lt' => 'SPK']]));
+    $step->loadCount('comments');
+
+    $data = LearningPathPresenter::step(new ResolvedLearningStep($step), $viewer, 'lt');
+    expect($data['description'])->toBe('<p>'.e(__('learning.system_steps.install_app.description', [], 'lt')).'</p>')
+        ->and($data['glossaryTerms'][0]['abbreviation'])->toBe('SPK');
+});
+
 test('automatic tracking is exposed before a system step is completed', function (): void {
     $viewer = makeUser(Tenant::query()->firstOrFail());
-    foreach (['profile_photo' => true, 'notification_settings' => true, 'check_access' => false] as $key => $tracked) {
+    foreach (['browser_push' => true, 'record_first_meeting' => true, 'install_app' => false] as $key => $tracked) {
         $step = LearningStep::query()->where('key', $key)->firstOrFail();
         $data = LearningPathPresenter::step(new ResolvedLearningStep($step), $viewer, 'lt');
         expect($data['automaticallyTracked'])->toBe($tracked)

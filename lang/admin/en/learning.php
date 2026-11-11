@@ -7,7 +7,6 @@ return [
         'path' => 'My path',
         'library' => 'Manage',
         'glossary' => 'Glossary',
-        'handover' => 'Handover',
         'reps' => 'My representatives',
         'step' => 'Learning step',
         'create' => 'Create learning step',
@@ -54,7 +53,7 @@ return [
     ],
     'empty' => [
         'title' => 'Your learning space will be here',
-        'description' => 'We are preparing the steps, glossary and handover.',
+        'description' => 'We are preparing the steps and glossary.',
     ],
     'validation' => [
         'audience_source' => 'Choose an existing audience source.',
@@ -63,56 +62,20 @@ return [
         'progress' => 'This progress change is not allowed.',
     ],
     'system_steps' => [
-        'check_access' => [
-            'summary' => 'Check your duties and access to the sections you need.',
-            'title' => 'Check your duties and access',
-            'description' => 'Check your institutions, duties, dates and available sections. Report anything missing or incorrect to an administrator.',
-            'action' => 'Review duties',
-        ],
-        'review_contacts' => [
-            'summary' => 'Check your contact details and photo so colleagues can recognise and reach you.',
-            'title' => 'Review your contact details',
-            'description' => 'Account settings let you update your contacts, photo and form of address. Your login email cannot be changed here, and your name can only be corrected once. Also check your photo – your representative coordinator may have already uploaded one. A photo and phone number are optional.',
-            'action' => 'Open account',
-        ],
-        'notification_settings' => [
-            'summary' => 'Choose where and how often to receive notifications.',
-            'title' => 'Choose how to receive notifications',
-            'description' => 'Check which email addresses receive notifications, the digest frequency and the notification types you need. You can keep the defaults. You can also send a test email from the settings page.',
-            'action' => 'Set notifications',
-        ],
-        'profile_photo' => [
-            'title' => 'Add your photo',
-            'description' => 'A photo helps colleagues recognise you. You can change it in your account.',
-            'action' => 'Open account',
-        ],
         'install_app' => [
-            'summary' => 'Open Mano VU SA from your device with one tap.',
             'title' => 'Install Mano VU SA',
             'description' => 'Add Mano VU SA to your phone’s home screen or computer’s applications for quick access. Installation is optional; you can continue using your browser.',
             'action' => 'Install',
         ],
         'browser_push' => [
-            'summary' => 'Receive reminders directly on this device.',
             'title' => 'Enable browser notifications',
             'description' => 'Receive reminders and other notifications you choose on this device. Your browser only asks for permission after you press the enable button. Declining leaves your email and in-app notification settings unchanged.',
             'action' => 'Enable notifications',
-        ],
-        'orientation' => [
-            'summary' => 'Find your tasks, workspaces and help.',
-            'title' => 'Learn where to start',
-            'description' => 'Home shows work needing your attention first. The workspace menu lists sections you can access. Help, the guide and the interactive tour are available through your account menu.',
-            'action' => 'Open tasks',
         ],
         'meet_coordinator' => [
             'title' => 'Meet your coordinator',
             'description' => 'Agree how to stay in touch and where to ask for help.',
             'action' => 'Get in touch',
-        ],
-        'follow_institution' => [
-            'title' => 'Follow your institution',
-            'description' => 'Follow your institution to receive relevant notifications.',
-            'action' => 'Follow institution',
         ],
         'meet_institution_contacts' => [
             'title' => 'Meet your institution contacts',
@@ -123,16 +86,6 @@ return [
             'title' => 'Record your first meeting',
             'description' => 'Record the questions discussed and decisions made after your meeting.',
             'action' => 'Record a meeting',
-        ],
-        'read_handover' => [
-            'title' => 'Read your handover notes',
-            'description' => 'Review your predecessor’s experience, unfinished work and advice.',
-            'action' => 'Read notes',
-        ],
-        'write_handover' => [
-            'title' => 'Pass on your experience',
-            'description' => 'Describe unfinished work, useful contacts and advice for your successor.',
-            'action' => 'Write notes',
         ],
     ],
     'glossary' => ['where_used' => 'Where it appears'],
@@ -155,8 +108,6 @@ return [
         'open_step' => 'Open step',
         'manage_terms' => 'Manage terms',
         'glossary_description' => 'Definitions of related terms.',
-        'handover_title' => 'Experience handover',
-        'handover_description' => 'Notes from predecessors and your experience for the next representative.',
         'audience_notes' => 'What it means for you',
         'related_terms' => 'Related terms',
         'auto_label' => 'ticked automatically',

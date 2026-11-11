@@ -44,11 +44,11 @@ describe('MobileMenuPanel', () => {
 
     expect(links.map(link => link.text())).toEqual([
       'shell.section_children.kelias.path', 'shell.section_children.kelias.documents',
-      'shell.section_children.kelias.glossary', 'shell.section_children.kelias.handover',
+      'shell.section_children.kelias.glossary',
       'shell.section_children.kelias.reps', 'shell.section_children.kelias.library',
     ]);
     expect(links[1]!.attributes('href')).toBe('/mocked-route/learningPath.documents');
-    expect(links.map(link => link.attributes('aria-current'))).toEqual([undefined, 'page', undefined, undefined, undefined, undefined]);
+    expect(links.map(link => link.attributes('aria-current'))).toEqual([undefined, 'page', undefined, undefined, undefined]);
     await links[1]!.trigger('click');
 
     expect(wrapper.emitted('update:open')?.at(-1)).toEqual([false]);

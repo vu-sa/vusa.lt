@@ -15,15 +15,16 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property string $id
  * @property array|string|null $term
+ * @property array|string|null $abbreviation
  * @property array|string|null $definition
  * @property-read Collection<int, LearningStep> $steps
  */
-#[Fillable(['term', 'definition'])]
+#[Fillable(['term', 'abbreviation', 'definition'])]
 class GlossaryTerm extends Model
 {
     use HasFactory, HasTranslations, HasUlids;
 
-    public $translatable = ['term', 'definition'];
+    public $translatable = ['term', 'abbreviation', 'definition'];
 
     /** @return BelongsToMany<LearningStep, $this> */
     public function steps(): BelongsToMany

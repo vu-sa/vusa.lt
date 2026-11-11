@@ -19,6 +19,12 @@ const stubs = {
   SheetTitle: commonStubs.DialogTitle,
   SheetDescription: commonStubs.DialogDescription,
   ConfirmDialog: true,
+  // The rich editor needs a real browser; a textarea keeps the per-locale binding testable.
+  TiptapEditor: {
+    props: ['modelValue'],
+    emits: ['update:modelValue'],
+    template: '<textarea :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
+  },
 };
 
 describe('LearningStepForm', () => {
@@ -161,13 +167,30 @@ describe('LearningStepForm', () => {
     wrapper.unmount();
   });
 
-  it('locks system audiences and submits only their id, stage and order', async () => {
+  it('offers an action button only for tasks and submits its text and link per language', async () => {
     const wrapper = mount(LearningStepForm, {
-      props: { step: editStep({ key: 'check_access', is_system: true, kind: LearningStepKind.Action, audiences: [audience({ type: LearningAudienceType.Purpose, label: 'Atstovas' })] }) },
+      props: { step: editStep({ kind: LearningStepKind.Action, action_label: { lt: 'Atverti', en: '' }, action_url: { lt: '/mano/profile', en: '' } }) },
       global: { stubs },
     });
     const stepForm = vi.mocked(useForm).mock.results[0]!.value;
-    expect(wrapper.get('[data-testid="system-step-title"]').text()).toBe('learning.system_steps.check_access.title');
+    expect(wrapper.get<HTMLInputElement>('[data-testid="step-action-url"]').element.value).toBe('/mano/profile');
+    await wrapper.get('[data-testid="step-action-label"]').setValue(' Nustatyti pranešimus ');
+    await wrapper.findComponent({ name: 'FormPage' }).vm.$emit('submit');
+    const payload = stepForm.transform.mock.calls[0]![0](stepForm);
+    expect(payload.action_label).toEqual({ lt: 'Nustatyti pranešimus', en: '' });
+    expect(payload.action_url).toEqual({ lt: '/mano/profile', en: '' });
+    await wrapper.get('[data-testid="step-kind-knowledge"]').trigger('click');
+    expect(wrapper.find('[data-testid="step-action-url"]').exists()).toBe(false);
+    wrapper.unmount();
+  });
+
+  it('locks system audiences and submits only their id, stage and order', async () => {
+    const wrapper = mount(LearningStepForm, {
+      props: { step: editStep({ key: 'install_app', is_system: true, kind: LearningStepKind.Action, audiences: [audience({ type: LearningAudienceType.Purpose, label: 'Atstovas' })] }) },
+      global: { stubs },
+    });
+    const stepForm = vi.mocked(useForm).mock.results[0]!.value;
+    expect(wrapper.get('[data-testid="system-step-title"]').text()).toBe('learning.system_steps.install_app.title');
     expect(wrapper.find('[data-testid="step-title"]').exists()).toBe(false);
     expect(wrapper.find('[data-testid="add-audience"]').exists()).toBe(false);
     expect(wrapper.get('[data-slot="audience-row"]').findAll('button')).toHaveLength(1);

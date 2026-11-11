@@ -361,9 +361,6 @@ Route::put('dutyTypes/{type}/models', [DutyTypeController::class, 'syncModels'])
 
 Route::get('learning', [LearningPathController::class, 'show'])->name('learningPath.show');
 Route::get('learning/documents', [LearningPathController::class, 'documents'])->name('learningPath.documents');
-Route::get('learning/handover', [HandoverNoteController::class, 'index'])->name('learningPath.handover');
-Route::post('learning/handover/{duty}', [HandoverNoteController::class, 'store'])->name('handoverNotes.store');
-Route::patch('learning/handover-notes/{handoverNote}', [HandoverNoteController::class, 'update'])->name('handoverNotes.update');
 Route::get('learning/reps', [LearningRepsController::class, 'index'])->name('learningPath.reps');
 Route::get('learning/reps/{user}', [LearningRepsController::class, 'show'])->name('learningPath.rep');
 Route::resource('learning/sections', LearningSectionController::class)->parameters(['sections' => 'learningSection'])->names('learningSections')->only(['store', 'update', 'destroy']);
