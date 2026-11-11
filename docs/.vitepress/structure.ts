@@ -59,6 +59,7 @@ export const guide: GuideChapter[] = [
     pages: [
       { text: 'Apžvalga', link: '/visak/apzvalga' },
       { text: 'Padaliniai', link: '/visak/padaliniai' },
+      { text: 'Atstovai', link: '/visak/atstovai' },
       { text: 'Užduotys', link: '/visak/uzduociu-suvestine' },
       { text: 'Posėdžiai', link: '/visak/posedziai' },
       { text: 'Darbotvarkės klausimai', link: '/visak/darbotvarkes-klausimai' },

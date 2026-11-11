@@ -35,6 +35,8 @@ Route::get('profile/notifications', [ProfileController::class, 'notificationSett
 Route::inertia('administration', 'Admin/ShowAdministration')->name('administration');
 Route::get('dashboard/atstovavimas', [AtstovavimasDashboardController::class, 'atstovavimas'])->name('dashboard.atstovavimas');
 Route::get('dashboard/atstovavimas/padaliniai', [AtstovavimasDashboardController::class, 'padaliniai'])->name('dashboard.atstovavimas.padaliniai');
+Route::get('dashboard/atstovavimas/atstovai', [RepresentativesController::class, 'index'])->name('representatives.index');
+Route::get('dashboard/atstovavimas/atstovai/{user}', [RepresentativesController::class, 'show'])->name('representatives.show');
 Route::get('dashboard/svetaine', [SvetaineDashboardController::class, 'svetaine'])->name('dashboard.svetaine');
 Route::get('dashboard/reservations', [ReservationsDashboardController::class, 'reservations'])->name('dashboard.reservations');
 Route::get('dashboard/organizacija', [OrganizacijaDashboardController::class, 'index'])->name('dashboard.organizacija');
@@ -367,8 +369,9 @@ Route::put('knowledge/items/{knowledgeItem}/glossary', [KnowledgeItemController:
 Route::resource('knowledge/sections', KnowledgeSectionController::class)->parameters(['sections' => 'knowledgeSection'])->names('knowledgeSections')->only(['store', 'update', 'destroy']);
 Route::resource('knowledge/items', KnowledgeItemController::class)->parameters(['items' => 'knowledgeItem'])->names('knowledgeItems')->except('index');
 Route::get('learning', [LearningPathController::class, 'show'])->name('learningPath.show');
-Route::get('learning/reps', [LearningRepsController::class, 'index'])->name('learningPath.reps');
-Route::get('learning/reps/{user}', [LearningRepsController::class, 'show'])->name('learningPath.rep');
+// Mano kelias → Atstovai moved to ViSAK → Atstovai; bookmarks and sent links still land.
+Route::get('learning/reps', fn () => redirect()->route('representatives.index', status: 301));
+Route::get('learning/reps/{user}', fn (string $user) => redirect()->route('representatives.show', $user, 301));
 Route::get('learning/library', [LearningStepController::class, 'index'])->name('learningSteps.index');
 Route::post('learning/steps/{learningStep}/progress', [LearningStepProgressController::class, 'store'])->name('learningSteps.progress');
 Route::resource('learning/steps', LearningStepController::class)->parameters(['steps' => 'learningStep'])->names('learningSteps')->except('index');

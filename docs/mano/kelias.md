@@ -10,7 +10,6 @@ tests:
   - tests/Feature/Admin/Learning/LearningWritesTest.php
   - tests/Feature/Admin/Learning/LearningStepProgressControllerTest.php
   - tests/Feature/Admin/Learning/LearningLibraryTest.php
-  - tests/Feature/Admin/Learning/LearningPeopleTest.php
   - tests/Feature/Admin/Learning/LearningPathPresenterTest.php
   - tests/Feature/Admin/Learning/SystemStepDetectorsTest.php
   - tests/Feature/Seeders/LearningPathPilotSeederTest.php
@@ -25,7 +24,6 @@ tests:
   - resources/js/Features/Admin/Learning/__tests__/LearningCompletionControl.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/LearningStepRow.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/LearningStepForm.component.test.ts
-  - resources/js/Features/Admin/Learning/__tests__/LearningRepList.component.test.ts
 ---
 
 # Mano kelias
@@ -107,7 +105,6 @@ puslapį, o žingsnio puslapyje – žingsnio pavadinimą. Telefone šie puslapi
 skyriaus pasirinkime ir per **Meniu**.
 
 - **Mano kelias** – tavo žingsniai ir pažanga.
-- **Atstovai** – tik studentų atstovų koordinatoriams ir superadministratoriams.
 - **Biblioteka** – tik tiems, kas gali tvarkyti žingsnius (žr. [Kas ką gali](#teises)). Puslapis
   **Kelio žingsniai** rodo visus žingsnius su paieška. Greiti filtrai – **Veiksmai**, **Kartojami kas
   kadenciją** ir **Pasiruošimas posėdžiams**; auditorija ir svarba – skiltyje **Filtrai**.
@@ -140,7 +137,7 @@ skyriaus pasirinkime ir per **Meniu**.
 | Kas | Ką gali |
 |---|---|
 | Kiekvienas narys | Matyti savo kelią, žymėti pažangą, rašyti įžvalgas |
-| Studentų atstovų koordinatorius (atsakingas už institucijas) | Matyti „Mano atstovai“: savo atstovų pažangą ir jų kelius |
+| Studentų atstovų koordinatorius (atsakingas už institucijas) | Matyti savo atstovų pažangą ir kelius puslapyje [ViSAK → Atstovai](/visak/atstovai) |
 | Studentų atstovų koordinatorius | Atverti Biblioteką, kurti ir redaguoti žingsnius, kurių visos auditorijos apribotos savo padaliniu |
 | Centrinio biuro studentų atstovų koordinatorius | Kurti ir redaguoti visų auditorijų žingsnius |
 
@@ -164,8 +161,8 @@ atvėrus kelią.
   kur reikia valdiklio ar automatinio atlikimo; žingsniai, kuriuos atstovas pažymi pats, yra įprasti, prireikus su
   mygtuku (`action_label`, `action_url`). Sisteminių atlikimas skaičiuojamas skaitant ir nesaugomas. Juose keičiamas tik etapas, tvarka ir rodymas; ištrinti negalima.
 - Teisės: `learningSteps.*.padalinys` – tik savo padaliniu apribotos auditorijos, `learningSteps.*.*` – visos (tos pačios
-  teisės galioja [Žinių bazei](/mano/ziniu-baze#technine-informacija)); „Mano atstovai“ –
-  `GetCoordinatedRepresentatives` per `ResponsibilityResolver`.
+  teisės galioja [Žinių bazei](/mano/ziniu-baze#technine-informacija)); atstovų pažanga –
+  [Atstovai](/visak/atstovai#technine-informacija), per `ResponsibilityResolver`.
 - Bandomasis turinys: `LearningPathPilotSeeder` (paleidžiamas ranka, kartojant nieko nedubliuoja).
 
 Žingsnių svarbą rodo pažangos langelis: VU SA spalvos kraštas – esminis, vientisas – rekomenduojamas, punktyrinis – papildomas. Žaibo langelis ranka nekeičiamas; užvedus pelę arba sufokusavus rodomas paaiškinimas. Žaibas langelio viduje žymi automatiškai stebimą žingsnį: šviesus langelis – dar neatliktas, užpildytas – atliktas.

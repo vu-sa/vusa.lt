@@ -211,7 +211,7 @@ describe('per-persona visibility', function (): void {
 
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'kelias', 'ziniu_baze', 'uzduotys', 'atsakomybes', 'veiklos_uzklausos'],
-            'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos', 'pareigybiu_laikotarpiai', 'institucijos_grafas'],
+            'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'atstovai', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos', 'pareigybiu_laikotarpiai', 'institucijos_grafas'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai'],
             'svetaine' => ['apzvalga', 'puslapiai', 'naujienos', 'kalendorius', 'baneriai', 'greitosios_nuorodos', 'failai'],
             'organizacija' => ['apzvalga', 'nariai', 'pareigybes', 'pareigybiu_atnaujinimas', 'studiju_programos', 'formos'],
@@ -254,7 +254,7 @@ describe('per-persona visibility', function (): void {
 
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'kelias', 'ziniu_baze', 'uzduotys', 'atsakomybes', 'veiklos_uzklausos'],
-            'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'uzduociu_suvestine', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos', 'pareigybiu_laikotarpiai', 'institucijos_grafas', 'problemu_kategorijos'],
+            'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'atstovai', 'uzduociu_suvestine', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos', 'pareigybiu_laikotarpiai', 'institucijos_grafas', 'problemu_kategorijos'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai', 'kategorijos'],
             'sistema' => ['apzvalga', 'tipai'],
             'svetaine' => ['apzvalga', 'puslapiai', 'naujienos', 'kalendorius', 'baneriai', 'navigacija', 'greitosios_nuorodos', 'renginiu_tipai', 'zymos', 'failai', 'dokumentai', 'studiju_rinkiniai'],
@@ -274,7 +274,7 @@ describe('per-persona visibility', function (): void {
             ->and(array_column($plainWorkspace['sections'][1]['children'], 'key'))->toBe(['path'])
             ->and(array_column($plainWorkspace['sections'][2]['children'], 'key'))->toBe(['overview', 'glossary'])
             ->and($adminWorkspace['sections'][2]['key'])->toBe('ziniu_baze')
-            ->and(array_column($adminWorkspace['sections'][1]['children'], 'key'))->toBe(['path', 'reps', 'library'])
+            ->and(array_column($adminWorkspace['sections'][1]['children'], 'key'))->toBe(['path', 'library'])
             ->and(array_column($adminWorkspace['sections'][2]['children'], 'key'))->toBe(['overview', 'glossary', 'library']);
 
         $cached = Cache::get(AdminNavigationCatalog::CACHE_PREFIX.$plain->id);

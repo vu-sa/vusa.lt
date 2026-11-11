@@ -1,25 +1,21 @@
 ---
 doc_status: reviewed
 title: Padaliniai
-last_reviewed: 2026-10-27
+last_reviewed: 2026-11-11
 tests:
   - tests/Feature/Api/Admin/RecordActivityStatusTest.php
   - tests/Feature/Admin/Dashboard/AtstovavimasDashboardTest.php
   - tests/Feature/Admin/Core/AtstovavimasApiTest.php
   - tests/Feature/Api/Admin/RepStatisticsTest.php
-  - tests/Feature/Api/Admin/RepMetricCadenceTest.php
   - tests/Feature/Admin/Core/AtstovavimasSettingsTest.php
   - tests/Feature/Institutions/InstitutionScopeTest.php
   - tests/Feature/Admin/Core/InstitutionStatusSnapshotTest.php
-  - tests/Feature/Admin/Core/RepMetricsTest.php
   - tests/Unit/InstitutionActivityStatusServiceTest.php
   - tests/Unit/Enums/InstitutionActivityStatusTest.php
   - resources/js/Pages/Admin/Dashboard/__tests__/ShowAtstovavimasPadaliniai.component.test.ts
   - resources/js/Pages/Admin/Dashboard/Components/__tests__/TenantScopeSelector.component.test.ts
   - resources/js/Pages/Admin/Dashboard/Components/__tests__/GanttFilterDropdown.component.test.ts
   - resources/js/Pages/Admin/Dashboard/Components/__tests__/InstitutionStatusTrendChart.component.test.ts
-  - resources/js/Pages/Admin/Dashboard/Components/__tests__/TenantRepMetrics.component.test.ts
-  - resources/js/Pages/Admin/Dashboard/Components/__tests__/RepresentativeActivitySection.component.test.ts
   - resources/js/Pages/Admin/Dashboard/Composables/__tests__/statusFlow.test.ts
   - resources/js/Pages/Admin/Dashboard/Composables/__tests__/useTimelineFilters.test.ts
   - resources/js/Pages/Admin/Dashboard/Composables/__tests__/useTenantMeetings.test.ts
@@ -39,10 +35,10 @@ tests:
 # Padaliniai
 
 **ViSAK → Padaliniai** (`/mano/dashboard/atstovavimas/padaliniai`) yra viso padalinio vaizdas:
-kurioms institucijoms reikia dėmesio, kaip keičiasi jų būklė, kaip aktyvūs atstovai ir kada vyksta
-posėdžiai. Puslapį sudaro dvi dalys:
+kurioms institucijoms reikia dėmesio, kaip keičiasi jų būklė ir kada vyksta posėdžiai. Atstovų
+aktyvumas ir atstovavimo rodikliai yra [Atstovų](/visak/atstovai) puslapyje. Puslapį sudaro dvi dalys:
 
-- **Rodikliai** – skaičiai, dėmesio sąrašas, būklės pokyčiai, atstovavimo rodikliai ir atstovų aktyvumas. Jie rodomi tik
+- **Rodikliai** – skaičiai, dėmesio sąrašas ir būklės pokyčiai. Jie rodomi tik
   tų padalinių, kurių institucijas naudotojas turi teisę matyti.
 - **Posėdžių laiko juosta** – ją mato **visi**, bet kiekvienas tik tiek, kiek jam leidžiama.
 
@@ -75,8 +71,8 @@ Rodikliai pagal nutylėjimą skaičiuojami tik VU organų institucijoms ir jų a
 
 </ChangelogNote>
 
-Skaičiai, sąrašas **Reikia dėmesio**, būklės pokyčiai, atstovavimo rodikliai ir atstovų aktyvumas
-skaičiuojami tik tų organų institucijoms, kurie pažymėti
+Skaičiai, sąrašas **Reikia dėmesio**, būklės pokyčiai, taip pat [atstovų](/visak/atstovai) aktyvumas ir
+atstovavimo rodikliai skaičiuojami tik tų organų institucijoms, kurie pažymėti
 [atstovavimo nustatymuose](/sistema/nustatymai#atstovavimas) – pagal nutylėjimą tik **VU organams**
 (Senatui, Tarybai, fakultetų taryboms ir pan.). Ar institucija yra VU, VU SA, nacionalinis ar
 tarptautinis organas, nustato jos [tipas](/sistema/tipai). Atstovas skaičiuojamas, jei eina
@@ -142,38 +138,11 @@ Praėjusios dienos išsaugomos kiekvienam padaliniui atskirai. Jei bent vieno pa
 tvarkingų institucijų skaičių, nei į **Reikia dėmesio**. Laikotarpis skaičiuojamas pagal
 [bendras būklės taisykles](/visak/apzvalga#busenos).
 
-### Atstovavimo rodikliai {#atstovavimo-rodikliai}
+### Atstovai {#atstovai}
 
-**Po posėdžių laiko juosta** kairėje pateikiami trys pasirinktų padalinių rodikliai. Dešinėje – dabartinių atstovų aktyvumas ir mygtukas **Visi atstovai**; telefone šios dalys rodomos viena po kitos.
-
-| Rodiklis | Kas skaičiuojama |
-|---|---|
-| Posėdis užfiksuotas per 7 d. | Jau įvykusių, sistemoje užregistruotų posėdžių dalis, kurių įrašas sukurtas iki posėdžio arba per 7 dienas po jo pradžios. Darbotvarkės užpildymas šiuo rodikliu nematuojamas. Neužregistruotų posėdžių sistema nežino. |
-| Užpildyti darbotvarkės klausimai | Nurodytas klausimo tipas; balsavimo klausimui užpildytas pagrindinis balsavimas, o jei jo nėra – visi balsavimai. VU valdymo organuose taip pat būtinas studentų atstovo balsas ir naudos studentams įvertinimas. Nebalsuojamiems klausimams balsų nereikia. |
-| Įvykdytos užduotys | Laikotarpiu sukurtų institucijos ar posėdžio užduočių dalis, kurios dabar įvykdytos. Asmeninės ir rezervacijų užduotys neįtraukiamos. |
-
-**Dabartinė kadencija** matuojama nuo bendros organizacijos kadencijos pradžios iki šiandien. **Palyginimo kadencija** matuojama visa, nuo pradžios iki pabaigos imtinai. Lentelės antraštėse pateikiami trumpi kadencijų metai (pvz., „2026–27“), o tikslios datos ir skaičiavimo taisyklės – išskleidus **Kaip skaičiuojama**. Prie procentų pateikiami skaitiklis ir vardiklis. Bendri kelių padalinių procentai skaičiuojami iš unikalių įrašų, ne vidurkinant padalinių procentus.
-
-Numatytoji palyginimo kadencija – ankstesnė baigta bendra kadencija. Sistemos nustatymus tvarkantis administratorius ją gali pakeisti [atstovavimo nustatymuose](/sistema/nustatymai#atstovavimas). Institucijų kadencijų išimtys šio bendro palyginimo nekeičia. Jei kadencijos nėra arba pasirinkta kadencija pašalinta, palyginimas neparenkamas tyliai; rodoma trūkstamo laikotarpio žinutė. Kai nėra ką skaičiuoti, procento vietoje rodoma „—“.
-
-Tai **retrospektyvus** skaičiavimas pagal dabar išlikusius įrašus, ne tiksli anksčiau matyto ekrano kopija. Vėliau įvestas posėdis įtraukiamas į jo datos kadenciją; vėliau užpildytas darbotvarkės klausimas ar atlikta užduotis gali pakeisti ankstesnės kadencijos skaičius. Dabartinė kadencija dar nesibaigusi, todėl jos imtis ir metų dalis skiriasi nuo visos palyginimo kadencijos.
-
-<ChangelogNote date="2026-10-20" title="Rodikliai lyginami pagal kadencijas">
-
-Rodiklių lentelė ir atstovų aktyvumas pateikiami po laiko juosta. Palyginimo kadencija pasirenkama nustatymuose.
-
-</ChangelogNote>
-
-<DocScreenshot name="visak-atstovu-rodikliai" alt="Atstovų rodikliai po posėdžių laiko juosta: pasirinktų padalinių dabartinės ir palyginimo kadencijų procentai bei atstovų aktyvumas" />
-
-### Atstovų aktyvumas
-
-Keturi skaičiai rodomi taip pat kaip institucijų skaičiai viršuje: kiek atstovų prisijungė **šiandien**, **per 7 d.**, **per 30 d.** iš visų dabartinių atstovų ir kiek **niekada** neprisijungė. Žemiau pateikiami trys pastaruoju metu aktyviausi atstovai.
-Mygtukas **Visi atstovai** atveria sąrašą, kuriame galima ieškoti atstovų ir atsirinkti aktyvius
-arba neaktyvius (niekada neprisijungusius arba neprisijungusius daugiau nei 30 d.).
-Ieškoma pagal vardą, el. paštą ir dabartinės pareigybės ar jos institucijos pavadinimą.
-Pareigybių ir institucijų pavadinimai tikrinami lietuvių ir anglų kalbomis, nepriklausomai
-nuo pasirinktos sąsajos kalbos. Paieška neapima buvusių pareigų ir neplečia pasirinktų padalinių sąrašo.
+Po posėdžių laiko juosta rodoma, kiek pasirinktų padalinių atstovų buvo aktyvūs per 30 dienų, ir
+nuoroda į [Atstovų](/visak/atstovai) puslapį su tais pačiais padaliniais. Ten rasi atstovus, kuriems
+reikia dėmesio, jų aktyvumą ir [atstovavimo rodiklius](/visak/atstovai#atstovavimo-rodikliai).
 
 ### Posėdžių laiko juosta
 
@@ -247,11 +216,10 @@ pasirinkimu.
   kasnakt į `institution_status_snapshots` (po eilutę padaliniui ir dienai) įrašo
   `metrics:reps:snapshot`; `--from=YYYY-MM-DD` užpildo trūkstamas dienas ir pažymi jas kaip
   atkurtas; `--repair-reconstructed` taiso tik atkurtas eilutes. Istorijos užklausa skaito pilnas išsaugotas dienas, trūkstamas perduoda foninei užduočiai, o šiandieną skaičiuoja gyvai.
-- Atstovavimo rodikliai – `/api/v1/admin/visak/rep-metrics` (`RepMetricReportService` su padalinių filtru), ta pati prieiga kaip kitų rodiklių.
 - Skaičiuojamas institucijas parenka `RepStatisticsScope::institutions()` (tipų išimtys ir `RepMetricSettings::counted_institution_scopes`, SQL filtras `InstitutionScopeResolver::constrainToScopes()`); laiko juosta šio filtro netaiko, eilutės pažymimos `in_summary`.
 - Puslapis – `AtstovavimasDashboardController::padaliniai` (`statsTenants`, `ganttTenants`,
   `defaultGanttTenantIds`, `canViewTenantTasks`). Duomenys kraunami per
-  `/api/v1/admin/visak/{timeline,timeline/history,representatives,gantt,meetings,activity-requests}`
+  `/api/v1/admin/visak/{timeline,timeline/history,gantt,meetings,activity-requests}`
   (`AtstovavimasApiController`). Posėdžiai kraunami ne didesnėmis kaip 6 mėn. dalimis
   (`useTenantMeetings`); serveris priima iki 24 mėn.
 - Užklausos atstovams – `GetOpenActivityRequestSpans`: atviros (`InstitutionActivityRequest::open()`)

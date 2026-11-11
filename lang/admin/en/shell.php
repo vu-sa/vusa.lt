@@ -92,7 +92,6 @@ return [
     'section_children' => [
         'kelias' => [
             'path' => 'My path',
-            'reps' => 'Representatives',
             'library' => 'Library',
         ],
         'ziniu_baze' => [
@@ -107,6 +106,7 @@ return [
         'ziniu_baze' => 'Knowledge base',
         'apzvalga' => 'Overview',
         'padaliniu_apzvalga' => 'Units',
+        'atstovai' => 'Representatives',
         'uzduotys' => 'Tasks',
         'pranesimai' => 'Notifications',
         'atsakomybes' => 'Responsibilities',
@@ -168,6 +168,7 @@ return [
         'problemos' => 'Problems raised by reps and their progress',
         'tikslai' => 'Units\' yearly goals and their progress (pilot)',
         'padaliniu_apzvalga' => 'Meeting timeline and institution health across units',
+        'atstovai' => 'Which representatives need you, their activity and onboarding',
         'pareigybiu_laikotarpiai' => 'Who held which duty and when – fix them all at once',
         'uzduociu_suvestine' => 'Tasks and deadlines across units',
         'institucijos_grafas' => 'Institution relations in one graph',

@@ -15,6 +15,7 @@ use App\Policies\FileableFilePolicy;
 use App\Policies\InstitutionCheckInPolicy;
 use App\Policies\KnowledgeItemPolicy;
 use App\Policies\KnowledgeSectionPolicy;
+use App\Services\RepresentativesPresenter;
 use App\Settings\SettingsSettings;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
@@ -71,6 +72,9 @@ class AuthServiceProvider extends ServiceProvider
         // Define gate for settings management access
         Gate::define('manage-settings', fn (User $user) => app(SettingsSettings::class)->canUserManageSettings($user));
         Gate::define('view-settings', fn (User $user) => app(SettingsSettings::class)->canUserViewSettings($user));
+
+        Gate::define('viewRepresentatives', fn (User $user): bool => RepresentativesPresenter::canView($user));
+        Gate::define('viewRepresentative', fn (User $user, User $rep): bool => RepresentativesPresenter::canViewRep($user, $rep));
 
         // Define gate for administration page access
         // User can access if they have viewAny permission on any administrative model

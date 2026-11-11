@@ -34,7 +34,7 @@ use App\Models\Tag;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Services\LearningAdminPresenter;
+use App\Services\RepresentativesPresenter;
 use App\Settings\FormSettings;
 use App\Support\AuthorityCacheExpiry;
 use App\Support\Experiments\GoalsExperiment;
@@ -183,7 +183,6 @@ class AdminNavigationCatalog
                 new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard', [], null, Visibility::always()),
                 new Section('kelias', 'shell.sections.kelias', 'learningPath.show', [], null, Visibility::always(), matches: ['learningPath.*', 'learningSteps.*'], descriptionKey: 'shell.section_descriptions.kelias', children: [
                     new SectionLink('path', 'shell.section_children.kelias.path', 'learningPath.show', Visibility::always()),
-                    new SectionLink('reps', 'shell.section_children.kelias.reps', 'learningPath.reps', Visibility::callback(fn (User $user): bool => LearningAdminPresenter::canSeeReps($user))),
                     new SectionLink('library', 'shell.section_children.kelias.library', 'learningSteps.index', Visibility::can('manage', LearningStep::class)),
                 ]),
                 new Section('ziniu_baze', 'shell.sections.ziniu_baze', 'knowledgeBase.show', [], null, Visibility::always(), matches: ['knowledgeBase.*', 'knowledgeItems.*', 'glossaryTerms.*'], descriptionKey: 'shell.section_descriptions.ziniu_baze', children: [
@@ -211,6 +210,7 @@ class AdminNavigationCatalog
             sections: [
                 new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard.atstovavimas', [], null, Visibility::can('viewAny', Meeting::class)),
                 new Section('padaliniu_apzvalga', 'shell.sections.padaliniu_apzvalga', 'dashboard.atstovavimas.padaliniai', [], null, Visibility::can('viewAny', Meeting::class), descriptionKey: 'shell.section_descriptions.padaliniu_apzvalga'),
+                new Section('atstovai', 'shell.sections.atstovai', 'representatives.index', [], null, Visibility::callback(fn (User $user): bool => RepresentativesPresenter::canView($user)), matches: ['representatives.*'], descriptionKey: 'shell.section_descriptions.atstovai'),
                 new Section('uzduociu_suvestine', 'shell.sections.uzduociu_suvestine', 'tasks.summary', [], 'task', Visibility::can('viewAny', Task::class), descriptionKey: 'shell.section_descriptions.uzduociu_suvestine'),
                 new Section('institucijos', 'shell.sections.institucijos', 'institutions.index', [], 'institution', Visibility::can('viewAny', Institution::class), descriptionKey: 'shell.section_descriptions.institucijos', startsGroup: true),
                 new Section('posedziai', 'shell.sections.posedziai', 'meetings.index', [], 'meeting', Visibility::can('viewAny', Meeting::class), descriptionKey: 'shell.section_descriptions.posedziai'),

@@ -99,7 +99,7 @@ Adresas: `/mano/settings/meetings`. Čia nustatomas posėdžių atvaizdavimas ir
 
 ### Atstovavimo nustatymai {#atstovavimas}
 
-**Palyginimo kadencija** nustato, su kuria visa baigta bendra kadencija lyginami [padalinių rodikliai](/visak/padaliniai#atstovavimo-rodikliai). Automatinė parinktis naudoja ankstesnę kadenciją. Nustatymą keičia tik sistemos nustatymus tvarkantys nariai; vien peržiūros teisės neužtenka. Parinktyje matyti kadencijos datos. Institucijų kadencijų išimtys šio palyginimo nekeičia.
+**Palyginimo kadencija** nustato, su kuria visa baigta bendra kadencija lyginami [padalinių rodikliai](/visak/atstovai#atstovavimo-rodikliai). Automatinė parinktis naudoja ankstesnę kadenciją. Nustatymą keičia tik sistemos nustatymus tvarkantys nariai; vien peržiūros teisės neužtenka. Parinktyje matyti kadencijos datos. Institucijų kadencijų išimtys šio palyginimo nekeičia.
 
 **Kurie organai skaičiuojami rodikliuose** nustato, kurių organų institucijos ir atstovai
 įtraukiami į [padalinių rodiklius](/visak/padaliniai#skaiciuojamos-institucijos): VU organai,

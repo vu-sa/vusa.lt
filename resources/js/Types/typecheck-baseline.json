@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "total": 2612,
+  "total": 2610,
   "fingerprints": {
     "docs/pdf/build-release.ts | TS2322 | Type 'string | undefined' is not assignable to type 'string'.": 1,
     "docs/pdf/build-release.ts | TS2345 | Argument of type 'string | undefined' is not assignable to parameter of type 'string'.": 1,
@@ -1099,7 +1099,6 @@
     "resources/js/Pages/Admin/Dashboard/Components/InstitutionStatusTrendChart.vue | TS2322 | Type 'number' is not assignable to type 'string'.": 2,
     "resources/js/Pages/Admin/Dashboard/Components/InstitutionStatusTrendChart.vue | TS2345 | Argument of type 'number | undefined' is not assignable to parameter of type 'number'.": 1,
     "resources/js/Pages/Admin/Dashboard/Components/InstitutionStatusTrendChart.vue | TS2532 | Object is possibly 'undefined'.": 5,
-    "resources/js/Pages/Admin/Dashboard/Components/RepresentativeDataTable.vue | TS2322 | Type 'number' is not assignable to type 'string'.": 2,
     "resources/js/Pages/Admin/Dashboard/Components/TenantRepMetrics.vue | TS2322 | Type 'number' is not assignable to type 'string'.": 1,
     "resources/js/Pages/Admin/Dashboard/Components/TenantScopeSelector.vue | TS2322 | Type 'number' is not assignable to type 'string'.": 1,
     "resources/js/Pages/Admin/Dashboard/Components/__tests__/TenantRepMetrics.component.test.ts | TS2322 | Type '{ now: number; previous: number; key?: string | undefined; part?: number | undefined; whole?: number | undefined; baseline?: number | null | undefined; baselinePart?: number | undefined; baselineWhole?: number | undefined; previousPart?: number; previousWhole?: number; }' is not assignable to type 'RepMetricRow'.": 3,

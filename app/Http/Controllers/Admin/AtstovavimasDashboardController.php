@@ -167,8 +167,8 @@ class AtstovavimasDashboardController extends AdminController
         /** @var User $user */
         $user = $request->user();
 
-        $statsTenants = $this->tenantOptions(app(AtstovavimasSettings::class)->getVisibleTenantIds($user));
-        $ganttTenants = $this->tenantOptions(Tenant::query()->representational()->pluck('id'));
+        $statsTenants = self::tenantOptions(app(AtstovavimasSettings::class)->getVisibleTenantIds($user));
+        $ganttTenants = self::tenantOptions(Tenant::query()->representational()->pluck('id'));
 
         return Inertia::render('Admin/Dashboard/ShowAtstovavimasPadaliniai', [
             'statsTenants' => $statsTenants,
@@ -208,7 +208,7 @@ class AtstovavimasDashboardController extends AdminController
      * @param  SupportCollection<int, int>  $tenantIds
      * @return SupportCollection<int, array{id: int, shortname: string, type: TenantType|null}>
      */
-    private function tenantOptions(SupportCollection $tenantIds): SupportCollection
+    public static function tenantOptions(SupportCollection $tenantIds): SupportCollection
     {
         return Tenant::query()
             ->whereIn('id', $tenantIds)

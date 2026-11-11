@@ -1,7 +1,7 @@
 ---
 paths:
   - 'app/Actions/ResolveLearningPath.php'
-  - 'app/Actions/GetCoordinatedRepresentatives.php'
+  - 'app/Services/RepresentativesPresenter.php'
   - 'app/Services/Learning/**'
   - 'app/Services/Learning*Presenter.php'
   - 'app/Services/KnowledgeBasePresenter.php'
@@ -42,4 +42,4 @@ Reps get the path, the Žinių bazė (every knowledge item of their path, by sec
 A knowledge item points at an archive `Document` or a URL per locale (`lt` required, `en` only when it differs). There is no upload path for learning material — files go to the SharePoint "Dokumentų sistema" first. Hidden documents may be chosen; members then see "Dokumentas dar neviešas" instead of a link.
 
 ## Progress visibility
-Coordinators see a rep's progress only through `GetCoordinatedRepresentatives` (their `StudentRepCoordination` institutions); never widen it to tenant permissions. Handover notes were retired before release; passing on experience is the regular `write_handover` step that reps tick themselves.
+Coordinators see a rep's progress only through `RepresentativesPresenter::coordinatedInstitutionIds()` (their `StudentRepCoordination` institutions) on ViSAK → Atstovai; padalinys managers see the same reps without it. Never widen progress to tenant permissions. Handover notes were retired before release; passing on experience is the regular `write_handover` step that reps tick themselves.

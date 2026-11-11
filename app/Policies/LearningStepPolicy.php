@@ -2,11 +2,9 @@
 
 namespace App\Policies;
 
-use App\Actions\GetCoordinatedRepresentatives;
 use App\Models\LearningStep;
 use App\Models\User;
 use App\Policies\Traits\ManagesLearningAudiences;
-use App\Services\LearningAdminPresenter;
 use App\Services\ModelAuthorizer;
 use Illuminate\Database\Eloquent\Model;
 
@@ -44,15 +42,5 @@ class LearningStepPolicy extends ModelPolicy
     public function delete(User $user, Model $model): bool
     {
         return $model instanceof LearningStep && ! $model->is_system && $this->manageAudiences($user, $model->audiences, 'delete');
-    }
-
-    public function viewReps(User $user): bool
-    {
-        return LearningAdminPresenter::canSeeReps($user);
-    }
-
-    public function viewRep(User $coordinator, User $rep): bool
-    {
-        return $coordinator->isSuperAdmin() || GetCoordinatedRepresentatives::isCoordinatorOf($coordinator, $rep);
     }
 }

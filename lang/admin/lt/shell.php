@@ -92,7 +92,6 @@ return [
     'section_children' => [
         'kelias' => [
             'path' => 'Mano kelias',
-            'reps' => 'Atstovai',
             'library' => 'Biblioteka',
         ],
         'ziniu_baze' => [
@@ -107,6 +106,7 @@ return [
         'ziniu_baze' => 'Žinių bazė',
         'apzvalga' => 'Apžvalga',
         'padaliniu_apzvalga' => 'Padaliniai',
+        'atstovai' => 'Atstovai',
         'uzduotys' => 'Užduotys',
         'pranesimai' => 'Pranešimai',
         'atsakomybes' => 'Atsakomybės',
@@ -168,6 +168,7 @@ return [
         'problemos' => 'Atstovų keliamos problemos ir jų eiga',
         'tikslai' => 'Padalinių metų tikslai ir jų eiga (bandomoji funkcija)',
         'padaliniu_apzvalga' => 'Padalinių posėdžių laiko juosta ir institucijų būklė',
+        'atstovai' => 'Kam iš atstovų reikia tavo dėmesio, jų aktyvumas ir įsivedimas',
         'pareigybiu_laikotarpiai' => 'Kas kada ėjo kokias pareigas – sutvarkyk visus iš karto',
         'uzduociu_suvestine' => 'Padalinių užduotys ir terminai',
         'institucijos_grafas' => 'Institucijų ryšiai viename grafe',
