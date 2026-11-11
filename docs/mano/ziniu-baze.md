@@ -25,8 +25,8 @@ matai tik tau skirtą medžiagą ir tai, kiek jos jau perskaitei.
 
 <ChangelogNote date="2026-11-11" title="Žinių bazė">
 
-Dokumentai iš Mano kelio perkelti į atskirą Žinių bazę: joje telpa ir pristatymai bei nuorodos, o
-kiekviena sąvoka turi savo puslapį.
+Žinių bazė pakeitė pareigybių ir institucijų tipų failus: dokumentai, pristatymai ir nuorodos su
+paaiškinimu, kam jų reikia, o kiekviena sąvoka turi savo puslapį.
 
 </ChangelogNote>
 

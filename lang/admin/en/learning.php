@@ -95,7 +95,6 @@ return [
         ],
     ],
     'glossary' => [
-        'where_used' => 'Where it appears',
         'explained_in' => 'Where this term is explained',
         'explained_in_hint' => 'What matters most for your duties comes first.',
         'elsewhere' => 'Elsewhere in the knowledge base',

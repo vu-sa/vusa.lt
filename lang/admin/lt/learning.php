@@ -95,7 +95,6 @@ return [
         ],
     ],
     'glossary' => [
-        'where_used' => 'Kur sutinkama',
         'explained_in' => 'Kur ši sąvoka paaiškinta',
         'explained_in_hint' => 'Pirmiausia – tai, kas svarbiausia tavo pareigoms.',
         'elsewhere' => 'Kita žinių bazės medžiaga',

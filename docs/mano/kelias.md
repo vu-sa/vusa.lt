@@ -34,7 +34,7 @@ tests:
 pareigas, todėl Studijų programos komiteto atstovas mato kitus žingsnius nei Senato narys. Ką verta
 perskaityti, rasi [Žinių bazėje](/mano/ziniu-baze).
 
-<ChangelogNote date="2026-11-10" title="Mano kelias">
+<ChangelogNote date="2026-11-11" title="Mano kelias">
 
 Mano kelias pakeitė pareigybių ir institucijų tipų failus: vietoj failų sąrašo – žingsniai su
 paaiškinimu, kam jų reikia, ir pažanga, kurią mato koordinatorius.
@@ -71,13 +71,6 @@ Kadencijos etapų juostoje yra tik veiksmai. Kelio viršuje rodomas [Žinių baz
 blokas: kiek būtinos medžiagos jau perskaityta ir vienas siūlomas skaitinys. Pasiruošimas posėdžiui
 rodomas kelio apačioje, atskirai kiekvienai tau tinkančiai auditorijai. Vienos auditorijos veiksmai
 numeruojami iš eilės ir neturi pažangos žymų.
-
-<ChangelogNote date="2026-11-11" title="Žinių bazė atskirai">
-
-Dokumentai iš kelio perkelti į atskirą Žinių bazę su savo skirtuku; kelyje liko jos blokas, o sąvokų
-nuoroda perkelta į Žinių bazę.
-
-</ChangelogNote>
 
 ### Etapai ir svarba
 
@@ -118,13 +111,6 @@ skyriaus pasirinkime ir per **Meniu**.
 - **Biblioteka** – tik tiems, kas gali tvarkyti žingsnius (žr. [Kas ką gali](#teises)). Puslapis
   **Kelio žingsniai** rodo visus žingsnius su paieška. Greiti filtrai – **Veiksmai**, **Kartojami kas
   kadenciją** ir **Pasiruošimas posėdžiams**; auditorija ir svarba – skiltyje **Filtrai**.
-
-<ChangelogNote date="2026-11-11" title="Antrasis meniu">
-
-Žinių bazė tapo atskiru skyriumi, o Pranešimų skyriaus antrajame meniu nebeliko – juos atveria
-varpelis. Bibliotekos greiti filtrai rodo tik pagrindinius pjūvius.
-
-</ChangelogNote>
 
 ## Veiksmai
 
