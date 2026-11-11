@@ -12,13 +12,15 @@ use App\Enums\ResponsibilityPurpose;
 use App\Models\Duty;
 use App\Models\DutyType;
 use App\Models\InstitutionType;
+use App\Models\KnowledgeItem;
+use App\Models\LearningAudience;
+use App\Models\LearningProgress;
 use App\Models\LearningStep;
-use App\Models\LearningStepAudience;
-use App\Models\LearningStepProgress;
 use App\Models\User;
 use App\Services\Learning\LearningPath;
-use App\Services\Learning\ResolvedLearningStep;
+use App\Services\Learning\ResolvedLearningItem;
 use App\Services\Learning\SystemSteps\SystemStepRegistry;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -53,8 +55,12 @@ class ResolveLearningPath
         $cadences = ResolveCadenceForDuty::forDuties($duties);
         $institutionTypes = self::ancestry(InstitutionType::all());
         $dutyTypes = self::ancestry(DutyType::all());
-        $steps = LearningStep::query()->active()->ordered()->with(['sources.document.institution.tenant', 'section', 'audiences' => fn ($query) => $query->with(LearningStepAudience::LABEL_RELATIONS)])->withCount(['comments' => fn ($query) => $query->notErased()])->get();
-        $progress = LearningStepProgress::query()->whereIn('user_id', $users->pluck('id'))->get()->groupBy('user_id');
+        $steps = LearningStep::query()->active()->ordered()->with(['audiences' => fn ($query) => $query->with(LearningAudience::LABEL_RELATIONS)])->withCount(['comments' => fn ($query) => $query->notErased()])->get();
+        $knowledge = KnowledgeItem::query()->active()->ordered()
+            ->with(['sources.document.institution.tenant', 'section', 'glossaryTerms', 'audiences' => fn ($query) => $query->with(LearningAudience::LABEL_RELATIONS)])
+            ->withCount(['comments' => fn ($query) => $query->notErased()])->get();
+        $progress = LearningProgress::query()->whereIn('user_id', $users->pluck('id'))
+            ->whereIn('progressable_type', [MorphMap::alias(LearningStep::class), MorphMap::alias(KnowledgeItem::class)])->get()->groupBy('user_id');
         $detections = [];
         foreach (SystemStepRegistry::definitions() as $key => $definition) {
             if ($definition['detector'] !== null) {
@@ -89,39 +95,43 @@ class ResolveLearningPath
                     }
                 }
             }
-            $userProgress = $progress->get($user->id, collect())->keyBy('learning_step_id');
+            $userProgress = $progress->get($user->id, collect())->keyBy(fn (LearningProgress $row): string => $row->progressable_type.':'.$row->progressable_id);
             $resolved = collect();
             $meetingPrep = collect();
-            $documents = collect();
-            foreach ($steps as $step) {
-                $matched = $step->audiences->filter(fn (LearningStepAudience $audience): bool => self::inAudience($audience, $facts));
+            $knowledgeItems = collect();
+            foreach ($steps->concat($knowledge) as $step) {
+                $matched = $step->audiences->filter(fn (LearningAudience $audience): bool => self::inAudience($audience, $facts));
                 if ($matched->isEmpty()) {
                     continue;
                 }
-                $winner = $matched->sortBy(fn (LearningStepAudience $audience): array => [
+                $winner = $matched->sortBy(fn (LearningAudience $audience): array => [
                     array_search($audience->importance, LearningImportance::cases(), true),
                     $audience->stage?->order() ?? 4, $audience->order, $audience->id,
                 ])->first();
                 $locale = app()->getLocale();
-                $notes = $matched->filter(fn (LearningStepAudience $audience): bool => filled($audience->getTranslation('description', $locale, false)))
-                    ->map(fn (LearningStepAudience $audience): array => ['label' => $audience->label($locale), 'description' => (string) $audience->getTranslation('description', $locale, false)])->values()->all();
-                $item = self::resolveStep($step, $winner, $notes, $userProgress->get($step->id), $termStart,
-                    $step->is_system && isset($detections[$step->key][$user->id]));
+                $notes = $matched->filter(fn (LearningAudience $audience): bool => filled($audience->getTranslation('description', $locale, false)))
+                    ->map(fn (LearningAudience $audience): array => ['label' => $audience->label($locale), 'description' => (string) $audience->getTranslation('description', $locale, false)])->values()->all();
+                $item = self::resolveStep($step, $winner, $notes, $userProgress->get($step->getMorphClass().':'.$step->id), $termStart,
+                    $step instanceof LearningStep && $step->is_system && isset($detections[$step->key][$user->id]));
+                if ($step instanceof KnowledgeItem) {
+                    $knowledgeItems->push($item);
+
+                    continue;
+                }
                 match ($step->kind) {
                     LearningStepKind::Action => $resolved->push($item),
-                    LearningStepKind::Knowledge => $documents->push($item),
                     LearningStepKind::MeetingPrep => $meetingPrep->push($item),
                 };
             }
-            $sort = fn (ResolvedLearningStep $item): array => [$item->stage?->order() ?? 4, $item->step->order, $item->step->id];
+            $sort = fn (ResolvedLearningItem $item): array => [$item->stage?->order() ?? 4, $item->item->order, $item->item->id];
             $paths->put($user->id, new LearningPath($user, self::stage($first !== null, $termStart, $end), $termStart,
-                $resolved->sortBy($sort)->values(), $documents->sortBy($sort)->values(), $meetingPrep->sortBy($sort)->values()));
+                $resolved->sortBy($sort)->values(), $knowledgeItems->sortBy($sort)->values(), $meetingPrep->sortBy($sort)->values()));
         }
 
         return $paths;
     }
 
-    private static function inAudience(LearningStepAudience $audience, array $facts): bool
+    private static function inAudience(LearningAudience $audience, array $facts): bool
     {
         if ($audience->type === LearningAudienceType::Everyone && $audience->tenant_id === null) {
             return true;
@@ -134,33 +144,37 @@ class ResolveLearningPath
     /** Incoming reps prepare before their term starts, so per-term work done in the lead-up still counts. */
     private const int TERM_LEAD_IN_DAYS = 90;
 
-    private static function completionIsCurrent(LearningStep $step, ?Carbon $date, ?Carbon $termStart): bool
+    private static function completionIsCurrent(LearningStep|KnowledgeItem $step, ?Carbon $date, ?Carbon $termStart): bool
     {
         return $date !== null && (! $step->per_term || $termStart === null || $date->gte($termStart->copy()->subDays(self::TERM_LEAD_IN_DAYS)));
     }
 
-    private static function resolveStep(LearningStep $step, LearningStepAudience $winner, array $notes, ?LearningStepProgress $progress, ?Carbon $termStart, bool $detected): ResolvedLearningStep
+    private static function resolveStep(LearningStep|KnowledgeItem $step, LearningAudience $winner, array $notes, ?LearningProgress $progress, ?Carbon $termStart, bool $detected): ResolvedLearningItem
     {
+        $stage = $step instanceof LearningStep && $step->kind === LearningStepKind::Action ? $winner->stage : null;
         $completedAt = self::completionIsCurrent($step, $progress?->completed_at, $termStart) ? $progress->completed_at : null;
         $state = 'pending';
         if ($completedAt !== null) {
             $state = $progress->status === LearningProgressStatus::Done ? 'done' : ($winner->importance->isSkippable() ? 'skipped' : 'pending');
         }
         if ($detected) {
-            return new ResolvedLearningStep($step, 'done', true, $completedAt, $winner->importance, $winner->stage, $winner->label(app()->getLocale()), $notes, $winner->id, $winner->type->value.':'.$winner->source_id.':'.$winner->tenant_id);
+            return new ResolvedLearningItem($step, 'done', true, $completedAt, $winner->importance, $stage, $winner->label(app()->getLocale()), $notes, $winner->id, $winner->type->value.':'.$winner->source_id.':'.$winner->tenant_id);
         }
         if (self::sourceUpdated($step, $state, $completedAt)) {
             $state = 'updated';
         }
 
-        return new ResolvedLearningStep($step, $state, false, $completedAt, $winner->importance, $winner->stage, $winner->label(app()->getLocale()), $notes, $winner->id, $winner->type->value.':'.$winner->source_id.':'.$winner->tenant_id);
+        return new ResolvedLearningItem($step, $state, false, $completedAt, $winner->importance, $stage, $winner->label(app()->getLocale()), $notes, $winner->id, $winner->type->value.':'.$winner->source_id.':'.$winner->tenant_id);
     }
 
-    private static function sourceUpdated(LearningStep $step, string $state, ?Carbon $completedAt): bool
+    private static function sourceUpdated(LearningStep|KnowledgeItem $step, string $state, ?Carbon $completedAt): bool
     {
+        if (! $step instanceof KnowledgeItem) {
+            return false;
+        }
         $modified = $step->sourceFor(app()->getLocale())?->document?->sharepoint_modified_at;
 
-        return $state === 'done' && $step->kind === LearningStepKind::Knowledge && $completedAt !== null && $modified !== null && $modified->gt($completedAt);
+        return $state === 'done' && $completedAt !== null && $modified !== null && $modified->gt($completedAt);
     }
 
     /**

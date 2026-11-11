@@ -2,16 +2,16 @@
 
 namespace App\Http\Requests;
 
-use App\Models\LearningStep;
+use App\Models\KnowledgeItem;
 use Illuminate\Foundation\Http\FormRequest;
 
-class SyncLearningStepGlossaryRequest extends FormRequest
+class SyncKnowledgeItemGlossaryRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $step = $this->route('learningStep');
+        $step = $this->route('knowledgeItem');
 
-        return $step instanceof LearningStep && $this->user()->can('update', $step);
+        return $step instanceof KnowledgeItem && $this->user()->can('update', $step);
     }
 
     /** @return array<string, mixed> */

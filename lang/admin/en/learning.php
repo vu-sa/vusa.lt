@@ -3,6 +3,7 @@
 return [
     'entity' => ['singular' => 'Learning step', 'plural' => 'Learning steps'],
     'pages' => [
+        'knowledge' => 'Knowledge base',
         'documents' => 'Documents',
         'path' => 'My path',
         'library' => 'Manage',

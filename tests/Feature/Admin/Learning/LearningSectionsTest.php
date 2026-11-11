@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\LearningSection;
-use App\Models\LearningStep;
+use App\Models\KnowledgeItem;
+use App\Models\KnowledgeSection;
 use App\Models\Permission;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -15,21 +15,21 @@ test('a tenant curator can create update and delete their sections but cannot ta
         $user->givePermissionTo(Permission::findOrCreate("learningSteps.{$ability}.padalinys", 'web'));
     }
     $payload = ['title' => ['lt' => 'Mokymai', 'en' => 'Training'], 'tenant_id' => $tenant->id];
-    asUser($user)->post(route('learningSections.store'), $payload)->assertRedirect();
-    $section = LearningSection::query()->where('created_by', $user->id)->sole();
+    asUser($user)->post(route('knowledgeSections.store'), $payload)->assertRedirect();
+    $section = KnowledgeSection::query()->where('created_by', $user->id)->sole();
     expect($section->tenant_id)->toBe($tenant->id);
-    asUser($user)->patch(route('learningSections.update', $section), [...$payload, 'order' => 3])->assertRedirect();
+    asUser($user)->patch(route('knowledgeSections.update', $section), [...$payload, 'order' => 3])->assertRedirect();
     expect($section->fresh()->order)->toBe(3);
-    asUser($user)->patch(route('learningSections.update', $section), [...$payload, 'tenant_id' => null])->assertForbidden();
-    $global = LearningSection::factory()->create();
-    $foreign = LearningSection::factory()->create(['tenant_id' => Tenant::factory()->create()->id]);
+    asUser($user)->patch(route('knowledgeSections.update', $section), [...$payload, 'tenant_id' => null])->assertForbidden();
+    $global = KnowledgeSection::factory()->create();
+    $foreign = KnowledgeSection::factory()->create(['tenant_id' => Tenant::factory()->create()->id]);
     foreach ([$global, $foreign] as $forbidden) {
-        asUser($user)->patch(route('learningSections.update', $forbidden), $payload)->assertForbidden();
-        asUser($user)->delete(route('learningSections.destroy', $forbidden))->assertForbidden();
+        asUser($user)->patch(route('knowledgeSections.update', $forbidden), $payload)->assertForbidden();
+        asUser($user)->delete(route('knowledgeSections.destroy', $forbidden))->assertForbidden();
     }
-    asUser($user)->post(route('learningSections.store'), [...$payload, 'tenant_id' => null])->assertForbidden();
-    asUser($user)->delete(route('learningSections.destroy', $section))->assertRedirect();
-    $this->assertDatabaseMissing('learning_sections', ['id' => $section->id]);
+    asUser($user)->post(route('knowledgeSections.store'), [...$payload, 'tenant_id' => null])->assertForbidden();
+    asUser($user)->delete(route('knowledgeSections.destroy', $section))->assertRedirect();
+    $this->assertDatabaseMissing('knowledge_sections', ['id' => $section->id]);
 });
 
 test('a global curator can manage global sections and deleting a section keeps its documents', function (): void {
@@ -38,11 +38,11 @@ test('a global curator can manage global sections and deleting a section keeps i
         $user->givePermissionTo(Permission::findOrCreate("learningSteps.{$ability}.*", 'web'));
     }
     $payload = ['title' => ['lt' => 'Mokymai', 'en' => 'Training']];
-    asUser($user)->post(route('learningSections.store'), $payload)->assertRedirect();
-    $section = LearningSection::query()->where('created_by', $user->id)->sole();
-    $step = LearningStep::factory()->create(['learning_section_id' => $section->id]);
-    asUser($user)->patch(route('learningSections.update', $section), [...$payload, 'order' => 2])->assertRedirect();
+    asUser($user)->post(route('knowledgeSections.store'), $payload)->assertRedirect();
+    $section = KnowledgeSection::query()->where('created_by', $user->id)->sole();
+    $step = KnowledgeItem::factory()->create(['knowledge_section_id' => $section->id]);
+    asUser($user)->patch(route('knowledgeSections.update', $section), [...$payload, 'order' => 2])->assertRedirect();
     expect($section->fresh()->order)->toBe(2);
-    asUser($user)->delete(route('learningSections.destroy', $section))->assertRedirect();
-    expect($step->fresh()->learning_section_id)->toBeNull();
+    asUser($user)->delete(route('knowledgeSections.destroy', $section))->assertRedirect();
+    expect($step->fresh()->knowledge_section_id)->toBeNull();
 });

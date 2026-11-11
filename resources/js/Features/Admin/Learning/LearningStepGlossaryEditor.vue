@@ -76,7 +76,7 @@ function save(): void {
   form.term_ids = termIds;
   emit('save', { term_ids: termIds });
 
-  form.put(route('learningSteps.glossary.sync', props.stepId), {
+  form.put(route('knowledgeItems.glossary.sync', props.stepId), {
     preserveScroll: true,
     onSuccess: () => {
       form.defaults();

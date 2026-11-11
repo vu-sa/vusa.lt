@@ -5,12 +5,15 @@ namespace App\Policies;
 use App\Actions\GetCoordinatedRepresentatives;
 use App\Models\LearningStep;
 use App\Models\User;
+use App\Policies\Traits\ManagesLearningAudiences;
 use App\Services\LearningAdminPresenter;
 use App\Services\ModelAuthorizer;
 use Illuminate\Database\Eloquent\Model;
 
 class LearningStepPolicy extends ModelPolicy
 {
+    use ManagesLearningAudiences;
+
     public function __construct(ModelAuthorizer $authorizer)
     {
         parent::__construct($authorizer);
@@ -51,24 +54,5 @@ class LearningStepPolicy extends ModelPolicy
     public function viewRep(User $coordinator, User $rep): bool
     {
         return $coordinator->isSuperAdmin() || GetCoordinatedRepresentatives::isCoordinatorOf($coordinator, $rep);
-    }
-
-    public function manageAudiences(User $user, iterable $audiences, string $ability): bool
-    {
-        $scope = $this->authorizer->scope($user, "learningSteps.{$ability}.padalinys");
-        if ($scope->isAllScope) {
-            return true;
-        }
-        if (! $scope->granted) {
-            return false;
-        }
-        foreach ($audiences as $audience) {
-            $tenantId = data_get($audience, 'tenant_id');
-            if ($tenantId === null || ! $scope->tenantIds()->contains($tenantId)) {
-                return false;
-            }
-        }
-
-        return true;
     }
 }

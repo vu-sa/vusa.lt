@@ -19,7 +19,7 @@ beforeEach(() => {
 
 function render(inPath = true, canUpdate = false) {
   return mount(ShowLearningStep, {
-    props: { step: step(), inPath, canUpdate, coordinators: [], institutionContacts: [], glossaryOptions: [] },
+    props: { step: step(), inPath, canUpdate, coordinators: [], institutionContacts: [] },
     global: { stubs: {
       ...commonStubs,
       DiscussionPanel: true,
@@ -58,13 +58,10 @@ it('keeps out-of-path completion and manager actions unavailable to readers', as
   wrapper.unmount();
 });
 
-it('opens the glossary editor in a sheet through the manager menu', async () => {
+it('offers only the step edit action to its managers', () => {
   const wrapper = render(true, true);
-  expect(wrapper.find('[data-slot="step-glossary-editor"]').exists()).toBe(false);
   expect(wrapper.get('[data-action="edit"] a').attributes('href')).toBe(route('learningSteps.edit', 'step-1'));
-  await wrapper.get('[data-action="glossary"]').trigger('click');
-  expect(wrapper.get('[role="dialog"]').text()).toContain('learning.path.manage_terms');
-  expect(wrapper.find('[role="dialog"] [data-slot="learning-step-glossary-editor"]').exists()).toBe(true);
+  expect(wrapper.find('[data-action="glossary"]').exists()).toBe(false);
   wrapper.unmount();
 });
 

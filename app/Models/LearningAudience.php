@@ -12,10 +12,12 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
- * @property string $learning_step_id
- * @property-read LearningStep $step
+ * @property string $audienceable_id
+ * @property string $audienceable_type
+ * @property-read LearningStep|KnowledgeItem $audienceable
  * @property-read Tenant|null $tenant
  * @property-read DutyType|null $dutyType
  * @property-read InstitutionType|null $institutionType
@@ -32,8 +34,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property array|string|null $description
  * @property int $order
  */
-#[Fillable(['learning_step_id', 'type', 'source_id', 'tenant_id', 'importance', 'stage', 'description', 'order'])]
-class LearningStepAudience extends Model
+#[Fillable(['audienceable_type', 'audienceable_id', 'type', 'source_id', 'tenant_id', 'importance', 'stage', 'description', 'order'])]
+class LearningAudience extends Model
 {
     use HasFactory, HasTranslations, HasUlids, LogsModelActivity;
 
@@ -41,10 +43,10 @@ class LearningStepAudience extends Model
 
     public const LABEL_RELATIONS = ['tenant', 'dutyType', 'institutionType', 'responsibility', 'duty', 'institution', 'purposeRole'];
 
-    /** @return BelongsTo<LearningStep, $this> */
-    public function step(): BelongsTo
+    /** @return MorphTo<\Illuminate\Database\Eloquent\Model, $this> */
+    public function audienceable(): MorphTo
     {
-        return $this->belongsTo(LearningStep::class, 'learning_step_id');
+        return $this->morphTo();
     }
 
     /** @return BelongsTo<Tenant, $this> */

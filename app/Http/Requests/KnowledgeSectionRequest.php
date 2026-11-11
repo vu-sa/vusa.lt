@@ -2,18 +2,18 @@
 
 namespace App\Http\Requests;
 
-use App\Models\LearningSection;
-use App\Policies\LearningSectionPolicy;
+use App\Models\KnowledgeSection;
+use App\Policies\KnowledgeSectionPolicy;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
-class LearningSectionRequest extends FormRequest
+class KnowledgeSectionRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $section = $this->route('learningSection');
+        $section = $this->route('knowledgeSection');
 
-        return $this->user()->can($section instanceof LearningSection ? 'update' : 'create', $section ?? LearningSection::class);
+        return $this->user()->can($section instanceof KnowledgeSection ? 'update' : 'create', $section ?? KnowledgeSection::class);
     }
 
     public function rules(): array
@@ -36,8 +36,8 @@ class LearningSectionRequest extends FormRequest
                 return;
             }
             $data = $validator->validated();
-            $tenantId = array_key_exists('tenant_id', $data) ? $data['tenant_id'] : $this->route('learningSection')?->tenant_id;
-            abort_unless(app(LearningSectionPolicy::class)->target($this->user(), $tenantId, $this->route('learningSection') ? 'update' : 'create'), 403);
+            $tenantId = array_key_exists('tenant_id', $data) ? $data['tenant_id'] : $this->route('knowledgeSection')?->tenant_id;
+            abort_unless(app(KnowledgeSectionPolicy::class)->target($this->user(), $tenantId, $this->route('knowledgeSection') ? 'update' : 'create'), 403);
         }];
     }
 }

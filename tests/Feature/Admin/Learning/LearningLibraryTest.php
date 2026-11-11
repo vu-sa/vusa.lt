@@ -11,8 +11,9 @@ use App\Models\DutyType;
 use App\Models\GlossaryTerm;
 use App\Models\Institution;
 use App\Models\InstitutionType;
+use App\Models\KnowledgeItem;
+use App\Models\KnowledgeItemSource;
 use App\Models\LearningStep;
-use App\Models\LearningStepSource;
 use App\Models\Permission;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -31,11 +32,10 @@ test('library payload includes curator flags for expired document, updated docum
         'expiration_date' => today()->subDay(),
         'sharepoint_modified_at' => null,
     ]);
-    $expiredStep = LearningStep::factory()->create([
-        'kind' => LearningStepKind::Knowledge,
+    $expiredStep = KnowledgeItem::factory()->create([
         'reviewed_at' => now(),
     ]);
-    LearningStepSource::factory()->for($expiredStep, 'step')->create([
+    KnowledgeItemSource::factory()->for($expiredStep, 'item')->create([
         'locale' => 'lt',
         'document_id' => $expiredDoc->id,
         'url' => null,
@@ -46,22 +46,20 @@ test('library payload includes curator flags for expired document, updated docum
         'expiration_date' => null,
         'sharepoint_modified_at' => now()->subHour(),
     ]);
-    $updatedStep = LearningStep::factory()->create([
-        'kind' => LearningStepKind::Knowledge,
+    $updatedStep = KnowledgeItem::factory()->create([
         'reviewed_at' => now()->subDay(),
     ]);
-    LearningStepSource::factory()->for($updatedStep, 'step')->create([
+    KnowledgeItemSource::factory()->for($updatedStep, 'item')->create([
         'locale' => 'lt',
         'document_id' => $updatedDoc->id,
         'url' => null,
     ]);
 
-    $missingSourceStep = LearningStep::factory()->create([
-        'kind' => LearningStepKind::Knowledge,
+    $missingSourceStep = KnowledgeItem::factory()->create([
     ]);
 
-    $response = asUser($curator)->get(route('learningSteps.index'))->assertOk();
-    $steps = collect($response->viewData('page')['props']['steps'])->keyBy('id');
+    $response = asUser($curator)->get(route('knowledgeItems.index'))->assertOk();
+    $steps = collect($response->viewData('page')['props']['items'])->keyBy('id');
 
     expect($steps[$expiredStep->id]['canUpdate'])->toBeTrue()
         ->and($steps[$expiredStep->id]['flags'])->toContain('expired_document')
@@ -69,7 +67,7 @@ test('library payload includes curator flags for expired document, updated docum
         ->and($steps[$missingSourceStep->id]['flags'])->toContain('missing_source');
 
     $member = makeUser($tenant);
-    asUser($member)->get(route('learningSteps.index'))->assertForbidden();
+    asUser($member)->get(route('knowledgeItems.index'))->assertForbidden();
 });
 
 test('create and edit pages offer audience types with managed tenants and identify global curators', function (): void {
@@ -164,41 +162,41 @@ test('document search returns hidden documents only to their manager and publish
     $manager->givePermissionTo(Permission::findOrCreate('learningSteps.create.*', 'web'));
     $manager->givePermissionTo(Permission::findOrCreate('documents.update.*', 'web'));
 
-    $hiddenSearch = asUser($manager)->getJson(route('learningSteps.documentSearch', ['q' => 'Paslėptas senato']))->assertOk()->json();
+    $hiddenSearch = asUser($manager)->getJson(route('knowledgeItems.documentSearch', ['q' => 'Paslėptas senato']))->assertOk()->json();
     expect($hiddenSearch)->toHaveCount(1)
         ->and($hiddenSearch[0]['id'])->toBe($hiddenDoc->id)
         ->and($hiddenSearch[0]['status'])->toBe(DocumentStatus::Hidden->value);
 
-    $cappedSearch = asUser($manager)->getJson(route('learningSteps.documentSearch', ['q' => 'senato']))->assertOk()->json();
+    $cappedSearch = asUser($manager)->getJson(route('knowledgeItems.documentSearch', ['q' => 'senato']))->assertOk()->json();
     expect($cappedSearch)->toHaveCount(20);
 
     $curatorWithoutDocs = makeUser($tenant);
     $curatorWithoutDocs->givePermissionTo(Permission::findOrCreate('learningSteps.create.*', 'web'));
 
-    $curatorSearch = asUser($curatorWithoutDocs)->getJson(route('learningSteps.documentSearch', ['q' => 'senato']))->assertOk()->json();
+    $curatorSearch = asUser($curatorWithoutDocs)->getJson(route('knowledgeItems.documentSearch', ['q' => 'senato']))->assertOk()->json();
     expect($curatorSearch)->toHaveCount(20)
         ->and(collect($curatorSearch)->pluck('id'))->not->toContain($hiddenDoc->id);
 });
 
 test('glossary sync authorizes update on the step and rejects foreign ids', function (): void {
     $tenant = Tenant::query()->firstOrFail();
-    $step = LearningStep::factory()->audience(['type' => LearningAudienceType::Purpose, 'source_id' => ResponsibilityPurpose::StudentRepresentation->value])->create();
+    $step = KnowledgeItem::factory()->audience(['type' => LearningAudienceType::Purpose, 'source_id' => ResponsibilityPurpose::StudentRepresentation->value])->create();
     $termA = GlossaryTerm::factory()->create();
     $termB = GlossaryTerm::factory()->create();
 
     $member = makeUser($tenant);
-    asUser($member)->put(route('learningSteps.glossary.sync', $step), [
+    asUser($member)->put(route('knowledgeItems.glossary.sync', $step), [
         'term_ids' => [$termA->id],
     ])->assertForbidden();
 
     $curator = makeUser($tenant);
     $curator->givePermissionTo(Permission::findOrCreate('learningSteps.update.*', 'web'));
 
-    asUser($curator)->put(route('learningSteps.glossary.sync', $step), [
+    asUser($curator)->put(route('knowledgeItems.glossary.sync', $step), [
         'term_ids' => ['01J00000000000000000000000'],
     ])->assertSessionHasErrors('term_ids.0');
 
-    asUser($curator)->put(route('learningSteps.glossary.sync', $step), [
+    asUser($curator)->put(route('knowledgeItems.glossary.sync', $step), [
         'term_ids' => [$termA->id, $termB->id],
     ])->assertRedirect();
 
@@ -212,33 +210,32 @@ test('glossary payload includes stepsCount and full translations for editing', f
         'term' => ['lt' => 'Senatas', 'en' => 'Senate'],
         'definition' => ['lt' => 'Aukščiausias savivaldos organas.', 'en' => 'Highest academic body.'],
     ]);
-    $steps = LearningStep::factory()->count(2)->create();
-    $term->steps()->sync($steps->pluck('id'));
+    $steps = KnowledgeItem::factory()->count(2)->create();
+    $term->knowledgeItems()->sync($steps->pluck('id'));
 
     asUser($user)->get(route('glossaryTerms.index'))->assertOk()->assertInertia(fn (Assert $page) => $page
-        ->component('Admin/Learning/IndexGlossaryTerm')
+        ->component('Admin/Knowledge/IndexGlossaryTerm')
         ->has('terms', 1)
         ->where('terms.0.id', $term->id)
-        ->where('terms.0.stepsCount', 2)
-        ->has('terms.0.steps', 2)
-        ->whereType('terms.0.steps.0.id', 'string')
-        ->whereType('terms.0.steps.0.title', 'string')
-        ->whereType('terms.0.steps.0.isDocument', 'boolean')
+        ->where('terms.0.itemsCount', 2)
+        ->has('terms.0.items', 2)
+        ->whereType('terms.0.items.0.id', 'string')
+        ->whereType('terms.0.items.0.title', 'string')
         ->where('terms.0.translations.term.lt', 'Senatas')
         ->where('terms.0.translations.term.en', 'Senate'));
 });
 
 test('the step page offers the glossary editor only to curators who may update the step', function (): void {
     $tenant = Tenant::query()->firstOrFail();
-    $step = LearningStep::factory()->audience(['type' => LearningAudienceType::Purpose, 'source_id' => ResponsibilityPurpose::StudentRepresentation->value])->create();
+    $step = KnowledgeItem::factory()->audience(['type' => LearningAudienceType::Purpose, 'source_id' => ResponsibilityPurpose::StudentRepresentation->value])->create();
     GlossaryTerm::factory()->create(['term' => ['lt' => 'Kvorumas', 'en' => 'Quorum']]);
     $member = makeUser($tenant);
     $curator = makeUser($tenant);
     $curator->givePermissionTo(Permission::findOrCreate('learningSteps.update.*', 'web'));
 
-    asUser($member)->get(route('learningSteps.show', $step))->assertOk()->assertInertia(fn (Assert $page) => $page
-        ->where('canUpdate', false)->where('glossaryOptions', []));
-    asUser($curator)->get(route('learningSteps.show', $step))->assertOk()->assertInertia(fn (Assert $page) => $page
+    asUser($member)->get(route('knowledgeItems.show', $step))->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('canUpdate', false)->missing('glossaryOptions'));
+    asUser($curator)->get(route('knowledgeItems.show', $step))->assertOk()->assertInertia(fn (Assert $page) => $page
         ->where('canUpdate', true)->has('glossaryOptions', 1)->where('glossaryOptions.0.term', 'Kvorumas'));
 });
 
@@ -252,27 +249,26 @@ test('a padalinys curator can manage the library with create or update permissio
         ->has('steps'));
 })->with(['create', 'update']);
 
-test('glossary step links open readable documents and fall back to step records for hidden sources and tasks', function (): void {
+test('glossary links always open knowledge records regardless of source visibility', function (): void {
     $viewer = makeUser(Tenant::query()->firstOrFail());
     $term = GlossaryTerm::factory()->create();
     $published = Document::factory()->create(['status' => DocumentStatus::Published, 'anonymous_url' => 'https://example.test/guide']);
     $hidden = Document::factory()->create(['status' => DocumentStatus::Hidden, 'anonymous_url' => null]);
-    $readableStep = LearningStep::factory()->create(['kind' => LearningStepKind::Knowledge]);
-    $hiddenStep = LearningStep::factory()->create(['kind' => LearningStepKind::Knowledge]);
-    $action = LearningStep::factory()->create(['kind' => LearningStepKind::Action]);
+    $readableStep = KnowledgeItem::factory()->create([]);
+    $hiddenStep = KnowledgeItem::factory()->create([]);
+    $unsourced = KnowledgeItem::factory()->create();
     $readableStep->sources()->create(['locale' => 'lt', 'document_id' => $published->id]);
     $hiddenStep->sources()->create(['locale' => 'lt', 'document_id' => $hidden->id]);
-    $term->steps()->attach([$readableStep->id, $hiddenStep->id, $action->id]);
+    $term->knowledgeItems()->attach([$readableStep->id, $hiddenStep->id, $unsourced->id]);
 
     $response = asUser($viewer)->get(route('glossaryTerms.index'))->assertOk();
-    $steps = collect($response->viewData('page')['props']['terms'][0]['steps'])->keyBy('id');
+    $steps = collect($response->viewData('page')['props']['terms'][0]['items'])->keyBy('id');
 
     expect($steps)->toHaveCount(3);
     expect($steps[$readableStep->id])->toBe([
         'id' => $readableStep->id, 'title' => $readableStep->getTranslation('title', app()->getLocale()),
-        'url' => route('documents.show', $published), 'isDocument' => true,
+        'url' => route('knowledgeItems.show', $readableStep),
     ]);
-    expect($steps[$hiddenStep->id]['url'])->toBe(route('learningSteps.show', $hiddenStep));
-    expect($steps[$action->id]['url'])->toBe(route('learningSteps.show', $action));
-    expect($steps[$action->id]['isDocument'])->toBeFalse();
+    expect($steps[$hiddenStep->id]['url'])->toBe(route('knowledgeItems.show', $hiddenStep));
+    expect($steps[$unsourced->id]['url'])->toBe(route('knowledgeItems.show', $unsourced));
 });

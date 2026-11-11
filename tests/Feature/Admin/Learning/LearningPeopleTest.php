@@ -6,9 +6,10 @@ use App\Enums\LearningStepKind;
 use App\Enums\ResponsibilityPurpose;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\KnowledgeItem;
+use App\Models\LearningAudience;
+use App\Models\LearningProgress;
 use App\Models\LearningStep;
-use App\Models\LearningStepAudience;
-use App\Models\LearningStepProgress;
 use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
 use App\Models\User;
@@ -34,16 +35,16 @@ test('the representatives overview scopes people and batches totals and latest a
     $step = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->audience(['importance' => LearningImportance::Essential])->create();
     $second = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->audience(['importance' => LearningImportance::Essential])->create();
     $responsibility = $duty->roles()->where('purpose', ResponsibilityPurpose::StudentRepresentation->value)->sole();
-    $document = LearningStep::factory()->withoutAudiences()->create();
-    LearningStepAudience::factory()->for($document, 'step')->responsibility($responsibility)->create([
-        'description' => ['lt' => 'Atstovo dokumentas', 'en' => 'Representative document'],
+    $document = KnowledgeItem::factory()->withoutAudiences()->create();
+    LearningAudience::factory()->for($document, 'audienceable')->responsibility($responsibility)->create([
+        'stage' => null, 'description' => ['lt' => 'Atstovo dokumentas', 'en' => 'Representative document'],
     ]);
     $reps = User::factory()->count(2)->create();
     foreach ($reps as $rep) {
         Dutiable::factory()->forUser($rep)->forDuty($duty)->create(['start_date' => today()->subMonth(), 'end_date' => null]);
     }
-    LearningStepProgress::factory()->for($reps[0])->create(['learning_step_id' => $step->id, 'status' => LearningProgressStatus::Done, 'completed_at' => now()->subDays(2)]);
-    LearningStepProgress::factory()->for($reps[0])->create(['learning_step_id' => $second->id, 'status' => LearningProgressStatus::Done, 'completed_at' => now()->subDay()]);
+    LearningProgress::factory()->for($reps[0])->create(['progressable_type' => $step->getMorphClass(), 'progressable_id' => $step->id, 'status' => LearningProgressStatus::Done, 'completed_at' => now()->subDays(2)]);
+    LearningProgress::factory()->for($reps[0])->create(['progressable_type' => $second->getMorphClass(), 'progressable_id' => $second->id, 'status' => LearningProgressStatus::Done, 'completed_at' => now()->subDay()]);
     asUser($coordinator)->get(route('learningPath.reps'))->assertOk();
 
     DB::enableQueryLog();

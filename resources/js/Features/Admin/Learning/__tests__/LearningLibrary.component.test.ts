@@ -2,7 +2,8 @@ import { usePage } from '@inertiajs/vue3';
 import { flushPromises, mount } from '@vue/test-utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import IndexGlossaryTerm from '@/Pages/Admin/Learning/IndexGlossaryTerm.vue';
+import IndexGlossaryTerm from '@/Pages/Admin/Knowledge/IndexGlossaryTerm.vue';
+import IndexKnowledgeItem from '@/Pages/Admin/Knowledge/IndexKnowledgeItem.vue';
 import IndexLearningStep from '@/Pages/Admin/Learning/IndexLearningStep.vue';
 import { LearningAudienceType, LearningImportance, LearningStage, LearningStepKind } from '@/Types/enums';
 import type { LearningLibraryStep } from '@/Types/learning';
@@ -14,14 +15,14 @@ vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 const originalUrl = window.location.href;
 const steps: LearningLibraryStep[] = [
   {
-    id: 'guide', title: 'Read the guide', kind: LearningStepKind.Knowledge,
+    id: 'guide', title: 'Read the guide', kind: LearningStepKind.MeetingPrep,
     audiences: [{ id: 'a1', type: LearningAudienceType.Everyone, label: 'Visi', stage: LearningStage.BeforeStart, importance: LearningImportance.Essential }],
-    audienceTypes: [LearningAudienceType.Everyone], section: { id: 's1', title: 'Pagrindai' }, order: 0, isActive: true, canUpdate: false, flags: [],
+    audienceTypes: [LearningAudienceType.Everyone], order: 0, isActive: true, canUpdate: false, perTerm: false,
   },
   {
     id: 'action', title: 'Meet your team', kind: LearningStepKind.Action,
     audiences: [{ id: 'a2', type: LearningAudienceType.InstitutionType, label: 'Taryba', stage: LearningStage.BeforeStart, importance: LearningImportance.Recommended }],
-    audienceTypes: [LearningAudienceType.InstitutionType], section: null, order: 1, isActive: true, canUpdate: true, flags: [],
+    audienceTypes: [LearningAudienceType.InstitutionType], order: 1, isActive: true, canUpdate: true, perTerm: false,
   },
 ];
 
@@ -60,9 +61,8 @@ const rowTitles = (wrapper: ReturnType<typeof render>) =>
 describe('learning library', () => {
   it.each([
     ['audience', 'institution_type', 'Meet your team'],
-    ['kind', 'knowledge', 'Read the guide'],
+    ['kind', 'meeting_prep', 'Read the guide'],
     ['importance', 'essential', 'Read the guide'],
-    ['section', 's1', 'Read the guide'],
   ])('narrows rows with the %s quick filter', async (field, value, title) => {
     const filter = `${field}:${value}`;
     const wrapper = render();
@@ -114,9 +114,10 @@ describe('learning library', () => {
     const wrapper = mount(IndexGlossaryTerm, {
       props: {
         terms: [{
-          id: 'quorum', term: 'Kvorumas', abbreviation: '', definition: 'Būtinas narių skaičius.', stepsCount: 1,
+          id: 'quorum', term: 'Kvorumas', abbreviation: '', definition: 'Būtinas narių skaičius.', itemsCount: 1,
           translations: { term: { lt: 'Kvorumas', en: 'Quorum' }, definition: { lt: 'Būtinas narių skaičius.', en: 'Required members.' } },
-          steps: [{ id: 'rules', title: 'Senato reglamentas', url: 'https://example.test/rules', isDocument: true }],
+          items: [{ id: 'rules', title: 'Senato reglamentas', url: 'https://example.test/rules' }],
+          priority: { rank: 3, importance: null, sectionOrder: 0, itemOrder: 0 },
         }],
         canManage: false,
       },
@@ -157,7 +158,7 @@ it('shows only two audience labels plus a remainder and uses the highest importa
 });
 
 it('opens sections from the library header', async () => {
-  const wrapper = render(true);
+  const wrapper = mount(IndexKnowledgeItem, { props: { items: [], canCreate: true }, global: { stubs: commonStubs } });
   await wrapper.get('[data-testid="manage-sections"]').trigger('click');
   expect(wrapper.findComponent({ name: 'LearningSectionsSheet' }).props('open')).toBe(true);
   wrapper.unmount();

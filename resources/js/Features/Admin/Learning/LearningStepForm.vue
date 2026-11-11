@@ -55,6 +55,7 @@
       </FormFieldWrapper>
 
       <FormFieldWrapper
+        v-if="!knowledge"
         id="step-kind"
         :label="$t('learning_library.fields.kind')"
         :hint="$t('learning_library.fields.kind_hint')"
@@ -99,11 +100,12 @@
       </FormFieldWrapper>
 
       <FormFieldWrapper
+        v-if="knowledge"
         id="step-source"
         :label="$t('learning_library.fields.source')"
         :hint="activeLocale === 'en' ? $t('learning_library.source.en_optional_hint') : $t('learning_library.fields.source_hint')"
         :error="form.errors[`sources.${activeLocale}`] || form.errors[`sources.${activeLocale}.document_id`] || form.errors[`sources.${activeLocale}.url`]"
-        :required="activeLocale === 'lt' && form.kind === LearningStepKind.Knowledge"
+        :required="activeLocale === 'lt' && form.kind === 'knowledge'"
       >
         <div class="space-y-3" :data-testid="`source-block-${activeLocale}`">
           <FormSegmentedControl
@@ -245,9 +247,9 @@
       </Button>
     </section>
 
-    <FormFieldWrapper v-if="!isSystem && form.kind === LearningStepKind.Knowledge" id="step-section" :label="$t('learning_library.fields.section')" :error="form.errors.learning_section_id">
+    <FormFieldWrapper v-if="!isSystem && form.kind === 'knowledge'" id="step-section" :label="$t('learning_library.fields.section')" :error="form.errors.knowledge_section_id">
       <SingleSelect v-if="sectionOptions.length > 16" v-model="selectedSection" :options="sectionOptions" label-field="title" value-field="id" :placeholder="$t('learning_library.audiences.no_section')" />
-      <NativeSelect v-else id="step-section" v-model="form.learning_section_id" :placeholder-value="null" placeholder-selectable :options="sectionOptions.map(section => ({ value: section.id, label: section.title }))" :placeholder="$t('learning_library.audiences.no_section')" data-testid="step-section" />
+      <NativeSelect v-else id="step-section" v-model="form.knowledge_section_id" :placeholder-value="null" placeholder-selectable :options="sectionOptions.map(section => ({ value: section.id, label: section.title }))" :placeholder="$t('learning_library.audiences.no_section')" data-testid="step-section" />
     </FormFieldWrapper>
 
     <template #aside>
@@ -364,6 +366,7 @@ import {
 import type {
   LearningDocumentSearchHit,
   LearningStepEditData,
+  KnowledgeItemEditData,
   LearningTenantOption,
   LearningTypeOption,
 } from '@/Types/learning';
@@ -375,9 +378,9 @@ type LocaleKey = 'lt' | 'en';
 type SourceMode = 'document' | 'url';
 
 interface LearningStepFormState {
-  kind: LearningStepKind;
+  kind: LearningStepKind | 'knowledge';
   audiences: LearningAudienceDraft[];
-  learning_section_id: string | null;
+  knowledge_section_id: string | null;
   title: { lt: string; en: string };
   description: { lt: string; en: string };
   action_label: { lt: string; en: string };
@@ -389,7 +392,8 @@ interface LearningStepFormState {
 }
 
 const props = withDefaults(defineProps<{
-  step?: LearningStepEditData | null;
+  step?: LearningStepEditData | KnowledgeItemEditData | null;
+  knowledge?: boolean;
   audienceTypes?: LearningAudienceType[];
   canTargetEverywhere?: boolean;
   tenants?: LearningTenantOption[];
@@ -406,15 +410,17 @@ const props = withDefaults(defineProps<{
   canDelete: false,
 });
 
+const knowledgeEdit = computed(() => props.step && 'sources' in props.step ? props.step : null);
+const stepEdit = computed(() => props.step && 'kind' in props.step ? props.step : null);
 const activeLocale = ref<LocaleKey>('lt');
 const isEdit = computed(() => Boolean(props.step?.id));
-const isSystem = computed(() => Boolean(props.step?.is_system));
-const backHref = computed(() => (props.step?.id ? route('learningSteps.show', props.step.id) : route('learningSteps.index')));
+const isSystem = computed(() => Boolean(stepEdit.value?.is_system));
+const backHref = computed(() => (props.step?.id ? route(`${props.knowledge ? 'knowledgeItems' : 'learningSteps'}.show`, props.step.id) : route(`${props.knowledge ? 'knowledgeItems' : 'learningSteps'}.index`)));
 
 const form = useForm<LearningStepFormState>({
-  kind: props.step?.kind ?? LearningStepKind.Knowledge,
+  kind: props.knowledge ? 'knowledge' : (stepEdit.value?.kind ?? LearningStepKind.Action),
   audiences: props.step?.audiences.map(audience => ({ ...audience, description: { ...audience.description } })) ?? [],
-  learning_section_id: props.step?.learning_section_id ?? null,
+  knowledge_section_id: knowledgeEdit.value?.knowledge_section_id ?? null,
   title: {
     lt: props.step?.title?.lt ?? '',
     en: props.step?.title?.en ?? '',
@@ -423,19 +429,19 @@ const form = useForm<LearningStepFormState>({
     lt: props.step?.description?.lt ?? '',
     en: props.step?.description?.en ?? '',
   },
-  action_label: { lt: props.step?.action_label?.lt ?? '', en: props.step?.action_label?.en ?? '' },
-  action_url: { lt: props.step?.action_url?.lt ?? '', en: props.step?.action_url?.en ?? '' },
+  action_label: { lt: stepEdit.value?.action_label?.lt ?? '', en: stepEdit.value?.action_label?.en ?? '' },
+  action_url: { lt: stepEdit.value?.action_url?.lt ?? '', en: stepEdit.value?.action_url?.en ?? '' },
   per_term: props.step?.per_term ?? false,
   order: props.step?.order ?? 0,
   is_active: props.step?.is_active ?? true,
   sources: {
     lt: {
-      document_id: props.step?.sources?.lt?.document_id ?? null,
-      url: props.step?.sources?.lt?.url ?? '',
+      document_id: knowledgeEdit.value?.sources?.lt?.document_id ?? null,
+      url: knowledgeEdit.value?.sources?.lt?.url ?? '',
     },
     en: {
-      document_id: props.step?.sources?.en?.document_id ?? null,
-      url: props.step?.sources?.en?.url ?? '',
+      document_id: knowledgeEdit.value?.sources?.en?.document_id ?? null,
+      url: knowledgeEdit.value?.sources?.en?.url ?? '',
     },
   },
 });
@@ -453,7 +459,7 @@ const fieldIds: Record<string, string> = {
   'action_url.lt': 'step-action-url',
   'action_url.en': 'step-action-url',
   'audiences': 'step-audiences',
-  'learning_section_id': 'step-section',
+  'knowledge_section_id': 'step-section',
   'order': 'step-order',
   'sources.lt': 'step-source',
   'sources.lt.document_id': 'step-source',
@@ -477,13 +483,13 @@ const missingLocaleCounts = computed<Record<LocaleKey, number>>(() => {
 });
 
 const sourceModes = reactive<Record<LocaleKey, SourceMode>>({
-  lt: props.step?.sources?.lt?.url && !props.step?.sources?.lt?.document_id ? 'url' : 'document',
-  en: props.step?.sources?.en?.url && !props.step?.sources?.en?.document_id ? 'url' : 'document',
+  lt: knowledgeEdit.value?.sources?.lt?.url && !knowledgeEdit.value?.sources?.lt?.document_id ? 'url' : 'document',
+  en: knowledgeEdit.value?.sources?.en?.url && !knowledgeEdit.value?.sources?.en?.document_id ? 'url' : 'document',
 });
 
 const selectedDocs = reactive<Record<LocaleKey, LearningDocumentSearchHit | null>>({
-  lt: props.step?.source_documents?.lt ?? null,
-  en: props.step?.source_documents?.en ?? null,
+  lt: knowledgeEdit.value?.source_documents?.lt ?? null,
+  en: knowledgeEdit.value?.source_documents?.en ?? null,
 });
 
 const searchQueries = reactive<Record<LocaleKey, string>>({ lt: '', en: '' });
@@ -492,12 +498,7 @@ const searching = reactive<Record<LocaleKey, boolean>>({ lt: false, en: false })
 const searchOpen = reactive<Record<LocaleKey, boolean>>({ lt: false, en: false });
 const deleteDialogOpen = ref(false);
 
-const systemTitle = computed(() => {
-  if (props.step?.key) {
-    return $t(`learning.system_steps.${props.step.key}.title`);
-  }
-  return props.step?.title?.[activeLocale.value] || props.step?.title?.lt || props.step?.title?.en || '';
-});
+const systemTitle = computed(() => stepEdit.value?.key ? $t(`learning.system_steps.${stepEdit.value.key}.title`) : '');
 
 const pageTitle = computed(() => {
   if (isSystem.value) {
@@ -520,8 +521,7 @@ const barTitle = computed(() => {
   return $t('learning.pages.create');
 });
 
-const kindOptions = computed<FormSegmentOption<LearningStepKind>[]>(() => [
-  { value: LearningStepKind.Knowledge, label: $t('learning.kinds.knowledge') },
+const kindOptions = computed<FormSegmentOption<LearningStepKind | 'knowledge'>[]>(() => [
   { value: LearningStepKind.Action, label: $t('learning.kinds.action') },
   { value: LearningStepKind.MeetingPrep, label: $t('learning.kinds.meeting_prep') },
 ]);
@@ -533,8 +533,8 @@ const sourceModeOptions = computed<FormSegmentOption<SourceMode>[]>(() => [
 
 const sectionOptions = computed(() => props.sections.map(section => ({ id: section.id, title: section.title[activeLocale.value] || section.title.lt || section.title.en || '' })));
 const selectedSection = computed({
-  get: () => sectionOptions.value.find(section => section.id === form.learning_section_id) ?? null,
-  set: (section: { id: string; title: string } | null) => { form.learning_section_id = section?.id ?? null; },
+  get: () => sectionOptions.value.find(section => section.id === form.knowledge_section_id) ?? null,
+  set: (section: { id: string; title: string } | null) => { form.knowledge_section_id = section?.id ?? null; },
 });
 const audienceSheetOpen = ref(false);
 const audienceIndex = ref<number | null>(null);
@@ -553,7 +553,6 @@ watch(() => form.kind, kind => {
   for (const audience of form.audiences) {
     audience.stage = kind === LearningStepKind.Action ? audience.stage ?? LearningStage.BeforeStart : null;
   }
-  if (kind !== LearningStepKind.Knowledge) form.learning_section_id = null;
 });
 
 function setSourceMode(locale: LocaleKey, mode: SourceMode): void {
@@ -594,7 +593,7 @@ async function runDocumentSearch(locale: LocaleKey): Promise<void> {
   searchOpen[locale] = true;
   searching[locale] = true;
   try {
-    const response = await fetch(route('learningSteps.documentSearch', { q: searchQueries[locale].trim() }), {
+    const response = await fetch(route('knowledgeItems.documentSearch', { q: searchQueries[locale].trim() }), {
       headers: { Accept: 'application/json' },
     });
     if (response.ok) {
@@ -627,19 +626,21 @@ function buildPayload(data: LearningStepFormState): Record<string, unknown> {
   }
 
   return {
-    kind: data.kind,
-    audiences: data.audiences.map(({ label, ...audience }) => ({
-      ...audience, stage: data.kind === LearningStepKind.Action ? audience.stage : null,
+    ...(!props.knowledge ? { kind: data.kind } : {}),
+    audiences: data.audiences.map(({ label, stage, ...audience }) => ({
+      ...audience, ...(!props.knowledge ? { stage: data.kind === LearningStepKind.Action ? stage : null } : {}),
     })),
-    learning_section_id: data.kind === LearningStepKind.Knowledge ? data.learning_section_id : null,
+    ...(props.knowledge ? { knowledge_section_id: data.knowledge_section_id } : {}),
     title: data.title,
     description: data.description,
-    action_label: { lt: data.action_label.lt.trim(), en: data.action_label.en.trim() },
-    action_url: { lt: data.action_url.lt.trim(), en: data.action_url.en.trim() },
+    ...(!props.knowledge ? {
+      action_label: { lt: data.action_label.lt.trim(), en: data.action_label.en.trim() },
+      action_url: { lt: data.action_url.lt.trim(), en: data.action_url.en.trim() },
+    } : {}),
     per_term: data.per_term,
     order: data.order,
     is_active: data.is_active,
-    sources,
+    ...(props.knowledge ? { sources } : {}),
   };
 }
 
@@ -655,10 +656,10 @@ function submit(): void {
   form.defaults();
 
   if (props.step?.id) {
-    form.put(route('learningSteps.update', props.step.id), options);
+    form.put(route(`${props.knowledge ? 'knowledgeItems' : 'learningSteps'}.update`, props.step.id), options);
   }
   else {
-    form.post(route('learningSteps.store'), options);
+    form.post(route(`${props.knowledge ? 'knowledgeItems' : 'learningSteps'}.store`), options);
   }
 }
 
@@ -667,6 +668,6 @@ function destroyStep(): void {
     return;
   }
   deleteDialogOpen.value = false;
-  router.delete(route('learningSteps.destroy', props.step.id));
+  router.delete(route(`${props.knowledge ? 'knowledgeItems' : 'learningSteps'}.destroy`, props.step.id));
 }
 </script>

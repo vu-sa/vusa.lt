@@ -3,6 +3,7 @@
 return [
     'entity' => ['singular' => 'Mokymosi žingsnis', 'plural' => 'Mokymosi žingsniai'],
     'pages' => [
+        'knowledge' => 'Žinių bazė',
         'documents' => 'Dokumentai',
         'path' => 'Mano kelias',
         'library' => 'Tvarkyti',

@@ -2,11 +2,11 @@
 
 namespace App\Policies;
 
-use App\Models\LearningSection;
+use App\Models\KnowledgeSection;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
 
-class LearningSectionPolicy
+class KnowledgeSectionPolicy
 {
     public function __construct(private readonly ModelAuthorizer $authorizer) {}
 
@@ -15,12 +15,12 @@ class LearningSectionPolicy
         return $this->authorizer->scope($user, 'learningSteps.create.padalinys')->granted;
     }
 
-    public function update(User $user, LearningSection $section): bool
+    public function update(User $user, KnowledgeSection $section): bool
     {
         return $this->target($user, $section->tenant_id, 'update');
     }
 
-    public function delete(User $user, LearningSection $section): bool
+    public function delete(User $user, KnowledgeSection $section): bool
     {
         return $this->target($user, $section->tenant_id, 'delete');
     }

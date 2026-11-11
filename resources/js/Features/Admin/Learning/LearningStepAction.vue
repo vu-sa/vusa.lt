@@ -6,15 +6,15 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import { buttonVariants } from '@/Components/ui/button';
 import { LearningImportance } from '@/Types/enums';
-import type { LearningStepData } from '@/Types/learning';
+import type { LearningStepData, KnowledgeItemData } from '@/Types/learning';
 import { safeHref } from '@/Utils/safeHref';
 
-const props = defineProps<{ step: LearningStepData }>();
-const isDocument = computed(() => props.step.kind === 'knowledge');
-const href = computed(() => safeHref(isDocument.value ? props.step.source?.url : props.step.actionUrl));
+const props = defineProps<{ step: LearningStepData | KnowledgeItemData }>();
+const isDocument = computed(() => 'source' in props.step);
+const href = computed(() => safeHref(isDocument.value ? ('source' in props.step ? props.step.source?.url : null) : ('actionUrl' in props.step ? props.step.actionUrl : null)));
 const label = computed(() => {
   if (isDocument.value) return $t('learning.path.read_document');
-  return props.step.actionLabel || $t('learning.path.open');
+  return ('actionLabel' in props.step ? props.step.actionLabel : null) || $t('learning.path.open');
 });
 // Documents and other sites open in a new tab (↗); platform pages stay in the app (→).
 const opensElsewhere = computed(() => {

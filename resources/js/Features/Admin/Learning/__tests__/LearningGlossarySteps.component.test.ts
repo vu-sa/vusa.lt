@@ -9,15 +9,14 @@ describe('Glossary step relations', () => {
   it('shows where the term appears with one-click document and task links', () => {
     const wrapper = mount(LearningGlossarySteps, {
       props: { steps: [
-        { id: 'document', title: 'Senato reglamentas', url: 'https://example.test/reglamentas', isDocument: true },
-        { id: 'task', title: 'Pasiruošk posėdžiui', url: null, isDocument: false },
+        { id: 'document', title: 'Senato reglamentas', url: route('knowledgeItems.show', 'document') },
+        { id: 'task', title: 'Pasiruošk posėdžiui', url: route('knowledgeItems.show', 'task') },
       ] },
     });
     expect(wrapper.text()).toContain('learning.glossary.where_used');
-    expect(wrapper.get('a[target="_blank"]').text()).toBe('Senato reglamentas');
-    expect(wrapper.get('a[target="_blank"]').attributes('href')).toBe('https://example.test/reglamentas');
-    expect(wrapper.get('a[target="_blank"]').attributes('rel')).toBe('noopener noreferrer');
-    expect(wrapper.findAll('a').some(link => link.attributes('href')?.includes('learningSteps.show'))).toBe(true);
+    expect(wrapper.findAll('a').map(link => link.attributes('href'))).toEqual([
+      route('knowledgeItems.show', 'document'), route('knowledgeItems.show', 'task'),
+    ]);
     wrapper.unmount();
   });
 });

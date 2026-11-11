@@ -30,7 +30,7 @@ describe('LearningStepGlossaryEditor', () => {
     vi.clearAllMocks();
   });
 
-  it('emits the selected term_ids payload and submits to learningSteps.glossary.sync', async () => {
+  it('emits the selected term_ids payload and submits to knowledgeItems.glossary.sync', async () => {
     const options = [
       { id: 'term-1', term: 'Senatas' },
       { id: 'term-2', term: 'SPK' },
@@ -57,7 +57,7 @@ describe('LearningStepGlossaryEditor', () => {
     const form = vi.mocked(useForm).mock.results.at(-1)?.value;
     expect(form.term_ids).toEqual(['term-1', 'term-2']);
     expect(form.put).toHaveBeenCalledWith(
-      expect.stringContaining('learningSteps.glossary.sync'),
+      expect.stringContaining('knowledgeItems.glossary.sync'),
       expect.objectContaining({ preserveScroll: true }),
     );
   });

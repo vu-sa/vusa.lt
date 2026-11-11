@@ -13,6 +13,7 @@
  */
 
 return [
+    'knowledgeItem' => ['model' => '{1} žinių įrašas|[2,9] žinių įrašai|[10,*] žinių įrašų', 'gender' => 'm'],
     'learningStep' => ['model' => '{1} mokymosi žingsnis|[2,9] mokymosi žingsniai|[10,*] mokymosi žingsnių', 'gender' => 'm'],
     'glossaryTerm' => ['model' => '{1} sąvoka|[2,9] sąvokos|[10,*] sąvokų', 'gender' => 'f'],
 

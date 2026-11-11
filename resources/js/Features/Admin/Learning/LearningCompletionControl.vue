@@ -4,12 +4,12 @@ import { Zap } from '@lucide/vue';
 
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/ui/tooltip';
-import type { LearningStepData } from '@/Types/learning';
+import type { LearningStepData, KnowledgeItemData } from '@/Types/learning';
 
-const props = defineProps<{ step: LearningStepData; disabled?: boolean }>();
+const props = defineProps<{ step: LearningStepData | KnowledgeItemData; disabled?: boolean }>();
 const checked = defineModel<boolean | 'indeterminate'>({ required: true });
 const hintId = useId();
-const automatic = computed(() => props.step.automaticallyTracked || props.step.autoCompleted);
+const automatic = computed(() => ('automaticallyTracked' in props.step && props.step.automaticallyTracked) || props.step.autoCompleted);
 const branded = computed(() => props.step.importance === 'essential');
 const appearance = computed(() => [
   'relative flex size-5 shrink-0 items-center justify-center border bg-clip-padding',

@@ -44,13 +44,13 @@
             <span v-else class="font-medium text-foreground">{{ item.term }}</span>
             <abbr v-if="item.abbreviation" :title="item.term" :class="abbreviationClass" data-testid="glossary-term-abbreviation">{{ item.abbreviation }}</abbr>
             <span class="ml-auto text-xs tabular-nums text-muted-foreground" data-testid="glossary-term-steps-count">
-              {{ $tChoice('learning_library.glossary.steps_usage', item.stepsCount, { count: String(item.stepsCount) }) }}
+              {{ $tChoice('learning_library.glossary.steps_usage', item.itemsCount, { count: String(item.itemsCount) }) }}
             </span>
           </div>
           <p class="mt-0.5 whitespace-pre-line text-sm text-muted-foreground">
             {{ item.definition }}
           </p>
-          <LearningGlossarySteps :steps="item.steps" />
+          <LearningGlossarySteps :steps="item.items" />
         </div>
       </CollectionRow>
     </template>
@@ -70,10 +70,10 @@
       </template>
       <div v-else-if="column.key === 'definition'" class="space-y-2">
         <p class="whitespace-pre-line text-sm text-muted-foreground">{{ item.definition }}</p>
-        <LearningGlossarySteps :steps="item.steps" />
+        <LearningGlossarySteps :steps="item.items" />
       </div>
       <span v-else-if="column.key === 'stepsCount'" class="tabular-nums text-sm text-muted-foreground" data-testid="glossary-term-steps-count">
-        {{ item.stepsCount }}
+        {{ item.itemsCount }}
       </span>
     </template>
 
@@ -190,8 +190,9 @@ const source = useLocalCollectionSource<GlossaryTermData>({
     item.translations?.definition?.lt,
     item.translations?.definition?.en,
   ],
-  defaultSort: 'term:asc',
+  defaultSort: 'priority:asc',
   sortOptions: () => [
+    { value: 'priority:asc', label: $t('learning.documents.by_importance'), by: item => props.terms.findIndex(term => term.id === item.id) },
     { value: 'term:asc', label: $t('learning_library.library.sort.title_asc'), by: item => item.term },
     { value: 'term:desc', label: $t('learning_library.library.sort.title_desc'), by: item => item.term },
   ],

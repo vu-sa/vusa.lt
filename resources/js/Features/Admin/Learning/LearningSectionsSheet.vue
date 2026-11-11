@@ -37,12 +37,12 @@ function edit(section: LearningSectionOption | null) {
 function submit() {
   if (!editing.value) return;
   const options = { preserveScroll: true, onSuccess: () => { form.defaults(); editing.value = false; } };
-  if (editingId.value) form.put(route('learningSections.update', editingId.value), options);
-  else form.post(route('learningSections.store'), options);
+  if (editingId.value) form.put(route('knowledgeSections.update', editingId.value), options);
+  else form.post(route('knowledgeSections.store'), options);
 }
 function destroy() {
   if (!deleting.value) return;
-  router.delete(route('learningSections.destroy', deleting.value.id), { preserveScroll: true, onSuccess: () => { confirmOpen.value = false; deleting.value = null; } });
+  router.delete(route('knowledgeSections.destroy', deleting.value.id), { preserveScroll: true, onSuccess: () => { confirmOpen.value = false; deleting.value = null; } });
 }
 </script>
 

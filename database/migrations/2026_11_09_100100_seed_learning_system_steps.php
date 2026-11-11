@@ -4,7 +4,9 @@ use App\Enums\LearningAudienceType;
 use App\Enums\LearningImportance;
 use App\Enums\LearningStage;
 use App\Enums\ResponsibilityPurpose;
+use App\Models\LearningStep;
 use App\Services\Learning\SystemSteps\SystemStepRegistry;
+use App\Support\MorphMap;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -59,8 +61,8 @@ return new class extends Migration
 
     private function insertAudience(string $stepId, ?string $purpose, LearningImportance $importance, LearningStage $stage): void
     {
-        DB::table('learning_step_audiences')->insert([
-            'id' => (string) Str::ulid(), 'learning_step_id' => $stepId,
+        DB::table('learning_audiences')->insert([
+            'id' => (string) Str::ulid(), 'audienceable_type' => MorphMap::alias(LearningStep::class), 'audienceable_id' => $stepId,
             'type' => $purpose === null ? 'everyone' : 'purpose', 'source_id' => $purpose,
             'importance' => $importance->value, 'stage' => $stage->value,
             'order' => 0, 'created_at' => now(), 'updated_at' => now(),

@@ -2,12 +2,12 @@ import { router, usePage } from '@inertiajs/vue3';
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import ShowLearningDocuments from '@/Pages/Admin/Learning/ShowLearningDocuments.vue';
+import ShowLearningDocuments from '@/Pages/Admin/Knowledge/ShowKnowledgeBase.vue';
 import { LearningImportance } from '@/Types/enums';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
 import LearningStepRow from '../LearningStepRow.vue';
-import { step } from './fixtures';
+import { knowledge } from './fixtures';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 beforeEach(() => {
@@ -20,16 +20,16 @@ const data = () => ({
     { id: 'first', title: 'Pirmas', description: 'Mokymų medžiaga', order: 1 },
     { id: 'empty', title: 'Tuščias', description: '', order: 3 },
   ],
-  documents: [
-    step({ id: 'done', state: 'done', importance: LearningImportance.Essential, section: { id: 'second', title: 'Antras' } }),
-    step({ id: 'recommended', section: { id: 'first', title: 'Pirmas' }, glossaryTerms: [{ id: 'quorum', term: 'Kvorumas', abbreviation: '', definition: 'Būtinas narių skaičius.' }] }),
-    step({ id: 'unread', state: 'updated', importance: LearningImportance.Essential }),
-    step({ id: 'optional', importance: LearningImportance.Optional }),
-    step({ id: 'skipped', state: 'skipped', importance: LearningImportance.Essential }),
+  items: [
+    knowledge({ id: 'done', state: 'done', importance: LearningImportance.Essential, section: { id: 'second', title: 'Antras' } }),
+    knowledge({ id: 'recommended', section: { id: 'first', title: 'Pirmas' }, glossaryTerms: [{ id: 'quorum', term: 'Kvorumas', abbreviation: '', definition: 'Būtinas narių skaičius.' }] }),
+    knowledge({ id: 'unread', state: 'updated', importance: LearningImportance.Essential }),
+    knowledge({ id: 'optional', importance: LearningImportance.Optional }),
+    knowledge({ id: 'skipped', state: 'skipped', importance: LearningImportance.Essential }),
   ],
 });
 function render() {
-  return mount(ShowLearningDocuments, { props: { documents: data() }, global: { stubs: commonStubs } });
+  return mount(ShowLearningDocuments, { props: { knowledge: data() }, global: { stubs: commonStubs } });
 }
 
 describe('Learning documents', () => {
@@ -67,7 +67,7 @@ describe('Learning documents', () => {
   });
 
   it('hides empty importance groups and teaches the empty state', () => {
-    const wrapper = mount(ShowLearningDocuments, { props: { documents: { sections: [], documents: [] } }, global: { stubs: commonStubs } });
+    const wrapper = mount(ShowLearningDocuments, { props: { knowledge: { sections: [], items: [] } }, global: { stubs: commonStubs } });
     expect(wrapper.findAll('[data-slot="document-section"]')).toHaveLength(0);
     expect(wrapper.get('[data-slot="empty-state"]').text()).toContain('learning.documents.empty_title');
     wrapper.unmount();

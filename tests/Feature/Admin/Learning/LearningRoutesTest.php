@@ -6,6 +6,7 @@ use App\Models\Duty;
 use App\Models\GlossaryTerm;
 use App\Models\Institution;
 use App\Models\InstitutionSecretary;
+use App\Models\KnowledgeItem;
 use App\Models\LearningStep;
 use App\Models\Permission;
 use App\Models\Pivots\Dutiable;
@@ -20,11 +21,11 @@ uses(RefreshDatabase::class);
 test('members can open learning pages with their typed payloads', function (string $routeName, string $component, string $prop): void {
     $user = makeUser(Tenant::query()->firstOrFail());
     asUser($user)->get(route($routeName))->assertOk()->assertInertia(fn (Assert $page) => $page
-        ->component('Admin/Learning/'.$component)->has($prop)->missing('canSeeReps')->missing('learningNavigation'));
+        ->component($component)->has($prop)->missing('canSeeReps')->missing('learningNavigation'));
 })->with([
-    'path' => ['learningPath.show', 'ShowLearningPath', 'path.stages'],
-    'documents' => ['learningPath.documents', 'ShowLearningDocuments', 'documents'],
-    'glossary' => ['glossaryTerms.index', 'IndexGlossaryTerm', 'terms'],
+    'path' => ['learningPath.show', 'Admin/Learning/ShowLearningPath', 'path.stages'],
+    'documents' => ['knowledgeBase.show', 'Admin/Knowledge/ShowKnowledgeBase', 'knowledge'],
+    'glossary' => ['glossaryTerms.index', 'Admin/Knowledge/IndexGlossaryTerm', 'terms'],
 ]);
 
 test('a member can open a library step and its presenter contract', function (): void {
@@ -32,7 +33,7 @@ test('a member can open a library step and its presenter contract', function ():
     $step = LearningStep::factory()->create();
     asUser($user)->get(route('learningSteps.show', $step))->assertOk()->assertInertia(fn (Assert $page) => $page
         ->component('Admin/Learning/ShowLearningStep')->where('step.id', $step->id)
-        ->whereType('step.title', 'string')->whereType('step.insightsCount', 'integer')->where('step.source', null));
+        ->whereType('step.title', 'string')->whereType('step.insightsCount', 'integer')->missing('step.source'));
 });
 
 test('non coordinators receive a direct 403 for representatives', function (): void {
@@ -71,23 +72,23 @@ test('global curators can open create and edit stubs', function (): void {
 
 test('a step record exposes localized glossary terms and the members own progress eligibility', function (): void {
     $user = makeUser(Tenant::query()->firstOrFail());
-    $step = LearningStep::factory()->create(['reviewed_at' => '2026-11-01']);
+    $step = KnowledgeItem::factory()->create(['reviewed_at' => '2026-11-01']);
     $term = GlossaryTerm::factory()->create([
         'term' => ['lt' => 'Kvorumas', 'en' => 'Quorum'],
         'definition' => ['lt' => 'Būtinas narių skaičius.', 'en' => 'The required number of members.'],
     ]);
     $step->glossaryTerms()->attach($term);
 
-    asUser($user)->get(route('learningSteps.show', $step))->assertOk()->assertInertia(fn (Assert $page) => $page
+    asUser($user)->get(route('knowledgeItems.show', $step))->assertOk()->assertInertia(fn (Assert $page) => $page
         ->where('inPath', true)
-        ->where('step.reviewedAt', '2026-11-01')
-        ->has('step.glossaryTerms', 1)
-        ->where('step.glossaryTerms.0.id', $term->id)
-        ->where('step.glossaryTerms.0.term', 'Kvorumas')
-        ->where('step.glossaryTerms.0.definition', 'Būtinas narių skaičius.')
-        ->whereType('step.glossaryTerms.0.id', 'string')
-        ->whereType('step.glossaryTerms.0.term', 'string')
-        ->whereType('step.glossaryTerms.0.definition', 'string')
+        ->where('item.reviewedAt', '2026-11-01')
+        ->has('item.glossaryTerms', 1)
+        ->where('item.glossaryTerms.0.id', $term->id)
+        ->where('item.glossaryTerms.0.term', 'Kvorumas')
+        ->where('item.glossaryTerms.0.definition', 'Būtinas narių skaičius.')
+        ->whereType('item.glossaryTerms.0.id', 'string')
+        ->whereType('item.glossaryTerms.0.term', 'string')
+        ->whereType('item.glossaryTerms.0.definition', 'string')
         ->has('coordinators')->has('institutionContacts'));
 });
 
@@ -138,5 +139,5 @@ test('library records outside a members path do not offer personal progress', fu
     $user = makeUser(Tenant::query()->firstOrFail());
     $step = LearningStep::factory()->forTenant(Tenant::factory()->create())->create();
     asUser($user)->get(route('learningSteps.show', $step))->assertOk()->assertInertia(fn (Assert $page) => $page
-        ->where('inPath', false)->has('step.glossaryTerms', 0)->where('step.reviewedAt', null));
+        ->where('inPath', false)->missing('step.glossaryTerms')->where('step.reviewedAt', null));
 });

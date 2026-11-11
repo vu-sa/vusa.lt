@@ -20,7 +20,7 @@ import type { LearningAudienceDraft, LearningAudienceOptions } from './types';
 
 const props = defineProps<LearningAudienceOptions & {
   audience?: LearningAudienceDraft | null;
-  kind: LearningStepKind;
+  kind: LearningStepKind | 'knowledge';
   isSystem?: boolean;
 }>();
 const open = defineModel<boolean>('open', { required: true });

@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('learning_sections', function (Blueprint $table): void {
+        Schema::create('knowledge_sections', function (Blueprint $table): void {
             $table->ulid('id')->primary();
             $table->json('title');
             $table->json('description')->nullable();
@@ -23,7 +23,6 @@ return new class extends Migration
             $table->string('key')->nullable()->unique();
             $table->boolean('is_system')->default(false);
             $table->string('kind');
-            $table->foreignUlid('learning_section_id')->nullable()->constrained('learning_sections')->nullOnDelete();
             $table->json('title')->nullable();
             $table->json('description')->nullable();
             $table->json('action_label')->nullable();
@@ -35,9 +34,22 @@ return new class extends Migration
             $table->foreignUlid('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
-        Schema::create('learning_step_audiences', function (Blueprint $table): void {
+        Schema::create('knowledge_items', function (Blueprint $table): void {
             $table->ulid('id')->primary();
-            $table->foreignUlid('learning_step_id')->constrained()->cascadeOnDelete();
+            $table->string('key')->nullable()->unique();
+            $table->foreignUlid('knowledge_section_id')->nullable()->constrained()->nullOnDelete();
+            $table->json('title');
+            $table->json('description')->nullable();
+            $table->boolean('per_term')->default(false);
+            $table->unsignedInteger('order')->default(0);
+            $table->boolean('is_active')->default(true);
+            $table->timestamp('reviewed_at')->nullable();
+            $table->foreignUlid('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamps();
+        });
+        Schema::create('learning_audiences', function (Blueprint $table): void {
+            $table->ulid('id')->primary();
+            $table->ulidMorphs('audienceable');
             $table->string('type');
             $table->string('source_id', 26)->nullable();
             $table->unsignedInteger('tenant_id')->nullable();
@@ -49,23 +61,23 @@ return new class extends Migration
             $table->timestamps();
             $table->index(['type', 'source_id']);
         });
-        Schema::create('learning_step_sources', function (Blueprint $table): void {
+        Schema::create('knowledge_item_sources', function (Blueprint $table): void {
             $table->id();
-            $table->foreignUlid('learning_step_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('knowledge_item_id')->constrained()->cascadeOnDelete();
             $table->string('locale', 2);
             $table->foreignId('document_id')->nullable()->constrained()->nullOnDelete();
             $table->string('url', 2048)->nullable();
             $table->timestamps();
-            $table->unique(['learning_step_id', 'locale']);
+            $table->unique(['knowledge_item_id', 'locale']);
         });
-        Schema::create('learning_step_progress', function (Blueprint $table): void {
+        Schema::create('learning_progress', function (Blueprint $table): void {
             $table->id();
-            $table->foreignUlid('learning_step_id')->constrained()->cascadeOnDelete();
+            $table->ulidMorphs('progressable');
             $table->foreignUlid('user_id')->constrained()->cascadeOnDelete();
             $table->string('status');
             $table->timestamp('completed_at');
             $table->timestamps();
-            $table->unique(['learning_step_id', 'user_id']);
+            $table->unique(['progressable_type', 'progressable_id', 'user_id'], 'learning_progress_user_unique');
         });
         Schema::create('glossary_terms', function (Blueprint $table): void {
             $table->ulid('id')->primary();
@@ -74,16 +86,16 @@ return new class extends Migration
             $table->json('definition');
             $table->timestamps();
         });
-        Schema::create('glossary_term_learning_step', function (Blueprint $table): void {
+        Schema::create('glossary_term_knowledge_item', function (Blueprint $table): void {
             $table->foreignUlid('glossary_term_id')->constrained()->cascadeOnDelete();
-            $table->foreignUlid('learning_step_id')->constrained()->cascadeOnDelete();
-            $table->primary(['glossary_term_id', 'learning_step_id']);
+            $table->foreignUlid('knowledge_item_id')->constrained()->cascadeOnDelete();
+            $table->primary(['glossary_term_id', 'knowledge_item_id']);
         });
     }
 
     public function down(): void
     {
-        foreach (['glossary_term_learning_step', 'glossary_terms', 'learning_step_progress', 'learning_step_sources', 'learning_step_audiences', 'learning_steps', 'learning_sections'] as $table) {
+        foreach (['glossary_term_knowledge_item', 'glossary_terms', 'learning_progress', 'knowledge_item_sources', 'learning_audiences', 'knowledge_items', 'learning_steps', 'knowledge_sections'] as $table) {
             Schema::dropIfExists($table);
         }
     }

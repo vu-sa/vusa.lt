@@ -17,7 +17,7 @@ use Illuminate\Support\Carbon;
  * @property array|string|null $term
  * @property array|string|null $abbreviation
  * @property array|string|null $definition
- * @property-read Collection<int, LearningStep> $steps
+ * @property-read Collection<int, KnowledgeItem> $knowledgeItems
  */
 #[Fillable(['term', 'abbreviation', 'definition'])]
 class GlossaryTerm extends Model
@@ -26,9 +26,9 @@ class GlossaryTerm extends Model
 
     public $translatable = ['term', 'abbreviation', 'definition'];
 
-    /** @return BelongsToMany<LearningStep, $this> */
-    public function steps(): BelongsToMany
+    /** @return BelongsToMany<KnowledgeItem, $this> */
+    public function knowledgeItems(): BelongsToMany
     {
-        return $this->belongsToMany(LearningStep::class);
+        return $this->belongsToMany(KnowledgeItem::class);
     }
 }

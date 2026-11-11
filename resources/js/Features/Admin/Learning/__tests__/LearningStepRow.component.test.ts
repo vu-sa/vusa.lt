@@ -1,3 +1,4 @@
+import type { LearningStepData, KnowledgeItemData } from '@/Types/learning';
 import { mount } from '@vue/test-utils';
 import { router, usePage } from '@inertiajs/vue3';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -6,7 +7,7 @@ import { LearningImportance, LearningStepKind } from '@/Types/enums';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
 import LearningStepRow from '../LearningStepRow.vue';
-import { step } from './fixtures';
+import { step, knowledge } from './fixtures';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 beforeEach(() => {
@@ -14,7 +15,7 @@ beforeEach(() => {
   vi.mocked(router.post).mockClear();
 });
 
-const render = (data = step(), readonly = false) => mount(LearningStepRow, {
+const render = (data: LearningStepData | KnowledgeItemData = step(), readonly = false) => mount(LearningStepRow, {
   props: { step: data, readonly },
   global: { stubs: commonStubs },
 });
@@ -51,19 +52,19 @@ describe('LearningStepRow', () => {
   });
 
   it('shows hidden documents without a source link', () => {
-    const wrapper = render(step({ source: { type: 'document', url: null, documentId: 1, documentStatus: null, title: 'Hidden' } }));
+    const wrapper = render(knowledge({ source: { type: 'document', url: null, documentId: 1, documentStatus: null, title: 'Hidden' } }));
     expect(wrapper.text()).toContain('learning.path.document_private');
     expect(wrapper.find('a[target="_blank"]').exists()).toBe(false);
     expect(wrapper.text()).toContain('Read the guide');
     wrapper.unmount();
   });
 
-  it('links the title to the step and places the insights count beside it', () => {
-    const data = step({ source: { type: 'url', url: 'https://example.test/guide', documentId: null, documentStatus: null, title: null } });
+  it('links a knowledge item title to its page and places the insights count beside it', () => {
+    const data = knowledge({ source: { type: 'url', url: 'https://example.test/guide', documentId: null, documentStatus: null, title: null } });
     const wrapper = render(data);
     const links = wrapper.get('[data-slot="step-title-row"]').findAll('a');
     expect(links[0]!.text()).toBe(data.title);
-    expect(links[0]!.attributes('href')).toMatch(/^\/mocked-route\/learningSteps\.show/);
+    expect(links[0]!.attributes('href')).toMatch(/^\/mocked-route\/knowledgeItems\.show/);
     expect(links[1]!.attributes('href')).toBe(links[0]!.attributes('href') + '#insights');
     expect(wrapper.get('[data-slot="learning-step-action"]').attributes('href')).toBe(data.source?.url);
     wrapper.unmount();
@@ -88,7 +89,7 @@ describe('LearningStepRow', () => {
   });
 
   it('puts the primary action label before its arrow and opens documents in a new tab', () => {
-    const wrapper = render(step({ source: { type: 'url', url: 'https://example.test/read', documentId: null, documentStatus: null, title: null } }));
+    const wrapper = render(knowledge({ source: { type: 'url', url: 'https://example.test/read', documentId: null, documentStatus: null, title: null } }));
     const action = wrapper.get('[data-slot="learning-step-action"]');
     expect(action.element.firstChild?.textContent?.trim()).toBe('learning.path.read_document');
     expect(action.element.lastElementChild?.tagName.toLowerCase()).toBe('svg');
@@ -155,7 +156,7 @@ describe('LearningStepRow', () => {
 });
 
  it('uses a document icon and labeled terms without redundant type text', () => {
-    const wrapper = mount(LearningStepRow, { props: { step: step({ glossaryTerms: [{ id: 'term-1', term: 'Mandatas', abbreviation: '', definition: 'Atstovavimo laikotarpis' }] }), showGlossary: true }, global: { stubs: commonStubs } });
+    const wrapper = mount(LearningStepRow, { props: { step: knowledge({ glossaryTerms: [{ id: 'term-1', term: 'Mandatas', abbreviation: '', definition: 'Atstovavimo laikotarpis' }] }), showGlossary: true }, global: { stubs: commonStubs } });
     expect(wrapper.find('[aria-label="learning.path.kind_document"]').exists()).toBe(true);
     expect(wrapper.text()).toContain('learning.path.related_terms');
     expect(wrapper.text()).not.toContain('learning.path.kind_task');

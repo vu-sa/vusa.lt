@@ -8,8 +8,8 @@ use App\Enums\LearningStepKind;
 use App\Enums\ResponsibilityPurpose;
 use App\Models\DutyType;
 use App\Models\InstitutionType;
+use App\Models\LearningAudience;
 use App\Models\LearningStep;
-use App\Models\LearningStepAudience;
 use App\Models\Tenant;
 use App\Services\Learning\SystemSteps\SystemStepRegistry;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -22,7 +22,7 @@ class LearningStepFactory extends Factory
     public function definition(): array
     {
         return [
-            'kind' => LearningStepKind::Knowledge,
+            'kind' => LearningStepKind::Action,
             'title' => ['lt' => fake()->sentence(4), 'en' => fake()->sentence(4)],
             'description' => ['lt' => fake()->paragraph(), 'en' => fake()->paragraph()],
             'is_system' => false, 'per_term' => false, 'order' => 0, 'is_active' => true,
@@ -44,7 +44,7 @@ class LearningStepFactory extends Factory
         return $this->withoutAfterCreating()->afterCreating(function (LearningStep $step) use ($attributes): void {
             // Only actions sit on the term timeline.
             $stage = $step->kind === LearningStepKind::Action ? LearningStage::BeforeStart : null;
-            LearningStepAudience::factory()->for($step, 'step')->create(['stage' => $stage, ...$attributes]);
+            LearningAudience::factory()->for($step, 'audienceable')->create(['stage' => $stage, ...$attributes]);
         });
     }
 
@@ -60,7 +60,7 @@ class LearningStepFactory extends Factory
             $sources = $definition['audience'] === LearningAudienceType::Everyone ? [null]
                 : [ResponsibilityPurpose::StudentRepresentation->value, ResponsibilityPurpose::StudentRepCoordination->value];
             foreach ($sources as $source) {
-                LearningStepAudience::factory()->for($step, 'step')->create([
+                LearningAudience::factory()->for($step, 'audienceable')->create([
                     'type' => $source === null ? LearningAudienceType::Everyone : LearningAudienceType::Purpose,
                     'source_id' => $source, 'stage' => $definition['stage'], 'importance' => $definition['importance'],
                 ]);

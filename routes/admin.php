@@ -142,7 +142,7 @@ Route::post('notification/mark-all-as-read', [UserNotificationsController::class
 Route::delete('notification/{id}', [UserNotificationsController::class, 'destroy'])->name('notifications.destroy');
 Route::delete('notifications', [UserNotificationsController::class, 'destroyAll'])->name('notifications.destroy-all');
 
-Route::resource('eventTypes', EventTypeController::class)->only(['index', 'store', 'update', 'destroy']);
+Route::resource('eventTypes', EventTypeController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
 Route::resource('calendar', CalendarController::class)
     ->names(['show' => 'calendar.view'])
     ->middleware(HandlePrecognitiveRequests::class);
@@ -178,7 +178,7 @@ Route::post('institutions/activity-requests', [InstitutionActivityRequestControl
 Route::put('institutions/{institution}/secretaries', [InstitutionSecretaryController::class, 'update'])->name('institutions.secretaries.update');
 
 Route::resource('resources', ResourceController::class);
-Route::resource('resourceCategories', ResourceCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
+Route::resource('resourceCategories', ResourceCategoryController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
 
 Route::put('reservations/{reservation}/add-users', [ReservationController::class, 'addUsers'])->name('reservations.add-users');
 
@@ -268,14 +268,14 @@ Route::post('tenants/{tenant}/quick-links', [TenantController::class, 'updateQui
 Route::get('tenants/{tenant}/main-page/edit', [TenantController::class, 'editMainPage'])->name('tenants.editMainPage');
 Route::post('tenants/{tenant}/main-page', [TenantController::class, 'updateMainPage'])->name('tenants.updateMainPage');
 
-Route::resource('tenants', TenantController::class)->only(['index', 'store', 'update', 'destroy']);
+Route::resource('tenants', TenantController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
 
 Route::get('forms/{form}/export', [FormController::class, 'export'])->name('forms.export');
 Route::resource('forms', FormController::class);
 
 Route::patch('problems/{problem}/status', [ProblemController::class, 'updateStatus'])->name('problems.updateStatus');
 Route::resource('problems', ProblemController::class);
-Route::resource('problemCategories', ProblemCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
+Route::resource('problemCategories', ProblemCategoryController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
 
 // Goals pilot — App\Support\Experiments\GoalsExperiment. A 404 outside the pilot.
 Route::middleware('experiment.goals')->group(function (): void {
@@ -359,14 +359,17 @@ Route::resource('dutyTypes', DutyTypeController::class)->parameters(['dutyTypes'
 Route::put('institutionTypes/{type}/models', [InstitutionTypeController::class, 'syncModels'])->name('institutionTypes.models.sync');
 Route::put('dutyTypes/{type}/models', [DutyTypeController::class, 'syncModels'])->name('dutyTypes.models.sync');
 
+Route::get('knowledge', [KnowledgeBaseController::class, 'show'])->name('knowledgeBase.show');
+Route::get('knowledge/library', [KnowledgeItemController::class, 'index'])->name('knowledgeItems.index');
+Route::get('knowledge/documents/search', [KnowledgeItemController::class, 'searchDocuments'])->name('knowledgeItems.documentSearch');
+Route::post('knowledge/items/{knowledgeItem}/progress', [KnowledgeItemProgressController::class, 'store'])->name('knowledgeItems.progress');
+Route::put('knowledge/items/{knowledgeItem}/glossary', [KnowledgeItemController::class, 'syncGlossary'])->name('knowledgeItems.glossary.sync');
+Route::resource('knowledge/sections', KnowledgeSectionController::class)->parameters(['sections' => 'knowledgeSection'])->names('knowledgeSections')->only(['store', 'update', 'destroy']);
+Route::resource('knowledge/items', KnowledgeItemController::class)->parameters(['items' => 'knowledgeItem'])->names('knowledgeItems')->except('index');
 Route::get('learning', [LearningPathController::class, 'show'])->name('learningPath.show');
-Route::get('learning/documents', [LearningPathController::class, 'documents'])->name('learningPath.documents');
 Route::get('learning/reps', [LearningRepsController::class, 'index'])->name('learningPath.reps');
 Route::get('learning/reps/{user}', [LearningRepsController::class, 'show'])->name('learningPath.rep');
-Route::resource('learning/sections', LearningSectionController::class)->parameters(['sections' => 'learningSection'])->names('learningSections')->only(['store', 'update', 'destroy']);
 Route::get('learning/library', [LearningStepController::class, 'index'])->name('learningSteps.index');
-Route::get('learning/documents/search', [LearningStepController::class, 'searchDocuments'])->name('learningSteps.documentSearch');
 Route::post('learning/steps/{learningStep}/progress', [LearningStepProgressController::class, 'store'])->name('learningSteps.progress');
-Route::put('learning/steps/{learningStep}/glossary', [LearningStepController::class, 'syncGlossary'])->name('learningSteps.glossary.sync');
 Route::resource('learning/steps', LearningStepController::class)->parameters(['steps' => 'learningStep'])->names('learningSteps')->except('index');
-Route::resource('learning/glossary', GlossaryTermController::class)->parameters(['glossary' => 'glossaryTerm'])->names('glossaryTerms')->only(['index', 'store', 'update', 'destroy']);
+Route::resource('knowledge/glossary', GlossaryTermController::class)->parameters(['glossary' => 'glossaryTerm'])->names('glossaryTerms')->only(['index', 'show', 'store', 'update', 'destroy']);

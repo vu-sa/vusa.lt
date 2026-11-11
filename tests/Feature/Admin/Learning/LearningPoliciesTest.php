@@ -19,8 +19,8 @@ test('a tenant curator can only create and edit tenant steps in their own unit',
     expect($user->can('update', $own))->toBeTrue();
     expect($user->can('update', $other))->toBeFalse();
     expect($user->can('update', $global))->toBeFalse();
-    $payload = ['kind' => 'knowledge', 'audiences' => [['type' => 'everyone', 'tenant_id' => $other->audiences->first()->tenant_id,
-        'importance' => 'recommended']], 'title' => ['lt' => 'Žingsnis', 'en' => 'Step']];
+    $payload = ['kind' => 'action', 'audiences' => [['type' => 'everyone', 'tenant_id' => $other->audiences->first()->tenant_id,
+        'importance' => 'recommended', 'stage' => 'before_start']], 'title' => ['lt' => 'Žingsnis', 'en' => 'Step']];
     asUser($user)->post(route('learningSteps.store'), $payload)->assertForbidden();
     $payload['audiences'][0]['tenant_id'] = null;
     asUser($user)->post(route('learningSteps.store'), $payload)->assertForbidden();

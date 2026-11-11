@@ -5,9 +5,9 @@ use App\Enums\LearningImportance;
 use App\Enums\LearningStage;
 use App\Models\Duty;
 use App\Models\GlossaryTerm;
-use App\Models\LearningSection;
+use App\Models\KnowledgeSection;
+use App\Models\LearningAudience;
 use App\Models\LearningStep;
-use App\Models\LearningStepAudience;
 use App\Models\Permission;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -39,10 +39,10 @@ test('step writes reject incompatible targets and ambiguous sources', function (
 })->with([
     'missing type' => [['audiences' => [['type' => 'institution_type', 'stage' => 'before_start', 'importance' => 'recommended']]], 'audiences.0.source_id'],
     'meeting prep stage' => [['kind' => 'meeting_prep'], 'audiences.0.stage'],
-    'document stage' => [['kind' => 'knowledge'], 'audiences.0.stage'],
+    'retired knowledge kind' => [['kind' => 'knowledge'], 'kind'],
     'missing title' => [['title' => ['en' => 'Step']], 'title.lt'],
-    'empty source' => [['sources' => ['lt' => []]], 'sources.lt'],
-    'unsafe URL' => [['sources' => ['lt' => ['url' => 'javascript:alert(1)']]], 'sources.lt.url'],
+    'empty source' => [['sources' => ['lt' => []]], 'sources'],
+    'unsafe URL' => [['sources' => ['lt' => ['url' => 'javascript:alert(1)']]], 'sources'],
     'unsafe button link' => [['action_url' => ['lt' => 'javascript:alert(1)']], 'action_url.lt'],
     'protocol-relative button link' => [['action_url' => ['lt' => '//evil.test']], 'action_url.lt'],
 ]);
@@ -72,8 +72,7 @@ test('a task keeps its button only while it stays a task', function (): void {
     expect($step->getTranslation('action_label', 'en'))->toBe('Open account')
         ->and($step->getTranslation('action_url', 'lt'))->toBe('/mano/profile');
 
-    asUser($user)->patch(route('learningSteps.update', $step), [...$payload, 'kind' => 'knowledge', 'audiences' => [['type' => 'everyone', 'importance' => 'recommended']],
-        'sources' => ['lt' => ['url' => 'https://example.test/read']]])->assertRedirect();
+    asUser($user)->patch(route('learningSteps.update', $step), [...$payload, 'kind' => 'meeting_prep', 'audiences' => [['type' => 'institution', 'source_id' => $user->authorization_duties()->firstOrFail()->institution->id, 'importance' => 'recommended']]])->assertRedirect();
     expect($step->fresh()->getTranslations('action_label'))->toBeEmpty()
         ->and($step->fresh()->getTranslations('action_url'))->toBeEmpty();
 });
@@ -101,7 +100,7 @@ test('replacing audiences removes the previous target', function (): void {
         'kind' => 'action', 'title' => ['lt' => 'Veiksmas', 'en' => 'Action'],
         'audiences' => [['type' => 'everyone', 'stage' => 'whole_term', 'importance' => 'recommended']],
     ])->assertRedirect();
-    $this->assertDatabaseMissing('learning_step_audiences', ['id' => $old]);
+    $this->assertDatabaseMissing('learning_audiences', ['id' => $old]);
     expect($step->fresh()->audiences->sole()->tenant_id)->toBeNull();
 });
 
@@ -122,8 +121,8 @@ test('a tenant curator cannot move an editable step into another unit', function
     $step = LearningStep::factory()->forTenant($tenant)->create();
     $other = Tenant::factory()->create();
     asUser($user)->patch(route('learningSteps.update', $step), [
-        'kind' => 'knowledge', 'title' => ['lt' => 'Žingsnis', 'en' => 'Step'],
-        'audiences' => [['type' => 'everyone', 'tenant_id' => $other->id, 'importance' => 'recommended']],
+        'kind' => 'action', 'title' => ['lt' => 'Žingsnis', 'en' => 'Step'],
+        'audiences' => [['type' => 'everyone', 'tenant_id' => $other->id, 'stage' => 'before_start', 'importance' => 'recommended']],
     ])->assertForbidden();
     expect($step->fresh()->audiences->sole()->tenant_id)->toBe($tenant->id);
 });
@@ -140,7 +139,7 @@ test('an audience id from another step is refused and the transaction leaves bot
     ])->assertForbidden();
 
     expect($step->fresh()->getTranslations('title'))->toBe($step->getTranslations('title'));
-    expect($foreign->fresh()->learning_step_id)->toBe($other->id);
+    expect($foreign->fresh()->audienceable_id)->toBe($other->id);
     expect($foreign->fresh()->importance)->toBe(LearningImportance::Recommended);
 });
 
@@ -172,22 +171,20 @@ test('authored audience validation rejects empty targeting system purposes and m
     'missing stage' => [[['type' => 'everyone', 'importance' => 'recommended']], 'audiences.0.stage'],
 ]);
 
-test('knowledge sections are cleared when a step becomes an action', function (): void {
+test('steps reject knowledge sections', function (): void {
     $user = makeUser(Tenant::query()->firstOrFail());
-    $user->givePermissionTo(Permission::findOrCreate('learningSteps.update.*', 'web'));
-    $section = LearningSection::factory()->create();
-    $step = LearningStep::factory()->create(['learning_section_id' => $section->id]);
-    asUser($user)->patch(route('learningSteps.update', $step), [
-        'kind' => 'action', 'title' => ['lt' => 'Veiksmas', 'en' => 'Action'], 'learning_section_id' => $section->id,
+    $user->givePermissionTo(Permission::findOrCreate('learningSteps.create.*', 'web'));
+    $section = KnowledgeSection::factory()->create();
+    asUser($user)->postJson(route('learningSteps.store'), [
+        'kind' => 'action', 'title' => ['lt' => 'Veiksmas', 'en' => 'Action'], 'knowledge_section_id' => $section->id,
         'audiences' => [['type' => 'everyone', 'importance' => 'recommended', 'stage' => 'before_start']],
-    ])->assertRedirect();
-    expect($step->fresh()->learning_section_id)->toBeNull();
+    ])->assertUnprocessable()->assertJsonValidationErrors('knowledge_section_id');
 });
 
 test('merging duties preserves learning audiences targeting the merged seat', function (): void {
     $kept = Duty::factory()->create();
     $source = Duty::factory()->create();
-    $audience = LearningStepAudience::factory()->duty($source)->create();
+    $audience = LearningAudience::factory()->duty($source)->create();
     MergeDuties::execute($kept, collect([$source]));
     expect($audience->fresh()->source_id)->toBe($kept->id);
 });

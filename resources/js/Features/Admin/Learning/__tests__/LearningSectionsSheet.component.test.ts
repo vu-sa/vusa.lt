@@ -46,7 +46,7 @@ describe('learning sections', () => {
     await wrapper.getComponent(SheetForm).vm.$emit('submit');
     expect(form.title).toEqual({ lt: 'Įvadas', en: 'Introduction' });
     expect(form.tenant_id).toBe(1);
-    expect(form.post).toHaveBeenCalledWith(expect.stringContaining('learningSections.store'), expect.objectContaining({ preserveScroll: true }));
+    expect(form.post).toHaveBeenCalledWith(expect.stringContaining('knowledgeSections.store'), expect.objectContaining({ preserveScroll: true }));
     wrapper.unmount();
   });
 
@@ -58,7 +58,7 @@ describe('learning sections', () => {
     expect(wrapper.find('#section-tenant').exists()).toBe(false);
     await wrapper.get('#section-title-lt').setValue('Atnaujinti mokymai');
     await wrapper.getComponent(SheetForm).vm.$emit('submit');
-    expect(form.put).toHaveBeenCalledWith(expect.stringContaining('learningSections.update'), expect.objectContaining({ preserveScroll: true }));
+    expect(form.put).toHaveBeenCalledWith(expect.stringContaining('knowledgeSections.update'), expect.objectContaining({ preserveScroll: true }));
     wrapper.unmount();
   });
 
@@ -69,7 +69,7 @@ describe('learning sections', () => {
     const confirm = wrapper.findAllComponents(ConfirmDialog).find(dialog => dialog.props('open'))!;
     expect(confirm).toBeDefined();
     await confirm.vm.$emit('confirm');
-    expect(router.delete).toHaveBeenCalledWith(expect.stringContaining('learningSections.destroy'), expect.objectContaining({ preserveScroll: true }));
+    expect(router.delete).toHaveBeenCalledWith(expect.stringContaining('knowledgeSections.destroy'), expect.objectContaining({ preserveScroll: true }));
     wrapper.unmount();
     const readonly = render([{ ...section, canUpdate: false, canDelete: false }], false);
     expect(readonly.get('[data-slot="managed-section"]').findAll('button')).toHaveLength(0);

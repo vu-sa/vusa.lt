@@ -13,16 +13,13 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
 
 /**
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property string|null $learning_section_id
- * @property-read LearningSection|null $section
- * @property-read Collection<int, LearningStepAudience> $audiences
+ * @property-read Collection<int, LearningAudience> $audiences
  * @property string $id
  * @property string|null $key
  * @property bool $is_system
@@ -38,15 +35,21 @@ use Illuminate\Support\Carbon;
  * @property string|null $created_by
  * @property-read int $comments_count
  * @property-read Collection<int, Comment> $comments
- * @property-read Collection<int, LearningStepSource> $sources
- * @property-read Collection<int, LearningStepProgress> $progress
- * @property-read Collection<int, GlossaryTerm> $glossaryTerms
+ * @property-read Collection<int, LearningProgress> $progress
  * @property-read User|null $createdBy
  */
-#[Fillable(['key', 'is_system', 'kind', 'learning_section_id', 'title', 'description', 'action_label', 'action_url', 'per_term', 'order', 'is_active', 'reviewed_at', 'created_by'])]
+#[Fillable(['key', 'is_system', 'kind', 'title', 'description', 'action_label', 'action_url', 'per_term', 'order', 'is_active', 'reviewed_at', 'created_by'])]
 class LearningStep extends Model implements Commentable
 {
     use HasComments, HasFactory, HasTranslations, HasUlids, LogsModelActivity;
+
+    protected static function booted(): void
+    {
+        static::deleting(function (self $item): void {
+            $item->audiences()->get()->each->delete();
+            $item->progress()->delete();
+        });
+    }
 
     public $translatable = ['title', 'description', 'action_label', 'action_url'];
 
@@ -56,34 +59,16 @@ class LearningStep extends Model implements Commentable
         return ['description'];
     }
 
-    /** @return HasMany<LearningStepSource, $this> */
-    public function sources(): HasMany
+    /** @return MorphMany<LearningProgress, $this> */
+    public function progress(): MorphMany
     {
-        return $this->hasMany(LearningStepSource::class);
+        return $this->morphMany(LearningProgress::class, 'progressable');
     }
 
-    /** @return HasMany<LearningStepProgress, $this> */
-    public function progress(): HasMany
+    /** @return MorphMany<LearningAudience, $this> */
+    public function audiences(): MorphMany
     {
-        return $this->hasMany(LearningStepProgress::class);
-    }
-
-    /** @return HasMany<LearningStepAudience, $this> */
-    public function audiences(): HasMany
-    {
-        return $this->hasMany(LearningStepAudience::class)->orderBy('order')->orderBy('id');
-    }
-
-    /** @return BelongsTo<LearningSection, $this> */
-    public function section(): BelongsTo
-    {
-        return $this->belongsTo(LearningSection::class, 'learning_section_id');
-    }
-
-    /** @return BelongsToMany<GlossaryTerm, $this> */
-    public function glossaryTerms(): BelongsToMany
-    {
-        return $this->belongsToMany(GlossaryTerm::class);
+        return $this->morphMany(LearningAudience::class, 'audienceable')->orderBy('order')->orderBy('id');
     }
 
     /** @return BelongsTo<User, $this> */
@@ -107,10 +92,5 @@ class LearningStep extends Model implements Commentable
     public function scopeOrdered(Builder $query): void
     {
         $query->orderBy('order')->orderBy('id');
-    }
-
-    public function sourceFor(string $locale): ?LearningStepSource
-    {
-        return $this->sources->firstWhere('locale', $locale) ?? $this->sources->firstWhere('locale', 'lt') ?? $this->sources->first();
     }
 }

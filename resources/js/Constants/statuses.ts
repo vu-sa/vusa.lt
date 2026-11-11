@@ -199,7 +199,6 @@ export const activityRequestStatuses: Record<ActivityRequestStatus, StatusPresen
 export type LearningCuratorFlag = 'expired_document' | 'updated_document' | 'missing_source';
 
 export const learningStepKinds: Record<LearningStepKind, StatusPresentation> = {
-  [LearningStepKind.Knowledge]: status('learning.kinds.knowledge', 'info'),
   [LearningStepKind.Action]: status('learning.kinds.action', 'progress'),
   [LearningStepKind.MeetingPrep]: status('learning.kinds.meeting_prep', 'neutral'),
 };

@@ -173,7 +173,6 @@ export enum LearningStage {
     TermEnd = 'term_end',
 }
 export enum LearningStepKind {
-    Knowledge = 'knowledge',
     Action = 'action',
     MeetingPrep = 'meeting_prep',
 }

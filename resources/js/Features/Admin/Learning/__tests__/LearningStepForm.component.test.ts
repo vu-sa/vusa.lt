@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { nextTick } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import LearningAudienceSheet from '../LearningAudienceSheet.vue';
-import { audience, editStep } from './fixtures';
+import { audience, editStep, editKnowledge } from './fixtures';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -35,17 +35,16 @@ describe('LearningStepForm', () => {
   it('swaps title, why and source when switching locale between LT and EN', async () => {
     const wrapper = mount(LearningStepForm, {
       props: {
+        knowledge: true,
         step: {
           id: 'step-1',
           title: { lt: 'LT pavadinimas', en: 'EN title' },
           description: { lt: 'LT paaiškinimas', en: 'EN explanation' },
-          kind: LearningStepKind.Knowledge,
-          learning_section_id: null,
+          knowledge_section_id: null,
           audiences: [audience()],
           per_term: false,
           order: 1,
           is_active: true,
-          is_system: false,
           sources: {
             lt: { document_id: 42, url: null },
             en: { document_id: null, url: 'https://vusa.lt/en-guide' },
@@ -114,7 +113,7 @@ describe('LearningStepForm', () => {
     const payload = transform(stepForm);
     expect(payload.audiences).toEqual([{
       type: LearningAudienceType.Everyone, source_id: null, tenant_id: null,
-      importance: LearningImportance.Essential, stage: null,
+      importance: LearningImportance.Essential, stage: LearningStage.BeforeStart,
       description: { lt: '', en: '' }, order: 0,
     }]);
     expect(stepForm.post).toHaveBeenCalled();
@@ -144,13 +143,13 @@ describe('LearningStepForm', () => {
     wrapper.unmount();
   });
 
-  it('clears stages for meeting prep and shows the section picker only for knowledge', async () => {
+  it('clears stages for meeting prep and keeps knowledge fields off step forms', async () => {
     const wrapper = mount(LearningStepForm, {
       props: { step: editStep({ audiences: [audience({ type: LearningAudienceType.InstitutionType, source_id: '10' })] }), institutionTypes: [{ id: 10, title: 'Taryba', parent_id: null }] },
       global: { stubs },
     });
     const stepForm = vi.mocked(useForm).mock.results[0]!.value;
-    expect(wrapper.find('[data-testid="step-section"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="step-section"]').exists()).toBe(false);
     await wrapper.get('[data-testid="step-kind-meeting_prep"]').trigger('click');
     expect(wrapper.find('[data-testid="step-section"]').exists()).toBe(false);
     await wrapper.get('[data-slot="audience-row"] button').trigger('click');
@@ -159,11 +158,12 @@ describe('LearningStepForm', () => {
     await wrapper.findComponent({ name: 'FormPage' }).vm.$emit('submit');
     const payload = stepForm.transform.mock.calls[0]![0](stepForm);
     expect(payload.audiences[0].stage).toBeNull();
-    expect(payload.learning_section_id).toBeNull();
+    expect(payload).not.toHaveProperty('knowledge_section_id');
+    expect(payload).not.toHaveProperty('sources');
     await wrapper.get('[data-testid="step-kind-action"]').trigger('click');
     expect(wrapper.find('[data-testid="step-section"]').exists()).toBe(false);
-    await wrapper.get('[data-testid="step-kind-knowledge"]').trigger('click');
-    expect(wrapper.find('[data-testid="step-section"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="step-kind-knowledge"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="step-section"]').exists()).toBe(false);
     wrapper.unmount();
   });
 
@@ -179,7 +179,7 @@ describe('LearningStepForm', () => {
     const payload = stepForm.transform.mock.calls[0]![0](stepForm);
     expect(payload.action_label).toEqual({ lt: 'Nustatyti pranešimus', en: '' });
     expect(payload.action_url).toEqual({ lt: '/mano/profile', en: '' });
-    await wrapper.get('[data-testid="step-kind-knowledge"]').trigger('click');
+    await wrapper.get('[data-testid="step-kind-meeting_prep"]').trigger('click');
     expect(wrapper.find('[data-testid="step-action-url"]').exists()).toBe(false);
     wrapper.unmount();
   });
@@ -228,17 +228,16 @@ describe('LearningStepForm', () => {
   it('switches source between document and URL and clears the opposite field', async () => {
     const wrapper = mount(LearningStepForm, {
       props: {
+        knowledge: true,
         step: {
           id: 'step-1',
           title: { lt: 'Žingsnis', en: 'Step' },
           description: { lt: '', en: '' },
-          kind: LearningStepKind.Knowledge,
-          learning_section_id: null,
+          knowledge_section_id: null,
           audiences: [audience()],
           per_term: false,
           order: 1,
           is_active: true,
-          is_system: false,
           sources: {
             lt: { document_id: 42, url: null },
           },
@@ -278,6 +277,7 @@ describe('LearningStepForm', () => {
     } as unknown as Response);
 
     const wrapper = mount(LearningStepForm, {
+      props: { knowledge: true },
       global: { stubs },
     });
 
@@ -297,4 +297,19 @@ describe('LearningStepForm', () => {
 
     expect(wrapper.find('[data-testid="hidden-document-warning-lt"]').exists()).toBe(false);
   });
+  it('submits knowledge sources and section without a step kind or stage', async () => {
+    const wrapper = mount(LearningStepForm, {
+      props: { knowledge: true, step: editKnowledge({ sources: { lt: { url: 'https://example.test/read', document_id: null } } }) },
+      global: { stubs },
+    });
+    const form = vi.mocked(useForm).mock.results[0]!.value;
+    await wrapper.findComponent({ name: 'FormPage' }).vm.$emit('submit');
+    const payload = form.transform.mock.calls[0]![0](form);
+    expect(payload).not.toHaveProperty('kind');
+    expect(payload.sources.lt.url).toBe('https://example.test/read');
+    expect(payload.audiences[0]).not.toHaveProperty('stage');
+    expect(form.put).toHaveBeenCalledWith(route('knowledgeItems.update', 'knowledge-1'), expect.any(Object));
+    wrapper.unmount();
+  });
+
 });

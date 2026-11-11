@@ -17,16 +17,16 @@ class LearningStepProgressController extends AdminController
     {
         $this->authorize('view', $learningStep);
         $path = ResolveLearningPath::execute($request->user());
-        $item = $path->steps->concat($path->documents)->firstWhere('step.id', $learningStep->id);
+        $item = $path->steps->firstWhere('item.id', $learningStep->id);
         $status = $request->validated('status');
         if ($learningStep->kind === LearningStepKind::MeetingPrep || ($status === LearningProgressStatus::Skipped->value && ! $item?->importance->isSkippable())) {
             throw ValidationException::withMessages(['status' => __('learning.validation.progress')]);
         }
-        $progress = $request->user()->learningProgress();
+        $progress = $learningStep->progress()->where('user_id', $request->user()->id);
         if ($status === null) {
-            $progress->where('learning_step_id', $learningStep->id)->delete();
+            $progress->delete();
         } else {
-            $progress->updateOrCreate(['learning_step_id' => $learningStep->id], ['status' => $status, 'completed_at' => now()]);
+            $progress->updateOrCreate(['user_id' => $request->user()->id], ['status' => $status, 'completed_at' => now()]);
         }
 
         return back();

@@ -177,7 +177,6 @@ export const activityRequestStatuses = {
 };
 
 export const learningStepKinds = {
-  [LearningStepKind.Knowledge]: withIcon(data.learningStepKinds[LearningStepKind.Knowledge], BookOpen),
   [LearningStepKind.Action]: withIcon(data.learningStepKinds[LearningStepKind.Action], CircleCheck),
   [LearningStepKind.MeetingPrep]: withIcon(data.learningStepKinds[LearningStepKind.MeetingPrep], CalendarCheck),
 };

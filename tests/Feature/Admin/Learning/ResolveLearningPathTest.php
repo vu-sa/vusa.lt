@@ -12,9 +12,10 @@ use App\Models\Duty;
 use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionType;
+use App\Models\KnowledgeItem;
+use App\Models\LearningAudience;
+use App\Models\LearningProgress;
 use App\Models\LearningStep;
-use App\Models\LearningStepAudience;
-use App\Models\LearningStepProgress;
 use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
 use App\Models\User;
@@ -50,7 +51,7 @@ test('a representative receives inherited institution and own tenant audiences o
     $unrelated = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->forInstitutionType()->create();
     $inactive = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->create(['is_active' => false]);
     $path = ResolveLearningPath::execute($user);
-    $ids = $path->steps->pluck('step.id')->all();
+    $ids = $path->steps->pluck('item.id')->all();
 
     expect($ids)->toContain($platform->id, $foundation->id, $inherited->id, $own->id)
         ->not->toContain($foreign->id, $unrelated->id, $inactive->id);
@@ -70,7 +71,7 @@ test('a non representative receives platform and inherited duty type steps', fun
     $foundation = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->audience(['type' => LearningAudienceType::Purpose, 'source_id' => ResponsibilityPurpose::StudentRepresentation->value])->create();
     $path = ResolveLearningPath::execute($user);
 
-    expect($path->steps->pluck('step.id')->all())->toContain($platform->id, $ownType->id)->not->toContain($foundation->id);
+    expect($path->steps->pluck('item.id')->all())->toContain($platform->id, $ownType->id)->not->toContain($foundation->id);
     expect($path->currentStage)->toBeNull();
 });
 
@@ -81,7 +82,7 @@ test('an incoming representative gets foundation before their term starts', func
     $path = ResolveLearningPath::execute($user);
 
     expect($path->currentStage)->toBe(LearningStage::BeforeStart);
-    expect($path->contains($step->id))->toBeTrue();
+    expect($path->contains($step))->toBeTrue();
 });
 
 test('per term progress expires while ordinary progress and skips remain resolved', function (): void {
@@ -91,13 +92,13 @@ test('per term progress expires while ordinary progress and skips remain resolve
     $done = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->create();
     $skip = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->create();
     foreach ([$term, $done, $skip] as $step) {
-        LearningStepProgress::factory()->for($user)->create([
-            'learning_step_id' => $step->id, 'completed_at' => today()->subMonths(6),
+        LearningProgress::factory()->for($user)->create([
+            'progressable_type' => $step->getMorphClass(), 'progressable_id' => $step->id, 'completed_at' => today()->subMonths(6),
             'status' => $step->is($skip) ? LearningProgressStatus::Skipped : LearningProgressStatus::Done,
         ]);
     }
     $path = ResolveLearningPath::execute($user);
-    $states = $path->steps->keyBy('step.id');
+    $states = $path->steps->keyBy('item.id');
 
     expect($states[$term->id]->state)->toBe('pending');
     expect($states[$done->id]->state)->toBe('done');
@@ -109,8 +110,8 @@ test('an incoming rep keeps per term progress made before the term starts', func
     $this->freezeTime();
     [$user] = learningRep(start: today()->addMonth()->toDateString());
     $step = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->create(['per_term' => true]);
-    LearningStepProgress::factory()->for($user)->create(['learning_step_id' => $step->id, 'completed_at' => now(), 'status' => LearningProgressStatus::Done]);
-    expect(ResolveLearningPath::execute($user)->steps->firstWhere('step.id', $step->id)->state)->toBe('done');
+    LearningProgress::factory()->for($user)->create(['progressable_type' => $step->getMorphClass(), 'progressable_id' => $step->id, 'completed_at' => now(), 'status' => LearningProgressStatus::Done]);
+    expect(ResolveLearningPath::execute($user)->steps->firstWhere('item.id', $step->id)->state)->toBe('done');
 });
 
 test('meeting preparation stays outside progress', function (): void {
@@ -121,20 +122,20 @@ test('meeting preparation stays outside progress', function (): void {
     $prep = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->meetingPrep($type)->create();
     $path = ResolveLearningPath::execute($user);
 
-    expect($path->steps->pluck('step.id')->all())->not->toContain($prep->id);
-    expect($path->meetingPrep->pluck('step.id')->all())->toContain($prep->id);
+    expect($path->steps->pluck('item.id')->all())->not->toContain($prep->id);
+    expect($path->meetingPrep->pluck('item.id')->all())->toContain($prep->id);
 });
 
 test('knowledge becomes updated when the SharePoint source changes after completion', function (): void {
     $this->freezeTime();
     $user = User::factory()->create(['profile_photo_path' => null]);
-    $step = LearningStep::factory()->create();
+    $step = KnowledgeItem::factory()->create();
     $document = Document::factory()->create(['sharepoint_modified_at' => now()]);
     $step->sources()->create(['locale' => 'lt', 'document_id' => $document->id]);
-    LearningStepProgress::factory()->for($user)->create(['learning_step_id' => $step->id, 'completed_at' => now()->subDay()]);
+    LearningProgress::factory()->for($user)->create(['progressable_type' => $step->getMorphClass(), 'progressable_id' => $step->id, 'completed_at' => now()->subDay()]);
     $path = ResolveLearningPath::execute($user);
 
-    expect($path->documents->firstWhere('step.id', $step->id)->state)->toBe('updated');
+    expect($path->knowledge->firstWhere('item.id', $step->id)->state)->toBe('updated');
 });
 
 test('detected completion is read time only and a manual tick also completes a system step', function (): void {
@@ -142,16 +143,16 @@ test('detected completion is read time only and a manual tick also completes a s
     $second = User::factory()->create();
     DB::table('push_subscriptions')->insert(['subscribable_type' => MorphMap::alias(User::class), 'subscribable_id' => $first->id, 'endpoint' => 'https://push.example.test/one']);
     $notification = LearningStep::query()->where('key', 'browser_push')->firstOrFail();
-    LearningStepProgress::factory()->for($second)->create(['learning_step_id' => $notification->id]);
+    LearningProgress::factory()->for($second)->create(['progressable_type' => $notification->getMorphClass(), 'progressable_id' => $notification->id]);
     $paths = ResolveLearningPath::forUsers(collect([$first, $second]));
-    $automatic = $paths[$first->id]->steps->firstWhere('step.id', $notification->id);
-    $manual = $paths[$second->id]->steps->firstWhere('step.id', $notification->id);
+    $automatic = $paths[$first->id]->steps->firstWhere('item.id', $notification->id);
+    $manual = $paths[$second->id]->steps->firstWhere('item.id', $notification->id);
 
     expect($automatic->state)->toBe('done');
     expect($automatic->autoCompleted)->toBeTrue();
     expect($manual->state)->toBe('done');
     expect($manual->autoCompleted)->toBeFalse();
-    $this->assertDatabaseMissing('learning_step_progress', ['user_id' => $first->id, 'learning_step_id' => $notification->id]);
+    $this->assertDatabaseMissing('learning_progress', ['user_id' => $first->id, 'progressable_type' => $notification->getMorphClass(), 'progressable_id' => $notification->id]);
 });
 
 test('term stages follow the first months and final forty five day boundaries', function (int $startedDaysAgo, int $endsInDays, LearningStage $stage): void {
@@ -172,13 +173,13 @@ test('term stages follow the first months and final forty five day boundaries', 
 test('the highest importance audience wins its stage and every matching note is returned', function (): void {
     [$user, $duty] = learningRep();
     $step = LearningStep::factory()->withoutAudiences()->create(['kind' => LearningStepKind::Action]);
-    LearningStepAudience::factory()->for($step, 'step')->everyone()->create([
+    LearningAudience::factory()->for($step, 'audienceable')->everyone()->create([
         'importance' => 'recommended', 'stage' => 'before_start', 'description' => ['lt' => 'Visiems nariams', 'en' => 'For all members'],
     ]);
-    $winner = LearningStepAudience::factory()->for($step, 'step')->duty($duty)->create([
+    $winner = LearningAudience::factory()->for($step, 'audienceable')->duty($duty)->create([
         'importance' => 'essential', 'stage' => 'whole_term', 'description' => ['lt' => 'Tavo pareigoms', 'en' => 'For your duty'],
     ]);
-    $item = ResolveLearningPath::execute($user)->steps->firstWhere('step.id', $step->id);
+    $item = ResolveLearningPath::execute($user)->steps->firstWhere('item.id', $step->id);
 
     expect($item->importance)->toBe(LearningImportance::Essential);
     expect($item->stage)->toBe(LearningStage::WholeTerm);
@@ -191,9 +192,9 @@ test('equal importance chooses the earliest stage then lowest audience order', f
     [$user] = learningRep();
     $step = LearningStep::factory()->withoutAudiences()->create();
     foreach ([['whole_term', 0], ['before_start', 5], ['before_start', 1]] as [$stage, $order]) {
-        $winner = LearningStepAudience::factory()->for($step, 'step')->create(['stage' => $stage, 'order' => $order]);
+        $winner = LearningAudience::factory()->for($step, 'audienceable')->create(['stage' => $stage, 'order' => $order]);
     }
-    expect(ResolveLearningPath::execute($user)->documents->firstWhere('step.id', $step->id)->audienceId)->toBe($winner->id);
+    expect(ResolveLearningPath::execute($user)->steps->firstWhere('item.id', $step->id)->audienceId)->toBe($winner->id);
 });
 
 test('tenant filtering requires the matching fact to come from a duty in that tenant', function (): void {
@@ -206,36 +207,36 @@ test('tenant filtering requires the matching fact to come from a duty in that te
     $unrelated = Duty::factory()->for(Institution::factory()->for($other))->create();
     Dutiable::factory()->forUser($user)->forDuty($unrelated)->create(['end_date' => null]);
     $matching = LearningStep::factory()->withoutAudiences()->create();
-    LearningStepAudience::factory()->for($matching, 'step')->institutionType($type)->create(['tenant_id' => $own->id]);
+    LearningAudience::factory()->for($matching, 'audienceable')->institutionType($type)->create(['tenant_id' => $own->id]);
     $foreign = LearningStep::factory()->withoutAudiences()->create();
-    LearningStepAudience::factory()->for($foreign, 'step')->institutionType($type)->create(['tenant_id' => $other->id]);
+    LearningAudience::factory()->for($foreign, 'audienceable')->institutionType($type)->create(['tenant_id' => $other->id]);
     $path = ResolveLearningPath::execute($user);
 
-    expect($path->contains($matching->id))->toBeTrue();
-    expect($path->contains($foreign->id))->toBeFalse();
+    expect($path->contains($matching))->toBeTrue();
+    expect($path->contains($foreign))->toBeFalse();
 });
 
 test('responsibility ids and system purposes match the holders of the role', function (): void {
     [$holder, $duty] = learningRep();
     $role = $duty->roles()->where('purpose', ResponsibilityPurpose::StudentRepresentation->value)->sole();
     $byRole = LearningStep::factory()->withoutAudiences()->create();
-    LearningStepAudience::factory()->for($byRole, 'step')->responsibility($role)->create();
+    LearningAudience::factory()->for($byRole, 'audienceable')->responsibility($role)->create();
     $byPurpose = LearningStep::factory()->withoutAudiences()->create();
-    LearningStepAudience::factory()->for($byPurpose, 'step')->purpose()->create();
+    LearningAudience::factory()->for($byPurpose, 'audienceable')->purpose()->create();
     $outsider = User::factory()->create();
     $paths = ResolveLearningPath::forUsers(collect([$holder, $outsider]));
 
-    expect($paths[$holder->id]->contains($byRole->id))->toBeTrue();
-    expect($paths[$holder->id]->contains($byPurpose->id))->toBeTrue();
-    expect($paths[$outsider->id]->contains($byRole->id))->toBeFalse();
-    expect($paths[$outsider->id]->contains($byPurpose->id))->toBeFalse();
+    expect($paths[$holder->id]->contains($byRole))->toBeTrue();
+    expect($paths[$holder->id]->contains($byPurpose))->toBeTrue();
+    expect($paths[$outsider->id]->contains($byRole))->toBeFalse();
+    expect($paths[$outsider->id]->contains($byPurpose))->toBeFalse();
 });
 
 test('retired system tasks are absent from the path', function (): void {
     $user = User::factory()->create(['profile_photo_path' => '/avatar.jpg']);
     $path = ResolveLearningPath::execute($user);
 
-    expect($path->steps->pluck('step.key'))->not->toContain('profile_photo', 'meet_institution_contacts', 'follow_institution', 'read_handover')
+    expect($path->steps->pluck('item.key'))->not->toContain('profile_photo', 'meet_institution_contacts', 'follow_institution', 'read_handover')
         ->toContain('install_app');
     $this->assertDatabaseMissing('learning_steps', ['key' => 'follow_institution']);
     $this->assertDatabaseMissing('learning_steps', ['key' => 'read_handover']);

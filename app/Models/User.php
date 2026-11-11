@@ -46,7 +46,7 @@ use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
- * @property-read Collection<int, LearningStepProgress> $learningProgress
+ * @property-read Collection<int, LearningProgress> $learningProgress
  * @property string $id
  * @property string|null $email
  * @property string|null $phone
@@ -464,9 +464,9 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
         ]);
     }
 
-    /** @return HasMany<LearningStepProgress, $this> */
+    /** @return HasMany<LearningProgress, $this> */
     public function learningProgress(): HasMany
     {
-        return $this->hasMany(LearningStepProgress::class);
+        return $this->hasMany(LearningProgress::class);
     }
 }

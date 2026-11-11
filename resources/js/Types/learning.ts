@@ -22,12 +22,10 @@ export interface LearningStepData {
   kind: LearningStepKind;
   audienceLabel: string;
   audienceNotes: { label: string; description: string }[];
-  section: { id: string; title: string } | null;
   stage: LearningStage | null;
   importance: LearningImportance;
   title: string;
   description: string;
-  source: LearningSource | null;
   actionUrl: string | null;
   actionLabel: string | null;
   state: 'pending' | 'done' | 'skipped' | 'updated';
@@ -37,7 +35,6 @@ export interface LearningStepData {
   skippable: boolean;
   insightsCount: number;
   reviewedAt: string | null;
-  glossaryTerms: Pick<GlossaryTermData, 'id' | 'term' | 'abbreviation' | 'definition'>[];
 }
 
 export interface LearningPathData {
@@ -45,7 +42,7 @@ export interface LearningPathData {
   termStart: string | null;
   stages: { stage: LearningStage; steps: LearningStepData[] }[];
   meetingPrep: { audience: { id: string; label: string }; steps: LearningStepData[] }[];
-  documents: LearningDocumentTotals & { nextDocument: LearningStepData | null };
+  knowledge: LearningDocumentTotals & { nextItem: KnowledgeItemData | null };
   totals: LearningTotals;
 }
 
@@ -57,11 +54,10 @@ export interface LearningLibraryStep {
   kind: LearningStepKind;
   audiences: { id: string; type: LearningAudienceType; label: string; importance: LearningImportance; stage: LearningStage | null }[];
   audienceTypes: LearningAudienceType[];
-  section: { id: string; title: string } | null;
   order: number;
   isActive: boolean;
   canUpdate: boolean;
-  flags: LearningCuratorFlag[];
+  perTerm: boolean;
 }
 
 export interface LearningDocumentSearchHit {
@@ -92,14 +88,11 @@ export interface LearningStepEditData {
   action_label?: { lt: string; en: string };
   action_url?: { lt: string; en: string };
   kind: LearningStepKind;
-  learning_section_id: string | null;
   audiences: LearningAudienceEditData[];
   per_term: boolean;
   order: number;
   is_active: boolean;
   is_system: boolean;
-  sources: Record<string, { document_id: number | null; url: string | null }>;
-  source_documents?: Record<string, LearningDocumentSearchHit>;
 }
 
 export interface LearningCoordinator {
@@ -118,8 +111,9 @@ export interface GlossaryTermData {
   term: string;
   abbreviation: string;
   definition: string;
-  stepsCount: number;
-  steps: { id: string; title: string; url: string | null; isDocument: boolean }[];
+  itemsCount: number;
+  items: { id: string; title: string; url: string }[];
+  priority: { rank: number; importance: LearningImportance | null; sectionOrder: number; itemOrder: number };
   translations: {
     term: { lt: string; en: string };
     abbreviation?: { lt: string; en: string };
@@ -170,5 +164,49 @@ export interface LearningDocumentTotals {
 
 export interface LearningDocumentsData {
   sections: { id: string; title: string; description: string; order: number }[];
-  documents: LearningStepData[];
+  items: KnowledgeItemData[];
+}
+
+export interface KnowledgeItemData {
+  id: string;
+  title: string;
+  description: string;
+  audienceLabel: string;
+  audienceNotes: { label: string; description: string }[];
+  importance: LearningImportance;
+  section: { id: string; title: string } | null;
+  source: LearningSource | null;
+  state: 'pending' | 'done' | 'skipped' | 'updated';
+  autoCompleted: false;
+  completedAt: string | null;
+  skippable: boolean;
+  insightsCount: number;
+  reviewedAt: string | null;
+  perTerm: boolean;
+  glossaryTerms: Pick<GlossaryTermData, 'id' | 'term' | 'abbreviation' | 'definition'>[];
+}
+
+export interface KnowledgeItemEditData {
+  id: string;
+  title: { lt: string; en: string };
+  description: { lt: string; en: string };
+  knowledge_section_id: string | null;
+  audiences: LearningAudienceEditData[];
+  per_term: boolean;
+  order: number;
+  is_active: boolean;
+  sources: Record<string, { document_id: number | null; url: string | null }>;
+  source_documents: Record<string, LearningDocumentSearchHit>;
+}
+
+export interface KnowledgeLibraryItem extends Omit<LearningLibraryStep, 'kind'> {
+  section: { id: string; title: string } | null;
+  flags: LearningCuratorFlag[];
+}
+
+export interface GlossaryTermPageData extends Omit<GlossaryTermData, 'priority' | 'itemsCount' | 'items'> {
+  items: {
+    id: string; title: string; url: string; inPath: boolean; importance: LearningImportance | null;
+    state: KnowledgeItemData['state']; section: KnowledgeItemData['section']; source: LearningSource | null;
+  }[];
 }

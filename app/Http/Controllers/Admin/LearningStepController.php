@@ -5,27 +5,22 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\GetTenantsForUpserts;
 use App\Actions\GetUserCoordinators;
 use App\Actions\ResolveLearningPath;
+use App\Actions\SyncLearningAudiences;
 use App\Enums\LearningAudienceType;
 use App\Enums\LearningImportance;
 use App\Enums\LearningStepKind;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\LearningStepRequest;
-use App\Http\Requests\SearchLearningDocumentsRequest;
-use App\Http\Requests\SyncLearningStepGlossaryRequest;
-use App\Models\Document;
 use App\Models\DutyType;
 use App\Models\InstitutionType;
-use App\Models\LearningSection;
+use App\Models\LearningAudience;
 use App\Models\LearningStep;
-use App\Models\LearningStepAudience;
 use App\Models\Role;
 use App\Models\User;
-use App\Services\Learning\ResolvedLearningStep;
-use App\Services\LearningAdminPresenter;
+use App\Services\Learning\ResolvedLearningItem;
 use App\Services\LearningInstitutionContactsPresenter;
 use App\Services\LearningPathPresenter;
 use App\Services\ModelAuthorizer;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -42,12 +37,7 @@ class LearningStepController extends AdminController
 
         return Inertia::render('Admin/Learning/IndexLearningStep', [
             'steps' => LearningPathPresenter::library(app()->getLocale(), $request->user()),
-            'sections' => $this->sectionOptions($request->user(), $this->authorizer->scope($request->user(), 'learningSteps.update.padalinys')->granted ? 'update' : 'create'),
             'audienceTypes' => array_map(fn (LearningAudienceType $type): string => $type->value, LearningAudienceType::cases()),
-            'sectionScopes' => collect(['create', 'update'])->mapWithKeys(fn (string $ability): array => [$ability => [
-                'canTargetEverywhere' => $this->authorizer->scope($request->user(), "learningSteps.{$ability}.padalinys")->isAllScope,
-                'tenants' => GetTenantsForUpserts::execute("learningSteps.{$ability}.padalinys", $this->authorizer)->all(),
-            ]])->all(),
             'canCreate' => $request->user()->can('create', LearningStep::class),
         ]);
     }
@@ -55,17 +45,16 @@ class LearningStepController extends AdminController
     public function show(Request $request, LearningStep $learningStep): Response
     {
         $this->authorize('view', $learningStep);
-        $learningStep->load(['sources.document.institution.tenant', 'section', 'glossaryTerms', 'audiences' => fn ($query) => $query->with(LearningStepAudience::LABEL_RELATIONS)])->loadCount(['comments' => fn ($query) => $query->notErased()]);
+        $learningStep->load(['audiences' => fn ($query) => $query->with(LearningAudience::LABEL_RELATIONS)])->loadCount(['comments' => fn ($query) => $query->notErased()]);
         $path = ResolveLearningPath::execute($request->user());
-        $item = $path->steps->concat($path->documents)->concat($path->meetingPrep)->first(fn (ResolvedLearningStep $item): bool => $item->step->id === $learningStep->id) ?? new ResolvedLearningStep($learningStep, importance: $learningStep->audiences->first()?->importance ?? LearningImportance::Recommended, stage: $learningStep->audiences->first()?->stage, audienceLabel: $learningStep->audiences->first()?->label(app()->getLocale()) ?? '');
+        $item = $path->steps->concat($path->meetingPrep)->first(fn (ResolvedLearningItem $item): bool => $item->item->id === $learningStep->id) ?? new ResolvedLearningItem($learningStep, importance: $learningStep->audiences->first()?->importance ?? LearningImportance::Recommended, stage: $learningStep->audiences->first()?->stage, audienceLabel: $learningStep->audiences->first()?->label(app()->getLocale()) ?? '');
 
         return Inertia::render('Admin/Learning/ShowLearningStep', [
             'step' => LearningPathPresenter::step($item, $request->user(), app()->getLocale()),
-            'inPath' => $path->contains($learningStep->id),
+            'inPath' => $path->contains($learningStep),
             'coordinators' => GetUserCoordinators::execute($request->user()),
             'institutionContacts' => LearningInstitutionContactsPresenter::forUser($request->user(), app()->getLocale()),
             'canUpdate' => $request->user()->can('update', $learningStep),
-            'glossaryOptions' => $request->user()->can('update', $learningStep) ? LearningAdminPresenter::glossaryOptions(app()->getLocale()) : [],
         ]);
     }
 
@@ -81,7 +70,7 @@ class LearningStepController extends AdminController
         $this->authorize('update', $learningStep);
 
         return Inertia::render('Admin/Learning/EditLearningStep', [
-            'step' => LearningPathPresenter::edit($learningStep->load(['sources.document', 'audiences' => fn ($query) => $query->with(LearningStepAudience::LABEL_RELATIONS)])),
+            'step' => LearningPathPresenter::edit($learningStep->load(['audiences' => fn ($query) => $query->with(LearningAudience::LABEL_RELATIONS)])),
             'canDelete' => $request->user()->can('delete', $learningStep),
             ...$this->formOptions($request->user(), 'update'),
         ]);
@@ -96,8 +85,7 @@ class LearningStepController extends AdminController
                 'reviewed_at' => now(),
                 'created_by' => $request->user()->id,
             ]);
-            $this->syncAudiences($step, $request->validated('audiences'));
-            $this->syncSources($step, $request->validated('sources', []));
+            SyncLearningAudiences::execute($step, $request->validated('audiences'));
 
             return $step;
         });
@@ -114,13 +102,10 @@ class LearningStepController extends AdminController
             }
             $learningStep->update([
                 ...$request->safe()->except(['sources', 'audiences']),
-                ...(! $learningStep->is_system ? ['learning_section_id' => $request->validated('learning_section_id'), 'reviewed_at' => now()] : []),
+                ...(! $learningStep->is_system ? ['reviewed_at' => now()] : []),
             ]);
             if (array_key_exists('audiences', $request->validated())) {
-                $this->syncAudiences($learningStep, $request->validated('audiences'));
-            }
-            if (! $learningStep->is_system && array_key_exists('sources', $request->validated())) {
-                $this->syncSources($learningStep, $request->validated('sources'));
+                SyncLearningAudiences::execute($learningStep, $request->validated('audiences'));
             }
         });
 
@@ -133,35 +118,6 @@ class LearningStepController extends AdminController
         $learningStep->delete();
 
         return to_route('learningSteps.index')->with('success', $this->entityMessage('deleted', 'learningStep'));
-    }
-
-    public function searchDocuments(SearchLearningDocumentsRequest $request): JsonResponse
-    {
-        $this->authorize('create', LearningStep::class);
-        $query = trim((string) ($request->validated('q') ?? ''));
-
-        $documents = Document::query()
-            ->browsableBy($request->user())
-            ->when($query !== '', fn ($builder) => $builder->where('title', 'like', "%{$query}%"))
-            ->orderByDesc('document_date')
-            ->orderByDesc('id')
-            ->limit(20)
-            ->get(['id', 'title', 'status', 'document_date']);
-
-        return response()->json($documents->map(fn (Document $document): array => [
-            'id' => $document->id,
-            'title' => (string) $document->title,
-            'status' => $document->status->value,
-            'date' => $document->document_date?->toDateString(),
-        ])->values()->all());
-    }
-
-    public function syncGlossary(SyncLearningStepGlossaryRequest $request, LearningStep $learningStep): RedirectResponse
-    {
-        $this->authorize('update', $learningStep);
-        $learningStep->glossaryTerms()->sync($request->validated('term_ids') ?? []);
-
-        return back()->with('success', $this->entityMessage('updated', 'learningStep'));
     }
 
     private function formOptions(User $user, string $ability): array
@@ -183,59 +139,6 @@ class LearningStepController extends AdminController
             'responsibilities' => Role::query()->exceptSuperAdmin()->get()->map(fn (Role $role): array => [
                 'id' => $role->id, 'title' => $role->displayTitle($locale),
             ])->sortBy('title')->values()->all(),
-            'sections' => $this->sectionOptions($user, $ability),
         ];
-    }
-
-    private function sectionOptions(User $user, string $ability): array
-    {
-        $scope = $this->authorizer->scope($user, "learningSteps.{$ability}.padalinys");
-
-        return LearningSection::query()->with('tenant')->when(! $scope->isAllScope,
-            fn ($query) => $query->whereIn('tenant_id', $scope->tenantIds()))->orderBy('order')->orderBy('id')->get()
-            ->map(fn (LearningSection $section): array => [
-                'id' => $section->id, 'title' => $section->getTranslations('title'),
-                'description' => $section->getTranslations('description'), 'order' => $section->order,
-                'tenant_id' => $section->tenant_id,
-                'canUpdate' => $user->can('update', $section),
-                'canDelete' => $user->can('delete', $section),
-                'tenant' => $section->tenant ? ['id' => $section->tenant->id, 'shortname' => $section->tenant->shortname] : null,
-            ])->all();
-    }
-
-    private function syncAudiences(LearningStep $step, array $audiences): void
-    {
-        $kept = [];
-        foreach ($audiences as $data) {
-            $id = $data['id'] ?? null;
-            $audience = $id !== null ? $step->audiences()->find($id) : null;
-            abort_if($id !== null && $audience === null, 403);
-            unset($data['id']);
-            if ($step->is_system) {
-                abort_if($audience === null, 403);
-                $audience->update(collect($data)->only(['stage', 'order'])->all());
-            } else {
-                $data = array_replace(['tenant_id' => null, 'stage' => null, 'description' => null, 'order' => 0], $data);
-                $data['source_id'] = $data['type'] === LearningAudienceType::Everyone->value ? null : $data['source_id'];
-                if ($audience !== null) {
-                    $audience->update($data);
-                } else {
-                    $audience = $step->audiences()->create($data);
-                }
-            }
-            $kept[] = $audience->id;
-        }
-        if (! $step->is_system) {
-            $step->audiences()->whereNotIn('id', $kept)->delete();
-        }
-    }
-
-    /** @param array<string, array{document_id?: int|null, url?: string|null}> $sources */
-    private function syncSources(LearningStep $step, array $sources): void
-    {
-        $step->sources()->whereNotIn('locale', array_keys($sources))->delete();
-        foreach ($sources as $locale => $source) {
-            $step->sources()->updateOrCreate(['locale' => $locale], ['document_id' => $source['document_id'] ?? null, 'url' => $source['url'] ?? null]);
-        }
     }
 }

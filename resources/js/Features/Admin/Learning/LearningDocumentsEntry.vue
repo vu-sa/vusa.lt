@@ -8,9 +8,9 @@ import type { LearningPathData } from '@/Types/learning';
 
 import LearningStepAction from './LearningStepAction.vue';
 
-const props = defineProps<{ documents: LearningPathData['documents']; readonly?: boolean }>();
+const props = defineProps<{ documents: LearningPathData['knowledge']; readonly?: boolean }>();
 const percent = computed(() => props.documents.essentialTotal ? Math.round(props.documents.essentialDone / props.documents.essentialTotal * 100) : 0);
-const next = computed(() => props.documents.nextDocument);
+const next = computed(() => props.documents.nextItem);
 </script>
 
 <template>
@@ -21,7 +21,7 @@ const next = computed(() => props.documents.nextDocument);
     aria-labelledby="documents-entry-title"
   >
     <div class="p-5">
-      <h2 id="documents-entry-title" class="text-xl font-bold leading-tight">{{ $t('learning.pages.documents') }}</h2>
+      <h2 id="documents-entry-title" class="text-xl font-bold leading-tight">{{ $t('learning.pages.knowledge') }}</h2>
       <p class="mt-3 flex items-baseline gap-2 text-sm text-muted-foreground">
         <span class="u-display text-3xl leading-none tabular-nums text-foreground">{{ documents.essentialDone }}<span class="text-muted-foreground">/{{ documents.essentialTotal }}</span></span>
         {{ $t('learning.documents.essential_read') }}
@@ -38,7 +38,7 @@ const next = computed(() => props.documents.nextDocument);
           <div class="flex min-w-0 items-start gap-2">
             <FileText class="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
             <div class="min-w-0">
-              <Link :href="route('learningSteps.show', next.id)" class="font-semibold leading-snug text-foreground underline-offset-4 hover:text-brand hover:underline">{{ next.title }}</Link>
+              <Link :href="route('knowledgeItems.show', next.id)" class="font-semibold leading-snug text-foreground underline-offset-4 hover:text-brand hover:underline">{{ next.title }}</Link>
               <p :class="['mt-0.5 text-xs', next.importance === 'essential' ? 'font-semibold text-brand' : 'text-muted-foreground']">{{ $t(`learning.importance.${next.importance}`) }}</p>
             </div>
           </div>
@@ -52,7 +52,7 @@ const next = computed(() => props.documents.nextDocument);
 
     <div class="flex items-center border-t border-border p-5 md:border-t-0 md:border-l">
       <Button as-child variant="brand" voice="sentence" class="w-full md:w-auto" data-slot="all-documents">
-        <Link :href="route('learningPath.documents')">{{ $t('learning.documents.all') }}<ArrowUpRight class="size-4" aria-hidden="true" /></Link>
+        <Link :href="route('knowledgeBase.show')">{{ $t('learning.documents.all') }}<ArrowUpRight class="size-4" aria-hidden="true" /></Link>
       </Button>
     </div>
   </section>

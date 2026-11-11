@@ -7,10 +7,10 @@ import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import { EmptyState, FormSegmentedControl } from '@/Components/Patterns';
 import LearningStepRow from '@/Features/Admin/Learning/LearningStepRow.vue';
 import { LearningImportance } from '@/Types/enums';
-import type { LearningDocumentsData, LearningStepData } from '@/Types/learning';
+import type { LearningDocumentsData, KnowledgeItemData } from '@/Types/learning';
 
 const props = defineProps<{
-  documents: LearningDocumentsData;
+  knowledge: LearningDocumentsData;
 }>();
 const page = usePage();
 const viewFromUrl = () => new URLSearchParams(page.url.split('?')[1]?.split('#')[0]).get('view') === 'sections' ? 'sections' : 'importance';
@@ -28,26 +28,26 @@ function changeView(value: string) {
   else url.searchParams.delete('view');
   router.replace({ url: `${url.pathname}${url.search}${url.hash}`, preserveState: true, preserveScroll: true });
 }
-const resolved = (step: LearningStepData) => step.state === 'done' || step.state === 'skipped';
+const resolved = (step: KnowledgeItemData) => step.state === 'done' || step.state === 'skipped';
 const groups = computed(() => {
   if (view.value === 'sections') {
     return [
-      ...[...props.documents.sections].sort((a, b) => a.order - b.order).map(section => ({
+      ...[...props.knowledge.sections].sort((a, b) => a.order - b.order).map(section => ({
         key: section.id, title: section.title, description: section.description,
-        steps: props.documents.documents.filter(step => step.section?.id === section.id),
+        steps: props.knowledge.items.filter(step => step.section?.id === section.id),
       })),
-      { key: 'other', title: $t('learning.documents.other'), description: '', steps: props.documents.documents.filter(step => !step.section) },
+      { key: 'other', title: $t('learning.documents.other'), description: '', steps: props.knowledge.items.filter(step => !step.section) },
     ].filter(group => group.steps.length);
   }
   return Object.values(LearningImportance).map(importance => ({
     key: importance, title: $t(`learning.documents.${importance}`), description: '',
-    steps: props.documents.documents.filter(step => step.importance === importance).sort((a, b) => Number(resolved(a)) - Number(resolved(b))),
+    steps: props.knowledge.items.filter(step => step.importance === importance).sort((a, b) => Number(resolved(a)) - Number(resolved(b))),
   })).filter(group => group.steps.length);
 });
 </script>
 
 <template>
-  <OverviewPage :title="$t('learning.pages.documents')">
+  <OverviewPage :title="$t('learning.pages.knowledge')">
     <FormSegmentedControl
       v-model="selectedView"
       :options="viewOptions"

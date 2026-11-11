@@ -7,10 +7,14 @@ use App\Enums\ModelEnum;
 use App\Models\FileableFile;
 use App\Models\Goal;
 use App\Models\InstitutionCheckIn;
+use App\Models\KnowledgeItem;
+use App\Models\KnowledgeSection;
 use App\Models\LearningStep;
 use App\Models\User;
 use App\Policies\FileableFilePolicy;
 use App\Policies\InstitutionCheckInPolicy;
+use App\Policies\KnowledgeItemPolicy;
+use App\Policies\KnowledgeSectionPolicy;
 use App\Settings\SettingsSettings;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
@@ -25,6 +29,8 @@ class AuthServiceProvider extends ServiceProvider
      */
     #[\Override]
     protected $policies = [
+        KnowledgeItem::class => KnowledgeItemPolicy::class,
+        KnowledgeSection::class => KnowledgeSectionPolicy::class,
         // explicit policies that are not inferred from model names
         InstitutionCheckIn::class => InstitutionCheckInPolicy::class,
         FileableFile::class => FileableFilePolicy::class,

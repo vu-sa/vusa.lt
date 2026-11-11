@@ -1,19 +1,19 @@
 import { router } from '@inertiajs/vue3';
 import { computed, ref, type Ref } from 'vue';
 
-import type { LearningStepData } from '@/Types/learning';
+import type { LearningStepData, KnowledgeItemData } from '@/Types/learning';
 
-export function useStepProgress(step: Ref<LearningStepData>, readonly: Ref<boolean | undefined>) {
+export function useStepProgress(step: Ref<LearningStepData | KnowledgeItemData>, readonly: Ref<boolean | undefined>) {
   const saving = ref(false);
   const failed = ref(false);
-  const locked = computed(() => Boolean(readonly.value) || step.value.autoCompleted || step.value.kind === 'meeting_prep');
+  const locked = computed(() => Boolean(readonly.value) || step.value.autoCompleted || ('kind' in step.value && step.value.kind === 'meeting_prep'));
   const canSkip = computed(() => !locked.value && step.value.skippable && (step.value.state === 'pending' || step.value.state === 'updated'));
 
   function save(status: 'done' | 'skipped' | null): void {
     if (saving.value || locked.value) return;
     saving.value = true;
     failed.value = false;
-    router.post(route('learningSteps.progress', step.value.id), { status }, {
+    router.post(route('source' in step.value ? 'knowledgeItems.progress' : 'learningSteps.progress', step.value.id), { status }, {
       preserveScroll: true,
       preserveState: true,
       onError: () => { failed.value = true; },

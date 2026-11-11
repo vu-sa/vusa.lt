@@ -3,8 +3,8 @@ import { BookOpen } from '@lucide/vue';
 
 import { controlVariants } from '@/Components/ui/control';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
-import type { LearningStepData } from '@/Types/learning';
-defineProps<{ terms: LearningStepData['glossaryTerms'] }>();
+import type { KnowledgeItemData } from '@/Types/learning';
+defineProps<{ terms: KnowledgeItemData['glossaryTerms'] }>();
 </script>
 
 <template>

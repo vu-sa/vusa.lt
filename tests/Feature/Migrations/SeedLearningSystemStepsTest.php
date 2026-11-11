@@ -1,9 +1,9 @@
 <?php
 
 use App\Enums\LearningStage;
+use App\Models\LearningAudience;
+use App\Models\LearningProgress;
 use App\Models\LearningStep;
-use App\Models\LearningStepAudience;
-use App\Models\LearningStepProgress;
 use App\Services\Learning\SystemSteps\SystemStepRegistry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -14,16 +14,16 @@ test('system step seed can be rerun without changing curator choices or progress
     $step = LearningStep::query()->where('key', 'install_app')->firstOrFail();
     $step->audiences()->update(['stage' => LearningStage::WholeTerm->value]);
     $step->update(['order' => 31, 'is_active' => false]);
-    $progress = LearningStepProgress::factory()->create(['learning_step_id' => $step->id]);
+    $progress = LearningProgress::factory()->create(['progressable_type' => $step->getMorphClass(), 'progressable_id' => $step->id]);
     $missing = LearningStep::query()->where('key', 'browser_push')->firstOrFail();
     $missing->delete();
     $migration->up();
-    $audienceCount = LearningStepAudience::query()->count();
+    $audienceCount = LearningAudience::query()->count();
     $migration->up();
-    expect(LearningStepAudience::query()->count())->toBe($audienceCount);
+    expect(LearningAudience::query()->count())->toBe($audienceCount);
 
     expect(LearningStep::query()->where('is_system', true)->count())->toBe(count(SystemStepRegistry::definitions()));
-    $this->assertDatabaseHas('learning_step_progress', ['id' => $progress->id, 'learning_step_id' => $step->id]);
+    $this->assertDatabaseHas('learning_progress', ['id' => $progress->id, 'progressable_type' => $step->getMorphClass(), 'progressable_id' => $step->id]);
     expect($step->fresh()->audiences->sole()->stage)->toBe(LearningStage::WholeTerm);
     expect($step->fresh()->order)->toBe(31);
     expect($step->fresh()->is_active)->toBeFalse();

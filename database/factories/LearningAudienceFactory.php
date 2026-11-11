@@ -10,19 +10,20 @@ use App\Models\Duty;
 use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionType;
+use App\Models\LearningAudience;
 use App\Models\LearningStep;
-use App\Models\LearningStepAudience;
 use App\Models\Role;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/** @extends Factory<LearningStepAudience> */
-class LearningStepAudienceFactory extends Factory
+/** @extends Factory<LearningAudience> */
+class LearningAudienceFactory extends Factory
 {
-    protected $model = LearningStepAudience::class;
+    protected $model = LearningAudience::class;
 
     public function definition(): array
     {
-        return ['learning_step_id' => LearningStep::factory()->withoutAudiences(), 'type' => LearningAudienceType::Everyone,
+        return ['audienceable_type' => MorphMap::alias(LearningStep::class), 'audienceable_id' => LearningStep::factory()->withoutAudiences(), 'type' => LearningAudienceType::Everyone,
             'importance' => LearningImportance::Recommended, 'stage' => LearningStage::BeforeStart,
             'description' => ['lt' => '', 'en' => ''], 'order' => 0];
     }

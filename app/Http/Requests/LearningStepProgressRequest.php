@@ -11,7 +11,7 @@ class LearningStepProgressRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return ResolveLearningPath::execute($this->user())->contains($this->route('learningStep')->id);
+        return ResolveLearningPath::execute($this->user())->contains($this->route('learningStep'));
     }
 
     public function rules(): array

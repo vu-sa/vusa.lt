@@ -15,6 +15,7 @@ use App\Models\DutyType;
 use App\Models\Form;
 use App\Models\Institution;
 use App\Models\InstitutionLink;
+use App\Models\KnowledgeItem;
 use App\Models\LearningStep;
 use App\Models\Meeting;
 use App\Models\PendingUpload;
@@ -559,6 +560,7 @@ describe('reply destinations', function (): void {
         Event::fake([CommentBroadcast::class]);
         $commentable = match ($type) {
             'learningStep' => LearningStep::factory()->create(),
+            'knowledgeItem' => KnowledgeItem::factory()->create(),
             'meeting' => $this->meeting,
             'agendaItem' => $this->agendaItem,
             'institution' => $this->institution,

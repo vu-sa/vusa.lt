@@ -2,13 +2,13 @@
 
 namespace Database\Factories;
 
-use App\Models\LearningSection;
+use App\Models\KnowledgeSection;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/** @extends Factory<LearningSection> */
-class LearningSectionFactory extends Factory
+/** @extends Factory<KnowledgeSection> */
+class KnowledgeSectionFactory extends Factory
 {
-    protected $model = LearningSection::class;
+    protected $model = KnowledgeSection::class;
 
     public function definition(): array
     {

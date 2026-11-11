@@ -1,13 +1,13 @@
 import { LearningAudienceType, LearningImportance, LearningStage, LearningStepKind } from '@/Types/enums';
-import type { LearningAudienceEditData, LearningPathData, LearningStepData, LearningStepEditData } from '@/Types/learning';
+import type { LearningAudienceEditData, LearningPathData, LearningStepData, LearningStepEditData, KnowledgeItemData, KnowledgeItemEditData } from '@/Types/learning';
 
 export function step(overrides: Partial<LearningStepData> = {}): LearningStepData {
   return {
-    id: 'step-1', key: null, isSystem: false, kind: LearningStepKind.Knowledge,
-    audienceLabel: 'Pagrindas', audienceNotes: [], section: null, stage: LearningStage.FirstMonths,
+    id: 'step-1', key: null, isSystem: false, kind: LearningStepKind.Action,
+    audienceLabel: 'Pagrindas', audienceNotes: [], stage: LearningStage.FirstMonths,
     importance: LearningImportance.Recommended, title: 'Read the guide', description: 'Prepare to represent students.',
-    source: null, actionUrl: null, actionLabel: null, state: 'pending', autoCompleted: false, automaticallyTracked: false, completedAt: null,
-    skippable: true, insightsCount: 2, reviewedAt: null, glossaryTerms: [], ...overrides,
+    actionUrl: null, actionLabel: null, state: 'pending', autoCompleted: false, automaticallyTracked: false, completedAt: null,
+    skippable: true, insightsCount: 2, reviewedAt: null, ...overrides,
   };
 }
 
@@ -21,7 +21,7 @@ export function path(): LearningPathData {
       { stage: LearningStage.TermEnd, steps: [step({ id: 'end', kind: LearningStepKind.Action })] },
     ],
     meetingPrep: [{ audience: { id: 'audience-spk', label: 'SPK' }, steps: [step({ id: 'prep', kind: LearningStepKind.MeetingPrep, stage: null, title: 'Read the agenda' })] }],
-    documents: { essentialDone: 1, essentialTotal: 2, done: 2, total: 4, nextDocument: step({ id: 'document-next' }) },
+    knowledge: { essentialDone: 1, essentialTotal: 2, done: 2, total: 4, nextItem: knowledge({ id: 'document-next' }) },
     totals: { essentialDone: 0, essentialTotal: 0, allDone: 1, allTotal: 3 },
   };
 }
@@ -38,7 +38,24 @@ export function editStep(overrides: Partial<LearningStepEditData> = {}): Learnin
   return {
     id: 'step-1', title: { lt: 'LT pavadinimas', en: 'EN title' },
     description: { lt: 'LT paaiškinimas', en: 'EN explanation' },
-    kind: LearningStepKind.Knowledge, learning_section_id: null, audiences: [audience()],
-    per_term: false, order: 1, is_active: true, is_system: false, sources: {}, ...overrides,
+    kind: LearningStepKind.Action, audiences: [audience()],
+    per_term: false, order: 1, is_active: true, is_system: false, ...overrides,
+  };
+}
+
+export function knowledge(overrides: Partial<KnowledgeItemData> = {}): KnowledgeItemData {
+  return {
+    id: 'knowledge-1', title: 'Read the guide', description: 'Prepare to represent students.',
+    audienceLabel: 'Pagrindas', audienceNotes: [], section: null, importance: LearningImportance.Recommended,
+    source: null, state: 'pending', autoCompleted: false, completedAt: null,
+    skippable: true, insightsCount: 2, reviewedAt: null, perTerm: false, glossaryTerms: [], ...overrides,
+  };
+}
+
+export function editKnowledge(overrides: Partial<KnowledgeItemEditData> = {}): KnowledgeItemEditData {
+  return {
+    id: 'knowledge-1', title: { lt: 'LT pavadinimas', en: 'EN title' }, description: { lt: '', en: '' },
+    knowledge_section_id: null, audiences: [audience({ stage: null })], per_term: false, order: 1,
+    is_active: true, sources: {}, source_documents: {}, ...overrides,
   };
 }

@@ -1,20 +1,16 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, toRef, watch } from 'vue';
+import { computed, onMounted, toRef, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowUpRight, BookOpen, Pencil } from '@lucide/vue';
-import { useMediaQuery } from '@vueuse/core';
+import { Pencil } from '@lucide/vue';
 
 import DiscussionPanel from '@/Components/Discussions/DiscussionPanel.vue';
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import { RecordActionMenu } from '@/Components/Patterns';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/Components/ui/sheet';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
 import { enterLearningStep } from '@/Composables/useRecordTrail';
 import LearningCompletionControl from '@/Features/Admin/Learning/LearningCompletionControl.vue';
 import LearningStepAction from '@/Features/Admin/Learning/LearningStepAction.vue';
 import LearningStepContent from '@/Features/Admin/Learning/LearningStepContent.vue';
-import LearningStepGlossaryEditor, { type GlossaryTermOption } from '@/Features/Admin/Learning/LearningStepGlossaryEditor.vue';
-import LearningTerms from '@/Features/Admin/Learning/LearningTerms.vue';
 import { useStepProgress } from '@/Features/Admin/Learning/composables/useStepProgress';
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import { safeHref } from '@/Utils/safeHref';
@@ -26,33 +22,17 @@ const props = defineProps<{
   coordinators: LearningCoordinator[];
   institutionContacts: LearningInstitutionContacts[];
   canUpdate: boolean;
-  glossaryOptions: GlossaryTermOption[];
 }>();
 const readonly = computed(() => !props.inPath);
 const { checked, saving, failed } = useStepProgress(toRef(props, 'step'), readonly);
-const glossaryOpen = ref(false);
-const isMobile = useMediaQuery('(max-width: 767px)');
 const actions = computed<AdminRecordAction[]>(() => props.canUpdate ? [
   { key: 'edit', label: $t('Redaguoti'), icon: Pencil, href: route('learningSteps.edit', props.step.id) },
-  { key: 'glossary', label: $t('learning.path.manage_terms'), icon: BookOpen },
 ] : []);
 const { formatDate } = useDateFormatter();
-const hasAction = computed(() => Boolean(safeHref(props.step.kind === 'knowledge' ? props.step.source?.url : props.step.actionUrl)));
-const sourceHref = computed(() => safeHref(props.step.source?.url));
-const sourceLabel = computed(() => {
-  if (!props.step.source) return null;
-  if (props.step.source.title) return props.step.source.title;
-  try {
-    return sourceHref.value ? new URL(sourceHref.value).hostname.replace(/^www\./, '') : null;
-  }
-  catch {
-    return sourceHref.value ?? null;
-  }
-});
+const hasAction = computed(() => Boolean(safeHref(props.step.actionUrl)));
 onMounted(() => enterLearningStep({ id: props.step.id, title: props.step.title }));
 watch(() => props.step.id, () => {
   enterLearningStep({ id: props.step.id, title: props.step.title });
-  glossaryOpen.value = false;
 });
 </script>
 
@@ -79,7 +59,7 @@ watch(() => props.step.id, () => {
     <template v-if="hasAction || actions.length" #actions>
       <div class="flex flex-wrap items-center gap-2" data-slot="step-actions">
         <LearningStepAction :step="step" />
-        <RecordActionMenu :actions="actions" trigger-size="compact" @select="key => key === 'glossary' && (glossaryOpen = true)" />
+        <RecordActionMenu :actions="actions" trigger-size="compact" />
       </div>
     </template>
 
@@ -94,20 +74,6 @@ watch(() => props.step.id, () => {
         data-slot="step-about"
       >
         <h2 id="step-about-title" class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{{ $t('learning.path.about_step') }}</h2>
-        <div v-if="sourceLabel" class="space-y-1">
-          <p class="text-xs text-muted-foreground">{{ $t('learning.path.source') }}</p>
-          <a v-if="sourceHref" :href="sourceHref" target="_blank" rel="noopener noreferrer" class="group inline-flex items-start gap-1.5 text-sm font-semibold leading-snug text-foreground hover:text-brand">
-            <span class="underline decoration-border underline-offset-4 group-hover:decoration-brand">{{ sourceLabel }}</span>
-            <ArrowUpRight class="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
-          </a>
-          <p v-else class="text-sm font-semibold leading-snug">{{ sourceLabel }}</p>
-          <p v-if="step.source?.type === 'document' && !sourceHref" class="text-xs text-muted-foreground">{{ $t('learning.path.document_private') }}</p>
-        </div>
-        <div v-if="step.section" class="space-y-1">
-          <p class="text-xs text-muted-foreground">{{ $t('learning_library.fields.section') }}</p>
-          <p class="text-sm font-semibold">{{ step.section.title }}</p>
-        </div>
-        <LearningTerms :terms="step.glossaryTerms" />
         <p class="text-xs text-muted-foreground">
           {{ step.reviewedAt ? $t('learning.path.reviewed_on', { date: formatDate(step.reviewedAt) }) : $t('learning.path.not_reviewed') }}
         </p>
@@ -117,14 +83,5 @@ watch(() => props.step.id, () => {
         <DiscussionPanel :key="step.id" commentable-type="learningStep" :commentable-id="step.id" :title="$t('learning.path.insights')" />
       </div>
     </div>
-
-    <Sheet v-if="canUpdate" v-model:open="glossaryOpen">
-      <SheetContent :side="isMobile ? 'bottom' : 'right'" class="max-h-[92dvh] overflow-y-auto">
-        <SheetHeader><SheetTitle>{{ $t('learning.path.manage_terms') }}</SheetTitle></SheetHeader>
-        <div class="px-4 pb-6" data-slot="step-glossary-editor">
-          <LearningStepGlossaryEditor :key="step.id" :step-id="step.id" :selected="step.glossaryTerms.map(term => ({ id: term.id, term: term.term }))" :options="glossaryOptions" />
-        </div>
-      </SheetContent>
-    </Sheet>
   </OverviewPage>
 </template>

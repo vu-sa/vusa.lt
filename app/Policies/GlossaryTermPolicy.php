@@ -15,6 +15,11 @@ class GlossaryTermPolicy
         return true;
     }
 
+    public function view(User $user, GlossaryTerm $term): bool
+    {
+        return true;
+    }
+
     public function create(User $user): bool
     {
         return $this->authorizer->allows($user, 'learningSteps.update.*');

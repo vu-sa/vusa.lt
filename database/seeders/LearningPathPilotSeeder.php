@@ -10,7 +10,8 @@ use App\Enums\ResponsibilityPurpose;
 use App\Models\Document;
 use App\Models\GlossaryTerm;
 use App\Models\InstitutionType;
-use App\Models\LearningSection;
+use App\Models\KnowledgeItem;
+use App\Models\KnowledgeSection;
 use App\Models\LearningStep;
 use App\Models\Tenant;
 use Illuminate\Database\Seeder;
@@ -25,14 +26,14 @@ class LearningPathPilotSeeder extends Seeder
     public function run(): void
     {
         DB::transaction(function (): void {
-            $section = LearningSection::query()->firstOrCreate(['title->lt' => 'Įvadiniai mokymai'], [
+            $section = KnowledgeSection::query()->firstOrCreate(['title->lt' => 'Įvadiniai mokymai'], [
                 'title' => ['lt' => 'Įvadiniai mokymai', 'en' => 'Introductory training'], 'order' => 0,
             ]);
             $steps = [...$this->foundationSteps(), ...$this->spkSteps()];
             foreach ($steps as $definition) {
                 $step = $this->upsertStep($definition);
-                if ($step !== null && in_array($step->key, ['pilot_vusa_statute', 'pilot_vusa_rules_of_procedure'], true)) {
-                    $step->update(['learning_section_id' => $section->id]);
+                if ($step !== null && in_array($definition['key'], ['pilot_vusa_statute', 'pilot_vusa_rules_of_procedure'], true)) {
+                    $step->update(['knowledge_section_id' => $section->id]);
                 }
             }
             $this->seedUnitRegulations();
@@ -46,7 +47,7 @@ class LearningPathPilotSeeder extends Seeder
         return [
             [
                 'key' => 'pilot_vusa_statute',
-                'kind' => LearningStepKind::Knowledge, 'audience' => LearningAudienceType::Purpose,
+                'kind' => 'knowledge', 'audience' => LearningAudienceType::Purpose,
                 'stage' => null, 'importance' => LearningImportance::Essential, 'order' => 10,
                 'title' => ['lt' => 'VU SA įstatai', 'en' => 'VU SR statute'],
                 'description' => [
@@ -57,7 +58,7 @@ class LearningPathPilotSeeder extends Seeder
             ],
             [
                 'key' => 'pilot_vusa_rules_of_procedure',
-                'kind' => LearningStepKind::Knowledge, 'audience' => LearningAudienceType::Purpose,
+                'kind' => 'knowledge', 'audience' => LearningAudienceType::Purpose,
                 'stage' => null, 'importance' => LearningImportance::Recommended, 'order' => 20,
                 'title' => ['lt' => 'VU SA darbo reglamentas', 'en' => 'VU SR rules of procedure'],
                 'description' => [
@@ -68,7 +69,7 @@ class LearningPathPilotSeeder extends Seeder
             ],
             [
                 'key' => 'pilot_vu_statute',
-                'kind' => LearningStepKind::Knowledge, 'audience' => LearningAudienceType::Purpose,
+                'kind' => 'knowledge', 'audience' => LearningAudienceType::Purpose,
                 'stage' => null, 'importance' => LearningImportance::Recommended, 'order' => 30,
                 'title' => ['lt' => 'Vilniaus universiteto statutas', 'en' => 'Statute of Vilnius University'],
                 'description' => [
@@ -79,7 +80,7 @@ class LearningPathPilotSeeder extends Seeder
             ],
             [
                 'key' => 'pilot_law_on_higher_education',
-                'kind' => LearningStepKind::Knowledge, 'audience' => LearningAudienceType::Purpose,
+                'kind' => 'knowledge', 'audience' => LearningAudienceType::Purpose,
                 'stage' => null, 'importance' => LearningImportance::Optional, 'order' => 40,
                 'title' => ['lt' => 'Mokslo ir studijų įstatymas', 'en' => 'Law on Higher Education and Research'],
                 'description' => [
@@ -99,7 +100,7 @@ class LearningPathPilotSeeder extends Seeder
         return [
             [
                 ...$type, 'key' => 'pilot_spk_regulations',
-                'kind' => LearningStepKind::Knowledge, 'stage' => null,
+                'kind' => 'knowledge', 'stage' => null,
                 'importance' => LearningImportance::Essential, 'order' => 10,
                 'title' => ['lt' => 'Studijų programos komiteto nuostatai', 'en' => 'Regulations of the study programme committee'],
                 'description' => [
@@ -140,7 +141,7 @@ class LearningPathPilotSeeder extends Seeder
             ],
             [
                 ...$type, 'key' => 'pilot_spk_activity_plan',
-                'kind' => LearningStepKind::Knowledge, 'stage' => null,
+                'kind' => 'knowledge', 'stage' => null,
                 'importance' => LearningImportance::Optional, 'order' => 50,
                 'title' => ['lt' => 'Studentų atstovo komitete veiklos plano pavyzdys', 'en' => 'Example activity plan of a committee representative'],
                 'description' => [
@@ -193,7 +194,7 @@ class LearningPathPilotSeeder extends Seeder
     }
 
     /** @param array<string, mixed> $definition */
-    private function upsertStep(array $definition): ?LearningStep
+    private function upsertStep(array $definition): LearningStep|KnowledgeItem|null
     {
         $institutionTypeId = null;
         if (isset($definition['institution_type'])) {
@@ -203,11 +204,13 @@ class LearningPathPilotSeeder extends Seeder
             }
         }
 
-        /** @var LearningStep $step */
-        $step = LearningStep::query()->firstOrNew(['key' => $definition['key']]);
+        $knowledge = $definition['kind'] === 'knowledge';
+        $step = $knowledge
+            ? KnowledgeItem::query()->firstOrNew(['key' => $definition['key']])
+            : LearningStep::query()->firstOrNew(['key' => $definition['key']]);
 
         $step->fill([
-            'kind' => $definition['kind'],
+            ...($knowledge ? [] : ['kind' => $definition['kind']]),
             'order' => $definition['order'],
             'title' => $definition['title'],
             'description' => array_map(fn (string $text): string => '<p>'.nl2br(e($text), false).'</p>', $definition['description']),
@@ -234,7 +237,7 @@ class LearningPathPilotSeeder extends Seeder
         if (isset($definition['url'])) {
             $sources['lt'] = ['url' => $definition['url']];
         }
-        foreach ($sources as $locale => $source) {
+        foreach ($knowledge ? $sources : [] as $locale => $source) {
             $step->sources()->updateOrCreate(['locale' => $locale], ['document_id' => $source['document_id'] ?? null, 'url' => $source['url'] ?? null]);
         }
 
@@ -246,7 +249,7 @@ class LearningPathPilotSeeder extends Seeder
         foreach (Tenant::query()->where('type', 'padalinys')->get() as $tenant) {
             $this->upsertStep([
                 'key' => "pilot_unit_regulations_{$tenant->alias}",
-                'kind' => LearningStepKind::Knowledge, 'audience' => LearningAudienceType::Everyone, 'tenant_id' => $tenant->id,
+                'kind' => 'knowledge', 'audience' => LearningAudienceType::Everyone, 'tenant_id' => $tenant->id,
                 'stage' => null, 'importance' => LearningImportance::Essential, 'order' => 10,
                 'title' => ['lt' => "{$tenant->shortname} nuostatai", 'en' => "{$tenant->shortname} regulations"],
                 'description' => [
@@ -262,7 +265,6 @@ class LearningPathPilotSeeder extends Seeder
     {
         $links = [
             'pilot_spk_regulations' => ['Studijų programos komitetas', 'Kvorumas', 'Socialiniai partneriai', 'Studijų rezultatai', 'Kamieninis akademinis padalinys'],
-            'pilot_spk_programme' => ['Studijų programos aprašas', 'Dalyko (modulio) aprašas', 'Kreditas', 'Studijų rezultatai'],
             'pilot_vu_statute' => ['Senatas', 'Taryba', 'Kamieninis akademinis padalinys'],
             'pilot_law_on_higher_education' => ['Akreditacija', 'Studijų kokybės vertinimo centras'],
             'pilot_vusa_statute' => ['Kadencija'],
@@ -273,9 +275,8 @@ class LearningPathPilotSeeder extends Seeder
                 ?? GlossaryTerm::query()->create($definition);
             foreach ($links as $key => $terms) {
                 if (in_array($definition['term']['lt'], $terms, true)) {
-                    /** @var LearningStep|null $step */
-                    $step = LearningStep::query()->where('key', $key)->first();
-                    $step?->glossaryTerms()->syncWithoutDetaching([$term->id]);
+                    $item = KnowledgeItem::query()->where('key', $key)->first();
+                    $item?->glossaryTerms()->syncWithoutDetaching([$term->id]);
                 }
             }
         }

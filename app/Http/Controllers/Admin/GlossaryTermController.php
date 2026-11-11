@@ -17,9 +17,18 @@ class GlossaryTermController extends AdminController
     {
         $this->authorize('viewAny', GlossaryTerm::class);
 
-        return Inertia::render('Admin/Learning/IndexGlossaryTerm', [
+        return Inertia::render('Admin/Knowledge/IndexGlossaryTerm', [
             'terms' => LearningAdminPresenter::glossary(app()->getLocale(), $request->user()),
             'canManage' => $request->user()->can('create', GlossaryTerm::class),
+        ]);
+    }
+
+    public function show(Request $request, GlossaryTerm $glossaryTerm): Response
+    {
+        $this->authorize('view', $glossaryTerm);
+
+        return Inertia::render('Admin/Knowledge/ShowGlossaryTerm', [
+            'term' => LearningAdminPresenter::glossaryTerm($glossaryTerm, $request->user(), app()->getLocale()),
         ]);
     }
 
