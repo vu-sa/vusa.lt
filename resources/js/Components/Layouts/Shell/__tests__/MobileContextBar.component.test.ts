@@ -30,7 +30,7 @@ const switcher = () => document.body.querySelector('[data-slot="mobile-section-s
 beforeEach(() => {
   clearTrail();
   vi.mocked(usePage).mockReturnValue(createMockPage());
-  vi.stubGlobal('route', (name?: string) => name ? `/mano/${name}` : { current: (pattern: string) => pattern === 'learningPath.documents' });
+  vi.stubGlobal('route', (name?: string) => name ? `/mano/${name}` : { current: (pattern: string) => pattern === 'learningPath.reps' });
 });
 
 afterEach(() => {
@@ -46,18 +46,16 @@ describe('MobileContextBar', () => {
     const wrapper = mountBar({ activeWorkspace: learning, activeSection: kelias });
     const button = wrapper.get('[data-tour="section-switcher"]');
 
-    expect(button.text()).toContain('shell.section_children.kelias.documents');
+    expect(button.text()).toContain('shell.section_children.kelias.reps');
     await button.trigger('click');
     await flushPromises();
 
     const links = [...switcher()!.querySelectorAll('[data-slot="mobile-section-child"]')];
     expect(links.map(link => link.textContent?.trim())).toEqual([
-      'shell.section_children.kelias.path', 'shell.section_children.kelias.documents',
-      'shell.section_children.kelias.glossary',
-      'shell.section_children.kelias.reps', 'shell.section_children.kelias.library',
+      'shell.section_children.kelias.path', 'shell.section_children.kelias.reps', 'shell.section_children.kelias.library',
     ]);
-    expect(links[1]!.getAttribute('href')).toBe('/mano/learningPath.documents');
-    expect(links.map(link => link.getAttribute('aria-current'))).toEqual([null, 'page', null, null, null]);
+    expect(links[1]!.getAttribute('href')).toBe('/mano/learningPath.reps');
+    expect(links.map(link => link.getAttribute('aria-current'))).toEqual([null, 'page', null]);
     (links[1] as HTMLElement).click();
     await flushPromises();
 
@@ -71,7 +69,7 @@ describe('MobileContextBar', () => {
     const text = mountBar({ activeWorkspace: learning, activeSection: kelias }).get('[data-tour="section-switcher"]').text();
 
     expect(text).toContain('Pasiruošk posėdžiui');
-    expect(text).not.toContain('shell.section_children.kelias.documents');
+    expect(text).not.toContain('shell.section_children.kelias.reps');
   });
 
   it('names the workspace and the section you are in', () => {

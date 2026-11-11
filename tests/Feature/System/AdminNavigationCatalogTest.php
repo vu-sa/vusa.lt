@@ -32,7 +32,7 @@ const SECTION_LANDING_ROUTES = [
     'dashboard', 'dashboard.atstovavimas', 'dashboard.atstovavimas.padaliniai', 'dashboard.reservations', 'dashboard.svetaine',
     'dashboard.organizacija', 'dashboard.sistema',
     'institutionGraph', 'dutiables.timeline', 'tasks.summary', 'systemStatus',
-    'mailQueue', 'administration', 'duties.updateUsersWizard', 'profile', 'learningPath.show',
+    'mailQueue', 'administration', 'duties.updateUsersWizard', 'profile', 'learningPath.show', 'knowledgeBase.show',
 ];
 
 /**
@@ -41,6 +41,7 @@ const SECTION_LANDING_ROUTES = [
 const EXCLUDED_FROM_CATALOG = [
     'administration' => 'Visi skyriai is the catalog rendered as a map (PR 7.5); it lists every section, so it is not one itself',
     'profile' => 'reached from the account menu, not a workspace section (PR 4.4)',
+    'notifications.index' => 'reached from the notification bell and the phone bottom bar, not a Pradžia tab',
     'profile.notifications' => 'Pranešimų nustatymai, reached from the account menu and Paskyra (PR 9.9)',
     'mySupportRequests.index' => 'Pagalba entry point, not a workspace section (PR 4.4)',
     'settings.cadences.index' => 'reached from within Nustatymai, not a top-level section',
@@ -55,6 +56,8 @@ const WORKSPACELESS_ROUTES = [
     'administration', 'profile', 'profile.notifications', 'mySupportRequests.index', 'mySupportRequests.create',
     'search.index', 'search.agendaItems', 'search.institutions',
     'search.meetings', 'search.resources',
+    // The notification bell and the phone bottom bar open it; Pradžia has no tab for it.
+    'notifications.index',
     // Redirects straight out to the file's anonymous SharePoint link; never rendered as a page.
     'fileableFiles.open',
 ];
@@ -156,7 +159,7 @@ describe('per-persona visibility', function (): void {
         // still gets a foothold in Rezervacijos. Active institutions, public meetings, their agenda items
         // documents and problems are open to every admin too (the viewAny() of each policy).
         expect(catalogSummary($this->catalog, $user))->toEqual([
-            'pradzia' => ['apzvalga', 'kelias', 'uzduotys', 'pranesimai', 'atsakomybes', 'veiklos_uzklausos'],
+            'pradzia' => ['apzvalga', 'kelias', 'ziniu_baze', 'uzduotys', 'atsakomybes', 'veiklos_uzklausos'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai'],
         ]);
@@ -168,13 +171,14 @@ describe('per-persona visibility', function (): void {
             'description' => 'shell.workspaces.pradzia.description',
             'sections' => [
                 ['key' => 'apzvalga', 'label' => 'shell.sections.apzvalga', 'routeName' => 'dashboard', 'routeParams' => [], 'entityType' => null, 'description' => null, 'collectionActions' => [], 'matches' => ['dashboard'], 'startsGroup' => false, 'children' => []],
-                ['key' => 'kelias', 'label' => 'shell.sections.kelias', 'routeName' => 'learningPath.show', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.kelias', 'collectionActions' => [], 'matches' => ['learningPath.*', 'learningSteps.*', 'glossaryTerms.*'], 'startsGroup' => false, 'children' => [
+                ['key' => 'kelias', 'label' => 'shell.sections.kelias', 'routeName' => 'learningPath.show', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.kelias', 'collectionActions' => [], 'matches' => ['learningPath.*', 'learningSteps.*'], 'startsGroup' => false, 'children' => [
                     ['key' => 'path', 'label' => 'shell.section_children.kelias.path', 'routeName' => 'learningPath.show'],
-                    ['key' => 'documents', 'label' => 'shell.section_children.kelias.documents', 'routeName' => 'learningPath.documents'],
-                    ['key' => 'glossary', 'label' => 'shell.section_children.kelias.glossary', 'routeName' => 'glossaryTerms.index'],
+                ]],
+                ['key' => 'ziniu_baze', 'label' => 'shell.sections.ziniu_baze', 'routeName' => 'knowledgeBase.show', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.ziniu_baze', 'collectionActions' => [], 'matches' => ['knowledgeBase.*', 'knowledgeItems.*', 'glossaryTerms.*'], 'startsGroup' => false, 'children' => [
+                    ['key' => 'overview', 'label' => 'shell.section_children.ziniu_baze.overview', 'routeName' => 'knowledgeBase.show'],
+                    ['key' => 'glossary', 'label' => 'shell.section_children.ziniu_baze.glossary', 'routeName' => 'glossaryTerms.index'],
                 ]],
                 ['key' => 'uzduotys', 'label' => 'shell.sections.uzduotys', 'routeName' => 'tasks.index', 'routeParams' => [], 'entityType' => 'task', 'description' => 'shell.section_descriptions.uzduotys', 'collectionActions' => [], 'matches' => ['tasks.index'], 'startsGroup' => false, 'children' => []],
-                ['key' => 'pranesimai', 'label' => 'shell.sections.pranesimai', 'routeName' => 'notifications.index', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.pranesimai', 'collectionActions' => [], 'matches' => ['notifications.*'], 'startsGroup' => false, 'children' => []],
                 ['key' => 'atsakomybes', 'label' => 'shell.sections.atsakomybes', 'routeName' => 'profile.roles', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.atsakomybes', 'collectionActions' => [], 'matches' => ['profile.roles'], 'startsGroup' => false, 'children' => []],
                 ['key' => 'veiklos_uzklausos', 'label' => 'shell.sections.veiklos_uzklausos', 'routeName' => 'profile.activityRequests', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.veiklos_uzklausos', 'collectionActions' => [], 'matches' => ['profile.activityRequests'], 'startsGroup' => false, 'children' => []],
             ],
@@ -191,7 +195,7 @@ describe('per-persona visibility', function (): void {
         // Which meetings and institutions the rep gets is the scoped search key's job, not the catalog's.
         // The institution graph is a padalinys view; a rep reads only their own institutions.
         expect(catalogSummary($this->catalog, $user))->toEqual([
-            'pradzia' => ['apzvalga', 'kelias', 'uzduotys', 'pranesimai', 'atsakomybes', 'veiklos_uzklausos'],
+            'pradzia' => ['apzvalga', 'kelias', 'ziniu_baze', 'uzduotys', 'atsakomybes', 'veiklos_uzklausos'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai'],
         ]);
@@ -206,7 +210,7 @@ describe('per-persona visibility', function (): void {
         $duty->assignRole('Komunikacijos koordinatorius');
 
         expect(catalogSummary($this->catalog, $user))->toEqual([
-            'pradzia' => ['apzvalga', 'kelias', 'uzduotys', 'pranesimai', 'atsakomybes', 'veiklos_uzklausos'],
+            'pradzia' => ['apzvalga', 'kelias', 'ziniu_baze', 'uzduotys', 'atsakomybes', 'veiklos_uzklausos'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos', 'pareigybiu_laikotarpiai', 'institucijos_grafas'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai'],
             'svetaine' => ['apzvalga', 'puslapiai', 'naujienos', 'kalendorius', 'baneriai', 'greitosios_nuorodos', 'failai'],
@@ -218,7 +222,7 @@ describe('per-persona visibility', function (): void {
         $user = makeTenantUserWithRole('Išteklių administratorius', $this->tenant);
 
         expect(catalogSummary($this->catalog, $user))->toEqual([
-            'pradzia' => ['apzvalga', 'kelias', 'uzduotys', 'pranesimai', 'atsakomybes', 'veiklos_uzklausos'],
+            'pradzia' => ['apzvalga', 'kelias', 'ziniu_baze', 'uzduotys', 'atsakomybes', 'veiklos_uzklausos'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai', 'kategorijos'],
             'sistema' => ['apzvalga', 'tipai'],
@@ -249,7 +253,7 @@ describe('per-persona visibility', function (): void {
         $user = makeAdminUser($this->tenant);
 
         expect(catalogSummary($this->catalog, $user))->toEqual([
-            'pradzia' => ['apzvalga', 'kelias', 'uzduotys', 'pranesimai', 'atsakomybes', 'veiklos_uzklausos'],
+            'pradzia' => ['apzvalga', 'kelias', 'ziniu_baze', 'uzduotys', 'atsakomybes', 'veiklos_uzklausos'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'uzduociu_suvestine', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos', 'pareigybiu_laikotarpiai', 'institucijos_grafas', 'problemu_kategorijos'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai', 'kategorijos'],
             'sistema' => ['apzvalga', 'tipai'],
@@ -259,7 +263,7 @@ describe('per-persona visibility', function (): void {
         ]);
     });
 
-    test('Mano kelias is second and its children are filtered per user before caching', function (): void {
+    test('Mano kelias and Žinių bazė follow Apžvalga and their children are filtered per user before caching', function (): void {
         $plain = makeUser($this->tenant);
         $admin = makeAdminUser($this->tenant);
 
@@ -267,9 +271,11 @@ describe('per-persona visibility', function (): void {
         $adminWorkspace = $this->catalog->for($admin)['workspaces'][0];
 
         expect($plainWorkspace['sections'][1]['key'])->toBe('kelias')
-            ->and(array_column($plainWorkspace['sections'][1]['children'], 'key'))->toBe(['path', 'documents', 'glossary'])
-            ->and($adminWorkspace['sections'][1]['key'])->toBe('kelias')
-            ->and(array_column($adminWorkspace['sections'][1]['children'], 'key'))->toBe(['path', 'documents', 'glossary', 'reps', 'library']);
+            ->and(array_column($plainWorkspace['sections'][1]['children'], 'key'))->toBe(['path'])
+            ->and(array_column($plainWorkspace['sections'][2]['children'], 'key'))->toBe(['overview', 'glossary'])
+            ->and($adminWorkspace['sections'][2]['key'])->toBe('ziniu_baze')
+            ->and(array_column($adminWorkspace['sections'][1]['children'], 'key'))->toBe(['path', 'reps', 'library'])
+            ->and(array_column($adminWorkspace['sections'][2]['children'], 'key'))->toBe(['overview', 'glossary', 'library']);
 
         $cached = Cache::get(AdminNavigationCatalog::CACHE_PREFIX.$plain->id);
         expect($cached['payload']['workspaces'][0]['sections'][1]['children'])->toBe($plainWorkspace['sections'][1]['children']);

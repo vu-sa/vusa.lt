@@ -92,15 +92,19 @@ return [
     'section_children' => [
         'kelias' => [
             'path' => 'My path',
-            'documents' => 'Documents',
-            'glossary' => 'Glossary',
             'reps' => 'Representatives',
+            'library' => 'Library',
+        ],
+        'ziniu_baze' => [
+            'overview' => 'Knowledge base',
+            'glossary' => 'Glossary',
             'library' => 'Library',
         ],
     ],
 
     'sections' => [
         'kelias' => 'My path',
+        'ziniu_baze' => 'Knowledge base',
         'apzvalga' => 'Overview',
         'padaliniu_apzvalga' => 'Units',
         'uzduotys' => 'Tasks',
@@ -153,9 +157,9 @@ return [
     ],
 
     'section_descriptions' => [
-        'kelias' => 'Your learning steps, documents and glossary.',
+        'kelias' => 'Your term steps and meeting preparation.',
+        'ziniu_baze' => 'What is worth knowing: documents, presentations and terms.',
         'uzduotys' => 'Work assigned to you and its deadlines',
-        'pranesimai' => 'All your notifications',
         'atsakomybes' => 'Your duties and what they let you do',
         'veiklos_uzklausos' => 'Requests you received about institution activity',
         'institucijos' => 'Institutions where we represent students',
@@ -205,7 +209,8 @@ return [
     ],
 
     'actions' => [
-        'new_learning_step' => ['title' => 'New learning step', 'description' => 'Knowledge or an action for the path'],
+        'new_learning_step' => ['title' => 'New path step', 'description' => 'An action or meeting preparation'],
+        'new_knowledge_item' => ['title' => 'New knowledge base entry', 'description' => 'A document, presentation or link for reps'],
         'new_institution_type' => ['title' => 'New institution type', 'description' => 'Institution grouping, representation and relationships'],
         'new_duty_type' => ['title' => 'New duty type', 'description' => 'Duty grouping and granted responsibilities'],
         'merge' => [

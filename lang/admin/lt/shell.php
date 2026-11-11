@@ -92,15 +92,19 @@ return [
     'section_children' => [
         'kelias' => [
             'path' => 'Mano kelias',
-            'documents' => 'Dokumentai',
-            'glossary' => 'Sąvokos',
             'reps' => 'Atstovai',
+            'library' => 'Biblioteka',
+        ],
+        'ziniu_baze' => [
+            'overview' => 'Žinių bazė',
+            'glossary' => 'Sąvokos',
             'library' => 'Biblioteka',
         ],
     ],
 
     'sections' => [
         'kelias' => 'Mano kelias',
+        'ziniu_baze' => 'Žinių bazė',
         'apzvalga' => 'Apžvalga',
         'padaliniu_apzvalga' => 'Padaliniai',
         'uzduotys' => 'Užduotys',
@@ -153,9 +157,9 @@ return [
     ],
 
     'section_descriptions' => [
-        'kelias' => 'Tavo mokymosi žingsniai, dokumentai ir sąvokos.',
+        'kelias' => 'Tavo kadencijos žingsniai ir pasiruošimas posėdžiams.',
+        'ziniu_baze' => 'Ką verta žinoti: dokumentai, pristatymai ir sąvokos.',
         'uzduotys' => 'Tau priskirti darbai ir terminai',
-        'pranesimai' => 'Visi tau skirti pranešimai',
         'atsakomybes' => 'Tavo pareigybės ir ką jos leidžia',
         'veiklos_uzklausos' => 'Tau gautos užklausos apie institucijų veiklą',
         'institucijos' => 'Institucijos, kuriose atstovaujame',
@@ -205,7 +209,8 @@ return [
     ],
 
     'actions' => [
-        'new_learning_step' => ['title' => 'Naujas mokymosi žingsnis', 'description' => 'Žinios ar veiksmas atstovų keliui'],
+        'new_learning_step' => ['title' => 'Naujas kelio žingsnis', 'description' => 'Veiksmas ar pasiruošimas posėdžiui'],
+        'new_knowledge_item' => ['title' => 'Nauja žinių bazės medžiaga', 'description' => 'Dokumentas, pristatymas ar nuoroda atstovams'],
         'new_institution_type' => ['title' => 'Naujas institucijos tipas', 'description' => 'Institucijų grupavimas, atstovavimas ir ryšiai'],
         'new_duty_type' => ['title' => 'Naujas pareigybės tipas', 'description' => 'Pareigybių grupavimas ir suteikiamos atsakomybės'],
         'merge' => [

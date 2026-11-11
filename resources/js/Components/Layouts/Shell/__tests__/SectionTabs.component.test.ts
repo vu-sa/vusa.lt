@@ -18,7 +18,7 @@ describe('SectionTabs', () => {
     let currentRoute: string;
 
     beforeEach(() => {
-      currentRoute = 'learningPath.documents';
+      currentRoute = 'learningPath.reps';
       clearTrail();
       vi.mocked(usePage).mockReturnValue(reactive({ ...createMockPage(), component: 'Admin/Learning/Documents' }) as ReturnType<typeof usePage>);
       const originalRoute = route;
@@ -40,8 +40,8 @@ describe('SectionTabs', () => {
     it('names and links the tab after the active child', () => {
       const tab = mountLearning().get('[data-slot="section-tab-crumb"]');
 
-      expect(tab.get('a .truncate').text()).toBe('shell.section_children.kelias.documents');
-      expect(tab.get('a').attributes('href')).toBe('/mocked-route/learningPath.documents');
+      expect(tab.get('a .truncate').text()).toBe('shell.section_children.kelias.reps');
+      expect(tab.get('a').attributes('href')).toBe('/mocked-route/learningPath.reps');
     });
 
     it('updates the label when navigating between children of the same section', async () => {
@@ -49,22 +49,20 @@ describe('SectionTabs', () => {
       vi.mocked(usePage).mockReturnValue(page as ReturnType<typeof usePage>);
       const wrapper = mountLearning();
 
-      currentRoute = 'glossaryTerms.index';
-      page.url = '/mano/learning/glossary';
+      currentRoute = 'learningSteps.index';
+      page.url = '/mano/learning/library';
       await flushPromises();
 
-      expect(wrapper.get('[data-slot="section-tab-crumb"] a .truncate').text()).toBe('shell.section_children.kelias.glossary');
+      expect(wrapper.get('[data-slot="section-tab-crumb"] a .truncate').text()).toBe('shell.section_children.kelias.library');
     });
 
     it('lists every child behind the chevron and marks the current one', () => {
       const links = mountLearning().get('[data-testid="dropdown-menu-content"]').findAll('a');
 
       expect(links.map(link => link.attributes('href'))).toEqual([
-        '/mocked-route/learningPath.show', '/mocked-route/learningPath.documents',
-        '/mocked-route/glossaryTerms.index',
-        '/mocked-route/learningPath.reps', '/mocked-route/learningSteps.index',
+        '/mocked-route/learningPath.show', '/mocked-route/learningPath.reps', '/mocked-route/learningSteps.index',
       ]);
-      expect(links.map(link => link.attributes('aria-current'))).toEqual([undefined, 'page', undefined, undefined, undefined]);
+      expect(links.map(link => link.attributes('aria-current'))).toEqual([undefined, 'page', undefined]);
     });
 
     it('lets the trail crumb win over the active child', () => {
@@ -94,7 +92,7 @@ describe('SectionTabs', () => {
       const wrapper = mountLearning();
       await flushPromises();
 
-      expect(wrapper.get('[data-slot="section-tabs-more"]').text()).toContain('shell.section_children.kelias.documents');
+      expect(wrapper.get('[data-slot="section-tabs-more"]').text()).toContain('shell.section_children.kelias.reps');
       const children = wrapper.findAll('[data-slot="section-tabs-more-child"]');
       expect(children.map(link => link.text())).toEqual(kelias.children!.map((child: { label: string }) => child.label));
       expect(children[1]!.attributes('aria-current')).toBe('page');
@@ -116,7 +114,7 @@ describe('SectionTabs', () => {
     expect(wrapper.findAll('li a').map(link => link.text())).toEqual([
       'shell.sections.apzvalga',
       'shell.sections.uzduotys',
-      'shell.sections.pranesimai',
+      'shell.sections.atsakomybes',
     ]);
     expect(wrapper.findAll('li a svg')).toHaveLength(3);
     expect(wrapper.findAll('li a').every(link => link.classes().includes('font-bold'))).toBe(true);

@@ -23,7 +23,7 @@ export const workspace = (key: string, sections: AdminSection[], createActions: 
 export const pradzia = workspace('pradzia', [
   section('apzvalga', 'dashboard'),
   section('uzduotys', 'tasks.index'),
-  section('pranesimai', 'notifications.index'),
+  section('atsakomybes', 'profile.roles'),
 ]);
 
 export const atstovavimas = workspace('atstovavimas', [
@@ -37,8 +37,6 @@ export const kelias: AdminSection = {
   ...section('kelias', 'learningPath.show'),
   children: [
     { key: 'path', label: 'shell.section_children.kelias.path', routeName: 'learningPath.show' },
-    { key: 'documents', label: 'shell.section_children.kelias.documents', routeName: 'learningPath.documents' },
-    { key: 'glossary', label: 'shell.section_children.kelias.glossary', routeName: 'glossaryTerms.index' },
     { key: 'reps', label: 'shell.section_children.kelias.reps', routeName: 'learningPath.reps' },
     { key: 'library', label: 'shell.section_children.kelias.library', routeName: 'learningSteps.index' },
   ],

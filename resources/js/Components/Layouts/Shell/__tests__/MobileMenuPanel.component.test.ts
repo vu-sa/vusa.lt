@@ -38,17 +38,15 @@ describe('MobileMenuPanel', () => {
     const originalRoute = route;
     vi.spyOn(globalThis, 'route').mockImplementation(((name?: string) => name
       ? originalRoute(name)
-      : { current: (pattern: string) => pattern === 'learningPath.documents' }) as typeof route);
+      : { current: (pattern: string) => pattern === 'learningPath.reps' }) as typeof route);
     const wrapper = mountPanel({ workspaces: [learning], activeWorkspace: learning, activeSection: kelias });
     const links = wrapper.findAll('[data-slot="mobile-menu-section-child"]');
 
     expect(links.map(link => link.text())).toEqual([
-      'shell.section_children.kelias.path', 'shell.section_children.kelias.documents',
-      'shell.section_children.kelias.glossary',
-      'shell.section_children.kelias.reps', 'shell.section_children.kelias.library',
+      'shell.section_children.kelias.path', 'shell.section_children.kelias.reps', 'shell.section_children.kelias.library',
     ]);
-    expect(links[1]!.attributes('href')).toBe('/mocked-route/learningPath.documents');
-    expect(links.map(link => link.attributes('aria-current'))).toEqual([undefined, 'page', undefined, undefined, undefined]);
+    expect(links[1]!.attributes('href')).toBe('/mocked-route/learningPath.reps');
+    expect(links.map(link => link.attributes('aria-current'))).toEqual([undefined, 'page', undefined]);
     await links[1]!.trigger('click');
 
     expect(wrapper.emitted('update:open')?.at(-1)).toEqual([false]);

@@ -13,6 +13,7 @@ use App\Models\Goal;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\InstitutionType;
+use App\Models\KnowledgeItem;
 use App\Models\LearningStep;
 use App\Models\MailingList;
 use App\Models\Meeting;
@@ -180,20 +181,23 @@ class AdminNavigationCatalog
             descriptionKey: 'shell.workspaces.pradzia.description',
             sections: [
                 new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard', [], null, Visibility::always()),
-                new Section('kelias', 'shell.sections.kelias', 'learningPath.show', [], null, Visibility::always(), matches: ['learningPath.*', 'learningSteps.*', 'glossaryTerms.*'], descriptionKey: 'shell.section_descriptions.kelias', children: [
+                new Section('kelias', 'shell.sections.kelias', 'learningPath.show', [], null, Visibility::always(), matches: ['learningPath.*', 'learningSteps.*'], descriptionKey: 'shell.section_descriptions.kelias', children: [
                     new SectionLink('path', 'shell.section_children.kelias.path', 'learningPath.show', Visibility::always()),
-                    new SectionLink('documents', 'shell.section_children.kelias.documents', 'learningPath.documents', Visibility::always()),
-                    new SectionLink('glossary', 'shell.section_children.kelias.glossary', 'glossaryTerms.index', Visibility::always()),
                     new SectionLink('reps', 'shell.section_children.kelias.reps', 'learningPath.reps', Visibility::callback(fn (User $user): bool => LearningAdminPresenter::canSeeReps($user))),
                     new SectionLink('library', 'shell.section_children.kelias.library', 'learningSteps.index', Visibility::can('manage', LearningStep::class)),
                 ]),
+                new Section('ziniu_baze', 'shell.sections.ziniu_baze', 'knowledgeBase.show', [], null, Visibility::always(), matches: ['knowledgeBase.*', 'knowledgeItems.*', 'glossaryTerms.*'], descriptionKey: 'shell.section_descriptions.ziniu_baze', children: [
+                    new SectionLink('overview', 'shell.section_children.ziniu_baze.overview', 'knowledgeBase.show', Visibility::always()),
+                    new SectionLink('glossary', 'shell.section_children.ziniu_baze.glossary', 'glossaryTerms.index', Visibility::always()),
+                    new SectionLink('library', 'shell.section_children.ziniu_baze.library', 'knowledgeItems.index', Visibility::can('manage', KnowledgeItem::class)),
+                ]),
                 new Section('uzduotys', 'shell.sections.uzduotys', 'tasks.index', [], 'task', Visibility::always(), matches: ['tasks.index'], descriptionKey: 'shell.section_descriptions.uzduotys'),
-                new Section('pranesimai', 'shell.sections.pranesimai', 'notifications.index', [], null, Visibility::always(), descriptionKey: 'shell.section_descriptions.pranesimai'),
                 new Section('atsakomybes', 'shell.sections.atsakomybes', 'profile.roles', [], null, Visibility::always(), descriptionKey: 'shell.section_descriptions.atsakomybes'),
                 new Section('veiklos_uzklausos', 'shell.sections.veiklos_uzklausos', 'profile.activityRequests', [], null, Visibility::always(), descriptionKey: 'shell.section_descriptions.veiklos_uzklausos'),
             ],
             createActions: [
                 CreateAction::route('new_learning_step', 'shell.actions.new_learning_step.title', 'shell.actions.new_learning_step.description', 'learning_step', 'learningSteps.create', Visibility::can('create', LearningStep::class)),
+                CreateAction::route('new_knowledge_item', 'shell.actions.new_knowledge_item.title', 'shell.actions.new_knowledge_item.description', 'knowledge_item', 'knowledgeItems.create', Visibility::can('create', KnowledgeItem::class)),
             ],
         );
     }
