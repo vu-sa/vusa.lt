@@ -1,6 +1,7 @@
 <template>
   <RecordPage
     v-model:section="currentSection"
+    section-query-key="tab"
     :history-subject="{ type: 'problem', id: problem.id }"
     :title="localizedTitle"
     :entity-type="ModelEnum.PROBLEM"

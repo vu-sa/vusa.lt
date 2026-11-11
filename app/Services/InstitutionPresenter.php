@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Actions\ActivityRequests\GetInstitutionActivityRequestHistory;
 use App\Actions\GetInstitutionSecretaries;
-use App\Actions\GetTypeFiles;
 use App\Enums\InstitutionActivityAnswer;
 use App\Enums\InstitutionActivityCampaign;
 use App\Enums\InstitutionActivityStatus;
@@ -15,11 +14,10 @@ use App\Http\Controllers\Admin\CadenceController;
 use App\Http\Controllers\Admin\InstitutionSecretaryController;
 use App\Http\Resources\InstitutionMeetingResource;
 use App\Http\Resources\ProblemSummaryResource;
-use App\Models\DutyType;
+use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\InstitutionLink;
-use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Problem;
 use App\Models\StudyProgram;
@@ -34,7 +32,10 @@ use Illuminate\Support\Collection;
 
 class InstitutionPresenter
 {
-    /** @return array{id: string, name: string, is_active: bool, description: string|null, tenant: array{id: int, shortname: string}|null, types: list<array{id: int, parent_id: int|null, title: string|null, description: string|null, slug: string|null, extra_attributes: array<array-key, mixed>|null, created_at: string|null, updated_at: string|null, deleted_at: string|null, pivot: array{institution_id: string, institution_type_id: int}}>, has_public_meetings: bool, governance_scope: InstitutionScope, duties_count: int, meetings_count: int, problems_count: int, related_institutions_count: int, managers: list<array{id: string, name: string, profile_photo_path: string|null, profile_photo_focal_point: string|null, pivot: array{id: string, start_date: string, end_date: string|null}}>, secretaries: list<array{id: string, name: string, email: string|null, profile_photo_path: string|null}>, sharepointPath: string|null, sharepointFolderUrl: string|null} */
+    /** Up to this many duties show in the overview instead of a tab (`DUTIES_IN_OVERVIEW` in ShowInstitution.vue). */
+    public const int OVERVIEW_DUTY_LIMIT = 3;
+
+    /** @return array{id: string, name: string, is_active: bool, description: string|null, tenant: array{id: int, shortname: string}|null, types: list<array{id: int, parent_id: int|null, title: string|null, description: string|null, slug: string|null, extra_attributes: array<array-key, mixed>|null, created_at: string|null, updated_at: string|null, deleted_at: string|null, pivot: array{institution_id: string, institution_type_id: int}}>, has_public_meetings: bool, governance_scope: InstitutionScope, duties_count: int, meetings_count: int, problems_count: int, related_institutions_count: int, has_files: bool, managers: list<array{id: string, name: string, profile_photo_path: string|null, profile_photo_focal_point: string|null, pivot: array{id: string, start_date: string, end_date: string|null}}>, secretaries: list<array{id: string, name: string, email: string|null, profile_photo_path: string|null}>, sharepointPath: string|null, sharepointFolderUrl: string|null} */
     public static function forShow(Institution $institution, bool $readOnly): array
     {
         $types = [];
@@ -59,6 +60,8 @@ class InstitutionPresenter
             'meetings_count' => (int) $institution->getAttribute('meetings_count'),
             'problems_count' => (int) $institution->getAttribute('problems_count'),
             'related_institutions_count' => app(InstitutionRelationService::class)->relatedTo($institution->id)->count(),
+            // Without files, the Failai tab gives way to an "add" action.
+            'has_files' => ! $readOnly && $institution->availableFiles()->exists(),
             'managers' => $managers,
             'secretaries' => $readOnly ? [] : InstitutionSecretaryController::usersPayload(GetInstitutionSecretaries::execute($institution)),
             'sharepointPath' => $readOnly ? null : SharepointFileService::pathOrNull($institution),
@@ -131,10 +134,10 @@ class InstitutionPresenter
     }
 
     /** @return list<array{id: string, name: string|null, description: string|null, institution_id: string, order: int, email: string|null, contacts_grouping: string, places_to_occupy: int|null, is_active: bool, created_at: string, updated_at: string, deleted_at: string|null, current_users: list<array{id: string, name: string, profile_photo_path: string|null, profile_photo_focal_point: string|null, pivot: array{id: string, start_date: string, end_date: string|null}}>}> */
-    public static function duties(Institution $institution): array
+    public static function duties(Institution $institution, ?int $limit = null): array
     {
         $duties = [];
-        foreach ($institution->duties()->with('current_users:id,name,profile_photo_path,profile_photo_focal_point')->orderBy('order')->get() as $duty) {
+        foreach ($institution->duties()->with('current_users:id,name,profile_photo_path,profile_photo_focal_point')->orderBy('order')->when($limit !== null, fn ($query) => $query->limit($limit))->get() as $duty) {
             $attributes = $duty->attributesToArray();
             $users = [];
             foreach ($duty->current_users as $user) {
@@ -160,7 +163,7 @@ class InstitutionPresenter
         return $duties;
     }
 
-    /** @return list<array{id: string, title: string, start_time: string, type: MeetingType|null, agenda_items_count: int, vote_matches: int, vote_mismatches: int, incomplete_vote_data: int, has_protocol: bool, has_report: bool, can_discard: bool}> */
+    /** @return list<array{id: string, title: string, start_time: string, type: MeetingType|null, agenda_items_count: int, vote_matches: int, vote_mismatches: int, incomplete_vote_data: int, outcome: array<string, int|string|null>, has_protocol: bool, has_report: bool, can_discard: bool}> */
     public static function meetings(Collection $meetings): array
     {
         $rows = [];
@@ -175,6 +178,7 @@ class InstitutionPresenter
                 'vote_matches' => $row['vote_matches'],
                 'vote_mismatches' => $row['vote_mismatches'],
                 'incomplete_vote_data' => $row['incomplete_vote_data'],
+                'outcome' => $row['outcome'],
                 'has_protocol' => $row['has_protocol'],
                 'has_report' => $row['has_report'],
                 'can_discard' => $row['can_discard'],
@@ -184,7 +188,7 @@ class InstitutionPresenter
         return $rows;
     }
 
-    /** @return array{activity_status: array{status: InstitutionActivityStatus, requires_action: bool, priority: int, periodicity_days: int, effective_days_since_activity: int|null, progress_percentage: int|null, last_activity_type: 'meeting'|'check_in'|null, last_activity_at: string|null, last_meeting_at: string|null, next_meeting_at: string|null, active_check_in_until: string|null, last_completed_check_in_at: string|null}|null, current_users: list<array{id: string, name: string, profile_photo_path: string|null, profile_photo_focal_point: string|null, pivot: array{id: string, start_date: string, end_date: string|null}}>, recentMeetings: list<array{id: string, title: string, start_time: string, type: MeetingType|null, agenda_items_count: int, vote_matches: int, vote_mismatches: int, incomplete_vote_data: int, has_protocol: bool, has_report: bool, can_discard: bool}>, meetings_count: int, meetings_hidden: bool} */
+    /** @return array{activity_status: array{status: InstitutionActivityStatus, requires_action: bool, priority: int, periodicity_days: int, effective_days_since_activity: int|null, progress_percentage: int|null, last_activity_type: 'meeting'|'check_in'|null, last_activity_at: string|null, last_meeting_at: string|null, next_meeting_at: string|null, active_check_in_until: string|null, last_completed_check_in_at: string|null}|null, current_users: list<array{id: string, name: string, profile_photo_path: string|null, profile_photo_focal_point: string|null, pivot: array{id: string, start_date: string, end_date: string|null}}>, recentMeetings: list<array{id: string, title: string, start_time: string, type: MeetingType|null, agenda_items_count: int, vote_matches: int, vote_mismatches: int, incomplete_vote_data: int, outcome: array<string, int|string|null>, has_protocol: bool, has_report: bool, can_discard: bool}>, meetings_count: int, meetings_hidden: bool} */
     public static function overview(Institution $institution, bool $showsMeetings, InstitutionActivityStatusData $status, Collection $meetings): array
     {
         $activity = $status->toArray();
@@ -230,21 +234,6 @@ class InstitutionPresenter
         $rows = [];
         foreach ($institution->availableFiles()->orderByDesc('file_date')->get() as $file) {
             $row = FileableFilePresenter::file($file);
-            $rows[] = $row;
-        }
-
-        return $rows;
-    }
-
-    /** @return list<array{id: string, fileable_type: string, fileable_id: string, sharepoint_id: string, sharepoint_path: string|null, name: string, file_type: string|null, mime_type: string|null, size_bytes: int|null, file_date: string|null, description: string|null, public_link: string|null, public_link_expires_at: string|null, last_synced_at: string|null, deleted_externally_at: string|null, created_at: string|null, updated_at: string|null, formatted_size: string|null, fileable: array{id: int, title: string|null}|null}> */
-    public static function typeFiles(Institution $institution): array
-    {
-        $rows = [];
-        foreach (GetTypeFiles::forFileable($institution) as $file) {
-            $row = FileableFilePresenter::file($file);
-            /** @var DutyType|InstitutionType|null $fileable */
-            $fileable = $file->fileable;
-            $row['fileable'] = $fileable ? ['id' => $fileable->id, 'title' => $fileable->getRawOriginal('title') === null ? null : (string) $fileable->title] : null;
             $rows[] = $row;
         }
 
@@ -346,7 +335,7 @@ class InstitutionPresenter
         return $options;
     }
 
-    /** @return array{update: bool, delete: bool, recordMeeting: bool, createProblem: bool, reportActivity: bool, manageLinks: bool, askAboutActivity: bool} */
+    /** @return array{update: bool, delete: bool, recordMeeting: bool, createProblem: bool, createDuty: bool, reportActivity: bool, manageLinks: bool, askAboutActivity: bool} */
     public static function abilities(Institution $institution, User $user, bool $readOnly): array
     {
         return [
@@ -354,6 +343,7 @@ class InstitutionPresenter
             'delete' => $user->can('delete', $institution),
             'recordMeeting' => ! $readOnly && $user->can('createFor', [Meeting::class, $institution]),
             'createProblem' => $user->can('create', Problem::class),
+            'createDuty' => ! $readOnly && $user->can('create', Duty::class),
             'reportActivity' => ! $readOnly && $user->can('create', [InstitutionCheckIn::class, $institution]),
             'manageLinks' => ! $readOnly && $user->can('create', InstitutionLink::class),
             'askAboutActivity' => ! $readOnly && $user->can('askAboutActivity', [InstitutionCheckIn::class, $institution]),

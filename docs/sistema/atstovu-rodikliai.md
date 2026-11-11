@@ -12,7 +12,7 @@ tests:
 
 Atstovų rodikliai pateikiami **ViSAK → Padaliniai**, po posėdžių laiko juosta, šalia dabartinių atstovų aktyvumo. Juos mato nariai, kuriems prieinami pasirinktų padalinių rodikliai. Atskiros rodiklių skilties sistemos meniu nebėra.
 
-Skaičiavimo taisyklės ir laikotarpių paaiškinimas pateikiami [Padalinių gide](/visak/padaliniai#atstovavimo-rodikliai). Palyginimo kadencija ir tai, kurių organų (pagal nutylėjimą – VU organų) institucijos skaičiuojamos, pasirenkama [atstovavimo nustatymuose](/sistema/nustatymai#atstovavimas).
+Skaičiavimo taisyklės ir laikotarpių paaiškinimas pateikiami [Atstovų gide](/visak/atstovai#atstovavimo-rodikliai). Palyginimo kadencija ir tai, kurių organų (pagal nutylėjimą – VU organų) institucijos skaičiuojamos, pasirenkama [atstovavimo nustatymuose](/sistema/nustatymai#atstovavimas).
 
 Dabartiniai rodikliai skaičiuojami tik aktyvioms institucijoms. Jau užfiksuotos ankstesnių dienų reikšmės ir istoriniai įrašai išsaugomi.
 

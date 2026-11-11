@@ -1,6 +1,7 @@
 <template>
   <RecordPage
     v-model:section="currentSection"
+    section-query-key="tab"
     :history-subject="readOnly ? undefined : { type: 'institution', id: institution.id }"
     :title="institution.name"
     :entity-type="ModelEnum.INSTITUTION"
@@ -11,25 +12,46 @@
     actions-beside-title
     @action="handleRecordAction"
   >
+    <template v-if="fillActions.length || assignmentLoading || (!readOnly && incompleteTasksCount)" #next-actions>
+      <SectionHeaderAction v-if="!readOnly && incompleteTasksCount" :label="`${$t('Nebaigtos užduotys')} · ${incompleteTasksCount}`" class="mb-3" @click="currentSection = 'tasks'" />
+      <RecordNextActions :fill="fillActions" />
+      <p v-if="assignmentLoading" role="status" class="mt-3 text-sm text-muted-foreground">{{ $t('Kraunami duomenys') }}</p>
+    </template>
+
+    <template v-if="hasDescription" #lead>
+      <InstitutionAbout :description="institution.description" />
+    </template>
+
     <template v-if="institution.is_active === false" #subtitle>
       <InactiveInstitutionBadge :active="institution.is_active" />
     </template>
 
     <template #fact-members>
-      <UsersFactList :users="overview.current_users" :inline-limit="2" class="mt-1" />
+      <UsersFactList :users="overview.current_users" :inline-limit="2" />
     </template>
 
     <template #fact-managers>
-      <UsersFactList :users="institution.managers ?? []" :inline-limit="2" class="mt-1" />
+      <UsersFactList :users="institution.managers ?? []" :inline-limit="2" />
     </template>
 
     <template #overview>
       <InstitutionOverviewSection
         :institution
         :overview
+        :upcoming-meeting="upcomingMeeting"
+        :duties="overviewDuties ?? []"
+        :can-manage="can.update"
+        :meetings-tab="tabs.some(tab => tab.value === 'meetings')"
         @navigate-tab="currentSection = $event"
-        @view-meeting="(meeting) => router.visit(route('meetings.show', meeting.id))"
+        @assign="openAssignSheet"
+        @edit-term="openTermSheet"
       />
+      <Deferred data="knowledgePages">
+        <template #fallback>
+          <div class="h-24 animate-pulse border-y border-border bg-secondary" />
+        </template>
+        <WikiRecordBlock v-if="knowledgePages?.length" :pages="knowledgePages" class="mt-10" />
+      </Deferred>
     </template>
 
     <template v-if="canViewActivityRequests" #activityRequests>
@@ -51,6 +73,7 @@
         <InstitutionDutiesSection
           :duties="sortedDuties"
           :institution-id="institution.id"
+          :can-create="can.createDuty"
           :can-manage="can.update"
           @assign="openAssignSheet"
           @edit-term="openTermSheet"
@@ -59,29 +82,20 @@
     </template>
 
     <template #meetings>
-      <WhenVisible :key="institution.id" :buffer="0" :always="false" data="meetings">
-        <template #fallback>
-          <div class="space-y-3">
-            <div v-for="n in 3" :key="n" class="h-12 animate-pulse border border-border bg-secondary/60" />
-          </div>
-        </template>
-        <InstitutionMeetingsList
-          v-if="meetings?.length"
-          :meetings
-          :institution-name="institution.name"
-          :can-delete="canDeleteMeetings"
-          @select="(meeting) => router.visit(route('meetings.show', meeting.id))"
-          @delete="askDeleteMeeting"
+      <!-- Mounted once the section is in view, so the page never searches for a tab nobody opens. -->
+      <div ref="meetingsAnchor">
+        <InstitutionMeetingsCollection
+          v-if="meetingsSeen"
+          :key="institution.id"
+          :institution-id="String(institution.id)"
+          :can-record-meeting="can.recordMeeting"
+          @record="openMeetingWindow"
         />
-        <EmptyState
-          v-else
-          :title="$t('Nėra susitikimų')"
-          :description="$t('Šiai institucijai dar nėra suplanuota susitikimų.')"
-          :icon="CalendarIcon"
-          :action-label="can.recordMeeting ? $t('Suplanuoti susitikimą') : undefined"
-          @action="openMeetingWindow"
-        />
-      </WhenVisible>
+        <div v-else class="space-y-3" data-testid="meetings-skeleton">
+          <div class="h-14 animate-pulse border-y border-border bg-secondary/60" />
+          <div v-for="n in 3" :key="n" class="h-14 animate-pulse bg-secondary/40" />
+        </div>
+      </div>
     </template>
 
     <template #terms>
@@ -116,18 +130,15 @@
             <div v-for="n in 3" :key="n" class="h-12 animate-pulse border border-border bg-secondary/60" />
           </div>
         </template>
-        <div class="grid gap-10 xl:grid-cols-2 xl:gap-16" data-testid="institution-relationships">
-          <RelatedInstitutions :items="relatedInstitutions ?? []" />
-          <RelationshipLinkList
-            v-if="can.manageLinks || institutionLinks?.length"
-            subject="institution"
-            :record-id="institution.id"
-            :record-name="institution.name"
-            :links="institutionLinks ?? []"
-            :can-manage="!!can.manageLinks"
-            :kinds="relationKinds ?? []"
-          />
-        </div>
+        <InstitutionRelationsList
+          :related="relatedInstitutions ?? []"
+          :links="institutionLinks ?? []"
+          :record-id="String(institution.id)"
+          :record-name="institution.name"
+          :can-manage="!!can.manageLinks"
+          :kinds="relationKinds ?? []"
+          data-testid="institution-relationships"
+        />
       </WhenVisible>
     </template>
 
@@ -138,22 +149,17 @@
             <div v-for="n in 2" :key="n" class="h-12 animate-pulse border border-border bg-secondary/60" />
           </div>
         </template>
-        <div class="space-y-4" data-testid="institution-problems">
-          <div v-if="can.createProblem" class="flex justify-end">
-            <Button as-child variant="outline" size="sm" voice="sentence">
-              <Link :href="route('problems.create', { institution: institution.id })">
-                <Plus aria-hidden="true" />
-                {{ $t('Nauja problema') }}
-              </Link>
-            </Button>
-          </div>
-          <ProblemSummaryList :problems="problems ?? []" />
-        </div>
+        <OverviewSection variant="home" :title="$t('Problemos')" :icon="getEntityTypeDefinition(ModelEnum.PROBLEM)?.icon" :count="problems?.length" data-testid="institution-problems">
+          <template v-if="can.createProblem" #actions>
+            <SectionHeaderAction :icon="Plus" :label="$t('Nauja problema')" :href="route('problems.create', { institution: institution.id })" />
+          </template>
+          <ProblemSummaryList :problems="problems ?? []" frame="attached" />
+        </OverviewSection>
       </WhenVisible>
     </template>
 
     <template #files>
-      <WhenVisible :key="institution.id" :data="['files', 'typeFiles']" :buffer="0" :always="false">
+      <WhenVisible :key="institution.id" data="files" :buffer="0" :always="false">
         <template #fallback>
           <div class="space-y-3" data-testid="files-skeleton">
             <div v-for="n in 3" :key="n" class="h-12 animate-pulse border border-border bg-secondary/60" />
@@ -162,7 +168,6 @@
         <FileableFilesPanel
           :fileable="{ id: institution.id, type: 'Institution' }"
           :files
-          :type-files
           :can-upload="can.update && !!institution.sharepointPath"
           :folder-url="institution.sharepointFolderUrl"
           :can-delete="can.update"
@@ -185,7 +190,7 @@
       </WhenVisible>
     </template>
 
-    <template v-if="!readOnly" #activity>
+    <template v-if="!readOnly" #comments>
       <RecordActivity commentable-type="institution" :commentable-id="institution.id" />
     </template>
   </RecordPage>
@@ -198,6 +203,22 @@
     :user="sheetUser"
     :study-programs="management?.studyPrograms ?? []"
     :taken-ids
+  />
+
+  <RelationshipLinkSheet
+    v-if="linkSheetMounted"
+    v-model:open="linkSheetOpen"
+    subject="institution"
+    :record-id="String(institution.id)"
+    :record-name="institution.name"
+    :link="null"
+    :kinds="relationKinds ?? []"
+  />
+
+  <FileableUploadSheet
+    v-if="uploadSheetMounted"
+    v-model:open="uploadSheetOpen"
+    :fileable="{ id: institution.id, type: 'Institution' }"
   />
 
   <AddCheckInDialog
@@ -217,20 +238,12 @@
     @close="closeTaskDetail"
     @report="reportFromDetail"
   />
-
-  <ConfirmDialog
-    v-model:open="deleteMeetingOpen"
-    :title="$t('Ištrinti posėdį?')"
-    :description="meetingToDelete?.can_discard ? $t('Posėdis tuščias ir ką tik sukurtas, todėl bus ištrintas visam laikui.') : $t('Posėdis bus perkeltas į šiukšlinę.')"
-    :confirm-label="$t('Ištrinti')"
-    destructive
-    @confirm="deleteMeeting"
-  />
 </template>
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, onUnmounted, ref, watch } from 'vue';
-import { WhenVisible, Link, router, usePage } from '@inertiajs/vue3';
+import { useIntersectionObserver } from '@vueuse/core';
+import { Deferred, WhenVisible, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
   Calendar as CalendarIcon,
@@ -240,369 +253,157 @@ import {
   ExternalLink,
   Eye,
   EyeOff,
+  LayoutGrid,
   MailQuestion,
+  MessageSquare,
   Plus,
   UserCheck,
 } from '@lucide/vue';
 
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
+import InstitutionAbout from '@/Components/Institutions/InstitutionAbout.vue';
 import InstitutionActivityRequestHistory from '@/Components/Institutions/InstitutionActivityRequestHistory.vue';
 import { CadenceSection } from '@/Components/Cadences';
 import InstitutionDutiesSection from '@/Components/Institutions/InstitutionDutiesSection.vue';
-import InstitutionMeetingsList from '@/Components/Institutions/InstitutionMeetingsList.vue';
+import InstitutionMeetingsCollection from '@/Components/Institutions/InstitutionMeetingsCollection.vue';
 import InstitutionOverviewSection from '@/Components/Institutions/InstitutionOverviewSection.vue';
+import WikiRecordBlock from '@/Features/Admin/Knowledge/WikiRecordBlock.vue';
 import { describeInstitutionActivity } from '@/Components/Institutions/institutionActivity';
 import { SecretariesSection } from '@/Components/Institutions';
 import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue';
 import UsersFactList from '@/Components/Avatars/UsersFactList.vue';
 import RecordPage, { type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import type { AdminRecordAction as ActionDescriptor } from '@/Types/AdminRecordAction';
-import { ConfirmDialog, EmptyState, OverviewSection } from '@/Components/Patterns';
+import { OverviewSection, RecordNextActions, SectionHeaderAction, type RecordNextAction } from '@/Components/Patterns';
 import ProblemSummaryList from '@/Components/Problems/ProblemSummaryList.vue';
-import { RelationshipLinkList } from '@/Components/Relationships';
-import { Button } from '@/Components/ui/button';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import { enterInstitution } from '@/Composables/useRecordTrail';
 import { getSuggestedCheckInRange, type TaskDisplayData } from '@/Composables/useTaskPresentation';
+import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import { inactiveInstitutionStatus, institutionActivityStatuses, type StatusPresentation } from '@/Constants/statusIcons';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
-import type { AssignmentDuty, AssignmentTerm, AssignmentUser, DutyWithUsers, UserWithPivot } from '@/Types/DutyAssignment';
+import { useDutyAssignmentSheet } from '@/Features/Admin/Occupancy/useDutyAssignmentSheet';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
 import { useInstitutionSubscription } from '@/Composables/useInstitutionSubscription';
 import { InstitutionScope, ModelEnum } from '@/Types/enums';
-import type { ActionType, InstitutionActivityAnswer, InstitutionActivityCampaign, InstitutionActivityStatus, InstitutionRelationKind, MeetingType } from '@/Types/enums';
+import type { InstitutionActivityStatus } from '@/Types/enums';
+import type { ShowInstitutionPageProps } from '@/Types/ShowInstitutionPage';
 import { formatDate } from '@/Utils/dateTime';
 
-interface InstitutionUser {
-  id: string;
-  name: string;
-  profile_photo_path: string | null;
-  profile_photo_focal_point: string | null;
-}
-
-interface InstitutionMemberTerm {
-  duty_id: string;
-  dutiable_id: string;
-  dutiable_type: string;
-  id: string;
-  via_dutiable_id: string | null;
-  tenant_id: number | null;
-  start_date: string;
-  end_date: string | null;
-  additional_photo: string | null;
-  additional_photo_focal_point: string | null;
-  additional_email: string | null;
-  use_original_duty_name: boolean;
-  description: { lt: string; en: string } | null;
-  study_program_id: string | null;
-  study_program_note: { lt: string; en: string } | null;
-  created_at: string;
-  updated_at: string;
-}
-
-interface InstitutionMember extends InstitutionUser {
-  pivot: Pick<InstitutionMemberTerm, 'id' | 'start_date' | 'end_date'>;
-}
-
-interface InstitutionPageDuty {
-  id: string;
-  name: string | null;
-  description: string | null;
-  institution_id: string;
-  order: number;
-  email: string | null;
-  contacts_grouping: string;
-  places_to_occupy: number | null;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
-  current_users: InstitutionMember[];
-}
-
-interface InstitutionPageType {
-  id: number;
-  parent_id: number | null;
-  title: string | null;
-  description: string | null;
-  slug: string | null;
-  extra_attributes: Record<string, unknown> | null;
-  created_at: string | null;
-  updated_at: string | null;
-  deleted_at: string | null;
-  pivot: { institution_id: string; institution_type_id: number };
-}
-
-interface InstitutionPageData {
-  id: string;
-  name: string;
-  is_active: boolean;
-  description: string | null;
-  tenant: { id: number; shortname: string } | null;
-  types: InstitutionPageType[];
-  has_public_meetings: boolean;
-  governance_scope: InstitutionScope;
-  duties_count: number;
-  meetings_count: number;
-  problems_count: number;
-  related_institutions_count: number;
-  managers: InstitutionMember[];
-  secretaries: InstitutionSecretary[];
-  sharepointPath: string | null;
-  sharepointFolderUrl: string | null;
-}
-
-interface InstitutionPageMeeting {
-  id: string;
-  title: string;
-  start_time: string;
-  type: MeetingType | null;
-  agenda_items_count: number;
-  vote_matches: number;
-  vote_mismatches: number;
-  incomplete_vote_data: number;
-  has_protocol: boolean;
-  has_report: boolean;
-  can_discard: boolean;
-}
-
-interface InstitutionActivityData {
-  status: InstitutionActivityStatus;
-  requires_action: boolean;
-  priority: number;
-  periodicity_days: number;
-  effective_days_since_activity: number | null;
-  progress_percentage: number | null;
-  last_activity_type: 'meeting' | 'check_in' | null;
-  last_activity_at: string | null;
-  last_meeting_at: string | null;
-  next_meeting_at: string | null;
-  active_check_in_until: string | null;
-  last_completed_check_in_at: string | null;
-}
-
-interface InstitutionOverviewData {
-  activity_status: InstitutionActivityData | null;
-  current_users: InstitutionMember[];
-  recentMeetings: InstitutionPageMeeting[];
-  meetings_count: number;
-  meetings_hidden: boolean;
-}
-
-interface InstitutionProblem {
-  id: string;
-  title: string;
-  status: string;
-  occurred_at: string;
-  resolved_at: string | null;
-  tenant: { id: number; shortname: string } | null;
-  responsible_user: { id: string; name: string } | null;
-}
-
-interface InstitutionPageRelatedInstitution {
-  id: string;
-  name: string | null;
-  is_active: boolean;
-  direction: 'outgoing' | 'incoming' | 'mutual';
-  via: 'direct' | 'type';
-  kind: InstitutionRelationKind;
-  kind_label: string;
-  cross_tenant: boolean;
-  authorized: boolean;
-}
-
-interface InstitutionLinkRow {
-  id: number;
-  created_at: string | null;
-  updated_at: string | null;
-  other: { id: string; name: string | null; is_active: boolean };
-  direction: 'outgoing' | 'incoming';
-  kind: InstitutionRelationKind;
-  kind_label: string;
-  mutual: boolean;
-}
-
-interface InstitutionManagement {
-  cadences: InstitutionCadence[];
-  globalCadences: InstitutionCadence[];
-  cadenceDefaults: { default_start_month_day: string; default_end_month_day: string };
-  secretaryRosters: InstitutionSecretaryRoster[];
-  studyPrograms: InstitutionStudyProgram[];
-}
-
-interface InstitutionTask {
-  id: string;
-  name: string;
-  description: string | null;
-  due_date: string | null;
-  completed_at: string | null;
-  cancelled_at: string | null;
-  created_at: string;
-  updated_at: string;
-  action_type: ActionType | null;
-  metadata: Record<string, unknown> | null;
-  progress: { current: number; total: number; percentage: number } | null;
-  is_overdue: boolean;
-  can_be_manually_completed: boolean;
-  can_update: boolean;
-  icon: string;
-  color: string;
-  taskable: { id: number | string; name: string | null; type: string } | null;
-  taskable_type: string;
-  taskable_id: string;
-  users: ({ id: string; name: string; profile_photo_path: string | null })[];
-}
-
-interface InstitutionHistoryItem {
-  id: string;
-  campaign_type: InstitutionActivityCampaign;
-  requester: string | null;
-  automatic: boolean;
-  recipient: string | null;
-  period_start: string;
-  period_end: string | null;
-  legacy: boolean;
-  note: string | null;
-  answer: InstitutionActivityAnswer | null;
-  created_at: string | null;
-  answered_at: string | null;
-  resolved_at: string | null;
-  expires_at: string;
-  resolution_source: string | null;
-  resolved_by: string | null;
-  status: 'pending' | 'answered' | 'resolved' | 'expired';
-  meetings: { id: string; date: string; url: string | null }[];
-  check_ins: { id: string; start: string; end: string }[];
-}
-
-interface InstitutionHistory {
-  data: { id: string; campaigns: Record<string, InstitutionHistoryItem[]> }[];
-  next_page: number | null;
-}
-
-interface InstitutionCadence {
-  id: string;
-  institution_id: string | null;
-  institution_name: string | null;
-  start_date: string;
-  end_date: string;
-  start_meeting: { id: string; title: string; start_time: string; institution_id: string | null; institution_name: string | null } | null;
-  end_meeting: { id: string; title: string; start_time: string; institution_id: string | null; institution_name: string | null } | null;
-  label: string;
-}
-
-interface InstitutionSecretaryRoster {
-  cadence_id: string;
-  label: string;
-  start_date: string;
-  end_date: string;
-  is_global: boolean;
-  is_current: boolean;
-  is_past: boolean;
-  secretaries: InstitutionSecretary[];
-}
-
-interface InstitutionSecretary {
-  id: string;
-  name: string;
-  email: string | null;
-  profile_photo_path: string | null;
-}
-
-interface InstitutionFile {
-  id: string;
-  fileable_type: string;
-  fileable_id: string;
-  sharepoint_id: string;
-  sharepoint_path: string | null;
-  name: string;
-  file_type: string | null;
-  mime_type: string | null;
-  size_bytes: number | null;
-  file_date: string | null;
-  description: string | null;
-  public_link: string | null;
-  public_link_expires_at: string | null;
-  last_synced_at: string | null;
-  deleted_externally_at: string | null;
-  created_at: string | null;
-  updated_at: string | null;
-  formatted_size: string | null;
-}
-
-interface InstitutionStudyProgram {
-  id: string;
-  name: string;
-  degree: string;
-  tenant_id: number;
-}
-
-const props = defineProps<{
-  institution: InstitutionPageData;
-  overview: InstitutionOverviewData;
-  activityRequests?: InstitutionHistory;
-  canViewActivityRequests: boolean;
-  can: { update: boolean; delete: boolean; recordMeeting: boolean; reportActivity: boolean; askAboutActivity: boolean; createProblem: boolean; manageLinks: boolean };
-  duties?: InstitutionPageDuty[];
-  meetings?: InstitutionPageMeeting[];
-  problems?: InstitutionProblem[];
-  tasks?: InstitutionTask[];
-  incompleteTasksCount: number;
-  assignmentTerms?: InstitutionMemberTerm[];
-  relatedInstitutions?: InstitutionPageRelatedInstitution[];
-  institutionLinks?: InstitutionLinkRow[];
-  relationKinds: { value: InstitutionRelationKind; label: string }[];
-  files?: InstitutionFile[];
-  typeFiles?: (InstitutionFile & { fileable: { id: number; title: string | null } | null })[];
-  management?: InstitutionManagement | null;
-  subscription: { is_followed: boolean; is_duty_based: boolean } | null;
-  readOnly: boolean;
-}>();
+const props = defineProps<ShowInstitutionPageProps>();
 
 watch(() => props.institution.id, () => enterInstitution(props.institution), { immediate: true });
 
 const AssignDutyUserSheet = defineAsyncComponent(() => import('@/Features/Admin/Occupancy/AssignDutyUserSheet.vue'));
 const FileableFilesPanel = defineAsyncComponent(() => import('@/Components/Files/FileableFilesPanel.vue'));
+const FileableUploadSheet = defineAsyncComponent(() => import('@/Components/Files/FileableUploadSheet.vue'));
+const RelationshipLinkSheet = defineAsyncComponent(() => import('@/Components/Relationships/RelationshipLinkSheet.vue'));
 const TaskDetailDialog = defineAsyncComponent(() => import('@/Features/Admin/TaskManager/TaskDetailDialog.vue'));
-const RelatedInstitutions = defineAsyncComponent(() => import('@/Components/Carousels/RelatedInstitutions.vue'));
+const InstitutionRelationsList = defineAsyncComponent(() => import('@/Components/Institutions/InstitutionRelationsList.vue'));
 
 // --- Sections ---------------------------------------------------------------------------------
 
 const currentSection = ref(new URL(usePage().url, 'http://localhost').searchParams.get('tab') ?? 'overview');
 
-const problemsTab = computed<RecordPageSection[]>(() => (props.institution.problems_count ?? 0) > 0
-  ? [{ value: 'problems', label: $t('Problemos'), count: props.institution.problems_count }]
-  : []);
 
-/** Dropped rather than disabled when there is nothing to show — a tab that cannot be opened is worse than none. */
+const entityIcon = (type: ModelEnum) => getEntityTypeDefinition(type)?.icon;
+
+const visitedOptionalSections = ref(new Set<string>());
+watch(currentSection, value => {
+  if (value === 'files' || value === 'related') visitedOptionalSections.value.add(value);
+}, { immediate: true });
+
 const tabs = computed<RecordPageSection[]>(() => {
+  const overview: RecordPageSection = { value: 'overview', label: $t('Santrauka'), icon: LayoutGrid };
+  const duties: RecordPageSection[] = [{ value: 'duties', label: $t('Pareigybės'), count: props.institution.duties_count, icon: entityIcon(ModelEnum.DUTY) }];
+  const meetings: RecordPageSection = { value: 'meetings', label: $t('Posėdžiai'), count: props.institution.meetings_count, icon: entityIcon(ModelEnum.MEETING) };
+  const problems: RecordPageSection[] = (props.institution.problems_count ?? 0) > 0
+    ? [{ value: 'problems', label: $t('Problemos'), count: props.institution.problems_count, icon: entityIcon(ModelEnum.PROBLEM) }]
+    : [];
+  const activityRequests: RecordPageSection[] = props.canViewActivityRequests
+    ? [{ value: 'activityRequests', label: $t('activity_requests.history_title'), icon: MailQuestion }]
+    : [];
+
   // A reader outside the institution gets its public face; meetings only where they are public.
   if (props.readOnly) {
     return [
-      { value: 'overview', label: $t('Apžvalga') },
-      { value: 'duties', label: $t('Pareigybės'), count: props.institution.duties_count },
-      ...(props.institution.has_public_meetings
-        ? [{ value: 'meetings', label: $t('Posėdžiai'), count: props.institution.meetings_count }]
-        : []),
-      ...(props.canViewActivityRequests ? [{ value: 'activityRequests', label: $t('activity_requests.history_title') }] : []),
-      ...problemsTab.value,
+      overview,
+      ...duties,
+      ...(props.institution.has_public_meetings ? [meetings] : []),
+      ...problems,
+      ...activityRequests,
     ];
   }
 
+  // The work first, the configuration last.
   return [
-    { value: 'overview', label: $t('Apžvalga') },
-    { value: 'duties', label: $t('Pareigybės'), count: props.institution.duties_count },
-    { value: 'meetings', label: $t('Posėdžiai'), count: props.institution.meetings_count },
-    ...(props.can.update ? [{ value: 'terms', label: $t('Kadencijos ir sekretoriai') }] : []),
-    ...(props.institution.related_institutions_count > 0 || props.can.manageLinks
-      ? [{ value: 'related', label: $t('Ryšiai'), count: props.institution.related_institutions_count }]
+    overview,
+    ...duties,
+    meetings,
+    { value: 'tasks', label: $t('Užduotys'), count: props.incompleteTasksCount, icon: entityIcon(ModelEnum.TASK) },
+    ...problems,
+    // An empty Ryšiai or Failai tab gives way to an "add" action under the facts (see fillActions).
+    ...((props.institution.related_institutions_count > 0 || visitedOptionalSections.value.has('related'))
+      ? [{ value: 'related', label: $t('Ryšiai'), count: props.institution.related_institutions_count, icon: entityIcon(ModelEnum.RELATIONSHIP) }]
       : []),
-    ...problemsTab.value,
-    { value: 'files', label: $t('Failai') },
-    ...(props.canViewActivityRequests ? [{ value: 'activityRequests', label: $t('activity_requests.history_title') }] : []),
-    { value: 'tasks', label: $t('Užduotys'), count: props.incompleteTasksCount },
+    ...((props.institution.has_files || visitedOptionalSections.value.has('files')) ? [{ value: 'files', label: $t('Failai'), icon: entityIcon(ModelEnum.FILE) }] : []),
+    ...activityRequests,
+    ...(props.can.update ? [{ value: 'terms', label: $t('Kadencijos ir sekretoriai'), icon: CalendarRange }] : []),
+    { value: 'comments', label: $t('Komentarai'), icon: MessageSquare },
   ];
+});
+
+// --- Adding the first link or file: no empty tab, an action instead ------------------------------
+
+const linkSheetOpen = ref(false);
+const linkSheetMounted = ref(false);
+const uploadSheetOpen = ref(false);
+const uploadSheetMounted = ref(false);
+/** The tab the first link or file will bring back, opened once the reload shows it. */
+const revealAfterAdding = ref<'related' | 'files' | null>(null);
+
+const fillActions = computed<RecordNextAction[]>(() => [
+  ...(props.can.manageLinks && props.institution.related_institutions_count === 0
+    ? [{
+        key: 'add-link',
+        label: $t('Pridėti ryšį'),
+        icon: entityIcon(ModelEnum.RELATIONSHIP),
+        run: () => {
+          linkSheetMounted.value = true;
+          linkSheetOpen.value = true;
+          revealAfterAdding.value = 'related';
+        },
+      }]
+    : []),
+  ...(props.can.update && props.institution.sharepointPath && !props.institution.has_files
+    ? [{
+        key: 'add-file',
+        label: $t('Pridėti failą'),
+        icon: entityIcon(ModelEnum.FILE),
+        run: () => {
+          uploadSheetMounted.value = true;
+          uploadSheetOpen.value = true;
+          revealAfterAdding.value = 'files';
+        },
+      }]
+    : []),
+]);
+
+// Closed without adding anything: nothing to reveal. A save closes the sheet after the reload, so the tab is back by then.
+watch([linkSheetOpen, uploadSheetOpen], ([linkOpen, uploadOpen]) => {
+  const target = revealAfterAdding.value;
+  if (!linkOpen && !uploadOpen && target && !tabs.value.some(tab => tab.value === target)) {
+    revealAfterAdding.value = null;
+  }
+});
+
+watch(tabs, (current) => {
+  const target = revealAfterAdding.value;
+  if (target && current.some(tab => tab.value === target)) {
+    currentSection.value = target;
+    revealAfterAdding.value = null;
+  }
 });
 
 // A tab remembered from a fuller visit may not exist here.
@@ -613,8 +414,8 @@ watch([tabs, currentSection], () => {
 }, { immediate: true });
 
 const optionalProps = [
-  'duties', 'meetings', 'tasks', 'problems', 'management', 'relatedInstitutions',
-  'institutionLinks', 'files', 'typeFiles', 'activityRequests', 'assignmentTerms',
+  'duties', 'tasks', 'problems', 'management', 'relatedInstitutions',
+  'institutionLinks', 'files', 'activityRequests', 'assignmentTerms',
 ] as const;
 
 const stopPreservingPanels = router.on('before', ({ detail: { visit } }) => {
@@ -632,6 +433,8 @@ watch(() => props.institution.id, () => {
 });
 
 // --- Title band -------------------------------------------------------------------------------
+
+const hasDescription = computed(() => typeof props.institution.description === 'string' && props.institution.description.trim() !== '');
 
 const primaryType = computed(() => {
   const type = props.institution.types?.[0];
@@ -669,6 +472,8 @@ const recordFacts = computed<RecordFact[]>(() => {
     key: 'type',
     label: scope ? $t(`forms.options.governance_scope_${scope}`) : $t('Institucijos tipas'),
     value: primaryType.value ?? '—',
+    // Whether its meetings are public is a property of the type, so it reads under it.
+    detail: props.institution.has_public_meetings ? $t('Vieši posėdžiai') : $t('Nevieši posėdžiai'),
     surfaceClass: scope
       ? (isVusa ? 'bg-brand/5' : 'bg-[#78003F]/10 dark:bg-[#78003F]/25')
       : undefined,
@@ -686,23 +491,12 @@ const recordFacts = computed<RecordFact[]>(() => {
     label: `${$t('Nariai')} · ${filledPositions.value}`,
   });
 
-  facts.push({
-    key: 'visibility',
-    label: $t('Posėdžių viešumas'),
-    value: props.institution.has_public_meetings ? $t('Vieši posėdžiai') : $t('Nevieši posėdžiai'),
-  });
-
   if (props.institution.managers?.length) {
     facts.push({ key: 'managers', label: $t('Koordinatoriai') });
   }
 
   return facts;
 });
-
-// --- Permissions ------------------------------------------------------------------------------
-
-const permissions = computed(() => usePage().props.auth?.can as Record<string, boolean> | undefined);
-const canDeleteMeetings = computed(() => permissions.value?.['meetings.delete.padalinys'] ?? false);
 
 // --- Subscription (Sekti / Nebesekti) ---------------------------------------------------------
 
@@ -846,56 +640,30 @@ const reportFromDetail = () => {
 
 // --- Meetings tab -----------------------------------------------------------------------------
 
-const deleteMeetingOpen = ref(false);
-const meetingToDelete = ref<{ id: string; can_discard?: boolean } | null>(null);
-
-const askDeleteMeeting = (meeting: { id: string; can_discard?: boolean }) => {
-  meetingToDelete.value = meeting;
-  deleteMeetingOpen.value = true;
-};
-
-const deleteMeeting = () => {
-  if (meetingToDelete.value) {
-    router.delete(route('meetings.destroy', meetingToDelete.value.id), { preserveScroll: true });
+const meetingsAnchor = ref<HTMLElement | null>(null);
+const meetingsSeen = ref(false);
+useIntersectionObserver(meetingsAnchor, ([entry]) => {
+  if (entry?.isIntersecting) {
+    meetingsSeen.value = true;
   }
-};
+});
 
 // --- Duties tab and the Priskirti sheet (O21) -------------------------------------------------
 
 const sortedDuties = computed(() =>
   [...(props.duties ?? [])].sort((a, b) => (a.order || 0) - (b.order || 0)));
 
-const assignSheetOpen = ref(false);
-const sheetDuty = ref<(AssignmentDuty & { current_users?: UserWithPivot[] }) | null>(null);
-const sheetDutiable = ref<AssignmentTerm | null>(null);
-const sheetUser = ref<AssignmentUser | null>(null);
-
-/** Who already holds the duty right now cannot be assigned to it again. */
-const holdsNow = (duty: { current_users?: UserWithPivot[] } | null) => (duty?.current_users ?? []);
-const takenIds = computed(() => holdsNow(sheetDuty.value).map(user => String(user.id)));
-
-const openAssignment = (duty: DutyWithUsers, user: UserWithPivot | null) => {
-  const open = () => {
-    const term = user ? props.assignmentTerms?.find(term => term.id === user.pivot?.id) : null;
-    if (user && !term) return;
-
-    sheetDuty.value = duty;
-    sheetDutiable.value = term ?? null;
-    sheetUser.value = user;
-    assignSheetOpen.value = true;
-  };
-  const only = [
-    ...(props.management === undefined ? ['management'] : []),
-    ...(user ? ['assignmentTerms'] : []),
-  ];
-  if (only.length) {
-    router.reload({ only, onSuccess: open });
-  }
-  else {
-    open();
-  }
-};
-
-const openAssignSheet = (duty: DutyWithUsers) => openAssignment(duty, null);
-const openTermSheet = (duty: DutyWithUsers, user: UserWithPivot) => openAssignment(duty, user);
+const {
+  open: assignSheetOpen,
+  loading: assignmentLoading,
+  duty: sheetDuty,
+  dutiable: sheetDutiable,
+  user: sheetUser,
+  takenIds,
+  assign: openAssignSheet,
+  editTerm: openTermSheet,
+} = useDutyAssignmentSheet({
+  terms: () => props.assignmentTerms,
+  needsManagement: () => props.management === undefined,
+});
 </script>

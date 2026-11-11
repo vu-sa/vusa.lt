@@ -19,7 +19,7 @@
       <span class="text-sm text-muted-foreground">
         {{ $t(':count pasirinkta', { count: String(selectedHits.length) }) }}
       </span>
-      <Button :disabled="!allowEmpty && selectedHits.length === 0" @click="confirm">
+      <Button type="button" :disabled="!allowEmpty && selectedHits.length === 0" @click="confirm">
         {{ confirmLabel }}
       </Button>
     </div>

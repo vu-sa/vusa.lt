@@ -1,33 +1,77 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
+import { usePage } from '@inertiajs/vue3';
+
+import { clearTrail, enterLearningStep } from '@/Composables/useRecordTrail';
+import { createMockPage } from '@/tests/helpers/createMockPage';
 
 import MobileContextBar from '../MobileContextBar.vue';
 
-import { atstovavimas, pradzia } from './fixtures';
+import { atstovavimas, kelias, learning, pradzia } from './fixtures';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 const toggleSearch = vi.fn();
 vi.mock('@/Composables/useCommandPalette', () => ({ useCommandPalette: () => ({ toggle: toggleSearch }) }));
 
-const mountBar = (props: Record<string, unknown> = {}) => mount(MobileContextBar, {
-  props: { activeWorkspace: atstovavimas, activeSection: atstovavimas.sections[1], ...props },
-  attachTo: document.body,
-  global: { stubs: { TaskCountBadge: true } },
-});
+const mounted: Array<ReturnType<typeof mount>> = [];
+const mountBar = (props: Record<string, unknown> = {}) => {
+  const wrapper = mount(MobileContextBar, {
+    props: { activeWorkspace: atstovavimas, activeSection: atstovavimas.sections[1], ...props },
+    attachTo: document.body,
+    global: { stubs: { TaskCountBadge: true } },
+  });
+  mounted.push(wrapper);
+  return wrapper;
+};
 
 const switcher = () => document.body.querySelector('[data-slot="mobile-section-switcher"]');
 
 beforeEach(() => {
-  vi.stubGlobal('route', (name: string) => `/mano/${name}`);
+  clearTrail();
+  vi.mocked(usePage).mockReturnValue(createMockPage());
+  vi.stubGlobal('route', (name?: string) => name ? `/mano/${name}` : { current: (pattern: string) => pattern === 'learningPath.reps' });
 });
 
 afterEach(() => {
+  // Unmount before the route stub goes, or a pending recompute calls an undefined route().
+  mounted.splice(0).forEach(wrapper => wrapper.unmount());
+  clearTrail();
   document.body.innerHTML = '';
   vi.unstubAllGlobals();
 });
 
 describe('MobileContextBar', () => {
+  it('names the active child and makes all children reachable in the switcher', async () => {
+    const wrapper = mountBar({ activeWorkspace: learning, activeSection: kelias });
+    const button = wrapper.get('[data-tour="section-switcher"]');
+
+    expect(button.text()).toContain('shell.section_children.kelias.reps');
+    await button.trigger('click');
+    await flushPromises();
+
+    const links = [...switcher()!.querySelectorAll('[data-slot="mobile-section-child"]')];
+    expect(links.map(link => link.textContent?.trim())).toEqual([
+      'shell.section_children.kelias.path', 'shell.section_children.kelias.reps', 'shell.section_children.kelias.library',
+    ]);
+    expect(links[1]!.getAttribute('href')).toBe('/mano/learningPath.reps');
+    expect(links.map(link => link.getAttribute('aria-current'))).toEqual([null, 'page', null]);
+    (links[1] as HTMLElement).click();
+    await flushPromises();
+
+    expect(switcher()).toBeNull();
+  });
+
+  it('names a learning record before its active child', () => {
+    vi.mocked(usePage).mockReturnValue({ ...createMockPage(), component: 'Admin/Learning/ShowLearningStep' });
+    enterLearningStep({ id: 42, title: 'Pasiruošk posėdžiui' });
+
+    const text = mountBar({ activeWorkspace: learning, activeSection: kelias }).get('[data-tour="section-switcher"]').text();
+
+    expect(text).toContain('Pasiruošk posėdžiui');
+    expect(text).not.toContain('shell.section_children.kelias.reps');
+  });
+
   it('names the workspace and the section you are in', () => {
     const wrapper = mountBar();
     const button = wrapper.get('[data-tour="section-switcher"]');

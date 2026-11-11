@@ -195,4 +195,11 @@ return [
         'change_type' => 'Change type',
         'clear_answer' => 'Clear',
     ],
+    'card' => [
+        'agenda_items' => ':count item|:count items',
+        'no_agenda' => 'No agenda',
+        'upcoming' => 'Upcoming',
+        'fallback_title' => 'Meeting',
+        'incomplete_votes' => 'Vote data missing',
+    ],
 ];

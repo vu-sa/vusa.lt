@@ -1,6 +1,7 @@
 <template>
   <RecordPage
     v-model:section="currentSection"
+    section-query-key="tab"
     :title="user.name"
     :entity-type="ModelEnum.USER"
     :history-subject="{ type: 'user', id: String(user.id) }"
@@ -130,8 +131,6 @@
     <template #tasks>
       <TaskManager
         :tasks
-        :task-stats
-        :disabled="false"
         @open-task-detail="openTaskDetail"
       />
     </template>

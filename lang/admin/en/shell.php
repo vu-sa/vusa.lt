@@ -10,6 +10,10 @@ return [
         'redirect' => 'Record merging is now available from the list actions.',
     ],
     'workspaces' => [
+        'wiki' => [
+            'title' => 'Wiki',
+            'description' => 'Terms, institutions and documents',
+        ],
         'pradzia' => [
             'title' => 'Mano',
             'description' => 'Your work, tasks and notifications',
@@ -89,9 +93,23 @@ return [
         'results' => 'Results',
     ],
 
+    'section_children' => [
+        'kelias' => [
+            'path' => 'My path',
+            'library' => 'Library',
+        ],
+    ],
+
     'sections' => [
+        'kelias' => 'My path',
+        'wiki' => 'Wiki',
+        'wiki_graph' => 'Term map',
+        'wiki_mine' => 'Entries for you',
+        'rodykle' => 'A–Z index',
+        'wiki_biblioteka' => 'Library',
         'apzvalga' => 'Overview',
         'padaliniu_apzvalga' => 'Units',
+        'atstovai' => 'Representatives',
         'uzduotys' => 'Tasks',
         'pranesimai' => 'Notifications',
         'atsakomybes' => 'Responsibilities',
@@ -125,6 +143,7 @@ return [
         'padaliniai' => 'Units',
         'studiju_programos' => 'Study programs',
         'konferencijos' => 'Mailing lists',
+        'kelio_zingsniai' => 'Path steps',
         'registracija_nariai' => 'Member registration',
         'registracija_atstovai' => 'Student rep registration',
         'formos' => 'Forms',
@@ -142,8 +161,13 @@ return [
     ],
 
     'section_descriptions' => [
+        'kelias' => 'Your term steps and meeting preparation.',
+        'wiki' => 'Who is who at VU SR and the university – and how it all connects',
+        'wiki_graph' => 'How Wiki terms link to each other',
+        'wiki_mine' => 'Entries for your duties and your learning progress',
+        'rodykle' => 'Every entry from A to Z',
+        'wiki_biblioteka' => 'Every entry, its audiences and status',
         'uzduotys' => 'Work assigned to you and its deadlines',
-        'pranesimai' => 'All your notifications',
         'atsakomybes' => 'Your duties and what they let you do',
         'veiklos_uzklausos' => 'Requests you received about institution activity',
         'institucijos' => 'Institutions where we represent students',
@@ -152,6 +176,7 @@ return [
         'problemos' => 'Problems raised by reps and their progress',
         'tikslai' => 'Units\' yearly goals and their progress (pilot)',
         'padaliniu_apzvalga' => 'Meeting timeline and institution health across units',
+        'atstovai' => 'Which representatives need you, their activity and onboarding',
         'pareigybiu_laikotarpiai' => 'Who held which duty and when – fix them all at once',
         'uzduociu_suvestine' => 'Tasks and deadlines across units',
         'institucijos_grafas' => 'Institution relations in one graph',
@@ -176,6 +201,7 @@ return [
         'padaliniai' => 'VU SR units and their details',
         'studiju_programos' => 'List of VU study programmes',
         'konferencijos' => 'Mailman mailing lists, their recipients and archive',
+        'kelio_zingsniai' => 'Mano kelias steps and their audiences: what newcomers do and when.',
         'registracija_nariai' => 'New member applications',
         'registracija_atstovai' => 'New student rep applications',
         'formos' => 'Forms and their responses',
@@ -193,6 +219,8 @@ return [
     ],
 
     'actions' => [
+        'new_learning_step' => ['title' => 'New path step', 'description' => 'An action or meeting preparation'],
+        'new_knowledge_item' => ['title' => 'New Wiki entry', 'description' => 'A term, document or explanation for reps'],
         'new_institution_type' => ['title' => 'New institution type', 'description' => 'Institution grouping, representation and relationships'],
         'new_duty_type' => ['title' => 'New duty type', 'description' => 'Duty grouping and granted responsibilities'],
         'merge' => [

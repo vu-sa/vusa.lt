@@ -172,13 +172,13 @@
           </li>
         </ul>
 
-        <ul v-else ref="rowsEl" class="divide-y divide-border/60 border-y border-border" data-slot="collection-rows">
+        <ul v-else ref="rowsEl" :class="ROW_LIST_CLASS" data-slot="collection-rows">
           <li
             v-for="(row, index) in table.getRowModel().rows"
             :key="row.id"
             :data-collection-key="row.id"
             :class="[
-              'flex items-stretch transition-colors hover:bg-secondary/40',
+              ROW_ITEM_CLASS,
               view === 'preview' && 'cursor-pointer',
               (view === 'preview' && selectedKey === row.id) || row.getIsSelected() ? 'bg-secondary' : '',
               rowMuted?.(row.original) && 'opacity-60',
@@ -246,6 +246,7 @@ import type { CollectionViewMode } from '@/Composables/useCollectionView';
 import type { CollectionColumn } from './types';
 import CollectionLoadMore from './CollectionLoadMore.vue';
 import CollectionRowActions from './CollectionRowActions.vue';
+import { ROW_ITEM_CLASS, ROW_LIST_CLASS } from './rowList';
 
 const props = withDefaults(defineProps<{
   collection: string;

@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\CommentKind;
 use App\Enums\MeetingType;
 use App\Events\CommentPosted;
 use App\Models\Comment;
@@ -154,7 +155,7 @@ describe('resolve helpers', function (): void {
         $this->actingAs($this->author);
         $resolver = makeUser($this->tenant);
 
-        $comment = $this->agendaItem->comment('<p>Question?</p>');
+        $comment = $this->agendaItem->comment('<p>Question?</p>', attributes: ['kind' => CommentKind::Topic, 'title' => 'Question']);
         expect($comment->isResolved())->toBeFalse();
 
         $comment->resolve($resolver);

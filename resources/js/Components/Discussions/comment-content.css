@@ -60,10 +60,18 @@
   background: color-mix(in oklab, var(--brand) 15%, transparent);
 }
 
+.comment-composer .ProseMirror {
+  position: relative;
+}
+
+/* One line with an ellipsis, so a long hint never spills out of the resting composer on a phone. */
 .comment-composer .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
-  float: left;
-  height: 0;
+  position: absolute;
+  inset-inline: 0.875rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   pointer-events: none;
   color: var(--muted-foreground);
 }

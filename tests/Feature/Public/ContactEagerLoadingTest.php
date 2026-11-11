@@ -1,8 +1,8 @@
 <?php
 
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\Institution;
-use App\Models\InstitutionType;
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -17,8 +17,8 @@ beforeEach(function (): void {
         'tenant_id' => $this->tenant->id,
     ]);
 
-    $this->type = InstitutionType::factory()->create([
-        'title' => ['lt' => 'Test InstitutionType', 'en' => 'Test InstitutionType'],
+    $this->type = DutyType::factory()->create([
+        'title' => ['lt' => 'Test duty type', 'en' => 'Test duty type'],
     ]);
 
     $this->duty = Duty::factory()->create([

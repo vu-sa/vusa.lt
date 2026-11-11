@@ -115,6 +115,8 @@ return [
             'all' => 'Everywhere',
         ],
         'resources' => [
+            'learningSteps' => 'Learning steps',
+            'knowledgeItems' => 'Wiki entries',
             'settings' => 'Settings',
         ],
     ],

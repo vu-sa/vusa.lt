@@ -214,19 +214,9 @@
           data-testid="agenda-item-problems"
         >
           <template v-if="canUpdate" #actions>
-            <Button
-              variant="outline"
-              size="sm"
-              voice="sentence"
-              class="pointer-coarse:h-11"
-              data-testid="agenda-item-link-problem"
-              @click="problemSheetOpen = true"
-            >
-              <Link2 class="size-4" aria-hidden="true" />
-              {{ $t('Susieti problemą') }}
-            </Button>
+            <SectionHeaderAction :icon="Link2" :label="$t('Susieti problemą')" data-testid="agenda-item-link-problem" @click="problemSheetOpen = true" />
           </template>
-          <ProblemSummaryList v-if="problems.length" :problems :removable="canUpdate" @remove="unlinkProblem" />
+          <ProblemSummaryList v-if="problems.length" :problems :removable="canUpdate" frame="attached" @remove="unlinkProblem" />
         </OverviewSection>
 
         <!-- Goals pilot: absent outside it. -->
@@ -323,7 +313,7 @@ import RecordPage, { type RecordAction, type RecordFact, type RecordNavigationCo
 import { missingFieldsLabel, type AgendaItemMissingAction } from '@/Components/Meetings/meetingCompletion';
 import AgendaItemPublicVisibilityDialog from '@/Components/Meetings/AgendaItemPublicVisibilityDialog.vue';
 import { isShownPublicly, meetingVisibilityLabel, type MeetingPublicVisibility } from '@/Components/Meetings/meetingPublicVisibility';
-import { ConfirmDialog, OverviewSection, RecordNextActions, type RecordNextAction } from '@/Components/Patterns';
+import { ConfirmDialog, OverviewSection, RecordNextActions, SectionHeaderAction, type RecordNextAction } from '@/Components/Patterns';
 import { createOverviewStatusRegistry, OVERVIEW_STATUS_KEY } from '@/Components/Patterns/overviewStatus';
 import ProblemLinkSheet from '@/Components/Problems/ProblemLinkSheet.vue';
 import AgendaItemGoalsPanel from '@/Features/Admin/Goals/AgendaItemGoalsPanel.vue';

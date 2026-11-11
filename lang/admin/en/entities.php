@@ -9,6 +9,9 @@
  */
 
 return [
+    'knowledgeItem' => ['model' => '{1} entry|[2,*] entries', 'gender' => 'm'],
+    'learningStep' => ['model' => '{1} learning step|[2,*] learning steps', 'gender' => 'm'],
+
     'duty' => [
         'model' => '{1} duty|[2,*] duties',
         'gender' => 'f',

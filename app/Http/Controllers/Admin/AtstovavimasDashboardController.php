@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\ActivityRequests\GetOpenActivityRequestSpans;
 use App\Actions\GetFollowedInstitutions;
-use App\Actions\GetTypeFiles;
 use App\Actions\GetUpcomingMeetingsForUser;
 use App\Actions\GetUserCoordinators;
 use App\Enums\InstitutionScope;
@@ -34,8 +33,6 @@ use Inertia\Response;
 
 class AtstovavimasDashboardController extends AdminController
 {
-    public const int REFERENCE_DOCUMENTS_LIMIT = 8;
-
     public function __construct(
         public Authorizer $authorizer,
         private readonly InstitutionActivityStatusService $activityStatusService,
@@ -141,11 +138,6 @@ class AtstovavimasDashboardController extends AdminController
             'activityRequests' => Inertia::defer(fn () => $this->ownActivityRequests($user()), 'secondary'),
             // R-g: the human answer to "I'm stuck" belongs on every rep screen, but never on the first paint.
             'coordinators' => Inertia::defer(fn () => GetUserCoordinators::execute($user()), 'secondary'),
-            // Reference files kept on the user's duty types ("Studentų atstovai" regulations, templates).
-            'referenceDocuments' => Inertia::defer(fn () => GetTypeFiles::forTypes(
-                $user()->authorization_duties->load('types')->flatMap(fn ($duty) => $duty->types)->unique('id')->values(),
-                self::REFERENCE_DOCUMENTS_LIMIT,
-            ), 'secondary'),
         ]);
     }
 
@@ -175,8 +167,8 @@ class AtstovavimasDashboardController extends AdminController
         /** @var User $user */
         $user = $request->user();
 
-        $statsTenants = $this->tenantOptions(app(AtstovavimasSettings::class)->getVisibleTenantIds($user));
-        $ganttTenants = $this->tenantOptions(Tenant::query()->representational()->pluck('id'));
+        $statsTenants = self::tenantOptions(app(AtstovavimasSettings::class)->getVisibleTenantIds($user));
+        $ganttTenants = self::tenantOptions(Tenant::query()->representational()->pluck('id'));
 
         return Inertia::render('Admin/Dashboard/ShowAtstovavimasPadaliniai', [
             'statsTenants' => $statsTenants,
@@ -216,7 +208,7 @@ class AtstovavimasDashboardController extends AdminController
      * @param  SupportCollection<int, int>  $tenantIds
      * @return SupportCollection<int, array{id: int, shortname: string, type: TenantType|null}>
      */
-    private function tenantOptions(SupportCollection $tenantIds): SupportCollection
+    public static function tenantOptions(SupportCollection $tenantIds): SupportCollection
     {
         return Tenant::query()
             ->whereIn('id', $tenantIds)

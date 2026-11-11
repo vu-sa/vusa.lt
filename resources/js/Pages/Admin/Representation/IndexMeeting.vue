@@ -38,20 +38,7 @@
     </template>
 
     <template #cell="{ item, column }">
-      <template v-if="column.key === 'date'">
-        <span class="tabular-nums">{{ formatDate(new Date((item.start_time ?? 0) * 1000)) }}</span>
-      </template>
-      <CollectionPrimaryCell v-else-if="column.key === 'title'" :match="item._searchMatch"
-        :title-matches="item._searchTitleMatches"
-        :title="getSearchTranslation(item, 'institution_name') || item.title"
-        :sub="titleOmitsDate(item.title) ? item.title : undefined"
-        :title-lines="2"
-        :href="isTrash ? undefined : route('meetings.show', item.id)"
-      />
-      <MeetingOutcome v-else-if="column.key === 'status'" :outcome="item" show="completion" show-complete />
-      <MeetingOutcome v-else-if="column.key === 'alignment'" :outcome="item" show="alignment" />
-      <MeetingOutcome v-else-if="column.key === 'outcome'" :outcome="item" show="counts" />
-      <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
+      <MeetingCollectionCell :item :column :linkless="isTrash" />
     </template>
 
     <template v-if="!isTrash" #preview="{ item, actions: recordActions }">
@@ -80,10 +67,12 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Pencil, ArrowUpRight, Plus, RotateCcw, Trash2 } from '@lucide/vue';
+import { Plus, RotateCcw, Trash2 } from '@lucide/vue';
 import { computed } from 'vue';
 
 import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
+import MeetingCollectionCell from '@/Components/Meetings/MeetingCollectionCell.vue';
+import { meetingColumns, meetingKey, meetingValueLabel, useMeetingRowActions } from '@/Components/Meetings/meetingCollection';
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
@@ -93,14 +82,9 @@ import { MeetingIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import MeetingCollectionRow from '@/Components/Meetings/MeetingCollectionRow.vue';
 import { EmptyState } from '@/Components/Patterns';
-import MeetingOutcome from '@/Components/Meetings/MeetingOutcome.vue';
-import { titleOmitsDate } from '@/Components/Meetings/meetingTitle';
 import MeetingPreview from '@/Components/Meetings/MeetingPreview.vue';
 import { Button } from '@/Components/ui/button';
-import { meetingCompletionStatuses, type MeetingCompletionStatus } from '@/Constants/statusIcons';
 import { useActionWindow } from '@/Composables/useActionWindow';
-import { useRowAbilities } from '@/Composables/useRowAbilities';
-import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import {
   isTrashView,
   useTrashCollectionSource,
@@ -108,7 +92,7 @@ import {
   type CollectionSource,
 } from '@/Composables/useCollectionSource';
 import type { MeetingSearchResult } from '@/Shared/Search/types';
-import { formatDate, formatRecordDate } from '@/Utils/dateTime';
+import { formatDate } from '@/Utils/dateTime';
 
 const props = defineProps<{
   /** Soft-deleted meetings the viewer could restore. */
@@ -135,24 +119,14 @@ const liveSource = isTrash
       preserveUrlKeys: ['view', 'item'],
       defaultFilters: { tenant_shortnames: props.defaultTenantShortnames },
       collapsedChips: { institution_ids: $t('Mano institucijos') },
-      // The filter popover and chips name a status exactly as the row badge does (U10).
-      valueLabel: (field, value) => (
-        field === 'completion_status' && value in meetingCompletionStatuses
-          ? $t(meetingCompletionStatuses[value as MeetingCompletionStatus].label)
-          : undefined
-      ),
+      valueLabel: meetingValueLabel,
     });
 const source: CollectionSource<MeetingSearchResult> = liveSource ?? useTrashCollectionSource<MeetingSearchResult>('meetings');
 
-const rowAbilities = useRowAbilities('meetings', () => isTrash ? [] : [...source.items.value, ...props.recentlyChanged].map(item => item.id));
-
-const actions = useCollectionRecordActions({
+const { actions, actionsFor: liveActionsFor } = useMeetingRowActions(
   source,
-  routePrefix: 'meetings',
-  onMutated: id => rowAbilities.invalidate([id]),
-  canRestore: () => false,
-  canForceDelete: () => false,
-});
+  () => isTrash ? [] : [...source.items.value, ...props.recentlyChanged].map(item => item.id),
+);
 type MeetingRow = MeetingSearchResult & { abilities?: { restore: boolean; forceDelete: boolean } };
 
 const actionsFor = (meeting: MeetingRow) => isTrash
@@ -160,23 +134,9 @@ const actionsFor = (meeting: MeetingRow) => isTrash
       ...(meeting.abilities?.restore ? [{ key: `restore:${meeting.id}`, label: $t('Atkurti'), icon: RotateCcw, primary: !meeting.abilities?.forceDelete }] : []),
       ...(meeting.abilities?.forceDelete ? [{ key: `forceDelete:${meeting.id}:${meeting.title}`, label: $t('Ištrinti visam laikui'), icon: Trash2, destructive: true }] : []),
     ]
-  : [
-      { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, href: route('meetings.show', meeting.id), role: 'open' as const, primary: true },
-      ...(rowAbilities.can(meeting.id, 'update') ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, menuOnly: true, href: route('meetings.edit', { meeting: meeting.id, action: 'edit' }) }] : []),
-      ...(rowAbilities.can(meeting.id, 'delete') ? [{ key: `delete:${meeting.id}:${meeting.title}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
-    ];
+  : liveActionsFor(meeting);
 
-const meetingKey = (meeting: MeetingSearchResult) => String(meeting.id);
-
-const columns = computed<CollectionColumn[]>(() => [
-  { key: 'date', label: $t('Data'), class: 'w-32', sortField: 'start_time' },
-  { key: 'title', label: $t('Institucija') },
-  { key: 'status', label: $t('Būsena'), class: 'w-40' },
-  { key: 'alignment', label: $t('Balsavimas'), class: 'w-44' },
-  { key: 'outcome', label: $t('Klausimai'), class: 'w-32', sortField: 'agenda_items_count' },
-  { key: 'created_at', label: $t('Sukurta'), class: 'w-36', sortField: 'created_at', defaultHidden: true },
-  { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', sortField: 'updated_at', defaultHidden: true },
-]);
+const columns = computed<CollectionColumn[]>(() => meetingColumns());
 
 // --- Quick filters (.ai/rules/js-pages-admin.md) ---------------------------------------------
 

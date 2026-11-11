@@ -58,7 +58,11 @@ vi.mock('ziggy-js', () => ({
 }));
 
 // Stub global route() for composable unit tests (not covered by config.global.mocks)
-vi.stubGlobal('route', (name: string, params: any) => {
+// Ziggy's no-argument route() returns the router; the shell asks it which page is current.
+const routeRouter = { current: () => false };
+
+vi.stubGlobal('route', (name?: string, params?: any) => {
+  if (name === undefined) return routeRouter;
   const paramEntries = params ? Object.entries(params).filter(([, v]) => v !== undefined) : [];
   const queryString = paramEntries.length > 0
     ? `?${paramEntries.map(([k, v]) => `${k}=${encodeURIComponent(String(v))}`).join('&')}`

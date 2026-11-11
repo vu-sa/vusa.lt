@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Tipai ir kategorijos
-last_reviewed: 2026-11-06
+last_reviewed: 2026-11-09
 tests:
   - tests/Feature/Meetings/MeetingKindTest.php
   - tests/Feature/Permissions/DutyTypeAssignmentTest.php
@@ -58,7 +58,7 @@ Pasirinktame sąraše taip pat gali spausti **Naujas institucijos tipas** arba
 
 Atidaręs tipo įrašą, skiltyje **Susieti įrašai** tvarkyk institucijas arba pareigybes.
 Viena institucija ar pareigybė gali turėti kelis tipus. Institucijos tipo skirtuke **Ryšiai** tvarkyk
-[tipų ryšius](/sistema/rysiai#tipu-rysio-kurimas). Failus rask tipo įrašo failų skiltyje; susieti įrašai gali paveldėti savo tipų ir jų tėvų failus.
+[tipų ryšius](/sistema/rysiai#tipu-rysio-kurimas).
 
 <ChangelogNote date="2026-11-02" title="Kaip vadinami posėdžiai">
 

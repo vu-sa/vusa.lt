@@ -3,8 +3,6 @@
 use App\Enums\ResponsibilityPurpose;
 use App\Models\Cadence;
 use App\Models\Duty;
-use App\Models\DutyType;
-use App\Models\FileableFile;
 use App\Models\Institution;
 use App\Models\InstitutionActivityRequest;
 use App\Models\InstitutionLink;
@@ -20,7 +18,6 @@ use App\Models\Role;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -121,49 +118,6 @@ describe('atstovavimas dashboard', function (): void {
             ->assertInertia(fn (Assert $page) => $page
                 ->where('upcomingMeetings.total', 21)
                 ->has('upcomingMeetings.items', 20)
-            );
-    });
-
-    test('reference documents are capped at eight, newest document date first', function (): void {
-        $dutyType = DutyType::factory()->create([]);
-        $this->user->current_duties()->first()->types()->attach($dutyType);
-        $files = FileableFile::factory()->count(9)
-            ->sequence(fn ($sequence) => ['file_date' => now()->subDays(9 - $sequence->index)])
-            ->create(['fileable_type' => MorphMap::alias(DutyType::class), 'fileable_id' => $dutyType->id]);
-
-        asUserWithInertia($this->user)
-            ->get(route('dashboard.atstovavimas'))
-            ->assertInertia(fn (Assert $page) => $page
-                ->loadDeferredProps('secondary', fn (Assert $page) => $page
-                    ->has('referenceDocuments', 8)
-                    ->where('referenceDocuments.0.id', $files->last()->id)
-                )
-            );
-    });
-
-    test('reference documents of the user\'s duty types, parents included, load with the secondary group', function (): void {
-        $parentType = DutyType::factory()->create([]);
-        $dutyType = DutyType::factory()->create(['parent_id' => $parentType->id]);
-        $this->user->current_duties()->first()->types()->attach($dutyType);
-        $unrelatedType = DutyType::factory()->create([]);
-
-        $fileOn = fn (DutyType $type, array $attributes = []) => FileableFile::factory()->create([
-            'fileable_type' => MorphMap::alias(DutyType::class),
-            'fileable_id' => $type->id,
-            ...$attributes,
-        ]);
-        $regulation = $fileOn($parentType);
-        $fileOn($unrelatedType);
-        $fileOn($dutyType, ['deleted_externally_at' => now()]);
-
-        asUserWithInertia($this->user)
-            ->get(route('dashboard.atstovavimas'))
-            ->assertInertia(fn (Assert $page) => $page
-                ->missing('referenceDocuments')
-                ->loadDeferredProps('secondary', fn (Assert $page) => $page
-                    ->has('referenceDocuments', 1)
-                    ->where('referenceDocuments.0.id', $regulation->id)
-                )
             );
     });
 

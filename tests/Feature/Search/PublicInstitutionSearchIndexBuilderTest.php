@@ -131,9 +131,12 @@ test('AtstovavimasSettings can configure custom student rep root type', function
         ->and($settings->getStudentRepInstitutionTypeSlugs()->toArray())->toContain('mano-atstovai', 'komitetas');
 });
 
-test('PublicInstitutionSearchIndexBuilder ranks key institutions ahead of the rest', function (TenantType $tenantType, bool $isPrimary, bool $isFeatured, int $expected): void {
+test('PublicInstitutionSearchIndexBuilder ranks key institutions ahead of the rest', function (TenantType $tenantType, bool $isPrimary, bool $isFeatured, int $expected, ?string $alias = null): void {
     $tenant = Tenant::factory()->create(['type' => $tenantType]);
     $institution = Institution::factory()->create(['is_active' => true, 'tenant_id' => $tenant->id]);
+    if ($alias !== null) {
+        $institution->forceFill(['alias' => $alias])->saveQuietly();
+    }
 
     if ($isPrimary) {
         $tenant->update(['primary_institution_id' => $institution->id]);
@@ -147,7 +150,8 @@ test('PublicInstitutionSearchIndexBuilder ranks key institutions ahead of the re
 
     expect($searchable['display_priority'])->toBe($expected);
 })->with([
-    'VU SA itself' => [TenantType::Pagrindinis, true, false, 4],
+    'VU SA itself' => [TenantType::Pagrindinis, true, false, 5],
+    'central office, right after VU SA' => [TenantType::Pagrindinis, false, true, 4, 'centrinis-biuras'],
     'VU SA governing body' => [TenantType::Pagrindinis, false, true, 3],
     'padalinys main institution' => [TenantType::Padalinys, true, false, 2],
     'PKP main institution' => [TenantType::Pkp, true, false, 1],

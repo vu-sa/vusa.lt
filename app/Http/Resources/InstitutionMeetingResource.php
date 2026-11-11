@@ -12,7 +12,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  */
 class InstitutionMeetingResource extends JsonResource
 {
-    /** @return array{id: string, title: string, start_time: string, type: MeetingType|null, agenda_items_count: int, vote_matches: int, vote_mismatches: int, incomplete_vote_data: int, has_protocol: bool, has_report: bool, can_discard: bool} */
+    /** @return array{id: string, title: string, start_time: string, type: MeetingType|null, agenda_items_count: int, vote_matches: int, vote_mismatches: int, incomplete_vote_data: int, outcome: array<string, int|string|null>, has_protocol: bool, has_report: bool, can_discard: bool} */
     #[\Override]
     public function toArray(Request $request): array
     {
@@ -28,6 +28,8 @@ class InstitutionMeetingResource extends JsonResource
             'vote_matches' => $outcome['outcome_aligned'],
             'vote_mismatches' => $outcome['outcome_misaligned'],
             'incomplete_vote_data' => $outcome['outcome_unknown'],
+            // The same summary the meetings index shows, so a card reads like a row there.
+            'outcome' => $outcome,
             'has_protocol' => (bool) ($this->resource->getAttributes()['protocol_exists'] ?? $this->has_protocol),
             'has_report' => (bool) ($this->resource->getAttributes()['report_exists'] ?? $this->has_report),
             'can_discard' => $this->created_at->isAfter(now()->subDay()) && $agendaItemsCount === 0 && $this->isDiscardable(),

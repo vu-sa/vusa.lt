@@ -51,7 +51,7 @@
       />
 
       <div v-if="hasMore" class="p-2">
-        <Button variant="outline" voice="sentence" size="sm" class="w-full" :disabled="isLoadingMore" @click="$emit('loadMore')">
+        <Button type="button" variant="outline" voice="sentence" size="sm" class="w-full" :disabled="isLoadingMore" @click="$emit('loadMore')">
           <Loader2 v-if="isLoadingMore" class="mr-2 size-4 animate-spin" />
           {{ $t('Rodyti daugiau') }}
         </Button>

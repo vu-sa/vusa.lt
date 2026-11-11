@@ -198,7 +198,9 @@ test('can open contacts search page with student rep type slugs', function (): v
         ->assertInertia(fn (Assert $page) => $page
             ->component('Public/Contacts/ShowContacts')
             ->has('institutionTypes')
-            ->where('studentRepTypeSlugs', [$root->slug])
+            ->where('studentRepTypeSlugs', fn ($slugs): bool => collect($slugs)->first() === $root->slug
+                && collect($slugs)->contains('spk')
+                && collect($slugs)->doesntContain('padaliniai'))
         );
 });
 

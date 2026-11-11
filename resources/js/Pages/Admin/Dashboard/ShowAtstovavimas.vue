@@ -38,11 +38,6 @@
           </template>
           <CoordinatorCard :coordinators="coordinators ?? []" compact />
         </Deferred>
-        <!-- No skeleton: most duty types have no reference files yet, and the block then never appears. -->
-        <Deferred data="referenceDocuments">
-          <template #fallback />
-          <ReferenceDocumentTiles v-if="referenceDocuments?.length" :files="referenceDocuments" />
-        </Deferred>
       </aside>
     </div>
 
@@ -120,7 +115,6 @@ import { OverviewStatusList } from '@/Components/Patterns';
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 import OverviewNumbers, { type OverviewNumberItem } from '@/Components/Overview/OverviewNumbers.vue';
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
-import { type FileableFileItem, ReferenceDocumentTiles } from '@/Components/Files';
 import CoordinatorCard from '@/Components/Home/CoordinatorCard.vue';
 import UpcomingMeetingsList from '@/Components/Home/UpcomingMeetingsList.vue';
 import FollowedInstitutionsList from '@/Components/Home/FollowedInstitutionsList.vue';
@@ -156,7 +150,6 @@ const props = defineProps<{
   canViewTenantOverview: boolean;
   openTasksCount: number;
   coordinators?: HomeCoordinator[];
-  referenceDocuments?: FileableFileItem[];
   upcomingMeetings: { items: HomeMeeting[]; total: number };
   followedInstitutions?: HomeFollowedInstitutions;
   /** Deferred: open activity requests over the user's own bodies */
@@ -247,8 +240,7 @@ const showNumbersBesideCoordinators = computed(() =>
 const isPrimarySectionEmpty = computed(() =>
   attention.value.length === 0
   && scopedUpcoming.value.length === 0
-  && props.coordinators?.length === 0
-  && !props.referenceDocuments?.length,
+  && props.coordinators?.length === 0,
 );
 
 function countByStatus(status: 'overdue' | 'approaching' | 'recent_check_in'): number {

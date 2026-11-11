@@ -7,10 +7,10 @@ use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\Admin\ToggleCommentReactionRequest;
 use App\Http\Resources\CommentResource;
 use App\Models\Comment;
+use App\Policies\CommentPolicy;
 use App\Support\Commentables;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Gate;
 
 /**
  * Toggle one-tap emoji reactions on a comment. Anyone who can view the parent
@@ -38,13 +38,13 @@ class CommentReactionApiController extends ApiController
             ]);
         }
 
-        $comment->load(['reactions.user:id,name']);
+        $comment->load(['authorDutiable.duty.institution.tenant', 'media', 'reactions.user:id,name']);
 
         /** @var Model|null $commentable */
         $commentable = $comment->commentable;
 
         $canModerate = $commentable !== null
-            && Gate::forUser($user)->allows('update', $commentable);
+            && app(CommentPolicy::class)->canModerate($user, $commentable);
         $request->attributes->set('comment_can_moderate', $canModerate);
 
         $payload = new CommentResource($comment)->resolve($request);

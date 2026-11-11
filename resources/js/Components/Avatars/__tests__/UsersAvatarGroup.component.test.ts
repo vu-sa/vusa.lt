@@ -155,3 +155,13 @@ describe('UsersAvatarGroup', () => {
     expect(wrapper.text()).toContain('+2');
   });
 });
+
+it('makes the complete expandable group a single trigger with a bounded people list', () => {
+  const wrapper = mount(UsersAvatarGroup, { props: { users: makeUsers(12), expandable: true }, global: { stubs: { ...commonStubs, Popover: { template: '<div><slot /></div>' }, PopoverTrigger: { template: '<div><slot /></div>' }, PopoverContent: { template: '<div data-testid="content"><slot /></div>' } } } });
+  const trigger = wrapper.get('button[data-slot="users-avatar-group"]');
+  expect(trigger.classes()).toContain('hover:bg-secondary');
+  expect(trigger.findAll('a')).toHaveLength(0);
+  const list = wrapper.get('[data-testid="content"] ul');
+  expect(list.classes()).toEqual(expect.arrayContaining(['max-h-72', 'overflow-y-auto', 'overscroll-contain']));
+  expect(list.findAll('li')).toHaveLength(12);
+});

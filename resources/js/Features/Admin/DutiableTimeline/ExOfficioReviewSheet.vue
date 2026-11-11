@@ -161,7 +161,7 @@ function submit(): void {
       acknowledge_access_change: acknowledge,
     }, {
       preserveScroll: true,
-      except: ['otherDuties', 'studyPrograms', 'lineage', 'quotaTenants', 'responsibilities', 'files', 'typeFiles'],
+      except: ['otherDuties', 'studyPrograms', 'lineage', 'quotaTenants', 'responsibilities', 'files'],
       onSuccess: (page) => {
         if (guard.open.value || (page.props.flash as { access_change_warning?: unknown } | undefined)?.access_change_warning) return;
         emit('update:open', false);

@@ -30,6 +30,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | resources/js/Pages/Admin/** | .ai/rules/js-pages-admin.md |
 | resources/js/**/*.test.ts | .ai/rules/js.md |
 | lang/** | .ai/rules/lang.md |
+| app/Actions/ResolveLearningPath.php, app/Services/RepresentativesPresenter.php, app/Services/Learning/**, app/Services/Learning*Presenter.php, app/Services/KnowledgeBasePresenter.php, app/Models/Learning*.php, app/Models/Knowledge*.php, app/Policies/Learning*.php, app/Policies/Knowledge*.php, app/Http/Controllers/Admin/Learning*.php, app/Http/Controllers/Admin/Knowledge*.php, app/Actions/SyncKnowledgeLinks.php, resources/js/Features/Admin/Knowledge/**, resources/js/Features/Admin/Learning/**, resources/js/Pages/Admin/Learning/**, resources/js/Pages/Admin/Knowledge/**, database/seeders/LearningPathPilotSeeder.php | .ai/rules/learning.md |
 | app/Http/Controllers/Admin/MailQueueController.php, app/Console/Commands/PruneNotificationDigests.php, resources/js/Pages/Admin/MailQueue.vue | .ai/rules/mail-queue.md |
 | app/Models/Meeting.php, app/Models/Vote.php, app/Models/Pivots/AgendaItem.php, app/Http/Requests/UpdateAgendaItemRequest.php, app/Http/Controllers/Admin/AgendaItemController.php, app/Enums/AgendaItemType.php, app/Services/MeetingCompletionService.php, app/Tasks/Handlers/AgendaCompletionTaskHandler.php, resources/js/Composables/useAgendaItemStyling.ts | .ai/rules/meetings-agenda.md |
 | resources/js/Pages/Admin/People/Show*.vue, app/Http/Middleware/HandleInertiaRequests.php | .ai/rules/middleware.md |

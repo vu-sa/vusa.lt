@@ -6,7 +6,8 @@
       <span class="min-w-0 truncate">{{ user.name }}</span>
     </li>
   </ul>
-  <UsersAvatarGroup v-else :users :max="5" size="xxs" expandable />
+  <!-- The group pads itself for its rings; a fact value sits on the cell's baseline instead. -->
+  <UsersAvatarGroup v-else :users :max="5" size="xxs" expandable class="-my-1" />
 </template>
 
 <script setup lang="ts">

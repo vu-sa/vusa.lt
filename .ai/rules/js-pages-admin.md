@@ -19,11 +19,19 @@ Dialog vs sheet vs page: confirming → dialog; small create/edit or preview →
 
 ## Collection and record anatomy
 Collection (`CollectionPage`; the v0 `/sistema/puslapiai` prototype and public `ShowDocuments.vue` are the reference): title band (brand eyebrow, `u-display` title, lead, one `lg` create) → quick-filter chips → a hairline filter band: search · Filtrai (count badge) · Rikiuoti · Ištrinti (N) · view toggle (Eilutės · Lentelė · Peržiūra; rows only below `md`, preview from `xl`) → active chips + "Išvalyti visus" · "Rasta N" → results → "Rodyti daugiau" (50 at a time, restored on back). The URL carries filters, sort, view and `?item=`. Tenant scope is a visible filter. The preview pane is the default only for queues. Selection is TanStack's (`selectable` + `#bulk-actions`, bottom-pinned bar); the most common workflow change is an optimistic row action. Trash is a filter over the same page and source contract — never a separate trash page or table — and soft delete gets an undo toast.
-Record (`RecordPage`): identity band (type eyebrow, identity anchor — photo, logo, date plate or entity mark — title, status, ONE primary action, ⋯ for edit/merge/delete/copy link) → key-facts strip (3–6) → sections (tabs when ≥3) → Komentarai (`RecordActivity`; change history lives in ⋯) last. Relations are managed here. Opened from a filtered list → ‹ 3 / 24 ›. Merge is a ⋯ / bulk action, never a page.
+Record (`RecordPage`): identity band (type eyebrow, identity anchor — photo, logo, date plate or entity mark — title, status, ONE primary action, ⋯ for edit/merge/delete/copy link) → key-facts strip (3–6) → sections (tabs when ≥2) → Komentarai (`RecordActivity`; change history lives in ⋯) last. Relations are managed here. Opened from a filtered list → ‹ 3 / 24 ›. Merge is a ⋯ / bulk action, never a page.
 Record next actions — three action tiers: 1 CTA (brand fill, one per region: the header primary, Pradžia's first shortcut); 2 Needed (workflow steps, what completes the record: solid outline, ink); 3 Fill in (optional detail that enriches the record: dashed `border-muted-foreground/50`, muted, `+` or the related model's icon via `getEntityTypeDefinition`). On records, tiers 2–3 go in `RecordPage`'s `#next-actions` slot as `RecordNextActions`, below the facts and `#alert` and above the content: needed actions first, a vertical hairline, then fill-ins. An empty `OverviewSection` with `emptyAction` becomes a fill-in when the page provides an `OVERVIEW_STATUS_KEY` registry (`ShowAgendaItem.vue` is the reference). Tier 1 stays in the header, and read-only viewers get no strip. The strip never alerts: missing required data is a status for the facts or `#alert`, and `#alert` holds messages, not action rows. Keep it to about five buttons.
 
 ## Row actions in a rows view
 One action set on rows, tables and the detail card: **Atidaryti** (`role: 'open'`, `primary: true`) + ⋯, with Redaguoti in ⋯ (`menuOnly: true`). A workflow step takes the labelled slot instead when one is due. In the detail card it is the region's brand fill (`emphasis`). Narrow rows are content plus a bordered ⋯: the title opens the record and the primary action leads the menu, never a boxed button under the content, which reads as a separate object. A row at least 672px wide shows the labelled action beside ⋯; `Collection/CollectionRow` measures its own width because the same row runs full-width, beside a preview and inside a record section, and a menu in a portal cannot follow a container query.
+
+## Record sections share one row and header vocabulary
+- A section header's action is `Patterns/SectionHeaderAction` (text-sized, brand; `tone="muted"` beside another), never a `ui/button`: a button makes the header taller than its siblings.
+- A list inside a record section is `Collection/CollectionRowList` + `CollectionRow` (`ROW_PADDING_CLASS`), never a hand-rolled `ul`: `frame="attached"` right under an `OverviewSection` header, whose rule is the box's top; `frame="box"` under a subheading. Plain top-and-bottom rules belong to collection views. The header gap and the attached box's pull share `Patterns/sectionSpacing.ts`.
+- A record with tabs passes `sectionQueryKey` (usually `tab`) to `RecordPage`, so each tab is a history entry and a deep link.
+- A tab that would only be empty is not shown. Whoever can fill it gets a fill-in in `#next-actions` (`RecordNextActions :fill`) that opens the add sheet; the tab returns, and opens, once the reload brings content. Render the slot only when there are actions, so a reader gets no empty strip (ShowInstitution's Ryšiai and Failai are the reference).
+- A meeting's result, wherever it is summarised (row, card, preview), is `Meetings/MeetingOutcome` over the `Meeting::outcomeSummary()` fields, never hand-rolled agenda counts or check marks.
+- A popover's own action is `ui/popover/PopoverFooterAction`: a full-width foot, uppercase like the date-time picker's „Dabar / Gerai“ (`tone="muted"` for the secondary). It is the one uppercase non-primary button, because it ends the popover rather than sitting among content.
 
 ## Index views say each fact once
 - Nothing repeats within a view: a tag never sits beside the counts it sums up, a column never repeats another, and a detail card never restates what its own section lists.
@@ -53,9 +61,12 @@ The `admin-redesign/no-legacy-utility` error rule applies to all `Pages/Admin/**
 
 ## Scroll regions and navigation scroll
 The admin shell uses an inner scroll container (`div[data-slot="admin-scroll-area"]`) with the `scroll-region` attribute. Inertia resets scroll to top (`(0, 0)`) by default on all page visits (`<Link>`, `router.visit`).
-- **Default off**: Never add `preserveScroll: true` to navigation links, tabs, breadcrumbs, or catalog items.
+- **Default off**: Never add `preserveScroll: true` to navigation links, tabs, breadcrumbs, or catalog items that make a server visit.
+- **Record tabs are the exception**: `RecordPage`'s `sectionQueryKey` turns a tab change into a client-side history entry (`router.push`, no request), so Back returns to the previous tab. It preserves scroll because the page does not change; `RecordPage` itself brings the new section's top into view.
 - **When `preserveScroll: true` is allowed**:
   1. Inline table mutations (restoring, toggling status, task completion).
   2. Submitting drawer/sheet forms (`SheetForm`) over a base collection or record.
   3. Granular sub-mutations on record pages (e.g. uploading an agenda document, generating a password).
   4. Saving an edit form in place (`Edit*.vue` updates) to maintain the editor's position.
+
+Institution records open Santrauka at every viewport. Phones use a sticky single-section selector. Duties remain a stable section with a bounded overview preview; institution-wide discussion lives in Komentarai. Keep an emptied optional section visible for the current visit.

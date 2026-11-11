@@ -102,6 +102,7 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
         matches: string[];
         /** Draw a separator before this section. */
         startsGroup: boolean;
+        children?: Array<{ key: string; label: string; routeName: string }>;
       }>;
       createActions: Array<{
         key: string;

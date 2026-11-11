@@ -1,7 +1,7 @@
 import { flushPromises, mount } from '@vue/test-utils';
 import { defineComponent, ref } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { usePage } from '@inertiajs/vue3';
+import { usePage, useRemember } from '@inertiajs/vue3';
 
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
@@ -301,4 +301,14 @@ describe('overlapping collection searches', () => {
 
     expect(controller.results.value).toEqual([{ id: 'reset' }]);
   });
+});
+
+it('restores embedded search and loaded pages without changing the record URL', async () => {
+  window.history.replaceState({}, '', '/mano/institutions/1?tab=meetings');
+  vi.mocked(useRemember).mockReturnValueOnce(ref({ query: 'senatas', filters: { query: 'senatas', year: ['2026'] }, sortBy: 'start_time:desc', pages: 3 }));
+  const controller = await mountController({ syncToUrl: false, rememberKey: 'institution-meetings:1' });
+  expect(controller.query.value).toBe('senatas');
+  expect(controller.filters.value.year).toEqual(['2026']);
+  expect(pagesCalled()).toEqual([1, 2, 3]);
+  expect(window.location.search).toBe('?tab=meetings');
 });

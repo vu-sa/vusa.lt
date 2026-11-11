@@ -94,6 +94,23 @@ class SyncImageMedia
             ->whereIn('model_id', PendingUpload::query()->whereBelongsTo($actor)->select('id'));
     }
 
+    public static function requirePending(User $actor, int $mediaId): Media
+    {
+        $media = self::stagedMediaQuery($actor, $mediaId)
+            ->where('collection_name', PendingUpload::COLLECTION)
+            ->lockForUpdate()->first();
+
+        abort_if($media === null, 403);
+
+        return $media;
+    }
+
+    public function attachPending(Model&ImageMediaOwner $owner, string $collection, int $mediaId, User $actor): void
+    {
+        $this->attachStaged($owner, $collection, self::requirePending($actor, $mediaId), []);
+        $owner->unsetRelation('media');
+    }
+
     /**
      * @param  array<string, mixed>|null  $ref
      */
@@ -225,7 +242,9 @@ class SyncImageMedia
         $this->fillProperties($media, $ref);
         $media->save();
 
-        $pending?->deletePreservingMedia();
+        if ($pending !== null && ! $pending->media()->exists()) {
+            $pending->deletePreservingMedia();
+        }
     }
 
     /**

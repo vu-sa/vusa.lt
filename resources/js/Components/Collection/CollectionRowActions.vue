@@ -16,7 +16,7 @@
         :aria-label="action === labelledAction ? undefined : action.label"
         :title="action === labelledAction ? undefined : action.label"
         :class="[
-          action === labelledAction ? labelledClass : iconClass,
+          action === labelledAction ? rowActionLabelledClass : rowActionIconClass,
           (action.disabled || action.loading) && 'pointer-events-none opacity-50',
           actionHoverClass(action),
           stacked && 'max-w-64',
@@ -38,6 +38,8 @@ import { computed } from 'vue';
 import RecordActionMenu from '@/Components/Patterns/RecordActionMenu.vue';
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import { safeHref } from '@/Utils/safeHref';
+
+import { rowActionIconClass, rowActionLabelledClass, rowActionHoverClass } from './rowActionClasses';
 
 export type CollectionRowAction = AdminRecordAction;
 
@@ -101,17 +103,7 @@ function actionHoverClass(action: CollectionRowAction): string {
 
   return [
     labelled && 'border-border text-foreground',
-    action.destructive ? 'hover:border-destructive hover:text-destructive' : 'hover:border-brand hover:text-brand',
+    action.destructive ? 'hover:border-destructive hover:text-destructive' : rowActionHoverClass,
   ].filter(Boolean).join(' ');
 }
-
-const iconClass = [
-  'flex size-9 items-center justify-center border border-border text-muted-foreground transition-colors',
-  'pointer-coarse:size-11 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50',
-].join(' ');
-
-const labelledClass = [
-  'inline-flex min-h-9 items-center gap-1.5 border px-3 text-xs font-bold normal-case tracking-normal transition-colors',
-  'pointer-coarse:min-h-11 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50',
-].join(' ');
 </script>

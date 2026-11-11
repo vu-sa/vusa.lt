@@ -70,6 +70,19 @@
                     <span class="flex-1">{{ $t(section.label) }}</span>
                     <TaskCountBadge v-if="workspace.key === 'pradzia' && section.key === 'uzduotys'" />
                   </Link>
+                  <Link
+                    v-for="child in section.children"
+                    :key="child.key"
+                    :href="sectionChildHref(child)"
+                    prefetch
+                    :cache-for="SHELL_PREFETCH_CACHE_FOR"
+                    v-bind="ariaCurrent(isCurrent(workspace, section) && activeSectionChild(section)?.key === child.key)"
+                    class="u-touch flex items-center py-3 pr-4 pl-16 text-sm text-muted-foreground transition-colors hover:text-brand focus-visible:-outline-offset-2 focus-visible:outline-2 focus-visible:outline-ring"
+                    data-slot="mobile-menu-section-child"
+                    @click="close"
+                  >
+                    {{ $t(child.label) }}
+                  </Link>
                 </li>
               </ul>
             </li>
@@ -233,6 +246,8 @@ import { computed, nextTick, ref, watch } from 'vue';
 import { Button } from '@/Components/ui/button';
 import { workspaceIcon } from '@/Constants/adminWorkspaces';
 import {
+  activeSectionChild,
+  sectionChildHref,
   sectionHref,
   SHELL_PREFETCH_CACHE_FOR,
   type AdminSection,

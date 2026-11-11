@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Document;
+use App\Services\Documents\DocumentPreviewService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -73,6 +74,8 @@ class SyncDocumentFromSharePointJob implements ShouldQueue
                     'title' => $result->title,
                 ]);
             }
+
+            $this->queueThumbnailRefresh();
         } catch (\Throwable $e) {
             Log::error('SharePoint sync job failed', [
                 'document_id' => $this->document->id,
@@ -90,6 +93,15 @@ class SyncDocumentFromSharePointJob implements ShouldQueue
 
             // Let the queue system handle retry logic
             throw $e;
+        }
+    }
+
+    private function queueThumbnailRefresh(): void
+    {
+        $document = $this->document->fresh();
+
+        if ($document !== null && $document->knowledgeItemSources()->exists() && app(DocumentPreviewService::class)->needsThumbnail($document)) {
+            RefreshDocumentThumbnailJob::dispatch($document);
         }
     }
 

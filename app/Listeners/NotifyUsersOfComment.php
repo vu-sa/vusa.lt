@@ -48,11 +48,15 @@ class NotifyUsersOfComment implements ShouldQueue
             'id' => $commentable->getKey(),
         ];
 
+        $topicTitle = $comment->kind === CommentKind::Topic
+            ? $comment->title
+            : ($comment->threadRoot?->kind === CommentKind::Topic ? $comment->threadRoot->title : null);
+
         $mentioned = $this->recipients->mentioned($comment);
 
         if ($mentioned->isNotEmpty()) {
             Notification::send($mentioned, new CommentPostedNotification(
-                $comment->body, $object, $subject, isMention: true, isPoll: $comment->kind === CommentKind::Poll,
+                $comment->body, $object, $subject, isMention: true, isPoll: $comment->kind === CommentKind::Poll, topicTitle: $topicTitle,
             ));
         }
 
@@ -60,7 +64,7 @@ class NotifyUsersOfComment implements ShouldQueue
 
         if ($audience->isNotEmpty()) {
             Notification::send($audience, new CommentPostedNotification(
-                $comment->body, $object, $subject, isPoll: $comment->kind === CommentKind::Poll,
+                $comment->body, $object, $subject, isPoll: $comment->kind === CommentKind::Poll, topicTitle: $topicTitle,
             ));
         }
     }

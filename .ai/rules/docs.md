@@ -32,7 +32,7 @@ Guide pages name app addresses as code (`` `/mano/notifications` ``); the PDF tu
 
 ## The guide's layout and PDF edition
 
-The guide (`docs/`, Lithuanian only — `docs/en/` keeps just the changelog) mirrors `AdminNavigationCatalog`: one directory per workspace (`mano/`, `visak/`, `rezervacijos/`, `svetaine/`, `organizacija/`, `sistema/`) plus `pagrindai/` and `ivadas.md`. Its order lives only in `docs/.vitepress/structure.ts`; the sidebar and the PDF both walk it, so a new page is added there, not in `lt.ts`.
+The guide (`docs/`, Lithuanian only — `docs/en/` keeps just the changelog) mirrors `AdminNavigationCatalog`: one directory per workspace (`mano/`, `wiki/`, `visak/`, `rezervacijos/`, `svetaine/`, `organizacija/`, `sistema/`) plus `pagrindai/` and `ivadas.md`. Its order lives only in `docs/.vitepress/structure.ts`; the sidebar and the PDF both walk it, so a new page is added there, not in `lt.ts`.
 
 - A section page follows `rezervacijos/rezervacijos.md`: *Susitarimai · Kaip tai veikia · Veiksmai · Kas ką gali · Pranešimai ir automatizavimas · Techninė informacija* (plus *Rekomendacijos* when the page has them), with `doc_status`/`last_reviewed`/`tests` frontmatter. The main flow speaks in roles and plain Lithuanian; policy classes, permission strings and config keys go only in the closing `## Techninė informacija` section, which the "Įrodyta testais" block (web `TestEvidence.vue`, PDF `evidence.typ`) follows. Unwritten pages are `doc_status: draft`, carry a `::: warning Rašoma` callout and no `tests:`.
 - `tests:` may cite Pest files (`tests/**.php`, shown as *Serveris*) and Vitest specs (`resources/js/**.test.ts`, *Sąsaja*) — `tests/Feature/Docs/DocTestCitationsTest.php` fails on anything else or on a file that no longer exists.

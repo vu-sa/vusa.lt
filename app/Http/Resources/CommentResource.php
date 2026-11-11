@@ -2,19 +2,15 @@
 
 namespace App\Http\Resources;
 
+use App\Actions\ResolveCommentAuthorDuty;
+use App\Enums\CommentKind;
 use App\Models\Comment;
+use App\Support\Media\ImageData;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-/**
- * @mixin Comment
- *
- * Threaded comment shape consumed by the discussion frontend. Permission flags
- * are computed cheaply: `update` is author-only and time-boxed (Comment::EDIT_WINDOW_MINUTES) and `delete` adds a single
- * per-request moderation flag (Gate::allows('update', $parent) evaluated once
- * in the controller and stashed on the request) rather than evaluating the
- * policy for every comment in a thread.
- */
+/** @mixin Comment */
 class CommentResource extends JsonResource
 {
     /**
@@ -35,6 +31,10 @@ class CommentResource extends JsonResource
             'thread_root_id' => $this->thread_root_id,
             'kind' => $this->kind->value,
             'body' => $this->body,
+            'title' => $this->title,
+            'author_duty' => $this->authorDutiable === null ? null : ResolveCommentAuthorDuty::data($this->authorDutiable),
+            'images' => $this->getMedia(Comment::IMAGES)->sortBy('order_column')
+                ->map(fn (Media $media): array => ImageData::fromMedia($media))->values()->all(),
             // A placeholder: nothing of the comment or its author remains to show.
             'is_erased' => $isErased,
             'metadata' => $this->metadata,
@@ -42,12 +42,15 @@ class CommentResource extends JsonResource
                 'id' => $this->user_id,
                 'name' => $this->user?->name,
                 'profile_photo_path' => $this->user?->profile_photo_path,
+                'pronouns' => $this->user?->getTranslations('pronouns') ?: null,
             ],
             'created_at' => $this->created_at?->toISOString(),
             'edited_at' => $this->edited_at?->toISOString(),
             'resolved_at' => $this->resolved_at?->toISOString(),
             'resolved_by' => $this->resolved_by,
+            // Transitional(topic-closed): remove is_resolved when all discussion clients read is_closed.
             'is_resolved' => $this->isResolved(),
+            'is_closed' => $this->isResolved(),
             'mentioned_user_ids' => $this->mentioned_user_ids ?? [],
             'reactions' => $this->reactionsTally($userId),
             'poll' => $this->when($this->isPoll(), fn () => $this->pollPayload($userId)),
@@ -59,9 +62,7 @@ class CommentResource extends JsonResource
             'can' => [
                 'update' => ! $isErased && $user !== null && $this->isEditableBy($user),
                 'delete' => ! $isErased && ($isAuthor || $canModerate),
-                // Reaching this endpoint already required `view` on the parent,
-                // and resolve follows the view audience.
-                'resolve' => ! $isErased && $userId !== null,
+                'resolve' => ! $isErased && $this->kind === CommentKind::Topic && ($isAuthor || $canModerate),
             ],
         ];
     }
@@ -92,14 +93,7 @@ class CommentResource extends JsonResource
             ->all();
     }
 
-    /**
-     * Live poll state: the stored definition plus per-option tallies and the
-     * voters behind them. `my_option_ids` is convenience for the requesting
-     * user; receiving clients recompute it from `voters` on broadcast (the
-     * broadcast payload has no per-user truth, same as `reacted_by_me`).
-     *
-     * @return array<string, mixed>
-     */
+    /** @return array<string, mixed> */
     protected function pollPayload(?string $userId): array
     {
         $options = $this->pollOptions();

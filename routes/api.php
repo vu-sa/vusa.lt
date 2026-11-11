@@ -183,7 +183,6 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         Route::get('visak/gantt', [AtstovavimasApiController::class, 'gantt'])->name('visak.gantt');
         Route::get('visak/meetings', [AtstovavimasApiController::class, 'meetings'])->name('visak.meetings');
         Route::get('visak/activity-requests', [AtstovavimasApiController::class, 'activityRequests'])->name('visak.activityRequests');
-        Route::get('visak/representatives', [AtstovavimasApiController::class, 'representatives'])->name('visak.representatives');
 
         // Guided action window ("Veiksmų langas") personalised choices
         Route::get('action-window/context', [ActionWindowApiController::class, 'context'])->name('actionWindow.context');

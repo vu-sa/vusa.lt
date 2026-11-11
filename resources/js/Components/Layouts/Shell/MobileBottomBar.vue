@@ -125,14 +125,29 @@ const emit = defineEmits<{ create: []; menu: [] }>();
 
 const unreadCount = useUnreadNotificationCount();
 
+// Notifications have no section tab, so the route itself lights Pranešimai.
+const onNotifications = (): boolean => {
+  void page.url;
+  try {
+    return Boolean(route().current('notifications.*'));
+  }
+  catch {
+    return false;
+  }
+};
+
 const routeTab = computed<Tab | null>(() => {
+  if (onNotifications()) {
+    return 'pranesimai';
+  }
+
   if (props.activeWorkspace?.key !== 'pradzia') {
     return props.activeWorkspace === undefined ? null : 'menu';
   }
 
   const section = props.activeSection?.key;
 
-  return section === 'uzduotys' || section === 'pranesimai' ? section : 'pradzia';
+  return section === 'uzduotys' ? section : 'pradzia';
 });
 
 // Light the tapped tab straight away rather than after the server answers; a slow phone otherwise feels ignored.

@@ -166,8 +166,70 @@
     @apply decoration-2;
   }
 
+  /* A wiki link (`[[`) stays ink with a dotted brand underline, so a link to another article
+     reads differently from one that leaves the page. */
+  a.wiki-link {
+    @apply text-foreground decoration-brand decoration-dotted decoration-2 underline-offset-4;
+  }
+
+  a.wiki-link:hover {
+    @apply decoration-solid;
+  }
+
   code {
     @apply rounded-sm bg-secondary px-1 py-0.5 text-[0.875em];
+  }
+
+  /* A Wiki article reads like an encyclopedia entry rather than a page: tighter paragraph rhythm,
+     a calmer heading scale, and term links coloured but not underlined, because a term-dense
+     paragraph striped with underlines is what made articles tiring to read. */
+  &.wiki-prose {
+    @apply text-base;
+
+    >*+* {
+      margin-block-start: 0.85em;
+    }
+
+    >:is(h2, h3, h4) {
+      margin-block-start: 1.75em;
+    }
+
+    p,
+    li {
+      line-height: 1.65;
+    }
+
+    h2 {
+      @apply border-b border-border pb-1.5 text-2xl font-bold tracking-tight;
+    }
+
+    h3 {
+      @apply text-xl font-bold tracking-tight;
+    }
+
+    h4 {
+      @apply text-base font-bold tracking-normal;
+    }
+
+    :is(ul, ol)>li {
+      margin-block-start: 0.35em;
+    }
+
+    /* The underline is always there, only transparent: switching it on made the browser animate
+       its thickness from the base link's 2px hover down to 1px. */
+    a.wiki-link,
+    a.wiki-link:is(:hover, :focus-visible) {
+      @apply text-brand underline decoration-solid decoration-1 underline-offset-4;
+      transition: text-decoration-color 150ms;
+    }
+
+    a.wiki-link {
+      @apply decoration-transparent;
+    }
+
+    a.wiki-link:is(:hover, :focus-visible) {
+      @apply decoration-brand;
+    }
   }
 
   :is(h1, h2, h3, h4, h5, h6) {

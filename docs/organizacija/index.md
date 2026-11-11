@@ -1,6 +1,6 @@
 ---
 doc_status: reviewed
-last_reviewed: 2026-09-30
+last_reviewed: 2026-11-11
 title: Organizacija
 ---
 
@@ -23,6 +23,7 @@ priklauso ir jų teisės platformoje.
 | Pareigybių atnaujinimas | `/mano/duties-update-users` | Turintys teisę kurti pareigybes |
 | Padaliniai | `/mano/tenants` | Turintys teisę matyti padalinius |
 | Studijų programos | `/mano/studyPrograms` | Turintys teisę matyti studijų programas |
+| Kelio žingsniai | `/mano/learning/library` | Turintys teisę kurti arba redaguoti kelio žingsnius; [gidas](/mano/kelias#teises) |
 | Konferencijos | `/mano/mailingLists` | Turintys teisę matyti konferencijas |
 | Narių / studentų atstovų registracija | `/mano/forms/{id}` | Galintys peržiūrėti atitinkamą formą (nustatoma nustatymuose) |
 | Formos | `/mano/forms` | Turintys teisę matyti formas |

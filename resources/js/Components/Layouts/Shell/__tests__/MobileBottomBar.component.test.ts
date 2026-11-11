@@ -54,7 +54,14 @@ describe('MobileBottomBar', () => {
   it('lights exactly the Pradžia tab the user is on', () => {
     expect(lit(mountBar({ activeSection: pradzia.sections[0] }))).toEqual([true, false, false, false]);
     expect(lit(mountBar({ activeSection: pradzia.sections[1] }))).toEqual([false, true, false, false]);
-    expect(lit(mountBar({ activeSection: pradzia.sections[2] }))).toEqual([false, false, true, false]);
+    expect(lit(mountBar({ activeSection: pradzia.sections[2] }))).toEqual([true, false, false, false]);
+  });
+
+  it('lights Pranešimai on the notifications page, which has no section tab', () => {
+    vi.spyOn(route(), 'current').mockImplementation(((pattern?: string) => pattern === 'notifications.*') as never);
+
+    expect(lit(mountBar({ activeSection: undefined }))).toEqual([false, false, true, false]);
+    vi.restoreAllMocks();
   });
 
   it('lights Meniu while the user is in another workspace', () => {

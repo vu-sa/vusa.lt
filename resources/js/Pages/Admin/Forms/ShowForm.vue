@@ -1,6 +1,7 @@
 <template>
   <RecordPage
     v-model:section="currentSection"
+    section-query-key="tab"
     :history-subject="{ type: 'form', id: form.id }"
     :title="localizedTitle"
     :entity-type="ModelEnum.FORM"

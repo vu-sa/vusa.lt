@@ -142,6 +142,7 @@ import CollectionViewToggle from '@/Components/Collection/CollectionViewToggle.v
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import type { CollectionColumn, CollectionQuickFilter, CollectionTrash } from '@/Components/Collection/types';
 import type { CollectionChip, CollectionSource } from '@/Composables/useCollectionSource';
+import { useCollectionControls } from '@/Composables/useCollectionControls';
 import { useCollectionView, type CollectionViewMode } from '@/Composables/useCollectionView';
 import { useListDetailSelection } from '@/Composables/useListDetailSelection';
 
@@ -256,27 +257,7 @@ function toggleTrash(): void {
 }
 
 /** Below md the Filtrai button opens the sheet instead of the inline row. */
-const sheetOpen = ref(false);
-
-function toggleFilters(): void {
-  if (isAtLeastMd.value) {
-    filtersOpen.value = !filtersOpen.value;
-  }
-  else {
-    sheetOpen.value = true;
-  }
-}
-
-// Counts are asked for only once someone looks at the filters (a remembered open panel counts).
-watch(
-  () => (isAtLeastMd.value ? filtersOpen.value : sheetOpen.value),
-  (open) => {
-    if (open) {
-      props.source.loadFacets?.();
-    }
-  },
-  { immediate: true },
-);
+const { sheetOpen, toggleFilters } = useCollectionControls(isAtLeastMd, filtersOpen, () => { props.source.loadFacets?.(); });
 
 const isFiltered = computed(() => props.source.query.value.trim() !== '' || props.source.activeFilterCount.value > 0);
 

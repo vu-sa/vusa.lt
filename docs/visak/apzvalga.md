@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Apžvalga
-last_reviewed: 2026-10-19
+last_reviewed: 2026-11-09
 tests:
   - tests/Feature/Admin/Dashboard/AtstovavimasDashboardTest.php
   - tests/Feature/Admin/Core/CoordinatorOnRepScreensTest.php
@@ -119,11 +119,6 @@ jei jos nėra – jo paties el. paštu. Jei institucijai nėra dabar pareigas ei
 koordinatoriaus](/pagrindai/atsakomybes), kortelė nerodoma. Pats sau
 koordinatoriumi niekas nerodomas.
 
-### Dokumentai
-
-Iki **8** dokumentų, pridėtų prie tavo pareigybių tipų (ir jų aukštesnių tipų), pvz., nuostatai ar
-atmintinės. Naujausi (pagal dokumento datą) pirmiausia. Jei tokių dokumentų nėra, skiltis nerodoma.
-
 ### Posėdžių laiko juosta
 
 Didesniame ekrane rodoma tavo institucijų posėdžių laiko juosta. Telefone vietoj jos siūloma nuoroda
@@ -179,7 +174,6 @@ Pavyzdžiui, po spalio 1 d. posėdžio, kai periodiškumas 30 dienų, veiklos ti
   `InstitutionActivityStatusService::resolve` (80 % riba), atostogos – `AcademicCalendarService`,
   periodiškumas – `Institution::meeting_periodicity_days`.
 - Artimiausi posėdžiai – `GetUpcomingMeetingsForUser` (iki 20 eilučių, `total` – visų skaičius).
-- Koordinatoriai (`GetUserCoordinators`), dokumentai (`GetTypeFiles`, riba
-  `REFERENCE_DOCUMENTS_LIMIT` = 8) ir sekamos institucijos kraunami atidėtai (`secondary` grupė).
+- Koordinatoriai (`GetUserCoordinators`) ir sekamos institucijos kraunami atidėtai (`secondary` grupė).
   Susijusios institucijos kraunamos tik įjungus jų rodymą (`relatedInstitutions`).
 - Koordinavimo šaltinį ir dabartinius pareigybės narius nustato `ResponsibilityResolver`.

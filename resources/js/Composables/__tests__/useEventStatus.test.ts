@@ -46,8 +46,15 @@ describe('useEventStatus', () => {
   });
 
   it('states the relative time precisely rather than vaguely', () => {
-    expect(useEventStatus({ date: hoursFromNow(24) }).relativeLabel.value).toBe('rytoj');
-    expect(useEventStatus({ date: hoursFromNow(24 * 3) }).relativeLabel.value).toContain('3');
+    // A moving clock lands "24 hours from now" a few ms short of a day, which reads "po 24 val.".
+    vi.useFakeTimers({ now: new Date('2026-03-10T09:00:00Z') });
+    try {
+      expect(useEventStatus({ date: hoursFromNow(24) }).relativeLabel.value).toBe('rytoj');
+      expect(useEventStatus({ date: hoursFromNow(24 * 3) }).relativeLabel.value).toContain('3');
+    }
+    finally {
+      vi.useRealTimers();
+    }
   });
 
   it('offers no relative time once the event has started', () => {

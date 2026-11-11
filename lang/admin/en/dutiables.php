@@ -241,4 +241,8 @@ return [
         'last_day_notice' => 'Today is the last day in office. The member remains active until the end of the day, and the term stays in the history.',
         'still_active_today' => ':name is still in office today. The term ends after today and stays in the history.',
     ],
+    'holders_spotlight' => [
+        'title' => 'Members are behind the photos',
+        'description' => 'Click the members\' photos to change a member\'s term or add a person.',
+    ],
 ];

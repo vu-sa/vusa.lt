@@ -4,9 +4,7 @@ namespace App\Services;
 
 use App\Actions\Duties\BuildDutyLineage;
 use App\Models\Duty;
-use App\Models\DutyType;
 use App\Models\FileableFile;
-use App\Models\InstitutionType;
 use App\Models\Pivots\Dutiable;
 use App\Models\StudyProgram;
 use App\Models\Tenant;
@@ -25,27 +23,6 @@ class DutyPanelPresenter
         $payload = [];
         foreach ($files as $file) {
             $item = FileableFilePresenter::file($file);
-            $payload[] = $item;
-        }
-
-        return $payload;
-    }
-
-    /**
-     * @param  Collection<int, FileableFile>  $files
-     * @return list<array{id: string, fileable_type: string, fileable_id: string, sharepoint_id: string, sharepoint_path: string|null, name: string, file_type: string|null, mime_type: string|null, size_bytes: int|null, file_date: string|null, description: string|null, public_link: string|null, public_link_expires_at: string|null, last_synced_at: string|null, deleted_externally_at: string|null, created_at: string|null, updated_at: string|null, formatted_size: string|null, fileable: array{id: int, title: string|null}|null}>
-     */
-    public static function typeFiles(Collection $files): array
-    {
-        $payload = [];
-        foreach ($files as $file) {
-            $item = FileableFilePresenter::file($file);
-            /** @var DutyType|InstitutionType|null $fileable */
-            $fileable = $file->fileable;
-            $item['fileable'] = $fileable === null ? null : [
-                'id' => $fileable->id,
-                'title' => $fileable->title === null ? null : (string) $fileable->title,
-            ];
             $payload[] = $item;
         }
 

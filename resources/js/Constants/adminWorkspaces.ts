@@ -1,5 +1,5 @@
 import type { Component } from 'vue';
-import { GraduationCap, Globe, Home, CalendarCheck, Settings2, Users } from '@lucide/vue';
+import { GraduationCap, Globe, Home, CalendarCheck, Library, Settings2, Users } from '@lucide/vue';
 
 /**
  * Icon per navigation-catalog workspace key. The catalog ships no icons (only `entityType` per
@@ -7,6 +7,7 @@ import { GraduationCap, Globe, Home, CalendarCheck, Settings2, Users } from '@lu
  */
 export const adminWorkspaceIcons: Record<string, Component> = {
   pradzia: Home,
+  wiki: Library,
   atstovavimas: GraduationCap,
   rezervacijos: CalendarCheck,
   svetaine: Globe,

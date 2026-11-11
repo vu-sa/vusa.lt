@@ -26,6 +26,7 @@ const stubs = {
         <h1>{{ title }}</h1>
         <div v-if="status" data-testid="status">{{ status.label }}</div>
         <div data-testid="tabs">{{ sections.map(s => s.value).join('|') }}</div>
+        <slot name="next-actions" />
         <div data-testid="facts">{{ facts.map(f => f.key).join('|') }}</div>
         <slot name="fact-managers" />
         <button v-if="primaryAction" data-testid="primary" @click="$emit('action', primaryAction.key)">{{ primaryAction.label }}</button>
@@ -39,8 +40,9 @@ const stubs = {
     `,
   },
   InstitutionOverviewSection: {
-    props: ['institution', 'overview'],
-    emits: ['navigate-tab'],
+    name: 'InstitutionOverviewSection',
+    props: ['institution', 'overview', 'duties', 'canManage', 'meetingsTab'],
+    emits: ['navigate-tab', 'assign', 'edit-term'],
     template: '<button data-testid="goto-duties" @click="$emit(\'navigate-tab\', \'duties\')" />',
   },
   InstitutionDutiesSection: {
@@ -49,7 +51,12 @@ const stubs = {
     emits: ['assign', 'edit-term'],
     template: '<div data-testid="duties-section" :data-can-manage="canManage" />',
   },
-  InstitutionMeetingsList: true,
+  InstitutionMeetingsCollection: {
+    name: 'InstitutionMeetingsCollection',
+    props: ['institutionId', 'canRecordMeeting'],
+    emits: ['record'],
+    template: '<div data-testid="meetings-collection" />',
+  },
   UserAvatar: true,
   UsersAvatarGroup: true,
   InstitutionScopeBadge: true,
@@ -57,14 +64,15 @@ const stubs = {
   SecretariesSection: { template: '<div data-testid="secretaries" />' },
   AssignDutyUserSheet: { name: 'AssignDutyUserSheet', props: ['open', 'duty', 'dutiable'], template: '<div data-testid="assign-sheet" :data-open="open" />' },
   AddCheckInDialog: true,
+  RelationshipLinkSheet: { name: 'RelationshipLinkSheet', props: ['open'], template: '<div data-testid="link-sheet" :data-open="open" />' },
+  FileableUploadSheet: { name: 'FileableUploadSheet', props: ['open'], template: '<div data-testid="upload-sheet" :data-open="open" />' },
   ConfirmDialog: true,
   RecordActivity: { template: '<div data-testid="record-activity" />' },
   TaskManager: true,
   FileableFilesPanel: true,
-  RelatedInstitutions: true,
+  InstitutionRelationsList: true,
   EmptyState: true,
   InstitutionActivityRequestHistory: true,
-  RelationshipLinkList: true,
   ProblemSummaryList: true,
 };
 
@@ -89,6 +97,7 @@ const baseInstitution: Institution = {
   secretaries: [],
   sharepointPath: null,
   sharepointFolderUrl: null,
+  has_files: true,
   has_public_meetings: false,
   governance_scope: InstitutionScope.University,
   duties_count: 0,
@@ -148,7 +157,6 @@ const createWrapper = (props: WrapperProps = {}) => {
       incompleteTasksCount: 0,
       relationKinds: [],
       duties: [],
-      meetings: [],
       tasks: [],
       relatedInstitutions: [],
       management,
@@ -205,8 +213,26 @@ describe('ShowInstitution.vue', () => {
   });
 
   it('offers the sections an editor can act on, and only those', () => {
-    expect(tabs(createWrapper())).toEqual(['overview', 'duties', 'meetings', 'terms', 'files', 'tasks']);
-    expect(tabs(createWrapper({ can: { update: false, delete: false } }))).toEqual(['overview', 'duties', 'meetings', 'files', 'tasks']);
+    expect(tabs(createWrapper())).toEqual(['overview', 'duties', 'meetings', 'tasks', 'files', 'terms', 'comments']);
+    expect(tabs(createWrapper({ can: { update: false, delete: false } }))).toEqual(['overview', 'duties', 'meetings', 'tasks', 'files', 'comments']);
+  });
+
+  it('keeps the duties destination stable regardless of count', () => {
+    const few = createWrapper({ duties_count: 3 });
+    const overview = few.findComponent({ name: 'InstitutionOverviewSection' });
+
+    expect(tabs(few)).toContain('duties');
+    expect(overview.props('duties')).toEqual([]);
+    expect(overview.props('canManage')).toBe(true);
+    expect(tabs(createWrapper({ duties_count: 4 })).slice(0, 2)).toEqual(['overview', 'duties']);
+    expect(createWrapper({ duties_count: 4 }).findComponent({ name: 'InstitutionOverviewSection' }).props('duties')).toEqual([]);
+  });
+
+  it('gives every section an icon', () => {
+    const sections = createWrapper({ duties_count: 4, related_institutions_count: 1, problems_count: 1 })
+      .findComponent({ name: 'RecordPage' }).props('sections') as Array<{ icon?: unknown }>;
+
+    expect(sections.every(section => section.icon)).toBe(true);
   });
 
   it('shows a reader outside the institution its public face: meetings only where they are public', () => {
@@ -214,13 +240,44 @@ describe('ShowInstitution.vue', () => {
 
     expect(tabs(createWrapper({ ...readOnly, has_public_meetings: true }))).toEqual(['overview', 'duties', 'meetings']);
     expect(tabs(createWrapper({ ...readOnly, has_public_meetings: false }))).toEqual(['overview', 'duties']);
+    expect(tabs(createWrapper({ ...readOnly, duties_count: 5, has_public_meetings: false }))).toEqual(['overview', 'duties']);
     expect(createWrapper(readOnly).find('[data-testid="overflow-timeline"]').exists()).toBe(false);
   });
 
   it('offers the relations section when there are related institutions, or to someone who can link them', () => {
     expect(tabs(createWrapper())).not.toContain('related');
     expect(tabs(createWrapper({ related_institutions_count: 2 }))).toContain('related');
-    expect(tabs(createWrapper({ can: { update: true, delete: true, recordMeeting: true, reportActivity: true, manageLinks: true } }))).toContain('related');
+    expect(tabs(createWrapper({ can: { update: true, delete: true, recordMeeting: true, reportActivity: true, manageLinks: true } }))).not.toContain('related');
+  });
+
+  /** An empty Ryšiai or Failai tab is clutter: whoever can fill it gets an action instead. */
+  it('offers to add the first link or file instead of an empty tab, only to those who can', async () => {
+    const manager = createWrapper({
+      has_files: false,
+      sharepointPath: '/Institucijos/SA',
+      can: { update: true, delete: true, recordMeeting: true, reportActivity: true, manageLinks: true },
+    });
+
+    expect(tabs(manager)).not.toContain('files');
+    expect(tabs(manager)).not.toContain('related');
+
+    await manager.get('[data-testid="record-fill-action-add-link"]').trigger('click');
+    expect(manager.get('[data-testid="link-sheet"]').attributes('data-open')).toBe('true');
+    await manager.get('[data-testid="record-fill-action-add-file"]').trigger('click');
+    expect(manager.get('[data-testid="upload-sheet"]').attributes('data-open')).toBe('true');
+
+    const reader = createWrapper({ has_files: false, can: { update: false, delete: false, manageLinks: false } });
+    expect(reader.find('[data-slot="record-next-action-list"]').exists()).toBe(false);
+  });
+
+  it('opens the tab the first link brings back once the page reloads with it', async () => {
+    const wrapper = createWrapper({ can: { update: true, delete: true, recordMeeting: true, reportActivity: true, manageLinks: true } });
+
+    await wrapper.get('[data-testid="record-fill-action-add-link"]').trigger('click');
+    await wrapper.setProps({ institution: { ...wrapper.props('institution'), related_institutions_count: 1 } });
+
+    expect(tabs(wrapper)).toContain('related');
+    expect(wrapper.findComponent({ name: 'RecordPage' }).props('section')).toBe('related');
   });
 
   it('shows the tenant and the member count as key facts', () => {
@@ -246,13 +303,13 @@ describe('ShowInstitution.vue', () => {
     expect(threeCoordinators.find('users-avatar-group-stub').attributes('expandable')).toBe('true');
   });
 
-  it('moves the type and governance scope to a fact and shows meeting visibility instead of periodicity', () => {
+  it('moves the type and governance scope to a fact, with meeting visibility under it instead of periodicity', () => {
     const wrapper = createWrapper({
       types: [institutionType('Taryba')],
       governance_scope: InstitutionScope.Vusa,
       has_public_meetings: false,
     });
-    const facts = wrapper.findComponent({ name: 'RecordPage' }).props('facts') as Array<{ key: string; value?: string }>;
+    const facts = wrapper.findComponent({ name: 'RecordPage' }).props('facts') as Array<{ key: string; value?: string; detail?: string }>;
 
     expect(facts.find(fact => fact.key === 'type')).toMatchObject({
       label: 'forms.options.governance_scope_vusa',
@@ -260,7 +317,9 @@ describe('ShowInstitution.vue', () => {
       surfaceClass: 'bg-brand/5',
     });
     expect(facts[1]?.key).toBe('type');
-    expect(facts.find(fact => fact.key === 'visibility')?.value).toBe('Nevieši posėdžiai');
+    // Visibility reads under the type rather than taking a fact of its own.
+    expect(facts.find(fact => fact.key === 'type')?.detail).toBe('Nevieši posėdžiai');
+    expect(facts.map(fact => fact.key)).not.toContain('visibility');
     expect(facts.map(fact => fact.key)).not.toContain('periodicity');
   });
 
@@ -321,8 +380,8 @@ describe('ShowInstitution.vue', () => {
   });
 
   it('passes the per-record permission down to the duties section, not a tenant-agnostic flag', () => {
-    expect(createWrapper().find('[data-testid="duties-section"]').attributes('data-can-manage')).toBe('true');
-    expect(createWrapper({ can: { update: false, delete: false } }).find('[data-testid="duties-section"]').attributes('data-can-manage')).toBe('false');
+    expect(createWrapper({ duties_count: 4 }).find('[data-testid="duties-section"]').attributes('data-can-manage')).toBe('true');
+    expect(createWrapper({ duties_count: 4, can: { update: false, delete: false } }).find('[data-testid="duties-section"]').attributes('data-can-manage')).toBe('false');
   });
 
   it('renders the terms and secretaries once the optional management data arrives', () => {
@@ -344,15 +403,14 @@ describe('ShowInstitution.vue', () => {
 
   it.each<[string, string | string[]]>([
     ['duties', 'duties'],
-    ['meetings', 'meetings'],
     ['terms', 'management'],
     ['related', ['relatedInstitutions', 'institutionLinks']],
     ['problems', 'problems'],
-    ['files', ['files', 'typeFiles']],
+    ['files', 'files'],
     ['tasks', 'tasks'],
     ['activityRequests', 'activityRequests'],
   ])('loads the %s panel through visibility with a skeleton and no repeated polling', async (tab, data) => {
-    const wrapper = createWrapper({ related_institutions_count: 1, problems_count: 1 });
+    const wrapper = createWrapper({ duties_count: 4, related_institutions_count: 1, problems_count: 1 });
     await wrapper.setProps({ canViewActivityRequests: true });
     const panel = wrapper.findAllComponents(WhenVisible)
       .find(component => JSON.stringify(component.props('data')) === JSON.stringify(data));
@@ -365,6 +423,34 @@ describe('ShowInstitution.vue', () => {
     await wrapper.vm.$nextTick();
 
     expect(router.reload).not.toHaveBeenCalled();
+  });
+
+  it('searches the meetings only once their section comes into view', async () => {
+    let reveal: ((entries: Array<{ isIntersecting: boolean }>) => void) | undefined;
+    vi.stubGlobal('IntersectionObserver', class {
+      constructor(callback: typeof reveal) {
+        reveal = callback;
+      }
+
+      observe() {}
+      disconnect() {}
+      unobserve() {}
+    });
+
+    const wrapper = createWrapper();
+    expect(wrapper.find('[data-testid="meetings-collection"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="meetings-skeleton"]').exists()).toBe(true);
+
+    // The observer attaches once the anchor element is in the DOM.
+    await wrapper.vm.$nextTick();
+    expect(reveal).toBeTypeOf('function');
+    reveal!([{ isIntersecting: true }]);
+    await wrapper.vm.$nextTick();
+
+    const collection = wrapper.findComponent({ name: 'InstitutionMeetingsCollection' });
+    expect(collection.props()).toMatchObject({ institutionId: 'inst1', canRecordMeeting: true });
+    vi.unstubAllGlobals();
+    vi.stubGlobal('route', (name?: string) => (name === undefined ? { current: () => false } : `/mocked/${name}`));
   });
 
   it('does not mount an activity-history visibility loader without permission', () => {
@@ -380,7 +466,7 @@ describe('ShowInstitution.vue', () => {
     mockRouter.__triggerBefore({ detail: { visit } });
 
     expect(visit.except).toEqual(expect.arrayContaining([
-      'institutionLinks', 'problems', 'files', 'typeFiles', 'activityRequests', 'assignmentTerms',
+      'institutionLinks', 'problems', 'files', 'activityRequests', 'assignmentTerms',
     ]));
     expect(visit.except).not.toContain('duties');
     expect(visit.except).not.toContain('meetings');
@@ -406,7 +492,7 @@ describe('ShowInstitution.vue', () => {
   });
 
   it('waits for the complete term before mounting its editor', async () => {
-    const wrapper = createWrapper();
+    const wrapper = createWrapper({ duties_count: 4 });
     const user = manager('member1', 'Rūta');
     const duty = { id: 'duty1', name: 'Narys', current_users: [user] };
     wrapper.findComponent({ name: 'InstitutionDutiesSection' }).vm.$emit('edit-term', duty, user);
@@ -438,7 +524,7 @@ describe('ShowInstitution.vue', () => {
     const wrapper = createWrapper();
 
     expect(wrapper.findComponent({ name: 'RecordPage' }).props('section')).toBe('files');
-    expect(wrapper.findAllComponents(WhenVisible).some(panel => JSON.stringify(panel.props('data')) === JSON.stringify(['files', 'typeFiles']))).toBe(true);
+    expect(wrapper.findAllComponents(WhenVisible).some(panel => panel.props('data') === 'files')).toBe(true);
     expect(router.reload).not.toHaveBeenCalled();
   });
 

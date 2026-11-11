@@ -117,19 +117,33 @@ describe('the list', () => {
   });
 });
 
-describe('show all', () => {
-  it('lists open tasks by default and adds the completed ones when switched on', async () => {
-    const done: TaskDisplayData = { ...task, id: 'task-2', completed_at: '2026-01-01T00:00:00Z' };
+describe('quick filters', () => {
+  const done: TaskDisplayData = { ...task, id: 'task-2', completed_at: '2026-01-01T00:00:00Z' };
+  const late: TaskDisplayData = { ...task, id: 'task-3', is_overdue: true, action_type: 'periodicity_gap' };
+
+  it('lists open tasks by default and swaps in the completed ones from "Atliktos"', async () => {
     const wrapper = mountManager({ tasks: [task, done] });
     const rowIds = () => wrapper.findAllComponents({ name: 'TaskRow' }).map(row => row.props('task').id);
-    const toggle = wrapper.get('button[aria-pressed]');
+    const completed = wrapper.get('[data-filter-id="completed"]');
 
     expect(rowIds()).toEqual(['task-1']);
-    expect(toggle.attributes('aria-pressed')).toBe('false');
+    expect(completed.text()).toBe('tasks.collection.completed · 1');
 
-    await toggle.trigger('click');
+    await completed.trigger('click');
 
-    expect(rowIds()).toEqual(['task-1', 'task-2']);
-    expect(toggle.attributes('aria-pressed')).toBe('true');
+    expect(rowIds()).toEqual(['task-2']);
+    expect(completed.attributes('aria-pressed')).toBe('true');
+  });
+
+  it('narrows the open tasks to the overdue or automatic ones', async () => {
+    const wrapper = mountManager({ tasks: [task, done, late] });
+    const rowIds = () => wrapper.findAllComponents({ name: 'TaskRow' }).map(row => row.props('task').id);
+
+    await wrapper.get('[data-filter-id="overdue"]').trigger('click');
+    expect(rowIds()).toEqual(['task-3']);
+
+    await wrapper.get('[data-filter-id="overdue"]').trigger('click');
+    await wrapper.get('[data-filter-id="auto"]').trigger('click');
+    expect(rowIds()).toEqual(['task-3']);
   });
 });

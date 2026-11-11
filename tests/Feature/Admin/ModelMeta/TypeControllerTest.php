@@ -130,27 +130,14 @@ test('role links backfill duties and newly assigned duties inherit roles', funct
     expect($duty->fresh()->hasRole($role))->toBeFalse()->and($other->fresh()->hasRole($role))->toBeFalse();
 });
 
-test('record exposes assigned owners and deferred files', function (): void {
+test('record exposes assigned owners', function (): void {
     $type = InstitutionType::factory()->create();
     $institution = Institution::factory()->create();
     $type->institutions()->attach($institution);
     asUserWithInertia($this->admin)->get(route('institutionTypes.show', $type))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('Admin/ModelMeta/ShowType')
-            ->where('attachedModels.0.id', $institution->id)->missing('files')
-            ->loadDeferredProps('files', fn (Assert $deferred) => $deferred->has('files')));
+            ->where('attachedModels.0.id', $institution->id));
 });
-
-test('administrators get the type files upload on both dictionaries', function (string $resource, string $class, string $folder): void {
-    $type = $class::factory()->create(['title' => ['lt' => 'Senatas', 'en' => 'Senate']]);
-
-    asUser($this->admin)->get(route("{$resource}.show", $type))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->component('Admin/ModelMeta/ShowType')
-            ->where('can.update', true)
-            ->where('sharepointPath', "General/Types/{$folder}/Senatas"));
-})->with([
-    ['institutionTypes', InstitutionType::class, 'Institutions'],
-    ['dutyTypes', DutyType::class, 'Duties'],
-]);
 
 test('assigned soft-deleted owners block permanent deletion', function (): void {
     $type = DutyType::factory()->create();

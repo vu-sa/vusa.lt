@@ -4,10 +4,8 @@ namespace App\Services\ResourceServices;
 
 use App\Enums\SharepointFolderEnum;
 use App\Models\Duty;
-use App\Models\DutyType;
 use App\Models\FileableFile;
 use App\Models\Institution;
-use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Traits\HasSharepointFiles;
 use App\Services\SharepointGraphService;
@@ -46,16 +44,6 @@ class SharepointFileService
         }
 
         $path = SharepointFolderEnum::GENERAL->label();
-
-        if ($fileable instanceof InstitutionType || $fileable instanceof DutyType) {
-            // model_type / getMorphClass() are morph aliases; the folder names are the model
-            // names ("Types/News"), so both are studly-cased back before pluralizing.
-            $typeableType = $fileable instanceof InstitutionType ? 'Institutions' : 'Duties';
-
-            $path .= '/Types';
-            $path .= '/'.$typeableType;
-            $path .= '/'.$fileable->getTranslation('title', 'lt');
-        }
 
         if ($fileable instanceof Institution) {
             $tenant = $fileable->loadMissing('tenant')->tenant;

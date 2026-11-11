@@ -60,6 +60,8 @@ return [
         ],
     ],
     'baseline' => [
+        'learningSteps' => 'Every member can view their path, read steps and mark their own progress.',
+        'knowledgeItems' => 'Every member can read the whole knowledge base and post insights.',
         'title' => 'Every member, even without a responsibility',
         'locked' => 'Every member',
         'locked_own' => 'Own – every member',

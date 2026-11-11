@@ -64,7 +64,7 @@ it('opens a problem with where it was discussed', function (): void {
     $page->click('[role=tab]:has-text("Svarstyta posėdžiuose")');
     docsScreenshot($page, 'v3-problem-meetings', highlights: [
         '[role=tab][aria-selected=true]',
-        'section[aria-labelledby=record-section-posedziai]',
+        '[id^="record-panel-"][id$="-posedziai"]',
     ]);
 
     $page->assertNoJavaScriptErrors();

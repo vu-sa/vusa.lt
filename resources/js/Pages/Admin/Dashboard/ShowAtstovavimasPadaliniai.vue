@@ -93,26 +93,14 @@
       </Link>
     </p>
 
-    <div v-if="hasStats" class="grid gap-8 lg:grid-cols-2 lg:gap-10" data-slot="atstovavimas-tenant-secondary-section">
-      <section ref="metricsAnchor" class="min-h-48 min-w-0" data-slot="atstovavimas-rep-metrics">
-        <OverviewSection :title="$t('visak.tenant_overview.rep_metrics')" :icon="ChartNoAxesCombined" variant="home">
-          <p v-if="repMetrics.error.value" class="mb-3 text-sm text-status-danger" role="alert">
-            {{ $t('metrics.history.error') }}
-          </p>
-          <TenantRepMetrics :data="scopedRepMetrics" :loading="!metricsVisible || repMetrics.isFetching.value" />
-        </OverviewSection>
-      </section>
-      <OverviewSection :title="$t('visak.tenant_overview.representatives')" :icon="Users" variant="home" class="min-w-0" data-slot="atstovavimas-representatives">
-        <RepresentativeActivitySection
-          v-if="representativeActivity"
-          :stats="representativeActivity.stats"
-          :users="representativeActivity.preview_users"
-          :tenant-ids="timelineFilters.selectedStatsTenants.value"
-          :loading="tenantTimelineData.isFetching.value"
-        />
-        <RepresentativeActivitySkeleton v-else />
-      </OverviewSection>
-    </div>
+    <p v-if="hasStats && representativeActivity" class="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-t border-border pt-3 text-sm" data-slot="atstovavimas-representatives-link">
+      <span class="text-muted-foreground">
+        {{ $t('representatives.padaliniai_link.summary', { active: String(representativeActivity.stats.activeLast30Days), total: String(representativeActivity.stats.total) }) }}
+      </span>
+      <Link :href="route('representatives.index', { tenants: timelineFilters.selectedStatsTenants.value })" class="font-medium text-foreground underline underline-offset-4">
+        {{ $t('representatives.padaliniai_link.open') }}
+      </Link>
+    </p>
 
     <WorkspaceSectionTiles v-if="hasStats" workspace-key="atstovavimas" variant="home" />
 
@@ -130,7 +118,7 @@
 
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { ChartArea, ChartNoAxesCombined, Users } from '@lucide/vue';
+import { ChartArea } from '@lucide/vue';
 import { useIntersectionObserver, useMediaQuery } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, onMounted, ref, watch } from 'vue';
@@ -144,15 +132,11 @@ import InstitutionsNeedingAttention from '@/Components/Home/InstitutionsNeedingA
 import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { InstitutionScope } from '@/Types/enums';
-import { useApi } from '@/Composables/useApi';
 import { OverviewSection } from '@/Components/Patterns';
 
 import InstitutionAttentionSkeleton from './Components/InstitutionAttentionSkeleton.vue';
 import OverviewNumbersSkeleton from './Components/OverviewNumbersSkeleton.vue';
-import RepresentativeActivitySection from './Components/RepresentativeActivitySection.vue';
-import RepresentativeActivitySkeleton from './Components/RepresentativeActivitySkeleton.vue';
 import InstitutionStatusTrendChart from './Components/InstitutionStatusTrendChart.vue';
-import TenantRepMetrics from './Components/TenantRepMetrics.vue';
 import TenantScopeSelector from './Components/TenantScopeSelector.vue';
 import TenantTimelineSection from './Components/TenantTimelineSection.vue';
 import TimelineGanttSkeleton from './Components/TimelineGanttSkeleton.vue';
@@ -162,7 +146,7 @@ import { provideTimelineFilters } from './Composables/useTimelineFilters';
 import { useTenantMeetings } from './Composables/useTenantMeetings';
 import { useTenantStatusHistory } from './Composables/useTenantStatusHistory';
 import { useTenantTimelineData } from './Composables/useTenantTimelineData';
-import type { AtstovavimasInstitution, AtstovavimasTenant, GanttActivityRequest, InstitutionStatusSummaryData, TenantRepMetrics as TenantRepMetricsData } from './types';
+import type { AtstovavimasInstitution, AtstovavimasTenant, GanttActivityRequest, InstitutionStatusSummaryData } from './types';
 
 const props = defineProps<{
   /** The padaliniai the user manages: the statistics are theirs alone. Empty for a rep. */
@@ -241,27 +225,6 @@ const institutionsWith = (activityStatus: string) => route('institutions.index',
     .map(id => props.statsTenants.find(tenant => String(tenant.id) === String(id))?.shortname)
     .filter(Boolean)
     .join(','),
-});
-
-const repMetrics = useApi<TenantRepMetricsData>(
-  computed(() => route('api.v1.admin.visak.repMetrics', { tenant_ids: timelineFilters.selectedStatsTenants.value })),
-  { immediate: false, refetch: false, showErrorToast: false },
-);
-
-const metricsAnchor = ref<HTMLElement | null>(null);
-const metricsVisible = ref(false);
-const metricsLoadedScope = ref('');
-const metricsScope = computed(() => timelineFilters.selectedStatsTenants.value.join(','));
-const scopedRepMetrics = computed(() => metricsLoadedScope.value === metricsScope.value ? repMetrics.data.value : null);
-useIntersectionObserver(metricsAnchor, ([entry]) => {
-  if (entry?.isIntersecting) metricsVisible.value = true;
-}, { rootMargin: '200px' });
-watch([metricsVisible, metricsScope], async ([visible, scope]) => {
-  if (!visible || !hasStats.value) return;
-  metricsLoadedScope.value = '';
-  repMetrics.abort();
-  await repMetrics.execute();
-  if (metricsScope.value === scope) metricsLoadedScope.value = scope;
 });
 
 const numbers = computed<OverviewNumberItem[]>(() => [
@@ -436,7 +399,6 @@ function refreshDashboard(): void {
     ganttActivityRequests.load(timelineFilters.selectedTenantForGantt.value, true);
   }
   void statusHistory.load(timelineFilters.selectedStatsTenants.value, historyDays.value, true);
-  if (metricsVisible.value) void repMetrics.execute();
   if (ganttActive.value) void tenantMeetings.refresh();
 }
 </script>

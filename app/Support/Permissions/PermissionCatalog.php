@@ -13,12 +13,13 @@ use Illuminate\Support\Str;
 final class PermissionCatalog
 {
     /** Admin workspaces (AdminNavigationCatalog keys), in the order the editor lists them. */
-    public const array AREAS = ['pradzia', 'atstovavimas', 'rezervacijos', 'svetaine', 'organizacija', 'sistema'];
+    public const array AREAS = ['pradzia', 'wiki', 'atstovavimas', 'rezervacijos', 'svetaine', 'organizacija', 'sistema'];
 
     /** Resource => workspace. Listed in the order the admin navigation shows them; the editor sorts by it. */
     private const array RESOURCE_AREAS = [
         'tasks' => 'pradzia',
         'comments' => 'pradzia',
+        'knowledgeItems' => 'wiki',
         'institutions' => 'atstovavimas',
         'meetings' => 'atstovavimas',
         'agendaItems' => 'atstovavimas',
@@ -42,6 +43,7 @@ final class PermissionCatalog
         'dutiables' => 'organizacija',
         'studyPrograms' => 'organizacija',
         'mailingLists' => 'organizacija',
+        'learningSteps' => 'organizacija',
         'forms' => 'organizacija',
         'roles' => 'sistema',
         'permissions' => 'sistema',

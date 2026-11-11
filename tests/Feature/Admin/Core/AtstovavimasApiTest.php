@@ -527,84 +527,6 @@ test('meetings are cached per window and refresh bypasses the cache', function (
         ->assertJsonCount(2, 'data');
 });
 
-test('representatives are searched and paginated without loading the full list', function (): void {
-    $duty = Duty::factory()->for($this->institution)->create();
-    grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
-
-    collect([
-        ['name' => 'First Representative', 'email' => 'first-representative@example.test'],
-        ['name' => 'Second Representative', 'email' => 'second-representative@example.test'],
-        ['name' => 'Third Representative', 'email' => 'third-representative@example.test'],
-    ])->each(function (array $attributes) use ($duty): void {
-        $representative = User::factory()->create($attributes);
-        $representative->duties()->attach($duty, [
-            'start_date' => now()->subMonth(),
-            'end_date' => null,
-        ]);
-    });
-
-    asUser($this->admin)
-        ->getJson(route('api.v1.admin.visak.representatives', [
-            'tenant_ids' => [$this->tenant->id],
-            'per_page' => 2,
-        ]))
-        ->assertSuccessful()
-        ->assertJsonCount(2, 'data.users')
-        ->assertJsonPath('data.pagination.total', 3)
-        ->assertJsonPath('data.pagination.last_page', 2);
-
-    asUser($this->admin)
-        ->getJson(route('api.v1.admin.visak.representatives', [
-            'tenant_ids' => [$this->tenant->id],
-            'search' => 'second-representative@example.test',
-        ]))
-        ->assertSuccessful()
-        ->assertJsonCount(1, 'data.users')
-        ->assertJsonPath('data.users.0.email', 'second-representative@example.test');
-});
-
-test('representative search reads translated duty and institution values rather than JSON keys', function (string $term, bool $matches): void {
-    $this->institution->update(['name' => ['lt' => 'Taryba', 'en' => 'Scholarships Board']]);
-    $duty = Duty::factory()->for($this->institution)->create([
-        'name' => ['lt' => 'Pirmininkas', 'en' => 'Chair'],
-    ]);
-    grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
-    $representative = User::factory()->create(['name' => 'Ona', 'email' => 'ona@example.test']);
-    $representative->duties()->attach($duty, ['start_date' => now()->subMonth()]);
-
-    asUser($this->admin)->getJson(route('api.v1.admin.visak.representatives', [
-        'tenant_ids' => [$this->tenant->id],
-        'search' => $term,
-    ]))->assertOk()
-        ->assertJsonCount($matches ? 1 : 0, 'data.users')
-        ->assertJsonPath('data.pagination.total', $matches ? 1 : 0);
-})->with([
-    'Lithuanian duty' => ['pirminink', true],
-    'English duty' => ['CHAIR', true],
-    'Lithuanian institution' => ['taryba', true],
-    'English institution' => ['SCHOLARSHIPS', true],
-    'Lithuanian JSON key' => ['lt', false],
-    'English JSON key' => ['en', false],
-]);
-
-test('translated representative search cannot include users outside the selected tenant or former duty holders', function (): void {
-    $duty = Duty::factory()->for($this->institution)->create([
-        'name' => ['lt' => 'Vadovas', 'en' => 'Scholarships Chair'],
-    ]);
-    grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
-    $former = User::factory()->create();
-    $former->duties()->attach($duty, ['start_date' => now()->subYear(), 'end_date' => now()->subDay()]);
-    $outsideDuty = Duty::factory()->create(['name' => ['lt' => 'Vadovas', 'en' => 'Scholarships Chair']]);
-    grantPurpose($outsideDuty, ResponsibilityPurpose::StudentRepresentation);
-    $outside = User::factory()->create();
-    $outside->duties()->attach($outsideDuty, ['start_date' => now()->subMonth()]);
-
-    asUser($this->admin)->getJson(route('api.v1.admin.visak.representatives', [
-        'tenant_ids' => [$this->tenant->id],
-        'search' => 'Scholarships',
-    ]))->assertOk()->assertJsonCount(0, 'data.users');
-});
-
 test('representative activity counts who acted today, this week, this month and never', function (): void {
     $duty = Duty::factory()->for($this->institution)->create();
     grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
@@ -617,10 +539,7 @@ test('representative activity counts who acted today, this week, this month and 
 
     asUser($this->admin)
         ->getJson(route('api.v1.admin.visak.timeline', ['tenant_ids' => [$this->tenant->id]]))
-        ->assertJsonCount(3, 'data.representative_activity.preview_users')
-        ->assertJsonPath('data.representative_activity.preview_users.0.category', 'today')
-        ->assertJsonPath('data.representative_activity.preview_users.1.category', 'week')
-        ->assertJsonPath('data.representative_activity.preview_users.2.category', 'month')
+        ->assertJsonMissingPath('data.representative_activity.preview_users')
         ->assertJsonPath('data.representative_activity.stats', [
             'total' => 5,
             'activeToday' => 1,
@@ -628,10 +547,6 @@ test('representative activity counts who acted today, this week, this month and 
             'activeLast30Days' => 3,
             'neverLoggedIn' => 1,
         ]);
-
-    asUser($this->admin)
-        ->getJson(route('api.v1.admin.visak.representatives', ['tenant_ids' => [$this->tenant->id], 'category' => 'inactive']))
-        ->assertJsonPath('data.pagination.total', 2);
 });
 
 /**

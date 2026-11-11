@@ -25,6 +25,7 @@ use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\InstitutionActivityStatusService;
+use App\Services\InstitutionPresenter;
 use App\Services\InstitutionRelationService;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Settings\CadenceSettings;
@@ -131,12 +132,13 @@ describe('unauthorized access', function (): void {
                 ->missing('overview.current_users.0.email')
                 ->missing('overview.current_users.0.phone')
                 ->missing('overview.current_users.0.pivot.additional_email')
-                ->missing('duties')
+                ->has('overviewDuties', 1)
+                ->missing('overviewDuties.0.current_users.0.email')
                 ->where('canViewActivityRequests', false)
                 ->missing('activityRequests')
                 ->reload(only: ['activityRequests'], callback: fn (Assert $history) => $history->missing('activityRequests'))
-                ->reloadOnly(['files', 'typeFiles', 'tasks', 'relatedInstitutions', 'institutionLinks', 'assignmentTerms'], fn (Assert $hidden) => $hidden
-                    ->where('files', [])->where('typeFiles', [])->where('tasks', [])
+                ->reloadOnly(['files', 'tasks', 'relatedInstitutions', 'institutionLinks', 'assignmentTerms'], fn (Assert $hidden) => $hidden
+                    ->where('files', [])->where('tasks', [])
                     ->where('relatedInstitutions', [])->where('institutionLinks', [])->where('assignmentTerms', []))
                 ->reloadOnly(['duties', 'problems', 'management'], fn (Assert $panels) => $panels
                     ->whereType('duties', 'array')
@@ -179,13 +181,12 @@ describe('unauthorized access', function (): void {
                 ->whereType('overview.activity_status.status', 'string')
                 ->missing('files')
                 ->missing('tasks')
+                ->where('overview.recentMeetings.0.type', null)
+                ->missing('overview.recentMeetings.0.agenda_item_titles')
+                ->whereType('overview.recentMeetings.0.has_protocol', 'boolean')
+                // The meetings tab searches the index with the reader's own scoped key.
                 ->missing('meetings')
-                ->reloadOnly(['meetings', 'management'], fn (Assert $panels) => $panels
-                    ->where('meetings.0.id', $meeting->id)
-                    ->where('meetings.0.type', null)
-                    ->missing('meetings.0.agenda_item_titles')
-                    ->whereType('meetings.0.has_protocol', 'boolean')
-                    ->where('management', null)));
+                ->reloadOnly('management', fn (Assert $panels) => $panels->where('management', null)));
     });
 
     test('cannot open an inactive institution outside their reach', function (): void {
@@ -239,7 +240,8 @@ describe('authorized access', function (): void {
     test('each optional tab returns only the props explicitly requested', function (array $only): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
         InstitutionActivityRequest::factory()->create(['institution_id' => $institution->id, 'recipient_id' => $this->admin->id]);
-        $optional = ['duties', 'meetings', 'tasks', 'problems', 'management', 'relatedInstitutions', 'institutionLinks', 'files', 'typeFiles', 'activityRequests', 'assignmentTerms'];
+        Duty::factory()->for($institution)->count(InstitutionPresenter::OVERVIEW_DUTY_LIMIT + 1)->create();
+        $optional = ['duties', 'tasks', 'problems', 'management', 'relatedInstitutions', 'institutionLinks', 'files', 'activityRequests', 'assignmentTerms'];
 
         asUserWithInertia($this->admin)->get(route('institutions.show', $institution))
             ->assertOk()
@@ -251,14 +253,55 @@ describe('authorized access', function (): void {
                     ->missingAll(array_values(array_diff($optional, $only)))));
     })->with([
         'duties' => [['duties']],
-        'meetings' => [['meetings']],
         'tasks' => [['tasks']],
         'problems' => [['problems']],
         'terms' => [['management']],
         'relations' => [['relatedInstitutions', 'institutionLinks']],
-        'files' => [['files', 'typeFiles']],
+        'files' => [['files']],
         'activity requests' => [['activityRequests']],
     ]);
+
+    test('the overview preview stays bounded while full duties wait for their tab', function (): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+        Duty::factory()->for($institution)->count(InstitutionPresenter::OVERVIEW_DUTY_LIMIT)->create();
+
+        asUserWithInertia($this->admin)->get(route('institutions.show', $institution))
+            ->assertInertia(fn (Assert $page) => $page->missing('duties')->has('overviewDuties', InstitutionPresenter::OVERVIEW_DUTY_LIMIT));
+
+        Duty::factory()->for($institution)->create();
+
+        asUserWithInertia($this->admin)->get(route('institutions.show', $institution))
+            ->assertInertia(fn (Assert $page) => $page
+                ->missing('duties')
+                ->reloadOnly('duties', fn (Assert $tab) => $tab->has('duties', InstitutionPresenter::OVERVIEW_DUTY_LIMIT + 1)));
+    });
+
+    test('separates the nearest upcoming meeting from bounded past meetings', function (): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+        foreach ([-4, -3, -2, -1, 1, 9] as $days) {
+            $meeting = Meeting::factory()->create(['start_time' => now()->addDays($days)]);
+            $meeting->institutions()->attach($institution);
+            if ($days === 1) {
+                $upcomingId = $meeting->id;
+            }
+        }
+        asUserWithInertia($this->admin)->get(route('institutions.show', $institution))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('upcomingMeeting.id', $upcomingId)
+                ->has('overview.recentMeetings', 3));
+    });
+
+    test('says whether there are files, so an empty Failai tab can give way to an add action', function (): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        asUserWithInertia($this->admin)->get(route('institutions.show', $institution))
+            ->assertInertia(fn (Assert $page) => $page->where('institution.has_files', false));
+
+        FileableFile::factory()->create(['fileable_type' => MorphMap::alias(Institution::class), 'fileable_id' => $institution->id]);
+
+        asUserWithInertia($this->admin)->get(route('institutions.show', $institution))
+            ->assertInertia(fn (Assert $page) => $page->where('institution.has_files', true));
+    });
 
     test('the task badge counts incomplete institution and meeting tasks without loading the tab', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
@@ -288,12 +331,8 @@ describe('authorized access', function (): void {
                 ->where('overview.recentMeetings.0.vote_matches', 1)
                 ->where('overview.recentMeetings.0.has_protocol', true)
                 ->where('overview.recentMeetings.0.has_report', false)
-                ->reloadOnly('meetings', fn (Assert $meetings) => $meetings
-                    ->where('meetings.0.agenda_items_count', 1)
-                    ->where('meetings.0.vote_matches', 1)
-                    ->where('meetings.0.has_protocol', true)
-                    ->where('meetings.0.has_report', false)
-                    ->where('meetings.0.can_discard', false)));
+                ->where('overview.recentMeetings.0.agenda_items_count', 1)
+                ->where('overview.recentMeetings.0.can_discard', false));
     });
 
     test('term editing loads full metadata separately from member lists', function (): void {
@@ -357,7 +396,6 @@ describe('authorized access', function (): void {
         $problem = Problem::factory()->create(['tenant_id' => $this->tenant->id, 'responsible_user_id' => null]);
         $institution->problems()->attach($problem);
         $file = FileableFile::factory()->create(['fileable_type' => 'institution', 'fileable_id' => $institution->id, 'public_link' => null]);
-        $typeFile = FileableFile::factory()->create(['fileable_type' => MorphMap::alias(InstitutionType::class), 'fileable_id' => $type->id]);
         $cadence = Cadence::factory()->create(['institution_id' => $institution->id, 'start_date' => today()->subMonth(), 'end_date' => today()->addMonth()]);
         InstitutionSecretary::create(['institution_id' => $institution->id, 'cadence_id' => $cadence->id, 'user_id' => $member->id]);
         StudyProgram::factory()->create(['tenant_id' => $this->tenant->id, 'name' => ['lt' => 'Matematika', 'en' => 'Mathematics']]);
@@ -404,6 +442,7 @@ describe('authorized access', function (): void {
             'meetings_count' => $loaded->meetings_count,
             'problems_count' => $loaded->problems_count,
             'related_institutions_count' => app(InstitutionRelationService::class)->relatedTo($loaded->id)->count(),
+            'has_files' => true,
             'managers' => $loaded->managers()->map($memberRow),
             'secretaries' => InstitutionSecretaryController::usersPayload(GetInstitutionSecretaries::execute($loaded)),
             'sharepointPath' => SharepointFileService::pathOrNull($loaded),
@@ -454,6 +493,7 @@ describe('authorized access', function (): void {
                     'delete' => $this->admin->can('delete', $loaded),
                     'recordMeeting' => $this->admin->can('createFor', [Meeting::class, $loaded]),
                     'createProblem' => $this->admin->can('create', Problem::class),
+                    'createDuty' => $this->admin->can('create', Duty::class),
                     'reportActivity' => $this->admin->can('create', [InstitutionCheckIn::class, $loaded]),
                     'manageLinks' => $this->admin->can('create', InstitutionLink::class),
                     'askAboutActivity' => $this->admin->can('askAboutActivity', [InstitutionCheckIn::class, $loaded]),
@@ -482,10 +522,9 @@ describe('authorized access', function (): void {
                 ->whereType('overview.activity_status.requires_action', 'boolean')
                 ->where('overview.recentMeetings.0.id', $meeting->id)
                 ->where('overview.recentMeetings.0.type', null)
-                ->missing('duties')->missing('tasks')->missing('files')->missing('management')->missing('activityRequests')
-                ->reloadOnly(['duties', 'meetings', 'tasks', 'problems', 'relatedInstitutions', 'institutionLinks', 'management'], fn (Assert $panels) => $panels
+                ->missing('tasks')->missing('files')->missing('management')->missing('activityRequests')
+                ->reloadOnly(['duties', 'tasks', 'problems', 'relatedInstitutions', 'institutionLinks', 'management'], fn (Assert $panels) => $panels
                     ->where('duties', $json($expectedDuties))
-                    ->where('meetings', $expectedMeetings)
                     ->where('tasks', $expectedTasks)
                     ->where('problems', $expectedProblems)
                     ->where('relatedInstitutions', app(InstitutionRelationService::class)->summaryFor($loaded))
@@ -496,8 +535,6 @@ describe('authorized access', function (): void {
                     ->where('duties.0.name', $dutyName)
                     ->where('duties.0.description', '')
                     ->whereType('duties.0.current_users.0.pivot.start_date', 'string')
-                    ->where('meetings.0.type', null)
-                    ->whereType('meetings.0.agenda_items_count', 'integer')
                     ->where('tasks.0.id', $task->id)
                     ->where('tasks.0.users.0.profile_photo_path', null)
                     ->whereType('tasks.0.can_update', 'boolean')
@@ -511,17 +548,12 @@ describe('authorized access', function (): void {
                     ->where('management.cadences.0.start_meeting', null)
                     ->whereType('management.secretaryRosters.0.is_current', 'boolean')
                     ->whereType('management.studyPrograms.0.name', 'string'))
-                ->reloadOnly(['files', 'typeFiles'], fn (Assert $files) => $files
+                ->reloadOnly(['files'], fn (Assert $files) => $files
                     ->where('files', [$file->fresh()->toArray()])
-                    ->where('typeFiles', [$typeFile->fresh()->load('fileable:id,title')->toArray()])
                     ->missing('files.0.deleted_at')
                     ->where('files.0.id', $file->id)
                     ->where('files.0.public_link', null)
-                    ->whereType('files.0.formatted_size', 'string')
-                    ->where('typeFiles.0', $typeFile->fresh()->load('fileable:id,title')->toArray())
-                    ->where('typeFiles.0.id', $typeFile->id)
-                    ->where('typeFiles.0.fileable.id', $type->id)
-                    ->whereType('typeFiles.0.fileable.title', 'string'))
+                    ->whereType('files.0.formatted_size', 'string'))
                 ->reloadOnly('activityRequests', fn (Assert $requests) => $requests
                     ->where('activityRequests', $expectedHistory)
                     ->where('activityRequests.data.0.id', $history->send_id)
@@ -663,7 +695,8 @@ describe('authorized access', function (): void {
         $response->assertStatus(200)
             ->assertInertia(fn ($page) => $page
                 ->missing('overview.recentMeetings.0.agenda_item_titles')
-                ->where('overview.recentMeetings.0.agenda_items_count', 4)
+                ->where('upcomingMeeting.agenda_items_count', 4)
+                ->where('overview.recentMeetings', [])
                 ->missing('overview.recentMeetings.0.agenda_items')
             );
     });
