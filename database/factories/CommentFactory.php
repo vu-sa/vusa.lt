@@ -24,6 +24,11 @@ class CommentFactory extends Factory
         ];
     }
 
+    public function topic(): static
+    {
+        return $this->state(fn () => ['kind' => CommentKind::Topic, 'title' => $this->faker->sentence()]);
+    }
+
     /**
      * A reply to a given parent comment (inherits its thread root).
      */

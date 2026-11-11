@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\MeetingType;
+use App\Models\Comment;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\InstitutionLink;
@@ -76,11 +77,11 @@ describe('comment policy follows the parent', function (): void {
         $this->coordinatorComment = $this->agendaItem->comment('<p>From the coordinator</p>');
     });
 
-    test('anyone who can view the parent can read, react and resolve', function (): void {
+    test('anyone who can view the parent can read and react but plain comments cannot be resolved', function (): void {
         foreach ([$this->viewer, $this->coordinator] as $user) {
             expect(Gate::forUser($user)->allows('view', $this->coordinatorComment))->toBeTrue()
                 ->and(Gate::forUser($user)->allows('react', $this->coordinatorComment))->toBeTrue()
-                ->and(Gate::forUser($user)->allows('resolve', $this->coordinatorComment))->toBeTrue();
+                ->and(Gate::forUser($user)->allows('resolve', $this->coordinatorComment))->toBeFalse();
         }
     });
 
@@ -145,4 +146,22 @@ describe('comment moderation permissions', function (): void {
         expect(Permission::query()->where('name', 'like', 'comments.%')->pluck('name')->sort()->values()->all())
             ->toBe(['comments.delete.*', 'comments.delete.padalinys']);
     });
+});
+
+describe('topic moderation', function (): void {
+    test('comment moderation permissions can close topics only in their scope', function (string $permission, bool $foreignAllowed): void {
+        $moderator = commentModerator($this->tenant, $permission);
+        $local = Comment::factory()->topic()->for($this->meeting, 'commentable')->for($this->viewer)->create();
+        $otherTenant = Tenant::query()->whereKeyNot($this->tenant->id)->firstOrFail();
+        $foreign = Comment::factory()->topic()
+            ->for(Problem::factory()->create(['tenant_id' => $otherTenant->id]), 'commentable')->for($this->viewer)->create();
+
+        expect(Gate::forUser($moderator)->allows('resolve', $local))->toBeTrue();
+        expect(Gate::forUser($moderator)->allows('resolve', $foreign))->toBe($foreignAllowed);
+
+        asUser($moderator)->postJson(route('api.v1.admin.comments.resolve', $local))
+            ->assertOk()->assertJsonPath('data.can.resolve', true)->assertJsonPath('data.is_closed', true);
+        asUser($moderator)->deleteJson(route('api.v1.admin.comments.resolve', $local))
+            ->assertOk()->assertJsonPath('data.is_closed', false);
+    })->with([['comments.delete.padalinys', false], ['comments.delete.*', true]]);
 });

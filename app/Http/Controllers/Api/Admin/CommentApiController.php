@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Actions\Media\SyncImageMedia;
+use App\Actions\ResolveCommentAuthorDuty;
 use App\Contracts\Commentable;
 use App\Enums\CommentKind;
 use App\Events\CommentBroadcast;
@@ -11,14 +13,17 @@ use App\Http\Requests\Comments\StoreCommentRequest;
 use App\Http\Requests\Comments\UpdateCommentRequest;
 use App\Http\Resources\CommentResource;
 use App\Models\Comment;
+use App\Policies\CommentPolicy;
 use App\Services\CommentableMentionResolver;
 use App\Support\Commentables;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 /**
  * The discussion framework API: threaded comments attached to any allowlisted
@@ -38,11 +43,14 @@ class CommentApiController extends ApiController
 
         $this->stashModeration($request, $commentable);
 
-        $replyLoad = ['user:id,name,profile_photo_path', 'reactions.user:id,name'];
+        $replyLoad = ['user:id,name,profile_photo_path,pronouns', 'authorDutiable.duty.institution.tenant', 'media', 'reactions.user:id,name', 'pollVotes.user:id,name'];
 
         $query = Comment::forCommentable($commentable->getMorphClass(), $commentable->getKey())
             ->roots()
             ->with([
+                'user:id,name,profile_photo_path,pronouns',
+                'authorDutiable.duty.institution.tenant',
+                'media',
                 'reactions.user:id,name',
                 'pollVotes.user:id,name',
                 'threadReplies' => fn ($q) => $q
@@ -55,7 +63,17 @@ class CommentApiController extends ApiController
             $request->safe()->boolean('resolved') ? $query->resolved() : $query->unresolved();
         }
 
-        return $this->jsonSuccess(CommentResource::collection($query->get()));
+        $authorDuty = app(ResolveCommentAuthorDuty::class);
+
+        return $this->jsonSuccess(CommentResource::collection($query->get()), meta: [
+            'capabilities' => Commentables::capabilitiesFor($commentableType),
+            'me' => [
+                'duties' => $authorDuty->options($request->user())->map(fn ($option) => ResolveCommentAuthorDuty::data($option))->values()->all(),
+                'default_dutiable_id' => $authorDuty->default($request->user(), $commentable),
+                // Lets the client keep moderation actions on comments that arrive over the broadcast.
+                'can_moderate' => (bool) $request->attributes->get('comment_can_moderate', false),
+            ],
+        ]);
     }
 
     /**
@@ -66,23 +84,48 @@ class CommentApiController extends ApiController
         $commentable = $this->resolveCommentable($commentableType, $commentableId);
         $this->authorize('view', $commentable);
 
-        $attributes = [];
+        $kind = CommentKind::from($request->validated('kind') ?? CommentKind::Comment->value);
+        $capabilities = Commentables::capabilitiesFor($commentableType);
 
-        if ($request->input('kind') === CommentKind::Poll->value) {
-            $attributes = [
-                'kind' => CommentKind::Poll,
-                'metadata' => ['poll' => $this->normalizePoll($request->input('metadata.poll'))],
-            ];
+        if (($kind === CommentKind::Topic && ! $capabilities['topics'])
+            || ($kind === CommentKind::Poll && ! $capabilities['polls'])) {
+            throw ValidationException::withMessages(['kind' => __('validation.in', ['attribute' => 'kind'])]);
         }
 
-        /** @var Comment $comment */
-        $comment = $commentable->comment(
-            $request->input('body'),
-            $request->input('parent_id'),
-            $attributes,
-        );
+        $comment = DB::transaction(function () use ($request, $commentable, $kind): Comment {
+            $user = $request->user();
+            $requestedDuty = $request->validated('dutiable_id');
+            $dutiableId = app(ResolveCommentAuthorDuty::class)->forPost($user, $commentable, $requestedDuty);
+            $attributes = [
+                'kind' => $kind,
+                'title' => $kind === CommentKind::Topic ? $request->validated('title') : null,
+                'author_dutiable_id' => $dutiableId,
+            ];
 
-        $comment->load(['reactions.user:id,name', 'pollVotes.user:id,name']);
+            if ($kind === CommentKind::Poll) {
+                $attributes['metadata'] = ['poll' => $this->normalizePoll($request->validated('metadata.poll'))];
+            }
+
+            foreach ($request->validated('image_ids') ?? [] as $mediaId) {
+                SyncImageMedia::requirePending($user, (int) $mediaId);
+            }
+
+            $this->refuseClosedTopic($commentable, $request->validated('parent_id'));
+
+            $comment = $commentable->comment($request->validated('body'), $request->validated('parent_id'), $attributes);
+
+            foreach ($request->validated('image_ids') ?? [] as $mediaId) {
+                app(SyncImageMedia::class)->attachPending($comment, Comment::IMAGES, (int) $mediaId, $user);
+            }
+
+            if ($requestedDuty !== null && ($user->ui_preferences['comment_dutiable_id'] ?? null) !== $requestedDuty) {
+                $user->forceFill(['ui_preferences' => array_merge($user->ui_preferences ?? [], ['comment_dutiable_id' => $requestedDuty])])->saveQuietly();
+            }
+
+            return $comment;
+        });
+
+        $comment->load(['user:id,name,profile_photo_path,pronouns', 'authorDutiable.duty.institution.tenant', 'media', 'reactions.user:id,name', 'pollVotes.user:id,name']);
         $this->stashModeration($request, $commentable);
 
         $this->broadcast($commentableType, $commentableId, 'created', $this->payload($request, $comment));
@@ -108,12 +151,12 @@ class CommentApiController extends ApiController
     {
         $this->authorize('update', $comment);
 
-        $comment->body = $request->input('body');
+        $comment->body = $request->validated('body');
         $comment->mentioned_user_ids = Comment::extractMentions($comment->body);
         $comment->markEdited();
         $comment->save();
 
-        $comment->load(['reactions.user:id,name', 'pollVotes.user:id,name']);
+        $comment->load(['user:id,name,profile_photo_path,pronouns', 'authorDutiable.duty.institution.tenant', 'media', 'reactions.user:id,name', 'pollVotes.user:id,name']);
         $this->stashModeration($request, $comment->commentable);
 
         $this->broadcastForComment($comment, 'updated', $this->payload($request, $comment));
@@ -141,7 +184,7 @@ class CommentApiController extends ApiController
         $this->authorize('resolve', $comment);
         $comment->resolve($request->user());
 
-        $comment->load(['reactions.user:id,name', 'pollVotes.user:id,name']);
+        $comment->load(['user:id,name,profile_photo_path,pronouns', 'authorDutiable.duty.institution.tenant', 'media', 'reactions.user:id,name', 'pollVotes.user:id,name']);
         $this->stashModeration($request, $comment->commentable);
         $this->broadcastForComment($comment, 'resolved', $this->payload($request, $comment));
 
@@ -153,7 +196,7 @@ class CommentApiController extends ApiController
         $this->authorize('resolve', $comment);
         $comment->unresolve();
 
-        $comment->load(['reactions.user:id,name', 'pollVotes.user:id,name']);
+        $comment->load(['user:id,name,profile_photo_path,pronouns', 'authorDutiable.duty.institution.tenant', 'media', 'reactions.user:id,name', 'pollVotes.user:id,name']);
         $this->stashModeration($request, $comment->commentable);
         $this->broadcastForComment($comment, 'resolved', $this->payload($request, $comment));
 
@@ -207,6 +250,24 @@ class CommentApiController extends ApiController
     }
 
     /**
+     * A closed topic takes no more replies; the root row is locked so a reply cannot slip in while it closes.
+     */
+    protected function refuseClosedTopic(Model&Commentable $commentable, ?string $parentId): void
+    {
+        if ($parentId === null) {
+            return;
+        }
+
+        /** @var Comment|null $parent */
+        $parent = $commentable->comments()->find($parentId);
+        $root = $parent === null ? null : $commentable->comments()->lockForUpdate()->find($parent->thread_root_id ?? $parent->id);
+
+        if ($root instanceof Comment && $root->kind === CommentKind::Topic && $root->isResolved()) {
+            throw ValidationException::withMessages(['parent_id' => __('discussions.topic.closed_hint')]);
+        }
+    }
+
+    /**
      * Resolve a commentable from the allowlist or 404.
      */
     protected function resolveCommentable(string $type, string $id): Model&Commentable
@@ -219,9 +280,6 @@ class CommentApiController extends ApiController
     }
 
     /**
-     * Normalize a validated poll definition: assign a stable server-side id to
-     * every option (clients only supply labels) and keep just the known keys.
-     *
      * @param  array<string, mixed>  $poll
      * @return array{options: array<int, array{id: string, label: string}>, allow_multiple: bool, closes_at: string|null}
      */
@@ -242,15 +300,12 @@ class CommentApiController extends ApiController
         ];
     }
 
-    /**
-     * Evaluate the moderation flag once per request and stash it for the
-     * resource (avoids per-comment policy evaluation across a thread).
-     */
+    /** Avoid per-comment policy queries when serializing a thread. */
     protected function stashModeration(Request $request, ?Model $commentable): void
     {
         $canModerate = $commentable !== null
             && $request->user() !== null
-            && Gate::forUser($request->user())->allows('update', $commentable);
+            && app(CommentPolicy::class)->canModerate($request->user(), $commentable);
 
         $request->attributes->set('comment_can_moderate', $canModerate);
     }
@@ -263,8 +318,7 @@ class CommentApiController extends ApiController
      */
     protected function payload(Request $request, Comment $comment): array
     {
-        // resolve() (not toArray()) filters out MissingValue/when() artifacts and
-        // fully resolves nested resources, yielding a clean json-encodable array.
+        // resolve() removes conditional fields omitted from broadcast payloads.
         return new CommentResource($comment)->resolve($request);
     }
 

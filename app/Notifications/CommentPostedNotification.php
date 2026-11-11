@@ -22,6 +22,7 @@ class CommentPostedNotification extends BaseNotification
         protected array $commenter,
         protected bool $isMention = false,
         protected bool $isPoll = false,
+        protected ?string $topicTitle = null,
     ) {}
 
     public function title(object $notifiable): string
@@ -47,6 +48,8 @@ class CommentPostedNotification extends BaseNotification
     {
         $html = preg_replace('/(<\/(?:p|li|ul|ol|blockquote|div|h[1-6])\s*>|<br\b[^>]*>)/i', ' $1', $this->commentBody);
         $text = Str::squish(html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+
+        $text = $this->topicTitle === null ? $text : $this->topicTitle.($text === '' ? '' : ' — '.$text);
 
         return $text === '' ? null : Str::limit($text, 200);
     }

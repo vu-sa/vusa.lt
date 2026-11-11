@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use App\Contracts\ImageMediaOwner;
 use App\Enums\CommentKind;
+use App\Models\Pivots\Dutiable;
+use App\Models\Traits\HasImageMedia;
 use App\Services\HtmlSanitizerService;
 use Illuminate\Database\Eloquent\Attributes\Touches;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
@@ -26,6 +29,9 @@ use Illuminate\Support\Facades\DB;
  * @property string $commentable_id
  * @property string|null $user_id
  * @property CommentKind $kind
+ * @property string|null $title
+ * @property string|null $author_dutiable_id
+ * @property-read Dutiable|null $authorDutiable
  * @property string $body
  * @property array<array-key, mixed>|null $metadata
  * @property array<array-key, mixed>|null $mentioned_user_ids
@@ -59,9 +65,11 @@ use Illuminate\Support\Facades\DB;
  */
 #[Touches(['commentable'])]
 #[Unguarded]
-class Comment extends Model
+class Comment extends Model implements ImageMediaOwner
 {
-    use HasFactory, HasUlids;
+    use HasFactory, HasImageMedia, HasUlids;
+
+    public const string IMAGES = 'images';
 
     /**
      * The emoji a user may react to a comment with.
@@ -82,7 +90,7 @@ class Comment extends Model
     ];
 
     #[\Override]
-    protected $with = ['user:id,name,profile_photo_path'];
+    protected $with = ['user:id,name,profile_photo_path,pronouns'];
 
     #[\Override]
     protected function casts(): array
@@ -125,6 +133,16 @@ class Comment extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function authorDutiable(): BelongsTo
+    {
+        return $this->belongsTo(Dutiable::class, 'author_dutiable_id');
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->registerImageCollection(self::IMAGES, single: false);
     }
 
     public function parent(): BelongsTo
@@ -171,10 +189,15 @@ class Comment extends Model
         DB::transaction(function (): void {
             $this->reactions()->delete();
             $this->pollVotes()->delete();
+            $this->clearMediaCollection(self::IMAGES);
 
             $this->forceFill([
                 'kind' => CommentKind::Comment,
                 'body' => '',
+                'title' => null,
+                'author_dutiable_id' => null,
+                'resolved_at' => null,
+                'resolved_by' => null,
                 'metadata' => null,
                 'mentioned_user_ids' => null,
                 'user_id' => null,
@@ -183,7 +206,8 @@ class Comment extends Model
             ])->save();
         });
 
-        $this->unsetRelation('user')->unsetRelation('reactions')->unsetRelation('pollVotes');
+        $this->unsetRelation('user')->unsetRelation('reactions')->unsetRelation('pollVotes')
+            ->unsetRelation('authorDutiable')->unsetRelation('media');
     }
 
     public function isPoll(): bool

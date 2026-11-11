@@ -1,16 +1,25 @@
 <?php
 
+use App\Actions\Media\AddImageMedia;
+use App\Actions\ResolveCommentAuthorDuty;
+use App\Enums\CommentKind;
 use App\Enums\MeetingType;
+use App\Enums\SystemDutyType;
+use App\Enums\TenantType;
 use App\Events\CommentBroadcast;
+use App\Events\CommentPosted;
 use App\Http\Resources\CommentResource;
 use App\Models\Comment;
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\Form;
 use App\Models\Institution;
 use App\Models\InstitutionLink;
 use App\Models\LearningStep;
 use App\Models\Meeting;
+use App\Models\PendingUpload;
 use App\Models\Pivots\AgendaItem;
+use App\Models\Pivots\Dutiable;
 use App\Models\Problem;
 use App\Models\Reservation;
 use App\Models\Role;
@@ -18,10 +27,14 @@ use App\Models\SupportRequest;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\CommentRecipientResolver;
+use App\Services\SystemDutyTypes;
+use App\Settings\DutyTypeSettings;
 use App\Support\Commentables;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Storage;
 
 pest()->use(RefreshDatabase::class);
 
@@ -74,8 +87,8 @@ describe('index', function (): void {
 
     test('filters by resolved state', function (): void {
         $this->actingAs($this->coordinator);
-        $open = $this->agendaItem->comment('<p>Open</p>');
-        $done = $this->agendaItem->comment('<p>Done</p>');
+        $open = $this->agendaItem->comment('<p>Open</p>', attributes: ['kind' => CommentKind::Topic, 'title' => 'Open']);
+        $done = $this->agendaItem->comment('<p>Done</p>', attributes: ['kind' => CommentKind::Topic, 'title' => 'Done']);
         $done->resolve($this->coordinator);
 
         asUser($this->coordinator)->getJson($this->indexUrl.'?resolved=0')
@@ -87,8 +100,8 @@ describe('index', function (): void {
 
     test('empty and invalid resolved filters leave all threads visible', function (string $filter): void {
         $this->actingAs($this->coordinator);
-        $open = $this->agendaItem->comment('<p>Open</p>');
-        $done = $this->agendaItem->comment('<p>Done</p>');
+        $open = $this->agendaItem->comment('<p>Open</p>', attributes: ['kind' => CommentKind::Topic, 'title' => 'Open']);
+        $done = $this->agendaItem->comment('<p>Done</p>', attributes: ['kind' => CommentKind::Topic, 'title' => 'Done']);
         $done->resolve($this->coordinator);
 
         asUser($this->coordinator)->getJson($this->indexUrl.$filter)
@@ -279,15 +292,17 @@ describe('update & delete', function (): void {
 });
 
 describe('resolve', function (): void {
-    test('a view-audience user can resolve and unresolve', function (): void {
-        $this->actingAs($this->coordinator);
-        $comment = $this->agendaItem->comment('<p>Question?</p>');
+    test('a topic author can close and reopen their topic', function (): void {
+        $this->actingAs($this->viewer);
+        $comment = $this->agendaItem->comment('<p>Question?</p>', attributes: ['kind' => CommentKind::Topic, 'title' => 'Question']);
 
         asUser($this->viewer)->postJson(route('api.v1.admin.comments.resolve', $comment))
-            ->assertOk()->assertJsonPath('data.is_resolved', true);
+            ->assertOk()->assertJsonPath('data.is_resolved', true)->assertJsonPath('data.is_closed', true);
 
         asUser($this->viewer)->deleteJson(route('api.v1.admin.comments.resolve', $comment))
-            ->assertOk()->assertJsonPath('data.is_resolved', false);
+            ->assertOk()->assertJsonPath('data.is_resolved', false)->assertJsonPath('data.is_closed', false);
+
+        expect($comment->fresh()->resolved_at)->toBeNull();
     });
 });
 
@@ -619,4 +634,380 @@ describe('reply destinations', function (): void {
             ->assertJsonMissing(['body' => '<p>Another record</p>']);
     });
 
+});
+
+describe('topics and capabilities', function (): void {
+    test('creates a titled topic', function (): void {
+        $response = asUser($this->viewer)->postJson($this->storeUrl, [
+            'kind' => 'topic', 'title' => 'Next meeting', 'body' => '<p>When?</p>',
+        ])->assertCreated()
+            ->assertJsonPath('data.kind', 'topic')
+            ->assertJsonPath('data.title', 'Next meeting')
+            ->assertJsonPath('data.is_closed', false)
+            ->assertJsonPath('data.can.resolve', true);
+
+        $this->assertDatabaseHas('comments', ['id' => $response->json('data.id'), 'title' => 'Next meeting', 'kind' => 'topic']);
+    });
+
+    test('validates topic titles and forbids titles on other kinds', function (array $payload): void {
+        asUser($this->viewer)->postJson($this->storeUrl, $payload + ['body' => '<p>Text</p>'])
+            ->assertUnprocessable()->assertJsonValidationErrors('title');
+
+        expect($this->agendaItem->comments()->count())->toBe(0);
+    })->with([
+        'missing' => [['kind' => 'topic']],
+        'empty' => [['kind' => 'topic', 'title' => '']],
+        'too long' => [['kind' => 'topic', 'title' => str_repeat('a', 161)]],
+        'not a string' => [['kind' => 'topic', 'title' => ['Title']]],
+        'plain comment' => [['kind' => 'comment', 'title' => 'Title']],
+        'poll' => [['kind' => 'poll', 'title' => 'Title', 'metadata' => ['poll' => ['options' => [['label' => 'Yes'], ['label' => 'No']]]]]],
+    ]);
+
+    test('support requests reject topics and polls', function (string $kind): void {
+        $support = SupportRequest::factory()->create(['visibility' => 'public']);
+        $payload = ['kind' => $kind, 'body' => '<p>Text</p>'];
+        if ($kind === 'topic') {
+            $payload['title'] = 'Title';
+        } else {
+            $payload['metadata'] = ['poll' => ['options' => [['label' => 'Yes'], ['label' => 'No']]]];
+        }
+
+        asUser($this->viewer)->postJson(route('api.v1.admin.comments.store', [
+            'commentableType' => 'supportRequest', 'commentableId' => $support->id,
+        ]), $payload)->assertUnprocessable()->assertJsonValidationErrors('kind');
+
+        expect($support->comments()->count())->toBe(0);
+    })->with(['topic', 'poll']);
+
+    test('a topic cannot be a reply', function (): void {
+        $root = Comment::factory()->for($this->agendaItem, 'commentable')->create();
+
+        asUser($this->viewer)->postJson($this->storeUrl, [
+            'kind' => 'topic', 'title' => 'Title', 'body' => '<p>Text</p>', 'parent_id' => $root->id,
+        ])->assertUnprocessable()->assertJsonValidationErrors('parent_id');
+
+        expect($root->replies()->count())->toBe(0);
+    });
+
+    test('a parent updater can close and reopen another authors topic', function (): void {
+        $topic = Comment::factory()->topic()->for($this->agendaItem, 'commentable')->for($this->viewer)->create();
+
+        asUser($this->coordinator)->postJson(route('api.v1.admin.comments.resolve', $topic))
+            ->assertOk()->assertJsonPath('data.is_closed', true)->assertJsonPath('data.can.resolve', true);
+        expect($topic->fresh()->resolved_by)->toBe($this->coordinator->id);
+
+        asUser($this->coordinator)->deleteJson(route('api.v1.admin.comments.resolve', $topic))
+            ->assertOk()->assertJsonPath('data.is_closed', false);
+        expect($topic->fresh()->resolved_at)->toBeNull();
+    });
+
+    test('another viewer cannot close or reopen a topic', function (): void {
+        $topic = Comment::factory()->topic()->for($this->agendaItem, 'commentable')->for($this->coordinator)->create();
+
+        asUser($this->viewer)->getJson($this->indexUrl)->assertOk()->assertJsonPath('data.0.can.resolve', false);
+        asUser($this->viewer)->postJson(route('api.v1.admin.comments.resolve', $topic))->assertForbidden();
+        expect($topic->fresh()->resolved_at)->toBeNull();
+
+        $topic->resolve($this->coordinator);
+        asUser($this->viewer)->deleteJson(route('api.v1.admin.comments.resolve', $topic))->assertForbidden();
+        expect($topic->fresh()->isResolved())->toBeTrue();
+    });
+
+    test('plain comments polls and erased topics cannot be closed', function (string $state): void {
+        $comment = Comment::factory()->for($this->agendaItem, 'commentable')->for($this->coordinator)->create([
+            'kind' => $state === 'erased' ? CommentKind::Topic : CommentKind::from($state),
+            'title' => $state === 'erased' ? 'Title' : null,
+        ]);
+        if ($state === 'erased') {
+            $comment->erase();
+        }
+
+        asUser($this->coordinator)->postJson(route('api.v1.admin.comments.resolve', $comment))->assertForbidden();
+        asUser($this->coordinator)->deleteJson(route('api.v1.admin.comments.resolve', $comment))->assertForbidden();
+        asUser($this->coordinator)->getJson($this->indexUrl)->assertOk()->assertJsonPath('data.0.can.resolve', false);
+        expect($comment->fresh()->resolved_at)->toBeNull();
+    })->with(['comment', 'poll', 'erased']);
+
+    test('index exposes capabilities and current author duty choices', function (): void {
+        $option = $this->viewer->dutiables()->with('duty.institution')->firstOrFail();
+        $this->viewer->update(['pronouns' => ['lt' => 'ji', 'en' => 'she']]);
+        $root = Comment::factory()->topic()->for($this->agendaItem, 'commentable')->for($this->viewer)->create(['author_dutiable_id' => $option->id]);
+        Comment::factory()->for($this->agendaItem, 'commentable')->for($this->viewer)->create([
+            'parent_id' => $root->id, 'thread_root_id' => $root->id, 'author_dutiable_id' => $option->id,
+        ]);
+
+        asUser($this->viewer)->getJson($this->indexUrl)->assertOk()
+            ->assertJsonPath('meta.capabilities', ['layout' => 'comments', 'topics' => true, 'polls' => true, 'images' => true])
+            ->assertJsonCount(1, 'meta.me.duties')
+            ->assertJsonPath('meta.me.default_dutiable_id', $option->id)
+            ->assertJsonPath('meta.me.duties.0.dutiable_id', $option->id)
+            ->assertJsonPath('data.0.author_duty.dutiable_id', $option->id)
+            ->assertJsonPath('data.0.replies.0.author_duty.dutiable_id', $option->id)
+            ->assertJsonPath('data.0.user.pronouns', ['lt' => 'ji', 'en' => 'she'])
+            ->assertJsonPath('data.0.replies.0.user.pronouns', ['lt' => 'ji', 'en' => 'she'])
+            ->assertJsonStructure(['meta' => ['capabilities', 'me' => ['duties' => [['dutiable_id', 'name', 'institution', 'use_original_duty_name']], 'default_dutiable_id']]]);
+    });
+
+    test('index exposes alias specific capabilities even without duties', function (string $alias, string $layout, bool $topics): void {
+        $user = User::factory()->create();
+        $record = $alias === 'supportRequest'
+            ? SupportRequest::factory()->create(['visibility' => 'public'])
+            : LearningStep::factory()->create(['is_active' => true]);
+
+        asUser($user)->getJson(route('api.v1.admin.comments.index', ['commentableType' => $alias, 'commentableId' => $record->id]))
+            ->assertOk()->assertJsonPath('meta', [
+                'capabilities' => ['layout' => $layout, 'topics' => $topics, 'polls' => $topics, 'images' => true],
+                'me' => ['duties' => [], 'default_dutiable_id' => null, 'can_moderate' => false],
+            ]);
+    })->with([['supportRequest', 'conversation', false], ['learningStep', 'topics', true]]);
+});
+
+test('index tells a moderator, and only a moderator, that they moderate this record', function (): void {
+    asUser($this->coordinator)->getJson($this->indexUrl)->assertOk()->assertJsonPath('meta.me.can_moderate', true);
+    asUser($this->viewer)->getJson($this->indexUrl)->assertOk()->assertJsonPath('meta.me.can_moderate', false);
+});
+
+describe('closed topics', function (): void {
+    test('refuse replies to the topic and to its replies, and accept them again once reopened', function (): void {
+        $topic = Comment::factory()->topic()->for($this->agendaItem, 'commentable')->for($this->viewer)->create();
+        $reply = Comment::factory()->for($this->agendaItem, 'commentable')->for($this->viewer)
+            ->create(['parent_id' => $topic->id, 'thread_root_id' => $topic->id]);
+        $topic->resolve($this->viewer);
+
+        foreach ([$topic, $reply] as $parent) {
+            asUser($this->viewer)->postJson($this->storeUrl, ['body' => '<p>Late</p>', 'parent_id' => $parent->id])
+                ->assertUnprocessable()->assertJsonValidationErrors('parent_id');
+        }
+        expect($topic->threadReplies()->count())->toBe(1);
+
+        $topic->unresolve();
+        asUser($this->viewer)->postJson($this->storeUrl, ['body' => '<p>Again</p>', 'parent_id' => $topic->id])->assertCreated();
+    });
+});
+
+describe('author duty', function (): void {
+    test('rejects a foreign or future duty assignment', function (string $state): void {
+        $this->freezeTime();
+        $option = Dutiable::factory()->forUser($state === 'foreign' ? $this->coordinator : $this->viewer)
+            ->forDuty(Duty::factory()->for($this->institution)->create())->create([
+                'start_date' => $state === 'future' ? today()->addDay() : today()->subMonth(),
+            ]);
+
+        asUser($this->viewer)->postJson($this->storeUrl, ['body' => '<p>Text</p>', 'dutiable_id' => $option->id])
+            ->assertUnprocessable()->assertJsonValidationErrors('dutiable_id');
+
+        expect($this->agendaItem->comments()->count())->toBe(0);
+    })->with(['foreign', 'future']);
+
+    test('an assignment whose duty was deleted is not offered', function (): void {
+        $gone = Dutiable::factory()->forUser($this->viewer)->forDuty(Duty::factory()->for($this->institution)->create())
+            ->create(['start_date' => today()->subMonth(), 'end_date' => null]);
+        $gone->duty->delete();
+
+        expect(app(ResolveCommentAuthorDuty::class)->options($this->viewer->fresh())->pluck('id'))->not->toContain($gone->id);
+    });
+
+    test('a former duty is offered with its period and can be chosen, but is never the default', function (): void {
+        $this->freezeTime();
+        $former = Dutiable::factory()->forUser($this->viewer)->forDuty(Duty::factory()->for($this->institution)->create())
+            ->create(['start_date' => today()->subYear(), 'end_date' => today()->subMonth()]);
+        $current = $this->viewer->dutiables()->whereKeyNot($former->id)->firstOrFail();
+
+        asUser($this->viewer)->getJson($this->indexUrl)->assertOk()
+            ->assertJsonPath('meta.me.duties.0.dutiable_id', $current->id)
+            ->assertJsonPath('meta.me.duties.1.dutiable_id', $former->id)
+            ->assertJsonPath('meta.me.duties.1.is_current', false)
+            ->assertJsonPath('meta.me.duties.1.start_date', today()->subYear()->toDateString())
+            ->assertJsonPath('meta.me.duties.1.end_date', today()->subMonth()->toDateString())
+            ->assertJsonPath('meta.me.default_dutiable_id', $current->id);
+
+        asUser($this->viewer)->postJson($this->storeUrl, ['body' => '<p>Text</p>', 'dutiable_id' => $former->id])
+            ->assertCreated()->assertJsonPath('data.author_duty.dutiable_id', $former->id)
+            ->assertJsonPath('data.author_duty.is_current', false);
+    });
+
+    test('an explicit current duty is stored for every kind and merges the preference quietly', function (string $kind): void {
+        $option = $this->viewer->dutiables()->firstOrFail();
+        $this->viewer->forceFill(['ui_preferences' => ['theme' => 'dark']])->saveQuietly();
+        $activityCount = $this->viewer->activitiesAsSubject()->count();
+        $payload = ['body' => '<p>Text</p>', 'kind' => $kind, 'dutiable_id' => $option->id];
+        if ($kind === 'topic') {
+            $payload['title'] = 'Title';
+        } elseif ($kind === 'poll') {
+            $payload['metadata'] = ['poll' => ['options' => [['label' => 'Yes'], ['label' => 'No']]]];
+        } elseif ($kind === 'reply') {
+            $payload['kind'] = 'comment';
+            $payload['parent_id'] = Comment::factory()->topic()->for($this->agendaItem, 'commentable')->create()->id;
+        }
+
+        $response = asUser($this->viewer)->postJson($this->storeUrl, $payload)
+            ->assertCreated()->assertJsonPath('data.author_duty.dutiable_id', $option->id);
+
+        $this->assertDatabaseHas('comments', ['id' => $response->json('data.id'), 'author_dutiable_id' => $option->id]);
+        expect($this->viewer->fresh()->ui_preferences)->toMatchArray(['theme' => 'dark', 'comment_dutiable_id' => $option->id]);
+        expect($this->viewer->activitiesAsSubject()->count())->toBe($activityCount);
+    })->with(['comment', 'topic', 'poll', 'reply']);
+
+    test('a duty tied to the record wins over the last choice, which wins over picker order', function (): void {
+        $this->freezeTime();
+        $user = User::factory()->create();
+        $matching = Dutiable::factory()->forUser($user)->forDuty(Duty::factory()->for($this->institution)->create())
+            ->create(['start_date' => today()->subMonth(), 'end_date' => today()]);
+        $other = Dutiable::factory()->forUser($user)->forDuty(Duty::factory()->for(Institution::factory()->for($this->tenant))->create())
+            ->create(['start_date' => today(), 'end_date' => null]);
+        $resolver = app(ResolveCommentAuthorDuty::class);
+        $user->forceFill(['ui_preferences' => ['comment_dutiable_id' => $other->id]])->saveQuietly();
+
+        foreach ([$this->institution, $matching->duty, $this->meeting, $this->agendaItem] as $record) {
+            expect($resolver->default($user, $record))->toBe($matching->id);
+        }
+        expect($resolver->default($user, new SupportRequest))->toBe($other->id);
+
+        $user->forceFill(['ui_preferences' => ['comment_dutiable_id' => 'stale']])->saveQuietly();
+        expect($resolver->default($user, new SupportRequest))->toBe($other->id);
+
+        $matching->update(['end_date' => today()->subDay()]);
+        $other->update(['end_date' => today()->subDay()]);
+        expect($resolver->default($user, $this->agendaItem))->toBeNull();
+    });
+
+    test('the picker lists a coordinator duty first, then by institution prominence, then former duties', function (): void {
+        $coordinatorType = DutyType::factory()->create();
+        app(DutyTypeSettings::class)->fill([SystemDutyType::Coordinator->settingKey() => $coordinatorType->id])->save();
+        app(SystemDutyTypes::class)->flush();
+        $user = User::factory()->create();
+        $assign = fn (Institution $institution, array $dates = []) => Dutiable::factory()->forUser($user)
+            ->forDuty(Duty::factory()->for($institution)->create())
+            ->create(array_merge(['start_date' => today()->subMonth(), 'end_date' => null], $dates));
+
+        $main = Tenant::factory()->create(['type' => TenantType::Pagrindinis]);
+        $vusa = Institution::factory()->for($main)->create();
+        $main->update(['primary_institution_id' => $vusa->id]);
+        $centralOffice = Institution::factory()->for($main)->create();
+        $centralOffice->forceFill(['alias' => 'centrinis-biuras'])->saveQuietly();
+
+        $ordinary = $assign(Institution::factory()->for($this->tenant)->create(), ['start_date' => today()]);
+        $office = $assign($centralOffice);
+        $atVusa = $assign($vusa);
+        $former = $assign($vusa, ['start_date' => today()->subYear(), 'end_date' => today()->subMonth()]);
+        $coordinator = $assign(Institution::factory()->for($this->tenant)->create());
+        $coordinator->duty->types()->attach($coordinatorType);
+
+        $resolver = app(ResolveCommentAuthorDuty::class);
+
+        expect($resolver->options($user->fresh())->pluck('id')->all())
+            ->toBe([$coordinator->id, $atVusa->id, $office->id, $ordinary->id, $former->id])
+            ->and($resolver->default($user->fresh(), new SupportRequest))->toBe($coordinator->id)
+            ->and($resolver->default($user->fresh(), $ordinary->duty->institution))->toBe($ordinary->id);
+    });
+
+    test('post without a selection uses the default without changing preferences', function (): void {
+        $option = $this->viewer->dutiables()->firstOrFail();
+        $this->viewer->forceFill(['ui_preferences' => ['theme' => 'dark']])->saveQuietly();
+
+        asUser($this->viewer)->postJson($this->storeUrl, ['body' => '<p>Text</p>'])
+            ->assertCreated()->assertJsonPath('data.author_duty.dutiable_id', $option->id);
+
+        expect($this->viewer->fresh()->ui_preferences)->toMatchArray(['theme' => 'dark'])->not->toHaveKey('comment_dutiable_id');
+    });
+});
+
+describe('comment images', function (): void {
+    test('own pending images attach in order keep their files and are erased with the comment', function (): void {
+        Storage::fake('spatieMediaLibrary');
+        $pending = PendingUpload::create(['user_id' => $this->viewer->id]);
+        $first = app(AddImageMedia::class)->execute($pending, UploadedFile::fake()->image('first.png'), PendingUpload::COLLECTION);
+        $secondPending = PendingUpload::create(['user_id' => $this->viewer->id]);
+        $second = app(AddImageMedia::class)->execute($secondPending, UploadedFile::fake()->image('second.png'), PendingUpload::COLLECTION);
+        $paths = [$first->getPathRelativeToRoot(), $second->getPathRelativeToRoot()];
+
+        $response = asUser($this->viewer)->postJson($this->storeUrl, ['body' => '<p>Images</p>', 'image_ids' => [$second->id, $first->id]])
+            ->assertCreated()->assertJsonCount(2, 'data.images')
+            ->assertJsonPath('data.images.0.id', $second->id)->assertJsonPath('data.images.1.id', $first->id)
+            ->assertJsonStructure(['data' => ['images' => [['id', 'url', 'thumb', 'srcset', 'width', 'height', 'focal_point', 'alt', 'author']]]]);
+
+        $comment = Comment::findOrFail($response->json('data.id'));
+        expect($comment->getMedia(Comment::IMAGES)->pluck('id')->all())->toBe([$second->id, $first->id]);
+        $this->assertModelMissing($pending);
+        $this->assertModelMissing($secondPending);
+        Storage::disk('spatieMediaLibrary')->assertExists($paths);
+        asUser($this->viewer)->getJson($this->indexUrl)->assertOk()->assertJsonCount(2, 'data.0.images');
+
+        asUser($this->viewer)->deleteJson(route('api.v1.admin.comments.destroy', $comment))
+            ->assertOk()->assertJsonPath('data.images', []);
+
+        expect($comment->fresh()->media()->count())->toBe(0);
+        Storage::disk('spatieMediaLibrary')->assertMissing($paths);
+    });
+
+    test('foreign pending images return 403 and create nothing or send notifications', function (): void {
+        Storage::fake('spatieMediaLibrary');
+        Event::fake([CommentPosted::class, CommentBroadcast::class]);
+        $pending = PendingUpload::create(['user_id' => $this->coordinator->id]);
+        $media = app(AddImageMedia::class)->execute($pending, UploadedFile::fake()->image('foreign.png'), PendingUpload::COLLECTION);
+
+        asUser($this->viewer)->postJson($this->storeUrl, ['body' => '<p>Text</p>', 'image_ids' => [$media->id]])->assertForbidden();
+
+        expect($this->agendaItem->comments()->count())->toBe(0);
+        expect($media->fresh()->model_id)->toBe($pending->id);
+        $this->assertModelExists($pending);
+        Event::assertNotDispatched(CommentPosted::class);
+        Event::assertNotDispatched(CommentBroadcast::class);
+    });
+
+    test('image ids must be integers and at most four', function (array $ids): void {
+        asUser($this->viewer)->postJson($this->storeUrl, ['body' => '<p>Text</p>', 'image_ids' => $ids])
+            ->assertUnprocessable()->assertJsonValidationErrors(count($ids) > 4 ? 'image_ids' : 'image_ids.0');
+        expect($this->agendaItem->comments()->count())->toBe(0);
+    })->with([[[1, 2, 3, 4, 5]], [['invalid']]]);
+});
+
+test('author duty labels use the current locale, the full institution name and its tenant', function (): void {
+    app()->setLocale('en');
+    $this->withSession(['lang' => 'en']);
+    $institution = Institution::factory()->for($this->tenant)->create([
+        'name' => ['lt' => 'Institucija', 'en' => 'Institution'],
+        'short_name' => ['lt' => 'INST', 'en' => ''],
+    ]);
+    $duty = Duty::factory()->for($institution)->create(['name' => ['lt' => 'Atstovė', 'en' => 'Representative']]);
+    $assignment = Dutiable::factory()->forUser($this->viewer)->forDuty($duty)->create([
+        'start_date' => today()->subDay(), 'end_date' => null, 'use_original_duty_name' => true,
+    ]);
+
+    asUser($this->viewer)->postJson($this->storeUrl, ['body' => '<p>Text</p>', 'dutiable_id' => $assignment->id])
+        ->assertCreated()->assertJsonPath('data.author_duty', [
+            'dutiable_id' => $assignment->id, 'name' => 'Representative',
+            'institution' => 'Institution', 'tenant' => $this->tenant->shortname, 'use_original_duty_name' => true,
+            'start_date' => today()->subDay()->toDateString(), 'end_date' => null, 'is_current' => true,
+        ]);
+});
+
+test('reply images appear under their thread and attached images cannot be claimed again', function (): void {
+    Storage::fake('spatieMediaLibrary');
+    $root = Comment::factory()->topic()->for($this->agendaItem, 'commentable')->for($this->viewer)->create();
+    $pending = PendingUpload::create(['user_id' => $this->viewer->id]);
+    $media = app(AddImageMedia::class)->execute($pending, UploadedFile::fake()->image('reply.png'), PendingUpload::COLLECTION);
+
+    $reply = asUser($this->viewer)->postJson($this->storeUrl, [
+        'body' => '<p>Reply</p>', 'parent_id' => $root->id, 'image_ids' => [$media->id],
+    ])->assertCreated()->assertJsonPath('data.images.0.id', $media->id)->json('data.id');
+
+    asUser($this->viewer)->getJson($this->indexUrl)->assertOk()
+        ->assertJsonPath('data.0.replies.0.id', $reply)->assertJsonPath('data.0.replies.0.images.0.id', $media->id);
+    asUser($this->viewer)->postJson($this->storeUrl, ['body' => '<p>Reuse</p>', 'image_ids' => [$media->id]])->assertForbidden();
+    expect($this->agendaItem->comments()->count())->toBe(2);
+    expect($media->fresh()->model_id)->toBe($reply);
+});
+
+test('erasing a topic also clears its title and author duty', function (): void {
+    $assignment = $this->viewer->dutiables()->firstOrFail();
+    $topic = Comment::factory()->topic()->for($this->agendaItem, 'commentable')->for($this->viewer)
+        ->create(['author_dutiable_id' => $assignment->id]);
+    $topic->resolve($this->viewer);
+
+    asUser($this->viewer)->deleteJson(route('api.v1.admin.comments.destroy', $topic))->assertOk()
+        ->assertJsonPath('data.title', null)->assertJsonPath('data.author_duty', null)->assertJsonPath('data.is_closed', false);
+
+    expect($topic->fresh()->author_dutiable_id)->toBeNull();
+    expect($topic->fresh()->resolved_by)->toBeNull();
 });
