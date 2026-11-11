@@ -156,6 +156,8 @@ return [
         'reopen' => 'Grąžinti',
         'open' => 'Atidaryti',
         'document_private' => 'neviešas',
+        'document_platform_only' => 'Matomas tik Mano VU SA',
+        'document_open_failed' => 'Nepavyko atidaryti dokumento. Pabandyk dar kartą vėliau.',
         'insights_count' => 'Įžvalgos (:count)',
         'insights' => 'Įžvalgos',
         'about' => 'Apie',

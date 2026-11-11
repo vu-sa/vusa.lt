@@ -50,11 +50,14 @@ const sourceLabel = computed(() => {
     return sourceHref.value ?? null;
   }
 });
-const enterTrail = () => enterKnowledgeRecord({ id: props.item.id, title: props.item.title, href: route('knowledgeItems.show', props.item.id) });
+const thumbnailFailed = ref(false);
+const thumbnailUrl = computed(() => thumbnailFailed.value ? null : props.item.source?.thumbnailUrl ?? null);
+const enterTrail =() => enterKnowledgeRecord({ id: props.item.id, title: props.item.title, href: route('knowledgeItems.show', props.item.id) });
 onMounted(enterTrail);
 watch(() => props.item.id, () => {
   enterTrail();
   glossaryOpen.value = false;
+  thumbnailFailed.value = false;
 });
 </script>
 
@@ -100,14 +103,35 @@ watch(() => props.item.id, () => {
         data-slot="step-about"
       >
         <h2 id="step-about-title" class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{{ $t('learning.path.about_item') }}</h2>
-        <div v-if="sourceLabel" class="space-y-1">
+        <div v-if="sourceLabel && thumbnailUrl" class="space-y-2" data-slot="source-preview">
+          <p class="text-xs text-muted-foreground">{{ $t('learning.path.source') }}</p>
+          <!-- Below lg the aside follows the article, so the page shrinks to a row instead of filling the screen. -->
+          <component
+            :is="sourceHref ? 'a' : 'div'"
+            v-bind="sourceHref ? { href: sourceHref, target: '_blank', rel: 'noopener noreferrer' } : {}"
+            class="group flex items-start gap-4 lg:block"
+          >
+            <span :class="['block aspect-3/4 w-24 shrink-0 overflow-hidden border border-border bg-muted transition-colors sm:w-28 lg:w-full', sourceHref && 'group-hover:border-brand group-focus-visible:border-brand']">
+              <img :src="thumbnailUrl" alt="" loading="lazy" decoding="async" class="size-full object-cover object-top" @error="thumbnailFailed = true">
+            </span>
+            <span class="block min-w-0 space-y-1 lg:mt-2.5">
+              <span :class="['block text-sm font-semibold leading-snug text-foreground', sourceHref && 'group-hover:text-brand']">
+                <span :class="sourceHref && 'underline decoration-border underline-offset-4 group-hover:decoration-brand'">{{ sourceLabel }}</span>
+                <ArrowUpRight v-if="sourceHref" class="ml-1 inline size-3.5 align-[-1px]" aria-hidden="true" />
+              </span>
+              <span v-if="item.source?.private" class="block text-xs text-muted-foreground">{{ $t('learning.path.document_platform_only') }}</span>
+            </span>
+          </component>
+        </div>
+        <div v-else-if="sourceLabel" class="space-y-1">
           <p class="text-xs text-muted-foreground">{{ $t('learning.path.source') }}</p>
           <a v-if="sourceHref" :href="sourceHref" target="_blank" rel="noopener noreferrer" class="group inline-flex items-start gap-1.5 text-sm font-semibold leading-snug text-foreground hover:text-brand">
             <span class="underline decoration-border underline-offset-4 group-hover:decoration-brand">{{ sourceLabel }}</span>
             <ArrowUpRight class="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
           </a>
           <p v-else class="text-sm font-semibold leading-snug">{{ sourceLabel }}</p>
-          <p v-if="item.source?.type === 'document' && !sourceHref" class="text-xs text-muted-foreground">{{ $t('learning.path.document_private') }}</p>
+          <p v-if="item.source?.private" class="text-xs text-muted-foreground">{{ $t('learning.path.document_platform_only') }}</p>
+          <p v-else-if="item.source?.type === 'document' && !sourceHref" class="text-xs text-muted-foreground">{{ $t('learning.path.document_private') }}</p>
         </div>
         <LearningTerms :terms="item.glossaryTerms" />
         <p class="text-xs text-muted-foreground">

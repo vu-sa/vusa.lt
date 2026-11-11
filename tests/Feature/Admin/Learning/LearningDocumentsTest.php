@@ -44,7 +44,7 @@ test('documents contains only knowledge in the members resolved path with progre
         ->missing('learningNavigation'));
 });
 
-test('documents keeps hidden sources unlinked and supports an empty path', function (): void {
+test('hidden sources open through the knowledge item and the path can be empty', function (): void {
     $member = makeUser(Tenant::query()->firstOrFail());
     LearningStep::query()->update(['is_active' => false]);
     $hidden = Document::factory()->create(['status' => DocumentStatus::Hidden, 'anonymous_url' => null]);
@@ -52,7 +52,7 @@ test('documents keeps hidden sources unlinked and supports an empty path', funct
     $step->sources()->create(['locale' => 'lt', 'document_id' => $hidden->id]);
 
     asUser($member)->get(route('knowledgeBase.show'))->assertOk()->assertInertia(fn (Assert $page) => $page
-        ->has('knowledge.items', 1)->where('knowledge.items.0.source.url', null));
+        ->has('knowledge.items', 1)->where('knowledge.items.0.source.url', route('knowledgeItems.openSource', $step))->where('knowledge.items.0.source.private', true));
 
     $step->update(['is_active' => false]);
     asUser($member)->get(route('knowledgeBase.show'))->assertOk()->assertInertia(fn (Assert $page) => $page->where('knowledge.items', [])->where('knowledge.sections', []));

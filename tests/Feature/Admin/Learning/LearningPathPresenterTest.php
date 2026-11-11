@@ -9,41 +9,35 @@ use App\Models\InstitutionType;
 use App\Models\KnowledgeItem;
 use App\Models\LearningProgress;
 use App\Models\LearningStep;
-use App\Models\Permission;
 use App\Models\Tenant;
 use App\Services\KnowledgeBasePresenter;
 use App\Services\Learning\ResolvedLearningItem;
 use App\Services\LearningPathPresenter;
-use App\Services\ModelAuthorizer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
 test('sources fall back to Lithuanian and expose published document links', function (): void {
-    $viewer = makeUser(Tenant::query()->firstOrFail());
     $step = KnowledgeItem::factory()->create();
     $document = Document::factory()->create(['status' => DocumentStatus::Published, 'anonymous_url' => 'https://example.test/shared']);
     $step->sources()->create(['locale' => 'lt', 'document_id' => $document->id]);
     $step->load(['sources.document', 'section', 'audiences'])->loadCount('comments');
-    $data = KnowledgeBasePresenter::item(new ResolvedLearningItem($step), $viewer, 'en');
+    $data = KnowledgeBasePresenter::item(new ResolvedLearningItem($step), 'en');
 
     expect($data['source']['url'])->toBe(route('documents.show', $document->id));
     expect($data['source']['documentId'])->toBe($document->id);
 });
 
-test('hidden sources expose no link to members and an edit link to curators', function (): void {
-    $tenant = Tenant::query()->firstOrFail();
-    $viewer = makeUser($tenant);
+test('hidden sources open through the knowledge item and show its thumbnail', function (): void {
     $step = KnowledgeItem::factory()->create();
-    $document = Document::factory()->create(['status' => DocumentStatus::Hidden, 'anonymous_url' => null]);
+    $document = Document::factory()->create(['status' => DocumentStatus::Hidden, 'anonymous_url' => null, 'thumbnail_path' => 'document-thumbnails/1.webp', 'thumbnail_etag' => 'etag-1']);
     $step->sources()->create(['locale' => 'lt', 'document_id' => $document->id]);
     $step->load(['sources.document', 'section', 'audiences'])->loadCount('comments');
-    $item = new ResolvedLearningItem($step);
-    expect(KnowledgeBasePresenter::item($item, $viewer, 'lt')['source']['url'])->toBeNull();
-    $viewer->givePermissionTo(Permission::findOrCreate('documents.update.*', 'web'));
-    app(ModelAuthorizer::class)->resetCache($viewer);
+    $source = KnowledgeBasePresenter::item(new ResolvedLearningItem($step), 'lt')['source'];
 
-    expect(KnowledgeBasePresenter::item($item, $viewer, 'lt')['source']['url'])->toBe(route('documents.edit', $document->id));
+    expect($source['url'])->toBe(route('knowledgeItems.openSource', $step))
+        ->and($source['private'])->toBeTrue()
+        ->and($source['thumbnailUrl'])->toStartWith(route('knowledgeItems.thumbnail', $step).'?v=');
 });
 
 test('system text is localized and raw URLs preserve the source contract', function (): void {
@@ -55,8 +49,8 @@ test('system text is localized and raw URLs preserve the source contract', funct
     $custom = KnowledgeItem::factory()->create();
     $custom->sources()->create(['locale' => 'en', 'url' => 'https://example.test/learn']);
     $custom->load('sources.document')->loadCount('comments');
-    expect(KnowledgeBasePresenter::item(new ResolvedLearningItem($custom), $viewer, 'lt')['source'])->toBe([
-        'type' => 'url', 'url' => 'https://example.test/learn', 'documentId' => null, 'documentStatus' => null, 'title' => null,
+    expect(KnowledgeBasePresenter::item(new ResolvedLearningItem($custom), 'lt')['source'])->toBe([
+        'type' => 'url', 'url' => 'https://example.test/learn', 'documentId' => null, 'documentStatus' => null, 'title' => null, 'private' => false, 'thumbnailUrl' => null,
     ]);
 });
 
@@ -81,7 +75,7 @@ test('the insights count leaves out deleted comments', function (): void {
     Comment::factory()->for($knowledgeItem, 'commentable')->create()->erase();
 
     $item = ResolveLearningPath::execute($user)->knowledge->firstWhere('item.id', $knowledgeItem->id);
-    expect(KnowledgeBasePresenter::item($item, $user, 'lt')['insightsCount'])->toBe(2);
+    expect(KnowledgeBasePresenter::item($item, 'lt')['insightsCount'])->toBe(2);
 });
 
 test('system descriptions arrive as escaped paragraphs', function (): void {

@@ -365,6 +365,8 @@ Route::get('knowledge', [KnowledgeBaseController::class, 'show'])->name('knowled
 Route::get('knowledge/library', [KnowledgeItemController::class, 'index'])->name('knowledgeItems.index');
 Route::get('knowledge/documents/search', [KnowledgeItemController::class, 'searchDocuments'])->name('knowledgeItems.documentSearch');
 Route::post('knowledge/items/{knowledgeItem}/progress', [KnowledgeItemProgressController::class, 'store'])->name('knowledgeItems.progress');
+Route::get('knowledge/items/{knowledgeItem}/thumbnail', [KnowledgeItemController::class, 'thumbnail'])->name('knowledgeItems.thumbnail');
+Route::get('knowledge/items/{knowledgeItem}/open', [KnowledgeItemController::class, 'openSource'])->name('knowledgeItems.openSource');
 Route::put('knowledge/items/{knowledgeItem}/glossary', [KnowledgeItemController::class, 'syncGlossary'])->name('knowledgeItems.glossary.sync');
 Route::resource('knowledge/sections', KnowledgeSectionController::class)->parameters(['sections' => 'knowledgeSection'])->names('knowledgeSections')->only(['store', 'update', 'destroy']);
 Route::resource('knowledge/items', KnowledgeItemController::class)->parameters(['items' => 'knowledgeItem'])->names('knowledgeItems')->except('index');

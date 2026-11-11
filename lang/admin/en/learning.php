@@ -156,6 +156,8 @@ return [
         'reopen' => 'Reopen',
         'open' => 'Open',
         'document_private' => 'not public',
+        'document_platform_only' => 'Only visible in Mano VU SA',
+        'document_open_failed' => 'Could not open the document. Try again later.',
         'insights_count' => 'Insights (:count)',
         'insights' => 'Insights',
         'about' => 'About',

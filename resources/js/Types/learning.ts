@@ -13,6 +13,9 @@ export interface LearningSource {
   documentId: number | null;
   documentStatus: DocumentStatus | null;
   title: string | null;
+  /** Not on public vusa.lt; `url` opens it through the knowledge item instead. */
+  private?: boolean;
+  thumbnailUrl?: string | null;
 }
 
 export interface LearningStepData {

@@ -12,6 +12,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Requests\KnowledgeItemRequest;
 use App\Http\Requests\SearchLearningDocumentsRequest;
 use App\Http\Requests\SyncKnowledgeItemGlossaryRequest;
+use App\Jobs\RefreshDocumentThumbnailJob;
 use App\Models\Document;
 use App\Models\DutyType;
 use App\Models\InstitutionType;
@@ -20,6 +21,7 @@ use App\Models\KnowledgeSection;
 use App\Models\LearningAudience;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\Documents\DocumentPreviewService;
 use App\Services\KnowledgeBasePresenter;
 use App\Services\Learning\ResolvedLearningItem;
 use App\Services\LearningAdminPresenter;
@@ -29,8 +31,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class KnowledgeItemController extends AdminController
 {
@@ -60,13 +64,42 @@ class KnowledgeItemController extends AdminController
         $item = $path->knowledge->first(fn (ResolvedLearningItem $item): bool => $item->item->id === $knowledgeItem->id) ?? new ResolvedLearningItem($knowledgeItem, importance: $knowledgeItem->audiences->first()?->importance ?? LearningImportance::Recommended, audienceLabel: $knowledgeItem->audiences->first()?->label(app()->getLocale()) ?? '');
 
         return Inertia::render('Admin/Knowledge/ShowKnowledgeItem', [
-            'item' => KnowledgeBasePresenter::item($item, $request->user(), app()->getLocale()),
+            'item' => KnowledgeBasePresenter::item($item, app()->getLocale()),
             'inPath' => $path->contains($knowledgeItem),
             'coordinators' => GetUserCoordinators::execute($request->user()),
             'institutionContacts' => LearningInstitutionContactsPresenter::forUser($request->user(), app()->getLocale()),
             'canUpdate' => $request->user()->can('update', $knowledgeItem),
             ...($request->user()->can('update', $knowledgeItem) ? ['glossaryOptions' => LearningAdminPresenter::glossaryOptions(app()->getLocale())] : []),
         ]);
+    }
+
+    public function thumbnail(KnowledgeItem $knowledgeItem): BinaryFileResponse
+    {
+        $this->authorize('view', $knowledgeItem);
+        $document = $this->sourceDocument($knowledgeItem);
+        abort_if($document?->thumbnail_path === null || ! Storage::exists($document->thumbnail_path), 404);
+
+        return response()->file(Storage::path($document->thumbnail_path), ['Content-Type' => 'image/webp', 'Cache-Control' => 'private, max-age=604800']);
+    }
+
+    /**
+     * Readers of the item may open its document even when it is hidden from the public site.
+     */
+    public function openSource(KnowledgeItem $knowledgeItem, DocumentPreviewService $previews): RedirectResponse
+    {
+        $this->authorize('view', $knowledgeItem);
+        $document = $this->sourceDocument($knowledgeItem);
+        abort_if($document === null, 404);
+
+        if ($document->isPublished() && filled($document->anonymous_url)) {
+            return redirect()->route('documents.show', $document->id);
+        }
+
+        $url = $previews->temporaryUrl($document);
+
+        return $url === null
+            ? back()->with('error', __('learning.path.document_open_failed'))
+            : redirect()->away($url);
     }
 
     public function create(Request $request): Response
@@ -200,6 +233,11 @@ class KnowledgeItemController extends AdminController
             ])->all();
     }
 
+    private function sourceDocument(KnowledgeItem $knowledgeItem): ?Document
+    {
+        return $knowledgeItem->load('sources.document')->sourceFor(app()->getLocale())?->document;
+    }
+
     /** @param array<string, array{document_id?: int|null, url?: string|null}> $sources */
     private function syncSources(KnowledgeItem $step, array $sources): void
     {
@@ -207,5 +245,10 @@ class KnowledgeItemController extends AdminController
         foreach ($sources as $locale => $source) {
             $step->sources()->updateOrCreate(['locale' => $locale], ['document_id' => $source['document_id'] ?? null, 'url' => $source['url'] ?? null]);
         }
+
+        $previews = app(DocumentPreviewService::class);
+        Document::query()->whereKey(array_filter(array_column($sources, 'document_id')))->get()
+            ->filter(fn (Document $document): bool => $previews->needsThumbnail($document))
+            ->each(fn (Document $document) => RefreshDocumentThumbnailJob::dispatch($document)->afterCommit());
     }
 }

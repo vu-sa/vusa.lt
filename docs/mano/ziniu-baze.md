@@ -3,6 +3,7 @@ title: Žinių bazė
 doc_status: reviewed
 last_reviewed: 2026-11-11
 tests:
+  - tests/Feature/Admin/Learning/KnowledgeItemDocumentPreviewTest.php
   - tests/Feature/Admin/Learning/KnowledgeItemsTest.php
   - tests/Feature/Admin/Learning/LearningDocumentsTest.php
   - tests/Feature/Admin/Learning/LearningSectionsTest.php
@@ -58,10 +59,11 @@ medžiagos jau perskaityta. Mano kelio viršuje esantis Žinių bazės blokas si
 Medžiagą galima pažymėti perskaityta, o rekomenduojamą ar papildomą – praleisti. Jei medžiaga
 pažymėta „Peržiūrėti kiekvieną kadenciją“, kiekvienos kadencijos pradžioje ją pažymi iš naujo. Jei
 šaltinio dokumentas Archyve atnaujinamas jau perskaičius, medžiaga pažymima „Atnaujinta – peržiūrėk“.
-Archyve paslėptas dokumentas rodomas su žyma „neviešas“, be nuorodos.
+Archyve paslėptą dokumentą gali atidaryti visi, kurie mato medžiagą, o viešame vusa.lt jis nerodomas;
+sąraše jis pažymėtas „neviešas“.
 
-Medžiagos puslapyje matyti svarba, skyrius, šaltinis, susijusios sąvokos ir įžvalgos – kitų atstovų
-patirtis ir klausimai (žr. [Komentarai](/visak/komentarai#temos)).
+Medžiagos puslapyje matyti svarba, skyrius, šaltinis (dokumentas – su pirmojo puslapio peržiūra),
+susijusios sąvokos ir įžvalgos – kitų atstovų patirtis ir klausimai (žr. [Komentarai](/visak/komentarai#temos)).
 
 ### Sąvokos
 

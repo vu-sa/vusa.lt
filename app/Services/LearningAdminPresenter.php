@@ -12,7 +12,7 @@ use App\Services\Learning\ResolvedLearningItem;
 /**
  * @phpstan-type TermPayload array{id: string, term: string, abbreviation: string, definition: string, translations: array{term: array{lt: string, en: string}, abbreviation: array{lt: string, en: string}, definition: array{lt: string, en: string}}}
  * @phpstan-type GlossaryPayload array{id: string, term: string, abbreviation: string, definition: string, translations: array{term: array{lt: string, en: string}, abbreviation: array{lt: string, en: string}, definition: array{lt: string, en: string}}, items: list<array{id: string, title: string, url: string}>, itemsCount: int, priority: array{rank: int, importance: \App\Enums\LearningImportance|null, sectionOrder: int, itemOrder: int}}
- * @phpstan-type GlossaryTermPayload array{id: string, term: string, abbreviation: string, definition: string, translations: array{term: array{lt: string, en: string}, abbreviation: array{lt: string, en: string}, definition: array{lt: string, en: string}}, items: list<array{id: string, title: string, url: string, inPath: bool, importance: \App\Enums\LearningImportance|null, state: string, section: array{id: string, title: string}|null, source: array{type: 'document'|'url', url: string|null, documentId: int|null, documentStatus: \App\Enums\DocumentStatus|null, title: string|null}|null}>}
+ * @phpstan-type GlossaryTermPayload array{id: string, term: string, abbreviation: string, definition: string, translations: array{term: array{lt: string, en: string}, abbreviation: array{lt: string, en: string}, definition: array{lt: string, en: string}}, items: list<array{id: string, title: string, url: string, inPath: bool, importance: \App\Enums\LearningImportance|null, state: string, section: array{id: string, title: string}|null, source: array{type: 'document'|'url', url: string|null, documentId: int|null, documentStatus: \App\Enums\DocumentStatus|null, title: string|null, private: bool, thumbnailUrl: string|null}|null}>}
  */
 class LearningAdminPresenter
 {
@@ -52,7 +52,7 @@ class LearningAdminPresenter
                 'id' => $item->id, 'title' => (string) $item->getTranslation('title', $locale), 'url' => route('knowledgeItems.show', $item),
                 'inPath' => $match !== null, 'importance' => $match?->importance, 'state' => $match?->state ?? 'pending',
                 'section' => $item->section ? ['id' => $item->section->id, 'title' => (string) $item->section->getTranslation('title', $locale)] : null,
-                'source' => KnowledgeBasePresenter::source($item, $viewer, $locale),
+                'source' => KnowledgeBasePresenter::source($item, $locale),
                 'priority' => self::priority($item, $match),
             ];
         }

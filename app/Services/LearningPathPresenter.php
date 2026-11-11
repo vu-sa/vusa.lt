@@ -51,7 +51,7 @@ class LearningPathPresenter
             ->sortBy(fn (ResolvedLearningItem $item): int => $item->importance === LearningImportance::Essential ? 0 : 1)->first();
 
         return ['currentStage' => $path->currentStage, 'termStart' => $path->termStart?->toDateString(), 'stages' => $stages, 'meetingPrep' => $meetingPrep,
-            'knowledge' => [...$path->knowledgeTotals(), 'nextItem' => $nextItem ? KnowledgeBasePresenter::item($nextItem, auth()->user() ?? $path->user, $locale) : null],
+            'knowledge' => [...$path->knowledgeTotals(), 'nextItem' => $nextItem ? KnowledgeBasePresenter::item($nextItem, $locale) : null],
             'totals' => $path->totals()];
     }
 

@@ -22,7 +22,10 @@ const props = defineProps<{
 }>();
 const { saving, failed, canSkip, checked, save } = useStepProgress(toRef(props, 'step'), toRef(props, 'readonly'));
 const isDocument = computed(() => 'source' in props.step);
-const hasDocumentSource = computed(() => Boolean(('source' in props.step ? props.step.source?.url : null)));
+const isPrivateDocument = computed(() => {
+  const source = 'source' in props.step ? props.step.source : null;
+  return source?.type === 'document' && (source.private === true || !source.url);
+});
 const isResolved = computed(() => props.step.state === 'done' || props.step.state === 'skipped');
 </script>
 
@@ -40,8 +43,8 @@ const isResolved = computed(() => props.step.state === 'done' || props.step.stat
           <MessageSquare class="size-3.5" aria-hidden="true" />{{ step.insightsCount }}
         </Link>
       </div>
-      <div v-if="(isDocument && ('source' in step && step.source?.type) === 'document' && !hasDocumentSource) || step.state === 'updated' || step.state === 'skipped'" class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-        <span v-if="isDocument && ('source' in step && step.source?.type) === 'document' && !hasDocumentSource">{{ $t('learning.path.document_private') }}</span>
+      <div v-if="isPrivateDocument || step.state === 'updated' || step.state === 'skipped'" class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+        <span v-if="isPrivateDocument">{{ $t('learning.path.document_private') }}</span>
         <span v-if="step.state === 'updated'" class="font-semibold text-status-attention">{{ $t('learning.path.updated') }}</span>
         <span v-if="step.state === 'skipped'">{{ $t('learning.path.skipped') }}</span>
       </div>

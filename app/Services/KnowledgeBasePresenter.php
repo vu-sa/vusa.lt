@@ -13,7 +13,7 @@ use App\Services\Learning\LearningPath;
 use App\Services\Learning\ResolvedLearningItem;
 
 /**
- * @phpstan-type KnowledgePayload array{id: string, title: string, description: string, audienceLabel: string, audienceNotes: list<array{label: string, description: string}>, importance: LearningImportance, section: array{id: string, title: string}|null, source: array{type: 'document'|'url', url: string|null, documentId: int|null, documentStatus: DocumentStatus|null, title: string|null}|null, state: string, autoCompleted: bool, completedAt: string|null, skippable: bool, insightsCount: int, reviewedAt: string|null, perTerm: bool, glossaryTerms: list<array{id: string, term: string, abbreviation: string, definition: string}>}
+ * @phpstan-type KnowledgePayload array{id: string, title: string, description: string, audienceLabel: string, audienceNotes: list<array{label: string, description: string}>, importance: LearningImportance, section: array{id: string, title: string}|null, source: array{type: 'document'|'url', url: string|null, documentId: int|null, documentStatus: DocumentStatus|null, title: string|null, private: bool, thumbnailUrl: string|null}|null, state: string, autoCompleted: bool, completedAt: string|null, skippable: bool, insightsCount: int, reviewedAt: string|null, perTerm: bool, glossaryTerms: list<array{id: string, term: string, abbreviation: string, definition: string}>}
  */
 class KnowledgeBasePresenter
 {
@@ -25,7 +25,7 @@ class KnowledgeBasePresenter
         foreach ($path->knowledge as $resolved) {
             /** @var KnowledgeItem $item */
             $item = $resolved->item;
-            $payloads[] = self::item($resolved, $path->user, $locale);
+            $payloads[] = self::item($resolved, $locale);
             if ($item->section !== null) {
                 $section = $item->section;
                 $sections[$section->id] = ['id' => $section->id, 'title' => (string) $section->getTranslation('title', $locale),
@@ -39,7 +39,7 @@ class KnowledgeBasePresenter
     }
 
     /** @return KnowledgePayload */
-    public static function item(ResolvedLearningItem $resolved, User $viewer, string $locale): array
+    public static function item(ResolvedLearningItem $resolved, string $locale): array
     {
         /** @var KnowledgeItem $item */
         $item = $resolved->item;
@@ -55,15 +55,15 @@ class KnowledgeBasePresenter
             'audienceLabel' => $resolved->audienceLabel, 'audienceNotes' => $resolved->audienceNotes,
             'importance' => $resolved->importance,
             'section' => $item->section ? ['id' => $item->section->id, 'title' => (string) $item->section->getTranslation('title', $locale)] : null,
-            'source' => self::source($item, $viewer, $locale), 'state' => $resolved->state,
+            'source' => self::source($item, $locale), 'state' => $resolved->state,
             'autoCompleted' => false, 'completedAt' => $resolved->completedAt?->toIso8601String(),
             'skippable' => $resolved->importance->isSkippable(), 'insightsCount' => (int) $item->comments_count,
             'reviewedAt' => $item->reviewed_at?->toDateString(), 'perTerm' => $item->per_term, 'glossaryTerms' => $terms,
         ];
     }
 
-    /** @return array{type: 'document'|'url', url: string|null, documentId: int|null, documentStatus: DocumentStatus|null, title: string|null}|null */
-    public static function source(KnowledgeItem $step, User $viewer, string $locale): ?array
+    /** @return array{type: 'document'|'url', url: string|null, documentId: int|null, documentStatus: DocumentStatus|null, title: string|null, private: bool, thumbnailUrl: string|null}|null */
+    public static function source(KnowledgeItem $step, string $locale): ?array
     {
         $source = $step->sourceFor($locale);
         if ($source === null) {
@@ -71,14 +71,16 @@ class KnowledgeBasePresenter
         }
         $document = $source->document;
         if ($document !== null) {
-            $url = $document->isPublished() && filled($document->anonymous_url)
-                ? route('documents.show', $document->id)
-                : ($viewer->can('update', $document) ? route('documents.edit', $document->id) : null);
+            $isPublic = $document->isPublished() && filled($document->anonymous_url);
 
-            return ['type' => 'document', 'url' => $url, 'documentId' => $document->id, 'documentStatus' => $document->status, 'title' => $document->title];
+            return [
+                'type' => 'document', 'url' => $isPublic ? route('documents.show', $document->id) : route('knowledgeItems.openSource', $step),
+                'documentId' => $document->id, 'documentStatus' => $document->status, 'title' => $document->title, 'private' => ! $isPublic,
+                'thumbnailUrl' => $document->thumbnail_path !== null ? route('knowledgeItems.thumbnail', [$step, 'v' => substr(md5((string) $document->thumbnail_etag), 0, 8)]) : null,
+            ];
         }
         if ($source->url !== null) {
-            return ['type' => 'url', 'url' => $source->url, 'documentId' => null, 'documentStatus' => null, 'title' => null];
+            return ['type' => 'url', 'url' => $source->url, 'documentId' => null, 'documentStatus' => null, 'title' => null, 'private' => false, 'thumbnailUrl' => null];
         }
 
         return null;
