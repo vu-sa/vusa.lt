@@ -3,6 +3,7 @@ import { PluginKey } from '@tiptap/pm/state';
 import Suggestion from '@tiptap/suggestion';
 
 import { createSuggestionRenderer } from '@/Components/TipTap/composables/createSuggestionRenderer';
+import type { LinkTarget, LinkTargetProvider } from '@/Components/TipTap/linkTargets';
 import type { WikiIndexEntry } from '@/Types/learning';
 
 import WikiLinkList from './WikiLinkList.vue';
@@ -21,10 +22,25 @@ export const wikiHref = (url: string): string => {
   }
 };
 
+const toTarget = (entry: WikiIndexEntry): LinkTarget => ({ id: entry.id, title: entry.title, hint: entry.abbreviation || null, href: wikiHref(entry.url) });
+
 /** Typing `[[` opens a picker of wiki articles; the choice becomes a link carrying the article id. */
 export function createWikiLinkExtension(load: () => Promise<WikiIndexEntry[]> = loadWikiLinkTargets) {
+  // The link dialog reads this to offer a "Wiki" tab and to edit existing wiki links.
+  let entries: WikiIndexEntry[] = [];
+  const targets: LinkTargetProvider = {
+    load: async () => {
+      entries = await load();
+      return entries.map(toTarget);
+    },
+    search: query => searchWiki(entries, query).map(toTarget),
+  };
+
   return Extension.create({
     name: 'wikiLink',
+    addStorage() {
+      return { targets };
+    },
     addProseMirrorPlugins() {
       return [Suggestion<WikiIndexEntry, WikiIndexEntry>({
         editor: this.editor,

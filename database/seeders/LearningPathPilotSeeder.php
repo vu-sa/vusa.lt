@@ -103,6 +103,7 @@ class LearningPathPilotSeeder extends Seeder
                 'kind' => 'knowledge', 'stage' => null,
                 'importance' => LearningImportance::Essential, 'order' => 10,
                 'title' => ['lt' => 'Studijų programos komiteto nuostatai', 'en' => 'Regulations of the study programme committee'],
+                'summary' => ['lt' => 'Ką daro studijų programos komitetas ir kaip jis dirba.', 'en' => 'What the study programme committee does and how it works.'],
                 'description' => [
                     'lt' => 'Ką komitetas daro ir kaip dirba: bent vienas narys – VU SA deleguotas atstovas, posėdžiai vyksta ne rečiau kaip kartą per semestrą, medžiaga turi būti išsiųsta ne vėliau kaip prieš 3 darbo dienas, sprendimai priimami paprasta balsų dauguma, o slaptas balsavimas vyksta, jei to prašo bent vienas narys.',
                     'en' => 'What the committee does and how it works: at least one member is delegated by VU SR, it meets at least once a semester, materials must arrive at least 3 working days before, decisions pass by simple majority, and a secret vote is held if any member asks for it.',
@@ -211,7 +212,7 @@ class LearningPathPilotSeeder extends Seeder
 
         $html = array_map(fn (string $text): string => '<p>'.nl2br(e($text), false).'</p>', $definition['description']);
         $step->fill([
-            ...($knowledge ? ['summary' => $definition['description'], 'description' => null] : ['kind' => $definition['kind'], 'description' => $html]),
+            ...($knowledge ? $this->articleText($definition) : ['kind' => $definition['kind'], 'description' => $html]),
             'order' => $definition['order'],
             'title' => $definition['title'],
         ]);
@@ -244,6 +245,27 @@ class LearningPathPilotSeeder extends Seeder
         return $step;
     }
 
+    /**
+     * An article's summary is one sentence; whatever follows it becomes the body.
+     *
+     * @param  array<string, mixed>  $definition
+     * @return array{summary: array<string, string>, description: array<string, string>}
+     */
+    private function articleText(array $definition): array
+    {
+        $summary = [];
+        $description = [];
+        foreach ($definition['description'] as $locale => $text) {
+            [$first, $rest] = array_pad(preg_split('/(?<=[.!?])\s+/u', $text, 2) ?: [$text], 2, '');
+            $explicit = $definition['summary'][$locale] ?? null;
+            $summary[$locale] = $explicit ?? $first;
+            $body = $explicit === null ? $rest : $text;
+            $description[$locale] = $body === '' ? '' : '<p>'.e($body).'</p>';
+        }
+
+        return ['summary' => $summary, 'description' => $description];
+    }
+
     private function seedUnitRegulations(): void
     {
         foreach (Tenant::query()->where('type', 'padalinys')->get() as $tenant) {
@@ -265,11 +287,13 @@ class LearningPathPilotSeeder extends Seeder
     private function seedGlossary(): void
     {
         $pages = [];
+        $bodies = [];
         foreach ($this->glossaryTerms() as $definition) {
             $page = KnowledgeItem::query()->firstOrNew(['key' => 'pilot_term_'.Str::slug($definition['term']['lt'], '_')]);
-            $page->fill(['title' => $definition['term'], 'abbreviation' => $definition['abbreviation'] ?? null, 'summary' => $definition['definition'], 'order' => 0]);
+            $page->fill(['title' => $definition['term'], 'abbreviation' => $definition['abbreviation'] ?? null, 'summary' => $definition['summary'], 'order' => 0]);
             $page->save();
             $pages[$definition['term']['lt']] = $page;
+            $bodies[$definition['term']['lt']] = $definition['body'] ?? null;
         }
 
         $link = fn (string $title, string $locale): string => isset($pages[$title])
@@ -279,10 +303,17 @@ class LearningPathPilotSeeder extends Seeder
             .implode(', ', array_map(fn (string $title): string => $link($title, $locale), $titles)).'.</p>';
 
         foreach ($this->documentTerms() as $key => $titles) {
-            KnowledgeItem::query()->where('key', $key)->first()?->update(['description' => ['lt' => $paragraph($titles, 'lt'), 'en' => $paragraph($titles, 'en')]]);
+            $document = KnowledgeItem::query()->where('key', $key)->first();
+            $document?->update(['description' => [
+                'lt' => $document->getTranslation('description', 'lt', false).$paragraph($titles, 'lt'),
+                'en' => $document->getTranslation('description', 'en', false).$paragraph($titles, 'en'),
+            ]]);
         }
-        foreach ($this->termLinks() as $title => $titles) {
-            ($pages[$title] ?? null)?->update(['description' => ['lt' => $paragraph($titles, 'lt'), 'en' => $paragraph($titles, 'en')]]);
+        foreach ($pages as $title => $page) {
+            $body = $bodies[$title];
+            $links = $this->termLinks()[$title] ?? [];
+            $html = fn (string $locale): string => ($body === null ? '' : '<p>'.e($body[$locale]).'</p>').($links === [] ? '' : $paragraph($links, $locale));
+            $page->update(['description' => ['lt' => $html('lt'), 'en' => $html('en')]]);
         }
 
         $spkType = InstitutionType::query()->where('slug', self::SPK_TYPE)->value('id');
@@ -313,23 +344,46 @@ class LearningPathPilotSeeder extends Seeder
         ];
     }
 
-    /** @return list<array{term: array{lt: string, en: string}, abbreviation?: array{lt?: string, en?: string}, definition: array{lt: string, en: string}}> */
+    /** @return list<array{term: array{lt: string, en: string}, abbreviation?: array{lt?: string, en?: string}, summary: array{lt: string, en: string}, body?: array{lt: string, en: string}}> */
     private function glossaryTerms(): array
     {
         return [
-            ['term' => ['lt' => 'Studijų programos komitetas', 'en' => 'Study programme committee'], 'abbreviation' => ['lt' => 'SPK', 'en' => 'SPC'], 'definition' => ['lt' => 'Akademinis darinys, kuris koordinuoja studijų programą ir prižiūri jos vykdymą. Sutrumpinimas – SPK.', 'en' => 'The academic body that coordinates a study programme and oversees how it is run. Abbreviated SPK.']],
-            ['term' => ['lt' => 'Studijų programos aprašas', 'en' => 'Study programme description'], 'definition' => ['lt' => 'Dokumentas, kuriame aprašyti programos tikslai, studijų rezultatai, struktūra ir dalykai.', 'en' => 'The document describing a programme\'s aims, learning outcomes, structure and courses.']],
-            ['term' => ['lt' => 'Dalyko (modulio) aprašas', 'en' => 'Course unit (module) description'], 'definition' => ['lt' => 'Vieno dalyko turinys, studijų rezultatai, vertinimo tvarka ir krūvis.', 'en' => 'The content, learning outcomes, assessment and workload of one course.']],
-            ['term' => ['lt' => 'Studijų rezultatai', 'en' => 'Learning outcomes'], 'definition' => ['lt' => 'Ką studentas turi žinoti ir gebėti baigęs dalyką ar programą.', 'en' => 'What a student should know and be able to do after a course or programme.']],
-            ['term' => ['lt' => 'Kreditas', 'en' => 'Credit'], 'definition' => ['lt' => 'Studijų apimties vienetas (ECTS); vienas kreditas atitinka apie 25–30 valandų studento darbo.', 'en' => 'A unit of study workload (ECTS); one credit is about 25–30 hours of student work.']],
-            ['term' => ['lt' => 'Akreditacija', 'en' => 'Accreditation'], 'definition' => ['lt' => 'Išorinio vertinimo rezultatas: leidimas vykdyti studijų kryptį tam tikram laikotarpiui.', 'en' => 'The outcome of external evaluation: permission to run a study field for a set period.']],
-            ['term' => ['lt' => 'Studijų kokybės vertinimo centras', 'en' => 'Centre for Quality Assessment in Higher Education'], 'abbreviation' => ['lt' => 'SKVC'], 'definition' => ['lt' => 'Institucija, kuri organizuoja studijų krypčių išorinį vertinimą ir akreditaciją.', 'en' => 'Organises external evaluation and accreditation of study fields.']],
-            ['term' => ['lt' => 'Senatas', 'en' => 'Senate'], 'definition' => ['lt' => 'Universiteto akademinių reikalų valdymo organas: tvirtina studijų tvarką, programas ir kitus akademinius sprendimus.', 'en' => 'The university body governing academic matters: approves study rules, programmes and other academic decisions.']],
-            ['term' => ['lt' => 'Taryba', 'en' => 'Council'], 'definition' => ['lt' => 'Universiteto strateginio valdymo organas: strategija, biudžetas, rektoriaus rinkimai.', 'en' => 'The university\'s strategic governing body: strategy, budget, election of the Rector.']],
-            ['term' => ['lt' => 'Kamieninis akademinis padalinys', 'en' => 'Core academic unit'], 'definition' => ['lt' => 'Fakultetas, institutas ar centras, vykdantis studijas. Sutrumpinimas – KAP.', 'en' => 'A faculty, institute or centre that runs studies. Abbreviated KAP.']],
-            ['term' => ['lt' => 'Socialiniai partneriai', 'en' => 'Social partners'], 'definition' => ['lt' => 'Darbdavių ir profesinių organizacijų atstovai, padedantys tobulinti programą.', 'en' => 'Representatives of employers and professional organisations who help improve a programme.']],
-            ['term' => ['lt' => 'Kvorumas', 'en' => 'Quorum'], 'definition' => ['lt' => 'Mažiausias dalyvaujančių narių skaičius, kad posėdžio sprendimai galiotų (komitete – ne mažiau kaip pusė narių).', 'en' => 'The minimum number of members present for decisions to be valid (in a committee, at least half).']],
-            ['term' => ['lt' => 'Kadencija', 'en' => 'Term of office'], 'definition' => ['lt' => 'Laikotarpis, kuriam esi išrinktas ar deleguotas eiti pareigas.', 'en' => 'The period for which you are elected or delegated to a role.']],
+            ['term' => ['lt' => 'Studijų programos komitetas', 'en' => 'Study programme committee'], 'abbreviation' => ['lt' => 'SPK', 'en' => 'SPC'],
+                'summary' => ['lt' => 'Akademinis darinys, koordinuojantis studijų programą.', 'en' => 'The academic body that coordinates a study programme.'],
+                'body' => ['lt' => 'Komitetas prižiūri, kaip programa vykdoma, svarsto jos pakeitimus ir studentų atsiliepimus.', 'en' => 'It oversees how the programme is run and discusses changes to it and student feedback.']],
+            ['term' => ['lt' => 'Studijų programos aprašas', 'en' => 'Study programme description'],
+                'summary' => ['lt' => 'Dokumentas, aprašantis studijų programą.', 'en' => 'The document that describes a study programme.'],
+                'body' => ['lt' => 'Jame surašyti programos tikslai, studijų rezultatai, struktūra ir dalykai.', 'en' => 'It sets out the programme\'s aims, learning outcomes, structure and courses.']],
+            ['term' => ['lt' => 'Dalyko (modulio) aprašas', 'en' => 'Course unit (module) description'],
+                'summary' => ['lt' => 'Vieno dalyko turinio ir vertinimo aprašas.', 'en' => 'The description of one course and how it is assessed.'],
+                'body' => ['lt' => 'Jame nurodomi dalyko studijų rezultatai, vertinimo tvarka ir krūvis.', 'en' => 'It lists the course\'s learning outcomes, assessment and workload.']],
+            ['term' => ['lt' => 'Studijų rezultatai', 'en' => 'Learning outcomes'],
+                'summary' => ['lt' => 'Ką studentas turi žinoti ir gebėti baigęs dalyką ar programą.', 'en' => 'What a student should know and be able to do after a course or programme.']],
+            ['term' => ['lt' => 'Kreditas', 'en' => 'Credit'], 'abbreviation' => ['lt' => 'ECTS'],
+                'summary' => ['lt' => 'Studijų apimties vienetas.', 'en' => 'A unit of study workload.'],
+                'body' => ['lt' => 'Vienas kreditas atitinka apie 25–30 valandų studento darbo.', 'en' => 'One credit is about 25–30 hours of student work.']],
+            ['term' => ['lt' => 'Akreditacija', 'en' => 'Accreditation'],
+                'summary' => ['lt' => 'Leidimas vykdyti studijų kryptį tam tikrą laikotarpį.', 'en' => 'Permission to run a study field for a set period.'],
+                'body' => ['lt' => 'Ji suteikiama po išorinio vertinimo.', 'en' => 'It is granted after an external evaluation.']],
+            ['term' => ['lt' => 'Studijų kokybės vertinimo centras', 'en' => 'Centre for Quality Assessment in Higher Education'], 'abbreviation' => ['lt' => 'SKVC'],
+                'summary' => ['lt' => 'Institucija, vertinanti studijų kryptis.', 'en' => 'The agency that evaluates study fields.'],
+                'body' => ['lt' => 'Centras organizuoja studijų krypčių išorinį vertinimą ir akreditaciją.', 'en' => 'It organises the external evaluation and accreditation of study fields.']],
+            ['term' => ['lt' => 'Senatas', 'en' => 'Senate'],
+                'summary' => ['lt' => 'Universiteto akademinių reikalų valdymo organas.', 'en' => 'The university body governing academic matters.'],
+                'body' => ['lt' => 'Senatas tvirtina studijų tvarką, programas ir kitus akademinius sprendimus.', 'en' => 'It approves study rules, programmes and other academic decisions.']],
+            ['term' => ['lt' => 'Taryba', 'en' => 'Council'],
+                'summary' => ['lt' => 'Universiteto strateginio valdymo organas.', 'en' => 'The university\'s strategic governing body.'],
+                'body' => ['lt' => 'Taryba tvirtina strategiją ir biudžetą bei renka rektorių.', 'en' => 'It approves the strategy and budget and elects the Rector.']],
+            ['term' => ['lt' => 'Kamieninis akademinis padalinys', 'en' => 'Core academic unit'], 'abbreviation' => ['lt' => 'KAP'],
+                'summary' => ['lt' => 'Fakultetas, institutas ar centras, vykdantis studijas.', 'en' => 'A faculty, institute or centre that runs studies.']],
+            ['term' => ['lt' => 'Socialiniai partneriai', 'en' => 'Social partners'],
+                'summary' => ['lt' => 'Darbdavių ir profesinių organizacijų atstovai.', 'en' => 'Representatives of employers and professional organisations.'],
+                'body' => ['lt' => 'Jie padeda tobulinti studijų programą ir dalyvauja komiteto darbe.', 'en' => 'They help improve a study programme and take part in the committee\'s work.']],
+            ['term' => ['lt' => 'Kvorumas', 'en' => 'Quorum'],
+                'summary' => ['lt' => 'Mažiausias narių skaičius, kad posėdžio sprendimai galiotų.', 'en' => 'The minimum number of members for a meeting\'s decisions to be valid.'],
+                'body' => ['lt' => 'Studijų programos komitete – ne mažiau kaip pusė narių.', 'en' => 'In a study programme committee, at least half of the members.']],
+            ['term' => ['lt' => 'Kadencija', 'en' => 'Term of office'],
+                'summary' => ['lt' => 'Laikotarpis, kuriam esi išrinktas ar deleguotas eiti pareigas.', 'en' => 'The period for which you are elected or delegated to a role.']],
         ];
     }
 }

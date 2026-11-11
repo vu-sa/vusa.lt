@@ -42,7 +42,10 @@
       :error="form.errors[`summary.${activeLocale}`] || form.errors.summary"
       :required="activeLocale === 'lt'"
     >
-      <Textarea id="article-summary" v-model="form.summary[activeLocale]" rows="3" maxlength="600" :class="fieldSurfaceClass" data-testid="article-summary" />
+      <div class="space-y-1">
+        <Textarea id="article-summary" v-model="form.summary[activeLocale]" rows="2" :maxlength="SUMMARY_MAX" :class="fieldSurfaceClass" data-testid="article-summary" />
+        <p class="text-right text-xs tabular-nums text-muted-foreground" aria-hidden="true">{{ form.summary[activeLocale].length }}/{{ SUMMARY_MAX }}</p>
+      </div>
     </FormFieldWrapper>
 
     <FormFieldWrapper
@@ -200,6 +203,7 @@ const props = withDefaults(defineProps<{
 // One instance per editor: each locale's editor is recreated with its own.
 const wikiLinks = () => createWikiLinkExtension();
 const linkSpotlight = useFeatureSpotlight('wiki-links-v1');
+const SUMMARY_MAX = 200;
 
 const activeLocale = ref<LocaleKey>('lt');
 const isEdit = computed(() => Boolean(props.item?.id));

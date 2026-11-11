@@ -3,8 +3,7 @@
     id="step-source"
     :label="$t('learning_library.fields.source')"
     :hint="locale === 'en' ? $t('learning_library.source.en_optional_hint') : $t('learning_library.fields.source_hint')"
-    :error="errors[`sources.${locale}`] || errors[`sources.${locale}.document_id`] || errors[`sources.${locale}.url`]"
-    :required="locale === 'lt'"
+    :error="errorFor(locale) || otherError"
   >
     <div class="space-y-3" :data-testid="`source-block-${locale}`">
       <FormSegmentedControl
@@ -107,7 +106,7 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 import { Search, X } from '@lucide/vue';
-import { computed, reactive } from 'vue';
+import { computed, nextTick, reactive } from 'vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import { FormSegmentedControl, StatusBadge, type FormSegmentOption } from '@/Components/Patterns';
@@ -129,8 +128,22 @@ const props = defineProps<{
 }>();
 const sources = defineModel<LearningSourceDraft>({ required: true });
 
-const modeFor = (locale: LocaleKey): SourceMode => sources.value[locale].url && !sources.value[locale].document_id ? 'url' : 'document';
+const isEmpty = (locale: LocaleKey): boolean => !sources.value[locale].url && !sources.value[locale].document_id;
+const ownMode = (locale: LocaleKey): SourceMode => sources.value[locale].url && !sources.value[locale].document_id ? 'url' : 'document';
+// An empty locale follows the filled one, so an EN-only link also opens the LT tab on "Nuoroda".
+const modeFor = (locale: LocaleKey): SourceMode => {
+  const other: LocaleKey = locale === 'lt' ? 'en' : 'lt';
+  return isEmpty(locale) && !isEmpty(other) ? ownMode(other) : ownMode(locale);
+};
 const modes = reactive<Record<LocaleKey, SourceMode>>({ lt: modeFor('lt'), en: modeFor('en') });
+
+const errorFor = (locale: LocaleKey): string | undefined => props.errors[`sources.${locale}`] || props.errors[`sources.${locale}.document_id`] || props.errors[`sources.${locale}.url`];
+const otherError = computed(() => {
+  const other: LocaleKey = props.locale === 'lt' ? 'en' : 'lt';
+  const message = errorFor(other);
+  return message ? `${other.toUpperCase()}: ${message}` : undefined;
+});
+const URL_PATTERN = /^https?:\/\/\S+$/i;
 const selected = reactive<Record<LocaleKey, LearningDocumentSearchHit | null>>({ lt: props.documents?.lt ?? null, en: props.documents?.en ?? null });
 const queries = reactive<Record<LocaleKey, string>>({ lt: '', en: '' });
 const results = reactive<Record<LocaleKey, LearningDocumentSearchHit[]>>({ lt: [], en: [] });
@@ -168,6 +181,15 @@ function clearDocument(locale: LocaleKey): void {
 }
 
 function onInput(locale: LocaleKey): void {
+  const typed = queries[locale].trim();
+  if (URL_PATTERN.test(typed)) {
+    setMode(locale, 'url');
+    sources.value[locale].url = typed;
+    queries[locale] = '';
+    open[locale] = false;
+    void nextTick(() => document.getElementById(`source-url-${locale}`)?.focus());
+    return;
+  }
   if (timers[locale]) clearTimeout(timers[locale]!);
   timers[locale] = setTimeout(() => void search(locale), 150);
 }

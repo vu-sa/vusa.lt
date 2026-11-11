@@ -33,6 +33,7 @@ return [
         'purpose' => 'System responsibility',
     ],
     'sections' => [
+        'reordered' => 'Section order saved.',
         'title' => 'Wiki sections',
         'create' => 'Create section',
         'created' => 'Section created.',

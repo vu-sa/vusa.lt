@@ -9,6 +9,7 @@ export interface LearningSectionOption {
   description: { lt?: string; en?: string };
   order: number;
   tenant_id: number | null;
+  itemsCount?: number;
   canUpdate?: boolean;
   canDelete?: boolean;
   tenant: { id: number; shortname: string } | null;

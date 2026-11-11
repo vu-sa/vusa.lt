@@ -40,9 +40,10 @@ describe('learning sections', () => {
     const form = vi.mocked(useForm).mock.results[0]!.value;
     await wrapper.get('[data-testid="create-section"]').trigger('click');
     expect(wrapper.get('#section-tenant').findAll('option').map(option => option.text())).toEqual(['forms.placeholders.select_tenant', 'MIF']);
-    await wrapper.get('#section-title-lt').setValue('Įvadas');
-    await wrapper.get('#section-title-en').setValue('Introduction');
-    await wrapper.get('#section-description-lt').setValue('Perskaityk prieš mokymus');
+    await wrapper.get('#section-title').setValue('Įvadas');
+    await wrapper.get('#section-description').setValue('Perskaityk prieš mokymus');
+    await wrapper.get('[data-testid="section-locale-en"]').trigger('click');
+    await wrapper.get('#section-title').setValue('Introduction');
     await wrapper.getComponent(SheetForm).vm.$emit('submit');
     expect(form.title).toEqual({ lt: 'Įvadas', en: 'Introduction' });
     expect(form.tenant_id).toBe(1);
@@ -53,13 +54,31 @@ describe('learning sections', () => {
   it('edits the selected section and uses the update scope', async () => {
     const wrapper = render();
     const form = vi.mocked(useForm).mock.results[0]!.value;
-    await wrapper.get('[data-slot="managed-section"] button').trigger('click');
-    expect(wrapper.get<HTMLInputElement>('#section-title-en').element.value).toBe('Training');
+    await wrapper.get('[data-slot="managed-section"] button[aria-label^="Redaguoti"]').trigger('click');
+    expect(wrapper.get<HTMLInputElement>('#section-title').element.value).toBe('Mokymai');
+    await wrapper.get('[data-testid="section-locale-en"]').trigger('click');
+    expect(wrapper.get<HTMLInputElement>('#section-title').element.value).toBe('Training');
     expect(wrapper.find('#section-tenant').exists()).toBe(false);
-    await wrapper.get('#section-title-lt').setValue('Atnaujinti mokymai');
+    await wrapper.get('[data-testid="section-locale-lt"]').trigger('click');
+    await wrapper.get('#section-title').setValue('Atnaujinti mokymai');
     await wrapper.getComponent(SheetForm).vm.$emit('submit');
     expect(form.put).toHaveBeenCalledWith(expect.stringContaining('knowledgeSections.update'), expect.objectContaining({ preserveScroll: true }));
     wrapper.unmount();
+  });
+
+  it('reorders sections with the arrows and saves the whole order', async () => {
+    const second: LearningSectionOption = { ...section, id: 'section-2', title: { lt: 'Sąvokos', en: 'Terms' }, order: 3 };
+    const wrapper = render([section, second]);
+    await wrapper.get('[data-testid="reorder-sections"]').trigger('click');
+    await wrapper.get('[aria-label^="Perkelti žemiau: Mokymai"]').trigger('click');
+    await wrapper.getComponent(SheetForm).vm.$emit('submit');
+    expect(router.post).toHaveBeenCalledWith(expect.stringContaining('knowledgeSections.reorder'), {
+      sections: [{ id: 'section-2', order: 0 }, { id: 'section-1', order: 1 }],
+    }, expect.objectContaining({ preserveScroll: true }));
+    wrapper.unmount();
+    const foreign = render([section, { ...second, canUpdate: false }]);
+    expect(foreign.find('[data-testid="reorder-sections"]').exists()).toBe(false);
+    foreign.unmount();
   });
 
   it('confirms deletion and hides actions forbidden on the section', async () => {

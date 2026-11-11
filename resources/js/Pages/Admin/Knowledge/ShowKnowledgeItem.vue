@@ -18,6 +18,7 @@ import LearningStepAction from '@/Features/Admin/Learning/LearningStepAction.vue
 import { useStepProgress } from '@/Features/Admin/Learning/composables/useStepProgress';
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import { safeHref } from '@/Utils/safeHref';
+import { escapeHtml } from '@/Utils/String';
 import type { KnowledgeItemData, LearningCoordinator, LearningInstitutionContacts, LearningTypeOption, WikiPageSummary, WikiSubject } from '@/Types/learning';
 
 const props = withDefaults(defineProps<{
@@ -53,6 +54,8 @@ const sourceLabel = computed(() => {
 const thumbnailFailed = ref(false);
 const thumbnailUrl = computed(() => thumbnailFailed.value ? null : props.item.source?.thumbnailUrl ?? null);
 const hasBody = computed(() => props.item.description.replace(/<[^>]*>/g, '').trim() !== '');
+// The summary opens the article in the same voice as the rest, not as a separate lead.
+const articleHtml = computed(() => (props.item.summary ? `<p data-slot="article-summary">${escapeHtml(props.item.summary)}</p>` : '') + (hasBody.value ? props.item.description : ''));
 const enterTrail = () => enterKnowledgeRecord({ id: props.item.id, title: props.item.title, href: route('knowledgeItems.show', props.item.id) });
 onMounted(enterTrail);
 watch(() => props.item.id, () => {
@@ -83,7 +86,6 @@ watch(() => props.item.id, () => {
               <span>{{ $t('learning.path.per_term') }}</span>
             </template>
           </p>
-          <p v-if="item.summary" class="mt-4 max-w-prose text-lg leading-relaxed text-foreground" data-slot="article-summary">{{ item.summary }}</p>
           <p v-if="failed" role="alert" class="mt-2 text-sm text-destructive">{{ $t('learning.path.save_failed') }}</p>
         </div>
       </div>
@@ -97,7 +99,7 @@ watch(() => props.item.id, () => {
 
     <div :class="['grid gap-10 lg:grid-cols-[minmax(0,1fr)_17rem] lg:gap-x-14', inPath && 'sm:pl-14']" data-slot="step-body">
       <article class="min-w-0 max-w-prose space-y-8 lg:col-start-1 lg:row-start-1">
-        <WikiProse v-if="hasBody" :html="item.description" :pages="linkedPages" />
+        <WikiProse v-if="articleHtml" :html="articleHtml" :pages="linkedPages" />
         <LearningAudienceNotes v-if="inPath" :notes="item.audienceNotes" />
 
         <section v-if="related.length" aria-labelledby="article-related" class="space-y-3 border-t border-border pt-6" data-slot="article-related">

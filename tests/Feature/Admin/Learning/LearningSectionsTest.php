@@ -46,3 +46,27 @@ test('a global curator can manage global sections and deleting a section keeps i
     asUser($user)->delete(route('knowledgeSections.destroy', $section))->assertRedirect();
     expect($step->fresh()->knowledge_section_id)->toBeNull();
 });
+
+test('sections are reordered only when the user may update every one of them', function (): void {
+    $tenant = Tenant::query()->firstOrFail();
+    $user = makeUser($tenant);
+    $user->givePermissionTo(Permission::findOrCreate('learningSteps.update.padalinys', 'web'));
+    [$first, $second] = KnowledgeSection::factory()->count(2)->sequence(['order' => 0], ['order' => 1])->create(['tenant_id' => $tenant->id]);
+    $global = KnowledgeSection::factory()->create(['order' => 2]);
+
+    asUser($user)->post(route('knowledgeSections.reorder'), ['sections' => [['id' => $second->id, 'order' => 0], ['id' => $first->id, 'order' => 1]]])->assertRedirect();
+    expect([$first->fresh()->order, $second->fresh()->order])->toBe([1, 0]);
+
+    asUser($user)->post(route('knowledgeSections.reorder'), ['sections' => [['id' => $global->id, 'order' => 0], ['id' => $first->id, 'order' => 2]]])->assertForbidden();
+    expect($global->fresh()->order)->toBe(2);
+});
+
+test('a new section goes to the end of the list', function (): void {
+    $user = makeUser(Tenant::query()->firstOrFail());
+    $user->givePermissionTo(Permission::findOrCreate('learningSteps.create.*', 'web'));
+    KnowledgeSection::factory()->create(['order' => 4]);
+
+    asUser($user)->post(route('knowledgeSections.store'), ['title' => ['lt' => 'Naujas', 'en' => 'New']])->assertRedirect();
+
+    expect(KnowledgeSection::query()->where('created_by', $user->id)->sole()->order)->toBe(5);
+});

@@ -267,12 +267,13 @@ class KnowledgeItemController extends AdminController
     {
         $scope = $this->sectionScope($user, $ability);
 
-        return KnowledgeSection::query()->with('tenant')->when(! $scope->isAllScope,
+        return KnowledgeSection::query()->with('tenant')->withCount('items')->when(! $scope->isAllScope,
             fn ($query) => $query->whereIn('tenant_id', $scope->tenantIds()))->orderBy('order')->orderBy('id')->get()
             ->map(fn (KnowledgeSection $section): array => [
                 'id' => $section->id, 'title' => $section->getTranslations('title'),
                 'description' => $section->getTranslations('description'), 'order' => $section->order,
                 'tenant_id' => $section->tenant_id,
+                'itemsCount' => $section->items_count,
                 'canUpdate' => $user->can('update', $section),
                 'canDelete' => $user->can('delete', $section),
                 'tenant' => $section->tenant ? ['id' => $section->tenant->id, 'shortname' => $section->tenant->shortname] : null,

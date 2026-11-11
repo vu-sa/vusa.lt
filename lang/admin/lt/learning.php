@@ -33,6 +33,7 @@ return [
         'purpose' => 'Sistemos atsakomybė',
     ],
     'sections' => [
+        'reordered' => 'Skyrių tvarka išsaugota.',
         'title' => 'Wiki skyriai',
         'create' => 'Sukurti skyrių',
         'created' => 'Skyrius sukurtas.',

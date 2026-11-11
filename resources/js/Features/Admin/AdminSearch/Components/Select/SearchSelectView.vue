@@ -53,6 +53,7 @@
             </template>
             <Button
               v-if="controller.activeFilterCount.value > 0"
+              type="button"
               variant="ghost"
               size="sm"
               voice="sentence"
