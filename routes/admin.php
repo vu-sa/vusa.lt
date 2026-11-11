@@ -362,6 +362,7 @@ Route::put('institutionTypes/{type}/models', [InstitutionTypeController::class, 
 Route::put('dutyTypes/{type}/models', [DutyTypeController::class, 'syncModels'])->name('dutyTypes.models.sync');
 
 Route::get('knowledge', [KnowledgeBaseController::class, 'show'])->name('knowledgeBase.show');
+Route::get('knowledge/for-you', [KnowledgeBaseController::class, 'mine'])->name('knowledgeBase.mine');
 Route::get('knowledge/library', [KnowledgeItemController::class, 'index'])->name('knowledgeItems.index');
 Route::get('knowledge/documents/search', [KnowledgeItemController::class, 'searchDocuments'])->name('knowledgeItems.documentSearch');
 Route::post('knowledge/items/{knowledgeItem}/progress', [KnowledgeItemProgressController::class, 'store'])->name('knowledgeItems.progress');

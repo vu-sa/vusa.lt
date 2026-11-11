@@ -6,11 +6,22 @@ import { createMockPage } from '@/tests/helpers/createMockPage';
 import LearningPathView from '../LearningPathView.vue';
 import { path, step } from './fixtures';
 import { commonStubs } from '@/tests/stubs';
+import ShowLearningPath from '@/Pages/Admin/Learning/ShowLearningPath.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 beforeEach(() => vi.mocked(usePage).mockReturnValue(createMockPage()));
 
 describe('LearningPathView', () => {
+  it('shows assigned Wiki progress without the old step meters or priority legend', () => {
+    const wrapper = mount(ShowLearningPath, { props: { path: path(), coordinators: [], institutionContacts: [] }, global: { stubs: commonStubs } });
+    expect(wrapper.find('[data-slot="learning-summary"]').exists()).toBe(false);
+    expect(wrapper.get('[data-slot="documents-entry"] [data-slot="wiki-progress-assigned"]').text()).toContain('2/4');
+    expect(wrapper.find('[data-slot="wiki-progress-legend"]').exists()).toBe(false);
+    expect(wrapper.text()).not.toContain('learning.path.summary_essential');
+    expect(wrapper.text()).not.toContain('learning.path.summary_all');
+    wrapper.unmount();
+  });
+
   it('shows every stage that has steps, with its rows and no disclosures', () => {
     const wrapper = mount(LearningPathView, { props: { path: path() }, global: { stubs: commonStubs } });
     expect(wrapper.findAll('[data-stage]')).toHaveLength(3);

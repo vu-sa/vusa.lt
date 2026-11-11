@@ -42,8 +42,8 @@ paaiškinimu, kam jų reikia, ir pažanga, kurią mato koordinatorius.
 ## Susitarimai
 
 - **Skaitiniai – Wiki.** Sąvokos, dokumentai ir pristatymai aprašomi
-  [Wiki straipsniuose](/wiki/straipsniai), o kelyje lieka tai, ką reikia padaryti. Žingsnio aprašyme
-  galima nurodyti į straipsnį (`[[`).
+  [Wiki įrašuose](/wiki/straipsniai), o kelyje lieka tai, ką reikia padaryti. Žingsnio aprašyme
+  galima nurodyti į įrašą (`[[`).
 - **Kiekvienas žingsnis paaiškina, kam jis reikalingas.** Aprašyme pirmiausia
   parašyk, kodėl verta – tai svarbiau už patį failą. Prireikus pridėk sąrašą, paveikslėlį ar YouTube vaizdo įrašą.
 - **Esminių žingsnių nedaug.** Vienai auditorijai užtenka kelių esminių žingsnių; visa kita –
@@ -65,7 +65,13 @@ Matai visų tau tinkančių auditorijų paaiškinimus. Būsimos pareigos įskait
 ### Wiki ir pasiruošimas posėdžiui {#dokumentai-ir-skyriai}
 
 Kadencijos etapų juostoje yra tik veiksmai. Kelio viršuje rodomas [Wiki](/wiki/straipsniai#pradzia)
-blokas: kiek būtinų straipsnių jau perskaityta ir vienas siūlomas skaitinys. Pasiruošimas posėdžiui
+blokas su tau skirtų įrašų pažangos matuokliu **Mano Wiki** ir vienu siūlomu skaitiniu.
+Mygtukas **VU SA Wiki** atveria tau skirtus įrašus. Blokas yra be išorinio rėmelio;
+tik **Toliau skaityk** skaitinys rodomas su rėmeliu, jo pavadinimas pabrauktas kaip kitų Wiki nuorodų.
+Mygtukai **Skaityti** ir **VU SA Wiki** yra vienodo dydžio. Matuoklis toks pats
+kaip puslapyje **Tau skirti įrašai**: būtinų, rekomenduojamų ir papildomų įrašų segmentai, tik be
+paaiškinimų po juosta. Atskirų esminių ir visų žingsnių pažangos matuoklių antraštėje nėra.
+Koordinatoriaus kontaktai susipažinimo žingsnyje rodomi erdvesnėje eilutėje. Pasiruošimas posėdžiui
 rodomas kelio apačioje, atskirai kiekvienai tau tinkančiai auditorijai. Vienos auditorijos veiksmai
 numeruojami iš eilės ir neturi pažangos žymų.
 
@@ -74,7 +80,7 @@ numeruojami iš eilės ir neturi pažangos žymų.
 Veiksmai išdėstyti pagal kadencijos etapus: **Prieš pradedant**, **Pirmieji mėnesiai** (pirmos 60
 dienų), **Visą kadenciją** ir **Kadencijos pabaiga** (paskutinės 45 dienos). Dabartinis etapas
 pažymėtas „dabar“. Visi etapai ir jų žingsniai rodomi iš karto. Žingsnio kairėje esantis langelis
-žymi pažangą; varnelę galima uždėti ir nuimti tiesiog eilutėje. Eilutėje rodomas tik pavadinimas – paaiškinimai, diegimo ir pranešimų informacija pasiekiami paspaudus pavadinimą. Veiksmo mygtukas eilutės dešinėje rodo svarbą: esminio žingsnio – VU SA spalvos, rekomenduojamo – rėmelis didžiosiomis raidėmis, papildomo – paprastas tekstas. Žingsnio puslapyje pažangą galima žymėti prie pavadinimo, o veiksmų mygtukai pateikiami antraštės dešinėje. Žingsniai įžvalgų neturi – jos rašomos prie [Wiki straipsnių](/wiki/straipsniai). Koordinatoriaus nuotrauka, pareigos ir mygtukas „Parašyti“ rodomi tiesiai prie susipažinimo žingsnio.
+žymi pažangą; varnelę galima uždėti ir nuimti tiesiog eilutėje. Eilutėje rodomas tik pavadinimas – paaiškinimai, diegimo ir pranešimų informacija pasiekiami paspaudus pavadinimą. Veiksmo mygtukas eilutės dešinėje rodo svarbą: esminio žingsnio – VU SA spalvos, rekomenduojamo – rėmelis didžiosiomis raidėmis, papildomo – paprastas tekstas. Žingsnio puslapyje pažangą galima žymėti prie pavadinimo, o veiksmų mygtukai pateikiami antraštės dešinėje. Žingsniai įžvalgų neturi – jos rašomos prie [Wiki įrašų](/wiki/straipsniai). Koordinatoriaus nuotrauka, pareigos ir mygtukas „Parašyti“ rodomi tiesiai prie susipažinimo žingsnio.
 
 Svarba nusako turinį, ne terminą: **Esminis** (būtina žinoti), **Rekomenduojamas**, **Papildomas**.
 Esminio žingsnio praleisti negalima.
@@ -119,7 +125,7 @@ Telefone skyriai pasiekiami dabartinio skyriaus pasirinkime ir per **Meniu**.
 ### Pridėti žingsnį
 
 1. Darbo srityje **Organizacija** pasirink **+ Sukurti** → **Naujas kelio žingsnis** (arba skyriuje **Kelio žingsniai** – **Naujas žingsnis**). Dokumentams
-   ir pristatymams naudok [Wiki straipsnius](/wiki/straipsniai#prideti-straipsni).
+   ir pristatymams naudok [Wiki įrašus](/wiki/straipsniai#prideti-straipsni).
 2. Pasirink rūšį (**Veiksmas** arba **Pasiruošimas posėdžiui**), įrašyk pavadinimą ir aprašymą. Aprašyme galima formatuoti tekstą, pridėti paveikslėlių ir YouTube vaizdo įrašų.
 3. Skiltyje **Kam skirta** spausk **Pridėti auditoriją**. Pasirink auditorijos tipą ir tikslą,
    svarbą, etapą ir, jei reikia, padalinį bei paaiškinimus lietuviškai ir angliškai. Jei gali tvarkyti
@@ -157,7 +163,7 @@ atvėrus kelią.
   kur reikia valdiklio ar automatinio atlikimo; žingsniai, kuriuos atstovas pažymi pats, yra įprasti, prireikus su
   mygtuku (`action_label`, `action_url`). Sisteminių atlikimas skaičiuojamas skaitant ir nesaugomas. Juose keičiamas tik etapas, tvarka ir rodymas; ištrinti negalima.
 - Teisės: `learningSteps.*.padalinys` – tik savo padaliniu apribotos auditorijos, `learningSteps.*.*` – visos (jos
-  taip pat leidžia tvarkyti [Wiki straipsnių](/wiki/straipsniai#technine-informacija) auditorijas); atstovų pažanga –
+  taip pat leidžia tvarkyti [Wiki įrašų](/wiki/straipsniai#technine-informacija) auditorijas); atstovų pažanga –
   [Atstovai](/visak/atstovai#technine-informacija), per `ResponsibilityResolver`.
 - Bandomasis turinys: `LearningPathPilotSeeder` (paleidžiamas ranka, kartojant nieko nedubliuoja).
 

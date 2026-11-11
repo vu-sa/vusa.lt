@@ -32,7 +32,7 @@ const SECTION_LANDING_ROUTES = [
     'dashboard', 'dashboard.atstovavimas', 'dashboard.atstovavimas.padaliniai', 'dashboard.reservations', 'dashboard.svetaine',
     'dashboard.organizacija', 'dashboard.sistema',
     'institutionGraph', 'dutiables.timeline', 'tasks.summary', 'systemStatus',
-    'mailQueue', 'administration', 'duties.updateUsersWizard', 'profile', 'learningPath.show', 'knowledgeBase.show',
+    'mailQueue', 'administration', 'duties.updateUsersWizard', 'profile', 'learningPath.show', 'knowledgeBase.show', 'knowledgeBase.mine',
 ];
 
 /**
@@ -162,7 +162,7 @@ describe('per-persona visibility', function (): void {
         // documents and problems are open to every admin too (the viewAny() of each policy).
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'kelias', 'uzduotys', 'atsakomybes', 'veiklos_uzklausos'],
-            'wiki' => ['wiki', 'rodykle'],
+            'wiki' => ['wiki', 'wiki_mine', 'rodykle'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai'],
         ]);
@@ -186,7 +186,8 @@ describe('per-persona visibility', function (): void {
                 'label' => 'shell.workspaces.wiki.title',
                 'description' => 'shell.workspaces.wiki.description',
                 'sections' => [
-                    ['key' => 'wiki', 'label' => 'shell.sections.wiki', 'routeName' => 'knowledgeBase.show', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.wiki', 'collectionActions' => [], 'matches' => ['knowledgeBase.*'], 'startsGroup' => false, 'children' => []],
+                    ['key' => 'wiki', 'label' => 'shell.sections.wiki', 'routeName' => 'knowledgeBase.show', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.wiki', 'collectionActions' => [], 'matches' => ['knowledgeBase.show'], 'startsGroup' => false, 'children' => []],
+                    ['key' => 'wiki_mine', 'label' => 'shell.sections.wiki_mine', 'routeName' => 'knowledgeBase.mine', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.wiki_mine', 'collectionActions' => [], 'matches' => ['knowledgeBase.mine'], 'startsGroup' => false, 'children' => []],
                     ['key' => 'rodykle', 'label' => 'shell.sections.rodykle', 'routeName' => 'knowledgeItems.alphabet', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.rodykle', 'collectionActions' => [], 'matches' => ['knowledgeItems.alphabet', 'knowledgeItems.show'], 'startsGroup' => false, 'children' => []],
                 ],
                 'createActions' => [],
@@ -203,7 +204,7 @@ describe('per-persona visibility', function (): void {
         // The institution graph is a padalinys view; a rep reads only their own institutions.
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'kelias', 'uzduotys', 'atsakomybes', 'veiklos_uzklausos'],
-            'wiki' => ['wiki', 'rodykle'],
+            'wiki' => ['wiki', 'wiki_mine', 'rodykle'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai'],
         ]);
@@ -219,7 +220,7 @@ describe('per-persona visibility', function (): void {
 
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'kelias', 'uzduotys', 'atsakomybes', 'veiklos_uzklausos'],
-            'wiki' => ['wiki', 'rodykle'],
+            'wiki' => ['wiki', 'wiki_mine', 'rodykle'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'atstovai', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos', 'pareigybiu_laikotarpiai', 'institucijos_grafas'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai'],
             'svetaine' => ['apzvalga', 'puslapiai', 'naujienos', 'kalendorius', 'baneriai', 'greitosios_nuorodos', 'failai'],
@@ -232,7 +233,7 @@ describe('per-persona visibility', function (): void {
 
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'kelias', 'uzduotys', 'atsakomybes', 'veiklos_uzklausos'],
-            'wiki' => ['wiki', 'rodykle'],
+            'wiki' => ['wiki', 'wiki_mine', 'rodykle'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai', 'kategorijos'],
             'sistema' => ['apzvalga', 'tipai'],
@@ -264,7 +265,7 @@ describe('per-persona visibility', function (): void {
 
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'kelias', 'uzduotys', 'atsakomybes', 'veiklos_uzklausos'],
-            'wiki' => ['wiki', 'rodykle', 'wiki_biblioteka'],
+            'wiki' => ['wiki', 'wiki_mine', 'rodykle', 'wiki_biblioteka'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'atstovai', 'uzduociu_suvestine', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos', 'pareigybiu_laikotarpiai', 'institucijos_grafas', 'problemu_kategorijos'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai', 'kategorijos'],
             'sistema' => ['apzvalga', 'tipai'],
@@ -410,6 +411,7 @@ describe('route resolution', function (): void {
         'step creation' => ['learningSteps.create', 'organizacija', 'kelio_zingsniai'],
         'step editor' => ['learningSteps.edit', 'organizacija', 'kelio_zingsniai'],
         'Wiki home' => ['knowledgeBase.show', 'wiki', 'wiki'],
+        'articles for you' => ['knowledgeBase.mine', 'wiki', 'wiki_mine'],
         'article index' => ['knowledgeItems.alphabet', 'wiki', 'rodykle'],
         'article record' => ['knowledgeItems.show', 'wiki', 'rodykle'],
         'article library' => ['knowledgeItems.index', 'wiki', 'wiki_biblioteka'],

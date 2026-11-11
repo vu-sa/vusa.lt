@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { useElementSize } from '@vueuse/core';
 import { transChoice } from 'laravel-vue-i18n';
 
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
@@ -15,6 +16,8 @@ const done = computed(() => new Set(props.doneIds));
 
 const query = ref('');
 const groups = computed(() => groupByLetter(searchWiki(props.index, query.value)));
+const alphabetBar = ref<HTMLElement | null>(null);
+const { height: alphabetBarHeight } = useElementSize(alphabetBar, undefined, { box: 'border-box' });
 </script>
 
 <template>
@@ -22,8 +25,9 @@ const groups = computed(() => groupByLetter(searchWiki(props.index, query.value)
     :title="$t('learning.pages.alphabet')"
     :eyebrow="$t('learning.pages.knowledge')"
     :lead="transChoice('learning.wiki.alphabet_lead', index.length, { count: String(index.length) })"
+    :style="{ '--alphabet-bar-height': `${alphabetBarHeight}px` }"
   >
-    <div class="sticky top-[var(--shell-chrome-height,0px)] z-10 -mx-4 space-y-3 border-b border-border bg-background/95 px-4 py-3 backdrop-blur sm:mx-0 sm:px-0" data-slot="alphabet-bar">
+    <div ref="alphabetBar" class="sticky top-[var(--shell-chrome-height,0px)] z-10 -mx-4 space-y-3 border-b border-border bg-background/95 px-4 py-3 backdrop-blur sm:mx-0 sm:px-0" data-slot="alphabet-bar">
       <WikiSearchField v-model="query" class="max-w-3xl" :label="$t('learning.wiki.search_label')" :placeholder="$t('learning.wiki.search_placeholder')" />
       <nav :aria-label="$t('learning.wiki.jump_to_letter')">
         <ul class="flex gap-1 overflow-x-auto pb-1">
@@ -35,7 +39,7 @@ const groups = computed(() => groupByLetter(searchWiki(props.index, query.value)
     </div>
 
     <div class="max-w-3xl space-y-10">
-      <section v-for="group in groups" :id="letterAnchor(group.letter)" :key="group.letter" class="grid scroll-mt-48 gap-x-8 sm:grid-cols-[3rem_minmax(0,1fr)]" :aria-labelledby="`${letterAnchor(group.letter)}-title`">
+      <section v-for="group in groups" :id="letterAnchor(group.letter)" :key="group.letter" class="grid scroll-mt-[calc(var(--shell-chrome-height,0px)+var(--alphabet-bar-height,0px)+1rem)] gap-x-8 sm:grid-cols-[3rem_minmax(0,1fr)]" :aria-labelledby="`${letterAnchor(group.letter)}-title`">
         <h2 :id="`${letterAnchor(group.letter)}-title`" class="u-display text-4xl leading-none text-brand">{{ group.letter }}</h2>
         <WikiPageList :pages="group.pages" :done-ids="done" class="mt-3 sm:mt-0" />
       </section>

@@ -103,6 +103,7 @@ return [
     'sections' => [
         'kelias' => 'My path',
         'wiki' => 'Wiki',
+        'wiki_mine' => 'Entries for you',
         'rodykle' => 'A–Z index',
         'wiki_biblioteka' => 'Library',
         'apzvalga' => 'Overview',
@@ -161,8 +162,9 @@ return [
     'section_descriptions' => [
         'kelias' => 'Your term steps and meeting preparation.',
         'wiki' => 'Who is who at VU SR and the university – and how it all connects',
-        'rodykle' => 'Every article from A to Z',
-        'wiki_biblioteka' => 'Every article, its audiences and status',
+        'wiki_mine' => 'Entries for your duties and your learning progress',
+        'rodykle' => 'Every entry from A to Z',
+        'wiki_biblioteka' => 'Every entry, its audiences and status',
         'uzduotys' => 'Work assigned to you and its deadlines',
         'atsakomybes' => 'Your duties and what they let you do',
         'veiklos_uzklausos' => 'Requests you received about institution activity',
@@ -216,7 +218,7 @@ return [
 
     'actions' => [
         'new_learning_step' => ['title' => 'New path step', 'description' => 'An action or meeting preparation'],
-        'new_knowledge_item' => ['title' => 'New Wiki article', 'description' => 'A term, document or explanation for reps'],
+        'new_knowledge_item' => ['title' => 'New Wiki entry', 'description' => 'A term, document or explanation for reps'],
         'new_institution_type' => ['title' => 'New institution type', 'description' => 'Institution grouping, representation and relationships'],
         'new_duty_type' => ['title' => 'New duty type', 'description' => 'Duty grouping and granted responsibilities'],
         'merge' => [

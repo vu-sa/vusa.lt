@@ -11,8 +11,8 @@
     :quick-filters="quickFilters"
     default-view="table"
     table-fixed
-    actions-width="w-40"
-    table-min-width="min-w-[56rem]"
+    actions-width="w-48"
+    table-min-width="min-w-[60rem]"
     :search-placeholder="$t('learning_library.knowledge.search_placeholder')"
     @quick-filter="toggleQuickFilter"
     @row-action="(item, key) => selectRowAction(key, item)"
@@ -105,7 +105,7 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { BookOpen, Eye, Pencil, Plus } from '@lucide/vue';
+import { ArrowUpRight, BookOpen, Pencil, Plus } from '@lucide/vue';
 import { computed, ref, toRef } from 'vue';
 
 import { quickFilterLabel } from '@/Components/Collection/quickFilterLabel';
@@ -186,9 +186,9 @@ const columns = computed<CollectionColumn[]>(() => [
 ]);
 
 const rowActions = (step: KnowledgeLibraryItem): CollectionRowAction[] => [
-  { key: 'open', role: 'open' as const, label: $t('Atidaryti'), icon: Eye, href: route('knowledgeItems.show', step.id) },
+  { key: 'open', role: 'open' as const, primary: true, label: $t('Atidaryti'), icon: ArrowUpRight, href: route('knowledgeItems.show', step.id) },
   ...(step.canUpdate
-    ? [{ key: 'edit', role: 'edit' as const, label: $t('Redaguoti'), icon: Pencil, href: route('knowledgeItems.edit', step.id) }]
+    ? [{ key: 'edit', role: 'edit' as const, menuOnly: true, label: $t('Redaguoti'), icon: Pencil, href: route('knowledgeItems.edit', step.id) }]
     : []),
 ];
 

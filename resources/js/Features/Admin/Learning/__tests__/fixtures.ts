@@ -21,7 +21,11 @@ export function path(): LearningPathData {
       { stage: LearningStage.TermEnd, steps: [step({ id: 'end', kind: LearningStepKind.Action })] },
     ],
     meetingPrep: [{ audience: { id: 'audience-spk', label: 'SPK' }, steps: [step({ id: 'prep', kind: LearningStepKind.MeetingPrep, stage: null, title: 'Read the agenda' })] }],
-    knowledge: { essentialDone: 1, essentialTotal: 2, done: 2, total: 4, nextItem: knowledge({ id: 'document-next' }) },
+    knowledge: { essentialDone: 1, essentialTotal: 2, done: 2, total: 4, nextItem: knowledge({ id: 'document-next' }), priorityProgress: [
+      { importance: LearningImportance.Essential, done: 1, total: 2 },
+      { importance: LearningImportance.Recommended, done: 1, total: 1 },
+      { importance: LearningImportance.Optional, done: 0, total: 1 },
+    ] },
     totals: { essentialDone: 0, essentialTotal: 0, allDone: 1, allTotal: 3 },
   };
 }

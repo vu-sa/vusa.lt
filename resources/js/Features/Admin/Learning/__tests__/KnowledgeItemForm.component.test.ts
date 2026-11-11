@@ -96,7 +96,7 @@ describe('KnowledgeItemForm', () => {
     expect(wrapper.get<HTMLInputElement>('[data-testid="source-url-en"]').element.value).toBe('https://vusa.lt/en-updated');
   });
 
-  it('switches source between document and URL and clears the opposite field', async () => {
+  it('keeps both source drafts when switching and submits only the active source', async () => {
     const wrapper = mount(KnowledgeItemForm, {
       props: {
         item: {
@@ -131,11 +131,24 @@ describe('KnowledgeItemForm', () => {
     expect(wrapper.find('[data-testid="source-url-lt"]').exists()).toBe(true);
 
     await wrapper.get('[data-testid="source-url-lt"]').setValue('https://vusa.lt/statutas');
+    const form = vi.mocked(useForm).mock.results[0]!.value;
+    await wrapper.findComponent({ name: 'FormPage' }).vm.$emit('submit');
+    const payload = form.transform.mock.calls[0]![0];
+    expect(payload(form).sources.lt).toEqual({ document_id: null, url: 'https://vusa.lt/statutas' });
     await wrapper.get('[data-testid="source-mode-lt-document"]').trigger('click');
     await nextTick();
 
     expect(wrapper.find('[data-testid="source-url-lt"]').exists()).toBe(false);
-    expect(wrapper.find('[data-testid="document-search-input-lt"]').exists()).toBe(true);
+    expect(wrapper.get('[data-testid="selected-document-lt"]').text()).toContain('Statutas');
+    expect(payload(form).sources.lt).toEqual({ document_id: 42, url: null });
+    await wrapper.get('[data-testid="source-mode-lt-url"]').trigger('click');
+    expect(wrapper.get<HTMLInputElement>('[data-testid="source-url-lt"]').element.value).toBe('https://vusa.lt/statutas');
+    await wrapper.get('[data-testid="source-mode-lt-document"]').trigger('click');
+    await wrapper.get('[data-testid="clear-document-lt"]').trigger('click');
+    await wrapper.get('[data-testid="source-mode-lt-url"]').trigger('click');
+    await wrapper.get('[data-testid="source-mode-lt-document"]').trigger('click');
+    expect(wrapper.find('[data-testid="selected-document-lt"]').exists()).toBe(false);
+    wrapper.unmount();
   });
 
   it('shows the hidden-document warning when picking a hidden document and hides it for a published one', async () => {
@@ -163,6 +176,11 @@ describe('KnowledgeItemForm', () => {
 
     expect(wrapper.find('[data-testid="hidden-document-warning-lt"]').exists()).toBe(true);
     expect(wrapper.get('[data-testid="hidden-document-warning-lt"]').text()).toBe('learning_library.source.hidden_document_warning');
+
+    await wrapper.get('[data-testid="source-mode-lt-url"]').trigger('click');
+    await wrapper.get('[data-testid="source-mode-lt-document"]').trigger('click');
+    expect(wrapper.get('[data-testid="selected-document-lt"]').text()).toContain('Paslėptas reglamentas');
+    expect(vi.mocked(useForm).mock.results[0]!.value.sources.lt.document_id).toBe(7);
 
     await wrapper.get('[data-testid="clear-document-lt"]').trigger('click');
     await nextTick();
@@ -195,6 +213,7 @@ describe('KnowledgeItemForm', () => {
       global: { stubs },
     });
     const form = vi.mocked(useForm).mock.results[0]!.value;
+    expect(wrapper.get('[data-slot="knowledge-audience-hint"]').text()).toBe('learning_library.sections.path_description');
     await wrapper.findComponent({ name: 'FormPage' }).vm.$emit('submit');
     const payload = form.transform.mock.calls[0]![0](form);
     expect(payload).not.toHaveProperty('kind');

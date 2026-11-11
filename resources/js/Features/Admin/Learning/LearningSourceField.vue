@@ -136,6 +136,7 @@ const modeFor = (locale: LocaleKey): SourceMode => {
   return isEmpty(locale) && !isEmpty(other) ? ownMode(other) : ownMode(locale);
 };
 const modes = reactive<Record<LocaleKey, SourceMode>>({ lt: modeFor('lt'), en: modeFor('en') });
+const drafts = reactive<LearningSourceDraft>({ lt: { ...sources.value.lt }, en: { ...sources.value.en } });
 
 const errorFor = (locale: LocaleKey): string | undefined => props.errors[`sources.${locale}`] || props.errors[`sources.${locale}.document_id`] || props.errors[`sources.${locale}.url`];
 const otherError = computed(() => {
@@ -156,16 +157,15 @@ const modeOptions = computed<FormSegmentOption<SourceMode>[]>(() => [
   { value: 'url', label: $t('learning_library.source.mode_url') },
 ]);
 
-// Switching mode clears the other half, so the payload never carries a document and a URL at once.
 function setMode(locale: LocaleKey, mode: SourceMode): void {
+  if (modes[locale] === mode) return;
+  if (modes[locale] === 'document') drafts[locale].document_id = sources.value[locale].document_id;
+  else drafts[locale].url = sources.value[locale].url;
   modes[locale] = mode;
-  if (mode === 'url') {
-    sources.value[locale].document_id = null;
-    selected[locale] = null;
-  }
-  else {
-    sources.value[locale].url = '';
-  }
+  sources.value[locale] = {
+    document_id: mode === 'document' ? drafts[locale].document_id : null,
+    url: mode === 'url' ? drafts[locale].url : '',
+  };
 }
 
 function selectDocument(locale: LocaleKey, doc: LearningDocumentSearchHit): void {
@@ -178,6 +178,7 @@ function selectDocument(locale: LocaleKey, doc: LearningDocumentSearchHit): void
 function clearDocument(locale: LocaleKey): void {
   selected[locale] = null;
   sources.value[locale].document_id = null;
+  drafts[locale].document_id = null;
 }
 
 function onInput(locale: LocaleKey, event: Event): void {

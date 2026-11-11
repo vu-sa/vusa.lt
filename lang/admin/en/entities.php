@@ -9,7 +9,7 @@
  */
 
 return [
-    'knowledgeItem' => ['model' => '{1} article|[2,*] articles', 'gender' => 'm'],
+    'knowledgeItem' => ['model' => '{1} entry|[2,*] entries', 'gender' => 'm'],
     'learningStep' => ['model' => '{1} learning step|[2,*] learning steps', 'gender' => 'm'],
 
     'duty' => [

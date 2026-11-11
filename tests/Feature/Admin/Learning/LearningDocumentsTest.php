@@ -14,6 +14,27 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
 
+test('articles for you has its own page with only personal learning data', function (): void {
+    $user = makeUser(Tenant::query()->firstOrFail());
+    $item = KnowledgeItem::factory()->create();
+
+    asUser($user)->get(route('knowledgeBase.mine'))->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->component('Admin/Knowledge/ShowKnowledgeForYou')
+        ->where('knowledge.items.0.id', $item->id)
+        ->missing('index')->missing('sections'));
+});
+
+test('old personal wiki views redirect to articles for you', function (string $view, string $expected): void {
+    $user = makeUser(Tenant::query()->firstOrFail());
+
+    asUser($user)->get(route('knowledgeBase.show', ['view' => $view]))
+        ->assertRedirectToRoute('knowledgeBase.mine', ['view' => $expected]);
+})->with([
+    ['importance', 'importance'],
+    ['sections', 'sections'],
+    ['mine', 'importance'],
+]);
+
 test('wiki separates self-learned articles from path progress and marks completed active articles in both indexes', function (): void {
     $this->freezeSecond();
     $user = makeUser(Tenant::query()->firstOrFail());
@@ -32,6 +53,16 @@ test('wiki separates self-learned articles from path progress and marks complete
     $step = LearningStep::factory()->create(['id' => $otherUsersArticle->id]);
     $step->progress()->create(['user_id' => $user->id, 'status' => 'done', 'completed_at' => now()]);
     $doneIds = collect([$selfLearned->id, $pathDone->id])->sort()->values()->all();
+
+    $assignedProgress = [
+        ['importance' => 'essential', 'done' => 0, 'total' => 0],
+        ['importance' => 'recommended', 'done' => 2, 'total' => 3],
+        ['importance' => 'optional', 'done' => 0, 'total' => 0],
+    ];
+    asUser($user)->get(route('knowledgeBase.mine'))->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('assignedProgress', $assignedProgress)->missing('wikiProgress'));
+    asUser($user)->get(route('learningPath.show'))->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('path.knowledge.priorityProgress', $assignedProgress));
 
     asUser($user)->get(route('knowledgeBase.show'))->assertOk()->assertInertia(fn (Assert $page) => $page
         ->has('knowledge.selfLearned', 1)
@@ -136,4 +167,6 @@ test('updated source clears learned marks across wiki views and off-path records
     asUser($user)->get(route('knowledgeBase.show'))->assertOk()->assertInertia(fn (Assert $page) => $page
         ->where('doneIds', [])->where('knowledge.selfLearned', [])->where('knowledge.stats.pathDone', 0));
     asUser($user)->get(route('knowledgeItems.alphabet'))->assertOk()->assertInertia(fn (Assert $page) => $page->where('doneIds', []));
+    asUser($user)->get(route('knowledgeBase.mine'))->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('assignedProgress.1.done', 0)->where('assignedProgress.1.total', 1));
 });

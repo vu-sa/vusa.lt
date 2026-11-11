@@ -44,8 +44,14 @@ export interface LearningPathData {
   termStart: string | null;
   stages: { stage: LearningStage; steps: LearningStepData[] }[];
   meetingPrep: { audience: { id: string; label: string }; steps: LearningStepData[] }[];
-  knowledge: LearningDocumentTotals & { nextItem: KnowledgeItemData | null };
+  knowledge: LearningDocumentTotals & { nextItem: KnowledgeItemData | null; priorityProgress: KnowledgePriorityProgress[] };
   totals: LearningTotals;
+}
+
+export interface KnowledgePriorityProgress {
+  importance: LearningImportance;
+  done: number;
+  total: number;
 }
 
 export type LearningCuratorFlag = 'expired_document' | 'updated_document' | 'missing_source';

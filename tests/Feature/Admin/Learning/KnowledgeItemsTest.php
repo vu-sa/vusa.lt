@@ -217,10 +217,15 @@ test('wiki links in a body are indexed both ways and previewed without dangling 
     expect($page->outgoingLinks()->pluck('id')->sort()->values()->all())->toBe(collect([$skvc->id, $hidden->id])->sort()->values()->all())
         ->and($skvc->incomingLinks()->sole()->is($page))->toBeTrue();
 
+    $skvc->progress()->create(['user_id' => $user->id, 'status' => 'done', 'completed_at' => now()]);
+    $otherUser = makeUser(Tenant::query()->firstOrFail());
+    $page->progress()->create(['user_id' => $otherUser->id, 'status' => 'done', 'completed_at' => now()]);
+
     asUser($user)->get(route('knowledgeItems.show', $page))->assertOk()->assertInertia(fn (Assert $inertia) => $inertia
         ->component('Admin/Knowledge/ShowKnowledgeItem')
         ->has('linkedPages', 1)->where("linkedPages.{$skvc->id}.summary", 'Vertina studijas.')
-        ->has('related', 1)->where('related.0.id', $skvc->id));
+        ->has('related', 1)->where('related.0.id', $skvc->id)
+        ->where('doneIds', [$skvc->id]));
     asUser($user)->get(route('knowledgeItems.show', $skvc))->assertInertia(fn (Assert $inertia) => $inertia
         ->where('related.0.id', $page->id)->where('inPath', false));
 

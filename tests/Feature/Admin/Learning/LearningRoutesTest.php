@@ -24,6 +24,7 @@ test('members can open learning pages with their typed payloads', function (stri
 })->with([
     'path' => ['learningPath.show', 'Admin/Learning/ShowLearningPath', 'path.stages'],
     'documents' => ['knowledgeBase.show', 'Admin/Knowledge/ShowKnowledgeBase', 'knowledge'],
+    'articles for you' => ['knowledgeBase.mine', 'Admin/Knowledge/ShowKnowledgeForYou', 'knowledge'],
     'alphabet' => ['knowledgeItems.alphabet', 'Admin/Knowledge/IndexKnowledgeAlphabet', 'index'],
 ]);
 

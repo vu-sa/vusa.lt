@@ -103,6 +103,7 @@ return [
     'sections' => [
         'kelias' => 'Mano kelias',
         'wiki' => 'Wiki',
+        'wiki_mine' => 'Tau skirti įrašai',
         'rodykle' => 'Rodyklė A–Ž',
         'wiki_biblioteka' => 'Biblioteka',
         'apzvalga' => 'Apžvalga',
@@ -161,8 +162,9 @@ return [
     'section_descriptions' => [
         'kelias' => 'Tavo kadencijos žingsniai ir pasiruošimas posėdžiams.',
         'wiki' => 'Kas yra kas VU SA ir universitete – ir kaip viskas susiję',
-        'rodykle' => 'Visi straipsniai pagal abėcėlę',
-        'wiki_biblioteka' => 'Visi straipsniai, jų auditorijos ir būsena',
+        'wiki_mine' => 'Tavo pareigoms skirti įrašai ir mokymosi pažanga',
+        'rodykle' => 'Visi įrašai pagal abėcėlę',
+        'wiki_biblioteka' => 'Visi įrašai, jų auditorijos ir būsena',
         'uzduotys' => 'Tau priskirti darbai ir terminai',
         'atsakomybes' => 'Tavo pareigybės ir ką jos leidžia',
         'veiklos_uzklausos' => 'Tau gautos užklausos apie institucijų veiklą',
@@ -216,7 +218,7 @@ return [
 
     'actions' => [
         'new_learning_step' => ['title' => 'Naujas kelio žingsnis', 'description' => 'Veiksmas ar pasiruošimas posėdžiui'],
-        'new_knowledge_item' => ['title' => 'Naujas Wiki straipsnis', 'description' => 'Sąvoka, dokumentas ar paaiškinimas atstovams'],
+        'new_knowledge_item' => ['title' => 'Naujas Wiki įrašas', 'description' => 'Sąvoka, dokumentas ar paaiškinimas atstovams'],
         'new_institution_type' => ['title' => 'Naujas institucijos tipas', 'description' => 'Institucijų grupavimas, atstovavimas ir ryšiai'],
         'new_duty_type' => ['title' => 'Naujas pareigybės tipas', 'description' => 'Pareigybių grupavimas ir suteikiamos atsakomybės'],
         'merge' => [

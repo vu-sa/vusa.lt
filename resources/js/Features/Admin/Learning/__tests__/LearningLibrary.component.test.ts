@@ -1,11 +1,13 @@
 import { usePage } from '@inertiajs/vue3';
 import { flushPromises, mount } from '@vue/test-utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { ArrowUpRight } from '@lucide/vue';
 
+import RecordActionMenu from '@/Components/Patterns/RecordActionMenu.vue';
 import IndexKnowledgeItem from '@/Pages/Admin/Knowledge/IndexKnowledgeItem.vue';
 import IndexLearningStep from '@/Pages/Admin/Learning/IndexLearningStep.vue';
 import { LearningAudienceType, LearningImportance, LearningStage, LearningStepKind } from '@/Types/enums';
-import type { LearningLibraryStep } from '@/Types/learning';
+import type { KnowledgeLibraryItem, LearningLibraryStep } from '@/Types/learning';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
 
@@ -129,5 +131,24 @@ it('opens sections from the library header', async () => {
   const wrapper = mount(IndexKnowledgeItem, { props: { items: [], canCreate: true }, global: { stubs: commonStubs } });
   await wrapper.get('[data-testid="manage-sections"]').trigger('click');
   expect(wrapper.findComponent({ name: 'LearningSectionsSheet' }).props('open')).toBe(true);
+  wrapper.unmount();
+});
+
+it.each([true, false])('leads the Wiki table with open and keeps edit in the menu when editable is %s', async (canUpdate) => {
+  window.history.replaceState({}, '', '/mano/knowledge/library?view=table');
+  vi.mocked(usePage).mockReturnValue({ ...createMockPage(), url: '/mano/knowledge/library?view=table' });
+  const item: KnowledgeLibraryItem = {
+    id: 'article', title: 'Wiki article', abbreviation: '', hasSource: false,
+    audiences: [], audienceTypes: [], section: null, order: 0, isActive: true, canUpdate, flags: [],
+  };
+  const wrapper = mount(IndexKnowledgeItem, { props: { items: [item] }, global: { stubs: commonStubs } });
+  await flushPromises();
+  const actions = wrapper.get('[data-slot="collection-row-actions"]');
+  const open = actions.get('[data-action="open"]');
+
+  expect(open.attributes('data-collection-row-action')).toBe('primary');
+  expect(open.text()).toBe('Atidaryti');
+  expect(open.findComponent(ArrowUpRight).exists()).toBe(true);
+  expect(actions.findComponent(RecordActionMenu).props('actions').map((action: { key: string }) => action.key)).toEqual(canUpdate ? ['edit'] : []);
   wrapper.unmount();
 });

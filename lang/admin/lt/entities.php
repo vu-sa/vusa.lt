@@ -13,7 +13,7 @@
  */
 
 return [
-    'knowledgeItem' => ['model' => '{1} straipsnis|[2,9] straipsniai|[10,*] straipsnių', 'gender' => 'm'],
+    'knowledgeItem' => ['model' => '{1} įrašas|[2,9] įrašai|[10,*] įrašų', 'gender' => 'm'],
     'learningStep' => ['model' => '{1} mokymosi žingsnis|[2,9] mokymosi žingsniai|[10,*] mokymosi žingsnių', 'gender' => 'm'],
 
     'document' => [

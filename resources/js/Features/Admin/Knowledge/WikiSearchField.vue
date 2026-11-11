@@ -9,7 +9,7 @@ const query = defineModel<string>({ required: true });
 
 <template>
   <div class="relative" data-slot="wiki-search">
-    <Search class="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+    <Search class="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
     <input
       v-model="query"
       type="search"
@@ -17,12 +17,12 @@ const query = defineModel<string>({ required: true });
       autocomplete="off"
       :aria-label="label"
       :placeholder
-      :class="[searchFieldClass, 'h-14 pl-12 text-base [&::-webkit-search-cancel-button]:hidden']"
+      :class="[searchFieldClass, 'bg-secondary/40 text-base md:text-sm [&::-webkit-search-cancel-button]:hidden']"
     >
     <button
       v-if="query"
       type="button"
-      class="absolute top-1/2 right-1.5 flex size-11 -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground"
+      class="absolute top-1/2 right-1 flex size-9 -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground pointer-coarse:size-11"
       :aria-label="$t('Išvalyti paiešką')"
       @click="query = ''"
     >

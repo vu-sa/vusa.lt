@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import ShowKnowledgeBase from '@/Pages/Admin/Knowledge/ShowKnowledgeBase.vue';
+import ShowKnowledgeForYou from '@/Pages/Admin/Knowledge/ShowKnowledgeForYou.vue';
 import { LearningImportance } from '@/Types/enums';
 import type { SelfLearnedItemData, WikiIndexEntry } from '@/Types/learning';
 import { createMockPage } from '@/tests/helpers/createMockPage';
@@ -47,7 +48,39 @@ function render(knowledgeItems = items(), extra: { selfLearned?: SelfLearnedItem
   });
 }
 
+function renderMine(knowledgeItems = items(), selfLearned: SelfLearnedItemData[] = []) {
+  return mount(ShowKnowledgeForYou, {
+    props: { knowledge: { sections: sections.slice(0, 2), items: knowledgeItems, selfLearned, stats: { pathDone: 0, pathTotal: knowledgeItems.length, selfLearned: selfLearned.length } }, assignedProgress: knowledgeItems.length ? [
+      { importance: LearningImportance.Essential, done: 2, total: 3 },
+      { importance: LearningImportance.Recommended, done: 0, total: 1 },
+      { importance: LearningImportance.Optional, done: 0, total: 1 },
+    ] : [] },
+    global: { stubs: commonStubs },
+  });
+}
+
 describe('Wiki home', () => {
+  it('shows only whole-Wiki progress at home and assigned priority progress on for-you', () => {
+    const wrapper = render(items(), { doneIds: ['skvc'] });
+    expect(wrapper.find('[data-slot="wiki-progress-assigned"]').exists()).toBe(false);
+    expect(wrapper.get('[data-slot="wiki-progress-all"] dt').classes()).toContain('sr-only');
+    expect(wrapper.get('[data-slot="wiki-progress-all"] [role="progressbar"]').attributes('aria-valuenow')).toBe('25');
+    expect(wrapper.text()).not.toContain('learning.documents.lead');
+    wrapper.unmount();
+
+    const mine = renderMine();
+    const assigned = mine.get('[data-slot="wiki-progress-assigned"]');
+    expect(assigned.get('dt').classes()).toContain('sr-only');
+    expect(assigned.text()).toContain('2/5');
+    expect(assigned.get('[data-priority="essential"]').attributes('aria-valuenow')).toBe('2');
+    expect(assigned.get('[data-priority="essential"]').attributes('aria-valuemax')).toBe('3');
+    expect(assigned.get('[data-priority="recommended"]').attributes('aria-valuenow')).toBe('0');
+    expect(assigned.get('[data-priority="optional"]').classes()).toContain('border-dashed');
+    expect(mine.find('[data-slot="wiki-progress-all"]').exists()).toBe(false);
+    expect(mine.find('[data-slot="wiki-progress-legend"]').exists()).toBe(true);
+    mine.unmount();
+  });
+
   it('leads with the unread essentials for you, then sections as portals, recent changes and letters', () => {
     const wrapper = render();
     expect(wrapper.get('[data-slot="wiki-for-you"]').findAll('[data-step]').map(row => row.attributes('data-step'))).toEqual(['unread', 'recommended']);
@@ -73,13 +106,14 @@ describe('Wiki home', () => {
 
   it('opens the full list for you by importance or section and keeps the view in the URL', async () => {
     const wrapper = render();
-    await wrapper.get('[data-testid="wiki-for-you-all"]').trigger('click');
-    expect(router.replace).toHaveBeenLastCalledWith(expect.objectContaining({ url: '/mano/knowledge?view=importance' }));
+    expect(wrapper.get('[data-testid="wiki-for-you-all"]').attributes('href')).toBe(route('knowledgeBase.mine'));
     wrapper.unmount();
 
-    vi.mocked(usePage).mockReturnValue({ ...createMockPage(), url: '/mano/knowledge?view=sections' });
-    const mine = render();
+    vi.mocked(usePage).mockReturnValue({ ...createMockPage(), url: '/mano/knowledge/for-you?view=sections' });
+    const mine = renderMine();
     expect(mine.findAll('[data-slot="document-section"]').map(group => group.get('h2').text())).toEqual(['Pirmas 0/1', 'Antras 1/1', 'learning.documents.other 1/3']);
+    await mine.get('[data-testid="documents-view-importance"]').trigger('click');
+    expect(router.replace).toHaveBeenLastCalledWith(expect.objectContaining({ url: route('knowledgeBase.mine', { view: 'importance' }) }));
     mine.unmount();
   });
 
@@ -88,16 +122,18 @@ describe('Wiki home', () => {
     expect(wrapper.get('[data-slot="wiki-for-you"]').text()).toContain('learning.wiki.for_you_done');
     wrapper.unmount();
 
-    vi.mocked(usePage).mockReturnValue({ ...createMockPage(), url: '/mano/knowledge?view=importance' });
-    const empty = render([]);
+    vi.mocked(usePage).mockReturnValue({ ...createMockPage(), url: '/mano/knowledge/for-you' });
+    const empty = renderMine([]);
     expect(empty.get('[data-slot="empty-state"]').text()).toContain('learning.documents.empty_title');
+    expect(empty.get('[data-slot="wiki-progress-assigned"]').text()).toContain('0/0');
+    expect(empty.findAll('[data-priority]')).toHaveLength(0);
     empty.unmount();
   });
 
   it('lists articles you learned on your own after your path, and ticks learned articles in lists', () => {
-    vi.mocked(usePage).mockReturnValue({ ...createMockPage(), url: '/mano/knowledge?view=importance' });
+    vi.mocked(usePage).mockReturnValue({ ...createMockPage(), url: '/mano/knowledge/for-you' });
     const self: SelfLearnedItemData = { ...knowledge({ id: 'kvorumas', title: 'Kvorumas', state: 'done' }), importance: null };
-    const mine = render(items(), { selfLearned: [self] });
+    const mine = renderMine(items(), [self]);
     const groups = mine.findAll('[data-slot="document-section"]');
     expect(groups.at(-1)!.get('h2').text()).toBe('learning.wiki.self_learned 1/1');
     expect(groups.at(-1)!.text()).toContain('Kvorumas');

@@ -21,6 +21,21 @@ const render = (data: LearningStepData | KnowledgeItemData = step(), readonly = 
 });
 
 describe('LearningStepRow', () => {
+  it('gives displayed coordinator contacts more bottom space', async () => {
+    const wrapper = render(step({ key: 'meet_coordinator' }));
+    expect(wrapper.classes()).toContain('pb-3');
+    await wrapper.setProps({ coordinators: [{
+      id: 'coordinator', name: 'Vardas Pavardė', email: 'coordinator@example.test',
+      profile_photo_path: null, duty: 'Koordinatorius', pronouns: {}, use_original_duty_name: false, institutions: [],
+    }] });
+    expect(wrapper.get('[data-slot="learning-coordinators"]').text()).toContain('Vardas Pavardė');
+    expect(wrapper.classes()).toContain('pb-6');
+    await wrapper.setProps({ coordinators: [] });
+    expect(wrapper.find('[data-slot="learning-coordinators"]').exists()).toBe(false);
+    expect(wrapper.classes()).toContain('pb-3');
+    wrapper.unmount();
+  });
+
   it('only offers skipping in the row menu when the step is skippable', async () => {
     const wrapper = render();
     await wrapper.get('[data-testid="skip-step"]').trigger('click');

@@ -27,6 +27,16 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  */
 class KnowledgeBasePresenter
 {
+    /** @return list<array{importance: LearningImportance, done: int, total: int}> */
+    public static function assignedProgress(LearningPath $path): array
+    {
+        return array_map(function (LearningImportance $importance) use ($path): array {
+            $items = $path->knowledge->filter(fn (ResolvedLearningItem $item): bool => $item->importance === $importance);
+
+            return ['importance' => $importance, 'done' => $items->whereIn('state', ['done', 'skipped'])->count(), 'total' => $items->count()];
+        }, LearningImportance::cases());
+    }
+
     /** @return array{sections: list<array{id: string, title: string, description: string, order: int}>, items: list<KnowledgePayload>, selfLearned: list<SelfLearnedPayload>, stats: array{pathDone: int, pathTotal: int, selfLearned: int}} */
     public static function overview(LearningPath $path, string $locale): array
     {

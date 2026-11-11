@@ -11,6 +11,8 @@ import { Button } from '@/Components/ui/button';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
 import { enterKnowledgeRecord } from '@/Composables/useRecordTrail';
 import WikiProse from '@/Features/Admin/Knowledge/WikiProse.vue';
+import WikiPageList from '@/Features/Admin/Knowledge/WikiPageList.vue';
+import WikiLinkPreview from '@/Features/Admin/Knowledge/WikiLinkPreview.vue';
 import WikiSubjectsSheet from '@/Features/Admin/Knowledge/WikiSubjectsSheet.vue';
 import LearningCompletionControl from '@/Features/Admin/Learning/LearningCompletionControl.vue';
 import LearningAudienceNotes from '@/Features/Admin/Learning/LearningAudienceNotes.vue';
@@ -31,11 +33,14 @@ const props = withDefaults(defineProps<{
   canUpdate: boolean;
   linkedPages?: Record<string, WikiPageSummary>;
   related?: WikiPageSummary[];
+  doneIds?: string[];
   subjects?: WikiSubject[];
   subjectOptions?: { institutionTypes: LearningTypeOption[]; dutyTypes: LearningTypeOption[] };
 }>(), { linkedPages: () => ({}), related: () => [], subjects: () => [], subjectOptions: () => ({ institutionTypes: [], dutyTypes: [] }) });
 
 const readonly = computed(() => !props.canTrack);
+const done = computed(() => new Set(props.doneIds ?? []));
+const relatedPages = computed(() => Object.fromEntries(props.related.map(page => [page.id, page])));
 const { checked, saving, failed } = useStepProgress(toRef(props, 'item'), readonly);
 const subjectsOpen = ref(false);
 const actions = computed<AdminRecordAction[]>(() => props.canUpdate
@@ -70,20 +75,20 @@ watch(() => props.item.id, () => {
 </script>
 
 <template>
-  <OverviewPage :title="item.title" :eyebrow="$t('learning.pages.knowledge')" class="gap-8! lg:gap-10! sm:[&>[data-slot=overview-title-band]]:items-start">
+  <OverviewPage :title="item.title" class="gap-8! lg:gap-10! sm:[&>[data-slot=overview-title-band]]:items-start">
     <template #heading>
-      <div :class="canTrack ? 'grid grid-cols-[2.75rem_minmax(0,1fr)] gap-x-3' : ''" data-slot="step-heading">
+      <div :class="['grid gap-y-3', canTrack && 'grid-cols-[2.75rem_minmax(0,1fr)] gap-x-3']" data-slot="step-heading">
+        <p :class="['text-xs font-bold uppercase tracking-[0.2em] text-brand', canTrack && 'col-start-2']" data-slot="step-eyebrow">{{ $t('learning.pages.knowledge') }}</p>
         <LearningCompletionControl v-if="canTrack" v-model="checked" :step="viewerItem" :disabled="saving" class="mt-1.5 sm:mt-2.5" />
         <div class="min-w-0">
           <h1 class="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-balance text-3xl font-bold leading-tight text-foreground sm:text-4xl">
             {{ item.title }}
             <abbr v-if="item.abbreviation" :title="item.title" class="border border-border px-2 py-0.5 text-base font-bold tracking-wide no-underline sm:text-lg" data-testid="article-abbreviation">{{ item.abbreviation }}</abbr>
           </h1>
-          <p v-if="canTrack || item.section" class="mt-2 flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground" data-slot="step-meta">
+          <p v-if="inPath || item.section" class="mt-2 flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground" data-slot="step-meta">
             <span v-if="inPath" :class="item.importance === 'essential' ? 'font-semibold text-brand' : 'font-semibold text-foreground'">{{ $t(`learning.importance.${item.importance}`) }}</span>
-            <span v-else-if="canTrack" :class="checked ? 'font-semibold text-foreground' : ''" data-slot="self-learning-state">{{ checked ? $t('learning.wiki.self_learned_done') : $t('learning.wiki.self_learning_hint') }}</span>
             <template v-if="item.section">
-              <span v-if="canTrack" aria-hidden="true">·</span>
+              <span v-if="inPath" aria-hidden="true">·</span>
               <Link :href="route('knowledgeBase.show') + `#section-${item.section.id}`" class="hover:text-foreground">{{ item.section.title }}</Link>
             </template>
           </p>
@@ -102,24 +107,6 @@ watch(() => props.item.id, () => {
       <article class="min-w-0 max-w-prose space-y-8 lg:col-start-1 lg:row-start-1">
         <WikiProse v-if="articleHtml" :html="articleHtml" :pages="linkedPages" />
         <LearningAudienceNotes v-if="inPath" :notes="item.audienceNotes" />
-
-        <section v-if="related.length" aria-labelledby="article-related" class="space-y-3 border-t border-border pt-6" data-slot="article-related">
-          <div>
-            <h2 id="article-related" class="text-xl font-bold leading-tight text-foreground">{{ $t('learning.wiki.related') }}</h2>
-            <p class="mt-1 text-sm text-muted-foreground">{{ $t('learning.wiki.related_hint') }}</p>
-          </div>
-          <ul class="divide-y divide-border border-y border-border">
-            <li v-for="page in related" :key="page.id" class="py-3">
-              <Link :href="page.url" class="group block">
-                <span class="flex flex-wrap items-baseline gap-x-2">
-                  <span class="font-semibold text-foreground underline decoration-border underline-offset-4 group-hover:decoration-foreground">{{ page.title }}</span>
-                  <span v-if="page.abbreviation" class="text-xs font-bold tracking-wide text-muted-foreground">{{ page.abbreviation }}</span>
-                </span>
-                <span v-if="page.summary" class="mt-0.5 line-clamp-2 block text-sm text-muted-foreground">{{ page.summary }}</span>
-              </Link>
-            </li>
-          </ul>
-        </section>
       </article>
 
       <aside
@@ -130,16 +117,15 @@ watch(() => props.item.id, () => {
         <h2 id="step-about-title" class="sr-only">{{ $t('learning.path.about_item') }}</h2>
         <div v-if="sourceLabel && thumbnailUrl" class="space-y-2" data-slot="source-preview">
           <p class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{{ $t('learning.path.source') }}</p>
-          <!-- Below lg the aside follows the article, so the page shrinks to a row instead of filling the screen. -->
           <component
             :is="sourceHref ? 'a' : 'div'"
             v-bind="sourceHref ? { href: sourceHref, target: '_blank', rel: 'noopener noreferrer' } : {}"
-            class="group flex items-start gap-4 lg:block"
+            class="group block"
           >
             <span :class="['block aspect-3/4 w-24 shrink-0 overflow-hidden border border-border bg-muted transition-colors sm:w-28 lg:w-full', sourceHref && 'group-hover:border-brand group-focus-visible:border-brand']">
               <img :src="thumbnailUrl" alt="" loading="lazy" decoding="async" class="size-full object-cover object-top" @error="thumbnailFailed = true">
             </span>
-            <span class="block min-w-0 space-y-1 lg:mt-2.5">
+            <span class="mt-2.5 block min-w-0 space-y-1">
               <span :class="['block text-sm font-semibold leading-snug text-foreground', sourceHref && 'group-hover:text-brand']">
                 <span :class="sourceHref && 'underline decoration-border underline-offset-4 group-hover:decoration-brand'">{{ sourceLabel }}</span>
                 <ArrowUpRight v-if="sourceHref" class="ml-1 inline size-3.5 align-[-1px]" aria-hidden="true" />
@@ -172,6 +158,13 @@ watch(() => props.item.id, () => {
           </ul>
           <p v-else class="text-xs text-muted-foreground">{{ $t('learning.wiki.subjects_empty') }}</p>
         </div>
+
+        <section v-if="related.length" aria-labelledby="article-related" class="space-y-2" data-slot="article-related">
+          <h2 id="article-related" class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{{ $t('learning.wiki.related') }}</h2>
+          <WikiLinkPreview :pages="relatedPages">
+            <WikiPageList :pages="related" :done-ids="done" dense preview class="text-sm" />
+          </WikiLinkPreview>
+        </section>
 
         <p class="text-xs text-muted-foreground">
           {{ item.reviewedAt ? $t('learning.path.reviewed_on', { date: formatDate(item.reviewedAt) }) : $t('learning.path.not_reviewed') }}

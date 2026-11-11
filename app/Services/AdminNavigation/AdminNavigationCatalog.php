@@ -49,7 +49,7 @@ use Illuminate\Support\Facades\Cache;
 class AdminNavigationCatalog
 {
     /** Bump the suffix when the payload shape or a gate changes, so a deploy never serves the old menu from cache. */
-    public const string CACHE_PREFIX = 'admin-navigation-v13-';
+    public const string CACHE_PREFIX = 'admin-navigation-v14-';
 
     private const int CACHE_TTL = 1800;
 
@@ -197,7 +197,8 @@ class AdminNavigationCatalog
             labelKey: 'shell.workspaces.wiki.title',
             descriptionKey: 'shell.workspaces.wiki.description',
             sections: [
-                new Section('wiki', 'shell.sections.wiki', 'knowledgeBase.show', [], null, Visibility::always(), matches: ['knowledgeBase.*'], descriptionKey: 'shell.section_descriptions.wiki'),
+                new Section('wiki', 'shell.sections.wiki', 'knowledgeBase.show', [], null, Visibility::always(), matches: ['knowledgeBase.show'], descriptionKey: 'shell.section_descriptions.wiki'),
+                new Section('wiki_mine', 'shell.sections.wiki_mine', 'knowledgeBase.mine', [], null, Visibility::can('viewAny', KnowledgeItem::class), matches: ['knowledgeBase.mine'], descriptionKey: 'shell.section_descriptions.wiki_mine'),
                 new Section('rodykle', 'shell.sections.rodykle', 'knowledgeItems.alphabet', [], null, Visibility::always(), matches: ['knowledgeItems.alphabet', 'knowledgeItems.show'], descriptionKey: 'shell.section_descriptions.rodykle'),
                 new Section('wiki_biblioteka', 'shell.sections.wiki_biblioteka', 'knowledgeItems.index', [], 'knowledge_item', Visibility::can('manage', KnowledgeItem::class), matches: ['knowledgeItems.index', 'knowledgeItems.create', 'knowledgeItems.edit'], descriptionKey: 'shell.section_descriptions.wiki_biblioteka'),
             ],

@@ -15,7 +15,7 @@ o tai, kas svarbiausia būtent tau, iškeliama pagal tavo pareigas.
 
 <ChangelogNote date="2026-11-11" title="Wiki">
 
-Žinių bazė tapo Wiki: sąvokos ir medžiaga sujungtos į vienos rūšies straipsnius, kurie vienas į
+Žinių bazė tapo Wiki: sąvokos ir medžiaga sujungtos į vienos rūšies įrašus, kurie vienas į
 kitą nurodo tekste, o Wiki turi savo sritį darbo sričių pasirinkime.
 
 </ChangelogNote>
@@ -23,8 +23,9 @@ kitą nurodo tekste, o Wiki turi savo sritį darbo sričių pasirinkime.
 | Skiltis | Adresas | Kas mato |
 |---|---|---|
 | [Wiki](/wiki/straipsniai#pradzia) | `/mano/knowledge` | Visi |
+| [Tau skirti įrašai](/wiki/straipsniai#tau-skirti-straipsniai) | `/mano/knowledge/for-you` | Visi |
 | [Rodyklė A–Ž](/wiki/straipsniai#rodykle) | `/mano/knowledge/a-z` | Visi |
 | [Biblioteka](/wiki/straipsniai#biblioteka) | `/mano/knowledge/library` | Wiki redaktoriai ir Mano kelio tvarkytojai |
 
 Wiki taip pat pasiekiama iš [Mano kelio](/mano/kelias): kelio viršuje esantis blokas rodo, kiek tau
-būtinų straipsnių jau perskaityta, ir siūlo kitą skaitinį.
+būtinų įrašų jau perskaityta, ir siūlo kitą skaitinį.

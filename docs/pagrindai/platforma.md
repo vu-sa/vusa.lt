@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Platforma
-last_reviewed: 2026-11-08
+last_reviewed: 2026-11-11
 tests:
   - resources/js/Composables/__tests__/useOptimisticVisit.test.ts
   - resources/js/Composables/__tests__/useCollectionSource.test.ts
@@ -105,6 +105,9 @@ rašomi įprastai, kad būtų lengviau juos perskaityti. Naršant klaviatūra, a
 matomą apvadą.
 
 Darbo srities pasirinkimas viršutinėje juostoje yra tokio pat aukščio kaip paieškos laukas. Jutikliniame ekrane mygtukas lieka didesnis, kad būtų patogu paspausti.
+
+Skilčių piktogramos nusako jų paskirtį: Wiki žymi knyga, tau skirtus straipsnius – knyga su varnele,
+Mano kelią – maršrutas, atstovus – žmonės. Tos pačios piktogramos naudojamos telefono meniu ir skilčių nuorodose.
 
 Slenkant puslapį, turinys po viršutine juosta suliejamas, kad navigacija ir formos veiksmai liktų aiškiai matomi.
 Didelio kontrasto režimu juostos fonas yra nepermatomas.

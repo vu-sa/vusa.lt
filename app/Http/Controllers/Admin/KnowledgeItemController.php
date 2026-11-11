@@ -85,6 +85,7 @@ class KnowledgeItemController extends AdminController
         return Inertia::render('Admin/Knowledge/ShowKnowledgeItem', [
             'item' => $payload,
             ...KnowledgeBasePresenter::pageContext($knowledgeItem, app()->getLocale()),
+            'doneIds' => KnowledgeBasePresenter::doneIds($request->user()),
             'inPath' => $inPath,
             'canTrack' => $knowledgeItem->is_active && $request->user()->can('view', $knowledgeItem),
             'coordinators' => GetUserCoordinators::execute($request->user()),

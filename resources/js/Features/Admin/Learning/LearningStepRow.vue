@@ -25,10 +25,11 @@ const isPrivateDocument = computed(() => {
   return source?.type === 'document' && (source.private === true || !source.url);
 });
 const isResolved = computed(() => props.step.state === 'done' || props.step.state === 'skipped');
+const hasCoordinators = computed(() => 'key' in props.step && props.step.key === 'meet_coordinator' && Boolean(props.coordinators?.length));
 </script>
 
 <template>
-  <li :data-step="step.id" :aria-busy="saving" class="grid grid-cols-[2.75rem_minmax(0,1fr)_auto] items-start gap-x-3 px-4 py-3">
+  <li :data-step="step.id" :aria-busy="saving" :class="hasCoordinators ? 'pb-6' : 'pb-3'" class="grid grid-cols-[2.75rem_minmax(0,1fr)_auto] items-start gap-x-3 px-4 pt-3">
     <!-- The checkbox and title share the action buttons' height, so single-line rows centre on one axis. -->
     <div class="flex min-h-9 items-center pointer-coarse:min-h-11">
       <LearningCompletionControl v-model="checked" :step="step" :disabled="saving || readonly" />
@@ -46,7 +47,7 @@ const isResolved = computed(() => props.step.state === 'done' || props.step.stat
         <span v-if="step.state === 'updated'" class="font-semibold text-status-attention">{{ $t('learning.path.updated') }}</span>
         <span v-if="step.state === 'skipped'">{{ $t('learning.path.skipped') }}</span>
       </div>
-      <LearningCoordinators v-if="'key' in step && step.key === 'meet_coordinator' && coordinators?.length" :coordinators="coordinators" class="mt-3" />
+      <LearningCoordinators v-if="hasCoordinators" :coordinators="coordinators ?? []" class="mt-3" />
       <p v-if="failed" role="alert" class="mt-2 text-sm text-destructive">{{ $t('learning.path.save_failed') }}</p>
     </div>
     <div class="col-start-2 row-start-2 flex min-w-0 flex-nowrap items-start gap-2 pt-2 sm:col-start-3 sm:row-start-1 sm:justify-end sm:pt-0">

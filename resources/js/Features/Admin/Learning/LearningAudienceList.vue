@@ -1,6 +1,7 @@
 <template>
   <section id="step-audiences" class="space-y-3" data-testid="step-audiences">
     <h2 class="text-lg font-semibold">{{ $t('learning_library.fields.audience') }}</h2>
+    <p v-if="kind === 'knowledge'" class="text-sm text-muted-foreground" data-slot="knowledge-audience-hint">{{ $t('learning_library.sections.path_description') }}</p>
     <p v-if="errors.audiences" class="text-sm text-destructive" role="alert">{{ errors.audiences }}</p>
     <ul class="divide-y divide-border border-y border-border">
       <li v-for="(audience, index) in audiences" :key="audience.id ?? index" class="flex flex-wrap items-start gap-2 py-3" data-slot="audience-row">

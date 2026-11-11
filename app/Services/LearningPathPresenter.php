@@ -21,7 +21,7 @@ use App\Services\Learning\SystemSteps\SystemStepRegistry;
  */
 class LearningPathPresenter
 {
-    /** @return array{currentStage: LearningStage|null, termStart: string|null, stages: list<array{stage: LearningStage, steps: list<StepPayload>}>, meetingPrep: list<array{audience: array{id: string, label: string}, steps: list<StepPayload>}>, knowledge: array{essentialDone: int, essentialTotal: int, done: int, total: int, nextItem: KnowledgePayload|null}, totals: array{essentialDone: int, essentialTotal: int, allDone: int, allTotal: int}} */
+    /** @return array{currentStage: LearningStage|null, termStart: string|null, stages: list<array{stage: LearningStage, steps: list<StepPayload>}>, meetingPrep: list<array{audience: array{id: string, label: string}, steps: list<StepPayload>}>, knowledge: array{essentialDone: int, essentialTotal: int, done: int, total: int, nextItem: KnowledgePayload|null, priorityProgress: list<array{importance: LearningImportance, done: int, total: int}>}, totals: array{essentialDone: int, essentialTotal: int, allDone: int, allTotal: int}} */
     public static function path(LearningPath $path, string $locale): array
     {
         $stages = [];
@@ -51,7 +51,8 @@ class LearningPathPresenter
             ->sortBy(fn (ResolvedLearningItem $item): int => $item->importance === LearningImportance::Essential ? 0 : 1)->first();
 
         return ['currentStage' => $path->currentStage, 'termStart' => $path->termStart?->toDateString(), 'stages' => $stages, 'meetingPrep' => $meetingPrep,
-            'knowledge' => [...$path->knowledgeTotals(), 'nextItem' => $nextItem ? KnowledgeBasePresenter::item($nextItem, $locale) : null],
+            'knowledge' => [...$path->knowledgeTotals(), 'nextItem' => $nextItem ? KnowledgeBasePresenter::item($nextItem, $locale) : null,
+                'priorityProgress' => KnowledgeBasePresenter::assignedProgress($path)],
             'totals' => $path->totals()];
     }
 

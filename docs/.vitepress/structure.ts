@@ -56,7 +56,7 @@ export const guide: GuideChapter[] = [
     description: 'Sąvokos, institucijos ir dokumentai',
     index: '/wiki/',
     pages: [
-      { text: 'Straipsniai', link: '/wiki/straipsniai' },
+      { text: 'Įrašai', link: '/wiki/straipsniai' },
     ],
   },
   {
