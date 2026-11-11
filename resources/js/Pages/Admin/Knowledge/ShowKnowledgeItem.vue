@@ -181,7 +181,7 @@ watch(() => props.item.id, () => {
       </aside>
 
       <div id="insights" class="min-w-0 scroll-mt-24 self-start border-t border-border pt-6 lg:col-start-1 lg:row-start-2">
-        <DiscussionPanel :key="item.id" commentable-type="knowledgeItem" :commentable-id="item.id" :title="$t('learning.path.insights')" />
+        <DiscussionPanel :key="item.id" commentable-type="knowledgeItem" :commentable-id="item.id" :title="$t('learning.path.insights')" :initial-count="item.insightsCount" />
       </div>
     </div>
 

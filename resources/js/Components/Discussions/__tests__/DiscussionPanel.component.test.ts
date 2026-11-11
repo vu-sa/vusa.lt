@@ -101,6 +101,12 @@ const mountPanel = (commentableType = 'meeting', extraProps: Record<string, unkn
   global: { stubs },
 });
 
+/** The root composer mounts when its stand-in field takes focus. */
+async function openComposer(wrapper: ReturnType<typeof mountPanel>) {
+  await wrapper.get('[data-testid="composer-launcher"]').trigger('focus');
+  await flushPromises();
+}
+
 const topic = (overrides: Partial<CommentData> = {}) => makeComment({ kind: 'topic', title: 'Kaip ruoštis posėdžiui?', ...overrides });
 
 describe('DiscussionPanel', () => {
@@ -155,6 +161,7 @@ describe('DiscussionPanel', () => {
 
     const wrapper = mountPanel();
     await flushPromises();
+    await openComposer(wrapper);
 
     await wrapper.find('.composer-stub').trigger('click');
     await flushPromises();
@@ -168,12 +175,14 @@ describe('DiscussionPanel', () => {
     mocks.fetchThread.mockResolvedValue(thread([], 'topics'));
     const learning = mountPanel('learningStep');
     await flushPromises();
+    await openComposer(learning);
     expect(learning.find('.composer-stub').attributes('data-modes')).toBe('comment,topic,poll');
     expect(learning.find('[data-testid="discussion-empty"]').text()).toBe('discussions.empty_topics');
 
     mocks.fetchThread.mockResolvedValue(thread([], 'conversation'));
     const support = mountPanel('supportRequest');
     await flushPromises();
+    await openComposer(support);
     expect(support.find('.composer-stub').attributes('data-modes')).toBe('comment');
   });
 
@@ -219,6 +228,7 @@ describe('DiscussionPanel', () => {
 
     const wrapper = mountPanel('learningStep');
     await flushPromises();
+    await openComposer(wrapper);
     await wrapper.find('.composer-stub').trigger('click');
     await flushPromises();
 
@@ -274,12 +284,12 @@ describe('DiscussionPanel', () => {
     await reply().trigger('click');
     await flushPromises();
     expect(reply().attributes('aria-expanded')).toBe('true');
-    expect(wrapper.findAll('.composer-stub')).toHaveLength(2);
+    expect(wrapper.findAll('.composer-stub')).toHaveLength(1);
 
     await reply().trigger('click');
     await flushPromises();
     expect(reply().attributes('aria-expanded')).toBe('false');
-    expect(wrapper.findAll('.composer-stub')).toHaveLength(1);
+    expect(wrapper.findAll('.composer-stub')).toHaveLength(0);
   });
 
   it('keeps moderation actions on a topic someone else posts while the page is open', async () => {
@@ -304,12 +314,12 @@ describe('DiscussionPanel', () => {
     await wrapper.find('[data-testid="topic-toggle"]').trigger('click');
     await wrapper.find('[data-testid="topic-reply"]').trigger('click');
     await flushPromises();
-    expect(wrapper.findAll('.composer-stub')).toHaveLength(2);
+    expect(wrapper.findAll('.composer-stub')).toHaveLength(1);
 
     await wrapper.find('[data-testid="topic-close"]').trigger('click');
     await flushPromises();
 
-    expect(wrapper.findAll('.composer-stub')).toHaveLength(1);
+    expect(wrapper.findAll('.composer-stub')).toHaveLength(0);
   });
 
   it('likes a comment from its action bar', async () => {
@@ -356,29 +366,42 @@ describe('DiscussionPanel', () => {
     await flushPromises();
     await wrapper.find('[data-testid="comment-reply"]').trigger('click');
     await flushPromises();
-    await wrapper.findAll('.composer-stub')[1]!.trigger('click');
+    await wrapper.get('.composer-stub').trigger('click');
     await flushPromises();
 
     expect(mocks.postComment).toHaveBeenCalledWith(mocks.nextDraft, 'root1');
     wrapper.unmount();
   });
 
-  it('loads composers asynchronously and mounts the reply editor only after opening a reply', async () => {
+  it('stands in for the root editor until clicked, and mounts every editor asynchronously', async () => {
     mocks.fetchThread.mockResolvedValue(thread([makeComment()]));
     const wrapper = mountPanel();
     await flushPromises();
-    expect(wrapper.findAll('.composer-stub')).toHaveLength(1);
+    expect(wrapper.findAll('.composer-stub')).toHaveLength(0);
 
+    await openComposer(wrapper);
     await wrapper.find('[data-testid="comment-reply"]').trigger('click');
     await flushPromises();
 
+    expect(wrapper.find('[data-testid="composer-launcher"]').exists()).toBe(false);
     const composers = wrapper.findAllComponents({ name: 'CommentComposer' });
     expect(composers).toHaveLength(2);
     for (const composer of composers) {
       const parentType = composer.vm.$.parent?.type as { __asyncLoader?: unknown };
       expect(parentType.__asyncLoader).toBeTypeOf('function');
+      expect(composer.attributes()).toHaveProperty('autofocus');
     }
-    expect(composers[1]!.attributes()).toHaveProperty('autofocus');
     wrapper.unmount();
+  });
+
+  it('holds the space of the thread the page counted while it loads', async () => {
+    mocks.fetchThread.mockReturnValue(new Promise(() => {}));
+
+    const empty = mountPanel('knowledgeItem', { initialCount: 0 });
+    expect(empty.findAll('[aria-busy="true"] .flex')).toHaveLength(0);
+    expect(empty.find('p[aria-busy="true"]').exists()).toBe(true);
+
+    const busy = mountPanel('knowledgeItem', { initialCount: 5 });
+    expect(busy.findAll('[aria-busy="true"] > div')).toHaveLength(3);
   });
 });

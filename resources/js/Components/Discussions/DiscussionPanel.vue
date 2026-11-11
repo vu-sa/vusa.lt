@@ -25,8 +25,10 @@
         <UserAvatar :user="currentUser" :size="32" />
       </div>
       <CommentComposer
+        v-if="composerOpen"
         ref="rootComposer"
         class="min-w-0 flex-1"
+        autofocus
         collapsible
         discover-formatting
         :placeholder="composerPlaceholder"
@@ -38,14 +40,29 @@
         :submitting="posting"
         @submit="onPost"
       />
+      <!-- Tiptap mounts on first focus; a real field keeps the phone keyboard open across the swap. -->
+      <input
+        v-else
+        type="text"
+        data-testid="composer-launcher"
+        :aria-label="launcherText || $t('Parašyk komentarą…')"
+        :placeholder="launcherText"
+        class="min-w-0 flex-1 border border-border bg-background px-3.5 py-2.5 text-base leading-[1.65] text-foreground outline-none transition-colors placeholder:text-muted-foreground hover:border-foreground/25 sm:text-[0.9375rem]"
+        @focus="composerOpen = true"
+      >
     </div>
 
-    <div v-if="loading" class="space-y-4" aria-busy="true">
-      <div v-for="n in 2" :key="n" class="flex gap-3">
+    <!-- Reserve what will arrive: one line when the page knows there is nothing, else a row per comment. -->
+    <p v-if="loading && initialCount === 0" class="border-t border-border pt-4 text-sm" aria-busy="true">
+      &nbsp;
+    </p>
+    <div v-else-if="loading" class="divide-y divide-border" aria-busy="true">
+      <div v-for="n in skeletonRows" :key="n" class="flex gap-3 py-4 first:pt-3">
         <Skeleton class="size-8 shrink-0" />
         <div class="flex-1 space-y-2">
           <Skeleton class="h-3 w-40" />
           <Skeleton class="h-3 w-full" />
+          <Skeleton class="h-3 w-24" />
         </div>
       </div>
     </div>
@@ -141,10 +158,13 @@ const props = withDefaults(defineProps<{
   showTitle?: boolean;
   /** Changes when the parent's people change, so the @mention list is refetched without a reload. */
   mentionablesKey?: string;
+  /** Comments the page already counted, so the loading state takes the space the thread will. */
+  initialCount?: number;
 }>(), {
   title: undefined,
   showTitle: true,
   mentionablesKey: undefined,
+  initialCount: undefined,
 });
 
 const titleId = useId();
@@ -154,6 +174,8 @@ const { comments, mentionables, meta, loading, posting, mutating, members } = di
 
 const rootComposer = ref<{ reset: () => void } | null>(null);
 const showClosed = ref(false);
+const composerOpen = ref(false);
+const skeletonRows = computed(() => Math.min(props.initialCount ?? 2, 3));
 const openTopicId = ref<string | null>(null);
 
 const capabilities = computed(() => meta.value.capabilities);
@@ -170,6 +192,7 @@ const resolvedTitle = computed(() => props.title ?? (layout.value === 'topics' ?
 const composerPlaceholder = computed(() => (layout.value === 'topics'
   ? $t('discussions.topics_placeholder')
   : undefined));
+const launcherText = computed(() => (loading.value ? '' : composerPlaceholder.value ?? $t('Parašyk komentarą…')));
 
 const emptyText = computed(() => {
   if (layout.value === 'topics') return $t('discussions.empty_topics');
@@ -212,6 +235,7 @@ watch(() => props.mentionablesKey, () => {
 });
 
 onMounted(() => {
-  void discussion.load();
+  // Warm the editor chunk once the thread is in, so the first click opens it without a wait.
+  void discussion.load().then(() => import('@/Components/Discussions/CommentComposer.vue'));
 });
 </script>

@@ -14,6 +14,7 @@ test('formatted comments survive saving and editing across responsive layouts', 
     $page = loginAsAdmin($user, $path, 390, 900);
     $composer = '.comment-composer .ProseMirror';
     $page->assertNotPresent('[data-testid=comment-toolbar]');
+    $page->click('[data-testid=composer-launcher]');
     $page->click($composer);
     $page->click('[data-testid=comment-formatting-toggle]');
     $page->assertPresent('[data-testid=comment-toolbar]');
@@ -63,6 +64,7 @@ test('the phone composer opens on tap and adds links and mentions', function ():
     $page = loginAsAdmin($user, route('supportRequests.show', $request->id, absolute: false), 390, 900);
     $page->assertNotPresent('[data-slot=composer-footer]');
     $root = '[data-slot=discussion-panel] > div:nth-of-type(1)';
+    $page->click('[data-testid=composer-launcher]');
     $page->click($root.' .ProseMirror');
     $page->click($root.' [data-testid=comment-formatting-toggle]');
     $page->click($root.' [data-testid=tiptap-link]');

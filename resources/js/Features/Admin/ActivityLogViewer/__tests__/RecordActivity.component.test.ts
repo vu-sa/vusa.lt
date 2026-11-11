@@ -72,7 +72,7 @@ describe('RecordActivity', () => {
     const wrapper = mountActivity();
     await flushPromises();
 
-    expect(wrapper.find('.composer-stub').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="composer-launcher"]').exists()).toBe(true);
     expect(wrapper.find('.thread-stub').exists()).toBe(false);
     expect(wrapper.find('[data-testid="discussion-empty"]').text()).toBe('discussions.empty_comments');
   });
