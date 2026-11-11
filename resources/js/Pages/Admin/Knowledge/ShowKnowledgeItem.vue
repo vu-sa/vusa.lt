@@ -38,10 +38,12 @@ const props = withDefaults(defineProps<{
 const readonly = computed(() => !props.canTrack);
 const { checked, saving, failed } = useStepProgress(toRef(props, 'item'), readonly);
 const subjectsOpen = ref(false);
-const actions = computed<AdminRecordAction[]>(() => props.canUpdate ? [
-  { key: 'edit', label: $t('Redaguoti'), icon: Pencil, href: route('knowledgeItems.edit', props.item.id) },
-] : []);
+const actions = computed<AdminRecordAction[]>(() => props.canUpdate
+  ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, href: route('knowledgeItems.edit', props.item.id) }]
+  : []);
 const { formatDate } = useDateFormatter();
+const viewerItem = computed(() => props.inPath ? props.item : { ...props.item, importance: null });
+
 const sourceHref = computed(() => safeHref(props.item.source?.url));
 const sourceLabel = computed(() => {
   if (!props.item.source) return null;
@@ -71,22 +73,18 @@ watch(() => props.item.id, () => {
   <OverviewPage :title="item.title" :eyebrow="$t('learning.pages.knowledge')" class="gap-8! lg:gap-10! sm:[&>[data-slot=overview-title-band]]:items-start">
     <template #heading>
       <div :class="canTrack ? 'grid grid-cols-[2.75rem_minmax(0,1fr)] gap-x-3' : ''" data-slot="step-heading">
-        <LearningCompletionControl v-if="canTrack" v-model="checked" :step="inPath ? item : { ...item, importance: null }" :disabled="saving" class="mt-1.5 sm:mt-2.5" />
+        <LearningCompletionControl v-if="canTrack" v-model="checked" :step="viewerItem" :disabled="saving" class="mt-1.5 sm:mt-2.5" />
         <div class="min-w-0">
           <h1 class="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-balance text-3xl font-bold leading-tight text-foreground sm:text-4xl">
             {{ item.title }}
             <abbr v-if="item.abbreviation" :title="item.title" class="border border-border px-2 py-0.5 text-base font-bold tracking-wide no-underline sm:text-lg" data-testid="article-abbreviation">{{ item.abbreviation }}</abbr>
           </h1>
-          <p v-if="canTrack || item.section || item.perTerm" class="mt-2 flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground" data-slot="step-meta">
+          <p v-if="canTrack || item.section" class="mt-2 flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground" data-slot="step-meta">
             <span v-if="inPath" :class="item.importance === 'essential' ? 'font-semibold text-brand' : 'font-semibold text-foreground'">{{ $t(`learning.importance.${item.importance}`) }}</span>
             <span v-else-if="canTrack" :class="checked ? 'font-semibold text-foreground' : ''" data-slot="self-learning-state">{{ checked ? $t('learning.wiki.self_learned_done') : $t('learning.wiki.self_learning_hint') }}</span>
             <template v-if="item.section">
               <span v-if="canTrack" aria-hidden="true">·</span>
               <Link :href="route('knowledgeBase.show') + `#section-${item.section.id}`" class="hover:text-foreground">{{ item.section.title }}</Link>
-            </template>
-            <template v-if="item.perTerm && inPath">
-              <span aria-hidden="true">·</span>
-              <span>{{ $t('learning.path.per_term') }}</span>
             </template>
           </p>
           <p v-if="failed" role="alert" class="mt-2 text-sm text-destructive">{{ $t('learning.path.save_failed') }}</p>
@@ -95,7 +93,7 @@ watch(() => props.item.id, () => {
     </template>
     <template v-if="sourceHref || actions.length" #actions>
       <div class="flex flex-wrap items-center gap-2" data-slot="step-actions">
-        <LearningStepAction v-if="sourceHref" :step="item" />
+        <LearningStepAction v-if="sourceHref" :step="viewerItem" />
         <RecordActionMenu :actions="actions" trigger-size="compact" />
       </div>
     </template>

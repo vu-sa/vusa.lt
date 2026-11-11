@@ -135,18 +135,6 @@
           />
         </FormFieldWrapper>
 
-        <div v-if="!isSystem" class="flex items-start gap-2.5">
-          <Checkbox id="step-per-term" v-model="form.per_term" data-testid="step-per-term" />
-          <div class="space-y-0.5 leading-none">
-            <Label for="step-per-term" class="text-sm font-medium">
-              {{ $t('learning_library.fields.per_term') }}
-            </Label>
-            <p class="text-xs text-muted-foreground">
-              {{ $t('learning_library.fields.per_term_hint') }}
-            </p>
-          </div>
-        </div>
-
         <div class="flex items-start gap-2.5">
           <Checkbox id="step-is-active" v-model="form.is_active" data-testid="step-is-active" />
           <div class="space-y-0.5 leading-none">
@@ -218,7 +206,6 @@ interface LearningStepFormState {
   description: { lt: string; en: string };
   action_label: { lt: string; en: string };
   action_url: { lt: string; en: string };
-  per_term: boolean;
   order: number;
   is_active: boolean;
 }
@@ -253,7 +240,6 @@ const form = useForm<LearningStepFormState>({
   description: { lt: props.step?.description?.lt ?? '', en: props.step?.description?.en ?? '' },
   action_label: { lt: props.step?.action_label?.lt ?? '', en: props.step?.action_label?.en ?? '' },
   action_url: { lt: props.step?.action_url?.lt ?? '', en: props.step?.action_url?.en ?? '' },
-  per_term: props.step?.per_term ?? false,
   order: props.step?.order ?? 0,
   is_active: props.step?.is_active ?? true,
 });
@@ -321,7 +307,6 @@ function buildPayload(data: LearningStepFormState): Record<string, unknown> {
     description: data.description,
     action_label: { lt: data.action_label.lt.trim(), en: data.action_label.en.trim() },
     action_url: { lt: data.action_url.lt.trim(), en: data.action_url.en.trim() },
-    per_term: data.per_term,
     order: data.order,
     is_active: data.is_active,
   };

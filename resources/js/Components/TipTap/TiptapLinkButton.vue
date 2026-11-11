@@ -17,7 +17,7 @@
       </div>
 
       <Tabs v-model="tab" class="mt-4 px-8">
-        <TabsList :class="['grid w-full', targets ? 'grid-cols-4' : 'grid-cols-3']">
+        <TabsList :class="['grid h-auto w-full [&>button]:min-h-11 [&>button]:min-w-0 [&>button]:whitespace-normal', targets ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-1 sm:grid-cols-3']">
           <TabsTrigger v-if="targets" value="wiki" data-testid="link-tab-wiki">
             {{ $t('rich-content.link_tab_wiki') }}
           </TabsTrigger>

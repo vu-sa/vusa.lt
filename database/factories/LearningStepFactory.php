@@ -25,7 +25,7 @@ class LearningStepFactory extends Factory
             'kind' => LearningStepKind::Action,
             'title' => ['lt' => fake()->sentence(4), 'en' => fake()->sentence(4)],
             'description' => ['lt' => fake()->paragraph(), 'en' => fake()->paragraph()],
-            'is_system' => false, 'per_term' => false, 'order' => 0, 'is_active' => true,
+            'is_system' => false, 'order' => 0, 'is_active' => true,
         ];
     }
 
@@ -53,7 +53,7 @@ class LearningStepFactory extends Factory
         $definition = SystemStepRegistry::definitions()[$key];
         $factory = $this->withoutAudiences()->state([
             'key' => $key, 'is_system' => true, 'kind' => LearningStepKind::Action,
-            'per_term' => $definition['per_term'], 'title' => null, 'description' => null,
+            'title' => null, 'description' => null,
         ]);
 
         return $factory->afterCreating(function (LearningStep $step) use ($definition): void {

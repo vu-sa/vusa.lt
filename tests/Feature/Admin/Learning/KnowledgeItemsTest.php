@@ -25,7 +25,7 @@ function knowledgePayload(?int $tenantId = null): array
         'description' => ['lt' => '<p>Žinok savo teises.</p>', 'en' => '<p>Know your rights.</p>'],
         'audiences' => [['type' => 'everyone', 'tenant_id' => $tenantId, 'importance' => 'recommended']],
         'sources' => ['lt' => ['url' => 'https://example.test/knowledge']],
-        'per_term' => true, 'order' => 4, 'is_active' => true,
+        'order' => 4, 'is_active' => true,
     ];
 }
 
@@ -41,7 +41,7 @@ test('knowledge curators create update and delete items with their related data'
     asUser($user)->post(route('knowledgeItems.store'), $payload)->assertRedirect();
     $item = KnowledgeItem::query()->where('created_by', $user->id)->sole();
     expect($item->section->is($section))->toBeTrue()
-        ->and($item->per_term)->toBeTrue()
+
         ->and($item->reviewed_at->equalTo(now()))->toBeTrue()
         ->and($item->sources->sole()->url)->toBe('https://example.test/knowledge')
         ->and($item->audiences->sole()->stage)->toBeNull();
@@ -178,18 +178,18 @@ test('inactive articles cannot be tracked', function (): void {
         ->where('canTrack', false));
 });
 
-test('knowledge per-term progress reopens while lead-in completion and ordinary progress count', function (): void {
+test('knowledge completion persists across term changes', function (): void {
     $this->freezeTime();
     $user = makeUser(Tenant::query()->firstOrFail());
     grantPurpose($user->authorization_duties()->firstOrFail(), ResponsibilityPurpose::StudentRepresentation);
     $user->dutiables()->firstOrFail()->update(['start_date' => today()->subDays(10), 'end_date' => today()->addYear()]);
-    $term = KnowledgeItem::factory()->create(['per_term' => true]);
+    $term = KnowledgeItem::factory()->create([]);
     $ordinary = KnowledgeItem::factory()->create();
     foreach ([$term, $ordinary] as $item) {
         $item->progress()->create(['user_id' => $user->id, 'status' => 'done', 'completed_at' => today()->subYear()]);
     }
     $items = ResolveLearningPath::execute($user)->knowledge->keyBy('item.id');
-    expect($items[$term->id]->state)->toBe('pending')->and($items[$ordinary->id]->state)->toBe('done');
+    expect($items[$term->id]->state)->toBe('done')->and($items[$ordinary->id]->state)->toBe('done');
     $term->progress()->update(['completed_at' => today()->subDays(30)]);
     expect(ResolveLearningPath::execute($user)->knowledge->firstWhere('item.id', $term->id)->state)->toBe('done');
 });
@@ -303,14 +303,14 @@ test('knowledge libraries and forms expose their dedicated payloads to curators'
     $item = KnowledgeItem::factory()->create();
     asUser($user)->get(route('knowledgeItems.index'))->assertOk()->assertInertia(fn (Assert $page) => $page
         ->component('Admin/Knowledge/IndexKnowledgeItem')->has('items', 1)->has('sections')->has('audienceTypes')->has('sectionScopes')
-        ->where('canCreate', true)->whereType('items.0.perTerm', 'boolean')->missing('items.0.kind'));
+        ->where('canCreate', true)->missing('items.0.perTerm')->missing('items.0.kind'));
     asUser($user)->get(route('knowledgeItems.create'))->assertOk()->assertInertia(fn (Assert $page) => $page
         ->component('Admin/Knowledge/CreateKnowledgeItem')->has('sections')->has('tenants'));
     asUser($user)->get(route('knowledgeItems.edit', $item))->assertOk()->assertInertia(fn (Assert $page) => $page
         ->component('Admin/Knowledge/EditKnowledgeItem')->where('item.id', $item->id)->has('item.title.lt')
         ->has('item.sources')->missing('item.kind'));
     asUser($user)->get(route('learningSteps.index'))->assertOk()->assertInertia(fn (Assert $page) => $page
-        ->where('canCreate', true)->whereType('steps.0.perTerm', 'boolean')->missing('steps.0.flags')->missing('sections'));
+        ->where('canCreate', true)->missing('steps.0.perTerm')->missing('steps.0.flags')->missing('sections'));
 });
 
 test('a link only in English is kept, and summaries stay one short sentence', function (): void {
@@ -323,4 +323,25 @@ test('a link only in English is kept, and summaries stay one short sentence', fu
     expect($item->fresh()->sources->sole())->locale->toBe('en')->url->toBe('https://example.test/en');
 
     asUser($user)->put(route('knowledgeItems.update', $item), [...$payload, 'summary' => ['lt' => str_repeat('a', 201)]])->assertInvalid('summary.lt');
+});
+
+test('a tenant path coordinator preserves a global article while editing its content', function (): void {
+    $tenant = Tenant::query()->firstOrFail();
+    $user = makeUser($tenant);
+    $user->givePermissionTo(Permission::findOrCreate('learningSteps.update.padalinys', 'web'));
+    $item = KnowledgeItem::factory()->forTenant($tenant)->create(['tenant_id' => null]);
+    asUser($user)->get(route('knowledgeItems.edit', $item))->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('item.tenant_id', null)->where('canPublishEverywhere', false));
+    $payload = knowledgePayload();
+    unset($payload['audiences']);
+    asUser($user)->put(route('knowledgeItems.update', $item), $payload)->assertRedirect();
+    expect($item->fresh()->tenant_id)->toBeNull();
+});
+
+test('article placement offers all tenants when either permission grants global access', function (): void {
+    $user = makeUser(Tenant::query()->firstOrFail());
+    $user->givePermissionTo(Permission::findOrCreate('knowledgeItems.create.padalinys', 'web'));
+    $user->givePermissionTo(Permission::findOrCreate('learningSteps.create.*', 'web'));
+    asUser($user)->get(route('knowledgeItems.create'))->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('canPublishEverywhere', true)->where('pageTenants', fn ($tenants): bool => $tenants->pluck('id')->unique()->count() === Tenant::count()));
 });

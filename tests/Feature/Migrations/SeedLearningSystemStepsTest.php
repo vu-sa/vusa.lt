@@ -40,7 +40,6 @@ test('steps reps tick themselves are seeded as regular tasks, some with a button
         ->and($notifications->audiences()->sole()->stage)->toBe(LearningStage::BeforeStart);
     $handover = LearningStep::query()->where('key', 'write_handover')->sole();
     expect($handover->is_system)->toBeFalse()
-        ->and($handover->per_term)->toBeTrue()
         ->and($handover->getTranslations('action_url'))->toBeEmpty()
         ->and($handover->audiences->pluck('stage')->unique()->all())->toBe([LearningStage::TermEnd]);
     expect(LearningStep::query()->whereIn('key', ['follow_institution', 'read_handover'])->exists())->toBeFalse();

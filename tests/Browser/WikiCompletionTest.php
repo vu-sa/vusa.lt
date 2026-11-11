@@ -37,3 +37,18 @@ it('opens the section manager and bilingual editor in the built app', function (
     $page->script('document.documentElement.classList.add("dark")');
     $page->screenshot(filename: 'wiki-section-editor-dark')->assertNoJavaScriptErrors();
 });
+
+it('opens the Wiki link picker in the article editor on phone and desktop', function () {
+    $user = makeUser(Tenant::query()->firstOrFail());
+    $user->givePermissionTo(Permission::findOrCreate('knowledgeItems.update.*', 'web'));
+    $item = KnowledgeItem::factory()->withoutAudiences()->create();
+    KnowledgeItem::factory()->withoutAudiences()->create();
+    $page = loginAsAdmin($user, route('knowledgeItems.edit', $item, absolute: false), 390, 844);
+    $page->click('[data-testid=step-description] button[aria-label="Nuoroda"]')
+        ->assertPresent('[data-testid=link-tab-wiki]')->click('[data-testid=link-tab-wiki]')
+        ->assertPresent('[data-testid=link-wiki-panel]')->assertNoJavaScriptErrors()
+        ->screenshot(fullPage: false, filename: 'wiki-link-dialog-phone');
+    $page->resize(1440, 900)->screenshot(fullPage: false, filename: 'wiki-link-dialog-desktop');
+    $page->script('document.documentElement.classList.add("dark")');
+    $page->screenshot(fullPage: false, filename: 'wiki-link-dialog-dark')->assertNoJavaScriptErrors();
+});

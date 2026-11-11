@@ -69,7 +69,7 @@ class KnowledgeItemController extends AdminController
             $progress = $knowledgeItem->progress()->where('user_id', $request->user()->id)->where('status', LearningProgressStatus::Done)->first();
             $item = new ResolvedLearningItem(
                 $knowledgeItem,
-                state: $progress === null ? 'pending' : 'done',
+                state: $progress === null ? 'pending' : (ResolveLearningPath::sourceUpdated($knowledgeItem, 'done', $progress->completed_at) ? 'updated' : 'done'),
                 completedAt: $progress?->completed_at,
                 importance: $knowledgeItem->audiences->first()->importance ?? LearningImportance::Recommended,
                 audienceLabel: $knowledgeItem->audiences->first()?->label(app()->getLocale()) ?? '',
@@ -188,7 +188,7 @@ class KnowledgeItemController extends AdminController
 
     public function searchDocuments(SearchLearningDocumentsRequest $request): JsonResponse
     {
-        $this->authorize('create', KnowledgeItem::class);
+        $this->authorize('manage', KnowledgeItem::class);
         $query = trim((string) ($request->validated('q') ?? ''));
 
         $documents = Document::query()
@@ -247,7 +247,8 @@ class KnowledgeItemController extends AdminController
 
         return [
             'canManageAudiences' => $policy->canManageAudiences($user, $ability) && ($item === null || $policy->manageAudiences($user, $item->audiences, $ability)),
-            'pageTenants' => GetTenantsForUpserts::execute(($knowledgeScope->granted ? 'knowledgeItems' : 'learningSteps').".{$ability}.padalinys", $this->authorizer)->all(),
+            'pageTenants' => GetTenantsForUpserts::execute("knowledgeItems.{$ability}.padalinys", $this->authorizer)
+                ->toBase()->merge(GetTenantsForUpserts::execute("learningSteps.{$ability}.padalinys", $this->authorizer))->unique('id')->sortBy('shortname')->values()->all(),
             'canPublishEverywhere' => $knowledgeScope->isAllScope || $scope->isAllScope,
             'audienceTypes' => array_map(fn (LearningAudienceType $type): string => $type->value,
                 array_filter(LearningAudienceType::cases(), fn (LearningAudienceType $type): bool => $type !== LearningAudienceType::Purpose)),

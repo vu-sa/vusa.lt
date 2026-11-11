@@ -118,7 +118,7 @@ test('the editor is told which resources have a trash', function (): void {
 
 test('learning curation is scoped while reading belongs to every member', function (): void {
     expect(PermissionCatalog::abilities()['learningSteps']['update'])->toBe(['padalinys', '*']);
-    expect(PermissionCatalog::areaOf('learningSteps'))->toBe('pradzia');
+    expect(PermissionCatalog::areaOf('learningSteps'))->toBe('organizacija');
     expect(PermissionCatalog::isGrantable('learningSteps.read.padalinys'))->toBeFalse();
     expect(PermissionCatalog::isGrantable('learningSteps.update.own'))->toBeFalse();
     expect(BaselineAccess::RESOURCES)->toContain('learningSteps');

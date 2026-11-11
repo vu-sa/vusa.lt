@@ -88,7 +88,7 @@ class LearningPathPresenter
         ];
     }
 
-    /** @return list<array{id: string, title: string, kind: LearningStepKind, audiences: list<array{id: string, type: LearningAudienceType, label: string, importance: LearningImportance, stage: LearningStage|null}>, audienceTypes: list<LearningAudienceType>, order: int, isActive: bool, canUpdate: bool, perTerm: bool}> */
+    /** @return list<array{id: string, title: string, kind: LearningStepKind, audiences: list<array{id: string, type: LearningAudienceType, label: string, importance: LearningImportance, stage: LearningStage|null}>, audienceTypes: list<LearningAudienceType>, order: int, isActive: bool, canUpdate: bool}> */
     public static function library(string $locale, ?User $viewer = null): array
     {
         $user = $viewer ?? auth()->user();
@@ -107,14 +107,14 @@ class LearningPathPresenter
                 'audienceTypes' => $step->audiences->pluck('type')->unique()->values()->all(),
                 'order' => $step->order,
                 'isActive' => $step->is_active,
-                'canUpdate' => $canUpdate, 'perTerm' => $step->per_term,
+                'canUpdate' => $canUpdate,
             ];
         }
 
         return $result;
     }
 
-    /** @return array{id: string, key: string|null, title: array{lt: string, en: string}, description: array{lt: string, en: string}, action_label: array{lt: string, en: string}, action_url: array{lt: string, en: string}, kind: LearningStepKind, audiences: list<array{id: string, type: LearningAudienceType, source_id: string|null, tenant_id: int|null, importance: LearningImportance, stage: LearningStage|null, description: array{lt: string, en: string}, order: int, label: string}>, per_term: bool, order: int, is_active: bool, is_system: bool} */
+    /** @return array{id: string, key: string|null, title: array{lt: string, en: string}, description: array{lt: string, en: string}, action_label: array{lt: string, en: string}, action_url: array{lt: string, en: string}, kind: LearningStepKind, audiences: list<array{id: string, type: LearningAudienceType, source_id: string|null, tenant_id: int|null, importance: LearningImportance, stage: LearningStage|null, description: array{lt: string, en: string}, order: int, label: string}>, order: int, is_active: bool, is_system: bool} */
     public static function edit(LearningStep $step): array
     {
         return [
@@ -130,7 +130,7 @@ class LearningPathPresenter
                 'description' => ['lt' => (string) $audience->getTranslation('description', 'lt', false), 'en' => (string) $audience->getTranslation('description', 'en', false)],
                 'order' => $audience->order, 'label' => $audience->label(app()->getLocale()),
             ])->all(),
-            'per_term' => $step->per_term, 'order' => $step->order, 'is_active' => $step->is_active, 'is_system' => $step->is_system,
+            'order' => $step->order, 'is_active' => $step->is_active, 'is_system' => $step->is_system,
         ];
     }
 }

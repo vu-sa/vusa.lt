@@ -1,7 +1,7 @@
 <template>
   <CollectionPage
     collection="learningSteps"
-    :eyebrow="$t('shell.workspaces.pradzia.title')"
+    :eyebrow="$t('shell.workspaces.organizacija.title')"
     :title="$t('learning.pages.library')"
     :lead="$t('learning_library.library.lead')"
     :source
@@ -128,14 +128,12 @@ const source = useLocalCollectionSource<LearningLibraryStep>({
     { field: 'audience', label: $t('learning_library.library.filters.audience'), get: step => step.audienceTypes.filter(type => props.audienceTypes.includes(type)), valueLabel: value => $t(`learning.audience_types.${value}`) },
     { field: 'kind', label: $t('learning_library.library.filters.kind'), get: step => step.kind, valueLabel: value => $t(`learning.kinds.${value}`) },
     { field: 'importance', label: $t('learning_library.library.filters.importance'), get: step => highestImportance(step), valueLabel: value => $t(`learning.importance.${value}`) },
-    { field: 'repeat', label: $t('learning_library.library.filters.repeat'), get: step => step.perTerm ? 'per_term' : 'once', valueLabel: value => $t(`learning_library.library.repeat.${value}`) },
   ],
 });
 
 // Only the main splits sit above the table; audience, importance and the rest stay in the filter panel.
 const QUICK_FILTERS = [
   { field: 'kind', value: LearningStepKind.Action, label: 'learning_library.library.quick.actions' },
-  { field: 'repeat', value: 'per_term', label: 'learning_library.library.quick.repeated' },
   { field: 'kind', value: LearningStepKind.MeetingPrep, label: 'learning_library.library.quick.meeting_prep' },
 ];
 

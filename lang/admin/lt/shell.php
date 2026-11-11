@@ -216,7 +216,7 @@ return [
 
     'actions' => [
         'new_learning_step' => ['title' => 'Naujas kelio žingsnis', 'description' => 'Veiksmas ar pasiruošimas posėdžiui'],
-        'new_knowledge_item' => ['title' => 'Naujas žinių bazės straipsnis', 'description' => 'Sąvoka, dokumentas ar paaiškinimas atstovams'],
+        'new_knowledge_item' => ['title' => 'Naujas Wiki straipsnis', 'description' => 'Sąvoka, dokumentas ar paaiškinimas atstovams'],
         'new_institution_type' => ['title' => 'Naujas institucijos tipas', 'description' => 'Institucijų grupavimas, atstovavimas ir ryšiai'],
         'new_duty_type' => ['title' => 'Naujas pareigybės tipas', 'description' => 'Pareigybių grupavimas ir suteikiamos atsakomybės'],
         'merge' => [

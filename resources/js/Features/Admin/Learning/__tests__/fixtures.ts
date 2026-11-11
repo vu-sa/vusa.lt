@@ -39,7 +39,7 @@ export function editStep(overrides: Partial<LearningStepEditData> = {}): Learnin
     id: 'step-1', title: { lt: 'LT pavadinimas', en: 'EN title' },
     description: { lt: 'LT paaiškinimas', en: 'EN explanation' },
     kind: LearningStepKind.Action, audiences: [audience()],
-    per_term: false, order: 1, is_active: true, is_system: false, ...overrides,
+    order: 1, is_active: true, is_system: false, ...overrides,
   };
 }
 
@@ -48,7 +48,7 @@ export function knowledge(overrides: Partial<KnowledgeItemData> = {}): Knowledge
     id: 'knowledge-1', title: 'Read the guide', abbreviation: '', summary: 'What the guide covers.', description: 'Prepare to represent students.',
     audienceLabel: 'Pagrindas', audienceNotes: [], section: null, importance: LearningImportance.Recommended,
     source: null, state: 'pending', autoCompleted: false, completedAt: null,
-    skippable: true, insightsCount: 2, reviewedAt: null, perTerm: false, ...overrides,
+    skippable: true, insightsCount: 2, reviewedAt: null, ...overrides,
   };
 }
 
@@ -56,7 +56,7 @@ export function editKnowledge(overrides: Partial<KnowledgeItemEditData> = {}): K
   return {
     id: 'knowledge-1', title: { lt: 'LT pavadinimas', en: 'EN title' }, abbreviation: { lt: '', en: '' },
     summary: { lt: 'LT santrauka', en: 'EN summary' }, description: { lt: '', en: '' },
-    knowledge_section_id: null, tenant_id: null, audiences: [audience({ stage: null })], per_term: false, order: 1,
+    knowledge_section_id: null, tenant_id: null, audiences: [audience({ stage: null })], order: 1,
     is_active: true, sources: {}, source_documents: {}, ...overrides,
   };
 }

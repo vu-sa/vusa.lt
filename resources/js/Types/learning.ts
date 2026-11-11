@@ -59,7 +59,6 @@ export interface LearningLibraryStep {
   order: number;
   isActive: boolean;
   canUpdate: boolean;
-  perTerm: boolean;
 }
 
 export interface LearningDocumentSearchHit {
@@ -91,7 +90,6 @@ export interface LearningStepEditData {
   action_url?: { lt: string; en: string };
   kind: LearningStepKind;
   audiences: LearningAudienceEditData[];
-  per_term: boolean;
   order: number;
   is_active: boolean;
   is_system: boolean;
@@ -159,7 +157,6 @@ export interface KnowledgeItemData {
   skippable: boolean;
   insightsCount: number;
   reviewedAt: string | null;
-  perTerm: boolean;
 }
 
 export interface KnowledgeItemEditData {
@@ -171,7 +168,6 @@ export interface KnowledgeItemEditData {
   knowledge_section_id: string | null;
   tenant_id: number | null;
   audiences: LearningAudienceEditData[];
-  per_term: boolean;
   order: number;
   is_active: boolean;
   sources: Record<string, { document_id: number | null; url: string | null }>;

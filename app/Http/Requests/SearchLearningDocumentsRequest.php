@@ -9,7 +9,7 @@ class SearchLearningDocumentsRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('create', KnowledgeItem::class);
+        return $this->user()->can('manage', KnowledgeItem::class);
     }
 
     /** @return array<string, mixed> */

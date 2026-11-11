@@ -44,7 +44,6 @@ describe('KnowledgeItemForm', () => {
           knowledge_section_id: null,
           tenant_id: null,
           audiences: [audience()],
-          per_term: false,
           order: 1,
           is_active: true,
           sources: {
@@ -109,7 +108,6 @@ describe('KnowledgeItemForm', () => {
           knowledge_section_id: null,
           tenant_id: null,
           audiences: [audience()],
-          per_term: false,
           order: 1,
           is_active: true,
           sources: {
@@ -222,4 +220,14 @@ describe('KnowledgeItemForm', () => {
     expect(payload.tenant_id).toBe(3);
     wrapper.unmount();
   });
+  it('preserves global scope when a single-tenant coordinator edits an article', () => {
+    const wrapper = mount(KnowledgeItemForm, {
+      props: { item: editKnowledge({ tenant_id: null }), canPublishEverywhere: false, pageTenants: [{ id: 3, shortname: 'VU SA MIF' }] },
+      global: { stubs },
+    });
+    const form = vi.mocked(useForm).mock.results[0]!.value;
+    expect(form.tenant_id).toBeNull();
+    wrapper.unmount();
+  });
+
 });

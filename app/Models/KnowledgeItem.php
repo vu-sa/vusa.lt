@@ -31,7 +31,6 @@ use Illuminate\Support\Carbon;
  * @property array|string|null $abbreviation
  * @property array|string|null $summary
  * @property array|string|null $description
- * @property bool $per_term
  * @property int $order
  * @property bool $is_active
  * @property Carbon|null $reviewed_at
@@ -46,7 +45,7 @@ use Illuminate\Support\Carbon;
  * @property-read Tenant|null $tenant
  * @property-read User|null $createdBy
  */
-#[Fillable(['key', 'knowledge_section_id', 'tenant_id', 'title', 'abbreviation', 'summary', 'description', 'per_term', 'order', 'is_active', 'reviewed_at', 'created_by'])]
+#[Fillable(['key', 'knowledge_section_id', 'tenant_id', 'title', 'abbreviation', 'summary', 'description', 'order', 'is_active', 'reviewed_at', 'created_by'])]
 class KnowledgeItem extends Model implements Commentable
 {
     use HasComments, HasFactory, HasTranslations, HasUlids, LogsModelActivity;
@@ -124,7 +123,7 @@ class KnowledgeItem extends Model implements Commentable
 
     protected function casts(): array
     {
-        return ['per_term' => 'boolean', 'is_active' => 'boolean', 'reviewed_at' => 'datetime', 'order' => 'integer'];
+        return ['is_active' => 'boolean', 'reviewed_at' => 'datetime', 'order' => 'integer'];
     }
 
     /** @param Builder<static> $query */

@@ -104,8 +104,7 @@ Telefone skyriai pasiekiami dabartinio skyriaus pasirinkime ir per **Meniu**.
 
 - **Mano kelias** – tavo žingsniai ir pažanga.
 - **Organizacija → Kelio žingsniai** – tik tiems, kas gali tvarkyti žingsnius (žr. [Kas ką gali](#teises)). Puslapis
-  **Kelio žingsniai** rodo visus žingsnius su paieška. Greiti filtrai – **Veiksmai**, **Kartojami kas
-  kadenciją** ir **Pasiruošimas posėdžiams**; auditorija ir svarba – skiltyje **Filtrai**.
+  **Kelio žingsniai** rodo visus žingsnius su paieška. Greiti filtrai – **Veiksmai** ir **Pasiruošimas posėdžiams**; auditorija ir svarba – skiltyje **Filtrai**.
 
 ## Veiksmai
 
@@ -136,7 +135,7 @@ Telefone skyriai pasiekiami dabartinio skyriaus pasirinkime ir per **Meniu**.
 |---|---|
 | Kiekvienas narys | Matyti savo kelią, žymėti pažangą |
 | Studentų atstovų koordinatorius (atsakingas už institucijas) | Matyti savo atstovų pažangą ir kelius puslapyje [ViSAK → Atstovai](/visak/atstovai) |
-| Studentų atstovų koordinatorius | Atverti Biblioteką, kurti ir redaguoti žingsnius, kurių visos auditorijos apribotos savo padaliniu |
+| Studentų atstovų koordinatorius | Atverti Organizacija → Kelio žingsniai, kurti ir redaguoti žingsnius, kurių visos auditorijos apribotos savo padaliniu |
 | Centrinio biuro studentų atstovų koordinatorius | Kurti ir redaguoti visų auditorijų žingsnius |
 
 Tavo pažangą matantys koordinatoriai nurodomi po kelio antrašte.
@@ -153,8 +152,7 @@ atvėrus kelią.
   `getParentsAndSelf()`). Pateikimas – `LearningPathPresenter`.
 - Etapas: pagal anksčiausios atstovo pareigybės pradžią; pabaiga – iš pareigų datų arba kadencijos
   (`ResolveCadenceForDuty`).
-- Kadencijai kartojami žingsniai (`per_term`) įskaitomi, jei atlikti ne anksčiau kaip 90 dienų iki
-  kadencijos pradžios.
+- Pažymėtas atlikimas išlieka ir pasikeitus kadencijai.
 - Sisteminiai žingsniai (`is_system`, raktai `SystemStepRegistry`) įrašomi migracija ir lieka tik ten,
   kur reikia valdiklio ar automatinio atlikimo; žingsniai, kuriuos atstovas pažymi pats, yra įprasti, prireikus su
   mygtuku (`action_label`, `action_url`). Sisteminių atlikimas skaičiuojamas skaitant ir nesaugomas. Juose keičiamas tik etapas, tvarka ir rodymas; ištrinti negalima.

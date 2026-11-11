@@ -51,7 +51,6 @@ class KnowledgeItemRequest extends FormRequest
             'summary.en' => ['nullable', 'string', 'max:200'],
             'description' => ['nullable', 'array:lt,en'],
             'description.*' => ['nullable', 'string', 'max:20000'],
-            'per_term' => ['sometimes', 'boolean'],
             'order' => ['sometimes', 'integer', 'min:0'],
             'is_active' => ['sometimes', 'boolean'],
             'reviewed_at' => ['nullable', 'date'],

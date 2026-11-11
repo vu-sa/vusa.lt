@@ -111,8 +111,7 @@ class ResolveLearningPath
                 $locale = app()->getLocale();
                 $notes = $matched->filter(fn (LearningAudience $audience): bool => filled($audience->getTranslation('description', $locale, false)))
                     ->map(fn (LearningAudience $audience): array => ['label' => $audience->label($locale), 'description' => (string) $audience->getTranslation('description', $locale, false)])->values()->all();
-                $item = self::resolveStep($step, $winner, $notes, $userProgress->get($step->getMorphClass().':'.$step->id), $termStart,
-                    $step instanceof LearningStep && $step->is_system && isset($detections[$step->key][$user->id]));
+                $item = self::resolveStep($step, $winner, $notes, $userProgress->get($step->getMorphClass().':'.$step->id), $step instanceof LearningStep && $step->is_system && isset($detections[$step->key][$user->id]));
                 if ($step instanceof KnowledgeItem) {
                     $knowledgeItems->push($item);
 
@@ -141,18 +140,10 @@ class ResolveLearningPath
         return isset($facts[$audience->type->value][$source][$audience->tenant_id ?? 'all']);
     }
 
-    /** Incoming reps prepare before their term starts, so per-term work done in the lead-up still counts. */
-    private const int TERM_LEAD_IN_DAYS = 90;
-
-    private static function completionIsCurrent(LearningStep|KnowledgeItem $step, ?Carbon $date, ?Carbon $termStart): bool
-    {
-        return $date !== null && (! $step->per_term || $termStart === null || $date->gte($termStart->copy()->subDays(self::TERM_LEAD_IN_DAYS)));
-    }
-
-    private static function resolveStep(LearningStep|KnowledgeItem $step, LearningAudience $winner, array $notes, ?LearningProgress $progress, ?Carbon $termStart, bool $detected): ResolvedLearningItem
+    private static function resolveStep(LearningStep|KnowledgeItem $step, LearningAudience $winner, array $notes, ?LearningProgress $progress, bool $detected): ResolvedLearningItem
     {
         $stage = $step instanceof LearningStep && $step->kind === LearningStepKind::Action ? $winner->stage : null;
-        $completedAt = self::completionIsCurrent($step, $progress?->completed_at, $termStart) ? $progress->completed_at : null;
+        $completedAt = $progress?->completed_at;
         $state = 'pending';
         if ($completedAt !== null) {
             $state = $progress->status === LearningProgressStatus::Done ? 'done' : ($winner->importance->isSkippable() ? 'skipped' : 'pending');
@@ -167,7 +158,7 @@ class ResolveLearningPath
         return new ResolvedLearningItem($step, $state, false, $completedAt, $winner->importance, $stage, $winner->label(app()->getLocale()), $notes, $winner->id, $winner->type->value.':'.$winner->source_id.':'.$winner->tenant_id);
     }
 
-    private static function sourceUpdated(LearningStep|KnowledgeItem $step, string $state, ?Carbon $completedAt): bool
+    public static function sourceUpdated(LearningStep|KnowledgeItem $step, string $state, ?Carbon $completedAt): bool
     {
         if (! $step instanceof KnowledgeItem) {
             return false;

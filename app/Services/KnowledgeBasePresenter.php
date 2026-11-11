@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Actions\ResolveLearningPath;
 use App\Actions\SyncKnowledgeLinks;
 use App\Enums\DocumentStatus;
 use App\Enums\LearningAudienceType;
@@ -19,8 +20,8 @@ use App\Services\Learning\ResolvedLearningItem;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
- * @phpstan-type KnowledgePayload array{id: string, title: string, abbreviation: string, summary: string, description: string, audienceLabel: string, audienceNotes: list<array{label: string, description: string}>, section: array{id: string, title: string}|null, source: array{type: 'document'|'url', url: string|null, documentId: int|null, documentStatus: DocumentStatus|null, title: string|null, private: bool, thumbnailUrl: string|null}|null, state: string, autoCompleted: bool, completedAt: string|null, skippable: bool, insightsCount: int, reviewedAt: string|null, perTerm: bool, importance: LearningImportance}
- * @phpstan-type SelfLearnedPayload array{id: string, title: string, abbreviation: string, summary: string, description: string, audienceLabel: string, audienceNotes: list<array{label: string, description: string}>, section: array{id: string, title: string}|null, source: array{type: 'document'|'url', url: string|null, documentId: int|null, documentStatus: DocumentStatus|null, title: string|null, private: bool, thumbnailUrl: string|null}|null, state: string, autoCompleted: bool, completedAt: string|null, skippable: bool, insightsCount: int, reviewedAt: string|null, perTerm: bool, importance: null}
+ * @phpstan-type KnowledgePayload array{id: string, title: string, abbreviation: string, summary: string, description: string, audienceLabel: string, audienceNotes: list<array{label: string, description: string}>, section: array{id: string, title: string}|null, source: array{type: 'document'|'url', url: string|null, documentId: int|null, documentStatus: DocumentStatus|null, title: string|null, private: bool, thumbnailUrl: string|null}|null, state: string, autoCompleted: bool, completedAt: string|null, skippable: bool, insightsCount: int, reviewedAt: string|null, importance: LearningImportance}
+ * @phpstan-type SelfLearnedPayload array{id: string, title: string, abbreviation: string, summary: string, description: string, audienceLabel: string, audienceNotes: list<array{label: string, description: string}>, section: array{id: string, title: string}|null, source: array{type: 'document'|'url', url: string|null, documentId: int|null, documentStatus: DocumentStatus|null, title: string|null, private: bool, thumbnailUrl: string|null}|null, state: string, autoCompleted: bool, completedAt: string|null, skippable: bool, insightsCount: int, reviewedAt: string|null, importance: null}
  * @phpstan-type PageSummary array{id: string, title: string, abbreviation: string, summary: string, url: string}
  * @phpstan-type IndexEntry array{id: string, title: string, abbreviation: string, summary: string, url: string, sectionId: string|null, updatedAt: string|null}
  */
@@ -57,6 +58,9 @@ class KnowledgeBasePresenter
         foreach ($progress as $completion) {
             /** @var KnowledgeItem $item */
             $item = $completion->progressable;
+            if (ResolveLearningPath::sourceUpdated($item, 'done', $completion->completed_at)) {
+                continue;
+            }
             $selfLearned[] = [
                 ...self::item(new ResolvedLearningItem($item, state: 'done', completedAt: $completion->completed_at), $locale),
                 'importance' => null,
@@ -79,6 +83,8 @@ class KnowledgeBasePresenter
     {
         return LearningProgress::query()->where('user_id', $user->id)->where('status', LearningProgressStatus::Done)
             ->whereHasMorph('progressable', [KnowledgeItem::class], fn ($query) => $query->active())
+            ->with('progressable.sources.document')->get()
+            ->reject(fn (LearningProgress $progress): bool => ResolveLearningPath::sourceUpdated($progress->progressable, 'done', $progress->completed_at))
             ->pluck('progressable_id')->all();
     }
 
@@ -98,7 +104,7 @@ class KnowledgeBasePresenter
             'source' => self::source($item, $locale), 'state' => $resolved->state,
             'autoCompleted' => false, 'completedAt' => $resolved->completedAt?->toIso8601String(),
             'skippable' => $resolved->importance->isSkippable(), 'insightsCount' => (int) $item->comments_count,
-            'reviewedAt' => $item->reviewed_at?->toDateString(), 'perTerm' => $item->per_term,
+            'reviewedAt' => $item->reviewed_at?->toDateString(),
         ];
     }
 
@@ -222,7 +228,7 @@ class KnowledgeBasePresenter
         return null;
     }
 
-    /** @return list<array{id: string, title: string, abbreviation: string, hasSource: bool, audiences: list<array{id: string, type: LearningAudienceType, label: string, importance: LearningImportance, stage: LearningStage|null}>, audienceTypes: list<LearningAudienceType>, section: array{id: string, title: string}|null, order: int, isActive: bool, canUpdate: bool, perTerm: bool, flags: list<'expired_document'|'updated_document'|'missing_source'>}> */
+    /** @return list<array{id: string, title: string, abbreviation: string, hasSource: bool, audiences: list<array{id: string, type: LearningAudienceType, label: string, importance: LearningImportance, stage: LearningStage|null}>, audienceTypes: list<LearningAudienceType>, section: array{id: string, title: string}|null, order: int, isActive: bool, canUpdate: bool, flags: list<'expired_document'|'updated_document'|'missing_source'>}> */
     public static function library(string $locale, ?User $viewer = null): array
     {
         $user = $viewer ?? auth()->user();
@@ -240,7 +246,7 @@ class KnowledgeBasePresenter
                 ])->all(),
                 'audienceTypes' => $step->audiences->pluck('type')->unique()->values()->all(),
                 'section' => $step->section ? ['id' => $step->section->id, 'title' => (string) $step->section->getTranslation('title', $locale)] : null,
-                'perTerm' => $step->per_term,
+
                 'order' => $step->order,
                 'isActive' => $step->is_active,
                 'canUpdate' => $canUpdate,
@@ -251,7 +257,7 @@ class KnowledgeBasePresenter
         return $result;
     }
 
-    /** @return array{id: string, title: array{lt: string, en: string}, abbreviation: array{lt: string, en: string}, summary: array{lt: string, en: string}, description: array{lt: string, en: string}, knowledge_section_id: string|null, tenant_id: int|null, audiences: list<array{id: string, type: LearningAudienceType, source_id: string|null, tenant_id: int|null, importance: LearningImportance, stage: LearningStage|null, description: array{lt: string, en: string}, order: int, label: string}>, per_term: bool, order: int, is_active: bool, sources: array<string, array{document_id: int|null, url: string|null}>, source_documents: array<string, array{id: int, title: string, status: string, date: string|null}>} */
+    /** @return array{id: string, title: array{lt: string, en: string}, abbreviation: array{lt: string, en: string}, summary: array{lt: string, en: string}, description: array{lt: string, en: string}, knowledge_section_id: string|null, tenant_id: int|null, audiences: list<array{id: string, type: LearningAudienceType, source_id: string|null, tenant_id: int|null, importance: LearningImportance, stage: LearningStage|null, description: array{lt: string, en: string}, order: int, label: string}>, order: int, is_active: bool, sources: array<string, array{document_id: int|null, url: string|null}>, source_documents: array<string, array{id: int, title: string, status: string, date: string|null}>} */
     public static function edit(KnowledgeItem $step): array
     {
         $sources = [];
@@ -281,7 +287,7 @@ class KnowledgeBasePresenter
                 'description' => ['lt' => (string) $audience->getTranslation('description', 'lt', false), 'en' => (string) $audience->getTranslation('description', 'en', false)],
                 'order' => $audience->order, 'label' => $audience->label(app()->getLocale()),
             ])->all(),
-            'per_term' => $step->per_term, 'order' => $step->order, 'is_active' => $step->is_active,
+            'order' => $step->order, 'is_active' => $step->is_active,
             'sources' => $sources, 'source_documents' => $sourceDocuments,
         ];
     }

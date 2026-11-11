@@ -201,7 +201,6 @@ return [
         'insights' => 'Įžvalgos',
         'about' => 'Apie',
         'about_item' => 'Apie straipsnį',
-        'per_term' => 'Kartojama kas kadenciją',
         'about_step' => 'Apie žingsnį',
         'reviewed_on' => 'Turinys peržiūrėtas :date',
         'meeting_prep' => 'Pasiruošimas posėdžiui',

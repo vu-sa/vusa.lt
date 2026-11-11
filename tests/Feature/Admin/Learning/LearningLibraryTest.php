@@ -122,7 +122,7 @@ test('store and update set reviewed_at to now', function (): void {
         'audiences' => [['type' => 'everyone', 'stage' => LearningStage::BeforeStart->value, 'importance' => LearningImportance::Essential->value]],
         'title' => ['lt' => 'Naujas žingsnis', 'en' => 'New step'],
         'description' => ['lt' => 'Kodėl verta', 'en' => 'Why useful'],
-        'per_term' => true,
+
         'order' => 3,
         'is_active' => true,
     ])->assertRedirect();
@@ -138,7 +138,7 @@ test('store and update set reviewed_at to now', function (): void {
         'audiences' => [['type' => 'everyone', 'stage' => LearningStage::FirstMonths->value, 'importance' => LearningImportance::Recommended->value]],
         'title' => ['lt' => 'Atnaujintas žingsnis', 'en' => 'Updated step'],
         'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
-        'per_term' => false,
+
         'order' => 4,
         'is_active' => true,
     ])->assertRedirect();
@@ -202,3 +202,9 @@ test('a padalinys curator can manage the library with create or update permissio
         ->missing('learningNavigation')
         ->has('steps'));
 })->with(['create', 'update']);
+
+test('update-only curators can search documents', function (string $resource): void {
+    $user = makeUser(Tenant::query()->firstOrFail());
+    $user->givePermissionTo(Permission::findOrCreate("{$resource}.update.*", 'web'));
+    asUser($user)->getJson(route('knowledgeItems.documentSearch', ['q' => 'guide']))->assertOk();
+})->with(['knowledgeItems', 'learningSteps']);

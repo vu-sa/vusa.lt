@@ -122,3 +122,18 @@ test('document payload includes only relevant sections and each documents sectio
     expect($documents[$document->id]['section'])->toBe(['id' => $section->id, 'title' => 'Įvadiniai mokymai']);
     expect($documents[$ungrouped->id]['section'])->toBeNull();
 });
+
+test('updated source clears learned marks across wiki views and off-path records', function (): void {
+    $this->freezeSecond();
+    $user = makeUser(Tenant::query()->firstOrFail());
+    foreach ([true, false] as $inPath) {
+        $item = $inPath ? KnowledgeItem::factory()->create() : KnowledgeItem::factory()->withoutAudiences()->create();
+        $document = Document::factory()->create(['sharepoint_modified_at' => now()]);
+        $item->sources()->create(['locale' => 'lt', 'document_id' => $document->id]);
+        $item->progress()->create(['user_id' => $user->id, 'status' => 'done', 'completed_at' => now()->subDay()]);
+        asUser($user)->get(route('knowledgeItems.show', $item))->assertOk()->assertInertia(fn (Assert $page) => $page->where('item.state', 'updated'));
+    }
+    asUser($user)->get(route('knowledgeBase.show'))->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('doneIds', [])->where('knowledge.selfLearned', [])->where('knowledge.stats.pathDone', 0));
+    asUser($user)->get(route('knowledgeItems.alphabet'))->assertOk()->assertInertia(fn (Assert $page) => $page->where('doneIds', []));
+});

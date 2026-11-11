@@ -27,7 +27,6 @@ return new class extends Migration
             $table->json('description')->nullable();
             $table->json('action_label')->nullable();
             $table->json('action_url')->nullable();
-            $table->boolean('per_term')->default(false);
             $table->unsignedInteger('order')->default(0);
             $table->boolean('is_active')->default(true);
             $table->timestamp('reviewed_at')->nullable();
@@ -44,7 +43,6 @@ return new class extends Migration
             $table->json('abbreviation')->nullable();
             $table->json('summary')->nullable();
             $table->json('description')->nullable();
-            $table->boolean('per_term')->default(false);
             $table->unsignedInteger('order')->default(0);
             $table->boolean('is_active')->default(true);
             $table->timestamp('reviewed_at')->nullable();

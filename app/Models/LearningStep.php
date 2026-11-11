@@ -26,7 +26,6 @@ use Illuminate\Support\Carbon;
  * @property array|string|null $description
  * @property array|string|null $action_label
  * @property array|string|null $action_url
- * @property bool $per_term
  * @property int $order
  * @property bool $is_active
  * @property Carbon|null $reviewed_at
@@ -34,7 +33,7 @@ use Illuminate\Support\Carbon;
  * @property-read Collection<int, LearningProgress> $progress
  * @property-read User|null $createdBy
  */
-#[Fillable(['key', 'is_system', 'kind', 'title', 'description', 'action_label', 'action_url', 'per_term', 'order', 'is_active', 'reviewed_at', 'created_by'])]
+#[Fillable(['key', 'is_system', 'kind', 'title', 'description', 'action_label', 'action_url', 'order', 'is_active', 'reviewed_at', 'created_by'])]
 class LearningStep extends Model
 {
     use HasFactory, HasTranslations, HasUlids, LogsModelActivity;
@@ -75,7 +74,7 @@ class LearningStep extends Model
 
     protected function casts(): array
     {
-        return ['kind' => LearningStepKind::class, 'is_system' => 'boolean', 'per_term' => 'boolean', 'is_active' => 'boolean', 'reviewed_at' => 'datetime', 'order' => 'integer'];
+        return ['kind' => LearningStepKind::class, 'is_system' => 'boolean', 'is_active' => 'boolean', 'reviewed_at' => 'datetime', 'order' => 'integer'];
     }
 
     /** @param Builder<static> $query */

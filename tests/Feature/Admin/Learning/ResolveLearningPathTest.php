@@ -85,10 +85,10 @@ test('an incoming representative gets foundation before their term starts', func
     expect($path->contains($step))->toBeTrue();
 });
 
-test('per term progress expires while ordinary progress and skips remain resolved', function (): void {
+test('completion and skips persist across term changes', function (): void {
     $this->freezeTime();
     [$user] = learningRep();
-    $term = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->create(['per_term' => true]);
+    $term = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->create([]);
     $done = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->create();
     $skip = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->create();
     foreach ([$term, $done, $skip] as $step) {
@@ -100,16 +100,16 @@ test('per term progress expires while ordinary progress and skips remain resolve
     $path = ResolveLearningPath::execute($user);
     $states = $path->steps->keyBy('item.id');
 
-    expect($states[$term->id]->state)->toBe('pending');
+    expect($states[$term->id]->state)->toBe('done');
     expect($states[$done->id]->state)->toBe('done');
     expect($states[$skip->id]->state)->toBe('skipped');
-    expect($path->totals()['allDone'])->toBe(2);
+    expect($path->totals()['allDone'])->toBe(3);
 });
 
-test('an incoming rep keeps per term progress made before the term starts', function (): void {
+test('an incoming rep keeps completion made before the term starts', function (): void {
     $this->freezeTime();
     [$user] = learningRep(start: today()->addMonth()->toDateString());
-    $step = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->create(['per_term' => true]);
+    $step = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->create([]);
     LearningProgress::factory()->for($user)->create(['progressable_type' => $step->getMorphClass(), 'progressable_id' => $step->id, 'completed_at' => now(), 'status' => LearningProgressStatus::Done]);
     expect(ResolveLearningPath::execute($user)->steps->firstWhere('item.id', $step->id)->state)->toBe('done');
 });

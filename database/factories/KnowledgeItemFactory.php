@@ -20,7 +20,7 @@ class KnowledgeItemFactory extends Factory
         return [
             'title' => ['lt' => fake()->sentence(4), 'en' => fake()->sentence(4)],
             'description' => ['lt' => fake()->paragraph(), 'en' => fake()->paragraph()],
-            'per_term' => false, 'order' => 0, 'is_active' => true,
+            'order' => 0, 'is_active' => true,
         ];
     }
 

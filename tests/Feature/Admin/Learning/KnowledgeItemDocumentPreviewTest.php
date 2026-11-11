@@ -136,7 +136,7 @@ describe('thumbnail refresh', function (): void {
             'description' => ['lt' => '<p>Žinok savo teises.</p>', 'en' => '<p>Know your rights.</p>'],
             'audiences' => [['type' => 'everyone', 'tenant_id' => null, 'importance' => 'recommended']],
             'sources' => ['lt' => ['document_id' => $document->id]],
-            'per_term' => false, 'order' => 1, 'is_active' => true,
+            'order' => 1, 'is_active' => true,
         ])->assertRedirect();
 
         Queue::assertPushed(RefreshDocumentThumbnailJob::class, fn (RefreshDocumentThumbnailJob $job): bool => $job->document->is($document));

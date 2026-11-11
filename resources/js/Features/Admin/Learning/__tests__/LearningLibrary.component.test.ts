@@ -16,12 +16,12 @@ const steps: LearningLibraryStep[] = [
   {
     id: 'guide', title: 'Read the guide', kind: LearningStepKind.MeetingPrep,
     audiences: [{ id: 'a1', type: LearningAudienceType.Everyone, label: 'Visi', stage: LearningStage.BeforeStart, importance: LearningImportance.Essential }],
-    audienceTypes: [LearningAudienceType.Everyone], order: 0, isActive: true, canUpdate: false, perTerm: false,
+    audienceTypes: [LearningAudienceType.Everyone], order: 0, isActive: true, canUpdate: false,
   },
   {
     id: 'action', title: 'Meet your team', kind: LearningStepKind.Action,
     audiences: [{ id: 'a2', type: LearningAudienceType.InstitutionType, label: 'Taryba', stage: LearningStage.BeforeStart, importance: LearningImportance.Recommended }],
-    audienceTypes: [LearningAudienceType.InstitutionType], order: 1, isActive: true, canUpdate: true, perTerm: true,
+    audienceTypes: [LearningAudienceType.InstitutionType], order: 1, isActive: true, canUpdate: true,
   },
 ];
 
@@ -61,13 +61,12 @@ describe('learning library', () => {
   it('offers only the main splits as quick filters', async () => {
     const wrapper = render();
     await flushPromises();
-    expect(wrapper.findAll('[data-filter-id]').map(chip => chip.attributes('data-filter-id'))).toEqual(['kind:action', 'repeat:per_term', 'kind:meeting_prep']);
+    expect(wrapper.findAll('[data-filter-id]').map(chip => chip.attributes('data-filter-id'))).toEqual(['kind:action', 'kind:meeting_prep']);
     wrapper.unmount();
   });
 
   it.each([
     ['kind', 'action', 'Meet your team'],
-    ['repeat', 'per_term', 'Meet your team'],
     ['kind', 'meeting_prep', 'Read the guide'],
   ])('narrows rows with the %s quick filter', async (field, value, title) => {
     const filter = `${field}:${value}`;
@@ -86,13 +85,11 @@ describe('learning library', () => {
     wrapper.unmount();
   });
 
-  it('combines filters across fields and lets the active chips clear them', async () => {
+  it('lets the active chips clear filters', async () => {
     const wrapper = render();
     await flushPromises();
-    await wrapper.get('[data-filter-id="repeat:per_term"]').trigger('click');
     await wrapper.get('[data-filter-id="kind:action"]').trigger('click');
     expect(rowTitles(wrapper)).toEqual(['Meet your team']);
-    expect(new URLSearchParams(window.location.search).get('repeat')).toBe('per_term');
     expect(new URLSearchParams(window.location.search).get('kind')).toBe('action');
     const clear = wrapper.get('[data-slot="collection-active-chips"]').findAll('button').find(button => button.text() === 'Išvalyti visus');
     expect(clear).toBeDefined();

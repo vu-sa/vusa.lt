@@ -63,3 +63,9 @@ it('lets you tick an article that is not on your path, and opens with its summar
   expect(readonly.find('[data-testid="step-checkbox"]').exists()).toBe(false);
   readonly.unmount();
 });
+
+it('gives an off-path source action no path importance', () => {
+  const wrapper = render({ ...hiddenDocument, thumbnailUrl: null }, { inPath: false });
+  expect(wrapper.findComponent({ name: 'LearningStepAction' }).props('step').importance).toBeNull();
+  wrapper.unmount();
+});

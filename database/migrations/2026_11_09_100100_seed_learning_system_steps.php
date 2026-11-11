@@ -26,7 +26,7 @@ return new class extends Migration
             $inserted = DB::table('learning_steps')->insertOrIgnore([
                 'id' => $id, 'key' => $key, 'is_system' => true,
                 'kind' => 'action',
-                'per_term' => $definition['per_term'], 'order' => 0, 'is_active' => true,
+                'order' => 0, 'is_active' => true,
                 'created_at' => now(), 'updated_at' => now(),
             ]);
             if ($inserted) {
@@ -43,7 +43,7 @@ return new class extends Migration
                 'title' => json_encode($step['title']), 'description' => json_encode(array_map(fn (string $text): string => '<p>'.e($text).'</p>', $step['description'])),
                 'action_label' => isset($step['action']) ? json_encode($step['action']) : null,
                 'action_url' => isset($step['url']) ? json_encode(['lt' => $step['url']]) : null,
-                'per_term' => $step['per_term'] ?? false, 'order' => 0, 'is_active' => true,
+                'order' => 0, 'is_active' => true,
                 'created_at' => now(), 'updated_at' => now(),
             ]);
             if ($inserted) {
@@ -69,7 +69,7 @@ return new class extends Migration
         ]);
     }
 
-    /** @return array<string, array{importance: LearningImportance, stage?: LearningStage, reps?: bool, per_term?: bool, url?: string, title: array{lt: string, en: string}, description: array{lt: string, en: string}, action?: array{lt: string, en: string}}> */
+    /** @return array<string, array{importance: LearningImportance, stage?: LearningStage, reps?: bool, url?: string, title: array{lt: string, en: string}, description: array{lt: string, en: string}, action?: array{lt: string, en: string}}> */
     private function starterSteps(): array
     {
         return [
@@ -110,7 +110,7 @@ return new class extends Migration
                 'action' => ['lt' => 'Atverti užduotis', 'en' => 'Open tasks'],
             ],
             'write_handover' => [
-                'importance' => LearningImportance::Essential, 'stage' => LearningStage::TermEnd, 'reps' => true, 'per_term' => true,
+                'importance' => LearningImportance::Essential, 'stage' => LearningStage::TermEnd, 'reps' => true,
                 'title' => ['lt' => 'Perduok patirtį kitam atstovui', 'en' => 'Pass on your experience'],
                 'description' => [
                     'lt' => 'Prieš baigdamas kadenciją susitik su įpėdiniu arba jam parašyk: papasakok apie nebaigtus darbus, naudingus kontaktus ir tai, ką verta žinoti.',

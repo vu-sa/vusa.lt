@@ -93,7 +93,7 @@
             id="article-tenant"
             v-model="form.tenant_id"
             :placeholder-value="null"
-            :placeholder-selectable="canPublishEverywhere"
+            :placeholder-selectable="canPublishEverywhere || item?.tenant_id === null"
             :options="pageTenants.map(tenant => ({ value: tenant.id, label: tenant.shortname }))"
             :placeholder="$t('learning.wiki.scope_everywhere')"
             data-testid="article-tenant"
@@ -109,7 +109,6 @@
         </FormFieldWrapper>
       </FormPanel>
       <FormPanel :title="$t('learning_library.sections.visibility')" :icon="Eye" flush>
-        <FormToggleRow v-if="canManageAudiences" id="step-per-term" v-model="form.per_term" :label="$t('learning_library.fields.knowledge_per_term')" :hint="$t('learning_library.fields.knowledge_per_term_hint')" data-testid="step-per-term" />
         <FormToggleRow id="step-is-active" v-model="form.is_active" :label="$t('learning_library.fields.is_active')" :hint="$t('learning_library.fields.knowledge_is_active_hint')" data-testid="step-is-active" />
       </FormPanel>
     </template>
@@ -171,7 +170,6 @@ interface KnowledgeItemFormState {
   audiences: LearningAudienceDraft[];
   knowledge_section_id: string | null;
   tenant_id: number | null;
-  per_term: boolean;
   order: number;
   is_active: boolean;
 }
@@ -220,8 +218,7 @@ const form = useForm<KnowledgeItemFormState>({
   sources: { lt: source('lt'), en: source('en') },
   audiences: props.item?.audiences.map(audience => ({ ...audience, description: { ...audience.description } })) ?? [],
   knowledge_section_id: props.item?.knowledge_section_id ?? null,
-  tenant_id: props.item?.tenant_id ?? (!props.canPublishEverywhere && props.pageTenants.length === 1 ? props.pageTenants[0]!.id : null),
-  per_term: props.item?.per_term ?? false,
+  tenant_id: props.item ? props.item.tenant_id : (!props.canPublishEverywhere && props.pageTenants.length === 1 ? props.pageTenants[0]!.id : null),
   order: props.item?.order ?? 0,
   is_active: props.item?.is_active ?? true,
 });
@@ -272,7 +269,6 @@ function payload(data: KnowledgeItemFormState): Record<string, unknown> {
     ...(props.canManageAudiences ? { audiences: data.audiences.map(({ label, stage, ...audience }) => audience) } : {}),
     knowledge_section_id: data.knowledge_section_id,
     tenant_id: data.tenant_id,
-    per_term: data.per_term,
     order: data.order,
     is_active: data.is_active,
   };

@@ -89,8 +89,7 @@ skirtus straipsnius.
 Straipsnis gali turėti vieną ar kelias auditorijas su svarba ir paaiškinimu „Tau tai reiškia“.
 Auditorijos veikia taip pat kaip [Mano kelyje](/mano/kelias#auditorijos), tik straipsnis neturi
 kadencijos etapo. Tau skirtą straipsnį galima pažymėti perskaitytu, o rekomenduojamą ar papildomą –
-praleisti. Jei straipsnis pažymėtas „Peržiūrėti kiekvieną kadenciją“, kiekvienos kadencijos pradžioje
-jį pažymi iš naujo; jei šaltinio dokumentas Archyve atnaujinamas jau perskaičius, straipsnis
+praleisti. Pažymėjimas išlieka pasikeitus kadencijai. Jei šaltinio dokumentas Archyve atnaujinamas jau perskaičius, straipsnis
 pažymimas „Atnaujinta – peržiūrėk“. Archyve paslėptą dokumentą gali atidaryti visi, kurie mato
 straipsnį, o viešame vusa.lt jis nerodomas.
 
@@ -150,8 +149,7 @@ Mano kelio žingsnių biblioteka yra atskirai: **Organizacija → Kelio žingsni
    adresą į dokumento paiešką, jis tampa nuoroda). Šaltinis nebūtinas; jei jis yra tik viena kalba,
    rodomas abiem.
 5. Dešinėje pasirink, kieno tai straipsnis (padalinio ar visos VU SA), skyrių ir eilės numerį.
-6. Jei gali tvarkyti Mano kelią, skiltyje **Kam skirta** pridėk auditorijas ir, prireikus, įjunk
-   **Peržiūrėti kiekvieną kadenciją**.
+6. Jei gali tvarkyti Mano kelią, skiltyje **Kam skirta** pridėk auditorijas.
 7. Išsaugok. Straipsnio puslapyje prie **Apie ką šis straipsnis** spausk **Tvarkyti**, jei
    straipsnis apie instituciją ar tipą: institucija pasirenkama paieškos lange, tipai – iš medžio.
 
@@ -191,7 +189,7 @@ redaguoti straipsnius, bet ne jų auditorijas.
   `duty_type`); institucijos puslapis juos gauna atidėtai (`knowledgePages`).
 - Auditorijos (`learning_audiences`) ir pažanga (`learning_progress`) bendros su kelio žingsniais; pažymėti
   galima bet kurį aktyvų straipsnį, o ne kelio pažymėjimai pradžioje grąžinami kaip `selfLearned`;
-  `per_term` straipsnis įskaitomas, jei pažymėtas ne anksčiau kaip 90 dienų iki kadencijos pradžios.
+  pažymėjimas išlieka pasikeitus kadencijai. Atnaujinus šaltinio dokumentą, straipsnį reikia peržiūrėti iš naujo.
 - Teisės: straipsnio turinys – `knowledgeItems.*` (`.padalinys` – straipsnio padalinys, `.*` – visi);
   auditorijos – `learningSteps.*`, o Mano kelio tvarkytojai gali redaguoti ir straipsnius, kurių
   auditorijas tvarko. Skyriai – bet kuri iš šių teisių.
