@@ -369,6 +369,7 @@ Route::post('knowledge/items/{knowledgeItem}/progress', [KnowledgeItemProgressCo
 Route::get('knowledge/items/{knowledgeItem}/thumbnail', [KnowledgeItemController::class, 'thumbnail'])->name('knowledgeItems.thumbnail');
 Route::get('knowledge/items/{knowledgeItem}/open', [KnowledgeItemController::class, 'openSource'])->name('knowledgeItems.openSource');
 Route::get('knowledge/a-z', [KnowledgeBaseController::class, 'alphabet'])->name('knowledgeItems.alphabet');
+Route::get('knowledge/graph', [KnowledgeBaseController::class, 'graph'])->name('knowledgeBase.graph');
 Route::get('knowledge/link-options', [KnowledgeItemController::class, 'linkOptions'])->name('knowledgeItems.linkOptions');
 Route::put('knowledge/items/{knowledgeItem}/subjects', [KnowledgeItemController::class, 'syncSubjects'])->name('knowledgeItems.subjects.sync');
 Route::post('knowledge/sections/reorder', [KnowledgeSectionController::class, 'reorder'])->name('knowledgeSections.reorder');

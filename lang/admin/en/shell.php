@@ -103,6 +103,7 @@ return [
     'sections' => [
         'kelias' => 'My path',
         'wiki' => 'Wiki',
+        'wiki_graph' => 'Term map',
         'wiki_mine' => 'Entries for you',
         'rodykle' => 'A–Z index',
         'wiki_biblioteka' => 'Library',
@@ -162,6 +163,7 @@ return [
     'section_descriptions' => [
         'kelias' => 'Your term steps and meeting preparation.',
         'wiki' => 'Who is who at VU SR and the university – and how it all connects',
+        'wiki_graph' => 'How Wiki terms link to each other',
         'wiki_mine' => 'Entries for your duties and your learning progress',
         'rodykle' => 'Every entry from A to Z',
         'wiki_biblioteka' => 'Every entry, its audiences and status',

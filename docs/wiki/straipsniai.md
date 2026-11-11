@@ -5,6 +5,7 @@ last_reviewed: 2026-11-11
 tests:
   - tests/Browser/WikiCompletionTest.php
   - tests/Feature/Admin/Learning/KnowledgeItemDocumentPreviewTest.php
+  - tests/Feature/Admin/Learning/KnowledgeGraphTest.php
   - tests/Feature/Admin/Learning/KnowledgeItemsTest.php
   - tests/Feature/Admin/Learning/KnowledgeKindsTest.php
   - tests/Feature/Admin/Learning/LearningDocumentsTest.php
@@ -174,6 +175,24 @@ Be paieškos rodoma:
 Kiekviena tema ir rinkinys turi savo puslapį: pavadinimas, aprašymas, rinkinio data ir įrašai ta
 tvarka, kuria jie rodomi visur. Kas gali redaguoti skyrių, mato mygtukus **Redaguoti skyrių** ir
 **Keisti tvarką**.
+
+### Sąvokų žemėlapis {#zemelapis}
+
+<ChangelogNote date="2026-11-11" title="Sąvokų žemėlapis">
+
+Antrajame Wiki meniu prieš **Biblioteką** atsirado **Sąvokų žemėlapis** – visos sąvokos ir jų ryšiai viename paveiksle.
+
+</ChangelogNote>
+
+Visos sąvokos (be medžiagos) kaip taškai, sujungti linija, kai viena sąvoka savo tekste nurodo į
+kitą per `[[` nuorodą. Taško spalva rodo temą, dydis – kiek ryšių sąvoka turi, o žiedas aplink
+tašką – kad sąvoką jau pažymėjai kaip išmoktą. Ryšių niekas nežymi ranka: jie atsiranda ir dingsta
+redaguojant įrašų tekstą.
+
+Paliesk ar spustelėk sąvoką: paryškinami jos ryšiai, o kortelėje matai santrauką, susijusias sąvokas
+(paliesk, kad pereitum prie jų) ir mygtuką **Atidaryti įrašą**. Paieška virš žemėlapio pritemdo
+netinkančias sąvokas ir parodo rastųjų sąrašą. Žemėlapį galima tempti, artinti ir mygtuku
+**Rodyti viską** vėl sutalpinti visą.
 
 ### Rodyklė A–Ž {#rodykle}
 

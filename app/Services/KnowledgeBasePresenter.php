@@ -21,6 +21,7 @@ use App\Models\User;
 use App\Services\Learning\LearningPath;
 use App\Services\Learning\ResolvedLearningItem;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Facades\DB;
 
 /**
  * @phpstan-type KnowledgePayload array{id: string, kind: KnowledgeItemKind, title: string, abbreviation: string, summary: string, summaryHtml: string, description: string, audienceLabel: string, audienceNotes: list<array{label: string, description: string}>, section: array{id: string, title: string}|null, source: array{type: 'document'|'url', url: string|null, documentId: int|null, documentStatus: DocumentStatus|null, title: string|null, private: bool, thumbnailUrl: string|null}|null, state: string, autoCompleted: bool, completedAt: string|null, skippable: bool, insightsCount: int, reviewedAt: string|null, importance: LearningImportance}
@@ -285,6 +286,32 @@ class KnowledgeBasePresenter
         usort($entries, fn (array $a, array $b): int => (int) $collator->compare($a['title'], $b['title']));
 
         return $entries;
+    }
+
+    /**
+     * Active terms and the `[[` links between them, undirected, for the term map.
+     *
+     * @return array{nodes: list<array{id: string, kind: KnowledgeItemKind, title: string, abbreviation: string, summary: string, summaryHtml: string, url: string, thumbnailUrl: string|null, sectionId: string|null, countsInProgress: bool, updatedAt: string|null, degree: int}>, edges: list<array{source: string, target: string}>, sections: list<SectionPayload>}
+     */
+    public static function graph(string $locale): array
+    {
+        $nodes = collect(self::index($locale, terms: true))->keyBy('id');
+        $edges = DB::table('knowledge_links')
+            ->whereIn('from_item_id', $nodes->keys())->whereIn('to_item_id', $nodes->keys())
+            ->get(['from_item_id', 'to_item_id'])
+            ->map(fn (object $link): array => [min($link->from_item_id, $link->to_item_id), max($link->from_item_id, $link->to_item_id)])
+            ->unique(fn (array $pair): string => implode(':', $pair))
+            ->map(fn (array $pair): array => ['source' => $pair[0], 'target' => $pair[1]])
+            ->values();
+        $degrees = $edges->flatMap(fn (array $edge): array => [$edge['source'], $edge['target']])->countBy();
+        $sectionIds = $nodes->pluck('sectionId')->filter()->unique()->values();
+
+        return [
+            'nodes' => $nodes->map(fn (array $node): array => [...$node, 'degree' => (int) $degrees->get($node['id'], 0)])->values()->all(),
+            'edges' => $edges->all(),
+            'sections' => self::sortSections(KnowledgeSection::query()->whereKey($sectionIds)->get()
+                ->map(fn (KnowledgeSection $section): array => self::section($section, $locale))->values()->all()),
+        ];
     }
 
     /** @return list<array{id: string, type: string, title: string, url: string|null}> */

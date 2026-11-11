@@ -25,6 +25,7 @@ kitą nurodo tekste, o Wiki turi savo sritį darbo sričių pasirinkime.
 | [Wiki](/wiki/straipsniai#pradzia) | `/mano/knowledge` | Visi |
 | [Tau skirti įrašai](/wiki/straipsniai#tau-skirti-straipsniai) | `/mano/knowledge/for-you` | Visi |
 | [Rodyklė A–Ž](/wiki/straipsniai#rodykle) | `/mano/knowledge/a-z` | Visi |
+| [Sąvokų žemėlapis](/wiki/straipsniai#zemelapis) | `/mano/knowledge/graph` | Visi |
 | [Biblioteka](/wiki/straipsniai#biblioteka) | `/mano/knowledge/library` | Wiki redaktoriai ir Mano kelio tvarkytojai |
 
 Wiki taip pat pasiekiama iš [Mano kelio](/mano/kelias): kelio viršuje esantis blokas rodo, kiek tau

@@ -103,6 +103,7 @@ return [
     'sections' => [
         'kelias' => 'Mano kelias',
         'wiki' => 'Wiki',
+        'wiki_graph' => 'Sąvokų žemėlapis',
         'wiki_mine' => 'Tau skirti įrašai',
         'rodykle' => 'Rodyklė A–Ž',
         'wiki_biblioteka' => 'Biblioteka',
@@ -162,6 +163,7 @@ return [
     'section_descriptions' => [
         'kelias' => 'Tavo kadencijos žingsniai ir pasiruošimas posėdžiams.',
         'wiki' => 'Kas yra kas VU SA ir universitete – ir kaip viskas susiję',
+        'wiki_graph' => 'Kaip Wiki sąvokos susijusios tarpusavyje',
         'wiki_mine' => 'Tavo pareigoms skirti įrašai ir mokymosi pažanga',
         'rodykle' => 'Visi įrašai pagal abėcėlę',
         'wiki_biblioteka' => 'Visi įrašai, jų auditorijos ir būsena',

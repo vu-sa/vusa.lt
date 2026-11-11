@@ -228,6 +228,18 @@ export interface WikiIndexEntry extends WikiPageSummary {
   updatedAt: string | null;
 }
 
+export interface WikiGraphNode extends WikiIndexEntry {
+  /** Terms this one links to or is linked from. */
+  degree: number;
+}
+
+export interface WikiGraphPayload {
+  nodes: WikiGraphNode[];
+  /** Undirected: one edge per linked pair, whichever article holds the link. */
+  edges: { source: string; target: string }[];
+  sections: { id: string; title: string }[];
+}
+
 export type WikiSubjectType = 'institution' | 'institution_type' | 'duty_type' | 'knowledge_item';
 
 export interface WikiSubject {

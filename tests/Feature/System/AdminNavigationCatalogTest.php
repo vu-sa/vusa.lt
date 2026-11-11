@@ -162,7 +162,7 @@ describe('per-persona visibility', function (): void {
         // documents and problems are open to every admin too (the viewAny() of each policy).
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'kelias', 'uzduotys', 'atsakomybes', 'veiklos_uzklausos'],
-            'wiki' => ['wiki', 'wiki_mine', 'rodykle'],
+            'wiki' => ['wiki', 'wiki_mine', 'rodykle', 'wiki_graph'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai'],
         ]);
@@ -189,6 +189,7 @@ describe('per-persona visibility', function (): void {
                     ['key' => 'wiki', 'label' => 'shell.sections.wiki', 'routeName' => 'knowledgeBase.show', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.wiki', 'collectionActions' => [], 'matches' => ['knowledgeBase.show', 'knowledgeSections.show'], 'startsGroup' => false, 'children' => []],
                     ['key' => 'wiki_mine', 'label' => 'shell.sections.wiki_mine', 'routeName' => 'knowledgeBase.mine', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.wiki_mine', 'collectionActions' => [], 'matches' => ['knowledgeBase.mine'], 'startsGroup' => false, 'children' => []],
                     ['key' => 'rodykle', 'label' => 'shell.sections.rodykle', 'routeName' => 'knowledgeItems.alphabet', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.rodykle', 'collectionActions' => [], 'matches' => ['knowledgeItems.alphabet', 'knowledgeItems.show'], 'startsGroup' => false, 'children' => []],
+                    ['key' => 'wiki_graph', 'label' => 'shell.sections.wiki_graph', 'routeName' => 'knowledgeBase.graph', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.wiki_graph', 'collectionActions' => [], 'matches' => ['knowledgeBase.graph'], 'startsGroup' => false, 'children' => []],
                 ],
                 'createActions' => [],
             ])
@@ -204,7 +205,7 @@ describe('per-persona visibility', function (): void {
         // The institution graph is a padalinys view; a rep reads only their own institutions.
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'kelias', 'uzduotys', 'atsakomybes', 'veiklos_uzklausos'],
-            'wiki' => ['wiki', 'wiki_mine', 'rodykle'],
+            'wiki' => ['wiki', 'wiki_mine', 'rodykle', 'wiki_graph'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai'],
         ]);
@@ -220,7 +221,7 @@ describe('per-persona visibility', function (): void {
 
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'kelias', 'uzduotys', 'atsakomybes', 'veiklos_uzklausos'],
-            'wiki' => ['wiki', 'wiki_mine', 'rodykle'],
+            'wiki' => ['wiki', 'wiki_mine', 'rodykle', 'wiki_graph'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'atstovai', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos', 'pareigybiu_laikotarpiai', 'institucijos_grafas'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai'],
             'svetaine' => ['apzvalga', 'puslapiai', 'naujienos', 'kalendorius', 'baneriai', 'greitosios_nuorodos', 'failai'],
@@ -233,7 +234,7 @@ describe('per-persona visibility', function (): void {
 
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'kelias', 'uzduotys', 'atsakomybes', 'veiklos_uzklausos'],
-            'wiki' => ['wiki', 'wiki_mine', 'rodykle'],
+            'wiki' => ['wiki', 'wiki_mine', 'rodykle', 'wiki_graph'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai', 'kategorijos'],
             'sistema' => ['apzvalga', 'tipai'],
@@ -265,7 +266,7 @@ describe('per-persona visibility', function (): void {
 
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'kelias', 'uzduotys', 'atsakomybes', 'veiklos_uzklausos'],
-            'wiki' => ['wiki', 'wiki_mine', 'rodykle', 'wiki_biblioteka'],
+            'wiki' => ['wiki', 'wiki_mine', 'rodykle', 'wiki_graph', 'wiki_biblioteka'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'atstovai', 'uzduociu_suvestine', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos', 'pareigybiu_laikotarpiai', 'institucijos_grafas', 'problemu_kategorijos'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai', 'kategorijos'],
             'sistema' => ['apzvalga', 'tipai'],

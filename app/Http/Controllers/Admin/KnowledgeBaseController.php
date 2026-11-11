@@ -42,6 +42,16 @@ class KnowledgeBaseController extends AdminController
         ]);
     }
 
+    public function graph(Request $request): Response
+    {
+        $this->authorize('viewAny', KnowledgeItem::class);
+
+        return Inertia::render('Admin/Knowledge/ShowKnowledgeGraph', [
+            'graph' => KnowledgeBasePresenter::graph(app()->getLocale()),
+            'doneIds' => KnowledgeBasePresenter::doneIds($request->user()),
+        ]);
+    }
+
     public function mine(Request $request): Response
     {
         $this->authorize('viewAny', KnowledgeItem::class);
