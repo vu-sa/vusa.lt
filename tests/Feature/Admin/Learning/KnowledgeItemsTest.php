@@ -140,13 +140,43 @@ test('knowledge progress is separate from same-id steps and never enters stages'
     expect($path->contains($item))->toBeTrue()->and($path->contains($step))->toBeFalse();
 });
 
-test('essential and out-of-path knowledge cannot be skipped or completed by outsiders', function (): void {
+test('essential and out-of-path knowledge cannot be skipped', function (): void {
     $user = makeUser(Tenant::query()->firstOrFail());
     $essential = KnowledgeItem::factory()->audience(['importance' => LearningImportance::Essential])->create();
     $foreign = KnowledgeItem::factory()->forTenant()->create();
     asUser($user)->postJson(route('knowledgeItems.progress', $essential), ['status' => 'skipped'])->assertUnprocessable()->assertJsonValidationErrors('status');
-    asUser($user)->post(route('knowledgeItems.progress', $foreign), ['status' => 'done'])->assertForbidden();
+    asUser($user)->postJson(route('knowledgeItems.progress', $foreign), ['status' => 'skipped'])->assertUnprocessable()->assertJsonValidationErrors('status');
     $this->assertDatabaseMissing('learning_progress', ['user_id' => $user->id]);
+});
+
+test('active articles outside the path can be completed and cleared for self-learning', function (): void {
+    $this->freezeSecond();
+    $user = makeUser(Tenant::query()->firstOrFail());
+    $item = KnowledgeItem::factory()->withoutAudiences()->create();
+
+    asUser($user)->get(route('knowledgeItems.show', $item))->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('inPath', false)->where('canTrack', true)
+        ->where('item.state', 'pending')->where('item.completedAt', null)->where('item.skippable', false));
+    asUser($user)->post(route('knowledgeItems.progress', $item), ['status' => 'done'])->assertRedirect();
+    $this->assertDatabaseHas('learning_progress', [
+        'user_id' => $user->id, 'progressable_type' => $item->getMorphClass(), 'progressable_id' => $item->id, 'status' => 'done',
+    ]);
+    asUser($user)->get(route('knowledgeItems.show', $item))->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('inPath', false)->where('canTrack', true)
+        ->where('item.state', 'done')->where('item.completedAt', now()->toIso8601String())->where('item.skippable', false));
+
+    asUser($user)->post(route('knowledgeItems.progress', $item), ['status' => null])->assertRedirect();
+    $this->assertDatabaseMissing('learning_progress', ['user_id' => $user->id, 'progressable_type' => $item->getMorphClass(), 'progressable_id' => $item->id]);
+});
+
+test('inactive articles cannot be tracked', function (): void {
+    $user = makeUser(Tenant::query()->firstOrFail());
+    $item = KnowledgeItem::factory()->withoutAudiences()->create(['is_active' => false]);
+
+    asUser($user)->post(route('knowledgeItems.progress', $item), ['status' => 'done'])->assertForbidden();
+    $this->assertDatabaseMissing('learning_progress', ['user_id' => $user->id]);
+    asUser($user)->get(route('knowledgeItems.show', $item))->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('canTrack', false));
 });
 
 test('knowledge per-term progress reopens while lead-in completion and ordinary progress count', function (): void {

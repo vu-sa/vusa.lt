@@ -6,23 +6,28 @@ use App\Actions\SyncKnowledgeLinks;
 use App\Enums\DocumentStatus;
 use App\Enums\LearningAudienceType;
 use App\Enums\LearningImportance;
+use App\Enums\LearningProgressStatus;
 use App\Enums\LearningStage;
 use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\KnowledgeItem;
 use App\Models\LearningAudience;
+use App\Models\LearningProgress;
 use App\Models\User;
 use App\Services\Learning\LearningPath;
 use App\Services\Learning\ResolvedLearningItem;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
- * @phpstan-type KnowledgePayload array{id: string, title: string, abbreviation: string, summary: string, description: string, audienceLabel: string, audienceNotes: list<array{label: string, description: string}>, importance: LearningImportance, section: array{id: string, title: string}|null, source: array{type: 'document'|'url', url: string|null, documentId: int|null, documentStatus: DocumentStatus|null, title: string|null, private: bool, thumbnailUrl: string|null}|null, state: string, autoCompleted: bool, completedAt: string|null, skippable: bool, insightsCount: int, reviewedAt: string|null, perTerm: bool}
+ * @phpstan-type KnowledgeContentPayload array{id: string, title: string, abbreviation: string, summary: string, description: string, audienceLabel: string, audienceNotes: list<array{label: string, description: string}>, section: array{id: string, title: string}|null, source: array{type: 'document'|'url', url: string|null, documentId: int|null, documentStatus: DocumentStatus|null, title: string|null, private: bool, thumbnailUrl: string|null}|null, state: string, autoCompleted: bool, completedAt: string|null, skippable: bool, insightsCount: int, reviewedAt: string|null, perTerm: bool}
+ * @phpstan-type KnowledgePayload KnowledgeContentPayload&array{importance: LearningImportance}
+ * @phpstan-type SelfLearnedPayload KnowledgeContentPayload&array{importance: null}
  * @phpstan-type PageSummary array{id: string, title: string, abbreviation: string, summary: string, url: string}
  * @phpstan-type IndexEntry array{id: string, title: string, abbreviation: string, summary: string, url: string, sectionId: string|null, updatedAt: string|null}
  */
 class KnowledgeBasePresenter
 {
-    /** @return array{sections: list<array{id: string, title: string, description: string, order: int}>, items: list<KnowledgePayload>} */
+    /** @return array{sections: list<array{id: string, title: string, description: string, order: int}>, items: list<KnowledgePayload>, selfLearned: list<SelfLearnedPayload>, stats: array{pathDone: int, pathTotal: int, selfLearned: int}} */
     public static function overview(LearningPath $path, string $locale): array
     {
         $payloads = [];
@@ -40,7 +45,42 @@ class KnowledgeBasePresenter
         $sections = array_values($sections);
         usort($sections, fn (array $a, array $b): int => [$a['order'], $a['id']] <=> [$b['order'], $b['id']]);
 
-        return ['sections' => $sections, 'items' => $payloads];
+        $selfLearned = [];
+        $progress = LearningProgress::query()
+            ->where('user_id', $path->user->id)
+            ->where('status', LearningProgressStatus::Done)
+            ->whereHasMorph('progressable', [KnowledgeItem::class], fn ($query) => $query
+                ->active()->whereNotIn('id', $path->knowledge->pluck('item.id')->all()))
+            ->with(['progressable' => fn (MorphTo $relation) => $relation
+                ->morphWith([KnowledgeItem::class => ['section', 'sources.document']])
+                ->constrain([KnowledgeItem::class => fn ($query) => $query->withCount(['comments' => fn ($comments) => $comments->notErased()])])])
+            ->orderByDesc('completed_at')->orderByDesc('id')->get();
+        foreach ($progress as $completion) {
+            /** @var KnowledgeItem $item */
+            $item = $completion->progressable;
+            $selfLearned[] = [
+                ...self::item(new ResolvedLearningItem($item, state: 'done', completedAt: $completion->completed_at), $locale),
+                'importance' => null,
+                'skippable' => false,
+            ];
+        }
+
+        return [
+            'sections' => $sections, 'items' => $payloads, 'selfLearned' => $selfLearned,
+            'stats' => [
+                'pathDone' => $path->knowledge->whereIn('state', ['done', 'skipped'])->count(),
+                'pathTotal' => $path->knowledge->count(),
+                'selfLearned' => count($selfLearned),
+            ],
+        ];
+    }
+
+    /** @return list<string> */
+    public static function doneIds(User $user): array
+    {
+        return LearningProgress::query()->where('user_id', $user->id)->where('status', LearningProgressStatus::Done)
+            ->whereHasMorph('progressable', [KnowledgeItem::class], fn ($query) => $query->active())
+            ->pluck('progressable_id')->all();
     }
 
     /** @return KnowledgePayload */

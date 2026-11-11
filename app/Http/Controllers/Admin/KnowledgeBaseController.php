@@ -21,6 +21,7 @@ class KnowledgeBaseController extends AdminController
         return Inertia::render('Admin/Knowledge/ShowKnowledgeBase', [
             'knowledge' => KnowledgeBasePresenter::overview(ResolveLearningPath::execute($request->user()), $locale),
             'index' => KnowledgeBasePresenter::index($locale),
+            'doneIds' => KnowledgeBasePresenter::doneIds($request->user()),
             'sections' => KnowledgeSection::query()->orderBy('order')->orderBy('id')->get()->map(fn (KnowledgeSection $section): array => [
                 'id' => $section->id, 'title' => (string) $section->getTranslation('title', $locale),
                 'description' => (string) $section->getTranslation('description', $locale), 'order' => $section->order,
@@ -29,12 +30,13 @@ class KnowledgeBaseController extends AdminController
         ]);
     }
 
-    public function alphabet(): Response
+    public function alphabet(Request $request): Response
     {
         $this->authorize('viewAny', KnowledgeItem::class);
 
         return Inertia::render('Admin/Knowledge/IndexKnowledgeAlphabet', [
             'index' => KnowledgeBasePresenter::index(app()->getLocale()),
+            'doneIds' => KnowledgeBasePresenter::doneIds($request->user()),
         ]);
     }
 }

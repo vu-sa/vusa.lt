@@ -18,7 +18,7 @@ class KnowledgeItemProgressController extends AdminController
         $path = ResolveLearningPath::execute($request->user());
         $item = $path->knowledge->firstWhere('item.id', $knowledgeItem->id);
         $status = $request->validated('status');
-        if (($status === LearningProgressStatus::Skipped->value && ! $item?->importance->isSkippable())) {
+        if ($status === LearningProgressStatus::Skipped->value && ($item === null || ! $item->importance->isSkippable())) {
             throw ValidationException::withMessages(['status' => __('learning.validation.progress')]);
         }
         $progress = $knowledgeItem->progress()->where('user_id', $request->user()->id);

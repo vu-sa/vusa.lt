@@ -136,7 +136,11 @@ export interface LearningDocumentTotals {
 export interface LearningDocumentsData {
   sections: { id: string; title: string; description: string; order: number }[];
   items: KnowledgeItemData[];
+  selfLearned: SelfLearnedItemData[];
+  stats: { pathDone: number; pathTotal: number; selfLearned: number };
 }
+
+export type SelfLearnedItemData = Omit<KnowledgeItemData, 'importance'> & { importance: null };
 
 export interface KnowledgeItemData {
   id: string;

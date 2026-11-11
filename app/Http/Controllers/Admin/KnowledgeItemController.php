@@ -8,6 +8,7 @@ use App\Actions\ResolveLearningPath;
 use App\Actions\SyncLearningAudiences;
 use App\Enums\LearningAudienceType;
 use App\Enums\LearningImportance;
+use App\Enums\LearningProgressStatus;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\KnowledgeItemRequest;
 use App\Http\Requests\SearchLearningDocumentsRequest;
@@ -62,14 +63,30 @@ class KnowledgeItemController extends AdminController
         $this->authorize('view', $knowledgeItem);
         $knowledgeItem->load(['sources.document.institution.tenant', 'section', 'audiences' => fn ($query) => $query->with(LearningAudience::LABEL_RELATIONS)])->loadCount(['comments' => fn ($query) => $query->notErased()]);
         $path = ResolveLearningPath::execute($request->user());
-        $item = $path->knowledge->first(fn (ResolvedLearningItem $item): bool => $item->item->id === $knowledgeItem->id) ?? new ResolvedLearningItem($knowledgeItem, importance: $knowledgeItem->audiences->first()?->importance ?? LearningImportance::Recommended, audienceLabel: $knowledgeItem->audiences->first()?->label(app()->getLocale()) ?? '');
+        $item = $path->knowledge->first(fn (ResolvedLearningItem $item): bool => $item->item->id === $knowledgeItem->id);
+        $inPath = $item !== null;
+        if ($item === null) {
+            $progress = $knowledgeItem->progress()->where('user_id', $request->user()->id)->where('status', LearningProgressStatus::Done)->first();
+            $item = new ResolvedLearningItem(
+                $knowledgeItem,
+                state: $progress === null ? 'pending' : 'done',
+                completedAt: $progress?->completed_at,
+                importance: $knowledgeItem->audiences->first()?->importance ?? LearningImportance::Recommended,
+                audienceLabel: $knowledgeItem->audiences->first()?->label(app()->getLocale()) ?? '',
+            );
+        }
+        $payload = KnowledgeBasePresenter::item($item, app()->getLocale());
+        if (! $inPath) {
+            $payload['skippable'] = false;
+        }
 
         $canUpdate = $request->user()->can('update', $knowledgeItem);
 
         return Inertia::render('Admin/Knowledge/ShowKnowledgeItem', [
-            'item' => KnowledgeBasePresenter::item($item, app()->getLocale()),
+            'item' => $payload,
             ...KnowledgeBasePresenter::pageContext($knowledgeItem, app()->getLocale()),
-            'inPath' => $path->contains($knowledgeItem),
+            'inPath' => $inPath,
+            'canTrack' => $knowledgeItem->is_active && $request->user()->can('view', $knowledgeItem),
             'coordinators' => GetUserCoordinators::execute($request->user()),
             'institutionContacts' => LearningInstitutionContactsPresenter::forUser($request->user(), app()->getLocale()),
             'canUpdate' => $canUpdate,

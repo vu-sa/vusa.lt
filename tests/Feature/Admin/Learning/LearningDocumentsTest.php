@@ -14,6 +14,59 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
 
+test('wiki separates self-learned articles from path progress and marks completed active articles in both indexes', function (): void {
+    $this->freezeSecond();
+    $user = makeUser(Tenant::query()->firstOrFail());
+    $otherUser = makeUser(Tenant::query()->firstOrFail());
+    $selfLearned = KnowledgeItem::factory()->withoutAudiences()->create();
+    $pathDone = KnowledgeItem::factory()->create();
+    $pathSkipped = KnowledgeItem::factory()->create();
+    KnowledgeItem::factory()->create();
+    $inactive = KnowledgeItem::factory()->withoutAudiences()->create(['is_active' => false]);
+    $otherUsersArticle = KnowledgeItem::factory()->withoutAudiences()->create();
+    foreach ([$selfLearned, $pathDone, $inactive] as $item) {
+        $item->progress()->create(['user_id' => $user->id, 'status' => 'done', 'completed_at' => now()]);
+    }
+    $pathSkipped->progress()->create(['user_id' => $user->id, 'status' => 'skipped', 'completed_at' => now()]);
+    $otherUsersArticle->progress()->create(['user_id' => $otherUser->id, 'status' => 'done', 'completed_at' => now()]);
+    $step = LearningStep::factory()->create(['id' => $otherUsersArticle->id]);
+    $step->progress()->create(['user_id' => $user->id, 'status' => 'done', 'completed_at' => now()]);
+    $doneIds = collect([$selfLearned->id, $pathDone->id])->sort()->values()->all();
+
+    asUser($user)->get(route('knowledgeBase.show'))->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->has('knowledge.selfLearned', 1)
+        ->where('knowledge.selfLearned.0.id', $selfLearned->id)
+        ->where('knowledge.selfLearned.0.importance', null)
+        ->where('knowledge.selfLearned.0.state', 'done')
+        ->where('knowledge.selfLearned.0.skippable', false)
+        ->where('knowledge.selfLearned.0.completedAt', now()->toIso8601String())
+        ->whereType('knowledge.selfLearned.0.title', 'string')
+        ->whereType('knowledge.selfLearned.0.insightsCount', 'integer')
+        ->where('knowledge.stats', ['pathDone' => 2, 'pathTotal' => 3, 'selfLearned' => 1])
+        ->where('doneIds', fn ($ids): bool => $ids->sort()->values()->all() === $doneIds));
+    asUser($user)->get(route('knowledgeItems.alphabet'))->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('doneIds', fn ($ids): bool => $ids->sort()->values()->all() === $doneIds));
+});
+
+test('self-learned articles are ordered by latest completion with their section and source payloads', function (): void {
+    $this->freezeSecond();
+    $user = makeUser(Tenant::query()->firstOrFail());
+    $section = KnowledgeSection::factory()->create();
+    $older = KnowledgeItem::factory()->withoutAudiences()->create();
+    $newer = KnowledgeItem::factory()->withoutAudiences()->create(['knowledge_section_id' => $section->id]);
+    $newer->sources()->create(['locale' => 'lt', 'url' => 'https://example.test/self-learning']);
+    $older->progress()->create(['user_id' => $user->id, 'status' => 'done', 'completed_at' => now()->subDay()]);
+    $newer->progress()->create(['user_id' => $user->id, 'status' => 'done', 'completed_at' => now()]);
+
+    asUser($user)->get(route('knowledgeBase.show'))->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->has('knowledge.selfLearned', 2)
+        ->where('knowledge.selfLearned.0.id', $newer->id)
+        ->where('knowledge.selfLearned.1.id', $older->id)
+        ->where('knowledge.selfLearned.0.section.id', $section->id)
+        ->where('knowledge.selfLearned.0.source.url', 'https://example.test/self-learning')
+        ->where('knowledge.stats', ['pathDone' => 0, 'pathTotal' => 0, 'selfLearned' => 2]));
+});
+
 test('documents contains only knowledge in the members resolved path with progress and sources', function (): void {
     $this->freezeTime();
     $member = makeUser(Tenant::query()->firstOrFail());

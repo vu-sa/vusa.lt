@@ -44,4 +44,7 @@ Everyone reads the whole Wiki; the home page leads with the viewer's unread esse
 A knowledge item points at an archive `Document` or a URL per locale (`lt` required, `en` only when it differs). There is no upload path for learning material — files go to the SharePoint "Dokumentų sistema" first. Hidden documents may be chosen: the item's readers open them through `knowledgeItems.openSource` (a short-lived Graph preview link, never an anonymous sharing link), so they stay off public pages. First-page thumbnails are fetched only for documents a knowledge item links to (`DocumentPreviewService`, keyed by eTag) and served through the item's `view` policy, never the document's.
 
 ## Progress visibility
+Any active article the user can view can be ticked for self-learning; skipping is allowed only for skippable articles on their path.
+Off-path ticks appear as `selfLearned` in the Wiki overview, with `pathDone`, `pathTotal` and `selfLearned` stats.
+
 Coordinators see a rep's progress only through `RepresentativesPresenter::coordinatedInstitutionIds()` (their `StudentRepCoordination` institutions) on ViSAK → Atstovai; padalinys managers see the same reps without it. Never widen progress to tenant permissions. Handover notes were retired before release; passing on experience is the regular `write_handover` step that reps tick themselves.
