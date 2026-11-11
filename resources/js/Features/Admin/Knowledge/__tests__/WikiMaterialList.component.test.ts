@@ -23,3 +23,20 @@ it('shows material as one sideways row of thumbnails, with a placeholder where t
   expect(tiles[1]!.find('img').exists()).toBe(false);
   expect(tiles[1]!.find('[aria-label="learning.wiki.learned"]').exists()).toBe(true);
 });
+
+it('fades the edge that still has tiles beyond it', async () => {
+  const wrapper = mount(WikiMaterialList, { props: { materials: [material('MIF'), material('FF'), material('IF')] } });
+  const strip = wrapper.get<HTMLElement>('[data-slot="wiki-materials"]');
+  expect(strip.attributes('data-more-right')).toBeUndefined();
+  Object.defineProperties(strip.element, { scrollWidth: { value: 600, configurable: true }, clientWidth: { value: 300, configurable: true } });
+
+  await strip.trigger('scroll');
+  expect(strip.attributes('data-more-right')).toBe('true');
+  expect(strip.attributes('data-more-left')).toBeUndefined();
+  expect(strip.element.style.maskImage).toContain('transparent 100%');
+
+  strip.element.scrollLeft = 300;
+  await strip.trigger('scroll');
+  expect(strip.attributes('data-more-left')).toBe('true');
+  expect(strip.attributes('data-more-right')).toBeUndefined();
+});

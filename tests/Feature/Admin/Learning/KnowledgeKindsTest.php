@@ -148,3 +148,15 @@ test('a section page offers its own editor only to those who may edit it', funct
     asUser(makeUser(Tenant::query()->firstOrFail()))->get(route('knowledgeSections.show', $section))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('editing', null));
 });
+
+test('ticking an article as learned flashes the whole-Wiki progress for the toast', function (): void {
+    $user = makeUser(Tenant::query()->firstOrFail());
+    $item = KnowledgeItem::factory()->create(['title' => ['lt' => 'Kvorumas', 'en' => 'Quorum']]);
+    KnowledgeItem::factory()->create();
+    KnowledgeItem::factory()->material()->withoutAudiences()->create(['counts_in_progress' => false]);
+
+    asUser($user)->post(route('knowledgeItems.progress', $item), ['status' => null])->assertRedirect()
+        ->assertSessionMissing('inertia.flash_data');
+    asUser($user)->post(route('knowledgeItems.progress', $item), ['status' => 'done'])->assertRedirect()
+        ->assertSessionHas('inertia.flash_data.wikiProgress', ['title' => 'Kvorumas', 'done' => 1, 'total' => 2, 'previousDone' => 0]);
+});

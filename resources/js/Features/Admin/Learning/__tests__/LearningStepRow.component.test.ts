@@ -74,13 +74,13 @@ describe('LearningStepRow', () => {
     wrapper.unmount();
   });
 
-  it('links a knowledge item title to its page and places the insights count beside it', () => {
+  it('links a knowledge item title to its page and leaves its insights to the article', () => {
     const data = knowledge({ source: { type: 'url', url: 'https://example.test/guide', documentId: null, documentStatus: null, title: null } });
     const wrapper = render(data);
     const links = wrapper.get('[data-slot="step-title-row"]').findAll('a');
     expect(links[0]!.text()).toBe(data.title);
     expect(links[0]!.attributes('href')).toMatch(/^\/mocked-route\/knowledgeItems\.show/);
-    expect(links[1]!.attributes('href')).toBe(links[0]!.attributes('href') + '#insights');
+    expect(links).toHaveLength(1);
     expect(wrapper.get('[data-slot="learning-step-action"]').attributes('href')).toBe(data.source?.url);
     wrapper.unmount();
   });

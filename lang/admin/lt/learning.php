@@ -106,6 +106,8 @@ return [
     ],
     'wiki' => [
         'progress_assigned' => 'Tau skirti įrašai',
+        'toast_learned' => 'Išmokta:',
+        'toast_complete' => 'Visa Wiki išmokta!',
         'progress_all' => 'Visa Wiki',
         'learned' => 'Išmokta',
         'self_learned' => 'Savarankiškai',
@@ -219,7 +221,6 @@ return [
         'document_private' => 'neviešas',
         'document_platform_only' => 'Matomas tik Mano VU SA',
         'document_open_failed' => 'Nepavyko atidaryti dokumento. Pabandyk dar kartą vėliau.',
-        'insights_count' => 'Įžvalgos (:count)',
         'insights' => 'Įžvalgos',
         'about' => 'Apie',
         'about_item' => 'Apie įrašą',

@@ -20,6 +20,8 @@ tests:
   - resources/js/Features/Admin/Knowledge/__tests__/WikiLinkCard.component.test.ts
   - resources/js/Features/Admin/Knowledge/__tests__/ShowKnowledgeSection.component.test.ts
   - resources/js/Features/Admin/Knowledge/__tests__/WikiMaterialList.component.test.ts
+  - resources/js/Features/Admin/Knowledge/__tests__/WikiProgressToast.component.test.ts
+  - resources/js/Features/Admin/Learning/__tests__/useStepProgress.test.ts
   - resources/js/Components/CommandPalette/__tests__/AdminCommandPalette.component.test.ts
   - resources/js/Features/Admin/Knowledge/__tests__/wikiSearch.test.ts
   - resources/js/Features/Admin/Learning/__tests__/LearningLibrary.component.test.ts
@@ -111,15 +113,15 @@ rodomi institucijos puslapio santraukoje, bloke **Wiki** (ir tiesiogiai su insti
 susieti su jos tipu).
 
 Medžiagą galima susieti ir su **sąvoka**: tada sąvokos puslapyje, po tekstu, ji rodoma bloke
-**Medžiaga apie tai** – viena eilute dokumentų miniatiūrų, kurią galima slinkti į šoną. Pirma
-rodoma tavo padalinio medžiaga, apvesta tamsiu rėmeliu. Pvz., sąvokos *Padalinio nuostatai* puslapyje pirmiausia matysi savo padalinio nuostatus.
+**Medžiaga apie tai** – viena eilute dokumentų miniatiūrų, kurią galima slinkti į šoną; kraštas,
+už kurio dar yra miniatiūrų, išblukęs. Pirma rodoma tavo padalinio medžiaga, apvesta tamsiu rėmeliu. Pvz., sąvokos *Padalinio nuostatai* puslapyje pirmiausia matysi savo padalinio nuostatus.
 
 „Apie ką“ nenulemia, kam įrašas rodomas Mano kelyje – tam skirtos auditorijos.
 
 ### Išmokta {#ismokta}
 
 Kiekvieną įrašą galima pažymėti išmoktu langeliu prie pavadinimo – ir tą, kuris tau skirtas, ir
-bet kurį kitą. Įrašo puslapyje pažangą rodo tik langelis, be papildomo teksto prie pavadinimo.
+bet kurį kitą. Pažymėjus pranešime rodoma, kaip pasikeitė visos Wiki pažanga. Įrašo puslapyje pažangą rodo tik langelis, be papildomo teksto prie pavadinimo.
 Pažymėti įrašai rodomi su varnele pradžioje ir rodyklėje. Ne tavo kelio
 įrašai, kuriuos pažymėjai, surenkami sąraše **Visi tau skirti įrašai** → **Pagal svarbą**,
 grupėje **Savarankiškai** ir įskaitomi į visos Wiki pažangą. Praleisti galima tik tau

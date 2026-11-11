@@ -105,7 +105,9 @@ watch(() => props.item.id, () => {
       </div>
     </template>
 
-    <div :class="['grid gap-10 lg:grid-cols-[minmax(0,1fr)_17rem] lg:gap-x-14', canTrack && 'sm:pl-14']" data-slot="step-body">
+    <!-- `auto 1fr` rows: the sticky aside spans both, and with two auto rows its extra height was
+         shared between them, so opening a thread shrank the first row and lifted Įžvalgos. -->
+    <div :class="['grid gap-10 lg:grid-cols-[minmax(0,1fr)_17rem] lg:grid-rows-[auto_1fr] lg:gap-x-14', canTrack && 'sm:pl-14']" data-slot="step-body">
       <article class="min-w-0 max-w-prose space-y-8 lg:col-start-1 lg:row-start-1">
         <WikiProse v-if="articleHtml" :html="articleHtml" :pages="linkedPages" />
         <LearningAudienceNotes v-if="inPath" :notes="item.audienceNotes" />
@@ -177,7 +179,7 @@ watch(() => props.item.id, () => {
         </p>
       </aside>
 
-      <div id="insights" class="min-w-0 scroll-mt-24 border-t border-border pt-6 lg:col-start-1 lg:row-start-2">
+      <div id="insights" class="min-w-0 scroll-mt-24 self-start border-t border-border pt-6 lg:col-start-1 lg:row-start-2">
         <DiscussionPanel :key="item.id" commentable-type="knowledgeItem" :commentable-id="item.id" :title="$t('learning.path.insights')" />
       </div>
     </div>

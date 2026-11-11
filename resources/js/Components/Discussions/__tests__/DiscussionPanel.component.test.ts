@@ -196,6 +196,21 @@ describe('DiscussionPanel', () => {
     expect(topics.text()).toContain('Užbaigta tema');
   });
 
+  it('heads a topic with its title and author only, in body tracking', async () => {
+    mocks.fetchThread.mockResolvedValue(thread([
+      topic({ id: 't1', title: 'Atvira tema', author_duty: { dutiable_id: 'd1', name: 'Koordinatorius', institution: 'MIF SA', use_original_duty_name: true } }),
+    ]));
+
+    const wrapper = mountPanel();
+    await flushPromises();
+
+    const heading = wrapper.get('[data-slot="discussion-topic"] h3');
+    expect(heading.classes()).toContain('tracking-normal');
+    expect(heading.text()).toContain('Author');
+    expect(heading.text()).not.toContain('Koordinatorius');
+    expect(heading.text()).not.toContain('MIF SA');
+  });
+
   it('opens a topic the author just started, and closes it from its body', async () => {
     mocks.fetchThread.mockResolvedValue(thread([], 'topics'));
     mocks.nextDraft = { body: '<p>Body</p>', mode: 'topic', title: 'Nauja tema', imageIds: [], dutiableId: null };

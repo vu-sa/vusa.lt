@@ -5,7 +5,8 @@
     :data-topic-id="topic.id"
     :data-closed="closed || undefined"
   >
-    <h3 class="m-0 text-base font-normal">
+    <!-- The base h3 style tightens tracking; the header reads as body text. -->
+    <h3 class="m-0 text-base font-normal tracking-normal">
       <button
         type="button"
         :aria-expanded="open"
@@ -22,7 +23,7 @@
         <span class="min-w-0 flex-1">
           <span :class="['block text-[0.9375rem] leading-snug font-semibold', closed ? 'text-muted-foreground' : 'text-foreground']">{{ topic.title }}</span>
           <span class="mt-1 block text-xs text-muted-foreground">
-            {{ topic.user.name ?? $t('Komentaras ištrintas') }}<template v-if="dutyLabel"> · {{ dutyLabel }}</template>
+            {{ topic.user.name ?? $t('Komentaras ištrintas') }}
             <span aria-hidden="true"> · </span>{{ lastActivityLabel }}
           </span>
         </span>
@@ -105,7 +106,6 @@ import { ChevronDown, CircleCheck, CornerDownRight, MessageSquare, MessagesSquar
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import CommentItem from '@/Components/Discussions/CommentItem.vue';
 import CommentThread from '@/Components/Discussions/CommentThread.vue';
-import { authorDutyLabel, authorDutyPeriod, endedBefore } from '@/Components/Discussions/authorDuty';
 import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { discussionTopicStatuses } from '@/Constants/statusIcons';
@@ -150,12 +150,6 @@ const { formatNearDate } = useDateFormatter();
 const closed = computed(() => Boolean(props.topic.is_closed ?? props.topic.is_resolved));
 const replies = computed(() => (props.topic.replies ?? []).filter(reply => !reply.is_erased));
 const replyCount = computed(() => replies.value.length);
-const dutyLabel = computed(() => {
-  const duty = props.topic.author_duty;
-  if (!duty) return '';
-  const label = authorDutyLabel(duty, props.topic.user);
-  return endedBefore(duty, props.topic.created_at) ? `${label} · ${authorDutyPeriod(duty)}` : label;
-});
 
 const participants = computed(() => {
   const seen = new Map<string, { id: string; name: string; profile_photo_path: string | null }>();

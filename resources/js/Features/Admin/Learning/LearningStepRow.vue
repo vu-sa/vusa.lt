@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { computed, toRef } from 'vue';
-import { FileText, MessageSquare, MoreHorizontal } from '@lucide/vue';
+import { FileText, MoreHorizontal } from '@lucide/vue';
 
 import { rowActionIconClass, rowActionHoverClass } from '@/Components/Collection/rowActionClasses';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
@@ -38,9 +38,6 @@ const hasCoordinators = computed(() => 'key' in props.step && props.step.key ===
       <div class="flex min-h-9 items-center gap-2 pointer-coarse:min-h-11" data-slot="step-title-row">
         <FileText v-if="isDocument" class="size-5 shrink-0 text-muted-foreground" role="img" :aria-label="$t('learning.path.kind_document')" />
         <Link :href="route('source' in step ? 'knowledgeItems.show' : 'learningSteps.show', step.id)" :class="['min-w-0 text-lg font-bold leading-6 underline decoration-border underline-offset-4 hover:decoration-foreground', isResolved ? 'text-muted-foreground' : 'text-foreground']">{{ step.title }}</Link>
-        <Link v-if="'insightsCount' in step && step.insightsCount > 0" :href="route('knowledgeItems.show', step.id) + '#insights'" class="-my-2.5 inline-flex min-h-11 shrink-0 items-center gap-1 text-xs text-muted-foreground hover:text-foreground" :aria-label="$t('learning.path.insights_count', { count: String(step.insightsCount) })">
-          <MessageSquare class="size-3.5" aria-hidden="true" />{{ step.insightsCount }}
-        </Link>
       </div>
       <div v-if="isPrivateDocument || step.state === 'updated' || step.state === 'skipped'" class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
         <span v-if="isPrivateDocument">{{ $t('learning.path.document_private') }}</span>

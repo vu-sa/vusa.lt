@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/vue3';
 import { computed, ref, type Ref } from 'vue';
 
+import { isWikiProgressFlash, showWikiProgressToast } from '@/Features/Admin/Knowledge/wikiProgressToast';
 import type { LearningStepData, KnowledgeItemData, SelfLearnedItemData } from '@/Types/learning';
 
 export function useStepProgress(step: Ref<LearningStepData | KnowledgeItemData | SelfLearnedItemData>, readonly: Ref<boolean | undefined>) {
@@ -18,6 +19,9 @@ export function useStepProgress(step: Ref<LearningStepData | KnowledgeItemData |
     router.post(route('source' in step.value ? 'knowledgeItems.progress' : 'learningSteps.progress', step.value.id), { status }, {
       preserveScroll: true,
       preserveState: true,
+      onFlash: (flash) => {
+        if (isWikiProgressFlash(flash.wikiProgress)) showWikiProgressToast(flash.wikiProgress);
+      },
       onError: () => { failed.value = true; },
       onHttpException: () => { failed.value = true; },
       onNetworkError: () => { failed.value = true; },

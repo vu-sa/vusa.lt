@@ -91,6 +91,22 @@ class KnowledgeBasePresenter
         ];
     }
 
+    /**
+     * The Wiki home's counter: active articles that count towards the whole Wiki, plus any on the
+     * reader's path, and how many of those the reader has learned.
+     *
+     * @return array{done: int, total: int}
+     */
+    public static function wikiProgress(User $user, LearningPath $path): array
+    {
+        $pathIds = $path->knowledge->pluck('item.id')->all();
+        $counted = KnowledgeItem::query()->active()
+            ->where(fn ($query) => $query->where('counts_in_progress', true)->orWhereIn('id', $pathIds))
+            ->pluck('id')->all();
+
+        return ['done' => count(array_intersect($counted, self::doneIds($user))), 'total' => count($counted)];
+    }
+
     /** @return list<string> */
     public static function doneIds(User $user): array
     {
