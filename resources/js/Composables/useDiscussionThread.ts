@@ -1,19 +1,36 @@
 import { computed, ref } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 
 import { useDiscussionApi } from '@/Composables/useDiscussionApi';
 import { useDiscussionChannel } from '@/Composables/useDiscussionChannel';
 import { useToasts } from '@/Composables/useToasts';
-import type { CommentData, MentionableUser, PollDraft } from '@/Types/discussions';
+import type { CommentData, CommentDraft, DiscussionMeta, MentionableUser } from '@/Types/discussions';
+
+const FALLBACK_META: DiscussionMeta = {
+  capabilities: { layout: 'comments', topics: false, polls: true, images: false },
+  me: { duties: [], default_dutiable_id: null },
+};
 
 export function useDiscussionThread(commentableType: string, commentableId: string) {
   const api = useDiscussionApi(commentableType, commentableId);
   const toasts = useToasts();
+  const currentUserId = computed(() => (usePage().props.auth as { user?: { id: string } } | undefined)?.user?.id ?? null);
 
   const comments = ref<CommentData[]>([]);
   const mentionables = ref<MentionableUser[]>([]);
+  const meta = ref<DiscussionMeta>(FALLBACK_META);
   const loading = ref(true);
   const posting = ref(false);
   const mutating = ref(false);
+
+  function findComment(id: string): CommentData | undefined {
+    for (const root of comments.value) {
+      if (root.id === id) return root;
+      const reply = root.replies?.find(candidate => candidate.id === id);
+      if (reply) return reply;
+    }
+    return undefined;
+  }
 
   function upsertComment(incoming: CommentData): void {
     if (!incoming.parent_id) {
@@ -41,21 +58,33 @@ export function useDiscussionThread(commentableType: string, commentableId: stri
     }
   }
 
+  /**
+   * A broadcast carries the sender's permission flags, so a viewer keeps the flags they already
+   * had and gets none on someone else's new comment until the next load.
+   */
+  function upsertBroadcast(incoming: CommentData): void {
+    const known = findComment(incoming.id);
+    const isMine = incoming.user.id !== null && incoming.user.id === currentUserId.value;
+    const moderates = meta.value.me.can_moderate === true;
+    let can = known?.can;
+    if (!can) {
+      can = isMine ? incoming.can : { update: false, delete: moderates, resolve: moderates && incoming.kind === 'topic' };
+    }
+    upsertComment({ ...incoming, can });
+  }
+
   const { members, connect } = useDiscussionChannel(commentableType, commentableId, {
-    onCreated: upsertComment,
-    onUpdated: upsertComment,
-    onResolved: upsertComment,
-    onReaction: upsertComment,
-    onPoll: upsertComment,
+    onCreated: upsertBroadcast,
+    onUpdated: upsertBroadcast,
+    onResolved: upsertBroadcast,
+    onReaction: upsertBroadcast,
+    onPoll: upsertBroadcast,
   });
 
-  async function post(html: string, parentId?: string): Promise<CommentData | null> {
-    const state = parentId ? mutating : posting;
+  async function run<T>(operation: () => Promise<T>, state = mutating): Promise<T | null> {
     state.value = true;
     try {
-      const comment = await (parentId ? api.postComment(html, parentId) : api.postComment(html));
-      upsertComment(comment);
-      return comment;
+      return await operation();
     }
     catch (error) {
       toasts.error((error as Error).message);
@@ -66,78 +95,22 @@ export function useDiscussionThread(commentableType: string, commentableId: stri
     }
   }
 
-  async function createPoll(html: string, poll: PollDraft): Promise<CommentData | null> {
-    posting.value = true;
-    try {
-      const comment = await api.createPoll(html, poll);
-      upsertComment(comment);
-      return comment;
-    }
-    catch (error) {
-      toasts.error((error as Error).message);
-      return null;
-    }
-    finally {
-      posting.value = false;
-    }
+  async function post(draft: CommentDraft, parentId?: string): Promise<CommentData | null> {
+    const comment = await run(() => api.postComment(draft, parentId), parentId ? mutating : posting);
+    if (comment) upsertComment(comment);
+    return comment;
   }
 
-  async function update(id: string, html: string): Promise<void> {
-    mutating.value = true;
-    try {
-      upsertComment(await api.updateComment(id, html));
-    }
-    catch (error) {
-      toasts.error((error as Error).message);
-    }
-    finally {
-      mutating.value = false;
-    }
-  }
-
-  async function remove(id: string): Promise<void> {
-    try {
-      // The comment stays as a "Komentaras ištrintas" placeholder so its replies keep their place.
-      upsertComment(await api.deleteComment(id));
-    }
-    catch (error) {
-      toasts.error((error as Error).message);
-    }
-  }
-
-  async function mutate(id: string, operation: 'resolve' | 'unresolve'): Promise<void> {
-    try {
-      upsertComment(operation === 'resolve'
-        ? await api.resolveComment(id)
-        : await api.unresolveComment(id));
-    }
-    catch (error) {
-      toasts.error((error as Error).message);
-    }
-  }
-
-  async function toggleReaction(id: string, emoji: string): Promise<void> {
-    try {
-      upsertComment(await api.toggleReaction(id, emoji));
-    }
-    catch (error) {
-      toasts.error((error as Error).message);
-    }
-  }
-
-  async function vote(id: string, optionId: string): Promise<void> {
-    try {
-      upsertComment(await api.togglePollVote(id, optionId));
-    }
-    catch (error) {
-      toasts.error((error as Error).message);
-    }
+  async function apply(operation: () => Promise<CommentData>): Promise<void> {
+    const comment = await run(operation);
+    if (comment) upsertComment(comment);
   }
 
   async function load(): Promise<void> {
     try {
       const [thread, mentions] = await Promise.all([api.fetchThread(), api.fetchMentionables()]);
-      comments.value = thread;
+      comments.value = thread.comments;
+      meta.value = thread.meta ?? FALLBACK_META;
       mentionables.value = mentions;
     }
     catch (error) {
@@ -162,20 +135,22 @@ export function useDiscussionThread(commentableType: string, commentableId: stri
   return {
     comments,
     mentionables,
+    meta,
     loading,
     posting,
     mutating,
     members,
-    rootCount: computed(() => comments.value.length),
     load,
     reloadMentionables,
     post,
-    createPoll,
-    update,
-    remove,
-    resolve: (id: string) => mutate(id, 'resolve'),
-    unresolve: (id: string) => mutate(id, 'unresolve'),
-    toggleReaction,
-    vote,
+    update: (id: string, html: string) => apply(() => api.updateComment(id, html)),
+    // The comment stays as a "Komentaras ištrintas" placeholder so its replies keep their place.
+    remove: (id: string) => apply(() => api.deleteComment(id)),
+    close: (id: string) => apply(() => api.closeTopic(id)),
+    reopen: (id: string) => apply(() => api.reopenTopic(id)),
+    toggleReaction: (id: string, emoji: string) => apply(() => api.toggleReaction(id, emoji)),
+    vote: (id: string, optionId: string) => apply(() => api.togglePollVote(id, optionId)),
   };
 }
+
+export type DiscussionThread = ReturnType<typeof useDiscussionThread>;

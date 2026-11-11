@@ -53,6 +53,7 @@ export enum CalendarHeroStyleEnum {
 export enum CommentKind {
     Comment = 'comment',
     Poll = 'poll',
+    Topic = 'topic',
 }
 export enum ContentPartEnum {
     IMAGE_GRID = 'IMAGE_GRID',

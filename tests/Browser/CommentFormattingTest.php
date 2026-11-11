@@ -13,6 +13,9 @@ test('formatted comments survive saving and editing across responsive layouts', 
     $path = route('supportRequests.show', $request->id, absolute: false);
     $page = loginAsAdmin($user, $path, 390, 900);
     $composer = '.comment-composer .ProseMirror';
+    $page->assertNotPresent('[data-testid=comment-toolbar]');
+    $page->click($composer);
+    $page->click('[data-testid=comment-formatting-toggle]');
     $page->assertPresent('[data-testid=comment-toolbar]');
     $page->fill($composer, 'Pirmas punktas');
     $page->click('[data-testid=tiptap-bulletList]');
@@ -24,7 +27,7 @@ test('formatted comments survive saving and editing across responsive layouts', 
     $page->keys($composer, 'Control+a');
     $page->click('[data-testid=tiptap-format-bold]');
     $page->assertPresent('.ProseMirror strong');
-    $page->press('Komentuoti');
+    $page->click('[data-testid=comment-submit]');
     $page->assertSee('Pirmas punktas')->assertSee('Antras punktas');
 
     $comment = $request->comments()->firstOrFail();
@@ -45,27 +48,37 @@ test('formatted comments survive saving and editing across responsive layouts', 
     $page->click('[data-testid=comment-actions]');
     $page->click('[data-testid=comment-edit]');
     $page->fill('[data-slot=comment-thread] .ProseMirror', 'Pataisytas punktas');
+    $page->click('[data-slot=comment-thread] [data-testid=comment-formatting-toggle]');
     $page->click('[data-slot=comment-thread] [data-testid=tiptap-orderedList]');
-    $page->press('Išsaugoti');
+    $page->click('[data-slot=comment-thread] [data-testid=comment-submit]');
     $page->assertSee('Pataisytas punktas');
     expect($comment->fresh()->body)->toContain('<ol>');
 
-    $page->resize(390, 900);
-    $page->press('Apklausa');
-    $page->assertPresent('[role=dialog] [data-testid=comment-toolbar]');
-    $page->click('[role=dialog] [data-testid=tiptap-link]');
+    $page->assertNoJavaScriptErrors();
+});
+
+test('the phone composer opens on tap and adds links and mentions', function (): void {
+    $user = makeUser(Tenant::query()->firstOrFail());
+    $request = SupportRequest::factory()->create(['created_by' => $user->id]);
+    $page = loginAsAdmin($user, route('supportRequests.show', $request->id, absolute: false), 390, 900);
+    $page->assertNotPresent('[data-slot=composer-footer]');
+    $root = '[data-slot=discussion-panel] > div:nth-of-type(1)';
+    $page->click($root.' .ProseMirror');
+    $page->click($root.' [data-testid=comment-formatting-toggle]');
+    $page->click($root.' [data-testid=tiptap-link]');
     $page->fill('[data-testid=link-url]', '/mano/meetings');
     $page->fill('[data-testid=link-text]', 'Posėdžiai');
     $page->keys('[data-testid=link-url]', 'Enter');
-    $page->assertPresent('[role=dialog] .ProseMirror a[href="/mano/meetings"]');
-    $page->click('[role=dialog] [data-testid=comment-mention]');
-    $page->assertPresent('[role=dialog] [data-comment-mention-menu]');
-    $page->keys('[role=dialog] .ProseMirror', 'Escape');
-    $page->assertNotPresent('[data-comment-mention-menu]')->assertPresent('[role=dialog]');
-    $page->click('[role=dialog] [data-testid=comment-mention]');
-    $page->click('[role=dialog] [data-comment-mention-menu] button');
-    $page->assertPresent('[role=dialog] .ProseMirror [data-type=mention]');
-    $page->screenshotElement('[role=dialog]', filename: 'comments-poll-phone-dark');
+    $page->assertPresent($root.' .ProseMirror a[href="/mano/meetings"]');
+    $page->click($root.' [data-testid=comment-mention]');
+    $page->assertPresent('[data-comment-mention-menu]');
+    $page->keys($root.' .ProseMirror', 'Escape');
+    $page->assertNotPresent('[data-comment-mention-menu]');
+    $page->click($root.' [data-testid=comment-mention]');
+    $page->click('[data-comment-mention-menu] button');
+    $page->assertPresent($root.' .ProseMirror [data-type=mention]');
+    expect($page->script('document.documentElement.scrollWidth'))->toBeLessThanOrEqual(390);
+    $page->screenshotElement('[data-slot=discussion-panel]', filename: 'comments-composer-phone');
     $page->assertNoJavaScriptErrors();
 });
 
@@ -84,9 +97,9 @@ test('a reply can be posted and reloaded on both discussion surfaces', function 
     $page = loginAsAdmin($user, $path, 390, 900);
     $page->assertSee('Pradinis komentaras');
 
-    $page->click('[data-slot=comment-thread] button:has-text("Atsakyti")');
+    $page->click('[data-slot=comment-thread] [data-testid=comment-reply]');
     $page->fill('[data-slot=comment-thread] .ProseMirror', 'Atsakymas į komentarą');
-    $page->click('[data-slot=comment-thread] .comment-composer button:has-text("Atsakyti")');
+    $page->click('[data-slot=comment-thread] [data-testid=comment-submit]');
     $page->assertSee('Atsakymas į komentarą');
 
     $reply = $root->replies()->firstOrFail();
@@ -96,6 +109,5 @@ test('a reply can be posted and reloaded on both discussion surfaces', function 
         ->and($commentable->comments()->count())->toBe(2);
     navigateTo($page, $path);
     $page->assertSee('Atsakymas į komentarą')->assertNoJavaScriptErrors();
-    $surface = $type === 'meeting' ? '[aria-labelledby=record-activity-title]' : '[data-slot=discussion-panel]';
-    $page->screenshotElement($surface, filename: 'comment-reply-'.$type);
+    $page->screenshotElement('[data-slot=discussion-panel]', filename: 'comment-reply-'.$type);
 })->with(['meeting', 'supportRequest']);

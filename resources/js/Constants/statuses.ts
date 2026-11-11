@@ -238,6 +238,11 @@ export const learningImportanceStatuses = {
   optional: status('learning.importance.optional', 'neutral'),
 };
 
+/** A discussion topic: only a closed one carries a badge. */
+export const discussionTopicStatuses = {
+  closed: status('discussions.topic.closed', 'success'),
+};
+
 export const learningProgressStatuses = {
   pending: status('learning.states.pending', 'neutral'),
   done: status('learning.states.done', 'success'),

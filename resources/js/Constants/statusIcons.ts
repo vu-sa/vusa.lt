@@ -217,6 +217,10 @@ export const learningImportanceStatuses = {
   optional: withIcon(data.learningImportanceStatuses.optional, CircleDashed),
 };
 
+export const discussionTopicStatuses = {
+  closed: withIcon(data.discussionTopicStatuses.closed, CircleCheck),
+};
+
 export const learningProgressStatuses = {
   pending: withIcon(data.learningProgressStatuses.pending, Circle),
   done: withIcon(data.learningProgressStatuses.done, CircleCheck),

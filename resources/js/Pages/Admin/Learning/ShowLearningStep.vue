@@ -113,10 +113,9 @@ watch(() => props.step.id, () => {
         </p>
       </aside>
 
-      <section id="insights" class="min-w-0 scroll-mt-24 border-t border-border pt-6 lg:col-start-1 lg:row-start-2" aria-labelledby="insights-title">
-        <h2 id="insights-title" class="sr-only">{{ $t('learning.path.insights') }}</h2>
-        <DiscussionPanel :key="step.id" commentable-type="learningStep" :commentable-id="step.id" />
-      </section>
+      <div id="insights" class="min-w-0 scroll-mt-24 border-t border-border pt-6 lg:col-start-1 lg:row-start-2">
+        <DiscussionPanel :key="step.id" commentable-type="learningStep" :commentable-id="step.id" :title="$t('learning.path.insights')" />
+      </div>
     </div>
 
     <Sheet v-if="canUpdate" v-model:open="glossaryOpen">

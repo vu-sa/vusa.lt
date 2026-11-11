@@ -31,7 +31,7 @@ const mountActivity = (commentableType = 'meeting') => mount(RecordActivity, {
       CommentThread: {
         props: ['comment'],
         emits: ['reply'],
-        template: `<div class="thread-stub">{{ comment.body }}<button type="button" data-testid="reply" @click="$emit('reply', comment.id, '<p>A reply</p>')" /></div>`,
+        template: `<div class="thread-stub">{{ comment.body }}<button type="button" data-testid="reply" @click="$emit('reply', comment.id, { body: '<p>A reply</p>', mode: 'comment', imageIds: [], dutiableId: null })" /></div>`,
       },
     },
   },
@@ -45,7 +45,7 @@ describe('RecordActivity', () => {
 
   /** The change history is about the record, so it lives in the record's ⋯ menu, not here. */
   it('shows only comments, without loading the change history', async () => {
-    fetchThread.mockResolvedValue([{ id: 'c1', body: 'Pirmas komentaras', replies: [] }]);
+    fetchThread.mockResolvedValue({ comments: [{ id: 'c1', kind: 'comment', body: 'Pirmas komentaras', replies: [] }], meta: null });
 
     const wrapper = mountActivity();
     await flushPromises();
@@ -55,7 +55,7 @@ describe('RecordActivity', () => {
   });
 
   it('refetches the mention list when the record\'s people change', async () => {
-    fetchThread.mockResolvedValue([]);
+    fetchThread.mockResolvedValue({ comments: [], meta: null });
 
     const wrapper = mountActivity();
     await flushPromises();
@@ -66,18 +66,18 @@ describe('RecordActivity', () => {
     expect(fetchThread).toHaveBeenCalledTimes(1);
   });
 
-  it('offers only the composer when there are no comments yet', async () => {
-    fetchThread.mockResolvedValue([]);
+  it('offers the composer and a one-line empty note when there are no comments yet', async () => {
+    fetchThread.mockResolvedValue({ comments: [], meta: null });
 
     const wrapper = mountActivity();
     await flushPromises();
 
     expect(wrapper.find('.composer-stub').exists()).toBe(true);
     expect(wrapper.find('.thread-stub').exists()).toBe(false);
-    expect(wrapper.find('section > p').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="discussion-empty"]').text()).toBe('discussions.empty_comments');
   });
   it.each(['meeting', 'agendaItem', 'institution', 'duty', 'form', 'problem', 'reservation'])('posts replies with the correct body and parent for %s', async (type) => {
-    fetchThread.mockResolvedValue([{ id: 'root1', body: 'Root', replies: [] }]);
+    fetchThread.mockResolvedValue({ comments: [{ id: 'root1', kind: 'comment', body: 'Root', replies: [] }], meta: null });
     postComment.mockResolvedValue({ id: 'reply1', body: '<p>A reply</p>', parent_id: 'root1', thread_root_id: 'root1' });
     const wrapper = mountActivity(type);
     await flushPromises();
@@ -85,7 +85,7 @@ describe('RecordActivity', () => {
     await wrapper.find('[data-testid="reply"]').trigger('click');
     await flushPromises();
 
-    expect(postComment).toHaveBeenCalledWith('<p>A reply</p>', 'root1');
+    expect(postComment).toHaveBeenCalledWith(expect.objectContaining({ body: '<p>A reply</p>' }), 'root1');
     wrapper.unmount();
   });
 });
