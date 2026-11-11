@@ -97,14 +97,13 @@ laukia žingsnis „Perduok patirtį kitam atstovui“: susitik su įpėdiniu ar
 ### Skiltys {#skirtukai}
 
 Mokymosi puslapiai pasiekiami antrajame darbo srities meniu. Pradžios srityje **Mano kelias** yra
-antras skyrius; [Wiki](/wiki/) turi savo darbo sritį.
-**Pranešimai** atveriami varpeliu viršuje arba telefono apačios juostoje, ne skyriumi. Rodyklė šalia
-skyriaus pavadinimo atveria žemiau išvardytus puslapius; skirtuko pavadinimas atitinka atvertą
-puslapį, o žingsnio puslapyje – žingsnio pavadinimą. Telefone šie puslapiai pasiekiami dabartinio
-skyriaus pasirinkime ir per **Meniu**.
+antras skyrius; [Wiki](/wiki/) turi savo darbo sritį. Žingsnio puslapyje **Mano kelias** skirtuke
+rodomas žingsnio pavadinimas. Žingsnių biblioteka pasiekiama per **Organizacija → Kelio žingsniai**.
+**Pranešimai** atveriami varpeliu viršuje arba telefono apačios juostoje, ne skyriumi.
+Telefone skyriai pasiekiami dabartinio skyriaus pasirinkime ir per **Meniu**.
 
 - **Mano kelias** – tavo žingsniai ir pažanga.
-- **Biblioteka** – tik tiems, kas gali tvarkyti žingsnius (žr. [Kas ką gali](#teises)). Puslapis
+- **Organizacija → Kelio žingsniai** – tik tiems, kas gali tvarkyti žingsnius (žr. [Kas ką gali](#teises)). Puslapis
   **Kelio žingsniai** rodo visus žingsnius su paieška. Greiti filtrai – **Veiksmai**, **Kartojami kas
   kadenciją** ir **Pasiruošimas posėdžiams**; auditorija ir svarba – skiltyje **Filtrai**.
 
@@ -120,7 +119,7 @@ skyriaus pasirinkime ir per **Meniu**.
 
 ### Pridėti žingsnį
 
-1. **+ Sukurti** → **Naujas kelio žingsnis** (arba Bibliotekoje **Naujas žingsnis**). Dokumentams
+1. Darbo srityje **Organizacija** pasirink **+ Sukurti** → **Naujas kelio žingsnis** (arba skyriuje **Kelio žingsniai** – **Naujas žingsnis**). Dokumentams
    ir pristatymams naudok [Wiki straipsnius](/wiki/straipsniai#prideti-straipsni).
 2. Pasirink rūšį (**Veiksmas** arba **Pasiruošimas posėdžiui**), įrašyk pavadinimą ir aprašymą. Aprašyme galima formatuoti tekstą, pridėti paveikslėlių ir YouTube vaizdo įrašų.
 3. Skiltyje **Kam skirta** spausk **Pridėti auditoriją**. Pasirink auditorijos tipą ir tikslą,

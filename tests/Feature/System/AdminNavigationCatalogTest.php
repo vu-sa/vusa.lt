@@ -60,6 +60,8 @@ const WORKSPACELESS_ROUTES = [
     'notifications.index',
     // Redirects straight out to the file's anonymous SharePoint link; never rendered as a page.
     'fileableFiles.open',
+    // JSON lookups, a thumbnail and a source redirect never render shell pages.
+    'knowledgeItems.documentSearch', 'knowledgeItems.linkOptions', 'knowledgeItems.thumbnail', 'knowledgeItems.openSource',
 ];
 
 /**
@@ -172,9 +174,7 @@ describe('per-persona visibility', function (): void {
             'description' => 'shell.workspaces.pradzia.description',
             'sections' => [
                 ['key' => 'apzvalga', 'label' => 'shell.sections.apzvalga', 'routeName' => 'dashboard', 'routeParams' => [], 'entityType' => null, 'description' => null, 'collectionActions' => [], 'matches' => ['dashboard'], 'startsGroup' => false, 'children' => []],
-                ['key' => 'kelias', 'label' => 'shell.sections.kelias', 'routeName' => 'learningPath.show', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.kelias', 'collectionActions' => [], 'matches' => ['learningPath.*', 'learningSteps.*'], 'startsGroup' => false, 'children' => [
-                    ['key' => 'path', 'label' => 'shell.section_children.kelias.path', 'routeName' => 'learningPath.show'],
-                ]],
+                ['key' => 'kelias', 'label' => 'shell.sections.kelias', 'routeName' => 'learningPath.show', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.kelias', 'collectionActions' => [], 'matches' => ['learningPath.*', 'learningSteps.show'], 'startsGroup' => false, 'children' => []],
                 ['key' => 'uzduotys', 'label' => 'shell.sections.uzduotys', 'routeName' => 'tasks.index', 'routeParams' => [], 'entityType' => 'task', 'description' => 'shell.section_descriptions.uzduotys', 'collectionActions' => [], 'matches' => ['tasks.index'], 'startsGroup' => false, 'children' => []],
                 ['key' => 'atsakomybes', 'label' => 'shell.sections.atsakomybes', 'routeName' => 'profile.roles', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.atsakomybes', 'collectionActions' => [], 'matches' => ['profile.roles'], 'startsGroup' => false, 'children' => []],
                 ['key' => 'veiklos_uzklausos', 'label' => 'shell.sections.veiklos_uzklausos', 'routeName' => 'profile.activityRequests', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.veiklos_uzklausos', 'collectionActions' => [], 'matches' => ['profile.activityRequests'], 'startsGroup' => false, 'children' => []],
@@ -186,8 +186,8 @@ describe('per-persona visibility', function (): void {
                 'label' => 'shell.workspaces.wiki.title',
                 'description' => 'shell.workspaces.wiki.description',
                 'sections' => [
-                    ['key' => 'wiki', 'label' => 'shell.sections.wiki', 'routeName' => 'knowledgeBase.show', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.wiki', 'collectionActions' => [], 'matches' => ['knowledgeBase.*', 'knowledgeItems.show', 'knowledgeItems.edit', 'knowledgeItems.create'], 'startsGroup' => false, 'children' => []],
-                    ['key' => 'rodykle', 'label' => 'shell.sections.rodykle', 'routeName' => 'knowledgeItems.alphabet', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.rodykle', 'collectionActions' => [], 'matches' => ['knowledgeItems.alphabet'], 'startsGroup' => false, 'children' => []],
+                    ['key' => 'wiki', 'label' => 'shell.sections.wiki', 'routeName' => 'knowledgeBase.show', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.wiki', 'collectionActions' => [], 'matches' => ['knowledgeBase.*'], 'startsGroup' => false, 'children' => []],
+                    ['key' => 'rodykle', 'label' => 'shell.sections.rodykle', 'routeName' => 'knowledgeItems.alphabet', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.rodykle', 'collectionActions' => [], 'matches' => ['knowledgeItems.alphabet', 'knowledgeItems.show'], 'startsGroup' => false, 'children' => []],
                 ],
                 'createActions' => [],
             ])
@@ -269,26 +269,50 @@ describe('per-persona visibility', function (): void {
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai', 'kategorijos'],
             'sistema' => ['apzvalga', 'tipai'],
             'svetaine' => ['apzvalga', 'puslapiai', 'naujienos', 'kalendorius', 'baneriai', 'navigacija', 'greitosios_nuorodos', 'renginiu_tipai', 'zymos', 'failai', 'dokumentai', 'studiju_rinkiniai'],
-            'organizacija' => ['apzvalga', 'nariai', 'pareigybes', 'pareigybiu_atnaujinimas', 'padaliniai', 'studiju_programos', 'konferencijos', 'formos'],
+            'organizacija' => ['apzvalga', 'nariai', 'pareigybes', 'pareigybiu_atnaujinimas', 'padaliniai', 'studiju_programos', 'konferencijos', 'kelio_zingsniai', 'formos'],
             'sistema' => ['apzvalga', 'roles', 'leidimai', 'tipai', 'instituciju_tipai', 'pareigybiu_tipai', 'nustatymai', 'sistemos_busena', 'laisku_eile', 'laisku_perziura', 'pagalbos_uzklausos'],
         ]);
     });
 
-    test('Mano kelias follows Apžvalga, Wiki is its own workspace, and children are filtered per user before caching', function (): void {
+    test('Mano kelias has no children and step management lives in Organizacija', function (): void {
         $plain = makeUser($this->tenant);
         $admin = makeAdminUser($this->tenant);
 
         $plainWorkspace = $this->catalog->for($plain)['workspaces'][0];
         $adminWorkspace = $this->catalog->for($admin)['workspaces'][0];
         $adminWiki = collect($this->catalog->for($admin)['workspaces'])->firstWhere('key', 'wiki');
+        $adminOrganizacija = collect($this->catalog->for($admin)['workspaces'])->firstWhere('key', 'organizacija');
 
         expect($plainWorkspace['sections'][1]['key'])->toBe('kelias')
-            ->and(array_column($plainWorkspace['sections'][1]['children'], 'key'))->toBe(['path'])
-            ->and(array_column($adminWorkspace['sections'][1]['children'], 'key'))->toBe(['path', 'library'])
+            ->and($plainWorkspace['sections'][1]['children'])->toBe([])
+            ->and($adminWorkspace['sections'][1]['children'])->toBe([])
+            ->and($plainWorkspace['createActions'])->toBe([])
+            ->and($adminWorkspace['createActions'])->toBe([])
+            ->and(catalogSummary($this->catalog, $plain))->not->toHaveKey('organizacija')
+            ->and(array_column($adminOrganizacija['sections'], 'key'))->toContain('kelio_zingsniai')
+            ->and(array_column($adminOrganizacija['createActions'], 'key'))->toContain('new_learning_step')
             ->and(array_column($adminWiki['createActions'], 'key'))->toBe(['new_knowledge_item']);
+
+        expect(collect($adminWiki['sections'])->firstWhere('key', 'wiki_biblioteka'))->toEqual([
+            'key' => 'wiki_biblioteka', 'label' => 'shell.sections.wiki_biblioteka', 'routeName' => 'knowledgeItems.index', 'routeParams' => [], 'entityType' => 'knowledge_item', 'description' => 'shell.section_descriptions.wiki_biblioteka', 'collectionActions' => [], 'matches' => ['knowledgeItems.index', 'knowledgeItems.create', 'knowledgeItems.edit'], 'startsGroup' => false, 'children' => [],
+        ]);
 
         $cached = Cache::get(AdminNavigationCatalog::CACHE_PREFIX.$plain->id);
         expect($cached['payload']['workspaces'][0]['sections'][1]['children'])->toBe($plainWorkspace['sections'][1]['children']);
+    });
+
+    test('a step manager sees Kelio žingsniai and its create action in Organizacija', function (): void {
+        $manager = makeTenantUserWithRole('Studentų atstovų koordinatorius', $this->tenant);
+        $workspaces = collect($this->catalog->for($manager)['workspaces']);
+        $organizacija = $workspaces->firstWhere('key', 'organizacija');
+
+        expect(collect($organizacija['sections'])->firstWhere('key', 'kelio_zingsniai'))->toEqual([
+            'key' => 'kelio_zingsniai', 'label' => 'shell.sections.kelio_zingsniai', 'routeName' => 'learningSteps.index', 'routeParams' => [], 'entityType' => 'learning_step', 'description' => 'shell.section_descriptions.kelio_zingsniai', 'collectionActions' => [], 'matches' => ['learningSteps.index', 'learningSteps.create', 'learningSteps.edit'], 'startsGroup' => false, 'children' => [],
+        ])
+            ->and(collect($organizacija['createActions'])->firstWhere('key', 'new_learning_step'))->toEqual([
+                'key' => 'new_learning_step', 'label' => 'shell.actions.new_learning_step.title', 'description' => 'shell.actions.new_learning_step.description', 'entityType' => 'learning_step', 'target' => ['kind' => 'route', 'routeName' => 'learningSteps.create'],
+            ])
+            ->and($workspaces->firstWhere('key', 'pradzia')['createActions'])->toBe([]);
     });
 
     test('ViSAK separates its own views from the collections, starting at Institucijos', function (): void {
@@ -375,6 +399,24 @@ describe('route-coverage guard', function (): void {
 });
 
 describe('route resolution', function (): void {
+    test('learning and Wiki pages are claimed by exactly one section', function (string $routeName, string $workspace, string $section): void {
+        $workspaces = $this->catalog->for(makeAdminUser($this->tenant))['workspaces'];
+
+        expect(catalogCandidates($workspaces, $routeName))->toBe([['workspace' => $workspace, 'section' => $section]]);
+    })->with([
+        'learning path' => ['learningPath.show', 'pradzia', 'kelias'],
+        'step record' => ['learningSteps.show', 'pradzia', 'kelias'],
+        'step library' => ['learningSteps.index', 'organizacija', 'kelio_zingsniai'],
+        'step creation' => ['learningSteps.create', 'organizacija', 'kelio_zingsniai'],
+        'step editor' => ['learningSteps.edit', 'organizacija', 'kelio_zingsniai'],
+        'Wiki home' => ['knowledgeBase.show', 'wiki', 'wiki'],
+        'article index' => ['knowledgeItems.alphabet', 'wiki', 'rodykle'],
+        'article record' => ['knowledgeItems.show', 'wiki', 'rodykle'],
+        'article library' => ['knowledgeItems.index', 'wiki', 'wiki_biblioteka'],
+        'article creation' => ['knowledgeItems.create', 'wiki', 'wiki_biblioteka'],
+        'article editor' => ['knowledgeItems.edit', 'wiki', 'wiki_biblioteka'],
+    ]);
+
     test('every admin route belongs to a workspace or is deliberately workspace-less', function (): void {
         $this->tenant->update(['goals_enabled' => true]);
 

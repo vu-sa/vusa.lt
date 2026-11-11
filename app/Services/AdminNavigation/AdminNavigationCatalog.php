@@ -49,7 +49,7 @@ use Illuminate\Support\Facades\Cache;
 class AdminNavigationCatalog
 {
     /** Bump the suffix when the payload shape or a gate changes, so a deploy never serves the old menu from cache. */
-    public const string CACHE_PREFIX = 'admin-navigation-v12-';
+    public const string CACHE_PREFIX = 'admin-navigation-v13-';
 
     private const int CACHE_TTL = 1800;
 
@@ -182,16 +182,10 @@ class AdminNavigationCatalog
             descriptionKey: 'shell.workspaces.pradzia.description',
             sections: [
                 new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard', [], null, Visibility::always()),
-                new Section('kelias', 'shell.sections.kelias', 'learningPath.show', [], null, Visibility::always(), matches: ['learningPath.*', 'learningSteps.*'], descriptionKey: 'shell.section_descriptions.kelias', children: [
-                    new SectionLink('path', 'shell.section_children.kelias.path', 'learningPath.show', Visibility::always()),
-                    new SectionLink('library', 'shell.section_children.kelias.library', 'learningSteps.index', Visibility::can('manage', LearningStep::class)),
-                ]),
+                new Section('kelias', 'shell.sections.kelias', 'learningPath.show', [], null, Visibility::always(), matches: ['learningPath.*', 'learningSteps.show'], descriptionKey: 'shell.section_descriptions.kelias'),
                 new Section('uzduotys', 'shell.sections.uzduotys', 'tasks.index', [], 'task', Visibility::always(), matches: ['tasks.index'], descriptionKey: 'shell.section_descriptions.uzduotys'),
                 new Section('atsakomybes', 'shell.sections.atsakomybes', 'profile.roles', [], null, Visibility::always(), descriptionKey: 'shell.section_descriptions.atsakomybes'),
                 new Section('veiklos_uzklausos', 'shell.sections.veiklos_uzklausos', 'profile.activityRequests', [], null, Visibility::always(), descriptionKey: 'shell.section_descriptions.veiklos_uzklausos'),
-            ],
-            createActions: [
-                CreateAction::route('new_learning_step', 'shell.actions.new_learning_step.title', 'shell.actions.new_learning_step.description', 'learning_step', 'learningSteps.create', Visibility::can('create', LearningStep::class)),
             ],
         );
     }
@@ -203,9 +197,9 @@ class AdminNavigationCatalog
             labelKey: 'shell.workspaces.wiki.title',
             descriptionKey: 'shell.workspaces.wiki.description',
             sections: [
-                new Section('wiki', 'shell.sections.wiki', 'knowledgeBase.show', [], null, Visibility::always(), matches: ['knowledgeBase.*', 'knowledgeItems.show', 'knowledgeItems.edit', 'knowledgeItems.create'], descriptionKey: 'shell.section_descriptions.wiki'),
-                new Section('rodykle', 'shell.sections.rodykle', 'knowledgeItems.alphabet', [], null, Visibility::always(), descriptionKey: 'shell.section_descriptions.rodykle'),
-                new Section('wiki_biblioteka', 'shell.sections.wiki_biblioteka', 'knowledgeItems.index', [], 'knowledge_item', Visibility::can('manage', KnowledgeItem::class), descriptionKey: 'shell.section_descriptions.wiki_biblioteka'),
+                new Section('wiki', 'shell.sections.wiki', 'knowledgeBase.show', [], null, Visibility::always(), matches: ['knowledgeBase.*'], descriptionKey: 'shell.section_descriptions.wiki'),
+                new Section('rodykle', 'shell.sections.rodykle', 'knowledgeItems.alphabet', [], null, Visibility::always(), matches: ['knowledgeItems.alphabet', 'knowledgeItems.show'], descriptionKey: 'shell.section_descriptions.rodykle'),
+                new Section('wiki_biblioteka', 'shell.sections.wiki_biblioteka', 'knowledgeItems.index', [], 'knowledge_item', Visibility::can('manage', KnowledgeItem::class), matches: ['knowledgeItems.index', 'knowledgeItems.create', 'knowledgeItems.edit'], descriptionKey: 'shell.section_descriptions.wiki_biblioteka'),
             ],
             createActions: [
                 CreateAction::route('new_knowledge_item', 'shell.actions.new_knowledge_item.title', 'shell.actions.new_knowledge_item.description', 'knowledge_item', 'knowledgeItems.create', Visibility::can('create', KnowledgeItem::class)),
@@ -309,11 +303,13 @@ class AdminNavigationCatalog
                 new Section('padaliniai', 'shell.sections.padaliniai', 'tenants.index', [], 'tenant', Visibility::can('viewAny', Tenant::class), descriptionKey: 'shell.section_descriptions.padaliniai'),
                 new Section('studiju_programos', 'shell.sections.studiju_programos', 'studyPrograms.index', [], 'study_program', Visibility::can('viewAny', StudyProgram::class), [CollectionAction::merge(Visibility::can('viewAny', StudyProgram::class))], descriptionKey: 'shell.section_descriptions.studiju_programos'),
                 new Section('konferencijos', 'shell.sections.konferencijos', 'mailingLists.index', [], 'mailing_list', Visibility::can('viewAny', MailingList::class), descriptionKey: 'shell.section_descriptions.konferencijos'),
+                new Section('kelio_zingsniai', 'shell.sections.kelio_zingsniai', 'learningSteps.index', [], 'learning_step', Visibility::can('manage', LearningStep::class), matches: ['learningSteps.index', 'learningSteps.create', 'learningSteps.edit'], descriptionKey: 'shell.section_descriptions.kelio_zingsniai'),
             ],
             overview: new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard.organizacija', [], null, Visibility::always()),
             createActions: [
                 CreateAction::route('duty_update', 'shell.actions.duty_update.title', 'shell.actions.duty_update.description', 'duty', 'duties.updateUsersWizard', Visibility::can('create', Duty::class)),
                 CreateAction::route('duty_periods', 'shell.actions.duty_periods.title', 'shell.actions.duty_periods.description', 'dutiable', 'dutiables.timeline', Visibility::can('viewAny', Duty::class)),
+                CreateAction::route('new_learning_step', 'shell.actions.new_learning_step.title', 'shell.actions.new_learning_step.description', 'learning_step', 'learningSteps.create', Visibility::can('create', LearningStep::class)),
             ],
         );
     }

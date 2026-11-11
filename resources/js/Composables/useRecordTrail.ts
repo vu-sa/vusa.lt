@@ -36,7 +36,7 @@ export const TRAIL_PAGES = new Set([
 /** Catalog section key → the trail record that section's tab stands in for. */
 const SECTION_RECORDS: Record<string, keyof Trail> = {
   kelias: 'learningStep',
-  wiki: 'knowledge',
+  rodykle: 'knowledge',
   institucijos: 'institution',
   posedziai: 'meeting',
   darbotvarkes_klausimai: 'agendaItem',
@@ -44,7 +44,7 @@ const SECTION_RECORDS: Record<string, keyof Trail> = {
 
 const trail = ref<Trail>({});
 
-/** A wiki article stands in for the Wiki tab. */
+/** A wiki article stands in for the Rodyklė tab. */
 export function enterKnowledgeRecord(record: { id: string; title: string; href: string }): void {
   trail.value = { knowledge: { id: record.id, href: record.href, label: record.title, title: record.title } };
 }

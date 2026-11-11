@@ -8,6 +8,7 @@ import {
   clearTrail,
   enterAgendaItem,
   enterInstitution,
+  enterKnowledgeRecord,
   enterLearningStep,
   enterMeeting,
   useRecordTrail,
@@ -73,6 +74,17 @@ describe('useRecordTrail', () => {
     await nextTick();
 
     expect(crumbFor('kelias')).toBeUndefined();
+  });
+
+  it('uses a Wiki article as the Rodyklė crumb', () => {
+    page.component = 'Admin/Knowledge/ShowKnowledgeItem';
+    const { crumbFor } = mountTrail();
+    const record = { id: 'k1', title: 'Kvorumas', href: '/mano/knowledge/items/k1' };
+
+    enterKnowledgeRecord(record);
+
+    expect(crumbFor('rodykle')).toEqual({ ...record, label: record.title });
+    expect(crumbFor('wiki')).toBeUndefined();
   });
 
   it('names the agenda item crumb with translations that arrive after it was entered', () => {

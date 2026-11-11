@@ -103,6 +103,9 @@ Be paieškos rodoma:
 Visi straipsniai pagal abėcėlę, sugrupuoti pagal pirmąją raidę, su santrumpa ir santrauka. Raidžių
 juosta lieka viršuje slenkant; paieška veikia taip pat kaip pradžioje.
 
+Atvėrus straipsnį, **Rodyklė A–Ž** skirtuke rodomas jo pavadinimas. Rodyklė šalia pavadinimo
+atveria meniu su nuoroda atgal į **Rodyklę A–Ž**.
+
 ### Biblioteka {#biblioteka}
 
 Biblioteka skirta tiems, kas tvarko Wiki ar Mano kelią (žr. [Kas ką gali](#teises)): visi straipsniai
@@ -110,6 +113,8 @@ su paieška, greitieji filtrai **Sąvokos** (straipsniai be šaltinio), **Esmini
 **Rekomenduojamas**, kiti (auditorija, skyrius) – skiltyje **Filtrai**. Matomos žymos: dokumentas
 nebegalioja, atnaujintas po peržiūros arba straipsnis neturi nei teksto, nei šaltinio. Čia pat
 tvarkomi skyriai.
+
+Mano kelio žingsnių biblioteka yra atskirai: **Organizacija → Kelio žingsniai**.
 
 ## Veiksmai
 
