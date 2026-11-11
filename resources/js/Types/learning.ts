@@ -33,7 +33,6 @@ export interface LearningStepData {
   automaticallyTracked: boolean;
   completedAt: string | null;
   skippable: boolean;
-  insightsCount: number;
   reviewedAt: string | null;
 }
 

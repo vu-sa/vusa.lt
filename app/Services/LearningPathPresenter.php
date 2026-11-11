@@ -17,7 +17,7 @@ use App\Services\Learning\SystemSteps\SystemStepRegistry;
 /**
  * @phpstan-import-type KnowledgePayload from KnowledgeBasePresenter
  *
- * @phpstan-type StepPayload array{id: string, key: string|null, isSystem: bool, kind: LearningStepKind, audienceLabel: string, audienceNotes: list<array{label: string, description: string}>, stage: LearningStage|null, importance: LearningImportance, title: string, description: string, actionUrl: string|null, actionLabel: string|null, state: string, autoCompleted: bool, automaticallyTracked: bool, completedAt: string|null, skippable: bool, insightsCount: int, reviewedAt: string|null}
+ * @phpstan-type StepPayload array{id: string, key: string|null, isSystem: bool, kind: LearningStepKind, audienceLabel: string, audienceNotes: list<array{label: string, description: string}>, stage: LearningStage|null, importance: LearningImportance, title: string, description: string, actionUrl: string|null, actionLabel: string|null, state: string, autoCompleted: bool, automaticallyTracked: bool, completedAt: string|null, skippable: bool, reviewedAt: string|null}
  */
 class LearningPathPresenter
 {
@@ -84,7 +84,6 @@ class LearningPathPresenter
             'automaticallyTracked' => ($definition['detector'] ?? null) !== null,
             'completedAt' => $item->completedAt?->toIso8601String(),
             'skippable' => $step->kind !== LearningStepKind::MeetingPrep && $item->importance->isSkippable(),
-            'insightsCount' => (int) $step->comments_count,
             'reviewedAt' => $step->reviewed_at?->toDateString(),
         ];
     }

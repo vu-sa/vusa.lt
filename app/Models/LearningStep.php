@@ -2,9 +2,7 @@
 
 namespace App\Models;
 
-use App\Contracts\Commentable;
 use App\Enums\LearningStepKind;
-use App\Models\Traits\HasComments;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -33,15 +31,13 @@ use Illuminate\Support\Carbon;
  * @property bool $is_active
  * @property Carbon|null $reviewed_at
  * @property string|null $created_by
- * @property-read int $comments_count
- * @property-read Collection<int, Comment> $comments
  * @property-read Collection<int, LearningProgress> $progress
  * @property-read User|null $createdBy
  */
 #[Fillable(['key', 'is_system', 'kind', 'title', 'description', 'action_label', 'action_url', 'per_term', 'order', 'is_active', 'reviewed_at', 'created_by'])]
-class LearningStep extends Model implements Commentable
+class LearningStep extends Model
 {
-    use HasComments, HasFactory, HasTranslations, HasUlids, LogsModelActivity;
+    use HasFactory, HasTranslations, HasUlids, LogsModelActivity;
 
     protected static function booted(): void
     {

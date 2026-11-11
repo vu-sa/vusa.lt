@@ -23,7 +23,7 @@ tests:
 
 Komentaruose galima aptarti įrašą su kolegomis, užduoti klausimą ar suderinti kitą veiksmą.
 Komentarų skydelis rodomas posėdžiuose, darbotvarkės klausimuose, problemose, institucijose, pareigybėse,
-formose, rezervacijose, pagalbos užklausose ir Mano kelio žingsniuose (ten jis vadinamas **Įžvalgos**).
+formose, rezervacijose, pagalbos užklausose ir Žinių bazės medžiagoje (ten jis vadinamas **Įžvalgos**).
 
 Komentaras priskiriamas jį parašiusiam asmeniui, jo pareigoms ir įrašui, prie kurio jis paliktas. Diskusijose galima
 atsakyti į kitų komentarus, paminėti kolegas, pridėti nuotraukų, pradėti atskiras temas ir rengti greitas apklausas.
@@ -68,7 +68,7 @@ pareigos prie vardo ir nuotraukos, o apklausa kuriama tiesiai laukelyje. Žymėj
 ### Komentaro ir atsakymo rašymas
 
 1. Atverk norimo įrašo puslapį (pvz., posėdžio ar problemos).
-2. Skiltyje **Komentarai** (pagalbos užklausose – **Diskusija**, Mano kelio žingsniuose – **Įžvalgos**) paspausk
+2. Skiltyje **Komentarai** (pagalbos užklausose – **Diskusija**, Žinių bazės medžiagoje – **Įžvalgos**) paspausk
    komentaro laukelį. Jis išsiskleidžia: viršuje gali pasirinkti **Komentaras** (numatyta), **Tema** arba **Apklausa**.
 3. Įrašyk tekstą. Jei nori atkreipti konkretaus asmens dėmesį, įvesk `@` arba spausk **@** mygtuką apačioje ir pasirink vardą iš sąrašo.
    Apatinėje laukelio juostoje matysi, kas gaus pranešimą apie paminėjimą (redaguojant komentarą pranešimai iš naujo nesiunčiami).
@@ -174,7 +174,7 @@ pranešimų varpelyje, o pranešime į įrenginį rodoma trumpesnė ištrauka. I
 
 ## Techninė informacija {#technine-informacija}
 
-- Komentavimo galimybę palaiko šie modeliai (`Commentables::TYPES`): `LearningStep`, `Meeting`, `AgendaItem`, `Institution`, `Duty`, `Form`, `Problem`, `Reservation`, `SupportRequest`. Skydelio išdėstymą ir leidžiamas temas bei apklausas kiekvienam tipui nustato `Commentables::CAPABILITIES`.
+- Komentavimo galimybę palaiko šie modeliai (`Commentables::TYPES`): `KnowledgeItem`, `Meeting`, `AgendaItem`, `Institution`, `Duty`, `Form`, `Problem`, `Reservation`, `SupportRequest`. Skydelio išdėstymą ir leidžiamas temas bei apklausas kiekvienam tipui nustato `Commentables::CAPABILITIES`.
 - Temos yra `CommentKind::Topic` komentarai su `title`; užbaigimas naudoja `resolved_at`/`resolved_by`. Autoriaus pareigos saugomos `author_dutiable_id` (`ResolveCommentAuthorDuty`), pasirinkimas įsimenamas `ui_preferences.comment_dutiable_id`. Nuotraukos – `Comment::IMAGES` medijos kolekcija, prisegama iš laikinų įkėlimų.
 - API užklausas apdoroja `CommentApiController`, reakcijas – `CommentReactionApiController`, apklausų balsus – `CommentPollVoteApiController`.
 - Prieigos taisykles nustato `CommentPolicy`: `view` ir `react` tikrina pagrindinio įrašo `view` teisę; `resolve` leidžiamas tik temai, jos autoriui arba moderatoriui; `update` leidžiama tik autoriui; `delete` leidžiama autoriui, pagrindinio įrašo redaktoriui arba turintiems `comments.delete.padalinys` / `comments.delete.*`.

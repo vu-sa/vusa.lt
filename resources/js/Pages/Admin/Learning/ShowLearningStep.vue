@@ -3,7 +3,6 @@ import { computed, onMounted, toRef, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Pencil } from '@lucide/vue';
 
-import DiscussionPanel from '@/Components/Discussions/DiscussionPanel.vue';
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import { RecordActionMenu } from '@/Components/Patterns';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
@@ -69,7 +68,7 @@ watch(() => props.step.id, () => {
       </article>
 
       <aside
-        class="space-y-5 border-t border-border pt-6 lg:sticky lg:top-[calc(var(--shell-chrome-height,0px)+1.5rem)] lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8"
+        class="space-y-5 border-t border-border pt-6 lg:sticky lg:top-[calc(var(--shell-chrome-height,0px)+1.5rem)] lg:col-start-2 lg:row-start-1 lg:self-start lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8"
         aria-labelledby="step-about-title"
         data-slot="step-about"
       >
@@ -78,10 +77,6 @@ watch(() => props.step.id, () => {
           {{ step.reviewedAt ? $t('learning.path.reviewed_on', { date: formatDate(step.reviewedAt) }) : $t('learning.path.not_reviewed') }}
         </p>
       </aside>
-
-      <div id="insights" class="min-w-0 scroll-mt-24 border-t border-border pt-6 lg:col-start-1 lg:row-start-2">
-        <DiscussionPanel :key="step.id" commentable-type="learningStep" :commentable-id="step.id" :title="$t('learning.path.insights')" />
-      </div>
     </div>
   </OverviewPage>
 </template>

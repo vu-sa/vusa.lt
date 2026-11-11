@@ -47,8 +47,6 @@ paaiškinimu, kam jų reikia, ir pažanga, kurią mato koordinatorius.
   parašyk, kodėl verta – tai svarbiau už patį failą. Prireikus pridėk sąrašą, paveikslėlį ar YouTube vaizdo įrašą.
 - **Esminių žingsnių nedaug.** Vienai auditorijai užtenka kelių esminių žingsnių; visa kita –
   rekomenduojama arba papildoma.
-- **Įžvalgos – autoriaus nuomonė.** Prie žingsnio rašoma, kaip jį atlikti ir į ką atkreipti dėmesį;
-  įžvalga pasirašyta ir su data, nes kontekstas keičiasi.
 
 ## Kaip tai veikia
 
@@ -75,7 +73,7 @@ numeruojami iš eilės ir neturi pažangos žymų.
 Veiksmai išdėstyti pagal kadencijos etapus: **Prieš pradedant**, **Pirmieji mėnesiai** (pirmos 60
 dienų), **Visą kadenciją** ir **Kadencijos pabaiga** (paskutinės 45 dienos). Dabartinis etapas
 pažymėtas „dabar“. Visi etapai ir jų žingsniai rodomi iš karto. Žingsnio kairėje esantis langelis
-žymi pažangą; varnelę galima uždėti ir nuimti tiesiog eilutėje. Eilutėje rodomas tik pavadinimas – paaiškinimai, diegimo ir pranešimų informacija pasiekiami paspaudus pavadinimą. Veiksmo mygtukas eilutės dešinėje rodo svarbą: esminio žingsnio – VU SA spalvos, rekomenduojamo – rėmelis didžiosiomis raidėmis, papildomo – paprastas tekstas. Įžvalgų skaičius rodomas šalia pavadinimo; ištrinti komentarai į jį neįskaičiuojami. Žingsnio puslapyje pažangą galima žymėti prie pavadinimo, veiksmų mygtukai pateikiami antraštės dešinėje, o įžvalgos rodomos po turiniu: jose galima pradėti temą su klausimu ar patirtimi, atsakyti kitiems ir pridėti nuotraukų (žr. [Komentarai](/visak/komentarai#temos)). Koordinatoriaus nuotrauka, pareigos ir mygtukas „Parašyti“ rodomi tiesiai prie susipažinimo žingsnio.
+žymi pažangą; varnelę galima uždėti ir nuimti tiesiog eilutėje. Eilutėje rodomas tik pavadinimas – paaiškinimai, diegimo ir pranešimų informacija pasiekiami paspaudus pavadinimą. Veiksmo mygtukas eilutės dešinėje rodo svarbą: esminio žingsnio – VU SA spalvos, rekomenduojamo – rėmelis didžiosiomis raidėmis, papildomo – paprastas tekstas. Žingsnio puslapyje pažangą galima žymėti prie pavadinimo, o veiksmų mygtukai pateikiami antraštės dešinėje. Žingsniai įžvalgų neturi – jos rašomos prie [Žinių bazės](/mano/ziniu-baze) medžiagos. Koordinatoriaus nuotrauka, pareigos ir mygtukas „Parašyti“ rodomi tiesiai prie susipažinimo žingsnio.
 
 Svarba nusako turinį, ne terminą: **Esminis** (būtina žinoti), **Rekomenduojamas**, **Papildomas**.
 Esminio žingsnio praleisti negalima.
@@ -117,7 +115,7 @@ skyriaus pasirinkime ir per **Meniu**.
 2. Perskaityk paaiškinimą po pavadinimu ir atlik veiksmą.
 3. Pažymėk langelį kairėje. Rekomenduojamą ar papildomą žingsnį gali **Praleisti** per **⋯** meniu.
 4. Savo žymą panaikink nuimdamas varnelę. Automatiškai pažymėto langelio keisti negalima.
-5. Įžvalgas atverk per jų skaičių prie žingsnio. Skaitinius rasi [Žinių bazėje](app:/mano/knowledge).
+5. Skaitinius ir jų įžvalgas rasi [Žinių bazėje](app:/mano/knowledge).
 
 ### Pridėti žingsnį
 
@@ -136,7 +134,7 @@ skyriaus pasirinkime ir per **Meniu**.
 
 | Kas | Ką gali |
 |---|---|
-| Kiekvienas narys | Matyti savo kelią, žymėti pažangą, rašyti įžvalgas |
+| Kiekvienas narys | Matyti savo kelią, žymėti pažangą |
 | Studentų atstovų koordinatorius (atsakingas už institucijas) | Matyti savo atstovų pažangą ir kelius puslapyje [ViSAK → Atstovai](/visak/atstovai) |
 | Studentų atstovų koordinatorius | Atverti Biblioteką, kurti ir redaguoti žingsnius, kurių visos auditorijos apribotos savo padaliniu |
 | Centrinio biuro studentų atstovų koordinatorius | Kurti ir redaguoti visų auditorijų žingsnius |

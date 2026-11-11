@@ -7,7 +7,6 @@ use App\Models\Duty;
 use App\Models\Form;
 use App\Models\Institution;
 use App\Models\KnowledgeItem;
-use App\Models\LearningStep;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Problem;
@@ -28,7 +27,6 @@ class Commentables
      */
     public const TYPES = [
         'knowledgeItem' => KnowledgeItem::class,
-        'learningStep' => LearningStep::class,
         'meeting' => Meeting::class,
         'agendaItem' => AgendaItem::class,
         'institution' => Institution::class,
@@ -41,7 +39,6 @@ class Commentables
 
     public const CAPABILITIES = [
         'knowledgeItem' => ['layout' => 'topics', 'topics' => true, 'polls' => true, 'images' => true],
-        'learningStep' => ['layout' => 'topics', 'topics' => true, 'polls' => true, 'images' => true],
         'meeting' => ['layout' => 'comments', 'topics' => true, 'polls' => true, 'images' => true],
         'agendaItem' => ['layout' => 'comments', 'topics' => true, 'polls' => true, 'images' => true],
         'institution' => ['layout' => 'comments', 'topics' => true, 'polls' => true, 'images' => true],

@@ -22,21 +22,20 @@ function render(inPath = true, canUpdate = false) {
     props: { step: step(), inPath, canUpdate, coordinators: [], institutionContacts: [] },
     global: { stubs: {
       ...commonStubs,
-      DiscussionPanel: true,
       Sheet: commonStubs.Dialog, SheetContent: commonStubs.DialogContent,
       SheetHeader: commonStubs.DialogHeader, SheetTitle: commonStubs.DialogTitle,
     } },
   });
 }
 
-it('puts completion beside the title and insights immediately after the full instructions', async () => {
+it('puts completion beside the title and has no insights thread', async () => {
   const wrapper = render();
   expect(wrapper.findAll('h1')).toHaveLength(1);
   expect(wrapper.get('h1').text()).toBe('Read the guide');
   const heading = wrapper.get('[data-slot="step-heading"]');
   expect(heading.element.firstElementChild?.getAttribute('data-slot')).toBe('learning-completion-control');
   expect(heading.find('h1').exists()).toBe(true);
-  expect(wrapper.get('#insights discussion-panel-stub').attributes('title')).toBe('learning.path.insights');
+  expect(wrapper.find('#insights').exists()).toBe(false);
   expect(wrapper.text()).toContain('Prepare to represent students.');
   expect(wrapper.find('[role="tablist"]').exists()).toBe(false);
   await wrapper.get('[role="checkbox"]').trigger('click');

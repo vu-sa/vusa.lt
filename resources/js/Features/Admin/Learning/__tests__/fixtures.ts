@@ -7,7 +7,7 @@ export function step(overrides: Partial<LearningStepData> = {}): LearningStepDat
     audienceLabel: 'Pagrindas', audienceNotes: [], stage: LearningStage.FirstMonths,
     importance: LearningImportance.Recommended, title: 'Read the guide', description: 'Prepare to represent students.',
     actionUrl: null, actionLabel: null, state: 'pending', autoCompleted: false, automaticallyTracked: false, completedAt: null,
-    skippable: true, insightsCount: 2, reviewedAt: null, ...overrides,
+    skippable: true, reviewedAt: null, ...overrides,
   };
 }
 

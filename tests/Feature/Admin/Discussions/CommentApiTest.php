@@ -16,7 +16,6 @@ use App\Models\Form;
 use App\Models\Institution;
 use App\Models\InstitutionLink;
 use App\Models\KnowledgeItem;
-use App\Models\LearningStep;
 use App\Models\Meeting;
 use App\Models\PendingUpload;
 use App\Models\Pivots\AgendaItem;
@@ -559,7 +558,6 @@ describe('reply destinations', function (): void {
     test('root comments and nested replies round trip on every discussion record', function (string $type): void {
         Event::fake([CommentBroadcast::class]);
         $commentable = match ($type) {
-            'learningStep' => LearningStep::factory()->create(),
             'knowledgeItem' => KnowledgeItem::factory()->create(),
             'meeting' => $this->meeting,
             'agendaItem' => $this->agendaItem,
@@ -754,14 +752,14 @@ describe('topics and capabilities', function (): void {
         $user = User::factory()->create();
         $record = $alias === 'supportRequest'
             ? SupportRequest::factory()->create(['visibility' => 'public'])
-            : LearningStep::factory()->create(['is_active' => true]);
+            : KnowledgeItem::factory()->create(['is_active' => true]);
 
         asUser($user)->getJson(route('api.v1.admin.comments.index', ['commentableType' => $alias, 'commentableId' => $record->id]))
             ->assertOk()->assertJsonPath('meta', [
                 'capabilities' => ['layout' => $layout, 'topics' => $topics, 'polls' => $topics, 'images' => true],
                 'me' => ['duties' => [], 'default_dutiable_id' => null, 'can_moderate' => false],
             ]);
-    })->with([['supportRequest', 'conversation', false], ['learningStep', 'topics', true]]);
+    })->with([['supportRequest', 'conversation', false], ['knowledgeItem', 'topics', true]]);
 });
 
 test('index tells a moderator, and only a moderator, that they moderate this record', function (): void {

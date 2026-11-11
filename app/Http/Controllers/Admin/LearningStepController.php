@@ -45,7 +45,7 @@ class LearningStepController extends AdminController
     public function show(Request $request, LearningStep $learningStep): Response
     {
         $this->authorize('view', $learningStep);
-        $learningStep->load(['audiences' => fn ($query) => $query->with(LearningAudience::LABEL_RELATIONS)])->loadCount(['comments' => fn ($query) => $query->notErased()]);
+        $learningStep->load(['audiences' => fn ($query) => $query->with(LearningAudience::LABEL_RELATIONS)]);
         $path = ResolveLearningPath::execute($request->user());
         $item = $path->steps->concat($path->meetingPrep)->first(fn (ResolvedLearningItem $item): bool => $item->item->id === $learningStep->id) ?? new ResolvedLearningItem($learningStep, importance: $learningStep->audiences->first()?->importance ?? LearningImportance::Recommended, stage: $learningStep->audiences->first()?->stage, audienceLabel: $learningStep->audiences->first()?->label(app()->getLocale()) ?? '');
 

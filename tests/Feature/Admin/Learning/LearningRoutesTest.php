@@ -33,7 +33,7 @@ test('a member can open a library step and its presenter contract', function ():
     $step = LearningStep::factory()->create();
     asUser($user)->get(route('learningSteps.show', $step))->assertOk()->assertInertia(fn (Assert $page) => $page
         ->component('Admin/Learning/ShowLearningStep')->where('step.id', $step->id)
-        ->whereType('step.title', 'string')->whereType('step.insightsCount', 'integer')->missing('step.source'));
+        ->whereType('step.title', 'string')->missing('step.insightsCount')->missing('step.source'));
 });
 
 test('members without step rights receive a direct 403 for the step editor', function (): void {

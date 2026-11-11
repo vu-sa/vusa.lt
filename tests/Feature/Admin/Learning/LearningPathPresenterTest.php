@@ -48,7 +48,7 @@ test('hidden sources expose no link to members and an edit link to curators', fu
 
 test('system text is localized and raw URLs preserve the source contract', function (): void {
     $viewer = makeUser(Tenant::query()->firstOrFail());
-    $step = LearningStep::query()->where('key', 'install_app')->withCount('comments')->firstOrFail();
+    $step = LearningStep::query()->where('key', 'install_app')->firstOrFail();
     $data = LearningPathPresenter::step(new ResolvedLearningItem($step), $viewer, 'en');
     expect($data['title'])->toBe(__('learning.system_steps.install_app.title', [], 'en'));
     expect($data['actionLabel'])->toBe(__('learning.system_steps.install_app.action', [], 'en'));
@@ -67,7 +67,6 @@ test('an authored task carries its own button text and link per language', funct
         'action_label' => ['lt' => 'Nustatyti pranešimus', 'en' => 'Set notifications'],
         'action_url' => ['lt' => '/mano/profile/notifications'],
     ]);
-    $step->loadCount('comments');
 
     $data = LearningPathPresenter::step(new ResolvedLearningItem($step), $viewer, 'en');
     expect($data['actionLabel'])->toBe('Set notifications')
@@ -77,19 +76,17 @@ test('an authored task carries its own button text and link per language', funct
 
 test('the insights count leaves out deleted comments', function (): void {
     $user = makeUser(Tenant::query()->firstOrFail());
-    LearningStep::query()->update(['is_active' => false]);
-    $step = LearningStep::factory()->create(['kind' => LearningStepKind::Action]);
-    Comment::factory()->for($step, 'commentable')->count(2)->create();
-    Comment::factory()->for($step, 'commentable')->create()->erase();
+    $knowledgeItem = KnowledgeItem::factory()->create();
+    Comment::factory()->for($knowledgeItem, 'commentable')->count(2)->create();
+    Comment::factory()->for($knowledgeItem, 'commentable')->create()->erase();
 
-    $item = ResolveLearningPath::execute($user)->steps->firstWhere('item.id', $step->id);
-    expect(LearningPathPresenter::step($item, $user, 'lt')['insightsCount'])->toBe(2);
+    $item = ResolveLearningPath::execute($user)->knowledge->firstWhere('item.id', $knowledgeItem->id);
+    expect(KnowledgeBasePresenter::item($item, $user, 'lt')['insightsCount'])->toBe(2);
 });
 
 test('system descriptions arrive as escaped paragraphs', function (): void {
     $viewer = makeUser(Tenant::query()->firstOrFail());
     $step = LearningStep::query()->where('key', 'install_app')->firstOrFail();
-    $step->loadCount('comments');
 
     $data = LearningPathPresenter::step(new ResolvedLearningItem($step), $viewer, 'lt');
     expect($data['description'])->toBe('<p>'.e(__('learning.system_steps.install_app.description', [], 'lt')).'</p>');
