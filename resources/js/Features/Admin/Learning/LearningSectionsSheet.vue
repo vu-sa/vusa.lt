@@ -2,14 +2,14 @@
 import { computed, ref, watch } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import { trans as $t, transChoice } from 'laravel-vue-i18n';
-import { ArrowDown, ArrowDownUp, ArrowUp, GripVertical, Languages, Pencil, Plus, Trash2 } from '@lucide/vue';
+import { ArrowDownUp, Languages, Pencil, Plus, Trash2 } from '@lucide/vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import TenantSelectField from '@/Components/AdminForms/TenantSelectField.vue';
 import CollectionRowList from '@/Components/Collection/CollectionRowList.vue';
+import SortableRowList from '@/Components/Collection/SortableRowList.vue';
 import { ConfirmDialog, SheetForm } from '@/Components/Patterns';
 import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
-import SortableDutiesTable from '@/Components/Tables/SortableDutiesTable.vue';
 import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass, segmentGroupClass, segmentVariants } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
@@ -62,14 +62,6 @@ function edit(section: LearningSectionOption | null): void {
 function startReorder(): void {
   draft.value = [...props.sections];
   view.value = 'reorder';
-}
-
-function move(index: number, step: -1 | 1): void {
-  const target = index + step;
-  if (target < 0 || target >= draft.value.length) return;
-  const next = [...draft.value];
-  [next[index], next[target]] = [next[target]!, next[index]!];
-  draft.value = next;
 }
 
 function submit(): void {
@@ -155,25 +147,22 @@ const disabled = computed(() => {
     </template>
 
     <!-- Reorder: drag by the handle or move with the arrows, as on an institution's duties. -->
-    <SortableDutiesTable
+    <SortableRowList
       v-else-if="view === 'reorder'"
       v-model:items="draft"
       frame="box"
       :item-key="(section: LearningSectionOption) => section.id"
+      :item-label="titleOf"
+      :disabled="saving"
       data-slot="sections-reorder"
     >
       <template #default="{ item: section, index }">
-        <div class="flex items-center gap-2 py-1 pr-1 pl-1">
-          <button type="button" class="handle flex min-h-11 w-8 shrink-0 cursor-grab items-center justify-center text-muted-foreground active:cursor-grabbing" :aria-label="$t('Tempti, kad pakeistum tvarką')" tabindex="-1" :disabled="saving">
-            <GripVertical class="size-4" aria-hidden="true" />
-          </button>
+        <p class="flex min-w-0 items-baseline gap-2 py-2.5">
           <span class="w-5 shrink-0 text-right text-xs tabular-nums text-muted-foreground">{{ index + 1 }}</span>
-          <span class="min-w-0 flex-1 truncate font-semibold">{{ titleOf(section) }}</span>
-          <Button type="button" variant="ghost" size="icon" :disabled="saving || index === 0" :aria-label="`${$t('Perkelti aukščiau')}: ${titleOf(section)}`" @click="move(index, -1)"><ArrowUp class="size-4" aria-hidden="true" /></Button>
-          <Button type="button" variant="ghost" size="icon" :disabled="saving || index === draft.length - 1" :aria-label="`${$t('Perkelti žemiau')}: ${titleOf(section)}`" @click="move(index, 1)"><ArrowDown class="size-4" aria-hidden="true" /></Button>
-        </div>
+          <span class="truncate font-semibold">{{ titleOf(section) }}</span>
+        </p>
       </template>
-    </SortableDutiesTable>
+    </SortableRowList>
 
     <!-- Edit -->
     <div v-else class="space-y-5" data-slot="section-editor">

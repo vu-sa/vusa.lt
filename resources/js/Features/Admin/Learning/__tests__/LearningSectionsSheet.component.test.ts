@@ -70,7 +70,7 @@ describe('learning sections', () => {
     const second: LearningSectionOption = { ...section, id: 'section-2', title: { lt: 'Sąvokos', en: 'Terms' }, order: 3 };
     const wrapper = render([section, second]);
     await wrapper.get('[data-testid="reorder-sections"]').trigger('click');
-    await wrapper.get('[aria-label^="Perkelti žemiau: Mokymai"]').trigger('click');
+    await wrapper.get('[aria-label="Perkelti žemiau"][title="Mokymai"]').trigger('click');
     await wrapper.getComponent(SheetForm).vm.$emit('submit');
     expect(router.post).toHaveBeenCalledWith(expect.stringContaining('knowledgeSections.reorder'), {
       sections: [{ id: 'section-2', order: 0 }, { id: 'section-1', order: 1 }],

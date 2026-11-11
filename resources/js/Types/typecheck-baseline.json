@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "total": 2610,
+  "total": 2609,
   "fingerprints": {
     "docs/pdf/build-release.ts | TS2322 | Type 'string | undefined' is not assignable to type 'string'.": 1,
     "docs/pdf/build-release.ts | TS2345 | Argument of type 'string | undefined' is not assignable to parameter of type 'string'.": 1,
@@ -781,7 +781,6 @@
     "resources/js/Components/SupportRequests/SupportRequestForm.vue | TS2538 | Type '{ value: string; label?: string | undefined; }' cannot be used as an index type.": 1,
     "resources/js/Components/Tables/SimpleDataTable.vue | TS2339 | Property 'rowClassName' does not exist on type '{ data: TData[]; columns: ColumnDef<any, TData, any>[]; emptyMessage: string | undefined; emptyIcon: any; enablePagination: boolean; pageSize: number; enableFiltering: boolean; ... 21 more ...; route: { ...; }; }'.": 1,
     "resources/js/Components/Tables/SimpleDataTable.vue | TS2344 | Type '<TData>(__VLS_props: NonNullable<Awaited<typeof __VLS_setup>>[\"props\"], __VLS_ctx?: __VLS_PrettifyLocal<Pick<NonNullable<Awaited<typeof __VLS_setup>>, \"attrs\" | \"emit\" | \"slots\">>, __VLS_exposed?: NonNullable<Awaited<typeof __VLS_setup>>[\"expose\"], __VLS_setup?: Promise<...>) => import(\"vue\").VNode & { __ctx?: NonNu...' does not satisfy the constraint 'abstract new (...args: any) => any'.": 1,
-    "resources/js/Components/Tables/SortableDutiesTable.vue | TS2769 | No overload matches this call.": 1,
     "resources/js/Components/Tables/SortableFormFieldsTable.vue | TS2769 | No overload matches this call.": 1,
     "resources/js/Components/Tables/TrashViewToggle.vue | TS2322 | Type '(value: string | string[] | undefined) => void' is not assignable to type '(payload: AcceptableValue | AcceptableValue[]) => any'.": 1,
     "resources/js/Components/Tag/ReservationResourceStateTag.vue | TS2339 | Property 'description' does not exist on type '{}'.": 1,

@@ -6,10 +6,10 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import { buttonVariants } from '@/Components/ui/button';
 import { LearningImportance } from '@/Types/enums';
-import type { LearningStepData, KnowledgeItemData } from '@/Types/learning';
+import type { LearningStepData, KnowledgeItemData, SelfLearnedItemData } from '@/Types/learning';
 import { safeHref } from '@/Utils/safeHref';
 
-const props = defineProps<{ step: LearningStepData | KnowledgeItemData }>();
+const props = defineProps<{ step: LearningStepData | KnowledgeItemData | SelfLearnedItemData }>();
 const isDocument = computed(() => 'source' in props.step);
 const sourceHref = computed(() => 'source' in props.step ? safeHref(props.step.source?.url) : null);
 // An article without a document is read on its own page.
@@ -30,7 +30,7 @@ const opensElsewhere = computed(() => {
 // Importance sets the weight: essential is the brand fill, recommended an uppercase outline, optional plain text.
 const buttonClass = computed(() => {
   if (props.step.importance === LearningImportance.Essential) return buttonVariants({ variant: 'brand', size: 'sm' });
-  if (props.step.importance === LearningImportance.Optional) return buttonVariants({ variant: 'ghost', voice: 'sentence', size: 'sm' });
+  if (props.step.importance === null || props.step.importance === LearningImportance.Optional) return buttonVariants({ variant: 'ghost', voice: 'sentence', size: 'sm' });
   return buttonVariants({ variant: 'outline', voice: 'brand', size: 'sm' });
 });
 </script>

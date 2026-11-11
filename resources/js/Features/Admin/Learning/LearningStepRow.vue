@@ -5,7 +5,7 @@ import { FileText, MessageSquare, MoreHorizontal } from '@lucide/vue';
 
 import { rowActionIconClass, rowActionHoverClass } from '@/Components/Collection/rowActionClasses';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
-import type { LearningCoordinator, LearningInstitutionContacts, LearningStepData, KnowledgeItemData } from '@/Types/learning';
+import type { LearningCoordinator, LearningInstitutionContacts, LearningStepData, KnowledgeItemData, SelfLearnedItemData } from '@/Types/learning';
 
 import LearningCoordinators from './LearningCoordinators.vue';
 import LearningCompletionControl from './LearningCompletionControl.vue';
@@ -13,7 +13,7 @@ import LearningStepAction from './LearningStepAction.vue';
 import { useStepProgress } from './composables/useStepProgress';
 
 const props = defineProps<{
-  step: LearningStepData | KnowledgeItemData;
+  step: LearningStepData | KnowledgeItemData | SelfLearnedItemData;
   readonly?: boolean;
   coordinators?: LearningCoordinator[];
   institutionContacts?: LearningInstitutionContacts[];

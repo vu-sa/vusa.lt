@@ -94,7 +94,7 @@ test('tenant curators must keep every audience and section within their unit', f
     asUser($user)->post(route('knowledgeItems.store'), knowledgePayload($tenant->id))->assertRedirect();
 });
 
-test('knowledge rejects stages and requires an unambiguous Lithuanian source', function (array $changes, string $error): void {
+test('knowledge rejects stages and ambiguous or unsafe sources', function (array $changes, string $error): void {
     $user = makeUser(Tenant::query()->firstOrFail());
     $user->givePermissionTo(Permission::findOrCreate('learningSteps.create.*', 'web'));
     asUser($user)->postJson(route('knowledgeItems.store'), array_replace(knowledgePayload(), $changes))
@@ -102,7 +102,6 @@ test('knowledge rejects stages and requires an unambiguous Lithuanian source', f
     $this->assertDatabaseMissing('knowledge_items', ['created_by' => $user->id]);
 })->with([
     'stage' => [['audiences' => [['type' => 'everyone', 'importance' => 'recommended', 'stage' => 'whole_term']]], 'audiences.0.stage'],
-    'missing lt' => [['sources' => ['en' => ['url' => 'https://example.test/en']]], 'sources.lt'],
     'empty source' => [['sources' => ['lt' => ['url' => null]]], 'sources.lt'],
     'unsafe url' => [['sources' => ['lt' => ['url' => 'javascript:alert(1)']]], 'sources.lt.url'],
 ]);
@@ -312,4 +311,16 @@ test('knowledge libraries and forms expose their dedicated payloads to curators'
         ->has('item.sources')->missing('item.kind'));
     asUser($user)->get(route('learningSteps.index'))->assertOk()->assertInertia(fn (Assert $page) => $page
         ->where('canCreate', true)->whereType('steps.0.perTerm', 'boolean')->missing('steps.0.flags')->missing('sections'));
+});
+
+test('a link only in English is kept, and summaries stay one short sentence', function (): void {
+    $user = makeUser(Tenant::query()->firstOrFail());
+    $user->givePermissionTo(Permission::findOrCreate('knowledgeItems.update.*', 'web'));
+    $item = KnowledgeItem::factory()->create();
+    $payload = collect(knowledgePayload())->except('audiences')->all();
+
+    asUser($user)->put(route('knowledgeItems.update', $item), [...$payload, 'sources' => ['en' => ['document_id' => null, 'url' => 'https://example.test/en']]])->assertRedirect();
+    expect($item->fresh()->sources->sole())->locale->toBe('en')->url->toBe('https://example.test/en');
+
+    asUser($user)->put(route('knowledgeItems.update', $item), [...$payload, 'summary' => ['lt' => str_repeat('a', 201)]])->assertInvalid('summary.lt');
 });

@@ -49,7 +49,7 @@
               :class="['pl-9', fieldSurfaceClass]"
               :data-testid="`document-search-input-${locale}`"
               @focus="search(locale)"
-              @input="onInput(locale)"
+              @input="onInput(locale, $event)"
             />
           </div>
 
@@ -180,8 +180,9 @@ function clearDocument(locale: LocaleKey): void {
   sources.value[locale].document_id = null;
 }
 
-function onInput(locale: LocaleKey): void {
-  const typed = queries[locale].trim();
+function onInput(locale: LocaleKey, event: Event): void {
+  // Read the field itself: the model update may not have landed yet.
+  const typed = ((event.target as HTMLInputElement | null)?.value ?? queries[locale]).trim();
   if (URL_PATTERN.test(typed)) {
     setMode(locale, 'url');
     sources.value[locale].url = typed;

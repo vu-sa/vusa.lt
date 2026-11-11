@@ -13,14 +13,17 @@ import { groupByLetter, letterAnchor } from '@/Features/Admin/Knowledge/wikiAlph
 import { searchWiki } from '@/Features/Admin/Knowledge/wikiSearch';
 import LearningStepRow from '@/Features/Admin/Learning/LearningStepRow.vue';
 import { LearningImportance } from '@/Types/enums';
-import type { KnowledgeItemData, LearningDocumentsData, WikiIndexEntry, WikiPageSummary } from '@/Types/learning';
+import type { KnowledgeItemData, LearningDocumentsData, SelfLearnedItemData, WikiIndexEntry, WikiPageSummary } from '@/Types/learning';
 
 const props = defineProps<{
   knowledge: LearningDocumentsData;
   index: WikiIndexEntry[];
   sections: { id: string; title: string; description: string; order: number }[];
   canCreate?: boolean;
+  doneIds?: string[];
 }>();
+const done = computed(() => new Set(props.doneIds ?? []));
+const selfLearned = computed(() => props.knowledge.selfLearned ?? []);
 
 const SECTION_PREVIEW = 5;
 const FOR_YOU_LIMIT = 5;
@@ -46,18 +49,23 @@ const sectionOf = (summary: WikiPageSummary) => {
   return entry?.sectionId ? sectionTitles.value.get(entry.sectionId) ?? null : null;
 };
 
-const resolved = (item: KnowledgeItemData) => item.state === 'done' || item.state === 'skipped';
+const resolved = (item: KnowledgeItemData | SelfLearnedItemData) => item.state === 'done' || item.state === 'skipped';
 const essential = computed(() => props.knowledge.items.filter(item => item.importance === LearningImportance.Essential));
 const forYou = computed(() => props.knowledge.items
   .filter(item => !resolved(item) && item.importance !== LearningImportance.Optional)
   .sort((a, b) => Number(b.importance === LearningImportance.Essential) - Number(a.importance === LearningImportance.Essential))
   .slice(0, FOR_YOU_LIMIT));
-const progressLead = computed(() => $t('learning.documents.lead', {
-  essentialDone: String(essential.value.filter(item => item.state === 'done').length),
-  essentialTotal: String(essential.value.length),
-  done: String(props.knowledge.items.filter(resolved).length),
-  total: String(props.knowledge.items.length),
-}));
+const progressLead = computed(() => {
+  const path = $t('learning.documents.lead', {
+    essentialDone: String(essential.value.filter(item => item.state === 'done').length),
+    essentialTotal: String(essential.value.length),
+    done: String(props.knowledge.items.filter(resolved).length),
+    total: String(props.knowledge.items.length),
+  });
+  return selfLearned.value.length
+    ? `${path} ${transChoice('learning.wiki.self_learned_lead', selfLearned.value.length, { count: String(selfLearned.value.length) })}`
+    : path;
+});
 
 const expanded = ref<Set<string>>(new Set());
 const portals = computed(() => [
@@ -90,10 +98,13 @@ const mineGroups = computed(() => {
       { key: 'other', title: $t('learning.documents.other'), items: props.knowledge.items.filter(item => !item.section) },
     ].filter(group => group.items.length);
   }
-  return Object.values(LearningImportance).map(importance => ({
-    key: importance, title: $t(`learning.documents.${importance}`),
-    items: props.knowledge.items.filter(item => item.importance === importance).sort((a, b) => Number(resolved(a)) - Number(resolved(b))),
-  })).filter(group => group.items.length);
+  return [
+    ...Object.values(LearningImportance).map(importance => ({
+      key: importance, title: $t(`learning.documents.${importance}`),
+      items: props.knowledge.items.filter(item => item.importance === importance).sort((a, b) => Number(resolved(a)) - Number(resolved(b))),
+    })),
+    { key: 'self', title: $t('learning.wiki.self_learned'), items: selfLearned.value },
+  ].filter(group => group.items.length);
 });
 </script>
 
@@ -102,7 +113,7 @@ const mineGroups = computed(() => {
     v-if="mine"
     :title="$t('learning.wiki.mine_title')"
     :eyebrow="$t('learning.pages.knowledge')"
-    :lead="knowledge.items.length ? progressLead : undefined"
+    :lead="knowledge.items.length || selfLearned.length ? progressLead : undefined"
   >
     <template #actions>
       <Button variant="ghost" voice="sentence" @click="setView('home')">
@@ -115,6 +126,7 @@ const mineGroups = computed(() => {
         {{ group.title }}
         <span class="text-sm font-normal tabular-nums text-muted-foreground">{{ group.items.filter(resolved).length }}/{{ group.items.length }}</span>
       </h2>
+      <p v-if="group.key === 'self'" class="mt-1 text-sm text-muted-foreground">{{ $t('learning.wiki.self_learned_hint') }}</p>
       <ul class="mt-3 divide-y divide-border border border-border">
         <LearningStepRow v-for="item in group.items" :key="item.id" :step="item" />
       </ul>
@@ -160,7 +172,7 @@ const mineGroups = computed(() => {
             <section v-for="section in portals" :id="`section-${section.id}`" :key="section.id" class="min-w-0 scroll-mt-24" :aria-labelledby="`portal-${section.id}`">
               <h3 :id="`portal-${section.id}`" class="border-t-2 border-foreground pt-3 text-lg font-bold leading-tight text-foreground">{{ section.title }}</h3>
               <p v-if="section.description" class="mt-1 text-sm text-muted-foreground">{{ section.description }}</p>
-              <WikiPageList :pages="visiblePages(section)" dense class="mt-3" />
+              <WikiPageList :pages="visiblePages(section)" dense :done-ids="done" class="mt-3" />
               <Button
                 v-if="section.pages.length > SECTION_PREVIEW && !expanded.has(section.id)"
                 variant="ghost"
@@ -179,7 +191,7 @@ const mineGroups = computed(() => {
         <aside class="space-y-10" data-slot="wiki-aside">
           <section v-if="recent.length" aria-labelledby="wiki-recent" class="space-y-3">
             <h2 id="wiki-recent" class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{{ $t('learning.wiki.recent') }}</h2>
-            <WikiPageList :pages="recent" dense />
+            <WikiPageList :pages="recent" dense :done-ids="done" />
           </section>
           <nav v-if="letters.length" aria-labelledby="wiki-letters" class="space-y-3">
             <h2 id="wiki-letters" class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{{ $t('learning.pages.alphabet') }}</h2>

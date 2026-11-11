@@ -7,6 +7,17 @@ import { commonStubs } from '@/tests/stubs';
 import { step } from './fixtures';
 
 describe('LearningCompletionControl', () => {
+  it('celebrates only the moment something is marked done', async () => {
+    const wrapper = mount(LearningCompletionControl, { props: { step: step(), modelValue: true } });
+    expect(wrapper.find('[data-celebrating]').exists()).toBe(false);
+    await wrapper.setProps({ modelValue: false });
+    await wrapper.setProps({ modelValue: true });
+    expect(wrapper.get('[role="checkbox"]').attributes('data-celebrating')).toBe('true');
+    expect(wrapper.find('.learning-check-burst').exists()).toBe(true);
+    expect(wrapper.get('[role="checkbox"]').classes()).toContain('border-2');
+    wrapper.unmount();
+  });
+
   it('uses a dashed optional outline and keeps the pointer on the visible control', async () => {
     const wrapper = mount(LearningCompletionControl, { props: { step: step({ importance: LearningImportance.Optional }), modelValue: false } });
     const checkbox = wrapper.get('[role="checkbox"]');

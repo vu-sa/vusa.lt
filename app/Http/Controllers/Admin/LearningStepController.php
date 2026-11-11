@@ -48,7 +48,7 @@ class LearningStepController extends AdminController
         $this->authorize('view', $learningStep);
         $learningStep->load(['audiences' => fn ($query) => $query->with(LearningAudience::LABEL_RELATIONS)]);
         $path = ResolveLearningPath::execute($request->user());
-        $item = $path->steps->concat($path->meetingPrep)->first(fn (ResolvedLearningItem $item): bool => $item->item->id === $learningStep->id) ?? new ResolvedLearningItem($learningStep, importance: $learningStep->audiences->first()?->importance ?? LearningImportance::Recommended, stage: $learningStep->audiences->first()?->stage, audienceLabel: $learningStep->audiences->first()?->label(app()->getLocale()) ?? '');
+        $item = $path->steps->concat($path->meetingPrep)->first(fn (ResolvedLearningItem $item): bool => $item->item->id === $learningStep->id) ?? new ResolvedLearningItem($learningStep, importance: $learningStep->audiences->first()->importance ?? LearningImportance::Recommended, stage: $learningStep->audiences->first()?->stage, audienceLabel: $learningStep->audiences->first()?->label(app()->getLocale()) ?? '');
 
         return Inertia::render('Admin/Learning/ShowLearningStep', [
             'step' => LearningPathPresenter::step($item, $request->user(), app()->getLocale()),
@@ -128,8 +128,8 @@ class LearningStepController extends AdminController
         $scope = $this->authorizer->scope($user, "learningSteps.{$ability}.padalinys");
 
         return [
-            'audienceTypes' => array_values(array_map(fn (LearningAudienceType $type): string => $type->value,
-                array_filter(LearningAudienceType::cases(), fn (LearningAudienceType $type): bool => $type !== LearningAudienceType::Purpose))),
+            'audienceTypes' => array_map(fn (LearningAudienceType $type): string => $type->value,
+                array_filter(LearningAudienceType::cases(), fn (LearningAudienceType $type): bool => $type !== LearningAudienceType::Purpose)),
             'canTargetEverywhere' => $scope->isAllScope,
             'tenants' => GetTenantsForUpserts::execute("learningSteps.{$ability}.padalinys", $this->authorizer)->all(),
             'institutionTypes' => InstitutionType::query()->get(['id', 'title', 'parent_id'])->map(fn (InstitutionType $type): array => [

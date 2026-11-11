@@ -164,3 +164,19 @@ describe('LearningStepRow', () => {
     expect(wrapper.text()).not.toContain('learning.path.kind_document');
     wrapper.unmount();
  });
+
+ it.each(['onError', 'onHttpException', 'onNetworkError'] as const)('rolls back an optimistic tick on %s and allows retry', async (failure) => {
+   const wrapper = render();
+   await wrapper.get('[role="checkbox"]').trigger('click');
+   expect(wrapper.get('[role="checkbox"]').attributes('aria-checked')).toBe('true');
+   const callbacks = vi.mocked(router.post).mock.calls[0]![2]! as { onFinish: () => void; onError: () => void; onHttpException: () => void; onNetworkError: () => void };
+   const fail = callbacks[failure] as () => void;
+   fail();
+   callbacks.onFinish!();
+   await wrapper.vm.$nextTick();
+   expect(wrapper.get('[role="checkbox"]').attributes('aria-checked')).toBe('false');
+   expect(wrapper.find('[role="alert"]').exists()).toBe(true);
+   await wrapper.get('[role="checkbox"]').trigger('click');
+   expect(router.post).toHaveBeenCalledTimes(2);
+   wrapper.unmount();
+ });

@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import ShowKnowledgeBase from '@/Pages/Admin/Knowledge/ShowKnowledgeBase.vue';
 import { LearningImportance } from '@/Types/enums';
-import type { WikiIndexEntry } from '@/Types/learning';
+import type { SelfLearnedItemData, WikiIndexEntry } from '@/Types/learning';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
 import { knowledge } from '../../Learning/__tests__/fixtures';
@@ -36,9 +36,13 @@ const items = () => [
   knowledge({ id: 'optional', importance: LearningImportance.Optional }),
   knowledge({ id: 'skipped', state: 'skipped', importance: LearningImportance.Essential }),
 ];
-function render(knowledgeItems = items()) {
+function render(knowledgeItems = items(), extra: { selfLearned?: SelfLearnedItemData[]; doneIds?: string[] } = {}) {
+  const selfLearned = extra.selfLearned ?? [];
   return mount(ShowKnowledgeBase, {
-    props: { knowledge: { sections: sections.slice(0, 2), items: knowledgeItems }, index, sections },
+    props: {
+      knowledge: { sections: sections.slice(0, 2), items: knowledgeItems, selfLearned, stats: { pathDone: 0, pathTotal: knowledgeItems.length, selfLearned: selfLearned.length } },
+      index, sections, doneIds: extra.doneIds,
+    },
     global: { stubs: commonStubs },
   });
 }
@@ -88,5 +92,21 @@ describe('Wiki home', () => {
     const empty = render([]);
     expect(empty.get('[data-slot="empty-state"]').text()).toContain('learning.documents.empty_title');
     empty.unmount();
+  });
+
+  it('lists articles you learned on your own after your path, and ticks learned articles in lists', () => {
+    vi.mocked(usePage).mockReturnValue({ ...createMockPage(), url: '/mano/knowledge?view=importance' });
+    const self: SelfLearnedItemData = { ...knowledge({ id: 'kvorumas', title: 'Kvorumas', state: 'done' }), importance: null };
+    const mine = render(items(), { selfLearned: [self] });
+    const groups = mine.findAll('[data-slot="document-section"]');
+    expect(groups.at(-1)!.get('h2').text()).toBe('learning.wiki.self_learned 1/1');
+    expect(groups.at(-1)!.text()).toContain('Kvorumas');
+    mine.unmount();
+
+    vi.mocked(usePage).mockReturnValue({ ...createMockPage(), url: '/mano/knowledge' });
+    const home = render(items(), { doneIds: ['skvc'] });
+    const learned = home.get('[data-slot="wiki-aside"]').findAll('[data-slot="wiki-page-learned"]');
+    expect(learned).toHaveLength(1);
+    home.unmount();
   });
 });

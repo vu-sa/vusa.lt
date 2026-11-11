@@ -28,21 +28,17 @@
     />
 
     <component
-      :is="reordering ? SortableDutiesTable : CollectionRowList"
+      :is="reordering ? SortableRowList : CollectionRowList"
       v-else
+      v-bind="reordering ? { disabled: saving, itemLabel: dutyName } : {}"
       :items="reordering ? draft : duties"
       frame="attached"
       :item-key="(duty: DutyWithUsers) => String(duty.id)"
       :row-muted="(duty: DutyWithUsers) => duty.is_active === false"
       @update:items="draft = $event"
     >
-      <template #default="{ item: duty, index }">
+      <template #default="{ item: duty }">
         <CollectionRow :actions="reordering ? [] : rowActions(duty)" :class="ROW_PADDING_CLASS" data-slot="institution-duty-row" @select="key => selectRowAction(key, duty)">
-          <template v-if="reordering" #lead>
-            <button type="button" class="handle flex min-h-11 w-6 cursor-grab items-center justify-center text-muted-foreground active:cursor-grabbing" :aria-label="$t('Tempti, kad pakeistum tvarką')" tabindex="-1" :disabled="saving">
-              <GripVertical class="size-4" aria-hidden="true" />
-            </button>
-          </template>
           <div class="flex items-center gap-3">
             <CollectionPrimaryCell :title="dutyName(duty)" :href="route('duties.show', duty.id)" class="flex-1">
               <InflectedDutyName :name="dutyName(duty)" />
@@ -77,10 +73,6 @@
               @assign="$emit('assign', duty)"
               @edit-term="user => $emit('edit-term', duty, user)"
             />
-            <div v-if="reordering" class="flex shrink-0 items-center">
-              <Button variant="ghost" size="icon-sm" :disabled="saving || index === 0" :aria-label="$t('Perkelti aukščiau')" @click="move(index, -1)"><ArrowUp class="size-4" /></Button>
-              <Button variant="ghost" size="icon-sm" :disabled="saving || index === draft.length - 1" :aria-label="$t('Perkelti žemiau')" @click="move(index, 1)"><ArrowDown class="size-4" /></Button>
-            </div>
           </div>
         </CollectionRow>
       </template>
@@ -92,11 +84,12 @@
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowDown, ArrowDownUp, ArrowUp, Briefcase, GripVertical, Pencil, Plus, Save, UserPlus } from '@lucide/vue';
+import { ArrowDownUp, Briefcase, Pencil, Plus, Save, UserPlus } from '@lucide/vue';
 
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import CollectionRowList from '@/Components/Collection/CollectionRowList.vue';
+import SortableRowList from '@/Components/Collection/SortableRowList.vue';
 import { ROW_PADDING_CLASS } from '@/Components/Collection/rowList';
 import DutyHoldersPopover from '@/Components/Duties/DutyHoldersPopover.vue';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
@@ -106,8 +99,6 @@ import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import type { DutyWithUsers, UserWithPivot } from '@/Types/DutyAssignment';
 import { EmptyState, OverviewSection, SectionHeaderAction } from '@/Components/Patterns';
-import SortableDutiesTable from '@/Components/Tables/SortableDutiesTable.vue';
-import { Button } from '@/Components/ui/button';
 
 const props = defineProps<{
   duties: DutyWithUsers[];
@@ -173,24 +164,6 @@ const startReorder = () => {
 const cancelReorder = () => {
   reordering.value = false;
   draft.value = [];
-};
-
-const move = (index: number, step: -1 | 1) => {
-  const target = index + step;
-
-  if (target < 0 || target >= draft.value.length) {
-    return;
-  }
-
-  const next = [...draft.value];
-  const currentDuty = next[index];
-  const targetDuty = next[target];
-
-  if (!currentDuty || !targetDuty) return;
-
-  next[index] = targetDuty;
-  next[target] = currentDuty;
-  draft.value = next;
 };
 
 const saveOrder = () => {

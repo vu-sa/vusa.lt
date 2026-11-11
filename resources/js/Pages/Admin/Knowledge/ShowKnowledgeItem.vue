@@ -24,6 +24,8 @@ import type { KnowledgeItemData, LearningCoordinator, LearningInstitutionContact
 const props = withDefaults(defineProps<{
   item: KnowledgeItemData;
   inPath: boolean;
+  /** Any active article can be ticked as learned, on your path or not. */
+  canTrack?: boolean;
   coordinators: LearningCoordinator[];
   institutionContacts: LearningInstitutionContacts[];
   canUpdate: boolean;
@@ -33,7 +35,7 @@ const props = withDefaults(defineProps<{
   subjectOptions?: { institutionTypes: LearningTypeOption[]; dutyTypes: LearningTypeOption[] };
 }>(), { linkedPages: () => ({}), related: () => [], subjects: () => [], subjectOptions: () => ({ institutionTypes: [], dutyTypes: [] }) });
 
-const readonly = computed(() => !props.inPath);
+const readonly = computed(() => !props.canTrack);
 const { checked, saving, failed } = useStepProgress(toRef(props, 'item'), readonly);
 const subjectsOpen = ref(false);
 const actions = computed<AdminRecordAction[]>(() => props.canUpdate ? [
@@ -68,17 +70,18 @@ watch(() => props.item.id, () => {
 <template>
   <OverviewPage :title="item.title" :eyebrow="$t('learning.pages.knowledge')" class="gap-8! lg:gap-10! sm:[&>[data-slot=overview-title-band]]:items-start">
     <template #heading>
-      <div :class="inPath ? 'grid grid-cols-[2.75rem_minmax(0,1fr)] gap-x-3' : ''" data-slot="step-heading">
-        <LearningCompletionControl v-if="inPath" v-model="checked" :step="item" :disabled="saving" class="mt-1.5 sm:mt-2.5" />
+      <div :class="canTrack ? 'grid grid-cols-[2.75rem_minmax(0,1fr)] gap-x-3' : ''" data-slot="step-heading">
+        <LearningCompletionControl v-if="canTrack" v-model="checked" :step="inPath ? item : { ...item, importance: null }" :disabled="saving" class="mt-1.5 sm:mt-2.5" />
         <div class="min-w-0">
           <h1 class="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-balance text-3xl font-bold leading-tight text-foreground sm:text-4xl">
             {{ item.title }}
             <abbr v-if="item.abbreviation" :title="item.title" class="border border-border px-2 py-0.5 text-base font-bold tracking-wide no-underline sm:text-lg" data-testid="article-abbreviation">{{ item.abbreviation }}</abbr>
           </h1>
-          <p v-if="inPath || item.section || item.perTerm" class="mt-2 flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground" data-slot="step-meta">
+          <p v-if="canTrack || item.section || item.perTerm" class="mt-2 flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground" data-slot="step-meta">
             <span v-if="inPath" :class="item.importance === 'essential' ? 'font-semibold text-brand' : 'font-semibold text-foreground'">{{ $t(`learning.importance.${item.importance}`) }}</span>
+            <span v-else-if="canTrack" :class="checked ? 'font-semibold text-foreground' : ''" data-slot="self-learning-state">{{ checked ? $t('learning.wiki.self_learned_done') : $t('learning.wiki.self_learning_hint') }}</span>
             <template v-if="item.section">
-              <span v-if="inPath" aria-hidden="true">·</span>
+              <span v-if="canTrack" aria-hidden="true">·</span>
               <Link :href="route('knowledgeBase.show') + `#section-${item.section.id}`" class="hover:text-foreground">{{ item.section.title }}</Link>
             </template>
             <template v-if="item.perTerm && inPath">
@@ -97,7 +100,7 @@ watch(() => props.item.id, () => {
       </div>
     </template>
 
-    <div :class="['grid gap-10 lg:grid-cols-[minmax(0,1fr)_17rem] lg:gap-x-14', inPath && 'sm:pl-14']" data-slot="step-body">
+    <div :class="['grid gap-10 lg:grid-cols-[minmax(0,1fr)_17rem] lg:gap-x-14', canTrack && 'sm:pl-14']" data-slot="step-body">
       <article class="min-w-0 max-w-prose space-y-8 lg:col-start-1 lg:row-start-1">
         <WikiProse v-if="articleHtml" :html="articleHtml" :pages="linkedPages" />
         <LearningAudienceNotes v-if="inPath" :notes="item.audienceNotes" />

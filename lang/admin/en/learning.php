@@ -95,6 +95,12 @@ return [
         ],
     ],
     'wiki' => [
+        'learned' => 'Learned',
+        'self_learned' => 'On your own',
+        'self_learned_hint' => 'Articles outside your path that you have ticked as learned.',
+        'self_learned_lead' => '{1} Plus :count on your own.|[2,*] Plus :count on your own.',
+        'self_learned_done' => 'Learned',
+        'self_learning_hint' => 'Tick it once you know it',
         'articles' => 'Wiki articles',
         'lead' => 'Who is who at VU SR and the university – terms, institutions, documents and how they connect.',
         'search_label' => 'Search the wiki',
@@ -155,6 +161,7 @@ return [
         'empty_description' => 'Come back later or contact your coordinator.',
     ],
     'path' => [
+        'self_learned' => 'Ticked for your own learning',
         'open_step' => 'Open step',
         'audience_notes' => 'What it means for you',
         'auto_label' => 'ticked automatically',

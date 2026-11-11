@@ -23,11 +23,6 @@ const stubs = {
   Popover: stubPopover,
   PopoverTrigger: { template: '<div><slot /></div>' },
   PopoverContent: stubPopoverContent,
-  // The real one drives Sortable on the DOM; the up/down buttons are what a test can reach.
-  SortableDutiesTable: {
-    props: ['items'],
-    template: '<div><div v-for="(model, index) in items" :key="model.id" :data-row="model.id"><slot :model="model" :item="model" :index="index" /></div></div>',
-  },
   DutyCard: { props: ['duty', 'canManage'], template: '<div class="duty-card">{{ duty.name }}</div>' },
   EmptyState: { props: ['title', 'actionLabel'], template: '<div data-testid="empty">{{ title }}<span v-if="actionLabel">{{ actionLabel }}</span></div>' },
 };
@@ -104,9 +99,9 @@ describe('InstitutionDutiesSection', () => {
     await button(wrapper, 'Keisti tvarką')!.trigger('click');
     expect(button(wrapper, 'Išsaugoti tvarką')!.attributes('disabled')).toBeDefined();
 
-    await wrapper.find('[data-row="b"]').findAll('button').find(b => b.attributes('aria-label') === 'Perkelti aukščiau')!.trigger('click');
+    await wrapper.find('[data-key="b"]').findAll('button').find(b => b.attributes('aria-label') === 'Perkelti aukščiau')!.trigger('click');
 
-    expect(wrapper.findAll('[data-row]').map(row => row.attributes('data-row'))).toEqual(['b', 'a', 'c']);
+    expect(wrapper.findAll('[data-key]').map(row => row.attributes('data-key'))).toEqual(['b', 'a', 'c']);
     expect(button(wrapper, 'Išsaugoti tvarką')!.attributes('disabled')).toBeUndefined();
   });
 
@@ -114,8 +109,8 @@ describe('InstitutionDutiesSection', () => {
     const wrapper = mountSection();
     await button(wrapper, 'Keisti tvarką')!.trigger('click');
 
-    const up = wrapper.find('[data-row="a"]').findAll('button').find(b => b.attributes('aria-label') === 'Perkelti aukščiau')!;
-    const down = wrapper.find('[data-row="c"]').findAll('button').find(b => b.attributes('aria-label') === 'Perkelti žemiau')!;
+    const up = wrapper.find('[data-key="a"]').findAll('button').find(b => b.attributes('aria-label') === 'Perkelti aukščiau')!;
+    const down = wrapper.find('[data-key="c"]').findAll('button').find(b => b.attributes('aria-label') === 'Perkelti žemiau')!;
 
     expect(up.attributes('disabled')).toBeDefined();
     expect(down.attributes('disabled')).toBeDefined();
@@ -125,7 +120,7 @@ describe('InstitutionDutiesSection', () => {
     const wrapper = mountSection();
 
     await button(wrapper, 'Keisti tvarką')!.trigger('click');
-    await wrapper.find('[data-row="a"]').findAll('button').find(b => b.attributes('aria-label') === 'Perkelti žemiau')!.trigger('click');
+    await wrapper.find('[data-key="a"]').findAll('button').find(b => b.attributes('aria-label') === 'Perkelti žemiau')!.trigger('click');
     await button(wrapper, 'Išsaugoti tvarką')!.trigger('click');
 
     expect(router.post).toHaveBeenCalledWith(

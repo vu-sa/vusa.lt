@@ -3,6 +3,7 @@ title: Wiki straipsniai
 doc_status: reviewed
 last_reviewed: 2026-11-11
 tests:
+  - tests/Browser/WikiCompletionTest.php
   - tests/Feature/Admin/Learning/KnowledgeItemDocumentPreviewTest.php
   - tests/Feature/Admin/Learning/KnowledgeItemsTest.php
   - tests/Feature/Admin/Learning/LearningDocumentsTest.php
@@ -18,6 +19,10 @@ tests:
   - resources/js/Features/Admin/Learning/__tests__/LearningLibrary.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/KnowledgeItemForm.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/LearningSectionsSheet.component.test.ts
+  - resources/js/Features/Admin/Learning/__tests__/ShowKnowledgeItem.component.test.ts
+  - resources/js/Features/Admin/Learning/__tests__/LearningCompletionControl.component.test.ts
+  - resources/js/Features/Admin/Knowledge/__tests__/WikiSubjectsSheet.component.test.ts
+  - resources/js/Components/TipTap/__tests__/TiptapLinkButton.component.test.ts
 ---
 
 # Wiki straipsniai
@@ -36,8 +41,8 @@ o susiję straipsniai surenkami automatiškai.
 
 ## Susitarimai
 
-- **Santrauka – vienas ar du sakiniai.** Ji rodoma paieškoje, sąrašuose ir užvedus ant nuorodos,
-  todėl turi būti suprantama be viso straipsnio.
+- **Santrauka – vienas sakinys** (iki 200 ženklų): kas tai yra. Ji rodoma paieškoje, sąrašuose ir
+  užvedus ant nuorodos, todėl turi būti suprantama be viso straipsnio. Visa kita – straipsnio tekste.
 - **Nuoroda vietoj pakartojimo.** Jei tekste minima sąvoka ar institucija, turinti savo straipsnį,
   ji susiejama nuoroda, o ne paaiškinama iš naujo.
 - **Šaltiniai laikomi Archyve.** Naujas dokumentas ar pristatymas pirmiausia įkeliamas į SharePoint
@@ -49,7 +54,7 @@ o susiję straipsniai surenkami automatiškai.
 
 ### Straipsniai ir nuorodos {#nuorodos}
 
-Straipsnio puslapyje rodomas pavadinimas su santrumpa, santrauka, tekstas, šaltinis (dokumentas – su
+Straipsnio puslapyje rodomas pavadinimas su santrumpa, tekstas (pradedamas santrauka), šaltinis (dokumentas – su
 pirmojo puslapio peržiūra), **Susiję straipsniai**, **Apie ką šis straipsnis** ir įžvalgos – kitų
 atstovų patirtis ir klausimai (žr. [Komentarai](/visak/komentarai#temos)).
 
@@ -70,6 +75,14 @@ rodomi institucijos puslapio santraukoje, bloke **Wiki** (ir tiesiogiai su insti
 susieti su jos tipu).
 
 „Apie ką“ nenulemia, kam straipsnis rodomas Mano kelyje – tam skirtos auditorijos.
+
+### Išmokta {#ismokta}
+
+Kiekvieną straipsnį galima pažymėti išmoktu langeliu prie pavadinimo – ir tą, kuris tau skirtas, ir
+bet kurį kitą. Pažymėti straipsniai rodomi su varnele pradžioje ir rodyklėje. Ne tavo kelio
+straipsniai, kuriuos pažymėjai, surenkami sąraše **Visi tau skirti straipsniai** → **Pagal svarbą**,
+grupėje **Savarankiškai**, o pažangos eilutėje pridedama, kiek jų išmokai. Praleisti galima tik tau
+skirtus straipsnius.
 
 ### Tau skirti straipsniai
 
@@ -123,34 +136,40 @@ Mano kelio žingsnių biblioteka yra atskirai: **Organizacija → Kelio žingsni
 1. Atverk [Wiki](app:/mano/knowledge) darbo sričių pasirinkime.
 2. Įrašyk sąvoką, santrumpą ar dokumento pavadinimą arba pasirink skyrių.
 3. Straipsnyje užvesk pelę ant nuorodos (telefone – paliesk), kad pamatytum trumpą paaiškinimą.
-4. Tau skirtą straipsnį pažymėk perskaitytu langeliu prie pavadinimo.
+4. Kai išmoksi, pažymėk langelį prie pavadinimo – tai galima bet kuriam straipsniui.
 
 ### Parašyti straipsnį {#prideti-straipsni}
 
 1. **+ Sukurti** → **Naujas žinių bazės straipsnis**.
-2. Įrašyk pavadinimą, santrumpą (jei yra) ir santrauką.
+2. Įrašyk pavadinimą, santrumpą (jei yra) ir vieno sakinio santrauką.
 3. Tekste parašyk `[[` ir kelias pavadinimo raides – pasirink straipsnį, į kurį nori nurodyti.
-   Tekste galima formatuoti, pridėti paveikslėlių ir YouTube vaizdo įrašų.
-4. Jei straipsnis paaiškina dokumentą, pasirink šaltinį: dokumentą iš Archyvo arba nuorodą.
-   Anglišką šaltinį nurodyk tik tada, kai jis skiriasi.
+   Esamą nuorodą pakeisi ją pažymėjęs ir paspaudęs **Redaguoti nuorodą**: skirtuke **Wiki straipsnis**
+   gali pakeisti nuorodos tekstą ar straipsnį, į kurį ji veda. Tekste galima formatuoti, pridėti
+   paveikslėlių ir YouTube vaizdo įrašų.
+4. Jei straipsnis paaiškina dokumentą, pasirink šaltinį: dokumentą iš Archyvo arba nuorodą (įklijavus
+   adresą į dokumento paiešką, jis tampa nuoroda). Šaltinis nebūtinas; jei jis yra tik viena kalba,
+   rodomas abiem.
 5. Dešinėje pasirink, kieno tai straipsnis (padalinio ar visos VU SA), skyrių ir eilės numerį.
 6. Jei gali tvarkyti Mano kelią, skiltyje **Kam skirta** pridėk auditorijas ir, prireikus, įjunk
    **Peržiūrėti kiekvieną kadenciją**.
 7. Išsaugok. Straipsnio puslapyje prie **Apie ką šis straipsnis** spausk **Tvarkyti**, jei
-   straipsnis apie instituciją ar tipą.
+   straipsnis apie instituciją ar tipą: institucija pasirenkama paieškos lange, tipai – iš medžio.
 
 ### Tvarkyti skyrius
 
 1. Bibliotekoje atverk **Skyriai**.
-2. Spausk **Sukurti skyrių** arba **Redaguoti** prie esamo. Įrašyk pavadinimus ir aprašymus abiem
-   kalbomis, eilės numerį ir padalinį, jei jis privalomas.
-3. **Ištrinti** paprašys patvirtinimo. Skyriaus straipsniai liks prie **Kiti straipsniai**.
+2. Spausk **Sukurti skyrių** arba pieštuką prie esamo. Įrašyk pavadinimą ir aprašymą lietuviškai,
+   tada perjunk **EN** ir įrašyk angliškai; padalinį – jei jis privalomas. Naujas skyrius atsiduria
+   sąrašo gale.
+3. **Keisti tvarką** leidžia tempti skyrius už rankenėlės arba perkelti rodyklėmis; spausk
+   **Išsaugoti tvarką**. Tvarką keisti gali tas, kas gali redaguoti visus sąrašo skyrius.
+4. **Ištrinti** paprašys patvirtinimo. Skyriaus straipsniai liks prie **Kiti straipsniai**.
 
 ## Kas ką gali {#teises}
 
 | Kas | Ką gali |
 |---|---|
-| Kiekvienas narys | Skaityti visą Wiki, žymėti sau skirtus straipsnius perskaitytais, rašyti įžvalgas |
+| Kiekvienas narys | Skaityti visą Wiki, žymėti bet kurį straipsnį išmoktu, praleisti sau skirtus rekomenduojamus, rašyti įžvalgas |
 | Studentų atstovų koordinatorius | Rašyti ir redaguoti savo padalinio straipsnius ir skyrius; straipsniams nustatyti tik savo padaliniu apribotas auditorijas |
 | Centrinio biuro studentų atstovų koordinatorius | Rašyti ir redaguoti visus straipsnius, skyrius ir auditorijas |
 
@@ -170,7 +189,8 @@ redaguoti straipsnius, bet ne jų auditorijas.
   `outgoingLinks` ∪ `incomingLinks`. Kortelių duomenys (`linkedPages`) siunčiami kartu su puslapiu.
 - „Apie ką“ – `knowledge_item_subjects` (leidžiami tipai: `institution`, `institution_type`,
   `duty_type`); institucijos puslapis juos gauna atidėtai (`knowledgePages`).
-- Auditorijos (`learning_audiences`) ir pažanga (`learning_progress`) bendros su kelio žingsniais;
+- Auditorijos (`learning_audiences`) ir pažanga (`learning_progress`) bendros su kelio žingsniais; pažymėti
+  galima bet kurį aktyvų straipsnį, o ne kelio pažymėjimai pradžioje grąžinami kaip `selfLearned`;
   `per_term` straipsnis įskaitomas, jei pažymėtas ne anksčiau kaip 90 dienų iki kadencijos pradžios.
 - Teisės: straipsnio turinys – `knowledgeItems.*` (`.padalinys` – straipsnio padalinys, `.*` – visi);
   auditorijos – `learningSteps.*`, o Mano kelio tvarkytojai gali redaguoti ir straipsnius, kurių

@@ -171,6 +171,26 @@ describe('KnowledgeItemForm', () => {
 
     expect(wrapper.find('[data-testid="hidden-document-warning-lt"]').exists()).toBe(false);
   });
+  it('opens an English-only link on "Nuoroda" in Lithuanian too, and keeps it on save', async () => {
+    const wrapper = mount(KnowledgeItemForm, {
+      props: { item: editKnowledge({ sources: { en: { url: 'https://vusa.lt/en-only', document_id: null } } }) },
+      global: { stubs },
+    });
+    expect(wrapper.find('[data-testid="source-url-lt"]').exists()).toBe(true);
+    const form = vi.mocked(useForm).mock.results[0]!.value;
+    await wrapper.findComponent({ name: 'FormPage' }).vm.$emit('submit');
+    const payload = form.transform.mock.calls[0]![0](form);
+    expect(payload.sources).toEqual({ en: { document_id: null, url: 'https://vusa.lt/en-only' } });
+    wrapper.unmount();
+  });
+
+  it('turns a link pasted into the document search into a link source', async () => {
+    const wrapper = mount(KnowledgeItemForm, { props: { item: editKnowledge({ sources: {} }) }, global: { stubs } });
+    await wrapper.get('[data-testid="document-search-input-lt"]').setValue('https://e-seimas.lrs.lt/akt');
+    expect(wrapper.get<HTMLInputElement>('[data-testid="source-url-lt"]').element.value).toBe('https://e-seimas.lrs.lt/akt');
+    wrapper.unmount();
+  });
+
   it('submits sources and section without a step kind or stage', async () => {
     const wrapper = mount(KnowledgeItemForm, {
       props: { item: editKnowledge({ sources: { lt: { url: 'https://example.test/read', document_id: null } } }), canManageAudiences: true },

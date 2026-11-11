@@ -95,6 +95,12 @@ return [
         ],
     ],
     'wiki' => [
+        'learned' => 'Išmokta',
+        'self_learned' => 'Savarankiškai',
+        'self_learned_hint' => 'Straipsniai ne iš tavo kelio, kuriuos pažymėjai kaip išmoktus.',
+        'self_learned_lead' => '{1} Ir dar :count savarankiškai.|[2,9] Ir dar :count savarankiškai.|[10,*] Ir dar :count savarankiškai.',
+        'self_learned_done' => 'Išmokta',
+        'self_learning_hint' => 'Pažymėk, kai išmoksi',
         'articles' => 'Wiki straipsniai',
         'lead' => 'Kas yra kas VU SA ir universitete – sąvokos, institucijos, dokumentai ir kaip jie susiję.',
         'search_label' => 'Ieškoti wiki',
@@ -155,6 +161,7 @@ return [
         'empty_description' => 'Grįžk vėliau arba kreipkis į koordinatorių.',
     ],
     'path' => [
+        'self_learned' => 'Pažymėta savarankiškam mokymuisi',
         'open_step' => 'Atidaryti žingsnį',
         'audience_notes' => 'Tau tai reiškia',
         'auto_label' => 'pažymėta automatiškai',

@@ -10,7 +10,8 @@ import { groupByLetter, letterAnchor } from '@/Features/Admin/Knowledge/wikiAlph
 import { searchWiki } from '@/Features/Admin/Knowledge/wikiSearch';
 import type { WikiIndexEntry } from '@/Types/learning';
 
-const props = defineProps<{ index: WikiIndexEntry[] }>();
+const props = withDefaults(defineProps<{ index: WikiIndexEntry[]; doneIds?: string[] }>(), { doneIds: () => [] });
+const done = computed(() => new Set(props.doneIds));
 
 const query = ref('');
 const groups = computed(() => groupByLetter(searchWiki(props.index, query.value)));
@@ -36,7 +37,7 @@ const groups = computed(() => groupByLetter(searchWiki(props.index, query.value)
     <div class="max-w-3xl space-y-10">
       <section v-for="group in groups" :id="letterAnchor(group.letter)" :key="group.letter" class="grid scroll-mt-48 gap-x-8 sm:grid-cols-[3rem_minmax(0,1fr)]" :aria-labelledby="`${letterAnchor(group.letter)}-title`">
         <h2 :id="`${letterAnchor(group.letter)}-title`" class="u-display text-4xl leading-none text-brand">{{ group.letter }}</h2>
-        <WikiPageList :pages="group.pages" class="mt-3 sm:mt-0" />
+        <WikiPageList :pages="group.pages" :done-ids="done" class="mt-3 sm:mt-0" />
       </section>
       <EmptyState v-if="!groups.length" :title="query ? $t('learning.wiki.no_results', { query }) : $t('learning_library.knowledge.empty_title')" />
     </div>

@@ -20,9 +20,9 @@ const hiddenDocument: LearningSource = {
   title: 'Studijų reguliaminas', private: true, thumbnailUrl: '/mano/knowledge/items/knowledge-1/thumbnail?v=abc',
 };
 
-function render(source: LearningSource | null) {
+function render(source: LearningSource | null, props: Record<string, unknown> = {}) {
   return mount(ShowKnowledgeItem, {
-    props: { item: knowledge({ source }), inPath: true, coordinators: [], institutionContacts: [], canUpdate: false },
+    props: { item: knowledge({ source }), inPath: true, canTrack: true, coordinators: [], institutionContacts: [], canUpdate: false, ...props },
     global: { stubs: {
       ...commonStubs, DiscussionPanel: true,
       Sheet: commonStubs.Dialog, SheetContent: commonStubs.DialogContent,
@@ -50,4 +50,16 @@ it('falls back to the plain link without a thumbnail or when the image fails', a
   await wrapper.get('[data-slot="source-preview"] img').trigger('error');
   expect(wrapper.find('[data-slot="source-preview"]').exists()).toBe(false);
   wrapper.unmount();
+});
+
+it('lets you tick an article that is not on your path, and opens with its summary as prose', async () => {
+  const wrapper = render(null, { inPath: false, item: knowledge({ source: null, summary: 'Vienas sakinys.', state: 'pending' }) });
+  expect(wrapper.find('[data-testid="step-checkbox"]').exists()).toBe(true);
+  expect(wrapper.get('[data-slot="self-learning-state"]').text()).toBe('learning.wiki.self_learning_hint');
+  expect(wrapper.get('[data-slot="wiki-prose"] [data-slot="article-summary"]').text()).toBe('Vienas sakinys.');
+  wrapper.unmount();
+
+  const readonly = render(null, { inPath: false, canTrack: false });
+  expect(readonly.find('[data-testid="step-checkbox"]').exists()).toBe(false);
+  readonly.unmount();
 });

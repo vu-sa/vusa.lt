@@ -71,7 +71,7 @@ class KnowledgeItemController extends AdminController
                 $knowledgeItem,
                 state: $progress === null ? 'pending' : 'done',
                 completedAt: $progress?->completed_at,
-                importance: $knowledgeItem->audiences->first()?->importance ?? LearningImportance::Recommended,
+                importance: $knowledgeItem->audiences->first()->importance ?? LearningImportance::Recommended,
                 audienceLabel: $knowledgeItem->audiences->first()?->label(app()->getLocale()) ?? '',
             );
         }
@@ -249,8 +249,8 @@ class KnowledgeItemController extends AdminController
             'canManageAudiences' => $policy->canManageAudiences($user, $ability) && ($item === null || $policy->manageAudiences($user, $item->audiences, $ability)),
             'pageTenants' => GetTenantsForUpserts::execute(($knowledgeScope->granted ? 'knowledgeItems' : 'learningSteps').".{$ability}.padalinys", $this->authorizer)->all(),
             'canPublishEverywhere' => $knowledgeScope->isAllScope || $scope->isAllScope,
-            'audienceTypes' => array_values(array_map(fn (LearningAudienceType $type): string => $type->value,
-                array_filter(LearningAudienceType::cases(), fn (LearningAudienceType $type): bool => $type !== LearningAudienceType::Purpose))),
+            'audienceTypes' => array_map(fn (LearningAudienceType $type): string => $type->value,
+                array_filter(LearningAudienceType::cases(), fn (LearningAudienceType $type): bool => $type !== LearningAudienceType::Purpose)),
             'canTargetEverywhere' => $scope->isAllScope,
             'tenants' => GetTenantsForUpserts::execute("learningSteps.{$ability}.padalinys", $this->authorizer)->all(),
             'institutionTypes' => InstitutionType::query()->get(['id', 'title', 'parent_id'])->map(fn (InstitutionType $type): array => [
