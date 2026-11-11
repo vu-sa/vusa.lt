@@ -41,16 +41,15 @@ describe('LearningPathView', () => {
   });
 });
 
-it('places the navigation tiles immediately after documents and before the timeline', () => {
+it('opens with the knowledge base entry, then the stages, and ends with meeting preparation', () => {
   const data = path();
   data.meetingPrep[0]!.steps.push(step({ id: 'prep-two', title: 'Second preparation' }));
   const wrapper = mount(LearningPathView, {
-    props: { path: data }, slots: { 'after-documents': '<div data-slot="tiles">Tiles</div>' }, global: { stubs: commonStubs },
+    props: { path: data }, global: { stubs: commonStubs },
   });
-  const blocks = wrapper.findAll('[data-slot="documents-entry"], [data-stage], [data-slot="tiles"], [data-slot="meeting-prep"]');
+  const blocks = wrapper.findAll('[data-slot="documents-entry"], [data-stage], [data-slot="meeting-prep"]');
   expect(blocks[0]!.attributes('data-slot')).toBe('documents-entry');
-  expect(blocks[1]!.attributes('data-slot')).toBe('tiles');
-  expect(blocks[2]!.attributes('data-stage')).toBe('before_start');
+  expect(blocks[1]!.attributes('data-stage')).toBe('before_start');
   expect(blocks.at(-1)!.attributes('data-slot')).toBe('meeting-prep');
   const prep = wrapper.get('[data-slot="meeting-prep"]');
   expect(prep.findAll('ol > li > span').map(number => number.text())).toEqual(['1', '2']);

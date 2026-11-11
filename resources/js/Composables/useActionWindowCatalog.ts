@@ -15,22 +15,7 @@
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import {
-  Building2,
-  CalendarOff,
-  CalendarPlus,
-  CalendarRange,
-  GraduationCap,
-  Landmark,
-  LayoutGrid,
-  MailQuestion,
-  MessageSquareWarning,
-  PencilLine,
-  Settings2,
-  Target,
-  UserCog,
-  type LucideIcon,
-} from '@lucide/vue';
+import { Building2, CalendarOff, CalendarPlus, CalendarRange, GraduationCap, Landmark, LayoutGrid, Library, MailQuestion, MessageSquareWarning, PencilLine, Settings2, Target, UserCog, type LucideIcon } from '@lucide/vue';
 
 import type { ScreenId } from '@/Composables/useActionWindow';
 import { changeDutyNameEndings } from '@/Utils/String';
@@ -160,6 +145,15 @@ export function buildPersonas(): ActionWindowPersona[] {
           icon: GraduationCap,
           requiresPermission: can => !!can.create.learningStep,
           target: { kind: 'route', route: 'learningSteps.create' },
+        },
+        {
+          key: 'new_knowledge_item',
+          title: $t('shell.actions.new_knowledge_item.title'),
+          description: $t('shell.actions.new_knowledge_item.description'),
+          icon: Library,
+          // Knowledge items share the learning step permissions.
+          requiresPermission: can => !!can.create.learningStep,
+          target: { kind: 'route', route: 'knowledgeItems.create' },
         },
         {
           key: 'duty_update',

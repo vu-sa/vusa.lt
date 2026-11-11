@@ -218,3 +218,18 @@ test('knowledge libraries and forms expose their dedicated payloads to curators'
     asUser($user)->get(route('learningSteps.index'))->assertOk()->assertInertia(fn (Assert $page) => $page
         ->where('canCreate', true)->whereType('steps.0.perTerm', 'boolean')->missing('steps.0.flags')->missing('sections'));
 });
+
+test('a term page leaves out hidden entries and only managers may edit it', function (): void {
+    $term = GlossaryTerm::factory()->create();
+    $visible = KnowledgeItem::factory()->create();
+    $hidden = KnowledgeItem::factory()->create(['is_active' => false]);
+    $term->knowledgeItems()->attach([$visible->id, $hidden->id]);
+    $member = makeUser(Tenant::query()->firstOrFail());
+    $manager = makeUser(Tenant::query()->firstOrFail());
+    $manager->givePermissionTo(Permission::findOrCreate('learningSteps.update.*', 'web'));
+
+    asUser($member)->get(route('glossaryTerms.show', $term))->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->has('term.items', 1)->where('term.items.0.id', $visible->id)->where('canUpdate', false)->where('canDelete', false));
+    asUser($manager)->get(route('glossaryTerms.show', $term))->assertInertia(fn (Assert $page) => $page->where('canUpdate', true));
+    asUser($manager)->delete(route('glossaryTerms.destroy', $term))->assertRedirect(route('glossaryTerms.index'));
+});

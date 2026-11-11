@@ -44,10 +44,19 @@ const groups = computed(() => {
     steps: props.knowledge.items.filter(step => step.importance === importance).sort((a, b) => Number(resolved(a)) - Number(resolved(b))),
   })).filter(group => group.steps.length);
 });
+const essential = computed(() => props.knowledge.items.filter(item => item.importance === LearningImportance.Essential));
+const lead = computed(() => props.knowledge.items.length
+  ? $t('learning.documents.lead', {
+      essentialDone: String(essential.value.filter(item => item.state === 'done').length),
+      essentialTotal: String(essential.value.length),
+      done: String(props.knowledge.items.filter(resolved).length),
+      total: String(props.knowledge.items.length),
+    })
+  : undefined);
 </script>
 
 <template>
-  <OverviewPage :title="$t('learning.pages.knowledge')">
+  <OverviewPage :title="$t('learning.pages.knowledge')" :lead="lead">
     <FormSegmentedControl
       v-model="selectedView"
       :options="viewOptions"
@@ -55,7 +64,7 @@ const groups = computed(() => {
       test-id-prefix="documents-view"
       class="max-w-md"
     />
-    <section v-for="group in groups" :key="group.key" data-slot="document-section" :aria-labelledby="`documents-${group.key}`">
+    <section v-for="group in groups" :id="`section-${group.key}`" :key="group.key" class="scroll-mt-24" data-slot="document-section" :aria-labelledby="`documents-${group.key}`">
       <h2 :id="`documents-${group.key}`" class="flex items-baseline gap-2 text-xl font-bold leading-tight text-foreground sm:text-2xl">
         {{ group.title }}
         <span class="text-sm font-normal tabular-nums text-muted-foreground">{{ group.steps.filter(resolved).length }}/{{ group.steps.length }}</span>

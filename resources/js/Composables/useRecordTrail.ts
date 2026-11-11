@@ -14,6 +14,7 @@ export interface TrailCrumb {
 
 interface Trail {
   learningStep?: TrailCrumb;
+  knowledge?: TrailCrumb;
   institution?: TrailCrumb;
   meeting?: TrailCrumb & { institutionIds: string[] };
   agendaItem?: TrailCrumb & { meetingId: string; position: number };
@@ -29,17 +30,25 @@ export const TRAIL_PAGES = new Set([
   'Admin/Representation/ShowMeeting',
   'Admin/Representation/ShowAgendaItem',
   'Admin/Learning/ShowLearningStep',
+  'Admin/Knowledge/ShowKnowledgeItem',
+  'Admin/Knowledge/ShowGlossaryTerm',
 ]);
 
 /** Catalog section key → the trail record that section's tab stands in for. */
 const SECTION_RECORDS: Record<string, keyof Trail> = {
   kelias: 'learningStep',
+  ziniu_baze: 'knowledge',
   institucijos: 'institution',
   posedziai: 'meeting',
   darbotvarkes_klausimai: 'agendaItem',
 };
 
 const trail = ref<Trail>({});
+
+/** A knowledge base entry or glossary term; both stand in for the Žinių bazė tab. */
+export function enterKnowledgeRecord(record: { id: string; title: string; href: string }): void {
+  trail.value = { knowledge: { id: record.id, href: record.href, label: record.title, title: record.title } };
+}
 
 export function enterLearningStep(step: { id: string | number; title: string }): void {
   trail.value = {

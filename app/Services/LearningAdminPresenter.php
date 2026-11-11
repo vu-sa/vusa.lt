@@ -62,7 +62,7 @@ class LearningAdminPresenter
     {
         $resolved = ResolveLearningPath::execute($viewer)->knowledge->keyBy('item.id');
         $items = [];
-        foreach ($term->loadMissing(['knowledgeItems.section', 'knowledgeItems.sources.document.institution.tenant'])->knowledgeItems as $item) {
+        foreach ($term->load(['knowledgeItems' => fn ($query) => $query->active()->with(['section', 'sources.document.institution.tenant'])])->knowledgeItems as $item) {
             $match = $resolved->get($item->id);
             $items[] = [
                 'id' => $item->id, 'title' => (string) $item->getTranslation('title', $locale), 'url' => route('knowledgeItems.show', $item),

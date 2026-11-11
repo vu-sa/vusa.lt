@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
-import { ArrowUpRight, CheckCheck, FileText } from '@lucide/vue';
+import { ArrowRight, CheckCheck, FileText } from '@lucide/vue';
 
 import { Button } from '@/Components/ui/button';
 import type { LearningPathData } from '@/Types/learning';
@@ -52,7 +52,7 @@ const next = computed(() => props.documents.nextItem);
 
     <div class="flex items-center border-t border-border p-5 md:border-t-0 md:border-l">
       <Button as-child variant="brand" voice="sentence" class="w-full md:w-auto" data-slot="all-documents">
-        <Link :href="route('knowledgeBase.show')">{{ $t('learning.documents.all') }}<ArrowUpRight class="size-4" aria-hidden="true" /></Link>
+        <Link :href="route('knowledgeBase.show')">{{ $t('learning.documents.open') }}<ArrowRight class="size-4" aria-hidden="true" /></Link>
       </Button>
     </div>
   </section>

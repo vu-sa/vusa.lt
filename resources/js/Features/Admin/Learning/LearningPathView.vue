@@ -42,7 +42,6 @@ function groups(steps: LearningStepData[]) {
 <template>
   <div class="space-y-12" data-slot="learning-path">
     <LearningDocumentsEntry :documents="path.knowledge" :readonly="readonly" />
-    <slot name="after-documents" />
 
     <ol v-if="hasSteps" class="relative">
       <li

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { BookOpen } from '@lucide/vue';
+import { Link } from '@inertiajs/vue3';
+import { ArrowRight, BookOpen } from '@lucide/vue';
 
 import { controlVariants } from '@/Components/ui/control';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
@@ -18,6 +19,9 @@ defineProps<{ terms: KnowledgeItemData['glossaryTerms'] }>();
         <PopoverContent class="max-w-[calc(100vw-2rem)]">
           <p class="font-semibold">{{ term.term }}<span v-if="term.abbreviation" class="font-normal text-muted-foreground"> ({{ term.abbreviation }})</span></p>
           <p class="mt-2 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">{{ term.definition }}</p>
+          <Link :href="route('glossaryTerms.show', term.id)" class="mt-3 inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground" data-slot="term-page-link">
+            {{ $t('learning.glossary.open') }}<ArrowRight class="size-3.5" aria-hidden="true" />
+          </Link>
         </PopoverContent>
       </Popover>
     </div>

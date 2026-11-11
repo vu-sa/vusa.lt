@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { ArrowUpRight, BookOpen } from '@lucide/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
-import { NavigationTiles } from '@/Components/Patterns';
 import LearningPathView from '@/Features/Admin/Learning/LearningPathView.vue';
 import type { LearningPathData, LearningCoordinator, LearningInstitutionContacts } from '@/Types/learning';
 
@@ -13,9 +11,6 @@ const percent = (done: number, total: number) => total === 0 ? 0 : Math.round(do
 const figures = computed(() => [
   { key: 'essential', label: $t('learning.path.summary_essential'), done: props.path.totals.essentialDone, total: props.path.totals.essentialTotal, fill: 'bg-brand-fill' },
   { key: 'all', label: $t('learning.path.summary_all'), done: props.path.totals.allDone, total: props.path.totals.allTotal, fill: 'bg-foreground' },
-]);
-const tiles = computed(() => [
-  { key: 'glossary', label: $t('learning.pages.glossary'), description: $t('learning.path.glossary_description'), href: route('glossaryTerms.index'), icon: BookOpen },
 ]);
 </script>
 
@@ -32,10 +27,6 @@ const tiles = computed(() => [
         </div>
       </dl>
     </template>
-    <LearningPathView :path="path" :coordinators="coordinators" :institution-contacts="institutionContacts">
-      <template #after-documents>
-        <NavigationTiles :items="tiles" :columns="2" :arrow-icon="ArrowUpRight" />
-      </template>
-    </LearningPathView>
+    <LearningPathView :path="path" :coordinators="coordinators" :institution-contacts="institutionContacts" />
   </OverviewPage>
 </template>

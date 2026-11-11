@@ -32,46 +32,26 @@
         @select="key => selectRowAction(key, item)"
       >
         <div class="min-w-0 flex-1">
-          <div class="flex flex-wrap items-baseline gap-2">
-            <button
-              v-if="canManageTerms"
-              type="button"
-              class="text-left font-medium text-foreground hover:text-brand"
-              @click="openSheet(item)"
-            >
+          <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+            <Link :href="route('glossaryTerms.show', item.id)" class="font-semibold text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground" data-testid="glossary-term-link">
               {{ item.term }}
-            </button>
-            <span v-else class="font-medium text-foreground">{{ item.term }}</span>
+            </Link>
             <abbr v-if="item.abbreviation" :title="item.term" :class="abbreviationClass" data-testid="glossary-term-abbreviation">{{ item.abbreviation }}</abbr>
             <span class="ml-auto text-xs tabular-nums text-muted-foreground" data-testid="glossary-term-steps-count">
-              {{ $tChoice('learning_library.glossary.steps_usage', item.itemsCount, { count: String(item.itemsCount) }) }}
+              {{ $tChoice('learning_library.glossary.items_usage', item.itemsCount, { count: String(item.itemsCount) }) }}
             </span>
           </div>
-          <p class="mt-0.5 whitespace-pre-line text-sm text-muted-foreground">
-            {{ item.definition }}
-          </p>
-          <LearningGlossarySteps :steps="item.items" />
+          <p class="mt-1 line-clamp-2 max-w-prose text-sm text-muted-foreground">{{ item.definition }}</p>
         </div>
       </CollectionRow>
     </template>
 
     <template #cell="{ item, column }">
       <template v-if="column.key === 'term'">
-        <button
-          v-if="canManageTerms"
-          type="button"
-          class="text-left font-medium text-foreground hover:text-brand"
-          @click="openSheet(item)"
-        >
-          {{ item.term }}
-        </button>
-        <span v-else class="font-medium text-foreground">{{ item.term }}</span>
+        <Link :href="route('glossaryTerms.show', item.id)" class="font-semibold text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">{{ item.term }}</Link>
         <abbr v-if="item.abbreviation" :title="item.term" :class="[abbreviationClass, 'ml-2']">{{ item.abbreviation }}</abbr>
       </template>
-      <div v-else-if="column.key === 'definition'" class="space-y-2">
-        <p class="whitespace-pre-line text-sm text-muted-foreground">{{ item.definition }}</p>
-        <LearningGlossarySteps :steps="item.items" />
-      </div>
+      <p v-else-if="column.key === 'definition'" class="line-clamp-3 text-sm text-muted-foreground">{{ item.definition }}</p>
       <span v-else-if="column.key === 'stepsCount'" class="tabular-nums text-sm text-muted-foreground" data-testid="glossary-term-steps-count">
         {{ item.itemsCount }}
       </span>
@@ -89,48 +69,7 @@
     </template>
   </CollectionPage>
 
-  <SheetForm
-    v-if="canManageTerms"
-    v-model:open="sheetOpen"
-    required-note
-    :title="editing ? $t('learning_library.glossary.edit_term') : $t('learning_library.glossary.new_term')"
-    :description="$t('learning_library.glossary.sheet_description')"
-    :processing="form.processing"
-    :dirty="form.isDirty"
-    @cancel="resetForm"
-    @submit="submitForm"
-  >
-    <FormFieldWrapper
-      id="glossary-term-input"
-      :label="$t('learning_library.glossary.term')"
-      :error="form.errors['term.lt'] || form.errors['term.en'] || form.errors.term"
-      required
-    >
-      <MultiLocaleInput id="glossary-term-input" v-model:input="form.term" />
-    </FormFieldWrapper>
-
-    <FormFieldWrapper
-      id="glossary-abbreviation-input"
-      :label="$t('learning_library.glossary.abbreviation')"
-      :hint="$t('learning_library.glossary.abbreviation_hint')"
-      :error="form.errors['abbreviation.lt'] || form.errors['abbreviation.en']"
-    >
-      <MultiLocaleInput id="glossary-abbreviation-input" v-model:input="form.abbreviation" />
-    </FormFieldWrapper>
-
-    <FormFieldWrapper
-      id="glossary-definition-input"
-      :label="$t('learning_library.glossary.definition')"
-      :error="form.errors['definition.lt'] || form.errors['definition.en'] || form.errors.definition"
-      required
-    >
-      <MultiLocaleInput
-        id="glossary-definition-input"
-        v-model:input="form.definition"
-        input-type="textarea"
-      />
-    </FormFieldWrapper>
-  </SheetForm>
+  <GlossaryTermSheet v-if="canManageTerms" v-model:open="sheetOpen" :term="editing" />
 
   <ConfirmDialog
     v-if="canManageTerms"
@@ -145,28 +84,20 @@
 </template>
 
 <script setup lang="ts">
-import { router, useForm } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { BookA, Pencil, Plus, Trash2 } from '@lucide/vue';
-import { computed, ref, toRaw, toRef } from 'vue';
+import { computed, ref, toRef } from 'vue';
 
-import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import type { CollectionColumn } from '@/Components/Collection/types';
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import type { CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
-import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
-import { ConfirmDialog, EmptyState, SheetForm } from '@/Components/Patterns';
+import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { useLocalCollectionSource } from '@/Composables/useCollectionSource';
-import LearningGlossarySteps from '@/Features/Admin/Learning/LearningGlossarySteps.vue';
+import GlossaryTermSheet from '@/Features/Admin/Learning/GlossaryTermSheet.vue';
 import type { GlossaryTermData } from '@/Types/learning';
-
-interface GlossaryFormState {
-  term: { lt: string; en: string };
-  abbreviation: { lt: string; en: string };
-  definition: { lt: string; en: string };
-}
 
 const props = defineProps<{
   terms: GlossaryTermData[];
@@ -201,7 +132,7 @@ const source = useLocalCollectionSource<GlossaryTermData>({
 const columns = computed<CollectionColumn[]>(() => [
   { key: 'term', label: $t('learning_library.glossary.term'), class: 'w-56', sortField: 'term' },
   { key: 'definition', label: $t('learning_library.glossary.definition') },
-  { key: 'stepsCount', label: $t('learning_library.glossary.steps_count'), class: 'w-28' },
+  { key: 'stepsCount', label: $t('learning_library.glossary.items_count'), class: 'w-28' },
 ]);
 
 const rowActions = (_item: GlossaryTermData): CollectionRowAction[] => {
@@ -218,50 +149,9 @@ const sheetOpen = ref(false);
 const editing = ref<GlossaryTermData | null>(null);
 const toDelete = ref<GlossaryTermData | null>(null);
 
-const blank = (): GlossaryFormState => ({
-  term: { lt: '', en: '' },
-  abbreviation: { lt: '', en: '' },
-  definition: { lt: '', en: '' },
-});
-
-const form = useForm<GlossaryFormState>(blank());
-
 function openSheet(item: GlossaryTermData | null = null): void {
   editing.value = item;
-  const next: GlossaryFormState = item
-    ? {
-        term: structuredClone(toRaw(item.translations?.term ?? { lt: item.term, en: '' })),
-        abbreviation: structuredClone(toRaw(item.translations?.abbreviation ?? { lt: item.abbreviation ?? '', en: '' })),
-        definition: structuredClone(toRaw(item.translations?.definition ?? { lt: item.definition, en: '' })),
-      }
-    : blank();
-  form.defaults(next);
-  form.reset();
-  form.clearErrors();
   sheetOpen.value = true;
-}
-
-function resetForm(): void {
-  form.reset();
-  form.clearErrors();
-}
-
-function submitForm(): void {
-  const options = {
-    preserveScroll: true,
-    onSuccess: () => {
-      form.defaults();
-      sheetOpen.value = false;
-      editing.value = null;
-    },
-  };
-
-  if (editing.value) {
-    form.put(route('glossaryTerms.update', editing.value.id), options);
-  }
-  else {
-    form.post(route('glossaryTerms.store'), options);
-  }
 }
 
 function selectRowAction(key: string, item: GlossaryTermData): void {

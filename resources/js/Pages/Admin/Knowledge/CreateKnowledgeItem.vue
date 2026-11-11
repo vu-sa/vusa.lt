@@ -1,5 +1,5 @@
 <template>
-  <LearningStepForm knowledge
+  <KnowledgeItemForm
     :audience-types="audienceTypes"
     :can-target-everywhere="canTargetEverywhere"
     :responsibilities="responsibilities"
@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import LearningStepForm from '@/Features/Admin/Learning/LearningStepForm.vue';
+import KnowledgeItemForm from '@/Features/Admin/Learning/KnowledgeItemForm.vue';
 import type { LearningSectionOption } from '@/Features/Admin/Learning/types';
 import type { LearningAudienceType } from '@/Types/enums';
 import type { LearningTenantOption, LearningTypeOption } from '@/Types/learning';

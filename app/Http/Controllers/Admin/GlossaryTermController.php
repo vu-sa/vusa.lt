@@ -29,6 +29,8 @@ class GlossaryTermController extends AdminController
 
         return Inertia::render('Admin/Knowledge/ShowGlossaryTerm', [
             'term' => LearningAdminPresenter::glossaryTerm($glossaryTerm, $request->user(), app()->getLocale()),
+            'canUpdate' => $request->user()->can('update', $glossaryTerm),
+            'canDelete' => $request->user()->can('delete', $glossaryTerm),
         ]);
     }
 
@@ -53,6 +55,6 @@ class GlossaryTermController extends AdminController
         $this->authorize('delete', $glossaryTerm);
         $glossaryTerm->delete();
 
-        return back()->with('success', $this->entityMessage('deleted', 'glossaryTerm'));
+        return to_route('glossaryTerms.index')->with('success', $this->entityMessage('deleted', 'glossaryTerm'));
     }
 }

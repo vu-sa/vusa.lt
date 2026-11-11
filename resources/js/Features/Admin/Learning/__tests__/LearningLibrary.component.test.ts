@@ -22,7 +22,7 @@ const steps: LearningLibraryStep[] = [
   {
     id: 'action', title: 'Meet your team', kind: LearningStepKind.Action,
     audiences: [{ id: 'a2', type: LearningAudienceType.InstitutionType, label: 'Taryba', stage: LearningStage.BeforeStart, importance: LearningImportance.Recommended }],
-    audienceTypes: [LearningAudienceType.InstitutionType], order: 1, isActive: true, canUpdate: true, perTerm: false,
+    audienceTypes: [LearningAudienceType.InstitutionType], order: 1, isActive: true, canUpdate: true, perTerm: true,
   },
 ];
 
@@ -59,10 +59,17 @@ const rowTitles = (wrapper: ReturnType<typeof render>) =>
   wrapper.findAll('[data-slot="collection-row"]').map(row => row.get('a').text());
 
 describe('learning library', () => {
+  it('offers only the main splits as quick filters', async () => {
+    const wrapper = render();
+    await flushPromises();
+    expect(wrapper.findAll('[data-filter-id]').map(chip => chip.attributes('data-filter-id'))).toEqual(['kind:action', 'repeat:per_term', 'kind:meeting_prep']);
+    wrapper.unmount();
+  });
+
   it.each([
-    ['audience', 'institution_type', 'Meet your team'],
+    ['kind', 'action', 'Meet your team'],
+    ['repeat', 'per_term', 'Meet your team'],
     ['kind', 'meeting_prep', 'Read the guide'],
-    ['importance', 'essential', 'Read the guide'],
   ])('narrows rows with the %s quick filter', async (field, value, title) => {
     const filter = `${field}:${value}`;
     const wrapper = render();
@@ -83,16 +90,16 @@ describe('learning library', () => {
   it('combines filters across fields and lets the active chips clear them', async () => {
     const wrapper = render();
     await flushPromises();
-    await wrapper.get('[data-filter-id="audience:institution_type"]').trigger('click');
+    await wrapper.get('[data-filter-id="repeat:per_term"]').trigger('click');
     await wrapper.get('[data-filter-id="kind:action"]').trigger('click');
     expect(rowTitles(wrapper)).toEqual(['Meet your team']);
-    expect(new URLSearchParams(window.location.search).get('audience')).toBe('institution_type');
+    expect(new URLSearchParams(window.location.search).get('repeat')).toBe('per_term');
     expect(new URLSearchParams(window.location.search).get('kind')).toBe('action');
     const clear = wrapper.get('[data-slot="collection-active-chips"]').findAll('button').find(button => button.text() === 'Išvalyti visus');
     expect(clear).toBeDefined();
     await clear!.trigger('click');
     expect(rowTitles(wrapper)).toEqual(['Read the guide', 'Meet your team']);
-    expect(window.location.search).not.toContain('audience=');
+    expect(window.location.search).not.toContain('repeat=');
     expect(window.location.search).not.toContain('kind=');
     wrapper.unmount();
   });
@@ -108,7 +115,7 @@ describe('learning library', () => {
     wrapper.unmount();
   });
 
-  it('shows glossary definitions and related document links in rows for a member', async () => {
+  it('links each glossary row to its term page for a member', async () => {
     window.history.replaceState({}, '', '/mano/learning/glossary?view=table');
     vi.mocked(usePage).mockReturnValue({ ...createMockPage(), url: '/mano/learning/glossary' });
     const wrapper = mount(IndexGlossaryTerm, {
@@ -126,8 +133,8 @@ describe('learning library', () => {
     await flushPromises();
     const row = wrapper.get('[data-slot="collection-row"]');
     expect(row.text()).toContain('Būtinas narių skaičius.');
-    expect(row.text()).toContain('learning.glossary.where_used');
-    expect(row.get('a[href="https://example.test/rules"]').text()).toBe('Senato reglamentas');
+    expect(row.get('[data-testid="glossary-term-link"]').attributes('href')).toContain('glossaryTerms.show');
+    expect(row.text()).not.toContain('Senato reglamentas');
     expect(wrapper.find('[data-testid="create-glossary-term"]').exists()).toBe(false);
     wrapper.unmount();
   });

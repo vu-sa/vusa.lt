@@ -11,7 +11,7 @@
     :quick-filters="quickFilters"
     default-view="table"
     table-fixed
-    actions-width="w-32"
+    actions-width="w-40"
     table-min-width="min-w-[56rem]"
     :search-placeholder="$t('learning_library.library.search_placeholder')"
     @quick-filter="toggleQuickFilter"
@@ -98,7 +98,7 @@ import {
   learningStepKinds,
 } from '@/Constants/statusIcons';
 import type { LearningLibraryStep } from '@/Types/learning';
-import { LearningImportance, LearningAudienceType } from '@/Types/enums';
+import { LearningAudienceType, LearningImportance, LearningStepKind } from '@/Types/enums';
 
 const props = withDefaults(defineProps<{
   steps: LearningLibraryStep[];
@@ -128,16 +128,21 @@ const source = useLocalCollectionSource<LearningLibraryStep>({
     { field: 'audience', label: $t('learning_library.library.filters.audience'), get: step => step.audienceTypes.filter(type => props.audienceTypes.includes(type)), valueLabel: value => $t(`learning.audience_types.${value}`) },
     { field: 'kind', label: $t('learning_library.library.filters.kind'), get: step => step.kind, valueLabel: value => $t(`learning.kinds.${value}`) },
     { field: 'importance', label: $t('learning_library.library.filters.importance'), get: step => highestImportance(step), valueLabel: value => $t(`learning.importance.${value}`) },
+    { field: 'repeat', label: $t('learning_library.library.filters.repeat'), get: step => step.perTerm ? 'per_term' : 'once', valueLabel: value => $t(`learning_library.library.repeat.${value}`) },
   ],
 });
 
-const quickFilters = computed<CollectionQuickFilter[]>(() =>
-  source.facets.value.flatMap(facet => facet.values.map(option => ({
-    id: `${facet.field}:${option.value}`,
-    label: quickFilterLabel(option.label, option.count ?? 0),
-    active: option.isSelected,
-  }))),
-);
+// Only the main splits sit above the table; audience, importance and the rest stay in the filter panel.
+const QUICK_FILTERS = [
+  { field: 'kind', value: LearningStepKind.Action, label: 'learning_library.library.quick.actions' },
+  { field: 'repeat', value: 'per_term', label: 'learning_library.library.quick.repeated' },
+  { field: 'kind', value: LearningStepKind.MeetingPrep, label: 'learning_library.library.quick.meeting_prep' },
+];
+
+const quickFilters = computed<CollectionQuickFilter[]>(() => QUICK_FILTERS.flatMap(({ field, value, label }) => {
+  const option = source.facets.value.find(facet => facet.field === field)?.values.find(candidate => candidate.value === value);
+  return option ? [{ id: `${field}:${value}`, label: quickFilterLabel($t(label), option.count ?? 0), active: option.isSelected }] : [];
+}));
 
 function toggleQuickFilter(id: string): void {
   const [field, value] = id.split(':');

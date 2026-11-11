@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, toRef } from 'vue';
+import { computed, onMounted, ref, toRef, watch } from 'vue';
+import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowUpRight, BookOpen, Pencil } from '@lucide/vue';
 import { useMediaQuery } from '@vueuse/core';
@@ -9,6 +10,7 @@ import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import { RecordActionMenu } from '@/Components/Patterns';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/Components/ui/sheet';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
+import { enterKnowledgeRecord } from '@/Composables/useRecordTrail';
 import LearningCompletionControl from '@/Features/Admin/Learning/LearningCompletionControl.vue';
 import LearningAudienceNotes from '@/Features/Admin/Learning/LearningAudienceNotes.vue';
 import LearningStepAction from '@/Features/Admin/Learning/LearningStepAction.vue';
@@ -48,6 +50,12 @@ const sourceLabel = computed(() => {
     return sourceHref.value ?? null;
   }
 });
+const enterTrail = () => enterKnowledgeRecord({ id: props.item.id, title: props.item.title, href: route('knowledgeItems.show', props.item.id) });
+onMounted(enterTrail);
+watch(() => props.item.id, () => {
+  enterTrail();
+  glossaryOpen.value = false;
+});
 </script>
 
 <template>
@@ -59,6 +67,14 @@ const sourceLabel = computed(() => {
           <h1 class="text-balance text-3xl font-bold leading-tight text-foreground sm:text-4xl">{{ item.title }}</h1>
           <p class="mt-2 flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground" data-slot="step-meta">
             <span :class="item.importance === 'essential' ? 'font-semibold text-brand' : 'font-semibold text-foreground'">{{ $t(`learning.importance.${item.importance}`) }}</span>
+            <template v-if="item.section">
+              <span aria-hidden="true">·</span>
+              <Link :href="route('knowledgeBase.show', { view: 'sections' }) + `#section-${item.section.id}`" class="hover:text-foreground">{{ item.section.title }}</Link>
+            </template>
+            <template v-if="item.perTerm">
+              <span aria-hidden="true">·</span>
+              <span>{{ $t('learning.path.per_term') }}</span>
+            </template>
           </p>
           <p v-if="failed" role="alert" class="mt-2 text-sm text-destructive">{{ $t('learning.path.save_failed') }}</p>
         </div>
@@ -83,7 +99,7 @@ const sourceLabel = computed(() => {
         aria-labelledby="step-about-title"
         data-slot="step-about"
       >
-        <h2 id="step-about-title" class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{{ $t('learning.path.about_step') }}</h2>
+        <h2 id="step-about-title" class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{{ $t('learning.path.about_item') }}</h2>
         <div v-if="sourceLabel" class="space-y-1">
           <p class="text-xs text-muted-foreground">{{ $t('learning.path.source') }}</p>
           <a v-if="sourceHref" :href="sourceHref" target="_blank" rel="noopener noreferrer" class="group inline-flex items-start gap-1.5 text-sm font-semibold leading-snug text-foreground hover:text-brand">
@@ -92,10 +108,6 @@ const sourceLabel = computed(() => {
           </a>
           <p v-else class="text-sm font-semibold leading-snug">{{ sourceLabel }}</p>
           <p v-if="item.source?.type === 'document' && !sourceHref" class="text-xs text-muted-foreground">{{ $t('learning.path.document_private') }}</p>
-        </div>
-        <div v-if="item.section" class="space-y-1">
-          <p class="text-xs text-muted-foreground">{{ $t('learning_library.fields.section') }}</p>
-          <p class="text-sm font-semibold">{{ item.section.title }}</p>
         </div>
         <LearningTerms :terms="item.glossaryTerms" />
         <p class="text-xs text-muted-foreground">

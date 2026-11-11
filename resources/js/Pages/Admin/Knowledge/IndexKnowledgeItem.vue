@@ -2,8 +2,8 @@
   <CollectionPage
     collection="knowledgeItems"
     :eyebrow="$t('shell.workspaces.pradzia.title')"
-    :title="$t('learning.pages.library')"
-    :lead="$t('learning_library.library.lead')"
+    :title="$t('learning.pages.knowledge_library')"
+    :lead="$t('learning_library.knowledge.lead')"
     :source
     :columns
     :item-key="stepKey"
@@ -11,18 +11,18 @@
     :quick-filters="quickFilters"
     default-view="table"
     table-fixed
-    actions-width="w-32"
+    actions-width="w-40"
     table-min-width="min-w-[56rem]"
-    :search-placeholder="$t('learning_library.library.search_placeholder')"
+    :search-placeholder="$t('learning_library.knowledge.search_placeholder')"
     @quick-filter="toggleQuickFilter"
     @row-action="(item, key) => selectRowAction(key, item)"
   >
     <template #actions>
       <Button variant="outline" voice="sentence" class="min-h-11" data-testid="manage-sections" @click="sectionsOpen = true">{{ $t('learning_library.section_manager.title') }}</Button>
-      <Button v-if="canCreateStep" as-child variant="brand" data-testid="create-learning-step">
+      <Button v-if="canCreateStep" as-child variant="brand" data-testid="create-knowledge-item">
         <Link :href="route('knowledgeItems.create')">
           <Plus aria-hidden="true" />
-          {{ $t('learning_library.library.new_step') }}
+          {{ $t('learning_library.knowledge.new_item') }}
         </Link>
       </Button>
     </template>
@@ -85,9 +85,9 @@
       <EmptyState
         mode="empty"
         :icon="BookOpen"
-        :title="$t('learning_library.library.empty_title')"
-        :description="$t('learning_library.library.empty_description')"
-        :action-label="canCreateStep ? $t('learning_library.library.new_step') : undefined"
+        :title="$t('learning_library.knowledge.empty_title')"
+        :description="$t('learning_library.knowledge.empty_description')"
+        :action-label="canCreateStep ? $t('learning_library.knowledge.new_item') : undefined"
         @action="router.visit(route('knowledgeItems.create'))"
       />
     </template>
@@ -158,13 +158,11 @@ const source = useLocalCollectionSource<KnowledgeLibraryItem>({
   ],
 });
 
-const quickFilters = computed<CollectionQuickFilter[]>(() =>
-  source.facets.value.flatMap(facet => facet.values.map(option => ({
-    id: `${facet.field}:${option.value}`,
-    label: quickFilterLabel(option.label, option.count ?? 0),
-    active: option.isSelected,
-  }))),
-);
+// Importance is the main split here; audience and section stay in the filter panel.
+const quickFilters = computed<CollectionQuickFilter[]>(() => [LearningImportance.Essential, LearningImportance.Recommended].flatMap((value) => {
+  const option = source.facets.value.find(facet => facet.field === 'importance')?.values.find(candidate => candidate.value === value);
+  return option ? [{ id: `importance:${value}`, label: quickFilterLabel(option.label, option.count ?? 0), active: option.isSelected }] : [];
+}));
 
 function toggleQuickFilter(id: string): void {
   const [field, value] = id.split(':');
@@ -174,7 +172,7 @@ function toggleQuickFilter(id: string): void {
 }
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'title', label: $t('learning_library.library.columns.title'), sortField: 'title' },
+  { key: 'title', label: $t('learning_library.knowledge.column_title'), sortField: 'title' },
   { key: 'audience', label: $t('learning_library.library.columns.audience'), class: 'w-44' },
   { key: 'section', label: $t('learning_library.library.columns.section'), class: 'w-44' },
   { key: 'importance', label: $t('learning_library.library.columns.importance'), class: 'w-40' },
