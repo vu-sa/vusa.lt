@@ -3,8 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\Institution;
-use App\Models\InstitutionType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class DutyFactory extends Factory
@@ -35,7 +35,7 @@ class DutyFactory extends Factory
     public function withType()
     {
         return $this->afterCreating(function ($duty) {
-            $duty->types()->attach(InstitutionType::query()->inRandomOrder()->first());
+            $duty->types()->attach(DutyType::query()->inRandomOrder()->first());
         });
     }
 }
