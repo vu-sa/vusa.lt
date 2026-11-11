@@ -113,7 +113,7 @@ rodomi institucijos puslapio santraukoje, bloke **Wiki** (ir tiesiogiai su insti
 susieti su jos tipu).
 
 Medžiagą galima susieti ir su **sąvoka**: tada sąvokos puslapyje, po tekstu, ji rodoma bloke
-**Medžiaga apie tai** – viena eilute dokumentų miniatiūrų, kurią galima slinkti į šoną; kraštas,
+**Susijusi medžiaga** – viena eilute dokumentų miniatiūrų, kurią galima slinkti į šoną; kraštas,
 už kurio dar yra miniatiūrų, išblukęs. Pirma rodoma tavo padalinio medžiaga, apvesta tamsiu rėmeliu. Pvz., sąvokos *Padalinio nuostatai* puslapyje pirmiausia matysi savo padalinio nuostatus.
 
 „Apie ką“ nenulemia, kam įrašas rodomas Mano kelyje – tam skirtos auditorijos.

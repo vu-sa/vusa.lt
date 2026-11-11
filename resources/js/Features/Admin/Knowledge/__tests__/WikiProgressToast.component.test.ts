@@ -7,16 +7,20 @@ import WikiProgressToast from '../WikiProgressToast.vue';
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
 
-it('grows the bar and counts up from the previous to the new whole-Wiki progress', async () => {
+it('leads with the Wiki home meter, counting up from where you were, and names the article below it', async () => {
   const wrapper = mount(WikiProgressToast, { props: { progress: { title: 'Kvorumas', done: 4, total: 8, previousDone: 3 } } });
-  expect(wrapper.text()).toContain('Kvorumas');
-  expect(wrapper.get('[data-slot="wiki-progress-toast-count"]').text()).toBe('3/8');
-  expect(wrapper.get<HTMLElement>('[data-slot="wiki-progress-toast-bar"]').element.style.width).toBe('37.5%');
+  const count = () => wrapper.get('[data-slot="wiki-progress-count"]').text();
+  const width = () => wrapper.get<HTMLElement>('[data-slot="wiki-progress-bar"]').element.style.width;
+  expect(count()).toBe('3/8');
+  expect(width()).toBe('38%');
+  expect(wrapper.html().indexOf('wiki-progress-count')).toBeLessThan(wrapper.html().indexOf('Kvorumas'));
+  // The meter's label stays for screen readers only.
+  expect(wrapper.get('dt').classes()).toContain('sr-only');
 
   await vi.advanceTimersByTimeAsync(1000);
   await nextTick();
-  expect(wrapper.get('[data-slot="wiki-progress-toast-count"]').text()).toBe('4/8');
-  expect(wrapper.get<HTMLElement>('[data-slot="wiki-progress-toast-bar"]').element.style.width).toBe('50%');
+  expect(count()).toBe('4/8');
+  expect(width()).toBe('50%');
   expect(wrapper.text()).not.toContain('learning.wiki.toast_complete');
 });
 

@@ -158,7 +158,7 @@ return [
         'term_badge' => 'Sąvoka',
         'materials' => 'Medžiaga',
         'materials_lead' => 'Mokymų skaidrės, pavyzdžiai ir kiti dokumentai, sugrupuoti į rinkinius.',
-        'materials_about' => 'Medžiaga apie tai',
+        'materials_about' => 'Susijusi medžiaga',
         'materials_empty' => 'Rinkinių dar nėra.',
         'read' => 'Skaityti',
         'section_empty' => 'Šiame skyriuje dar nėra įrašų.',

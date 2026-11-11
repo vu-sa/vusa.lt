@@ -158,7 +158,7 @@ return [
         'term_badge' => 'Term',
         'materials' => 'Material',
         'materials_lead' => 'Training slides, examples and other documents, grouped into collections.',
-        'materials_about' => 'Material about this',
+        'materials_about' => 'Related material',
         'materials_empty' => 'No collections yet.',
         'read' => 'Read',
         'section_empty' => 'This section has no articles yet.',

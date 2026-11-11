@@ -83,9 +83,10 @@ watch(() => props.item.id, () => {
         <p :class="['text-xs font-bold uppercase tracking-[0.2em] text-brand', canTrack && 'col-start-2']" data-slot="step-eyebrow">{{ $t(`learning.kinds.${item.kind}`) }}</p>
         <LearningCompletionControl v-if="canTrack" v-model="checked" :step="viewerItem" :disabled="saving" class="mt-1.5 sm:mt-2.5" />
         <div class="min-w-0">
-          <h1 class="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-balance text-3xl font-bold leading-tight text-foreground sm:text-4xl">
+          <h1 class="text-balance text-3xl font-bold leading-tight text-foreground sm:text-4xl">
             {{ item.title }}
-            <abbr v-if="item.abbreviation" :title="item.title" class="border border-border px-2 py-0.5 text-base font-bold tracking-wide no-underline sm:text-lg" data-testid="article-abbreviation">{{ item.abbreviation }}</abbr>
+            <!-- Inline and middle-aligned: on the baseline, the box hung below the title's letters. -->
+            <abbr v-if="item.abbreviation" :title="item.title" class="ml-3 inline-block border border-border px-2 py-0.5 align-middle text-base leading-tight font-bold tracking-wide no-underline sm:text-lg" data-testid="article-abbreviation">{{ item.abbreviation }}</abbr>
           </h1>
           <p v-if="inPath || item.section" class="mt-2 flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground" data-slot="step-meta">
             <span v-if="inPath" :class="item.importance === 'essential' ? 'font-semibold text-brand' : 'font-semibold text-foreground'">{{ $t(`learning.importance.${item.importance}`) }}</span>
