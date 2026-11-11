@@ -21,6 +21,7 @@ import LearningStepAction from '@/Features/Admin/Learning/LearningStepAction.vue
 import { useStepProgress } from '@/Features/Admin/Learning/composables/useStepProgress';
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import { safeHref } from '@/Utils/safeHref';
+import { stripHtmlTags } from '@/Utils/String';
 import type { KnowledgeItemData, LearningCoordinator, LearningInstitutionContacts, LearningTypeOption, WikiMaterial, WikiPageSummary, WikiSubject } from '@/Types/learning';
 
 const props = withDefaults(defineProps<{
@@ -64,7 +65,7 @@ const sourceLabel = computed(() => {
 });
 const thumbnailFailed = ref(false);
 const thumbnailUrl = computed(() => thumbnailFailed.value ? null : props.item.source?.thumbnailUrl ?? null);
-const hasBody = computed(() => props.item.description.replace(/<[^>]*>/g, '').trim() !== '');
+const hasBody = computed(() => stripHtmlTags(props.item.description).trim() !== '');
 // The summary opens the article in the same voice as the rest, its bold title included, not as a separate lead.
 const articleHtml = computed(() => (props.item.summaryHtml ? `<p data-slot="article-summary">${props.item.summaryHtml}</p>` : '') + (hasBody.value ? props.item.description : ''));
 const enterTrail = () => enterKnowledgeRecord({ id: props.item.id, title: props.item.title, href: route('knowledgeItems.show', props.item.id) });

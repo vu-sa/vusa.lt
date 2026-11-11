@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
+import { KnowledgeItemKind } from '@/Types/enums';
 import type { WikiGraphNode, WikiGraphPayload } from '@/Types/learning';
 
 import WikiGraph from '../WikiGraph.vue';
@@ -10,7 +11,7 @@ const preferences = useAccessibilityPreferences();
 let wrapper: ReturnType<typeof mount>;
 
 const node = (id: string, title: string, degree: number, sectionId: string | null = 's1'): WikiGraphNode => ({
-  id, title, degree, sectionId, kind: 'term', abbreviation: '', summary: `${title} summary`, summaryHtml: '', url: `/mano/knowledge/items/${id}`, thumbnailUrl: null, countsInProgress: true, updatedAt: null,
+  id, title, degree, sectionId, kind: KnowledgeItemKind.Term, abbreviation: '', summary: `${title} summary`, summaryHtml: '', url: `/mano/knowledge/items/${id}`, thumbnailUrl: null, countsInProgress: true, updatedAt: null,
 });
 
 const graph: WikiGraphPayload = {

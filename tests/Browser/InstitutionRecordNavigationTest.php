@@ -34,6 +34,9 @@ it('keeps institution sections reachable on phones and desktops', function () {
             $page->click('[role="tab"][data-section="comments"]');
         }
         $page->assertVisible('[id^="record-panel-"][id$="-comments"]');
+        if ($page->script('document.querySelector("[data-testid=composer-launcher]") !== null')) {
+            $page->click('[data-testid=composer-launcher]');
+        }
         $page->type('[id^="record-panel-"][id$="-comments"] [contenteditable=true]', "Draft {$width}");
         if ($width < 768) {
             $page->select('[data-slot="record-section-switcher"] select', 'overview');
@@ -57,12 +60,12 @@ it('keeps institution sections reachable on phones and desktops', function () {
     $page->click('[role="tab"][data-section="duties"]');
     $page->assertPresent('[data-slot="institution-duty-row"]');
     $page->click('button:has-text("Keisti tvarką")');
-    $page->assertPresent('[data-slot="sortable-duties"] .handle');
+    $page->assertPresent('[data-slot="sortable-row-list"] .handle');
     $page->screenshot(filename: 'institution-duty-reorder');
-    $before = $page->script("document.querySelector('[data-slot=sortable-duties] a').href");
-    $page->page()->locator('[data-slot="sortable-duties"] li:nth-child(1) .handle')->dragTo($page->page()->locator('[data-slot="sortable-duties"] li:nth-child(3) .handle'), ['steps' => 20]);
-    $page->assertScript("document.querySelector('[data-slot=sortable-duties] a').href !== ".json_encode($before));
-    $page->click('button:has-text("Atšaukti")');
+    $before = $page->script("document.querySelector('[data-slot=sortable-row-list] a').href");
+    $page->page()->locator('[data-slot="sortable-row-list"] li:nth-child(1) .handle')->dragTo($page->page()->locator('[data-slot="sortable-row-list"] li:nth-child(3) .handle'), ['steps' => 20]);
+    $page->assertScript("document.querySelector('[data-slot=sortable-row-list] a').href !== ".json_encode($before));
+    $page->click('[data-slot="institution-duties-section"] button:has-text("Atšaukti")');
     $page->click('[data-slot="record-facts"] button[data-slot="users-avatar-group"]');
     $page->assertVisible('[data-slot="users-avatar-group-popover"]');
     $page->screenshot(filename: 'institution-people-popover');
