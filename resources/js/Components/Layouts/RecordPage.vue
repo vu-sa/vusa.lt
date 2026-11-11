@@ -390,7 +390,7 @@ if (!currentSection.value && props.sections.length) {
 
 // A deep link (`?tab=files`) opens that section, whatever the page would start on.
 if (props.sectionQueryKey) {
-  const linked = new URL(usePage().url, window.location.origin).searchParams.get(props.sectionQueryKey);
+  const linked = new URL(usePage().url || window.location.href, window.location.origin).searchParams.get(props.sectionQueryKey);
   if (linked && linked !== currentSection.value && props.sections.some(section => section.value === linked)) {
     currentSection.value = linked;
   }
@@ -399,7 +399,9 @@ if (props.sectionQueryKey) {
 const isDesktop = useMediaQuery('(min-width: 768px)');
 const switcherId = useId();
 // A link to a section other than the first (`?tab=`) opens just that section on a phone too.
-const mobileSection = computed({ get: () => currentSection.value, set: value => { currentSection.value = value; } });
+const mobileSection = computed({ get: () => currentSection.value, set: (value) => {
+  currentSection.value = value;
+} });
 const switcherOptions = computed(() => [
   ...props.sections.map(section => ({
     value: section.value,
@@ -411,7 +413,7 @@ watch(() => props.sections, (sections) => {
   if (!sections.some(section => section.value === mobileSection.value)) {
     const fallback = sections[0]?.value ?? '';
     if (props.sectionQueryKey) {
-      const url = new URL(page.url, window.location.origin);
+      const url = new URL(page.url || window.location.href, window.location.origin);
       url.searchParams.delete(props.sectionQueryKey);
       router.replace({ url: `${url.pathname}${url.search}${url.hash}`, preserveState: true, preserveScroll: true });
     }
@@ -427,20 +429,21 @@ const sectionInUrl = (url: string) => {
   if (!props.sectionQueryKey) {
     return null;
   }
-  const value = new URL(url, window.location.origin).searchParams.get(props.sectionQueryKey);
+  const value = new URL(url || window.location.href, window.location.origin).searchParams.get(props.sectionQueryKey);
 
   return props.sections.some(section => section.value === value) ? value : props.sections[0]?.value ?? null;
 };
 
 /** A section the reader picked: shown, and remembered as a step in the browser history. */
-const selectSection = (value: string) => { currentSection.value = value; };
+const selectSection = (value: string) => {
+  currentSection.value = value;
+};
 
 const recordSection = (value: string) => {
-
   if (!props.sectionQueryKey) {
     return;
   }
-  const url = new URL(page.url, window.location.origin);
+  const url = new URL(page.url || window.location.href, window.location.origin);
   url.searchParams.set(props.sectionQueryKey, value);
   const next = `${url.pathname}${url.search}${url.hash}`;
   if (next !== page.url) {
@@ -450,15 +453,15 @@ const recordSection = (value: string) => {
 };
 
 // Back and forward restore the URL; follow it without pushing again.
-watch(() => page.url, (url) => {
-  const requested = props.sectionQueryKey ? new URL(url, window.location.origin).searchParams.get(props.sectionQueryKey) : null;
+watch(() => page.url, (url, previous) => {
+  const requested = props.sectionQueryKey ? new URL(url || window.location.href, window.location.origin).searchParams.get(props.sectionQueryKey) : null;
   if (requested && !props.sections.some(section => section.value === requested)) {
-    const normalized = new URL(url, window.location.origin);
+    const normalized = new URL(url || window.location.href, window.location.origin);
     normalized.searchParams.delete(props.sectionQueryKey!);
     router.replace({ url: `${normalized.pathname}${normalized.search}${normalized.hash}`, preserveState: true, preserveScroll: true });
   }
   const value = sectionInUrl(url);
-  if (value && value !== currentSection.value) {
+  if ((previous !== undefined || requested !== null) && value && value !== currentSection.value) {
     currentSection.value = value;
   }
 }, { immediate: true });
@@ -500,7 +503,7 @@ const revealSection = (value: string) => {
 };
 
 watch(currentSection, (value, previous) => {
-  if (value && previous && value !== sectionInUrl(page.url)) recordSection(value);
+  if (value && previous && value !== sectionInUrl(page.url || window.location.href)) recordSection(value);
   if (hasTabs.value && value && previous) {
     void nextTick(() => revealSection(value));
   }

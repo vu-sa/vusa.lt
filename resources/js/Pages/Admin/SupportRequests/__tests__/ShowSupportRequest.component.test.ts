@@ -39,15 +39,15 @@ describe('support request record', () => {
     });
 
     expect(wrapper.findAll('[role="tab"]')).toHaveLength(0);
-    expect(wrapper.get('[aria-labelledby="record-section-description"]').text()).toContain(request.description);
-    expect(wrapper.get('[aria-labelledby="record-section-evidence"]').text()).toContain(hasAttachments ? 'screenshot.png' : 'Prisegtų failų nėra.');
-    expect(wrapper.get('[aria-labelledby="record-section-discussion"] [data-testid="discussion"]').exists()).toBe(true);
+    expect(wrapper.get('[aria-labelledby$="-description"]').text()).toContain(request.description);
+    expect(wrapper.get('[aria-labelledby$="-evidence"]').text()).toContain(hasAttachments ? 'screenshot.png' : 'Prisegtų failų nėra.');
+    expect(wrapper.get('[aria-labelledby$="-discussion"] [data-testid="discussion"]').exists()).toBe(true);
     for (const section of wrapper.findAll('section[aria-labelledby^="record-section-"]')) {
       expect(section.classes()).not.toContain('md:hidden');
     }
     expect(wrapper.find('button').exists()).toBe(false);
     if (hasAttachments) {
-      const evidence = wrapper.get('[aria-labelledby="record-section-evidence"]');
+      const evidence = wrapper.get('[aria-labelledby$="-evidence"]');
       expect(evidence.get('a').attributes('href')).toBe('/mano/support-requests/request-1/evidence/1');
       expect(evidence.get('img').attributes('src')).toBe('/mano/support-requests/request-1/evidence/1/thumb');
     }

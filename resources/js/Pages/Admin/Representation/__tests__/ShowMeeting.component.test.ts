@@ -289,7 +289,7 @@ describe('ShowMeeting.vue', () => {
   ] as const)('loads the %s section through WhenVisible without selecting its tab', (section, data) => {
     const wrapper = createWrapper({ files: undefined, governanceScope: 'vusa' });
     const panel = wrapper.findAllComponents(WhenVisible)
-      .find(component => component.element.closest('section')?.getAttribute('aria-labelledby') === `record-section-${section}`);
+      .find(component => component.element.closest('section')?.getAttribute('aria-labelledby')?.endsWith(`-${section}`));
 
     expect(panel).toBeDefined();
     expect(panel?.props('data')).toEqual(data);
@@ -309,7 +309,7 @@ describe('ShowMeeting.vue', () => {
     const wrapper = createWrapper({ files: undefined, governanceScope: 'vusa' });
     const record = wrapper.findComponent({ name: 'RecordPage' });
     const panel = wrapper.findAllComponents(WhenVisible)
-      .find(component => component.element.closest('section')?.getAttribute('aria-labelledby') === `record-section-${tab}`);
+      .find(component => component.element.closest('section')?.getAttribute('aria-labelledby') ?.endsWith(`-${tab}`));
 
     expect(record.props('section')).toBe(tab);
     expect(panel?.props('data')).toEqual(data);

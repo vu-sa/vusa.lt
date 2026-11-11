@@ -407,3 +407,19 @@ it.each([false, true])('renders a fact with an unsupported URL as text when exte
   expect(wrapper.find('a[href*="script"]').exists()).toBe(false);
   wrapper.unmount();
 });
+
+it('preserves the initial section without a URL tab and lets explicit links override it', () => {
+  const page = reactive({ ...createMockPage(), url: '/mano/meetings/1' });
+  vi.mocked(usePage).mockReturnValue(page as unknown as ReturnType<typeof usePage>);
+  const mountRecord = () => mount(RecordPage, {
+    props: { title: 'Meeting', entityType: 'meeting', section: 'files', sectionQueryKey: 'tab', sections: [{ value: 'agenda', label: 'Agenda' }, { value: 'files', label: 'Files' }] },
+    global: { stubs: commonStubs },
+  });
+  const stored = mountRecord();
+  expect(stored.emitted('update:section')).toBeUndefined();
+  stored.unmount();
+  page.url = '/mano/meetings/1?tab=agenda';
+  const linked = mountRecord();
+  expect(linked.emitted('update:section')?.at(-1)).toEqual(['agenda']);
+  linked.unmount();
+});

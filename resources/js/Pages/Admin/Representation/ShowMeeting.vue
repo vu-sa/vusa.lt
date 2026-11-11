@@ -763,21 +763,8 @@ const loadOptionalProps = (keys: OptionalPanelProp[]) => {
 
 watch(() => props.meeting.id, () => requestedProps.clear());
 
-// Sync tab state to URL without page reload
 watch(currentTab, (newTab) => {
   storedTab.value = newTab;
-
-  if (typeof window !== 'undefined') {
-    const url = new URL(window.location.href);
-    if (newTab === 'agenda') {
-      url.searchParams.delete('tab');
-    }
-    else {
-      url.searchParams.set('tab', newTab);
-    }
-    url.searchParams.delete('action');
-    window.history.replaceState({}, '', url.toString());
-  }
 });
 
 const recordFacts = computed<RecordFact[]>(() => [
