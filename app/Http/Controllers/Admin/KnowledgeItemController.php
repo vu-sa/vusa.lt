@@ -18,14 +18,13 @@ use App\Models\Document;
 use App\Models\DutyType;
 use App\Models\InstitutionType;
 use App\Models\KnowledgeItem;
-use App\Models\KnowledgeSection;
 use App\Models\LearningAudience;
 use App\Models\Role;
 use App\Models\User;
 use App\Policies\KnowledgeItemPolicy;
-use App\Services\Authorization\PermissionScope;
 use App\Services\Documents\DocumentPreviewService;
 use App\Services\KnowledgeBasePresenter;
+use App\Services\KnowledgeSectionOptions;
 use App\Services\Learning\ResolvedLearningItem;
 use App\Services\LearningInstitutionContactsPresenter;
 use App\Services\ModelAuthorizer;
@@ -40,7 +39,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class KnowledgeItemController extends AdminController
 {
-    public function __construct(private readonly ModelAuthorizer $authorizer) {}
+    public function __construct(private readonly ModelAuthorizer $authorizer, private readonly KnowledgeSectionOptions $sections) {}
 
     public function index(Request $request): Response
     {
@@ -48,12 +47,9 @@ class KnowledgeItemController extends AdminController
 
         return Inertia::render('Admin/Knowledge/IndexKnowledgeItem', [
             'items' => KnowledgeBasePresenter::library(app()->getLocale(), $request->user()),
-            'sections' => $this->sectionOptions($request->user(), $this->sectionScope($request->user(), 'update')->granted ? 'update' : 'create'),
+            'sections' => $this->sections->options($request->user(), $this->sections->scope($request->user(), 'update')->granted ? 'update' : 'create'),
             'audienceTypes' => array_map(fn (LearningAudienceType $type): string => $type->value, LearningAudienceType::cases()),
-            'sectionScopes' => collect(['create', 'update'])->mapWithKeys(fn (string $ability): array => [$ability => [
-                'canTargetEverywhere' => $this->sectionScope($request->user(), $ability)->isAllScope,
-                'tenants' => GetTenantsForUpserts::execute($this->sectionPermission($request->user(), $ability), $this->authorizer)->all(),
-            ]])->all(),
+            'sectionScopes' => $this->sections->scopes($request->user()),
             'canCreate' => $request->user()->can('create', KnowledgeItem::class),
         ]);
     }
@@ -211,10 +207,10 @@ class KnowledgeItemController extends AdminController
         ])->values()->all());
     }
 
-    /** Every active page, for the editor's `[[` link picker. */
+    /** Every active page, for the editor's `[[` picker and the command palette; readers already get it on the Wiki home. */
     public function linkOptions(): JsonResponse
     {
-        $this->authorize('manage', KnowledgeItem::class);
+        $this->authorize('viewAny', KnowledgeItem::class);
 
         return response()->json(KnowledgeBasePresenter::index(app()->getLocale()));
     }
@@ -274,39 +270,8 @@ class KnowledgeItemController extends AdminController
             'responsibilities' => Role::query()->exceptSuperAdmin()->get()->map(fn (Role $role): array => [
                 'id' => $role->id, 'title' => $role->displayTitle($locale),
             ])->sortBy('title')->values()->all(),
-            'sections' => $this->sectionOptions($user, $ability),
+            'sections' => $this->sections->options($user, $ability),
         ];
-    }
-
-    /** Sections belong to the wiki, so its editors manage them; path builders keep the access they had. */
-    private function sectionPermission(User $user, string $ability): string
-    {
-        $knowledge = $this->authorizer->scope($user, "knowledgeItems.{$ability}.padalinys");
-        $learning = $this->authorizer->scope($user, "learningSteps.{$ability}.padalinys");
-
-        return ($knowledge->isAllScope || ($knowledge->granted && ! $learning->isAllScope) ? 'knowledgeItems' : 'learningSteps').".{$ability}.padalinys";
-    }
-
-    private function sectionScope(User $user, string $ability): PermissionScope
-    {
-        return $this->authorizer->scope($user, $this->sectionPermission($user, $ability));
-    }
-
-    private function sectionOptions(User $user, string $ability): array
-    {
-        $scope = $this->sectionScope($user, $ability);
-
-        return KnowledgeSection::query()->with('tenant')->withCount('items')->when(! $scope->isAllScope,
-            fn ($query) => $query->whereIn('tenant_id', $scope->tenantIds()))->orderBy('order')->orderBy('id')->get()
-            ->map(fn (KnowledgeSection $section): array => [
-                'id' => $section->id, 'kind' => $section->kind, 'date' => $section->date?->toDateString(), 'title' => $section->getTranslations('title'),
-                'description' => $section->getTranslations('description'), 'order' => $section->order,
-                'tenant_id' => $section->tenant_id,
-                'itemsCount' => $section->items_count,
-                'canUpdate' => $user->can('update', $section),
-                'canDelete' => $user->can('delete', $section),
-                'tenant' => $section->tenant ? ['id' => $section->tenant->id, 'shortname' => $section->tenant->shortname] : null,
-            ])->all();
     }
 
     /** A new or moved article goes to the end of its section; the order is set on the section page. */

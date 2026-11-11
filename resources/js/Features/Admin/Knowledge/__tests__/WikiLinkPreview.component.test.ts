@@ -9,7 +9,7 @@ import { KnowledgeItemKind } from '@/Types/enums';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-const page = { id: 'skvc', title: 'SKVC', kind: KnowledgeItemKind.Term, abbreviation: '', summary: 'Vertina studijas.', summaryHtml: 'Vertina studijas.', url: '/mano/knowledge/items/skvc' };
+const page = { id: 'skvc', title: 'SKVC', kind: KnowledgeItemKind.Term, abbreviation: '', summary: 'Vertina studijas.', summaryHtml: 'Vertina studijas.', url: '/mano/knowledge/items/skvc', thumbnailUrl: null };
 
 function render() {
   return mount(WikiLinkPreview, {

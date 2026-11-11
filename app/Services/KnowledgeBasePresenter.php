@@ -25,10 +25,10 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 /**
  * @phpstan-type KnowledgePayload array{id: string, kind: KnowledgeItemKind, title: string, abbreviation: string, summary: string, summaryHtml: string, description: string, audienceLabel: string, audienceNotes: list<array{label: string, description: string}>, section: array{id: string, title: string}|null, source: array{type: 'document'|'url', url: string|null, documentId: int|null, documentStatus: DocumentStatus|null, title: string|null, private: bool, thumbnailUrl: string|null}|null, state: string, autoCompleted: bool, completedAt: string|null, skippable: bool, insightsCount: int, reviewedAt: string|null, importance: LearningImportance}
  * @phpstan-type SelfLearnedPayload array{id: string, kind: KnowledgeItemKind, title: string, abbreviation: string, summary: string, summaryHtml: string, description: string, audienceLabel: string, audienceNotes: list<array{label: string, description: string}>, section: array{id: string, title: string}|null, source: array{type: 'document'|'url', url: string|null, documentId: int|null, documentStatus: DocumentStatus|null, title: string|null, private: bool, thumbnailUrl: string|null}|null, state: string, autoCompleted: bool, completedAt: string|null, skippable: bool, insightsCount: int, reviewedAt: string|null, importance: null}
- * @phpstan-type PageSummary array{id: string, kind: KnowledgeItemKind, title: string, abbreviation: string, summary: string, summaryHtml: string, url: string}
- * @phpstan-type IndexEntry array{id: string, kind: KnowledgeItemKind, title: string, abbreviation: string, summary: string, summaryHtml: string, url: string, sectionId: string|null, updatedAt: string|null}
+ * @phpstan-type PageSummary array{id: string, kind: KnowledgeItemKind, title: string, abbreviation: string, summary: string, summaryHtml: string, url: string, thumbnailUrl: string|null}
+ * @phpstan-type IndexEntry array{id: string, kind: KnowledgeItemKind, title: string, abbreviation: string, summary: string, summaryHtml: string, url: string, thumbnailUrl: string|null, sectionId: string|null, countsInProgress: bool, updatedAt: string|null}
  * @phpstan-type SectionPayload array{id: string, kind: KnowledgeSectionKind, title: string, description: string, date: string|null, order: int}
- * @phpstan-type MaterialPayload array{id: string, kind: KnowledgeItemKind, title: string, abbreviation: string, summary: string, summaryHtml: string, url: string, tenant: string|null, mine: bool}
+ * @phpstan-type MaterialPayload array{id: string, kind: KnowledgeItemKind, title: string, abbreviation: string, summary: string, summaryHtml: string, url: string, thumbnailUrl: string|null, tenant: string|null, mine: bool}
  */
 class KnowledgeBasePresenter
 {
@@ -129,7 +129,7 @@ class KnowledgeBasePresenter
      */
     public static function pageContext(KnowledgeItem $item, string $locale, ?User $viewer = null): array
     {
-        $item->loadMissing(['outgoingLinks' => fn ($query) => $query->active(), 'incomingLinks' => fn ($query) => $query->active(), 'subjects.subject']);
+        $item->loadMissing(['outgoingLinks' => fn ($query) => $query->active()->with('sources.document'), 'incomingLinks' => fn ($query) => $query->active()->with('sources.document'), 'subjects.subject']);
         $related = $item->outgoingLinks->concat($item->incomingLinks)->unique('id')
             ->map(fn (KnowledgeItem $page): array => self::summary($page, $locale))->values()->all();
         $collator = new \Collator($locale);
@@ -155,7 +155,7 @@ class KnowledgeBasePresenter
 
         return KnowledgeItem::query()->active()->where('kind', KnowledgeItemKind::Material)
             ->whereHas('subjects', fn ($query) => $query->where('subject_type', 'knowledge_item')->where('subject_id', $term->id))
-            ->with(['tenant', 'section'])->get()
+            ->with(['tenant', 'section', 'sources.document'])->get()
             ->sortBy([
                 fn (KnowledgeItem $a, KnowledgeItem $b): int => $isMine($b) <=> $isMine($a),
                 fn (KnowledgeItem $a, KnowledgeItem $b): int => [$a->section->order ?? PHP_INT_MAX, $a->order, $a->id] <=> [$b->section->order ?? PHP_INT_MAX, $b->order, $b->id],
@@ -209,8 +209,20 @@ class KnowledgeBasePresenter
     {
         return [
             'section' => self::section($section, $locale),
-            'pages' => $section->items()->active()->get()->map(fn (KnowledgeItem $page): array => self::summary($page, $locale))->values()->all(),
+            'pages' => $section->items()->active()->with('sources.document')->get()->map(fn (KnowledgeItem $page): array => self::summary($page, $locale))->values()->all(),
         ];
+    }
+
+    /** The source document's first page, only when the caller eager-loaded `sources.document`. */
+    public static function thumbnail(KnowledgeItem $page, string $locale): ?string
+    {
+        if (! $page->relationLoaded('sources')) {
+            return null;
+        }
+        $document = $page->sourceFor($locale)?->document;
+
+        return $document?->thumbnail_path === null ? null
+            : route('knowledgeItems.thumbnail', [$page, 'v' => substr(md5((string) $document->thumbnail_etag), 0, 8)]);
     }
 
     /** The summary as plain text, for search, rows and meta. */
@@ -227,7 +239,7 @@ class KnowledgeBasePresenter
             return [];
         }
 
-        return KnowledgeItem::query()->active()->whereKey($ids)->get()
+        return KnowledgeItem::query()->active()->whereKey($ids)->with('sources.document')->get()
             ->mapWithKeys(fn (KnowledgeItem $page): array => [$page->id => self::summary($page, $locale)])->all();
     }
 
@@ -240,15 +252,17 @@ class KnowledgeBasePresenter
             'summary' => self::plain($page->getTranslation('summary', $locale)),
             'summaryHtml' => (string) $page->getTranslation('summary', $locale),
             'url' => route('knowledgeItems.show', $page),
+            'thumbnailUrl' => self::thumbnail($page, $locale),
         ];
     }
 
     /** @return list<IndexEntry> active pages alphabetically: every kind for the hub search and link picker, terms only for A–Ž */
     public static function index(string $locale, bool $terms = false): array
     {
-        $entries = KnowledgeItem::query()->active()->when($terms, fn ($query) => $query->terms())->get()->map(fn (KnowledgeItem $page): array => [
+        $entries = KnowledgeItem::query()->active()->when($terms, fn ($query) => $query->terms())->with('sources.document')->get()->map(fn (KnowledgeItem $page): array => [
             ...self::summary($page, $locale),
             'sectionId' => $page->knowledge_section_id,
+            'countsInProgress' => $page->counts_in_progress,
             'updatedAt' => ($page->reviewed_at ?? $page->updated_at)?->toIso8601String(),
         ])->all();
         $collator = new \Collator($locale);
@@ -294,7 +308,7 @@ class KnowledgeBasePresenter
             ->whereHas('subjects', fn ($query) => $query
                 ->where(fn ($q) => $q->where('subject_type', 'institution')->where('subject_id', (string) $institution->id))
                 ->orWhere(fn ($q) => $q->where('subject_type', 'institution_type')->whereIn('subject_id', $typeIds)))
-            ->ordered()->get()->map(fn (KnowledgeItem $page): array => self::summary($page, $locale))->values()->all();
+            ->ordered()->with('sources.document')->get()->map(fn (KnowledgeItem $page): array => self::summary($page, $locale))->values()->all();
     }
 
     /** @return array{type: 'document'|'url', url: string|null, documentId: int|null, documentStatus: DocumentStatus|null, title: string|null, private: bool, thumbnailUrl: string|null}|null */
@@ -351,7 +365,7 @@ class KnowledgeBasePresenter
         return $result;
     }
 
-    /** @return array{id: string, kind: KnowledgeItemKind, title: array{lt: string, en: string}, abbreviation: array{lt: string, en: string}, summary: array{lt: string, en: string}, description: array{lt: string, en: string}, knowledge_section_id: string|null, tenant_id: int|null, audiences: list<array{id: string, type: LearningAudienceType, source_id: string|null, tenant_id: int|null, importance: LearningImportance, stage: LearningStage|null, description: array{lt: string, en: string}, order: int, label: string}>, is_active: bool, sources: array<string, array{document_id: int|null, url: string|null}>, source_documents: array<string, array{id: int, title: string, status: string, date: string|null}>} */
+    /** @return array{id: string, kind: KnowledgeItemKind, title: array{lt: string, en: string}, abbreviation: array{lt: string, en: string}, summary: array{lt: string, en: string}, description: array{lt: string, en: string}, knowledge_section_id: string|null, tenant_id: int|null, audiences: list<array{id: string, type: LearningAudienceType, source_id: string|null, tenant_id: int|null, importance: LearningImportance, stage: LearningStage|null, description: array{lt: string, en: string}, order: int, label: string}>, is_active: bool, counts_in_progress: bool, sources: array<string, array{document_id: int|null, url: string|null}>, source_documents: array<string, array{id: int, title: string, status: string, date: string|null}>} */
     public static function edit(KnowledgeItem $step): array
     {
         $sources = [];
@@ -383,6 +397,7 @@ class KnowledgeBasePresenter
                 'order' => $audience->order, 'label' => $audience->label(app()->getLocale()),
             ])->all(),
             'is_active' => $step->is_active,
+            'counts_in_progress' => $step->counts_in_progress,
             'sources' => $sources, 'source_documents' => $sourceDocuments,
         ];
     }

@@ -17,7 +17,7 @@ beforeEach(() => {
 });
 
 const entry = (id: string, title: string, overrides: Partial<WikiIndexEntry> = {}): WikiIndexEntry => ({
-  id, kind: KnowledgeItemKind.Term, title, abbreviation: '', summary: '', summaryHtml: '', url: `/mano/knowledge/items/${id}`, sectionId: null, updatedAt: null, ...overrides,
+  id, kind: KnowledgeItemKind.Term, title, abbreviation: '', summary: '', summaryHtml: '', url: `/mano/knowledge/items/${id}`, thumbnailUrl: null, sectionId: null, countsInProgress: true, updatedAt: null, ...overrides,
 });
 // The server sends topics in their order, then collections.
 const sections = [
@@ -90,6 +90,23 @@ describe('Wiki home', () => {
     expect(wrapper.text()).not.toContain('Tuščias');
     expect(wrapper.get('[data-slot="wiki-aside"]').findAll('[data-slot="wiki-page-list"] li')[0]!.text()).toContain('SKVC');
     expect(wrapper.get('[data-slot="wiki-aside"]').findAll('nav li').map(letter => letter.text())).toEqual(['A', 'S', 'Ž']);
+    wrapper.unmount();
+  });
+
+  it('leaves exempt articles out of the whole-Wiki count unless they are on your path', () => {
+    const wrapper = mount(ShowKnowledgeBase, {
+      props: {
+        knowledge: { sections: [], items: [knowledge({ id: 'mine-unit' })], selfLearned: [], stats: { pathDone: 0, pathTotal: 1, selfLearned: 0 } },
+        index: [
+          entry('kvorumas', 'Kvorumas'),
+          entry('mine-unit', 'MIF nuostatai', { kind: KnowledgeItemKind.Material, countsInProgress: false }),
+          entry('other-unit', 'FF nuostatai', { kind: KnowledgeItemKind.Material, countsInProgress: false }),
+        ],
+        sections: [], doneIds: ['kvorumas', 'other-unit'],
+      },
+      global: { stubs: commonStubs },
+    });
+    expect(wrapper.get('[data-slot="wiki-progress"] [role="progressbar"]').attributes('aria-valuetext')).toBe('1/2');
     wrapper.unmount();
   });
 

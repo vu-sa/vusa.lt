@@ -13,7 +13,7 @@ const stubs = {
   PopoverAnchor: true,
   PopoverContent: { template: '<div data-testid="preview"><slot /></div>' },
 };
-const pages = { skvc: { id: 'skvc', title: 'Studijų kokybės vertinimo centras', kind: KnowledgeItemKind.Term, abbreviation: 'SKVC', summary: 'SKVC vertina studijas.', summaryHtml: '<strong>SKVC</strong> vertina studijas.', url: '/mano/knowledge/items/skvc' } };
+const pages = { skvc: { id: 'skvc', title: 'Studijų kokybės vertinimo centras', kind: KnowledgeItemKind.Term, abbreviation: 'SKVC', summary: 'SKVC vertina studijas.', summaryHtml: '<strong>SKVC</strong> vertina studijas.', url: '/mano/knowledge/items/skvc', thumbnailUrl: null } };
 const html = '<p>Žr. <a href="/old" target="_blank" data-knowledge-id="skvc">SKVC</a> ir <a href="/x" data-knowledge-id="gone">ištrintą</a>.</p>';
 
 function render() {

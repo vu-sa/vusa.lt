@@ -107,6 +107,7 @@
       </FormPanel>
       <FormPanel :title="$t('learning_library.sections.visibility')" :icon="Eye" flush>
         <FormToggleRow id="step-is-active" v-model="form.is_active" :label="$t('learning_library.fields.is_active')" :hint="$t('learning_library.fields.knowledge_is_active_hint')" data-testid="step-is-active" />
+        <FormToggleRow id="article-counts-in-progress" v-model="form.counts_in_progress" :label="$t('learning_library.fields.counts_in_progress')" :hint="$t('learning_library.fields.counts_in_progress_hint')" data-testid="article-counts-in-progress" />
       </FormPanel>
     </template>
 
@@ -168,6 +169,7 @@ interface KnowledgeItemFormState {
   knowledge_section_id: string | null;
   tenant_id: number | null;
   is_active: boolean;
+  counts_in_progress: boolean;
 }
 
 const props = withDefaults(defineProps<{
@@ -217,6 +219,7 @@ const form = useForm<KnowledgeItemFormState>({
   knowledge_section_id: props.item?.knowledge_section_id ?? null,
   tenant_id: props.item ? props.item.tenant_id : (!props.canPublishEverywhere && props.pageTenants.length === 1 ? props.pageTenants[0]!.id : null),
   is_active: props.item?.is_active ?? true,
+  counts_in_progress: props.item?.counts_in_progress ?? true,
 });
 
 const fieldIds: Record<string, string> = {
@@ -282,6 +285,7 @@ function payload(data: KnowledgeItemFormState): Record<string, unknown> {
     knowledge_section_id: data.knowledge_section_id,
     tenant_id: data.tenant_id,
     is_active: data.is_active,
+    counts_in_progress: data.counts_in_progress,
   };
 }
 

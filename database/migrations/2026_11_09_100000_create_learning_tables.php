@@ -48,6 +48,7 @@ return new class extends Migration
             $table->json('description')->nullable();
             $table->unsignedInteger('order')->default(0);
             $table->boolean('is_active')->default(true);
+            $table->boolean('counts_in_progress')->default(true);
             $table->timestamp('reviewed_at')->nullable();
             $table->foreignUlid('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();

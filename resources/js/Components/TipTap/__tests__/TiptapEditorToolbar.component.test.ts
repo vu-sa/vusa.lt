@@ -23,6 +23,14 @@ describe('TiptapEditor field toolbar', () => {
     expect(wrapper.find('[data-testid="tiptap-format-underline"]').classes()).toContain('size-8');
   });
 
+  it('lets a framed description field be dragged taller, but keeps a one-line marks field fixed', async () => {
+    const description = await mountEditor({ tools: 'description', html: true });
+    expect(description.find('.tiptap-content').classes()).toContain('resize-y');
+
+    const marks = await mountEditor({ preset: 'marks', disableLinks: true });
+    expect(marks.find('.tiptap-content').classes()).not.toContain('resize-y');
+  });
+
   it('keeps short marks-only fields to bold, italic and underline', async () => {
     const wrapper = await mountEditor({ preset: 'marks', disableLinks: true });
 

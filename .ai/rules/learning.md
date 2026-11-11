@@ -46,5 +46,6 @@ A knowledge item may point at an archive `Document` or a URL per locale; either 
 ## Progress visibility
 Any active article the user can view can be ticked for self-learning; skipping is allowed only for skippable articles on their path.
 Off-path ticks appear as `selfLearned` in the Wiki overview, with `pathDone`, `pathTotal` and `selfLearned` stats.
+The whole-Wiki count on the home leaves out articles with `counts_in_progress` off (per-unit material) unless they are on the viewer's path. The command palette searches the same active-article index as the Wiki hub (`knowledgeItems.linkOptions`, open to every reader); do not add a Typesense collection for it.
 
 Coordinators see a rep's progress only through `RepresentativesPresenter::coordinatedInstitutionIds()` (their `StudentRepCoordination` institutions) on ViSAK → Atstovai; padalinys managers see the same reps without it. Never widen progress to tenant permissions. Handover notes were retired before release; passing on experience is the regular `write_handover` step that reps tick themselves.

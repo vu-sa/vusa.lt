@@ -80,6 +80,11 @@
         </div>
       </div>
       <span v-else-if="column.key === 'audience'" class="text-sm text-muted-foreground">{{ audienceSummary(item) || '—' }}</span>
+      <!-- A text tag like the meetings' Būsena: a category, not a status, so it stays muted. -->
+      <span v-else-if="column.key === 'kind'" class="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground" :data-kind="item.kind" data-slot="article-kind">
+        <component :is="item.kind === KnowledgeItemKind.Term ? BookA : FileText" class="size-3.5 shrink-0" aria-hidden="true" />
+        {{ $t(`learning.kinds.${item.kind}`) }}
+      </span>
       <span v-else-if="column.key === 'section'" class="text-sm text-muted-foreground">{{ item.section?.title || '—' }}</span>
       <template v-else-if="column.key === 'importance'">
         <StatusBadge v-if="highestImportance(item)" :status="learningStepImportances[highestImportance(item)!]" voice="sentence" />
@@ -106,7 +111,7 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowUpRight, BookOpen, Pencil, Plus } from '@lucide/vue';
+import { ArrowUpRight, BookA, BookOpen, FileText, Pencil, Plus } from '@lucide/vue';
 import { computed, ref, toRef } from 'vue';
 
 import { quickFilterLabel } from '@/Components/Collection/quickFilterLabel';
@@ -180,6 +185,7 @@ function toggleQuickFilter(id: string): void {
 
 const columns = computed<CollectionColumn[]>(() => [
   { key: 'title', label: $t('learning_library.knowledge.column_title'), sortField: 'title' },
+  { key: 'kind', label: $t('learning_library.library.columns.kind'), class: 'w-32' },
   { key: 'audience', label: $t('learning_library.library.columns.audience'), class: 'w-44' },
   { key: 'section', label: $t('learning_library.library.columns.section'), class: 'w-44' },
   { key: 'importance', label: $t('learning_library.library.columns.importance'), class: 'w-40' },

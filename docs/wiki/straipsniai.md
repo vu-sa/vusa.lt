@@ -19,6 +19,8 @@ tests:
   - resources/js/Features/Admin/Knowledge/__tests__/WikiLinkPreview.component.test.ts
   - resources/js/Features/Admin/Knowledge/__tests__/WikiLinkCard.component.test.ts
   - resources/js/Features/Admin/Knowledge/__tests__/ShowKnowledgeSection.component.test.ts
+  - resources/js/Features/Admin/Knowledge/__tests__/WikiMaterialList.component.test.ts
+  - resources/js/Components/CommandPalette/__tests__/AdminCommandPalette.component.test.ts
   - resources/js/Features/Admin/Knowledge/__tests__/wikiSearch.test.ts
   - resources/js/Features/Admin/Learning/__tests__/LearningLibrary.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/KnowledgeItemForm.component.test.ts
@@ -93,7 +95,8 @@ telefone pirmas palietimas atveria peržiūrą, antras – įrašą.
 
 Nuorodos į kitus įrašus tekste rodomos VU SA spalva, be pabraukimo. Užvedus pelę arba pasiekus nuorodą
 klaviatūra atsiveria kortelė su paryškinta įrašo santrauka (pavadinimas nekartojamas, nes santrauka
-juo prasideda) ir rūšimi; visa kortelė yra nuoroda į įrašą. Telefone pirmas palietimas atveria kortelę, antras – įrašą. Jei įrašas, į kurį
+juo prasideda) ir rūšimi; jei įrašo šaltinis – dokumentas, šalia rodomas jo pirmasis puslapis.
+Visa kortelė yra nuoroda į įrašą. Telefone pirmas palietimas atveria kortelę, antras – įrašą. Jei įrašas, į kurį
 nurodoma, ištrintas ar paslėptas, nuoroda rodoma kaip paprastas tekstas. Tokios pačios nuorodos
 veikia ir [Mano kelio](/mano/kelias) žingsnių aprašymuose.
 
@@ -108,8 +111,8 @@ rodomi institucijos puslapio santraukoje, bloke **Wiki** (ir tiesiogiai su insti
 susieti su jos tipu).
 
 Medžiagą galima susieti ir su **sąvoka**: tada sąvokos puslapyje, po tekstu, ji rodoma bloke
-**Medžiaga apie tai**. Pirma rodoma tavo padalinio medžiaga, o kitų padalinių – po mygtuku
-**Visi**. Pvz., sąvokos *Padalinio nuostatai* puslapyje pirmiausia matysi savo padalinio nuostatus.
+**Medžiaga apie tai** – viena eilute dokumentų miniatiūrų, kurią galima slinkti į šoną. Pirma
+rodoma tavo padalinio medžiaga, apvesta tamsiu rėmeliu. Pvz., sąvokos *Padalinio nuostatai* puslapyje pirmiausia matysi savo padalinio nuostatus.
 
 „Apie ką“ nenulemia, kam įrašas rodomas Mano kelyje – tam skirtos auditorijos.
 
@@ -130,7 +133,9 @@ Jame pasirink **Pagal svarbą** arba **Pagal skyrius**; pasirinkimas išlieka pu
 Į šį puslapį veda ir Wiki pradžios mygtukas **Visi tau skirti įrašai** bei Mano kelio Wiki blokas.
 
 Wiki pradžioje viršuje rodomas tik visos Wiki pažangos matuoklis: kiek visų aktyvių įrašų
-pažymėjai išmoktais. Praleisti įrašai į šį skaičių neįtraukiami.
+pažymėjai išmoktais. Praleisti įrašai į šį skaičių neįtraukiami. Įrašai, kuriems išjungta
+**Įskaičiuoti į visos Wiki pažangą** (pvz., kiekvieno padalinio nuostatai), skaičiuojami tik tiems,
+kam jie skirti.
 
 Puslapyje **Tau skirti įrašai** matuoklis rodo tik tau skirtus įrašus: būtinų segmentas pažymėtas VU SA spalva, rekomenduojamų –
 tamsiu kontūru, papildomų – punktyru. Užpildyta dalis rodo atliktą pažangą, neužpildyta lieka
@@ -165,7 +170,8 @@ Be paieškos rodoma:
 ### Skyriaus puslapis {#skyrius}
 
 Kiekviena tema ir rinkinys turi savo puslapį: pavadinimas, aprašymas, rinkinio data ir įrašai ta
-tvarka, kuria jie rodomi visur. Kas gali redaguoti skyrių, mato mygtuką **Keisti tvarką**.
+tvarka, kuria jie rodomi visur. Kas gali redaguoti skyrių, mato mygtukus **Redaguoti skyrių** ir
+**Keisti tvarką**.
 
 ### Rodyklė A–Ž {#rodykle}
 
@@ -179,7 +185,7 @@ atveria meniu su nuoroda atgal į **Rodyklę A–Ž**.
 ### Biblioteka {#biblioteka}
 
 Biblioteka skirta tiems, kas tvarko Wiki ar Mano kelią (žr. [Kas ką gali](#teises)): visi įrašai
-su paieška, greitieji filtrai **Sąvokos**, **Medžiaga**, **Esminis** ir
+su paieška, stulpelis **Rūšis** (sąvoka ar medžiaga), greitieji filtrai **Sąvokos**, **Medžiaga**, **Esminis** ir
 **Rekomenduojamas**, kiti (auditorija, skyrius) – skiltyje **Filtrai**. Matomos žymos: dokumentas
 nebegalioja, atnaujintas po peržiūros arba įrašas neturi nei teksto, nei šaltinio. Čia pat
 tvarkomi skyriai.
@@ -192,7 +198,8 @@ Mano kelio žingsnių biblioteka yra atskirai: **Organizacija → Kelio žingsni
 
 ### Ieškoti ir skaityti
 
-1. Atverk [Wiki](app:/mano/knowledge) darbo sričių pasirinkime.
+1. Atverk [Wiki](app:/mano/knowledge) darbo sričių pasirinkime arba ieškok komandų paletėje
+   (**Ctrl K**) – Wiki įrašai rodomi atskiroje grupėje.
 2. Įrašyk sąvoką, santrumpą ar dokumento pavadinimą arba pasirink skyrių.
 3. Įraše užvesk pelę ant nuorodos (telefone – paliesk), kad pamatytum trumpą paaiškinimą.
 4. Kai išmoksi, pažymėk langelį prie pavadinimo – tai galima bet kuriam įrašui.
@@ -217,6 +224,9 @@ Mano kelio žingsnių biblioteka yra atskirai: **Organizacija → Kelio žingsni
 7. Išsaugok. Įrašo puslapyje prie **Apie ką šis įrašas** spausk **Tvarkyti**, jei
    įrašas apie instituciją ar tipą: institucija pasirenkama paieškos lange, tipai – iš medžio.
    Medžiagą čia susiek ir su sąvoka, kurią ji paaiškina.
+8. Jei įrašas reikalingas tik daliai narių (pvz., vieno padalinio nuostatai), skiltyje **Rodymas**
+   išjunk **Įskaičiuoti į visos Wiki pažangą**. Aprašymo laukelį galima ištempti, kaip ir įprastą
+   teksto laukelį.
 
 ### Tvarkyti skyrius
 
@@ -256,6 +266,9 @@ redaguoti įrašus, bet ne jų auditorijas.
   (`HtmlSanitizerService::sanitizeInlineMarks`); 200 ženklų riba skaičiuojama be žymių.
 - Įrašų tvarka (`order`) – vieta skyriuje, keičiama tik skyriaus puslapyje
   (`knowledgeSections.items.reorder`).
+- `counts_in_progress = false` išima įrašą iš visos Wiki pažangos, išskyrus skaitytojus, kurių kelyje
+  jis yra. Komandų paletė Wiki ieško tame pačiame indekse kaip Wiki pradžia (`knowledgeItems.linkOptions`),
+  ne Typesense.
 - Nuorodos saugomos tekste kaip `<a data-knowledge-id="…">` (leidžia `HtmlSanitizerService`), o
   `SyncKnowledgeLinks` po išsaugojimo perrašo `knowledge_links` lentelę; susiję įrašai –
   `outgoingLinks` ∪ `incomingLinks`. Kortelių duomenys (`linkedPages`) siunčiami kartu su puslapiu.

@@ -7,6 +7,9 @@ import { useCommandPalette } from '@/Composables/useCommandPalette';
 import { useUIPreferences } from '@/Composables/useUIPreferences';
 import { createEmptyMultiSearchResults } from '@/Shared/Search/utils/createEmptyMultiSearchResults';
 
+import { loadWikiLinkTargets } from '@/Features/Admin/Knowledge/useWikiLinkTargets';
+import { KnowledgeItemKind } from '@/Types/enums';
+
 import { useCommandActions } from '../useCommandActions';
 import AdminCommandPalette from '../AdminCommandPalette.vue';
 
@@ -14,11 +17,13 @@ vi.mock('@/Composables/useAdminSearch', () => ({ useAdminSearch: vi.fn() }));
 vi.mock('@/Composables/useCommandPalette', () => ({ useCommandPalette: vi.fn() }));
 vi.mock('@/Composables/useUIPreferences', () => ({ useUIPreferences: vi.fn() }));
 vi.mock('../useCommandActions', () => ({ useCommandActions: vi.fn() }));
+vi.mock('@/Features/Admin/Knowledge/useWikiLinkTargets', () => ({ loadWikiLinkTargets: vi.fn() }));
 
 beforeEach(() => {
   vi.useFakeTimers();
   vi.mocked(useCommandPalette).mockReturnValue({ isOpen: ref(true), query: ref(''), recentItems: ref([]), close: vi.fn() } as ReturnType<typeof useCommandPalette>);
   vi.mocked(useUIPreferences).mockReturnValue({ isPinned: vi.fn(), togglePin: vi.fn(), pinnedPages: ref([]) } as unknown as ReturnType<typeof useUIPreferences>);
+  vi.mocked(loadWikiLinkTargets).mockResolvedValue([]);
 });
 
 afterEach(() => vi.useRealTimers());
@@ -74,6 +79,36 @@ describe('admin palette relevance', () => {
     await vi.advanceTimersByTimeAsync(301);
     await flushPromises();
     expect(wrapper.findAll('[data-testid="result"]')[0].text()).toBe(first);
+    wrapper.unmount();
+  });
+});
+
+describe('admin palette Wiki results', () => {
+  it('lists matching Wiki articles from the cached index', async () => {
+    vi.mocked(loadWikiLinkTargets).mockResolvedValue([
+      { id: 'kvorumas', kind: KnowledgeItemKind.Term, title: 'Kvorumas', abbreviation: '', summary: '', summaryHtml: '', url: '/mano/knowledge/items/kvorumas', thumbnailUrl: null, sectionId: null, countsInProgress: true, updatedAt: null },
+      { id: 'senatas', kind: KnowledgeItemKind.Term, title: 'Senatas', abbreviation: '', summary: '', summaryHtml: '', url: '/mano/knowledge/items/senatas', thumbnailUrl: null, sectionId: null, countsInProgress: true, updatedAt: null },
+    ]);
+    vi.mocked(useCommandActions).mockReturnValue({
+      filterActions: () => [], activeWorkspace: ref({ key: 'wiki' }), workspaceKeyForEntity: () => 'wiki',
+    } as unknown as ReturnType<typeof useCommandActions>);
+    vi.mocked(useAdminSearch).mockReturnValue({
+      multiSearch: vi.fn().mockResolvedValue(createEmptyMultiSearchResults()), initialize: vi.fn(), isRateLimited: ref(false), getDirectInstitutionIds: () => [],
+    } as unknown as ReturnType<typeof useAdminSearch>);
+    const wrapper = mount(AdminCommandPalette, {
+      global: { stubs: {
+        PaletteDialog: { template: '<div><slot /></div>' },
+        CommandList: { template: '<div><slot /></div>' },
+        PaletteGroup: { template: '<div><slot /></div>' },
+        CommandItem: { template: '<div><slot /></div>' },
+        PaletteRow: { props: ['title', 'value'], template: '<div data-testid="palette-row" :data-value="value">{{ title }}</div>' },
+      } },
+    });
+    await flushPromises();
+    await wrapper.get('input').setValue('kvor');
+    await vi.advanceTimersByTimeAsync(301);
+    await flushPromises();
+    expect(wrapper.findAll('[data-testid="palette-row"]').filter(row => row.attributes('data-value')?.startsWith('wiki-')).map(row => row.text())).toEqual(['Kvorumas']);
     wrapper.unmount();
   });
 });

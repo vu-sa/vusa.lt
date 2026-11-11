@@ -10,7 +10,7 @@ vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 const page = (overrides: Partial<WikiPageSummary> = {}): WikiPageSummary => ({
   id: 'kvorumas', kind: KnowledgeItemKind.Term, title: 'Kvorumas', abbreviation: '',
   summary: 'Kvorumas – mažiausias narių skaičius.', summaryHtml: '<strong>Kvorumas</strong> – mažiausias narių skaičius.',
-  url: '/mano/knowledge/items/kvorumas', ...overrides,
+  url: '/mano/knowledge/items/kvorumas', thumbnailUrl: null, ...overrides,
 });
 
 it('is one link to the article that leads with the bold summary instead of repeating the title', () => {
@@ -27,4 +27,10 @@ it('falls back to the title without a summary and shows an abbreviation the summ
   const wrapper = mount(WikiLinkCard, { props: { page: page({ summary: '', summaryHtml: '', abbreviation: 'KV' }) } });
   expect(wrapper.text()).toContain('Kvorumas');
   expect(wrapper.get('abbr').text()).toBe('KV');
+});
+
+it('puts the document\'s first page beside the summary, as Wikipedia does with a lead image', () => {
+  const wrapper = mount(WikiLinkCard, { props: { page: page({ kind: KnowledgeItemKind.Material, thumbnailUrl: '/thumb/kvorumas' }) } });
+  expect(wrapper.get('[data-slot="wiki-link-card-image"]').attributes('src')).toBe('/thumb/kvorumas');
+  expect(wrapper.findAll('a')).toHaveLength(1);
 });

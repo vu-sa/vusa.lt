@@ -157,7 +157,6 @@ return [
         'materials' => 'Material',
         'materials_lead' => 'Training slides, examples and other documents, grouped into collections.',
         'materials_about' => 'Material about this',
-        'materials_other_units' => 'Other units',
         'materials_empty' => 'No collections yet.',
         'read' => 'Read',
         'section_empty' => 'This section has no articles yet.',

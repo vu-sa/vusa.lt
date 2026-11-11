@@ -23,6 +23,8 @@ const props = defineProps<{
   sections: LearningSectionOption[];
   scopes: LearningSectionScopes;
   canCreate: boolean;
+  /** Opens straight into this section's editor and closes on save, as from the section's own page. */
+  editOnly?: string | null;
   locale: 'lt' | 'en';
 }>();
 const open = defineModel<boolean>('open', { required: true });
@@ -67,8 +69,13 @@ const orderChanged = computed(() => draft.value.some((section, index) => section
 const missingEnglish = computed(() => form.title.lt.trim() !== '' && form.title.en.trim() === '');
 
 watch(open, (value) => {
-  if (!value) view.value = 'list';
-});
+  if (!value) {
+    view.value = 'list';
+    return;
+  }
+  const only = props.editOnly ? props.sections.find(section => section.id === props.editOnly) : null;
+  if (only) edit(only);
+}, { immediate: true });
 
 function edit(section: LearningSectionOption | null): void {
   editingId.value = section?.id ?? null;
@@ -100,7 +107,14 @@ function submit(): void {
     return;
   }
   if (view.value !== 'edit') return;
-  const options = { preserveScroll: true, onSuccess: () => { form.defaults(); view.value = 'list'; } };
+  const options = {
+    preserveScroll: true,
+    onSuccess: () => {
+      form.defaults();
+      if (props.editOnly) open.value = false;
+      else view.value = 'list';
+    },
+  };
   form.transform(data => ({ ...data, date: data.kind === KnowledgeSectionKind.Collection ? data.date : null }));
   if (editingId.value) form.put(route('knowledgeSections.update', editingId.value), options);
   else form.post(route('knowledgeSections.store'), options);
@@ -229,7 +243,7 @@ const disabled = computed(() => {
         <DatePicker :model-value="form.date" clearable data-testid="section-date" @update:model-value="(value?: Date) => form.date = isoDate(value)" />
       </FormFieldWrapper>
       <TenantSelectField v-if="!scope.canTargetEverywhere" id="section-tenant" v-model="form.tenant_id" :tenants="scope.tenants" :error="form.errors.tenant_id" />
-      <Button type="button" variant="ghost" voice="sentence" class="-ml-3" @click="view = 'list'">{{ $t('learning_library.section_manager.back') }}</Button>
+      <Button v-if="!editOnly" type="button" variant="ghost" voice="sentence" class="-ml-3" @click="view = 'list'">{{ $t('learning_library.section_manager.back') }}</Button>
     </div>
   </SheetForm>
   <ConfirmDialog v-model:open="confirmOpen" :title="$t('learning_library.section_manager.delete_title')" :description="$t('learning_library.section_manager.delete_description')" :confirm-label="$t('Ištrinti')" destructive @confirm="destroy" />

@@ -52,6 +52,22 @@ describe('learning sections', () => {
     wrapper.unmount();
   });
 
+  it('opens straight into one section\'s editor from its page and closes once saved', async () => {
+    const wrapper = mount(LearningSectionsSheet, {
+      props: {
+        open: true, locale: 'lt', canCreate: false, sections: [section], editOnly: 'section-1',
+        scopes: { create: { canTargetEverywhere: true, tenants: [] }, update: { canTargetEverywhere: true, tenants: [] } },
+      }, global: { stubs },
+    });
+    const form = vi.mocked(useForm).mock.results[0]!.value;
+    expect(wrapper.get<HTMLInputElement>('#section-title').element.value).toBe('Mokymai');
+    expect(wrapper.text()).not.toContain('learning_library.section_manager.back');
+    await wrapper.getComponent(SheetForm).vm.$emit('submit');
+    form.put.mock.calls[0]![1].onSuccess();
+    expect(wrapper.emitted('update:open')?.at(-1)).toEqual([false]);
+    wrapper.unmount();
+  });
+
   it('edits the selected section and uses the update scope', async () => {
     const wrapper = render();
     const form = vi.mocked(useForm).mock.results[0]!.value;

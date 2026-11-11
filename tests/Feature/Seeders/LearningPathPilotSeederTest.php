@@ -32,7 +32,7 @@ test('seeds the pilot once, links archive documents by title and replaces audien
     expect($step->section->getTranslation('title', 'en'))->toBe('VU SR and the university');
     $unitTerm = KnowledgeItem::query()->where('key', 'pilot_unit_regulations')->sole();
     expect($unitTerm->kind)->toBe(KnowledgeItemKind::Term)->and($unitTerm->audiences)->toBeEmpty()
-        ->and($unitStep->kind)->toBe(KnowledgeItemKind::Material)
+        ->and($unitStep->kind)->toBe(KnowledgeItemKind::Material)->and($unitStep->counts_in_progress)->toBeFalse()
         ->and($unitStep->section->kind)->toBe(KnowledgeSectionKind::Collection)
         ->and($unitStep->subjects->sole()->only(['subject_type', 'subject_id']))->toBe(['subject_type' => 'knowledge_item', 'subject_id' => $unitTerm->id]);
     expect($step->audiences)->toHaveCount(2);

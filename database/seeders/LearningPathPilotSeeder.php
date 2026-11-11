@@ -235,6 +235,7 @@ class LearningPathPilotSeeder extends Seeder
                 'kind' => $definition['item_kind'] ?? KnowledgeItemKind::Term,
                 'knowledge_section_id' => isset($definition['section']) ? $this->sections[$definition['section']]->id : null,
                 'tenant_id' => $definition['tenant_id'] ?? null,
+                'counts_in_progress' => $definition['counts_in_progress'] ?? true,
             ] : []),
             'order' => $definition['order'],
             'title' => $definition['title'],
@@ -320,7 +321,7 @@ class LearningPathPilotSeeder extends Seeder
         }
         foreach (Tenant::query()->where('type', 'padalinys')->orderBy('shortname')->get() as $index => $tenant) {
             $this->upsertStep([
-                'key' => "pilot_unit_regulations_{$tenant->alias}", 'section' => 'unit_regulations', 'item_kind' => KnowledgeItemKind::Material,
+                'key' => "pilot_unit_regulations_{$tenant->alias}", 'section' => 'unit_regulations', 'item_kind' => KnowledgeItemKind::Material, 'counts_in_progress' => false,
                 'kind' => 'knowledge', 'audience' => LearningAudienceType::Everyone, 'tenant_id' => $tenant->id,
                 'stage' => null, 'importance' => LearningImportance::Essential, 'order' => $index,
                 'subjects' => [['knowledge_item', $term->id]],

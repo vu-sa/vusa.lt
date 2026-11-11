@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t, transChoice } from 'laravel-vue-i18n';
-import { ArrowDownUp } from '@lucide/vue';
+import { ArrowDownUp, Pencil } from '@lucide/vue';
 
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import SortableRowList from '@/Components/Collection/SortableRowList.vue';
@@ -11,6 +11,8 @@ import { Button } from '@/Components/ui/button';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
 import WikiLinkPreview from '@/Features/Admin/Knowledge/WikiLinkPreview.vue';
 import WikiPageList from '@/Features/Admin/Knowledge/WikiPageList.vue';
+import LearningSectionsSheet from '@/Features/Admin/Learning/LearningSectionsSheet.vue';
+import type { LearningSectionOption, LearningSectionScopes } from '@/Features/Admin/Learning/types';
 import type { WikiPageSummary, WikiSection } from '@/Types/learning';
 
 const props = defineProps<{
@@ -18,7 +20,11 @@ const props = defineProps<{
   pages: WikiPageSummary[];
   doneIds: string[];
   canReorder: boolean;
+  /** This section as the Skyriai sheet edits it, for its editors only. */
+  editing?: { options: LearningSectionOption[]; scopes: LearningSectionScopes } | null;
 }>();
+const editOpen = ref(false);
+const locale = computed(() => (usePage().props.app as { locale?: string } | undefined)?.locale === 'en' ? 'en' : 'lt');
 
 const { formatDate } = useDateFormatter();
 const done = computed(() => new Set(props.doneIds));
@@ -54,6 +60,9 @@ function saveOrder(): void {
         </template>
         <span class="tabular-nums">{{ transChoice('learning.wiki.alphabet_lead', pages.length, { count: String(pages.length) }) }}</span>
       </p>
+      <Button v-if="editing" type="button" variant="outline" voice="sentence" size="sm" data-testid="edit-section" @click="editOpen = true">
+        <Pencil class="size-4" aria-hidden="true" />{{ $t('learning_library.section_manager.edit_action') }}
+      </Button>
       <Button v-if="canReorder && pages.length > 1 && !reordering" type="button" variant="outline" voice="sentence" size="sm" data-testid="reorder-section-items" @click="startReorder">
         <ArrowDownUp class="size-4" aria-hidden="true" />{{ $t('Keisti tvarką') }}
       </Button>
@@ -91,5 +100,15 @@ function saveOrder(): void {
 
       <EmptyState v-else :title="$t('learning.wiki.section_empty')" />
     </div>
+
+    <LearningSectionsSheet
+      v-if="editing"
+      v-model:open="editOpen"
+      :sections="editing.options"
+      :scopes="editing.scopes"
+      :can-create="false"
+      :locale
+      :edit-only="section.id"
+    />
   </OverviewPage>
 </template>

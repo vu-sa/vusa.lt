@@ -118,3 +118,33 @@ test('Rodyklė A–Ž lists terms only, while search covers material too', funct
         ->has('index', 1)->where('index.0.id', $term->id));
     asUser($user)->get(route('knowledgeBase.show'))->assertOk()->assertInertia(fn (Assert $page) => $page->has('index', 2));
 });
+
+test('every reader can load the article index the command palette searches', function (): void {
+    $reader = makeUser(Tenant::query()->firstOrFail());
+    $term = KnowledgeItem::factory()->create();
+    KnowledgeItem::factory()->create(['is_active' => false]);
+
+    asUser($reader)->getJson(route('knowledgeItems.linkOptions'))->assertOk()->assertJsonCount(1)->assertJsonPath('0.id', $term->id);
+});
+
+test('an article can stay out of the whole-Wiki progress count', function (): void {
+    $user = wikiEditor();
+    $item = KnowledgeItem::factory()->material()->create();
+
+    asUser($user)->put(route('knowledgeItems.update', $item), articlePayload(['kind' => 'material', 'counts_in_progress' => false]))->assertRedirect();
+    expect($item->fresh()->counts_in_progress)->toBeFalse();
+
+    asUser($user)->get(route('knowledgeBase.show'))->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('index.0.countsInProgress', false));
+    asUser($user)->get(route('knowledgeItems.edit', $item))->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('item.counts_in_progress', false));
+});
+
+test('a section page offers its own editor only to those who may edit it', function (): void {
+    $section = KnowledgeSection::factory()->create();
+
+    asUser(wikiEditor())->get(route('knowledgeSections.show', $section))->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->has('editing.options', 1)->where('editing.options.0.id', $section->id)->has('editing.scopes.update'));
+    asUser(makeUser(Tenant::query()->firstOrFail()))->get(route('knowledgeSections.show', $section))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('editing', null));
+});

@@ -95,7 +95,8 @@
 
     <div
       :class="[
-        'tiptap-content overflow-hidden',
+        'tiptap-content',
+        isResizable ? 'min-h-48 resize-y overflow-auto [&_.ProseMirror]:min-h-full' : 'overflow-hidden',
         isFramed ? '' : 'border border-border bg-background',
         { 'tiptap-content--prose': proseStyle },
       ]"
@@ -164,6 +165,11 @@ const props = withDefaults(defineProps<{
   framed?: boolean;
   /** Feature extensions (e.g. wiki links); read once when the editor is created. */
   extensions?: AnyExtension[];
+  /**
+   * Let the writer drag the field taller, like a textarea. Defaults on for framed multi-line
+   * editors (form description fields); one-line `marks` fields stay fixed.
+   */
+  resizable?: boolean;
 }>(), {
   preset: 'full',
   tools: undefined,
@@ -174,6 +180,7 @@ const props = withDefaults(defineProps<{
   proseStyle: false,
   framed: undefined,
   extensions: () => [],
+  resizable: undefined,
 });
 
 const emit = defineEmits<{
@@ -184,6 +191,7 @@ const contextMenus = useTemplateRef<InstanceType<typeof TiptapContextMenus>>('co
 
 const showToolbar = computed(() => props.toolbar !== 'bubble' && props.preset !== 'minimal');
 const isFramed = computed(() => props.framed ?? showToolbar.value);
+const isResizable = computed(() => props.resizable ?? (isFramed.value && props.preset !== 'marks'));
 const tools = computed(() => toolsFor(props.tools ?? profileForPreset(props.preset), { disableTables: props.disableTables }));
 const hasMoreMenu = computed(() => {
   const t = tools.value;

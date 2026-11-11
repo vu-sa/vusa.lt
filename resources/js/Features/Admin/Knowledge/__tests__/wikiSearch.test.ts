@@ -4,7 +4,7 @@ import { groupByLetter } from '../wikiAlphabet';
 import { searchWiki } from '../wikiSearch';
 import { KnowledgeItemKind } from '@/Types/enums';
 
-const page = (id: string, title: string, abbreviation = '', summary = '') => ({ id, kind: KnowledgeItemKind.Term, title, abbreviation, summary, summaryHtml: summary, url: `/${id}`, sectionId: null, updatedAt: null });
+const page = (id: string, title: string, abbreviation = '', summary = '') => ({ id, kind: KnowledgeItemKind.Term, title, abbreviation, summary, summaryHtml: summary, url: `/${id}`, thumbnailUrl: null, sectionId: null, countsInProgress: true, updatedAt: null });
 
 describe('wiki search and alphabet', () => {
   it('ranks an exact abbreviation, then title starts, then title and summary matches, ignoring diacritics', () => {

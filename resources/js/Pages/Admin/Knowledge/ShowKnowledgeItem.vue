@@ -43,7 +43,6 @@ const props = withDefaults(defineProps<{
 const readonly = computed(() => !props.canTrack);
 const done = computed(() => new Set(props.doneIds ?? []));
 const relatedPages = computed(() => Object.fromEntries(props.related.map(page => [page.id, page])));
-const materialPages = computed(() => Object.fromEntries(props.materials.map(page => [page.id, page])));
 const { checked, saving, failed } = useStepProgress(toRef(props, 'item'), readonly);
 const subjectsOpen = ref(false);
 const actions = computed<AdminRecordAction[]>(() => props.canUpdate
@@ -112,9 +111,7 @@ watch(() => props.item.id, () => {
         <LearningAudienceNotes v-if="inPath" :notes="item.audienceNotes" />
         <section v-if="materials.length" aria-labelledby="article-materials" class="space-y-3" data-slot="article-materials">
           <h2 id="article-materials" class="text-xl font-bold leading-tight text-foreground">{{ $t('learning.wiki.materials_about') }}</h2>
-          <WikiLinkPreview :pages="materialPages">
-            <WikiMaterialList :materials="materials" :done-ids="done" />
-          </WikiLinkPreview>
+          <WikiMaterialList :materials="materials" :done-ids="done" />
         </section>
       </article>
 

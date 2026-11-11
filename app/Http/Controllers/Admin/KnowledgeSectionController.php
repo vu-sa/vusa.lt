@@ -9,6 +9,7 @@ use App\Http\Requests\ReorderKnowledgeSectionsRequest;
 use App\Models\KnowledgeItem;
 use App\Models\KnowledgeSection;
 use App\Services\KnowledgeBasePresenter;
+use App\Services\KnowledgeSectionOptions;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,14 +18,16 @@ use Inertia\Response;
 
 class KnowledgeSectionController extends AdminController
 {
-    public function show(Request $request, KnowledgeSection $knowledgeSection): Response
+    public function show(Request $request, KnowledgeSection $knowledgeSection, KnowledgeSectionOptions $sections): Response
     {
         $this->authorize('viewAny', KnowledgeItem::class);
+        $canUpdate = $request->user()->can('update', $knowledgeSection);
 
         return Inertia::render('Admin/Knowledge/ShowKnowledgeSection', [
             ...KnowledgeBasePresenter::sectionPage($knowledgeSection, app()->getLocale()),
             'doneIds' => KnowledgeBasePresenter::doneIds($request->user()),
-            'canReorder' => $request->user()->can('update', $knowledgeSection),
+            'canReorder' => $canUpdate,
+            'editing' => $canUpdate ? ['options' => $sections->options($request->user(), 'update', $knowledgeSection), 'scopes' => $sections->scopes($request->user())] : null,
         ]);
     }
 

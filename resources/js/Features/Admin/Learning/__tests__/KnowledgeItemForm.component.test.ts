@@ -46,6 +46,7 @@ describe('KnowledgeItemForm', () => {
           tenant_id: null,
           audiences: [audience()],
           is_active: true,
+          counts_in_progress: true,
           sources: {
             lt: { document_id: 42, url: null },
             en: { document_id: null, url: 'https://vusa.lt/en-guide' },
@@ -110,6 +111,7 @@ describe('KnowledgeItemForm', () => {
           tenant_id: null,
           audiences: [audience()],
           is_active: true,
+          counts_in_progress: true,
           sources: {
             lt: { document_id: 42, url: null },
           },

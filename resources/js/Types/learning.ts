@@ -189,6 +189,7 @@ export interface KnowledgeItemEditData {
   tenant_id: number | null;
   audiences: LearningAudienceEditData[];
   is_active: boolean;
+  counts_in_progress: boolean;
   sources: Record<string, { document_id: number | null; url: string | null }>;
   source_documents: Record<string, LearningDocumentSearchHit>;
 }
@@ -210,6 +211,8 @@ export interface WikiPageSummary {
   summary: string;
   summaryHtml: string;
   url: string;
+  /** The source document's first page, when there is one. */
+  thumbnailUrl: string | null;
 }
 
 /** Material about a term, with the unit it belongs to; the viewer's own units come first. */
@@ -220,6 +223,8 @@ export interface WikiMaterial extends WikiPageSummary {
 
 export interface WikiIndexEntry extends WikiPageSummary {
   sectionId: string | null;
+  /** Off for material only some readers need (one unit's regulations); it then counts only for those it is assigned to. */
+  countsInProgress: boolean;
   updatedAt: string | null;
 }
 

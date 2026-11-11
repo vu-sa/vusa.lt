@@ -1,32 +1,43 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { ChevronDown } from '@lucide/vue';
+import { reactive } from 'vue';
+import { Link } from '@inertiajs/vue3';
+import { Check, FileText } from '@lucide/vue';
 
-import { Button } from '@/Components/ui/button';
 import type { WikiMaterial } from '@/Types/learning';
 
-import WikiPageList from './WikiPageList.vue';
-
-const props = defineProps<{ materials: WikiMaterial[]; doneIds?: ReadonlySet<string> }>();
-
-// Material from the viewer's own units leads; the rest (e.g. 14 other faculties' regulations) waits behind one button.
-const OTHERS_PREVIEW = 3;
-const mine = computed(() => props.materials.filter(material => material.mine));
-const others = computed(() => props.materials.filter(material => !material.mine));
-const showAll = ref(false);
-const collapsed = computed(() => mine.value.length > 0 && others.value.length > OTHERS_PREVIEW && !showAll.value);
-const unitOf = (page: { id: string }) => props.materials.find(material => material.id === page.id)?.tenant ?? null;
+// One row that scrolls sideways, so 14 other units' regulations never push the page down;
+// the viewer's own units come first (the presenter sorts them).
+defineProps<{ materials: WikiMaterial[]; doneIds?: ReadonlySet<string> }>();
+const failed = reactive(new Set<string>());
 </script>
 
 <template>
-  <div class="space-y-4" data-slot="wiki-materials">
-    <WikiPageList v-if="mine.length" :pages="mine" :section-of="unitOf" :done-ids="doneIds" />
-    <div v-if="others.length" class="space-y-2">
-      <h3 v-if="mine.length" class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{{ $t('learning.wiki.materials_other_units') }}</h3>
-      <WikiPageList v-if="!collapsed" :pages="others" :section-of="unitOf" :done-ids="doneIds" dense />
-      <Button v-else type="button" variant="ghost" voice="sentence" size="sm" class="-ml-3" data-testid="wiki-materials-more" @click="showAll = true">
-        {{ $t('learning.wiki.section_more', { count: String(others.length) }) }}<ChevronDown class="size-4" aria-hidden="true" />
-      </Button>
-    </div>
-  </div>
+  <ul class="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-3" data-slot="wiki-materials">
+    <li v-for="material in materials" :key="material.id" class="w-28 shrink-0 snap-start sm:w-32" :data-mine="material.mine || undefined">
+      <Link :href="material.url" class="group block outline-none" data-slot="wiki-material">
+        <span
+          :class="[
+            'flex aspect-3/4 w-full items-center justify-center overflow-hidden border bg-muted transition-colors',
+            material.mine ? 'border-foreground' : 'border-border',
+            'group-hover:border-brand group-focus-visible:border-brand',
+          ]"
+        >
+          <img
+            v-if="material.thumbnailUrl && !failed.has(material.id)"
+            :src="material.thumbnailUrl"
+            alt=""
+            loading="lazy"
+            class="size-full object-cover object-top"
+            @error="failed.add(material.id)"
+          >
+          <FileText v-else class="size-8 text-muted-foreground" aria-hidden="true" />
+        </span>
+        <span class="mt-2 flex items-start gap-1 text-sm font-semibold leading-snug text-foreground group-hover:text-brand">
+          <span class="line-clamp-2">{{ material.title }}</span>
+          <Check v-if="doneIds?.has(material.id)" class="mt-0.5 size-3.5 shrink-0 stroke-3 text-status-success" role="img" :aria-label="$t('learning.wiki.learned')" />
+        </span>
+        <span v-if="material.tenant" class="mt-0.5 block text-xs text-muted-foreground">{{ material.tenant }}</span>
+      </Link>
+    </li>
+  </ul>
 </template>

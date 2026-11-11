@@ -34,6 +34,8 @@ class KnowledgeSection extends Model
 
     public $translatable = ['title', 'description'];
 
+    protected $attributes = ['kind' => 'topic'];
+
     /** @return HasMany<KnowledgeItem, $this> */
     public function items(): HasMany
     {

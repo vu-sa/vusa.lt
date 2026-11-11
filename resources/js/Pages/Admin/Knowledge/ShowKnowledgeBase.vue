@@ -40,6 +40,8 @@ const sectionOf = (summary: WikiPageSummary) => {
 };
 const { formatDate } = useDateFormatter();
 const terms = computed(() => props.index.filter(entry => entry.kind === KnowledgeItemKind.Term));
+const onPath = computed(() => new Set(props.knowledge.items.map(item => item.id)));
+const counted = computed(() => props.index.filter(entry => entry.countsInProgress || onPath.value.has(entry.id)));
 
 const resolved = (item: KnowledgeItemData) => item.state === 'done' || item.state === 'skipped';
 const forYou = computed(() => props.knowledge.items
@@ -72,7 +74,7 @@ const letters = computed(() => groupByLetter(terms.value).map(group => group.let
 <template>
   <OverviewPage :title="$t('learning.pages.knowledge')" :lead="$t('learning.wiki.lead')">
     <template #actions>
-      <WikiProgressSummary :done="done.size" :total="index.length" />
+      <WikiProgressSummary :done="counted.filter(entry => done.has(entry.id)).length" :total="counted.length" />
     </template>
     <div class="max-w-3xl space-y-3">
       <WikiSearchField v-model="query" :label="$t('learning.wiki.search_label')" :placeholder="$t('learning.wiki.search_placeholder')" />

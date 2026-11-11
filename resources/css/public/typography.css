@@ -215,12 +215,20 @@
       margin-block-start: 0.35em;
     }
 
+    /* The underline is always there, only transparent: switching it on made the browser animate
+       its thickness from the base link's 2px hover down to 1px. */
+    a.wiki-link,
+    a.wiki-link:is(:hover, :focus-visible) {
+      @apply text-brand underline decoration-solid decoration-1 underline-offset-4;
+      transition: text-decoration-color 150ms;
+    }
+
     a.wiki-link {
-      @apply text-brand no-underline;
+      @apply decoration-transparent;
     }
 
     a.wiki-link:is(:hover, :focus-visible) {
-      @apply underline decoration-brand decoration-1 underline-offset-4;
+      @apply decoration-brand;
     }
   }
 

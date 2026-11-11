@@ -56,6 +56,7 @@ class KnowledgeItemRequest extends FormRequest
             'description' => ['nullable', 'array:lt,en'],
             'description.*' => ['nullable', 'string', 'max:20000'],
             'is_active' => ['sometimes', 'boolean'],
+            'counts_in_progress' => ['sometimes', 'boolean'],
             'reviewed_at' => ['nullable', 'date'],
             'sources' => ['sometimes', 'array:lt,en'],
             'sources.*' => ['array:document_id,url'],

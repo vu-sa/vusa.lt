@@ -35,6 +35,7 @@ use Illuminate\Support\Carbon;
  * @property array|string|null $description
  * @property int $order
  * @property bool $is_active
+ * @property bool $counts_in_progress
  * @property Carbon|null $reviewed_at
  * @property string|null $created_by
  * @property-read int $comments_count
@@ -47,7 +48,7 @@ use Illuminate\Support\Carbon;
  * @property-read Tenant|null $tenant
  * @property-read User|null $createdBy
  */
-#[Fillable(['key', 'kind', 'knowledge_section_id', 'tenant_id', 'title', 'abbreviation', 'summary', 'description', 'order', 'is_active', 'reviewed_at', 'created_by'])]
+#[Fillable(['key', 'kind', 'knowledge_section_id', 'tenant_id', 'title', 'abbreviation', 'summary', 'description', 'order', 'is_active', 'counts_in_progress', 'reviewed_at', 'created_by'])]
 class KnowledgeItem extends Model implements Commentable
 {
     use HasComments, HasFactory, HasTranslations, HasUlids, LogsModelActivity;
@@ -62,6 +63,9 @@ class KnowledgeItem extends Model implements Commentable
     }
 
     public $translatable = ['title', 'abbreviation', 'summary', 'description'];
+
+    /** Match the column defaults, so a freshly created article reads the same as a reloaded one. */
+    protected $attributes = ['kind' => 'term', 'counts_in_progress' => true];
 
     /** @return list<string> */
     protected function sanitizedHtmlTranslations(): array
@@ -131,7 +135,7 @@ class KnowledgeItem extends Model implements Commentable
 
     protected function casts(): array
     {
-        return ['kind' => KnowledgeItemKind::class, 'is_active' => 'boolean', 'reviewed_at' => 'datetime', 'order' => 'integer'];
+        return ['kind' => KnowledgeItemKind::class, 'is_active' => 'boolean', 'counts_in_progress' => 'boolean', 'reviewed_at' => 'datetime', 'order' => 'integer'];
     }
 
     /** @param Builder<static> $query */
