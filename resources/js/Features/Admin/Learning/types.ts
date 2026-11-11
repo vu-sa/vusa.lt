@@ -1,10 +1,12 @@
-import type { LearningAudienceType } from '@/Types/enums';
+import type { KnowledgeSectionKind, LearningAudienceType } from '@/Types/enums';
 import type { LearningAudienceEditData, LearningTenantOption, LearningTypeOption } from '@/Types/learning';
 
 export type LearningAudienceDraft = Omit<LearningAudienceEditData, 'id'> & { id?: string };
 
 export interface LearningSectionOption {
   id: string;
+  kind: KnowledgeSectionKind;
+  date: string | null;
   title: { lt?: string; en?: string };
   description: { lt?: string; en?: string };
   order: number;

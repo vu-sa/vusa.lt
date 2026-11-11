@@ -8,12 +8,14 @@ import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import TenantSelectField from '@/Components/AdminForms/TenantSelectField.vue';
 import CollectionRowList from '@/Components/Collection/CollectionRowList.vue';
 import SortableRowList from '@/Components/Collection/SortableRowList.vue';
-import { ConfirmDialog, SheetForm } from '@/Components/Patterns';
+import { ConfirmDialog, FormSegmentedControl, SheetForm } from '@/Components/Patterns';
 import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
 import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass, segmentGroupClass, segmentVariants } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
 import { Textarea } from '@/Components/ui/textarea';
+import { DatePicker } from '@/Components/ui/date-picker';
+import { KnowledgeSectionKind } from '@/Types/enums';
 
 import type { LearningSectionOption, LearningSectionScopes } from './types';
 
@@ -34,14 +36,34 @@ const scope = computed(() => props.scopes[editingId.value ? 'update' : 'create']
 const deleting = ref<LearningSectionOption | null>(null);
 const confirmOpen = ref(false);
 const draft = ref<LearningSectionOption[]>([]);
+const reorderKind = ref<KnowledgeSectionKind>(KnowledgeSectionKind.Topic);
 const saving = ref(false);
-const form = useForm({ title: { lt: '', en: '' }, description: { lt: '', en: '' }, tenant_id: null as number | null });
+const form = useForm({ kind: KnowledgeSectionKind.Topic as KnowledgeSectionKind, date: null as string | null, title: { lt: '', en: '' }, description: { lt: '', en: '' }, tenant_id: null as number | null });
+const kindOptions = computed<{ value: string; label: string }[]>(() => [
+  { value: KnowledgeSectionKind.Topic, label: $t('learning.section_kinds.topic') },
+  { value: KnowledgeSectionKind.Collection, label: $t('learning.section_kinds.collection') },
+]);
+const kindModel = computed<string>({
+  get: () => form.kind,
+  set: (value) => {
+    form.kind = value as KnowledgeSectionKind;
+  },
+});
+const editingSection = computed(() => props.sections.find(section => section.id === editingId.value) ?? null);
+const kindLocked = computed(() => (editingSection.value?.itemsCount ?? 0) > 0);
+const groups = computed(() => ([KnowledgeSectionKind.Topic, KnowledgeSectionKind.Collection] as const).map(kind => ({
+  kind,
+  title: $t(kind === KnowledgeSectionKind.Topic ? 'learning_library.section_manager.topics' : 'learning_library.section_manager.collections'),
+  sections: props.sections.filter(section => section.kind === kind),
+})).filter(group => group.sections.length));
+const isoDate = (value?: Date) => value ? `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}` : null;
 
 const titleOf = (section: LearningSectionOption) => section.title[props.locale] || section.title.lt || section.title.en || '';
 const descriptionOf = (section: LearningSectionOption) => section.description[props.locale] || section.description.lt || '';
 // A partial reorder would leave others' sections in odd places, so it needs rights over the whole list.
-const canReorder = computed(() => props.sections.length > 1 && props.sections.every(section => section.canUpdate));
-const orderChanged = computed(() => draft.value.some((section, index) => section.id !== props.sections[index]?.id));
+const canReorder = (sections: LearningSectionOption[]) => sections.length > 1 && sections.every(section => section.canUpdate);
+const reorderSource = computed(() => props.sections.filter(section => section.kind === reorderKind.value));
+const orderChanged = computed(() => draft.value.some((section, index) => section.id !== reorderSource.value[index]?.id));
 const missingEnglish = computed(() => form.title.lt.trim() !== '' && form.title.en.trim() === '');
 
 watch(open, (value) => {
@@ -50,6 +72,8 @@ watch(open, (value) => {
 
 function edit(section: LearningSectionOption | null): void {
   editingId.value = section?.id ?? null;
+  form.kind = section?.kind ?? KnowledgeSectionKind.Topic;
+  form.date = section?.date ?? null;
   form.title = { lt: section?.title.lt ?? '', en: section?.title.en ?? '' };
   form.description = { lt: section?.description.lt ?? '', en: section?.description.en ?? '' };
   form.tenant_id = section ? section.tenant_id : (!scope.value.canTargetEverywhere && scope.value.tenants.length === 1 ? scope.value.tenants[0]!.id : null);
@@ -59,8 +83,9 @@ function edit(section: LearningSectionOption | null): void {
   view.value = 'edit';
 }
 
-function startReorder(): void {
-  draft.value = [...props.sections];
+function startReorder(kind: KnowledgeSectionKind): void {
+  reorderKind.value = kind;
+  draft.value = props.sections.filter(section => section.kind === kind);
   view.value = 'reorder';
 }
 
@@ -76,6 +101,7 @@ function submit(): void {
   }
   if (view.value !== 'edit') return;
   const options = { preserveScroll: true, onSuccess: () => { form.defaults(); view.value = 'list'; } };
+  form.transform(data => ({ ...data, date: data.kind === KnowledgeSectionKind.Collection ? data.date : null }));
   if (editingId.value) form.put(route('knowledgeSections.update', editingId.value), options);
   else form.post(route('knowledgeSections.store'), options);
 }
@@ -114,21 +140,24 @@ const disabled = computed(() => {
 
     <!-- List -->
     <template v-if="view === 'list'">
-      <div v-if="canCreate || canReorder" class="flex flex-wrap gap-2">
-        <Button v-if="canCreate" type="button" variant="outline" voice="sentence" data-testid="create-section" @click="edit(null)">
-          <Plus class="size-4" aria-hidden="true" />{{ $t('learning.sections.create') }}
-        </Button>
-        <Button v-if="canReorder" type="button" variant="ghost" voice="sentence" data-testid="reorder-sections" @click="startReorder">
-          <ArrowDownUp class="size-4" aria-hidden="true" />{{ $t('Keisti tvarką') }}
-        </Button>
-      </div>
-      <CollectionRowList v-if="sections.length" :items="sections" frame="box" :item-key="(section: LearningSectionOption) => section.id">
+      <Button v-if="canCreate" type="button" variant="outline" voice="sentence" class="self-start" data-testid="create-section" @click="edit(null)">
+        <Plus class="size-4" aria-hidden="true" />{{ $t('learning.sections.create') }}
+      </Button>
+      <section v-for="group in groups" :key="group.kind" class="space-y-2" :data-slot="`sections-${group.kind}`">
+        <div class="flex items-center justify-between gap-2">
+          <h3 class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{{ group.title }}</h3>
+          <Button v-if="canReorder(group.sections)" type="button" variant="ghost" voice="sentence" size="sm" class="-my-1" :data-testid="`reorder-sections-${group.kind}`" @click="startReorder(group.kind)">
+            <ArrowDownUp class="size-4" aria-hidden="true" />{{ $t('Keisti tvarką') }}
+          </Button>
+        </div>
+      <CollectionRowList :items="group.sections" frame="box" :item-key="(section: LearningSectionOption) => section.id">
         <template #default="{ item: section }">
           <div class="flex items-start gap-2 px-3 py-2.5" data-slot="managed-section">
             <div class="min-w-0 flex-1">
               <p class="break-words font-semibold leading-snug text-foreground">{{ titleOf(section) }}</p>
               <p v-if="descriptionOf(section)" class="mt-0.5 line-clamp-1 text-sm text-muted-foreground">{{ descriptionOf(section) }}</p>
               <p class="mt-1 flex flex-wrap gap-x-2 text-xs text-muted-foreground">
+                <template v-if="section.date"><span>{{ section.date }}</span><span aria-hidden="true">·</span></template>
                 <span class="tabular-nums">{{ transChoice('learning_library.section_manager.articles', section.itemsCount ?? 0, { count: String(section.itemsCount ?? 0) }) }}</span>
                 <template v-if="section.tenant"><span aria-hidden="true">·</span><span>{{ section.tenant.shortname }}</span></template>
                 <span v-if="!section.title.en" class="text-status-attention">· {{ $t('learning_library.section_manager.no_english') }}</span>
@@ -143,7 +172,8 @@ const disabled = computed(() => {
           </div>
         </template>
       </CollectionRowList>
-      <p v-else class="text-sm text-muted-foreground">{{ $t('learning_library.section_manager.empty') }}</p>
+      </section>
+      <p v-if="!sections.length" class="text-sm text-muted-foreground">{{ $t('learning_library.section_manager.empty') }}</p>
     </template>
 
     <!-- Reorder: drag by the handle or move with the arrows, as on an institution's duties. -->
@@ -186,11 +216,17 @@ const disabled = computed(() => {
           <Languages class="size-3.5 shrink-0" aria-hidden="true" />{{ $t('learning_library.section_manager.editing_english') }}
         </p>
       </div>
+      <FormFieldWrapper id="section-kind" :label="$t('learning_library.section_manager.kind')" :hint="kindLocked ? $t('learning_library.section_manager.kind_locked') : $t('learning_library.section_manager.kind_hint')" :error="form.errors.kind">
+        <FormSegmentedControl v-model="kindModel" :options="kindOptions" :ariaLabel="$t('learning_library.section_manager.kind')" :disabled="kindLocked" test-id-prefix="section-kind" />
+      </FormFieldWrapper>
       <FormFieldWrapper id="section-title" :label="$t('learning_library.section_manager.name')" :required="editLocale === 'lt'" :error="form.errors[`title.${editLocale}`]">
         <Input id="section-title" v-model="form.title[editLocale]" :class="fieldSurfaceClass" data-testid="section-title" />
       </FormFieldWrapper>
       <FormFieldWrapper id="section-description" :label="$t('learning_library.section_manager.description_label')" :hint="$t('learning_library.section_manager.description_hint')" :error="form.errors[`description.${editLocale}`]">
         <Textarea id="section-description" v-model="form.description[editLocale]" rows="3" :class="fieldSurfaceClass" data-testid="section-description" />
+      </FormFieldWrapper>
+      <FormFieldWrapper v-if="form.kind === KnowledgeSectionKind.Collection" id="section-date" :label="$t('learning_library.section_manager.date')" :hint="$t('learning_library.section_manager.date_hint')" :error="form.errors.date">
+        <DatePicker :model-value="form.date" clearable data-testid="section-date" @update:model-value="(value?: Date) => form.date = isoDate(value)" />
       </FormFieldWrapper>
       <TenantSelectField v-if="!scope.canTargetEverywhere" id="section-tenant" v-model="form.tenant_id" :tenants="scope.tenants" :error="form.errors.tenant_id" />
       <Button type="button" variant="ghost" voice="sentence" class="-ml-3" @click="view = 'list'">{{ $t('learning_library.section_manager.back') }}</Button>

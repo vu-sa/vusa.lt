@@ -148,6 +148,14 @@ export enum InstitutionTypeLinkScope {
     MainToUnits = 'main_to_units',
     AllTenants = 'all_tenants',
 }
+export enum KnowledgeItemKind {
+    Term = 'term',
+    Material = 'material',
+}
+export enum KnowledgeSectionKind {
+    Topic = 'topic',
+    Collection = 'collection',
+}
 export enum LearningAudienceType {
     Everyone = 'everyone',
     DutyType = 'duty_type',

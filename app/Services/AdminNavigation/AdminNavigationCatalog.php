@@ -197,7 +197,7 @@ class AdminNavigationCatalog
             labelKey: 'shell.workspaces.wiki.title',
             descriptionKey: 'shell.workspaces.wiki.description',
             sections: [
-                new Section('wiki', 'shell.sections.wiki', 'knowledgeBase.show', [], null, Visibility::always(), matches: ['knowledgeBase.show'], descriptionKey: 'shell.section_descriptions.wiki'),
+                new Section('wiki', 'shell.sections.wiki', 'knowledgeBase.show', [], null, Visibility::always(), matches: ['knowledgeBase.show', 'knowledgeSections.show'], descriptionKey: 'shell.section_descriptions.wiki'),
                 new Section('wiki_mine', 'shell.sections.wiki_mine', 'knowledgeBase.mine', [], null, Visibility::can('viewAny', KnowledgeItem::class), matches: ['knowledgeBase.mine'], descriptionKey: 'shell.section_descriptions.wiki_mine'),
                 new Section('rodykle', 'shell.sections.rodykle', 'knowledgeItems.alphabet', [], null, Visibility::always(), matches: ['knowledgeItems.alphabet', 'knowledgeItems.show'], descriptionKey: 'shell.section_descriptions.rodykle'),
                 new Section('wiki_biblioteka', 'shell.sections.wiki_biblioteka', 'knowledgeItems.index', [], 'knowledge_item', Visibility::can('manage', KnowledgeItem::class), matches: ['knowledgeItems.index', 'knowledgeItems.create', 'knowledgeItems.edit'], descriptionKey: 'shell.section_descriptions.wiki_biblioteka'),

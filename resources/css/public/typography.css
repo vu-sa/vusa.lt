@@ -180,6 +180,50 @@
     @apply rounded-sm bg-secondary px-1 py-0.5 text-[0.875em];
   }
 
+  /* A Wiki article reads like an encyclopedia entry rather than a page: tighter paragraph rhythm,
+     a calmer heading scale, and term links coloured but not underlined, because a term-dense
+     paragraph striped with underlines is what made articles tiring to read. */
+  &.wiki-prose {
+    @apply text-base;
+
+    >*+* {
+      margin-block-start: 0.85em;
+    }
+
+    >:is(h2, h3, h4) {
+      margin-block-start: 1.75em;
+    }
+
+    p,
+    li {
+      line-height: 1.65;
+    }
+
+    h2 {
+      @apply border-b border-border pb-1.5 text-2xl font-bold tracking-tight;
+    }
+
+    h3 {
+      @apply text-xl font-bold tracking-tight;
+    }
+
+    h4 {
+      @apply text-base font-bold tracking-normal;
+    }
+
+    :is(ul, ol)>li {
+      margin-block-start: 0.35em;
+    }
+
+    a.wiki-link {
+      @apply text-brand no-underline;
+    }
+
+    a.wiki-link:is(:hover, :focus-visible) {
+      @apply underline decoration-brand decoration-1 underline-offset-4;
+    }
+  }
+
   :is(h1, h2, h3, h4, h5, h6) {
     text-wrap: balance;
   }

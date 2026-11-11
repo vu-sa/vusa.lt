@@ -6,6 +6,7 @@ import { ConfirmDialog, SheetForm } from '@/Components/Patterns';
 import { commonStubs } from '@/tests/stubs';
 import LearningSectionsSheet from '../LearningSectionsSheet.vue';
 import type { LearningSectionOption } from '../types';
+import { KnowledgeSectionKind } from '@/Types/enums';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 const stubs = {
@@ -18,7 +19,7 @@ const stubs = {
   ConfirmDialog: true,
 };
 const section: LearningSectionOption = {
-  id: 'section-1', title: { lt: 'Mokymai', en: 'Training' }, description: { lt: 'Medžiaga', en: 'Reading' },
+  id: 'section-1', kind: KnowledgeSectionKind.Topic, date: null, title: { lt: 'Mokymai', en: 'Training' }, description: { lt: 'Medžiaga', en: 'Reading' },
   order: 2, tenant_id: 1, tenant: { id: 1, shortname: 'MIF' }, canUpdate: true, canDelete: true,
 };
 function render(sections = [section], canCreate = true) {
@@ -69,7 +70,7 @@ describe('learning sections', () => {
   it('reorders sections with the arrows and saves the whole order', async () => {
     const second: LearningSectionOption = { ...section, id: 'section-2', title: { lt: 'Sąvokos', en: 'Terms' }, order: 3 };
     const wrapper = render([section, second]);
-    await wrapper.get('[data-testid="reorder-sections"]').trigger('click');
+    await wrapper.get('[data-testid="reorder-sections-topic"]').trigger('click');
     await wrapper.get('[aria-label="Perkelti žemiau"][title="Mokymai"]').trigger('click');
     await wrapper.getComponent(SheetForm).vm.$emit('submit');
     expect(router.post).toHaveBeenCalledWith(expect.stringContaining('knowledgeSections.reorder'), {
@@ -77,7 +78,7 @@ describe('learning sections', () => {
     }, expect.objectContaining({ preserveScroll: true }));
     wrapper.unmount();
     const foreign = render([section, { ...second, canUpdate: false }]);
-    expect(foreign.find('[data-testid="reorder-sections"]').exists()).toBe(false);
+    expect(foreign.find('[data-testid="reorder-sections-topic"]').exists()).toBe(false);
     foreign.unmount();
   });
 

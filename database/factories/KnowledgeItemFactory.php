@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\KnowledgeItemKind;
 use App\Enums\LearningAudienceType;
 use App\Models\DutyType;
 use App\Models\InstitutionType;
@@ -27,6 +28,11 @@ class KnowledgeItemFactory extends Factory
     public function configure(): static
     {
         return $this->audience([]);
+    }
+
+    public function material(): static
+    {
+        return $this->state(['kind' => KnowledgeItemKind::Material]);
     }
 
     public function withoutAudiences(): static

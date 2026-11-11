@@ -12,6 +12,8 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->json('title');
             $table->json('description')->nullable();
+            $table->string('kind')->default('topic');
+            $table->date('date')->nullable();
             $table->unsignedInteger('order')->default(0);
             $table->unsignedInteger('tenant_id')->nullable();
             $table->foreign('tenant_id')->references('id')->on('tenants')->cascadeOnDelete();
@@ -36,6 +38,7 @@ return new class extends Migration
         Schema::create('knowledge_items', function (Blueprint $table): void {
             $table->ulid('id')->primary();
             $table->string('key')->nullable()->unique();
+            $table->string('kind')->default('term');
             $table->foreignUlid('knowledge_section_id')->nullable()->constrained()->nullOnDelete();
             $table->unsignedInteger('tenant_id')->nullable();
             $table->foreign('tenant_id')->references('id')->on('tenants')->cascadeOnDelete();

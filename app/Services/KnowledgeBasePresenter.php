@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Actions\ResolveLearningPath;
 use App\Actions\SyncKnowledgeLinks;
 use App\Enums\DocumentStatus;
+use App\Enums\KnowledgeItemKind;
+use App\Enums\KnowledgeSectionKind;
 use App\Enums\LearningAudienceType;
 use App\Enums\LearningImportance;
 use App\Enums\LearningProgressStatus;
@@ -12,6 +14,7 @@ use App\Enums\LearningStage;
 use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\KnowledgeItem;
+use App\Models\KnowledgeSection;
 use App\Models\LearningAudience;
 use App\Models\LearningProgress;
 use App\Models\User;
@@ -20,10 +23,12 @@ use App\Services\Learning\ResolvedLearningItem;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
- * @phpstan-type KnowledgePayload array{id: string, title: string, abbreviation: string, summary: string, description: string, audienceLabel: string, audienceNotes: list<array{label: string, description: string}>, section: array{id: string, title: string}|null, source: array{type: 'document'|'url', url: string|null, documentId: int|null, documentStatus: DocumentStatus|null, title: string|null, private: bool, thumbnailUrl: string|null}|null, state: string, autoCompleted: bool, completedAt: string|null, skippable: bool, insightsCount: int, reviewedAt: string|null, importance: LearningImportance}
- * @phpstan-type SelfLearnedPayload array{id: string, title: string, abbreviation: string, summary: string, description: string, audienceLabel: string, audienceNotes: list<array{label: string, description: string}>, section: array{id: string, title: string}|null, source: array{type: 'document'|'url', url: string|null, documentId: int|null, documentStatus: DocumentStatus|null, title: string|null, private: bool, thumbnailUrl: string|null}|null, state: string, autoCompleted: bool, completedAt: string|null, skippable: bool, insightsCount: int, reviewedAt: string|null, importance: null}
- * @phpstan-type PageSummary array{id: string, title: string, abbreviation: string, summary: string, url: string}
- * @phpstan-type IndexEntry array{id: string, title: string, abbreviation: string, summary: string, url: string, sectionId: string|null, updatedAt: string|null}
+ * @phpstan-type KnowledgePayload array{id: string, kind: KnowledgeItemKind, title: string, abbreviation: string, summary: string, summaryHtml: string, description: string, audienceLabel: string, audienceNotes: list<array{label: string, description: string}>, section: array{id: string, title: string}|null, source: array{type: 'document'|'url', url: string|null, documentId: int|null, documentStatus: DocumentStatus|null, title: string|null, private: bool, thumbnailUrl: string|null}|null, state: string, autoCompleted: bool, completedAt: string|null, skippable: bool, insightsCount: int, reviewedAt: string|null, importance: LearningImportance}
+ * @phpstan-type SelfLearnedPayload array{id: string, kind: KnowledgeItemKind, title: string, abbreviation: string, summary: string, summaryHtml: string, description: string, audienceLabel: string, audienceNotes: list<array{label: string, description: string}>, section: array{id: string, title: string}|null, source: array{type: 'document'|'url', url: string|null, documentId: int|null, documentStatus: DocumentStatus|null, title: string|null, private: bool, thumbnailUrl: string|null}|null, state: string, autoCompleted: bool, completedAt: string|null, skippable: bool, insightsCount: int, reviewedAt: string|null, importance: null}
+ * @phpstan-type PageSummary array{id: string, kind: KnowledgeItemKind, title: string, abbreviation: string, summary: string, summaryHtml: string, url: string}
+ * @phpstan-type IndexEntry array{id: string, kind: KnowledgeItemKind, title: string, abbreviation: string, summary: string, summaryHtml: string, url: string, sectionId: string|null, updatedAt: string|null}
+ * @phpstan-type SectionPayload array{id: string, kind: KnowledgeSectionKind, title: string, description: string, date: string|null, order: int}
+ * @phpstan-type MaterialPayload array{id: string, kind: KnowledgeItemKind, title: string, abbreviation: string, summary: string, summaryHtml: string, url: string, tenant: string|null, mine: bool}
  */
 class KnowledgeBasePresenter
 {
@@ -37,7 +42,7 @@ class KnowledgeBasePresenter
         }, LearningImportance::cases());
     }
 
-    /** @return array{sections: list<array{id: string, title: string, description: string, order: int}>, items: list<KnowledgePayload>, selfLearned: list<SelfLearnedPayload>, stats: array{pathDone: int, pathTotal: int, selfLearned: int}} */
+    /** @return array{sections: list<SectionPayload>, items: list<KnowledgePayload>, selfLearned: list<SelfLearnedPayload>, stats: array{pathDone: int, pathTotal: int, selfLearned: int}} */
     public static function overview(LearningPath $path, string $locale): array
     {
         $payloads = [];
@@ -48,12 +53,10 @@ class KnowledgeBasePresenter
             $payloads[] = self::item($resolved, $locale);
             if ($item->section !== null) {
                 $section = $item->section;
-                $sections[$section->id] = ['id' => $section->id, 'title' => (string) $section->getTranslation('title', $locale),
-                    'description' => (string) $section->getTranslation('description', $locale), 'order' => $section->order];
+                $sections[$section->id] = self::section($section, $locale);
             }
         }
-        $sections = array_values($sections);
-        usort($sections, fn (array $a, array $b): int => [$a['order'], $a['id']] <=> [$b['order'], $b['id']]);
+        $sections = self::sortSections(array_values($sections));
 
         $selfLearned = [];
         $progress = LearningProgress::query()
@@ -105,8 +108,9 @@ class KnowledgeBasePresenter
         $item = $resolved->item;
 
         return [
-            'id' => $item->id, 'title' => (string) $item->getTranslation('title', $locale),
-            'abbreviation' => (string) $item->getTranslation('abbreviation', $locale), 'summary' => (string) $item->getTranslation('summary', $locale),
+            'id' => $item->id, 'kind' => $item->kind, 'title' => (string) $item->getTranslation('title', $locale),
+            'abbreviation' => (string) $item->getTranslation('abbreviation', $locale),
+            'summary' => self::plain($item->getTranslation('summary', $locale)), 'summaryHtml' => (string) $item->getTranslation('summary', $locale),
             'description' => (string) $item->getTranslation('description', $locale),
             'audienceLabel' => $resolved->audienceLabel, 'audienceNotes' => $resolved->audienceNotes,
             'importance' => $resolved->importance,
@@ -121,9 +125,9 @@ class KnowledgeBasePresenter
     /**
      * The record page: the item plus everything its wiki links need.
      *
-     * @return array{linkedPages: array<string, PageSummary>, related: list<PageSummary>, subjects: list<array{id: string, type: string, title: string, url: string|null}>}
+     * @return array{linkedPages: array<string, PageSummary>, related: list<PageSummary>, subjects: list<array{id: string, type: string, title: string, url: string|null}>, materials: list<MaterialPayload>}
      */
-    public static function pageContext(KnowledgeItem $item, string $locale): array
+    public static function pageContext(KnowledgeItem $item, string $locale, ?User $viewer = null): array
     {
         $item->loadMissing(['outgoingLinks' => fn ($query) => $query->active(), 'incomingLinks' => fn ($query) => $query->active(), 'subjects.subject']);
         $related = $item->outgoingLinks->concat($item->incomingLinks)->unique('id')
@@ -135,7 +139,84 @@ class KnowledgeBasePresenter
             'linkedPages' => self::linkedPages($item->getTranslation('description', $locale), $locale, $item->id),
             'related' => $related,
             'subjects' => self::subjects($item, $locale),
+            'materials' => $item->kind === KnowledgeItemKind::Term ? self::materials($item, $locale, $viewer) : [],
         ];
+    }
+
+    /**
+     * Material about a term, the viewer's own units first: "Padalinio nuostatai" leads with your faculty's.
+     *
+     * @return list<MaterialPayload>
+     */
+    public static function materials(KnowledgeItem $term, string $locale, ?User $viewer = null): array
+    {
+        $mine = $viewer?->tenants()->pluck('tenants.id')->all() ?? [];
+        $isMine = fn (KnowledgeItem $page): bool => $page->tenant_id !== null && in_array($page->tenant_id, $mine, true);
+
+        return KnowledgeItem::query()->active()->where('kind', KnowledgeItemKind::Material)
+            ->whereHas('subjects', fn ($query) => $query->where('subject_type', 'knowledge_item')->where('subject_id', $term->id))
+            ->with(['tenant', 'section'])->get()
+            ->sortBy([
+                fn (KnowledgeItem $a, KnowledgeItem $b): int => $isMine($b) <=> $isMine($a),
+                fn (KnowledgeItem $a, KnowledgeItem $b): int => [$a->section->order ?? PHP_INT_MAX, $a->order, $a->id] <=> [$b->section->order ?? PHP_INT_MAX, $b->order, $b->id],
+            ])
+            ->map(fn (KnowledgeItem $page): array => [...self::summary($page, $locale), 'tenant' => $page->tenant?->shortname, 'mine' => $isMine($page)])
+            ->values()->all();
+    }
+
+    /** @return SectionPayload */
+    public static function section(KnowledgeSection $section, string $locale): array
+    {
+        return [
+            'id' => $section->id, 'kind' => $section->kind, 'title' => (string) $section->getTranslation('title', $locale),
+            'description' => (string) $section->getTranslation('description', $locale),
+            'date' => $section->date?->toDateString(), 'order' => $section->order,
+        ];
+    }
+
+    /**
+     * Topics in their order, then collections newest first, then undated ones in their order.
+     *
+     * @param  list<SectionPayload>  $sections
+     * @return list<SectionPayload>
+     */
+    public static function sortSections(array $sections): array
+    {
+        $rank = fn (array $section): int => match (true) {
+            $section['kind'] === KnowledgeSectionKind::Topic => 0,
+            $section['date'] !== null => 1,
+            default => 2,
+        };
+        usort($sections, fn (array $a, array $b): int => ($rank($a) <=> $rank($b))
+            ?: (($b['date'] ?? '') <=> ($a['date'] ?? ''))
+            ?: ([$a['order'], $a['id']] <=> [$b['order'], $b['id']]));
+
+        return $sections;
+    }
+
+    /** @return list<SectionPayload> */
+    public static function sections(string $locale): array
+    {
+        return self::sortSections(KnowledgeSection::query()->get()->map(fn (KnowledgeSection $section): array => self::section($section, $locale))->values()->all());
+    }
+
+    /**
+     * A section page: its articles in their order.
+     *
+     * @return array{section: SectionPayload, pages: list<PageSummary>}
+     */
+    public static function sectionPage(KnowledgeSection $section, string $locale): array
+    {
+        return [
+            'section' => self::section($section, $locale),
+            'pages' => $section->items()->active()->get()->map(fn (KnowledgeItem $page): array => self::summary($page, $locale))->values()->all(),
+        ];
+    }
+
+    /** The summary as plain text, for search, rows and meta. */
+    public static function plain(mixed $html): string
+    {
+        return trim(html_entity_decode(strip_tags((string) $html), ENT_QUOTES | ENT_HTML5));
     }
 
     /** @return array<string, PageSummary> */
@@ -154,17 +235,18 @@ class KnowledgeBasePresenter
     public static function summary(KnowledgeItem $page, string $locale): array
     {
         return [
-            'id' => $page->id, 'title' => (string) $page->getTranslation('title', $locale),
+            'id' => $page->id, 'kind' => $page->kind, 'title' => (string) $page->getTranslation('title', $locale),
             'abbreviation' => (string) $page->getTranslation('abbreviation', $locale),
-            'summary' => (string) $page->getTranslation('summary', $locale),
+            'summary' => self::plain($page->getTranslation('summary', $locale)),
+            'summaryHtml' => (string) $page->getTranslation('summary', $locale),
             'url' => route('knowledgeItems.show', $page),
         ];
     }
 
-    /** @return list<IndexEntry> every active page, alphabetically, for the hub search, A–Ž and the editor's link picker */
-    public static function index(string $locale): array
+    /** @return list<IndexEntry> active pages alphabetically: every kind for the hub search and link picker, terms only for A–Ž */
+    public static function index(string $locale, bool $terms = false): array
     {
-        $entries = KnowledgeItem::query()->active()->get()->map(fn (KnowledgeItem $page): array => [
+        $entries = KnowledgeItem::query()->active()->when($terms, fn ($query) => $query->terms())->get()->map(fn (KnowledgeItem $page): array => [
             ...self::summary($page, $locale),
             'sectionId' => $page->knowledge_section_id,
             'updatedAt' => ($page->reviewed_at ?? $page->updated_at)?->toIso8601String(),
@@ -189,6 +271,7 @@ class KnowledgeBasePresenter
                 'title' => $model instanceof Institution ? (string) $model->getTranslation('name', $locale) : (string) $model->getTranslation('title', $locale),
                 'url' => match (true) {
                     $model instanceof Institution => route('institutions.show', $model),
+                    $model instanceof KnowledgeItem => route('knowledgeItems.show', $model),
                     $model instanceof InstitutionType => route('institutionTypes.show', $model),
                     default => route('dutyTypes.show', $model),
                 },
@@ -238,7 +321,7 @@ class KnowledgeBasePresenter
         return null;
     }
 
-    /** @return list<array{id: string, title: string, abbreviation: string, hasSource: bool, audiences: list<array{id: string, type: LearningAudienceType, label: string, importance: LearningImportance, stage: LearningStage|null}>, audienceTypes: list<LearningAudienceType>, section: array{id: string, title: string}|null, order: int, isActive: bool, canUpdate: bool, flags: list<'expired_document'|'updated_document'|'missing_source'>}> */
+    /** @return list<array{id: string, kind: KnowledgeItemKind, title: string, abbreviation: string, hasSource: bool, audiences: list<array{id: string, type: LearningAudienceType, label: string, importance: LearningImportance, stage: LearningStage|null}>, audienceTypes: list<LearningAudienceType>, section: array{id: string, title: string}|null, order: int, isActive: bool, canUpdate: bool, flags: list<'expired_document'|'updated_document'|'missing_source'>}> */
     public static function library(string $locale, ?User $viewer = null): array
     {
         $user = $viewer ?? auth()->user();
@@ -247,6 +330,7 @@ class KnowledgeBasePresenter
             $canUpdate = $user instanceof User && $user->can('update', $step);
             $result[] = [
                 'id' => $step->id,
+                'kind' => $step->kind,
                 'title' => (string) $step->getTranslation('title', $locale),
                 'abbreviation' => (string) $step->getTranslation('abbreviation', $locale),
                 'hasSource' => $step->sources->contains(fn ($source): bool => $source->document_id !== null || filled($source->url)),
@@ -267,7 +351,7 @@ class KnowledgeBasePresenter
         return $result;
     }
 
-    /** @return array{id: string, title: array{lt: string, en: string}, abbreviation: array{lt: string, en: string}, summary: array{lt: string, en: string}, description: array{lt: string, en: string}, knowledge_section_id: string|null, tenant_id: int|null, audiences: list<array{id: string, type: LearningAudienceType, source_id: string|null, tenant_id: int|null, importance: LearningImportance, stage: LearningStage|null, description: array{lt: string, en: string}, order: int, label: string}>, order: int, is_active: bool, sources: array<string, array{document_id: int|null, url: string|null}>, source_documents: array<string, array{id: int, title: string, status: string, date: string|null}>} */
+    /** @return array{id: string, kind: KnowledgeItemKind, title: array{lt: string, en: string}, abbreviation: array{lt: string, en: string}, summary: array{lt: string, en: string}, description: array{lt: string, en: string}, knowledge_section_id: string|null, tenant_id: int|null, audiences: list<array{id: string, type: LearningAudienceType, source_id: string|null, tenant_id: int|null, importance: LearningImportance, stage: LearningStage|null, description: array{lt: string, en: string}, order: int, label: string}>, is_active: bool, sources: array<string, array{document_id: int|null, url: string|null}>, source_documents: array<string, array{id: int, title: string, status: string, date: string|null}>} */
     public static function edit(KnowledgeItem $step): array
     {
         $sources = [];
@@ -286,6 +370,7 @@ class KnowledgeBasePresenter
 
         return [
             'id' => $step->id,
+            'kind' => $step->kind,
             'title' => ['lt' => (string) $step->getTranslation('title', 'lt', false), 'en' => (string) $step->getTranslation('title', 'en', false)],
             'abbreviation' => ['lt' => (string) $step->getTranslation('abbreviation', 'lt', false), 'en' => (string) $step->getTranslation('abbreviation', 'en', false)],
             'summary' => ['lt' => (string) $step->getTranslation('summary', 'lt', false), 'en' => (string) $step->getTranslation('summary', 'en', false)],
@@ -297,7 +382,7 @@ class KnowledgeBasePresenter
                 'description' => ['lt' => (string) $audience->getTranslation('description', 'lt', false), 'en' => (string) $audience->getTranslation('description', 'en', false)],
                 'order' => $audience->order, 'label' => $audience->label(app()->getLocale()),
             ])->all(),
-            'order' => $step->order, 'is_active' => $step->is_active,
+            'is_active' => $step->is_active,
             'sources' => $sources, 'source_documents' => $sourceDocuments,
         ];
     }

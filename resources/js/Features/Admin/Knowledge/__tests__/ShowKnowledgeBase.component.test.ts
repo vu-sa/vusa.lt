@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import ShowKnowledgeBase from '@/Pages/Admin/Knowledge/ShowKnowledgeBase.vue';
 import ShowKnowledgeForYou from '@/Pages/Admin/Knowledge/ShowKnowledgeForYou.vue';
-import { LearningImportance } from '@/Types/enums';
+import { KnowledgeItemKind, KnowledgeSectionKind, LearningImportance } from '@/Types/enums';
 import type { SelfLearnedItemData, WikiIndexEntry } from '@/Types/learning';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
@@ -17,12 +17,13 @@ beforeEach(() => {
 });
 
 const entry = (id: string, title: string, overrides: Partial<WikiIndexEntry> = {}): WikiIndexEntry => ({
-  id, title, abbreviation: '', summary: '', url: `/mano/knowledge/items/${id}`, sectionId: null, updatedAt: null, ...overrides,
+  id, kind: KnowledgeItemKind.Term, title, abbreviation: '', summary: '', summaryHtml: '', url: `/mano/knowledge/items/${id}`, sectionId: null, updatedAt: null, ...overrides,
 });
+// The server sends topics in their order, then collections.
 const sections = [
-  { id: 'second', title: 'Antras', description: '', order: 2 },
-  { id: 'first', title: 'Pirmas', description: 'Mokymų medžiaga', order: 1 },
-  { id: 'empty', title: 'Tuščias', description: '', order: 3 },
+  { id: 'first', kind: KnowledgeSectionKind.Topic, title: 'Pirmas', description: 'Mokymų medžiaga', date: null, order: 1 },
+  { id: 'second', kind: KnowledgeSectionKind.Topic, title: 'Antras', description: '', date: null, order: 2 },
+  { id: 'empty', kind: KnowledgeSectionKind.Topic, title: 'Tuščias', description: '', date: null, order: 3 },
 ];
 const index = [
   entry('akreditacija', 'Akreditacija', { sectionId: 'first', summary: 'Leidimas vykdyti studijas.', updatedAt: '2026-11-01T00:00:00Z' }),

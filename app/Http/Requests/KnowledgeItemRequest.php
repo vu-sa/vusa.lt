@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\KnowledgeItemKind;
 use App\Enums\LearningAudienceType;
 use App\Enums\LearningImportance;
 use App\Http\Requests\Concerns\ValidatesLearningAudiences;
@@ -10,6 +11,8 @@ use App\Models\KnowledgeItem;
 use App\Models\KnowledgeSection;
 use App\Policies\KnowledgeItemPolicy;
 use App\Policies\KnowledgeSectionPolicy;
+use App\Services\HtmlSanitizerService;
+use App\Services\KnowledgeBasePresenter;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -28,6 +31,7 @@ class KnowledgeItemRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'kind' => ['sometimes', Rule::enum(KnowledgeItemKind::class)],
             'knowledge_section_id' => ['nullable', 'exists:knowledge_sections,id'],
             'tenant_id' => ['nullable', 'integer', 'exists:tenants,id'],
             'audiences' => ['sometimes', 'array'],
@@ -47,11 +51,10 @@ class KnowledgeItemRequest extends FormRequest
             'abbreviation' => ['nullable', 'array:lt,en'],
             'abbreviation.*' => ['nullable', 'string', 'max:32'],
             'summary' => ['required', 'array:lt,en'],
-            'summary.lt' => ['required', 'string', 'max:200'],
-            'summary.en' => ['nullable', 'string', 'max:200'],
+            'summary.lt' => ['required', 'string', 'max:2000', $this->summaryLength(...)],
+            'summary.en' => ['nullable', 'string', 'max:2000', $this->summaryLength(...)],
             'description' => ['nullable', 'array:lt,en'],
             'description.*' => ['nullable', 'string', 'max:20000'],
-            'order' => ['sometimes', 'integer', 'min:0'],
             'is_active' => ['sometimes', 'boolean'],
             'reviewed_at' => ['nullable', 'date'],
             'sources' => ['sometimes', 'array:lt,en'],
@@ -83,12 +86,24 @@ class KnowledgeItemRequest extends FormRequest
             if (filled($data['knowledge_section_id'] ?? null)) {
                 $section = KnowledgeSection::findOrFail($data['knowledge_section_id']);
                 abort_unless(app(KnowledgeSectionPolicy::class)->target($this->user(), $section->tenant_id, $ability), 403);
+                $kind = isset($data['kind']) ? KnowledgeItemKind::from($data['kind']) : ($item instanceof KnowledgeItem ? $item->kind : KnowledgeItemKind::Term);
+                if ($section->kind !== $kind->sectionKind()) {
+                    $validator->errors()->add('knowledge_section_id', __('learning.validation.section_kind'));
+                }
             }
             if (array_key_exists('audiences', $data)) {
                 $this->validateAudienceSources($validator, $data);
             }
             $this->validateSources($validator, $data['sources'] ?? []);
         }];
+    }
+
+    /** The summary is one sentence; only the text that survives sanitizing counts, not its bold marks. */
+    private function summaryLength(string $attribute, mixed $value, \Closure $fail): void
+    {
+        if (is_string($value) && mb_strlen(KnowledgeBasePresenter::plain(app(HtmlSanitizerService::class)->sanitizeInlineMarks($value))) > 200) {
+            $fail(__('validation.max.string', ['attribute' => __('learning_library.fields.summary'), 'max' => 200]));
+        }
     }
 
     /** @param array<string, array{document_id?: int|null, url?: string|null}> $sources */

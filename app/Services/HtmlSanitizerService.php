@@ -16,10 +16,16 @@ class HtmlSanitizerService
 
     private readonly HtmlSanitizer $richContentSanitizer;
 
+    private readonly HtmlSanitizer $inlineMarksSanitizer;
+
     public function __construct()
     {
         $this->commentSanitizer = new HtmlSanitizer($this->commentConfig());
         $this->richContentSanitizer = new HtmlSanitizer($this->richContentConfig());
+        $this->inlineMarksSanitizer = new HtmlSanitizer((new HtmlSanitizerConfig)
+            ->allowElement('strong')->allowElement('b')->allowElement('em')->allowElement('i')->allowElement('u')
+            ->blockElement('p')
+            ->withMaxInputLength(10_000));
     }
 
     /**
@@ -49,6 +55,15 @@ class HtmlSanitizerService
     public function sanitizeRichContent(string $html): string
     {
         return trim($this->richContentSanitizer->sanitize($html));
+    }
+
+    /**
+     * Sanitize a one-line field from the Tiptap `marks` preset (an article summary): only inline
+     * marks survive, and the editor's wrapping paragraph is unwrapped so it can sit inside a card.
+     */
+    public function sanitizeInlineMarks(string $html): string
+    {
+        return trim($this->inlineMarksSanitizer->sanitize($html));
     }
 
     private function commentConfig(): HtmlSanitizerConfig

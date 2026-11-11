@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\KnowledgeItemKind;
+use App\Models\KnowledgeItem;
 use App\Models\KnowledgeItemSubject;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Http\FormRequest;
@@ -33,7 +35,11 @@ class SyncKnowledgeItemSubjectsRequest extends FormRequest
             }
             foreach ($validator->validated()['subjects'] as $index => $subject) {
                 $model = Relation::getMorphedModel($subject['type']);
-                if ($model === null || ! $model::query()->whereKey($subject['id'])->exists()) {
+                $query = $model === null ? null : $model::query()->whereKey($subject['id']);
+                if ($model === KnowledgeItem::class) {
+                    $query?->where('kind', KnowledgeItemKind::Term)->where('is_active', true)->whereKeyNot($this->route('knowledgeItem')->getKey());
+                }
+                if ($query === null || ! $query->exists()) {
                     $validator->errors()->add("subjects.{$index}.id", __('validation.exists', ['attribute' => 'id']));
                 }
             }

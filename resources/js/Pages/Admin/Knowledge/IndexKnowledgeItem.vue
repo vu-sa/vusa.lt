@@ -42,6 +42,7 @@
             <StatusBadge v-if="!item.isActive" :status="bannerStatuses.inactive" voice="sentence" data-testid="step-inactive-badge" />
           </div>
           <div class="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+            <span>{{ $t(`learning.kinds.${item.kind}`) }}</span>
             <span v-if="item.audiences.length">· {{ audienceSummary(item) }}</span>
             <span v-if="item.section">· {{ item.section.title }}</span>
             <StatusBadge v-if="highestImportance(item)" :status="learningStepImportances[highestImportance(item)!]" voice="sentence" />
@@ -123,7 +124,7 @@ import {
   learningStepKinds,
 } from '@/Constants/statusIcons';
 import type { KnowledgeLibraryItem } from '@/Types/learning';
-import { LearningImportance, LearningAudienceType } from '@/Types/enums';
+import { KnowledgeItemKind, LearningImportance, LearningAudienceType } from '@/Types/enums';
 import LearningSectionsSheet from '@/Features/Admin/Learning/LearningSectionsSheet.vue';
 import type { LearningSectionOption, LearningSectionScopes } from '@/Features/Admin/Learning/types';
 
@@ -153,7 +154,6 @@ const source = useLocalCollectionSource<KnowledgeLibraryItem>({
   searchText: step => [step.title, step.abbreviation, ...step.audiences.map(audience => audience.label), step.section?.title],
   defaultSort: 'title:asc',
   sortOptions: () => [
-    { value: 'order:asc', label: $t('learning_library.library.sort.order_asc'), by: step => step.order },
     { value: 'title:asc', label: $t('learning_library.library.sort.title_asc'), by: step => step.title },
     { value: 'title:desc', label: $t('learning_library.library.sort.title_desc'), by: step => step.title },
   ],
@@ -161,12 +161,12 @@ const source = useLocalCollectionSource<KnowledgeLibraryItem>({
     { field: 'audience', label: $t('learning_library.library.filters.audience'), get: step => step.audienceTypes.filter(type => props.audienceTypes.includes(type)), valueLabel: value => $t(`learning.audience_types.${value}`) },
     { field: 'section', label: $t('learning_library.library.filters.section'), get: step => step.section?.id, valueLabel: value => props.sections.find(section => section.id === value)?.title[locale.value] || props.items.find(step => step.section?.id === value)?.section?.title || value },
     { field: 'importance', label: $t('learning_library.library.filters.importance'), get: step => highestImportance(step) ?? undefined, valueLabel: value => $t(`learning.importance.${value}`) },
-    { field: 'kind', label: $t('learning_library.knowledge.terms_filter'), get: step => step.hasSource ? undefined : 'term', valueLabel: () => $t('learning_library.knowledge.terms_filter') },
+    { field: 'kind', label: $t('learning_library.library.filters.kind'), get: step => step.kind, valueLabel: value => $t(value === KnowledgeItemKind.Term ? 'learning_library.knowledge.terms_filter' : 'learning_library.knowledge.materials_filter') },
   ],
 });
 
-// Terms and importance are the main splits here; audience and section stay in the filter panel.
-const quickFilters = computed<CollectionQuickFilter[]>(() => ([['kind', 'term'], ['importance', LearningImportance.Essential], ['importance', LearningImportance.Recommended]] as const).flatMap(([field, value]) => {
+// Kind and importance are the main splits here; audience and section stay in the filter panel.
+const quickFilters = computed<CollectionQuickFilter[]>(() => ([['kind', KnowledgeItemKind.Term], ['kind', KnowledgeItemKind.Material], ['importance', LearningImportance.Essential], ['importance', LearningImportance.Recommended]] as const).flatMap(([field, value]) => {
   const option = source.facets.value.find(facet => facet.field === field)?.values.find(candidate => candidate.value === value);
   return option ? [{ id: `${field}:${value}`, label: quickFilterLabel(option.label, option.count ?? 0), active: option.isSelected }] : [];
 }));

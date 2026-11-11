@@ -13,13 +13,15 @@ import WikiProgressSummary from '@/Features/Admin/Knowledge/WikiProgressSummary.
 import { groupByLetter, letterAnchor } from '@/Features/Admin/Knowledge/wikiAlphabet';
 import { searchWiki } from '@/Features/Admin/Knowledge/wikiSearch';
 import LearningStepRow from '@/Features/Admin/Learning/LearningStepRow.vue';
-import { LearningImportance } from '@/Types/enums';
-import type { KnowledgeItemData, LearningDocumentsData, WikiIndexEntry, WikiPageSummary } from '@/Types/learning';
+import { useDateFormatter } from '@/Composables/useDateFormatter';
+import { KnowledgeItemKind, KnowledgeSectionKind, LearningImportance } from '@/Types/enums';
+import type { KnowledgeItemData, LearningDocumentsData, WikiIndexEntry, WikiPageSummary, WikiSection } from '@/Types/learning';
 
 const props = defineProps<{
   knowledge: LearningDocumentsData;
   index: WikiIndexEntry[];
-  sections: { id: string; title: string; description: string; order: number }[];
+  /** Topics in order, then collections newest first. */
+  sections: WikiSection[];
   canCreate?: boolean;
   doneIds?: string[];
 }>();
@@ -33,8 +35,11 @@ const results = computed(() => searchWiki(props.index, query.value));
 const sectionTitles = computed(() => new Map(props.sections.map(section => [section.id, section.title])));
 const sectionOf = (summary: WikiPageSummary) => {
   const entry = props.index.find(candidate => candidate.id === summary.id);
-  return entry?.sectionId ? sectionTitles.value.get(entry.sectionId) ?? null : null;
+  const section = entry?.sectionId ? sectionTitles.value.get(entry.sectionId) ?? null : null;
+  return summary.kind === KnowledgeItemKind.Material ? [$t('learning.kinds.material'), section].filter(Boolean).join(' · ') : section;
 };
+const { formatDate } = useDateFormatter();
+const terms = computed(() => props.index.filter(entry => entry.kind === KnowledgeItemKind.Term));
 
 const resolved = (item: KnowledgeItemData) => item.state === 'done' || item.state === 'skipped';
 const forYou = computed(() => props.knowledge.items
@@ -44,9 +49,13 @@ const forYou = computed(() => props.knowledge.items
 
 const expanded = ref<Set<string>>(new Set());
 const portals = computed(() => [
-  ...[...props.sections].sort((a, b) => a.order - b.order).map(section => ({ ...section, pages: props.index.filter(entry => entry.sectionId === section.id) })),
-  { id: 'other', title: $t('learning.wiki.unsorted'), description: '', order: Number.MAX_SAFE_INTEGER, pages: props.index.filter(entry => !entry.sectionId) },
+  ...props.sections.filter(section => section.kind === KnowledgeSectionKind.Topic).map(section => ({ ...section, pages: terms.value.filter(entry => entry.sectionId === section.id) })),
+  { id: 'other', title: $t('learning.wiki.unsorted'), description: '', pages: terms.value.filter(entry => !entry.sectionId) },
 ].filter(section => section.pages.length));
+const collections = computed(() => props.sections
+  .filter(section => section.kind === KnowledgeSectionKind.Collection)
+  .map(section => ({ ...section, count: props.index.filter(entry => entry.sectionId === section.id).length }))
+  .filter(section => section.count));
 const visiblePages = (section: { id: string; pages: WikiIndexEntry[] }) => expanded.value.has(section.id) ? section.pages : section.pages.slice(0, SECTION_PREVIEW);
 function expand(id: string): void {
   expanded.value = new Set([...expanded.value, id]);
@@ -56,7 +65,7 @@ const recent = computed(() => [...props.index]
   .filter(entry => entry.updatedAt)
   .sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''))
   .slice(0, 5));
-const letters = computed(() => groupByLetter(props.index).map(group => group.letter));
+const letters = computed(() => groupByLetter(terms.value).map(group => group.letter));
 
 </script>
 
@@ -99,7 +108,10 @@ const letters = computed(() => groupByLetter(props.index).map(group => group.let
           <h2 id="wiki-sections" class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{{ $t('learning.wiki.sections') }}</h2>
           <div class="grid gap-x-10 gap-y-10 md:grid-cols-2">
             <section v-for="section in portals" :id="`section-${section.id}`" :key="section.id" class="min-w-0 scroll-mt-24" :aria-labelledby="`portal-${section.id}`">
-              <h3 :id="`portal-${section.id}`" class="border-t-2 border-foreground pt-3 text-lg font-bold leading-tight text-foreground">{{ section.title }}</h3>
+              <h3 :id="`portal-${section.id}`" class="border-t-2 border-foreground pt-3 text-lg font-bold leading-tight text-foreground">
+                <Link v-if="section.id !== 'other'" :href="route('knowledgeSections.show', section.id)" class="underline decoration-transparent underline-offset-4 hover:decoration-foreground">{{ section.title }}</Link>
+                <template v-else>{{ section.title }}</template>
+              </h3>
               <p v-if="section.description" class="mt-1 text-sm text-muted-foreground">{{ section.description }}</p>
               <WikiPageList :pages="visiblePages(section)" dense :done-ids="done" class="mt-3" />
               <Button
@@ -115,6 +127,21 @@ const letters = computed(() => groupByLetter(props.index).map(group => group.let
             </section>
           </div>
           <EmptyState v-if="!portals.length" :title="$t('learning_library.knowledge.empty_title')" :description="$t('learning_library.knowledge.empty_description')" />
+
+          <section v-if="collections.length" aria-labelledby="wiki-materials" class="space-y-3 pt-6" data-slot="wiki-materials">
+            <h2 id="wiki-materials" class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{{ $t('learning.wiki.materials') }}</h2>
+            <p class="text-sm text-muted-foreground">{{ $t('learning.wiki.materials_lead') }}</p>
+            <ul class="divide-y divide-border border-y border-border">
+              <li v-for="collection in collections" :key="collection.id">
+                <Link :href="route('knowledgeSections.show', collection.id)" class="group flex min-h-11 flex-wrap items-baseline gap-x-3 gap-y-0.5 py-3">
+                  <span class="font-semibold text-foreground underline decoration-transparent underline-offset-4 transition-colors group-hover:decoration-foreground">{{ collection.title }}</span>
+                  <time v-if="collection.date" :datetime="collection.date" class="text-sm text-muted-foreground">{{ formatDate(collection.date) }}</time>
+                  <span class="ml-auto text-xs tabular-nums text-muted-foreground">{{ transChoice('learning.wiki.alphabet_lead', collection.count, { count: String(collection.count) }) }}</span>
+                  <span v-if="collection.description" class="block w-full text-sm text-muted-foreground">{{ collection.description }}</span>
+                </Link>
+              </li>
+            </ul>
+          </section>
         </section>
 
         <aside class="space-y-10" data-slot="wiki-aside">

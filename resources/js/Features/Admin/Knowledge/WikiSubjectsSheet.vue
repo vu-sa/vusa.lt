@@ -9,8 +9,10 @@ import { TypeTreeSelect } from '@/Components/AdminForms/TypeTree';
 import { SheetForm } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { NativeSelect } from '@/Components/ui/native-select';
+import { SingleSelect } from '@/Components/ui/single-select';
 import InstitutionSelectDialog from '@/Features/Admin/AdminSearch/Components/Select/InstitutionSelectDialog.vue';
 import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import { KnowledgeItemKind } from '@/Types/enums';
 import type { LearningTypeOption, WikiSubject, WikiSubjectType } from '@/Types/learning';
 
 const props = defineProps<{
@@ -18,15 +20,30 @@ const props = defineProps<{
   subjects: WikiSubject[];
   institutionTypes: LearningTypeOption[];
   dutyTypes: LearningTypeOption[];
+  /** Material may be about a term; a term itself is only about institutions and types. */
+  kind: KnowledgeItemKind;
+  terms?: { id: string; title: string }[];
 }>();
 const open = defineModel<boolean>('open', { required: true });
 
 type Draft = Pick<WikiSubject, 'id' | 'type' | 'title'>;
 const form = useForm<{ subjects: Draft[] }>({ subjects: [] });
-const adding = ref<WikiSubjectType>('institution');
+const adding = ref<WikiSubjectType>(props.kind === KnowledgeItemKind.Material ? 'knowledge_item' : 'institution');
 const institutionDialogOpen = ref(false);
 const typeId = ref<string | null>(null);
-const typeOptions = computed(() => (['institution', 'institution_type', 'duty_type'] as const).map(value => ({ value, label: $t(`learning.wiki.subject_types.${value}`) })));
+const subjectTypes = computed<WikiSubjectType[]>(() => props.kind === KnowledgeItemKind.Material
+  ? ['knowledge_item', 'institution', 'institution_type', 'duty_type']
+  : ['institution', 'institution_type', 'duty_type']);
+const typeOptions = computed(() => subjectTypes.value.map(value => ({ value, label: $t(`learning.wiki.subject_types.${value}`) })));
+const termOptions = computed(() => (props.terms ?? []).filter(term => term.id !== props.itemId));
+const pickedTerm = computed<{ id: string; title: string } | null>({
+  get: () => null,
+  set: (term) => { if (term) add({ id: term.id, type: 'knowledge_item', title: term.title }); },
+});
+const termId = computed<string | null>({
+  get: () => null,
+  set: (id) => { pickedTerm.value = termOptions.value.find(term => term.id === id) ?? null; },
+});
 const treeTypes = computed(() => adding.value === 'duty_type' ? props.dutyTypes : props.institutionTypes);
 
 watch(open, (value) => {
@@ -48,7 +65,7 @@ function pickInstitution(hits: NormalizedSearchHit[]): void {
 }
 
 watch(typeId, (id) => {
-  if (id === null || adding.value === 'institution') return;
+  if (id === null || adding.value === 'institution' || adding.value === 'knowledge_item') return;
   const type = treeTypes.value.find(option => String(option.id) === id);
   if (type) add({ id, type: adding.value, title: type.title });
   typeId.value = null;
@@ -105,6 +122,10 @@ function save(): void {
           </Button>
         </template>
       </InstitutionSelectDialog>
+      <template v-else-if="adding === 'knowledge_item'">
+        <SingleSelect v-if="termOptions.length > 16" v-model="pickedTerm" :options="termOptions" label-field="title" value-field="id" :placeholder="$t('Pasirinkti')" data-testid="wiki-subject-term" />
+        <NativeSelect v-else id="wiki-subject-term" v-model="termId" :placeholder-value="null" :options="termOptions.map(term => ({ value: term.id, label: term.title }))" :placeholder="$t('Pasirinkti')" data-testid="wiki-subject-term" />
+      </template>
       <TypeTreeSelect v-else id="wiki-subject-target" v-model="typeId" :types="treeTypes" as-string :placeholder="$t('Pasirinkti')" />
     </div>
   </SheetForm>

@@ -5,10 +5,11 @@ import { h } from 'vue';
 
 import WikiLinkPreview from '../WikiLinkPreview.vue';
 import WikiPageList from '../WikiPageList.vue';
+import { KnowledgeItemKind } from '@/Types/enums';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-const page = { id: 'skvc', title: 'SKVC', abbreviation: '', summary: 'Vertina studijas.', url: '/mano/knowledge/items/skvc' };
+const page = { id: 'skvc', title: 'SKVC', kind: KnowledgeItemKind.Term, abbreviation: '', summary: 'Vertina studijas.', summaryHtml: 'Vertina studijas.', url: '/mano/knowledge/items/skvc' };
 
 function render() {
   return mount(WikiLinkPreview, {

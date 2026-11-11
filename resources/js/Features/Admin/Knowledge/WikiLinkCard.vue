@@ -1,21 +1,33 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { ArrowRight } from '@lucide/vue';
 
 import type { WikiPageSummary } from '@/Types/learning';
 
-defineProps<{ page: WikiPageSummary }>();
+const props = defineProps<{ page: WikiPageSummary }>();
+// The summary names the article itself, in bold, so the title is shown only when there is no summary.
+const showAbbreviation = computed(() => props.page.abbreviation !== '' && !props.page.summary.includes(props.page.abbreviation));
 </script>
 
 <template>
-  <div class="space-y-2 p-4" data-slot="wiki-link-card">
-    <p class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-      <span class="text-base font-bold leading-snug text-foreground">{{ page.title }}</span>
-      <abbr v-if="page.abbreviation" :title="page.title" class="border border-border px-1.5 py-px text-xs font-bold tracking-wide no-underline">{{ page.abbreviation }}</abbr>
-    </p>
-    <p v-if="page.summary" class="text-sm leading-relaxed text-muted-foreground">{{ page.summary }}</p>
-    <Link :href="page.url" class="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground sm:min-h-0">
-      {{ $t('learning.wiki.open_article') }}<ArrowRight class="size-3.5" aria-hidden="true" />
-    </Link>
-  </div>
+  <Link
+    :href="page.url"
+    class="group block outline-none transition-colors hover:bg-accent/60 focus-visible:bg-accent/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+    data-slot="wiki-link-card"
+  >
+    <span class="block space-y-2 p-4">
+      <!-- Sanitized on write to bold and italic marks (HtmlSanitizerService::sanitizeInlineMarks). -->
+      <!-- eslint-disable-next-line vue/no-v-html -->
+      <span v-if="page.summaryHtml" class="block text-sm leading-relaxed text-foreground [&_b]:font-bold [&_strong]:font-bold" data-slot="wiki-link-card-summary" v-html="page.summaryHtml" />
+      <span v-else class="block text-sm font-bold leading-snug text-foreground">{{ page.title }}</span>
+      <abbr v-if="showAbbreviation" :title="page.title" class="inline-block border border-border px-1.5 py-px text-xs font-bold tracking-wide no-underline">{{ page.abbreviation }}</abbr>
+    </span>
+    <span class="flex min-h-11 items-center justify-between gap-3 border-t border-border px-4 text-xs text-muted-foreground sm:min-h-9">
+      <span>{{ $t(`learning.kinds.${page.kind}`) }}</span>
+      <span class="inline-flex items-center gap-1 font-semibold text-foreground group-hover:text-brand">
+        {{ $t('learning.wiki.read') }}<ArrowRight class="size-3.5" aria-hidden="true" />
+      </span>
+    </span>
+  </Link>
 </template>

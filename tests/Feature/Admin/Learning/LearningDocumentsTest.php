@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\DocumentStatus;
+use App\Enums\KnowledgeSectionKind;
 use App\Enums\LearningProgressStatus;
 use App\Enums\LearningStepKind;
 use App\Models\Document;
@@ -148,7 +149,7 @@ test('document payload includes only relevant sections and each documents sectio
     $response = asUser($member)->get(route('knowledgeBase.show'))->assertOk();
     $props = $response->viewData('page')['props'];
 
-    expect($props['knowledge']['sections'])->toBe([['id' => $section->id, 'title' => 'Įvadiniai mokymai', 'description' => 'Mokymų dokumentai', 'order' => 4]]);
+    expect($props['knowledge']['sections'])->toBe([['id' => $section->id, 'kind' => KnowledgeSectionKind::Topic, 'title' => 'Įvadiniai mokymai', 'description' => 'Mokymų dokumentai', 'date' => null, 'order' => 4]]);
     $documents = collect($props['knowledge']['items'])->keyBy('id');
     expect($documents[$document->id]['section'])->toBe(['id' => $section->id, 'title' => 'Įvadiniai mokymai']);
     expect($documents[$ungrouped->id]['section'])->toBeNull();

@@ -1,4 +1,4 @@
-import type { DocumentStatus, LearningImportance, LearningAudienceType, LearningStage, LearningStepKind } from './enums';
+import type { DocumentStatus, KnowledgeItemKind, KnowledgeSectionKind, LearningImportance, LearningAudienceType, LearningStage, LearningStepKind } from './enums';
 
 export interface LearningTotals {
   essentialDone: number;
@@ -137,8 +137,18 @@ export interface LearningDocumentTotals {
   total: number;
 }
 
+/** A Wiki section: a topic groups terms, a collection groups material (optionally dated, e.g. a training). */
+export interface WikiSection {
+  id: string;
+  kind: KnowledgeSectionKind;
+  title: string;
+  description: string;
+  date: string | null;
+  order: number;
+}
+
 export interface LearningDocumentsData {
-  sections: { id: string; title: string; description: string; order: number }[];
+  sections: WikiSection[];
   items: KnowledgeItemData[];
   selfLearned: SelfLearnedItemData[];
   stats: { pathDone: number; pathTotal: number; selfLearned: number };
@@ -148,9 +158,12 @@ export type SelfLearnedItemData = Omit<KnowledgeItemData, 'importance'> & { impo
 
 export interface KnowledgeItemData {
   id: string;
+  kind: KnowledgeItemKind;
   title: string;
   abbreviation: string;
+  /** Plain text; `summaryHtml` keeps its bold marks. */
   summary: string;
+  summaryHtml: string;
   description: string;
   audienceLabel: string;
   audienceNotes: { label: string; description: string }[];
@@ -167,6 +180,7 @@ export interface KnowledgeItemData {
 
 export interface KnowledgeItemEditData {
   id: string;
+  kind: KnowledgeItemKind;
   title: { lt: string; en: string };
   abbreviation: { lt: string; en: string };
   summary: { lt: string; en: string };
@@ -174,13 +188,13 @@ export interface KnowledgeItemEditData {
   knowledge_section_id: string | null;
   tenant_id: number | null;
   audiences: LearningAudienceEditData[];
-  order: number;
   is_active: boolean;
   sources: Record<string, { document_id: number | null; url: string | null }>;
   source_documents: Record<string, LearningDocumentSearchHit>;
 }
 
 export interface KnowledgeLibraryItem extends Omit<LearningLibraryStep, 'kind'> {
+  kind: KnowledgeItemKind;
   abbreviation: string;
   hasSource: boolean;
   section: { id: string; title: string } | null;
@@ -190,10 +204,18 @@ export interface KnowledgeLibraryItem extends Omit<LearningLibraryStep, 'kind'> 
 /** A wiki article as a link target: popovers, related lists, search and the A–Ž index. */
 export interface WikiPageSummary {
   id: string;
+  kind: KnowledgeItemKind;
   title: string;
   abbreviation: string;
   summary: string;
+  summaryHtml: string;
   url: string;
+}
+
+/** Material about a term, with the unit it belongs to; the viewer's own units come first. */
+export interface WikiMaterial extends WikiPageSummary {
+  tenant: string | null;
+  mine: boolean;
 }
 
 export interface WikiIndexEntry extends WikiPageSummary {
@@ -201,7 +223,7 @@ export interface WikiIndexEntry extends WikiPageSummary {
   updatedAt: string | null;
 }
 
-export type WikiSubjectType = 'institution' | 'institution_type' | 'duty_type';
+export type WikiSubjectType = 'institution' | 'institution_type' | 'duty_type' | 'knowledge_item';
 
 export interface WikiSubject {
   id: string;

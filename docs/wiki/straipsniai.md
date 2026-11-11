@@ -6,6 +6,7 @@ tests:
   - tests/Browser/WikiCompletionTest.php
   - tests/Feature/Admin/Learning/KnowledgeItemDocumentPreviewTest.php
   - tests/Feature/Admin/Learning/KnowledgeItemsTest.php
+  - tests/Feature/Admin/Learning/KnowledgeKindsTest.php
   - tests/Feature/Admin/Learning/LearningDocumentsTest.php
   - tests/Feature/Admin/Learning/LearningLibraryTest.php
   - tests/Feature/Admin/Learning/LearningRoutesTest.php
@@ -16,6 +17,8 @@ tests:
   - resources/js/Features/Admin/Knowledge/__tests__/ShowKnowledgeBase.component.test.ts
   - resources/js/Features/Admin/Knowledge/__tests__/WikiProse.component.test.ts
   - resources/js/Features/Admin/Knowledge/__tests__/WikiLinkPreview.component.test.ts
+  - resources/js/Features/Admin/Knowledge/__tests__/WikiLinkCard.component.test.ts
+  - resources/js/Features/Admin/Knowledge/__tests__/ShowKnowledgeSection.component.test.ts
   - resources/js/Features/Admin/Knowledge/__tests__/wikiSearch.test.ts
   - resources/js/Features/Admin/Learning/__tests__/LearningLibrary.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/KnowledgeItemForm.component.test.ts
@@ -28,10 +31,18 @@ tests:
 
 # Wiki įrašai
 
-Wiki sudaro **įrašai**. Įrašas gali būti trumpa sąvoka (pvz., *Kvorumas*), institucija
-(*Studijų kokybės vertinimo centras*, SKVC) ar dokumentas su paaiškinimu (*VU statutas*). Visi jie
-vienodi: turi pavadinimą, trumpą santrauką, jei reikia – santrumpą, išsamesnį tekstą ir šaltinį.
-Įrašai vienas į kitą nurodo tekste, todėl iš vieno lengva pereiti prie susijusių.
+Wiki sudaro **įrašai**, ir jie būna dviejų rūšių:
+
+- **Sąvoka** – tai, ką verta suprasti: trumpa sąvoka (pvz., *Kvorumas*), institucija
+  (*Studijų kokybės vertinimo centras*, SKVC) ar dokumentas su paaiškinimu (*VU SA įstatai*,
+  *Padalinio nuostatai*). Sąvokos sudaro Wiki žodynėlį: jos rodomos **Skyriuose** ir **Rodyklėje A–Ž**.
+- **Medžiaga** – konkretus dokumentas, kurį verta perskaityti: mokymų skaidrės, pavyzdys
+  (*Studentų atstovo komitete veiklos plano pavyzdys*) ar vieno padalinio nuostatai. Medžiaga
+  grupuojama į **rinkinius**, o žodynėlyje nerodoma.
+
+Abiejų rūšių įrašai turi pavadinimą, trumpą santrauką, jei reikia – santrumpą, išsamesnį tekstą ir
+šaltinį, gali būti skirti auditorijoms, komentuojami ir žymimi išmoktais. Įrašai vienas į kitą
+nurodo tekste, todėl iš vieno lengva pereiti prie susijusių.
 
 <ChangelogNote date="2026-11-11" title="Wiki">
 
@@ -40,10 +51,21 @@ o susiję įrašai surenkami automatiškai.
 
 </ChangelogNote>
 
+<ChangelogNote date="2026-11-11" title="Sąvokos ir medžiaga">
+
+Įrašai skirstomi į sąvokas ir medžiagą, skyriai – į temas ir rinkinius. Įrašų tvarka keičiama
+skyriaus puslapyje, o nuorodos kortelė rodo paryškintą santrauką.
+
+</ChangelogNote>
+
 ## Susitarimai
 
-- **Santrauka – vienas sakinys** (iki 200 ženklų): kas tai yra. Ji rodoma paieškoje, sąrašuose ir
-  užvedus ant nuorodos, todėl turi būti suprantama be viso įrašo. Visa kita – įrašo tekste.
+- **Santrauka – vienas sakinys** (iki 200 ženklų): kas tai yra. Kaip Vikipedijoje, ji pradedama
+  paryškintu pavadinimu: „**Kvorumas** – mažiausias narių skaičius…“. Santrauka rodoma paieškoje,
+  sąrašuose ir užvedus ant nuorodos, todėl turi būti suprantama be viso įrašo. Visa kita – įrašo tekste.
+- **Viena sąvoka – vienas įrašas.** Jei to paties dokumento yra daug variantų (pvz., kiekvieno
+  padalinio nuostatai), sąvoka *Padalinio nuostatai* būna viena, o kiekvieno padalinio dokumentas –
+  atskira medžiaga apie ją.
 - **Nuoroda vietoj pakartojimo.** Jei tekste minima sąvoka ar institucija, turinti savo įrašą,
   ji susiejama nuoroda, o ne paaiškinama iš naujo.
 - **Šaltiniai laikomi Archyve.** Naujas dokumentas ar pristatymas pirmiausia įkeliamas į SharePoint
@@ -69,9 +91,9 @@ pavadinimai ir santrumpos be aprašymų; varnelė rodo tavo jau išmoktus įraš
 Užvedus pelę arba pasiekus nuorodą klaviatūra rodoma įrašo peržiūra su santrauka;
 telefone pirmas palietimas atveria peržiūrą, antras – įrašą.
 
-Nuorodos į kitus įrašus tekste pabrauktos taškais. Užvedus pelę arba pasiekus nuorodą
-klaviatūra atsiveria kortelė su įrašo pavadinimu, santrumpa ir santrauka; paspaudus atveriamas
-įrašas. Telefone pirmas palietimas atveria kortelę, antras – įrašą. Jei įrašas, į kurį
+Nuorodos į kitus įrašus tekste rodomos VU SA spalva, be pabraukimo. Užvedus pelę arba pasiekus nuorodą
+klaviatūra atsiveria kortelė su paryškinta įrašo santrauka (pavadinimas nekartojamas, nes santrauka
+juo prasideda) ir rūšimi; visa kortelė yra nuoroda į įrašą. Telefone pirmas palietimas atveria kortelę, antras – įrašą. Jei įrašas, į kurį
 nurodoma, ištrintas ar paslėptas, nuoroda rodoma kaip paprastas tekstas. Tokios pačios nuorodos
 veikia ir [Mano kelio](/mano/kelias) žingsnių aprašymuose.
 
@@ -84,6 +106,10 @@ veikia ir [Mano kelio](/mano/kelias) žingsnių aprašymuose.
 *Studijų programos komitetas* su institucijos tipu „Studijų programos komitetas“. Tokie įrašai
 rodomi institucijos puslapio santraukoje, bloke **Wiki** (ir tiesiogiai su institucija susieti, ir
 susieti su jos tipu).
+
+Medžiagą galima susieti ir su **sąvoka**: tada sąvokos puslapyje, po tekstu, ji rodoma bloke
+**Medžiaga apie tai**. Pirma rodoma tavo padalinio medžiaga, o kitų padalinių – po mygtuku
+**Visi**. Pvz., sąvokos *Padalinio nuostatai* puslapyje pirmiausia matysi savo padalinio nuostatus.
 
 „Apie ką“ nenulemia, kam įrašas rodomas Mano kelyje – tam skirtos auditorijos.
 
@@ -130,13 +156,20 @@ Be paieškos rodoma:
 
 - **Tau svarbiausia** – iki penkių neperskaitytų būtinų ir rekomenduojamų įrašų bei tavo
   pažanga. **Visi tau skirti įrašai** atveria atskirą puslapį **Tau skirti įrašai**.
-- **Skyriai** – kiekvienas skyrius su aprašymu ir pirmaisiais įrašais; **Visi** parodo likusius.
-  Įrašai be skyriaus rodomi prie **Kiti įrašai**.
+- **Skyriai** – temos su aprašymu ir pirmosiomis sąvokomis; **Visi** parodo likusias, o temos
+  pavadinimas atveria jos puslapį. Sąvokos be temos rodomos prie **Kiti įrašai**.
+- **Medžiaga** – rinkiniai: su data (pvz., mokymai) – nuo naujausio, tada be datos; prie kiekvieno
+  nurodytas įrašų skaičius.
 - **Neseniai atnaujinta** ir raidžių juosta, vedanti į rodyklę.
+
+### Skyriaus puslapis {#skyrius}
+
+Kiekviena tema ir rinkinys turi savo puslapį: pavadinimas, aprašymas, rinkinio data ir įrašai ta
+tvarka, kuria jie rodomi visur. Kas gali redaguoti skyrių, mato mygtuką **Keisti tvarką**.
 
 ### Rodyklė A–Ž {#rodykle}
 
-Visi įrašai pagal abėcėlę, sugrupuoti pagal pirmąją raidę, su santrumpa ir santrauka. Raidžių
+Visos sąvokos pagal abėcėlę (medžiaga čia nerodoma, ją rasi rinkiniuose ir paieškoje), sugrupuoti pagal pirmąją raidę, su santrumpa ir santrauka. Raidžių
 juosta lieka viršuje slenkant; paieška veikia taip pat kaip pradžioje.
 Paspaudus raidę, jos antraštė atsiduria žemiau abiejų navigacijos juostų ir lieka matoma.
 
@@ -146,7 +179,7 @@ atveria meniu su nuoroda atgal į **Rodyklę A–Ž**.
 ### Biblioteka {#biblioteka}
 
 Biblioteka skirta tiems, kas tvarko Wiki ar Mano kelią (žr. [Kas ką gali](#teises)): visi įrašai
-su paieška, greitieji filtrai **Sąvokos** (įrašai be šaltinio), **Esminis** ir
+su paieška, greitieji filtrai **Sąvokos**, **Medžiaga**, **Esminis** ir
 **Rekomenduojamas**, kiti (auditorija, skyrius) – skiltyje **Filtrai**. Matomos žymos: dokumentas
 nebegalioja, atnaujintas po peržiūros arba įrašas neturi nei teksto, nei šaltinio. Čia pat
 tvarkomi skyriai.
@@ -167,7 +200,8 @@ Mano kelio žingsnių biblioteka yra atskirai: **Organizacija → Kelio žingsni
 ### Parašyti įrašą {#prideti-straipsni}
 
 1. **+ Sukurti** → **Naujas žinių bazės įrašas**.
-2. Įrašyk pavadinimą, santrumpą (jei yra) ir vieno sakinio santrauką.
+2. Pasirink, ar tai **sąvoka**, ar **medžiaga**. Įrašyk pavadinimą, santrumpą (jei yra) ir vieno
+   sakinio santrauką, prasidedančią pavadinimu; jį paryškink (**Ctrl+B**).
 3. Tekste parašyk `[[` ir kelias pavadinimo raides – pasirink įrašą, į kurį nori nurodyti.
    Esamą nuorodą pakeisi ją pažymėjęs ir paspaudęs **Redaguoti nuorodą**: skirtuke **Wiki įrašas**
    gali pakeisti nuorodos tekstą ar įrašą, į kurį ji veda. Tekste galima formatuoti, pridėti
@@ -176,21 +210,27 @@ Mano kelio žingsnių biblioteka yra atskirai: **Organizacija → Kelio žingsni
    adresą į dokumento paiešką, jis tampa nuoroda). Šaltinis nebūtinas; jei jis yra tik viena kalba,
    rodomas abiem. Redaguojant galima perjungti šaltinio tipą ir grįžti: pasirinktas dokumentas ir
    įvesta nuoroda išlieka juodraštyje. Išsaugomas tik tuo metu pasirinktas šaltinis.
-5. Dešinėje pasirink, kieno tai įrašas (padalinio ar visos VU SA), skyrių ir eilės numerį.
+5. Dešinėje pasirink, kieno tai įrašas (padalinio ar visos VU SA), ir skyrių: sąvokai – temą,
+   medžiagai – rinkinį. Naujas įrašas atsiduria skyriaus gale; tvarką keisk skyriaus puslapyje.
 6. Jei gali tvarkyti Mano kelią, skiltyje **Kam skirta** pridėk auditorijas. Pasirinktai grupei
    įrašas bus rodomas puslapyje **Tau skirti įrašai** ir Mano kelio Wiki bloke.
 7. Išsaugok. Įrašo puslapyje prie **Apie ką šis įrašas** spausk **Tvarkyti**, jei
    įrašas apie instituciją ar tipą: institucija pasirenkama paieškos lange, tipai – iš medžio.
+   Medžiagą čia susiek ir su sąvoka, kurią ji paaiškina.
 
 ### Tvarkyti skyrius
 
 1. Bibliotekoje atverk **Skyriai**.
-2. Spausk **Sukurti skyrių** arba pieštuką prie esamo. Įrašyk pavadinimą ir aprašymą lietuviškai,
-   tada perjunk **EN** ir įrašyk angliškai; padalinį – jei jis privalomas. Naujas skyrius atsiduria
-   sąrašo gale.
-3. **Keisti tvarką** leidžia tempti skyrius už rankenėlės arba perkelti rodyklėmis; spausk
-   **Išsaugoti tvarką**. Tvarką keisti gali tas, kas gali redaguoti visus sąrašo skyrius.
-4. **Ištrinti** paprašys patvirtinimo. Skyriaus įrašai liks prie **Kiti įrašai**.
+2. Spausk **Sukurti skyrių** arba pieštuką prie esamo. Pasirink rūšį: **Tema** grupuoja sąvokas
+   pagal sritį, **Rinkinys** – medžiagą (rinkiniui gali nurodyti mokymų datą). Įrašyk pavadinimą ir
+   aprašymą lietuviškai, tada perjunk **EN** ir įrašyk angliškai; padalinį – jei jis privalomas.
+   Naujas skyrius atsiduria sąrašo gale. Skyriaus, kuriame jau yra įrašų, rūšies pakeisti negalima.
+3. Temos ir rinkiniai rodomi atskirai. **Keisti tvarką** prie kiekvienos grupės leidžia tempti
+   skyrius už rankenėlės arba perkelti rodyklėmis; spausk **Išsaugoti tvarką**. Tvarką keisti gali
+   tas, kas gali redaguoti visus tos grupės skyrius.
+4. Įrašų tvarką keisk skyriaus puslapyje: atverk skyrių, spausk **Keisti tvarką**, perkelk įrašus ir
+   spausk **Išsaugoti tvarką**.
+5. **Ištrinti** paprašys patvirtinimo. Skyriaus įrašai liks prie **Kiti įrašai**.
 
 ## Kas ką gali {#teises}
 
@@ -209,13 +249,19 @@ redaguoti įrašus, bet ne jų auditorijas.
 
 ## Techninė informacija
 
-- Įrašas – `KnowledgeItem` (`abbreviation`, `summary`, `tenant_id`; šaltiniai `KnowledgeItemSource`,
-  skyriai `KnowledgeSection`). Atskiro sąvokų modelio nebėra.
+- Įrašas – `KnowledgeItem` (`kind`: `term` | `material`, `abbreviation`, `summary`, `tenant_id`;
+  šaltiniai `KnowledgeItemSource`, skyriai `KnowledgeSection` su `kind`: `topic` | `collection` ir
+  `date`). Sąvoka dedama tik į temą, medžiaga – tik į rinkinį (`KnowledgeItemRequest`).
+- `summary` saugomas kaip HTML, kuriame paliekami tik paryškinimai ir pasvirimai
+  (`HtmlSanitizerService::sanitizeInlineMarks`); 200 ženklų riba skaičiuojama be žymių.
+- Įrašų tvarka (`order`) – vieta skyriuje, keičiama tik skyriaus puslapyje
+  (`knowledgeSections.items.reorder`).
 - Nuorodos saugomos tekste kaip `<a data-knowledge-id="…">` (leidžia `HtmlSanitizerService`), o
   `SyncKnowledgeLinks` po išsaugojimo perrašo `knowledge_links` lentelę; susiję įrašai –
   `outgoingLinks` ∪ `incomingLinks`. Kortelių duomenys (`linkedPages`) siunčiami kartu su puslapiu.
 - „Apie ką“ – `knowledge_item_subjects` (leidžiami tipai: `institution`, `institution_type`,
-  `duty_type`); institucijos puslapis juos gauna atidėtai (`knowledgePages`).
+  `duty_type`, `knowledge_item` – tik aktyvi sąvoka); institucijos puslapis juos gauna atidėtai
+  (`knowledgePages`), sąvokos puslapis – `materials`.
 - Auditorijos (`learning_audiences`) ir pažanga (`learning_progress`) bendros su kelio žingsniais; pažymėti
   galima bet kurį aktyvų įrašą, o ne kelio pažymėjimai pradžioje grąžinami kaip `selfLearned`;
   pažymėjimas išlieka pasikeitus kadencijai. Atnaujinus šaltinio dokumentą, įrašą reikia peržiūrėti iš naujo.

@@ -16,6 +16,10 @@
     @update:locale="activeLocale = $event"
     @submit="submit"
   >
+    <FormFieldWrapper id="article-kind" :label="$t('learning_library.fields.item_kind')" :hint="$t('learning_library.fields.item_kind_hint')" :error="form.errors.kind">
+      <FormSegmentedControl v-model="kindModel" :options="kindOptions" :ariaLabel="$t('learning_library.fields.item_kind')" test-id-prefix="article-kind" class="max-w-sm" />
+    </FormFieldWrapper>
+
     <FormFieldWrapper
       id="step-title"
       :label="$t('learning_library.fields.title')"
@@ -42,10 +46,7 @@
       :error="form.errors[`summary.${activeLocale}`] || form.errors.summary"
       :required="activeLocale === 'lt'"
     >
-      <div class="space-y-1">
-        <Textarea id="article-summary" v-model="form.summary[activeLocale]" rows="2" :maxlength="SUMMARY_MAX" :class="fieldSurfaceClass" data-testid="article-summary" />
-        <p class="text-right text-xs tabular-nums text-muted-foreground" aria-hidden="true">{{ form.summary[activeLocale].length }}/{{ SUMMARY_MAX }}</p>
-      </div>
+      <TiptapEditor :key="`summary-${activeLocale}`" v-model="form.summary[activeLocale]" preset="marks" disable-links :max-characters="SUMMARY_MAX" html framed data-testid="article-summary" />
     </FormFieldWrapper>
 
     <FormFieldWrapper
@@ -103,10 +104,6 @@
           <SingleSelect v-if="sectionOptions.length > 16" v-model="selectedSection" :options="sectionOptions" label-field="title" value-field="id" :placeholder="$t('learning_library.audiences.no_section')" />
           <NativeSelect v-else id="step-section" v-model="form.knowledge_section_id" :placeholder-value="null" placeholder-selectable :options="sectionOptions.map(section => ({ value: section.id, label: section.title }))" :placeholder="$t('learning_library.audiences.no_section')" data-testid="step-section" />
         </FormFieldWrapper>
-
-        <FormFieldWrapper id="step-order" :label="$t('learning_library.fields.order')" :hint="$t('learning_library.fields.knowledge_order_hint')" :error="form.errors.order">
-          <Input id="step-order" v-model.number="form.order" type="number" min="0" :class="['max-w-32', fieldSurfaceClass]" data-testid="step-order" />
-        </FormFieldWrapper>
       </FormPanel>
       <FormPanel :title="$t('learning_library.sections.visibility')" :icon="Eye" flush>
         <FormToggleRow id="step-is-active" v-model="form.is_active" :label="$t('learning_library.fields.is_active')" :hint="$t('learning_library.fields.knowledge_is_active_hint')" data-testid="step-is-active" />
@@ -136,22 +133,21 @@
 import { router, useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Eye, SlidersHorizontal, Trash2 } from '@lucide/vue';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import { ConfirmDialog, FormPanel, FormToggleRow } from '@/Components/Patterns';
+import { ConfirmDialog, FormPanel, FormSegmentedControl, FormToggleRow } from '@/Components/Patterns';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
-import { Textarea } from '@/Components/ui/textarea';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { createWikiLinkExtension } from '@/Features/Admin/Knowledge/wikiLinkExtension';
 import { NativeSelect } from '@/Components/ui/native-select';
 import { SingleSelect } from '@/Components/ui/single-select';
-import { LearningAudienceType } from '@/Types/enums';
+import { KnowledgeItemKind, KnowledgeSectionKind, LearningAudienceType } from '@/Types/enums';
 import type { KnowledgeItemEditData, LearningTenantOption, LearningTypeOption } from '@/Types/learning';
 
 import LearningAudienceList from './LearningAudienceList.vue';
@@ -162,6 +158,7 @@ import { hasRichText } from './composables/hasRichText';
 type LocaleKey = 'lt' | 'en';
 
 interface KnowledgeItemFormState {
+  kind: KnowledgeItemKind;
   title: { lt: string; en: string };
   abbreviation: { lt: string; en: string };
   summary: { lt: string; en: string };
@@ -170,7 +167,6 @@ interface KnowledgeItemFormState {
   audiences: LearningAudienceDraft[];
   knowledge_section_id: string | null;
   tenant_id: number | null;
-  order: number;
   is_active: boolean;
 }
 
@@ -211,6 +207,7 @@ const backHref = computed(() => props.item?.id ? route('knowledgeItems.show', pr
 const source = (locale: LocaleKey) => ({ document_id: props.item?.sources?.[locale]?.document_id ?? null, url: props.item?.sources?.[locale]?.url ?? '' });
 
 const form = useForm<KnowledgeItemFormState>({
+  kind: props.item?.kind ?? KnowledgeItemKind.Term,
   title: { lt: props.item?.title.lt ?? '', en: props.item?.title.en ?? '' },
   abbreviation: { lt: props.item?.abbreviation.lt ?? '', en: props.item?.abbreviation.en ?? '' },
   summary: { lt: props.item?.summary.lt ?? '', en: props.item?.summary.en ?? '' },
@@ -219,7 +216,6 @@ const form = useForm<KnowledgeItemFormState>({
   audiences: props.item?.audiences.map(audience => ({ ...audience, description: { ...audience.description } })) ?? [],
   knowledge_section_id: props.item?.knowledge_section_id ?? null,
   tenant_id: props.item ? props.item.tenant_id : (!props.canPublishEverywhere && props.pageTenants.length === 1 ? props.pageTenants[0]!.id : null),
-  order: props.item?.order ?? 0,
   is_active: props.item?.is_active ?? true,
 });
 
@@ -228,14 +224,14 @@ const fieldIds: Record<string, string> = {
   'summary': 'article-summary', 'summary.lt': 'article-summary', 'summary.en': 'article-summary',
   'abbreviation.lt': 'article-abbreviation', 'abbreviation.en': 'article-abbreviation', 'tenant_id': 'article-tenant',
   'description': 'step-description', 'description.lt': 'step-description', 'description.en': 'step-description',
-  'audiences': 'step-audiences', 'knowledge_section_id': 'step-section', 'order': 'step-order',
+  'audiences': 'step-audiences', 'knowledge_section_id': 'step-section', 'kind': 'article-kind',
   'sources.lt': 'step-source', 'sources.lt.document_id': 'step-source', 'sources.lt.url': 'source-url-lt',
   'sources.en': 'step-source', 'sources.en.document_id': 'step-source', 'sources.en.url': 'source-url-en',
 };
 
 const missingLocaleCounts = computed<Record<LocaleKey, number>>(() => ({
-  lt: (form.title.lt.trim() === '' ? 1 : 0) + (form.summary.lt.trim() === '' ? 1 : 0),
-  en: (form.title.en.trim() === '' ? 1 : 0) + (form.summary.lt.trim() !== '' && form.summary.en.trim() === '' ? 1 : 0) + (hasRichText(form.description.lt) && !hasRichText(form.description.en) ? 1 : 0),
+  lt: (form.title.lt.trim() === '' ? 1 : 0) + (hasRichText(form.summary.lt) ? 0 : 1),
+  en: (form.title.en.trim() === '' ? 1 : 0) + (hasRichText(form.summary.lt) && !hasRichText(form.summary.en) ? 1 : 0) + (hasRichText(form.description.lt) && !hasRichText(form.description.en) ? 1 : 0),
 }));
 
 const pageTitle = computed(() => {
@@ -244,7 +240,22 @@ const pageTitle = computed(() => {
 });
 const barTitle = computed(() => isEdit.value ? props.item?.title.lt || props.item?.title.en || $t('learning.pages.knowledge_edit') : $t('learning.pages.knowledge_create'));
 
-const sectionOptions = computed(() => props.sections.map(section => ({ id: section.id, title: section.title[activeLocale.value] || section.title.lt || section.title.en || '' })));
+const kindOptions = computed<{ value: string; label: string }[]>(() => [
+  { value: KnowledgeItemKind.Term, label: $t('learning.kinds.term') },
+  { value: KnowledgeItemKind.Material, label: $t('learning.kinds.material') },
+]);
+const kindModel = computed<string>({
+  get: () => form.kind,
+  set: (value) => {
+    form.kind = value as KnowledgeItemKind;
+  },
+});
+const sectionKind = computed(() => form.kind === KnowledgeItemKind.Term ? KnowledgeSectionKind.Topic : KnowledgeSectionKind.Collection);
+// A term sits in a topic and material in a collection, so switching the kind drops a section that no longer fits.
+watch(sectionKind, (kind) => {
+  if (props.sections.find(section => section.id === form.knowledge_section_id)?.kind !== kind) form.knowledge_section_id = null;
+});
+const sectionOptions = computed(() => props.sections.filter(section => section.kind === sectionKind.value).map(section => ({ id: section.id, title: section.title[activeLocale.value] || section.title.lt || section.title.en || '' })));
 const selectedSection = computed({
   get: () => sectionOptions.value.find(section => section.id === form.knowledge_section_id) ?? null,
   set: (section: { id: string; title: string } | null) => { form.knowledge_section_id = section?.id ?? null; },
@@ -261,6 +272,7 @@ function payload(data: KnowledgeItemFormState): Record<string, unknown> {
   }
 
   return {
+    kind: data.kind,
     title: data.title,
     abbreviation: data.abbreviation,
     summary: data.summary,
@@ -269,7 +281,6 @@ function payload(data: KnowledgeItemFormState): Record<string, unknown> {
     ...(props.canManageAudiences ? { audiences: data.audiences.map(({ label, stage, ...audience }) => audience) } : {}),
     knowledge_section_id: data.knowledge_section_id,
     tenant_id: data.tenant_id,
-    order: data.order,
     is_active: data.is_active,
   };
 }

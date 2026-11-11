@@ -8,7 +8,7 @@ import { audience, editStep, editKnowledge } from './fixtures';
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 import KnowledgeItemForm from '@/Features/Admin/Learning/KnowledgeItemForm.vue';
-import { DocumentStatus, LearningAudienceType, LearningImportance, LearningStage, LearningStepKind } from '@/Types/enums';
+import { KnowledgeItemKind, DocumentStatus, LearningAudienceType, LearningImportance, LearningStage, LearningStepKind } from '@/Types/enums';
 import { commonStubs } from '@/tests/stubs';
 
 const stubs = {
@@ -41,10 +41,10 @@ describe('KnowledgeItemForm', () => {
           description: { lt: 'LT paaiškinimas', en: 'EN explanation' },
           abbreviation: { lt: '', en: '' },
           summary: { lt: 'LT santrauka', en: '' },
+          kind: KnowledgeItemKind.Term,
           knowledge_section_id: null,
           tenant_id: null,
           audiences: [audience()],
-          order: 1,
           is_active: true,
           sources: {
             lt: { document_id: 42, url: null },
@@ -105,10 +105,10 @@ describe('KnowledgeItemForm', () => {
           description: { lt: '', en: '' },
           abbreviation: { lt: '', en: '' },
           summary: { lt: 'LT santrauka', en: '' },
+          kind: KnowledgeItemKind.Term,
           knowledge_section_id: null,
           tenant_id: null,
           audiences: [audience()],
-          order: 1,
           is_active: true,
           sources: {
             lt: { document_id: 42, url: null },
@@ -207,7 +207,7 @@ describe('KnowledgeItemForm', () => {
     wrapper.unmount();
   });
 
-  it('submits sources and section without a step kind or stage', async () => {
+  it('submits the article kind, sources and section without a stage', async () => {
     const wrapper = mount(KnowledgeItemForm, {
       props: { item: editKnowledge({ sources: { lt: { url: 'https://example.test/read', document_id: null } } }), canManageAudiences: true },
       global: { stubs },
@@ -216,7 +216,8 @@ describe('KnowledgeItemForm', () => {
     expect(wrapper.get('[data-slot="knowledge-audience-hint"]').text()).toBe('learning_library.sections.path_description');
     await wrapper.findComponent({ name: 'FormPage' }).vm.$emit('submit');
     const payload = form.transform.mock.calls[0]![0](form);
-    expect(payload).not.toHaveProperty('kind');
+    expect(payload.kind).toBe('term');
+    expect(payload).not.toHaveProperty('order');
     expect(payload.sources.lt.url).toBe('https://example.test/read');
     expect(payload.audiences[0]).not.toHaveProperty('stage');
     expect(form.put).toHaveBeenCalledWith(route('knowledgeItems.update', 'knowledge-1'), expect.any(Object));

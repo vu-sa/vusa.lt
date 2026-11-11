@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { nextTick } from 'vue';
 
 import WikiProse from '../WikiProse.vue';
+import { KnowledgeItemKind } from '@/Types/enums';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -12,7 +13,7 @@ const stubs = {
   PopoverAnchor: true,
   PopoverContent: { template: '<div data-testid="preview"><slot /></div>' },
 };
-const pages = { skvc: { id: 'skvc', title: 'Studijų kokybės vertinimo centras', abbreviation: 'SKVC', summary: 'Vertina studijas.', url: '/mano/knowledge/items/skvc' } };
+const pages = { skvc: { id: 'skvc', title: 'Studijų kokybės vertinimo centras', kind: KnowledgeItemKind.Term, abbreviation: 'SKVC', summary: 'SKVC vertina studijas.', summaryHtml: '<strong>SKVC</strong> vertina studijas.', url: '/mano/knowledge/items/skvc' } };
 const html = '<p>Žr. <a href="/old" target="_blank" data-knowledge-id="skvc">SKVC</a> ir <a href="/x" data-knowledge-id="gone">ištrintą</a>.</p>';
 
 function render() {
@@ -40,7 +41,7 @@ describe('WikiProse', () => {
     await link.trigger('click', { button: 0 });
     await nextTick();
     expect(router.visit).not.toHaveBeenCalled();
-    expect(wrapper.get('[data-testid="preview"]').text()).toContain('Vertina studijas.');
+    expect(wrapper.get('[data-testid="preview"]').text()).toContain('SKVC vertina studijas.');
     await link.trigger('click', { button: 0 });
     expect(router.visit).toHaveBeenCalledWith(expect.stringContaining('/mano/knowledge/items/skvc'));
     wrapper.unmount();

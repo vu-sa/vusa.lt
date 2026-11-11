@@ -36,7 +36,7 @@ it.each([true, false])('keeps the eyebrow in the title grid when tracking is %s'
   const heading = wrapper.get('[data-slot="step-heading"]');
   const eyebrow = heading.get('[data-slot="step-eyebrow"]');
 
-  expect(eyebrow.text()).toBe('learning.pages.knowledge');
+  expect(eyebrow.text()).toBe('learning.kinds.term');
   expect(eyebrow.classes('col-start-2')).toBe(canTrack);
   expect(heading.classes('grid-cols-[2.75rem_minmax(0,1fr)]')).toBe(canTrack);
   expect(heading.find('[data-testid="step-checkbox"]').exists()).toBe(canTrack);
@@ -65,10 +65,11 @@ it('falls back to the plain link without a thumbnail or when the image fails', a
 });
 
 it('lets you tick an article that is not on your path, and opens with its summary as prose', async () => {
-  const wrapper = render(null, { inPath: false, item: knowledge({ source: null, summary: 'Vienas sakinys.', state: 'pending' }) });
+  const wrapper = render(null, { inPath: false, item: knowledge({ source: null, summary: 'Vienas sakinys.', summaryHtml: '<strong>Vienas</strong> sakinys.', state: 'pending' }) });
   expect(wrapper.find('[data-testid="step-checkbox"]').exists()).toBe(true);
   expect(wrapper.find('[data-slot="step-meta"]').exists()).toBe(false);
   expect(wrapper.get('[data-slot="wiki-prose"] [data-slot="article-summary"]').text()).toBe('Vienas sakinys.');
+  expect(wrapper.get('[data-slot="article-summary"] strong').text()).toBe('Vienas');
   await wrapper.setProps({ item: knowledge({ source: null, state: 'done' }) });
   expect(wrapper.get('[data-testid="step-checkbox"]').attributes('aria-checked')).toBe('true');
   expect(wrapper.find('[data-slot="step-meta"]').exists()).toBe(false);

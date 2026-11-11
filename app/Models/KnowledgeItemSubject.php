@@ -15,15 +15,15 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property string $subject_type
  * @property string $subject_id
  * @property-read KnowledgeItem $item
- * @property-read Institution|InstitutionType|DutyType|null $subject
+ * @property-read Institution|InstitutionType|DutyType|KnowledgeItem|null $subject
  */
 #[Fillable(['knowledge_item_id', 'subject_type', 'subject_id'])]
 class KnowledgeItemSubject extends Model
 {
     public $timestamps = false;
 
-    /** Morph aliases a page may be about. */
-    public const array SUBJECT_TYPES = ['institution', 'institution_type', 'duty_type'];
+    /** Morph aliases a page may be about; a `knowledge_item` subject is always a term. */
+    public const array SUBJECT_TYPES = ['institution', 'institution_type', 'duty_type', 'knowledge_item'];
 
     /** @return BelongsTo<KnowledgeItem, $this> */
     public function item(): BelongsTo

@@ -372,7 +372,8 @@ Route::get('knowledge/a-z', [KnowledgeBaseController::class, 'alphabet'])->name(
 Route::get('knowledge/link-options', [KnowledgeItemController::class, 'linkOptions'])->name('knowledgeItems.linkOptions');
 Route::put('knowledge/items/{knowledgeItem}/subjects', [KnowledgeItemController::class, 'syncSubjects'])->name('knowledgeItems.subjects.sync');
 Route::post('knowledge/sections/reorder', [KnowledgeSectionController::class, 'reorder'])->name('knowledgeSections.reorder');
-Route::resource('knowledge/sections', KnowledgeSectionController::class)->parameters(['sections' => 'knowledgeSection'])->names('knowledgeSections')->only(['store', 'update', 'destroy']);
+Route::post('knowledge/sections/{knowledgeSection}/items/reorder', [KnowledgeSectionController::class, 'reorderItems'])->name('knowledgeSections.items.reorder');
+Route::resource('knowledge/sections', KnowledgeSectionController::class)->parameters(['sections' => 'knowledgeSection'])->names('knowledgeSections')->only(['show', 'store', 'update', 'destroy']);
 Route::resource('knowledge/items', KnowledgeItemController::class)->parameters(['items' => 'knowledgeItem'])->names('knowledgeItems')->except('index');
 Route::get('learning', [LearningPathController::class, 'show'])->name('learningPath.show');
 // Mano kelias → Atstovai moved to ViSAK → Atstovai; bookmarks and sent links still land.

@@ -6,7 +6,6 @@ use App\Actions\ResolveLearningPath;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\ShowKnowledgeBaseRequest;
 use App\Models\KnowledgeItem;
-use App\Models\KnowledgeSection;
 use App\Services\KnowledgeBasePresenter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -28,10 +27,7 @@ class KnowledgeBaseController extends AdminController
             'knowledge' => KnowledgeBasePresenter::overview(ResolveLearningPath::execute($request->user()), $locale),
             'index' => KnowledgeBasePresenter::index($locale),
             'doneIds' => KnowledgeBasePresenter::doneIds($request->user()),
-            'sections' => KnowledgeSection::query()->orderBy('order')->orderBy('id')->get()->map(fn (KnowledgeSection $section): array => [
-                'id' => $section->id, 'title' => (string) $section->getTranslation('title', $locale),
-                'description' => (string) $section->getTranslation('description', $locale), 'order' => $section->order,
-            ])->all(),
+            'sections' => KnowledgeBasePresenter::sections($locale),
             'canCreate' => $request->user()->can('create', KnowledgeItem::class),
         ]);
     }
@@ -41,7 +37,7 @@ class KnowledgeBaseController extends AdminController
         $this->authorize('viewAny', KnowledgeItem::class);
 
         return Inertia::render('Admin/Knowledge/IndexKnowledgeAlphabet', [
-            'index' => KnowledgeBasePresenter::index(app()->getLocale()),
+            'index' => KnowledgeBasePresenter::index(app()->getLocale(), terms: true),
             'doneIds' => KnowledgeBasePresenter::doneIds($request->user()),
         ]);
     }

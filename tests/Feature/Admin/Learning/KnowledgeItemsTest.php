@@ -308,12 +308,12 @@ test('knowledge libraries and forms expose their dedicated payloads to curators'
     $item = KnowledgeItem::factory()->create();
     asUser($user)->get(route('knowledgeItems.index'))->assertOk()->assertInertia(fn (Assert $page) => $page
         ->component('Admin/Knowledge/IndexKnowledgeItem')->has('items', 1)->has('sections')->has('audienceTypes')->has('sectionScopes')
-        ->where('canCreate', true)->missing('items.0.perTerm')->missing('items.0.kind'));
+        ->where('canCreate', true)->missing('items.0.perTerm')->where('items.0.kind', 'term'));
     asUser($user)->get(route('knowledgeItems.create'))->assertOk()->assertInertia(fn (Assert $page) => $page
         ->component('Admin/Knowledge/CreateKnowledgeItem')->has('sections')->has('tenants'));
     asUser($user)->get(route('knowledgeItems.edit', $item))->assertOk()->assertInertia(fn (Assert $page) => $page
         ->component('Admin/Knowledge/EditKnowledgeItem')->where('item.id', $item->id)->has('item.title.lt')
-        ->has('item.sources')->missing('item.kind'));
+        ->has('item.sources')->where('item.kind', 'term')->missing('item.order'));
     asUser($user)->get(route('learningSteps.index'))->assertOk()->assertInertia(fn (Assert $page) => $page
         ->where('canCreate', true)->missing('steps.0.perTerm')->missing('steps.0.flags')->missing('sections'));
 });

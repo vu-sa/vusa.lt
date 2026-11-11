@@ -127,7 +127,7 @@ test('store and update set reviewed_at to now', function (): void {
         'is_active' => true,
     ])->assertRedirect();
 
-    $step = LearningStep::query()->where('is_system', false)->latest('created_at')->firstOrFail();
+    $step = LearningStep::query()->where('title->lt', 'Naujas žingsnis')->firstOrFail();
     expect($step->reviewed_at?->toIso8601String())->toBe(now()->toIso8601String());
 
     $step->update(['reviewed_at' => now()->subDays(10)]);

@@ -24,6 +24,16 @@ trait HasTranslations
     }
 
     /**
+     * Translatable one-line fields that may carry only inline marks (bold, italic).
+     *
+     * @return list<string>
+     */
+    protected function inlineHtmlTranslations(): array
+    {
+        return [];
+    }
+
+    /**
      * Sanitize on write. Spatie funnels every write path — mass assignment,
      * `update()`, `setTranslations()` — through `setTranslation()`, so overriding
      * it here covers them all. An `Attribute` mutator would not fire at all,
@@ -33,6 +43,8 @@ trait HasTranslations
     {
         if (is_string($value) && in_array($key, $this->sanitizedHtmlTranslations(), true)) {
             $value = app(HtmlSanitizerService::class)->sanitizeRichContent($value);
+        } elseif (is_string($value) && in_array($key, $this->inlineHtmlTranslations(), true)) {
+            $value = app(HtmlSanitizerService::class)->sanitizeInlineMarks($value);
         }
 
         return $this->baseSetTranslation($key, $locale, $value);

@@ -6,7 +6,7 @@ import { ArrowUpRight } from '@lucide/vue';
 import RecordActionMenu from '@/Components/Patterns/RecordActionMenu.vue';
 import IndexKnowledgeItem from '@/Pages/Admin/Knowledge/IndexKnowledgeItem.vue';
 import IndexLearningStep from '@/Pages/Admin/Learning/IndexLearningStep.vue';
-import { LearningAudienceType, LearningImportance, LearningStage, LearningStepKind } from '@/Types/enums';
+import { KnowledgeItemKind, LearningAudienceType, LearningImportance, LearningStage, LearningStepKind } from '@/Types/enums';
 import type { KnowledgeLibraryItem, LearningLibraryStep } from '@/Types/learning';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
@@ -138,7 +138,7 @@ it.each([true, false])('leads the Wiki table with open and keeps edit in the men
   window.history.replaceState({}, '', '/mano/knowledge/library?view=table');
   vi.mocked(usePage).mockReturnValue({ ...createMockPage(), url: '/mano/knowledge/library?view=table' });
   const item: KnowledgeLibraryItem = {
-    id: 'article', title: 'Wiki article', abbreviation: '', hasSource: false,
+    id: 'article', kind: KnowledgeItemKind.Term, title: 'Wiki article', abbreviation: '', hasSource: false,
     audiences: [], audienceTypes: [], section: null, order: 0, isActive: true, canUpdate, flags: [],
   };
   const wrapper = mount(IndexKnowledgeItem, { props: { items: [item] }, global: { stubs: commonStubs } });

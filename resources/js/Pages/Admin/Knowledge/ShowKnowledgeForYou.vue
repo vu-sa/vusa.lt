@@ -31,7 +31,7 @@ const mineOptions = computed(() => [
 const mineGroups = computed(() => {
   if (mineView.value === 'sections') {
     return [
-      ...[...props.knowledge.sections].sort((a, b) => a.order - b.order).map(section => ({
+      ...props.knowledge.sections.map(section => ({
         key: section.id, title: section.title, items: props.knowledge.items.filter(item => item.section?.id === section.id),
       })),
       { key: 'other', title: $t('learning.documents.other'), items: props.knowledge.items.filter(item => !item.section) },

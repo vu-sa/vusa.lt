@@ -186,7 +186,7 @@ describe('per-persona visibility', function (): void {
                 'label' => 'shell.workspaces.wiki.title',
                 'description' => 'shell.workspaces.wiki.description',
                 'sections' => [
-                    ['key' => 'wiki', 'label' => 'shell.sections.wiki', 'routeName' => 'knowledgeBase.show', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.wiki', 'collectionActions' => [], 'matches' => ['knowledgeBase.show'], 'startsGroup' => false, 'children' => []],
+                    ['key' => 'wiki', 'label' => 'shell.sections.wiki', 'routeName' => 'knowledgeBase.show', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.wiki', 'collectionActions' => [], 'matches' => ['knowledgeBase.show', 'knowledgeSections.show'], 'startsGroup' => false, 'children' => []],
                     ['key' => 'wiki_mine', 'label' => 'shell.sections.wiki_mine', 'routeName' => 'knowledgeBase.mine', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.wiki_mine', 'collectionActions' => [], 'matches' => ['knowledgeBase.mine'], 'startsGroup' => false, 'children' => []],
                     ['key' => 'rodykle', 'label' => 'shell.sections.rodykle', 'routeName' => 'knowledgeItems.alphabet', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.rodykle', 'collectionActions' => [], 'matches' => ['knowledgeItems.alphabet', 'knowledgeItems.show'], 'startsGroup' => false, 'children' => []],
                 ],
@@ -411,6 +411,7 @@ describe('route resolution', function (): void {
         'step creation' => ['learningSteps.create', 'organizacija', 'kelio_zingsniai'],
         'step editor' => ['learningSteps.edit', 'organizacija', 'kelio_zingsniai'],
         'Wiki home' => ['knowledgeBase.show', 'wiki', 'wiki'],
+        'section page' => ['knowledgeSections.show', 'wiki', 'wiki'],
         'articles for you' => ['knowledgeBase.mine', 'wiki', 'wiki_mine'],
         'article index' => ['knowledgeItems.alphabet', 'wiki', 'rodykle'],
         'article record' => ['knowledgeItems.show', 'wiki', 'rodykle'],

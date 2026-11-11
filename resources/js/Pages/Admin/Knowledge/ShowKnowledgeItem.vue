@@ -13,6 +13,7 @@ import { enterKnowledgeRecord } from '@/Composables/useRecordTrail';
 import WikiProse from '@/Features/Admin/Knowledge/WikiProse.vue';
 import WikiPageList from '@/Features/Admin/Knowledge/WikiPageList.vue';
 import WikiLinkPreview from '@/Features/Admin/Knowledge/WikiLinkPreview.vue';
+import WikiMaterialList from '@/Features/Admin/Knowledge/WikiMaterialList.vue';
 import WikiSubjectsSheet from '@/Features/Admin/Knowledge/WikiSubjectsSheet.vue';
 import LearningCompletionControl from '@/Features/Admin/Learning/LearningCompletionControl.vue';
 import LearningAudienceNotes from '@/Features/Admin/Learning/LearningAudienceNotes.vue';
@@ -20,8 +21,7 @@ import LearningStepAction from '@/Features/Admin/Learning/LearningStepAction.vue
 import { useStepProgress } from '@/Features/Admin/Learning/composables/useStepProgress';
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import { safeHref } from '@/Utils/safeHref';
-import { escapeHtml } from '@/Utils/String';
-import type { KnowledgeItemData, LearningCoordinator, LearningInstitutionContacts, LearningTypeOption, WikiPageSummary, WikiSubject } from '@/Types/learning';
+import type { KnowledgeItemData, LearningCoordinator, LearningInstitutionContacts, LearningTypeOption, WikiMaterial, WikiPageSummary, WikiSubject } from '@/Types/learning';
 
 const props = withDefaults(defineProps<{
   item: KnowledgeItemData;
@@ -35,12 +35,15 @@ const props = withDefaults(defineProps<{
   related?: WikiPageSummary[];
   doneIds?: string[];
   subjects?: WikiSubject[];
-  subjectOptions?: { institutionTypes: LearningTypeOption[]; dutyTypes: LearningTypeOption[] };
-}>(), { linkedPages: () => ({}), related: () => [], subjects: () => [], subjectOptions: () => ({ institutionTypes: [], dutyTypes: [] }) });
+  /** Material about this term, the viewer's own units first. */
+  materials?: WikiMaterial[];
+  subjectOptions?: { institutionTypes: LearningTypeOption[]; dutyTypes: LearningTypeOption[]; terms: { id: string; title: string }[] };
+}>(), { linkedPages: () => ({}), related: () => [], subjects: () => [], materials: () => [], subjectOptions: () => ({ institutionTypes: [], dutyTypes: [], terms: [] }) });
 
 const readonly = computed(() => !props.canTrack);
 const done = computed(() => new Set(props.doneIds ?? []));
 const relatedPages = computed(() => Object.fromEntries(props.related.map(page => [page.id, page])));
+const materialPages = computed(() => Object.fromEntries(props.materials.map(page => [page.id, page])));
 const { checked, saving, failed } = useStepProgress(toRef(props, 'item'), readonly);
 const subjectsOpen = ref(false);
 const actions = computed<AdminRecordAction[]>(() => props.canUpdate
@@ -63,8 +66,8 @@ const sourceLabel = computed(() => {
 const thumbnailFailed = ref(false);
 const thumbnailUrl = computed(() => thumbnailFailed.value ? null : props.item.source?.thumbnailUrl ?? null);
 const hasBody = computed(() => props.item.description.replace(/<[^>]*>/g, '').trim() !== '');
-// The summary opens the article in the same voice as the rest, not as a separate lead.
-const articleHtml = computed(() => (props.item.summary ? `<p data-slot="article-summary">${escapeHtml(props.item.summary)}</p>` : '') + (hasBody.value ? props.item.description : ''));
+// The summary opens the article in the same voice as the rest, its bold title included, not as a separate lead.
+const articleHtml = computed(() => (props.item.summaryHtml ? `<p data-slot="article-summary">${props.item.summaryHtml}</p>` : '') + (hasBody.value ? props.item.description : ''));
 const enterTrail = () => enterKnowledgeRecord({ id: props.item.id, title: props.item.title, href: route('knowledgeItems.show', props.item.id) });
 onMounted(enterTrail);
 watch(() => props.item.id, () => {
@@ -78,7 +81,7 @@ watch(() => props.item.id, () => {
   <OverviewPage :title="item.title" class="gap-8! lg:gap-10! sm:[&>[data-slot=overview-title-band]]:items-start">
     <template #heading>
       <div :class="['grid gap-y-3', canTrack && 'grid-cols-[2.75rem_minmax(0,1fr)] gap-x-3']" data-slot="step-heading">
-        <p :class="['text-xs font-bold uppercase tracking-[0.2em] text-brand', canTrack && 'col-start-2']" data-slot="step-eyebrow">{{ $t('learning.pages.knowledge') }}</p>
+        <p :class="['text-xs font-bold uppercase tracking-[0.2em] text-brand', canTrack && 'col-start-2']" data-slot="step-eyebrow">{{ $t(`learning.kinds.${item.kind}`) }}</p>
         <LearningCompletionControl v-if="canTrack" v-model="checked" :step="viewerItem" :disabled="saving" class="mt-1.5 sm:mt-2.5" />
         <div class="min-w-0">
           <h1 class="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-balance text-3xl font-bold leading-tight text-foreground sm:text-4xl">
@@ -89,7 +92,7 @@ watch(() => props.item.id, () => {
             <span v-if="inPath" :class="item.importance === 'essential' ? 'font-semibold text-brand' : 'font-semibold text-foreground'">{{ $t(`learning.importance.${item.importance}`) }}</span>
             <template v-if="item.section">
               <span v-if="inPath" aria-hidden="true">·</span>
-              <Link :href="route('knowledgeBase.show') + `#section-${item.section.id}`" class="hover:text-foreground">{{ item.section.title }}</Link>
+              <Link :href="route('knowledgeSections.show', item.section.id)" class="underline decoration-transparent underline-offset-4 hover:text-foreground hover:decoration-foreground">{{ item.section.title }}</Link>
             </template>
           </p>
           <p v-if="failed" role="alert" class="mt-2 text-sm text-destructive">{{ $t('learning.path.save_failed') }}</p>
@@ -107,6 +110,12 @@ watch(() => props.item.id, () => {
       <article class="min-w-0 max-w-prose space-y-8 lg:col-start-1 lg:row-start-1">
         <WikiProse v-if="articleHtml" :html="articleHtml" :pages="linkedPages" />
         <LearningAudienceNotes v-if="inPath" :notes="item.audienceNotes" />
+        <section v-if="materials.length" aria-labelledby="article-materials" class="space-y-3" data-slot="article-materials">
+          <h2 id="article-materials" class="text-xl font-bold leading-tight text-foreground">{{ $t('learning.wiki.materials_about') }}</h2>
+          <WikiLinkPreview :pages="materialPages">
+            <WikiMaterialList :materials="materials" :done-ids="done" />
+          </WikiLinkPreview>
+        </section>
       </article>
 
       <aside
@@ -183,6 +192,8 @@ watch(() => props.item.id, () => {
       :subjects="subjects"
       :institution-types="subjectOptions.institutionTypes"
       :duty-types="subjectOptions.dutyTypes"
+      :terms="subjectOptions.terms"
+      :kind="item.kind"
     />
   </OverviewPage>
 </template>

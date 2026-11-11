@@ -84,7 +84,7 @@ class KnowledgeItemController extends AdminController
 
         return Inertia::render('Admin/Knowledge/ShowKnowledgeItem', [
             'item' => $payload,
-            ...KnowledgeBasePresenter::pageContext($knowledgeItem, app()->getLocale()),
+            ...KnowledgeBasePresenter::pageContext($knowledgeItem, app()->getLocale(), $request->user()),
             'doneIds' => KnowledgeBasePresenter::doneIds($request->user()),
             'inPath' => $inPath,
             'canTrack' => $knowledgeItem->is_active && $request->user()->can('view', $knowledgeItem),
@@ -148,6 +148,7 @@ class KnowledgeItemController extends AdminController
         $step = DB::transaction(function () use ($request): KnowledgeItem {
             $step = KnowledgeItem::create([
                 ...$request->safe()->except(['sources', 'audiences']),
+                'order' => $this->nextOrder($request->validated('knowledge_section_id')),
                 'reviewed_at' => now(),
                 'created_by' => $request->user()->id,
             ]);
@@ -164,9 +165,11 @@ class KnowledgeItemController extends AdminController
     {
         $this->authorize('update', $knowledgeItem);
         DB::transaction(function () use ($request, $knowledgeItem): void {
+            $sectionId = $request->validated('knowledge_section_id');
             $knowledgeItem->update([
                 ...$request->safe()->except(['sources', 'audiences']),
-                'knowledge_section_id' => $request->validated('knowledge_section_id'), 'tenant_id' => $request->validated('tenant_id'), 'reviewed_at' => now(),
+                ...($sectionId !== $knowledgeItem->knowledge_section_id ? ['order' => $this->nextOrder($sectionId)] : []),
+                'knowledge_section_id' => $sectionId, 'tenant_id' => $request->validated('tenant_id'), 'reviewed_at' => now(),
             ]);
             if (array_key_exists('audiences', $request->validated())) {
                 SyncLearningAudiences::execute($knowledgeItem, $request->validated('audiences'));
@@ -229,14 +232,21 @@ class KnowledgeItemController extends AdminController
         return back()->with('success', $this->entityMessage('updated', 'knowledgeItem'));
     }
 
-    /** @return array{institutionTypes: list<array{id: int, title: string, parent_id: int|null}>, dutyTypes: list<array{id: int, title: string, parent_id: int|null}>} */
+    /** @return array{institutionTypes: list<array{id: int, title: string, parent_id: int|null}>, dutyTypes: list<array{id: int, title: string, parent_id: int|null}>, terms: list<array{id: string, title: string}>} */
     private function subjectOptions(): array
     {
         $locale = app()->getLocale();
         $options = fn ($types): array => $types->map(fn ($type): array => ['id' => $type->id, 'title' => (string) $type->getTranslation('title', $locale), 'parent_id' => $type->parent_id])
             ->values()->all();
 
-        return ['institutionTypes' => $options(InstitutionType::query()->get(['id', 'title', 'parent_id'])), 'dutyTypes' => $options(DutyType::query()->get(['id', 'title', 'parent_id']))];
+        $terms = [];
+        foreach (KnowledgeItem::query()->active()->terms()->get(['id', 'title']) as $term) {
+            $terms[] = ['id' => $term->id, 'title' => (string) $term->getTranslation('title', $locale)];
+        }
+        $collator = new \Collator($locale);
+        usort($terms, fn (array $a, array $b): int => (int) $collator->compare($a['title'], $b['title']));
+
+        return ['institutionTypes' => $options(InstitutionType::query()->get(['id', 'title', 'parent_id'])), 'dutyTypes' => $options(DutyType::query()->get(['id', 'title', 'parent_id'])), 'terms' => $terms];
     }
 
     private function formOptions(User $user, string $ability, ?KnowledgeItem $item = null): array
@@ -289,7 +299,7 @@ class KnowledgeItemController extends AdminController
         return KnowledgeSection::query()->with('tenant')->withCount('items')->when(! $scope->isAllScope,
             fn ($query) => $query->whereIn('tenant_id', $scope->tenantIds()))->orderBy('order')->orderBy('id')->get()
             ->map(fn (KnowledgeSection $section): array => [
-                'id' => $section->id, 'title' => $section->getTranslations('title'),
+                'id' => $section->id, 'kind' => $section->kind, 'date' => $section->date?->toDateString(), 'title' => $section->getTranslations('title'),
                 'description' => $section->getTranslations('description'), 'order' => $section->order,
                 'tenant_id' => $section->tenant_id,
                 'itemsCount' => $section->items_count,
@@ -297,6 +307,12 @@ class KnowledgeItemController extends AdminController
                 'canDelete' => $user->can('delete', $section),
                 'tenant' => $section->tenant ? ['id' => $section->tenant->id, 'shortname' => $section->tenant->shortname] : null,
             ])->all();
+    }
+
+    /** A new or moved article goes to the end of its section; the order is set on the section page. */
+    private function nextOrder(?string $sectionId): int
+    {
+        return (int) KnowledgeItem::query()->where('knowledge_section_id', $sectionId)->max('order') + 1;
     }
 
     private function sourceDocument(KnowledgeItem $knowledgeItem): ?Document

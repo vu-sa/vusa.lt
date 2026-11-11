@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Actions\SyncKnowledgeLinks;
 use App\Contracts\Commentable;
+use App\Enums\KnowledgeItemKind;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
@@ -26,6 +27,7 @@ use Illuminate\Support\Carbon;
  * @property-read Collection<int, LearningAudience> $audiences
  * @property string $id
  * @property string|null $key
+ * @property KnowledgeItemKind $kind
  * @property int|null $tenant_id
  * @property array|string|null $title
  * @property array|string|null $abbreviation
@@ -45,7 +47,7 @@ use Illuminate\Support\Carbon;
  * @property-read Tenant|null $tenant
  * @property-read User|null $createdBy
  */
-#[Fillable(['key', 'knowledge_section_id', 'tenant_id', 'title', 'abbreviation', 'summary', 'description', 'order', 'is_active', 'reviewed_at', 'created_by'])]
+#[Fillable(['key', 'kind', 'knowledge_section_id', 'tenant_id', 'title', 'abbreviation', 'summary', 'description', 'order', 'is_active', 'reviewed_at', 'created_by'])]
 class KnowledgeItem extends Model implements Commentable
 {
     use HasComments, HasFactory, HasTranslations, HasUlids, LogsModelActivity;
@@ -65,6 +67,12 @@ class KnowledgeItem extends Model implements Commentable
     protected function sanitizedHtmlTranslations(): array
     {
         return ['description'];
+    }
+
+    /** @return list<string> */
+    protected function inlineHtmlTranslations(): array
+    {
+        return ['summary'];
     }
 
     /** @return HasMany<KnowledgeItemSource, $this> */
@@ -123,13 +131,19 @@ class KnowledgeItem extends Model implements Commentable
 
     protected function casts(): array
     {
-        return ['is_active' => 'boolean', 'reviewed_at' => 'datetime', 'order' => 'integer'];
+        return ['kind' => KnowledgeItemKind::class, 'is_active' => 'boolean', 'reviewed_at' => 'datetime', 'order' => 'integer'];
     }
 
     /** @param Builder<static> $query */
     public function scopeActive(Builder $query): void
     {
         $query->where('is_active', true);
+    }
+
+    /** @param Builder<static> $query */
+    public function scopeTerms(Builder $query): void
+    {
+        $query->where('kind', KnowledgeItemKind::Term);
     }
 
     /** @param Builder<static> $query */

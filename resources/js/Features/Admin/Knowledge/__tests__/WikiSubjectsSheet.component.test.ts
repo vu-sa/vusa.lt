@@ -6,6 +6,7 @@ import { beforeEach, expect, it, vi } from 'vitest';
 import { SheetForm } from '@/Components/Patterns';
 import { commonStubs } from '@/tests/stubs';
 import WikiSubjectsSheet from '../WikiSubjectsSheet.vue';
+import { KnowledgeItemKind } from '@/Types/enums';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 beforeEach(() => vi.clearAllMocks());
@@ -19,7 +20,7 @@ const InstitutionSelectDialog = defineComponent({
 
 it('adds an institution picked in the dialog without saving the sheet', async () => {
   const wrapper = mount(WikiSubjectsSheet, {
-    props: { open: false, itemId: 'item-1', subjects: [], institutionTypes: [], dutyTypes: [] },
+    props: { open: false, itemId: 'item-1', subjects: [], institutionTypes: [], dutyTypes: [], kind: KnowledgeItemKind.Term },
     global: { stubs: { ...commonStubs, Sheet: commonStubs.Dialog, SheetContent: commonStubs.DialogContent, SheetHeader: commonStubs.DialogHeader, SheetTitle: commonStubs.DialogTitle, SheetDescription: commonStubs.DialogDescription, InstitutionSelectDialog } },
   });
   await wrapper.setProps({ open: true });

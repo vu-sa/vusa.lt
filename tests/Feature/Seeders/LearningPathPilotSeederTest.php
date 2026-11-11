@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\KnowledgeItemKind;
+use App\Enums\KnowledgeSectionKind;
 use App\Enums\LearningAudienceType;
 use App\Models\Document;
 use App\Models\InstitutionType;
@@ -27,7 +29,12 @@ test('seeds the pilot once, links archive documents by title and replaces audien
     $unitStep = KnowledgeItem::query()->where('key', "pilot_unit_regulations_{$tenant->alias}")->sole();
     expect($unitStep->audiences->sole()->type)->toBe(LearningAudienceType::Everyone);
     expect($unitStep->audiences->sole()->tenant_id)->toBe($tenant->id);
-    expect($step->section->getTranslation('title', 'en'))->toBe('Introductory training');
+    expect($step->section->getTranslation('title', 'en'))->toBe('VU SR and the university');
+    $unitTerm = KnowledgeItem::query()->where('key', 'pilot_unit_regulations')->sole();
+    expect($unitTerm->kind)->toBe(KnowledgeItemKind::Term)->and($unitTerm->audiences)->toBeEmpty()
+        ->and($unitStep->kind)->toBe(KnowledgeItemKind::Material)
+        ->and($unitStep->section->kind)->toBe(KnowledgeSectionKind::Collection)
+        ->and($unitStep->subjects->sole()->only(['subject_type', 'subject_id']))->toBe(['subject_type' => 'knowledge_item', 'subject_id' => $unitTerm->id]);
     expect($step->audiences)->toHaveCount(2);
     expect($unitStep->sourceFor('lt')->document_id)->toBe($unitRegulations->id);
     expect(KnowledgeItem::query()->where('key', 'pilot_spk_regulations')->sole()->outgoingLinks)->toHaveCount(5);

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\KnowledgeSectionKind;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -18,13 +19,15 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property array|string|null $title
  * @property array|string|null $description
+ * @property KnowledgeSectionKind $kind
+ * @property Carbon|null $date
  * @property int|null $tenant_id
  * @property string|null $created_by
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property int $order
  */
-#[Fillable(['title', 'description', 'order', 'tenant_id', 'created_by'])]
+#[Fillable(['title', 'description', 'kind', 'date', 'order', 'tenant_id', 'created_by'])]
 class KnowledgeSection extends Model
 {
     use HasFactory, HasTranslations, HasUlids, LogsModelActivity;
@@ -45,6 +48,6 @@ class KnowledgeSection extends Model
 
     protected function casts(): array
     {
-        return ['order' => 'integer'];
+        return ['kind' => KnowledgeSectionKind::class, 'date' => 'date', 'order' => 'integer'];
     }
 }
