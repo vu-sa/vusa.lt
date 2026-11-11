@@ -51,7 +51,7 @@
         :hint="$t('learning_library.fields.description_hint')"
         :error="form.errors[`description.${activeLocale}`] || form.errors.description"
       >
-        <TiptapEditor :key="activeLocale" v-model="form.description[activeLocale]" tools="description" html data-testid="step-description" />
+        <TiptapEditor :key="activeLocale" v-model="form.description[activeLocale]" tools="description" html :extensions="[createWikiLinkExtension()]" data-testid="step-description" />
       </FormFieldWrapper>
 
       <FormFieldWrapper
@@ -196,6 +196,7 @@ import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog, FormPanel, FormSegmentedControl, type FormSegmentOption } from '@/Components/Patterns';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
+import { createWikiLinkExtension } from '@/Features/Admin/Knowledge/wikiLinkExtension';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { fieldSurfaceClass } from '@/Components/ui/control';

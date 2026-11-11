@@ -23,7 +23,7 @@ tests:
 
 Komentaruose galima aptarti įrašą su kolegomis, užduoti klausimą ar suderinti kitą veiksmą.
 Komentarų skydelis rodomas posėdžiuose, darbotvarkės klausimuose, problemose, institucijose, pareigybėse,
-formose, rezervacijose, pagalbos užklausose ir Žinių bazės medžiagoje (ten jis vadinamas **Įžvalgos**).
+formose, rezervacijose, pagalbos užklausose ir Wiki straipsniuose (ten jis vadinamas **Įžvalgos**).
 
 Komentaras priskiriamas jį parašiusiam asmeniui, jo pareigoms ir įrašui, prie kurio jis paliktas. Diskusijose galima
 atsakyti į kitų komentarus, paminėti kolegas, pridėti nuotraukų, pradėti atskiras temas ir rengti greitas apklausas.
@@ -68,7 +68,7 @@ pareigos prie vardo ir nuotraukos, o apklausa kuriama tiesiai laukelyje. Žymėj
 ### Komentaro ir atsakymo rašymas
 
 1. Atverk norimo įrašo puslapį (pvz., posėdžio ar problemos).
-2. Skiltyje **Komentarai** (pagalbos užklausose – **Diskusija**, Žinių bazės medžiagoje – **Įžvalgos**) paspausk
+2. Skiltyje **Komentarai** (pagalbos užklausose – **Diskusija**, Wiki straipsniuose – **Įžvalgos**) paspausk
    komentaro laukelį. Jis išsiskleidžia: viršuje gali pasirinkti **Komentaras** (numatyta), **Tema** arba **Apklausa**.
 3. Įrašyk tekstą. Jei nori atkreipti konkretaus asmens dėmesį, įvesk `@` arba spausk **@** mygtuką apačioje ir pasirink vardą iš sąrašo.
    Apatinėje laukelio juostoje matysi, kas gaus pranešimą apie paminėjimą (redaguojant komentarą pranešimai iš naujo nesiunčiami).

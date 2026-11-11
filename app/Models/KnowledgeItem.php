@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Actions\SyncKnowledgeLinks;
 use App\Contracts\Commentable;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasTranslations;
@@ -25,7 +26,10 @@ use Illuminate\Support\Carbon;
  * @property-read Collection<int, LearningAudience> $audiences
  * @property string $id
  * @property string|null $key
+ * @property int|null $tenant_id
  * @property array|string|null $title
+ * @property array|string|null $abbreviation
+ * @property array|string|null $summary
  * @property array|string|null $description
  * @property bool $per_term
  * @property int $order
@@ -36,10 +40,13 @@ use Illuminate\Support\Carbon;
  * @property-read Collection<int, Comment> $comments
  * @property-read Collection<int, KnowledgeItemSource> $sources
  * @property-read Collection<int, LearningProgress> $progress
- * @property-read Collection<int, GlossaryTerm> $glossaryTerms
+ * @property-read Collection<int, KnowledgeItem> $outgoingLinks
+ * @property-read Collection<int, KnowledgeItem> $incomingLinks
+ * @property-read Collection<int, KnowledgeItemSubject> $subjects
+ * @property-read Tenant|null $tenant
  * @property-read User|null $createdBy
  */
-#[Fillable(['key', 'knowledge_section_id', 'title', 'description', 'per_term', 'order', 'is_active', 'reviewed_at', 'created_by'])]
+#[Fillable(['key', 'knowledge_section_id', 'tenant_id', 'title', 'abbreviation', 'summary', 'description', 'per_term', 'order', 'is_active', 'reviewed_at', 'created_by'])]
 class KnowledgeItem extends Model implements Commentable
 {
     use HasComments, HasFactory, HasTranslations, HasUlids, LogsModelActivity;
@@ -50,9 +57,10 @@ class KnowledgeItem extends Model implements Commentable
             $item->audiences()->get()->each->delete();
             $item->progress()->delete();
         });
+        static::saved(fn (self $item) => SyncKnowledgeLinks::execute($item));
     }
 
-    public $translatable = ['title', 'description'];
+    public $translatable = ['title', 'abbreviation', 'summary', 'description'];
 
     /** @return list<string> */
     protected function sanitizedHtmlTranslations(): array
@@ -84,10 +92,28 @@ class KnowledgeItem extends Model implements Commentable
         return $this->belongsTo(KnowledgeSection::class, 'knowledge_section_id');
     }
 
-    /** @return BelongsToMany<GlossaryTerm, $this> */
-    public function glossaryTerms(): BelongsToMany
+    /** @return BelongsToMany<KnowledgeItem, $this> */
+    public function outgoingLinks(): BelongsToMany
     {
-        return $this->belongsToMany(GlossaryTerm::class);
+        return $this->belongsToMany(self::class, 'knowledge_links', 'from_item_id', 'to_item_id');
+    }
+
+    /** @return BelongsToMany<KnowledgeItem, $this> */
+    public function incomingLinks(): BelongsToMany
+    {
+        return $this->belongsToMany(self::class, 'knowledge_links', 'to_item_id', 'from_item_id');
+    }
+
+    /** @return HasMany<KnowledgeItemSubject, $this> */
+    public function subjects(): HasMany
+    {
+        return $this->hasMany(KnowledgeItemSubject::class);
+    }
+
+    /** @return BelongsTo<Tenant, $this> */
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
     }
 
     /** @return BelongsTo<User, $this> */

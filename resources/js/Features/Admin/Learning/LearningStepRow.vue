@@ -10,7 +10,6 @@ import type { LearningCoordinator, LearningInstitutionContacts, LearningStepData
 import LearningCoordinators from './LearningCoordinators.vue';
 import LearningCompletionControl from './LearningCompletionControl.vue';
 import LearningStepAction from './LearningStepAction.vue';
-import LearningTerms from './LearningTerms.vue';
 import { useStepProgress } from './composables/useStepProgress';
 
 const props = defineProps<{
@@ -18,7 +17,6 @@ const props = defineProps<{
   readonly?: boolean;
   coordinators?: LearningCoordinator[];
   institutionContacts?: LearningInstitutionContacts[];
-  showGlossary?: boolean;
 }>();
 const { saving, failed, canSkip, checked, save } = useStepProgress(toRef(props, 'step'), toRef(props, 'readonly'));
 const isDocument = computed(() => 'source' in props.step);
@@ -49,7 +47,6 @@ const isResolved = computed(() => props.step.state === 'done' || props.step.stat
         <span v-if="step.state === 'skipped'">{{ $t('learning.path.skipped') }}</span>
       </div>
       <LearningCoordinators v-if="'key' in step && step.key === 'meet_coordinator' && coordinators?.length" :coordinators="coordinators" class="mt-3" />
-      <LearningTerms v-if="showGlossary && 'glossaryTerms' in step" :terms="step.glossaryTerms" class="mt-2" />
       <p v-if="failed" role="alert" class="mt-2 text-sm text-destructive">{{ $t('learning.path.save_failed') }}</p>
     </div>
     <div class="col-start-2 row-start-2 flex min-w-0 flex-nowrap items-start gap-2 pt-2 sm:col-start-3 sm:row-start-1 sm:justify-end sm:pt-0">

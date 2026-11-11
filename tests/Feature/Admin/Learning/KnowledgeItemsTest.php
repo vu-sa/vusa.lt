@@ -4,7 +4,8 @@ use App\Actions\ResolveLearningPath;
 use App\Enums\LearningImportance;
 use App\Enums\ResponsibilityPurpose;
 use App\Models\Document;
-use App\Models\GlossaryTerm;
+use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\KnowledgeItem;
 use App\Models\KnowledgeSection;
 use App\Models\LearningStep;
@@ -19,6 +20,8 @@ function knowledgePayload(?int $tenantId = null): array
 {
     return [
         'title' => ['lt' => 'Atstovo žinios', 'en' => 'Representative knowledge'],
+        'summary' => ['lt' => 'Ką atstovas turi žinoti.', 'en' => 'What a rep should know.'],
+        'tenant_id' => $tenantId,
         'description' => ['lt' => '<p>Žinok savo teises.</p>', 'en' => '<p>Know your rights.</p>'],
         'audiences' => [['type' => 'everyone', 'tenant_id' => $tenantId, 'importance' => 'recommended']],
         'sources' => ['lt' => ['url' => 'https://example.test/knowledge']],
@@ -174,32 +177,94 @@ test('a source update reopens knowledge until it is read again', function (): vo
     expect(ResolveLearningPath::execute($user)->knowledge->sole()->state)->toBe('done');
 });
 
-test('glossary lists and term pages prioritize the viewers path then section and item order', function (): void {
+test('wiki links in a body are indexed both ways and previewed without dangling targets', function (): void {
     $user = makeUser(Tenant::query()->firstOrFail());
-    $early = KnowledgeSection::factory()->create(['order' => 1]);
-    $late = KnowledgeSection::factory()->create(['order' => 2]);
-    $recommended = KnowledgeItem::factory()->create(['knowledge_section_id' => $early->id]);
-    $essential = KnowledgeItem::factory()->audience(['importance' => 'essential'])->create(['knowledge_section_id' => $late->id, 'order' => 2]);
-    $firstEssential = KnowledgeItem::factory()->audience(['importance' => 'essential'])->create(['knowledge_section_id' => $early->id, 'order' => 3]);
-    $foreign = KnowledgeItem::factory()->forTenant()->create(['knowledge_section_id' => $early->id]);
-    $term = GlossaryTerm::factory()->create(['term' => ['lt' => 'Bendra sąvoka', 'en' => 'Shared term']]);
-    $term->knowledgeItems()->attach([$recommended->id, $essential->id, $firstEssential->id, $foreign->id]);
-    $lessRelevant = GlossaryTerm::factory()->create(['term' => ['lt' => 'A sąvoka', 'en' => 'A term']]);
-    $lessRelevant->knowledgeItems()->attach($recommended);
-    $outside = GlossaryTerm::factory()->create();
-    $outside->knowledgeItems()->attach($foreign);
+    $skvc = KnowledgeItem::factory()->withoutAudiences()->create(['title' => ['lt' => 'SKVC', 'en' => 'SKVC'], 'summary' => ['lt' => 'Vertina studijas.', 'en' => 'Assesses studies.']]);
+    $hidden = KnowledgeItem::factory()->withoutAudiences()->create(['is_active' => false]);
+    $link = fn (KnowledgeItem $target): string => '<a href="/x" data-knowledge-id="'.$target->id.'">x</a>';
+    $page = KnowledgeItem::factory()->create(['description' => ['lt' => '<p>'.$link($skvc).$link($hidden).'</p>', 'en' => '<p>'.$link($skvc).'</p>']]);
+    $page->update(['description' => ['lt' => '<p>'.$link($skvc).$link($hidden).$link($page).'<a data-knowledge-id="01zzzzzzzzzzzzzzzzzzzzzzzz">gone</a></p>']]);
 
-    asUser($user)->get(route('glossaryTerms.index'))->assertOk()->assertInertia(fn (Assert $page) => $page
-        ->component('Admin/Knowledge/IndexGlossaryTerm')->where('terms.0.id', $term->id)
-        ->where('terms.0.priority.importance', 'essential')->where('terms.1.id', $lessRelevant->id)->where('terms.2.id', $outside->id));
-    asUser($user)->get(route('glossaryTerms.show', $term))->assertOk()->assertInertia(fn (Assert $page) => $page
-        ->component('Admin/Knowledge/ShowGlossaryTerm')->where('term.id', $term->id)
-        ->where('term.items.0.id', $firstEssential->id)->where('term.items.1.id', $essential->id)
-        ->where('term.items.2.id', $recommended->id)->where('term.items.3.id', $foreign->id)
-        ->where('term.items.0.inPath', true)->where('term.items.0.importance', 'essential')
-        ->where('term.items.3.inPath', false)->where('term.items.3.importance', null)
-        ->where('term.items.0.url', route('knowledgeItems.show', $firstEssential))
-        ->whereType('term.items.0.state', 'string')->has('term.translations.term.en'));
+    expect($page->outgoingLinks()->pluck('id')->sort()->values()->all())->toBe(collect([$skvc->id, $hidden->id])->sort()->values()->all())
+        ->and($skvc->incomingLinks()->sole()->is($page))->toBeTrue();
+
+    asUser($user)->get(route('knowledgeItems.show', $page))->assertOk()->assertInertia(fn (Assert $inertia) => $inertia
+        ->component('Admin/Knowledge/ShowKnowledgeItem')
+        ->has('linkedPages', 1)->where("linkedPages.{$skvc->id}.summary", 'Vertina studijas.')
+        ->has('related', 1)->where('related.0.id', $skvc->id));
+    asUser($user)->get(route('knowledgeItems.show', $skvc))->assertInertia(fn (Assert $inertia) => $inertia
+        ->where('related.0.id', $page->id)->where('inPath', false));
+
+    $page->update(['description' => ['lt' => '<p>Be nuorodų.</p>', 'en' => '']]);
+    expect($page->outgoingLinks()->count())->toBe(0);
+});
+
+test('only wiki editors of the unit write articles, and audiences stay with path builders', function (): void {
+    $tenant = Tenant::query()->firstOrFail();
+    $other = Tenant::query()->whereKeyNot($tenant->id)->firstOrFail();
+    $editor = makeUser($tenant);
+    foreach (['create', 'update', 'delete'] as $ability) {
+        $editor->givePermissionTo(Permission::findOrCreate("knowledgeItems.{$ability}.padalinys", 'web'));
+    }
+    $own = KnowledgeItem::factory()->withoutAudiences()->create(['tenant_id' => $tenant->id]);
+    $foreign = KnowledgeItem::factory()->withoutAudiences()->create(['tenant_id' => $other->id]);
+    $global = KnowledgeItem::factory()->withoutAudiences()->create();
+    expect($editor->can('update', $own))->toBeTrue()
+        ->and($editor->can('update', $foreign))->toBeFalse()
+        ->and($editor->can('update', $global))->toBeFalse()
+        ->and($editor->can('manage', KnowledgeItem::class))->toBeTrue();
+
+    $article = collect(knowledgePayload($tenant->id))->except(['audiences', 'sources'])->all();
+    asUser($editor)->post(route('knowledgeItems.store'), $article)->assertRedirect();
+    $created = KnowledgeItem::query()->where('created_by', $editor->id)->sole();
+    expect($created->tenant_id)->toBe($tenant->id)->and($created->audiences)->toBeEmpty()->and($created->sources)->toBeEmpty();
+
+    asUser($editor)->post(route('knowledgeItems.store'), [...$article, 'tenant_id' => null])->assertForbidden();
+    asUser($editor)->post(route('knowledgeItems.store'), knowledgePayload($tenant->id))->assertForbidden();
+    asUser($editor)->put(route('knowledgeItems.update', $own), [...$article, 'title' => ['lt' => 'Nauja']])->assertRedirect();
+    asUser($editor)->put(route('knowledgeItems.update', $foreign), $article)->assertForbidden();
+    expect($own->fresh()->getTranslation('title', 'lt'))->toBe('Nauja');
+});
+
+test('articles are about institutions and types from an allowlist and show on the institution', function (): void {
+    $user = makeUser(Tenant::query()->firstOrFail());
+    $user->givePermissionTo(Permission::findOrCreate('knowledgeItems.update.*', 'web'));
+    $institution = Institution::factory()->create();
+    $type = InstitutionType::factory()->create();
+    $institution->types()->attach($type);
+    $direct = KnowledgeItem::factory()->withoutAudiences()->create();
+    $viaType = KnowledgeItem::factory()->withoutAudiences()->create();
+
+    asUser($user)->put(route('knowledgeItems.subjects.sync', $direct), ['subjects' => [
+        ['type' => 'institution', 'id' => $institution->id], ['type' => 'institution', 'id' => $institution->id],
+    ]])->assertRedirect();
+    asUser($user)->put(route('knowledgeItems.subjects.sync', $viaType), ['subjects' => [['type' => 'institution_type', 'id' => (string) $type->id]]])->assertRedirect();
+    asUser($user)->putJson(route('knowledgeItems.subjects.sync', $direct), ['subjects' => [['type' => 'user', 'id' => $user->id]]])
+        ->assertUnprocessable()->assertJsonValidationErrors('subjects.0.type');
+    asUser($user)->putJson(route('knowledgeItems.subjects.sync', $direct), ['subjects' => [['type' => 'institution', 'id' => 'missing']]])
+        ->assertUnprocessable()->assertJsonValidationErrors('subjects.0.id');
+    asUser(makeUser(Tenant::query()->firstOrFail()))->put(route('knowledgeItems.subjects.sync', $direct), ['subjects' => []])->assertForbidden();
+
+    expect($direct->subjects()->count())->toBe(1);
+    asUser($user)->get(route('knowledgeItems.show', $direct))->assertInertia(fn (Assert $page) => $page
+        ->where('subjects.0.type', 'institution')->where('subjects.0.url', route('institutions.show', $institution)));
+    asUser($user)->get(route('institutions.show', $institution))->assertInertia(fn (Assert $page) => $page
+        ->missing('knowledgePages')
+        ->loadDeferredProps('knowledge', fn (Assert $reload) => $reload->has('knowledgePages', 2)));
+});
+
+test('the wiki home and A–Ž index list every active article alphabetically', function (): void {
+    $user = makeUser(Tenant::query()->firstOrFail());
+    KnowledgeItem::factory()->withoutAudiences()->create(['title' => ['lt' => 'Žodis', 'en' => 'Word']]);
+    KnowledgeItem::factory()->withoutAudiences()->create(['title' => ['lt' => 'Čempionas', 'en' => 'Champion']]);
+    KnowledgeItem::factory()->withoutAudiences()->create(['title' => ['lt' => 'Akademija', 'en' => 'Academy']]);
+    KnowledgeItem::factory()->withoutAudiences()->create(['title' => ['lt' => 'Paslėpta', 'en' => 'Hidden'], 'is_active' => false]);
+
+    asUser($user)->get(route('knowledgeItems.alphabet'))->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->component('Admin/Knowledge/IndexKnowledgeAlphabet')->has('index', 3)
+        ->where('index.0.title', 'Akademija')->where('index.1.title', 'Čempionas')->where('index.2.title', 'Žodis'));
+    asUser($user)->get(route('knowledgeBase.show'))->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->component('Admin/Knowledge/ShowKnowledgeBase')->has('index', 3)->has('sections')->has('knowledge.items'));
 });
 
 test('knowledge libraries and forms expose their dedicated payloads to curators', function (): void {
@@ -217,19 +282,4 @@ test('knowledge libraries and forms expose their dedicated payloads to curators'
         ->has('item.sources')->missing('item.kind'));
     asUser($user)->get(route('learningSteps.index'))->assertOk()->assertInertia(fn (Assert $page) => $page
         ->where('canCreate', true)->whereType('steps.0.perTerm', 'boolean')->missing('steps.0.flags')->missing('sections'));
-});
-
-test('a term page leaves out hidden entries and only managers may edit it', function (): void {
-    $term = GlossaryTerm::factory()->create();
-    $visible = KnowledgeItem::factory()->create();
-    $hidden = KnowledgeItem::factory()->create(['is_active' => false]);
-    $term->knowledgeItems()->attach([$visible->id, $hidden->id]);
-    $member = makeUser(Tenant::query()->firstOrFail());
-    $manager = makeUser(Tenant::query()->firstOrFail());
-    $manager->givePermissionTo(Permission::findOrCreate('learningSteps.update.*', 'web'));
-
-    asUser($member)->get(route('glossaryTerms.show', $term))->assertOk()->assertInertia(fn (Assert $page) => $page
-        ->has('term.items', 1)->where('term.items.0.id', $visible->id)->where('canUpdate', false)->where('canDelete', false));
-    asUser($manager)->get(route('glossaryTerms.show', $term))->assertInertia(fn (Assert $page) => $page->where('canUpdate', true));
-    asUser($manager)->delete(route('glossaryTerms.destroy', $term))->assertRedirect(route('glossaryTerms.index'));
 });

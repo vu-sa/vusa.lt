@@ -4,7 +4,7 @@ use App\Actions\MergeDuties;
 use App\Enums\LearningImportance;
 use App\Enums\LearningStage;
 use App\Models\Duty;
-use App\Models\GlossaryTerm;
+use App\Models\KnowledgeItem;
 use App\Models\KnowledgeSection;
 use App\Models\LearningAudience;
 use App\Models\LearningStep;
@@ -77,18 +77,18 @@ test('a task keeps its button only while it stays a task', function (): void {
         ->and($step->fresh()->getTranslations('action_url'))->toBeEmpty();
 });
 
-test('a global curator can create update and delete a glossary term', function (): void {
+test('an article body keeps wiki links and their target id', function (): void {
     $user = makeUser(Tenant::query()->firstOrFail());
-    $user->givePermissionTo(Permission::findOrCreate('learningSteps.update.*', 'web'));
-    $payload = ['term' => ['lt' => 'Studijų programos komitetas', 'en' => 'Study programme committee'], 'abbreviation' => ['lt' => 'SPK', 'en' => 'SPC'], 'definition' => ['lt' => 'Programos komitetas.', 'en' => 'A programme committee.']];
-    asUser($user)->post(route('glossaryTerms.store'), $payload)->assertRedirect();
-    $term = GlossaryTerm::query()->latest()->firstOrFail();
-    expect($term->getTranslation('abbreviation', 'en'))->toBe('SPC');
-    $payload['definition']['lt'] = 'Institucijos laikotarpis.';
-    asUser($user)->patch(route('glossaryTerms.update', $term), $payload)->assertRedirect();
-    expect($term->fresh()->getTranslation('definition', 'lt'))->toBe('Institucijos laikotarpis.');
-    asUser($user)->delete(route('glossaryTerms.destroy', $term))->assertRedirect();
-    $this->assertDatabaseMissing('glossary_terms', ['id' => $term->id]);
+    $user->givePermissionTo(Permission::findOrCreate('knowledgeItems.create.*', 'web'));
+    $target = KnowledgeItem::factory()->withoutAudiences()->create();
+    asUser($user)->post(route('knowledgeItems.store'), [
+        'title' => ['lt' => 'Senatas'], 'summary' => ['lt' => 'Akademinis organas.'],
+        'description' => ['lt' => '<p>Žr. <a href="/mano/knowledge/items/'.$target->id.'" data-knowledge-id="'.$target->id.'" onclick="x()">Taryba</a></p>'],
+    ])->assertRedirect();
+
+    $article = KnowledgeItem::query()->where('created_by', $user->id)->sole();
+    expect($article->getTranslation('description', 'lt'))->toContain('data-knowledge-id="'.$target->id.'"')->not->toContain('onclick')
+        ->and($article->outgoingLinks()->sole()->is($target))->toBeTrue();
 });
 
 test('replacing audiences removes the previous target', function (): void {
@@ -104,14 +104,14 @@ test('replacing audiences removes the previous target', function (): void {
     expect($step->fresh()->audiences->sole()->tenant_id)->toBeNull();
 });
 
-test('members cannot mutate the library or glossary', function (): void {
+test('members cannot mutate the library or the wiki', function (): void {
     $user = makeUser(Tenant::query()->firstOrFail());
     $step = LearningStep::factory()->create();
-    $term = GlossaryTerm::factory()->create();
+    $article = KnowledgeItem::factory()->withoutAudiences()->create();
     asUser($user)->patch(route('learningSteps.update', $step), [])->assertForbidden();
     asUser($user)->delete(route('learningSteps.destroy', $step))->assertForbidden();
-    asUser($user)->post(route('glossaryTerms.store'), [])->assertForbidden();
-    asUser($user)->delete(route('glossaryTerms.destroy', $term))->assertForbidden();
+    asUser($user)->post(route('knowledgeItems.store'), [])->assertForbidden();
+    asUser($user)->delete(route('knowledgeItems.destroy', $article))->assertForbidden();
 });
 
 test('a tenant curator cannot move an editable step into another unit', function (): void {

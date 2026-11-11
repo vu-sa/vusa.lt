@@ -13,11 +13,12 @@ import LearningStepContent from '@/Features/Admin/Learning/LearningStepContent.v
 import { useStepProgress } from '@/Features/Admin/Learning/composables/useStepProgress';
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import { safeHref } from '@/Utils/safeHref';
-import type { LearningStepData, LearningCoordinator, LearningInstitutionContacts } from '@/Types/learning';
+import type { LearningStepData, LearningCoordinator, LearningInstitutionContacts, WikiPageSummary } from '@/Types/learning';
 
 const props = defineProps<{
   step: LearningStepData;
   inPath: boolean;
+  linkedPages?: Record<string, WikiPageSummary>;
   coordinators: LearningCoordinator[];
   institutionContacts: LearningInstitutionContacts[];
   canUpdate: boolean;
@@ -64,7 +65,7 @@ watch(() => props.step.id, () => {
 
     <div class="grid gap-10 sm:pl-14 lg:grid-cols-[minmax(0,1fr)_17rem] lg:gap-x-14" data-slot="step-body">
       <article class="min-w-0 max-w-prose lg:col-start-1 lg:row-start-1">
-        <LearningStepContent :step="step" :readonly="!inPath" :coordinators="coordinators" :institution-contacts="institutionContacts" />
+        <LearningStepContent :step="step" :readonly="!inPath" :coordinators="coordinators" :institution-contacts="institutionContacts" :linked-pages="linkedPages" />
       </article>
 
       <aside

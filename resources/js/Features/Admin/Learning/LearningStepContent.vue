@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { LearningCoordinator, LearningInstitutionContacts, LearningStepData } from '@/Types/learning';
+import WikiProse from '@/Features/Admin/Knowledge/WikiProse.vue';
+import type { LearningCoordinator, LearningInstitutionContacts, LearningStepData, WikiPageSummary } from '@/Types/learning';
 
 import BrowserNotificationSetup from './BrowserNotificationSetup.vue';
 import InstallationInstructions from './InstallationInstructions.vue';
@@ -11,14 +12,13 @@ withDefaults(defineProps<{
   readonly?: boolean;
   coordinators?: LearningCoordinator[];
   institutionContacts?: LearningInstitutionContacts[];
-}>(), { coordinators: () => [], institutionContacts: () => [] });
+  linkedPages?: Record<string, WikiPageSummary>;
+}>(), { coordinators: () => [], institutionContacts: () => [], linkedPages: () => ({}) });
 </script>
 
 <template>
   <div class="space-y-5">
-    <!-- Sanitized on write (LearningStep::sanitizedHtmlTranslations). -->
-    <!-- eslint-disable-next-line vue/no-v-html -->
-    <div v-if="step.description" class="rc-prose max-w-prose text-foreground [&_iframe]:aspect-video [&_iframe]:h-auto [&_iframe]:w-full" data-slot="step-description" v-html="step.description" />
+    <WikiProse v-if="step.description" :html="step.description" :pages="linkedPages" prose-class="max-w-prose text-foreground [&_iframe]:aspect-video [&_iframe]:h-auto [&_iframe]:w-full" data-slot="step-description" />
     <LearningAudienceNotes :notes="step.audienceNotes" />
 
     <LearningCoordinators v-if="step.key === 'meet_coordinator'" :coordinators="coordinators" />

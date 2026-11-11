@@ -11,14 +11,18 @@ import { safeHref } from '@/Utils/safeHref';
 
 const props = defineProps<{ step: LearningStepData | KnowledgeItemData }>();
 const isDocument = computed(() => 'source' in props.step);
-const href = computed(() => safeHref(isDocument.value ? ('source' in props.step ? props.step.source?.url : null) : ('actionUrl' in props.step ? props.step.actionUrl : null)));
+const sourceHref = computed(() => 'source' in props.step ? safeHref(props.step.source?.url) : null);
+// An article without a document is read on its own page.
+const href = computed(() => isDocument.value
+  ? sourceHref.value ?? route('knowledgeItems.show', props.step.id)
+  : safeHref('actionUrl' in props.step ? props.step.actionUrl : null));
 const label = computed(() => {
   if (isDocument.value) return $t('learning.path.read_document');
   return ('actionLabel' in props.step ? props.step.actionLabel : null) || $t('learning.path.open');
 });
 // Documents and other sites open in a new tab (↗); platform pages stay in the app (→).
 const opensElsewhere = computed(() => {
-  if (isDocument.value) return true;
+  if (isDocument.value) return Boolean(sourceHref.value);
   if (!href.value || typeof window === 'undefined') return false;
   return new URL(href.value, window.location.origin).origin !== window.location.origin;
 });

@@ -46,6 +46,12 @@
         @assign="openAssignSheet"
         @edit-term="openTermSheet"
       />
+      <Deferred data="knowledgePages">
+        <template #fallback>
+          <div class="h-24 animate-pulse border-y border-border bg-secondary" />
+        </template>
+        <WikiRecordBlock v-if="knowledgePages?.length" :pages="knowledgePages" class="mt-10" />
+      </Deferred>
     </template>
 
     <template v-if="canViewActivityRequests" #activityRequests>
@@ -237,7 +243,7 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, onUnmounted, ref, watch } from 'vue';
 import { useIntersectionObserver } from '@vueuse/core';
-import { WhenVisible, router, usePage } from '@inertiajs/vue3';
+import { Deferred, WhenVisible, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
   Calendar as CalendarIcon,
@@ -261,6 +267,7 @@ import { CadenceSection } from '@/Components/Cadences';
 import InstitutionDutiesSection from '@/Components/Institutions/InstitutionDutiesSection.vue';
 import InstitutionMeetingsCollection from '@/Components/Institutions/InstitutionMeetingsCollection.vue';
 import InstitutionOverviewSection from '@/Components/Institutions/InstitutionOverviewSection.vue';
+import WikiRecordBlock from '@/Features/Admin/Knowledge/WikiRecordBlock.vue';
 import { describeInstitutionActivity } from '@/Components/Institutions/institutionActivity';
 import { SecretariesSection } from '@/Components/Institutions';
 import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue';

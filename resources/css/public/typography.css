@@ -166,6 +166,16 @@
     @apply decoration-2;
   }
 
+  /* A wiki link (`[[`) stays ink with a dotted brand underline, so a link to another article
+     reads differently from one that leaves the page. */
+  a.wiki-link {
+    @apply text-foreground decoration-brand decoration-dotted decoration-2 underline-offset-4;
+  }
+
+  a.wiki-link:hover {
+    @apply decoration-solid;
+  }
+
   code {
     @apply rounded-sm bg-secondary px-1 py-0.5 text-[0.875em];
   }

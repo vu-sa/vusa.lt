@@ -57,7 +57,7 @@ class ResolveLearningPath
         $dutyTypes = self::ancestry(DutyType::all());
         $steps = LearningStep::query()->active()->ordered()->with(['audiences' => fn ($query) => $query->with(LearningAudience::LABEL_RELATIONS)])->get();
         $knowledge = KnowledgeItem::query()->active()->ordered()
-            ->with(['sources.document.institution.tenant', 'section', 'glossaryTerms', 'audiences' => fn ($query) => $query->with(LearningAudience::LABEL_RELATIONS)])
+            ->with(['sources.document.institution.tenant', 'section', 'audiences' => fn ($query) => $query->with(LearningAudience::LABEL_RELATIONS)])
             ->withCount(['comments' => fn ($query) => $query->notErased()])->get();
         $progress = LearningProgress::query()->whereIn('user_id', $users->pluck('id'))
             ->whereIn('progressable_type', [MorphMap::alias(LearningStep::class), MorphMap::alias(KnowledgeItem::class)])->get()->groupBy('user_id');

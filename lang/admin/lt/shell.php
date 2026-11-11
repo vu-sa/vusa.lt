@@ -10,6 +10,10 @@ return [
         'redirect' => 'Įrašų sujungimą dabar rasi sąrašo veiksmuose.',
     ],
     'workspaces' => [
+        'wiki' => [
+            'title' => 'Wiki',
+            'description' => 'Sąvokos, institucijos ir dokumentai',
+        ],
         'pradzia' => [
             'title' => 'Mano',
             'description' => 'Tavo darbai, užduotys ir pranešimai',
@@ -94,16 +98,13 @@ return [
             'path' => 'Mano kelias',
             'library' => 'Biblioteka',
         ],
-        'ziniu_baze' => [
-            'overview' => 'Žinių bazė',
-            'glossary' => 'Sąvokos',
-            'library' => 'Biblioteka',
-        ],
     ],
 
     'sections' => [
         'kelias' => 'Mano kelias',
-        'ziniu_baze' => 'Žinių bazė',
+        'wiki' => 'Wiki',
+        'rodykle' => 'Rodyklė A–Ž',
+        'wiki_biblioteka' => 'Biblioteka',
         'apzvalga' => 'Apžvalga',
         'padaliniu_apzvalga' => 'Padaliniai',
         'atstovai' => 'Atstovai',
@@ -158,7 +159,9 @@ return [
 
     'section_descriptions' => [
         'kelias' => 'Tavo kadencijos žingsniai ir pasiruošimas posėdžiams.',
-        'ziniu_baze' => 'Ką verta žinoti: dokumentai, pristatymai ir sąvokos.',
+        'wiki' => 'Kas yra kas VU SA ir universitete – ir kaip viskas susiję',
+        'rodykle' => 'Visi straipsniai pagal abėcėlę',
+        'wiki_biblioteka' => 'Visi straipsniai, jų auditorijos ir būsena',
         'uzduotys' => 'Tau priskirti darbai ir terminai',
         'atsakomybes' => 'Tavo pareigybės ir ką jos leidžia',
         'veiklos_uzklausos' => 'Tau gautos užklausos apie institucijų veiklą',
@@ -211,7 +214,7 @@ return [
 
     'actions' => [
         'new_learning_step' => ['title' => 'Naujas kelio žingsnis', 'description' => 'Veiksmas ar pasiruošimas posėdžiui'],
-        'new_knowledge_item' => ['title' => 'Nauja žinių bazės medžiaga', 'description' => 'Dokumentas, pristatymas ar nuoroda atstovams'],
+        'new_knowledge_item' => ['title' => 'Naujas žinių bazės straipsnis', 'description' => 'Sąvoka, dokumentas ar paaiškinimas atstovams'],
         'new_institution_type' => ['title' => 'Naujas institucijos tipas', 'description' => 'Institucijų grupavimas, atstovavimas ir ryšiai'],
         'new_duty_type' => ['title' => 'Naujas pareigybės tipas', 'description' => 'Pareigybių grupavimas ir suteikiamos atsakomybės'],
         'merge' => [

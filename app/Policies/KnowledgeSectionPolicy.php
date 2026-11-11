@@ -12,7 +12,8 @@ class KnowledgeSectionPolicy
 
     public function create(User $user): bool
     {
-        return $this->authorizer->scope($user, 'learningSteps.create.padalinys')->granted;
+        return $this->authorizer->scope($user, 'knowledgeItems.create.padalinys')->granted
+            || $this->authorizer->scope($user, 'learningSteps.create.padalinys')->granted;
     }
 
     public function update(User $user, KnowledgeSection $section): bool
@@ -27,8 +28,13 @@ class KnowledgeSectionPolicy
 
     public function target(User $user, ?int $tenantId, string $ability): bool
     {
-        $scope = $this->authorizer->scope($user, "learningSteps.{$ability}.padalinys");
+        foreach (['knowledgeItems', 'learningSteps'] as $resource) {
+            $scope = $this->authorizer->scope($user, "{$resource}.{$ability}.padalinys");
+            if ($scope->isAllScope || ($scope->granted && $tenantId !== null && $scope->tenantIds()->contains($tenantId))) {
+                return true;
+            }
+        }
 
-        return $scope->isAllScope || ($scope->granted && $tenantId !== null && $scope->tenantIds()->contains($tenantId));
+        return false;
     }
 }

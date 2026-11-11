@@ -116,6 +116,7 @@ return [
         ],
         'resources' => [
             'learningSteps' => 'Learning steps',
+            'knowledgeItems' => 'Wiki articles',
             'settings' => 'Settings',
         ],
     ],

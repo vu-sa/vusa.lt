@@ -26,7 +26,24 @@
       <Input id="step-title" v-model="form.title[activeLocale]" :class="['h-11', fieldSurfaceClass]" data-testid="step-title" />
     </FormFieldWrapper>
 
-    <LearningSourceField v-model="form.sources" :locale="activeLocale" :errors="form.errors" :documents="item?.source_documents" />
+    <FormFieldWrapper
+      id="article-abbreviation"
+      :label="$t('learning_library.fields.abbreviation')"
+      :hint="$t('learning_library.fields.abbreviation_hint')"
+      :error="form.errors[`abbreviation.${activeLocale}`]"
+    >
+      <Input id="article-abbreviation" v-model="form.abbreviation[activeLocale]" maxlength="32" :class="['h-11 max-w-48', fieldSurfaceClass]" data-testid="article-abbreviation" />
+    </FormFieldWrapper>
+
+    <FormFieldWrapper
+      id="article-summary"
+      :label="$t('learning_library.fields.summary')"
+      :hint="$t('learning_library.fields.summary_hint')"
+      :error="form.errors[`summary.${activeLocale}`] || form.errors.summary"
+      :required="activeLocale === 'lt'"
+    >
+      <Textarea id="article-summary" v-model="form.summary[activeLocale]" rows="3" maxlength="600" :class="fieldSurfaceClass" data-testid="article-summary" />
+    </FormFieldWrapper>
 
     <FormFieldWrapper
       id="step-description"
@@ -34,10 +51,26 @@
       :hint="$t('learning_library.fields.knowledge_description_hint')"
       :error="form.errors[`description.${activeLocale}`] || form.errors.description"
     >
-      <TiptapEditor :key="activeLocale" v-model="form.description[activeLocale]" tools="description" html data-testid="step-description" />
+      <div class="space-y-2">
+        <SpotlightPopover
+          :title="$t('learning.wiki.link_spotlight_title')"
+          :description="$t('learning.wiki.link_spotlight_body')"
+          :is-dismissed="linkSpotlight.isDismissed.value"
+          @dismiss="linkSpotlight.dismiss()"
+        >
+          <p class="inline-flex items-center gap-2 text-xs text-muted-foreground" data-slot="wiki-link-hint">
+            <kbd class="border border-border bg-background px-1.5 font-mono text-[11px] font-bold text-foreground">[[</kbd>
+            {{ $t('learning.wiki.link_button') }}
+          </p>
+        </SpotlightPopover>
+        <TiptapEditor :key="activeLocale" v-model="form.description[activeLocale]" tools="description" html :extensions="[wikiLinks()]" data-testid="step-description" />
+      </div>
     </FormFieldWrapper>
 
+    <LearningSourceField v-model="form.sources" :locale="activeLocale" :errors="form.errors" :documents="item?.source_documents" />
+
     <LearningAudienceList
+      v-if="canManageAudiences"
       v-model="form.audiences"
       kind="knowledge"
       :locale="activeLocale"
@@ -52,6 +85,17 @@
 
     <template #aside>
       <FormPanel :title="$t('learning_library.sections.placement')" :icon="SlidersHorizontal" data-testid="panel-additional">
+        <FormFieldWrapper id="article-tenant" :label="$t('learning_library.fields.page_tenant')" :hint="$t('learning_library.fields.page_tenant_hint')" :error="form.errors.tenant_id">
+          <NativeSelect
+            id="article-tenant"
+            v-model="form.tenant_id"
+            :placeholder-value="null"
+            :placeholder-selectable="canPublishEverywhere"
+            :options="pageTenants.map(tenant => ({ value: tenant.id, label: tenant.shortname }))"
+            :placeholder="$t('learning.wiki.scope_everywhere')"
+            data-testid="article-tenant"
+          />
+        </FormFieldWrapper>
         <FormFieldWrapper id="step-section" :label="$t('learning_library.fields.section')" :hint="$t('learning_library.fields.section_hint')" :error="form.errors.knowledge_section_id">
           <SingleSelect v-if="sectionOptions.length > 16" v-model="selectedSection" :options="sectionOptions" label-field="title" value-field="id" :placeholder="$t('learning_library.audiences.no_section')" />
           <NativeSelect v-else id="step-section" v-model="form.knowledge_section_id" :placeholder-value="null" placeholder-selectable :options="sectionOptions.map(section => ({ value: section.id, label: section.title }))" :placeholder="$t('learning_library.audiences.no_section')" data-testid="step-section" />
@@ -62,7 +106,7 @@
         </FormFieldWrapper>
       </FormPanel>
       <FormPanel :title="$t('learning_library.sections.visibility')" :icon="Eye" flush>
-        <FormToggleRow id="step-per-term" v-model="form.per_term" :label="$t('learning_library.fields.knowledge_per_term')" :hint="$t('learning_library.fields.knowledge_per_term_hint')" data-testid="step-per-term" />
+        <FormToggleRow v-if="canManageAudiences" id="step-per-term" v-model="form.per_term" :label="$t('learning_library.fields.knowledge_per_term')" :hint="$t('learning_library.fields.knowledge_per_term_hint')" data-testid="step-per-term" />
         <FormToggleRow id="step-is-active" v-model="form.is_active" :label="$t('learning_library.fields.is_active')" :hint="$t('learning_library.fields.knowledge_is_active_hint')" data-testid="step-is-active" />
       </FormPanel>
     </template>
@@ -95,10 +139,14 @@ import { computed, ref } from 'vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog, FormPanel, FormToggleRow } from '@/Components/Patterns';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
+import { Textarea } from '@/Components/ui/textarea';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
+import { createWikiLinkExtension } from '@/Features/Admin/Knowledge/wikiLinkExtension';
 import { NativeSelect } from '@/Components/ui/native-select';
 import { SingleSelect } from '@/Components/ui/single-select';
 import { LearningAudienceType } from '@/Types/enums';
@@ -113,10 +161,13 @@ type LocaleKey = 'lt' | 'en';
 
 interface KnowledgeItemFormState {
   title: { lt: string; en: string };
+  abbreviation: { lt: string; en: string };
+  summary: { lt: string; en: string };
   description: { lt: string; en: string };
   sources: LearningSourceDraft;
   audiences: LearningAudienceDraft[];
   knowledge_section_id: string | null;
+  tenant_id: number | null;
   per_term: boolean;
   order: number;
   is_active: boolean;
@@ -132,13 +183,23 @@ const props = withDefaults(defineProps<{
   responsibilities?: { id: string; title: string }[];
   sections?: LearningSectionOption[];
   canDelete?: boolean;
+  canManageAudiences?: boolean;
+  pageTenants?: LearningTenantOption[];
+  canPublishEverywhere?: boolean;
 }>(), {
   item: null,
   audienceTypes: () => Object.values(LearningAudienceType).filter(type => type !== LearningAudienceType.Purpose),
   canTargetEverywhere: false,
   tenants: () => [], institutionTypes: () => [], dutyTypes: () => [], responsibilities: () => [], sections: () => [],
   canDelete: false,
+  canManageAudiences: false,
+  pageTenants: () => [],
+  canPublishEverywhere: false,
 });
+
+// One instance per editor: each locale's editor is recreated with its own.
+const wikiLinks = () => createWikiLinkExtension();
+const linkSpotlight = useFeatureSpotlight('wiki-links-v1');
 
 const activeLocale = ref<LocaleKey>('lt');
 const isEdit = computed(() => Boolean(props.item?.id));
@@ -149,10 +210,13 @@ const source = (locale: LocaleKey) => ({ document_id: props.item?.sources?.[loca
 
 const form = useForm<KnowledgeItemFormState>({
   title: { lt: props.item?.title.lt ?? '', en: props.item?.title.en ?? '' },
+  abbreviation: { lt: props.item?.abbreviation.lt ?? '', en: props.item?.abbreviation.en ?? '' },
+  summary: { lt: props.item?.summary.lt ?? '', en: props.item?.summary.en ?? '' },
   description: { lt: props.item?.description.lt ?? '', en: props.item?.description.en ?? '' },
   sources: { lt: source('lt'), en: source('en') },
   audiences: props.item?.audiences.map(audience => ({ ...audience, description: { ...audience.description } })) ?? [],
   knowledge_section_id: props.item?.knowledge_section_id ?? null,
+  tenant_id: props.item?.tenant_id ?? (!props.canPublishEverywhere && props.pageTenants.length === 1 ? props.pageTenants[0]!.id : null),
   per_term: props.item?.per_term ?? false,
   order: props.item?.order ?? 0,
   is_active: props.item?.is_active ?? true,
@@ -160,6 +224,8 @@ const form = useForm<KnowledgeItemFormState>({
 
 const fieldIds: Record<string, string> = {
   'title': 'step-title', 'title.lt': 'step-title', 'title.en': 'step-title',
+  'summary': 'article-summary', 'summary.lt': 'article-summary', 'summary.en': 'article-summary',
+  'abbreviation.lt': 'article-abbreviation', 'abbreviation.en': 'article-abbreviation', 'tenant_id': 'article-tenant',
   'description': 'step-description', 'description.lt': 'step-description', 'description.en': 'step-description',
   'audiences': 'step-audiences', 'knowledge_section_id': 'step-section', 'order': 'step-order',
   'sources.lt': 'step-source', 'sources.lt.document_id': 'step-source', 'sources.lt.url': 'source-url-lt',
@@ -167,8 +233,8 @@ const fieldIds: Record<string, string> = {
 };
 
 const missingLocaleCounts = computed<Record<LocaleKey, number>>(() => ({
-  lt: form.title.lt.trim() === '' ? 1 : 0,
-  en: (form.title.en.trim() === '' ? 1 : 0) + (hasRichText(form.description.lt) && !hasRichText(form.description.en) ? 1 : 0),
+  lt: (form.title.lt.trim() === '' ? 1 : 0) + (form.summary.lt.trim() === '' ? 1 : 0),
+  en: (form.title.en.trim() === '' ? 1 : 0) + (form.summary.lt.trim() !== '' && form.summary.en.trim() === '' ? 1 : 0) + (hasRichText(form.description.lt) && !hasRichText(form.description.en) ? 1 : 0),
 }));
 
 const pageTitle = computed(() => {
@@ -195,10 +261,13 @@ function payload(data: KnowledgeItemFormState): Record<string, unknown> {
 
   return {
     title: data.title,
+    abbreviation: data.abbreviation,
+    summary: data.summary,
     description: data.description,
     sources,
-    audiences: data.audiences.map(({ label, stage, ...audience }) => audience),
+    ...(props.canManageAudiences ? { audiences: data.audiences.map(({ label, stage, ...audience }) => audience) } : {}),
     knowledge_section_id: data.knowledge_section_id,
+    tenant_id: data.tenant_id,
     per_term: data.per_term,
     order: data.order,
     is_active: data.is_active,

@@ -367,7 +367,9 @@ Route::get('knowledge/documents/search', [KnowledgeItemController::class, 'searc
 Route::post('knowledge/items/{knowledgeItem}/progress', [KnowledgeItemProgressController::class, 'store'])->name('knowledgeItems.progress');
 Route::get('knowledge/items/{knowledgeItem}/thumbnail', [KnowledgeItemController::class, 'thumbnail'])->name('knowledgeItems.thumbnail');
 Route::get('knowledge/items/{knowledgeItem}/open', [KnowledgeItemController::class, 'openSource'])->name('knowledgeItems.openSource');
-Route::put('knowledge/items/{knowledgeItem}/glossary', [KnowledgeItemController::class, 'syncGlossary'])->name('knowledgeItems.glossary.sync');
+Route::get('knowledge/a-z', [KnowledgeBaseController::class, 'alphabet'])->name('knowledgeItems.alphabet');
+Route::get('knowledge/link-options', [KnowledgeItemController::class, 'linkOptions'])->name('knowledgeItems.linkOptions');
+Route::put('knowledge/items/{knowledgeItem}/subjects', [KnowledgeItemController::class, 'syncSubjects'])->name('knowledgeItems.subjects.sync');
 Route::resource('knowledge/sections', KnowledgeSectionController::class)->parameters(['sections' => 'knowledgeSection'])->names('knowledgeSections')->only(['store', 'update', 'destroy']);
 Route::resource('knowledge/items', KnowledgeItemController::class)->parameters(['items' => 'knowledgeItem'])->names('knowledgeItems')->except('index');
 Route::get('learning', [LearningPathController::class, 'show'])->name('learningPath.show');
@@ -377,4 +379,3 @@ Route::get('learning/reps/{user}', fn (string $user) => redirect()->route('repre
 Route::get('learning/library', [LearningStepController::class, 'index'])->name('learningSteps.index');
 Route::post('learning/steps/{learningStep}/progress', [LearningStepProgressController::class, 'store'])->name('learningSteps.progress');
 Route::resource('learning/steps', LearningStepController::class)->parameters(['steps' => 'learningStep'])->names('learningSteps')->except('index');
-Route::resource('knowledge/glossary', GlossaryTermController::class)->parameters(['glossary' => 'glossaryTerm'])->names('glossaryTerms')->only(['index', 'show', 'store', 'update', 'destroy']);

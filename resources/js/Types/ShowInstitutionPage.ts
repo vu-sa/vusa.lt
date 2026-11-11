@@ -1,3 +1,4 @@
+import type { WikiPageSummary } from '@/Types/learning';
 import type { ActionType, InstitutionActivityAnswer, InstitutionActivityCampaign, InstitutionActivityStatus, InstitutionRelationKind, InstitutionScope, MeetingType } from '@/Types/enums';
 
 export interface InstitutionUser {
@@ -268,6 +269,7 @@ export interface InstitutionStudyProgram {
 
 /** The props of `Pages/Admin/People/ShowInstitution.vue`, as `InstitutionController::show` sends them. */
 export interface ShowInstitutionPageProps {
+  knowledgePages?: WikiPageSummary[];
   overviewDuties?: InstitutionPageDuty[];
   upcomingMeeting?: InstitutionPageMeeting | null;
   institution: InstitutionPageData;

@@ -29,7 +29,8 @@ class KnowledgeItemRequest extends FormRequest
     {
         return [
             'knowledge_section_id' => ['nullable', 'exists:knowledge_sections,id'],
-            'audiences' => ['required', 'array', 'min:1'],
+            'tenant_id' => ['nullable', 'integer', 'exists:tenants,id'],
+            'audiences' => ['sometimes', 'array'],
             'audiences.*' => ['array:id,type,source_id,tenant_id,importance,stage,description,order'],
             'audiences.*.id' => ['nullable', 'string'],
             'audiences.*.type' => ['required', Rule::enum(LearningAudienceType::class)],
@@ -43,14 +44,19 @@ class KnowledgeItemRequest extends FormRequest
             'title' => ['required', 'array:lt,en'],
             'title.lt' => ['required', 'string', 'max:255'],
             'title.en' => ['nullable', 'string', 'max:255'],
+            'abbreviation' => ['nullable', 'array:lt,en'],
+            'abbreviation.*' => ['nullable', 'string', 'max:32'],
+            'summary' => ['required', 'array:lt,en'],
+            'summary.lt' => ['required', 'string', 'max:600'],
+            'summary.en' => ['nullable', 'string', 'max:600'],
             'description' => ['nullable', 'array:lt,en'],
             'description.*' => ['nullable', 'string', 'max:20000'],
             'per_term' => ['sometimes', 'boolean'],
             'order' => ['sometimes', 'integer', 'min:0'],
             'is_active' => ['sometimes', 'boolean'],
             'reviewed_at' => ['nullable', 'date'],
-            'sources' => ['required', 'array:lt,en'],
-            'sources.lt' => ['required', 'array:document_id,url'],
+            'sources' => ['sometimes', 'array:lt,en'],
+            'sources.lt' => ['required_with:sources.en', 'array:document_id,url'],
             'sources.*' => ['array:document_id,url'],
             'sources.*.document_id' => ['nullable', 'integer', 'exists:documents,id'],
             'sources.*.url' => ['nullable', 'url:http,https', 'max:2048'],
@@ -64,14 +70,26 @@ class KnowledgeItemRequest extends FormRequest
                 return;
             }
             $data = $validator->validated();
-            $ability = $this->route('knowledgeItem') ? 'update' : 'create';
-            abort_unless(app(KnowledgeItemPolicy::class)->manageAudiences($this->user(), $data['audiences'], $ability), 403);
+            $item = $this->route('knowledgeItem');
+            $ability = $item instanceof KnowledgeItem ? 'update' : 'create';
+            $policy = app(KnowledgeItemPolicy::class);
+            $tenantId = $data['tenant_id'] ?? null;
+            if (! $item instanceof KnowledgeItem || $item->tenant_id !== $tenantId) {
+                abort_unless($policy->targetTenant($this->user(), $tenantId, $ability), 403);
+            }
+            if (array_key_exists('audiences', $data)) {
+                abort_unless($policy->canManageAudiences($this->user(), $ability)
+                    && $policy->manageAudiences($this->user(), $data['audiences'], $ability)
+                    && (! $item instanceof KnowledgeItem || $policy->manageAudiences($this->user(), $item->audiences, $ability)), 403);
+            }
             if (filled($data['knowledge_section_id'] ?? null)) {
                 $section = KnowledgeSection::findOrFail($data['knowledge_section_id']);
                 abort_unless(app(KnowledgeSectionPolicy::class)->target($this->user(), $section->tenant_id, $ability), 403);
             }
-            $this->validateAudienceSources($validator, $data);
-            $this->validateSources($validator, $data['sources']);
+            if (array_key_exists('audiences', $data)) {
+                $this->validateAudienceSources($validator, $data);
+            }
+            $this->validateSources($validator, $data['sources'] ?? []);
         }];
     }
 

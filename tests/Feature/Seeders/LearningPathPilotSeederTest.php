@@ -2,7 +2,6 @@
 
 use App\Enums\LearningAudienceType;
 use App\Models\Document;
-use App\Models\GlossaryTerm;
 use App\Models\InstitutionType;
 use App\Models\KnowledgeItem;
 use App\Models\LearningStep;
@@ -31,13 +30,15 @@ test('seeds the pilot once, links archive documents by title and replaces audien
     expect($step->section->getTranslation('title', 'en'))->toBe('Introductory training');
     expect($step->audiences)->toHaveCount(2);
     expect($unitStep->sourceFor('lt')->document_id)->toBe($unitRegulations->id);
-    expect(KnowledgeItem::query()->where('key', 'pilot_spk_regulations')->sole()->glossaryTerms)->toHaveCount(5);
+    expect(KnowledgeItem::query()->where('key', 'pilot_spk_regulations')->sole()->outgoingLinks)->toHaveCount(5);
+    $skvc = KnowledgeItem::query()->where('abbreviation->lt', 'SKVC')->sole();
+    expect($skvc->audiences)->toBeEmpty()->and($skvc->incomingLinks)->not->toBeEmpty();
 
     $step->update(['order' => 99, 'title' => ['lt' => 'Kuratoriaus pavadinimas']]);
-    $counts = [LearningStep::query()->count(), KnowledgeItem::query()->count(), GlossaryTerm::query()->count()];
+    $counts = [LearningStep::query()->count(), KnowledgeItem::query()->count()];
     $this->seed(LearningPathPilotSeeder::class);
 
-    expect([LearningStep::query()->count(), KnowledgeItem::query()->count(), GlossaryTerm::query()->count()])->toBe($counts);
+    expect([LearningStep::query()->count(), KnowledgeItem::query()->count()])->toBe($counts);
     expect($step->fresh()->order)->toBe(10);
     expect($step->fresh()->getTranslation('title', 'lt'))->toBe('VU SA įstatai');
     expect($step->fresh()->audiences)->toHaveCount(2);

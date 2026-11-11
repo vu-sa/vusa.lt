@@ -3,7 +3,6 @@
 use App\Enums\ResponsibilityPurpose;
 use App\Models\Cadence;
 use App\Models\Duty;
-use App\Models\GlossaryTerm;
 use App\Models\Institution;
 use App\Models\InstitutionSecretary;
 use App\Models\KnowledgeItem;
@@ -25,7 +24,7 @@ test('members can open learning pages with their typed payloads', function (stri
 })->with([
     'path' => ['learningPath.show', 'Admin/Learning/ShowLearningPath', 'path.stages'],
     'documents' => ['knowledgeBase.show', 'Admin/Knowledge/ShowKnowledgeBase', 'knowledge'],
-    'glossary' => ['glossaryTerms.index', 'Admin/Knowledge/IndexGlossaryTerm', 'terms'],
+    'alphabet' => ['knowledgeItems.alphabet', 'Admin/Knowledge/IndexKnowledgeAlphabet', 'index'],
 ]);
 
 test('a member can open a library step and its presenter contract', function (): void {
@@ -50,26 +49,30 @@ test('global curators can open create and edit stubs', function (): void {
     asUser($user)->get(route('learningSteps.edit', $step))->assertOk()->assertInertia(fn (Assert $page) => $page->component('Admin/Learning/EditLearningStep')->has('step.title.lt'));
 });
 
-test('a step record exposes localized glossary terms and the members own progress eligibility', function (): void {
+test('an article record exposes its abbreviation, summary and the members own progress eligibility', function (): void {
     $user = makeUser(Tenant::query()->firstOrFail());
-    $step = KnowledgeItem::factory()->create(['reviewed_at' => '2026-11-01']);
-    $term = GlossaryTerm::factory()->create([
-        'term' => ['lt' => 'Kvorumas', 'en' => 'Quorum'],
-        'definition' => ['lt' => 'Būtinas narių skaičius.', 'en' => 'The required number of members.'],
+    $item = KnowledgeItem::factory()->create([
+        'reviewed_at' => '2026-11-01',
+        'abbreviation' => ['lt' => 'SKVC', 'en' => 'SKVC'],
+        'summary' => ['lt' => 'Vertina studijų kryptis.', 'en' => 'Assesses study fields.'],
     ]);
-    $step->glossaryTerms()->attach($term);
 
-    asUser($user)->get(route('knowledgeItems.show', $step))->assertOk()->assertInertia(fn (Assert $page) => $page
+    asUser($user)->get(route('knowledgeItems.show', $item))->assertOk()->assertInertia(fn (Assert $page) => $page
         ->where('inPath', true)
         ->where('item.reviewedAt', '2026-11-01')
-        ->has('item.glossaryTerms', 1)
-        ->where('item.glossaryTerms.0.id', $term->id)
-        ->where('item.glossaryTerms.0.term', 'Kvorumas')
-        ->where('item.glossaryTerms.0.definition', 'Būtinas narių skaičius.')
-        ->whereType('item.glossaryTerms.0.id', 'string')
-        ->whereType('item.glossaryTerms.0.term', 'string')
-        ->whereType('item.glossaryTerms.0.definition', 'string')
+        ->where('item.abbreviation', 'SKVC')
+        ->where('item.summary', 'Vertina studijų kryptis.')
+        ->has('linkedPages')->has('related')->has('subjects')
         ->has('coordinators')->has('institutionContacts'));
+});
+
+test('a step description previews the wiki articles it links to', function (): void {
+    $user = makeUser(Tenant::query()->firstOrFail());
+    $article = KnowledgeItem::factory()->withoutAudiences()->create(['summary' => ['lt' => 'Trumpai.', 'en' => 'Briefly.']]);
+    $step = LearningStep::factory()->create(['description' => ['lt' => '<p><a href="/x" data-knowledge-id="'.$article->id.'">Straipsnis</a></p>', 'en' => '']]);
+
+    asUser($user)->get(route('learningSteps.show', $step))->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where("linkedPages.{$article->id}.summary", 'Trumpai.'));
 });
 
 test('institution contacts contain only a representatives own institutions and current term secretaries', function (): void {
@@ -119,5 +122,5 @@ test('library records outside a members path do not offer personal progress', fu
     $user = makeUser(Tenant::query()->firstOrFail());
     $step = LearningStep::factory()->forTenant(Tenant::factory()->create())->create();
     asUser($user)->get(route('learningSteps.show', $step))->assertOk()->assertInertia(fn (Assert $page) => $page
-        ->where('inPath', false)->missing('step.glossaryTerms')->where('step.reviewedAt', null));
+        ->where('inPath', false)->where('step.reviewedAt', null));
 });

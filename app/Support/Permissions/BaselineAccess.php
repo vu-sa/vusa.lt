@@ -27,6 +27,7 @@ final class BaselineAccess
         'tasks',
         'comments',
         'learningSteps',
+        'knowledgeItems',
         'reservations',
         'users',
     ];
@@ -42,6 +43,7 @@ final class BaselineAccess
         'comments.create.*',
         'comments.read.*',
         'learningSteps.read.*',
+        'knowledgeItems.read.*',
         'comments.update.*',
         'comments.delete.own',
         'resources.read.*',

@@ -233,6 +233,7 @@ export enum ModelEnum {
     FORM = 'form',
     GOAL = 'goal',
     LEARNING_STEP = 'learning_step',
+    KNOWLEDGE_ITEM = 'knowledge_item',
     INSTITUTION = 'institution',
     INSTITUTION_TYPE = 'institution_type',
     MAILING_LIST = 'mailing_list',

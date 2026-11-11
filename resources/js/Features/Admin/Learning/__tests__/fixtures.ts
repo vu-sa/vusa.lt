@@ -45,17 +45,18 @@ export function editStep(overrides: Partial<LearningStepEditData> = {}): Learnin
 
 export function knowledge(overrides: Partial<KnowledgeItemData> = {}): KnowledgeItemData {
   return {
-    id: 'knowledge-1', title: 'Read the guide', description: 'Prepare to represent students.',
+    id: 'knowledge-1', title: 'Read the guide', abbreviation: '', summary: 'What the guide covers.', description: 'Prepare to represent students.',
     audienceLabel: 'Pagrindas', audienceNotes: [], section: null, importance: LearningImportance.Recommended,
     source: null, state: 'pending', autoCompleted: false, completedAt: null,
-    skippable: true, insightsCount: 2, reviewedAt: null, perTerm: false, glossaryTerms: [], ...overrides,
+    skippable: true, insightsCount: 2, reviewedAt: null, perTerm: false, ...overrides,
   };
 }
 
 export function editKnowledge(overrides: Partial<KnowledgeItemEditData> = {}): KnowledgeItemEditData {
   return {
-    id: 'knowledge-1', title: { lt: 'LT pavadinimas', en: 'EN title' }, description: { lt: '', en: '' },
-    knowledge_section_id: null, audiences: [audience({ stage: null })], per_term: false, order: 1,
+    id: 'knowledge-1', title: { lt: 'LT pavadinimas', en: 'EN title' }, abbreviation: { lt: '', en: '' },
+    summary: { lt: 'LT santrauka', en: 'EN summary' }, description: { lt: '', en: '' },
+    knowledge_section_id: null, tenant_id: null, audiences: [audience({ stage: null })], per_term: false, order: 1,
     is_active: true, sources: {}, source_documents: {}, ...overrides,
   };
 }

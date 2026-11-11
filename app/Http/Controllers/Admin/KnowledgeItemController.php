@@ -11,7 +11,7 @@ use App\Enums\LearningImportance;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\KnowledgeItemRequest;
 use App\Http\Requests\SearchLearningDocumentsRequest;
-use App\Http\Requests\SyncKnowledgeItemGlossaryRequest;
+use App\Http\Requests\SyncKnowledgeItemSubjectsRequest;
 use App\Jobs\RefreshDocumentThumbnailJob;
 use App\Models\Document;
 use App\Models\DutyType;
@@ -21,10 +21,11 @@ use App\Models\KnowledgeSection;
 use App\Models\LearningAudience;
 use App\Models\Role;
 use App\Models\User;
+use App\Policies\KnowledgeItemPolicy;
+use App\Services\Authorization\PermissionScope;
 use App\Services\Documents\DocumentPreviewService;
 use App\Services\KnowledgeBasePresenter;
 use App\Services\Learning\ResolvedLearningItem;
-use App\Services\LearningAdminPresenter;
 use App\Services\LearningInstitutionContactsPresenter;
 use App\Services\ModelAuthorizer;
 use Illuminate\Http\JsonResponse;
@@ -46,11 +47,11 @@ class KnowledgeItemController extends AdminController
 
         return Inertia::render('Admin/Knowledge/IndexKnowledgeItem', [
             'items' => KnowledgeBasePresenter::library(app()->getLocale(), $request->user()),
-            'sections' => $this->sectionOptions($request->user(), $this->authorizer->scope($request->user(), 'learningSteps.update.padalinys')->granted ? 'update' : 'create'),
+            'sections' => $this->sectionOptions($request->user(), $this->sectionScope($request->user(), 'update')->granted ? 'update' : 'create'),
             'audienceTypes' => array_map(fn (LearningAudienceType $type): string => $type->value, LearningAudienceType::cases()),
             'sectionScopes' => collect(['create', 'update'])->mapWithKeys(fn (string $ability): array => [$ability => [
-                'canTargetEverywhere' => $this->authorizer->scope($request->user(), "learningSteps.{$ability}.padalinys")->isAllScope,
-                'tenants' => GetTenantsForUpserts::execute("learningSteps.{$ability}.padalinys", $this->authorizer)->all(),
+                'canTargetEverywhere' => $this->sectionScope($request->user(), $ability)->isAllScope,
+                'tenants' => GetTenantsForUpserts::execute($this->sectionPermission($request->user(), $ability), $this->authorizer)->all(),
             ]])->all(),
             'canCreate' => $request->user()->can('create', KnowledgeItem::class),
         ]);
@@ -59,17 +60,20 @@ class KnowledgeItemController extends AdminController
     public function show(Request $request, KnowledgeItem $knowledgeItem): Response
     {
         $this->authorize('view', $knowledgeItem);
-        $knowledgeItem->load(['sources.document.institution.tenant', 'section', 'glossaryTerms', 'audiences' => fn ($query) => $query->with(LearningAudience::LABEL_RELATIONS)])->loadCount(['comments' => fn ($query) => $query->notErased()]);
+        $knowledgeItem->load(['sources.document.institution.tenant', 'section', 'audiences' => fn ($query) => $query->with(LearningAudience::LABEL_RELATIONS)])->loadCount(['comments' => fn ($query) => $query->notErased()]);
         $path = ResolveLearningPath::execute($request->user());
         $item = $path->knowledge->first(fn (ResolvedLearningItem $item): bool => $item->item->id === $knowledgeItem->id) ?? new ResolvedLearningItem($knowledgeItem, importance: $knowledgeItem->audiences->first()?->importance ?? LearningImportance::Recommended, audienceLabel: $knowledgeItem->audiences->first()?->label(app()->getLocale()) ?? '');
 
+        $canUpdate = $request->user()->can('update', $knowledgeItem);
+
         return Inertia::render('Admin/Knowledge/ShowKnowledgeItem', [
             'item' => KnowledgeBasePresenter::item($item, app()->getLocale()),
+            ...KnowledgeBasePresenter::pageContext($knowledgeItem, app()->getLocale()),
             'inPath' => $path->contains($knowledgeItem),
             'coordinators' => GetUserCoordinators::execute($request->user()),
             'institutionContacts' => LearningInstitutionContactsPresenter::forUser($request->user(), app()->getLocale()),
-            'canUpdate' => $request->user()->can('update', $knowledgeItem),
-            ...($request->user()->can('update', $knowledgeItem) ? ['glossaryOptions' => LearningAdminPresenter::glossaryOptions(app()->getLocale())] : []),
+            'canUpdate' => $canUpdate,
+            ...($canUpdate ? ['subjectOptions' => $this->subjectOptions()] : []),
         ]);
     }
 
@@ -116,7 +120,7 @@ class KnowledgeItemController extends AdminController
         return Inertia::render('Admin/Knowledge/EditKnowledgeItem', [
             'item' => KnowledgeBasePresenter::edit($knowledgeItem->load(['sources.document', 'audiences' => fn ($query) => $query->with(LearningAudience::LABEL_RELATIONS)])),
             'canDelete' => $request->user()->can('delete', $knowledgeItem),
-            ...$this->formOptions($request->user(), 'update'),
+            ...$this->formOptions($request->user(), 'update', $knowledgeItem),
         ]);
     }
 
@@ -129,7 +133,7 @@ class KnowledgeItemController extends AdminController
                 'reviewed_at' => now(),
                 'created_by' => $request->user()->id,
             ]);
-            SyncLearningAudiences::execute($step, $request->validated('audiences'));
+            SyncLearningAudiences::execute($step, $request->validated('audiences', []));
             $this->syncSources($step, $request->validated('sources', []));
 
             return $step;
@@ -144,7 +148,7 @@ class KnowledgeItemController extends AdminController
         DB::transaction(function () use ($request, $knowledgeItem): void {
             $knowledgeItem->update([
                 ...$request->safe()->except(['sources', 'audiences']),
-                'knowledge_section_id' => $request->validated('knowledge_section_id'), 'reviewed_at' => now(),
+                'knowledge_section_id' => $request->validated('knowledge_section_id'), 'tenant_id' => $request->validated('tenant_id'), 'reviewed_at' => now(),
             ]);
             if (array_key_exists('audiences', $request->validated())) {
                 SyncLearningAudiences::execute($knowledgeItem, $request->validated('audiences'));
@@ -186,20 +190,48 @@ class KnowledgeItemController extends AdminController
         ])->values()->all());
     }
 
-    public function syncGlossary(SyncKnowledgeItemGlossaryRequest $request, KnowledgeItem $knowledgeItem): RedirectResponse
+    /** Every active page, for the editor's `[[` link picker. */
+    public function linkOptions(): JsonResponse
+    {
+        $this->authorize('manage', KnowledgeItem::class);
+
+        return response()->json(KnowledgeBasePresenter::index(app()->getLocale()));
+    }
+
+    public function syncSubjects(SyncKnowledgeItemSubjectsRequest $request, KnowledgeItem $knowledgeItem): RedirectResponse
     {
         $this->authorize('update', $knowledgeItem);
-        $knowledgeItem->glossaryTerms()->sync($request->validated('term_ids') ?? []);
+        DB::transaction(function () use ($request, $knowledgeItem): void {
+            $knowledgeItem->subjects()->delete();
+            foreach (collect($request->validated('subjects'))->unique(fn (array $subject): string => $subject['type'].':'.$subject['id']) as $subject) {
+                $knowledgeItem->subjects()->create(['subject_type' => $subject['type'], 'subject_id' => (string) $subject['id']]);
+            }
+        });
 
         return back()->with('success', $this->entityMessage('updated', 'knowledgeItem'));
     }
 
-    private function formOptions(User $user, string $ability): array
+    /** @return array{institutionTypes: list<array{id: int, title: string, parent_id: int|null}>, dutyTypes: list<array{id: int, title: string, parent_id: int|null}>} */
+    private function subjectOptions(): array
+    {
+        $locale = app()->getLocale();
+        $options = fn ($types): array => $types->map(fn ($type): array => ['id' => $type->id, 'title' => (string) $type->getTranslation('title', $locale), 'parent_id' => $type->parent_id])
+            ->values()->all();
+
+        return ['institutionTypes' => $options(InstitutionType::query()->get(['id', 'title', 'parent_id'])), 'dutyTypes' => $options(DutyType::query()->get(['id', 'title', 'parent_id']))];
+    }
+
+    private function formOptions(User $user, string $ability, ?KnowledgeItem $item = null): array
     {
         $locale = app()->getLocale();
         $scope = $this->authorizer->scope($user, "learningSteps.{$ability}.padalinys");
+        $policy = app(KnowledgeItemPolicy::class);
+        $knowledgeScope = $this->authorizer->scope($user, "knowledgeItems.{$ability}.padalinys");
 
         return [
+            'canManageAudiences' => $policy->canManageAudiences($user, $ability) && ($item === null || $policy->manageAudiences($user, $item->audiences, $ability)),
+            'pageTenants' => GetTenantsForUpserts::execute(($knowledgeScope->granted ? 'knowledgeItems' : 'learningSteps').".{$ability}.padalinys", $this->authorizer)->all(),
+            'canPublishEverywhere' => $knowledgeScope->isAllScope || $scope->isAllScope,
             'audienceTypes' => array_values(array_map(fn (LearningAudienceType $type): string => $type->value,
                 array_filter(LearningAudienceType::cases(), fn (LearningAudienceType $type): bool => $type !== LearningAudienceType::Purpose))),
             'canTargetEverywhere' => $scope->isAllScope,
@@ -217,9 +249,23 @@ class KnowledgeItemController extends AdminController
         ];
     }
 
+    /** Sections belong to the wiki, so its editors manage them; path builders keep the access they had. */
+    private function sectionPermission(User $user, string $ability): string
+    {
+        $knowledge = $this->authorizer->scope($user, "knowledgeItems.{$ability}.padalinys");
+        $learning = $this->authorizer->scope($user, "learningSteps.{$ability}.padalinys");
+
+        return ($knowledge->isAllScope || ($knowledge->granted && ! $learning->isAllScope) ? 'knowledgeItems' : 'learningSteps').".{$ability}.padalinys";
+    }
+
+    private function sectionScope(User $user, string $ability): PermissionScope
+    {
+        return $this->authorizer->scope($user, $this->sectionPermission($user, $ability));
+    }
+
     private function sectionOptions(User $user, string $ability): array
     {
-        $scope = $this->authorizer->scope($user, "learningSteps.{$ability}.padalinys");
+        $scope = $this->sectionScope($user, $ability);
 
         return KnowledgeSection::query()->with('tenant')->when(! $scope->isAllScope,
             fn ($query) => $query->whereIn('tenant_id', $scope->tenantIds()))->orderBy('order')->orderBy('id')->get()

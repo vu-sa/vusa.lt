@@ -4,7 +4,6 @@ use App\Enums\DocumentStatus;
 use App\Enums\LearningProgressStatus;
 use App\Enums\LearningStepKind;
 use App\Models\Document;
-use App\Models\GlossaryTerm;
 use App\Models\KnowledgeItem;
 use App\Models\KnowledgeSection;
 use App\Models\LearningProgress;
@@ -15,15 +14,13 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
 
-test('documents contains only knowledge in the members resolved path with progress sources and glossary', function (): void {
+test('documents contains only knowledge in the members resolved path with progress and sources', function (): void {
     $this->freezeTime();
     $member = makeUser(Tenant::query()->firstOrFail());
     LearningStep::query()->update(['is_active' => false]);
     $document = Document::factory()->create(['status' => DocumentStatus::Published, 'anonymous_url' => 'https://example.test/guide', 'sharepoint_modified_at' => null]);
     $knowledge = KnowledgeItem::factory()->create();
     $knowledge->sources()->create(['locale' => 'lt', 'document_id' => $document->id]);
-    $term = GlossaryTerm::factory()->create(['term' => ['lt' => 'Kvorumas', 'en' => 'Quorum']]);
-    $knowledge->glossaryTerms()->attach($term);
     LearningProgress::factory()->for($member)->create([
         'progressable_type' => $knowledge->getMorphClass(), 'progressable_id' => $knowledge->id, 'status' => LearningProgressStatus::Done, 'completed_at' => now(),
     ]);
@@ -40,7 +37,6 @@ test('documents contains only knowledge in the members resolved path with progre
         ->whereType('knowledge.items.0.description', 'string')
         ->where('knowledge.items.0.state', 'done')
         ->where('knowledge.items.0.source.url', route('documents.show', $document))
-        ->where('knowledge.items.0.glossaryTerms.0.id', $term->id)
         ->missing('learningNavigation'));
 });
 

@@ -56,7 +56,7 @@ final class MorphMap
         'learning_step' => Models\LearningStep::class,
         'knowledge_item_source' => Models\KnowledgeItemSource::class,
         'learning_progress' => Models\LearningProgress::class,
-        'glossary_term' => Models\GlossaryTerm::class,
+        'knowledge_item_subject' => Models\KnowledgeItemSubject::class,
         'institution' => Models\Institution::class,
         'institution_secretary' => Models\InstitutionSecretary::class,
         'institution_activity_request' => Models\InstitutionActivityRequest::class,

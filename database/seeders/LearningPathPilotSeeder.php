@@ -8,7 +8,6 @@ use App\Enums\LearningStage;
 use App\Enums\LearningStepKind;
 use App\Enums\ResponsibilityPurpose;
 use App\Models\Document;
-use App\Models\GlossaryTerm;
 use App\Models\InstitutionType;
 use App\Models\KnowledgeItem;
 use App\Models\KnowledgeSection;
@@ -16,6 +15,7 @@ use App\Models\LearningStep;
 use App\Models\Tenant;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class LearningPathPilotSeeder extends Seeder
 {
@@ -209,11 +209,11 @@ class LearningPathPilotSeeder extends Seeder
             ? KnowledgeItem::query()->firstOrNew(['key' => $definition['key']])
             : LearningStep::query()->firstOrNew(['key' => $definition['key']]);
 
+        $html = array_map(fn (string $text): string => '<p>'.nl2br(e($text), false).'</p>', $definition['description']);
         $step->fill([
-            ...($knowledge ? [] : ['kind' => $definition['kind']]),
+            ...($knowledge ? ['summary' => $definition['description'], 'description' => null] : ['kind' => $definition['kind'], 'description' => $html]),
             'order' => $definition['order'],
             'title' => $definition['title'],
-            'description' => array_map(fn (string $text): string => '<p>'.nl2br(e($text), false).'</p>', $definition['description']),
         ]);
         $step->save();
         $step->audiences()->delete();
@@ -261,25 +261,56 @@ class LearningPathPilotSeeder extends Seeder
         }
     }
 
+    /** Terms are short pages; the pilot documents and terms link to them in their bodies. */
     private function seedGlossary(): void
     {
-        $links = [
+        $pages = [];
+        foreach ($this->glossaryTerms() as $definition) {
+            $page = KnowledgeItem::query()->firstOrNew(['key' => 'pilot_term_'.Str::slug($definition['term']['lt'], '_')]);
+            $page->fill(['title' => $definition['term'], 'abbreviation' => $definition['abbreviation'] ?? null, 'summary' => $definition['definition'], 'order' => 0]);
+            $page->save();
+            $pages[$definition['term']['lt']] = $page;
+        }
+
+        $link = fn (string $title, string $locale): string => isset($pages[$title])
+            ? '<a href="'.e(route('knowledgeItems.show', $pages[$title])).'" data-knowledge-id="'.$pages[$title]->id.'">'.e((string) $pages[$title]->getTranslation('title', $locale)).'</a>'
+            : e($title);
+        $paragraph = fn (array $titles, string $locale): string => '<p>'.($locale === 'lt' ? 'Susijusios sąvokos: ' : 'Related terms: ')
+            .implode(', ', array_map(fn (string $title): string => $link($title, $locale), $titles)).'.</p>';
+
+        foreach ($this->documentTerms() as $key => $titles) {
+            KnowledgeItem::query()->where('key', $key)->first()?->update(['description' => ['lt' => $paragraph($titles, 'lt'), 'en' => $paragraph($titles, 'en')]]);
+        }
+        foreach ($this->termLinks() as $title => $titles) {
+            ($pages[$title] ?? null)?->update(['description' => ['lt' => $paragraph($titles, 'lt'), 'en' => $paragraph($titles, 'en')]]);
+        }
+
+        $spkType = InstitutionType::query()->where('slug', self::SPK_TYPE)->value('id');
+        if ($spkType !== null && isset($pages['Studijų programos komitetas'])) {
+            $pages['Studijų programos komitetas']->subjects()->firstOrCreate(['subject_type' => 'institution_type', 'subject_id' => (string) $spkType]);
+        }
+    }
+
+    /** @return array<string, list<string>> */
+    private function documentTerms(): array
+    {
+        return [
             'pilot_spk_regulations' => ['Studijų programos komitetas', 'Kvorumas', 'Socialiniai partneriai', 'Studijų rezultatai', 'Kamieninis akademinis padalinys'],
             'pilot_vu_statute' => ['Senatas', 'Taryba', 'Kamieninis akademinis padalinys'],
             'pilot_law_on_higher_education' => ['Akreditacija', 'Studijų kokybės vertinimo centras'],
             'pilot_vusa_statute' => ['Kadencija'],
         ];
+    }
 
-        foreach ($this->glossaryTerms() as $definition) {
-            $term = GlossaryTerm::query()->where('term->lt', $definition['term']['lt'])->first()
-                ?? GlossaryTerm::query()->create($definition);
-            foreach ($links as $key => $terms) {
-                if (in_array($definition['term']['lt'], $terms, true)) {
-                    $item = KnowledgeItem::query()->where('key', $key)->first();
-                    $item?->glossaryTerms()->syncWithoutDetaching([$term->id]);
-                }
-            }
-        }
+    /** @return array<string, list<string>> */
+    private function termLinks(): array
+    {
+        return [
+            'Studijų programos komitetas' => ['Studijų programos aprašas', 'Studijų rezultatai', 'Kvorumas', 'Socialiniai partneriai'],
+            'Studijų programos aprašas' => ['Studijų rezultatai', 'Kreditas', 'Dalyko (modulio) aprašas'],
+            'Akreditacija' => ['Studijų kokybės vertinimo centras'],
+            'Senatas' => ['Taryba', 'Kvorumas'],
+        ];
     }
 
     /** @return list<array{term: array{lt: string, en: string}, abbreviation?: array{lt?: string, en?: string}, definition: array{lt: string, en: string}}> */

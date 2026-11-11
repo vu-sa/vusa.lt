@@ -53,6 +53,9 @@ class RoleCentralStudentRepresentativeCoordinatorSeeder extends Seeder
             'learningSteps.create.*',
             'learningSteps.update.*',
             'learningSteps.delete.*',
+            'knowledgeItems.create.*',
+            'knowledgeItems.update.*',
+            'knowledgeItems.delete.*',
         ]);
     }
 }

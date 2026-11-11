@@ -108,21 +108,6 @@ export interface LearningCoordinator {
   institutions: string[];
 }
 
-export interface GlossaryTermData {
-  id: string;
-  term: string;
-  abbreviation: string;
-  definition: string;
-  itemsCount: number;
-  items: { id: string; title: string; url: string }[];
-  priority: { rank: number; importance: LearningImportance | null; sectionOrder: number; itemOrder: number };
-  translations: {
-    term: { lt: string; en: string };
-    abbreviation?: { lt: string; en: string };
-    definition: { lt: string; en: string };
-  };
-}
-
 export interface LearningInstitutionContacts {
   id: string;
   title: string;
@@ -156,6 +141,8 @@ export interface LearningDocumentsData {
 export interface KnowledgeItemData {
   id: string;
   title: string;
+  abbreviation: string;
+  summary: string;
   description: string;
   audienceLabel: string;
   audienceNotes: { label: string; description: string }[];
@@ -169,14 +156,16 @@ export interface KnowledgeItemData {
   insightsCount: number;
   reviewedAt: string | null;
   perTerm: boolean;
-  glossaryTerms: Pick<GlossaryTermData, 'id' | 'term' | 'abbreviation' | 'definition'>[];
 }
 
 export interface KnowledgeItemEditData {
   id: string;
   title: { lt: string; en: string };
+  abbreviation: { lt: string; en: string };
+  summary: { lt: string; en: string };
   description: { lt: string; en: string };
   knowledge_section_id: string | null;
+  tenant_id: number | null;
   audiences: LearningAudienceEditData[];
   per_term: boolean;
   order: number;
@@ -186,13 +175,31 @@ export interface KnowledgeItemEditData {
 }
 
 export interface KnowledgeLibraryItem extends Omit<LearningLibraryStep, 'kind'> {
+  abbreviation: string;
+  hasSource: boolean;
   section: { id: string; title: string } | null;
   flags: LearningCuratorFlag[];
 }
 
-export interface GlossaryTermPageData extends Omit<GlossaryTermData, 'priority' | 'itemsCount' | 'items'> {
-  items: {
-    id: string; title: string; url: string; inPath: boolean; importance: LearningImportance | null;
-    state: KnowledgeItemData['state']; section: KnowledgeItemData['section']; source: LearningSource | null;
-  }[];
+/** A wiki article as a link target: popovers, related lists, search and the A–Ž index. */
+export interface WikiPageSummary {
+  id: string;
+  title: string;
+  abbreviation: string;
+  summary: string;
+  url: string;
+}
+
+export interface WikiIndexEntry extends WikiPageSummary {
+  sectionId: string | null;
+  updatedAt: string | null;
+}
+
+export type WikiSubjectType = 'institution' | 'institution_type' | 'duty_type';
+
+export interface WikiSubject {
+  id: string;
+  type: WikiSubjectType;
+  title: string;
+  url: string | null;
 }

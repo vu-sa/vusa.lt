@@ -109,6 +109,8 @@ class HtmlSanitizerService
             ->allowElement('sup')
             ->allowElement('span', ['class'])
             ->allowElement('a', ['href', 'class', 'target'])
+            // Wiki links: the id is what the knowledge base indexes and previews.
+            ->allowAttribute('data-knowledge-id', 'a')
             // AccessibleImage
             ->allowElement('img', ['src', 'alt', 'title', 'width', 'height', 'class', 'loading'])
             ->allowAttribute('data-align', 'img')

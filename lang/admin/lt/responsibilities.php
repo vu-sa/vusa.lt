@@ -116,6 +116,7 @@ return [
         ],
         'resources' => [
             'learningSteps' => 'Mokymosi žingsniai',
+            'knowledgeItems' => 'Wiki straipsniai',
             'settings' => 'Nustatymai',
         ],
     ],

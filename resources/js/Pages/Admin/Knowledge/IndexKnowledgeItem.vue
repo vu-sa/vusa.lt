@@ -1,7 +1,7 @@
 <template>
   <CollectionPage
     collection="knowledgeItems"
-    :eyebrow="$t('shell.workspaces.pradzia.title')"
+    :eyebrow="$t('shell.workspaces.wiki.title')"
     :title="$t('learning.pages.knowledge_library')"
     :lead="$t('learning_library.knowledge.lead')"
     :source
@@ -38,12 +38,13 @@
             <Link :href="route('knowledgeItems.show', item.id)" class="font-medium text-foreground hover:text-brand">
               {{ item.title }}
             </Link>
+            <span v-if="item.abbreviation" class="text-xs font-bold tracking-wide text-muted-foreground">{{ item.abbreviation }}</span>
             <StatusBadge v-if="!item.isActive" :status="bannerStatuses.inactive" voice="sentence" data-testid="step-inactive-badge" />
           </div>
           <div class="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
-            <span>· {{ audienceSummary(item) }}</span>
+            <span v-if="item.audiences.length">· {{ audienceSummary(item) }}</span>
             <span v-if="item.section">· {{ item.section.title }}</span>
-            <StatusBadge :status="learningStepImportances[highestImportance(item)]" voice="sentence" />
+            <StatusBadge v-if="highestImportance(item)" :status="learningStepImportances[highestImportance(item)!]" voice="sentence" />
             <template v-if="item.canUpdate && item.flags.length">
               <StatusBadge
                 v-for="flag in item.flags"
@@ -64,6 +65,7 @@
           <Link :href="route('knowledgeItems.show', item.id)" class="font-medium text-foreground hover:text-brand">
             {{ item.title }}
           </Link>
+          <span v-if="item.abbreviation" class="text-xs font-bold tracking-wide text-muted-foreground">{{ item.abbreviation }}</span>
           <StatusBadge v-if="!item.isActive" :status="bannerStatuses.inactive" voice="sentence" data-testid="step-inactive-badge" />
         </div>
         <div v-if="item.canUpdate && item.flags.length" class="flex flex-wrap items-center gap-1.5">
@@ -78,7 +80,10 @@
       </div>
       <span v-else-if="column.key === 'audience'" class="text-sm text-muted-foreground">{{ audienceSummary(item) || '—' }}</span>
       <span v-else-if="column.key === 'section'" class="text-sm text-muted-foreground">{{ item.section?.title || '—' }}</span>
-      <StatusBadge v-else-if="column.key === 'importance'" :status="learningStepImportances[highestImportance(item)]" voice="sentence" />
+      <template v-else-if="column.key === 'importance'">
+        <StatusBadge v-if="highestImportance(item)" :status="learningStepImportances[highestImportance(item)!]" voice="sentence" />
+        <span v-else class="text-sm text-muted-foreground">—</span>
+      </template>
     </template>
 
     <template #empty>
@@ -135,8 +140,9 @@ const sectionsOpen = ref(false);
 function audienceSummary(step: KnowledgeLibraryItem) {
   return step.audiences.slice(0, 2).map(audience => audience.label).join(', ') + (step.audiences.length > 2 ? ` +${step.audiences.length - 2}` : '');
 }
-function highestImportance(step: KnowledgeLibraryItem): LearningImportance {
-  return Object.values(LearningImportance).find(importance => step.audiences.some(audience => audience.importance === importance)) ?? LearningImportance.Optional;
+/** Null for a reference article that is on nobody's path. */
+function highestImportance(step: KnowledgeLibraryItem): LearningImportance | null {
+  return Object.values(LearningImportance).find(importance => step.audiences.some(audience => audience.importance === importance)) ?? null;
 }
 
 const canCreateStep = computed(() => Boolean(props.canCreate));
@@ -144,8 +150,8 @@ const stepKey = (step: KnowledgeLibraryItem) => step.id;
 
 const source = useLocalCollectionSource<KnowledgeLibraryItem>({
   items: toRef(props, 'items'),
-  searchText: step => [step.title, ...step.audiences.map(audience => audience.label), step.section?.title],
-  defaultSort: 'order:asc',
+  searchText: step => [step.title, step.abbreviation, ...step.audiences.map(audience => audience.label), step.section?.title],
+  defaultSort: 'title:asc',
   sortOptions: () => [
     { value: 'order:asc', label: $t('learning_library.library.sort.order_asc'), by: step => step.order },
     { value: 'title:asc', label: $t('learning_library.library.sort.title_asc'), by: step => step.title },
@@ -154,14 +160,15 @@ const source = useLocalCollectionSource<KnowledgeLibraryItem>({
   facets: [
     { field: 'audience', label: $t('learning_library.library.filters.audience'), get: step => step.audienceTypes.filter(type => props.audienceTypes.includes(type)), valueLabel: value => $t(`learning.audience_types.${value}`) },
     { field: 'section', label: $t('learning_library.library.filters.section'), get: step => step.section?.id, valueLabel: value => props.sections.find(section => section.id === value)?.title[locale.value] || props.items.find(step => step.section?.id === value)?.section?.title || value },
-    { field: 'importance', label: $t('learning_library.library.filters.importance'), get: step => highestImportance(step), valueLabel: value => $t(`learning.importance.${value}`) },
+    { field: 'importance', label: $t('learning_library.library.filters.importance'), get: step => highestImportance(step) ?? undefined, valueLabel: value => $t(`learning.importance.${value}`) },
+    { field: 'kind', label: $t('learning_library.knowledge.terms_filter'), get: step => step.hasSource ? undefined : 'term', valueLabel: () => $t('learning_library.knowledge.terms_filter') },
   ],
 });
 
-// Importance is the main split here; audience and section stay in the filter panel.
-const quickFilters = computed<CollectionQuickFilter[]>(() => [LearningImportance.Essential, LearningImportance.Recommended].flatMap((value) => {
-  const option = source.facets.value.find(facet => facet.field === 'importance')?.values.find(candidate => candidate.value === value);
-  return option ? [{ id: `importance:${value}`, label: quickFilterLabel(option.label, option.count ?? 0), active: option.isSelected }] : [];
+// Terms and importance are the main splits here; audience and section stay in the filter panel.
+const quickFilters = computed<CollectionQuickFilter[]>(() => ([['kind', 'term'], ['importance', LearningImportance.Essential], ['importance', LearningImportance.Recommended]] as const).flatMap(([field, value]) => {
+  const option = source.facets.value.find(facet => facet.field === field)?.values.find(candidate => candidate.value === value);
+  return option ? [{ id: `${field}:${value}`, label: quickFilterLabel(option.label, option.count ?? 0), active: option.isSelected }] : [];
 }));
 
 function toggleQuickFilter(id: string): void {

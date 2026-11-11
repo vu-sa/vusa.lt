@@ -25,6 +25,7 @@ use App\Models\PublicUrl;
 use App\Services\InstitutionActivityStatusService;
 use App\Services\InstitutionDeactivationService;
 use App\Services\InstitutionPresenter;
+use App\Services\KnowledgeBasePresenter;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use App\Settings\MeetingSettings;
@@ -156,6 +157,7 @@ class InstitutionController extends AdminController
                 ? InstitutionPresenter::management($institution) : null),
             'assignmentTerms' => Inertia::optional(fn () => $request->user()->can('update', $institution) ? InstitutionPresenter::assignmentTerms($institution) : []),
             'subscription' => fn () => InstitutionPresenter::subscription($institution, $request->user()),
+            'knowledgePages' => Inertia::defer(fn () => KnowledgeBasePresenter::forInstitution($institution, app()->getLocale()), 'knowledge'),
         ]);
     }
 

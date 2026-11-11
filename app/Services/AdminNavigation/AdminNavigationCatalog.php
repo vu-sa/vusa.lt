@@ -91,6 +91,7 @@ class AdminNavigationCatalog
     {
         $workspaces = array_filter([
             $this->resolveWorkspace($this->pradziaWorkspace(), $user),
+            $this->resolveWorkspace($this->wikiWorkspace(), $user),
             $this->resolveWorkspace($this->atstovavimasWorkspace(), $user),
             $this->resolveWorkspace($this->rezervacijosWorkspace(), $user),
             $this->resolveWorkspace($this->svetaineWorkspace(), $user),
@@ -185,17 +186,28 @@ class AdminNavigationCatalog
                     new SectionLink('path', 'shell.section_children.kelias.path', 'learningPath.show', Visibility::always()),
                     new SectionLink('library', 'shell.section_children.kelias.library', 'learningSteps.index', Visibility::can('manage', LearningStep::class)),
                 ]),
-                new Section('ziniu_baze', 'shell.sections.ziniu_baze', 'knowledgeBase.show', [], null, Visibility::always(), matches: ['knowledgeBase.*', 'knowledgeItems.*', 'glossaryTerms.*'], descriptionKey: 'shell.section_descriptions.ziniu_baze', children: [
-                    new SectionLink('overview', 'shell.section_children.ziniu_baze.overview', 'knowledgeBase.show', Visibility::always()),
-                    new SectionLink('glossary', 'shell.section_children.ziniu_baze.glossary', 'glossaryTerms.index', Visibility::always()),
-                    new SectionLink('library', 'shell.section_children.ziniu_baze.library', 'knowledgeItems.index', Visibility::can('manage', KnowledgeItem::class)),
-                ]),
                 new Section('uzduotys', 'shell.sections.uzduotys', 'tasks.index', [], 'task', Visibility::always(), matches: ['tasks.index'], descriptionKey: 'shell.section_descriptions.uzduotys'),
                 new Section('atsakomybes', 'shell.sections.atsakomybes', 'profile.roles', [], null, Visibility::always(), descriptionKey: 'shell.section_descriptions.atsakomybes'),
                 new Section('veiklos_uzklausos', 'shell.sections.veiklos_uzklausos', 'profile.activityRequests', [], null, Visibility::always(), descriptionKey: 'shell.section_descriptions.veiklos_uzklausos'),
             ],
             createActions: [
                 CreateAction::route('new_learning_step', 'shell.actions.new_learning_step.title', 'shell.actions.new_learning_step.description', 'learning_step', 'learningSteps.create', Visibility::can('create', LearningStep::class)),
+            ],
+        );
+    }
+
+    private function wikiWorkspace(): Workspace
+    {
+        return new Workspace(
+            key: 'wiki',
+            labelKey: 'shell.workspaces.wiki.title',
+            descriptionKey: 'shell.workspaces.wiki.description',
+            sections: [
+                new Section('wiki', 'shell.sections.wiki', 'knowledgeBase.show', [], null, Visibility::always(), matches: ['knowledgeBase.*', 'knowledgeItems.show', 'knowledgeItems.edit', 'knowledgeItems.create'], descriptionKey: 'shell.section_descriptions.wiki'),
+                new Section('rodykle', 'shell.sections.rodykle', 'knowledgeItems.alphabet', [], null, Visibility::always(), descriptionKey: 'shell.section_descriptions.rodykle'),
+                new Section('wiki_biblioteka', 'shell.sections.wiki_biblioteka', 'knowledgeItems.index', [], 'knowledge_item', Visibility::can('manage', KnowledgeItem::class), descriptionKey: 'shell.section_descriptions.wiki_biblioteka'),
+            ],
+            createActions: [
                 CreateAction::route('new_knowledge_item', 'shell.actions.new_knowledge_item.title', 'shell.actions.new_knowledge_item.description', 'knowledge_item', 'knowledgeItems.create', Visibility::can('create', KnowledgeItem::class)),
             ],
         );

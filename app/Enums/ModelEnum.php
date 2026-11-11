@@ -29,6 +29,7 @@ enum ModelEnum: string
     case FORM = 'form';
     case GOAL = 'goal';
     case LEARNING_STEP = 'learning_step';
+    case KNOWLEDGE_ITEM = 'knowledge_item';
     case INSTITUTION = 'institution';
     case INSTITUTION_TYPE = 'institution_type';
     case MAILING_LIST = 'mailing_list';
@@ -101,6 +102,7 @@ enum ModelEnum: string
             'studySets' => ['padalinys', '*'],
             'quickLinks' => ['padalinys', '*'],
             'learningSteps' => ['padalinys', '*'],
+            'knowledgeItems' => ['padalinys', '*'],
             'problems' => ['padalinys', '*'],
             // `own` is reserved for a member's personal goals; no policy reads it yet.
             'goals' => ['own', 'padalinys', '*'],

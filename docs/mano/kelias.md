@@ -30,7 +30,7 @@ tests:
 
 **Mano kelias** padeda pasiruošti pareigoms: ką padaryti ir kada. Kelias sudaromas pagal tavo
 pareigas, todėl Studijų programos komiteto atstovas mato kitus žingsnius nei Senato narys. Ką verta
-perskaityti, rasi [Žinių bazėje](/mano/ziniu-baze).
+perskaityti, rasi [Wiki](/wiki/straipsniai).
 
 <ChangelogNote date="2026-11-11" title="Mano kelias">
 
@@ -41,8 +41,9 @@ paaiškinimu, kam jų reikia, ir pažanga, kurią mato koordinatorius.
 
 ## Susitarimai
 
-- **Skaitiniai – žinių bazėje.** Dokumentai, pristatymai ir nuorodos kuriami
-  [Žinių bazėje](/mano/ziniu-baze), o kelyje lieka tai, ką reikia padaryti.
+- **Skaitiniai – Wiki.** Sąvokos, dokumentai ir pristatymai aprašomi
+  [Wiki straipsniuose](/wiki/straipsniai), o kelyje lieka tai, ką reikia padaryti. Žingsnio aprašyme
+  galima nurodyti į straipsnį (`[[`).
 - **Kiekvienas žingsnis paaiškina, kam jis reikalingas.** Aprašyme pirmiausia
   parašyk, kodėl verta – tai svarbiau už patį failą. Prireikus pridėk sąrašą, paveikslėlį ar YouTube vaizdo įrašą.
 - **Esminių žingsnių nedaug.** Vienai auditorijai užtenka kelių esminių žingsnių; visa kita –
@@ -61,10 +62,10 @@ Jei atitinki kelias auditorijas, rodoma didžiausia svarba ir tos auditorijos et
 svarbioms auditorijoms pirmiau pasirenkamas ankstesnis etapas, tada mažesnis eilės numeris.
 Matai visų tau tinkančių auditorijų paaiškinimus. Būsimos pareigos įskaitomos iš karto.
 
-### Žinių bazė ir pasiruošimas posėdžiui {#dokumentai-ir-skyriai}
+### Wiki ir pasiruošimas posėdžiui {#dokumentai-ir-skyriai}
 
-Kadencijos etapų juostoje yra tik veiksmai. Kelio viršuje rodomas [Žinių bazės](/mano/ziniu-baze)
-blokas: kiek būtinos medžiagos jau perskaityta ir vienas siūlomas skaitinys. Pasiruošimas posėdžiui
+Kadencijos etapų juostoje yra tik veiksmai. Kelio viršuje rodomas [Wiki](/wiki/straipsniai#pradzia)
+blokas: kiek būtinų straipsnių jau perskaityta ir vienas siūlomas skaitinys. Pasiruošimas posėdžiui
 rodomas kelio apačioje, atskirai kiekvienai tau tinkančiai auditorijai. Vienos auditorijos veiksmai
 numeruojami iš eilės ir neturi pažangos žymų.
 
@@ -73,7 +74,7 @@ numeruojami iš eilės ir neturi pažangos žymų.
 Veiksmai išdėstyti pagal kadencijos etapus: **Prieš pradedant**, **Pirmieji mėnesiai** (pirmos 60
 dienų), **Visą kadenciją** ir **Kadencijos pabaiga** (paskutinės 45 dienos). Dabartinis etapas
 pažymėtas „dabar“. Visi etapai ir jų žingsniai rodomi iš karto. Žingsnio kairėje esantis langelis
-žymi pažangą; varnelę galima uždėti ir nuimti tiesiog eilutėje. Eilutėje rodomas tik pavadinimas – paaiškinimai, diegimo ir pranešimų informacija pasiekiami paspaudus pavadinimą. Veiksmo mygtukas eilutės dešinėje rodo svarbą: esminio žingsnio – VU SA spalvos, rekomenduojamo – rėmelis didžiosiomis raidėmis, papildomo – paprastas tekstas. Žingsnio puslapyje pažangą galima žymėti prie pavadinimo, o veiksmų mygtukai pateikiami antraštės dešinėje. Žingsniai įžvalgų neturi – jos rašomos prie [Žinių bazės](/mano/ziniu-baze) medžiagos. Koordinatoriaus nuotrauka, pareigos ir mygtukas „Parašyti“ rodomi tiesiai prie susipažinimo žingsnio.
+žymi pažangą; varnelę galima uždėti ir nuimti tiesiog eilutėje. Eilutėje rodomas tik pavadinimas – paaiškinimai, diegimo ir pranešimų informacija pasiekiami paspaudus pavadinimą. Veiksmo mygtukas eilutės dešinėje rodo svarbą: esminio žingsnio – VU SA spalvos, rekomenduojamo – rėmelis didžiosiomis raidėmis, papildomo – paprastas tekstas. Žingsnio puslapyje pažangą galima žymėti prie pavadinimo, o veiksmų mygtukai pateikiami antraštės dešinėje. Žingsniai įžvalgų neturi – jos rašomos prie [Wiki straipsnių](/wiki/straipsniai). Koordinatoriaus nuotrauka, pareigos ir mygtukas „Parašyti“ rodomi tiesiai prie susipažinimo žingsnio.
 
 Svarba nusako turinį, ne terminą: **Esminis** (būtina žinoti), **Rekomenduojamas**, **Papildomas**.
 Esminio žingsnio praleisti negalima.
@@ -96,7 +97,7 @@ laukia žingsnis „Perduok patirtį kitam atstovui“: susitik su įpėdiniu ar
 ### Skiltys {#skirtukai}
 
 Mokymosi puslapiai pasiekiami antrajame darbo srities meniu. Pradžios srityje **Mano kelias** yra
-antras skyrius, o **Žinių bazė** – trečias (žr. [Žinių bazė](/mano/ziniu-baze#skirtukai)).
+antras skyrius; [Wiki](/wiki/) turi savo darbo sritį.
 **Pranešimai** atveriami varpeliu viršuje arba telefono apačios juostoje, ne skyriumi. Rodyklė šalia
 skyriaus pavadinimo atveria žemiau išvardytus puslapius; skirtuko pavadinimas atitinka atvertą
 puslapį, o žingsnio puslapyje – žingsnio pavadinimą. Telefone šie puslapiai pasiekiami dabartinio
@@ -115,12 +116,12 @@ skyriaus pasirinkime ir per **Meniu**.
 2. Perskaityk paaiškinimą po pavadinimu ir atlik veiksmą.
 3. Pažymėk langelį kairėje. Rekomenduojamą ar papildomą žingsnį gali **Praleisti** per **⋯** meniu.
 4. Savo žymą panaikink nuimdamas varnelę. Automatiškai pažymėto langelio keisti negalima.
-5. Skaitinius ir jų įžvalgas rasi [Žinių bazėje](app:/mano/knowledge).
+5. Skaitinius ir jų įžvalgas rasi [Wiki](app:/mano/knowledge).
 
 ### Pridėti žingsnį
 
 1. **+ Sukurti** → **Naujas kelio žingsnis** (arba Bibliotekoje **Naujas žingsnis**). Dokumentams
-   ir pristatymams naudok [žinių bazę](/mano/ziniu-baze#prideti-medziaga).
+   ir pristatymams naudok [Wiki straipsnius](/wiki/straipsniai#prideti-straipsni).
 2. Pasirink rūšį (**Veiksmas** arba **Pasiruošimas posėdžiui**), įrašyk pavadinimą ir aprašymą. Aprašyme galima formatuoti tekstą, pridėti paveikslėlių ir YouTube vaizdo įrašų.
 3. Skiltyje **Kam skirta** spausk **Pridėti auditoriją**. Pasirink auditorijos tipą ir tikslą,
    svarbą, etapą ir, jei reikia, padalinį bei paaiškinimus lietuviškai ir angliškai. Jei gali tvarkyti
@@ -158,8 +159,8 @@ atvėrus kelią.
 - Sisteminiai žingsniai (`is_system`, raktai `SystemStepRegistry`) įrašomi migracija ir lieka tik ten,
   kur reikia valdiklio ar automatinio atlikimo; žingsniai, kuriuos atstovas pažymi pats, yra įprasti, prireikus su
   mygtuku (`action_label`, `action_url`). Sisteminių atlikimas skaičiuojamas skaitant ir nesaugomas. Juose keičiamas tik etapas, tvarka ir rodymas; ištrinti negalima.
-- Teisės: `learningSteps.*.padalinys` – tik savo padaliniu apribotos auditorijos, `learningSteps.*.*` – visos (tos pačios
-  teisės galioja [Žinių bazei](/mano/ziniu-baze#technine-informacija)); atstovų pažanga –
+- Teisės: `learningSteps.*.padalinys` – tik savo padaliniu apribotos auditorijos, `learningSteps.*.*` – visos (jos
+  taip pat leidžia tvarkyti [Wiki straipsnių](/wiki/straipsniai#technine-informacija) auditorijas); atstovų pažanga –
   [Atstovai](/visak/atstovai#technine-informacija), per `ResponsibilityResolver`.
 - Bandomasis turinys: `LearningPathPilotSeeder` (paleidžiamas ranka, kartojant nieko nedubliuoja).
 

@@ -10,6 +10,10 @@ return [
         'redirect' => 'Record merging is now available from the list actions.',
     ],
     'workspaces' => [
+        'wiki' => [
+            'title' => 'Wiki',
+            'description' => 'Terms, institutions and documents',
+        ],
         'pradzia' => [
             'title' => 'Mano',
             'description' => 'Your work, tasks and notifications',
@@ -94,16 +98,13 @@ return [
             'path' => 'My path',
             'library' => 'Library',
         ],
-        'ziniu_baze' => [
-            'overview' => 'Knowledge base',
-            'glossary' => 'Glossary',
-            'library' => 'Library',
-        ],
     ],
 
     'sections' => [
         'kelias' => 'My path',
-        'ziniu_baze' => 'Knowledge base',
+        'wiki' => 'Wiki',
+        'rodykle' => 'A–Z index',
+        'wiki_biblioteka' => 'Library',
         'apzvalga' => 'Overview',
         'padaliniu_apzvalga' => 'Units',
         'atstovai' => 'Representatives',
@@ -158,7 +159,9 @@ return [
 
     'section_descriptions' => [
         'kelias' => 'Your term steps and meeting preparation.',
-        'ziniu_baze' => 'What is worth knowing: documents, presentations and terms.',
+        'wiki' => 'Who is who at VU SR and the university – and how it all connects',
+        'rodykle' => 'Every article from A to Z',
+        'wiki_biblioteka' => 'Every article, its audiences and status',
         'uzduotys' => 'Work assigned to you and its deadlines',
         'atsakomybes' => 'Your duties and what they let you do',
         'veiklos_uzklausos' => 'Requests you received about institution activity',
@@ -211,7 +214,7 @@ return [
 
     'actions' => [
         'new_learning_step' => ['title' => 'New path step', 'description' => 'An action or meeting preparation'],
-        'new_knowledge_item' => ['title' => 'New knowledge base entry', 'description' => 'A document, presentation or link for reps'],
+        'new_knowledge_item' => ['title' => 'New knowledge base article', 'description' => 'A term, document or explanation for reps'],
         'new_institution_type' => ['title' => 'New institution type', 'description' => 'Institution grouping, representation and relationships'],
         'new_duty_type' => ['title' => 'New duty type', 'description' => 'Duty grouping and granted responsibilities'],
         'merge' => [

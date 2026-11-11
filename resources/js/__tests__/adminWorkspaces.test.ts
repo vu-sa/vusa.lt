@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { adminWorkspaceIcons, workspaceIcon } from '@/Constants/adminWorkspaces';
 
 /** The keys AdminNavigationCatalog emits; a super admin sees all of them (AdminNavigationCatalogTest). */
-const catalogWorkspaceKeys = ['pradzia', 'atstovavimas', 'rezervacijos', 'svetaine', 'organizacija', 'sistema'];
+const catalogWorkspaceKeys = ['pradzia', 'wiki', 'atstovavimas', 'rezervacijos', 'svetaine', 'organizacija', 'sistema'];
 
 describe('adminWorkspaces', () => {
   it('has an icon for every workspace the catalog emits', () => {

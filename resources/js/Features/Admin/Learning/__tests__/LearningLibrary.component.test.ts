@@ -2,7 +2,6 @@ import { usePage } from '@inertiajs/vue3';
 import { flushPromises, mount } from '@vue/test-utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import IndexGlossaryTerm from '@/Pages/Admin/Knowledge/IndexGlossaryTerm.vue';
 import IndexKnowledgeItem from '@/Pages/Admin/Knowledge/IndexKnowledgeItem.vue';
 import IndexLearningStep from '@/Pages/Admin/Learning/IndexLearningStep.vue';
 import { LearningAudienceType, LearningImportance, LearningStage, LearningStepKind } from '@/Types/enums';
@@ -101,41 +100,6 @@ describe('learning library', () => {
     expect(rowTitles(wrapper)).toEqual(['Read the guide', 'Meet your team']);
     expect(window.location.search).not.toContain('repeat=');
     expect(window.location.search).not.toContain('kind=');
-    wrapper.unmount();
-  });
-
-  it('renders the glossary collection without local tabs', async () => {
-    vi.mocked(usePage).mockReturnValue({ ...createMockPage(), url: '/mano/learning/glossary' });
-    const wrapper = mount(IndexGlossaryTerm, {
-      props: { terms: [], canManage: false },
-      global: { stubs: commonStubs },
-    });
-    await flushPromises();
-    expect(wrapper.find('[data-slot=learning-tabs]').exists()).toBe(false);
-    wrapper.unmount();
-  });
-
-  it('links each glossary row to its term page for a member', async () => {
-    window.history.replaceState({}, '', '/mano/learning/glossary?view=table');
-    vi.mocked(usePage).mockReturnValue({ ...createMockPage(), url: '/mano/learning/glossary' });
-    const wrapper = mount(IndexGlossaryTerm, {
-      props: {
-        terms: [{
-          id: 'quorum', term: 'Kvorumas', abbreviation: '', definition: 'Būtinas narių skaičius.', itemsCount: 1,
-          translations: { term: { lt: 'Kvorumas', en: 'Quorum' }, definition: { lt: 'Būtinas narių skaičius.', en: 'Required members.' } },
-          items: [{ id: 'rules', title: 'Senato reglamentas', url: 'https://example.test/rules' }],
-          priority: { rank: 3, importance: null, sectionOrder: 0, itemOrder: 0 },
-        }],
-        canManage: false,
-      },
-      global: { stubs: commonStubs },
-    });
-    await flushPromises();
-    const row = wrapper.get('[data-slot="collection-row"]');
-    expect(row.text()).toContain('Būtinas narių skaičius.');
-    expect(row.get('[data-testid="glossary-term-link"]').attributes('href')).toContain('glossaryTerms.show');
-    expect(row.text()).not.toContain('Senato reglamentas');
-    expect(wrapper.find('[data-testid="create-glossary-term"]').exists()).toBe(false);
     wrapper.unmount();
   });
 

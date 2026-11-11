@@ -52,15 +52,12 @@ it('keeps out-of-path completion and manager actions unavailable to readers', as
   await wrapper.get('[role="checkbox"]').trigger('click');
   expect(router.post).not.toHaveBeenCalled();
   expect(wrapper.find('[data-action="edit"]').exists()).toBe(false);
-  expect(wrapper.find('[data-action="glossary"]').exists()).toBe(false);
-  expect(wrapper.find('[data-slot="step-glossary-editor"]').exists()).toBe(false);
   wrapper.unmount();
 });
 
 it('offers only the step edit action to its managers', () => {
   const wrapper = render(true, true);
   expect(wrapper.get('[data-action="edit"] a').attributes('href')).toBe(route('learningSteps.edit', 'step-1'));
-  expect(wrapper.find('[data-action="glossary"]').exists()).toBe(false);
   wrapper.unmount();
 });
 

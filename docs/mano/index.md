@@ -24,7 +24,6 @@ Sritis rodoma **visiems** naudotojams.
 | Užduotys | `/mano/tasks` | Visi – tik savo užduotis |
 | Pranešimai (varpelis) | `/mano/notifications` | Visi – tik savo pranešimus |
 | [Mano kelias](/mano/kelias) | `/mano/learning` | Visi |
-| [Žinių bazė](/mano/ziniu-baze) | `/mano/knowledge` | Visi |
 
 <DocScreenshot name="admin-home" alt="Mano VU SA pradžia: tavo užduotys, greiti veiksmai ir artimiausi posėdžiai" caption="Pradžia – užduotys ir artimiausi tavo posėdžiai vienoje vietoje." href="/mano" />
 

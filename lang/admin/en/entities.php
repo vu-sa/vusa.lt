@@ -9,9 +9,8 @@
  */
 
 return [
-    'knowledgeItem' => ['model' => '{1} knowledge item|[2,*] knowledge items', 'gender' => 'm'],
+    'knowledgeItem' => ['model' => '{1} article|[2,*] articles', 'gender' => 'm'],
     'learningStep' => ['model' => '{1} learning step|[2,*] learning steps', 'gender' => 'm'],
-    'glossaryTerm' => ['model' => '{1} glossary term|[2,*] glossary terms', 'gender' => 'f'],
 
     'duty' => [
         'model' => '{1} duty|[2,*] duties',

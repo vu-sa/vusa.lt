@@ -108,7 +108,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch, onBeforeUnmount, useTemplateRef } from 'vue';
 import { EditorContent, useEditor } from '@tiptap/vue-3';
-import { Extension } from '@tiptap/core';
+import { type AnyExtension, Extension } from '@tiptap/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Link, Undo2, Redo2 } from '@lucide/vue';
 
@@ -120,6 +120,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { latinizeId } from '@/Utils/String';
 
 import { type EditorPreset, getExtensionsForPreset } from './extensions/presets';
+import { KnowledgeLinkAttribute } from './extensions/KnowledgeLinkAttribute';
 import { useTiptapFileUpload } from './composables/useTiptapFileUpload';
 import { useTiptapCommands } from './composables/useTiptapCommands';
 import { normalizeContent } from './normalizeContent';
@@ -161,6 +162,8 @@ const props = withDefaults(defineProps<{
    * canvas and comment editors (bubble toolbar, `minimal`) stay unframed.
    */
   framed?: boolean;
+  /** Feature extensions (e.g. wiki links); read once when the editor is created. */
+  extensions?: AnyExtension[];
 }>(), {
   preset: 'full',
   tools: undefined,
@@ -170,6 +173,7 @@ const props = withDefaults(defineProps<{
   showBold: true,
   proseStyle: false,
   framed: undefined,
+  extensions: () => [],
 });
 
 const emit = defineEmits<{
@@ -213,6 +217,8 @@ const extensions = [
     onFilePaste: props.preset === 'full' ? handleFilePaste : undefined,
   }),
   LinkShortcut,
+  KnowledgeLinkAttribute,
+  ...props.extensions,
 ];
 
 const contentError = ref(false);

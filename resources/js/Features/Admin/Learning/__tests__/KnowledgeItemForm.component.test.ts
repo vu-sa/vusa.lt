@@ -39,7 +39,10 @@ describe('KnowledgeItemForm', () => {
           id: 'step-1',
           title: { lt: 'LT pavadinimas', en: 'EN title' },
           description: { lt: 'LT paaiškinimas', en: 'EN explanation' },
+          abbreviation: { lt: '', en: '' },
+          summary: { lt: 'LT santrauka', en: '' },
           knowledge_section_id: null,
+          tenant_id: null,
           audiences: [audience()],
           per_term: false,
           order: 1,
@@ -101,7 +104,10 @@ describe('KnowledgeItemForm', () => {
           id: 'step-1',
           title: { lt: 'Žingsnis', en: 'Step' },
           description: { lt: '', en: '' },
+          abbreviation: { lt: '', en: '' },
+          summary: { lt: 'LT santrauka', en: '' },
           knowledge_section_id: null,
+          tenant_id: null,
           audiences: [audience()],
           per_term: false,
           order: 1,
@@ -167,7 +173,7 @@ describe('KnowledgeItemForm', () => {
   });
   it('submits sources and section without a step kind or stage', async () => {
     const wrapper = mount(KnowledgeItemForm, {
-      props: { item: editKnowledge({ sources: { lt: { url: 'https://example.test/read', document_id: null } } }) },
+      props: { item: editKnowledge({ sources: { lt: { url: 'https://example.test/read', document_id: null } } }), canManageAudiences: true },
       global: { stubs },
     });
     const form = vi.mocked(useForm).mock.results[0]!.value;
@@ -180,4 +186,20 @@ describe('KnowledgeItemForm', () => {
     wrapper.unmount();
   });
 
+  it('sends the article fields and leaves audiences to those who build paths', async () => {
+    const wrapper = mount(KnowledgeItemForm, {
+      props: { item: editKnowledge({ abbreviation: { lt: 'SKVC', en: '' }, tenant_id: 3 }), pageTenants: [{ id: 3, shortname: 'VU SA MIF' }] },
+      global: { stubs },
+    });
+    expect(wrapper.find('[data-testid="step-audiences"]').exists()).toBe(false);
+    expect(wrapper.get<HTMLTextAreaElement>('[data-testid="article-summary"]').element.value).toBe('LT santrauka');
+    const form = vi.mocked(useForm).mock.results[0]!.value;
+    await wrapper.findComponent({ name: 'FormPage' }).vm.$emit('submit');
+    const payload = form.transform.mock.calls[0]![0](form);
+    expect(payload).not.toHaveProperty('audiences');
+    expect(payload.abbreviation.lt).toBe('SKVC');
+    expect(payload.summary.lt).toBe('LT santrauka');
+    expect(payload.tenant_id).toBe(3);
+    wrapper.unmount();
+  });
 });

@@ -155,10 +155,11 @@ describe('LearningStepRow', () => {
   });
 });
 
- it('uses a document icon and labeled terms without redundant type text', () => {
-    const wrapper = mount(LearningStepRow, { props: { step: knowledge({ glossaryTerms: [{ id: 'term-1', term: 'Mandatas', abbreviation: '', definition: 'Atstovavimo laikotarpis' }] }), showGlossary: true }, global: { stubs: commonStubs } });
+ it('uses a document icon without redundant type text, and an article without a source opens its own page', () => {
+    const wrapper = mount(LearningStepRow, { props: { step: knowledge() }, global: { stubs: commonStubs } });
     expect(wrapper.find('[aria-label="learning.path.kind_document"]').exists()).toBe(true);
-    expect(wrapper.text()).toContain('learning.path.related_terms');
+    expect(wrapper.get('[data-slot="learning-step-action"]').attributes('href')).toContain('knowledgeItems.show');
+    expect(wrapper.get('[data-slot="learning-step-action"]').attributes('target')).toBeUndefined();
     expect(wrapper.text()).not.toContain('learning.path.kind_task');
     expect(wrapper.text()).not.toContain('learning.path.kind_document');
     wrapper.unmount();

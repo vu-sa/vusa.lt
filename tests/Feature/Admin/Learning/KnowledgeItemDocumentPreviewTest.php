@@ -132,6 +132,7 @@ describe('thumbnail refresh', function (): void {
 
         asUser($this->member)->post(route('knowledgeItems.store'), [
             'title' => ['lt' => 'Atstovo žinios', 'en' => 'Representative knowledge'],
+            'summary' => ['lt' => 'Ką atstovas turi žinoti.'],
             'description' => ['lt' => '<p>Žinok savo teises.</p>', 'en' => '<p>Know your rights.</p>'],
             'audiences' => [['type' => 'everyone', 'tenant_id' => null, 'importance' => 'recommended']],
             'sources' => ['lt' => ['document_id' => $document->id]],

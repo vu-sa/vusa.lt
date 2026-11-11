@@ -50,6 +50,9 @@ class RoleStudentRepresentativeCoordinatorSeeder extends Seeder
             'learningSteps.create.padalinys',
             'learningSteps.update.padalinys',
             'learningSteps.delete.padalinys',
+            'knowledgeItems.create.padalinys',
+            'knowledgeItems.update.padalinys',
+            'knowledgeItems.delete.padalinys',
         ]);
 
         $type = DutyType::query()->find(TypeSeeder::STUDENT_REPRESENTATIVE_DUTY_TYPE_ID)

@@ -17,6 +17,7 @@ use App\Models\LearningAudience;
 use App\Models\LearningStep;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\KnowledgeBasePresenter;
 use App\Services\Learning\ResolvedLearningItem;
 use App\Services\LearningInstitutionContactsPresenter;
 use App\Services\LearningPathPresenter;
@@ -51,6 +52,7 @@ class LearningStepController extends AdminController
 
         return Inertia::render('Admin/Learning/ShowLearningStep', [
             'step' => LearningPathPresenter::step($item, $request->user(), app()->getLocale()),
+            'linkedPages' => KnowledgeBasePresenter::linkedPages($learningStep->getTranslation('description', app()->getLocale()), app()->getLocale()),
             'inPath' => $path->contains($learningStep),
             'coordinators' => GetUserCoordinators::execute($request->user()),
             'institutionContacts' => LearningInstitutionContactsPresenter::forUser($request->user(), app()->getLocale()),

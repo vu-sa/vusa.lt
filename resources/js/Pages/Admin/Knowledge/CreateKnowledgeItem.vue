@@ -7,6 +7,9 @@
     :tenants="tenants"
     :institution-types="institutionTypes"
     :duty-types="dutyTypes"
+    :can-manage-audiences="canManageAudiences"
+    :page-tenants="pageTenants"
+    :can-publish-everywhere="canPublishEverywhere"
   />
 </template>
 
@@ -24,5 +27,8 @@ defineProps<{
   tenants?: LearningTenantOption[];
   institutionTypes?: LearningTypeOption[];
   dutyTypes?: LearningTypeOption[];
+  canManageAudiences?: boolean;
+  pageTenants?: LearningTenantOption[];
+  canPublishEverywhere?: boolean;
 }>();
 </script>
