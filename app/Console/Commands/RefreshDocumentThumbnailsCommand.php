@@ -15,13 +15,15 @@ class RefreshDocumentThumbnailsCommand extends Command
     public function handle(DocumentPreviewService $previews): int
     {
         $documents = Document::query()->whereHas('knowledgeItemSources')->get()
-            ->filter(fn (Document $document): bool => $this->option('force') || $previews->needsThumbnail($document));
+            ->filter(fn (Document $document): bool => $this->option('force') || $document->eTag === null || $previews->needsThumbnail($document));
 
         $bar = $this->output->createProgressBar($documents->count());
         $bar->start();
 
         foreach ($documents as $document) {
-            $previews->refreshThumbnail($document);
+            if ($this->syncedOnce($document)) {
+                $previews->refreshThumbnail($document);
+            }
             $this->line(" {$document->id}: ".($document->thumbnail_path ?? 'no thumbnail'), verbosity: 'v');
             $bar->advance();
         }
@@ -33,5 +35,23 @@ class RefreshDocumentThumbnailsCommand extends Command
         $this->info("Checked {$documents->count()} documents, {$withThumbnail} now have a thumbnail.");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Hidden documents are not synced on a schedule, so one may still lack the eTag its thumbnail is keyed by.
+     */
+    private function syncedOnce(Document $document): bool
+    {
+        if ($document->eTag !== null) {
+            return true;
+        }
+
+        try {
+            return $document->refreshFromSharepoint()?->eTag !== null;
+        } catch (\Throwable $e) {
+            $this->line(" {$document->id}: sync failed – {$e->getMessage()}", verbosity: 'v');
+
+            return false;
+        }
     }
 }

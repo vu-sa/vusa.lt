@@ -13,7 +13,6 @@ use App\Http\Controllers\AdminController;
 use App\Http\Requests\KnowledgeItemRequest;
 use App\Http\Requests\SearchLearningDocumentsRequest;
 use App\Http\Requests\SyncKnowledgeItemSubjectsRequest;
-use App\Jobs\RefreshDocumentThumbnailJob;
 use App\Models\Document;
 use App\Models\DutyType;
 use App\Models\InstitutionType;
@@ -295,7 +294,6 @@ class KnowledgeItemController extends AdminController
 
         $previews = app(DocumentPreviewService::class);
         Document::query()->whereKey(array_filter(array_column($sources, 'document_id')))->get()
-            ->filter(fn (Document $document): bool => $previews->needsThumbnail($document))
-            ->each(fn (Document $document) => RefreshDocumentThumbnailJob::dispatch($document)->afterCommit());
+            ->each(fn (Document $document) => $previews->queueThumbnail($document));
     }
 }

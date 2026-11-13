@@ -2,11 +2,13 @@
 
 use App\Enums\DocumentStatus;
 use App\Jobs\RefreshDocumentThumbnailJob;
+use App\Jobs\SyncDocumentFromSharePointJob;
 use App\Models\Document;
 use App\Models\KnowledgeItem;
 use App\Models\Permission;
 use App\Models\Tenant;
 use App\Services\Documents\DocumentPreviewService;
+use App\Services\DocumentSharepointSyncService;
 use App\Services\SharepointGraphService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -140,6 +142,43 @@ describe('thumbnail refresh', function (): void {
         ])->assertRedirect();
 
         Queue::assertPushed(RefreshDocumentThumbnailJob::class, fn (RefreshDocumentThumbnailJob $job): bool => $job->document->is($document));
+    });
+
+    test('linking a never-synced hidden document syncs it first, which then queues its thumbnail', function (): void {
+        Queue::fake();
+        foreach (['learningSteps.create.*', 'documents.update.*'] as $permission) {
+            $this->member->givePermissionTo(Permission::findOrCreate($permission, 'web'));
+        }
+        $document = Document::factory()->create(['status' => DocumentStatus::Hidden, 'eTag' => null]);
+
+        asUser($this->member)->post(route('knowledgeItems.store'), [
+            'title' => ['lt' => 'Atstovo planas', 'en' => 'Representative plan'],
+            'summary' => ['lt' => 'Ką atstovas planuoja.'],
+            'description' => ['lt' => '<p>Planas.</p>', 'en' => '<p>Plan.</p>'],
+            'audiences' => [['type' => 'everyone', 'tenant_id' => null, 'importance' => 'recommended']],
+            'sources' => ['lt' => ['document_id' => $document->id]],
+            'order' => 1, 'is_active' => true,
+        ])->assertRedirect();
+
+        Queue::assertPushed(SyncDocumentFromSharePointJob::class, fn (SyncDocumentFromSharePointJob $job): bool => $job->document->is($document));
+        Queue::assertNotPushed(RefreshDocumentThumbnailJob::class);
+    });
+
+    test('the command syncs a never-synced source document before fetching its thumbnail', function (): void {
+        Http::fake(['thumbnails.test/*' => Http::response(Image::createImage(800, 1100)->encodeUsingFileExtension('png')->toString(), 200, ['Content-Type' => 'image/png'])]);
+        [, $document] = knowledgeItemWithDocument(['status' => DocumentStatus::Hidden, 'eTag' => null]);
+        $this->mock(DocumentSharepointSyncService::class)->shouldReceive('sync')->once()
+            ->andReturnUsing(function (Document $synced): Document {
+                $synced->forceFill(['eTag' => 'etag-5'])->save();
+
+                return $synced;
+            });
+        $this->app->instance(DocumentPreviewService::class, previewServiceWithDriveItem(['https://thumbnails.test/large']));
+
+        $this->artisan('sharepoint:refresh-thumbnails')->assertSuccessful();
+
+        expect($document->fresh()->thumbnail_path)->toBe("document-thumbnails/{$document->id}.webp")
+            ->and($document->fresh()->thumbnail_etag)->toBe('etag-5');
     });
 
     test('the first-page thumbnail is stored as WebP for the current file version', function (): void {

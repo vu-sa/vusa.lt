@@ -7,6 +7,7 @@ use App\Jobs\DiscoverSharepointDocumentsJob;
 use App\Jobs\SyncDocumentFromSharePointJob;
 use App\Models\Document;
 use App\Models\Institution;
+use App\Models\KnowledgeItem;
 use App\Models\SharepointFolder;
 use App\Services\Documents\DiscoveryResult;
 use App\Services\Documents\SharepointDocumentDiscovery;
@@ -464,6 +465,21 @@ test('a changed or restored published file has its public link checked again', f
 
     Queue::assertPushed(SyncDocumentFromSharePointJob::class, fn ($job) => $job->document->is($restored));
     Queue::assertNotPushed(SyncDocumentFromSharePointJob::class, fn ($job) => $job->document->is($pending));
+});
+
+test('a changed hidden file is synced only when a knowledge item uses it, for its thumbnail', function (): void {
+    Queue::fake([SyncDocumentFromSharePointJob::class]);
+    $source = Document::factory()->create(['status' => DocumentStatus::Hidden, 'sharepoint_id' => 'unique-1', 'sharepoint_drive_item_id' => 'drive-old-1']);
+    KnowledgeItem::factory()->create()->sources()->create(['locale' => 'lt', 'document_id' => $source->id]);
+    $unused = Document::factory()->create(['status' => DocumentStatus::Hidden, 'sharepoint_id' => 'unique-2', 'sharepoint_drive_item_id' => 'drive-old-2']);
+
+    discoveryWithGraph([discoveryPage([discoveryFile('drive-1', 'unique-1'), discoveryFile('drive-2', 'unique-2')])], [
+        'drive-1' => ['eTag' => '"e"', 'fields' => []],
+        'drive-2' => ['eTag' => '"e"', 'fields' => []],
+    ])->run();
+
+    Queue::assertPushed(SyncDocumentFromSharePointJob::class, fn ($job) => $job->document->is($source));
+    Queue::assertNotPushed(SyncDocumentFromSharePointJob::class, fn ($job) => $job->document->is($unused));
 });
 
 test('a padalinys created after its files arrived is matched without the files changing', function (): void {
