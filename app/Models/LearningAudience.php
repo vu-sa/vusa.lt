@@ -30,7 +30,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
- * @property-read \Illuminate\Database\Eloquent\Model $audienceable
+ * @property-read \Illuminate\Database\Eloquent\Model|null $audienceable
  * @property-read Duty|null $duty
  * @property-read DutyType|null $dutyType
  * @property-read array $translatable_columns_from

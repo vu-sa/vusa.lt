@@ -55,7 +55,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property bool $ended_by_institution_deactivation
  * @property string $assignment_origin
  * @property-read Collection<int, Dutiable> $derivedDutiables
- * @property-read Model $dutiable
+ * @property-read Model|null $dutiable
  * @property-read Duty|null $duty
  * @property-read array $translatable_columns_from
  * @property-read MediaCollection<int, Media> $media

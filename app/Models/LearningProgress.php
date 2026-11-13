@@ -19,7 +19,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $completed_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Model $progressable
+ * @property-read LearningStep|KnowledgeItem|null $progressable
  * @property-read User|null $user
  *
  * @method static \Database\Factories\LearningProgressFactory factory($count = null, $state = [])
@@ -35,7 +35,7 @@ class LearningProgress extends Model
 {
     use HasFactory;
 
-    /** @return MorphTo<\Illuminate\Database\Eloquent\Model, $this> */
+    /** @return MorphTo<contravariant LearningStep|KnowledgeItem, $this> */
     public function progressable(): MorphTo
     {
         return $this->morphTo();

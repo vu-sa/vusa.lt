@@ -1,6 +1,6 @@
 <?php
 
-use App\Support\TaskModelIdeHelperHook;
+use App\Support\MorphToIdeHelperHook;
 use App\Support\TranslatableModelIdeHelperHook;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Client\Factory;
@@ -179,7 +179,7 @@ return [
     */
 
     'model_hooks' => [
-        TaskModelIdeHelperHook::class,
+        MorphToIdeHelperHook::class,
         TranslatableModelIdeHelperHook::class,
     ],
 

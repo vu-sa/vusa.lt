@@ -43,7 +43,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property Carbon|null $updated_at
  * @property string|null $author_dutiable_id
  * @property-read Dutiable|null $authorDutiable
- * @property-read Model|\Eloquent $commentable
+ * @property-read Model|\Eloquent|null $commentable
  * @property-read MediaCollection<int, Media> $media
  * @property-read Comment|null $parent
  * @property-read Collection<int, CommentPollVote> $pollVotes

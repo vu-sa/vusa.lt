@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property string $subject_type
  * @property string $subject_id
  * @property-read KnowledgeItem $item
- * @property-read \Illuminate\Database\Eloquent\Model $subject
+ * @property-read Institution|InstitutionType|DutyType|KnowledgeItem|null $subject
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|KnowledgeItemSubject newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|KnowledgeItemSubject newQuery()
@@ -37,7 +37,7 @@ class KnowledgeItemSubject extends Model
         return $this->belongsTo(KnowledgeItem::class, 'knowledge_item_id');
     }
 
-    /** @return MorphTo<\Illuminate\Database\Eloquent\Model, $this> */
+    /** @return MorphTo<contravariant Institution|InstitutionType|DutyType|KnowledgeItem, $this> */
     public function subject(): MorphTo
     {
         return $this->morphTo();
