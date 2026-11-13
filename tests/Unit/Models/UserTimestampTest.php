@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 
@@ -27,4 +28,16 @@ test('editing the person moves the update time, even alongside a setting', funct
     $this->user->fresh()->forceFill(['phone' => '+37060000000', 'ui_preferences' => ['theme' => 'dark']])->save();
 
     expect($this->user->fresh()->updated_at->toISOString())->toBe('2026-11-13T18:00:00.000000Z');
+});
+
+test('the timestamps stay dates while a settings-only save runs, so its observers can index the person', function (): void {
+    $seen = null;
+    User::saved(function (User $user) use (&$seen): void {
+        $seen = $user->created_at;
+    });
+
+    $this->user->fresh()->forceFill(['ui_preferences' => ['theme' => 'dark']])->save();
+
+    expect($seen)->toBeInstanceOf(Carbon::class)
+        ->and(fn () => $this->user->fresh()->toSearchableArray())->not->toThrow(Throwable::class);
 });

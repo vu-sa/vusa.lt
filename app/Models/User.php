@@ -145,6 +145,9 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
     protected function casts(): array
     {
         return [
+            // Explicit, because save() turns timestamps off for settings-only writes, which drops their implicit cast.
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
             'last_action' => 'datetime',
             'show_pronouns' => 'boolean',
             'tutorial_progress' => 'array',
