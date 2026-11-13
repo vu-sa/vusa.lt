@@ -15,7 +15,9 @@
     <template v-if="fillActions.length || assignmentLoading || (!readOnly && incompleteTasksCount)" #next-actions>
       <SectionHeaderAction v-if="!readOnly && incompleteTasksCount" :label="`${$t('Nebaigtos užduotys')} · ${incompleteTasksCount}`" class="mb-3" @click="currentSection = 'tasks'" />
       <RecordNextActions :fill="fillActions" />
-      <p v-if="assignmentLoading" role="status" class="mt-3 text-sm text-muted-foreground">{{ $t('Kraunami duomenys') }}</p>
+      <p v-if="assignmentLoading" role="status" class="mt-3 text-sm text-muted-foreground">
+        {{ $t('Kraunami duomenys') }}
+      </p>
     </template>
 
     <template v-if="hasDescription" #lead>
@@ -38,7 +40,7 @@
       <InstitutionOverviewSection
         :institution
         :overview
-        :upcoming-meeting="upcomingMeeting"
+        :upcoming-meeting
         :duties="overviewDuties ?? []"
         :can-manage="can.update"
         :meetings-tab="tabs.some(tab => tab.value === 'meetings')"
@@ -306,11 +308,10 @@ const InstitutionRelationsList = defineAsyncComponent(() => import('@/Components
 
 const currentSection = ref(new URL(usePage().url, 'http://localhost').searchParams.get('tab') ?? 'overview');
 
-
 const entityIcon = (type: ModelEnum) => getEntityTypeDefinition(type)?.icon;
 
 const visitedOptionalSections = ref(new Set<string>());
-watch(currentSection, value => {
+watch(currentSection, (value) => {
   if (value === 'files' || value === 'related') visitedOptionalSections.value.add(value);
 }, { immediate: true });
 

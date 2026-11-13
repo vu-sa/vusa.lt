@@ -48,6 +48,7 @@
     "require-dev": {
         "barryvdh/laravel-debugbar": "^4.4",
         "barryvdh/laravel-ide-helper": "^3.6",
+        "brianium/paratest": "7.27.5",
         "driftingly/rector-laravel": "^2.5",
         "fakerphp/faker": "^1.9.1",
         "fumeapp/modeltyper": "^3.0",

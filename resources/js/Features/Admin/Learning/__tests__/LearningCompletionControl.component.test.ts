@@ -2,8 +2,10 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
 import { LearningImportance } from '@/Types/enums';
-import LearningCompletionControl from '../LearningCompletionControl.vue';
 import { commonStubs } from '@/tests/stubs';
+
+import LearningCompletionControl from '../LearningCompletionControl.vue';
+
 import { step } from './fixtures';
 
 describe('LearningCompletionControl', () => {

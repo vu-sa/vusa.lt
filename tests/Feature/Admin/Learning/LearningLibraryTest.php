@@ -18,7 +18,7 @@ use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 test('library payload includes curator flags for expired document, updated document and missing source', function (): void {
     $this->freezeTime();

@@ -25,7 +25,9 @@
         <span v-if="item.summary" class="line-clamp-1 text-xs text-muted-foreground">{{ item.summary }}</span>
       </button>
     </template>
-    <p v-else class="px-2.5 py-2 text-xs text-muted-foreground">{{ $t('learning.wiki.link_none') }}</p>
+    <p v-else class="px-2.5 py-2 text-xs text-muted-foreground">
+      {{ $t('learning.wiki.link_none') }}
+    </p>
   </div>
 </template>
 

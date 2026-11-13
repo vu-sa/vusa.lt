@@ -25,7 +25,7 @@ const submitButton = () => wrapper.find('[data-testid="comment-submit"]');
 const submitted = () => wrapper.emitted('submit')?.[0]?.[0] as CommentDraft | undefined;
 
 async function type(html: string) {
-  const editor = (wrapper.vm as unknown as { $: { setupState: { editor: { commands: { setContent: (value: string, options?: unknown) => void } } } } }).$.setupState.editor;
+  const { editor } = (wrapper.vm as unknown as { $: { setupState: { editor: { commands: { setContent: (value: string, options?: unknown) => void } } } } }).$.setupState;
   editor.commands.setContent(html, { emitUpdate: true });
   await flushPromises();
 }

@@ -7,8 +7,8 @@
     :source
     :columns
     :item-key="stepKey"
-    :row-actions="rowActions"
-    :quick-filters="quickFilters"
+    :row-actions
+    :quick-filters
     default-view="table"
     table-fixed
     actions-width="w-40"
@@ -43,7 +43,6 @@
             <StatusBadge :status="learningStepKinds[item.kind]" voice="sentence" />
             <span>· {{ audienceSummary(item) }}</span>
             <StatusBadge :status="learningStepImportances[highestImportance(item)]" voice="sentence" />
-
           </div>
         </div>
       </CollectionRow>
@@ -57,7 +56,6 @@
           </Link>
           <StatusBadge v-if="!item.isActive" :status="bannerStatuses.inactive" voice="sentence" data-testid="step-inactive-badge" />
         </div>
-
       </div>
       <StatusBadge v-else-if="column.key === 'kind'" :status="learningStepKinds[item.kind]" voice="sentence" />
       <span v-else-if="column.key === 'audience'" class="text-sm text-muted-foreground">{{ audienceSummary(item) || '—' }}</span>
@@ -75,7 +73,6 @@
       />
     </template>
   </CollectionPage>
-
 </template>
 
 <script setup lang="ts">

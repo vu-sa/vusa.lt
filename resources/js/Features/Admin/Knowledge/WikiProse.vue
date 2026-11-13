@@ -1,3 +1,11 @@
+<template>
+  <WikiLinkPreview :pages data-slot="wiki-prose">
+    <!-- Sanitized on write (HtmlSanitizerService); links are decorated after render. -->
+    <!-- eslint-disable-next-line vue/no-v-html -->
+    <div ref="root" :class="['rc-prose wiki-prose', proseClass]" v-html="html" />
+  </WikiLinkPreview>
+</template>
+
 <script setup lang="ts">
 import { nextTick, onMounted, ref, watch } from 'vue';
 
@@ -32,11 +40,3 @@ function decorate(): void {
 onMounted(decorate);
 watch(() => [props.html, props.pages], () => nextTick(decorate));
 </script>
-
-<template>
-  <WikiLinkPreview :pages="pages" data-slot="wiki-prose">
-    <!-- Sanitized on write (HtmlSanitizerService); links are decorated after render. -->
-    <!-- eslint-disable-next-line vue/no-v-html -->
-    <div ref="root" :class="['rc-prose wiki-prose', proseClass]" v-html="html" />
-  </WikiLinkPreview>
-</template>

@@ -9,23 +9,17 @@ use App\Enums\ResponsibilityPurpose;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Carbon;
 
 /**
- * @property string $audienceable_id
- * @property string $audienceable_type
- * @property-read LearningStep|KnowledgeItem $audienceable
- * @property-read Tenant|null $tenant
- * @property-read DutyType|null $dutyType
- * @property-read InstitutionType|null $institutionType
- * @property-read Role|null $responsibility
- * @property-read Duty|null $duty
- * @property-read Institution|null $institution
- * @property-read Role|null $purposeRole
  * @property string $id
+ * @property string $audienceable_type
+ * @property string $audienceable_id
  * @property LearningAudienceType $type
  * @property string|null $source_id
  * @property int|null $tenant_id
@@ -33,6 +27,31 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property LearningStage|null $stage
  * @property array|string|null $description
  * @property int $order
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Collection<int, Activity> $activitiesAsSubject
+ * @property-read \Illuminate\Database\Eloquent\Model $audienceable
+ * @property-read Duty|null $duty
+ * @property-read DutyType|null $dutyType
+ * @property-read array $translatable_columns_from
+ * @property-read Institution|null $institution
+ * @property-read InstitutionType|null $institutionType
+ * @property-read Role|null $purposeRole
+ * @property-read Role|null $responsibility
+ * @property-read Tenant|null $tenant
+ * @property-read mixed $translations
+ *
+ * @method static \Database\Factories\LearningAudienceFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LearningAudience newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LearningAudience newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LearningAudience query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LearningAudience whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LearningAudience whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LearningAudience whereLocale(string $column, string $locale)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LearningAudience whereLocales(string $column, array $locales)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LearningAudience whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
+ *
+ * @mixin \Eloquent
  */
 #[Fillable(['audienceable_type', 'audienceable_id', 'type', 'source_id', 'tenant_id', 'importance', 'stage', 'description', 'order'])]
 class LearningAudience extends Model

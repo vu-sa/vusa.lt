@@ -309,7 +309,7 @@ describe('ShowMeeting.vue', () => {
     const wrapper = createWrapper({ files: undefined, governanceScope: 'vusa' });
     const record = wrapper.findComponent({ name: 'RecordPage' });
     const panel = wrapper.findAllComponents(WhenVisible)
-      .find(component => component.element.closest('section')?.getAttribute('aria-labelledby') ?.endsWith(`-${tab}`));
+      .find(component => component.element.closest('section')?.getAttribute('aria-labelledby')?.endsWith(`-${tab}`));
 
     expect(record.props('section')).toBe(tab);
     expect(panel?.props('data')).toEqual(data);

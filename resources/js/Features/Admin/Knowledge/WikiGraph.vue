@@ -1,3 +1,75 @@
+<template>
+  <div class="flex flex-col gap-3" data-slot="wiki-graph">
+    <div ref="wrapper" class="relative h-[calc(100dvh-16rem)] min-h-[440px] w-full overflow-hidden border border-border bg-secondary/30">
+      <svg ref="svgRef" class="size-full cursor-grab touch-none active:cursor-grabbing" :aria-label="$t('learning.wiki.graph_canvas')" role="group" />
+
+      <div class="absolute top-3 right-3 flex flex-col border border-border bg-background/95 backdrop-blur">
+        <button type="button" :aria-label="$t('learning.wiki.graph_zoom_in')" :title="$t('learning.wiki.graph_zoom_in')" class="flex size-9 items-center justify-center text-foreground hover:bg-accent pointer-coarse:size-11" @click="zoomBy(1.3)">
+          <Plus class="size-4" aria-hidden="true" />
+        </button>
+        <button type="button" :aria-label="$t('learning.wiki.graph_zoom_out')" :title="$t('learning.wiki.graph_zoom_out')" class="flex size-9 items-center justify-center border-t border-border text-foreground hover:bg-accent pointer-coarse:size-11" @click="zoomBy(1 / 1.3)">
+          <Minus class="size-4" aria-hidden="true" />
+        </button>
+        <button type="button" :aria-label="$t('learning.wiki.graph_reset')" :title="$t('learning.wiki.graph_reset')" class="flex size-9 items-center justify-center border-t border-border text-foreground hover:bg-accent pointer-coarse:size-11" @click="resetZoom">
+          <Maximize class="size-4" aria-hidden="true" />
+        </button>
+      </div>
+
+      <aside
+        v-if="selected"
+        class="absolute inset-x-0 bottom-0 max-h-[60%] overflow-y-auto border-t border-border bg-background p-4 sm:inset-x-auto sm:right-3 sm:bottom-3 sm:w-80 sm:border"
+        data-slot="wiki-graph-selected"
+        :aria-label="selected.title"
+      >
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p v-if="selectedSection" class="text-xs font-bold tracking-[0.12em] uppercase" :style="{ color: sectionColors.get(selectedSection.id) }">
+              {{ selectedSection.title }}
+            </p>
+            <h2 class="mt-1 text-base leading-snug font-semibold text-foreground">
+              {{ selected.title }}
+              <span v-if="selected.abbreviation" class="font-normal text-muted-foreground">({{ selected.abbreviation }})</span>
+            </h2>
+          </div>
+          <button type="button" class="-mt-1 -mr-1 flex size-9 shrink-0 items-center justify-center text-muted-foreground hover:text-foreground pointer-coarse:size-11" :aria-label="$t('learning.wiki.graph_close')" @click="selectedId = null">
+            <X class="size-4" aria-hidden="true" />
+          </button>
+        </div>
+        <p v-if="selected.summary" class="mt-2 text-sm text-muted-foreground">
+          {{ selected.summary }}
+        </p>
+        <p class="mt-3 text-xs font-medium text-muted-foreground">
+          {{ transChoice('learning.wiki.graph_links', selected.degree, { count: String(selected.degree) }) }}
+        </p>
+        <ul v-if="selectedNeighbours.length" class="mt-1.5 flex flex-wrap gap-1.5">
+          <li v-for="neighbour in selectedNeighbours" :key="neighbour.id">
+            <button type="button" class="inline-flex min-h-8 items-center gap-1.5 border border-border px-2 text-xs text-foreground hover:border-foreground pointer-coarse:min-h-11" @click="openNeighbour(neighbour.id)">
+              <span class="size-2 shrink-0 rounded-full" :style="{ backgroundColor: colorFor(neighbour) }" aria-hidden="true" />
+              {{ label(neighbour) }}
+            </button>
+          </li>
+        </ul>
+        <Button as-child class="mt-4 w-full" voice="sentence">
+          <Link :href="selected.url">
+            {{ $t('learning.wiki.graph_open') }}
+            <ArrowRight class="size-4" aria-hidden="true" />
+          </Link>
+        </Button>
+      </aside>
+    </div>
+    <ul class="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted-foreground" :aria-label="$t('learning.wiki.graph_sections')" data-slot="wiki-graph-legend">
+      <li v-for="entry in legend" :key="entry.key" class="flex items-center gap-2">
+        <span class="size-2.5 shrink-0 rounded-full" :style="{ backgroundColor: entry.color }" aria-hidden="true" />
+        {{ entry.label }}
+      </li>
+      <li v-if="hasLearned" class="flex items-center gap-2">
+        <span class="size-3 shrink-0 rounded-full border-[1.5px] border-muted-foreground" aria-hidden="true" />
+        {{ $t('learning.wiki.learned') }}
+      </li>
+    </ul>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { Link } from '@inertiajs/vue3';
@@ -334,76 +406,3 @@ function openNeighbour(id: string) {
   centreOn(id);
 }
 </script>
-
-<template>
-  <div class="flex flex-col gap-3" data-slot="wiki-graph">
-    <div ref="wrapper" class="relative h-[calc(100dvh-16rem)] min-h-[440px] w-full overflow-hidden border border-border bg-secondary/30">
-      <svg ref="svgRef" class="size-full cursor-grab touch-none active:cursor-grabbing" :aria-label="$t('learning.wiki.graph_canvas')" role="group" />
-
-      <div class="absolute top-3 right-3 flex flex-col border border-border bg-background/95 backdrop-blur">
-        <button type="button" :aria-label="$t('learning.wiki.graph_zoom_in')" :title="$t('learning.wiki.graph_zoom_in')" class="flex size-9 items-center justify-center text-foreground hover:bg-accent pointer-coarse:size-11" @click="zoomBy(1.3)">
-          <Plus class="size-4" aria-hidden="true" />
-        </button>
-        <button type="button" :aria-label="$t('learning.wiki.graph_zoom_out')" :title="$t('learning.wiki.graph_zoom_out')" class="flex size-9 items-center justify-center border-t border-border text-foreground hover:bg-accent pointer-coarse:size-11" @click="zoomBy(1 / 1.3)">
-          <Minus class="size-4" aria-hidden="true" />
-        </button>
-        <button type="button" :aria-label="$t('learning.wiki.graph_reset')" :title="$t('learning.wiki.graph_reset')" class="flex size-9 items-center justify-center border-t border-border text-foreground hover:bg-accent pointer-coarse:size-11" @click="resetZoom">
-          <Maximize class="size-4" aria-hidden="true" />
-        </button>
-      </div>
-
-      <aside
-        v-if="selected"
-        class="absolute inset-x-0 bottom-0 max-h-[60%] overflow-y-auto border-t border-border bg-background p-4 sm:inset-x-auto sm:right-3 sm:bottom-3 sm:w-80 sm:border"
-        data-slot="wiki-graph-selected"
-        :aria-label="selected.title"
-      >
-        <div class="flex items-start justify-between gap-3">
-          <div class="min-w-0">
-            <p v-if="selectedSection" class="text-xs font-bold tracking-[0.12em] uppercase" :style="{ color: sectionColors.get(selectedSection.id) }">
-              {{ selectedSection.title }}
-            </p>
-            <h2 class="mt-1 text-base leading-snug font-semibold text-foreground">
-              {{ selected.title }}
-              <span v-if="selected.abbreviation" class="font-normal text-muted-foreground">({{ selected.abbreviation }})</span>
-            </h2>
-          </div>
-          <button type="button" class="-mt-1 -mr-1 flex size-9 shrink-0 items-center justify-center text-muted-foreground hover:text-foreground pointer-coarse:size-11" :aria-label="$t('learning.wiki.graph_close')" @click="selectedId = null">
-            <X class="size-4" aria-hidden="true" />
-          </button>
-        </div>
-        <p v-if="selected.summary" class="mt-2 text-sm text-muted-foreground">
-          {{ selected.summary }}
-        </p>
-        <p class="mt-3 text-xs font-medium text-muted-foreground">
-          {{ transChoice('learning.wiki.graph_links', selected.degree, { count: String(selected.degree) }) }}
-        </p>
-        <ul v-if="selectedNeighbours.length" class="mt-1.5 flex flex-wrap gap-1.5">
-          <li v-for="neighbour in selectedNeighbours" :key="neighbour.id">
-            <button type="button" class="inline-flex min-h-8 items-center gap-1.5 border border-border px-2 text-xs text-foreground hover:border-foreground pointer-coarse:min-h-11" @click="openNeighbour(neighbour.id)">
-              <span class="size-2 shrink-0 rounded-full" :style="{ backgroundColor: colorFor(neighbour) }" aria-hidden="true" />
-              {{ label(neighbour) }}
-            </button>
-          </li>
-        </ul>
-        <Button as-child class="mt-4 w-full" voice="sentence">
-          <Link :href="selected.url">
-            {{ $t('learning.wiki.graph_open') }}
-            <ArrowRight class="size-4" aria-hidden="true" />
-          </Link>
-        </Button>
-      </aside>
-    </div>
-    <ul class="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted-foreground" :aria-label="$t('learning.wiki.graph_sections')" data-slot="wiki-graph-legend">
-      <li v-for="entry in legend" :key="entry.key" class="flex items-center gap-2">
-        <span class="size-2.5 shrink-0 rounded-full" :style="{ backgroundColor: entry.color }" aria-hidden="true" />
-        {{ entry.label }}
-      </li>
-      <li v-if="hasLearned" class="flex items-center gap-2">
-        <span class="size-3 shrink-0 rounded-full border-[1.5px] border-muted-foreground" aria-hidden="true" />
-        {{ $t('learning.wiki.learned') }}
-      </li>
-    </ul>
-  </div>
-</template>
-

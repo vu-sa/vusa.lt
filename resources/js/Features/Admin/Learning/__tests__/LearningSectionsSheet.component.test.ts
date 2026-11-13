@@ -4,9 +4,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ConfirmDialog, SheetForm } from '@/Components/Patterns';
 import { commonStubs } from '@/tests/stubs';
+import { KnowledgeSectionKind } from '@/Types/enums';
+
 import LearningSectionsSheet from '../LearningSectionsSheet.vue';
 import type { LearningSectionOption } from '../types';
-import { KnowledgeSectionKind } from '@/Types/enums';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 const stubs = {

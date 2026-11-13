@@ -1,12 +1,12 @@
 import { usePage } from '@inertiajs/vue3';
-import { createMockPage } from '@/tests/helpers/createMockPage';
 import { ref } from 'vue';
 import { flushPromises, mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import InstallationInstructions from '../InstallationInstructions.vue';
-
+import { createMockPage } from '@/tests/helpers/createMockPage';
 import { NativeSelect } from '@/Components/ui/native-select';
+
+import InstallationInstructions from '../InstallationInstructions.vue';
 
 const install = vi.hoisted(() => ({ promptInstall: vi.fn() }));
 const state = { canInstall: ref(false), isInstalled: ref(false) };

@@ -1,19 +1,3 @@
-<script setup lang="ts">
-import { computed, ref, watch } from 'vue';
-import { Link } from '@inertiajs/vue3';
-import { ArrowRight } from '@lucide/vue';
-
-import type { WikiPageSummary } from '@/Types/learning';
-
-const props = defineProps<{ page: WikiPageSummary }>();
-// The summary names the article itself, in bold, so the title is shown only when there is no summary.
-const imageFailed = ref(false);
-watch(() => props.page.id, () => {
-  imageFailed.value = false;
-});
-const showAbbreviation = computed(() => props.page.abbreviation !== '' && !props.page.summary.includes(props.page.abbreviation));
-</script>
-
 <template>
   <Link
     :href="page.url"
@@ -47,3 +31,19 @@ const showAbbreviation = computed(() => props.page.abbreviation !== '' && !props
     </span>
   </Link>
 </template>
+
+<script setup lang="ts">
+import { computed, ref, watch } from 'vue';
+import { Link } from '@inertiajs/vue3';
+import { ArrowRight } from '@lucide/vue';
+
+import type { WikiPageSummary } from '@/Types/learning';
+
+const props = defineProps<{ page: WikiPageSummary }>();
+// The summary names the article itself, in bold, so the title is shown only when there is no summary.
+const imageFailed = ref(false);
+watch(() => props.page.id, () => {
+  imageFailed.value = false;
+});
+const showAbbreviation = computed(() => props.page.abbreviation !== '' && !props.page.summary.includes(props.page.abbreviation));
+</script>

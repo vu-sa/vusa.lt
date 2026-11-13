@@ -14,7 +14,7 @@ class Season
     /** Days the countdown on Pradžia shows before the season starts. */
     public const int COUNTDOWN_DAYS = 7;
 
-    public function __construct(private SeasonSettings $settings) {}
+    public function __construct(private readonly SeasonSettings $settings) {}
 
     /** New dates can turn a tree into last year's, or back: work it out again. */
     public static function forgetLastTreeYear(): void

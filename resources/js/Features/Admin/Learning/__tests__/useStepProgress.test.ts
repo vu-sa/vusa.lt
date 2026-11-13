@@ -5,6 +5,7 @@ import { ref } from 'vue';
 import { showWikiProgressToast } from '@/Features/Admin/Knowledge/wikiProgressToast';
 
 import { useStepProgress } from '../composables/useStepProgress';
+
 import { knowledge } from './fixtures';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));

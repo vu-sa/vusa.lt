@@ -46,7 +46,6 @@ use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
- * @property-read Collection<int, LearningProgress> $learningProgress
  * @property string $id
  * @property string|null $email
  * @property string|null $phone
@@ -79,6 +78,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read array $translatable_columns_from
  * @property-read mixed $has_password
  * @property-read Collection<int, Institution> $institutions
+ * @property-read Collection<int, LearningProgress> $learningProgress
  * @property-read MediaCollection<int, Media> $media
  * @property-read Collection<int, UserMicrosoftIdentity> $microsoftIdentities
  * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $notifications

@@ -1,10 +1,20 @@
 <template>
   <div class="space-y-3" data-slot="onboarding-push">
-    <p role="status" class="text-sm font-medium">{{ $t(statusKey) }}</p>
-    <p v-if="needsInstallation" class="text-sm text-muted-foreground">{{ $t('learning.path.push.install_first') }}</p>
-    <p v-else-if="!pushSupported" class="text-sm text-muted-foreground">{{ $t('learning.path.push.unsupported_help') }}</p>
-    <p v-else-if="pushPermission === 'denied'" class="text-sm text-muted-foreground">{{ $t('learning.path.push.unblock') }}</p>
-    <p v-else-if="!serviceWorkerReady && !hasPushSubscription" class="text-sm text-muted-foreground">{{ $t('learning.path.push.preparing') }}</p>
+    <p role="status" class="text-sm font-medium">
+      {{ $t(statusKey) }}
+    </p>
+    <p v-if="needsInstallation" class="text-sm text-muted-foreground">
+      {{ $t('learning.path.push.install_first') }}
+    </p>
+    <p v-else-if="!pushSupported" class="text-sm text-muted-foreground">
+      {{ $t('learning.path.push.unsupported_help') }}
+    </p>
+    <p v-else-if="pushPermission === 'denied'" class="text-sm text-muted-foreground">
+      {{ $t('learning.path.push.unblock') }}
+    </p>
+    <p v-else-if="!serviceWorkerReady && !hasPushSubscription" class="text-sm text-muted-foreground">
+      {{ $t('learning.path.push.preparing') }}
+    </p>
     <Button
       v-if="canSubscribeToPush && !needsInstallation && !hasPushSubscription && serviceWorkerReady"
       class="h-auto min-h-11 max-w-full whitespace-normal text-left"
@@ -17,7 +27,9 @@
       <BellPlus class="size-4" aria-hidden="true" />{{ $t('learning.path.push.enable') }}
     </Button>
     <Button class="h-auto min-h-11 max-w-full whitespace-normal text-left" as-child variant="link" voice="sentence">
-      <Link :href="route('profile.notifications')"><BellPlus class="size-4" aria-hidden="true" />{{ $t('learning.path.push.manage') }}</Link>
+      <Link :href="route('profile.notifications')">
+        <BellPlus class="size-4" aria-hidden="true" />{{ $t('learning.path.push.manage') }}
+      </Link>
     </Button>
     <Button
       v-if="hasPushSubscription && needsConfirmation"
@@ -30,7 +42,9 @@
     >
       {{ $t('learning.path.push.confirm') }}
     </Button>
-    <p v-if="activationFailed" role="alert" class="text-sm text-destructive">{{ $t('learning.path.push.failed') }}</p>
+    <p v-if="activationFailed" role="alert" class="text-sm text-destructive">
+      {{ $t('learning.path.push.failed') }}
+    </p>
   </div>
 </template>
 

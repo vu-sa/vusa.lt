@@ -6,6 +6,7 @@ use App\Enums\LearningStepKind;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -15,9 +16,6 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
 
 /**
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- * @property-read Collection<int, LearningAudience> $audiences
  * @property string $id
  * @property string|null $key
  * @property bool $is_system
@@ -30,8 +28,28 @@ use Illuminate\Support\Carbon;
  * @property bool $is_active
  * @property Carbon|null $reviewed_at
  * @property string|null $created_by
- * @property-read Collection<int, LearningProgress> $progress
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Collection<int, Activity> $activitiesAsSubject
+ * @property-read Collection<int, LearningAudience> $audiences
  * @property-read User|null $createdBy
+ * @property-read array $translatable_columns_from
+ * @property-read Collection<int, LearningProgress> $progress
+ * @property-read mixed $translations
+ *
+ * @method static Builder<static>|LearningStep active()
+ * @method static \Database\Factories\LearningStepFactory factory($count = null, $state = [])
+ * @method static Builder<static>|LearningStep newModelQuery()
+ * @method static Builder<static>|LearningStep newQuery()
+ * @method static Builder<static>|LearningStep ordered()
+ * @method static Builder<static>|LearningStep query()
+ * @method static Builder<static>|LearningStep whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|LearningStep whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|LearningStep whereLocale(string $column, string $locale)
+ * @method static Builder<static>|LearningStep whereLocales(string $column, array $locales)
+ * @method static Builder<static>|LearningStep whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
+ *
+ * @mixin \Eloquent
  */
 #[Fillable(['key', 'is_system', 'kind', 'title', 'description', 'action_label', 'action_url', 'order', 'is_active', 'reviewed_at', 'created_by'])]
 class LearningStep extends Model
@@ -78,13 +96,15 @@ class LearningStep extends Model
     }
 
     /** @param Builder<static> $query */
-    public function scopeActive(Builder $query): void
+    #[Scope]
+    protected function active(Builder $query): void
     {
         $query->where('is_active', true);
     }
 
     /** @param Builder<static> $query */
-    public function scopeOrdered(Builder $query): void
+    #[Scope]
+    protected function ordered(Builder $query): void
     {
         $query->orderBy('order')->orderBy('id');
     }

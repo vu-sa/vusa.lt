@@ -9,6 +9,7 @@ use App\Models\Traits\HasComments;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -20,16 +21,12 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
 
 /**
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- * @property string|null $knowledge_section_id
- * @property-read KnowledgeSection|null $section
- * @property-read Collection<int, LearningAudience> $audiences
  * @property string $id
  * @property string|null $key
  * @property KnowledgeItemKind $kind
+ * @property string|null $knowledge_section_id
  * @property int|null $tenant_id
- * @property array|string|null $title
+ * @property array|string $title
  * @property array|string|null $abbreviation
  * @property array|string|null $summary
  * @property array|string|null $description
@@ -38,15 +35,37 @@ use Illuminate\Support\Carbon;
  * @property bool $counts_in_progress
  * @property Carbon|null $reviewed_at
  * @property string|null $created_by
- * @property-read int $comments_count
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Collection<int, Activity> $activitiesAsSubject
+ * @property-read Collection<int, LearningAudience> $audiences
  * @property-read Collection<int, Comment> $comments
- * @property-read Collection<int, KnowledgeItemSource> $sources
- * @property-read Collection<int, LearningProgress> $progress
- * @property-read Collection<int, KnowledgeItem> $outgoingLinks
+ * @property-read User|null $createdBy
+ * @property-read array $translatable_columns_from
  * @property-read Collection<int, KnowledgeItem> $incomingLinks
+ * @property-read Collection<int, KnowledgeItem> $outgoingLinks
+ * @property-read Collection<int, LearningProgress> $progress
+ * @property-read Collection<int, Comment> $rootComments
+ * @property-read KnowledgeSection|null $section
+ * @property-read Collection<int, KnowledgeItemSource> $sources
  * @property-read Collection<int, KnowledgeItemSubject> $subjects
  * @property-read Tenant|null $tenant
- * @property-read User|null $createdBy
+ * @property-read mixed $translations
+ *
+ * @method static Builder<static>|KnowledgeItem active()
+ * @method static \Database\Factories\KnowledgeItemFactory factory($count = null, $state = [])
+ * @method static Builder<static>|KnowledgeItem newModelQuery()
+ * @method static Builder<static>|KnowledgeItem newQuery()
+ * @method static Builder<static>|KnowledgeItem ordered()
+ * @method static Builder<static>|KnowledgeItem query()
+ * @method static Builder<static>|KnowledgeItem terms()
+ * @method static Builder<static>|KnowledgeItem whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|KnowledgeItem whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|KnowledgeItem whereLocale(string $column, string $locale)
+ * @method static Builder<static>|KnowledgeItem whereLocales(string $column, array $locales)
+ * @method static Builder<static>|KnowledgeItem whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
+ *
+ * @mixin \Eloquent
  */
 #[Fillable(['key', 'kind', 'knowledge_section_id', 'tenant_id', 'title', 'abbreviation', 'summary', 'description', 'order', 'is_active', 'counts_in_progress', 'reviewed_at', 'created_by'])]
 class KnowledgeItem extends Model implements Commentable
@@ -65,6 +84,7 @@ class KnowledgeItem extends Model implements Commentable
     public $translatable = ['title', 'abbreviation', 'summary', 'description'];
 
     /** Match the column defaults, so a freshly created article reads the same as a reloaded one. */
+    #[\Override]
     protected $attributes = ['kind' => 'term', 'counts_in_progress' => true];
 
     /** @return list<string> */
@@ -139,19 +159,22 @@ class KnowledgeItem extends Model implements Commentable
     }
 
     /** @param Builder<static> $query */
-    public function scopeActive(Builder $query): void
+    #[Scope]
+    protected function active(Builder $query): void
     {
         $query->where('is_active', true);
     }
 
     /** @param Builder<static> $query */
-    public function scopeTerms(Builder $query): void
+    #[Scope]
+    protected function terms(Builder $query): void
     {
         $query->where('kind', KnowledgeItemKind::Term);
     }
 
     /** @param Builder<static> $query */
-    public function scopeOrdered(Builder $query): void
+    #[Scope]
+    protected function ordered(Builder $query): void
     {
         $query->orderBy('order')->orderBy('id');
     }

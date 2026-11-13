@@ -6,7 +6,7 @@ use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 test('the term map links active terms once per pair and leaves out material and inactive articles', function (): void {
     $topic = KnowledgeSection::factory()->create();

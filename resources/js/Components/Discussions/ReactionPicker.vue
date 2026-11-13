@@ -2,7 +2,7 @@
   <Popover v-model:open="open">
     <PopoverAnchor as-child>
       <div ref="anchor" class="flex items-center">
-        <slot :toggle="toggleFromClick" :open="open" :hover="{ onPointerenter: onPointerEnter, onPointerleave: onPointerLeave }" />
+        <slot :toggle="toggleFromClick" :open :hover="{ onPointerenter: onPointerEnter, onPointerleave: onPointerLeave }" />
       </div>
     </PopoverAnchor>
     <PopoverContent

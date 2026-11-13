@@ -2,7 +2,9 @@ import { flushPromises, mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { nextTick } from 'vue';
 import { useForm } from '@inertiajs/vue3';
+
 import LearningAudienceSheet from '../LearningAudienceSheet.vue';
+
 import { audience, editStep, editKnowledge } from './fixtures';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
@@ -251,5 +253,4 @@ describe('KnowledgeItemForm', () => {
     expect(form.tenant_id).toBeNull();
     wrapper.unmount();
   });
-
 });

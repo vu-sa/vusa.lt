@@ -6,7 +6,7 @@ export function useCollectionControls(isDesktop: Ref<boolean>, filtersOpen: Ref<
     if (isDesktop.value) filtersOpen.value = !filtersOpen.value;
     else sheetOpen.value = true;
   };
-  watch(() => isDesktop.value ? filtersOpen.value : sheetOpen.value, open => {
+  watch(() => isDesktop.value ? filtersOpen.value : sheetOpen.value, (open) => {
     if (open) loadFacets();
   }, { immediate: true });
   return { sheetOpen, toggleFilters };

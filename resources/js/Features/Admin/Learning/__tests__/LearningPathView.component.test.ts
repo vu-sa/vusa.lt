@@ -3,10 +3,12 @@ import { usePage } from '@inertiajs/vue3';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createMockPage } from '@/tests/helpers/createMockPage';
-import LearningPathView from '../LearningPathView.vue';
-import { path, step } from './fixtures';
 import { commonStubs } from '@/tests/stubs';
 import ShowLearningPath from '@/Pages/Admin/Learning/ShowLearningPath.vue';
+
+import LearningPathView from '../LearningPathView.vue';
+
+import { path, step } from './fixtures';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 beforeEach(() => vi.mocked(usePage).mockReturnValue(createMockPage()));
@@ -45,7 +47,7 @@ describe('LearningPathView', () => {
 
   it('shows an empty state when there are no steps', () => {
     const data = path();
-    data.stages.forEach(stage => { stage.steps = []; });
+    data.stages.forEach((stage) => { stage.steps = []; });
     const wrapper = mount(LearningPathView, { props: { path: data }, global: { stubs: commonStubs } });
     expect(wrapper.get('[data-slot="empty-state"]').text()).toContain('learning.path.empty_title');
     wrapper.unmount();

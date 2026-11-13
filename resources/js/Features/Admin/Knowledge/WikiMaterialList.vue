@@ -1,33 +1,3 @@
-<script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
-import { useResizeObserver } from '@vueuse/core';
-import { Link } from '@inertiajs/vue3';
-import { Check, FileText } from '@lucide/vue';
-
-import type { WikiMaterial } from '@/Types/learning';
-
-// One row that scrolls sideways, so 14 other units' regulations never push the page down;
-// the viewer's own units come first (the presenter sorts them).
-defineProps<{ materials: WikiMaterial[]; doneIds?: ReadonlySet<string> }>();
-const failed = reactive(new Set<string>());
-
-// Fade whichever edge still has tiles beyond it, so a row that scrolls reads as one.
-const strip = ref<HTMLElement | null>(null);
-const more = reactive({ left: false, right: false });
-function measure(): void {
-  const el = strip.value;
-  if (!el) return;
-  more.left = el.scrollLeft > 1;
-  more.right = el.scrollLeft + el.clientWidth < el.scrollWidth - 1;
-}
-onMounted(measure);
-useResizeObserver(strip, measure);
-const fade = '2.5rem';
-const maskImage = computed(() => (more.left || more.right)
-  ? `linear-gradient(to right, ${more.left ? 'transparent' : 'black'} 0, black ${more.left ? fade : '0'}, black calc(100% - ${more.right ? fade : '0px'}), ${more.right ? 'transparent' : 'black'} 100%)`
-  : undefined);
-</script>
-
 <template>
   <ul
     ref="strip"
@@ -66,3 +36,33 @@ const maskImage = computed(() => (more.left || more.right)
     </li>
   </ul>
 </template>
+
+<script setup lang="ts">
+import { computed, onMounted, reactive, ref } from 'vue';
+import { useResizeObserver } from '@vueuse/core';
+import { Link } from '@inertiajs/vue3';
+import { Check, FileText } from '@lucide/vue';
+
+import type { WikiMaterial } from '@/Types/learning';
+
+// One row that scrolls sideways, so 14 other units' regulations never push the page down;
+// the viewer's own units come first (the presenter sorts them).
+defineProps<{ materials: WikiMaterial[]; doneIds?: ReadonlySet<string> }>();
+const failed = reactive(new Set<string>());
+
+// Fade whichever edge still has tiles beyond it, so a row that scrolls reads as one.
+const strip = ref<HTMLElement | null>(null);
+const more = reactive({ left: false, right: false });
+function measure(): void {
+  const el = strip.value;
+  if (!el) return;
+  more.left = el.scrollLeft > 1;
+  more.right = el.scrollLeft + el.clientWidth < el.scrollWidth - 1;
+}
+onMounted(measure);
+useResizeObserver(strip, measure);
+const fade = '2.5rem';
+const maskImage = computed(() => (more.left || more.right)
+  ? `linear-gradient(to right, ${more.left ? 'transparent' : 'black'} 0, black ${more.left ? fade : '0'}, black calc(100% - ${more.right ? fade : '0px'}), ${more.right ? 'transparent' : 'black'} 100%)`
+  : undefined);
+</script>

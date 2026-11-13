@@ -5,7 +5,7 @@ use App\Models\Permission;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 test('a tenant curator can only create and edit tenant steps in their own unit', function (): void {
     $tenant = Tenant::query()->firstOrFail();
@@ -15,10 +15,10 @@ test('a tenant curator can only create and edit tenant steps in their own unit',
     $own = LearningStep::factory()->forTenant($tenant)->create();
     $other = LearningStep::factory()->forTenant()->create();
     $global = LearningStep::factory()->create();
-    expect($user->can('create', LearningStep::class))->toBeTrue();
-    expect($user->can('update', $own))->toBeTrue();
-    expect($user->can('update', $other))->toBeFalse();
-    expect($user->can('update', $global))->toBeFalse();
+    expect($user->can('create', LearningStep::class))->toBeTrue()
+        ->and($user->can('update', $own))->toBeTrue()
+        ->and($user->can('update', $other))->toBeFalse()
+        ->and($user->can('update', $global))->toBeFalse();
     $payload = ['kind' => 'action', 'audiences' => [['type' => 'everyone', 'tenant_id' => $other->audiences->first()->tenant_id,
         'importance' => 'recommended', 'stage' => 'before_start']], 'title' => ['lt' => 'Žingsnis', 'en' => 'Step']];
     asUser($user)->post(route('learningSteps.store'), $payload)->assertForbidden();
@@ -36,8 +36,8 @@ test('global curators edit any audience but nobody deletes system steps', functi
     $user->givePermissionTo(Permission::findOrCreate('learningSteps.delete.*', 'web'));
     $step = LearningStep::factory()->forTenant()->create();
     $system = LearningStep::query()->where('key', 'install_app')->firstOrFail();
-    expect($user->can('update', $step))->toBeTrue();
-    expect($user->can('delete', $system))->toBeFalse();
+    expect($user->can('update', $step))->toBeTrue()
+        ->and($user->can('delete', $system))->toBeFalse();
     $admin = makeAdminUser(Tenant::query()->firstOrFail());
     asUser($admin)->delete(route('learningSteps.destroy', $system))->assertForbidden();
     $this->assertDatabaseHas('learning_steps', ['id' => $system->id]);

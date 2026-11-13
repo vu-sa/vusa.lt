@@ -17,7 +17,7 @@ use Microsoft\Graph\Generated\Models\DriveItem;
 use Microsoft\Graph\Generated\Models\Thumbnail;
 use Microsoft\Graph\Generated\Models\ThumbnailSet;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 function knowledgeItemWithDocument(array $documentAttributes): array
 {

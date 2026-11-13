@@ -1,47 +1,6 @@
-<script setup lang="ts">
-import { computed } from 'vue';
-import { Check, RefreshCw } from '@lucide/vue';
-
-import EmptyState from '@/Components/Patterns/EmptyState.vue';
-import type { LearningCoordinator, LearningInstitutionContacts, LearningPathData, LearningStepData } from '@/Types/learning';
-
-import LearningStepRow from './LearningStepRow.vue';
-import LearningDocumentsEntry from './LearningDocumentsEntry.vue';
-import LearningAudienceNotes from './LearningAudienceNotes.vue';
-
-const props = defineProps<{
-  path: LearningPathData;
-  readonly?: boolean;
-  coordinators?: LearningCoordinator[];
-  institutionContacts?: LearningInstitutionContacts[];
-}>();
-
-const stations = computed(() => props.path.stages.filter(station => station.steps.length));
-const currentIndex = computed(() => stations.value.findIndex(station => station.stage === props.path.currentStage));
-const hasSteps = computed(() => stations.value.length > 0);
-
-const resolved = (steps: LearningStepData[]) => steps.filter(step => step.state === 'done' || step.state === 'skipped').length;
-
-function stateOf(index: number, steps: LearningStepData[]): 'done' | 'now' | 'behind' | 'ahead' {
-  if (resolved(steps) === steps.length) return 'done';
-  if (index === currentIndex.value) return 'now';
-  return index < currentIndex.value ? 'behind' : 'ahead';
-}
-
-function groups(steps: LearningStepData[]) {
-  const audiences = new Map<string, LearningStepData[]>();
-  for (const step of steps) {
-    const rows = audiences.get(step.audienceLabel) ?? [];
-    rows.push(step);
-    audiences.set(step.audienceLabel, rows);
-  }
-  return [...audiences].map(([label, steps]) => ({ label, steps }));
-}
-</script>
-
 <template>
   <div class="space-y-12" data-slot="learning-path">
-    <LearningDocumentsEntry :documents="path.knowledge" :readonly="readonly" />
+    <LearningDocumentsEntry :documents="path.knowledge" :readonly />
 
     <ol v-if="hasSteps" class="relative">
       <li
@@ -91,7 +50,9 @@ function groups(steps: LearningStepData[]) {
               {{ $t('learning.path.stage_progress', { done: String(resolved(station.steps)), total: String(station.steps.length) }) }}
             </span>
           </header>
-          <p class="mt-1 max-w-prose pl-13 text-sm text-muted-foreground sm:pl-0">{{ $t(`learning.path.stage_hints.${station.stage}`) }}</p>
+          <p class="mt-1 max-w-prose pl-13 text-sm text-muted-foreground sm:pl-0">
+            {{ $t(`learning.path.stage_hints.${station.stage}`) }}
+          </p>
 
           <div v-for="group in groups(station.steps)" :key="group.label" class="mt-4">
             <h3 class="flex items-baseline gap-2 text-sm font-semibold text-foreground">
@@ -102,10 +63,10 @@ function groups(steps: LearningStepData[]) {
               <LearningStepRow
                 v-for="step in group.steps"
                 :key="step.id"
-                :step="step"
-                :readonly="readonly"
-                :coordinators="coordinators"
-                :institution-contacts="institutionContacts"
+                :step
+                :readonly
+                :coordinators
+                :institution-contacts
               />
             </ul>
           </div>
@@ -116,18 +77,24 @@ function groups(steps: LearningStepData[]) {
 
     <section v-if="path.meetingPrep.length" data-slot="meeting-prep" aria-labelledby="meeting-prep-title">
       <header class="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <h2 id="meeting-prep-title" class="text-xl font-bold leading-tight sm:text-2xl">{{ $t('learning.path.meeting_prep') }}</h2>
+        <h2 id="meeting-prep-title" class="text-xl font-bold leading-tight sm:text-2xl">
+          {{ $t('learning.path.meeting_prep') }}
+        </h2>
         <span class="inline-flex items-center gap-1.5 border border-border px-2 py-0.5 text-xs font-semibold text-muted-foreground">
           <RefreshCw class="size-3.5" aria-hidden="true" />{{ $t('learning.path.meeting_prep_hint') }}
         </span>
       </header>
       <div v-for="group in path.meetingPrep" :key="group.audience.id" class="mt-4">
-        <h3 class="text-sm font-semibold">{{ group.audience.label }}</h3>
+        <h3 class="text-sm font-semibold">
+          {{ group.audience.label }}
+        </h3>
         <ol class="mt-2 divide-y divide-border border border-border">
           <li v-for="(step, stepIndex) in group.steps" :key="step.id" class="grid grid-cols-[2.75rem_minmax(0,1fr)] items-start gap-x-3 px-4 py-4">
             <span class="mx-auto flex size-6 items-center justify-center border-2 border-border text-xs font-bold tabular-nums text-muted-foreground" aria-hidden="true">{{ stepIndex + 1 }}</span>
             <div class="min-w-0">
-              <p class="text-lg font-bold leading-6">{{ step.title }}</p>
+              <p class="text-lg font-bold leading-6">
+                {{ step.title }}
+              </p>
               <!-- Sanitized on write (LearningStep::sanitizedHtmlTranslations). -->
               <!-- eslint-disable-next-line vue/no-v-html -->
               <div v-if="step.description" class="rc-prose mt-1 max-w-prose text-sm text-muted-foreground" data-slot="step-description" v-html="step.description" />
@@ -139,3 +106,44 @@ function groups(steps: LearningStepData[]) {
     </section>
   </div>
 </template>
+
+<script setup lang="ts">
+import { computed } from 'vue';
+import { Check, RefreshCw } from '@lucide/vue';
+
+import EmptyState from '@/Components/Patterns/EmptyState.vue';
+import type { LearningCoordinator, LearningInstitutionContacts, LearningPathData, LearningStepData } from '@/Types/learning';
+
+import LearningStepRow from './LearningStepRow.vue';
+import LearningDocumentsEntry from './LearningDocumentsEntry.vue';
+import LearningAudienceNotes from './LearningAudienceNotes.vue';
+
+const props = defineProps<{
+  path: LearningPathData;
+  readonly?: boolean;
+  coordinators?: LearningCoordinator[];
+  institutionContacts?: LearningInstitutionContacts[];
+}>();
+
+const stations = computed(() => props.path.stages.filter(station => station.steps.length));
+const currentIndex = computed(() => stations.value.findIndex(station => station.stage === props.path.currentStage));
+const hasSteps = computed(() => stations.value.length > 0);
+
+const resolved = (steps: LearningStepData[]) => steps.filter(step => step.state === 'done' || step.state === 'skipped').length;
+
+function stateOf(index: number, steps: LearningStepData[]): 'done' | 'now' | 'behind' | 'ahead' {
+  if (resolved(steps) === steps.length) return 'done';
+  if (index === currentIndex.value) return 'now';
+  return index < currentIndex.value ? 'behind' : 'ahead';
+}
+
+function groups(steps: LearningStepData[]) {
+  const audiences = new Map<string, LearningStepData[]>();
+  for (const step of steps) {
+    const rows = audiences.get(step.audienceLabel) ?? [];
+    rows.push(step);
+    audiences.set(step.audienceLabel, rows);
+  }
+  return [...audiences].map(([label, steps]) => ({ label, steps }));
+}
+</script>

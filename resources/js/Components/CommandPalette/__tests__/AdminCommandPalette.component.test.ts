@@ -6,7 +6,6 @@ import { useAdminSearch } from '@/Composables/useAdminSearch';
 import { useCommandPalette } from '@/Composables/useCommandPalette';
 import { useUIPreferences } from '@/Composables/useUIPreferences';
 import { createEmptyMultiSearchResults } from '@/Shared/Search/utils/createEmptyMultiSearchResults';
-
 import { loadWikiLinkTargets } from '@/Features/Admin/Knowledge/useWikiLinkTargets';
 import { KnowledgeItemKind } from '@/Types/enums';
 

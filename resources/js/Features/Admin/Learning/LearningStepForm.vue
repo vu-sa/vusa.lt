@@ -1,19 +1,19 @@
 <template>
   <FormPage
     :title="pageTitle"
-    :bar-title="barTitle"
+    :bar-title
     :entity-type="ModelEnum.LEARNING_STEP"
     required-note
-    :back-href="backHref"
+    :back-href
     :back-label="$t('learning.pages.library')"
     :dirty="form.isDirty"
     :processing="form.processing"
     :errors="form.errors"
-    :field-ids="fieldIds"
+    :field-ids
     :mode="isEdit ? 'edit' : 'create'"
     :locale="activeLocale"
     :available-locales="['lt', 'en']"
-    :missing-locale-counts="missingLocaleCounts"
+    :missing-locale-counts
     @update:locale="activeLocale = $event"
     @submit="submit"
   >
@@ -64,7 +64,7 @@
         <FormSegmentedControl
           v-model="form.kind"
           :options="kindOptions"
-          :ariaLabel="$t('learning_library.fields.kind')"
+          :aria-label="$t('learning_library.fields.kind')"
           test-id-prefix="step-kind"
         />
       </FormFieldWrapper>
@@ -97,21 +97,20 @@
           />
         </div>
       </FormFieldWrapper>
-
     </template>
 
     <LearningAudienceList
       v-model="form.audiences"
       :kind="form.kind"
-      :is-system="isSystem"
+      :is-system
       :locale="activeLocale"
       :errors="form.errors"
-      :audience-types="audienceTypes"
-      :can-target-everywhere="canTargetEverywhere"
-      :tenants="tenants"
-      :institution-types="institutionTypes"
-      :duty-types="dutyTypes"
-      :responsibilities="responsibilities"
+      :audience-types
+      :can-target-everywhere
+      :tenants
+      :institution-types
+      :duty-types
+      :responsibilities
     />
 
     <template #aside>

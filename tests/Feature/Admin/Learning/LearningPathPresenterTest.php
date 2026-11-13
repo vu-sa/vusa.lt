@@ -15,7 +15,7 @@ use App\Services\Learning\ResolvedLearningItem;
 use App\Services\LearningPathPresenter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 test('sources fall back to Lithuanian and expose published document links', function (): void {
     $step = KnowledgeItem::factory()->create();
@@ -24,8 +24,8 @@ test('sources fall back to Lithuanian and expose published document links', func
     $step->load(['sources.document', 'section', 'audiences'])->loadCount('comments');
     $data = KnowledgeBasePresenter::item(new ResolvedLearningItem($step), 'en');
 
-    expect($data['source']['url'])->toBe(route('documents.show', $document->id));
-    expect($data['source']['documentId'])->toBe($document->id);
+    expect($data['source']['url'])->toBe(route('documents.show', $document->id))
+        ->and($data['source']['documentId'])->toBe($document->id);
 });
 
 test('hidden sources open through the knowledge item and show its thumbnail', function (): void {
@@ -44,8 +44,7 @@ test('system text is localized and raw URLs preserve the source contract', funct
     $viewer = makeUser(Tenant::query()->firstOrFail());
     $step = LearningStep::query()->where('key', 'install_app')->firstOrFail();
     $data = LearningPathPresenter::step(new ResolvedLearningItem($step), $viewer, 'en');
-    expect($data['title'])->toBe(__('learning.system_steps.install_app.title', [], 'en'));
-    expect($data['actionLabel'])->toBe(__('learning.system_steps.install_app.action', [], 'en'));
+    expect($data)->toMatchArray(['title' => __('learning.system_steps.install_app.title', [], 'en'), 'actionLabel' => __('learning.system_steps.install_app.action', [], 'en')]);
     $custom = KnowledgeItem::factory()->create();
     $custom->sources()->create(['locale' => 'en', 'url' => 'https://example.test/learn']);
     $custom->load('sources.document')->loadCount('comments');
@@ -111,13 +110,13 @@ test('path separates document progress and groups meeting preparation by the win
     $path = ResolveLearningPath::execute($user);
     $payload = LearningPathPresenter::path($path, 'lt');
 
-    expect(collect($payload['stages'])->flatMap(fn (array $stage) => $stage['steps'])->pluck('id')->all())->toBe([$action->id]);
-    expect($payload['totals']['allTotal'])->toBe(1);
-    expect($payload['knowledge'])->toMatchArray(['essentialDone' => 1, 'essentialTotal' => 2, 'done' => 1, 'total' => 3]);
-    expect($payload['knowledge']['nextItem']['id'])->toBe($essential->id)
-        ->and($payload['knowledge'])->not->toHaveKey('next');
-    expect($payload['meetingPrep'][0]['audience'])->toBe(['id' => 'institution_type:'.$type->id.':', 'label' => $type->getTranslation('title', 'lt')]);
-    expect($payload['meetingPrep'][0]['steps'][0]['id'])->toBe($prep->id);
+    expect(collect($payload['stages'])->flatMap(fn (array $stage) => $stage['steps'])->pluck('id')->all())->toBe([$action->id])
+        ->and($payload['totals']['allTotal'])->toBe(1)
+        ->and($payload['knowledge'])->toMatchArray(['essentialDone' => 1, 'essentialTotal' => 2, 'done' => 1, 'total' => 3])
+        ->and($payload['knowledge']['nextItem']['id'])->toBe($essential->id)
+        ->and($payload['knowledge'])->not->toHaveKey('next')
+        ->and($payload['meetingPrep'][0]['audience'])->toBe(['id' => 'institution_type:'.$type->id.':', 'label' => $type->getTranslation('title', 'lt')])
+        ->and($payload['meetingPrep'][0]['steps'][0]['id'])->toBe($prep->id);
 });
 
 test('meeting prep steps for the same institution type form one group', function (): void {

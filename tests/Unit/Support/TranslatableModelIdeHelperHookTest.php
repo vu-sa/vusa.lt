@@ -10,7 +10,7 @@ pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->hook = new TranslatableModelIdeHelperHook;
-    $this->mockCommand = $this->createMock(ModelsCommand::class);
+    $this->mockCommand = $this->createStub(ModelsCommand::class);
 
     // Track setProperty calls to verify the hook behavior
     $this->setPropertyCalls = [];

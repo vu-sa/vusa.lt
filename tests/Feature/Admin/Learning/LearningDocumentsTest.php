@@ -13,7 +13,7 @@ use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 test('articles for you has its own page with only personal learning data', function (): void {
     $user = makeUser(Tenant::query()->firstOrFail());
@@ -151,8 +151,8 @@ test('document payload includes only relevant sections and each documents sectio
 
     expect($props['knowledge']['sections'])->toBe([['id' => $section->id, 'kind' => KnowledgeSectionKind::Topic, 'title' => 'Įvadiniai mokymai', 'description' => 'Mokymų dokumentai', 'date' => null, 'order' => 4]]);
     $documents = collect($props['knowledge']['items'])->keyBy('id');
-    expect($documents[$document->id]['section'])->toBe(['id' => $section->id, 'title' => 'Įvadiniai mokymai']);
-    expect($documents[$ungrouped->id]['section'])->toBeNull();
+    expect($documents[$document->id]['section'])->toBe(['id' => $section->id, 'title' => 'Įvadiniai mokymai'])
+        ->and($documents[$ungrouped->id]['section'])->toBeNull();
 });
 
 test('updated source clears learned marks across wiki views and off-path records', function (): void {

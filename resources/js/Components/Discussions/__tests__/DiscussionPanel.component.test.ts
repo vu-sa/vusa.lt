@@ -41,11 +41,11 @@ vi.mock('@/Components/Discussions/CommentComposer.vue', async () => {
     __esModule: true,
     default: defineComponent({
       name: 'CommentComposer',
-      emits: ['submit', 'cancel'],
-      methods: { reset: mocks.resetComposer },
       props: ['modes'],
-      template: '<button class="composer-stub" :data-modes="(modes || []).join(\',\')" @click="$emit(\'submit\', draft)">composer</button>',
+      emits: ['submit', 'cancel'],
       data: () => ({ draft: mocks.nextDraft }),
+      methods: { reset: mocks.resetComposer },
+      template: '<button class="composer-stub" :data-modes="(modes || []).join(\',\')" @click="$emit(\'submit\', draft)">composer</button>',
     }),
   };
 });

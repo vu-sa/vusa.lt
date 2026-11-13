@@ -52,9 +52,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $sharepoint_web_url
  * @property Carbon|null $sharepoint_modified_at
  * @property string|null $sharepoint_institution_label
- * @property string|null $thumbnail_path
- * @property string|null $thumbnail_etag
- * @property-read Collection<int, KnowledgeItemSource> $knowledgeItemSources
  * @property Carbon $created_at
  * @property Carbon|null $checked_at
  * @property string $sync_status Status of SharePoint sync: pending, syncing, success, failed
@@ -64,9 +61,12 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $updated_at
  * @property Carbon|null $effective_date
  * @property Carbon|null $expiration_date
+ * @property string|null $thumbnail_path
+ * @property string|null $thumbnail_etag
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Institution|null $institution
  * @property-read mixed $is_in_effect
+ * @property-read Collection<int, KnowledgeItemSource> $knowledgeItemSources
  * @property-read string $language_code
  * @property-read Meeting|null $meeting
  * @property-read Collection<int, Tenant> $tenant

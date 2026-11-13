@@ -23,7 +23,7 @@ use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 function learningRep(?Institution $institution = null, ?string $start = null): array
 {
@@ -54,8 +54,8 @@ test('a representative receives inherited institution and own tenant audiences o
     $ids = $path->steps->pluck('item.id')->all();
 
     expect($ids)->toContain($platform->id, $foundation->id, $inherited->id, $own->id)
-        ->not->toContain($foreign->id, $unrelated->id, $inactive->id);
-    expect($path->currentStage)->toBe(LearningStage::FirstMonths);
+        ->not->toContain($foreign->id, $unrelated->id, $inactive->id)
+        ->and($path->currentStage)->toBe(LearningStage::FirstMonths);
 });
 
 test('a non representative receives platform and inherited duty type steps', function (): void {
@@ -71,8 +71,8 @@ test('a non representative receives platform and inherited duty type steps', fun
     $foundation = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->audience(['type' => LearningAudienceType::Purpose, 'source_id' => ResponsibilityPurpose::StudentRepresentation->value])->create();
     $path = ResolveLearningPath::execute($user);
 
-    expect($path->steps->pluck('item.id')->all())->toContain($platform->id, $ownType->id)->not->toContain($foundation->id);
-    expect($path->currentStage)->toBeNull();
+    expect($path->steps->pluck('item.id')->all())->toContain($platform->id, $ownType->id)->not->toContain($foundation->id)
+        ->and($path->currentStage)->toBeNull();
 });
 
 test('an incoming representative gets foundation before their term starts', function (): void {
@@ -81,8 +81,8 @@ test('an incoming representative gets foundation before their term starts', func
     $step = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->audience(['type' => LearningAudienceType::Purpose, 'source_id' => ResponsibilityPurpose::StudentRepresentation->value])->create();
     $path = ResolveLearningPath::execute($user);
 
-    expect($path->currentStage)->toBe(LearningStage::BeforeStart);
-    expect($path->contains($step))->toBeTrue();
+    expect($path->currentStage)->toBe(LearningStage::BeforeStart)
+        ->and($path->contains($step))->toBeTrue();
 });
 
 test('completion and skips persist across term changes', function (): void {
@@ -100,10 +100,10 @@ test('completion and skips persist across term changes', function (): void {
     $path = ResolveLearningPath::execute($user);
     $states = $path->steps->keyBy('item.id');
 
-    expect($states[$term->id]->state)->toBe('done');
-    expect($states[$done->id]->state)->toBe('done');
-    expect($states[$skip->id]->state)->toBe('skipped');
-    expect($path->totals()['allDone'])->toBe(3);
+    expect($states[$term->id]->state)->toBe('done')
+        ->and($states[$done->id]->state)->toBe('done')
+        ->and($states[$skip->id]->state)->toBe('skipped')
+        ->and($path->totals()['allDone'])->toBe(3);
 });
 
 test('an incoming rep keeps completion made before the term starts', function (): void {
@@ -122,8 +122,8 @@ test('meeting preparation stays outside progress', function (): void {
     $prep = LearningStep::factory()->state(['kind' => LearningStepKind::Action])->meetingPrep($type)->create();
     $path = ResolveLearningPath::execute($user);
 
-    expect($path->steps->pluck('item.id')->all())->not->toContain($prep->id);
-    expect($path->meetingPrep->pluck('item.id')->all())->toContain($prep->id);
+    expect($path->steps->pluck('item.id')->all())->not->toContain($prep->id)
+        ->and($path->meetingPrep->pluck('item.id')->all())->toContain($prep->id);
 });
 
 test('knowledge becomes updated when the SharePoint source changes after completion', function (): void {
@@ -148,10 +148,10 @@ test('detected completion is read time only and a manual tick also completes a s
     $automatic = $paths[$first->id]->steps->firstWhere('item.id', $notification->id);
     $manual = $paths[$second->id]->steps->firstWhere('item.id', $notification->id);
 
-    expect($automatic->state)->toBe('done');
-    expect($automatic->autoCompleted)->toBeTrue();
-    expect($manual->state)->toBe('done');
-    expect($manual->autoCompleted)->toBeFalse();
+    expect($automatic->state)->toBe('done')
+        ->and($automatic->autoCompleted)->toBeTrue()
+        ->and($manual->state)->toBe('done')
+        ->and($manual->autoCompleted)->toBeFalse();
     $this->assertDatabaseMissing('learning_progress', ['user_id' => $first->id, 'progressable_type' => $notification->getMorphClass(), 'progressable_id' => $notification->id]);
 });
 
@@ -181,11 +181,11 @@ test('the highest importance audience wins its stage and every matching note is 
     ]);
     $item = ResolveLearningPath::execute($user)->steps->firstWhere('item.id', $step->id);
 
-    expect($item->importance)->toBe(LearningImportance::Essential);
-    expect($item->stage)->toBe(LearningStage::WholeTerm);
-    expect($item->audienceId)->toBe($winner->id);
-    expect(array_column($item->audienceNotes, 'description'))->toBe(['Visiems nariams', 'Tavo pareigoms']);
-    expect($item->audienceLabel)->toBe($winner->label('lt'));
+    expect($item->importance)->toBe(LearningImportance::Essential)
+        ->and($item->stage)->toBe(LearningStage::WholeTerm)
+        ->and($item->audienceId)->toBe($winner->id)
+        ->and(array_column($item->audienceNotes, 'description'))->toBe(['Visiems nariams', 'Tavo pareigoms'])
+        ->and($item->audienceLabel)->toBe($winner->label('lt'));
 });
 
 test('equal importance chooses the earliest stage then lowest audience order', function (): void {
@@ -212,8 +212,8 @@ test('tenant filtering requires the matching fact to come from a duty in that te
     LearningAudience::factory()->for($foreign, 'audienceable')->institutionType($type)->create(['tenant_id' => $other->id]);
     $path = ResolveLearningPath::execute($user);
 
-    expect($path->contains($matching))->toBeTrue();
-    expect($path->contains($foreign))->toBeFalse();
+    expect($path->contains($matching))->toBeTrue()
+        ->and($path->contains($foreign))->toBeFalse();
 });
 
 test('responsibility ids and system purposes match the holders of the role', function (): void {
@@ -226,10 +226,10 @@ test('responsibility ids and system purposes match the holders of the role', fun
     $outsider = User::factory()->create();
     $paths = ResolveLearningPath::forUsers(collect([$holder, $outsider]));
 
-    expect($paths[$holder->id]->contains($byRole))->toBeTrue();
-    expect($paths[$holder->id]->contains($byPurpose))->toBeTrue();
-    expect($paths[$outsider->id]->contains($byRole))->toBeFalse();
-    expect($paths[$outsider->id]->contains($byPurpose))->toBeFalse();
+    expect($paths[$holder->id]->contains($byRole))->toBeTrue()
+        ->and($paths[$holder->id]->contains($byPurpose))->toBeTrue()
+        ->and($paths[$outsider->id]->contains($byRole))->toBeFalse()
+        ->and($paths[$outsider->id]->contains($byPurpose))->toBeFalse();
 });
 
 test('retired system tasks are absent from the path', function (): void {

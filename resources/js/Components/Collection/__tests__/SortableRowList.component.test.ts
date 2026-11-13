@@ -1,5 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { expect, it, vi } from 'vitest';
+
 import SortableRowList from '../SortableRowList.vue';
 
 const { option } = vi.hoisted(() => ({ option: vi.fn() }));

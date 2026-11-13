@@ -32,7 +32,7 @@ tests:
 pareigas, todėl Studijų programos komiteto atstovas mato kitus žingsnius nei Senato narys. Ką verta
 perskaityti, rasi [Wiki](/wiki/straipsniai).
 
-<ChangelogNote date="2026-11-11" title="Mano kelias">
+<ChangelogNote date="2026-11-13" title="Mano kelias">
 
 Mano kelias pakeitė pareigybių ir institucijų tipų failus: vietoj failų sąrašo – žingsniai su
 paaiškinimu, kam jų reikia, ir pažanga, kurią mato koordinatorius.

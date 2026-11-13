@@ -6,7 +6,7 @@ use App\Models\Permission;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 test('a tenant curator can create update and delete their sections but cannot target global or foreign sections', function (): void {
     $tenant = Tenant::query()->firstOrFail();

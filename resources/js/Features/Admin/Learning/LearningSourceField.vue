@@ -9,7 +9,7 @@
       <FormSegmentedControl
         :model-value="modes[locale]"
         :options="modeOptions"
-        :ariaLabel="$t('learning_library.fields.source')"
+        :aria-label="$t('learning_library.fields.source')"
         :test-id-prefix="`source-mode-${locale}`"
         @update:model-value="mode => setMode(locale, mode)"
       />
@@ -59,8 +59,12 @@
             role="listbox"
             :data-testid="`document-results-${locale}`"
           >
-            <p v-if="searching[locale]" class="px-3 py-2 text-xs text-muted-foreground">{{ $t('learning_library.source.searching') }}</p>
-            <p v-else-if="results[locale].length === 0" class="px-3 py-2 text-xs text-muted-foreground">{{ $t('learning_library.source.no_results') }}</p>
+            <p v-if="searching[locale]" class="px-3 py-2 text-xs text-muted-foreground">
+              {{ $t('learning_library.source.searching') }}
+            </p>
+            <p v-else-if="results[locale].length === 0" class="px-3 py-2 text-xs text-muted-foreground">
+              {{ $t('learning_library.source.no_results') }}
+            </p>
             <button
               v-for="doc in results[locale]"
               :key="doc.id"

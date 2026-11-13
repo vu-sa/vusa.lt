@@ -56,7 +56,7 @@ atsakyti į kitų komentarus, paminėti kolegas, pridėti nuotraukų, pradėti a
 - **Skydelis prisitaiko prie įrašo**: Mano kelio žingsniuose pirmiausia rodomos temos, pagalbos
   užklausose rodomas paprastas susirašinėjimas be temų ir apklausų, kituose įrašuose – komentarai su temomis ir apklausomis.
 
-<ChangelogNote date="2026-11-11" title="Temos, pareigos ir nuotraukos komentaruose">
+<ChangelogNote date="2026-11-13" title="Temos, pareigos ir nuotraukos komentaruose">
 
 Rašymo laukelis ramybės būsenoje užima vieną eilutę, formatavimas paslėptas po mygtuku. Atsirado temos,
 pareigos prie vardo ir nuotraukos, o apklausa kuriama tiesiai laukelyje. Žymėjimas „Išspręsta“ pakeistas temų užbaigimu.

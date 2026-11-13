@@ -92,7 +92,9 @@
           <component :is="closed ? RotateCcw : CircleCheck" />
           {{ closed ? $t('discussions.topic.reopen') : $t('discussions.topic.close') }}
         </Button>
-        <p v-if="closed" class="ml-auto text-xs text-muted-foreground">{{ $t('discussions.topic.closed_hint') }}</p>
+        <p v-if="closed" class="ml-auto text-xs text-muted-foreground">
+          {{ $t('discussions.topic.closed_hint') }}
+        </p>
       </div>
     </div>
   </article>

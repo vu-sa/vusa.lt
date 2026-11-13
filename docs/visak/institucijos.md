@@ -80,7 +80,7 @@ Atvėrus instituciją iškart rodoma **Santrauka**: aprašymas po pavadinimu (dv
 
 Telefone iš pradžių rodoma Santrauka. Prisegtame laukelyje **Rodyti** galima pasirinkti vieną skiltį. Nuoroda su pasirinktu skirtuku iškart atveria tą skiltį – ir telefone.
 
-<ChangelogNote date="2026-11-11" title="Atnaujintas institucijos puslapis">
+<ChangelogNote date="2026-11-13" title="Atnaujintas institucijos puslapis">
 
 Iki 2026-11-09 aprašymas buvo apžvalgos skiltyje, posėdžiai – sąrašu, o pareigybės visada turėjo atskirą skirtuką.
 

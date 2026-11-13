@@ -9,7 +9,7 @@ use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 test('system detectors identify the matching user in one batched query', function (string $detector, string $fixture): void {
     $this->freezeTime();
@@ -27,8 +27,8 @@ test('system detectors identify the matching user in one batched query', functio
     $queries = DB::getQueryLog();
     DB::disableQueryLog();
 
-    expect($ids->all())->toBe([$done->id]);
-    expect($queries)->toHaveCount(1);
+    expect($ids->all())->toBe([$done->id])
+        ->and($queries)->toHaveCount(1);
 })->with([
     'photo' => [ProfilePhotoDetector::class, 'photo'],
     'push' => [BrowserPushDetector::class, 'push'],

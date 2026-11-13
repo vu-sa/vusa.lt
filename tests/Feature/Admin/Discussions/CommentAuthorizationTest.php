@@ -156,8 +156,8 @@ describe('topic moderation', function (): void {
         $foreign = Comment::factory()->topic()
             ->for(Problem::factory()->create(['tenant_id' => $otherTenant->id]), 'commentable')->for($this->viewer)->create();
 
-        expect(Gate::forUser($moderator)->allows('resolve', $local))->toBeTrue();
-        expect(Gate::forUser($moderator)->allows('resolve', $foreign))->toBe($foreignAllowed);
+        expect(Gate::forUser($moderator)->allows('resolve', $local))->toBeTrue()
+            ->and(Gate::forUser($moderator)->allows('resolve', $foreign))->toBe($foreignAllowed);
 
         asUser($moderator)->postJson(route('api.v1.admin.comments.resolve', $local))
             ->assertOk()->assertJsonPath('data.can.resolve', true)->assertJsonPath('data.is_closed', true);

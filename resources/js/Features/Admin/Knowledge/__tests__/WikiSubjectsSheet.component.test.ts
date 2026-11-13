@@ -5,8 +5,9 @@ import { beforeEach, expect, it, vi } from 'vitest';
 
 import { SheetForm } from '@/Components/Patterns';
 import { commonStubs } from '@/tests/stubs';
-import WikiSubjectsSheet from '../WikiSubjectsSheet.vue';
 import { KnowledgeItemKind } from '@/Types/enums';
+
+import WikiSubjectsSheet from '../WikiSubjectsSheet.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 beforeEach(() => vi.clearAllMocks());

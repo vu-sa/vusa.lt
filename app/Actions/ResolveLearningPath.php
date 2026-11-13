@@ -42,7 +42,7 @@ class ResolveLearningPath
             return collect();
         }
         // Fresh load: ModelAuthorizer may have left a partial `authorization_duties` on the same instance.
-        (new EloquentCollection($users->all()))->load([
+        new EloquentCollection($users->all())->load([
             'authorization_duties.institution.types',
             'authorization_duties.types',
             'authorization_duties.roles',

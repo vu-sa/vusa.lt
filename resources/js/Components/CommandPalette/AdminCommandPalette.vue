@@ -174,6 +174,10 @@ import SearchHitRow from '@/Features/Admin/AdminSearch/Components/SearchHitRow.v
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import { TopProgressBar } from '@/Components/Patterns';
 import { CommandList, CommandItem } from '@/Components/ui/command';
+import { loadWikiLinkTargets } from '@/Features/Admin/Knowledge/useWikiLinkTargets';
+import { searchWiki } from '@/Features/Admin/Knowledge/wikiSearch';
+import type { WikiIndexEntry } from '@/Types/learning';
+import { ModelEnum } from '@/Types/enums';
 
 import PinButton from './results/PinButton.vue';
 import { paletteRowClass } from './results/paletteRowClass';
@@ -182,10 +186,6 @@ import PaletteGroup from './results/PaletteGroup.vue';
 import ActionResult from './results/ActionResult.vue';
 import { useCommandActions } from './useCommandActions';
 import PaletteDialog from './PaletteDialog.vue';
-import { loadWikiLinkTargets } from '@/Features/Admin/Knowledge/useWikiLinkTargets';
-import { searchWiki } from '@/Features/Admin/Knowledge/wikiSearch';
-import type { WikiIndexEntry } from '@/Types/learning';
-import { ModelEnum } from '@/Types/enums';
 
 /** Search collection → the catalog `entityType` whose section owns it, for workspace ranking. */
 const collectionEntityType: Record<SearchCollectionKey, string> = {

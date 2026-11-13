@@ -8,6 +8,7 @@ import { KnowledgeItemKind, KnowledgeSectionKind, LearningImportance } from '@/T
 import type { SelfLearnedItemData, WikiIndexEntry } from '@/Types/learning';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
+
 import { knowledge } from '../../Learning/__tests__/fixtures';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
@@ -51,11 +52,13 @@ function render(knowledgeItems = items(), extra: { selfLearned?: SelfLearnedItem
 
 function renderMine(knowledgeItems = items(), selfLearned: SelfLearnedItemData[] = []) {
   return mount(ShowKnowledgeForYou, {
-    props: { knowledge: { sections: sections.slice(0, 2), items: knowledgeItems, selfLearned, stats: { pathDone: 0, pathTotal: knowledgeItems.length, selfLearned: selfLearned.length } }, assignedProgress: knowledgeItems.length ? [
-      { importance: LearningImportance.Essential, done: 2, total: 3 },
-      { importance: LearningImportance.Recommended, done: 0, total: 1 },
-      { importance: LearningImportance.Optional, done: 0, total: 1 },
-    ] : [] },
+    props: { knowledge: { sections: sections.slice(0, 2), items: knowledgeItems, selfLearned, stats: { pathDone: 0, pathTotal: knowledgeItems.length, selfLearned: selfLearned.length } }, assignedProgress: knowledgeItems.length
+      ? [
+          { importance: LearningImportance.Essential, done: 2, total: 3 },
+          { importance: LearningImportance.Recommended, done: 0, total: 1 },
+          { importance: LearningImportance.Optional, done: 0, total: 1 },
+        ]
+      : [] },
     global: { stubs: commonStubs },
   });
 }

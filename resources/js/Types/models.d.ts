@@ -258,6 +258,7 @@ declare global {
       commentable_id: string
       user_id?: string | null
       kind: CommentKind
+      title?: string | null
       body: string
       metadata?: Array<unknown> | null
       mentioned_user_ids?: Array<unknown> | null
@@ -267,9 +268,11 @@ declare global {
       erased_at?: string | null
       created_at?: string | null
       updated_at?: string | null
+      author_dutiable_id?: string | null
       // relations
       commentable?: Comment
       user?: User
+      author_dutiable?: Dutiable
       parent?: Comment
       replies?: Comment[]
       thread_replies?: Comment[]
@@ -277,13 +280,16 @@ declare global {
       reactions?: CommentReaction[]
       poll_votes?: CommentPollVote[]
       resolver?: User
+      media?: Media[]
       // counts
       replies_count: number
       thread_replies_count: number
       reactions_count: number
       poll_votes_count: number
+      media_count: number
       // exists
       user_exists: boolean
+      author_dutiable_exists: boolean
       parent_exists: boolean
       replies_exists: boolean
       thread_replies_exists: boolean
@@ -291,6 +297,7 @@ declare global {
       reactions_exists: boolean
       poll_votes_exists: boolean
       resolver_exists: boolean
+      media_exists: boolean
     }
 
     export interface CommentPollVote {
@@ -433,19 +440,24 @@ declare global {
       updated_at?: string
       effective_date?: string | null
       expiration_date?: string | null
+      thumbnail_path?: string | null
+      thumbnail_etag?: string | null
       // mutators
       language_code: string
       is_in_effect: unknown
       // relations
       meeting?: Meeting
       institution?: Institution
+      knowledge_item_sources?: KnowledgeItemSource[]
       tenant?: Tenant
       activities_as_subject?: Activity[]
       // counts
+      knowledge_item_sources_count: number
       activities_as_subject_count: number
       // exists
       meeting_exists: boolean
       institution_exists: boolean
+      knowledge_item_sources_exists: boolean
       activities_as_subject_exists: boolean
     }
 
@@ -675,16 +687,12 @@ declare global {
       deleted_at?: string | null
       // mutators
       force_delete_blocked_reason: string
-      has_protocol: boolean
-      has_report: boolean
       translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
       duties?: Duty[]
       roles?: Role[]
       responsibility_grants?: ResponsibilityGrant[]
-      fileable_files?: FileableFile[]
-      available_files?: FileableFile[]
       parent?: DutyType
       descendants?: DutyType[]
       recursive_descendants?: DutyType[]
@@ -694,8 +702,6 @@ declare global {
       duties_count: number
       roles_count: number
       responsibility_grants_count: number
-      fileable_files_count: number
-      available_files_count: number
       descendants_count: number
       recursive_descendants_count: number
       activities_as_subject_count: number
@@ -703,8 +709,6 @@ declare global {
       duties_exists: boolean
       roles_exists: boolean
       responsibility_grants_exists: boolean
-      fileable_files_exists: boolean
-      available_files_exists: boolean
       parent_exists: boolean
       descendants_exists: boolean
       recursive_descendants_exists: boolean
@@ -1188,16 +1192,12 @@ declare global {
       deleted_at?: string | null
       // mutators
       force_delete_blocked_reason: string
-      has_protocol: boolean
-      has_report: boolean
       translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
       institutions?: Institution[]
       outgoing_links?: InstitutionTypeLink[]
       incoming_links?: InstitutionTypeLink[]
-      fileable_files?: FileableFile[]
-      available_files?: FileableFile[]
       parent?: InstitutionType
       descendants?: InstitutionType[]
       recursive_descendants?: InstitutionType[]
@@ -1207,8 +1207,6 @@ declare global {
       institutions_count: number
       outgoing_links_count: number
       incoming_links_count: number
-      fileable_files_count: number
-      available_files_count: number
       descendants_count: number
       recursive_descendants_count: number
       activities_as_subject_count: number
@@ -1216,8 +1214,6 @@ declare global {
       institutions_exists: boolean
       outgoing_links_exists: boolean
       incoming_links_exists: boolean
-      fileable_files_exists: boolean
-      available_files_exists: boolean
       parent_exists: boolean
       descendants_exists: boolean
       recursive_descendants_exists: boolean
@@ -1244,6 +1240,218 @@ declare global {
       // exists
       source_exists: boolean
       target_exists: boolean
+      activities_as_subject_exists: boolean
+    }
+
+    export interface KnowledgeItem {
+      // columns
+      id: string
+      key?: string | null
+      kind: KnowledgeItemKind
+      knowledge_section_id?: string | null
+      tenant_id?: number | null
+      title: Array<unknown>
+      abbreviation?: Array<unknown> | null
+      summary?: Array<unknown> | null
+      description?: Array<unknown> | null
+      order: number
+      is_active: boolean
+      counts_in_progress: boolean
+      reviewed_at?: string | null
+      created_by?: string | null
+      created_at?: string | null
+      updated_at?: string | null
+      // mutators
+      translatable_columns_from: Array<unknown>
+      translations: unknown
+      // relations
+      sources?: KnowledgeItemSource[]
+      progress?: LearningProgress[]
+      audiences?: LearningAudience[]
+      section?: KnowledgeSection
+      outgoing_links?: KnowledgeItem[]
+      incoming_links?: KnowledgeItem[]
+      subjects?: KnowledgeItemSubject[]
+      tenant?: Tenant
+      created_by?: User
+      comments?: Comment[]
+      root_comments?: Comment[]
+      activities_as_subject?: Activity[]
+      // counts
+      sources_count: number
+      progress_count: number
+      audiences_count: number
+      outgoing_links_count: number
+      incoming_links_count: number
+      subjects_count: number
+      comments_count: number
+      root_comments_count: number
+      activities_as_subject_count: number
+      // exists
+      sources_exists: boolean
+      progress_exists: boolean
+      audiences_exists: boolean
+      section_exists: boolean
+      outgoing_links_exists: boolean
+      incoming_links_exists: boolean
+      subjects_exists: boolean
+      tenant_exists: boolean
+      created_by_exists: boolean
+      comments_exists: boolean
+      root_comments_exists: boolean
+      activities_as_subject_exists: boolean
+    }
+
+    export interface KnowledgeItemSource {
+      // columns
+      id: number
+      knowledge_item_id: string
+      locale: string
+      document_id?: number | null
+      url?: string | null
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      item?: KnowledgeItem
+      document?: Document
+      // counts
+      // exists
+      item_exists: boolean
+      document_exists: boolean
+    }
+
+    export interface KnowledgeItemSubject {
+      // columns
+      id: number
+      knowledge_item_id: string
+      subject_type: string
+      subject_id: string
+      // relations
+      item?: KnowledgeItem
+      subject?: KnowledgeItemSubject
+      // counts
+      // exists
+      item_exists: boolean
+    }
+
+    export interface KnowledgeSection {
+      // columns
+      id: string
+      title: Array<unknown>
+      description?: Array<unknown> | null
+      kind: KnowledgeSectionKind
+      date?: string | null
+      order: number
+      tenant_id?: number | null
+      created_by?: string | null
+      created_at?: string | null
+      updated_at?: string | null
+      // mutators
+      translatable_columns_from: Array<unknown>
+      translations: unknown
+      // relations
+      items?: KnowledgeItem[]
+      tenant?: Tenant
+      activities_as_subject?: Activity[]
+      // counts
+      items_count: number
+      activities_as_subject_count: number
+      // exists
+      items_exists: boolean
+      tenant_exists: boolean
+      activities_as_subject_exists: boolean
+    }
+
+    export interface LearningAudience {
+      // columns
+      id: string
+      audienceable_type: string
+      audienceable_id: string
+      type: LearningAudienceType
+      source_id?: string | null
+      tenant_id?: number | null
+      importance: LearningImportance
+      stage?: LearningStage | null
+      description?: Array<unknown> | null
+      order: number
+      created_at?: string | null
+      updated_at?: string | null
+      // mutators
+      translatable_columns_from: Array<unknown>
+      translations: unknown
+      // relations
+      audienceable?: LearningAudience
+      tenant?: Tenant
+      duty_type?: DutyType
+      institution_type?: InstitutionType
+      responsibility?: Role
+      duty?: Duty
+      institution?: Institution
+      purpose_role?: Role
+      activities_as_subject?: Activity[]
+      // counts
+      activities_as_subject_count: number
+      // exists
+      tenant_exists: boolean
+      duty_type_exists: boolean
+      institution_type_exists: boolean
+      responsibility_exists: boolean
+      duty_exists: boolean
+      institution_exists: boolean
+      purpose_role_exists: boolean
+      activities_as_subject_exists: boolean
+    }
+
+    export interface LearningProgress {
+      // columns
+      id: number
+      progressable_type: string
+      progressable_id: string
+      user_id: string
+      status: LearningProgressStatus
+      completed_at: string
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      progressable?: LearningProgress
+      user?: User
+      // counts
+      // exists
+      user_exists: boolean
+    }
+
+    export interface LearningStep {
+      // columns
+      id: string
+      key?: string | null
+      is_system: boolean
+      kind: LearningStepKind
+      title?: Array<unknown> | null
+      description?: Array<unknown> | null
+      action_label?: Array<unknown> | null
+      action_url?: Array<unknown> | null
+      order: number
+      is_active: boolean
+      reviewed_at?: string | null
+      created_by?: string | null
+      created_at?: string | null
+      updated_at?: string | null
+      // mutators
+      translatable_columns_from: Array<unknown>
+      translations: unknown
+      // relations
+      progress?: LearningProgress[]
+      audiences?: LearningAudience[]
+      created_by?: User
+      activities_as_subject?: Activity[]
+      // counts
+      progress_count: number
+      audiences_count: number
+      activities_as_subject_count: number
+      // exists
+      progress_exists: boolean
+      audiences_exists: boolean
+      created_by_exists: boolean
       activities_as_subject_exists: boolean
     }
 
@@ -2772,6 +2980,7 @@ declare global {
       followed_institutions?: Institution[]
       reservations?: Reservation[]
       reservation_draft?: ReservationDraft
+      learning_progress?: LearningProgress[]
       media?: Media[]
       push_subscriptions?: PushSubscription[]
       roles?: Role[]
@@ -2791,6 +3000,7 @@ declare global {
       secretaried_institutions_count: number
       followed_institutions_count: number
       reservations_count: number
+      learning_progress_count: number
       media_count: number
       push_subscriptions_count: number
       roles_count: number
@@ -2811,6 +3021,7 @@ declare global {
       followed_institutions_exists: boolean
       reservations_exists: boolean
       reservation_draft_exists: boolean
+      learning_progress_exists: boolean
       media_exists: boolean
       push_subscriptions_exists: boolean
       roles_exists: boolean
@@ -2899,6 +3110,7 @@ declare global {
     const CommentKind = {
       Comment: 'comment',
       Poll: 'poll',
+      Topic: 'topic',
     } as const;
 
     export type CommentKind = typeof CommentKind[keyof typeof CommentKind]
@@ -2962,6 +3174,63 @@ declare global {
     } as const;
 
     export type InstitutionTypeLinkScope = typeof InstitutionTypeLinkScope[keyof typeof InstitutionTypeLinkScope]
+
+    const KnowledgeItemKind = {
+      Term: 'term',
+      Material: 'material',
+    } as const;
+
+    export type KnowledgeItemKind = typeof KnowledgeItemKind[keyof typeof KnowledgeItemKind]
+
+    const KnowledgeSectionKind = {
+      Topic: 'topic',
+      Collection: 'collection',
+    } as const;
+
+    export type KnowledgeSectionKind = typeof KnowledgeSectionKind[keyof typeof KnowledgeSectionKind]
+
+    const LearningAudienceType = {
+      Everyone: 'everyone',
+      DutyType: 'duty_type',
+      InstitutionType: 'institution_type',
+      Responsibility: 'responsibility',
+      Duty: 'duty',
+      Institution: 'institution',
+      Purpose: 'purpose',
+    } as const;
+
+    export type LearningAudienceType = typeof LearningAudienceType[keyof typeof LearningAudienceType]
+
+    const LearningImportance = {
+      Essential: 'essential',
+      Recommended: 'recommended',
+      Optional: 'optional',
+    } as const;
+
+    export type LearningImportance = typeof LearningImportance[keyof typeof LearningImportance]
+
+    const LearningStage = {
+      BeforeStart: 'before_start',
+      FirstMonths: 'first_months',
+      WholeTerm: 'whole_term',
+      TermEnd: 'term_end',
+    } as const;
+
+    export type LearningStage = typeof LearningStage[keyof typeof LearningStage]
+
+    const LearningProgressStatus = {
+      Done: 'done',
+      Skipped: 'skipped',
+    } as const;
+
+    export type LearningProgressStatus = typeof LearningProgressStatus[keyof typeof LearningProgressStatus]
+
+    const LearningStepKind = {
+      Action: 'action',
+      MeetingPrep: 'meeting_prep',
+    } as const;
+
+    export type LearningStepKind = typeof LearningStepKind[keyof typeof LearningStepKind]
 
     const MailingListMode = {
       Unmanaged: 'unmanaged',

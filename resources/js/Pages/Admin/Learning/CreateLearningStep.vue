@@ -1,11 +1,11 @@
 <template>
   <LearningStepForm
-    :audience-types="audienceTypes"
-    :can-target-everywhere="canTargetEverywhere"
-    :responsibilities="responsibilities"
-    :tenants="tenants"
-    :institution-types="institutionTypes"
-    :duty-types="dutyTypes"
+    :audience-types
+    :can-target-everywhere
+    :responsibilities
+    :tenants
+    :institution-types
+    :duty-types
   />
 </template>
 

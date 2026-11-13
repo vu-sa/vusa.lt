@@ -100,7 +100,7 @@ describe('RepresentativeList', () => {
   });
 
   it('searches names and institutions, and clearing resets the filter too', async () => {
-    const wrapper = mount(RepresentativeList, { props: { reps, filter: 'all' as RepListFilter, 'onUpdate:filter': (value: RepListFilter) => wrapper.setProps({ filter: value }) } });
+    const wrapper = mount(RepresentativeList, { props: { reps, 'filter': 'all' as RepListFilter, 'onUpdate:filter': (value: RepListFilter) => wrapper.setProps({ filter: value }) } });
     await wrapper.get('input[type="search"]').setValue('SENAT');
     expect(ids(wrapper)).toEqual(['Cleo']);
 

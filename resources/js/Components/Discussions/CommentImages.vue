@@ -26,7 +26,9 @@
 
     <Dialog :open="openIndex !== null" @update:open="value => !value && (openIndex = null)">
       <DialogContent class="max-w-[min(64rem,calc(100vw-2rem))] p-2 sm:p-3">
-        <DialogTitle class="sr-only">{{ $t('discussions.images.open', { n: String((openIndex ?? 0) + 1) }) }}</DialogTitle>
+        <DialogTitle class="sr-only">
+          {{ $t('discussions.images.open', { n: String((openIndex ?? 0) + 1) }) }}
+        </DialogTitle>
         <img v-if="current" :src="current.url" :alt="current.alt ?? ''" class="mx-auto max-h-[80dvh] w-auto">
         <div v-if="images.length > 1" class="flex items-center justify-between gap-2 pt-2">
           <Button type="button" variant="ghost" size="sm" :disabled="openIndex === 0" @click="openIndex = (openIndex ?? 1) - 1">

@@ -49,14 +49,14 @@ Abiejų rūšių įrašai turi pavadinimą, trumpą santrauką, jei reikia – s
 šaltinį, gali būti skirti auditorijoms, komentuojami ir žymimi išmoktais. Įrašai vienas į kitą
 nurodo tekste, todėl iš vieno lengva pereiti prie susijusių.
 
-<ChangelogNote date="2026-11-11" title="Wiki">
+<ChangelogNote date="2026-11-13" title="Wiki">
 
 Sąvokos ir žinių bazės medžiaga sujungtos į įrašus. Nuorodos tekste rodo trumpą paaiškinimą,
 o susiję įrašai surenkami automatiškai.
 
 </ChangelogNote>
 
-<ChangelogNote date="2026-11-11" title="Sąvokos ir medžiaga">
+<ChangelogNote date="2026-11-13" title="Sąvokos ir medžiaga">
 
 Įrašai skirstomi į sąvokas ir medžiagą, skyriai – į temas ir rinkinius. Įrašų tvarka keičiama
 skyriaus puslapyje, o nuorodos kortelė rodo paryškintą santrauką.
@@ -178,7 +178,7 @@ tvarka, kuria jie rodomi visur. Kas gali redaguoti skyrių, mato mygtukus **Reda
 
 ### Sąvokų žemėlapis {#zemelapis}
 
-<ChangelogNote date="2026-11-11" title="Sąvokų žemėlapis">
+<ChangelogNote date="2026-11-13" title="Sąvokų žemėlapis">
 
 Antrajame Wiki meniu prieš **Biblioteką** atsirado **Sąvokų žemėlapis** – visos sąvokos ir jų ryšiai viename paveiksle.
 

@@ -66,8 +66,12 @@
           <PopoverContent align="start" class="w-[min(20rem,calc(100vw-2rem))] p-0">
             <dl class="divide-y divide-border text-sm">
               <div v-for="option in poll.options" :key="option.id" class="px-3 py-2">
-                <dt class="text-xs font-semibold text-muted-foreground">{{ option.label }} · {{ count(option.id) }}</dt>
-                <dd class="mt-0.5">{{ voters(option.id).map(voter => voter.name).filter(Boolean).join(', ') || '—' }}</dd>
+                <dt class="text-xs font-semibold text-muted-foreground">
+                  {{ option.label }} · {{ count(option.id) }}
+                </dt>
+                <dd class="mt-0.5">
+                  {{ voters(option.id).map(voter => voter.name).filter(Boolean).join(', ') || '—' }}
+                </dd>
               </div>
             </dl>
           </PopoverContent>

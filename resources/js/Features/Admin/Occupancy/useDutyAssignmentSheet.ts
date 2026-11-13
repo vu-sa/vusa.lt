@@ -1,8 +1,8 @@
 import { router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { useToasts } from '@/Composables/useToasts';
 
+import { useToasts } from '@/Composables/useToasts';
 import type { AssignmentDuty, AssignmentTerm, AssignmentUser, DutyWithUsers, UserWithPivot } from '@/Types/DutyAssignment';
 
 interface AssignmentSheetSource {

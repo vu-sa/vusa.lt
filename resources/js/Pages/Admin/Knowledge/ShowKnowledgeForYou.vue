@@ -1,3 +1,28 @@
+<template>
+  <OverviewPage
+    :title="$t('learning.wiki.mine_title')"
+    :eyebrow="$t('learning.pages.knowledge')"
+  >
+    <template #actions>
+      <WikiAssignedProgress :progress="assignedProgress" class="sm:w-80" />
+    </template>
+    <FormSegmentedControl v-model="mineView" :options="mineOptions" :aria-label="$t('Rodyti')" test-id-prefix="documents-view" class="max-w-md" />
+    <section v-for="group in mineGroups" :id="`section-${group.key}`" :key="group.key" class="scroll-mt-24" data-slot="document-section" :aria-labelledby="`documents-${group.key}`">
+      <h2 :id="`documents-${group.key}`" class="flex items-baseline gap-2 text-xl font-bold leading-tight text-foreground sm:text-2xl">
+        {{ group.title }}
+        <span class="text-sm font-normal tabular-nums text-muted-foreground">{{ group.items.filter(resolved).length }}/{{ group.items.length }}</span>
+      </h2>
+      <p v-if="group.key === 'self'" class="mt-1 text-sm text-muted-foreground">
+        {{ $t('learning.wiki.self_learned_hint') }}
+      </p>
+      <ul class="mt-3 divide-y divide-border border border-border">
+        <LearningStepRow v-for="item in group.items" :key="item.id" :step="item" />
+      </ul>
+    </section>
+    <EmptyState v-if="!mineGroups.length" :title="$t('learning.documents.empty_title')" :description="$t('learning.documents.empty_description')" />
+  </OverviewPage>
+</template>
+
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
@@ -46,26 +71,3 @@ const mineGroups = computed(() => {
   ].filter(group => group.items.length);
 });
 </script>
-
-<template>
-  <OverviewPage
-    :title="$t('learning.wiki.mine_title')"
-    :eyebrow="$t('learning.pages.knowledge')"
-  >
-    <template #actions>
-      <WikiAssignedProgress :progress="assignedProgress" class="sm:w-80" />
-    </template>
-    <FormSegmentedControl v-model="mineView" :options="mineOptions" :ariaLabel="$t('Rodyti')" test-id-prefix="documents-view" class="max-w-md" />
-    <section v-for="group in mineGroups" :id="`section-${group.key}`" :key="group.key" class="scroll-mt-24" data-slot="document-section" :aria-labelledby="`documents-${group.key}`">
-      <h2 :id="`documents-${group.key}`" class="flex items-baseline gap-2 text-xl font-bold leading-tight text-foreground sm:text-2xl">
-        {{ group.title }}
-        <span class="text-sm font-normal tabular-nums text-muted-foreground">{{ group.items.filter(resolved).length }}/{{ group.items.length }}</span>
-      </h2>
-      <p v-if="group.key === 'self'" class="mt-1 text-sm text-muted-foreground">{{ $t('learning.wiki.self_learned_hint') }}</p>
-      <ul class="mt-3 divide-y divide-border border border-border">
-        <LearningStepRow v-for="item in group.items" :key="item.id" :step="item" />
-      </ul>
-    </section>
-    <EmptyState v-if="!mineGroups.length" :title="$t('learning.documents.empty_title')" :description="$t('learning.documents.empty_description')" />
-  </OverviewPage>
-</template>

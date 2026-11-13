@@ -1,11 +1,3 @@
-<script setup lang="ts">
-import PeopleContactList from '@/Components/Avatars/PeopleContactList.vue';
-import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
-import type { LearningCoordinator } from '@/Types/learning';
-
-defineProps<{ coordinators: LearningCoordinator[] }>();
-</script>
-
 <template>
   <PeopleContactList v-if="coordinators.length" :people="coordinators" compact data-slot="learning-coordinators">
     <template #details="{ person }">
@@ -18,3 +10,11 @@ defineProps<{ coordinators: LearningCoordinator[] }>();
     </template>
   </PeopleContactList>
 </template>
+
+<script setup lang="ts">
+import PeopleContactList from '@/Components/Avatars/PeopleContactList.vue';
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
+import type { LearningCoordinator } from '@/Types/learning';
+
+defineProps<{ coordinators: LearningCoordinator[] }>();
+</script>

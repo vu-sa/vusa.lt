@@ -10,7 +10,9 @@
       </button>
     </PopoverTrigger>
     <PopoverContent class="w-[min(24rem,calc(100vw-2rem))] p-0" align="end" data-slot="users-avatar-group-popover">
-      <p class="border-b border-border px-3 py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">{{ $t('Naudotojai') }} · {{ users.length }}</p>
+      <p class="border-b border-border px-3 py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+        {{ $t('Naudotojai') }} · {{ users.length }}
+      </p>
       <ul class="max-h-72 divide-y divide-border/60 overflow-y-auto overscroll-contain">
         <li v-for="(user, index) in users" :key="user.id || user.name || index" class="flex min-h-11 items-center gap-2 px-3 py-1.5 hover:bg-secondary/40">
           <component :is="isClickable && user.id ? Link : 'div'" :href="isClickable && user.id ? route('users.show', user.id) : undefined" class="flex min-w-0 flex-1 items-center gap-2 hover:text-brand">
@@ -79,7 +81,6 @@
         </HoverCardContent>
       </HoverCard>
     </div>
-
   </div>
 </template>
 

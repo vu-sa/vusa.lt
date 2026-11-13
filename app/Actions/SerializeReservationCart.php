@@ -74,7 +74,7 @@ class SerializeReservationCart
      */
     private static function item(ReservationDraftItem $item, ReservationDraft $draft): array
     {
-        /** @var Resource|null $resource */
+        /** @var resource|null $resource */
         $resource = $item->resource;
 
         if ($resource === null || $resource->trashed()) {

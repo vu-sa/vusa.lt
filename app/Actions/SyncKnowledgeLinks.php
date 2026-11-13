@@ -25,6 +25,6 @@ class SyncKnowledgeLinks
     {
         preg_match_all('/data-knowledge-id="([0-9A-Za-z]{26})"/', implode("\n", array_filter($html)), $matches);
 
-        return array_values(array_unique(array_map('strtolower', $matches[1])));
+        return array_values(array_unique(array_map(strtolower(...), $matches[1])));
     }
 }

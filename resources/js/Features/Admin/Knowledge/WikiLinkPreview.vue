@@ -1,3 +1,32 @@
+<template>
+  <div
+    @pointerdown="lastPointer = $event.pointerType"
+    @pointerover="onPointerOver"
+    @pointerout="onPointerOut"
+    @focusin="onFocusIn"
+    @focusout="scheduleClose"
+    @click.capture="onClick"
+  >
+    <slot />
+    <Popover v-model:open="open">
+      <PopoverAnchor :reference="anchor ?? undefined" />
+      <PopoverContent
+        v-if="active"
+        side="bottom"
+        align="start"
+        :class="[active.thumbnailUrl ? 'w-96' : 'w-80', 'max-w-[calc(100vw-2rem)] rounded-none p-0']"
+        :trap-focus="false"
+        @open-auto-focus.prevent
+        @close-auto-focus.prevent
+        @pointerenter="keepOpen"
+        @pointerleave="scheduleClose"
+      >
+        <WikiLinkCard :page="active" />
+      </PopoverContent>
+    </Popover>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
@@ -11,7 +40,7 @@ const props = defineProps<{ pages: Record<string, WikiPageSummary> }>();
 const anchor = ref<HTMLAnchorElement | null>(null);
 const open = ref(false);
 const active = computed(() => anchor.value ? props.pages[anchor.value.dataset.knowledgeId ?? ''] ?? null : null);
-let lastPointer = 'mouse';
+const lastPointer = ref('mouse');
 let openTimer: ReturnType<typeof setTimeout> | undefined;
 let closeTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -57,7 +86,7 @@ function onClick(event: MouseEvent): void {
   if (!link || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
   event.preventDefault();
   event.stopPropagation();
-  if (lastPointer !== 'mouse' && !(open.value && anchor.value === link)) {
+  if (lastPointer.value !== 'mouse' && !(open.value && anchor.value === link)) {
     show(link);
     return;
   }
@@ -70,32 +99,3 @@ onBeforeUnmount(() => {
   clearTimeout(closeTimer);
 });
 </script>
-
-<template>
-  <div
-    @pointerdown="lastPointer = $event.pointerType"
-    @pointerover="onPointerOver"
-    @pointerout="onPointerOut"
-    @focusin="onFocusIn"
-    @focusout="scheduleClose"
-    @click.capture="onClick"
-  >
-    <slot />
-    <Popover v-model:open="open">
-      <PopoverAnchor :reference="anchor ?? undefined" />
-      <PopoverContent
-        v-if="active"
-        side="bottom"
-        align="start"
-        :class="[active.thumbnailUrl ? 'w-96' : 'w-80', 'max-w-[calc(100vw-2rem)] rounded-none p-0']"
-        :trap-focus="false"
-        @open-auto-focus.prevent
-        @close-auto-focus.prevent
-        @pointerenter="keepOpen"
-        @pointerleave="scheduleClose"
-      >
-        <WikiLinkCard :page="active" />
-      </PopoverContent>
-    </Popover>
-  </div>
-</template>

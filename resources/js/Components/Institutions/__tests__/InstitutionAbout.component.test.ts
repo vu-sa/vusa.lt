@@ -32,7 +32,7 @@ describe('InstitutionAbout', () => {
   });
 });
 
- it('keeps a short link and media-only descriptions accessible', async () => {
+it('keeps a short link and media-only descriptions accessible', async () => {
   const wrapper = mount(InstitutionAbout, { props: { description: '<p><a href="https://vusa.lt">VU SA</a></p>' } });
   await wrapper.get('[data-testid="institution-about-toggle"]').trigger('click');
   expect(wrapper.get('a').attributes('href')).toBe('https://vusa.lt');

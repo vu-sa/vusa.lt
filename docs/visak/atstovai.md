@@ -23,7 +23,7 @@ puslapio apačioje.
 
 <DocScreenshot name="visak-atstovai" alt="Atstovų puslapis: skaičiai, atstovai, kuriems reikia dėmesio, aktyvumo juosta, atstovavimo rodikliai ir įsivedimas" caption="Koordinatorės vaizdas: pirmiausia – kam reikia jos dėmesio." href="/mano/dashboard/atstovavimas/atstovai" />
 
-<ChangelogNote date="2026-11-11" title="Atstovai">
+<ChangelogNote date="2026-11-13" title="Atstovai">
 
 Atstovų aktyvumas ir atstovavimo rodikliai perkelti iš [Padalinių](/visak/padaliniai) į šį puslapį,
 o Mano kelio skiltis „Atstovai“ – čia pat. Kiekvienas atstovas turi savo puslapį.

@@ -1,12 +1,14 @@
-import type { LearningStepData, KnowledgeItemData } from '@/Types/learning';
 import { mount } from '@vue/test-utils';
 import { router, usePage } from '@inertiajs/vue3';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { LearningStepData, KnowledgeItemData } from '@/Types/learning';
 import { LearningImportance, LearningStepKind } from '@/Types/enums';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
+
 import LearningStepRow from '../LearningStepRow.vue';
+
 import { step, knowledge } from './fixtures';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
@@ -94,7 +96,7 @@ describe('LearningStepRow', () => {
     wrapper.unmount();
   });
 
-  it.each(['install_app', 'browser_push', 'meet_institution_contacts', null])('keeps rich instructions on the step page: %s', key => {
+  it.each(['install_app', 'browser_push', 'meet_institution_contacts', null])('keeps rich instructions on the step page: %s', (key) => {
     const data = step({ key, isSystem: key !== null, audienceNotes: [{ label: 'SPK', description: 'Audience instructions' }] });
     const wrapper = render(data, true);
     expect(wrapper.find('details').exists()).toBe(false);
@@ -170,28 +172,28 @@ describe('LearningStepRow', () => {
   });
 });
 
- it('uses a document icon without redundant type text, and an article without a source opens its own page', () => {
-    const wrapper = mount(LearningStepRow, { props: { step: knowledge() }, global: { stubs: commonStubs } });
-    expect(wrapper.find('[aria-label="learning.path.kind_document"]').exists()).toBe(true);
-    expect(wrapper.get('[data-slot="learning-step-action"]').attributes('href')).toContain('knowledgeItems.show');
-    expect(wrapper.get('[data-slot="learning-step-action"]').attributes('target')).toBeUndefined();
-    expect(wrapper.text()).not.toContain('learning.path.kind_task');
-    expect(wrapper.text()).not.toContain('learning.path.kind_document');
-    wrapper.unmount();
- });
+it('uses a document icon without redundant type text, and an article without a source opens its own page', () => {
+  const wrapper = mount(LearningStepRow, { props: { step: knowledge() }, global: { stubs: commonStubs } });
+  expect(wrapper.find('[aria-label="learning.path.kind_document"]').exists()).toBe(true);
+  expect(wrapper.get('[data-slot="learning-step-action"]').attributes('href')).toContain('knowledgeItems.show');
+  expect(wrapper.get('[data-slot="learning-step-action"]').attributes('target')).toBeUndefined();
+  expect(wrapper.text()).not.toContain('learning.path.kind_task');
+  expect(wrapper.text()).not.toContain('learning.path.kind_document');
+  wrapper.unmount();
+});
 
- it.each(['onError', 'onHttpException', 'onNetworkError'] as const)('rolls back an optimistic tick on %s and allows retry', async (failure) => {
-   const wrapper = render();
-   await wrapper.get('[role="checkbox"]').trigger('click');
-   expect(wrapper.get('[role="checkbox"]').attributes('aria-checked')).toBe('true');
-   const callbacks = vi.mocked(router.post).mock.calls[0]![2]! as { onFinish: () => void; onError: () => void; onHttpException: () => void; onNetworkError: () => void };
-   const fail = callbacks[failure] as () => void;
-   fail();
-   callbacks.onFinish!();
-   await wrapper.vm.$nextTick();
-   expect(wrapper.get('[role="checkbox"]').attributes('aria-checked')).toBe('false');
-   expect(wrapper.find('[role="alert"]').exists()).toBe(true);
-   await wrapper.get('[role="checkbox"]').trigger('click');
-   expect(router.post).toHaveBeenCalledTimes(2);
-   wrapper.unmount();
- });
+it.each(['onError', 'onHttpException', 'onNetworkError'] as const)('rolls back an optimistic tick on %s and allows retry', async (failure) => {
+  const wrapper = render();
+  await wrapper.get('[role="checkbox"]').trigger('click');
+  expect(wrapper.get('[role="checkbox"]').attributes('aria-checked')).toBe('true');
+  const callbacks = vi.mocked(router.post).mock.calls[0]![2]! as { onFinish: () => void; onError: () => void; onHttpException: () => void; onNetworkError: () => void };
+  const fail = callbacks[failure] as () => void;
+  fail();
+  callbacks.onFinish!();
+  await wrapper.vm.$nextTick();
+  expect(wrapper.get('[role="checkbox"]').attributes('aria-checked')).toBe('false');
+  expect(wrapper.find('[role="alert"]').exists()).toBe(true);
+  await wrapper.get('[role="checkbox"]').trigger('click');
+  expect(router.post).toHaveBeenCalledTimes(2);
+  wrapper.unmount();
+});

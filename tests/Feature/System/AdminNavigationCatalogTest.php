@@ -293,11 +293,10 @@ describe('per-persona visibility', function (): void {
             ->and(catalogSummary($this->catalog, $plain))->not->toHaveKey('organizacija')
             ->and(array_column($adminOrganizacija['sections'], 'key'))->toContain('kelio_zingsniai')
             ->and(array_column($adminOrganizacija['createActions'], 'key'))->toContain('new_learning_step')
-            ->and(array_column($adminWiki['createActions'], 'key'))->toBe(['new_knowledge_item']);
-
-        expect(collect($adminWiki['sections'])->firstWhere('key', 'wiki_biblioteka'))->toEqual([
-            'key' => 'wiki_biblioteka', 'label' => 'shell.sections.wiki_biblioteka', 'routeName' => 'knowledgeItems.index', 'routeParams' => [], 'entityType' => 'knowledge_item', 'description' => 'shell.section_descriptions.wiki_biblioteka', 'collectionActions' => [], 'matches' => ['knowledgeItems.index', 'knowledgeItems.create', 'knowledgeItems.edit'], 'startsGroup' => false, 'children' => [],
-        ]);
+            ->and(array_column($adminWiki['createActions'], 'key'))->toBe(['new_knowledge_item'])
+            ->and(collect($adminWiki['sections'])->firstWhere('key', 'wiki_biblioteka'))->toEqual([
+                'key' => 'wiki_biblioteka', 'label' => 'shell.sections.wiki_biblioteka', 'routeName' => 'knowledgeItems.index', 'routeParams' => [], 'entityType' => 'knowledge_item', 'description' => 'shell.section_descriptions.wiki_biblioteka', 'collectionActions' => [], 'matches' => ['knowledgeItems.index', 'knowledgeItems.create', 'knowledgeItems.edit'], 'startsGroup' => false, 'children' => [],
+            ]);
 
         $cached = Cache::get(AdminNavigationCatalog::CACHE_PREFIX.$plain->id);
         expect($cached['payload']['workspaces'][0]['sections'][1]['children'])->toBe($plainWorkspace['sections'][1]['children']);

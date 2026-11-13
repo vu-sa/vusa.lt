@@ -1,9 +1,10 @@
 import { mount } from '@vue/test-utils';
 import { expect, it, vi } from 'vitest';
 
-import WikiMaterialList from '../WikiMaterialList.vue';
 import { KnowledgeItemKind } from '@/Types/enums';
 import type { WikiMaterial } from '@/Types/learning';
+
+import WikiMaterialList from '../WikiMaterialList.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

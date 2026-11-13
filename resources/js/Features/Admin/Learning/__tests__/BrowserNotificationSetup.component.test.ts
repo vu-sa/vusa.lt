@@ -1,8 +1,9 @@
 import { router, usePage } from '@inertiajs/vue3';
-import { createMockPage } from '@/tests/helpers/createMockPage';
 import { ref } from 'vue';
 import { mount, flushPromises } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { createMockPage } from '@/tests/helpers/createMockPage';
 
 import BrowserNotificationSetup from '../BrowserNotificationSetup.vue';
 

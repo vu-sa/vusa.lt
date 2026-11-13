@@ -1,12 +1,3 @@
-<script setup lang="ts">
-import { Search, X } from '@lucide/vue';
-
-import { searchFieldClass } from '@/Components/ui/control';
-
-defineProps<{ label: string; placeholder: string }>();
-const query = defineModel<string>({ required: true });
-</script>
-
 <template>
   <div class="relative" data-slot="wiki-search">
     <Search class="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
@@ -30,3 +21,12 @@ const query = defineModel<string>({ required: true });
     </button>
   </div>
 </template>
+
+<script setup lang="ts">
+import { Search, X } from '@lucide/vue';
+
+import { searchFieldClass } from '@/Components/ui/control';
+
+defineProps<{ label: string; placeholder: string }>();
+const query = defineModel<string>({ required: true });
+</script>

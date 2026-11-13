@@ -15,7 +15,7 @@ use Database\Seeders\TypeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 test('members can open learning pages with their typed payloads', function (string $routeName, string $component, string $prop): void {
     $user = makeUser(Tenant::query()->firstOrFail());

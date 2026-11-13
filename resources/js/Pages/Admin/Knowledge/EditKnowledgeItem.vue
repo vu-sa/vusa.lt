@@ -1,17 +1,17 @@
 <template>
   <KnowledgeItemForm
-    :item="item"
-    :audience-types="audienceTypes"
-    :can-target-everywhere="canTargetEverywhere"
-    :responsibilities="responsibilities"
-    :sections="sections"
-    :tenants="tenants"
-    :institution-types="institutionTypes"
-    :duty-types="dutyTypes"
-    :can-manage-audiences="canManageAudiences"
-    :page-tenants="pageTenants"
-    :can-publish-everywhere="canPublishEverywhere"
-    :can-delete="canDelete"
+    :item
+    :audience-types
+    :can-target-everywhere
+    :responsibilities
+    :sections
+    :tenants
+    :institution-types
+    :duty-types
+    :can-manage-audiences
+    :page-tenants
+    :can-publish-everywhere
+    :can-delete
   />
 </template>
 

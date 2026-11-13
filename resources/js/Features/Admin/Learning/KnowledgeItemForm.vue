@@ -1,23 +1,23 @@
 <template>
   <FormPage
     :title="pageTitle"
-    :bar-title="barTitle"
+    :bar-title
     required-note
-    :back-href="backHref"
+    :back-href
     :back-label="$t('learning.pages.knowledge_library')"
     :dirty="form.isDirty"
     :processing="form.processing"
     :errors="form.errors"
-    :field-ids="fieldIds"
+    :field-ids
     :mode="isEdit ? 'edit' : 'create'"
     :locale="activeLocale"
     :available-locales="['lt', 'en']"
-    :missing-locale-counts="missingLocaleCounts"
+    :missing-locale-counts
     @update:locale="activeLocale = $event"
     @submit="submit"
   >
     <FormFieldWrapper id="article-kind" :label="$t('learning_library.fields.item_kind')" :hint="$t('learning_library.fields.item_kind_hint')" :error="form.errors.kind">
-      <FormSegmentedControl v-model="kindModel" :options="kindOptions" :ariaLabel="$t('learning_library.fields.item_kind')" test-id-prefix="article-kind" class="max-w-sm" />
+      <FormSegmentedControl v-model="kindModel" :options="kindOptions" :aria-label="$t('learning_library.fields.item_kind')" test-id-prefix="article-kind" class="max-w-sm" />
     </FormFieldWrapper>
 
     <FormFieldWrapper
@@ -79,12 +79,12 @@
       kind="knowledge"
       :locale="activeLocale"
       :errors="form.errors"
-      :audience-types="audienceTypes"
-      :can-target-everywhere="canTargetEverywhere"
-      :tenants="tenants"
-      :institution-types="institutionTypes"
-      :duty-types="dutyTypes"
-      :responsibilities="responsibilities"
+      :audience-types
+      :can-target-everywhere
+      :tenants
+      :institution-types
+      :duty-types
+      :responsibilities
     />
 
     <template #aside>

@@ -20,6 +20,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
  * @property string $id
@@ -30,8 +32,6 @@ use Illuminate\Support\Facades\DB;
  * @property string|null $user_id
  * @property CommentKind $kind
  * @property string|null $title
- * @property string|null $author_dutiable_id
- * @property-read Dutiable|null $authorDutiable
  * @property string $body
  * @property array<array-key, mixed>|null $metadata
  * @property array<array-key, mixed>|null $mentioned_user_ids
@@ -41,7 +41,10 @@ use Illuminate\Support\Facades\DB;
  * @property Carbon|null $erased_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property string|null $author_dutiable_id
+ * @property-read Dutiable|null $authorDutiable
  * @property-read Model|\Eloquent $commentable
+ * @property-read MediaCollection<int, Media> $media
  * @property-read Comment|null $parent
  * @property-read Collection<int, CommentPollVote> $pollVotes
  * @property-read Collection<int, CommentReaction> $reactions

@@ -1,3 +1,131 @@
+<template>
+  <SheetForm
+    v-model:open="open"
+    :title="$t('learning_library.section_manager.title')"
+    :description="sheetDescription"
+    :dirty="(view === 'edit' && form.isDirty) || (view === 'reorder' && orderChanged)"
+    :processing="form.processing || saving"
+    :disabled
+    :save-label="view === 'reorder' ? $t('Išsaugoti tvarką') : undefined"
+    @submit="submit"
+  >
+    <template v-if="view === 'list'" #footer>
+      <Button type="button" variant="outline" voice="sentence" class="min-h-11" @click="open = false">
+        {{ $t('Uždaryti') }}
+      </Button>
+    </template>
+
+    <!-- List -->
+    <template v-if="view === 'list'">
+      <Button v-if="canCreate" type="button" variant="outline" voice="sentence" class="self-start" data-testid="create-section" @click="edit(null)">
+        <Plus class="size-4" aria-hidden="true" />{{ $t('learning.sections.create') }}
+      </Button>
+      <section v-for="group in groups" :key="group.kind" class="space-y-2" :data-slot="`sections-${group.kind}`">
+        <div class="flex items-center justify-between gap-2">
+          <h3 class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+            {{ group.title }}
+          </h3>
+          <Button v-if="canReorder(group.sections)" type="button" variant="ghost" voice="sentence" size="sm" class="-my-1" :data-testid="`reorder-sections-${group.kind}`" @click="startReorder(group.kind)">
+            <ArrowDownUp class="size-4" aria-hidden="true" />{{ $t('Keisti tvarką') }}
+          </Button>
+        </div>
+        <CollectionRowList :items="group.sections" frame="box" :item-key="(section: LearningSectionOption) => section.id">
+          <template #default="{ item: section }">
+            <div class="flex items-start gap-2 px-3 py-2.5" data-slot="managed-section">
+              <div class="min-w-0 flex-1">
+                <p class="break-words font-semibold leading-snug text-foreground">
+                  {{ titleOf(section) }}
+                </p>
+                <p v-if="descriptionOf(section)" class="mt-0.5 line-clamp-1 text-sm text-muted-foreground">
+                  {{ descriptionOf(section) }}
+                </p>
+                <p class="mt-1 flex flex-wrap gap-x-2 text-xs text-muted-foreground">
+                  <template v-if="section.date">
+                    <span>{{ section.date }}</span><span aria-hidden="true">·</span>
+                  </template>
+                  <span class="tabular-nums">{{ transChoice('learning_library.section_manager.articles', section.itemsCount ?? 0, { count: String(section.itemsCount ?? 0) }) }}</span>
+                  <template v-if="section.tenant">
+                    <span aria-hidden="true">·</span><span>{{ section.tenant.shortname }}</span>
+                  </template>
+                  <span v-if="!section.title.en" class="text-status-attention">· {{ $t('learning_library.section_manager.no_english') }}</span>
+                </p>
+              </div>
+              <Button v-if="section.canUpdate" type="button" variant="ghost" size="icon" :aria-label="`${$t('Redaguoti')}: ${titleOf(section)}`" @click="edit(section)">
+                <Pencil class="size-4" aria-hidden="true" />
+              </Button>
+              <Button v-if="section.canDelete" type="button" variant="ghost" size="icon" :aria-label="`${$t('Ištrinti')}: ${titleOf(section)}`" @click="deleting = section; confirmOpen = true">
+                <Trash2 class="size-4" aria-hidden="true" />
+              </Button>
+            </div>
+          </template>
+        </CollectionRowList>
+      </section>
+      <p v-if="!sections.length" class="text-sm text-muted-foreground">
+        {{ $t('learning_library.section_manager.empty') }}
+      </p>
+    </template>
+
+    <!-- Reorder: drag by the handle or move with the arrows, as on an institution's duties. -->
+    <SortableRowList
+      v-else-if="view === 'reorder'"
+      v-model:items="draft"
+      frame="box"
+      :item-key="(section: LearningSectionOption) => section.id"
+      :item-label="titleOf"
+      :disabled="saving"
+      data-slot="sections-reorder"
+    >
+      <template #default="{ item: section, index }">
+        <p class="flex min-w-0 items-baseline gap-2 py-2.5">
+          <span class="w-5 shrink-0 text-right text-xs tabular-nums text-muted-foreground">{{ index + 1 }}</span>
+          <span class="truncate font-semibold">{{ titleOf(section) }}</span>
+        </p>
+      </template>
+    </SortableRowList>
+
+    <!-- Edit -->
+    <div v-else class="space-y-5" data-slot="section-editor">
+      <div class="flex flex-wrap items-center gap-3">
+        <div :class="segmentGroupClass" role="group" :aria-label="$t('Kalba')">
+          <button
+            v-for="loc in LOCALES"
+            :key="loc"
+            type="button"
+            :class="segmentVariants({ active: editLocale === loc })"
+            :aria-pressed="editLocale === loc"
+            :data-testid="`section-locale-${loc}`"
+            @click="editLocale = loc"
+          >
+            <LocaleFlag :locale="loc" />
+            <span>{{ loc.toUpperCase() }}</span>
+            <span v-if="loc === 'en' && missingEnglish" class="size-1.5 bg-status-attention" aria-hidden="true" />
+          </button>
+        </div>
+        <p v-if="editLocale === 'en'" class="flex items-center gap-1.5 text-xs font-medium text-status-attention">
+          <Languages class="size-3.5 shrink-0" aria-hidden="true" />{{ $t('learning_library.section_manager.editing_english') }}
+        </p>
+      </div>
+      <FormFieldWrapper id="section-kind" :label="$t('learning_library.section_manager.kind')" :hint="kindLocked ? $t('learning_library.section_manager.kind_locked') : $t('learning_library.section_manager.kind_hint')" :error="form.errors.kind">
+        <FormSegmentedControl v-model="kindModel" :options="kindOptions" :aria-label="$t('learning_library.section_manager.kind')" :disabled="kindLocked" test-id-prefix="section-kind" />
+      </FormFieldWrapper>
+      <FormFieldWrapper id="section-title" :label="$t('learning_library.section_manager.name')" :required="editLocale === 'lt'" :error="form.errors[`title.${editLocale}`]">
+        <Input id="section-title" v-model="form.title[editLocale]" :class="fieldSurfaceClass" data-testid="section-title" />
+      </FormFieldWrapper>
+      <FormFieldWrapper id="section-description" :label="$t('learning_library.section_manager.description_label')" :hint="$t('learning_library.section_manager.description_hint')" :error="form.errors[`description.${editLocale}`]">
+        <Textarea id="section-description" v-model="form.description[editLocale]" rows="3" :class="fieldSurfaceClass" data-testid="section-description" />
+      </FormFieldWrapper>
+      <FormFieldWrapper v-if="form.kind === KnowledgeSectionKind.Collection" id="section-date" :label="$t('learning_library.section_manager.date')" :hint="$t('learning_library.section_manager.date_hint')" :error="form.errors.date">
+        <DatePicker :model-value="form.date" clearable data-testid="section-date" @update:model-value="(value?: Date) => form.date = isoDate(value)" />
+      </FormFieldWrapper>
+      <TenantSelectField v-if="!scope.canTargetEverywhere" id="section-tenant" v-model="form.tenant_id" :tenants="scope.tenants" :error="form.errors.tenant_id" />
+      <Button v-if="!editOnly" type="button" variant="ghost" voice="sentence" class="-ml-3" @click="view = 'list'">
+        {{ $t('learning_library.section_manager.back') }}
+      </Button>
+    </div>
+  </SheetForm>
+  <ConfirmDialog v-model:open="confirmOpen" :title="$t('learning_library.section_manager.delete_title')" :description="$t('learning_library.section_manager.delete_description')" :confirm-label="$t('Ištrinti')" destructive @confirm="destroy" />
+</template>
+
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
@@ -136,115 +264,3 @@ const disabled = computed(() => {
   return true;
 });
 </script>
-
-<template>
-  <SheetForm
-    v-model:open="open"
-    :title="$t('learning_library.section_manager.title')"
-    :description="sheetDescription"
-    :dirty="(view === 'edit' && form.isDirty) || (view === 'reorder' && orderChanged)"
-    :processing="form.processing || saving"
-    :disabled
-    :save-label="view === 'reorder' ? $t('Išsaugoti tvarką') : undefined"
-    @submit="submit"
-  >
-    <template v-if="view === 'list'" #footer>
-      <Button type="button" variant="outline" voice="sentence" class="min-h-11" @click="open = false">{{ $t('Uždaryti') }}</Button>
-    </template>
-
-    <!-- List -->
-    <template v-if="view === 'list'">
-      <Button v-if="canCreate" type="button" variant="outline" voice="sentence" class="self-start" data-testid="create-section" @click="edit(null)">
-        <Plus class="size-4" aria-hidden="true" />{{ $t('learning.sections.create') }}
-      </Button>
-      <section v-for="group in groups" :key="group.kind" class="space-y-2" :data-slot="`sections-${group.kind}`">
-        <div class="flex items-center justify-between gap-2">
-          <h3 class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{{ group.title }}</h3>
-          <Button v-if="canReorder(group.sections)" type="button" variant="ghost" voice="sentence" size="sm" class="-my-1" :data-testid="`reorder-sections-${group.kind}`" @click="startReorder(group.kind)">
-            <ArrowDownUp class="size-4" aria-hidden="true" />{{ $t('Keisti tvarką') }}
-          </Button>
-        </div>
-      <CollectionRowList :items="group.sections" frame="box" :item-key="(section: LearningSectionOption) => section.id">
-        <template #default="{ item: section }">
-          <div class="flex items-start gap-2 px-3 py-2.5" data-slot="managed-section">
-            <div class="min-w-0 flex-1">
-              <p class="break-words font-semibold leading-snug text-foreground">{{ titleOf(section) }}</p>
-              <p v-if="descriptionOf(section)" class="mt-0.5 line-clamp-1 text-sm text-muted-foreground">{{ descriptionOf(section) }}</p>
-              <p class="mt-1 flex flex-wrap gap-x-2 text-xs text-muted-foreground">
-                <template v-if="section.date"><span>{{ section.date }}</span><span aria-hidden="true">·</span></template>
-                <span class="tabular-nums">{{ transChoice('learning_library.section_manager.articles', section.itemsCount ?? 0, { count: String(section.itemsCount ?? 0) }) }}</span>
-                <template v-if="section.tenant"><span aria-hidden="true">·</span><span>{{ section.tenant.shortname }}</span></template>
-                <span v-if="!section.title.en" class="text-status-attention">· {{ $t('learning_library.section_manager.no_english') }}</span>
-              </p>
-            </div>
-            <Button v-if="section.canUpdate" type="button" variant="ghost" size="icon" :aria-label="`${$t('Redaguoti')}: ${titleOf(section)}`" @click="edit(section)">
-              <Pencil class="size-4" aria-hidden="true" />
-            </Button>
-            <Button v-if="section.canDelete" type="button" variant="ghost" size="icon" :aria-label="`${$t('Ištrinti')}: ${titleOf(section)}`" @click="deleting = section; confirmOpen = true">
-              <Trash2 class="size-4" aria-hidden="true" />
-            </Button>
-          </div>
-        </template>
-      </CollectionRowList>
-      </section>
-      <p v-if="!sections.length" class="text-sm text-muted-foreground">{{ $t('learning_library.section_manager.empty') }}</p>
-    </template>
-
-    <!-- Reorder: drag by the handle or move with the arrows, as on an institution's duties. -->
-    <SortableRowList
-      v-else-if="view === 'reorder'"
-      v-model:items="draft"
-      frame="box"
-      :item-key="(section: LearningSectionOption) => section.id"
-      :item-label="titleOf"
-      :disabled="saving"
-      data-slot="sections-reorder"
-    >
-      <template #default="{ item: section, index }">
-        <p class="flex min-w-0 items-baseline gap-2 py-2.5">
-          <span class="w-5 shrink-0 text-right text-xs tabular-nums text-muted-foreground">{{ index + 1 }}</span>
-          <span class="truncate font-semibold">{{ titleOf(section) }}</span>
-        </p>
-      </template>
-    </SortableRowList>
-
-    <!-- Edit -->
-    <div v-else class="space-y-5" data-slot="section-editor">
-      <div class="flex flex-wrap items-center gap-3">
-        <div :class="segmentGroupClass" role="group" :aria-label="$t('Kalba')">
-          <button
-            v-for="loc in LOCALES"
-            :key="loc"
-            type="button"
-            :class="segmentVariants({ active: editLocale === loc })"
-            :aria-pressed="editLocale === loc"
-            :data-testid="`section-locale-${loc}`"
-            @click="editLocale = loc"
-          >
-            <LocaleFlag :locale="loc" />
-            <span>{{ loc.toUpperCase() }}</span>
-            <span v-if="loc === 'en' && missingEnglish" class="size-1.5 bg-status-attention" aria-hidden="true" />
-          </button>
-        </div>
-        <p v-if="editLocale === 'en'" class="flex items-center gap-1.5 text-xs font-medium text-status-attention">
-          <Languages class="size-3.5 shrink-0" aria-hidden="true" />{{ $t('learning_library.section_manager.editing_english') }}
-        </p>
-      </div>
-      <FormFieldWrapper id="section-kind" :label="$t('learning_library.section_manager.kind')" :hint="kindLocked ? $t('learning_library.section_manager.kind_locked') : $t('learning_library.section_manager.kind_hint')" :error="form.errors.kind">
-        <FormSegmentedControl v-model="kindModel" :options="kindOptions" :ariaLabel="$t('learning_library.section_manager.kind')" :disabled="kindLocked" test-id-prefix="section-kind" />
-      </FormFieldWrapper>
-      <FormFieldWrapper id="section-title" :label="$t('learning_library.section_manager.name')" :required="editLocale === 'lt'" :error="form.errors[`title.${editLocale}`]">
-        <Input id="section-title" v-model="form.title[editLocale]" :class="fieldSurfaceClass" data-testid="section-title" />
-      </FormFieldWrapper>
-      <FormFieldWrapper id="section-description" :label="$t('learning_library.section_manager.description_label')" :hint="$t('learning_library.section_manager.description_hint')" :error="form.errors[`description.${editLocale}`]">
-        <Textarea id="section-description" v-model="form.description[editLocale]" rows="3" :class="fieldSurfaceClass" data-testid="section-description" />
-      </FormFieldWrapper>
-      <FormFieldWrapper v-if="form.kind === KnowledgeSectionKind.Collection" id="section-date" :label="$t('learning_library.section_manager.date')" :hint="$t('learning_library.section_manager.date_hint')" :error="form.errors.date">
-        <DatePicker :model-value="form.date" clearable data-testid="section-date" @update:model-value="(value?: Date) => form.date = isoDate(value)" />
-      </FormFieldWrapper>
-      <TenantSelectField v-if="!scope.canTargetEverywhere" id="section-tenant" v-model="form.tenant_id" :tenants="scope.tenants" :error="form.errors.tenant_id" />
-      <Button v-if="!editOnly" type="button" variant="ghost" voice="sentence" class="-ml-3" @click="view = 'list'">{{ $t('learning_library.section_manager.back') }}</Button>
-    </div>
-  </SheetForm>
-  <ConfirmDialog v-model:open="confirmOpen" :title="$t('learning_library.section_manager.delete_title')" :description="$t('learning_library.section_manager.delete_description')" :confirm-label="$t('Ištrinti')" destructive @confirm="destroy" />
-</template>

@@ -1,7 +1,6 @@
 import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
 
 import { formatDateWith } from '@/Utils/dateTime';
-
 import { changeDutyNameEndings } from '@/Utils/String';
 import type { CommentAuthorDuty } from '@/Types/discussions';
 

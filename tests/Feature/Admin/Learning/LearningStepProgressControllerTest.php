@@ -7,7 +7,7 @@ use App\Models\LearningStep;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 test('a member can tick skip and clear their own step progress', function (): void {
     $user = makeUser(Tenant::query()->firstOrFail());

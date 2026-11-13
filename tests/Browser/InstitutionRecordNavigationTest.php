@@ -10,7 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
 
-it('keeps institution sections reachable on phones and desktops', function () {
+it('keeps institution sections reachable on phones and desktops', function (): void {
     Role::findOrCreate(config('permission.super_admin_role_name'), 'web');
     $user = User::factory()->create();
     $user->assignRole(config('permission.super_admin_role_name'));

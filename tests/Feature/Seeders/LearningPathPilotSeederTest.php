@@ -27,17 +27,17 @@ test('seeds the pilot once, links archive documents by title and replaces audien
     expect(LearningStep::query()->whereHas('audiences', $forSpk)->count())->toBe(7)
         ->and(KnowledgeItem::query()->whereHas('audiences', $forSpk)->count())->toBe(2);
     $unitStep = KnowledgeItem::query()->where('key', "pilot_unit_regulations_{$tenant->alias}")->sole();
-    expect($unitStep->audiences->sole()->type)->toBe(LearningAudienceType::Everyone);
-    expect($unitStep->audiences->sole()->tenant_id)->toBe($tenant->id);
-    expect($step->section->getTranslation('title', 'en'))->toBe('VU SR and the university');
+    expect($unitStep->audiences->sole()->type)->toBe(LearningAudienceType::Everyone)
+        ->and($unitStep->audiences->sole()->tenant_id)->toBe($tenant->id)
+        ->and($step->section->getTranslation('title', 'en'))->toBe('VU SR and the university');
     $unitTerm = KnowledgeItem::query()->where('key', 'pilot_unit_regulations')->sole();
     expect($unitTerm->kind)->toBe(KnowledgeItemKind::Term)->and($unitTerm->audiences)->toBeEmpty()
         ->and($unitStep->kind)->toBe(KnowledgeItemKind::Material)->and($unitStep->counts_in_progress)->toBeFalse()
         ->and($unitStep->section->kind)->toBe(KnowledgeSectionKind::Collection)
-        ->and($unitStep->subjects->sole()->only(['subject_type', 'subject_id']))->toBe(['subject_type' => 'knowledge_item', 'subject_id' => $unitTerm->id]);
-    expect($step->audiences)->toHaveCount(2);
-    expect($unitStep->sourceFor('lt')->document_id)->toBe($unitRegulations->id);
-    expect(KnowledgeItem::query()->where('key', 'pilot_spk_regulations')->sole()->outgoingLinks)->toHaveCount(5);
+        ->and($unitStep->subjects->sole()->only(['subject_type', 'subject_id']))->toBe(['subject_type' => 'knowledge_item', 'subject_id' => $unitTerm->id])
+        ->and($step->audiences)->toHaveCount(2)
+        ->and($unitStep->sourceFor('lt')->document_id)->toBe($unitRegulations->id)
+        ->and(KnowledgeItem::query()->where('key', 'pilot_spk_regulations')->sole()->outgoingLinks)->toHaveCount(5);
     $skvc = KnowledgeItem::query()->where('abbreviation->lt', 'SKVC')->sole();
     expect($skvc->audiences)->toBeEmpty()->and($skvc->incomingLinks)->not->toBeEmpty();
 
@@ -45,8 +45,8 @@ test('seeds the pilot once, links archive documents by title and replaces audien
     $counts = [LearningStep::query()->count(), KnowledgeItem::query()->count()];
     $this->seed(LearningPathPilotSeeder::class);
 
-    expect([LearningStep::query()->count(), KnowledgeItem::query()->count()])->toBe($counts);
-    expect($step->fresh()->order)->toBe(10);
-    expect($step->fresh()->getTranslation('title', 'lt'))->toBe('VU SA įstatai');
-    expect($step->fresh()->audiences)->toHaveCount(2);
+    expect([LearningStep::query()->count(), KnowledgeItem::query()->count()])->toBe($counts)
+        ->and($step->fresh()->order)->toBe(10)
+        ->and($step->fresh()->getTranslation('title', 'lt'))->toBe('VU SA įstatai')
+        ->and($step->fresh()->audiences)->toHaveCount(2);
 });

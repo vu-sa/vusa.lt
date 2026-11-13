@@ -12,7 +12,7 @@ use App\Models\Permission;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 test('system updates ignore authored fields and preserve their identity', function (): void {
     $user = makeUser(Tenant::query()->firstOrFail());
@@ -23,12 +23,12 @@ test('system updates ignore authored fields and preserve their identity', functi
         'title' => ['lt' => 'Injected'], 'key' => 'other', 'is_system' => false,
     ])->assertRedirect();
     $step->refresh();
-    expect($step->key)->toBe('install_app');
-    expect($step->is_system)->toBeTrue();
-    expect($step->audiences->first()->stage)->toBe(LearningStage::WholeTerm);
-    expect($step->order)->toBe(6);
-    expect($step->is_active)->toBeFalse();
-    expect($step->getTranslations('title'))->toBeEmpty();
+    expect($step->key)->toBe('install_app')
+        ->and($step->is_system)->toBeTrue()
+        ->and($step->audiences->first()->stage)->toBe(LearningStage::WholeTerm)
+        ->and($step->order)->toBe(6)
+        ->and($step->is_active)->toBeFalse()
+        ->and($step->getTranslations('title'))->toBeEmpty();
 });
 
 test('step writes reject incompatible targets and ambiguous sources', function (array $changes, string $error): void {
@@ -138,9 +138,9 @@ test('an audience id from another step is refused and the transaction leaves bot
         'audiences' => [['id' => $foreign->id, 'type' => 'everyone', 'stage' => 'before_start', 'importance' => 'essential']],
     ])->assertForbidden();
 
-    expect($step->fresh()->getTranslations('title'))->toBe($step->getTranslations('title'));
-    expect($foreign->fresh()->audienceable_id)->toBe($other->id);
-    expect($foreign->fresh()->importance)->toBe(LearningImportance::Recommended);
+    expect($step->fresh()->getTranslations('title'))->toBe($step->getTranslations('title'))
+        ->and($foreign->fresh()->audienceable_id)->toBe($other->id)
+        ->and($foreign->fresh()->importance)->toBe(LearningImportance::Recommended);
 });
 
 test('system audiences preserve identity importance and omitted rows', function (): void {
@@ -151,9 +151,9 @@ test('system audiences preserve identity importance and omitted rows', function 
     asUser($user)->patch(route('learningSteps.update', $step), [
         'audiences' => [['id' => $audience->id, 'stage' => 'whole_term', 'order' => 7]],
     ])->assertRedirect();
-    expect($step->fresh()->audiences)->toHaveCount(2);
-    expect($audience->fresh()->stage)->toBe(LearningStage::WholeTerm);
-    expect($audience->fresh()->importance)->toBe(LearningImportance::Essential);
+    expect($step->fresh()->audiences)->toHaveCount(2)
+        ->and($audience->fresh()->stage)->toBe(LearningStage::WholeTerm)
+        ->and($audience->fresh()->importance)->toBe(LearningImportance::Essential);
     asUser($user)->patchJson(route('learningSteps.update', $step), [
         'audiences' => [['id' => $audience->id, 'type' => 'everyone', 'importance' => 'optional']],
     ])->assertUnprocessable();

@@ -1,3 +1,54 @@
+<template>
+  <div class="flex h-6 w-11 shrink-0 items-center justify-center" data-slot="learning-completion-control">
+    <Tooltip v-if="automatic">
+      <TooltipTrigger as-child>
+        <span
+          role="checkbox"
+          tabindex="0"
+          aria-readonly="true"
+          aria-disabled="true"
+          :aria-checked="checked === true"
+          :aria-label="step.title"
+          :aria-describedby="hintId"
+          data-testid="step-checkbox"
+          :class="[
+            ...appearance,
+            'cursor-default outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40',
+            checked
+              ? 'bg-status-success-surface text-status-success'
+              : (branded ? 'bg-background text-brand' : 'bg-background text-muted-foreground'),
+          ]"
+        >
+          <Zap class="size-3.5" role="img" :aria-label="$t(checked ? 'learning.path.auto_help' : 'learning.path.auto_pending')" />
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>{{ $t('learning.path.auto_tracking') }}</TooltipContent>
+    </Tooltip>
+    <span v-else class="relative flex">
+      <Checkbox
+        v-model="checked"
+        :disabled
+        :aria-label="step.title"
+        :aria-describedby="hintId"
+        data-testid="step-checkbox"
+        :data-celebrating="celebrating || undefined"
+        :class="[
+          ...appearance,
+          'learning-check cursor-pointer disabled:cursor-default [&_svg]:size-3.5 [&_svg]:stroke-[3]',
+          branded
+            ? 'enabled:hover:border-brand enabled:hover:bg-brand/10 data-[state=checked]:bg-brand-fill data-[state=checked]:text-brand-foreground data-[state=checked]:enabled:hover:bg-brand-fill/90'
+            : 'enabled:hover:border-foreground enabled:hover:bg-muted data-[state=checked]:bg-foreground data-[state=checked]:text-background data-[state=checked]:enabled:hover:bg-foreground/80',
+        ]"
+      />
+      <span v-if="celebrating" :class="['learning-check-burst pointer-events-none absolute inset-0 border-2', branded ? 'border-brand' : 'border-foreground']" aria-hidden="true" />
+    </span>
+    <span :id="hintId" class="sr-only">
+      {{ step.importance ? $t(`learning.importance.${step.importance}`) : $t('learning.path.self_learned') }}
+      <template v-if="automatic">. {{ $t('learning.path.auto_tracking') }}</template>
+    </span>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, useId, watch } from 'vue';
 import { Zap } from '@lucide/vue';
@@ -32,57 +83,6 @@ const appearance = computed(() => [
   props.step.importance === 'optional' && 'border-dashed',
 ]);
 </script>
-
-<template>
-  <div class="flex h-6 w-11 shrink-0 items-center justify-center" data-slot="learning-completion-control">
-    <Tooltip v-if="automatic">
-      <TooltipTrigger as-child>
-        <span
-          role="checkbox"
-          tabindex="0"
-          aria-readonly="true"
-          aria-disabled="true"
-          :aria-checked="checked === true"
-          :aria-label="step.title"
-          :aria-describedby="hintId"
-          data-testid="step-checkbox"
-          :class="[
-            ...appearance,
-            'cursor-default outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40',
-            checked
-              ? 'bg-status-success-surface text-status-success'
-              : (branded ? 'bg-background text-brand' : 'bg-background text-muted-foreground'),
-          ]"
-        >
-          <Zap class="size-3.5" role="img" :aria-label="$t(checked ? 'learning.path.auto_help' : 'learning.path.auto_pending')" />
-        </span>
-      </TooltipTrigger>
-      <TooltipContent>{{ $t('learning.path.auto_tracking') }}</TooltipContent>
-    </Tooltip>
-    <span v-else class="relative flex">
-      <Checkbox
-        v-model="checked"
-        :disabled="disabled"
-        :aria-label="step.title"
-        :aria-describedby="hintId"
-        data-testid="step-checkbox"
-        :data-celebrating="celebrating || undefined"
-        :class="[
-          ...appearance,
-          'learning-check cursor-pointer disabled:cursor-default [&_svg]:size-3.5 [&_svg]:stroke-[3]',
-          branded
-            ? 'enabled:hover:border-brand enabled:hover:bg-brand/10 data-[state=checked]:bg-brand-fill data-[state=checked]:text-brand-foreground data-[state=checked]:enabled:hover:bg-brand-fill/90'
-            : 'enabled:hover:border-foreground enabled:hover:bg-muted data-[state=checked]:bg-foreground data-[state=checked]:text-background data-[state=checked]:enabled:hover:bg-foreground/80',
-        ]"
-      />
-      <span v-if="celebrating" :class="['learning-check-burst pointer-events-none absolute inset-0 border-2', branded ? 'border-brand' : 'border-foreground']" aria-hidden="true" />
-    </span>
-    <span :id="hintId" class="sr-only">
-      {{ step.importance ? $t(`learning.importance.${step.importance}`) : $t('learning.path.self_learned') }}
-      <template v-if="automatic">. {{ $t('learning.path.auto_tracking') }}</template>
-    </span>
-  </div>
-</template>
 
 <style scoped>
 @keyframes learning-check-pop {

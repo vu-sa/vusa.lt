@@ -16,7 +16,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->freezeTime();

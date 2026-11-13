@@ -13,7 +13,7 @@ Darbo sritis **Wiki** – VU SA žinių bazė: kas yra kas VU SA ir universitete
 santrumpos, kokie dokumentai svarbūs ir kaip visa tai susiję. Sritis rodoma **visiems** naudotojams,
 o tai, kas svarbiausia būtent tau, iškeliama pagal tavo pareigas.
 
-<ChangelogNote date="2026-11-11" title="Wiki">
+<ChangelogNote date="2026-11-13" title="Wiki">
 
 Žinių bazė tapo Wiki: sąvokos ir medžiaga sujungtos į vienos rūšies įrašus, kurie vienas į
 kitą nurodo tekste, o Wiki turi savo sritį darbo sričių pasirinkime.

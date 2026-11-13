@@ -65,7 +65,9 @@
       </div>
     </div>
 
-    <p v-if="error" class="pl-5 text-xs text-destructive" role="alert">{{ error }}</p>
+    <p v-if="error" class="pl-5 text-xs text-destructive" role="alert">
+      {{ error }}
+    </p>
   </div>
 </template>
 

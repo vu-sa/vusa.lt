@@ -3,8 +3,9 @@ import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { nextTick } from 'vue';
 
-import WikiProse from '../WikiProse.vue';
 import { KnowledgeItemKind } from '@/Types/enums';
+
+import WikiProse from '../WikiProse.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

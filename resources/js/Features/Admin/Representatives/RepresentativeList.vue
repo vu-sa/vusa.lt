@@ -57,7 +57,9 @@
     </ul>
     <EmptyState v-else :title="$t(reps.length ? 'representatives.list.no_results' : 'representatives.list.empty')">
       <template v-if="reps.length" #action>
-        <Button variant="outline" voice="sentence" @click="clear">{{ $t('representatives.list.clear') }}</Button>
+        <Button variant="outline" voice="sentence" @click="clear">
+          {{ $t('representatives.list.clear') }}
+        </Button>
       </template>
     </EmptyState>
 

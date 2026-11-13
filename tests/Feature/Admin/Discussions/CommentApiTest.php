@@ -844,8 +844,8 @@ describe('author duty', function (): void {
             ->assertCreated()->assertJsonPath('data.author_duty.dutiable_id', $option->id);
 
         $this->assertDatabaseHas('comments', ['id' => $response->json('data.id'), 'author_dutiable_id' => $option->id]);
-        expect($this->viewer->fresh()->ui_preferences)->toMatchArray(['theme' => 'dark', 'comment_dutiable_id' => $option->id]);
-        expect($this->viewer->activitiesAsSubject()->count())->toBe($activityCount);
+        expect($this->viewer->fresh()->ui_preferences)->toMatchArray(['theme' => 'dark', 'comment_dutiable_id' => $option->id])
+            ->and($this->viewer->activitiesAsSubject()->count())->toBe($activityCount);
     })->with(['comment', 'topic', 'poll', 'reply']);
 
     test('a duty tied to the record wins over the last choice, which wins over picker order', function (): void {
@@ -948,8 +948,8 @@ describe('comment images', function (): void {
 
         asUser($this->viewer)->postJson($this->storeUrl, ['body' => '<p>Text</p>', 'image_ids' => [$media->id]])->assertForbidden();
 
-        expect($this->agendaItem->comments()->count())->toBe(0);
-        expect($media->fresh()->model_id)->toBe($pending->id);
+        expect($this->agendaItem->comments()->count())->toBe(0)
+            ->and($media->fresh()->model_id)->toBe($pending->id);
         $this->assertModelExists($pending);
         Event::assertNotDispatched(CommentPosted::class);
         Event::assertNotDispatched(CommentBroadcast::class);
@@ -995,8 +995,8 @@ test('reply images appear under their thread and attached images cannot be claim
     asUser($this->viewer)->getJson($this->indexUrl)->assertOk()
         ->assertJsonPath('data.0.replies.0.id', $reply)->assertJsonPath('data.0.replies.0.images.0.id', $media->id);
     asUser($this->viewer)->postJson($this->storeUrl, ['body' => '<p>Reuse</p>', 'image_ids' => [$media->id]])->assertForbidden();
-    expect($this->agendaItem->comments()->count())->toBe(2);
-    expect($media->fresh()->model_id)->toBe($reply);
+    expect($this->agendaItem->comments()->count())->toBe(2)
+        ->and($media->fresh()->model_id)->toBe($reply);
 });
 
 test('erasing a topic also clears its title and author duty', function (): void {
@@ -1008,6 +1008,6 @@ test('erasing a topic also clears its title and author duty', function (): void 
     asUser($this->viewer)->deleteJson(route('api.v1.admin.comments.destroy', $topic))->assertOk()
         ->assertJsonPath('data.title', null)->assertJsonPath('data.author_duty', null)->assertJsonPath('data.is_closed', false);
 
-    expect($topic->fresh()->author_dutiable_id)->toBeNull();
-    expect($topic->fresh()->resolved_by)->toBeNull();
+    expect($topic->fresh()->author_dutiable_id)->toBeNull()
+        ->and($topic->fresh()->resolved_by)->toBeNull();
 });

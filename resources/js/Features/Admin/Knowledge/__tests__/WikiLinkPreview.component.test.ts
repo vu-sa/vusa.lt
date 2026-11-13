@@ -3,9 +3,10 @@ import { mount } from '@vue/test-utils';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { h } from 'vue';
 
+import { KnowledgeItemKind } from '@/Types/enums';
+
 import WikiLinkPreview from '../WikiLinkPreview.vue';
 import WikiPageList from '../WikiPageList.vue';
-import { KnowledgeItemKind } from '@/Types/enums';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

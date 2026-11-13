@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
 
 pest()->use(RefreshDatabase::class);
 
-it('keeps an archive document when the editor switches source modes and explains the audience', function () {
+it('keeps an archive document when the editor switches source modes and explains the audience', function (): void {
     $user = makeUser(Tenant::query()->firstOrFail());
     foreach (['knowledgeItems.update.*', 'learningSteps.update.*'] as $permission) {
         $user->givePermissionTo(Permission::findOrCreate($permission, 'web'));
@@ -29,7 +29,7 @@ it('keeps an archive document when the editor switches source modes and explains
         ->assertNoJavaScriptErrors()->screenshotElement('[data-testid=step-audiences]', filename: 'wiki-audience-hint-phone');
 });
 
-it('keeps the library open action and edit menu inside the table action column', function () {
+it('keeps the library open action and edit menu inside the table action column', function (): void {
     $user = makeUser(Tenant::query()->firstOrFail());
     $user->givePermissionTo(Permission::findOrCreate('knowledgeItems.update.*', 'web'));
     KnowledgeItem::factory()->withoutAudiences()->create();
@@ -44,7 +44,7 @@ it('keeps the library open action and edit menu inside the table action column',
         ->assertNoJavaScriptErrors()->screenshot(filename: 'wiki-library-actions-phone');
 });
 
-it('keeps alphabet headings below both sticky navigation bars after a letter jump', function () {
+it('keeps alphabet headings below both sticky navigation bars after a letter jump', function (): void {
     $user = makeUser(Tenant::query()->firstOrFail());
     foreach (['A', 'B', 'C', 'D', 'E', 'Z'] as $letter) {
         KnowledgeItem::factory()->withoutAudiences()->count(4)->create([
@@ -59,7 +59,7 @@ it('keeps alphabet headings below both sticky navigation bars after a letter jum
     }
 });
 
-it('opens articles for you from the Wiki menu and switches grouping on its own page', function () {
+it('opens articles for you from the Wiki menu and switches grouping on its own page', function (): void {
     $tenant = Tenant::query()->firstOrFail();
     $user = makeUser($tenant);
     grantPurpose($user->duties()->firstOrFail(), ResponsibilityPurpose::StudentRepresentation);
@@ -102,7 +102,7 @@ it('opens articles for you from the Wiki menu and switches grouping on its own p
     $page->screenshotElement('[data-step]:has([data-slot=learning-coordinators])', filename: 'learning-coordinator-phone');
 });
 
-it('lets a reader complete an off-path article in the built app', function () {
+it('lets a reader complete an off-path article in the built app', function (): void {
     Storage::fake();
     Storage::put('document-thumbnails/wiki-preview.png', UploadedFile::fake()->image('preview.png', 300, 400)->getContent());
     $user = makeUser(Tenant::query()->firstOrFail());
@@ -137,7 +137,7 @@ it('lets a reader complete an off-path article in the built app', function () {
     $page->assertAttribute('[data-testid=step-checkbox]', 'aria-checked', 'true')->assertNoJavaScriptErrors();
 });
 
-it('opens the section manager and bilingual editor in the built app', function () {
+it('opens the section manager and bilingual editor in the built app', function (): void {
     $user = makeUser(Tenant::query()->firstOrFail());
     foreach (['knowledgeItems.create.*', 'knowledgeItems.update.*', 'learningSteps.create.*', 'learningSteps.update.*'] as $permission) {
         $user->givePermissionTo(Permission::findOrCreate($permission, 'web'));
@@ -153,7 +153,7 @@ it('opens the section manager and bilingual editor in the built app', function (
     $page->screenshot(filename: 'wiki-section-editor-dark')->assertNoJavaScriptErrors();
 });
 
-it('opens the Wiki link picker in the article editor on phone and desktop', function () {
+it('opens the Wiki link picker in the article editor on phone and desktop', function (): void {
     $user = makeUser(Tenant::query()->firstOrFail());
     $user->givePermissionTo(Permission::findOrCreate('knowledgeItems.update.*', 'web'));
     $item = KnowledgeItem::factory()->withoutAudiences()->create();

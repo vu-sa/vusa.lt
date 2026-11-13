@@ -11,7 +11,7 @@ use App\Services\KnowledgeBasePresenter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 function wikiEditor(): User
 {

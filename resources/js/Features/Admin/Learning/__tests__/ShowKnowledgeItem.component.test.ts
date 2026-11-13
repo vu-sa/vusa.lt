@@ -6,6 +6,7 @@ import ShowKnowledgeItem from '@/Pages/Admin/Knowledge/ShowKnowledgeItem.vue';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
 import type { LearningSource } from '@/Types/learning';
+
 import { knowledge } from './fixtures';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));

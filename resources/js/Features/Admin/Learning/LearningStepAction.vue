@@ -1,3 +1,19 @@
+<template>
+  <component
+    :is="opensElsewhere ? 'a' : Link"
+    v-if="href"
+    :href
+    :target="opensElsewhere ? '_blank' : undefined"
+    :rel="opensElsewhere ? 'noopener noreferrer' : undefined"
+    :class="[buttonClass, 'min-w-0']"
+    :data-importance="step.importance"
+    data-slot="learning-step-action"
+  >
+    <span class="min-w-0 truncate">{{ label }}</span>
+    <component :is="opensElsewhere ? ArrowUpRight : ArrowRight" class="size-4 shrink-0" aria-hidden="true" />
+  </component>
+</template>
+
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
@@ -34,19 +50,3 @@ const buttonClass = computed(() => {
   return buttonVariants({ variant: 'outline', voice: 'brand', size: 'sm' });
 });
 </script>
-
-<template>
-  <component
-    :is="opensElsewhere ? 'a' : Link"
-    v-if="href"
-    :href="href"
-    :target="opensElsewhere ? '_blank' : undefined"
-    :rel="opensElsewhere ? 'noopener noreferrer' : undefined"
-    :class="[buttonClass, 'min-w-0']"
-    :data-importance="step.importance"
-    data-slot="learning-step-action"
-  >
-    <span class="min-w-0 truncate">{{ label }}</span>
-    <component :is="opensElsewhere ? ArrowUpRight : ArrowRight" class="size-4 shrink-0" aria-hidden="true" />
-  </component>
-</template>

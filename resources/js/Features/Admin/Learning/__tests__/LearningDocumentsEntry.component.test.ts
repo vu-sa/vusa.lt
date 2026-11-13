@@ -3,7 +3,9 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { commonStubs } from '@/tests/stubs';
 import { Button } from '@/Components/ui/button';
+
 import LearningDocumentsEntry from '../LearningDocumentsEntry.vue';
+
 import { path, knowledge } from './fixtures';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));

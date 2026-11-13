@@ -23,9 +23,10 @@
               {{ $t('Balsavo: :option', { option: votedOptionLabel }) }}
             </span>
           </p>
-          <p v-if="dutyLabel" class="truncate text-xs text-muted-foreground" :title="dutyLabel" data-testid="comment-author-duty">{{ dutyLabel }}</p>
+          <p v-if="dutyLabel" class="truncate text-xs text-muted-foreground" :title="dutyLabel" data-testid="comment-author-duty">
+            {{ dutyLabel }}
+          </p>
         </div>
-
       </header>
 
       <CommentComposer

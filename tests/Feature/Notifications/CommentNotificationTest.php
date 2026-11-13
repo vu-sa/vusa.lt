@@ -179,8 +179,8 @@ test('topic notifications cite the title in excerpts and digests', function (): 
     $this->agendaItem->comment('<p>Let us discuss it.</p>', attributes: ['kind' => CommentKind::Topic, 'title' => 'Next meeting']);
 
     Notification::assertSentTo($this->rep, CommentPostedNotification::class, function (CommentPostedNotification $notification): bool {
-        expect($notification->excerpt($this->rep))->toBe('Next meeting — Let us discuss it.');
-        expect($notification->digestLine($this->rep))->toContain('Next meeting');
+        expect($notification->excerpt($this->rep))->toBe('Next meeting — Let us discuss it.')
+            ->and($notification->digestLine($this->rep))->toContain('Next meeting');
 
         return true;
     });
@@ -197,8 +197,8 @@ test('topic reply notifications cite the root topic title', function (): void {
     $this->agendaItem->comment('<p>Second reply</p>', $parent->id);
 
     Notification::assertSentTo($this->rep, CommentPostedNotification::class, function (CommentPostedNotification $notification): bool {
-        expect($notification->excerpt($this->rep))->toBe('Next meeting — Second reply');
-        expect($notification->digestLine($this->rep))->toContain('Next meeting');
+        expect($notification->excerpt($this->rep))->toBe('Next meeting — Second reply')
+            ->and($notification->digestLine($this->rep))->toContain('Next meeting');
 
         return true;
     });

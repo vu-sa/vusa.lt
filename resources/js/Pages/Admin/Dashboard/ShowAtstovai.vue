@@ -10,7 +10,7 @@
         compact
         :description="$t('representatives.tenant_scope_description')"
         :tenants
-        :selected-tenants="selectedTenants"
+        :selected-tenants
         @update:selected-tenants="selectTenants"
       />
     </template>
@@ -47,20 +47,26 @@
             <p class="text-sm text-muted-foreground" data-slot="representative-own-work">
               {{ $t('representatives.activity.own_work', { count: String(overview.summary.recordedOwn), total: String(inOffice) }) }}
             </p>
-            <p class="text-xs text-muted-foreground">{{ $t('representatives.activity.caption') }}</p>
+            <p class="text-xs text-muted-foreground">
+              {{ $t('representatives.activity.caption') }}
+            </p>
           </OverviewSection>
         </div>
 
         <div v-if="hasMetrics || learning" class="grid gap-8 lg:grid-cols-2 lg:gap-10">
           <section v-if="hasMetrics" ref="metricsAnchor" class="min-h-48 min-w-0" data-slot="representative-metrics">
             <OverviewSection :title="$t('representatives.metrics.title')" :icon="ChartNoAxesCombined" variant="home">
-              <p v-if="repMetrics.error.value" class="text-sm text-status-danger" role="alert">{{ $t('metrics.history.error') }}</p>
+              <p v-if="repMetrics.error.value" class="text-sm text-status-danger" role="alert">
+                {{ $t('metrics.history.error') }}
+              </p>
               <TenantRepMetrics :data="scopedRepMetrics" :loading="!metricsVisible || repMetrics.isFetching.value" />
             </OverviewSection>
           </section>
           <OverviewSection v-if="learning" :title="$t('representatives.onboarding.title')" :icon="Route" variant="home" class="min-w-0" data-slot="representative-onboarding">
             <RepresentativeShareBar :segments="onboardingSegments" />
-            <p class="text-xs text-muted-foreground">{{ $t('representatives.onboarding.caption') }}</p>
+            <p class="text-xs text-muted-foreground">
+              {{ $t('representatives.onboarding.caption') }}
+            </p>
           </OverviewSection>
         </div>
 

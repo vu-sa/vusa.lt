@@ -1,3 +1,49 @@
+<template>
+  <SheetForm
+    v-model:open="open"
+    :title="$t('learning.wiki.subjects')"
+    :description="$t('learning.wiki.subjects_hint')"
+    :dirty="form.isDirty"
+    :processing="form.processing"
+    @submit="save"
+  >
+    <!-- A portaled dialog, as in DutyForm: an inline search inside the sheet's <form> would submit it. -->
+    <div class="space-y-4">
+      <ul v-if="form.subjects.length" class="divide-y divide-border border border-border" data-slot="wiki-subjects">
+        <li v-for="subject in form.subjects" :key="`${subject.type}:${subject.id}`" class="flex items-center justify-between gap-3 py-1 pr-1 pl-3">
+          <span class="min-w-0">
+            <span class="block truncate text-sm font-semibold">{{ subject.title }}</span>
+            <span class="block text-xs text-muted-foreground">{{ $t(`learning.wiki.subject_types.${subject.type}`) }}</span>
+          </span>
+          <Button type="button" variant="ghost" size="icon" :aria-label="`${$t('Pašalinti')}: ${subject.title}`" @click="remove(subject)">
+            <X class="size-4" aria-hidden="true" />
+          </Button>
+        </li>
+      </ul>
+      <p v-else class="text-sm text-muted-foreground">
+        {{ $t('learning.wiki.subjects_empty') }}
+      </p>
+
+      <FormFieldWrapper id="wiki-subject-type" :label="$t('learning.wiki.subjects_add')">
+        <NativeSelect id="wiki-subject-type" v-model="adding" :options="typeOptions" />
+      </FormFieldWrapper>
+      <InstitutionSelectDialog v-if="adding === 'institution'" v-model:open="institutionDialogOpen" :institutions="[]" @confirm="pickInstitution">
+        <template #trigger>
+          <Button type="button" variant="outline" class="u-touch w-full justify-between font-normal" data-testid="wiki-subject-institution">
+            <span class="truncate text-muted-foreground">{{ $t('Pasirinkti instituciją…') }}</span>
+            <ChevronsUpDown class="size-4 opacity-50" aria-hidden="true" />
+          </Button>
+        </template>
+      </InstitutionSelectDialog>
+      <template v-else-if="adding === 'knowledge_item'">
+        <SingleSelect v-if="termOptions.length > 16" v-model="pickedTerm" :options="termOptions" label-field="title" value-field="id" :placeholder="$t('Pasirinkti')" data-testid="wiki-subject-term" />
+        <NativeSelect v-else id="wiki-subject-term" v-model="termId" :placeholder-value="null" :options="termOptions.map(term => ({ value: term.id, label: term.title }))" :placeholder="$t('Pasirinkti')" data-testid="wiki-subject-term" />
+      </template>
+      <TypeTreeSelect v-else id="wiki-subject-target" v-model="typeId" :types="treeTypes" as-string :placeholder="$t('Pasirinkti')" />
+    </div>
+  </SheetForm>
+</template>
+
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useForm } from '@inertiajs/vue3';
@@ -86,47 +132,3 @@ function save(): void {
     });
 }
 </script>
-
-<template>
-  <SheetForm
-    v-model:open="open"
-    :title="$t('learning.wiki.subjects')"
-    :description="$t('learning.wiki.subjects_hint')"
-    :dirty="form.isDirty"
-    :processing="form.processing"
-    @submit="save"
-  >
-    <!-- A portaled dialog, as in DutyForm: an inline search inside the sheet's <form> would submit it. -->
-    <div class="space-y-4">
-      <ul v-if="form.subjects.length" class="divide-y divide-border border border-border" data-slot="wiki-subjects">
-        <li v-for="subject in form.subjects" :key="`${subject.type}:${subject.id}`" class="flex items-center justify-between gap-3 py-1 pr-1 pl-3">
-          <span class="min-w-0">
-            <span class="block truncate text-sm font-semibold">{{ subject.title }}</span>
-            <span class="block text-xs text-muted-foreground">{{ $t(`learning.wiki.subject_types.${subject.type}`) }}</span>
-          </span>
-          <Button type="button" variant="ghost" size="icon" :aria-label="`${$t('Pašalinti')}: ${subject.title}`" @click="remove(subject)">
-            <X class="size-4" aria-hidden="true" />
-          </Button>
-        </li>
-      </ul>
-      <p v-else class="text-sm text-muted-foreground">{{ $t('learning.wiki.subjects_empty') }}</p>
-
-      <FormFieldWrapper id="wiki-subject-type" :label="$t('learning.wiki.subjects_add')">
-        <NativeSelect id="wiki-subject-type" v-model="adding" :options="typeOptions" />
-      </FormFieldWrapper>
-      <InstitutionSelectDialog v-if="adding === 'institution'" v-model:open="institutionDialogOpen" :institutions="[]" @confirm="pickInstitution">
-        <template #trigger>
-          <Button type="button" variant="outline" class="u-touch w-full justify-between font-normal" data-testid="wiki-subject-institution">
-            <span class="truncate text-muted-foreground">{{ $t('Pasirinkti instituciją…') }}</span>
-            <ChevronsUpDown class="size-4 opacity-50" aria-hidden="true" />
-          </Button>
-        </template>
-      </InstitutionSelectDialog>
-      <template v-else-if="adding === 'knowledge_item'">
-        <SingleSelect v-if="termOptions.length > 16" v-model="pickedTerm" :options="termOptions" label-field="title" value-field="id" :placeholder="$t('Pasirinkti')" data-testid="wiki-subject-term" />
-        <NativeSelect v-else id="wiki-subject-term" v-model="termId" :placeholder-value="null" :options="termOptions.map(term => ({ value: term.id, label: term.title }))" :placeholder="$t('Pasirinkti')" data-testid="wiki-subject-term" />
-      </template>
-      <TypeTreeSelect v-else id="wiki-subject-target" v-model="typeId" :types="treeTypes" as-string :placeholder="$t('Pasirinkti')" />
-    </div>
-  </SheetForm>
-</template>

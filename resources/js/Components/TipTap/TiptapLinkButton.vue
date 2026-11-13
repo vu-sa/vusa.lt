@@ -36,7 +36,9 @@
           <div class="space-y-2">
             <Label for="wiki-link-text">{{ $t('rich-content.link_text') }}</Label>
             <Input id="wiki-link-text" v-model="linkTextRef" :placeholder="target?.title || $t('rich-content.link_text')" data-testid="wiki-link-text" />
-            <p class="text-xs text-muted-foreground">{{ $t('rich-content.link_wiki_text_hint') }}</p>
+            <p class="text-xs text-muted-foreground">
+              {{ $t('rich-content.link_wiki_text_hint') }}
+            </p>
           </div>
           <div class="space-y-2">
             <Label for="wiki-link-search">{{ $t('rich-content.link_wiki_target') }}</Label>
@@ -55,7 +57,9 @@
                   <span v-if="option.hint" class="shrink-0 text-xs font-bold tracking-wide text-muted-foreground">{{ option.hint }}</span>
                 </button>
               </li>
-              <li v-if="!wikiOptions.length" class="px-3 py-2 text-sm text-muted-foreground">{{ $t('rich-content.link_wiki_empty') }}</li>
+              <li v-if="!wikiOptions.length" class="px-3 py-2 text-sm text-muted-foreground">
+                {{ $t('rich-content.link_wiki_empty') }}
+              </li>
             </ul>
           </div>
         </TabsContent>

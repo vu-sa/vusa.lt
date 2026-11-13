@@ -1,9 +1,10 @@
 import { mount } from '@vue/test-utils';
 import { expect, it, vi } from 'vitest';
 
-import WikiLinkCard from '../WikiLinkCard.vue';
 import { KnowledgeItemKind } from '@/Types/enums';
 import type { WikiPageSummary } from '@/Types/learning';
+
+import WikiLinkCard from '../WikiLinkCard.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

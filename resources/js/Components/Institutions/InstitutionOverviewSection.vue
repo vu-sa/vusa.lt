@@ -43,9 +43,9 @@
         :duties
         :total-count="institution.duties_count"
         preview
-        @view-all="$emit('navigate-tab', 'duties')"
         :institution-id="institution.id"
         :can-manage="false"
+        @view-all="$emit('navigate-tab', 'duties')"
         @assign="$emit('assign', $event)"
         @edit-term="(duty, user) => $emit('edit-term', duty, user)"
       />

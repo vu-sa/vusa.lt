@@ -7,7 +7,7 @@ use App\Models\LearningStep;
 use App\Services\Learning\SystemSteps\SystemStepRegistry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 test('system step seed can be rerun without changing curator choices or progress', function (): void {
     $migration = require database_path('migrations/2026_11_09_100100_seed_learning_system_steps.php');
@@ -20,14 +20,13 @@ test('system step seed can be rerun without changing curator choices or progress
     $migration->up();
     $audienceCount = LearningAudience::query()->count();
     $migration->up();
-    expect(LearningAudience::query()->count())->toBe($audienceCount);
-
-    expect(LearningStep::query()->where('is_system', true)->count())->toBe(count(SystemStepRegistry::definitions()));
+    expect(LearningAudience::query()->count())->toBe($audienceCount)
+        ->and(LearningStep::query()->where('is_system', true)->count())->toBe(count(SystemStepRegistry::definitions()));
     $this->assertDatabaseHas('learning_progress', ['id' => $progress->id, 'progressable_type' => $step->getMorphClass(), 'progressable_id' => $step->id]);
-    expect($step->fresh()->audiences->sole()->stage)->toBe(LearningStage::WholeTerm);
-    expect($step->fresh()->order)->toBe(31);
-    expect($step->fresh()->is_active)->toBeFalse();
-    expect(LearningStep::query()->where('key', 'browser_push')->count())->toBe(1);
+    expect($step->fresh()->audiences->sole()->stage)->toBe(LearningStage::WholeTerm)
+        ->and($step->fresh()->order)->toBe(31)
+        ->and($step->fresh()->is_active)->toBeFalse()
+        ->and(LearningStep::query()->where('key', 'browser_push')->count())->toBe(1);
 });
 
 test('steps reps tick themselves are seeded as regular tasks, some with a button', function (): void {
@@ -41,6 +40,6 @@ test('steps reps tick themselves are seeded as regular tasks, some with a button
     $handover = LearningStep::query()->where('key', 'write_handover')->sole();
     expect($handover->is_system)->toBeFalse()
         ->and($handover->getTranslations('action_url'))->toBeEmpty()
-        ->and($handover->audiences->pluck('stage')->unique()->all())->toBe([LearningStage::TermEnd]);
-    expect(LearningStep::query()->whereIn('key', ['follow_institution', 'read_handover'])->exists())->toBeFalse();
+        ->and($handover->audiences->pluck('stage')->unique()->all())->toBe([LearningStage::TermEnd])
+        ->and(LearningStep::query()->whereIn('key', ['follow_institution', 'read_handover'])->exists())->toBeFalse();
 });

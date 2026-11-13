@@ -7,8 +7,8 @@
     :source
     :columns
     :item-key="stepKey"
-    :row-actions="rowActions"
-    :quick-filters="quickFilters"
+    :row-actions
+    :quick-filters
     default-view="table"
     table-fixed
     actions-width="w-48"
@@ -18,7 +18,9 @@
     @row-action="(item, key) => selectRowAction(key, item)"
   >
     <template #actions>
-      <Button variant="outline" voice="sentence" class="min-h-11" data-testid="manage-sections" @click="sectionsOpen = true">{{ $t('learning_library.section_manager.title') }}</Button>
+      <Button variant="outline" voice="sentence" class="min-h-11" data-testid="manage-sections" @click="sectionsOpen = true">
+        {{ $t('learning_library.section_manager.title') }}
+      </Button>
       <Button v-if="canCreateStep" as-child variant="brand" data-testid="create-knowledge-item">
         <Link :href="route('knowledgeItems.create')">
           <Plus aria-hidden="true" />
@@ -104,7 +106,7 @@
     </template>
   </CollectionPage>
   <LearningSectionsSheet
-    v-model:open="sectionsOpen" :sections="sections" :scopes="sectionScopes" :locale="locale" :can-create="canCreateStep"
+    v-model:open="sectionsOpen" :sections :scopes="sectionScopes" :locale :can-create="canCreateStep"
   />
 </template>
 
