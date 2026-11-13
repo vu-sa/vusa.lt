@@ -54,7 +54,7 @@ export interface KnowledgePriorityProgress {
   total: number;
 }
 
-export type LearningCuratorFlag = 'expired_document' | 'updated_document' | 'missing_source';
+export type LearningCuratorFlag = 'expired_document' | 'updated_document' | 'broken_link';
 
 export interface LearningLibraryStep {
   id: string;
@@ -198,6 +198,7 @@ export interface KnowledgeLibraryItem extends Omit<LearningLibraryStep, 'kind'> 
   kind: KnowledgeItemKind;
   abbreviation: string;
   hasSource: boolean;
+  linkBroken: boolean;
   section: { id: string; title: string } | null;
   flags: LearningCuratorFlag[];
 }

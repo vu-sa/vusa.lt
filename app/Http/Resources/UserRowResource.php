@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\LoginRecency;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -14,7 +15,8 @@ class UserRowResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            ...$this->resource->makeVisible(['last_action'])->makeHidden(['roles', 'tenants'])->toArray(),
+            ...$this->resource->makeHidden(['roles', 'tenants'])->toArray(),
+            'login_recency' => LoginRecency::fromLastAction($this->resource->last_action),
             'can_update_identity' => (bool) $request->user()?->can('updateIdentity', $this->resource),
         ];
     }

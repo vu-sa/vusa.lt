@@ -233,6 +233,20 @@ test('wiki links in a body are indexed both ways and previewed without dangling 
     expect($page->outgoingLinks()->count())->toBe(0);
 });
 
+test('a wiki link in the summary previews on the article but stays plain text on cards', function (): void {
+    $user = makeUser(Tenant::query()->firstOrFail());
+    $skvc = KnowledgeItem::factory()->withoutAudiences()->create(['summary' => ['lt' => 'Vertina studijas.', 'en' => 'Assesses studies.']]);
+    $summary = '<strong>Akreditacija</strong> – ją atlieka <a href="/x" data-knowledge-id="'.$skvc->id.'">SKVC</a>.';
+    $page = KnowledgeItem::factory()->withoutAudiences()->create(['summary' => ['lt' => $summary, 'en' => ''], 'description' => ['lt' => '', 'en' => '']]);
+
+    asUser($user)->get(route('knowledgeItems.show', $page))->assertOk()->assertInertia(fn (Assert $inertia) => $inertia
+        ->where('item.summaryHtml', $summary)
+        ->has('linkedPages', 1)->where("linkedPages.{$skvc->id}.summary", 'Vertina studijas.'));
+    asUser($user)->get(route('knowledgeItems.show', $skvc))->assertInertia(fn (Assert $inertia) => $inertia
+        ->where('related.0.id', $page->id)
+        ->where('related.0.summaryHtml', '<strong>Akreditacija</strong> – ją atlieka SKVC.'));
+});
+
 test('only wiki editors of the unit write articles, and audiences stay with path builders', function (): void {
     $tenant = Tenant::query()->firstOrFail();
     $other = Tenant::query()->whereKeyNot($tenant->id)->firstOrFail();

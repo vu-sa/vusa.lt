@@ -180,19 +180,19 @@
       </FormPanel>
 
       <FormPanel
-        v-if="!isCreating && user.last_action"
-        :title="$t('Paskutinis veiksmas')"
+        v-if="!isCreating && user.login_recency"
+        :title="$t('users.login_recency.label')"
         :icon="Clock"
       >
-        <p class="text-xs text-muted-foreground">
-          {{ $t('Paskutinį kartą prisijungė') }} {{ formatDate(user.last_action) }}
+        <p class="text-xs text-muted-foreground" data-testid="user-login-recency">
+          {{ $t(`users.login_recency.${user.login_recency}`) }}
         </p>
       </FormPanel>
     </template>
 
-    <template v-if="!isCreating && user.last_action" #footer-extra>
+    <template v-if="!isCreating && user.login_recency" #footer-extra>
       <span class="text-xs text-muted-foreground">
-        {{ $t('Paskutinį kartą prisijungė') }} {{ formatDate(user.last_action) }}
+        {{ $t('users.login_recency.label') }}: {{ $t(`users.login_recency.${user.login_recency}`) }}
       </span>
     </template>
   </FormPage>
@@ -215,14 +215,13 @@ import { MultiSelect } from '@/Components/ui/multi-select';
 import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
 import type { ImageData } from '@/Types/media';
 import { useDuplicateUserCheck } from '@/Composables/useDuplicateUserCheck';
-import { ModelEnum } from '@/Types/enums';
-import { formatDate } from '@/Utils/dateTime';
+import { LoginRecency, ModelEnum } from '@/Types/enums';
 
 import FormFieldWrapper from './FormFieldWrapper.vue';
 import DuplicateUserWarning, { type DuplicateUserMatch } from './DuplicateUserWarning.vue';
 
 const props = withDefaults(defineProps<{
-  user: App.Entities.User;
+  user: App.Entities.User & { login_recency?: LoginRecency };
   /** Create only: the duties a new person can start with. */
   tenantsWithDuties?: App.Entities.Tenant[];
   permissableTenants?: App.Entities.Tenant[];

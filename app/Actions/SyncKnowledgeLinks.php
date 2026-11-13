@@ -5,18 +5,19 @@ namespace App\Actions;
 use App\Models\KnowledgeItem;
 
 /**
- * Rebuilds the page-to-page link index from the `[[` links in a page body, so related pages and
- * backlinks never need hand-kept relations.
+ * Rebuilds the page-to-page link index from the `[[` links in a page's summary and body, so related
+ * pages and backlinks never need hand-kept relations.
  */
 class SyncKnowledgeLinks
 {
     public static function execute(KnowledgeItem $item): void
     {
-        if (! $item->wasRecentlyCreated && ! $item->wasChanged('description')) {
+        if (! $item->wasRecentlyCreated && ! $item->wasChanged(['summary', 'description'])) {
             return;
         }
 
-        $ids = array_values(array_diff(self::idsIn(...array_values($item->getTranslations('description'))), [$item->id]));
+        $html = [...array_values($item->getTranslations('summary')), ...array_values($item->getTranslations('description'))];
+        $ids = array_values(array_diff(self::idsIn(...$html), [$item->id]));
         $item->outgoingLinks()->sync(KnowledgeItem::query()->whereKey($ids)->pluck('id')->all());
     }
 

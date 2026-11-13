@@ -188,6 +188,12 @@ export enum LocaleEnum {
     LT = 'lt',
     EN = 'en',
 }
+export enum LoginRecency {
+    Week = 'week',
+    Month = 'month',
+    Stale = 'stale',
+    Never = 'never',
+}
 export enum MailingListAddressMode {
     Holder = 'holder',
     DutyMailbox = 'duty_mailbox',

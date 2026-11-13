@@ -46,7 +46,7 @@
       :error="form.errors[`summary.${activeLocale}`] || form.errors.summary"
       :required="activeLocale === 'lt'"
     >
-      <TiptapEditor :key="`summary-${activeLocale}`" v-model="form.summary[activeLocale]" preset="marks" disable-links :max-characters="SUMMARY_MAX" html framed data-testid="article-summary" />
+      <TiptapEditor :key="`summary-${activeLocale}`" v-model="form.summary[activeLocale]" preset="marks" wiki-links-only :extensions="[wikiLinks()]" :max-characters="SUMMARY_MAX" html framed data-testid="article-summary" />
     </FormFieldWrapper>
 
     <FormFieldWrapper

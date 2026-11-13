@@ -145,6 +145,9 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
     protected function casts(): array
     {
         return [
+            // Explicit, because save() turns timestamps off for settings-only writes, which drops their implicit cast.
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
             'last_action' => 'datetime',
             'show_pronouns' => 'boolean',
             'tutorial_progress' => 'array',
@@ -347,6 +350,23 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
     public function legacyImageColumns(): array
     {
         return ['profile_photo' => ['url' => 'profile_photo_path', 'focal' => 'profile_photo_focal_point']];
+    }
+
+    /** Settings, tokens and presence a person changes for themselves; none of them is an edit of the member record. */
+    private const array UNTIMESTAMPED_ATTRIBUTES = [
+        'ui_preferences', 'notification_preferences', 'tutorial_progress', 'last_changelog_check',
+        'last_action', 'microsoft_token', 'remember_token',
+    ];
+
+    /** @param  array<string, mixed>  $options */
+    #[\Override]
+    public function save(array $options = []): bool
+    {
+        if ($this->exists && $this->isDirty() && array_diff(array_keys($this->getDirty()), self::UNTIMESTAMPED_ATTRIBUTES) === []) {
+            return static::withoutTimestamps(fn (): bool => parent::save($options));
+        }
+
+        return parent::save($options);
     }
 
     #[\Override]

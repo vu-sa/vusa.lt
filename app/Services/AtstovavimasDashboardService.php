@@ -284,7 +284,7 @@ class AtstovavimasDashboardService
                     'duties' => array_map(fn (array $duty) => [
                         ...$duty,
                         'users' => array_map(
-                            fn (array $representative) => Arr::except($representative, ['last_action', 'activity_category']),
+                            fn (array $representative) => Arr::except($representative, ['activity_category']),
                             $duty['users'],
                         ),
                     ], $row['duties']),
@@ -355,7 +355,6 @@ class AtstovavimasDashboardService
 
             $institution->duties->each(function ($duty): void {
                 $duty->users->each(function (User $representative): void {
-                    $representative->makeVisible('last_action');
                     $representative->setAttribute(
                         'activity_category',
                         $this->activityCategory($representative->last_action)
@@ -426,7 +425,6 @@ class AtstovavimasDashboardService
                             'id' => (string) $representative->id,
                             'name' => $representative->name,
                             'profile_photo_path' => $representative->profile_photo_path,
-                            'last_action' => $representative->last_action?->toISOString(),
                             'activity_category' => $representative->getAttribute('activity_category'),
                             'pivot' => [
                                 'start_date' => $representative->pivot?->start_date,

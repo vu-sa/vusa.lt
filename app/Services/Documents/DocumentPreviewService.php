@@ -2,12 +2,13 @@
 
 namespace App\Services\Documents;
 
+use App\Jobs\RefreshDocumentThumbnailJob;
+use App\Jobs\SyncDocumentFromSharePointJob;
 use App\Models\Document;
 use App\Services\SharepointGraphService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Laravel\Facades\Image;
 use Microsoft\Graph\Generated\Models\DriveItem;
 
 /**
@@ -23,6 +24,19 @@ class DocumentPreviewService
     public function needsThumbnail(Document $document): bool
     {
         return $document->thumbnail_etag !== $document->eTag;
+    }
+
+    /**
+     * A never-synced document (hidden ones are not synced on a schedule) has no eTag to key a thumbnail
+     * by, so it is synced first; that job queues the thumbnail.
+     */
+    public function queueThumbnail(Document $document): void
+    {
+        if ($document->eTag === null) {
+            SyncDocumentFromSharePointJob::dispatch($document)->afterCommit();
+        } elseif ($this->needsThumbnail($document)) {
+            RefreshDocumentThumbnailJob::dispatch($document)->afterCommit();
+        }
     }
 
     /**
@@ -92,7 +106,7 @@ class DocumentPreviewService
         }
 
         $path = self::DIRECTORY.'/'.$document->id.'.webp';
-        Storage::put($path, Image::decodeBinary($response->body())->scaleDown(width: 600)->encodeUsingFileExtension('webp', quality: 80)->toString());
+        app(ThumbnailStore::class)->put($path, $response->body());
 
         return $path;
     }

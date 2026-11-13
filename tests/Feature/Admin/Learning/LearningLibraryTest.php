@@ -54,8 +54,7 @@ test('library payload includes curator flags for expired document, updated docum
         'url' => null,
     ]);
 
-    $missingSourceStep = KnowledgeItem::factory()->create(['description' => ['lt' => '', 'en' => '']]);
-    $termWithBody = KnowledgeItem::factory()->create();
+    $withoutSource = KnowledgeItem::factory()->create(['description' => ['lt' => '', 'en' => '']]);
 
     $response = asUser($curator)->get(route('knowledgeItems.index'))->assertOk();
     $steps = collect($response->viewData('page')['props']['items'])->keyBy('id');
@@ -63,9 +62,8 @@ test('library payload includes curator flags for expired document, updated docum
     expect($steps[$expiredStep->id]['canUpdate'])->toBeTrue()
         ->and($steps[$expiredStep->id]['flags'])->toContain('expired_document')
         ->and($steps[$updatedStep->id]['flags'])->toContain('updated_document')
-        ->and($steps[$missingSourceStep->id]['flags'])->toContain('missing_source')
-        ->and($steps[$termWithBody->id]['flags'])->not->toContain('missing_source')
-        ->and($steps[$termWithBody->id]['hasSource'])->toBeFalse();
+        ->and($steps[$withoutSource->id]['flags'])->toBe([])
+        ->and($steps[$withoutSource->id]['hasSource'])->toBeFalse();
 
     $member = makeUser($tenant);
     asUser($member)->get(route('knowledgeItems.index'))->assertForbidden();
@@ -208,3 +206,15 @@ test('update-only curators can search documents', function (string $resource): v
     $user->givePermissionTo(Permission::findOrCreate("{$resource}.update.*", 'web'));
     asUser($user)->getJson(route('knowledgeItems.documentSearch', ['q' => 'guide']))->assertOk();
 })->with(['knowledgeItems', 'learningSteps']);
+
+test('the knowledge library reports broken URL sources in either locale', function (): void {
+    $curator = makeUser(Tenant::query()->firstOrFail());
+    $curator->givePermissionTo(Permission::findOrCreate('knowledgeItems.update.*', 'web'));
+    $item = KnowledgeItem::factory()->create();
+    KnowledgeItemSource::factory()->for($item, 'item')->create(['locale' => 'en', 'check_failures' => 3, 'check_status' => 404]);
+
+    $response = asUser($curator)->get(route('knowledgeItems.index'))->assertOk();
+    $row = collect($response->viewData('page')['props']['items'])->firstWhere('id', $item->id);
+
+    expect($row['flags'])->toContain('broken_link')->and($row['linkBroken'])->toBeTrue();
+});

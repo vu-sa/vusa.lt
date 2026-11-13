@@ -76,7 +76,6 @@ export interface AtstovavimasDutyUser {
   id: string;
   name: string;
   profile_photo_path?: string | null;
-  last_action?: string | null;
   activity_category?: RepresentativeActivityCategory;
   pivot?: {
     start_date?: string | null;
@@ -218,7 +217,6 @@ export interface GanttDutyMember {
     profile_photo_path?: string | null;
     // Activity status (only available in tenant view, enriched from representativeActivity)
     activityCategory?: RepresentativeActivityCategory;
-    lastAction?: string | null;
   };
   start_date: Date;
   end_date?: Date | null;

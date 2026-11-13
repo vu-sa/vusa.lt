@@ -22,7 +22,6 @@ function rep(id: string, overrides: Partial<RepRow> = {}, reason: RepAttentionRe
     institutions: [{ id: 'spk', name: 'SPK', tenant: 'VU SA MIF', status: InstitutionActivityStatus.Healthy, lastMeetingAt: null, nextMeetingAt: null }],
     termStart: '2026-09-01',
     incoming: false,
-    lastAction: '2026-11-10T10:00:00Z',
     activity: 'week',
     meetings: { recorded: 0, held: 0 },
     learning: null,
@@ -73,9 +72,9 @@ describe('RepresentativeShareBar', () => {
 
 describe('RepresentativeList', () => {
   const reps = [
-    rep('Anna', { activity: 'never', lastAction: null }, 'never_logged_in'),
+    rep('Anna', { activity: 'never' }, 'never_logged_in'),
     rep('Ben', { learning: { essentialDone: 1, essentialTotal: 4, allDone: 1, allTotal: 5 }, meetings: { recorded: 2, held: 3 } }),
-    rep('Cleo', { incoming: true, activity: 'never', lastAction: null, institutions: [{ id: 'senate', name: 'Senatas', tenant: null, status: InstitutionActivityStatus.Healthy, lastMeetingAt: null, nextMeetingAt: null }] }),
+    rep('Cleo', { incoming: true, activity: 'never', institutions: [{ id: 'senate', name: 'Senatas', tenant: null, status: InstitutionActivityStatus.Healthy, lastMeetingAt: null, nextMeetingAt: null }] }),
   ];
 
   it('filters by the bucket the page sets and keeps incoming reps out of activity buckets', async () => {
@@ -88,6 +87,13 @@ describe('RepresentativeList', () => {
     await wrapper.setProps({ filter: 'incoming' });
     expect(ids(wrapper)).toEqual(['Cleo']);
     expect(wrapper.get('[data-rep="Cleo"]').text()).toContain('representatives.list.starts');
+  });
+
+  it('shows when a rep logged in only as a band, never a date', () => {
+    const wrapper = mount(RepresentativeList, { props: { reps } });
+
+    expect(wrapper.get('[data-rep="Ben"] [data-slot="rep-login"]').text()).toBe('representatives.list.login.week');
+    expect(wrapper.get('[data-rep="Anna"] [data-slot="rep-login"]').text()).toBe('representatives.list.login.never');
   });
 
   it('shows learning and own-work lines only when there is something to show', () => {

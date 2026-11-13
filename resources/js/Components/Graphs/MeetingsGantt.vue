@@ -153,7 +153,7 @@ const props = withDefaults(defineProps<{
   /** '100%' in focus mode; otherwise the chart fits its rows up to `maxHeight` */
   height?: string;
   maxHeight?: number;
-  dutyMembers?: Array<{ institution_id: string | number; user: { id: string; name: string; profile_photo_path?: string | null; activityCategory?: 'today' | 'week' | 'month' | 'stale' | 'never'; lastAction?: string | null }; start_date: string | Date; end_date?: string | Date | null }>;
+  dutyMembers?: Array<{ institution_id: string | number; user: { id: string; name: string; profile_photo_path?: string | null; activityCategory?: 'today' | 'week' | 'month' | 'stale' | 'never' }; start_date: string | Date; end_date?: string | Date | null }>;
   inactivePeriods?: Array<{ institution_id: string | number; from: string | Date; until: string | Date }>;
   showDutyMembers?: boolean;
   /** Activity rings on member avatars (padaliniai view only) */

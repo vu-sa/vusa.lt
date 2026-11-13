@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Actions\ResolveLearningPath;
 use App\Enums\InstitutionActivityStatus;
+use App\Enums\LoginRecency;
 use App\Enums\ResponsibilityPurpose;
 use App\Models\Activity;
 use App\Models\Institution;
@@ -23,7 +24,7 @@ use Illuminate\Support\Facades\DB;
  * @phpstan-type RepInstitution array{id: string, name: string, tenant: string|null, status: InstitutionActivityStatus, lastMeetingAt: string|null, nextMeetingAt: string|null}
  * @phpstan-type RepLearning array{essentialDone: int, essentialTotal: int, allDone: int, allTotal: int}
  * @phpstan-type RepAttention array{reason: string, institution: string|null}
- * @phpstan-type RepRow array{id: string, name: string, email: string, photo: string|null, institutions: list<RepInstitution>, termStart: string|null, incoming: bool, lastAction: string|null, activity: string, meetings: array{recorded: int, held: int}, learning: RepLearning|null, attention: RepAttention|null}
+ * @phpstan-type RepRow array{id: string, name: string, email: string, photo: string|null, institutions: list<RepInstitution>, termStart: string|null, incoming: bool, activity: LoginRecency, meetings: array{recorded: int, held: int}, learning: RepLearning|null, attention: RepAttention|null}
  * @phpstan-type RepSummary array{total: int, incoming: int, attention: int, activity: array{week: int, month: int, stale: int, never: int}, recordedOwn: int, learning: array{reps: int, finished: int, inProgress: int, notStarted: int}|null}
  */
 class RepresentativesPresenter
@@ -86,9 +87,9 @@ class RepresentativesPresenter
             ->map(fn ($id): string => (string) $id)
             ->merge($viewer->isSuperAdmin() ? [] : self::coordinatedInstitutionIds($viewer))
             ->unique()->values();
-        $reps = self::rows($viewer, self::terms($institutionIds)->get(['id', 'duty_id', 'dutiable_id', 'start_date', 'end_date']), $locale);
+        ['rows' => $reps, 'learning' => $learning] = self::build($viewer, self::terms($institutionIds)->get(['id', 'duty_id', 'dutiable_id', 'start_date', 'end_date']), $locale);
 
-        return ['reps' => $reps, 'summary' => self::summary($reps)];
+        return ['reps' => $reps, 'summary' => self::summary($reps, $learning)];
     }
 
     /**
@@ -103,7 +104,7 @@ class RepresentativesPresenter
             ->with('duty:id,institution_id')
             ->get(['id', 'duty_id', 'dutiable_id', 'start_date', 'end_date']);
 
-        return self::rows($viewer, $terms, $locale)[0] ?? null;
+        return self::build($viewer, $terms, $locale)['rows'][0] ?? null;
     }
 
     public static function seesLearningOf(User $viewer, User $rep): bool
@@ -131,15 +132,18 @@ class RepresentativesPresenter
     }
 
     /**
+     * Rows carry a rep's own progress only for super admins and that rep's coordinators; the summary
+     * counts everyone's, so `learning` holds every rep's progress keyed by user id.
+     *
      * @param  Collection<int, Dutiable>  $terms
-     * @return list<RepRow>
+     * @return array{rows: list<RepRow>, learning: array<string, RepLearning|null>}
      */
-    private static function rows(User $viewer, Collection $terms, string $locale): array
+    private static function build(User $viewer, Collection $terms, string $locale): array
     {
         $users = User::query()->whereIn('id', $terms->pluck('dutiable_id')->unique()->values())
             ->get(['id', 'name', 'email', 'profile_photo_path', 'last_action']);
         if ($users->isEmpty()) {
-            return [];
+            return ['rows' => [], 'learning' => []];
         }
 
         $institutionIds = $terms->pluck('duty.institution_id')->unique()->values();
@@ -148,9 +152,10 @@ class RepresentativesPresenter
         $statuses = $institutions->map(fn (Institution $institution) => app(InstitutionActivityStatusService::class)->resolve($institution));
 
         $coordinated = $viewer->isSuperAdmin() ? null : self::coordinatedInstitutionIds($viewer)->flip();
-        $learningUsers = $users->filter(fn (User $user): bool => $coordinated === null
-            || $terms->where('dutiable_id', $user->id)->contains(fn (Dutiable $term): bool => $coordinated->has((string) $term->duty->institution_id)));
-        $paths = ResolveLearningPath::forUsers($learningUsers->values());
+        $seesLearning = fn (User $user): bool => $coordinated === null
+            || $terms->where('dutiable_id', $user->id)->contains(fn (Dutiable $term): bool => $coordinated->has((string) $term->duty->institution_id));
+        $paths = ResolveLearningPath::forUsers($users->values());
+        $learningByUser = [];
         $meetings = self::meetingCounts($terms, $institutionIds);
         $now = now();
 
@@ -175,9 +180,7 @@ class RepresentativesPresenter
                     'nextMeetingAt' => $statuses[(string) $institution->id]->nextMeetingAt?->toISOString(),
                 ];
             }
-            $path = $paths->get($user->id);
-            $learning = $path?->totals();
-            $user->makeVisible('last_action');
+            $learningByUser[(string) $user->id] = $paths->get($user->id)?->totals();
             $row = [
                 'id' => (string) $user->id,
                 'name' => $user->name,
@@ -186,10 +189,9 @@ class RepresentativesPresenter
                 'institutions' => $repInstitutions,
                 'termStart' => $termStart?->toDateString(),
                 'incoming' => $incoming,
-                'lastAction' => $user->last_action?->toISOString(),
-                'activity' => self::activity($user->last_action, $now),
+                'activity' => LoginRecency::fromLastAction($user->last_action, $now),
                 'meetings' => $meetings[$user->id] ?? ['recorded' => 0, 'held' => 0],
-                'learning' => $learning,
+                'learning' => $seesLearning($user) ? $learningByUser[(string) $user->id] : null,
                 'attention' => null,
             ];
             $row['attention'] = self::attention($row, $termStart);
@@ -203,17 +205,7 @@ class RepresentativesPresenter
             return $rank($a) <=> $rank($b) ?: (int) $collator->compare($a['name'], $b['name']);
         });
 
-        return $rows;
-    }
-
-    private static function activity(?CarbonInterface $lastAction, CarbonInterface $now): string
-    {
-        return match (true) {
-            $lastAction === null => 'never',
-            $lastAction->gte($now->copy()->subDays(7)) => 'week',
-            $lastAction->gte($now->copy()->subDays(30)) => 'month',
-            default => 'stale',
-        };
+        return ['rows' => $rows, 'learning' => $learningByUser];
     }
 
     /**
@@ -227,7 +219,7 @@ class RepresentativesPresenter
         if ($row['incoming']) {
             return null;
         }
-        if ($row['activity'] === 'never') {
+        if ($row['activity'] === LoginRecency::Never) {
             return ['reason' => 'never_logged_in', 'institution' => null];
         }
         foreach ($row['institutions'] as $institution) {
@@ -240,7 +232,7 @@ class RepresentativesPresenter
             && $termStart !== null && $termStart->lte(today()->subDays(self::ESSENTIALS_GRACE_DAYS))) {
             return ['reason' => 'essentials_not_started', 'institution' => null];
         }
-        if ($row['activity'] === 'stale') {
+        if ($row['activity'] === LoginRecency::Stale) {
             return ['reason' => 'inactive', 'institution' => null];
         }
 
@@ -285,9 +277,10 @@ class RepresentativesPresenter
 
     /**
      * @param  list<RepRow>  $reps
+     * @param  array<string, RepLearning|null>  $learningByUser
      * @return RepSummary
      */
-    private static function summary(array $reps): array
+    private static function summary(array $reps, array $learningByUser): array
     {
         $summary = ['total' => count($reps), 'incoming' => 0, 'attention' => 0, 'activity' => ['week' => 0, 'month' => 0, 'stale' => 0, 'never' => 0], 'recordedOwn' => 0, 'learning' => null];
         $learning = ['reps' => 0, 'finished' => 0, 'inProgress' => 0, 'notStarted' => 0];
@@ -297,15 +290,16 @@ class RepresentativesPresenter
 
                 continue;
             }
-            $summary['activity'][$rep['activity']]++;
+            $summary['activity'][$rep['activity']->value]++;
             $summary['attention'] += (int) ($rep['attention'] !== null);
             $summary['recordedOwn'] += (int) ($rep['meetings']['recorded'] > 0);
-            if ($rep['learning'] !== null && $rep['learning']['essentialTotal'] > 0) {
+            $repLearning = $learningByUser[$rep['id']] ?? null;
+            if ($repLearning !== null && $repLearning['essentialTotal'] > 0) {
                 $learning['reps']++;
-                $done = $rep['learning']['essentialDone'];
+                $done = $repLearning['essentialDone'];
                 $key = match (true) {
                     $done === 0 => 'notStarted',
-                    $done >= $rep['learning']['essentialTotal'] => 'finished',
+                    $done >= $repLearning['essentialTotal'] => 'finished',
                     default => 'inProgress',
                 };
                 $learning[$key]++;

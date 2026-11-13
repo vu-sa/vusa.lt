@@ -13,7 +13,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Requests\KnowledgeItemRequest;
 use App\Http\Requests\SearchLearningDocumentsRequest;
 use App\Http\Requests\SyncKnowledgeItemSubjectsRequest;
-use App\Jobs\RefreshDocumentThumbnailJob;
+use App\Jobs\CheckKnowledgeSourceUrlJob;
 use App\Models\Document;
 use App\Models\DutyType;
 use App\Models\InstitutionType;
@@ -94,10 +94,12 @@ class KnowledgeItemController extends AdminController
     public function thumbnail(KnowledgeItem $knowledgeItem): BinaryFileResponse
     {
         $this->authorize('view', $knowledgeItem);
-        $document = $this->sourceDocument($knowledgeItem);
-        abort_if($document?->thumbnail_path === null || ! Storage::exists($document->thumbnail_path), 404);
+        $source = $knowledgeItem->load('sources.document')->sourceFor(app()->getLocale());
+        $path = $source?->document !== null ? $source->document->thumbnail_path : ($source?->isUrl() ? $source->thumbnail_path : null);
+        abort_if($path === null || ! Storage::exists($path), 404);
 
-        return response()->file(Storage::path($document->thumbnail_path), ['Content-Type' => 'image/webp', 'Cache-Control' => 'private, max-age=604800']);
+        // BinaryFileResponse makes itself public by default; a hidden document's preview must not land in shared caches.
+        return response()->file(Storage::path($path), ['Content-Type' => 'image/webp'])->setPrivate()->setMaxAge(604800);
     }
 
     /**
@@ -288,14 +290,30 @@ class KnowledgeItemController extends AdminController
     /** @param array<string, array{document_id?: int|null, url?: string|null}> $sources */
     private function syncSources(KnowledgeItem $step, array $sources): void
     {
-        $step->sources()->whereNotIn('locale', array_keys($sources))->delete();
+        foreach ($step->sources()->whereNotIn('locale', array_keys($sources))->get() as $removed) {
+            if ($removed->thumbnail_path !== null) {
+                Storage::delete($removed->thumbnail_path);
+            }
+            $removed->delete();
+        }
         foreach ($sources as $locale => $source) {
-            $step->sources()->updateOrCreate(['locale' => $locale], ['document_id' => $source['document_id'] ?? null, 'url' => $source['url'] ?? null]);
+            $model = $step->sources()->firstOrNew(['locale' => $locale]);
+            $model->fill(['document_id' => $source['document_id'] ?? null, 'url' => $source['url'] ?? null]);
+            $changed = ! $model->exists || $model->isDirty(['url', 'document_id']);
+            if ($changed) {
+                if ($model->thumbnail_path !== null) {
+                    Storage::delete($model->thumbnail_path);
+                }
+                $model->forceFill(['checked_at' => null, 'check_status' => null, 'check_failures' => 0, 'content_version' => null, 'thumbnail_path' => null, 'thumbnail_version' => null]);
+            }
+            $model->save();
+            if ($changed && $model->isUrl()) {
+                CheckKnowledgeSourceUrlJob::dispatch($model)->afterCommit();
+            }
         }
 
         $previews = app(DocumentPreviewService::class);
         Document::query()->whereKey(array_filter(array_column($sources, 'document_id')))->get()
-            ->filter(fn (Document $document): bool => $previews->needsThumbnail($document))
-            ->each(fn (Document $document) => RefreshDocumentThumbnailJob::dispatch($document)->afterCommit());
+            ->each(fn (Document $document) => $previews->queueThumbnail($document));
     }
 }
