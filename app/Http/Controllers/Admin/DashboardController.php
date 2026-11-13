@@ -23,6 +23,7 @@ use App\Services\InstitutionRelationService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RepStatisticsScope;
 use App\Settings\FormSettings;
+use App\Support\Season;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -105,6 +106,7 @@ class DashboardController extends AdminController
         );
 
         return Inertia::render('Admin/ShowAdminHome', [
+            'seasonCountdown' => fn () => app(Season::class)->countdown(),
             'activeActivityRequests' => fn () => $activityRequests->activeSummary($user()),
             'actionWindowLaunch' => fn () => $request->actionWindowLaunch($user()),
             'taskStats' => fn () => $taskStats(),

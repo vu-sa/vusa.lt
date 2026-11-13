@@ -12,6 +12,10 @@ return [
 
     // Settings pages
     'pages' => [
+        'season' => [
+            'title' => 'Žiemos šventės',
+            'description' => 'Šventinių dekoracijų ir eglutės datos',
+        ],
         'forms' => [
             'title' => 'Formų nustatymai',
             'description' => 'Konfigūruok formų nustatymus, pvz., narystės registraciją.',
