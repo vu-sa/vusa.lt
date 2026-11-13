@@ -30,7 +30,6 @@ interface ParsedDutyMember {
     profile_photo_path?: string | null;
     // Activity status (only available in tenant view)
     activityCategory?: 'today' | 'week' | 'month' | 'stale' | 'never';
-    lastAction?: string | null;
   };
 }
 

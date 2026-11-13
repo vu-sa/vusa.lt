@@ -4,6 +4,13 @@ return [
     'terms' => [
         'via_duty' => 'via :duty',
     ],
+    'login_recency' => [
+        'label' => 'Login',
+        'week' => 'Within 7 days',
+        'month' => 'Within 30 days',
+        'stale' => 'Over 30 days ago',
+        'never' => 'Never',
+    ],
     'derived_duty_removal' => 'End an ex officio assignment by changing its source term.',
     'index' => [
         'lead' => 'Member accounts, contacts and duty history.',

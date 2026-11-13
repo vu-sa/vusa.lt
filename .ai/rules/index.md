@@ -58,4 +58,4 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Tasks/**, app/Models/Task.php, app/Models/Traits/HasTasks.php, app/Http/Controllers/Admin/TaskController.php, app/Actions/ResolveTaskAssignees.php, app/Actions/ResolveTaskAudience.php, app/Actions/ResyncTaskAssigneesForCadence.php, app/Actions/Schedulable/**, app/Listeners/HandleTaskCreated.php, app/Console/Commands/SendTaskOverdueReminders.php, app/Models/Cadence.php | .ai/rules/tasks.md |
 | tests/** | .ai/rules/tests.md |
 | app/Services/Typesense/**, app/Console/Commands/GenerateTypesenseSearchKey.php | .ai/rules/typesense.md |
-| app/Http/Controllers/Admin/UserController.php, app/Policies/UserPolicy.php, app/Http/Requests/UpdateUserRequest.php | .ai/rules/users.md |
+| app/Http/Controllers/Admin/UserController.php, app/Policies/UserPolicy.php, app/Http/Requests/UpdateUserRequest.php, app/Models/User.php, app/Http/Middleware/UpdateLastAction.php, app/Http/Resources/UserRowResource.php | .ai/rules/users.md |

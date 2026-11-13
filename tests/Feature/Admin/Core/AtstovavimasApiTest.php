@@ -655,7 +655,8 @@ describe('padaliniai gantt', function (): void {
             ->and($public['check_ins'])->toHaveCount(1)
             ->and($public['duties'][0]['users'][0])->toHaveKeys(['id', 'name'])->not->toHaveKey('last_action')
             ->and($rows->get((string) $this->ownInstitution->id))->not->toHaveKey('authorized')
-            ->and($rows->get((string) $this->ownInstitution->id)['activity_status'])->not->toBeNull();
+            ->and($rows->get((string) $this->ownInstitution->id)['activity_status'])->not->toBeNull()
+            ->and($rows->get((string) $this->ownInstitution->id)['duties'][0]['users'][0])->toHaveKey('activity_category')->not->toHaveKey('last_action');
     });
 
     test('a padalinys reader gets their padalinys in full and only public bodies elsewhere', function (): void {

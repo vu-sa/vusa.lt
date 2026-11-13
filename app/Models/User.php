@@ -349,6 +349,23 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
         return ['profile_photo' => ['url' => 'profile_photo_path', 'focal' => 'profile_photo_focal_point']];
     }
 
+    /** Settings, tokens and presence a person changes for themselves; none of them is an edit of the member record. */
+    private const array UNTIMESTAMPED_ATTRIBUTES = [
+        'ui_preferences', 'notification_preferences', 'tutorial_progress', 'last_changelog_check',
+        'last_action', 'microsoft_token', 'remember_token',
+    ];
+
+    /** @param  array<string, mixed>  $options */
+    #[\Override]
+    public function save(array $options = []): bool
+    {
+        if ($this->exists && $this->isDirty() && array_diff(array_keys($this->getDirty()), self::UNTIMESTAMPED_ATTRIBUTES) === []) {
+            return static::withoutTimestamps(fn (): bool => parent::save($options));
+        }
+
+        return parent::save($options);
+    }
+
     #[\Override]
     protected static function booted(): void
     {

@@ -47,7 +47,6 @@ const createUser = (overrides: Record<string, unknown> = {}) => ({
   profile_photo_path: null,
   pronouns: { lt: '', en: '' },
   show_pronouns: false,
-  last_action: null,
   current_duties: [],
   ...overrides,
 });
@@ -123,10 +122,11 @@ describe('UserForm.vue', () => {
       expect(wrapper.emitted('submit:form')).toHaveLength(1);
     });
 
-    it('shows when the person last signed in', () => {
-      wrapper = mountForm({ user: createUser({ last_action: '2026-09-01T10:00:00Z' }) });
+    it('shows how recently the person signed in as a band, never a date', () => {
+      wrapper = mountForm({ user: createUser({ login_recency: 'month', last_action: '2026-09-01T10:00:00Z' }) });
 
-      expect(wrapper.text()).toContain('Paskutinį kartą prisijungė');
+      expect(wrapper.get('[data-testid="user-login-recency"]').text()).toBe('users.login_recency.month');
+      expect(wrapper.text()).not.toContain('2026');
     });
   });
 

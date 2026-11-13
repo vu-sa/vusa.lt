@@ -226,6 +226,19 @@ describe('authorized access', function (): void {
                 ->missing('roles'));
     });
 
+    test('the login time shows only as a band, never the exact time', function (): void {
+        $user = makeUser($this->tenant);
+        $user->forceFill(['last_action' => now()->subDays(10)])->save();
+
+        asUser($this->admin)->get(route('users.index'))->assertOk()->assertInertia(fn ($page) => $page
+            ->where('users.data', fn ($rows): bool => collect($rows)->firstWhere('id', $user->id)['login_recency'] === 'month'
+                && ! array_key_exists('last_action', collect($rows)->firstWhere('id', $user->id))));
+        asUser($this->admin)->get(route('users.show', $user))->assertOk()->assertInertia(fn ($page) => $page
+            ->where('user.login_recency', 'month')->missing('user.last_action'));
+        asUserWithInertia($this->admin)->get(route('users.edit', $user))->assertOk()->assertInertia(fn ($page) => $page
+            ->where('user.login_recency', 'month')->missing('user.last_action'));
+    });
+
     test('show page exposes seat provenance and tenant on each duty pivot', function (): void {
         $user = makeUser($this->tenant);
         $source = $user->dutiables()->firstOrFail();

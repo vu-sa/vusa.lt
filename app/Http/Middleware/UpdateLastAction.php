@@ -31,10 +31,9 @@ class UpdateLastAction
 
         if ($user instanceof User
             && (! $user->last_action || $user->last_action->diffInSeconds(now()) >= self::THROTTLE_SECONDS)) {
-            // Query-builder update: no model events, so this never touches activity
-            // logging or fires UserPermissionObserver — a presence heartbeat has no
-            // business invalidating the requesting user's own permission caches.
-            User::whereKey($user->id)->update(['last_action' => Carbon::now()]);
+            // A builder update fires no model events (no activity log, no permission-cache reset), and
+            // without timestamps it leaves updated_at alone: a visit is not an edit of the member record.
+            User::withoutTimestamps(fn () => User::whereKey($user->id)->update(['last_action' => Carbon::now()]));
         }
 
         return $next($request);
