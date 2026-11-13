@@ -4,6 +4,13 @@ return [
     'terms' => [
         'via_duty' => 'per :duty',
     ],
+    'login_recency' => [
+        'label' => 'Prisijungimas',
+        'week' => 'Per 7 d.',
+        'month' => 'Per 30 d.',
+        'stale' => 'Seniau nei prieš 30 d.',
+        'never' => 'Niekada',
+    ],
     'derived_duty_removal' => 'Ex officio pareigas užbaik pakeisdamas jas suteikiančią kadenciją.',
     'index' => [
         'lead' => 'Narių paskyros, kontaktai ir pareigų istorija.',

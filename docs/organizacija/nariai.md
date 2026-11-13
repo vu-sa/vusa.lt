@@ -1,13 +1,14 @@
 ---
 doc_status: reviewed
 title: Nariai
-last_reviewed: 2026-10-26
+last_reviewed: 2026-11-13
 tests:
   - tests/Feature/Admin/Management/UserActivityRequestsTest.php
   - resources/js/Components/Public/__tests__/ContactWithPhoto.component.test.ts
   - resources/js/Utils/__tests__/String.test.ts
   - tests/Feature/Search/ContactSearchIndexSyncTest.php
   - tests/Feature/Admin/Management/UserControllerTest.php
+  - tests/Unit/Models/UserTimestampTest.php
   - tests/Browser/UserDuplicateFilterTest.php
   - tests/Browser/UserMergeContactDetailsTest.php
   - tests/Feature/Admin/Management/UserDuplicateFilterTest.php
@@ -133,6 +134,8 @@ Narių sąraše (`/mano/users`) pateikiama visų pasiekiamų narių suvestinė:
 
 - **Paieška**: galima ieškoti pagal vardą, pavardę, el. pašto adresą ar telefono numerį.
 - **Rikiavimas**: galima rikiuoti pagal vardą (A–Z arba Z–A), paskutinį prisijungimą arba sukūrimo datą.
+  Stulpelis **Atnaujinta** rodo, kada paskutinį kartą keisti nario duomenys; prisijungimai, nustatymai ir
+  pranešimų pasirinkimai jo nekeičia.
 - **Greitieji filtrai „Dabartiniai“ ir „Buvę“**: dabartiniai šiandien eina bent vienas pareigas, buvę –
   turi pareigų istoriją, bet visi jų laikotarpiai pasibaigę. Paskyros, turinčios tik roles, nėra nei viena, nei kita.
 - **Greitasis filtras „Galimi dublikatai“** – atrenka matomus narius, kurių vardas ir pavardė sutampa
@@ -165,7 +168,8 @@ Atvėrus narį ir grįžus naršyklės mygtuku **Atgal** arba **Pirmyn**, sąra�
 ### Nario profilio kortelė {#kortele}
 
 Paspaudus nario sąraše atveriamas nario profilis (`/mano/users/{id}`). Viršuje pateikiama esminė informacija:
-kontaktinis el. paštas, telefonas, paskutinio veiksmo data ir prisijungimo slaptažodžio būsena.
+kontaktinis el. paštas, telefonas, kada narys prisijungė ir prisijungimo slaptažodžio būsena. Prisijungimas
+rodomas tik grupe – per 7 d., per 30 d., seniau ar niekada; tikslus laikas niekur nerodomas.
 
 Profilis suskirstytas į skirtukus:
 

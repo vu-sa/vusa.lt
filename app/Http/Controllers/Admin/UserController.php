@@ -10,6 +10,7 @@ use App\Actions\ForgetUserAccess;
 use App\Actions\GenerateUserPassword;
 use App\Actions\Media\SyncImageMedia;
 use App\Actions\MergeUsers;
+use App\Enums\LoginRecency;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\ActivityRequests\ActivityRequestHistoryRequest;
 use App\Http\Requests\GenerateUserPasswordRequest;
@@ -76,7 +77,6 @@ class UserController extends AdminController
 
         /** @var Collection<int, User> $collection */
         $collection = $users->getCollection();
-        $collection->makeVisible(['last_action']);
 
         return Inertia::render('Admin/People/IndexUser', [
             'users' => [
@@ -181,7 +181,7 @@ class UserController extends AdminController
         $actor = fn () => once(fn () => request()->user());
 
         return Inertia::render('Admin/People/ShowUser', [
-            'user' => fn () => $loadUser()->toFullArray(),
+            'user' => fn () => [...$loadUser()->toFullArray(), 'login_recency' => LoginRecency::fromLastAction($user->last_action)],
             'isSuperAdmin' => $user->isSuperAdmin(...),
             'activityRequests' => Inertia::defer(fn () => $activityRequests->history($user, $actor(), $request->historyPage()), 'activityRequests'),
             'tasks' => fn () => TaskResource::collection($tasks())->resolve(),
@@ -213,7 +213,8 @@ class UserController extends AdminController
 
         return Inertia::render('Admin/People/EditUser', [
             'user' => [
-                ...$user->load('current_duties')->makeVisible(['last_action'])->append('has_password')->toFullArray(),
+                ...$user->load('current_duties')->append('has_password')->toFullArray(),
+                'login_recency' => LoginRecency::fromLastAction($user->last_action),
                 'profile_photo_media' => $user->imageData('profile_photo'),
             ],
             'canUpdateIdentity' => $actor->can('updateIdentity', $user),

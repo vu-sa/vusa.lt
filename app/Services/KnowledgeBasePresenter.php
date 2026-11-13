@@ -153,7 +153,7 @@ class KnowledgeBasePresenter
         usort($related, fn (array $a, array $b): int => (int) $collator->compare($a['title'], $b['title']));
 
         return [
-            'linkedPages' => self::linkedPages($item->getTranslation('description', $locale), $locale, $item->id),
+            'linkedPages' => self::linkedPages($item->getTranslation('summary', $locale)."\n".$item->getTranslation('description', $locale), $locale, $item->id),
             'related' => $related,
             'subjects' => self::subjects($item, $locale),
             'materials' => $item->kind === KnowledgeItemKind::Term ? self::materials($item, $locale, $viewer) : [],
@@ -267,7 +267,7 @@ class KnowledgeBasePresenter
             'id' => $page->id, 'kind' => $page->kind, 'title' => (string) $page->getTranslation('title', $locale),
             'abbreviation' => (string) $page->getTranslation('abbreviation', $locale),
             'summary' => self::plain($page->getTranslation('summary', $locale)),
-            'summaryHtml' => (string) $page->getTranslation('summary', $locale),
+            'summaryHtml' => HtmlSanitizerService::withoutLinks((string) $page->getTranslation('summary', $locale)),
             'url' => route('knowledgeItems.show', $page),
             'thumbnailUrl' => self::thumbnail($page, $locale),
         ];
@@ -372,13 +372,13 @@ class KnowledgeBasePresenter
             ];
         }
         if ($source->url !== null) {
-            return ['type' => 'url', 'url' => $source->url, 'documentId' => null, 'documentStatus' => null, 'title' => null, 'private' => false, 'thumbnailUrl' => null];
+            return ['type' => 'url', 'url' => $source->url, 'documentId' => null, 'documentStatus' => null, 'title' => null, 'private' => false, 'thumbnailUrl' => $source->thumbnail_path !== null ? route('knowledgeItems.thumbnail', [$step, 'v' => substr(md5((string) $source->thumbnail_version), 0, 8)]) : null];
         }
 
         return null;
     }
 
-    /** @return list<array{id: string, kind: KnowledgeItemKind, title: string, abbreviation: string, hasSource: bool, audiences: list<array{id: string, type: LearningAudienceType, label: string, importance: LearningImportance, stage: LearningStage|null}>, audienceTypes: list<LearningAudienceType>, section: array{id: string, title: string}|null, order: int, isActive: bool, canUpdate: bool, flags: list<'expired_document'|'updated_document'|'missing_source'>}> */
+    /** @return list<array{id: string, kind: KnowledgeItemKind, title: string, abbreviation: string, hasSource: bool, linkBroken: bool, audiences: list<array{id: string, type: LearningAudienceType, label: string, importance: LearningImportance, stage: LearningStage|null}>, audienceTypes: list<LearningAudienceType>, section: array{id: string, title: string}|null, order: int, isActive: bool, canUpdate: bool, flags: list<'expired_document'|'updated_document'|'broken_link'>}> */
     public static function library(string $locale, ?User $viewer = null): array
     {
         $user = $viewer ?? auth()->user();
@@ -391,6 +391,7 @@ class KnowledgeBasePresenter
                 'title' => (string) $step->getTranslation('title', $locale),
                 'abbreviation' => (string) $step->getTranslation('abbreviation', $locale),
                 'hasSource' => $step->sources->contains(fn ($source): bool => $source->document_id !== null || filled($source->url)),
+                'linkBroken' => $step->sources->contains(fn ($source): bool => $source->isBroken()),
                 'audiences' => $step->audiences->map(fn (LearningAudience $audience): array => [
                     'id' => $audience->id, 'type' => $audience->type, 'label' => $audience->label($locale),
                     'importance' => $audience->importance, 'stage' => $audience->stage,
@@ -445,10 +446,13 @@ class KnowledgeBasePresenter
         ];
     }
 
-    /** @return list<'expired_document'|'updated_document'|'missing_source'> */
+    /** @return list<'expired_document'|'updated_document'|'broken_link'> */
     private static function flags(KnowledgeItem $step): array
     {
         $flags = [];
+        if ($step->sources->contains(fn ($source): bool => $source->isBroken())) {
+            $flags[] = 'broken_link';
+        }
         $baseline = $step->reviewed_at ?? $step->updated_at;
         $documents = $step->sources->map(fn ($source) => $source->document)->filter();
 
@@ -457,10 +461,6 @@ class KnowledgeBasePresenter
         }
         if ($documents->contains(fn ($document): bool => $document->sharepoint_modified_at !== null && ($baseline === null || $document->sharepoint_modified_at->gt($baseline)))) {
             $flags[] = 'updated_document';
-        }
-        $hasBody = collect($step->getTranslations('description'))->contains(fn ($html): bool => trim(strip_tags((string) $html)) !== '');
-        if (! $hasBody && $step->sources->filter(fn ($source): bool => $source->document_id !== null || filled($source->url))->isEmpty()) {
-            $flags[] = 'missing_source';
         }
 
         return $flags;

@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Atstovai
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-13
 tests:
   - tests/Feature/Admin/Dashboard/AtstovaiDashboardTest.php
   - tests/Feature/Admin/Core/AtstovavimasApiTest.php
@@ -61,18 +61,20 @@ penki atstovai; mygtukas po sąrašu atveria visus, kuriems reikia dėmesio, apa
 
 ### Skaičiai ir aktyvumas {#aktyvumas}
 
-Viršuje rodoma, kiek yra atstovų, kiek jų reikia dėmesio, kokia dalis koordinuojamų atstovų baigė
-būtinus Mano kelio žingsnius ir kiek yra būsimų atstovų. Paspaudus skaičių atveriamas atitinkamas
+Viršuje rodoma, kiek yra atstovų, kiek jų reikia dėmesio, kokia dalis atstovų baigė būtinus Mano
+kelio žingsnius ir kiek yra būsimų atstovų. Paspaudus skaičių atveriamas atitinkamas
 sąrašas.
 
 **Aktyvumo** juosta parodo, kada dabartiniai atstovai paskutinį kartą naudojosi Mano VU SA: per 7
-dienas, per 30 dienų, seniau ar niekada. Paspaudus dalį sąrašas apačioje atrenkamas pagal ją,
+dienas, per 30 dienų, seniau ar niekada. Tikslus prisijungimo laikas niekur nerodomas – tik šios
+grupės. Paspaudus dalį sąrašas apačioje atrenkamas pagal ją,
 paspaudus dar kartą – atrinkimas panaikinamas. Po juosta nurodoma, kiek atstovų per pastarąsias
 90 dienų patys užfiksavo bent vieną savo institucijos posėdį. Prisijungimai nėra atstovavimo
 kokybės matas – tai tik ženklas, su kuo verta pasikalbėti.
 
-**Įsivedimas** rodo, kiek koordinuojamų atstovų dar nepradėjo, pradėjo ir baigė būtinus
-[Mano kelio](/mano/kelias) žingsnius. Kitiems atstovams pažanga nerodoma.
+**Įsivedimas** rodo, kiek pasirinktų padalinių atstovų dar nepradėjo, pradėjo ir baigė būtinus
+[Mano kelio](/mano/kelias) žingsnius. Šią suvestinę mato visi, kas gali atverti puslapį; kiekvieno
+atstovo pažanga atskirai rodoma tik jo koordinatoriui.
 
 ### Atstovavimo rodikliai {#atstovavimo-rodikliai}
 
@@ -96,13 +98,14 @@ Tai **retrospektyvus** skaičiavimas pagal dabar išlikusius įrašus, ne tiksli
 
 Sąraše galima ieškoti pagal vardą ar instituciją, atsirinkti instituciją ir aktyvumą (reikia
 dėmesio, per 7 d., per 30 d., seniau, niekada, būsimi). Eilutėje matyti atstovo institucijos, kada
-jis paskutinį kartą prisijungė, kiek savo institucijų posėdžių per 90 dienų užfiksavo pats ir, jei
+jis prisijungė (per 7 d., per 30 d., seniau ar niekada), kiek savo institucijų posėdžių per 90 dienų užfiksavo pats ir, jei
 esi jo koordinatorius, būtinų žingsnių pažanga. Rodoma po 50 atstovų; daugiau – **Rodyti daugiau**.
 
 ### Atstovo puslapis {#atstovo-puslapis}
 
-Paspaudus atstovą atveriamas jo puslapis. Faktuose matyti, nuo kada jis eina pareigas, kada paskutinį
-kartą prisijungė, kiek posėdžių užfiksavo pats, būtinų žingsnių pažanga ir atviros užduotys. Jei
+Paspaudus atstovą atveriamas jo puslapis. Faktuose matyti, nuo kada jis eina pareigas, kada
+prisijungė (ta pati grupė kaip sąraše), kiek posėdžių užfiksavo pats, būtinų žingsnių pažanga (tik
+koordinatoriui) ir atviros užduotys. Jei
 atstovui reikia dėmesio, priežastis rodoma po faktais.
 
 - **Apžvalga** – atstovo institucijos su jų būsena, paskutiniu ir kitu posėdžiu.
@@ -117,13 +120,13 @@ atstovui reikia dėmesio, priežastis rodoma po faktais.
 
 | Kas | Ką mato |
 |---|---|
-| Studentų atstovų koordinatorius, Komunikacijos koordinatorius | Savo padalinio atstovus, jų aktyvumą ir padalinio rodiklius |
+| Studentų atstovų koordinatorius, Komunikacijos koordinatorius | Savo padalinio atstovus, jų aktyvumą, padalinio rodiklius ir bendrą įsivedimo suvestinę |
 | Centrinio biuro studentų atstovų koordinatorius | Visų padalinių atstovus ir rodiklius |
 | Studentų atstovų koordinatorius (atsakingas už institucijas) | Savo koordinuojamus atstovus, taip pat jų Mano kelio pažangą ir kelią |
 | Studentų atstovas, narys be rolės | Puslapio nemato |
 
-Mano kelio pažanga rodoma tik koordinatoriui, atsakingam už atstovo instituciją, – vien teisė matyti
-padalinio rodiklius jos neatveria.
+Kiekvieno atstovo Mano kelio pažanga rodoma tik koordinatoriui, atsakingam už atstovo instituciją, –
+vien teisė matyti padalinio rodiklius jos neatveria. Kiti mato tik bendrą įsivedimo suvestinę.
 
 ## Pranešimai ir automatizavimas
 
@@ -138,7 +141,10 @@ Puslapis pranešimų nesiunčia. Dėmesio priežastys skaičiuojamos kiekvieną 
   koordinuojamos institucijos iš `ResponsibilityResolver` su `StudentRepCoordination`.
 - Atstovai – dabartinės ir būsimos pareigos (`Dutiable::current()`) aktyviose pareigybėse su
   `StudentRepresentation`; padalinių institucijos parenkamos per `RepStatisticsScope::institutions()`.
-- Pažanga – `ResolveLearningPath::forUsers()` tik koordinuojamiems atstovams.
+- Pažanga – `ResolveLearningPath::forUsers()` visiems atstovams suvestinei; eilutėje `learning` lieka
+  `null`, jei žiūrintysis nekoordinuoja atstovo institucijos (taip pat ir priežastis „nepradėjo būtinų
+  žingsnių“).
+- Prisijungimas – tik `LoginRecency` grupė (`activity`); `users.last_action` į naršyklę nesiunčiamas.
 - Pats užfiksuotas posėdis – posėdžio `created` įrašas veiklos žurnale, kurio autorius – atstovas.
 - Atstovavimo rodikliai – `/api/v1/admin/visak/rep-metrics` (`RepMetricReportService` su padalinių filtru).
 - Seni adresai `/mano/learning/reps` ir `/mano/learning/reps/{narys}` nukreipia čia.

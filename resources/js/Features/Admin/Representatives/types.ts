@@ -29,7 +29,6 @@ export interface RepRow {
   institutions: RepInstitution[];
   termStart: string | null;
   incoming: boolean;
-  lastAction: string | null;
   activity: RepActivity;
   meetings: { recorded: number; held: number };
   /** Null unless the viewer coordinates this rep: progress never follows padalinys rights. */

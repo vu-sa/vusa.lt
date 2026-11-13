@@ -480,8 +480,7 @@ class SharepointDocumentDiscovery
         if (! $dryRun) {
             $document->save();
 
-            // A changed, moved or restored published file may have a new .url target or a lost link.
-            if (($fileChanged || $driveItemChanged || $restored) && $document->isPublished()) {
+            if ($this->needsSync($document, $fileChanged || $driveItemChanged || $restored)) {
                 SyncDocumentFromSharePointJob::dispatch($document);
             }
         }
@@ -491,6 +490,15 @@ class SharepointDocumentDiscovery
         if ($restored) {
             $result->restored++;
         }
+    }
+
+    /**
+     * A changed, moved or restored published file may have a new .url target or a lost link;
+     * a knowledge item's source, whatever its status, needs a new thumbnail.
+     */
+    private function needsSync(Document $document, bool $fileChanged): bool
+    {
+        return $fileChanged && ($document->isPublished() || $document->knowledgeItemSources()->exists());
     }
 
     /**

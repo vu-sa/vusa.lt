@@ -13,6 +13,12 @@ use Illuminate\Support\Carbon;
  * @property string $locale
  * @property int|null $document_id
  * @property string|null $url
+ * @property Carbon|null $checked_at
+ * @property int|null $check_status
+ * @property int $check_failures
+ * @property string|null $content_version
+ * @property string|null $thumbnail_path
+ * @property string|null $thumbnail_version
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Document|null $document
@@ -29,6 +35,23 @@ use Illuminate\Support\Carbon;
 class KnowledgeItemSource extends Model
 {
     use HasFactory;
+
+    public const int BROKEN_AFTER_FAILURES = 3;
+
+    protected function casts(): array
+    {
+        return ['checked_at' => 'datetime'];
+    }
+
+    public function isUrl(): bool
+    {
+        return $this->document_id === null && filled($this->url);
+    }
+
+    public function isBroken(): bool
+    {
+        return $this->isUrl() && $this->check_failures >= self::BROKEN_AFTER_FAILURES;
+    }
 
     /** @return BelongsTo<KnowledgeItem, $this> */
     public function item(): BelongsTo

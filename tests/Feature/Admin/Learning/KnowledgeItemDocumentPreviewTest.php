@@ -1,12 +1,17 @@
 <?php
 
 use App\Enums\DocumentStatus;
+use App\Jobs\CheckKnowledgeSourceUrlJob;
 use App\Jobs\RefreshDocumentThumbnailJob;
+use App\Jobs\SyncDocumentFromSharePointJob;
 use App\Models\Document;
 use App\Models\KnowledgeItem;
+use App\Models\KnowledgeItemSource;
 use App\Models\Permission;
 use App\Models\Tenant;
 use App\Services\Documents\DocumentPreviewService;
+use App\Services\DocumentSharepointSyncService;
+use App\Services\KnowledgeBasePresenter;
 use App\Services\SharepointGraphService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -142,6 +147,43 @@ describe('thumbnail refresh', function (): void {
         Queue::assertPushed(RefreshDocumentThumbnailJob::class, fn (RefreshDocumentThumbnailJob $job): bool => $job->document->is($document));
     });
 
+    test('linking a never-synced hidden document syncs it first, which then queues its thumbnail', function (): void {
+        Queue::fake();
+        foreach (['learningSteps.create.*', 'documents.update.*'] as $permission) {
+            $this->member->givePermissionTo(Permission::findOrCreate($permission, 'web'));
+        }
+        $document = Document::factory()->create(['status' => DocumentStatus::Hidden, 'eTag' => null]);
+
+        asUser($this->member)->post(route('knowledgeItems.store'), [
+            'title' => ['lt' => 'Atstovo planas', 'en' => 'Representative plan'],
+            'summary' => ['lt' => 'Ką atstovas planuoja.'],
+            'description' => ['lt' => '<p>Planas.</p>', 'en' => '<p>Plan.</p>'],
+            'audiences' => [['type' => 'everyone', 'tenant_id' => null, 'importance' => 'recommended']],
+            'sources' => ['lt' => ['document_id' => $document->id]],
+            'order' => 1, 'is_active' => true,
+        ])->assertRedirect();
+
+        Queue::assertPushed(SyncDocumentFromSharePointJob::class, fn (SyncDocumentFromSharePointJob $job): bool => $job->document->is($document));
+        Queue::assertNotPushed(RefreshDocumentThumbnailJob::class);
+    });
+
+    test('the command syncs a never-synced source document before fetching its thumbnail', function (): void {
+        Http::fake(['thumbnails.test/*' => Http::response(Image::createImage(800, 1100)->encodeUsingFileExtension('png')->toString(), 200, ['Content-Type' => 'image/png'])]);
+        [, $document] = knowledgeItemWithDocument(['status' => DocumentStatus::Hidden, 'eTag' => null]);
+        $this->mock(DocumentSharepointSyncService::class)->shouldReceive('sync')->once()
+            ->andReturnUsing(function (Document $synced): Document {
+                $synced->forceFill(['eTag' => 'etag-5'])->save();
+
+                return $synced;
+            });
+        $this->app->instance(DocumentPreviewService::class, previewServiceWithDriveItem(['https://thumbnails.test/large']));
+
+        $this->artisan('sharepoint:refresh-thumbnails')->assertSuccessful();
+
+        expect($document->fresh()->thumbnail_path)->toBe("document-thumbnails/{$document->id}.webp")
+            ->and($document->fresh()->thumbnail_etag)->toBe('etag-5');
+    });
+
     test('the first-page thumbnail is stored as WebP for the current file version', function (): void {
         Http::fake(['thumbnails.test/*' => Http::response(Image::createImage(800, 1100)->encodeUsingFileExtension('png')->toString(), 200, ['Content-Type' => 'image/png'])]);
         $document = Document::factory()->create(['status' => DocumentStatus::Hidden, 'eTag' => 'etag-2']);
@@ -172,4 +214,80 @@ describe('thumbnail refresh', function (): void {
 
         expect($document->fresh()->thumbnail_etag)->toBeNull();
     });
+});
+
+test('a reader gets a URL source thumbnail in their locale with fallback', function (): void {
+    $item = KnowledgeItem::factory()->create();
+    $source = $item->sources()->forceCreate(['locale' => 'en', 'url' => 'https://example.test/guide', 'thumbnail_path' => 'source-thumbnails/url.webp', 'thumbnail_version' => 'v1']);
+    Storage::put($source->thumbnail_path, 'webp-bytes');
+
+    asUser($this->member)->get(route('knowledgeItems.thumbnail', $item))
+        ->assertOk()->assertHeader('Content-Type', 'image/webp')->assertHeader('Cache-Control', 'max-age=604800, private');
+
+    $payload = KnowledgeBasePresenter::source($item->fresh(), 'lt');
+    expect($payload['thumbnailUrl'])->toContain('v=6654c734');
+});
+
+test('saving a changed URL clears stale check data and queues a check after commit', function (): void {
+    Queue::fake([CheckKnowledgeSourceUrlJob::class]);
+    $this->member->givePermissionTo(Permission::findOrCreate('knowledgeItems.update.*', 'web'));
+    $item = KnowledgeItem::factory()->create();
+    $source = $item->sources()->forceCreate([
+        'locale' => 'lt', 'url' => 'https://example.test/old', 'checked_at' => now(), 'check_status' => 404,
+        'check_failures' => 3, 'content_version' => 'old', 'thumbnail_path' => 'source-thumbnails/old.webp', 'thumbnail_version' => 'old',
+    ]);
+    Storage::put($source->thumbnail_path, 'old-image');
+
+    asUser($this->member)->put(route('knowledgeItems.update', $item), [
+        'title' => ['lt' => 'Žinios', 'en' => 'Knowledge'],
+        'summary' => ['lt' => 'Ką verta žinoti.', 'en' => 'Worth knowing.'],
+        'description' => ['lt' => '<p>Aprašymas.</p>', 'en' => '<p>Description.</p>'],
+        'sources' => ['lt' => ['url' => 'https://example.test/new']],
+    ])->assertRedirect()->assertSessionHasNoErrors();
+
+    $this->assertDatabaseHas('knowledge_item_sources', [
+        'id' => $source->id, 'url' => 'https://example.test/new', 'checked_at' => null, 'check_status' => null,
+        'check_failures' => 0, 'content_version' => null, 'thumbnail_path' => null, 'thumbnail_version' => null,
+    ]);
+    Storage::assertMissing('source-thumbnails/old.webp');
+    Queue::assertPushed(CheckKnowledgeSourceUrlJob::class, fn ($job): bool => $job->source->is($source) && $job->afterCommit === true);
+});
+
+test('saving a new URL source queues a check', function (): void {
+    Queue::fake([CheckKnowledgeSourceUrlJob::class]);
+    $this->member->givePermissionTo(Permission::findOrCreate('knowledgeItems.create.*', 'web'));
+
+    asUser($this->member)->post(route('knowledgeItems.store'), [
+        'title' => ['lt' => 'Žinios', 'en' => 'Knowledge'],
+        'summary' => ['lt' => 'Ką verta žinoti.', 'en' => 'Worth knowing.'],
+        'description' => ['lt' => '<p>Aprašymas.</p>', 'en' => '<p>Description.</p>'],
+        'sources' => ['lt' => ['url' => 'https://example.test/new']],
+        'is_active' => true,
+    ])->assertRedirect()->assertSessionHasNoErrors();
+
+    $source = KnowledgeItemSource::query()->where('url', 'https://example.test/new')->sole();
+    expect($source->check_status)->toBeNull()->and($source->check_failures)->toBe(0);
+    Queue::assertPushed(CheckKnowledgeSourceUrlJob::class, fn ($job): bool => $job->source->is($source));
+});
+
+test('saving the same URL keeps its preview and does not queue another check', function (): void {
+    Queue::fake([CheckKnowledgeSourceUrlJob::class]);
+    $this->member->givePermissionTo(Permission::findOrCreate('knowledgeItems.update.*', 'web'));
+    $item = KnowledgeItem::factory()->create();
+    $source = $item->sources()->forceCreate([
+        'locale' => 'lt', 'url' => 'https://example.test/guide', 'check_status' => 200,
+        'thumbnail_path' => 'source-thumbnails/same.webp', 'thumbnail_version' => 'v1',
+    ]);
+    Storage::put($source->thumbnail_path, 'image');
+
+    asUser($this->member)->put(route('knowledgeItems.update', $item), [
+        'title' => ['lt' => 'Žinios', 'en' => 'Knowledge'],
+        'summary' => ['lt' => 'Ką verta žinoti.', 'en' => 'Worth knowing.'],
+        'description' => ['lt' => '<p>Aprašymas.</p>', 'en' => '<p>Description.</p>'],
+        'sources' => ['lt' => ['url' => 'https://example.test/guide']],
+    ])->assertRedirect()->assertSessionHasNoErrors();
+
+    expect($source->fresh()->thumbnail_version)->toBe('v1');
+    Storage::assertExists('source-thumbnails/same.webp');
+    Queue::assertNotPushed(CheckKnowledgeSourceUrlJob::class);
 });

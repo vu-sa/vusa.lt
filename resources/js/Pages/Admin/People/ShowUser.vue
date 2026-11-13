@@ -218,7 +218,7 @@ import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { DutiableTimelineDialog } from '@/Features/Admin/DutiableTimeline';
 import { AssignDutyUserSheet, MemberTermsSummary, UserTermRow, termStatus, termYearSpan } from '@/Features/Admin/Occupancy';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
-import { ModelEnum } from '@/Types/enums';
+import { LoginRecency, ModelEnum } from '@/Types/enums';
 import { changeDutyNameEndings } from '@/Utils/String';
 import { formatDate, todayIso } from '@/Utils/dateTime';
 
@@ -233,6 +233,7 @@ const props = defineProps<{
     upcoming_duties: UserDuty[];
     previous_duties: UserDuty[];
     has_password: boolean;
+    login_recency: LoginRecency;
   };
   tasks: Array<{
     id: string;
@@ -365,8 +366,8 @@ const recordFacts = computed<RecordFact[]>(() => {
     facts.push({ key: 'years', label: $t('Veiklos metai'), value: yearSpan.value });
   }
 
-  if (props.user.last_action) {
-    facts.push({ key: 'last_action', label: $t('Paskutinį kartą prisijungė'), value: formatDate(props.user.last_action) });
+  if (props.user.login_recency) {
+    facts.push({ key: 'login_recency', label: $t('users.login_recency.label'), value: $t(`users.login_recency.${props.user.login_recency}`) });
   }
 
   return facts;

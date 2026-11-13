@@ -76,7 +76,7 @@ import type { RepInstitution, RepRow } from '@/Features/Admin/Representatives/ty
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import { ModelEnum } from '@/Types/enums';
 import type { LearningPathData } from '@/Types/learning';
-import { formatDate, formatNearDate } from '@/Utils/dateTime';
+import { formatDate } from '@/Utils/dateTime';
 
 const props = defineProps<{
   rep: RepRow;
@@ -101,7 +101,7 @@ const facts = computed<RecordFact[]>(() => {
   items.push({
     key: 'last_login',
     label: $t('representatives.rep.last_login'),
-    value: props.rep.lastAction ? formatNearDate(props.rep.lastAction) : $t('representatives.activity.never'),
+    value: $t(`representatives.activity.${props.rep.activity}`),
   });
   items.push({
     key: 'meetings',

@@ -90,6 +90,23 @@ describe('authorized access', function (): void {
             ->and($reps[$this->rep->id]['learning'])->toBeNull();
     });
 
+    test('without coordination, reps show a login band and only the overall progress', function (): void {
+        Dutiable::query()->where('dutiable_id', $this->rep->id)->update(['start_date' => today()->subMonths(6)]);
+        $overview = [];
+        asUser(padalinysManager($this->tenant))->get(route('representatives.index'))->assertInertia(function (Assert $page) use (&$overview): void {
+            $page->loadDeferredProps('reps', function (Assert $page) use (&$overview): void {
+                $overview = $page->toArray()['props']['overview'];
+            });
+        });
+        $row = collect($overview['reps'])->firstWhere('id', $this->rep->id);
+
+        expect($row)->not->toHaveKey('lastAction')
+            ->and($row['activity'])->toBe('week')
+            ->and($row['learning'])->toBeNull()
+            ->and($row['attention'])->toBeNull()
+            ->and($overview['summary']['learning'])->toMatchArray(['reps' => 1, 'notStarted' => 1]);
+    });
+
     test('a coordinator without padalinys rights sees only the reps they coordinate, with progress', function (): void {
         $coordinator = repCoordinator($this->tenant);
 
@@ -104,7 +121,8 @@ describe('authorized access', function (): void {
     test('the rep page shows the path only to their coordinator', function (): void {
         asUser(padalinysManager($this->tenant))->get(route('representatives.show', $this->rep))->assertOk()
             ->assertInertia(fn (Assert $page) => $page->component('Admin/Representation/ShowRepresentative')
-                ->where('rep.id', $this->rep->id)->where('path', null)->where('rep.learning', null));
+                ->where('rep.id', $this->rep->id)->where('path', null)->where('rep.learning', null)
+                ->where('rep.activity', 'week')->missing('rep.lastAction'));
 
         asUser(repCoordinator($this->tenant))->get(route('representatives.show', $this->rep))->assertOk()
             ->assertInertia(fn (Assert $page) => $page->has('path.totals')->where('rep.learning.essentialTotal', 1));
