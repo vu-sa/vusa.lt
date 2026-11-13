@@ -30,6 +30,7 @@ import {
   ThumbsDown,
   ThumbsUp,
   TriangleAlert,
+  Unlink,
   UserX,
 } from '@lucide/vue';
 
@@ -195,6 +196,7 @@ export const learningStepImportances = {
 };
 
 export const learningCuratorFlags = {
+  broken_link: withIcon(data.learningCuratorFlags.broken_link, Unlink),
   expired_document: withIcon(data.learningCuratorFlags.expired_document, CircleX),
   updated_document: withIcon(data.learningCuratorFlags.updated_document, RefreshCw),
 };

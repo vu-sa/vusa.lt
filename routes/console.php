@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Schedulable\TaskNotifier;
+use App\Jobs\CheckKnowledgeSourceUrlsJob;
 use App\Jobs\DiscoverSharepointDocumentsJob;
 use App\Jobs\QueueHeartbeat;
 use App\Jobs\SyncFileableFilesJob;
@@ -49,6 +50,12 @@ Schedule::job(new SyncStaleDocumentsJob)
 Schedule::job(new DiscoverSharepointDocumentsJob)
     ->everyFifteenMinutes()
     ->name('discover-sharepoint-documents')
+    ->withoutOverlapping(30);
+
+// Check external knowledge sources daily and refresh changed previews.
+Schedule::job(new CheckKnowledgeSourceUrlsJob)
+    ->dailyAt('03:30')
+    ->name('check-knowledge-source-urls')
     ->withoutOverlapping(30);
 
 // Weekly sync of FileableFiles to detect externally deleted files

@@ -138,7 +138,7 @@ it.each([true, false])('leads the Wiki table with open and keeps edit in the men
   window.history.replaceState({}, '', '/mano/knowledge/library?view=table');
   vi.mocked(usePage).mockReturnValue({ ...createMockPage(), url: '/mano/knowledge/library?view=table' });
   const item: KnowledgeLibraryItem = {
-    id: 'article', kind: KnowledgeItemKind.Term, title: 'Wiki article', abbreviation: '', hasSource: false,
+    id: 'article', kind: KnowledgeItemKind.Term, title: 'Wiki article', abbreviation: '', hasSource: false, linkBroken: false,
     audiences: [], audienceTypes: [], section: null, order: 0, isActive: true, canUpdate, flags: [],
   };
   const wrapper = mount(IndexKnowledgeItem, { props: { items: [item] }, global: { stubs: commonStubs } });
@@ -157,7 +157,7 @@ it('finds Wiki entries without a source through a quick filter instead of a row 
   window.history.replaceState({}, '', '/mano/knowledge/library?view=rows');
   vi.mocked(usePage).mockReturnValue({ ...createMockPage(), url: '/mano/knowledge/library?view=rows' });
   const entry = (id: string, hasSource: boolean): KnowledgeLibraryItem => ({
-    id, kind: KnowledgeItemKind.Term, title: id, abbreviation: '', hasSource,
+    id, kind: KnowledgeItemKind.Term, title: id, abbreviation: '', hasSource, linkBroken: false,
     audiences: [], audienceTypes: [], section: null, order: 0, isActive: true, canUpdate: true, flags: [],
   });
   const wrapper = mount(IndexKnowledgeItem, { props: { items: [entry('Sourced', true), entry('Unsourced', false)] }, global: { stubs: commonStubs } });
@@ -169,5 +169,27 @@ it('finds Wiki entries without a source through a quick filter instead of a row 
 
   expect(titles()).toEqual(['Unsourced']);
   expect(wrapper.find('[data-testid^="curator-flag-"]').exists()).toBe(false);
+  wrapper.unmount();
+});
+
+it('finds broken links through the link quick filter', async () => {
+  window.history.replaceState({}, '', '/mano/knowledge/library?view=rows');
+  vi.mocked(usePage).mockReturnValue({ ...createMockPage(), url: '/mano/knowledge/library?view=rows' });
+  const entry = (id: string, linkBroken: boolean): KnowledgeLibraryItem => ({
+    id, kind: KnowledgeItemKind.Term, title: id, abbreviation: '', hasSource: true, linkBroken,
+    audiences: [], audienceTypes: [], section: null, order: 0, isActive: true, canUpdate: true,
+    flags: linkBroken ? ['broken_link'] : [],
+  });
+  const wrapper = mount(IndexKnowledgeItem, { props: { items: [entry('Broken', true), entry('Working', false)] }, global: { stubs: commonStubs } });
+  await flushPromises();
+  const titles = () => wrapper.findAll('[data-slot="collection-row"]').map(row => row.get('a').text());
+  expect(titles()).toEqual(['Broken', 'Working']);
+
+  await wrapper.get('[data-filter-id="link:broken"]').trigger('click');
+
+  expect(titles()).toEqual(['Broken']);
+  expect(new URLSearchParams(window.location.search).get('link')).toBe('broken');
+  await wrapper.get('[data-filter-id="link:broken"]').trigger('click');
+  expect(titles()).toEqual(['Broken', 'Working']);
   wrapper.unmount();
 });

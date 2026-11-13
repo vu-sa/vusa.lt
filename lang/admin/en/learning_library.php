@@ -52,7 +52,9 @@ return [
             'importance' => 'Importance',
             'flags' => 'Status',
         ],
+        'link' => ['broken' => 'Link not working', 'ok' => 'Link works'],
         'filters' => [
+            'link' => 'Link',
             'all' => 'All',
             'audience' => 'Audience',
             'section' => 'Section',
@@ -70,6 +72,7 @@ return [
             'title_desc' => 'By title (Z–A)',
         ],
         'flags' => [
+            'broken_link' => 'Link not working',
             'expired_document' => 'Document no longer in effect',
             'updated_document' => 'Document updated',
         ],
@@ -135,6 +138,7 @@ return [
         'is_active_hint' => 'Hidden steps are not shown on representative paths but remain in the library.',
     ],
     'source' => [
+        'pdf_archive_hint' => 'Upload a VU SR document to the Archive and pick it as a document instead – it gets a preview and change tracking.',
         'locale_lt' => 'Source in Lithuanian',
         'locale_en' => 'Source in English',
         'hint' => 'Upload new files to the Archive first',

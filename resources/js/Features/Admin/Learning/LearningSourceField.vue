@@ -93,16 +93,20 @@
         </p>
       </div>
 
-      <Input
-        v-else
-        :id="`source-url-${locale}`"
-        v-model="sources[locale].url"
-        type="url"
-        inputmode="url"
-        :class="fieldSurfaceClass"
-        :placeholder="$t('learning_library.source.url_placeholder')"
-        :data-testid="`source-url-${locale}`"
-      />
+      <div v-else class="space-y-2">
+        <Input
+          :id="`source-url-${locale}`"
+          v-model="sources[locale].url"
+          type="url"
+          inputmode="url"
+          :class="fieldSurfaceClass"
+          :placeholder="$t('learning_library.source.url_placeholder')"
+          :data-testid="`source-url-${locale}`"
+        />
+        <p v-if="isPdfUrl" class="text-xs text-muted-foreground" :data-testid="`source-pdf-hint-${locale}`">
+          {{ $t('learning_library.source.pdf_archive_hint') }}
+        </p>
+      </div>
     </div>
   </FormFieldWrapper>
 </template>
@@ -131,6 +135,15 @@ const props = defineProps<{
   documents?: Partial<Record<string, LearningDocumentSearchHit>>;
 }>();
 const sources = defineModel<LearningSourceDraft>({ required: true });
+
+const isPdfUrl = computed(() => {
+  try {
+    return /\.pdf$/i.test(new URL(sources.value[props.locale].url).pathname);
+  }
+  catch {
+    return false;
+  }
+});
 
 const isEmpty = (locale: LocaleKey): boolean => !sources.value[locale].url && !sources.value[locale].document_id;
 const ownMode = (locale: LocaleKey): SourceMode => sources.value[locale].url && !sources.value[locale].document_id ? 'url' : 'document';

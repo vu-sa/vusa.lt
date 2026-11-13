@@ -5,6 +5,8 @@ last_reviewed: 2026-11-13
 tests:
   - tests/Browser/WikiCompletionTest.php
   - tests/Feature/Admin/Learning/KnowledgeItemDocumentPreviewTest.php
+  - tests/Feature/Admin/Learning/KnowledgeSourceUrlCheckTest.php
+  - tests/Feature/Admin/Learning/SafeUrlFetcherTest.php
   - tests/Feature/Admin/Learning/KnowledgeGraphTest.php
   - tests/Feature/Admin/Learning/KnowledgeItemsTest.php
   - tests/Feature/Admin/Learning/KnowledgeKindsTest.php
@@ -74,7 +76,9 @@ skyriaus puslapyje, o nuorodos kortelė rodo paryškintą santrauką.
 - **Nuoroda vietoj pakartojimo.** Jei tekste minima sąvoka ar institucija, turinti savo įrašą,
   ji susiejama nuoroda, o ne paaiškinama iš naujo.
 - **Šaltiniai laikomi Archyve.** Naujas dokumentas ar pristatymas pirmiausia įkeliamas į SharePoint
-  „Dokumentų sistemą“ (Archyvą), o įrašas į jį nurodo. Vieši teisės aktai susiejami nuoroda.
+  „Dokumentų sistemą“ (Archyvą), o įrašas į jį nurodo. Vieši teisės aktai susiejami nuoroda. Įvedus
+  nuorodą į PDF, formoje primenama, kad VU SA dokumentą geriau įkelti į Archyvą: tada rodoma jo
+  peržiūra ir sekami pakeitimai.
 - **Būtinų įrašų nedaug.** Vienai auditorijai pakanka kelių būtinų įrašų; visa kita –
   rekomenduojama, papildoma arba tiesiog lieka Wiki be auditorijos.
 
@@ -209,7 +213,10 @@ Biblioteka skirta tiems, kas tvarko Wiki ar Mano kelią (žr. [Kas ką gali](#te
 su paieška, stulpelis **Rūšis** (sąvoka ar medžiaga), greitieji filtrai **Sąvokos**, **Medžiaga**, **Esminis**,
 **Rekomenduojamas** ir **Be šaltinio**, kiti (auditorija, skyrius, šaltinis) – skiltyje **Filtrai**.
 Šaltinis nebūtinas, todėl įrašas be jo nežymimas; filtras **Be šaltinio** padeda rasti, kur jį dar
-verta pridėti. Matomos žymos: dokumentas nebegalioja arba atnaujintas po peržiūros. Čia pat
+verta pridėti. Matomos žymos: dokumentas nebegalioja, atnaujintas po peržiūros arba **Nuoroda
+neveikia**. Nuorodos tikrinamos kas naktį; žyma atsiranda, kai nuoroda neatsidaro tris dienas iš eilės
+(puslapiai, kuriems reikia prisijungimo, laikomi veikiančiais). Ją rasti padeda greitasis filtras
+**Nuoroda neveikia**. Čia pat
 tvarkomi skyriai.
 
 Eilutės veiksmas **Atidaryti** su rodykle atveria įrašą; **Redaguoti** yra eilutės **⋯** meniu.
@@ -240,7 +247,9 @@ Mano kelio žingsnių biblioteka yra atskirai: **Organizacija → Kelio žingsni
 4. Jei įrašas paaiškina dokumentą, pasirink šaltinį: dokumentą iš Archyvo arba nuorodą (įklijavus
    adresą į dokumento paiešką, jis tampa nuoroda). Šaltinis nebūtinas; jei jis yra tik viena kalba,
    rodomas abiem. Redaguojant galima perjungti šaltinio tipą ir grįžti: pasirinktas dokumentas ir
-   įvesta nuoroda išlieka juodraštyje. Išsaugomas tik tuo metu pasirinktas šaltinis.
+   įvesta nuoroda išlieka juodraštyje. Išsaugomas tik tuo metu pasirinktas šaltinis. Nuorodos šaltinis
+   taip pat gauna peržiūrą: PDF failo – pirmąjį puslapį, tinklalapio – jo paties nurodytą paveikslėlį
+   (jei toks yra).
 5. Dešinėje pasirink, **kas redaguoja** įrašą, ir skyrių: sąvokai – temą, medžiagai – rinkinį.
    Padalinio įrašą redaguoja to padalinio Wiki redaktoriai, **Visa VU SA** – tik visos VU SA
    redaktoriai. Tai nelemia, kas įrašą mato: skaityti gali visi, o kam jis skirtas, nustato **Kam
@@ -306,6 +315,12 @@ redaguoti įrašus, bet ne jų auditorijas.
 - Auditorijos (`learning_audiences`) ir pažanga (`learning_progress`) bendros su kelio žingsniais; pažymėti
   galima bet kurį aktyvų įrašą, o ne kelio pažymėjimai pradžioje grąžinami kaip `selfLearned`;
   pažymėjimas išlieka pasikeitus kadencijai. Atnaujinus šaltinio dokumentą, įrašą reikia peržiūrėti iš naujo.
+- Nuorodų šaltiniai tikrinami kas naktį (`CheckKnowledgeSourceUrlsJob`, 03:30; rankiniu būdu –
+  `knowledge:check-source-urls`). Visos užklausos eina per `SafeUrlFetcher`: tik `http(s)` ir 80/443
+  prievadai, atmetami vidiniai ir rezervuoti adresai (tikrinama kiekviename peradresavime, patikrintas
+  adresas prisegamas užklausai), dydžio ir laiko ribos. 401/403 laikomi veikiančia nuoroda;
+  `check_failures ≥ 3` – žyma „Nuoroda neveikia“. Peržiūra: PDF pirmasis puslapis per `pdftoppm`
+  (poppler, niekada Ghostscript), tinklalapio – `og:image`; saugoma `source-thumbnails/{id}.webp`.
 - Teisės: įrašo turinys – `knowledgeItems.*` (`.padalinys` – įrašo padalinys, `.*` – visi);
   auditorijos – `learningSteps.*`, o Mano kelio tvarkytojai gali redaguoti ir įrašus, kurių
   auditorijas tvarko. Skyriai – bet kuri iš šių teisių.

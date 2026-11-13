@@ -372,13 +372,13 @@ class KnowledgeBasePresenter
             ];
         }
         if ($source->url !== null) {
-            return ['type' => 'url', 'url' => $source->url, 'documentId' => null, 'documentStatus' => null, 'title' => null, 'private' => false, 'thumbnailUrl' => null];
+            return ['type' => 'url', 'url' => $source->url, 'documentId' => null, 'documentStatus' => null, 'title' => null, 'private' => false, 'thumbnailUrl' => $source->thumbnail_path !== null ? route('knowledgeItems.thumbnail', [$step, 'v' => substr(md5((string) $source->thumbnail_version), 0, 8)]) : null];
         }
 
         return null;
     }
 
-    /** @return list<array{id: string, kind: KnowledgeItemKind, title: string, abbreviation: string, hasSource: bool, audiences: list<array{id: string, type: LearningAudienceType, label: string, importance: LearningImportance, stage: LearningStage|null}>, audienceTypes: list<LearningAudienceType>, section: array{id: string, title: string}|null, order: int, isActive: bool, canUpdate: bool, flags: list<'expired_document'|'updated_document'>}> */
+    /** @return list<array{id: string, kind: KnowledgeItemKind, title: string, abbreviation: string, hasSource: bool, linkBroken: bool, audiences: list<array{id: string, type: LearningAudienceType, label: string, importance: LearningImportance, stage: LearningStage|null}>, audienceTypes: list<LearningAudienceType>, section: array{id: string, title: string}|null, order: int, isActive: bool, canUpdate: bool, flags: list<'expired_document'|'updated_document'|'broken_link'>}> */
     public static function library(string $locale, ?User $viewer = null): array
     {
         $user = $viewer ?? auth()->user();
@@ -391,6 +391,7 @@ class KnowledgeBasePresenter
                 'title' => (string) $step->getTranslation('title', $locale),
                 'abbreviation' => (string) $step->getTranslation('abbreviation', $locale),
                 'hasSource' => $step->sources->contains(fn ($source): bool => $source->document_id !== null || filled($source->url)),
+                'linkBroken' => $step->sources->contains(fn ($source): bool => $source->isBroken()),
                 'audiences' => $step->audiences->map(fn (LearningAudience $audience): array => [
                     'id' => $audience->id, 'type' => $audience->type, 'label' => $audience->label($locale),
                     'importance' => $audience->importance, 'stage' => $audience->stage,
@@ -445,10 +446,13 @@ class KnowledgeBasePresenter
         ];
     }
 
-    /** @return list<'expired_document'|'updated_document'> */
+    /** @return list<'expired_document'|'updated_document'|'broken_link'> */
     private static function flags(KnowledgeItem $step): array
     {
         $flags = [];
+        if ($step->sources->contains(fn ($source): bool => $source->isBroken())) {
+            $flags[] = 'broken_link';
+        }
         $baseline = $step->reviewed_at ?? $step->updated_at;
         $documents = $step->sources->map(fn ($source) => $source->document)->filter();
 

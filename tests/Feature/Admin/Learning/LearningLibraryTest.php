@@ -206,3 +206,15 @@ test('update-only curators can search documents', function (string $resource): v
     $user->givePermissionTo(Permission::findOrCreate("{$resource}.update.*", 'web'));
     asUser($user)->getJson(route('knowledgeItems.documentSearch', ['q' => 'guide']))->assertOk();
 })->with(['knowledgeItems', 'learningSteps']);
+
+test('the knowledge library reports broken URL sources in either locale', function (): void {
+    $curator = makeUser(Tenant::query()->firstOrFail());
+    $curator->givePermissionTo(Permission::findOrCreate('knowledgeItems.update.*', 'web'));
+    $item = KnowledgeItem::factory()->create();
+    KnowledgeItemSource::factory()->for($item, 'item')->create(['locale' => 'en', 'check_failures' => 3, 'check_status' => 404]);
+
+    $response = asUser($curator)->get(route('knowledgeItems.index'))->assertOk();
+    $row = collect($response->viewData('page')['props']['items'])->firstWhere('id', $item->id);
+
+    expect($row['flags'])->toContain('broken_link')->and($row['linkBroken'])->toBeTrue();
+});

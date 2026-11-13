@@ -52,7 +52,9 @@ return [
             'importance' => 'Svarba',
             'flags' => 'Būklė',
         ],
+        'link' => ['broken' => 'Nuoroda neveikia', 'ok' => 'Nuoroda veikia'],
         'filters' => [
+            'link' => 'Nuoroda',
             'all' => 'Visi',
             'audience' => 'Kam skirta',
             'section' => 'Skyrius',
@@ -70,6 +72,7 @@ return [
             'title_desc' => 'Pagal pavadinimą (Z–A)',
         ],
         'flags' => [
+            'broken_link' => 'Nuoroda neveikia',
             'expired_document' => 'Dokumentas nebegalioja',
             'updated_document' => 'Dokumentas atnaujintas',
         ],
@@ -135,6 +138,7 @@ return [
         'is_active_hint' => 'Išjungtas žingsnis nerodomas atstovų kelyje, bet lieka skiltyje „Kelio žingsniai“.',
     ],
     'source' => [
+        'pdf_archive_hint' => 'VU SA dokumentą geriau įkelk į Archyvą ir pasirink kaip dokumentą – bus rodoma peržiūra ir sekami pakeitimai.',
         'locale_lt' => 'Šaltinis lietuviškai',
         'locale_en' => 'Šaltinis angliškai',
         'hint' => 'Naujus failus pirmiausia įkelk į Archyvą',
