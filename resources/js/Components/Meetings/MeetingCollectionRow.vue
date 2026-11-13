@@ -13,7 +13,7 @@
       class="group/row block min-w-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
     >
       <span class="line-clamp-2 font-bold text-foreground group-hover/row:text-brand">
-        {{ institutionName || meeting.title || $t('Be pavadinimo') }}
+        {{ heading }}
       </span>
       <span class="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground">
         <template v-for="(part, index) in facts" :key="part">
@@ -49,6 +49,8 @@ const props = defineProps<{
   pinned?: boolean;
   /** Beside the detail card, which already says how it went. */
   compact?: boolean;
+  /** Inside the institution's own record, where its name would only repeat the page. */
+  hideInstitution?: boolean;
 }>();
 
 const emit = defineEmits<{ select: [key: string] }>();
@@ -64,12 +66,16 @@ const formatLabel = computed(() => {
   return props.meeting.type === MeetingType.Remote ? $t('Nuotolinis posėdis') : null;
 });
 
-const institutionName = computed(() => props.meeting.institution_name_lt || props.meeting.institution_name_en);
+const institutionName = computed(() => props.hideInstitution
+  ? null
+  : props.meeting.institution_name_lt || props.meeting.institution_name_en);
+
+const heading = computed(() => institutionName.value || props.meeting.title || $t('Be pavadinimo'));
 
 // The title carries the date, so the sub-line only adds what tells two meetings apart.
 const facts = computed(() => [
   institutionName.value ? props.meeting.title || $t('Be pavadinimo') : null,
   formatLabel.value,
-  props.meeting.tenant_shortname,
+  props.hideInstitution ? null : props.meeting.tenant_shortname,
 ].filter((part): part is string => Boolean(part)));
 </script>

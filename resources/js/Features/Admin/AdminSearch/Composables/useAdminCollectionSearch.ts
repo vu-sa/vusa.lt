@@ -6,7 +6,7 @@
  */
 
 import { ref, computed, watch, onMounted, onUnmounted, shallowRef, toValue, type MaybeRefOrGetter } from 'vue';
-import { usePage } from '@inertiajs/vue3';
+import { usePage, useRemember } from '@inertiajs/vue3';
 import { useUrlSearchParams, useDebounceFn } from '@vueuse/core';
 
 import { provideFacetSearch } from '@/Shared/Search/facets';
@@ -42,6 +42,7 @@ export interface UseAdminCollectionSearchOptions {
   collection: AdminCollection;
   /** Initial query from URL or default */
   initialQuery?: string;
+  rememberKey?: string;
   /** Whether to load initial facets on mount */
   loadFacetsOnMount?: boolean;
   /** Whether to perform initial search on mount */
@@ -100,18 +101,22 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     : null;
 
   // State
+  const remembered = options.rememberKey ? ref(useRemember({ query: initialQuery, filters: { query: initialQuery } as AdminSearchFilters, sortBy: facetConfig.defaultSortBy, pages: 1 }, options.rememberKey)) : null;
   const status = ref<AdminSearchStatus>('idle');
-  const query = ref(initialQuery);
-  const filters = ref<AdminSearchFilters>({ query: initialQuery });
+  const query = ref(remembered?.value.query ?? initialQuery);
+  const filters = ref<AdminSearchFilters>(remembered?.value.filters ?? { query: initialQuery });
   // An active query defaults to relevance ranking; an empty query browses by date.
-  const sortBy = ref(initialQuery.trim() !== '' ? RELEVANCE_SORT_VALUE : facetConfig.defaultSortBy);
+  const sortBy = ref(remembered?.value.sortBy ?? (initialQuery.trim() !== '' ? RELEVANCE_SORT_VALUE : facetConfig.defaultSortBy));
   // Tracks whether the user explicitly picked a sort. Until they do, the query
   // state drives the default sort (relevance when querying, date when browsing).
   const isSortUserSelected = ref(false);
   const currentPage = ref(1);
   // Pages the URL says were loaded before leaving (`?pages=3`); replayed after the first search
   // so back navigation lands on the same rows. Consumed once.
-  let pagesToRestore = 1;
+  let pagesToRestore = Math.min(remembered?.value.pages ?? 1, MAX_RESTORED_PAGES);
+  watch([query, filters, sortBy, currentPage], () => {
+    if (remembered) Object.assign(remembered.value, { query: query.value, filters: JSON.parse(JSON.stringify(filters.value)), sortBy: sortBy.value, pages: Math.max(currentPage.value, pagesToRestore) });
+  }, { deep: true });
 
   // Results state (using shallowRef for performance with large arrays)
   const results = shallowRef<unknown[]>([]);

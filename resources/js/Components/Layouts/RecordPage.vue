@@ -6,8 +6,9 @@
 
     <div class="mx-auto w-full max-w-[90rem]">
       <header class="border-b border-border pt-6 pb-6 sm:pt-10 sm:pb-8">
-        <!-- Holds three clamped title lines plus the fold toggle on desktop so the facts strip and aside below do not jump between records. -->
-        <div class="flex min-w-0 items-start gap-4 lg:min-h-42">
+        <!-- Holds three clamped title lines plus the fold toggle on desktop so the facts strip and aside below do not jump between records.
+             Beside-title actions keep the title to one row, where that reserve is only empty space. -->
+        <div :class="['flex min-w-0 items-start gap-4', !actionsBesideTitle && 'lg:min-h-42']" data-slot="record-identity">
           <div v-if="$slots.identity" class="shrink-0">
             <slot name="identity" />
           </div>
@@ -150,6 +151,9 @@
                 {{ fact.value }}
               </Link>
               <span v-else>{{ fact.value }}</span>
+              <span v-if="!fact.status && fact.detail" class="mt-0.5 block text-xs font-normal text-muted-foreground" data-slot="fact-detail">
+                {{ fact.detail }}
+              </span>
             </slot>
           </dd>
         </div>
@@ -164,37 +168,80 @@
         <slot name="next-actions" />
       </div>
 
-      <nav v-if="hasTabs" class="mt-8 hidden border-b border-border md:flex" :aria-label="$t('Įrašo skyriai')">
-        <button
-          v-for="section in sections"
-          :key="section.value"
-          type="button"
-          role="tab"
-          :aria-selected="section.value === currentSection"
-          class="-mb-px inline-flex h-12 items-center gap-2 border-b-2 px-4 text-xs font-bold uppercase tracking-wide"
-          :class="section.value === currentSection
-            ? 'border-brand text-foreground'
-            : 'border-transparent text-muted-foreground hover:text-foreground'"
-          @click="currentSection = section.value"
-        >
-          <component :is="section.icon" v-if="section.icon" class="size-4 shrink-0" aria-hidden="true" />
-          {{ section.label }}
-          <span v-if="section.count" class="text-xs font-normal">{{ section.count }}</span>
-        </button>
+      <div v-if="hasTabs" ref="tabsAnchor" aria-hidden="true" />
+      <!-- Sticky under the shell chrome, at its section tabs' height and padding, so a long section never strands its tabs off screen. -->
+      <nav
+        v-if="hasTabs"
+        ref="tabsNav"
+        :class="[
+          'sticky top-[var(--shell-chrome-height,0px)] z-30 mt-8 hidden border-b border-border md:block',
+          'bg-background/95 backdrop-blur-sm [.a11y-contrast_&]:bg-background [.a11y-contrast_&]:backdrop-blur-none',
+        ]"
+        :aria-label="$t('Įrašo skyriai')"
+      >
+        <div ref="tabList" role="tablist" class="flex overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <button
+            v-for="section in sections"
+            :id="`record-tab-${recordId}-${section.value}`"
+            :key="section.value"
+            type="button"
+            role="tab"
+            :aria-selected="section.value === currentSection"
+            :aria-controls="`record-panel-${recordId}-${section.value}`"
+            :tabindex="section.value === currentSection ? 0 : -1"
+            :data-section="section.value"
+            :class="[
+              '-mb-px inline-flex h-10 shrink-0 items-center gap-2 border-b-2 px-3 pointer-coarse:h-11',
+              'text-xs font-bold uppercase tracking-wide whitespace-nowrap',
+              section.value === currentSection
+                ? 'border-brand text-foreground'
+                : 'border-transparent text-muted-foreground hover:text-foreground',
+            ]"
+            @click="selectSection(section.value)"
+            @keydown="onTabKeydown"
+          >
+            <component :is="section.icon" v-if="section.icon" class="size-4 shrink-0" aria-hidden="true" />
+            {{ section.label }}
+            <span v-if="section.count" class="text-xs font-normal">{{ section.count }}</span>
+          </button>
+        </div>
       </nav>
 
+      <!-- The phone selector and desktop tabs share the same section state. -->
+      <div v-if="hasTabs" class="sticky top-[var(--shell-chrome-height,0px)] z-30 mt-8 border-b border-border bg-background py-3 md:hidden" data-slot="record-section-switcher">
+        <label :for="switcherId" class="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+          {{ $t('Rodyti') }}
+        </label>
+        <NativeSelect :id="switcherId" :model-value="mobileSection" :options="switcherOptions" @update:model-value="pickMobileSection" @change="selectSection(($event.target as HTMLSelectElement).value)" />
+      </div>
+
       <div :class="$slots.aside ? 'lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-10' : undefined">
-        <div class="min-w-0">
-          <div :class="['mt-8 space-y-10', sectionLayout !== 'stacked' && 'md:space-y-0']">
+        <!-- At least a screen tall below the tabs, so a short section never pulls the page up under the reader;
+             the comments count towards it, so they follow the first section instead of a screen below it. -->
+        <div :class="['min-w-0', hasTabs && 'md:min-h-[calc(var(--shell-scroll-height,100svh)-var(--shell-chrome-height,0px)-4.5rem)]']" data-slot="record-body">
+          <div
+            :class="['mt-8 space-y-10', sectionLayout !== 'stacked' && 'md:space-y-0']"
+            data-slot="record-sections"
+          >
             <section
               v-for="section in sections"
+              :id="`record-panel-${recordId}-${section.value}`"
               :key="section.value"
-              :class="sectionLayout === 'stacked' ? undefined : section.value === currentSection ? 'md:block' : 'md:hidden'"
-              :aria-labelledby="`record-section-${section.value}`"
+              :class="[
+                sectionLayout === 'stacked' ? undefined : section.value === currentSection ? 'md:block' : 'md:hidden',
+                hasTabs && section.value !== mobileSection && 'max-md:hidden',
+                'scroll-mt-[calc(var(--shell-chrome-height,0px)+1rem)]',
+              ]"
+              :role="hasTabs && isDesktop ? 'tabpanel' : undefined"
+              :aria-labelledby="hasTabs && isDesktop ? `record-tab-${recordId}-${section.value}` : `record-section-${recordId}-${section.value}`"
             >
               <h2
-                :id="`record-section-${section.value}`"
-                :class="['mb-4 flex items-center gap-2 text-xl font-semibold text-foreground', sectionLayout !== 'stacked' && 'md:hidden']"
+                :id="`record-section-${recordId}-${section.value}`"
+                :class="[
+                  'mb-4 flex items-center gap-2 text-xl font-semibold text-foreground',
+                  sectionLayout !== 'stacked' && 'md:hidden',
+                  hasTabs && 'max-md:sr-only',
+                ]"
               >
                 <component :is="section.icon" v-if="section.icon" class="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
                 {{ section.label }}
@@ -206,8 +253,11 @@
           <!-- Hidden, not unmounted, so the thread and any draft survive a tab switch. -->
           <section
             v-if="$slots.activity"
-            class="mt-12 border-t border-border pt-8"
-            :class="{ 'md:hidden': hasTabs && currentSection !== sections[0]?.value }"
+            class="mt-12"
+            :class="{
+              'md:hidden': hasTabs && currentSection !== sections[0]?.value,
+              'max-md:hidden': hasTabs && mobileSection !== sections[0]?.value,
+            }"
             data-slot="record-activity"
           >
             <slot name="activity" />
@@ -235,9 +285,9 @@
 
 <script setup lang="ts">
 import type { Component } from 'vue';
-import { computed, ref, watch } from 'vue';
-import { Head, Link, router } from '@inertiajs/vue3';
-import { useResizeObserver } from '@vueuse/core';
+import { computed, nextTick, ref, useId, watch } from 'vue';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { useMediaQuery, useResizeObserver } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronLeft, ChevronRight, History } from '@lucide/vue';
 
@@ -246,6 +296,7 @@ import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import { RuledGrid, type RuledGridColumns } from '@/Components/Brand';
 import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
+import { NativeSelect } from '@/Components/ui/native-select';
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 import { statusRoleParts, type StatusPresentation } from '@/Constants/statusIcons';
@@ -272,7 +323,7 @@ export interface RecordFact {
   external?: boolean;
   /** Renders the fact as a status: the cell takes the role's surface, the value its icon and ink. */
   status?: StatusPresentation;
-  /** A quiet line under a status, e.g. what the status rests on. */
+  /** A quiet line under the value, e.g. what a status rests on. */
   detail?: string | null;
 }
 
@@ -309,6 +360,8 @@ const props = withDefaults(defineProps<{
   titleVoice?: 'display' | 'sentence';
   /** Keeps short record titles and their actions on one row at desktop widths. */
   actionsBesideTitle?: boolean;
+  /** Query key (e.g. `tab`) that records the open section, so a tab change is a step back can undo. */
+  sectionQueryKey?: string;
 }>(), {
   status: undefined,
   eyebrowSuffix: undefined,
@@ -320,18 +373,159 @@ const props = withDefaults(defineProps<{
   navigation: undefined,
   historySubject: undefined,
   titleVoice: 'display',
+  sectionQueryKey: undefined,
 });
 
 const emit = defineEmits<{
   action: [key: string];
 }>();
 
+const recordId = useId();
 const currentSection = defineModel<string>('section', { default: '' });
-const hasTabs = computed(() => props.sectionLayout !== 'stacked' && props.sections.length >= 3);
+const hasTabs = computed(() => props.sectionLayout !== 'stacked' && props.sections.length >= 2);
 
 if (!currentSection.value && props.sections.length) {
   currentSection.value = props.sections[0]!.value;
 }
+
+// A deep link (`?tab=files`) opens that section, whatever the page would start on.
+if (props.sectionQueryKey) {
+  const linked = new URL(usePage().url || window.location.href, window.location.origin).searchParams.get(props.sectionQueryKey);
+  if (linked && linked !== currentSection.value && props.sections.some(section => section.value === linked)) {
+    currentSection.value = linked;
+  }
+}
+
+const isDesktop = useMediaQuery('(min-width: 768px)');
+const switcherId = useId();
+// A link to a section other than the first (`?tab=`) opens just that section on a phone too.
+const mobileSection = computed({ get: () => currentSection.value, set: (value) => {
+  currentSection.value = value;
+} });
+const switcherOptions = computed(() => [
+  ...props.sections.map(section => ({
+    value: section.value,
+    label: section.count ? `${section.label} · ${section.count}` : section.label,
+  })),
+]);
+
+watch(() => props.sections, (sections) => {
+  if (!sections.some(section => section.value === mobileSection.value)) {
+    const fallback = sections[0]?.value ?? '';
+    if (props.sectionQueryKey) {
+      const url = new URL(page.url || window.location.href, window.location.origin);
+      url.searchParams.delete(props.sectionQueryKey);
+      router.replace({ url: `${url.pathname}${url.search}${url.hash}`, preserveState: true, preserveScroll: true });
+    }
+    currentSection.value = fallback;
+  }
+});
+
+// --- The open section in the URL: each tab change is a history entry --------------------------
+
+const page = usePage();
+
+const sectionInUrl = (url: string) => {
+  if (!props.sectionQueryKey) {
+    return null;
+  }
+  const value = new URL(url || window.location.href, window.location.origin).searchParams.get(props.sectionQueryKey);
+
+  return props.sections.some(section => section.value === value) ? value : props.sections[0]?.value ?? null;
+};
+
+/** A section the reader picked: shown, and remembered as a step in the browser history. */
+const selectSection = (value: string) => {
+  currentSection.value = value;
+};
+
+const recordSection = (value: string) => {
+  if (!props.sectionQueryKey) {
+    return;
+  }
+  const url = new URL(page.url || window.location.href, window.location.origin);
+  url.searchParams.set(props.sectionQueryKey, value);
+  const next = `${url.pathname}${url.search}${url.hash}`;
+  if (next !== page.url) {
+    // A client-side entry: no request, and the reveal below decides the scroll.
+    router.push({ url: next, preserveScroll: true, preserveState: true });
+  }
+};
+
+// Back and forward restore the URL; follow it without pushing again.
+watch(() => page.url, (url, previous) => {
+  const requested = props.sectionQueryKey ? new URL(url || window.location.href, window.location.origin).searchParams.get(props.sectionQueryKey) : null;
+  if (requested && !props.sections.some(section => section.value === requested)) {
+    const normalized = new URL(url || window.location.href, window.location.origin);
+    normalized.searchParams.delete(props.sectionQueryKey!);
+    router.replace({ url: `${normalized.pathname}${normalized.search}${normalized.hash}`, preserveState: true, preserveScroll: true });
+  }
+  const value = sectionInUrl(url);
+  if ((previous !== undefined || requested !== null) && value && value !== currentSection.value) {
+    currentSection.value = value;
+  }
+}, { immediate: true });
+
+const pickMobileSection = (value: string | number | null | undefined) => {
+  if (value != null) selectSection(String(value));
+};
+
+const tabsAnchor = ref<HTMLElement | null>(null);
+const tabList = ref<HTMLElement | null>(null);
+
+/** Keeps the new section's top in view: a stuck tab bar would otherwise leave the reader mid-page or below a short section. */
+const revealSection = (value: string) => {
+  if (!isDesktop.value) {
+    document.getElementById(`record-panel-${recordId}-${value}`)?.scrollIntoView({ block: 'start' });
+    return;
+  }
+
+  const anchor = tabsAnchor.value;
+  const scrollArea = anchor?.closest<HTMLElement>('[data-slot="admin-scroll-area"]');
+  if (anchor && scrollArea) {
+    const chrome = Number.parseFloat(getComputedStyle(scrollArea).getPropertyValue('--shell-chrome-height')) || 0;
+    const anchorTop = scrollArea.scrollTop + anchor.getBoundingClientRect().top - scrollArea.getBoundingClientRect().top - chrome;
+    if (scrollArea.scrollTop > anchorTop) {
+      scrollArea.scrollTop = anchorTop;
+    }
+  }
+
+  const list = tabList.value;
+  const tab = [...(list?.querySelectorAll<HTMLElement>('[role="tab"]') ?? [])].find(element => element.dataset.section === value);
+  if (list && tab) {
+    if (tab.offsetLeft < list.scrollLeft) {
+      list.scrollLeft = tab.offsetLeft;
+    }
+    else if (tab.offsetLeft + tab.offsetWidth > list.scrollLeft + list.clientWidth) {
+      list.scrollLeft = tab.offsetLeft + tab.offsetWidth - list.clientWidth;
+    }
+  }
+};
+
+watch(currentSection, (value, previous) => {
+  if (value && previous && value !== sectionInUrl(page.url || window.location.href)) recordSection(value);
+  if (hasTabs.value && value && previous) {
+    void nextTick(() => revealSection(value));
+  }
+});
+
+const onTabKeydown = (event: KeyboardEvent) => {
+  const index = props.sections.findIndex(section => section.value === currentSection.value);
+  const last = props.sections.length - 1;
+  const next = {
+    ArrowRight: index >= last ? 0 : index + 1,
+    ArrowLeft: index <= 0 ? last : index - 1,
+    Home: 0,
+    End: last,
+  }[event.key];
+  if (next === undefined) {
+    return;
+  }
+
+  event.preventDefault();
+  selectSection(props.sections[next]!.value);
+  void nextTick(() => tabList.value?.querySelector<HTMLElement>('[aria-selected="true"]')?.focus());
+};
 
 const historyOpen = ref(false);
 

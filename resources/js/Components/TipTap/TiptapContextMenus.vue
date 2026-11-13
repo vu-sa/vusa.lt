@@ -37,7 +37,7 @@
       class="flex max-w-56 items-center gap-1 truncate px-2 text-xs text-brand underline-offset-2 hover:underline"
       :title="$t('rich-content.link_open')"
     >
-      <span class="truncate">{{ currentHref }}</span>
+      <span class="truncate">{{ currentWikiTitle ? `${$t('rich-content.link_tab_wiki')}: ${currentWikiTitle}` : currentHref }}</span>
       <IFluentOpen16Regular class="size-3.5 shrink-0" />
     </a>
     <Separator orientation="vertical" class="mx-0.5 h-5" />
@@ -94,14 +94,14 @@
     v-if="linksEnabled"
     ref="linkDialog"
     :editor
-    @submit="(url, text) => commands.insertLink(url, text)"
-    @document:submit="(url, text) => commands.insertLink(url, text, { document: true })"
+    @submit="(url, text, options) => commands.insertLink(url, text, options)"
+    @document:submit="(url, text, options) => commands.insertLink(url, text, { ...options, document: true })"
   />
 </template>
 
 <script setup lang="ts">
 import type { Editor } from '@tiptap/core';
-import { computed, useTemplateRef } from 'vue';
+import { computed, ref, useTemplateRef, watch } from 'vue';
 import { BubbleMenu } from '@tiptap/vue-3/menus';
 import { trans as $t } from 'laravel-vue-i18n';
 
@@ -112,6 +112,7 @@ import TiptapImageMenu from './TiptapImageMenu.vue';
 import TiptapLinkButton from './TiptapLinkButton.vue';
 import TiptapToolButton from './TiptapToolButton.vue';
 import { useTiptapCommands } from './composables/useTiptapCommands';
+import { linkTargetProvider } from './linkTargets';
 import {
   shouldShowLinkBubbleMenu,
   shouldShowTableBubbleMenu,
@@ -154,6 +155,15 @@ const linkDialog = useTemplateRef<InstanceType<typeof TiptapLinkButton>>('linkDi
 
 const linksEnabled = computed(() => !props.disableLinks && Boolean(props.editor.schema.marks.link));
 const currentHref = computed(() => (props.editor.getAttributes('link').href as string | undefined) ?? '');
+const currentKnowledgeId = computed(() => (props.editor.getAttributes('link').knowledgeId as string | null | undefined) ?? null);
+const currentWikiTitle = ref<string | null>(null);
+watch(currentKnowledgeId, async (id) => {
+  currentWikiTitle.value = null;
+  const provider = linkTargetProvider(props.editor);
+  if (!id || !provider) return;
+  const title = (await provider.load()).find(target => target.id === id)?.title ?? null;
+  if (currentKnowledgeId.value === id) currentWikiTitle.value = title;
+}, { immediate: true });
 
 function openLinkDialog(): void {
   linkDialog.value?.open();

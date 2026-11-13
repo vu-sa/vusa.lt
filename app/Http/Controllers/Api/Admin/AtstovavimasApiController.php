@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Actions\ActivityRequests\GetOpenActivityRequestSpans;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\Admin\AtstovavimasMeetingsRequest;
-use App\Http\Requests\Api\Admin\AtstovavimasRepresentativesRequest;
 use App\Http\Requests\Api\Admin\AtstovavimasStatusHistoryRequest;
 use App\Http\Requests\Api\Admin\AtstovavimasTenantRequest;
 use App\Models\User;
@@ -103,20 +102,6 @@ class AtstovavimasApiController extends ApiController
                 $request->tenantIds(),
             )
         );
-    }
-
-    public function representatives(AtstovavimasRepresentativesRequest $request): JsonResponse
-    {
-        $user = $this->requireAuth($request);
-        $tenantIds = $this->authorizedTenantIds($request->validated('tenant_ids'), $user);
-        $perPage = (int) $request->validated('per_page', 20);
-
-        return $this->jsonSuccess($this->dashboardService->representativeUsers(
-            $tenantIds->all(),
-            $request->validated('category', 'all'),
-            $request->validated('search'),
-            $perPage,
-        ));
     }
 
     /**

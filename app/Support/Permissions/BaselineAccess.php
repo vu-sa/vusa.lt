@@ -26,6 +26,8 @@ final class BaselineAccess
         'dutiables',
         'tasks',
         'comments',
+        'learningSteps',
+        'knowledgeItems',
         'reservations',
         'users',
     ];
@@ -40,6 +42,8 @@ final class BaselineAccess
         'meetings.read.own',
         'comments.create.*',
         'comments.read.*',
+        'learningSteps.read.*',
+        'knowledgeItems.read.*',
         'comments.update.*',
         'comments.delete.own',
         'resources.read.*',

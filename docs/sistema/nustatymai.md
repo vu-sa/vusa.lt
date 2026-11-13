@@ -1,8 +1,11 @@
 ---
 doc_status: reviewed
 title: Nustatymai
-last_reviewed: 2026-11-08
+last_reviewed: 2026-11-13
 tests:
+  - tests/Feature/Season/SeasonTest.php
+  - tests/Feature/Season/SeasonCountdownTest.php
+  - tests/Feature/Admin/Core/SeasonSettingsTest.php
   - tests/Feature/Admin/Settings/SystemPurposesSettingsTest.php
   - tests/Feature/Admin/Settings/CadenceControllerTest.php
   - tests/Feature/Admin/People/CadenceResolutionTest.php
@@ -99,7 +102,7 @@ Adresas: `/mano/settings/meetings`. Čia nustatomas posėdžių atvaizdavimas ir
 
 ### Atstovavimo nustatymai {#atstovavimas}
 
-**Palyginimo kadencija** nustato, su kuria visa baigta bendra kadencija lyginami [padalinių rodikliai](/visak/padaliniai#atstovavimo-rodikliai). Automatinė parinktis naudoja ankstesnę kadenciją. Nustatymą keičia tik sistemos nustatymus tvarkantys nariai; vien peržiūros teisės neužtenka. Parinktyje matyti kadencijos datos. Institucijų kadencijų išimtys šio palyginimo nekeičia.
+**Palyginimo kadencija** nustato, su kuria visa baigta bendra kadencija lyginami [padalinių rodikliai](/visak/atstovai#atstovavimo-rodikliai). Automatinė parinktis naudoja ankstesnę kadenciją. Nustatymą keičia tik sistemos nustatymus tvarkantys nariai; vien peržiūros teisės neužtenka. Parinktyje matyti kadencijos datos. Institucijų kadencijų išimtys šio palyginimo nekeičia.
 
 **Kurie organai skaičiuojami rodikliuose** nustato, kurių organų institucijos ir atstovai
 įtraukiami į [padalinių rodiklius](/visak/padaliniai#skaiciuojamos-institucijos): VU organai,
@@ -151,6 +154,10 @@ rekomendacijos nerodomos. Abu rikiavimai pagal datą netaiko svarbių tipų pirm
 
 Adresas: `/mano/settings/site`. Čia nurodomi privatumo politikos puslapiai lietuvių ir anglų kalbomis.
 Puslapių pasirinkimo laukas ne superadministratoriams rodo tik jų pačių padalinio puslapius.
+
+### Žiemos sezonas {#ziemos-sezonas}
+
+Sezono nustatymuose galima įjungti žiemos papuošimus ir pasirinkti sezono pradžią, eglutės uždarymo bei sezono pabaigos datas. Taip pat nustatomas laikas papuošimui pataisyti ir pertrauka prieš jį perkabinant. Pradžioje savaitę iki sezono pradžios rodomas atgalinis skaičiavimas.
 
 ## Veiksmai
 

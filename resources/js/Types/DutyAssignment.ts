@@ -46,6 +46,9 @@ export interface DutyWithUsers {
   id: string | number;
   name?: string | { lt?: string; en?: string } | null;
   order?: number | null;
+  email?: string | null;
+  places_to_occupy?: number | null;
+  is_active?: boolean;
   current_users?: UserWithPivot[];
   previous_users?: UserWithPivot[];
 }

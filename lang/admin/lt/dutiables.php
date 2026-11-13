@@ -241,4 +241,8 @@ return [
         'last_day_notice' => 'Šiandien yra paskutinė pareigų diena. Narys lieka aktyvus iki dienos pabaigos, o laikotarpis išlieka istorijoje.',
         'still_active_today' => ':name šiandien dar eina pareigas. Laikotarpis baigsis po šiandien ir išliks istorijoje.',
     ],
+    'holders_spotlight' => [
+        'title' => 'Nariai – nuotraukose',
+        'description' => 'Paspausk narių nuotraukas: ten keičiamas nario pareigų laikotarpis ir pridedamas naujas asmuo.',
+    ],
 ];

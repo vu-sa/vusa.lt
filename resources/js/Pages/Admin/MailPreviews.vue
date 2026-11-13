@@ -41,14 +41,14 @@
       </aside>
       <section class="min-w-0 py-4 lg:pl-5" :aria-label="$t('mail_previews.preview')">
         <div class="flex flex-wrap gap-3 border-b border-border pb-4">
-          <FormSegmentedControl v-model="width" class="w-full sm:w-auto" :aria-label="$t('mail_previews.width')" test-id-prefix="width" :options="[
+          <FormSegmentedControl v-model="width" class="w-full sm:w-auto" :label="$t('mail_previews.width')" test-id-prefix="width" :options="[
             { value: 390, label: $t('mail_previews.phone'), icon: Smartphone },
             { value: 640, label: $t('mail_previews.desktop'), icon: Monitor },
           ]" />
-          <FormSegmentedControl v-model="format" class="w-full sm:w-auto" :aria-label="$t('mail_previews.format')" test-id-prefix="format" :options="[
+          <FormSegmentedControl v-model="format" class="w-full sm:w-auto" :label="$t('mail_previews.format')" test-id-prefix="format" :options="[
             { value: 'html', label: $t('mail_previews.html') }, { value: 'text', label: $t('mail_previews.text') },
           ]" />
-          <FormSegmentedControl v-model="locale" class="w-full sm:w-auto" :aria-label="$t('mail_previews.locale')" test-id-prefix="locale" :options="[
+          <FormSegmentedControl v-model="locale" class="w-full sm:w-auto" :label="$t('mail_previews.locale')" test-id-prefix="locale" :options="[
             { value: 'lt', label: $t('mail_previews.lt') }, { value: 'en', label: $t('mail_previews.en') },
           ]" />
         </div>

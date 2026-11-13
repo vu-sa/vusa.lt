@@ -74,6 +74,19 @@
               <span class="flex-1">{{ $t(section.label) }}</span>
               <TaskCountBadge v-if="activeWorkspace.key === 'pradzia' && section.key === 'uzduotys'" />
             </Link>
+            <Link
+              v-for="child in section.children"
+              :key="child.key"
+              :href="sectionChildHref(child)"
+              prefetch
+              :cache-for="SHELL_PREFETCH_CACHE_FOR"
+              v-bind="ariaCurrent(activeSectionChild(section)?.key === child.key)"
+              class="u-touch flex items-center border-l-2 border-l-transparent py-3 pr-4 pl-11 text-sm text-muted-foreground transition-colors hover:text-brand focus-visible:-outline-offset-2 focus-visible:outline-2 focus-visible:outline-ring"
+              data-slot="mobile-section-child"
+              @click="switcherOpen = false"
+            >
+              {{ $t(child.label) }}
+            </Link>
           </li>
         </ul>
 
@@ -96,7 +109,7 @@ import { computed, ref, watch } from 'vue';
 
 import { Button } from '@/Components/ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/Components/ui/sheet';
-import { sectionHref, SHELL_PREFETCH_CACHE_FOR, type AdminSection, type AdminWorkspace } from '@/Composables/useAdminNavigation';
+import { activeSectionChild, sectionChildHref, sectionHref, sectionLabel, SHELL_PREFETCH_CACHE_FOR, type AdminSection, type AdminWorkspace } from '@/Composables/useAdminNavigation';
 import { useCommandPalette } from '@/Composables/useCommandPalette';
 import { useRecordTrail } from '@/Composables/useRecordTrail';
 import { sectionIcon } from '@/Constants/adminSections';
@@ -127,13 +140,14 @@ const workspaceLabel = computed(() => $t(props.activeWorkspace?.label ?? 'shell.
 
 // An overview is the workspace itself, so naming it again would only push the useful part off-screen.
 const placeLabel = computed(() => {
+  void page.url;
   const section = props.activeSection;
 
   if (!section || section.key === 'apzvalga') {
     return null;
   }
 
-  return crumbFor(section.key)?.label ?? $t(section.label);
+  return sectionLabel(section, crumbFor(section.key));
 });
 
 function openSwitcher(): void {

@@ -26,10 +26,13 @@ class StoreCommentRequest extends FormRequest
         return [
             'body' => ['required', 'string'],
             'parent_id' => ['nullable', 'string', Rule::exists('comments', 'id')],
-            'kind' => ['nullable', Rule::in([CommentKind::Comment->value, CommentKind::Poll->value])],
+            'kind' => ['nullable', Rule::in([CommentKind::Comment->value, CommentKind::Poll->value, CommentKind::Topic->value])],
+            'title' => ['required_if:kind,topic', 'prohibited_unless:kind,topic', 'string', 'max:160'],
+            'dutiable_id' => ['nullable', 'string'],
+            'image_ids' => ['nullable', 'array', 'max:4'],
+            'image_ids.*' => ['integer', 'distinct'],
             'metadata' => ['nullable', 'array'],
-            // Poll definition: clients send option labels only — ids are assigned
-            // server-side. closes_at and allow_multiple are optional.
+            // Option ids are assigned on the server.
             'metadata.poll' => ['array', 'required_if:kind,poll'],
             'metadata.poll.options' => ['array', 'min:2', 'max:10', 'required_if:kind,poll'],
             'metadata.poll.options.*.label' => ['required', 'string', 'max:255'],
@@ -41,9 +44,8 @@ class StoreCommentRequest extends FormRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function ($validator): void {
-            // A poll is always a thread root — it can't be posted as a reply.
-            if ($this->input('kind') === CommentKind::Poll->value && $this->filled('parent_id')) {
-                $validator->errors()->add('parent_id', __('A poll cannot be a reply.'));
+            if (in_array($this->input('kind'), [CommentKind::Poll->value, CommentKind::Topic->value], true) && $this->filled('parent_id')) {
+                $validator->errors()->add('parent_id', __('validation.prohibited', ['attribute' => 'parent_id']));
             }
         });
     }

@@ -39,7 +39,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read mixed $file_type_label
- * @property-read Model|\Eloquent $fileable
+ * @property-read Model|\Eloquent|null $fileable
  * @property-read mixed $formatted_size
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FileableFile available()

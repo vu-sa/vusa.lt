@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Scout\EngineManager;
@@ -60,9 +61,12 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $updated_at
  * @property Carbon|null $effective_date
  * @property Carbon|null $expiration_date
+ * @property string|null $thumbnail_path
+ * @property string|null $thumbnail_etag
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Institution|null $institution
  * @property-read mixed $is_in_effect
+ * @property-read Collection<int, KnowledgeItemSource> $knowledgeItemSources
  * @property-read string $language_code
  * @property-read Meeting|null $meeting
  * @property-read Collection<int, Tenant> $tenant
@@ -79,7 +83,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
-#[Hidden(['sharepoint_id', 'eTag', 'public_url_created_at', 'sharepoint_site_id', 'sharepoint_list_id', 'sharepoint_permission_id', 'sharepoint_drive_item_id', 'sharepoint_path', 'sharepoint_web_url', 'sharepoint_institution_label', 'published_by', 'created_at', 'updated_at'])]
+#[Hidden(['sharepoint_id', 'eTag', 'public_url_created_at', 'sharepoint_site_id', 'sharepoint_list_id', 'sharepoint_permission_id', 'sharepoint_drive_item_id', 'sharepoint_path', 'sharepoint_web_url', 'sharepoint_institution_label', 'thumbnail_path', 'thumbnail_etag', 'published_by', 'created_at', 'updated_at'])]
 #[Unguarded]
 class Document extends Model
 {
@@ -421,6 +425,12 @@ class Document extends Model
     public function institution(): BelongsTo
     {
         return $this->belongsTo(Institution::class);
+    }
+
+    /** @return HasMany<KnowledgeItemSource, $this> */
+    public function knowledgeItemSources(): HasMany
+    {
+        return $this->hasMany(KnowledgeItemSource::class);
     }
 
     public function tenant(): HasManyDeep

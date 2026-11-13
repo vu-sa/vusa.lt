@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\CommentKind;
 use App\Models\Comment;
 use App\Models\Tenant;
 use App\Models\User;
@@ -10,16 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 
-/**
- * "See it → discuss it": comment authorization derives from the parent
- * commentable. Anyone who can `view` the parent can read, post, react and
- * resolve. Editing/deleting your own comment is the author's right; deleting
- * someone else's requires `update` on the parent, or `comments.delete.padalinys`
- * for the parent's padalinys, or `comments.delete.*` (moderation).
- *
- * Create is authorized in the controller against the parent (no Comment
- * instance exists yet) via Gate::authorize('view', $commentable).
- */
+/** Discussion permissions derive from the parent; only topics can be closed. */
 class CommentPolicy
 {
     public function __construct(private readonly ModelAuthorizer $authorizer) {}
@@ -44,12 +36,21 @@ class CommentPolicy
             return true;
         }
 
-        return $this->canUpdateCommentable($user, $comment) || $this->moderates($user, $comment);
+        return $this->moderatesParent($user, $comment);
     }
 
     public function resolve(User $user, Comment $comment): bool
     {
-        return ! $comment->isErased() && $this->canViewCommentable($user, $comment);
+        return ! $comment->isErased() && $comment->kind === CommentKind::Topic
+            && ($comment->isAuthor($user) || $this->moderatesParent($user, $comment));
+    }
+
+    private function moderatesParent(User $user, Comment $comment): bool
+    {
+        /** @var Model|null $commentable */
+        $commentable = $comment->commentable;
+
+        return $commentable !== null && $this->canModerate($user, $commentable);
     }
 
     public function react(User $user, Comment $comment): bool
@@ -71,31 +72,24 @@ class CommentPolicy
             && Gate::forUser($user)->allows('view', $commentable);
     }
 
-    private function moderates(User $user, Comment $comment): bool
+    public function canModerate(User $user, Model $commentable): bool
     {
+        if (Gate::forUser($user)->allows('update', $commentable)) {
+            return true;
+        }
+
         if ($this->authorizer->scope($user, 'comments.delete.*')->isAllScope) {
             return true;
         }
 
         $tenantIds = $this->authorizer->tenants($user, 'comments.delete.padalinys')->pluck('id');
 
-        return $tenantIds->isNotEmpty() && $this->commentableTenantIds($comment)->intersect($tenantIds)->isNotEmpty();
+        return $tenantIds->isNotEmpty() && $this->commentableTenantIds($commentable)->intersect($tenantIds)->isNotEmpty();
     }
 
-    /**
-     * Records without a padalinys (SharePoint files, support requests) only yield to `comments.delete.*`.
-     *
-     * @return Collection<int, int|string>
-     */
-    private function commentableTenantIds(Comment $comment): Collection
+    /** @return Collection<int, int|string> */
+    private function commentableTenantIds(Model $commentable): Collection
     {
-        /** @var Model|null $commentable */
-        $commentable = $comment->commentable;
-
-        if ($commentable === null) {
-            return collect();
-        }
-
         if (method_exists($commentable, 'tenant')) {
             $tenant = $commentable->getRelationValue('tenant');
 
@@ -105,14 +99,5 @@ class CommentPolicy
         return method_exists($commentable, 'tenants')
             ? $commentable->tenants()->pluck('tenants.id')
             : collect();
-    }
-
-    private function canUpdateCommentable(User $user, Comment $comment): bool
-    {
-        /** @var Model|null $commentable */
-        $commentable = $comment->commentable;
-
-        return $commentable !== null
-            && Gate::forUser($user)->allows('update', $commentable);
     }
 }

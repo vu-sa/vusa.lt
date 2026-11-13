@@ -91,6 +91,7 @@ vi.mock('@/Pages/Admin/Dashboard/Composables/useTenantTimelineData', () => ({
             { ...tenantInstitution('excluded', 99), in_summary: false },
           ],
           institution_summary: { all: 5, needs_attention: 3, overdue: 2, approaching: 1, no_activity: 0, recent_check_in: 0, current: 2 },
+          representative_activity: { stats: { total: 12, activeToday: 1, activeLast7Days: 4, activeLast30Days: 9, neverLoggedIn: 2 } },
         }),
         isFetching: ref(false),
         loaded: tenantLoaded,
@@ -161,7 +162,6 @@ const marker = (name: string) => ({ name, template: `<div data-testid="${name}" 
 const stubs = {
   ...commonStubs,
   InstitutionsNeedingAttention: { name: 'InstitutionsNeedingAttention', props: { institutions: Array, limit: Number, title: String }, template: '<div data-testid="attention" />' },
-  RepresentativeActivitySection: marker('representatives'),
   TenantTimelineSection: marker('tenant-timeline'),
   TimelineGanttSkeleton: marker('timeline-skeleton'),
   TenantScopeSelector: { name: 'TenantScopeSelector', props: ['tenants', 'label'], template: '<div data-testid="tenant-scope-selector" />' },
@@ -275,15 +275,14 @@ describe('upper section', () => {
     expect(wrapper.find('[data-testid=chart-summary]').exists()).toBe(false);
   });
 
-  it('places outcome metrics outside the upper section and below the timeline', () => {
+  it('sends rep activity and metrics to the Atstovai page, keeping one summary line', () => {
     wrapper = createWrapper();
-    const section = wrapper.get('[data-slot="atstovavimas-tenant-primary-section"]');
-    expect(section.find('[data-slot="tenant-rep-metrics"]').exists()).toBe(false);
-    expect(wrapper.find('[data-slot="atstovavimas-rep-metrics"] [data-slot="tenant-rep-metrics"]').exists()).toBe(true);
-    expect(wrapper.get('[data-slot=atstovavimas-tenant-secondary-section]').find('[data-slot=atstovavimas-representatives]').exists()).toBe(true);
-    expect(wrapper.text()).not.toContain('metrics.spotlight.action');
-    const html = wrapper.html();
-    expect(html.indexOf('atstovavimas-rep-metrics')).toBeGreaterThan(html.indexOf('atstovavimas-tenant-primary-section'));
+
+    const link = wrapper.get('[data-slot="atstovavimas-representatives-link"]');
+    expect(link.text()).toContain('representatives.padaliniai_link.summary');
+    expect(link.get('a').attributes('href')).toContain('representatives.index');
+    expect(wrapper.find('[data-slot="tenant-rep-metrics"]').exists()).toBe(false);
+    expect(wrapper.find('[data-slot="atstovavimas-tenant-secondary-section"]').exists()).toBe(false);
   });
 });
 

@@ -39,7 +39,7 @@ class NotifyAffectedReservationDrafts
         foreach ($drafts as $draft) {
             $taken = $draft->items
                 ->filter(function (ReservationDraftItem $item) use ($draft, $reservedQuantities): bool {
-                    /** @var Resource|null $resource */
+                    /** @var resource|null $resource */
                     $resource = $item->resource;
 
                     if ($resource === null) {

@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Institucijos
-last_reviewed: 2026-11-08
+last_reviewed: 2026-11-09
 tests:
   - tests/Feature/Admin/ModelMeta/TypeControllerTest.php
   - tests/Feature/Meetings/MeetingKindTest.php
@@ -9,6 +9,9 @@ tests:
   - tests/Feature/Admin/Search/InstitutionMemberTermsApiTest.php
   - tests/Feature/Search/AdminSearchTranslationsTest.php
   - resources/js/Pages/Admin/People/__tests__/IndexInstitution.component.test.ts
+  - resources/js/Pages/Admin/People/__tests__/ShowInstitution.component.test.ts
+  - resources/js/Components/Institutions/__tests__/InstitutionMeetingsCollection.component.test.ts
+  - tests/Feature/Admin/Management/InstitutionControllerTest.php
   - resources/js/Composables/__tests__/searchTranslations.test.ts
   - resources/js/Pages/Admin/Dashboard/__tests__/ShowAtstovavimasPadaliniai.component.test.ts
   - tests/Browser/CollectionTrashRefreshTest.php
@@ -73,7 +76,15 @@ Institucijų sąraše pavadinimai ir tipai rodomi pasirinkta Mano VU SA kalba. J
 
 ### Institucijos puslapis {#puslapis}
 
-Atvėrus instituciją iškart rodoma apžvalga, nariai ir paskutiniai posėdžiai. Kitų skirtukų turinys įkeliamas juos pirmą kartą pasirinkus; kol lauki, rodomas įkėlimo vietaženklis. Telefone skiltys rodomos viena po kitos, o jų turinys įkeliamas slenkant iki skilties. Nuoroda su pasirinktu skirtuku iškart atveria tą skiltį.
+Atvėrus instituciją iškart rodoma **Santrauka**: aprašymas po pavadinimu (dvi eilutės, visas tekstas – paspaudus **Skaityti daugiau**), iki trijų posėdžių kortelių (artimiausias būsimas ir du paskutiniai įvykę arba trys įvykę, jei būsimo nėra) ir iki trijų pareigybių peržiūra; visos pareigybės visada turi atskirą skirtuką. Kitų skirtukų turinys įkeliamas juos pirmą kartą pasirinkus; kol lauki, rodomas įkėlimo vietaženklis. Skirtukų juosta lieka matoma slenkant, o perjungus skirtuką puslapis nebeperšoka į kitą vietą. Naršyklės mygtukas „Atgal“ grąžina į ankstesnį skirtuką.
+
+Telefone iš pradžių rodoma Santrauka. Prisegtame laukelyje **Rodyti** galima pasirinkti vieną skiltį. Nuoroda su pasirinktu skirtuku iškart atveria tą skiltį – ir telefone.
+
+<ChangelogNote date="2026-11-13" title="Atnaujintas institucijos puslapis">
+
+Iki 2026-11-09 aprašymas buvo apžvalgos skiltyje, posėdžiai – sąrašu, o pareigybės visada turėjo atskirą skirtuką.
+
+</ChangelogNote>
 
 ### Institucijų sąrašas {#sarasas}
 
@@ -231,19 +242,27 @@ viešumas**. Kalendoriuje paskelbtas posėdis pats savaime viešu netampa.
 
 Narių ir sekretorių nuotraukos rodomos mažos, kad sąrašuose ir kortelėse daugiau vietos liktų vardams bei pareigoms.
 
-Viršuje – veiklos būklė, rūšis ir tipas, padalinys, dabartinių narių skaičius, posėdžių
-viešumas ir koordinatoriai. Skirtukai:
+Viršuje – veiklos būklė, rūšis ir tipas (po juo – ar posėdžiai vieši), padalinys, dabartinių
+narių skaičius ir koordinatoriai. Skirtukai:
 
 | Skirtukas | Kas jame |
 |---|---|
-| **Apžvalga** | Aprašymas, paskutiniai posėdžiai su pirmais darbotvarkės punktais, dabartiniai sekretoriai |
-| **Pareigybės** | Institucijos pareigybės ir jų nariai; čia keičiama pareigybių tvarka |
-| **Posėdžiai** | Visi institucijos posėdžiai |
-| **Kadencijos ir sekretoriai** | Kadencijos ir kiekvienos jų sekretoriai (tik galintiems redaguoti) |
-| **Ryšiai** | Susijusios institucijos ir tiesioginiai ryšiai; rodomas, kai ryšių yra arba juos gali tvarkyti (žr. [Ryšiai](/sistema/rysiai)) |
+| **Santrauka** | Trys paskutiniai posėdžiai (ar užpildyti, kaip sutapo balsavimai, protokolas ir ataskaita), pareigybės (jei jų ne daugiau kaip trys), dabartiniai sekretoriai |
+| **Pareigybės** | Rodomas, kai pareigybių yra keturios ar daugiau: pareigybės ir jų nariai; čia keičiama pareigybių tvarka |
+| **Posėdžiai** | Institucijos posėdžiai su paieška, filtrais (metai, būsena, balsavimo atitikimas) ir eilučių arba lentelės vaizdu – kaip [posėdžių sąraše](/visak/posedziai) |
+| **Užduotys** | Institucijos ir jos posėdžių užduotys; skaičius rodo neatliktas. Greitieji filtrai **Vėluoja**, **Automatinės** ir **Atliktos** – kaip užduočių sąraše |
 | **Problemos** | Su institucija susietos problemos, pirmiau neišspręstos (tik jei jų yra, žr. [Problemos](/visak/problemos#posedziai)) |
-| **Failai** | Institucijos darbo failai SharePoint; viešai nerodomi (žr. [Įrašų failai](/visak/failai)) |
-| **Užduotys** | Institucijos ir jos posėdžių užduotys; skaičius rodo neatliktas |
+| **Ryšiai** | Visos susijusios institucijos viename sąraše, sugrupuotos pagal kryptį; rodomas, kai ryšių yra (žr. [Ryšiai](/sistema/rysiai)) |
+| **Failai** | Institucijos darbo failai SharePoint; viešai nerodomi, skirtukas rodomas, kai failų yra (žr. [Įrašų failai](/visak/failai)) |
+| **Užklausos atstovams** | Išsiųsti klausimai, ar vyko posėdis, ir atsakymai (žr. [Užklausos atstovams](#uzklausos)) |
+| **Kadencijos ir sekretoriai** | Kadencijos ir kiekvienos jų sekretoriai (tik galintiems redaguoti) |
+
+Kol ryšių ar failų nėra, tuščio skirtuko nerodoma: kas gali juos pridėti, po faktais mato mygtuką
+**Pridėti ryšį** arba **Pridėti failą**. Išsaugojus pirmąjį ryšį ar failą, skirtukas atsiranda ir atveriamas.
+Sekretoriai skirtuke **Santrauka** rodomi su vardu ir mygtuku **Parašyti**, kaip koordinatoriai
+atstovavimo apžvalgoje.
+
+Posėdžių skirtuke rodomi tie patys posėdžiai, kuriuos matytum posėdžių sąraše: jei kurio nors posėdžio matyti negali, jis nerodomas ir čia.
 
 **Savo** institucija (kurioje eini ar netrukus pradėsi eiti pareigas) matoma pilnai, net be rolės.
 **Kitą aktyvią** instituciją gali atidaryti kiekvienas narys, bet mato tik viešą jos pusę: apžvalgą, pareigybes ir – jei posėdžiai vieši – posėdžius. Jei posėdžiai nevieši,
@@ -515,9 +534,14 @@ Kuo sekretorius skiriasi nuo koordinatoriaus, aprašyta [ViSAK](/visak/#koordina
 
 ### Pareigybės
 
-Skirtuke **Pareigybės** matyti institucijos pareigybės ir jų nariai. Redaguoti galintys gali keisti
-pareigybių tvarką (rodyklėmis, tada **Išsaugoti**) ir priskirti žmogų pareigybei. Pareigybės
-kuriamos ir tvarkomos [Pareigybių](/organizacija/pareigybes) skiltyje.
+Pareigybės ir jų nariai rodomi skirtuke **Santrauka**, o kai pareigybių yra keturios ar daugiau – atskirame
+skirtuke **Pareigybės**. Eilutėje matyti, kiek vietų užimta, ir pareigybės el. paštas; nariai
+rodomi nuotraukomis. Paspaudus nuotraukas atsiveria narių sąrašas su datomis, nuo kada jie eina
+pareigas; ten redaguoti galintys gali pakeisti nario pareigų laikotarpį arba **Pridėti asmenį**.
+Asmenį pridėti galima ir eilutės veiksmu. Pirmą kartą atvėrus puslapį, redaguoti galintiems
+nuotraukas parodo trumpas patarimas. Redaguoti galintys taip pat keičia pareigybių tvarką
+(**Keisti tvarką**, rodyklėmis, tada **Išsaugoti tvarką**). Pareigybės kuriamos ir tvarkomos
+[Pareigybių](/organizacija/pareigybes) skiltyje.
 
 ### Sekti ir nebesekti {#sekti}
 
@@ -654,3 +678,13 @@ Pranešimas apie tai, kad posėdžio nebus, suteikia atskirą pusės periodišku
   Įrašų papildymo klausimus užbaigia tik aiškus laikotarpio patvirtinimas.
 - Sekretoriai: `InstitutionSecretary`; perskyrimas – `ResyncTaskAssigneesForCadence`; perkėlimas į
   savą kadenciją – `CarrySecretariesIntoOverride` (`Cadence::booted()`).
+
+## Institucijos santrauka ir skyriai
+
+Santraukoje rodoma iki trijų posėdžių kortelių: artimiausias būsimas ir du paskutiniai įvykę posėdžiai, o jei būsimo posėdžio nėra – trys paskutiniai įvykę. Kitų metų posėdžiuose nurodomi metai. Pareigybių peržiūroje matomas bendras ir likusių pareigybių skaičius. Nebaigtų užduočių nuoroda rodoma virš skyrių. Pareigybės visada turi atskirą skyrių; komentarai yra bendras institucijos skyrius.
+
+Telefone iš pradžių rodoma Santrauka. Prisegtas skyrių pasirinkimas atveria vieną skyrių; jo nuorodą galima nukopijuoti, o naršyklės „Atgal“ grąžina ankstesnį skyrių. Ištrynus paskutinį failą ar ryšį, atvertas skyrius lieka iki išėjimo iš įrašo.
+
+Narių valdiklyje rodoma, kas eina pareigas. Turint teisę tvarkyti sudėtį, galima priskirti asmenį arba keisti jo laikotarpį. Visa laikotarpių istorija pateikiama pareigybės įraše.
+
+Keičiant pareigybių tvarką, išlieka tos pačios eilutės. Tvarką galima keisti tempimo rankenėle arba rodyklėmis, tada išsaugoti arba atšaukti. Išskleidžiama narių grupė atveriama paspaudus bet kurią jos vietą; ilgas sąrašas slenkamas išskleidimo viduje.

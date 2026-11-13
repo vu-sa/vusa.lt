@@ -73,10 +73,10 @@ export function useTiptapCommands(source: MaybeRefOrGetter<Editor | null | undef
    * Edits the link under a selection, or inserts `text` as a new link. Inserted as a
    * node, never an HTML string, so quotes or `<` in a URL or label cannot break markup.
    */
-  function insertLink(url: string, text?: string, options: { document?: boolean; replaceSelectionText?: boolean } = {}): void {
+  function insertLink(url: string, text?: string, options: { document?: boolean; replaceSelectionText?: boolean; attrs?: Record<string, unknown> } = {}): void {
     if (!editor.value || !url) return;
 
-    const attrs = { href: url, class: options.document ? DOCUMENT_LINK_CLASS : null };
+    const attrs = { href: url, class: options.document ? DOCUMENT_LINK_CLASS : null, ...options.attrs };
     const { from, to } = editor.value.state.selection;
 
     if (from !== to && options.replaceSelectionText) {

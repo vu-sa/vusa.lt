@@ -60,7 +60,7 @@
       </div>
     </template>
     <template #discussion>
-      <DiscussionPanel commentable-type="supportRequest" :commentable-id="supportRequest.id" :mentionables-key />
+      <DiscussionPanel commentable-type="supportRequest" :commentable-id="supportRequest.id" :show-title="false" :mentionables-key />
     </template>
   </RecordPage>
   <SheetForm

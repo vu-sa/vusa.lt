@@ -3,14 +3,11 @@
 namespace App\Models;
 
 use App\Contracts\GuardsForceDelete;
-use App\Contracts\SharepointFileableContract;
 use App\Enums\InstitutionScope;
-use App\Events\FileableNameUpdated;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Jobs\RefreshMeetingTitles;
 use App\Models\Pivots\InstitutionInstitutionType;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
-use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\HasTypeHierarchy;
 use App\Models\Traits\LogsModelActivity;
@@ -37,12 +34,8 @@ use Illuminate\Support\Facades\Cache;
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
- * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Collection<int, InstitutionType> $descendants
- * @property-read Collection<int, FileableFile> $fileableFiles
  * @property-read string|null $force_delete_blocked_reason
- * @property-read bool $has_protocol
- * @property-read bool $has_report
  * @property-read array $translatable_columns_from
  * @property-read Collection<int, InstitutionTypeLink> $incomingLinks
  * @property-read InstitutionInstitutionType|null $pivot
@@ -69,9 +62,9 @@ use Illuminate\Support\Facades\Cache;
  * @mixin \Eloquent
  */
 #[Fillable(['title', 'description', 'slug', 'parent_id', 'extra_attributes'])]
-class InstitutionType extends Model implements GuardsForceDelete, SharepointFileableContract
+class InstitutionType extends Model implements GuardsForceDelete
 {
-    use GuardsForceDeleteWhenReferenced, HasFactory, HasSharepointFiles, HasTranslations, HasTypeHierarchy, LogsModelActivity, SoftDeletes;
+    use GuardsForceDeleteWhenReferenced, HasFactory, HasTranslations, HasTypeHierarchy, LogsModelActivity, SoftDeletes;
 
     protected $translatable = ['title', 'description'];
 
@@ -87,12 +80,6 @@ class InstitutionType extends Model implements GuardsForceDelete, SharepointFile
 
     protected static function booted(): void
     {
-        static::saving(function (self $type): void {
-            if ($type->isDirty('title')) {
-                FileableNameUpdated::dispatch($type);
-            }
-        });
-
         $flush = function (): void {
             app(InstitutionScopeResolver::class)->flush();
             Cache::forget(HandleInertiaRequests::INSTITUTION_TYPES_CACHE_KEY);

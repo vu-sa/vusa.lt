@@ -78,6 +78,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read array $translatable_columns_from
  * @property-read mixed $has_password
  * @property-read Collection<int, Institution> $institutions
+ * @property-read Collection<int, LearningProgress> $learningProgress
  * @property-read MediaCollection<int, Media> $media
  * @property-read Collection<int, UserMicrosoftIdentity> $microsoftIdentities
  * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $notifications
@@ -461,5 +462,11 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
             'trash.blockers.check_ins' => InstitutionCheckIn::query()->where('user_id', $this->id)->count(),
             'trash.blockers.reported_problems' => Problem::query()->where('created_by', $this->id)->count(),
         ]);
+    }
+
+    /** @return HasMany<LearningProgress, $this> */
+    public function learningProgress(): HasMany
+    {
+        return $this->hasMany(LearningProgress::class);
     }
 }

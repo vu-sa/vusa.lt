@@ -12,6 +12,10 @@ return [
 
     // Settings pages
     'pages' => [
+        'season' => [
+            'title' => 'Winter holidays',
+            'description' => 'Dates for holiday decorations and the winter tree',
+        ],
         'forms' => [
             'title' => 'Form Settings',
             'description' => 'Configure form-related settings like member registration.',

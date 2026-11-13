@@ -51,7 +51,7 @@ describe('FileableFilesPanel', () => {
   it('opens a file in one click through the redirect route', () => {
     const wrapper = mountPanel({ files: [protocol] });
 
-    const link = wrapper.find('[data-slot="fileable-file-row"] a');
+    const link = wrapper.find('[data-slot="fileable-file-row"] a[data-collection-open]');
     expect(link.attributes('href')).toContain('fileableFiles.open');
     expect(link.attributes('target')).toBe('_blank');
   });
@@ -59,7 +59,7 @@ describe('FileableFilesPanel', () => {
   it('deletes only after confirming', async () => {
     const wrapper = mountPanel({ files: [protocol] });
 
-    await wrapper.find('[data-slot="fileable-file-row"] button[aria-label="Ištrinti"]').trigger('click');
+    await wrapper.find('[data-slot="fileable-file-row"] [data-action="delete"]').trigger('click');
     expect(router.delete).not.toHaveBeenCalled();
 
     await wrapper.find('[data-testid="confirm-delete"]').trigger('click');
@@ -71,13 +71,13 @@ describe('FileableFilesPanel', () => {
 
     expect(wrapper.find('[data-testid="upload-sheet"]').exists()).toBe(false);
     expect(wrapper.find('button[data-missing-type]').exists()).toBe(false);
-    expect(wrapper.find('button[aria-label="Ištrinti"]').exists()).toBe(false);
+    expect(wrapper.find('[data-action="delete"]').exists()).toBe(false);
   });
 
   it('revokes a file link only after confirming, and only once the file has one', async () => {
     const wrapper = mountPanel({ files: [protocol, { ...protocol, id: 'f2', public_link: 'https://sharepoint.test/x' }] });
 
-    const revokeButtons = wrapper.findAll('[data-action="revoke-link"]');
+    const revokeButtons = wrapper.findAll('[data-action="revoke"]');
     expect(revokeButtons).toHaveLength(1);
 
     await revokeButtons[0].trigger('click');
@@ -90,7 +90,7 @@ describe('FileableFilesPanel', () => {
   it('offers no link revocation to a reader', () => {
     const wrapper = mountPanel({ files: [{ ...protocol, public_link: 'https://sharepoint.test/x' }], canDelete: false });
 
-    expect(wrapper.find('[data-action="revoke-link"]').exists()).toBe(false);
+    expect(wrapper.find('[data-action="revoke"]').exists()).toBe(false);
   });
 
   it('always says files are never shown on vusa.lt and links the folder when one is given', () => {

@@ -8,8 +8,9 @@ describe('FormSegmentedControl', () => {
 
   it('emits scalar values and keeps ordinary choices in sentence case', async () => {
     const wrapper = mount(FormSegmentedControl, {
-      props: { options, modelValue: 1, ariaLabel: 'Choice' },
+      props: { options, modelValue: 1, label: 'Choice' },
     });
+    expect(wrapper.get('[role="group"]').attributes('aria-label')).toBe('Choice');
     await wrapper.findAll('button')[1].trigger('click');
     expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([2]);
     expect(wrapper.get('button').classes()).toContain('normal-case');
@@ -21,7 +22,7 @@ describe('FormSegmentedControl', () => {
 
   it('prevents changes in read-only forms', async () => {
     const wrapper = mount(FormSegmentedControl, {
-      props: { options, modelValue: 1, ariaLabel: 'Choice', disabled: true },
+      props: { options, modelValue: 1, label: 'Choice', disabled: true },
     });
     expect(wrapper.findAll('button').every(button => button.element.disabled)).toBe(true);
     await wrapper.findAll('button')[1].trigger('click');

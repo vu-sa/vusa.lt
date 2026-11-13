@@ -5,9 +5,7 @@ namespace App\Enums;
 use App\Contracts\SharepointFileableContract;
 use App\Enums\Concerns\HasEnumHelpers;
 use App\Models\Duty;
-use App\Models\DutyType;
 use App\Models\Institution;
-use App\Models\InstitutionType;
 use App\Models\Meeting;
 use Illuminate\Database\Eloquent\Model;
 
@@ -22,8 +20,6 @@ enum AllowedFileablesEnum: string
     case DUTY = 'Duty';
     case INSTITUTION = 'Institution';
     case MEETING = 'Meeting';
-    case INSTITUTION_TYPE = 'InstitutionType';
-    case DUTY_TYPE = 'DutyType';
 
     /**
      * @return class-string<Model&SharepointFileableContract>
@@ -34,8 +30,6 @@ enum AllowedFileablesEnum: string
             self::DUTY => Duty::class,
             self::INSTITUTION => Institution::class,
             self::MEETING => Meeting::class,
-            self::INSTITUTION_TYPE => InstitutionType::class,
-            self::DUTY_TYPE => DutyType::class,
         };
     }
 

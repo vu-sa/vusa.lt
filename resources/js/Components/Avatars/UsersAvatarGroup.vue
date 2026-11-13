@@ -1,5 +1,29 @@
 <template>
-  <div data-slot="users-avatar-group" class="inline-flex flex-row items-center py-1" role="group" :aria-label="$t('Naudotojai')">
+  <Popover v-if="expandable && users.length">
+    <PopoverTrigger as-child>
+      <button type="button" data-slot="users-avatar-group" class="inline-flex min-w-0 items-center gap-2 px-1 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground data-[state=open]:bg-secondary data-[state=open]:text-foreground pointer-coarse:min-h-11 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring" :aria-label="$t('Rodyti visus')">
+        <span class="flex items-center">
+          <UserAvatar v-for="(user, index) in visibleUsers" :key="user.id || index" :user :size="avatarSize" :class="index > 0 ? '-ml-2 [&_[data-slot=avatar]]:ring-2 [&_[data-slot=avatar]]:ring-background' : undefined" />
+          <Avatar v-if="hasMoreUsers" :size="avatarSize" class="-ml-2 ring-2 ring-background"><AvatarFallback :class="textSizeClass">+{{ remainingCount }}</AvatarFallback></Avatar>
+        </span>
+        <ChevronDown class="size-3.5 shrink-0" aria-hidden="true" />
+      </button>
+    </PopoverTrigger>
+    <PopoverContent class="w-[min(24rem,calc(100vw-2rem))] p-0" align="end" data-slot="users-avatar-group-popover">
+      <p class="border-b border-border px-3 py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+        {{ $t('Naudotojai') }} · {{ users.length }}
+      </p>
+      <ul class="max-h-72 divide-y divide-border/60 overflow-y-auto overscroll-contain">
+        <li v-for="(user, index) in users" :key="user.id || user.name || index" class="flex min-h-11 items-center gap-2 px-3 py-1.5 hover:bg-secondary/40">
+          <component :is="isClickable && user.id ? Link : 'div'" :href="isClickable && user.id ? route('users.show', user.id) : undefined" class="flex min-w-0 flex-1 items-center gap-2 hover:text-brand">
+            <UserAvatar :user :size="popoverAvatarSize" />
+            <span class="min-w-0"><span class="block truncate text-sm font-medium">{{ user.name }}</span><slot name="user-additional-info" :user /></span>
+          </component>
+        </li>
+      </ul>
+    </PopoverContent>
+  </Popover>
+  <div v-else data-slot="users-avatar-group" class="inline-flex flex-row items-center py-1" role="group" :aria-label="$t('Naudotojai')">
     <!-- Display avatars up to the maximum allowed -->
     <div v-for="(user, index) in visibleUsers" :key="user.id || index" class="relative flex items-center"
       :class="[avatarWrapperClass, index > 0 ? '-ml-2 [&_[data-slot=avatar]]:ring-2 [&_[data-slot=avatar]]:ring-background' : '']" :style="{ zIndex: visibleUsers.length - index }">
@@ -57,37 +81,6 @@
         </HoverCardContent>
       </HoverCard>
     </div>
-
-    <!-- Optional expand chevron: opens a dropdown listing all users -->
-    <Popover v-if="expandable && users.length > 0">
-      <PopoverTrigger as-child>
-        <button
-          type="button"
-          class="ml-1 flex size-7 items-center justify-center text-muted-foreground transition-colors hover:bg-accent hover:text-foreground pointer-coarse:size-11"
-          :aria-label="$t('Rodyti visus')"
-        >
-          <ChevronDown class="h-4 w-4" />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent class="w-64 p-2" align="end">
-        <div class="grid gap-1 max-h-72 overflow-y-auto pr-1">
-          <template v-for="(user, index) in users" :key="user.id || user.name || index">
-            <Link v-if="isClickable && user.id" :href="route('users.show', user.id)" class="contents">
-              <UserPopover show-name :size="popoverAvatarSize" :user :clickable="false">
-                <template #additional-info>
-                  <slot name="user-additional-info" :user />
-                </template>
-              </UserPopover>
-            </Link>
-            <UserPopover v-else show-name :size="popoverAvatarSize" :user :clickable="false">
-              <template #additional-info>
-                <slot name="user-additional-info" :user />
-              </template>
-            </UserPopover>
-          </template>
-        </div>
-      </PopoverContent>
-    </Popover>
   </div>
 </template>
 
@@ -104,6 +97,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover
 
 import type { AvatarUser } from './UserAvatar.vue';
 import UserPopover from './UserPopover.vue';
+import UserAvatar from './UserAvatar.vue';
 
 const props = withDefaults(defineProps<{
   users: AvatarUser[];

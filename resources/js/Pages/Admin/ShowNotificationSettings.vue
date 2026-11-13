@@ -107,7 +107,7 @@
           <FormSegmentedControl
             :model-value="form.reminder_settings.task_reminder_days[0]"
             :options="taskReminderOptions"
-            :aria-label="$t('notifications.preferences.task_reminder_days')"
+            :label="$t('notifications.preferences.task_reminder_days')"
             test-id-prefix="task-reminder"
             @update:model-value="value => form.reminder_settings.task_reminder_days = [value]"
           />
@@ -154,7 +154,7 @@
           v-else
           :model-value="0"
           :options="muteDurationOptions"
-          :aria-label="$t('notifications.preferences.mute_all')"
+          :label="$t('notifications.preferences.mute_all')"
           test-id-prefix="mute"
           @update:model-value="hours => mute(hours)"
         />
@@ -175,7 +175,7 @@
             v-model="form.digest_frequency_hours"
             :options="digestFrequencyOptions"
             class="h-auto pointer-coarse:h-auto [&>button]:min-h-11 [&>button]:py-2"
-            :aria-label="$t('notifications.preferences.digest_label')"
+            :label="$t('notifications.preferences.digest_label')"
             test-id-prefix="digest-frequency"
           />
         </FormFieldWrapper>

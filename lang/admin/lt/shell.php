@@ -10,6 +10,10 @@ return [
         'redirect' => 'Įrašų sujungimą dabar rasi sąrašo veiksmuose.',
     ],
     'workspaces' => [
+        'wiki' => [
+            'title' => 'Wiki',
+            'description' => 'Sąvokos, institucijos ir dokumentai',
+        ],
         'pradzia' => [
             'title' => 'Mano',
             'description' => 'Tavo darbai, užduotys ir pranešimai',
@@ -89,9 +93,23 @@ return [
         'results' => 'Rezultatai',
     ],
 
+    'section_children' => [
+        'kelias' => [
+            'path' => 'Mano kelias',
+            'library' => 'Biblioteka',
+        ],
+    ],
+
     'sections' => [
+        'kelias' => 'Mano kelias',
+        'wiki' => 'Wiki',
+        'wiki_graph' => 'Sąvokų žemėlapis',
+        'wiki_mine' => 'Tau skirti įrašai',
+        'rodykle' => 'Rodyklė A–Ž',
+        'wiki_biblioteka' => 'Biblioteka',
         'apzvalga' => 'Apžvalga',
         'padaliniu_apzvalga' => 'Padaliniai',
+        'atstovai' => 'Atstovai',
         'uzduotys' => 'Užduotys',
         'pranesimai' => 'Pranešimai',
         'atsakomybes' => 'Atsakomybės',
@@ -125,6 +143,7 @@ return [
         'padaliniai' => 'Padaliniai',
         'studiju_programos' => 'Studijų programos',
         'konferencijos' => 'Konferencijos',
+        'kelio_zingsniai' => 'Kelio žingsniai',
         'registracija_nariai' => 'Narių registracija',
         'registracija_atstovai' => 'Studentų atstovų registracija',
         'formos' => 'Formos',
@@ -142,8 +161,13 @@ return [
     ],
 
     'section_descriptions' => [
+        'kelias' => 'Tavo kadencijos žingsniai ir pasiruošimas posėdžiams.',
+        'wiki' => 'Kas yra kas VU SA ir universitete – ir kaip viskas susiję',
+        'wiki_graph' => 'Kaip Wiki sąvokos susijusios tarpusavyje',
+        'wiki_mine' => 'Tavo pareigoms skirti įrašai ir mokymosi pažanga',
+        'rodykle' => 'Visi įrašai pagal abėcėlę',
+        'wiki_biblioteka' => 'Visi įrašai, jų auditorijos ir būsena',
         'uzduotys' => 'Tau priskirti darbai ir terminai',
-        'pranesimai' => 'Visi tau skirti pranešimai',
         'atsakomybes' => 'Tavo pareigybės ir ką jos leidžia',
         'veiklos_uzklausos' => 'Tau gautos užklausos apie institucijų veiklą',
         'institucijos' => 'Institucijos, kuriose atstovaujame',
@@ -152,6 +176,7 @@ return [
         'problemos' => 'Atstovų keliamos problemos ir jų eiga',
         'tikslai' => 'Padalinių metų tikslai ir jų eiga (bandomoji funkcija)',
         'padaliniu_apzvalga' => 'Padalinių posėdžių laiko juosta ir institucijų būklė',
+        'atstovai' => 'Kam iš atstovų reikia tavo dėmesio, jų aktyvumas ir įsivedimas',
         'pareigybiu_laikotarpiai' => 'Kas kada ėjo kokias pareigas – sutvarkyk visus iš karto',
         'uzduociu_suvestine' => 'Padalinių užduotys ir terminai',
         'institucijos_grafas' => 'Institucijų ryšiai viename grafe',
@@ -176,6 +201,7 @@ return [
         'padaliniai' => 'VU SA padaliniai ir jų duomenys',
         'studiju_programos' => 'VU studijų programų sąrašas',
         'konferencijos' => 'Mailman konferencijos, jų gavėjai ir archyvas',
+        'kelio_zingsniai' => 'Mano kelias žingsniai ir jų auditorijos: ką naujokas daro ir kada.',
         'registracija_nariai' => 'Naujų narių prašymai',
         'registracija_atstovai' => 'Naujų studentų atstovų prašymai',
         'formos' => 'Anketos ir jų atsakymai',
@@ -193,6 +219,8 @@ return [
     ],
 
     'actions' => [
+        'new_learning_step' => ['title' => 'Naujas kelio žingsnis', 'description' => 'Veiksmas ar pasiruošimas posėdžiui'],
+        'new_knowledge_item' => ['title' => 'Naujas Wiki įrašas', 'description' => 'Sąvoka, dokumentas ar paaiškinimas atstovams'],
         'new_institution_type' => ['title' => 'Naujas institucijos tipas', 'description' => 'Institucijų grupavimas, atstovavimas ir ryšiai'],
         'new_duty_type' => ['title' => 'Naujas pareigybės tipas', 'description' => 'Pareigybių grupavimas ir suteikiamos atsakomybės'],
         'merge' => [

@@ -233,20 +233,6 @@ export interface InactivePeriod {
 
 // Representative activity tracking types
 
-export interface RepresentativeUser {
-  id: string;
-  name: string;
-  email: string;
-  profile_photo_path?: string | null;
-  last_action: string | null;
-  category: RepresentativeActivityCategory;
-  duties: Array<{
-    id: string;
-    name: string;
-    institution_name?: string;
-  }>;
-}
-
 export interface RepresentativeActivityStats {
   total: number;
   activeToday: number;
@@ -257,7 +243,6 @@ export interface RepresentativeActivityStats {
 
 export interface RepresentativeActivityData {
   stats: RepresentativeActivityStats;
-  preview_users: RepresentativeUser[];
 }
 
 export interface InstitutionStatusSummaryData {
@@ -268,18 +253,6 @@ export interface InstitutionStatusSummaryData {
   no_activity: number;
   current: number;
   recent_check_in: number;
-}
-
-export interface RepresentativePagination {
-  current_page: number;
-  last_page: number;
-  per_page: number;
-  total: number;
-}
-
-export interface RepresentativePageData {
-  users: RepresentativeUser[];
-  pagination: RepresentativePagination;
 }
 
 export interface AtstovavimasTenantTimelineData {

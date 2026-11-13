@@ -1,36 +1,12 @@
 <template>
   <div class="space-y-4">
-    <div class="flex flex-wrap items-center gap-2">
-      <template v-if="taskStats">
-        <Badge v-if="taskStats.overdue > 0" variant="rose" class="gap-1 text-xs">
-          <AlertCircleIcon class="h-3 w-3" />
-          {{ taskStats.overdue }} {{ $t('overdue') }}
-        </Badge>
-        <Badge v-if="taskStats.autoCompleting > 0" variant="secondary" class="gap-1 text-xs">
-          <RotateCwIcon class="h-3 w-3" />
-          {{ taskStats.autoCompleting }} {{ $t('tasks.manager.auto_completing_count') }}
-        </Badge>
-        <Badge v-if="taskStats.completed > 0" variant="secondary" class="gap-1 text-xs">
-          <CheckCircleIcon class="h-3 w-3" />
-          {{ taskStats.completed }} {{ $t('completed') }}
-        </Badge>
-      </template>
+    <!-- The same chips the task list offers, counting from what this record holds. -->
+    <CollectionQuickFilters :filters="quickFilters" wrap @toggle="toggleQuickFilter" />
 
-      <!-- Open tasks by default; completed ones only on request. -->
-      <button
-        type="button"
-        :disabled
-        :aria-pressed="showAll"
-        :class="['ml-auto', controlVariants({ size: 'sm', active: showAll })]"
-        @click="showAll = !showAll"
-      >
-        {{ $t('tasks.filters.show_all') }}
-      </button>
-    </div>
-
-    <ul v-if="filteredTasks.length > 0" class="divide-y divide-border border-y border-border">
-      <li v-for="task in filteredTasks" :key="task.id">
+    <ul v-if="filteredTasks.length > 0" :class="ROW_LIST_BOX_CLASS">
+      <li v-for="task in filteredTasks" :key="task.id" :class="ROW_ITEM_CLASS">
         <TaskRow
+          class="flex-1"
           :task
           :loading="loadingTaskId === task.id"
           @open="emit('openTaskDetail', task)"
@@ -87,13 +63,15 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, defineAsyncComponent, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { AlertCircleIcon, RotateCwIcon, CheckCircleIcon } from '@lucide/vue';
+import { CheckCircleIcon } from '@lucide/vue';
 import { toast } from 'vue-sonner';
 
 import { useTaskActionDialogs } from '@/Composables/useTaskActionDialogs';
 import type { TaskDisplayData } from '@/Composables/useTaskPresentation';
-import { Badge } from '@/Components/ui/badge';
-import { controlVariants } from '@/Components/ui/control';
+import CollectionQuickFilters from '@/Components/Collection/CollectionQuickFilters.vue';
+import { quickFilterLabel } from '@/Components/Collection/quickFilterLabel';
+import { ROW_ITEM_CLASS, ROW_LIST_BOX_CLASS } from '@/Components/Collection/rowList';
+import type { CollectionQuickFilter } from '@/Components/Collection/types';
 import { buttonVariants } from '@/Components/ui/button';
 import {
   AlertDialog,
@@ -112,17 +90,8 @@ import type { TaskActionKey } from './taskActions';
 // Use async component for the dialog to improve initial load performance
 const CreateTaskDialog = defineAsyncComponent(() => import('./CreateTaskDialog.vue'));
 
-interface TaskStats {
-  total: number;
-  completed: number;
-  overdue: number;
-  autoCompleting: number;
-}
-
 const props = defineProps<{
-  disabled?: boolean;
   tasks?: TaskDisplayData[];
-  taskStats?: TaskStats;
   taskable?: {
     id: string | number;
     type: string;
@@ -147,13 +116,40 @@ const loadingTaskId = ref<string | null>(null);
 const deleteDialogOpen = ref(false);
 const taskPendingDeletion = ref<TaskDisplayData | null>(null);
 
-const showAll = ref(false);
+type TaskQuickFilter = 'overdue' | 'auto' | 'completed';
+const activeFilters = ref(new Set<TaskQuickFilter>());
 
-const filteredTasks = computed(() => {
+const isAutomatic = (task: TaskDisplayData) => Boolean(task.action_type);
+const openTasks = computed(() => (props.tasks ?? []).filter(task => !task.completed_at));
+
+const quickFilters = computed<CollectionQuickFilter[]>(() => {
   const tasks = props.tasks ?? [];
 
-  return showAll.value ? tasks : tasks.filter(task => !task.completed_at);
+  return [
+    { id: 'overdue', label: quickFilterLabel($t('tasks.collection.overdue'), openTasks.value.filter(task => task.is_overdue).length), active: activeFilters.value.has('overdue') },
+    { id: 'auto', label: quickFilterLabel($t('tasks.collection.automatic'), openTasks.value.filter(isAutomatic).length), active: activeFilters.value.has('auto') },
+    { id: 'completed', label: quickFilterLabel($t('tasks.collection.completed'), tasks.filter(task => task.completed_at).length), active: activeFilters.value.has('completed') },
+  ];
 });
+
+function toggleQuickFilter(id: string): void {
+  const next = new Set(activeFilters.value);
+  const filter = id as TaskQuickFilter;
+
+  if (next.has(filter)) {
+    next.delete(filter);
+  }
+  else {
+    next.add(filter);
+  }
+  activeFilters.value = next;
+}
+
+// Open tasks by default; "Atliktos" swaps in the finished ones, the others narrow either.
+const filteredTasks = computed(() => (props.tasks ?? [])
+  .filter(task => activeFilters.value.has('completed') ? Boolean(task.completed_at) : !task.completed_at)
+  .filter(task => !activeFilters.value.has('overdue') || task.is_overdue)
+  .filter(task => !activeFilters.value.has('auto') || isAutomatic(task)));
 
 const handleTaskCompletion = (task: TaskDisplayData) => {
   if (task.can_be_manually_completed === false) {

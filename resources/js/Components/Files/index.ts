@@ -6,5 +6,4 @@
 export { default as DocumentFolderBrowser } from './DocumentFolderBrowser.vue';
 export { default as FileableFilesPanel } from './FileableFilesPanel.vue';
 export { default as FileableUploadSheet } from './FileableUploadSheet.vue';
-export { default as ReferenceDocumentTiles } from './ReferenceDocumentTiles.vue';
 export type { DocumentFolderListing, DocumentFolderRow, DocumentProblem, DocumentStatusFilter, FileableFileItem } from './types';

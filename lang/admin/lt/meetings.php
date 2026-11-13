@@ -195,4 +195,11 @@ return [
         'change_type' => 'Keisti tipą',
         'clear_answer' => 'Išvalyti',
     ],
+    'card' => [
+        'agenda_items' => ':count klausimas|:count klausimai|:count klausimų',
+        'no_agenda' => 'Be darbotvarkės',
+        'upcoming' => 'Būsimas',
+        'fallback_title' => 'Posėdis',
+        'incomplete_votes' => 'Trūksta balsavimo duomenų',
+    ],
 ];

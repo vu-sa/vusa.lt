@@ -1,6 +1,6 @@
 <template>
   <FormFieldWrapper :id :label="$t('Būsena')" :error :hint>
-    <FormSegmentedControl :id v-model="active" :options :aria-label="$t('Būsena')" :test-id-prefix="id" />
+    <FormSegmentedControl :id v-model="active" :options :label="$t('Būsena')" :test-id-prefix="id" />
   </FormFieldWrapper>
 </template>
 

@@ -49,7 +49,9 @@ it('opens scoped responsibility grants from a type across widths and themes', fu
         $page->script('document.documentElement.classList.toggle("dark", '.($dark ? 'true' : 'false').')');
         foreach ([390, 820, 1180, 1440] as $width) {
             $page->resize($width, 900);
-            if ($width >= 768) {
+            if ($width < 768) {
+                $page->select('[data-slot="record-section-switcher"] select', 'roles');
+            } else {
                 $page->click('button[role="tab"]:has-text("Atsakomybės")');
             }
             $page->assertVisible('[data-testid="type-grant-needs-scope"]');

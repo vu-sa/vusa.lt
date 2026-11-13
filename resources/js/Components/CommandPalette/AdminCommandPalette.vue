@@ -70,6 +70,18 @@
           <ActionResult v-for="action in goToActions" :key="action.id" :action />
         </PaletteGroup>
 
+        <!-- Wiki articles come from the small index the Wiki hub searches too, not from Typesense. -->
+        <PaletteGroup v-if="wikiHits.length > 0" :heading="$t('learning.pages.knowledge')">
+          <PaletteRow
+            v-for="page in wikiHits" :key="`wiki-${page.id}`"
+            :value="`wiki-${page.id}`"
+            :icon="Library"
+            :entity-type="ModelEnum.KNOWLEDGE_ITEM"
+            :title="page.abbreviation ? `${page.title} (${page.abbreviation})` : page.title"
+            :subtitle="$t(`learning.kinds.${page.kind}`)"
+            @select="navigateToHref(page.url)"
+          />
+        </PaletteGroup>
         <!-- One ranked list across collections; each row names its type -->
         <PaletteGroup v-if="flatHits.length > 0" :heading="$t('shell.palette.results')">
           <CommandItem
@@ -144,6 +156,7 @@ import {
   ArrowUp,
   ArrowDown,
   SearchX,
+  Library,
 } from '@lucide/vue';
 
 import { useAdminSearch, type MultiSearchResults } from '@/Composables/useAdminSearch';
@@ -161,6 +174,10 @@ import SearchHitRow from '@/Features/Admin/AdminSearch/Components/SearchHitRow.v
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import { TopProgressBar } from '@/Components/Patterns';
 import { CommandList, CommandItem } from '@/Components/ui/command';
+import { loadWikiLinkTargets } from '@/Features/Admin/Knowledge/useWikiLinkTargets';
+import { searchWiki } from '@/Features/Admin/Knowledge/wikiSearch';
+import type { WikiIndexEntry } from '@/Types/learning';
+import { ModelEnum } from '@/Types/enums';
 
 import PinButton from './results/PinButton.vue';
 import { paletteRowClass } from './results/paletteRowClass';
@@ -202,6 +219,9 @@ const searchResults = ref<MultiSearchResults>(createEmptyMultiSearchResults());
 const searchInputRef = ref<HTMLInputElement | null>(null);
 
 const pinnedItems = computed<RecentItem[]>(() => pinnedPages.value);
+
+const wikiIndex = ref<WikiIndexEntry[]>([]);
+const wikiHits = computed(() => query.value.trim() ? searchWiki(wikiIndex.value, query.value).slice(0, 4) : []);
 
 // Top 5 recents, minus anything already listed as pinned
 const topRecentItems = computed<RecentItem[]>(() => {
@@ -245,6 +265,7 @@ const hasResults = computed(() => (
   createActions.value.length > 0
   || goToActions.value.length > 0
   || flatHits.value.length > 0
+  || wikiHits.value.length > 0
 ));
 
 // Debounced search function - 300ms debounce to reduce request frequency
@@ -317,6 +338,9 @@ watch(isOpen, (opened) => {
       initializeSearch();
       searchInitialized = true;
     }
+    loadWikiLinkTargets().then((index) => {
+      wikiIndex.value = index;
+    });
     // Focus the search input after dialog opens with fallback for animation delay
     nextTick(() => {
       searchInputRef.value?.focus();

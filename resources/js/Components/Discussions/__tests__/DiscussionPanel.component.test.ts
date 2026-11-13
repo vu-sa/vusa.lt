@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { commonStubs } from '@/tests/stubs';
-import type { CommentData } from '@/Types/discussions';
+import type { CommentData, DiscussionLayout } from '@/Types/discussions';
 
 // --- Hoisted mock fns so the module factories can reference them ---
 const mocks = vi.hoisted(() => ({
@@ -11,11 +11,13 @@ const mocks = vi.hoisted(() => ({
   fetchMentionables: vi.fn(),
   postComment: vi.fn(),
   toggleReaction: vi.fn(),
-  resolveComment: vi.fn(),
-  unresolveComment: vi.fn(),
+  closeTopic: vi.fn(),
+  reopenTopic: vi.fn(),
   updateComment: vi.fn(),
   deleteComment: vi.fn(),
   resetComposer: vi.fn(),
+  nextDraft: { body: '<p>new</p>', mode: 'comment', imageIds: [], dutiableId: null } as Record<string, unknown>,
+  channel: {} as Record<string, (comment: CommentData) => void>,
 }));
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
@@ -25,7 +27,10 @@ vi.mock('@/Composables/useDiscussionApi', () => ({
 }));
 
 vi.mock('@/Composables/useDiscussionChannel', () => ({
-  useDiscussionChannel: () => ({ members: ref([]), connect: vi.fn(), disconnect: vi.fn(), whisperTyping: vi.fn() }),
+  useDiscussionChannel: (_type: string, _id: string, handlers: Record<string, (comment: CommentData) => void>) => {
+    mocks.channel = handlers;
+    return { members: ref([]), connect: vi.fn(), disconnect: vi.fn(), whisperTyping: vi.fn() };
+  },
 }));
 
 // The Tiptap-based composer is heavy; stub it to a button that emits submit.
@@ -36,9 +41,11 @@ vi.mock('@/Components/Discussions/CommentComposer.vue', async () => {
     __esModule: true,
     default: defineComponent({
       name: 'CommentComposer',
+      props: ['modes'],
       emits: ['submit', 'cancel'],
+      data: () => ({ draft: mocks.nextDraft }),
       methods: { reset: mocks.resetComposer },
-      template: '<button class="composer-stub" @click="$emit(\'submit\', \'<p>new</p>\')">composer</button>',
+      template: '<button class="composer-stub" :data-modes="(modes || []).join(\',\')" @click="$emit(\'submit\', draft)">composer</button>',
     }),
   };
 });
@@ -63,7 +70,7 @@ function makeComment(overrides: Partial<CommentData> = {}): CommentData {
     mentioned_user_ids: [],
     reactions: [],
     replies: [],
-    can: { update: false, delete: false, resolve: true },
+    can: { update: false, delete: false, resolve: false },
     ...overrides,
   };
 }
@@ -79,19 +86,40 @@ const stubs = {
   DropdownMenuItem: { template: '<div><slot /></div>' },
 };
 
+function thread(comments: CommentData[], layout: DiscussionLayout = 'comments', canModerate = false) {
+  return {
+    comments,
+    meta: {
+      capabilities: { layout, topics: layout !== 'conversation', polls: layout !== 'conversation', images: true },
+      me: { duties: [], default_dutiable_id: null, can_moderate: canModerate },
+    },
+  };
+}
+
+const mountPanel = (commentableType = 'meeting', extraProps: Record<string, unknown> = {}) => mount(DiscussionPanel, {
+  props: { commentableType, commentableId: 'x1', ...extraProps },
+  global: { stubs },
+});
+
+/** The root composer mounts when its stand-in field takes focus. */
+async function openComposer(wrapper: ReturnType<typeof mountPanel>) {
+  await wrapper.get('[data-testid="composer-launcher"]').trigger('focus');
+  await flushPromises();
+}
+
+const topic = (overrides: Partial<CommentData> = {}) => makeComment({ kind: 'topic', title: 'Kaip ruoštis posėdžiui?', ...overrides });
+
 describe('DiscussionPanel', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.fetchMentionables.mockResolvedValue([]);
+    mocks.nextDraft = { body: '<p>new</p>', mode: 'comment', imageIds: [], dutiableId: null };
   });
 
   it('refetches the mention list when the parent\'s people change', async () => {
-    mocks.fetchThread.mockResolvedValue([]);
+    mocks.fetchThread.mockResolvedValue(thread([]));
 
-    const wrapper = mount(DiscussionPanel, {
-      props: { commentableType: 'supportRequest', commentableId: 'sr1', mentionablesKey: 'u1' },
-      global: { stubs },
-    });
+    const wrapper = mountPanel('supportRequest', { mentionablesKey: 'u1' });
     await flushPromises();
     expect(mocks.fetchMentionables).toHaveBeenCalledTimes(1);
 
@@ -103,66 +131,120 @@ describe('DiscussionPanel', () => {
   });
 
   it('renders fetched threads with their replies', async () => {
-    mocks.fetchThread.mockResolvedValue([
+    mocks.fetchThread.mockResolvedValue(thread([
       makeComment({ id: 'root1', body: '<p>Root one</p>', replies: [makeComment({ id: 'rep1', parent_id: 'root1', thread_root_id: 'root1', body: '<p>A reply</p>' })] }),
-    ]);
+    ]));
 
-    const wrapper = mount(DiscussionPanel, {
-      props: { commentableType: 'agendaItem', commentableId: 'ai1' },
-      global: { stubs },
-    });
+    const wrapper = mountPanel('agendaItem');
     await flushPromises();
 
     expect(wrapper.html()).toContain('Root one');
     expect(wrapper.html()).toContain('A reply');
   });
 
-  it('posts a new root comment and appends it', async () => {
-    mocks.fetchThread.mockResolvedValue([]);
-    mocks.postComment.mockResolvedValue(makeComment({ id: 'new1', body: '<p>Posted</p>' }));
+  it('shows the latest replies and folds the earlier ones', async () => {
+    const replies = [1, 2, 3, 4].map(n => makeComment({ id: `r${n}`, parent_id: 'root1', thread_root_id: 'root1', body: `<p>Reply ${n}</p>` }));
+    mocks.fetchThread.mockResolvedValue(thread([makeComment({ id: 'root1', replies })]));
 
-    const wrapper = mount(DiscussionPanel, {
-      props: { commentableType: 'meeting', commentableId: 'm1' },
-      global: { stubs },
-    });
+    const wrapper = mountPanel();
     await flushPromises();
 
-    // The root composer is the first stub.
+    expect(wrapper.html()).not.toContain('Reply 1');
+    expect(wrapper.html()).toContain('Reply 4');
+    await wrapper.find('[data-testid="show-earlier-replies"]').trigger('click');
+    expect(wrapper.html()).toContain('Reply 1');
+  });
+
+  it('posts a new root comment as a draft and appends it', async () => {
+    mocks.fetchThread.mockResolvedValue(thread([]));
+    mocks.postComment.mockResolvedValue(makeComment({ id: 'new1', body: '<p>Posted</p>' }));
+
+    const wrapper = mountPanel();
+    await flushPromises();
+    await openComposer(wrapper);
+
     await wrapper.find('.composer-stub').trigger('click');
     await flushPromises();
 
-    expect(mocks.postComment).toHaveBeenCalledWith('<p>new</p>');
+    expect(mocks.postComment).toHaveBeenCalledWith(mocks.nextDraft, undefined);
     expect(wrapper.html()).toContain('Posted');
     expect(mocks.resetComposer).toHaveBeenCalledOnce();
   });
 
-  it('filters out resolved threads when toggled to open-only', async () => {
-    mocks.fetchThread.mockResolvedValue([
-      makeComment({ id: 'open1', body: '<p>Open thread</p>' }),
-      makeComment({ id: 'done1', body: '<p>Done thread</p>', is_resolved: true, resolved_at: new Date().toISOString() }),
-    ]);
+  it('starts every composer on a comment and offers topics and polls only where the record allows them', async () => {
+    mocks.fetchThread.mockResolvedValue(thread([], 'topics'));
+    const learning = mountPanel('learningStep');
+    await flushPromises();
+    await openComposer(learning);
+    expect(learning.find('.composer-stub').attributes('data-modes')).toBe('comment,topic,poll');
+    expect(learning.find('[data-testid="discussion-empty"]').text()).toBe('discussions.empty_topics');
 
-    const wrapper = mount(DiscussionPanel, {
-      props: { commentableType: 'meeting', commentableId: 'm1' },
-      global: { stubs },
-    });
+    mocks.fetchThread.mockResolvedValue(thread([], 'conversation'));
+    const support = mountPanel('supportRequest');
+    await flushPromises();
+    await openComposer(support);
+    expect(support.find('.composer-stub').attributes('data-modes')).toBe('comment');
+  });
+
+  it('lists open topics above comments and keeps closed topics folded away', async () => {
+    mocks.fetchThread.mockResolvedValue(thread([
+      makeComment({ id: 'c1', body: '<p>Plain comment</p>' }),
+      topic({ id: 't1', title: 'Atvira tema' }),
+      topic({ id: 't2', title: 'Užbaigta tema', is_closed: true, is_resolved: true }),
+    ]));
+
+    const wrapper = mountPanel();
     await flushPromises();
 
-    expect(wrapper.html()).toContain('Done thread');
+    const topics = wrapper.find('[data-slot="discussion-topics"]');
+    expect(topics.text()).toContain('Atvira tema');
+    expect(topics.text()).not.toContain('Užbaigta tema');
+    expect(wrapper.find('[data-slot="discussion-comments"]').text()).toContain('Plain comment');
 
-    // Toggle to "open only".
-    await wrapper.findAll('button').find(b => b.text().includes('discussions.filter_unresolved_only'))!.trigger('click');
+    await wrapper.find('[data-testid="toggle-closed-topics"]').trigger('click');
+    expect(topics.text()).toContain('Užbaigta tema');
+  });
+
+  it('heads a topic with its title and author only, in body tracking', async () => {
+    mocks.fetchThread.mockResolvedValue(thread([
+      topic({ id: 't1', title: 'Atvira tema', author_duty: { dutiable_id: 'd1', name: 'Koordinatorius', institution: 'MIF SA', use_original_duty_name: true } }),
+    ]));
+
+    const wrapper = mountPanel();
     await flushPromises();
 
-    expect(wrapper.html()).toContain('Open thread');
-    expect(wrapper.html()).not.toContain('Done thread');
+    const heading = wrapper.get('[data-slot="discussion-topic"] h3');
+    expect(heading.classes()).toContain('tracking-normal');
+    expect(heading.text()).toContain('Author');
+    expect(heading.text()).not.toContain('Koordinatorius');
+    expect(heading.text()).not.toContain('MIF SA');
+  });
+
+  it('opens a topic the author just started, and closes it from its body', async () => {
+    mocks.fetchThread.mockResolvedValue(thread([], 'topics'));
+    mocks.nextDraft = { body: '<p>Body</p>', mode: 'topic', title: 'Nauja tema', imageIds: [], dutiableId: null };
+    mocks.postComment.mockResolvedValue(topic({ id: 't9', title: 'Nauja tema', body: '<p>Body</p>', can: { update: true, delete: true, resolve: true } }));
+    mocks.closeTopic.mockResolvedValue(topic({ id: 't9', title: 'Nauja tema', is_closed: true, is_resolved: true, can: { update: true, delete: true, resolve: true } }));
+
+    const wrapper = mountPanel('learningStep');
+    await flushPromises();
+    await openComposer(wrapper);
+    await wrapper.find('.composer-stub').trigger('click');
+    await flushPromises();
+
+    expect(wrapper.find('[data-slot="topic-body"]').text()).toContain('Body');
+    await wrapper.find('[data-testid="topic-close"]').trigger('click');
+    await flushPromises();
+
+    expect(mocks.closeTopic).toHaveBeenCalledWith('t9');
+    expect(wrapper.find('[data-testid="toggle-closed-topics"]').exists()).toBe(true);
   });
 
   it('leaves a "Komentaras ištrintas" placeholder where a deleted comment was, replies kept', async () => {
     const reply = makeComment({ id: 'rep1', parent_id: 'root1', thread_root_id: 'root1', body: '<p>Rugsėjo 30 d.</p>' });
-    mocks.fetchThread.mockResolvedValue([
-      makeComment({ id: 'root1', body: '<p>Kada kitas posėdis?</p>', can: { update: true, delete: true, resolve: true }, replies: [reply] }),
-    ]);
+    mocks.fetchThread.mockResolvedValue(thread([
+      makeComment({ id: 'root1', body: '<p>Kada kitas posėdis?</p>', can: { update: true, delete: true, resolve: false }, replies: [reply] }),
+    ]));
     mocks.deleteComment.mockResolvedValue(makeComment({
       id: 'root1', body: '', is_erased: true, user: { id: null, name: null, profile_photo_path: null },
       can: { update: false, delete: false, resolve: false },
@@ -170,13 +252,10 @@ describe('DiscussionPanel', () => {
       replies: undefined,
     }));
 
-    const wrapper = mount(DiscussionPanel, {
-      props: { commentableType: 'meeting', commentableId: 'm1' },
-      global: { stubs },
-    });
+    const wrapper = mountPanel();
     await flushPromises();
 
-    await wrapper.findAll('div').find(element => element.text() === 'Ištrinti')!.trigger('click');
+    await wrapper.find('[data-testid="comment-delete"]').trigger('click');
     await flushPromises();
 
     expect(mocks.deleteComment).toHaveBeenCalledWith('root1');
@@ -184,12 +263,95 @@ describe('DiscussionPanel', () => {
     expect(wrapper.html()).not.toContain('Kada kitas posėdis?');
     expect(wrapper.html()).toContain('Rugsėjo 30 d.');
   });
+
+  it('shows the duty the author wrote as', async () => {
+    mocks.fetchThread.mockResolvedValue(thread([
+      makeComment({ author_duty: { dutiable_id: 'd1', name: 'Koordinatorius', institution: 'MIF SA', use_original_duty_name: true } }),
+    ]));
+
+    const wrapper = mountPanel();
+    await flushPromises();
+
+    expect(wrapper.find('[data-testid="comment-author-duty"]').text()).toBe('Koordinatorius · MIF SA');
+  });
+
+  it('marks the reply button while its reply box is open and closes the box on a second press', async () => {
+    mocks.fetchThread.mockResolvedValue(thread([makeComment({ id: 'c1' })]));
+    const wrapper = mountPanel();
+    await flushPromises();
+    const reply = () => wrapper.find('[data-testid="comment-reply"]');
+
+    await reply().trigger('click');
+    await flushPromises();
+    expect(reply().attributes('aria-expanded')).toBe('true');
+    expect(wrapper.findAll('.composer-stub')).toHaveLength(1);
+
+    await reply().trigger('click');
+    await flushPromises();
+    expect(reply().attributes('aria-expanded')).toBe('false');
+    expect(wrapper.findAll('.composer-stub')).toHaveLength(0);
+  });
+
+  it('keeps moderation actions on a topic someone else posts while the page is open', async () => {
+    mocks.fetchThread.mockResolvedValue(thread([], 'comments', true));
+    const wrapper = mountPanel();
+    await flushPromises();
+
+    mocks.channel.onCreated!(topic({ id: 't-live', title: 'Live topic', user: { id: 'someone-else', name: 'Ona', profile_photo_path: null }, can: { update: true, delete: true, resolve: true } }));
+    await flushPromises();
+    await wrapper.find('[data-testid="topic-toggle"]').trigger('click');
+
+    expect(wrapper.find('[data-testid="topic-close"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="comment-delete"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="comment-edit"]').exists()).toBe(false);
+  });
+
+  it('closes an open reply box when its topic is closed', async () => {
+    mocks.fetchThread.mockResolvedValue(thread([topic({ id: 't1', can: { update: false, delete: false, resolve: true } })]));
+    mocks.closeTopic.mockResolvedValue(topic({ id: 't1', is_closed: true, is_resolved: true, can: { update: false, delete: false, resolve: true } }));
+    const wrapper = mountPanel();
+    await flushPromises();
+    await wrapper.find('[data-testid="topic-toggle"]').trigger('click');
+    await wrapper.find('[data-testid="topic-reply"]').trigger('click');
+    await flushPromises();
+    expect(wrapper.findAll('.composer-stub')).toHaveLength(1);
+
+    await wrapper.find('[data-testid="topic-close"]').trigger('click');
+    await flushPromises();
+
+    expect(wrapper.findAll('.composer-stub')).toHaveLength(0);
+  });
+
+  it('likes a comment from its action bar', async () => {
+    mocks.fetchThread.mockResolvedValue(thread([makeComment({ id: 'c1' })]));
+    mocks.toggleReaction.mockResolvedValue(makeComment({ id: 'c1', reactions: [{ emoji: '👍', count: 1, reacted_by_me: true, users: [{ id: 'u1', name: 'Author' }] }] }));
+
+    const wrapper = mountPanel();
+    await flushPromises();
+    await wrapper.find('[data-testid="comment-like"]').trigger('click');
+    await flushPromises();
+
+    expect(mocks.toggleReaction).toHaveBeenCalledWith('c1', '👍');
+    expect(wrapper.find('[data-testid="comment-like"]').attributes('aria-pressed')).toBe('true');
+  });
+
+  it('dates a duty that had already ended when the comment was written', async () => {
+    mocks.fetchThread.mockResolvedValue(thread([
+      makeComment({ id: 'c1', created_at: '2026-10-01T10:00:00Z', author_duty: { dutiable_id: 'd1', name: 'Koordinatorius', institution: 'MIF SA', use_original_duty_name: true, start_date: '2024-09-01', end_date: '2025-06-30', is_current: false } }),
+      makeComment({ id: 'c2', created_at: '2025-03-01T10:00:00Z', author_duty: { dutiable_id: 'd1', name: 'Koordinatorius', institution: 'MIF SA', use_original_duty_name: true, start_date: '2024-09-01', end_date: '2025-06-30', is_current: false } }),
+    ]));
+
+    const wrapper = mountPanel();
+    await flushPromises();
+
+    const lines = wrapper.findAll('[data-testid="comment-author-duty"]').map(line => line.text());
+    expect(lines[0]).toBe('Koordinatorius · MIF SA · discussions.author_duty.period');
+    expect(lines[1]).toBe('Koordinatorius · MIF SA');
+  });
+
   it('renders stored nested lists with the comment content styling hook', async () => {
-    mocks.fetchThread.mockResolvedValue([makeComment({ body: '<ul><li><p>First</p><ol start="3"><li><p>Nested</p></li></ol></li></ul>' })]);
-    const wrapper = mount(DiscussionPanel, {
-      props: { commentableType: 'meeting', commentableId: 'm1' },
-      global: { stubs },
-    });
+    mocks.fetchThread.mockResolvedValue(thread([makeComment({ body: '<ul><li><p>First</p><ol start="3"><li><p>Nested</p></li></ol></li></ul>' })]));
+    const wrapper = mountPanel();
     await flushPromises();
 
     expect(wrapper.find('.comment-content > ul > li > p').text()).toBe('First');
@@ -197,42 +359,49 @@ describe('DiscussionPanel', () => {
     expect(wrapper.find('.comment-content ol li p').text()).toBe('Nested');
   });
 
-  it('posts replies with the correct body and parent on the support request surface', async () => {
-    mocks.fetchThread.mockResolvedValue([makeComment({ id: 'root1' })]);
+  it('posts replies with the correct parent on the support request surface', async () => {
+    mocks.fetchThread.mockResolvedValue(thread([makeComment({ id: 'root1' })], 'conversation'));
     mocks.postComment.mockResolvedValue(makeComment({ id: 'reply1', body: '<p>new</p>', parent_id: 'root1', thread_root_id: 'root1' }));
-    const wrapper = mount(DiscussionPanel, {
-      props: { commentableType: 'supportRequest', commentableId: 'sr1' },
-      global: { stubs },
-    });
+    const wrapper = mountPanel('supportRequest');
     await flushPromises();
-    await wrapper.findAll('button').find(button => button.text() === 'Atsakyti')!.trigger('click');
+    await wrapper.find('[data-testid="comment-reply"]').trigger('click');
     await flushPromises();
-    await wrapper.findAll('.composer-stub')[1]!.trigger('click');
+    await wrapper.get('.composer-stub').trigger('click');
     await flushPromises();
 
-    expect(mocks.postComment).toHaveBeenCalledWith('<p>new</p>', 'root1');
+    expect(mocks.postComment).toHaveBeenCalledWith(mocks.nextDraft, 'root1');
     wrapper.unmount();
   });
 
-  it('loads composers asynchronously and mounts the reply editor only after opening a reply', async () => {
-    mocks.fetchThread.mockResolvedValue([makeComment()]);
-    const wrapper = mount(DiscussionPanel, {
-      props: { commentableType: 'meeting', commentableId: 'm1' },
-      global: { stubs },
-    });
+  it('stands in for the root editor until clicked, and mounts every editor asynchronously', async () => {
+    mocks.fetchThread.mockResolvedValue(thread([makeComment()]));
+    const wrapper = mountPanel();
     await flushPromises();
-    expect(wrapper.findAll('.composer-stub')).toHaveLength(1);
+    expect(wrapper.findAll('.composer-stub')).toHaveLength(0);
 
-    await wrapper.findAll('button').find(button => button.text() === 'Atsakyti')!.trigger('click');
+    await openComposer(wrapper);
+    await wrapper.find('[data-testid="comment-reply"]').trigger('click');
     await flushPromises();
 
+    expect(wrapper.find('[data-testid="composer-launcher"]').exists()).toBe(false);
     const composers = wrapper.findAllComponents({ name: 'CommentComposer' });
     expect(composers).toHaveLength(2);
     for (const composer of composers) {
       const parentType = composer.vm.$.parent?.type as { __asyncLoader?: unknown };
       expect(parentType.__asyncLoader).toBeTypeOf('function');
+      expect(composer.attributes()).toHaveProperty('autofocus');
     }
-    expect(composers[1]!.attributes()).toHaveProperty('autofocus');
     wrapper.unmount();
+  });
+
+  it('holds the space of the thread the page counted while it loads', async () => {
+    mocks.fetchThread.mockReturnValue(new Promise(() => {}));
+
+    const empty = mountPanel('knowledgeItem', { initialCount: 0 });
+    expect(empty.findAll('[aria-busy="true"] .flex')).toHaveLength(0);
+    expect(empty.find('p[aria-busy="true"]').exists()).toBe(true);
+
+    const busy = mountPanel('knowledgeItem', { initialCount: 5 });
+    expect(busy.findAll('[aria-busy="true"] > div')).toHaveLength(3);
   });
 });

@@ -40,7 +40,7 @@ class MergeDuties
     ];
 
     /** Moved by their own rules below: assignments collapse, quotas keep the looser limit, self-links drop. */
-    public const array CUSTOM = ['dutiables', 'duty_successions', 'duty_tenant', 'ex_officio_duties'];
+    public const array CUSTOM = ['dutiables', 'duty_successions', 'duty_tenant', 'ex_officio_duties', 'learning_audiences'];
 
     /**
      * @param  Collection<int, Duty>  $sources
@@ -121,6 +121,9 @@ class MergeDuties
         foreach (self::REPOINT_MORPH as $table => [$morph, $sharedColumns]) {
             $moved[$table] = MergeRepointer::morph($table, $morph, $sharedColumns, MorphMap::alias(Duty::class), $kept->id, $source->id);
         }
+
+        DB::table('learning_audiences')->where('type', 'duty')->where('source_id', $source->id)
+            ->update(['source_id' => $kept->id]);
 
         // Grouped entries (e.g. a term edited under its duty) point at their record through the root as well.
         MergeRepointer::morph('activity_log', 'root_subject', null, MorphMap::alias(Duty::class), $kept->id, $source->id);

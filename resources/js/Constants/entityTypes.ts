@@ -1,4 +1,4 @@
-import { Building2, Tags } from '@lucide/vue';
+import { BookOpen, Building2, Library, Tags } from '@lucide/vue';
 import type { Component } from 'vue';
 
 import {
@@ -81,6 +81,8 @@ export interface EntityTypeDefinition {
 }
 
 export const entityTypeRegistry: Record<ModelEnum, EntityTypeDefinition> = {
+  [ModelEnum.LEARNING_STEP]: entry(ModelEnum.LEARNING_STEP, 'learning.entity.singular', 'learning.entity.plural', BookOpen, BookOpen, 6),
+  [ModelEnum.KNOWLEDGE_ITEM]: entry(ModelEnum.KNOWLEDGE_ITEM, 'learning.pages.knowledge_item', 'learning.wiki.articles', Library, Library, 6),
   [ModelEnum.AGENDA_ITEM]: entry(ModelEnum.AGENDA_ITEM, 'Darbotvarkės klausimas', 'Darbotvarkės klausimai', AgendaItemIcon, AgendaItemIconFilled, 1),
   [ModelEnum.BANNER]: entry(ModelEnum.BANNER, 'Skydelis', 'Skydeliai', BannerIcon, BannerIconFilled, 5),
   [ModelEnum.CALENDAR]: entry(ModelEnum.CALENDAR, 'Renginys', 'Renginiai', CalendarIcon, CalendarIconFilled, 6),

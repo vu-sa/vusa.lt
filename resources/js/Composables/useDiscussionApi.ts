@@ -8,12 +8,16 @@
 
 import { usePage } from '@inertiajs/vue3';
 
-import type { CommentData, MentionableUser, PollDraft } from '@/Types/discussions';
+import type { CommentData, CommentDraft, DiscussionMeta, MentionableUser } from '@/Types/discussions';
 
 export function useDiscussionApi(commentableType: string, commentableId: string) {
   const page = usePage();
 
   async function request<T>(url: string, method: string, body?: unknown): Promise<T> {
+    return (await send<T>(url, method, body)).data;
+  }
+
+  async function send<T, M = unknown>(url: string, method: string, body?: unknown): Promise<{ data: T; meta: M | null }> {
     const csrf = (page.props.csrf_token as string | undefined) ?? '';
 
     const response = await fetch(url, {
@@ -34,34 +38,30 @@ export function useDiscussionApi(commentableType: string, commentableId: string)
       throw new Error(json?.message ?? 'Request failed');
     }
 
-    return json.data as T;
+    return { data: json.data as T, meta: (json.meta ?? null) as M | null };
   }
 
   const params = { commentableType, commentableId };
 
   return {
-    fetchThread(resolved?: boolean): Promise<CommentData[]> {
-      const url = route('api.v1.admin.comments.index', params);
-      const query = resolved === undefined ? '' : `?resolved=${resolved ? 1 : 0}`;
-      return request<CommentData[]>(url + query, 'GET');
+    async fetchThread(): Promise<{ comments: CommentData[]; meta: DiscussionMeta | null }> {
+      const { data, meta } = await send<CommentData[], DiscussionMeta>(route('api.v1.admin.comments.index', params), 'GET');
+      return { comments: data, meta };
     },
 
     fetchMentionables(): Promise<MentionableUser[]> {
       return request<MentionableUser[]>(route('api.v1.admin.comments.mentionables', params), 'GET');
     },
 
-    postComment(body: string, parentId?: string | null): Promise<CommentData> {
+    postComment(draft: CommentDraft, parentId?: string | null): Promise<CommentData> {
       return request<CommentData>(route('api.v1.admin.comments.store', params), 'POST', {
-        body,
+        body: draft.body,
         parent_id: parentId ?? null,
-      });
-    },
-
-    createPoll(body: string, poll: PollDraft): Promise<CommentData> {
-      return request<CommentData>(route('api.v1.admin.comments.store', params), 'POST', {
-        body,
-        kind: 'poll',
-        metadata: { poll },
+        kind: draft.mode,
+        title: draft.mode === 'topic' ? draft.title : undefined,
+        metadata: draft.mode === 'poll' ? { poll: draft.poll } : undefined,
+        image_ids: draft.imageIds.length ? draft.imageIds : undefined,
+        dutiable_id: draft.dutiableId ?? undefined,
       });
     },
 
@@ -79,11 +79,11 @@ export function useDiscussionApi(commentableType: string, commentableId: string)
       return request<CommentData>(route('api.v1.admin.comments.destroy', { comment: id }), 'DELETE');
     },
 
-    resolveComment(id: string): Promise<CommentData> {
+    closeTopic(id: string): Promise<CommentData> {
       return request<CommentData>(route('api.v1.admin.comments.resolve', { comment: id }), 'POST');
     },
 
-    unresolveComment(id: string): Promise<CommentData> {
+    reopenTopic(id: string): Promise<CommentData> {
       return request<CommentData>(route('api.v1.admin.comments.resolve', { comment: id }), 'DELETE');
     },
 

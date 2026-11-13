@@ -17,6 +17,8 @@ interface UseCollectionViewOptions {
   views?: CollectionViewMode[];
   /** Without a preview to show, the preview view is never offered (an empty pane helps no one). */
   hasPreview?: boolean;
+  /** Off for a collection embedded in another page: `?view=` belongs to that page. */
+  syncToUrl?: boolean;
 }
 
 function isViewMode(value: unknown): value is CollectionViewMode {
@@ -40,7 +42,8 @@ export function useCollectionView(options: UseCollectionViewOptions) {
   );
   const filtersOpen = useLocalStorage(`admin-collection-filters:${userId}:${options.collection}`, false, { writeDefaults: false });
 
-  const fromUrl = new URLSearchParams(window.location.search).get('view');
+  const syncToUrl = options.syncToUrl ?? true;
+  const fromUrl = syncToUrl ? new URLSearchParams(window.location.search).get('view') : null;
   const chosen: Ref<CollectionViewMode> = ref(isViewMode(fromUrl) ? fromUrl : remembered.value);
 
   const isAtLeastMd = useMediaQuery('(min-width: 768px)');
@@ -71,6 +74,10 @@ export function useCollectionView(options: UseCollectionViewOptions) {
   function setView(next: CollectionViewMode): void {
     chosen.value = next;
     remembered.value = next;
+
+    if (!syncToUrl) {
+      return;
+    }
 
     const url = new URL(window.location.href);
     if (next === options.defaultView) {

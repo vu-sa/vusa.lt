@@ -1,19 +1,104 @@
 import { usePage } from '@inertiajs/vue3';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 import { reactive } from 'vue';
 
-import { clearTrail, enterAgendaItem } from '@/Composables/useRecordTrail';
+import { clearTrail, enterAgendaItem, enterLearningStep } from '@/Composables/useRecordTrail';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
 
 import SectionTabs from '../SectionTabs.vue';
 
-import { atstovavimas, pradzia, rezervacijos, section, workspace } from './fixtures';
+import { atstovavimas, kelias, learning, pradzia, rezervacijos, section, workspace } from './fixtures';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 describe('SectionTabs', () => {
+  describe('section children', () => {
+    let currentRoute: string;
+
+    beforeEach(() => {
+      currentRoute = 'learningPath.reps';
+      clearTrail();
+      vi.mocked(usePage).mockReturnValue(reactive({ ...createMockPage(), component: 'Admin/Learning/Documents' }) as ReturnType<typeof usePage>);
+      const originalRoute = route;
+      vi.spyOn(globalThis, 'route').mockImplementation(((name?: string, params?: string | number) => name
+        ? originalRoute(name, params)
+        : { current: (pattern: string) => pattern === currentRoute }) as typeof route);
+    });
+
+    afterEach(() => {
+      clearTrail();
+      vi.restoreAllMocks();
+    });
+
+    const mountLearning = () => mount(SectionTabs, {
+      props: { workspace: learning, activeSection: kelias },
+      global: { stubs: commonStubs },
+    });
+
+    it('names and links the tab after the active child', () => {
+      const tab = mountLearning().get('[data-slot="section-tab-crumb"]');
+
+      expect(tab.get('a .truncate').text()).toBe('shell.section_children.kelias.reps');
+      expect(tab.get('a').attributes('href')).toBe('/mocked-route/learningPath.reps');
+    });
+
+    it('updates the label when navigating between children of the same section', async () => {
+      const page = reactive({ ...createMockPage(), component: 'Admin/Learning/Documents' });
+      vi.mocked(usePage).mockReturnValue(page as ReturnType<typeof usePage>);
+      const wrapper = mountLearning();
+
+      currentRoute = 'learningSteps.index';
+      page.url = '/mano/learning/library';
+      await flushPromises();
+
+      expect(wrapper.get('[data-slot="section-tab-crumb"] a .truncate').text()).toBe('shell.section_children.kelias.library');
+    });
+
+    it('lists every child behind the chevron and marks the current one', () => {
+      const links = mountLearning().get('[data-testid="dropdown-menu-content"]').findAll('a');
+
+      expect(links.map(link => link.attributes('href'))).toEqual([
+        '/mocked-route/learningPath.show', '/mocked-route/learningPath.reps', '/mocked-route/learningSteps.index',
+      ]);
+      expect(links.map(link => link.attributes('aria-current'))).toEqual([undefined, 'page', undefined]);
+    });
+
+    it('lets the trail crumb win over the active child', () => {
+      vi.mocked(usePage).mockReturnValue(reactive({ ...createMockPage(), component: 'Admin/Learning/ShowLearningStep' }) as ReturnType<typeof usePage>);
+      enterLearningStep({ id: 42, title: 'Pasiruošk posėdžiui' });
+      const tab = mountLearning().get('[data-slot="section-tab-crumb"]');
+
+      expect(tab.get('a .truncate').text()).toBe('Pasiruošk posėdžiui');
+      expect(tab.get('a').attributes('href')).toBe('/mocked-route/learningSteps.show');
+    });
+
+    it('falls back to the section when no child matches', () => {
+      currentRoute = 'learningSteps.create';
+      const tab = mountLearning().get('[data-slot="section-tab-crumb"]');
+
+      expect(tab.get('a .truncate').text()).toBe('shell.sections.kelias');
+      expect(tab.get('a').attributes('href')).toBe('/mocked-route/learningPath.show');
+    });
+
+    it('lists the children under their section when it overflows', async () => {
+      vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(150);
+      vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
+        const index = [...(this.parentElement?.children ?? [])].indexOf(this);
+
+        return { left: 0, right: this.tagName === 'LI' ? (index + 1) * 100 : 150 } as DOMRect;
+      });
+      const wrapper = mountLearning();
+      await flushPromises();
+
+      expect(wrapper.get('[data-slot="section-tabs-more"]').text()).toContain('shell.section_children.kelias.reps');
+      const children = wrapper.findAll('[data-slot="section-tabs-more-child"]');
+      expect(children.map(link => link.text())).toEqual(kelias.children!.map((child: { label: string }) => child.label));
+      expect(children[1]!.attributes('aria-current')).toBe('page');
+    });
+  });
+
   it('uses a translucent surface with an opaque high-contrast override', () => {
     const wrapper = mount(SectionTabs, { props: { workspace: atstovavimas } });
     const nav = wrapper.find('nav');
@@ -29,7 +114,7 @@ describe('SectionTabs', () => {
     expect(wrapper.findAll('li a').map(link => link.text())).toEqual([
       'shell.sections.apzvalga',
       'shell.sections.uzduotys',
-      'shell.sections.pranesimai',
+      'shell.sections.atsakomybes',
     ]);
     expect(wrapper.findAll('li a svg')).toHaveLength(3);
     expect(wrapper.findAll('li a').every(link => link.classes().includes('font-bold'))).toBe(true);

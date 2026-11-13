@@ -4,87 +4,71 @@
       {{ emptyMessage }}
     </p>
 
-    <ul v-else-if="cadences.length" class="divide-y divide-border">
-      <li v-for="cadence in cadences" :key="cadence.id" class="py-3 first:pt-0">
-        <CadenceRowForm
-          v-if="editingId === cadence.id"
-          :model-value="{
-            start_date: cadence.start_date,
-            end_date: cadence.end_date,
-            start_meeting_id: cadence.start_meeting?.id ?? null,
-            end_meeting_id: cadence.end_meeting?.id ?? null,
-          }"
-          :institution-id="cadence.institution_id"
-          :anchors="{ start: cadence.start_meeting ?? null, end: cadence.end_meeting ?? null }"
-          :processing
-          @save="value => emit('update', cadence, value)"
-          @cancel="emit('cancel-edit')"
-        />
-
-        <div v-else class="flex flex-wrap items-center justify-between gap-3">
-          <div class="flex min-w-0 items-center gap-3">
-            <DateBadge :date="cadence.start_date" />
-            <div class="min-w-0">
-              <!-- Derived from the dates rather than typed: the two can never disagree. -->
-              <span class="truncate font-medium">{{ cadence.label }}</span>
-              <p class="truncate text-xs text-muted-foreground">
-                {{ cadence.start_date }} — {{ cadence.end_date }}
-              </p>
-              <!-- Where the boundary came from, so a date nobody typed is not a mystery. -->
-              <p v-if="cadence.start_meeting || cadence.end_meeting"
-                class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground">
-                <Link
-                  v-for="anchor in [cadence.start_meeting, cadence.end_meeting].filter(Boolean)"
-                  :key="anchor!.id"
-                  :href="route('meetings.show', anchor!.id)"
-                  class="inline-flex min-w-0 items-center gap-1 hover:underline"
-                >
-                  <CalendarClock class="size-3 shrink-0" />
-                  <span class="truncate">{{ anchor!.title ?? $t('cadences.fields.anchor_untitled') }}</span>
-                  <!-- Named only when the sitting is another body's; its own would be noise. -->
-                  <span v-if="foreignInstitution(cadence, anchor!)" class="shrink-0 opacity-70">
-                    ({{ foreignInstitution(cadence, anchor!) }})
-                  </span>
-                </Link>
-              </p>
-            </div>
-          </div>
-
-          <div v-if="!readonly" class="flex shrink-0 items-center gap-1">
-            <Button type="button" size="icon-xs" variant="ghost" :aria-label="$t('cadences.actions.edit')"
-              @click="emit('edit', cadence.id)">
-              <Pencil class="size-3.5" />
-            </Button>
-
-            <AlertDialog>
-              <AlertDialogTrigger as-child>
-                <Button type="button" size="icon-xs" variant="ghost" :aria-label="$t('cadences.actions.delete')"
-                  class="text-destructive hover:text-destructive">
-                  <Trash2 class="size-3.5" />
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>{{ $t('cadences.delete.title') }}</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {{ $t('cadences.delete.description', { label: cadence.label }) }}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>{{ $t('cadences.delete.cancel') }}</AlertDialogCancel>
-                  <AlertDialogAction
-                    class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    @click="emit('delete', cadence)"
-                  >
-                    {{ $t('cadences.delete.confirm') }}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
+    <ul v-else-if="cadences.length" :class="ROW_LIST_BOX_CLASS">
+      <li v-for="cadence in cadences" :key="cadence.id" :class="ROW_ITEM_CLASS">
+        <div v-if="editingId === cadence.id" :class="['min-w-0 flex-1', ROW_PADDING_CLASS]">
+          <CadenceRowForm
+            :model-value="{
+              start_date: cadence.start_date,
+              end_date: cadence.end_date,
+              start_meeting_id: cadence.start_meeting?.id ?? null,
+              end_meeting_id: cadence.end_meeting?.id ?? null,
+            }"
+            :institution-id="cadence.institution_id"
+            :anchors="{ start: cadence.start_meeting ?? null, end: cadence.end_meeting ?? null }"
+            :processing
+            @save="value => emit('update', cadence, value)"
+            @cancel="emit('cancel-edit')"
+          />
         </div>
+
+        <CollectionRow
+          v-else
+          :actions="readonly ? [] : rowActions()"
+          :class="['min-w-0 flex-1', ROW_PADDING_CLASS]"
+          data-slot="cadence-row"
+          @select="key => selectAction(key, cadence)"
+        >
+          <template #lead>
+            <DateBadge :date="cadence.start_date" />
+          </template>
+          <!-- Derived from the dates rather than typed: the two can never disagree. -->
+          <p class="truncate font-bold text-foreground">
+            {{ cadence.label }}
+          </p>
+          <p class="mt-0.5 truncate text-xs text-muted-foreground tabular-nums">
+            {{ cadence.start_date }} — {{ cadence.end_date }}
+          </p>
+          <!-- Where the boundary came from, so a date nobody typed is not a mystery. -->
+          <p v-if="cadence.start_meeting || cadence.end_meeting"
+            class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+            <Link
+              v-for="anchor in [cadence.start_meeting, cadence.end_meeting].filter(Boolean)"
+              :key="anchor!.id"
+              :href="route('meetings.show', anchor!.id)"
+              class="inline-flex min-w-0 items-center gap-1 hover:underline"
+            >
+              <CalendarClock class="size-3 shrink-0" />
+              <span class="truncate">{{ anchor!.title ?? $t('cadences.fields.anchor_untitled') }}</span>
+              <!-- Named only when the sitting is another body's; its own would be noise. -->
+              <span v-if="foreignInstitution(cadence, anchor!)" class="shrink-0 opacity-70">
+                ({{ foreignInstitution(cadence, anchor!) }})
+              </span>
+            </Link>
+          </p>
+        </CollectionRow>
       </li>
     </ul>
+
+    <ConfirmDialog
+      :open="toDelete !== null"
+      :title="$t('cadences.delete.title')"
+      :description="$t('cadences.delete.description', { label: toDelete?.label ?? '' })"
+      :confirm-label="$t('cadences.delete.confirm')"
+      destructive
+      @update:open="open => { if (!open) toDelete = null; }"
+      @confirm="confirmDelete"
+    />
 
     <div v-if="adding" class="border border-dashed border-border p-3">
       <CadenceRowForm
@@ -102,20 +86,12 @@
 import { CalendarClock, Pencil, Trash2 } from '@lucide/vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
+import { ref } from 'vue';
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/Components/ui/alert-dialog';
-import { Button } from '@/Components/ui/button';
-import { DateBadge } from '@/Components/Patterns';
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
+import { ROW_ITEM_CLASS, ROW_LIST_BOX_CLASS, ROW_PADDING_CLASS } from '@/Components/Collection/rowList';
+import { ConfirmDialog, DateBadge } from '@/Components/Patterns';
+import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 
 import CadenceRowForm, { type CadenceAnchor, type CadenceDraft } from './CadenceRowForm.vue';
 
@@ -167,4 +143,27 @@ const emit = defineEmits<{
   'update': [cadence: CadenceRow, value: CadenceDraft];
   'delete': [cadence: CadenceRow];
 }>();
+
+const toDelete = ref<CadenceRow | null>(null);
+
+const rowActions = (): AdminRecordAction[] => [
+  { key: 'edit', label: $t('cadences.actions.edit'), icon: Pencil, role: 'edit' },
+  { key: 'delete', label: $t('cadences.actions.delete'), icon: Trash2, destructive: true },
+];
+
+function selectAction(key: string, cadence: CadenceRow): void {
+  if (key === 'edit') {
+    emit('edit', cadence.id);
+  }
+  else if (key === 'delete') {
+    toDelete.value = cadence;
+  }
+}
+
+function confirmDelete(): void {
+  if (toDelete.value) {
+    emit('delete', toDelete.value);
+  }
+  toDelete.value = null;
+}
 </script>

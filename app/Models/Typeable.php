@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property string $typeable_type
  * @property string $typeable_id
  * @property-read Type|null $type
- * @property-read Model|\Eloquent $typeable
+ * @property-read Model|\Eloquent|null $typeable
  *
  * @method static \Database\Factories\TypeableFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Typeable newModelQuery()

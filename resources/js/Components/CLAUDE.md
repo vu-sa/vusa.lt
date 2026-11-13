@@ -117,6 +117,7 @@ Rules for anything added there:
 | Main + sticky sidebar two-column body | `ShowPageGrid` | `@/Components/Patterns` |
 | A linked row for one entity (icon, label, chevron) | `EntityLinkCard` | `@/Components/Patterns` |
 | A ruled grid of destinations (icon, label, description) — Visi skyriai, overview sections, quick access | `NavigationTiles` (`WorkspaceSectionTiles` for a workspace's catalog sections) | `@/Components/Patterns`, `@/Components/Overview` |
+| A short list whose order the user changes (drag handle + arrows) | `SortableRowList` | `@/Components/Collection/SortableRowList.vue` |
 | A month/day date tile | `DateBadge` | `@/Components/Patterns` |
 | "Nothing here yet" / Filter empty | `EmptyState` | `@/Components/Patterns` |
 | Loading placeholder shaped like content | `CollectionSkeleton`, `RecordSkeleton`, `FormSkeleton`, `SectionCardSkeleton` | `@/Components/Patterns` |

@@ -1,9 +1,15 @@
 import { computed, ref, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 
 type Catalog = NonNullable<PageProps['adminNavigation']>;
 export type AdminWorkspace = Catalog['workspaces'][number];
 export type AdminSection = AdminWorkspace['sections'][number];
+export interface AdminSectionLink {
+  key: string;
+  label: string;
+  routeName: string;
+}
 
 export interface ActiveNavigation {
   workspace: AdminWorkspace | undefined;
@@ -13,6 +19,14 @@ export interface ActiveNavigation {
 export const SHELL_PREFETCH_CACHE_FOR: [string, string] = ['15s', '1m'];
 
 export const sectionHref = (section: AdminSection): string => route(section.routeName, section.routeParams);
+
+export const sectionChildHref = (child: AdminSectionLink): string => route(child.routeName, {});
+
+export const activeSectionChild = (section: AdminSection): AdminSectionLink | undefined =>
+  section.children?.find((child: AdminSectionLink) => route().current(child.routeName));
+
+export const sectionLabel = (section: AdminSection, crumb?: { label: string }): string =>
+  crumb?.label ?? $t(activeSectionChild(section)?.label ?? section.label);
 
 /** Where a workspace opens: its first section, which is always its overview. */
 export const workspaceHref = (workspace: AdminWorkspace): string | undefined =>

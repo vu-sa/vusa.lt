@@ -19,7 +19,8 @@
             {{ item.description }}
           </span>
         </span>
-        <ArrowRight
+        <component
+          :is="arrowIcon ?? ArrowRight"
           :class="[
             'mt-0.5 size-4 shrink-0 -translate-x-1 text-muted-foreground opacity-0 transition-all',
             'group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100',
@@ -50,6 +51,7 @@ export interface NavigationTileItem {
 withDefaults(defineProps<{
   items: NavigationTileItem[];
   columns?: 2 | 3 | 4;
+  arrowIcon?: Component;
 }>(), {
   columns: 4,
 });

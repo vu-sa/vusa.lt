@@ -69,6 +69,15 @@ describe('FileableUploadSheet', () => {
     expect(postedFiles()[0]).toMatchObject({ type: 'Ataskaitos' });
   });
 
+  it('lets the type be changed with a native select', async () => {
+    const wrapper = mountSheet({ initialFiles: [file('scan.pdf')] });
+
+    await wrapper.get('select[aria-label="Tipas"]').setValue('Kita');
+    await wrapper.find('form').trigger('submit');
+
+    expect(postedFiles()[0]).toMatchObject({ type: 'Kita' });
+  });
+
   it('keeps only the rows the server could not upload', async () => {
     const wrapper = mountSheet({ initialFiles: [file('a.pdf'), file('b.pdf')] });
 

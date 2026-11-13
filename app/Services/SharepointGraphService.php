@@ -21,6 +21,7 @@ use Microsoft\Graph\Generated\Drives\Item\Items\Item\CreateLink\CreateLinkPostRe
 use Microsoft\Graph\Generated\Drives\Item\Items\Item\Delta\DeltaRequestBuilderGetRequestConfiguration;
 use Microsoft\Graph\Generated\Drives\Item\Items\Item\DriveItemItemRequestBuilderGetRequestConfiguration;
 use Microsoft\Graph\Generated\Drives\Item\Items\Item\ListItem\ListItemRequestBuilderGetRequestConfiguration;
+use Microsoft\Graph\Generated\Drives\Item\Items\Item\Preview\PreviewPostRequestBody;
 use Microsoft\Graph\Generated\Models;
 use Microsoft\Graph\Generated\Models\DriveItem;
 use Microsoft\Graph\Generated\Models\FieldValueSet;
@@ -235,6 +236,25 @@ class SharepointGraphService
         $driveItem = $this->graph->sites()->bySiteId($siteId)->lists()->byListId($listId)->items()->byListItemId($listItemId)->driveItem()->get($requestConfiguration)->wait();
 
         return $driveItem;
+    }
+
+    /**
+     * A short-lived viewer URL that opens the file without a sharing link or a Microsoft 365 sign-in.
+     */
+    public function getDriveItemPreviewUrl(string $driveId, string $driveItemId): ?string
+    {
+        try {
+            $preview = $this->graph->drives()->byDriveId($driveId)->items()->byDriveItemId($driveItemId)->preview()->post(new PreviewPostRequestBody)->wait();
+
+            return $preview?->getGetUrl();
+        } catch (\Exception $e) {
+            Log::warning('Failed to get drive item preview URL', [
+                'driveItemId' => $driveItemId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
     }
 
     public function updateDriveItemByPath(string $path, array $fields): ?DriveItem

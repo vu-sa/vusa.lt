@@ -16,7 +16,7 @@ use Illuminate\Support\Carbon;
  * @property string $url
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read Model $urlable
+ * @property-read Model|null $urlable
  *
  * @method static \Database\Factories\PublicUrlFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicUrl newModelQuery()

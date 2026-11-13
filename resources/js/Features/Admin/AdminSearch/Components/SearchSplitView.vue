@@ -44,7 +44,7 @@
       >
         <!-- Mobile back button -->
         <div class="border-b border-border p-2 lg:hidden">
-          <Button variant="ghost" size="sm" voice="sentence" @click="mobileShowsDetail = false">
+          <Button type="button" variant="ghost" size="sm" voice="sentence" @click="mobileShowsDetail = false">
             <ChevronLeft aria-hidden="true" />
             {{ $t('Atgal į sąrašą') }}
           </Button>

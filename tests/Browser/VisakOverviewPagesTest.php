@@ -17,7 +17,7 @@ beforeEach(function (): void {
 /** No `$t()` call fell through to its raw key; lower-cased since CSS uppercases headings. */
 function expectNoRawVisakKeys($page): void
 {
-    $script = '/\b(visak|tasks|atstovavimas)\.[a-z_]+\.[a-z_]/.test(document.body.innerText.toLowerCase())';
+    $script = '/\b(visak|tasks|atstovavimas|representatives)\.[a-z_]+\.[a-z_]/.test(document.body.innerText.toLowerCase())';
     $page->assertScript($script, false);
 }
 
@@ -99,10 +99,28 @@ it('shows a padalinys coordinator the statistics of their padalinys', function (
     docsScreenshot($page, 'visak-padaliniai');
     docsScreenshot($page, 'v3-ask-representatives', highlights: ['[data-slot=institutions-needing-attention-ask]']);
 
-    $page->script("document.querySelector('[data-slot=atstovavimas-rep-metrics]').scrollIntoView()");
+    $page->assertNoJavaScriptErrors();
+});
+
+it('shows a padalinys coordinator who needs them on the Atstovai page and opens a representative', function (): void {
+    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::COORDINATOR_EMAIL), '/mano/dashboard/atstovavimas/atstovai');
+    waitForInertiaRender($page, '[data-slot=representative-all] [data-rep]');
+
+    expectNoRawVisakKeys($page);
+    expectVisakPageFits($page, 'representative-all');
+    $page->resize(1440, 1200);
+    docsScreenshot($page, 'visak-atstovai');
+
+    $page->script("document.querySelector('[data-slot=representative-metrics]').scrollIntoView()");
     waitForInertiaRender($page, '[data-testid=tenant-rep-metrics-table]');
-    expectVisakPageFits($page, 'atstovavimas-rep-metrics');
     docsScreenshot($page, 'visak-atstovu-rodikliai');
+
+    $page->click('[data-slot=representative-all] [data-rep] a');
+    waitForInertiaRender($page, '[data-slot=record-facts]');
+    expectNoRawVisakKeys($page);
+    expectVisakPageFits($page, 'record-facts');
+    $page->resize(1440, 1200);
+    docsScreenshot($page, 'visak-atstovas');
 
     $page->assertNoJavaScriptErrors();
 });

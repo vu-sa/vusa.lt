@@ -23,6 +23,7 @@ final readonly class Section
      * @param  string|null  $descriptionKey  i18n key for the one-line description on section tiles
      *                                       (Visi skyriai, workspace overviews).
      * @param  bool  $startsGroup  Draws a separator before this section in every section list.
+     * @param  list<SectionLink>  $children
      */
     public function __construct(
         public string $key,
@@ -36,10 +37,11 @@ final readonly class Section
         public ?string $descriptionKey = null,
         public bool $startsGroup = false,
         public bool $taxonomy = false,
+        public array $children = [],
     ) {}
 
     /**
-     * @return array{key: string, label: string, routeName: string, routeParams: array<string, mixed>, entityType: string|null, description: string|null, collectionActions: list<array{key: string, label: string, target: string}>, matches: list<string>, startsGroup: bool}
+     * @return array{key: string, label: string, routeName: string, routeParams: array<string, mixed>, entityType: string|null, description: string|null, collectionActions: list<array{key: string, label: string, target: string}>, matches: list<string>, startsGroup: bool, children: list<array{key: string, label: string, routeName: string}>}
      */
     public function toArray(): array
     {
@@ -53,6 +55,7 @@ final readonly class Section
             'collectionActions' => array_map(fn (CollectionAction $action) => $action->toArray(), $this->collectionActions),
             'matches' => $this->routePatterns(),
             'startsGroup' => $this->startsGroup,
+            'children' => array_map(fn (SectionLink $child) => $child->toArray(), $this->children),
         ];
     }
 

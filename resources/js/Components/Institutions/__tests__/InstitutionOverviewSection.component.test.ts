@@ -7,7 +7,7 @@ import InstitutionOverviewSection from '../InstitutionOverviewSection.vue';
 // compiled) by the section, so this also acts as a compile smoke-test.
 const stubs = {
   UsersAvatarGroup: true,
-  InstitutionMeetingsList: true,
+  InstitutionDutiesSection: { props: ['duties'], template: '<div data-testid="duties">{{ duties.length }}</div>' },
 };
 
 type InstitutionProp = InstanceType<typeof InstitutionOverviewSection>['$props']['institution'];
@@ -54,25 +54,6 @@ const makeOverview = (overrides: Record<string, unknown> = {}): OverviewProp => 
 }) as unknown as OverviewProp;
 
 describe('InstitutionOverviewSection', () => {
-  it('renders the About section when a description is present', () => {
-    const wrapper = mount(InstitutionOverviewSection, {
-      props: { institution: makeInstitution(), overview: makeOverview() },
-      global: { stubs },
-    });
-
-    expect(wrapper.text()).toContain('Apie');
-    expect(wrapper.text()).toContain('A short description.');
-  });
-
-  it('hides the About section when there is no description', () => {
-    const wrapper = mount(InstitutionOverviewSection, {
-      props: { institution: makeInstitution({ description: '' }), overview: makeOverview() },
-      global: { stubs },
-    });
-
-    expect(wrapper.text()).not.toContain('Apie');
-  });
-
   it('keeps members, tasks and related institutions out of the overview — each has its own section', () => {
     const wrapper = mount(InstitutionOverviewSection, {
       props: { institution: makeInstitution(), overview: makeOverview() },
@@ -123,7 +104,9 @@ describe('InstitutionOverviewSection', () => {
       global: { stubs },
     });
 
-    expect(wrapper.text()).toContain('Nėra susitikimų');
+    // An empty section is one line (visual budget), with no second way to plan a meeting.
+    expect(wrapper.text()).toContain('Šiai institucijai dar nėra suplanuota susitikimų.');
+    expect(wrapper.find('[data-slot="institution-recent-meetings"]').exists()).toBe(false);
     expect(wrapper.text()).not.toContain('Suplanuoti susitikimą');
   });
 
@@ -134,6 +117,7 @@ describe('InstitutionOverviewSection', () => {
         overview: makeOverview({
           recentMeetings: [{ id: 'm1', start_time: '2025-11-01T10:00:00.000Z', title: 'Posėdis' }],
         }),
+        meetingsTab: true,
       },
       global: { stubs },
     });
@@ -141,6 +125,42 @@ describe('InstitutionOverviewSection', () => {
     await wrapper.findAll('button').find(b => b.text().includes('Visi posėdžiai'))!.trigger('click');
 
     expect(wrapper.emitted('navigate-tab')?.[0]).toEqual(['meetings']);
+  });
+
+  it('shows the three newest meetings as cards', () => {
+    const meeting = (id: string, start: string) => ({ id, start_time: start, title: `${id} posėdis` });
+    const wrapper = mount(InstitutionOverviewSection, {
+      props: {
+        institution: makeInstitution(),
+        overview: makeOverview({
+          recentMeetings: [
+            meeting('old', '2025-01-01T10:00:00.000Z'),
+            meeting('newest', '2025-11-01T10:00:00.000Z'),
+            meeting('middle', '2025-06-01T10:00:00.000Z'),
+            meeting('older', '2025-03-01T10:00:00.000Z'),
+          ],
+        }),
+      },
+      global: { stubs },
+    });
+
+    const cards = wrapper.findAll('[data-slot="meeting-card"]');
+    expect(cards.map(card => card.text().match(/([a-z]+) posėdis/)?.[1])).toEqual(['newest', 'middle', 'older']);
+  });
+
+  it('shows the duties only when the page hands them to the overview', () => {
+    const duties = [{ id: 'd1', name: 'Pirmininkas', current_users: [] }];
+    const without = mount(InstitutionOverviewSection, {
+      props: { institution: makeInstitution(), overview: makeOverview() },
+      global: { stubs },
+    });
+    const withDuties = mount(InstitutionOverviewSection, {
+      props: { institution: makeInstitution(), overview: makeOverview(), duties },
+      global: { stubs },
+    });
+
+    expect(without.find('[data-testid="duties"]').exists()).toBe(false);
+    expect(withDuties.get('[data-testid="duties"]').text()).toBe('1');
   });
 
   it('shows current-term secretaries without repeating coordinators from the key facts', () => {
@@ -158,6 +178,8 @@ describe('InstitutionOverviewSection', () => {
 
     expect(wrapper.text()).toContain('secretaries.label');
     expect(wrapper.text()).not.toContain('Koordinatoriai');
+    // Named and reachable, as the coordinators are on the representation overview.
+    expect(wrapper.get('[data-slot="people-contact-list"]').text()).toContain('Rūta');
   });
 });
 
@@ -180,4 +202,19 @@ describe('InstitutionOverviewSection — non-public meetings', () => {
 
     expect(wrapper.find('[data-testid="institution-meetings-hidden"]').exists()).toBe(false);
   });
+});
+
+it.each([true, false])('keeps the meeting summary to three cards with upcoming=%s', (hasUpcoming) => {
+  const meeting = (id: string, start_time: string) => ({ id, title: id, start_time });
+  const wrapper = mount(InstitutionOverviewSection, {
+    props: {
+      institution: makeInstitution(), meetingsTab: true,
+      overview: makeOverview({ recentMeetings: [meeting('past1', '2025-11-03'), meeting('past2', '2025-11-02'), meeting('past3', '2025-11-01')] }),
+      upcomingMeeting: hasUpcoming ? meeting('next', '2999-01-01') : null,
+    }, global: { stubs },
+  });
+  const cards = wrapper.findAll('[data-slot="meeting-card"]');
+  expect(cards).toHaveLength(3);
+  expect(cards[0]!.text()).toContain(hasUpcoming ? 'next' : 'past1');
+  expect(wrapper.text().includes('past3')).toBe(!hasUpcoming);
 });

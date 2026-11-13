@@ -102,7 +102,7 @@
             <FormSegmentedControl
               v-model="form.scope_type"
               :options="scopeOptions"
-              :aria-label="$t('responsibilities.sheet.scope')"
+              :label="$t('responsibilities.sheet.scope')"
               test-id-prefix="responsibility-scope"
             />
           </FormFieldWrapper>

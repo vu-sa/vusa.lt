@@ -24,8 +24,6 @@ use Illuminate\Support\Collection as SupportCollection;
 
 class AtstovavimasDashboardService
 {
-    private const int REPRESENTATIVE_PREVIEW_LIMIT = 3;
-
     public const string PROJECTION_FULL = 'full';
 
     public const string PROJECTION_PUBLIC = 'public';
@@ -337,66 +335,6 @@ class AtstovavimasDashboardService
     }
 
     /**
-     * @param  list<int>  $tenantIds
-     * @return array{
-     *   users: array<int, array<string, mixed>>,
-     *   pagination: array{current_page: int, last_page: int, per_page: int, total: int}
-     * }
-     */
-    public function representativeUsers(
-        array $tenantIds,
-        string $category,
-        ?string $search,
-        int $perPage,
-    ): array {
-        $query = $this->representativeQuery($tenantIds);
-
-        if (filled($search)) {
-            $query->where(function (Builder $query) use ($search): void {
-                $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhereHas('current_duties', function (Builder $dutyQuery) use ($search): void {
-                        $dutyQuery->whereTranslationLike('name', $search)
-                            ->orWhereHas('institution', fn (Builder $institutionQuery) => $institutionQuery
-                                ->whereTranslationLike('name', $search));
-                    });
-            });
-        }
-
-        $thirtyDaysAgo = now()->subDays(30);
-
-        if ($category === 'active') {
-            $query->where('last_action', '>=', $thirtyDaysAgo);
-        } elseif ($category === 'inactive') {
-            $query->where(fn (Builder $query) => $query
-                ->whereNull('last_action')
-                ->orWhere('last_action', '<', $thirtyDaysAgo));
-        }
-
-        $query->orderByRaw('CASE WHEN last_action IS NULL THEN 0 ELSE 1 END')
-            ->orderBy('last_action')
-            ->orderBy('name');
-
-        $paginator = $query
-            ->select('id', 'name', 'email', 'profile_photo_path', 'last_action')
-            ->with($this->representativeDutyRelations($tenantIds))
-            ->paginate($perPage);
-
-        return [
-            'users' => $paginator->getCollection()
-                ->map(fn (User $representative) => $this->mapRepresentative($representative))
-                ->values()
-                ->all(),
-            'pagination' => [
-                'current_page' => $paginator->currentPage(),
-                'last_page' => $paginator->lastPage(),
-                'per_page' => $paginator->perPage(),
-                'total' => $paginator->total(),
-            ],
-        ];
-    }
-
-    /**
      * @param  Collection<int, Institution>  $institutions
      */
     private function decorateInstitutions(Collection $institutions): void
@@ -584,10 +522,7 @@ class AtstovavimasDashboardService
 
     /**
      * @param  list<int>  $tenantIds
-     * @return array{
-     *   stats: array<string, int>,
-     *   preview_users: array<int, array<string, mixed>>
-     * }
+     * @return array{stats: array<string, int>}
      */
     private function representativeActivitySummary(array $tenantIds): array
     {
@@ -604,17 +539,6 @@ class AtstovavimasDashboardService
             ->selectRaw('SUM(CASE WHEN last_action IS NULL THEN 1 ELSE 0 END) as never_logged_in')
             ->first();
 
-        $relations = $this->representativeDutyRelations($tenantIds);
-
-        $activeUsers = (clone $query)
-            ->select('id', 'name', 'email', 'profile_photo_path', 'last_action')
-            ->where('last_action', '>=', $thirtyDaysAgo)
-            ->orderByDesc('last_action')
-            ->orderBy('name')
-            ->limit(self::REPRESENTATIVE_PREVIEW_LIMIT)
-            ->with($relations)
-            ->get();
-
         return [
             'stats' => [
                 'total' => (int) data_get($aggregate, 'total', 0),
@@ -623,10 +547,6 @@ class AtstovavimasDashboardService
                 'activeLast30Days' => (int) data_get($aggregate, 'active_last_30_days', 0),
                 'neverLoggedIn' => (int) data_get($aggregate, 'never_logged_in', 0),
             ],
-            'preview_users' => $activeUsers
-                ->map(fn (User $representative) => $this->mapRepresentative($representative))
-                ->values()
-                ->all(),
         ];
     }
 
@@ -641,46 +561,6 @@ class AtstovavimasDashboardService
                 ->where('duties.is_active', true)
                 ->holdingPurpose(ResponsibilityPurpose::StudentRepresentation)
                 ->whereIn('institution_id', RepStatisticsScope::institutions($tenantIds)->select('institutions.id')));
-    }
-
-    /**
-     * @param  list<int>  $tenantIds
-     * @return array<string, \Closure>
-     */
-    private function representativeDutyRelations(array $tenantIds): array
-    {
-        return [
-            'current_duties' => fn ($query) => $query->select('duties.id', 'duties.name', 'duties.institution_id')
-                ->where('duties.is_active', true)
-                ->holdingPurpose(ResponsibilityPurpose::StudentRepresentation)
-                ->whereIn('institution_id', RepStatisticsScope::institutions($tenantIds)->select('institutions.id'))
-                ->with('institution:id,name,tenant_id'),
-        ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function mapRepresentative(User $representative): array
-    {
-        $representative->makeVisible('last_action');
-
-        return [
-            'id' => (string) $representative->id,
-            'name' => $representative->name,
-            'email' => $representative->email,
-            'profile_photo_path' => $representative->profile_photo_path,
-            'last_action' => $representative->last_action?->toISOString(),
-            'category' => $this->activityCategory($representative->last_action),
-            'duties' => $representative->current_duties
-                ->map(fn ($duty) => [
-                    'id' => (string) $duty->id,
-                    'name' => data_get($duty, 'name'),
-                    'institution_name' => data_get($duty, 'institution.name'),
-                ])
-                ->values()
-                ->all(),
-        ];
     }
 
     private function activityCategory(?CarbonInterface $lastAction): string

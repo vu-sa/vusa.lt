@@ -278,7 +278,7 @@
           <FormSegmentedControl
             v-model="form.contacts_grouping"
             :options="contactsGroupingOptions"
-            :aria-label="$t('Kontaktų rikiavimas')"
+            :label="$t('Kontaktų rikiavimas')"
             test-id-prefix="contacts-grouping"
           />
         </FormFieldWrapper>

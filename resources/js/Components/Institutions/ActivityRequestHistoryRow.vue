@@ -1,9 +1,16 @@
 <template>
-  <li class="flex flex-col gap-2 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6" data-slot="activity-request-recipient">
+  <li
+    :class="[ROW_ITEM_CLASS, ROW_PADDING_CLASS, 'flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-6']"
+    data-slot="activity-request-recipient"
+  >
     <div class="min-w-0 space-y-1">
-      <p class="text-sm font-semibold">
+      <p class="font-bold text-foreground">
         <template v-if="request.institution">
-          <Link v-if="request.institution.url" :href="request.institution.url" class="underline underline-offset-4">
+          <Link
+            v-if="request.institution.url"
+            :href="request.institution.url"
+            class="hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          >
             {{ request.institution.name }}
           </Link>
           <span v-else>{{ request.institution.name ?? $t('activity_requests.personal.unavailable_institution') }}</span>
@@ -69,6 +76,7 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { CalendarDays, CalendarX } from '@lucide/vue';
 
+import { ROW_ITEM_CLASS, ROW_PADDING_CLASS } from '@/Components/Collection/rowList';
 import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { controlVariants } from '@/Components/ui/control';

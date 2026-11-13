@@ -1,0 +1,37 @@
+import { mount } from '@vue/test-utils';
+import { expect, it, vi } from 'vitest';
+
+import { KnowledgeItemKind } from '@/Types/enums';
+import type { WikiPageSummary } from '@/Types/learning';
+
+import WikiLinkCard from '../WikiLinkCard.vue';
+
+vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
+
+const page = (overrides: Partial<WikiPageSummary> = {}): WikiPageSummary => ({
+  id: 'kvorumas', kind: KnowledgeItemKind.Term, title: 'Kvorumas', abbreviation: '',
+  summary: 'Kvorumas – mažiausias narių skaičius.', summaryHtml: '<strong>Kvorumas</strong> – mažiausias narių skaičius.',
+  url: '/mano/knowledge/items/kvorumas', thumbnailUrl: null, ...overrides,
+});
+
+it('is one link to the article that leads with the bold summary instead of repeating the title', () => {
+  const wrapper = mount(WikiLinkCard, { props: { page: page() } });
+  const links = wrapper.findAll('a');
+  expect(links).toHaveLength(1);
+  expect(links[0]!.attributes('href')).toBe('/mano/knowledge/items/kvorumas');
+  expect(wrapper.get('[data-slot="wiki-link-card-summary"] strong').text()).toBe('Kvorumas');
+  expect(wrapper.text().match(/Kvorumas/g)).toHaveLength(1);
+  expect(wrapper.text()).toContain('learning.kinds.term');
+});
+
+it('falls back to the title without a summary and shows an abbreviation the summary leaves out', () => {
+  const wrapper = mount(WikiLinkCard, { props: { page: page({ summary: '', summaryHtml: '', abbreviation: 'KV' }) } });
+  expect(wrapper.text()).toContain('Kvorumas');
+  expect(wrapper.get('abbr').text()).toBe('KV');
+});
+
+it('puts the document\'s first page beside the summary, as Wikipedia does with a lead image', () => {
+  const wrapper = mount(WikiLinkCard, { props: { page: page({ kind: KnowledgeItemKind.Material, thumbnailUrl: '/thumb/kvorumas' }) } });
+  expect(wrapper.get('[data-slot="wiki-link-card-image"]').attributes('src')).toBe('/thumb/kvorumas');
+  expect(wrapper.findAll('a')).toHaveLength(1);
+});

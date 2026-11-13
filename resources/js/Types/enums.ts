@@ -32,8 +32,6 @@ export enum AllowedFileablesEnum {
     DUTY = 'Duty',
     INSTITUTION = 'Institution',
     MEETING = 'Meeting',
-    INSTITUTION_TYPE = 'InstitutionType',
-    DUTY_TYPE = 'DutyType',
 }
 export enum ApprovalDecision {
     Approved = 'approved',
@@ -55,6 +53,7 @@ export enum CalendarHeroStyleEnum {
 export enum CommentKind {
     Comment = 'comment',
     Poll = 'poll',
+    Topic = 'topic',
 }
 export enum ContentPartEnum {
     IMAGE_GRID = 'IMAGE_GRID',
@@ -149,6 +148,42 @@ export enum InstitutionTypeLinkScope {
     MainToUnits = 'main_to_units',
     AllTenants = 'all_tenants',
 }
+export enum KnowledgeItemKind {
+    Term = 'term',
+    Material = 'material',
+}
+export enum KnowledgeSectionKind {
+    Topic = 'topic',
+    Collection = 'collection',
+}
+export enum LearningAudienceType {
+    Everyone = 'everyone',
+    DutyType = 'duty_type',
+    InstitutionType = 'institution_type',
+    Responsibility = 'responsibility',
+    Duty = 'duty',
+    Institution = 'institution',
+    Purpose = 'purpose',
+}
+export enum LearningImportance {
+    Essential = 'essential',
+    Recommended = 'recommended',
+    Optional = 'optional',
+}
+export enum LearningProgressStatus {
+    Done = 'done',
+    Skipped = 'skipped',
+}
+export enum LearningStage {
+    BeforeStart = 'before_start',
+    FirstMonths = 'first_months',
+    WholeTerm = 'whole_term',
+    TermEnd = 'term_end',
+}
+export enum LearningStepKind {
+    Action = 'action',
+    MeetingPrep = 'meeting_prep',
+}
 export enum LocaleEnum {
     LT = 'lt',
     EN = 'en',
@@ -205,6 +240,8 @@ export enum ModelEnum {
     FILE = 'file',
     FORM = 'form',
     GOAL = 'goal',
+    LEARNING_STEP = 'learning_step',
+    KNOWLEDGE_ITEM = 'knowledge_item',
     INSTITUTION = 'institution',
     INSTITUTION_TYPE = 'institution_type',
     MAILING_LIST = 'mailing_list',
@@ -328,7 +365,6 @@ export enum SharepointFieldEnum {
 export enum SharepointFolderEnum {
     GENERAL = 'GENERAL',
     PADALINIAI = 'PADALINIAI',
-    TYPES = 'TYPES',
     INSTITUTIONS = 'INSTITUTIONS',
     MEETINGS = 'MEETINGS',
 }

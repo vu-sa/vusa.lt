@@ -16,33 +16,44 @@
           :class="['shrink-0', overflowIndexes.has(index) && 'invisible', startsGroup(section, index) && 'ml-2 border-l border-border pl-2']"
           :aria-hidden="overflowIndexes.has(index) || undefined"
         >
-          <!-- On the trail, the tab stands in for its record (the current one, or the way back up);
-               the chevron keeps the collection one tap away. -->
-          <div v-if="trailCrumb(section)" data-slot="section-tab-crumb" :class="crumbTabClass(section.key === activeSection?.key)">
+          <!-- On the trail or a child page, the tab stands in for the current page; the chevron
+               keeps the section's other pages one tap away. -->
+          <div v-if="trailCrumb(section) || section.children?.length" data-slot="section-tab-crumb" :class="crumbTabClass(section.key === activeSection?.key)">
             <Link
-              :href="trailCrumb(section)!.href"
+              :href="resolvedHref(section)"
               prefetch
               :cache-for="SHELL_PREFETCH_CACHE_FOR"
               :tabindex="overflowIndexes.has(index) ? -1 : undefined"
-              :title="trailCrumb(section)!.title"
+              :title="trailCrumb(section)?.title ?? resolvedLabel(section)"
               v-bind="ariaCurrent(section.key === activeSection?.key)"
               class="flex min-w-0 items-center gap-2 pr-1 pl-3 transition-colors hover:text-foreground focus-visible:text-foreground"
             >
               <component :is="sectionIcon(section)" class="size-4 shrink-0" aria-hidden="true" />
               <span class="sr-only">{{ $t(section.label) }}:</span>
-              <span class="max-w-40 truncate">{{ trailCrumb(section)!.label }}</span>
+              <span class="max-w-40 truncate">{{ resolvedLabel(section) }}</span>
             </Link>
             <DropdownMenu :modal="false">
               <DropdownMenuTrigger
                 data-slot="section-tab-crumb-menu"
                 :tabindex="overflowIndexes.has(index) ? -1 : undefined"
                 :aria-label="$t('shell.trail.open_section', { section: $t(section.label) })"
-                class="flex items-center pr-2 pl-1 transition-colors hover:text-foreground focus-visible:text-foreground pointer-coarse:px-3"
+                class="flex items-center justify-center pr-2 pl-1 transition-colors hover:text-foreground focus-visible:text-foreground pointer-coarse:min-w-11 pointer-coarse:px-3"
               >
                 <ChevronDown class="size-3.5 shrink-0 opacity-60" aria-hidden="true" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" class="w-60 rounded-none p-1 shadow-none">
                 <DropdownMenuItem
+                  v-for="child in section.children"
+                  :key="child.key"
+                  as-child
+                  class="cursor-pointer gap-3 rounded-none px-3 py-2.5 text-sm font-medium pointer-coarse:min-h-11"
+                >
+                  <Link :href="sectionChildHref(child)" prefetch :cache-for="SHELL_PREFETCH_CACHE_FOR" v-bind="ariaCurrent(activeSectionChild(section)?.key === child.key)">
+                    <span class="flex-1">{{ $t(child.label) }}</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  v-if="!section.children?.length"
                   as-child
                   class="cursor-pointer gap-3 rounded-none px-3 py-2.5 text-sm font-medium pointer-coarse:min-h-11"
                 >
@@ -78,7 +89,7 @@
         >
           <template v-if="activeOverflowing">
             <component :is="sectionIcon(activeOverflowing)" class="size-4 shrink-0" aria-hidden="true" />
-            <span class="max-w-40 truncate">{{ trailCrumb(activeOverflowing)?.label ?? $t(activeOverflowing.label) }}</span>
+            <span class="max-w-40 truncate">{{ resolvedLabel(activeOverflowing) }}</span>
           </template>
           <template v-else>
             <Ellipsis class="size-4 shrink-0" aria-hidden="true" />
@@ -102,6 +113,22 @@
                 <component :is="sectionIcon(section)" class="size-4 shrink-0" aria-hidden="true" />
                 <span class="flex-1">{{ $t(section.label) }}</span>
                 <TaskCountBadge v-if="hasTaskBadge(section)" />
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              v-for="child in section.children"
+              :key="child.key"
+              as-child
+              class="cursor-pointer gap-3 rounded-none py-2.5 pr-3 pl-10 text-sm text-muted-foreground pointer-coarse:min-h-11"
+            >
+              <Link
+                :href="sectionChildHref(child)"
+                prefetch
+                :cache-for="SHELL_PREFETCH_CACHE_FOR"
+                v-bind="ariaCurrent(activeSectionChild(section)?.key === child.key)"
+                data-slot="section-tabs-more-child"
+              >
+                <span class="min-w-0 flex-1">{{ $t(child.label) }}</span>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -141,7 +168,7 @@
 </template>
 
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronDown, Ellipsis, LayoutGrid } from '@lucide/vue';
 import { computed, ref } from 'vue';
@@ -154,7 +181,10 @@ import {
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 import {
+  activeSectionChild,
+  sectionChildHref,
   sectionHref,
+  sectionLabel,
   SHELL_PREFETCH_CACHE_FOR,
   type AdminSection,
   type AdminWorkspace,
@@ -172,12 +202,24 @@ const props = defineProps<{
 }>();
 
 const listRef = ref<HTMLElement | null>(null);
+const page = usePage();
 const sections = computed(() => props.workspace?.sections ?? []);
 const { trail, crumbFor } = useRecordTrail();
-// A crumb changes a tab's width, so it has to re-measure what overflows.
-const { overflowIndexes, setItemRef } = useOverflowingItems(listRef, () => [sections.value, trail.value]);
+// A record or child page can change the tab width without changing the section.
+const { overflowIndexes, setItemRef } = useOverflowingItems(listRef, () => [sections.value, trail.value, page.url]);
 
 const trailCrumb = (section: AdminSection) => crumbFor(section.key);
+const resolvedLabel = (section: AdminSection) => {
+  // route().current() is not reactive; reading the URL re-renders the label on child pages.
+  void page.url;
+
+  return sectionLabel(section, trailCrumb(section));
+};
+const resolvedHref = (section: AdminSection) => {
+  const child = activeSectionChild(section);
+
+  return trailCrumb(section)?.href ?? (child ? sectionChildHref(child) : sectionHref(section));
+};
 
 const overflowing = computed(() => sections.value.filter((_, index) => overflowIndexes.value.has(index)));
 const activeOverflowing = computed(() => overflowing.value.find(section => section.key === props.activeSection?.key));

@@ -25,7 +25,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Duty|null $duty
- * @property-read Model $scope
+ * @property-read Model|null $scope
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyResponsibility newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyResponsibility newQuery()

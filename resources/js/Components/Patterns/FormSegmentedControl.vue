@@ -11,7 +11,7 @@
     )"
     :style="{ '--segments': options.length }"
     role="group"
-    :aria-label
+    :aria-label="label"
     data-slot="form-segmented-control"
   >
     <button
@@ -51,7 +51,8 @@ export interface FormSegmentOption<V> {
 /** A 2–5 option choice on a form's canvas: one hairline frame, the chosen segment brand-filled. */
 const props = defineProps<{
   options: FormSegmentOption<T>[];
-  ariaLabel: string;
+  /** The group's accessible name; not `ariaLabel`, which vue-tsc cannot match to `aria-label` on a generic component. */
+  label: string;
   testIdPrefix?: string;
   disabled?: boolean;
   voice?: 'sentence' | 'brand';

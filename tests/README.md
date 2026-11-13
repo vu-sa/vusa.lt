@@ -90,6 +90,10 @@ test('cannot update resource in invalid state', function () {
 
 ## Test Environment
 
+ParaTest is pinned to 7.27.5: 7.28 returns grouped file arrays that Pest 5.3.5's parallel runner cannot read. Revisit the pin when upgrading Pest.
+
+Run backend and browser Pest suites sequentially: the browser plugin shares its Playwright server state between runs.
+
 ### Reservation row-lock tests
 
 The optional MariaDB tests use two connections to a temporary database to check competing capacity

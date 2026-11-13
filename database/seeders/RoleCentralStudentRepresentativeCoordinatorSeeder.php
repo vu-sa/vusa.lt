@@ -50,6 +50,12 @@ class RoleCentralStudentRepresentativeCoordinatorSeeder extends Seeder
             'mailingLists.create.*',
             'mailingLists.read.*',
             'mailingLists.update.*',
+            'learningSteps.create.*',
+            'learningSteps.update.*',
+            'learningSteps.delete.*',
+            'knowledgeItems.create.*',
+            'knowledgeItems.update.*',
+            'knowledgeItems.delete.*',
         ]);
     }
 }

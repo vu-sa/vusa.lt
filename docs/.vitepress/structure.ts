@@ -48,6 +48,15 @@ export const guide: GuideChapter[] = [
       { text: 'Užduotys', link: '/mano/uzduotys' },
       { text: 'Pranešimai', link: '/mano/pranesimai' },
       { text: 'Paskyra ir prieiga', link: '/mano/paskyra-ir-prieiga' },
+      { text: 'Mano kelias', link: '/mano/kelias' },
+    ],
+  },
+  {
+    text: 'Wiki',
+    description: 'Sąvokos, institucijos ir dokumentai',
+    index: '/wiki/',
+    pages: [
+      { text: 'Įrašai', link: '/wiki/straipsniai' },
     ],
   },
   {
@@ -57,6 +66,7 @@ export const guide: GuideChapter[] = [
     pages: [
       { text: 'Apžvalga', link: '/visak/apzvalga' },
       { text: 'Padaliniai', link: '/visak/padaliniai' },
+      { text: 'Atstovai', link: '/visak/atstovai' },
       { text: 'Užduotys', link: '/visak/uzduociu-suvestine' },
       { text: 'Posėdžiai', link: '/visak/posedziai' },
       { text: 'Darbotvarkės klausimai', link: '/visak/darbotvarkes-klausimai' },

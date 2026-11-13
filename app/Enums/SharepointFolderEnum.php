@@ -10,7 +10,6 @@ enum SharepointFolderEnum: string
 
     case GENERAL = 'GENERAL';
     case PADALINIAI = 'PADALINIAI';
-    case TYPES = 'TYPES';
     case INSTITUTIONS = 'INSTITUTIONS';
     case MEETINGS = 'MEETINGS';
 
@@ -19,7 +18,6 @@ enum SharepointFolderEnum: string
         return match ($this) {
             self::GENERAL => 'General',
             self::PADALINIAI => 'Padaliniai',
-            self::TYPES => 'Types',
             self::INSTITUTIONS => 'Institutions',
             self::MEETINGS => 'Meetings',
         };

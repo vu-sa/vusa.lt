@@ -6,6 +6,7 @@ use App\Contracts\Commentable;
 use App\Models\Duty;
 use App\Models\Form;
 use App\Models\Institution;
+use App\Models\KnowledgeItem;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Problem;
@@ -25,6 +26,7 @@ class Commentables
      * @var array<string, class-string<Model&Commentable>>
      */
     public const TYPES = [
+        'knowledgeItem' => KnowledgeItem::class,
         'meeting' => Meeting::class,
         'agendaItem' => AgendaItem::class,
         'institution' => Institution::class,
@@ -34,6 +36,24 @@ class Commentables
         'reservation' => Reservation::class,
         'supportRequest' => SupportRequest::class,
     ];
+
+    public const CAPABILITIES = [
+        'knowledgeItem' => ['layout' => 'topics', 'topics' => true, 'polls' => true, 'images' => true],
+        'meeting' => ['layout' => 'comments', 'topics' => true, 'polls' => true, 'images' => true],
+        'agendaItem' => ['layout' => 'comments', 'topics' => true, 'polls' => true, 'images' => true],
+        'institution' => ['layout' => 'comments', 'topics' => true, 'polls' => true, 'images' => true],
+        'duty' => ['layout' => 'comments', 'topics' => true, 'polls' => true, 'images' => true],
+        'form' => ['layout' => 'comments', 'topics' => true, 'polls' => true, 'images' => true],
+        'problem' => ['layout' => 'comments', 'topics' => true, 'polls' => true, 'images' => true],
+        'reservation' => ['layout' => 'comments', 'topics' => true, 'polls' => true, 'images' => true],
+        'supportRequest' => ['layout' => 'conversation', 'topics' => false, 'polls' => false, 'images' => true],
+    ];
+
+    /** @return array{layout: string, topics: bool, polls: bool, images: bool} */
+    public static function capabilitiesFor(string $alias): array
+    {
+        return self::CAPABILITIES[$alias] ?? ['layout' => 'comments', 'topics' => true, 'polls' => true, 'images' => true];
+    }
 
     /**
      * @return class-string<Model&Commentable>|null

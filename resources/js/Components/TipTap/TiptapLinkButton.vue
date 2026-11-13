@@ -16,8 +16,11 @@
         </DialogHeader>
       </div>
 
-      <Tabs default-value="url" class="mt-4 px-8">
-        <TabsList class="grid w-full grid-cols-3">
+      <Tabs v-model="tab" class="mt-4 px-8">
+        <TabsList :class="['grid h-auto w-full [&>button]:min-h-11 [&>button]:min-w-0 [&>button]:whitespace-normal', targets ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-1 sm:grid-cols-3']">
+          <TabsTrigger v-if="targets" value="wiki" data-testid="link-tab-wiki">
+            {{ $t('rich-content.link_tab_wiki') }}
+          </TabsTrigger>
           <TabsTrigger value="url">
             {{ $t('rich-content.link_tab_url') }}
           </TabsTrigger>
@@ -28,6 +31,38 @@
             {{ $t('rich-content.link_tab_document') }}
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent v-if="targets" value="wiki" class="space-y-4 pt-4" data-testid="link-wiki-panel">
+          <div class="space-y-2">
+            <Label for="wiki-link-text">{{ $t('rich-content.link_text') }}</Label>
+            <Input id="wiki-link-text" v-model="linkTextRef" :placeholder="target?.title || $t('rich-content.link_text')" data-testid="wiki-link-text" />
+            <p class="text-xs text-muted-foreground">
+              {{ $t('rich-content.link_wiki_text_hint') }}
+            </p>
+          </div>
+          <div class="space-y-2">
+            <Label for="wiki-link-search">{{ $t('rich-content.link_wiki_target') }}</Label>
+            <Input id="wiki-link-search" v-model="wikiQuery" type="search" :placeholder="$t('rich-content.link_wiki_search')" data-testid="wiki-link-search" />
+            <ul class="max-h-64 divide-y divide-border overflow-y-auto border border-border" role="listbox" :aria-label="$t('rich-content.link_wiki_target')">
+              <li v-for="option in wikiOptions" :key="option.id">
+                <button
+                  type="button"
+                  role="option"
+                  :aria-selected="option.id === target?.id"
+                  :class="['flex min-h-11 w-full items-baseline gap-2 px-3 py-2 text-left text-sm hover:bg-accent', option.id === target?.id && 'bg-accent font-semibold']"
+                  :data-testid="`wiki-link-option-${option.id}`"
+                  @click="target = option"
+                >
+                  <span class="min-w-0 flex-1 truncate">{{ option.title }}</span>
+                  <span v-if="option.hint" class="shrink-0 text-xs font-bold tracking-wide text-muted-foreground">{{ option.hint }}</span>
+                </button>
+              </li>
+              <li v-if="!wikiOptions.length" class="px-3 py-2 text-sm text-muted-foreground">
+                {{ $t('rich-content.link_wiki_empty') }}
+              </li>
+            </ul>
+          </div>
+        </TabsContent>
 
         <TabsContent value="url" class="space-y-4 pt-4">
           <TiptapLinkForm v-model:url="urlRef" v-model:text="linkTextRef" :has-selected-text @submit="addLink" @cancel="showModal = false" />
@@ -89,7 +124,7 @@
         <Button type="button" variant="outline" @click="showModal = false">
           {{ $t('Atšaukti') }}
         </Button>
-        <Button type="button" :disabled="!isValidTiptapLink(urlRef)" @click="addLink">
+        <Button type="button" :disabled="tab === 'wiki' ? !target : !isValidTiptapLink(urlRef)" data-testid="link-apply" @click="tab === 'wiki' ? addWikiLink() : addLink()">
           {{ $t('rich-content.link_apply') }}
         </Button>
       </DialogFooter>
@@ -98,7 +133,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, shallowRef } from 'vue';
 import type { Editor } from '@tiptap/core';
 import { trans as $t } from 'laravel-vue-i18n';
 
@@ -112,6 +147,7 @@ import { InlineCollectionSelect } from '@/Features/Admin/AdminSearch/Components/
 import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { Spinner } from '@/Components/ui/spinner';
 
+import { linkTargetProvider, type LinkTarget } from './linkTargets';
 import { isValidTiptapLink } from './linkUrl';
 import TiptapLinkForm from './TiptapLinkForm.vue';
 
@@ -119,14 +155,34 @@ const props = defineProps<{
   editor?: Editor | null;
 }>();
 
+export interface LinkSubmitOptions {
+  /** The mark attributes beyond `href`: a wiki link's article id, or `null` to drop it. */
+  attrs: { knowledgeId: string | null };
+  /** True when the text differs from the link's current text, so the dialog may rename it. */
+  replaceSelectionText: boolean;
+}
+
 const emit = defineEmits<{
-  (e: 'submit', url: string, text?: string): void;
-  (e: 'document:submit', url: string, text?: string): void;
+  (e: 'submit', url: string, text: string | undefined, options: LinkSubmitOptions): void;
+  (e: 'document:submit', url: string, text: string | undefined, options: LinkSubmitOptions): void;
 }>();
 
 const showModal = ref(false);
 const urlRef = ref<string>('');
 const linkTextRef = ref<string>('');
+const originalText = ref('');
+const tab = ref<string>('url');
+
+const targets = computed(() => linkTargetProvider(props.editor));
+const target = shallowRef<LinkTarget | null>(null);
+const wikiQuery = ref('');
+const loadedTargets = shallowRef<LinkTarget[]>([]);
+const wikiOptions = computed(() => (wikiQuery.value.trim() ? targets.value?.search(wikiQuery.value) ?? [] : loadedTargets.value).slice(0, 30));
+
+const submitOptions = (knowledgeId: string | null): LinkSubmitOptions => ({
+  attrs: { knowledgeId },
+  replaceSelectionText: linkTextRef.value.trim() !== '' && linkTextRef.value !== originalText.value,
+});
 
 const hasSelectedText = computed(() => {
   if (!props.editor) return false;
@@ -151,16 +207,31 @@ function open() {
   else {
     linkTextRef.value = '';
   }
+  originalText.value = linkTextRef.value;
 
+  const knowledgeId = (linkAttrs?.knowledgeId as string | null | undefined) ?? null;
+  tab.value = knowledgeId && targets.value ? 'wiki' : 'url';
+  target.value = null;
+  wikiQuery.value = '';
   showModal.value = true;
+  void targets.value?.load().then((all) => {
+    loadedTargets.value = all;
+    target.value = knowledgeId ? all.find(option => option.id === knowledgeId) ?? null : null;
+  });
 }
 
 function addLink() {
   const url = urlRef.value.trim();
   if (isValidTiptapLink(url)) {
-    emit('submit', url, linkTextRef.value.trim() || url);
+    emit('submit', url, linkTextRef.value.trim() || url, submitOptions(null));
   }
 
+  showModal.value = false;
+}
+
+function addWikiLink() {
+  if (!target.value) return;
+  emit('submit', target.value.href, linkTextRef.value.trim() || target.value.title, submitOptions(target.value.id));
   showModal.value = false;
 }
 
@@ -175,7 +246,7 @@ function addFileLink(file: string) {
     finalUrl = `/uploads/${file.substring(firstSlash + 1)}`;
   }
   const linkText = linkTextRef.value.trim() || finalUrl;
-  emit('submit', finalUrl, linkText);
+  emit('submit', finalUrl, linkText, submitOptions(null));
   showModal.value = false;
 }
 
@@ -187,7 +258,7 @@ function onDocumentConfirm(hits: NormalizedSearchHit[]) {
   if (!url) return;
 
   const linkText = linkTextRef.value.trim() || hit.title || url;
-  emit('document:submit', url, linkText);
+  emit('document:submit', url, linkText, submitOptions(null));
   showModal.value = false;
 }
 </script>

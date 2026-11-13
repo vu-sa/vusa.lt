@@ -11,7 +11,7 @@
       <FormSegmentedControl
         v-model="lang"
         :options="langOptions"
-        :aria-label="labels.lang"
+        :label="labels.lang"
         :test-id-prefix="`${testIdPrefix}-lang`"
       >
         <template #option="{ option }">

@@ -13,6 +13,8 @@ use App\Models\Goal;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\InstitutionType;
+use App\Models\KnowledgeItem;
+use App\Models\LearningStep;
 use App\Models\MailingList;
 use App\Models\Meeting;
 use App\Models\Navigation;
@@ -32,6 +34,7 @@ use App\Models\Tag;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\RepresentativesPresenter;
 use App\Settings\FormSettings;
 use App\Support\AuthorityCacheExpiry;
 use App\Support\Experiments\GoalsExperiment;
@@ -46,7 +49,7 @@ use Illuminate\Support\Facades\Cache;
 class AdminNavigationCatalog
 {
     /** Bump the suffix when the payload shape or a gate changes, so a deploy never serves the old menu from cache. */
-    public const string CACHE_PREFIX = 'admin-navigation-v10-';
+    public const string CACHE_PREFIX = 'admin-navigation-v14-';
 
     private const int CACHE_TTL = 1800;
 
@@ -88,6 +91,7 @@ class AdminNavigationCatalog
     {
         $workspaces = array_filter([
             $this->resolveWorkspace($this->pradziaWorkspace(), $user),
+            $this->resolveWorkspace($this->wikiWorkspace(), $user),
             $this->resolveWorkspace($this->atstovavimasWorkspace(), $user),
             $this->resolveWorkspace($this->rezervacijosWorkspace(), $user),
             $this->resolveWorkspace($this->svetaineWorkspace(), $user),
@@ -140,6 +144,11 @@ class AdminNavigationCatalog
             ->filter(fn (Section $section) => $section->visibility->allows($user))
             ->map(function (Section $section) use ($user): array {
                 $data = $section->toArray();
+                $data['children'] = collect($section->children)
+                    ->filter(fn (SectionLink $child) => $child->visibility->allows($user))
+                    ->map(fn (SectionLink $child) => $child->toArray())
+                    ->values()
+                    ->all();
                 $data['collectionActions'] = collect($section->collectionActions)
                     ->filter(fn (CollectionAction $action) => $action->visibility->allows($user))
                     ->map(fn (CollectionAction $action) => $action->toArray())
@@ -173,10 +182,29 @@ class AdminNavigationCatalog
             descriptionKey: 'shell.workspaces.pradzia.description',
             sections: [
                 new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard', [], null, Visibility::always()),
+                new Section('kelias', 'shell.sections.kelias', 'learningPath.show', [], null, Visibility::always(), matches: ['learningPath.*', 'learningSteps.show'], descriptionKey: 'shell.section_descriptions.kelias'),
                 new Section('uzduotys', 'shell.sections.uzduotys', 'tasks.index', [], 'task', Visibility::always(), matches: ['tasks.index'], descriptionKey: 'shell.section_descriptions.uzduotys'),
-                new Section('pranesimai', 'shell.sections.pranesimai', 'notifications.index', [], null, Visibility::always(), descriptionKey: 'shell.section_descriptions.pranesimai'),
                 new Section('atsakomybes', 'shell.sections.atsakomybes', 'profile.roles', [], null, Visibility::always(), descriptionKey: 'shell.section_descriptions.atsakomybes'),
                 new Section('veiklos_uzklausos', 'shell.sections.veiklos_uzklausos', 'profile.activityRequests', [], null, Visibility::always(), descriptionKey: 'shell.section_descriptions.veiklos_uzklausos'),
+            ],
+        );
+    }
+
+    private function wikiWorkspace(): Workspace
+    {
+        return new Workspace(
+            key: 'wiki',
+            labelKey: 'shell.workspaces.wiki.title',
+            descriptionKey: 'shell.workspaces.wiki.description',
+            sections: [
+                new Section('wiki', 'shell.sections.wiki', 'knowledgeBase.show', [], null, Visibility::always(), matches: ['knowledgeBase.show', 'knowledgeSections.show'], descriptionKey: 'shell.section_descriptions.wiki'),
+                new Section('wiki_mine', 'shell.sections.wiki_mine', 'knowledgeBase.mine', [], null, Visibility::can('viewAny', KnowledgeItem::class), matches: ['knowledgeBase.mine'], descriptionKey: 'shell.section_descriptions.wiki_mine'),
+                new Section('rodykle', 'shell.sections.rodykle', 'knowledgeItems.alphabet', [], null, Visibility::always(), matches: ['knowledgeItems.alphabet', 'knowledgeItems.show'], descriptionKey: 'shell.section_descriptions.rodykle'),
+                new Section('wiki_graph', 'shell.sections.wiki_graph', 'knowledgeBase.graph', [], null, Visibility::always(), matches: ['knowledgeBase.graph'], descriptionKey: 'shell.section_descriptions.wiki_graph'),
+                new Section('wiki_biblioteka', 'shell.sections.wiki_biblioteka', 'knowledgeItems.index', [], 'knowledge_item', Visibility::can('manage', KnowledgeItem::class), matches: ['knowledgeItems.index', 'knowledgeItems.create', 'knowledgeItems.edit'], descriptionKey: 'shell.section_descriptions.wiki_biblioteka'),
+            ],
+            createActions: [
+                CreateAction::route('new_knowledge_item', 'shell.actions.new_knowledge_item.title', 'shell.actions.new_knowledge_item.description', 'knowledge_item', 'knowledgeItems.create', Visibility::can('create', KnowledgeItem::class)),
             ],
         );
     }
@@ -190,6 +218,7 @@ class AdminNavigationCatalog
             sections: [
                 new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard.atstovavimas', [], null, Visibility::can('viewAny', Meeting::class)),
                 new Section('padaliniu_apzvalga', 'shell.sections.padaliniu_apzvalga', 'dashboard.atstovavimas.padaliniai', [], null, Visibility::can('viewAny', Meeting::class), descriptionKey: 'shell.section_descriptions.padaliniu_apzvalga'),
+                new Section('atstovai', 'shell.sections.atstovai', 'representatives.index', [], null, Visibility::callback(fn (User $user): bool => RepresentativesPresenter::canView($user)), matches: ['representatives.*'], descriptionKey: 'shell.section_descriptions.atstovai'),
                 new Section('uzduociu_suvestine', 'shell.sections.uzduociu_suvestine', 'tasks.summary', [], 'task', Visibility::can('viewAny', Task::class), descriptionKey: 'shell.section_descriptions.uzduociu_suvestine'),
                 new Section('institucijos', 'shell.sections.institucijos', 'institutions.index', [], 'institution', Visibility::can('viewAny', Institution::class), descriptionKey: 'shell.section_descriptions.institucijos', startsGroup: true),
                 new Section('posedziai', 'shell.sections.posedziai', 'meetings.index', [], 'meeting', Visibility::can('viewAny', Meeting::class), descriptionKey: 'shell.section_descriptions.posedziai'),
@@ -276,11 +305,13 @@ class AdminNavigationCatalog
                 new Section('padaliniai', 'shell.sections.padaliniai', 'tenants.index', [], 'tenant', Visibility::can('viewAny', Tenant::class), descriptionKey: 'shell.section_descriptions.padaliniai'),
                 new Section('studiju_programos', 'shell.sections.studiju_programos', 'studyPrograms.index', [], 'study_program', Visibility::can('viewAny', StudyProgram::class), [CollectionAction::merge(Visibility::can('viewAny', StudyProgram::class))], descriptionKey: 'shell.section_descriptions.studiju_programos'),
                 new Section('konferencijos', 'shell.sections.konferencijos', 'mailingLists.index', [], 'mailing_list', Visibility::can('viewAny', MailingList::class), descriptionKey: 'shell.section_descriptions.konferencijos'),
+                new Section('kelio_zingsniai', 'shell.sections.kelio_zingsniai', 'learningSteps.index', [], 'learning_step', Visibility::can('manage', LearningStep::class), matches: ['learningSteps.index', 'learningSteps.create', 'learningSteps.edit'], descriptionKey: 'shell.section_descriptions.kelio_zingsniai'),
             ],
             overview: new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard.organizacija', [], null, Visibility::always()),
             createActions: [
                 CreateAction::route('duty_update', 'shell.actions.duty_update.title', 'shell.actions.duty_update.description', 'duty', 'duties.updateUsersWizard', Visibility::can('create', Duty::class)),
                 CreateAction::route('duty_periods', 'shell.actions.duty_periods.title', 'shell.actions.duty_periods.description', 'dutiable', 'dutiables.timeline', Visibility::can('viewAny', Duty::class)),
+                CreateAction::route('new_learning_step', 'shell.actions.new_learning_step.title', 'shell.actions.new_learning_step.description', 'learning_step', 'learningSteps.create', Visibility::can('create', LearningStep::class)),
             ],
         );
     }

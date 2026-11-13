@@ -13,7 +13,7 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
-import { Building2, CalendarRange, Compass, FileText, Globe, ListChecks, Users } from '@lucide/vue';
+import { Building2, CalendarRange, Compass, FileText, Globe, ListChecks, TreePine, Users } from '@lucide/vue';
 
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import { NavigationTiles, OverviewSection, type NavigationTileItem } from '@/Components/Patterns';
@@ -67,6 +67,13 @@ const generalItems = computed<NavigationTileItem[]>(() => [
     description: $t('settings.pages.site.description'),
     icon: Globe,
     href: route('settings.site.edit'),
+  },
+  {
+    key: 'season',
+    label: $t('settings.pages.season.title'),
+    description: $t('settings.pages.season.description'),
+    icon: TreePine,
+    href: route('settings.season.edit'),
   },
 ]);
 </script>

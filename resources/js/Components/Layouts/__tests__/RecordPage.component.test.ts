@@ -1,9 +1,11 @@
 import { mount } from '@vue/test-utils';
 import { CircleCheck } from '@lucide/vue';
 import { describe, expect, it, vi } from 'vitest';
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
+import { reactive } from 'vue';
 
 import RecordPage from '@/Components/Layouts/RecordPage.vue';
+import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
@@ -38,13 +40,13 @@ describe('RecordPage', () => {
 
     expect(wrapper.findAll('[role="tab"]')).toHaveLength(0);
     for (const key of ['agenda', 'files', 'tasks']) {
-      const section = wrapper.get(`[aria-labelledby="record-section-${key}"]`);
+      const section = wrapper.get(`[aria-labelledby$="-${key}"]`);
       expect(section.classes()).not.toContain('md:hidden');
       expect(section.get('h2').classes()).not.toContain('md:hidden');
       expect(section.get(`[data-testid="${key}"]`).exists()).toBe(true);
     }
     expect(wrapper.get('[data-slot="record-activity"]').classes()).not.toContain('md:hidden');
-    expect(wrapper.get('[aria-labelledby="record-section-agenda"]').element.parentElement?.classList.contains('md:space-y-0')).toBe(false);
+    expect(wrapper.get('[aria-labelledby$="-agenda"]').element.parentElement?.classList.contains('md:space-y-0')).toBe(false);
   });
 
   it('renders rich title content inside the existing heading and keeps the plain browser title', () => {
@@ -101,9 +103,114 @@ describe('RecordPage', () => {
     await wrapper.setProps({ actionsBesideTitle: true });
 
     expect(wrapper.find('[data-slot="record-title"]').classes()).toContain('lg:row-start-2');
-    expect(wrapper.find('header').html()).toContain('lg:min-h-42');
+    expect(wrapper.find('[data-slot="record-identity"]').classes()).not.toContain('lg:min-h-42');
     expect(wrapper.find('header').html()).toContain('lg:items-start');
     expect(wrapper.find('header').html()).toContain('lg:col-start-2 lg:row-start-2');
+  });
+
+  it('reserves room for a three-line title only when the actions sit under it', () => {
+    const wrapper = createWrapper();
+
+    expect(wrapper.find('[data-slot="record-identity"]').classes()).toContain('lg:min-h-42');
+  });
+
+  it('wires the tabs to their panels and moves between them with the arrow keys', async () => {
+    const wrapper = createWrapper();
+    const tabs = () => wrapper.findAll('[role="tab"]');
+
+    expect(wrapper.find('[role="tablist"]').exists()).toBe(true);
+    expect(tabs()[0]!.attributes('tabindex')).toBe('0');
+    expect(wrapper.find(`[id="${tabs()[0]!.attributes('aria-controls')}"]`).exists()).toBe(true);
+    expect(tabs()[1]!.attributes('tabindex')).toBe('-1');
+    expect(wrapper.find('[id^="record-panel-"][id$="-files"]').exists()).toBe(true);
+
+    await tabs()[0]!.trigger('keydown', { key: 'ArrowLeft' });
+    expect(tabs()[2]!.attributes('aria-selected')).toBe('true');
+
+    await tabs()[2]!.trigger('keydown', { key: 'Home' });
+    expect(tabs()[0]!.attributes('aria-selected')).toBe('true');
+  });
+
+  it('keeps the sections and comments at least a screen tall so a short tab cannot pull the page up', () => {
+    const wrapper = createWrapper();
+    const body = wrapper.get('[data-slot="record-body"]');
+
+    expect(body.classes().some(name => name.startsWith('md:min-h-'))).toBe(true);
+    // The comments sit inside the reserved height, right after the first section.
+    expect(body.find('[data-slot="record-activity"]').exists()).toBe(true);
+  });
+
+  /** Phones have no tabs: the select narrows the stacked sections to one, or shows them all. */
+  it('narrows the phone view to the section picked in the switcher', async () => {
+    const wrapper = createWrapper();
+    const sectionOf = (key: string) => wrapper.get(`[id^="record-panel-"][id$="-${key}"]`).classes();
+    const select = wrapper.get('[data-slot="record-section-switcher"] select');
+
+    expect((select.element as HTMLSelectElement).value).toBe('agenda');
+    expect(sectionOf('files')).toContain('max-md:hidden');
+
+    await select.setValue('files');
+
+    expect(sectionOf('files')).not.toContain('max-md:hidden');
+    expect(sectionOf('agenda')).toContain('max-md:hidden');
+    expect(wrapper.get('[data-slot="record-activity"]').classes()).toContain('max-md:hidden');
+    expect(wrapper.emitted('update:section')?.at(-1)).toEqual(['files']);
+
+    expect(select.find('option[value="__all"]').exists()).toBe(false);
+  });
+
+  it('opens a phone on the section a link points to', () => {
+    const wrapper = mount(RecordPage, {
+      props: {
+        title: 'Senato posėdis',
+        entityType: 'meeting',
+        section: 'tasks',
+        sections: [
+          { value: 'agenda', label: 'Darbotvarkė' },
+          { value: 'files', label: 'Failai' },
+          { value: 'tasks', label: 'Užduotys', count: 4 },
+        ],
+      },
+      global: { stubs: commonStubs },
+    });
+
+    const select = wrapper.get('[data-slot="record-section-switcher"] select');
+    expect((select.element as HTMLSelectElement).value).toBe('tasks');
+    expect(select.text()).toContain('Užduotys · 4');
+    expect(wrapper.get('[id^="record-panel-"][id$="-agenda"]').classes()).toContain('max-md:hidden');
+  });
+
+  /** Each tab a reader opens is a step back can undo, without a request. */
+  it('records the open section in the URL as a history entry and follows back navigation', async () => {
+    const page = reactive({ ...createMockPage(), url: '/mano/institutions/1?tab=agenda' });
+    vi.mocked(usePage).mockReturnValue(page as unknown as ReturnType<typeof usePage>);
+    vi.mocked(router.push).mockClear();
+    const wrapper = createWrapper();
+    await wrapper.setProps({ sectionQueryKey: 'tab' });
+
+    await wrapper.findAll('[role="tab"]')[2]!.trigger('click');
+    expect(router.push).toHaveBeenCalledWith(expect.objectContaining({ url: '/mano/institutions/1?tab=tasks', preserveState: true }));
+
+    page.url = '/mano/institutions/1?tab=files';
+    await wrapper.vm.$nextTick();
+    expect(wrapper.findAll('[role="tab"]')[1]!.attributes('aria-selected')).toBe('true');
+
+    vi.mocked(router.push).mockClear();
+    await wrapper.findAll('[role="tab"]')[0]!.trigger('click');
+    expect(router.push).toHaveBeenCalledWith(expect.objectContaining({ url: '/mano/institutions/1?tab=agenda' }));
+
+    page.url = '/mano/institutions/1';
+    await wrapper.vm.$nextTick();
+    expect(router.push).toHaveBeenCalledTimes(1);
+    expect(wrapper.findAll('[role="tab"]')[0]!.attributes('aria-selected')).toBe('true');
+  });
+
+  it('leaves the URL alone without a section key', async () => {
+    vi.mocked(router.push).mockClear();
+    const wrapper = createWrapper();
+
+    await wrapper.findAll('[role="tab"]')[1]!.trigger('click');
+    expect(router.push).not.toHaveBeenCalled();
   });
 
   it('fits four facts into one wide row while retaining smaller breakpoint columns', () => {
@@ -299,4 +406,20 @@ it.each([false, true])('renders a fact with an unsupported URL as text when exte
   expect(wrapper.text()).toContain('Facebook');
   expect(wrapper.find('a[href*="script"]').exists()).toBe(false);
   wrapper.unmount();
+});
+
+it('preserves the initial section without a URL tab and lets explicit links override it', () => {
+  const page = reactive({ ...createMockPage(), url: '/mano/meetings/1' });
+  vi.mocked(usePage).mockReturnValue(page as unknown as ReturnType<typeof usePage>);
+  const mountRecord = () => mount(RecordPage, {
+    props: { title: 'Meeting', entityType: 'meeting', section: 'files', sectionQueryKey: 'tab', sections: [{ value: 'agenda', label: 'Agenda' }, { value: 'files', label: 'Files' }] },
+    global: { stubs: commonStubs },
+  });
+  const stored = mountRecord();
+  expect(stored.emitted('update:section')).toBeUndefined();
+  stored.unmount();
+  page.url = '/mano/meetings/1?tab=agenda';
+  const linked = mountRecord();
+  expect(linked.emitted('update:section')?.at(-1)).toEqual(['agenda']);
+  linked.unmount();
 });

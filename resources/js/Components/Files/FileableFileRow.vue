@@ -1,64 +1,33 @@
 <template>
-  <li class="flex items-center gap-3 py-2" data-slot="fileable-file-row">
-    <FileText class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-    <div class="min-w-0 flex-1">
+  <li :class="ROW_ITEM_CLASS" data-slot="fileable-file-row">
+    <CollectionRow :actions :class="['min-w-0 flex-1', ROW_PADDING_CLASS]" @select="select">
+      <template #lead>
+        <FileText class="size-4 text-muted-foreground" aria-hidden="true" />
+      </template>
       <!-- A plain link to a redirect: opening mints the reader's anonymous link on the way. -->
       <a
-        :href="route('fileableFiles.open', file.id)"
+        :href="openHref"
         target="_blank"
         rel="noopener noreferrer"
-        class="block truncate text-sm font-medium text-foreground hover:underline"
+        data-collection-open
+        class="block truncate font-bold text-foreground hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
       >{{ file.name }}</a>
-      <span class="block truncate text-xs text-muted-foreground">
+      <p class="mt-0.5 truncate text-xs text-muted-foreground">
         {{ meta }}
-      </span>
-    </div>
-    <Button
-      type="button"
-      variant="ghost"
-      size="icon-sm"
-      class="shrink-0 text-muted-foreground"
-      :title="$t('Kopijuoti nuorodą')"
-      :aria-label="$t('Kopijuoti nuorodą')"
-      @click="emit('copy', file)"
-    >
-      <Link2 class="size-4" />
-    </Button>
-    <Button
-      v-if="canDelete && file.public_link"
-      type="button"
-      variant="ghost"
-      size="icon-sm"
-      class="shrink-0 text-muted-foreground"
-      :title="$t('Atšaukti nuorodą')"
-      :aria-label="$t('Atšaukti nuorodą')"
-      data-action="revoke-link"
-      @click="emit('revoke', file)"
-    >
-      <Link2Off class="size-4" />
-    </Button>
-    <Button
-      v-if="canDelete"
-      type="button"
-      variant="ghost"
-      size="icon-sm"
-      class="shrink-0 text-muted-foreground hover:text-destructive"
-      :title="$t('Ištrinti')"
-      :aria-label="$t('Ištrinti')"
-      @click="emit('delete', file)"
-    >
-      <Trash2 class="size-4" />
-    </Button>
+      </p>
+    </CollectionRow>
   </li>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { FileText, Link2, Link2Off, Trash2 } from '@lucide/vue';
+import { ArrowUpRight, FileText, Link2, Link2Off, Trash2 } from '@lucide/vue';
 
-import { Button } from '@/Components/ui/button';
+import CollectionRow from '@/Components/Collection/CollectionRow.vue';
+import { ROW_ITEM_CLASS, ROW_PADDING_CLASS } from '@/Components/Collection/rowList';
 import { fileTypeLabel } from '@/Constants/fileTypes';
+import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 
 import type { FileableFileItem } from './types';
 
@@ -73,8 +42,23 @@ const emit = defineEmits<{
   revoke: [file: FileableFileItem];
 }>();
 
+const openHref = computed(() => route('fileableFiles.open', props.file.id));
+
+const actions = computed<AdminRecordAction[]>(() => [
+  { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, href: openHref.value, external: true, role: 'open', primary: true },
+  { key: 'copy', label: $t('Kopijuoti nuorodą'), icon: Link2 },
+  ...(props.canDelete && props.file.public_link ? [{ key: 'revoke', label: $t('Atšaukti nuorodą'), icon: Link2Off }] : []),
+  ...(props.canDelete ? [{ key: 'delete', label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
+]);
+
+const select = (key: string) => {
+  if (key === 'copy') emit('copy', props.file);
+  else if (key === 'revoke') emit('revoke', props.file);
+  else if (key === 'delete') emit('delete', props.file);
+};
+
 const meta = computed(() => [
-  props.file.fileable?.title ?? $t(fileTypeLabel(props.file.file_type)),
+  $t(fileTypeLabel(props.file.file_type)),
   props.file.file_date?.slice(0, 10),
   props.file.formatted_size,
 ].filter(Boolean).join(' · '));

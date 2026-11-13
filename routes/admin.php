@@ -35,6 +35,8 @@ Route::get('profile/notifications', [ProfileController::class, 'notificationSett
 Route::inertia('administration', 'Admin/ShowAdministration')->name('administration');
 Route::get('dashboard/atstovavimas', [AtstovavimasDashboardController::class, 'atstovavimas'])->name('dashboard.atstovavimas');
 Route::get('dashboard/atstovavimas/padaliniai', [AtstovavimasDashboardController::class, 'padaliniai'])->name('dashboard.atstovavimas.padaliniai');
+Route::get('dashboard/atstovavimas/atstovai', [RepresentativesController::class, 'index'])->name('representatives.index');
+Route::get('dashboard/atstovavimas/atstovai/{user}', [RepresentativesController::class, 'show'])->name('representatives.show');
 Route::get('dashboard/svetaine', [SvetaineDashboardController::class, 'svetaine'])->name('dashboard.svetaine');
 Route::get('dashboard/reservations', [ReservationsDashboardController::class, 'reservations'])->name('dashboard.reservations');
 Route::get('dashboard/organizacija', [OrganizacijaDashboardController::class, 'index'])->name('dashboard.organizacija');
@@ -142,7 +144,7 @@ Route::post('notification/mark-all-as-read', [UserNotificationsController::class
 Route::delete('notification/{id}', [UserNotificationsController::class, 'destroy'])->name('notifications.destroy');
 Route::delete('notifications', [UserNotificationsController::class, 'destroyAll'])->name('notifications.destroy-all');
 
-Route::resource('eventTypes', EventTypeController::class)->only(['index', 'store', 'update', 'destroy']);
+Route::resource('eventTypes', EventTypeController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
 Route::resource('calendar', CalendarController::class)
     ->names(['show' => 'calendar.view'])
     ->middleware(HandlePrecognitiveRequests::class);
@@ -178,7 +180,7 @@ Route::post('institutions/activity-requests', [InstitutionActivityRequestControl
 Route::put('institutions/{institution}/secretaries', [InstitutionSecretaryController::class, 'update'])->name('institutions.secretaries.update');
 
 Route::resource('resources', ResourceController::class);
-Route::resource('resourceCategories', ResourceCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
+Route::resource('resourceCategories', ResourceCategoryController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
 
 Route::put('reservations/{reservation}/add-users', [ReservationController::class, 'addUsers'])->name('reservations.add-users');
 
@@ -268,14 +270,14 @@ Route::post('tenants/{tenant}/quick-links', [TenantController::class, 'updateQui
 Route::get('tenants/{tenant}/main-page/edit', [TenantController::class, 'editMainPage'])->name('tenants.editMainPage');
 Route::post('tenants/{tenant}/main-page', [TenantController::class, 'updateMainPage'])->name('tenants.updateMainPage');
 
-Route::resource('tenants', TenantController::class)->only(['index', 'store', 'update', 'destroy']);
+Route::resource('tenants', TenantController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
 
 Route::get('forms/{form}/export', [FormController::class, 'export'])->name('forms.export');
 Route::resource('forms', FormController::class);
 
 Route::patch('problems/{problem}/status', [ProblemController::class, 'updateStatus'])->name('problems.updateStatus');
 Route::resource('problems', ProblemController::class);
-Route::resource('problemCategories', ProblemCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
+Route::resource('problemCategories', ProblemCategoryController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
 
 // Goals pilot — App\Support\Experiments\GoalsExperiment. A 404 outside the pilot.
 Route::middleware('experiment.goals')->group(function (): void {
@@ -344,6 +346,8 @@ Route::get('settings/purposes', [SettingsController::class, 'editSystemPurposes'
 Route::post('settings/purposes', [SettingsController::class, 'updateSystemPurposes'])->name('settings.purposes.update');
 Route::get('settings/site', [SettingsController::class, 'editSiteSettings'])->name('settings.site.edit');
 Route::post('settings/site', [SettingsController::class, 'updateSiteSettings'])->name('settings.site.update');
+Route::get('settings/season', [SettingsController::class, 'editSeason'])->name('settings.season.edit');
+Route::post('settings/season', [SettingsController::class, 'updateSeason'])->name('settings.season.update');
 Route::get('settings/cadences', [CadenceController::class, 'index'])->name('settings.cadences.index');
 Route::post('settings/cadences/defaults', [CadenceController::class, 'updateDefaults'])->name('settings.cadences.defaults');
 Route::post('settings/cadences', [CadenceController::class, 'store'])->name('settings.cadences.store');
@@ -358,3 +362,26 @@ Route::resource('institutionTypes', InstitutionTypeController::class)->parameter
 Route::resource('dutyTypes', DutyTypeController::class)->parameters(['dutyTypes' => 'type']);
 Route::put('institutionTypes/{type}/models', [InstitutionTypeController::class, 'syncModels'])->name('institutionTypes.models.sync');
 Route::put('dutyTypes/{type}/models', [DutyTypeController::class, 'syncModels'])->name('dutyTypes.models.sync');
+
+Route::get('knowledge', [KnowledgeBaseController::class, 'show'])->name('knowledgeBase.show');
+Route::get('knowledge/for-you', [KnowledgeBaseController::class, 'mine'])->name('knowledgeBase.mine');
+Route::get('knowledge/library', [KnowledgeItemController::class, 'index'])->name('knowledgeItems.index');
+Route::get('knowledge/documents/search', [KnowledgeItemController::class, 'searchDocuments'])->name('knowledgeItems.documentSearch');
+Route::post('knowledge/items/{knowledgeItem}/progress', [KnowledgeItemProgressController::class, 'store'])->name('knowledgeItems.progress');
+Route::get('knowledge/items/{knowledgeItem}/thumbnail', [KnowledgeItemController::class, 'thumbnail'])->name('knowledgeItems.thumbnail');
+Route::get('knowledge/items/{knowledgeItem}/open', [KnowledgeItemController::class, 'openSource'])->name('knowledgeItems.openSource');
+Route::get('knowledge/a-z', [KnowledgeBaseController::class, 'alphabet'])->name('knowledgeItems.alphabet');
+Route::get('knowledge/graph', [KnowledgeBaseController::class, 'graph'])->name('knowledgeBase.graph');
+Route::get('knowledge/link-options', [KnowledgeItemController::class, 'linkOptions'])->name('knowledgeItems.linkOptions');
+Route::put('knowledge/items/{knowledgeItem}/subjects', [KnowledgeItemController::class, 'syncSubjects'])->name('knowledgeItems.subjects.sync');
+Route::post('knowledge/sections/reorder', [KnowledgeSectionController::class, 'reorder'])->name('knowledgeSections.reorder');
+Route::post('knowledge/sections/{knowledgeSection}/items/reorder', [KnowledgeSectionController::class, 'reorderItems'])->name('knowledgeSections.items.reorder');
+Route::resource('knowledge/sections', KnowledgeSectionController::class)->parameters(['sections' => 'knowledgeSection'])->names('knowledgeSections')->only(['show', 'store', 'update', 'destroy']);
+Route::resource('knowledge/items', KnowledgeItemController::class)->parameters(['items' => 'knowledgeItem'])->names('knowledgeItems')->except('index');
+Route::get('learning', [LearningPathController::class, 'show'])->name('learningPath.show');
+// Mano kelias → Atstovai moved to ViSAK → Atstovai; bookmarks and sent links still land.
+Route::get('learning/reps', fn () => redirect()->route('representatives.index', status: 301));
+Route::get('learning/reps/{user}', fn (string $user) => redirect()->route('representatives.show', $user, 301));
+Route::get('learning/library', [LearningStepController::class, 'index'])->name('learningSteps.index');
+Route::post('learning/steps/{learningStep}/progress', [LearningStepProgressController::class, 'store'])->name('learningSteps.progress');
+Route::resource('learning/steps', LearningStepController::class)->parameters(['steps' => 'learningStep'])->names('learningSteps')->except('index');

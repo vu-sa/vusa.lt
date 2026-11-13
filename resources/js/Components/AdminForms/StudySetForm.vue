@@ -79,7 +79,7 @@
                 :id="`course-semester-${index}`"
                 v-model="course.semester"
                 :options="semesterOptions"
-                :aria-label="$t('Semestras')"
+                :label="$t('Semestras')"
               />
             </FormFieldWrapper>
 

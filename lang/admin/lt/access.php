@@ -60,6 +60,8 @@ return [
         ],
     ],
     'baseline' => [
+        'learningSteps' => 'Visi nariai gali matyti savo kelią, skaityti žingsnius ir žymėti savo pažangą.',
+        'knowledgeItems' => 'Visi nariai gali skaityti visą žinių bazę ir rašyti įžvalgas.',
         'title' => 'Visi nariai – ir be atsakomybės',
         'locked' => 'Visi nariai',
         'locked_own' => 'Savo – visi nariai',

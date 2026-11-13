@@ -1,10 +1,19 @@
 import { describe, it, expect } from 'vitest';
 import { defineComponent } from 'vue';
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 
 import { commonStubs } from '@/tests/stubs';
 
+import type { LinkTargetProvider } from '../linkTargets';
 import TiptapLinkButton from '../TiptapLinkButton.vue';
+
+const wikiTargets: LinkTargetProvider = {
+  load: async () => [
+    { id: 'spk', title: 'Studijų programos komitetas', hint: 'SPK', href: '/mano/knowledge/items/spk' },
+    { id: 'skvc', title: 'Studijų kokybės vertinimo centras', hint: 'SKVC', href: '/mano/knowledge/items/skvc' },
+  ],
+  search: query => query.toLowerCase().includes('skvc') ? [{ id: 'skvc', title: 'Studijų kokybės vertinimo centras', hint: 'SKVC', href: '/mano/knowledge/items/skvc' }] : [],
+};
 
 /**
  * Minimal stand-in for a Tiptap editor covering only the surface this dialog
@@ -23,6 +32,8 @@ function createMockEditor(opts: {
   linkFrom?: number;
   linkTo?: number;
   linkText?: string;
+  knowledgeId?: string;
+  targets?: LinkTargetProvider;
 } = {}) {
   const {
     href = '',
@@ -31,6 +42,8 @@ function createMockEditor(opts: {
     linkFrom = 3,
     linkTo = 15,
     linkText = 'mano nuoroda',
+    knowledgeId,
+    targets,
   } = opts;
 
   const selection = { from, to };
@@ -42,7 +55,8 @@ function createMockEditor(opts: {
         textBetween: (f: number, t: number) => (f === t ? '' : linkText),
       },
     },
-    getAttributes: () => (href ? { href } : {}),
+    storage: targets ? { wikiLink: { targets } } : {},
+    getAttributes: () => (href ? { href, knowledgeId } : {}),
     chain: () => ({
       focus: () => ({
         extendMarkRange: () => ({
@@ -143,7 +157,7 @@ describe('TiptapLinkButton', () => {
 
     const docEvents = wrapper.emitted('document:submit');
     expect(docEvents).toHaveLength(1);
-    expect(docEvents![0]).toEqual(['/dokumentas/abc', 'Dokumentas ABC']);
+    expect(docEvents![0]).toEqual(['/dokumentas/abc', 'Dokumentas ABC', { attrs: { knowledgeId: null }, replaceSelectionText: false }]);
   });
 
   it('prefers a custom link text over the document title', async () => {
@@ -156,7 +170,7 @@ describe('TiptapLinkButton', () => {
     await wrapper.find('[data-testid="doc-confirm"]').trigger('click');
 
     const docEvents = wrapper.emitted('document:submit');
-    expect(docEvents![0]).toEqual(['/dokumentas/abc', 'mano tekstas']);
+    expect(docEvents![0]).toEqual(['/dokumentas/abc', 'mano tekstas', { attrs: { knowledgeId: null }, replaceSelectionText: true }]);
   });
 
   it('does not emit document:submit when the selected hit has no href', async () => {
@@ -170,6 +184,45 @@ describe('TiptapLinkButton', () => {
     await wrapper.find('[data-testid="doc-confirm"]').trigger('click');
 
     expect(wrapper.emitted('document:submit')).toBeUndefined();
+  });
+
+  it('opens a wiki link on the Wiki tab with its text, and renames it in place', async () => {
+    const editor = createMockEditor({ href: '/mano/knowledge/items/spk', knowledgeId: 'spk', linkText: 'komitetas', targets: wikiTargets });
+    const wrapper = mountLinkButton(editor);
+
+    await openDialog(wrapper);
+    await flushPromises();
+
+    expect(wrapper.get('[data-testid="wiki-link-option-spk"]').attributes('aria-selected')).toBe('true');
+    expect(wrapper.get<HTMLInputElement>('[data-testid="wiki-link-text"]').element.value).toBe('komitetas');
+
+    await wrapper.get('[data-testid="wiki-link-text"]').setValue('SPK');
+    await wrapper.get('[data-testid="link-apply"]').trigger('click');
+
+    expect(wrapper.emitted('submit')![0]).toEqual(['/mano/knowledge/items/spk', 'SPK', { attrs: { knowledgeId: 'spk' }, replaceSelectionText: true }]);
+  });
+
+  it('retargets a wiki link to another article', async () => {
+    const editor = createMockEditor({ href: '/mano/knowledge/items/spk', knowledgeId: 'spk', linkText: 'komitetas', targets: wikiTargets });
+    const wrapper = mountLinkButton(editor);
+
+    await openDialog(wrapper);
+    await flushPromises();
+    await wrapper.get('[data-testid="wiki-link-search"]').setValue('skvc');
+    await wrapper.get('[data-testid="wiki-link-option-skvc"]').trigger('click');
+    await wrapper.get('[data-testid="link-apply"]').trigger('click');
+
+    expect(wrapper.emitted('submit')![0]).toEqual(['/mano/knowledge/items/skvc', 'komitetas', { attrs: { knowledgeId: 'skvc' }, replaceSelectionText: false }]);
+  });
+
+  it('drops the article id when a link is saved as a plain address', async () => {
+    const editor = createMockEditor({ href: 'https://vusa.lt', targets: wikiTargets });
+    const wrapper = mountLinkButton(editor);
+
+    await openDialog(wrapper);
+    await wrapper.get('[data-testid="link-apply"]').trigger('click');
+
+    expect(wrapper.emitted('submit')![0]).toEqual(['https://vusa.lt', 'mano nuoroda', { attrs: { knowledgeId: null }, replaceSelectionText: false }]);
   });
 
   // NOTE on coverage gaps (per resources/js/CLAUDE.md):

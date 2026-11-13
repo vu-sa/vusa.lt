@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Mano
-last_reviewed: 2026-11-08
+last_reviewed: 2026-11-09
 tests:
   - tests/Feature/Admin/Management/UserActivityRequestsTest.php
   - resources/js/Pages/Admin/__tests__/ShowAdminHome.component.test.ts
@@ -22,7 +22,8 @@ Sritis rodoma **visiems** naudotojams.
 |---|---|---|
 | Apžvalga | `/mano` | Visi |
 | Užduotys | `/mano/tasks` | Visi – tik savo užduotis |
-| Pranešimai | `/mano/notifications` | Visi – tik savo pranešimus |
+| Pranešimai (varpelis) | `/mano/notifications` | Visi – tik savo pranešimus |
+| [Mano kelias](/mano/kelias) | `/mano/learning` | Visi |
 
 <DocScreenshot name="admin-home" alt="Mano VU SA pradžia: tavo užduotys, greiti veiksmai ir artimiausi posėdžiai" caption="Pradžia – užduotys ir artimiausi tavo posėdžiai vienoje vietoje." href="/mano" />
 

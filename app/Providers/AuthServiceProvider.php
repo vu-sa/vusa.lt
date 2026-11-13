@@ -7,9 +7,15 @@ use App\Enums\ModelEnum;
 use App\Models\FileableFile;
 use App\Models\Goal;
 use App\Models\InstitutionCheckIn;
+use App\Models\KnowledgeItem;
+use App\Models\KnowledgeSection;
+use App\Models\LearningStep;
 use App\Models\User;
 use App\Policies\FileableFilePolicy;
 use App\Policies\InstitutionCheckInPolicy;
+use App\Policies\KnowledgeItemPolicy;
+use App\Policies\KnowledgeSectionPolicy;
+use App\Services\RepresentativesPresenter;
 use App\Settings\SettingsSettings;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
@@ -24,6 +30,8 @@ class AuthServiceProvider extends ServiceProvider
      */
     #[\Override]
     protected $policies = [
+        KnowledgeItem::class => KnowledgeItemPolicy::class,
+        KnowledgeSection::class => KnowledgeSectionPolicy::class,
         // explicit policies that are not inferred from model names
         InstitutionCheckIn::class => InstitutionCheckInPolicy::class,
         FileableFile::class => FileableFilePolicy::class,
@@ -41,8 +49,9 @@ class AuthServiceProvider extends ServiceProvider
         // Implicitly grant "Super Admin" role all permissions
         // This works in the app by using gate-related functions like auth()->user->can() and @can()
         Gate::before(function (User $user, $ability, array $arguments) {
-            // Goal policies enforce tenant enrollment even for super admins.
-            if (($arguments[0] ?? null) === Goal::class || ($arguments[0] ?? null) instanceof Goal) {
+            // These policies enforce invariants even for super admins.
+            if (($arguments[0] ?? null) === Goal::class || ($arguments[0] ?? null) instanceof Goal
+                || ($arguments[0] ?? null) instanceof LearningStep) {
                 return null;
             }
 
@@ -63,6 +72,9 @@ class AuthServiceProvider extends ServiceProvider
         // Define gate for settings management access
         Gate::define('manage-settings', fn (User $user) => app(SettingsSettings::class)->canUserManageSettings($user));
         Gate::define('view-settings', fn (User $user) => app(SettingsSettings::class)->canUserViewSettings($user));
+
+        Gate::define('viewRepresentatives', fn (User $user): bool => RepresentativesPresenter::canView($user));
+        Gate::define('viewRepresentative', fn (User $user, User $rep): bool => RepresentativesPresenter::canViewRep($user, $rep));
 
         // Define gate for administration page access
         // User can access if they have viewAny permission on any administrative model

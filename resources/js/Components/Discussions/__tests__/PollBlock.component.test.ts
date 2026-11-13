@@ -24,15 +24,25 @@ function makePoll(overrides: Partial<PollData> = {}): PollData {
 }
 
 describe('PollBlock', () => {
-  it('renders each option with its count, percentage and voters', () => {
+  it('renders each option with its count and percentage, marking the viewer\'s choice', () => {
     const wrapper = mount(PollBlock, { props: { poll: makePoll() } });
 
-    const text = wrapper.text();
-    expect(text).toContain('Yes');
-    expect(text).toContain('No');
+    const options = wrapper.findAll('[data-testid="poll-option-vote"]');
+    expect(options[0]!.text()).toContain('Yes');
     // 2 of 3 votes ≈ 67%
-    expect(text).toContain('67%');
-    expect(text).toContain('Ada, Ben');
+    expect(options[0]!.text()).toContain('67% · 2');
+    expect(options[0]!.attributes('aria-pressed')).toBe('true');
+    expect(options[1]!.attributes('aria-pressed')).toBe('false');
+    expect(wrapper.text()).toContain('discussions.poll.who_voted');
+  });
+
+  it('lists who voted for each option on request', async () => {
+    const wrapper = mount(PollBlock, { props: { poll: makePoll() }, attachTo: document.body });
+
+    await wrapper.findAll('button').find(button => button.text() === 'discussions.poll.who_voted')!.trigger('click');
+
+    expect(document.body.textContent).toContain('Ada, Ben');
+    wrapper.unmount();
   });
 
   it('emits vote with the option id when an option is clicked', async () => {

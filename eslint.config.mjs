@@ -387,6 +387,21 @@ export default tseslint.config(
             message: 'UI primitives cannot depend on features.',
           },
           {
+            // The winter season stays in its own folder: the rest of the app reaches it only through its index.
+            target: [
+              ...['Components', 'Composables', 'Constants', 'Utils', 'Types', 'Services', 'Shared'].map(folder => `resources/js/${folder}`),
+              'resources/js/Features/!(Admin)/**',
+              'resources/js/Features/Admin/!(Seasons)/**',
+              'resources/js/Pages/!(Admin)/**',
+              'resources/js/Pages/Admin/!(Season)/**',
+              'resources/js/Pages/Admin/*.{vue,ts}',
+              'resources/js/*.ts',
+            ],
+            from: 'resources/js/Features/Admin/Seasons',
+            except: ['./index.ts'],
+            message: 'Import the season only through @/Features/Admin/Seasons (its index.ts), so it stays out of shared code and bundles.',
+          },
+          {
             target: ['resources/js/Components/Public', 'resources/js/Pages/Public'],
             from: ['resources/js/Components/Patterns', 'resources/js/Components/Layouts', 'resources/js/Features/Admin'],
             message: 'Public surfaces use Public/Base and Public/Layouts instead of admin patterns, shells or features.',

@@ -22,6 +22,7 @@ describe('IndexSettings', () => {
       '/mocked-route/settings.cadences.index',
       '/mocked-route/settings.purposes.edit',
       '/mocked-route/settings.site.edit',
+      '/mocked-route/settings.season.edit',
     ]);
   });
 

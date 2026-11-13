@@ -37,7 +37,7 @@
 
       <Separator orientation="vertical" class="mx-0.5 h-5" />
 
-      <TiptapLinkButton :editor @submit="(url, text) => commands.insertLink(url, text)" @document:submit="(url, text) => commands.insertLink(url, text, { document: true })">
+      <TiptapLinkButton :editor @submit="(url, text, options) => commands.insertLink(url, text, options)" @document:submit="(url, text, options) => commands.insertLink(url, text, { ...options, document: true })">
         <TiptapToolButton toggle :active="editor.isActive('link')" :label="$t('rich-content.link')">
           <Link class="size-4" />
         </TiptapToolButton>

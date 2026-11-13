@@ -13,6 +13,9 @@
  */
 
 return [
+    'knowledgeItem' => ['model' => '{1} įrašas|[2,9] įrašai|[10,*] įrašų', 'gender' => 'm'],
+    'learningStep' => ['model' => '{1} mokymosi žingsnis|[2,9] mokymosi žingsniai|[10,*] mokymosi žingsnių', 'gender' => 'm'],
+
     'document' => [
         'model' => '{1} dokumentas|[2,9] dokumentai|[10,*] dokumentų',
         'gender' => 'm',

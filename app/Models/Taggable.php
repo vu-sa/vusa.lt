@@ -18,7 +18,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Tag|null $tag
- * @property-read Model|\Eloquent $taggable
+ * @property-read Model|\Eloquent|null $taggable
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Taggable newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Taggable newQuery()

@@ -26,7 +26,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
- * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $approvable
+ * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent|null $approvable
  * @property-read User|null $revertedBy
  * @property-read User|null $user
  *
