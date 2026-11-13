@@ -135,7 +135,7 @@
         <FormSegmentedControl
           v-model="form.address_mode"
           :options="addressModeOptions"
-          :aria-label="$t('mailing_lists.sheet.address_mode')"
+          :label="$t('mailing_lists.sheet.address_mode')"
           test-id-prefix="source-address-mode"
         />
       </FormFieldWrapper>
@@ -145,7 +145,7 @@
           <FormSegmentedControl
             v-model="form.filters.tenant_scope"
             :options="tenantScopeOptions"
-            :aria-label="$t('mailing_lists.sheet.tenant_scope')"
+            :label="$t('mailing_lists.sheet.tenant_scope')"
             test-id-prefix="source-tenant-scope"
           />
         </FormFieldWrapper>

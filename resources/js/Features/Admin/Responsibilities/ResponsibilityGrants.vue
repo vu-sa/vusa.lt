@@ -150,7 +150,7 @@
     >
       <div class="space-y-6">
         <FormFieldWrapper id="grantee_type" :label="$t('responsibilities.grants.to')">
-          <FormSegmentedControl v-model="form.grantee_type" :options="granteeOptions" :aria-label="$t('responsibilities.grants.to')" test-id-prefix="grantee" />
+          <FormSegmentedControl v-model="form.grantee_type" :options="granteeOptions" :label="$t('responsibilities.grants.to')" test-id-prefix="grantee" />
         </FormFieldWrapper>
 
         <DutySearchField v-if="form.grantee_type === DUTY" v-model="selectedDuty" include-inactive :error="form.errors.grantee_id" />
@@ -203,7 +203,7 @@
             <FormSegmentedControl
               v-model="form.scope_type"
               :options="scopeOptions"
-              :aria-label="$t('responsibilities.sheet.scope')"
+              :label="$t('responsibilities.sheet.scope')"
               test-id-prefix="grant-scope"
             />
           </FormFieldWrapper>

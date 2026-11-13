@@ -6,7 +6,7 @@
     <template #actions>
       <WikiAssignedProgress :progress="assignedProgress" class="sm:w-80" />
     </template>
-    <FormSegmentedControl v-model="mineView" :options="mineOptions" :aria-label="$t('Rodyti')" test-id-prefix="documents-view" class="max-w-md" />
+    <FormSegmentedControl v-model="mineView" :options="mineOptions" :label="$t('Rodyti')" test-id-prefix="documents-view" class="max-w-md" />
     <section v-for="group in mineGroups" :id="`section-${group.key}`" :key="group.key" class="scroll-mt-24" data-slot="document-section" :aria-labelledby="`documents-${group.key}`">
       <h2 :id="`documents-${group.key}`" class="flex items-baseline gap-2 text-xl font-bold leading-tight text-foreground sm:text-2xl">
         {{ group.title }}

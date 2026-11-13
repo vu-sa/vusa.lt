@@ -73,7 +73,7 @@
             v-model="governanceScope"
             tabindex="-1"
             stack-on-phone
-            :aria-label="$t('forms.fields.governance_scope')"
+            :label="$t('forms.fields.governance_scope')"
             :options="governanceScopeOptions"
           />
         </FormFieldWrapper>
@@ -88,7 +88,7 @@
             v-model="meetingKind"
             tabindex="-1"
             stack-on-phone
-            :aria-label="$t('forms.fields.meeting_kind')"
+            :label="$t('forms.fields.meeting_kind')"
             :options="meetingKindOptions()"
           />
         </FormFieldWrapper>

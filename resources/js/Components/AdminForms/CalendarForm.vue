@@ -392,7 +392,7 @@
             v-model="form.is_international"
             :options="audienceOptions"
             :disabled="readOnly"
-            :aria-label="$t('Viešinimo auditorija')"
+            :label="$t('Viešinimo auditorija')"
             test-id-prefix="calendar-audience"
           />
         </FormFieldWrapper>

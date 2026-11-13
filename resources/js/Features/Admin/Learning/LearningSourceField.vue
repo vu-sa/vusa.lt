@@ -9,7 +9,7 @@
       <FormSegmentedControl
         :model-value="modes[locale]"
         :options="modeOptions"
-        :aria-label="$t('learning_library.fields.source')"
+        :label="$t('learning_library.fields.source')"
         :test-id-prefix="`source-mode-${locale}`"
         @update:model-value="mode => setMode(locale, mode)"
       />

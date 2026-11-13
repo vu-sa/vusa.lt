@@ -18,11 +18,11 @@
         <div class="space-y-3">
           <div class="space-y-2">
             <span class="text-sm text-foreground">{{ $t('rich-content.columns') }}</span>
-            <FormSegmentedControl v-model="columnsChoice" :options="columnOptions" :aria-label="$t('rich-content.columns')" />
+            <FormSegmentedControl v-model="columnsChoice" :options="columnOptions" :label="$t('rich-content.columns')" />
           </div>
           <div class="space-y-2">
             <span class="text-sm text-foreground">{{ $t('rich-content.gap_size') }}</span>
-            <FormSegmentedControl v-model="gapChoice" :options="gapOptions" :aria-label="$t('rich-content.gap_size')" />
+            <FormSegmentedControl v-model="gapChoice" :options="gapOptions" :label="$t('rich-content.gap_size')" />
           </div>
           <div class="flex min-h-11 items-center gap-3">
             <Switch :id="lightboxId" v-model="options.showLightbox" />

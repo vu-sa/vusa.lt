@@ -106,7 +106,7 @@
         </p>
       </div>
       <FormFieldWrapper id="section-kind" :label="$t('learning_library.section_manager.kind')" :hint="kindLocked ? $t('learning_library.section_manager.kind_locked') : $t('learning_library.section_manager.kind_hint')" :error="form.errors.kind">
-        <FormSegmentedControl v-model="kindModel" :options="kindOptions" :aria-label="$t('learning_library.section_manager.kind')" :disabled="kindLocked" test-id-prefix="section-kind" />
+        <FormSegmentedControl v-model="kindModel" :options="kindOptions" :label="$t('learning_library.section_manager.kind')" :disabled="kindLocked" test-id-prefix="section-kind" />
       </FormFieldWrapper>
       <FormFieldWrapper id="section-title" :label="$t('learning_library.section_manager.name')" :required="editLocale === 'lt'" :error="form.errors[`title.${editLocale}`]">
         <Input id="section-title" v-model="form.title[editLocale]" :class="fieldSurfaceClass" data-testid="section-title" />

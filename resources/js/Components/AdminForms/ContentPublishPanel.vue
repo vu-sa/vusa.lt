@@ -5,7 +5,7 @@
         v-model="published"
         voice="brand"
         :options="statusOptions"
-        :aria-label="$t('Būsena')"
+        :label="$t('Būsena')"
         :test-id-prefix="`${testIdPrefix}-status`"
       />
     </FormFieldWrapper>

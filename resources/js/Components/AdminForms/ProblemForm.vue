@@ -98,7 +98,7 @@
             stack-on-phone
             tabindex="-1"
             :options="statusOptions"
-            :aria-label="capitalize($tChoice('entities.problem.status', 1))"
+            :label="capitalize($tChoice('entities.problem.status', 1))"
           />
         </FormFieldWrapper>
 

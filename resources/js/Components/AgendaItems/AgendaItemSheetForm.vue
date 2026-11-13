@@ -47,7 +47,7 @@
       <FormSegmentedControl
         v-model="draftType"
         :options="typeOptions"
-        :aria-label="$t('meetings.item.type')"
+        :label="$t('meetings.item.type')"
         test-id-prefix="agenda-item-sheet-type"
         stack-on-phone
         class="[&>button]:gap-1 [&>button]:px-1.5 [&>button]:tracking-normal [&_svg]:size-3.5!"

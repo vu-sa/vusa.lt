@@ -14,7 +14,7 @@
     <FormSegmentedControl
       v-model="mode"
       :options="modeOptions"
-      :aria-label="$t('meetings.agenda.mode_label')"
+      :label="$t('meetings.agenda.mode_label')"
       test-id-prefix="agenda-add-mode"
     />
 

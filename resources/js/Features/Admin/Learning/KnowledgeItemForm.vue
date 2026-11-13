@@ -17,7 +17,7 @@
     @submit="submit"
   >
     <FormFieldWrapper id="article-kind" :label="$t('learning_library.fields.item_kind')" :hint="$t('learning_library.fields.item_kind_hint')" :error="form.errors.kind">
-      <FormSegmentedControl v-model="kindModel" :options="kindOptions" :aria-label="$t('learning_library.fields.item_kind')" test-id-prefix="article-kind" class="max-w-sm" />
+      <FormSegmentedControl v-model="kindModel" :options="kindOptions" :label="$t('learning_library.fields.item_kind')" test-id-prefix="article-kind" class="max-w-sm" />
     </FormFieldWrapper>
 
     <FormFieldWrapper

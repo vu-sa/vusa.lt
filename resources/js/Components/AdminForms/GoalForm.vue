@@ -93,7 +93,7 @@
           <FormSegmentedControl
             v-model="form.status"
             :options="statusOptions"
-            :aria-label="$t('entities.goal.status')"
+            :label="$t('entities.goal.status')"
             test-id-prefix="goal-status"
             class="h-auto grid-cols-1 pointer-coarse:h-auto [&>button]:min-h-10 [&>button]:justify-start [&>button]:px-3 pointer-coarse:[&>button]:min-h-11"
           />

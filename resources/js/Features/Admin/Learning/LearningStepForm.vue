@@ -64,7 +64,7 @@
         <FormSegmentedControl
           v-model="form.kind"
           :options="kindOptions"
-          :aria-label="$t('learning_library.fields.kind')"
+          :label="$t('learning_library.fields.kind')"
           test-id-prefix="step-kind"
         />
       </FormFieldWrapper>

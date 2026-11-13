@@ -71,7 +71,7 @@
         <FormSegmentedControl
           v-model="form.direction"
           :options="directionOptions"
-          :aria-label="$t('Kryptis')"
+          :label="$t('Kryptis')"
           test-id-prefix="relationship-direction"
         />
       </FormFieldWrapper>
@@ -100,7 +100,7 @@
         <FormSegmentedControl
           v-model="form.scope"
           :options="scopeOptions"
-          :aria-label="$t('Aprėptis')"
+          :label="$t('Aprėptis')"
           test-id-prefix="relationship-scope"
           stack-on-phone
         />

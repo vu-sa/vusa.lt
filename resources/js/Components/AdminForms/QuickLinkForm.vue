@@ -118,7 +118,7 @@
           <FormSegmentedControl
             v-model="form.lang"
             :options="langOptions"
-            :aria-label="$t('Kalba')"
+            :label="$t('Kalba')"
           >
             <template #option="{ option }">
               <LocaleFlag :locale="option.value" />

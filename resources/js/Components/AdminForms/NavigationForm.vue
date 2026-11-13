@@ -263,7 +263,7 @@
                 <FormSegmentedControl
                   :model-value="form.extra_attributes.column ?? 1"
                   :options="columnOptions"
-                  :aria-label="$t('navigation.form.column')"
+                  :label="$t('navigation.form.column')"
                   test-id-prefix="navigation-column"
                   @update:model-value="val => form.extra_attributes.column = Number(val)"
                 />
@@ -273,7 +273,7 @@
                 <FormSegmentedControl
                   :model-value="form.extra_attributes.col_span ?? 1"
                   :options="columnOptions"
-                  :aria-label="$t('navigation.form.col_span')"
+                  :label="$t('navigation.form.col_span')"
                   test-id-prefix="navigation-col-span"
                   @update:model-value="val => form.extra_attributes.col_span = Number(val)"
                 />
