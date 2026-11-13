@@ -59,12 +59,24 @@ test('a section with articles keeps its kind, and only a collection has a date',
     expect(KnowledgeSection::query()->where('kind', KnowledgeSectionKind::Collection)->sole()->date->toDateString())->toBe('2026-09-20');
 });
 
-test('the summary keeps only inline marks and its length counts text, not tags', function (): void {
+test('the summary keeps inline marks and wiki links, other links keep only their text', function (): void {
+    $user = wikiEditor();
+    $item = KnowledgeItem::factory()->create();
+    $target = KnowledgeItem::factory()->create();
+    $wikiLink = "<a href=\"/mano/knowledge/{$target->id}\" data-knowledge-id=\"{$target->id}\">SKVC</a>";
+
+    asUser($user)->put(route('knowledgeItems.update', $item), articlePayload(['summary' => ['lt' => "<p><strong>Kvorumas</strong><script>x</script> pagal {$wikiLink} ir <a href=\"https://x.test\">tvarką</a>.</p>"]]))->assertRedirect();
+
+    expect($item->fresh()->getTranslation('summary', 'lt'))->toBe("<strong>Kvorumas</strong> pagal {$wikiLink} ir tvarką.")
+        ->and($item->outgoingLinks()->sole()->is($target))->toBeTrue();
+});
+
+test('the summary length counts text, not tags', function (): void {
     $user = wikiEditor();
     $item = KnowledgeItem::factory()->create();
     $bold = '<strong>'.str_repeat('a', 10).'</strong>'.str_repeat('b', 190);
 
-    asUser($user)->put(route('knowledgeItems.update', $item), articlePayload(['summary' => ['lt' => "<p>{$bold}<script>x</script><a href=\"https://x.test\">link</a></p>"]]))->assertRedirect();
+    asUser($user)->put(route('knowledgeItems.update', $item), articlePayload(['summary' => ['lt' => "<p>{$bold}</p>"]]))->assertRedirect();
     expect($item->fresh()->getTranslation('summary', 'lt'))->toBe($bold);
 
     asUser($user)->put(route('knowledgeItems.update', $item), articlePayload(['summary' => ['lt' => "<strong>a</strong>{$bold}"]]))->assertInvalid('summary.lt');

@@ -197,7 +197,6 @@ export const learningStepImportances = {
 export const learningCuratorFlags = {
   expired_document: withIcon(data.learningCuratorFlags.expired_document, CircleX),
   updated_document: withIcon(data.learningCuratorFlags.updated_document, RefreshCw),
-  missing_source: withIcon(data.learningCuratorFlags.missing_source, TriangleAlert),
 };
 
 export const inactiveInstitutionStatus = withIcon(data.inactiveInstitutionStatus, CircleSlash);

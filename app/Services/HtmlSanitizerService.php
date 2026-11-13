@@ -24,6 +24,9 @@ class HtmlSanitizerService
         $this->richContentSanitizer = new HtmlSanitizer($this->richContentConfig());
         $this->inlineMarksSanitizer = new HtmlSanitizer((new HtmlSanitizerConfig)
             ->allowElement('strong')->allowElement('b')->allowElement('em')->allowElement('i')->allowElement('u')
+            ->allowElement('a', ['href', 'data-knowledge-id'])
+            ->allowLinkSchemes(['https', 'http'])
+            ->allowRelativeLinks()
             ->blockElement('p')
             ->withMaxInputLength(10_000));
     }
@@ -59,11 +62,22 @@ class HtmlSanitizerService
 
     /**
      * Sanitize a one-line field from the Tiptap `marks` preset (an article summary): only inline
-     * marks survive, and the editor's wrapping paragraph is unwrapped so it can sit inside a card.
+     * marks and wiki links survive, and the editor's wrapping paragraph is unwrapped so it can sit
+     * inside a card. Any other link keeps just its text.
      */
     public function sanitizeInlineMarks(string $html): string
     {
-        return trim($this->inlineMarksSanitizer->sanitize($html));
+        $sanitized = $this->inlineMarksSanitizer->sanitize($html);
+
+        return trim((string) preg_replace('#<a\b(?![^>]*\bdata-knowledge-id=)[^>]*>(.*?)</a>#s', '$1', $sanitized));
+    }
+
+    /**
+     * The same field for a place that is itself a link (a card or list row), where a nested link is invalid.
+     */
+    public static function withoutLinks(string $inlineHtml): string
+    {
+        return (string) preg_replace('#</?a\b[^>]*>#', '', $inlineHtml);
     }
 
     private function commentConfig(): HtmlSanitizerConfig

@@ -196,7 +196,7 @@ export const activityRequestStatuses: Record<ActivityRequestStatus, StatusPresen
   expired: status('activity_requests.expired', 'neutral'),
 };
 
-export type LearningCuratorFlag = 'expired_document' | 'updated_document' | 'missing_source';
+export type LearningCuratorFlag = 'expired_document' | 'updated_document';
 
 export const learningStepKinds: Record<LearningStepKind, StatusPresentation> = {
   [LearningStepKind.Action]: status('learning.kinds.action', 'progress'),
@@ -219,7 +219,6 @@ export const learningStepImportances: Record<LearningImportance, StatusPresentat
 export const learningCuratorFlags: Record<LearningCuratorFlag, StatusPresentation> = {
   expired_document: status('learning_library.library.flags.expired_document', 'danger'),
   updated_document: status('learning_library.library.flags.updated_document', 'attention'),
-  missing_source: status('learning_library.library.flags.missing_source', 'attention'),
 };
 
 function status(label: string, role: StatusRole, uppercase = false): StatusPresentation {

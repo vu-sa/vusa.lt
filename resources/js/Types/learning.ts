@@ -54,7 +54,7 @@ export interface KnowledgePriorityProgress {
   total: number;
 }
 
-export type LearningCuratorFlag = 'expired_document' | 'updated_document' | 'missing_source';
+export type LearningCuratorFlag = 'expired_document' | 'updated_document';
 
 export interface LearningLibraryStep {
   id: string;

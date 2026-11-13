@@ -1,7 +1,7 @@
 ---
 title: Wiki įrašai
 doc_status: reviewed
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-13
 tests:
   - tests/Browser/WikiCompletionTest.php
   - tests/Feature/Admin/Learning/KnowledgeItemDocumentPreviewTest.php
@@ -206,9 +206,10 @@ atveria meniu su nuoroda atgal į **Rodyklę A–Ž**.
 ### Biblioteka {#biblioteka}
 
 Biblioteka skirta tiems, kas tvarko Wiki ar Mano kelią (žr. [Kas ką gali](#teises)): visi įrašai
-su paieška, stulpelis **Rūšis** (sąvoka ar medžiaga), greitieji filtrai **Sąvokos**, **Medžiaga**, **Esminis** ir
-**Rekomenduojamas**, kiti (auditorija, skyrius) – skiltyje **Filtrai**. Matomos žymos: dokumentas
-nebegalioja, atnaujintas po peržiūros arba įrašas neturi nei teksto, nei šaltinio. Čia pat
+su paieška, stulpelis **Rūšis** (sąvoka ar medžiaga), greitieji filtrai **Sąvokos**, **Medžiaga**, **Esminis**,
+**Rekomenduojamas** ir **Be šaltinio**, kiti (auditorija, skyrius, šaltinis) – skiltyje **Filtrai**.
+Šaltinis nebūtinas, todėl įrašas be jo nežymimas; filtras **Be šaltinio** padeda rasti, kur jį dar
+verta pridėti. Matomos žymos: dokumentas nebegalioja arba atnaujintas po peržiūros. Čia pat
 tvarkomi skyriai.
 
 Eilutės veiksmas **Atidaryti** su rodykle atveria įrašą; **Redaguoti** yra eilutės **⋯** meniu.
@@ -229,7 +230,9 @@ Mano kelio žingsnių biblioteka yra atskirai: **Organizacija → Kelio žingsni
 
 1. **+ Sukurti** → **Naujas žinių bazės įrašas**.
 2. Pasirink, ar tai **sąvoka**, ar **medžiaga**. Įrašyk pavadinimą, santrumpą (jei yra) ir vieno
-   sakinio santrauką, prasidedančią pavadinimu; jį paryškink (**Ctrl+B**).
+   sakinio santrauką (**Trumpai**), prasidedančią pavadinimu; jį paryškink (**Ctrl+B**). Ir santraukoje
+   `[[` susieja su kitu įrašu: įrašo puslapyje tokia nuoroda veikia kaip tekste, o kortelėse ir
+   sąrašuose rodoma kaip paprastas tekstas.
 3. Tekste parašyk `[[` ir kelias pavadinimo raides – pasirink įrašą, į kurį nori nurodyti.
    Esamą nuorodą pakeisi ją pažymėjęs ir paspaudęs **Redaguoti nuorodą**: skirtuke **Wiki įrašas**
    gali pakeisti nuorodos tekstą ar įrašą, į kurį ji veda. Tekste galima formatuoti, pridėti
@@ -238,15 +241,19 @@ Mano kelio žingsnių biblioteka yra atskirai: **Organizacija → Kelio žingsni
    adresą į dokumento paiešką, jis tampa nuoroda). Šaltinis nebūtinas; jei jis yra tik viena kalba,
    rodomas abiem. Redaguojant galima perjungti šaltinio tipą ir grįžti: pasirinktas dokumentas ir
    įvesta nuoroda išlieka juodraštyje. Išsaugomas tik tuo metu pasirinktas šaltinis.
-5. Dešinėje pasirink, kieno tai įrašas (padalinio ar visos VU SA), ir skyrių: sąvokai – temą,
-   medžiagai – rinkinį. Naujas įrašas atsiduria skyriaus gale; tvarką keisk skyriaus puslapyje.
+5. Dešinėje pasirink, **kas redaguoja** įrašą, ir skyrių: sąvokai – temą, medžiagai – rinkinį.
+   Padalinio įrašą redaguoja to padalinio Wiki redaktoriai, **Visa VU SA** – tik visos VU SA
+   redaktoriai. Tai nelemia, kas įrašą mato: skaityti gali visi, o kam jis skirtas, nustato **Kam
+   skirta**. Medžiaga apie sąvoką skaitytojo padalinio nariams rodoma pirmiau. Naujas įrašas
+   atsiduria skyriaus gale; tvarką keisk skyriaus puslapyje.
 6. Jei gali tvarkyti Mano kelią, skiltyje **Kam skirta** pridėk auditorijas. Pasirinktai grupei
    įrašas bus rodomas puslapyje **Tau skirti įrašai** ir Mano kelio Wiki bloke.
 7. Išsaugok. Įrašo puslapyje prie **Apie ką šis įrašas** spausk **Tvarkyti**, jei
    įrašas apie instituciją ar tipą: institucija pasirenkama paieškos lange, tipai – iš medžio.
    Medžiagą čia susiek ir su sąvoka, kurią ji paaiškina.
 8. Jei įrašas reikalingas tik daliai narių (pvz., vieno padalinio nuostatai), skiltyje **Rodymas**
-   išjunk **Įskaičiuoti į visos Wiki pažangą**. Aprašymo laukelį galima ištempti, kaip ir įprastą
+   išjunk **Įskaičiuoti į visos Wiki pažangą**. Išjungus **Rodomas**, įrašas visiškai dingsta iš Wiki
+   (skyrių, rinkinių, paieškos ir kelio), bet lieka bibliotekoje. Aprašymo laukelį galima ištempti, kaip ir įprastą
    teksto laukelį.
 
 ### Tvarkyti skyrius

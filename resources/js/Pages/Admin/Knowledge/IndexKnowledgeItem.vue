@@ -169,11 +169,12 @@ const source = useLocalCollectionSource<KnowledgeLibraryItem>({
     { field: 'section', label: $t('learning_library.library.filters.section'), get: step => step.section?.id, valueLabel: value => props.sections.find(section => section.id === value)?.title[locale.value] || props.items.find(step => step.section?.id === value)?.section?.title || value },
     { field: 'importance', label: $t('learning_library.library.filters.importance'), get: step => highestImportance(step) ?? undefined, valueLabel: value => $t(`learning.importance.${value}`) },
     { field: 'kind', label: $t('learning_library.library.filters.kind'), get: step => step.kind, valueLabel: value => $t(value === KnowledgeItemKind.Term ? 'learning_library.knowledge.terms_filter' : 'learning_library.knowledge.materials_filter') },
+    { field: 'source', label: $t('learning_library.library.filters.source'), get: step => step.hasSource ? 'with' : 'without', valueLabel: value => $t(`learning_library.library.source.${value}`) },
   ],
 });
 
-// Kind and importance are the main splits here; audience and section stay in the filter panel.
-const quickFilters = computed<CollectionQuickFilter[]>(() => ([['kind', KnowledgeItemKind.Term], ['kind', KnowledgeItemKind.Material], ['importance', LearningImportance.Essential], ['importance', LearningImportance.Recommended]] as const).flatMap(([field, value]) => {
+// Kind and importance are the main splits here, and "Be šaltinio" finds entries to complete; audience and section stay in the filter panel.
+const quickFilters = computed<CollectionQuickFilter[]>(() => ([['kind', KnowledgeItemKind.Term], ['kind', KnowledgeItemKind.Material], ['importance', LearningImportance.Essential], ['importance', LearningImportance.Recommended], ['source', 'without']] as const).flatMap(([field, value]) => {
   const option = source.facets.value.find(facet => facet.field === field)?.values.find(candidate => candidate.value === value);
   return option ? [{ id: `${field}:${value}`, label: quickFilterLabel(option.label, option.count ?? 0), active: option.isSelected }] : [];
 }));

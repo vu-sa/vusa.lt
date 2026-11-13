@@ -17,7 +17,7 @@
         ref="contextMenus"
         :editor
         :show-bold
-        :disable-links
+        :disable-links="disableLinks || wikiLinksOnly"
         :text-bubble="!showToolbar || tools.headingLevels.length > 0"
         :image-menu="preset === 'full'"
       />
@@ -147,6 +147,8 @@ const props = withDefaults(defineProps<{
   html?: boolean;
   disableTables?: boolean;
   disableLinks?: boolean;
+  /** Keep the link mark for `[[` wiki links but offer no URL link controls (the article summary). */
+  wikiLinksOnly?: boolean;
   maxCharacters?: number;
   placeholder?: string;
   /** Keep controls next to a selection instead of reserving space above the editor. */
@@ -197,7 +199,7 @@ const hasMoreMenu = computed(() => {
   const t = tools.value;
   return t.lists || t.blockquote || t.clearFormatting || t.alignment || t.tag || t.headingStyle;
 });
-const linksEnabled = computed(() => !props.disableLinks && Boolean(editor.value?.schema.marks.link));
+const linksEnabled = computed(() => !props.disableLinks && !props.wikiLinksOnly && Boolean(editor.value?.schema.marks.link));
 
 const { handleFileDrop, handleFilePaste, clearPendingUploads } = useTiptapFileUpload();
 
