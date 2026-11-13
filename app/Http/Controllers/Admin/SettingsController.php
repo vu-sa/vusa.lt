@@ -12,6 +12,7 @@ use App\Http\Requests\UpdateAtstovavimasSettingsRequest;
 use App\Http\Requests\UpdateDocumentSettingsRequest;
 use App\Http\Requests\UpdateFormSettingsRequest;
 use App\Http\Requests\UpdateMeetingSettingsRequest;
+use App\Http\Requests\UpdateSeasonSettingsRequest;
 use App\Http\Requests\UpdateSiteSettingsRequest;
 use App\Http\Requests\UpdateSystemPurposesSettingsRequest;
 use App\Models\Document;
@@ -34,8 +35,11 @@ use App\Settings\DutyTypeSettings;
 use App\Settings\FormSettings;
 use App\Settings\MeetingSettings;
 use App\Settings\RepMetricSettings;
+use App\Settings\SeasonSettings;
 use App\Settings\SettingsSettings;
 use App\Settings\SiteSettings;
+use App\Support\Season;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -357,6 +361,34 @@ class SettingsController extends AdminController
         $siteSettings->privacy_page_id_lt = $validated['privacy_page_id_lt'] ?? null;
         $siteSettings->privacy_page_id_en = $validated['privacy_page_id_en'] ?? null;
         $siteSettings->save();
+
+        return $this->redirectBackWithSuccess(__('settings.messages.updated'));
+    }
+
+    public function editSeason(SeasonSettings $seasonSettings, SettingsSettings $settingsSettings): InertiaResponse
+    {
+        return $this->settingsPage($settingsSettings, 'Admin/Settings/EditSeasonSettings', [
+            'enabled' => $seasonSettings->enabled,
+            'starts_on' => $seasonSettings->starts_on,
+            'tree_locks_on' => $seasonSettings->tree_locks_on,
+            'ends_on' => $seasonSettings->ends_on,
+            'ornament_adjust_minutes' => $seasonSettings->ornament_adjust_minutes,
+            'ornament_cooldown_hours' => $seasonSettings->ornament_cooldown_hours,
+        ]);
+    }
+
+    public function updateSeason(UpdateSeasonSettingsRequest $request, SeasonSettings $seasonSettings, SettingsSettings $settingsSettings): RedirectResponse
+    {
+        $this->authorizeSettingsAccess($settingsSettings);
+
+        $seasonSettings->enabled = $request->safe()->boolean('enabled');
+        $seasonSettings->starts_on = $request->validated('starts_on');
+        $seasonSettings->tree_locks_on = $request->validated('tree_locks_on');
+        $seasonSettings->ends_on = $request->validated('ends_on');
+        $seasonSettings->ornament_adjust_minutes = (int) $request->validated('ornament_adjust_minutes');
+        $seasonSettings->ornament_cooldown_hours = (int) $request->validated('ornament_cooldown_hours');
+        $seasonSettings->save();
+        Season::forgetLastTreeYear();
 
         return $this->redirectBackWithSuccess(__('settings.messages.updated'));
     }

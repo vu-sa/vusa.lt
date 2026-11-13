@@ -20,6 +20,12 @@
     <div class="absolute inset-0 -z-10 hidden bg-gradient-to-l from-background/95 from-0% via-background/68 via-32% to-transparent to-62% sm:block" aria-hidden="true" />
     <div class="absolute inset-0 -z-10 hidden bg-gradient-to-t from-background/78 via-transparent to-background/18 sm:block" aria-hidden="true" />
 
+    <!-- The right side of the band, for something the page stands there (the winter tree). -->
+    <!-- z-2: above the seasonal snowdrift (z-1), so the tree stands on the snow. -->
+    <div v-if="$slots.aside" class="absolute inset-y-0 right-7 z-2 hidden pt-3 md:block" data-slot="home-hero-aside">
+      <slot name="aside" />
+    </div>
+
     <div class="min-w-0">
       <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground" data-testid="hero-date">
         {{ today }}

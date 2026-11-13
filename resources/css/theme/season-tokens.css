@@ -1,0 +1,61 @@
+/* Winter-season colours for the tree, the decorations and the seasonal turtle loader; muted so
+   they sit on the paper like the rest of the admin, and deep in dark mode so the lights carry it. */
+@theme inline {
+  --color-season-straw: var(--season-straw);
+}
+
+:root {
+  --season-fir-deep: oklch(0.34 0.055 162);
+  --season-fir-mid: oklch(0.45 0.075 156);
+  --season-fir-light: oklch(0.6 0.085 148);
+  --season-fir-edge: oklch(0.28 0.045 162);
+  --season-fir-needle: oklch(0.72 0.06 150);
+  --season-fir-shadow: oklch(0.2 0.04 168);
+  /* Late in the season the fir cools to a lively spruce blue-green, lit icy on top. */
+  --season-fir-frost: oklch(0.52 0.11 196);
+  --season-fir-frost-light: oklch(0.86 0.07 200);
+  --season-trunk: oklch(0.47 0.05 55);
+  --season-bark: oklch(0.3 0.04 50);
+  --season-straw: oklch(0.66 0.11 78);
+  --season-straw-shade: oklch(0.5 0.09 66);
+  --season-straw-light: oklch(0.86 0.08 88);
+  --season-snow: oklch(0.985 0.004 240);
+  --season-snow-shade: oklch(0.86 0.015 240);
+  --season-snowflake: oklch(0.78 0.03 240);
+  --season-sky: oklch(0.84 0.045 235);
+  /* Behind working pages: a paler, greyer blue than the tree page, still deep enough for white clouds. */
+  --season-sky-ambient: oklch(0.84 0.034 233);
+  --season-cloud: oklch(0.985 0.004 240);
+  --season-cloud-shade: oklch(0.8 0.022 245);
+  --season-light: oklch(0.88 0.12 85);
+  --season-light-glow: oklch(0.82 0.15 72);
+  --season-loader: oklch(0.5 0.1 155);
+  --season-hat: oklch(0.55 0.19 27);
+}
+
+.dark {
+  --season-fir-deep: oklch(0.23 0.035 165);
+  --season-fir-mid: oklch(0.31 0.05 160);
+  --season-fir-light: oklch(0.41 0.065 154);
+  --season-fir-edge: oklch(0.55 0.07 152);
+  --season-fir-needle: oklch(0.5 0.06 152);
+  --season-fir-shadow: oklch(0.1 0.02 168);
+  --season-fir-frost: oklch(0.4 0.09 200);
+  --season-fir-frost-light: oklch(0.68 0.07 205);
+  --season-trunk: oklch(0.34 0.035 55);
+  --season-bark: oklch(0.2 0.025 50);
+  --season-straw: oklch(0.8 0.11 82);
+  --season-straw-shade: oklch(0.62 0.1 72);
+  --season-straw-light: oklch(0.93 0.06 92);
+  --season-snow: oklch(0.86 0.012 245);
+  --season-snow-shade: oklch(0.62 0.02 245);
+  --season-snowflake: oklch(0.93 0.01 245);
+  --season-sky: oklch(0.22 0.04 255);
+  --season-sky-ambient: oklch(0.23 0.032 252);
+  --season-cloud: oklch(0.34 0.02 255);
+  --season-cloud-shade: oklch(0.24 0.02 258);
+  --season-light: oklch(0.9 0.12 85);
+  --season-light-glow: oklch(0.8 0.16 70);
+  --season-loader: oklch(0.7 0.12 152);
+  --season-hat: oklch(0.64 0.18 27);
+}

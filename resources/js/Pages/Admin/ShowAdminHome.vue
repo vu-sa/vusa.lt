@@ -1,8 +1,15 @@
 <template>
   <OverviewPage :title="$t('Mano VU SA')">
     <template #hero>
-      <HomeHero :greeting :image="heroImage" :summary="taskSummary" />
+      <HomeHero :greeting :image="heroImage" :summary="taskSummary">
+        <template v-if="seasonCountdown" #aside>
+          <SeasonCountdown :starts-at="seasonCountdown.startsAt" />
+        </template>
+      </HomeHero>
     </template>
+
+    <!-- Phones have no hero band, so the countdown sits right under the greeting. -->
+    <SeasonCountdown v-if="seasonCountdown" :starts-at="seasonCountdown.startsAt" variant="row" class="md:hidden" />
 
     <div class="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:gap-16" data-slot="home-primary-section">
       <div class="flex min-w-0 flex-col gap-10 lg:gap-14">
@@ -99,6 +106,7 @@ import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import type { ReservationDraftSummaryData } from '@/Components/Reservations/ReservationDraftRow.vue';
 import ReservationDraftSummary from '@/Components/Reservations/ReservationDraftSummary.vue';
 import { CollectionSkeleton, OverviewStatusList } from '@/Components/Patterns';
+import { SeasonCountdown } from '@/Features/Admin/Seasons';
 import { addressivize } from '@/Utils/String';
 import { useProductTour } from '@/Composables/useProductTour';
 import { useIsMobile } from '@/Composables/useIsMobile';
@@ -129,6 +137,8 @@ const props = defineProps<{
   registrationForms: HomeRegistrationForm[];
   /** The user's unfinished reservation, so a started one is one tap away. */
   reservationDraft: ReservationDraftSummaryData | null;
+  /** The week before the season: when it starts. */
+  seasonCountdown?: { startsAt: string } | null;
 }>();
 
 const deferredProps = ['institutionsNeedingAttention', 'upcomingCalendarEvents', 'latestNews', 'recentlyEdited', 'followedInstitutions'];

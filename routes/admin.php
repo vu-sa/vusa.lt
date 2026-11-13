@@ -346,6 +346,8 @@ Route::get('settings/purposes', [SettingsController::class, 'editSystemPurposes'
 Route::post('settings/purposes', [SettingsController::class, 'updateSystemPurposes'])->name('settings.purposes.update');
 Route::get('settings/site', [SettingsController::class, 'editSiteSettings'])->name('settings.site.edit');
 Route::post('settings/site', [SettingsController::class, 'updateSiteSettings'])->name('settings.site.update');
+Route::get('settings/season', [SettingsController::class, 'editSeason'])->name('settings.season.edit');
+Route::post('settings/season', [SettingsController::class, 'updateSeason'])->name('settings.season.update');
 Route::get('settings/cadences', [CadenceController::class, 'index'])->name('settings.cadences.index');
 Route::post('settings/cadences/defaults', [CadenceController::class, 'updateDefaults'])->name('settings.cadences.defaults');
 Route::post('settings/cadences', [CadenceController::class, 'store'])->name('settings.cadences.store');
