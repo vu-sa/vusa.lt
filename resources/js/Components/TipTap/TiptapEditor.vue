@@ -17,7 +17,8 @@
         ref="contextMenus"
         :editor
         :show-bold
-        :disable-links="disableLinks || wikiLinksOnly"
+        :disable-links="!linksEnabled"
+        :wiki-only="wikiLinksOnly"
         :text-bubble="!showToolbar || tools.headingLevels.length > 0"
         :image-menu="preset === 'full'"
       />
@@ -122,6 +123,7 @@ import { latinizeId } from '@/Utils/String';
 
 import { type EditorPreset, getExtensionsForPreset } from './extensions/presets';
 import { KnowledgeLinkAttribute } from './extensions/KnowledgeLinkAttribute';
+import { linkTargetProvider } from './linkTargets';
 import { useTiptapFileUpload } from './composables/useTiptapFileUpload';
 import { useTiptapCommands } from './composables/useTiptapCommands';
 import { normalizeContent } from './normalizeContent';
@@ -147,7 +149,7 @@ const props = withDefaults(defineProps<{
   html?: boolean;
   disableTables?: boolean;
   disableLinks?: boolean;
-  /** Keep the link mark for `[[` wiki links but offer no URL link controls (the article summary). */
+  /** Links may point only at wiki articles (the article summary): the link dialog offers just the Wiki tab. */
   wikiLinksOnly?: boolean;
   maxCharacters?: number;
   placeholder?: string;
@@ -199,7 +201,8 @@ const hasMoreMenu = computed(() => {
   const t = tools.value;
   return t.lists || t.blockquote || t.clearFormatting || t.alignment || t.tag || t.headingStyle;
 });
-const linksEnabled = computed(() => !props.disableLinks && !props.wikiLinksOnly && Boolean(editor.value?.schema.marks.link));
+const linksEnabled = computed(() => !props.disableLinks && Boolean(editor.value?.schema.marks.link)
+  && (!props.wikiLinksOnly || linkTargetProvider(editor.value) !== null));
 
 const { handleFileDrop, handleFilePaste, clearPendingUploads } = useTiptapFileUpload();
 

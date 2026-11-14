@@ -40,6 +40,17 @@
       <article class="min-w-0 max-w-prose space-y-8 lg:col-start-1 lg:row-start-1">
         <WikiProse v-if="articleHtml" :html="articleHtml" :pages="linkedPages" />
         <LearningAudienceNotes v-if="inPath" :notes="item.audienceNotes" />
+        <section v-if="placements.length" aria-labelledby="article-structure" class="space-y-6" data-slot="article-structure">
+          <h2 id="article-structure" class="text-xl font-bold leading-tight text-foreground">
+            {{ $t('learning.wiki.structure') }}
+          </h2>
+          <figure v-for="place in placements" :key="place.graph" class="space-y-2" :data-graph="place.graph">
+            <figcaption class="text-sm font-semibold text-muted-foreground">
+              {{ place.title[locale] }}
+            </figcaption>
+            <FlowGraph :graph-key="place.graph" :highlight="place.node" :articles="place.links" />
+          </figure>
+        </section>
         <section v-if="materials.length" aria-labelledby="article-materials" class="space-y-3" data-slot="article-materials">
           <h2 id="article-materials" class="text-xl font-bold leading-tight text-foreground">
             {{ $t('learning.wiki.materials_about') }}
@@ -153,7 +164,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, toRef, watch } from 'vue';
 import { Link } from '@inertiajs/vue3';
-import { trans as $t } from 'laravel-vue-i18n';
+import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
 import { ArrowUpRight, Pencil } from '@lucide/vue';
 
 import DiscussionPanel from '@/Components/Discussions/DiscussionPanel.vue';
@@ -167,6 +178,8 @@ import WikiPageList from '@/Features/Admin/Knowledge/WikiPageList.vue';
 import WikiLinkPreview from '@/Features/Admin/Knowledge/WikiLinkPreview.vue';
 import WikiMaterialList from '@/Features/Admin/Knowledge/WikiMaterialList.vue';
 import WikiSubjectsSheet from '@/Features/Admin/Knowledge/WikiSubjectsSheet.vue';
+import FlowGraph from '@/Features/StructureGraph/FlowGraph.vue';
+import { findGraph } from '@/Features/StructureGraph/registry';
 import LearningCompletionControl from '@/Features/Admin/Learning/LearningCompletionControl.vue';
 import LearningAudienceNotes from '@/Features/Admin/Learning/LearningAudienceNotes.vue';
 import LearningStepAction from '@/Features/Admin/Learning/LearningStepAction.vue';
@@ -174,7 +187,7 @@ import { useStepProgress } from '@/Features/Admin/Learning/composables/useStepPr
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import { safeHref } from '@/Utils/safeHref';
 import { stripHtmlTags } from '@/Utils/String';
-import type { KnowledgeItemData, LearningCoordinator, LearningInstitutionContacts, LearningTypeOption, WikiMaterial, WikiPageSummary, WikiSubject } from '@/Types/learning';
+import type { KnowledgeItemData, LearningCoordinator, LearningInstitutionContacts, LearningTypeOption, WikiMaterial, WikiPageSummary, WikiStructurePlacement, WikiSubject } from '@/Types/learning';
 
 const props = withDefaults(defineProps<{
   item: KnowledgeItemData;
@@ -190,10 +203,17 @@ const props = withDefaults(defineProps<{
   subjects?: WikiSubject[];
   /** Material about this term, the viewer's own units first. */
   materials?: WikiMaterial[];
+  /** The structure graphs this article sits in. */
+  structures?: WikiStructurePlacement[];
   subjectOptions?: { institutionTypes: LearningTypeOption[]; dutyTypes: LearningTypeOption[]; terms: { id: string; title: string }[] };
-}>(), { linkedPages: () => ({}), related: () => [], subjects: () => [], materials: () => [], subjectOptions: () => ({ institutionTypes: [], dutyTypes: [], terms: [] }) });
+}>(), { linkedPages: () => ({}), related: () => [], subjects: () => [], materials: () => [], structures: () => [], subjectOptions: () => ({ institutionTypes: [], dutyTypes: [], terms: [] }) });
 
 const readonly = computed(() => !props.canTrack);
+const locale = computed(() => (getActiveLanguage() === 'en' ? 'en' : 'lt'));
+const placements = computed(() => props.structures.flatMap((place) => {
+  const graph = findGraph(place.graph);
+  return graph ? [{ ...place, title: graph.title }] : [];
+}));
 const done = computed(() => new Set(props.doneIds ?? []));
 const relatedPages = computed(() => Object.fromEntries(props.related.map(page => [page.id, page])));
 const { checked, saving, failed } = useStepProgress(toRef(props, 'item'), readonly);

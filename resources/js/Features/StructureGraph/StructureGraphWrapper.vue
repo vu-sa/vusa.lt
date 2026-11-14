@@ -2,22 +2,26 @@
   <div class="h-96 sm:h-[468px]">
     <StructureGraph :min-zoom="0.2" :nodes :edges show-fullscreen @show-dialog="handleModal" />
   </div>
+  <p class="mt-2 mb-4 text-xs text-muted-foreground" data-slot="structure-graph-hint">
+    {{ $t('Paspausk elementą – liks matomi tik su juo susiję.') }}
+  </p>
 
-  <dialog ref="dialogRef" class="w-full h-full bg-zinc-50 dark:bg-zinc-900 ml-4 mt-4">
+  <dialog ref="dialogRef" class="m-0 h-dvh max-h-none w-dvw max-w-none bg-background p-4 text-foreground backdrop:bg-black/50" @close="showGraph = false">
     <div class="h-full">
-      <StructureGraph v-if="showGraph" :min-zoom="0.2" :nodes :edges :animated show-close @close="dialogRef?.close()" />
+      <StructureGraph v-if="showGraph" :min-zoom="0.2" :nodes :edges :animated scroll-zoom show-close @close="dialogRef?.close()" />
     </div>
   </dialog>
 </template>
 
 <script setup lang="ts">
+import type { Edge, Node } from '@vue-flow/core';
 import { ref, useTemplateRef } from 'vue';
 
 import StructureGraph from './StructureGraph.vue';
 
 defineProps<{
-  nodes: Record<string, any>[];
-  edges: Record<string, any>[];
+  nodes: Node[];
+  edges: Edge[];
 }>();
 
 const dialogRef = useTemplateRef<HTMLDialogElement | null>('dialogRef');
@@ -28,5 +32,5 @@ function handleModal() {
   showGraph.value = true;
 }
 
-const animated = ref(true);
+const animated = ref(false);
 </script>

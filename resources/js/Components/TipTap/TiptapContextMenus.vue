@@ -94,6 +94,7 @@
     v-if="linksEnabled"
     ref="linkDialog"
     :editor
+    :wiki-only
     @submit="(url, text, options) => commands.insertLink(url, text, options)"
     @document:submit="(url, text, options) => commands.insertLink(url, text, { ...options, document: true })"
   />
@@ -139,6 +140,8 @@ const props = withDefaults(defineProps<{
   imageMenu?: boolean;
   showBold?: boolean;
   disableLinks?: boolean;
+  /** Only wiki links: the dialog shows just its Wiki tab. */
+  wikiOnly?: boolean;
 }>(), {
   // eslint-disable-next-line vue/no-boolean-default -- most editors want the selection bubble.
   textBubble: true,
@@ -146,6 +149,7 @@ const props = withDefaults(defineProps<{
   // eslint-disable-next-line vue/no-boolean-default -- true for every caller but a bold-styled field.
   showBold: true,
   disableLinks: false,
+  wikiOnly: false,
 });
 
 const bubbleClass = 'flex items-center gap-0.5 border border-border bg-background p-1 text-foreground shadow-md';

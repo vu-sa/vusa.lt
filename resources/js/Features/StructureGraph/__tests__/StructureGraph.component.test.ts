@@ -41,3 +41,31 @@ describe('StructureGraph motion', () => {
     }
   });
 });
+
+describe('StructureGraph focus', () => {
+  it('fades what a clicked node is not tied to, and restores it on an empty click', async () => {
+    const FlowStub = defineComponent({
+      props: ['nodes', 'edges'],
+      emits: ['init', 'nodeClick', 'paneClick'],
+      template: '<div />',
+    });
+    const wrapper = mount(StructureGraph, {
+      props: {
+        nodes: [{ id: 'a', position: { x: 0, y: 0 } }, { id: 'b', position: { x: 0, y: 0 } }, { id: 'c', position: { x: 0, y: 0 } }],
+        edges: [{ id: 'a-b', source: 'a', target: 'b' }, { id: 'b-c', source: 'b', target: 'c' }],
+      },
+      global: { stubs: { VueFlow: FlowStub } },
+    });
+    const flow = () => wrapper.getComponent(FlowStub);
+    const faded = (items: { id: string; class?: string }[]) => items.filter(item => item.class?.includes('is-faded')).map(item => item.id);
+
+    flow().vm.$emit('nodeClick', { node: { id: 'a' } });
+    await nextTick();
+    expect(faded(flow().props('nodes'))).toEqual(['c']);
+    expect(faded(flow().props('edges'))).toEqual(['b-c']);
+
+    flow().vm.$emit('paneClick');
+    await nextTick();
+    expect(faded(flow().props('nodes'))).toEqual([]);
+  });
+});

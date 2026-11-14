@@ -1,0 +1,27 @@
+{
+  "nodes": [
+    {"id":"node-ark","kind":"assembly","label":{"lt":"VU SA ataskaitinė-rinkiminė konferencija","en":"VU SR Annual Convention"},"handles":["right","left","bottom"],"width":340,"position":{"x":10,"y":0}},
+    {"id":"node-prezidentas","kind":"leader","label":{"lt":"Prezidentas","en":"President"},"handles":["top","left-bottom","right-bottom","right-top"],"position":{"x":104,"y":90}},
+    {"id":"node-cb","kind":"body","label":{"lt":"Centrinis biuras","en":"Central Office"},"handles":["left"],"width":120,"position":{"x":370,"y":73}},
+    {"id":"node-revizija","kind":"body","label":{"lt":"Revizijos komisija","en":"Revision Commission"},"handles":["left"],"width":120,"position":{"x":420,"y":0},"positionEn":{"x":420,"y":-9}},
+    {"id":"node-taryba","kind":"council","label":{"lt":"Taryba","en":"Council"},"handles":["top","right","bottom-left"],"position":{"x":5,"y":170}},
+    {"id":"node-parlamentas","kind":"council","label":{"lt":"Parlamentas","en":"Parliament"},"handles":["top","left","right"],"position":{"x":205,"y":170},"positionEn":{"x":255,"y":170}},
+    {"id":"node-park","kind":"assembly","label":{"lt":"VU SA P ataskaitinė-rinkiminė konferencija","en":"VU SR U Annual Convention"},"handles":["left","bottom","right","bottom-right"],"width":260,"position":{"x":50,"y":250}},
+    {"id":"node-pirmininkas","kind":"leader","label":{"lt":"Pirmininkas","en":"Chairperson"},"handles":["left","top","bottom"],"position":{"x":105,"y":340}},
+    {"id":"node-pkvo","kind":"assembly","label":{"lt":"VU SA P kolegialus valdymo organas","en":"VU SR U collegial governing body"},"handles":["top","top-right"],"width":260,"position":{"x":50,"y":410}}
+  ],
+  "edges": [
+    {"id":"edge-ark-prezidentas","source":"node-ark","target":"node-prezidentas","sourceHandle":"bottom","targetHandle":"top","type":"step","label":{"lt":"Renka","en":"Elects"}},
+    {"id":"edge-prezidentas-cb","source":"node-prezidentas","target":"node-cb","sourceHandle":"right-top","targetHandle":"left","label":{"lt":"Paskiria","en":"Appoints"}},
+    {"id":"edge-ark-revizija","source":"node-ark","target":"node-revizija","sourceHandle":"right","targetHandle":"left","label":{"lt":"Renka","en":"Elects"}},
+    {"id":"edge-prezidentas-taryba","source":"node-prezidentas","target":"node-taryba","sourceHandle":"left-bottom","targetHandle":"top","label":{"lt":"Įeina į","en":"Included in"}},
+    {"id":"edge-prezidentas-parlamentas","source":"node-prezidentas","target":"node-parlamentas","sourceHandle":"right-bottom","targetHandle":"top","label":{"lt":"Įeina į","en":"Included in"}},
+    {"id":"edge-park-ark","source":"node-park","target":"node-ark","sourceHandle":"left","targetHandle":"left","label":{"lt":"Deleguoja 10 narių į","en":"Delegates 10 members to"}},
+    {"id":"edge-taryba-parlamentas","source":"node-taryba","target":"node-parlamentas","sourceHandle":"right","targetHandle":"left","label":{"lt":"Įeina į","en":"Included in"}},
+    {"id":"edge-park-pirmininkas","source":"node-park","target":"node-pirmininkas","sourceHandle":"bottom","targetHandle":"top","label":{"lt":"Renka","en":"Elects"}},
+    {"id":"edge-pirmininkas-taryba","source":"node-pirmininkas","target":"node-taryba","sourceHandle":"left","targetHandle":"bottom-left","label":{"lt":"Įeina į","en":"Included in"}},
+    {"id":"edge-park-parlamentas","source":"node-park","target":"node-parlamentas","sourceHandle":"right","targetHandle":"right","label":{"lt":"Deleguoja 2 narius į","en":"Delegates 2 members to"}},
+    {"id":"edge-park-pkvo","source":"node-park","target":"node-pkvo","sourceHandle":"bottom-right","targetHandle":"top-right","label":{"lt":"Renka","en":"Elects"}},
+    {"id":"edge-pirmininkas-pkvo","source":"node-pirmininkas","target":"node-pkvo","sourceHandle":"bottom","targetHandle":"top","label":{"lt":"Įeina į","en":"Included in"}}
+  ]
+}

@@ -1,56 +1,44 @@
 <template>
-  <button type="button"
+  <button
+    type="button"
     class="relative h-full w-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-    @mouseenter="handleOpen" @mouseleave="handleClose"
-    @blur="handleClose" @focus="isVisible = true">
-    <!-- <component :is="data.label" /> -->
-    <span v-if="typeof data.label === 'string'" :class="[data.textClass]" class="absolute top-2 text-xs left-0 text-center leading-4 w-full">{{ data.label }}</span>
+    :class="[data.nodeClass, data.highlighted && 'outline-2 outline-offset-4 outline-brand']"
+    :aria-expanded="hasDetails ? showDetails : undefined"
+    @focus="details.onFocus"
+    @blur="details.onBlur"
+    @mouseenter="details.enter"
+    @mouseleave="details.leave"
+  >
+    <span v-if="typeof data.label === 'string'" :class="[data.textClass]" class="absolute inset-x-0 top-1.5 px-2 text-left text-[10px] leading-tight">{{ data.label }}</span>
     <component :is="data.label" v-else />
+    <span v-if="data.article" aria-hidden="true" class="absolute right-1 top-1 size-1.5 bg-current opacity-70" data-testid="structure-node-linked" />
   </button>
-  <Handle type="source" :position="sourcePosition" />
-  <Handle type="target" :position="targetPosition" />
-  <NodeToolbar v-if="data.description || data.url" class="max-w-md border border-border bg-popover p-3 text-xs text-popover-foreground shadow-sm" :is-visible
-    position="top" @mouseenter="isOnToolbar = true" @mouseleave="handleToolbarLeave"
-    @focusin="isOnToolbar = true" @focusout="handleToolbarLeave">
-    <strong v-if="typeof data.label === 'string'" class="block">{{ data.label }}</strong>
-    {{
-      data.description }}
-    <a v-if="data.url" rel="noopener noreferrer" :href="data.url" target="_blank" class="text-brand underline"
-      @click.stop @mouseenter="isOnToolbar = true" @focus="isOnToolbar = true">Nuoroda</a>
-  </NodeToolbar>
+  <template v-if="data.handles">
+    <Handle v-for="handle in handlesFor(data.handles)" :id="handle.id" :key="handle.id" :position="handle.position" :style="handle.style" />
+  </template>
+  <template v-else>
+    <Handle type="source" :position="sourcePosition ?? Position.Bottom" />
+    <Handle type="target" :position="targetPosition ?? Position.Top" />
+  </template>
+  <NodeDetails v-if="hasDetails" :is-visible="showDetails" :data @mouseenter="details.enter" @mouseleave="details.leave" />
 </template>
 
-<script setup>
-import { Handle } from '@vue-flow/core';
-import { NodeToolbar } from '@vue-flow/node-toolbar';
-import { ref } from 'vue';
+<script setup lang="ts">
+import { Handle, Position } from '@vue-flow/core';
+import { computed } from 'vue';
 
-defineProps(['id', 'sourcePosition', 'targetPosition', 'data']);
+import NodeDetails from './NodeDetails.vue';
+import { useNodeDetails } from './useNodeDetails';
+import { handlesFor, type StructureNodeData } from './handles';
 
-const isVisible = ref(false);
-const isOnButton = ref(false);
-const isOnToolbar = ref(false);
+const props = defineProps<{
+  id: string;
+  data: StructureNodeData;
+  sourcePosition?: Position;
+  targetPosition?: Position;
+}>();
 
-const handleOpen = () => {
-  isOnButton.value = true;
-  setTimeout(() => {
-    if (isOnButton.value) {
-      isVisible.value = true;
-    }
-  }, 200);
-};
-
-const handleClose = () => {
-  isOnButton.value = false;
-  setTimeout(() => {
-    if (!isOnToolbar.value) {
-      isVisible.value = false;
-    }
-  }, 180);
-};
-
-const handleToolbarLeave = () => {
-  isOnToolbar.value = false;
-  handleClose();
-};
+const details = useNodeDetails();
+const hasDetails = computed(() => Boolean(props.data.description || props.data.url || props.data.article));
+const showDetails = details.open;
 </script>

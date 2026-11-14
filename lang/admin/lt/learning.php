@@ -171,6 +171,8 @@ return [
         'materials' => 'Medžiaga',
         'materials_lead' => 'Mokymų skaidrės, pavyzdžiai ir kiti dokumentai, sugrupuoti į rinkinius.',
         'materials_about' => 'Susijusi medžiaga',
+        'structure' => 'Vieta struktūroje',
+        'structure_read' => 'Skaityti: :title',
         'materials_empty' => 'Rinkinių dar nėra.',
         'read' => 'Skaityti',
         'section_empty' => 'Šiame skyriuje dar nėra įrašų.',
