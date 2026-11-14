@@ -29,5 +29,5 @@ function handleModal() {
   showGraph.value = true;
 }
 
-const animated = ref(true);
+const animated = ref(false);
 </script>

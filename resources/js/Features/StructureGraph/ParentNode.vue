@@ -7,7 +7,7 @@
     @focus="focused = true"
     @blur="focused = false"
   >
-    <span v-if="typeof data.label === 'string'" :class="[data.textClass]" class="absolute left-0 top-2 w-full text-center text-xs leading-4">{{ data.label }}</span>
+    <span v-if="typeof data.label === 'string'" :class="[data.textClass]" class="absolute inset-x-0 top-1.5 px-2 text-left text-[10px] leading-tight">{{ data.label }}</span>
     <component :is="data.label" v-else />
     <span v-if="data.article" aria-hidden="true" class="absolute right-1 top-1 size-1.5 bg-current opacity-70" data-testid="structure-node-linked" />
   </button>

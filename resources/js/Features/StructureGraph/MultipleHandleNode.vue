@@ -1,13 +1,13 @@
 <template>
   <button
     type="button"
-    class="relative h-full w-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+    class="relative flex h-full w-full items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
     :class="[data.nodeClass, data.highlighted && 'outline-2 outline-offset-4 outline-brand']"
     :aria-expanded="hasDetails ? showDetails : undefined"
     @focus="focused = true"
     @blur="focused = false"
   >
-    <span v-if="typeof data.label === 'string'" :class="[data.textClass]" class="mx-auto block w-fit p-2 text-[13.4px]">{{ data.label }}</span>
+    <span v-if="typeof data.label === 'string'" :class="[data.textClass]" class="mx-auto block w-fit px-2 py-1.5 text-[11px] leading-tight">{{ data.label }}</span>
     <component :is="data.label" v-else />
     <!-- Marks a node that opens a wiki article, so readers know it leads somewhere. -->
     <span v-if="data.article" aria-hidden="true" class="absolute right-1 top-1 size-1.5 bg-current opacity-70" data-testid="structure-node-linked" />
