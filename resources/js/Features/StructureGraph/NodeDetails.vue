@@ -2,7 +2,7 @@
   <NodeToolbar
     :is-visible
     :position="Position.Top"
-    class="max-w-md border border-border bg-popover p-3 text-xs text-popover-foreground shadow-sm"
+    class="w-max max-w-[min(20rem,calc(100vw-3rem))] border border-border bg-popover p-3 text-xs text-popover-foreground shadow-sm"
     data-slot="structure-node-details"
   >
     <strong v-if="typeof data.label === 'string'" class="block">{{ data.label }}</strong>
