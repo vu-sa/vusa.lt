@@ -14,6 +14,7 @@ use App\Enums\LearningStage;
 use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\KnowledgeItem;
+use App\Models\KnowledgeItemSource;
 use App\Models\KnowledgeSection;
 use App\Models\LearningAudience;
 use App\Models\LearningProgress;
@@ -230,16 +231,25 @@ class KnowledgeBasePresenter
         ];
     }
 
-    /** The source document's first page, only when the caller eager-loaded `sources.document`. */
+    /** The source's first page or page preview, only when the caller eager-loaded `sources.document`. */
     public static function thumbnail(KnowledgeItem $page, string $locale): ?string
     {
         if (! $page->relationLoaded('sources')) {
             return null;
         }
-        $document = $page->sourceFor($locale)?->document;
+        $source = $page->sourceFor($locale);
 
-        return $document?->thumbnail_path === null ? null
-            : route('knowledgeItems.thumbnail', [$page, 'v' => substr(md5((string) $document->thumbnail_etag), 0, 8)]);
+        return $source === null ? null : self::sourceThumbnail($page, $source);
+    }
+
+    /** A document source's SharePoint preview, or a URL source's own, versioned so a new one busts the cache. */
+    private static function sourceThumbnail(KnowledgeItem $page, KnowledgeItemSource $source): ?string
+    {
+        [$path, $version] = $source->document !== null
+            ? [$source->document->thumbnail_path, $source->document->thumbnail_etag]
+            : [$source->isUrl() ? $source->thumbnail_path : null, $source->thumbnail_version];
+
+        return $path === null ? null : route('knowledgeItems.thumbnail', [$page, 'v' => substr(md5((string) $version), 0, 8)]);
     }
 
     /** The summary as plain text, for search, rows and meta. */
@@ -368,11 +378,11 @@ class KnowledgeBasePresenter
             return [
                 'type' => 'document', 'url' => $isPublic ? route('documents.show', $document->id) : route('knowledgeItems.openSource', $step),
                 'documentId' => $document->id, 'documentStatus' => $document->status, 'title' => $document->title, 'private' => ! $isPublic,
-                'thumbnailUrl' => $document->thumbnail_path !== null ? route('knowledgeItems.thumbnail', [$step, 'v' => substr(md5((string) $document->thumbnail_etag), 0, 8)]) : null,
+                'thumbnailUrl' => self::sourceThumbnail($step, $source),
             ];
         }
         if ($source->url !== null) {
-            return ['type' => 'url', 'url' => $source->url, 'documentId' => null, 'documentStatus' => null, 'title' => null, 'private' => false, 'thumbnailUrl' => $source->thumbnail_path !== null ? route('knowledgeItems.thumbnail', [$step, 'v' => substr(md5((string) $source->thumbnail_version), 0, 8)]) : null];
+            return ['type' => 'url', 'url' => $source->url, 'documentId' => null, 'documentStatus' => null, 'title' => null, 'private' => false, 'thumbnailUrl' => self::sourceThumbnail($step, $source)];
         }
 
         return null;

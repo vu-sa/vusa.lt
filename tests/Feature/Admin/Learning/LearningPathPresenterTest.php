@@ -40,6 +40,14 @@ test('hidden sources open through the knowledge item and show its thumbnail', fu
         ->and($source['thumbnailUrl'])->toStartWith(route('knowledgeItems.thumbnail', $step).'?v=');
 });
 
+test('a link source with its own preview gives cards a thumbnail too', function (): void {
+    $material = KnowledgeItem::factory()->create();
+    $material->sources()->forceCreate(['locale' => 'lt', 'url' => 'https://example.test/page', 'thumbnail_path' => 'source-thumbnails/1.webp', 'thumbnail_version' => 'v1']);
+    $material->load('sources.document');
+
+    expect(KnowledgeBasePresenter::thumbnail($material, 'en'))->toStartWith(route('knowledgeItems.thumbnail', $material).'?v=');
+});
+
 test('system text is localized and raw URLs preserve the source contract', function (): void {
     $viewer = makeUser(Tenant::query()->firstOrFail());
     $step = LearningStep::query()->where('key', 'install_app')->firstOrFail();
