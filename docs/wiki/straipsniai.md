@@ -132,7 +132,8 @@ Pasirinkus schemą ir jos elementą, įrašo puslapyje po tekstu rodomas blokas 
 schema, kurioje tas elementas apvestas. Pasirinkus tik schemą, rodoma visa schema, be pažymėto elemento.
 
 Vienas elementas gali būti susietas tik su vienu įrašu. Kiti schemos elementai, turintys savo įrašą,
-pažymėti mažu kvadratėliu: paspaudus elementą atsiveria jo aprašymas ir nuoroda **Skaityti**. Schemą
+pažymėti mažu kvadratėliu: paspaudus elementą atsiveria jo aprašymas ir nuoroda **Skaityti**, o visa,
+kas su juo nesusiję (nei grupe, nei rodykle), prigęsta; paspaudus tuščią vietą, schema vėl rodoma visa. Schemą
 galima artinti, tempti ir atverti per visą ekraną. Pačios schemos keičiamos sistemoje – pastebėjus
 klaidą ar pasikeitusią struktūrą, parašyk IT.
 

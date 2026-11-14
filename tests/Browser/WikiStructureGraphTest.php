@@ -20,6 +20,8 @@ it('shows an article in its structure graph, with other nodes leading to their a
         ->screenshotElement('[data-slot=article-structure]', filename: 'wiki-structure-article');
     $page->click('.vue-flow__node[data-id=node-taryba] button')
         ->assertAttribute('[data-testid=structure-node-article]', 'href', route('knowledgeItems.show', $council))
+        ->assertPresent('.vue-flow__node.is-faded[data-id=node-studentai]')
+        ->assertNotPresent('.vue-flow__node.is-faded[data-id=node-taryba]')
         ->screenshotElement('[data-slot=article-structure]', filename: 'wiki-structure-node-open');
     $page->resize(390, 844)->assertNoJavaScriptErrors()->screenshotElement('[data-slot=article-structure]', filename: 'wiki-structure-phone');
 });

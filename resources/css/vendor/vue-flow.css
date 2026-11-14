@@ -103,3 +103,18 @@
 .basic-flow .structure-edge--dashed .vue-flow__edge-path {
   stroke-dasharray: 6 4;
 }
+
+/* Focus: what a clicked node is not tied to steps back. */
+.basic-flow :is(.vue-flow__node, .vue-flow__edge) {
+  transition: opacity 150ms ease;
+}
+
+.basic-flow :is(.vue-flow__node, .vue-flow__edge).is-faded {
+  opacity: 0.08;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .basic-flow :is(.vue-flow__node, .vue-flow__edge) {
+    transition: none;
+  }
+}

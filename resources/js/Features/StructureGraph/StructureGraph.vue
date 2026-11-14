@@ -2,7 +2,8 @@
   <VueFlow fit-view-on-init :nodes :edges default-marker-color="var(--muted-foreground)"
     class="basic-flow mb-4 border" :nodes-connectable="false" :nodes-draggable="!readonly"
     :elements-selectable="!readonly" :pan-on-drag="!readonly" :zoom-on-scroll="!readonly && scrollZoom"
-    :zoom-on-pinch="!readonly" :zoom-on-double-click="!readonly" :prevent-scrolling="!readonly && scrollZoom" @init="onInit">
+    :zoom-on-pinch="!readonly" :zoom-on-double-click="!readonly" :prevent-scrolling="!readonly && scrollZoom" @init="onInit"
+    @node-click="({ node }) => focusedId = node.id" @pane-click="focusedId = null">
     <template #node-multiple-handle="props">
       <MultipleHandleNode :id="props.id" :data="props.data" :selected="props.selected" />
     </template>
@@ -50,6 +51,7 @@ import { ref, computed, shallowRef, watch } from 'vue';
 
 import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
 
+import { focusOn } from './focus';
 import MultipleHandleNode from './MultipleHandleNode.vue';
 import ParentNode from './ParentNode.vue';
 
@@ -70,14 +72,15 @@ defineEmits<{
   (e: 'close'): void;
 }>();
 
-const nodes = computed(() => {
-  return props.nodes.map((node) => {
-    return {
-      ...node,
-      class: 'vue-flow__node-default',
-    };
-  });
-});
+// A clicked node fades everything unrelated, so its ties read without the rest of the graph.
+const focusedId = ref<string | null>(null);
+watch(() => props.nodes, () => { focusedId.value = null; });
+const focus = computed(() => focusedId.value ? focusOn(focusedId.value, props.nodes, props.edges) : null);
+
+const nodes = computed(() => props.nodes.map(node => ({
+  ...node,
+  class: ['vue-flow__node-default', focus.value && !focus.value.nodes.has(node.id) && 'is-faded'].filter(Boolean).join(' '),
+})));
 
 const { isReducedMotion } = useAccessibilityPreferences();
 const flow = shallowRef<VueFlowStore>();
@@ -97,23 +100,10 @@ function onInit(instance: VueFlowStore): void {
 watch(isReducedMotion, applyMotion);
 const playAnimations = ref(props.animated);
 
-const edges = computed(() => {
-  if (playAnimations.value && !isReducedMotion.value) {
-    return props.edges.map((edge) => {
-      return {
-        ...edge,
-        animated: true,
-      };
-    });
-  }
-  else {
-    return props.edges.map((edge) => {
-      return {
-        ...edge,
-        animated: false,
-      };
-    });
-  }
-});
+const edges = computed(() => props.edges.map(edge => ({
+  ...edge,
+  animated: Boolean(playAnimations.value && !isReducedMotion.value),
+  class: [edge.class, focus.value && !focus.value.edges.has(edge.id) && 'is-faded'].filter(Boolean).join(' ') || undefined,
+})));
 
 </script>
