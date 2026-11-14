@@ -1642,5 +1642,6 @@
     "Visos pareigybės": "All duties",
     "Nepavyko atverti laikotarpio. Atnaujink puslapį ir bandyk dar kartą.": "Could not open the term. Refresh the page and try again.",
     "Nepavyko įkelti duomenų. Bandyk dar kartą.": "Could not load data. Try again.",
-    "Šios schemos nebėra.": "This graph is no longer available."
+    "Šios schemos nebėra.": "This graph is no longer available.",
+    "Paspausk elementą – liks matomi tik su juo susiję.": "Click an element to see only what it is tied to."
 }

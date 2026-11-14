@@ -18,6 +18,7 @@ it('shows an article in its structure graph, with other nodes leading to their a
     $page = loginAsAdmin($user, route('knowledgeItems.show', $senate, absolute: false), 1440, 1000);
     $page->assertVisible('[data-slot=article-structure] .vue-flow__node[data-id=node-senatas]')
         ->assertPresent('.vue-flow__node[data-id=node-taryba] [data-testid=structure-node-linked]')
+        ->assertSee('Paspausk elementą – liks matomi tik su juo susiję.')
         ->assertNoJavaScriptErrors()
         ->screenshotElement('[data-slot=article-structure]', filename: 'wiki-structure-article');
     $page->click('.vue-flow__node[data-id=node-taryba] button')

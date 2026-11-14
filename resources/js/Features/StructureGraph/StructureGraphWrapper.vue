@@ -2,6 +2,9 @@
   <div class="h-96 sm:h-[468px]">
     <StructureGraph :min-zoom="0.2" :nodes :edges show-fullscreen @show-dialog="handleModal" />
   </div>
+  <p class="mt-2 mb-4 text-xs text-muted-foreground" data-slot="structure-graph-hint">
+    {{ $t('Paspausk elementą – liks matomi tik su juo susiję.') }}
+  </p>
 
   <dialog ref="dialogRef" class="m-0 h-dvh max-h-none w-dvw max-w-none bg-background p-4 text-foreground backdrop:bg-black/50" @close="showGraph = false">
     <div class="h-full">
