@@ -5,10 +5,10 @@
     :zoom-on-pinch="!readonly" :zoom-on-double-click="!readonly" :prevent-scrolling="!readonly && scrollZoom" @init="onInit"
     @node-click="({ node }) => focusedId = node.id" @pane-click="focusedId = null">
     <template #node-multiple-handle="props">
-      <MultipleHandleNode :id="props.id" :data="props.data" :selected="props.selected" />
+      <MultipleHandleNode :id="props.id" :data="props.data" />
     </template>
     <template #node-parent="props">
-      <ParentNode :id="props.id" :data="props.data" :selected="props.selected" :source-position="props.sourcePosition"
+      <ParentNode :id="props.id" :data="props.data" :source-position="props.sourcePosition"
         :target-position="props.targetPosition" />
     </template>
     <Controls v-if="!readonly" class="h-8" position="bottom-right">

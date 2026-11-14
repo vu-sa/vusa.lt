@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { defineComponent } from 'vue';
+import { describe, expect, it, vi } from 'vitest';
+import { defineComponent, nextTick } from 'vue';
 import { mount } from '@vue/test-utils';
 
 import MultipleHandleNode from '../MultipleHandleNode.vue';
@@ -16,16 +16,32 @@ const mountNode = (props: Record<string, unknown>) => mount(MultipleHandleNode, 
 });
 
 describe('MultipleHandleNode', () => {
-  it('opens its details when selected or focused, not before', async () => {
-    const wrapper = mountNode({ data: { label: 'Senatas', handles: [], description: 'Akademinės savivaldos organas.' } });
-    expect(wrapper.get('[data-testid="toolbar"]').attributes('data-visible')).toBe('false');
+  it('shows its details while hovered, with a moment to reach the popover, and never pins them on click', async () => {
+    vi.useFakeTimers();
+    try {
+      const wrapper = mountNode({ data: { label: 'Senatas', handles: [], description: 'Akademinės savivaldos organas.' } });
+      const visible = () => wrapper.get('[data-testid="toolbar"]').attributes('data-visible');
+      expect(visible()).toBe('false');
 
-    await wrapper.get('button').trigger('focus');
-    expect(wrapper.get('[data-testid="toolbar"]').attributes('data-visible')).toBe('true');
+      await wrapper.get('button').trigger('mouseenter');
+      expect(visible()).toBe('true');
 
-    await wrapper.get('button').trigger('blur');
-    await wrapper.setProps({ selected: true });
-    expect(wrapper.get('[data-testid="toolbar"]').attributes('data-visible')).toBe('true');
+      await wrapper.get('button').trigger('mouseleave');
+      await wrapper.get('[data-testid="toolbar"]').trigger('mouseenter');
+      vi.advanceTimersByTime(300);
+      await nextTick();
+      expect(visible()).toBe('true');
+
+      await wrapper.get('[data-testid="toolbar"]').trigger('mouseleave');
+      await wrapper.get('button').trigger('click');
+      await wrapper.get('button').trigger('focus');
+      vi.advanceTimersByTime(300);
+      await nextTick();
+      expect(visible()).toBe('false');
+    }
+    finally {
+      vi.useRealTimers();
+    }
   });
 
   it('marks a node that leads to a wiki article and links to it', () => {

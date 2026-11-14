@@ -23,6 +23,10 @@ it('shows an article in its structure graph, with other nodes leading to their a
         ->assertPresent('.vue-flow__node.is-faded[data-id=node-studentai]')
         ->assertNotPresent('.vue-flow__node.is-faded[data-id=node-taryba]')
         ->screenshotElement('[data-slot=article-structure]', filename: 'wiki-structure-node-open');
+    // The details follow the pointer; the click only keeps the focus fade.
+    $page->hover('#article-structure')->wait(0.5)
+        ->assertNotPresent('[data-testid=structure-node-article]')
+        ->assertPresent('.vue-flow__node.is-faded[data-id=node-studentai]');
     $page->resize(390, 844)->assertNoJavaScriptErrors()->screenshotElement('[data-slot=article-structure]', filename: 'wiki-structure-phone');
 });
 
