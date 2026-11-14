@@ -31,4 +31,10 @@ describe('focusOn', () => {
     expect([...focus.nodes].sort()).toEqual(['kiti', 'komitetas', 'seimas', 'skvc', 'skvc-taryba', 'vsf']);
     expect(focus.edges.has('lss-vsf')).toBe(false);
   });
+
+  it('keeps every member of a group a line leads to', () => {
+    const focus = focusOn('lss', nodes, [...edges, { id: 'lss-skvc', source: 'lss', target: 'skvc' }]);
+
+    expect([...focus.nodes].sort()).toEqual(['lss', 'skvc', 'skvc-taryba', 'vsf']);
+  });
 });

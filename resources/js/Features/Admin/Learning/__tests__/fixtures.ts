@@ -60,7 +60,7 @@ export function editKnowledge(overrides: Partial<KnowledgeItemEditData> = {}): K
   return {
     id: 'knowledge-1', kind: KnowledgeItemKind.Term, title: { lt: 'LT pavadinimas', en: 'EN title' }, abbreviation: { lt: '', en: '' },
     summary: { lt: 'LT santrauka', en: 'EN summary' }, description: { lt: '', en: '' },
-    knowledge_section_id: null, tenant_id: null, structure_graph: null, structure_node: null, audiences: [audience({ stage: null })],
+    knowledge_section_id: null, tenant_id: null, structure: [], audiences: [audience({ stage: null })],
     is_active: true, counts_in_progress: true, sources: {}, source_documents: {}, ...overrides,
   };
 }

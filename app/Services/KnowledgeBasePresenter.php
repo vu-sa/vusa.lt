@@ -15,6 +15,7 @@ use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\KnowledgeItem;
 use App\Models\KnowledgeItemSource;
+use App\Models\KnowledgeItemStructureNode;
 use App\Models\KnowledgeSection;
 use App\Models\LearningAudience;
 use App\Models\LearningProgress;
@@ -143,11 +144,11 @@ class KnowledgeBasePresenter
     /**
      * The record page: the item plus everything its wiki links need.
      *
-     * @return array{linkedPages: array<string, PageSummary>, related: list<PageSummary>, subjects: list<array{id: string, type: string, title: string, url: string|null}>, materials: list<MaterialPayload>, structure: array{graph: string, node: string|null, links: array<string, array{title: string, url: string}>}|null}
+     * @return array{linkedPages: array<string, PageSummary>, related: list<PageSummary>, subjects: list<array{id: string, type: string, title: string, url: string|null}>, materials: list<MaterialPayload>, structures: list<array{graph: string, node: string|null, links: array<string, array{title: string, url: string}>}>}
      */
     public static function pageContext(KnowledgeItem $item, string $locale, ?User $viewer = null): array
     {
-        $item->loadMissing(['outgoingLinks' => fn ($query) => $query->active()->with('sources.document'), 'incomingLinks' => fn ($query) => $query->active()->with('sources.document'), 'subjects.subject']);
+        $item->loadMissing(['outgoingLinks' => fn ($query) => $query->active()->with('sources.document'), 'incomingLinks' => fn ($query) => $query->active()->with('sources.document'), 'subjects.subject', 'structureNodes']);
         $related = $item->outgoingLinks->concat($item->incomingLinks)->unique('id')
             ->map(fn (KnowledgeItem $page): array => self::summary($page, $locale))->values()->all();
         $collator = new \Collator($locale);
@@ -158,10 +159,9 @@ class KnowledgeBasePresenter
             'related' => $related,
             'subjects' => self::subjects($item, $locale),
             'materials' => $item->kind === KnowledgeItemKind::Term ? self::materials($item, $locale, $viewer) : [],
-            'structure' => $item->structure_graph !== null ? [
-                'graph' => $item->structure_graph, 'node' => $item->structure_node,
-                'links' => self::graphLinks($item->structure_graph, $locale),
-            ] : null,
+            'structures' => $item->structureNodes->map(fn (KnowledgeItemStructureNode $place): array => [
+                'graph' => $place->graph, 'node' => $place->node, 'links' => self::graphLinks($place->graph, $locale),
+            ])->values()->all(),
         ];
     }
 
@@ -172,10 +172,10 @@ class KnowledgeBasePresenter
      */
     public static function graphLinks(string $graph, string $locale): array
     {
-        return KnowledgeItem::query()->active()->where('structure_graph', $graph)->whereNotNull('structure_node')
-            ->get(['id', 'title', 'structure_graph', 'structure_node'])
-            ->mapWithKeys(fn (KnowledgeItem $page): array => [
-                (string) $page->structure_node => ['title' => (string) $page->getTranslation('title', $locale), 'url' => route('knowledgeItems.show', $page)],
+        return KnowledgeItemStructureNode::query()->where('graph', $graph)->whereNotNull('node')
+            ->whereHas('item', fn ($query) => $query->active())->with('item:id,title')->get()
+            ->mapWithKeys(fn (KnowledgeItemStructureNode $place): array => [
+                (string) $place->node => ['title' => (string) $place->item->getTranslation('title', $locale), 'url' => route('knowledgeItems.show', $place->item)],
             ])->all();
     }
 
@@ -437,7 +437,7 @@ class KnowledgeBasePresenter
         return $result;
     }
 
-    /** @return array{id: string, kind: KnowledgeItemKind, title: array{lt: string, en: string}, abbreviation: array{lt: string, en: string}, summary: array{lt: string, en: string}, description: array{lt: string, en: string}, knowledge_section_id: string|null, tenant_id: int|null, structure_graph: string|null, structure_node: string|null, audiences: list<array{id: string, type: LearningAudienceType, source_id: string|null, tenant_id: int|null, importance: LearningImportance, stage: LearningStage|null, description: array{lt: string, en: string}, order: int, label: string}>, is_active: bool, counts_in_progress: bool, sources: array<string, array{document_id: int|null, url: string|null}>, source_documents: array<string, array{id: int, title: string, status: string, date: string|null}>} */
+    /** @return array{id: string, kind: KnowledgeItemKind, title: array{lt: string, en: string}, abbreviation: array{lt: string, en: string}, summary: array{lt: string, en: string}, description: array{lt: string, en: string}, knowledge_section_id: string|null, tenant_id: int|null, structure: list<array{graph: string, node: string|null}>, audiences: list<array{id: string, type: LearningAudienceType, source_id: string|null, tenant_id: int|null, importance: LearningImportance, stage: LearningStage|null, description: array{lt: string, en: string}, order: int, label: string}>, is_active: bool, counts_in_progress: bool, sources: array<string, array{document_id: int|null, url: string|null}>, source_documents: array<string, array{id: int, title: string, status: string, date: string|null}>} */
     public static function edit(KnowledgeItem $step): array
     {
         $sources = [];
@@ -462,7 +462,7 @@ class KnowledgeBasePresenter
             'summary' => ['lt' => (string) $step->getTranslation('summary', 'lt', false), 'en' => (string) $step->getTranslation('summary', 'en', false)],
             'description' => ['lt' => (string) $step->getTranslation('description', 'lt', false), 'en' => (string) $step->getTranslation('description', 'en', false)],
             'knowledge_section_id' => $step->knowledge_section_id, 'tenant_id' => $step->tenant_id,
-            'structure_graph' => $step->structure_graph, 'structure_node' => $step->structure_node,
+            'structure' => $step->structureNodes->map(fn (KnowledgeItemStructureNode $place): array => ['graph' => $place->graph, 'node' => $place->node])->values()->all(),
             'audiences' => $step->audiences->map(fn (LearningAudience $audience): array => [
                 'id' => $audience->id, 'type' => $audience->type, 'source_id' => $audience->source_id,
                 'tenant_id' => $audience->tenant_id, 'importance' => $audience->importance, 'stage' => $audience->stage,

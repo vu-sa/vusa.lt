@@ -28,37 +28,60 @@ function structurePayload(array $overrides = []): array
     ];
 }
 
-test('an article is placed on a node of a structure graph, or on a whole graph', function (): void {
+function placeOn(KnowledgeItem $item, string $graph, ?string $node = null): KnowledgeItem
+{
+    $item->structureNodes()->create(['graph' => $graph, 'node' => $node, 'order' => $item->structureNodes()->count()]);
+
+    return $item;
+}
+
+test('an article is placed on nodes of several graphs, or on a whole graph, in order', function (): void {
     $item = KnowledgeItem::factory()->create(['tenant_id' => null]);
 
-    asUser(structureEditor())->put(route('knowledgeItems.update', $item), structurePayload(['structure_graph' => 'vusa-structure', 'structure_node' => 'node-taryba']))->assertValid();
-    expect($item->refresh())->structure_graph->toBe('vusa-structure')->structure_node->toBe('node-taryba');
+    asUser(structureEditor())->put(route('knowledgeItems.update', $item), structurePayload(['structure' => [
+        ['graph' => 'vu', 'node' => 'node-senatas'],
+        ['graph' => 'am', 'node' => null],
+    ]]))->assertValid();
 
-    asUser(structureEditor())->put(route('knowledgeItems.update', $item), structurePayload(['structure_graph' => 'vu', 'structure_node' => null]))->assertValid();
-    expect($item->refresh())->structure_graph->toBe('vu')->structure_node->toBeNull();
+    expect($item->structureNodes()->get(['graph', 'node', 'order'])->toArray())->toBe([
+        ['graph' => 'vu', 'node' => 'node-senatas', 'order' => 0],
+        ['graph' => 'am', 'node' => null, 'order' => 1],
+    ]);
+
+    asUser(structureEditor())->put(route('knowledgeItems.update', $item), structurePayload(['structure' => []]))->assertValid();
+    expect($item->structureNodes()->count())->toBe(0);
 });
 
-test('a node must exist in its graph and belongs to one article only', function (): void {
-    KnowledgeItem::factory()->create(['structure_graph' => 'vusa-structure', 'structure_node' => 'node-taryba']);
+test('a node must exist in its graph, belongs to one article, and an article sits once per graph', function (): void {
+    placeOn(KnowledgeItem::factory()->create(), 'vusa-structure', 'node-taryba');
     $item = KnowledgeItem::factory()->create(['tenant_id' => null]);
     $editor = structureEditor();
+    $put = fn (array $structure) => asUser($editor)->put(route('knowledgeItems.update', $item), structurePayload(['structure' => $structure]));
 
-    asUser($editor)->put(route('knowledgeItems.update', $item), structurePayload(['structure_graph' => 'nope', 'structure_node' => null]))->assertInvalid('structure_graph');
-    asUser($editor)->put(route('knowledgeItems.update', $item), structurePayload(['structure_graph' => 'vusa-structure', 'structure_node' => 'node-missing']))->assertInvalid('structure_node');
-    asUser($editor)->put(route('knowledgeItems.update', $item), structurePayload(['structure_graph' => null, 'structure_node' => 'node-cb']))->assertInvalid('structure_graph');
-    asUser($editor)->put(route('knowledgeItems.update', $item), structurePayload(['structure_graph' => 'vusa-structure', 'structure_node' => 'node-taryba']))->assertInvalid('structure_node');
+    $put([['graph' => 'nope']])->assertInvalid('structure.0.graph');
+    $put([['graph' => 'vusa-structure', 'node' => 'node-missing']])->assertInvalid('structure.0.node');
+    $put([['graph' => 'vusa-structure', 'node' => 'node-taryba']])->assertInvalid('structure.0.node');
+    $put([['graph' => 'vu'], ['graph' => 'vu', 'node' => 'node-senatas']])->assertInvalid('structure.1.graph');
 });
 
-test('the article page lists the articles other nodes of its graph stand for', function (): void {
-    $item = KnowledgeItem::factory()->create(['structure_graph' => 'vusa-structure', 'structure_node' => 'node-taryba']);
-    $other = KnowledgeItem::factory()->create(['structure_graph' => 'vusa-structure', 'structure_node' => 'node-parlamentas', 'title' => ['lt' => 'Parlamentas', 'en' => 'Parliament']]);
-    KnowledgeItem::factory()->create(['structure_graph' => 'vusa-structure', 'structure_node' => 'node-cb', 'is_active' => false]);
-    KnowledgeItem::factory()->create(['structure_graph' => 'vu', 'structure_node' => 'node-rektorius']);
+test('an article keeps its own node when saved again', function (): void {
+    $item = placeOn(KnowledgeItem::factory()->create(['tenant_id' => null]), 'vu', 'node-senatas');
 
-    $structure = KnowledgeBasePresenter::pageContext($item, 'en')['structure'];
+    asUser(structureEditor())->put(route('knowledgeItems.update', $item), structurePayload(['structure' => [['graph' => 'vu', 'node' => 'node-senatas']]]))->assertValid();
+});
 
-    expect($structure['graph'])->toBe('vusa-structure')
-        ->and($structure['node'])->toBe('node-taryba')
-        ->and(array_keys($structure['links']))->toEqualCanonicalizing(['node-taryba', 'node-parlamentas'])
-        ->and($structure['links']['node-parlamentas'])->toBe(['title' => 'Parliament', 'url' => route('knowledgeItems.show', $other)]);
+test('the article page lists each graph with the articles its other nodes stand for', function (): void {
+    $item = placeOn(placeOn(KnowledgeItem::factory()->create(), 'vusa-structure', 'node-taryba'), 'vu');
+    $other = placeOn(KnowledgeItem::factory()->create(['title' => ['lt' => 'Parlamentas', 'en' => 'Parliament']]), 'vusa-structure', 'node-parlamentas');
+    placeOn(KnowledgeItem::factory()->create(['is_active' => false]), 'vusa-structure', 'node-cb');
+    placeOn(KnowledgeItem::factory()->create(), 'vu', 'node-rektorius');
+
+    $structures = KnowledgeBasePresenter::pageContext($item, 'en')['structures'];
+
+    expect(array_column($structures, 'graph'))->toBe(['vusa-structure', 'vu'])
+        ->and($structures[0]['node'])->toBe('node-taryba')
+        ->and(array_keys($structures[0]['links']))->toEqualCanonicalizing(['node-taryba', 'node-parlamentas'])
+        ->and($structures[0]['links']['node-parlamentas'])->toBe(['title' => 'Parliament', 'url' => route('knowledgeItems.show', $other)])
+        ->and($structures[1]['node'])->toBeNull()
+        ->and(array_keys($structures[1]['links']))->toBe(['node-rektorius']);
 });

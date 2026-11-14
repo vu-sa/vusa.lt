@@ -39,8 +39,7 @@ describe('KnowledgeItemForm', () => {
       props: {
         item: {
           id: 'step-1',
-          structure_graph: null,
-          structure_node: null,
+          structure: [],
           title: { lt: 'LT pavadinimas', en: 'EN title' },
           description: { lt: 'LT paaiškinimas', en: 'EN explanation' },
           abbreviation: { lt: '', en: '' },
@@ -106,8 +105,7 @@ describe('KnowledgeItemForm', () => {
       props: {
         item: {
           id: 'step-1',
-          structure_graph: null,
-          structure_node: null,
+          structure: [],
           title: { lt: 'Žingsnis', en: 'Step' },
           description: { lt: '', en: '' },
           abbreviation: { lt: '', en: '' },

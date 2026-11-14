@@ -40,16 +40,16 @@
       <article class="min-w-0 max-w-prose space-y-8 lg:col-start-1 lg:row-start-1">
         <WikiProse v-if="articleHtml" :html="articleHtml" :pages="linkedPages" />
         <LearningAudienceNotes v-if="inPath" :notes="item.audienceNotes" />
-        <section v-if="structure && structureGraph" aria-labelledby="article-structure" class="space-y-3" data-slot="article-structure">
-          <div>
-            <h2 id="article-structure" class="text-xl font-bold leading-tight text-foreground">
-              {{ structure.node ? $t('learning.wiki.structure') : structureGraph.title[locale] }}
-            </h2>
-            <p v-if="structure.node" class="mt-1 text-sm text-muted-foreground">
-              {{ structureGraph.title[locale] }}
-            </p>
-          </div>
-          <FlowGraph :graph-key="structure.graph" :highlight="structure.node" :articles="structure.links" />
+        <section v-if="placements.length" aria-labelledby="article-structure" class="space-y-6" data-slot="article-structure">
+          <h2 id="article-structure" class="text-xl font-bold leading-tight text-foreground">
+            {{ $t('learning.wiki.structure') }}
+          </h2>
+          <figure v-for="place in placements" :key="place.graph" class="space-y-2" :data-graph="place.graph">
+            <figcaption class="text-sm font-semibold text-muted-foreground">
+              {{ place.title[locale] }}
+            </figcaption>
+            <FlowGraph :graph-key="place.graph" :highlight="place.node" :articles="place.links" />
+          </figure>
         </section>
         <section v-if="materials.length" aria-labelledby="article-materials" class="space-y-3" data-slot="article-materials">
           <h2 id="article-materials" class="text-xl font-bold leading-tight text-foreground">
@@ -203,14 +203,17 @@ const props = withDefaults(defineProps<{
   subjects?: WikiSubject[];
   /** Material about this term, the viewer's own units first. */
   materials?: WikiMaterial[];
-  /** The structure graph this article sits in, if any. */
-  structure?: WikiStructurePlacement | null;
+  /** The structure graphs this article sits in. */
+  structures?: WikiStructurePlacement[];
   subjectOptions?: { institutionTypes: LearningTypeOption[]; dutyTypes: LearningTypeOption[]; terms: { id: string; title: string }[] };
-}>(), { linkedPages: () => ({}), related: () => [], subjects: () => [], materials: () => [], structure: null, subjectOptions: () => ({ institutionTypes: [], dutyTypes: [], terms: [] }) });
+}>(), { linkedPages: () => ({}), related: () => [], subjects: () => [], materials: () => [], structures: () => [], subjectOptions: () => ({ institutionTypes: [], dutyTypes: [], terms: [] }) });
 
 const readonly = computed(() => !props.canTrack);
 const locale = computed(() => (getActiveLanguage() === 'en' ? 'en' : 'lt'));
-const structureGraph = computed(() => findGraph(props.structure?.graph));
+const placements = computed(() => props.structures.flatMap((place) => {
+  const graph = findGraph(place.graph);
+  return graph ? [{ ...place, title: graph.title }] : [];
+}));
 const done = computed(() => new Set(props.doneIds ?? []));
 const relatedPages = computed(() => Object.fromEntries(props.related.map(page => [page.id, page])));
 const { checked, saving, failed } = useStepProgress(toRef(props, 'item'), readonly);

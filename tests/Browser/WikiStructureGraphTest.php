@@ -10,8 +10,10 @@ pest()->use(RefreshDatabase::class);
 it('shows an article in its structure graph, with other nodes leading to their articles', function (): void {
     $user = makeUser(Tenant::query()->firstOrFail());
     $user->givePermissionTo(Permission::findOrCreate('knowledgeItems.update.*', 'web'));
-    $senate = KnowledgeItem::factory()->withoutAudiences()->create(['title' => ['lt' => 'Senatas', 'en' => 'Senate'], 'structure_graph' => 'vu', 'structure_node' => 'node-senatas']);
-    $council = KnowledgeItem::factory()->withoutAudiences()->create(['title' => ['lt' => 'Taryba', 'en' => 'Council'], 'structure_graph' => 'vu', 'structure_node' => 'node-taryba']);
+    $senate = KnowledgeItem::factory()->withoutAudiences()->create(['title' => ['lt' => 'Senatas', 'en' => 'Senate']]);
+    $senate->structureNodes()->create(['graph' => 'vu', 'node' => 'node-senatas']);
+    $council = KnowledgeItem::factory()->withoutAudiences()->create(['title' => ['lt' => 'Taryba', 'en' => 'Council']]);
+    $council->structureNodes()->create(['graph' => 'vu', 'node' => 'node-taryba']);
 
     $page = loginAsAdmin($user, route('knowledgeItems.show', $senate, absolute: false), 1440, 1000);
     $page->assertVisible('[data-slot=article-structure] .vue-flow__node[data-id=node-senatas]')
@@ -36,9 +38,12 @@ it('lets an editor pick a graph and a node, previewing the node highlighted', fu
     $item = KnowledgeItem::factory()->withoutAudiences()->create();
 
     $page = loginAsAdmin($user, route('knowledgeItems.edit', $item, absolute: false), 1440, 1000);
-    $page->select('[data-testid=structure-graph]', 'vusa-structure')
-        ->select('[data-testid=structure-node]', 'node-parlamentas')
-        ->assertVisible('[data-slot=structure-field] .vue-flow__node[data-id=node-parlamentas]')
+    $page->click('[data-testid=structure-add]')
+        ->select('[data-testid=structure-graph-0]', 'vusa-structure')
+        ->select('[data-testid=structure-node-0]', 'node-parlamentas')
+        ->click('[data-testid=structure-add]')
+        ->assertVisible('[data-testid=structure-place-1]')
+        ->assertVisible('[data-testid=structure-place-0] .vue-flow__node[data-id=node-parlamentas]')
         ->assertNoJavaScriptErrors()
         ->screenshotElement('[data-slot=structure-field]', filename: 'wiki-structure-form');
 });

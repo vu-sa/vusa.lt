@@ -5,7 +5,7 @@
     </p>
     <div v-else-if="!flow" :class="['animate-pulse bg-muted', preview ? 'h-64' : 'h-96 sm:h-[468px]']" />
     <div v-else-if="preview" class="h-64">
-      <StructureGraph readonly :nodes="flow.nodes" :edges="flow.edges" class="!mb-0" />
+      <StructureGraph readonly :min-zoom="0.1" :nodes="flow.nodes" :edges="flow.edges" class="!mb-0" />
     </div>
     <StructureGraphWrapper v-else :nodes="flow.nodes" :edges="flow.edges" />
   </div>
