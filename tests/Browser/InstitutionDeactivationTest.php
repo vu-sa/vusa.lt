@@ -87,6 +87,8 @@ it('applies list status changes and retains inactive institution tags across nav
 
     navigateTo($page, '/mano/duties?view=preview');
     waitForInertiaRender($page, '[data-slot=collection-preview] [data-slot=collection-status-menu]');
+    // The preview opens the first row; the actor's own (randomly named) duty can sort before this one.
+    $page->click('[data-slot=collection-rows] li:has-text("Būsenos pareigybė") [data-collection-open]');
     $page->assertSee('Nebeveikianti institucija');
     foreach (['light', 'dark'] as $theme) {
         $page->script('document.documentElement.classList.toggle("dark", '.($theme === 'dark' ? 'true' : 'false').')');
