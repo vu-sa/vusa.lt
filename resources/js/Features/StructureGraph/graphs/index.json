@@ -1,0 +1,9 @@
+[
+  {"key": "vusa-structure", "title": {"lt": "VU SA struktūra", "en": "VU SR structure"}, "description": {"lt": "Konferencijos, Taryba, Parlamentas ir padalinių valdymas.", "en": "Conferences, the Council, the Parliament and unit governance."}},
+  {"key": "vu", "title": {"lt": "Vilniaus universitetas", "en": "Vilnius University"}, "description": {"lt": "Taryba, Senatas, Rektorius, rektoratas ir jų komisijos.", "en": "The Council, Senate, Rector, Rectorate and their committees."}},
+  {"key": "kap", "title": {"lt": "Kamienis akademinis padalinys", "en": "Core academic unit"}, "description": {"lt": "Fakulteto ar instituto taryba, komisijos, SPK ir studentų atstovai.", "en": "A faculty or institute council, committees, study programme committees and student representatives."}},
+  {"key": "seimas", "title": {"lt": "Seimas", "en": "Seimas"}, "description": {"lt": "Seimo vadovybė, frakcijos ir komitetai.", "en": "The Seimas leadership, political groups and committees."}},
+  {"key": "lrv", "title": {"lt": "Vyriausybė", "en": "Government"}, "description": {"lt": "Ministras Pirmininkas ir 14 ministerijų.", "en": "The Prime Minister and the 14 ministries."}},
+  {"key": "smsm", "title": {"lt": "Švietimo, mokslo ir sporto ministerija", "en": "Ministry of Education, Science and Sport"}, "description": {"lt": "Ministerija ir jai pavaldžios įstaigos.", "en": "The ministry and the agencies under it."}},
+  {"key": "am", "title": {"lt": "Aukštojo mokslo valdymas", "en": "Higher education governance"}, "description": {"lt": "Kas Lietuvoje sprendžia aukštojo mokslo klausimus.", "en": "Who decides on higher education in Lithuania."}}
+]

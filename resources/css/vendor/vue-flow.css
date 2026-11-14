@@ -87,3 +87,34 @@
   border-color: var(--flow-border);
   background: var(--flow-surface);
 }
+
+/* A group frames its members on a tint, so nested groups read as layers. */
+.basic-flow .vue-flow__node-parent.vue-flow__node-default {
+  border-color: var(--flow-border);
+  background: color-mix(in oklab, var(--muted) 55%, transparent);
+}
+
+/* Not connectable, so the anchor dots are only clutter; edges still attach to them. */
+.basic-flow .vue-flow__handle {
+  opacity: 0;
+}
+
+/* A weaker tie (advises, proposes), told apart without a colour of its own. */
+.basic-flow .structure-edge--dashed .vue-flow__edge-path {
+  stroke-dasharray: 6 4;
+}
+
+/* Focus: what a clicked node is not tied to steps back. */
+.basic-flow :is(.vue-flow__node, .vue-flow__edge) {
+  transition: opacity 150ms ease;
+}
+
+.basic-flow :is(.vue-flow__node, .vue-flow__edge).is-faded {
+  opacity: 0.08;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .basic-flow :is(.vue-flow__node, .vue-flow__edge) {
+    transition: none;
+  }
+}

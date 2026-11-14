@@ -134,7 +134,7 @@ class KnowledgeItemController extends AdminController
         $this->authorize('update', $knowledgeItem);
 
         return Inertia::render('Admin/Knowledge/EditKnowledgeItem', [
-            'item' => KnowledgeBasePresenter::edit($knowledgeItem->load(['sources.document', 'audiences' => fn ($query) => $query->with(LearningAudience::LABEL_RELATIONS)])),
+            'item' => KnowledgeBasePresenter::edit($knowledgeItem->load(['sources.document', 'structureNodes', 'audiences' => fn ($query) => $query->with(LearningAudience::LABEL_RELATIONS)])),
             'canDelete' => $request->user()->can('delete', $knowledgeItem),
             ...$this->formOptions($request->user(), 'update', $knowledgeItem),
         ]);
@@ -145,13 +145,14 @@ class KnowledgeItemController extends AdminController
         $this->authorize('create', KnowledgeItem::class);
         $step = DB::transaction(function () use ($request): KnowledgeItem {
             $step = KnowledgeItem::create([
-                ...$request->safe()->except(['sources', 'audiences']),
+                ...$request->safe()->except(['sources', 'audiences', 'structure']),
                 'order' => $this->nextOrder($request->validated('knowledge_section_id')),
                 'reviewed_at' => now(),
                 'created_by' => $request->user()->id,
             ]);
             SyncLearningAudiences::execute($step, $request->validated('audiences', []));
             $this->syncSources($step, $request->validated('sources', []));
+            $this->syncStructure($step, $request->validated('structure', []));
 
             return $step;
         });
@@ -165,7 +166,7 @@ class KnowledgeItemController extends AdminController
         DB::transaction(function () use ($request, $knowledgeItem): void {
             $sectionId = $request->validated('knowledge_section_id');
             $knowledgeItem->update([
-                ...$request->safe()->except(['sources', 'audiences']),
+                ...$request->safe()->except(['sources', 'audiences', 'structure']),
                 ...($sectionId !== $knowledgeItem->knowledge_section_id ? ['order' => $this->nextOrder($sectionId)] : []),
                 'knowledge_section_id' => $sectionId, 'tenant_id' => $request->validated('tenant_id'), 'reviewed_at' => now(),
             ]);
@@ -174,6 +175,9 @@ class KnowledgeItemController extends AdminController
             }
             if (array_key_exists('sources', $request->validated())) {
                 $this->syncSources($knowledgeItem, $request->validated('sources'));
+            }
+            if (array_key_exists('structure', $request->validated())) {
+                $this->syncStructure($knowledgeItem, $request->validated('structure'));
             }
         });
 
@@ -285,6 +289,19 @@ class KnowledgeItemController extends AdminController
     private function sourceDocument(KnowledgeItem $knowledgeItem): ?Document
     {
         return $knowledgeItem->load('sources.document')->sourceFor(app()->getLocale())?->document;
+    }
+
+    /**
+     * Replaces the article's places in the structure graphs, in the order given.
+     *
+     * @param  list<array{graph: string, node?: string|null}>  $structure
+     */
+    private function syncStructure(KnowledgeItem $item, array $structure): void
+    {
+        $item->structureNodes()->delete();
+        foreach ($structure as $order => $place) {
+            $item->structureNodes()->create(['graph' => $place['graph'], 'node' => $place['node'] ?? null, 'order' => $order]);
+        }
     }
 
     /** @param array<string, array{document_id?: int|null, url?: string|null}> $sources */

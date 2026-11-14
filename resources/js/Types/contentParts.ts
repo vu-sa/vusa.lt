@@ -223,9 +223,8 @@ export interface SocialEmbed {
 
 export interface FlowGraph {
   json_content: {
-    nodes?: Record<string, any>[];
-    edges?: Record<string, any>[];
-    preset?: 'VusaStructure';
+    /** A key in `Features/StructureGraph/registry.ts`; `VusaStructure` on older blocks. */
+    preset?: string;
   };
   options: null;
 }

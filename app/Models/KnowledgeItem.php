@@ -48,6 +48,7 @@ use Illuminate\Support\Carbon;
  * @property-read Collection<int, Comment> $rootComments
  * @property-read KnowledgeSection|null $section
  * @property-read Collection<int, KnowledgeItemSource> $sources
+ * @property-read Collection<int, KnowledgeItemStructureNode> $structureNodes
  * @property-read Collection<int, KnowledgeItemSubject> $subjects
  * @property-read Tenant|null $tenant
  * @property-read mixed $translations
@@ -103,6 +104,12 @@ class KnowledgeItem extends Model implements Commentable
     public function sources(): HasMany
     {
         return $this->hasMany(KnowledgeItemSource::class);
+    }
+
+    /** @return HasMany<KnowledgeItemStructureNode, $this> */
+    public function structureNodes(): HasMany
+    {
+        return $this->hasMany(KnowledgeItemStructureNode::class)->orderBy('order');
     }
 
     /** @return MorphMany<LearningProgress, $this> */
