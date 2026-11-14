@@ -73,6 +73,14 @@
 
     <LearningSourceField v-model="form.sources" :locale="activeLocale" :errors="form.errors" :documents="item?.source_documents" />
 
+    <LearningStructureField
+      v-model:graph="form.structure_graph"
+      v-model:node="form.structure_node"
+      :locale="activeLocale"
+      :graph-error="form.errors.structure_graph"
+      :node-error="form.errors.structure_node"
+    />
+
     <LearningAudienceList
       v-if="canManageAudiences"
       v-model="form.audiences"
@@ -153,6 +161,7 @@ import type { KnowledgeItemEditData, LearningTenantOption, LearningTypeOption } 
 
 import LearningAudienceList from './LearningAudienceList.vue';
 import LearningSourceField, { type LearningSourceDraft } from './LearningSourceField.vue';
+import LearningStructureField from './LearningStructureField.vue';
 import type { LearningAudienceDraft, LearningSectionOption } from './types';
 import { hasRichText } from './composables/hasRichText';
 
@@ -168,6 +177,8 @@ interface KnowledgeItemFormState {
   audiences: LearningAudienceDraft[];
   knowledge_section_id: string | null;
   tenant_id: number | null;
+  structure_graph: string | null;
+  structure_node: string | null;
   is_active: boolean;
   counts_in_progress: boolean;
 }
@@ -218,6 +229,8 @@ const form = useForm<KnowledgeItemFormState>({
   audiences: props.item?.audiences.map(audience => ({ ...audience, description: { ...audience.description } })) ?? [],
   knowledge_section_id: props.item?.knowledge_section_id ?? null,
   tenant_id: props.item ? props.item.tenant_id : (!props.canPublishEverywhere && props.pageTenants.length === 1 ? props.pageTenants[0]!.id : null),
+  structure_graph: props.item?.structure_graph ?? null,
+  structure_node: props.item?.structure_node ?? null,
   is_active: props.item?.is_active ?? true,
   counts_in_progress: props.item?.counts_in_progress ?? true,
 });
@@ -228,6 +241,7 @@ const fieldIds: Record<string, string> = {
   'abbreviation.lt': 'article-abbreviation', 'abbreviation.en': 'article-abbreviation', 'tenant_id': 'article-tenant',
   'description': 'step-description', 'description.lt': 'step-description', 'description.en': 'step-description',
   'audiences': 'step-audiences', 'knowledge_section_id': 'step-section', 'kind': 'article-kind',
+  'structure_graph': 'article-structure-graph', 'structure_node': 'article-structure-node',
   'sources.lt': 'step-source', 'sources.lt.document_id': 'step-source', 'sources.lt.url': 'source-url-lt',
   'sources.en': 'step-source', 'sources.en.document_id': 'step-source', 'sources.en.url': 'source-url-en',
 };
@@ -284,6 +298,8 @@ function payload(data: KnowledgeItemFormState): Record<string, unknown> {
     ...(props.canManageAudiences ? { audiences: data.audiences.map(({ label, stage, ...audience }) => audience) } : {}),
     knowledge_section_id: data.knowledge_section_id,
     tenant_id: data.tenant_id,
+    structure_graph: data.structure_graph,
+    structure_node: data.structure_graph ? data.structure_node : null,
     is_active: data.is_active,
     counts_in_progress: data.counts_in_progress,
   };

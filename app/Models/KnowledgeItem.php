@@ -30,6 +30,8 @@ use Illuminate\Support\Carbon;
  * @property array|string|null $abbreviation
  * @property array|string|null $summary
  * @property array|string|null $description
+ * @property string|null $structure_graph
+ * @property string|null $structure_node
  * @property int $order
  * @property bool $is_active
  * @property bool $counts_in_progress
@@ -67,7 +69,7 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
-#[Fillable(['key', 'kind', 'knowledge_section_id', 'tenant_id', 'title', 'abbreviation', 'summary', 'description', 'order', 'is_active', 'counts_in_progress', 'reviewed_at', 'created_by'])]
+#[Fillable(['key', 'kind', 'knowledge_section_id', 'tenant_id', 'title', 'abbreviation', 'summary', 'description', 'structure_graph', 'structure_node', 'order', 'is_active', 'counts_in_progress', 'reviewed_at', 'created_by'])]
 class KnowledgeItem extends Model implements Commentable
 {
     use HasComments, HasFactory, HasTranslations, HasUlids, LogsModelActivity;

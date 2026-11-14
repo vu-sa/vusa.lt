@@ -87,3 +87,14 @@
   border-color: var(--flow-border);
   background: var(--flow-surface);
 }
+
+/* A group frames its members; it is not a body of its own. */
+.basic-flow .vue-flow__node-parent.vue-flow__node-default {
+  border-style: dashed;
+  background: transparent;
+}
+
+/* A weaker tie (advises, proposes), told apart without a colour of its own. */
+.basic-flow .structure-edge--dashed .vue-flow__edge-path {
+  stroke-dasharray: 6 4;
+}

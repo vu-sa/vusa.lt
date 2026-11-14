@@ -1,7 +1,7 @@
 ---
 title: Wiki įrašai
 doc_status: reviewed
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-14
 tests:
   - tests/Browser/WikiCompletionTest.php
   - tests/Feature/Admin/Learning/KnowledgeItemDocumentPreviewTest.php
@@ -10,6 +10,7 @@ tests:
   - tests/Feature/Admin/Learning/KnowledgeGraphTest.php
   - tests/Feature/Admin/Learning/KnowledgeItemsTest.php
   - tests/Feature/Admin/Learning/KnowledgeKindsTest.php
+  - tests/Feature/Admin/Learning/KnowledgeStructureNodeTest.php
   - tests/Feature/Admin/Learning/LearningDocumentsTest.php
   - tests/Feature/Admin/Learning/LearningLibraryTest.php
   - tests/Feature/Admin/Learning/LearningRoutesTest.php
@@ -122,6 +123,18 @@ Medžiagą galima susieti ir su **sąvoka**: tada sąvokos puslapyje, po tekstu,
 už kurio dar yra miniatiūrų, išblukęs. Pirma rodoma tavo padalinio medžiaga, apvesta tamsiu rėmeliu. Pvz., sąvokos *Padalinio nuostatai* puslapyje pirmiausia matysi savo padalinio nuostatus.
 
 „Apie ką“ nenulemia, kam įrašas rodomas Mano kelyje – tam skirtos auditorijos.
+
+### Schemos {#schemos}
+
+Įrašą galima pastatyti į struktūros schemą: VU SA, Vilniaus universiteto, kamieninio akademinio
+padalinio, Seimo, Vyriausybės, Švietimo, mokslo ir sporto ministerijos ar aukštojo mokslo valdymo.
+Pasirinkus schemą ir jos elementą, įrašo puslapyje po tekstu rodomas blokas **Vieta struktūroje** –
+schema, kurioje tas elementas apvestas. Pasirinkus tik schemą, rodoma visa schema, be pažymėto elemento.
+
+Vienas elementas gali būti susietas tik su vienu įrašu. Kiti schemos elementai, turintys savo įrašą,
+pažymėti mažu kvadratėliu: paspaudus elementą atsiveria jo aprašymas ir nuoroda **Skaityti**. Schemą
+galima artinti, tempti ir atverti per visą ekraną. Pačios schemos keičiamos sistemoje – pastebėjus
+klaidą ar pasikeitusią struktūrą, parašyk IT.
 
 ### Išmokta {#ismokta}
 
@@ -260,7 +273,10 @@ Mano kelio žingsnių biblioteka yra atskirai: **Organizacija → Kelio žingsni
 7. Išsaugok. Įrašo puslapyje prie **Apie ką šis įrašas** spausk **Tvarkyti**, jei
    įrašas apie instituciją ar tipą: institucija pasirenkama paieškos lange, tipai – iš medžio.
    Medžiagą čia susiek ir su sąvoka, kurią ji paaiškina.
-8. Jei įrašas reikalingas tik daliai narių (pvz., vieno padalinio nuostatai), skiltyje **Rodymas**
+8. Jei įrašas aprašo instituciją ar organą, lauke **Schema** pasirink schemą ir, jei reikia,
+   **Vietą schemoje** – elementą, kurį įrašas aprašo. Žemiau matysi schemą su pažymėtu elementu.
+   Žr. [Schemos](#schemos).
+9. Jei įrašas reikalingas tik daliai narių (pvz., vieno padalinio nuostatai), skiltyje **Rodymas**
    išjunk **Įskaičiuoti į visos Wiki pažangą**. Išjungus **Rodomas**, įrašas visiškai dingsta iš Wiki
    (skyrių, rinkinių, paieškos ir kelio), bet lieka bibliotekoje. Aprašymo laukelį galima ištempti, kaip ir įprastą
    teksto laukelį.

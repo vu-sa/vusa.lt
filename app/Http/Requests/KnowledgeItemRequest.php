@@ -13,6 +13,7 @@ use App\Policies\KnowledgeItemPolicy;
 use App\Policies\KnowledgeSectionPolicy;
 use App\Services\HtmlSanitizerService;
 use App\Services\KnowledgeBasePresenter;
+use App\Support\StructureGraphs;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -62,6 +63,11 @@ class KnowledgeItemRequest extends FormRequest
             'sources.*' => ['array:document_id,url'],
             'sources.*.document_id' => ['nullable', 'integer', 'exists:documents,id'],
             'sources.*.url' => ['nullable', 'url:http,https', 'max:2048'],
+            'structure_graph' => ['nullable', 'string', 'required_with:structure_node', Rule::in(StructureGraphs::keys())],
+            'structure_node' => [
+                'nullable', 'string', 'max:100', $this->existingNode(...),
+                Rule::unique('knowledge_items')->where('structure_graph', $this->input('structure_graph'))->ignore($this->route('knowledgeItem')),
+            ],
         ];
     }
 
@@ -97,6 +103,14 @@ class KnowledgeItemRequest extends FormRequest
             }
             $this->validateSources($validator, $data['sources'] ?? []);
         }];
+    }
+
+    private function existingNode(string $attribute, mixed $value, \Closure $fail): void
+    {
+        $graph = $this->input('structure_graph');
+        if (is_string($value) && is_string($graph) && ! StructureGraphs::hasNode($graph, $value)) {
+            $fail(__('validation.exists', ['attribute' => __('learning_library.fields.structure_node')]));
+        }
     }
 
     /** The summary is one sentence; only the text that survives sanitizing counts, not its bold marks. */

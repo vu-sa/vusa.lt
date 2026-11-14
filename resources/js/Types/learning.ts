@@ -187,11 +187,20 @@ export interface KnowledgeItemEditData {
   description: { lt: string; en: string };
   knowledge_section_id: string | null;
   tenant_id: number | null;
+  structure_graph: string | null;
+  structure_node: string | null;
   audiences: LearningAudienceEditData[];
   is_active: boolean;
   counts_in_progress: boolean;
   sources: Record<string, { document_id: number | null; url: string | null }>;
   source_documents: Record<string, LearningDocumentSearchHit>;
+}
+
+/** Where an article sits in a structure graph, and the articles other nodes stand for. */
+export interface WikiStructurePlacement {
+  graph: string;
+  node: string | null;
+  links: Record<string, { title: string; url: string }>;
 }
 
 export interface KnowledgeLibraryItem extends Omit<LearningLibraryStep, 'kind'> {

@@ -215,7 +215,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     icon: FlowIcon,
     description: 'Proceso eigos schema',
     category: 'special',
-    defaultContent: () => ({ preset: 'VusaStructure' }),
+    defaultContent: () => ({ preset: 'vusa-structure' }),
     inlineEditable: true,
     editor: defineAsyncComponent(() => import('./FlowGraphEditor.vue')),
   },

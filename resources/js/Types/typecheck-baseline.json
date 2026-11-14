@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "total": 2578,
+  "total": 2572,
   "fingerprints": {
     "docs/pdf/build-release.ts | TS2322 | Type 'string | undefined' is not assignable to type 'string'.": 1,
     "docs/pdf/build-release.ts | TS2345 | Argument of type 'string | undefined' is not assignable to parameter of type 'string'.": 1,
@@ -674,7 +674,6 @@
     "resources/js/Components/RichContent/Types/ContentGridEditor.vue | TS7006 | Parameter 'rowIndex' implicitly has an 'any' type.": 4,
     "resources/js/Components/RichContent/Types/ContentGridEditor.vue | TS7006 | Parameter 'targetIndex' implicitly has an 'any' type.": 2,
     "resources/js/Components/RichContent/Types/EventListOptionsFields.vue | TS2322 | Type 'number | null' is not assignable to type 'number | undefined'.": 2,
-    "resources/js/Components/RichContent/Types/FlowGraphEditor.vue | TS18048 | 'modelValue.value' is possibly 'undefined'.": 2,
     "resources/js/Components/RichContent/Types/HeroCarouselEditor.vue | TS2304 | Cannot find name 'buttonItem'.": 6,
     "resources/js/Components/RichContent/Types/HeroCarouselEditor.vue | TS2304 | Cannot find name 'updateButton'.": 3,
     "resources/js/Components/RichContent/Types/HeroCarouselEditor.vue | TS2322 | Type 'AcceptableValue | undefined' is not assignable to type '\"strong\" | \"medium\" | \"light\" | \"dark\" | undefined'.": 1,
@@ -1042,8 +1041,6 @@
     "resources/js/Features/Registrations/RegistrationForm.vue | TS2532 | Object is possibly 'undefined'.": 2,
     "resources/js/Features/Registrations/__tests__/RegistrationForm.component.test.ts | TS2322 | Type '{ is_required: false; id?: string | number | undefined; label?: LocalizedLabel | undefined; description?: LocalizedLabel; placeholder?: LocalizedLabel; ... 4 more ...; options?: Array<RegistrationOption | string | number> | null; }' is not assignable to type 'RegistrationFieldDefinition'.": 1,
     "resources/js/Features/Registrations/__tests__/RegistrationForm.component.test.ts | TS2532 | Object is possibly 'undefined'.": 10,
-    "resources/js/Features/StructureGraph/StructureGraphWrapper.vue | TS2322 | Type 'Record<string, any>[]' is not assignable to type 'Edge[]'.": 2,
-    "resources/js/Features/StructureGraph/StructureGraphWrapper.vue | TS2322 | Type 'Record<string, any>[]' is not assignable to type 'Node<any, any, string>[]'.": 2,
     "resources/js/Pages/Admin/Calendar/CreateCalendarEvent.vue | TS2322 | Type 'Omit<Calendar, \"media\" | \"tenant\" | \"updated_at\" | \"created_at\" | \"registration_form_id\" | \"registration_form\">' is not assignable to type 'CalendarEventForm'.": 1,
     "resources/js/Pages/Admin/Calendar/EditCalendarEvent.vue | TS2322 | Type 'Calendar' is not assignable to type 'CalendarEventForm'.": 1,
     "resources/js/Pages/Admin/Calendar/IndexCalendarEvents.vue | TS2345 | Argument of type 'Partial<EventRow>' is not assignable to parameter of type 'RequestPayload | undefined'.": 1,

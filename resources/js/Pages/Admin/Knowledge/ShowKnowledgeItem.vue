@@ -40,6 +40,17 @@
       <article class="min-w-0 max-w-prose space-y-8 lg:col-start-1 lg:row-start-1">
         <WikiProse v-if="articleHtml" :html="articleHtml" :pages="linkedPages" />
         <LearningAudienceNotes v-if="inPath" :notes="item.audienceNotes" />
+        <section v-if="structure && structureGraph" aria-labelledby="article-structure" class="space-y-3" data-slot="article-structure">
+          <div>
+            <h2 id="article-structure" class="text-xl font-bold leading-tight text-foreground">
+              {{ structure.node ? $t('learning.wiki.structure') : structureGraph.title[locale] }}
+            </h2>
+            <p v-if="structure.node" class="mt-1 text-sm text-muted-foreground">
+              {{ structureGraph.title[locale] }}
+            </p>
+          </div>
+          <FlowGraph :graph-key="structure.graph" :highlight="structure.node" :articles="structure.links" />
+        </section>
         <section v-if="materials.length" aria-labelledby="article-materials" class="space-y-3" data-slot="article-materials">
           <h2 id="article-materials" class="text-xl font-bold leading-tight text-foreground">
             {{ $t('learning.wiki.materials_about') }}
@@ -153,7 +164,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, toRef, watch } from 'vue';
 import { Link } from '@inertiajs/vue3';
-import { trans as $t } from 'laravel-vue-i18n';
+import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
 import { ArrowUpRight, Pencil } from '@lucide/vue';
 
 import DiscussionPanel from '@/Components/Discussions/DiscussionPanel.vue';
@@ -167,6 +178,8 @@ import WikiPageList from '@/Features/Admin/Knowledge/WikiPageList.vue';
 import WikiLinkPreview from '@/Features/Admin/Knowledge/WikiLinkPreview.vue';
 import WikiMaterialList from '@/Features/Admin/Knowledge/WikiMaterialList.vue';
 import WikiSubjectsSheet from '@/Features/Admin/Knowledge/WikiSubjectsSheet.vue';
+import FlowGraph from '@/Features/StructureGraph/FlowGraph.vue';
+import { findGraph } from '@/Features/StructureGraph/registry';
 import LearningCompletionControl from '@/Features/Admin/Learning/LearningCompletionControl.vue';
 import LearningAudienceNotes from '@/Features/Admin/Learning/LearningAudienceNotes.vue';
 import LearningStepAction from '@/Features/Admin/Learning/LearningStepAction.vue';
@@ -174,7 +187,7 @@ import { useStepProgress } from '@/Features/Admin/Learning/composables/useStepPr
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import { safeHref } from '@/Utils/safeHref';
 import { stripHtmlTags } from '@/Utils/String';
-import type { KnowledgeItemData, LearningCoordinator, LearningInstitutionContacts, LearningTypeOption, WikiMaterial, WikiPageSummary, WikiSubject } from '@/Types/learning';
+import type { KnowledgeItemData, LearningCoordinator, LearningInstitutionContacts, LearningTypeOption, WikiMaterial, WikiPageSummary, WikiStructurePlacement, WikiSubject } from '@/Types/learning';
 
 const props = withDefaults(defineProps<{
   item: KnowledgeItemData;
@@ -190,10 +203,14 @@ const props = withDefaults(defineProps<{
   subjects?: WikiSubject[];
   /** Material about this term, the viewer's own units first. */
   materials?: WikiMaterial[];
+  /** The structure graph this article sits in, if any. */
+  structure?: WikiStructurePlacement | null;
   subjectOptions?: { institutionTypes: LearningTypeOption[]; dutyTypes: LearningTypeOption[]; terms: { id: string; title: string }[] };
-}>(), { linkedPages: () => ({}), related: () => [], subjects: () => [], materials: () => [], subjectOptions: () => ({ institutionTypes: [], dutyTypes: [], terms: [] }) });
+}>(), { linkedPages: () => ({}), related: () => [], subjects: () => [], materials: () => [], structure: null, subjectOptions: () => ({ institutionTypes: [], dutyTypes: [], terms: [] }) });
 
 const readonly = computed(() => !props.canTrack);
+const locale = computed(() => (getActiveLanguage() === 'en' ? 'en' : 'lt'));
+const structureGraph = computed(() => findGraph(props.structure?.graph));
 const done = computed(() => new Set(props.doneIds ?? []));
 const relatedPages = computed(() => Object.fromEntries(props.related.map(page => [page.id, page])));
 const { checked, saving, failed } = useStepProgress(toRef(props, 'item'), readonly);

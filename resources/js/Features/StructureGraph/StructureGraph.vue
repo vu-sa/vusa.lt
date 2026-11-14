@@ -1,14 +1,16 @@
 <template>
   <VueFlow fit-view-on-init :nodes :edges default-marker-color="var(--muted-foreground)"
-    class="basic-flow mb-4 border" :nodes-connectable="false" @init="onInit">
+    class="basic-flow mb-4 border" :nodes-connectable="false" :nodes-draggable="!readonly"
+    :elements-selectable="!readonly" :pan-on-drag="!readonly" :zoom-on-scroll="!readonly && scrollZoom"
+    :zoom-on-pinch="!readonly" :zoom-on-double-click="!readonly" :prevent-scrolling="!readonly && scrollZoom" @init="onInit">
     <template #node-multiple-handle="props">
-      <MultipleHandleNode :id="props.id" :data="props.data" />
+      <MultipleHandleNode :id="props.id" :data="props.data" :selected="props.selected" />
     </template>
     <template #node-parent="props">
-      <ParentNode :id="props.id" :data="props.data" :source-position="props.sourcePosition"
+      <ParentNode :id="props.id" :data="props.data" :selected="props.selected" :source-position="props.sourcePosition"
         :target-position="props.targetPosition" />
     </template>
-    <Controls class="h-8" position="bottom-right">
+    <Controls v-if="!readonly" class="h-8" position="bottom-right">
       <ControlButton v-if="!isReducedMotion && !playAnimations" @click="playAnimations = true">
         <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 32 32">
           <path
@@ -55,6 +57,10 @@ const props = defineProps<{
   animated?: boolean;
   showFullscreen?: boolean;
   showClose?: boolean;
+  /** A still picture: no panning, zooming, selecting or controls (the editor preview). */
+  readonly?: boolean;
+  /** Only fullscreen: inline, the wheel must keep scrolling the page past the graph. */
+  scrollZoom?: boolean;
   nodes: Node[];
   edges: Edge[];
 }>();
