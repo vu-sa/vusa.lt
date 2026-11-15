@@ -17,7 +17,7 @@
       </div>
 
       <Tabs v-model="tab" class="mt-4 px-8">
-        <TabsList :class="['grid h-auto w-full [&>button]:min-h-11 [&>button]:min-w-0 [&>button]:whitespace-normal', targets ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-1 sm:grid-cols-3']">
+        <TabsList v-if="!onlyWiki" :class="['grid h-auto w-full [&>button]:min-h-11 [&>button]:min-w-0 [&>button]:whitespace-normal', targets ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-1 sm:grid-cols-3']">
           <TabsTrigger v-if="targets" value="wiki" data-testid="link-tab-wiki">
             {{ $t('rich-content.link_tab_wiki') }}
           </TabsTrigger>
@@ -64,11 +64,11 @@
           </div>
         </TabsContent>
 
-        <TabsContent value="url" class="space-y-4 pt-4">
+        <TabsContent v-if="!onlyWiki" value="url" class="space-y-4 pt-4">
           <TiptapLinkForm v-model:url="urlRef" v-model:text="linkTextRef" :has-selected-text @submit="addLink" @cancel="showModal = false" />
         </TabsContent>
 
-        <TabsContent value="file" class="pt-4 max-h-[60vh] overflow-y-auto pr-1 space-y-4">
+        <TabsContent v-if="!onlyWiki" value="file" class="pt-4 max-h-[60vh] overflow-y-auto pr-1 space-y-4">
           <div class="space-y-2">
             <Label for="file-link-text">{{ $t('rich-content.link_text') }}</Label>
             <Input
@@ -90,7 +90,7 @@
           </Suspense>
         </TabsContent>
 
-        <TabsContent value="archiveDocument" class="pt-4 max-h-[60vh] overflow-y-auto pr-1 space-y-4">
+        <TabsContent v-if="!onlyWiki" value="archiveDocument" class="pt-4 max-h-[60vh] overflow-y-auto pr-1 space-y-4">
           <div class="space-y-2">
             <Label for="archive-link-text">{{ $t('rich-content.link_text') }}</Label>
             <Input
@@ -153,6 +153,8 @@ import TiptapLinkForm from './TiptapLinkForm.vue';
 
 const props = defineProps<{
   editor?: Editor | null;
+  /** Offer only the Wiki tab (a field whose sanitizer keeps wiki links alone). */
+  wikiOnly?: boolean;
 }>();
 
 export interface LinkSubmitOptions {
@@ -174,6 +176,7 @@ const originalText = ref('');
 const tab = ref<string>('url');
 
 const targets = computed(() => linkTargetProvider(props.editor));
+const onlyWiki = computed(() => props.wikiOnly && targets.value !== null);
 const target = shallowRef<LinkTarget | null>(null);
 const wikiQuery = ref('');
 const loadedTargets = shallowRef<LinkTarget[]>([]);
@@ -210,7 +213,7 @@ function open() {
   originalText.value = linkTextRef.value;
 
   const knowledgeId = (linkAttrs?.knowledgeId as string | null | undefined) ?? null;
-  tab.value = knowledgeId && targets.value ? 'wiki' : 'url';
+  tab.value = onlyWiki.value || (knowledgeId && targets.value) ? 'wiki' : 'url';
   target.value = null;
   wikiQuery.value = '';
   showModal.value = true;

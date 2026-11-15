@@ -8,11 +8,13 @@ use App\Enums\LearningImportance;
 use App\Http\Requests\Concerns\ValidatesLearningAudiences;
 use App\Models\Document;
 use App\Models\KnowledgeItem;
+use App\Models\KnowledgeItemStructureNode;
 use App\Models\KnowledgeSection;
 use App\Policies\KnowledgeItemPolicy;
 use App\Policies\KnowledgeSectionPolicy;
 use App\Services\HtmlSanitizerService;
 use App\Services\KnowledgeBasePresenter;
+use App\Support\StructureGraphs;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -62,6 +64,10 @@ class KnowledgeItemRequest extends FormRequest
             'sources.*' => ['array:document_id,url'],
             'sources.*.document_id' => ['nullable', 'integer', 'exists:documents,id'],
             'sources.*.url' => ['nullable', 'url:http,https', 'max:2048'],
+            'structure' => ['sometimes', 'array', 'max:'.count(StructureGraphs::keys())],
+            'structure.*' => ['array:graph,node'],
+            'structure.*.graph' => ['required', 'string', 'distinct', Rule::in(StructureGraphs::keys())],
+            'structure.*.node' => ['nullable', 'string', 'max:100', $this->availableNode(...)],
         ];
     }
 
@@ -97,6 +103,22 @@ class KnowledgeItemRequest extends FormRequest
             }
             $this->validateSources($validator, $data['sources'] ?? []);
         }];
+    }
+
+    /** The node exists in its graph and no other article stands for it. */
+    private function availableNode(string $attribute, mixed $value, \Closure $fail): void
+    {
+        $graph = $this->input(str_replace('.node', '.graph', $attribute));
+        if (! is_string($value) || ! is_string($graph)) {
+            return;
+        }
+        $item = $this->route('knowledgeItem');
+        if (! StructureGraphs::hasNode($graph, $value)) {
+            $fail(__('validation.exists', ['attribute' => __('learning_library.fields.structure_node')]));
+        } elseif (KnowledgeItemStructureNode::query()->where(['graph' => $graph, 'node' => $value])
+            ->when($item instanceof KnowledgeItem, fn ($query) => $query->where('knowledge_item_id', '!=', $item->getKey()))->exists()) {
+            $fail(__('learning_library.fields.structure_node_taken'));
+        }
     }
 
     /** The summary is one sentence; only the text that survives sanitizing counts, not its bold marks. */

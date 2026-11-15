@@ -103,9 +103,9 @@ const tabsStubs = {
   TabsContent: { template: '<div><slot /></div>' },
 };
 
-function mountLinkButton(editor: any) {
+function mountLinkButton(editor: any, props: { wikiOnly?: boolean } = {}) {
   return mount(TiptapLinkButton, {
-    props: { editor },
+    props: { editor, ...props },
     slots: { default: '<button type="button" data-testid="trigger">open</button>' },
     global: {
       stubs: {
@@ -200,6 +200,19 @@ describe('TiptapLinkButton', () => {
     await wrapper.get('[data-testid="link-apply"]').trigger('click');
 
     expect(wrapper.emitted('submit')![0]).toEqual(['/mano/knowledge/items/spk', 'SPK', { attrs: { knowledgeId: 'spk' }, replaceSelectionText: true }]);
+  });
+
+  it('offers only the Wiki tab for a wiki-only field', async () => {
+    const editor = createMockEditor({ href: '/mano/knowledge/items/spk', knowledgeId: 'spk', linkText: 'komitetas', targets: wikiTargets });
+    const wrapper = mountLinkButton(editor, { wikiOnly: true });
+
+    await openDialog(wrapper);
+    await flushPromises();
+
+    expect(wrapper.find('[data-testid="link-wiki-panel"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="link-tab-wiki"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="inline-doc-select"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="file-selector"]').exists()).toBe(false);
   });
 
   it('retargets a wiki link to another article', async () => {

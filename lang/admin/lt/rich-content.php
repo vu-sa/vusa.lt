@@ -128,10 +128,6 @@ return [
     'valid_url' => 'Nuoroda atpažinta',
     // Flow graph
     'flow_graph_preset' => 'Procesų schemos šablonas',
-    'presets' => [
-        'vusa_structure' => 'VU SA struktūra',
-        'vusa_structure_description' => 'Organizacinė VU SA struktūros schema',
-    ],
     // Accordion
     'no_accordion_items' => 'Nėra pridėta jokių punktų',
     'add_first_accordion_item' => 'Pridėti pirmą punktą',

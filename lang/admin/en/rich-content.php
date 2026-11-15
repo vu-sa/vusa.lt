@@ -128,10 +128,6 @@ return [
     'valid_url' => 'URL recognized',
     // Flow graph
     'flow_graph_preset' => 'Flow graph preset',
-    'presets' => [
-        'vusa_structure' => 'VU SA Structure',
-        'vusa_structure_description' => 'Organizational structure diagram of VU SA',
-    ],
     // Accordion
     'no_accordion_items' => 'No accordion items added',
     'add_first_accordion_item' => 'Add first item',

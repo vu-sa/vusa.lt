@@ -74,7 +74,7 @@ export const contentSamples: Record<string, () => ContentSample> = {
     options: { textLeft: true, imageDecorations: [] },
   }),
   'flow-graph': () => ({
-    json_content: { preset: 'VusaStructure' },
+    json_content: { preset: 'vusa-structure' },
   }),
   'number-stat-section': () => ({
     json_content: [

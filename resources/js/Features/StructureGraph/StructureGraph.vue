@@ -1,6 +1,9 @@
 <template>
   <VueFlow fit-view-on-init :nodes :edges default-marker-color="var(--muted-foreground)"
-    class="basic-flow mb-4 border" :nodes-connectable="false" @init="onInit">
+    class="basic-flow mb-4 border" :nodes-connectable="false" :nodes-draggable="!readonly"
+    :elements-selectable="!readonly" :pan-on-drag="!readonly" :zoom-on-scroll="!readonly && scrollZoom"
+    :zoom-on-pinch="!readonly" :zoom-on-double-click="!readonly" :prevent-scrolling="!readonly && scrollZoom" @init="onInit"
+    @node-click="({ node }) => focusedId = node.id" @pane-click="focusedId = null">
     <template #node-multiple-handle="props">
       <MultipleHandleNode :id="props.id" :data="props.data" />
     </template>
@@ -8,7 +11,7 @@
       <ParentNode :id="props.id" :data="props.data" :source-position="props.sourcePosition"
         :target-position="props.targetPosition" />
     </template>
-    <Controls class="h-8" position="bottom-right">
+    <Controls v-if="!readonly" class="h-8" position="bottom-right">
       <ControlButton v-if="!isReducedMotion && !playAnimations" @click="playAnimations = true">
         <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 32 32">
           <path
@@ -48,6 +51,7 @@ import { ref, computed, shallowRef, watch } from 'vue';
 
 import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
 
+import { focusOn } from './focus';
 import MultipleHandleNode from './MultipleHandleNode.vue';
 import ParentNode from './ParentNode.vue';
 
@@ -55,6 +59,10 @@ const props = defineProps<{
   animated?: boolean;
   showFullscreen?: boolean;
   showClose?: boolean;
+  /** A still picture: no panning, zooming, selecting or controls (the editor preview). */
+  readonly?: boolean;
+  /** Only fullscreen: inline, the wheel must keep scrolling the page past the graph. */
+  scrollZoom?: boolean;
   nodes: Node[];
   edges: Edge[];
 }>();
@@ -64,14 +72,15 @@ defineEmits<{
   (e: 'close'): void;
 }>();
 
-const nodes = computed(() => {
-  return props.nodes.map((node) => {
-    return {
-      ...node,
-      class: 'vue-flow__node-default',
-    };
-  });
-});
+// A clicked node fades everything unrelated, so its ties read without the rest of the graph.
+const focusedId = ref<string | null>(null);
+watch(() => props.nodes, () => { focusedId.value = null; });
+const focus = computed(() => focusedId.value ? focusOn(focusedId.value, props.nodes, props.edges) : null);
+
+const nodes = computed(() => props.nodes.map(node => ({
+  ...node,
+  class: ['vue-flow__node-default', focus.value && !focus.value.nodes.has(node.id) && 'is-faded'].filter(Boolean).join(' '),
+})));
 
 const { isReducedMotion } = useAccessibilityPreferences();
 const flow = shallowRef<VueFlowStore>();
@@ -91,23 +100,10 @@ function onInit(instance: VueFlowStore): void {
 watch(isReducedMotion, applyMotion);
 const playAnimations = ref(props.animated);
 
-const edges = computed(() => {
-  if (playAnimations.value && !isReducedMotion.value) {
-    return props.edges.map((edge) => {
-      return {
-        ...edge,
-        animated: true,
-      };
-    });
-  }
-  else {
-    return props.edges.map((edge) => {
-      return {
-        ...edge,
-        animated: false,
-      };
-    });
-  }
-});
+const edges = computed(() => props.edges.map(edge => ({
+  ...edge,
+  animated: Boolean(playAnimations.value && !isReducedMotion.value),
+  class: [edge.class, focus.value && !focus.value.edges.has(edge.id) && 'is-faded'].filter(Boolean).join(' ') || undefined,
+})));
 
 </script>

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
+import { Extension } from '@tiptap/core';
 
 import TiptapEditor from '../TiptapEditor.vue';
 import TiptapInsertMenu from '../TiptapInsertMenu.vue';
@@ -117,11 +118,19 @@ describe('TiptapEditor bubble toolbar', () => {
     expect(wrapper.findComponent({ name: 'BubbleMenu' }).exists()).toBe(false);
   });
 
-  it('keeps wiki links but offers no URL link controls when wikiLinksOnly is set', async () => {
-    const wrapper = await mountEditor({ preset: 'marks', wikiLinksOnly: true, html: true, modelValue: '<p><a href="/x" data-knowledge-id="01jz000000000000000000000a">SKVC</a></p>' });
+  it('offers wiki-only link controls when wikiLinksOnly is set and the editor has wiki targets', async () => {
+    const wikiLink = Extension.create({ name: 'wikiLink', addStorage: () => ({ targets: { load: async () => [], search: () => [] } }) });
+    const wrapper = await mountEditor({ preset: 'marks', wikiLinksOnly: true, html: true, extensions: [wikiLink], modelValue: '<p><a href="/x" data-knowledge-id="01jz000000000000000000000a">SKVC</a></p>' });
     await nextTick();
 
     expect(wrapper.find('.tiptap-content a[data-knowledge-id="01jz000000000000000000000a"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="tiptap-link"]').exists()).toBe(true);
+    expect(wrapper.findComponent(TiptapLinkButton).props('wikiOnly')).toBe(true);
+  });
+
+  it('offers no link controls for wikiLinksOnly without wiki targets', async () => {
+    const wrapper = await mountEditor({ preset: 'marks', wikiLinksOnly: true });
+
     expect(wrapper.find('[data-testid="tiptap-link"]').exists()).toBe(false);
     expect(wrapper.findComponent(TiptapLinkButton).exists()).toBe(false);
   });

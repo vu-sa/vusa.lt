@@ -376,19 +376,11 @@
   "Naujausios": "Latest",
   "Žiūrėti visas": "View all",
   "Prezidentas": "President",
-  "VU SA ataskaitinė-rinkiminė konferencija": "VU SR Annual Convention",
   "Taryba": "Council",
   "Parlamentas": "Parliament",
-  "Revizijos komisija": "Revision Commission",
   "Centrinis biuras": "Central Office",
-  "VU SA P ataskaitinė-rinkiminė konferencija": "VU SR U Annual Convention",
   "Pirmininkas": "Chairperson",
-  "VU SA P kolegialus valdymo organas": "VU SR U collegial governing body",
-  "Įeina į": "Included in",
-  "Paskiria": "Appoints",
   "Renka": "Elects",
-  "Deleguoja 10 narių į": "Delegates 10 members to",
-  "Deleguoja 2 narius į": "Delegates 2 members to",
   "Būsimi": "Upcoming",
   "Praėję": "Past",
   "Rasta :count renginių": "Found :count events",
@@ -1649,5 +1641,7 @@
     "Artimiausias posėdis": "Next meeting",
     "Visos pareigybės": "All duties",
     "Nepavyko atverti laikotarpio. Atnaujink puslapį ir bandyk dar kartą.": "Could not open the term. Refresh the page and try again.",
-    "Nepavyko įkelti duomenų. Bandyk dar kartą.": "Could not load data. Try again."
+    "Nepavyko įkelti duomenų. Bandyk dar kartą.": "Could not load data. Try again.",
+    "Šios schemos nebėra.": "This graph is no longer available.",
+    "Paspausk elementą – liks matomi tik su juo susiję.": "Click an element to see only what it is tied to."
 }
