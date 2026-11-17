@@ -68,7 +68,7 @@
       id="tenant-alias"
       :label="$t('forms.tenants.alias')"
       required
-      :hint="$t('forms.tenants.alias_hint')"
+      :hint="form.type === TenantType.Pkp ? $t('forms.tenants.alias_hint_pkp') : $t('forms.tenants.alias_hint')"
       :error="form.errors.alias"
     >
       <Input id="tenant-alias" v-model="form.alias" />

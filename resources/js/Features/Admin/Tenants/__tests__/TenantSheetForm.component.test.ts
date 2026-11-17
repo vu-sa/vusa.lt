@@ -76,9 +76,11 @@ describe('TenantSheetForm', () => {
   it('uses a native select for tenant type and shows usage hints', async () => {
     const wrapper = mountForm(tenant);
     expect(wrapper.get('select#tenant-type').findAll('option')).toHaveLength(3);
+    expect(wrapper.text()).toContain($t('forms.tenants.alias_hint'));
     await wrapper.get('select#tenant-type').setValue('pkp');
     expect(form.type).toBe('pkp');
-    expect(wrapper.text()).toContain($t('forms.tenants.alias_hint'));
+    expect(wrapper.text()).toContain($t('forms.tenants.alias_hint_pkp'));
+    expect(wrapper.text()).not.toContain($t('forms.tenants.alias_hint'));
     expect(wrapper.text()).toContain($t('forms.tenants.primary_institution_hint'));
     expect(wrapper.text()).not.toContain('forms.');
   });

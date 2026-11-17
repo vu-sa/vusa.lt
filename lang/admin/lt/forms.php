@@ -2,7 +2,7 @@
 
 return [
     'tenants' => [
-        'alias' => 'Subdomenas',
+        'alias' => 'Techninė žymė',
         'picker_spotlight_title' => 'Institucijos paieška',
         'primary_institution' => 'Pagrindinė institucija',
         'pick_institution' => 'Pasirinkti instituciją',
@@ -12,7 +12,8 @@ return [
         'fullname_hint' => 'Oficialus pavadinimas padalinių sąrašuose ir lietuviško svetainės pradžios puslapio antraštėje.',
         'shortname_hint' => 'Rodomas navigacijoje, filtruose ir kontaktų kortelėse, pvz., VU SA MIF.',
         'type_hint' => 'Nustato padalinio rūšį; atstovavimo rodikliai ir ataskaitos neapima PKP.',
-        'alias_hint' => 'Nustato viešos svetainės subdomeną, pvz., mif → mif.vusa.lt. Tik mažosios lotyniškos raidės, skaitmenys ir brūkšneliai.',
+        'alias_hint' => 'Padalinio svetainės subdomenas, pvz., mif → mif.vusa.lt. Tik mažosios lotyniškos raidės, skaitmenys ir brūkšneliai.',
+        'alias_hint_pkp' => 'Unikali trumpa žymė, pvz., esn-vu. PKP subdomenas paprastai nenaudojamas. Tik mažosios lotyniškos raidės, skaitmenys ir brūkšneliai.',
         'shortname_vu_hint' => 'Fakulteto trumpinys studijų medžiagos puslapyje ir padalinių pasirinkimų rikiavimui, pvz., MIF.',
         'primary_institution_hint' => 'Jos nuotrauka ir trumpas pavadinimas rodomi viešame padalinio pasirinkime, nuotrauka – ir Mano VU SA pradžioje.',
         'primary_institution_details' => 'Pagrindinė institucija iškeliama viešoje kontaktų paieškoje. Ji taip pat naudojama narių registracijos laiškuose; gavėjai parenkami pagal priskirtas atsakomybes. Padalinio kontaktų puslapis instituciją randa pagal sutampančius subdomeno ir institucijos trumpinius, o ne šį pasirinkimą.',
