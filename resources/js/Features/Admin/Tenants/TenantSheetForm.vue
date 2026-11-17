@@ -67,6 +67,7 @@
     <FormFieldWrapper
       id="tenant-alias"
       :label="$t('forms.tenants.alias')"
+      required
       :hint="$t('forms.tenants.alias_hint')"
       :error="form.errors.alias"
     >

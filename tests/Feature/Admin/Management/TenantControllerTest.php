@@ -298,19 +298,38 @@ describe('validation', function (): void {
             'fullname' => 'Test Tenant',
             'shortname' => 'Test',
             'type' => 'pagrindinis',
-            // Deliberately omitting 'alias'
+            'alias' => null,
         ]);
 
-        // If alias is required at database level, it will throw 500 error before validation
-        // Let's check what actually happens
-        if ($response->status() === 500) {
-            // Database constraint violation means alias is required at DB level
-            expect(true)->toBeTrue(); // Pass the test as alias is indeed required
-        } else {
-            // If we get 302, check for validation errors
-            $response->assertStatus(302)
-                ->assertSessionHasErrors('alias');
-        }
+        $response->assertStatus(302)
+            ->assertSessionHasErrors('alias');
+        expect(Tenant::query()->where('fullname', 'Test Tenant')->exists())->toBeFalse();
+    });
+
+    test('rejects an alias that is not a valid subdomain', function (string $alias): void {
+        $response = asUser($this->admin)->post(route('tenants.store'), [
+            'fullname' => 'Test Tenant',
+            'shortname' => 'Test',
+            'type' => 'pkp',
+            'alias' => $alias,
+        ]);
+
+        $response->assertStatus(302)
+            ->assertSessionHasErrors('alias');
+    })->with(['Uppercase', 'with space', 'under_score', '-leading', 'ąžuolas', 'way-too-long-for-a-subdomain']);
+
+    test('cannot clear the alias on update', function (): void {
+        $tenant = Tenant::factory()->create();
+
+        $response = asUser($this->admin)->put(route('tenants.update', $tenant), [
+            'fullname' => $tenant->fullname,
+            'shortname' => $tenant->shortname,
+            'type' => 'padalinys',
+            'alias' => '',
+        ]);
+
+        $response->assertStatus(302)
+            ->assertSessionHasErrors('alias');
     });
 
     test('requires unique alias for store', function (): void {

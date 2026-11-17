@@ -67,6 +67,9 @@ class Tenant extends Model
 
     private const string ALL_CACHE_KEY = 'tenant:all';
 
+    /** The alias is the public subdomain, so it must be a valid DNS label. */
+    public const string ALIAS_PATTERN = '/^[a-z0-9]+(?:-[a-z0-9]+)*$/';
+
     #[\Override]
     protected function casts(): array
     {

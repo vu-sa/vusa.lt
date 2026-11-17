@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\TenantType;
+use App\Models\Tenant;
 use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -26,11 +27,11 @@ class UpdateTenantRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'fullname' => 'required|unique:tenants,fullname,'.$this->tenant->id,
-            'shortname' => 'required|unique:tenants,shortname,'.$this->tenant->id,
+            'fullname' => 'required|string|max:100|unique:tenants,fullname,'.$this->tenant->id,
+            'shortname' => 'required|string|max:100|unique:tenants,shortname,'.$this->tenant->id,
             'type' => ['required', new Enum(TenantType::class)],
-            'alias' => 'nullable|unique:tenants,alias,'.$this->tenant->id,
-            'shortname_vu' => 'nullable|unique:tenants,shortname_vu,'.$this->tenant->id,
+            'alias' => ['sometimes', 'required', 'string', 'max:20', 'regex:'.Tenant::ALIAS_PATTERN, 'unique:tenants,alias,'.$this->tenant->id],
+            'shortname_vu' => 'nullable|string|max:125|unique:tenants,shortname_vu,'.$this->tenant->id,
             'primary_institution_id' => ['nullable', SoftDeleteRules::existsLive('institutions')->where('tenant_id', $this->tenant->id)],
             'goals_enabled' => ['sometimes', 'boolean'],
         ];

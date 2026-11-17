@@ -12,7 +12,7 @@ return [
         'fullname_hint' => 'Official name used in tenant lists and the Lithuanian public homepage heading.',
         'shortname_hint' => 'Shown in navigation, filters and contact cards, e.g. VU SA MIF.',
         'type_hint' => 'Determines the tenant type; representation metrics and reports exclude PKP.',
-        'alias_hint' => 'Determines the public website subdomain, e.g. mif → mif.vusa.lt.',
+        'alias_hint' => 'Determines the public website subdomain, e.g. mif → mif.vusa.lt. Lowercase Latin letters, digits and hyphens only.',
         'shortname_vu_hint' => 'Faculty abbreviation used on the study materials page and to sort tenant choices, e.g. MIF.',
         'primary_institution_hint' => 'Its photo and short name appear in the public tenant selector; its photo can also appear on the admin homepage.',
         'primary_institution_details' => 'The primary institution is prioritised in public contacts search. It is also used in member-registration emails; recipients follow assigned responsibilities. The tenant contact page finds its institution through matching tenant and institution aliases, rather than this selection.',
