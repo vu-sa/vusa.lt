@@ -1,8 +1,9 @@
 ---
 doc_status: reviewed
 title: Paskyra ir prieiga
-last_reviewed: 2026-11-01
+last_reviewed: 2026-11-19
 tests:
+  - tests/Feature/Auth/AuthControllerTest.php
   - resources/js/Components/Institutions/__tests__/UserActivityRequestHistory.component.test.ts
   - tests/Browser/UserActivityRequestsTest.php
   - tests/Feature/Admin/Management/UserActivityRequestsTest.php
@@ -31,6 +32,13 @@ juose rodomi tavo duomenys.
 
 Paskyros duomenys ir pareigybių suteikiama prieiga tvarkomi atskirai.
 Pakeitus kontaktus nauja rolė nesuteikiama, o rolių peržiūra nekeičia pareigų datų.
+
+### Prisijungimas slaptažodžiu {#prisijungimas}
+
+Po 5 nesėkmingų bandymų prisijungti el. paštu ir slaptažodžiu ta paskyra iš to paties tinklo
+minutei užrakinama – rodoma, po kiek sekundžių galima bandyti vėl. Jei iš vieno tinklo per minutę
+nepavyksta 30 bandymų, tas tinklas laikinai negali prisijungti slaptažodžiu. Sėkmingi
+prisijungimai į šią ribą neįskaičiuojami, o prisijungimas per „Microsoft“ neribojamas.
 
 ## Veiksmai
 
@@ -142,6 +150,7 @@ kontaktinius duomenis. Kitų narių pareigos ir rolės tvarkomos per tam skirtus
 
 - `ProfileController` visada naudoja prisijungusio naudotojo ID; prieigos suvestinę sudaro `GetUserAccessSummary`.
 - Profilio laukai tikrinami `UpdateUserSettingsRequest`, slaptažodis – `UpdatePasswordRequest`.
+- Prisijungimo bandymus riboja `AuthenticateRequest` (paskyra ir IP – 5, vien IP – 30 nesėkmių per minutę).
 - Profilio vardas, el. paštas ir slaptažodis nepriimami per bendrą profilio atnaujinimą;
   `ShowProfile.vue` vardo ir el. pašto laukus rodo užrakintus.
 - `ProfileRolesTest` tikrina pareigų būsenas, paskutinės dienos įskaitymą, roles ir kitų

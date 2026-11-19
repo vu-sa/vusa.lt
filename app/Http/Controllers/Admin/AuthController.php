@@ -82,13 +82,18 @@ class AuthController extends Controller
      */
     public function authenticate(AuthenticateRequest $request)
     {
+        $request->ensureIsNotRateLimited();
+
         $credentials = $request->validated();
 
         if (Auth::attempt($credentials)) {
+            $request->clearAttempts();
             $request->session()->regenerate();
 
             return redirect()->intended(route('dashboard'));
         }
+
+        $request->recordFailedAttempt();
 
         return back()->withErrors([
             'email' => __('auth.failed'),
