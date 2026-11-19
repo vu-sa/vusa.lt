@@ -149,6 +149,8 @@ Default to none. A comment earns its place by saying something the code cannot.
 
 Language specifics: PHPDoc over inline comments (PHP), JSDoc rules under [TypeScript](#typescript).
 
+**Rule docs** (this file, `.ai/rules`, nested `CLAUDE.md`): when a rule can be a test or lint rule, write that and shrink the prose to one line pointing at it. Every `Class::member` and file path they name must resolve — `RuleReferencesTest` checks.
+
 ## Architecture
 
 ### Routes & API
@@ -393,7 +395,7 @@ These come from real bugs found in this codebase. Treat them as non-negotiable.
 
 **A child resource authorizes against its parent.** When a model carries no permissions of its own, delegate to the policy of the model that owns it, rather than inventing unseeded permissions (which lock out everyone but super admins). Precedent: `ReservationResourceController` → `Reservation`.
 
-**Resolving a child by a request id is an IDOR.** `find()`/`findOrNew()` on the model itself resolves *any* id, not just ones belonging to the record in the URL. Resolve through the parent's relation and refuse what it cannot find (`FormController::syncFormFields()`):
+**Resolving a child by a request id is an IDOR.** `find()`/`findOrNew()` on the model itself resolves *any* id, not just ones belonging to the record in the URL. Resolve through the parent's relation and refuse what it cannot find (`FormController::update()`):
 
 ```php
 // Resolve through the relation so a crafted payload cannot reach another form's fields.
@@ -402,7 +404,7 @@ $formFieldFromDb = $form->formFields()->find($formField['id']);
 abort_if($formFieldFromDb === null, 403, 'Form field does not belong to this form.');
 ```
 
-**Never dispatch a method name built from request input.** `$model->{$request->model_type}()->sync(...)` reaches unintended relations and 500s on unknown values. Resolve through an allowlist — `Type::TYPEABLE_RELATIONS`, `AllowedFileablesEnum` — and validate with `Rule::in(...)`.
+**Never dispatch a method name built from request input.** `$model->{$request->model_type}()->sync(...)` reaches unintended relations and 500s on unknown values. Resolve through an allowlist — `Tag::TAGGABLE_RELATIONS`, `AllowedFileablesEnum` — and validate with `Rule::in(...)`.
 
 **No `$request->all()` into `create()`/`update()`.** Use a Form Request or explicit `->only([...])`. Never mass-assign a whole request onto a model whose `$guarded` is empty.
 

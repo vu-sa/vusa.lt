@@ -8,7 +8,7 @@ paths:
 ## Band chrome is derived, not authored — set `bandRole`, never re-add background/padding
 A block's ground (tint/border/bleed) is computed by `bandLayout.ts`'s `resolveBands()` from document position — it is NOT a per-block authored setting. Do not restore `options.background`/`padding`/`rounded`/`divider`/`bleed` (removed by the 2026-09-04 migration `collapse_section_chrome_into_band_presentation`).
 - Authors choose only `options.presentation: 'auto'|'plain'`; `emphasis` is reserved for CTA bands. Automatic bands keep the standard padding; plain blocks may set `options.plainPadding: 'none'|'compact'|'default'`.
-- A new content type that renders its own full-bleed section sets `bandRole: 'band'` in its `Types/index.ts` registry entry (or a function form when the answer depends on a variant, like `hero`/`spotify-embed`).
+- A new content type that renders its own full-bleed section sets `bandRole: 'band'` in its `RichContent/Types/index.ts` registry entry (or a function form when the answer depends on a variant, like `hero`/`spotify-embed`).
 - Its display component takes a `band?: BandResolution` prop and passes it to `RCSection.vue` (`:band`), or binds `band.classes` / reads `band.tint`/`band.bleeds` directly when it keeps its own markup (`EventCalendarElement.vue`, `CtaBandDisplay.vue`). Never hardcode `bg-secondary/40`/`border-y`/`rc-viewport`; use `BAND_GROUND_CLASS`/`BAND_PADDING` from `sectionClasses.ts`.
 - `RichContentParser.vue` computes the band map once and forwards `:band` through `RichContentBlock.vue`, gated like `:resolved` (undeclared types get `undefined`).
 

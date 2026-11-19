@@ -71,10 +71,10 @@ class Tag extends Model
 
     /**
      * The models a tag may be attached to, and the relation each exposes for it. The single
-     * source of truth for "what is taggable" — mirrors Type::TYPEABLE_RELATIONS, and anything
-     * that resolves a taggable relation from stored/request data (e.g. TopicController
-     * aggregating content for a topic page) must read this list rather than hardcode model
-     * classes, so a future taggable model can't be reached without being added here first.
+     * source of truth for "what is taggable": anything that resolves a taggable relation from
+     * stored/request data (e.g. TopicController aggregating content for a topic page) must read
+     * this list rather than hardcode model classes, so a future taggable model can't be reached
+     * without being added here first.
      *
      * @var array<string, string>
      */
