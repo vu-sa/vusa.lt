@@ -132,13 +132,6 @@ konkrečiai skelbiama.
 
 </ChangelogNote>
 
-<ChangelogNote date="2026-10-26" title="Matomumas per kalendorių">
-
-Iki 2026-10-26 kalendoriuje paskelbtas posėdis buvo žymimas „Rodoma tik ViSAK“, nors jo darbotvarkė
-rodoma renginio puslapyje.
-
-</ChangelogNote>
-
 ### Bendri posėdžiai
 
 Posėdis gali priklausyti kelioms institucijoms (pvz., bendras dviejų komitetų posėdis). Institucija
@@ -239,12 +232,6 @@ darbotvarkės gale. Kaip pildyti punktus, aprašyta puslapyje
   neužbaigta darbotvarkės užduotis sukuriama iš naujo. Posėdis, sukurtas mažiau nei prieš parą ir
   dar tuščias (be darbotvarkės, failų, dokumentų, komentarų ir kalendoriaus įrašo), ištrinamas visam
   laikui – patvirtinimo lange tai parašyta.
-
-<ChangelogNote date="2026-10-25" title="Ką tik sukurtas tuščias posėdis ištrinamas visam laikui">
-
-Anksčiau toks posėdis patekdavo į šiukšlinę, o atkūrus posėdį jo užduotys negrįždavo.
-
-</ChangelogNote>
 
 ### Posėdžių sąrašas
 

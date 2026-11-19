@@ -90,12 +90,6 @@ pranešimo – apie jas primenama artėjant terminui. Apie naują posėdį atsto
 darbotvarkės užduotis, sužino vienu pranešimu **„Sukurtas naujas posėdis“**, kaip ir koordinatoriai.
 Posėdį sukūręs narys šio pranešimo negauna.
 
-<ChangelogNote date="2026-10-19" title="Automatinės užduotys be atskiro pranešimo">
-
-Anksčiau kiekvienas naujas posėdis atstovo suvestinėje palikdavo dvi „Nauja užduotis“ eilutes, iš kurių viena jau būdavo atlikta.
-
-</ChangelogNote>
-
 Pagal institucijos posėdžių periodiškumą gali gauti **„VU SA · Ar vyko posėdis?“** arba
 **„VU SA · Papildyk posėdžių įrašus“**. Automatiškai toks laiškas siunčiamas vieną kartą, kai
 institucija pradeda vėluoti. Tą patį gali inicijuoti koordinatorius.

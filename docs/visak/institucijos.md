@@ -374,13 +374,6 @@ pareigybės laikotarpį; jei dabartinės kadencijos nėra, naudojama atstovo par
 kuriuos reikia papildyti. Paskutinė pareigų diena dar yra galiojanti. Laikotarpio pabaiga
 užfiksuojama siunčiant ir vėliau nesikeičia.
 
-<ChangelogNote date="2026-10-18" title="Klausiama tik apie laiką po paskutinės veiklos">
-
-Anksčiau laikotarpis visada prasidėdavo nuo kadencijos pradžios, todėl atstovų būdavo klausiama ir apie
-laiką, apie kurį jie jau pranešė.
-
-</ChangelogNote>
-
 <ChangelogNote date="2026-10-19" title="Galima paklausti pasibaigus pranešimui">
 
 Koordinatorius gali siųsti **Ar vyko posėdis?**, kai institucija vėluoja, jos būklė yra
@@ -582,13 +575,6 @@ institucijas. Jei toks adresas jau užimtas, priekyje pridedamas padalinio trump
 - Senas adresas toliau nukreipia į instituciją. Ankstesni adresai rodomi po nuoroda, skiltyje
   **Ankstesni vieši adresai**; nebereikalingą galima ištrinti – tada jis nebeveiks.
 - Padalinio pagrindinės institucijos ir centrinio biuro adresas nekeičiamas.
-
-<ChangelogNote date="2026-10-19" title="Kiekviena institucija turi savo adresą">
-
-Anksčiau kelios institucijos galėjo turėti tą patį adresą, todėl viešose kortelėse visos vesdavo į
-vieną instituciją. Dabar adresai sudaryti iš pavadinimų, o seni adresai nukreipia į naujus.
-
-</ChangelogNote>
 - **Ištrinta** institucija patenka į [šiukšlinę](/pagrindai/platforma#siuksline), o jos
   pareigybės ir posėdžiai lieka. Institucijos, kurioje einamos pareigos, ištrinti negalima.
 - Šiukšlinės veiksmas **Atkurti ir atidaryti** atkuria instituciją ir iškart atidaro jos įrašą. Įrašai be pavadinimo sąraše ir įrašo puslapyje rodomi kaip **Be pavadinimo · nuorodos kodas**, kad juos būtų galima atskirti ir rasti pagal kodą. **Galutinai ištrinti** negalima, kol ji turi

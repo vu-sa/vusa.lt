@@ -449,8 +449,8 @@ also updates the guide page for that section (`docs/<workspace>/<section>.md`, s
 `docs/.vitepress/structure.ts`) in the same change — its *Kas ką gali*, statuses or *Susitarimai*
 — and the LT changelog entry links to it and, where useful, to the platform page itself (`Gide: [Teisės](/rezervacijos/rezervacijos#teises) · Mano VU SA: [Rezervacijos](app:/mano/reservations)`). A
 section without a page yet gets its stub filled in. If you touch the tests a page cites, update its
-`tests:` paths and `last_reviewed`. For a notable change, add a `<ChangelogNote>` next to the part of
-the guide page it changed.
+`tests:` paths and `last_reviewed`. For a new feature or a substantial enhancement — never a fix — add a `<ChangelogNote>` next to
+the part of the guide page it changed.
 
 ## Database & debugging
 

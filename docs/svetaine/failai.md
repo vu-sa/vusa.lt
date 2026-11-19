@@ -69,24 +69,12 @@ Formose įkeltos nuotraukos saugomos prie įrašo, o svetainė kiekvienam ekranu
 
 ### Nuotraukų dydžiai {#nuotrauku-dydziai}
 
-<ChangelogNote date="2026-10-17" title="Ryškesnės nuotraukos">
-
-Svetainė kiekvienai vietai parenka pakankamo dydžio nuotraukos versiją, todėl nuotraukos ryškios ir didelės raiškos ekranuose.
-
-</ChangelogNote>
-
 - Ir formų, ir failų tvarkyklėje įkeltos nuotraukos saugomos iki 3840 px ilgesniosios kraštinės. Naršyklė pagal ekraną ir vietą puslapyje parsisiunčia mažesnę versiją, todėl mažoms kortelėms, meniu ir avatarams siunčiami nedideli failai.
 - Naršyklei siūlomos versijos neviršija originalo pločio. Jei mažesnės versijos nepakanka, siunčiamas originalas be papildomo kokybės praradimo.
 - Logotipai, ekrano nuotraukos pagalbos užklausose ir permatomi paveikslėliai saugomi be kokybės nuostolių, kad raidės liktų aiškios.
 - Anksčiau įkeltų, jau sumažintų nuotraukų kokybės atkurti negalima. Kur nuotrauka atrodo neryški, reikia įkelti didesnį originalą.
 
 ### Įkėlimų apdorojimas {#ikelimas}
-
-<ChangelogNote date="2026-10-02" title="Patikimesnis failų įkėlimas">
-
-Vieno pavadinimo failai neperrašo vienas kito, o neišsaugotas failas nepažymimas kaip sėkmingai įkeltas.
-
-</ChangelogNote>
 
 - Vienas failas gali būti iki **50 MB**. JPEG, PNG ir WebP paveikslėliai sumažinami iki 3840 px ilgesniosios kraštinės ir saugomi WebP formatu. GIF animacijos, SVG ir kiti failai grupinio įkėlimo metu nekeičiami.
 - Jei pavadinimas jau užimtas, naujam failui pridedama laiko žyma, o prireikus – ir skaitiklis. Ankstesnis failas išlieka, net jei keli įkėlimai vyksta vienu metu.
@@ -150,12 +138,6 @@ Failus ir aplankus galima pervadinti, failus – perkelti į kitą aplanką, o t
 
 Prieš trinant failą, sistema leidžia apsisaugoti nuo puslapių sugadinimo:
 
-<ChangelogNote date="2026-10-02" title="Patikimesnė naudojimo patikra">
-
-Patikra randa failą visuose turinio blokuose, nuotraukų laukuose ir nuorodose, net kai jo pavadinime yra tarpų ar lietuviškų raidžių, ir parodo, kur jis naudojamas.
-
-</ChangelogNote>
-
 - **Naudojimo patikra:** pasirinkęs failą, informacijos skydelyje spausk **Tikrinti naudojimą**. Sistema patikrina visus puslapių, naujienų ir padalinių pradinių puslapių turinio blokus, nuotraukų laukus (naujienų, puslapių, banerių, institucijų, narių), aprašymus ir nuorodas (renginių, pareigybių, formų, problemų, žymų, navigacijos, greitųjų nuorodų) bei dar neišsaugotus juodraščius. Įrašai šiukšlinėje taip pat skaičiuojami – juos atkūrus, failas vėl būtų reikalingas.
 - **Rezultatas:** jei failas naudojamas, matai sąrašą, kur jis panaudotas, ir gali atsidaryti tą įrašą. Patikra visada atliekama iš naujo, todėl rodo ir ką tik įterptas nuorodas.
 - **Kas nelaikoma naudojimu:** to paties pavadinimo failas kitame aplanke ir nuoroda į kitą svetainę (ne vusa.lt) su tokiu pačiu keliu.
@@ -168,13 +150,6 @@ Patikra randa failą visuose turinio blokuose, nuotraukų laukuose ir nuorodose,
 Jei nėra prieigos prie failų tvarkyklės, tiesioginė nuoroda parodo prieigos klaidą.
 Turint prieigą prie savo padalinio aplanko, bendrojo aplanko nuoroda nukreipia į pasiekiamą aplanką.
 Vien teisė peržiūrėti failus nesuteikia teisės kurti aplankų, optimizuoti paveikslėlių, pervadinti, perkelti ar trinti. Veiksmai, kurių atliktame aplanke negali, nerodomi.
-
-<ChangelogNote date="2026-10-02" title="Grupinio trynimo teisės tikrinamos iš anksto">
-
-Jei bent vieno pasirinkto failo trinti negalima dėl teisių, netrinamas nė vienas pasirinktas failas.
-Sąsajoje parodoma prieigos klaida; pasirinkimą galima pakeisti ir bandyti dar kartą.
-
-</ChangelogNote>
 
 | Veiksmas | Padalinio koordinatorius | Centrinio biuro komunikacijos koordinatorius |
 |---|---|---|

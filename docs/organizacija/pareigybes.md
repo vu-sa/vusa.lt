@@ -284,15 +284,6 @@ Kad duomenų bazėje nesidaugintų dubliuotos pareigybės:
 - Panašios pareigybės kitose to paties padalinio institucijose išvardijamos su nuoroda į jų puslapį;
   kitų padalinių atitikmenys tik suskaičiuojami.
 
-<ChangelogNote date="2026-10-20" title="Dublikatų patikra abiem kalbomis">
-
-Kuriant ar redaguojant pareigybę, tikrinami abu jos pavadinimai – lietuviškas ir angliškas.
-Įvedus anglišką pavadinimą, atitikmuo randamas ir tada, kai pareigybė turi kitokį lietuvišką
-pavadinimą. Tai taikoma savo institucijai, kitoms to paties padalinio institucijoms ir kitiems
-padaliniams. Perspėjimas netrukdo išsaugoti pareigybės.
-
-</ChangelogNote>
-
 ## Veiksmai
 
 ### Pareigybių sąrašas ir filtrai {#sarasas}
@@ -355,13 +346,6 @@ suskirstytas į skirtukus:
 Pradžia negali būti vėlesnė už pabaigą. Pabaigos data yra paskutinė aktyvi diena. **Užbaigti pareigas šiandien** įrašo šiandieną;
 narys lieka dabartinių narių sąraše iki dienos pabaigos ir tampa buvusiu kitą dieną.
 Istorinis įrašas išlieka. Jei paskutinė pareigų diena buvo vakar, įrašyk vakarykštę datą.
-
-<ChangelogNote date="2026-10-02" title="Paskutinė pareigų diena">
-
-Dabartinių ir buvusių narių sąrašai dabar vienodai įskaito pabaigos dieną.
-Užbaigimo patvirtinimas aiškiai paaiškina, kad šiandien pareigos dar galioja.
-
-</ChangelogNote>
 
 ### Nario priskyrimas ir šalinimas {#priskirti-nari}
 

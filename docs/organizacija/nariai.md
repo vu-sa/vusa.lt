@@ -69,25 +69,6 @@ o ne pareigybinį `@vusa.lt`. Pareigybiniai el. paštai keičiantis kadencijoms 
 todėl asmeninė paskyros istorija turi likti susieta su konkrečiu žmogumi.
 :::
 
-<ChangelogNote date="2026-11-06" title="Prisijungimas po VU el. pašto pakeitimo">
-
-Kai studentas įsidarbina VU, universitetas pervadina jo „Microsoft“ paskyrą (pvz.,
-`vardas.pavarde@gmc.stud.vu.lt` tampa `@gmc.vu.lt` arba `@cr.vu.lt`). Prisijungus per
-„Microsoft“, platforma įsimena pačią paskyrą, ne tik adresą, todėl vėliau pervadinus
-paskyrą narys ir toliau jungiasi prie tos pačios Mano VU SA paskyros.
-
-Jei paskyra pervadinta dar prieš pirmą tokį prisijungimą, naujas adresas priimamas tik tada,
-kai jis skiriasi vien domenu: to paties padalinio studento ir darbuotojo adresai (`@gmc.stud.vu.lt` ir `@gmc.vu.lt`)
-priima vienas kitą, o `@cr.vu.lt` priimamas vietoj bet kurio padalinio adreso. Be to, vardas ir pavardė „Microsoft“ paskyroje
-turi sutapti su nario vardu ir pavarde, o toks narys turi būti vienas. Paskyra, kurios prisijungimo el. paštas yra `@cr.vu.lt`,
-kitu adresu neatpažįstama. Kitais atvejais (pvz., perėjus į kitą padalinį ar adresui gavus `.2` galūnę)
-prisijungimo el. paštą pakeičia administratorius.
-
-Prisijungimo el. paštas po tokio prisijungimo nekeičiamas: senoji studentinė pašto dėžutė kartais
-lieka kaip bendroji dėžutė.
-
-</ChangelogNote>
-
 ### Nuotraukos {#nuotraukos}
 
 Viešoje kontaktų kortelėje pirmojo rodomo pareigybės laikotarpio nuotrauka turi pirmenybę prieš

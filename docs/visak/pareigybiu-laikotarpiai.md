@@ -290,12 +290,6 @@ Sujungus šaltinio laikotarpius, susieti ex officio priskyrimai apima visą suju
 
 ### Tikrinimas visoje istorijoje {#ex-officio-tikrinimas}
 
-<ChangelogNote date="2026-10-30" title="Ex officio tikrinimas">
-
-Sistema laikotarpius lygina su šaltinio pareigomis tuo pačiu metu, o ne su šiandienos būsena.
-
-</ChangelogNote>
-
 ### Kaip *ex officio* laikotarpiai seka pagrindines pareigas {#ex-officio-sekimas}
 
 Kiekvienam pagrindinių pareigų laikotarpiui, pagal kiekvieną pareigybės formoje nurodytą ryšį, tenka vienas prijungtas *ex officio* laikotarpis su tomis pačiomis datomis.
