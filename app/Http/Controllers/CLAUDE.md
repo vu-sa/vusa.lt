@@ -1,91 +1,50 @@
-# Controllers Documentation
+# Controllers
 
-Reference for controller structure in this application. **The enforced rules** — validation
-in Form Requests, reading `validated()`/`safe()` over raw input, check ordering, index-listing
-helpers, route-segment allowlists — live in [.ai/rules/controllers.md](../../../.ai/rules/controllers.md)
-and are what you must follow before editing anything here. This file only documents the shapes
-those rules apply to.
+The enforced rules live in [.ai/rules/controllers.md](../../../.ai/rules/controllers.md): validation in Form Requests, reading `validated()`/`safe()` instead of raw input, check ordering, index-listing helpers and route-segment allowlists. This file shows the shape those rules produce. `Admin/NewsController.php` is the reference controller.
 
-## AdminControllerInterface
-
-All admin controllers should implement `AdminControllerInterface` to ensure consistent behavior and proper return types.
-
-**See**: @app/Contracts/AdminControllerInterface.php
-
-### Standard Admin Controller Methods
-
-Every method that reads request input type-hints a **Form Request**, never `Illuminate\Http\Request` —
-see [.ai/rules/controllers.md](../../../.ai/rules/controllers.md). A plain `Request` only for
-`->user()`/`->session()`/headers is fine; `ValidationConventionTest` enforces the rest.
+## The shape of an admin controller
 
 ```php
-public function index(IndexExampleRequest $request): InertiaResponse;    // Display listing
-public function create(): InertiaResponse;                               // Show create form
-public function store(StoreExampleRequest $request): RedirectResponse;   // Store new resource
-public function show(mixed $model): InertiaResponse;                     // Display resource
-public function edit(mixed $model): InertiaResponse;                     // Show edit form
-public function update(UpdateExampleRequest $request, mixed $model): RedirectResponse;
-public function destroy(mixed $model): RedirectResponse;                 // Delete resource
-```
-
-Index requests extend `BaseIndexRequest` and read paging through its helpers
-(`getPerPage()`, `getShowDeleted()`, `getSorting()`, `getFilters()`).
-
-## Authorization in Controllers
-
-### Using Permission Checks
-
-```php
-// Using the Permission facade
-if (Permission::check('news.create.padalinys')) {
-    // User can create news for their tenant
-}
-
-// Using Laravel's built-in authorization
-$this->authorize('create', News::class);
-$this->authorize('update', $newsArticle);
-```
-
-### Policy Implementation
-
-Controllers rely on policies that extend `ModelPolicy` base class:
-
-```php
-class ExamplePolicy extends ModelPolicy
+class NewsController extends AdminController
 {
-    public function __construct(ModelAuthorizer $authorizer)
+    use HandlesSoftDeletes;
+
+    #[Authorize('viewAny', News::class)]
+    public function index(IndexNewsRequest $request) { … }
+
+    #[Authorize('create', News::class)]
+    public function store(StoreNewsRequest $request) { … }
+
+    #[Authorize('update', 'news')]
+    public function update(UpdateNewsRequest $request, News $news) { … }
+
+    #[Authorize('restore', 'news')]
+    public function restore(News $news): RedirectResponse
     {
-        parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::EXAMPLE()->label);
+        return $this->restoreModel($news);
     }
-    
-    // Override methods only when custom logic is needed
-    public function view(User $user, Example $example)
-    {
-        if ($this->commonChecker($user, $example, 'read', $this->pluralModelName)) {
-            return true;
-        }
-        
-        return false;
-    }
+
+    // Authorized in BulkDestroyNewsRequest: every picked article.
+    public function bulkDestroy(BulkDestroyNewsRequest $request): RedirectResponse { … }
 }
 ```
 
-### Route Protection
+- **Every method that reads input type-hints a Form Request**, never `Illuminate\Http\Request`. A plain `Request` is fine only for `->user()`, `->session()` and headers. `ValidationConventionTest` enforces this.
+- **Index requests extend `BaseIndexRequest`**. Read paging through its helpers: `getPerPage()`, `getShowDeleted()`, `getSorting()`, `getFilters()`.
+- **Soft-deletable models** register their trash routes with `Route::softDeletes()` and delegate to `HandlesSoftDeletes`. `SoftDeleteRoutesConventionTest` checks both.
 
-Protect routes using the `tenant.permission` middleware:
+## Where the authorization check lives
 
-```php
-Route::get('/admin/news', [NewsController::class, 'index'])
-    ->middleware('tenant.permission:news.read.padalinys');
-```
+There are exactly three places, and a reader should find the check in the first place they look:
 
-## Controller Best Practices
+1. **`#[Authorize]` on the method.** Use it for any check on a class or a route-bound model.
+   - The second argument is a class (`News::class`), a **route parameter name** (`'news'`), or both (`[Comment::class, 'post']`).
+   - It runs as `can` middleware, before the Form Request validates, so an unauthorized caller gets 403 and never 422.
+2. **The Form Request's `authorize()`.** Use it only when the check needs the request body: ids in the payload, several records at once, or a merge target.
+   - The controller method then says where to look: `// Authorized in MergeTagsRequest: the target and every source tag.`
+   - Never leave an `authorize()` that only does `return true`: a Form Request without one is allowed by default.
+3. **`$this->authorize()` in the body.** Use it only when the subject is computed there, such as a relation, a record looked up from input, or a second check after a branch.
 
-1. **Implement AdminControllerInterface** for all admin controllers
-2. **Use Permission facade** for authorization checks
-3. **Follow consistent return types** as defined in the interface
-4. **Return proper Inertia responses** for views and redirects for actions
+`RouteAuthorizationCoverageTest` fails on a mutating route with no check. It also fails on a plain check written as `$this->authorize()` at the top of a method, or as a one-line `can()` in a Form Request.
 
-Validation and input-reading rules (Form Requests, `validated()`/`safe()`, check ordering)
-are enforced — see [.ai/rules/controllers.md](../../../.ai/rules/controllers.md).
+Policies extend `ModelPolicy` and resolve permissions through `ModelAuthorizer` (see `.ai/rules/app.md`). A refused check renders a 403 page on a direct visit, a 302 with an `error` flash on an Inertia request, and 403 JSON on the API (see "Authorization responses" in `AGENTS.md`).
