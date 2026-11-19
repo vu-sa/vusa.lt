@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Ištekliai
-last_reviewed: 2026-10-31
+last_reviewed: 2026-11-19
 tests:
   - tests/Feature/Admin/Reservations/ResourceControllerTest.php
   - tests/Feature/Api/Admin/ResourceAvailabilityApiControllerTest.php
@@ -69,9 +69,16 @@ Išteklio puslapyje matyti:
 
 ::: info Privatumas
 Kitų žmonių rezervacijose matai tik laikotarpį ir kiekį: užimtumas viešas visiems, bet už jo
-esančios rezervacijos – ne. Pilną rezervaciją mato tik tie, kas turi teisę ją peržiūrėti (žr.
+esančios rezervacijos – ne. Tai galioja ir greitajai peržiūrai, ir užimtumui kuriant rezervaciją.
+Pilną rezervaciją mato tik tie, kas turi teisę ją peržiūrėti (žr.
 [Rezervacijos → Teisės](/rezervacijos/rezervacijos#teises)).
 :::
+
+<ChangelogNote date="2026-11-19" title="Išteklių peržiūros privatumas">
+
+Greitoji peržiūra ir užimtumas kuriant rezervaciją nebeparodo svetimų rezervacijų pavadinimų.
+
+</ChangelogNote>
 
 ### Greitoji peržiūra sąraše {#greitoji-perziura}
 

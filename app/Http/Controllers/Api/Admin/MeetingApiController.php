@@ -12,7 +12,6 @@ use App\Services\ResourceServices\DutyService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
-use Illuminate\Support\Facades\Auth;
 
 class MeetingApiController extends ApiController
 {
@@ -114,12 +113,9 @@ class MeetingApiController extends ApiController
      *
      * @routeName api.v1.admin.meetings.recent
      */
+    // Self-scoped, so no policy: only institutions where the caller holds a duty or is a secretary.
     public function recent(): JsonResponse
     {
-        if (! Auth::check()) {
-            return $this->jsonError('Unauthorized', 401);
-        }
-
         $sixMonthsAgo = now()->subMonths(6);
         $userInstitutions = DutyService::getUserInstitutionsForDashboard(meetingsFrom: $sixMonthsAgo);
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Actions\SerializeResourceAvailability;
 use App\Actions\SerializeResourceManagers;
 use App\Http\Controllers\Api\ApiController;
 use App\Models\Resource;
@@ -35,14 +36,7 @@ class ResourceApiController extends ApiController
             ->limit(3)
             ->get();
 
-        $mapReservation = fn ($reservation) => [
-            'id' => (string) $reservation->id,
-            'name' => $reservation->name,
-            'quantity' => (int) $reservation->pivot->quantity,
-            'state' => (string) $reservation->pivot->state,
-            'start_time' => $reservation->pivot->start_time?->timestamp,
-            'end_time' => $reservation->pivot->end_time?->timestamp,
-        ];
+        $mapReservation = fn ($reservation) => SerializeResourceAvailability::reservationRow($reservation, request()->user());
 
         return $this->jsonSuccess([
             'upcoming_reservations' => $activeReservations->map($mapReservation)->values(),

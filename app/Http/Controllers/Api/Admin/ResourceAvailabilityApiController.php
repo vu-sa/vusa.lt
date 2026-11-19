@@ -44,7 +44,9 @@ class ResourceAvailabilityApiController extends ApiController
             ->with(['active_reservations'])
             ->get();
 
-        $data = $resources->map(function (Resource $resource) use ($start, $end, $rangeStart, $rangeEnd) {
+        $viewer = $request->user();
+
+        $data = $resources->map(function (Resource $resource) use ($start, $end, $rangeStart, $rangeEnd, $viewer) {
             $overlappingReservations = $resource->active_reservations
                 ->filter(function ($reservation) use ($rangeStart, $rangeEnd) {
                     $pivotStart = $reservation->pivot->start_time;
@@ -56,13 +58,13 @@ class ResourceAvailabilityApiController extends ApiController
 
                     return $pivotStart->lt($rangeEnd) && $pivotEnd->gt($rangeStart);
                 })
-                ->map(fn ($reservation) => SerializeResourceAvailability::reservationRow($reservation))
+                ->map(fn ($reservation) => SerializeResourceAvailability::reservationRow($reservation, $viewer))
                 ->values()
                 ->all();
 
             return [
                 'id' => (string) $resource->id,
-                ...SerializeResourceAvailability::execute($resource, $start, $end),
+                ...SerializeResourceAvailability::execute($resource, $start, $end, $viewer),
                 'reservations' => $overlappingReservations,
             ];
         })->keyBy('id');

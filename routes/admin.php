@@ -144,7 +144,7 @@ Route::post('notification/mark-all-as-read', [UserNotificationsController::class
 Route::delete('notification/{id}', [UserNotificationsController::class, 'destroy'])->name('notifications.destroy');
 Route::delete('notifications', [UserNotificationsController::class, 'destroyAll'])->name('notifications.destroy-all');
 
-Route::resource('eventTypes', EventTypeController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
+Route::resource('eventTypes', EventTypeController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::resource('calendar', CalendarController::class)
     ->names(['show' => 'calendar.view'])
     ->middleware(HandlePrecognitiveRequests::class);
@@ -180,7 +180,7 @@ Route::post('institutions/activity-requests', [InstitutionActivityRequestControl
 Route::put('institutions/{institution}/secretaries', [InstitutionSecretaryController::class, 'update'])->name('institutions.secretaries.update');
 
 Route::resource('resources', ResourceController::class);
-Route::resource('resourceCategories', ResourceCategoryController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
+Route::resource('resourceCategories', ResourceCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
 
 Route::put('reservations/{reservation}/add-users', [ReservationController::class, 'addUsers'])->name('reservations.add-users');
 
@@ -265,19 +265,17 @@ Route::resource('studySets', StudySetController::class)->except(['show']);
 Route::post('institutions/reorderDuties', [InstitutionController::class, 'reorderDuties'])->name('institutions.reorderDuties');
 Route::resource('institutions', InstitutionController::class);
 
-Route::get('tenants/{tenant}/quick-links/edit', [TenantController::class, 'editQuickLink'])->name('tenants.editQuickLink');
-Route::post('tenants/{tenant}/quick-links', [TenantController::class, 'updateQuickLink'])->name('tenants.updateQuickLink');
 Route::get('tenants/{tenant}/main-page/edit', [TenantController::class, 'editMainPage'])->name('tenants.editMainPage');
 Route::post('tenants/{tenant}/main-page', [TenantController::class, 'updateMainPage'])->name('tenants.updateMainPage');
 
-Route::resource('tenants', TenantController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
+Route::resource('tenants', TenantController::class)->only(['index', 'store', 'update', 'destroy']);
 
 Route::get('forms/{form}/export', [FormController::class, 'export'])->name('forms.export');
 Route::resource('forms', FormController::class);
 
 Route::patch('problems/{problem}/status', [ProblemController::class, 'updateStatus'])->name('problems.updateStatus');
 Route::resource('problems', ProblemController::class);
-Route::resource('problemCategories', ProblemCategoryController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
+Route::resource('problemCategories', ProblemCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
 
 // Goals pilot — App\Support\Experiments\GoalsExperiment. A 404 outside the pilot.
 Route::middleware('experiment.goals')->group(function (): void {
