@@ -74,12 +74,6 @@ Pilną rezervaciją mato tik tie, kas turi teisę ją peržiūrėti (žr.
 [Rezervacijos → Teisės](/rezervacijos/rezervacijos#teises)).
 :::
 
-<ChangelogNote date="2026-11-19" title="Išteklių peržiūros privatumas">
-
-Greitoji peržiūra ir užimtumas kuriant rezervaciją nebeparodo svetimų rezervacijų pavadinimų.
-
-</ChangelogNote>
-
 ### Greitoji peržiūra sąraše {#greitoji-perziura}
 
 Išteklių sąraše galima persijungti į peržiūros rodinį (`preview`), kuriame dešiniajame šoniniame
