@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Actions\SerializeResourceAvailability;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\Admin\ResourceAvailabilityRequest;
+use App\Models\Reservation;
 use App\Models\Resource;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 /**
  * Provides date-range-aware capacity for resources.
@@ -25,6 +27,8 @@ class ResourceAvailabilityApiController extends ApiController
      *
      * @routeName api.v1.admin.resources.availability
      */
+    // Availability is only meaningful within the reservation-creation flow, so gate on the same ability the create form uses.
+    #[Authorize('create', Reservation::class)]
     public function index(ResourceAvailabilityRequest $request): JsonResponse
     {
         $validated = $request->validated();

@@ -6,6 +6,7 @@ use App\Actions\SerializeResourceManagers;
 use App\Http\Controllers\Api\ApiController;
 use App\Models\Resource;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 class ResourceApiController extends ApiController
 {
@@ -19,10 +20,9 @@ class ResourceApiController extends ApiController
      *
      * @routeName api.v1.admin.resources.preview
      */
+    #[Authorize('view', 'resource')]
     public function preview(Resource $resource): JsonResponse
     {
-        $this->authorize('view', $resource);
-
         $activeReservations = $resource->active_reservations()
             ->orderByPivot('start_time')
             ->limit(5)

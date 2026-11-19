@@ -11,6 +11,7 @@ use App\Services\AgendaItemPresenter;
 use App\Services\ResourceServices\DutyService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\Auth;
 
 class MeetingApiController extends ApiController
@@ -43,10 +44,9 @@ class MeetingApiController extends ApiController
      *
      * @routeName api.v1.admin.meetings.preview
      */
+    #[Authorize('view', 'meeting')]
     public function preview(Meeting $meeting): JsonResponse
     {
-        $this->authorize('view', $meeting);
-
         $meeting->load([
             'institutions',
             'agendaItems' => fn ($query) => $query->orderBy('order')->with('votes'),
@@ -86,10 +86,9 @@ class MeetingApiController extends ApiController
      *
      * @routeName api.v1.admin.meetings.agendaItems
      */
+    #[Authorize('view', 'meeting')]
     public function agendaItems(Meeting $meeting): JsonResponse
     {
-        $this->authorize('view', $meeting);
-
         $meeting->load([
             'agendaItems' => fn ($query) => $query->orderBy('order'),
         ]);

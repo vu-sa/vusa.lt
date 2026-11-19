@@ -12,6 +12,7 @@ use App\Services\ModelAuthorizer;
 use App\Services\TanstackTableService;
 use App\Support\CollectionFacetCounts;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 class UserApiController extends ApiController
 {
@@ -19,17 +20,15 @@ class UserApiController extends ApiController
 
     public function __construct(private TanstackTableService $tableService, private ModelAuthorizer $authorizer) {}
 
+    #[Authorize('view', 'user')]
     public function photo(User $user): JsonResponse
     {
-        $this->authorize('view', $user);
-
         return $this->jsonSuccess(['image' => $user->imageData('profile_photo')]);
     }
 
+    #[Authorize('viewAny', User::class)]
     public function index(IndexUserRequest $request): JsonResponse
     {
-        $this->authorize('viewAny', User::class);
-
         $query = fn (IndexUserRequest $request) => $this->applyTanstackFilters(
             BuildUserIndexQuery::execute($request, $this->authorizer),
             $request,
