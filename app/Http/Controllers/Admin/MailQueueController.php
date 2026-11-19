@@ -12,6 +12,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Services\MailPreview\MailPreviewRenderer;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -25,10 +26,9 @@ use Inertia\Response;
  */
 class MailQueueController extends AdminController
 {
+    #[Authorize('viewAny', Role::class)]
     public function index(IndexMailQueueRequest $request, BuildMailQueuePage $builder): Response
     {
-        $this->authorize('viewAny', Role::class);
-
         return Inertia::render('Admin/MailQueue', [
             'recipients' => $builder->execute($request),
             'canManage' => Auth::user()->isSuperAdmin(),
@@ -39,10 +39,9 @@ class MailQueueController extends AdminController
         ]);
     }
 
+    #[Authorize('viewAny', Role::class)]
     public function previewForUser(RenderMailPreviewRequest $request, User $user, BuildNotificationDigest $builder, MailPreviewRenderer $renderer): \Illuminate\Http\Response
     {
-        $this->authorize('viewAny', Role::class);
-
         $items = NotificationDigestQueue::query()->where('user_id', $user->id)->orderBy('created_at')->orderBy('id')->get();
         abort_if($items->isEmpty(), 404);
 

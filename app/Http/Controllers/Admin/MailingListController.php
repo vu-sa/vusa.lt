@@ -32,6 +32,7 @@ use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
@@ -59,18 +60,16 @@ class MailingListController extends AdminController
     /**
      * Lists number in the dozens, so the whole set is sent and filtered in the browser.
      */
+    #[Authorize('viewAny', MailingList::class)]
     public function index(Request $request): Response
     {
-        $this->authorize('viewAny', MailingList::class);
-
         return $this->renderIndex($request, openCreate: false);
     }
 
     /** The + Sukurti entry point: the collection with its create sheet open. */
+    #[Authorize('create', MailingList::class)]
     public function create(Request $request): Response
     {
-        $this->authorize('create', MailingList::class);
-
         return $this->renderIndex($request, openCreate: true);
     }
 
@@ -102,6 +101,7 @@ class MailingListController extends AdminController
         ]);
     }
 
+    #[Authorize('create', MailingList::class)]
     public function store(StoreMailingListRequest $request): RedirectResponse
     {
         if (! $this->mailman->isConfigured()) {
@@ -143,10 +143,9 @@ class MailingListController extends AdminController
         return redirect()->route('mailingLists.show', $mailingList)->with('success', $this->entityMessage('created', 'mailingList'));
     }
 
+    #[Authorize('viewArchive', 'mailingList')]
     public function show(ShowMailingListRequest $request, MailingList $mailingList): Response
     {
-        $this->authorize('viewArchive', $mailingList);
-
         $user = $request->user();
         $canView = $user->can('view', $mailingList);
         $canUpdate = $user->can('update', $mailingList);
@@ -178,6 +177,7 @@ class MailingListController extends AdminController
         ]);
     }
 
+    #[Authorize('update', 'mailingList')]
     public function update(UpdateMailingListRequest $request, MailingList $mailingList): RedirectResponse
     {
         try {
@@ -202,6 +202,7 @@ class MailingListController extends AdminController
         return back()->with('success', $this->entityMessage('updated', 'mailingList'));
     }
 
+    #[Authorize('update', 'mailingList')]
     public function updateMode(UpdateMailingListModeRequest $request, MailingList $mailingList, SyncMailingList $sync): RedirectResponse
     {
         $mode = MailingListMode::from($request->validated('mode'));
@@ -223,14 +224,15 @@ class MailingListController extends AdminController
         return back()->with('success', __('mailing_lists.messages.unmanaged'));
     }
 
+    #[Authorize('update', 'mailingList')]
     public function sync(SyncMailingListRequest $request, MailingList $mailingList, SyncMailingList $sync): RedirectResponse
     {
         return $this->runSync($mailingList, $sync, $request->validated('preview_token'), $request->user());
     }
 
+    #[Authorize('create', MailingList::class)]
     public function import(Request $request, ImportMailingLists $import): RedirectResponse
     {
-        $this->authorize('create', MailingList::class);
         abort_unless($this->authorizer->scope($request->user(), 'mailingLists.create.padalinys')->isAllScope, 403);
 
         if (! $this->mailman->isConfigured()) {

@@ -7,11 +7,6 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateTaskCompletionRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return $this->user()?->can('update', $this->route('task')) ?? false;
-    }
-
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

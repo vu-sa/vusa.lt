@@ -30,10 +30,9 @@ class QuickLinkController extends AdminController
     /**
      * Display a listing of the resource.
      */
+    #[Authorize('viewAny', QuickLink::class)]
     public function index(IndexQuickLinkRequest $request)
     {
-        $this->authorize('viewAny', QuickLink::class);
-
         $tenants = GetTenantsForUpserts::execute('quickLinks.read.padalinys', $this->authorizer)
             ->filter(fn ($tenant) => in_array($tenant['type'], TenantType::representationalValues(), true))
             ->values();
@@ -66,6 +65,7 @@ class QuickLinkController extends AdminController
     /**
      * Show the form for creating a new resource.
      */
+    #[Authorize('create', QuickLink::class)]
     public function create(CreateQuickLinkRequest $request)
     {
         $tenantOptions = GetTenantsForUpserts::execute('quickLinks.create.padalinys', $this->authorizer);
@@ -85,10 +85,9 @@ class QuickLinkController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
+    #[Authorize('create', QuickLink::class)]
     public function store(StoreQuickLinkRequest $request, PostCreateRedirect $redirect)
     {
-        $this->authorize('create', QuickLink::class);
-
         $quickLink = DB::transaction(function () use ($request): QuickLink {
             $quickLink = new QuickLink;
             $quickLink->fill($request->safe()->only('text', 'link', 'lang', 'icon', 'is_important'));
@@ -105,10 +104,9 @@ class QuickLinkController extends AdminController
     /**
      * Show the form for editing the specified resource.
      */
+    #[Authorize('update', 'quickLink')]
     public function edit(QuickLink $quickLink)
     {
-        $this->authorize('update', $quickLink);
-
         return Inertia::render('Admin/Content/EditQuickLink', [
             'quickLink' => $quickLink,
             'tenantOptions' => GetTenantsForUpserts::execute('quickLinks.update.padalinys', $this->authorizer),
@@ -119,10 +117,9 @@ class QuickLinkController extends AdminController
     /**
      * Update the specified resource in storage.
      */
+    #[Authorize('update', 'quickLink')]
     public function update(UpdateQuickLinkRequest $request, QuickLink $quickLink)
     {
-        $this->authorize('update', $quickLink);
-
         DB::transaction(function () use ($request, $quickLink): void {
             $quickLink->update($request->safe()->only('text', 'link', 'lang', 'icon', 'is_important', 'tenant_id'));
         });
@@ -133,10 +130,9 @@ class QuickLinkController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
+    #[Authorize('delete', 'quickLink')]
     public function destroy(QuickLink $quickLink)
     {
-        $this->authorize('delete', $quickLink);
-
         $quickLink->delete();
 
         return redirect()->route('quickLinks.index')->with('info', $this->entityMessage('deleted', 'quickLink'));

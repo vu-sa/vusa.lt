@@ -8,16 +8,16 @@ use App\Http\Requests\UpdateProblemCategoryRequest;
 use App\Models\ProblemCategory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ProblemCategoryController extends AdminController
 {
+    #[Authorize('viewAny', ProblemCategory::class)]
     public function index(Request $request): Response
     {
-        $this->authorize('viewAny', ProblemCategory::class);
-
         return Inertia::render('Admin/Problems/IndexProblemCategory', [
             'problemCategories' => ProblemCategory::query()
                 // Trashed problems count too: restoring one would bring its categories back.
@@ -35,6 +35,7 @@ class ProblemCategoryController extends AdminController
         ]);
     }
 
+    #[Authorize('create', ProblemCategory::class)]
     public function store(StoreProblemCategoryRequest $request): RedirectResponse
     {
         ProblemCategory::create([
@@ -45,6 +46,7 @@ class ProblemCategoryController extends AdminController
         return back()->with('success', $this->entityMessage('created', 'problemCategory'));
     }
 
+    // Authorized in UpdateProblemCategoryRequest: the bound category.
     public function update(UpdateProblemCategoryRequest $request, ProblemCategory $problemCategory): RedirectResponse
     {
         // The slug stays put: it is the stable handle seeders and filters use.
@@ -56,10 +58,9 @@ class ProblemCategoryController extends AdminController
     /**
      * Refused while in use: the pivot cascades, so deleting would silently untag problems.
      */
+    #[Authorize('delete', 'problemCategory')]
     public function destroy(ProblemCategory $problemCategory): RedirectResponse
     {
-        $this->authorize('delete', $problemCategory);
-
         $problemsCount = $problemCategory->problems()->withTrashed()->count();
 
         if ($problemsCount > 0) {

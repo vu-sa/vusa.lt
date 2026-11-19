@@ -22,6 +22,7 @@ use App\Notifications\AssignedToResourceNotification;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
 /* use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests; */
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
@@ -39,10 +40,9 @@ class ReservationController extends AdminController
     /**
      * Display a listing of the resource.
      */
+    #[Authorize('viewList', Reservation::class)]
     public function index(IndexReservationRequest $request)
     {
-        $this->authorize('viewList', Reservation::class);
-
         $reservations = fn () => once(function () use ($request) {
             $query = Reservation::query()->with(SerializeReservationsForTable::EAGER_LOADS);
 
@@ -105,6 +105,7 @@ class ReservationController extends AdminController
      * Submitting the cart: capacity is checked under a row lock, and the draft is consumed with
      * the reservation so a failed check leaves it intact.
      */
+    #[Authorize('create', Reservation::class)]
     public function store(StoreReservationRequest $request)
     {
         $this->authorize('create', [Reservation::class, $this->authorizer]);
@@ -145,6 +146,7 @@ class ReservationController extends AdminController
     /**
      * Display the specified resource.
      */
+    #[Authorize('view', 'reservation')]
     public function show(ShowReservationRequest $request, Reservation $reservation)
     {
         $this->authorize('view', [Reservation::class, $reservation, $this->authorizer]);
@@ -225,6 +227,7 @@ class ReservationController extends AdminController
         return back()->with('success', $this->entityMessage('deleted', 'reservation'));
     }
 
+    // Authorized in AddReservationUsersRequest: the reservation receiving users.
     public function addUsers(AddReservationUsersRequest $request, Reservation $reservation)
     {
         $this->authorize('addUsers', [Reservation::class, $reservation, $this->authorizer]);

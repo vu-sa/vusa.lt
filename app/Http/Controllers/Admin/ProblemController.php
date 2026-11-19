@@ -40,10 +40,9 @@ class ProblemController extends AdminController
     /**
      * Display a listing of the resource.
      */
+    #[Authorize('viewAny', Problem::class)]
     public function index(IndexProblemRequest $request)
     {
-        $this->authorize('viewAny', Problem::class);
-
         $query = BuildProblemIndexQuery::execute($request);
 
         $query = $this->applyTanstackFilters(
@@ -84,6 +83,7 @@ class ProblemController extends AdminController
     /**
      * Show the form for creating a new resource.
      */
+    #[Authorize('create', Problem::class)]
     public function create(CreateProblemRequest $request)
     {
         $tenants = GetTenantsForUpserts::execute('problems.create.padalinys', $this->authorizer);
@@ -107,6 +107,7 @@ class ProblemController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
+    #[Authorize('create', Problem::class)]
     public function store(StoreProblemRequest $request, PostCreateRedirect $redirect)
     {
         $validated = $request->validated();
@@ -134,10 +135,9 @@ class ProblemController extends AdminController
     /**
      * Display the specified resource.
      */
+    #[Authorize('view', 'problem')]
     public function show(Problem $problem)
     {
-        $this->authorize('view', $problem);
-
         $user = auth()->user();
 
         return Inertia::render('Admin/Problems/ShowProblem', [
@@ -212,10 +212,9 @@ class ProblemController extends AdminController
     /**
      * Show the form for editing the specified resource.
      */
+    #[Authorize('update', 'problem')]
     public function edit(Problem $problem)
     {
-        $this->authorize('update', $problem);
-
         $problemData = $problem->load(['tenant', 'createdBy', 'responsibleUser', 'categories', 'institutions'])->toFullArray();
         $problemData['categories'] = $problem->categories->pluck('id')->toArray();
         $problemData['institutions'] = $problem->institutions->pluck('id')->toArray();
@@ -237,6 +236,7 @@ class ProblemController extends AdminController
     /**
      * Update the specified resource in storage.
      */
+    #[Authorize('update', 'problem')]
     public function update(UpdateProblemRequest $request, Problem $problem)
     {
         $validated = $request->validated();
@@ -255,10 +255,9 @@ class ProblemController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
+    #[Authorize('delete', 'problem')]
     public function destroy(Problem $problem)
     {
-        $this->authorize('delete', $problem);
-
         $problem->delete();
 
         return $this->redirectToIndexWithInfo('problems', $this->entityMessage('deleted', 'problem'));
@@ -267,10 +266,9 @@ class ProblemController extends AdminController
     /**
      * Update the status of the specified problem.
      */
+    #[Authorize('update', 'problem')]
     public function updateStatus(UpdateProblemStatusRequest $request, Problem $problem)
     {
-        $this->authorize('update', $problem);
-
         $problem->update(['status' => $request->validated('status')]);
 
         return back()->with('success', $this->entityMessage('updated', 'problem'));

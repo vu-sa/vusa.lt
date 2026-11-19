@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateResourceCategoryRequest;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\ResourceCategory;
 use App\Services\TanstackTableService;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Inertia\Inertia;
 
 class ResourceCategoryController extends AdminController
@@ -20,10 +21,9 @@ class ResourceCategoryController extends AdminController
     /**
      * Display a listing of the resource.
      */
+    #[Authorize('viewAny', ResourceCategory::class)]
     public function index(IndexResourceCategoryRequest $request)
     {
-        $this->authorize('viewAny', ResourceCategory::class);
-
         $query = ResourceCategory::query();
 
         $searchableColumns = ['name'];
@@ -65,6 +65,7 @@ class ResourceCategoryController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
+    #[Authorize('create', ResourceCategory::class)]
     public function store(StoreResourceCategoryRequest $request)
     {
         $resourceCategory = new ResourceCategory;
@@ -79,10 +80,9 @@ class ResourceCategoryController extends AdminController
     /**
      * Update the specified resource in storage.
      */
+    #[Authorize('update', 'resourceCategory')]
     public function update(UpdateResourceCategoryRequest $request, ResourceCategory $resourceCategory)
     {
-        $this->authorize('update', $resourceCategory);
-
         $validatedData = $request->safe();
         $resourceCategory->fill($validatedData->toArray());
         $resourceCategory->save();
@@ -93,10 +93,9 @@ class ResourceCategoryController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
+    #[Authorize('delete', 'resourceCategory')]
     public function destroy(ResourceCategory $resourceCategory)
     {
-        $this->authorize('delete', $resourceCategory);
-
         $resourceCategory->delete();
 
         return redirect()->route('resourceCategories.index')->with(['success' => $this->entityMessage('deleted', 'resourceCategory')]);

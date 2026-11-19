@@ -47,10 +47,9 @@ class UserController extends AdminController
     /**
      * Display a listing of the resource.
      */
+    #[Authorize('viewAny', User::class)]
     public function index(IndexUserRequest $request)
     {
-        $this->authorize('viewAny', User::class);
-
         $buildQuery = fn (bool $includeDuplicates = true) => $this->applyTanstackFilters(
             BuildUserIndexQuery::execute($request, $this->authorizer, $includeDuplicates),
             $request,
@@ -101,10 +100,9 @@ class UserController extends AdminController
     /**
      * Show the form for creating a new resource.
      */
+    #[Authorize('create', User::class)]
     public function create()
     {
-        $this->authorize('create', User::class);
-
         return Inertia::render('Admin/People/CreateUser', [
             'tenantsWithDuties' => UserDutyService::getTenantsWithDutiesForForm($this->authorizer),
             'permissableTenants' => UserDutyService::getPermissableTenants($this->authorizer, 'users.create.padalinys'),
@@ -114,6 +112,7 @@ class UserController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
+    #[Authorize('create', User::class)]
     public function store(StoreUserRequest $request, SyncImageMedia $syncImage, PostCreateRedirect $redirect)
     {
         $user = DB::transaction(function () use ($request, $syncImage): User {
@@ -146,6 +145,7 @@ class UserController extends AdminController
     /**
      * Display the specified resource.
      */
+    // Authorized in ActivityRequestHistoryRequest: the user in the route.
     public function show(ActivityRequestHistoryRequest $request, User $user, GetUserActivityRequests $activityRequests)
     {
         $loadUser = fn () => once(function () use ($user) {
@@ -206,10 +206,9 @@ class UserController extends AdminController
     /**
      * Show the form for editing the specified resource.
      */
+    #[Authorize('update', 'user')]
     public function edit(User $user)
     {
-        $this->authorize('update', $user);
-
         $actor = Auth::user();
 
         return Inertia::render('Admin/People/EditUser', [
@@ -226,11 +225,10 @@ class UserController extends AdminController
     /**
      * Update the specified resource in storage.
      */
+    #[Authorize('update', 'user')]
     public function update(UpdateUserRequest $request, User $user)
     {
         // TODO: make duty attach / detach work properly
-        $this->authorize('update', $user);
-
         $actor = $request->user();
         $currentDutyIds = $user->current_duties->pluck('id');
 
@@ -281,6 +279,7 @@ class UserController extends AdminController
      * duties' responsibilities, which scope them to a padalinys; a role held by the person
      * directly would apply in every padalinys they hold any duty in.
      */
+    // Authorized in UpdateUserSuperAdminRequest: super admins only.
     public function updateSuperAdmin(UpdateUserSuperAdminRequest $request, User $user)
     {
         $actor = $request->user();
@@ -303,10 +302,9 @@ class UserController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
+    #[Authorize('delete', 'user')]
     public function destroy(User $user)
     {
-        $this->authorize('delete', $user);
-
         // UserPolicy blocks this too, but Gate::before grants super admins every
         // ability outright, so the policy never runs for them.
         abort_if($user->is(Auth::user()), 403, __('users.cannot_delete_self'));
@@ -319,6 +317,7 @@ class UserController extends AdminController
     /**
      * Merge duplicate user accounts into one.
      */
+    // Authorized in MergeUsersRequest: the users and any identity change in the body.
     public function mergeUsers(MergeUsersRequest $request): RedirectResponse
     {
         $keptUser = $request->keptUser();
@@ -371,6 +370,7 @@ class UserController extends AdminController
     /**
      * Generate a random password for the user (super admin only).
      */
+    // Authorized in GenerateUserPasswordRequest: super admins only.
     public function generatePassword(User $user, GenerateUserPasswordRequest $request)
     {
         $password = GenerateUserPassword::execute($user);
@@ -382,6 +382,7 @@ class UserController extends AdminController
     /**
      * Delete a user's password (super admin only).
      */
+    // Authorized in GenerateUserPasswordRequest: super admins only.
     public function deletePassword(User $user, GenerateUserPasswordRequest $request)
     {
         DeleteUserPassword::execute($user);

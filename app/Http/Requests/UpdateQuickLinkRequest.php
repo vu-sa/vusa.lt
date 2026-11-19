@@ -12,11 +12,6 @@ class UpdateQuickLinkRequest extends FormRequest
 {
     use ValidatesTenantScope;
 
-    public function authorize(): bool
-    {
-        return $this->user()->can('update', $this->route('quickLink'));
-    }
-
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

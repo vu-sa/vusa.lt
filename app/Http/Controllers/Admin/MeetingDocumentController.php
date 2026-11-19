@@ -18,6 +18,7 @@ use Illuminate\Validation\ValidationException;
  */
 class MeetingDocumentController extends AdminController
 {
+    // Authorized in StoreMeetingDocumentRequest: the meeting and the document in the body.
     public function store(StoreMeetingDocumentRequest $request, Meeting $meeting): RedirectResponse
     {
         UpdateDocumentStatus::linkToMeeting($request->resolveDocument(), $meeting, $request->user());
@@ -28,6 +29,7 @@ class MeetingDocumentController extends AdminController
     /**
      * Link files chosen in SharePoint's own picker, as the meeting page did before discovery.
      */
+    // Authorized in StoreMeetingSharepointDocumentRequest: document creation and meeting editing.
     public function storeFromSharepoint(StoreMeetingSharepointDocumentRequest $request, Meeting $meeting): RedirectResponse
     {
         $documents = ResolvePickedDocuments::execute($request->pickedItems(), $request->user());
@@ -48,6 +50,7 @@ class MeetingDocumentController extends AdminController
      * `Document $document` is what makes route-model binding substitute `{document}` — the
      * request needs the model, not the raw id, to check it belongs to this meeting.
      */
+    // Authorized in DestroyMeetingDocumentRequest: the meeting and document in the route.
     public function destroy(DestroyMeetingDocumentRequest $request, Meeting $meeting, Document $document): RedirectResponse
     {
         $document = $request->document();

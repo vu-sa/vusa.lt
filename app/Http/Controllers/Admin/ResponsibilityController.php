@@ -32,6 +32,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -44,10 +45,9 @@ use Inertia\Response;
  */
 class ResponsibilityController extends AdminController
 {
+    #[Authorize('viewAny', Role::class)]
     public function index(IndexRoleRequest $request): Response
     {
-        $this->authorize('viewAny', Role::class);
-
         // A short list sent whole: the collection searches, sorts and filters it in the browser.
         return Inertia::render('Admin/Permissions/IndexResponsibility', [
             'responsibilities' => Role::query()->withCount(['permissions', 'duties'])->get()
@@ -70,13 +70,13 @@ class ResponsibilityController extends AdminController
         ]);
     }
 
+    #[Authorize('create', Role::class)]
     public function create(): Response
     {
-        $this->authorize('create', Role::class);
-
         return Inertia::render('Admin/Permissions/CreateResponsibility');
     }
 
+    #[Authorize('create', Role::class)]
     public function store(StoreRoleRequest $request, PostCreateRedirect $redirect): RedirectResponse
     {
         $role = new Role([
@@ -91,10 +91,9 @@ class ResponsibilityController extends AdminController
             ->with('success', $this->entityMessage('created', 'role'));
     }
 
+    #[Authorize('view', 'role')]
     public function show(Role $role): Response
     {
-        $this->authorize('view', $role);
-
         $role->load('permissions:id,name', 'attachable_types:id');
         $held = $role->permissions->pluck('name');
 
@@ -133,10 +132,9 @@ class ResponsibilityController extends AdminController
         ]);
     }
 
+    #[Authorize('update', 'role')]
     public function edit(Role $role): Response|RedirectResponse
     {
-        $this->authorize('update', $role);
-
         if ($role->isSuperAdmin()) {
             return back()->with('info', __('messages.role.not_editable'));
         }
@@ -151,6 +149,7 @@ class ResponsibilityController extends AdminController
         ]);
     }
 
+    #[Authorize('update', 'role')]
     public function update(UpdateRoleRequest $request, Role $role): RedirectResponse
     {
         if ($role->isSuperAdmin()) {
@@ -165,10 +164,9 @@ class ResponsibilityController extends AdminController
         return redirect()->route('responsibilities.show', $role)->with('success', $this->entityMessage('updated', 'role'));
     }
 
+    #[Authorize('delete', 'role')]
     public function destroy(Role $role): RedirectResponse
     {
-        $this->authorize('delete', $role);
-
         if ($reason = $this->deleteBlockedReason($role)) {
             return back()->with('error', $reason);
         }
@@ -183,6 +181,7 @@ class ResponsibilityController extends AdminController
         return redirect()->route('responsibilities.index')->with('success', $this->entityMessage('deleted', 'role'));
     }
 
+    // Authorized in UpdateRolePermissionsRequest: the role whose permissions change.
     public function updatePermissions(UpdateRolePermissionsRequest $request, Role $role): RedirectResponse
     {
         $current = $role->permissions()->pluck('name')->filter(PermissionCatalog::isGrantable(...));
@@ -213,6 +212,7 @@ class ResponsibilityController extends AdminController
             : back()->with('success', $message);
     }
 
+    // Authorized in StoreRoleGrantRequest: the role receiving the grant.
     public function storeGrant(StoreRoleGrantRequest $request, Role $role): RedirectResponse
     {
         $role->grants()->firstOrCreate([
@@ -224,10 +224,9 @@ class ResponsibilityController extends AdminController
         return back()->with('success', __('responsibilities.messages.added'));
     }
 
+    #[Authorize('update', 'role')]
     public function destroyGrant(Request $request, Role $role, string $grant): RedirectResponse
     {
-        $this->authorize('update', $role);
-
         // Resolved through the responsibility so a crafted id cannot reach another one's grant.
         $responsibilityGrant = $role->grants()->find($grant);
 
@@ -243,6 +242,7 @@ class ResponsibilityController extends AdminController
     /**
      * Take a role a person holds directly, outside any duty, away from them.
      */
+    // Authorized in DestroyRoleUserRequest: super admins only.
     public function destroyUser(DestroyRoleUserRequest $request, Role $role, User $user): RedirectResponse
     {
         abort_unless($role->users()->whereKey($user->getKey())->exists(), 404);
@@ -256,6 +256,7 @@ class ResponsibilityController extends AdminController
         return back()->with('success', __('responsibilities.messages.removed'));
     }
 
+    #[Authorize('update', 'role')]
     public function syncAttachableTypes(SyncRoleAttachableTypesRequest $request, Role $role): RedirectResponse
     {
         $role->syncAudited('attachable_types', $request->validated('attachable_types'));

@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Reservation;
 use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -10,14 +9,6 @@ use Illuminate\Support\Carbon;
 
 class StoreReservationRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return $this->user()->can('create', Reservation::class);
-    }
-
     #[\Override]
     protected function prepareForValidation()
     {

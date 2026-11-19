@@ -12,6 +12,7 @@ use App\Http\Requests\UpdateTenantRequest;
 use App\Models\Content;
 use App\Models\Tenant;
 use App\Services\ContentService;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -22,10 +23,9 @@ class TenantController extends AdminController
     /**
      * Display a listing of the resource.
      */
+    #[Authorize('viewAny', Tenant::class)]
     public function index(IndexTenantRequest $request): Response
     {
-        $this->authorize('viewAny', Tenant::class);
-
         // A short list sent whole: the collection searches, sorts and filters it in the browser.
         return Inertia::render('Admin/People/IndexTenant', [
             'tenants' => Tenant::query()->orderBy('fullname')
@@ -50,6 +50,7 @@ class TenantController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
+    #[Authorize('create', Tenant::class)]
     public function store(StoreTenantRequest $request)
     {
         $tenant = new Tenant;
@@ -64,6 +65,7 @@ class TenantController extends AdminController
     /**
      * Update the specified resource in storage.
      */
+    #[Authorize('update', 'tenant')]
     public function update(UpdateTenantRequest $request, Tenant $tenant)
     {
         $tenant->fill($request->validated());
@@ -76,19 +78,17 @@ class TenantController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
+    #[Authorize('delete', 'tenant')]
     public function destroy(Tenant $tenant)
     {
-        $this->authorize('delete', $tenant);
-
         $tenant->delete();
 
         return redirect()->route('tenants.index')->with('success', $this->entityMessage('deleted', 'tenant'));
     }
 
+    #[Authorize('updateMainPage', 'tenant')]
     public function editMainPage(EditTenantMainPageRequest $request, Tenant $tenant)
     {
-        $this->authorize('updateMainPage', $tenant);
-
         $locale = $request->requestedLocale();
         $content = $tenant->homepageContents()
             ->where('locale', $locale->value)
@@ -102,6 +102,7 @@ class TenantController extends AdminController
         ]);
     }
 
+    #[Authorize('updateMainPage', 'tenant')]
     public function updateMainPage(UpdateContentRequest $request, Tenant $tenant)
     {
         // `validated()` only keeps array-shaped fields (`parts.*.options`, `json_content.*`

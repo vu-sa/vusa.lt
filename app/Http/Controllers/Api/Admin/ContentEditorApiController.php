@@ -29,11 +29,13 @@ class ContentEditorApiController extends ApiController
         return $this->jsonSuccess($this->editor->snapshot($item));
     }
 
+    #[Authorize('create', Page::class)]
     public function storePage(StorePageRequest $request): JsonResponse
     {
         return $this->saved($request, 'pages');
     }
 
+    #[Authorize('update', 'page')]
     public function updatePage(UpdatePageRequest $request, Page $page): JsonResponse
     {
         return $this->saved($request, 'pages', $page);

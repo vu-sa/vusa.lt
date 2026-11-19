@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\ReservationCart;
 
-use App\Models\Reservation;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -10,8 +9,4 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 abstract class ReservationCartRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return $this->user()?->can('create', Reservation::class) ?? false;
-    }
 }

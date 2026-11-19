@@ -9,11 +9,6 @@ use Illuminate\Validation\Rule;
 
 class UpdateMailingListModeRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return $this->user()->can('update', $this->route('mailingList'));
-    }
-
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

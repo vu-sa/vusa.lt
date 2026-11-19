@@ -30,10 +30,9 @@ class StudySetController extends AdminController
     /**
      * Display a listing of the resource.
      */
+    #[Authorize('viewAny', StudySet::class)]
     public function index(IndexStudySetRequest $request)
     {
-        $this->authorize('viewAny', StudySet::class);
-
         // A short list sent whole: the collection searches, sorts and filters it in the browser.
         $query = $this->tableService->applyPermissionFiltering(
             StudySet::query()->with('tenant:id,shortname')->withCount('courses')->orderBy('order'),
@@ -51,10 +50,9 @@ class StudySetController extends AdminController
     /**
      * Show the form for creating a new resource.
      */
+    #[Authorize('create', StudySet::class)]
     public function create()
     {
-        $this->authorize('create', StudySet::class);
-
         return Inertia::render('Admin/StudySets/CreateStudySet', [
             'assignableTenants' => GetTenantsForUpserts::execute('studySets.create.padalinys', $this->authorizer),
         ]);
@@ -63,10 +61,9 @@ class StudySetController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
+    #[Authorize('create', StudySet::class)]
     public function store(StoreStudySetRequest $request, PostCreateRedirect $redirect)
     {
-        $this->authorize('create', StudySet::class);
-
         $studySet = DB::transaction(function () use ($request): StudySet {
             $studySet = StudySet::create([
                 'name' => $request->validated('name'),
@@ -89,10 +86,9 @@ class StudySetController extends AdminController
     /**
      * Show the form for editing the specified resource.
      */
+    #[Authorize('update', 'studySet')]
     public function edit(StudySet $studySet)
     {
-        $this->authorize('update', $studySet);
-
         $studySet->load([
             'courses' => fn ($query) => $query->orderBy('order'),
             'courses.reviews',
@@ -114,10 +110,9 @@ class StudySetController extends AdminController
     /**
      * Update the specified resource in storage.
      */
+    #[Authorize('update', 'studySet')]
     public function update(UpdateStudySetRequest $request, StudySet $studySet)
     {
-        $this->authorize('update', $studySet);
-
         DB::transaction(function () use ($request, $studySet): void {
             $studySet->update([
                 'name' => $request->validated('name'),
@@ -137,10 +132,9 @@ class StudySetController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
+    #[Authorize('delete', 'studySet')]
     public function destroy(StudySet $studySet)
     {
-        $this->authorize('delete', $studySet);
-
         $studySet->delete();
 
         return $this->redirectToIndexWithInfo('studySets', $this->entityMessage('deleted', 'studySet'));

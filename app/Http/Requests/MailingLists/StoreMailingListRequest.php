@@ -12,11 +12,6 @@ class StoreMailingListRequest extends MailingListRequest
     #[\Override]
     protected string $tenantScopePermission = 'mailingLists.create.padalinys';
 
-    public function authorize(): bool
-    {
-        return $this->user()->can('create', MailingList::class);
-    }
-
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

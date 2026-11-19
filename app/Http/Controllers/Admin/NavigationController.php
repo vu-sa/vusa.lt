@@ -25,6 +25,7 @@ class NavigationController extends AdminController
     /**
      * Display a listing of the resource.
      */
+    #[Authorize('viewAny', Navigation::class)]
     public function index(IndexNavigationRequest $request)
     {
         $showDeleted = $request->safe()->boolean('showDeleted');
@@ -64,6 +65,7 @@ class NavigationController extends AdminController
     /**
      * Show the form for creating a new resource.
      */
+    #[Authorize('create', Navigation::class)]
     public function create(CreateNavigationRequest $request)
     {
         $parent_id = (int) ($request->validated('parent_id') ?? 0);
@@ -89,6 +91,7 @@ class NavigationController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
+    #[Authorize('create', Navigation::class)]
     public function store(StoreNavigationRequest $request, PostCreateRedirect $redirect)
     {
         $validated = $request->validated();
@@ -120,10 +123,9 @@ class NavigationController extends AdminController
     /**
      * Show the form for editing the specified resource.
      */
+    #[Authorize('update', 'navigation')]
     public function edit(Navigation $navigation)
     {
-        $this->authorize('update', $navigation);
-
         $location = $this->resolveLocation($navigation->extra_attributes['location'] ?? null);
 
         return Inertia::render('Admin/Navigation/EditNavigation', [
@@ -136,6 +138,7 @@ class NavigationController extends AdminController
     /**
      * Update the specified resource in storage.
      */
+    // Authorized in UpdateNavigationRequest: the navigation entry in the route.
     public function update(UpdateNavigationRequest $request, Navigation $navigation)
     {
         $navigation->fill($request->validated());
@@ -154,6 +157,7 @@ class NavigationController extends AdminController
      * its column array*, not a flattened position, so a column move can never corrupt
      * another column's relative order the way the old `flatten(1)` did.
      */
+    // Authorized in ReorderNavigationRequest: global navigation editing permission.
     public function updateOrder(ReorderNavigationRequest $request)
     {
         // Navigation is a globally-scoped model (see NavigationPolicy /
@@ -192,10 +196,9 @@ class NavigationController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
+    #[Authorize('delete', 'navigation')]
     public function destroy(Navigation $navigation)
     {
-        $this->authorize('delete', $navigation);
-
         $navigation->delete();
 
         return redirect()->route('navigation.index')->with('info', $this->entityMessage('deleted', 'navigation'));
