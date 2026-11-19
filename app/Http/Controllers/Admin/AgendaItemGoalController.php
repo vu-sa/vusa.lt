@@ -30,6 +30,7 @@ class AgendaItemGoalController extends AdminController
         return back()->with('success', __('goals.messages.agenda_item_linked'));
     }
 
+    // Unlinking deletes the goal's step, which its editors may do anyway (StepController::destroy).
     #[Authorize('update', 'goal')]
     public function destroy(AgendaItem $agendaItem, Goal $goal): RedirectResponse
     {

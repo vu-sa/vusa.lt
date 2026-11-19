@@ -136,7 +136,6 @@ Route::resource('users', UserController::class);
 Route::put('users/{user}/super-admin', [UserController::class, 'updateSuperAdmin'])->name('users.superAdmin.update');
 Route::post('users/{user}/generate-password', [UserController::class, 'generatePassword'])->name('users.generatePassword');
 Route::delete('users/{user}/delete-password', [UserController::class, 'deletePassword'])->name('users.deletePassword');
-Route::resource('users.comments', CommentController::class)->only(['store', 'update', 'destroy']);
 
 Route::get('notifications', [UserNotificationsController::class, 'index'])->name('notifications.index');
 Route::post('notification/{id}/markAsRead', [UserNotificationsController::class, 'markAsRead'])->name('notifications.markAsRead');
