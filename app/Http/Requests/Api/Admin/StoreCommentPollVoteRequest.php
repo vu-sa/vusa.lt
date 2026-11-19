@@ -9,11 +9,6 @@ use Illuminate\Validation\Rule;
 
 class StoreCommentPollVoteRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return $this->user()->can('react', $this->route('comment'));
-    }
-
     /**
      * The "is this even a poll, and is it still open" guards run here rather than in the
      * controller so they still fire *before* the option is validated — otherwise voting on a

@@ -32,10 +32,9 @@ class DutyApiController extends ApiController
         return $this->jsonSuccess(['is_active' => $duty->fresh()->is_active], $this->entityMessage('updated', 'duty'));
     }
 
+    #[Authorize('viewAny', Duty::class)]
     public function index(IndexDutyRequest $request): JsonResponse
     {
-        $this->authorize('viewAny', Duty::class);
-
         $query = fn (IndexDutyRequest $request) => $this->applyTanstackFilters(
             BuildDutyIndexQuery::execute($request, $this->authorizer),
             $request,

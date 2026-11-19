@@ -13,6 +13,7 @@ use App\Services\FormRegistrationVisibilityService;
 use App\Services\TanstackTableService;
 use App\Support\CollectionFacetCounts;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 class FormApiController extends ApiController
 {
@@ -24,10 +25,9 @@ class FormApiController extends ApiController
         private FormRegistrationVisibilityService $registrationVisibility,
     ) {}
 
+    #[Authorize('viewAny', Form::class)]
     public function index(IndexFormRequest $request): JsonResponse
     {
-        $this->authorize('viewAny', Form::class);
-
         $user = $request->user();
 
         $query = fn (IndexFormRequest $request) => $this->applyTanstackFilters(

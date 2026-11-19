@@ -17,10 +17,9 @@ use Illuminate\Support\Facades\Gate;
 
 class InstitutionApiController extends ApiController
 {
+    #[Authorize('update', 'institution')]
     public function status(Institution $institution, InstitutionDeactivationService $deactivation): JsonResponse
     {
-        $this->authorize('update', $institution);
-
         return $this->jsonSuccess([
             'is_active' => (bool) $institution->is_active,
             'deactivation' => $deactivation->summary($institution),
@@ -34,10 +33,9 @@ class InstitutionApiController extends ApiController
         return $this->jsonSuccess(['is_active' => (bool) $institution->fresh()->is_active], $this->entityMessage('updated', 'institution'));
     }
 
+    #[Authorize('view', 'institution')]
     public function preview(Institution $institution): JsonResponse
     {
-        $this->authorize('view', $institution);
-
         $institution->load([
             'types',
             'duties.current_users',
@@ -80,10 +78,9 @@ class InstitutionApiController extends ApiController
      * Who has held a duty here, for the Nariai popover. Gated like the record page, because the
      * collection also lists public institutions the viewer cannot open.
      */
+    #[Authorize('view', 'institution')]
     public function memberTerms(Institution $institution): JsonResponse
     {
-        $this->authorize('view', $institution);
-
         return $this->jsonSuccess($institution->duties()->with('users:id,name')->get()
             ->flatMap(fn (Duty $duty) => $duty->users->map(fn (User $user) => [
                 'name' => $user->name,

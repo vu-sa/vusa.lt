@@ -7,15 +7,15 @@ use App\Http\Controllers\Api\ApiController;
 use App\Models\Cadence;
 use App\Models\Duty;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Carbon;
 
 /** The terms offered as date presets when assigning someone to a duty, current or past. */
 class DutyCadenceApiController extends ApiController
 {
+    #[Authorize('managePeople', 'duty')]
     public function index(Duty $duty): JsonResponse
     {
-        $this->authorize('managePeople', $duty);
-
         $today = Carbon::today();
 
         return $this->jsonSuccess(

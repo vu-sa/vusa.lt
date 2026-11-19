@@ -14,6 +14,7 @@ use App\Models\Document;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 /**
  * The managers' document view: every published file, plus every file they may manage, browsed by
@@ -24,10 +25,9 @@ class DocumentFolderApiController extends ApiController
     /** Files per request; "Rodyti daugiau" asks for the next ones. */
     private const int PAGE_SIZE = 100;
 
+    #[Authorize('create', Document::class)]
     public function index(IndexDocumentFolderRequest $request): JsonResponse
     {
-        $this->authorize('create', Document::class);
-
         $user = $request->user();
         $path = $request->hasPath() ? $request->folderPath() : $this->startPath($user);
         $flat = $request->flat();
@@ -101,10 +101,9 @@ class DocumentFolderApiController extends ApiController
     /**
      * Try creating a published document's public link again, checking SharePoint from scratch.
      */
+    #[Authorize('update', 'document')]
     public function refresh(Document $document): JsonResponse
     {
-        $this->authorize('update', $document);
-
         // So the row reads "being created" rather than "failed" until the job reports back.
         $document->update(['sync_status' => 'pending']);
         SyncDocumentFromSharePointJob::dispatch($document, force: true);
