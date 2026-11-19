@@ -54,6 +54,7 @@ Specialized guidance lives in sub-directory `CLAUDE.md` files:
 - Data tables: [resources/js/Components/Tables/CLAUDE.md](resources/js/Components/Tables/CLAUDE.md)
 - Storybook: [.storybook/CLAUDE.md](.storybook/CLAUDE.md)
 - Controllers: [app/Http/Controllers/CLAUDE.md](app/Http/Controllers/CLAUDE.md)
+- Adding an admin section (every registry, in order): [.ai/rules/admin-section.md](.ai/rules/admin-section.md)
 - Composables: [resources/js/Composables/CLAUDE.md](resources/js/Composables/CLAUDE.md)
 
 ## Testing

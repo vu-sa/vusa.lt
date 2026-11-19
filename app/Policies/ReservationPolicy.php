@@ -3,22 +3,13 @@
 namespace App\Policies;
 
 use App\Enums\CRUDEnum;
-use App\Enums\ModelEnum;
 use App\Models\Reservation;
 use App\Models\User;
-use App\Services\ModelAuthorizer;
 use App\States\ReservationResource\Created;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 class ReservationPolicy extends ModelPolicy
 {
-    public function __construct(ModelAuthorizer $authorizer)
-    {
-        parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::RESERVATION->label());
-    }
-
     // Override create method to check if user can create reservation
     // NOTE: Every user can create reservation
     #[\Override]
@@ -52,7 +43,7 @@ class ReservationPolicy extends ModelPolicy
         // if user has permission to view it
 
         foreach ($reservation->resources as $resource) {
-            $check = $this->commonChecker($user, $resource, CRUDEnum::UPDATE->label(), 'resources', false);
+            $check = $this->commonChecker($user, $resource, CRUDEnum::UPDATE->label(), 'resources');
 
             if ($check) {
                 return true;

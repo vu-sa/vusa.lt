@@ -3,22 +3,13 @@
 namespace App\Policies;
 
 use App\Enums\CRUDEnum;
-use App\Enums\ModelEnum;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
-use App\Services\ModelAuthorizer;
 use App\Support\MorphMap;
-use Illuminate\Support\Str;
 
 class DutiablePolicy extends ModelPolicy
 {
-    public function __construct(ModelAuthorizer $authorizer)
-    {
-        parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::DUTIABLE->label());
-    }
-
     /**
      * Whether the user can manage (edit/delete) this specific Dutiable row.
      *

@@ -2,22 +2,13 @@
 
 namespace App\Policies;
 
-use App\Enums\ModelEnum;
 use App\Enums\TenantType;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Services\ModelAuthorizer;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 class TenantPolicy extends ModelPolicy
 {
-    public function __construct(ModelAuthorizer $authorizer)
-    {
-        parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::TENANT->label());
-    }
-
     /**
      * Determine whether the user can create models.
      */

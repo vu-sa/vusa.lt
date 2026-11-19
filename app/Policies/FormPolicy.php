@@ -2,28 +2,19 @@
 
 namespace App\Policies;
 
-use App\Enums\ModelEnum;
 use App\Models\Form;
 use App\Models\User;
 use App\Services\FormAccessService;
 use App\Services\ModelAuthorizer;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 class FormPolicy extends ModelPolicy
 {
-    /**
-     * These models belong to a single tenant through a `tenant` relation.
-     */
-    #[\Override]
-    protected bool $hasManyTenants = false;
-
     public function __construct(
         ModelAuthorizer $authorizer,
         private readonly FormAccessService $formAccess,
     ) {
         parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::FORM->label());
     }
 
     #[\Override]
