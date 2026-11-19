@@ -31,6 +31,7 @@ use App\Services\ModelAuthorizer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -41,10 +42,9 @@ class KnowledgeItemController extends AdminController
 {
     public function __construct(private readonly ModelAuthorizer $authorizer, private readonly KnowledgeSectionOptions $sections) {}
 
+    #[Authorize('manage', KnowledgeItem::class)]
     public function index(Request $request): Response
     {
-        $this->authorize('manage', KnowledgeItem::class);
-
         return Inertia::render('Admin/Knowledge/IndexKnowledgeItem', [
             'items' => KnowledgeBasePresenter::library(app()->getLocale(), $request->user()),
             'sections' => $this->sections->options($request->user(), $this->sections->scope($request->user(), 'update')->granted ? 'update' : 'create'),
@@ -54,9 +54,9 @@ class KnowledgeItemController extends AdminController
         ]);
     }
 
+    #[Authorize('view', 'knowledgeItem')]
     public function show(Request $request, KnowledgeItem $knowledgeItem): Response
     {
-        $this->authorize('view', $knowledgeItem);
         $knowledgeItem->load(['sources.document.institution.tenant', 'section', 'audiences' => fn ($query) => $query->with(LearningAudience::LABEL_RELATIONS)])->loadCount(['comments' => fn ($query) => $query->notErased()]);
         $path = ResolveLearningPath::execute($request->user());
         $item = $path->knowledge->first(fn (ResolvedLearningItem $item): bool => $item->item->id === $knowledgeItem->id);
@@ -91,9 +91,9 @@ class KnowledgeItemController extends AdminController
         ]);
     }
 
+    #[Authorize('view', 'knowledgeItem')]
     public function thumbnail(KnowledgeItem $knowledgeItem): BinaryFileResponse
     {
-        $this->authorize('view', $knowledgeItem);
         $source = $knowledgeItem->load('sources.document')->sourceFor(app()->getLocale());
         $path = $source?->document !== null ? $source->document->thumbnail_path : ($source?->isUrl() ? $source->thumbnail_path : null);
         abort_if($path === null || ! Storage::exists($path), 404);
@@ -105,9 +105,9 @@ class KnowledgeItemController extends AdminController
     /**
      * Readers of the item may open its document even when it is hidden from the public site.
      */
+    #[Authorize('view', 'knowledgeItem')]
     public function openSource(KnowledgeItem $knowledgeItem, DocumentPreviewService $previews): RedirectResponse
     {
-        $this->authorize('view', $knowledgeItem);
         $document = $this->sourceDocument($knowledgeItem);
         abort_if($document === null, 404);
 
@@ -122,17 +122,15 @@ class KnowledgeItemController extends AdminController
             : redirect()->away($url);
     }
 
+    #[Authorize('create', KnowledgeItem::class)]
     public function create(Request $request): Response
     {
-        $this->authorize('create', KnowledgeItem::class);
-
         return Inertia::render('Admin/Knowledge/CreateKnowledgeItem', $this->formOptions($request->user(), 'create'));
     }
 
+    #[Authorize('update', 'knowledgeItem')]
     public function edit(Request $request, KnowledgeItem $knowledgeItem): Response
     {
-        $this->authorize('update', $knowledgeItem);
-
         return Inertia::render('Admin/Knowledge/EditKnowledgeItem', [
             'item' => KnowledgeBasePresenter::edit($knowledgeItem->load(['sources.document', 'structureNodes', 'audiences' => fn ($query) => $query->with(LearningAudience::LABEL_RELATIONS)])),
             'canDelete' => $request->user()->can('delete', $knowledgeItem),
@@ -140,9 +138,9 @@ class KnowledgeItemController extends AdminController
         ]);
     }
 
+    #[Authorize('create', KnowledgeItem::class)]
     public function store(KnowledgeItemRequest $request): RedirectResponse
     {
-        $this->authorize('create', KnowledgeItem::class);
         $step = DB::transaction(function () use ($request): KnowledgeItem {
             $step = KnowledgeItem::create([
                 ...$request->safe()->except(['sources', 'audiences', 'structure']),
@@ -160,9 +158,9 @@ class KnowledgeItemController extends AdminController
         return to_route('knowledgeItems.show', $step)->with('success', $this->entityMessage('created', 'knowledgeItem'));
     }
 
+    #[Authorize('update', 'knowledgeItem')]
     public function update(KnowledgeItemRequest $request, KnowledgeItem $knowledgeItem): RedirectResponse
     {
-        $this->authorize('update', $knowledgeItem);
         DB::transaction(function () use ($request, $knowledgeItem): void {
             $sectionId = $request->validated('knowledge_section_id');
             $knowledgeItem->update([
@@ -184,17 +182,17 @@ class KnowledgeItemController extends AdminController
         return back()->with('success', $this->entityMessage('updated', 'knowledgeItem'));
     }
 
+    #[Authorize('delete', 'knowledgeItem')]
     public function destroy(KnowledgeItem $knowledgeItem): RedirectResponse
     {
-        $this->authorize('delete', $knowledgeItem);
         $knowledgeItem->delete();
 
         return to_route('knowledgeItems.index')->with('success', $this->entityMessage('deleted', 'knowledgeItem'));
     }
 
+    #[Authorize('manage', KnowledgeItem::class)]
     public function searchDocuments(SearchLearningDocumentsRequest $request): JsonResponse
     {
-        $this->authorize('manage', KnowledgeItem::class);
         $query = trim((string) ($request->validated('q') ?? ''));
 
         $documents = Document::query()
@@ -214,16 +212,15 @@ class KnowledgeItemController extends AdminController
     }
 
     /** Every active page, for the editor's `[[` picker and the command palette; readers already get it on the Wiki home. */
+    #[Authorize('viewAny', KnowledgeItem::class)]
     public function linkOptions(): JsonResponse
     {
-        $this->authorize('viewAny', KnowledgeItem::class);
-
         return response()->json(KnowledgeBasePresenter::index(app()->getLocale()));
     }
 
+    #[Authorize('update', 'knowledgeItem')]
     public function syncSubjects(SyncKnowledgeItemSubjectsRequest $request, KnowledgeItem $knowledgeItem): RedirectResponse
     {
-        $this->authorize('update', $knowledgeItem);
         DB::transaction(function () use ($request, $knowledgeItem): void {
             $knowledgeItem->subjects()->delete();
             foreach (collect($request->validated('subjects'))->unique(fn (array $subject): string => $subject['type'].':'.$subject['id']) as $subject) {

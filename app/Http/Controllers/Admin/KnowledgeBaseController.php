@@ -9,14 +9,15 @@ use App\Models\KnowledgeItem;
 use App\Services\KnowledgeBasePresenter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class KnowledgeBaseController extends AdminController
 {
+    #[Authorize('viewAny', KnowledgeItem::class)]
     public function show(ShowKnowledgeBaseRequest $request): Response|RedirectResponse
     {
-        $this->authorize('viewAny', KnowledgeItem::class);
         $view = $request->validated('view');
         if (in_array($view, ['importance', 'sections', 'mine'], true)) {
             return to_route('knowledgeBase.mine', ['view' => $view === 'sections' ? 'sections' : 'importance']);
@@ -32,29 +33,27 @@ class KnowledgeBaseController extends AdminController
         ]);
     }
 
+    #[Authorize('viewAny', KnowledgeItem::class)]
     public function alphabet(Request $request): Response
     {
-        $this->authorize('viewAny', KnowledgeItem::class);
-
         return Inertia::render('Admin/Knowledge/IndexKnowledgeAlphabet', [
             'index' => KnowledgeBasePresenter::index(app()->getLocale(), terms: true),
             'doneIds' => KnowledgeBasePresenter::doneIds($request->user()),
         ]);
     }
 
+    #[Authorize('viewAny', KnowledgeItem::class)]
     public function graph(Request $request): Response
     {
-        $this->authorize('viewAny', KnowledgeItem::class);
-
         return Inertia::render('Admin/Knowledge/ShowKnowledgeGraph', [
             'graph' => KnowledgeBasePresenter::graph(app()->getLocale()),
             'doneIds' => KnowledgeBasePresenter::doneIds($request->user()),
         ]);
     }
 
+    #[Authorize('viewAny', KnowledgeItem::class)]
     public function mine(Request $request): Response
     {
-        $this->authorize('viewAny', KnowledgeItem::class);
         $path = ResolveLearningPath::execute($request->user());
 
         return Inertia::render('Admin/Knowledge/ShowKnowledgeForYou', [

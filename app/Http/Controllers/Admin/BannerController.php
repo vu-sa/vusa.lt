@@ -30,10 +30,9 @@ class BannerController extends AdminController
     /**
      * Display a listing of the resource.
      */
+    #[Authorize('viewAny', Banner::class)]
     public function index(IndexBannerRequest $request): InertiaResponse
     {
-        $this->authorize('viewAny', Banner::class);
-
         $query = Banner::query()->with(['tenant:id,shortname', 'media']);
 
         $searchableColumns = ['title'];
@@ -81,20 +80,18 @@ class BannerController extends AdminController
     /**
      * Show the form for creating a new resource.
      */
+    #[Authorize('create', Banner::class)]
     public function create(): InertiaResponse
     {
-        $this->authorize('create', Banner::class);
-
         return Inertia::render('Admin/Content/CreateBanner');
     }
 
     /**
      * Store a newly created resource in storage.
      */
+    #[Authorize('create', Banner::class)]
     public function store(StoreBannerRequest $request, SyncImageMedia $syncImage, PostCreateRedirect $redirect)
     {
-        $this->authorize('create', Banner::class);
-
         $tenants = GetTenantsForUpserts::execute('banners.create.padalinys', $this->authorizer);
 
         $banner = new Banner;
@@ -117,10 +114,9 @@ class BannerController extends AdminController
     /**
      * Show the form for editing the specified resource.
      */
+    #[Authorize('update', 'banner')]
     public function edit(Banner $banner): InertiaResponse
     {
-        $this->authorize('update', $banner);
-
         return Inertia::render('Admin/Content/EditBanner', [
             'banner' => [...$banner->toArray(), 'image_media' => $banner->imageData('image')],
         ]);
@@ -129,10 +125,9 @@ class BannerController extends AdminController
     /**
      * Update the specified resource in storage.
      */
+    #[Authorize('update', 'banner')]
     public function update(UpdateBannerRequest $request, Banner $banner, SyncImageMedia $syncImage)
     {
-        $this->authorize('update', $banner);
-
         $banner->title = $request->title;
         $banner->is_active = $request->is_active;
         $banner->link_url = $request->link_url ?? '';
@@ -145,6 +140,7 @@ class BannerController extends AdminController
         return $this->backResponse(['success' => $this->entityMessage('updated', 'banner')]);
     }
 
+    #[Authorize('update', 'banner')]
     public function updateStatus(UpdateBannerStatusRequest $request, Banner $banner): RedirectResponse
     {
         $banner->is_active = $request->validated('is_active');
@@ -158,10 +154,9 @@ class BannerController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
+    #[Authorize('delete', 'banner')]
     public function destroy(Banner $banner): RedirectResponse
     {
-        $this->authorize('delete', $banner);
-
         $banner->delete();
 
         return $this->redirectResponse('banners.index')->with('info', $this->entityMessage('deleted', 'banner'));

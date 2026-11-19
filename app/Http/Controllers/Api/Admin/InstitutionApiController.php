@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\InstitutionDeactivationService;
 use App\Services\InstitutionRelationService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\Gate;
 
 class InstitutionApiController extends ApiController
@@ -92,10 +93,9 @@ class InstitutionApiController extends ApiController
             ->values());
     }
 
+    #[Authorize('create', Institution::class)]
     public function store(StoreInstitutionRequest $request): JsonResponse
     {
-        $this->authorize('create', Institution::class);
-
         $institution = new Institution;
 
         $institution->fill($request->safe()->except('types'))->save();

@@ -11,6 +11,7 @@ use App\Models\Meeting;
 use App\Models\Pivots\ReservationResource;
 use App\Models\Reservation;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Str;
 
 class CommentController extends AdminController
@@ -60,10 +61,9 @@ class CommentController extends AdminController
      *
      * @return RedirectResponse
      */
+    #[Authorize('update', 'comment')]
     public function update(UpdateAdminCommentRequest $request, Comment $comment)
     {
-        $this->authorize('update', $comment);
-
         // update comment
         $comment->update($request->safe()->only('comment'));
 
@@ -75,10 +75,9 @@ class CommentController extends AdminController
      *
      * @return RedirectResponse
      */
+    #[Authorize('delete', 'comment')]
     public function destroy(Comment $comment)
     {
-        $this->authorize('delete', $comment);
-
         $comment->erase();
 
         return back()->with('success', $this->entityMessage('deleted', 'comment'));

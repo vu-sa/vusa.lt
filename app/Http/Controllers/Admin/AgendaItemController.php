@@ -21,6 +21,7 @@ use App\Support\Experiments\GoalsExperiment;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -28,10 +29,9 @@ use Inertia\Response as InertiaResponse;
 
 class AgendaItemController extends AdminController
 {
+    #[Authorize('viewAny', Meeting::class)]
     public function index(Request $request): InertiaResponse
     {
-        $this->authorize('viewAny', Meeting::class);
-
         return Inertia::render('Admin/Representation/IndexAgendaItem', [
             'defaultTenantShortnames' => GetUserTenantShortnames::execute($request->user()),
         ]);
@@ -40,6 +40,7 @@ class AgendaItemController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
+    // Authorized in StoreAgendaItemsRequest: the meeting named in the body.
     public function store(StoreAgendaItemsRequest $request)
     {
         if ($request->has('agendaItemTitles')) {
@@ -204,6 +205,7 @@ class AgendaItemController extends AdminController
     /**
      * The old editor URL, kept for links in sent emails and notifications.
      */
+    // Authorized in EditAgendaItemRequest: the agenda item must have a meeting.
     public function edit(EditAgendaItemRequest $request, AgendaItem $agendaItem): RedirectResponse
     {
         return redirect()->route('agendaItems.show', [
@@ -215,6 +217,7 @@ class AgendaItemController extends AdminController
     /**
      * Update the specified resource in storage.
      */
+    #[Authorize('update', 'agendaItem')]
     public function update(UpdateAgendaItemRequest $request, AgendaItem $agendaItem)
     {
         $voteIds = app(MeetingSearchLock::class)->run($agendaItem->meeting_id, fn () => DB::transaction(function () use ($request, $agendaItem): ?array {
@@ -307,10 +310,9 @@ class AgendaItemController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
+    #[Authorize('delete', 'agendaItem')]
     public function destroy(AgendaItem $agendaItem)
     {
-        $this->authorize('delete', $agendaItem);
-
         $meetingId = $agendaItem->meeting_id;
         $agendaItem->delete();
 

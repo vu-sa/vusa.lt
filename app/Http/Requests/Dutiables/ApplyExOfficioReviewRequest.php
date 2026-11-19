@@ -7,11 +7,6 @@ use Illuminate\Validation\Rule;
 
 class ApplyExOfficioReviewRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return $this->user()->can('managePeople', $this->route('duty'));
-    }
-
     public function rules(): array
     {
         return [

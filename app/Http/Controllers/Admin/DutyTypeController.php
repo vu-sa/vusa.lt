@@ -24,10 +24,9 @@ class DutyTypeController extends AdminController
 {
     use HandlesSoftDeletes, HasTanstackTables;
 
+    #[Authorize('viewAny', DutyType::class)]
     public function index(IndexTypeRequest $request): Response
     {
-        $this->authorize('viewAny', DutyType::class);
-
         // A short list sent whole: the collection searches, sorts and filters it in the browser.
         $types = DutyType::query()
             ->when($request->getShowDeleted(), fn ($query) => $query->onlyTrashed())
@@ -41,16 +40,16 @@ class DutyTypeController extends AdminController
         ]);
     }
 
+    #[Authorize('create', DutyType::class)]
     public function create(): Response
     {
-        $this->authorize('create', DutyType::class);
-
         return Inertia::render('Admin/ModelMeta/CreateType', [
             'typeKind' => 'dutyType',
             'contentTypes' => DutyType::select('id', 'title', 'parent_id')->get(),
         ]);
     }
 
+    // Authorized in DutyTypeRequest: the ability depends on the route.
     public function store(DutyTypeRequest $request): RedirectResponse
     {
         $type = DutyType::query()->create(
@@ -61,10 +60,9 @@ class DutyTypeController extends AdminController
             ->with('success', $this->entityMessage('created', 'dutyType'));
     }
 
+    #[Authorize('view', 'type')]
     public function show(DutyType $type): Response
     {
-        $this->authorize('view', $type);
-
         $type->load([
             'parent:id,title',
             'duties' => fn ($query) => $query->select('id', 'name'),
@@ -124,10 +122,9 @@ class DutyTypeController extends AdminController
         ]);
     }
 
+    #[Authorize('update', 'type')]
     public function edit(DutyType $type): Response
     {
-        $this->authorize('update', $type);
-
         return Inertia::render('Admin/ModelMeta/EditType', [
             'typeKind' => 'dutyType',
             'contentType' => $type->toFullArray(),
@@ -135,6 +132,7 @@ class DutyTypeController extends AdminController
         ]);
     }
 
+    // Authorized in DutyTypeRequest: the ability depends on the route.
     public function update(DutyTypeRequest $request, DutyType $type): RedirectResponse
     {
         $type->update($request->safe()->only('title', 'description', 'parent_id'));
@@ -142,6 +140,7 @@ class DutyTypeController extends AdminController
         return back()->with('success', $this->entityMessage('updated', 'dutyType'));
     }
 
+    // Authorized in SyncTypeModelsRequest: the bound duty or institution type.
     public function syncModels(SyncTypeModelsRequest $request, DutyType $type): RedirectResponse
     {
         $type->duties()->sync([
@@ -152,10 +151,9 @@ class DutyTypeController extends AdminController
         return back()->with('success', $this->entityMessage('updated', 'dutyType'));
     }
 
+    #[Authorize('delete', 'type')]
     public function destroy(DutyType $type): RedirectResponse
     {
-        $this->authorize('delete', $type);
-
         if ($reason = $type->deleteBlockedReason()) {
             return back()->with('error', $reason);
         }

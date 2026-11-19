@@ -14,11 +14,6 @@ use Illuminate\Validation\Validator;
  */
 class StoreInstitutionLinkRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return $this->user()?->can('create', InstitutionLink::class) ?? false;
-    }
-
     public function rules(): array
     {
         /** @var Institution $institution */

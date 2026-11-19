@@ -7,11 +7,6 @@ use Illuminate\Validation\Rule;
 
 class ReviewExOfficioRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return $this->user()->can('manageDutiable', $this->route('dutiable'));
-    }
-
     public function rules(): array
     {
         return [

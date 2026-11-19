@@ -9,16 +9,17 @@ use App\Http\Requests\Dutiables\ApplyExOfficioReviewRequest;
 use App\Models\Duty;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 class DutyExOfficioReviewController extends AdminController
 {
+    #[Authorize('managePeople', 'duty')]
     public function preview(Duty $duty): JsonResponse
     {
-        $this->authorize('managePeople', $duty);
-
         return response()->json(['success' => true, 'data' => PlanExOfficioReview::forDuty($duty, request()->user())]);
     }
 
+    #[Authorize('managePeople', 'duty')]
     public function apply(ApplyExOfficioReviewRequest $request, Duty $duty): RedirectResponse
     {
         $data = $request->validated();

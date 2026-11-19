@@ -16,6 +16,7 @@ use App\Services\ModelAuthorizer;
 use App\Services\TanstackTableService;
 use App\Support\CollectionFacetCounts;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\DB;
 
 class DutyApiController extends ApiController
@@ -53,10 +54,9 @@ class DutyApiController extends ApiController
         ]);
     }
 
+    #[Authorize('create', Duty::class)]
     public function store(StoreDutyRequest $request, DutyAssignmentService $assignments): JsonResponse
     {
-        $this->authorize('create', Duty::class);
-
         return DB::transaction(function () use ($request, $assignments) {
             $duty = new Duty;
 

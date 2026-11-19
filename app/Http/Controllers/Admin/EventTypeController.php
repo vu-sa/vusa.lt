@@ -24,10 +24,9 @@ class EventTypeController extends AdminController
     /**
      * Display a listing of the resource.
      */
+    #[Authorize('viewAny', EventType::class)]
     public function index(IndexEventTypeRequest $request): Response
     {
-        $this->authorize('viewAny', EventType::class);
-
         $query = EventType::query();
 
         $searchableColumns = ['name', 'slug'];
@@ -83,6 +82,7 @@ class EventTypeController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
+    #[Authorize('create', EventType::class)]
     public function store(StoreEventTypeRequest $request): RedirectResponse
     {
         EventType::create($request->validated());
@@ -93,6 +93,7 @@ class EventTypeController extends AdminController
     /**
      * Update the specified resource in storage.
      */
+    #[Authorize('update', 'eventType')]
     public function update(UpdateEventTypeRequest $request, EventType $eventType): RedirectResponse
     {
         $eventType->update($request->validated());
@@ -103,10 +104,9 @@ class EventTypeController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
+    #[Authorize('delete', 'eventType')]
     public function destroy(EventType $eventType): RedirectResponse
     {
-        $this->authorize('delete', $eventType);
-
         $eventType->delete();
 
         return $this->redirectToIndexWithSuccess('eventTypes', $this->entityMessage('deleted', 'eventType'));

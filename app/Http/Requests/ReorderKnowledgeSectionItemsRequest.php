@@ -8,11 +8,6 @@ use Illuminate\Validation\Validator;
 
 class ReorderKnowledgeSectionItemsRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return $this->user()->can('update', $this->route('knowledgeSection'));
-    }
-
     /** @return array<string, array<int, string>> */
     public function rules(): array
     {

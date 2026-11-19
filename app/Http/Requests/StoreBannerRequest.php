@@ -12,11 +12,6 @@ class StoreBannerRequest extends FormRequest
 {
     use HasImageValidation;
 
-    public function authorize(): bool
-    {
-        return $this->user()->can('create', Banner::class);
-    }
-
     /**
      * The tenant is resolved from the acting user's permissions in the controller, not from
      * the payload, so there is no tenant_id rule here.

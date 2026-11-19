@@ -7,6 +7,7 @@ use App\Http\Requests\StoreAgendaItemProblemRequest;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Problem;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 /**
  * Links a problem to the agenda item where representatives raised it. The link is edited on the
@@ -14,6 +15,7 @@ use Illuminate\Http\RedirectResponse;
  */
 class AgendaItemProblemController extends AdminController
 {
+    // Authorized in StoreAgendaItemProblemRequest: the agenda item must be bound and editable.
     public function store(StoreAgendaItemProblemRequest $request, AgendaItem $agendaItem): RedirectResponse
     {
         $problem = Problem::query()->findOrFail($request->validated('problem_id'));
@@ -31,10 +33,9 @@ class AgendaItemProblemController extends AdminController
         return back()->with('success', __('problems.linked'));
     }
 
+    #[Authorize('update', 'agendaItem')]
     public function destroy(AgendaItem $agendaItem, Problem $problem): RedirectResponse
     {
-        $this->authorize('update', $agendaItem);
-
         abort_unless($agendaItem->problems()->whereKey($problem->id)->exists(), 404);
 
         $agendaItem->problems()->detach($problem->id);

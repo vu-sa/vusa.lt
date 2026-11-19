@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Services\DutyResponsibilityPresenter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 /**
  * Atsakomybės on the duty record: what the duty does, whether given to it directly, through one of
@@ -44,10 +45,9 @@ class DutyResponsibilityController extends AdminController
         return back()->with('success', __('responsibilities.messages.added'));
     }
 
+    #[Authorize('update', 'duty')]
     public function destroy(Duty $duty, string $grant, Request $request): RedirectResponse
     {
-        $this->authorize('update', $duty);
-
         // Resolved through the duty so a crafted id cannot reach another duty's grant.
         $responsibilityGrant = $duty->responsibilityGrants()->with('role')->find($grant);
 
