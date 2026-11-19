@@ -2,6 +2,4 @@
 
 namespace App\Http\Requests;
 
-class StoreProblemCategoryRequest extends ProblemCategoryRequest
-{
-}
+class StoreProblemCategoryRequest extends ProblemCategoryRequest {}

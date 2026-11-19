@@ -7,6 +7,4 @@ use Illuminate\Foundation\Http\FormRequest;
 /**
  * The cart is always the acting user's own draft, so the only gate is being allowed to reserve.
  */
-abstract class ReservationCartRequest extends FormRequest
-{
-}
+abstract class ReservationCartRequest extends FormRequest {}

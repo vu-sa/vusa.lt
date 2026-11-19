@@ -10,12 +10,6 @@ use App\Models\Meeting;
  */
 class StoreMeetingSharepointDocumentRequest extends PickSharepointDocumentsRequest
 {
-    #[\Override]
-    public function authorize(): bool
-    {
-        return parent::authorize() && $this->user()->can('update', $this->meeting());
-    }
-
     public function meeting(): Meeting
     {
         /** @var Meeting $meeting */

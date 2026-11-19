@@ -11,6 +11,7 @@ use App\Http\Requests\Meetings\StoreMeetingSharepointDocumentRequest;
 use App\Models\Document;
 use App\Models\Meeting;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -29,7 +30,8 @@ class MeetingDocumentController extends AdminController
     /**
      * Link files chosen in SharePoint's own picker, as the meeting page did before discovery.
      */
-    // Authorized in StoreMeetingSharepointDocumentRequest: document creation and meeting editing.
+    #[Authorize('create', Document::class)]
+    #[Authorize('update', 'meeting')]
     public function storeFromSharepoint(StoreMeetingSharepointDocumentRequest $request, Meeting $meeting): RedirectResponse
     {
         $documents = ResolvePickedDocuments::execute($request->pickedItems(), $request->user());

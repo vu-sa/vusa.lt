@@ -2,6 +2,4 @@
 
 namespace App\Http\Requests;
 
-class UpdateProblemRequest extends ProblemRequest
-{
-}
+class UpdateProblemRequest extends ProblemRequest {}

@@ -79,6 +79,7 @@ class DocumentController extends AdminController
     /**
      * Publish files chosen in SharePoint's own picker, importing any discovery has not reached yet.
      */
+    #[Authorize('create', Document::class)]
     public function pick(PickSharepointDocumentsRequest $request)
     {
         $documents = ResolvePickedDocuments::execute($request->pickedItems(), $request->user());

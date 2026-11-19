@@ -2,6 +2,4 @@
 
 namespace App\Http\Requests;
 
-class UpdateReservationResourceRequest extends ReservationResourceRequest
-{
-}
+class UpdateReservationResourceRequest extends ReservationResourceRequest {}

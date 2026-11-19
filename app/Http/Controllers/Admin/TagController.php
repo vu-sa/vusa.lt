@@ -107,18 +107,6 @@ class TagController extends AdminController
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(Tag $tag): Response
-    {
-        $this->authorize('view', $tag);
-
-        return Inertia::render('Admin/Content/ShowTag', [
-            'tag' => $tag->toFullArray(),
-        ]);
-    }
-
-    /**
      * Show the form for editing the specified resource.
      */
     #[Authorize('update', 'tag')]

@@ -2,6 +2,4 @@
 
 namespace App\Http\Requests;
 
-class StoreNavigationRequest extends NavigationRequest
-{
-}
+class StoreNavigationRequest extends NavigationRequest {}

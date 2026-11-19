@@ -2,6 +2,4 @@
 
 namespace App\Http\Requests\MailingLists;
 
-class UpdateMailingListRequest extends MailingListRequest
-{
-}
+class UpdateMailingListRequest extends MailingListRequest {}

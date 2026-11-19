@@ -2,6 +2,4 @@
 
 namespace App\Http\Requests;
 
-class StoreResourceCategoryRequest extends ResourceCategoryRequest
-{
-}
+class StoreResourceCategoryRequest extends ResourceCategoryRequest {}
