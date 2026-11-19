@@ -73,7 +73,7 @@ test('cannot update resource in invalid state', function () {
 ./vendor/bin/sail artisan test
 
 # Run specific test file
-./vendor/bin/sail artisan test tests/Feature/Auth/SecurityTest.php
+./vendor/bin/sail artisan test tests/Feature/Auth/AuthControllerTest.php
 
 # Run with coverage
 ./vendor/bin/sail artisan test --coverage

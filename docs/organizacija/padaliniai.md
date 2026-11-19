@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Padaliniai
-last_reviewed: 2026-10-27
+last_reviewed: 2026-11-19
 tests:
   - tests/Unit/Models/TenantTimestampTest.php
   - tests/Feature/Admin/Management/TenantControllerTest.php

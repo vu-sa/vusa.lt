@@ -387,6 +387,17 @@ describe('Microsoft identity linking', function (): void {
     });
 });
 
+test('a password login starts a new session', function (): void {
+    $user = User::factory()->create(['password' => bcrypt('teisingas')]);
+    $sessionBeforeLogin = session()->getId();
+
+    $this->post('/login', ['email' => $user->email, 'password' => 'teisingas'])
+        ->assertRedirect(route('dashboard'));
+
+    $this->assertAuthenticatedAs($user);
+    expect(session()->getId())->not->toBe($sessionBeforeLogin);
+});
+
 describe('password login throttling', function (): void {
     beforeEach(function (): void {
         $this->user = User::factory()->create(['email' => 'vardenis@vusa.lt', 'password' => bcrypt('teisingas')]);

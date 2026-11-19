@@ -63,10 +63,6 @@ Every controller test file should cover **unauthorized access**, **authorized ac
 Custom Pest expectations:
 
 ```php
-expect($response->status())->toBeSecureResponse();
-expect($response->status())->toRequireAuth();
-expect($content)->toNotExposePassword();
-
 // Translatable models (Spatie HasTranslations)
 expect($model)->toHaveTranslations('name');          // array with lt + en keys
 expect($model)->toHaveTranslations('name', ['lt']);  // only the locales you pass
