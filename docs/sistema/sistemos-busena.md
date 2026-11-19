@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Sistemos būsena
-last_reviewed: 2026-10-16
+last_reviewed: 2026-11-19
 tests:
   - tests/Feature/System/SystemStatusTest.php
   - tests/Unit/Services/SystemMonitorServiceTest.php

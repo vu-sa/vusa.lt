@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Failai
-last_reviewed: 2026-10-19
+last_reviewed: 2026-11-19
 tests:
   - tests/Browser/ContentEditorImageSaveTest.php
   - resources/js/Components/FileUpload/__tests__/ImageUploadMedia.component.test.ts

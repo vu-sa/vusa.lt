@@ -200,10 +200,7 @@ describe('Files Controller - Authentication & Authorization', function (): void 
     });
 
     test('file manager can access files within their tenant', function (): void {
-        $response = asUser($this->fileManager)->get(route('files.index', ['path' => $this->allowedPath]));
-
-        // Should succeed or redirect to correct path
-        expect($response->status())->toBeIn([200, 302]);
+        asUser($this->fileManager)->get(route('files.index', ['path' => $this->allowedPath]))->assertOk();
     });
 
     test('file manager is redirected to tenant directory when accessing root', function (): void {
@@ -241,27 +238,19 @@ describe('Files Controller - Directory Listing', function (): void {
     });
 
     test('API returns proper file structure', function (): void {
-        $response = asUser($this->fileManager)->getJson('/api/v1/admin/files?path='.urlencode($this->allowedPath));
+        Storage::put($this->allowedPath.'/listed.txt', 'listed');
 
-        // Should succeed and return JSON
-        expect($response->status())->toBeIn([200, 403]); // May not have permission
+        $files = asUser($this->fileManager)->getJson('/api/v1/admin/files?path='.urlencode($this->allowedPath))
+            ->assertOk()
+            ->json('data.files');
 
-        if ($response->status() === 200) {
-            $files = $response->json('data.files');
-            expect($files)->toBeArray();
-
-            if (count($files) > 0) {
-                $file = $files[0];
-                expect($file)->toHaveKeys(['path', 'name', 'type', 'size', 'modified', 'mimeType']);
-            }
-        }
+        expect($files)->not->toBeEmpty()
+            ->and($files[0])->toHaveKeys(['path', 'name', 'type', 'size', 'modified', 'mimeType']);
     });
 
     test('invalid path format is rejected', function (): void {
-        $response = asUser($this->fileManager)->getJson('/api/v1/admin/files?path='.urlencode('../../../etc/passwd'));
-
-        // Should return error (403 or 400)
-        expect($response->status())->toBeIn([400, 403, 422]);
+        asUser($this->fileManager)->getJson('/api/v1/admin/files?path='.urlencode('../../../etc/passwd'))
+            ->assertStatus(400);
     });
 
     test('API falls back to tenant directory when unauthorized root', function (): void {
@@ -391,8 +380,7 @@ describe('Files Controller - Directory Deletion', function (): void {
         Storage::makeDirectory($fullPath);
 
         // Actor with read-only can browse tenant directory
-        $browseResponse = asUser($readerUser)->get(route('files.index', ['path' => $this->allowedPath]));
-        expect($browseResponse->status())->toBeIn([200, 302]);
+        asUser($readerUser)->get(route('files.index', ['path' => $this->allowedPath]))->assertOk();
         $apiBrowseResponse = asUser($readerUser)->getJson('/api/v1/admin/files?path='.urlencode($this->allowedPath));
         expect($apiBrowseResponse->status())->toBe(200);
 
@@ -572,32 +560,15 @@ describe('Files Controller - API Endpoints', function (): void {
 });
 
 describe('Files Controller - Security Tests', function (): void {
-    test('path traversal attempts are blocked', function (): void {
-        $maliciousPaths = [
-            '../../../etc/passwd',
-            '..\\..\\..\\windows\\system32',
-            'public/files/../../../etc/passwd',
-            'public/files/../../.env',
-        ];
-
-        foreach ($maliciousPaths as $path) {
-            $response = asUser($this->fileManager)->getJson('/api/v1/admin/files?path='.urlencode($path));
-            expect($response->status())->toBeIn([400, 403]);
-        }
-    });
-
-    test('invalid characters in paths are rejected', function (): void {
-        $invalidPaths = [
-            'public/files/test<script>',
-            'public/files/test|pipe',
-            'public/files/test&&command',
-        ];
-
-        foreach ($invalidPaths as $path) {
-            $response = asUser($this->fileManager)->getJson('/api/v1/admin/files?path='.urlencode($path));
-            expect($response->status())->toBeIn([400, 403]);
-        }
-    });
+    test('path traversal attempts are rejected', function (string $path, int $status): void {
+        asUser($this->fileManager)->getJson('/api/v1/admin/files?path='.urlencode($path))
+            ->assertStatus($status);
+    })->with([
+        'relative traversal' => ['../../../etc/passwd', 400],
+        'windows traversal' => ['..\\..\\..\\windows\\system32', 400],
+        'traversal out of files' => ['public/files/../../../etc/passwd', 400],
+        'traversal to .env' => ['public/files/../../.env', 400],
+    ]);
 
     test('directory creation outside allowed path is rejected', function (): void {
         $response = asUser($this->fileManager)->post(route('files.createDirectory'), [

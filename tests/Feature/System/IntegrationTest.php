@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\Tenant;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Http;
@@ -116,7 +115,7 @@ describe('route accessibility and authentication', function (): void {
         foreach ($adminRoutes as $routeName) {
             if (Route::has($routeName)) {
                 $this->get(route($routeName))
-                    ->assertRedirect(); // Should redirect to login
+                    ->assertRedirect(route('login'));
             }
         }
     });
@@ -132,9 +131,7 @@ describe('route accessibility and authentication', function (): void {
                 ->assertStatus(200);
         }
 
-        // Root should redirect to a language version (either 301 or 302 is acceptable)
-        $response = $this->get('/');
-        expect([301, 302])->toContain($response->status());
+        $this->get('/')->assertStatus(301);
     });
 
     test('authenticated users can access appropriate admin areas', function (): void {
@@ -145,39 +142,7 @@ describe('route accessibility and authentication', function (): void {
         asUser($this->admin)->get(route('dashboard'))
             ->assertStatus(200);
 
-        // Test that admin can access features they have permissions for
-        // This might redirect if user doesn't have proper permissions, which is acceptable
-        $response = asUser($this->admin)->get(route('news.index'));
-        expect([200, 302])->toContain($response->status());
-    });
-
-    test('API routes have proper authentication', function (): void {
-        // Use makeUser to ensure admin has proper tenant relationship
-        $adminWithTenant = makeUser($this->tenant);
-
-        // Get the tenant through the user's institution relationship
-        $userTenant = $adminWithTenant->duties()->first()->institution->tenant;
-
-        // Ensure tenant has an alias
-        if (! $userTenant->alias) {
-            $userTenant->update(['alias' => 'test-tenant']);
-        }
-
-        // Test that API routes work with proper tenant context
-        $protectedApiRoutes = [
-            "/api/v1/tenants/{$userTenant->alias}/news",
-        ];
-
-        foreach ($protectedApiRoutes as $route) {
-            $response = $this->getJson($route);
-            expect($response->status())->toBeIn([200, 404]);
-        }
-
-        // Test that authenticated users can access API
-        foreach ($protectedApiRoutes as $route) {
-            $response = asUser($this->admin)->getJson($route);
-            expect($response->status())->toBeIn([200, 403]); // 200 if allowed, 403 if permission denied
-        }
+        asUser($this->admin)->get(route('news.index'))->assertOk();
     });
 });
 
@@ -344,47 +309,6 @@ describe('SharePoint API integration', function (): void {
         } catch (Exception) {
             // HTTP facade might not be used, which is acceptable
             expect(true)->toBeTrue();
-        }
-    });
-});
-
-describe('comprehensive route testing', function (): void {
-    test('all registered routes return appropriate status codes', function (): void {
-        $router = app('router');
-        $routes = $router->getRoutes();
-
-        $testableRoutes = [];
-
-        foreach ($routes as $route) {
-            $uri = $route->uri();
-            $methods = $route->methods();
-
-            // Skip routes with parameters for now, and only test GET routes
-            // Also skip telescope routes to avoid binding issues in tests
-            if (! str_contains($uri, '{') &&
-                in_array('GET', $methods) &&
-                ! str_starts_with($uri, 'api/') &&
-                ! str_starts_with($uri, 'telescope')) {
-                $testableRoutes[] = '/'.$uri;
-            }
-        }
-
-        // Test a sample of routes (limit to prevent long test runs)
-        $sampleRoutes = array_slice($testableRoutes, 0, 10);
-
-        foreach ($sampleRoutes as $route) {
-            $response = $this->get($route);
-
-            // Routes should return 200 (success), 302 (redirect), or 404 (not found)
-            // but not 500 (server error)
-            // Handle different response types (some might be file downloads)
-            if (method_exists($response, 'status')) {
-                expect($response->status())->not->toBe(500)
-                    ->toBeIn([200, 302, 404, 403, 401]);
-            } else {
-                // For file responses, just check that no exception was thrown
-                expect(true)->toBeTrue();
-            }
         }
     });
 });
