@@ -25,7 +25,7 @@ class DutySuccessionController extends AdminController
 
     public function destroy(Duty $duty, string $succession): RedirectResponse
     {
-        $this->handleAuthorization('update', $duty);
+        $this->authorize('update', $duty);
 
         static::linkOf($duty, $succession)->delete();
 

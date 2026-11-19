@@ -33,7 +33,7 @@ class DutyApiController extends ApiController
 
     public function index(IndexDutyRequest $request): JsonResponse
     {
-        $this->authorizeApi('viewAny', Duty::class);
+        $this->authorize('viewAny', Duty::class);
 
         $query = fn (IndexDutyRequest $request) => $this->applyTanstackFilters(
             BuildDutyIndexQuery::execute($request, $this->authorizer),
@@ -55,7 +55,7 @@ class DutyApiController extends ApiController
 
     public function store(StoreDutyRequest $request, DutyAssignmentService $assignments): JsonResponse
     {
-        $this->authorizeApi('create', Duty::class);
+        $this->authorize('create', Duty::class);
 
         return DB::transaction(function () use ($request, $assignments) {
             $duty = new Duty;

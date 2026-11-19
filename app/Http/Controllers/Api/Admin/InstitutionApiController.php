@@ -18,7 +18,7 @@ class InstitutionApiController extends ApiController
 {
     public function status(Institution $institution, InstitutionDeactivationService $deactivation): JsonResponse
     {
-        $this->authorizeApi('update', $institution);
+        $this->authorize('update', $institution);
 
         return $this->jsonSuccess([
             'is_active' => (bool) $institution->is_active,
@@ -35,7 +35,7 @@ class InstitutionApiController extends ApiController
 
     public function preview(Institution $institution): JsonResponse
     {
-        $this->authorizeApi('view', $institution);
+        $this->authorize('view', $institution);
 
         $institution->load([
             'types',
@@ -81,7 +81,7 @@ class InstitutionApiController extends ApiController
      */
     public function memberTerms(Institution $institution): JsonResponse
     {
-        $this->authorizeApi('view', $institution);
+        $this->authorize('view', $institution);
 
         return $this->jsonSuccess($institution->duties()->with('users:id,name')->get()
             ->flatMap(fn (Duty $duty) => $duty->users->map(fn (User $user) => [
@@ -94,7 +94,7 @@ class InstitutionApiController extends ApiController
 
     public function store(StoreInstitutionRequest $request): JsonResponse
     {
-        $this->authorizeApi('create', Institution::class);
+        $this->authorize('create', Institution::class);
 
         $institution = new Institution;
 

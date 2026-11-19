@@ -45,7 +45,7 @@ class MeetingApiController extends ApiController
      */
     public function preview(Meeting $meeting): JsonResponse
     {
-        $this->authorizeApi('view', $meeting);
+        $this->authorize('view', $meeting);
 
         $meeting->load([
             'institutions',
@@ -88,7 +88,7 @@ class MeetingApiController extends ApiController
      */
     public function agendaItems(Meeting $meeting): JsonResponse
     {
-        $this->authorizeApi('view', $meeting);
+        $this->authorize('view', $meeting);
 
         $meeting->load([
             'agendaItems' => fn ($query) => $query->orderBy('order'),

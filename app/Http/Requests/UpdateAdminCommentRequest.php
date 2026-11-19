@@ -11,12 +11,6 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 class UpdateAdminCommentRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        // The controller authorizes against the comment resolved from the route.
-        return true;
-    }
-
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

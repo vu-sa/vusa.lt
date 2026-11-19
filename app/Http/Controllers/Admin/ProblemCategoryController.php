@@ -16,7 +16,7 @@ class ProblemCategoryController extends AdminController
 {
     public function index(Request $request): Response
     {
-        $this->handleAuthorization('viewAny', ProblemCategory::class);
+        $this->authorize('viewAny', ProblemCategory::class);
 
         return Inertia::render('Admin/Problems/IndexProblemCategory', [
             'problemCategories' => ProblemCategory::query()
@@ -58,7 +58,7 @@ class ProblemCategoryController extends AdminController
      */
     public function destroy(ProblemCategory $problemCategory): RedirectResponse
     {
-        $this->handleAuthorization('delete', $problemCategory);
+        $this->authorize('delete', $problemCategory);
 
         $problemsCount = $problemCategory->problems()->withTrashed()->count();
 

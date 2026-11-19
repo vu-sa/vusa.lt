@@ -30,7 +30,7 @@ class InstitutionLinkController extends AdminController
 
     public function destroy(InstitutionLink $institutionLink): RedirectResponse
     {
-        $this->handleAuthorization('delete', $institutionLink);
+        $this->authorize('delete', $institutionLink);
 
         $institutionLink->delete();
 

@@ -46,7 +46,7 @@ class DutyResponsibilityController extends AdminController
 
     public function destroy(Duty $duty, string $grant, Request $request): RedirectResponse
     {
-        $this->handleAuthorization('update', $duty);
+        $this->authorize('update', $duty);
 
         // Resolved through the duty so a crafted id cannot reach another duty's grant.
         $responsibilityGrant = $duty->responsibilityGrants()->with('role')->find($grant);

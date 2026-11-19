@@ -17,7 +17,7 @@ class TagApiController extends ApiController
 
     public function index(IndexTagRequest $request): JsonResponse
     {
-        $this->authorizeApi('viewAny', Tag::class);
+        $this->authorize('viewAny', Tag::class);
 
         $tags = $this->applyTanstackFilters(
             Tag::query(),

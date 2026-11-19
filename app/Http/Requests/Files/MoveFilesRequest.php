@@ -8,11 +8,6 @@ use Illuminate\Foundation\Http\FormRequest;
 /** Each source directory and the destination are authorized in the controller after normalisation. */
 class MoveFilesRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

@@ -36,7 +36,7 @@ class ApprovalController extends AdminController
         // ApprovalService::approve() has the final say via canBeApprovedBy(), but that is a
         // per-step approver check, not an access check — a coarse `view` gate here keeps the
         // endpoint from being a probe for records the user cannot see at all.
-        $this->handleAuthorization('view', $approvable);
+        $this->authorize('view', $approvable);
 
         $decision = ApprovalDecision::from($validated['decision']);
         $user = auth()->user();
@@ -79,7 +79,7 @@ class ApprovalController extends AdminController
             ->map(fn ($id) => $this->resolveApprovable($validated['approvable_type'], $id))
             ->filter()
             // Same coarse gate as store(); bulkApprove() still applies canBeApprovedBy() per item.
-            ->each(fn ($approvable) => $this->handleAuthorization('view', $approvable));
+            ->each(fn ($approvable) => $this->authorize('view', $approvable));
 
         $result = $this->approvalService->bulkApprove($approvables, $user, $decision, $notes, $step);
         $approvals = $result['approvals'];
@@ -131,7 +131,7 @@ class ApprovalController extends AdminController
                 continue;
             }
 
-            $this->handleAuthorization('view', $approvable);
+            $this->authorize('view', $approvable);
 
             try {
                 if ($this->approvalService->fastForward($approvable, $user, $notes)->isNotEmpty()) {
@@ -170,7 +170,7 @@ class ApprovalController extends AdminController
         $reservationResources = collect($validated['approvable_ids'])
             ->map(fn ($id) => $this->resolveApprovable($validated['approvable_type'], $id))
             ->filter(fn ($approvable) => $approvable instanceof ReservationResource)
-            ->each(fn ($approvable) => $this->handleAuthorization('view', $approvable));
+            ->each(fn ($approvable) => $this->authorize('view', $approvable));
 
         $result = $this->approvalService->bulkBacktrack(
             $reservationResources,

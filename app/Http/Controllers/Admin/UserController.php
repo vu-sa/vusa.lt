@@ -32,6 +32,7 @@ use App\Services\ResourceServices\UserDutyService;
 use App\Services\TanstackTableService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -48,7 +49,7 @@ class UserController extends AdminController
      */
     public function index(IndexUserRequest $request)
     {
-        $this->handleAuthorization('viewAny', User::class);
+        $this->authorize('viewAny', User::class);
 
         $buildQuery = fn (bool $includeDuplicates = true) => $this->applyTanstackFilters(
             BuildUserIndexQuery::execute($request, $this->authorizer, $includeDuplicates),
@@ -102,7 +103,7 @@ class UserController extends AdminController
      */
     public function create()
     {
-        $this->handleAuthorization('create', User::class);
+        $this->authorize('create', User::class);
 
         return Inertia::render('Admin/People/CreateUser', [
             'tenantsWithDuties' => UserDutyService::getTenantsWithDutiesForForm($this->authorizer),
@@ -207,7 +208,7 @@ class UserController extends AdminController
      */
     public function edit(User $user)
     {
-        $this->handleAuthorization('update', $user);
+        $this->authorize('update', $user);
 
         $actor = Auth::user();
 
@@ -228,7 +229,7 @@ class UserController extends AdminController
     public function update(UpdateUserRequest $request, User $user)
     {
         // TODO: make duty attach / detach work properly
-        $this->handleAuthorization('update', $user);
+        $this->authorize('update', $user);
 
         $actor = $request->user();
         $currentDutyIds = $user->current_duties->pluck('id');
@@ -304,7 +305,7 @@ class UserController extends AdminController
      */
     public function destroy(User $user)
     {
-        $this->handleAuthorization('delete', $user);
+        $this->authorize('delete', $user);
 
         // UserPolicy blocks this too, but Gate::before grants super admins every
         // ability outright, so the policy never runs for them.
@@ -335,6 +336,7 @@ class UserController extends AdminController
     /**
      * Restore a soft-deleted user.
      */
+    #[Authorize('restore', 'user')]
     public function restore(User $user): RedirectResponse
     {
         return $this->restoreModel($user, $this->entityMessage('restored', 'user'));
@@ -343,10 +345,9 @@ class UserController extends AdminController
     /**
      * Permanently delete a user.
      */
+    #[Authorize('forceDelete', 'user')]
     public function forceDelete(User $user): RedirectResponse
     {
-        $this->authorize('forceDelete', $user);
-
         abort_if($user->is(Auth::user()), 403, __('users.cannot_delete_self'));
 
         // The cleanup is handed to the trait rather than run here: it must not happen

@@ -71,7 +71,7 @@ class StepController extends AdminController
 
     private function destroy(Goal|Problem $parent, Step $step): RedirectResponse
     {
-        $this->handleAuthorization('update', $parent);
+        $this->authorize('update', $parent);
 
         $step->delete();
 

@@ -24,6 +24,7 @@ use App\Services\PostCreateRedirect;
 use App\Services\TanstackTableService;
 use App\Support\Experiments\GoalsExperiment;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
@@ -41,7 +42,7 @@ class ProblemController extends AdminController
      */
     public function index(IndexProblemRequest $request)
     {
-        $this->handleAuthorization('viewAny', Problem::class);
+        $this->authorize('viewAny', Problem::class);
 
         $query = BuildProblemIndexQuery::execute($request);
 
@@ -135,7 +136,7 @@ class ProblemController extends AdminController
      */
     public function show(Problem $problem)
     {
-        $this->handleAuthorization('view', $problem);
+        $this->authorize('view', $problem);
 
         $user = auth()->user();
 
@@ -213,7 +214,7 @@ class ProblemController extends AdminController
      */
     public function edit(Problem $problem)
     {
-        $this->handleAuthorization('update', $problem);
+        $this->authorize('update', $problem);
 
         $problemData = $problem->load(['tenant', 'createdBy', 'responsibleUser', 'categories', 'institutions'])->toFullArray();
         $problemData['categories'] = $problem->categories->pluck('id')->toArray();
@@ -256,7 +257,7 @@ class ProblemController extends AdminController
      */
     public function destroy(Problem $problem)
     {
-        $this->handleAuthorization('delete', $problem);
+        $this->authorize('delete', $problem);
 
         $problem->delete();
 
@@ -268,7 +269,7 @@ class ProblemController extends AdminController
      */
     public function updateStatus(UpdateProblemStatusRequest $request, Problem $problem)
     {
-        $this->handleAuthorization('update', $problem);
+        $this->authorize('update', $problem);
 
         $problem->update(['status' => $request->validated('status')]);
 
@@ -278,11 +279,13 @@ class ProblemController extends AdminController
     /**
      * Restore the specified resource from storage.
      */
+    #[Authorize('restore', 'problem')]
     public function restore(Problem $problem): RedirectResponse
     {
         return $this->restoreModel($problem, $this->entityMessage('restored', 'problem'));
     }
 
+    #[Authorize('forceDelete', 'problem')]
     public function forceDelete(Problem $problem): RedirectResponse
     {
         return $this->forceDeleteModel($problem);

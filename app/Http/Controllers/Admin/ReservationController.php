@@ -41,7 +41,7 @@ class ReservationController extends AdminController
      */
     public function index(IndexReservationRequest $request)
     {
-        $this->handleAuthorization('viewList', Reservation::class);
+        $this->authorize('viewList', Reservation::class);
 
         $reservations = fn () => once(function () use ($request) {
             $query = Reservation::query()->with(SerializeReservationsForTable::EAGER_LOADS);
@@ -90,7 +90,7 @@ class ReservationController extends AdminController
      */
     public function create()
     {
-        $this->handleAuthorization('create', [Reservation::class, $this->authorizer]);
+        $this->authorize('create', [Reservation::class, $this->authorizer]);
 
         return Inertia::render('Admin/Reservations/CreateReservation', [
             'reservationCart' => SerializeReservationCart::execute(request()->user()),
@@ -107,7 +107,7 @@ class ReservationController extends AdminController
      */
     public function store(StoreReservationRequest $request)
     {
-        $this->handleAuthorization('create', [Reservation::class, $this->authorizer]);
+        $this->authorize('create', [Reservation::class, $this->authorizer]);
 
         $reservation = DB::transaction(function () use ($request): Reservation {
             $reservation = new Reservation;
@@ -147,7 +147,7 @@ class ReservationController extends AdminController
      */
     public function show(ShowReservationRequest $request, Reservation $reservation)
     {
-        $this->handleAuthorization('view', [Reservation::class, $reservation, $this->authorizer]);
+        $this->authorize('view', [Reservation::class, $reservation, $this->authorizer]);
 
         $modelName = Str::of(class_basename($reservation))->camel()->plural();
 
@@ -218,7 +218,7 @@ class ReservationController extends AdminController
      */
     public function destroy(Reservation $reservation)
     {
-        $this->handleAuthorization('delete', [Reservation::class, $reservation, $this->authorizer]);
+        $this->authorize('delete', [Reservation::class, $reservation, $this->authorizer]);
 
         $reservation->delete();
 
@@ -227,7 +227,7 @@ class ReservationController extends AdminController
 
     public function addUsers(AddReservationUsersRequest $request, Reservation $reservation)
     {
-        $this->handleAuthorization('addUsers', [Reservation::class, $reservation, $this->authorizer]);
+        $this->authorize('addUsers', [Reservation::class, $reservation, $this->authorizer]);
 
         $old_users = $reservation->users;
 

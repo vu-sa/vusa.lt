@@ -12,7 +12,7 @@ class MailQueueApiController extends ApiController
 {
     public function index(IndexMailQueueRequest $request, BuildMailQueuePage $builder): JsonResponse
     {
-        $this->authorizeApi('viewAny', Role::class);
+        $this->authorize('viewAny', Role::class);
 
         $page = $builder->execute($request);
 

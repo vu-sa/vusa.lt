@@ -22,7 +22,7 @@ class SystemStatusController extends AdminController
 
     public function index(Request $request)
     {
-        $this->handleAuthorization('viewAny', Role::class);
+        $this->authorize('viewAny', Role::class);
 
         return Inertia::render('Admin/SystemStatus', [
             'lastUpdated' => now()->toISOString(),

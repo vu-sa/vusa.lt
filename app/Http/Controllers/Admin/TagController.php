@@ -13,6 +13,7 @@ use App\Models\News;
 use App\Models\Tag;
 use App\Services\TanstackTableService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -27,7 +28,7 @@ class TagController extends AdminController
      */
     public function index(IndexTagRequest $request): Response
     {
-        $this->handleAuthorization('viewAny', Tag::class);
+        $this->authorize('viewAny', Tag::class);
 
         // Build base query
         $query = Tag::query();
@@ -88,7 +89,7 @@ class TagController extends AdminController
      */
     public function create(): Response
     {
-        $this->handleAuthorization('create', Tag::class);
+        $this->authorize('create', Tag::class);
 
         return Inertia::render('Admin/Content/CreateTag');
     }
@@ -98,7 +99,7 @@ class TagController extends AdminController
      */
     public function store(StoreTagRequest $request): RedirectResponse
     {
-        $this->handleAuthorization('create', Tag::class);
+        $this->authorize('create', Tag::class);
 
         $tag = Tag::create($request->validated());
 
@@ -113,7 +114,7 @@ class TagController extends AdminController
      */
     public function show(Tag $tag): Response
     {
-        $this->handleAuthorization('view', $tag);
+        $this->authorize('view', $tag);
 
         return Inertia::render('Admin/Content/ShowTag', [
             'tag' => $tag->toFullArray(),
@@ -125,7 +126,7 @@ class TagController extends AdminController
      */
     public function edit(Tag $tag): Response
     {
-        $this->handleAuthorization('update', $tag);
+        $this->authorize('update', $tag);
 
         // Get news that use this tag
         $news = $tag->news()
@@ -156,7 +157,7 @@ class TagController extends AdminController
      */
     public function update(UpdateTagRequest $request, Tag $tag): RedirectResponse
     {
-        $this->handleAuthorization('update', $tag);
+        $this->authorize('update', $tag);
 
         $tag->update($request->validated());
 
@@ -207,7 +208,7 @@ class TagController extends AdminController
      */
     public function destroy(Tag $tag)
     {
-        $this->handleAuthorization('delete', $tag);
+        $this->authorize('delete', $tag);
 
         $tag->delete();
 
@@ -215,11 +216,13 @@ class TagController extends AdminController
             ->with('success', __('Tag deleted successfully'));
     }
 
+    #[Authorize('restore', 'tag')]
     public function restore(Tag $tag): RedirectResponse
     {
         return $this->restoreModel($tag);
     }
 
+    #[Authorize('forceDelete', 'tag')]
     public function forceDelete(Tag $tag): RedirectResponse
     {
         return $this->forceDeleteModel($tag);

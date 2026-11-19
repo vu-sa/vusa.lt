@@ -15,7 +15,7 @@ class PermissionController extends AdminController
      */
     public function index(IndexPermissionRequest $request): Response
     {
-        $this->handleAuthorization('viewAny', Permission::class);
+        $this->authorize('viewAny', Permission::class);
 
         // A short list sent whole: the collection searches, sorts and filters it in the browser.
         return Inertia::render('Admin/Permissions/IndexPermission', [

@@ -30,6 +30,7 @@ use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use App\Settings\MeetingSettings;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -48,7 +49,7 @@ class InstitutionController extends AdminController
      */
     public function index(IndexInstitutionRequest $request): Response
     {
-        $this->handleAuthorization('viewAny', Institution::class);
+        $this->authorize('viewAny', Institution::class);
 
         // Live rows come from Typesense (the scoped key carries the authorization) and the trash
         // from api.v1.admin.trash.index, so the page itself needs no rows.
@@ -71,7 +72,7 @@ class InstitutionController extends AdminController
      */
     public function create()
     {
-        $this->handleAuthorization('create', Institution::class);
+        $this->authorize('create', Institution::class);
 
         Inertia::share('seo.title', 'Nauja institucija');
 
@@ -166,7 +167,7 @@ class InstitutionController extends AdminController
      */
     public function edit(Institution $institution)
     {
-        $this->handleAuthorization('update', $institution);
+        $this->authorize('update', $institution);
 
         $institution->load('types');
 
@@ -212,7 +213,7 @@ class InstitutionController extends AdminController
      */
     public function destroy(Institution $institution)
     {
-        $this->handleAuthorization('delete', $institution);
+        $this->authorize('delete', $institution);
 
         // check if auth user is from this institution
         if (auth()->user()->institutions->contains($institution)) {
@@ -227,6 +228,7 @@ class InstitutionController extends AdminController
     /**
      * Restore the specified resource from storage.
      */
+    #[Authorize('restore', 'institution')]
     public function restore(Institution $institution): RedirectResponse
     {
         $response = $this->restoreModel($institution, $this->entityMessage('restored', 'institution'));
@@ -244,7 +246,7 @@ class InstitutionController extends AdminController
      */
     public function destroyPublicUrl(Institution $institution, PublicUrl $publicUrl): RedirectResponse
     {
-        $this->handleAuthorization('update', $institution);
+        $this->authorize('update', $institution);
 
         // Resolve through the relation so a crafted payload cannot reach another institution's URLs.
         $publicUrlFromDb = $institution->publicUrls()->find($publicUrl->id);
@@ -280,6 +282,7 @@ class InstitutionController extends AdminController
         return back()->with('success', __('messages.duty.order_updated'));
     }
 
+    #[Authorize('forceDelete', 'institution')]
     public function forceDelete(Institution $institution): RedirectResponse
     {
         return $this->forceDeleteModel($institution);

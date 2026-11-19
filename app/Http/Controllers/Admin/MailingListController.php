@@ -61,7 +61,7 @@ class MailingListController extends AdminController
      */
     public function index(Request $request): Response
     {
-        $this->handleAuthorization('viewAny', MailingList::class);
+        $this->authorize('viewAny', MailingList::class);
 
         return $this->renderIndex($request, openCreate: false);
     }
@@ -69,7 +69,7 @@ class MailingListController extends AdminController
     /** The + Sukurti entry point: the collection with its create sheet open. */
     public function create(Request $request): Response
     {
-        $this->handleAuthorization('create', MailingList::class);
+        $this->authorize('create', MailingList::class);
 
         return $this->renderIndex($request, openCreate: true);
     }
@@ -145,7 +145,7 @@ class MailingListController extends AdminController
 
     public function show(ShowMailingListRequest $request, MailingList $mailingList): Response
     {
-        $this->handleAuthorization('viewArchive', $mailingList);
+        $this->authorize('viewArchive', $mailingList);
 
         $user = $request->user();
         $canView = $user->can('view', $mailingList);
@@ -230,7 +230,7 @@ class MailingListController extends AdminController
 
     public function import(Request $request, ImportMailingLists $import): RedirectResponse
     {
-        $this->handleAuthorization('create', MailingList::class);
+        $this->authorize('create', MailingList::class);
         abort_unless($this->authorizer->scope($request->user(), 'mailingLists.create.padalinys')->isAllScope, 403);
 
         if (! $this->mailman->isConfigured()) {

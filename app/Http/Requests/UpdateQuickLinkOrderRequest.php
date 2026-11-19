@@ -10,15 +10,6 @@ use Illuminate\Validation\Rule;
 class UpdateQuickLinkOrderRequest extends FormRequest
 {
     /**
-     * Each row is authorized individually in the controller, because reordering may span
-     * several quick links and the ability is checked per record.
-     */
-    public function authorize(): bool
-    {
-        return true;
-    }
-
-    /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array

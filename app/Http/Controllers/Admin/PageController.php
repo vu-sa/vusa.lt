@@ -18,6 +18,7 @@ use App\Services\ContentEditorService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
@@ -32,7 +33,7 @@ class PageController extends AdminController
      */
     public function index(IndexPageRequest $request)
     {
-        $this->handleAuthorization('viewAny', Page::class);
+        $this->authorize('viewAny', Page::class);
 
         // Live rows come from Typesense (the scoped key carries the authorization) and the trash
         // from api.v1.admin.trash.index, so the page itself needs no rows.
@@ -46,7 +47,7 @@ class PageController extends AdminController
      */
     public function create()
     {
-        $this->handleAuthorization('create', Page::class);
+        $this->authorize('create', Page::class);
 
         return Inertia::render('Admin/Content/CreatePage',
             [
@@ -61,7 +62,7 @@ class PageController extends AdminController
      */
     public function store(StorePageRequest $request, PostCreateRedirect $redirect)
     {
-        $this->handleAuthorization('create', Page::class);
+        $this->authorize('create', Page::class);
 
         $page = app(ContentEditorService::class)->save('pages', $request->validated(), $request->user());
 
@@ -74,7 +75,7 @@ class PageController extends AdminController
      */
     public function edit(Page $page)
     {
-        $this->handleAuthorization('update', $page);
+        $this->authorize('update', $page);
 
         $page->load('tenant:id,alias,shortname', 'parent:id,title');
 
@@ -94,7 +95,7 @@ class PageController extends AdminController
      */
     public function update(UpdatePageRequest $request, Page $page)
     {
-        $this->handleAuthorization('update', $page);
+        $this->authorize('update', $page);
 
         $page = app(ContentEditorService::class)->save('pages', $request->validated(), $request->user(), $page);
 
@@ -106,7 +107,7 @@ class PageController extends AdminController
      */
     public function destroy(Page $page)
     {
-        $this->handleAuthorization('delete', $page);
+        $this->authorize('delete', $page);
 
         $page->delete();
 
@@ -136,11 +137,13 @@ class PageController extends AdminController
         return back()->with('info', __('messages.bulk_deleted', ['count' => $pages->count()]));
     }
 
+    #[Authorize('restore', 'page')]
     public function restore(Page $page): RedirectResponse
     {
         return $this->restoreModel($page, $this->entityMessage('restored', 'page'));
     }
 
+    #[Authorize('forceDelete', 'page')]
     public function forceDelete(Page $page): RedirectResponse
     {
         return $this->forceDeleteModel($page);
@@ -151,7 +154,7 @@ class PageController extends AdminController
      */
     public function destroyPublicUrl(Page $page, PublicUrl $publicUrl): RedirectResponse
     {
-        $this->handleAuthorization('update', $page);
+        $this->authorize('update', $page);
 
         // Resolve through the relation so a crafted payload cannot reach another page's URLs.
         $publicUrlFromDb = $page->publicUrls()->find($publicUrl->id);

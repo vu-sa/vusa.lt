@@ -17,6 +17,7 @@ use App\Models\Tag;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
@@ -31,7 +32,7 @@ class QuickLinkController extends AdminController
      */
     public function index(IndexQuickLinkRequest $request)
     {
-        $this->handleAuthorization('viewAny', QuickLink::class);
+        $this->authorize('viewAny', QuickLink::class);
 
         $tenants = GetTenantsForUpserts::execute('quickLinks.read.padalinys', $this->authorizer)
             ->filter(fn ($tenant) => in_array($tenant['type'], TenantType::representationalValues(), true))
@@ -86,7 +87,7 @@ class QuickLinkController extends AdminController
      */
     public function store(StoreQuickLinkRequest $request, PostCreateRedirect $redirect)
     {
-        $this->handleAuthorization('create', QuickLink::class);
+        $this->authorize('create', QuickLink::class);
 
         $quickLink = DB::transaction(function () use ($request): QuickLink {
             $quickLink = new QuickLink;
@@ -106,7 +107,7 @@ class QuickLinkController extends AdminController
      */
     public function edit(QuickLink $quickLink)
     {
-        $this->handleAuthorization('update', $quickLink);
+        $this->authorize('update', $quickLink);
 
         return Inertia::render('Admin/Content/EditQuickLink', [
             'quickLink' => $quickLink,
@@ -120,7 +121,7 @@ class QuickLinkController extends AdminController
      */
     public function update(UpdateQuickLinkRequest $request, QuickLink $quickLink)
     {
-        $this->handleAuthorization('update', $quickLink);
+        $this->authorize('update', $quickLink);
 
         DB::transaction(function () use ($request, $quickLink): void {
             $quickLink->update($request->safe()->only('text', 'link', 'lang', 'icon', 'is_important', 'tenant_id'));
@@ -134,7 +135,7 @@ class QuickLinkController extends AdminController
      */
     public function destroy(QuickLink $quickLink)
     {
-        $this->handleAuthorization('delete', $quickLink);
+        $this->authorize('delete', $quickLink);
 
         $quickLink->delete();
 
@@ -148,7 +149,7 @@ class QuickLinkController extends AdminController
 
         // Authorize every row before writing any, so a mixed batch changes nothing.
         foreach ($quickLinks as $quickLink) {
-            $this->handleAuthorization('update', [QuickLink::class, $quickLink, $this->authorizer]);
+            $this->authorize('update', [QuickLink::class, $quickLink, $this->authorizer]);
         }
 
         DB::transaction(function () use ($orderList, $quickLinks): void {
@@ -190,11 +191,13 @@ class QuickLinkController extends AdminController
             ->all();
     }
 
+    #[Authorize('restore', 'quickLink')]
     public function restore(QuickLink $quickLink): RedirectResponse
     {
         return $this->restoreModel($quickLink);
     }
 
+    #[Authorize('forceDelete', 'quickLink')]
     public function forceDelete(QuickLink $quickLink): RedirectResponse
     {
         return $this->forceDeleteModel($quickLink);

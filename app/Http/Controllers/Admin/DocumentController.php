@@ -28,7 +28,7 @@ class DocumentController extends AdminController
      */
     public function index(IndexDocumentRequest $request, DocumentSettings $documentSettings)
     {
-        $this->handleAuthorization('viewAny', Document::class);
+        $this->authorize('viewAny', Document::class);
 
         $user = $request->user();
         $canCreate = $user->can('create', Document::class);
@@ -108,7 +108,7 @@ class DocumentController extends AdminController
 
     public function refresh(Document $document)
     {
-        $this->handleAuthorization('update', $document);
+        $this->authorize('update', $document);
 
         // Dispatch sync job to background instead of synchronous processing
         // Forced: a person asking for a refresh means "check the link too", not "unless the eTag matches".
@@ -119,7 +119,7 @@ class DocumentController extends AdminController
 
     public function edit(Document $document): Response
     {
-        $this->handleAuthorization('update', $document);
+        $this->authorize('update', $document);
 
         if ($document->sharepoint_web_url && $document->removed_from_sharepoint_at === null) {
             return Inertia::location($document->sharepoint_web_url);
@@ -133,7 +133,7 @@ class DocumentController extends AdminController
      */
     public function show(Document $document)
     {
-        $this->handleAuthorization('view', $document);
+        $this->authorize('view', $document);
 
         if ($document->anonymous_url) {
             return Inertia::location($document->anonymous_url);

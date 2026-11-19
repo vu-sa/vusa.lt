@@ -26,7 +26,7 @@ class DocumentFolderApiController extends ApiController
 
     public function index(IndexDocumentFolderRequest $request): JsonResponse
     {
-        $this->authorizeApi('create', Document::class);
+        $this->authorize('create', Document::class);
 
         $user = $request->user();
         $path = $request->hasPath() ? $request->folderPath() : $this->startPath($user);
@@ -103,7 +103,7 @@ class DocumentFolderApiController extends ApiController
      */
     public function refresh(Document $document): JsonResponse
     {
-        $this->authorizeApi('update', $document);
+        $this->authorize('update', $document);
 
         // So the row reads "being created" rather than "failed" until the job reports back.
         $document->update(['sync_status' => 'pending']);

@@ -36,7 +36,7 @@ class GoalController extends AdminController
      */
     public function index(Request $request): Response
     {
-        $this->handleAuthorization('viewAny', Goal::class);
+        $this->authorize('viewAny', Goal::class);
 
         $user = $request->user();
 
@@ -63,7 +63,7 @@ class GoalController extends AdminController
 
     public function create(): Response
     {
-        $this->handleAuthorization('create', Goal::class);
+        $this->authorize('create', Goal::class);
 
         $tenants = GetTenantsForUpserts::execute('goals.create.padalinys', $this->authorizer)
             ->whereIn('id', GoalsExperiment::enabledTenantIds())->values();
@@ -89,7 +89,7 @@ class GoalController extends AdminController
 
     public function show(Request $request, Goal $goal): Response
     {
-        $this->handleAuthorization('view', $goal);
+        $this->authorize('view', $goal);
 
         $user = $request->user();
         $goal->load(['tenant', 'cadence', 'responsibleDuty.current_users', 'createdBy:id,name']);
@@ -137,7 +137,7 @@ class GoalController extends AdminController
 
     public function edit(Goal $goal): Response
     {
-        $this->handleAuthorization('update', $goal);
+        $this->authorize('update', $goal);
 
         return Inertia::render('Admin/Goals/EditGoal', [
             ...$this->formOptions(GetTenantsForUpserts::execute('goals.update.padalinys', $this->authorizer)
@@ -158,7 +158,7 @@ class GoalController extends AdminController
 
     public function destroy(Goal $goal): RedirectResponse
     {
-        $this->handleAuthorization('delete', $goal);
+        $this->authorize('delete', $goal);
 
         $goal->delete();
 
@@ -174,7 +174,7 @@ class GoalController extends AdminController
 
     public function unlinkProblem(Goal $goal, Problem $problem): RedirectResponse
     {
-        $this->handleAuthorization('update', $goal);
+        $this->authorize('update', $goal);
 
         $goal->problems()->detach($problem->id);
 

@@ -46,7 +46,7 @@ class ResponsibilityController extends AdminController
 {
     public function index(IndexRoleRequest $request): Response
     {
-        $this->handleAuthorization('viewAny', Role::class);
+        $this->authorize('viewAny', Role::class);
 
         // A short list sent whole: the collection searches, sorts and filters it in the browser.
         return Inertia::render('Admin/Permissions/IndexResponsibility', [
@@ -72,7 +72,7 @@ class ResponsibilityController extends AdminController
 
     public function create(): Response
     {
-        $this->handleAuthorization('create', Role::class);
+        $this->authorize('create', Role::class);
 
         return Inertia::render('Admin/Permissions/CreateResponsibility');
     }
@@ -93,7 +93,7 @@ class ResponsibilityController extends AdminController
 
     public function show(Role $role): Response
     {
-        $this->handleAuthorization('view', $role);
+        $this->authorize('view', $role);
 
         $role->load('permissions:id,name', 'attachable_types:id');
         $held = $role->permissions->pluck('name');
@@ -135,7 +135,7 @@ class ResponsibilityController extends AdminController
 
     public function edit(Role $role): Response|RedirectResponse
     {
-        $this->handleAuthorization('update', $role);
+        $this->authorize('update', $role);
 
         if ($role->isSuperAdmin()) {
             return back()->with('info', __('messages.role.not_editable'));
@@ -167,7 +167,7 @@ class ResponsibilityController extends AdminController
 
     public function destroy(Role $role): RedirectResponse
     {
-        $this->handleAuthorization('delete', $role);
+        $this->authorize('delete', $role);
 
         if ($reason = $this->deleteBlockedReason($role)) {
             return back()->with('error', $reason);
@@ -226,7 +226,7 @@ class ResponsibilityController extends AdminController
 
     public function destroyGrant(Request $request, Role $role, string $grant): RedirectResponse
     {
-        $this->handleAuthorization('update', $role);
+        $this->authorize('update', $role);
 
         // Resolved through the responsibility so a crafted id cannot reach another one's grant.
         $responsibilityGrant = $role->grants()->find($grant);

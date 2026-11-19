@@ -16,6 +16,7 @@ use App\Models\Role;
 use App\Services\ModelAuthorizer;
 use App\Support\MorphMap;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -25,7 +26,7 @@ class DutyTypeController extends AdminController
 
     public function index(IndexTypeRequest $request): Response
     {
-        $this->handleAuthorization('viewAny', DutyType::class);
+        $this->authorize('viewAny', DutyType::class);
 
         // A short list sent whole: the collection searches, sorts and filters it in the browser.
         $types = DutyType::query()
@@ -42,7 +43,7 @@ class DutyTypeController extends AdminController
 
     public function create(): Response
     {
-        $this->handleAuthorization('create', DutyType::class);
+        $this->authorize('create', DutyType::class);
 
         return Inertia::render('Admin/ModelMeta/CreateType', [
             'typeKind' => 'dutyType',
@@ -62,7 +63,7 @@ class DutyTypeController extends AdminController
 
     public function show(DutyType $type): Response
     {
-        $this->handleAuthorization('view', $type);
+        $this->authorize('view', $type);
 
         $type->load([
             'parent:id,title',
@@ -125,7 +126,7 @@ class DutyTypeController extends AdminController
 
     public function edit(DutyType $type): Response
     {
-        $this->handleAuthorization('update', $type);
+        $this->authorize('update', $type);
 
         return Inertia::render('Admin/ModelMeta/EditType', [
             'typeKind' => 'dutyType',
@@ -153,7 +154,7 @@ class DutyTypeController extends AdminController
 
     public function destroy(DutyType $type): RedirectResponse
     {
-        $this->handleAuthorization('delete', $type);
+        $this->authorize('delete', $type);
 
         if ($reason = $type->deleteBlockedReason()) {
             return back()->with('error', $reason);
@@ -165,11 +166,13 @@ class DutyTypeController extends AdminController
             ->with('success', $this->entityMessage('deleted', 'dutyType'));
     }
 
+    #[Authorize('restore', 'type')]
     public function restore(DutyType $type): RedirectResponse
     {
         return $this->restoreModel($type, $this->entityMessage('restored', 'dutyType'));
     }
 
+    #[Authorize('forceDelete', 'type')]
     public function forceDelete(DutyType $type): RedirectResponse
     {
         return $this->forceDeleteModel($type);

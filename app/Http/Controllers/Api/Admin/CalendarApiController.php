@@ -16,7 +16,7 @@ class CalendarApiController extends ApiController
 
     public function index(IndexCalendarRequest $request): JsonResponse
     {
-        $this->authorizeApi('viewAny', Calendar::class);
+        $this->authorize('viewAny', Calendar::class);
 
         $query = fn (IndexCalendarRequest $request) => BuildCalendarIndexQuery::execute($request, $this->tableService);
         $events = $query($request)->paginate($request->getPerPage());

@@ -17,7 +17,7 @@ class ResourceCategoryApiController extends ApiController
 
     public function index(IndexResourceCategoryRequest $request): JsonResponse
     {
-        $this->authorizeApi('viewAny', ResourceCategory::class);
+        $this->authorize('viewAny', ResourceCategory::class);
 
         $categories = $this->applyTanstackFilters(
             ResourceCategory::query(),

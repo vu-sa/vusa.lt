@@ -72,7 +72,7 @@ class TrashApiController extends ApiController
     {
         $config = self::COLLECTIONS[$collection];
 
-        $this->authorizeApi('viewAny', $config['model']);
+        $this->authorize('viewAny', $config['model']);
 
         return match ($collection) {
             'institutions' => $this->respond($this->tenantScoped(Institution::onlyTrashed(), $config), $request, $config),

@@ -31,6 +31,7 @@ use App\Services\MeetingPresenter;
 use App\Services\MeetingRepresentativeResolver;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -51,7 +52,7 @@ class MeetingController extends AdminController
      */
     public function index(IndexMeetingRequest $request)
     {
-        $this->handleAuthorization('viewAny', Meeting::class);
+        $this->authorize('viewAny', Meeting::class);
 
         // Live rows come from Typesense (the scoped key carries the authorization) and the trash
         // from api.v1.admin.trash.index, so the page itself needs no rows.
@@ -160,7 +161,7 @@ class MeetingController extends AdminController
      */
     public function show(Meeting $meeting)
     {
-        $this->handleAuthorization('viewSummary', $meeting);
+        $this->authorize('viewSummary', $meeting);
 
         // Public summaries expose the agenda without internal panels or sibling navigation.
         $readOnly = fn (): bool => once(fn (): bool => ! Gate::allows('view', $meeting));
@@ -350,7 +351,7 @@ class MeetingController extends AdminController
      */
     public function update(UpdateMeetingRequest $request, Meeting $meeting)
     {
-        $this->handleAuthorization('update', $meeting);
+        $this->authorize('update', $meeting);
 
         $validated = $request->validated();
 
@@ -365,7 +366,7 @@ class MeetingController extends AdminController
      */
     public function destroy(DestroyMeetingRequest $request, Meeting $meeting)
     {
-        $this->handleAuthorization('delete', $meeting);
+        $this->authorize('delete', $meeting);
 
         $redirect_url = $request->validated('redirect_to') ?? back()->getTargetUrl();
 
@@ -381,6 +382,7 @@ class MeetingController extends AdminController
         return redirect($redirect_url)->with('success', __('messages.meeting.deleted'));
     }
 
+    #[Authorize('restore', 'meeting')]
     public function restore(Meeting $meeting): RedirectResponse
     {
         return $this->restoreModel($meeting, __('messages.meeting.restored'));
@@ -391,7 +393,7 @@ class MeetingController extends AdminController
      */
     public function attachInstitution(AttachMeetingInstitutionRequest $request, Meeting $meeting): RedirectResponse
     {
-        $this->handleAuthorization('update', $meeting);
+        $this->authorize('update', $meeting);
 
         $validated = $request->validated();
 
@@ -410,7 +412,7 @@ class MeetingController extends AdminController
      */
     public function detachInstitution(Meeting $meeting, Institution $institution): RedirectResponse
     {
-        $this->handleAuthorization('update', $meeting);
+        $this->authorize('update', $meeting);
 
         if ($meeting->institutions()->count() <= 1) {
             return back()->with('error', __('messages.meeting.institution_required'));
@@ -422,6 +424,7 @@ class MeetingController extends AdminController
         return back()->with('success', __('messages.meeting.institution_detached'));
     }
 
+    #[Authorize('forceDelete', 'meeting')]
     public function forceDelete(Meeting $meeting): RedirectResponse
     {
         return $this->forceDeleteModel($meeting);

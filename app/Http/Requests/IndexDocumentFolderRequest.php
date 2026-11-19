@@ -10,11 +10,6 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 class IndexDocumentFolderRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true; // Authorization is handled in the controller
-    }
-
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

@@ -31,7 +31,7 @@ class ReservationResourceController extends AdminController
         DB::transaction(function () use ($request, $attributes): void {
             $this->ensureCapacity($attributes);
             $reservation = Reservation::query()->findOrFail($request->validated('reservation_id'));
-            $this->handleAuthorization('update', $reservation);
+            $this->authorize('update', $reservation);
 
             ReservationResource::create([...$attributes, 'reservation_id' => $reservation->id]);
         }, 3);
@@ -53,7 +53,7 @@ class ReservationResourceController extends AdminController
             }
 
             $this->ensureCapacity($attributes, $locked->id);
-            $this->handleAuthorization('update', $locked->reservation);
+            $this->authorize('update', $locked->reservation);
             $locked->update($attributes);
         }, 3);
 
@@ -81,7 +81,7 @@ class ReservationResourceController extends AdminController
 
     public function destroy(ReservationResource $reservationResource)
     {
-        $this->handleAuthorization('delete', $reservationResource->reservation);
+        $this->authorize('delete', $reservationResource->reservation);
 
         $reservationResource->delete();
 

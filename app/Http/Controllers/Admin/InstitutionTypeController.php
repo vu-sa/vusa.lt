@@ -19,6 +19,7 @@ use App\Models\ResponsibilityGrant;
 use App\Services\InstitutionRelationService;
 use App\Support\MorphMap;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -28,7 +29,7 @@ class InstitutionTypeController extends AdminController
 
     public function index(IndexTypeRequest $request): Response
     {
-        $this->handleAuthorization('viewAny', InstitutionType::class);
+        $this->authorize('viewAny', InstitutionType::class);
 
         // A short list sent whole: the collection searches, sorts and filters it in the browser.
         $types = InstitutionType::query()
@@ -45,7 +46,7 @@ class InstitutionTypeController extends AdminController
 
     public function create(): Response
     {
-        $this->handleAuthorization('create', InstitutionType::class);
+        $this->authorize('create', InstitutionType::class);
 
         return Inertia::render('Admin/ModelMeta/CreateType', [
             'typeKind' => 'institutionType',
@@ -65,7 +66,7 @@ class InstitutionTypeController extends AdminController
 
     public function show(InstitutionType $type): Response
     {
-        $this->handleAuthorization('view', $type);
+        $this->authorize('view', $type);
 
         $responsibleDuties = [];
 
@@ -123,7 +124,7 @@ class InstitutionTypeController extends AdminController
 
     public function edit(InstitutionType $type): Response
     {
-        $this->handleAuthorization('update', $type);
+        $this->authorize('update', $type);
 
         return Inertia::render('Admin/ModelMeta/EditType', [
             'typeKind' => 'institutionType',
@@ -151,7 +152,7 @@ class InstitutionTypeController extends AdminController
 
     public function destroy(InstitutionType $type): RedirectResponse
     {
-        $this->handleAuthorization('delete', $type);
+        $this->authorize('delete', $type);
 
         $type->delete();
 
@@ -159,11 +160,13 @@ class InstitutionTypeController extends AdminController
             ->with('success', $this->entityMessage('deleted', 'institutionType'));
     }
 
+    #[Authorize('restore', 'type')]
     public function restore(InstitutionType $type): RedirectResponse
     {
         return $this->restoreModel($type, $this->entityMessage('restored', 'institutionType'));
     }
 
+    #[Authorize('forceDelete', 'type')]
     public function forceDelete(InstitutionType $type): RedirectResponse
     {
         return $this->forceDeleteModel($type);

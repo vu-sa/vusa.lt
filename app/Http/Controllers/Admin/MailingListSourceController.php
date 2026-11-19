@@ -42,7 +42,7 @@ class MailingListSourceController extends AdminController
 
     public function destroy(MailingList $mailingList, string $source): RedirectResponse
     {
-        $this->handleAuthorization('update', $mailingList);
+        $this->authorize('update', $mailingList);
 
         // Resolved through the list so a crafted id cannot reach another list's source.
         try {

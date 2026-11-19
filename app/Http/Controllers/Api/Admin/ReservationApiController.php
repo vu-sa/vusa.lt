@@ -21,7 +21,7 @@ class ReservationApiController extends ApiController
 
     public function index(IndexReservationRequest $request): JsonResponse
     {
-        $this->authorizeApi('viewList', Reservation::class);
+        $this->authorize('viewList', Reservation::class);
 
         $query = fn (IndexReservationRequest $request) => $this->applyTanstackFilters(
             ApplyReservationIndexFilters::execute(

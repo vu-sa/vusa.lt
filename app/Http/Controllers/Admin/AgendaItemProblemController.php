@@ -33,7 +33,7 @@ class AgendaItemProblemController extends AdminController
 
     public function destroy(AgendaItem $agendaItem, Problem $problem): RedirectResponse
     {
-        $this->handleAuthorization('update', $agendaItem);
+        $this->authorize('update', $agendaItem);
 
         abort_unless($agendaItem->problems()->whereKey($problem->id)->exists(), 404);
 

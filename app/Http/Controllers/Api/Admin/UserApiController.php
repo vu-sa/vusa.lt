@@ -21,14 +21,14 @@ class UserApiController extends ApiController
 
     public function photo(User $user): JsonResponse
     {
-        $this->authorizeApi('view', $user);
+        $this->authorize('view', $user);
 
         return $this->jsonSuccess(['image' => $user->imageData('profile_photo')]);
     }
 
     public function index(IndexUserRequest $request): JsonResponse
     {
-        $this->authorizeApi('viewAny', User::class);
+        $this->authorize('viewAny', User::class);
 
         $query = fn (IndexUserRequest $request) => $this->applyTanstackFilters(
             BuildUserIndexQuery::execute($request, $this->authorizer),

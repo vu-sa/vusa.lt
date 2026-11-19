@@ -27,7 +27,7 @@ class MailQueueController extends AdminController
 {
     public function index(IndexMailQueueRequest $request, BuildMailQueuePage $builder): Response
     {
-        $this->handleAuthorization('viewAny', Role::class);
+        $this->authorize('viewAny', Role::class);
 
         return Inertia::render('Admin/MailQueue', [
             'recipients' => $builder->execute($request),
@@ -41,7 +41,7 @@ class MailQueueController extends AdminController
 
     public function previewForUser(RenderMailPreviewRequest $request, User $user, BuildNotificationDigest $builder, MailPreviewRenderer $renderer): \Illuminate\Http\Response
     {
-        $this->handleAuthorization('viewAny', Role::class);
+        $this->authorize('viewAny', Role::class);
 
         $items = NotificationDigestQueue::query()->where('user_id', $user->id)->orderBy('created_at')->orderBy('id')->get();
         abort_if($items->isEmpty(), 404);
@@ -93,7 +93,7 @@ class MailQueueController extends AdminController
      */
     private function authorizeManagement(): void
     {
-        $this->handleAuthorization('viewAny', Role::class);
+        $this->authorize('viewAny', Role::class);
 
         abort_unless(Auth::user()->isSuperAdmin(), 403, 'Only super administrators may discard queued email.');
     }

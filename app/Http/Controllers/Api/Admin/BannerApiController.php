@@ -18,7 +18,7 @@ class BannerApiController extends ApiController
 
     public function index(IndexBannerRequest $request): JsonResponse
     {
-        $this->authorizeApi('viewAny', Banner::class);
+        $this->authorize('viewAny', Banner::class);
 
         $query = fn (IndexBannerRequest $request) => $this->applyTanstackFilters(
             Banner::query()->with(['tenant:id,shortname', 'media']),

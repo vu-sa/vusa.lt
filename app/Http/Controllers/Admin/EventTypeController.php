@@ -11,6 +11,7 @@ use App\Http\Traits\HasTanstackTables;
 use App\Models\EventType;
 use App\Services\TanstackTableService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -25,7 +26,7 @@ class EventTypeController extends AdminController
      */
     public function index(IndexEventTypeRequest $request): Response
     {
-        $this->handleAuthorization('viewAny', EventType::class);
+        $this->authorize('viewAny', EventType::class);
 
         $query = EventType::query();
 
@@ -104,18 +105,20 @@ class EventTypeController extends AdminController
      */
     public function destroy(EventType $eventType): RedirectResponse
     {
-        $this->handleAuthorization('delete', $eventType);
+        $this->authorize('delete', $eventType);
 
         $eventType->delete();
 
         return $this->redirectToIndexWithSuccess('eventTypes', $this->entityMessage('deleted', 'eventType'));
     }
 
+    #[Authorize('restore', 'eventType')]
     public function restore(EventType $eventType): RedirectResponse
     {
         return $this->restoreModel($eventType);
     }
 
+    #[Authorize('forceDelete', 'eventType')]
     public function forceDelete(EventType $eventType): RedirectResponse
     {
         return $this->forceDeleteModel($eventType);

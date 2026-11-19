@@ -16,6 +16,7 @@ use App\Models\StudyProgram;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
@@ -30,7 +31,7 @@ class StudyProgramController extends AdminController
      */
     public function index(IndexStudyProgramRequest $request)
     {
-        $this->handleAuthorization('viewAny', StudyProgram::class);
+        $this->authorize('viewAny', StudyProgram::class);
 
         // A short list sent whole: the collection searches, sorts and filters it in the browser.
         $query = StudyProgram::query()->with('tenant:id,shortname')->orderBy('name');
@@ -52,7 +53,7 @@ class StudyProgramController extends AdminController
      */
     public function create()
     {
-        $this->handleAuthorization('create', StudyProgram::class);
+        $this->authorize('create', StudyProgram::class);
 
         return Inertia::render('Admin/People/CreateStudyProgram', [
             'tenants' => GetTenantsForUpserts::execute('studyPrograms.create.padalinys', $this->authorizer),
@@ -65,7 +66,7 @@ class StudyProgramController extends AdminController
      */
     public function store(StoreStudyProgramRequest $request, PostCreateRedirect $redirect)
     {
-        $this->handleAuthorization('create', StudyProgram::class);
+        $this->authorize('create', StudyProgram::class);
 
         $studyProgram = StudyProgram::create($request->validated());
 
@@ -78,7 +79,7 @@ class StudyProgramController extends AdminController
      */
     public function edit(StudyProgram $studyProgram)
     {
-        $this->handleAuthorization('update', $studyProgram);
+        $this->authorize('update', $studyProgram);
 
         return Inertia::render('Admin/People/EditStudyProgram', [
             'studyProgram' => $studyProgram->load('tenant')->toFullArray(),
@@ -92,7 +93,7 @@ class StudyProgramController extends AdminController
      */
     public function update(UpdateStudyProgramRequest $request, StudyProgram $studyProgram)
     {
-        $this->handleAuthorization('update', $studyProgram);
+        $this->authorize('update', $studyProgram);
 
         $studyProgram->update($request->validated());
 
@@ -105,7 +106,7 @@ class StudyProgramController extends AdminController
      */
     public function destroy(StudyProgram $studyProgram)
     {
-        $this->handleAuthorization('delete', $studyProgram);
+        $this->authorize('delete', $studyProgram);
 
         // Check if the study program is being used by any dutiables
         $dutiablesCount = Dutiable::where('study_program_id', $studyProgram->id)->count();
@@ -146,11 +147,13 @@ class StudyProgramController extends AdminController
             ->with('success', __('messages.study_program.merged'));
     }
 
+    #[Authorize('restore', 'studyProgram')]
     public function restore(StudyProgram $studyProgram): RedirectResponse
     {
         return $this->restoreModel($studyProgram);
     }
 
+    #[Authorize('forceDelete', 'studyProgram')]
     public function forceDelete(StudyProgram $studyProgram): RedirectResponse
     {
         return $this->forceDeleteModel($studyProgram);

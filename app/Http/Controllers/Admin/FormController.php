@@ -25,6 +25,7 @@ use App\Settings\FormSettings;
 use App\Support\LocalizedRouteSlugs;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -72,7 +73,7 @@ class FormController extends AdminController
      */
     public function index(IndexFormRequest $request): Response
     {
-        $this->handleAuthorization('viewAny', Form::class);
+        $this->authorize('viewAny', Form::class);
 
         $user = $request->user();
 
@@ -126,7 +127,7 @@ class FormController extends AdminController
      */
     public function create()
     {
-        $this->handleAuthorization('create', Form::class);
+        $this->authorize('create', Form::class);
 
         return Inertia::render('Admin/Forms/CreateForm', [
             'assignableTenants' => GetTenantsForUpserts::execute('forms.create.padalinys', $this->authorizer),
@@ -177,7 +178,7 @@ class FormController extends AdminController
      */
     public function show(Request $request, Form $form)
     {
-        $this->handleAuthorization('view', $form);
+        $this->authorize('view', $form);
 
         $form->load(['formFields' => fn ($query) => $query->orderBy('order')]);
 
@@ -239,7 +240,7 @@ class FormController extends AdminController
      */
     public function edit(Form $form)
     {
-        $this->handleAuthorization('update', $form);
+        $this->authorize('update', $form);
 
         return Inertia::render('Admin/Forms/EditForm', [
             'form' => [
@@ -297,7 +298,7 @@ class FormController extends AdminController
      */
     public function destroy(Form $form)
     {
-        $this->handleAuthorization('delete', $form);
+        $this->authorize('delete', $form);
 
         $form->delete();
 
@@ -306,18 +307,20 @@ class FormController extends AdminController
 
     public function export(Request $request, Form $form)
     {
-        $this->handleAuthorization('update', $form);
+        $this->authorize('update', $form);
 
         $fileName = substr(Str::slug($form->getTranslation('name', app()->getLocale())), 0, 20).'-'.now()->format('Y-m-d-H-i-s');
 
         return new FormRegistrationsExport($form, $request->user())->download($fileName.'.xlsx');
     }
 
+    #[Authorize('restore', 'form')]
     public function restore(Form $form): RedirectResponse
     {
         return $this->restoreModel($form);
     }
 
+    #[Authorize('forceDelete', 'form')]
     public function forceDelete(Form $form): RedirectResponse
     {
         return $this->forceDeleteModel($form);

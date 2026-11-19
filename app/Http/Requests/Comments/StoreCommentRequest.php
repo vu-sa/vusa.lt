@@ -13,11 +13,6 @@ use Illuminate\Validation\Rule;
  */
 class StoreCommentRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /**
      * @return array<string, mixed>
      */

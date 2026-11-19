@@ -14,6 +14,7 @@ use App\Models\Tag;
 use App\Services\NavigationService;
 use App\Services\PostCreateRedirect;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
 
@@ -121,7 +122,7 @@ class NavigationController extends AdminController
      */
     public function edit(Navigation $navigation)
     {
-        $this->handleAuthorization('update', $navigation);
+        $this->authorize('update', $navigation);
 
         $location = $this->resolveLocation($navigation->extra_attributes['location'] ?? null);
 
@@ -159,7 +160,7 @@ class NavigationController extends AdminController
         // HasCommonChecks::commonChecker) — it has no tenant relation, so `update` is
         // granted only via the blanket `navigation.update.all` permission and does not
         // vary per row. One check up front is equivalent to the old per-row loop.
-        $this->handleAuthorization('update', new Navigation);
+        $this->authorize('update', new Navigation);
 
         $data = $request->validated();
 
@@ -193,18 +194,20 @@ class NavigationController extends AdminController
      */
     public function destroy(Navigation $navigation)
     {
-        $this->handleAuthorization('delete', $navigation);
+        $this->authorize('delete', $navigation);
 
         $navigation->delete();
 
         return redirect()->route('navigation.index')->with('info', $this->entityMessage('deleted', 'navigation'));
     }
 
+    #[Authorize('restore', 'navigation')]
     public function restore(Navigation $navigation): RedirectResponse
     {
         return $this->restoreModel($navigation);
     }
 
+    #[Authorize('forceDelete', 'navigation')]
     public function forceDelete(Navigation $navigation): RedirectResponse
     {
         return $this->forceDeleteModel($navigation);

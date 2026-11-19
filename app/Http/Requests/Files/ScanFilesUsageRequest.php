@@ -8,11 +8,6 @@ use Illuminate\Foundation\Http\FormRequest;
 /** The pre-delete check; the controller authorizes each path's directory. */
 class ScanFilesUsageRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

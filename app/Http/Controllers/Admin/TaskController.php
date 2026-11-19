@@ -62,7 +62,7 @@ class TaskController extends AdminController
      */
     public function destroy(Task $task)
     {
-        $this->handleAuthorization('delete', $task);
+        $this->authorize('delete', $task);
 
         $task->delete();
 
@@ -71,7 +71,7 @@ class TaskController extends AdminController
 
     public function updateCompletionStatus(UpdateTaskCompletionRequest $request, Task $task)
     {
-        $this->handleAuthorization('update', $task);
+        $this->authorize('update', $task);
 
         // Prevent manual completion of auto-completing tasks
         if (! $task->canBeManuallyCompleted()) {
@@ -91,7 +91,7 @@ class TaskController extends AdminController
      */
     public function summary(IndexTasksRequest $request): Response
     {
-        $this->handleAuthorization('viewAny', Task::class);
+        $this->authorize('viewAny', Task::class);
 
         return $this->renderCollection($request, BuildTaskIndexQuery::SCOPE_TENANT);
     }

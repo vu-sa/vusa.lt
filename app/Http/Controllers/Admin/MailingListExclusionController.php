@@ -29,7 +29,7 @@ class MailingListExclusionController extends AdminController
 
     public function destroy(MailingList $mailingList, string $exclusion): RedirectResponse
     {
-        $this->handleAuthorization('update', $mailingList);
+        $this->authorize('update', $mailingList);
 
         try {
             $mailingList->withSyncLock(function () use ($mailingList, $exclusion): void {

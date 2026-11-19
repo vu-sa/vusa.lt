@@ -24,6 +24,7 @@ use App\Services\TanstackTableService;
 use App\Support\LocalizedRouteSlugs;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -40,7 +41,7 @@ class CalendarController extends AdminController
      */
     public function index(IndexCalendarRequest $request)
     {
-        $this->handleAuthorization('viewAny', Calendar::class);
+        $this->authorize('viewAny', Calendar::class);
 
         $calendar = BuildCalendarIndexQuery::execute($request, $this->tableService)
             ->paginate($request->getPerPage());
@@ -64,7 +65,7 @@ class CalendarController extends AdminController
      */
     public function create()
     {
-        $this->handleAuthorization('create', Calendar::class);
+        $this->authorize('create', Calendar::class);
 
         return Inertia::render('Admin/Calendar/CreateCalendarEvent', [
             'assignableTenants' => GetTenantsForUpserts::execute('calendars.create.padalinys', $this->authorizer),
@@ -106,7 +107,7 @@ class CalendarController extends AdminController
      */
     public function show(Calendar $calendar)
     {
-        $this->handleAuthorization('view', $calendar);
+        $this->authorize('view', $calendar);
 
         return redirect()->route('calendar.edit', $calendar);
     }
@@ -116,7 +117,7 @@ class CalendarController extends AdminController
      */
     public function edit(Request $request, Calendar $calendar)
     {
-        $this->handleAuthorization('view', $calendar);
+        $this->authorize('view', $calendar);
 
         $canUpdate = $request->user()->can('update', $calendar);
         $calendar->loadMissing('tenant:id,type,shortname');
@@ -261,8 +262,8 @@ class CalendarController extends AdminController
 
     public function duplicate(Calendar $calendar)
     {
-        $this->handleAuthorization('create', Calendar::class);
-        $this->handleAuthorization('view', $calendar);
+        $this->authorize('create', Calendar::class);
+        $this->authorize('view', $calendar);
         abort_unless($this->authorizer->scope(auth()->user(), 'calendars.create.padalinys')->allowsTenant($calendar->tenant), 403);
 
         $newCalendar = DuplicateCalendarAction::execute($calendar);
@@ -275,7 +276,7 @@ class CalendarController extends AdminController
      */
     public function destroy(Calendar $calendar)
     {
-        $this->handleAuthorization('delete', $calendar);
+        $this->authorize('delete', $calendar);
 
         $calendar->delete();
 
@@ -287,7 +288,7 @@ class CalendarController extends AdminController
      */
     public function destroyPublicUrl(Calendar $calendar, PublicUrl $publicUrl): RedirectResponse
     {
-        $this->handleAuthorization('update', $calendar);
+        $this->authorize('update', $calendar);
 
         // Resolve through the relation so a crafted payload cannot reach another event's URLs.
         $publicUrlFromDb = $calendar->publicUrls()->find($publicUrl->id);
@@ -301,18 +302,20 @@ class CalendarController extends AdminController
 
     public function destroyMedia(Calendar $calendar, Media $media)
     {
-        $this->handleAuthorization('update', $calendar);
+        $this->authorize('update', $calendar);
 
         HandleModelMediaUploads::deleteMedia($calendar, 'images', $media->id);
 
         return back()->with('info', __('messages.calendar.image_deleted'));
     }
 
+    #[Authorize('restore', 'calendar')]
     public function restore(Calendar $calendar): RedirectResponse
     {
         return $this->restoreModel($calendar);
     }
 
+    #[Authorize('forceDelete', 'calendar')]
     public function forceDelete(Calendar $calendar): RedirectResponse
     {
         return $this->forceDeleteModel($calendar);

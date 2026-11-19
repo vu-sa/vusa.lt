@@ -22,7 +22,7 @@ class ResourceCategoryController extends AdminController
      */
     public function index(IndexResourceCategoryRequest $request)
     {
-        $this->handleAuthorization('viewAny', ResourceCategory::class);
+        $this->authorize('viewAny', ResourceCategory::class);
 
         $query = ResourceCategory::query();
 
@@ -81,7 +81,7 @@ class ResourceCategoryController extends AdminController
      */
     public function update(UpdateResourceCategoryRequest $request, ResourceCategory $resourceCategory)
     {
-        $this->handleAuthorization('update', $resourceCategory);
+        $this->authorize('update', $resourceCategory);
 
         $validatedData = $request->safe();
         $resourceCategory->fill($validatedData->toArray());
@@ -95,7 +95,7 @@ class ResourceCategoryController extends AdminController
      */
     public function destroy(ResourceCategory $resourceCategory)
     {
-        $this->handleAuthorization('delete', $resourceCategory);
+        $this->authorize('delete', $resourceCategory);
 
         $resourceCategory->delete();
 

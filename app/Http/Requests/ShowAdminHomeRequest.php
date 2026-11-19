@@ -16,11 +16,6 @@ class ShowAdminHomeRequest extends FormRequest
     /** @var list<string> */
     public const array WINDOWS = ['meeting.create', 'check-in'];
 
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /**
      * @return array<string, list<string>>
      */

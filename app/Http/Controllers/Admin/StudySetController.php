@@ -15,6 +15,7 @@ use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use App\Services\TanstackTableService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -31,7 +32,7 @@ class StudySetController extends AdminController
      */
     public function index(IndexStudySetRequest $request)
     {
-        $this->handleAuthorization('viewAny', StudySet::class);
+        $this->authorize('viewAny', StudySet::class);
 
         // A short list sent whole: the collection searches, sorts and filters it in the browser.
         $query = $this->tableService->applyPermissionFiltering(
@@ -52,7 +53,7 @@ class StudySetController extends AdminController
      */
     public function create()
     {
-        $this->handleAuthorization('create', StudySet::class);
+        $this->authorize('create', StudySet::class);
 
         return Inertia::render('Admin/StudySets/CreateStudySet', [
             'assignableTenants' => GetTenantsForUpserts::execute('studySets.create.padalinys', $this->authorizer),
@@ -64,7 +65,7 @@ class StudySetController extends AdminController
      */
     public function store(StoreStudySetRequest $request, PostCreateRedirect $redirect)
     {
-        $this->handleAuthorization('create', StudySet::class);
+        $this->authorize('create', StudySet::class);
 
         $studySet = DB::transaction(function () use ($request): StudySet {
             $studySet = StudySet::create([
@@ -90,7 +91,7 @@ class StudySetController extends AdminController
      */
     public function edit(StudySet $studySet)
     {
-        $this->handleAuthorization('update', $studySet);
+        $this->authorize('update', $studySet);
 
         $studySet->load([
             'courses' => fn ($query) => $query->orderBy('order'),
@@ -115,7 +116,7 @@ class StudySetController extends AdminController
      */
     public function update(UpdateStudySetRequest $request, StudySet $studySet)
     {
-        $this->handleAuthorization('update', $studySet);
+        $this->authorize('update', $studySet);
 
         DB::transaction(function () use ($request, $studySet): void {
             $studySet->update([
@@ -138,7 +139,7 @@ class StudySetController extends AdminController
      */
     public function destroy(StudySet $studySet)
     {
-        $this->handleAuthorization('delete', $studySet);
+        $this->authorize('delete', $studySet);
 
         $studySet->delete();
 
@@ -197,11 +198,13 @@ class StudySetController extends AdminController
         }
     }
 
+    #[Authorize('restore', 'studySet')]
     public function restore(StudySet $studySet): RedirectResponse
     {
         return $this->restoreModel($studySet);
     }
 
+    #[Authorize('forceDelete', 'studySet')]
     public function forceDelete(StudySet $studySet): RedirectResponse
     {
         return $this->forceDeleteModel($studySet);

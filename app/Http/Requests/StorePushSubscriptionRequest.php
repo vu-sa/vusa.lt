@@ -10,11 +10,6 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 class StorePushSubscriptionRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

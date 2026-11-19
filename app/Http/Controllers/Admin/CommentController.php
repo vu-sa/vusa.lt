@@ -62,7 +62,7 @@ class CommentController extends AdminController
      */
     public function update(UpdateAdminCommentRequest $request, Comment $comment)
     {
-        $this->handleAuthorization('update', $comment);
+        $this->authorize('update', $comment);
 
         // update comment
         $comment->update($request->safe()->only('comment'));
@@ -77,7 +77,7 @@ class CommentController extends AdminController
      */
     public function destroy(Comment $comment)
     {
-        $this->handleAuthorization('delete', $comment);
+        $this->authorize('delete', $comment);
 
         $comment->erase();
 

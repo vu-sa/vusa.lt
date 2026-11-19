@@ -24,7 +24,7 @@ class TenantController extends AdminController
      */
     public function index(IndexTenantRequest $request): Response
     {
-        $this->handleAuthorization('viewAny', Tenant::class);
+        $this->authorize('viewAny', Tenant::class);
 
         // A short list sent whole: the collection searches, sorts and filters it in the browser.
         return Inertia::render('Admin/People/IndexTenant', [
@@ -78,7 +78,7 @@ class TenantController extends AdminController
      */
     public function destroy(Tenant $tenant)
     {
-        $this->handleAuthorization('delete', $tenant);
+        $this->authorize('delete', $tenant);
 
         $tenant->delete();
 
@@ -87,7 +87,7 @@ class TenantController extends AdminController
 
     public function editMainPage(EditTenantMainPageRequest $request, Tenant $tenant)
     {
-        $this->handleAuthorization('updateMainPage', $tenant);
+        $this->authorize('updateMainPage', $tenant);
 
         $locale = $request->requestedLocale();
         $content = $tenant->homepageContents()

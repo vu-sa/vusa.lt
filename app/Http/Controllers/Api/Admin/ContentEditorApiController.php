@@ -13,6 +13,7 @@ use App\Models\Page;
 use App\Services\ContentEditorService;
 use App\Services\PostCreateRedirect;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 class ContentEditorApiController extends ApiController
 {
@@ -23,7 +24,7 @@ class ContentEditorApiController extends ApiController
         abort_unless(in_array($kind, ['pages', 'news'], true), 404);
         $model = $kind === 'pages' ? Page::class : News::class;
         $item = $model::findOrFail($record);
-        $this->authorizeApi('update', $item);
+        $this->authorize('update', $item);
 
         return $this->jsonSuccess($this->editor->snapshot($item));
     }
@@ -38,11 +39,13 @@ class ContentEditorApiController extends ApiController
         return $this->saved($request, 'pages', $page);
     }
 
+    #[Authorize('create', News::class)]
     public function storeNews(StoreNewsRequest $request): JsonResponse
     {
         return $this->saved($request, 'news');
     }
 
+    #[Authorize('update', 'news')]
     public function updateNews(UpdateNewsRequest $request, News $news): JsonResponse
     {
         return $this->saved($request, 'news', $news);

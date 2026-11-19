@@ -14,7 +14,7 @@ class DutyCadenceApiController extends ApiController
 {
     public function index(Duty $duty): JsonResponse
     {
-        $this->authorizeApi('managePeople', $duty);
+        $this->authorize('managePeople', $duty);
 
         $today = Carbon::today();
 

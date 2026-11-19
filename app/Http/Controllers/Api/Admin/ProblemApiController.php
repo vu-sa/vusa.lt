@@ -21,7 +21,7 @@ class ProblemApiController extends ApiController
 
     public function index(IndexProblemRequest $request): JsonResponse
     {
-        $this->authorizeApi('viewAny', Problem::class);
+        $this->authorize('viewAny', Problem::class);
 
         $query = fn (IndexProblemRequest $request) => $this->applyTanstackFilters(
             BuildProblemIndexQuery::execute($request),

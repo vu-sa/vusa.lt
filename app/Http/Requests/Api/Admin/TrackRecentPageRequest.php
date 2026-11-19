@@ -8,11 +8,6 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class TrackRecentPageRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

@@ -18,6 +18,7 @@ use App\Notifications\SupportRequestInvolvedNotification;
 use App\Notifications\SupportRequestStatusChangedNotification;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -33,7 +34,7 @@ class SupportRequestController extends AdminController
 
     public function index(IndexSupportRequestRequest $request): RedirectResponse
     {
-        $this->handleAuthorization('viewAny', SupportRequest::class);
+        $this->authorize('viewAny', SupportRequest::class);
 
         return redirect()->route('mySupportRequests.index', ['tab' => 'all']);
     }
@@ -228,6 +229,7 @@ class SupportRequestController extends AdminController
         return redirect()->route('mySupportRequests.index', ['tab' => 'all'])->with('success', $this->entityMessage('deleted', 'supportRequest'));
     }
 
+    #[Authorize('restore', 'supportRequest')]
     public function restore(SupportRequest $supportRequest): RedirectResponse
     {
         return $this->restoreModel($supportRequest);

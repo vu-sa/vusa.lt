@@ -19,11 +19,6 @@ use Illuminate\Validation\Rules\Enum;
  */
 abstract class ApprovableRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

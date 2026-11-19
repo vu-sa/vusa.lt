@@ -30,7 +30,7 @@ class AgendaItemController extends AdminController
 {
     public function index(Request $request): InertiaResponse
     {
-        $this->handleAuthorization('viewAny', Meeting::class);
+        $this->authorize('viewAny', Meeting::class);
 
         return Inertia::render('Admin/Representation/IndexAgendaItem', [
             'defaultTenantShortnames' => GetUserTenantShortnames::execute($request->user()),
@@ -84,7 +84,7 @@ class AgendaItemController extends AdminController
         // Items of a trashed meeting are kept for its restore, but have no page of their own.
         abort_if($agendaItem->meeting === null, 404);
 
-        $this->handleAuthorization('viewSummary', $agendaItem);
+        $this->authorize('viewSummary', $agendaItem);
 
         // A public meeting's item outside the user's reach: the item itself, without notes or discussion.
         $readOnly = ! Gate::allows('view', $agendaItem);
@@ -309,7 +309,7 @@ class AgendaItemController extends AdminController
      */
     public function destroy(AgendaItem $agendaItem)
     {
-        $this->handleAuthorization('delete', $agendaItem);
+        $this->authorize('delete', $agendaItem);
 
         $meetingId = $agendaItem->meeting_id;
         $agendaItem->delete();
@@ -329,7 +329,7 @@ class AgendaItemController extends AdminController
         // Reordering is a write against the meeting's agenda, so it follows the meeting's
         // update ability. The scoped where() below already confines the writes to this
         // meeting's items, so authorizing the meeting covers every row touched.
-        $this->handleAuthorization('update', Meeting::query()->findOrFail($validated['meeting_id']));
+        $this->authorize('update', Meeting::query()->findOrFail($validated['meeting_id']));
 
         DB::transaction(function () use ($request): void {
             foreach ($request->agenda_items as $item) {

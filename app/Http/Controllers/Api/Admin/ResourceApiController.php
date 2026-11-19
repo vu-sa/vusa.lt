@@ -21,7 +21,7 @@ class ResourceApiController extends ApiController
      */
     public function preview(Resource $resource): JsonResponse
     {
-        $this->authorizeApi('view', $resource);
+        $this->authorize('view', $resource);
 
         $activeReservations = $resource->active_reservations()
             ->orderByPivot('start_time')

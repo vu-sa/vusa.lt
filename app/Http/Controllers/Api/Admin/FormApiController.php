@@ -26,7 +26,7 @@ class FormApiController extends ApiController
 
     public function index(IndexFormRequest $request): JsonResponse
     {
-        $this->authorizeApi('viewAny', Form::class);
+        $this->authorize('viewAny', Form::class);
 
         $user = $request->user();
 

@@ -30,7 +30,7 @@ class AgendaItemGoalController extends AdminController
 
     public function destroy(AgendaItem $agendaItem, Goal $goal): RedirectResponse
     {
-        $this->handleAuthorization('update', $goal);
+        $this->authorize('update', $goal);
 
         $goal->steps()->where('agenda_item_id', $agendaItem->id)->get()->each->delete();
 

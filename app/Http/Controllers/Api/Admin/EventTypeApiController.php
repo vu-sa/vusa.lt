@@ -17,7 +17,7 @@ class EventTypeApiController extends ApiController
 
     public function index(IndexEventTypeRequest $request): JsonResponse
     {
-        $this->authorizeApi('viewAny', EventType::class);
+        $this->authorize('viewAny', EventType::class);
 
         $query = EventType::query();
 
