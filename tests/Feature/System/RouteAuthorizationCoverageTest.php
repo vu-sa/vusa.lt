@@ -247,14 +247,19 @@ test('plain controller checks are #[Authorize] attributes', function (): void {
     $plain = [];
 
     foreach (appClassesIn('Http/Controllers') as $class) {
-        foreach ((new ReflectionClass($class))->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+        // Helpers count too: a private `destroy(Goal|Problem $parent)` that checks its argument
+        // hides the check from every public method that calls it.
+        foreach ((new ReflectionClass($class))->getMethods() as $method) {
             if ($method->getDeclaringClass()->getName() !== $class || $method->isStatic()) {
                 continue;
             }
 
             $boundModels = collect($method->getParameters())
-                ->filter(fn (ReflectionParameter $parameter): bool => $parameter->getType() instanceof ReflectionNamedType
-                    && is_subclass_of($parameter->getType()->getName(), Model::class))
+                ->filter(fn (ReflectionParameter $parameter): bool => collect(match (true) {
+                    $parameter->getType() instanceof ReflectionNamedType => [$parameter->getType()],
+                    $parameter->getType() instanceof ReflectionUnionType => $parameter->getType()->getTypes(),
+                    default => [],
+                })->contains(fn ($type): bool => $type instanceof ReflectionNamedType && is_subclass_of($type->getName(), Model::class)))
                 ->map(fn (ReflectionParameter $parameter): string => $parameter->getName())
                 ->all();
 

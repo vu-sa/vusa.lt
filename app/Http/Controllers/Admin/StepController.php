@@ -8,6 +8,7 @@ use App\Models\Goal;
 use App\Models\Problem;
 use App\Models\Step;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 /**
  * Steps of the goals pilot, written from a goal's or a problem's page. The routes use scoped
@@ -15,34 +16,40 @@ use Illuminate\Http\RedirectResponse;
  */
 class StepController extends AdminController
 {
+    #[Authorize('update', 'goal')]
     public function storeForGoal(StepRequest $request, Goal $goal): RedirectResponse
     {
         return $this->store($request, $goal);
     }
 
+    #[Authorize('update', 'goal')]
     public function updateForGoal(StepRequest $request, Goal $goal, Step $step): RedirectResponse
     {
         return $this->update($request, $step);
     }
 
+    #[Authorize('update', 'goal')]
     public function destroyForGoal(Goal $goal, Step $step): RedirectResponse
     {
-        return $this->destroy($goal, $step);
+        return $this->destroy($step);
     }
 
+    #[Authorize('update', 'problem')]
     public function storeForProblem(StepRequest $request, Problem $problem): RedirectResponse
     {
         return $this->store($request, $problem);
     }
 
+    #[Authorize('update', 'problem')]
     public function updateForProblem(StepRequest $request, Problem $problem, Step $step): RedirectResponse
     {
         return $this->update($request, $step);
     }
 
+    #[Authorize('update', 'problem')]
     public function destroyForProblem(Problem $problem, Step $step): RedirectResponse
     {
-        return $this->destroy($problem, $step);
+        return $this->destroy($step);
     }
 
     private function store(StepRequest $request, Goal|Problem $parent): RedirectResponse
@@ -69,10 +76,8 @@ class StepController extends AdminController
         return back()->with('success', __('goals.messages.step_saved'));
     }
 
-    private function destroy(Goal|Problem $parent, Step $step): RedirectResponse
+    private function destroy(Step $step): RedirectResponse
     {
-        $this->authorize('update', $parent);
-
         $step->delete();
 
         return back()->with('success', __('goals.messages.step_deleted'));
