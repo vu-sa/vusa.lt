@@ -69,7 +69,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { FolderPlus, Upload } from '@lucide/vue';
 import { ref } from 'vue';
 
-import FileManager from '@/Features/Admin/FileManager/FileManager.vue';
+import FileManager from '@/Components/FileManager/FileManager.vue';
 import type {
   DirectoryEntry,
   FileEntry,
@@ -77,9 +77,9 @@ import type {
   FileManagerViewState,
   FileViewMode,
   TypeFilter,
-} from '@/Features/Admin/FileManager/types';
-import { useFileSearch } from '@/Features/Admin/FileManager/useFileSearch';
-import { parentPath } from '@/Features/Admin/FileManager/utils';
+} from '@/Components/FileManager/types';
+import { useFileSearch } from '@/Components/FileManager/useFileSearch';
+import { parentPath } from '@/Components/FileManager/utils';
 import CollectionTitleBand from '@/Components/Collection/CollectionTitleBand.vue';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import StagingNote from '@/Components/StagingNote.vue';

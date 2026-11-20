@@ -43,7 +43,7 @@
 <script setup lang="ts">
 import '@vue-flow/core/dist/style.css';
 import '@vue-flow/core/dist/theme-default.css';
-import '../../../css/vendor/vue-flow.css';
+import '@/../css/vendor/vue-flow.css';
 
 import { VueFlow, type Edge, type Node, type VueFlowStore } from '@vue-flow/core';
 import { Controls, ControlButton } from '@vue-flow/controls';

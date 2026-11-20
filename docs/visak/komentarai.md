@@ -11,7 +11,7 @@ tests:
   - tests/Feature/Notifications/MailTemplateRenderTest.php
   - tests/Unit/Notifications/CommentPostedNotificationTest.php
   - resources/js/Components/Discussions/__tests__/DiscussionPanel.component.test.ts
-  - resources/js/Features/Admin/ActivityLogViewer/__tests__/RecordActivity.component.test.ts
+  - resources/js/Components/ActivityLog/__tests__/RecordActivity.component.test.ts
   - resources/js/Components/Discussions/__tests__/CommentComposer.component.test.ts
   - resources/js/Components/Discussions/__tests__/PollBlock.component.test.ts
   - resources/js/Components/TipTap/__tests__/commentExtensions.test.ts

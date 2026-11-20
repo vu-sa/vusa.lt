@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import MemberTermsSummary from '@/Features/Admin/Occupancy/MemberTermsSummary.vue';
+import MemberTermsSummary from '@/Components/Users/MemberTermsSummary.vue';
 
 const stubs = {
   Popover: { template: '<div><slot /></div>' },

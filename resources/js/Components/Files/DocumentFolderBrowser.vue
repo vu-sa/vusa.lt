@@ -360,7 +360,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
 import { useApiMutation } from '@/Composables/useApi';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
-import PathBreadcrumb from '@/Features/Admin/FileManager/Components/PathBreadcrumb.vue';
+import PathBreadcrumb from '@/Components/FileManager/Components/PathBreadcrumb.vue';
 import { DocumentStatus } from '@/Types/enums';
 import { formatDate } from '@/Utils/dateTime';
 import { getFileIcon } from '@/Utils/fileIcons';

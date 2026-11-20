@@ -197,7 +197,7 @@ import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { problemStatuses, type ProblemStatus } from '@/Constants/statusIcons';
-import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
+import RecordActivity from '@/Components/ActivityLog/RecordActivity.vue';
 import LinkedGoalList from '@/Features/Admin/Goals/LinkedGoalList.vue';
 import ProblemStepsPanel from '@/Features/Admin/Goals/ProblemStepsPanel.vue';
 import type { ProblemGoalLinks } from '@/Features/Admin/Goals/types';

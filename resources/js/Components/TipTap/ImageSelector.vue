@@ -192,7 +192,7 @@ import {
   StepperDescription,
 } from '@/Components/ui/stepper';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
-import FileSelector from '@/Features/Admin/FileManager/FileSelector.vue';
+import FileSelector from '@/Components/FileManager/FileSelector.vue';
 
 defineProps<{
   selectionType?: 'image' | 'video';

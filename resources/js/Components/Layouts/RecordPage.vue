@@ -298,7 +298,7 @@ import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { NativeSelect } from '@/Components/ui/native-select';
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
-import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
+import ActivityLogSheet from '@/Components/ActivityLog/ActivityLogSheet.vue';
 import { statusRoleParts, type StatusPresentation } from '@/Constants/statusIcons';
 import { safeHref } from '@/Utils/safeHref';
 

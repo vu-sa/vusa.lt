@@ -27,7 +27,7 @@ const MIGRATED_ADMIN_COMPONENT_PATHS = [
   'resources/js/Components/Layouts/RecordPage*.vue',
   'resources/js/Components/Meetings/MeetingDatePlate.vue',
   'resources/js/Components/Meetings/MeetingCompletionChecklist.vue',
-  'resources/js/Features/Admin/ActivityLogViewer/RecordActivity.vue',
+  'resources/js/Components/ActivityLog/RecordActivity.vue',
   'resources/js/Components/Graphs/GanttZoomControl.vue',
   'resources/js/Components/Graphs/MeetingsGantt.vue',
   'resources/js/Components/Graphs/MeetingsGanttToolbar.vue',
@@ -76,7 +76,7 @@ const MIGRATED_ADMIN_COMPONENT_PATHS = [
   'resources/js/Features/Admin/NavigationBuilder/**',
   'resources/js/Components/AdminForms/{PageForm,NewsForm,CalendarForm,FormFieldWrapper,PermalinkField,PermalinkPreviewHint,SEOPreview,BannerForm,QuickLinkForm,NavigationForm,NavigationParentForm,TagForm}.vue',
   'resources/js/Components/Analytics/ContentAnalyticsCard.vue',
-  'resources/js/Features/Admin/FileManager/**',
+  'resources/js/Components/FileManager/**',
   'resources/js/Features/Admin/SharepointFileManager/**',
   'resources/js/Features/Admin/PermissionMatrix/**',
   'resources/js/Features/Admin/Responsibilities/**',
@@ -393,9 +393,9 @@ export default tseslint.config(
             message: 'UI primitives cannot depend on higher component tiers, features or pages.',
           },
           {
-            target: 'resources/js/Components/ui',
+            target: ['Components', 'Composables', 'Constants', 'Utils', 'Types', 'Search'].map(folder => `resources/js/${folder}`),
             from: 'resources/js/Features',
-            message: 'UI primitives cannot depend on features.',
+            message: 'Features sit above components and below pages. Move what shared code needs from a feature into Components/ or lower.',
           },
           {
             // The winter season stays in its own folder: the rest of the app reaches it only through its index.

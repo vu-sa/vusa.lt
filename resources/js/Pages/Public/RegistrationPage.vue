@@ -34,8 +34,8 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
-import RegistrationForm from '@/Features/Registrations/RegistrationForm.vue';
-import type { RegistrationDefinition, RegistrationFieldDefinition } from '@/Features/Registrations/types';
+import RegistrationForm from '@/Components/Public/Registrations/RegistrationForm.vue';
+import type { RegistrationDefinition, RegistrationFieldDefinition } from '@/Components/Public/Registrations/types';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 
 const { form } = defineProps<{

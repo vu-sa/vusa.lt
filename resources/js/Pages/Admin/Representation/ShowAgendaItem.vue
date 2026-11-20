@@ -327,7 +327,7 @@ import { agendaItemStatuses } from '@/Constants/statusIcons';
 import { getAgendaItemStatus } from '@/Composables/useAgendaItemStyling';
 import { enterAgendaItem } from '@/Composables/useRecordTrail';
 import { agendaItemFormData, useAgendaItemAutosave, type AgendaItemFormData } from '@/Composables/useAgendaItemAutosave';
-import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
+import RecordActivity from '@/Components/ActivityLog/RecordActivity.vue';
 import { ModelEnum } from '@/Types/enums';
 import { formatDate, formatTime } from '@/Utils/dateTime';
 import { isEmailMeeting } from '@/Utils/MeetingDisplay';

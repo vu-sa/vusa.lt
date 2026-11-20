@@ -12,8 +12,8 @@ import { computed } from 'vue';
 
 import type { FlowGraph } from '@/Types/contentParts';
 import { Field, FieldLabel } from '@/Components/ui/field';
-import FlowGraphChoice from '@/Features/StructureGraph/FlowGraphChoice.vue';
-import { findGraph } from '@/Features/StructureGraph/registry';
+import FlowGraphChoice from '@/Components/StructureGraph/FlowGraphChoice.vue';
+import { findGraph } from '@/Components/StructureGraph/registry';
 
 const modelValue = defineModel<FlowGraph['json_content']>({ required: true });
 

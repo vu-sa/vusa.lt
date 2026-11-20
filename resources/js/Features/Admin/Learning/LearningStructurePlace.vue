@@ -45,9 +45,9 @@ import { X } from '@lucide/vue';
 
 import { Button } from '@/Components/ui/button';
 import { NativeSelect } from '@/Components/ui/native-select';
-import FlowGraph from '@/Features/StructureGraph/FlowGraph.vue';
-import { findGraph, graphRegistry } from '@/Features/StructureGraph/registry';
-import type { GraphDef } from '@/Features/StructureGraph/types';
+import FlowGraph from '@/Components/StructureGraph/FlowGraph.vue';
+import { findGraph, graphRegistry } from '@/Components/StructureGraph/registry';
+import type { GraphDef } from '@/Components/StructureGraph/types';
 
 const props = defineProps<{
   index: number;
