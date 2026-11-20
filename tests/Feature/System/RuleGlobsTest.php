@@ -88,7 +88,7 @@ function ruleGlobSources(): array
 
         if (preg_match('/\A---\n(.*?)\n---\n/s', $contents, $frontmatter) === 1
             && preg_match('/^paths:\n((?:[ \t]+-[^\n]*\n?)+)/m', $frontmatter[1], $paths) === 1
-            && preg_match_all("/^[ \t]*-[ \t]*'?([^'\n]+?)'?[ \t]*$/m", $paths[1], $globs) > 0) {
+            && preg_match_all("/^[ \t]*-[ \t]*['\"]?([^'\"\n]+?)['\"]?[ \t]*$/m", $paths[1], $globs) > 0) {
             $sources[$relative] = $globs[1];
         }
     }

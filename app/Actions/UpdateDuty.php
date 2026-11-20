@@ -58,7 +58,7 @@ class UpdateDuty
             ]);
 
             if (isset($data['current_users'])) {
-                $this->assignments->syncRepresentatives($duty, $data['current_users']);
+                $this->assignments->syncRepresentatives($duty, $data['current_users'], actor: $actor);
             }
 
             SyncExOfficioTargets::execute($duty, array_values(array_filter($data['ex_officio_target_duty_ids'] ?? [])));
@@ -86,7 +86,7 @@ class UpdateDuty
             // The duty form sends only tenant and quota; a missing list must not read as "remove everyone".
             foreach ($assignableTenantsInput as $row) {
                 if (array_key_exists('user_ids', $row)) {
-                    $this->assignments->syncRepresentatives($duty, $row['user_ids'] ?? [], (int) $row['tenant_id']);
+                    $this->assignments->syncRepresentatives($duty, $row['user_ids'] ?? [], (int) $row['tenant_id'], $actor);
                 }
             }
             if ($institutionChanged || $tenantIdsChanged) {
