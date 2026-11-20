@@ -7,41 +7,52 @@ Related: [Tables](Tables/CLAUDE.md) · [Breadcrumbs](../Composables/useBreadcrum
 
 ## Tiers
 
-Dependencies run one way — upward only. A tier never imports from a tier above it.
+Dependencies run one way — upward only. `npm run lint:boundaries` enforces it and blocks CI; the
+zones live in `eslint.config.mjs`.
 
 ```
-ui/            shadcn-vue wrappers over reka-ui — ours to edit, styled only through tokens.
-  ↑            Never imported directly by Pages/** — ESLint blocks ui/card there.
-Brand/         DisplayHeading, EyebrowLabel, TagChip — shared by admin and public.
+Utils/ Types/ Constants/ Composables/ Search/    no components (Search/ is the non-UI search core)
   ↑
-Patterns/      Generic, domain-free building blocks.
-  ↑            SectionCard, EmptyState, StatusBadge, SheetForm, FormSection, ConfirmDialog …
-<Entity>/      Duties/, Institutions/, Meetings/, Members/, Files/ …
-  ↑            Compose Patterns + domain knowledge. One barrel index.ts per folder.
-Layouts/       Page shells: OverviewPage, CollectionPage, RecordPage, FormPage
+ui/                  shadcn-vue wrappers over reka-ui, styled only through tokens
   ↑
-Pages/Admin/   Compose only. No raw <Card>, no hand-rolled hero or grid markup.
+Brand/  Shared/      both surfaces: identity (DisplayHeading, TagChip, DatePlate) and
+  ↑                  domain-free controls (LocaleFlag, DarkModeButton, AccessibilitySettings …)
+Patterns/            admin building blocks: SectionCard, EmptyState, StatusBadge, SheetForm …
+  ↑
+<Entity>/ Collection/ AdminForms/ Pickers/ Search/ FileManager/ ActivityLog/ …
+  ↑                  domain knowledge; one barrel index.ts per folder
+Layouts/             page shells (OverviewPage, CollectionPage, RecordPage, FormPage) and Shell/
+  ↑
+Features/Admin/<X>/  a screen-sized chunk of one admin area; only pages and other features import it
+  ↑
+Pages/Admin/         compose only: no raw <Card>, no hand-rolled hero or grid markup
 ```
 
-**Placement test:** does the component call `route()` or reference an
-`App.Entities.*` type? Then it is *not* generic — it belongs in an entity folder,
-not in `Patterns/`. Pass URLs in as a resolved `href` string instead.
+**Placement tests.**
+- Does the component call `route()` or reference an `App.Entities.*` type? Then it is not generic:
+  it goes in an entity folder, not in `Patterns/`. Pass URLs in as a resolved `href`.
+- Will anything outside `Pages/` or `Features/` need it? Then it goes in `Components/`, not
+  `Features/`. A feature that grows a second consumer moves down.
+- Does it render? Composables, `Search/` and `Utils/` hold logic only. A composable written for one
+  component lives next to it (`AdminForms/useDuplicateUserCheck.ts`).
+- `Types/` and `Constants/` may `import type` from a component; the rule cannot exempt type imports,
+  so those few are not zoned.
 
-## Two tiers, two surfaces
+## Two surfaces
 
-`Patterns/` is **admin-only** by construction — its barrel says so, and nothing under
-`Pages/Public/**` imports it. The public site has its own primitives tier and its own visual
-language (sharp corners, hairline rules, one brand accent per view):
+The public site has its own primitives tier and visual language (sharp corners, hairline rules,
+one brand accent per view):
 
 ```
-ui/  →  Public/Base/  →  Public/<area>/  →  Public/Layouts/  →  Pages/Public/
-ui/  →  Patterns/     →  <Entity>/       →  Layouts/         →  Pages/Admin/
+ui/  →  Brand/ + Shared/  →  Public/Base/  →  Public/<area>/  →  Public/Layouts/  →  Pages/Public/
+ui/  →  Brand/ + Shared/  →  Patterns/     →  <Entity>/       →  Layouts/         →  Pages/Admin/
 ```
 
-The two never import each other; what both need lives one tier down, in `Brand/` (the ruled
-display headline, the eyebrow, the tag chip) and in `ui/` (buttons and controls). Where both have a
-component for the same idea, that is deliberate — `Patterns/DateBadge` is a muted `rounded-lg` inline badge, `Public/Base/DatePlate`
-is a square plate with a brand rule sized to sit on a photograph.
+The two never import each other; what both need lives in `Brand/`, `Shared/` or `ui/`. Two
+exceptions are deliberate: `RichContent/` renders public blocks inside the admin editor, and the
+navigation builder and Pradžia's site lists preview the public site. Where both surfaces have a
+component for the same idea, that is deliberate too: `Patterns/DateBadge` is a muted inline badge,
+`Brand/DatePlate` a square plate with a brand rule sized to sit on a photograph.
 
 ### `Components/Public/Base/`
 
@@ -52,11 +63,11 @@ is a square plate with a brand rule sized to sit on a photograph.
 | The band a listing/detail page opens with | `PageTitleBand` |
 | A brand-coloured kicker on its own | `EyebrowLabel` |
 | A list of things (instead of cards) | `HairlineList` + `HairlineRow` |
-| A day/month plate over an event image | `DatePlate` |
+| A day/month plate over an event image | `Brand/DatePlate` |
 | A fixed-ratio, grayscale image | `MediaFrame` |
 | A category marker | `TagChip` |
 | One figure in a stats strip | `StatCell` |
-| Reader preferences (text size, contrast, underlines) | `AccessibilityMenu` |
+| Reader preferences (text size, contrast, underlines) | `AccessibilityMenu` (its panel is `Shared/AccessibilitySettings`) |
 | The site mark | `HeaderWordmark` |
 | A primary call to action | `ui/button` with `variant="brand" size="lg"` |
 

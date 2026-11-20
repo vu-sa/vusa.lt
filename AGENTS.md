@@ -37,7 +37,7 @@ that folder's `decisions.md`, `reps.md` and `plan.md` — read them with
 
 Public and admin pages share one paper, ink, and brand palette (global `:root`/`.dark`); `data-surface` on `<html>` only scopes the few rules that differ.
 `--accent` remains the shadcn hover surface; `--brand` and `--brand-fill` carry VU SA red or amber.
-Build from `ui/` → `Public/Base/` → `Public/<area>/` → `Public/Layouts/` → `Pages/Public/`.
+Build from `ui/` → `Brand/` + `Shared/` → `Public/Base/` → `Public/<area>/` → `Public/Layouts/` → `Pages/Public/`.
 Use `Public/Base/` for domain-free primitives and `ui/button` for actions. Keep corners square and
 use tokens instead of raw colour utilities. Check both themes and phone layouts. Detailed rules
 live in `.ai/rules/public.md`, `.ai/rules/css.md`, and `resources/js/Components/CLAUDE.md`.
@@ -283,7 +283,7 @@ if ($request->filled('field')) {
 
 ### Component tiers
 
-`ui/` (shadcn primitives) → `Patterns/` (generic: `SectionCard`, `EmptyState`, `StatusBadge`, `SheetForm`, `FormSection`, `ConfirmDialog`, …) → entity folders (`Duties/`, `Institutions/`, …) → `Layouts/` (`OverviewPage`, `CollectionPage`, `RecordPage`, `FormPage`) → pages. Dependencies run one way only.
+`ui/` (shadcn primitives) → `Brand/` + `Shared/` (both surfaces) → `Patterns/` (generic: `SectionCard`, `EmptyState`, `StatusBadge`, `SheetForm`, `FormSection`, `ConfirmDialog`, …) → entity folders (`Duties/`, `Institutions/`, `Pickers/`, …) → `Layouts/` (`OverviewPage`, `CollectionPage`, `RecordPage`, `FormPage`) → `Features/Admin/` → pages. Dependencies run one way only; `npm run lint:boundaries` enforces it in CI.
 
 Pages **compose**; they don't hand-roll card chrome. A titled panel is `SectionCard` from `@/Components/Patterns`, not raw `<Card><CardHeader>` — ESLint rejects `ui/card` imports under `Pages/Admin/**`. Admin records use `RecordPage` (`ShowDuty.vue` / `ShowMeeting.vue` are reference pages); collections use `CollectionPage`.
 

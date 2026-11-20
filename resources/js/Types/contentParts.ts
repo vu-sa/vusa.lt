@@ -223,7 +223,7 @@ export interface SocialEmbed {
 
 export interface FlowGraph {
   json_content: {
-    /** A key in `Features/StructureGraph/registry.ts`; `VusaStructure` on older blocks. */
+    /** A key in `Components/StructureGraph/registry.ts`; `VusaStructure` on older blocks. */
     preset?: string;
   };
   options: null;
