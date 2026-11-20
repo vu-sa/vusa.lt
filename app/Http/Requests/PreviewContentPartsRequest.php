@@ -56,7 +56,7 @@ class PreviewContentPartsRequest extends FormRequest
         }
         $action = $this->has('kind') ? 'create' : 'update';
 
-        return GetTenantsForUpserts::execute($kind.'.'.$action.'.padalinys', $authorizer)->pluck('id')->all();
+        return GetTenantsForUpserts::execute($this->user(), $kind.'.'.$action.'.padalinys', $authorizer)->pluck('id')->all();
     }
 
     public function rules(ModelAuthorizer $authorizer): array

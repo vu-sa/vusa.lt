@@ -11,7 +11,7 @@ use App\Models\InstitutionType;
 use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Services\ResourceServices\SharepointFileService;
+use App\Services\Sharepoint\SharepointFileService;
 
 class DutyPresenter
 {

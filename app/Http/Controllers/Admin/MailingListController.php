@@ -95,7 +95,7 @@ class MailingListController extends AdminController
             'canCreate' => $user->can('create', MailingList::class),
             'canImport' => $this->authorizer->scope($user, 'mailingLists.create.padalinys')->isAllScope,
             'mailmanConfigured' => $this->mailman->isConfigured(),
-            'tenants' => GetTenantsForUpserts::execute('mailingLists.create.padalinys', $this->authorizer),
+            'tenants' => GetTenantsForUpserts::execute($user, 'mailingLists.create.padalinys', $this->authorizer),
             'domain' => $this->mailman->domain(),
             'openCreate' => $openCreate,
         ]);
@@ -169,7 +169,7 @@ class MailingListController extends AdminController
             'messages' => Inertia::scroll(fn () => $this->messagesFor($mailingList, $request->validated('messages_page', 1)))->defer('archive'),
             'sourceOptions' => Inertia::optional(fn (): ?array => $canUpdate ? $this->sourceOptions($mailingList) : null),
             'mailmanConfigured' => $this->mailman->isConfigured(),
-            'tenants' => GetTenantsForUpserts::execute('mailingLists.update.padalinys', $this->authorizer),
+            'tenants' => GetTenantsForUpserts::execute($user, 'mailingLists.update.padalinys', $this->authorizer),
             'can' => [
                 'view' => $canView,
                 'update' => $canUpdate,

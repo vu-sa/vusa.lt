@@ -1,10 +1,9 @@
 <?php
 
-namespace App\Services\ResourceServices;
+namespace App\Services\Institutions;
 
 use App\Enums\TenantType;
 use App\Models\Activity;
-use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\Meeting;
@@ -17,30 +16,18 @@ use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
-class DutyService
+class InstitutionQueries
 {
-    /**
-     * Get institutions available for duty creation/editing (upserts).
-     *
-     * This uses permission-based filtering (duties.create.padalinys) to determine
-     * which institutions a user can manage duties for.
-     *
-     * Note: This is intentionally different from getInstitutionsForDashboard() which
-     * also includes institutions where the user is just a member (for viewing purposes).
-     *
-     * @see getInstitutionsForDashboard() for dashboard visibility logic
-     */
-    public static function getInstitutionsForUpserts(ModelAuthorizer $authorizer)
+    /** Duty upserts use creation permissions, while the dashboard also includes memberships. */
+    public static function getInstitutionsForUpserts(User $actor, ModelAuthorizer $authorizer)
     {
-        $user = request()->user();
-
         // Check for global access
-        $hasGlobalAccess = $authorizer->allows($user, 'duties.create.*');
+        $hasGlobalAccess = $authorizer->allows($actor, 'duties.create.*');
 
         // Get tenant IDs where user can create duties
         $tenantIds = $hasGlobalAccess
             ? collect()
-            : $authorizer->tenants($user, 'duties.create.padalinys')->pluck('id');
+            : $authorizer->tenants($actor, 'duties.create.padalinys')->pluck('id');
 
         return Institution::select('id', 'name', 'alias', 'tenant_id', 'is_active')
             ->when(! $hasGlobalAccess, function ($query) use ($tenantIds): void {
@@ -54,61 +41,12 @@ class DutyService
             ->get();
     }
 
-    /**
-     * Duties selectable as ex-officio targets for a given duty (or, when creating
-     * a new duty, scoped to the tenants the user may create duties in).
-     *
-     * Ex-officio targets are restricted to the **same tenant** as the source duty —
-     * otherwise an admin of one tenant could funnel users into (and inherit the
-     * permissions of) a duty in another tenant. The only exception: admins with
-     * the global duties scope (`duties.update.*` when editing / `duties.create.*`
-     * when creating) may pick any duty (rare cross-tenant ex-officio cases, e.g.
-     * another tenant's chairman holding an ex-officio seat).
-     */
-    public static function getAssignableExOfficioDuties(ModelAuthorizer $authorizer, ?Duty $duty = null): Collection
+    /** Includes institutions in visible tenants and institutions where the actor holds a non-ended duty. */
+    public static function getInstitutionsForDashboard(User $actor, ModelAuthorizer $authorizer)
     {
-        $user = request()->user();
-
-        $query = Duty::select('id', 'name', 'institution_id', 'is_active')
-            ->with(['institution:id,name,short_name,tenant_id,is_active', 'institution.tenant:id,shortname'])
-            ->orderBy('name');
-
-        if ($duty) {
-            $query->where('id', '!=', $duty->id);
-
-            if (! $authorizer->allows($user, 'duties.update.*')) {
-                $tenantId = $duty->institution?->tenant_id;
-                $query->whereHas('institution', fn ($q) => $q->where('tenant_id', $tenantId));
-            }
-        } elseif (! $authorizer->allows($user, 'duties.create.*')) {
-            $tenantIds = $authorizer->tenants($user, 'duties.create.padalinys')->pluck('id');
-            $query->whereHas('institution', fn ($q) => $q->whereIn('tenant_id', $tenantIds));
-        }
-
-        return $query->get();
-    }
-
-    /**
-     * Get institutions for the Atstovavimas dashboard.
-     *
-     * This uses permission-based visibility via AtstovavimasSettings::getVisibleTenantIds():
-     *
-     * - Super admins or users with institutions.read.*: See all institutions
-     * - Users with institutions.read.padalinys: See institutions in authorized tenants
-     * - Regular users: See only institutions they are directly assigned to via duties
-     *
-     * Note: This is intentionally different from getInstitutionsForUpserts() which uses
-     * duties.create.padalinys permission for CRUD operations.
-     *
-     * @see AtstovavimasSettings::getVisibleTenantIds() for visibility logic
-     * @see getInstitutionsForUpserts() for duty creation/editing
-     */
-    public static function getInstitutionsForDashboard(ModelAuthorizer $authorizer)
-    {
-        $user = request()->user();
         $atstovavimasSettings = app(AtstovavimasSettings::class);
-        $visibleTenantIds = $atstovavimasSettings->getVisibleTenantIds($user);
-        $userInstitutionIds = $user->current_or_upcoming_duties()
+        $visibleTenantIds = $atstovavimasSettings->getVisibleTenantIds($actor);
+        $userInstitutionIds = $actor->current_or_upcoming_duties()
             ->pluck('institution_id')
             ->filter()
             ->unique();
@@ -149,27 +87,16 @@ class DutyService
             ->get();
     }
 
-    /**
-     * Get only user's directly assigned institutions for the dashboard.
-     *
-     * This is a lightweight version that only includes institutions where the user
-     * has non-ended duties, plus the ones they have been nominated to look after as secretary.
-     * Each result carries `is_secretary` so the UI can say which is which — a
-     * secretary is not a member and must not be drawn as one.
-     *
-     * @see getInstitutionsForDashboard() for full access including coordinator tenants
-     */
-    public static function getUserInstitutionsForDashboard(bool $activeOnly = false, ?CarbonInterface $meetingsFrom = null)
+    /** Marks secretaries separately so the dashboard does not present them as members. */
+    public static function getUserInstitutionsForDashboard(User $actor, bool $activeOnly = false, ?CarbonInterface $meetingsFrom = null)
     {
-        $user = request()->user();
-
         // Get user's directly assigned institution IDs
-        $dutyInstitutionIds = $user->current_or_upcoming_duties()
+        $dutyInstitutionIds = $actor->current_or_upcoming_duties()
             ->pluck('institution_id')
             ->filter()
             ->unique();
 
-        $secretariedInstitutionIds = $user->secretariedInstitutions()
+        $secretariedInstitutionIds = $actor->secretariedInstitutions()
             ->pluck('institutions.id')
             ->unique();
 
@@ -195,17 +122,8 @@ class DutyService
         return $institutions;
     }
 
-    /**
-     * Get institutions for specific tenant IDs.
-     *
-     * This is used for lazy-loading tenant timeline data when the tenant tab
-     * is opened or when the tenant filter changes.
-     * Users with global visibility roles are treated as global access.
-     *
-     * @param  Collection|array  $tenantIds  The tenant IDs to load institutions for
-     * @param  ModelAuthorizer  $authorizer  The authorizer to check access permissions
-     */
-    public static function getInstitutionsForTenants($tenantIds, ModelAuthorizer $authorizer)
+    /** @param  Collection|array  $tenantIds */
+    public static function getInstitutionsForTenants(User $actor, $tenantIds, ModelAuthorizer $authorizer)
     {
         $tenantIds = collect($tenantIds)->filter();
 
@@ -213,9 +131,8 @@ class DutyService
             return collect();
         }
 
-        $user = request()->user();
         $atstovavimasSettings = app(AtstovavimasSettings::class);
-        $visibleTenantIds = $atstovavimasSettings->getVisibleTenantIds($user);
+        $visibleTenantIds = $atstovavimasSettings->getVisibleTenantIds($actor);
 
         // Filter to only accessible tenants
         $accessibleTenantIds = $tenantIds->intersect($visibleTenantIds);
@@ -230,18 +147,11 @@ class DutyService
     }
 
     /**
-     * Get institutions for specific tenant IDs, with a light eager-load set for the
-     * ViSAK tenant timeline API.
+     * Loads only the relations needed for activity statuses; the timeline fetches meetings separately.
      *
-     * Unlike {@see getInstitutionsForTenants()}, this skips agenda items, votes and
-     * file metadata: the timeline payload contains no meetings (those are loaded in
-     * windows via the meetings endpoint), and meetings are only needed for the
-     * server-side activity-status resolution.
-     *
-     * @param  Collection|array  $tenantIds  The tenant IDs to load institutions for
-     * @param  ModelAuthorizer  $authorizer  The authorizer to check access permissions
+     * @param  Collection|array  $tenantIds
      */
-    public static function getTimelineInstitutionsForTenants($tenantIds, ModelAuthorizer $authorizer)
+    public static function getTimelineInstitutionsForTenants(User $actor, $tenantIds, ModelAuthorizer $authorizer)
     {
         $tenantIds = collect($tenantIds)->filter();
 
@@ -249,9 +159,8 @@ class DutyService
             return collect();
         }
 
-        $user = request()->user();
         $atstovavimasSettings = app(AtstovavimasSettings::class);
-        $visibleTenantIds = $atstovavimasSettings->getVisibleTenantIds($user);
+        $visibleTenantIds = $atstovavimasSettings->getVisibleTenantIds($actor);
 
         // Filter to only accessible tenants
         $accessibleTenantIds = $tenantIds->intersect($visibleTenantIds);
@@ -309,9 +218,7 @@ class DutyService
             ->tap(self::withActivityDates(...));
     }
 
-    /**
-     * Build the base query for dashboard institutions with all needed eager loading.
-     */
+    /** @return Builder<Institution> */
     private static function buildInstitutionQuery(?CarbonInterface $meetingsFrom = null)
     {
         return Institution::select('id', 'name', 'alias', 'tenant_id', 'is_active', 'meeting_periodicity_days')
@@ -345,10 +252,7 @@ class DutyService
     }
 
     /**
-     * Adds `last_meeting_date` (last held), `next_meeting_date` and `last_activity_at`: the latest
-     * logged change by a person to a meeting (agenda items and votes roll up to it), or a new
-     * check-in. Not `meetings.updated_at`, which MariaDB's ON UPDATE bumps on migrations too;
-     * check-ins are no longer activity-logged, but each one is created by a person.
+     * Uses logged changes and check-ins because migrations can bump meetings.updated_at.
      *
      * @param  Builder<Institution>  $query
      */

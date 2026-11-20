@@ -129,7 +129,7 @@ class LearningStepController extends AdminController
             'audienceTypes' => array_map(fn (LearningAudienceType $type): string => $type->value,
                 array_filter(LearningAudienceType::cases(), fn (LearningAudienceType $type): bool => $type !== LearningAudienceType::Purpose)),
             'canTargetEverywhere' => $scope->isAllScope,
-            'tenants' => GetTenantsForUpserts::execute("learningSteps.{$ability}.padalinys", $this->authorizer)->all(),
+            'tenants' => GetTenantsForUpserts::execute($user, "learningSteps.{$ability}.padalinys", $this->authorizer)->all(),
             'institutionTypes' => InstitutionType::query()->get(['id', 'title', 'parent_id'])->map(fn (InstitutionType $type): array => [
                 'id' => $type->id, 'title' => (string) $type->getTranslation('title', $locale), 'parent_id' => $type->parent_id,
             ])->values()->all(),

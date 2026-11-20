@@ -2,8 +2,8 @@
 
 use App\Enums\DocumentStatus;
 use App\Models\Document;
-use App\Services\DocumentSharepointSyncService;
-use App\Services\SharepointGraphService;
+use App\Services\Sharepoint\DocumentSharepointSyncService;
+use App\Services\Sharepoint\SharepointGraphService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Microsoft\Graph\Generated\Models\DriveItem;
 use Microsoft\Graph\Generated\Models\FieldValueSet;

@@ -16,6 +16,7 @@ use App\Models\StudyProgram;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -51,10 +52,10 @@ class StudyProgramController extends AdminController
      * Show the form for creating a new resource.
      */
     #[Authorize('create', StudyProgram::class)]
-    public function create()
+    public function create(Request $request)
     {
         return Inertia::render('Admin/People/CreateStudyProgram', [
-            'tenants' => GetTenantsForUpserts::execute('studyPrograms.create.padalinys', $this->authorizer),
+            'tenants' => GetTenantsForUpserts::execute($request->user(), 'studyPrograms.create.padalinys', $this->authorizer),
             'degreeOptions' => DegreeEnum::getFormOptions(),
         ]);
     }
@@ -75,11 +76,11 @@ class StudyProgramController extends AdminController
      * Show the form for editing the specified resource.
      */
     #[Authorize('update', 'studyProgram')]
-    public function edit(StudyProgram $studyProgram)
+    public function edit(Request $request, StudyProgram $studyProgram)
     {
         return Inertia::render('Admin/People/EditStudyProgram', [
             'studyProgram' => $studyProgram->load('tenant')->toFullArray(),
-            'tenants' => GetTenantsForUpserts::execute('studyPrograms.update.padalinys', $this->authorizer),
+            'tenants' => GetTenantsForUpserts::execute($request->user(), 'studyPrograms.update.padalinys', $this->authorizer),
             'degreeOptions' => DegreeEnum::getFormOptions(),
         ]);
     }

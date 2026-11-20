@@ -19,6 +19,7 @@ use App\Services\ContentEditorService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -46,13 +47,13 @@ class NewsController extends AdminController
      * Show the form for creating a new resource.
      */
     #[Authorize('create', News::class)]
-    public function create()
+    public function create(Request $request)
     {
         $tags = Tag::orderBy('alias')->get();
 
         return Inertia::render('Admin/Content/CreateNews', [
             'availableTags' => $tags->map->toFullArray(),
-            'assignableTenants' => GetTenantsForUpserts::execute('news.create.padalinys', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute($request->user(), 'news.create.padalinys', $this->authorizer),
         ]);
     }
 

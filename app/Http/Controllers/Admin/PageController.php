@@ -18,6 +18,7 @@ use App\Services\ContentEditorService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -45,12 +46,12 @@ class PageController extends AdminController
      * Show the form for creating a new resource.
      */
     #[Authorize('create', Page::class)]
-    public function create()
+    public function create(Request $request)
     {
         return Inertia::render('Admin/Content/CreatePage',
             [
                 'availableTags' => Tag::orderBy('alias')->get()->map->toFullArray(),
-                'assignableTenants' => GetTenantsForUpserts::execute('pages.create.padalinys', $this->authorizer),
+                'assignableTenants' => GetTenantsForUpserts::execute($request->user(), 'pages.create.padalinys', $this->authorizer),
             ]
         );
     }

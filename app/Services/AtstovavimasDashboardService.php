@@ -12,7 +12,7 @@ use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\User;
 use App\Models\Vote;
-use App\Services\ResourceServices\DutyService;
+use App\Services\Institutions\InstitutionQueries;
 use App\Settings\AtstovavimasSettings;
 use App\Settings\MeetingSettings;
 use Carbon\CarbonImmutable;
@@ -55,9 +55,9 @@ class AtstovavimasDashboardService
      *   representative_activity: array<string, mixed>
      * }
      */
-    public function tenantTimeline(array $tenantIds): array
+    public function tenantTimeline(User $actor, array $tenantIds): array
     {
-        $institutions = DutyService::getTimelineInstitutionsForTenants($tenantIds, $this->authorizer);
+        $institutions = InstitutionQueries::getTimelineInstitutionsForTenants($actor, $tenantIds, $this->authorizer);
         $this->decorateInstitutions($institutions);
         $counted = $this->countedInstitutions($institutions);
         $countedIds = $counted->pluck('id')->map(fn ($id) => (string) $id)->flip();
@@ -266,7 +266,7 @@ class AtstovavimasDashboardService
      */
     public function ganttInstitutions(SupportCollection $access): array
     {
-        $institutions = DutyService::getTimelineInstitutions($access->keys());
+        $institutions = InstitutionQueries::getTimelineInstitutions($access->keys());
         $this->decorateInstitutions($institutions);
 
         return $institutions
@@ -395,7 +395,7 @@ class AtstovavimasDashboardService
             'is_internal' => $this->scopeResolver->forInstitution($institution)->isInternal(),
             'has_public_meetings' => $institution->has_public_meetings,
             'upcoming_meetings_count' => (int) ($institution->upcoming_meetings_count ?? 0),
-            // ISO strings from DutyService::withActivityDates(); the Gantt sorts and sections by them.
+            // ISO strings from InstitutionQueries::withActivityDates(); the Gantt sorts and sections by them.
             'last_meeting_date' => $institution->getAttribute('last_meeting_date'),
             'next_meeting_date' => $institution->getAttribute('next_meeting_date'),
             'last_activity_at' => $institution->getAttribute('last_activity_at'),

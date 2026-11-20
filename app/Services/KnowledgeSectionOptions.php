@@ -24,7 +24,7 @@ class KnowledgeSectionOptions
         foreach (['create', 'update'] as $ability) {
             $scopes[$ability] = [
                 'canTargetEverywhere' => $this->scope($user, $ability)->isAllScope,
-                'tenants' => GetTenantsForUpserts::execute($this->permission($user, $ability), $this->authorizer)->all(),
+                'tenants' => GetTenantsForUpserts::execute($user, $this->permission($user, $ability), $this->authorizer)->all(),
             ];
         }
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Duties\SyncUserDuties;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
@@ -7,12 +8,10 @@ use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
-use App\Services\ResourceServices\UserDutyService;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 pest()->use(RefreshDatabase::class);
@@ -499,12 +498,10 @@ describe('duty assignment', function (): void {
         // The user is already active on the duty.
         $target->duties()->attach($duty->id, ['start_date' => now()->subDay(), 'end_date' => null]);
 
-        // syncDutiesForUser resolves the actor's tenants through Auth, so log in.
-        Auth::login($this->admin);
-
         // Simulate a stale snapshot: the duty is passed as "new" even though an
         // active row already exists. The guard must keep it to a single row.
-        UserDutyService::syncDutiesForUser(
+        SyncUserDuties::execute(
+            $this->admin,
             new Collection([$duty->id]),
             new Collection([]),
             $target,

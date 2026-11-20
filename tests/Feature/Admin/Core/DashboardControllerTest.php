@@ -584,7 +584,7 @@ describe('institutions needing attention', function (): void {
         [$user, $institution] = institutionForUserWithMeeting('2025-10-01 10:00:00');
 
         // A completed check-in ending 5 days ago should reset the activity clock,
-        // matching what the ShowAtstovavimas page computes via DutyService.
+        // matching what the ShowAtstovavimas page computes via InstitutionQueries.
         InstitutionCheckIn::factory()->create([
             'institution_id' => $institution->id,
             'user_id' => $user->id,

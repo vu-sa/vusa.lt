@@ -27,7 +27,7 @@ use App\Models\User;
 use App\Services\InstitutionActivityStatusService;
 use App\Services\InstitutionPresenter;
 use App\Services\InstitutionRelationService;
-use App\Services\ResourceServices\SharepointFileService;
+use App\Services\Sharepoint\SharepointFileService;
 use App\Settings\CadenceSettings;
 use App\Settings\MeetingSettings;
 use App\Support\MorphMap;

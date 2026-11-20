@@ -3,6 +3,7 @@
 namespace App\Rules;
 
 use App\Actions\GetTenantsForUpserts;
+use App\Models\User;
 use App\Services\ModelAuthorizer;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -31,6 +32,7 @@ class WithinAuthorizedTenantScope implements ValidationRule
     public function __construct(
         protected string $parentModel,
         protected string $permission,
+        protected User $actor,
     ) {}
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
@@ -41,7 +43,7 @@ class WithinAuthorizedTenantScope implements ValidationRule
             return;
         }
 
-        $allowedTenantIds = GetTenantsForUpserts::execute($this->permission, app(ModelAuthorizer::class))
+        $allowedTenantIds = GetTenantsForUpserts::execute($this->actor, $this->permission, app(ModelAuthorizer::class))
             ->pluck('id')
             ->map(intval(...))
             ->all();

@@ -23,7 +23,7 @@ use App\Models\Problem;
 use App\Models\StudyProgram;
 use App\Models\Task;
 use App\Models\User;
-use App\Services\ResourceServices\SharepointFileService;
+use App\Services\Sharepoint\SharepointFileService;
 use App\Settings\CadenceSettings;
 use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;

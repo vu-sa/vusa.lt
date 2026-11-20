@@ -23,6 +23,7 @@ use App\Services\ResponsibilityResolver;
 use App\Support\StagingProtection;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Inertia\Inertia;
 
@@ -52,10 +53,10 @@ class ResourceController extends AdminController
      * Show the form for creating a new resource.
      */
     #[Authorize('create', Resource::class)]
-    public function create()
+    public function create(Request $request)
     {
         return Inertia::render('Admin/Reservations/CreateResource', [
-            'assignableTenants' => GetTenantsForUpserts::execute('resources.create.padalinys', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute($request->user(), 'resources.create.padalinys', $this->authorizer),
             'categories' => ResourceCategory::all(),
         ]);
     }
@@ -189,7 +190,7 @@ class ResourceController extends AdminController
                     'url' => $image->getUrl(),
                 ]),
                 ],
-            'assignableTenants' => GetTenantsForUpserts::execute('resources.update.padalinys', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute($user, 'resources.update.padalinys', $this->authorizer),
             'categories' => ResourceCategory::all(),
         ]);
     }

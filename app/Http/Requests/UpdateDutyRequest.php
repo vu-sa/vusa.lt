@@ -46,7 +46,7 @@ class UpdateDutyRequest extends FormRequest
             'institution_id' => [
                 'bail', 'required', 'ulid', SoftDeleteRules::existsLive('institutions'),
                 ...($this->input('institution_id') !== $duty->institution_id
-                    ? [new WithinAuthorizedTenantScope(Institution::class, 'duties.update.padalinys')]
+                    ? [new WithinAuthorizedTenantScope(Institution::class, 'duties.update.padalinys', $this->user())]
                     : []),
             ],
             'places_to_occupy' => 'sometimes|nullable|integer|min:1',

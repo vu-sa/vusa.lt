@@ -1,7 +1,7 @@
 <?php
 
 use App\Enums\SharepointConfigEnum;
-use App\Services\SharepointGraphService;
+use App\Services\Sharepoint\SharepointGraphService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Sleep;

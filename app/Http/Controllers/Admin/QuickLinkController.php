@@ -17,6 +17,7 @@ use App\Models\Tag;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -33,7 +34,7 @@ class QuickLinkController extends AdminController
     #[Authorize('viewAny', QuickLink::class)]
     public function index(IndexQuickLinkRequest $request)
     {
-        $tenants = GetTenantsForUpserts::execute('quickLinks.read.padalinys', $this->authorizer)
+        $tenants = GetTenantsForUpserts::execute($request->user(), 'quickLinks.read.padalinys', $this->authorizer)
             ->filter(fn ($tenant) => in_array($tenant['type'], TenantType::representationalValues(), true))
             ->values();
 
@@ -48,7 +49,7 @@ class QuickLinkController extends AdminController
         }
 
         $quickLinks = $quickLinksQuery->orderBy('order')->get();
-        $reorderTenants = GetTenantsForUpserts::execute('quickLinks.update.padalinys', $this->authorizer)
+        $reorderTenants = GetTenantsForUpserts::execute($request->user(), 'quickLinks.update.padalinys', $this->authorizer)
             ->whereIn('id', $tenants->pluck('id'))->values();
 
         return Inertia::render('Admin/Content/IndexQuickLink', [
@@ -68,7 +69,7 @@ class QuickLinkController extends AdminController
     #[Authorize('create', QuickLink::class)]
     public function create(CreateQuickLinkRequest $request)
     {
-        $tenantOptions = GetTenantsForUpserts::execute('quickLinks.create.padalinys', $this->authorizer);
+        $tenantOptions = GetTenantsForUpserts::execute($request->user(), 'quickLinks.create.padalinys', $this->authorizer);
 
         // Prefill from the index's tenant/language scope, so a link started from the EN list is an EN link.
         $requestedTenantId = $request->safe()->integer('tenant');
@@ -105,11 +106,11 @@ class QuickLinkController extends AdminController
      * Show the form for editing the specified resource.
      */
     #[Authorize('update', 'quickLink')]
-    public function edit(QuickLink $quickLink)
+    public function edit(Request $request, QuickLink $quickLink)
     {
         return Inertia::render('Admin/Content/EditQuickLink', [
             'quickLink' => $quickLink,
-            'tenantOptions' => GetTenantsForUpserts::execute('quickLinks.update.padalinys', $this->authorizer),
+            'tenantOptions' => GetTenantsForUpserts::execute($request->user(), 'quickLinks.update.padalinys', $this->authorizer),
             'topicOptions' => $this->getTopicOptions(),
         ]);
     }

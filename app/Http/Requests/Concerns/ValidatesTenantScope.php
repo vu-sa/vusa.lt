@@ -36,7 +36,7 @@ trait ValidatesTenantScope
      */
     protected function authorizedTenantIds(string $permission): array
     {
-        return GetTenantsForUpserts::execute($permission, app(ModelAuthorizer::class))
+        return GetTenantsForUpserts::execute($this->user(), $permission, app(ModelAuthorizer::class))
             ->pluck('id')
             ->map(intval(...))
             ->all();

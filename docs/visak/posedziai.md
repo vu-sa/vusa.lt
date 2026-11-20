@@ -376,7 +376,7 @@ esminėmis narių mintimis. Jei protokolas neatsiunčiamas, ataskaita jį atstoj
   `MeetingController::show` siunčia bendram posėdžiui pritaikytą `title_noun` ir
   `inherited_meeting_kind`; `ShowMeeting` instituciją linksniuoja tik lietuviškai.
 - Institucijų tvarka: `Meeting::institutions()` pagal pridėjimo laiką; SharePoint aplankas –
-  pirmosios institucijos, pavadintas lietuviškai (`SharepointFileService::pathForFileableDriveItem()`).
+  pirmosios institucijos, pavadintas lietuviškai (`App\Services\Sharepoint\SharepointFileService::pathForFileableDriveItem()`).
 - Viešumas: `Meeting::is_public` pagal `MeetingSettings::public_meeting_institution_type_ids`.
 - Būsena ir trūkstami veiksmai: `MeetingCompletionService::calculate()` / `missingActions()`.
 - Rezultatas: `Meeting::outcomeSummary()` (`VoteStatisticsCalculator::outcomeSummary()`); paieškos

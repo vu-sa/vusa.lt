@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\SharepointGraphService;
+use App\Services\Sharepoint\SharepointGraphService;
 use Microsoft\Graph\Generated\Models\Permission;
 use Microsoft\Graph\Generated\Models\PermissionCollectionResponse;
 use Microsoft\Graph\Generated\Models\SharingLink;

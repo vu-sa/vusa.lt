@@ -3,7 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Document;
-use App\Services\SharepointGraphService;
+use App\Services\Sharepoint\SharepointGraphService;
 use App\Support\StagingProtection;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;

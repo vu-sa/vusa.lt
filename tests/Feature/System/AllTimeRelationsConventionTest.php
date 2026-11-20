@@ -54,6 +54,10 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     'app/Actions/Dutiables/ReconcileExOfficioSeats.php' => ['->duties' => 1, "'duties" => 2],
     // Lineage includes holders' terms that began before the handover.
     'app/Actions/Duties/BuildDutyLineage.php' => ['->users' => 1, "'users'" => 1, "'duties" => 2],
+    // Duty creation and update scopes restrict selectable ex officio targets.
+    'app/Actions/Duties/GetAssignableExOfficioDuties.php' => ['->tenants' => 1, "'duties" => 3],
+    // Assignment error payload and duty attach.
+    'app/Actions/Duties/SyncUserDuties.php' => ['->duties' => 1, "'duties" => 1],
     // Merge candidates show tenants and counts from all terms.
     'app/Actions/FindMergeableUserDuplicates.php' => ['->tenants' => 1, "'tenants'" => 1, '->duties' => 1, "'duties" => 1],
     // Responsibility resolver duties are loaded with current holders.
@@ -64,6 +68,8 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     'app/Actions/GetInstitutionMembers.php' => ["'duties" => 2],
     // The representative duties query checks both ends of the term against the requested date.
     'app/Actions/GetInstitutionRepresentatives.php' => ["'duties" => 2],
+    // Permission-scoped tenants for duty assignment and form options.
+    'app/Actions/GetPermissableTenants.php' => ['->tenants' => 1],
     // Meeting tenant relation and duty record route.
     'app/Actions/GetRecentlyEditedRecords.php' => ["'tenants'" => 1, "'duties" => 1],
     // Responsibility resolver selects the duties that handle reservations for this tenant.
@@ -216,6 +222,8 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     'app/Services/InstitutionPresenter.php' => ['->duties' => 3, "'duties" => 2],
     // Related institutions load term history for the Gantt and join the tenant table for graph edges.
     'app/Services/InstitutionRelationService.php' => ["'tenants'" => 1, "'duties" => 2],
+    // Duty permission scopes and full term history for Gantt coverage.
+    'app/Services/Institutions/InstitutionQueries.php' => ['->tenants' => 1, "'duties" => 7],
     // Tenant options come from the section's upsert permission.
     'app/Services/KnowledgeSectionOptions.php' => ["'tenants'" => 1],
     // User table lookup for profile photos.
@@ -236,10 +244,6 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     'app/Services/Permissions/ResponsibilityPermissionGaps.php' => ['->duties' => 1],
     // Institution duty catalog and a count of duties with current holders.
     'app/Services/PublicInstitutionSearchIndexBuilder.php' => ['->duties' => 1, "'duties" => 1],
-    // Duty permission scopes and full term history for Gantt coverage.
-    'app/Services/ResourceServices/DutyService.php' => ['->tenants' => 2, "'duties" => 10],
-    // Assignment error payload, duty attach and permission-scoped tenants.
-    'app/Services/ResourceServices/UserDutyService.php' => ['->tenants' => 1, '->duties' => 1, "'duties" => 1],
     // Duty catalog queries and responsibility lookups with date-scoped holders.
     'app/Services/ResponsibilityResolver.php' => ['->users' => 1, '->duties' => 1, "'duties" => 9],
     // User table updates scrub all staging accounts.

@@ -26,7 +26,7 @@ class SvetaineDashboardController extends AdminController
         $selectedTenant = $request->validated('tenant_id');
 
         // Leave only tenants that are not 'pkp'
-        $tenants = collect(GetTenantsForUpserts::execute('pages.update.padalinys', $this->authorizer))->filter(fn ($tenant) => in_array($tenant['type'], TenantType::representationalValues(), true))->values();
+        $tenants = collect(GetTenantsForUpserts::execute($request->user(), 'pages.update.padalinys', $this->authorizer))->filter(fn ($tenant) => in_array($tenant['type'], TenantType::representationalValues(), true))->values();
 
         // Check if selected tenant is in the list of tenants
         if ($selectedTenant) {

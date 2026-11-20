@@ -17,6 +17,7 @@
  * @see ModelAuthorizer
  */
 
+use App\Actions\GetPermissableTenants;
 use App\Actions\GetTenantsForUpserts;
 use App\Models\News;
 use App\Models\Pivots\ReservationResource;
@@ -26,7 +27,6 @@ use App\Models\ResourceCategory;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer;
-use App\Services\ResourceServices\UserDutyService;
 use App\Services\TanstackTableService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
@@ -122,7 +122,7 @@ describe('a global tag role beside a tenant-scoped content role', function (): v
     test('a global tag scope does not widen the tenant picker on admin forms', function (): void {
         expect($this->authorizer->allows($this->coordinator, 'tags.update.*'))->toBeTrue();
 
-        $tenantIds = GetTenantsForUpserts::execute('news.create.padalinys', $this->authorizer)
+        $tenantIds = GetTenantsForUpserts::execute($this->coordinator, 'news.create.padalinys', $this->authorizer)
             ->pluck('id');
 
         expect($tenantIds->all())->toBe([$this->tenantA->id]);
@@ -147,9 +147,7 @@ describe('an actor holding a duty but no permission', function (): void {
     test('resolves to no tenants at all', function (): void {
         $user = makeUser($this->tenantA);
 
-        $this->actingAs($user);
-
         expect($this->authorizer->tenants($user, 'users.create.padalinys'))->toBeEmpty()
-            ->and(UserDutyService::getPermissableTenants($this->authorizer, 'users.create.padalinys'))->toBeEmpty();
+            ->and(GetPermissableTenants::execute($user, $this->authorizer, 'users.create.padalinys'))->toBeEmpty();
     });
 });

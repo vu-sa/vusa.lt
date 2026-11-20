@@ -61,13 +61,12 @@ test('the duty action also refuses a move outside the update scope', function ()
     $actor = makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant);
     $duty = Duty::factory()->for(Institution::factory()->for($tenant))->create();
     $destination = Institution::factory()->for(Tenant::query()->whereKeyNot($tenant->id)->first())->create();
-    asUser($actor);
 
     expect(fn () => app(UpdateDuty::class)->execute($duty, [
         'name' => ['lt' => 'Pakeista', 'en' => 'Changed'],
         'institution_id' => $destination->id,
         'contacts_grouping' => 'none',
-    ]))->toThrow(ValidationException::class)
+    ], $actor))->toThrow(ValidationException::class)
         ->and($duty->fresh()->institution_id)->toBe($duty->institution_id);
 });
 
@@ -114,12 +113,11 @@ test('the duty action refuses a trashed destination even with global access', fu
     $duty = Duty::factory()->for(Institution::factory()->for($tenant))->create();
     $destination = Institution::factory()->for($tenant)->create();
     $destination->delete();
-    asUser($actor);
 
     expect(fn () => app(UpdateDuty::class)->execute($duty, [
         'name' => ['lt' => 'Pakeista', 'en' => 'Changed'],
         'institution_id' => $destination->id, 'contacts_grouping' => 'none',
-    ]))->toThrow(ValidationException::class)
+    ], $actor))->toThrow(ValidationException::class)
         ->and($duty->fresh()->institution_id)->toBe($duty->institution_id);
 });
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Sharepoint;
 
 use App\Helpers\InternetShortcutParser;
 use App\Jobs\RevokeSharepointPermissionJob;

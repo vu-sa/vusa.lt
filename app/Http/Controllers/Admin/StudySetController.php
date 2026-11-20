@@ -15,6 +15,7 @@ use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use App\Services\TanstackTableService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -51,10 +52,10 @@ class StudySetController extends AdminController
      * Show the form for creating a new resource.
      */
     #[Authorize('create', StudySet::class)]
-    public function create()
+    public function create(Request $request)
     {
         return Inertia::render('Admin/StudySets/CreateStudySet', [
-            'assignableTenants' => GetTenantsForUpserts::execute('studySets.create.padalinys', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute($request->user(), 'studySets.create.padalinys', $this->authorizer),
         ]);
     }
 
@@ -87,7 +88,7 @@ class StudySetController extends AdminController
      * Show the form for editing the specified resource.
      */
     #[Authorize('update', 'studySet')]
-    public function edit(StudySet $studySet)
+    public function edit(Request $request, StudySet $studySet)
     {
         $studySet->load([
             'courses' => fn ($query) => $query->orderBy('order'),
@@ -103,7 +104,7 @@ class StudySetController extends AdminController
                     'reviews' => $course->reviews->map->toFullArray(),
                 ]),
             ],
-            'assignableTenants' => GetTenantsForUpserts::execute('studySets.update.padalinys', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute($request->user(), 'studySets.update.padalinys', $this->authorizer),
         ]);
     }
 

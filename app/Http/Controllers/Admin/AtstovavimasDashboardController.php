@@ -18,9 +18,9 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Services\InstitutionActivityStatusService;
 use App\Services\InstitutionRelationService;
+use App\Services\Institutions\InstitutionQueries;
 use App\Services\InstitutionScopeResolver;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\ResourceServices\DutyService;
 use App\Settings\AtstovavimasSettings;
 use App\Settings\RepMetricSettings;
 use Illuminate\Database\Eloquent\Collection;
@@ -56,8 +56,8 @@ class AtstovavimasDashboardController extends AdminController
         });
 
         // Get only user's directly assigned institutions (lightweight, always loaded)
-        $userInstitutions = fn () => once(function () {
-            $institutions = DutyService::getUserInstitutionsForDashboard(activeOnly: true);
+        $userInstitutions = fn () => once(function () use ($request) {
+            $institutions = InstitutionQueries::getUserInstitutionsForDashboard($request->user(), activeOnly: true);
 
             $institutions->each(function ($institution): void {
                 $institution->meetings?->each->append(['completion_status', 'has_report', 'has_protocol', 'has_calendar_event']);

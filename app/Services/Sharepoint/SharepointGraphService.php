@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Sharepoint;
 
 use App\Enums\SharepointConfigEnum;
 use App\Enums\SharepointPermissionTypeEnum;

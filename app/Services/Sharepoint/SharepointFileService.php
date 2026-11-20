@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\ResourceServices;
+namespace App\Services\Sharepoint;
 
 use App\Enums\SharepointFolderEnum;
 use App\Models\Duty;
@@ -8,7 +8,6 @@ use App\Models\FileableFile;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Traits\HasSharepointFiles;
-use App\Services\SharepointGraphService;
 use App\Support\StagingProtection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;

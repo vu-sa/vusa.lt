@@ -14,7 +14,7 @@ use App\Models\StudyProgram;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ContactPresentationService;
-use App\Services\ResourceServices\SharepointFileService;
+use App\Services\Sharepoint\SharepointFileService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;

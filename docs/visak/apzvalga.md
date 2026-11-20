@@ -170,7 +170,7 @@ Pavyzdžiui, po spalio 1 d. posėdžio, kai periodiškumas 30 dienų, veiklos ti
 
 - Puslapis – `AtstovavimasDashboardController::atstovavimas`, komponentas `Admin/Dashboard/ShowAtstovavimas`.
   Seni adresai `?scope=tenant` ir `?tab=tenant` nukreipia į `dashboard.atstovavimas.padaliniai`.
-- Institucijos – `DutyService::getUserInstitutionsForDashboard`, būsena –
+- Institucijos – `InstitutionQueries::getUserInstitutionsForDashboard`, būsena –
   `InstitutionActivityStatusService::resolve` (80 % riba), atostogos – `AcademicCalendarService`,
   periodiškumas – `Institution::meeting_periodicity_days`.
 - Artimiausi posėdžiai – `GetUpcomingMeetingsForUser` (iki 20 eilučių, `total` – visų skaičius).

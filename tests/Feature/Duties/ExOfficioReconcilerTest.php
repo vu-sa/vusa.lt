@@ -5,6 +5,7 @@ use App\Actions\Dutiables\ApplyExOfficioReview;
 use App\Actions\Dutiables\PlanExOfficioReview;
 use App\Actions\Dutiables\ReconcileExOfficioSeats;
 use App\Actions\Dutiables\SyncExOfficioTargets;
+use App\Actions\Duties\SyncUserDuties;
 use App\Actions\MergeDuties;
 use App\Actions\UpdateDuty;
 use App\Actions\UpdateInstitution;
@@ -18,7 +19,6 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
 use App\Services\Permissions\AccessChangeAnalyzer;
-use App\Services\ResourceServices\UserDutyService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;
@@ -89,9 +89,9 @@ test('moving a target institution reconciles seats without ending them', functio
     SyncExOfficioTargets::execute($this->sourceDuty, [$this->targetDuty->id]);
     $source = reconcilerSource();
     $seat = $source->derivedDutiables()->sole();
-    asUser(makeAdminUser($this->tenant));
+    $actor = makeAdminUser($this->tenant);
     app(UpdateDuty::class)->execute($this->targetDuty, ['institution_id' => $institution->id,
-        'assignable_tenants' => [['tenant_id' => $this->tenant->id]]]);
+        'assignable_tenants' => [['tenant_id' => $this->tenant->id]]], $actor);
 
     expect($seat->fresh()->tenant_id)->toBe($this->tenant->id)->and($seat->fresh()->end_date)->toBeNull();
 });
@@ -141,9 +141,9 @@ test('user duty service refuses to remove a duty held only through derived seats
     SyncExOfficioTargets::execute($this->sourceDuty, [$this->targetDuty->id]);
     $source = reconcilerSource();
     $seat = $source->derivedDutiables()->sole();
-    $this->actingAs(makeAdminUser($this->tenant));
+    $actor = makeAdminUser($this->tenant);
     try {
-        UserDutyService::syncDutiesForUser(collect(), collect([$this->targetDuty->id]),
+        SyncUserDuties::execute($actor, collect(), collect([$this->targetDuty->id]),
             $this->holder, app(ModelAuthorizer::class), 'users.update.padalinys');
         $this->fail('Derived-only removal must be refused.');
     } catch (ValidationException $exception) {
@@ -157,8 +157,8 @@ test('user duty service removal ends root rows while keeping derived rows', func
     $source = reconcilerSource();
     $seat = $source->derivedDutiables()->sole();
     $root = Dutiable::factory()->forDuty($this->targetDuty)->forUser($this->holder)->create(['start_date' => '2026-01-01', 'end_date' => null]);
-    $this->actingAs(makeAdminUser($this->tenant));
-    UserDutyService::syncDutiesForUser(collect(), collect([$this->targetDuty->id]),
+    $actor = makeAdminUser($this->tenant);
+    SyncUserDuties::execute($actor, collect(), collect([$this->targetDuty->id]),
         $this->holder, app(ModelAuthorizer::class), 'users.update.padalinys');
 
     expect($root->fresh()->end_date->toDateString())->toBe('2026-10-29')->and($seat->fresh()->end_date)->toBeNull();
@@ -168,8 +168,8 @@ test('user duty service adding a manual term does not reuse a derived row', func
     SyncExOfficioTargets::execute($this->sourceDuty, [$this->targetDuty->id]);
     $source = reconcilerSource();
     $seat = $source->derivedDutiables()->sole();
-    $this->actingAs(makeAdminUser($this->tenant));
-    UserDutyService::syncDutiesForUser(collect([$this->targetDuty->id]), collect(),
+    $actor = makeAdminUser($this->tenant);
+    SyncUserDuties::execute($actor, collect([$this->targetDuty->id]), collect(),
         $this->holder, app(ModelAuthorizer::class), 'users.update.padalinys');
 
     expect($this->targetDuty->dutiables()->whereNull('via_dutiable_id')->count())->toBe(1)
