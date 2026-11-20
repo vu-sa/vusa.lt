@@ -11,11 +11,29 @@
 use Illuminate\Support\Str;
 use Symfony\Component\Finder\Finder;
 
-const RULE_GLOB_SEARCH_ROOTS = ['app', 'bootstrap', 'config', 'database', 'deployment', 'docs', 'lang', 'public', 'resources', 'routes', 'tests', '.github'];
+const RULE_GLOB_SKIPPED_DIRECTORIES = ['.git', '.worktrees', 'node_modules', 'vendor', 'storage', 'public/build'];
+
+/**
+ * `a/{b,c}.php` becomes `a/b.php` and `a/c.php`, so a stale alternative cannot hide behind a live one.
+ *
+ * @return array<int, string>
+ */
+function ruleGlobAlternatives(string $glob): array
+{
+    if (preg_match('/\{([^{}]*)\}/', $glob, $match, PREG_OFFSET_CAPTURE) !== 1) {
+        return [$glob];
+    }
+
+    [$whole, $offset] = $match[0];
+
+    return collect(explode(',', $match[1][0]))
+        ->flatMap(fn (string $option): array => ruleGlobAlternatives(substr_replace($glob, $option, $offset, strlen($whole))))
+        ->all();
+}
 
 function ruleGlobRegex(string $glob): string
 {
-    $tokens = ['**/' => '(.*/)?', '**' => '.*', '*' => '[^/]*', '?' => '[^/]', '{' => '(', '}' => ')', ',' => '|'];
+    $tokens = ['**/' => '(.*/)?', '**' => '.*', '*' => '[^/]*', '?' => '[^/]'];
     $regex = '';
 
     for ($i = 0; $i < strlen($glob);) {
@@ -46,12 +64,12 @@ function ruleGlobRepoFiles(): array
         return $files;
     }
 
-    $roots = array_values(array_filter(array_map(base_path(...), RULE_GLOB_SEARCH_ROOTS), is_dir(...)));
-    $finder = Finder::create()->files()->in($roots)->exclude(['node_modules', 'build', 'vendor'])->ignoreDotFiles(false);
+    $finder = Finder::create()->files()->in(base_path())->ignoreDotFiles(false)->ignoreVCS(true)
+        ->exclude(RULE_GLOB_SKIPPED_DIRECTORIES);
 
-    $files = ['CLAUDE.md', 'AGENTS.md'];
+    $files = [];
     foreach ($finder as $file) {
-        $files[] = Str::after($file->getPathname(), base_path().'/');
+        $files[] = $file->getRelativePathname();
     }
 
     return $files;
@@ -68,15 +86,16 @@ function ruleGlobSources(): array
         $relative = Str::after($path, base_path().'/');
         $contents = file_get_contents($path) ?: '';
 
-        if (preg_match('/\A---\n(.*?)\n---/s', $contents, $frontmatter) === 1
-            && preg_match_all("/^\s*-\s*'?([^'\n]+?)'?\s*$/m", $frontmatter[1], $globs) > 0) {
+        if (preg_match('/\A---\n(.*?)\n---\n/s', $contents, $frontmatter) === 1
+            && preg_match('/^paths:\n((?:[ \t]+-[^\n]*\n?)+)/m', $frontmatter[1], $paths) === 1
+            && preg_match_all("/^[ \t]*-[ \t]*'?([^'\n]+?)'?[ \t]*$/m", $paths[1], $globs) > 0) {
             $sources[$relative] = $globs[1];
         }
     }
 
     preg_match_all('/^\| (.+?) \| (\.ai\/rules\/[\w.\/-]+\.md) \|$/m', file_get_contents(base_path('.ai/rules/index.md')) ?: '', $rows, PREG_SET_ORDER);
-    foreach ($rows as [, $globs, $rule]) {
-        $sources[".ai/rules/index.md → {$rule}"] = preg_split('/\s*,\s*(?![^{]*\})/', trim($globs)) ?: [];
+    foreach ($rows as $index => [, $globs, $rule]) {
+        $sources[".ai/rules/index.md#{$index} → {$rule}"] = preg_split('/\s*,\s*(?![^{]*\})/', trim($globs)) ?: [];
     }
 
     return $sources;
@@ -87,7 +106,7 @@ test('every rule glob still matches a file', function (): void {
     $stale = [];
 
     foreach (ruleGlobSources() as $source => $globs) {
-        foreach ($globs as $glob) {
+        foreach (collect($globs)->flatMap(ruleGlobAlternatives(...)) as $glob) {
             $regex = ruleGlobRegex($glob);
 
             if (! collect($files)->contains(fn (string $file): bool => preg_match($regex, $file) === 1)) {
@@ -99,22 +118,27 @@ test('every rule glob still matches a file', function (): void {
     expect($stale)->toBeEmpty("These rule globs match no file, so the rule never loads for what they meant:\n".implode("\n", $stale));
 });
 
-test('the rules index lists the same globs as each rule', function (): void {
+test('the rules index has one row per scoped rule, with the same globs', function (): void {
     $sources = ruleGlobSources();
+    $rows = collect($sources)->filter(fn (array $globs, string $source): bool => str_starts_with($source, '.ai/rules/index.md#'))
+        ->mapToGroups(fn (array $globs, string $source): array => [Str::after($source, ' → ') => $globs]);
+    $rules = collect($sources)->reject(fn (array $globs, string $source): bool => str_starts_with($source, '.ai/rules/index.md'));
+    $sorted = fn (array $globs): array => collect($globs)->sort()->values()->all();
     $drift = [];
 
-    foreach ($sources as $source => $globs) {
-        if (! str_starts_with($source, '.ai/rules/index.md → ')) {
-            continue;
-        }
+    foreach ($rules as $rule => $globs) {
+        $ruleRows = $rows->get($rule, collect());
 
-        $rule = Str::after($source, ' → ');
-        $declared = $sources[$rule] ?? [];
-
-        if (collect($globs)->sort()->values()->all() !== collect($declared)->sort()->values()->all()) {
-            $drift[] = $rule;
+        if ($ruleRows->count() !== 1) {
+            $drift[] = "{$rule}: {$ruleRows->count()} index rows";
+        } elseif ($sorted($ruleRows->first()) !== $sorted($globs)) {
+            $drift[] = "{$rule}: index row and frontmatter disagree";
         }
     }
 
-    expect($drift)->toBeEmpty("The index row and the frontmatter disagree for:\n".implode("\n", $drift));
+    foreach ($rows->keys()->diff($rules->keys()) as $orphan) {
+        $drift[] = "{$orphan}: indexed, but has no paths frontmatter";
+    }
+
+    expect($drift)->toBeEmpty(implode("\n", $drift));
 });
