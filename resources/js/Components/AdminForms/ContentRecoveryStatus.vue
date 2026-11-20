@@ -32,7 +32,7 @@
 import { computed } from 'vue';
 import { CircleAlert, CloudCheck, CloudOff, GitCompareArrows, HardDrive, Loader2, ShieldCheck } from '@lucide/vue';
 
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import type { useContentEditor } from '@/Composables/useContentEditor';
 

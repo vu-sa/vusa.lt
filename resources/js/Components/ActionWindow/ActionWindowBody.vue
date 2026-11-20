@@ -101,8 +101,8 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
-import EntityTypeMark from '@/Components/EntityTypeMark.vue';
-import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
+import EntityTypeMark from '@/Components/Patterns/EntityTypeMark.vue';
+import FadeTransition from '@/Components/Shared/FadeTransition.vue';
 
 import { ACTION_WINDOW_SCREENS, flowIdentity, flowProgress } from './screenRegistry';
 

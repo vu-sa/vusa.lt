@@ -246,12 +246,7 @@ class InstitutionController extends AdminController
     #[Authorize('update', 'institution')]
     public function destroyPublicUrl(Institution $institution, PublicUrl $publicUrl): RedirectResponse
     {
-        // Resolve through the relation so a crafted payload cannot reach another institution's URLs.
-        $publicUrlFromDb = $institution->publicUrls()->find($publicUrl->id);
-
-        abort_if($publicUrlFromDb === null, 403, 'Public URL does not belong to this institution.');
-
-        $publicUrlFromDb->delete();
+        $publicUrl->delete();
 
         return back()->with('info', $this->entityMessage('deleted', 'publicUrl'));
     }

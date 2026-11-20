@@ -38,7 +38,7 @@ import { Plus } from '@lucide/vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import { Button } from '@/Components/ui/button';
-import { graphRegistry } from '@/Features/StructureGraph/registry';
+import { graphRegistry } from '@/Components/StructureGraph/registry';
 
 import LearningStructurePlace from './LearningStructurePlace.vue';
 

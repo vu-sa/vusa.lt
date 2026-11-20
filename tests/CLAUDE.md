@@ -9,7 +9,7 @@ For test commands, environment setup, the directory tree, and authorization-stat
   - `inertia.mock.ts` — `usePage`, `router`, `useForm`
   - `i18n.ts` — `trans`, `wTrans`, `$t` (uses real generated translations)
   - `route.ts` — `route()` (predictable mock URLs)
-- Component tests live in `resources/js/Components/**/__tests__/`, composable tests in `resources/js/Composables/__tests__/`, service tests in `resources/js/Services/__tests__/`.
+- Component tests live in `resources/js/Components/**/__tests__/`, composable tests in `resources/js/Composables/__tests__/`, search service tests in `resources/js/Search/<area>/__tests__/`.
 - **Real browser tests** (Playwright via `pestphp/pest-plugin-browser`) live in `tests/Browser/` — run explicitly with `vendor/bin/sail pest tests/Browser --parallel` after `sail npm run build` (not part of the default suite). Read `.ai/rules/browser.md` and [Browser/README.md](Browser/README.md) before writing one, especially the subdomain-routing/SmartLink gotcha and the `visitPublicSubdomain()` helper.
 
 ## Controller test pattern

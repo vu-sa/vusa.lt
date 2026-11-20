@@ -35,7 +35,7 @@
             class="flex items-center gap-1 text-sm leading-relaxed text-muted-foreground"
           >
             <span class="min-w-0">
-              <InflectedDutyName :name="duty.name" :holder="dutyHolder" :use-original-duty-name="duty.pivot?.use_original_duty_name" />
+              <span class="relative min-w-0">{{ inflectedDutyName(duty) }}</span>
               <span v-if="duty.contact_tenant" data-testid="contact-duty-tenant" class="text-muted-foreground/70">
                 · {{ duty.contact_tenant }}
               </span>
@@ -131,14 +131,13 @@ import { computed } from 'vue';
 
 import type { ImageData } from '@/Types/media';
 import MediaImage from '@/Components/Brand/MediaImage.vue';
-import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { changeDutyNameEndings, type DutyPronouns } from '@/Utils/String';
 import { stripHtml } from '@/Utils/html';
 import { safeHref } from '@/Utils/safeHref';
 
-import InfoPopover from '../Buttons/InfoPopover.vue';
+import InfoPopover from '../Shared/InfoPopover.vue';
 
 import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
 import IFluentPerson24Regular from '~icons/fluent/person-24-regular';
@@ -177,12 +176,15 @@ const hasDutyDescription = (duty: App.Entities.Duty): boolean => {
   return stripHtml(desc).trim().length > 0;
 };
 
+const inflectedDutyName = (duty: App.Entities.Duty & { pivot?: { use_original_duty_name?: boolean | null } }) =>
+  changeDutyNameEndings(dutyHolder.value, duty.name, usePage().props.app.locale, dutyHolder.value.pronouns, duty.pivot?.use_original_duty_name);
+
 // Some users have multiple duties, so we need to show all of their emails AND duty name
 // alongside the email
 const shownContactEmail = computed(() => {
   return props.duties.reduce<{ name: string; email: string }[]>((acc, duty) => {
     acc.push({
-      name: changeDutyNameEndings(dutyHolder.value, duty.name, usePage().props.app.locale, dutyHolder.value.pronouns, duty.pivot?.use_original_duty_name),
+      name: inflectedDutyName(duty),
       email: duty.pivot?.additional_email ?? duty.email ?? props.contact.email,
     });
     return acc;

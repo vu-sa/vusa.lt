@@ -67,7 +67,7 @@ import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import { PreviewFact, PreviewFacts, PreviewPane, PreviewSection, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { statusFor, studentBenefitStatuses, voteStatuses } from '@/Constants/statusIcons';
-import type { AgendaItemSearchResult } from '@/Shared/Search/types';
+import type { AgendaItemSearchResult } from '@/Search/core/types';
 import { formatDate } from '@/Utils/dateTime';
 
 import AgendaItemTypeMark from './AgendaItemTypeMark.vue';

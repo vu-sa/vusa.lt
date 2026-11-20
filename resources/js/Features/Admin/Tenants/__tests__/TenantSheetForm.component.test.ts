@@ -4,8 +4,8 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import TenantSheetForm, { type TenantInput, type TenantInstitution } from '@/Features/Admin/Tenants/TenantSheetForm.vue';
-import CollectionSelectContent from '@/Features/Admin/AdminSearch/Components/Select/CollectionSelectContent.vue';
-import { normalizeHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import CollectionSelectContent from '@/Components/Pickers/CollectionSelectContent.vue';
+import { normalizeHit } from '@/Search/admin/Utils/searchHitMappers';
 import { createMockForm } from '@/tests/helpers/createMockForm';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));

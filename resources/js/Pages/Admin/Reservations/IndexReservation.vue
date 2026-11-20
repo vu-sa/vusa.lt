@@ -143,8 +143,8 @@ import CollectionRowActions from '@/Components/Collection/CollectionRowActions.v
 import { reservationRowActions } from '@/Components/Reservations/reservationRowActions';
 import type { ReservationDecision } from '@/Components/Reservations/types';
 import { useReservationCart } from '@/Components/Reservations/useReservationCart';
-import ReservationPeriod from '@/Components/SmallElements/ReservationPeriod.vue';
-import ReservationStateSummary from '@/Components/Tag/ReservationStateSummary.vue';
+import ReservationPeriod from '@/Components/Reservations/ReservationPeriod.vue';
+import ReservationStateSummary from '@/Components/Reservations/ReservationStateSummary.vue';
 import { Button } from '@/Components/ui/button';
 import { ReservationIcon } from '@/Components/icons';
 import { useDatabaseCollectionSource, type DatabaseFacetDefinition } from '@/Composables/useCollectionSource';

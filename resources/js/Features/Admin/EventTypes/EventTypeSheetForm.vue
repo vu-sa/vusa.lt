@@ -71,7 +71,7 @@
 import { useForm } from '@inertiajs/vue3';
 import { computed, toRaw, watch } from 'vue';
 
-import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
+import MultiLocaleInput from '@/Components/AdminForms/MultiLocaleInput.vue';
 import SheetForm from '@/Components/Patterns/SheetForm.vue';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';

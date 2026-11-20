@@ -7,8 +7,8 @@ import type { LinkTarget, LinkTargetProvider } from '@/Components/TipTap/linkTar
 import type { WikiIndexEntry } from '@/Types/learning';
 
 import WikiLinkList from './WikiLinkList.vue';
-import { loadWikiLinkTargets } from './useWikiLinkTargets';
-import { searchWiki } from './wikiSearch';
+import { loadWikiLinkTargets } from '@/Search/admin/useWikiLinkTargets';
+import { searchWiki } from '@/Search/admin/wikiSearch';
 
 export const wikiLinkPluginKey = new PluginKey('wikiLink');
 

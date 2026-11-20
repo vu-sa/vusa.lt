@@ -95,21 +95,26 @@ Route::softDeletes('studySets', StudySetController::class);
 Route::softDeletes('tags', TagController::class);
 Route::softDeletes('users', UserController::class);
 
-Route::delete('institutions/{institution}/public-urls/{publicUrl}', [InstitutionController::class, 'destroyPublicUrl'])->name('institutions.publicUrls.destroy');
+Route::scopeBindings()->group(function (): void {
+    Route::delete('institutions/{institution}/public-urls/{publicUrl}', [InstitutionController::class, 'destroyPublicUrl'])->name('institutions.publicUrls.destroy');
+    Route::delete('news/{news}/public-urls/{publicUrl}', [NewsController::class, 'destroyPublicUrl'])->name('news.publicUrls.destroy');
+    Route::delete('pages/{page}/public-urls/{publicUrl}', [PageController::class, 'destroyPublicUrl'])->name('pages.publicUrls.destroy');
+    Route::delete('calendar/{calendar}/public-urls/{publicUrl}', [CalendarController::class, 'destroyPublicUrl'])->name('calendar.publicUrls.destroy');
+    Route::delete('meetings/{meeting}/documents/{document}', [MeetingDocumentController::class, 'destroy'])->name('meetings.documents.destroy');
+    Route::post('calendar/{calendar}/media/{media}', [CalendarController::class, 'destroyMedia'])->name('calendar.destroyMedia');
+});
+
 Route::patch('news/bulk-status', [NewsController::class, 'bulkUpdateStatus'])->name('news.bulkStatus');
 Route::delete('news/bulk-delete', [NewsController::class, 'bulkDestroy'])->name('news.bulkDestroy');
 Route::post('news/{news}/duplicate', [NewsController::class, 'duplicate'])->name('news.duplicate');
-Route::delete('news/{news}/public-urls/{publicUrl}', [NewsController::class, 'destroyPublicUrl'])->name('news.publicUrls.destroy');
 Route::patch('pages/bulk-status', [PageController::class, 'bulkUpdateStatus'])->name('pages.bulkStatus');
 Route::delete('pages/bulk-delete', [PageController::class, 'bulkDestroy'])->name('pages.bulkDestroy');
-Route::delete('pages/{page}/public-urls/{publicUrl}', [PageController::class, 'destroyPublicUrl'])->name('pages.publicUrls.destroy');
 Route::post('meetings/{meeting}/institutions', [MeetingController::class, 'attachInstitution'])->name('meetings.institutions.attach');
 Route::delete('meetings/{meeting}/institutions/{institution}', [MeetingController::class, 'detachInstitution'])->name('meetings.institutions.detach');
 Route::post('meetings/{meeting}/calendar-event', [MeetingCalendarController::class, 'store'])->name('meetings.calendarEvent.store');
 Route::delete('meetings/{meeting}/calendar-event', [MeetingCalendarController::class, 'destroy'])->name('meetings.calendarEvent.destroy');
 Route::post('meetings/{meeting}/documents', [MeetingDocumentController::class, 'store'])->name('meetings.documents.store');
 Route::post('meetings/{meeting}/documents/sharepoint', [MeetingDocumentController::class, 'storeFromSharepoint'])->name('meetings.documents.storeFromSharepoint');
-Route::delete('meetings/{meeting}/documents/{document}', [MeetingDocumentController::class, 'destroy'])->name('meetings.documents.destroy');
 
 // Resources with Precognition (live validation)
 Route::resource('pages', PageController::class)->except(['show'])
@@ -148,9 +153,7 @@ Route::resource('calendar', CalendarController::class)
     ->names(['show' => 'calendar.view'])
     ->middleware(HandlePrecognitiveRequests::class);
 Route::patch('calendar/{calendar}/index', [CalendarController::class, 'updateIndex'])->name('calendar.updateIndex');
-Route::post('calendar/{calendar}/media/{media}', [CalendarController::class, 'destroyMedia'])->name('calendar.destroyMedia');
 Route::post('calendar/{calendar}/duplicate', [CalendarController::class, 'duplicate'])->name('calendar.duplicate');
-Route::delete('calendar/{calendar}/public-urls/{publicUrl}', [CalendarController::class, 'destroyPublicUrl'])->name('calendar.publicUrls.destroy');
 Route::resource('agendaItems', AgendaItemController::class)->except(['create']);
 Route::post('agendaItems/reorder', [AgendaItemController::class, 'reorder'])->name('agendaItems.reorder');
 Route::post('agendaItems/{agendaItem}/problems', [AgendaItemProblemController::class, 'store'])->name('agendaItems.problems.store');

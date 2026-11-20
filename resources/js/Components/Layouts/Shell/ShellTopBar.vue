@@ -69,7 +69,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { MousePointerClick } from '@lucide/vue';
 import { computed } from 'vue';
 
-import NotificationsIndicator from '@/Components/NotificationsIndicator.vue';
+import NotificationsIndicator from '@/Components/Layouts/Shell/NotificationsIndicator.vue';
 import { Button } from '@/Components/ui/button';
 import { SHELL_PREFETCH_CACHE_FOR, type AdminSection, type AdminWorkspace } from '@/Composables/useAdminNavigation';
 import { SHELL_FORM_BAR_ID } from '@/Composables/useShellFocus';

@@ -161,12 +161,7 @@ class NewsController extends AdminController
     #[Authorize('update', 'news')]
     public function destroyPublicUrl(News $news, PublicUrl $publicUrl): RedirectResponse
     {
-        // Resolve through the relation so a crafted payload cannot reach another article's URLs.
-        $publicUrlFromDb = $news->publicUrls()->find($publicUrl->id);
-
-        abort_if($publicUrlFromDb === null, 403, 'Public URL does not belong to this news article.');
-
-        $publicUrlFromDb->delete();
+        $publicUrl->delete();
 
         return back()->with('info', $this->entityMessage('deleted', 'publicUrl'));
     }

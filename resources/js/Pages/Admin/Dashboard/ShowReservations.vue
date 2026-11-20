@@ -109,7 +109,7 @@ import ReservationDecisionDialog from '@/Components/Reservations/ReservationDeci
 import ReservationDraftSummary from '@/Components/Reservations/ReservationDraftSummary.vue';
 import ReservationsNeedingDecision from '@/Components/Reservations/ReservationsNeedingDecision.vue';
 import type { ReservationCart, ReservationDecision } from '@/Components/Reservations/types';
-import ReservationStateSummary from '@/Components/Tag/ReservationStateSummary.vue';
+import ReservationStateSummary from '@/Components/Reservations/ReservationStateSummary.vue';
 import { Button } from '@/Components/ui/button';
 import { useDocsHref } from '@/Composables/useDocsHref';
 import { formatDate } from '@/Utils/dateTime';

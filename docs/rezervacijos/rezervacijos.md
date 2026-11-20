@@ -188,7 +188,7 @@ ir netrukdomas atlikti sprendimus.
 - **Pridėti išteklių** prie jau sukurtos rezervacijos. Išteklį, jo kiekį ar laiką galima keisti tik būsenoje **pateikta**. Patvirtintą išteklį pirmiausia reikia grąžinti į pateiktą būseną (tai gali išteklio administratorius)
   arba atšaukti ir pateikti iš naujo. Norėdamas vienam
   daiktui nustatyti kitą skolinimosi laiką nei visai rezervacijai, pridėk jį jau sukūręs rezervaciją.
-- **Pridėti kitus teikėjus.** Pridėti naudotojai gauna pranešimą ir tampa lygiaverčiais teikėjais:
+- **Pridėti kitus teikėjus.** Narį randi įvesdamas bent dvi vardo raides. Pridėti naudotojai gauna pranešimą ir tampa lygiaverčiais teikėjais:
   mato rezervaciją, gali ją keisti ir atšaukti.
 - **Ištrinti** rezervaciją – ją ištrinti gali jos teikėjas, kol nė vienas jos daiktas dar nepatvirtintas (vėliau ją ištrinti gali tik rezervacijų administratorius). Rezervacija ištrinama **iškart ir negrįžtamai**
   (ji nepatenka į šiukšlinę). Kartu atlaisvinami visi joje buvę ištekliai ir pašalinami su ja susiję komentarai bei užduotys.

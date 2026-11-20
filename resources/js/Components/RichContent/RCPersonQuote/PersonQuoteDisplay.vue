@@ -98,7 +98,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Button } from '@/Components/ui/button';
-import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import { normalizeHit, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 
 import RCSection from '../RCSection.vue';
 import RichContentTiptapHTML from '../RichContentTiptapHTML.vue';
@@ -119,7 +119,7 @@ const FieldLabel = defineAsyncComponent(() => import('@/Components/ui/field').th
 const Popover = defineAsyncComponent(() => import('@/Components/ui/popover').then(m => m.Popover));
 const PopoverAnchor = defineAsyncComponent(() => import('@/Components/ui/popover').then(m => m.PopoverAnchor));
 const PopoverContent = defineAsyncComponent(() => import('@/Components/ui/popover').then(m => m.PopoverContent));
-const CollectionSelectDialog = defineAsyncComponent(() => import('@/Features/Admin/AdminSearch/Components/Select/CollectionSelectDialog.vue'));
+const CollectionSelectDialog = defineAsyncComponent(() => import('@/Components/Pickers/CollectionSelectDialog.vue'));
 
 const props = defineProps<{
   element: models.ContentPart;

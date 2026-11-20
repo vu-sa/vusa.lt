@@ -192,7 +192,7 @@ tests/Feature/
 **File Organization**:
 ```
 resources/js/
-├── Services/__tests__/ServiceName.test.ts
+├── Search/<area>/__tests__/ServiceName.test.ts
 ├── Composables/__tests__/useComposable.test.ts  
 ├── Utils/__tests__/UtilityName.test.ts
 └── Components/ComponentName/__tests__/ComponentName.component.test.ts

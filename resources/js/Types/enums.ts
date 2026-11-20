@@ -417,6 +417,11 @@ export enum TenantType {
     Padalinys = 'padalinys',
     Pkp = 'pkp',
 }
+export enum UserSearchPurpose {
+    Problem = 'problem',
+    DutyMember = 'duty-member',
+    Involve = 'involve',
+}
 export enum VoteValue {
     Positive = 'positive',
     Negative = 'negative',

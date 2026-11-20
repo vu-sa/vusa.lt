@@ -93,7 +93,7 @@ import SortableRowList from '@/Components/Collection/SortableRowList.vue';
 import { ROW_PADDING_CLASS } from '@/Components/Collection/rowList';
 import DutyHoldersPopover from '@/Components/Duties/DutyHoldersPopover.vue';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';

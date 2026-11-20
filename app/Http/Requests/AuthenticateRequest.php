@@ -19,11 +19,6 @@ class AuthenticateRequest extends FormRequest
     /** Only failures count, so a whole campus behind one NAT can still sign in. */
     public const int MAX_FAILURES_PER_IP = 30;
 
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

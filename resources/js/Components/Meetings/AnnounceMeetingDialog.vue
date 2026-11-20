@@ -62,8 +62,8 @@ import { CalendarPlus, Link2, Plus } from '@lucide/vue';
 import { DialogDescription } from 'reka-ui';
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
-import CollectionSelectDialog from '@/Features/Admin/AdminSearch/Components/Select/CollectionSelectDialog.vue';
-import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import CollectionSelectDialog from '@/Components/Pickers/CollectionSelectDialog.vue';
+import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 
 const props = defineProps<{
   open: boolean;

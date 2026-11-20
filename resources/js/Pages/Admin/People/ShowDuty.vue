@@ -349,7 +349,7 @@ import {
 
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import DutyLineageTimeline, { type LineageLinkedDuty } from '@/Components/Duties/DutyLineageTimeline.vue';
@@ -362,7 +362,7 @@ import { ConfirmDialog, OverviewSection, SheetForm } from '@/Components/Patterns
 import { Button } from '@/Components/ui/button';
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 import { operatingStatuses, type StatusPresentation } from '@/Constants/statusIcons';
-import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
+import RecordActivity from '@/Components/ActivityLog/RecordActivity.vue';
 import ExOfficioReviewSheet from '@/Features/Admin/DutiableTimeline/ExOfficioReviewSheet.vue';
 import { DutiableTimelineDialog } from '@/Features/Admin/DutiableTimeline';
 import { AssignDutyUserSheet, DutySearchField, MemberTermRow, dutyNameOn, termStatus, type DutyHit, type QuotaTenant } from '@/Features/Admin/Occupancy';

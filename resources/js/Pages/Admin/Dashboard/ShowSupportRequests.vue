@@ -58,7 +58,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import { quickFilterLabel } from '@/Components/Collection/quickFilterLabel';
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
-import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import { useCollectionRecordActions } from '@/Components/Collection/useCollectionRecordActions';
 import { useRowAbilities } from '@/Composables/useRowAbilities';
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';

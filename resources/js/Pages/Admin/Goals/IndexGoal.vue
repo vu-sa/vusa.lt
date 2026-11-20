@@ -86,7 +86,7 @@ import { computed, toRef } from 'vue';
 
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
-import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import { useCollectionRecordActions } from '@/Components/Collection/useCollectionRecordActions';
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import type { CollectionColumn } from '@/Components/Collection/types';
 import { GoalIcon } from '@/Components/icons';

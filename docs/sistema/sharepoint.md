@@ -60,5 +60,5 @@ diskas. Veiksmas nėra imituojamas ir automatiškai nenukreipiamas į kitą disk
   (`DocumentSharepointLock`). Ilgos – dokumentų archyvo tikrinimas ir `SyncFileableFilesJob` –
   `long-running` ryšiu, kurio `retry_after` ilgesnis už jų laiko limitą; jam reikia atskiro
   `queue:work long-running` proceso (`deployment/supervisor/README.md`).
-- Failų langas (`Features/Admin/SharepointFilePicker`, MSAL): `VITE_SHAREPOINT_CLIENT_ID` ir
+- Failų langas (`Components/Files/Sharepoint`, MSAL): `VITE_SHAREPOINT_CLIENT_ID` ir
   `VITE_SHAREPOINT_TENANT_ID` statymo metu, aplinkos adresas – Entra programos SPA peradresavimo URI.

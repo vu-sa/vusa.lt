@@ -19,7 +19,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { NavigationTiles } from '@/Components/Patterns';
 import type { AdminSection } from '@/Composables/useAdminNavigation';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';

@@ -42,7 +42,7 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Group } from '@lucide/vue';
 
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { Button } from '@/Components/ui/button';
 import {
   DropdownMenu,

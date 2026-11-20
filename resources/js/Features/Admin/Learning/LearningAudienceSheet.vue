@@ -64,8 +64,8 @@ import { NativeSelect } from '@/Components/ui/native-select';
 import { SingleSelect } from '@/Components/ui/single-select';
 import { Input } from '@/Components/ui/input';
 import { Textarea } from '@/Components/ui/textarea';
-import InlineCollectionSelect from '@/Features/Admin/AdminSearch/Components/Select/InlineCollectionSelect.vue';
-import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import InlineCollectionSelect from '@/Components/Pickers/InlineCollectionSelect.vue';
+import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 import DutySearchField, { type DutyHit } from '@/Features/Admin/Occupancy/DutySearchField.vue';
 import { LearningAudienceType, LearningImportance, LearningStage, LearningStepKind } from '@/Types/enums';
 

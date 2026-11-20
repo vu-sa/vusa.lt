@@ -86,7 +86,7 @@ import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import MergeRecordsDialog, { type MergeRecord } from '@/Components/Merge/MergeRecordsDialog.vue';
 import { Button } from '@/Components/ui/button';
 import { useAdminNavigation } from '@/Composables/useAdminNavigation';
-import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import { useCollectionRecordActions } from '@/Components/Collection/useCollectionRecordActions';
 import { isTrashView, useLocalCollectionSource } from '@/Composables/useCollectionSource';
 
 type StudyProgramRow = App.Entities.StudyProgram & {

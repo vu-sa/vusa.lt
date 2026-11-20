@@ -77,7 +77,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { AlertTriangle, Trash2 } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 
-import EntityTypeMark from '@/Components/EntityTypeMark.vue';
+import EntityTypeMark from '@/Components/Patterns/EntityTypeMark.vue';
 import { Button } from '@/Components/ui/button';
 import { NumberField } from '@/Components/ui/number-field';
 import { ModelEnum } from '@/Types/enums';

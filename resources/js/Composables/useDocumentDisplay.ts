@@ -1,6 +1,6 @@
 import { computed } from 'vue';
 
-import type { SearchMatchDocument } from '@/Shared/Search/matches';
+import type { SearchMatchDocument } from '@/Search/core/matches';
 import { trackEvent } from '@/Plugins/umami';
 import { formatDate, parseDate } from '@/Utils/dateTime';
 

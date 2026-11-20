@@ -563,7 +563,7 @@ describe('public URL history', function (): void {
 
         asUser($this->newsManager)
             ->delete(route('news.publicUrls.destroy', [$this->managedNews, $foreign]))
-            ->assertStatus(403);
+            ->assertNotFound();
 
         $this->assertDatabaseHas('public_urls', ['id' => $foreign->id]);
     });

@@ -114,7 +114,7 @@ import { localizedRoute } from '@/Utils/LocalizedRoutes';
 import NewsCard from '@/Components/Public/News/NewsCard.vue';
 import type { News, NewsItem } from '@/Types/contentParts';
 import { formatDate } from '@/Utils/dateTime';
-import { useNewsFetch } from '@/Services/ContentService';
+import { useNewsFetch } from '@/Composables/ContentService';
 import { EyebrowLabel, MediaFrame } from '@/Components/Public/Base';
 import { Skeleton } from '@/Components/ui/skeleton';
 import RCInlineText from '@/Components/RichContent/Editor/Fullscreen/RCInlineText.vue';

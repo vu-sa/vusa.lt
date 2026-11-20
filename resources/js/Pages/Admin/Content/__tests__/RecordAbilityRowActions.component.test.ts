@@ -28,7 +28,7 @@ vi.mock('@/Composables/useCollectionSource', () => {
 vi.mock('@/Components/Reservations/useReservationCart', () => ({
   useReservationCart: () => ({ period: ref(null), hasPeriod: ref(false), openSheet: vi.fn() }),
 }));
-vi.mock('@/Features/Admin/AdminSearch/Composables/useResourceAvailability', () => ({
+vi.mock('@/Search/admin/Composables/useResourceAvailability', () => ({
   useResourceAvailability: () => ({ availability: ref(new Map()), ensure: vi.fn() }),
 }));
 

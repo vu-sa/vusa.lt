@@ -320,12 +320,12 @@ import { Label } from '@/Components/ui/label';
 import { OrderedListInput } from '@/Components/ui/ordered-list-input';
 import { resolveTenantPublicHost, resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import { usePermalinkPreview } from '@/Composables/usePermalinkPreview';
-import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
-import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import { CollectionSelectDialog } from '@/Components/Pickers';
+import { normalizeHit, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 import { Textarea } from '@/Components/ui/textarea';
 import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
 
-import VisualOptionSelect from '../FormItems/VisualOptionSelect.vue';
+import VisualOptionSelect from './VisualOptionSelect.vue';
 import { getContentType, type BlockWidth } from '../RichContent/Types';
 import RichContentFormElement from '../RichContent/RichContentFormElement.vue';
 

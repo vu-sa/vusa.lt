@@ -19,7 +19,7 @@
 
 <script setup lang="ts">
 
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { controlVariants } from '@/Components/ui/control';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 

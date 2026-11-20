@@ -94,6 +94,21 @@ test('cross-tenant admin can add their own tenant user via batch-update', functi
     expect($exists)->toBeTrue();
 });
 
+test('cross-tenant admin cannot batch-update another assignable tenant', function (): void {
+    $otherTenant = Tenant::factory()->create();
+    $this->duty->assignableTenants()->attach($otherTenant->id, ['quota' => 2]);
+
+    asUser($this->crossAdmin)->postJson(route('duties.batchUpdateUsers', $this->duty), [
+        'tenant_id' => $otherTenant->id,
+        'user_changes' => [
+            ['user_id' => $this->tenantUser->id, 'action' => 'add'],
+        ],
+    ])->assertUnprocessable()
+        ->assertJsonValidationErrors('tenant_id');
+
+    expect($this->duty->dutiables()->where('dutiable_id', $this->tenantUser->id)->exists())->toBeFalse();
+});
+
 test('cross-tenant admin can add a user who has no prior tenant membership', function (): void {
     // Users have no direct tenant assignment — membership is through duties.
     // Any user (even without existing duties) may be assigned to a cross-tenant duty.

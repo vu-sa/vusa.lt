@@ -61,7 +61,7 @@ import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 
 import { useDateFormatter } from '@/Composables/useDateFormatter';
-import type { MeetingSearchResult } from '@/Shared/Search/types';
+import type { MeetingSearchResult } from '@/Search/core/types';
 import { MeetingType } from '@/Types/MeetingType';
 import { parseDate } from '@/Utils/dateTime';
 

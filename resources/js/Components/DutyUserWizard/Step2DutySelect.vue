@@ -307,7 +307,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
 import { SectionCard, EmptyState } from '@/Components/Patterns';
 import type { useDutyUserWizard } from '@/Composables/useDutyUserWizard';
-import { useDuplicateDutyCheck } from '@/Composables/useDuplicateDutyCheck';
+import { useDuplicateDutyCheck } from '@/Components/AdminForms/useDuplicateDutyCheck';
 import { DutyIcon, InstitutionIcon } from '@/Components/icons';
 import DuplicateDutyWarning from '@/Components/AdminForms/DuplicateDutyWarning.vue';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';

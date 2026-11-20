@@ -19,7 +19,7 @@
 <script setup lang="ts">
 import type { Component } from 'vue';
 
-import EntityTypeMark from '@/Components/EntityTypeMark.vue';
+import EntityTypeMark from '@/Components/Patterns/EntityTypeMark.vue';
 import { CommandItem } from '@/Components/ui/command';
 
 import { paletteRowClass } from './paletteRowClass';

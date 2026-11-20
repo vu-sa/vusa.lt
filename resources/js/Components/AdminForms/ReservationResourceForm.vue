@@ -92,8 +92,8 @@ import { NumberField } from '@/Components/ui/number-field';
 import { DateRangePicker } from '@/Components/ui/date-picker';
 import { capitalize } from '@/Utils/String';
 import { ResourceIcon } from '@/Components/icons';
-import { ResourceSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
-import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import { ResourceSelectDialog } from '@/Components/Pickers';
+import { normalizeHit, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 
 import FormFieldWrapper from './FormFieldWrapper.vue';
 

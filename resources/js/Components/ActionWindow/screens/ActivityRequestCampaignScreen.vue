@@ -38,7 +38,7 @@ import { MailQuestion } from '@lucide/vue';
 
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 
 import ActionWindowScreen from '../ActionWindowScreen.vue';
 import ActionChoiceList from '../ActionChoiceList.vue';

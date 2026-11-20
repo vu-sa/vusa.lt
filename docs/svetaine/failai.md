@@ -19,10 +19,10 @@ tests:
   - tests/Feature/Console/MediaLegacyFilesCommandTest.php
   - tests/Feature/Console/MigrateImagesCommandTest.php
   - tests/Feature/Services/Media/LegacyImageBackfillTest.php
-  - resources/js/Features/Admin/FileManager/__tests__/FilePropertiesDrawer.component.test.ts
-  - resources/js/Features/Admin/FileManager/__tests__/FileManagerUpload.component.test.ts
-  - resources/js/Features/Admin/FileManager/__tests__/FileManagerView.component.test.ts
-  - resources/js/Features/Admin/FileManager/__tests__/FolderStrip.component.test.ts
+  - resources/js/Components/FileManager/__tests__/FilePropertiesDrawer.component.test.ts
+  - resources/js/Components/FileManager/__tests__/FileManagerUpload.component.test.ts
+  - resources/js/Components/FileManager/__tests__/FileManagerView.component.test.ts
+  - resources/js/Components/FileManager/__tests__/FolderStrip.component.test.ts
 ---
 
 # Failai

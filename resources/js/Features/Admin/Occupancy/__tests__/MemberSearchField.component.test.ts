@@ -56,7 +56,7 @@ describe('MemberSearchField.vue', () => {
     expect(wrapper.find('[role="listbox"]').exists()).toBe(false);
   });
 
-  it('sends the permission the endpoint requires, across all units', async () => {
+  it('searches for duty members', async () => {
     const wrapper = mountField();
 
     await wrapper.find('input').setValue('jon');
@@ -65,8 +65,7 @@ describe('MemberSearchField.vue', () => {
     expect(execute).toHaveBeenCalledTimes(1);
     const url = urls.at(-1) ?? '';
     expect(url).toContain('search=jon');
-    expect(url).toContain('permission=duties.update.padalinys');
-    expect(url).toContain('scope=all');
+    expect(url).toContain('purpose=duty-member');
   });
 
   it('selects the arrowed-to result with Enter and never submits the surrounding form', async () => {

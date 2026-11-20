@@ -1,7 +1,7 @@
 import { getActiveLanguage } from 'laravel-vue-i18n';
 
-import { getUserDuties } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
-import type { UserSearchResult } from '@/Shared/Search/types';
+import { getUserDuties } from '@/Search/admin/Utils/searchHitMappers';
+import type { UserSearchResult } from '@/Search/core/types';
 
 interface DutyLink {
   id?: string;

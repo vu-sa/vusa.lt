@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ValidatesTenantScope;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
@@ -12,9 +13,12 @@ use App\Support\MorphMap;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class BatchUpdateDutyUsersRequest extends FormRequest
 {
+    use ValidatesTenantScope;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -47,9 +51,18 @@ class BatchUpdateDutyUsersRequest extends FormRequest
      */
     public function rules(): array
     {
+        /** @var Duty $duty */
+        $duty = $this->route('duty');
+        $tenantRules = ['nullable', 'integer', 'exists:tenants,id'];
+
+        if (! $this->user()->can('update', $duty)) {
+            $tenantRules[] = $this->tenantIdInAuthorizedScope('duties.update.padalinys');
+            $tenantRules[] = Rule::in($duty->assignableTenants->modelKeys());
+        }
+
         return [
             'user_changes' => 'required|array',
-            'tenant_id' => 'nullable|integer|exists:tenants,id',
+            'tenant_id' => $tenantRules,
             'user_changes.*.user_id' => [
                 'required',
                 'string',

@@ -351,7 +351,7 @@ import CollectionSelectionBar from '@/Components/Collection/CollectionSelectionB
 import CollectionTitleBand from '@/Components/Collection/CollectionTitleBand.vue';
 import type { CollectionQuickFilter } from '@/Components/Collection/types';
 import { DocumentIcon } from '@/Components/icons';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { CollectionSkeleton, ConfirmDialog, EmptyState, TopProgressBar } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
@@ -360,7 +360,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
 import { useApiMutation } from '@/Composables/useApi';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
-import PathBreadcrumb from '@/Features/Admin/FileManager/Components/PathBreadcrumb.vue';
+import PathBreadcrumb from '@/Components/FileManager/Components/PathBreadcrumb.vue';
 import { DocumentStatus } from '@/Types/enums';
 import { formatDate } from '@/Utils/dateTime';
 import { getFileIcon } from '@/Utils/fileIcons';

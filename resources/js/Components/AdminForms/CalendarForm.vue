@@ -475,7 +475,7 @@ import { NativeSelect } from '@/Components/ui/native-select';
 import { Checkbox } from '@/Components/ui/checkbox';
 import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
-import VisualOptionSelect from '@/Components/FormItems/VisualOptionSelect.vue';
+import VisualOptionSelect from '@/Components/AdminForms/VisualOptionSelect.vue';
 import { contentStatuses } from '@/Constants/statusIcons';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { resolveTenantPublicHost } from '@/Composables/useTenantSubdomain';

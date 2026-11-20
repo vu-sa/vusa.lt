@@ -127,7 +127,7 @@ import WikiPageList from '@/Features/Admin/Knowledge/WikiPageList.vue';
 import WikiSearchField from '@/Features/Admin/Knowledge/WikiSearchField.vue';
 import WikiProgressSummary from '@/Features/Admin/Knowledge/WikiProgressSummary.vue';
 import { groupByLetter, letterAnchor } from '@/Features/Admin/Knowledge/wikiAlphabet';
-import { searchWiki } from '@/Features/Admin/Knowledge/wikiSearch';
+import { searchWiki } from '@/Search/admin/wikiSearch';
 import LearningStepRow from '@/Features/Admin/Learning/LearningStepRow.vue';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
 import { KnowledgeItemKind, KnowledgeSectionKind, LearningImportance } from '@/Types/enums';

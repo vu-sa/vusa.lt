@@ -150,13 +150,13 @@ import { computed } from 'vue';
 import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import ResourceManagers, { type ResourceManagerContact } from '@/Components/Reservations/ResourceManagers.vue';
 import { PreviewFact, PreviewFacts, PreviewPane, PreviewSection, StatusBadge } from '@/Components/Patterns';
-import ReservationResourceStateTag from '@/Components/Tag/ReservationResourceStateTag.vue';
+import ReservationResourceStateTag from '@/Components/Reservations/ReservationResourceStateTag.vue';
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
 import { usePreviewApi } from '@/Composables/usePreviewApi';
 import { notReservableStatus } from '@/Constants/statusIcons';
-import type { ResourceAvailability } from '@/Features/Admin/AdminSearch/Composables/useResourceAvailability';
-import type { ResourceSearchResult } from '@/Shared/Search/types';
+import type { ResourceAvailability } from '@/Search/admin/Composables/useResourceAvailability';
+import type { ResourceSearchResult } from '@/Search/core/types';
 import { formatDateTime } from '@/Utils/dateTime';
 
 interface ReservationRow {

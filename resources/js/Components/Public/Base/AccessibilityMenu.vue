@@ -31,7 +31,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover
 import { cn } from '@/Utils/Shadcn/utils';
 import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
 
-import AccessibilitySettings from './AccessibilitySettings.vue';
+import AccessibilitySettings from '../../Shared/AccessibilitySettings.vue';
 
 import IFluentAccessibility24Regular from '~icons/fluent/accessibility-24-regular';
 

@@ -2,7 +2,7 @@ import { describe, test, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import { stubIcon } from '@/tests/stubs';
-import { documentWithMatch, type SearchMatchDocument } from '@/Shared/Search/matches';
+import { documentWithMatch, type SearchMatchDocument } from '@/Search/core/matches';
 import type { DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
 
 import DocumentCompactListItem from '../DocumentCompactListItem.vue';

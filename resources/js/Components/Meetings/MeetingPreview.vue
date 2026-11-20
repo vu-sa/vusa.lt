@@ -88,7 +88,7 @@ import { ContextFact, ContextFacts, PreviewPane, PreviewSection, StatusMark } fr
 import { Button } from '@/Components/ui/button';
 import { usePreviewApi } from '@/Composables/usePreviewApi';
 import { inactiveInstitutionStatus, meetingCompletionStatuses, statusFor, statusRoleParts, voteStatuses } from '@/Constants/statusIcons';
-import type { MeetingSearchResult } from '@/Shared/Search/types';
+import type { MeetingSearchResult } from '@/Search/core/types';
 import { formatDateTime, formatTime } from '@/Utils/dateTime';
 
 import MeetingOutcome from './MeetingOutcome.vue';

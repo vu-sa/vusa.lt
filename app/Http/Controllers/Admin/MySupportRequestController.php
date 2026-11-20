@@ -31,10 +31,7 @@ class MySupportRequestController extends AdminController
     #[Authorize('create', SupportRequest::class)]
     public function create()
     {
-        return Inertia::render('Admin/SupportRequests/CreateSupportRequest', [
-            ...static::formOptions(),
-            'users' => User::query()->orderBy('name')->get(['id', 'name', 'profile_photo_path']),
-        ]);
+        return Inertia::render('Admin/SupportRequests/CreateSupportRequest', static::formOptions());
     }
 
     #[Authorize('create', SupportRequest::class)]

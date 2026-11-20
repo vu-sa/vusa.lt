@@ -37,7 +37,7 @@ that folder's `decisions.md`, `reps.md` and `plan.md` — read them with
 
 Public and admin pages share one paper, ink, and brand palette (global `:root`/`.dark`); `data-surface` on `<html>` only scopes the few rules that differ.
 `--accent` remains the shadcn hover surface; `--brand` and `--brand-fill` carry VU SA red or amber.
-Build from `ui/` → `Public/Base/` → `Public/<area>/` → `Public/Layouts/` → `Pages/Public/`.
+Build from `ui/` → `Brand/` + `Shared/` → `Public/Base/` → `Public/<area>/` → `Public/Layouts/` → `Pages/Public/`.
 Use `Public/Base/` for domain-free primitives and `ui/button` for actions. Keep corners square and
 use tokens instead of raw colour utilities. Check both themes and phone layouts. Detailed rules
 live in `.ai/rules/public.md`, `.ai/rules/css.md`, and `resources/js/Components/CLAUDE.md`.
@@ -249,7 +249,7 @@ Public controllers extending `PublicController` should call `shareOtherLangURL()
 ### Search
 
 - Default Scout driver: `database` (`SCOUT_DRIVER` env) — used by every model that does not override `searchableUsing()`.
-- Typesense: models that override `searchableUsing()` (users, institutions, duties, meetings, agenda items, documents, resources, pages, news, calendar). Public search and admin collections/search query it from the browser with scoped keys (`useTypesenseCollectionSource`, `Features/Admin/AdminSearch`). Trash views always read the database.
+- Typesense: models that override `searchableUsing()` (users, institutions, duties, meetings, agenda items, documents, resources, pages, news, calendar). Public search and admin collections/search query it from the browser with scoped keys (`useTypesenseCollectionSource`, `Search/admin`). Trash views always read the database.
 - Redis: caching + sessions; target >80% hit ratio.
 
 ### Activity log (spatie/laravel-activitylog)
@@ -283,7 +283,7 @@ if ($request->filled('field')) {
 
 ### Component tiers
 
-`ui/` (shadcn primitives) → `Patterns/` (generic: `SectionCard`, `EmptyState`, `StatusBadge`, `SheetForm`, `FormSection`, `ConfirmDialog`, …) → entity folders (`Duties/`, `Institutions/`, …) → `Layouts/` (`OverviewPage`, `CollectionPage`, `RecordPage`, `FormPage`) → pages. Dependencies run one way only.
+`ui/` (shadcn primitives) → `Brand/` + `Shared/` (both surfaces) → `Patterns/` (generic: `SectionCard`, `EmptyState`, `StatusBadge`, `SheetForm`, `FormSection`, `ConfirmDialog`, …) → entity folders (`Duties/`, `Institutions/`, `Pickers/`, …) → `Layouts/` (`OverviewPage`, `CollectionPage`, `RecordPage`, `FormPage`) → `Features/Admin/` → pages. Dependencies run one way only; `npm run lint:boundaries` enforces it in CI.
 
 Pages **compose**; they don't hand-roll card chrome. A titled panel is `SectionCard` from `@/Components/Patterns`, not raw `<Card><CardHeader>` — ESLint rejects `ui/card` imports under `Pages/Admin/**`. Admin records use `RecordPage` (`ShowDuty.vue` / `ShowMeeting.vue` are reference pages); collections use `CollectionPage`.
 
@@ -334,7 +334,7 @@ Source: `resources/js/Composables/useBreadcrumbsUnified.ts`.
 
 ### Feature discovery (spotlights)
 
-New or relocated admin UI that a returning user wouldn't find unaided **must ship with a spotlight** so it's discoverable; something moved into plain sight, such as a visible section tab, needs none. Wrap the entry point with `SpotlightPopover` (`@/Components/Onboarding/SpotlightPopover.vue`) and drive its dismissed state with `useFeatureSpotlight('<feature>-v<n>')` (`@/Composables/useFeatureSpotlight.ts`), which persists per-user via the tutorial-progress API. Dismiss it when the user engages the feature (e.g. opens the menu), not only via the popover button. Bump the `-v<n>` suffix when a feature changes enough to warrant re-surfacing. Example: the responsibilities spotlight in `Features/Admin/Responsibilities/DutyResponsibilitiesSection.vue`.
+New or relocated admin UI that a returning user wouldn't find unaided **must ship with a spotlight** so it's discoverable; something moved into plain sight, such as a visible section tab, needs none. Wrap the entry point with `SpotlightPopover` (`@/Components/Patterns/SpotlightPopover.vue`) and drive its dismissed state with `useFeatureSpotlight('<feature>-v<n>')` (`@/Composables/useFeatureSpotlight.ts`), which persists per-user via the tutorial-progress API. Dismiss it when the user engages the feature (e.g. opens the menu), not only via the popover button. Bump the `-v<n>` suffix when a feature changes enough to warrant re-surfacing. Example: the responsibilities spotlight in `Features/Admin/Responsibilities/DutyResponsibilitiesSection.vue`.
 
 ## Styling (Tailwind v4)
 
@@ -392,11 +392,11 @@ Authorization tests expect 403 status codes for direct requests — never `asser
 
 These come from real bugs found in this codebase. Treat them as non-negotiable.
 
-**Every mutating route authorizes.** A controller that only injects `ModelAuthorizer` without calling it is unprotected — the `auth` middleware proves *who* the user is, not *what* they may touch. Check `routes/admin.php` against the controller: a registered route with no `#[Authorize]`, `$this->authorize()` or Form Request `authorize()` is a hole. `RouteAuthorizationCoverageTest` checks every mutating route.
+**Every admin route authorizes.** The `auth` middleware identifies the actor. Use `#[Authorize]`, `$this->authorize()` or a Form Request's `authorize()` to check what they may access. `RouteAuthorizationCoverageTest` checks read and mutating routes and records any routes protected by other means.
 
 **A child resource authorizes against its parent.** When a model carries no permissions of its own, delegate to the policy of the model that owns it, rather than inventing unseeded permissions (which lock out everyone but super admins). Precedent: `ReservationResourceController` → `Reservation`.
 
-**Resolving a child by a request id is an IDOR.** `find()`/`findOrNew()` on the model itself resolves *any* id, not just ones belonging to the record in the URL. Resolve through the parent's relation and refuse what it cannot find (`FormController::update()`):
+**Scope nested children to their parent.** Use `Route::scopeBindings()` for a child model bound in the URL. `tests/Feature/System/RouteArchitectureTest.php` checks nested admin bindings. For child IDs in the payload, resolve through the parent's relation and refuse what it cannot find, as in `FormController::update()`.
 
 ```php
 // Resolve through the relation so a crafted payload cannot reach another form's fields.

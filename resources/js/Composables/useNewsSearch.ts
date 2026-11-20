@@ -3,14 +3,14 @@ import { usePage } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 
 import { imageFromSearch } from '@/Types/media';
-import { provideFacetSearch } from '@/Shared/Search/facets';
-import { SearchClientFactory, type TypesenseClient } from '@/Shared/Search/services/SearchClientFactory';
+import { provideFacetSearch } from '@/Search/core/facets';
+import { SearchClientFactory, type TypesenseClient } from '@/Search/core/services/SearchClientFactory';
 import type { NewsItem } from '@/Types/contentParts';
 
 export interface NewsDocument {
-  _searchMatch?: import('@/Shared/Search/matches').SearchMatch;
-  _searchTitleMatches?: import('@/Shared/Search/matches').SearchMatch[];
-  _searchFieldMatches?: Record<string, import('@/Shared/Search/matches').SearchMatch>;
+  _searchMatch?: import('@/Search/core/matches').SearchMatch;
+  _searchTitleMatches?: import('@/Search/core/matches').SearchMatch[];
+  _searchFieldMatches?: Record<string, import('@/Search/core/matches').SearchMatch>;
   id: string | number;
   title: string;
   short?: string;

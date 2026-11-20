@@ -72,7 +72,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Landmark, List, MailQuestion, Search } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { Button } from '@/Components/ui/button';

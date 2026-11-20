@@ -169,7 +169,7 @@ import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
 import { Compass, Edit, FileText, Link2, Shield, Trash2 } from '@lucide/vue';
 
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import { ConfirmDialog, OverviewSection, SheetForm } from '@/Components/Patterns';
 import { RelationshipLinkList, type RelationKindOption, type RelationshipLinkRow, type RelationshipTypeOption } from '@/Components/Relationships';

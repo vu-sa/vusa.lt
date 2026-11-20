@@ -324,8 +324,8 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronDown, ExternalLink, Loader2, Palette, SlidersHorizontal, Trash2 } from '@lucide/vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
-import FluentIconSelect from '@/Components/FormItems/FluentIconSelect.vue';
-import VisualOptionSelect from '@/Components/FormItems/VisualOptionSelect.vue';
+import FluentIconSelect from '@/Components/AdminForms/FluentIconSelect.vue';
+import VisualOptionSelect from '@/Components/AdminForms/VisualOptionSelect.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog } from '@/Components/Patterns';
 import FormPanel from '@/Components/Patterns/FormPanel.vue';
@@ -349,8 +349,8 @@ import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
 import FocalPointPicker from '@/Components/ui/upload/FocalPointPicker.vue';
 import { useApiMutation } from '@/Composables/useApi';
 import { bannerStatuses } from '@/Constants/statusIcons';
-import { MultiCollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
-import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import { MultiCollectionSelectDialog } from '@/Components/Pickers';
+import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 import { safeHref } from '@/Utils/safeHref';
 
 interface TopicOption {

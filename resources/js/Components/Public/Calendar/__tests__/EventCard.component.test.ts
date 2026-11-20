@@ -1,0 +1,114 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { mount } from '@vue/test-utils';
+import { Link, usePage } from '@inertiajs/vue3';
+
+import EventCard from '@/Components/Public/Calendar/EventCard.vue';
+import { createMockPage } from '@/tests/helpers/createMockPage';
+
+function makeEvent(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 1,
+    title: 'Test renginys',
+    date: '2099-01-01T18:00:00+00:00',
+    end_date: null,
+    is_all_day: false,
+    location: null,
+    is_remote: false,
+    main_image_url: null,
+    facebook_url: null,
+    tenant: { shortname: 'VU SA' },
+    event_type: { name: 'Konferencija' },
+    ...overrides,
+  };
+}
+
+describe('Calendar/EventCard.vue', () => {
+  beforeEach(() => {
+    vi.mocked(usePage).mockReturnValue(createMockPage());
+  });
+
+  function mountCard(props: Record<string, unknown> = {}) {
+    return mount(EventCard, {
+      props: { event: makeEvent(), ...props },
+    });
+  }
+
+  it('renders the address for an in-person event', () => {
+    const wrapper = mountCard({ event: makeEvent({ location: 'Saulėtekio al. 9' }) });
+
+    expect(wrapper.text()).toContain('Saulėtekio al. 9');
+    expect(wrapper.text()).not.toContain('Nuotolinis renginys');
+  });
+
+  it('shows a remote badge instead of a location for a remote event, even if location is set', () => {
+    const wrapper = mountCard({ event: makeEvent({ is_remote: true, location: 'Should not show' }) });
+
+    expect(wrapper.text()).toContain('Nuotolinis renginys');
+    expect(wrapper.text()).not.toContain('Should not show');
+  });
+
+  it('shows neither a location nor a remote badge when there is no location and it is not remote', () => {
+    const wrapper = mountCard();
+
+    expect(wrapper.text()).not.toContain('Nuotolinis renginys');
+  });
+
+  it('renders event type and tenant badges by default', () => {
+    const wrapper = mountCard();
+
+    expect(wrapper.text()).toContain('Konferencija');
+    expect(wrapper.text()).toContain('VU SA');
+  });
+
+  it('hides badges when showBadges is false', () => {
+    const wrapper = mountCard({ showBadges: false });
+
+    expect(wrapper.text()).not.toContain('Konferencija');
+  });
+
+  it('shows Peržiūrėti for past events', () => {
+    const wrapper = mountCard({ variant: 'past' });
+
+    expect(wrapper.text()).toContain('Peržiūrėti');
+    expect(wrapper.text()).not.toContain('Daugiau');
+  });
+
+  it('shows Daugiau for upcoming events', () => {
+    const wrapper = mountCard({ variant: 'upcoming' });
+
+    expect(wrapper.text()).toContain('Daugiau');
+    expect(wrapper.text()).not.toContain('Peržiūrėti');
+  });
+
+  it('links to the canonical public_url when the list provides one', () => {
+    const wrapper = mountCard({
+      event: makeEvent({ public_url: 'https://vusa.lt/lt/kalendorius/renginio-pavadinimas' }),
+    });
+
+    expect(wrapper.find('a[href="https://vusa.lt/lt/kalendorius/renginio-pavadinimas"]').exists()).toBe(true);
+    expect(wrapper.html()).not.toContain('calendar.event?calendar=1');
+  });
+
+  it('falls back to the id-based redirect route when no public_url is provided', () => {
+    const wrapper = mountCard();
+
+    expect(wrapper.find('a[href^="/mocked-route/calendar.event"]').exists()).toBe(true);
+  });
+
+  it('keeps same-origin public navigation in Inertia by default', () => {
+    const wrapper = mountCard({ event: makeEvent({ public_url: `${window.location.origin}/lt/renginys` }) });
+
+    expect(wrapper.findAllComponents(Link)).toHaveLength(3);
+  });
+
+  it.each(['upcoming', 'past', 'compact'])('uses native links throughout the %s variant when Inertia is disabled', (variant) => {
+    const wrapper = mountCard({
+      event: makeEvent({ public_url: `${window.location.origin}/lt/renginys` }),
+      inertia: false,
+      variant,
+    });
+
+    expect(wrapper.findComponent(Link).exists()).toBe(false);
+    expect(wrapper.findAll('a').every(link => link.attributes('href') === `${window.location.origin}/lt/renginys`)).toBe(true);
+  });
+});

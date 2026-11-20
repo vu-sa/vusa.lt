@@ -13,6 +13,7 @@ paths:
   - 'app/Http/Controllers/Admin/Knowledge*.php'
   - 'app/Actions/SyncKnowledgeLinks.php'
   - 'resources/js/Features/Admin/Knowledge/**'
+  - 'resources/js/Search/admin/{wikiSearch,useWikiLinkTargets}.ts'
   - 'resources/js/Features/Admin/Learning/**'
   - 'resources/js/Pages/Admin/Learning/**'
   - 'resources/js/Pages/Admin/Knowledge/**'
@@ -51,5 +52,5 @@ Ticking an article as learned flashes `wikiProgress` (`Inertia::flash`, computed
 Coordinators see a rep's progress only through `RepresentativesPresenter::coordinatedInstitutionIds()` (their `StudentRepCoordination` institutions) on ViSAK → Atstovai; padalinys managers see the same reps without it. Never widen progress to tenant permissions. Handover notes were retired before release; passing on experience is the regular `write_handover` step that reps tick themselves.
 
 ## Structure graphs are data in code, placed by key
-The graphs (`resources/js/Features/StructureGraph/graphs/*.json`, listed in `index.json`) are read by the frontend registry and by `App\Support\StructureGraphs`, which validates a knowledge item's places (`knowledge_item_structure_nodes`: graph + optional node). An article sits once per graph and one node belongs to at most one article (unique indexes); a graph without a node shows the whole graph. Nodes link to articles only through these rows, never by matching titles. A node's colour comes only from its `kind` (`nodeKinds.ts`, the VU SA structure palette), never from the data; anything containing other nodes is a `group`. Node ids are the link between code and articles, so never rename one without moving the articles that use it.
+The graphs (`resources/js/Components/StructureGraph/graphs/*.json`, listed in `index.json`) are read by the frontend registry and by `App\Support\StructureGraphs`, which validates a knowledge item's places (`knowledge_item_structure_nodes`: graph + optional node). An article sits once per graph and one node belongs to at most one article (unique indexes); a graph without a node shows the whole graph. Nodes link to articles only through these rows, never by matching titles. A node's colour comes only from its `kind` (`nodeKinds.ts`, the VU SA structure palette), never from the data; anything containing other nodes is a `group`. Node ids are the link between code and articles, so never rename one without moving the articles that use it.
 

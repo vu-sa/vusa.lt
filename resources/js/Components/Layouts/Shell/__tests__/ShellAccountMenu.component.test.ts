@@ -4,7 +4,7 @@ import { loadLanguageAsync } from 'laravel-vue-i18n';
 
 import { commonStubs } from '@/tests/stubs';
 import { router } from '@/mocks/inertia.mock';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 
 import ShellAccountMenu from '../ShellAccountMenu.vue';
 

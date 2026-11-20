@@ -51,7 +51,7 @@ import MeetingCollectionRow from '@/Components/Meetings/MeetingCollectionRow.vue
 import { meetingColumns, meetingKey, meetingValueLabel, useMeetingRowActions } from '@/Components/Meetings/meetingCollection';
 import { EmptyState } from '@/Components/Patterns';
 import { useTypesenseCollectionSource } from '@/Composables/useCollectionSource';
-import type { MeetingSearchResult } from '@/Shared/Search/types';
+import type { MeetingSearchResult } from '@/Search/core/types';
 
 /**
  * The meetings index, narrowed to one institution. The scoped search key decides what the reader may

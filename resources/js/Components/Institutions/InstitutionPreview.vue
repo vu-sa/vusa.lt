@@ -82,7 +82,7 @@ import { ContextFact, ContextFacts, PreviewChipList, PreviewPane, PreviewSection
 import { Button } from '@/Components/ui/button';
 import { usePreviewApi } from '@/Composables/usePreviewApi';
 import { operatingStatuses } from '@/Constants/statusIcons';
-import type { InstitutionSearchResult, MeetingSearchResult } from '@/Shared/Search/types';
+import type { InstitutionSearchResult, MeetingSearchResult } from '@/Search/core/types';
 import { formatDate } from '@/Utils/dateTime';
 
 interface InstitutionPreviewData {

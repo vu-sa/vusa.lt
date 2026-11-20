@@ -248,12 +248,12 @@ import { useEventListener } from '@vueuse/core';
 import { computed, h, nextTick, onUnmounted, ref, useId, watch, type FunctionalComponent } from 'vue';
 
 import { preferredScrollBehavior } from '@/Composables/useAccessibilityPreferences';
-import EntityTypeMark from '@/Components/EntityTypeMark.vue';
-import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
+import EntityTypeMark from '@/Components/Patterns/EntityTypeMark.vue';
+import LocaleFlag from '@/Components/Shared/LocaleFlag.vue';
 import { Button } from '@/Components/ui/button';
 import { segmentGroupClass, segmentVariants } from '@/Components/ui/control';
 import { SHELL_FORM_BAR_ID, SHELL_MOBILE_ACTIONS_ID, useShellFocus } from '@/Composables/useShellFocus';
-import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
+import ActivityLogSheet from '@/Components/ActivityLog/ActivityLogSheet.vue';
 import FormRequiredNote from '@/Components/Patterns/FormRequiredNote.vue';
 import ModelTimestamps from '@/Components/Patterns/ModelTimestamps.vue';
 import type { ModelEnum } from '@/Types/enums';

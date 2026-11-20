@@ -137,7 +137,7 @@ import TenantSelectField from '@/Components/AdminForms/TenantSelectField.vue';
 import CollectionRowList from '@/Components/Collection/CollectionRowList.vue';
 import SortableRowList from '@/Components/Collection/SortableRowList.vue';
 import { ConfirmDialog, FormSegmentedControl, SheetForm } from '@/Components/Patterns';
-import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
+import LocaleFlag from '@/Components/Shared/LocaleFlag.vue';
 import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass, segmentGroupClass, segmentVariants } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';

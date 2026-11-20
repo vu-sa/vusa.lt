@@ -50,7 +50,7 @@ import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { Button } from '@/Components/ui/button';
 import { formatDateWith } from '@/Utils/dateTime';
 
-import { termStatus } from './occupancy';
+import { termStatus } from '@/Utils/occupancy';
 
 const props = defineProps<{
   user: {

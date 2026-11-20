@@ -15,7 +15,7 @@
 import { computed, shallowRef } from 'vue';
 
 import { useApi } from '@/Composables/useApi';
-import MemberTermsSummary from '@/Features/Admin/Occupancy/MemberTermsSummary.vue';
+import MemberTermsSummary from '@/Components/Users/MemberTermsSummary.vue';
 
 interface MemberTerm {
   name: string;

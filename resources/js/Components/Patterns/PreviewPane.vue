@@ -58,7 +58,7 @@
 import { Link } from '@inertiajs/vue3';
 import type { HTMLAttributes } from 'vue';
 
-import EntityTypeMark from '@/Components/EntityTypeMark.vue';
+import EntityTypeMark from '@/Components/Patterns/EntityTypeMark.vue';
 import { cn } from '@/Utils/Shadcn/utils';
 
 /**

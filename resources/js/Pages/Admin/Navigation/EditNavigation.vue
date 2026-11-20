@@ -31,7 +31,7 @@ import { router, type InertiaForm } from '@inertiajs/vue3';
 
 import NavigationForm from '@/Components/AdminForms/NavigationForm.vue';
 import NavigationParentForm from '@/Components/AdminForms/NavigationParentForm.vue';
-import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
+import ActivityLogSheet from '@/Components/ActivityLog/ActivityLogSheet.vue';
 
 interface TopicOption {
   id: number;

@@ -95,7 +95,7 @@ export default defineConfig({
     // Default projects for daily development (unit + component)
     // Use --project storybook or test:all for browser testing
     projects: [
-      // Unit tests project - Services, Composables, Utils
+      // Unit tests project - Search, Composables, Utils
       jsdomProject(
         'unit',
         [

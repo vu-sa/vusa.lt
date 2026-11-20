@@ -41,7 +41,7 @@ const useDuplicateDutyCheckMock = vi.fn(() => ({
   isChecking: ref(false),
   check: vi.fn(),
 }));
-vi.mock('@/Composables/useDuplicateDutyCheck', () => ({
+vi.mock('@/Components/AdminForms/useDuplicateDutyCheck', () => ({
   useDuplicateDutyCheck: (...args: unknown[]) => useDuplicateDutyCheckMock(...args),
 }));
 

@@ -1384,7 +1384,7 @@ describe('alias', function (): void {
         $other->update(['alias' => 'kito-antras']);
 
         asUser($this->admin)->delete(route('institutions.publicUrls.destroy', [$institution, $other->publicUrls()->first()]))
-            ->assertForbidden();
+            ->assertNotFound();
 
         asUser($this->admin)->delete(route('institutions.publicUrls.destroy', [$institution, $institution->publicUrls()->first()]))
             ->assertRedirect();

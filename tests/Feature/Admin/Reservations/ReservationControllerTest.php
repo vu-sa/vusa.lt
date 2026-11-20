@@ -269,12 +269,14 @@ describe('auth: reservation manager', function (): void {
     });
 
     test('can access existing reservation', function (): void {
-        $response = asUser($this->reservationManager)->get(route('reservations.show', $this->reservation->id));
+        $response = asUserWithInertia($this->reservationManager)->get(route('reservations.show', $this->reservation->id));
 
         $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
             ->component('Admin/Reservations/ShowReservation')
             ->whereNot('reservation', null)
             ->where('reservation.id', $this->reservation->id)
+            ->missing('allUsers')
+            ->reload(fn (Assert $reload) => $reload->missing('allUsers'), only: 'allUsers')
         );
     });
 
@@ -364,6 +366,24 @@ describe('auth: reservation manager', function (): void {
             ]))
             ->assertOk()
             ->assertSessionHasNoErrors();
+    });
+});
+
+describe('reservationResources.show', function (): void {
+    test('redirects a reservation participant to the reservation', function (): void {
+        $pivot = $this->reservation->resources()->first()->pivot;
+
+        asUser($this->reservationManager)
+            ->get(route('reservationResources.show', $pivot->id))
+            ->assertRedirectToRoute('reservations.show', $this->reservation);
+    });
+
+    test('refuses to disclose the reservation redirect to an outsider', function (): void {
+        $pivot = $this->reservation->resources()->first()->pivot;
+
+        asUser($this->user)
+            ->get(route('reservationResources.show', $pivot->id))
+            ->assertForbidden();
     });
 });
 

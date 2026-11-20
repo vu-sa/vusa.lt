@@ -50,8 +50,8 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { computed, watch } from 'vue';
 
 import SheetForm from '@/Components/Patterns/SheetForm.vue';
-import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
-import MultiLocaleTiptapFormItem from '@/Components/FormItems/MultiLocaleTiptapFormItem.vue';
+import MultiLocaleInput from '@/Components/AdminForms/MultiLocaleInput.vue';
+import MultiLocaleTiptapFormItem from '@/Components/AdminForms/MultiLocaleTiptapFormItem.vue';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Checkbox } from '@/Components/ui/checkbox';

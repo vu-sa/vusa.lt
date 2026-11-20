@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Duty;
+use App\Models\Institution;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\UserSimilarityFinder;
@@ -21,7 +23,7 @@ describe('search', function (): void {
         $current->update(['name' => 'Zita Rankauskienė']);
 
         $hits = collect(asUser($this->coordinator)
-            ->getJson(route('api.v1.admin.users.search', ['search' => 'Rankausk', 'permission' => 'users.read.padalinys']))
+            ->getJson(route('api.v1.admin.users.search', ['search' => 'Rankausk', 'purpose' => 'problem']))
             ->assertOk()
             ->json('data'));
 
@@ -30,27 +32,29 @@ describe('search', function (): void {
             ->and($hits[1]['last_term_year'])->toBe(2020);
     });
 
-    test('matches on email as well as name', function (): void {
+    test('matches on email and returns the full address for a problem', function (): void {
         $target = makeUser($this->tenant);
         $target->update(['name' => 'Petras Petraitis', 'email' => 'unique.handle@stud.vu.lt']);
 
         $response = asUser($this->coordinator)
             ->getJson(route('api.v1.admin.users.search', [
                 'search' => 'unique.handle',
-                'permission' => 'users.read.padalinys',
+                'purpose' => 'problem',
             ]))
             ->assertStatus(200);
 
-        expect(collect($response->json('data'))->pluck('id'))->toContain($target->id);
+        $match = collect($response->json('data'))->firstWhere('id', $target->id);
+
+        expect($match)->toHaveKey('email', 'unique.handle@stud.vu.lt');
     });
 
-    test('returns users with no duties so they can be given one', function (): void {
+    test('includes unclaimed users in problem searches', function (): void {
         $unclaimed = User::factory()->create(['name' => 'Nauja Narė']);
 
         $response = asUser($this->coordinator)
             ->getJson(route('api.v1.admin.users.search', [
                 'search' => 'Nauja',
-                'permission' => 'users.read.padalinys',
+                'purpose' => 'problem',
             ]))
             ->assertStatus(200);
 
@@ -64,60 +68,108 @@ describe('search', function (): void {
         $response = asUser($this->coordinator)
             ->getJson(route('api.v1.admin.users.search', [
                 'search' => 'Nauja',
-                'permission' => 'users.read.padalinys',
+                'purpose' => 'problem',
             ]))
             ->assertStatus(200);
 
         expect(collect($response->json('data'))->pluck('id'))->not->toContain($superAdmin->id);
     });
 
-    test('excludes a claimed user from another tenant by default', function (): void {
+    test('excludes users outside the caller’s problem scope', function (): void {
         $foreign = makeUser(Tenant::factory()->create(['type' => 'padalinys']));
         $foreign->update(['name' => 'Svetimas Svetimaitis']);
 
         $response = asUser($this->coordinator)
             ->getJson(route('api.v1.admin.users.search', [
                 'search' => 'Svetimas',
-                'permission' => 'users.read.padalinys',
+                'purpose' => 'problem',
             ]))
             ->assertStatus(200);
 
         expect(collect($response->json('data'))->pluck('id'))->not->toContain($foreign->id);
     });
 
-    test('scope=all returns people from every tenant', function (): void {
-        // The duty wizard needs this: assigning somebody from another unit is how a
-        // person joins a new one. Hiding them is what makes admins create a second
-        // account for a person who already exists.
+    test('accepts either problem permission on its own', function (string $permission): void {
+        $actor = makeUser($this->tenant);
+        $actor->duties()->firstOrFail()->givePermissionTo($permission);
+        $target = makeUser($this->tenant);
+        $target->update(['name' => 'Rūta Leidimaitė']);
+
+        asUser($actor)->getJson(route('api.v1.admin.users.search', [
+            'search' => 'Leidimaitė',
+            'purpose' => 'problem',
+        ]))
+            ->assertOk()
+            ->assertJsonFragment(['id' => $target->id]);
+    })->with([
+        'create' => 'problems.create.padalinys',
+        'update' => 'problems.update.padalinys',
+    ]);
+
+    test('combines the tenants granted by the two problem permissions', function (): void {
+        $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
+        $actor = makeUser($this->tenant);
+        $actor->duties()->firstOrFail()->givePermissionTo('problems.create.padalinys');
+        $otherDuty = Duty::factory()->for(Institution::factory()->for($otherTenant))->create();
+        $otherDuty->givePermissionTo('problems.update.padalinys');
+        $actor->duties()->attach($otherDuty, ['start_date' => today()->subDay()]);
+
+        $local = makeUser($this->tenant);
+        $local->update(['name' => 'Rūta Aprėptis']);
+        $foreign = makeUser($otherTenant);
+        $foreign->update(['name' => 'Ieva Aprėptis']);
+
+        asUser($actor)->getJson(route('api.v1.admin.users.search', [
+            'search' => 'Aprėptis',
+            'purpose' => 'problem',
+        ]))
+            ->assertOk()
+            ->assertJsonFragment(['id' => $local->id])
+            ->assertJsonFragment(['id' => $foreign->id]);
+    });
+
+    test('searches every tenant when either problem permission is global', function (): void {
+        $actor = makeUser($this->tenant);
+        $actor->duties()->firstOrFail()->givePermissionTo(['problems.create.padalinys', 'problems.update.*']);
+        $foreign = makeUser(Tenant::factory()->create(['type' => 'padalinys']));
+        $foreign->update(['name' => 'Agnė Visuotinė', 'email' => 'visuotine@stud.vu.lt']);
+
+        $response = asUser($actor)->getJson(route('api.v1.admin.users.search', [
+            'search' => 'Visuotinė',
+            'purpose' => 'problem',
+        ]))->assertOk();
+
+        $match = collect($response->json('data'))->firstWhere('id', $foreign->id);
+
+        expect($match)->toHaveKey('email', 'visuotine@stud.vu.lt');
+    });
+
+    test('duty-member finds people across tenants and masks foreign emails', function (): void {
         $foreign = makeUser(Tenant::factory()->create(['type' => 'padalinys', 'shortname' => 'VU SA TEST']));
         $foreign->update(['name' => 'Svetimas Svetimaitis', 'email' => 'svetimas@stud.vu.lt']);
 
         $response = asUser($this->coordinator)
             ->getJson(route('api.v1.admin.users.search', [
                 'search' => 'Svetimas',
-                'permission' => 'duties.update.padalinys',
-                'scope' => 'all',
+                'purpose' => 'duty-member',
             ]))
             ->assertStatus(200);
 
         $match = collect($response->json('data'))->firstWhere('id', $foreign->id);
 
         expect($match)->not->toBeNull()
-            // The unit is what lets an admin tell two identical names apart.
             ->and($match['tenants'])->toContain('VU SA TEST')
-            // ...but a global picker must not double as an address book.
             ->and($match['email'])->toBe('s***@stud.vu.lt');
     });
 
-    test('scope=all still shows full emails for the admin own tenant', function (): void {
+    test('duty-member shows full emails in the caller’s duty scope', function (): void {
         $own = makeUser($this->tenant);
         $own->update(['name' => 'Savas Savaitis', 'email' => 'savas@stud.vu.lt']);
 
         $response = asUser($this->coordinator)
             ->getJson(route('api.v1.admin.users.search', [
                 'search' => 'Savas',
-                'permission' => 'users.read.padalinys',
-                'scope' => 'all',
+                'purpose' => 'duty-member',
             ]))
             ->assertStatus(200);
 
@@ -125,25 +177,57 @@ describe('search', function (): void {
             ->toBe('savas@stud.vu.lt');
     });
 
-    test('rejects an unknown scope rather than silently widening', function (): void {
-        asUser($this->coordinator)
-            ->getJson(route('api.v1.admin.users.search', ['search' => 'Jonas', 'scope' => 'everything']))
-            ->assertStatus(422);
+    test('returns 403 for a restricted purpose when the caller has no grant', function (string $purpose): void {
+        asUser(makeUser($this->tenant))
+            ->getJson(route('api.v1.admin.users.search', ['search' => 'Jonas', 'purpose' => $purpose]))
+            ->assertForbidden();
+    })->with(['duty-member', 'problem']);
+
+    test('involve finds someone in another tenant without returning an email', function (): void {
+        $foreign = makeUser(Tenant::factory()->create(['type' => 'padalinys']));
+        $foreign->update(['name' => 'Svetimas Svetimaitis', 'email' => 'svetimas@stud.vu.lt']);
+
+        $response = asUser(makeUser($this->tenant))
+            ->getJson(route('api.v1.admin.users.search', ['search' => 'Svetimas', 'purpose' => 'involve']))
+            ->assertOk();
+
+        $match = collect($response->json('data'))->firstWhere('id', $foreign->id);
+
+        expect($match)->toHaveKey('name', 'Svetimas Svetimaitis')
+            ->not->toHaveKey('email');
     });
 
-    test('requires an explicit permission rather than defaulting the tenant scope', function (): void {
-        // The permission decides which tenants the caller may pick from, so a
-        // forgotten parameter must be a validation error, not a silent fallback.
-        asUser($this->coordinator)
-            ->getJson(route('api.v1.admin.users.search', ['search' => 'Jonas']))
-            ->assertStatus(422)
-            ->assertJsonValidationErrors('permission');
+    test('involve does not match on email, so it cannot reveal whose address it is', function (): void {
+        $foreign = makeUser(Tenant::factory()->create(['type' => 'padalinys']));
+        $foreign->update(['name' => 'Svetimas Svetimaitis', 'email' => 'unique.handle@stud.vu.lt']);
+
+        $response = asUser(makeUser($this->tenant))
+            ->getJson(route('api.v1.admin.users.search', ['search' => 'unique.handle', 'purpose' => 'involve']))
+            ->assertOk();
+
+        expect($response->json('data'))->toBe([]);
     });
+
+    test('returns 401 for involve when the caller is a guest', function (): void {
+        $this->getJson(route('api.v1.admin.users.search', ['search' => 'Jonas', 'purpose' => 'involve']))
+            ->assertUnauthorized();
+    });
+
+    test('returns 422 for an unknown or missing purpose', function (array $query): void {
+        asUser($this->coordinator)
+            ->getJson(route('api.v1.admin.users.search', ['search' => 'Jonas', ...$query]))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('purpose');
+    })->with([
+        'unknown purpose' => [['purpose' => 'everything']],
+        'missing purpose' => [[]],
+    ]);
 
     test('still requires at least two characters', function (): void {
         asUser($this->coordinator)
-            ->getJson(route('api.v1.admin.users.search', ['search' => 'a']))
-            ->assertStatus(422);
+            ->getJson(route('api.v1.admin.users.search', ['search' => 'a', 'purpose' => 'problem']))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('search');
     });
 });
 

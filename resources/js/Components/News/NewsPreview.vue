@@ -56,12 +56,12 @@ import { PreviewFact, PreviewFacts, PreviewPane, StatusBadge } from '@/Component
 import { Button } from '@/Components/ui/button';
 import { contentStatuses } from '@/Constants/statusIcons';
 import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
-import { stripHtml } from '@/Features/Admin/AdminSearch/Utils/html';
-import type { NewsSearchResult } from '@/Shared/Search/types';
+import { stripHtml } from '@/Search/admin/Utils/html';
+import type { NewsSearchResult } from '@/Search/core/types';
 import { formatDate } from '@/Utils/dateTime';
 import { localizedRoute } from '@/Utils/LocalizedRoutes';
 
-import { newsStatus } from './newsStatus';
+import { newsStatus } from '@/Search/admin/Utils/newsStatus';
 
 const props = defineProps<{
   news: NewsSearchResult;

@@ -7,7 +7,7 @@ import { commonStubs } from '@/tests/stubs';
 import Step2DutySelect from '../Step2DutySelect.vue';
 import Step4Review from '../Step4Review.vue';
 
-vi.mock('@/Composables/useDuplicateDutyCheck', () => ({
+vi.mock('@/Components/AdminForms/useDuplicateDutyCheck', () => ({
   useDuplicateDutyCheck: () => ({ matches: ref({ same_institution: [], same_tenant: [], other_institution: [], other_institution_count: 0 }) }),
 }));
 

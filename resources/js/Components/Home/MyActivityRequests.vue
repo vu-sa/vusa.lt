@@ -41,7 +41,7 @@ import { MailQuestion } from '@lucide/vue';
 
 import { OverviewSection } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 

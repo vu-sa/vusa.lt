@@ -287,12 +287,7 @@ class CalendarController extends AdminController
     #[Authorize('update', 'calendar')]
     public function destroyPublicUrl(Calendar $calendar, PublicUrl $publicUrl): RedirectResponse
     {
-        // Resolve through the relation so a crafted payload cannot reach another event's URLs.
-        $publicUrlFromDb = $calendar->publicUrls()->find($publicUrl->id);
-
-        abort_if($publicUrlFromDb === null, 403, 'Public URL does not belong to this calendar event.');
-
-        $publicUrlFromDb->delete();
+        $publicUrl->delete();
 
         return back()->with('info', $this->entityMessage('deleted', 'publicUrl'));
     }

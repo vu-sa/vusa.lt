@@ -20,6 +20,7 @@ class ReservationResourceController extends AdminController
     /**
      * Redirect to the reservation show page. Separate reservation resource show pages are not needed.
      */
+    #[Authorize('view', 'reservationResource')]
     public function show(ReservationResource $reservationResource): RedirectResponse
     {
         return redirect()->route('reservations.show', $reservationResource->reservation);

@@ -32,7 +32,7 @@ tests:
   - resources/js/Components/Merge/__tests__/UserMergeDutyEmails.component.test.ts
   - resources/js/Pages/Admin/People/__tests__/IndexUser.component.test.ts
   - resources/js/Composables/__tests__/useDatabaseCollectionSource.test.ts
-  - resources/js/Composables/__tests__/useDuplicateUserCheck.test.ts
+  - resources/js/Components/AdminForms/__tests__/useDuplicateUserCheck.test.ts
 ---
 
 # Nariai

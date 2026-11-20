@@ -7,7 +7,7 @@ import {
   getStudentBenefitLabel,
   getStudentVoteLabel,
 } from '@/Composables/useAgendaItemStyling';
-import { getFacetValueLabel } from '@/Features/Admin/AdminSearch/Config/collectionFacetConfig';
+import { getFacetValueLabel } from '@/Search/admin/Config/collectionFacetConfig';
 
 const vote = (overrides: Record<string, unknown> = {}) => ({
   id: 'v1',

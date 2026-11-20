@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { CalendarDays, CalendarSearch, History, Landmark } from '@lucide/vue';
 
-import EntityTypeMark from '@/Components/EntityTypeMark.vue';
+import EntityTypeMark from '@/Components/Patterns/EntityTypeMark.vue';
 
 import ActionChoiceButton from './ActionChoiceButton.vue';
 import ActionChoiceList from './ActionChoiceList.vue';

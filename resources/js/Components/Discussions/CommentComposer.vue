@@ -157,7 +157,7 @@ import CommentMentionList from '@/Components/Discussions/CommentMentionList.vue'
 import CommentToolbar from '@/Components/Discussions/CommentToolbar.vue';
 import PollOptionsEditor from '@/Components/Discussions/PollOptionsEditor.vue';
 import { useComposerImages } from '@/Components/Discussions/useComposerImages';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import TiptapToolButton from '@/Components/TipTap/TiptapToolButton.vue';
 import { createSuggestionRenderer } from '@/Components/TipTap/composables/createSuggestionRenderer';
 import { createCommentExtensions } from '@/Components/TipTap/extensions/presets';

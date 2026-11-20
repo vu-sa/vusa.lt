@@ -17,7 +17,6 @@ use App\Http\Requests\StoreReservationRequest;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Reservation;
 use App\Models\Resource;
-use App\Models\User;
 use App\Notifications\AssignedToResourceNotification;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
@@ -204,7 +203,6 @@ class ReservationController extends AdminController
                     'lowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($capacityAtDateTimeRange),
                 ];
             })),
-            'allUsers' => Inertia::optional(fn () => User::select('id', 'name', 'profile_photo_path')->orderBy('name')->get()),
         ]);
     }
 
