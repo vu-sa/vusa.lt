@@ -3,6 +3,7 @@
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Meeting;
+use App\Models\Reservation;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
@@ -59,4 +60,17 @@ test('a direct tenant meeting read permission and a current duty allow viewing a
     $this->reader->givePermissionTo('meetings.read.padalinys');
 
     expect(Gate::forUser($this->reader)->allows('view', $this->task))->toBeTrue();
+});
+
+test('an assignee whose term has ended still sees and updates their task, and a requester their reservation', function (): void {
+    attachTaskPolicyDuty($this->reader, $this->institution, [], [
+        'start_date' => now()->subYears(3),
+        'end_date' => now()->subYears(2),
+    ]);
+    $this->task->users()->attach($this->reader);
+    $reservation = Reservation::factory()->hasAttached($this->reader)->create();
+
+    expect(Gate::forUser($this->reader)->allows('view', $this->task))->toBeTrue()
+        ->and(Gate::forUser($this->reader)->allows('update', $this->task))->toBeTrue()
+        ->and(Gate::forUser($this->reader)->allows('view', $reservation))->toBeTrue();
 });
