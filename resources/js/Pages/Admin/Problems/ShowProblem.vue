@@ -48,7 +48,7 @@
 
     <template #aprasymas>
       <div class="max-w-3xl space-y-4">
-        <!-- eslint-disable-next-line vue/no-v-html -->
+        <!-- v-html: sanitized on write (Problem::sanitizedHtmlTranslations) -->
         <div v-if="localizedDescription" class="prose prose-zinc dark:prose-invert max-w-none text-sm" v-html="localizedDescription" />
         <p v-else class="text-sm italic text-muted-foreground">
           {{ $t('problems.show.no_description') }}
@@ -59,7 +59,7 @@
     <template #veiksmai>
       <!-- Goals pilot: steps are the record of what was done; the older free text stays above as a summary. -->
       <div v-if="goalsExperiment" class="space-y-8">
-        <!-- eslint-disable-next-line vue/no-v-html -->
+        <!-- v-html: sanitized on write (Problem::sanitizedHtmlTranslations) -->
         <div v-if="hasStepsTaken" class="prose prose-zinc dark:prose-invert max-w-3xl text-sm" v-html="localizedStepsTaken" />
         <Deferred data="goalLinks">
           <template #fallback>
@@ -78,7 +78,7 @@
         </Deferred>
       </div>
       <div v-else class="max-w-3xl space-y-4">
-        <!-- eslint-disable-next-line vue/no-v-html -->
+        <!-- v-html: sanitized on write (Problem::sanitizedHtmlTranslations) -->
         <div v-if="hasStepsTaken" class="prose prose-zinc dark:prose-invert max-w-none text-sm" v-html="localizedStepsTaken" />
         <EmptyState
           v-else
@@ -93,7 +93,7 @@
 
     <template #sprendimas>
       <div class="max-w-3xl space-y-4">
-        <!-- eslint-disable-next-line vue/no-v-html -->
+        <!-- v-html: sanitized on write (Problem::sanitizedHtmlTranslations) -->
         <div v-if="hasSolution" class="border border-status-success-border bg-status-success-surface p-4 text-sm text-foreground" v-html="localizedSolution" />
         <EmptyState
           v-else

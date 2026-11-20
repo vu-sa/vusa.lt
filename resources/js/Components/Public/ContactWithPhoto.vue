@@ -44,6 +44,7 @@
               </span>
             </span>
             <InfoPopover v-if="hasDutyDescription(duty)" compact style="max-width: 400px" trigger="hover" color="gray">
+              <!-- v-html: sanitized on write (Duty / Dutiable::sanitizedHtmlTranslations) -->
               <span v-html="dutyDescription(duty)" />
             </InfoPopover>
           </p>

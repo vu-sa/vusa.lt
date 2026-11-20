@@ -12,6 +12,7 @@
     <template #title>
       <div v-if="!isTitleLive" role="heading" :aria-level="variant === 'banner' ? 2 : 1" :class="[titleClass, titleAlignmentClass]">
         <button type="button" class="block w-full cursor-text text-inherit" data-rc-interactive @click="claimTitle">
+          <!-- v-html: sanitized on write (ContentPart::sanitizeJsonContentHtml) -->
           <span v-if="hasTitle" v-html="element.json_content.title" />
           <span v-else class="text-muted-foreground/50">{{ $t('rich-content.title') }}</span>
         </button>
@@ -33,6 +34,7 @@
     <template #description>
       <p v-if="!isDescriptionLive" :class="descriptionClass">
         <button type="button" class="block w-full cursor-text text-left" data-rc-interactive @click="claimDescription">
+          <!-- v-html: sanitized on write (ContentPart::sanitizeJsonContentHtml) -->
           <span v-if="hasDescription" v-html="element.json_content.description" />
           <span v-else class="text-muted-foreground/50">{{ $t('rich-content.description') }}</span>
         </button>

@@ -1,4 +1,5 @@
 <template>
+  <!-- v-html: built by Tiptap generateHTML from ContentPart JSON; the schema drops unknown nodes -->
   <div class="rc-prose tracking-normal" v-html="generateHTMLfromTiptap(json_content)" />
 </template>
 

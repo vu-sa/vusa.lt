@@ -62,6 +62,7 @@
 
       <!-- While the dialog holds the live editor, the sidebar shows a snapshot. -->
       <div v-else-if="expanded" class="px-2">
+        <!-- v-html: sanitized on write (AgendaItemNote notes mutator); local edits are the author's own -->
         <div
           v-if="notes.notesHtml.value"
           class="typography max-h-64 overflow-y-auto text-sm"

@@ -1,5 +1,6 @@
 <template>
   <div class="relative">
+    <!-- v-html: sanitized on write (ContentPart::sanitizeJsonContentHtml) -->
     <div v-if="typeof element.html === 'string'" class="rc-prose" v-html="element.html" />
     <div v-else-if="element.html === null" class="text-sm italic text-muted-foreground">
       {{ $t('Turinio nepavyko atvaizduoti') }}

@@ -177,7 +177,7 @@
       :label="$t('Aprašymas')"
     >
       <template v-if="readOnly">
-        <!-- eslint-disable-next-line vue/no-v-html -- calendar rich text is sanitized when written -->
+        <!-- v-html: sanitized on write (Calendar::sanitizedHtmlTranslations) -->
         <div class="rc-prose tracking-normal" v-html="form.description?.[activeLocale]" />
       </template>
       <TiptapEditor

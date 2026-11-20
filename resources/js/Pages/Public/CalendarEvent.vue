@@ -22,6 +22,7 @@
         <!-- Main Content -->
         <main class="order-last min-w-0 space-y-10 lg:order-none">
           <!-- Description / Rich Content -->
+          <!-- v-html: sanitized on write (Calendar::sanitizedHtmlTranslations) -->
           <article
             v-if="event.description"
             class="rc-prose max-w-none"

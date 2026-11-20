@@ -91,6 +91,7 @@
           v-if="!editable"
           :class="titleClass"
         >
+          <!-- v-html: sanitized on write (ContentPart::sanitizeJsonContentHtml) -->
           <span v-if="hasTitle" v-html="slide.title" />
           <span v-else>{{ slide.title }}</span>
         </h2>
@@ -106,6 +107,7 @@
             data-rc-interactive
             @click="claimTitle"
           >
+            <!-- v-html: sanitized on write (ContentPart::sanitizeJsonContentHtml) -->
             <span v-if="hasTitle" v-html="slide.title" />
             <span v-else class="text-white/40">{{ $t('rich-content.title') }}</span>
           </button>
@@ -139,11 +141,13 @@
           <div v-if="!isDescriptionLive" class="rc-prose rc-prose-invert text-sm leading-relaxed text-white/85 sm:text-base">
             <button v-if="editable" type="button" class="block w-full cursor-text text-left text-inherit" data-rc-interactive @click="claimDescription">
               <RichContentTiptapHTML v-if="hasTiptapContent(slide.description)" :json_content="slide.description" />
+              <!-- v-html: sanitized on write (ContentPart::sanitizeJsonContentHtml) -->
               <span v-else-if="hasHtmlContent(slide.description)" v-html="slide.description" />
               <span v-else class="text-white/40">{{ $t('rich-content.description') }}</span>
             </button>
             <template v-else>
               <RichContentTiptapHTML v-if="hasTiptapContent(slide.description)" :json_content="slide.description" />
+              <!-- v-html: sanitized on write (ContentPart::sanitizeJsonContentHtml) -->
               <span v-else-if="hasHtmlContent(slide.description)" v-html="slide.description" />
             </template>
           </div>

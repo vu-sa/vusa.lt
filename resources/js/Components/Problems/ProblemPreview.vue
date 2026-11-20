@@ -38,7 +38,7 @@
 
     <PreviewSection v-if="description" :title="$t('Aprašymas')">
       <!-- Sanitized on write (HtmlSanitizerService via the model). -->
-      <!-- eslint-disable-next-line vue/no-v-html -->
+      <!-- v-html: sanitized on write (Problem::sanitizedHtmlTranslations) -->
       <div class="line-clamp-6 text-sm text-foreground/90" v-html="description" />
     </PreviewSection>
   </PreviewPane>

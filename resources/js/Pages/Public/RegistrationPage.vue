@@ -12,6 +12,7 @@
     <section class="mx-auto max-w-7xl px-5 py-8 sm:px-6 sm:py-12 lg:px-8">
       <div class="max-w-prose">
         <!-- Rich Description -->
+        <!-- v-html: sanitized on write (Form::sanitizedHtmlTranslations) -->
         <div v-if="form.description" class="typography mb-8" v-html="form.description" />
 
         <!-- Show pre-filled institution name if provided -->

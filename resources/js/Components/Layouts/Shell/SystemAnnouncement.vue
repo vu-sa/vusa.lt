@@ -5,7 +5,7 @@
       <h3 class="font-medium">
         {{ $t('System Announcement') }}
       </h3>
-      <!-- eslint-disable-next-line vue/no-v-html -- HTML authored by admins in Nustatymai, rendered as the legacy shell does -->
+      <!-- v-html: app.systemMessage has no backend source; sanitize on write before adding one -->
       <div class="mt-1 text-sm" v-html="message" />
     </div>
   </div>

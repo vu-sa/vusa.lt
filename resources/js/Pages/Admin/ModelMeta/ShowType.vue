@@ -14,7 +14,7 @@
     <template #overview>
       <div class="grid gap-10 xl:grid-cols-2 xl:gap-16">
         <OverviewSection variant="home" :title="$t('Aprašymas')" :icon="FileText">
-          <!-- eslint-disable-next-line vue/no-v-html -- sanitised on write (DutyType/InstitutionType::sanitizedHtmlTranslations) -->
+          <!-- v-html: sanitized on write (DutyType / InstitutionType::sanitizedHtmlTranslations) -->
           <div v-if="description?.trim()" class="prose prose-sm dark:prose-invert max-w-none text-foreground" v-html="description" />
           <p v-else class="text-sm text-muted-foreground">
             {{ $t('Aprašymo nėra.') }}
