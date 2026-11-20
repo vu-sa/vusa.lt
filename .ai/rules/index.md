@@ -9,6 +9,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Enums/ModelEnum.php, app/Support/MorphMap.php, app/Services/AdminNavigation/AdminNavigationCatalog.php, app/Policies/ModelPolicy.php | .ai/rules/admin-section.md |
 | resources/js/Pages/Admin/ShowAdminHome.vue, resources/js/Components/Home/** | .ai/rules/admin-home.md |
 | app/**, tests/Feature/System/DutiableDetachConventionTest.php | .ai/rules/app.md |
+| app/Actions/**, app/Services/**, app/Support/**, app/ValueObjects/**, app/Helpers/** | .ai/rules/backend-layout.md |
 | app/Actions/Get*.php, app/Actions/Resolve*.php, app/Tasks/Subscribers/**, app/Models/InstitutionSecretary.php, app/Services/CommentableMentionResolver.php, app/Console/Commands/SendMeetingReminders.php, app/Notifications/** | .ai/rules/audiences.md |
 | resources/js/Components/Public/Base/MediaFrame.vue | .ai/rules/base.md |
 | tests/Browser/** | .ai/rules/browser.md |

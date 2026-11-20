@@ -260,11 +260,15 @@ Public controllers extending `PublicController` should call `shareOtherLangURL()
 - `attribute_changes` column = `{attributes, old}` (auto, from `LogsActivity`); `properties` column = your `withProperties()` data.
 - Config: `config/activitylog.php` (`enabled`, `clean_after_days`, `default_except_attributes`).
 
+### Where backend code lives
+
+Actions, Services and Support each have one job; see `.ai/rules/backend-layout.md` before adding a class to `app/`.
+
 ### Common helper patterns
 
 ```php
-// Always pass both args
-GetTenantsForUpserts::execute('models.create.padalinys', $this->authorizer);
+// The controller reads the actor; actions and services take it as an argument
+GetTenantsForUpserts::execute($request->user(), 'models.create.padalinys', $this->authorizer);
 
 // Manual filtering before TanStack filters
 if ($request->filled('field')) {
