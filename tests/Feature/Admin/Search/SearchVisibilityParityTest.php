@@ -177,15 +177,23 @@ test('duties in the list and in search are exactly the ones the member may open'
         ->and($member->can('update', $external))->toBeFalse();
 });
 
-test('a member can open a former duty outside their list', function (): void {
+test('a duty the member held in another unit is in their list and search too', function (): void {
     $member = $this->member;
     $member->givePermissionTo('duties.read.padalinys');
-    $duty = Duty::factory()->for(Institution::factory()->for($this->otherTenant))->create();
-    $member->duties()->attach($duty, ['start_date' => now()->subYears(2), 'end_date' => now()->subYear()]);
+    $held = Duty::factory()->for(Institution::factory()->for($this->otherTenant))->create();
+    $unrelated = Duty::factory()->for(Institution::factory()->for($this->otherTenant))->create();
+    $member->duties()->attach($held, ['start_date' => now()->subYears(2), 'end_date' => now()->subYear()]);
     app(ModelAuthorizer::class)->resetCache($member);
+    TypesenseScopedKeyService::invalidateForUser($member->id);
 
-    expect(Gate::forUser($member)->allows('view', $duty))->toBeTrue()
-        ->and(app(DutyAccessService::class)->visibleDuties(Duty::query()->whereKey($duty->id), $member)->exists())->toBeFalse();
+    $duties = collect([$held, $unrelated]);
+    $listed = app(DutyAccessService::class)->visibleDuties(Duty::query()->whereKey($duties->pluck('id')), $member)
+        ->pluck('id')->sort()->values()->all();
+
+    expect(parityAdmittedIds(Duty::class, parityKeyFilter($member, 'duties'), $duties))
+        ->toBe(parityAllowedIds($member, $duties, 'view'))
+        ->toBe($listed)
+        ->toBe([(string) $held->id]);
 });
 
 test('a role-free member finds their current institutions meetings from any term', function (): void {

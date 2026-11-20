@@ -290,7 +290,7 @@ Kad duomenų bazėje nesidaugintų dubliuotos pareigybės:
 
 ### Pareigybių sąrašas ir filtrai {#sarasas}
 
-Pareigybių sąraše (`/mano/duties`) pateikiamos visos pasiekiamos pareigybės:
+Pareigybių sąraše (`/mano/duties`) pateikiamos visos pasiekiamos pareigybės, taip pat tos, kurias pats eini ar ėjai:
 
 - **Paieška**: galima ieškoti pagal pareigybės pavadinimą, el. paštą arba instituciją.
 - Ilgas pareigybės pavadinimas neišplečia lentelės už jos ribų; slenkant lentelę horizontaliai, veiksmų meniu lieka pasiekiamas.
@@ -516,7 +516,8 @@ laikotarpyje gali turėti nurodytą papildomą kontaktinį el. paštą ar asmeni
 - Pareigybių administravimą reglamentuoja `DutyPolicy`.
 - `duties.read.*` leidžia matyti visas sistemos pareigybes; `duties.read.padalinys` riboja matomumą
   iki vartotojo atstovaujamo padalinio institucijų ir bendrų pareigybių, kurių `assignableTenants`
-  apima tą padalinį. Sąrašą, paiešką ir įrašo atidarymą lemia ta pati taisyklė (`DutyAccessService`).
+  apima tą padalinį. Sąrašą, paiešką ir įrašo atidarymą lemia ta pati taisyklė (`DutyAccessService`);
+  sąraše ir paieškoje matomos ir naudotojo eitos pareigybės.
 - Kiekvienas naudotojas, kuris bent kartą ėjo pareigybę, turi teisę peržiūrėti tos pareigybės įrašą
   (`DutyPolicy::view`).
 - `DutyPolicy::managePeople` tikrina, ar vartotojas gali priskirti ir šalinti narius: savame

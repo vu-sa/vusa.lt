@@ -44,12 +44,27 @@ final class DutyAccessService
 
         $tenantIds = $this->authorizer->scope($user, 'duties.read.padalinys')->tenantIds()->all();
 
-        return $query->where(function (Builder $query) use ($tenantIds, $includeExternal): void {
+        return $query->where(function (Builder $query) use ($tenantIds, $includeExternal, $user): void {
             $query->whereHas('institution.tenant', fn (Builder $tenantQuery) => $tenantQuery->whereIn('id', $tenantIds));
 
             if ($includeExternal) {
                 $query->orWhereHas('assignableTenants', fn (Builder $tenantQuery) => $tenantQuery->whereIn('tenants.id', $tenantIds));
             }
+
+            $query->orWhereHas('users', fn (Builder $holders) => $holders->whereKey($user->getKey()));
         });
+    }
+
+    /** The scoped key's filter: the tenant clause the key service built, or a duty the user holds or held. */
+    public function searchFilter(User $user, ?string $tenantFilter): ?string
+    {
+        $held = $user->duties()->pluck('duties.id')->unique()->map(fn (string $id): string => "`{$id}`");
+        $clauses = array_values(array_filter([$tenantFilter, $held->isEmpty() ? null : 'id:=['.$held->implode(',').']']));
+
+        return match (count($clauses)) {
+            0 => null,
+            1 => $clauses[0],
+            default => '('.implode(' || ', $clauses).')',
+        };
     }
 }
