@@ -105,27 +105,8 @@
       </DialogHeader>
       <div class="space-y-4">
         <div class="space-y-2">
-          <Label>{{ $t('Naudotojai') }}</Label>
-          <MultiSelect
-            ref="userMultiSelectRef"
-            v-model="selectedUsersList"
-            :options="allUsers ?? []"
-            label-field="name"
-            value-field="id"
-            :placeholder="`${$t('Pasirink')}...`"
-            :empty-text="$t('No users found.')"
-          >
-            <template #selected-item="{ item: user }">
-              <div class="flex items-center gap-1">
-                <UserAvatar :user="(user as unknown as App.Entities.User)" size="xxs" />
-                <span class="max-w-[120px] truncate">{{ (user as unknown as App.Entities.User).name }}</span>
-              </div>
-            </template>
-            <template #option="{ item: user }">
-              <UserAvatar :user="(user as unknown as App.Entities.User)" size="xxs" class="shrink-0" />
-              <span class="min-w-0 truncate">{{ (user as unknown as App.Entities.User).name }}</span>
-            </template>
-          </MultiSelect>
+          <Label for="reservation-add-users">{{ $t('Naudotojai') }}</Label>
+          <PeopleSearchField v-model="selectedUsersList" input-id="reservation-add-users" />
         </div>
         <Button variant="brand" :disabled="selectedUsersList.length === 0 || reservationUserForm.processing" @click="handleSubmitUserForm">
           <Check v-if="!reservationUserForm.processing" class="size-4" aria-hidden="true" />
@@ -157,7 +138,6 @@ import { computed, ref, watch, capitalize } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import { Check, CheckCheck, Info, Plus, Trash2, UserPlus } from '@lucide/vue';
 
-import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import ReservationResourceForm from '@/Components/AdminForms/ReservationResourceForm.vue';
 import RecordPage, { type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
@@ -169,11 +149,12 @@ import ReservationStateSummary from '@/Components/Tag/ReservationStateSummary.vu
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Label } from '@/Components/ui/label';
-import { MultiSelect } from '@/Components/ui/multi-select';
 import { NativeSelect } from '@/Components/ui/native-select';
 import { useDocsHref } from '@/Composables/useDocsHref';
 import { RESERVATION_CARD_MODAL_TITLES } from '@/Constants/I18n/CardModalTitles';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
+import PeopleSearchField from '@/Features/Admin/AdminSearch/Components/Select/PeopleSearchField.vue';
+import type { MemberHit } from '@/Features/Admin/AdminSearch/Components/Select/UserSearchField.vue';
 import { ModelEnum } from '@/Types/enums';
 import type { DashboardReservation, ReservationResourceState } from '@/Utils/ReservationStatus';
 import { getPrimaryAction, isPivotUnresolved, summarizeStates } from '@/Utils/ReservationStatus';
@@ -187,7 +168,6 @@ const props = defineProps<{
   decisionTarget: DashboardReservation;
   can: { update: boolean; delete: boolean };
   allResources?: App.Entities.Resource[];
-  allUsers?: App.Entities.User[];
 }>();
 
 // --- Sections and key facts -------------------------------------------------------------------
@@ -336,8 +316,7 @@ const reservationUserForm = useForm({
   users: null as string[] | null,
 });
 
-const selectedUsersList = ref<App.Entities.User[]>([]);
-const userMultiSelectRef = ref<{ reset: () => void } | null>(null);
+const selectedUsersList = ref<MemberHit[]>([]);
 
 watch(selectedUsersList, (users) => {
   reservationUserForm.users = users.map(user => user.id);
@@ -351,7 +330,6 @@ const handleAddResource = () => {
 };
 
 const handleAddUser = () => {
-  router.reload({ only: ['allUsers'] });
   showReservationAddUserModal.value = true;
 };
 
@@ -360,7 +338,6 @@ const handleSubmitUserForm = () => {
     onSuccess: () => {
       reservationUserForm.reset();
       selectedUsersList.value = [];
-      userMultiSelectRef.value?.reset();
       showReservationAddUserModal.value = false;
     },
   });

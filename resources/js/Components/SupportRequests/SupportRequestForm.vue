@@ -271,14 +271,14 @@
         </div>
 
         <FormFieldWrapper
-          v-if="!isEditing && users.length > 0"
+          v-if="!isEditing"
           id="involved_users"
           :label="$t('Susiję žmonės')"
           :hint="$t('Pridėti žmonės matys šį pranešimą, galės jį komentuoti ir gaus atnaujinimus.')"
           :error="form.errors.involved_users"
           class="pt-2 border-t"
         >
-          <InvolvedUsersPicker v-model="involvedUsers" :users />
+          <InvolvedUsersPicker v-model="involvedUsers" />
         </FormFieldWrapper>
       </FormPanel>
     </template>
@@ -320,13 +320,11 @@ const props = withDefaults(defineProps<{
   types: SupportRequestTaxonomyItem[];
   areas: SupportRequestTaxonomyItem[];
   roles: SupportRequestRoleOption[];
-  users?: SupportRequestUser[];
   supportRequest?: SupportRequestItem | null;
   context?: { url?: string; viewport?: string; browser?: string };
   backUrl?: string;
   showCancel?: boolean;
 }>(), {
-  users: () => [],
   supportRequest: null,
   context: undefined,
   backUrl: undefined,

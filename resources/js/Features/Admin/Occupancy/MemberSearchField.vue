@@ -5,8 +5,7 @@
     :error
     :allow-create
     :label="$t('Narys')"
-    permission="duties.update.padalinys"
-    scope="all"
+    purpose="duty-member"
     @update:model-value="emit('update:modelValue', $event)"
   />
 </template>

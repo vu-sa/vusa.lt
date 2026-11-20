@@ -112,7 +112,7 @@
             :model-value="selectedUser"
             :aria-label="capitalize($tChoice('entities.problem.responsible_user', 1))"
             :placeholder="$t('problems.form.responsible_user_placeholder')"
-            :permission="isEditing ? 'problems.update.padalinys' : 'problems.create.padalinys'"
+            purpose="problem"
             @update:model-value="handleUserSelect"
           />
         </FormFieldWrapper>

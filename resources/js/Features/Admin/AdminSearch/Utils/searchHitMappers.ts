@@ -140,7 +140,7 @@ export function normalizeUserApiHit(user: {
   tenants?: string[];
   is_current?: boolean;
   last_term_year?: number | null;
-}, { taken = false }: { taken?: boolean } = {}): NormalizedSearchHit {
+}, { taken = false, takenLabel = $t('Jau eina šias pareigas') }: { taken?: boolean; takenLabel?: string } = {}): NormalizedSearchHit {
   const tenants = user.tenants?.join(', ') || undefined;
   return {
     id: `users-${user.id}`,
@@ -149,7 +149,7 @@ export function normalizeUserApiHit(user: {
     icon: UserIcon,
     title: user.name,
     imageUrl: user.profile_photo_path || undefined,
-    subtitle: taken ? $t('Jau eina šias pareigas') : user.email,
+    subtitle: taken ? takenLabel : user.email,
     meta: user.is_current === false && user.last_term_year ? `${$t('Buvęs narys')} · ${user.last_term_year}` : undefined,
     badge: tenants,
     contextBadge: tenants,

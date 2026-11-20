@@ -26,7 +26,7 @@
           {{ $t('Priskirta') }}
           <Select :model-value="supportRequest.assignedTo?.id ?? 'unassigned'" @update:model-value="assign">
             <SelectTrigger class="w-52"><SelectValue /></SelectTrigger>
-            <SelectContent><SelectItem value="unassigned">{{ $t('Nepriskirta') }}</SelectItem><SelectItem v-for="assignee in assignees" :key="assignee.id" :value="assignee.id">{{ assignee.name }}</SelectItem></SelectContent>
+            <SelectContent><SelectItem value="unassigned">{{ $t('Nepriskirta') }}</SelectItem><SelectItem v-for="assignee in assignees ?? []" :key="assignee.id" :value="assignee.id">{{ assignee.name }}</SelectItem></SelectContent>
           </Select>
         </label>
         <Button v-if="permissions.can_manage_involved" variant="outline" voice="sentence" @click="openInvolvedSheet">
@@ -70,7 +70,7 @@
     :processing="savingInvolved"
     @submit="saveInvolvedUsers"
   >
-    <InvolvedUsersPicker v-model="selectedInvolvedUsers" :users="assignees" />
+    <InvolvedUsersPicker v-model="selectedInvolvedUsers" />
   </SheetForm>
   <ConfirmDialog v-model:open="deleteOpen" :title="$t('Šalinti pranešimą?')" :description="$t('Pranešimas bus perkeltas į šiukšlinę.')" :confirm-label="$t('Šalinti')" destructive @confirm="router.delete(route('supportRequests.destroy', supportRequest.id))" />
 </template>
@@ -97,7 +97,8 @@ import { safeHref } from '@/Utils/safeHref';
 const props = defineProps<{
   supportRequest: SupportRequestItem;
   availableStatuses: Array<{ value: string; label: string; badgeVariant: string }>;
-  assignees: SupportRequestUser[];
+  /** Sent only to those who may assign. */
+  assignees?: SupportRequestUser[];
   permissions: { can_update: boolean; can_update_status: boolean; can_assign: boolean; can_manage_involved: boolean; can_delete: boolean; can_restore: boolean };
 }>();
 const deleteOpen = ref(false);
@@ -141,7 +142,7 @@ const involvedSheetOpen = ref(false);
 const savingInvolved = ref(false);
 const selectedInvolvedUsers = ref<SupportRequestUser[]>([]);
 function openInvolvedSheet(): void {
-  selectedInvolvedUsers.value = props.assignees.filter(user => involvedUsers.value.some(involved => involved.id === user.id));
+  selectedInvolvedUsers.value = [...involvedUsers.value];
   involvedSheetOpen.value = true;
 }
 function saveInvolvedUsers(): void {

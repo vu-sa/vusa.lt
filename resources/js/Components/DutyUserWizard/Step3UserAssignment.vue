@@ -496,8 +496,7 @@ const runUserSearch = useDebounceFn(() => {
 
   const params = new URLSearchParams({
     search: userSearchQuery.value.trim(),
-    permission: 'duties.update.padalinys',
-    scope: 'all',
+    purpose: 'duty-member',
   });
   userSearchUrl.value = `${route('api.v1.admin.users.search')}?${params.toString()}`;
   executeUserSearch();

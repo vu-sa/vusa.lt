@@ -100,11 +100,14 @@ import { normalizeUserApiHit, type NormalizedSearchHit } from '../../Utils/searc
 
 import InlineSearchField from './InlineSearchField.vue';
 
+/** Decides on the server whom the search may reach; see `App\Enums\UserSearchPurpose`. */
+export type UserSearchPurpose = 'problem' | 'duty-member' | 'involve';
+
 /** What `api.v1.admin.users.search` returns — not a full User entity. */
 export interface MemberHit {
   id: string;
   name: string;
-  /** Masked for people outside the acting admin's units. */
+  /** Masked outside the acting admin's units; absent for `involve`. */
   email?: string;
   profile_photo_path?: string | null;
   tenants?: string[];
@@ -117,14 +120,14 @@ export interface MemberHit {
 
 const props = withDefaults(defineProps<{
   modelValue: MemberHit | null;
-  permission: string;
-  scope?: 'all';
+  purpose: UserSearchPurpose;
   label?: string;
   placeholder?: string;
   inputId?: string;
   ariaLabel?: string;
-  /** Members who already hold the duty; offered but not selectable. */
+  /** Offered but not selectable, e.g. members who already hold the duty. */
   takenIds?: string[];
+  takenLabel?: string;
   error?: string;
   /** Offer creating the person when they are not in the system yet. */
   allowCreate?: boolean;
@@ -153,10 +156,7 @@ const runSearch = useDebounceFn(() => {
     return;
   }
 
-  const params = new URLSearchParams({ search: term, permission: props.permission });
-  if (props.scope) {
-    params.set('scope', props.scope);
-  }
+  const params = new URLSearchParams({ search: term, purpose: props.purpose });
   searchUrl.value = `${route('api.v1.admin.users.search')}?${params.toString()}`;
   execute();
 }, 250);
@@ -165,7 +165,7 @@ watch(query, runSearch);
 
 const results = computed<MemberHit[]>(() => (query.value.trim().length >= 2 ? (data.value ?? []) : []));
 const isTaken = (hit: MemberHit) => props.takenIds.includes(hit.id);
-const rows = computed(() => results.value.map(hit => normalizeUserApiHit(hit, { taken: isTaken(hit) })));
+const rows = computed(() => results.value.map(hit => normalizeUserApiHit(hit, { taken: isTaken(hit), takenLabel: props.takenLabel })));
 const selected = computed(() => props.modelValue ? normalizeUserApiHit(props.modelValue) : null);
 const isDisabled = (hit: NormalizedSearchHit) => props.takenIds.includes(hit.recordId);
 const choose = (hit: NormalizedSearchHit) => {

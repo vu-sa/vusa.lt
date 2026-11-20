@@ -218,8 +218,7 @@ describe('ProblemForm.vue — responsible member picker', () => {
     const wrapper = mountForm();
     const picker = wrapper.getComponent(UserSearchField);
 
-    expect(picker.props('permission')).toBe('problems.create.padalinys');
-    expect(picker.props('scope')).toBeUndefined();
+    expect(picker.props('purpose')).toBe('problem');
     expect(wrapper.get('input#problem-responsible-user').attributes('role')).toBe('combobox');
 
     picker.vm.$emit('update:modelValue', { id: 'user-1', name: 'Jonas Jonaitis' });

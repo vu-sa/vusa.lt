@@ -4,3 +4,4 @@ export { default as InlineCollectionSelect } from './InlineCollectionSelect.vue'
 export { default as ResourceSelectDialog } from './ResourceSelectDialog.vue';
 export { default as InlineSearchField } from './InlineSearchField.vue';
 export { default as UserSearchField } from './UserSearchField.vue';
+export { default as PeopleSearchField } from './PeopleSearchField.vue';
