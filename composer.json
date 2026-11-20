@@ -9,7 +9,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.5",
-        "guzzlehttp/guzzle": "^7.2",
+        "guzzlehttp/guzzle": "^8.5",
         "hashids/hashids": "^5.0",
         "inertiajs/inertia-laravel": "^3.0",
         "intervention/image-laravel": "^4.0",
