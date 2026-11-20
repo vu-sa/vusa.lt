@@ -16,9 +16,9 @@ paths:
 
 ## A scope is only offered where a policy reads it
 - `*` — everywhere. `padalinys` — the tenants of the user's non-ended granting duties.
-- `own` — ids from the **same-named relation on `Duty`** (`ModelAuthorizer::resolveOwnModelIds`). A model with no such relation gets no `own` cell; offering one grants nothing. Check the relation before allowing `own`.
+- `own` — ids from the Duty relation `PermissionCatalog::OWN_SCOPES` names for the resource (`PermissionCatalog::ownRelation()`), with the editor's label for the cell. A resource not listed has no `own` cell and resolves to no records, so adding a relation to `Duty` never grants anything. Reservations stay out: participants already manage theirs, and `Duty::reservations()` reaches every past holder's.
 - `viewAny` and `create` only look at `.padalinys` (`HasCommonChecks`). `create.own` therefore exists only where the policy reads it and the resource is listed in `OWN_CREATE`: `meetings` (`MeetingPolicy::createFor`) and `documents` (`DocumentPolicy::create`; `own` = files of the duty's institution, for bodies like Revizijos komisija inside the main padalinys). Anything else must read it in its own policy first.
-- A scope reserved for later (`goals.*.own`) is allowed in `ModelEnum::getAllowedScopes` with a comment saying so.
+- A scope reserved for later (`goals.*.own`) is listed in `OWN_SCOPES` with a null relation and a comment saying so.
 
 ## A term grants access before it starts, and nothing else
 A future-dated term grants its permissions immediately, on purpose: `User::current_or_upcoming_duties` has no start check, so an incoming holder can prepare. It carries no responsibility until it starts. Contacts, mailing lists, tasks and any mail use started-and-not-ended (`current_duties`, `Dutiable::activeOn()`); `Dutiable::current()` means *allocated*, so it counts future terms and is for seats and quotas only. Tests: `ScheduledDutyAuthorizationTest`, `InstitutionActivityRequestControllerTest`.
@@ -31,4 +31,4 @@ What every signed-in member may do belongs in the **policy**, with a sentence in
 2. Restrict scopes to what the policy actually reads (`ModelEnum::getAllowedScopes`, `UNGRANTABLE`). Label the resource through `getEntityTypeDefinition` or `responsibilities.matrix.resources.<key>`.
 3. Run `vendor/bin/sail artisan permissions:sync --dry-run`, then without the flag. It creates the missing rows, and detaches and deletes every stored name the catalog no longer offers, listing who held it. Existing rows keep their ids and holders; a second run changes nothing. `deployment:run` runs it after `migrate`, so no migration is needed for catalog changes.
 4. Removing a permission is the same: take it out of the catalog and sync. Deleting a permission a responsibility holds removes real access, so read the "Held by" table before running it on production.
-5. `PermissionCatalogTest` fails when app code names a permission nobody can grant, and when an `own` cell has no `Duty` relation behind it.
+5. `PermissionCatalogTest` fails when app code names a permission nobody can grant, when the `own` cells change, and when an `OWN_SCOPES` relation is missing on `Duty`; `OwnScopeTest` checks that an unlisted `own` reaches nothing.

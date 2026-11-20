@@ -7,6 +7,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Authorization\PermissionScope;
 use App\Support\AuthorityCacheExpiry;
+use App\Support\Permissions\PermissionCatalog;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -90,16 +91,18 @@ class ModelAuthorizer
     }
 
     /**
-     * Permissable model IDs directly associated with the granting duties for an own-scope permission.
+     * IDs of the records an own-scope permission reaches through the granting duties, read through
+     * the relation `PermissionCatalog::ownRelation()` names for the resource; none when it names none.
      *
      * @param  Collection<int, Duty>  $duties
      * @return \Illuminate\Support\Collection<int, int|string>
      */
-    public function ownModelIds(User $user, string $permission, Collection $duties, string $relation): \Illuminate\Support\Collection
+    public function ownModelIds(User $user, string $permission, Collection $duties, string $resource): \Illuminate\Support\Collection
     {
         $key = "{$user->id}:{$permission}";
+        $relation = PermissionCatalog::ownRelation($resource);
 
-        return $this->ownModelIds[$key] ??= $this->resolveOwnModelIds($duties, $relation);
+        return $this->ownModelIds[$key] ??= $relation === null ? collect() : $this->resolveOwnModelIds($duties, $relation);
     }
 
     /**
@@ -122,7 +125,7 @@ class ModelAuthorizer
                 } elseif ($related instanceof Collection || $related instanceof \Illuminate\Support\Collection) {
                     $ids = $ids->merge($related->pluck('id'));
                 }
-            } elseif (method_exists($duty, $relation)) {
+            } else {
                 $rel = $duty->{$relation}();
                 if ($rel instanceof BelongsTo) {
                     $foreignKey = $rel->getForeignKeyName();

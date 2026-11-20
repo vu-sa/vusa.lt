@@ -1,9 +1,10 @@
 ---
 doc_status: reviewed
 title: Atsakomybės ir leidimai
-last_reviewed: 2026-11-08
+last_reviewed: 2026-11-20
 tests:
   - tests/Feature/Permissions/MeetingPermissionsTest.php
+  - tests/Feature/Permissions/OwnScopeTest.php
   - tests/Feature/Console/SyncPermissionsTest.php
   - tests/Browser/PermissionMatrixTest.php
   - tests/Feature/Permissions/DutyTypeAssignmentTest.php
@@ -88,9 +89,17 @@ Užraktu **Visi nariai** pažymėtus veiksmus pagal
 [bazinę prieigą](/pagrindai/teises#bazine-prieiga) jau turi kiekvienas narys; prie išteklių
 parašyta, ką kiekvienas narys gali be jokios atsakomybės.
 
-Apimtis **Savo** siūloma tik ten, kur ji ką nors reiškia: pavyzdžiui, posėdžiams (savo institucijų
-posėdžiai) ir pareigybėms. Užduotims, dokumentams, naudotojams ir kitiems ištekliams jos nėra –
-savo užduotis ir save matai be jokios atsakomybės.
+Apimtis **Savo** siūloma tik ten, kur ji ką nors reiškia, ir tinklelyje vadinama pagal tai, ką apima:
+
+| Sritis | Ką apima „Savo“ |
+|---|---|
+| Posėdžiai | **Savo institucijų, visų kadencijų** – institucijų, kuriose yra atsakomybę suteikiančios pareigybės, posėdžiai |
+| Dokumentai | **Savo institucijų** – tų pačių institucijų dokumentai |
+| Pareigybės | **Savo pareigybių** – pačios atsakomybę suteikiančios pareigybės |
+| Pareigybių laikotarpiai | **Savo pareigybių** – visi tų pareigybių laikotarpiai |
+
+Kitur jos nėra. Užduotis, rezervacijas, kuriose dalyvauji, ir save matai ir tvarkai be jokios
+atsakomybės, o kitų žmonių įrašams reikia apimties **Padalinyje** arba **Visur**.
 
 Posėdžių apimtis **Savo institucijų, visų kadencijų** reiškia institucijas tų pareigybių, kurios suteikia
 šią teisę, o ne paties nario sukurtus posėdžius. Pasirinkus šią redagavimo apimtį, galima keisti
