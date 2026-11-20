@@ -116,8 +116,8 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     'app/Notifications/ReservationStatusChangeBatch.php' => ['->users' => 1],
     // ModelAuthorizer tenant scope and owning tenants of allowlisted commentable models.
     'app/Policies/CommentPolicy.php' => ['->tenants' => 2, "'tenants'" => 1],
-    // Holders retain historical read access, and assigning seats reads the ModelAuthorizer scope.
-    'app/Policies/DutyPolicy.php' => ['->tenants' => 1, '->users' => 1, "'duties" => 1],
+    // Assigning seats reads the ModelAuthorizer scope.
+    'app/Policies/DutyPolicy.php' => ['->tenants' => 1, "'duties" => 1],
     // PermissionScope tenants for directory authorization.
     'app/Policies/FilePolicy.php' => ['->tenants' => 1],
     // ModelAuthorizer tenants for the goal creation permission.
