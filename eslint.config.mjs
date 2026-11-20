@@ -381,11 +381,6 @@ export default tseslint.config(
             message: 'Search/ is the non-UI search core. Move what it needs from components into Search/, Utils/ or Constants/.',
           },
           {
-            target: 'resources/js/Search',
-            from: 'resources/js/Features',
-            message: 'Search/ is the non-UI search core. Move what it needs from components into Search/, Utils/ or Constants/.',
-          },
-          {
             target: 'resources/js/Components/ui',
             from: 'resources/js/Components',
             except: ['ui'],
@@ -440,6 +435,7 @@ export default tseslint.config(
     files: [
       'resources/js/Pages/Admin/**/*.{vue,ts}',
       'resources/js/Features/Admin/**/*.{vue,ts}',
+      'resources/js/Components/{Search,Pickers,ActivityLog,FileManager}/**/*.{vue,ts}',
     ],
     rules: {
       'no-restricted-imports': ['warn', {
