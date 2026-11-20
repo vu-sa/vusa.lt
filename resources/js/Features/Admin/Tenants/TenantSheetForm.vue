@@ -153,8 +153,8 @@ import { Checkbox } from '@/Components/ui/checkbox';
 import { Input } from '@/Components/ui/input';
 import { NativeSelect } from '@/Components/ui/native-select';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
-import CollectionSelectContent from '@/Features/Admin/AdminSearch/Components/Select/CollectionSelectContent.vue';
-import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import CollectionSelectContent from '@/Components/Pickers/CollectionSelectContent.vue';
+import { normalizeHit, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 import { TenantType } from '@/Types/enums';
 
 export interface TenantInstitution {

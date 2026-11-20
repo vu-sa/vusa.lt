@@ -38,7 +38,7 @@ const mockSearch = vi.fn().mockResolvedValue({
   ],
 });
 
-vi.mock('@/Shared/Search/services/SearchClientFactory', () => ({
+vi.mock('@/Search/core/services/SearchClientFactory', () => ({
   SearchClientFactory: {
     createPublicClient: vi.fn(() => ({
       search: mockSearch,

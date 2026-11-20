@@ -32,7 +32,7 @@ vi.mock('../useSearchClient', () => ({
   })),
 }));
 
-vi.mock('../../Services/InstitutionSearchService', () => ({
+vi.mock('../../Search/public/InstitutionSearchService', () => ({
   InstitutionSearchService: vi.fn().mockImplementation(() => ({
     performSearch: vi.fn(() => Promise.resolve({
       hits: [],

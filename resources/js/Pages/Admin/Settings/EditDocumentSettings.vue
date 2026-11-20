@@ -132,8 +132,8 @@ import { Checkbox } from '@/Components/ui/checkbox';
 import { Input } from '@/Components/ui/input';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
-import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
-import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import { CollectionSelectDialog } from '@/Components/Pickers';
+import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 
 interface ContentTypeOption {
   value: string;

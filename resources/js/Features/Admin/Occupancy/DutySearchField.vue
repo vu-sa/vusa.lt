@@ -23,9 +23,9 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, ref, watch } from 'vue';
 
-import InlineSearchField from '@/Features/Admin/AdminSearch/Components/Select/InlineSearchField.vue';
-import { useAdminCollectionSearch } from '@/Features/Admin/AdminSearch/Composables/useAdminCollectionSearch';
-import { normalizeHit, type MapperContext, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import InlineSearchField from '@/Components/Pickers/InlineSearchField.vue';
+import { useAdminCollectionSearch } from '@/Search/admin/Composables/useAdminCollectionSearch';
+import { normalizeHit, type MapperContext, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 
 /** What the sheet needs from a `duties` search document. */
 export interface DutyHit {

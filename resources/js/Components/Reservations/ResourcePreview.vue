@@ -155,8 +155,8 @@ import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
 import { usePreviewApi } from '@/Composables/usePreviewApi';
 import { notReservableStatus } from '@/Constants/statusIcons';
-import type { ResourceAvailability } from '@/Features/Admin/AdminSearch/Composables/useResourceAvailability';
-import type { ResourceSearchResult } from '@/Shared/Search/types';
+import type { ResourceAvailability } from '@/Search/admin/Composables/useResourceAvailability';
+import type { ResourceSearchResult } from '@/Search/core/types';
 import { formatDateTime } from '@/Utils/dateTime';
 
 interface ReservationRow {

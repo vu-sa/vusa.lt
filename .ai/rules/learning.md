@@ -13,6 +13,7 @@ paths:
   - 'app/Http/Controllers/Admin/Knowledge*.php'
   - 'app/Actions/SyncKnowledgeLinks.php'
   - 'resources/js/Features/Admin/Knowledge/**'
+  - 'resources/js/Search/admin/{wikiSearch,useWikiLinkTargets}.ts'
   - 'resources/js/Features/Admin/Learning/**'
   - 'resources/js/Pages/Admin/Learning/**'
   - 'resources/js/Pages/Admin/Knowledge/**'

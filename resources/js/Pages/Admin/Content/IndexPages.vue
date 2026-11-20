@@ -171,7 +171,7 @@ import {
   useTrashCollectionSource,
   useTypesenseCollectionSource,
 } from '@/Composables/useCollectionSource';
-import type { PageSearchResult } from '@/Shared/Search/types';
+import type { PageSearchResult } from '@/Search/core/types';
 import { formatDate, formatRecordDate } from '@/Utils/dateTime';
 
 type PageRow = PageSearchResult & {

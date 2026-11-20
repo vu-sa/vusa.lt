@@ -12,7 +12,7 @@ vi.mock('vue-sonner', () => ({
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 import { commonStubs, stubIcon } from '@/tests/stubs';
-import { documentWithMatch, type SearchMatchDocument } from '@/Shared/Search/matches';
+import { documentWithMatch, type SearchMatchDocument } from '@/Search/core/matches';
 import type { DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
 
 import DocumentListItem from '../DocumentListItem.vue';

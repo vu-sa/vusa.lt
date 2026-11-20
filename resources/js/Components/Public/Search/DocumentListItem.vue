@@ -176,7 +176,7 @@ import { computed } from 'vue';
 import { Icon } from '@iconify/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { descriptionMatch, documentDateMatch, matchTitle } from '@/Shared/Search/matches';
+import { descriptionMatch, documentDateMatch, matchTitle } from '@/Search/core/matches';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import { useDocumentDisplay, getDocumentTargetUrl, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
 import { useToasts } from '@/Composables/useToasts';

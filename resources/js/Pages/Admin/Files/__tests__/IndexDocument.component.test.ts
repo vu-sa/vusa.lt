@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
-import type { DocumentSearchResult } from '@/Shared/Search/types';
+import type { DocumentSearchResult } from '@/Search/core/types';
 
 import IndexDocument from '../IndexDocument.vue';
 

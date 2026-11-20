@@ -175,14 +175,14 @@ import { institutionActivityStatuses, operatingStatuses, statusFor } from '@/Con
 import { useRowAbilities } from '@/Composables/useRowAbilities';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { useInstitutionSubscription } from '@/Composables/useInstitutionSubscription';
-import { escapeFilterValue } from '@/Features/Admin/AdminSearch/Services/AdminSearchService';
+import { escapeFilterValue } from '@/Search/admin/Services/AdminSearchService';
 import {
   isTrashView,
   useTrashCollectionSource,
   useTypesenseCollectionSource,
   type CollectionSource,
 } from '@/Composables/useCollectionSource';
-import type { InstitutionSearchResult } from '@/Shared/Search/types';
+import type { InstitutionSearchResult } from '@/Search/core/types';
 import { formatRecordDate } from '@/Utils/dateTime';
 
 type InstitutionRow = InstitutionSearchResult & { force_delete_blocked_reason?: string | null };

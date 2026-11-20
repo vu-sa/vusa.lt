@@ -148,8 +148,8 @@ import {
   useTrashCollectionSource,
   useTypesenseCollectionSource,
 } from '@/Composables/useCollectionSource';
-import { stripHtml } from '@/Features/Admin/AdminSearch/Utils/html';
-import type { NewsSearchResult } from '@/Shared/Search/types';
+import { stripHtml } from '@/Search/admin/Utils/html';
+import type { NewsSearchResult } from '@/Search/core/types';
 import { formatDate, formatRecordDate } from '@/Utils/dateTime';
 
 type NewsRow = NewsSearchResult & {

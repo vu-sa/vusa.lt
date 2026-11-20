@@ -6,7 +6,7 @@ import type { CollectionSource } from '@/Composables/useCollectionSource';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { useRowAbilities } from '@/Composables/useRowAbilities';
 import { meetingCompletionStatuses, type MeetingCompletionStatus } from '@/Constants/statusIcons';
-import type { MeetingSearchResult } from '@/Shared/Search/types';
+import type { MeetingSearchResult } from '@/Search/core/types';
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 
 /** The meetings index and every embedded meetings list share these, so a meeting reads the same everywhere. */

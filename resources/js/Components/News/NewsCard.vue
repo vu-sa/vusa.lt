@@ -64,7 +64,7 @@ import { Image } from '@lucide/vue';
 import { computed } from 'vue';
 
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
-import { descriptionMatch, matchTitle } from '@/Shared/Search/matches';
+import { descriptionMatch, matchTitle } from '@/Search/core/matches';
 import MediaFrame from '@/Components/Brand/MediaFrame.vue';
 import type { ImageData } from '@/Types/media';
 import type { NewsItem } from '@/Types/contentParts';

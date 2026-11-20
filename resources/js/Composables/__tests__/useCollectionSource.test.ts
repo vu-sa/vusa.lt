@@ -5,7 +5,7 @@ import { useTypesenseCollectionSource } from '../useCollectionSource';
 
 const controller = vi.hoisted(() => ({ current: null as unknown }));
 
-vi.mock('@/Features/Admin/AdminSearch/Composables/useAdminCollectionSearch', () => ({
+vi.mock('@/Search/admin/Composables/useAdminCollectionSearch', () => ({
   useAdminCollectionSearch: () => controller.current,
 }));
 

@@ -216,8 +216,8 @@ import { Textarea } from '@/Components/ui/textarea';
 import { useDocsHref } from '@/Composables/useDocsHref';
 import { RESERVATION_PLACEHOLDERS } from '@/Constants/I18n/Placeholders';
 import type { StatusPresentation } from '@/Constants/statusIcons';
-import { ResourceSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
-import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import { ResourceSelectDialog } from '@/Components/Pickers';
+import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 import { ModelEnum } from '@/Types/enums';
 
 import FormFieldWrapper from './FormFieldWrapper.vue';

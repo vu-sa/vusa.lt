@@ -66,7 +66,7 @@ import { AgendaItemIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { EmptyState } from '@/Components/Patterns';
 import { useTypesenseCollectionSource } from '@/Composables/useCollectionSource';
-import type { AgendaItemSearchResult } from '@/Shared/Search/types';
+import type { AgendaItemSearchResult } from '@/Search/core/types';
 import { formatRecordDate } from '@/Utils/dateTime';
 
 const props = defineProps<{

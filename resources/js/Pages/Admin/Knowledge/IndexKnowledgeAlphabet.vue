@@ -38,7 +38,7 @@ import { EmptyState } from '@/Components/Patterns';
 import WikiPageList from '@/Features/Admin/Knowledge/WikiPageList.vue';
 import WikiSearchField from '@/Features/Admin/Knowledge/WikiSearchField.vue';
 import { groupByLetter, letterAnchor } from '@/Features/Admin/Knowledge/wikiAlphabet';
-import { searchWiki } from '@/Features/Admin/Knowledge/wikiSearch';
+import { searchWiki } from '@/Search/admin/wikiSearch';
 import type { WikiIndexEntry } from '@/Types/learning';
 
 const props = withDefaults(defineProps<{ index: WikiIndexEntry[]; doneIds?: string[] }>(), { doneIds: () => [] });

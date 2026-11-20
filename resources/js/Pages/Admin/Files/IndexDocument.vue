@@ -161,7 +161,7 @@ import { Pencil, ExternalLink, EyeOff, FileUp, RefreshCw } from '@lucide/vue';
 import { computed, onBeforeUnmount, ref } from 'vue';
 
 import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
-import { highlightText, matchTitle } from '@/Shared/Search/matches';
+import { highlightText, matchTitle } from '@/Search/core/matches';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
 import { quickFilterLabel } from '@/Components/Collection/quickFilterLabel';
@@ -179,7 +179,7 @@ import { useAdminNavigation } from '@/Composables/useAdminNavigation';
 import { useTypesenseCollectionSource } from '@/Composables/useCollectionSource';
 import FilePicker from '@/Features/Admin/SharepointFilePicker/FilePicker.vue';
 import { isPickerAvailable, pickedDocuments, type Item } from '@/Features/Admin/SharepointFilePicker/picker';
-import type { DocumentSearchResult } from '@/Shared/Search/types';
+import type { DocumentSearchResult } from '@/Search/core/types';
 import { formatRecordDate, formatDate, formatNearDate } from '@/Utils/dateTime';
 import { safeHref } from '@/Utils/safeHref';
 

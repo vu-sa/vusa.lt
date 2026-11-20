@@ -52,7 +52,7 @@ tests:
   - resources/js/Components/Institutions/__tests__/InstitutionOverviewSection.component.test.ts
   - resources/js/Components/Institutions/__tests__/SecretariesSection.component.test.ts
   - resources/js/Components/ActionWindow/__tests__/InstitutionReportScreen.component.test.ts
-  - resources/js/Features/Admin/AdminSearch/Config/__tests__/collectionFacetConfig.test.ts
+  - resources/js/Search/admin/Config/__tests__/collectionFacetConfig.test.ts
   - tests/Feature/Permissions/StudentRepresentativeRoleTest.php
   - tests/Feature/Permissions/BaselineAccessTest.php
   - tests/Browser/VisakRecordPagesTest.php

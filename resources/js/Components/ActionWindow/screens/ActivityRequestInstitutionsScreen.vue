@@ -86,7 +86,7 @@ import { useActionWindow, type ActionWindowInstitutionRef } from '@/Composables/
 import { useApi } from '@/Composables/useApi';
 import { describeInstitutionActivity } from '@/Components/Institutions/institutionActivity';
 import { EmptyState } from '@/Components/Patterns';
-import { useAdminCollectionSearch } from '@/Features/Admin/AdminSearch/Composables/useAdminCollectionSearch';
+import { useAdminCollectionSearch } from '@/Search/admin/Composables/useAdminCollectionSearch';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Skeleton } from '@/Components/ui/skeleton';

@@ -19,7 +19,7 @@
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import type { CollectionColumn } from '@/Components/Collection/types';
 import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
-import type { MeetingSearchResult } from '@/Shared/Search/types';
+import type { MeetingSearchResult } from '@/Search/core/types';
 import { formatDate, formatRecordDate } from '@/Utils/dateTime';
 
 import MeetingOutcome from './MeetingOutcome.vue';

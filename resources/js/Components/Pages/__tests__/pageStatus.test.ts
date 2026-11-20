@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { contentStatuses } from '@/Constants/statusIcons';
-import type { PageSearchResult } from '@/Shared/Search/types';
+import type { PageSearchResult } from '@/Search/core/types';
 
 import { pageStatus } from '../pageStatus';
 

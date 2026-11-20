@@ -4,8 +4,8 @@ import type { InertiaForm } from '@inertiajs/vue3';
 import { defineComponent, markRaw, nextTick } from 'vue';
 
 import ProblemForm from '@/Components/AdminForms/ProblemForm.vue';
-import UserSearchField from '@/Features/Admin/AdminSearch/Components/Select/UserSearchField.vue';
-import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import UserSearchField from '@/Components/Pickers/UserSearchField.vue';
+import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 import { createMockForm } from '@/tests/helpers/createMockForm';
 import { commonStubs } from '@/tests/stubs';
 

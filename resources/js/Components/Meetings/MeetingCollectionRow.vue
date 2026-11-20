@@ -37,7 +37,7 @@ import { computed } from 'vue';
 
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
-import type { MeetingSearchResult } from '@/Shared/Search/types';
+import type { MeetingSearchResult } from '@/Search/core/types';
 import { MeetingType } from '@/Types/MeetingType';
 
 import MeetingOutcome from './MeetingOutcome.vue';

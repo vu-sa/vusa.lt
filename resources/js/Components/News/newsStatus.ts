@@ -1,5 +1,5 @@
 import { contentStatuses, type StatusPresentation } from '@/Constants/statusIcons';
-import type { NewsSearchResult } from '@/Shared/Search/types';
+import type { NewsSearchResult } from '@/Search/core/types';
 
 /** A published article waits in "Suplanuota" until its publish time arrives. */
 export function newsStatus(news: NewsSearchResult, now = Date.now()): StatusPresentation {

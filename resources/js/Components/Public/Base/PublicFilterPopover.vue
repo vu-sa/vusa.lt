@@ -130,7 +130,7 @@ import type { HTMLAttributes } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ref } from 'vue';
 
-import { useFacetOptions } from '@/Shared/Search/useFacetOptions';
+import { useFacetOptions } from '@/Search/core/useFacetOptions';
 import { controlCountClass, controlVariants } from '@/Components/ui/control';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { cn } from '@/Utils/Shadcn/utils';

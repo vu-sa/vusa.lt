@@ -136,7 +136,7 @@ import { Button } from '@/Components/ui/button';
 import { EyebrowLabel } from '@/Components/Public/Base';
 import CalendarSyncModal from '@/Components/Public/CalendarSyncModal.vue';
 import Skeleton from '@/Components/ui/skeleton/Skeleton.vue';
-import { useCalendarFetch } from '@/Services/ContentService';
+import { useCalendarFetch } from '@/Composables/ContentService';
 import { formatDateWith, formatEventDateSpan, formatMonthAbbr } from '@/Utils/dateTime';
 import { getCalendarEvent2Route } from '@/Utils/Route';
 import type { Calendar } from '@/Types/contentParts';

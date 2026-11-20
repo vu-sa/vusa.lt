@@ -304,8 +304,8 @@ import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import type { LinkList } from '@/Types/contentParts';
-import CollectionSelectDialog from '@/Features/Admin/AdminSearch/Components/Select/CollectionSelectDialog.vue';
-import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import CollectionSelectDialog from '@/Components/Pickers/CollectionSelectDialog.vue';
+import { normalizeHit, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
 import { Button } from '@/Components/ui/button';

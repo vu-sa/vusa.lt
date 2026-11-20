@@ -2,7 +2,7 @@ import { CalendarClock } from '@lucide/vue';
 import { describe, expect, it } from 'vitest';
 
 import { contentStatuses } from '@/Constants/statusIcons';
-import type { NewsSearchResult } from '@/Shared/Search/types';
+import type { NewsSearchResult } from '@/Search/core/types';
 
 import { newsStatus } from '../newsStatus';
 

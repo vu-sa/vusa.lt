@@ -3,8 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ref } from 'vue';
 
 import DutySearchField from '@/Features/Admin/Occupancy/DutySearchField.vue';
-import SearchHitRow from '@/Features/Admin/AdminSearch/Components/SearchHitRow.vue';
-import { documentWithMatch } from '@/Shared/Search/matches';
+import SearchHitRow from '@/Components/Search/SearchHitRow.vue';
+import { documentWithMatch } from '@/Search/core/matches';
 import { commonStubs } from '@/tests/stubs';
 
 const results = ref<unknown[]>([]);
@@ -14,7 +14,7 @@ const status = ref('idle');
 const loadMore = vi.fn();
 const search = vi.fn();
 
-vi.mock('@/Features/Admin/AdminSearch/Composables/useAdminCollectionSearch', () => ({
+vi.mock('@/Search/admin/Composables/useAdminCollectionSearch', () => ({
   useAdminCollectionSearch: () => ({
     results,
     hasMoreResults,

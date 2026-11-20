@@ -143,8 +143,8 @@ import { Label } from '@/Components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import FileSelector from '@/Features/Admin/FileManager/FileSelector.vue';
-import { InlineCollectionSelect } from '@/Features/Admin/AdminSearch/Components/Select';
-import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import { InlineCollectionSelect } from '@/Components/Pickers';
+import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 import { Spinner } from '@/Components/ui/spinner';
 
 import { linkTargetProvider, type LinkTarget } from './linkTargets';

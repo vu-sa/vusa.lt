@@ -132,8 +132,8 @@ import { DatePicker } from '@/Components/ui/date-picker';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import MultiCollectionSelectDialog from '@/Features/Admin/AdminSearch/Components/Select/MultiCollectionSelectDialog.vue';
-import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import MultiCollectionSelectDialog from '@/Components/Pickers/MultiCollectionSelectDialog.vue';
+import { normalizeHit, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 import { formatDate, todayIso } from '@/Utils/dateTime';
 
 import type { GoalStep, LinkOption, StepParent, Translated } from './types';

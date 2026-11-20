@@ -58,9 +58,9 @@ import { FileClock, FileText, LoaderCircle, Search } from '@lucide/vue';
 import type { DocumentFolderRow } from '@/Components/Files';
 import { Button } from '@/Components/ui/button';
 import { useApi } from '@/Composables/useApi';
-import SearchResultList from '@/Features/Admin/AdminSearch/Components/SearchResultList.vue';
-import SearchSelectDialog from '@/Features/Admin/AdminSearch/Components/Select/SearchSelectDialog.vue';
-import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import SearchResultList from '@/Components/Search/SearchResultList.vue';
+import SearchSelectDialog from '@/Components/Pickers/SearchSelectDialog.vue';
+import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 
 const props = defineProps<{
   meetingId: string;

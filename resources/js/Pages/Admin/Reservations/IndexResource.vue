@@ -213,7 +213,7 @@ import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
-import { highlightText, matchTitle } from '@/Shared/Search/matches';
+import { highlightText, matchTitle } from '@/Search/core/matches';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
 import EntityTypeMark from '@/Components/EntityTypeMark.vue';
@@ -230,8 +230,8 @@ import { useReservationCart } from '@/Components/Reservations/useReservationCart
 import { Button } from '@/Components/ui/button';
 import { useTypesenseCollectionSource } from '@/Composables/useCollectionSource';
 import { notReservableStatus } from '@/Constants/statusIcons';
-import { useResourceAvailability } from '@/Features/Admin/AdminSearch/Composables/useResourceAvailability';
-import type { ResourceSearchResult } from '@/Shared/Search/types';
+import { useResourceAvailability } from '@/Search/admin/Composables/useResourceAvailability';
+import type { ResourceSearchResult } from '@/Search/core/types';
 import { formatRecordDate } from '@/Utils/dateTime';
 
 const props = defineProps<{

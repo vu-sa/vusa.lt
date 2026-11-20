@@ -1,7 +1,7 @@
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
-import type { DutySearchResult } from '@/Shared/Search/types';
+import type { DutySearchResult } from '@/Search/core/types';
 
 interface Member {
   id?: string;

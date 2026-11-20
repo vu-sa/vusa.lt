@@ -27,7 +27,7 @@ tests:
   - resources/js/Features/Admin/Knowledge/__tests__/WikiProgressToast.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/useStepProgress.test.ts
   - resources/js/Components/CommandPalette/__tests__/AdminCommandPalette.component.test.ts
-  - resources/js/Features/Admin/Knowledge/__tests__/wikiSearch.test.ts
+  - resources/js/Search/admin/__tests__/wikiSearch.test.ts
   - resources/js/Features/Admin/Learning/__tests__/LearningLibrary.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/KnowledgeItemForm.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/LearningSectionsSheet.component.test.ts

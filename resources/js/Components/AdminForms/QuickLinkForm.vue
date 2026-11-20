@@ -186,8 +186,8 @@ import { Input } from '@/Components/ui/input';
 import { NativeSelect } from '@/Components/ui/native-select';
 import { useApiMutation } from '@/Composables/useApi';
 import type { StatusPresentation } from '@/Constants/statusIcons';
-import { MultiCollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
-import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import { MultiCollectionSelectDialog } from '@/Components/Pickers';
+import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 import { safeHref } from '@/Utils/safeHref';
 
 interface TopicOption {

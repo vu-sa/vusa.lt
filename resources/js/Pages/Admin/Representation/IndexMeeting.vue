@@ -91,7 +91,7 @@ import {
   useTypesenseCollectionSource,
   type CollectionSource,
 } from '@/Composables/useCollectionSource';
-import type { MeetingSearchResult } from '@/Shared/Search/types';
+import type { MeetingSearchResult } from '@/Search/core/types';
 import { formatDate } from '@/Utils/dateTime';
 
 const props = defineProps<{

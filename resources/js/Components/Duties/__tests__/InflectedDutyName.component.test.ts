@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils';
 
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { commonStubs } from '@/tests/stubs';
-import { documentWithMatch, type SearchMatchDocument } from '@/Shared/Search/matches';
+import { documentWithMatch, type SearchMatchDocument } from '@/Search/core/matches';
 import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
 
 describe('InflectedDutyName.vue', () => {

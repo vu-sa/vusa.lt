@@ -13,9 +13,9 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 
-import UserSearchField, { type MemberHit } from '@/Features/Admin/AdminSearch/Components/Select/UserSearchField.vue';
+import UserSearchField, { type MemberHit } from '@/Components/Pickers/UserSearchField.vue';
 
-export type { MemberHit } from '@/Features/Admin/AdminSearch/Components/Select/UserSearchField.vue';
+export type { MemberHit } from '@/Components/Pickers/UserSearchField.vue';
 
 // Searching all units lets a member join another unit through a new duty.
 defineProps<{

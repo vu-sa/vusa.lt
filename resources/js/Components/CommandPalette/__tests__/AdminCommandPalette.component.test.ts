@@ -5,8 +5,8 @@ import { ref } from 'vue';
 import { useAdminSearch } from '@/Composables/useAdminSearch';
 import { useCommandPalette } from '@/Composables/useCommandPalette';
 import { useUIPreferences } from '@/Composables/useUIPreferences';
-import { createEmptyMultiSearchResults } from '@/Shared/Search/utils/createEmptyMultiSearchResults';
-import { loadWikiLinkTargets } from '@/Features/Admin/Knowledge/useWikiLinkTargets';
+import { createEmptyMultiSearchResults } from '@/Search/core/utils/createEmptyMultiSearchResults';
+import { loadWikiLinkTargets } from '@/Search/admin/useWikiLinkTargets';
 import { KnowledgeItemKind } from '@/Types/enums';
 
 import { useCommandActions } from '../useCommandActions';
@@ -16,7 +16,7 @@ vi.mock('@/Composables/useAdminSearch', () => ({ useAdminSearch: vi.fn() }));
 vi.mock('@/Composables/useCommandPalette', () => ({ useCommandPalette: vi.fn() }));
 vi.mock('@/Composables/useUIPreferences', () => ({ useUIPreferences: vi.fn() }));
 vi.mock('../useCommandActions', () => ({ useCommandActions: vi.fn() }));
-vi.mock('@/Features/Admin/Knowledge/useWikiLinkTargets', () => ({ loadWikiLinkTargets: vi.fn() }));
+vi.mock('@/Search/admin/useWikiLinkTargets', () => ({ loadWikiLinkTargets: vi.fn() }));
 
 beforeEach(() => {
   vi.useFakeTimers();

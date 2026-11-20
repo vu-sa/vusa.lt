@@ -109,8 +109,8 @@ import { FormPanel, FormSegmentedControl, type FormSegmentOption } from '@/Compo
 import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
 import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';
-import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
-import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import { CollectionSelectDialog } from '@/Components/Pickers';
+import { normalizeHit, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 
 import FormFieldWrapper from './FormFieldWrapper.vue';
 import ContentTranslationWorkspace from './ContentTranslationWorkspace.vue';

@@ -51,7 +51,7 @@ import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import { PreviewFact, PreviewFacts, PreviewPane, PreviewSection, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import type { StatusPresentation } from '@/Constants/statusIcons';
-import type { DocumentSearchResult } from '@/Shared/Search/types';
+import type { DocumentSearchResult } from '@/Search/core/types';
 import { formatDate } from '@/Utils/dateTime';
 import { safeHref } from '@/Utils/safeHref';
 

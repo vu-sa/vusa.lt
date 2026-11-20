@@ -313,9 +313,9 @@ export interface TextBox {
  * Matches the shape from NewsCollection::toPublicArray()
  */
 export interface NewsItem {
-  _searchMatch?: import('@/Shared/Search/matches').SearchMatch;
-  _searchTitleMatches?: import('@/Shared/Search/matches').SearchMatch[];
-  _searchFieldMatches?: Record<string, import('@/Shared/Search/matches').SearchMatch>;
+  _searchMatch?: import('@/Search/core/matches').SearchMatch;
+  _searchTitleMatches?: import('@/Search/core/matches').SearchMatch[];
+  _searchFieldMatches?: Record<string, import('@/Search/core/matches').SearchMatch>;
   id: number;
   title: string;
   lang: string;

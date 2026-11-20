@@ -59,8 +59,8 @@ const MIGRATED_ADMIN_COMPONENT_PATHS = [
   'resources/js/Features/Admin/Tags/**',
   'resources/js/Components/Layouts/OverviewPage.vue',
   'resources/js/Components/Duties/MyDutyTermRow.vue',
-  'resources/js/Features/Admin/AdminSearch/Components/SearchResultGroup.vue',
-  'resources/js/Features/Admin/AdminSearch/Components/Detail/MeetingDetailPreview.vue',
+  'resources/js/Components/Search/SearchResultGroup.vue',
+  'resources/js/Components/Search/Detail/MeetingDetailPreview.vue',
   'resources/js/Components/Overview/**',
   'resources/js/Components/Patterns/OverviewSection.vue',
   'resources/js/Components/Reservations/**',
@@ -370,10 +370,15 @@ export default tseslint.config(
         basePath: projectRoot,
         zones: [
           {
-            target: ['Components', 'Composables', 'Constants', 'Utils', 'Types', 'Services', 'Shared', 'Features']
+            target: ['Components', 'Composables', 'Constants', 'Utils', 'Types', 'Search', 'Features']
               .map(folder => `resources/js/${folder}`),
             from: 'resources/js/Pages',
             message: 'Shared source cannot depend on page modules. Move the shared contract or implementation below Pages.',
+          },
+          {
+            target: 'resources/js/Search',
+            from: ['resources/js/Components', 'resources/js/Features'],
+            message: 'Search/ is the non-UI search core. Move what it needs from components into Search/, Utils/ or Constants/.',
           },
           {
             target: 'resources/js/Components/ui',
@@ -389,7 +394,7 @@ export default tseslint.config(
           {
             // The winter season stays in its own folder: the rest of the app reaches it only through its index.
             target: [
-              ...['Components', 'Composables', 'Constants', 'Utils', 'Types', 'Services', 'Shared'].map(folder => `resources/js/${folder}`),
+              ...['Components', 'Composables', 'Constants', 'Utils', 'Types', 'Search'].map(folder => `resources/js/${folder}`),
               'resources/js/Features/!(Admin)/**',
               'resources/js/Features/Admin/!(Seasons)/**',
               'resources/js/Pages/!(Admin)/**',

@@ -64,11 +64,11 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Landmark } from '@lucide/vue';
 
-import SearchHitCardText from '@/Features/Admin/AdminSearch/Components/SearchHitCardText.vue';
+import SearchHitCardText from '@/Components/Search/SearchHitCardText.vue';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { useActionWindowData } from '@/Composables/useActionWindowData';
-import { useAdminCollectionSearch } from '@/Features/Admin/AdminSearch/Composables/useAdminCollectionSearch';
-import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import { useAdminCollectionSearch } from '@/Search/admin/Composables/useAdminCollectionSearch';
+import { normalizeHit, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 import { EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';

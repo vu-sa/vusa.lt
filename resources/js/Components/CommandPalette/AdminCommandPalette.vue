@@ -160,7 +160,7 @@ import {
 } from '@lucide/vue';
 
 import { useAdminSearch, type MultiSearchResults } from '@/Composables/useAdminSearch';
-import { createEmptyMultiSearchResults } from '@/Shared/Search/utils/createEmptyMultiSearchResults';
+import { createEmptyMultiSearchResults } from '@/Search/core/utils/createEmptyMultiSearchResults';
 import { useCommandPalette, type RecentItem } from '@/Composables/useCommandPalette';
 import { resolvePageIcon } from '@/Composables/pageIcons';
 import { useUIPreferences } from '@/Composables/useUIPreferences';
@@ -169,13 +169,13 @@ import {
   type MapperContext,
   type NormalizedSearchHit,
   type SearchCollectionKey,
-} from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
-import SearchHitRow from '@/Features/Admin/AdminSearch/Components/SearchHitRow.vue';
+} from '@/Search/admin/Utils/searchHitMappers';
+import SearchHitRow from '@/Components/Search/SearchHitRow.vue';
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import { TopProgressBar } from '@/Components/Patterns';
 import { CommandList, CommandItem } from '@/Components/ui/command';
-import { loadWikiLinkTargets } from '@/Features/Admin/Knowledge/useWikiLinkTargets';
-import { searchWiki } from '@/Features/Admin/Knowledge/wikiSearch';
+import { loadWikiLinkTargets } from '@/Search/admin/useWikiLinkTargets';
+import { searchWiki } from '@/Search/admin/wikiSearch';
 import type { WikiIndexEntry } from '@/Types/learning';
 import { ModelEnum } from '@/Types/enums';
 

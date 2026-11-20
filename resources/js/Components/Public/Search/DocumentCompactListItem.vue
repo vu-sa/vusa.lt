@@ -125,7 +125,7 @@ import { computed } from 'vue';
 import { Icon } from '@iconify/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { documentDateMatch, highlightText, matchTitle } from '@/Shared/Search/matches';
+import { documentDateMatch, highlightText, matchTitle } from '@/Search/core/matches';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import { useDocumentDisplay, getDocumentTargetUrl, parseDocumentDate, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
 import { TagChip } from '@/Components/Public/Base';

@@ -33,7 +33,7 @@
     // Keep the shadcn catalog, while still checking its imports and dependencies.
     "resources/js/Components/ui/**": ["files", "exports", "types", "duplicates"],
     // Canonical component barrels intentionally expose the reusable catalog.
-    "resources/js/Components/{Brand,Patterns,Duties,Files,Relationships,Cadences,Institutions}/index.ts": ["exports", "types"],
+    "resources/js/Components/{Brand,Patterns,Pickers,Duties,Files,Relationships,Cadences,Institutions}/index.ts": ["exports", "types"],
     "resources/js/Components/Public/Base/index.ts": ["exports", "types"],
     // Aliased modules must retain the interfaces imported from their real packages.
     "resources/js/mocks/{inertia.storybook,route}.ts": ["exports", "types"],

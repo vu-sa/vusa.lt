@@ -49,8 +49,8 @@ import { computed } from 'vue';
 import { PreviewFact, PreviewFacts, PreviewPane, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
-import { stripHtml } from '@/Features/Admin/AdminSearch/Utils/html';
-import type { PageSearchResult } from '@/Shared/Search/types';
+import { stripHtml } from '@/Search/admin/Utils/html';
+import type { PageSearchResult } from '@/Search/core/types';
 
 import { pageStatus } from './pageStatus';
 

@@ -349,8 +349,8 @@ import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
 import FocalPointPicker from '@/Components/ui/upload/FocalPointPicker.vue';
 import { useApiMutation } from '@/Composables/useApi';
 import { bannerStatuses } from '@/Constants/statusIcons';
-import { MultiCollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
-import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import { MultiCollectionSelectDialog } from '@/Components/Pickers';
+import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 import { safeHref } from '@/Utils/safeHref';
 
 interface TopicOption {

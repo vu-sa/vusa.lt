@@ -1,5 +1,5 @@
-import type { SearchProfileConfig } from '@/Shared/Search/profiles';
-import { SearchClientFactory } from '@/Shared/Search/services/SearchClientFactory';
+import type { SearchProfileConfig } from '@/Search/core/profiles';
+import { SearchClientFactory } from '@/Search/core/services/SearchClientFactory';
 
 interface TypesenseNode {
   protocol: string;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getCollectionSortOptions, resolveSortValue } from '@/Features/Admin/AdminSearch/Config/collectionFacetConfig';
+import { getCollectionSortOptions, resolveSortValue } from '@/Search/admin/Config/collectionFacetConfig';
 
 import { getSearchTranslation, getSearchTranslations } from '../useTranslatedTitle';
 

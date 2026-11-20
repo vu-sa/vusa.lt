@@ -249,7 +249,7 @@ Public controllers extending `PublicController` should call `shareOtherLangURL()
 ### Search
 
 - Default Scout driver: `database` (`SCOUT_DRIVER` env) — used by every model that does not override `searchableUsing()`.
-- Typesense: models that override `searchableUsing()` (users, institutions, duties, meetings, agenda items, documents, resources, pages, news, calendar). Public search and admin collections/search query it from the browser with scoped keys (`useTypesenseCollectionSource`, `Features/Admin/AdminSearch`). Trash views always read the database.
+- Typesense: models that override `searchableUsing()` (users, institutions, duties, meetings, agenda items, documents, resources, pages, news, calendar). Public search and admin collections/search query it from the browser with scoped keys (`useTypesenseCollectionSource`, `Search/admin`). Trash views always read the database.
 - Redis: caching + sessions; target >80% hit ratio.
 
 ### Activity log (spatie/laravel-activitylog)
