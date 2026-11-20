@@ -11,6 +11,8 @@
 use Illuminate\Support\Str;
 
 const ALL_TIME_RELATION_DIRECTORIES = [
+    'app/Actions',
+    'app/Services',
     'app/Policies',
     'app/Http/Requests',
     'app/Http/Middleware',
@@ -30,6 +32,30 @@ const ALL_TIME_RELATION_NEEDLES = [
 
 /** @var array<string, array<string, int>> */
 const ALL_TIME_RELATION_ALLOWLIST = [
+    // Checks whether the institution has representative duties configured.
+    'app/Actions/ActivityRequests/SendInstitutionActivityRequests.php' => ["'duties" => 1],
+    // Reservation participants and the actor's resource-management tenant scope.
+    'app/Actions/ApplyReservationIndexFilters.php' => ['->tenants' => 1, "'users'" => 2],
+    // Duty home tenant and duty ID qualifiers for data quality filters.
+    'app/Actions/BuildDutyIndexQuery.php' => ["'tenants'" => 1, "'duties" => 2],
+    // Direct role users are checked alongside current duty holders.
+    'app/Actions/BuildSupportRequestCollection.php' => ["'users'" => 1],
+    // Explicit task assignees and the actor's task-read tenant scope.
+    'app/Actions/BuildTaskIndexQuery.php' => ['->tenants' => 1, "'users'" => 3],
+    // Member history includes past units and terms, with date filters for current and scheduled terms.
+    'app/Actions/BuildUserIndexQuery.php' => ['->tenants' => 1, "'tenants'" => 1, "'duties" => 12],
+    // Cache key for ex officio integrity findings.
+    'app/Actions/Dutiables/CheckExOfficioIntegrity.php' => ["'duties" => 1],
+    // Duty table aliases for the source and target of an ex officio term.
+    'app/Actions/Dutiables/FindSuspectExOfficioDutiables.php' => ["'duties" => 2],
+    // Duty ID qualifier on the ex officio target query.
+    'app/Actions/Dutiables/PlanExOfficioReview.php' => ["'duties" => 1],
+    // Institution duty catalog and duty ID qualifiers for ex officio rules.
+    'app/Actions/Dutiables/ReconcileExOfficioSeats.php' => ['->duties' => 1, "'duties" => 2],
+    // Lineage includes holders' terms that began before the handover.
+    'app/Actions/Duties/BuildDutyLineage.php' => ['->users' => 1, "'users'" => 1, "'duties" => 2],
+    // Merge candidates show tenants and counts from all terms.
+    'app/Actions/FindMergeableUserDuplicates.php' => ['->tenants' => 1, "'tenants'" => 1, '->duties' => 1, "'duties" => 1],
     // Responsibility resolver duties are loaded with current holders.
     'app/Actions/GetInstitutionCoordinators.php' => ['->duties' => 1],
     // Responsibility resolver supplies the coordination audience for this institution.
@@ -46,10 +72,28 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     'app/Actions/GetTenantsForUpserts.php' => ['->tenants' => 1],
     // Duty record route.
     'app/Actions/GetUserAccessSummary.php' => ["'duties" => 1],
+    // Duty merge audit event and log message.
+    'app/Actions/MergeDuties.php' => ["'duties" => 2],
+    // Excludes the reservation's explicit participants.
+    'app/Actions/NotifyAffectedReservationDrafts.php' => ['->users' => 1],
+    // Purges access caches for anyone linked to a removed permission through a duty.
+    'app/Actions/Permissions/SyncPermissionCatalog.php' => ["'duties" => 2],
+    // Duty table joins and columns for projecting responsibility grants.
+    'app/Actions/ProjectDutyResponsibilities.php' => ["'duties" => 8],
     // Selects source duties before collecting holders with activeOn().
     'app/Actions/ResolveMailingListMembers.php' => ['->duties' => 1],
     // Task assignees come from task_user.
     'app/Actions/ResolveTaskAudience.php' => ['->users' => 1, "'users'" => 1],
+    // Direct role users and role duties intersected with the actor's current duties.
+    'app/Actions/Responsibilities/GrantableResponsibilities.php' => ["'users'" => 1, "'duties" => 3],
+    // Writes date-scoped assignees to task_user.
+    'app/Actions/ResyncTaskAssigneesForCadence.php' => ['->users' => 2],
+    // Eager-loads explicit task assignees from task_user.
+    'app/Actions/Schedulable/TaskNotifier.php' => ["'users'" => 1],
+    // Reservation participants and the actor's resource-management tenant scope.
+    'app/Actions/SerializeReservationsForTable.php' => ['->tenants' => 1, '->users' => 2, "'users'" => 1],
+    // Permission key for validating an institution change.
+    'app/Actions/UpdateDuty.php' => ["'duties" => 1],
     // Tenant catalog and the shared prop backed by current_or_upcoming_tenants().
     'app/Http/Middleware/HandleInertiaRequests.php' => ["'tenants'" => 2],
     // Reservation participants payload field.
@@ -134,6 +178,82 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     'app/Policies/Traits/HasCommonChecks.php' => ['->tenants' => 2, "'tenants'" => 2, '->duties' => 1],
     // Fail-closed historical containment, blocking tenant names, and the actor's ModelAuthorizer scope.
     'app/Policies/UserPolicy.php' => ['->tenants' => 7, "'tenants'" => 1],
+    // Duty route names and route patterns for admin navigation.
+    'app/Services/AdminNavigation/AdminNavigationCatalog.php' => ["'duties" => 4],
+    // Agenda item tenants are the meeting's institution tenants.
+    'app/Services/AgendaItemPresenter.php' => ['->tenants' => 1, "'tenants'" => 2],
+    // Gantt rows show all terms, with separate activity counts from current duties.
+    'app/Services/AtstovavimasDashboardService.php' => ['->users' => 2, "'users'" => 3, '->duties' => 2, "'duties" => 4],
+    // Reads tenants from an already resolved permission scope.
+    'app/Services/Authorization/PermissionScope.php' => ['->tenants' => 2],
+    // Legacy reservation-resource comments use reservation participants after curated audiences are checked.
+    'app/Services/CommentRecipientResolver.php' => ["'users'" => 2],
+    // Reservation participants come from reservation_user.
+    'app/Services/CommentableMentionResolver.php' => ['->users' => 1],
+    // Contact payload groups duties already loaded with current holders.
+    'app/Services/ContactPresentationService.php' => ["'duties" => 3],
+    // Refreshes search documents for past and present holders and their duties.
+    'app/Services/ContactSearchIndexSynchronizer.php' => ['->users' => 1, '->duties' => 1],
+    // Duty record, list and search intentionally include duties the actor has held.
+    'app/Services/DutyAccessService.php' => ['->tenants' => 1, "'tenants'" => 1, '->users' => 1, "'users'" => 1, '->duties' => 1, "'duties" => 5],
+    // Audited insert of new assignment rows into dutiables.
+    'app/Services/DutyAssignmentService.php' => ["'users'" => 1],
+    // Sibling duties load only current holders.
+    'app/Services/DutyPanelPresenter.php' => ['->duties' => 1],
+    // Duty record shows every term and the duty's home tenant.
+    'app/Services/DutyPresenter.php' => ['->tenants' => 1, "'tenants'" => 2, '->users' => 1, "'users'" => 1],
+    // Duty-update permission key and its resolved tenant options.
+    'app/Services/DutyResponsibilityPresenter.php' => ["'tenants'" => 1, "'duties" => 1],
+    // Reads permission-scoped tenants for file directories.
+    'app/Services/FileStorageService.php' => ['->tenants' => 2],
+    // Duty and user table names and duty record routes.
+    'app/Services/FileUsageScanner.php' => ["'users'" => 1, "'duties" => 3],
+    // ModelAuthorizer supplies the form-read tenant scope.
+    'app/Services/FormAccessService.php' => ['->tenants' => 1],
+    // Registration options check vacancies through duties.current_users.
+    'app/Services/FormOptionResolver.php' => ["'duties" => 1],
+    // Institution duty counts and duty lists with current holders.
+    'app/Services/InstitutionPresenter.php' => ['->duties' => 3, "'duties" => 2],
+    // Related institutions load term history for the Gantt and join the tenant table for graph edges.
+    'app/Services/InstitutionRelationService.php' => ["'tenants'" => 1, "'duties" => 2],
+    // Tenant options come from the section's upsert permission.
+    'app/Services/KnowledgeSectionOptions.php' => ["'tenants'" => 1],
+    // User table lookup for profile photos.
+    'app/Services/Learning/SystemSteps/ProfilePhotoDetector.php' => ["'users'" => 1],
+    // Chair duties load current holders for learning contacts.
+    'app/Services/LearningInstitutionContactsPresenter.php' => ['->duties' => 1, "'duties" => 1],
+    // Meeting tenants, permission-scoped duties and historical terms bounded to meeting dates.
+    'app/Services/MeetingAccessService.php' => ['->tenants' => 1, '->duties' => 2, "'duties" => 1],
+    // Both duty queries restrict terms to the meeting date.
+    'app/Services/MeetingRepresentativeResolver.php' => ["'duties" => 4],
+    // PermissionScope results, computed tenant sets and the cache of non-ended duties.
+    'app/Services/ModelAuthorizer.php' => ['->tenants' => 3, '->duties' => 3, "'duties" => 1],
+    // Duty email column on the current duties relation.
+    'app/Services/NotificationRouter.php' => ["'duties" => 1],
+    // ModelAuthorizer supplies tenants for the requested permission.
+    'app/Services/PermissionService.php' => ['->tenants' => 1],
+    // Role duties come from the responsibility projection.
+    'app/Services/Permissions/ResponsibilityPermissionGaps.php' => ['->duties' => 1],
+    // Institution duty catalog and a count of duties with current holders.
+    'app/Services/PublicInstitutionSearchIndexBuilder.php' => ['->duties' => 1, "'duties" => 1],
+    // Duty permission scopes and full term history for Gantt coverage.
+    'app/Services/ResourceServices/DutyService.php' => ['->tenants' => 2, "'duties" => 10],
+    // Assignment error payload, duty attach and permission-scoped tenants.
+    'app/Services/ResourceServices/UserDutyService.php' => ['->tenants' => 1, '->duties' => 1, "'duties" => 1],
+    // Duty catalog queries and responsibility lookups with date-scoped holders.
+    'app/Services/ResponsibilityResolver.php' => ['->users' => 1, '->duties' => 1, "'duties" => 9],
+    // User table updates scrub all staging accounts.
+    'app/Services/StagingAccountScrubber.php' => ["'users'" => 3],
+    // Queue statistics field for waiting users.
+    'app/Services/SystemMonitorService.php' => ['->users' => 1],
+    // Relation name checks qualify the tenant ID in scoped table queries.
+    'app/Services/TanstackTableService.php' => ["'tenants'" => 2],
+    // Typesense collection names and a duty-read permission key.
+    'app/Services/Typesense/TypesenseCollectionConfig.php' => ["'users'" => 1, "'duties" => 2],
+    // Includes past holders in key invalidation and uses scoped tenants for search.
+    'app/Services/Typesense/TypesenseScopedKeyService.php' => ['->tenants' => 1, "'tenants'" => 1, '->users' => 3, "'users'" => 2, '->duties' => 1, "'duties" => 2],
+    // Duplicate candidates count terms across the whole record.
+    'app/Services/UserSimilarityFinder.php' => ["'duties" => 1],
     // Task assignees come from task_user.
     'app/Tasks/Handlers/AgendaCompletionTaskHandler.php' => ['->users' => 1, "'users'" => 1],
     // Task assignees come from task_user.
@@ -157,7 +277,7 @@ const ALL_TIME_RELATION_ALLOWLIST = [
 ];
 
 test('default-named term relation references stay within the justified allowance', function (): void {
-    $files = glob(base_path('app/Actions/{Get,Resolve}*.php'), GLOB_BRACE) ?: [];
+    $files = [];
 
     foreach (ALL_TIME_RELATION_DIRECTORIES as $directory) {
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(base_path($directory))) as $file) {
