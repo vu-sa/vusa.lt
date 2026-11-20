@@ -131,7 +131,7 @@ class UserDutyService
         if (! $authorizer->allows($user, $permission)) {
             return Tenant::orderBy('shortname')
                 ->with('institutions:id,name,tenant_id', 'institutions.duties:id,name,institution_id')
-                ->whereIn('id', User::find(Auth::id())->tenants->pluck('id'))
+                ->whereIn('id', $user->current_or_upcoming_tenants()->pluck('tenants.id'))
                 ->get();
         }
 

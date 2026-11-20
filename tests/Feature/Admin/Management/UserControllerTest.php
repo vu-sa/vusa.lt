@@ -114,6 +114,18 @@ describe('authorized access', function (): void {
         'API' => ['api.v1.admin.users.index', 'data.items'],
     ]);
 
+    test('the create form offers no duties from a unit where the actor only held an ended term', function (): void {
+        $formerTenant = Tenant::factory()->create();
+        $formerDuty = Duty::factory()->for(Institution::factory()->for($formerTenant))->create();
+        $this->admin->duties()->attach($formerDuty->id, ['start_date' => '2019-07-01', 'end_date' => '2020-06-30']);
+
+        asUser($this->admin)->get(route('users.create'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('tenantsWithDuties', fn ($tenants) => collect($tenants)->pluck('id')->contains($this->tenant->id)
+                    && ! collect($tenants)->pluck('id')->contains($formerTenant->id)));
+    });
+
     test('separates current members from former ones', function (): void {
         $current = makeUser($this->tenant);
         $former = makeUser($this->tenant);
