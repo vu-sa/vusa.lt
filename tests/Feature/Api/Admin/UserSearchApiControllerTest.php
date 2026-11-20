@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Permission;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\UserSimilarityFinder;
@@ -21,7 +22,7 @@ describe('search', function (): void {
         $current->update(['name' => 'Zita Rankauskienė']);
 
         $hits = collect(asUser($this->coordinator)
-            ->getJson(route('api.v1.admin.users.search', ['search' => 'Rankausk', 'permission' => 'users.read.padalinys']))
+            ->getJson(route('api.v1.admin.users.search', ['search' => 'Rankausk', 'permission' => 'duties.update.padalinys']))
             ->assertOk()
             ->json('data'));
 
@@ -37,7 +38,7 @@ describe('search', function (): void {
         $response = asUser($this->coordinator)
             ->getJson(route('api.v1.admin.users.search', [
                 'search' => 'unique.handle',
-                'permission' => 'users.read.padalinys',
+                'permission' => 'duties.update.padalinys',
             ]))
             ->assertStatus(200);
 
@@ -50,7 +51,7 @@ describe('search', function (): void {
         $response = asUser($this->coordinator)
             ->getJson(route('api.v1.admin.users.search', [
                 'search' => 'Nauja',
-                'permission' => 'users.read.padalinys',
+                'permission' => 'duties.update.padalinys',
             ]))
             ->assertStatus(200);
 
@@ -64,7 +65,7 @@ describe('search', function (): void {
         $response = asUser($this->coordinator)
             ->getJson(route('api.v1.admin.users.search', [
                 'search' => 'Nauja',
-                'permission' => 'users.read.padalinys',
+                'permission' => 'duties.update.padalinys',
             ]))
             ->assertStatus(200);
 
@@ -78,7 +79,7 @@ describe('search', function (): void {
         $response = asUser($this->coordinator)
             ->getJson(route('api.v1.admin.users.search', [
                 'search' => 'Svetimas',
-                'permission' => 'users.read.padalinys',
+                'permission' => 'duties.update.padalinys',
             ]))
             ->assertStatus(200);
 
@@ -116,7 +117,7 @@ describe('search', function (): void {
         $response = asUser($this->coordinator)
             ->getJson(route('api.v1.admin.users.search', [
                 'search' => 'Savas',
-                'permission' => 'users.read.padalinys',
+                'permission' => 'duties.update.padalinys',
                 'scope' => 'all',
             ]))
             ->assertStatus(200);
@@ -136,6 +137,18 @@ describe('search', function (): void {
         // forgotten parameter must be a validation error, not a silent fallback.
         asUser($this->coordinator)
             ->getJson(route('api.v1.admin.users.search', ['search' => 'Jonas']))
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('permission');
+    });
+
+    test('refuses a permission no picker scopes by', function (): void {
+        // A global grant on anything else would otherwise lift the tenant filter and the email mask.
+        $this->coordinator->givePermissionTo(Permission::findOrCreate('calendars.read.*', 'web'));
+        $foreign = makeUser(Tenant::factory()->create(['type' => 'padalinys']));
+        $foreign->update(['name' => 'Svetimas Svetimaitis']);
+
+        asUser($this->coordinator)
+            ->getJson(route('api.v1.admin.users.search', ['search' => 'Svetimas', 'permission' => 'calendars.read.*']))
             ->assertStatus(422)
             ->assertJsonValidationErrors('permission');
     });
