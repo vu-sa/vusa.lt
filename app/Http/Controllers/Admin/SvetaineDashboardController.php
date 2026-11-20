@@ -11,6 +11,7 @@ use App\Models\News;
 use App\Models\Page;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Inertia\Inertia;
 
 class SvetaineDashboardController extends AdminController
@@ -19,6 +20,7 @@ class SvetaineDashboardController extends AdminController
         public Authorizer $authorizer,
     ) {}
 
+    #[Authorize('viewAny', Page::class)]
     public function svetaine(ShowSvetaineDashboardRequest $request)
     {
         $selectedTenant = $request->validated('tenant_id');

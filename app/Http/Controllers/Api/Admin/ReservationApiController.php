@@ -12,6 +12,7 @@ use App\Services\ModelAuthorizer;
 use App\Services\TanstackTableService;
 use App\Support\CollectionFacetCounts;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 class ReservationApiController extends ApiController
 {
@@ -19,10 +20,9 @@ class ReservationApiController extends ApiController
 
     public function __construct(private TanstackTableService $tableService, private ModelAuthorizer $authorizer) {}
 
+    #[Authorize('viewList', Reservation::class)]
     public function index(IndexReservationRequest $request): JsonResponse
     {
-        $this->authorizeApi('viewList', Reservation::class);
-
         $query = fn (IndexReservationRequest $request) => $this->applyTanstackFilters(
             ApplyReservationIndexFilters::execute(
                 Reservation::query()->with(SerializeReservationsForTable::EAGER_LOADS),

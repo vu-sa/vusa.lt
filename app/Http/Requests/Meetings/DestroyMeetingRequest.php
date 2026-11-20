@@ -10,11 +10,6 @@ use Throwable;
 
 class DestroyMeetingRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return $this->user()?->can('delete', $this->route('meeting')) ?? false;
-    }
-
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

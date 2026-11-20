@@ -10,14 +10,6 @@ use Closure;
 class UpdateNewsRequest extends NewsRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return $this->user()->can('update', $this->news);
-    }
-
-    /**
      * Get the tenant the news item belongs to, so permalink uniqueness is scoped
      * to that tenant instead of checked globally.
      */

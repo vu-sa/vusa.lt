@@ -21,18 +21,10 @@ class StorePageRequest extends FormRequest
     use ValidatesTenantScope;
 
     /**
-     * Determine if the user is authorized to make this request.
+     * Get the validation rules that apply to the request.
      *
      * `can('create', Page::class)` is tenant-agnostic, so the `tenant_id` rule below is what
      * actually confines the page to a padalinys the user may create in.
-     */
-    public function authorize(): bool
-    {
-        return $this->user()->can('create', Page::class);
-    }
-
-    /**
-     * Get the validation rules that apply to the request.
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */

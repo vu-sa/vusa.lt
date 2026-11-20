@@ -11,6 +11,7 @@ use App\Http\Traits\HasTanstackTables;
 use App\Models\EventType;
 use App\Services\TanstackTableService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -23,10 +24,9 @@ class EventTypeController extends AdminController
     /**
      * Display a listing of the resource.
      */
+    #[Authorize('viewAny', EventType::class)]
     public function index(IndexEventTypeRequest $request): Response
     {
-        $this->handleAuthorization('viewAny', EventType::class);
-
         $query = EventType::query();
 
         $searchableColumns = ['name', 'slug'];
@@ -82,6 +82,7 @@ class EventTypeController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
+    #[Authorize('create', EventType::class)]
     public function store(StoreEventTypeRequest $request): RedirectResponse
     {
         EventType::create($request->validated());
@@ -92,6 +93,7 @@ class EventTypeController extends AdminController
     /**
      * Update the specified resource in storage.
      */
+    #[Authorize('update', 'eventType')]
     public function update(UpdateEventTypeRequest $request, EventType $eventType): RedirectResponse
     {
         $eventType->update($request->validated());
@@ -102,20 +104,21 @@ class EventTypeController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
+    #[Authorize('delete', 'eventType')]
     public function destroy(EventType $eventType): RedirectResponse
     {
-        $this->handleAuthorization('delete', $eventType);
-
         $eventType->delete();
 
         return $this->redirectToIndexWithSuccess('eventTypes', $this->entityMessage('deleted', 'eventType'));
     }
 
+    #[Authorize('restore', 'eventType')]
     public function restore(EventType $eventType): RedirectResponse
     {
         return $this->restoreModel($eventType);
     }
 
+    #[Authorize('forceDelete', 'eventType')]
     public function forceDelete(EventType $eventType): RedirectResponse
     {
         return $this->forceDeleteModel($eventType);

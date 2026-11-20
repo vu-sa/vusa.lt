@@ -18,7 +18,7 @@ class InstitutionSubscriptionApiController extends ApiController
     public function status(Request $request, Institution $institution): JsonResponse
     {
         $user = $this->requireAuth($request);
-        $this->authorizeApi('viewSummary', $institution);
+        $this->authorize('viewSummary', $institution);
 
         return $this->jsonSuccess(
             $this->subscriptionService->getStatus($user, $institution)
@@ -28,7 +28,7 @@ class InstitutionSubscriptionApiController extends ApiController
     public function follow(Request $request, Institution $institution): JsonResponse
     {
         $user = $this->requireAuth($request);
-        $this->authorizeApi('follow', $institution);
+        $this->authorize('follow', $institution);
 
         $this->subscriptionService->follow($user, $institution);
 
@@ -61,7 +61,7 @@ class InstitutionSubscriptionApiController extends ApiController
         $institutions = Institution::query()->whereIn('id', $request->institutionIds())->get();
 
         foreach ($institutions as $institution) {
-            $this->authorizeApi('follow', $institution);
+            $this->authorize('follow', $institution);
         }
 
         $this->subscriptionService->followMany($user, $institutions);

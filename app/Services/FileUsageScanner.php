@@ -57,7 +57,7 @@ class FileUsageScanner
         Problem::class => 'problems.show',
         Goal::class => 'goals.show',
         User::class => 'users.show',
-        Tenant::class => 'tenants.show',
+        Tenant::class => 'tenants.editMainPage',
     ];
 
     /**

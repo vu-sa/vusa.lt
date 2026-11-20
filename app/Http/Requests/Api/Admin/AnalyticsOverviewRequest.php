@@ -9,11 +9,6 @@ use Illuminate\Validation\Rule;
 
 class AnalyticsOverviewRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

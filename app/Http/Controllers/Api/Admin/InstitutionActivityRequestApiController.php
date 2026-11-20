@@ -16,6 +16,7 @@ use App\Support\ActivityRequests\ActivityRequestPlanEntry;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 /**
  * Feeds the "Paklausti, ar vyko posėdžiai" action window flow: which institutions and people the
@@ -26,13 +27,12 @@ class InstitutionActivityRequestApiController extends ApiController
     /**
      * @route GET /api/v1/admin/activity-requests/candidates
      */
+    #[Authorize('viewAny', InstitutionCheckIn::class)]
     public function candidates(
         Request $request,
         ResolveAskableInstitutions $askable,
         InstitutionActivityStatusService $statuses,
     ): JsonResponse {
-        $this->authorize('viewAny', InstitutionCheckIn::class);
-
         $institutions = $this->reachable($request, $askable)
             ->with(['types', 'tenant', 'meetings:id,start_time', 'checkIns'])
             ->get();
@@ -60,10 +60,9 @@ class InstitutionActivityRequestApiController extends ApiController
     /**
      * @route GET /api/v1/admin/activity-requests/people
      */
+    #[Authorize('viewAny', InstitutionCheckIn::class)]
     public function people(Request $request, ResolveAskableInstitutions $askable, ResolveActivityRequestRecipients $recipients): JsonResponse
     {
-        $this->authorize('viewAny', InstitutionCheckIn::class);
-
         return $this->jsonSuccess($recipients->people($this->reachable($request, $askable)
             ->with(['types', 'tenant'])->get(['id', 'name', 'tenant_id'])));
     }

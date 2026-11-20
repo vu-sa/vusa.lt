@@ -7,10 +7,12 @@ use App\Http\Requests\ReservationCart\DestroyReservationCartRequest;
 use App\Http\Requests\ReservationCart\StoreReservationCartItemRequest;
 use App\Http\Requests\ReservationCart\UpdateReservationCartItemRequest;
 use App\Http\Requests\ReservationCart\UpdateReservationCartRequest;
+use App\Models\Reservation;
 use App\Models\ReservationDraft;
 use App\Models\Resource;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 /**
  * The acting user's reservation cart. Every endpoint resolves the draft from the session user —
@@ -18,6 +20,7 @@ use Illuminate\Http\RedirectResponse;
  */
 class ReservationCartController extends AdminController
 {
+    #[Authorize('create', Reservation::class)]
     public function update(UpdateReservationCartRequest $request): RedirectResponse
     {
         $draft = $this->draftFor($request->user());
@@ -28,6 +31,7 @@ class ReservationCartController extends AdminController
         return back();
     }
 
+    #[Authorize('create', Reservation::class)]
     public function destroy(DestroyReservationCartRequest $request): RedirectResponse
     {
         $request->user()->reservationDraft()->delete();
@@ -38,6 +42,7 @@ class ReservationCartController extends AdminController
     /**
      * Adding what is already in the cart sets its quantity rather than duplicating the row.
      */
+    #[Authorize('create', Reservation::class)]
     public function storeItem(StoreReservationCartItemRequest $request): RedirectResponse
     {
         $this->draftFor($request->user())->items()->updateOrCreate(
@@ -48,6 +53,7 @@ class ReservationCartController extends AdminController
         return back();
     }
 
+    #[Authorize('create', Reservation::class)]
     public function updateItem(UpdateReservationCartItemRequest $request, Resource $resource): RedirectResponse
     {
         $item = $request->user()->reservationDraft?->items()->where('resource_id', $resource->id)->first();
@@ -59,6 +65,7 @@ class ReservationCartController extends AdminController
         return back();
     }
 
+    #[Authorize('create', Reservation::class)]
     public function destroyItem(DestroyReservationCartRequest $request, Resource $resource): RedirectResponse
     {
         $request->user()->reservationDraft?->items()->where('resource_id', $resource->id)->first()?->delete();

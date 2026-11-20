@@ -20,6 +20,9 @@ class ProblemRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
+     * The class-level create check is tenant-agnostic, so the `tenant_id` rule
+     * confines new problems to a padalinys the user may create in.
+     *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array

@@ -23,6 +23,7 @@ use App\Services\ResponsibilityResolver;
 use App\Support\StagingProtection;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Inertia\Inertia;
 
 class ResourceController extends AdminController
@@ -35,10 +36,9 @@ class ResourceController extends AdminController
      * The collection reads from Typesense (its scoped key carries the authorization), so the page
      * needs no rows from us.
      */
+    #[Authorize('viewAny', Resource::class)]
     public function index()
     {
-        $this->handleAuthorization('viewAny', Resource::class);
-
         return Inertia::render('Admin/Reservations/IndexResource', [
             'reservationCart' => SerializeReservationCart::execute(request()->user()),
             'mainTenantId' => Tenant::main()?->id,
@@ -51,10 +51,9 @@ class ResourceController extends AdminController
     /**
      * Show the form for creating a new resource.
      */
+    #[Authorize('create', Resource::class)]
     public function create()
     {
-        $this->handleAuthorization('create', Resource::class);
-
         return Inertia::render('Admin/Reservations/CreateResource', [
             'assignableTenants' => GetTenantsForUpserts::execute('resources.create.padalinys', $this->authorizer),
             'categories' => ResourceCategory::all(),
@@ -64,10 +63,9 @@ class ResourceController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
+    #[Authorize('create', Resource::class)]
     public function store(StoreResourceRequest $request, PostCreateRedirect $redirect)
     {
-        $this->handleAuthorization('create', Resource::class);
-
         if ($request->validated('media') !== []) {
             StagingProtection::ensureDiskIsWritable(config('media-library.disk_name'));
         }
@@ -92,10 +90,9 @@ class ResourceController extends AdminController
     /**
      * The resource record: what it is, whether it is free, who has it and when it is booked next.
      */
+    #[Authorize('view', 'resource')]
     public function show(Resource $resource)
     {
-        $this->handleAuthorization('view', $resource);
-
         $user = request()->user();
         $now = now();
 
@@ -168,10 +165,9 @@ class ResourceController extends AdminController
     /**
      * Show the form for editing the specified resource.
      */
+    #[Authorize('update', 'resource')]
     public function edit(Resource $resource)
     {
-        $this->handleAuthorization('update', $resource);
-
         $user = request()->user();
         $now = now();
 
@@ -201,6 +197,7 @@ class ResourceController extends AdminController
     /**
      * Update the specified resource in storage.
      */
+    #[Authorize('update', 'resource')]
     public function update(UpdateResourceRequest $request, Resource $resource)
     {
         $hasPendingMedia = collect($request->validated('media'))
@@ -234,10 +231,9 @@ class ResourceController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
+    #[Authorize('delete', 'resource')]
     public function destroy(Resource $resource)
     {
-        $this->handleAuthorization('delete', $resource);
-
         $resource->delete();
 
         return redirect()->route('resources.index')
@@ -247,11 +243,13 @@ class ResourceController extends AdminController
     /**
      * Restore the specified resource from storage.
      */
+    #[Authorize('restore', 'resource')]
     public function restore(Resource $resource): RedirectResponse
     {
         return $this->restoreModel($resource, $this->entityMessage('restored', 'resource'));
     }
 
+    #[Authorize('forceDelete', 'resource')]
     public function forceDelete(Resource $resource): RedirectResponse
     {
         return $this->forceDeleteModel($resource);

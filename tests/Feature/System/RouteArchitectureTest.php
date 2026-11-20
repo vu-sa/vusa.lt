@@ -92,3 +92,18 @@ it('includes admin in admin API route names', function (): void {
         expect($name)->toContain('admin');
     }
 });
+
+it('points every controller route at a method that exists', function (): void {
+    $missing = collect(Route::getRoutes()->getRoutes())
+        ->map(fn ($route) => $route->getActionName())
+        ->filter(fn (string $action) => str_starts_with($action, 'App\\') && str_contains($action, '@'))
+        ->reject(function (string $action): bool {
+            [$class, $method] = explode('@', $action);
+
+            return method_exists($class, $method);
+        })
+        ->values()
+        ->all();
+
+    expect($missing)->toBeEmpty(implode("\n", $missing));
+});

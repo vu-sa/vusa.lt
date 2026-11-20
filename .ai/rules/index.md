@@ -6,6 +6,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | --- | --- |
 | resources/js/Components/ActionWindow/** | .ai/rules/action-window.md |
 | resources/js/Components/AdminForms/** | .ai/rules/admin-forms.md |
+| app/Enums/ModelEnum.php, app/Support/MorphMap.php, app/Services/AdminNavigation/AdminNavigationCatalog.php, app/Policies/ModelPolicy.php | .ai/rules/admin-section.md |
 | resources/js/Pages/Admin/ShowAdminHome.vue, resources/js/Components/Home/** | .ai/rules/admin-home.md |
 | app/**, tests/Feature/System/DutiableDetachConventionTest.php | .ai/rules/app.md |
 | app/Actions/Get*.php, app/Actions/Resolve*.php, app/Tasks/Subscribers/**, app/Models/InstitutionSecretary.php, app/Services/CommentableMentionResolver.php, app/Console/Commands/SendMeetingReminders.php, app/Notifications/** | .ai/rules/audiences.md |

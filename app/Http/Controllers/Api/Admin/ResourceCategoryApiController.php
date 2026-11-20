@@ -8,6 +8,7 @@ use App\Http\Traits\HasTanstackTables;
 use App\Models\ResourceCategory;
 use App\Services\TanstackTableService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 class ResourceCategoryApiController extends ApiController
 {
@@ -15,10 +16,9 @@ class ResourceCategoryApiController extends ApiController
 
     public function __construct(private TanstackTableService $tableService) {}
 
+    #[Authorize('viewAny', ResourceCategory::class)]
     public function index(IndexResourceCategoryRequest $request): JsonResponse
     {
-        $this->authorizeApi('viewAny', ResourceCategory::class);
-
         $categories = $this->applyTanstackFilters(
             ResourceCategory::query(),
             $request,

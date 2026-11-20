@@ -24,6 +24,7 @@ use App\Services\TanstackTableService;
 use App\Support\LocalizedRouteSlugs;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -38,10 +39,9 @@ class CalendarController extends AdminController
     /**
      * Display a listing of the resource.
      */
+    #[Authorize('viewAny', Calendar::class)]
     public function index(IndexCalendarRequest $request)
     {
-        $this->handleAuthorization('viewAny', Calendar::class);
-
         $calendar = BuildCalendarIndexQuery::execute($request, $this->tableService)
             ->paginate($request->getPerPage());
 
@@ -62,10 +62,9 @@ class CalendarController extends AdminController
     /**
      * Show the form for creating a new resource.
      */
+    #[Authorize('create', Calendar::class)]
     public function create()
     {
-        $this->handleAuthorization('create', Calendar::class);
-
         return Inertia::render('Admin/Calendar/CreateCalendarEvent', [
             'assignableTenants' => GetTenantsForUpserts::execute('calendars.create.padalinys', $this->authorizer),
             'eventTypes' => EventType::query()->orderBy('sort_order')->get(),
@@ -76,6 +75,7 @@ class CalendarController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
+    #[Authorize('create', Calendar::class)]
     public function store(StoreCalendarRequest $request, SyncImageMedia $syncImage, PostCreateRedirect $redirect)
     {
         $calendar = new Calendar;
@@ -104,20 +104,18 @@ class CalendarController extends AdminController
      * Display the specified resource.
      * Content objects (Decision O4) have no separate record page; the editor is canonical.
      */
+    #[Authorize('view', 'calendar')]
     public function show(Calendar $calendar)
     {
-        $this->handleAuthorization('view', $calendar);
-
         return redirect()->route('calendar.edit', $calendar);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
+    #[Authorize('view', 'calendar')]
     public function edit(Request $request, Calendar $calendar)
     {
-        $this->handleAuthorization('view', $calendar);
-
         $canUpdate = $request->user()->can('update', $calendar);
         $calendar->loadMissing('tenant:id,type,shortname');
 
@@ -204,6 +202,7 @@ class CalendarController extends AdminController
     /**
      * Update the specified resource in storage.
      */
+    #[Authorize('update', 'calendar')]
     public function update(UpdateCalendarRequest $request, Calendar $calendar, SyncImageMedia $syncImage)
     {
         DB::transaction(function () use ($request, $calendar, $syncImage): void {
@@ -242,6 +241,7 @@ class CalendarController extends AdminController
         return back()->with('success', $this->entityMessage('updated', 'calendar'));
     }
 
+    #[Authorize('update', 'calendar')]
     public function updateIndex(UpdateCalendarIndexRequest $request, Calendar $calendar): RedirectResponse
     {
         $data = $request->validated();
@@ -259,10 +259,10 @@ class CalendarController extends AdminController
         return back()->with('success', $this->entityMessage('updated', 'calendar'));
     }
 
+    #[Authorize('create', Calendar::class)]
+    #[Authorize('view', 'calendar')]
     public function duplicate(Calendar $calendar)
     {
-        $this->handleAuthorization('create', Calendar::class);
-        $this->handleAuthorization('view', $calendar);
         abort_unless($this->authorizer->scope(auth()->user(), 'calendars.create.padalinys')->allowsTenant($calendar->tenant), 403);
 
         $newCalendar = DuplicateCalendarAction::execute($calendar);
@@ -273,10 +273,9 @@ class CalendarController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
+    #[Authorize('delete', 'calendar')]
     public function destroy(Calendar $calendar)
     {
-        $this->handleAuthorization('delete', $calendar);
-
         $calendar->delete();
 
         return redirect()->route('calendar.index')->with('info', $this->entityMessage('deleted', 'calendar'));
@@ -285,10 +284,9 @@ class CalendarController extends AdminController
     /**
      * Remove a legacy public URL (an old permalink that still 301-redirects here).
      */
+    #[Authorize('update', 'calendar')]
     public function destroyPublicUrl(Calendar $calendar, PublicUrl $publicUrl): RedirectResponse
     {
-        $this->handleAuthorization('update', $calendar);
-
         // Resolve through the relation so a crafted payload cannot reach another event's URLs.
         $publicUrlFromDb = $calendar->publicUrls()->find($publicUrl->id);
 
@@ -299,20 +297,21 @@ class CalendarController extends AdminController
         return back()->with('info', $this->entityMessage('deleted', 'publicUrl'));
     }
 
+    #[Authorize('update', 'calendar')]
     public function destroyMedia(Calendar $calendar, Media $media)
     {
-        $this->handleAuthorization('update', $calendar);
-
         HandleModelMediaUploads::deleteMedia($calendar, 'images', $media->id);
 
         return back()->with('info', __('messages.calendar.image_deleted'));
     }
 
+    #[Authorize('restore', 'calendar')]
     public function restore(Calendar $calendar): RedirectResponse
     {
         return $this->restoreModel($calendar);
     }
 
+    #[Authorize('forceDelete', 'calendar')]
     public function forceDelete(Calendar $calendar): RedirectResponse
     {
         return $this->forceDeleteModel($calendar);

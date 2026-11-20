@@ -8,9 +8,11 @@ use App\Listeners\QueueMailingListSync;
 use App\Models\MailingList;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 class MailingListExclusionController extends AdminController
 {
+    #[Authorize('update', 'mailingList')]
     public function store(StoreMailingListExclusionRequest $request, MailingList $mailingList): RedirectResponse
     {
         try {
@@ -27,10 +29,9 @@ class MailingListExclusionController extends AdminController
         return back()->with('success', __('mailing_lists.messages.exclusion_added'));
     }
 
+    #[Authorize('update', 'mailingList')]
     public function destroy(MailingList $mailingList, string $exclusion): RedirectResponse
     {
-        $this->handleAuthorization('update', $mailingList);
-
         try {
             $mailingList->withSyncLock(function () use ($mailingList, $exclusion): void {
                 $model = $mailingList->exclusions()->find($exclusion);

@@ -12,11 +12,6 @@ class ShowInstitutionCategoryRequest extends FormRequest
     use DropsInvalidOptionalQuery;
     use NormalizesBooleanFlags;
 
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     #[\Override]
     protected function prepareForValidation(): void
     {

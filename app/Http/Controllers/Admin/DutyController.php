@@ -36,6 +36,7 @@ use App\Services\ResourceServices\DutyService;
 use App\Services\TanstackTableService;
 use App\Support\MorphMap;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -49,10 +50,9 @@ class DutyController extends AdminController
     /**
      * Display a listing of the resource.
      */
+    #[Authorize('viewAny', Duty::class)]
     public function index(IndexDutyRequest $request)
     {
-        $this->handleAuthorization('viewAny', Duty::class);
-
         $query = $this->applyTanstackFilters(
             BuildDutyIndexQuery::execute($request, $this->authorizer),
             $request,
@@ -92,6 +92,7 @@ class DutyController extends AdminController
     /**
      * Show the form for creating a new resource.
      */
+    #[Authorize('create', Duty::class)]
     public function create(CreateDutyRequest $request)
     {
         return Inertia::render('Admin/People/CreateDuty', [
@@ -106,6 +107,7 @@ class DutyController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
+    #[Authorize('create', Duty::class)]
     public function store(StoreDutyRequest $request, PostCreateRedirect $redirect)
     {
         return DB::transaction(function () use ($request, $redirect) {
@@ -130,10 +132,9 @@ class DutyController extends AdminController
     /**
      * Display the specified resource.
      */
+    #[Authorize('view', 'duty')]
     public function show(Duty $duty)
     {
-        $this->handleAuthorization('view', $duty);
-
         $loadDuty = fn () => once(function () use ($duty): Duty {
             $duty->loadMissing([
                 'institution.tenant',
@@ -186,12 +187,11 @@ class DutyController extends AdminController
     /**
      * Show the form for editing the specified resource.
      */
+    // Owning-tenant admins (can update the duty) and cross-tenant admins
+    // (can only manage their tenant's reps) may both open this page.
+    #[Authorize('managePeople', 'duty')]
     public function edit(Duty $duty)
     {
-        // Owning-tenant admins (can update the duty) and cross-tenant admins
-        // (can only manage their tenant's reps) may both open this page.
-        $this->handleAuthorization('managePeople', $duty);
-
         $user = request()->user();
         $canEditDuty = $user->can('update', $duty);
 
@@ -260,10 +260,9 @@ class DutyController extends AdminController
     /**
      * Update the specified resource in storage.
      */
+    #[Authorize('update', 'duty')]
     public function update(UpdateDutyRequest $request, Duty $duty, UpdateDuty $updateDuty): RedirectResponse
     {
-        $this->handleAuthorization('update', $duty);
-
         $actor = $request->user();
 
         $data = $request->validated();
@@ -333,15 +332,15 @@ class DutyController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
+    #[Authorize('delete', 'duty')]
     public function destroy(Duty $duty)
     {
-        $this->handleAuthorization('delete', $duty);
-
         $duty->delete();
 
         return redirect()->route('duties.index')->with('info', $this->entityMessage('deleted', 'duty'));
     }
 
+    #[Authorize('restore', 'duty')]
     public function restore(Duty $duty): RedirectResponse
     {
         return $this->restoreModel($duty);
@@ -350,6 +349,7 @@ class DutyController extends AdminController
     /**
      * Merge one or more duplicate duties into a single kept duty.
      */
+    #[Authorize('merge', Duty::class)]
     public function mergeDuties(MergeDutiesRequest $request)
     {
         $kept = Duty::findOrFail($request->validated('target_duty_id'));
@@ -370,10 +370,9 @@ class DutyController extends AdminController
     /**
      * Display the duty user update wizard page.
      */
+    #[Authorize('viewAny', Duty::class)]
     public function updateUsersWizard()
     {
-        $this->handleAuthorization('viewAny', Duty::class);
-
         $currentUsersLoad = ['current_users' => function ($q): void {
             $q->select('users.id', 'name', 'email', 'profile_photo_path')
                 ->withPivot('start_date', 'end_date');
@@ -447,6 +446,7 @@ class DutyController extends AdminController
     /**
      * Batch update users for a duty.
      */
+    // Authorized in BatchUpdateDutyUsersRequest: the duty and permission to create users.
     public function batchUpdateUsers(BatchUpdateDutyUsersRequest $request, Duty $duty)
     {
         $validated = $request->validated();
@@ -560,6 +560,7 @@ class DutyController extends AdminController
             ->with('success', trans('Pareigybės nariai sėkmingai atnaujinti!'));
     }
 
+    #[Authorize('forceDelete', 'duty')]
     public function forceDelete(Duty $duty): RedirectResponse
     {
         return $this->forceDeleteModel($duty);

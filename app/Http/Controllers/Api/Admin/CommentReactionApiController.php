@@ -11,6 +11,7 @@ use App\Policies\CommentPolicy;
 use App\Support\Commentables;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 /**
  * Toggle one-tap emoji reactions on a comment. Anyone who can view the parent
@@ -18,6 +19,7 @@ use Illuminate\Http\JsonResponse;
  */
 class CommentReactionApiController extends ApiController
 {
+    #[Authorize('react', 'comment')]
     public function toggle(ToggleCommentReactionRequest $request, Comment $comment): JsonResponse
     {
         $validated = $request->validated();

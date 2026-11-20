@@ -3,15 +3,12 @@
 namespace App\Policies;
 
 use App\Enums\CRUDEnum;
-use App\Enums\ModelEnum;
 use App\Models\Meeting;
 use App\Models\Reservation;
 use App\Models\Task;
 use App\Models\User;
-use App\Services\ModelAuthorizer;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 class TaskPolicy extends ModelPolicy
 {
@@ -22,12 +19,6 @@ class TaskPolicy extends ModelPolicy
         Meeting::class => 'meetings',
         Reservation::class => 'reservations',
     ];
-
-    public function __construct(ModelAuthorizer $authorizer)
-    {
-        parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::TASK->label());
-    }
 
     /**
      * Determine whether the user can view any tasks (for summary page).

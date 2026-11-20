@@ -7,11 +7,6 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class AnalyticsContentRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

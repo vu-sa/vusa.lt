@@ -10,11 +10,6 @@ class IndexTenantCalendarRequest extends FormRequest
 {
     use NormalizesBooleanFlags;
 
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     #[\Override]
     protected function prepareForValidation(): void
     {

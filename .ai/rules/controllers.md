@@ -73,3 +73,13 @@ against the resource prefixes that actually exist in the `permissions` table.
 Wayfinder types a page's props by reading the `Inertia::render()` call statically; a helper that
 forwards `$component, $props` hides the page from it (admin's old `inertiaResponse()` left 112 pages
 untyped). Build props in presenters (`.ai/rules/payloads.md`), but keep the render call in the action.
+
+## Authorize with `#[Authorize]` on the method; a Form Request only when it needs input
+A check on a class or a route-bound model is `#[Authorize('update', 'news')]` on the controller
+method: it runs before validation and sits where a reader looks first. A Form Request's
+`authorize()` holds only checks on request input (ids in the body, several records), and the
+method gets `// Authorized in XRequest: <why>.` `RouteAuthorizationCoverageTest` enforces both.
+
+When you delete a Form Request's `authorize()`, add the attribute to **every** controller using
+that request (and its subclasses): `ContentEditorApiController` shares `StoreNewsRequest` with
+`NewsController`, and missing it left the API route open.

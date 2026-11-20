@@ -12,7 +12,6 @@ use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\StagingBasicAuth;
 use App\Http\Middleware\StagingEnvironmentWarnings;
 use App\Http\Middleware\StagingReadOnlyMode;
-use App\Http\Middleware\TenantPermission;
 use App\Http\Middleware\UpdateLastAction;
 use App\Support\Media\ResizableImage;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -125,7 +124,6 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'locale' => SetLocale::class,
-            'tenant.permission' => TenantPermission::class,
             'experiment.goals' => EnsureGoalsExperiment::class,
         ]);
     })

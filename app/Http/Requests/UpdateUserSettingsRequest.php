@@ -15,11 +15,6 @@ class UpdateUserSettingsRequest extends FormRequest
 {
     use HasImageValidation;
 
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

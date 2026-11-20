@@ -15,6 +15,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -123,6 +124,7 @@ class FileApiController extends ApiController
     }
 
     // A single batch avoids competing uploads interrupting each other in Inertia's visit stream.
+    #[Authorize('create', File::class)]
     public function store(StoreFilesRequest $request): JsonResponse
     {
         $this->requireAuth($request);

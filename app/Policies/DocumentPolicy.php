@@ -2,34 +2,16 @@
 
 namespace App\Policies;
 
-use App\Enums\ModelEnum;
 use App\Models\Document;
 use App\Models\User;
-use App\Services\ModelAuthorizer;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 /**
  * Policy for Document model authorization
  */
 class DocumentPolicy extends ModelPolicy
 {
-    /**
-     * These models belong to a single tenant through a `tenant` relation.
-     */
-    #[\Override]
-    protected bool $hasManyTenants = false;
-
-    /**
-     * Initialize policy with model name
-     */
-    public function __construct(ModelAuthorizer $authorizer)
-    {
-        parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::DOCUMENT->label());
-    }
-
     /**
      * Documents are public, so every admin may browse the collection; managing them is gated
      * by `create` / `update` / `delete`.

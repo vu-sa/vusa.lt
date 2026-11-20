@@ -16,6 +16,7 @@ use App\Models\User;
 use App\Notifications\SupportRequestCreatedNotification;
 use App\Notifications\SupportRequestInvolvedNotification;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\Notification;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -27,16 +28,16 @@ class MySupportRequestController extends AdminController
         return Inertia::render('Admin/Dashboard/ShowSupportRequests', $builder->execute($request));
     }
 
+    #[Authorize('create', SupportRequest::class)]
     public function create()
     {
-        $this->authorize('create', SupportRequest::class);
-
         return Inertia::render('Admin/SupportRequests/CreateSupportRequest', [
             ...static::formOptions(),
             'users' => User::query()->orderBy('name')->get(['id', 'name', 'profile_photo_path']),
         ]);
     }
 
+    #[Authorize('create', SupportRequest::class)]
     public function store(StoreSupportRequestRequest $request): RedirectResponse
     {
         $data = $request->safe()->except(['roles', 'images', 'involved_users']);

@@ -100,3 +100,22 @@ test('preview includes terminal past reservations in previous list', function ()
         ->assertJsonPath('data.previous_reservations.0.quantity', 2)
         ->assertJsonPath('data.previous_reservations.0.state', 'returned');
 });
+
+test('preview hides the name of a reservation the viewer cannot open', function (): void {
+    $user = makeUser($this->tenant);
+
+    $reservation = Reservation::factory()->create(['name' => 'Someone else\'s event']);
+    $this->resource->reservations()->attach($reservation->id, [
+        'quantity' => 1,
+        'state' => 'reserved',
+        'start_time' => now()->addDay(),
+        'end_time' => now()->addDays(2),
+    ]);
+
+    asUser($user)
+        ->getJson(route('api.v1.admin.resources.preview', $this->resource))
+        ->assertStatus(200)
+        ->assertJsonPath('data.upcoming_reservations.0.name', null)
+        ->assertJsonPath('data.upcoming_reservations.0.id', null)
+        ->assertJsonPath('data.upcoming_reservations.0.quantity', 1);
+});

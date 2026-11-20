@@ -28,7 +28,6 @@ arch('AdminController provides response helpers')
     ->toHaveMethods([
         'redirectResponse',
         'redirectBack',
-        'handleAuthorization',
     ]);
 
 /*

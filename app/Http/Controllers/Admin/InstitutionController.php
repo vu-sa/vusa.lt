@@ -30,6 +30,7 @@ use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use App\Settings\MeetingSettings;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -46,10 +47,9 @@ class InstitutionController extends AdminController
     /**
      * Display a listing of the resource.
      */
+    #[Authorize('viewAny', Institution::class)]
     public function index(IndexInstitutionRequest $request): Response
     {
-        $this->handleAuthorization('viewAny', Institution::class);
-
         // Live rows come from Typesense (the scoped key carries the authorization) and the trash
         // from api.v1.admin.trash.index, so the page itself needs no rows.
         return Inertia::render('Admin/People/IndexInstitution', [
@@ -69,10 +69,9 @@ class InstitutionController extends AdminController
     /**
      * Show the form for creating a new resource.
      */
+    #[Authorize('create', Institution::class)]
     public function create()
     {
-        $this->handleAuthorization('create', Institution::class);
-
         Inertia::share('seo.title', 'Nauja institucija');
 
         return Inertia::render('Admin/People/CreateInstitution', [
@@ -84,6 +83,7 @@ class InstitutionController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
+    #[Authorize('create', Institution::class)]
     public function store(StoreInstitutionRequest $request, SyncImageMedia $syncImage, PostCreateRedirect $redirect)
     {
         $institution = new Institution;
@@ -102,6 +102,7 @@ class InstitutionController extends AdminController
     /**
      * Display the specified resource.
      */
+    // Authorized in ActivityRequestHistoryRequest: the bound institution or user.
     public function show(ActivityRequestHistoryRequest $request, Institution $institution): Response
     {
         // An active institution outside the user's reach opens as its public face: overview,
@@ -164,10 +165,9 @@ class InstitutionController extends AdminController
     /**
      * Show the form for editing the specified resource.
      */
+    #[Authorize('update', 'institution')]
     public function edit(Institution $institution)
     {
-        $this->handleAuthorization('update', $institution);
-
         $institution->load('types');
 
         Inertia::share('seo.title', $institution->name);
@@ -191,6 +191,7 @@ class InstitutionController extends AdminController
     /**
      * Update the specified resource in storage.
      */
+    #[Authorize('update', 'institution')]
     public function update(UpdateInstitutionRequest $request, Institution $institution, UpdateInstitution $update)
     {
         $update->execute($institution, $request->validated(), $request->user());
@@ -210,10 +211,9 @@ class InstitutionController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
+    #[Authorize('delete', 'institution')]
     public function destroy(Institution $institution)
     {
-        $this->handleAuthorization('delete', $institution);
-
         // check if auth user is from this institution
         if (auth()->user()->institutions->contains($institution)) {
             return back()->with('error', __('messages.institution.cannot_delete_own'));
@@ -227,6 +227,7 @@ class InstitutionController extends AdminController
     /**
      * Restore the specified resource from storage.
      */
+    #[Authorize('restore', 'institution')]
     public function restore(Institution $institution): RedirectResponse
     {
         $response = $this->restoreModel($institution, $this->entityMessage('restored', 'institution'));
@@ -242,10 +243,9 @@ class InstitutionController extends AdminController
     /**
      * Remove a legacy public URL (an old alias that still 301-redirects here).
      */
+    #[Authorize('update', 'institution')]
     public function destroyPublicUrl(Institution $institution, PublicUrl $publicUrl): RedirectResponse
     {
-        $this->handleAuthorization('update', $institution);
-
         // Resolve through the relation so a crafted payload cannot reach another institution's URLs.
         $publicUrlFromDb = $institution->publicUrls()->find($publicUrl->id);
 
@@ -262,6 +262,7 @@ class InstitutionController extends AdminController
      *
      * @return RedirectResponse
      */
+    // Authorized in ReorderDutiesRequest: every institution that owns a selected duty.
     public function reorderDuties(ReorderDutiesRequest $request)
     {
         $duties = collect($request->validated('duties'));
@@ -280,6 +281,7 @@ class InstitutionController extends AdminController
         return back()->with('success', __('messages.duty.order_updated'));
     }
 
+    #[Authorize('forceDelete', 'institution')]
     public function forceDelete(Institution $institution): RedirectResponse
     {
         return $this->forceDeleteModel($institution);

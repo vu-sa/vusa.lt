@@ -16,32 +16,19 @@ use Illuminate\Support\Facades\Log;
 trait HasCommonChecks
 {
     /**
-     * Whether the model relates to tenants through a `tenants` (many) relation.
-     *
-     * Policies whose model belongs to a single tenant (a `tenant` relation) set this to false;
-     * left true, the padalinys scope finds no `tenants` relation and silently denies.
-     */
-    protected bool $hasManyTenants = true;
-
-    /**
      * Common checker logic for tenant-based authorization.
      *
      * @param  User  $user  The user to check permissions for
      * @param  Model  $model  The model to check against
      * @param  string  $ability  The CRUD action being checked (e.g., read, update)
      * @param  string|null  $resourceName  Override the resource name if different from plural model name
-     * @param  bool|null  $hasManyTenants  Overrides the policy's $hasManyTenants for this check
      */
     protected function commonChecker(
         User $user,
         Model $model,
         string $ability,
         ?string $resourceName = null,
-        ?bool $hasManyTenants = null
     ): bool {
-        $hasManyTenants ??= $this->hasManyTenants;
-
-        // WARNING: Uses the current object pluralModelName, it must be set, or a resource name must be provided
         $resource = $resourceName ?? $this->pluralModelName;
 
         if (empty($resource)) {
@@ -54,7 +41,7 @@ trait HasCommonChecks
 
         return $this->authorizer->allows($user, $permissionBase.PermissionScopeEnum::ALL->label())
             || $this->allowsOwnScope($user, $model, $permissionBase, $resource)
-            || $this->allowsPadalinysScope($user, $model, $permissionBase, $hasManyTenants);
+            || $this->allowsPadalinysScope($user, $model, $permissionBase);
     }
 
     /**
@@ -75,11 +62,12 @@ trait HasCommonChecks
     }
 
     /**
-     * Whether the model belongs to one of the tenants the user holds the padalinys scope in.
+     * Whether the model belongs to one of the tenants the user holds the padalinys scope in,
+     * read through its `tenants` relation when it has one, else its `tenant` relation.
      */
-    private function allowsPadalinysScope(User $user, Model $model, string $permissionBase, bool $hasManyTenants): bool
+    private function allowsPadalinysScope(User $user, Model $model, string $permissionBase): bool
     {
-        $tenantRelation = $hasManyTenants ? 'tenants' : 'tenant';
+        $tenantRelation = method_exists($model, 'tenants') ? 'tenants' : 'tenant';
 
         // Globally scoped models (tags, types, categories, navigation) have no tenant
         // relation and are only ever granted "*"; deny rather than 500 on loading it.

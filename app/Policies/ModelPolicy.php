@@ -8,6 +8,7 @@ use App\Policies\Traits\HasCommonChecks;
 use App\Services\ModelAuthorizer;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 /**
  * Base policy class for most models in the application.
@@ -20,14 +21,15 @@ class ModelPolicy
     use HasCommonChecks;
 
     /**
-     * The plural name of the model, used for permission string generation
+     * The resource segment of this policy's permissions. Derived from the class name
+     * (`QuickLinkPolicy` → `quickLinks`); set it only when the two differ.
      */
-    protected $pluralModelName;
+    protected ?string $pluralModelName = null;
 
-    /**
-     * Constructor injects the ModelAuthorizer service
-     */
-    public function __construct(public ModelAuthorizer $authorizer) {}
+    public function __construct(public ModelAuthorizer $authorizer)
+    {
+        $this->pluralModelName ??= Str::plural(Str::camel(Str::beforeLast(class_basename(static::class), 'Policy')));
+    }
 
     /**
      * The resource segment of this policy's permissions, e.g. `news` in `news.update.padalinys`.

@@ -18,6 +18,7 @@ use App\Services\ContentEditorService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
@@ -30,10 +31,9 @@ class PageController extends AdminController
     /**
      * Display a listing of the resource.
      */
+    #[Authorize('viewAny', Page::class)]
     public function index(IndexPageRequest $request)
     {
-        $this->handleAuthorization('viewAny', Page::class);
-
         // Live rows come from Typesense (the scoped key carries the authorization) and the trash
         // from api.v1.admin.trash.index, so the page itself needs no rows.
         return Inertia::render('Admin/Content/IndexPages', [
@@ -44,10 +44,9 @@ class PageController extends AdminController
     /**
      * Show the form for creating a new resource.
      */
+    #[Authorize('create', Page::class)]
     public function create()
     {
-        $this->handleAuthorization('create', Page::class);
-
         return Inertia::render('Admin/Content/CreatePage',
             [
                 'availableTags' => Tag::orderBy('alias')->get()->map->toFullArray(),
@@ -59,10 +58,9 @@ class PageController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
+    #[Authorize('create', Page::class)]
     public function store(StorePageRequest $request, PostCreateRedirect $redirect)
     {
-        $this->handleAuthorization('create', Page::class);
-
         $page = app(ContentEditorService::class)->save('pages', $request->validated(), $request->user());
 
         return redirect($redirect->url($request->user(), $page, 'pages.edit', 'update', 'pages.index'))
@@ -72,10 +70,9 @@ class PageController extends AdminController
     /**
      * Show the form for editing the specified resource.
      */
+    #[Authorize('update', 'page')]
     public function edit(Page $page)
     {
-        $this->handleAuthorization('update', $page);
-
         $page->load('tenant:id,alias,shortname', 'parent:id,title');
 
         return Inertia::render('Admin/Content/EditPage', [
@@ -92,10 +89,9 @@ class PageController extends AdminController
     /**
      * Update the specified resource in storage.
      */
+    #[Authorize('update', 'page')]
     public function update(UpdatePageRequest $request, Page $page)
     {
-        $this->handleAuthorization('update', $page);
-
         $page = app(ContentEditorService::class)->save('pages', $request->validated(), $request->user(), $page);
 
         return back()->with('success', $this->entityMessage('updated', 'page'))->with('data', $page->load('content'));
@@ -104,10 +100,9 @@ class PageController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
+    #[Authorize('delete', 'page')]
     public function destroy(Page $page)
     {
-        $this->handleAuthorization('delete', $page);
-
         $page->delete();
 
         return redirect()->route('pages.index')->with('info', $this->entityMessage('deleted', 'page'));
@@ -117,6 +112,7 @@ class PageController extends AdminController
      * Publish or unpublish the pages picked in the collection (one id for the inline status menu).
      * Saved one by one so Scout, the public index and the activity log see every change.
      */
+    // Authorized in BulkUpdatePageStatusRequest: every selected page.
     public function bulkUpdateStatus(BulkUpdatePageStatusRequest $request): RedirectResponse
     {
         $pages = $request->records();
@@ -127,6 +123,7 @@ class PageController extends AdminController
         return back()->with('success', __('messages.bulk_updated', ['count' => $pages->count()]));
     }
 
+    // Authorized in BulkDestroyPagesRequest: every selected page.
     public function bulkDestroy(BulkDestroyPagesRequest $request): RedirectResponse
     {
         $pages = $request->records();
@@ -136,11 +133,13 @@ class PageController extends AdminController
         return back()->with('info', __('messages.bulk_deleted', ['count' => $pages->count()]));
     }
 
+    #[Authorize('restore', 'page')]
     public function restore(Page $page): RedirectResponse
     {
         return $this->restoreModel($page, $this->entityMessage('restored', 'page'));
     }
 
+    #[Authorize('forceDelete', 'page')]
     public function forceDelete(Page $page): RedirectResponse
     {
         return $this->forceDeleteModel($page);
@@ -149,10 +148,9 @@ class PageController extends AdminController
     /**
      * Remove a legacy public URL (an old permalink that still 301-redirects here).
      */
+    #[Authorize('update', 'page')]
     public function destroyPublicUrl(Page $page, PublicUrl $publicUrl): RedirectResponse
     {
-        $this->handleAuthorization('update', $page);
-
         // Resolve through the relation so a crafted payload cannot reach another page's URLs.
         $publicUrlFromDb = $page->publicUrls()->find($publicUrl->id);
 

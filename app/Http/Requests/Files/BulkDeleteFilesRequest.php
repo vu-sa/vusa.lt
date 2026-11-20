@@ -8,11 +8,6 @@ use Illuminate\Foundation\Http\FormRequest;
 /** Each destination needs its directory's delete permission before any file is removed. */
 class BulkDeleteFilesRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

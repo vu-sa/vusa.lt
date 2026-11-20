@@ -24,7 +24,7 @@ class TaskApiController extends ApiController
         $scope = $request->validated('scope') ?? BuildTaskIndexQuery::SCOPE_MINE;
 
         if ($scope === BuildTaskIndexQuery::SCOPE_TENANT) {
-            $this->authorizeApi('viewAny', Task::class);
+            $this->authorize('viewAny', Task::class);
         }
 
         $query = fn (IndexTasksRequest $request) => BuildTaskIndexQuery::execute($request, $scope, $user, $this->authorizer);

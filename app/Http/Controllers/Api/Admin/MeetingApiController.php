@@ -11,7 +11,7 @@ use App\Services\AgendaItemPresenter;
 use App\Services\ResourceServices\DutyService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 class MeetingApiController extends ApiController
 {
@@ -43,10 +43,9 @@ class MeetingApiController extends ApiController
      *
      * @routeName api.v1.admin.meetings.preview
      */
+    #[Authorize('view', 'meeting')]
     public function preview(Meeting $meeting): JsonResponse
     {
-        $this->authorizeApi('view', $meeting);
-
         $meeting->load([
             'institutions',
             'agendaItems' => fn ($query) => $query->orderBy('order')->with('votes'),
@@ -86,10 +85,9 @@ class MeetingApiController extends ApiController
      *
      * @routeName api.v1.admin.meetings.agendaItems
      */
+    #[Authorize('view', 'meeting')]
     public function agendaItems(Meeting $meeting): JsonResponse
     {
-        $this->authorizeApi('view', $meeting);
-
         $meeting->load([
             'agendaItems' => fn ($query) => $query->orderBy('order'),
         ]);
@@ -115,12 +113,9 @@ class MeetingApiController extends ApiController
      *
      * @routeName api.v1.admin.meetings.recent
      */
+    // Self-scoped, so no policy: only institutions where the caller holds a duty or is a secretary.
     public function recent(): JsonResponse
     {
-        if (! Auth::check()) {
-            return $this->jsonError('Unauthorized', 401);
-        }
-
         $sixMonthsAgo = now()->subMonths(6);
         $userInstitutions = DutyService::getUserInstitutionsForDashboard(meetingsFrom: $sixMonthsAgo);
 

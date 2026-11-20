@@ -3,7 +3,6 @@
 namespace App\Policies;
 
 use App\Enums\CRUDEnum;
-use App\Enums\ModelEnum;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\User;
@@ -11,14 +10,12 @@ use App\Services\MeetingAccessService;
 use App\Services\ModelAuthorizer;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 class MeetingPolicy extends ModelPolicy
 {
     public function __construct(ModelAuthorizer $authorizer, private readonly MeetingAccessService $meetingAccess)
     {
         parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::MEETING->label());
     }
 
     /** The scoped search key filters public meetings and every additional viewing path. */

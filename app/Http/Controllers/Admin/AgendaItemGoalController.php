@@ -7,6 +7,7 @@ use App\Http\Requests\Goals\LinkAgendaItemGoalRequest;
 use App\Models\Goal;
 use App\Models\Pivots\AgendaItem;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 /**
  * Goals pilot: an agenda item counts towards a goal as a step on the goal, dated by its meeting,
@@ -14,6 +15,7 @@ use Illuminate\Http\RedirectResponse;
  */
 class AgendaItemGoalController extends AdminController
 {
+    // Authorized in LinkAgendaItemGoalRequest: the agenda item and the selected goal.
     public function store(LinkAgendaItemGoalRequest $request, AgendaItem $agendaItem): RedirectResponse
     {
         $goal = Goal::query()->findOrFail($request->validated('goal_id'));
@@ -28,10 +30,10 @@ class AgendaItemGoalController extends AdminController
         return back()->with('success', __('goals.messages.agenda_item_linked'));
     }
 
+    // Unlinking deletes the goal's step, which its editors may do anyway (StepController::destroy).
+    #[Authorize('update', 'goal')]
     public function destroy(AgendaItem $agendaItem, Goal $goal): RedirectResponse
     {
-        $this->handleAuthorization('update', $goal);
-
         $goal->steps()->where('agenda_item_id', $agendaItem->id)->get()->each->delete();
 
         return back()->with('success', __('goals.messages.agenda_item_unlinked'));

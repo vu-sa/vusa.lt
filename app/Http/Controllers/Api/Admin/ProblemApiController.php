@@ -10,6 +10,7 @@ use App\Models\Problem;
 use App\Services\TanstackTableService;
 use App\Support\CollectionFacetCounts;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 class ProblemApiController extends ApiController
 {
@@ -19,10 +20,9 @@ class ProblemApiController extends ApiController
         private TanstackTableService $tableService,
     ) {}
 
+    #[Authorize('viewAny', Problem::class)]
     public function index(IndexProblemRequest $request): JsonResponse
     {
-        $this->authorizeApi('viewAny', Problem::class);
-
         $query = fn (IndexProblemRequest $request) => $this->applyTanstackFilters(
             BuildProblemIndexQuery::execute($request),
             $request,
