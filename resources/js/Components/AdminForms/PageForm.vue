@@ -325,7 +325,7 @@ import { normalizeHit, type NormalizedSearchHit } from '@/Search/admin/Utils/sea
 import { Textarea } from '@/Components/ui/textarea';
 import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
 
-import VisualOptionSelect from '../FormItems/VisualOptionSelect.vue';
+import VisualOptionSelect from './VisualOptionSelect.vue';
 import { getContentType, type BlockWidth } from '../RichContent/Types';
 import RichContentFormElement from '../RichContent/RichContentFormElement.vue';
 

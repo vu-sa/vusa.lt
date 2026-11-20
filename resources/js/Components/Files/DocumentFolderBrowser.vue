@@ -351,7 +351,7 @@ import CollectionSelectionBar from '@/Components/Collection/CollectionSelectionB
 import CollectionTitleBand from '@/Components/Collection/CollectionTitleBand.vue';
 import type { CollectionQuickFilter } from '@/Components/Collection/types';
 import { DocumentIcon } from '@/Components/icons';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { CollectionSkeleton, ConfirmDialog, EmptyState, TopProgressBar } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';

@@ -2,7 +2,7 @@ import { defineComponent, markRaw } from 'vue';
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
-import TurtleMascot from '@/Components/Empty/TurtleMascot.vue';
+import TurtleMascot from '@/Components/Patterns/TurtleMascot.vue';
 
 import EmptyState from '../EmptyState.vue';
 

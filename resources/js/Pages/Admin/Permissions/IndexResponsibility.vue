@@ -56,7 +56,7 @@ import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
-import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import { useCollectionRecordActions } from '@/Components/Collection/useCollectionRecordActions';
 import { useRowAbilities } from '@/Composables/useRowAbilities';
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';

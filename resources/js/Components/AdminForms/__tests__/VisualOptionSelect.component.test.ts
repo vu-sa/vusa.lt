@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { h } from 'vue';
 
-import VisualOptionSelect from '@/Components/FormItems/VisualOptionSelect.vue';
-import type { VisualOption } from '@/Components/FormItems/VisualOptionSelect.vue';
+import VisualOptionSelect from '@/Components/AdminForms/VisualOptionSelect.vue';
+import type { VisualOption } from '@/Components/AdminForms/VisualOptionSelect.vue';
 
 const DummyIcon = () => h('svg');
 

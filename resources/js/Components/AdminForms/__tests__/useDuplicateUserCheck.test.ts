@@ -13,7 +13,7 @@ vi.mock('@/Composables/useApi', () => ({
   }),
 }));
 
-import { useDuplicateUserCheck } from '@/Composables/useDuplicateUserCheck';
+import { useDuplicateUserCheck } from '@/Components/AdminForms/useDuplicateUserCheck';
 
 describe('useDuplicateUserCheck', () => {
   beforeEach(() => {

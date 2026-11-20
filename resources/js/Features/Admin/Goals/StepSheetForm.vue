@@ -124,7 +124,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Link2, Users, X } from '@lucide/vue';
 import { capitalize, computed, ref, toRaw, watch } from 'vue';
 
-import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
+import MultiLocaleInput from '@/Components/AdminForms/MultiLocaleInput.vue';
 import SheetForm from '@/Components/Patterns/SheetForm.vue';
 import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';

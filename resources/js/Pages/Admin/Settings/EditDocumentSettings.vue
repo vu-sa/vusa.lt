@@ -130,7 +130,7 @@ import { MultiSelect } from '@/Components/ui/multi-select';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Input } from '@/Components/ui/input';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { CollectionSelectDialog } from '@/Components/Pickers';
 import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';

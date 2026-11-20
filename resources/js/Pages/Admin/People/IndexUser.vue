@@ -157,7 +157,7 @@ import { userPreviewFromRecord } from '@/Components/Users/userPreview';
 import { Button } from '@/Components/ui/button';
 import { useAdminNavigation } from '@/Composables/useAdminNavigation';
 import { useRowAbilities } from '@/Composables/useRowAbilities';
-import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import { useCollectionRecordActions } from '@/Components/Collection/useCollectionRecordActions';
 import { isTrashView, useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
 import type { StatusPresentation } from '@/Constants/statusIcons';
 import { MemberTermsSummary, termYearSpan } from '@/Features/Admin/Occupancy';

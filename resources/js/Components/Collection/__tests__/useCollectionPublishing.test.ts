@@ -2,7 +2,7 @@ import { router } from '@inertiajs/vue3';
 import { describe, expect, it, vi } from 'vitest';
 
 import { publishChoices, useCollectionPublishing } from '../useCollectionPublishing';
-import type { CollectionSource } from '../useCollectionSource';
+import type { CollectionSource } from '@/Composables/useCollectionSource';
 
 it('blocks overlapping writes and deletions while other rows remain usable', () => {
   vi.mocked(router.patch).mockClear();

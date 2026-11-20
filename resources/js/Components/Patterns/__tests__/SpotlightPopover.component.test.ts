@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 
 describe('Onboarding/SpotlightPopover.vue', () => {
   let wrapper: ReturnType<typeof mount> | null = null;

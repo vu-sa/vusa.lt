@@ -127,7 +127,7 @@ import { EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { contentStatuses } from '@/Constants/statusIcons';
 import { NativeSelect } from '@/Components/ui/native-select';
-import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import { useCollectionRecordActions } from '@/Components/Collection/useCollectionRecordActions';
 import { isTrashView, useDatabaseCollectionSource, type DatabaseFacetDefinition } from '@/Composables/useCollectionSource';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { formatDateTime, formatRecordDate } from '@/Utils/dateTime';

@@ -248,7 +248,7 @@ import { useEventListener } from '@vueuse/core';
 import { computed, h, nextTick, onUnmounted, ref, useId, watch, type FunctionalComponent } from 'vue';
 
 import { preferredScrollBehavior } from '@/Composables/useAccessibilityPreferences';
-import EntityTypeMark from '@/Components/EntityTypeMark.vue';
+import EntityTypeMark from '@/Components/Patterns/EntityTypeMark.vue';
 import LocaleFlag from '@/Components/Shared/LocaleFlag.vue';
 import { Button } from '@/Components/ui/button';
 import { segmentGroupClass, segmentVariants } from '@/Components/ui/control';

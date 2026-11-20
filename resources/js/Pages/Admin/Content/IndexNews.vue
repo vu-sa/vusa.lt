@@ -140,8 +140,8 @@ import NewsPreview from '@/Components/News/NewsPreview.vue';
 import { newsStatus } from '@/Search/admin/Utils/newsStatus';
 import { EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { useCollectionPublishing } from '@/Composables/useCollectionPublishing';
-import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import { useCollectionPublishing } from '@/Components/Collection/useCollectionPublishing';
+import { useCollectionRecordActions } from '@/Components/Collection/useCollectionRecordActions';
 import {
   isTrashView,
   useTrashAwareSource,

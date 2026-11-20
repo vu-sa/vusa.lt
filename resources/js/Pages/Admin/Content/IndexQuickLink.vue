@@ -163,7 +163,7 @@ import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { EmptyState, SheetForm, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { NativeSelect } from '@/Components/ui/native-select';
-import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import { useCollectionRecordActions } from '@/Components/Collection/useCollectionRecordActions';
 import { isTrashView, useLocalCollectionSource } from '@/Composables/useCollectionSource';
 import type { StatusPresentation } from '@/Constants/statusIcons';
 import { formatRecordDate } from '@/Utils/dateTime';

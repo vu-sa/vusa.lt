@@ -324,8 +324,8 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronDown, ExternalLink, Loader2, Palette, SlidersHorizontal, Trash2 } from '@lucide/vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
-import FluentIconSelect from '@/Components/FormItems/FluentIconSelect.vue';
-import VisualOptionSelect from '@/Components/FormItems/VisualOptionSelect.vue';
+import FluentIconSelect from '@/Components/AdminForms/FluentIconSelect.vue';
+import VisualOptionSelect from '@/Components/AdminForms/VisualOptionSelect.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog } from '@/Components/Patterns';
 import FormPanel from '@/Components/Patterns/FormPanel.vue';

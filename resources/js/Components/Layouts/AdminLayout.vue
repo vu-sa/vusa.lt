@@ -53,7 +53,7 @@ import { createStartFmProvider } from '@/Composables/useStartFm';
 const AdminCommandPalette = defineAsyncComponent(() => import('@/Components/CommandPalette/AdminCommandPalette.vue'));
 import ActionWindow from '@/Components/ActionWindow/ActionWindow.vue';
 
-const KeyboardShortcutsDialog = defineAsyncComponent(() => import('@/Components/KeyboardShortcutsDialog.vue'));
+const KeyboardShortcutsDialog = defineAsyncComponent(() => import('@/Components/Layouts/Shell/KeyboardShortcutsDialog.vue'));
 
 const props = defineProps<{
   title?: string;

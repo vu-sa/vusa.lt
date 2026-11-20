@@ -75,8 +75,8 @@ import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import CollectionRowList from '@/Components/Collection/CollectionRowList.vue';
 import { ROW_PADDING_CLASS } from '@/Components/Collection/rowList';
-import EntityTypeMark from '@/Components/EntityTypeMark.vue';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import EntityTypeMark from '@/Components/Patterns/EntityTypeMark.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { ConfirmDialog, OverviewSection, SectionHeaderAction } from '@/Components/Patterns';
 import RelationshipLinkSheet from '@/Components/Relationships/RelationshipLinkSheet.vue';
 import type { RelationKindOption, RelationshipLinkRow } from '@/Components/Relationships/types';

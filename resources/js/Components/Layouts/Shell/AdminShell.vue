@@ -97,7 +97,7 @@ import { usePage } from '@inertiajs/vue3';
 import { useElementSize, useEventListener, useLocalStorage } from '@vueuse/core';
 import { computed, ref, watch } from 'vue';
 
-import ImpersonateBanner from '@/Components/ImpersonateBanner.vue';
+import ImpersonateBanner from '@/Components/Layouts/Shell/ImpersonateBanner.vue';
 import StagingBanner from '@/Components/StagingBanner.vue';
 import StagingWatermark from '@/Components/Shared/StagingWatermark.vue';
 import { useActionWindow } from '@/Composables/useActionWindow';

@@ -205,7 +205,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Briefcase, Clock, Lock, UserCheck } from '@lucide/vue';
 
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
-import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
+import MultiLocaleInput from '@/Components/AdminForms/MultiLocaleInput.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { FormPanel } from '@/Components/Patterns';
 import { Checkbox } from '@/Components/ui/checkbox';
@@ -214,7 +214,7 @@ import { Label } from '@/Components/ui/label';
 import { MultiSelect } from '@/Components/ui/multi-select';
 import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
 import type { ImageData } from '@/Types/media';
-import { useDuplicateUserCheck } from '@/Composables/useDuplicateUserCheck';
+import { useDuplicateUserCheck } from '@/Components/AdminForms/useDuplicateUserCheck';
 import { LoginRecency, ModelEnum } from '@/Types/enums';
 
 import FormFieldWrapper from './FormFieldWrapper.vue';

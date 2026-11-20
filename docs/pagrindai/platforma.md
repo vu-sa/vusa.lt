@@ -21,11 +21,11 @@ tests:
   - tests/Browser/AdminCollectionPagesTest.php
   - resources/js/Components/Patterns/__tests__/RecordActionMenu.component.test.ts
   - resources/js/Composables/__tests__/useStartFm.test.ts
-  - resources/js/Components/__tests__/StartFmPlayer.component.test.ts
+  - resources/js/Components/Shared/__tests__/StartFmPlayer.component.test.ts
   - resources/js/Components/Layouts/__tests__/FormPage.component.test.ts
   - resources/js/Components/Patterns/__tests__/ModelTimestamps.component.test.ts
   - resources/js/Components/Patterns/__tests__/SheetForm.component.test.ts
-  - resources/js/Composables/__tests__/useCollectionRecordActions.test.ts
+  - resources/js/Components/Collection/__tests__/useCollectionRecordActions.test.ts
   - tests/Browser/CollectionTrashRefreshTest.php
   - tests/Browser/PostCreateNavigationTest.php
   - tests/Feature/Admin/Content/PageControllerTest.php

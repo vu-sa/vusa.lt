@@ -164,7 +164,7 @@ import { Compass, Plus, TriangleAlert } from '@lucide/vue';
 
 import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { ConfirmDialog, FormSegmentedControl, OverviewSection, SheetForm, type FormSegmentOption } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { NativeSelect } from '@/Components/ui/native-select';

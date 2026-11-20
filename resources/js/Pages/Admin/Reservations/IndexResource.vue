@@ -207,7 +207,7 @@ import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { capitalize, computed, onMounted, watch } from 'vue';
 
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
-import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import { useCollectionRecordActions } from '@/Components/Collection/useCollectionRecordActions';
 import { useRowAbilities } from '@/Composables/useRowAbilities';
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
@@ -216,7 +216,7 @@ import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import { highlightText, matchTitle } from '@/Search/core/matches';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
-import EntityTypeMark from '@/Components/EntityTypeMark.vue';
+import EntityTypeMark from '@/Components/Patterns/EntityTypeMark.vue';
 import { ResourceIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { EmptyState, StatusBadge } from '@/Components/Patterns';

@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
-import EntityTypeMark from '@/Components/EntityTypeMark.vue';
+import EntityTypeMark from '@/Components/Patterns/EntityTypeMark.vue';
 import { ModelEnum } from '@/Types/enums';
 
 describe('EntityTypeMark', () => {

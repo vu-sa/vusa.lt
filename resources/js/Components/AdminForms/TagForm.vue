@@ -86,8 +86,8 @@ import { ExternalLink, Star, Tags, Trash2 } from '@lucide/vue';
 import type { ColumnDef } from '@tanstack/vue-table';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
-import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
-import MultiLocaleTiptapFormItem from '@/Components/FormItems/MultiLocaleTiptapFormItem.vue';
+import MultiLocaleInput from '@/Components/AdminForms/MultiLocaleInput.vue';
+import MultiLocaleTiptapFormItem from '@/Components/AdminForms/MultiLocaleTiptapFormItem.vue';
 import { NewsIcon } from '@/Components/icons';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog, FormPanel, FormToggleRow, SectionCard, StatusBadge } from '@/Components/Patterns';

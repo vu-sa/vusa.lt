@@ -349,7 +349,7 @@ import {
 
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import DutyLineageTimeline, { type LineageLinkedDuty } from '@/Components/Duties/DutyLineageTimeline.vue';

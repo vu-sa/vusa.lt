@@ -3,7 +3,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import type { CollectionColumn } from '@/Components/Collection/types';
 import type { CollectionSource } from '@/Composables/useCollectionSource';
-import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import { useCollectionRecordActions } from '@/Components/Collection/useCollectionRecordActions';
 import { useRowAbilities } from '@/Composables/useRowAbilities';
 import { meetingCompletionStatuses, type MeetingCompletionStatus } from '@/Constants/statusIcons';
 import type { MeetingSearchResult } from '@/Search/core/types';

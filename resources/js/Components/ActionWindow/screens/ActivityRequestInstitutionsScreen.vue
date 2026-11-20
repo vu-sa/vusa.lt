@@ -80,7 +80,7 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { Landmark } from '@lucide/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { useActionWindow, type ActionWindowInstitutionRef } from '@/Composables/useActionWindow';
 import { useApi } from '@/Composables/useApi';

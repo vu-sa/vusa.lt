@@ -51,7 +51,7 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import type { InstitutionDeactivationSummary } from '@/Components/AdminForms/InstitutionForm.vue';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { ConfirmDialog } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { useApi, useApiMutation } from '@/Composables/useApi';

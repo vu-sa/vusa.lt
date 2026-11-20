@@ -94,7 +94,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { GraduationCap, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
-import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
+import MultiLocaleInput from '@/Components/AdminForms/MultiLocaleInput.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog, FormPanel } from '@/Components/Patterns';
 import FormSection from '@/Components/Patterns/FormSection.vue';

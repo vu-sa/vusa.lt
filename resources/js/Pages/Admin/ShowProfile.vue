@@ -310,9 +310,9 @@ import {
 } from '@lucide/vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
-import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
+import MultiLocaleInput from '@/Components/AdminForms/MultiLocaleInput.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { FormPanel, FormSection } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';

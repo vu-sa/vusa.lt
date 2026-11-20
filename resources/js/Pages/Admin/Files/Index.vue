@@ -81,7 +81,7 @@ import type {
 import { useFileSearch } from '@/Components/FileManager/useFileSearch';
 import { parentPath } from '@/Components/FileManager/utils';
 import CollectionTitleBand from '@/Components/Collection/CollectionTitleBand.vue';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import StagingNote from '@/Components/StagingNote.vue';
 import { Button } from '@/Components/ui/button';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';

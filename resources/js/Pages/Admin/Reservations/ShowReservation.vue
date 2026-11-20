@@ -145,7 +145,7 @@ import type { AdminRecordAction as ActionDescriptor } from '@/Types/AdminRecordA
 import { ConfirmDialog } from '@/Components/Patterns';
 import ReservationDecisionDialog from '@/Components/Reservations/ReservationDecisionDialog.vue';
 import ReservationResourceList from '@/Components/Reservations/ReservationResourceList.vue';
-import ReservationStateSummary from '@/Components/Tag/ReservationStateSummary.vue';
+import ReservationStateSummary from '@/Components/Reservations/ReservationStateSummary.vue';
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Label } from '@/Components/ui/label';

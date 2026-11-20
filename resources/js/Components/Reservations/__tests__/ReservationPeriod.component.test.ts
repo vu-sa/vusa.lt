@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import ReservationPeriod from '@/Components/SmallElements/ReservationPeriod.vue';
+import ReservationPeriod from '@/Components/Reservations/ReservationPeriod.vue';
 import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));

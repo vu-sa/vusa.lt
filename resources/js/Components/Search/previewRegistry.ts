@@ -63,7 +63,7 @@ export const previewRegistry: Record<SearchCollectionKey, PreviewEntry> = {
     props: hit => ({ news: hit.raw as NewsSearchResult }),
   },
   pages: {
-    component: defineAsyncComponent(() => import('@/Components/Pages/PagePreview.vue')),
+    component: defineAsyncComponent(() => import('@/Components/ContentPages/PagePreview.vue')),
     props: hit => ({ page: hit.raw as PageSearchResult }),
   },
   calendar: {

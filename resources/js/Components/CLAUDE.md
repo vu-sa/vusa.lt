@@ -111,7 +111,7 @@ Rules for anything added there:
 | A small create/edit over its collection or record | `SheetForm` | `@/Components/Patterns` |
 | "Are you sure?" before ending, discarding or deleting | `ConfirmDialog` | `@/Components/Patterns` |
 | A status (reservation, vote, task, content…) | `StatusBadge` + the enum's icon-bound map in `Constants/statusIcons.ts` | `@/Components/Patterns` |
-| An entity type's icon + category colour | `EntityTypeMark` / `getEntityTypeDefinition` | `@/Components/EntityTypeMark.vue`, `@/Constants/entityTypes` |
+| An entity type's icon + category colour | `EntityTypeMark` / `getEntityTypeDefinition` | `@/Components/Patterns/EntityTypeMark.vue`, `@/Constants/entityTypes` |
 | A settings screen with several independent saves | `OverviewPage` + a `SectionCard` per block | `@/Components/Layouts/OverviewPage.vue`, `@/Components/Patterns` |
 | A titled panel (list, fields, anything) | `SectionCard` | `@/Components/Patterns` |
 | Main + sticky sidebar two-column body | `ShowPageGrid` | `@/Components/Patterns` |

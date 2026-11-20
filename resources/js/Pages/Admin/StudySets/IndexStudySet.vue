@@ -68,7 +68,7 @@ import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { contentStatuses } from '@/Constants/statusIcons';
-import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import { useCollectionRecordActions } from '@/Components/Collection/useCollectionRecordActions';
 import { isTrashView, useLocalCollectionSource } from '@/Composables/useCollectionSource';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { formatRecordDate } from '@/Utils/dateTime';

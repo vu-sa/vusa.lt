@@ -457,7 +457,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Component
 import { Label } from '@/Components/ui/label';
 import DuplicateUserWarning from '@/Components/AdminForms/DuplicateUserWarning.vue';
 import { useApi } from '@/Composables/useApi';
-import { useDuplicateUserCheck } from '@/Composables/useDuplicateUserCheck';
+import { useDuplicateUserCheck } from '@/Components/AdminForms/useDuplicateUserCheck';
 import { getSuggestedEndDate, getTodayDate, formatDateForDisplay } from '@/Composables/useDutyUserWizard';
 import type { useDutyUserWizard, UserChange, NewUserData } from '@/Composables/useDutyUserWizard';
 import { DutyIcon } from '@/Components/icons';

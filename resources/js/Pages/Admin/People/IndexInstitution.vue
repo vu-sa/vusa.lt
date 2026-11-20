@@ -173,7 +173,7 @@ import InstitutionPreview from '@/Components/Institutions/InstitutionPreview.vue
 import { Button } from '@/Components/ui/button';
 import { institutionActivityStatuses, operatingStatuses, statusFor } from '@/Constants/statusIcons';
 import { useRowAbilities } from '@/Composables/useRowAbilities';
-import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import { useCollectionRecordActions } from '@/Components/Collection/useCollectionRecordActions';
 import { useInstitutionSubscription } from '@/Composables/useInstitutionSubscription';
 import { escapeFilterValue } from '@/Search/admin/Services/AdminSearchService';
 import {

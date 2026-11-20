@@ -93,7 +93,7 @@ import CollectionRowActions from '@/Components/Collection/CollectionRowActions.v
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import { ResourceIcon } from '@/Components/icons';
 import { ConfirmDialog, EmptyState, StatusBadge } from '@/Components/Patterns';
-import ReservationPeriod from '@/Components/SmallElements/ReservationPeriod.vue';
+import ReservationPeriod from '@/Components/Reservations/ReservationPeriod.vue';
 import { reservationResourceStatuses, type ReservationResourceStatus } from '@/Constants/statusIcons';
 import type { DashboardReservation } from '@/Utils/ReservationStatus';
 import { formatDateTime } from '@/Utils/dateTime';

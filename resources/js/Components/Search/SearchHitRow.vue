@@ -95,7 +95,7 @@ import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitut
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
-import EntityTypeMark from '@/Components/EntityTypeMark.vue';
+import EntityTypeMark from '@/Components/Patterns/EntityTypeMark.vue';
 import { StatusBadge } from '@/Components/Patterns';
 import { Badge } from '@/Components/ui/badge';
 

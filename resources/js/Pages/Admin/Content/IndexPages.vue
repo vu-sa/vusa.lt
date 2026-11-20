@@ -152,8 +152,8 @@ import CollectionStatusMenu from '@/Components/Collection/CollectionStatusMenu.v
 import type { CollectionColumn } from '@/Components/Collection/types';
 import { PageIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
-import PagePreview from '@/Components/Pages/PagePreview.vue';
-import { pageStatus } from '@/Components/Pages/pageStatus';
+import PagePreview from '@/Components/ContentPages/PagePreview.vue';
+import { pageStatus } from '@/Components/ContentPages/pageStatus';
 import { EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import {
@@ -162,8 +162,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
-import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
-import { useCollectionPublishing } from '@/Composables/useCollectionPublishing';
+import { useCollectionRecordActions } from '@/Components/Collection/useCollectionRecordActions';
+import { useCollectionPublishing } from '@/Components/Collection/useCollectionPublishing';
 import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import {
   isTrashView,

@@ -2,7 +2,7 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { ref } from 'vue';
 
-import ReservationResourceStateTag from '@/Components/Tag/ReservationResourceStateTag.vue';
+import ReservationResourceStateTag from '@/Components/Reservations/ReservationResourceStateTag.vue';
 import { commonStubs } from '@/tests/stubs';
 
 import ResourcePreview from '../ResourcePreview.vue';

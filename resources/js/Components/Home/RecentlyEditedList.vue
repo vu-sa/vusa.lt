@@ -26,7 +26,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { History } from '@lucide/vue';
 
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
-import EntityTypeMark from '@/Components/EntityTypeMark.vue';
+import EntityTypeMark from '@/Components/Patterns/EntityTypeMark.vue';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
 
 import type { HomeRecentRecord } from './types';

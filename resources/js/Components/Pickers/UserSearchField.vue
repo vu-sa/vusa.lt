@@ -94,7 +94,7 @@ import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { useApi } from '@/Composables/useApi';
-import { useDuplicateUserCheck } from '@/Composables/useDuplicateUserCheck';
+import { useDuplicateUserCheck } from '@/Components/AdminForms/useDuplicateUserCheck';
 
 import { normalizeUserApiHit, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 

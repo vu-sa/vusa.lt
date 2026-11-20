@@ -3,13 +3,13 @@ import { Link, router, usePage } from '@inertiajs/vue3';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { computed, nextTick } from 'vue';
 
-import NotificationsIndicator from '@/Components/NotificationsIndicator.vue';
+import NotificationsIndicator from '@/Components/Layouts/Shell/NotificationsIndicator.vue';
 import { createMockPage } from '@/tests/helpers/createMockPage';
-import { useRealtimeNotifications } from '@/Composables/useRealtimeNotifications';
+import { useRealtimeNotifications } from '@/Components/Notifications/useRealtimeNotifications';
 import { markNotificationRead } from '@/Composables/markNotificationRead';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
-vi.mock('@/Composables/useRealtimeNotifications');
+vi.mock('@/Components/Notifications/useRealtimeNotifications');
 vi.mock('@/Composables/markNotificationRead');
 
 const popoverStubs = {

@@ -381,6 +381,22 @@ export default tseslint.config(
             message: 'Search/ is the non-UI search core. Move what it needs from components into Search/, Utils/ or Constants/.',
           },
           {
+            target: ['resources/js/Composables', 'resources/js/Utils'],
+            from: 'resources/js/Components',
+            except: ['./icons'],
+            message: 'Composables and utils hold logic only. A composable written for one component lives next to it.',
+          },
+          {
+            target: ['resources/js/Components/Brand', 'resources/js/Components/Shared'],
+            from: ['resources/js/Components/!(ui|Brand|Shared|icons)/**', 'resources/js/Components/*.{vue,ts}'],
+            message: 'Brand/ and Shared/ build only on ui/ and each other; both surfaces import them.',
+          },
+          {
+            target: 'resources/js/Components/Patterns',
+            from: ['resources/js/Components/!(ui|Brand|Shared|Patterns|icons)/**', 'resources/js/Components/*.{vue,ts}'],
+            message: 'Patterns are generic; they build only on ui/, Brand/ and Shared/. Pass domain pieces in through props or slots.',
+          },
+          {
             target: 'resources/js/Components/ui',
             from: 'resources/js/Components',
             except: ['ui'],

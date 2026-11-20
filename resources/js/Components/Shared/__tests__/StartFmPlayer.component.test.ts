@@ -4,8 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createStartFmProvider, type StartFmContext } from '@/Composables/useStartFm';
 
-import StartFmPlayer from '../Shared/StartFmPlayer.vue';
-import StartFM from '../Public/Nav/StartFM.vue';
+import StartFmPlayer from '../StartFmPlayer.vue';
+import StartFM from '../../Public/Nav/StartFM.vue';
 
 let radio: StartFmContext;
 let wrapper: ReturnType<typeof mount>;

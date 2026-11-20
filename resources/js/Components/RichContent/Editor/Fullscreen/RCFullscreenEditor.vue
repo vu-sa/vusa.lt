@@ -125,7 +125,7 @@ import { moveArrayElement } from '@vueuse/integrations/useSortable';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { preferredScrollBehavior } from '@/Composables/useAccessibilityPreferences';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { SMART_TIPTAP_TOOLBAR_PORTAL_KEY } from '@/Components/TipTap/smartToolbarPortal';
 import { Button } from '@/Components/ui/button';

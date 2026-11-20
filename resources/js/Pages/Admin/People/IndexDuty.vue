@@ -105,7 +105,7 @@ import { ArrowRight, Merge, Pencil, Plus, RotateCcw, Trash2 } from '@lucide/vue'
 import { computed, ref } from 'vue';
 
 import { operatingStatuses } from '@/Constants/statusIcons';
-import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import { useCollectionRecordActions } from '@/Components/Collection/useCollectionRecordActions';
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import CollectionActivityStatus from '@/Components/Collection/CollectionActivityStatus.vue';
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';

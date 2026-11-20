@@ -103,7 +103,7 @@ import { ArrowUpRight, ChevronDown, Columns2, Languages, Plus } from '@lucide/vu
 import { contentEditorHttp as http } from '@/Composables/contentEditorHttp';
 import { CONTENT_EDITOR_CONTEXT } from '@/Components/RichContent/contentEditorContext';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { ConfirmDialog } from '@/Components/Patterns';
 import { FormPanel, FormSegmentedControl, type FormSegmentOption } from '@/Components/Patterns';
 import LocaleFlag from '@/Components/Shared/LocaleFlag.vue';

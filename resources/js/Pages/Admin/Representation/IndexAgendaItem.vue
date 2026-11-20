@@ -52,7 +52,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Trash2, Pencil, ArrowUpRight } from '@lucide/vue';
 
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
-import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import { useCollectionRecordActions } from '@/Components/Collection/useCollectionRecordActions';
 import { useRowAbilities } from '@/Composables/useRowAbilities';
 import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
 import AgendaItemPreview from '@/Components/AgendaItems/AgendaItemPreview.vue';

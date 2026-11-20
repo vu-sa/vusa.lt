@@ -306,7 +306,7 @@ import { useToasts } from '@/Composables/useToasts';
 import AgendaItemBody from '@/Components/AgendaItems/AgendaItemBody.vue';
 import AgendaItemTypeDialog from '@/Components/AgendaItems/AgendaItemTypeDialog.vue';
 import AgendaItemSheetForm from '@/Components/AgendaItems/AgendaItemSheetForm.vue';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import AgendaItemVotesSheetForm from '@/Components/AgendaItems/AgendaItemVotesSheetForm.vue';
 import RecordPage, { type RecordAction, type RecordFact, type RecordNavigationContext } from '@/Components/Layouts/RecordPage.vue';

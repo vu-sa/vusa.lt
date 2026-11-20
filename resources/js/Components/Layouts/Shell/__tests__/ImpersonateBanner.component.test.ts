@@ -3,7 +3,7 @@ import { usePage } from '@inertiajs/vue3';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ref } from 'vue';
 
-import ImpersonateBanner from '@/Components/ImpersonateBanner.vue';
+import ImpersonateBanner from '@/Components/Layouts/Shell/ImpersonateBanner.vue';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { reloadDocument } from '@/Utils/reloadDocument';
 

@@ -176,7 +176,7 @@ import { ChevronDown, ExternalLink, Languages, LayoutGrid, Loader2, Star, Trash2
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import TenantSelectField from '@/Components/AdminForms/TenantSelectField.vue';
-import FluentIconSelect from '@/Components/FormItems/FluentIconSelect.vue';
+import FluentIconSelect from '@/Components/AdminForms/FluentIconSelect.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog, FormPanel, FormSegmentedControl, FormToggleRow, StatusBadge, type FormSegmentOption } from '@/Components/Patterns';
 import LocaleFlag from '@/Components/Shared/LocaleFlag.vue';

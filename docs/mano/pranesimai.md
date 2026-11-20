@@ -9,7 +9,7 @@ tests:
   - tests/Feature/Notifications/NotificationSettingsTest.php
   - resources/js/Pages/Admin/__tests__/ShowNotifications.component.test.ts
   - resources/js/Features/Admin/Notifications/__tests__/NotificationCard.component.test.ts
-  - resources/js/Components/__tests__/NotificationsIndicator.component.test.ts
+  - resources/js/Components/Layouts/Shell/__tests__/NotificationsIndicator.component.test.ts
   - resources/js/Components/Notifications/__tests__/NotificationLink.component.test.ts
   - resources/js/Components/Notifications/__tests__/NotificationToast.component.test.ts
   - tests/Browser/AdminPublicLinksTest.php
