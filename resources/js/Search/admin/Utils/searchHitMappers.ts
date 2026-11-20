@@ -11,7 +11,7 @@ import type { Component } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { newsStatus } from '@/Components/News/newsStatus';
+import { newsStatus } from '@/Search/admin/Utils/newsStatus';
 import { getTranslatedValue, getSearchTranslation, getSearchTranslations } from '@/Composables/useTranslatedTitle';
 import {
   contentStatuses,
@@ -24,7 +24,7 @@ import {
 } from '@/Constants/statusIcons';
 import { hasIdentityMatch, PROSE_FIELDS, type SearchMatchDocument } from '@/Search/core/matches';
 import { changeDutyNameEndings } from '@/Utils/String';
-import { termYearSpan } from '@/Features/Admin/Occupancy/occupancy';
+import { termYearSpan } from '@/Utils/occupancy';
 import {
   AgendaItemIcon,
   CalendarIcon,

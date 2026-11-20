@@ -49,7 +49,7 @@ tests:
   - resources/js/Components/AdminForms/__tests__/DuplicateDutyWarning.component.test.ts
   - resources/js/Components/AdminForms/__tests__/DutyForm.component.test.ts
   - resources/js/Features/Admin/Responsibilities/__tests__/DutyResponsibilitiesSection.component.test.ts
-  - resources/js/Features/Admin/Occupancy/__tests__/occupancy.test.ts
+  - resources/js/Utils/__tests__/occupancy.test.ts
   - resources/js/Features/Admin/Occupancy/__tests__/AssignDutyUserSheet.component.test.ts
   - resources/js/Features/Admin/Occupancy/__tests__/DutySearchField.component.test.ts
   - tests/Feature/Search/SearchExperienceTest.php

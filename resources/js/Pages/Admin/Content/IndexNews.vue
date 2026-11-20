@@ -137,7 +137,7 @@ import type { CollectionColumn } from '@/Components/Collection/types';
 import { NewsIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import NewsPreview from '@/Components/News/NewsPreview.vue';
-import { newsStatus } from '@/Components/News/newsStatus';
+import { newsStatus } from '@/Search/admin/Utils/newsStatus';
 import { EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { useCollectionPublishing } from '@/Composables/useCollectionPublishing';
