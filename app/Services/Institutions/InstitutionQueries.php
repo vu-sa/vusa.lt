@@ -84,6 +84,7 @@ class InstitutionQueries
                 },
             ])
             ->tap(self::withActivityDates(...))
+            ->afterQuery(self::hideMemberDetails(...))
             ->get();
     }
 
@@ -215,7 +216,8 @@ class InstitutionQueries
                     $query->where('start_time', '>', now());
                 },
             ])
-            ->tap(self::withActivityDates(...));
+            ->tap(self::withActivityDates(...))
+            ->afterQuery(self::hideMemberDetails(...));
     }
 
     /** @return Builder<Institution> */
@@ -248,7 +250,26 @@ class InstitutionQueries
                     $query->where('start_time', '>', now());
                 },
             ])
-            ->tap(self::withActivityDates(...));
+            ->tap(self::withActivityDates(...))
+            ->afterQuery(self::hideMemberDetails(...));
+    }
+
+    /**
+     * The timeline needs who held a seat and when. Contact details, notes and login times stay on
+     * the server, even for a related institution the viewer cannot open.
+     *
+     * @param  EloquentCollection<int, Institution>  $institutions
+     */
+    public static function hideMemberDetails(EloquentCollection $institutions): void
+    {
+        foreach ($institutions as $institution) {
+            foreach ($institution->relationLoaded('duties') ? $institution->duties : [] as $duty) {
+                foreach ($duty->relationLoaded('users') ? $duty->users : [] as $user) {
+                    $user->setVisible(['id', 'name', 'profile_photo_path', 'activity_category', 'pivot']);
+                    $user->getRelation('pivot')?->setVisible(['start_date', 'end_date']);
+                }
+            }
+        }
     }
 
     /**

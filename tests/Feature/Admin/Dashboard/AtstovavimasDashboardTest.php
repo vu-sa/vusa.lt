@@ -640,6 +640,32 @@ describe('atstovavimas related institutions', function (): void {
             );
     });
 
+    test('timeline member rows carry only who held the seat and when', function (): void {
+        InstitutionLink::factory()->create(['source_institution_id' => $this->relatedInstitution->id, 'target_institution_id' => $this->userInstitution->id]);
+        $former = User::factory()->create(['last_action' => now()]);
+        foreach ([$this->relatedInstitution, $this->userInstitution] as $institution) {
+            Duty::factory()->for($institution)->create()->users()->attach($former->id, [
+                'start_date' => '2020-07-01', 'end_date' => '2021-06-30',
+                'additional_email' => 'private@vusa.lt', 'study_program_note' => 'Private note',
+            ]);
+        }
+
+        $memberRows = fn (array $institutions): array => collect($institutions)
+            ->flatMap(fn (array $institution) => collect($institution['duties'] ?? [])->flatMap(fn (array $duty) => $duty['users'] ?? []))
+            ->all();
+        $onlyTimelineFields = fn (array $rows): bool => $rows !== [] && collect($rows)->every(fn (array $row): bool => array_diff(array_keys($row), ['id', 'name', 'profile_photo_path', 'activity_category', 'pivot']) === []
+            && array_keys($row['pivot']) === ['start_date', 'end_date']);
+
+        asUserWithInertia($this->user)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('userInstitutions', fn ($institutions) => $onlyTimelineFields($memberRows(collect($institutions)->toArray())))
+                ->reloadOnly('relatedInstitutions', fn (Assert $reload) => $reload
+                    ->where('relatedInstitutions', fn ($institutions) => $onlyTimelineFields($memberRows(collect($institutions)->toArray())))
+                )
+            );
+    });
+
     test('unauthorized related institutions include meetings but no agenda items', function (): void {
         // Create incoming relationship (NOT authorized because NOT bidirectional)
         InstitutionLink::factory()->create(['source_institution_id' => $this->relatedInstitution->id, 'target_institution_id' => $this->userInstitution->id]);
