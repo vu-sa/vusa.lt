@@ -25,7 +25,7 @@ export function useAtstovavimasData(
     const secretaried = userInstitutions.filter(institution => institution.is_secretary ?? institution.is_administered);
 
     return [
-      ...(user?.authorization_duties ?? []).map(duty => institutionsById.get(String(duty.institution_id)) ?? null),
+      ...(user?.current_or_upcoming_duties ?? []).map(duty => institutionsById.get(String(duty.institution_id)) ?? null),
       ...secretaried,
     ]
       .filter((institution): institution is AtstovavimasInstitution => institution !== null && institution !== undefined)

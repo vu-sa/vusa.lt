@@ -33,7 +33,7 @@ class StoreSupportRequestRequest extends FormRequest
                     }
 
                     $hasRole = $user->roles()->where('roles.id', $value)->exists()
-                        || $user->authorization_duties()->whereHas('roles', fn ($q) => $q->where('roles.id', $value))->exists();
+                        || $user->current_or_upcoming_duties()->whereHas('roles', fn ($q) => $q->where('roles.id', $value))->exists();
 
                     if (! $hasRole) {
                         $fail(__('Jūs negalite pasirinkti šios rolės.'));

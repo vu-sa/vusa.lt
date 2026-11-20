@@ -69,7 +69,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read InstitutionSecretary|InstitutionFollow|Dutiable|null $pivot
- * @property-read Collection<int, Duty> $authorization_duties
+ * @property-read Collection<int, Duty> $current_or_upcoming_duties
  * @property-read Collection<int, Duty> $current_duties
  * @property-read Collection<int, Dutiable> $dutiables
  * @property-read Collection<int, Duty> $duties
@@ -306,12 +306,13 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
     }
 
     /**
-     * Not ended: permissions start before the term does, on purpose. For who holds a duty, or
-     * whom to contact, use {@see current_duties()}.
+     * Duties whose terms have not ended, including terms that have yet to start because
+     * permissions start before the term does. To find who holds a duty now or whom to
+     * contact, use {@see current_duties()}.
      *
      * @return MorphToMany<Duty, $this, Dutiable, 'pivot'>
      */
-    public function authorization_duties(): MorphToMany
+    public function current_or_upcoming_duties(): MorphToMany
     {
         return $this->duties()
             ->where(fn ($query) => $query->whereNull('dutiables.end_date')
@@ -321,7 +322,7 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
     /** @return MorphToMany<Duty, $this, Dutiable, 'pivot'> */
     public function upcoming_duties(): MorphToMany
     {
-        return $this->authorization_duties()
+        return $this->current_or_upcoming_duties()
             ->whereDate('dutiables.start_date', '>', now()->toDateString());
     }
 

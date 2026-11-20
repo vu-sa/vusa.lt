@@ -44,7 +44,7 @@ final class AuthorityCacheExpiry
         }
 
         // The same relation authorization reads; the end date is the last day in office.
-        $dutyEnd = $user->authorization_duties()->min('dutiables.end_date');
+        $dutyEnd = $user->current_or_upcoming_duties()->min('dutiables.end_date');
         $secretaryEnd = Cadence::query()->containing($today)
             ->whereHas('secretaryAssignments', fn ($query) => $query->where('user_id', $user->id))
             ->min('end_date');

@@ -153,7 +153,7 @@ atvėrus kelią.
 
 ## Techninė informacija
 
-- Kelias: `ResolveLearningPath` (auditorijos iš `authorization_duties`; atstovo pareigos – su
+- Kelias: `ResolveLearningPath` (auditorijos iš `current_or_upcoming_duties`; atstovo pareigos – su
   `StudentRepresentation` ar `StudentRepCoordination` atsakomybe; tipai su protėviais per
   `getParentsAndSelf()`). Pateikimas – `LearningPathPresenter`.
 - Etapas: pagal anksčiausios atstovo pareigybės pradžią; pabaiga – iš pareigų datų arba kadencijos

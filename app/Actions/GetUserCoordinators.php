@@ -21,7 +21,7 @@ class GetUserCoordinators
     {
         // Queried afresh: ModelAuthorizer caches these duties with a name-less `institution:id,tenant_id`.
         $institutions = Institution::query()
-            ->whereIn('id', $user->authorization_duties->pluck('institution_id')->filter()->unique())
+            ->whereIn('id', $user->current_or_upcoming_duties->pluck('institution_id')->filter()->unique())
             ->get();
 
         $coordinators = [];

@@ -72,7 +72,7 @@ test('a task keeps its button only while it stays a task', function (): void {
     expect($step->getTranslation('action_label', 'en'))->toBe('Open account')
         ->and($step->getTranslation('action_url', 'lt'))->toBe('/mano/profile');
 
-    asUser($user)->patch(route('learningSteps.update', $step), [...$payload, 'kind' => 'meeting_prep', 'audiences' => [['type' => 'institution', 'source_id' => $user->authorization_duties()->firstOrFail()->institution->id, 'importance' => 'recommended']]])->assertRedirect();
+    asUser($user)->patch(route('learningSteps.update', $step), [...$payload, 'kind' => 'meeting_prep', 'audiences' => [['type' => 'institution', 'source_id' => $user->current_or_upcoming_duties()->firstOrFail()->institution->id, 'importance' => 'recommended']]])->assertRedirect();
     expect($step->fresh()->getTranslations('action_label'))->toBeEmpty()
         ->and($step->fresh()->getTranslations('action_url'))->toBeEmpty();
 });

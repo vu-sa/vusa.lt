@@ -40,7 +40,7 @@ class ModelAuthorizer
     private array $scopes = [];
 
     /**
-     * Authorization duties per user, keyed by user id.
+     * Current or upcoming duties per user, keyed by user id.
      *
      * @var array<string, Collection<int, Duty>>
      */
@@ -270,13 +270,13 @@ class ModelAuthorizer
             "auth:duties:{$user->id}",
             fn () => AuthorityCacheExpiry::for($user, static::CACHE_TTL),
             fn () => $user->load([
-                'authorization_duties:id,name,institution_id',
-                'authorization_duties.institution:id,tenant_id',
-                'authorization_duties.roles.permissions',
+                'current_or_upcoming_duties:id,name,institution_id',
+                'current_or_upcoming_duties.institution:id,tenant_id',
+                'current_or_upcoming_duties.roles.permissions',
                 // Without this, the duty loop lazy-loads $duty->permissions (direct, not via
                 // role) once per duty — an N+1 on every permission check.
-                'authorization_duties.permissions',
-            ])->authorization_duties
+                'current_or_upcoming_duties.permissions',
+            ])->current_or_upcoming_duties
         );
     }
 

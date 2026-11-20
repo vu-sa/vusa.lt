@@ -41,14 +41,14 @@ class ResolveLearningPath
         if ($users->isEmpty()) {
             return collect();
         }
-        // Fresh load: ModelAuthorizer may have left a partial `authorization_duties` on the same instance.
+        // Fresh load: ModelAuthorizer may have left a partial `current_or_upcoming_duties` on the same instance.
         new EloquentCollection($users->all())->load([
-            'authorization_duties.institution.types',
-            'authorization_duties.types',
-            'authorization_duties.roles',
-            'authorization_duties.predecessors' => fn ($query) => $query->withTrashed(),
+            'current_or_upcoming_duties.institution.types',
+            'current_or_upcoming_duties.types',
+            'current_or_upcoming_duties.roles',
+            'current_or_upcoming_duties.predecessors' => fn ($query) => $query->withTrashed(),
         ]);
-        $duties = $users->flatMap(fn (User $user) => $user->authorization_duties)->unique('id')->values();
+        $duties = $users->flatMap(fn (User $user) => $user->current_or_upcoming_duties)->unique('id')->values();
         $repIds = Duty::query()->whereIn('id', $duties->pluck('id'))
             ->where(fn ($q) => $q->holdingPurpose(ResponsibilityPurpose::StudentRepresentation)
                 ->orWhere(fn ($c) => $c->holdingPurpose(ResponsibilityPurpose::StudentRepCoordination)))->pluck('id');
@@ -69,7 +69,7 @@ class ResolveLearningPath
         }
         $paths = collect();
         foreach ($users as $user) {
-            $userDuties = $user->authorization_duties;
+            $userDuties = $user->current_or_upcoming_duties;
             $repDuties = $userDuties->whereIn('id', $repIds)->sortBy(fn (Duty $duty) => $duty->pivot->start_date);
             $first = $repDuties->first();
             $termStart = $first?->pivot->start_date;

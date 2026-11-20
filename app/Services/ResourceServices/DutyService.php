@@ -108,7 +108,7 @@ class DutyService
         $user = request()->user();
         $atstovavimasSettings = app(AtstovavimasSettings::class);
         $visibleTenantIds = $atstovavimasSettings->getVisibleTenantIds($user);
-        $userInstitutionIds = $user->authorization_duties()
+        $userInstitutionIds = $user->current_or_upcoming_duties()
             ->pluck('institution_id')
             ->filter()
             ->unique();
@@ -164,7 +164,7 @@ class DutyService
         $user = request()->user();
 
         // Get user's directly assigned institution IDs
-        $dutyInstitutionIds = $user->authorization_duties()
+        $dutyInstitutionIds = $user->current_or_upcoming_duties()
             ->pluck('institution_id')
             ->filter()
             ->unique();

@@ -193,7 +193,7 @@ test('a future source seat is created immediately and grants early access', func
     SyncExOfficioTargets::execute($this->sourceDuty, [$this->targetDuty->id]);
     $source = reconcilerSource(['start_date' => today()->addMonth()->toDateString()]);
     expect($source->derivedDutiables()->sole()->start_date->toDateString())->toBe('2026-11-30')
-        ->and($this->holder->fresh()->authorization_duties->contains('id', $this->targetDuty->id))->toBeTrue();
+        ->and($this->holder->fresh()->current_or_upcoming_duties->contains('id', $this->targetDuty->id))->toBeTrue();
 });
 
 test('merge keeps nonoverlapping past terms and seats from both duties', function (): void {

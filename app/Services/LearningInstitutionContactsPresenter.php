@@ -13,7 +13,7 @@ class LearningInstitutionContactsPresenter
     /** @return list<array{id: string, title: string, contacts: list<array{name: string, role: string, email: string|null}>}> */
     public static function forUser(User $user, string $locale): array
     {
-        $institutionIds = $user->authorization_duties()
+        $institutionIds = $user->current_or_upcoming_duties()
             ->holdingPurpose(ResponsibilityPurpose::StudentRepresentation)
             ->pluck('institution_id')->filter()->unique()->values();
         if ($institutionIds->isEmpty()) {

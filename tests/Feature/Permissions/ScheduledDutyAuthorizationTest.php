@@ -58,7 +58,7 @@ test('a scheduled duty grants its role and own and tenant scopes without making 
     asUser($this->actor)->get(route('dashboard.atstovavimas'))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('user.authorization_duties.0.id', $this->duty->id)
+            ->where('user.current_or_upcoming_duties.0.id', $this->duty->id)
             ->where('userInstitutions.0.id', $this->institution->id)
             ->where('upcomingMeetings.total', 1)
         );

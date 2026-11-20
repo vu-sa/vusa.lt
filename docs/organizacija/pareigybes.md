@@ -540,7 +540,7 @@ laikotarpyje gali turėti nurodytą papildomą kontaktinį el. paštą ar asmeni
   naujas narys kuriamas tame pačiame `dutiables.store` užklausime (`new_user`), jei veikiantis naudotojas gali kurti narius.
 - Savęs užsirakinimo apsaugą užtikrina `AdminController::guardSelfLockout` kartu su
   `DutySelfLockoutChecker`.
-- `current_duties` tikrina ir pradžią, ir imtinę pabaigą. `authorization_duties` apima ir
+- `current_duties` tikrina ir pradžią, ir imtinę pabaigą. `current_or_upcoming_duties` apima ir
   dar neprasidėjusius laikotarpius; tai tikrina `ScheduledDutyAuthorizationTest`.
   Būsimas laikotarpis dėl to netampa dabartiniu.
 

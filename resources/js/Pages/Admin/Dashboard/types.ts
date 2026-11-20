@@ -2,8 +2,8 @@ import type { RepresentativeActivityCategory } from '@/Components/Graphs/types';
 
 export type { RepresentativeActivityCategory } from '@/Components/Graphs/types';
 
-export type AtstovavimasUser = Omit<App.Entities.User, 'authorization_duties'> & {
-  authorization_duties?: Array<{
+export type AtstovavimasUser = Omit<App.Entities.User, 'current_or_upcoming_duties'> & {
+  current_or_upcoming_duties?: Array<{
     institution_id: string | null;
   }>;
 };

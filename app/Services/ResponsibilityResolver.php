@@ -241,7 +241,7 @@ class ResponsibilityResolver
     private function assignmentsReaching(User $user, ResponsibilityPurpose $purpose, bool $includeScheduled = false): SupportCollection
     {
         $dutyIds = $includeScheduled
-            ? $user->authorization_duties()->pluck('duties.id')->map(strval(...))->all()
+            ? $user->current_or_upcoming_duties()->pluck('duties.id')->map(strval(...))->all()
             : $this->currentDutyIds($user);
 
         return $this->assignments($purpose)
