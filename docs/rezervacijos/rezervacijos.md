@@ -214,6 +214,10 @@ pakeitimai neišsaugomi ir forma parodo klaidą. Galima rezervuoti ir kitų pada
 | Atšaukti paskutinį veiksmą | – | – | ✓, tik savo padalinio daiktus |
 | Ištrinti rezervaciją | – | ✓ | – |
 
+Teikėjai savo rezervaciją mato visada. Kiti ją mato pagal padalinio teises: rezervacija priklauso
+jos daiktų padaliniams ir padaliniams, kuriuose teikėjai šiuo metu eina (ar netrukus pradės eiti)
+pareigas. Padalinio, kuriame teikėjas pareigas ėjo tik anksčiau, administratoriai jos nebemato.
+
 ::: warning Tik savo padalinio daiktai
 Tvirtinimo teisė tikrinama pagal **daikto** padalinį. MIF administratorius mato rezervaciją, kurioje
 yra MIF daiktas, bet tos pačios rezervacijos FSF daikto tvirtinti negali. Sąraše jis pažymėtas
