@@ -136,7 +136,7 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Link, usePage } from '@inertiajs/vue3';
 
-import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
+import LocaleFlag from '@/Components/Shared/LocaleFlag.vue';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import { EyebrowLabel, MediaFrame, ReadingSizeControl, ShareButton, TagChip } from '@/Components/Public/Base';

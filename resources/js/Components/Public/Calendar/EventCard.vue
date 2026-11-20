@@ -123,7 +123,7 @@ import { ref, computed } from 'vue';
 
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import { highlightText, matchTitle, type SearchMatchDocument } from '@/Search/core/matches';
-import DatePlate from '@/Components/Public/Base/DatePlate.vue';
+import DatePlate from '@/Components/Brand/DatePlate.vue';
 import { formatEventDateSpan, parseDate } from '@/Utils/dateTime';
 import { getCalendarEvent2Route } from '@/Utils/Route';
 import { imageFromSearch } from '@/Types/media';

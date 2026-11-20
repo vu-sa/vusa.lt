@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import CalendarFilterPopover, { type FilterOption } from '@/Components/Calendar/CalendarFilterPopover.vue';
+import CalendarFilterPopover, { type FilterOption } from '@/Components/Public/Calendar/CalendarFilterPopover.vue';
 
 describe('Calendar/CalendarFilterPopover.vue', () => {
   const sampleOptions: FilterOption[] = [

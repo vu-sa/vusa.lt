@@ -4,8 +4,8 @@ import { TagChip } from '@/Components/Brand';
 import { Button } from '@/Components/ui/button';
 
 import AccessibilityMenu from './AccessibilityMenu.vue';
-import CheckControl from './CheckControl.vue';
-import DatePlate from './DatePlate.vue';
+import CheckControl from '../../Shared/CheckControl.vue';
+import DatePlate from '../../Brand/DatePlate.vue';
 import HairlineList from './HairlineList.vue';
 import HairlineRow from './HairlineRow.vue';
 import HeaderWordmark from './HeaderWordmark.vue';

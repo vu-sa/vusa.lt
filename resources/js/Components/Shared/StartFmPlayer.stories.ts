@@ -5,9 +5,9 @@ import { onMounted, ref } from 'vue';
 import { createStartFmProvider, type StartFmStatus } from '@/Composables/useStartFm';
 
 import StartFmPlayer from './StartFmPlayer.vue';
-import StartFM from './Public/Nav/StartFM.vue';
-import MobileBottomBar from './Layouts/Shell/MobileBottomBar.vue';
-import { pradzia } from './Layouts/Shell/__tests__/fixtures';
+import StartFM from '../Public/Nav/StartFM.vue';
+import MobileBottomBar from '../Layouts/Shell/MobileBottomBar.vue';
+import { pradzia } from '../Layouts/Shell/__tests__/fixtures';
 
 const meta: Meta = {
   title: 'Media/START FM',

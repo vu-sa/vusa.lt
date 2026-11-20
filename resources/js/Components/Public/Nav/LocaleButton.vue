@@ -59,7 +59,7 @@ import {
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 
-import LocaleFlag from './LocaleFlag.vue';
+import LocaleFlag from '../../Shared/LocaleFlag.vue';
 
 import IFluentChevronDown24Regular from '~icons/fluent/chevron-down-24-regular';
 

@@ -2,7 +2,7 @@ import { mount } from '@vue/test-utils';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { nextTick } from 'vue';
 
-import DarkModeButton from '@/Components/Buttons/DarkModeButton.vue';
+import DarkModeButton from '@/Components/Shared/DarkModeButton.vue';
 
 beforeEach(async () => {
   localStorage.setItem('vueuse-color-scheme', 'light');

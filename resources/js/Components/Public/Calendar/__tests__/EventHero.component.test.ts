@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils';
 import { h } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
-import EventHero from '@/Components/Calendar/EventHero.vue';
+import EventHero from '@/Components/Public/Calendar/EventHero.vue';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 

@@ -414,8 +414,21 @@ export default tseslint.config(
           },
           {
             target: ['resources/js/Components/Public', 'resources/js/Pages/Public'],
-            from: ['resources/js/Components/Patterns', 'resources/js/Components/Layouts', 'resources/js/Features/Admin'],
-            message: 'Public surfaces use Public/Base and Public/Layouts instead of admin patterns, shells or features.',
+            from: ['resources/js/Components/!(Public|ui|Brand|Shared|RichContent|icons)/**', 'resources/js/Components/*.{vue,ts}', 'resources/js/Features/Admin/**'],
+            message: 'Public surfaces build on ui/, Brand/, Shared/ and Public/. Move what both surfaces need into Brand/ or Shared/.',
+          },
+          {
+            // RichContent renders public blocks inside the editor; NavigationBuilder and the home site
+            // lists preview the public site on purpose.
+            target: [
+              'resources/js/Pages/Admin',
+              'resources/js/Features/Admin/!(NavigationBuilder)/**',
+              'resources/js/Components/!(Public|ui|Brand|Shared|RichContent|Home)/**',
+              'resources/js/Components/Home/!(SiteContentLists).vue',
+              'resources/js/Components/*.{vue,ts}',
+            ],
+            from: 'resources/js/Components/Public',
+            message: 'Admin builds on ui/, Brand/ and Shared/, not on the public surface. Move what both need into Brand/ or Shared/.',
           },
         ],
       }],

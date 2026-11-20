@@ -2,7 +2,7 @@ import { mount } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import StagingWatermark from '@/Components/StagingWatermark.vue';
+import StagingWatermark from '@/Components/Shared/StagingWatermark.vue';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));

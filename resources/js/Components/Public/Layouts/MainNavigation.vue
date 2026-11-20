@@ -66,7 +66,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import { AccessibilityMenu, HeaderWordmark } from '@/Components/Public/Base';
 import { cn } from '@/Utils/Shadcn/utils';
-import DarkModeSwitch from '@/Components/Buttons/DarkModeButton.vue';
+import DarkModeSwitch from '@/Components/Shared/DarkModeButton.vue';
 import { useSecondMenu } from '@/Composables/useSecondMenu';
 
 import MainMenu from '../Nav/MainMenu.vue';

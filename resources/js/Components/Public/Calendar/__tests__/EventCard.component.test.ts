@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { Link, usePage } from '@inertiajs/vue3';
 
-import EventCard from '@/Components/Calendar/EventCard.vue';
+import EventCard from '@/Components/Public/Calendar/EventCard.vue';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
 function makeEvent(overrides: Record<string, unknown> = {}) {

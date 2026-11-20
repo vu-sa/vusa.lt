@@ -138,7 +138,7 @@ import { changeDutyNameEndings, type DutyPronouns } from '@/Utils/String';
 import { stripHtml } from '@/Utils/html';
 import { safeHref } from '@/Utils/safeHref';
 
-import InfoPopover from '../Buttons/InfoPopover.vue';
+import InfoPopover from '../Shared/InfoPopover.vue';
 
 import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
 import IFluentPerson24Regular from '~icons/fluent/person-24-regular';

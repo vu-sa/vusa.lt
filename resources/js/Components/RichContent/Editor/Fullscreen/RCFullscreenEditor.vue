@@ -130,7 +130,7 @@ import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { SMART_TIPTAP_TOOLBAR_PORTAL_KEY } from '@/Components/TipTap/smartToolbarPortal';
 import { Button } from '@/Components/ui/button';
 import { ButtonGroup } from '@/Components/ui/button-group';
-import DarkModeButton from '@/Components/Buttons/DarkModeButton.vue';
+import DarkModeButton from '@/Components/Shared/DarkModeButton.vue';
 import { Dialog, DialogContent, DialogTitle } from '@/Components/ui/dialog';
 
 import { CONTENT_EDITOR_CONTEXT } from '../../contentEditorContext';

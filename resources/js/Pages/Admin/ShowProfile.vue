@@ -321,7 +321,7 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
 import type { ImageData } from '@/Types/media';
-import AccessibilitySettings from '@/Components/Public/Base/AccessibilitySettings.vue';
+import AccessibilitySettings from '@/Components/Shared/AccessibilitySettings.vue';
 import { useApiMutation } from '@/Composables/useApi';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { resetInitialization } from '@/Composables/useTutorialProgress';

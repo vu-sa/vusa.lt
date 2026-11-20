@@ -54,7 +54,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Services/** | .ai/rules/services.md |
 | resources/js/Pages/Admin/Settings/**, app/Settings/** | .ai/rules/settings.md |
 | app/Services/AdminNavigation/**, resources/js/Components/Layouts/Shell/** | .ai/rules/shell.md |
-| resources/js/Components/Staging*.vue, resources/js/Composables/useStaging.ts, app/Http/Middleware/Staging*.php, app/Services/NotificationRouter.php, app/Listeners/BlockExternalNotificationsOnStaging.php, app/Support/StagingProtection.php, app/Services/StagingMediaStore.php | .ai/rules/staging.md |
+| resources/js/Components/Staging*.vue, resources/js/Components/Shared/StagingWatermark.vue, resources/js/Composables/useStaging.ts, app/Http/Middleware/Staging*.php, app/Services/NotificationRouter.php, app/Listeners/BlockExternalNotificationsOnStaging.php, app/Support/StagingProtection.php, app/Services/StagingMediaStore.php | .ai/rules/staging.md |
 | app/Support/MorphMap.php, app/Support/LocalizedRouteSlugs.php | .ai/rules/support.md |
 | app/Tasks/**, app/Models/Task.php, app/Models/Traits/HasTasks.php, app/Http/Controllers/Admin/TaskController.php, app/Actions/ResolveTaskAssignees.php, app/Actions/ResolveTaskAudience.php, app/Actions/ResyncTaskAssigneesForCadence.php, app/Actions/Schedulable/**, app/Listeners/HandleTaskCreated.php, app/Console/Commands/SendTaskOverdueReminders.php, app/Models/Cadence.php | .ai/rules/tasks.md |
 | tests/** | .ai/rules/tests.md |

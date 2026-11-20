@@ -106,7 +106,7 @@ import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { ConfirmDialog } from '@/Components/Patterns';
 import { FormPanel, FormSegmentedControl, type FormSegmentOption } from '@/Components/Patterns';
-import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
+import LocaleFlag from '@/Components/Shared/LocaleFlag.vue';
 import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { CollectionSelectDialog } from '@/Components/Pickers';

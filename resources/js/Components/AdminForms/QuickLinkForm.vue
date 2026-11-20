@@ -179,7 +179,7 @@ import TenantSelectField from '@/Components/AdminForms/TenantSelectField.vue';
 import FluentIconSelect from '@/Components/FormItems/FluentIconSelect.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog, FormPanel, FormSegmentedControl, FormToggleRow, StatusBadge, type FormSegmentOption } from '@/Components/Patterns';
-import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
+import LocaleFlag from '@/Components/Shared/LocaleFlag.vue';
 import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';

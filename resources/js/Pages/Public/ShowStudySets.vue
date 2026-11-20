@@ -269,7 +269,7 @@ import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 
 import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
-import CheckControl from '@/Components/Public/Base/CheckControl.vue';
+import CheckControl from '@/Components/Shared/CheckControl.vue';
 import { usePageBreadcrumbs, BreadcrumbHelpers, createBreadcrumbItem } from '@/Composables/useBreadcrumbsUnified';
 import { Button } from '@/Components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';

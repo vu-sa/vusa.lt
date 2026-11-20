@@ -225,7 +225,7 @@ import { useLogout } from '@/Composables/useLogout';
 import { useStartFm } from '@/Composables/useStartFm';
 import { useTour } from '@/Composables/useTourProvider';
 import { useDocsUpdateIndicator } from '@/Composables/useDocsUpdateIndicator';
-import AccessibilitySettings from '@/Components/Public/Base/AccessibilitySettings.vue';
+import AccessibilitySettings from '@/Components/Shared/AccessibilitySettings.vue';
 
 import ISimpleIconsMicrosoft from '~icons/simple-icons/microsoft';
 import ISimpleIconsGithub from '~icons/simple-icons/github';

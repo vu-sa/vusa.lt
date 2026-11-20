@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
 
-import EventDetailsCard from '@/Components/Calendar/EventDetailsCard.vue';
+import EventDetailsCard from '@/Components/Public/Calendar/EventDetailsCard.vue';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
 describe('Calendar/EventDetailsCard.vue', () => {

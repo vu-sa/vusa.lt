@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import EventActions from '@/Components/Calendar/EventActions.vue';
+import EventActions from '@/Components/Public/Calendar/EventActions.vue';
 
 /** The registration CTA is rendered inline with Facebook and Share actions. */
 describe('Calendar/EventActions.vue', () => {

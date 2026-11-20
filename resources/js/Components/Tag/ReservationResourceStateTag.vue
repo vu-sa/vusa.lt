@@ -30,7 +30,7 @@ import { Badge } from '@/Components/ui/badge';
 import { capitalize } from '@/Utils/String';
 import type { ReservationResourceState } from '@/Utils/ReservationStatus';
 
-import InfoPopover from '../Buttons/InfoPopover.vue';
+import InfoPopover from '../Shared/InfoPopover.vue';
 
 const props = defineProps<{
   state: ReservationResourceState;

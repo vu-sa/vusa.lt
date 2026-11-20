@@ -191,7 +191,7 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 
-import CopyToClipboardButton from '@/Components/Buttons/CopyToClipboardButton.vue';
+import CopyToClipboardButton from '@/Components/Shared/CopyToClipboardButton.vue';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 

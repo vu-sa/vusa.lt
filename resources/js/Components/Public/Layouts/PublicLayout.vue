@@ -63,9 +63,9 @@ import { computed, h, defineAsyncComponent, onMounted, ref, watch, nextTick } fr
 import { useDark, useElementSize } from '@vueuse/core';
 import { usePage, router } from '@inertiajs/vue3';
 
-import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
-import StagingWatermark from '@/Components/StagingWatermark.vue';
-import StartFmPlayer from '@/Components/StartFmPlayer.vue';
+import FadeTransition from '@/Components/Shared/FadeTransition.vue';
+import StagingWatermark from '@/Components/Shared/StagingWatermark.vue';
+import StartFmPlayer from '@/Components/Shared/StartFmPlayer.vue';
 import { createStartFmProvider } from '@/Composables/useStartFm';
 import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
 import { Toaster } from '@/Components/ui/sonner';
