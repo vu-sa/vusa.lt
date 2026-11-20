@@ -6,7 +6,6 @@
   >
     <span class="flex items-start gap-4 p-4">
       <span class="min-w-0 flex-1 space-y-2">
-        <!-- Sanitized on write to bold and italic marks (HtmlSanitizerService::sanitizeInlineMarks). -->
         <!-- v-html: sanitized on write (KnowledgeItem::inlineHtmlTranslations) -->
         <span v-if="page.summaryHtml" class="block text-sm leading-relaxed text-foreground [&_b]:font-bold [&_strong]:font-bold" data-slot="wiki-link-card-summary" v-html="page.summaryHtml" />
         <span v-else class="block text-sm font-bold leading-snug text-foreground">{{ page.title }}</span>

@@ -5,8 +5,9 @@
       <h3 class="font-medium">
         {{ $t('System Announcement') }}
       </h3>
-      <!-- v-html: app.systemMessage has no backend source; sanitize on write before adding one -->
-      <div class="mt-1 text-sm" v-html="message" />
+      <p class="mt-1 text-sm">
+        {{ message }}
+      </p>
     </div>
   </div>
 </template>

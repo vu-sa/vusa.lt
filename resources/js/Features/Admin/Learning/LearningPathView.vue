@@ -95,7 +95,6 @@
               <p class="text-lg font-bold leading-6">
                 {{ step.title }}
               </p>
-              <!-- Sanitized on write (LearningStep::sanitizedHtmlTranslations). -->
               <!-- v-html: sanitized on write (LearningStep::sanitizedHtmlTranslations) -->
               <div v-if="step.description" class="rc-prose mt-1 max-w-prose text-sm text-muted-foreground" data-slot="step-description" v-html="step.description" />
               <LearningAudienceNotes :notes="step.audienceNotes" class="mt-2" />

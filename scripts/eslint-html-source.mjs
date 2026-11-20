@@ -45,14 +45,21 @@ export const htmlSourcePlugin = {
           return null;
         }
 
+        function check(node) {
+          const marker = precedingMarker(node.parent.parent);
+
+          if (!marker || !MARKER.test(marker.value)) {
+            context.report({ node, messageId: 'missing' });
+          }
+        }
+
         return sourceCode.parserServices?.defineTemplateBodyVisitor
           ? sourceCode.parserServices.defineTemplateBodyVisitor({
-              'VAttribute[directive=true][key.name.name="html"]'(node) {
-                const element = node.parent.parent;
-                const marker = precedingMarker(element);
-
-                if (!marker || !MARKER.test(marker.value)) {
-                  context.report({ node, messageId: 'missing' });
+              'VAttribute[directive=true][key.name.name="html"]': check,
+              // `:innerHTML` is v-html under another name.
+              'VAttribute[directive=true][key.name.name="bind"]'(node) {
+                if (/^(?:inner|outer)html$/i.test(node.key.argument?.name ?? '')) {
+                  check(node);
                 }
               },
             })

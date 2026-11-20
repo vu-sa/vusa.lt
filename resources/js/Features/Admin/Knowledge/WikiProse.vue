@@ -1,7 +1,6 @@
 <template>
   <WikiLinkPreview :pages data-slot="wiki-prose">
-    <!-- Sanitized on write (HtmlSanitizerService); links are decorated after render. -->
-    <!-- v-html: sanitized on write (KnowledgeItem / LearningStep::sanitizedHtmlTranslations) -->
+    <!-- v-html: sanitized on write (KnowledgeItem, LearningStep::sanitizedHtmlTranslations; summary via inlineHtmlTranslations) -->
     <div ref="root" :class="['rc-prose wiki-prose', proseClass]" v-html="html" />
   </WikiLinkPreview>
 </template>

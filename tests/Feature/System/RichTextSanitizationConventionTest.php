@@ -22,10 +22,12 @@ use App\Models\StudySet;
 use App\Models\Traits\HasTranslations;
 use App\Models\Type;
 use App\Models\Vote;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Symfony\Component\Finder\SplFileInfo;
 
 /** Name segments that suggest a field may hold markup. */
-const RICH_FIELD_SEGMENTS = ['body', 'comment', 'content', 'description', 'evaluation', 'html', 'note', 'notes', 'position', 'result', 'solution', 'steps', 'summary', 'text'];
+const RICH_FIELD_SEGMENTS = ['about', 'answer', 'bio', 'body', 'comment', 'content', 'description', 'details', 'evaluation', 'excerpt', 'html', 'instructions', 'intro', 'lead', 'message', 'note', 'notes', 'position', 'result', 'solution', 'steps', 'summary', 'text'];
 
 /**
  * Fields no Tiptap editor writes and no `v-html` renders. Each names its editor.
@@ -55,8 +57,8 @@ const PLAIN_TEXT_TRANSLATIONS = [
  */
 function translatableModelClasses(): array
 {
-    return collect(array_merge(glob(app_path('Models/*.php')) ?: [], glob(app_path('Models/Pivots/*.php')) ?: []))
-        ->map(fn (string $path): string => 'App\\'.Str::of($path)->after(app_path().'/')->beforeLast('.php')->replace('/', '\\'))
+    return collect(File::allFiles(app_path('Models')))
+        ->map(fn (SplFileInfo $file): string => 'App\\Models\\'.Str::of($file->getRelativePathname())->beforeLast('.php')->replace('/', '\\'))
         ->filter(fn (string $class): bool => class_exists($class) && in_array(HasTranslations::class, class_uses_recursive($class), true))
         ->values()
         ->all();
@@ -77,9 +79,12 @@ function isDeclaredPlainText(string $class, string $field): bool
 /**
  * @return list<string>
  */
-function declaredHtmlTranslations(object $model, string $method): array
+function sanitizedTranslations(object $model): array
 {
-    return (new ReflectionMethod($model, $method))->invoke($model);
+    return [
+        ...(new ReflectionMethod($model, 'sanitizedHtmlTranslations'))->invoke($model),
+        ...(new ReflectionMethod($model, 'inlineHtmlTranslations'))->invoke($model),
+    ];
 }
 
 test('every rich-named translatable field is sanitized or declared plain text', function (): void {
@@ -87,10 +92,7 @@ test('every rich-named translatable field is sanitized or declared plain text', 
 
     foreach (translatableModelClasses() as $class) {
         $model = new $class;
-        $sanitized = [
-            ...declaredHtmlTranslations($model, 'sanitizedHtmlTranslations'),
-            ...declaredHtmlTranslations($model, 'inlineHtmlTranslations'),
-        ];
+        $sanitized = sanitizedTranslations($model);
 
         foreach ($model->getTranslatableAttributes() as $field) {
             $looksRich = array_intersect(explode('_', $field), RICH_FIELD_SEGMENTS) !== [];
@@ -112,7 +114,7 @@ test('every plain-text exemption names a translatable field that is not sanitize
 
         foreach (array_keys($fields) as $field) {
             if (! in_array($field, $model->getTranslatableAttributes(), true)
-                || in_array($field, declaredHtmlTranslations($model, 'sanitizedHtmlTranslations'), true)) {
+                || in_array($field, sanitizedTranslations($model), true)) {
                 $stale[] = "{$class}::\${$field}";
             }
         }

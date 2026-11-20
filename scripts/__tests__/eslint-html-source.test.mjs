@@ -38,6 +38,13 @@ describe('html-source/require-comment', () => {
     expect(lint('<!-- v-html: sanitized on write -->\n<p>Lead</p>\n<div v-html="body" />')).toEqual(['missing']);
   });
 
+  it('treats an innerHTML or outerHTML binding as v-html', () => {
+    expect(lint('<div :innerHTML="body" />')).toEqual(['missing']);
+    expect(lint('<div v-bind:outerHTML="body" />')).toEqual(['missing']);
+    expect(lint('<!-- v-html: sanitized on write -->\n<div :innerHTML="body" />')).toEqual([]);
+    expect(lint('<div :title="body" />')).toEqual([]);
+  });
+
   it('needs one marker per element', () => {
     expect(lint('<!-- v-html: sanitized on write -->\n<div v-html="a" />\n<div v-html="b" />')).toEqual(['missing']);
   });
