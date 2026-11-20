@@ -81,6 +81,17 @@ describe('authorized manager access', function (): void {
             ->assertRedirect(route('mySupportRequests.index', ['tab' => 'all']));
     });
 
+    test('sends the assignee list only to someone who can assign', function (): void {
+        $publicRequest = SupportRequest::factory()->create(['visibility' => SupportRequestVisibility::Public]);
+
+        asUserWithInertia($this->user)->get(route('supportRequests.show', $publicRequest->id))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('permissions.can_assign', false)
+                ->where('assignees', [])
+            );
+    });
+
     test('can view support request show page', function (): void {
         asUserWithInertia($this->admin)->get(route('supportRequests.show', $this->supportRequest->id))
             ->assertStatus(200)

@@ -269,12 +269,14 @@ describe('auth: reservation manager', function (): void {
     });
 
     test('can access existing reservation', function (): void {
-        $response = asUser($this->reservationManager)->get(route('reservations.show', $this->reservation->id));
+        $response = asUserWithInertia($this->reservationManager)->get(route('reservations.show', $this->reservation->id));
 
         $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
             ->component('Admin/Reservations/ShowReservation')
             ->whereNot('reservation', null)
             ->where('reservation.id', $this->reservation->id)
+            ->missing('allUsers')
+            ->reload(fn (Assert $reload) => $reload->missing('allUsers'), only: 'allUsers')
         );
     });
 

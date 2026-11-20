@@ -103,11 +103,8 @@ class SupportRequestController extends AdminController
             'preview_url' => route('supportRequests.evidence', [$supportRequest, $m->id, 'large']),
         ]);
 
-        $assignees = User::query()
-            ->orderBy('name')
-            ->get(['id', 'name', 'profile_photo_path']);
-
         $user = auth()->user();
+        $canAssign = $user?->can('assign', $supportRequest) ?? false;
 
         return [
             'supportRequest' => [
@@ -123,11 +120,12 @@ class SupportRequestController extends AdminController
                 'label' => $case->label(),
                 'badgeVariant' => $case->badgeVariant(),
             ]),
-            'assignees' => $assignees,
+            // Only support managers may assign, and they already reach every tenant.
+            'assignees' => $canAssign ? User::query()->orderBy('name')->get(['id', 'name', 'profile_photo_path']) : [],
             'permissions' => [
                 'can_update' => $user?->can('update', $supportRequest) ?? false,
                 'can_update_status' => $user?->can('updateStatus', $supportRequest) ?? false,
-                'can_assign' => $user?->can('assign', $supportRequest) ?? false,
+                'can_assign' => $canAssign,
                 'can_manage_involved' => $user?->can('assign', $supportRequest) ?? false,
                 'can_delete' => $user?->can('delete', $supportRequest) ?? false,
                 'can_restore' => $user?->can('restore', $supportRequest) ?? false,

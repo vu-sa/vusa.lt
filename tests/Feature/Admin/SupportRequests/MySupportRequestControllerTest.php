@@ -167,6 +167,7 @@ describe('creating and storing support requests', function (): void {
                 ->has('types')
                 ->has('areas')
                 ->has('roles')
+                ->missing('users')
                 ->where('types', fn ($types) => collect($types)->contains('name', $this->type->getTranslation('name', 'lt')))
                 ->where('areas', fn ($areas) => collect($areas)->contains('name', $this->area->getTranslation('name', 'lt')))
             );

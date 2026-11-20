@@ -75,7 +75,7 @@ const READ_ROUTE_EXEMPTIONS = [
     'api.v1.admin.files.allowedTypes' => 'Serves shared upload extensions and size limits to signed-in users.',
     'api.v1.admin.tutorials.progress' => 'Reads the acting user’s tutorial progress.',
     'api.v1.admin.search.config' => 'TypesenseManager generates search keys with the acting user’s permissions.',
-    'api.v1.admin.users.search' => 'UserSearchRequest allowlists the permission used for tenant filtering and out-of-scope email masking.',
+    'api.v1.admin.users.search' => 'The purpose determines which permission the caller must hold. The involve purpose returns names without email addresses.',
     'api.v1.admin.impersonate.search' => 'Private guards require a super admin in local or staging.',
     'microsoft.callback' => 'The Microsoft OAuth callback authenticates the user before a session exists.',
 ];
