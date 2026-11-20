@@ -379,6 +379,12 @@ describe('ShowInstitution.vue', () => {
     expect(wrapper.find('[data-testid="overflow-mute"]').exists()).toBe(false);
   });
 
+  it('does not offer following to someone who sits there', () => {
+    const wrapper = createWrapper({ subscription: { is_followed: false, is_duty_based: true } });
+
+    expect(wrapper.find('[data-testid="overflow-follow"]').exists()).toBe(false);
+  });
+
   it('passes the per-record permission down to the duties section, not a tenant-agnostic flag', () => {
     expect(createWrapper({ duties_count: 4 }).find('[data-testid="duties-section"]').attributes('data-can-manage')).toBe('true');
     expect(createWrapper({ duties_count: 4, can: { update: false, delete: false } }).find('[data-testid="duties-section"]').attributes('data-can-manage')).toBe('false');

@@ -459,11 +459,11 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
     }
 
     /**
-     * Check if the user has a duty at a specific institution.
+     * Whether the user holds a seat there now. A former member is not, so they may follow it.
      */
     public function hasInstitution(Institution $institution): bool
     {
-        return $this->institutions()->where('institutions.id', $institution->id)->exists();
+        return $this->current_duties()->where('duties.institution_id', $institution->id)->exists();
     }
 
     public function reservations(): BelongsToMany

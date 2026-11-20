@@ -553,7 +553,8 @@ const overflowActions = computed<ActionDescriptor[]>(() => {
   }
   actions.push({ key: 'public', label: $t('Atidaryti vusa.lt'), icon: ExternalLink, href: publicUrl.value, external: true });
 
-  if (props.subscription) {
+  // A member hears about the institution through their seat, so following is not offered.
+  if (props.subscription && !isDutyBased.value) {
     actions.push({
       key: 'follow',
       label: isFollowed.value ? $t('Nebesekti') : $t('Sekti'),

@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Institucijos
-last_reviewed: 2026-11-09
+last_reviewed: 2026-11-21
 tests:
   - tests/Feature/Admin/ModelMeta/TypeControllerTest.php
   - tests/Feature/Meetings/MeetingKindTest.php
@@ -10,6 +10,7 @@ tests:
   - tests/Feature/Search/AdminSearchTranslationsTest.php
   - resources/js/Pages/Admin/People/__tests__/IndexInstitution.component.test.ts
   - resources/js/Pages/Admin/People/__tests__/ShowInstitution.component.test.ts
+  - tests/Feature/InstitutionSubscriptionTest.php
   - resources/js/Components/Institutions/__tests__/InstitutionMeetingsCollection.component.test.ts
   - tests/Feature/Admin/Management/InstitutionControllerTest.php
   - resources/js/Composables/__tests__/searchTranslations.test.ts
@@ -549,6 +550,8 @@ puslapyje (**⋯ → Sekti**) arba sąraše, pažymėjus kelias institucijas. S�
   posėdžiai vieši.
 - **Nebesekti** – pašalinti instituciją iš sekamų sąrašo ir nebegauti jos sekėjams skirtų pranešimų.
 - Pranešimai dėl einamų pareigų nepriklauso nuo pasirinkimo sekti instituciją.
+- Kol eini pareigas institucijoje, **Sekti** nesiūloma: apie jos posėdžius sužinai per pareigas.
+  Pasibaigus kadencijai instituciją galima sekti kaip ir bet kurią kitą.
 
 <ChangelogNote date="2026-10-02" title="Vienas pasirinkimas – sekti arba nebesekti">
 Atskiras institucijos nutildymas pašalintas. Anksčiau sektos ir nutildytos institucijos
