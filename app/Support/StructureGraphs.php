@@ -26,7 +26,7 @@ class StructureGraphs
 
     public static function directory(): string
     {
-        return resource_path('js/Features/StructureGraph/graphs');
+        return resource_path('js/Components/StructureGraph/graphs');
     }
 
     /** @return array<string, list<string>> */
