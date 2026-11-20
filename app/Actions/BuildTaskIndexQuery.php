@@ -3,13 +3,9 @@
 namespace App\Actions;
 
 use App\Http\Requests\IndexTasksRequest;
-use App\Models\Institution;
-use App\Models\Meeting;
-use App\Models\Reservation;
 use App\Models\Task;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
-use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -31,17 +27,8 @@ final class BuildTaskIndexQuery
      */
     public static function scoped(IndexTasksRequest $request, string $scope, User $user, ModelAuthorizer $authorizer): Builder
     {
-        $query = self::base($scope, $user, $authorizer);
-
-        $query->with(['taskable', 'users:id,name,email,profile_photo_path', 'tenants']);
-
-        if ($scope === self::SCOPE_TENANT && $request->filled('tenant')) {
-            $tenantIds = collect((array) $request->validated('tenant'))->map(fn ($id) => (int) $id)
-                ->intersect(self::readableTenantIds($user, $authorizer));
-
-            // Tenants the user may not read narrow to nothing rather than being ignored silently.
-            $query->whereHas('tenants', fn (Builder $q) => $q->whereIn('tenants.id', $tenantIds->all()));
-        }
+        $tenantFilter = $request->filled('tenant') ? (array) $request->validated('tenant') : null;
+        $query = self::base($scope, $user, $authorizer, $tenantFilter)->withListingRelations();
 
         if ($types = $request->validated('taskable_type')) {
             $query->whereIn('taskable_type', (array) $types);
@@ -121,14 +108,15 @@ final class BuildTaskIndexQuery
     }
 
     /**
-     * Every task the scope may show, before any filter.
+     * Every task the scope may show in the selected padaliniai.
      *
+     * @param  array<int, int|string>|null  $tenantFilter
      * @return Builder<Task>
      */
-    public static function base(string $scope, User $user, ModelAuthorizer $authorizer): Builder
+    public static function base(string $scope, User $user, ModelAuthorizer $authorizer, ?array $tenantFilter = null): Builder
     {
         return $scope === self::SCOPE_TENANT
-            ? self::tenantScope($user, $authorizer)
+            ? self::tenantScope($user, $authorizer, $tenantFilter)
             : Task::query()->whereHas('users', fn (Builder $q) => $q->where('users.id', $user->id));
     }
 
@@ -141,46 +129,22 @@ final class BuildTaskIndexQuery
     }
 
     /**
-     * Tasks in the user's readable padaliniai whose subject they may also read — a task never
-     * reveals a meeting, reservation or institution the user could not open themselves.
-     *
+     * @param  array<int, int|string>|null  $tenantFilter
      * @return Builder<Task>
      */
-    private static function tenantScope(User $user, ModelAuthorizer $authorizer): Builder
+    private static function tenantScope(User $user, ModelAuthorizer $authorizer, ?array $tenantFilter): Builder
     {
-        $taskTenantIds = self::readableTenantIds($user, $authorizer);
-        $meetingTenantIds = $authorizer->tenants($user, 'meetings.read.padalinys')->pluck('id');
-        $reservationTenantIds = $authorizer->tenants($user, 'reservations.read.padalinys')->pluck('id');
-        $institutionTenantIds = $authorizer->tenants($user, 'institutions.read.padalinys')->pluck('id');
+        $tenantIds = self::readableTenantIds($user, $authorizer);
+        if ($tenantFilter !== null) {
+            $tenantIds = $tenantIds->intersect($tenantFilter);
+        }
 
-        return Task::query()
-            ->whereHas('tenants', fn (Builder $q) => $q->whereIn('tenants.id', $taskTenantIds->all()))
-            ->where(function (Builder $q) use ($meetingTenantIds, $reservationTenantIds, $institutionTenantIds): void {
-                if ($meetingTenantIds->isNotEmpty()) {
-                    $q->orWhere(fn (Builder $sub) => $sub
-                        ->where('taskable_type', MorphMap::alias(Meeting::class))
-                        ->whereHasMorph('taskable', [Meeting::class], fn (Builder $meeting) => $meeting
-                            ->whereHas('tenants', fn (Builder $tenant) => $tenant->whereIn('tenants.id', $meetingTenantIds))));
-                }
+        $taskableTenantIds = [];
+        foreach (Task::TENANT_TASKABLE_PERMISSIONS as $type => $permission) {
+            $taskableTenantIds[$type] = $authorizer->scope($user, $permission)->tenantIds()->all();
+        }
 
-                if ($reservationTenantIds->isNotEmpty()) {
-                    $q->orWhere(fn (Builder $sub) => $sub
-                        ->where('taskable_type', MorphMap::alias(Reservation::class))
-                        ->whereHasMorph('taskable', [Reservation::class], fn (Builder $reservation) => $reservation
-                            ->whereHas('tenants', fn (Builder $tenant) => $tenant->whereIn('tenants.id', $reservationTenantIds))));
-                }
-
-                // A task outlives a hard-deleted subject. Nothing is left to authorize against and
-                // the tenant filter already scopes it, so it stays listed where it can be cleared.
-                $q->orWhere(fn (Builder $sub) => $sub->whereDoesntHaveMorph('taskable', Task::TASKABLE_TYPES));
-
-                if ($institutionTenantIds->isNotEmpty()) {
-                    $q->orWhere(fn (Builder $sub) => $sub
-                        ->where('taskable_type', MorphMap::alias(Institution::class))
-                        ->whereHasMorph('taskable', [Institution::class], fn (Builder $institution) => $institution
-                            ->whereHas('tenant', fn (Builder $tenant) => $tenant->whereIn('tenants.id', $institutionTenantIds))));
-                }
-            });
+        return Task::query()->inTenants($tenantIds->all(), $taskableTenantIds);
     }
 
     /**

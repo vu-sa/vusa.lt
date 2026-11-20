@@ -63,7 +63,7 @@ trait HasCommonChecks
 
     /**
      * Whether the model belongs to one of the tenants the user holds the padalinys scope in,
-     * read through its `tenants` relation when it has one, else its `tenant` relation.
+     * read through its `owningTenants()` when it defines one, else its `tenants` or `tenant` relation.
      */
     private function allowsPadalinysScope(User $user, Model $model, string $permissionBase): bool
     {
@@ -71,7 +71,7 @@ trait HasCommonChecks
 
         // Globally scoped models (tags, types, categories, navigation) have no tenant
         // relation and are only ever granted "*"; deny rather than 500 on loading it.
-        if (! method_exists($model, $tenantRelation)) {
+        if (! method_exists($model, 'owningTenants') && ! method_exists($model, $tenantRelation)) {
             return false;
         }
 
@@ -88,6 +88,10 @@ trait HasCommonChecks
 
     protected function tenantsFor(Model $model, string $tenantRelation): Collection
     {
+        if (method_exists($model, 'owningTenants')) {
+            return $model->owningTenants();
+        }
+
         $modelTenants = $model->loadMissing($tenantRelation)->getRelation($tenantRelation);
 
         return match (true) {

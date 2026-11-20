@@ -219,10 +219,10 @@ class InstitutionPresenter
     /** @return list<array{id: string, name: string, description: string|null, due_date: string|null, completed_at: string|null, cancelled_at: string|null, created_at: string, updated_at: string, action_type: ActionType|null, metadata: array<string, mixed>|null, progress: array{current: int, total: int, percentage: int}|null, is_overdue: bool, can_be_manually_completed: bool, can_update: bool, icon: string, color: string, taskable: array{id: int|string, name: string|null, type: string}|null, taskable_type: string, taskable_id: string, users: list<array{id: string, name: string, profile_photo_path: string|null}>}> */
     public static function tasks(Institution $institution): array
     {
-        $tasks = $institution->tasks()->with('users:id,name,email,profile_photo_path', 'taskable', 'tenants')->get()
+        $tasks = $institution->tasks()->withListingRelations()->get()
             ->merge(Task::query()->where('taskable_type', MorphMap::alias(Meeting::class))
                 ->whereIn('taskable_id', $institution->meetings()->select('meetings.id'))
-                ->with('users:id,name,email,profile_photo_path', 'taskable', 'tenants')->get())
+                ->withListingRelations()->get())
             ->sortByDesc('created_at')->values();
 
         return MeetingPanelPresenter::taskRows($tasks, request()->user());

@@ -128,8 +128,8 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     'app/Policies/MeetingPolicy.php' => ["'tenants'" => 1, '->duties' => 2, "'duties" => 1],
     // Reservation participants come from reservation_user.
     'app/Policies/ReservationPolicy.php' => ['->users' => 4],
-    // Task assignees come from task_user, and taskable tenants belong to Meeting or Reservation.
-    'app/Policies/TaskPolicy.php' => ["'tenants'" => 2, '->users' => 2],
+    // Task assignees come from task_user; tenantsFor() reads the task's or its subject's owning units.
+    'app/Policies/TaskPolicy.php' => ['->tenants' => 2, "'tenants'" => 2, '->users' => 2],
     // PermissionScope and record tenant reads; a User record keeps all-time tenants on purpose (alumni management).
     'app/Policies/Traits/HasCommonChecks.php' => ['->tenants' => 2, "'tenants'" => 2, '->duties' => 1],
     // Fail-closed historical containment, blocking tenant names, and the actor's ModelAuthorizer scope.

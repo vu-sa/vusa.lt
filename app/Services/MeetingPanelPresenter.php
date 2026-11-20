@@ -57,7 +57,7 @@ class MeetingPanelPresenter
     public static function tasks(Meeting $meeting): array
     {
         return self::taskRows(
-            $meeting->tasks()->with('users:id,name,email,profile_photo_path', 'taskable', 'tenants')->get(),
+            $meeting->tasks()->withListingRelations()->get(),
             request()->user(),
         );
     }

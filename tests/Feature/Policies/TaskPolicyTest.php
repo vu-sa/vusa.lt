@@ -46,12 +46,12 @@ test('an ended duty granting meeting read permission does not allow viewing a me
     expect(Gate::forUser($this->reader)->allows('view', $this->task))->toBeFalse();
 });
 
-test('a current duty with global meeting read permission allows viewing a meeting task in another tenant', function (): void {
+test('global meeting read permission still requires task read in the meeting tenant', function (): void {
     $other = Tenant::query()->whereKeyNot($this->tenant->id)->firstOrFail();
     $otherInstitution = Institution::factory()->for($other)->create();
     attachTaskPolicyDuty($this->reader, $otherInstitution, ['tasks.read.padalinys', 'meetings.read.*']);
 
-    expect(Gate::forUser($this->reader)->allows('view', $this->task))->toBeTrue();
+    expect(Gate::forUser($this->reader)->allows('view', $this->task))->toBeFalse();
 });
 
 test('a direct tenant meeting read permission and a current duty allow viewing a meeting task', function (): void {

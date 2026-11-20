@@ -9,7 +9,9 @@ use App\Models\Traits\HasTasks;
 use App\Models\Traits\LogsModelActivity;
 use App\Models\Traits\LogsRelationshipChanges;
 use App\States\ReservationResource\Returned;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -36,9 +38,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, \App\Models\Resource> $resources
  * @property-read Collection<int, Comment> $rootComments
  * @property-read Collection<int, Task> $tasks
- * @property-read Collection<int, Tenant> $tenants
+ * @property-read Collection<int, Tenant> $reserverTenants
+ * @property-read Collection<int, Tenant> $resourceTenants
  * @property-read Collection<int, User> $users
- * @property-read int|null $tenants_count
  *
  * @method static \Database\Factories\ReservationFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Reservation newModelQuery()
@@ -48,9 +50,12 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @mixin \Eloquent
  */
 #[Unguarded]
+#[Hidden(self::TENANT_RELATIONS)]
 class Reservation extends Model implements Commentable
 {
     use HasComments, HasFactory, HasRelationships, HasTasks, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable;
+
+    public const array TENANT_RELATIONS = ['reserverTenants', 'resourceTenants'];
 
     #[\Override]
     protected function casts(): array
@@ -84,9 +89,36 @@ class Reservation extends Model implements Commentable
             ->withTimestamps();
     }
 
-    public function tenants(): HasManyDeep
+    public function resourceTenants(): HasManyDeep
     {
-        return $this->hasManyDeepFromRelations($this->users(), (new User)->tenants());
+        return $this->hasManyDeepFromRelations($this->resources(), (new Resource)->tenant())
+            ->withTrashed('resources.deleted_at');
+    }
+
+    public function reserverTenants(): HasManyDeep
+    {
+        return $this->hasManyDeepFromRelationsWithConstraints($this->users(...), (new User)->current_or_upcoming_tenants(...));
+    }
+
+    /** @return Collection<int, Tenant> */
+    public function owningTenants(): Collection
+    {
+        $this->loadMissing(self::TENANT_RELATIONS);
+
+        return $this->resourceTenants->merge($this->reserverTenants);
+    }
+
+    /**
+     * @param  Builder<static>  $query
+     * @param  array<int, int|string>  $tenantIds
+     */
+    public function scopeInTenants(Builder $query, array $tenantIds): void
+    {
+        $inTenants = fn (Builder $tenants) => $tenants->whereIn('tenants.id', $tenantIds);
+
+        $query->where(fn (Builder $reservation) => $reservation
+            ->whereHas('resourceTenants', $inTenants)
+            ->orWhereHas('reserverTenants', $inTenants));
     }
 
     protected function isCompleted(): Attribute
