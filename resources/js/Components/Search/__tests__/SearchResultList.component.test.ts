@@ -1,18 +1,14 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
-import { h } from 'vue';
 
 import SearchResultList from '../SearchResultList.vue';
 import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
-
-const DummyIcon = { render: () => h('span') };
 
 function makeHit(id: string, title: string): NormalizedSearchHit {
   return {
     id,
     recordId: id,
     collection: 'meetings',
-    icon: DummyIcon,
     title,
     raw: {},
   };

@@ -1,7 +1,7 @@
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import type { InertiaForm } from '@inertiajs/vue3';
-import { defineComponent, markRaw, nextTick } from 'vue';
+import { defineComponent, nextTick } from 'vue';
 
 import ProblemForm from '@/Components/AdminForms/ProblemForm.vue';
 import UserSearchField from '@/Components/Pickers/UserSearchField.vue';
@@ -67,7 +67,6 @@ const institutionHit = (id: string, title: string): NormalizedSearchHit => ({
   id: `institutions-${id}`,
   recordId: id,
   collection: 'institutions',
-  icon: markRaw(defineComponent({ template: '<i />' })),
   title,
   raw: {},
 });

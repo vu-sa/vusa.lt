@@ -9,7 +9,6 @@ import { createEmptyMultiSearchResults } from '@/Search/core/utils/createEmptyMu
 import {
   adminCollectionToKey,
   collectAllTabHits,
-  COLLECTION_META,
   formatSearchDate,
   formatSearchDateTime,
   normalizeHit,
@@ -80,7 +79,6 @@ describe('normalizeHit', () => {
     expect(hit.subtitle).toBe('VU Senatas');
     expect(hit.badge).toBe('VU SA');
     expect(hit.href).toContain('meetings.show');
-    expect(hit.icon).toBe(COLLECTION_META.meetings.icon);
     expect(hit.raw).toBe(doc);
     expect(hit.statusBadge).toBe(meetingCompletionStatuses.complete);
   });

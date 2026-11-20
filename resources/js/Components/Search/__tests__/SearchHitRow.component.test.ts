@@ -12,7 +12,6 @@ const hit = {
   id: 'users-1',
   recordId: '1',
   collection: 'users',
-  icon: {},
   raw: {},
   title: 'Jonas Jonaitis',
   contextBadge: 'MIF',

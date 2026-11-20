@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "total": 2565,
+  "total": 2561,
   "fingerprints": {
     "docs/pdf/build-release.ts | TS2322 | Type 'string | undefined' is not assignable to type 'string'.": 1,
     "docs/pdf/build-release.ts | TS2345 | Argument of type 'string | undefined' is not assignable to parameter of type 'string'.": 1,
@@ -512,9 +512,7 @@
     "resources/js/Components/Public/Calendar/__tests__/CalendarFilterPopover.component.test.ts | TS2532 | Object is possibly 'undefined'.": 1,
     "resources/js/Components/Public/Calendar/__tests__/EventDetailsCard.component.test.ts | TS2322 | Type 'string' is not assignable to type 'unknown[]'.": 4,
     "resources/js/Components/Public/Calendar/__tests__/EventHero.component.test.ts | TS2740 | Type '{ id: number; title: string; date: string; end_date: null; is_all_day: boolean; main_image_url: null; tenant: { shortname: string; }; event_type: { name: string; }; }' is missing the following properties from type 'Calendar': is_remote, is_draft, is_international, hero_style, and 16 more.": 1,
-    "resources/js/Components/Public/ContactWithPhoto.vue | TS2322 | Type 'unknown[] | null | undefined' is not assignable to type 'string'.": 1,
-    "resources/js/Components/Public/ContactWithPhoto.vue | TS2322 | Type '{ name: string; pronouns: string | unknown[] | { lt?: string | null; en?: string | null; } | null | undefined; }' is not assignable to type 'DutyNameHolder'.": 1,
-    "resources/js/Components/Public/ContactWithPhoto.vue | TS2339 | Property 'pivot' does not exist on type 'Duty & { roles?: Role[] | null | undefined; roles_count?: number | null | undefined; } & { contact_tenant?: string | null | undefined; }'.": 3,
+    "resources/js/Components/Public/ContactWithPhoto.vue | TS2339 | Property 'pivot' does not exist on type 'Duty & { roles?: Role[] | null | undefined; roles_count?: number | null | undefined; } & { contact_tenant?: string | null | undefined; }'.": 1,
     "resources/js/Components/Public/ContactWithPhoto.vue | TS2339 | Property 'pivot' does not exist on type 'Duty'.": 5,
     "resources/js/Components/Public/ContactWithPhoto.vue | TS2345 | Argument of type '{ name: string; pronouns: string | unknown[] | { lt?: string | null; en?: string | null; } | null | undefined; }' is not assignable to parameter of type 'DutyNameHolder'.": 1,
     "resources/js/Components/Public/FullWidth/EventCalendarElement.vue | TS2345 | Argument of type 'LocaleEnum' is not assignable to parameter of type 'ModelEnum'.": 1,

@@ -378,7 +378,6 @@ export default tseslint.config(
           {
             target: 'resources/js/Search',
             from: 'resources/js/Components',
-            except: ['./icons'],
             message: 'Search/ is the non-UI search core. Move what it needs from components into Search/, Utils/ or Constants/.',
           },
           {

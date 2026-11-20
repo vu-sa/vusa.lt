@@ -7,7 +7,6 @@
  * tabs, and the detail pane so every surface renders hits identically.
  */
 
-import type { Component } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
@@ -25,18 +24,6 @@ import {
 import { hasIdentityMatch, PROSE_FIELDS, type SearchMatchDocument } from '@/Search/core/matches';
 import { changeDutyNameEndings } from '@/Utils/String';
 import { termYearSpan } from '@/Utils/occupancy';
-import {
-  AgendaItemIcon,
-  CalendarIcon,
-  DocumentIcon,
-  DutyIcon,
-  InstitutionIcon,
-  MeetingIcon,
-  NewsIcon,
-  PageIcon,
-  ResourceIcon,
-  UserIcon,
-} from '@/Components/icons';
 import type {
   AgendaItemSearchResult,
   CalendarSearchResult,
@@ -100,7 +87,6 @@ export interface NormalizedSearchHit {
   /** The underlying record id. */
   recordId: string;
   collection: SearchCollectionKey;
-  icon: Component;
   /** Thumbnail URL rendered in place of the icon when present (e.g. resource photo). */
   imageUrl?: string;
   title: string;
@@ -146,7 +132,6 @@ export function normalizeUserApiHit(user: {
     id: `users-${user.id}`,
     recordId: String(user.id),
     collection: 'users',
-    icon: UserIcon,
     title: user.name,
     imageUrl: user.profile_photo_path || undefined,
     subtitle: taken ? takenLabel : user.email,
@@ -157,24 +142,23 @@ export function normalizeUserApiHit(user: {
   };
 }
 
-/** Per-collection display metadata (icon + label + page tab). */
+/** Per-collection display metadata (label + page tab). */
 export const COLLECTION_META: Record<SearchCollectionKey, {
-  icon: Component;
   /** i18n key (LT source string). */
   label: string;
   /** Unified search page tab value, when the collection has a dedicated tab. */
   tab?: string;
 }> = {
-  meetings: { icon: MeetingIcon, label: 'Posėdžiai', tab: 'meetings' },
-  agendaItems: { icon: AgendaItemIcon, label: 'Darbotvarkės punktai', tab: 'agenda-items' },
-  institutions: { icon: InstitutionIcon, label: 'Institucijos', tab: 'institutions' },
-  resources: { icon: ResourceIcon, label: 'Ištekliai', tab: 'resources' },
-  duties: { icon: DutyIcon, label: 'Pareigybės', tab: 'duties' },
-  documents: { icon: DocumentIcon, label: 'Dokumentai', tab: 'documents' },
-  news: { icon: NewsIcon, label: 'Naujienos' },
-  pages: { icon: PageIcon, label: 'Puslapiai' },
-  calendar: { icon: CalendarIcon, label: 'Kalendorius' },
-  users: { icon: UserIcon, label: 'Nariai', tab: 'users' },
+  meetings: { label: 'Posėdžiai', tab: 'meetings' },
+  agendaItems: { label: 'Darbotvarkės punktai', tab: 'agenda-items' },
+  institutions: { label: 'Institucijos', tab: 'institutions' },
+  resources: { label: 'Ištekliai', tab: 'resources' },
+  duties: { label: 'Pareigybės', tab: 'duties' },
+  documents: { label: 'Dokumentai', tab: 'documents' },
+  news: { label: 'Naujienos' },
+  pages: { label: 'Puslapiai' },
+  calendar: { label: 'Kalendorius' },
+  users: { label: 'Nariai', tab: 'users' },
 };
 
 /** Map an AdminCollection (snake_case) to the canonical result key (camelCase). */
@@ -258,7 +242,7 @@ export function formatSearchDateTime(timestamp?: number): string | undefined {
   });
 }
 
-type Mapper<T> = (doc: T, ctx?: MapperContext) => Omit<NormalizedSearchHit, 'id' | 'collection' | 'icon' | 'raw'>;
+type Mapper<T> = (doc: T, ctx?: MapperContext) => Omit<NormalizedSearchHit, 'id' | 'collection' | 'raw'>;
 
 /**
  * Whether a duty's home tenant falls outside the current user's accessible
@@ -497,13 +481,11 @@ export function collectAllTabHits(
  * tenants) so mappers can flag rows like cross-tenant duties.
  */
 export function normalizeHit(collection: SearchCollectionKey, doc: unknown, ctx?: MapperContext): NormalizedSearchHit {
-  const meta = COLLECTION_META[collection];
   const mapped = MAPPERS[collection](doc, ctx);
   return {
     ...mapped,
     id: `${collection}-${mapped.recordId}`,
     collection,
-    icon: meta.icon,
     raw: doc,
   };
 }

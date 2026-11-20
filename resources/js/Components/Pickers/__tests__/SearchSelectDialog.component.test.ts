@@ -7,8 +7,8 @@ import { commonStubs } from '@/tests/stubs';
 import SearchSelectDialog from '../SearchSelectDialog.vue';
 import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 
-const hitA = { id: 'r-1', recordId: '1', collection: 'resources', title: 'Alpha', icon: {}, raw: {} } as unknown as NormalizedSearchHit;
-const hitB = { id: 'r-2', recordId: '2', collection: 'resources', title: 'Beta', icon: {}, raw: {} } as unknown as NormalizedSearchHit;
+const hitA = { id: 'r-1', recordId: '1', collection: 'resources', title: 'Alpha', raw: {} } as unknown as NormalizedSearchHit;
+const hitB = { id: 'r-2', recordId: '2', collection: 'resources', title: 'Beta', raw: {} } as unknown as NormalizedSearchHit;
 
 const stubs = {
   ...commonStubs,

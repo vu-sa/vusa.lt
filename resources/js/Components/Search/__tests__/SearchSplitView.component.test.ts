@@ -10,7 +10,6 @@ const hit = {
   recordId: '1',
   collection: 'resources',
   title: 'Kamera',
-  icon: {},
   raw: {},
 } as NormalizedSearchHit;
 

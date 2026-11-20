@@ -53,7 +53,7 @@
 import { computed, ref, watch } from 'vue';
 import { refDebounced } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { FileClock, FileText, LoaderCircle, Search } from '@lucide/vue';
+import { FileClock, LoaderCircle, Search } from '@lucide/vue';
 
 import type { DocumentFolderRow } from '@/Components/Files';
 import { Button } from '@/Components/ui/button';
@@ -95,7 +95,6 @@ const toHit = (row: DocumentFolderRow): NormalizedSearchHit => ({
   id: `documents-${row.id}`,
   recordId: String(row.id),
   collection: 'documents',
-  icon: FileText,
   title: row.title || row.name,
   subtitle: [row.sharepoint_path, row.document_date].filter(Boolean).join(' · '),
   raw: row,
