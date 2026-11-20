@@ -270,9 +270,9 @@ Actions, Services and Support each have one job; see `.ai/rules/backend-layout.m
 // The controller reads the actor; actions and services take it as an argument
 GetTenantsForUpserts::execute($request->user(), 'models.create.padalinys', $this->authorizer);
 
-// Manual filtering before TanStack filters
-if ($request->filled('field')) {
-    $query->where('field', $request->field);
+// Manual filtering before TanStack filters: read validated input, never raw
+if ($request->safe()->filled('field')) {
+    $query->where('field', $request->validated('field'));
 }
 ```
 

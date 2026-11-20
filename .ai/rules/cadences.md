@@ -6,7 +6,6 @@ paths:
   - 'app/Http/Requests/Cadences/**'
   - 'resources/js/Components/Cadences/**'
   - 'app/Http/Requests/UpdateInstitutionSecretariesRequest.php'
-  - 'app/Actions/ResolveCadence*.php'
 ---
 
 # Cadences

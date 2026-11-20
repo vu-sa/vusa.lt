@@ -1,7 +1,8 @@
 ---
 paths:
-  - 'app/Actions/Get*.php'
-  - 'app/Actions/Resolve*.php'
+  - 'app/Actions/GetInstitution*.php'
+  - 'app/Actions/{GetMeetingOverseers,ResolveMeetingNotificationAudience,ResolveMailingListMembers,ResolveTaskAssignees,ResolveTaskAudience}.php'
+  - 'app/Services/{MeetingRepresentative,Responsibility,CommentRecipient}Resolver.php'
   - 'app/Tasks/Subscribers/**'
   - 'app/Models/InstitutionSecretary.php'
   - 'app/Services/CommentableMentionResolver.php'
@@ -18,7 +19,7 @@ paths:
 | `current_duties()`, `current_users()`, `Dutiable::activeOn()` | started and not ended | who holds it, contacts, mail, counts |
 | `current_or_upcoming_duties()` / `current_or_upcoming_tenants()`, `Dutiable::current()` | not ended | permissions, "my units", quotas |
 
-The default name is the all-time one. `AllTimeRelationsConventionTest` keeps it out of policies, requests, middleware, notifications, tasks and audience actions unless the use is allowlisted with a reason.
+The default name is the all-time one. `AllTimeRelationsConventionTest` keeps it out of policies, requests, middleware, notifications, tasks, `app/Actions` and `app/Services` unless the use is allowlisted with a reason.
 
 ## Notification audiences are date-scoped
 Never build a notification audience from an all-time relation: a body with turnover notifies everyone who ever held a seat. `SendMeetingReminders` and `CommentableMentionResolver` both shipped that bug. Use the actions below.
