@@ -151,12 +151,7 @@ class PageController extends AdminController
     #[Authorize('update', 'page')]
     public function destroyPublicUrl(Page $page, PublicUrl $publicUrl): RedirectResponse
     {
-        // Resolve through the relation so a crafted payload cannot reach another page's URLs.
-        $publicUrlFromDb = $page->publicUrls()->find($publicUrl->id);
-
-        abort_if($publicUrlFromDb === null, 403, 'Public URL does not belong to this page.');
-
-        $publicUrlFromDb->delete();
+        $publicUrl->delete();
 
         return back()->with('info', $this->entityMessage('deleted', 'publicUrl'));
     }

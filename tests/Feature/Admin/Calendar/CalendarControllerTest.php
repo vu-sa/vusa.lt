@@ -777,6 +777,21 @@ describe('relationships', function (): void {
     });
 });
 
+test('a gallery image can only be deleted through its own event', function (): void {
+    Storage::fake('spatieMediaLibrary');
+    $event = Calendar::factory()->for($this->tenant)->create();
+    $otherEvent = Calendar::factory()->for($this->tenant)->create();
+    $image = app(AddImageMedia::class)->execute($event, UploadedFile::fake()->image('event.jpg'), 'images');
+
+    asUser($this->calendarManager)->post(route('calendar.destroyMedia', [$otherEvent, $image]))
+        ->assertNotFound();
+    $this->assertModelExists($image);
+
+    asUser($this->calendarManager)->post(route('calendar.destroyMedia', [$event, $image]))
+        ->assertRedirect();
+    $this->assertModelMissing($image);
+});
+
 describe('public URL history', function (): void {
     beforeEach(function (): void {
         $this->calendar = Calendar::factory()->for($this->tenant)->create();
@@ -805,7 +820,7 @@ describe('public URL history', function (): void {
 
         asUser($this->calendarManager)
             ->delete(route('calendar.publicUrls.destroy', [$this->calendar, $foreign]))
-            ->assertStatus(403);
+            ->assertNotFound();
 
         $this->assertDatabaseHas('public_urls', ['id' => $foreign->id]);
     });

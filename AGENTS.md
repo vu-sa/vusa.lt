@@ -392,11 +392,11 @@ Authorization tests expect 403 status codes for direct requests — never `asser
 
 These come from real bugs found in this codebase. Treat them as non-negotiable.
 
-**Every mutating route authorizes.** A controller that only injects `ModelAuthorizer` without calling it is unprotected — the `auth` middleware proves *who* the user is, not *what* they may touch. Check `routes/admin.php` against the controller: a registered route with no `#[Authorize]`, `$this->authorize()` or Form Request `authorize()` is a hole. `RouteAuthorizationCoverageTest` checks every mutating route.
+**Every admin route authorizes.** The `auth` middleware identifies the actor. Use `#[Authorize]`, `$this->authorize()` or a Form Request's `authorize()` to check what they may access. `RouteAuthorizationCoverageTest` checks read and mutating routes and records any routes protected by other means.
 
 **A child resource authorizes against its parent.** When a model carries no permissions of its own, delegate to the policy of the model that owns it, rather than inventing unseeded permissions (which lock out everyone but super admins). Precedent: `ReservationResourceController` → `Reservation`.
 
-**Resolving a child by a request id is an IDOR.** `find()`/`findOrNew()` on the model itself resolves *any* id, not just ones belonging to the record in the URL. Resolve through the parent's relation and refuse what it cannot find (`FormController::update()`):
+**Scope nested children to their parent.** Use `Route::scopeBindings()` for a child model bound in the URL. `tests/Feature/System/RouteArchitectureTest.php` checks nested admin bindings. For child IDs in the payload, resolve through the parent's relation and refuse what it cannot find, as in `FormController::update()`.
 
 ```php
 // Resolve through the relation so a crafted payload cannot reach another form's fields.

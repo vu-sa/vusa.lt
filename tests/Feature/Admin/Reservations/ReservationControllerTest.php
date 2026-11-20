@@ -367,6 +367,24 @@ describe('auth: reservation manager', function (): void {
     });
 });
 
+describe('reservationResources.show', function (): void {
+    test('redirects a reservation participant to the reservation', function (): void {
+        $pivot = $this->reservation->resources()->first()->pivot;
+
+        asUser($this->reservationManager)
+            ->get(route('reservationResources.show', $pivot->id))
+            ->assertRedirectToRoute('reservations.show', $this->reservation);
+    });
+
+    test('refuses to disclose the reservation redirect to an outsider', function (): void {
+        $pivot = $this->reservation->resources()->first()->pivot;
+
+        asUser($this->user)
+            ->get(route('reservationResources.show', $pivot->id))
+            ->assertForbidden();
+    });
+});
+
 describe('reservationResources.store', function (): void {
     /**
      * ReservationPolicy::create() lets every user create reservations, so the Form Request's
