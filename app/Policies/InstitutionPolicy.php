@@ -2,26 +2,17 @@
 
 namespace App\Policies;
 
-use App\Enums\ModelEnum;
 use App\Models\Institution;
 use App\Models\User;
 use App\Services\InstitutionAccessService;
 use App\Services\ModelAuthorizer;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 class InstitutionPolicy extends ModelPolicy
 {
-    /**
-     * These models belong to a single tenant through a `tenant` relation.
-     */
-    #[\Override]
-    protected bool $hasManyTenants = false;
-
     public function __construct(ModelAuthorizer $authorizer, private readonly InstitutionAccessService $institutions)
     {
         parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::INSTITUTION->label());
     }
 
     /**

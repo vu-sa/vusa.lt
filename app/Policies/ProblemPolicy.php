@@ -2,32 +2,14 @@
 
 namespace App\Policies;
 
-use App\Enums\ModelEnum;
 use App\Models\User;
-use App\Services\ModelAuthorizer;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 /**
  * Policy for Problem model authorization
  */
 class ProblemPolicy extends ModelPolicy
 {
-    /**
-     * These models belong to a single tenant through a `tenant` relation.
-     */
-    #[\Override]
-    protected bool $hasManyTenants = false;
-
-    /**
-     * Initialize policy with model name
-     */
-    public function __construct(ModelAuthorizer $authorizer)
-    {
-        parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::PROBLEM->label());
-    }
-
     /**
      * Baseline: problems are a shared knowledge base, so every member may browse all of them.
      */

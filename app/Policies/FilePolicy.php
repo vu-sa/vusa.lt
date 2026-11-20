@@ -2,20 +2,12 @@
 
 namespace App\Policies;
 
-use App\Enums\ModelEnum;
 use App\Models\User;
-use App\Services\ModelAuthorizer;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class FilePolicy extends ModelPolicy
 {
-    public function __construct(ModelAuthorizer $authorizer)
-    {
-        parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::FILE->label());
-    }
-
     /**
      * Determine whether the user can view a directory.
      */

@@ -14,11 +14,6 @@ class ShowReservationRequest extends FormRequest
 {
     use DropsInvalidOptionalQuery;
 
-    public function authorize(): bool
-    {
-        return $this->user()?->can('view', $this->route('reservation')) ?? false;
-    }
-
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

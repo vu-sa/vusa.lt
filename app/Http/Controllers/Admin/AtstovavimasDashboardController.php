@@ -26,6 +26,7 @@ use App\Settings\RepMetricSettings;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -160,10 +161,9 @@ class AtstovavimasDashboardController extends AdminController
      * The padaliniai overview: every admin gets the Gantt of public meetings and their own bodies;
      * the statistics are only for the padaliniai the user manages. Data loads through the admin API.
      */
+    #[Authorize('viewAny', Meeting::class)]
     public function padaliniai(Request $request): Response
     {
-        $this->authorize('viewAny', Meeting::class);
-
         /** @var User $user */
         $user = $request->user();
 

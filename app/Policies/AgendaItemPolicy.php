@@ -3,7 +3,6 @@
 namespace App\Policies;
 
 use App\Enums\CRUDEnum;
-use App\Enums\ModelEnum;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\User;
@@ -11,7 +10,6 @@ use App\Services\MeetingAccessService;
 use App\Services\ModelAuthorizer;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 /** Private agenda reading grants remain independent of meeting reading grants. */
 class AgendaItemPolicy extends ModelPolicy
@@ -19,7 +17,6 @@ class AgendaItemPolicy extends ModelPolicy
     public function __construct(ModelAuthorizer $authorizer, private readonly MeetingAccessService $meetingAccess)
     {
         parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::AGENDA_ITEM->label());
     }
 
     /**

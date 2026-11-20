@@ -13,11 +13,6 @@ class EditMeetingRequest extends FormRequest
 {
     use DropsInvalidOptionalQuery;
 
-    public function authorize(): bool
-    {
-        return $this->user()?->can('update', $this->route('meeting')) ?? false;
-    }
-
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

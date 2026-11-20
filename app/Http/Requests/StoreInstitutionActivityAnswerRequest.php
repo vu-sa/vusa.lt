@@ -12,11 +12,6 @@ use Illuminate\Validation\Validator;
 
 class StoreInstitutionActivityAnswerRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     protected function prepareForValidation(): void
     {
         if (! $this->has('meetings') && $this->filled('meeting_date')) {

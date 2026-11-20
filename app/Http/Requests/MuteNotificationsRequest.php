@@ -13,11 +13,6 @@ class MuteNotificationsRequest extends FormRequest
 {
     public const array HOUR_OPTIONS = [1, 4, 24, 168];
 
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

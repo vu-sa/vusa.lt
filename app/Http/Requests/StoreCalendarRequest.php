@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Calendar;
 use App\Rules\SoftDeleteRules;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Validator;
@@ -51,11 +50,6 @@ class StoreCalendarRequest extends CalendarRequest
 
             $this->merge(['permalink' => array_replace((array) $this->input('permalink', []), [$locale => $candidate])]);
         }
-    }
-
-    public function authorize(): bool
-    {
-        return $this->user()->can('create', Calendar::class);
     }
 
     /**

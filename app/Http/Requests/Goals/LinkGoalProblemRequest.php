@@ -12,11 +12,6 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 class LinkGoalProblemRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return $this->user()->can('update', $this->route('goal'));
-    }
-
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

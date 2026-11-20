@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Studijų programos
-last_reviewed: 2026-10-15
+last_reviewed: 2026-11-19
 tests:
   - tests/Feature/Admin/Management/StudyProgramControllerTest.php
   - resources/js/Components/AdminForms/__tests__/StudyProgramForm.component.test.ts
@@ -130,7 +130,7 @@ Pakeitus programos duomenis ar sujungus programas, pasikeitimai iš karto atsisp
 - `studyPrograms.read.padalinys`, `studyPrograms.create.padalinys`, `studyPrograms.update.padalinys`,
   `studyPrograms.delete.padalinys` suteikia padalinio apimties teises.
 - Visuotiniai leidimai `studyPrograms.*` suteikia prieigą prie visų padalinių programų.
-- Modelis `StudyProgram` susietas su vienu padaliniu (`$hasManyTenants = false`).
+- Modelis `StudyProgram` susietas su vienu padaliniu (`tenant` ryšys).
 
 ### Kaip tai įgyvendinta
 

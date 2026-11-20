@@ -12,14 +12,14 @@ use App\Models\User;
 use App\Services\InstitutionDeactivationService;
 use App\Services\InstitutionRelationService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\Gate;
 
 class InstitutionApiController extends ApiController
 {
+    #[Authorize('update', 'institution')]
     public function status(Institution $institution, InstitutionDeactivationService $deactivation): JsonResponse
     {
-        $this->authorizeApi('update', $institution);
-
         return $this->jsonSuccess([
             'is_active' => (bool) $institution->is_active,
             'deactivation' => $deactivation->summary($institution),
@@ -33,10 +33,9 @@ class InstitutionApiController extends ApiController
         return $this->jsonSuccess(['is_active' => (bool) $institution->fresh()->is_active], $this->entityMessage('updated', 'institution'));
     }
 
+    #[Authorize('view', 'institution')]
     public function preview(Institution $institution): JsonResponse
     {
-        $this->authorizeApi('view', $institution);
-
         $institution->load([
             'types',
             'duties.current_users',
@@ -79,10 +78,9 @@ class InstitutionApiController extends ApiController
      * Who has held a duty here, for the Nariai popover. Gated like the record page, because the
      * collection also lists public institutions the viewer cannot open.
      */
+    #[Authorize('view', 'institution')]
     public function memberTerms(Institution $institution): JsonResponse
     {
-        $this->authorizeApi('view', $institution);
-
         return $this->jsonSuccess($institution->duties()->with('users:id,name')->get()
             ->flatMap(fn (Duty $duty) => $duty->users->map(fn (User $user) => [
                 'name' => $user->name,
@@ -92,10 +90,9 @@ class InstitutionApiController extends ApiController
             ->values());
     }
 
+    #[Authorize('create', Institution::class)]
     public function store(StoreInstitutionRequest $request): JsonResponse
     {
-        $this->authorizeApi('create', Institution::class);
-
         $institution = new Institution;
 
         $institution->fill($request->safe()->except('types'))->save();

@@ -12,11 +12,6 @@ class EditTenantMainPageRequest extends FormRequest
 {
     use DropsInvalidOptionalQuery;
 
-    public function authorize(): bool
-    {
-        return $this->user()?->can('updateMainPage', $this->route('tenant')) ?? false;
-    }
-
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

@@ -13,6 +13,7 @@ use App\Models\Page;
 use App\Models\Tag;
 use App\Support\LocalizedRouteSlugs;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Validation\Rule;
 
 class NavigationLinkApiController extends ApiController
@@ -26,6 +27,7 @@ class NavigationLinkApiController extends ApiController
      *
      * @routeName api.v1.admin.navigation.resolveUrl
      */
+    #[Authorize('viewAny', Navigation::class)]
     public function resolveUrl(ResolveNavigationUrlRequest $request): JsonResponse
     {
         $data = $request->validated();

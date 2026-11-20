@@ -1,6 +1,6 @@
 ---
 doc_status: reviewed
-last_reviewed: 2026-10-07
+last_reviewed: 2026-11-19
 title: Kūrėjams
 ---
 
@@ -62,3 +62,5 @@ Kodo taisyklės, kurių laikosi ir žmonės, ir AI agentai, surašytos repozitor
 Smulkesni vadovai: [valdikliai](https://github.com/vu-sa/vusa.lt/blob/main/app/Http/Controllers/CLAUDE.md),
 [komponentai](https://github.com/vu-sa/vusa.lt/blob/main/resources/js/Components/CLAUDE.md),
 [testai](https://github.com/vu-sa/vusa.lt/blob/main/tests/CLAUDE.md).
+Naujas Mano VU SA skyrius liečia apie penkiolika registrų – jų sąrašas eilės tvarka su juos
+saugančiais testais yra [`admin-section.md`](https://github.com/vu-sa/vusa.lt/blob/main/.ai/rules/admin-section.md).

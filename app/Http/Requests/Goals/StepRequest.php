@@ -16,16 +16,11 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 /**
- * A step is written from its goal's or its problem's page and authorizes against that parent.
+ * A step is written from its goal's or its problem's page; the controller authorizes that parent.
  * It may also count towards the other side, but only one already linked to the parent.
  */
 class StepRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return $this->user()->can('update', $this->parent());
-    }
-
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

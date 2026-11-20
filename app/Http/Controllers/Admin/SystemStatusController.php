@@ -11,6 +11,7 @@ use App\Services\SystemMaintenanceService;
 use App\Services\SystemMonitorService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Inertia\Inertia;
 
 class SystemStatusController extends AdminController
@@ -20,10 +21,9 @@ class SystemStatusController extends AdminController
         private readonly DeviceMetricService $deviceMetrics,
     ) {}
 
+    #[Authorize('viewAny', Role::class)]
     public function index(Request $request)
     {
-        $this->handleAuthorization('viewAny', Role::class);
-
         return Inertia::render('Admin/SystemStatus', [
             'lastUpdated' => now()->toISOString(),
             'status' => $this->monitor->getAllStatus(),
@@ -38,6 +38,7 @@ class SystemStatusController extends AdminController
         ]);
     }
 
+    // Authorized in RunSystemMaintenanceRequest: super admins only.
     public function runMaintenance(RunSystemMaintenanceRequest $request, SystemMaintenanceService $maintenance): RedirectResponse
     {
         $action = $request->action();

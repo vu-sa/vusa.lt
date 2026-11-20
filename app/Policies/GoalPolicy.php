@@ -2,29 +2,17 @@
 
 namespace App\Policies;
 
-use App\Enums\ModelEnum;
 use App\Models\Goal;
 use App\Models\User;
-use App\Services\ModelAuthorizer;
 use App\Support\Experiments\GoalsExperiment;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 /**
  * Pilot members read enabled tenants' goals; writes also require scoped permissions.
  */
 class GoalPolicy extends ModelPolicy
 {
-    #[\Override]
-    protected bool $hasManyTenants = false;
-
-    public function __construct(ModelAuthorizer $authorizer)
-    {
-        parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::GOAL->label());
-    }
-
     #[\Override]
     public function viewAny(User $user): bool
     {

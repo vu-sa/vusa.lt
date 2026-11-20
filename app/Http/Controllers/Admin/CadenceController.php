@@ -11,6 +11,7 @@ use App\Models\Meeting;
 use App\Settings\CadenceSettings;
 use App\Settings\SettingsSettings;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
@@ -104,6 +105,7 @@ class CadenceController extends AdminController
         ]);
     }
 
+    // Authorized in UpdateCadenceSettingsRequest: settings management permission.
     public function updateDefaults(
         UpdateCadenceSettingsRequest $request,
         CadenceSettings $cadenceSettings,
@@ -117,6 +119,7 @@ class CadenceController extends AdminController
         return back()->with('success', __('settings.messages.updated'));
     }
 
+    // Authorized in StoreCadenceRequest: the institution named in the body.
     public function store(StoreCadenceRequest $request): RedirectResponse
     {
         Cadence::create($request->safe()->only(self::WRITABLE));
@@ -124,6 +127,7 @@ class CadenceController extends AdminController
         return back()->with('success', $this->entityMessage('created', 'cadence'));
     }
 
+    // Authorized in UpdateCadenceRequest: the cadence and its destination institution.
     public function update(UpdateCadenceRequest $request, Cadence $cadence): RedirectResponse
     {
         $cadence->fill($request->safe()->only(self::WRITABLE))->save();
@@ -131,10 +135,9 @@ class CadenceController extends AdminController
         return back()->with('success', $this->entityMessage('updated', 'cadence'));
     }
 
+    #[Authorize('delete', 'cadence')]
     public function destroy(Cadence $cadence): RedirectResponse
     {
-        $this->authorize('delete', $cadence);
-
         $cadence->delete();
 
         return back()->with('success', $this->entityMessage('deleted', 'cadence'));

@@ -4,7 +4,6 @@ namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\DropsInvalidOptionalQuery;
 use App\Http\Requests\Concerns\NormalizesBooleanFlags;
-use App\Models\Navigation;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -12,11 +11,6 @@ class IndexNavigationRequest extends FormRequest
 {
     use DropsInvalidOptionalQuery;
     use NormalizesBooleanFlags;
-
-    public function authorize(): bool
-    {
-        return $this->user()?->can('viewAny', Navigation::class) ?? false;
-    }
 
     #[\Override]
     protected function prepareForValidation(): void

@@ -83,10 +83,11 @@
       :title="$t('Rezervacijos pasirinktu laiku')"
     >
       <ul class="divide-y divide-border border-y border-border">
-        <li v-for="reservation in availability.reservations" :key="reservation.id" class="flex items-center justify-between gap-3 py-2 text-sm">
+        <li v-for="reservation in availability.reservations" :key="reservation.key" class="flex items-center justify-between gap-3 py-2 text-sm">
           <span class="flex min-w-0 items-center gap-2">
             <AlertTriangle v-if="isTimeEndedActive(reservation)" class="size-3.5 shrink-0 text-status-attention" aria-hidden="true" />
-            <span class="truncate">{{ reservation.name }}</span>
+            <span v-if="reservation.name" class="truncate">{{ reservation.name }}</span>
+            <span v-else class="truncate text-muted-foreground">{{ $t('reservations.resource.other_reservation') }}</span>
           </span>
           <span class="shrink-0 text-xs tabular-nums text-muted-foreground">{{ $t(':count vnt.', { count: String(reservation.quantity) }) }}</span>
         </li>
@@ -108,11 +109,12 @@
       :empty-message="list.emptyMessage"
     >
       <ol class="divide-y divide-border border-y border-border">
-        <li v-for="reservation in list.items" :key="reservation.id" class="flex flex-col gap-1.5 py-2 text-sm">
+        <li v-for="reservation in list.items" :key="reservation.key" class="flex flex-col gap-1.5 py-2 text-sm">
           <div class="flex items-center justify-between gap-3">
-            <Link :href="route('reservations.show', reservation.id)" class="min-w-0 flex-1 truncate font-medium hover:text-brand">
+            <Link v-if="reservation.id" :href="route('reservations.show', reservation.id)" class="min-w-0 flex-1 truncate font-medium hover:text-brand">
               {{ reservation.name }}
             </Link>
+            <span v-else class="min-w-0 flex-1 truncate text-muted-foreground">{{ $t('reservations.resource.other_reservation') }}</span>
             <span class="shrink-0 text-xs tabular-nums text-muted-foreground">{{ $t(':count vnt.', { count: String(reservation.quantity) }) }}</span>
           </div>
           <div class="flex items-center justify-between gap-3">
@@ -158,8 +160,9 @@ import type { ResourceSearchResult } from '@/Shared/Search/types';
 import { formatDateTime } from '@/Utils/dateTime';
 
 interface ReservationRow {
-  id: string;
-  name: string;
+  key: number;
+  id: string | null;
+  name: string | null;
   quantity: number;
   state: App.Entities.ReservationResource['state'];
   start_time: number | null;

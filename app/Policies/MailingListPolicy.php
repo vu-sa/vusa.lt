@@ -2,23 +2,11 @@
 
 namespace App\Policies;
 
-use App\Enums\ModelEnum;
 use App\Models\MailingList;
 use App\Models\User;
-use App\Services\ModelAuthorizer;
-use Illuminate\Support\Str;
 
 class MailingListPolicy extends ModelPolicy
 {
-    #[\Override]
-    protected bool $hasManyTenants = false;
-
-    public function __construct(ModelAuthorizer $authorizer)
-    {
-        parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::MAILING_LIST->label());
-    }
-
     /**
      * Like Mailman's private archive: list managers, plus anyone subscribed through one of
      * their own addresses (main email, an assignment's email or a duty mailbox they hold now).

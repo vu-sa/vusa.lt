@@ -5,7 +5,6 @@ namespace App\Policies;
 use App\Models\KnowledgeItem;
 use App\Models\User;
 use App\Policies\Traits\ManagesLearningAudiences;
-use App\Services\ModelAuthorizer;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -16,12 +15,6 @@ use Illuminate\Database\Eloquent\Model;
 class KnowledgeItemPolicy extends ModelPolicy
 {
     use ManagesLearningAudiences;
-
-    public function __construct(ModelAuthorizer $authorizer)
-    {
-        parent::__construct($authorizer);
-        $this->pluralModelName = 'knowledgeItems';
-    }
 
     public function viewAny(User $user): bool
     {

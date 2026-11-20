@@ -10,11 +10,6 @@ class ShowRegistrationFormRequest extends FormRequest
 {
     use DropsInvalidOptionalQuery;
 
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

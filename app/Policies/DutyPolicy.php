@@ -2,21 +2,13 @@
 
 namespace App\Policies;
 
-use App\Enums\ModelEnum;
 use App\Models\Duty;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 class DutyPolicy extends ModelPolicy
 {
-    public function __construct(ModelAuthorizer $authorizer)
-    {
-        parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::DUTY->label());
-    }
-
     /**
      * Baseline: anyone who holds or once held the duty may read it; beyond that, `duties.read.*`.
      *

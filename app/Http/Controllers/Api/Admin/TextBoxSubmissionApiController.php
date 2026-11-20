@@ -19,7 +19,7 @@ class TextBoxSubmissionApiController extends ApiController
     {
         $this->requireAuth($request);
 
-        $this->authorizeApi('view', $this->pageForContentPart($request->integer('content_part_id')));
+        $this->authorize('view', $this->pageForContentPart($request->integer('content_part_id')));
 
         $paginator = TextBoxSubmission::query()
             ->where('content_part_id', $request->content_part_id)
@@ -41,7 +41,7 @@ class TextBoxSubmissionApiController extends ApiController
     {
         $this->requireAuth($request);
 
-        $this->authorizeApi('update', $this->pageForContentPart($submission->content_part_id));
+        $this->authorize('update', $this->pageForContentPart($submission->content_part_id));
 
         $submission->delete();
 
@@ -52,7 +52,7 @@ class TextBoxSubmissionApiController extends ApiController
     {
         $this->requireAuth($request);
 
-        $this->authorizeApi('update', $this->pageForContentPart($request->integer('content_part_id')));
+        $this->authorize('update', $this->pageForContentPart($request->integer('content_part_id')));
 
         TextBoxSubmission::query()
             ->where('content_part_id', $request->integer('content_part_id'))
@@ -67,7 +67,7 @@ class TextBoxSubmissionApiController extends ApiController
 
         $contentPart = ContentPart::findOrFail($request->content_part_id);
 
-        $this->authorizeApi('view', $this->pageForContentPart($contentPart));
+        $this->authorize('view', $this->pageForContentPart($contentPart));
 
         $pageTitle = Page::query()
             ->where('content_id', $contentPart->content_id)

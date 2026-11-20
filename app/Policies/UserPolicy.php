@@ -3,7 +3,6 @@
 namespace App\Policies;
 
 use App\Enums\CRUDEnum;
-use App\Enums\ModelEnum;
 use App\Enums\PermissionScopeEnum;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
@@ -11,7 +10,6 @@ use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection as SupportCollection;
-use Illuminate\Support\Str;
 
 /**
  * Authorization for the User resource.
@@ -39,8 +37,6 @@ class UserPolicy extends ModelPolicy
     public function __construct(public Authorizer $authorizer)
     {
         parent::__construct($authorizer);
-
-        $this->pluralModelName = Str::plural(ModelEnum::USER->label());
     }
 
     /**

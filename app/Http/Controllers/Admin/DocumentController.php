@@ -16,6 +16,7 @@ use App\Models\Document;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Settings\DocumentDiscoverySettings;
 use App\Settings\DocumentSettings;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -26,10 +27,9 @@ class DocumentController extends AdminController
     /**
      * Display a listing of the resource.
      */
+    #[Authorize('viewAny', Document::class)]
     public function index(IndexDocumentRequest $request, DocumentSettings $documentSettings)
     {
-        $this->handleAuthorization('viewAny', Document::class);
-
         $user = $request->user();
         $canCreate = $user->can('create', Document::class);
 
@@ -70,6 +70,7 @@ class DocumentController extends AdminController
     /**
      * Publish (queues the public link) or hide (revokes it, see DocumentObserver) SharePoint files.
      */
+    // Authorized in UpdateDocumentStatusRequest: every selected document.
     public function updateStatus(UpdateDocumentStatusRequest $request)
     {
         return back()->with('success', UpdateDocumentStatus::executeWithMessage($request->documents(), $request->status(), $request->user()));
@@ -78,6 +79,7 @@ class DocumentController extends AdminController
     /**
      * Publish files chosen in SharePoint's own picker, importing any discovery has not reached yet.
      */
+    #[Authorize('create', Document::class)]
     public function pick(PickSharepointDocumentsRequest $request)
     {
         $documents = ResolvePickedDocuments::execute($request->pickedItems(), $request->user());
@@ -97,19 +99,17 @@ class DocumentController extends AdminController
     /**
      * Read new and changed files from SharePoint now instead of waiting for the 15-minute run.
      */
+    #[Authorize('create', Document::class)]
     public function discover()
     {
-        $this->authorize('create', Document::class);
-
         DiscoverSharepointDocumentsJob::dispatch();
 
         return back()->with('success', __('messages.document.discovery_queued'));
     }
 
+    #[Authorize('update', 'document')]
     public function refresh(Document $document)
     {
-        $this->handleAuthorization('update', $document);
-
         // Dispatch sync job to background instead of synchronous processing
         // Forced: a person asking for a refresh means "check the link too", not "unless the eTag matches".
         SyncDocumentFromSharePointJob::dispatch($document, force: true);
@@ -117,10 +117,9 @@ class DocumentController extends AdminController
         return back()->with('success', __('messages.document.refresh_queued'));
     }
 
+    #[Authorize('update', 'document')]
     public function edit(Document $document): Response
     {
-        $this->handleAuthorization('update', $document);
-
         if ($document->sharepoint_web_url && $document->removed_from_sharepoint_at === null) {
             return Inertia::location($document->sharepoint_web_url);
         }
@@ -131,10 +130,9 @@ class DocumentController extends AdminController
     /**
      * Display the specified resource.
      */
+    #[Authorize('view', 'document')]
     public function show(Document $document)
     {
-        $this->handleAuthorization('view', $document);
-
         if ($document->anonymous_url) {
             return Inertia::location($document->anonymous_url);
         }

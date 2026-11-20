@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Document;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -11,11 +10,6 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 class PickSharepointDocumentsRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return $this->user()?->can('create', Document::class) ?? false;
-    }
-
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

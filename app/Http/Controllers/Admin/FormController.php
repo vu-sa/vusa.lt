@@ -25,6 +25,7 @@ use App\Settings\FormSettings;
 use App\Support\LocalizedRouteSlugs;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -70,10 +71,9 @@ class FormController extends AdminController
     /**
      * Display a listing of the resource.
      */
+    #[Authorize('viewAny', Form::class)]
     public function index(IndexFormRequest $request): Response
     {
-        $this->handleAuthorization('viewAny', Form::class);
-
         $user = $request->user();
 
         $query = BuildFormIndexQuery::execute($request, $user, $this->formAccess, $this->tableService);
@@ -124,10 +124,9 @@ class FormController extends AdminController
     /**
      * Show the form for creating a new resource.
      */
+    #[Authorize('create', Form::class)]
     public function create()
     {
-        $this->handleAuthorization('create', Form::class);
-
         return Inertia::render('Admin/Forms/CreateForm', [
             'assignableTenants' => GetTenantsForUpserts::execute('forms.create.padalinys', $this->authorizer),
             ...$this->fieldModelChoices(),
@@ -153,6 +152,7 @@ class FormController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
+    #[Authorize('create', Form::class)]
     public function store(StoreFormRequest $request, PostCreateRedirect $redirect)
     {
         $form = new Form;
@@ -175,10 +175,9 @@ class FormController extends AdminController
     /**
      * Display the specified resource.
      */
+    #[Authorize('view', 'form')]
     public function show(Request $request, Form $form)
     {
-        $this->handleAuthorization('view', $form);
-
         $form->load(['formFields' => fn ($query) => $query->orderBy('order')]);
 
         $registrations = $this->registrationVisibility
@@ -237,10 +236,9 @@ class FormController extends AdminController
     /**
      * Show the form for editing the specified resource.
      */
+    #[Authorize('update', 'form')]
     public function edit(Form $form)
     {
-        $this->handleAuthorization('update', $form);
-
         return Inertia::render('Admin/Forms/EditForm', [
             'form' => [
                 ...$form->toFullArray(),
@@ -259,6 +257,7 @@ class FormController extends AdminController
     /**
      * Update the specified resource in storage.
      */
+    #[Authorize('update', 'form')]
     public function update(UpdateFormRequest $request, Form $form)
     {
         $form->update($request->safe()->only('name', 'description', 'path', 'publish_time'));
@@ -295,29 +294,29 @@ class FormController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
+    #[Authorize('delete', 'form')]
     public function destroy(Form $form)
     {
-        $this->handleAuthorization('delete', $form);
-
         $form->delete();
 
         return redirect()->route('forms.index')->with('success', $this->entityMessage('deleted', 'form'));
     }
 
+    #[Authorize('update', 'form')]
     public function export(Request $request, Form $form)
     {
-        $this->handleAuthorization('update', $form);
-
         $fileName = substr(Str::slug($form->getTranslation('name', app()->getLocale())), 0, 20).'-'.now()->format('Y-m-d-H-i-s');
 
         return new FormRegistrationsExport($form, $request->user())->download($fileName.'.xlsx');
     }
 
+    #[Authorize('restore', 'form')]
     public function restore(Form $form): RedirectResponse
     {
         return $this->restoreModel($form);
     }
 
+    #[Authorize('forceDelete', 'form')]
     public function forceDelete(Form $form): RedirectResponse
     {
         return $this->forceDeleteModel($form);

@@ -10,11 +10,6 @@ class DestroyDutiableRequest extends FormRequest
 {
     use NormalizesBooleanFlags;
 
-    public function authorize(): bool
-    {
-        return $this->user()?->can('manageDutiable', $this->route('dutiable')) ?? false;
-    }
-
     #[\Override]
     protected function prepareForValidation(): void
     {

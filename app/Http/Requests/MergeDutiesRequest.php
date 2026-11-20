@@ -2,18 +2,12 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Duty;
 use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class MergeDutiesRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return $this->user()->can('merge', Duty::class);
-    }
-
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

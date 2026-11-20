@@ -8,6 +8,7 @@ use App\Http\Traits\HasTanstackTables;
 use App\Models\EventType;
 use App\Services\TanstackTableService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 class EventTypeApiController extends ApiController
 {
@@ -15,10 +16,9 @@ class EventTypeApiController extends ApiController
 
     public function __construct(private TanstackTableService $tableService) {}
 
+    #[Authorize('viewAny', EventType::class)]
     public function index(IndexEventTypeRequest $request): JsonResponse
     {
-        $this->authorizeApi('viewAny', EventType::class);
-
         $query = EventType::query();
 
         if ($request->getShowDeleted()) {

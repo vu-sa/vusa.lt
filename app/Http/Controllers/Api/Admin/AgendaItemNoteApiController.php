@@ -7,6 +7,7 @@ use App\Http\Requests\Api\Admin\UpdateAgendaItemNoteRequest;
 use App\Models\AgendaItemNote;
 use App\Models\Pivots\AgendaItem;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -21,12 +22,12 @@ class AgendaItemNoteApiController extends ApiController
     /**
      * Return the persisted Y.js snapshot + HTML for an agenda item's notes.
      */
+    #[Authorize('view', 'agendaItem')]
     public function show(AgendaItem $agendaItem): JsonResponse
     {
         // Read is allowed for the broad `view` audience (coordinators / related
         // viewers) so they can see the persisted snapshot read-only. Editing
         // (update) and realtime presence remain gated on `update`.
-        $this->authorize('view', $agendaItem);
 
         // Reading never creates the row: an empty row made the agenda list mark the
         // item as annotated. update() creates it on the first actual save instead.
@@ -60,6 +61,7 @@ class AgendaItemNoteApiController extends ApiController
      * Each client sends its whole document, so a save based on an older version than the stored
      * one gets a 409 with the stored state; the client merges it (a CRDT merge loses nothing) and saves again.
      */
+    #[Authorize('update', 'agendaItem')]
     public function update(UpdateAgendaItemNoteRequest $request, AgendaItem $agendaItem): JsonResponse
     {
         $validated = $request->validated();

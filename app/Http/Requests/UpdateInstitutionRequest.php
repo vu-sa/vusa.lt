@@ -48,14 +48,6 @@ class UpdateInstitutionRequest extends InstitutionRequest
     }
 
     /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return $this->user()->can('update', $this->institution);
-    }
-
-    /**
      * Get the validation rules that apply to the request.
      */
     #[\Override]

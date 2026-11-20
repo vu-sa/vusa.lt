@@ -18,10 +18,14 @@
  * @see AGENTS.md — "Every mutating route authorizes"
  */
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Routing\Route as RoutingRoute;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
+use Symfony\Component\Finder\Finder;
 
 pest()->use(RefreshDatabase::class);
 
@@ -67,8 +71,6 @@ const SELF_SCOPED_ROUTE_NAMES = [
  */
 const AUTHORIZATION_TOKENS = [
     '$this->authorize(',
-    '$this->handleAuthorization(',
-    '$this->authorizeApi(',
     'abort_if(',
     'abort_unless(',
     'Gate::',
@@ -97,9 +99,9 @@ function mutatingAdminRoutes(): array
 }
 
 /**
- * Whether the controller method authorizes directly, delegates to a helper on the controller
- * that authorizes (e.g. HandlesSoftDeletes::restoreModel), or type-hints a Form Request whose
- * authorize() is more than a bare `return true`.
+ * Whether the controller method carries `#[Authorize]`, authorizes in its body, delegates to a
+ * helper on the controller that authorizes, or type-hints a Form Request whose authorize() is
+ * more than a bare `return true`.
  */
 function routeActionAuthorizes(string $action): bool
 {
@@ -114,6 +116,11 @@ function routeActionAuthorizes(string $action): bool
     }
 
     $reflection = new ReflectionMethod($class, $method);
+
+    if (hasAuthorizeAttribute($reflection)) {
+        return true;
+    }
+
     $body = methodBody($reflection);
 
     if (bodyAuthorizes($body)) {
@@ -146,6 +153,12 @@ function routeActionAuthorizes(string $action): bool
     }
 
     return false;
+}
+
+function hasAuthorizeAttribute(ReflectionMethod $reflection): bool
+{
+    return $reflection->getAttributes(Authorize::class) !== []
+        || $reflection->getDeclaringClass()->getAttributes(Authorize::class) !== [];
 }
 
 function methodBody(ReflectionMethod $reflection): string
@@ -196,5 +209,105 @@ test('every mutating admin route authorizes', function (): void {
         ->values()
         ->all();
 
-    expect($unprotected)->toBeEmpty();
+    expect($unprotected)->toBeEmpty(implode("\n", $unprotected));
+});
+
+/**
+ * @return array<int, class-string>
+ */
+function appClassesIn(string $directory): array
+{
+    $namespace = 'App\\'.str_replace('/', '\\', $directory).'\\';
+
+    return collect(Finder::create()->files()->in(app_path($directory))->name('*.php'))
+        ->map(fn (SplFileInfo $file): string => $namespace.str_replace(['/', '.php'], ['\\', ''], $file->getRelativePathname()))
+        ->filter(fn (string $class): bool => class_exists($class))
+        ->values()
+        ->all();
+}
+
+/**
+ * A method body's statements, comments and outer braces stripped.
+ *
+ * @return array<int, string>
+ */
+function methodStatements(ReflectionMethod $reflection): array
+{
+    $body = (string) preg_replace(['/\/\*.*?\*\//s', '/\/\/[^\n]*/'], '', methodBody($reflection));
+    $body = Str::of($body)->after('{')->beforeLast('}')->squish()->toString();
+
+    return array_values(array_filter(array_map('trim', explode(';', $body))));
+}
+
+/**
+ * A leading `$this->authorize()` on a class or a route-bound model belongs in `#[Authorize]`,
+ * which runs before validation and sits where a reader looks first.
+ */
+test('plain controller checks are #[Authorize] attributes', function (): void {
+    $plain = [];
+
+    foreach (appClassesIn('Http/Controllers') as $class) {
+        // Helpers count too: a private `destroy(Goal|Problem $parent)` that checks its argument
+        // hides the check from every public method that calls it.
+        foreach ((new ReflectionClass($class))->getMethods() as $method) {
+            if ($method->getDeclaringClass()->getName() !== $class || $method->isStatic()) {
+                continue;
+            }
+
+            $boundModels = collect($method->getParameters())
+                ->filter(fn (ReflectionParameter $parameter): bool => collect(match (true) {
+                    $parameter->getType() instanceof ReflectionNamedType => [$parameter->getType()],
+                    $parameter->getType() instanceof ReflectionUnionType => $parameter->getType()->getTypes(),
+                    default => [],
+                })->contains(fn ($type): bool => $type instanceof ReflectionNamedType && is_subclass_of($type->getName(), Model::class)))
+                ->map(fn (ReflectionParameter $parameter): string => $parameter->getName())
+                ->all();
+
+            foreach (methodStatements($method) as $statement) {
+                if (! preg_match('/^\$this->authorize\(\s*[\'"]\w+[\'"]\s*,\s*(.+)\)$/', $statement, $match)) {
+                    break;
+                }
+
+                $subjects = preg_split('/\s*,\s*/', trim($match[1], '[] '));
+                $isPlain = collect($subjects)->every(fn (string $subject): bool => str_ends_with($subject, '::class')
+                    || in_array(ltrim($subject, '$'), $boundModels, true));
+
+                if ($isPlain) {
+                    $plain[] = "{$class}@{$method->getName()}: {$statement}";
+                }
+            }
+        }
+    }
+
+    expect($plain)->toBeEmpty(implode("\n", $plain));
+});
+
+/**
+ * A Form Request's authorize() holds only what an attribute cannot express (request input,
+ * several records). A bare `return true` is the framework default, so it is deleted.
+ */
+test('Form Requests hold no plain checks', function (): void {
+    $plain = [];
+    $subject = '([\\\\\w]+::class|\$this->route\([\'"]\w+[\'"]\)|\$this->\w+)';
+
+    foreach (appClassesIn('Http/Requests') as $class) {
+        if (! is_subclass_of($class, FormRequest::class) || ! method_exists($class, 'authorize')) {
+            continue;
+        }
+
+        $method = new ReflectionMethod($class, 'authorize');
+
+        if ($method->getDeclaringClass()->getName() !== $class) {
+            continue;
+        }
+
+        $statements = methodStatements($method);
+
+        if ($statements === ['return true']
+            || (count($statements) === 1 && preg_match('/^return \$this->user\(\)\??->can\([\'"]\w+[\'"], '.$subject.'\)( \?\? false)?$/', $statements[0]))) {
+            $plain[] = "{$class}: {$statements[0]}";
+        }
+    }
+
+    expect($plain)->toBeEmpty(implode("\n", $plain));
 });

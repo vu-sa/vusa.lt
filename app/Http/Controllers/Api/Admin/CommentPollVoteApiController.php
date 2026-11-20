@@ -12,6 +12,7 @@ use App\Support\Commentables;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 /**
  * Cast (or retract) a vote on a poll comment. Anyone who can view the parent may
@@ -22,10 +23,10 @@ use Illuminate\Http\Request;
  */
 class CommentPollVoteApiController extends ApiController
 {
+    #[Authorize('react', 'comment')]
+    #[Authorize('vote', 'comment')]
     public function toggle(StoreCommentPollVoteRequest $request, Comment $comment): JsonResponse
     {
-        $this->authorize('vote', $comment);
-
         // The poll guards and the option allowlist both live on the request now, so they
         // still run in the same order as when this was inline.
         $validated = $request->validated();

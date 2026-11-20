@@ -9,13 +9,14 @@ use App\Http\Controllers\AdminController;
 use App\Http\Requests\LearningStepProgressRequest;
 use App\Models\LearningStep;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Validation\ValidationException;
 
 class LearningStepProgressController extends AdminController
 {
+    #[Authorize('view', 'learningStep')]
     public function store(LearningStepProgressRequest $request, LearningStep $learningStep): RedirectResponse
     {
-        $this->authorize('view', $learningStep);
         $path = ResolveLearningPath::execute($request->user());
         $item = $path->steps->firstWhere('item.id', $learningStep->id);
         $status = $request->validated('status');

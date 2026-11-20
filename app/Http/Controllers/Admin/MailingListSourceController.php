@@ -9,12 +9,14 @@ use App\Listeners\QueueMailingListSync;
 use App\Models\MailingList;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 /**
  * Sources and exclusions have no permissions of their own; they are edits to the list.
  */
 class MailingListSourceController extends AdminController
 {
+    #[Authorize('update', 'mailingList')]
     public function store(StoreMailingListSourceRequest $request, MailingList $mailingList): RedirectResponse
     {
         $type = MailingListSourceType::from($request->validated('type'));
@@ -40,10 +42,9 @@ class MailingListSourceController extends AdminController
         return back()->with('success', __('mailing_lists.messages.source_added'));
     }
 
+    #[Authorize('update', 'mailingList')]
     public function destroy(MailingList $mailingList, string $source): RedirectResponse
     {
-        $this->handleAuthorization('update', $mailingList);
-
         // Resolved through the list so a crafted id cannot reach another list's source.
         try {
             $mailingList->withSyncLock(function () use ($mailingList, $source): void {

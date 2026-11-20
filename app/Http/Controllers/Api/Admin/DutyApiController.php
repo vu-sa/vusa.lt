@@ -16,6 +16,7 @@ use App\Services\ModelAuthorizer;
 use App\Services\TanstackTableService;
 use App\Support\CollectionFacetCounts;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\DB;
 
 class DutyApiController extends ApiController
@@ -31,10 +32,9 @@ class DutyApiController extends ApiController
         return $this->jsonSuccess(['is_active' => $duty->fresh()->is_active], $this->entityMessage('updated', 'duty'));
     }
 
+    #[Authorize('viewAny', Duty::class)]
     public function index(IndexDutyRequest $request): JsonResponse
     {
-        $this->authorizeApi('viewAny', Duty::class);
-
         $query = fn (IndexDutyRequest $request) => $this->applyTanstackFilters(
             BuildDutyIndexQuery::execute($request, $this->authorizer),
             $request,
@@ -53,10 +53,9 @@ class DutyApiController extends ApiController
         ]);
     }
 
+    #[Authorize('create', Duty::class)]
     public function store(StoreDutyRequest $request, DutyAssignmentService $assignments): JsonResponse
     {
-        $this->authorizeApi('create', Duty::class);
-
         return DB::transaction(function () use ($request, $assignments) {
             $duty = new Duty;
 

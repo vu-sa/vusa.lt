@@ -9,6 +9,7 @@ use App\Models\Banner;
 use App\Services\TanstackTableService;
 use App\Support\CollectionFacetCounts;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 class BannerApiController extends ApiController
 {
@@ -16,10 +17,9 @@ class BannerApiController extends ApiController
 
     public function __construct(private TanstackTableService $tableService) {}
 
+    #[Authorize('viewAny', Banner::class)]
     public function index(IndexBannerRequest $request): JsonResponse
     {
-        $this->authorizeApi('viewAny', Banner::class);
-
         $query = fn (IndexBannerRequest $request) => $this->applyTanstackFilters(
             Banner::query()->with(['tenant:id,shortname', 'media']),
             $request,

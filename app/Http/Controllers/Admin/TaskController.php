@@ -13,6 +13,7 @@ use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -31,6 +32,7 @@ class TaskController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
+    // Authorized in StoreTaskRequest: the task target in the body.
     public function store(StoreTaskRequest $request)
     {
         $validatedData = $request->safe();
@@ -60,19 +62,17 @@ class TaskController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
+    #[Authorize('delete', 'task')]
     public function destroy(Task $task)
     {
-        $this->handleAuthorization('delete', $task);
-
         $task->delete();
 
         return back()->with('success', $this->entityMessage('deleted', 'task'));
     }
 
+    #[Authorize('update', 'task')]
     public function updateCompletionStatus(UpdateTaskCompletionRequest $request, Task $task)
     {
-        $this->handleAuthorization('update', $task);
-
         // Prevent manual completion of auto-completing tasks
         if (! $task->canBeManuallyCompleted()) {
             return back()->with('error', __('messages.task.automatic_not_markable'));
@@ -89,10 +89,9 @@ class TaskController extends AdminController
      * ViSAK → Užduotys: every task in the padaliniai the user may read, on the same page as
      * their own list.
      */
+    #[Authorize('viewAny', Task::class)]
     public function summary(IndexTasksRequest $request): Response
     {
-        $this->handleAuthorization('viewAny', Task::class);
-
         return $this->renderCollection($request, BuildTaskIndexQuery::SCOPE_TENANT);
     }
 

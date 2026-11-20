@@ -13,6 +13,7 @@ use App\Models\News;
 use App\Models\Tag;
 use App\Services\TanstackTableService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -25,10 +26,9 @@ class TagController extends AdminController
     /**
      * Display a listing of the resource.
      */
+    #[Authorize('viewAny', Tag::class)]
     public function index(IndexTagRequest $request): Response
     {
-        $this->handleAuthorization('viewAny', Tag::class);
-
         // Build base query
         $query = Tag::query();
 
@@ -86,20 +86,18 @@ class TagController extends AdminController
     /**
      * Show the form for creating a new resource.
      */
+    #[Authorize('create', Tag::class)]
     public function create(): Response
     {
-        $this->handleAuthorization('create', Tag::class);
-
         return Inertia::render('Admin/Content/CreateTag');
     }
 
     /**
      * Store a newly created resource in storage.
      */
+    #[Authorize('create', Tag::class)]
     public function store(StoreTagRequest $request): RedirectResponse
     {
-        $this->handleAuthorization('create', Tag::class);
-
         $tag = Tag::create($request->validated());
 
         return ($request->header('X-Tag-Sheet') === 'true'
@@ -109,24 +107,11 @@ class TagController extends AdminController
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(Tag $tag): Response
-    {
-        $this->handleAuthorization('view', $tag);
-
-        return Inertia::render('Admin/Content/ShowTag', [
-            'tag' => $tag->toFullArray(),
-        ]);
-    }
-
-    /**
      * Show the form for editing the specified resource.
      */
+    #[Authorize('update', 'tag')]
     public function edit(Tag $tag): Response
     {
-        $this->handleAuthorization('update', $tag);
-
         // Get news that use this tag
         $news = $tag->news()
             ->select('news.id', 'title', 'permalink', 'publish_time', 'lang', 'tenant_id')
@@ -154,10 +139,9 @@ class TagController extends AdminController
     /**
      * Update the specified resource in storage.
      */
+    #[Authorize('update', 'tag')]
     public function update(UpdateTagRequest $request, Tag $tag): RedirectResponse
     {
-        $this->handleAuthorization('update', $tag);
-
         $tag->update($request->validated());
 
         return back()->with('success', __('Tag updated successfully'));
@@ -166,6 +150,7 @@ class TagController extends AdminController
     /**
      * Merge multiple tags into a target tag.
      */
+    // Authorized in MergeTagsRequest: the target and source tags in the body.
     public function processMergeTags(MergeTagsRequest $request)
     {
         $targetTagId = $request->validated('target_tag_id');
@@ -205,21 +190,22 @@ class TagController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
+    #[Authorize('delete', 'tag')]
     public function destroy(Tag $tag)
     {
-        $this->handleAuthorization('delete', $tag);
-
         $tag->delete();
 
         return to_route('tags.index')
             ->with('success', __('Tag deleted successfully'));
     }
 
+    #[Authorize('restore', 'tag')]
     public function restore(Tag $tag): RedirectResponse
     {
         return $this->restoreModel($tag);
     }
 
+    #[Authorize('forceDelete', 'tag')]
     public function forceDelete(Tag $tag): RedirectResponse
     {
         return $this->forceDeleteModel($tag);
