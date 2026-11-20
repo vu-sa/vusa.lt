@@ -290,6 +290,16 @@ test('cross-tenant admin cannot edit or remove a dutiable based on former tenant
     expect($dutiable->fresh()->additional_email)->toBeNull();
 });
 
+test('cross-tenant admin can open the duty record', function (): void {
+    asUser($this->crossAdmin)->get(route('duties.show', $this->duty))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->component('Admin/People/ShowDuty'));
+});
+
+test('unrelated user cannot open the duty record', function (): void {
+    asUser($this->outsideUser)->get(route('duties.show', $this->duty))->assertForbidden();
+});
+
 test('cross-tenant admin can open the duty edit page (read-only mode)', function (): void {
     $response = asUser($this->crossAdmin)->get(route('duties.edit', $this->duty));
 

@@ -1013,9 +1013,8 @@ describe('ShowDuty payload contract', function (): void {
         app()->setLocale($locale);
         $expected = $duty->fresh()->load([
             'institution.tenant', 'users' => fn ($query) => $query->withPivot('created_at', 'updated_at'),
-            'types', 'formerNames',
+            'types', 'formerNames', 'tenants',
         ]);
-        $this->dutyManager->can('view', $expected);
         $expected->setRelation('users', app(ContactPresentationService::class)->sortHolders($expected, $expected->users));
         $record = $expected->toArray();
         $record['sharepointPath'] = SharepointFileService::pathOrNull($expected);

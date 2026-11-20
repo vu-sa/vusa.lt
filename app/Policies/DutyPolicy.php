@@ -4,20 +4,21 @@ namespace App\Policies;
 
 use App\Models\Duty;
 use App\Models\User;
+use App\Services\DutyAccessService;
 use App\Services\ModelAuthorizer;
 use Illuminate\Database\Eloquent\Model;
 
 class DutyPolicy extends ModelPolicy
 {
     /**
-     * Duty holders retain read access to duties they once held.
+     * Allow scoped readers and current or former duty holders to open the record.
      *
      * @param  Duty  $duty
      */
     #[\Override]
     public function view(User $user, Model $duty): bool
     {
-        return $duty->users()->whereKey($user->getKey())->exists() || parent::view($user, $duty);
+        return app(DutyAccessService::class)->allowsRead($user, $duty);
     }
 
     /** Merging rewrites assignment history and permanently deletes duties, so only super admins may. */

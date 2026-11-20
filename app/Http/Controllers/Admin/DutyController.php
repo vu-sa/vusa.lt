@@ -26,6 +26,7 @@ use App\Models\Pivots\Dutiable;
 use App\Models\StudyProgram;
 use App\Models\User;
 use App\Services\ContactPresentationService;
+use App\Services\DutyAccessService;
 use App\Services\DutyAssignmentService;
 use App\Services\DutyPanelPresenter;
 use App\Services\DutyPresenter;
@@ -51,10 +52,10 @@ class DutyController extends AdminController
      * Display a listing of the resource.
      */
     #[Authorize('viewAny', Duty::class)]
-    public function index(IndexDutyRequest $request)
+    public function index(IndexDutyRequest $request, DutyAccessService $access)
     {
         $query = $this->applyTanstackFilters(
-            BuildDutyIndexQuery::execute($request, $this->authorizer),
+            BuildDutyIndexQuery::execute($request, $access),
             $request,
             $this->tableService,
             ['name', 'email'],
