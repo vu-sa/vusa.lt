@@ -121,22 +121,6 @@ class InstitutionAccessService
     }
 
     /**
-     * Get institution IDs from all user duties (including historical).
-     * Used for the institutions collection where all user duties grant access.
-     *
-     * @return Collection<int, string> Collection of institution IDs (ULIDs)
-     */
-    public function getAllDutyInstitutionIds(User $user): Collection
-    {
-        return $user->duties()
-            ->whereNotNull('institution_id')
-            ->pluck('institution_id')
-            ->filter()
-            ->unique()
-            ->values();
-    }
-
-    /**
      * Get institution IDs accessible via authorized relationships.
      *
      * For each of the user's duty institutions, finds related institutions

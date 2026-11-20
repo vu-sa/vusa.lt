@@ -270,7 +270,11 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
         return $this->forceDeleteBlockedReason();
     }
 
-    /** @return MorphToMany<User, $this, Dutiable, 'pivot'> */
+    /**
+     * Every term ever held, including ended terms. Use {@see current_users()} for current holders.
+     *
+     * @return MorphToMany<User, $this, Dutiable, 'pivot'>
+     */
     public function users(): MorphToMany
     {
         return $this->morphedByMany(User::class, 'dutiable')

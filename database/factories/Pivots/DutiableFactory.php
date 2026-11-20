@@ -42,7 +42,7 @@ class DutiableFactory extends Factory
             'dutiable_type' => MorphMap::alias(User::class),
             'dutiable_id' => User::factory(),
             'start_date' => $this->faker->dateTimeBetween('-2 years', '-1 year'),
-            'end_date' => $this->faker->optional(0.3)->dateTimeBetween('-1 year', 'now'),
+            'end_date' => $this->faker->optional(0.3)->dateTimeBetween('-1 year', '-1 day'),
             'additional_email' => $this->faker->optional(0.2)->safeEmail(),
             'additional_photo' => $this->faker->optional(0.1)->imageUrl(200, 200, 'people'),
             'additional_photo_focal_point' => $this->faker->optional(0.1)->randomElement(['50% 30%', '40% 25%', '60% 35%']),
@@ -141,7 +141,7 @@ class DutiableFactory extends Factory
 
             return [
                 'start_date' => $startDate,
-                'end_date' => $this->faker->dateTimeBetween($startDate, 'now'),
+                'end_date' => $this->faker->dateTimeBetween($startDate, '-1 day'),
             ];
         });
     }

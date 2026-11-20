@@ -89,22 +89,18 @@ class TaskPolicy extends ModelPolicy
             return false;
         }
 
-        $permission = $resourceName.'.read.padalinys';
+        $scope = $this->authorizer->scope($user, $resourceName.'.read.padalinys');
 
-        // Check if user has the padalinys permission for the taskable
-        if (! $this->authorizer->allows($user, $permission)) {
+        if (! $scope->granted) {
             return false;
         }
 
-        // Get user's permissible tenants for this permission
-        $permissibleTenants = $user->tenants()
-            ->whereIn('duties.id', $this->authorizer->duties($user, $permission)->pluck('id'))
-            ->get();
+        if ($scope->isAllScope) {
+            return true;
+        }
 
-        // Get taskable's tenants
         $taskableTenants = $taskable->load('tenants')->getRelation('tenants');
 
-        // Convert to collection for consistent handling
         $taskableCollection = new Collection;
         if ($taskableTenants instanceof Model) {
             $taskableCollection->push($taskableTenants);
@@ -112,7 +108,6 @@ class TaskPolicy extends ModelPolicy
             $taskableCollection = $taskableTenants;
         }
 
-        // Check if any tenant matches
-        return $taskableCollection->intersect($permissibleTenants)->isNotEmpty();
+        return $taskableCollection->pluck('id')->intersect($scope->tenantIds())->isNotEmpty();
     }
 }

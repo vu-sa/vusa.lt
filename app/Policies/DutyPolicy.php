@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 class DutyPolicy extends ModelPolicy
 {
     /**
-     * Baseline: anyone who holds or once held the duty may read it; beyond that, `duties.read.*`.
+     * Duty holders retain read access to duties they once held.
      *
      * @param  Duty  $duty
      */
@@ -27,12 +27,8 @@ class DutyPolicy extends ModelPolicy
     }
 
     /**
-     * Whether the user can manage (add/edit/remove) people on this duty.
-     *
-     * Owning-tenant admins pass via the normal update check. Non-owning tenant
-     * admins pass if their tenant appears in $duty->assignableTenants.
-     * When $targetUser is provided, the cross-tenant path additionally requires
-     * that user to belong to the admin's assignable tenant.
+     * Cross-tenant admins can manage seats for their assignable tenant only.
+     * When a target user is provided, they must have a non-ended term in that tenant.
      */
     public function managePeople(User $user, Duty $duty, ?User $targetUser = null): bool
     {
@@ -59,9 +55,8 @@ class DutyPolicy extends ModelPolicy
             return false;
         }
 
-        // If a target user is given, they must belong to one of the shared tenants.
         if ($targetUser !== null) {
-            $targetTenantIds = $targetUser->tenants()->pluck('tenants.id');
+            $targetTenantIds = $targetUser->current_or_upcoming_tenants()->pluck('tenants.id');
 
             return $targetTenantIds->intersect($sharedTenantIds)->isNotEmpty();
         }

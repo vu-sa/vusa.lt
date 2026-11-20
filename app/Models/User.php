@@ -14,6 +14,7 @@ use App\Models\Traits\HasUIPreferences;
 use App\Models\Traits\LogsModelActivity;
 use App\Models\Traits\LogsRelationshipChanges;
 use App\Services\ContactSearchIndexSynchronizer;
+use App\Services\ModelAuthorizer;
 use App\Services\NotificationRouter;
 use App\Services\Typesense\SearchText;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -70,6 +71,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read InstitutionSecretary|InstitutionFollow|Dutiable|null $pivot
  * @property-read Collection<int, Duty> $current_or_upcoming_duties
+ * @property-read Collection<int, Tenant> $current_or_upcoming_tenants
  * @property-read Collection<int, Duty> $current_duties
  * @property-read Collection<int, Dutiable> $dutiables
  * @property-read Collection<int, Duty> $duties
@@ -390,12 +392,25 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
     }
 
     /**
-     * The tenants this user belongs to, derived from *all* their duties — including
-     * ones that have ended. Most tenant-scoped authorization resolves through here.
+     * Tenants from all terms, including ended ones. Use {@see ModelAuthorizer::scope()}
+     * for permissions and {@see current_or_upcoming_tenants()} for unit membership.
+     *
+     * @return HasManyDeep<Tenant, $this>
      */
     public function tenants(): HasManyDeep
     {
-        return $this->hasManyDeepFromRelations($this->duties(), (new Duty)->institution(), (new Institution)->tenant());
+        /** @var HasManyDeep<Tenant, $this> $tenants */
+        $tenants = $this->hasManyDeepFromRelations($this->duties(), (new Duty)->institution(), (new Institution)->tenant());
+
+        return $tenants;
+    }
+
+    /** @return HasManyDeep<Tenant, $this> */
+    public function current_or_upcoming_tenants(): HasManyDeep
+    {
+        return $this->tenants()
+            ->where(fn ($query) => $query->whereNull('dutiables.end_date')
+                ->orWhereDate('dutiables.end_date', '>=', today()));
     }
 
     /** @return BelongsToMany<Task, $this> */

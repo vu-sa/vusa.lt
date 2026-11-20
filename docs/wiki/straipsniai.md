@@ -120,7 +120,9 @@ susieti su jos tipu).
 
 Medžiagą galima susieti ir su **sąvoka**: tada sąvokos puslapyje, po tekstu, ji rodoma bloke
 **Susijusi medžiaga** – viena eilute dokumentų miniatiūrų, kurią galima slinkti į šoną; kraštas,
-už kurio dar yra miniatiūrų, išblukęs. Pirma rodoma tavo padalinio medžiaga, apvesta tamsiu rėmeliu. Pvz., sąvokos *Padalinio nuostatai* puslapyje pirmiausia matysi savo padalinio nuostatus.
+už kurio dar yra miniatiūrų, išblukęs. Pirma rodoma ir tamsiu rėmeliu apvedama tų padalinių
+medžiaga, kuriuose turi dabartinių arba būsimų pareigų. Pvz., sąvokos *Padalinio nuostatai*
+puslapyje pirmiausia matysi savo padalinio nuostatus.
 
 „Apie ką“ nenulemia, kam įrašas rodomas Mano kelyje – tam skirtos auditorijos.
 

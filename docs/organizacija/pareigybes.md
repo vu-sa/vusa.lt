@@ -167,8 +167,8 @@ kvota)“, vieta priklauso pačios pareigybės padaliniui.
 
 - Pasirinkus jau užpildytą kvotą, laikotarpis vis tiek išsaugomas, o kvota rodoma viršyta (pvz., 4/3).
   Fakulteto koordinatoriams pilna kvota ir toliau neleidžia pridėti naujo nario.
-- Jei narys nepriklauso pasirinktam padaliniui, išsaugant parodomas įspėjimas: to padalinio
-  administratoriai šios vietos redaguoti negalės.
+- Kito padalinio administratoriai gali valdyti savo kvotai priskirtą vietą, jei narys turi tame
+  padalinyje dabartinių arba būsimų pareigų. Jei tokių pareigų nėra, išsaugant parodomas įspėjimas.
 - Prie deleguoto nario rodoma žyma **Deleguota** su padalinio pavadinimu.
 
 <ChangelogNote date="2026-10-26" title="Kvotos pasirinkimas laikotarpyje">

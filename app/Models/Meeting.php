@@ -426,6 +426,7 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
         return $this->hasMany(Document::class, 'meeting_id');
     }
 
+    /** Every term ever held, including ended terms. Use GetInstitutionMembers::forMeeting() for holders on the meeting date. */
     public function users(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->institutions(), (new Institution)->users());

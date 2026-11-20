@@ -133,6 +133,8 @@ Sąraše (`/mano/pages`) gali ieškoti puslapių pagal pavadinimą:
 - **Greitieji filtrai:** gali vienu paspaudimu atsirinkti paskelbtus puslapius arba juodraščius.
 - **Rūšiavimas:** pagal atnaujinimo datą, sukūrimo laiką ar pavadinimą.
 
+Meniu **Pagrindinis puslapis** pateikia nuorodas į padalinius, kuriuose turi dabartinių arba būsimų pareigų.
+
 ### Naujo puslapio kūrimas
 
 Puslapio viršuje spausk **Naujas puslapis** (arba eik adresu `/mano/pages/create`):

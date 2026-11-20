@@ -134,6 +134,10 @@ Jei gali matyti ir padalinio užduotis, sąraše rodomas mygtukas **Visos užduo
 | Pažymėti automatinę užduotį atlikta | – | – | – |
 | Ištrinti rankinę ar automatinę užduotį | – | – | ✓ |
 
+Posėdžio ar rezervacijos užduotį, kuri tau nepriskirta, gali atverti turėdamas užduočių peržiūros
+teisę ir atitinkamą posėdžių ar rezervacijų peržiūros teisę. Pastaroji turi apimti bent vieną su
+posėdžiu ar rezervacija susijusį padalinį. Visų padalinių teisės apima ir šiuos įrašus.
+
 Atsakingas už užduotį jos ištrinti negali. Ištrinti gali tik turintys užduočių trynimo teisę – ir
 automatinę užduotį, pvz., kai ji nebegali užsibaigti pati, nes ištrintas jos objektas.
 

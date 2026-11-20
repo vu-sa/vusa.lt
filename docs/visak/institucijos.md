@@ -284,6 +284,8 @@ Jei institucija nesirinko ar kurį laiką nesirinks (pvz., per sesiją), apie ta
 laikotarpis ir, jei reikia, pastaba (iki 500 simbolių). Tai galima padaryti per **Veiksmai → Posėdžio
 nebuvo**, pradžios mygtuką **Posėdžio nebuvo** arba institucijos meniu **⋯ → Pridėti pažymą**.
 
+Institucijos narys gali pridėti ir peržiūrėti pranešimus, jei jo pareigų laikotarpis dar nesibaigė. Prieiga suteikiama ir prieš paskirto laikotarpio pradžią.
+
 - Veiksmų lange laikotarpio pradžia parenkama pati ir parodoma su priežastimi: tai vėliausia iš
   **tavo kadencijos pradžios** (ta pati, nuo kurios klausia [veiklos užklausos](#paklausti)),
   **dienos po paskutinio posėdžio** ir **dienos po ankstesnio pranešimo**. Jei nė vienos nėra,
