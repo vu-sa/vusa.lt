@@ -15,10 +15,12 @@ inside each folder (`Actions/Dutiables/`, `Services/Typesense/`, `Support/Permis
 ## Action: `app/Actions/<Domain>/`
 It changes state, or it answers one named question (`Get*`, `Resolve*`, `Find*`, `Build*`).
 - Default shape: `public static function execute(...)`, with every input as an explicit argument.
+  Several named static methods are fine when they answer the same question for different subjects
+  (`ResolveTaskAssignees::forMeeting()` / `forInstitution()`).
 - If it needs an injected collaborator (`MailmanClient`, an upload writer), it is resolved from the
   container and exposes an instance `execute()`. Don't turn it into a Service just because of that.
-- It takes the acting `User` as an argument. It never reads `Auth`, `auth()` or `request()`, and it never type-hints a
-  Request, so a command, job or test can call it.
+- It takes the acting `User` as an argument and never a Request, so a command, job or test can call
+  it. `tests/Feature/System/BackendLayoutConventionTest.php` ratchets the remaining exceptions.
 
 ## Service: `app/Services/<Domain>/`
 It is injected and holds a dependency, a client or a cache: `ModelAuthorizer`, `UmamiClient`,
@@ -41,7 +43,10 @@ takes the user explicitly (`services.md`).
 
 ## Move on touch
 When you edit a top-level `app/Services/*.php` that belongs to a domain (Duties, Institutions,
-Meetings, Files, Sharepoint), move it into that domain's folder in the same change. "Resource" names
-`App\Models\Resource`, API resources and the first permission segment; don't use it for a folder.
+Meetings, Files, Sharepoint), move it into that domain's folder in the same change, and fix any rule glob naming its old path
+(`tests/Feature/System/RuleGlobsTest.php` fails on a glob matching no file).
+
+"Resource" names `App\Models\Resource`, API resources and the first permission segment; don't use
+it for a folder.
 
 Elsewhere: `app/Tasks/README.md` (its own subsystem), `audiences.md` (who receives what).
