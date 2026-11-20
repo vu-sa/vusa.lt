@@ -53,6 +53,8 @@ beforeEach(function (): void {
 
     $this->coordinator = makeUser($this->tenant);
     $duty = $this->coordinator->duties()->firstOrFail();
+    // Tests below travel to fixed dates; a duty starting yesterday would lose its permissions there.
+    $this->coordinator->duties()->updateExistingPivot($duty->id, ['start_date' => '2020-01-01']);
     ResponsibilityGrant::factory()->forDuty($duty)->forInstitution($this->institution)->create();
     ResponsibilityGrant::factory()->forDuty($duty)->forInstitution($this->otherInstitution)->create();
 
