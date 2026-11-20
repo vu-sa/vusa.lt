@@ -96,7 +96,7 @@ import { Label } from '@/Components/ui/label';
 import { useApi } from '@/Composables/useApi';
 import { useDuplicateUserCheck } from '@/Composables/useDuplicateUserCheck';
 
-import { normalizeUserApiHit, type NormalizedSearchHit } from '../../Search/admin/Utils/searchHitMappers';
+import { normalizeUserApiHit, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 
 import InlineSearchField from './InlineSearchField.vue';
 

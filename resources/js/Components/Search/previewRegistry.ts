@@ -16,7 +16,7 @@ import type {
   UserSearchResult,
 } from '@/Search/core/types';
 
-import type { NormalizedSearchHit, SearchCollectionKey } from '../../Search/admin/Utils/searchHitMappers';
+import type { NormalizedSearchHit, SearchCollectionKey } from '@/Search/admin/Utils/searchHitMappers';
 
 interface PreviewEntry {
   component: Component;

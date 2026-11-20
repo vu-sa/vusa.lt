@@ -395,7 +395,7 @@ import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { formatDate, todayIso } from '@/Utils/dateTime';
 import type { AssignmentDuty, AssignmentUser, AssignmentTerm } from '@/Types/DutyAssignment';
 
-import { isCuratorDuty, termStatus } from '../../../Utils/occupancy';
+import { isCuratorDuty, termStatus } from '@/Utils/occupancy';
 import MemberSearchField, { type MemberHit } from './MemberSearchField.vue';
 import DutySearchField, { type DutyHit } from './DutySearchField.vue';
 

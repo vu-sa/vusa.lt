@@ -31,8 +31,8 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 
-import type { AdminCollection } from '../../Search/admin/Types/AdminSearchTypes';
-import type { NormalizedSearchHit } from '../../Search/admin/Utils/searchHitMappers';
+import type { AdminCollection } from '@/Search/admin/Types/AdminSearchTypes';
+import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 
 import SearchSelectDialog from './SearchSelectDialog.vue';
 import MultiCollectionSelectContent from './MultiCollectionSelectContent.vue';

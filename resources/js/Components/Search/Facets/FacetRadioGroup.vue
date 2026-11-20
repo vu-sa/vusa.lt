@@ -56,7 +56,7 @@ import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/Components/ui/radio-group';
 
-import type { AdminFacetValue } from '../../../Search/admin/Types/AdminSearchTypes';
+import type { AdminFacetValue } from '@/Search/admin/Types/AdminSearchTypes';
 
 interface Props {
   values: AdminFacetValue[];

@@ -6,7 +6,7 @@ import type {
   AdminSearchFilters,
   CollectionFacetConfig,
   SortOption,
-} from '../../Search/admin/Types/AdminSearchTypes';
+} from '@/Search/admin/Types/AdminSearchTypes';
 
 /**
  * The reactive surface the record selector needs from a search backend.

@@ -51,7 +51,7 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 
-import { termStatus, termYearSpan, type TermStatus } from '../../../Utils/occupancy';
+import { termStatus, termYearSpan, type TermStatus } from '@/Utils/occupancy';
 
 interface MemberTerm {
   /** Names the line itself, for a list of people rather than institutions. */

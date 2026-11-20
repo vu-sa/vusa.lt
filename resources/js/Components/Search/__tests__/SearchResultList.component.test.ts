@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { h } from 'vue';
 
 import SearchResultList from '../SearchResultList.vue';
-import type { NormalizedSearchHit } from '../../../Search/admin/Utils/searchHitMappers';
+import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 
 const DummyIcon = { render: () => h('span') };
 

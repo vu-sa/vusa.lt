@@ -66,7 +66,7 @@ import { ChevronLeft } from '@lucide/vue';
 import { Button } from '@/Components/ui/button';
 import { useListDetailSelection } from '@/Composables/useListDetailSelection';
 
-import type { NormalizedSearchHit } from '../../Search/admin/Utils/searchHitMappers';
+import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 
 import SearchResultList from './SearchResultList.vue';
 import SearchDetailPane from './SearchDetailPane.vue';

@@ -66,7 +66,7 @@ import { Clock, Sparkles, SearchX, Loader2 } from '@lucide/vue';
 
 import { Button } from '@/Components/ui/button';
 
-import type { NormalizedSearchHit } from '../../Search/admin/Utils/searchHitMappers';
+import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 
 import SearchResultListItem from './SearchResultListItem.vue';
 

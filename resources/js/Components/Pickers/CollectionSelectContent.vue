@@ -13,9 +13,9 @@
 </template>
 
 <script setup lang="ts">
-import { useAdminCollectionSearch } from '../../Search/admin/Composables/useAdminCollectionSearch';
-import { adminCollectionToKey, normalizeHit, type MapperContext, type NormalizedSearchHit } from '../../Search/admin/Utils/searchHitMappers';
-import type { AdminCollection } from '../../Search/admin/Types/AdminSearchTypes';
+import { useAdminCollectionSearch } from '@/Search/admin/Composables/useAdminCollectionSearch';
+import { adminCollectionToKey, normalizeHit, type MapperContext, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import type { AdminCollection } from '@/Search/admin/Types/AdminSearchTypes';
 
 import SearchSelectView from './SearchSelectView.vue';
 

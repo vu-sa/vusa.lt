@@ -99,8 +99,8 @@ import EntityTypeMark from '@/Components/EntityTypeMark.vue';
 import { StatusBadge } from '@/Components/Patterns';
 import { Badge } from '@/Components/ui/badge';
 
-import { useSearchHitMatches } from '../../Search/admin/Composables/useSearchHitMatches';
-import type { NormalizedSearchHit, SearchCollectionKey } from '../../Search/admin/Utils/searchHitMappers';
+import { useSearchHitMatches } from '@/Search/admin/Composables/useSearchHitMatches';
+import type { NormalizedSearchHit, SearchCollectionKey } from '@/Search/admin/Utils/searchHitMappers';
 
 const props = withDefaults(defineProps<{
   hit: NormalizedSearchHit;

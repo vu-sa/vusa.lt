@@ -1,6 +1,6 @@
 import { usePage } from '@inertiajs/vue3';
 
-import type { MeetingSearchFilters, MeetingFacet, ProcessedMeetingSearchResult } from '../../Types/MeetingSearchTypes';
+import type { MeetingSearchFilters, MeetingFacet, ProcessedMeetingSearchResult } from '@/Types/MeetingSearchTypes';
 
 /**
  * Meeting Search Service - handles Typesense API interactions for meeting search

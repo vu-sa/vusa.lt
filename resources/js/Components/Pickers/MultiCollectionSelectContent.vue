@@ -45,8 +45,8 @@ import type { MultiSearchResults } from '@/Search/core/types';
 import { createEmptyMultiSearchResults } from '@/Search/core/utils/createEmptyMultiSearchResults';
 
 import SearchSplitView from '../Search/SearchSplitView.vue';
-import { collectAllTabHits, type NormalizedSearchHit } from '../../Search/admin/Utils/searchHitMappers';
-import type { AdminCollection } from '../../Search/admin/Types/AdminSearchTypes';
+import { collectAllTabHits, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import type { AdminCollection } from '@/Search/admin/Types/AdminSearchTypes';
 
 const props = defineProps<{
   /** Which collections to search and offer — everything else is filtered out of the

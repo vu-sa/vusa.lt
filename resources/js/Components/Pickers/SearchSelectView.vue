@@ -115,9 +115,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import SearchSplitView from '../Search/SearchSplitView.vue';
 import SearchDetailPane from '../Search/SearchDetailPane.vue';
 import SearchFiltersPopover from '../Search/SearchFiltersPopover.vue';
-import { useFilterPills } from '../../Search/admin/Composables/useFilterPills';
-import type { AdminCollectionSearchController } from '../../Search/admin/Composables/useAdminCollectionSearch';
-import type { NormalizedSearchHit } from '../../Search/admin/Utils/searchHitMappers';
+import { useFilterPills } from '@/Search/admin/Composables/useFilterPills';
+import type { AdminCollectionSearchController } from '@/Search/admin/Composables/useAdminCollectionSearch';
+import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 
 import type { SelectSearchController } from './types';
 

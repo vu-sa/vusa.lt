@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { nextTick } from 'vue';
 
 import SearchSplitView from '../SearchSplitView.vue';
-import type { NormalizedSearchHit } from '../../../Search/admin/Utils/searchHitMappers';
+import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 
 const hit = {
   id: 'resources-1',
