@@ -430,6 +430,8 @@ protected function sanitizedHtmlTranslations(): array
 
 That covers every write path (mass assignment, `update()`, `setTranslations()`, factories, seeders). Do **not** add `#[\Override]` — the parent is a trait, not a class. Precedents: `Problem`, `Duty`, `Institution`, `Pivots\Dutiable`.
 
+`tests/Feature/System/RichTextSanitizationConventionTest.php` fails on a rich-named translatable field that is neither sanitized nor listed there as plain text. The blocking `html-source/require-comment` lint (`scripts/eslint-html-source.mjs`) requires a `<!-- v-html: <where it is sanitized> -->` comment right before every `v-html`.
+
 **No raw identifiers in SQL.** Validate request-derived columns against `Schema::hasColumn` and use query-builder methods so the grammar quotes identifiers.
 
 **Account for soft-deleted records when editing backend requests.** When handling a request that references a model (by route-model binding, ID lookup, or relationship), remember that the model may already be soft-deleted. Restore, force-delete, and trash-management flows must use `withTrashed()` on routes, queries, and relationships where the UI needs to access trashed rows; otherwise a legitimate admin action will silently 404 or act on the wrong record. Always keep the same authorization checks for trashed records.

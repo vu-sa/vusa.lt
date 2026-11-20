@@ -61,6 +61,12 @@ class Tag extends Model
 
     public $translatable = ['name', 'description'];
 
+    /** @return list<string> */
+    protected function sanitizedHtmlTranslations(): array
+    {
+        return ['description'];
+    }
+
     #[\Override]
     protected function casts(): array
     {
