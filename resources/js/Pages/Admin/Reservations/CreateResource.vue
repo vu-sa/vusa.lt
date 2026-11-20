@@ -9,12 +9,13 @@
 </template>
 
 <script setup lang="ts">
-import { usePage, type InertiaForm } from '@inertiajs/vue3';
+import type { InertiaForm } from '@inertiajs/vue3';
 
 import ResourceForm from '@/Components/AdminForms/ResourceForm.vue';
+import { pickDefaultTenantId } from '@/Components/AdminForms/TenantSelectField.vue';
 import type { ResourceCreationTemplate } from '@/Components/AdminForms/resourceFormTypes';
 
-defineProps<{
+const props = defineProps<{
   assignableTenants: Array<App.Entities.Tenant>;
   categories: App.Entities.ResourceCategory[];
 }>();
@@ -32,8 +33,7 @@ const resource: ResourceCreationTemplate = {
   location: '',
   capacity: 1,
   resource_category_id: null,
-  // If tenant_id is zero, then the form will be disabled (set in form).
-  tenant_id: usePage().props.auth?.user.tenants[0]?.id ?? 0,
+  tenant_id: pickDefaultTenantId(props.assignableTenants) ?? 0,
   is_reservable: true,
   media: [],
 };

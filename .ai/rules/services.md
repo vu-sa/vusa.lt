@@ -35,7 +35,7 @@ Two rules follow from this:
 - **A permission the actor does not hold resolves to zero tenants.** There is no "fall back to the tenants they hold any duty in" — that fallback was the escalation path in issue #621. Do not reintroduce one; deny instead.
 - **Never cache or pass around a resolved scope as if it were the actor's scope generally.** It answers one permission. Resolve each permission you actually mean; the memo makes that free.
 
-Tenant access is derived from *current* duties only (`loadDuties()`), never from `User::tenants()`, which is a HasManyDeep over every duty the user has ever held.
+Tenant access is derived from not-ended duties only (`loadDuties()`), never from `User::tenants()`, which is a HasManyDeep over every duty the user has ever held. For "the units I am in" outside a permission check, use `User::current_or_upcoming_tenants()`.
 
 ## Institution relationships resolve in one place, from two link tables
 `InstitutionRelationService` is the only code that expands `institution_links` / `institution_type_links` into related institutions; access (HasCommonChecks, InstitutionAccessService, Typesense keys), the Gantt and the graph all read it, so never re-derive pairs elsewhere.
