@@ -430,7 +430,7 @@ protected function sanitizedHtmlTranslations(): array
 
 That covers every write path (mass assignment, `update()`, `setTranslations()`, factories, seeders). Do **not** add `#[\Override]` — the parent is a trait, not a class. Precedents: `Problem`, `Duty`, `Institution`, `Pivots\Dutiable`.
 
-`tests/Feature/System/RichTextSanitizationConventionTest.php` fails on a rich-named translatable field that is neither sanitized nor listed there as plain text. The blocking `html-source/require-comment` lint (`scripts/eslint-html-source.mjs`) requires a `<!-- v-html: <where it is sanitized> -->` comment right before every `v-html`.
+`tests/Feature/System/RichTextSanitizationConventionTest.php` sets a `<script>` on every model column with a markup-like name and fails unless it is stripped or the column is listed there as plain text. The blocking `html-source/require-comment` lint (`scripts/eslint-html-source.mjs`) requires a `<!-- v-html: <where it is sanitized> -->` comment right before every `v-html`.
 
 **No raw identifiers in SQL.** Validate request-derived columns against `Schema::hasColumn` and use query-builder methods so the grammar quotes identifiers.
 

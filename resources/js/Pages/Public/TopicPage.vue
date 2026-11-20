@@ -1,11 +1,12 @@
 <template>
   <div class="topic-page">
-    <PageTitleBand
-      :title="topic.name"
-      :lead="topic.description || undefined"
-    >
+    <PageTitleBand :title="topic.name">
       <template #breadcrumbs>
         <PublicBreadcrumbs variant="inline" />
+      </template>
+      <template v-if="topic.description" #lead>
+        <!-- v-html: sanitized on write (Tag::sanitizedHtmlTranslations) -->
+        <div class="[&_p]:m-0 [&_p+p]:mt-3 [&_a]:text-foreground [&_a]:underline" data-slot="topic-lead" v-html="topic.description" />
       </template>
     </PageTitleBand>
 
