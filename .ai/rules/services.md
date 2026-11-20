@@ -21,6 +21,9 @@ The scanner now works in two stages. Stage 1 is SQL: it ANDs `LIKE ? ESCAPE '|'`
 - No result cache: a cached "safe" outlives a new reference. Do not swallow query exceptions either, since an empty result reads as "safe to delete".
 - Never reintroduce a static cache in owner resolution: RefreshDatabase reuses auto-increment ids in SQLite.
 
+## A model whose visibility is more than tenant plus permission gets one access service
+`MeetingAccessService` and `DutyAccessService` each answer one model's visibility in one class: the policy check, the database list query and, where the generic tenant filter is not enough, the search filter. Do not re-derive such a model's rule in a controller or index query. `tests/Feature/Admin/Search/SearchVisibilityParityTest.php` compares list, search key and policy for both; extend it when the rule changes. Plain tenant-owned models stay on `ModelPolicy` and `TanstackTableService::applyPermissionFiltering`.
+
 ## Meeting scope and visibility rules live in models.md
 `InstitutionScopeResolver`, `MeetingCompletionService` and `VoteStatisticsCalculator` are all
 governed by the governance-scope and public-visibility rules in `.ai/rules/models.md` — read those

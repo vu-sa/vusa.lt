@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Pareigybės
-last_reviewed: 2026-11-09
+last_reviewed: 2026-11-21
 tests:
   - tests/Browser/CollectionTrashRefreshTest.php
   - resources/js/Components/AdminForms/__tests__/DutyForm.component.test.ts
@@ -10,6 +10,8 @@ tests:
   - tests/Feature/Permissions/DutyTypeAssignmentTest.php
   - resources/js/Pages/Admin/People/__tests__/IndexDuty.component.test.ts
   - tests/Feature/Admin/DutyMergeTest.php
+  - tests/Feature/CrossTenantDutyTest.php
+  - tests/Feature/Admin/Search/SearchVisibilityParityTest.php
   - tests/Feature/Api/Admin/DutyApiControllerTest.php
   - tests/Browser/PostCreateNavigationTest.php
   - tests/Browser/DutySeatReferenceTest.php
@@ -155,8 +157,8 @@ padalinių.
 Tokioms pareigybėms naudojamas **padalinių kvotų mechanizmas**:
 - Pareigybę sukūręs padalinys nustato, kurie kiti padaliniai gali skirti savo atstovus ir kokia
   jiems skirta vieta (kvota).
-- Fakulteto koordinatorius mato šią instituciją ir pareigybę savo sąraše kaip išorinę ir gali
-  paskirti savo fakulteto studentą, neviršydamas skirtos kvotos.
+- Fakulteto koordinatorius mato šią instituciją ir pareigybę savo sąraše kaip išorinę, gali atidaryti
+  jos puslapį peržiūrai ir paskirti savo fakulteto studentą, neviršydamas skirtos kvotos.
 - Fakulteto administratorius negali keisti pačios pareigybės pavadinimo ar kitų padalinių atstovų,
   tačiau gali valdyti savo deleguotus narius.
 
@@ -462,6 +464,7 @@ ir „Atstovė taryboje“, arba dublikatas dėl rašybos klaidos), Superadminis
 |---|---|---|---|---|---|
 | Matyti savo pareigybę | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Matyti padalinio pareigybes | – | ✓ | ✓ | ✓, visų padalinių | ✓ |
+| Matyti bendras pareigybes, į kurias padalinys skiria narius | – | ✓ | ✓ | ✓ | ✓ |
 | Sukurti ir redaguoti padalinio pareigybę | – | ✓ | ✓ | ✓, visų padalinių | ✓ |
 | Priskirti narius savo padalinyje | – | ✓ | ✓ | ✓, visų padalinių | ✓ |
 | Priskirti narius pagal savo padalinio kvotą bendrose pareigybėse | – | ✓ | ✓ | ✓ | ✓ |
@@ -512,7 +515,8 @@ laikotarpyje gali turėti nurodytą papildomą kontaktinį el. paštą ar asmeni
 
 - Pareigybių administravimą reglamentuoja `DutyPolicy`.
 - `duties.read.*` leidžia matyti visas sistemos pareigybes; `duties.read.padalinys` riboja matomumą
-  iki vartotojo atstovaujamo padalinio institucijų.
+  iki vartotojo atstovaujamo padalinio institucijų ir bendrų pareigybių, kurių `assignableTenants`
+  apima tą padalinį. Sąrašą, paiešką ir įrašo atidarymą lemia ta pati taisyklė (`DutyAccessService`).
 - Kiekvienas naudotojas, kuris bent kartą ėjo pareigybę, turi teisę peržiūrėti tos pareigybės įrašą
   (`DutyPolicy::view`).
 - `DutyPolicy::managePeople` tikrina, ar vartotojas gali priskirti ir šalinti narius: savame
