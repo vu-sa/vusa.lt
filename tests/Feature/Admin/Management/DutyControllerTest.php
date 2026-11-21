@@ -92,6 +92,24 @@ describe('authorized access', function (): void {
             ->and($this->dutyManager->can('delete', $foreign))->toBeFalse();
     })->with(['lazy' => false, 'eager' => true]);
 
+    test('a soft-deleted institution denies duty updates even when its tenant is loaded', function (): void {
+        $institution = Institution::factory()->for($this->tenant)->create();
+        $duty = Duty::factory()->for($institution)->create();
+        expect($this->dutyManager->can('update', $duty))->toBeTrue();
+
+        $institution->delete();
+
+        $unloaded = $duty->fresh();
+        $loaded = $duty->fresh([
+            'institution' => fn ($query) => $query->withTrashed()->with('tenant'),
+        ]);
+
+        expect($loaded->institution->trashed())->toBeTrue()
+            ->and($loaded->institution->tenant->is($this->tenant))->toBeTrue()
+            ->and($this->dutyManager->can('update', $unloaded))->toBeFalse()
+            ->and($this->dutyManager->can('update', $loaded))->toBeFalse();
+    });
+
     test('inline duty creation via API returns the created model', function (): void {
         $response = asUser($this->dutyManager)->postJson(route('api.v1.admin.duties.store'), [
             'name' => ['lt' => 'Vedlio pareigybė', 'en' => 'Wizard duty'],

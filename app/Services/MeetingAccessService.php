@@ -22,6 +22,12 @@ class MeetingAccessService
         $this->baselineAccess = new \WeakMap;
     }
 
+    public function flush(): void
+    {
+        $this->baselineAccess = new \WeakMap;
+        $this->historicalPeriods = [];
+    }
+
     public function hasBaselineAccess(User $user, Meeting $meeting): bool
     {
         $memo = $this->baselineAccess[$meeting] ?? [];
@@ -56,13 +62,15 @@ class MeetingAccessService
     /** @return Collection<int, array{institution_id: string, start: Carbon, end: Carbon|null}> */
     private function historicalPeriods(User $user): Collection
     {
-        if (isset($this->historicalPeriods[$user->id])) {
-            return $this->historicalPeriods[$user->id];
+        $key = $user->id.':'.InstitutionRelationService::version();
+
+        if (isset($this->historicalPeriods[$key])) {
+            return $this->historicalPeriods[$key];
         }
 
         $accessible = $this->institutions->getAccessibleInstitutionIds($user);
 
-        return $this->historicalPeriods[$user->id] = $user->duties()->whereNotNull('duties.institution_id')->whereNotNull('dutiables.start_date')->get()
+        return $this->historicalPeriods[$key] = $user->duties()->whereNotNull('duties.institution_id')->whereNotNull('dutiables.start_date')->get()
             ->reject(fn ($duty): bool => $accessible->contains($duty->institution_id))
             ->map(fn ($duty): array => [
                 'institution_id' => $duty->institution_id,

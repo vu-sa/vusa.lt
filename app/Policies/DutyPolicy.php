@@ -25,10 +25,18 @@ class DutyPolicy extends ModelPolicy
     #[\Override]
     protected function tenantsFor(Model $model, string $tenantRelation): Collection
     {
-        if ($model instanceof Duty && $model->relationLoaded('institution') && $model->institution?->relationLoaded('tenant')) {
-            $tenant = $model->institution->tenant;
+        if ($model instanceof Duty && $model->relationLoaded('institution')) {
+            $institution = $model->institution;
 
-            return new Collection($tenant === null ? [] : [$tenant]);
+            if ($institution === null || $institution->trashed()) {
+                return new Collection;
+            }
+
+            if ($institution->relationLoaded('tenant')) {
+                $tenant = $institution->tenant;
+
+                return new Collection($tenant === null ? [] : [$tenant]);
+            }
         }
 
         return parent::tenantsFor($model, $tenantRelation);
