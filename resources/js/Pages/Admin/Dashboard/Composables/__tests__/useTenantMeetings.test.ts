@@ -235,6 +235,18 @@ describe('useInstitutionMeetings', () => {
     expect(store.meetings.value.map(meeting => meeting.institution_id)).toEqual(['inst-1', 'inst-2']);
   });
 
+  it('loads an unpadded first view of four months back and two ahead in one request', async () => {
+    const store = useInstitutionMeetings(() => ['inst-1']);
+
+    store.ensureRange(new Date(2026, 6, 21), new Date(2027, 0, 21), { pad: false });
+    await vi.advanceTimersByTimeAsync(200);
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    const url = new URL(fetchedUrls[0]!, 'http://localhost');
+    expect(url.searchParams.get('from')).toBe('2026-07-01');
+    expect(url.searchParams.get('to')).toBe('2027-01-31');
+  });
+
   it('does not fetch without institutions', async () => {
     const store = useInstitutionMeetings(() => []);
 

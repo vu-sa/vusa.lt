@@ -19,7 +19,7 @@ const MIN_BUFFER_DAYS = 30;
 const FETCH_DEBOUNCE_MS = 150;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 /** One request covers at most this many months, well under the server's 24-month cap. */
-const CHUNK_MONTHS = 6;
+const DEFAULT_CHUNK_MONTHS = 6;
 
 interface Window {
   from: number;
@@ -36,12 +36,12 @@ function monthEnd(ts: number): number {
   return new Date(d.getFullYear(), d.getMonth() + 1, 1).getTime() - 1;
 }
 
-function chunk(segment: Window): Window[] {
+function chunk(segment: Window, months: number): Window[] {
   const chunks: Window[] = [];
   let { from } = segment;
   while (from <= segment.until) {
     const d = new Date(from);
-    const until = Math.min(segment.until, new Date(d.getFullYear(), d.getMonth() + CHUNK_MONTHS, 1).getTime() - 1);
+    const until = Math.min(segment.until, new Date(d.getFullYear(), d.getMonth() + months, 1).getTime() - 1);
     chunks.push({ from, until });
     from = until + 1;
   }
@@ -52,6 +52,7 @@ interface WindowedMeetingsSource {
   /** Endpoint plus query for one window, or null when there is nothing to fetch. */
   request: (from: string, until: string, refresh: boolean) => { url: string; params: URLSearchParams } | null;
   keyOf: (meeting: AtstovavimasTenantMeeting) => string;
+  chunkMonths?: number;
 }
 
 export function useTenantMeetings(tenantIds: () => Array<string | number>) {
@@ -87,6 +88,8 @@ export function useInstitutionMeetings(institutionIds: () => Array<string | numb
       return { url: route('api.v1.admin.atstovavimas.meetings'), params };
     },
     keyOf: meeting => `${meeting.institution_id}:${meeting.id}`,
+    // A handful of institutions: a year is still a small response, and the first view is one request.
+    chunkMonths: 12,
   });
 }
 
@@ -201,7 +204,7 @@ function useWindowedMeetings(source: WindowedMeetingsSource) {
 
     const center = (range.from + range.until) / 2;
     const chunks = missingSegments(range.from, range.until)
-      .flatMap(chunk)
+      .flatMap(segment => chunk(segment, source.chunkMonths ?? DEFAULT_CHUNK_MONTHS))
       .sort((a, b) => Math.abs((a.from + a.until) / 2 - center) - Math.abs((b.from + b.until) / 2 - center));
     if (chunks.length === 0) return;
 
@@ -243,9 +246,12 @@ function useWindowedMeetings(source: WindowedMeetingsSource) {
     void flushPendingRange();
   }, FETCH_DEBOUNCE_MS);
 
-  /** Ensure meetings are loaded for [from, until] plus padding. Debounced; only missing months are fetched. */
-  function ensureRange(from: Date, until: Date): void {
-    const bufferMs = Math.max(MIN_BUFFER_DAYS * MS_PER_DAY, (until.getTime() - from.getTime()) / 4);
+  /**
+   * Ensure meetings are loaded for [from, until] plus padding. Debounced; only missing months are fetched.
+   * `pad: false` keeps a first load of up to six months to one request.
+   */
+  function ensureRange(from: Date, until: Date, { pad = true }: { pad?: boolean } = {}): void {
+    const bufferMs = pad ? Math.max(MIN_BUFFER_DAYS * MS_PER_DAY, (until.getTime() - from.getTime()) / 4) : 0;
     const window = {
       from: monthStart(from.getTime() - bufferMs),
       until: monthEnd(until.getTime() + bufferMs),

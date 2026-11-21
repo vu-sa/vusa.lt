@@ -68,7 +68,7 @@
           :meetings-loading="meetingsLoadingVisible"
           @create-meeting="actions.onGapCreateMeeting"
           @create-check-in="actions.onGapCreateCheckIn"
-          @range-changed="institutionMeetings.ensureRange"
+          @range-changed="(min: Date, max: Date) => institutionMeetings.ensureRange(min, max)"
         />
       </div>
     </section>
@@ -288,28 +288,28 @@ useIntersectionObserver(timelineAnchor, ([entry]) => {
   }
 }, { rootMargin: '200px' });
 
-const ganttActive = computed(() => isAtLeastMd.value && timelineVisible.value);
-
 function loadInitialMeetingWindow(): void {
   institutionMeetings.ensureRange(
     new Date(`${props.initialMeetingsWindow.from}T00:00:00`),
     new Date(`${props.initialMeetingsWindow.to}T00:00:00`),
+    { pad: false },
   );
 }
 
-watch(ganttActive, (active) => {
-  if (active) loadInitialMeetingWindow();
+// Fetched on load rather than on scroll: the request is small, and the Gantt is ready when reached.
+watch(isAtLeastMd, (wide) => {
+  if (wide) loadInitialMeetingWindow();
 }, { immediate: true });
 
 watch(meetingInstitutionIds, (ids, previous) => {
   if (ids.join(',') === previous.join(',')) return;
   institutionMeetings.reset();
-  if (ganttActive.value) loadInitialMeetingWindow();
+  if (isAtLeastMd.value) loadInitialMeetingWindow();
 });
 
 // A meeting created or edited from the ActionWindow must show without a page reload.
 watch(actionWindow.isOpen, (open, wasOpen) => {
-  if (wasOpen && !open && ganttActive.value) void institutionMeetings.refresh();
+  if (wasOpen && !open && isAtLeastMd.value) void institutionMeetings.refresh();
 });
 
 const meetingsLoadingRange = computed(() => {
