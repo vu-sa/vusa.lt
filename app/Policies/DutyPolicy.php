@@ -32,7 +32,8 @@ class DutyPolicy extends ModelPolicy
                 return new Collection;
             }
 
-            if ($institution->relationLoaded('tenant')) {
+            // A projection without tenant_id leaves the tenant relation empty rather than absent.
+            if ($institution->relationLoaded('tenant') && array_key_exists('tenant_id', $institution->getAttributes())) {
                 $tenant = $institution->tenant;
 
                 return new Collection($tenant === null ? [] : [$tenant]);
