@@ -64,12 +64,13 @@
           :may-have-related-institutions="props.mayHaveRelatedInstitutions"
           :activity-requests="props.activityRequests ?? []"
           :institution-has-activity
-          :loading-range="meetingsLoadingRange"
+          :loading-segments="institutionMeetings.loadingSegments.value"
           :meetings-loading="meetingsLoadingVisible"
           :agenda-loader="institutionMeetings.loadAgenda"
           @create-meeting="actions.onGapCreateMeeting"
           @create-check-in="actions.onGapCreateCheckIn"
           @range-changed="(min: Date, max: Date) => institutionMeetings.ensureRange(min, max)"
+          @rows-changed="institutionMeetings.setRows"
         />
       </div>
     </section>
@@ -310,12 +311,7 @@ watch(meetingInstitutionIds, (ids, previous) => {
 
 // A meeting created or edited from the ActionWindow must show without a page reload.
 watch(actionWindow.isOpen, (open, wasOpen) => {
-  if (wasOpen && !open && isAtLeastMd.value) void institutionMeetings.refresh();
-});
-
-const meetingsLoadingRange = computed(() => {
-  const pending = institutionMeetings.pendingWindow.value;
-  return pending ? { from: new Date(pending.from), until: new Date(pending.until) } : null;
+  if (wasOpen && !open && isAtLeastMd.value) institutionMeetings.refresh();
 });
 
 // Only shown after 300ms so a fast response never flashes it.

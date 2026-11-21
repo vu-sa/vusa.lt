@@ -78,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-import type { GanttAgendaLoader } from './types';
+import type { GanttAgendaLoader, GanttLoadingSegment } from './types';
 import { computed, onMounted, onUnmounted, ref, watch, nextTick } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
@@ -164,7 +164,8 @@ const props = withDefaults(defineProps<{
   /** Markers come without their agenda; the tooltip fetches it on first hover. */
   agendaLoader?: GanttAgendaLoader;
   /** Date range being fetched, drawn as a pulsing band */
-  loadingRange?: { from: Date; until: Date } | null;
+  /** Requests in flight, each shaded on its own rows and dates. */
+  loadingSegments?: GanttLoadingSegment[];
   meetingsLoading?: boolean;
   /** In focus mode the toolbar's full-screen button reads as "exit" */
   fullscreenActive?: boolean;
@@ -191,6 +192,8 @@ const emit = defineEmits<{
   (e: 'show-legend-modal'): void;
   /** The dates on screen changed — consumers lazy-load meetings for them */
   (e: 'range-changed', min: Date, max: Date): void;
+  /** Institution ids in display order (each once) and the first and last of them on screen. */
+  (e: 'rows-changed', institutionIds: string[], firstVisible: number, lastVisible: number): void;
 }>();
 
 const DAYS_AROUND_TODAY = 60;
@@ -526,22 +529,27 @@ function render(): void {
   };
   renderVacationBackgrounds(vacationContext);
 
-  if (props.loadingRange) {
-    const x0 = Math.max(0, x(props.loadingRange.from), visibleLeft);
-    const x1 = Math.min(innerWidth, x(props.loadingRange.until), visibleRight);
-    if (x1 > x0) {
-      g.append('g')
-        .attr('class', 'gantt-loading-rows')
-        .selectAll('rect')
-        .data(visibleInstitutionRows)
-        .enter()
-        .append('rect')
-        .attr('class', 'gantt-loading-range')
-        .attr('x', x0)
-        .attr('y', d => rowTop(d.key) + 5)
-        .attr('width', x1 - x0)
-        .attr('height', GANTT_ROW_HEIGHT - 10);
-    }
+  const loadingCells = (props.loadingSegments ?? []).flatMap((segment) => {
+    const x0 = Math.max(0, x(segment.from), visibleLeft);
+    const x1 = Math.min(innerWidth, x(segment.until), visibleRight);
+    if (x1 <= x0) return [];
+    const ids = segment.institutionIds ? new Set(segment.institutionIds) : null;
+    return visibleInstitutionRows
+      .filter(row => !ids || ids.has(String(row.institutionId)))
+      .map(row => ({ key: row.key, x0, x1 }));
+  });
+  if (loadingCells.length > 0) {
+    g.append('g')
+      .attr('class', 'gantt-loading-rows')
+      .selectAll('rect')
+      .data(loadingCells)
+      .enter()
+      .append('rect')
+      .attr('class', 'gantt-loading-range')
+      .attr('x', d => d.x0)
+      .attr('y', d => rowTop(d.key) + 5)
+      .attr('width', d => d.x1 - d.x0)
+      .attr('height', GANTT_ROW_HEIGHT - 10);
   }
 
   if (props.showDutyMembers) {
@@ -638,15 +646,27 @@ function render(): void {
   });
 
   emit('range-changed', x.invert(Math.max(0, visibleLeft)), x.invert(visibleRight));
+  emitRows(visibleRows);
 
   afterRenderQueue.splice(0).forEach(callback => callback());
+}
+
+function emitRows(visibleRows: Array<{ type: string; institutionId?: string | number }>): void {
+  const order = new Map<string, number>();
+  for (const row of layoutRows.value) {
+    if (row.type === 'institution' && !order.has(String(row.institutionId))) order.set(String(row.institutionId), order.size);
+  }
+  const onScreen = visibleRows
+    .filter(row => row.type === 'institution')
+    .map(row => order.get(String(row.institutionId))!);
+  emit('rows-changed', [...order.keys()], onScreen.length ? Math.min(...onScreen) : 0, onScreen.length ? Math.max(...onScreen) : -1);
 }
 
 watch(
   [
     parsedMeetings, parsedGaps, parsedDutyMembers, parsedInactivePeriods, institutions, layoutRows, vacationPeriods,
     openRequests, extraBefore, extraAfter, dayWidthPx,
-    () => props.showDutyMembers, () => props.showActivityStatus, () => props.loadingRange, () => props.institutionPeriodicity,
+    () => props.showDutyMembers, () => props.showActivityStatus, () => props.loadingSegments, () => props.institutionPeriodicity,
   ],
   scheduleRender,
 );

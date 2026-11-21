@@ -67,6 +67,8 @@ export interface AtstovavimasInstitution {
   duties?: AtstovavimasDuty[];
   /** Overview rows carry assignment periods instead of the duty graph. */
   membership_periods?: AtstovavimasMembershipPeriod[];
+  /** Padaliniai rows with full access: activity rings for the members above, by user id. */
+  member_activity_categories?: Record<string, RepresentativeActivityCategory>;
   // Related institution metadata (only present for related institutions)
   is_related?: boolean;
   relationship_direction?: 'outgoing' | 'incoming' | 'mutual';

@@ -75,7 +75,7 @@
           :institution-periodicity="tenantInstitutionPeriodicity"
           :duty-members="ganttData.tenantDutyMembers.value"
           :inactive-periods="ganttData.tenantInactivePeriods.value"
-          :loading-range="meetingsLoadingRange"
+          :loading-segments="tenantMeetings.loadingSegments.value"
           :agenda-loader="tenantMeetings.loadAgenda"
           :meetings-loading="meetingsLoadingVisible"
           :representative-activity
@@ -84,6 +84,7 @@
           @create-meeting="onCreateMeeting"
           @create-check-in="actions.onGapCreateCheckIn"
           @range-changed="onTenantRangeChanged"
+          @rows-changed="onRowsChanged"
         />
       </div>
     </section>
@@ -145,6 +146,7 @@ import { useAtstovavimasActions } from './Composables/useAtstovavimasActions';
 import { useGanttChartData } from './Composables/useGanttChartData';
 import { provideTimelineFilters } from './Composables/useTimelineFilters';
 import { useTenantMeetings } from './Composables/useTenantMeetings';
+import { useRowMembers } from './Composables/useRowMembers';
 import { useTenantStatusHistory } from './Composables/useTenantStatusHistory';
 import { useTenantTimelineData } from './Composables/useTenantTimelineData';
 import type { AtstovavimasInstitution, AtstovavimasTenant, GanttActivityRequest, InstitutionStatusSummaryData } from './types';
@@ -180,9 +182,16 @@ const actions = useAtstovavimasActions([]);
 const tenantTimelineData = useTenantTimelineData();
 const ganttRows = useTenantTimelineData<AtstovavimasInstitution[]>('api.v1.admin.visak.gantt');
 const ganttActivityRequests = useTenantTimelineData<GanttActivityRequest[]>('api.v1.admin.visak.activityRequests');
-const tenantMeetings = useTenantMeetings(() => timelineFilters.selectedTenantForGantt.value);
+// Hundreds of rows: requests follow the rows on screen, so none go out before the chart reports them.
+const tenantMeetings = useTenantMeetings(() => timelineFilters.selectedTenantForGantt.value, { waitForRows: true });
 const tenantInstitutionsData = computed(() => tenantTimelineData.data.value?.institutions ?? []);
-const ganttInstitutionsData = computed(() => ganttRows.data.value ?? []);
+const rowMembers = useRowMembers(() => timelineFilters.selectedTenantForGantt.value);
+const ganttInstitutionsData = computed(() => rowMembers.merge(ganttRows.data.value ?? []));
+
+function onRowsChanged(institutionIds: string[], firstVisible: number, lastVisible: number): void {
+  tenantMeetings.setRows(institutionIds, firstVisible, lastVisible);
+  rowMembers.setRows(institutionIds, firstVisible, lastVisible);
+}
 const representativeActivity = computed(() => tenantTimelineData.data.value?.representative_activity);
 const ganttData = useGanttChartData(ganttInstitutionsData, props.ganttTenants, tenantMeetings.meetings);
 
@@ -281,11 +290,6 @@ useIntersectionObserver(timelineAnchor, ([entry]) => {
   }
 }, { rootMargin: '200px' });
 
-const meetingsLoadingRange = computed(() => {
-  const pending = tenantMeetings.pendingWindow.value;
-  return pending ? { from: new Date(pending.from), until: new Date(pending.until) } : null;
-});
-
 // Only shown after 300ms so a fast cache hit never flashes it.
 const meetingsLoadingVisible = ref(false);
 let meetingsLoadingTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -332,17 +336,14 @@ onMounted(() => {
   tenantTimelineData.load(timelineFilters.selectedStatsTenants.value);
 });
 
+// Meetings follow the rows: the chart reports which rows are on screen, and those load first.
 watch(ganttActive, (active) => {
   if (!active) return;
   const tenants = timelineFilters.selectedTenantForGantt.value;
   if (tenants.length === 0) return;
   ganttRows.load(tenants);
   ganttActivityRequests.load(tenants);
-}, { immediate: true });
-
-// Meetings are the slow part of the Gantt and do not need its rows, so they start with the page.
-watch(isAtLeastMd, (wide) => {
-  if (wide && timelineFilters.selectedTenantForGantt.value.length > 0) loadInitialMeetingWindow();
+  loadInitialMeetingWindow();
 }, { immediate: true });
 
 watch(() => timelineFilters.selectedStatsTenants.value, (tenantIds) => {
@@ -353,11 +354,14 @@ watch(() => timelineFilters.selectedTenantForGantt.value, (newTenants, oldTenant
   if (newTenants.length === 0) return;
   const changed = newTenants.join(',') !== (oldTenants ?? []).join(',');
   // Loaded windows belong to the old selection even while the Gantt is hidden.
-  if (changed) tenantMeetings.reset();
-  if (changed && isAtLeastMd.value) loadInitialMeetingWindow();
+  if (changed) {
+    tenantMeetings.reset();
+    rowMembers.reset();
+  }
   if (!ganttActive.value) return;
   ganttRows.load(newTenants);
   ganttActivityRequests.load(newTenants);
+  if (changed) loadInitialMeetingWindow();
 }, { deep: true });
 
 // --- Gantt lookup maps ------------------------------------------------------------------------
@@ -404,6 +408,9 @@ function refreshDashboard(): void {
     ganttActivityRequests.load(timelineFilters.selectedTenantForGantt.value, true);
   }
   void statusHistory.load(timelineFilters.selectedStatsTenants.value, historyDays.value, true);
-  if (isAtLeastMd.value) void tenantMeetings.refresh();
+  if (ganttActive.value) {
+    tenantMeetings.refresh();
+    rowMembers.refresh();
+  }
 }
 </script>

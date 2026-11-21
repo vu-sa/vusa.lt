@@ -9,3 +9,10 @@ export type GanttAgendaLoader = (meeting: { id: string | number; institution_id:
   type?: AgendaItemType;
   votes?: Vote[];
 }> | null>;
+
+/** A meetings request in flight: its dates and the rows it covers (null: every row). */
+export interface GanttLoadingSegment {
+  from: Date;
+  until: Date;
+  institutionIds: string[] | null;
+}

@@ -59,11 +59,12 @@
           :duty-members :inactive-periods :show-duty-members="filters.showDutyMembersTenant.value"
           :show-activity-status="filters.showActivityStatusTenant.value"
           :activity-requests :show-activity-requests="filters.showActivityRequestsTenant.value"
-          :loading-range :agenda-loader :meetings-loading="meetingsLoading || filters.tenantInstitutionsLoading.value"
+          :loading-segments :agenda-loader :meetings-loading="meetingsLoading || filters.tenantInstitutionsLoading.value"
           :empty-message="$t('Šiame padalinyje nėra institucijų')" @create-meeting="$emit('create-meeting', $event)"
           @create-check-in="$emit('create-check-in', $event)"
           @fullscreen="toggle"
-          @range-changed="(min: Date, max: Date) => $emit('range-changed', min, max)" />
+          @range-changed="(min: Date, max: Date) => $emit('range-changed', min, max)"
+          @rows-changed="(ids: string[], first: number, last: number) => $emit('rows-changed', ids, first, last)" />
       </div>
     </OverviewSection>
   </FocusModeFrame>
@@ -77,7 +78,7 @@ import { CalendarRange } from '@lucide/vue';
 import FocusModeFrame from '@/Components/Patterns/FocusModeFrame.vue';
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 
-import type { GanttAgendaLoader } from '@/Components/Graphs/types';
+import type { GanttAgendaLoader, GanttLoadingSegment } from '@/Components/Graphs/types';
 import type {
   GanttMeeting,
   AtstovavimasGap,
@@ -108,7 +109,7 @@ defineProps<{
   dutyMembers?: GanttDutyMember[];
   inactivePeriods?: InactivePeriod[];
   institutionPeriodicity?: Record<string | number, number>;
-  loadingRange?: { from: Date; until: Date } | null;
+  loadingSegments?: GanttLoadingSegment[];
   agendaLoader?: GanttAgendaLoader;
   /** Whether meetings are being fetched (delayed ~300ms by the caller) */
   meetingsLoading?: boolean;
@@ -122,6 +123,7 @@ defineEmits<{
   'create-meeting': [payload: { institution_id: string | number; suggestedAt: Date; institutionName?: string }];
   'create-check-in': [payload: { institution_id: string | number; startDate: Date; endDate: Date }];
   'range-changed': [min: Date, max: Date];
+  'rows-changed': [institutionIds: string[], firstVisible: number, lastVisible: number];
 }>();
 
 // The Gantt is heavy; give the rest of the page its first frame.

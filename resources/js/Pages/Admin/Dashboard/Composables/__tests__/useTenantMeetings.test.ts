@@ -111,7 +111,7 @@ describe('useTenantMeetings', () => {
     expect(store.meetings.value[0]!.start_time).toBeInstanceOf(Date);
   });
 
-  it('re-fetches all loaded windows with refresh=1 on refresh()', async () => {
+  it('re-fetches every loaded month with refresh=1 on refresh(), in request-sized chunks', async () => {
     const store = useTenantMeetings(() => ['1']);
 
     store.ensureRange(new Date(2026, 5, 15), new Date(2026, 6, 15));
@@ -122,12 +122,13 @@ describe('useTenantMeetings', () => {
     await vi.advanceTimersByTimeAsync(200);
     expect(fetch).toHaveBeenCalledTimes(2);
 
-    await store.refresh();
+    store.refresh();
+    await vi.advanceTimersByTimeAsync(0);
 
-    expect(fetch).toHaveBeenCalledTimes(3);
-    expect(fetchedUrls[2]).toContain('refresh=1');
-    expect(fetchedUrls[2]).toContain('from=2026-05-01');
-    expect(fetchedUrls[2]).toContain('until=2026-11-30');
+    const refreshed = fetchedUrls.slice(2).map(url => new URL(url, 'http://localhost').searchParams);
+    expect(refreshed.every(params => params.get('refresh') === '1')).toBe(true);
+    expect(refreshed.map(params => params.get('from')).sort()[0]).toBe('2026-05-01');
+    expect(refreshed.map(params => params.get('until')).sort().at(-1)).toBe('2026-11-30');
   });
 
   it('leaves a window unloaded and reports lastError when the request fails', async () => {
@@ -317,10 +318,6 @@ describe('useInstitutionMeetings', () => {
 });
 
 describe('tooltip agendas', () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
   it('fetches a meeting agenda once, with the window access, and retries after a failure', async () => {
     const urls: string[] = [];
     let fail = true;
@@ -344,5 +341,77 @@ describe('tooltip agendas', () => {
     expect(urls[1]).toContain('api.v1.admin.atstovavimas.meetings.agenda');
     expect(params.get('institution_id')).toBe('inst-1');
     expect(params.getAll('tenant_ids[]')).toEqual(['1', '2']);
+  });
+});
+
+describe('rows on screen first', () => {
+  const rows = Array.from({ length: 60 }, (_, i) => `inst-${String(i).padStart(2, '0')}`);
+  const resolvers: Array<() => void> = [];
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    fetchedUrls.splice(0);
+    resolvers.splice(0);
+    vi.stubGlobal('fetch', vi.fn((url: string) => {
+      fetchedUrls.push(String(url));
+      return new Promise<Response>((resolve) => {
+        resolvers.push(() => resolve({ ok: true, json: async () => ({ success: true, data: [] }) } as Response));
+      });
+    }));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  const idsOf = (url: string) => new URL(url, 'http://localhost').searchParams.getAll('institution_ids[]');
+
+  it('sends nothing for the tenant chart until it reports its rows', async () => {
+    const store = useTenantMeetings(() => ['1'], { waitForRows: true });
+
+    store.ensureRange(new Date(2026, 5, 15), new Date(2026, 6, 15));
+    await vi.advanceTimersByTimeAsync(200);
+    expect(fetch).not.toHaveBeenCalled();
+
+    store.setRows(rows, 0, 10);
+    await vi.advanceTimersByTimeAsync(200);
+    expect(fetch).toHaveBeenCalled();
+  });
+
+  it('asks for the batch on screen first, then the batches next to it', async () => {
+    const store = useTenantMeetings(() => ['1'], { waitForRows: true });
+    store.ensureRange(new Date(2026, 5, 15), new Date(2026, 6, 15), { pad: false });
+    // Rows 25–35 on screen: the second batch of twenty.
+    store.setRows(rows, 25, 35);
+    await vi.advanceTimersByTimeAsync(200);
+
+    expect(idsOf(fetchedUrls[0]!)).toEqual(rows.slice(20, 40));
+    expect(store.loadingSegments.value[0]!.institutionIds).toEqual(rows.slice(20, 40));
+
+    while (resolvers.length > 0) {
+      resolvers.shift()!();
+      await vi.advanceTimersByTimeAsync(0);
+    }
+    const batches = fetchedUrls.map(url => idsOf(url)[0]);
+    expect(new Set(batches)).toEqual(new Set(['inst-20', 'inst-00', 'inst-40']));
+    expect(store.isFetching.value).toBe(false);
+  });
+
+  it('does not ask again for rows already loaded when the view scrolls back', async () => {
+    const store = useTenantMeetings(() => ['1'], { waitForRows: true });
+    store.ensureRange(new Date(2026, 5, 15), new Date(2026, 6, 15), { pad: false });
+    store.setRows(rows, 0, 10);
+    await vi.advanceTimersByTimeAsync(200);
+    while (resolvers.length > 0) {
+      resolvers.shift()!();
+      await vi.advanceTimersByTimeAsync(0);
+    }
+    const requests = fetchedUrls.length;
+
+    store.setRows(rows, 45, 55);
+    store.setRows(rows, 0, 10);
+    await vi.advanceTimersByTimeAsync(200);
+
+    expect(fetchedUrls).toHaveLength(requests);
   });
 });

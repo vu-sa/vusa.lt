@@ -34,7 +34,7 @@
         :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsUser.value"
         :hide-internal-institutions="filters.hideInternalInstitutionsUser.value"
         :institution-names="allInstitutionNames" :tenant-names :institution-has-public-meetings="allInstitutionHasPublicMeetings"
-        :institution-has-activity :loading-range :meetings-loading :agenda-loader
+        :institution-has-activity :loading-segments :meetings-loading :agenda-loader
         :institution-periodicity="allInstitutionPeriodicity"
         :duty-members="mergedDutyMembers" :inactive-periods="mergedInactivePeriods"
         :show-duty-members="filters.showDutyMembersUser.value"
@@ -42,7 +42,8 @@
         :empty-message="$t('Neturi tiesiogiai priskirtų institucijų')" @create-meeting="$emit('create-meeting', $event)"
         @create-check-in="$emit('create-check-in', $event)"
         @fullscreen="toggle"
-        @range-changed="(min: Date, max: Date) => $emit('range-changed', min, max)" />
+        @range-changed="(min: Date, max: Date) => $emit('range-changed', min, max)"
+        @rows-changed="(ids: string[], first: number, last: number) => $emit('rows-changed', ids, first, last)" />
     </OverviewSection>
   </FocusModeFrame>
 </template>
@@ -55,7 +56,7 @@ import { CalendarRange } from '@lucide/vue';
 import FocusModeFrame from '@/Components/Patterns/FocusModeFrame.vue';
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 
-import type { GanttAgendaLoader } from '@/Components/Graphs/types';
+import type { GanttAgendaLoader, GanttLoadingSegment } from '@/Components/Graphs/types';
 import type {
   AtstovavimasInstitution,
   GanttMeeting,
@@ -90,7 +91,7 @@ interface Props {
   activityRequests?: GanttActivityRequest[];
   /** Meetings arrive by window, so activity is read from the institution rows instead. */
   institutionHasActivity?: Record<string, boolean>;
-  loadingRange?: { from: Date; until: Date } | null;
+  loadingSegments?: GanttLoadingSegment[];
   agendaLoader?: GanttAgendaLoader;
   meetingsLoading?: boolean;
 }
@@ -121,6 +122,7 @@ defineEmits<{
   'create-meeting': [payload: { institution_id: string | number; suggestedAt: Date }];
   'create-check-in': [payload: { institution_id: string | number; startDate: Date; endDate: Date }];
   'range-changed': [min: Date, max: Date];
+  'rows-changed': [institutionIds: string[], firstVisible: number, lastVisible: number];
 }>();
 
 // In place rather than a modal, so dialogs opened from the chart stack above it.

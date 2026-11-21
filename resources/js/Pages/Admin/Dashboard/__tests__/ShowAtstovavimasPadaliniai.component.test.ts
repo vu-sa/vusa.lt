@@ -102,7 +102,8 @@ vi.mock('@/Pages/Admin/Dashboard/Composables/useTenantTimelineData', () => ({
 vi.mock('@/Pages/Admin/Dashboard/Composables/useTenantMeetings', () => ({
   useTenantMeetings: () => ({
     meetings: ref([]),
-    pendingWindow: ref(null),
+    loadingSegments: ref([]),
+    setRows: vi.fn(),
     isFetching: ref(false),
     ensureRange: vi.fn(),
     reset: vi.fn(),

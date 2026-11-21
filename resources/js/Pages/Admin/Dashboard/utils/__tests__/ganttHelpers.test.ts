@@ -23,6 +23,12 @@ describe('extractDutyMembers', () => {
     ]);
   });
 
+  it('carries the Padaliniai activity category to each member', () => {
+    const row = { ...overviewRow, member_activity_categories: { u2: 'week' } } as AtstovavimasInstitution;
+
+    expect(extractDutyMembers([row]).map(member => member.user.activityCategory)).toEqual([undefined, 'week']);
+  });
+
   it('finds the gap between membership periods', () => {
     const periods = calculateInactivePeriods([overviewRow], extractDutyMembers([overviewRow]));
 

@@ -21,7 +21,7 @@
         :show-activity-requests
         :height
         :fullscreen-active
-        :loading-range
+        :loading-segments
         :agenda-loader
         :meetings-loading
         @create-meeting="$emit('create-meeting', $event)"
@@ -29,6 +29,7 @@
         @fullscreen="$emit('fullscreen')"
         @show-legend-modal="showLegendModal = true"
         @range-changed="(min: Date, max: Date) => $emit('range-changed', min, max)"
+        @rows-changed="(ids: string[], first: number, last: number) => $emit('rows-changed', ids, first, last)"
       />
     </div>
 
@@ -45,7 +46,7 @@ import { ref } from 'vue';
 import MeetingsGantt from '@/Components/Graphs/MeetingsGantt.vue';
 import GanttLegendModal from '@/Components/Graphs/GanttLegendModal.vue';
 
-import type { GanttAgendaLoader } from '@/Components/Graphs/types';
+import type { GanttAgendaLoader, GanttLoadingSegment } from '@/Components/Graphs/types';
 import type {
   GanttMeeting,
   GanttInstitution,
@@ -77,7 +78,7 @@ defineProps<{
   /** Activity rings on members (padaliniai view only) */
   showActivityStatus?: boolean;
   institutionPeriodicity?: Record<string | number, number>;
-  loadingRange?: { from: Date; until: Date } | null;
+  loadingSegments?: GanttLoadingSegment[];
   agendaLoader?: GanttAgendaLoader;
   /** Whether meetings are being fetched (delayed ~300ms by the caller) */
   meetingsLoading?: boolean;
@@ -91,6 +92,7 @@ defineEmits<{
   'create-check-in': [payload: { institution_id: string | number; startDate: Date; endDate: Date }];
   'fullscreen': [];
   'range-changed': [min: Date, max: Date];
+  'rows-changed': [institutionIds: string[], firstVisible: number, lastVisible: number];
 }>();
 
 const showLegendModal = ref(false);

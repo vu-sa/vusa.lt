@@ -25,7 +25,12 @@ export function extractDutyMembers(institutions: AtstovavimasInstitution[]): Gan
       members.push({
         institution_id: String(institution.id),
         duty_id: String(period.duty_id),
-        user: { id: String(period.user.id), name: period.user.name, profile_photo_path: period.user.profile_photo_path },
+        user: {
+          id: String(period.user.id),
+          name: period.user.name,
+          profile_photo_path: period.user.profile_photo_path,
+          activityCategory: institution.member_activity_categories?.[String(period.user.id)],
+        },
         start_date: new Date(period.start_date),
         end_date: period.end_date ? new Date(period.end_date) : null,
       });
