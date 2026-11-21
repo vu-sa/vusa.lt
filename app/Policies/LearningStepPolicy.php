@@ -5,18 +5,11 @@ namespace App\Policies;
 use App\Models\LearningStep;
 use App\Models\User;
 use App\Policies\Traits\ManagesLearningAudiences;
-use App\Services\ModelAuthorizer;
 use Illuminate\Database\Eloquent\Model;
 
 class LearningStepPolicy extends ModelPolicy
 {
     use ManagesLearningAudiences;
-
-    public function __construct(ModelAuthorizer $authorizer)
-    {
-        parent::__construct($authorizer);
-        $this->pluralModelName = 'learningSteps';
-    }
 
     public function viewAny(User $user): bool
     {

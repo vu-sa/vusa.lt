@@ -9,6 +9,7 @@ use App\Http\Requests\StoreDutyPredecessorRequest;
 use App\Models\Duty;
 use App\Models\Pivots\DutySuccession;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 /**
  * Keeps a duty's track record across splits and merges, e.g. a combined coordinator split in
@@ -23,15 +24,15 @@ class DutySuccessionController extends AdminController
         return back()->with('success', __('Ankstesnė pareigybė susieta.'));
     }
 
+    #[Authorize('update', 'duty')]
     public function destroy(Duty $duty, string $succession): RedirectResponse
     {
-        $this->handleAuthorization('update', $duty);
-
         static::linkOf($duty, $succession)->delete();
 
         return back()->with('success', __('Ankstesnė pareigybė atsieta.'));
     }
 
+    // Authorized in FoldDutyRenameRequest: the duty and its predecessor.
     public function foldRename(FoldDutyRenameRequest $request, Duty $duty): RedirectResponse
     {
         FoldPredecessorIntoRename::execute($request->link(), $request->user());

@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Actions\SerializeResourceAvailability;
 use App\Actions\SerializeResourceManagers;
 use App\Http\Controllers\Api\ApiController;
 use App\Models\Resource;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 class ResourceApiController extends ApiController
 {
@@ -19,10 +21,9 @@ class ResourceApiController extends ApiController
      *
      * @routeName api.v1.admin.resources.preview
      */
+    #[Authorize('view', 'resource')]
     public function preview(Resource $resource): JsonResponse
     {
-        $this->authorizeApi('view', $resource);
-
         $activeReservations = $resource->active_reservations()
             ->orderByPivot('start_time')
             ->limit(5)
@@ -35,14 +36,7 @@ class ResourceApiController extends ApiController
             ->limit(3)
             ->get();
 
-        $mapReservation = fn ($reservation) => [
-            'id' => (string) $reservation->id,
-            'name' => $reservation->name,
-            'quantity' => (int) $reservation->pivot->quantity,
-            'state' => (string) $reservation->pivot->state,
-            'start_time' => $reservation->pivot->start_time?->timestamp,
-            'end_time' => $reservation->pivot->end_time?->timestamp,
-        ];
+        $mapReservation = fn ($reservation) => SerializeResourceAvailability::reservationRow($reservation, request()->user());
 
         return $this->jsonSuccess([
             'upcoming_reservations' => $activeReservations->map($mapReservation)->values(),

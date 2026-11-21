@@ -7,9 +7,19 @@
  * Note: These are feature tests because they need the Laravel application context.
  */
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 
 uses()->group('routes');
+
+const UNSCOPED_NESTED_ROUTES = [
+    'agendaItems.goals.destroy' => 'Unlinks a goal step by agenda item ID under the goal’s update policy.',
+    'agendaItems.problems.destroy' => 'Unlinks a many-to-many relation after authorizing the agenda item and checking the link.',
+    'goals.problems.unlink' => 'Detaches a many-to-many link under the goal’s update policy.',
+    'meetings.institutions.detach' => 'The policy evaluates both route models and access to the meeting after removing the link.',
+    'responsibilities.users.destroy' => 'Super admins may remove direct role assignments after the controller verifies the membership.',
+];
 
 /*
 |--------------------------------------------------------------------------
@@ -91,4 +101,51 @@ it('includes admin in admin API route names', function (): void {
         // Admin API routes should include 'admin' in name
         expect($name)->toContain('admin');
     }
+});
+
+it('points every controller route at a method that exists', function (): void {
+    $missing = collect(Route::getRoutes()->getRoutes())
+        ->map(fn ($route) => $route->getActionName())
+        ->filter(fn (string $action) => str_starts_with($action, 'App\\') && str_contains($action, '@'))
+        ->reject(function (string $action): bool {
+            [$class, $method] = explode('@', $action);
+
+            return method_exists($class, $method);
+        })
+        ->values()
+        ->all();
+
+    expect($missing)->toBeEmpty(implode("\n", $missing));
+});
+
+it('scopes nested admin model bindings', function (): void {
+    $unscoped = [];
+
+    foreach (Route::getRoutes()->getRoutes() as $route) {
+        $action = $route->getActionName();
+
+        if (! Str::startsWith($action, ['App\Http\Controllers\Admin\\', 'App\Http\Controllers\Api\Admin\\'])
+            || $route->enforcesScopedBindings()) {
+            continue;
+        }
+
+        $name = $route->getName() ?? $route->uri();
+        $parameters = $route->parameterNames();
+
+        if (array_key_exists($name, UNSCOPED_NESTED_ROUTES) || count($parameters) < 2) {
+            continue;
+        }
+
+        $bindings = array_filter(
+            $route->signatureParameters(Model::class),
+            fn (ReflectionParameter $parameter): bool => in_array($parameter->getName(), $parameters, true)
+                || in_array(Str::snake($parameter->getName()), $parameters, true),
+        );
+
+        if (count($bindings) >= 2) {
+            $unscoped[] = "{$name} -> {$action}";
+        }
+    }
+
+    expect($unscoped)->toBeEmpty(implode("\n", $unscoped));
 });

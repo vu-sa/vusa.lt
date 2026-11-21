@@ -5,7 +5,7 @@ namespace App\Services\Documents;
 use App\Jobs\RefreshDocumentThumbnailJob;
 use App\Jobs\SyncDocumentFromSharePointJob;
 use App\Models\Document;
-use App\Services\SharepointGraphService;
+use App\Services\Sharepoint\SharepointGraphService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;

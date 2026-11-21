@@ -10,11 +10,6 @@ class IndexPublicSearchRequest extends FormRequest
 {
     use DropsInvalidOptionalQuery;
 
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     #[\Override]
     protected function prepareForValidation(): void
     {

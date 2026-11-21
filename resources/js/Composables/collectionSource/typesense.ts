@@ -1,8 +1,8 @@
 import { computed, ref, watch, type MaybeRefOrGetter, type Ref } from 'vue';
 
-import { useAdminCollectionSearch } from '@/Features/Admin/AdminSearch/Composables/useAdminCollectionSearch';
-import { getFacetValueLabel } from '@/Features/Admin/AdminSearch/Config/collectionFacetConfig';
-import type { AdminCollection } from '@/Features/Admin/AdminSearch/Types/AdminSearchTypes';
+import { useAdminCollectionSearch } from '@/Search/admin/Composables/useAdminCollectionSearch';
+import { getFacetValueLabel } from '@/Search/admin/Config/collectionFacetConfig';
+import type { AdminCollection } from '@/Search/admin/Types/AdminSearchTypes';
 
 import type { CollectionFacet, CollectionChip, TypesenseCollectionSource } from './types';
 import { PAGE_SIZE, useOptimisticOverlay } from './shared';

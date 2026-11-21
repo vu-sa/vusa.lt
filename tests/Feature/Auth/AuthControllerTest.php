@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\TenantType;
+use App\Http\Requests\AuthenticateRequest;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
@@ -383,5 +384,73 @@ describe('Microsoft identity linking', function (): void {
         $this->get(route('microsoft.callback'))->assertSessionHas('error', __('auth.account_deleted'));
 
         $this->assertGuest();
+    });
+});
+
+test('a password login starts a new session', function (): void {
+    $user = User::factory()->create(['password' => bcrypt('teisingas')]);
+    $sessionBeforeLogin = session()->getId();
+
+    $this->post('/login', ['email' => $user->email, 'password' => 'teisingas'])
+        ->assertRedirect(route('dashboard'));
+
+    $this->assertAuthenticatedAs($user);
+    expect(session()->getId())->not->toBe($sessionBeforeLogin);
+});
+
+describe('password login throttling', function (): void {
+    beforeEach(function (): void {
+        $this->user = User::factory()->create(['email' => 'vardenis@vusa.lt', 'password' => bcrypt('teisingas')]);
+    });
+
+    $attemptLogin = fn (string $email, string $password, string $ip = '10.0.0.1') => test()
+        ->withServerVariables(['REMOTE_ADDR' => $ip])
+        ->post('/login', ['email' => $email, 'password' => $password]);
+
+    test('an account is locked after five wrong passwords, even for the right one', function () use ($attemptLogin): void {
+        foreach (range(1, AuthenticateRequest::MAX_ATTEMPTS_PER_ACCOUNT) as $attempt) {
+            $attemptLogin('vardenis@vusa.lt', 'neteisingas')->assertSessionHasErrors(['email' => __('auth.failed')]);
+        }
+
+        $attemptLogin('vardenis@vusa.lt', 'teisingas')->assertSessionHasErrors('email');
+
+        expect(session('errors')->first('email'))->not->toBe(__('auth.failed'));
+        $this->assertGuest();
+    });
+
+    test('a successful login resets the account counter', function () use ($attemptLogin): void {
+        foreach (range(1, AuthenticateRequest::MAX_ATTEMPTS_PER_ACCOUNT - 1) as $attempt) {
+            $attemptLogin('vardenis@vusa.lt', 'neteisingas');
+        }
+
+        $attemptLogin('vardenis@vusa.lt', 'teisingas')->assertRedirect(route('dashboard'));
+        auth()->logout();
+
+        foreach (range(1, AuthenticateRequest::MAX_ATTEMPTS_PER_ACCOUNT - 1) as $attempt) {
+            $attemptLogin('vardenis@vusa.lt', 'neteisingas');
+        }
+
+        $attemptLogin('vardenis@vusa.lt', 'teisingas')->assertRedirect(route('dashboard'));
+    });
+
+    test('a locked account does not lock other people on the same network', function () use ($attemptLogin): void {
+        User::factory()->create(['email' => 'kitas@vusa.lt', 'password' => bcrypt('teisingas')]);
+
+        foreach (range(1, AuthenticateRequest::MAX_ATTEMPTS_PER_ACCOUNT) as $attempt) {
+            $attemptLogin('vardenis@vusa.lt', 'neteisingas');
+        }
+
+        $attemptLogin('kitas@vusa.lt', 'teisingas')->assertRedirect(route('dashboard'));
+    });
+
+    test('too many failures from one address lock that address for every account', function () use ($attemptLogin): void {
+        foreach (range(1, AuthenticateRequest::MAX_FAILURES_PER_IP) as $attempt) {
+            $attemptLogin("nera{$attempt}@vusa.lt", 'neteisingas');
+        }
+
+        $attemptLogin('vardenis@vusa.lt', 'teisingas')->assertSessionHasErrors('email');
+        $this->assertGuest();
+
+        $attemptLogin('vardenis@vusa.lt', 'teisingas', '10.0.0.2')->assertRedirect(route('dashboard'));
     });
 });

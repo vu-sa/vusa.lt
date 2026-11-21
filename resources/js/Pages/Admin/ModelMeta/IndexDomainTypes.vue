@@ -75,9 +75,9 @@ import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import type { CollectionColumn } from '@/Components/Collection/types';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { Button } from '@/Components/ui/button';
-import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import { useCollectionRecordActions } from '@/Components/Collection/useCollectionRecordActions';
 import { isTrashView, useLocalCollectionSource } from '@/Composables/useCollectionSource';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';

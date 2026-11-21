@@ -1,6 +1,7 @@
 ---
 paths:
   - 'resources/js/Components/Staging*.vue'
+  - 'resources/js/Components/Shared/StagingWatermark.vue'
   - 'resources/js/Composables/useStaging.ts'
   - 'app/Http/Middleware/Staging*.php'
   - 'app/Services/NotificationRouter.php'

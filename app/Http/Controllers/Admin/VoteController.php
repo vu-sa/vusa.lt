@@ -18,7 +18,7 @@ class VoteController extends AdminController
     {
         $agendaItem = AgendaItem::findOrFail($request->agenda_item_id);
 
-        $this->handleAuthorization('update', $agendaItem);
+        $this->authorize('update', $agendaItem);
 
         // One transaction, so the search index never sees two main votes.
         DB::transaction(function () use ($request, $agendaItem): void {
@@ -50,7 +50,7 @@ class VoteController extends AdminController
     {
         $agendaItem = $vote->agendaItem;
 
-        $this->handleAuthorization('update', $agendaItem);
+        $this->authorize('update', $agendaItem);
 
         DB::transaction(function () use ($request, $vote, $agendaItem): void {
             $vote->fill($request->validated());
@@ -74,7 +74,7 @@ class VoteController extends AdminController
     {
         $agendaItem = $vote->agendaItem;
 
-        $this->handleAuthorization('update', $agendaItem);
+        $this->authorize('update', $agendaItem);
 
         $vote->delete();
 
@@ -88,7 +88,7 @@ class VoteController extends AdminController
     {
         $agendaItem = $vote->agendaItem;
 
-        $this->handleAuthorization('update', $agendaItem);
+        $this->authorize('update', $agendaItem);
 
         DB::transaction(function () use ($vote, $agendaItem): void {
             // Unset main flag from all other votes

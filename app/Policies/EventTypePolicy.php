@@ -2,26 +2,14 @@
 
 namespace App\Policies;
 
-use App\Enums\ModelEnum;
 use App\Models\User;
-use App\Services\ModelAuthorizer;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 /**
  * Policy for EventType model authorization
  */
 class EventTypePolicy extends ModelPolicy
 {
-    /**
-     * Initialize policy with model name
-     */
-    public function __construct(ModelAuthorizer $authorizer)
-    {
-        parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::EVENT_TYPE->label());
-    }
-
     /**
      * Event types are global entities that don't belong to specific tenants.
      * Users with the appropriate global permission can manage all of them.

@@ -33,6 +33,7 @@
     "knip": "knip",
     "lint": "eslint resources/js",
     "lint:file": "eslint",
+    "lint:boundaries": "eslint -c eslint.boundaries.config.mjs --report-unused-disable-directives-severity off resources/js",
     "lint:fix": "eslint resources/js --fix",
     "format": "eslint resources/js --fix",
     "check": "npm run typecheck && npm run lint",

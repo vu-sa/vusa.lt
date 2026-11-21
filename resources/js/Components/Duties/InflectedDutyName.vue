@@ -49,7 +49,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Comp
 import { changeDutyNameEndings, getDutyNameGenderVariants, type DutyNameHolder } from '@/Utils/String';
 import { useDutyGenderFlip } from '@/Composables/useDutyGenderFlip';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
-import { matchTitle, sliceMatch, type SearchMatch as SearchMatchData } from '@/Shared/Search/matches';
+import { matchTitle, sliceMatch, type SearchMatch as SearchMatchData } from '@/Search/core/matches';
 
 /** A position alternates endings; a holder’s assignment keeps their inflected name. */
 const props = withDefaults(defineProps<{

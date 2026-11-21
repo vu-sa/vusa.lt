@@ -15,7 +15,7 @@ A `dark:`-prefixed class inside a shared `ui/` primitive (e.g. the ghost button 
 
 ## Public chrome shares one measure and one hover-bleed idiom
 - One measure: the header, `SecondMenu`, and every `SectionBand` share `max-w-7xl px-5 sm:px-6 lg:px-8`. Don't invent a different max-width for a new public band — it will visibly misalign against everything else on the page.
-- Full-width list rows (event lists, mega-menu columns) that need their hover fill to bleed slightly past the visible content, without touching the section's own outer edge, use `-mx-<n> px-<n>` (equal and opposite) rather than adding plain padding — plain padding would shift the content itself out of alignment with headings above it. Keep `n` smaller than the section's own horizontal padding so the bleed stays inside the band. Precedent: `EventCalendarElement.vue`, `RCEventList/EventListDisplay.vue`.
+- Full-width list rows (event lists, mega-menu columns) that need their hover fill to bleed slightly past the visible content, without touching the section's own outer edge, use `-mx-<n> px-<n>` (equal and opposite) rather than adding plain padding — plain padding would shift the content itself out of alignment with headings above it. Keep `n` smaller than the section's own horizontal padding so the bleed stays inside the band. Precedent: `EventCalendarElement.vue`, `RichContent/RCEventList/EventListDisplay.vue`.
 
 ## Anchor/img sizing traps in the public header chrome
 - A plain `<a>` (e.g. `SmartLink`) wrapping an image/logo is an inline element whose box height follows the surrounding line-height, not its content — it renders visibly taller than what's inside it. Fix by making the anchor itself `inline-flex items-center`, not by resizing the child.

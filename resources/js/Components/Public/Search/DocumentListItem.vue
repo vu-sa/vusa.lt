@@ -176,14 +176,14 @@ import { computed } from 'vue';
 import { Icon } from '@iconify/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { descriptionMatch, documentDateMatch, matchTitle } from '@/Shared/Search/matches';
+import { descriptionMatch, documentDateMatch, matchTitle } from '@/Search/core/matches';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import { useDocumentDisplay, getDocumentTargetUrl, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
 import { useToasts } from '@/Composables/useToasts';
 import { Button } from '@/Components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { TagChip } from '@/Components/Public/Base';
-import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
+import LocaleFlag from '@/Components/Shared/LocaleFlag.vue';
 import { safeHref } from '@/Utils/safeHref';
 
 import IFluentArrowDownload20Regular from '~icons/fluent/arrow-download-20-regular';

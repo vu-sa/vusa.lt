@@ -8,11 +8,6 @@ use Illuminate\Foundation\Http\FormRequest;
 /** Authorization follows path validation and uses the policy ability matching the action. */
 class FilePathRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

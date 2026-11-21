@@ -8,12 +8,14 @@ use App\Enums\MeetingType;
 use App\Http\Controllers\Api\ApiController;
 use App\Models\Institution;
 use App\Models\Meeting;
+use App\Models\User;
 use App\Services\InstitutionActivityStatusService;
+use App\Services\Institutions\InstitutionQueries;
 use App\Services\InstitutionScopeResolver;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\ResourceServices\DutyService;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
@@ -43,18 +45,20 @@ class ActionWindowApiController extends ApiController
      * @routeName api.v1.admin.actionWindow.context
      */
     public function context(
+        Request $request,
         InstitutionActivityStatusService $activityStatus,
         Authorizer $authorizer,
         InstitutionScopeResolver $scopes,
         ResolveCheckInStarts $checkInStarts,
     ): JsonResponse {
-        $institutions = DutyService::getUserInstitutionsForDashboard(meetingsFrom: now()->subMonths(6));
-        $starts = $checkInStarts->execute(request()->user(), $institutions->map($this->institutionForActivityStatus(...)));
+        $actor = $request->user();
+        $institutions = InstitutionQueries::getUserInstitutionsForDashboard($actor, meetingsFrom: now()->subMonths(6));
+        $starts = $checkInStarts->execute($actor, $institutions->map($this->institutionForActivityStatus(...)));
 
         return $this->jsonSuccess([
             'institutions' => $this->institutionPayload($institutions, $activityStatus, $starts),
             'meetingsNeedingAttention' => $this->meetingPayload($institutions),
-            'institutionSearch' => $this->institutionSearchScope($authorizer, $scopes),
+            'institutionSearch' => $this->institutionSearchScope($actor, $authorizer, $scopes),
         ]);
     }
 
@@ -72,10 +76,10 @@ class ActionWindowApiController extends ApiController
      *
      * @return array{enabled: bool, tenant_ids: array<int, int>, internal_type_ids: array<int, int>, external_type_ids: array<int, int>}
      */
-    private function institutionSearchScope(Authorizer $authorizer, InstitutionScopeResolver $scopes): array
+    private function institutionSearchScope(User $actor, Authorizer $authorizer, InstitutionScopeResolver $scopes): array
     {
-        $scope = $authorizer->scope(request()->user(), 'meetings.create.padalinys');
-        $tenants = GetTenantsForUpserts::execute('meetings.create.padalinys', $authorizer);
+        $scope = $authorizer->scope($actor, 'meetings.create.padalinys');
+        $tenants = GetTenantsForUpserts::execute($actor, 'meetings.create.padalinys', $authorizer);
 
         return [
             'enabled' => $scope->isAllScope || $tenants->isNotEmpty(),

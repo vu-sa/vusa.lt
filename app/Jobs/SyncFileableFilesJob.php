@@ -3,7 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\FileableFile;
-use App\Services\SharepointGraphService;
+use App\Services\Sharepoint\SharepointGraphService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;

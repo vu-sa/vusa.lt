@@ -1,6 +1,6 @@
 ---
 paths:
-  - 'app/Services/*Presenter.php'
+  - 'app/Services/**/*Presenter.php'
   - 'app/Http/Resources/**'
 ---
 
@@ -12,7 +12,7 @@ its payload from a named presenter with an exact shape. References: `NewsArticle
 (public) and `MeetingPresenter` / `MeetingPanelPresenter` / `AgendaItemPresenter` (admin).
 
 ## A payload is a static presenter method with an exact `@return` shape
-`app/Services/<Thing>Presenter.php`, static methods, `@return array{key: type, …}` or
+`app/Services/<Domain>/<Thing>Presenter.php`, static methods, `@return array{key: type, …}` or
 `list<array{…}>`. Build the array key by key from typed expressions. Analysis loses
 `...$model->toArray()` spreads, `->only()` and untyped `->map(fn …)` closures. The last one
 was even typed `string[]` for a list of objects, which is worse than `unknown`. Loop, or map

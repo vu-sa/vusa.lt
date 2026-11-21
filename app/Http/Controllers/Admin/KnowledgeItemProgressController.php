@@ -9,14 +9,15 @@ use App\Http\Requests\KnowledgeItemProgressRequest;
 use App\Models\KnowledgeItem;
 use App\Services\KnowledgeBasePresenter;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class KnowledgeItemProgressController extends AdminController
 {
+    #[Authorize('view', 'knowledgeItem')]
     public function store(KnowledgeItemProgressRequest $request, KnowledgeItem $knowledgeItem): RedirectResponse
     {
-        $this->authorize('view', $knowledgeItem);
         $path = ResolveLearningPath::execute($request->user());
         $item = $path->knowledge->firstWhere('item.id', $knowledgeItem->id);
         $status = $request->validated('status');

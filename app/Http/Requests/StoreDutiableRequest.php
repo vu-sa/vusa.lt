@@ -142,7 +142,9 @@ class StoreDutiableRequest extends FormRequest
         $tenantId = $this->isCreatingMember()
             ? $sharedTenantIds->first()
             : $sharedTenantIds
-                ->intersect(User::query()->find($this->input('user_id'))?->tenants()->pluck('tenants.id') ?? collect())
+                ->intersect(
+                    User::query()->find($this->input('user_id'))?->current_or_upcoming_tenants()->pluck('tenants.id') ?? collect()
+                )
                 ->first();
 
         return $tenantId === null ? null : (int) $tenantId;

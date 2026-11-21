@@ -7,12 +7,11 @@ import { ref, computed, nextTick, type ComputedRef } from 'vue';
 import { useLocalStorage } from '@vueuse/core';
 import { usePage } from '@inertiajs/vue3';
 
-import { useBaseSearch, type BaseSearchService } from '@/Shared/Search/composables/useBaseSearch';
-import { FilterUtils } from '@/Shared/Search/services/FilterUtils';
-import type { ProcessedSearchResult } from '@/Shared/Search/types';
-
-import type { InstitutionSearchFilters, InstitutionFacet, InstitutionSearchPreferences, InstitutionSearchController, SearchError } from '../Types/InstitutionSearchTypes';
-import { InstitutionSearchService } from '../Services/InstitutionSearchService';
+import { useBaseSearch, type BaseSearchService } from '@/Search/core/composables/useBaseSearch';
+import { FilterUtils } from '@/Search/core/services/FilterUtils';
+import type { ProcessedSearchResult } from '@/Search/core/types';
+import type { InstitutionSearchFilters, InstitutionFacet, InstitutionSearchPreferences, InstitutionSearchController, SearchError } from '@/Types/InstitutionSearchTypes';
+import { InstitutionSearchService } from '@/Search/public/InstitutionSearchService';
 
 import { createTypesenseClients } from './useSearchClient';
 

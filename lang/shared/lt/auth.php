@@ -14,7 +14,7 @@ return [
     */
 
     'failed' => 'Šie prisijungimo duomenys neatitinka mūsų įrašų.',
-    'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
+    'throttle' => 'Per daug bandymų prisijungti. Bandyk dar kartą po :seconds s.',
     'login' => 'Prisijungti',
     'logout' => 'Atsijungti',
     'logout_microsoft' => 'Atsijungti ir iš „Microsoft“',

@@ -3,21 +3,12 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\ValidatesTenantScope;
-use App\Models\Resource;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreResourceRequest extends FormRequest
 {
     use ValidatesTenantScope;
-
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return $this->user()->can('create', Resource::class);
-    }
 
     /**
      * Get the validation rules that apply to the request.

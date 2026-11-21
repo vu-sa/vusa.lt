@@ -139,7 +139,7 @@ import { ArrowUpRight, Pencil, Plus, RotateCcw, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
-import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import { useCollectionRecordActions } from '@/Components/Collection/useCollectionRecordActions';
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
 import ProblemCollectionRow from '@/Components/Problems/ProblemRow.vue';

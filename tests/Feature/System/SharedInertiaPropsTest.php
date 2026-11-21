@@ -2,6 +2,8 @@
 
 use App\Enums\TenantType;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Models\Duty;
+use App\Models\Institution;
 use App\Models\Tag;
 use App\Models\Tenant;
 use App\Services\Permissions\PermissionMapBuilder;
@@ -66,6 +68,24 @@ test('admin pages share the data the admin shell needs', function (): void {
             ->has('auth.user.tenants', 1)
             ->missing('auth.user.roles')
         );
+});
+
+test('admin pages share the tenants of current and upcoming terms', function (): void {
+    $currentDuty = $this->user->duties()->sole();
+    $current = $currentDuty->institution->tenant;
+    [$upcoming, $former] = Tenant::query()->whereKeyNot($current->id)->limit(2)->get()->all();
+    $upcomingDuty = Duty::factory()->for(Institution::factory()->for($upcoming))->create();
+    $formerDuty = Duty::factory()->for(Institution::factory()->for($former))->create();
+
+    $this->user->duties()->updateExistingPivot($currentDuty->id, ['start_date' => now()->subMonth(), 'end_date' => null]);
+    $this->user->duties()->attach($upcomingDuty, ['start_date' => now()->addMonth(), 'end_date' => null]);
+    $this->user->duties()->attach($formerDuty, ['start_date' => now()->subYears(3), 'end_date' => now()->subYears(2)]);
+
+    $response = asUserWithInertia($this->user)->get(route('dashboard'))->assertOk();
+
+    expect(array_column($response->json('props.auth.user.tenants'), 'id'))
+        ->toContain($current->id, $upcoming->id)
+        ->not->toContain($former->id);
 });
 
 test('admin pages omit public head defaults while public pages retain them', function (): void {

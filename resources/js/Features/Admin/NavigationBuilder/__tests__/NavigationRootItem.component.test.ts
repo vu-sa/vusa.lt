@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { defineComponent, h, nextTick } from 'vue';
+import { defineComponent, h, nextTick, reactive } from 'vue';
 
 import NavigationRootItem from '@/Features/Admin/NavigationBuilder/NavigationRootItem.vue';
 import type { AdminNavigationRoot } from '@/Features/Admin/NavigationBuilder/types';
@@ -65,7 +65,7 @@ const alertDialogStubs = {
 };
 
 function makeRoot(): AdminNavigationRoot {
-  return {
+  return reactive({
     id: 1,
     name: 'Studentams',
     url: '#',
@@ -85,7 +85,7 @@ function makeRoot(): AdminNavigationRoot {
       ],
       [],
     ],
-  };
+  });
 }
 
 describe('NavigationRootItem.vue — cross-column drag', () => {

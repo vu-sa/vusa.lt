@@ -99,11 +99,13 @@
                         @click.stop="claimDescription(index)"
                       >
                         <RichContentTiptapHTML v-if="hasTiptapContent(slide.description)" :json_content="slide.description" />
+                        <!-- v-html: sanitized on write (ContentPart::sanitizeJsonContentHtml) -->
                         <span v-else-if="hasHtmlContent(slide.description)" v-html="slide.description" />
                         <span v-else class="text-muted-foreground/50">{{ $t('rich-content.description') }}</span>
                       </button>
                       <template v-else>
                         <RichContentTiptapHTML v-if="hasTiptapContent(slide.description)" :json_content="slide.description" />
+                        <!-- v-html: sanitized on write (ContentPart::sanitizeJsonContentHtml) -->
                         <span v-else-if="hasHtmlContent(slide.description)" v-html="slide.description" />
                       </template>
                     </div>

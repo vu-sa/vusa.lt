@@ -240,7 +240,7 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
 import type { CollectionSortOption } from '@/Composables/useCollectionSource';
 import { capitalize } from '@/Utils/String';
-import { ACTIONS_COLUMN_ID, SELECT_COLUMN_ID, useCollectionTable } from '@/Composables/useCollectionTable';
+import { ACTIONS_COLUMN_ID, SELECT_COLUMN_ID, useCollectionTable } from '@/Components/Collection/useCollectionTable';
 import type { CollectionViewMode } from '@/Composables/useCollectionView';
 
 import type { CollectionColumn } from './types';

@@ -77,7 +77,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import FormSection from '@/Components/Patterns/FormSection.vue';
 import { NativeSelect } from '@/Components/ui/native-select';
 import { TypeTreeSelect } from '@/Components/AdminForms/TypeTree';

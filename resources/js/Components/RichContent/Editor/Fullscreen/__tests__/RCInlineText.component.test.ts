@@ -77,14 +77,16 @@ describe('RCInlineText', () => {
 
   it('commits focused text when preview mode unmounts the field before its debounce fires', async () => {
     vi.useFakeTimers();
-    const wrapper = mount(RCInlineText, { props: { modelValue: 'Old', editable: true } });
+    // A listener, not emitted(): test-utils clears the emit history on unmount.
+    const onUpdate = vi.fn();
+    const wrapper = mount(RCInlineText, { props: { 'modelValue': 'Old', 'editable': true, 'onUpdate:modelValue': onUpdate } });
 
     await wrapper.trigger('focus');
     wrapper.element.textContent = 'Kept before preview';
     await wrapper.trigger('input');
     wrapper.unmount();
 
-    expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual(['Kept before preview']);
+    expect(onUpdate).toHaveBeenLastCalledWith('Kept before preview');
     vi.useRealTimers();
   });
 });

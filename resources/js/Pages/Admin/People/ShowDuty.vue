@@ -135,7 +135,7 @@
     <template #about>
       <div class="grid gap-10 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] xl:gap-16">
         <OverviewSection variant="home" :title="$t('Aprašymas')" :icon="FileText">
-          <!-- eslint-disable-next-line vue/no-v-html -->
+          <!-- v-html: sanitized on write (Duty::sanitizedHtmlTranslations) -->
           <div v-if="dutyDescriptionHtml" class="prose prose-sm dark:prose-invert max-w-none" v-html="dutyDescriptionHtml" />
           <p v-else class="text-sm text-muted-foreground">
             {{ $t('Ši pareigybė neturi aprašymo.') }}
@@ -349,7 +349,7 @@ import {
 
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import DutyLineageTimeline, { type LineageLinkedDuty } from '@/Components/Duties/DutyLineageTimeline.vue';
@@ -362,7 +362,7 @@ import { ConfirmDialog, OverviewSection, SheetForm } from '@/Components/Patterns
 import { Button } from '@/Components/ui/button';
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 import { operatingStatuses, type StatusPresentation } from '@/Constants/statusIcons';
-import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
+import RecordActivity from '@/Components/ActivityLog/RecordActivity.vue';
 import ExOfficioReviewSheet from '@/Features/Admin/DutiableTimeline/ExOfficioReviewSheet.vue';
 import { DutiableTimelineDialog } from '@/Features/Admin/DutiableTimeline';
 import { AssignDutyUserSheet, DutySearchField, MemberTermRow, dutyNameOn, termStatus, type DutyHit, type QuotaTenant } from '@/Features/Admin/Occupancy';

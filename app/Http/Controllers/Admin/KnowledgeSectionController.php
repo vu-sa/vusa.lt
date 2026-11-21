@@ -12,15 +12,16 @@ use App\Services\KnowledgeBasePresenter;
 use App\Services\KnowledgeSectionOptions;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class KnowledgeSectionController extends AdminController
 {
+    #[Authorize('viewAny', KnowledgeItem::class)]
     public function show(Request $request, KnowledgeSection $knowledgeSection, KnowledgeSectionOptions $sections): Response
     {
-        $this->authorize('viewAny', KnowledgeItem::class);
         $canUpdate = $request->user()->can('update', $knowledgeSection);
 
         return Inertia::render('Admin/Knowledge/ShowKnowledgeSection', [
@@ -31,9 +32,9 @@ class KnowledgeSectionController extends AdminController
         ]);
     }
 
+    #[Authorize('update', 'knowledgeSection')]
     public function reorderItems(ReorderKnowledgeSectionItemsRequest $request, KnowledgeSection $knowledgeSection): RedirectResponse
     {
-        $this->authorize('update', $knowledgeSection);
         DB::transaction(function () use ($request, $knowledgeSection): void {
             $items = $knowledgeSection->items()->get()->keyBy('id');
             foreach ($request->validated('items') as $order => $id) {
@@ -44,9 +45,9 @@ class KnowledgeSectionController extends AdminController
         return back()->with('success', __('learning.sections.reordered_items'));
     }
 
+    #[Authorize('create', KnowledgeSection::class)]
     public function store(KnowledgeSectionRequest $request): RedirectResponse
     {
-        $this->authorize('create', KnowledgeSection::class);
         KnowledgeSection::create([
             'order' => (int) KnowledgeSection::query()->max('order') + 1,
             ...$request->safe()->only(['title', 'description', 'kind', 'date', 'order', 'tenant_id']),
@@ -56,14 +57,15 @@ class KnowledgeSectionController extends AdminController
         return back()->with('success', __('learning.sections.created'));
     }
 
+    #[Authorize('update', 'knowledgeSection')]
     public function update(KnowledgeSectionRequest $request, KnowledgeSection $knowledgeSection): RedirectResponse
     {
-        $this->authorize('update', $knowledgeSection);
         $knowledgeSection->update([...$request->safe()->only(['title', 'description', 'kind', 'order', 'tenant_id']), 'date' => $request->validated('date')]);
 
         return back()->with('success', __('learning.sections.updated'));
     }
 
+    // Authorized in ReorderKnowledgeSectionsRequest: every selected section.
     public function reorder(ReorderKnowledgeSectionsRequest $request): RedirectResponse
     {
         $sections = $request->sections()->keyBy('id');
@@ -74,9 +76,9 @@ class KnowledgeSectionController extends AdminController
         return back()->with('success', __('learning.sections.reordered'));
     }
 
+    #[Authorize('delete', 'knowledgeSection')]
     public function destroy(KnowledgeSection $knowledgeSection): RedirectResponse
     {
-        $this->authorize('delete', $knowledgeSection);
         $knowledgeSection->delete();
 
         return back()->with('success', __('learning.sections.deleted'));

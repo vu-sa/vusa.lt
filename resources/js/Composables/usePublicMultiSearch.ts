@@ -16,10 +16,10 @@ import { reactive, ref, computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { useLocalStorage, useDebounceFn } from '@vueuse/core';
 
-import { documentWithMatch, type HighlightedHit } from '@/Shared/Search/matches';
-import { buildProfileParams, type SearchProfileConfig } from '@/Shared/Search/profiles';
-import { ErrorUtils } from '@/Shared/Search/services/SearchErrorUtils';
-import { createSearchReporter } from '@/Shared/Search/searchReporter';
+import { documentWithMatch, type HighlightedHit } from '@/Search/core/matches';
+import { buildProfileParams, type SearchProfileConfig } from '@/Search/core/profiles';
+import { ErrorUtils } from '@/Search/core/services/SearchErrorUtils';
+import { createSearchReporter } from '@/Search/core/searchReporter';
 
 export type SearchCollectionId
   = | 'institutions'

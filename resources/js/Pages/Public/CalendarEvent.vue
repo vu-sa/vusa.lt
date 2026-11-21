@@ -22,6 +22,7 @@
         <!-- Main Content -->
         <main class="order-last min-w-0 space-y-10 lg:order-none">
           <!-- Description / Rich Content -->
+          <!-- v-html: sanitized on write (Calendar::sanitizedHtmlTranslations) -->
           <article
             v-if="event.description"
             class="rc-prose max-w-none"
@@ -214,9 +215,9 @@ import { usePage, Link } from '@inertiajs/vue3';
 import type { ImageData } from '@/Types/media';
 import MediaImage from '@/Components/Brand/MediaImage.vue';
 import Button from '@/Components/ui/button/Button.vue';
-import EventActions from '@/Components/Calendar/EventActions.vue';
-import EventDetailsCard from '@/Components/Calendar/EventDetailsCard.vue';
-import EventHero from '@/Components/Calendar/EventHero.vue';
+import EventActions from '@/Components/Public/Calendar/EventActions.vue';
+import EventDetailsCard from '@/Components/Public/Calendar/EventDetailsCard.vue';
+import EventHero from '@/Components/Public/Calendar/EventHero.vue';
 import PhotoGalleryGridDisplay from '@/Components/RichContent/RCPhotoGalleryGrid/PhotoGalleryGridDisplay.vue';
 import PublicAgendaList from '@/Components/Public/PublicAgendaList.vue';
 import PublicMeetingDocuments, { type PublicMeetingDocument } from '@/Components/Public/PublicMeetingDocuments.vue';

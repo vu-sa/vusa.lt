@@ -19,6 +19,7 @@ use App\Support\Commentables;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -147,10 +148,9 @@ class CommentApiController extends ApiController
     /**
      * Edit your own comment.
      */
+    #[Authorize('update', 'comment')]
     public function update(UpdateCommentRequest $request, Comment $comment): JsonResponse
     {
-        $this->authorize('update', $comment);
-
         $comment->body = $request->validated('body');
         $comment->mentioned_user_ids = Comment::extractMentions($comment->body);
         $comment->markEdited();
@@ -167,10 +167,9 @@ class CommentApiController extends ApiController
     /**
      * Delete a comment (author, or a moderator who can update the parent).
      */
+    #[Authorize('delete', 'comment')]
     public function destroy(Request $request, Comment $comment): JsonResponse
     {
-        $this->authorize('delete', $comment);
-
         $comment->erase();
         $this->stashModeration($request, $comment->commentable);
 
@@ -179,9 +178,9 @@ class CommentApiController extends ApiController
         return $this->jsonSuccess(new CommentResource($comment), $this->entityMessage('deleted', 'comment'));
     }
 
+    #[Authorize('resolve', 'comment')]
     public function resolve(Request $request, Comment $comment): JsonResponse
     {
-        $this->authorize('resolve', $comment);
         $comment->resolve($request->user());
 
         $comment->load(['user:id,name,profile_photo_path,pronouns', 'authorDutiable.duty.institution.tenant', 'media', 'reactions.user:id,name', 'pollVotes.user:id,name']);
@@ -191,9 +190,9 @@ class CommentApiController extends ApiController
         return $this->jsonSuccess(new CommentResource($comment));
     }
 
+    #[Authorize('resolve', 'comment')]
     public function unresolve(Request $request, Comment $comment): JsonResponse
     {
-        $this->authorize('resolve', $comment);
         $comment->unresolve();
 
         $comment->load(['user:id,name,profile_photo_path,pronouns', 'authorDutiable.duty.institution.tenant', 'media', 'reactions.user:id,name', 'pollVotes.user:id,name']);

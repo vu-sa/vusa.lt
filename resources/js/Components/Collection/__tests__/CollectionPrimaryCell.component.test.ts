@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
-import { documentWithMatch, type SearchMatchDocument } from '@/Shared/Search/matches';
+import { documentWithMatch, type SearchMatchDocument } from '@/Search/core/matches';
 
 import CollectionPrimaryCell from '../CollectionPrimaryCell.vue';
 

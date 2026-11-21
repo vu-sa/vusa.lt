@@ -179,13 +179,6 @@ Klausimas **užpildytas**, kai:
 Kai pagrindinis pažymėtas, kiti balsavimai užpildymui įtakos neturi. Ta pati taisyklė taikoma posėdžio
 [būsenai](/visak/posedziai#busena), užpildymo užduočiai ir sąrašo filtrui **Užpildymo būsena**.
 
-<ChangelogNote date="2026-10-02" title="Viena užpildymo taisyklė">
-
-Iki v3 sąrašo filtras informacinius, atidėtus klausimus, pertraukas ir VU SA darinių klausimus su
-vien sprendimu laikė nepilnais, o posėdžio būsena klausimą be tipo galėjo laikyti užpildytu.
-
-</ChangelogNote>
-
 ### Klausimo būsena
 
 Klausimo būsena rodo **rezultatą**, pvz., **Studentų pozicija priimta** (studentų balsas sutampa

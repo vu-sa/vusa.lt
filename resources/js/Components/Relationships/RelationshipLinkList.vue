@@ -77,7 +77,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowLeft, ArrowLeftRight, ArrowRight, Link2, Plus } from '@lucide/vue';
 
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { ConfirmDialog, OverviewSection } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';

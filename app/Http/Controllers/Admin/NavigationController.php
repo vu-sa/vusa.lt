@@ -14,6 +14,7 @@ use App\Models\Tag;
 use App\Services\NavigationService;
 use App\Services\PostCreateRedirect;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
 
@@ -24,6 +25,7 @@ class NavigationController extends AdminController
     /**
      * Display a listing of the resource.
      */
+    #[Authorize('viewAny', Navigation::class)]
     public function index(IndexNavigationRequest $request)
     {
         $showDeleted = $request->safe()->boolean('showDeleted');
@@ -63,6 +65,7 @@ class NavigationController extends AdminController
     /**
      * Show the form for creating a new resource.
      */
+    #[Authorize('create', Navigation::class)]
     public function create(CreateNavigationRequest $request)
     {
         $parent_id = (int) ($request->validated('parent_id') ?? 0);
@@ -88,6 +91,7 @@ class NavigationController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
+    #[Authorize('create', Navigation::class)]
     public function store(StoreNavigationRequest $request, PostCreateRedirect $redirect)
     {
         $validated = $request->validated();
@@ -119,10 +123,9 @@ class NavigationController extends AdminController
     /**
      * Show the form for editing the specified resource.
      */
+    #[Authorize('update', 'navigation')]
     public function edit(Navigation $navigation)
     {
-        $this->handleAuthorization('update', $navigation);
-
         $location = $this->resolveLocation($navigation->extra_attributes['location'] ?? null);
 
         return Inertia::render('Admin/Navigation/EditNavigation', [
@@ -135,6 +138,7 @@ class NavigationController extends AdminController
     /**
      * Update the specified resource in storage.
      */
+    // Authorized in UpdateNavigationRequest: the navigation entry in the route.
     public function update(UpdateNavigationRequest $request, Navigation $navigation)
     {
         $navigation->fill($request->validated());
@@ -153,13 +157,14 @@ class NavigationController extends AdminController
      * its column array*, not a flattened position, so a column move can never corrupt
      * another column's relative order the way the old `flatten(1)` did.
      */
+    // Authorized in ReorderNavigationRequest: global navigation editing permission.
     public function updateOrder(ReorderNavigationRequest $request)
     {
         // Navigation is a globally-scoped model (see NavigationPolicy /
         // HasCommonChecks::commonChecker) — it has no tenant relation, so `update` is
         // granted only via the blanket `navigation.update.all` permission and does not
         // vary per row. One check up front is equivalent to the old per-row loop.
-        $this->handleAuthorization('update', new Navigation);
+        $this->authorize('update', new Navigation);
 
         $data = $request->validated();
 
@@ -191,20 +196,21 @@ class NavigationController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
+    #[Authorize('delete', 'navigation')]
     public function destroy(Navigation $navigation)
     {
-        $this->handleAuthorization('delete', $navigation);
-
         $navigation->delete();
 
         return redirect()->route('navigation.index')->with('info', $this->entityMessage('deleted', 'navigation'));
     }
 
+    #[Authorize('restore', 'navigation')]
     public function restore(Navigation $navigation): RedirectResponse
     {
         return $this->restoreModel($navigation);
     }
 
+    #[Authorize('forceDelete', 'navigation')]
     public function forceDelete(Navigation $navigation): RedirectResponse
     {
         return $this->forceDeleteModel($navigation);

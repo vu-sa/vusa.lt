@@ -1,0 +1,77 @@
+import { mount } from '@vue/test-utils';
+import { describe, expect, it } from 'vitest';
+import { ChevronRight } from '@lucide/vue';
+
+import { deletedMemberStatus } from '@/Constants/statusIcons';
+import { documentWithMatch } from '@/Search/core/matches';
+import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+
+import SearchHitRow from '../SearchHitRow.vue';
+
+const hit = {
+  id: 'users-1',
+  recordId: '1',
+  collection: 'users',
+  raw: {},
+  title: 'Jonas Jonaitis',
+  contextBadge: 'MIF',
+  statusBadge: deletedMemberStatus,
+  viewHref: '/mano/users/1',
+  editHref: '/mano/users/1/edit',
+} as NormalizedSearchHit;
+
+describe('SearchHitRow', () => {
+  it('keeps the chevron by default and allows pickers to hide it', async () => {
+    const wrapper = mount(SearchHitRow, { props: { hit }, global: { stubs: { EntityTypeMark: true } } });
+
+    expect(wrapper.findComponent(ChevronRight).exists()).toBe(true);
+
+    await wrapper.setProps({ trailing: 'none' });
+
+    expect(wrapper.findComponent(ChevronRight).exists()).toBe(false);
+  });
+
+  it('explains an unseen match in place of the subtitle and names the type', () => {
+    const wrapper = mount(SearchHitRow, {
+      props: { hit: { ...hit, subtitle: 'jonas@vusa.lt', raw: { _searchMatch: { field: 'body', segments: [{ text: 'Petras Petraitis', matched: true }] } } }, showType: true },
+      global: { stubs: { EntityTypeMark: true } },
+    });
+    expect(wrapper.get('[data-field="body"]').text()).toBe('Petras Petraitis');
+    expect(wrapper.text()).not.toContain('jonas@vusa.lt');
+    expect(wrapper.get('[data-slot="search-hit-type"]').text()).toBe('Narys');
+  });
+  it('highlights the existing name without adding a duplicate excerpt', () => {
+    const raw = documentWithMatch({ document: { name: hit.title }, highlights: [
+      { field: 'name', snippet: '⟦Jonas⟧ Jonaitis' },
+      { field: 'current_user_names', snippet: '⟦Jonas⟧ Jonaitis' },
+    ] });
+    const wrapper = mount(SearchHitRow, { props: { hit: { ...hit, raw } }, global: { stubs: { EntityTypeMark: true } } });
+    expect(wrapper.get('[data-field="name"] mark').text()).toBe('Jonas');
+    expect(wrapper.text().match(/Jonas Jonaitis/g)).toHaveLength(1);
+  });
+
+  it('does not highlight a name when only a related record matched', () => {
+    const raw = documentWithMatch({ document: { name: hit.title }, highlights: [{ field: 'current_duty_names', snippet: '⟦Prezidentė⟧' }] });
+    const wrapper = mount(SearchHitRow, { props: { hit: { ...hit, raw } }, global: { stubs: { EntityTypeMark: true } } });
+    expect(wrapper.find('[data-field="name"]').exists()).toBe(false);
+    expect(wrapper.get('[data-field="current_duty_names"] mark').text()).toBe('Prezidentė');
+  });
+  it('shows context separately from status and names its quick actions', async () => {
+    const wrapper = mount(SearchHitRow, {
+      props: { hit, showActions: true },
+      global: { stubs: { EntityTypeMark: true } },
+    });
+
+    expect(wrapper.text()).toContain('MIF');
+    expect(wrapper.text()).toContain('Ištrintas');
+
+    const view = wrapper.get('button[aria-label="Peržiūrėti"]');
+    const edit = wrapper.get('button[aria-label="Redaguoti"]');
+
+    await view.trigger('click');
+    await edit.trigger('click');
+
+    expect(wrapper.emitted('view')).toHaveLength(1);
+    expect(wrapper.emitted('edit')).toHaveLength(1);
+  });
+});

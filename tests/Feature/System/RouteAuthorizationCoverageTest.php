@@ -3,25 +3,19 @@
 /**
  * Authorization Architecture Tests
  *
- * Every mutating admin route must authorize. The `auth` middleware only proves *who* the user
- * is, not *what* they may touch, and `routes/admin.php` applies nothing else — so a controller
- * method reachable by POST/PUT/PATCH/DELETE with no authorization call and no gating Form
- * Request is an open door.
+ * The booted admin route table includes resource and macro routes that a source scan can miss.
  *
- * This test walks the real route table rather than a hand-kept list, so a newly registered
- * route is covered the moment it exists. Exemptions are enumerated below and each one has to
- * be justified in review.
- *
- * It lives under Feature rather than Architecture because it walks the booted route table,
- * and tests/Architecture runs without an application instance.
- *
- * @see AGENTS.md — "Every mutating route authorizes"
+ * @see AGENTS.md — "Every admin route authorizes"
  */
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Routing\Route as RoutingRoute;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
+use Symfony\Component\Finder\Finder;
 
 pest()->use(RefreshDatabase::class);
 
@@ -62,15 +56,35 @@ const SELF_SCOPED_ROUTE_NAMES = [
     'api.v1.admin.impersonate.stop',
 ];
 
+const READ_ROUTE_EXEMPTIONS = [
+    'profile' => 'Loads the acting user’s own profile.',
+    'profile.roles' => 'Summarizes the acting user’s own access.',
+    'profile.notifications' => 'Reads the acting user’s notification preferences and email choices.',
+    'dashboard.reservations' => 'Queries the actor’s reservations and reservations with resources in tenants they manage.',
+    'notifications.index' => 'Loads notifications through the acting user’s relation.',
+    'search.meetings' => 'Redirects a bookmark to the authorized meetings collection.',
+    'search.agendaItems' => 'Redirects a bookmark to the authorized agenda items collection.',
+    'search.institutions' => 'Redirects a bookmark to the authorized institutions collection.',
+    'search.resources' => 'Redirects a bookmark to the authorized resources collection.',
+    'mySupportRequests.index' => 'BuildSupportRequestCollection limits results to requests visible to the actor.',
+    'api.v1.admin.supportRequests.index' => 'BuildSupportRequestCollection applies the actor’s visibility scope to results and facets.',
+    'api.v1.admin.pushSubscriptions.index' => 'Reads subscriptions through the acting user’s relation.',
+    'api.v1.admin.academicCalendar.vacations' => 'Serves shared academic break dates to signed-in users.',
+    'api.v1.admin.actionWindow.context' => 'Loads institutions from the actor’s duties and secretary assignments and scopes institution search to their permissions.',
+    'api.v1.admin.meetings.recent' => 'Loads meetings from institutions where the actor holds a duty or is a secretary.',
+    'api.v1.admin.files.allowedTypes' => 'Serves shared upload extensions and size limits to signed-in users.',
+    'api.v1.admin.tutorials.progress' => 'Reads the acting user’s tutorial progress.',
+    'api.v1.admin.search.config' => 'TypesenseManager generates search keys with the acting user’s permissions.',
+    'api.v1.admin.users.search' => 'The purpose determines which permission the caller must hold. The involve purpose returns names without email addresses.',
+    'api.v1.admin.impersonate.search' => 'Private guards require a super admin in local or staging.',
+    'microsoft.callback' => 'The Microsoft OAuth callback authenticates the user before a session exists.',
+];
+
 /**
  * Tokens that count as an authorization check in a controller method body.
  */
 const AUTHORIZATION_TOKENS = [
     '$this->authorize(',
-    '$this->handleAuthorization(',
-    '$this->authorizeApi(',
-    'abort_if(',
-    'abort_unless(',
     'Gate::',
     '->can(',
     '->cannot(',
@@ -79,10 +93,10 @@ const AUTHORIZATION_TOKENS = [
 /**
  * @return array<int, array{name: string, action: string}>
  */
-function mutatingAdminRoutes(): array
+function adminRoutes(array $methods): array
 {
     return collect(Route::getRoutes()->getRoutes())
-        ->filter(fn (RoutingRoute $route) => (bool) array_intersect($route->methods(), ['POST', 'PUT', 'PATCH', 'DELETE']))
+        ->filter(fn (RoutingRoute $route) => (bool) array_intersect($route->methods(), $methods))
         ->filter(function (RoutingRoute $route): bool {
             $action = $route->getActionName();
 
@@ -91,29 +105,29 @@ function mutatingAdminRoutes(): array
         })
         // Unnamed routes fall back to their URI so they can still be exempted by hand.
         ->map(fn (RoutingRoute $route) => ['name' => $route->getName() ?? $route->uri(), 'action' => $route->getActionName()])
-        ->reject(fn (array $route) => in_array($route['name'], SELF_SCOPED_ROUTE_NAMES, true))
         ->values()
         ->all();
 }
 
 /**
- * Whether the controller method authorizes directly, delegates to a helper on the controller
- * that authorizes (e.g. HandlesSoftDeletes::restoreModel), or type-hints a Form Request whose
- * authorize() is more than a bare `return true`.
+ * Whether the controller method carries `#[Authorize]`, authorizes in its body, delegates to a
+ * helper on the controller that authorizes, or type-hints a Form Request whose authorize() is
+ * more than a bare `return true`.
  */
 function routeActionAuthorizes(string $action): bool
 {
-    if (! str_contains($action, '@')) {
-        return true; // Invokable controllers are checked by hand.
-    }
-
-    [$class, $method] = explode('@', $action);
+    [$class, $method] = Str::parseCallback($action, '__invoke');
 
     if (! class_exists($class) || ! method_exists($class, $method)) {
-        return true; // Missing methods are a routing bug, not an authorization one.
+        return false;
     }
 
     $reflection = new ReflectionMethod($class, $method);
+
+    if (hasAuthorizeAttribute($reflection)) {
+        return true;
+    }
+
     $body = methodBody($reflection);
 
     if (bodyAuthorizes($body)) {
@@ -148,6 +162,12 @@ function routeActionAuthorizes(string $action): bool
     return false;
 }
 
+function hasAuthorizeAttribute(ReflectionMethod $reflection): bool
+{
+    return $reflection->getAttributes(Authorize::class) !== []
+        || $reflection->getDeclaringClass()->getAttributes(Authorize::class) !== [];
+}
+
 function methodBody(ReflectionMethod $reflection): string
 {
     $file = file($reflection->getFileName());
@@ -161,7 +181,9 @@ function methodBody(ReflectionMethod $reflection): string
 
 function bodyAuthorizes(string $body): bool
 {
-    return array_any(AUTHORIZATION_TOKENS, fn ($token) => str_contains($body, $token));
+    return array_any(AUTHORIZATION_TOKENS, fn ($token) => str_contains($body, $token))
+        // A 404 or 422 guard checks existence or input, not access.
+        || preg_match('/\babort_(?:if|unless)\s*\([^;]*?,\s*(?:code:\s*)?403\s*[,)]/s', $body) === 1;
 }
 
 /**
@@ -190,11 +212,137 @@ function formRequestGates(string $class): bool
 }
 
 test('every mutating admin route authorizes', function (): void {
-    $unprotected = collect(mutatingAdminRoutes())
+    $unprotected = collect(adminRoutes(['POST', 'PUT', 'PATCH', 'DELETE']))
+        ->reject(fn (array $route) => in_array($route['name'], SELF_SCOPED_ROUTE_NAMES, true))
         ->reject(fn (array $route) => routeActionAuthorizes($route['action']))
         ->map(fn (array $route) => "{$route['name']} -> {$route['action']}")
         ->values()
         ->all();
 
-    expect($unprotected)->toBeEmpty();
+    expect($unprotected)->toBeEmpty(implode("\n", $unprotected));
+});
+
+test('every admin read route authorizes', function (): void {
+    $unprotected = collect(adminRoutes(['GET']))
+        ->reject(fn (array $route) => array_key_exists($route['name'], READ_ROUTE_EXEMPTIONS))
+        ->reject(fn (array $route) => routeActionAuthorizes($route['action']))
+        ->map(fn (array $route) => "{$route['name']} -> {$route['action']}")
+        ->values()
+        ->all();
+
+    expect($unprotected)->toBeEmpty(implode("\n", $unprotected));
+});
+
+test('only a forbidden abort counts as authorization', function (): void {
+    $multiline = <<<'PHP'
+        abort_unless(
+            in_array($tenantId, [1, 2], true),
+            403,
+        );
+        PHP;
+
+    expect(bodyAuthorizes($multiline))->toBeTrue()
+        ->and(bodyAuthorizes('abort_if($missing, 404, "403");'))->toBeFalse()
+        ->and(bodyAuthorizes('abort_unless(in_array($code, [403, 409]), 422);'))->toBeFalse()
+        ->and(bodyAuthorizes('abort_if($conflict, 409);'))->toBeFalse();
+});
+
+/**
+ * @return array<int, class-string>
+ */
+function appClassesIn(string $directory): array
+{
+    $namespace = 'App\\'.str_replace('/', '\\', $directory).'\\';
+
+    return collect(Finder::create()->files()->in(app_path($directory))->name('*.php'))
+        ->map(fn (SplFileInfo $file): string => $namespace.str_replace(['/', '.php'], ['\\', ''], $file->getRelativePathname()))
+        ->filter(fn (string $class): bool => class_exists($class))
+        ->values()
+        ->all();
+}
+
+/**
+ * A method body's statements, comments and outer braces stripped.
+ *
+ * @return array<int, string>
+ */
+function methodStatements(ReflectionMethod $reflection): array
+{
+    $body = (string) preg_replace(['/\/\*.*?\*\//s', '/\/\/[^\n]*/'], '', methodBody($reflection));
+    $body = Str::of($body)->after('{')->beforeLast('}')->squish()->toString();
+
+    return array_values(array_filter(array_map(trim(...), explode(';', $body))));
+}
+
+/**
+ * A leading `$this->authorize()` on a class or a route-bound model belongs in `#[Authorize]`,
+ * which runs before validation and sits where a reader looks first.
+ */
+test('plain controller checks are #[Authorize] attributes', function (): void {
+    $plain = [];
+
+    foreach (appClassesIn('Http/Controllers') as $class) {
+        // Helpers count too: a private `destroy(Goal|Problem $parent)` that checks its argument
+        // hides the check from every public method that calls it.
+        foreach (new ReflectionClass($class)->getMethods() as $method) {
+            if ($method->getDeclaringClass()->getName() !== $class || $method->isStatic()) {
+                continue;
+            }
+
+            $boundModels = collect($method->getParameters())
+                ->filter(fn (ReflectionParameter $parameter): bool => collect(match (true) {
+                    $parameter->getType() instanceof ReflectionNamedType => [$parameter->getType()],
+                    $parameter->getType() instanceof ReflectionUnionType => $parameter->getType()->getTypes(),
+                    default => [],
+                })->contains(fn ($type): bool => $type instanceof ReflectionNamedType && is_subclass_of($type->getName(), Model::class)))
+                ->map(fn (ReflectionParameter $parameter): string => $parameter->getName())
+                ->all();
+
+            foreach (methodStatements($method) as $statement) {
+                if (! preg_match('/^\$this->authorize\(\s*[\'"]\w+[\'"]\s*,\s*(.+)\)$/', $statement, $match)) {
+                    break;
+                }
+
+                $subjects = preg_split('/\s*,\s*/', trim($match[1], '[] '));
+                $isPlain = collect($subjects)->every(fn (string $subject): bool => str_ends_with($subject, '::class')
+                    || in_array(ltrim($subject, '$'), $boundModels, true));
+
+                if ($isPlain) {
+                    $plain[] = "{$class}@{$method->getName()}: {$statement}";
+                }
+            }
+        }
+    }
+
+    expect($plain)->toBeEmpty(implode("\n", $plain));
+});
+
+/**
+ * A Form Request's authorize() holds only what an attribute cannot express (request input,
+ * several records). A bare `return true` is the framework default, so it is deleted.
+ */
+test('Form Requests hold no plain checks', function (): void {
+    $plain = [];
+    $subject = '([\\\\\w]+::class|\$this->route\([\'"]\w+[\'"]\)|\$this->\w+)';
+
+    foreach (appClassesIn('Http/Requests') as $class) {
+        if (! is_subclass_of($class, FormRequest::class) || ! method_exists($class, 'authorize')) {
+            continue;
+        }
+
+        $method = new ReflectionMethod($class, 'authorize');
+
+        if ($method->getDeclaringClass()->getName() !== $class) {
+            continue;
+        }
+
+        $statements = methodStatements($method);
+
+        if ($statements === ['return true']
+            || (count($statements) === 1 && preg_match('/^return \$this->user\(\)\??->can\([\'"]\w+[\'"], '.$subject.'\)( \?\? false)?$/', $statements[0]))) {
+            $plain[] = "{$class}: {$statements[0]}";
+        }
+    }
+
+    expect($plain)->toBeEmpty(implode("\n", $plain));
 });

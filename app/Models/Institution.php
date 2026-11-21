@@ -298,6 +298,7 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
         return $pastMeeting;
     }
 
+    /** Every term ever held, including ended terms. Use GetInstitutionMembers for current holders. */
     public function users(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->duties(), (new Duty)->users());

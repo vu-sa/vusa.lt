@@ -18,6 +18,7 @@ use App\Notifications\SupportRequestInvolvedNotification;
 use App\Notifications\SupportRequestStatusChangedNotification;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -31,24 +32,21 @@ class SupportRequestController extends AdminController
 
     public function __construct(public Authorizer $authorizer) {}
 
+    #[Authorize('viewAny', SupportRequest::class)]
     public function index(IndexSupportRequestRequest $request): RedirectResponse
     {
-        $this->handleAuthorization('viewAny', SupportRequest::class);
-
         return redirect()->route('mySupportRequests.index', ['tab' => 'all']);
     }
 
+    #[Authorize('view', 'support_request')]
     public function show(SupportRequest $supportRequest): Response
     {
-        $this->authorize('view', $supportRequest);
-
         return Inertia::render('Admin/SupportRequests/ShowSupportRequest', $this->showPayload($supportRequest));
     }
 
+    #[Authorize('view', 'supportRequest')]
     public function evidence(SupportRequest $supportRequest, int $media, string $conversion = 'original'): StreamedResponse
     {
-        $this->authorize('view', $supportRequest);
-
         $item = $supportRequest->media()->where('collection_name', 'evidence')->findOrFail($media);
         abort_unless(in_array($conversion, ['original', 'thumb', 'large'], true), 404);
         $conversion = $conversion !== 'original' && $item->hasGeneratedConversion($conversion) ? $conversion : '';
@@ -62,10 +60,9 @@ class SupportRequestController extends AdminController
         ]);
     }
 
+    #[Authorize('update', 'support_request')]
     public function edit(SupportRequest $supportRequest): Response
     {
-        $this->authorize('update', $supportRequest);
-
         return Inertia::render('Admin/SupportRequests/EditSupportRequest', [
             ...$this->showPayload($supportRequest),
             'isEditing' => true,
@@ -106,11 +103,8 @@ class SupportRequestController extends AdminController
             'preview_url' => route('supportRequests.evidence', [$supportRequest, $m->id, 'large']),
         ]);
 
-        $assignees = User::query()
-            ->orderBy('name')
-            ->get(['id', 'name', 'profile_photo_path']);
-
         $user = auth()->user();
+        $canAssign = $user?->can('assign', $supportRequest) ?? false;
 
         return [
             'supportRequest' => [
@@ -126,11 +120,12 @@ class SupportRequestController extends AdminController
                 'label' => $case->label(),
                 'badgeVariant' => $case->badgeVariant(),
             ]),
-            'assignees' => $assignees,
+            // Only support managers may assign, and they already reach every tenant.
+            'assignees' => $canAssign ? User::query()->orderBy('name')->get(['id', 'name', 'profile_photo_path']) : [],
             'permissions' => [
                 'can_update' => $user?->can('update', $supportRequest) ?? false,
                 'can_update_status' => $user?->can('updateStatus', $supportRequest) ?? false,
-                'can_assign' => $user?->can('assign', $supportRequest) ?? false,
+                'can_assign' => $canAssign,
                 'can_manage_involved' => $user?->can('assign', $supportRequest) ?? false,
                 'can_delete' => $user?->can('delete', $supportRequest) ?? false,
                 'can_restore' => $user?->can('restore', $supportRequest) ?? false,
@@ -139,6 +134,7 @@ class SupportRequestController extends AdminController
         ];
     }
 
+    // Authorized in UpdateSupportRequestRequest: the support request in the route.
     public function update(UpdateSupportRequestRequest $request, SupportRequest $supportRequest): RedirectResponse
     {
         $data = $request->safe()->except(['roles', 'images', 'deleted_media_ids']);
@@ -162,6 +158,7 @@ class SupportRequestController extends AdminController
         return redirect()->route('supportRequests.show', $supportRequest)->with('success', $this->entityMessage('updated', 'supportRequest'));
     }
 
+    // Authorized in UpdateSupportRequestStatusRequest: the support request in the route.
     public function updateStatus(UpdateSupportRequestStatusRequest $request, SupportRequest $supportRequest): RedirectResponse
     {
         $oldStatus = $supportRequest->status;
@@ -195,6 +192,7 @@ class SupportRequestController extends AdminController
         return back()->with('success', $this->entityMessage('updated', 'supportRequest'));
     }
 
+    // Authorized in AssignSupportRequestRequest: the support request in the route.
     public function assign(AssignSupportRequestRequest $request, SupportRequest $supportRequest): RedirectResponse
     {
         $previousAssignee = $supportRequest->assigned_to;
@@ -208,6 +206,7 @@ class SupportRequestController extends AdminController
         return back()->with('success', $this->entityMessage('updated', 'supportRequest'));
     }
 
+    // Authorized in SyncSupportRequestInvolvedUsersRequest: the support request in the route.
     public function syncInvolvedUsers(SyncSupportRequestInvolvedUsersRequest $request, SupportRequest $supportRequest): RedirectResponse
     {
         $changes = $supportRequest->involvedUsers()->sync($request->validated('involved_users'));
@@ -220,14 +219,15 @@ class SupportRequestController extends AdminController
         return back()->with('success', $this->entityMessage('updated', 'supportRequest'));
     }
 
+    #[Authorize('delete', 'support_request')]
     public function destroy(SupportRequest $supportRequest): RedirectResponse
     {
-        $this->authorize('delete', $supportRequest);
         $supportRequest->delete();
 
         return redirect()->route('mySupportRequests.index', ['tab' => 'all'])->with('success', $this->entityMessage('deleted', 'supportRequest'));
     }
 
+    #[Authorize('restore', 'supportRequest')]
     public function restore(SupportRequest $supportRequest): RedirectResponse
     {
         return $this->restoreModel($supportRequest);

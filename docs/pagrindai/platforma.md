@@ -5,11 +5,11 @@ last_reviewed: 2026-11-11
 tests:
   - resources/js/Composables/__tests__/useOptimisticVisit.test.ts
   - resources/js/Composables/__tests__/useCollectionSource.test.ts
-  - resources/js/Features/Admin/AdminSearch/Composables/__tests__/useAdminCollectionSearch.pages.test.ts
-  - resources/js/Shared/Search/__tests__/useBaseSearch.test.ts
+  - resources/js/Search/admin/Composables/__tests__/useAdminCollectionSearch.pages.test.ts
+  - resources/js/Search/core/__tests__/useBaseSearch.test.ts
   - tests/Feature/Profile/UIPreferencesTest.php
   - resources/js/Composables/__tests__/useAdminSearch.test.ts
-  - resources/js/Features/Admin/AdminSearch/Composables/__tests__/useAdminCollectionSearch.initial.test.ts
+  - resources/js/Search/admin/Composables/__tests__/useAdminCollectionSearch.initial.test.ts
   - tests/Feature/Api/Admin/RecordAbilitiesApiControllerTest.php
   - resources/js/Utils/__tests__/dateTime.test.ts
   - resources/js/Utils/__tests__/formatMonthAbbr.test.ts
@@ -21,11 +21,11 @@ tests:
   - tests/Browser/AdminCollectionPagesTest.php
   - resources/js/Components/Patterns/__tests__/RecordActionMenu.component.test.ts
   - resources/js/Composables/__tests__/useStartFm.test.ts
-  - resources/js/Components/__tests__/StartFmPlayer.component.test.ts
+  - resources/js/Components/Shared/__tests__/StartFmPlayer.component.test.ts
   - resources/js/Components/Layouts/__tests__/FormPage.component.test.ts
   - resources/js/Components/Patterns/__tests__/ModelTimestamps.component.test.ts
   - resources/js/Components/Patterns/__tests__/SheetForm.component.test.ts
-  - resources/js/Composables/__tests__/useCollectionRecordActions.test.ts
+  - resources/js/Components/Collection/__tests__/useCollectionRecordActions.test.ts
   - tests/Browser/CollectionTrashRefreshTest.php
   - tests/Browser/PostCreateNavigationTest.php
   - tests/Feature/Admin/Content/PageControllerTest.php
@@ -36,17 +36,17 @@ tests:
   - resources/js/Composables/__tests__/useActionWindowCatalog.test.ts
   - tests/Feature/Search/SearchExperienceTest.php
   - tests/Browser/SearchExperienceTest.php
-  - resources/js/Shared/Search/__tests__/SearchExperience.test.ts
+  - resources/js/Search/core/__tests__/SearchExperience.test.ts
   - resources/js/Components/CommandPalette/__tests__/AdminCommandPalette.component.test.ts
-  - resources/js/Shared/Search/__tests__/FacetOptions.component.test.ts
+  - resources/js/Search/core/__tests__/FacetOptions.component.test.ts
   - resources/js/__tests__/designTokens.test.ts
   - resources/js/Components/Patterns/__tests__/StatusBadge.component.test.ts
   - resources/js/Components/Layouts/__tests__/FormPage.component.test.ts
   - resources/js/Components/AdminForms/__tests__/DuplicateDutyWarning.component.test.ts
   - resources/js/Components/AdminForms/__tests__/DuplicateUserWarning.component.test.ts
-  - resources/js/Features/Admin/AdminSearch/Components/Select/__tests__/SearchSelectDialog.component.test.ts
-  - resources/js/Features/Admin/AdminSearch/Components/__tests__/SearchHitRow.component.test.ts
-  - resources/js/Features/Admin/AdminSearch/Components/__tests__/SearchSplitView.component.test.ts
+  - resources/js/Components/Pickers/__tests__/SearchSelectDialog.component.test.ts
+  - resources/js/Components/Search/__tests__/SearchHitRow.component.test.ts
+  - resources/js/Components/Search/__tests__/SearchSplitView.component.test.ts
   - resources/js/Composables/__tests__/useListDetailSelection.test.ts
   - resources/js/Components/Layouts/__tests__/CollectionPage.component.test.ts
   - resources/js/Components/Patterns/__tests__/Preview.component.test.ts

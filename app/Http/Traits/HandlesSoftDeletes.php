@@ -13,11 +13,11 @@ use Illuminate\Support\Facades\DB;
  * Shared restore / permanent-delete behaviour for admin controllers of
  * soft-deletable models.
  *
- * Controllers keep a thin, route-model-bound wrapper so implicit binding and
- * type hints stay explicit, and delegate the authorization, the action and the
- * flash redirect to this trait:
+ * Controllers keep a thin, route-model-bound wrapper that carries the
+ * `#[Authorize]` attribute, and delegate the action and the flash redirect here:
  *
  * ```php
+ * #[Authorize('restore', 'news')]
  * public function restore(News $news): RedirectResponse
  * {
  *     return $this->restoreModel($news);
@@ -32,7 +32,7 @@ trait HandlesSoftDeletes
     /**
      * Restore a soft-deleted model.
      *
-     * Authorized by the model's `restore` policy method, which reuses the existing
+     * The caller's `#[Authorize('restore', …)]` hits the model's `restore` policy, which reuses the
      * `{resource}.delete.{scope}` permission — restoring is the inverse of deleting,
      * so it deliberately does not introduce a permission of its own.
      *
@@ -43,8 +43,6 @@ trait HandlesSoftDeletes
     protected function restoreModel(Model $model, ?string $message = null): RedirectResponse
     {
         $this->assertSoftDeletable($model);
-
-        $this->authorize('restore', $model);
 
         // Restoring an already-active record is a no-op rather than an error, so a
         // double-submitted form does not surface a confusing failure.
@@ -82,8 +80,6 @@ trait HandlesSoftDeletes
     protected function forceDeleteModel(Model $model, ?string $message = null, ?\Closure $before = null): RedirectResponse
     {
         $this->assertSoftDeletable($model);
-
-        $this->authorize('forceDelete', $model);
 
         abort_unless($model->trashed(), 403, __('trash.must_be_deleted_first')); // @phpstan-ignore method.notFound
 

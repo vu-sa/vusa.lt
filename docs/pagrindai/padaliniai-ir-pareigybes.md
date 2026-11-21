@@ -96,6 +96,6 @@ gavėju. Tai nustato tik [sistemos paskirtį](/pagrindai/atsakomybes#paskirtys) 
 - Padalinius aprašo `Tenant` modelis, institucijas – `Institution`, pareigybes – `Duty`.
 - Pareigybės laikotarpis saugomas ryšio lentelėje `dutiables` (`Dutiable` modelis) su `start_date`, `end_date`, `study_program_id`, `additional_email`, `additional_photo`.
 - `User::current_duties()` tikrina, kad `start_date <= today` ir `(end_date is null or end_date >= today)`.
-- `User::authorization_duties()` tikrina `(end_date is null or end_date >= today)` – tai apima ir būsimus laikotarpius (`upcoming_duties()`). Šią atskirtį tikrina `ScheduledDutyAuthorizationTest`.
+- `User::current_or_upcoming_duties()` tikrina `(end_date is null or end_date >= today)` – tai apima ir būsimus laikotarpius (`upcoming_duties()`). Šią atskirtį tikrina `ScheduledDutyAuthorizationTest`.
 - Bazinę prisijungusio nario prieigą be atsakomybių užtikrina `BaselineAccessTest`.
 - Koordinatorių parinkimą pagal organo hierarchiją atlieka `ResponsibilityResolver`, tikrinamas `ResponsibilityResolverTest`.

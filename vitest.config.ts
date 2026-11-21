@@ -95,14 +95,14 @@ export default defineConfig({
     // Default projects for daily development (unit + component)
     // Use --project storybook or test:all for browser testing
     projects: [
-      // Unit tests project - Services, Composables, Utils
+      // Unit tests project - Search, Composables, Utils
       jsdomProject(
         'unit',
         [
           'resources/js/**/__tests__/**/*.test.ts',
           'resources/js/**/*.test.ts',
           'docs/.vitepress/theme/__tests__/**/*.test.ts',
-          'scripts/__tests__/typecheck-ratchet.test.mjs',
+          'scripts/__tests__/*.test.mjs',
           'vite-plugins/__tests__/**/*.test.ts',
         ],
         [

@@ -1,6 +1,6 @@
 import type { AvatarUser } from '@/Components/Avatars/UserAvatar.vue';
 import type { SecretaryUser } from '@/Components/Institutions';
-import type { MeetingSearchResult } from '@/Shared/Search/types';
+import type { MeetingSearchResult } from '@/Search/core/types';
 import type { InstitutionActivityStatus } from '@/Types/InstitutionActivity';
 
 export interface InstitutionPageMeeting {

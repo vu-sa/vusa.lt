@@ -310,9 +310,9 @@ import {
 } from '@lucide/vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
-import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
+import MultiLocaleInput from '@/Components/AdminForms/MultiLocaleInput.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { FormPanel, FormSection } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
@@ -321,7 +321,7 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
 import type { ImageData } from '@/Types/media';
-import AccessibilitySettings from '@/Components/Public/Base/AccessibilitySettings.vue';
+import AccessibilitySettings from '@/Components/Shared/AccessibilitySettings.vue';
 import { useApiMutation } from '@/Composables/useApi';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { resetInitialization } from '@/Composables/useTutorialProgress';

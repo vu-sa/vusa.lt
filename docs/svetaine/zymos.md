@@ -65,7 +65,7 @@ Puslapio viršuje spausk **Nauja žyma** (arba eik adresu `/mano/tags/create`):
 
 1. **Pavadinimas** – įrašyk žymos pavadinimą lietuvių ir anglų kalbomis.
 2. **Alias** – įrašyk unikalų URL trumpinį mažosiomis raidėmis (pvz., `atstovavimas`).
-3. **Aprašymas** – neprivalomas temos paaiškinimas lietuvių ir anglų kalbomis (rodomas temos puslapio viršuje). Redaktorius matomas ir kuriant žymą, ir redaguojant žymą be aprašymo.
+3. **Aprašymas** – neprivalomas temos paaiškinimas lietuvių ir anglų kalbomis (rodomas temos puslapio viršuje su formatavimu – paryškinimais, nuorodomis, sąrašais). Redaktorius matomas ir kuriant žymą, ir redaguojant žymą be aprašymo.
 4. **Temos puslapis** – pažymėk varnelę, jei nori, kad žyma turėtų viešą temos puslapį `/tema/{alias}`.
 5. Spausk **Išsaugoti**.
 

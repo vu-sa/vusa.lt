@@ -172,7 +172,7 @@ import ResourceBookingRow, { type ResourceBooking } from '@/Components/Reservati
 import type { ReservationCart } from '@/Components/Reservations/types';
 import { useReservationCart } from '@/Components/Reservations/useReservationCart';
 import type { StatusPresentation } from '@/Constants/statusIcons';
-import { useResourceAvailability } from '@/Features/Admin/AdminSearch/Composables/useResourceAvailability';
+import { useResourceAvailability } from '@/Search/admin/Composables/useResourceAvailability';
 import { ModelEnum } from '@/Types/enums';
 import { formatDate } from '@/Utils/dateTime';
 

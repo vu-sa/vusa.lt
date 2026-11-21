@@ -1,14 +1,14 @@
 import { ref, computed, watch } from 'vue';
 
-import { useAdminSearchSession } from '@/Features/Admin/AdminSearch/searchSession';
-import { buildAdminSearchParams, ADMIN_SEARCH_FALLBACKS } from '@/Features/Admin/AdminSearch/Config/collectionSearchConfig';
-import { documentWithMatch, type HighlightedHit } from '@/Shared/Search/matches';
-import { facetSearches, mergeDisjunctiveFacets } from '@/Shared/Search/facets';
-import { ErrorUtils } from '@/Shared/Search/services/SearchErrorUtils';
-import { createEmptyMultiSearchResults } from '@/Shared/Search/utils/createEmptyMultiSearchResults';
-import type { MultiSearchResults } from '@/Shared/Search/types';
+import { useAdminSearchSession } from '@/Search/admin/searchSession';
+import { buildAdminSearchParams, ADMIN_SEARCH_FALLBACKS } from '@/Search/admin/Config/collectionSearchConfig';
+import { documentWithMatch, type HighlightedHit } from '@/Search/core/matches';
+import { facetSearches, mergeDisjunctiveFacets } from '@/Search/core/facets';
+import { ErrorUtils } from '@/Search/core/services/SearchErrorUtils';
+import { createEmptyMultiSearchResults } from '@/Search/core/utils/createEmptyMultiSearchResults';
+import type { MultiSearchResults } from '@/Search/core/types';
 
-export type { MultiSearchResults } from '@/Shared/Search/types';
+export type { MultiSearchResults } from '@/Search/core/types';
 
 /**
  * Admin Search Types

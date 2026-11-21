@@ -46,8 +46,9 @@ jobs:
             - 'knip.jsonc'
             - 'vite-plugins/**'
             - 'dev/*.mjs'
-            - 'scripts/typecheck-ratchet.mjs'
-            - 'scripts/__tests__/typecheck-ratchet.test.mjs'
+            - 'eslint*.mjs'
+            - 'scripts/*.mjs'
+            - 'scripts/__tests__/*.test.mjs'
             - '.github/workflows/ci.yml'
           types:
             - 'app/Models/**'
@@ -504,6 +505,10 @@ jobs:
     - name: Check TypeScript baseline
       run: npm run typecheck:ratchet -- --strict-baseline
 
+    - name: Component tier boundaries
+      if: ${{ !cancelled() }}
+      run: npm run lint:boundaries
+
   # ESLint remains advisory.
   js-quality:
     needs: [changes, setup]
@@ -650,7 +655,7 @@ jobs:
           echo "Results: Static Analysis=$STATIC_ANALYSIS_RESULT, PHP Tests=$PHP_TESTS_RESULT, JS Tests=$JS_TESTS_RESULT, Typecheck=$TYPECHECK_RESULT, JS Quality=$JS_QUALITY_RESULT, Browser Tests=$BROWSER_TESTS_RESULT, Storybook Tests=$STORYBOOK_TESTS_RESULT"
 
           if [[ "$TYPECHECK_REQUIRED" == "true" && "$TYPECHECK_RESULT" != "success" ]]; then
-            echo "❌ TypeScript ratchet did not pass"
+            echo "❌ TypeScript ratchet or tier boundaries did not pass"
             exit 1
           fi
 

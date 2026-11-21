@@ -14,7 +14,7 @@
     <template #overview>
       <div class="grid gap-10 xl:grid-cols-2 xl:gap-16">
         <OverviewSection variant="home" :title="$t('Aprašymas')" :icon="FileText">
-          <!-- eslint-disable-next-line vue/no-v-html -- sanitised on write (DutyType/InstitutionType::sanitizedHtmlTranslations) -->
+          <!-- v-html: sanitized on write (DutyType / InstitutionType::sanitizedHtmlTranslations) -->
           <div v-if="description?.trim()" class="prose prose-sm dark:prose-invert max-w-none text-foreground" v-html="description" />
           <p v-else class="text-sm text-muted-foreground">
             {{ $t('Aprašymo nėra.') }}
@@ -169,7 +169,7 @@ import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
 import { Compass, Edit, FileText, Link2, Shield, Trash2 } from '@lucide/vue';
 
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import { ConfirmDialog, OverviewSection, SheetForm } from '@/Components/Patterns';
 import { RelationshipLinkList, type RelationKindOption, type RelationshipLinkRow, type RelationshipTypeOption } from '@/Components/Relationships';

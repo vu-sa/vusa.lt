@@ -11,7 +11,7 @@ tests:
   - tests/Feature/Notifications/MailTemplateRenderTest.php
   - tests/Unit/Notifications/CommentPostedNotificationTest.php
   - resources/js/Components/Discussions/__tests__/DiscussionPanel.component.test.ts
-  - resources/js/Features/Admin/ActivityLogViewer/__tests__/RecordActivity.component.test.ts
+  - resources/js/Components/ActivityLog/__tests__/RecordActivity.component.test.ts
   - resources/js/Components/Discussions/__tests__/CommentComposer.component.test.ts
   - resources/js/Components/Discussions/__tests__/PollBlock.component.test.ts
   - resources/js/Components/TipTap/__tests__/commentExtensions.test.ts
@@ -104,13 +104,6 @@ Formatavimas išlieka išsaugojus ir vėl atvėrus komentarą.
 
 **Enter** tęsia pastraipą ar sąrašą, **Shift + Enter** įterpia eilutės lūžį.
 Lentelės, antraštės ir failų priedai komentaruose nesiūlomi; nuotraukas galima pridėti.
-
-<ChangelogNote date="2026-10-26" title="Komentarų formatavimas">
-
-Sąrašų ženkleliai ir numeracija matomi tiek rašant, tiek išsaugojus komentarą.
-Formatavimo mygtukai veikia ir telefone.
-
-</ChangelogNote>
 
 ### Temos pradėjimas {#temos}
 

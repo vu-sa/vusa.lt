@@ -76,3 +76,25 @@ describe('news API image fallback', function (): void {
             ->assertJsonPath('data.0.permalink', 'test-news-permalink');
     });
 });
+
+describe('news API visibility', function (): void {
+    test('serves only published news of the requested tenant to guests', function (): void {
+        News::query()->where('tenant_id', $this->tenant->id)->delete();
+        $otherTenant = Tenant::factory()->create();
+
+        $published = News::factory()->for($this->tenant)->create(['lang' => 'lt', 'publish_time' => now()->subHour()]);
+        News::factory()->for($this->tenant)->create(['lang' => 'lt', 'draft' => true]);
+        News::factory()->for($this->tenant)->create(['lang' => 'lt', 'publish_time' => now()->addDay()]);
+        News::factory()->for($otherTenant)->create(['lang' => 'lt', 'publish_time' => now()->subHour()]);
+
+        $ids = $this->getJson("/api/v1/tenants/{$this->tenant->alias}/news?lang=lt")
+            ->assertOk()
+            ->json('data.*.id');
+
+        expect($ids)->toBe([$published->id]);
+    });
+
+    test('an unknown tenant is not found', function (): void {
+        $this->getJson('/api/v1/tenants/nonexistent-tenant/news')->assertNotFound();
+    });
+});

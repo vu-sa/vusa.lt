@@ -48,8 +48,8 @@ import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, toRaw, watch } from 'vue';
 
-import FluentIconSelect from '@/Components/FormItems/FluentIconSelect.vue';
-import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
+import FluentIconSelect from '@/Components/AdminForms/FluentIconSelect.vue';
+import MultiLocaleInput from '@/Components/AdminForms/MultiLocaleInput.vue';
 import SheetForm from '@/Components/Patterns/SheetForm.vue';
 import { Label } from '@/Components/ui/label';
 import { RESOURCE_CATEGORY_PLACEHOLDERS } from '@/Constants/I18n/Placeholders';

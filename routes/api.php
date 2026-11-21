@@ -291,8 +291,9 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         Route::patch('duties/{duty}/status', [DutyApiController::class, 'updateStatus'])->name('duties.status.update');
         Route::post('users/merge-preview', UserMergePreviewApiController::class)->name('users.mergePreview');
 
-        // User search for forms (e.g. responsible user in problems)
-        Route::get('users/search', [UserSearchApiController::class, 'search'])->name('users.search');
+        Route::get('users/search', [UserSearchApiController::class, 'search'])
+            ->middleware('throttle:60,1')
+            ->name('users.search');
 
         // Warns about an existing person before a duplicate account is created. Searches
         // every tenant on purpose, so it is throttled and returns masked emails only.

@@ -6,7 +6,9 @@ use App\Models\InstitutionCheckIn;
 use App\Models\Meeting;
 use App\Models\ResponsibilityGrant;
 use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Gate;
 
 pest()->use(RefreshDatabase::class);
 
@@ -141,6 +143,48 @@ test('a member reports a period without meetings, an outsider cannot', function 
 
     expect($institution->checkIns()->sole()->user_id)->toBe($member->id);
 });
+
+test('a former institution member cannot create or view a check-in', function (): void {
+    $institution = Institution::factory()->for(Tenant::query()->firstOrFail())->create();
+    $duty = Duty::factory()->for($institution)->create();
+    $formerMember = User::factory()->hasAttached($duty, [
+        'start_date' => now()->subYears(3),
+        'end_date' => now()->subYears(2),
+    ])->create();
+    $report = InstitutionCheckIn::factory()->for($institution)->create();
+
+    asUser($formerMember)->post(route('institutions.check-ins.store', $institution), [
+        'start_date' => today()->toDateString(),
+        'end_date' => today()->addWeek()->toDateString(),
+    ])->assertForbidden();
+
+    $this->assertDatabaseMissing('institution_check_ins', [
+        'institution_id' => $institution->id,
+        'user_id' => $formerMember->id,
+    ]);
+    expect(Gate::forUser($formerMember)->allows('view', $report))->toBeFalse();
+});
+
+test('a member with a non-ended term can create and view check-ins', function (int $startInMonths): void {
+    $institution = Institution::factory()->for(Tenant::query()->firstOrFail())->create();
+    $duty = Duty::factory()->for($institution)->create();
+    $member = User::factory()->hasAttached($duty, [
+        'start_date' => now()->addMonths($startInMonths),
+        'end_date' => null,
+    ])->create();
+    $report = InstitutionCheckIn::factory()->for($institution)->create();
+
+    asUser($member)->post(route('institutions.check-ins.store', $institution), [
+        'start_date' => today()->toDateString(),
+        'end_date' => today()->addWeek()->toDateString(),
+    ])->assertRedirect()->assertSessionHasNoErrors();
+
+    $this->assertDatabaseHas('institution_check_ins', [
+        'institution_id' => $institution->id,
+        'user_id' => $member->id,
+    ]);
+    expect(Gate::forUser($member)->allows('view', $report))->toBeTrue();
+})->with(['a current term' => -1, 'an upcoming term' => 1]);
 
 test('a check-in must end after it starts', function (): void {
     $tenant = Tenant::query()->firstOrFail();

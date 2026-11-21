@@ -1,9 +1,9 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
-import LearningSourceField, { type LearningSourceDraft } from '../LearningSourceField.vue';
-
 import { commonStubs } from '@/tests/stubs';
+
+import LearningSourceField, { type LearningSourceDraft } from '../LearningSourceField.vue';
 
 describe('LearningSourceField PDF hint', () => {
   it.each([

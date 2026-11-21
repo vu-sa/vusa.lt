@@ -168,7 +168,7 @@ class HandleInertiaRequests extends Middleware
                     ...($onAdmin ? $this->getOpenTaskCounts($user) : []),
                     'isSuperAdmin' => $user->isSuperAdmin(),
                     'tenants' => $onAdmin
-                        ? $user->tenants()->distinct()->get(['tenants.id', 'tenants.shortname', 'tenants.alias'])
+                        ? $user->current_or_upcoming_tenants()->distinct()->get(['tenants.id', 'tenants.shortname', 'tenants.alias'])
                         : [],
                     ...($onAdmin ? $this->getNotificationPreview($user) : [
                         'unreadNotifications' => [],

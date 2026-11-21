@@ -20,8 +20,8 @@
  */
 
 export { default as AccessibilityMenu } from './AccessibilityMenu.vue';
-export { default as CheckControl } from './CheckControl.vue';
-export { default as DatePlate } from './DatePlate.vue';
+export { default as CheckControl } from '../../Shared/CheckControl.vue';
+export { default as DatePlate } from '../../Brand/DatePlate.vue';
 export { default as HairlineList } from './HairlineList.vue';
 export { default as HairlineRow } from './HairlineRow.vue';
 export { default as HeaderWordmark } from './HeaderWordmark.vue';

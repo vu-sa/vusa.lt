@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\GetFollowedInstitutions;
+use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\Meeting;
@@ -72,6 +73,15 @@ describe('InstitutionSubscriptionService', function (): void {
         $status = $this->service->getStatus($this->user, $this->institution);
 
         expect($status)->toBe(['is_followed' => true, 'is_duty_based' => false]);
+    });
+
+    test('only a current seat makes the subscription duty-based, so a former member may follow', function (): void {
+        $duty = Duty::factory()->for($this->institution)->create();
+        $former = User::factory()->hasAttached($duty, ['start_date' => '2020-07-01', 'end_date' => '2021-06-30'])->create();
+        $current = User::factory()->hasAttached($duty, ['start_date' => now()->subDay()])->create();
+
+        expect($this->service->getStatus($former, $this->institution)['is_duty_based'])->toBeFalse()
+            ->and($this->service->getStatus($current, $this->institution)['is_duty_based'])->toBeTrue();
     });
 
     test('toggle follow works correctly', function (): void {

@@ -19,6 +19,7 @@ use App\Support\Experiments\GoalsExperiment;
 use App\Support\LocalizedRouteSlugs;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -34,10 +35,9 @@ class GoalController extends AdminController
     /**
      * Goals are a handful per padalinys a year, so the whole list is sent and filtered in the browser.
      */
+    #[Authorize('viewAny', Goal::class)]
     public function index(Request $request): Response
     {
-        $this->handleAuthorization('viewAny', Goal::class);
-
         $user = $request->user();
 
         $goals = Goal::query()
@@ -61,11 +61,10 @@ class GoalController extends AdminController
         ]);
     }
 
-    public function create(): Response
+    #[Authorize('create', Goal::class)]
+    public function create(Request $request): Response
     {
-        $this->handleAuthorization('create', Goal::class);
-
-        $tenants = GetTenantsForUpserts::execute('goals.create.padalinys', $this->authorizer)
+        $tenants = GetTenantsForUpserts::execute($request->user(), 'goals.create.padalinys', $this->authorizer)
             ->whereIn('id', GoalsExperiment::enabledTenantIds())->values();
 
         return Inertia::render('Admin/Goals/CreateGoal', [
@@ -77,6 +76,8 @@ class GoalController extends AdminController
         ]);
     }
 
+    // `create` is tenant-agnostic; the inherited `tenant_id` rule confines the goal to a padalinys.
+    #[Authorize('create', Goal::class)]
     public function store(StoreGoalRequest $request): RedirectResponse
     {
         $goal = Goal::create([
@@ -87,10 +88,9 @@ class GoalController extends AdminController
         return redirect()->route('goals.show', $goal)->with('success', $this->entityMessage('created', 'goal'));
     }
 
+    #[Authorize('view', 'goal')]
     public function show(Request $request, Goal $goal): Response
     {
-        $this->handleAuthorization('view', $goal);
-
         $user = $request->user();
         $goal->load(['tenant', 'cadence', 'responsibleDuty.current_users', 'createdBy:id,name']);
 
@@ -135,12 +135,11 @@ class GoalController extends AdminController
         ]);
     }
 
-    public function edit(Goal $goal): Response
+    #[Authorize('update', 'goal')]
+    public function edit(Request $request, Goal $goal): Response
     {
-        $this->handleAuthorization('update', $goal);
-
         return Inertia::render('Admin/Goals/EditGoal', [
-            ...$this->formOptions(GetTenantsForUpserts::execute('goals.update.padalinys', $this->authorizer)
+            ...$this->formOptions(GetTenantsForUpserts::execute($request->user(), 'goals.update.padalinys', $this->authorizer)
                 ->whereIn('id', GoalsExperiment::enabledTenantIds())->values()),
             'goal' => [
                 ...$goal->toFullArray(),
@@ -149,6 +148,7 @@ class GoalController extends AdminController
         ]);
     }
 
+    #[Authorize('update', 'goal')]
     public function update(UpdateGoalRequest $request, Goal $goal): RedirectResponse
     {
         $goal->update($request->validated());
@@ -156,15 +156,15 @@ class GoalController extends AdminController
         return back()->with('success', $this->entityMessage('updated', 'goal'));
     }
 
+    #[Authorize('delete', 'goal')]
     public function destroy(Goal $goal): RedirectResponse
     {
-        $this->handleAuthorization('delete', $goal);
-
         $goal->delete();
 
         return $this->redirectToIndexWithInfo('goals', $this->entityMessage('deleted', 'goal'));
     }
 
+    #[Authorize('update', 'goal')]
     public function linkProblem(LinkGoalProblemRequest $request, Goal $goal): RedirectResponse
     {
         $goal->problems()->syncWithoutDetaching([$request->validated('problem_id')]);
@@ -172,10 +172,9 @@ class GoalController extends AdminController
         return back()->with('success', __('goals.messages.problem_linked'));
     }
 
+    #[Authorize('update', 'goal')]
     public function unlinkProblem(Goal $goal, Problem $problem): RedirectResponse
     {
-        $this->handleAuthorization('update', $goal);
-
         $goal->problems()->detach($problem->id);
 
         return back()->with('success', __('goals.messages.problem_unlinked'));

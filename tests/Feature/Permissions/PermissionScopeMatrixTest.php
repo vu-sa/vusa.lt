@@ -82,7 +82,8 @@ function subjectIn(string $resource, Tenant $tenant): mixed
         'problems' => Problem::factory()->create(['tenant_id' => $tenant->id]),
         'studyPrograms' => StudyProgram::factory()->create(['tenant_id' => $tenant->id]),
         'quickLinks' => QuickLink::factory()->create(['tenant_id' => $tenant->id]),
-        'tasks' => Task::factory()->hasAttached(makeUser($tenant))->create(),
+        'tasks' => Task::factory()->hasAttached(makeUser($tenant))
+            ->create(['taskable_id' => Institution::factory()->for($tenant)->create()->id]),
         'studySets' => StudySet::factory()->create(['tenant_id' => $tenant->id]),
         'pages' => Page::factory()->create(['tenant_id' => $tenant->id]),
         'mailingLists' => MailingList::factory()->create(['tenant_id' => $tenant->id]),

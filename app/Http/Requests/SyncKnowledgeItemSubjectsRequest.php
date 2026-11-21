@@ -12,11 +12,6 @@ use Illuminate\Validation\Validator;
 
 class SyncKnowledgeItemSubjectsRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return $this->user()->can('update', $this->route('knowledgeItem'));
-    }
-
     public function rules(): array
     {
         return [

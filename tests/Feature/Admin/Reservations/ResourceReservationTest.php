@@ -263,7 +263,7 @@ function reservationResourcePayload(ReservationResource $pivot, array $changes =
 describe('reservation resource validation', function (): void {
     test('invalid values never change the row', function (string $field, mixed $value): void {
         $pivot = makeReservationResource($this->resource, $this->user);
-        $original = $pivot->getAttributes();
+        $original = $pivot->fresh()->getAttributes();
 
         asUser($this->user)->put(route('reservationResources.update', $pivot), reservationResourcePayload($pivot, [$field => $value]))
             ->assertSessionHasErrors($field);
@@ -292,7 +292,7 @@ describe('reservation resource validation', function (): void {
         $pivot = makeReservationResource($this->resource, $this->user);
         $pivot->state = $state;
         $pivot->save();
-        $original = $pivot->getAttributes();
+        $original = $pivot->fresh()->getAttributes();
 
         asUser($manager ? $this->resourceManager : $this->user)
             ->put(route('reservationResources.update', $pivot), reservationResourcePayload($pivot, ['quantity' => 2]))

@@ -169,7 +169,7 @@ describe('Step3UserAssignment.vue', () => {
     await flushPromises();
 
     expect(apiMock.execute).toHaveBeenCalled();
-    expect(apiMock.lastUrl).toContain('scope=all');
+    expect(apiMock.lastUrl).toContain('purpose=duty-member');
     vi.useRealTimers();
   });
 

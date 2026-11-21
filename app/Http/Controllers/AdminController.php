@@ -97,21 +97,6 @@ abstract class AdminController extends Controller
     }
 
     /**
-     * Handle authorization with consistent error handling.
-     *
-     * This used to accept the two arguments in either order and guess which was which. Every
-     * call site now passes the ability first, so the guessing is gone — an inverted call is a
-     * type error at the boundary instead of an authorization check against the wrong subject.
-     *
-     * @param  string  $ability  e.g. 'update'
-     * @param  mixed  $model  A model instance, or a class-string for class-level abilities
-     */
-    protected function handleAuthorization(string $ability, mixed $model = null): void
-    {
-        $this->authorize($ability, $model);
-    }
-
-    /**
      * Gate a workspace's overview page on the navigation catalog: it opens for exactly the users
      * whose tab row would show it, so the page and its tab can never disagree.
      */

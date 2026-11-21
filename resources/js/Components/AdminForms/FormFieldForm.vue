@@ -101,9 +101,8 @@ import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
 import { Input } from '@/Components/ui/input';
 import { NativeSelect } from '@/Components/ui/native-select';
 
-import MultiLocaleTiptapFormItem from '../FormItems/MultiLocaleTiptapFormItem.vue';
-import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
-
+import MultiLocaleTiptapFormItem from './MultiLocaleTiptapFormItem.vue';
+import MultiLocaleInput from './MultiLocaleInput.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 
 const props = defineProps<{

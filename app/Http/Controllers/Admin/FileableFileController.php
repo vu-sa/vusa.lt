@@ -5,10 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreFileableFilesRequest;
 use App\Models\FileableFile;
-use App\Services\ResourceServices\SharepointFileService;
+use App\Services\Sharepoint\SharepointFileService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -20,6 +21,7 @@ class FileableFileController extends AdminController
 {
     public function __construct(private readonly SharepointFileService $files) {}
 
+    // Authorized in StoreFileableFilesRequest: the record resolved from the route.
     public function store(StoreFileableFilesRequest $request): RedirectResponse
     {
         $fileable = $request->fileable();
@@ -70,10 +72,9 @@ class FileableFileController extends AdminController
     /**
      * Opening a file is one click: find or mint the anonymous link, then go there.
      */
+    #[Authorize('view', 'fileableFile')]
     public function open(FileableFile $fileableFile): RedirectResponse
     {
-        $this->authorize('view', $fileableFile);
-
         try {
             return redirect()->away($this->files->publicLinkFor($fileableFile));
         } catch (\Throwable $e) {
@@ -81,10 +82,9 @@ class FileableFileController extends AdminController
         }
     }
 
+    #[Authorize('view', 'fileableFile')]
     public function publicLink(FileableFile $fileableFile): JsonResponse
     {
-        $this->authorize('view', $fileableFile);
-
         try {
             return response()->json(['url' => $this->files->publicLinkFor($fileableFile)]);
         } catch (\Throwable $e) {
@@ -92,10 +92,9 @@ class FileableFileController extends AdminController
         }
     }
 
+    #[Authorize('update', 'fileableFile')]
     public function revokePublicLink(FileableFile $fileableFile): RedirectResponse
     {
-        $this->authorize('update', $fileableFile);
-
         try {
             $this->files->revokePublicLink($fileableFile);
         } catch (\Throwable $e) {
@@ -110,10 +109,9 @@ class FileableFileController extends AdminController
         return back()->with('success', __('messages.sharepoint.link_revoked'));
     }
 
+    #[Authorize('delete', 'fileableFile')]
     public function destroy(FileableFile $fileableFile): RedirectResponse
     {
-        $this->authorize('delete', $fileableFile);
-
         try {
             $this->files->deleteFile($fileableFile);
         } catch (\Throwable $e) {

@@ -659,7 +659,7 @@ describe('public URL history', function (): void {
 
         asUser($this->admin)
             ->delete(route('pages.publicUrls.destroy', [$this->page, $foreign]))
-            ->assertStatus(403);
+            ->assertNotFound();
 
         $this->assertDatabaseHas('public_urls', ['id' => $foreign->id]);
     });

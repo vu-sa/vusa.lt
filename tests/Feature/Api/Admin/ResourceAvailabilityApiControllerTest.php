@@ -58,7 +58,8 @@ test('subtracts an overlapping reservation from the available capacity', functio
 
     $response->assertOk()
         ->assertJsonPath("data.{$this->resource->id}.lowestCapacityAtDateTimeRange", 3)
-        ->assertJsonPath("data.{$this->resource->id}.reservations.0.quantity", 2);
+        ->assertJsonPath("data.{$this->resource->id}.reservations.0.quantity", 2)
+        ->assertJsonPath("data.{$this->resource->id}.reservations.0.name", null);
 });
 
 test('validates that start is before end', function (): void {

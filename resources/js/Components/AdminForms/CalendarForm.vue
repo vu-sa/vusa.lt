@@ -177,7 +177,7 @@
       :label="$t('Aprašymas')"
     >
       <template v-if="readOnly">
-        <!-- eslint-disable-next-line vue/no-v-html -- calendar rich text is sanitized when written -->
+        <!-- v-html: sanitized on write (Calendar::sanitizedHtmlTranslations) -->
         <div class="rc-prose tracking-normal" v-html="form.description?.[activeLocale]" />
       </template>
       <TiptapEditor
@@ -475,7 +475,7 @@ import { NativeSelect } from '@/Components/ui/native-select';
 import { Checkbox } from '@/Components/ui/checkbox';
 import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
-import VisualOptionSelect from '@/Components/FormItems/VisualOptionSelect.vue';
+import VisualOptionSelect from '@/Components/AdminForms/VisualOptionSelect.vue';
 import { contentStatuses } from '@/Constants/statusIcons';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { resolveTenantPublicHost } from '@/Composables/useTenantSubdomain';

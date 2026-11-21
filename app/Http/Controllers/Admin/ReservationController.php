@@ -17,11 +17,11 @@ use App\Http\Requests\StoreReservationRequest;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Reservation;
 use App\Models\Resource;
-use App\Models\User;
 use App\Notifications\AssignedToResourceNotification;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
 /* use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests; */
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
@@ -39,10 +39,9 @@ class ReservationController extends AdminController
     /**
      * Display a listing of the resource.
      */
+    #[Authorize('viewList', Reservation::class)]
     public function index(IndexReservationRequest $request)
     {
-        $this->handleAuthorization('viewList', Reservation::class);
-
         $reservations = fn () => once(function () use ($request) {
             $query = Reservation::query()->with(SerializeReservationsForTable::EAGER_LOADS);
 
@@ -90,7 +89,7 @@ class ReservationController extends AdminController
      */
     public function create()
     {
-        $this->handleAuthorization('create', [Reservation::class, $this->authorizer]);
+        $this->authorize('create', [Reservation::class, $this->authorizer]);
 
         return Inertia::render('Admin/Reservations/CreateReservation', [
             'reservationCart' => SerializeReservationCart::execute(request()->user()),
@@ -105,9 +104,10 @@ class ReservationController extends AdminController
      * Submitting the cart: capacity is checked under a row lock, and the draft is consumed with
      * the reservation so a failed check leaves it intact.
      */
+    #[Authorize('create', Reservation::class)]
     public function store(StoreReservationRequest $request)
     {
-        $this->handleAuthorization('create', [Reservation::class, $this->authorizer]);
+        $this->authorize('create', [Reservation::class, $this->authorizer]);
 
         $reservation = DB::transaction(function () use ($request): Reservation {
             $reservation = new Reservation;
@@ -145,9 +145,10 @@ class ReservationController extends AdminController
     /**
      * Display the specified resource.
      */
+    #[Authorize('view', 'reservation')]
     public function show(ShowReservationRequest $request, Reservation $reservation)
     {
-        $this->handleAuthorization('view', [Reservation::class, $reservation, $this->authorizer]);
+        $this->authorize('view', [Reservation::class, $reservation, $this->authorizer]);
 
         $modelName = Str::of(class_basename($reservation))->camel()->plural();
 
@@ -202,7 +203,6 @@ class ReservationController extends AdminController
                     'lowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($capacityAtDateTimeRange),
                 ];
             })),
-            'allUsers' => Inertia::optional(fn () => User::select('id', 'name', 'profile_photo_path')->orderBy('name')->get()),
         ]);
     }
 
@@ -218,16 +218,17 @@ class ReservationController extends AdminController
      */
     public function destroy(Reservation $reservation)
     {
-        $this->handleAuthorization('delete', [Reservation::class, $reservation, $this->authorizer]);
+        $this->authorize('delete', [Reservation::class, $reservation, $this->authorizer]);
 
         $reservation->delete();
 
         return back()->with('success', $this->entityMessage('deleted', 'reservation'));
     }
 
+    // Authorized in AddReservationUsersRequest: the reservation receiving users.
     public function addUsers(AddReservationUsersRequest $request, Reservation $reservation)
     {
-        $this->handleAuthorization('addUsers', [Reservation::class, $reservation, $this->authorizer]);
+        $this->authorize('addUsers', [Reservation::class, $reservation, $this->authorizer]);
 
         $old_users = $reservation->users;
 

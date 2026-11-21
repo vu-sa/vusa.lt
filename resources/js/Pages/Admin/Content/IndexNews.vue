@@ -137,19 +137,19 @@ import type { CollectionColumn } from '@/Components/Collection/types';
 import { NewsIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import NewsPreview from '@/Components/News/NewsPreview.vue';
-import { newsStatus } from '@/Components/News/newsStatus';
+import { newsStatus } from '@/Search/admin/Utils/newsStatus';
 import { EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { useCollectionPublishing } from '@/Composables/useCollectionPublishing';
-import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import { useCollectionPublishing } from '@/Components/Collection/useCollectionPublishing';
+import { useCollectionRecordActions } from '@/Components/Collection/useCollectionRecordActions';
 import {
   isTrashView,
   useTrashAwareSource,
   useTrashCollectionSource,
   useTypesenseCollectionSource,
 } from '@/Composables/useCollectionSource';
-import { stripHtml } from '@/Features/Admin/AdminSearch/Utils/html';
-import type { NewsSearchResult } from '@/Shared/Search/types';
+import { stripHtml } from '@/Search/admin/Utils/html';
+import type { NewsSearchResult } from '@/Search/core/types';
 import { formatDate, formatRecordDate } from '@/Utils/dateTime';
 
 type NewsRow = NewsSearchResult & {

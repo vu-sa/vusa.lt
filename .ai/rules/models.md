@@ -13,7 +13,7 @@ A `Public*` mirror is never saved, so its Scout observer never fires. Its parent
 - A new mirror needs a `MorphMap::ALIASED_TO_PARENT` entry and a parent using the trait; `tests/Feature/Search/PublicSearchMirrorTest.php` checks both.
 - Exceptions: `AgendaItem::save()` and `SyncMeetingOutcomeIndex` write the public meeting index directly under `MeetingSearchLock` (see `.ai/rules/typesense.md`); `search:sync-public` catches time-based flips (`publish_time`, assignment dates) and mass updates that fire no events.
 
-These are direct `->searchable()` calls, so `Model::disableSearchSyncing()` does NOT suppress them.
+These are direct `->searchable()` calls, so Scout's `Searchable::disableSearchSyncing()` does NOT suppress them.
 
 To actually stop indexing (e.g. in a test), swap the Scout engine itself — see `TestingServiceProvider` / `usesTypesense()` in `tests/Pest.php`, which null the engine at the `EngineManager` level so both the observer path and these direct calls are covered.
 
@@ -24,17 +24,17 @@ Helpers to reach for instead of re-deriving:
 - `Tenant::main()` — the single central-office tenant (was hand-written in six places).
 - `Tenant::query()->representational()` — everything except PKP. Inside a `whereHas()` closure PHPStan only sees `Builder<Model>`, so use `whereIn('type', TenantType::representationalValues())` there.
 
-`GetTenantsForUpserts` deliberately emits `$tenant->type?->value`: its array shape goes straight to Inertia and is compared against plain strings by several callers.
+`GetTenantsForUpserts::execute($user, $permission, $authorizer)` deliberately emits `$tenant->type?->value`: its array shape goes straight to Inertia and is compared against plain strings by several callers.
 
-## Institution governance scope is a Type flag, inherited down the type tree
+## Institution governance scope is an InstitutionType flag, inherited down the type tree
 Whether an institution is one of VU SA's own bodies (`vusa`) or an external one VU SA delegates
 representatives into (`vu` / `national` / `international`) lives in
-`types.extra_attributes['governance_scope']` and is inherited from the nearest ancestor via
-`types.parent_id`. Only the root types declare a value; children inherit.
+`institution_types.extra_attributes['governance_scope']` and is inherited from the nearest ancestor via
+`institution_types.parent_id`. Only the root types declare a value; children inherit.
 
 Read it through `InstitutionScopeResolver` (a singleton, one cached query over the whole tree),
-never `Type::getParentsAndSelf()` — that walks `recursiveParent` one query per level and N+1s
-across any meeting or institution listing. `Type::booted()` flushes the cache on save/delete/restore.
+never `InstitutionType::getParentsAndSelf()` — that walks `recursiveParent` one query per level and N+1s
+across any meeting or institution listing. `InstitutionType::booted()` flushes the cache on save/delete/restore.
 
 A type carries exactly ONE scope. Type links (`institution_type_links`) do not consider
 scope, so a body belonging to a different world than its type gets its own type — never a

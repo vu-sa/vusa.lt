@@ -226,11 +226,9 @@ describe('Document Sync Controller', function (): void {
         $user = User::factory()->create(); // User without admin role
         $document = Document::factory()->create();
 
-        $response = $this->actingAs($user)
-            ->post(route('documents.refresh', $document));
-
-        // User gets redirected due to authorization failure (could be 403 or 302)
-        expect($response->status())->toBeIn([302, 403]);
+        $this->actingAs($user)
+            ->post(route('documents.refresh', $document))
+            ->assertForbidden();
 
         // Ensure no sync jobs were dispatched (ignore scout jobs)
         Queue::assertNotPushed(SyncDocumentFromSharePointJob::class);

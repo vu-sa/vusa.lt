@@ -218,7 +218,8 @@ import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { DutiableTimelineDialog } from '@/Features/Admin/DutiableTimeline';
 import { AssignDutyUserSheet, MemberTermsSummary, UserTermRow, termStatus, termYearSpan } from '@/Features/Admin/Occupancy';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
-import { LoginRecency, ModelEnum } from '@/Types/enums';
+import type { LoginRecency } from '@/Types/enums';
+import { ModelEnum } from '@/Types/enums';
 import { changeDutyNameEndings } from '@/Utils/String';
 import { formatDate, todayIso } from '@/Utils/dateTime';
 

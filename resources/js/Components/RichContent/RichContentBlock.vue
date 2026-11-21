@@ -14,6 +14,7 @@
                for both public pages and the editor's global preview; otherwise the card
                body appears empty even though json_content is present. -->
           <template v-if="element.type === 'shadcn-card'">
+            <!-- v-html: sanitized on render (ContentPart::renderTiptapHtml) -->
             <div v-if="typeof element.html === 'string'" class="rc-prose" v-html="element.html" />
             <RichContentTiptapHTML v-else :json_content="element.json_content" />
           </template>

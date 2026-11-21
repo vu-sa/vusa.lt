@@ -25,7 +25,7 @@ vi.mock('@/Composables/useActionWindowData', () => ({
 const searchOptions = vi.fn();
 const results = shallowRef<unknown[]>([]);
 
-vi.mock('@/Features/Admin/AdminSearch/Composables/useAdminCollectionSearch', () => ({
+vi.mock('@/Search/admin/Composables/useAdminCollectionSearch', () => ({
   useAdminCollectionSearch: (options: unknown) => {
     searchOptions(options);
 

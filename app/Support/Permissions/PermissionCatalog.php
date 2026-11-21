@@ -68,22 +68,27 @@ final class PermissionCatalog
     private const array RESERVED = ['supportRequests'];
 
     /**
+     * What `own` means, per resource: the Duty relation that lists the records a holder may act on
+     * (`duties` = the granting duties themselves) and the editor's label for the cell. A resource
+     * missing here has no `own` scope, so adding a relation to Duty never grants anything.
+     * Tasks, reservations and users stay out: members already manage their own, and the Duty
+     * relations of those names reach former holders' or colleagues' records.
+     */
+    private const array OWN_SCOPES = [
+        'duties' => ['relation' => 'duties', 'label' => 'access.own_duties'],
+        'dutiables' => ['relation' => 'dutiables', 'label' => 'access.own_duties'],
+        'meetings' => ['relation' => 'meetings', 'label' => 'access.own_institutions'],
+        'documents' => ['relation' => 'documents', 'label' => 'access.own_institution_documents'],
+        // Reserved for a member's personal goals; no relation yet, so it matches nothing.
+        'goals' => ['relation' => null, 'label' => null],
+    ];
+
+    /**
      * Combinations that would grant nothing, matched with `Str::is` against `resource.ability.scope`.
-     * `own` resolves through a same-named relation on Duty; a model without one has no `own` rows,
-     * and `create` only reads `.padalinys`, so `create.own` exists only where a policy reads it (`OWN_CREATE`).
+     * `create` only reads `.padalinys`, so `create.own` exists only where a policy reads it (`OWN_CREATE`).
      * Anything every member already has belongs in the policy and BaselineAccess instead.
      */
     private const array UNGRANTABLE = [
-        // No Duty relation, so `own` matches no record.
-        'banners.*.own', 'calendars.*.own', 'files.*.own', 'forms.*.own', 'news.*.own', 'pages.*.own',
-        // Same records as `padalinys`.
-        'resources.*.own',
-        // Agenda items follow their meeting; tasks are the assignee's (Duty::tasks reaches a colleague's).
-        'agendaItems.*.own', 'tasks.*.own',
-        // Everyone sees the reservations they take part in (BaselineAccess retires `create`).
-        'reservations.read.own',
-        // You edit yourself in Profilis and cannot delete yourself; `own` would mean colleagues.
-        'users.*.own',
         // Permissions are seeded from the catalog and only listed.
         'permissions.create.*', 'permissions.update.*', 'permissions.delete.*',
         // Deleting the duty you hold makes no sense.
@@ -177,6 +182,14 @@ final class PermissionCatalog
         ));
     }
 
+    /**
+     * The Duty relation behind a resource's `own` scope; null when `own` matches no record.
+     */
+    public static function ownRelation(string $resource): ?string
+    {
+        return self::OWN_SCOPES[$resource]['relation'] ?? null;
+    }
+
     public static function areaOf(string $resource): string
     {
         return self::RESOURCE_AREAS[$resource] ?? 'sistema';
@@ -205,11 +218,7 @@ final class PermissionCatalog
                 'abilities' => $abilities,
                 'baseline' => $baseline[$resource] ?? null,
                 'baselineSegments' => BaselineAccess::segments($resource),
-                'scopeLabels' => match ($resource) {
-                    'meetings' => ['own' => __('access.own_institutions')],
-                    'documents' => ['own' => __('access.own_institution_documents')],
-                    default => [],
-                },
+                'scopeLabels' => isset(self::OWN_SCOPES[$resource]['label']) ? ['own' => __(self::OWN_SCOPES[$resource]['label'])] : [],
                 'scopeDescriptions' => in_array($resource, ['meetings', 'agendaItems'], true) ? __("access.permission_scopes.{$resource}") : [],
                 'softDeletes' => ModelEnum::isSoftDeletable($resource),
             ])
@@ -245,6 +254,10 @@ final class PermissionCatalog
     private static function allowedScopes(string $resource, string $ability): array
     {
         $scopes = ModelEnum::getAllowedScopes($resource);
+
+        if (! array_key_exists($resource, self::OWN_SCOPES)) {
+            $scopes = array_diff($scopes, ['own']);
+        }
 
         if ($ability === CRUDEnum::CREATE->label() && ! in_array($resource, self::OWN_CREATE, true)) {
             $scopes = array_diff($scopes, ['own']);

@@ -33,7 +33,7 @@ import { computed } from 'vue';
 
 import { StatusBadge } from '@/Components/Patterns';
 import { meetingAlignmentStatuses, meetingCompletionStatuses, statusFor, statusRoleParts, type StatusPresentation } from '@/Constants/statusIcons';
-import type { MeetingSearchResult } from '@/Shared/Search/types';
+import type { MeetingSearchResult } from '@/Search/core/types';
 
 /**
  * How a meeting went, anywhere one is listed. Nothing is said twice: `summary` folds the vote split

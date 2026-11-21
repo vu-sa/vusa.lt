@@ -11,9 +11,9 @@ use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
 use App\Services\AtstovavimasDashboardService;
 use App\Services\InstitutionRelationService;
+use App\Services\Institutions\InstitutionQueries;
 use App\Services\InstitutionStatusSnapshotService;
 use App\Services\RepStatisticsScope;
-use App\Services\ResourceServices\DutyService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -89,13 +89,13 @@ test('inactive institutions are excluded from query and in-memory statistics and
     expect(RepStatisticsScope::institutions([$this->tenant->id])->pluck('institutions.id'))->toContain($this->institution->id)->not->toContain($inactive->id)
         ->and(RepStatisticsScope::counts($this->institution))->toBeTrue()
         ->and(RepStatisticsScope::counts($inactive))->toBeFalse()
-        ->and(DutyService::getTimelineInstitutions($ids)->modelKeys())->toBe([$this->institution->id]);
+        ->and(InstitutionQueries::getTimelineInstitutions($ids)->modelKeys())->toBe([$this->institution->id]);
 
     $access = app(AtstovavimasDashboardService::class)->ganttInstitutionAccess(makeAdminUser(), [$this->tenant->id]);
     expect($access->keys())->toContain($this->institution->id)->not->toContain($inactive->id);
     $inactive->update(['is_active' => true]);
     expect(RepStatisticsScope::counts($inactive->fresh()))->toBeTrue()
-        ->and(DutyService::getTimelineInstitutions($ids)->modelKeys())->toContain($inactive->id);
+        ->and(InstitutionQueries::getTimelineInstitutions($ids)->modelKeys())->toContain($inactive->id);
 });
 
 test('current statistics exclude meetings belonging only to inactive institutions', function (): void {

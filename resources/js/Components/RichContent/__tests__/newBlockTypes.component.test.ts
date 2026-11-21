@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { mount, type VueWrapper } from '@vue/test-utils';
+import { reactive } from 'vue';
 
 import CardStackEditor from '../Types/CardStackEditor.vue';
 import CarouselSlideDeckEditor from '../Types/CarouselSlideDeckEditor.vue';
@@ -183,7 +184,7 @@ describe('carousel-slide-deck', () => {
 
 describe('photo-gallery', () => {
   it('exposes gallery layout options as labelled pressed controls', async () => {
-    const item = createContentItem('photo-gallery');
+    const item = reactive(createContentItem('photo-gallery'));
     const wrapper = mount(PhotoGalleryGridEditor, {
       props: { modelValue: item.json_content, options: item.options },
       global: { stubs: { TiptapImageButton: true } },

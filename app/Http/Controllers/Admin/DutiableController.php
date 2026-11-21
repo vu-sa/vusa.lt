@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Support\MorphMap;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
@@ -42,6 +43,7 @@ class DutiableController extends AdminController
      * description reaches the model's sanitizing setter; the audit wrapper keeps the
      * activity log identical to the wizard's attach.
      */
+    // Authorized in StoreDutiableRequest: the duty and member named in the body.
     public function store(StoreDutiableRequest $request, SyncImageMedia $syncImage): RedirectResponse
     {
         $data = $request->safe();
@@ -80,10 +82,9 @@ class DutiableController extends AdminController
      *
      * @deprecated Kept for bookmarks, mail links and the timeline's `edit_url`; remove once they open the occupancy sheet instead.
      */
+    #[Authorize('manageDutiable', 'dutiable')]
     public function edit(Dutiable $dutiable): RedirectResponse
     {
-        $this->authorize('manageDutiable', $dutiable);
-
         return redirect()->route('duties.show', ['duty' => $dutiable->duty_id, 'dutiable' => $dutiable->id]);
     }
 
@@ -91,10 +92,9 @@ class DutiableController extends AdminController
      * Update the specified resource in storage.
      * TODO: this will not work for contacts
      */
+    #[Authorize('manageDutiable', 'dutiable')]
     public function update(Dutiable $dutiable, UpdateDutiableRequest $request)
     {
-        $this->authorize('manageDutiable', $dutiable);
-
         $data = $request->validated();
 
         // Derived (ex-officio) rows have their dates mirrored from the source;
@@ -118,15 +118,15 @@ class DutiableController extends AdminController
     }
 
     /**
-     * Warns, without blocking, when a seat counts toward a padalinys its member does not belong to:
-     * that padalinys's admins cannot edit it (DutyPolicy::managePeople checks membership).
+     * A padalinys's admins cannot edit a quota seat if its member has no non-ended term
+     * in that padalinys (DutyPolicy::managePeople).
      */
     private function savedResponse(string $action, Duty $duty, ?int $tenantId, ?string $userId): RedirectResponse
     {
         $response = back()->with('success', $this->entityMessage($action, 'dutiable'));
         $member = $tenantId !== null && $userId !== null ? User::query()->find($userId) : null;
 
-        if ($member === null || $member->tenants()->where('tenants.id', $tenantId)->exists()) {
+        if ($member === null || $member->current_or_upcoming_tenants()->where('tenants.id', $tenantId)->exists()) {
             return $response;
         }
 
@@ -139,10 +139,9 @@ class DutiableController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
+    #[Authorize('manageDutiable', 'dutiable')]
     public function destroy(DestroyDutiableRequest $request, Dutiable $dutiable)
     {
-        $this->authorize('manageDutiable', $dutiable);
-
         $user = $dutiable->dutiable;
 
         $mutation = fn () => $dutiable->delete();

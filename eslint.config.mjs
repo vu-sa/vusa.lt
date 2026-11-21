@@ -9,6 +9,8 @@ import importPlugin, { createNodeResolver } from 'eslint-plugin-import-x';
 import stylistic from '@stylistic/eslint-plugin';
 import globals from 'globals';
 
+import { htmlSourcePlugin } from './scripts/eslint-html-source.mjs';
+
 const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 const sourceResolver = createNodeResolver({
   alias: { '@': [path.resolve(projectRoot, 'resources/js')] },
@@ -27,7 +29,7 @@ const MIGRATED_ADMIN_COMPONENT_PATHS = [
   'resources/js/Components/Layouts/RecordPage*.vue',
   'resources/js/Components/Meetings/MeetingDatePlate.vue',
   'resources/js/Components/Meetings/MeetingCompletionChecklist.vue',
-  'resources/js/Features/Admin/ActivityLogViewer/RecordActivity.vue',
+  'resources/js/Components/ActivityLog/RecordActivity.vue',
   'resources/js/Components/Graphs/GanttZoomControl.vue',
   'resources/js/Components/Graphs/MeetingsGantt.vue',
   'resources/js/Components/Graphs/MeetingsGanttToolbar.vue',
@@ -59,8 +61,8 @@ const MIGRATED_ADMIN_COMPONENT_PATHS = [
   'resources/js/Features/Admin/Tags/**',
   'resources/js/Components/Layouts/OverviewPage.vue',
   'resources/js/Components/Duties/MyDutyTermRow.vue',
-  'resources/js/Features/Admin/AdminSearch/Components/SearchResultGroup.vue',
-  'resources/js/Features/Admin/AdminSearch/Components/Detail/MeetingDetailPreview.vue',
+  'resources/js/Components/Search/SearchResultGroup.vue',
+  'resources/js/Components/Search/Detail/MeetingDetailPreview.vue',
   'resources/js/Components/Overview/**',
   'resources/js/Components/Patterns/OverviewSection.vue',
   'resources/js/Components/Reservations/**',
@@ -76,7 +78,7 @@ const MIGRATED_ADMIN_COMPONENT_PATHS = [
   'resources/js/Features/Admin/NavigationBuilder/**',
   'resources/js/Components/AdminForms/{PageForm,NewsForm,CalendarForm,FormFieldWrapper,PermalinkField,PermalinkPreviewHint,SEOPreview,BannerForm,QuickLinkForm,NavigationForm,NavigationParentForm,TagForm}.vue',
   'resources/js/Components/Analytics/ContentAnalyticsCard.vue',
-  'resources/js/Features/Admin/FileManager/**',
+  'resources/js/Components/FileManager/**',
   'resources/js/Features/Admin/SharepointFileManager/**',
   'resources/js/Features/Admin/PermissionMatrix/**',
   'resources/js/Features/Admin/Responsibilities/**',
@@ -363,6 +365,15 @@ export default tseslint.config(
     rules: { 'admin-redesign/no-legacy-utility': 'error' },
   },
   {
+    files: ['resources/js/**/*.vue'],
+    ignores: ['**/__tests__/**', '**/*.stories.*'],
+    plugins: { 'html-source': htmlSourcePlugin },
+    rules: {
+      'vue/no-v-html': 'off',
+      'html-source/require-comment': 'error',
+    },
+  },
+  {
     files: ['resources/js/**/*.{vue,ts,tsx,js,jsx}'],
     ignores: ['**/__tests__/**', '**/*.{test,spec,stories}.{ts,tsx,js,jsx}', 'resources/js/tests/**', 'resources/js/mocks/**'],
     rules: {
@@ -370,10 +381,31 @@ export default tseslint.config(
         basePath: projectRoot,
         zones: [
           {
-            target: ['Components', 'Composables', 'Constants', 'Utils', 'Types', 'Services', 'Shared', 'Features']
+            target: ['Components', 'Composables', 'Constants', 'Utils', 'Types', 'Search', 'Features']
               .map(folder => `resources/js/${folder}`),
             from: 'resources/js/Pages',
             message: 'Shared source cannot depend on page modules. Move the shared contract or implementation below Pages.',
+          },
+          {
+            target: 'resources/js/Search',
+            from: 'resources/js/Components',
+            message: 'Search/ is the non-UI search core. Move what it needs from components into Search/, Utils/ or Constants/.',
+          },
+          {
+            target: ['resources/js/Composables', 'resources/js/Utils'],
+            from: 'resources/js/Components',
+            except: ['./icons'],
+            message: 'Composables and utils hold logic only. A composable written for one component lives next to it.',
+          },
+          {
+            target: ['resources/js/Components/Brand', 'resources/js/Components/Shared'],
+            from: ['resources/js/Components/!(ui|Brand|Shared|icons)/**', 'resources/js/Components/*.{vue,ts}'],
+            message: 'Brand/ and Shared/ build only on ui/ and each other; both surfaces import them.',
+          },
+          {
+            target: 'resources/js/Components/Patterns',
+            from: ['resources/js/Components/!(ui|Brand|Shared|Patterns|icons)/**', 'resources/js/Components/*.{vue,ts}'],
+            message: 'Patterns are generic; they build only on ui/, Brand/ and Shared/. Pass domain pieces in through props or slots.',
           },
           {
             target: 'resources/js/Components/ui',
@@ -382,14 +414,14 @@ export default tseslint.config(
             message: 'UI primitives cannot depend on higher component tiers, features or pages.',
           },
           {
-            target: 'resources/js/Components/ui',
+            target: ['Components', 'Composables', 'Constants', 'Utils', 'Types', 'Search'].map(folder => `resources/js/${folder}`),
             from: 'resources/js/Features',
-            message: 'UI primitives cannot depend on features.',
+            message: 'Features sit above components and below pages. Move what shared code needs from a feature into Components/ or lower.',
           },
           {
             // The winter season stays in its own folder: the rest of the app reaches it only through its index.
             target: [
-              ...['Components', 'Composables', 'Constants', 'Utils', 'Types', 'Services', 'Shared'].map(folder => `resources/js/${folder}`),
+              ...['Components', 'Composables', 'Constants', 'Utils', 'Types', 'Search'].map(folder => `resources/js/${folder}`),
               'resources/js/Features/!(Admin)/**',
               'resources/js/Features/Admin/!(Seasons)/**',
               'resources/js/Pages/!(Admin)/**',
@@ -403,8 +435,21 @@ export default tseslint.config(
           },
           {
             target: ['resources/js/Components/Public', 'resources/js/Pages/Public'],
-            from: ['resources/js/Components/Patterns', 'resources/js/Components/Layouts', 'resources/js/Features/Admin'],
-            message: 'Public surfaces use Public/Base and Public/Layouts instead of admin patterns, shells or features.',
+            from: ['resources/js/Components/!(Public|ui|Brand|Shared|RichContent|icons)/**', 'resources/js/Components/*.{vue,ts}', 'resources/js/Features/Admin/**'],
+            message: 'Public surfaces build on ui/, Brand/, Shared/ and Public/. Move what both surfaces need into Brand/ or Shared/.',
+          },
+          {
+            // RichContent renders public blocks inside the editor; NavigationBuilder and the home site
+            // lists preview the public site on purpose.
+            target: [
+              'resources/js/Pages/Admin',
+              'resources/js/Features/Admin/!(NavigationBuilder)/**',
+              'resources/js/Components/!(Public|ui|Brand|Shared|RichContent|Home)/**',
+              'resources/js/Components/Home/!(SiteContentLists).vue',
+              'resources/js/Components/*.{vue,ts}',
+            ],
+            from: 'resources/js/Components/Public',
+            message: 'Admin builds on ui/, Brand/ and Shared/, not on the public surface. Move what both need into Brand/ or Shared/.',
           },
         ],
       }],
@@ -417,6 +462,7 @@ export default tseslint.config(
     files: [
       'resources/js/Pages/Admin/**/*.{vue,ts}',
       'resources/js/Features/Admin/**/*.{vue,ts}',
+      'resources/js/Components/{Search,Pickers,ActivityLog,FileManager}/**/*.{vue,ts}',
     ],
     rules: {
       'no-restricted-imports': ['warn', {

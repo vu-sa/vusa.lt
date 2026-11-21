@@ -20,11 +20,6 @@ class UpdateMeetingRequest extends FormRequest
         $this->normalizeTranslatable('description');
     }
 
-    public function authorize(): bool
-    {
-        return $this->user()->can('update', $this->route('meeting'));
-    }
-
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

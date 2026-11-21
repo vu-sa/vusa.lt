@@ -57,8 +57,8 @@ import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import FormSection from '@/Components/Patterns/FormSection.vue';
 import { Button } from '@/Components/ui/button';
-import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
-import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import { CollectionSelectDialog } from '@/Components/Pickers';
+import { normalizeHit, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 
 interface SelectedPage {
   id: string;

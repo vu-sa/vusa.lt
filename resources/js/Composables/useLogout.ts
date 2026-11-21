@@ -1,6 +1,6 @@
 import { router } from '@inertiajs/vue3';
 
-import { clearAdminSearchSession } from '@/Features/Admin/AdminSearch/searchSession';
+import { clearAdminSearchSession } from '@/Search/admin/searchSession';
 
 export function useLogout() {
   const logout = () => {

@@ -59,7 +59,7 @@ import { Search, SlidersHorizontal, X } from '@lucide/vue';
 import { ref, watch } from 'vue';
 
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { controlCountClass, controlVariants, searchFieldClass } from '@/Components/ui/control';
 
 const props = defineProps<{

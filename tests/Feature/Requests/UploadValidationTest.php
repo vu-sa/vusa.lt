@@ -14,8 +14,8 @@ use Illuminate\Support\Facades\Validator;
 pest()->use(RefreshDatabase::class);
 
 test('image fields accept matching raster files and refuse mismatched filenames and contents', function (string $requestClass, string $field): void {
-    asUser(makeUser(Tenant::query()->first()));
-    $rules = (new $requestClass)->rules()[$field];
+    $user = makeUser(Tenant::query()->first());
+    $rules = (new $requestClass)->setUserResolver(fn () => $user)->rules()[$field];
     $data = fn (UploadedFile $file): array => ['uploads' => [['file' => $file]]];
     $validate = fn (UploadedFile $file) => Validator::make($data($file), ['uploads.*.file' => $rules]);
 

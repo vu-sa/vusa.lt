@@ -11,11 +11,6 @@ use Illuminate\Validation\Rule;
  */
 class UpdateInstitutionLinkRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return $this->user()?->can('update', $this->route('institutionLink')) ?? false;
-    }
-
     public function rules(): array
     {
         return [

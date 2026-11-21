@@ -20,7 +20,7 @@ tests:
   - resources/js/Components/AdminForms/__tests__/FormForm.component.test.ts
   - resources/js/Components/AdminForms/__tests__/FormFieldForm.component.test.ts
   - resources/js/Components/ui/checkbox/__tests__/Checkbox.component.test.ts
-  - resources/js/Features/Registrations/__tests__/RegistrationForm.component.test.ts
+  - resources/js/Components/Public/Registrations/__tests__/RegistrationForm.component.test.ts
 ---
 
 # Formos ir registracijos

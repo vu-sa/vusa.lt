@@ -50,7 +50,7 @@ import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
-import { matchTitle, type SearchMatch as SearchMatchData } from '@/Shared/Search/matches';
+import { matchTitle, type SearchMatch as SearchMatchData } from '@/Search/core/matches';
 
 /**
  * The first cell of every collection row: a bold title that opens the record, over one quiet

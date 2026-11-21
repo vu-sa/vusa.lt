@@ -10,7 +10,9 @@ paths:
 
 Two helpers exist for this; use them instead of hand-rolling:
 - `App\Http\Requests\Concerns\ValidatesTenantScope::tenantIdInAuthorizedScope($permission)` — for a `tenant_id` rule.
-- `App\Rules\WithinAuthorizedTenantScope($parentModel, $permission)` — when the tenant is reached through a parent (e.g. `institution_id` on StoreMeetingRequest).
+- `App\Rules\WithinAuthorizedTenantScope($parentModel, $permission, $this->user())` — when the tenant is reached through a parent (e.g. `institution_id` on StoreMeetingRequest).
+
+`tests/Feature/System/TenantScopedRequestConventionTest.php` checks top-level `tenant_id` rules and records where a different scope check applies.
 
 When the parent has no tenant_id (Meeting, Reservation), authorize the parent object in `authorize()` instead, and `return true` when it does not resolve so the `exists` rule reports it as a validation error rather than a 403.
 

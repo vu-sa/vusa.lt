@@ -124,8 +124,8 @@ import { NativeSelect } from '@/Components/ui/native-select';
 import { TypeTreeSelect } from '@/Components/AdminForms/TypeTree';
 import { Switch } from '@/Components/ui/switch';
 import { InstitutionTypeLinkScope } from '@/Types/enums';
-import { InlineCollectionSelect } from '@/Features/Admin/AdminSearch/Components/Select';
-import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import { InlineCollectionSelect } from '@/Components/Pickers';
+import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 
 import type { RelationKindOption, RelationshipLinkRow, RelationshipSubject, RelationshipTypeOption } from './types';
 

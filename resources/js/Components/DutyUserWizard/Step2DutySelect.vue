@@ -284,7 +284,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject, type ComputedRef } from 'vue';
+import { ref, computed, inject, type ComputedRef, type DeepReadonly } from 'vue';
 import { usePage, useHttp } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
 import { trans as $t } from 'laravel-vue-i18n';
@@ -307,7 +307,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
 import { SectionCard, EmptyState } from '@/Components/Patterns';
 import type { useDutyUserWizard } from '@/Composables/useDutyUserWizard';
-import { useDuplicateDutyCheck } from '@/Composables/useDuplicateDutyCheck';
+import { useDuplicateDutyCheck } from '@/Components/AdminForms/useDuplicateDutyCheck';
 import { DutyIcon, InstitutionIcon } from '@/Components/icons';
 import DuplicateDutyWarning from '@/Components/AdminForms/DuplicateDutyWarning.vue';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
@@ -407,7 +407,7 @@ const filteredDuties = computed(() => {
   );
 });
 
-const isEmptyDuty = (duty: App.Entities.Duty) => duty.is_active !== false && !duty.current_users?.length;
+const isEmptyDuty = (duty: DeepReadonly<App.Entities.Duty>) => duty.is_active !== false && !duty.current_users?.length;
 
 const sortedDuties = computed(() => {
   return [...filteredDuties.value].sort((a, b) => {
@@ -417,8 +417,8 @@ const sortedDuties = computed(() => {
   });
 });
 
-const selectDuty = (duty: App.Entities.Duty) => {
-  wizard.setDuty(duty as App.Entities.Duty);
+const selectDuty = (duty: DeepReadonly<App.Entities.Duty>) => {
+  wizard.setDuty(duty);
   wizard.nextStep();
 };
 

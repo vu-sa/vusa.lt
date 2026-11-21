@@ -11,6 +11,7 @@ use App\Models\Pivots\AgendaItem;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Vote;
+use App\Services\DutyAccessService;
 use App\Services\InstitutionAccessService;
 use App\Services\MeetingAccessService;
 use App\Services\ModelAuthorizer;
@@ -25,7 +26,7 @@ use Typesense\Client;
 /*
  * "Typesense narrows, the policy decides": a list row must appear exactly when opening it is
  * allowed. The filter each scoped key embeds is run against real indexed documents and compared
- * with InstitutionPolicy / MeetingPolicy / AgendaItemPolicy::viewSummary().
+ * with InstitutionPolicy / MeetingPolicy / AgendaItemPolicy::viewSummary() and DutyPolicy::view().
  */
 
 pest()->use(RefreshDatabase::class);
@@ -58,8 +59,8 @@ function parityKeyFilter(User $user, string $collection): string
  * Of this test's records, the ones the filter admits — the collection outlives the rolled-back
  * database, so other tests' documents are in it too.
  *
- * @param  class-string<Meeting|AgendaItem|Institution>  $model
- * @param  iterable<Meeting|AgendaItem|Institution>  $records
+ * @param  class-string<Meeting|AgendaItem|Institution|Duty>  $model
+ * @param  iterable<Meeting|AgendaItem|Institution|Duty>  $records
  * @return list<string>
  */
 function parityAdmittedIds(string $model, string $filter, iterable $records): array
@@ -72,12 +73,12 @@ function parityAdmittedIds(string $model, string $filter, iterable $records): ar
 }
 
 /**
- * @param  iterable<Meeting|AgendaItem|Institution>  $records
+ * @param  iterable<Meeting|AgendaItem|Institution|Duty>  $records
  * @return list<string>
  */
-function parityAllowedIds(User $user, iterable $records): array
+function parityAllowedIds(User $user, iterable $records, string $ability = 'viewSummary'): array
 {
-    return collect($records)->filter(fn ($record) => Gate::forUser($user)->allows('viewSummary', $record))
+    return collect($records)->filter(fn ($record) => Gate::forUser($user)->allows($ability, $record))
         ->map(fn ($record): string => (string) $record->getKey())->sort()->values()->all();
 }
 
@@ -149,6 +150,50 @@ test('institutions in the list are exactly the ones the member may open', functi
     expect(parityAdmittedIds(Institution::class, parityKeyFilter($this->member, 'institutions'), $institutions))
         ->toBe(parityAllowedIds($this->member, $institutions))
         ->toHaveCount(1);
+});
+
+test('duties in the list and in search are exactly the ones the member may open', function (): void {
+    $member = $this->member;
+    $member->givePermissionTo('duties.read.padalinys');
+    app(ModelAuthorizer::class)->resetCache($member);
+    TypesenseScopedKeyService::invalidateForUser($member->id);
+
+    $tenant = $member->duties()->first()->institution->tenant;
+    $otherInstitution = Institution::factory()->for($this->otherTenant)->create();
+    $home = Duty::factory()->for(Institution::factory()->for($tenant))->create();
+    $external = Duty::factory()->for($otherInstitution)->create();
+    $unrelated = Duty::factory()->for($otherInstitution)->create();
+    $external->assignableTenants()->attach($tenant->id, ['quota' => 1]);
+    $external->refresh()->searchable();
+
+    $duties = collect([$home, $external, $unrelated]);
+    $listed = app(DutyAccessService::class)->visibleDuties(Duty::query()->whereKey($duties->pluck('id')), $member)
+        ->pluck('id')->sort()->values()->all();
+
+    expect(parityAdmittedIds(Duty::class, parityKeyFilter($member, 'duties'), $duties))
+        ->toBe(parityAllowedIds($member, $duties, 'view'))
+        ->toBe($listed)
+        ->toHaveCount(2)
+        ->and($member->can('update', $external))->toBeFalse();
+});
+
+test('a duty the member held in another unit is in their list and search too', function (): void {
+    $member = $this->member;
+    $member->givePermissionTo('duties.read.padalinys');
+    $held = Duty::factory()->for(Institution::factory()->for($this->otherTenant))->create();
+    $unrelated = Duty::factory()->for(Institution::factory()->for($this->otherTenant))->create();
+    $member->duties()->attach($held, ['start_date' => now()->subYears(2), 'end_date' => now()->subYear()]);
+    app(ModelAuthorizer::class)->resetCache($member);
+    TypesenseScopedKeyService::invalidateForUser($member->id);
+
+    $duties = collect([$held, $unrelated]);
+    $listed = app(DutyAccessService::class)->visibleDuties(Duty::query()->whereKey($duties->pluck('id')), $member)
+        ->pluck('id')->sort()->values()->all();
+
+    expect(parityAdmittedIds(Duty::class, parityKeyFilter($member, 'duties'), $duties))
+        ->toBe(parityAllowedIds($member, $duties, 'view'))
+        ->toBe($listed)
+        ->toBe([(string) $held->id]);
 });
 
 test('a role-free member finds their current institutions meetings from any term', function (): void {

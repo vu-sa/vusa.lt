@@ -6,7 +6,6 @@ paths:
   - 'app/Http/Requests/Cadences/**'
   - 'resources/js/Components/Cadences/**'
   - 'app/Http/Requests/UpdateInstitutionSecretariesRequest.php'
-  - 'app/Actions/ResolveCadence*.php'
 ---
 
 # Cadences
@@ -14,7 +13,7 @@ paths:
 ## Cadences are plain date ranges owned by their institution
 A cadence is `(institution_id, start_date, end_date)` plus, optionally, the meetings those dates were taken from (see below). `institution_id` NULL is the global ladder; a non-null row is an override, and an institution holding even one stops using the global ladder entirely (ResolveCadenceForDuty::pick, AnalyzeDutiableTimeline::applicable, PlanDutiableTimelineChanges::applicable and ResolveCadenceForInstitution all repeat this rule — change all four together; the last one differs, see below).
 
-Do not reintroduce a `label` column: the display name is derived from the start/end years (`Cadence::getLabelAttribute()`), so it can never drift from the dates. Uniqueness is `(institution_id, start_date)`, and MySQL treats NULLs as distinct, so CadenceRequest carries the `whereNull('institution_id')` rule the index cannot express.
+Do not reintroduce a `label` column: the display name is derived from the start/end years (the `Cadence::label()` accessor), so it can never drift from the dates. Uniqueness is `(institution_id, start_date)`, and MySQL treats NULLs as distinct, so CadenceRequest carries the `whereNull('institution_id')` rule the index cannot express.
 
 There is deliberately no generator. Terms are typed by hand; `CadenceSettings::windowFor()` only prefills a new row.
 

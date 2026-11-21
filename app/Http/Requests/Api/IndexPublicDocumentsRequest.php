@@ -11,11 +11,6 @@ class IndexPublicDocumentsRequest extends FormRequest
 
     public const int MAX_LIMIT = 50;
 
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

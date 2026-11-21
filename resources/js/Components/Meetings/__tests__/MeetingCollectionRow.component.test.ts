@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import { commonStubs } from '@/tests/stubs';
-import type { MeetingSearchResult } from '@/Shared/Search/types';
+import type { MeetingSearchResult } from '@/Search/core/types';
 
 import MeetingCollectionRow from '../MeetingCollectionRow.vue';
 

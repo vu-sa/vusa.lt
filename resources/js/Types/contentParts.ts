@@ -223,7 +223,7 @@ export interface SocialEmbed {
 
 export interface FlowGraph {
   json_content: {
-    /** A key in `Features/StructureGraph/registry.ts`; `VusaStructure` on older blocks. */
+    /** A key in `Components/StructureGraph/registry.ts`; `VusaStructure` on older blocks. */
     preset?: string;
   };
   options: null;
@@ -313,9 +313,9 @@ export interface TextBox {
  * Matches the shape from NewsCollection::toPublicArray()
  */
 export interface NewsItem {
-  _searchMatch?: import('@/Shared/Search/matches').SearchMatch;
-  _searchTitleMatches?: import('@/Shared/Search/matches').SearchMatch[];
-  _searchFieldMatches?: Record<string, import('@/Shared/Search/matches').SearchMatch>;
+  _searchMatch?: import('@/Search/core/matches').SearchMatch;
+  _searchTitleMatches?: import('@/Search/core/matches').SearchMatch[];
+  _searchFieldMatches?: Record<string, import('@/Search/core/matches').SearchMatch>;
   id: number;
   title: string;
   lang: string;

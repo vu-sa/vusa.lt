@@ -89,7 +89,7 @@ test('a document linked to another meeting cannot be unlinked through this one',
 
     asUser($this->admin)
         ->delete(route('meetings.documents.destroy', [$this->meeting, $document]))
-        ->assertStatus(403);
+        ->assertNotFound();
 
     expect($document->fresh()->meeting_id)->toBe($otherMeeting->id);
 });

@@ -11,7 +11,7 @@ use App\Models\KnowledgeItem;
 use App\Models\SharepointFolder;
 use App\Services\Documents\DiscoveryResult;
 use App\Services\Documents\SharepointDocumentDiscovery;
-use App\Services\SharepointGraphService;
+use App\Services\Sharepoint\SharepointGraphService;
 use App\Services\SystemMonitorService;
 use App\Settings\DocumentDiscoverySettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -6,12 +6,14 @@ Before planning or editing, find the row whose globs match the file's path and r
 | --- | --- |
 | resources/js/Components/ActionWindow/** | .ai/rules/action-window.md |
 | resources/js/Components/AdminForms/** | .ai/rules/admin-forms.md |
+| app/Enums/ModelEnum.php, app/Support/MorphMap.php, app/Services/AdminNavigation/AdminNavigationCatalog.php, app/Policies/ModelPolicy.php | .ai/rules/admin-section.md |
 | resources/js/Pages/Admin/ShowAdminHome.vue, resources/js/Components/Home/** | .ai/rules/admin-home.md |
 | app/**, tests/Feature/System/DutiableDetachConventionTest.php | .ai/rules/app.md |
-| app/Actions/Get*.php, app/Actions/Resolve*.php, app/Tasks/Subscribers/**, app/Models/InstitutionSecretary.php, app/Services/CommentableMentionResolver.php, app/Console/Commands/SendMeetingReminders.php, app/Notifications/** | .ai/rules/audiences.md |
+| app/Actions/**, app/Services/**, app/Support/**, app/ValueObjects/**, app/Helpers/** | .ai/rules/backend-layout.md |
+| app/Actions/GetInstitution*.php, app/Actions/{GetMeetingOverseers,ResolveMeetingNotificationAudience,ResolveMailingListMembers,ResolveTaskAssignees,ResolveTaskAudience}.php, app/Services/{MeetingRepresentative,Responsibility,CommentRecipient}Resolver.php, app/Tasks/Subscribers/**, app/Models/InstitutionSecretary.php, app/Services/CommentableMentionResolver.php, app/Console/Commands/SendMeetingReminders.php, app/Notifications/** | .ai/rules/audiences.md |
 | resources/js/Components/Public/Base/MediaFrame.vue | .ai/rules/base.md |
 | tests/Browser/** | .ai/rules/browser.md |
-| app/Models/Cadence.php, app/Policies/CadencePolicy.php, app/Actions/Cadences/**, app/Http/Requests/Cadences/**, resources/js/Components/Cadences/**, app/Http/Requests/UpdateInstitutionSecretariesRequest.php, app/Actions/ResolveCadence*.php | .ai/rules/cadences.md |
+| app/Models/Cadence.php, app/Policies/CadencePolicy.php, app/Actions/Cadences/**, app/Http/Requests/Cadences/**, resources/js/Components/Cadences/**, app/Http/Requests/UpdateInstitutionSecretariesRequest.php | .ai/rules/cadences.md |
 | docs/changelog/**, docs/en/changelog/** | .ai/rules/changelog.md |
 | app/Console/Commands/** | .ai/rules/commands.md |
 | config/vusa.php | .ai/rules/config.md |
@@ -30,7 +32,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | resources/js/Pages/Admin/** | .ai/rules/js-pages-admin.md |
 | resources/js/**/*.test.ts | .ai/rules/js.md |
 | lang/** | .ai/rules/lang.md |
-| app/Actions/ResolveLearningPath.php, app/Services/RepresentativesPresenter.php, app/Services/Learning/**, app/Services/Learning*Presenter.php, app/Services/KnowledgeBasePresenter.php, app/Models/Learning*.php, app/Models/Knowledge*.php, app/Policies/Learning*.php, app/Policies/Knowledge*.php, app/Http/Controllers/Admin/Learning*.php, app/Http/Controllers/Admin/Knowledge*.php, app/Actions/SyncKnowledgeLinks.php, resources/js/Features/Admin/Knowledge/**, resources/js/Features/Admin/Learning/**, resources/js/Pages/Admin/Learning/**, resources/js/Pages/Admin/Knowledge/**, database/seeders/LearningPathPilotSeeder.php | .ai/rules/learning.md |
+| app/Actions/ResolveLearningPath.php, app/Services/RepresentativesPresenter.php, app/Services/Learning/**, app/Services/Learning*Presenter.php, app/Services/KnowledgeBasePresenter.php, app/Models/Learning*.php, app/Models/Knowledge*.php, app/Policies/Learning*.php, app/Policies/Knowledge*.php, app/Http/Controllers/Admin/Learning*.php, app/Http/Controllers/Admin/Knowledge*.php, app/Actions/SyncKnowledgeLinks.php, resources/js/Features/Admin/Knowledge/**, resources/js/Search/admin/{wikiSearch,useWikiLinkTargets}.ts, resources/js/Features/Admin/Learning/**, resources/js/Pages/Admin/Learning/**, resources/js/Pages/Admin/Knowledge/**, database/seeders/LearningPathPilotSeeder.php | .ai/rules/learning.md |
 | app/Http/Controllers/Admin/MailQueueController.php, app/Console/Commands/PruneNotificationDigests.php, resources/js/Pages/Admin/MailQueue.vue | .ai/rules/mail-queue.md |
 | app/Models/Meeting.php, app/Models/Vote.php, app/Models/Pivots/AgendaItem.php, app/Http/Requests/UpdateAgendaItemRequest.php, app/Http/Controllers/Admin/AgendaItemController.php, app/Enums/AgendaItemType.php, app/Services/MeetingCompletionService.php, app/Tasks/Handlers/AgendaCompletionTaskHandler.php, resources/js/Composables/useAgendaItemStyling.ts | .ai/rules/meetings-agenda.md |
 | resources/js/Pages/Admin/People/Show*.vue, app/Http/Middleware/HandleInertiaRequests.php | .ai/rules/middleware.md |
@@ -41,8 +43,8 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Notifications/**, app/Mail/**, app/Enums/NotificationType.php, app/Services/Notifications/**, app/Listeners/HandleTaskCreated.php, app/Listeners/QueueNotificationForDigest.php, app/Tasks/Subscribers/**, app/Actions/Schedulable/TaskNotifier.php, app/Console/Commands/Send*.php, resources/js/Pages/Admin/ShowNotificationSettings.vue | .ai/rules/notifications.md |
 | resources/css/components/turtle-loader.css, resources/views/turtle-loader.blade.php, resources/js/admin.ts, resources/js/public.ts | .ai/rules/page-loader.md |
 | app/Support/Permissions/**, app/Policies/**, app/Enums/ModelEnum.php, app/Actions/Permissions/**, app/Console/Commands/*Permissions.php, database/seeders/ModelPermissionSeeder.php, resources/js/Features/Admin/PermissionMatrix/** | .ai/rules/permissions.md |
-| app/Services/*Presenter.php, app/Http/Resources/** | .ai/rules/payloads.md |
-| resources/js/Components/AdminForms/**, resources/js/Components/RichContent/**, resources/js/Features/Admin/AdminSearch/**, resources/js/Components/ui/single-select/**, resources/js/Pages/Admin/**, resources/js/Components/**/Forms/** | .ai/rules/pickers.md |
+| app/Services/**/*Presenter.php, app/Http/Resources/** | .ai/rules/payloads.md |
+| resources/js/Components/AdminForms/**, resources/js/Components/RichContent/**, resources/js/Components/Pickers/**, resources/js/Components/Search/**, resources/js/Components/ui/single-select/**, resources/js/Pages/Admin/** | .ai/rules/pickers.md |
 | app/Providers/** | .ai/rules/providers.md |
 | app/Http/Controllers/Public/**, app/Http/Controllers/PublicController.php, app/Providers/AppServiceProvider.php | .ai/rules/public-head.md |
 | resources/js/**/Public/** | .ai/rules/public.md |
@@ -53,7 +55,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Services/** | .ai/rules/services.md |
 | resources/js/Pages/Admin/Settings/**, app/Settings/** | .ai/rules/settings.md |
 | app/Services/AdminNavigation/**, resources/js/Components/Layouts/Shell/** | .ai/rules/shell.md |
-| resources/js/Components/Staging*.vue, resources/js/Composables/useStaging.ts, app/Http/Middleware/Staging*.php, app/Services/NotificationRouter.php, app/Listeners/BlockExternalNotificationsOnStaging.php, app/Support/StagingProtection.php, app/Services/StagingMediaStore.php | .ai/rules/staging.md |
+| resources/js/Components/Staging*.vue, resources/js/Components/Shared/StagingWatermark.vue, resources/js/Composables/useStaging.ts, app/Http/Middleware/Staging*.php, app/Services/NotificationRouter.php, app/Listeners/BlockExternalNotificationsOnStaging.php, app/Support/StagingProtection.php, app/Services/StagingMediaStore.php | .ai/rules/staging.md |
 | app/Support/MorphMap.php, app/Support/LocalizedRouteSlugs.php | .ai/rules/support.md |
 | app/Tasks/**, app/Models/Task.php, app/Models/Traits/HasTasks.php, app/Http/Controllers/Admin/TaskController.php, app/Actions/ResolveTaskAssignees.php, app/Actions/ResolveTaskAudience.php, app/Actions/ResyncTaskAssigneesForCadence.php, app/Actions/Schedulable/**, app/Listeners/HandleTaskCreated.php, app/Console/Commands/SendTaskOverdueReminders.php, app/Models/Cadence.php | .ai/rules/tasks.md |
 | tests/** | .ai/rules/tests.md |

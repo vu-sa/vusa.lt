@@ -421,10 +421,7 @@ describe('Search API endpoints', function (): void {
     });
 
     test('unauthenticated user cannot fetch search config', function (): void {
-        $response = $this->get('/api/v1/admin/search/config');
-
-        // API routes may redirect to login (302) or return 401
-        expect($response->status())->toBeIn([302, 401]);
+        $this->getJson('/api/v1/admin/search/config')->assertUnauthorized();
     });
 
     test('refresh key endpoint works for authenticated user', function (): void {

@@ -284,7 +284,7 @@ import { enterInstitution } from '@/Composables/useRecordTrail';
 import { getSuggestedCheckInRange, type TaskDisplayData } from '@/Composables/useTaskPresentation';
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import { inactiveInstitutionStatus, institutionActivityStatuses, type StatusPresentation } from '@/Constants/statusIcons';
-import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
+import RecordActivity from '@/Components/ActivityLog/RecordActivity.vue';
 import { useDutyAssignmentSheet } from '@/Features/Admin/Occupancy/useDutyAssignmentSheet';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
 import { useInstitutionSubscription } from '@/Composables/useInstitutionSubscription';
@@ -553,7 +553,8 @@ const overflowActions = computed<ActionDescriptor[]>(() => {
   }
   actions.push({ key: 'public', label: $t('Atidaryti vusa.lt'), icon: ExternalLink, href: publicUrl.value, external: true });
 
-  if (props.subscription) {
+  // A member hears about the institution through their seat, so following is not offered.
+  if (props.subscription && !isDutyBased.value) {
     actions.push({
       key: 'follow',
       label: isFollowed.value ? $t('Nebesekti') : $t('Sekti'),

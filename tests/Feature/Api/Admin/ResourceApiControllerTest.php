@@ -58,6 +58,7 @@ describe('resource preview endpoint', function (): void {
 
     test('preview lists previous terminal reservations', function (): void {
         $reservation = Reservation::factory()->create(['name' => 'Returned event']);
+        $reservation->users()->attach($this->simpleUser);
         $this->resource->reservations()->attach($reservation->id, [
             'quantity' => 1,
             'state' => 'returned',
@@ -110,6 +111,7 @@ describe('resource preview endpoint', function (): void {
 
     test('preview includes time-ended active reservations in upcoming list', function (): void {
         $reservation = Reservation::factory()->create(['name' => 'Stale active event']);
+        $reservation->users()->attach($this->simpleUser);
         $this->resource->reservations()->attach($reservation->id, [
             'quantity' => 1,
             'state' => 'reserved',

@@ -80,13 +80,13 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { Landmark } from '@lucide/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { useActionWindow, type ActionWindowInstitutionRef } from '@/Composables/useActionWindow';
 import { useApi } from '@/Composables/useApi';
 import { describeInstitutionActivity } from '@/Components/Institutions/institutionActivity';
 import { EmptyState } from '@/Components/Patterns';
-import { useAdminCollectionSearch } from '@/Features/Admin/AdminSearch/Composables/useAdminCollectionSearch';
+import { useAdminCollectionSearch } from '@/Search/admin/Composables/useAdminCollectionSearch';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Skeleton } from '@/Components/ui/skeleton';

@@ -9,16 +9,6 @@ use Illuminate\Foundation\Http\FormRequest;
 class ReorderAgendaItemsRequest extends FormRequest
 {
     /**
-     * Reordering is a write against the meeting's agenda, so it follows the meeting's update
-     * ability. Authorization stays in the controller because it needs the validated
-     * meeting_id, and the scoped where() there confines the writes to that meeting's items.
-     */
-    public function authorize(): bool
-    {
-        return true;
-    }
-
-    /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array

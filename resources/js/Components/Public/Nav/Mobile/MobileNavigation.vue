@@ -114,7 +114,7 @@ import { DialogContent as MobileDialogContent, DialogOverlay, DialogRoot, Dialog
 import LocaleButton from '@/Components/Public/Nav/LocaleButton.vue';
 import SearchButton from '@/Components/Public/Nav/SearchButton.vue';
 import { AccessibilityMenu, HeaderWordmark } from '@/Components/Public/Base';
-import DarkModeButton from '@/Components/Buttons/DarkModeButton.vue';
+import DarkModeButton from '@/Components/Shared/DarkModeButton.vue';
 import { Button } from '@/Components/ui/button';
 import { cn } from '@/Utils/Shadcn/utils';
 import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';

@@ -1,4 +1,4 @@
-import { ref, reactive, computed, watch, readonly } from 'vue';
+import { ref, reactive, computed, watch, readonly, toRaw, type DeepReadonly } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
@@ -358,7 +358,7 @@ export function useDutyUserWizard(options: UseDutyUserWizardOptions = {}) {
     }
   };
 
-  const setDuty = (duty: App.Entities.Duty) => {
+  const setDuty = (duty: App.Entities.Duty | DeepReadonly<App.Entities.Duty>) => {
     // Reset users if duty changes
     if (state.duty?.id !== duty.id) {
       state.userChanges = [];
@@ -366,7 +366,8 @@ export function useDutyUserWizard(options: UseDutyUserWizardOptions = {}) {
       state.validation.users = false;
     }
 
-    state.duty = duty;
+    // Callers pass duties read from the readonly `state`; store the raw object, not the proxy.
+    state.duty = toRaw(duty) as App.Entities.Duty;
 
     if (validateDuty(duty.id)) {
       if (state.maxCompletedStep < 2) {
@@ -404,7 +405,7 @@ export function useDutyUserWizard(options: UseDutyUserWizardOptions = {}) {
     validateUsers();
   };
 
-  const addUserToRemove = (user: App.Entities.User, endDate?: string) => {
+  const addUserToRemove = (user: Pick<App.Entities.User, 'id' | 'name' | 'email' | 'profile_photo_path'>, endDate?: string) => {
     // Check if already in changes
     const existingIndex = state.userChanges.findIndex(c => c.userId === user.id);
     if (existingIndex !== -1) {

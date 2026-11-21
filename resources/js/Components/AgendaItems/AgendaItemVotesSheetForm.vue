@@ -121,7 +121,7 @@ import { ChevronDown, ChevronUp, Languages, Star, Trash2 } from '@lucide/vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import { SheetForm } from '@/Components/Patterns';
-import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
+import LocaleFlag from '@/Components/Shared/LocaleFlag.vue';
 import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass, segmentGroupClass, segmentVariants } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';

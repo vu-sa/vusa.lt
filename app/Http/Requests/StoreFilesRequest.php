@@ -15,11 +15,6 @@ class StoreFilesRequest extends FormRequest
 {
     public const int MAX_SIZE_KB = 51200;
 
-    public function authorize(): bool
-    {
-        return $this->user()?->can('create', File::class) ?? false;
-    }
-
     /** @return array<string, ValidationRule|array<mixed>|string> */
     public function rules(): array
     {

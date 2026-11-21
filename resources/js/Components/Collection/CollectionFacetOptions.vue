@@ -55,7 +55,7 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { Check } from '@lucide/vue';
 
-import { useFacetOptions } from '@/Shared/Search/useFacetOptions';
+import { useFacetOptions } from '@/Search/core/useFacetOptions';
 import { controlVariants } from '@/Components/ui/control';
 import type { CollectionFacet } from '@/Composables/useCollectionSource';
 import { capitalize } from '@/Utils/String';

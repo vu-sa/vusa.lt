@@ -1,7 +1,8 @@
 ---
 paths:
-  - 'app/Actions/Get*.php'
-  - 'app/Actions/Resolve*.php'
+  - 'app/Actions/GetInstitution*.php'
+  - 'app/Actions/{GetMeetingOverseers,ResolveMeetingNotificationAudience,ResolveMailingListMembers,ResolveTaskAssignees,ResolveTaskAudience}.php'
+  - 'app/Services/{MeetingRepresentative,Responsibility,CommentRecipient}Resolver.php'
   - 'app/Tasks/Subscribers/**'
   - 'app/Models/InstitutionSecretary.php'
   - 'app/Services/CommentableMentionResolver.php'
@@ -11,8 +12,17 @@ paths:
 
 # Audiences: who is in a group of people
 
+## Relations are named by the dates they cover
+| Name | Covers | Use for |
+|---|---|---|
+| `User::duties()` / `tenants()`, `Duty::users()`, `Institution::users()`, `Meeting::users()` | every term ever held | history, lineage, the duty page |
+| `current_duties()`, `current_users()`, `Dutiable::activeOn()` | started and not ended | who holds it, contacts, mail, counts |
+| `current_or_upcoming_duties()` / `current_or_upcoming_tenants()`, `Dutiable::current()` | not ended | permissions, "my units", quotas |
+
+The default name is the all-time one. `AllTimeRelationsConventionTest` keeps it out of policies, requests, middleware, notifications, tasks, `app/Actions` and `app/Services` unless the use is allowlisted with a reason.
+
 ## Notification audiences are date-scoped
-`Institution::users()`, `Meeting::users()` and `$duty->users` are all-time HasManyDeep/MorphToMany relations. Never build a notification audience from them — a body with turnover notifies everyone who ever held a seat. `SendMeetingReminders` and `CommentableMentionResolver` both shipped that bug. Use the actions below.
+Never build a notification audience from an all-time relation: a body with turnover notifies everyone who ever held a seat. `SendMeetingReminders` and `CommentableMentionResolver` both shipped that bug. Use the actions below.
 
 ## One word per group of people — "secretary" means a nominated row, nothing else
 Each action answers one checkable question; do not reuse a name for a union of them.

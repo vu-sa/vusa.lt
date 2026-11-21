@@ -38,7 +38,7 @@ class AnalyticsApiController extends ApiController
 
     public function overview(AnalyticsOverviewRequest $request): JsonResponse
     {
-        $this->requireAuth($request);
+        $actor = $this->requireAuth($request);
 
         $validated = $request->validated();
 
@@ -51,7 +51,7 @@ class AnalyticsApiController extends ApiController
          * says nothing about *this* tenant. Without this second check any authenticated
          * user could read any tenant's analytics by changing tenant_id.
          */
-        $manageableTenantIds = GetTenantsForUpserts::execute('pages.update.padalinys', $this->authorizer)
+        $manageableTenantIds = GetTenantsForUpserts::execute($actor, 'pages.update.padalinys', $this->authorizer)
             ->pluck('id');
 
         if (! $manageableTenantIds->contains($tenant->id)) {

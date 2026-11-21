@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\BuildDutyIndexQuery;
 use App\Actions\Dutiables\SyncExOfficioTargets;
+use App\Actions\Duties\GetAssignableExOfficioDuties;
 use App\Actions\GetAttachableTypesForDuty;
 use App\Actions\GetTenantsForUpserts;
 use App\Actions\MergeDuties;
@@ -26,16 +27,19 @@ use App\Models\Pivots\Dutiable;
 use App\Models\StudyProgram;
 use App\Models\User;
 use App\Services\ContactPresentationService;
+use App\Services\DutyAccessService;
 use App\Services\DutyAssignmentService;
 use App\Services\DutyPanelPresenter;
 use App\Services\DutyPresenter;
 use App\Services\DutyResponsibilityPresenter;
+use App\Services\Institutions\InstitutionQueries;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
-use App\Services\ResourceServices\DutyService;
 use App\Services\TanstackTableService;
 use App\Support\MorphMap;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -49,12 +53,11 @@ class DutyController extends AdminController
     /**
      * Display a listing of the resource.
      */
-    public function index(IndexDutyRequest $request)
+    #[Authorize('viewAny', Duty::class)]
+    public function index(IndexDutyRequest $request, DutyAccessService $access)
     {
-        $this->handleAuthorization('viewAny', Duty::class);
-
         $query = $this->applyTanstackFilters(
-            BuildDutyIndexQuery::execute($request, $this->authorizer),
+            BuildDutyIndexQuery::execute($request, $access),
             $request,
             $this->tableService,
             ['name', 'email'],
@@ -92,20 +95,24 @@ class DutyController extends AdminController
     /**
      * Show the form for creating a new resource.
      */
+    #[Authorize('create', Duty::class)]
     public function create(CreateDutyRequest $request)
     {
+        $actor = $request->user();
+
         return Inertia::render('Admin/People/CreateDuty', [
             'dutyTypes' => GetAttachableTypesForDuty::execute()->values(),
-            'assignableInstitutions' => DutyService::getInstitutionsForUpserts($this->authorizer),
+            'assignableInstitutions' => InstitutionQueries::getInstitutionsForUpserts($actor, $this->authorizer),
             'prefillInstitutionId' => $request->validated('institution_id'),
-            'assignableTenants' => GetTenantsForUpserts::execute('duties.create.padalinys', $this->authorizer),
-            'assignableDuties' => DutyService::getAssignableExOfficioDuties($this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute($actor, 'duties.create.padalinys', $this->authorizer),
+            'assignableDuties' => GetAssignableExOfficioDuties::execute($actor, $this->authorizer),
         ]);
     }
 
     /**
      * Store a newly created resource in storage.
      */
+    #[Authorize('create', Duty::class)]
     public function store(StoreDutyRequest $request, PostCreateRedirect $redirect)
     {
         return DB::transaction(function () use ($request, $redirect) {
@@ -130,10 +137,9 @@ class DutyController extends AdminController
     /**
      * Display the specified resource.
      */
+    #[Authorize('view', 'duty')]
     public function show(Duty $duty)
     {
-        $this->handleAuthorization('view', $duty);
-
         $loadDuty = fn () => once(function () use ($duty): Duty {
             $duty->loadMissing([
                 'institution.tenant',
@@ -186,12 +192,11 @@ class DutyController extends AdminController
     /**
      * Show the form for editing the specified resource.
      */
+    // Owning-tenant admins (can update the duty) and cross-tenant admins
+    // (can only manage their tenant's reps) may both open this page.
+    #[Authorize('managePeople', 'duty')]
     public function edit(Duty $duty)
     {
-        // Owning-tenant admins (can update the duty) and cross-tenant admins
-        // (can only manage their tenant's reps) may both open this page.
-        $this->handleAuthorization('managePeople', $duty);
-
         $user = request()->user();
         $canEditDuty = $user->can('update', $duty);
 
@@ -251,23 +256,22 @@ class DutyController extends AdminController
             'assignableTenantUsers' => $assignableTenantUsers,
             'exOfficioMembers' => $this->exOfficioMembersForDutyForm($duty, $canEditDuty ? null : $actingAssignableTenantIds),
             'dutyTypes' => GetAttachableTypesForDuty::execute()->values(),
-            'assignableInstitutions' => DutyService::getInstitutionsForUpserts($this->authorizer),
-            'assignableTenants' => GetTenantsForUpserts::execute('duties.update.padalinys', $this->authorizer),
-            'assignableDuties' => $canEditDuty ? DutyService::getAssignableExOfficioDuties($this->authorizer, $duty) : collect(),
+            'assignableInstitutions' => InstitutionQueries::getInstitutionsForUpserts($user, $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute($user, 'duties.update.padalinys', $this->authorizer),
+            'assignableDuties' => $canEditDuty ? GetAssignableExOfficioDuties::execute($user, $this->authorizer, $duty) : collect(),
         ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
+    #[Authorize('update', 'duty')]
     public function update(UpdateDutyRequest $request, Duty $duty, UpdateDuty $updateDuty): RedirectResponse
     {
-        $this->handleAuthorization('update', $duty);
-
         $actor = $request->user();
 
         $data = $request->validated();
-        $mutation = fn () => $updateDuty->execute($duty, $data);
+        $mutation = fn () => $updateDuty->execute($duty, $data, $actor);
 
         // The acting user holding this duty may lose access if its roles, types
         // or institution change beneath them.
@@ -333,15 +337,15 @@ class DutyController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
+    #[Authorize('delete', 'duty')]
     public function destroy(Duty $duty)
     {
-        $this->handleAuthorization('delete', $duty);
-
         $duty->delete();
 
         return redirect()->route('duties.index')->with('info', $this->entityMessage('deleted', 'duty'));
     }
 
+    #[Authorize('restore', 'duty')]
     public function restore(Duty $duty): RedirectResponse
     {
         return $this->restoreModel($duty);
@@ -350,6 +354,7 @@ class DutyController extends AdminController
     /**
      * Merge one or more duplicate duties into a single kept duty.
      */
+    #[Authorize('merge', Duty::class)]
     public function mergeDuties(MergeDutiesRequest $request)
     {
         $kept = Duty::findOrFail($request->validated('target_duty_id'));
@@ -370,10 +375,10 @@ class DutyController extends AdminController
     /**
      * Display the duty user update wizard page.
      */
-    public function updateUsersWizard()
+    #[Authorize('viewAny', Duty::class)]
+    public function updateUsersWizard(Request $request)
     {
-        $this->handleAuthorization('viewAny', Duty::class);
-
+        $actor = $request->user();
         $currentUsersLoad = ['current_users' => function ($q): void {
             $q->select('users.id', 'name', 'email', 'profile_photo_path')
                 ->withPivot('start_date', 'end_date');
@@ -381,7 +386,7 @@ class DutyController extends AdminController
 
         // Get institutions the user can access, with their duties and current users
         // Include pivot data (start_date) to detect long-staying users
-        $institutions = DutyService::getInstitutionsForUpserts($this->authorizer)
+        $institutions = InstitutionQueries::getInstitutionsForUpserts($actor, $this->authorizer)
             // Inactive duties keep their history but are not staffed any more.
             ->load(['duties' => function ($query) use ($currentUsersLoad): void {
                 $query->where('is_active', true)->with($currentUsersLoad);
@@ -391,7 +396,7 @@ class DutyController extends AdminController
         // Each such institution is loaded with ONLY the assignable duty(ies),
         // carrying the `assignableTenants` pivot (quota) for the acting tenant.
         $adminReadTenantIds = $this->authorizer
-            ->tenants(request()->user(), 'duties.read.padalinys')->pluck('id');
+            ->tenants($actor, 'duties.read.padalinys')->pluck('id');
 
         if ($adminReadTenantIds->isNotEmpty()) {
             // For cross-tenant duties the acting tenant only assigns *into*, show
@@ -422,7 +427,7 @@ class DutyController extends AdminController
         }
 
         // Get data needed for creating institutions and duties
-        $assignableTenants = GetTenantsForUpserts::execute('institutions.create.padalinys', $this->authorizer);
+        $assignableTenants = GetTenantsForUpserts::execute($actor, 'institutions.create.padalinys', $this->authorizer);
         $institutionTypes = InstitutionType::query()->get();
 
         return Inertia::render('Admin/People/DutyUserUpdateWizard', [
@@ -447,6 +452,7 @@ class DutyController extends AdminController
     /**
      * Batch update users for a duty.
      */
+    // Authorized in BatchUpdateDutyUsersRequest: the duty and permission to create users.
     public function batchUpdateUsers(BatchUpdateDutyUsersRequest $request, Duty $duty)
     {
         $validated = $request->validated();
@@ -560,6 +566,7 @@ class DutyController extends AdminController
             ->with('success', trans('Pareigybės nariai sėkmingai atnaujinti!'));
     }
 
+    #[Authorize('forceDelete', 'duty')]
     public function forceDelete(Duty $duty): RedirectResponse
     {
         return $this->forceDeleteModel($duty);

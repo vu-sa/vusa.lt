@@ -19,6 +19,7 @@ use App\Models\Pivots\Dutiable;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -41,10 +42,9 @@ class DutiableTimelineController extends AdminController
      * is held by exactly one role, so gating on it would lock out the coordinators this
      * page exists for, while `duties.read.padalinys` is what they actually carry.
      */
+    #[Authorize('viewAny', Duty::class)]
     public function index(IndexDutiableTimelineRequest $request): InertiaResponse
     {
-        $this->authorize('viewAny', Duty::class);
-
         // Loaded whole, not `select('id', 'name', 'alias')`: InstitutionPolicy scopes by
         // `tenant_id`, so a trimmed model authorizes as if it belonged to no tenant.
         $institution = $request->filled('institution')
@@ -81,7 +81,7 @@ class DutiableTimelineController extends AdminController
      */
     private function ownInstitutions(User $user): Collection
     {
-        return $user->authorization_duties()
+        return $user->current_or_upcoming_duties()
             ->with('institution')
             ->get()
             ->pluck('institution')
@@ -99,6 +99,7 @@ class DutiableTimelineController extends AdminController
             ->values();
     }
 
+    // Authorized in ApplyDutiableTimelineRequest: every affected assignment.
     public function apply(ApplyDutiableTimelineRequest $request): RedirectResponse
     {
         // Re-planned server-side from the operation list; whatever diff the client drew is
@@ -121,6 +122,7 @@ class DutiableTimelineController extends AdminController
         ]));
     }
 
+    #[Authorize('manageDutiable', 'dutiable')]
     public function reviewExOfficio(ReviewExOfficioRequest $request, Dutiable $dutiable): RedirectResponse
     {
         $mutation = fn () => DB::transaction(function () use ($request, $dutiable): void {
@@ -152,6 +154,7 @@ class DutiableTimelineController extends AdminController
         return back()->with('success', __('dutiables.timeline.review.saved'));
     }
 
+    // Authorized in MergeDutiablesRequest: every selected assignment.
     public function previewMerge(MergeDutiablesRequest $request): JsonResponse
     {
         return response()->json(['success' => true, 'data' => PreviewDutiableMerge::execute($request->rows())]);
@@ -161,6 +164,7 @@ class DutiableTimelineController extends AdminController
      * Folds several stints of one holder into one row. Separate from `apply()` because a
      * merge deletes rows, which no operation in the planner's vocabulary can express.
      */
+    // Authorized in MergeDutiablesRequest: every selected assignment.
     public function merge(MergeDutiablesRequest $request): RedirectResponse
     {
         $rows = $request->rows();

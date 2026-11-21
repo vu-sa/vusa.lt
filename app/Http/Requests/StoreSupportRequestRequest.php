@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Enums\SupportRequestVisibility;
-use App\Models\SupportRequest;
 use App\Rules\SafeUrl;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -11,14 +10,6 @@ use Illuminate\Validation\Rule;
 
 class StoreSupportRequestRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return $this->user()?->can('create', SupportRequest::class) ?? false;
-    }
-
     /**
      * Get the validation rules that apply to the request.
      *
@@ -42,7 +33,7 @@ class StoreSupportRequestRequest extends FormRequest
                     }
 
                     $hasRole = $user->roles()->where('roles.id', $value)->exists()
-                        || $user->authorization_duties()->whereHas('roles', fn ($q) => $q->where('roles.id', $value))->exists();
+                        || $user->current_or_upcoming_duties()->whereHas('roles', fn ($q) => $q->where('roles.id', $value))->exists();
 
                     if (! $hasRole) {
                         $fail(__('Jūs negalite pasirinkti šios rolės.'));

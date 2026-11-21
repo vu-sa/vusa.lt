@@ -124,7 +124,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Link2, Users, X } from '@lucide/vue';
 import { capitalize, computed, ref, toRaw, watch } from 'vue';
 
-import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
+import MultiLocaleInput from '@/Components/AdminForms/MultiLocaleInput.vue';
 import SheetForm from '@/Components/Patterns/SheetForm.vue';
 import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';
@@ -132,8 +132,8 @@ import { DatePicker } from '@/Components/ui/date-picker';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import MultiCollectionSelectDialog from '@/Features/Admin/AdminSearch/Components/Select/MultiCollectionSelectDialog.vue';
-import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import MultiCollectionSelectDialog from '@/Components/Pickers/MultiCollectionSelectDialog.vue';
+import { normalizeHit, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 import { formatDate, todayIso } from '@/Utils/dateTime';
 
 import type { GoalStep, LinkOption, StepParent, Translated } from './types';

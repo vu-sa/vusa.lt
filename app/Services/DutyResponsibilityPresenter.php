@@ -65,7 +65,7 @@ class DutyResponsibilityPresenter
      */
     public static function options(User $user): array
     {
-        $tenants = GetTenantsForUpserts::execute('duties.update.padalinys', app(ModelAuthorizer::class))
+        $tenants = GetTenantsForUpserts::execute($user, 'duties.update.padalinys', app(ModelAuthorizer::class))
             ->map(fn ($tenant) => ['id' => (int) $tenant['id'], 'shortname' => (string) $tenant['shortname']])
             ->values();
 

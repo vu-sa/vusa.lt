@@ -4,7 +4,6 @@ namespace App\Http\Requests;
 
 use App\Enums\DegreeEnum;
 use App\Http\Requests\Concerns\ValidatesTenantScope;
-use App\Models\StudyProgram;
 use App\Rules\TranslatableField;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -13,14 +12,6 @@ use Illuminate\Validation\Rule;
 class StoreStudyProgramRequest extends FormRequest
 {
     use ValidatesTenantScope;
-
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return $this->user()->can('create', StudyProgram::class);
-    }
 
     /**
      * Get the validation rules that apply to the request.

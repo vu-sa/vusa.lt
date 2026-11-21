@@ -18,8 +18,9 @@ Adresas – `/mano/institutionGraph`.
 
 Viršuje galima pasirinkti vieną iš dviejų rodinių:
 
-- **Institucijos** – institucijų mazgai ir jų ryšiai. Mazgo dydį lemia narių skaičius;
-  institucijos išdėstomos grupėmis pagal padalinį.
+- **Institucijos** – institucijų mazgai ir jų ryšiai. Mazgo dydį lemia šiuo metu pareigas einančių
+  narių skaičius. Kiekvienas narys skaičiuojamas vieną kartą, net jei eina kelias pareigas.
+  Institucijos išdėstomos grupėmis pagal padalinį.
 - **Tipai** – institucijų tipai ir tarp jų nustatyti ryšiai. Mazgo dydį lemia to tipo
   institucijų skaičius.
 

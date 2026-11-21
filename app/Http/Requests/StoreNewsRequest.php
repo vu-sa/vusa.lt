@@ -10,18 +10,10 @@ class StoreNewsRequest extends NewsRequest
     use ValidatesTenantScope;
 
     /**
-     * Determine if the user is authorized to make this request.
-     *
-     * `can('create', News::class)` is tenant-agnostic, so the `tenant_id` rule below is what
-     * actually confines the article to a padalinys the user may create in.
-     */
-    public function authorize(): bool
-    {
-        return $this->user()->can('create', News::class);
-    }
-
-    /**
      * Get the validation rules that apply to the request.
+     *
+     * `#[Authorize('create', News::class)]` is tenant-agnostic, so the `tenant_id` rule is what
+     * confines the article to a padalinys the user may create in.
      */
     #[\Override]
     public function rules(): array

@@ -103,14 +103,14 @@ import { ArrowUpRight, ChevronDown, Columns2, Languages, Plus } from '@lucide/vu
 import { contentEditorHttp as http } from '@/Composables/contentEditorHttp';
 import { CONTENT_EDITOR_CONTEXT } from '@/Components/RichContent/contentEditorContext';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { ConfirmDialog } from '@/Components/Patterns';
 import { FormPanel, FormSegmentedControl, type FormSegmentOption } from '@/Components/Patterns';
-import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
+import LocaleFlag from '@/Components/Shared/LocaleFlag.vue';
 import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';
-import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
-import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import { CollectionSelectDialog } from '@/Components/Pickers';
+import { normalizeHit, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 
 import FormFieldWrapper from './FormFieldWrapper.vue';
 import ContentTranslationWorkspace from './ContentTranslationWorkspace.vue';

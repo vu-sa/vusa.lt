@@ -2,24 +2,18 @@
 
 namespace App\Actions;
 
-use App\Services\ModelAuthorizer as Authorizer;
+use App\Models\User;
+use App\Services\ModelAuthorizer;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 
-/**
- * This class is always used in the context, when there's need for the input
- * of a tenant.
- */
 class GetTenantsForUpserts
 {
     /**
-     * Note the `->value` on `type`: this array shape is handed straight to Inertia and compared
-     * against plain strings by several callers, so the enum is unwrapped here rather than
-     * leaking a TenantType into an array payload.
+     * Inertia callers compare the tenant type against strings.
      */
-    public static function execute(string $permission, Authorizer $authorizer): Collection
+    public static function execute(User $user, string $permission, ModelAuthorizer $authorizer): Collection
     {
-        return $authorizer->tenants(Auth::user(), $permission)
+        return $authorizer->tenants($user, $permission)
             ->sortBy('shortname_vu')
             ->values()
             ->map(fn ($tenant) => [

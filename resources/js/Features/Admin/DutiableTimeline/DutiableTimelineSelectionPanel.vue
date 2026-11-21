@@ -343,7 +343,7 @@ import { CalendarCheck, CalendarX, ExternalLink, Merge, Trash2 } from '@lucide/v
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 import { useApiMutation } from '@/Composables/useApi';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import {
   AlertDialog,
   AlertDialogAction,

@@ -5,7 +5,7 @@ import { computed, defineComponent, h, ref, type Component } from 'vue';
 
 import ActivityRequestCampaignScreen from '@/Components/ActionWindow/screens/ActivityRequestCampaignScreen.vue';
 import ActionWindowBody from '@/Components/ActionWindow/ActionWindowBody.vue';
-import { useAdminCollectionSearch } from '@/Features/Admin/AdminSearch/Composables/useAdminCollectionSearch';
+import { useAdminCollectionSearch } from '@/Search/admin/Composables/useAdminCollectionSearch';
 import ActivityRequestInstitutionsScreen from '@/Components/ActionWindow/screens/ActivityRequestInstitutionsScreen.vue';
 import ActivityRequestReviewScreen from '@/Components/ActionWindow/screens/ActivityRequestReviewScreen.vue';
 import ActivityRequestModeScreen from '@/Components/ActionWindow/screens/ActivityRequestModeScreen.vue';
@@ -32,7 +32,7 @@ vi.mock('@/Composables/useApi', () => ({
   }),
 }));
 
-vi.mock('@/Features/Admin/AdminSearch/Composables/useAdminCollectionSearch', () => ({
+vi.mock('@/Search/admin/Composables/useAdminCollectionSearch', () => ({
   useAdminCollectionSearch: vi.fn(() => ({ results: computed(() => candidates.value), status: ref('idle'), error: ref(null), query: ref(''), hasMoreResults: ref(false), search: vi.fn(), loadMore: vi.fn() })),
 }));
 vi.mock('@/Composables/useFeatureSpotlight', () => ({ useFeatureSpotlight: () => ({ isDismissed: ref(true), dismiss: vi.fn() }) }));

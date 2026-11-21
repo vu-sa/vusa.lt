@@ -73,7 +73,7 @@ test('cannot update resource in invalid state', function () {
 ./vendor/bin/sail artisan test
 
 # Run specific test file
-./vendor/bin/sail artisan test tests/Feature/Auth/SecurityTest.php
+./vendor/bin/sail artisan test tests/Feature/Auth/AuthControllerTest.php
 
 # Run with coverage
 ./vendor/bin/sail artisan test --coverage
@@ -192,7 +192,7 @@ tests/Feature/
 **File Organization**:
 ```
 resources/js/
-├── Services/__tests__/ServiceName.test.ts
+├── Search/<area>/__tests__/ServiceName.test.ts
 ├── Composables/__tests__/useComposable.test.ts  
 ├── Utils/__tests__/UtilityName.test.ts
 └── Components/ComponentName/__tests__/ComponentName.component.test.ts

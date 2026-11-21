@@ -95,21 +95,26 @@ Route::softDeletes('studySets', StudySetController::class);
 Route::softDeletes('tags', TagController::class);
 Route::softDeletes('users', UserController::class);
 
-Route::delete('institutions/{institution}/public-urls/{publicUrl}', [InstitutionController::class, 'destroyPublicUrl'])->name('institutions.publicUrls.destroy');
+Route::scopeBindings()->group(function (): void {
+    Route::delete('institutions/{institution}/public-urls/{publicUrl}', [InstitutionController::class, 'destroyPublicUrl'])->name('institutions.publicUrls.destroy');
+    Route::delete('news/{news}/public-urls/{publicUrl}', [NewsController::class, 'destroyPublicUrl'])->name('news.publicUrls.destroy');
+    Route::delete('pages/{page}/public-urls/{publicUrl}', [PageController::class, 'destroyPublicUrl'])->name('pages.publicUrls.destroy');
+    Route::delete('calendar/{calendar}/public-urls/{publicUrl}', [CalendarController::class, 'destroyPublicUrl'])->name('calendar.publicUrls.destroy');
+    Route::delete('meetings/{meeting}/documents/{document}', [MeetingDocumentController::class, 'destroy'])->name('meetings.documents.destroy');
+    Route::post('calendar/{calendar}/media/{media}', [CalendarController::class, 'destroyMedia'])->name('calendar.destroyMedia');
+});
+
 Route::patch('news/bulk-status', [NewsController::class, 'bulkUpdateStatus'])->name('news.bulkStatus');
 Route::delete('news/bulk-delete', [NewsController::class, 'bulkDestroy'])->name('news.bulkDestroy');
 Route::post('news/{news}/duplicate', [NewsController::class, 'duplicate'])->name('news.duplicate');
-Route::delete('news/{news}/public-urls/{publicUrl}', [NewsController::class, 'destroyPublicUrl'])->name('news.publicUrls.destroy');
 Route::patch('pages/bulk-status', [PageController::class, 'bulkUpdateStatus'])->name('pages.bulkStatus');
 Route::delete('pages/bulk-delete', [PageController::class, 'bulkDestroy'])->name('pages.bulkDestroy');
-Route::delete('pages/{page}/public-urls/{publicUrl}', [PageController::class, 'destroyPublicUrl'])->name('pages.publicUrls.destroy');
 Route::post('meetings/{meeting}/institutions', [MeetingController::class, 'attachInstitution'])->name('meetings.institutions.attach');
 Route::delete('meetings/{meeting}/institutions/{institution}', [MeetingController::class, 'detachInstitution'])->name('meetings.institutions.detach');
 Route::post('meetings/{meeting}/calendar-event', [MeetingCalendarController::class, 'store'])->name('meetings.calendarEvent.store');
 Route::delete('meetings/{meeting}/calendar-event', [MeetingCalendarController::class, 'destroy'])->name('meetings.calendarEvent.destroy');
 Route::post('meetings/{meeting}/documents', [MeetingDocumentController::class, 'store'])->name('meetings.documents.store');
 Route::post('meetings/{meeting}/documents/sharepoint', [MeetingDocumentController::class, 'storeFromSharepoint'])->name('meetings.documents.storeFromSharepoint');
-Route::delete('meetings/{meeting}/documents/{document}', [MeetingDocumentController::class, 'destroy'])->name('meetings.documents.destroy');
 
 // Resources with Precognition (live validation)
 Route::resource('pages', PageController::class)->except(['show'])
@@ -136,7 +141,6 @@ Route::resource('users', UserController::class);
 Route::put('users/{user}/super-admin', [UserController::class, 'updateSuperAdmin'])->name('users.superAdmin.update');
 Route::post('users/{user}/generate-password', [UserController::class, 'generatePassword'])->name('users.generatePassword');
 Route::delete('users/{user}/delete-password', [UserController::class, 'deletePassword'])->name('users.deletePassword');
-Route::resource('users.comments', CommentController::class)->only(['store', 'update', 'destroy']);
 
 Route::get('notifications', [UserNotificationsController::class, 'index'])->name('notifications.index');
 Route::post('notification/{id}/markAsRead', [UserNotificationsController::class, 'markAsRead'])->name('notifications.markAsRead');
@@ -144,14 +148,12 @@ Route::post('notification/mark-all-as-read', [UserNotificationsController::class
 Route::delete('notification/{id}', [UserNotificationsController::class, 'destroy'])->name('notifications.destroy');
 Route::delete('notifications', [UserNotificationsController::class, 'destroyAll'])->name('notifications.destroy-all');
 
-Route::resource('eventTypes', EventTypeController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
+Route::resource('eventTypes', EventTypeController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::resource('calendar', CalendarController::class)
     ->names(['show' => 'calendar.view'])
     ->middleware(HandlePrecognitiveRequests::class);
 Route::patch('calendar/{calendar}/index', [CalendarController::class, 'updateIndex'])->name('calendar.updateIndex');
-Route::post('calendar/{calendar}/media/{media}', [CalendarController::class, 'destroyMedia'])->name('calendar.destroyMedia');
 Route::post('calendar/{calendar}/duplicate', [CalendarController::class, 'duplicate'])->name('calendar.duplicate');
-Route::delete('calendar/{calendar}/public-urls/{publicUrl}', [CalendarController::class, 'destroyPublicUrl'])->name('calendar.publicUrls.destroy');
 Route::resource('agendaItems', AgendaItemController::class)->except(['create']);
 Route::post('agendaItems/reorder', [AgendaItemController::class, 'reorder'])->name('agendaItems.reorder');
 Route::post('agendaItems/{agendaItem}/problems', [AgendaItemProblemController::class, 'store'])->name('agendaItems.problems.store');
@@ -180,7 +182,7 @@ Route::post('institutions/activity-requests', [InstitutionActivityRequestControl
 Route::put('institutions/{institution}/secretaries', [InstitutionSecretaryController::class, 'update'])->name('institutions.secretaries.update');
 
 Route::resource('resources', ResourceController::class);
-Route::resource('resourceCategories', ResourceCategoryController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
+Route::resource('resourceCategories', ResourceCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
 
 Route::put('reservations/{reservation}/add-users', [ReservationController::class, 'addUsers'])->name('reservations.add-users');
 
@@ -265,19 +267,17 @@ Route::resource('studySets', StudySetController::class)->except(['show']);
 Route::post('institutions/reorderDuties', [InstitutionController::class, 'reorderDuties'])->name('institutions.reorderDuties');
 Route::resource('institutions', InstitutionController::class);
 
-Route::get('tenants/{tenant}/quick-links/edit', [TenantController::class, 'editQuickLink'])->name('tenants.editQuickLink');
-Route::post('tenants/{tenant}/quick-links', [TenantController::class, 'updateQuickLink'])->name('tenants.updateQuickLink');
 Route::get('tenants/{tenant}/main-page/edit', [TenantController::class, 'editMainPage'])->name('tenants.editMainPage');
 Route::post('tenants/{tenant}/main-page', [TenantController::class, 'updateMainPage'])->name('tenants.updateMainPage');
 
-Route::resource('tenants', TenantController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
+Route::resource('tenants', TenantController::class)->only(['index', 'store', 'update', 'destroy']);
 
 Route::get('forms/{form}/export', [FormController::class, 'export'])->name('forms.export');
 Route::resource('forms', FormController::class);
 
 Route::patch('problems/{problem}/status', [ProblemController::class, 'updateStatus'])->name('problems.updateStatus');
 Route::resource('problems', ProblemController::class);
-Route::resource('problemCategories', ProblemCategoryController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
+Route::resource('problemCategories', ProblemCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
 
 // Goals pilot — App\Support\Experiments\GoalsExperiment. A 404 outside the pilot.
 Route::middleware('experiment.goals')->group(function (): void {

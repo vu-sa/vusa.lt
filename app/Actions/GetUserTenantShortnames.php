@@ -16,7 +16,7 @@ class GetUserTenantShortnames
      */
     public static function execute(User $user, bool $withMainTenant = false): array
     {
-        $shortnames = $user->authorization_duties()
+        $shortnames = $user->current_or_upcoming_duties()
             ->with('institution.tenant:id,shortname')
             ->get()
             ->toBase()

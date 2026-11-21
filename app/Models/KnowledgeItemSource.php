@@ -13,14 +13,14 @@ use Illuminate\Support\Carbon;
  * @property string $locale
  * @property int|null $document_id
  * @property string|null $url
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property Carbon|null $checked_at
  * @property int|null $check_status
  * @property int $check_failures
  * @property string|null $content_version
  * @property string|null $thumbnail_path
  * @property string|null $thumbnail_version
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
  * @property-read Document|null $document
  * @property-read KnowledgeItem $item
  *

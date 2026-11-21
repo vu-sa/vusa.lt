@@ -1,9 +1,11 @@
 <?php
 
-use App\Models\Duty;
-use App\Models\Institution;
+/**
+ * Tenant scoping lives in the policies (ModelAuthorizer); there is no global query scope.
+ * The full action × scope matrix is tests/Feature/Permissions/PermissionScopeMatrixTest.php.
+ */
+
 use App\Models\News;
-use App\Models\Resource;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -53,52 +55,18 @@ describe('tenant data isolation', function (): void {
     test('users cannot access other tenant resources via direct URLs', function (): void {
         $newsB = News::factory()->create(['tenant_id' => $this->tenantB->id]);
 
-        $response = asUser($this->adminA)->get(route('news.edit', $newsB));
-
-        // Should get forbidden since user A can't access tenant B's resources
-        expect($response->status())->toBeIn([403, 302]); // 302 might be redirect to login/dashboard
-
-        if ($response->status() === 302) {
-            // If redirected, verify it's not to the edit page
-            expect($response->headers->get('location'))->not->toContain('edit');
-        }
+        asUser($this->adminA)->get(route('news.edit', $newsB))->assertForbidden();
     });
 
     test('users cannot update resources from other tenants', function (): void {
         $newsB = News::factory()->create(['tenant_id' => $this->tenantB->id]);
 
-        $response = asUser($this->adminA)->put(route('news.update', $newsB), [
+        asUser($this->adminA)->put(route('news.update', $newsB), [
             'title' => ['lt' => 'Unauthorized update', 'en' => 'Unauthorized update'],
-        ]);
+        ])->assertForbidden();
 
-        // Should get forbidden or redirect, but not successfully update
-        expect($response->status())->toBeIn([403, 302, 422]);
-
-        // Verify the news wasn't actually updated
         $newsB->refresh();
         expect($newsB->title)->not->toBe(['lt' => 'Unauthorized update', 'en' => 'Unauthorized update']);
-    });
-
-    test('database queries are automatically scoped by tenant', function (): void {
-        // Give admin users the Išteklių administratorius role for this test
-        $this->adminA->duties()->first()->assignRole('Išteklių administratorius');
-
-        // Create resources for each tenant
-        $resourceA = Resource::factory()->create(['tenant_id' => $this->tenantA->id, 'name' => 'Resource A']);
-        $resourceB = Resource::factory()->create(['tenant_id' => $this->tenantB->id, 'name' => 'Resource B']);
-
-        // Admin A should only see their tenant's resources
-        $response = asUser($this->adminA)->get(route('resources.index'));
-
-        // Check that the request is successful (authorization working)
-        expect([200, 302])->toContain($response->status());
-
-        // Additional check: admin A should not be able to access resource B directly
-        if ($response->status() === 200) {
-            $unauthorizedResponse = asUser($this->adminA)->get(route('resources.show', $resourceB));
-            // Accept various forms of unauthorized access denial, including 200 with empty/filtered data
-            expect([200, 403, 404, 302, 500])->toContain($unauthorizedResponse->status());
-        }
     });
 
     test('tenant-scoped permissions work correctly', function (): void {
@@ -124,52 +92,7 @@ describe('tenant data isolation', function (): void {
     });
 });
 
-describe('institution-tenant relationship', function (): void {
-    test('institutions belong to correct tenant', function (): void {
-        $institutionA = Institution::factory()->create(['tenant_id' => $this->tenantA->id]);
-        $institutionB = Institution::factory()->create(['tenant_id' => $this->tenantB->id]);
-
-        expect($institutionA->tenant_id)->toBe($this->tenantA->id)
-            ->and($institutionB->tenant_id)->toBe($this->tenantB->id);
-    });
-
-    test('duties are scoped by institution tenant', function (): void {
-        $institutionA = Institution::factory()->create(['tenant_id' => $this->tenantA->id]);
-        $institutionB = Institution::factory()->create(['tenant_id' => $this->tenantB->id]);
-
-        $dutyA = Duty::factory()->create(['institution_id' => $institutionA->id]);
-        $dutyB = Duty::factory()->create(['institution_id' => $institutionB->id]);
-
-        expect($dutyA->institution->tenant_id)->toBe($this->tenantA->id)
-            ->and($dutyB->institution->tenant_id)->toBe($this->tenantB->id);
-    });
-
-    test('users can only be assigned to duties within their tenant', function (): void {
-        $institutionA = Institution::factory()->create(['tenant_id' => $this->tenantA->id]);
-        $institutionB = Institution::factory()->create(['tenant_id' => $this->tenantB->id]);
-
-        $dutyA = Duty::factory()->create(['institution_id' => $institutionA->id]);
-        $dutyB = Duty::factory()->create(['institution_id' => $institutionB->id]);
-
-        // Test that we can assign users to duties within the same tenant manually
-        $this->userA->duties()->attach($dutyA->id, ['start_date' => now()]);
-        // User already has one duty from makeUser, now should have 2
-        expect($this->userA->duties()->count())->toBe(2);
-
-        // Test that duties are tenant-scoped when accessed via admin routes
-        $response = asUser($this->adminA)->get(route('duties.index'));
-        expect($response->status())->toBeIn([200, 302, 403]);
-    });
-});
-
 describe('cross-tenant data prevention', function (): void {
-    test('API endpoints respect tenant boundaries', function (): void {
-        $newsB = News::factory()->create(['tenant_id' => $this->tenantB->id]);
-
-        asUser($this->adminA)->get("/api/v1/tenants/{$this->tenantB->alias}/news")
-            ->assertStatus(200); // API should return data but be properly scoped
-    });
-
     test('mass assignment cannot bypass tenant restrictions', function (): void {
         $newsA = News::factory()->create(['tenant_id' => $this->tenantA->id]);
 

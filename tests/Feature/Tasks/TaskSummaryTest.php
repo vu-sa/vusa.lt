@@ -1,7 +1,10 @@
 <?php
 
+use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Meeting;
+use App\Models\Reservation;
+use App\Models\Resource;
 use App\Models\Role;
 use App\Models\Task;
 use App\Models\Tenant;
@@ -9,6 +12,7 @@ use App\Models\User;
 use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Gate;
 
 pest()->use(RefreshDatabase::class);
 
@@ -17,9 +21,6 @@ beforeEach(function (): void {
     $this->institution = Institution::factory()->for($this->tenant)->create();
 });
 
-/**
- * The summary reaches a task through its assignees' tenants, so every fixture needs one.
- */
 function summaryTaskFor(User $assignee, array $attributes = []): Task
 {
     $task = Task::factory()->create($attributes);
@@ -180,20 +181,48 @@ describe('tasks.destroy for an orphaned task', function (): void {
 });
 
 describe('tasks.summary scope', function (): void {
-    test('shows a padalinys reader the tasks held in their padalinys but not those held elsewhere', function (): void {
+    test('scopes meeting tasks by the meeting and orphaned tasks by non-ended assignee terms', function (): void {
         Role::create(['name' => 'Meeting task reader', 'guard_name' => 'web'])
-            ->givePermissionTo(['tasks.read.padalinys', 'meetings.read.padalinys']);
-        $reader = makeTenantUserWithRole('Meeting task reader', $this->tenant);
-        $otherTenant = Tenant::query()->whereKeyNot($this->tenant->id)->firstOrFail();
-        $ownTask = summaryMeetingTaskFor(makeUser($this->tenant), $this->institution);
-        // The meeting is readable; only the assignee's padalinys puts this task out of scope.
-        $foreignTask = summaryMeetingTaskFor(makeUser($otherTenant), $this->institution);
+            ->givePermissionTo(['tasks.read.padalinys', 'tasks.update.padalinys', 'tasks.delete.padalinys', 'meetings.read.padalinys']);
+        [$currentTenant, $formerTenant] = Tenant::query()->whereKeyNot($this->tenant->id)->limit(2)->get()->all();
+        $meetingReader = makeTenantUserWithRole('Meeting task reader', $this->tenant);
+        $currentReader = makeTenantUserWithRole('Meeting task reader', $currentTenant);
+        $formerReader = makeTenantUserWithRole('Meeting task reader', $formerTenant);
+        $assignee = makeUser($currentTenant);
+        $formerDuty = Duty::factory()->for(Institution::factory()->for($formerTenant))->create();
+        $assignee->duties()->attach($formerDuty, ['start_date' => today()->subYear(), 'end_date' => today()->subDay()]);
 
-        $response = asUser($reader)->get(route('tasks.summary'));
+        $meetingTask = summaryMeetingTaskFor($assignee, $this->institution);
+        $orphan = orphanTaskFor($assignee);
+        $summary = route('tasks.summary', ['item' => $meetingTask->id]);
 
-        $ids = collect($response->viewData('page')['props']['data'])->pluck('id');
-        expect($ids)->toContain($ownTask->id)
-            ->and($ids)->not->toContain($foreignTask->id);
+        $meetingView = asUser($meetingReader)->get($summary)->assertOk()->viewData('page')['props'];
+        expect(array_column($meetingView['data'], 'id'))->toBe([$meetingTask->id])
+            ->and($meetingView['linkedTask']['id'])->toBe($meetingTask->id)
+            ->and($meetingView['data'][0]['can_update'])->toBeTrue()
+            ->and($meetingView['data'][0]['can_delete'])->toBeTrue();
+
+        $currentView = asUser($currentReader)->get($summary)->assertOk()->viewData('page')['props'];
+        expect(array_column($currentView['data'], 'id'))->toBe([$orphan->id])
+            ->and($currentView['data'][0]['can_delete'])->toBeTrue()
+            ->and(Gate::forUser($currentReader)->allows('view', $orphan))->toBeTrue();
+
+        $formerView = asUser($formerReader)->get($summary)->assertOk()->viewData('page')['props'];
+        expect($formerView['data'])->toBeEmpty()->and($formerView['linkedTask'])->toBeNull()
+            ->and(Gate::forUser($formerReader)->any(['view', 'update', 'delete'], $meetingTask))->toBeFalse()
+            ->and(Gate::forUser($formerReader)->any(['view', 'update', 'delete'], $orphan))->toBeFalse();
+    });
+
+    test('soft deleting a personal task subject keeps the task out of the tenant list', function (): void {
+        $subject = User::factory()->create();
+        $task = summaryTaskFor(makeUser($this->tenant), ['taskable_type' => 'user', 'taskable_id' => $subject->id]);
+        $subject->delete();
+        $reader = makeUser($this->tenant);
+        $reader->givePermissionTo('tasks.read.padalinys');
+
+        expect(Gate::forUser($reader)->allows('view', $task))->toBeFalse();
+        asUser($reader)->getJson(route('api.v1.admin.tasks.index', ['scope' => 'tenant']))
+            ->assertOk()->assertJsonPath('data.total', 0);
     });
 
     test('hides a meeting task from a reader who may not open meetings in that padalinys', function (): void {
@@ -209,7 +238,7 @@ describe('tasks.summary scope', function (): void {
             ->and($ids)->not->toContain($meetingTask->id);
     });
 
-    test('never lists a task nobody is assigned to, nor one about a user', function (): void {
+    test('lists unassigned institution tasks and keeps personal tasks out of the summary', function (): void {
         $superAdmin = makeAdminUser($this->tenant);
         $unassigned = Task::factory()->create(['taskable_type' => 'institution', 'taskable_id' => $this->institution->id]);
         $aboutUser = summaryTaskFor($superAdmin, ['taskable_type' => 'user', 'taskable_id' => $superAdmin->id]);
@@ -219,8 +248,27 @@ describe('tasks.summary scope', function (): void {
 
         $ids = collect($response->viewData('page')['props']['data'])->pluck('id');
         expect($ids)->toContain($listed->id)
-            ->and($ids)->not->toContain($unassigned->id)
+            ->and($ids)->toContain($unassigned->id)
             ->and($ids)->not->toContain($aboutUser->id);
+    });
+
+    test('lists a reservation task in the resource and current reserver units', function (): void {
+        [$formerTenant, $currentTenant] = Tenant::query()->whereKeyNot($this->tenant->id)->limit(2)->get()->all();
+        $reserver = makeUser($currentTenant);
+        $formerDuty = Duty::factory()->for(Institution::factory()->for($formerTenant))->create();
+        $reserver->duties()->attach($formerDuty, ['start_date' => today()->subYear(), 'end_date' => today()->subDay()]);
+        $reservation = Reservation::factory()->hasAttached(Resource::factory()->for($this->tenant))->hasAttached($reserver)->create();
+        $task = Task::factory()->forReservation($reservation)->create();
+
+        foreach ([[$this->tenant, true], [$currentTenant, true], [$formerTenant, false]] as [$tenant, $visible]) {
+            $reader = makeUser($tenant);
+            $reader->givePermissionTo(['tasks.read.padalinys', 'reservations.read.padalinys']);
+
+            expect(Gate::forUser($reader)->allows('view', $task))->toBe($visible);
+            $ids = asUser($reader)->getJson(route('api.v1.admin.tasks.index', ['scope' => 'tenant', 'tenant' => [$tenant->id]]))
+                ->assertOk()->collect('data.items')->pluck('id');
+            expect($ids->contains($task->id))->toBe($visible);
+        }
     });
 
     test('shows the central student representative coordinator the tasks of every padalinys', function (): void {
@@ -259,8 +307,8 @@ describe('tasks.summary filters', function (): void {
     test('narrows to a chosen padalinys the viewer may read', function (): void {
         $coordinator = makeTenantUserWithRole('Centrinio biuro studentų atstovų koordinatorius', $this->tenant);
         $otherTenant = Tenant::query()->whereKeyNot($this->tenant->id)->firstOrFail();
-        $ownTask = summaryMeetingTaskFor(makeUser($this->tenant), $this->institution);
-        summaryMeetingTaskFor(makeUser($otherTenant), Institution::factory()->for($otherTenant)->create());
+        $ownTask = summaryMeetingTaskFor(makeUser($otherTenant), $this->institution);
+        summaryMeetingTaskFor(makeUser($this->tenant), Institution::factory()->for($otherTenant)->create());
 
         asUser($coordinator)
             ->getJson(route('api.v1.admin.tasks.index', ['scope' => 'tenant', 'tenant' => [$this->tenant->id]]))

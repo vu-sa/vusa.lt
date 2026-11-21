@@ -48,7 +48,7 @@ function padalinysManager(Tenant $tenant): User
 function repCoordinator(Tenant $tenant): User
 {
     $coordinator = makeUser($tenant);
-    grantPurpose($coordinator->authorization_duties()->firstOrFail(), ResponsibilityPurpose::StudentRepCoordination, $tenant);
+    grantPurpose($coordinator->current_or_upcoming_duties()->firstOrFail(), ResponsibilityPurpose::StudentRepCoordination, $tenant);
 
     return $coordinator;
 }

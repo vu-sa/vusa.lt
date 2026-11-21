@@ -80,24 +80,6 @@ if (shell_exec('gh auth status >/dev/null 2>&1 && echo ok') !== null) {
 |
 */
 
-// Authorization-specific expectations
-expect()->extend('toBeAuthorizedFor', fn (string $action, mixed $model = null) => $this->toBeIn([200, 201, 302, 303]));
-
-expect()->extend('toRequireAuth', fn () => $this->toBeIn([302, 401, 403]));
-
-expect()->extend('toBeForbidden', fn () => $this->toBe(403));
-
-expect()->extend('toBeSecureResponse', fn () => $this->toBeIn([200, 302, 403, 404, 422]));
-
-expect()->extend('toBeSecureApiResponse', fn () => $this->toBeIn([200, 401, 403, 404]));
-
-expect()->extend('toNotExposePassword', function () {
-    $content = $this->value;
-    expect($content)->not->toContain('password')->not->toContain('remember_token');
-
-    return $this;
-});
-
 // Translatable-model expectations (Spatie HasTranslations).
 expect()->extend('toHaveTranslations', function (string $field, array $locales = ['lt', 'en']) {
     $translations = $this->value->getTranslations($field);

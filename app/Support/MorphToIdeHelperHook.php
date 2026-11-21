@@ -18,9 +18,9 @@ class MorphToIdeHelperHook implements ModelHookInterface
 {
     public function run(ModelsCommand $command, Model $model): void
     {
-        $modelFile = (new ReflectionClass($model))->getFileName();
+        $modelFile = new ReflectionClass($model)->getFileName();
 
-        foreach ((new ReflectionClass($model))->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+        foreach (new ReflectionClass($model)->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
             // Inherited relations are skipped: their docblock names resolve against another file.
             if ($method->getFileName() !== $modelFile || $method->getNumberOfParameters() > 0 || ! self::returnsMorphTo($method)) {
                 continue;

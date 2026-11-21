@@ -40,12 +40,6 @@ Sukūrus greitąją nuorodą, atveriama jos redagavimo forma.
 
 ## Rodymas svetainėje {#rodymas}
 
-<ChangelogNote date="2026-10-02" title="Meniu paruošiamas prieš pirmą rodymą">
-
-Viešo meniu kalba ir greitųjų nuorodų piktogramos paruošiamos kartu su puslapiu. Nuorodų duomenys toliau tvarkomi šioje skiltyje.
-
-</ChangelogNote>
-
 Nuorodas ir jų piktogramas svetainė pateikia kartu su puslapiu. Piktogramos pasirinkimo keisti nereikia. Jei piktograma dar nepalaikoma vietiniame rinkinyje, ji įkeliama atskirai; nuoroda veikia ir be jos.
 
 Angliškame puslapyje meniu vertimai paruošiami prieš jį parodant, taip pat kai esi prisijungęs. Padalinio logotipas pradedamas įkelti iš anksto, pagal dabartinį padalinį ir puslapio kalbą.
@@ -63,12 +57,6 @@ Sąrašo puslapyje (`/mano/quickLinks`):
 ### Naujos nuorodos kūrimas {#naujos-nuorodos-kurimas}
 
 Puslapio viršuje spausk **Nauja nuoroda** (arba eik adresu `/mano/quickLinks/create`). Forma atsiveria su tuo padaliniu ir kalba, kuriuos buvai pasirinkęs sąraše – pvz., iš EN sąrašo kuriama angliška nuoroda.
-
-<ChangelogNote date="2026-10-23" title="Padalinys pasirenkamas formoje">
-
-Nauja nuoroda išsaugoma tam padaliniui, kuris pasirinktas formoje, ir kurti ją galima ir angliškai svetainės versijai.
-
-</ChangelogNote>
 
 1. **Tekstas** – įrašyk trumpą mygtuko pavadinimą (pvz., „Kuratoriai“, „DUK“, „Stipendijos“).
 2. **Nuoroda** – įvesk vidinio puslapio kelią (pvz., `/lt/kuratoriai`) arba visą išorinį adresą (pvz., `https://vilnius.lt`).

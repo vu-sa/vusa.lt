@@ -12,6 +12,7 @@
     <section class="mx-auto max-w-7xl px-5 py-8 sm:px-6 sm:py-12 lg:px-8">
       <div class="max-w-prose">
         <!-- Rich Description -->
+        <!-- v-html: sanitized on write (Form::sanitizedHtmlTranslations) -->
         <div v-if="form.description" class="typography mb-8" v-html="form.description" />
 
         <!-- Show pre-filled institution name if provided -->
@@ -34,8 +35,8 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
-import RegistrationForm from '@/Features/Registrations/RegistrationForm.vue';
-import type { RegistrationDefinition, RegistrationFieldDefinition } from '@/Features/Registrations/types';
+import RegistrationForm from '@/Components/Public/Registrations/RegistrationForm.vue';
+import type { RegistrationDefinition, RegistrationFieldDefinition } from '@/Components/Public/Registrations/types';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 
 const { form } = defineProps<{

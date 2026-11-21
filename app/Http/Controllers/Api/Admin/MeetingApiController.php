@@ -8,10 +8,11 @@ use App\Http\Requests\Meetings\IndexMeetingPendingDocumentsRequest;
 use App\Http\Resources\DocumentRowResource;
 use App\Models\Meeting;
 use App\Services\AgendaItemPresenter;
-use App\Services\ResourceServices\DutyService;
+use App\Services\Institutions\InstitutionQueries;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 class MeetingApiController extends ApiController
 {
@@ -43,10 +44,9 @@ class MeetingApiController extends ApiController
      *
      * @routeName api.v1.admin.meetings.preview
      */
+    #[Authorize('view', 'meeting')]
     public function preview(Meeting $meeting): JsonResponse
     {
-        $this->authorizeApi('view', $meeting);
-
         $meeting->load([
             'institutions',
             'agendaItems' => fn ($query) => $query->orderBy('order')->with('votes'),
@@ -86,10 +86,9 @@ class MeetingApiController extends ApiController
      *
      * @routeName api.v1.admin.meetings.agendaItems
      */
+    #[Authorize('view', 'meeting')]
     public function agendaItems(Meeting $meeting): JsonResponse
     {
-        $this->authorizeApi('view', $meeting);
-
         $meeting->load([
             'agendaItems' => fn ($query) => $query->orderBy('order'),
         ]);
@@ -115,14 +114,12 @@ class MeetingApiController extends ApiController
      *
      * @routeName api.v1.admin.meetings.recent
      */
-    public function recent(): JsonResponse
+    // Self-scoped, so no policy: only institutions where the caller holds a duty or is a secretary.
+    public function recent(Request $request): JsonResponse
     {
-        if (! Auth::check()) {
-            return $this->jsonError('Unauthorized', 401);
-        }
-
+        $actor = $request->user();
         $sixMonthsAgo = now()->subMonths(6);
-        $userInstitutions = DutyService::getUserInstitutionsForDashboard(meetingsFrom: $sixMonthsAgo);
+        $userInstitutions = InstitutionQueries::getUserInstitutionsForDashboard($actor, meetingsFrom: $sixMonthsAgo);
 
         if ($userInstitutions->isEmpty()) {
             return $this->jsonSuccess([]);
@@ -137,7 +134,7 @@ class MeetingApiController extends ApiController
                     'start_time' => $meeting->start_time?->toISOString(),
                     'institution_id' => (string) $institution->id,
                     'institution_name' => $institution->name ?? 'Unknown',
-                    'agenda_items' => $meeting->agendaItems->map(fn ($item) => ['title' => AgendaItemPresenter::forUser($item, request()->user())['title']])->toArray(),
+                    'agenda_items' => $meeting->agendaItems->map(fn ($item) => ['title' => AgendaItemPresenter::forUser($item, $actor)['title']])->toArray(),
                 ]) ?? collect())
             ->sortByDesc('start_time')
             ->unique('id')

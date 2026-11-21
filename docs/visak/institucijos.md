@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Institucijos
-last_reviewed: 2026-11-09
+last_reviewed: 2026-11-21
 tests:
   - tests/Feature/Admin/ModelMeta/TypeControllerTest.php
   - tests/Feature/Meetings/MeetingKindTest.php
@@ -10,6 +10,7 @@ tests:
   - tests/Feature/Search/AdminSearchTranslationsTest.php
   - resources/js/Pages/Admin/People/__tests__/IndexInstitution.component.test.ts
   - resources/js/Pages/Admin/People/__tests__/ShowInstitution.component.test.ts
+  - tests/Feature/InstitutionSubscriptionTest.php
   - resources/js/Components/Institutions/__tests__/InstitutionMeetingsCollection.component.test.ts
   - tests/Feature/Admin/Management/InstitutionControllerTest.php
   - resources/js/Composables/__tests__/searchTranslations.test.ts
@@ -52,7 +53,7 @@ tests:
   - resources/js/Components/Institutions/__tests__/InstitutionOverviewSection.component.test.ts
   - resources/js/Components/Institutions/__tests__/SecretariesSection.component.test.ts
   - resources/js/Components/ActionWindow/__tests__/InstitutionReportScreen.component.test.ts
-  - resources/js/Features/Admin/AdminSearch/Config/__tests__/collectionFacetConfig.test.ts
+  - resources/js/Search/admin/Config/__tests__/collectionFacetConfig.test.ts
   - tests/Feature/Permissions/StudentRepresentativeRoleTest.php
   - tests/Feature/Permissions/BaselineAccessTest.php
   - tests/Browser/VisakRecordPagesTest.php
@@ -284,6 +285,8 @@ Jei institucija nesirinko ar kurį laiką nesirinks (pvz., per sesiją), apie ta
 laikotarpis ir, jei reikia, pastaba (iki 500 simbolių). Tai galima padaryti per **Veiksmai → Posėdžio
 nebuvo**, pradžios mygtuką **Posėdžio nebuvo** arba institucijos meniu **⋯ → Pridėti pažymą**.
 
+Institucijos narys gali pridėti ir peržiūrėti pranešimus, jei jo pareigų laikotarpis dar nesibaigė. Prieiga suteikiama ir prieš paskirto laikotarpio pradžią.
+
 - Veiksmų lange laikotarpio pradžia parenkama pati ir parodoma su priežastimi: tai vėliausia iš
   **tavo kadencijos pradžios** (ta pati, nuo kurios klausia [veiklos užklausos](#paklausti)),
   **dienos po paskutinio posėdžio** ir **dienos po ankstesnio pranešimo**. Jei nė vienos nėra,
@@ -373,13 +376,6 @@ pareigybės laikotarpį; jei dabartinės kadencijos nėra, naudojama atstovo par
 **Papildyk posėdžių įrašus** laikotarpis prasideda nuo kadencijos pradžios, nes apima posėdžius,
 kuriuos reikia papildyti. Paskutinė pareigų diena dar yra galiojanti. Laikotarpio pabaiga
 užfiksuojama siunčiant ir vėliau nesikeičia.
-
-<ChangelogNote date="2026-10-18" title="Klausiama tik apie laiką po paskutinės veiklos">
-
-Anksčiau laikotarpis visada prasidėdavo nuo kadencijos pradžios, todėl atstovų būdavo klausiama ir apie
-laiką, apie kurį jie jau pranešė.
-
-</ChangelogNote>
 
 <ChangelogNote date="2026-10-19" title="Galima paklausti pasibaigus pranešimui">
 
@@ -554,6 +550,8 @@ puslapyje (**⋯ → Sekti**) arba sąraše, pažymėjus kelias institucijas. S�
   posėdžiai vieši.
 - **Nebesekti** – pašalinti instituciją iš sekamų sąrašo ir nebegauti jos sekėjams skirtų pranešimų.
 - Pranešimai dėl einamų pareigų nepriklauso nuo pasirinkimo sekti instituciją.
+- Kol eini pareigas institucijoje, **Sekti** nesiūloma: apie jos posėdžius sužinai per pareigas.
+  Pasibaigus kadencijai instituciją galima sekti kaip ir bet kurią kitą.
 
 <ChangelogNote date="2026-10-02" title="Vienas pasirinkimas – sekti arba nebesekti">
 Atskiras institucijos nutildymas pašalintas. Anksčiau sektos ir nutildytos institucijos
@@ -582,13 +580,6 @@ institucijas. Jei toks adresas jau užimtas, priekyje pridedamas padalinio trump
 - Senas adresas toliau nukreipia į instituciją. Ankstesni adresai rodomi po nuoroda, skiltyje
   **Ankstesni vieši adresai**; nebereikalingą galima ištrinti – tada jis nebeveiks.
 - Padalinio pagrindinės institucijos ir centrinio biuro adresas nekeičiamas.
-
-<ChangelogNote date="2026-10-19" title="Kiekviena institucija turi savo adresą">
-
-Anksčiau kelios institucijos galėjo turėti tą patį adresą, todėl viešose kortelėse visos vesdavo į
-vieną instituciją. Dabar adresai sudaryti iš pavadinimų, o seni adresai nukreipia į naujus.
-
-</ChangelogNote>
 - **Ištrinta** institucija patenka į [šiukšlinę](/pagrindai/platforma#siuksline), o jos
   pareigybės ir posėdžiai lieka. Institucijos, kurioje einamos pareigos, ištrinti negalima.
 - Šiukšlinės veiksmas **Atkurti ir atidaryti** atkuria instituciją ir iškart atidaro jos įrašą. Įrašai be pavadinimo sąraše ir įrašo puslapyje rodomi kaip **Be pavadinimo · nuorodos kodas**, kad juos būtų galima atskirti ir rasti pagal kodą. **Galutinai ištrinti** negalima, kol ji turi

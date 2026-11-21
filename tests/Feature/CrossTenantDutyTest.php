@@ -94,6 +94,21 @@ test('cross-tenant admin can add their own tenant user via batch-update', functi
     expect($exists)->toBeTrue();
 });
 
+test('cross-tenant admin cannot batch-update another assignable tenant', function (): void {
+    $otherTenant = Tenant::factory()->create();
+    $this->duty->assignableTenants()->attach($otherTenant->id, ['quota' => 2]);
+
+    asUser($this->crossAdmin)->postJson(route('duties.batchUpdateUsers', $this->duty), [
+        'tenant_id' => $otherTenant->id,
+        'user_changes' => [
+            ['user_id' => $this->tenantUser->id, 'action' => 'add'],
+        ],
+    ])->assertUnprocessable()
+        ->assertJsonValidationErrors('tenant_id');
+
+    expect($this->duty->dutiables()->where('dutiable_id', $this->tenantUser->id)->exists())->toBeFalse();
+});
+
 test('cross-tenant admin can add a user who has no prior tenant membership', function (): void {
     // Users have no direct tenant assignment — membership is through duties.
     // Any user (even without existing duties) may be assigned to a cross-tenant duty.
@@ -250,6 +265,39 @@ test('cross-tenant admin cannot edit dutiable of user from another tenant', func
     ]);
 
     expect($response->status())->toBe(403);
+});
+
+test('cross-tenant admin cannot edit or remove a dutiable based on former tenant membership', function (): void {
+    $membership = $this->tenantUser->duties()->sole();
+    $this->tenantUser->duties()->updateExistingPivot($membership->id, [
+        'start_date' => now()->subYears(3),
+        'end_date' => now()->subYears(2),
+    ]);
+    $dutiable = Dutiable::factory()->forDuty($this->duty)->forUser($this->tenantUser)->create([
+        'start_date' => now()->subDay(),
+        'end_date' => null,
+        'additional_email' => null,
+    ]);
+
+    $update = asUser($this->crossAdmin)->patch(route('dutiables.update', $dutiable), [
+        'additional_email' => 'cross@example.com',
+    ]);
+    $remove = asUser($this->crossAdmin)->delete(route('dutiables.destroy', $dutiable));
+
+    expect($update->status())->toBe(403)
+        ->and($remove->status())->toBe(403);
+    $this->assertModelExists($dutiable);
+    expect($dutiable->fresh()->additional_email)->toBeNull();
+});
+
+test('cross-tenant admin can open the duty record', function (): void {
+    asUser($this->crossAdmin)->get(route('duties.show', $this->duty))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->component('Admin/People/ShowDuty'));
+});
+
+test('unrelated user cannot open the duty record', function (): void {
+    asUser($this->outsideUser)->get(route('duties.show', $this->duty))->assertForbidden();
 });
 
 test('cross-tenant admin can open the duty edit page (read-only mode)', function (): void {
@@ -770,6 +818,32 @@ describe('store (Priskirti sheet)', function (): void {
         expect(Dutiable::query()->where('dutiable_id', $this->outsideUser->id)->exists())->toBeFalse();
     });
 
+    test('a delegated seat skips a former tenant when choosing its quota', function (): void {
+        $other = Tenant::query()->whereNotIn('id', [$this->owningTenant->id, $this->assignableTenant->id])->firstOrFail();
+        $this->duty->assignableTenants()->attach($other, ['quota' => 2]);
+
+        // Put the ended membership in the first quota returned so it would be picked without the date filter.
+        [$former, $current] = $this->duty->assignableTenants()->get()->all();
+        $otherAdminDuty = Duty::factory()->for(Institution::factory()->for($other))->create();
+        $otherAdminDuty->assignRole('Komunikacijos koordinatorius');
+        $this->crossAdmin->duties()->attach($otherAdminDuty, ['start_date' => now()->subMonth(), 'end_date' => null]);
+
+        $formerDuty = Duty::factory()->for(Institution::factory()->for($former))->create();
+        $currentDuty = Duty::factory()->for(Institution::factory()->for($current))->create();
+        $member = $this->outsideUser;
+        $member->duties()->attach($formerDuty, ['start_date' => now()->subYears(3), 'end_date' => now()->subYears(2)]);
+        $member->duties()->attach($currentDuty, ['start_date' => now()->subMonth(), 'end_date' => null]);
+
+        asUser($this->crossAdmin)->post(route('dutiables.store'), [
+            'duty_id' => $this->duty->id,
+            'user_id' => $member->id,
+            'start_date' => today()->toDateString(),
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        $created = $this->duty->dutiables()->where('dutiable_id', $member->id)->sole();
+        expect($created->tenant_id)->toBe($current->id);
+    });
+
     test('the tenant quota is enforced', function (): void {
         // Quota is 2 (see beforeEach).
         foreach ([1, 2] as $_) {
@@ -927,8 +1001,10 @@ describe('choosing the quota padalinys of a seat', function (): void {
             ->assertSessionHasErrors('tenant_id');
     });
 
-    test('counting a seat toward a padalinys its member is not in warns without blocking', function (): void {
+    test('counting a seat toward a former padalinys warns without blocking', function (): void {
         $outsider = makeUser($this->owningTenant);
+        $formerDuty = Duty::factory()->for(Institution::factory()->for($this->assignableTenant))->create();
+        $outsider->duties()->attach($formerDuty, ['start_date' => now()->subYears(3), 'end_date' => now()->subYears(2)]);
         $this->seat->update(['dutiable_id' => $outsider->id]);
 
         asUser($this->owningAdmin)->patch(route('dutiables.update', $this->seat), ['tenant_id' => $this->assignableTenant->id])

@@ -162,7 +162,7 @@ import {
 } from '@/Components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
-import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
+import RecordActivity from '@/Components/ActivityLog/RecordActivity.vue';
 import { ModelEnum } from '@/Types/enums';
 import { formatDateTime, parseDate } from '@/Utils/dateTime';
 

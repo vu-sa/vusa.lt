@@ -1,9 +1,9 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { defineComponent, markRaw } from 'vue';
+import { defineComponent } from 'vue';
 
 import EditSiteSettings from '@/Pages/Admin/Settings/EditSiteSettings.vue';
-import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 
 /**
  * Stands in for CollectionSelectDialog — the real Typesense search flow is out of scope
@@ -42,7 +42,6 @@ const hitFor = (id: string, title: string): NormalizedSearchHit => ({
   id: `pages-${id}`,
   recordId: id,
   collection: 'pages',
-  icon: markRaw(defineComponent({ template: '<i />' })),
   title,
   badge: 'VU SA',
   raw: {},

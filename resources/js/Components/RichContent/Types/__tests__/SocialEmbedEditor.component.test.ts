@@ -1,11 +1,14 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
+import { reactive } from 'vue';
 
 import SocialEmbedEditor from '../SocialEmbedEditor.vue';
 
+interface EmbedContent { url: string; platform: string | null }
+
 describe('SocialEmbedEditor', () => {
   it('labels its controls and identifies a supported URL', async () => {
-    const content: { url: string; platform: string | null } = { url: '', platform: null };
+    const content = reactive<EmbedContent>({ url: '', platform: null });
     const wrapper = mount(SocialEmbedEditor, {
       props: { modelValue: content, options: { showCaption: true } },
       global: { stubs: { SocialEmbedPreview: true } },
@@ -23,10 +26,10 @@ describe('SocialEmbedEditor', () => {
 
   describe('opening existing content', () => {
     it('synchronizes platform immediately on mount when platform was null', () => {
-      const content: { url: string; platform: string | null } = {
+      const content = reactive<EmbedContent>({
         url: 'https://www.instagram.com/reel/example123/',
         platform: null,
-      };
+      });
       const wrapper = mount(SocialEmbedEditor, {
         props: { modelValue: content, options: { showCaption: true } },
         global: { stubs: { SocialEmbedPreview: true } },
@@ -39,10 +42,10 @@ describe('SocialEmbedEditor', () => {
     });
 
     it('corrects a mismatched/stale saved platform on mount', () => {
-      const content: { url: string; platform: string | null } = {
+      const content = reactive<EmbedContent>({
         url: 'https://www.facebook.com/vustudentusatstovybe/posts/123456',
         platform: 'instagram',
-      };
+      });
       const wrapper = mount(SocialEmbedEditor, {
         props: { modelValue: content, options: { showCaption: true } },
         global: { stubs: { SocialEmbedPreview: true } },
@@ -54,10 +57,10 @@ describe('SocialEmbedEditor', () => {
     });
 
     it('clears platform on mount when url is empty but platform was saved', () => {
-      const content: { url: string; platform: string | null } = {
+      const content = reactive<EmbedContent>({
         url: '',
         platform: 'facebook',
-      };
+      });
       const wrapper = mount(SocialEmbedEditor, {
         props: { modelValue: content, options: { showCaption: true } },
         global: { stubs: { SocialEmbedPreview: true } },
@@ -71,10 +74,10 @@ describe('SocialEmbedEditor', () => {
 
   describe('switching platforms and clearing URL', () => {
     it('switches platform when user enters a different social platform URL', async () => {
-      const content: { url: string; platform: string | null } = {
+      const content = reactive<EmbedContent>({
         url: 'https://www.facebook.com/vustudentusatstovybe/posts/123',
         platform: 'facebook',
-      };
+      });
       const wrapper = mount(SocialEmbedEditor, {
         props: { modelValue: content, options: { showCaption: true } },
         global: { stubs: { SocialEmbedPreview: true } },
@@ -95,10 +98,10 @@ describe('SocialEmbedEditor', () => {
     });
 
     it('clears platform and hides preview when URL is emptied', async () => {
-      const content: { url: string; platform: string | null } = {
+      const content = reactive<EmbedContent>({
         url: 'https://www.instagram.com/p/example',
         platform: 'instagram',
-      };
+      });
       const wrapper = mount(SocialEmbedEditor, {
         props: { modelValue: content, options: { showCaption: true } },
         global: { stubs: { SocialEmbedPreview: true } },
@@ -116,7 +119,7 @@ describe('SocialEmbedEditor', () => {
 
   describe('malformed URLs and lookalike domains', () => {
     it('shows warning and sets platform to null on malformed URL', async () => {
-      const content: { url: string; platform: string | null } = { url: '', platform: null };
+      const content = reactive<EmbedContent>({ url: '', platform: null });
       const wrapper = mount(SocialEmbedEditor, {
         props: { modelValue: content, options: { showCaption: true } },
         global: { stubs: { SocialEmbedPreview: true } },
@@ -132,7 +135,7 @@ describe('SocialEmbedEditor', () => {
     });
 
     it('shows warning and sets platform to null on lookalike domains', async () => {
-      const content: { url: string; platform: string | null } = { url: '', platform: null };
+      const content = reactive<EmbedContent>({ url: '', platform: null });
       const wrapper = mount(SocialEmbedEditor, {
         props: { modelValue: content, options: { showCaption: true } },
         global: { stubs: { SocialEmbedPreview: true } },
@@ -159,7 +162,7 @@ describe('SocialEmbedEditor', () => {
     });
 
     it('shows warning on root domains without post target', async () => {
-      const content: { url: string; platform: string | null } = { url: '', platform: null };
+      const content = reactive<EmbedContent>({ url: '', platform: null });
       const wrapper = mount(SocialEmbedEditor, {
         props: { modelValue: content, options: { showCaption: true } },
         global: { stubs: { SocialEmbedPreview: true } },

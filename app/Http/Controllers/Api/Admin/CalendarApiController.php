@@ -9,15 +9,15 @@ use App\Models\Calendar;
 use App\Services\TanstackTableService;
 use App\Support\CollectionFacetCounts;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 class CalendarApiController extends ApiController
 {
     public function __construct(private readonly TanstackTableService $tableService) {}
 
+    #[Authorize('viewAny', Calendar::class)]
     public function index(IndexCalendarRequest $request): JsonResponse
     {
-        $this->authorizeApi('viewAny', Calendar::class);
-
         $query = fn (IndexCalendarRequest $request) => BuildCalendarIndexQuery::execute($request, $this->tableService);
         $events = $query($request)->paginate($request->getPerPage());
 

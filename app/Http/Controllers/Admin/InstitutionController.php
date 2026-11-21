@@ -30,6 +30,8 @@ use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use App\Settings\MeetingSettings;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -46,10 +48,9 @@ class InstitutionController extends AdminController
     /**
      * Display a listing of the resource.
      */
+    #[Authorize('viewAny', Institution::class)]
     public function index(IndexInstitutionRequest $request): Response
     {
-        $this->handleAuthorization('viewAny', Institution::class);
-
         // Live rows come from Typesense (the scoped key carries the authorization) and the trash
         // from api.v1.admin.trash.index, so the page itself needs no rows.
         return Inertia::render('Admin/People/IndexInstitution', [
@@ -69,14 +70,13 @@ class InstitutionController extends AdminController
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    #[Authorize('create', Institution::class)]
+    public function create(Request $request)
     {
-        $this->handleAuthorization('create', Institution::class);
-
         Inertia::share('seo.title', 'Nauja institucija');
 
         return Inertia::render('Admin/People/CreateInstitution', [
-            'assignableTenants' => GetTenantsForUpserts::execute('institutions.create.padalinys', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute($request->user(), 'institutions.create.padalinys', $this->authorizer),
             'institutionTypes' => InstitutionType::query()->get(),
         ]);
     }
@@ -84,6 +84,7 @@ class InstitutionController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
+    #[Authorize('create', Institution::class)]
     public function store(StoreInstitutionRequest $request, SyncImageMedia $syncImage, PostCreateRedirect $redirect)
     {
         $institution = new Institution;
@@ -102,6 +103,7 @@ class InstitutionController extends AdminController
     /**
      * Display the specified resource.
      */
+    // Authorized in ActivityRequestHistoryRequest: the bound institution or user.
     public function show(ActivityRequestHistoryRequest $request, Institution $institution): Response
     {
         // An active institution outside the user's reach opens as its public face: overview,
@@ -164,10 +166,9 @@ class InstitutionController extends AdminController
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Institution $institution)
+    #[Authorize('update', 'institution')]
+    public function edit(Request $request, Institution $institution)
     {
-        $this->handleAuthorization('update', $institution);
-
         $institution->load('types');
 
         Inertia::share('seo.title', $institution->name);
@@ -184,13 +185,14 @@ class InstitutionController extends AdminController
                 'public_urls' => $institution->publicUrls()->get(['id', 'url', 'locale', 'created_at']),
             ],
             'institutionTypes' => InstitutionType::query()->get(),
-            'assignableTenants' => GetTenantsForUpserts::execute('institutions.update.padalinys', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute($request->user(), 'institutions.update.padalinys', $this->authorizer),
         ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
+    #[Authorize('update', 'institution')]
     public function update(UpdateInstitutionRequest $request, Institution $institution, UpdateInstitution $update)
     {
         $update->execute($institution, $request->validated(), $request->user());
@@ -210,10 +212,9 @@ class InstitutionController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
+    #[Authorize('delete', 'institution')]
     public function destroy(Institution $institution)
     {
-        $this->handleAuthorization('delete', $institution);
-
         // check if auth user is from this institution
         if (auth()->user()->institutions->contains($institution)) {
             return back()->with('error', __('messages.institution.cannot_delete_own'));
@@ -227,6 +228,7 @@ class InstitutionController extends AdminController
     /**
      * Restore the specified resource from storage.
      */
+    #[Authorize('restore', 'institution')]
     public function restore(Institution $institution): RedirectResponse
     {
         $response = $this->restoreModel($institution, $this->entityMessage('restored', 'institution'));
@@ -242,16 +244,10 @@ class InstitutionController extends AdminController
     /**
      * Remove a legacy public URL (an old alias that still 301-redirects here).
      */
+    #[Authorize('update', 'institution')]
     public function destroyPublicUrl(Institution $institution, PublicUrl $publicUrl): RedirectResponse
     {
-        $this->handleAuthorization('update', $institution);
-
-        // Resolve through the relation so a crafted payload cannot reach another institution's URLs.
-        $publicUrlFromDb = $institution->publicUrls()->find($publicUrl->id);
-
-        abort_if($publicUrlFromDb === null, 403, 'Public URL does not belong to this institution.');
-
-        $publicUrlFromDb->delete();
+        $publicUrl->delete();
 
         return back()->with('info', $this->entityMessage('deleted', 'publicUrl'));
     }
@@ -262,6 +258,7 @@ class InstitutionController extends AdminController
      *
      * @return RedirectResponse
      */
+    // Authorized in ReorderDutiesRequest: every institution that owns a selected duty.
     public function reorderDuties(ReorderDutiesRequest $request)
     {
         $duties = collect($request->validated('duties'));
@@ -280,6 +277,7 @@ class InstitutionController extends AdminController
         return back()->with('success', __('messages.duty.order_updated'));
     }
 
+    #[Authorize('forceDelete', 'institution')]
     public function forceDelete(Institution $institution): RedirectResponse
     {
         return $this->forceDeleteModel($institution);

@@ -2,7 +2,7 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { ref } from 'vue';
 
-import ReservationResourceStateTag from '@/Components/Tag/ReservationResourceStateTag.vue';
+import ReservationResourceStateTag from '@/Components/Reservations/ReservationResourceStateTag.vue';
 import { commonStubs } from '@/tests/stubs';
 
 import ResourcePreview from '../ResourcePreview.vue';
@@ -19,8 +19,9 @@ const baseResource = {
 };
 
 interface ReservationPreview {
-  id: string;
-  name: string;
+  key?: number;
+  id: string | null;
+  name: string | null;
   quantity: number;
   state: string;
   start_time: number | null;
@@ -193,6 +194,21 @@ describe('ResourcePreview', () => {
     expect(wrapper.text()).toContain('Ankstesnės rezervacijos');
     expect(wrapper.text()).toContain('Senas renginys');
     expect(wrapper.find('a[href*="/mocked-route/reservations.show"]').exists()).toBe(true);
+  });
+
+  it('shows a reservation the viewer cannot open without its name or a link', () => {
+    mockController.data.value = {
+      upcoming_reservations: [
+        { key: 7, id: null, name: null, quantity: 1, state: 'reserved', start_time: 1_700_000_000, end_time: 1_700_010_000 },
+      ],
+      previous_reservations: [],
+      managers: [],
+    };
+
+    const wrapper = mountDetail({ showUpcomingReservations: true });
+
+    expect(wrapper.text()).toContain('reservations.resource.other_reservation');
+    expect(wrapper.find('a[href*="/mocked-route/reservations.show"]').exists()).toBe(false);
   });
 
   it('renders managers when data is loaded', () => {

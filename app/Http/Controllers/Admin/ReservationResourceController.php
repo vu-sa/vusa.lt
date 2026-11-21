@@ -11,6 +11,7 @@ use App\Models\Reservation;
 use App\Models\Resource;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -19,11 +20,13 @@ class ReservationResourceController extends AdminController
     /**
      * Redirect to the reservation show page. Separate reservation resource show pages are not needed.
      */
+    #[Authorize('view', 'reservationResource')]
     public function show(ReservationResource $reservationResource): RedirectResponse
     {
         return redirect()->route('reservations.show', $reservationResource->reservation);
     }
 
+    // Authorized in StoreReservationResourceRequest: the reservation named in the body.
     public function store(StoreReservationResourceRequest $request): RedirectResponse
     {
         $attributes = $request->resourceAttributes();
@@ -31,7 +34,7 @@ class ReservationResourceController extends AdminController
         DB::transaction(function () use ($request, $attributes): void {
             $this->ensureCapacity($attributes);
             $reservation = Reservation::query()->findOrFail($request->validated('reservation_id'));
-            $this->handleAuthorization('update', $reservation);
+            $this->authorize('update', $reservation);
 
             ReservationResource::create([...$attributes, 'reservation_id' => $reservation->id]);
         }, 3);
@@ -39,6 +42,7 @@ class ReservationResourceController extends AdminController
         return back()->with('success', $this->entityMessage('created', 'reservationResource'));
     }
 
+    #[Authorize('update', 'reservationResource')]
     public function update(UpdateReservationResourceRequest $request, ReservationResource $reservationResource): RedirectResponse
     {
         $attributes = $request->resourceAttributes();
@@ -53,7 +57,7 @@ class ReservationResourceController extends AdminController
             }
 
             $this->ensureCapacity($attributes, $locked->id);
-            $this->handleAuthorization('update', $locked->reservation);
+            $this->authorize('update', $locked->reservation);
             $locked->update($attributes);
         }, 3);
 
@@ -81,7 +85,7 @@ class ReservationResourceController extends AdminController
 
     public function destroy(ReservationResource $reservationResource)
     {
-        $this->handleAuthorization('delete', $reservationResource->reservation);
+        $this->authorize('delete', $reservationResource->reservation);
 
         $reservationResource->delete();
 

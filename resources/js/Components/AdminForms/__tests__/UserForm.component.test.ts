@@ -9,7 +9,7 @@ import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-vi.mock('@/Composables/useDuplicateUserCheck', () => ({
+vi.mock('@/Components/AdminForms/useDuplicateUserCheck', () => ({
   useDuplicateUserCheck: () => ({ matches: { value: [] } }),
 }));
 

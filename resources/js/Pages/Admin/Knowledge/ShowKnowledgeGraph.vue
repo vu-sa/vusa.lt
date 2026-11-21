@@ -25,7 +25,7 @@ import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import { EmptyState } from '@/Components/Patterns';
 import WikiGraph from '@/Features/Admin/Knowledge/WikiGraph.vue';
 import WikiSearchField from '@/Features/Admin/Knowledge/WikiSearchField.vue';
-import { searchWiki } from '@/Features/Admin/Knowledge/wikiSearch';
+import { searchWiki } from '@/Search/admin/wikiSearch';
 import type { WikiGraphPayload } from '@/Types/learning';
 
 const props = withDefaults(defineProps<{ graph: WikiGraphPayload; doneIds?: string[] }>(), { doneIds: () => [] });

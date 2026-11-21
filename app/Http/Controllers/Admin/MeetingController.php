@@ -31,6 +31,7 @@ use App\Services\MeetingPresenter;
 use App\Services\MeetingRepresentativeResolver;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -49,10 +50,9 @@ class MeetingController extends AdminController
     /**
      * Display a listing of the resource.
      */
+    #[Authorize('viewAny', Meeting::class)]
     public function index(IndexMeetingRequest $request)
     {
-        $this->handleAuthorization('viewAny', Meeting::class);
-
         // Live rows come from Typesense (the scoped key carries the authorization) and the trash
         // from api.v1.admin.trash.index, so the page itself needs no rows.
         return Inertia::render('Admin/Representation/IndexMeeting', [
@@ -65,6 +65,7 @@ class MeetingController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
+    // Authorized in StoreMeetingRequest: meeting creation and any linked calendar event.
     public function store(StoreMeetingRequest $request)
     {
         $validatedData = $request->safe();
@@ -158,10 +159,9 @@ class MeetingController extends AdminController
     /**
      * Display the specified resource.
      */
+    #[Authorize('viewSummary', 'meeting')]
     public function show(Meeting $meeting)
     {
-        $this->handleAuthorization('viewSummary', $meeting);
-
         // Public summaries expose the agenda without internal panels or sibling navigation.
         $readOnly = fn (): bool => once(fn (): bool => ! Gate::allows('view', $meeting));
 
@@ -337,6 +337,7 @@ class MeetingController extends AdminController
     /**
      * Meetings are edited on their record page; the URL stays for public edit links and search.
      */
+    #[Authorize('update', 'meeting')]
     public function edit(EditMeetingRequest $request, Meeting $meeting): RedirectResponse
     {
         return redirect()->route('meetings.show', [
@@ -348,10 +349,9 @@ class MeetingController extends AdminController
     /**
      * Update the specified resource in storage.
      */
+    #[Authorize('update', 'meeting')]
     public function update(UpdateMeetingRequest $request, Meeting $meeting)
     {
-        $this->handleAuthorization('update', $meeting);
-
         $validated = $request->validated();
 
         $meeting->fill($validated);
@@ -363,10 +363,9 @@ class MeetingController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
+    #[Authorize('delete', 'meeting')]
     public function destroy(DestroyMeetingRequest $request, Meeting $meeting)
     {
-        $this->handleAuthorization('delete', $meeting);
-
         $redirect_url = $request->validated('redirect_to') ?? back()->getTargetUrl();
 
         // `delete` suffices for a discardable meeting: it holds nothing but what its creator just typed.
@@ -381,6 +380,7 @@ class MeetingController extends AdminController
         return redirect($redirect_url)->with('success', __('messages.meeting.deleted'));
     }
 
+    #[Authorize('restore', 'meeting')]
     public function restore(Meeting $meeting): RedirectResponse
     {
         return $this->restoreModel($meeting, __('messages.meeting.restored'));
@@ -389,10 +389,9 @@ class MeetingController extends AdminController
     /**
      * Attach an additional institution to a joint meeting.
      */
+    #[Authorize('update', 'meeting')]
     public function attachInstitution(AttachMeetingInstitutionRequest $request, Meeting $meeting): RedirectResponse
     {
-        $this->handleAuthorization('update', $meeting);
-
         $validated = $request->validated();
 
         $meeting->attachAudited('institutions', $validated['institution_id']);
@@ -408,10 +407,9 @@ class MeetingController extends AdminController
     /**
      * Detach an institution from a meeting (joint meeting must keep at least one).
      */
+    #[Authorize('update', 'meeting')]
     public function detachInstitution(Meeting $meeting, Institution $institution): RedirectResponse
     {
-        $this->handleAuthorization('update', $meeting);
-
         if ($meeting->institutions()->count() <= 1) {
             return back()->with('error', __('messages.meeting.institution_required'));
         }
@@ -422,6 +420,7 @@ class MeetingController extends AdminController
         return back()->with('success', __('messages.meeting.institution_detached'));
     }
 
+    #[Authorize('forceDelete', 'meeting')]
     public function forceDelete(Meeting $meeting): RedirectResponse
     {
         return $this->forceDeleteModel($meeting);

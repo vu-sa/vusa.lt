@@ -7,13 +7,13 @@ use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\IndexMailQueueRequest;
 use App\Models\Role;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 class MailQueueApiController extends ApiController
 {
+    #[Authorize('viewAny', Role::class)]
     public function index(IndexMailQueueRequest $request, BuildMailQueuePage $builder): JsonResponse
     {
-        $this->authorizeApi('viewAny', Role::class);
-
         $page = $builder->execute($request);
 
         return $this->jsonSuccess([

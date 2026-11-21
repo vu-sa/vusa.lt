@@ -19,11 +19,6 @@ use Illuminate\Validation\Validator;
 
 class StoreMailingListSourceRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return $this->user()->can('update', $this->route('mailingList'));
-    }
-
     protected function prepareForValidation(): void
     {
         if (is_string($this->input('email'))) {

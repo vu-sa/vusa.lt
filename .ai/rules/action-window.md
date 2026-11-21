@@ -6,7 +6,7 @@ paths:
 # Action Window
 
 ## Pick records in the action window with an inline Typesense list, never a dialog
-When an action window screen has to pick a record that is not already in a short, personal list (an institution the caller holds no duty in, say), drive it with `useAdminCollectionSearch` directly and render the hits as `ActionChoiceButton`s inside an `ActionWindowScreen` — see `screens/InstitutionSearchScreen.vue`.
+When an action window screen has to pick a record that is not already in a short, personal list (an institution the caller holds no duty in, say), drive it with `useAdminCollectionSearch` directly and render the hits as `ActionChoiceButton`s inside an `ActionWindowScreen` — see `ActionWindow/screens/InstitutionSearchScreen.vue`.
 
 Do NOT reach for `CollectionSelectDialog` / `SearchSelectView` there: they are a split view with facets and a detail pane, a dialog inside a dialog, and they do not fit the 560px window or the mobile drawer. The window is one question per screen, and a picker has to keep that language.
 

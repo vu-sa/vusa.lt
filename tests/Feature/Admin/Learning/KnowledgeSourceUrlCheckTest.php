@@ -109,8 +109,8 @@ test('preview errors preserve the previous thumbnail and successful link status'
 
     app(SourceUrlChecker::class)->check($source);
 
-    expect($source->thumbnail_version)->toBe('old')->and($source->check_failures)->toBe(0);
-    expect(Storage::get('source-thumbnails/old.webp'))->toBe('old-image');
+    expect($source->thumbnail_version)->toBe('old')->and($source->check_failures)->toBe(0)
+        ->and(Storage::get('source-thumbnails/old.webp'))->toBe('old-image');
 });
 
 test('unchanged or unversioned existing previews are not downloaded again', function (?string $version): void {
@@ -175,7 +175,7 @@ test('daily dispatch includes only URL sources of active items and spaces their 
     KnowledgeItemSource::factory()->for(KnowledgeItem::factory()->create(['is_active' => false]), 'item')->create();
     KnowledgeItemSource::factory()->create(['document_id' => Document::factory()->create()->id, 'url' => null]);
 
-    (new CheckKnowledgeSourceUrlsJob(5))->handle();
+    new CheckKnowledgeSourceUrlsJob(5)->handle();
 
     Queue::assertPushed(CheckKnowledgeSourceUrlJob::class, 2);
     Queue::assertPushed(CheckKnowledgeSourceUrlJob::class, fn ($job): bool => $job->source->is($first) && $job->delay->equalTo(now()));
@@ -211,9 +211,9 @@ test('a failed PDF render cleans up and keeps the old preview', function (): voi
 
     $checker->check($source);
 
-    expect($source->thumbnail_version)->toBe('old')->and($source->check_failures)->toBe(0);
-    expect(Storage::get('source-thumbnails/old.webp'))->toBe('old-image');
-    expect($temporary)->toHaveCount(2);
+    expect($source->thumbnail_version)->toBe('old')->and($source->check_failures)->toBe(0)
+        ->and(Storage::get('source-thumbnails/old.webp'))->toBe('old-image')
+        ->and($temporary)->toHaveCount(2);
     foreach ($temporary as $file) {
         expect(file_exists($file))->toBeFalse();
     }

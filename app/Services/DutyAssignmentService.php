@@ -28,7 +28,7 @@ class DutyAssignmentService
     }
 
     /** @param list<string> $userIds */
-    public function syncRepresentatives(Duty $duty, array $userIds, ?int $tenantId = null): void
+    public function syncRepresentatives(Duty $duty, array $userIds, ?int $tenantId = null, ?User $actor = null): void
     {
         // Derived seats follow their source duty, never a manual representative list.
         $query = Dutiable::query()
@@ -42,7 +42,7 @@ class DutyAssignmentService
         $toRemove = array_values(array_diff($currentUserIds, $userIds));
         $toAdd = array_values(array_unique(array_diff($userIds, $currentUserIds)));
 
-        if (($actor = auth()->user()) !== null) {
+        if ($actor !== null) {
             foreach ($toAdd as $userId) {
                 AuthorizeDutyAssignment::execute($actor, $duty, (string) $userId);
             }

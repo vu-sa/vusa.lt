@@ -12,6 +12,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Services\MailPreview\MailPreviewRenderer;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -25,10 +26,9 @@ use Inertia\Response;
  */
 class MailQueueController extends AdminController
 {
+    #[Authorize('viewAny', Role::class)]
     public function index(IndexMailQueueRequest $request, BuildMailQueuePage $builder): Response
     {
-        $this->handleAuthorization('viewAny', Role::class);
-
         return Inertia::render('Admin/MailQueue', [
             'recipients' => $builder->execute($request),
             'canManage' => Auth::user()->isSuperAdmin(),
@@ -39,10 +39,9 @@ class MailQueueController extends AdminController
         ]);
     }
 
+    #[Authorize('viewAny', Role::class)]
     public function previewForUser(RenderMailPreviewRequest $request, User $user, BuildNotificationDigest $builder, MailPreviewRenderer $renderer): \Illuminate\Http\Response
     {
-        $this->handleAuthorization('viewAny', Role::class);
-
         $items = NotificationDigestQueue::query()->where('user_id', $user->id)->orderBy('created_at')->orderBy('id')->get();
         abort_if($items->isEmpty(), 404);
 
@@ -55,9 +54,10 @@ class MailQueueController extends AdminController
     /**
      * Drop a single line from a pending digest.
      */
+    #[Authorize('viewAny', Role::class)]
     public function destroy(NotificationDigestQueue $mailQueueItem): RedirectResponse
     {
-        $this->authorizeManagement();
+        $this->ensureSuperAdmin();
 
         $mailQueueItem->delete();
 
@@ -67,9 +67,10 @@ class MailQueueController extends AdminController
     /**
      * Drop everything queued for one recipient — their pending digest never goes out.
      */
+    #[Authorize('viewAny', Role::class)]
     public function destroyForUser(User $user): RedirectResponse
     {
-        $this->authorizeManagement();
+        $this->ensureSuperAdmin();
 
         $deleted = NotificationDigestQueue::query()->where('user_id', $user->id)->delete();
 
@@ -79,9 +80,10 @@ class MailQueueController extends AdminController
     /**
      * Empty the queue. The escape hatch for a backlog that must not be delivered at all.
      */
+    #[Authorize('viewAny', Role::class)]
     public function destroyAll(): RedirectResponse
     {
-        $this->authorizeManagement();
+        $this->ensureSuperAdmin();
 
         $deleted = NotificationDigestQueue::query()->delete();
 
@@ -91,10 +93,8 @@ class MailQueueController extends AdminController
     /**
      * Reading the backlog is an admin question; discarding other people's mail is not.
      */
-    private function authorizeManagement(): void
+    private function ensureSuperAdmin(): void
     {
-        $this->handleAuthorization('viewAny', Role::class);
-
         abort_unless(Auth::user()->isSuperAdmin(), 403, 'Only super administrators may discard queued email.');
     }
 }

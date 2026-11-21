@@ -62,6 +62,7 @@
 
       <!-- While the dialog holds the live editor, the sidebar shows a snapshot. -->
       <div v-else-if="expanded" class="px-2">
+        <!-- v-html: server copy sanitized on write (AgendaItemNote::notesHtml); live copy is editor schema output -->
         <div
           v-if="notes.notesHtml.value"
           class="typography max-h-64 overflow-y-auto text-sm"

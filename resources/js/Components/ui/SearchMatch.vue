@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import type { SearchMatch } from '@/Shared/Search/matches';
+import type { SearchMatch } from '@/Search/core/matches';
 
 defineProps<{ match?: SearchMatch; title?: string | null }>();
 </script>

@@ -125,12 +125,12 @@ import { moveArrayElement } from '@vueuse/integrations/useSortable';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { preferredScrollBehavior } from '@/Composables/useAccessibilityPreferences';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { SMART_TIPTAP_TOOLBAR_PORTAL_KEY } from '@/Components/TipTap/smartToolbarPortal';
 import { Button } from '@/Components/ui/button';
 import { ButtonGroup } from '@/Components/ui/button-group';
-import DarkModeButton from '@/Components/Buttons/DarkModeButton.vue';
+import DarkModeButton from '@/Components/Shared/DarkModeButton.vue';
 import { Dialog, DialogContent, DialogTitle } from '@/Components/ui/dialog';
 
 import { CONTENT_EDITOR_CONTEXT } from '../../contentEditorContext';

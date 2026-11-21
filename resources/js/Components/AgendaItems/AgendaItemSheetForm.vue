@@ -173,7 +173,7 @@ import { ChevronDown, Languages, Trash2 } from '@lucide/vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import { agendaItemTypeOptions, applyAgendaItemType, type AgendaItemType } from '@/Components/AgendaItems/agendaItemTypes';
 import { FormSegmentedControl, SheetForm } from '@/Components/Patterns';
-import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
+import LocaleFlag from '@/Components/Shared/LocaleFlag.vue';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Input } from '@/Components/ui/input';

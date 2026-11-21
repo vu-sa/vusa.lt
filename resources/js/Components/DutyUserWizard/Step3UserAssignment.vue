@@ -457,7 +457,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Component
 import { Label } from '@/Components/ui/label';
 import DuplicateUserWarning from '@/Components/AdminForms/DuplicateUserWarning.vue';
 import { useApi } from '@/Composables/useApi';
-import { useDuplicateUserCheck } from '@/Composables/useDuplicateUserCheck';
+import { useDuplicateUserCheck } from '@/Components/AdminForms/useDuplicateUserCheck';
 import { getSuggestedEndDate, getTodayDate, formatDateForDisplay } from '@/Composables/useDutyUserWizard';
 import type { useDutyUserWizard, UserChange, NewUserData } from '@/Composables/useDutyUserWizard';
 import { DutyIcon } from '@/Components/icons';
@@ -496,8 +496,7 @@ const runUserSearch = useDebounceFn(() => {
 
   const params = new URLSearchParams({
     search: userSearchQuery.value.trim(),
-    permission: 'duties.update.padalinys',
-    scope: 'all',
+    purpose: 'duty-member',
   });
   userSearchUrl.value = `${route('api.v1.admin.users.search')}?${params.toString()}`;
   executeUserSearch();
@@ -574,7 +573,7 @@ const handleAddUser = (user: UserSearchResult) => {
   showUserSearch.value = false;
 };
 
-const handleRemoveUser = (user: App.Entities.User) => {
+const handleRemoveUser = (user: Parameters<typeof wizard.addUserToRemove>[0]) => {
   wizard.addUserToRemove(user, getTodayDate());
 };
 

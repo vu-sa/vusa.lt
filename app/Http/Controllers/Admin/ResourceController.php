@@ -23,6 +23,8 @@ use App\Services\ResponsibilityResolver;
 use App\Support\StagingProtection;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Inertia\Inertia;
 
 class ResourceController extends AdminController
@@ -35,10 +37,9 @@ class ResourceController extends AdminController
      * The collection reads from Typesense (its scoped key carries the authorization), so the page
      * needs no rows from us.
      */
+    #[Authorize('viewAny', Resource::class)]
     public function index()
     {
-        $this->handleAuthorization('viewAny', Resource::class);
-
         return Inertia::render('Admin/Reservations/IndexResource', [
             'reservationCart' => SerializeReservationCart::execute(request()->user()),
             'mainTenantId' => Tenant::main()?->id,
@@ -51,12 +52,11 @@ class ResourceController extends AdminController
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    #[Authorize('create', Resource::class)]
+    public function create(Request $request)
     {
-        $this->handleAuthorization('create', Resource::class);
-
         return Inertia::render('Admin/Reservations/CreateResource', [
-            'assignableTenants' => GetTenantsForUpserts::execute('resources.create.padalinys', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute($request->user(), 'resources.create.padalinys', $this->authorizer),
             'categories' => ResourceCategory::all(),
         ]);
     }
@@ -64,10 +64,9 @@ class ResourceController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
+    #[Authorize('create', Resource::class)]
     public function store(StoreResourceRequest $request, PostCreateRedirect $redirect)
     {
-        $this->handleAuthorization('create', Resource::class);
-
         if ($request->validated('media') !== []) {
             StagingProtection::ensureDiskIsWritable(config('media-library.disk_name'));
         }
@@ -92,16 +91,15 @@ class ResourceController extends AdminController
     /**
      * The resource record: what it is, whether it is free, who has it and when it is booked next.
      */
+    #[Authorize('view', 'resource')]
     public function show(Resource $resource)
     {
-        $this->handleAuthorization('view', $resource);
-
         $user = request()->user();
         $now = now();
 
         $resource->load(['tenant:id,shortname', 'category', 'media']);
 
-        $active = $resource->active_reservations()->with(['users', 'resources.tenant', 'tenants'])->orderByPivot('start_time')->get();
+        $active = $resource->active_reservations()->with(['users', 'resources.tenant', ...Reservation::TENANT_RELATIONS])->orderByPivot('start_time')->get();
 
         $row = fn (Reservation $reservation): array => $this->reservationRow($reservation, $user, $now);
 
@@ -124,7 +122,7 @@ class ResourceController extends AdminController
             'upcoming' => $active->filter(fn (Reservation $reservation) => $reservation->pivot->start_time?->gt($now))->take(10)->map($row)->values(),
             'managers' => SerializeResourceManagers::execute($resource),
             'history' => Inertia::defer(fn () => $resource->reservations()
-                ->with(['users', 'resources.tenant', 'tenants'])
+                ->with(['users', 'resources.tenant', ...Reservation::TENANT_RELATIONS])
                 ->wherePivotIn('state', ['returned', 'rejected', 'cancelled'])
                 ->orderByPivot('end_time', 'desc')
                 ->limit(50)
@@ -168,17 +166,16 @@ class ResourceController extends AdminController
     /**
      * Show the form for editing the specified resource.
      */
+    #[Authorize('update', 'resource')]
     public function edit(Resource $resource)
     {
-        $this->handleAuthorization('update', $resource);
-
         $user = request()->user();
         $now = now();
 
         return Inertia::render('Admin/Reservations/EditResource', [
             // The full history lives on the resource page; the form only shows what is newest.
             'recentReservations' => $resource->reservations()
-                ->with(['users', 'resources.tenant', 'tenants'])
+                ->with(['users', 'resources.tenant', ...Reservation::TENANT_RELATIONS])
                 ->orderByPivot('start_time', 'desc')
                 ->limit(5)
                 ->get()
@@ -193,7 +190,7 @@ class ResourceController extends AdminController
                     'url' => $image->getUrl(),
                 ]),
                 ],
-            'assignableTenants' => GetTenantsForUpserts::execute('resources.update.padalinys', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute($user, 'resources.update.padalinys', $this->authorizer),
             'categories' => ResourceCategory::all(),
         ]);
     }
@@ -201,6 +198,7 @@ class ResourceController extends AdminController
     /**
      * Update the specified resource in storage.
      */
+    #[Authorize('update', 'resource')]
     public function update(UpdateResourceRequest $request, Resource $resource)
     {
         $hasPendingMedia = collect($request->validated('media'))
@@ -234,10 +232,9 @@ class ResourceController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
+    #[Authorize('delete', 'resource')]
     public function destroy(Resource $resource)
     {
-        $this->handleAuthorization('delete', $resource);
-
         $resource->delete();
 
         return redirect()->route('resources.index')
@@ -247,11 +244,13 @@ class ResourceController extends AdminController
     /**
      * Restore the specified resource from storage.
      */
+    #[Authorize('restore', 'resource')]
     public function restore(Resource $resource): RedirectResponse
     {
         return $this->restoreModel($resource, $this->entityMessage('restored', 'resource'));
     }
 
+    #[Authorize('forceDelete', 'resource')]
     public function forceDelete(Resource $resource): RedirectResponse
     {
         return $this->forceDeleteModel($resource);

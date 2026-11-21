@@ -53,8 +53,7 @@ import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitut
 import DutyLabel, { type DutyLabelHolder } from '@/Components/Duties/DutyLabel.vue';
 import { Button } from '@/Components/ui/button';
 import { formatDateWith } from '@/Utils/dateTime';
-
-import { dutyNameOn, termStatus, type FormerDutyName } from './occupancy';
+import { dutyNameOn, termStatus, type FormerDutyName } from '@/Utils/occupancy';
 
 interface Term {
   id?: string;

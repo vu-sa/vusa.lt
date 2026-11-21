@@ -45,6 +45,7 @@ return [
     'duty_period' => 'tavo pareigų laikotarpį',
     'own_institutions' => 'Savo institucijų, visų kadencijų',
     'own_institution_documents' => 'Savo institucijų',
+    'own_duties' => 'Savo pareigybių',
     'permission_scopes' => [
         'meetings' => [
             'read' => [
@@ -75,7 +76,7 @@ return [
         'dutiables' => 'Savo pareigybes ir jų kadencijas mato visi nariai; kitų kadencijas valdo pareigybes tvarkantys.',
         'tasks' => 'Mato ir atlieka jiems priskirtas užduotis.',
         'comments' => 'Komentuoja visur, kur mato įrašą; savo komentarą gali redaguoti 15 min. po parašymo, o ištrinti – bet kada. Kitų komentarus trina tas, kas gali redaguoti įrašą.',
-        'reservations' => 'Kiekvienas gali kurti rezervacijas, mato ir keičia tas, kuriose dalyvauja, o savo rezervaciją gali ištrinti, kol ji dar nepatvirtinta.',
+        'reservations' => 'Kiekvienas gali kurti rezervacijas, mato ir keičia tas, kuriose dalyvauja, o savo rezervaciją gali ištrinti, kol nė vienas jos daiktas nepatvirtintas. Teisės čia skirtos kitų rezervacijoms padalinyje ar visur.',
         'users' => 'Kiekvienas mato ir redaguoja save (Profilis), bet negali savęs ištrinti.',
     ],
 ];

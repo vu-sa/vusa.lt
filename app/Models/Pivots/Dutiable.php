@@ -300,9 +300,8 @@ class Dutiable extends MorphPivot implements ImageMediaOwner
     }
 
     /**
-     * Rows that have not ended yet, matching what `Duty::current_users()` and every
-     * quota check mean by "current" — a future-dated start still counts, because the
-     * seat is already allocated. The end date is the last day in office.
+     * Non-ended terms match User::current_or_upcoming_duties() and quota checks.
+     * A seat is allocated even before the term starts.
      */
     public function scopeCurrent($query)
     {

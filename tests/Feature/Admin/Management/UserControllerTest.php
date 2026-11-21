@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Duties\SyncUserDuties;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
@@ -7,12 +8,10 @@ use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
-use App\Services\ResourceServices\UserDutyService;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 pest()->use(RefreshDatabase::class);
@@ -24,47 +23,40 @@ beforeEach(function (): void {
 describe('unauthorized access', function (): void {
     beforeEach(function (): void {
         $this->user = makeUser($this->tenant);
-        $response = asUser($this->user)->get(route('dashboard'));
-        expect($response->status())->toBeSecureResponse();
+        asUser($this->user)->get(route('dashboard'))->assertOk();
     });
 
     test('cannot index users', function (): void {
-        $response = asUser($this->user)->get(route('users.index'));
-        expect($response->status())->toRequireAuth();
+        asUser($this->user)->get(route('users.index'))->assertForbidden();
     });
 
     test('cannot access user create page', function (): void {
-        $response = asUser($this->user)->get(route('users.create'));
-        expect($response->status())->toRequireAuth();
+        asUser($this->user)->get(route('users.create'))->assertForbidden();
     });
 
     test('cannot store user', function (): void {
-        $response = asUser($this->user)->post(route('users.store'), [
+        asUser($this->user)->post(route('users.store'), [
             'name' => 'Test User',
             'email' => 'test@example.com',
-        ]);
-        expect($response->status())->toRequireAuth();
+        ])->assertForbidden();
     });
 
     test('cannot access user edit page', function (): void {
         $user = User::factory()->create();
-        $response = asUser($this->user)->get(route('users.edit', $user));
-        expect($response->status())->toRequireAuth();
+        asUser($this->user)->get(route('users.edit', $user))->assertForbidden();
     });
 
     test('cannot update user', function (): void {
         $user = User::factory()->create();
-        $response = asUser($this->user)->put(route('users.update', $user), [
+        asUser($this->user)->put(route('users.update', $user), [
             'name' => 'Test User Updated',
             'email' => 'updated@example.com',
-        ]);
-        expect($response->status())->toRequireAuth();
+        ])->assertForbidden();
     });
 
     test('cannot delete user', function (): void {
         $user = User::factory()->create();
-        $response = asUser($this->user)->delete(route('users.destroy', $user));
-        expect($response->status())->toRequireAuth();
+        asUser($this->user)->delete(route('users.destroy', $user))->assertForbidden();
     });
 });
 
@@ -120,6 +112,18 @@ describe('authorized access', function (): void {
         'page' => ['users.index', 'props.users.data'],
         'API' => ['api.v1.admin.users.index', 'data.items'],
     ]);
+
+    test('the create form offers no duties from a unit where the actor only held an ended term', function (): void {
+        $formerTenant = Tenant::factory()->create();
+        $formerDuty = Duty::factory()->for(Institution::factory()->for($formerTenant))->create();
+        $this->admin->duties()->attach($formerDuty->id, ['start_date' => '2019-07-01', 'end_date' => '2020-06-30']);
+
+        asUser($this->admin)->get(route('users.create'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('tenantsWithDuties', fn ($tenants) => collect($tenants)->pluck('id')->contains($this->tenant->id)
+                    && ! collect($tenants)->pluck('id')->contains($formerTenant->id)));
+    });
 
     test('separates current members from former ones', function (): void {
         $current = makeUser($this->tenant);
@@ -237,6 +241,28 @@ describe('authorized access', function (): void {
             ->where('user.login_recency', 'month')->missing('user.last_action'));
         asUserWithInertia($this->admin)->get(route('users.edit', $user))->assertOk()->assertInertia(fn ($page) => $page
             ->where('user.login_recency', 'month')->missing('user.last_action'));
+    });
+
+    test('show and edit pages never send the password or remember token', function (): void {
+        $user = makeUser($this->tenant);
+        $user->forceFill(['password' => bcrypt('slaptas'), 'remember_token' => 'token'])->save();
+
+        asUser($this->admin)->get(route('users.show', $user))->assertOk()->assertInertia(fn ($page) => $page
+            ->missing('user.password')->missing('user.remember_token'));
+        asUserWithInertia($this->admin)->get(route('users.edit', $user))->assertOk()->assertInertia(fn ($page) => $page
+            ->missing('user.password')->missing('user.remember_token'));
+    });
+
+    test('search treats quotes and SQL as plain text', function (): void {
+        $user = makeUser($this->tenant);
+        $user->update(['name' => "Vardenis O'Brien"]);
+
+        asUser($this->admin)->get(route('users.index', ['search' => "O'Brien"]))->assertOk()
+            ->assertInertia(fn ($page) => $page->where('users.data', fn ($rows): bool => collect($rows)->pluck('id')->all() === [$user->id]));
+        asUser($this->admin)->get(route('users.index', ['search' => "'; DROP TABLE users; --"]))->assertOk()
+            ->assertInertia(fn ($page) => $page->where('users.data', []));
+
+        expect(User::query()->whereKey($user->id)->exists())->toBeTrue();
     });
 
     test('show page exposes seat provenance and tenant on each duty pivot', function (): void {
@@ -472,12 +498,10 @@ describe('duty assignment', function (): void {
         // The user is already active on the duty.
         $target->duties()->attach($duty->id, ['start_date' => now()->subDay(), 'end_date' => null]);
 
-        // syncDutiesForUser resolves the actor's tenants through Auth, so log in.
-        Auth::login($this->admin);
-
         // Simulate a stale snapshot: the duty is passed as "new" even though an
         // active row already exists. The guard must keep it to a single row.
-        UserDutyService::syncDutiesForUser(
+        SyncUserDuties::execute(
+            $this->admin,
             new Collection([$duty->id]),
             new Collection([]),
             $target,

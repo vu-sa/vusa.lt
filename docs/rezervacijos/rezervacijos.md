@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Rezervacijos
-last_reviewed: 2026-10-25
+last_reviewed: 2026-11-20
 tests:
   - tests/Feature/Responsibilities/ReservationHandlingTest.php
   - tests/Feature/Tasks/Subscribers/ApprovalTaskSubscriberTest.php
@@ -175,13 +175,6 @@ ir su keliais pasirinktais ištekliais iš karto.
   rezervuota → pateikta, paskolinta → rezervuota, grąžinta → paskolinta. Atšauktas patvirtinimas lieka
   istorijoje su tavo nurodyta priežastimi.
 
-<ChangelogNote date="2026-10-02" title="Grupinio atšaukimo teisės tikrinamos iš anksto">
-
-Pasirinkus kelis daiktus veiksmui **Atšaukti paskutinį veiksmą**, pirmiausia tikrinamos teisės į visus
-pasirinktus daiktus. Jei bent vieno valdyti negalima, nė vieno būsena nekeičiama ir parodoma prieigos klaida.
-
-</ChangelogNote>
-
 ::: tip Išteklių filtravimas rezervacijos puslapyje
 Jei rezervacijoje yra daiktų iš kelių padalinių, rezervacijos puslapyje (`/mano/reservations/{id}`)
 atsiranda padalinio pasirinkimo filtras. Taip administratorius gali matyti tik savo padalinio daiktus
@@ -195,7 +188,7 @@ ir netrukdomas atlikti sprendimus.
 - **Pridėti išteklių** prie jau sukurtos rezervacijos. Išteklį, jo kiekį ar laiką galima keisti tik būsenoje **pateikta**. Patvirtintą išteklį pirmiausia reikia grąžinti į pateiktą būseną (tai gali išteklio administratorius)
   arba atšaukti ir pateikti iš naujo. Norėdamas vienam
   daiktui nustatyti kitą skolinimosi laiką nei visai rezervacijai, pridėk jį jau sukūręs rezervaciją.
-- **Pridėti kitus teikėjus.** Pridėti naudotojai gauna pranešimą ir tampa lygiaverčiais teikėjais:
+- **Pridėti kitus teikėjus.** Narį randi įvesdamas bent dvi vardo raides. Pridėti naudotojai gauna pranešimą ir tampa lygiaverčiais teikėjais:
   mato rezervaciją, gali ją keisti ir atšaukti.
 - **Ištrinti** rezervaciją – ją ištrinti gali jos teikėjas, kol nė vienas jos daiktas dar nepatvirtintas (vėliau ją ištrinti gali tik rezervacijų administratorius). Rezervacija ištrinama **iškart ir negrįžtamai**
   (ji nepatenka į šiukšlinę). Kartu atlaisvinami visi joje buvę ištekliai ir pašalinami su ja susiję komentarai bei užduotys.
@@ -219,7 +212,11 @@ pakeitimai neišsaugomi ir forma parodo klaidą. Galima rezervuoti ir kitų pada
 | Atšaukti išteklių (kol neišduotas) | – | ✓ | – |
 | Tvirtinti, atmesti, išduoti, grąžinti, užbaigti | – | – | ✓, tik savo padalinio daiktus |
 | Atšaukti paskutinį veiksmą | – | – | ✓, tik savo padalinio daiktus |
-| Ištrinti rezervaciją | – | ✓ | – |
+| Ištrinti rezervaciją | – | ✓, kol nė vienas daiktas nepatvirtintas | – |
+
+Teikėjai savo rezervaciją mato visada. Kiti ją mato pagal padalinio teises: rezervacija priklauso
+jos daiktų padaliniams ir padaliniams, kuriuose teikėjai šiuo metu eina (ar netrukus pradės eiti)
+pareigas. Padalinio, kuriame teikėjas pareigas ėjo tik anksčiau, administratoriai jos nebemato.
 
 ::: warning Tik savo padalinio daiktai
 Tvirtinimo teisė tikrinama pagal **daikto** padalinį. MIF administratorius mato rezervaciją, kurioje

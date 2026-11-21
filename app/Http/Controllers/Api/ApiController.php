@@ -27,20 +27,6 @@ abstract class ApiController extends Controller
     use TranslatesEntityMessages;
 
     /**
-     * Handle authorization with JSON error responses.
-     *
-     * Unlike Inertia controllers that redirect on forbidden,
-     * API controllers return 403 JSON responses.
-     *
-     * @param  string  $ability  The ability to check
-     * @param  mixed  $arguments  Model or class to authorize against
-     */
-    protected function authorizeApi(string $ability, mixed $arguments): void
-    {
-        $this->authorize($ability, $arguments);
-    }
-
-    /**
      * Safely get the authenticated user or return 401.
      *
      * @throws UnauthorizedHttpException

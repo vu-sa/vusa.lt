@@ -7,7 +7,7 @@
 
 <script setup lang="ts">
 import type { FlowGraph as FlowGraphPart } from '@/Types/contentParts';
-import FlowGraph from '@/Features/StructureGraph/FlowGraph.vue';
+import FlowGraph from '@/Components/StructureGraph/FlowGraph.vue';
 
 defineProps<{
   element: FlowGraphPart;

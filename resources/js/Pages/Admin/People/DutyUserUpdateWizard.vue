@@ -337,7 +337,7 @@ import { toast } from 'vue-sonner';
 import { useDutyUserWizard, getSuggestedEndDate, formatDateForDisplay } from '@/Composables/useDutyUserWizard';
 import { SHELL_FORM_BAR_ID, useShellFocus } from '@/Composables/useShellFocus';
 import { Button } from '@/Components/ui/button';
-import EntityTypeMark from '@/Components/EntityTypeMark.vue';
+import EntityTypeMark from '@/Components/Patterns/EntityTypeMark.vue';
 
 // Step components
 import Step1InstitutionSelect from '@/Components/DutyUserWizard/Step1InstitutionSelect.vue';

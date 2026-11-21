@@ -26,7 +26,7 @@ class ApprovalApiController extends ApiController
 
         // The history carries approver names and their internal notes, so reading it follows
         // the approvable's own view ability rather than being open to any authenticated user.
-        $this->authorizeApi('view', $approvable);
+        $this->authorize('view', $approvable);
 
         $approvals = $approvable->approvals()
             ->with([

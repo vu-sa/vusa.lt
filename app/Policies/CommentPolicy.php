@@ -90,6 +90,10 @@ class CommentPolicy
     /** @return Collection<int, int|string> */
     private function commentableTenantIds(Model $commentable): Collection
     {
+        if (method_exists($commentable, 'owningTenants')) {
+            return $commentable->owningTenants()->pluck('id');
+        }
+
         if (method_exists($commentable, 'tenant')) {
             $tenant = $commentable->getRelationValue('tenant');
 

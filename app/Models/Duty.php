@@ -76,7 +76,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read bool $has_report
  * @property-read array $translatable_columns_from
  * @property-read Institution|null $institution
- * @property-read Institution|null $institutions
  * @property-read Collection<int, Meeting> $meetings
  * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $notifications
  * @property-read Collection<int, Permission> $permissions
@@ -270,7 +269,11 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
         return $this->forceDeleteBlockedReason();
     }
 
-    /** @return MorphToMany<User, $this, Dutiable, 'pivot'> */
+    /**
+     * Every term ever held, including ended terms. Use {@see current_users()} for current holders.
+     *
+     * @return MorphToMany<User, $this, Dutiable, 'pivot'>
+     */
     public function users(): MorphToMany
     {
         return $this->morphedByMany(User::class, 'dutiable')
@@ -380,12 +383,6 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
     public function institution(): BelongsTo
     {
         return $this->belongsTo(Institution::class);
-    }
-
-    // HACK: this is a workaround for the fact that we cannot use the same relation name in the parent and child models
-    public function institutions(): BelongsTo
-    {
-        return $this->institution();
     }
 
     // it has only one tenant all times, but it's better to have this method with this name

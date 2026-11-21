@@ -24,6 +24,8 @@ use App\Services\PostCreateRedirect;
 use App\Services\TanstackTableService;
 use App\Support\Experiments\GoalsExperiment;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
@@ -39,10 +41,9 @@ class ProblemController extends AdminController
     /**
      * Display a listing of the resource.
      */
+    #[Authorize('viewAny', Problem::class)]
     public function index(IndexProblemRequest $request)
     {
-        $this->handleAuthorization('viewAny', Problem::class);
-
         $query = BuildProblemIndexQuery::execute($request);
 
         $query = $this->applyTanstackFilters(
@@ -83,9 +84,10 @@ class ProblemController extends AdminController
     /**
      * Show the form for creating a new resource.
      */
+    #[Authorize('create', Problem::class)]
     public function create(CreateProblemRequest $request)
     {
-        $tenants = GetTenantsForUpserts::execute('problems.create.padalinys', $this->authorizer);
+        $tenants = GetTenantsForUpserts::execute($request->user(), 'problems.create.padalinys', $this->authorizer);
 
         // Opened from an institution's Problemos tab: start in its padalinys, already linked, if the user may write there.
         $institution = filled($request->validated('institution'))
@@ -106,6 +108,7 @@ class ProblemController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
+    #[Authorize('create', Problem::class)]
     public function store(StoreProblemRequest $request, PostCreateRedirect $redirect)
     {
         $validated = $request->validated();
@@ -133,10 +136,9 @@ class ProblemController extends AdminController
     /**
      * Display the specified resource.
      */
+    #[Authorize('view', 'problem')]
     public function show(Problem $problem)
     {
-        $this->handleAuthorization('view', $problem);
-
         $user = auth()->user();
 
         return Inertia::render('Admin/Problems/ShowProblem', [
@@ -211,15 +213,14 @@ class ProblemController extends AdminController
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Problem $problem)
+    #[Authorize('update', 'problem')]
+    public function edit(Request $request, Problem $problem)
     {
-        $this->handleAuthorization('update', $problem);
-
         $problemData = $problem->load(['tenant', 'createdBy', 'responsibleUser', 'categories', 'institutions'])->toFullArray();
         $problemData['categories'] = $problem->categories->pluck('id')->toArray();
         $problemData['institutions'] = $problem->institutions->pluck('id')->toArray();
 
-        $tenants = GetTenantsForUpserts::execute('problems.update.padalinys', $this->authorizer);
+        $tenants = GetTenantsForUpserts::execute($request->user(), 'problems.update.padalinys', $this->authorizer);
 
         return Inertia::render('Admin/Problems/EditProblem', [
             'problem' => $problemData,
@@ -236,6 +237,7 @@ class ProblemController extends AdminController
     /**
      * Update the specified resource in storage.
      */
+    #[Authorize('update', 'problem')]
     public function update(UpdateProblemRequest $request, Problem $problem)
     {
         $validated = $request->validated();
@@ -254,10 +256,9 @@ class ProblemController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
+    #[Authorize('delete', 'problem')]
     public function destroy(Problem $problem)
     {
-        $this->handleAuthorization('delete', $problem);
-
         $problem->delete();
 
         return $this->redirectToIndexWithInfo('problems', $this->entityMessage('deleted', 'problem'));
@@ -266,10 +267,9 @@ class ProblemController extends AdminController
     /**
      * Update the status of the specified problem.
      */
+    #[Authorize('update', 'problem')]
     public function updateStatus(UpdateProblemStatusRequest $request, Problem $problem)
     {
-        $this->handleAuthorization('update', $problem);
-
         $problem->update(['status' => $request->validated('status')]);
 
         return back()->with('success', $this->entityMessage('updated', 'problem'));
@@ -278,11 +278,13 @@ class ProblemController extends AdminController
     /**
      * Restore the specified resource from storage.
      */
+    #[Authorize('restore', 'problem')]
     public function restore(Problem $problem): RedirectResponse
     {
         return $this->restoreModel($problem, $this->entityMessage('restored', 'problem'));
     }
 
+    #[Authorize('forceDelete', 'problem')]
     public function forceDelete(Problem $problem): RedirectResponse
     {
         return $this->forceDeleteModel($problem);

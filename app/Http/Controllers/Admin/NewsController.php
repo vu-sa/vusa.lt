@@ -19,6 +19,8 @@ use App\Services\ContentEditorService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
@@ -31,10 +33,9 @@ class NewsController extends AdminController
     /**
      * Display a listing of the resource.
      */
+    #[Authorize('viewAny', News::class)]
     public function index(IndexNewsRequest $request)
     {
-        $this->handleAuthorization('viewAny', News::class);
-
         // Live rows come from Typesense (the scoped key carries the authorization) and the trash
         // from api.v1.admin.trash.index, so the page itself needs no rows.
         return Inertia::render('Admin/Content/IndexNews', [
@@ -45,22 +46,21 @@ class NewsController extends AdminController
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    #[Authorize('create', News::class)]
+    public function create(Request $request)
     {
-        $this->handleAuthorization('create', News::class);
-
         $tags = Tag::orderBy('alias')->get();
 
         return Inertia::render('Admin/Content/CreateNews', [
             'availableTags' => $tags->map->toFullArray(),
-            'assignableTenants' => GetTenantsForUpserts::execute('news.create.padalinys', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute($request->user(), 'news.create.padalinys', $this->authorizer),
         ]);
     }
 
+    #[Authorize('create', News::class)]
+    #[Authorize('view', 'news')]
     public function duplicate(News $news)
     {
-        $this->handleAuthorization('create', News::class);
-        $this->handleAuthorization('view', $news);
         abort_unless($this->authorizer->scope(auth()->user(), 'news.create.padalinys')->allowsTenant($news->tenant), 403);
 
         $newNews = DuplicateNewsAction::execute($news);
@@ -71,6 +71,7 @@ class NewsController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
+    #[Authorize('create', News::class)]
     public function store(StoreNewsRequest $request, PostCreateRedirect $redirect)
     {
         $news = app(ContentEditorService::class)->save('news', $request->validated(), $request->user());
@@ -82,10 +83,9 @@ class NewsController extends AdminController
     /**
      * Show the form for editing the specified resource.
      */
+    #[Authorize('update', 'news')]
     public function edit(News $news)
     {
-        $this->handleAuthorization('update', $news);
-
         $tags = Tag::orderBy('alias')->get();
 
         return Inertia::render('Admin/Content/EditNews', [
@@ -100,6 +100,7 @@ class NewsController extends AdminController
     /**
      * Update the specified resource in storage.
      */
+    #[Authorize('update', 'news')]
     public function update(UpdateNewsRequest $request, News $news)
     {
         $news = app(ContentEditorService::class)->save('news', $request->validated(), $request->user(), $news);
@@ -110,22 +111,19 @@ class NewsController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
+    #[Authorize('delete', 'news')]
     public function destroy(News $news)
     {
-        $this->handleAuthorization('delete', $news);
-
         $news->delete();
 
         return $this->redirectToIndexWithInfo('news', $this->entityMessage('deleted', 'news'));
     }
 
     /**
-     * Restore the specified resource from storage.
-     */
-    /**
      * Publish or unpublish the articles picked in the collection (one id for the inline status menu).
      * Saved one by one so Scout, the public index and the activity log see every change.
      */
+    // Authorized in BulkUpdateNewsStatusRequest: every picked article.
     public function bulkUpdateStatus(BulkUpdateNewsStatusRequest $request): RedirectResponse
     {
         $news = $request->records();
@@ -136,6 +134,7 @@ class NewsController extends AdminController
         return back()->with('success', __('messages.bulk_updated', ['count' => $news->count()]));
     }
 
+    // Authorized in BulkDestroyNewsRequest: every picked article.
     public function bulkDestroy(BulkDestroyNewsRequest $request): RedirectResponse
     {
         $news = $request->records();
@@ -145,11 +144,13 @@ class NewsController extends AdminController
         return back()->with('info', __('messages.bulk_deleted', ['count' => $news->count()]));
     }
 
+    #[Authorize('restore', 'news')]
     public function restore(News $news): RedirectResponse
     {
         return $this->restoreModel($news, $this->entityMessage('restored', 'news'));
     }
 
+    #[Authorize('forceDelete', 'news')]
     public function forceDelete(News $news): RedirectResponse
     {
         return $this->forceDeleteModel($news);
@@ -158,16 +159,10 @@ class NewsController extends AdminController
     /**
      * Remove a legacy public URL (an old permalink that still 301-redirects here).
      */
+    #[Authorize('update', 'news')]
     public function destroyPublicUrl(News $news, PublicUrl $publicUrl): RedirectResponse
     {
-        $this->handleAuthorization('update', $news);
-
-        // Resolve through the relation so a crafted payload cannot reach another article's URLs.
-        $publicUrlFromDb = $news->publicUrls()->find($publicUrl->id);
-
-        abort_if($publicUrlFromDb === null, 403, 'Public URL does not belong to this news article.');
-
-        $publicUrlFromDb->delete();
+        $publicUrl->delete();
 
         return back()->with('info', $this->entityMessage('deleted', 'publicUrl'));
     }

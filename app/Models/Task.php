@@ -4,7 +4,9 @@ namespace App\Models;
 
 use App\Actions\ResolveTaskAudience;
 use App\Tasks\Enums\ActionType;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -12,6 +14,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\DB;
@@ -39,10 +42,12 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read int|null $tenants_count
  *
  * @method static \Database\Factories\TaskFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Task incomplete()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Task newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Task newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Task query()
+ * @method static Builder<static>|Task inTenants(array $tenantIds, array $taskableTenantIds)
+ * @method static Builder<static>|Task incomplete()
+ * @method static Builder<static>|Task newModelQuery()
+ * @method static Builder<static>|Task newQuery()
+ * @method static Builder<static>|Task query()
+ * @method static Builder<static>|Task withListingRelations()
  *
  * @mixin \Eloquent
  */
@@ -108,14 +113,6 @@ class Task extends Model
     }
 
     /**
-     * The models a task may be filed against.
-     *
-     * `taskable_type` arrives from request input, so it must be resolved through an allowlist
-     * rather than trusted — see StoreTaskRequest.
-     *
-     * @var list<class-string<Model>>
-     */
-    /**
      * The morph aliases a task may hang off — what `taskable_type` stores and what
      * StoreTaskRequest accepts from the frontend.
      *
@@ -126,6 +123,13 @@ class Task extends Model
         'meeting',
         'reservation',
         'user',
+    ];
+
+    /** User tasks are personal, so their subject does not grant tenant access. */
+    public const array TENANT_TASKABLE_PERMISSIONS = [
+        Institution::class => 'institutions.read.padalinys',
+        Meeting::class => 'meetings.read.padalinys',
+        Reservation::class => 'reservations.read.padalinys',
     ];
 
     public function taskable(): MorphTo
@@ -149,9 +153,67 @@ class Task extends Model
         return ResolveTaskAudience::execute($this, $audienceMemo);
     }
 
+    /** Assignees' non-ended units; they own the task only once its subject is hard-deleted. */
     public function tenants(): HasManyDeep
     {
-        return $this->hasManyDeepFromRelations($this->users(), (new User)->tenants());
+        return $this->hasManyDeepFromRelationsWithConstraints($this->users(...), (new User)->current_or_upcoming_tenants(...));
+    }
+
+    /** @return Collection<int, Tenant> */
+    public function owningTenants(): Collection
+    {
+        $taskable = $this->loadMissing('taskable')->taskable;
+
+        return match (true) {
+            $taskable instanceof Institution => new Collection(array_filter([$taskable->loadMissing('tenant')->tenant])),
+            $taskable instanceof Meeting => $taskable->loadMissing('tenants')->tenants,
+            $taskable instanceof Reservation => $taskable->owningTenants(),
+            $taskable === null && ! $this->taskable()->withTrashed()->exists() => $this->loadMissing('tenants')->tenants,
+            default => new Collection,
+        };
+    }
+
+    /** @param  Builder<static>  $query */
+    #[Scope]
+    protected function withListingRelations(Builder $query): void
+    {
+        $query->with([
+            'users:id,name,email,profile_photo_path',
+            'tenants',
+            'taskable' => fn (MorphTo $taskable) => $taskable->morphWith([
+                Institution::class => ['tenant'],
+                Meeting::class => ['tenants'],
+                Reservation::class => Reservation::TENANT_RELATIONS,
+            ]),
+        ]);
+    }
+
+    /**
+     * @param  Builder<static>  $query
+     * @param  array<int, int|string>  $tenantIds
+     * @param  array<class-string<Model>, array<int, int|string>>  $taskableTenantIds
+     */
+    #[Scope]
+    protected function inTenants(Builder $query, array $tenantIds, array $taskableTenantIds): void
+    {
+        $query->where(function (Builder $tasks) use ($tenantIds, $taskableTenantIds): void {
+            foreach (array_keys(self::TENANT_TASKABLE_PERMISSIONS) as $type) {
+                $ids = array_intersect($tenantIds, $taskableTenantIds[$type] ?? []);
+
+                if ($ids !== []) {
+                    $tasks->orWhereHasMorph('taskable', $type, fn (Builder $taskable) => match ($type) {
+                        Institution::class => $taskable->whereIn('institutions.tenant_id', $ids),
+                        Meeting::class => $taskable->whereHas('tenants', fn (Builder $tenants) => $tenants->whereIn('tenants.id', $ids)),
+                        Reservation::class => $taskable->inTenants($ids),
+                    });
+                }
+            }
+
+            // A task outlives a hard-deleted subject; it stays listed in its assignees' units so it can be cleared.
+            $tasks->orWhere(fn (Builder $orphan) => $orphan
+                ->whereDoesntHaveMorph('taskable', self::TASKABLE_TYPES, fn (Builder $taskable) => $taskable->withoutGlobalScope(SoftDeletingScope::class))
+                ->whereHas('tenants', fn (Builder $tenants) => $tenants->whereIn('tenants.id', $tenantIds)));
+        });
     }
 
     /**

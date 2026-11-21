@@ -1,11 +1,11 @@
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import type { InertiaForm } from '@inertiajs/vue3';
-import { defineComponent, markRaw, nextTick } from 'vue';
+import { defineComponent, nextTick } from 'vue';
 
 import ProblemForm from '@/Components/AdminForms/ProblemForm.vue';
-import UserSearchField from '@/Features/Admin/AdminSearch/Components/Select/UserSearchField.vue';
-import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import UserSearchField from '@/Components/Pickers/UserSearchField.vue';
+import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 import { createMockForm } from '@/tests/helpers/createMockForm';
 import { commonStubs } from '@/tests/stubs';
 
@@ -67,7 +67,6 @@ const institutionHit = (id: string, title: string): NormalizedSearchHit => ({
   id: `institutions-${id}`,
   recordId: id,
   collection: 'institutions',
-  icon: markRaw(defineComponent({ template: '<i />' })),
   title,
   raw: {},
 });
@@ -218,8 +217,7 @@ describe('ProblemForm.vue — responsible member picker', () => {
     const wrapper = mountForm();
     const picker = wrapper.getComponent(UserSearchField);
 
-    expect(picker.props('permission')).toBe('problems.create.padalinys');
-    expect(picker.props('scope')).toBeUndefined();
+    expect(picker.props('purpose')).toBe('problem');
     expect(wrapper.get('input#problem-responsible-user').attributes('role')).toBe('combobox');
 
     picker.vm.$emit('update:modelValue', { id: 'user-1', name: 'Jonas Jonaitis' });

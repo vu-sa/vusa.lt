@@ -21,6 +21,9 @@ The scanner now works in two stages. Stage 1 is SQL: it ANDs `LIKE ? ESCAPE '|'`
 - No result cache: a cached "safe" outlives a new reference. Do not swallow query exceptions either, since an empty result reads as "safe to delete".
 - Never reintroduce a static cache in owner resolution: RefreshDatabase reuses auto-increment ids in SQLite.
 
+## A model whose visibility is more than tenant plus permission gets one access service
+`MeetingAccessService` and `DutyAccessService` each answer one model's visibility in one class: the policy check, the database list query and, where the generic tenant filter is not enough, the search filter. Do not re-derive such a model's rule in a controller or index query. `tests/Feature/Admin/Search/SearchVisibilityParityTest.php` compares list, search key and policy for both; extend it when the rule changes. Plain tenant-owned models stay on `ModelPolicy` and `TanstackTableService::applyPermissionFiltering`.
+
 ## Meeting scope and visibility rules live in models.md
 `InstitutionScopeResolver`, `MeetingCompletionService` and `VoteStatisticsCalculator` are all
 governed by the governance-scope and public-visibility rules in `.ai/rules/models.md` — read those
@@ -35,7 +38,7 @@ Two rules follow from this:
 - **A permission the actor does not hold resolves to zero tenants.** There is no "fall back to the tenants they hold any duty in" — that fallback was the escalation path in issue #621. Do not reintroduce one; deny instead.
 - **Never cache or pass around a resolved scope as if it were the actor's scope generally.** It answers one permission. Resolve each permission you actually mean; the memo makes that free.
 
-Tenant access is derived from *current* duties only (`loadDuties()`), never from `User::tenants()`, which is a HasManyDeep over every duty the user has ever held.
+Tenant access is derived from not-ended duties only (`loadDuties()`), never from `User::tenants()`, which is a HasManyDeep over every duty the user has ever held. For "the units I am in" outside a permission check, use `User::current_or_upcoming_tenants()`.
 
 ## Institution relationships resolve in one place, from two link tables
 `InstitutionRelationService` is the only code that expands `institution_links` / `institution_type_links` into related institutions; access (HasCommonChecks, InstitutionAccessService, Typesense keys), the Gantt and the graph all read it, so never re-derive pairs elsewhere.

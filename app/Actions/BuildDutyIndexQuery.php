@@ -5,8 +5,8 @@ namespace App\Actions;
 use App\Http\Requests\IndexDutyRequest;
 use App\Models\Duty;
 use App\Models\User;
+use App\Services\DutyAccessService;
 use App\Services\DutyDuplicateFinder;
-use App\Services\ModelAuthorizer;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 final class BuildDutyIndexQuery
 {
     /** @return Builder<Duty> */
-    public static function execute(IndexDutyRequest $request, ModelAuthorizer $authorizer): Builder
+    public static function execute(IndexDutyRequest $request, DutyAccessService $access): Builder
     {
         $query = Duty::query()->with([
             'tenants',
@@ -36,20 +36,9 @@ final class BuildDutyIndexQuery
         }
 
         $actor = $request->user();
-        if (! $authorizer->allows($actor, 'duties.read.*') && ! $actor?->isSuperAdmin()) {
-            $tenantIds = $authorizer->tenants($actor, 'duties.read.padalinys')->pluck('id')->all();
-            $includeExternal = filter_var($request->getFilters()['show_external'] ?? true, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? true;
+        $includeExternal = filter_var($request->getFilters()['show_external'] ?? true, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? true;
 
-            $query->where(function (Builder $query) use ($tenantIds, $includeExternal): void {
-                $query->whereHas('institution.tenant', fn (Builder $tenantQuery) => $tenantQuery->whereIn('id', $tenantIds));
-
-                if ($includeExternal) {
-                    $query->orWhereHas('assignableTenants', fn (Builder $tenantQuery) => $tenantQuery->whereIn('tenants.id', $tenantIds));
-                }
-            });
-        }
-
-        return $query;
+        return $access->visibleDuties($query, $actor, $includeExternal);
     }
 
     /** @param Builder<Duty> $query */

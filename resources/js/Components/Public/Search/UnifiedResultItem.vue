@@ -45,7 +45,7 @@ import { computed, ref, type Component } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
-import { descriptionMatch, highlightText, matchTitle, type SearchMatchDocument } from '@/Shared/Search/matches';
+import { descriptionMatch, highlightText, matchTitle, type SearchMatchDocument } from '@/Search/core/matches';
 import HairlineRow from '@/Components/Public/Base/HairlineRow.vue';
 import { getDocumentTargetUrl, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
 import type { SearchCollectionId } from '@/Composables/usePublicMultiSearch';

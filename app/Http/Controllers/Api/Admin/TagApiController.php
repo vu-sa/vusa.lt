@@ -8,6 +8,7 @@ use App\Http\Traits\HasTanstackTables;
 use App\Models\Tag;
 use App\Services\TanstackTableService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 class TagApiController extends ApiController
 {
@@ -15,10 +16,9 @@ class TagApiController extends ApiController
 
     public function __construct(private TanstackTableService $tableService) {}
 
+    #[Authorize('viewAny', Tag::class)]
     public function index(IndexTagRequest $request): JsonResponse
     {
-        $this->authorizeApi('viewAny', Tag::class);
-
         $tags = $this->applyTanstackFilters(
             Tag::query(),
             $request,

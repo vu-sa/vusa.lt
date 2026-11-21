@@ -56,8 +56,8 @@ import { SheetForm } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { NativeSelect } from '@/Components/ui/native-select';
 import { SingleSelect } from '@/Components/ui/single-select';
-import InstitutionSelectDialog from '@/Features/Admin/AdminSearch/Components/Select/InstitutionSelectDialog.vue';
-import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import InstitutionSelectDialog from '@/Components/Pickers/InstitutionSelectDialog.vue';
+import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 import { KnowledgeItemKind } from '@/Types/enums';
 import type { LearningTypeOption, WikiSubject, WikiSubjectType } from '@/Types/learning';
 

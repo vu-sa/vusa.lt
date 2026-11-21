@@ -49,9 +49,9 @@ diskas. Veiksmas nėra imituojamas ir automatiškai nenukreipiamas į kitą disk
 
 ## Techninė informacija {#technine-informacija}
 
-- Graph sąsaja: `SharepointGraphService` (`microsoft/microsoft-graph`), diskas –
+- Graph sąsaja: `App\Services\Sharepoint\SharepointGraphService` (`microsoft/microsoft-graph`), diskas –
   `filesystems.sharepoint.vusa_drive_id`, archyvas – `archive_drive_id`.
-- Įrašų failai: `SharepointFileService`, `FileableFile`; aplankų pervadinimas –
+- Įrašų failai: `App\Services\Sharepoint\SharepointFileService`, `FileableFile`; aplankų pervadinimas –
   `UpdateSharepointFolder`; sinchronizavimas – `SyncFileableFilesJob`.
 - Apsauga: `StagingProtection::ensureSharepointIsWritable()`; platformos užklausas atskirai riboja
   `StagingReadOnlyMode`.
@@ -60,5 +60,5 @@ diskas. Veiksmas nėra imituojamas ir automatiškai nenukreipiamas į kitą disk
   (`DocumentSharepointLock`). Ilgos – dokumentų archyvo tikrinimas ir `SyncFileableFilesJob` –
   `long-running` ryšiu, kurio `retry_after` ilgesnis už jų laiko limitą; jam reikia atskiro
   `queue:work long-running` proceso (`deployment/supervisor/README.md`).
-- Failų langas (`Features/Admin/SharepointFilePicker`, MSAL): `VITE_SHAREPOINT_CLIENT_ID` ir
+- Failų langas (`Components/Files/Sharepoint`, MSAL): `VITE_SHAREPOINT_CLIENT_ID` ir
   `VITE_SHAREPOINT_TENANT_ID` statymo metu, aplinkos adresas – Entra programos SPA peradresavimo URI.

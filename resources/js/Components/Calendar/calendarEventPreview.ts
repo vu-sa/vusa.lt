@@ -1,7 +1,7 @@
 import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
 
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
-import type { CalendarSearchResult } from '@/Shared/Search/types';
+import type { CalendarSearchResult } from '@/Search/core/types';
 import { formatDateTime } from '@/Utils/dateTime';
 
 /** An event as its preview shows it, whether it came from search or from the database. */

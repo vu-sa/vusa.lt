@@ -15,6 +15,8 @@ use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use App\Services\TanstackTableService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -29,10 +31,9 @@ class StudySetController extends AdminController
     /**
      * Display a listing of the resource.
      */
+    #[Authorize('viewAny', StudySet::class)]
     public function index(IndexStudySetRequest $request)
     {
-        $this->handleAuthorization('viewAny', StudySet::class);
-
         // A short list sent whole: the collection searches, sorts and filters it in the browser.
         $query = $this->tableService->applyPermissionFiltering(
             StudySet::query()->with('tenant:id,shortname')->withCount('courses')->orderBy('order'),
@@ -50,22 +51,20 @@ class StudySetController extends AdminController
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    #[Authorize('create', StudySet::class)]
+    public function create(Request $request)
     {
-        $this->handleAuthorization('create', StudySet::class);
-
         return Inertia::render('Admin/StudySets/CreateStudySet', [
-            'assignableTenants' => GetTenantsForUpserts::execute('studySets.create.padalinys', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute($request->user(), 'studySets.create.padalinys', $this->authorizer),
         ]);
     }
 
     /**
      * Store a newly created resource in storage.
      */
+    #[Authorize('create', StudySet::class)]
     public function store(StoreStudySetRequest $request, PostCreateRedirect $redirect)
     {
-        $this->handleAuthorization('create', StudySet::class);
-
         $studySet = DB::transaction(function () use ($request): StudySet {
             $studySet = StudySet::create([
                 'name' => $request->validated('name'),
@@ -88,10 +87,9 @@ class StudySetController extends AdminController
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(StudySet $studySet)
+    #[Authorize('update', 'studySet')]
+    public function edit(Request $request, StudySet $studySet)
     {
-        $this->handleAuthorization('update', $studySet);
-
         $studySet->load([
             'courses' => fn ($query) => $query->orderBy('order'),
             'courses.reviews',
@@ -106,17 +104,16 @@ class StudySetController extends AdminController
                     'reviews' => $course->reviews->map->toFullArray(),
                 ]),
             ],
-            'assignableTenants' => GetTenantsForUpserts::execute('studySets.update.padalinys', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute($request->user(), 'studySets.update.padalinys', $this->authorizer),
         ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
+    #[Authorize('update', 'studySet')]
     public function update(UpdateStudySetRequest $request, StudySet $studySet)
     {
-        $this->handleAuthorization('update', $studySet);
-
         DB::transaction(function () use ($request, $studySet): void {
             $studySet->update([
                 'name' => $request->validated('name'),
@@ -136,10 +133,9 @@ class StudySetController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
+    #[Authorize('delete', 'studySet')]
     public function destroy(StudySet $studySet)
     {
-        $this->handleAuthorization('delete', $studySet);
-
         $studySet->delete();
 
         return $this->redirectToIndexWithInfo('studySets', $this->entityMessage('deleted', 'studySet'));
@@ -197,11 +193,13 @@ class StudySetController extends AdminController
         }
     }
 
+    #[Authorize('restore', 'studySet')]
     public function restore(StudySet $studySet): RedirectResponse
     {
         return $this->restoreModel($studySet);
     }
 
+    #[Authorize('forceDelete', 'studySet')]
     public function forceDelete(StudySet $studySet): RedirectResponse
     {
         return $this->forceDeleteModel($studySet);

@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\ValidatesTenantScope;
-use App\Models\QuickLink;
 use App\Rules\SafeUrl;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -12,11 +11,6 @@ use Illuminate\Validation\Rule;
 class StoreQuickLinkRequest extends FormRequest
 {
     use ValidatesTenantScope;
-
-    public function authorize(): bool
-    {
-        return $this->user()->can('create', QuickLink::class);
-    }
 
     /**
      * @return array<string, ValidationRule|array<mixed>|string>

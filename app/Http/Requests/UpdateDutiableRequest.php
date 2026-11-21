@@ -15,14 +15,6 @@ class UpdateDutiableRequest extends FormRequest
     use HasImageValidation;
     use ValidatesQuotaTenant;
 
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return $this->user()->can('manageDutiable', $this->route('dutiable'));
-    }
-
     #[\Override]
     protected function prepareForValidation(): void
     {

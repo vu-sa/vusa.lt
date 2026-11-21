@@ -19,6 +19,7 @@ use App\Models\ResponsibilityGrant;
 use App\Services\InstitutionRelationService;
 use App\Support\MorphMap;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -26,10 +27,9 @@ class InstitutionTypeController extends AdminController
 {
     use HandlesSoftDeletes, HasTanstackTables;
 
+    #[Authorize('viewAny', InstitutionType::class)]
     public function index(IndexTypeRequest $request): Response
     {
-        $this->handleAuthorization('viewAny', InstitutionType::class);
-
         // A short list sent whole: the collection searches, sorts and filters it in the browser.
         $types = InstitutionType::query()
             ->when($request->getShowDeleted(), fn ($query) => $query->onlyTrashed())
@@ -43,16 +43,16 @@ class InstitutionTypeController extends AdminController
         ]);
     }
 
+    #[Authorize('create', InstitutionType::class)]
     public function create(): Response
     {
-        $this->handleAuthorization('create', InstitutionType::class);
-
         return Inertia::render('Admin/ModelMeta/CreateType', [
             'typeKind' => 'institutionType',
             'contentTypes' => InstitutionType::select('id', 'title', 'parent_id')->get(),
         ]);
     }
 
+    // Authorized in InstitutionTypeRequest: the ability depends on the route.
     public function store(InstitutionTypeRequest $request): RedirectResponse
     {
         $type = InstitutionType::query()->create(
@@ -63,10 +63,9 @@ class InstitutionTypeController extends AdminController
             ->with('success', $this->entityMessage('created', 'institutionType'));
     }
 
+    #[Authorize('view', 'type')]
     public function show(InstitutionType $type): Response
     {
-        $this->handleAuthorization('view', $type);
-
         $responsibleDuties = [];
 
         foreach (ResponsibilityGrant::query()
@@ -121,10 +120,9 @@ class InstitutionTypeController extends AdminController
         ]);
     }
 
+    #[Authorize('update', 'type')]
     public function edit(InstitutionType $type): Response
     {
-        $this->handleAuthorization('update', $type);
-
         return Inertia::render('Admin/ModelMeta/EditType', [
             'typeKind' => 'institutionType',
             'contentType' => $type->toFullArray(),
@@ -132,6 +130,7 @@ class InstitutionTypeController extends AdminController
         ]);
     }
 
+    // Authorized in InstitutionTypeRequest: the ability depends on the route.
     public function update(InstitutionTypeRequest $request, InstitutionType $type): RedirectResponse
     {
         $type->update($request->safe()->only('title', 'description', 'parent_id', 'slug', 'extra_attributes'));
@@ -139,6 +138,7 @@ class InstitutionTypeController extends AdminController
         return back()->with('success', $this->entityMessage('updated', 'institutionType'));
     }
 
+    // Authorized in SyncTypeModelsRequest: the bound duty or institution type.
     public function syncModels(SyncTypeModelsRequest $request, InstitutionType $type): RedirectResponse
     {
         $changes = $type->institutions()->sync($request->validated('models'));
@@ -149,21 +149,22 @@ class InstitutionTypeController extends AdminController
         return back()->with('success', $this->entityMessage('updated', 'institutionType'));
     }
 
+    #[Authorize('delete', 'type')]
     public function destroy(InstitutionType $type): RedirectResponse
     {
-        $this->handleAuthorization('delete', $type);
-
         $type->delete();
 
         return redirect()->route('institutionTypes.index')
             ->with('success', $this->entityMessage('deleted', 'institutionType'));
     }
 
+    #[Authorize('restore', 'type')]
     public function restore(InstitutionType $type): RedirectResponse
     {
         return $this->restoreModel($type, $this->entityMessage('restored', 'institutionType'));
     }
 
+    #[Authorize('forceDelete', 'type')]
     public function forceDelete(InstitutionType $type): RedirectResponse
     {
         return $this->forceDeleteModel($type);

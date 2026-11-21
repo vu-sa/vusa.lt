@@ -176,18 +176,18 @@ import { ChevronDown, ExternalLink, Languages, LayoutGrid, Loader2, Star, Trash2
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import TenantSelectField from '@/Components/AdminForms/TenantSelectField.vue';
-import FluentIconSelect from '@/Components/FormItems/FluentIconSelect.vue';
+import FluentIconSelect from '@/Components/AdminForms/FluentIconSelect.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog, FormPanel, FormSegmentedControl, FormToggleRow, StatusBadge, type FormSegmentOption } from '@/Components/Patterns';
-import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
+import LocaleFlag from '@/Components/Shared/LocaleFlag.vue';
 import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
 import { NativeSelect } from '@/Components/ui/native-select';
 import { useApiMutation } from '@/Composables/useApi';
 import type { StatusPresentation } from '@/Constants/statusIcons';
-import { MultiCollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
-import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import { MultiCollectionSelectDialog } from '@/Components/Pickers';
+import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 import { safeHref } from '@/Utils/safeHref';
 
 interface TopicOption {

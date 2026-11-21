@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Actions\SerializeResourceAvailability;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\Admin\ResourceAvailabilityRequest;
+use App\Models\Reservation;
 use App\Models\Resource;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Routing\Attributes\Controllers\Authorize;
 
 /**
  * Provides date-range-aware capacity for resources.
@@ -25,6 +27,8 @@ class ResourceAvailabilityApiController extends ApiController
      *
      * @routeName api.v1.admin.resources.availability
      */
+    // Availability is only meaningful within the reservation-creation flow, so gate on the same ability the create form uses.
+    #[Authorize('create', Reservation::class)]
     public function index(ResourceAvailabilityRequest $request): JsonResponse
     {
         $validated = $request->validated();
@@ -40,7 +44,9 @@ class ResourceAvailabilityApiController extends ApiController
             ->with(['active_reservations'])
             ->get();
 
-        $data = $resources->map(function (Resource $resource) use ($start, $end, $rangeStart, $rangeEnd) {
+        $viewer = $request->user();
+
+        $data = $resources->map(function (Resource $resource) use ($start, $end, $rangeStart, $rangeEnd, $viewer) {
             $overlappingReservations = $resource->active_reservations
                 ->filter(function ($reservation) use ($rangeStart, $rangeEnd) {
                     $pivotStart = $reservation->pivot->start_time;
@@ -52,13 +58,13 @@ class ResourceAvailabilityApiController extends ApiController
 
                     return $pivotStart->lt($rangeEnd) && $pivotEnd->gt($rangeStart);
                 })
-                ->map(fn ($reservation) => SerializeResourceAvailability::reservationRow($reservation))
+                ->map(fn ($reservation) => SerializeResourceAvailability::reservationRow($reservation, $viewer))
                 ->values()
                 ->all();
 
             return [
                 'id' => (string) $resource->id,
-                ...SerializeResourceAvailability::execute($resource, $start, $end),
+                ...SerializeResourceAvailability::execute($resource, $start, $end, $viewer),
                 'reservations' => $overlappingReservations,
             ];
         })->keyBy('id');

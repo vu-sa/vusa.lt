@@ -126,7 +126,7 @@ import { Link } from '@inertiajs/vue3';
 import { ExternalLink, SearchX } from '@lucide/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import TurtleMascot from '@/Components/Empty/TurtleMascot.vue';
+import TurtleMascot from '@/Components/Patterns/TurtleMascot.vue';
 import { Button } from '@/Components/ui/button';
 import { cn } from '@/Utils/Shadcn/utils';
 

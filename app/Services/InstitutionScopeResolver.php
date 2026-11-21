@@ -12,8 +12,8 @@ use Illuminate\Support\Facades\Cache;
 /**
  * Resolves which governance world an institution belongs to.
  *
- * Scope is declared on a InstitutionType as `extra_attributes['governance_scope']` and inherited down
- * `types.parent_id`: the nearest ancestor (self first) carrying a value wins. The whole tree is
+ * Scope is declared on an InstitutionType as `extra_attributes['governance_scope']` and inherited down
+ * `institution_types.parent_id`: the nearest ancestor (self first) carrying a value wins. The whole tree is
  * loaded in a single query and cached — `InstitutionType::getParentsAndSelf()` walks `recursiveParent` one
  * query per level, which would N+1 across any meeting or institution listing.
  *

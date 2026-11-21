@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Pagalbos užklausos
-last_reviewed: 2026-10-21
+last_reviewed: 2026-11-20
 tests:
   - tests/Feature/Admin/SupportRequests/SupportRequestControllerTest.php
   - tests/Feature/Admin/SupportRequests/MySupportRequestControllerTest.php
@@ -38,7 +38,7 @@ Kuriant užklausą nurodoma, kas ją gali matyti. Pasirinktas matomumas rodomas 
 
 ### Susiję žmonės {#susije-zmones}
 
-Jei problema aktuali keliems nariams, kuriant užklausą galima pridėti **susijusius žmones** – bet kuriuos platformos narius. Jie mato užklausą (net privačią), gali ją komentuoti ir gauna pranešimus apie naujus komentarus. Vėliau sąrašą gali keisti administratorius. Atsakingas asmuo vis tiek yra vienas.
+Jei problema aktuali keliems nariams, kuriant užklausą galima pridėti **susijusius žmones** – bet kuriuos platformos narius, kuriuos randi įvesdamas bent dvi vardo raides. Jie mato užklausą (net privačią), gali ją komentuoti ir gauna pranešimus apie naujus komentarus. Vėliau sąrašą gali keisti administratorius. Atsakingas asmuo vis tiek yra vienas.
 
 ### Būsenų ciklas
 
