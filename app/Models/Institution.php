@@ -391,9 +391,7 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
      */
     protected function makeAllSearchableUsing(Builder $query)
     {
-        $this->scopeWithSearchableRelations($query);
-
-        return $query;
+        return $query->withSearchableRelations();
     }
 
     public function toSearchableArray(): array

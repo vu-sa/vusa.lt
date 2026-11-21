@@ -299,9 +299,7 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
      */
     protected function makeAllSearchableUsing(Builder $query)
     {
-        $this->scopeWithSearchableRelations($query);
-
-        return $query;
+        return $query->withSearchableRelations();
     }
 
     /**

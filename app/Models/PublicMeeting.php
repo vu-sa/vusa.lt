@@ -134,6 +134,12 @@ class PublicMeeting extends Meeting
         ]);
     }
 
+    #[\Override]
+    protected function makeAllSearchableUsing(Builder $query)
+    {
+        return $query->withSearchableRelations();
+    }
+
     /**
      * Get searchable array for Typesense indexing
      */
