@@ -163,6 +163,8 @@ const props = withDefaults(defineProps<{
   institutionPeriodicity?: Record<string | number, number>;
   /** Markers come without their agenda; the tooltip fetches it on first hover. */
   agendaLoader?: GanttAgendaLoader;
+  /** Rows whose member history has not arrived yet: no "no members" stripes for them. */
+  membersPending?: string[];
   /** Date range being fetched, drawn as a pulsing band */
   /** Requests in flight, each shaded on its own rows and dates. */
   loadingSegments?: GanttLoadingSegment[];
@@ -378,6 +380,14 @@ const requestLabels = computed(() => {
 });
 
 /** Meetings whose records an open "Papildyk posėdžių įrašus" request asks for. */
+const membersPendingSet = computed(() => new Set(props.membersPending ?? []));
+
+const lastPointer = { x: 0, y: 0 };
+function trackPointer(event: PointerEvent): void {
+  lastPointer.x = event.clientX;
+  lastPointer.y = event.clientY;
+}
+
 const requestedMeetingIds = computed(() => {
   const ids = new Set<string>();
   const periods = openRequests.value.filter(request => request.campaign === 'missing_meetings');
@@ -562,7 +572,9 @@ function render(): void {
       minTime: drawMin,
       maxTime: drawMax,
       ...rowGeometry,
-      rows: visibleInstitutionRows,
+      rows: props.membersPending?.length
+        ? visibleInstitutionRows.filter(row => !membersPendingSet.value.has(String(row.institutionId)))
+        : visibleInstitutionRows,
     });
   }
 
@@ -648,6 +660,9 @@ function render(): void {
   emit('range-changed', x.invert(Math.max(0, visibleLeft)), x.invert(visibleRight));
   emitRows(visibleRows);
 
+  // Background batches redraw while the pointer rests on a meeting; its tooltip comes back instead of vanishing.
+  container.querySelector('g.meeting-icon:hover')?.dispatchEvent(new MouseEvent('mouseenter', { clientX: lastPointer.x, clientY: lastPointer.y }));
+
   afterRenderQueue.splice(0).forEach(callback => callback());
 }
 
@@ -666,7 +681,7 @@ watch(
   [
     parsedMeetings, parsedGaps, parsedDutyMembers, parsedInactivePeriods, institutions, layoutRows, vacationPeriods,
     openRequests, extraBefore, extraAfter, dayWidthPx,
-    () => props.showDutyMembers, () => props.showActivityStatus, () => props.loadingSegments, () => props.institutionPeriodicity,
+    () => props.showDutyMembers, () => props.showActivityStatus, () => props.loadingSegments, () => props.membersPending, () => props.institutionPeriodicity,
   ],
   scheduleRender,
 );
@@ -694,6 +709,10 @@ onMounted(() => {
     viewport.attachViewportTracking(),
     attachKeyboardHandler(wrap.value),
     props.interactive ? dragSelection.attachDragHandler() : undefined,
+    (() => {
+      wrap.value?.addEventListener('pointermove', trackPointer, { passive: true });
+      return () => wrap.value?.removeEventListener('pointermove', trackPointer);
+    })(),
   ];
 
   // The view's position survives a reload: center date and vertical scroll, saved while scrolling.

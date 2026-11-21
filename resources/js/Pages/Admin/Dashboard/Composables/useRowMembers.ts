@@ -109,31 +109,40 @@ export function useRowMembers(tenantIds: () => Array<string | number>) {
     pump();
   }
 
-  /** The rows with whatever member history has arrived, in the shape the Gantt helpers read. */
-  function merge<T extends AtstovavimasInstitution>(institutions: T[]): T[] {
+  /** Only the rows whose member history has arrived, in the shape the Gantt helpers read. */
+  function withHistory<T extends AtstovavimasInstitution>(institutions: T[]): T[] {
     const loaded = byInstitution.value;
-    if (loaded.size === 0) return institutions;
-    return institutions.map((institution) => {
+    return institutions.flatMap((institution) => {
       const members = loaded.get(String(institution.id));
-      return members
-        ? { ...institution, membership_periods: members.periods, member_activity_categories: members.activity }
-        : institution;
+      return members ? [{ ...institution, membership_periods: members.periods, member_activity_categories: members.activity }] : [];
     });
+  }
+
+  /** Rows still waiting for their history; the chart must not read their empty member list as "nobody". */
+  function pendingIds(institutions: AtstovavimasInstitution[]): string[] {
+    const loaded = byInstitution.value;
+    return institutions.map(institution => String(institution.id)).filter(id => !loaded.has(id));
   }
 
   function reset(): void {
     generation += 1;
     queue = [];
+    rows = [];
+    visible = { first: 0, last: -1 };
     requested.clear();
     byInstitution.value = new Map();
   }
 
-  /** After an edit: forget everything and load the current rows again, on-screen first. */
+  /** After an edit: forget what was loaded and load the current rows again, on-screen first. */
   function refresh(): void {
+    const keptRows = rows;
+    const keptVisible = visible;
     reset();
+    rows = keptRows;
+    visible = keptVisible;
     queue = plan();
     pump();
   }
 
-  return { byInstitution, inFlight, setRows, merge, reset, refresh };
+  return { byInstitution, inFlight, setRows, withHistory, pendingIds, reset, refresh };
 }

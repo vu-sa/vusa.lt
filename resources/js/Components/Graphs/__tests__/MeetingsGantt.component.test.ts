@@ -98,4 +98,17 @@ describe('MeetingsGantt', () => {
     await flushPromises();
     expect(tooltip()).toContain('Studijų programos keitimas');
   });
+
+  it('does not stripe a row as having no members while its member history is still loading', async () => {
+    await mountGantt({ showDutyMembers: true, dutyMembers: [], inactivePeriods: [], membersPending: ['kolegija'] });
+
+    const striped = wrapper.findAll('.inactive-period').length;
+    // Senatas (no members, history loaded) is striped; Studijų kolegija (pending) is not.
+    expect(striped).toBeGreaterThan(0);
+
+    await wrapper.setProps({ membersPending: ['kolegija', 'senatas'] });
+    await flushPromises();
+    await nextFrame();
+    expect(wrapper.findAll('.inactive-period')).toHaveLength(0);
+  });
 });

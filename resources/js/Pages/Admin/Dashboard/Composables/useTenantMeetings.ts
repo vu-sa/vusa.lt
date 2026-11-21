@@ -43,14 +43,15 @@ interface Task {
 }
 
 
-function monthStart(ts: number): number {
+/** Chunks sit on calendar boundaries (half-years, years), so a view always asks for the same, cacheable windows. */
+function chunkStart(ts: number, months: number): number {
   const d = new Date(ts);
-  return new Date(d.getFullYear(), d.getMonth(), 1).getTime();
+  return new Date(d.getFullYear(), d.getMonth() - (d.getMonth() % months), 1).getTime();
 }
 
-function monthEnd(ts: number): number {
-  const d = new Date(ts);
-  return new Date(d.getFullYear(), d.getMonth() + 1, 1).getTime() - 1;
+function chunkEnd(ts: number, months: number): number {
+  const start = new Date(chunkStart(ts, months));
+  return new Date(start.getFullYear(), start.getMonth() + months, 1).getTime() - 1;
 }
 
 function chunk(segment: Window, months: number): Window[] {
@@ -127,7 +128,8 @@ export function useTenantMeetings(tenantIds: () => Array<string | number>, { wai
 
       return { url: route('api.v1.admin.visak.meetings'), params };
     },
-    keyOf: meeting => String(meeting.id),
+    // A joint meeting is one marker per institution row.
+    keyOf: meeting => `${meeting.institution_id}:${meeting.id}`,
     agendaParams: () => {
       const params = new URLSearchParams();
       tenantIds().map(String).forEach(id => params.append('tenant_ids[]', id));
@@ -312,6 +314,12 @@ function useWindowedMeetings(source: WindowedMeetingsSource) {
 
   const debouncedSchedule = useDebounceFn(schedule, FETCH_DEBOUNCE_MS);
 
+  /** Running workers pick from the new order at once; only starting new ones waits for the view to settle. */
+  function reprioritise(): void {
+    if (inFlight.value.length > 0) queue = plan();
+    void debouncedSchedule();
+  }
+
   /**
    * Ensure meetings are loaded for [from, until] plus padding. Debounced; only missing months are fetched.
    * `pad: false` keeps a first load of up to one chunk to one request per batch.
@@ -319,8 +327,8 @@ function useWindowedMeetings(source: WindowedMeetingsSource) {
   function ensureRange(from: Date, until: Date, { pad = true }: { pad?: boolean } = {}): void {
     const bufferMs = pad ? Math.max(MIN_BUFFER_DAYS * MS_PER_DAY, (until.getTime() - from.getTime()) / 4) : 0;
     // Re-planned even when unchanged: a failed request is retried on the next report.
-    range = { from: monthStart(from.getTime() - bufferMs), until: monthEnd(until.getTime() + bufferMs) };
-    void debouncedSchedule();
+    range = { from: chunkStart(from.getTime() - bufferMs, chunkMonths), until: chunkEnd(until.getTime() + bufferMs, chunkMonths) };
+    reprioritise();
   }
 
   /** Institution ids in display order and the indexes of the first and last row on screen. */
@@ -333,38 +341,19 @@ function useWindowedMeetings(source: WindowedMeetingsSource) {
     if (sameRows && sameBatches) return;
 
     rows = ids;
-    void debouncedSchedule();
+    reprioritise();
   }
 
-  /** Re-fetch everything loaded so far, bypassing the server cache, in the same chunks and batches. */
+  /** After an edit: drop what was loaded (deleted or moved meetings too) and reload the view, bypassing the cache. */
   function refresh(): void {
+    debouncedSchedule.cancel?.();
+    generation += 1;
     agendas.clear();
-    const byChunk = new Map<string, { window: Window; ids: string[]; all: boolean }>();
-    for (const [id, windows] of coverage) {
-      for (const window of windows.flatMap(w => chunk(w, chunkMonths))) {
-        const key = `${window.from}:${window.until}`;
-        const entry = byChunk.get(key) ?? { window, ids: [], all: false };
-        if (id === ALL) entry.all = true;
-        else entry.ids.push(id);
-        byChunk.set(key, entry);
-      }
-    }
     coverage.clear();
-
-    const tasks: Task[] = [];
-    for (const { window, ids, all } of byChunk.values()) {
-      if (all) {
-        tasks.push({ window, institutionIds: null, refresh: true });
-        continue;
-      }
-      for (let i = 0; i < ids.length; i += BATCH_SIZE) {
-        tasks.push({ window, institutionIds: ids.slice(i, i + BATCH_SIZE), refresh: true });
-      }
-    }
-
-    queue = tasks;
-    const idle = CONCURRENCY - inFlight.value.length;
-    for (let i = 0; i < Math.min(idle, queue.length); i++) void worker();
+    inFlight.value = [];
+    meetingsById.value = new Map();
+    queue = plan().map(task => ({ ...task, refresh: true }));
+    for (let i = 0; i < Math.min(CONCURRENCY, queue.length); i++) void worker();
   }
 
   const agendas = new Map<string, Promise<AgendaItems | null>>();

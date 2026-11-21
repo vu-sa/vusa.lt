@@ -59,7 +59,7 @@
           :duty-members :inactive-periods :show-duty-members="filters.showDutyMembersTenant.value"
           :show-activity-status="filters.showActivityStatusTenant.value"
           :activity-requests :show-activity-requests="filters.showActivityRequestsTenant.value"
-          :loading-segments :agenda-loader :meetings-loading="meetingsLoading || filters.tenantInstitutionsLoading.value"
+          :loading-segments :agenda-loader :members-pending :meetings-loading="meetingsLoading || filters.tenantInstitutionsLoading.value"
           :empty-message="$t('Šiame padalinyje nėra institucijų')" @create-meeting="$emit('create-meeting', $event)"
           @create-check-in="$emit('create-check-in', $event)"
           @fullscreen="toggle"
@@ -111,6 +111,8 @@ defineProps<{
   institutionPeriodicity?: Record<string | number, number>;
   loadingSegments?: GanttLoadingSegment[];
   agendaLoader?: GanttAgendaLoader;
+  /** Rows whose member history has not arrived; not drawn as having no members. */
+  membersPending?: string[];
   /** Whether meetings are being fetched (delayed ~300ms by the caller) */
   meetingsLoading?: boolean;
   /** Only decides whether the activity-ring option is offered; the figures live on the page. */

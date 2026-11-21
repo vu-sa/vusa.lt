@@ -56,12 +56,16 @@ describe('useRowMembers', () => {
     expect(new URL(urls[0]!, 'http://localhost').searchParams.getAll('tenant_ids[]')).toEqual(['1']);
   });
 
-  it('merges the arrived history into the rows in the shape the Gantt helpers read', async () => {
+  it('returns only rows with arrived history, in the shape the Gantt helpers read, and lists the rest as pending', async () => {
     const members = useRowMembers(() => ['1']);
     members.setRows(rows.slice(0, 5), 0, 4);
     await flushPromises();
 
-    const [row] = members.merge([{ id: 'inst-00', name: 'A' } as AtstovavimasInstitution, { id: 'other', name: 'B' } as AtstovavimasInstitution]);
+    const rowsIn = [{ id: 'inst-00', name: 'A' } as AtstovavimasInstitution, { id: 'other', name: 'B' } as AtstovavimasInstitution];
+    const withHistory = members.withHistory(rowsIn);
+    expect(withHistory).toHaveLength(1);
+    expect(members.pendingIds(rowsIn)).toEqual(['other']);
+    const [row] = withHistory;
     expect(row!.membership_periods).toEqual([{ user: { id: 'u1', name: 'Lina', profile_photo_path: null }, duty_id: 'd1', start_date: '2025-09-01', end_date: null }]);
     expect(row!.member_activity_categories).toEqual({ u1: 'week' });
   });

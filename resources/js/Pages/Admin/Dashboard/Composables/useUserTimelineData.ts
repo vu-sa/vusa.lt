@@ -14,7 +14,6 @@ import type {
 import {
   extractDutyMembers,
   calculateInactivePeriods,
-  extractMeetingsFromInstitutions,
   formatInstitutionsForGantt,
   buildInstitutionNamesMap,
   buildInstitutionPublicMeetingsMap,
@@ -84,14 +83,8 @@ export function useUserTimelineData(options: UseUserTimelineDataOptions) {
   });
 
   // Merged meetings: user's + extracted from related institutions
-  const mergedMeetings = computed<GanttMeeting[]>(() => {
-    if (!showRelatedInstitutions.value || !visibleRelatedInstitutions.value.length) {
-      return meetings.value;
-    }
-
-    const relatedMeetings = extractMeetingsFromInstitutions(visibleRelatedInstitutions.value);
-    return [...meetings.value, ...relatedMeetings];
-  });
+  // Related institutions' meetings arrive through the same windowed store as the user's own.
+  const mergedMeetings = computed<GanttMeeting[]>(() => meetings.value);
 
   // Merged duty members
   const mergedDutyMembers = computed<GanttDutyMember[]>(() => {

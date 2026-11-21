@@ -12,9 +12,6 @@ import type {
 import {
   extractDutyMembers,
   calculateInactivePeriods,
-  formatInstitutionsForGantt as formatInstitutionsForGanttHelper,
-  buildInstitutionNamesMap,
-  buildInstitutionPublicMeetingsMap,
   buildInstitutionPeriodicityMap,
   ganttInstitutionTypes,
   ganttActivityDates,
@@ -24,6 +21,8 @@ export function useGanttChartData(
   tenantInstitutionsRef: Ref<AtstovavimasInstitution[]>, // Lazy loaded tenant institutions
   availableTenants: AtstovavimasTenant[],
   tenantMeetingsRef: ComputedRef<GanttMeeting[]>, // Windowed meetings from useTenantMeetings
+  /** Rows whose member history has arrived; kept apart so a batch does not recompute every row. */
+  memberRowsRef?: Ref<AtstovavimasInstitution[]>,
 ) {
   // Use the lazy-loaded tenant institutions directly
   const tenantInstitutions = tenantInstitutionsRef;
@@ -67,28 +66,13 @@ export function useGanttChartData(
     return names;
   });
 
-  // Institution name mappings for Gantt charts - use shared helpers
-  const getInstitutionNames = (institutions: AtstovavimasInstitution[]) => {
-    return buildInstitutionNamesMap(institutions);
-  };
-
   const getTenantNames = () => {
     return cachedTenantNames.value;
-  };
-
-  // Get public meetings lookup for institutions
-  const getInstitutionHasPublicMeetings = (institutions: AtstovavimasInstitution[]) => {
-    return buildInstitutionPublicMeetingsMap(institutions);
   };
 
   // Get meeting periodicity lookup for institutions (days between expected meetings)
   const getInstitutionPeriodicity = (institutions: AtstovavimasInstitution[]) => {
     return buildInstitutionPeriodicityMap(institutions);
-  };
-
-  // Format institutions for Gantt component - use shared helper
-  const formatInstitutionsForGantt = (institutions: AtstovavimasInstitution[]): GanttInstitution[] => {
-    return formatInstitutionsForGanttHelper(institutions);
   };
 
   // Format tenant institutions for Gantt
@@ -124,27 +108,16 @@ export function useGanttChartData(
 
   // Extract duty members from tenant institutions for Gantt display - use shared helper
   const tenantDutyMembers = computed<GanttDutyMember[]>(() => {
-    return extractDutyMembers(tenantInstitutions.value as unknown as AtstovavimasInstitution[]);
+    return extractDutyMembers((memberRowsRef ?? tenantInstitutions).value as unknown as AtstovavimasInstitution[]);
   });
 
   // Calculate inactive periods for tenant institutions - use shared helper
   const tenantInactivePeriods = computed<InactivePeriod[]>(() => {
     return calculateInactivePeriods(
-      tenantInstitutions.value as unknown as AtstovavimasInstitution[],
+      (memberRowsRef ?? tenantInstitutions).value as unknown as AtstovavimasInstitution[],
       tenantDutyMembers.value,
     );
   });
-
-  // Helper to extract duty members from user's institutions - use shared helper
-  const getDutyMembersFromInstitutions = (institutions: AtstovavimasInstitution[]): GanttDutyMember[] => {
-    return extractDutyMembers(institutions);
-  };
-
-  // Helper to calculate inactive periods from user's institutions - use shared helper
-  const getInactivePeriodsFromInstitutions = (institutions: AtstovavimasInstitution[]): InactivePeriod[] => {
-    const dutyMembers = extractDutyMembers(institutions);
-    return calculateInactivePeriods(institutions, dutyMembers);
-  };
 
   return {
     // Tenant data
@@ -159,12 +132,7 @@ export function useGanttChartData(
     tenantInactivePeriods,
 
     // Helper functions
-    getInstitutionNames,
     getTenantNames,
-    getInstitutionHasPublicMeetings,
     getInstitutionPeriodicity,
-    formatInstitutionsForGantt,
-    getDutyMembersFromInstitutions,
-    getInactivePeriodsFromInstitutions,
   };
 }

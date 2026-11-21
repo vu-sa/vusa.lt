@@ -46,151 +46,113 @@ describe('useTenantMeetings', () => {
     vi.useRealTimers();
   });
 
-  it('fetches the visible range with buffer, quantized to month boundaries', async () => {
+  const windowsOf = () => fetchedUrls.map((url) => {
+    const params = new URL(url, 'http://localhost').searchParams;
+    return `${params.get('from')}..${params.get('until')}`;
+  });
+
+  it('pads the visible range and asks for whole calendar half-years', async () => {
     const store = useTenantMeetings(() => ['1', '2']);
 
     store.ensureRange(new Date(2026, 5, 15), new Date(2026, 6, 15));
     expect(fetch).not.toHaveBeenCalled();
-
     await vi.advanceTimersByTimeAsync(200);
 
-    expect(fetch).toHaveBeenCalledTimes(1);
-    const url = fetchedUrls[0]!;
-    expect(url).toContain('api.v1.admin.visak.meetings');
-    // June 15 - 30d buffer = May 16 -> month start May 1
-    expect(url).toContain('from=2026-05-01');
-    // July 15 + 30d buffer = Aug 14 -> month end Aug 31
-    expect(url).toContain('until=2026-08-31');
-    expect(url).toContain('tenant_ids');
+    expect(windowsOf().sort()).toEqual(['2026-01-01..2026-06-30', '2026-07-01..2026-12-31']);
+    expect(new URL(fetchedUrls[0]!, 'http://localhost').searchParams.getAll('tenant_ids[]')).toEqual(['1', '2']);
   });
 
-  it('skips ranges that are already covered', async () => {
+  it('never asks again for a half-year it already has', async () => {
     const store = useTenantMeetings(() => ['1']);
 
     store.ensureRange(new Date(2026, 5, 15), new Date(2026, 6, 15));
     await vi.advanceTimersByTimeAsync(200);
-    expect(fetch).toHaveBeenCalledTimes(1);
+    fetchedUrls.splice(0);
 
-    // A range inside the already-loaded window must not trigger a fetch
-    store.ensureRange(new Date(2026, 5, 20), new Date(2026, 6, 1));
+    // Scrolling a little stays inside the loaded half-years; further reaches only the next one.
+    store.ensureRange(new Date(2026, 6, 1), new Date(2026, 7, 1));
     await vi.advanceTimersByTimeAsync(200);
-    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetchedUrls).toHaveLength(0);
+
+    store.ensureRange(new Date(2026, 10, 15), new Date(2026, 11, 20));
+    await vi.advanceTimersByTimeAsync(200);
+    expect(windowsOf()).toEqual(['2027-01-01..2027-06-30']);
   });
 
-  it('fetches only the missing month segments of partially covered ranges', async () => {
-    const store = useTenantMeetings(() => ['1']);
-
-    store.ensureRange(new Date(2026, 5, 15), new Date(2026, 6, 15));
-    await vi.advanceTimersByTimeAsync(200);
-    expect(fetch).toHaveBeenCalledTimes(1);
-
-    // Extend into autumn: [2026-05-01, 2026-08-31] is loaded, so only Sep-Nov is missing
-    store.ensureRange(new Date(2026, 8, 15), new Date(2026, 9, 15));
-    await vi.advanceTimersByTimeAsync(200);
-
-    expect(fetch).toHaveBeenCalledTimes(2);
-    expect(fetchedUrls[1]).toContain('from=2026-09-01');
-    expect(fetchedUrls[1]).toContain('until=2026-11-30');
-  });
-
-  it('dedupes meetings by id across overlapping windows and sorts by start_time', async () => {
+  it('keeps each meeting once per institution and sorts by start_time', async () => {
     responseQueue = [
-      [makeMeeting('b', '2026-06-10T10:00:00Z'), makeMeeting('a', '2026-05-05T10:00:00Z')],
+      [makeMeeting('b', '2026-06-10T10:00:00Z'), makeMeeting('a', '2026-05-05T10:00:00Z'), { ...makeMeeting('a', '2026-05-05T10:00:00Z'), institution_id: 'inst-2' }],
       [makeMeeting('b', '2026-06-10T10:00:00Z'), makeMeeting('c', '2026-09-02T10:00:00Z')],
     ];
-
     const store = useTenantMeetings(() => ['1']);
 
     store.ensureRange(new Date(2026, 5, 15), new Date(2026, 6, 15));
     await vi.advanceTimersByTimeAsync(200);
 
-    store.ensureRange(new Date(2026, 8, 15), new Date(2026, 9, 15));
-    await vi.advanceTimersByTimeAsync(200);
-
-    expect(store.meetings.value.map(m => m.id)).toEqual(['a', 'b', 'c']);
+    expect(store.meetings.value.map(m => `${m.institution_id}:${m.id}`)).toEqual(['inst-1:a', 'inst-2:a', 'inst-1:b', 'inst-1:c']);
     expect(store.meetings.value[0]!.start_time).toBeInstanceOf(Date);
   });
 
-  it('re-fetches every loaded month with refresh=1 on refresh(), in request-sized chunks', async () => {
+  it('on refresh() drops what it had and reloads the view with refresh=1', async () => {
+    responseQueue = [[makeMeeting('gone', '2026-05-05T10:00:00Z')]];
     const store = useTenantMeetings(() => ['1']);
-
     store.ensureRange(new Date(2026, 5, 15), new Date(2026, 6, 15));
     await vi.advanceTimersByTimeAsync(200);
-
-    // Adjacent windows merge, so this becomes one [May, Nov] window
-    store.ensureRange(new Date(2026, 8, 15), new Date(2026, 9, 15));
-    await vi.advanceTimersByTimeAsync(200);
-    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(store.meetings.value.map(m => m.id)).toEqual(['gone']);
+    fetchedUrls.splice(0);
 
     store.refresh();
     await vi.advanceTimersByTimeAsync(0);
 
-    const refreshed = fetchedUrls.slice(2).map(url => new URL(url, 'http://localhost').searchParams);
-    expect(refreshed.every(params => params.get('refresh') === '1')).toBe(true);
-    expect(refreshed.map(params => params.get('from')).sort()[0]).toBe('2026-05-01');
-    expect(refreshed.map(params => params.get('until')).sort().at(-1)).toBe('2026-11-30');
+    expect(store.meetings.value).toEqual([]);
+    expect(windowsOf().sort()).toEqual(['2026-01-01..2026-06-30', '2026-07-01..2026-12-31']);
+    expect(fetchedUrls.every(url => url.includes('refresh=1'))).toBe(true);
   });
 
-  it('leaves a window unloaded and reports lastError when the request fails', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => ({
-      ok: false,
-      status: 500,
-      json: async () => ({}),
-    } as Response)));
-
+  it('leaves a failed half-year unloaded and retries it on the next report', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false, status: 500, json: async () => ({}) } as Response)));
     const store = useTenantMeetings(() => ['1']);
 
     store.ensureRange(new Date(2026, 5, 15), new Date(2026, 6, 15));
     await vi.advanceTimersByTimeAsync(200);
-
     expect(store.meetings.value).toEqual([]);
     expect(store.lastError.value).not.toBeNull();
+    expect(store.isFetching.value).toBe(false);
 
-    // The failed window was never marked as loaded, so the same range is retried
     mockFetch();
-    store.ensureRange(new Date(2026, 5, 15), new Date(2026, 6, 15));
-    await vi.advanceTimersByTimeAsync(200);
-
-    expect(fetch).toHaveBeenCalledTimes(1);
-  });
-
-  it('reset() clears meetings and windows so ranges are fetched again', async () => {
-    const store = useTenantMeetings(() => ['1']);
-
-    store.ensureRange(new Date(2026, 5, 15), new Date(2026, 6, 15));
-    await vi.advanceTimersByTimeAsync(200);
-    expect(fetch).toHaveBeenCalledTimes(1);
-
-    store.reset();
-    expect(store.meetings.value).toEqual([]);
-
     store.ensureRange(new Date(2026, 5, 15), new Date(2026, 6, 15));
     await vi.advanceTimersByTimeAsync(200);
     expect(fetch).toHaveBeenCalledTimes(2);
   });
 
-  it('loads a zoomed-out range to its edges in chunks, nearest the middle first', async () => {
+  it('reset() clears meetings and coverage so the view is fetched again', async () => {
+    responseQueue = [[makeMeeting('a', '2026-06-10T10:00:00Z')]];
+    const store = useTenantMeetings(() => ['1']);
+    store.ensureRange(new Date(2026, 5, 15), new Date(2026, 6, 15));
+    await vi.advanceTimersByTimeAsync(200);
+    fetchedUrls.splice(0);
+
+    store.reset();
+    expect(store.meetings.value).toEqual([]);
+    await vi.advanceTimersByTimeAsync(200);
+    expect(fetchedUrls).toHaveLength(2);
+  });
+
+  it('loads a zoomed-out range to its edges in half-years, nearest the middle first', async () => {
     const store = useTenantMeetings(() => ['1']);
 
     // About three years on screen, as at one pixel per day.
     store.ensureRange(new Date(2024, 0, 1), new Date(2026, 11, 31));
     await vi.advanceTimersByTimeAsync(200);
 
-    const windows = fetchedUrls.map((url) => {
-      const params = new URL(url, 'http://localhost').searchParams;
-      return [params.get('from')!, params.get('until')!] as const;
-    });
-    const froms = windows.map(([from]) => from).sort();
-    const untils = windows.map(([, until]) => until).sort();
+    const windows = windowsOf();
+    // A quarter of the span is padded on each side, rounded out to half-years; nothing in between is skipped.
+    expect([...windows].sort()[0]).toBe('2023-01-01..2023-06-30');
+    expect([...windows].sort().at(-1)).toBe('2027-07-01..2027-12-31');
+    expect(windows).toHaveLength(10);
+    // The first request is a half-year around the middle of the view (2025).
+    expect(windows[0]!.startsWith('2025-')).toBe(true);
 
-    // A quarter of the span is padded on each side; nothing in between is skipped.
-    expect(froms[0]! <= '2023-04-30').toBe(true);
-    expect(untils.at(-1)! >= '2027-09-30').toBe(true);
-    expect(windows.every(([from, until]) => new Date(until).getTime() - new Date(from).getTime() < 186 * 24 * 60 * 60 * 1000)).toBe(true);
-    // The first request is the chunk around the middle of the view (mid-2025).
-    expect(windows[0]![0] <= '2025-07-01' && windows[0]![1] >= '2025-06-01').toBe(true);
-
-    // Everything is loaded now, so the same view asks for nothing more.
     fetchedUrls.splice(0);
     store.ensureRange(new Date(2024, 0, 1), new Date(2026, 11, 31));
     await vi.advanceTimersByTimeAsync(200);
@@ -269,7 +231,7 @@ describe('useInstitutionMeetings', () => {
     vi.useRealTimers();
   });
 
-  it('asks the representative endpoint for the given institutions and window', async () => {
+  it('asks the representative endpoint for the given institutions, a calendar year at a time', async () => {
     const store = useInstitutionMeetings(() => ['inst-1', 'inst-2']);
 
     store.ensureRange(new Date(2026, 5, 15), new Date(2026, 6, 15));
@@ -278,8 +240,9 @@ describe('useInstitutionMeetings', () => {
     const url = new URL(fetchedUrls[0]!, 'http://localhost');
     expect(url.pathname).toContain('api.v1.admin.atstovavimas.meetings');
     expect(url.searchParams.getAll('institution_ids[]')).toEqual(['inst-1', 'inst-2']);
-    expect(url.searchParams.get('from')).toBe('2026-05-01');
-    expect(url.searchParams.get('to')).toBe('2026-08-31');
+    expect(url.searchParams.get('from')).toBe('2026-01-01');
+    expect(url.searchParams.get('to')).toBe('2026-12-31');
+    expect(fetchedUrls).toHaveLength(1);
   });
 
   it('keeps a joint meeting once under each of its institutions', async () => {
@@ -295,16 +258,17 @@ describe('useInstitutionMeetings', () => {
     expect(store.meetings.value.map(meeting => meeting.institution_id)).toEqual(['inst-1', 'inst-2']);
   });
 
-  it('loads an unpadded first view of four months back and two ahead in one request', async () => {
+  it('loads an unpadded first view across New Year as one request per year, in parallel', async () => {
     const store = useInstitutionMeetings(() => ['inst-1']);
 
     store.ensureRange(new Date(2026, 6, 21), new Date(2027, 0, 21), { pad: false });
     await vi.advanceTimersByTimeAsync(200);
 
-    expect(fetch).toHaveBeenCalledTimes(1);
-    const url = new URL(fetchedUrls[0]!, 'http://localhost');
-    expect(url.searchParams.get('from')).toBe('2026-07-01');
-    expect(url.searchParams.get('to')).toBe('2027-01-31');
+    const windows = fetchedUrls.map((url) => {
+      const params = new URL(url, 'http://localhost').searchParams;
+      return `${params.get('from')}..${params.get('to')}`;
+    });
+    expect(windows.sort()).toEqual(['2026-01-01..2026-12-31', '2027-01-01..2027-12-31']);
   });
 
   it('does not fetch without institutions', async () => {

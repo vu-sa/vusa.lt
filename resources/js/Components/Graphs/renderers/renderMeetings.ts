@@ -320,8 +320,10 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
         tooltipManager.show(meetingContent(d, needsAgenda ? 'loading' : 'ready'), pointer.x, pointer.y);
 
         if (!needsAgenda) return;
+        const node = event.currentTarget as Element;
         ctx.loadAgenda!(d).then((items) => {
-          if (hovered !== d) return;
+          // A redraw replaces the node without a mouseleave; a detached node's agenda is not shown.
+          if (hovered !== d || !node.isConnected) return;
           tooltipManager.show(items === null ? meetingContent(d, 'failed') : meetingContent({ ...d, agenda_items: items }), pointer.x, pointer.y);
         });
       })

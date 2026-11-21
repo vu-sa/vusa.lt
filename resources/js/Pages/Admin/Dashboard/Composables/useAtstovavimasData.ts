@@ -3,7 +3,6 @@ import { computed, type MaybeRefOrGetter, toValue } from 'vue';
 import type {
   AtstovavimasUser,
   AtstovavimasInstitution,
-  InstitutionInsights,
   AtstovavimasGap,
 } from '../types';
 
@@ -41,24 +40,8 @@ export function useAtstovavimasData(
     });
   });
 
-  // Calculate institutions insights for footer information
-  const institutionsInsights = computed<InstitutionInsights>(() => {
-    return {
-      attention: institutions.value
-        .filter(institution => institution.activity_status.requires_action)
-        .sort((a, b) => b.activity_status.priority - a.activity_status.priority)
-        .slice(0, 2)
-        .map(institution => ({
-          id: institution.id,
-          name: institution.name,
-          ...institution.activity_status,
-        })),
-    };
-  });
-
   return {
     institutions,
     userGaps,
-    institutionsInsights,
   };
 }

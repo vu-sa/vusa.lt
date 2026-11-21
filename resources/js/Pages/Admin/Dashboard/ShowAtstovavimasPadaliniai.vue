@@ -77,6 +77,7 @@
           :inactive-periods="ganttData.tenantInactivePeriods.value"
           :loading-segments="tenantMeetings.loadingSegments.value"
           :agenda-loader="tenantMeetings.loadAgenda"
+          :members-pending="membersPending"
           :meetings-loading="meetingsLoadingVisible"
           :representative-activity
           :activity-requests="ganttActivityRequests.data.value ?? []"
@@ -186,14 +187,18 @@ const ganttActivityRequests = useTenantTimelineData<GanttActivityRequest[]>('api
 const tenantMeetings = useTenantMeetings(() => timelineFilters.selectedTenantForGantt.value, { waitForRows: true });
 const tenantInstitutionsData = computed(() => tenantTimelineData.data.value?.institutions ?? []);
 const rowMembers = useRowMembers(() => timelineFilters.selectedTenantForGantt.value);
-const ganttInstitutionsData = computed(() => rowMembers.merge(ganttRows.data.value ?? []));
+const ganttInstitutionsData = computed(() => ganttRows.data.value ?? []);
+const memberRows = computed(() => rowMembers.withHistory(ganttInstitutionsData.value));
+const membersPending = computed(() => rowMembers.pendingIds(ganttInstitutionsData.value));
 
 function onRowsChanged(institutionIds: string[], firstVisible: number, lastVisible: number): void {
+  // Until a new selection's rows arrive, the chart still reports the previous selection's.
+  if (ganttRows.isFetching.value) return;
   tenantMeetings.setRows(institutionIds, firstVisible, lastVisible);
   rowMembers.setRows(institutionIds, firstVisible, lastVisible);
 }
 const representativeActivity = computed(() => tenantTimelineData.data.value?.representative_activity);
-const ganttData = useGanttChartData(ganttInstitutionsData, props.ganttTenants, tenantMeetings.meetings);
+const ganttData = useGanttChartData(ganttInstitutionsData, props.ganttTenants, tenantMeetings.meetings, memberRows);
 
 provideGanttSettings();
 
@@ -316,15 +321,6 @@ watch(ganttRows.loaded, (loaded) => {
   timelineFilters.tenantInstitutionsLoaded.value = loaded;
 }, { immediate: true });
 
-// Meetings around today; further windows are fetched as the Gantt range extends.
-function loadInitialMeetingWindow(): void {
-  const today = new Date();
-  tenantMeetings.ensureRange(
-    new Date(today.getFullYear(), today.getMonth() - 3, 1),
-    new Date(today.getFullYear(), today.getMonth() + 4, 0),
-  );
-}
-
 function onTenantRangeChanged(min: Date, max: Date): void {
   tenantMeetings.ensureRange(min, max);
 }
@@ -336,14 +332,13 @@ onMounted(() => {
   tenantTimelineData.load(timelineFilters.selectedStatsTenants.value);
 });
 
-// Meetings follow the rows: the chart reports which rows are on screen, and those load first.
+// Meetings and member history follow the rows: the chart reports the rows on screen, and those load first.
 watch(ganttActive, (active) => {
   if (!active) return;
   const tenants = timelineFilters.selectedTenantForGantt.value;
   if (tenants.length === 0) return;
   ganttRows.load(tenants);
   ganttActivityRequests.load(tenants);
-  loadInitialMeetingWindow();
 }, { immediate: true });
 
 watch(() => timelineFilters.selectedStatsTenants.value, (tenantIds) => {
@@ -361,7 +356,6 @@ watch(() => timelineFilters.selectedTenantForGantt.value, (newTenants, oldTenant
   if (!ganttActive.value) return;
   ganttRows.load(newTenants);
   ganttActivityRequests.load(newTenants);
-  if (changed) loadInitialMeetingWindow();
 }, { deep: true });
 
 // --- Gantt lookup maps ------------------------------------------------------------------------

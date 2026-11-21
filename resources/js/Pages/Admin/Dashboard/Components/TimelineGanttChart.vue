@@ -23,6 +23,7 @@
         :fullscreen-active
         :loading-segments
         :agenda-loader
+        :members-pending
         :meetings-loading
         @create-meeting="$emit('create-meeting', $event)"
         @create-check-in="$emit('create-check-in', $event)"
@@ -80,6 +81,8 @@ defineProps<{
   institutionPeriodicity?: Record<string | number, number>;
   loadingSegments?: GanttLoadingSegment[];
   agendaLoader?: GanttAgendaLoader;
+  /** Rows whose member history has not arrived; not drawn as having no members. */
+  membersPending?: string[];
   /** Whether meetings are being fetched (delayed ~300ms by the caller) */
   meetingsLoading?: boolean;
   fullscreenActive?: boolean;
