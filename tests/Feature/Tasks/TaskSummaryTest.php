@@ -208,8 +208,8 @@ describe('tasks.summary scope', function (): void {
             ->and(Gate::forUser($currentReader)->allows('view', $orphan))->toBeTrue();
 
         $formerView = asUser($formerReader)->get($summary)->assertOk()->viewData('page')['props'];
-        expect($formerView['data'])->toBeEmpty()->and($formerView['linkedTask'])->toBeNull();
-        expect(Gate::forUser($formerReader)->any(['view', 'update', 'delete'], $meetingTask))->toBeFalse()
+        expect($formerView['data'])->toBeEmpty()->and($formerView['linkedTask'])->toBeNull()
+            ->and(Gate::forUser($formerReader)->any(['view', 'update', 'delete'], $meetingTask))->toBeFalse()
             ->and(Gate::forUser($formerReader)->any(['view', 'update', 'delete'], $orphan))->toBeFalse();
     });
 

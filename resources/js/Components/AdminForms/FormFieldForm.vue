@@ -103,7 +103,6 @@ import { NativeSelect } from '@/Components/ui/native-select';
 
 import MultiLocaleTiptapFormItem from './MultiLocaleTiptapFormItem.vue';
 import MultiLocaleInput from './MultiLocaleInput.vue';
-
 import FormFieldWrapper from './FormFieldWrapper.vue';
 
 const props = defineProps<{

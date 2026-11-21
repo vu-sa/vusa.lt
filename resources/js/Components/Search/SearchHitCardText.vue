@@ -16,7 +16,6 @@
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import { StatusBadge } from '@/Components/Patterns';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
-
 import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 import { useSearchHitMatches } from '@/Search/admin/Composables/useSearchHitMatches';
 

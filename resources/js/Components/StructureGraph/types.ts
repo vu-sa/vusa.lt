@@ -8,11 +8,11 @@ export type GraphLocale = keyof Localized;
 /** What a body is; its colour comes only from this (`nodeKinds.ts`), never from the data. */
 export type NodeKind = 'assembly' | 'leader' | 'council' | 'body' | 'group';
 
-export type HandleId =
-  | 'left' | 'left-top' | 'left-bottom'
-  | 'top' | 'top-left' | 'top-right'
-  | 'right' | 'right-top' | 'right-bottom'
-  | 'bottom' | 'bottom-left' | 'bottom-right';
+export type HandleId
+  = | 'left' | 'left-top' | 'left-bottom'
+    | 'top' | 'top-left' | 'top-right'
+    | 'right' | 'right-top' | 'right-bottom'
+    | 'bottom' | 'bottom-left' | 'bottom-right';
 
 export interface Point {
   x: number;

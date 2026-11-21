@@ -6,9 +6,9 @@ use App\Models\Duty;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 
-final class DutyAccessService
+final readonly class DutyAccessService
 {
-    public function __construct(private readonly ModelAuthorizer $authorizer) {}
+    public function __construct(private ModelAuthorizer $authorizer) {}
 
     public function allowsRead(User $user, Duty $duty): bool
     {

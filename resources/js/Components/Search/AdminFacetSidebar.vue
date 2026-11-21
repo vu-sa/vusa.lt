@@ -117,7 +117,6 @@ import {
 import { Button } from '@/Components/ui/button';
 import { Accordion } from '@/Components/ui/accordion';
 import { CheckboxFilter, YearFilter, FilterAccordion, getFacetIconColor } from '@/Components/Shared/Search';
-
 import type { AdminFacet, AdminSearchFilters, CollectionFacetConfig } from '@/Search/admin/Types/AdminSearchTypes';
 import { getFacetValueLabel } from '@/Search/admin/Config/collectionFacetConfig';
 

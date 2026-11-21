@@ -271,7 +271,7 @@ function methodStatements(ReflectionMethod $reflection): array
     $body = (string) preg_replace(['/\/\*.*?\*\//s', '/\/\/[^\n]*/'], '', methodBody($reflection));
     $body = Str::of($body)->after('{')->beforeLast('}')->squish()->toString();
 
-    return array_values(array_filter(array_map('trim', explode(';', $body))));
+    return array_values(array_filter(array_map(trim(...), explode(';', $body))));
 }
 
 /**
@@ -284,7 +284,7 @@ test('plain controller checks are #[Authorize] attributes', function (): void {
     foreach (appClassesIn('Http/Controllers') as $class) {
         // Helpers count too: a private `destroy(Goal|Problem $parent)` that checks its argument
         // hides the check from every public method that calls it.
-        foreach ((new ReflectionClass($class))->getMethods() as $method) {
+        foreach (new ReflectionClass($class)->getMethods() as $method) {
             if ($method->getDeclaringClass()->getName() !== $class || $method->isStatic()) {
                 continue;
             }

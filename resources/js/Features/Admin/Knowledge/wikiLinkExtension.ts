@@ -5,10 +5,10 @@ import Suggestion from '@tiptap/suggestion';
 import { createSuggestionRenderer } from '@/Components/TipTap/composables/createSuggestionRenderer';
 import type { LinkTarget, LinkTargetProvider } from '@/Components/TipTap/linkTargets';
 import type { WikiIndexEntry } from '@/Types/learning';
-
-import WikiLinkList from './WikiLinkList.vue';
 import { loadWikiLinkTargets } from '@/Search/admin/useWikiLinkTargets';
 import { searchWiki } from '@/Search/admin/wikiSearch';
+
+import WikiLinkList from './WikiLinkList.vue';
 
 export const wikiLinkPluginKey = new PluginKey('wikiLink');
 

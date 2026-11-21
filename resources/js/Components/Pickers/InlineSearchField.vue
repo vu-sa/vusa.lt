@@ -93,8 +93,8 @@ import { computed, ref, useId, watch } from 'vue';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-
 import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+
 import SearchHitRow from '../Search/SearchHitRow.vue';
 
 const props = defineProps<{

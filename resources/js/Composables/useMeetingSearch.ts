@@ -11,7 +11,6 @@ import { usePage } from '@inertiajs/vue3';
 import { useBaseSearch, type BaseSearchService } from '@/Search/core/composables/useBaseSearch';
 import { FilterUtils } from '@/Search/core/services/FilterUtils';
 import type { ProcessedSearchResult } from '@/Search/core/types';
-
 import type { MeetingSearchFilters, MeetingFacet, MeetingSearchPreferences, MeetingSearchController } from '@/Types/MeetingSearchTypes';
 import { MeetingSearchService } from '@/Search/public/MeetingSearchService';
 

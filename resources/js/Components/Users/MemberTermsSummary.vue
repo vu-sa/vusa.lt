@@ -50,7 +50,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
-
 import { termStatus, termYearSpan, type TermStatus } from '@/Utils/occupancy';
 
 interface MemberTerm {

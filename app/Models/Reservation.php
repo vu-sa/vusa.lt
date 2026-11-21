@@ -10,6 +10,7 @@ use App\Models\Traits\LogsModelActivity;
 use App\Models\Traits\LogsRelationshipChanges;
 use App\States\ReservationResource\Returned;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -34,18 +35,21 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, Comment> $comments
  * @property-read mixed $is_completed
+ * @property-read Collection<int, Tenant> $reserverTenants
+ * @property-read Collection<int, Tenant> $resourceTenants
  * @property-read ReservationResource|null $pivot
  * @property-read Collection<int, \App\Models\Resource> $resources
  * @property-read Collection<int, Comment> $rootComments
  * @property-read Collection<int, Task> $tasks
- * @property-read Collection<int, Tenant> $reserverTenants
- * @property-read Collection<int, Tenant> $resourceTenants
  * @property-read Collection<int, User> $users
+ * @property-read int|null $resource_tenants_count
+ * @property-read int|null $reserver_tenants_count
  *
  * @method static \Database\Factories\ReservationFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Reservation newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Reservation newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Reservation query()
+ * @method static Builder<static>|Reservation inTenants(array $tenantIds)
+ * @method static Builder<static>|Reservation newModelQuery()
+ * @method static Builder<static>|Reservation newQuery()
+ * @method static Builder<static>|Reservation query()
  *
  * @mixin \Eloquent
  */
@@ -112,7 +116,8 @@ class Reservation extends Model implements Commentable
      * @param  Builder<static>  $query
      * @param  array<int, int|string>  $tenantIds
      */
-    public function scopeInTenants(Builder $query, array $tenantIds): void
+    #[Scope]
+    protected function inTenants(Builder $query, array $tenantIds): void
     {
         $inTenants = fn (Builder $tenants) => $tenants->whereIn('tenants.id', $tenantIds);
 

@@ -1,8 +1,9 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
-import SearchResultListItem from '../SearchResultListItem.vue';
 import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+
+import SearchResultListItem from '../SearchResultListItem.vue';
 
 const hit = { id: 'r-1', recordId: '1', collection: 'resources', title: 'Alpha', raw: {} } as unknown as NormalizedSearchHit;
 

@@ -4,9 +4,9 @@ import { ChevronRight } from '@lucide/vue';
 
 import { deletedMemberStatus } from '@/Constants/statusIcons';
 import { documentWithMatch } from '@/Search/core/matches';
+import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 
 import SearchHitRow from '../SearchHitRow.vue';
-import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 
 const hit = {
   id: 'users-1',

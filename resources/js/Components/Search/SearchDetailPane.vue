@@ -26,8 +26,8 @@ import { computed } from 'vue';
 import { EmptyState } from '@/Components/Patterns';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import type { SearchMatchDocument } from '@/Search/core/matches';
-
 import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+
 import { previewRegistry } from './previewRegistry';
 
 const props = defineProps<{

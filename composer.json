@@ -15,7 +15,7 @@
         "intervention/image-laravel": "^4.0",
         "laravel-notification-channels/webpush": "^13.0",
         "laravel/framework": "^13.3.0",
-        "laravel/head": "^0.2",
+        "laravel/head": "^0.3",
         "laravel/reverb": "^1.7",
         "laravel/scout": "^11.1.0",
         "laravel/telescope": "^5.0",

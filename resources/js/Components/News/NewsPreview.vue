@@ -60,7 +60,6 @@ import { stripHtml } from '@/Search/admin/Utils/html';
 import type { NewsSearchResult } from '@/Search/core/types';
 import { formatDate } from '@/Utils/dateTime';
 import { localizedRoute } from '@/Utils/LocalizedRoutes';
-
 import { newsStatus } from '@/Search/admin/Utils/newsStatus';
 
 const props = defineProps<{

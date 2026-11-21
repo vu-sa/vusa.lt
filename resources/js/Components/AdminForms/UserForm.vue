@@ -215,7 +215,8 @@ import { MultiSelect } from '@/Components/ui/multi-select';
 import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
 import type { ImageData } from '@/Types/media';
 import { useDuplicateUserCheck } from '@/Components/AdminForms/useDuplicateUserCheck';
-import { LoginRecency, ModelEnum } from '@/Types/enums';
+import type { LoginRecency } from '@/Types/enums';
+import { ModelEnum } from '@/Types/enums';
 
 import FormFieldWrapper from './FormFieldWrapper.vue';
 import DuplicateUserWarning, { type DuplicateUserMatch } from './DuplicateUserWarning.vue';

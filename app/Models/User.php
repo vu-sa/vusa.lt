@@ -70,9 +70,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read InstitutionSecretary|InstitutionFollow|Dutiable|null $pivot
+ * @property-read Collection<int, Duty> $current_duties
  * @property-read Collection<int, Duty> $current_or_upcoming_duties
  * @property-read Collection<int, Tenant> $current_or_upcoming_tenants
- * @property-read Collection<int, Duty> $current_duties
  * @property-read Collection<int, Dutiable> $dutiables
  * @property-read Collection<int, Duty> $duties
  * @property-read Collection<int, Institution> $followedInstitutions
@@ -97,6 +97,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read mixed $translations
  * @property-read Collection<int, Duty> $upcoming_duties
  * @property-read int|null $tenants_count
+ * @property-read int|null $current_or_upcoming_tenants_count
  * @property-read int|null $institutions_count
  *
  * @method static \Database\Factories\UserFactory factory($count = null, $state = [])

@@ -15,7 +15,6 @@ import type {
   ResourceSearchResult,
   UserSearchResult,
 } from '@/Search/core/types';
-
 import type { NormalizedSearchHit, SearchCollectionKey } from '@/Search/admin/Utils/searchHitMappers';
 
 interface PreviewEntry {

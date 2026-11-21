@@ -84,7 +84,7 @@ function concreteModelClasses(): array
 {
     return collect(File::allFiles(app_path('Models')))
         ->map(fn (SplFileInfo $file): string => 'App\\Models\\'.Str::of($file->getRelativePathname())->beforeLast('.php')->replace('/', '\\'))
-        ->filter(fn (string $class): bool => class_exists($class) && is_subclass_of($class, Model::class) && ! (new ReflectionClass($class))->isAbstract())
+        ->filter(fn (string $class): bool => class_exists($class) && is_subclass_of($class, Model::class) && ! new ReflectionClass($class)->isAbstract())
         ->values()
         ->all();
 }
@@ -142,11 +142,11 @@ test('every rich-named column strips a script when set, or is listed', function 
         }
     }
 
-    expect($unsanitized)->toBe([]);
+    expect($unsanitized)->toBeEmpty();
 });
 
 test('every listed column still exists', function (): void {
     $known = array_keys(richColumns());
 
-    expect(array_values(array_diff([...array_keys(PLAIN_TEXT_COLUMNS), ...array_keys(SANITIZED_ELSEWHERE)], $known)))->toBe([]);
+    expect(array_values(array_diff([...array_keys(PLAIN_TEXT_COLUMNS), ...array_keys(SANITIZED_ELSEWHERE)], $known)))->toBeEmpty();
 });

@@ -21,7 +21,7 @@ const hits = [jonas, ona];
 
 const mountField = (modelValue: typeof hits = []) =>
   mount(PeopleSearchField, {
-    props: { 'modelValue': modelValue, 'onUpdate:modelValue': () => {} },
+    props: { modelValue, 'onUpdate:modelValue': () => {} },
     global: { stubs: { UserAvatar: { template: '<span class="avatar" />' } } },
   });
 

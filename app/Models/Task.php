@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Actions\ResolveTaskAudience;
 use App\Tasks\Enums\ActionType;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -38,12 +39,15 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Model|\Eloquent|null $taskable
  * @property-read Collection<int, Tenant> $tenants
  * @property-read Collection<int, User> $users
+ * @property-read int|null $tenants_count
  *
  * @method static \Database\Factories\TaskFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Task incomplete()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Task newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Task newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Task query()
+ * @method static Builder<static>|Task inTenants(array $tenantIds, array $taskableTenantIds)
+ * @method static Builder<static>|Task incomplete()
+ * @method static Builder<static>|Task newModelQuery()
+ * @method static Builder<static>|Task newQuery()
+ * @method static Builder<static>|Task query()
+ * @method static Builder<static>|Task withListingRelations()
  *
  * @mixin \Eloquent
  */
@@ -170,7 +174,8 @@ class Task extends Model
     }
 
     /** @param  Builder<static>  $query */
-    public function scopeWithListingRelations(Builder $query): void
+    #[Scope]
+    protected function withListingRelations(Builder $query): void
     {
         $query->with([
             'users:id,name,email,profile_photo_path',
@@ -188,7 +193,8 @@ class Task extends Model
      * @param  array<int, int|string>  $tenantIds
      * @param  array<class-string<Model>, array<int, int|string>>  $taskableTenantIds
      */
-    public function scopeInTenants(Builder $query, array $tenantIds, array $taskableTenantIds): void
+    #[Scope]
+    protected function inTenants(Builder $query, array $tenantIds, array $taskableTenantIds): void
     {
         $query->where(function (Builder $tasks) use ($tenantIds, $taskableTenantIds): void {
             foreach (array_keys(self::TENANT_TASKABLE_PERMISSIONS) as $type) {

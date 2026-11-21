@@ -57,7 +57,7 @@ const props = defineProps<{
   error?: string;
 }>();
 
-defineEmits<{ (e: 'remove'): void }>();
+defineEmits<(e: 'remove') => void>();
 
 const graph = defineModel<string>('graph', { required: true });
 const node = defineModel<string | null>('node', { required: true });

@@ -536,7 +536,6 @@ declare global {
       responsibility_grants?: ResponsibilityGrant[]
       types?: DutyType[]
       institution?: Institution
-      institutions?: Institution
       tenants?: Tenant
       meetings?: Meeting
       documents?: Document
@@ -589,7 +588,6 @@ declare global {
       responsibility_grants_exists: boolean
       types_exists: boolean
       institution_exists: boolean
-      institutions_exists: boolean
       ex_officio_target_duties_exists: boolean
       ex_officio_source_duties_exists: boolean
       former_names_exists: boolean
@@ -1266,6 +1264,7 @@ declare global {
       translations: unknown
       // relations
       sources?: KnowledgeItemSource[]
+      structure_nodes?: KnowledgeItemStructureNode[]
       progress?: LearningProgress[]
       audiences?: LearningAudience[]
       section?: KnowledgeSection
@@ -1279,6 +1278,7 @@ declare global {
       activities_as_subject?: Activity[]
       // counts
       sources_count: number
+      structure_nodes_count: number
       progress_count: number
       audiences_count: number
       outgoing_links_count: number
@@ -1289,6 +1289,7 @@ declare global {
       activities_as_subject_count: number
       // exists
       sources_exists: boolean
+      structure_nodes_exists: boolean
       progress_exists: boolean
       audiences_exists: boolean
       section_exists: boolean
@@ -1311,6 +1312,12 @@ declare global {
       url?: string | null
       created_at?: string | null
       updated_at?: string | null
+      checked_at?: string | null
+      check_status?: number | null
+      check_failures: boolean
+      content_version?: string | null
+      thumbnail_path?: string | null
+      thumbnail_version?: string | null
       // relations
       item?: KnowledgeItem
       document?: Document
@@ -1318,6 +1325,22 @@ declare global {
       // exists
       item_exists: boolean
       document_exists: boolean
+    }
+
+    export interface KnowledgeItemStructureNode {
+      // columns
+      id: number
+      knowledge_item_id: string
+      graph: string
+      node?: string | null
+      order: number
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      item?: KnowledgeItem
+      // counts
+      // exists
+      item_exists: boolean
     }
 
     export interface KnowledgeItemSubject {
@@ -2268,7 +2291,8 @@ declare global {
       // relations
       resources?: Resource[]
       users?: User[]
-      tenants?: Tenant
+      resource_tenants?: Tenant
+      reserver_tenants?: Tenant
       comments?: Comment[]
       root_comments?: Comment[]
       tasks?: Task[]
@@ -2974,6 +2998,7 @@ declare global {
       upcoming_duties?: Duty[]
       dutiables?: Dutiable[]
       tenants?: Tenant
+      current_or_upcoming_tenants?: Tenant
       tasks?: Task[]
       institutions?: Institution
       secretaried_institutions?: Institution[]

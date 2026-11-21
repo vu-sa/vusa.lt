@@ -7,6 +7,8 @@
  * @see .ai/rules/backend-layout.md
  */
 
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 const BACKEND_LAYOUT_AMBIENT_ACTOR_NEEDLES = [
@@ -18,8 +20,8 @@ const BACKEND_LAYOUT_AMBIENT_ACTOR_NEEDLES = [
 ];
 
 const BACKEND_LAYOUT_REQUEST_NEEDLES = [
-    'Illuminate\Http\Request',
-    'Illuminate\Foundation\Http\FormRequest',
+    Request::class,
+    FormRequest::class,
     'App\Http\Requests\\',
 ];
 

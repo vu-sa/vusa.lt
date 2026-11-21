@@ -30,7 +30,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import ResourcePreview from '@/Components/Reservations/ResourcePreview.vue';
 import type { ResourceSearchResult } from '@/Search/core/types';
-
 import { useAdminCollectionSearch } from '@/Search/admin/Composables/useAdminCollectionSearch';
 import { useResourceAvailability, type DateTimeRange } from '@/Search/admin/Composables/useResourceAvailability';
 import { normalizeHit, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';

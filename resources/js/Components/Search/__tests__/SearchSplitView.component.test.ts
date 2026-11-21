@@ -2,8 +2,9 @@ import { mount } from '@vue/test-utils';
 import { afterEach, describe, expect, it } from 'vitest';
 import { nextTick } from 'vue';
 
-import SearchSplitView from '../SearchSplitView.vue';
 import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+
+import SearchSplitView from '../SearchSplitView.vue';
 
 const hit = {
   id: 'resources-1',

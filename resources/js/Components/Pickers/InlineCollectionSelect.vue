@@ -31,7 +31,6 @@ import { ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { Button } from '@/Components/ui/button';
-
 import { useAdminCollectionSearch } from '@/Search/admin/Composables/useAdminCollectionSearch';
 import { adminCollectionToKey, normalizeHit, type MapperContext, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 import type { AdminCollection } from '@/Search/admin/Types/AdminSearchTypes';

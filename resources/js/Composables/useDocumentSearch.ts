@@ -12,7 +12,6 @@ import { useBaseSearch, type BaseSearchService } from '@/Search/core/composables
 import { FilterUtils } from '@/Search/core/services/FilterUtils';
 import { createSearchReporter } from '@/Search/core/searchReporter';
 import type { ProcessedSearchResult } from '@/Search/core/types';
-
 import { DocumentSearchService } from '@/Search/public/DocumentSearchService';
 import type { DocumentSearchFilters, DocumentSearchSort, DocumentFacet, DocumentSearchPreferences, DocumentSearchController, SearchState, SearchError } from '@/Types/DocumentSearchTypes';
 

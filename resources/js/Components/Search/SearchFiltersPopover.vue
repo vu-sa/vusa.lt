@@ -42,7 +42,6 @@ import { SlidersHorizontal } from '@lucide/vue';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
-
 import type { AdminFacet, AdminSearchFilters, CollectionFacetConfig } from '@/Search/admin/Types/AdminSearchTypes';
 
 import AdminFacetSidebar from './AdminFacetSidebar.vue';

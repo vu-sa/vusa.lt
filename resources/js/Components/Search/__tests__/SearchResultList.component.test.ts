@@ -1,8 +1,9 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
-import SearchResultList from '../SearchResultList.vue';
 import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+
+import SearchResultList from '../SearchResultList.vue';
 
 function makeHit(id: string, title: string): NormalizedSearchHit {
   return {

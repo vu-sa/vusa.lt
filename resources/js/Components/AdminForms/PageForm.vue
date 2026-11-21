@@ -325,10 +325,10 @@ import { normalizeHit, type NormalizedSearchHit } from '@/Search/admin/Utils/sea
 import { Textarea } from '@/Components/ui/textarea';
 import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
 
-import VisualOptionSelect from './VisualOptionSelect.vue';
 import { getContentType, type BlockWidth } from '../RichContent/Types';
 import RichContentFormElement from '../RichContent/RichContentFormElement.vue';
 
+import VisualOptionSelect from './VisualOptionSelect.vue';
 import TenantSelectField, { pickDefaultTenantId } from './TenantSelectField.vue';
 import TagMultiSelect from './TagMultiSelect.vue';
 import SEOPreview from './SEOPreview.vue';

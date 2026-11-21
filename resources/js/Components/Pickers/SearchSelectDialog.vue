@@ -71,7 +71,6 @@ import {
   DialogTrigger,
 } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';
-
 import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 
 const props = defineProps<{

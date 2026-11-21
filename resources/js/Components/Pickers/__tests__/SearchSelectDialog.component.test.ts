@@ -3,9 +3,9 @@ import { describe, expect, it } from 'vitest';
 import { h } from 'vue';
 
 import { commonStubs } from '@/tests/stubs';
+import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 
 import SearchSelectDialog from '../SearchSelectDialog.vue';
-import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 
 const hitA = { id: 'r-1', recordId: '1', collection: 'resources', title: 'Alpha', raw: {} } as unknown as NormalizedSearchHit;
 const hitB = { id: 'r-2', recordId: '2', collection: 'resources', title: 'Beta', raw: {} } as unknown as NormalizedSearchHit;

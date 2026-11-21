@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { KnowledgeItemKind } from '@/Types/enums';
-
 import { groupByLetter } from '@/Features/Admin/Knowledge/wikiAlphabet';
+
 import { searchWiki } from '../wikiSearch';
 
 const page = (id: string, title: string, abbreviation = '', summary = '') => ({ id, kind: KnowledgeItemKind.Term, title, abbreviation, summary, summaryHtml: summary, url: `/${id}`, thumbnailUrl: null, sectionId: null, countsInProgress: true, updatedAt: null });
