@@ -46,6 +46,7 @@
           />
           <h3 v-else class="rc-step-title mt-3 text-lg font-bold text-foreground">
             <RichContentTiptapHTML v-if="hasTiptapContent(step.title)" :json_content="step.title" />
+            <!-- v-html: sanitized on write (ContentPart::sanitizeJsonContentHtml) -->
             <span v-else-if="hasHtmlText(step.title)" v-html="step.title" />
             <template v-else>
               {{ step.title }}
@@ -69,6 +70,7 @@
               <RichContentTiptapHTML :json_content="step.text" />
             </div>
             <!-- A <div>, not a <p>: the stored HTML is itself <p>…</p>, which the SSR markup parser would split. -->
+            <!-- v-html: sanitized on write (ContentPart::sanitizeJsonContentHtml) -->
             <div v-else-if="hasHtmlText(step.text)" class="rc-step-text mt-2 text-pretty leading-relaxed text-muted-foreground" v-html="step.text" />
             <p v-else-if="step.text" class="rc-step-text mt-2 text-pretty leading-relaxed text-muted-foreground">
               {{ step.text }}

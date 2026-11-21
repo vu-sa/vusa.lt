@@ -3,23 +3,12 @@
 namespace App\Policies;
 
 use App\Enums\CRUDEnum;
-use App\Models\Meeting;
-use App\Models\Reservation;
 use App\Models\Task;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 class TaskPolicy extends ModelPolicy
 {
-    /**
-     * Mapping of taskable types to their permission resource names
-     */
-    protected array $taskablePermissionMap = [
-        Meeting::class => 'meetings',
-        Reservation::class => 'reservations',
-    ];
-
     /**
      * Determine whether the user can view any tasks (for summary page).
      * Requires tasks.read.padalinys permission.
@@ -39,25 +28,28 @@ class TaskPolicy extends ModelPolicy
     #[\Override]
     public function view(User $user, Model $task): bool
     {
-        // If user is assigned to the task, they can always view it
         if ($task->users->contains($user)) {
             return true;
         }
 
-        // Check if user has tasks.read.padalinys permission
-        if (! $this->authorizer->allows($user, 'tasks.read.padalinys')) {
+        $tenantIds = $this->authorizer->scope($user, 'tasks.read.padalinys')->tenantIds();
+        if ($tenantIds->isEmpty()) {
             return false;
         }
 
-        // Get the taskable model
-        /** @var Model|null $taskable */
-        $taskable = $task->taskable()->first();
-        if (! $taskable) {
+        $taskable = $task->loadMissing('taskable')->taskable;
+        if ($taskable === null) {
+            return $this->tenantsFor($task, 'tenants')->pluck('id')->intersect($tenantIds)->isNotEmpty();
+        }
+
+        $permission = Task::TENANT_TASKABLE_PERMISSIONS[$taskable::class] ?? null;
+        if ($permission === null) {
             return false;
         }
 
-        // Check compound authorization: user must also have permission on the taskable
-        return $this->checkTaskablePermission($user, $taskable);
+        $tenantIds = $tenantIds->intersect($this->authorizer->scope($user, $permission)->tenantIds());
+
+        return $tenantIds->isNotEmpty() && $this->tenantsFor($taskable, 'tenants')->pluck('id')->intersect($tenantIds)->isNotEmpty();
     }
 
     /**
@@ -73,46 +65,5 @@ class TaskPolicy extends ModelPolicy
         }
 
         return $this->commonChecker($user, $task, CRUDEnum::UPDATE->label());
-    }
-
-    /**
-     * Check if user has permission to view the taskable model.
-     * This implements compound authorization - user needs both task AND taskable permissions.
-     */
-    protected function checkTaskablePermission(User $user, Model $taskable): bool
-    {
-        $taskableClass = $taskable::class;
-        $resourceName = $this->taskablePermissionMap[$taskableClass] ?? null;
-
-        if (! $resourceName) {
-            // Unknown taskable type - deny access
-            return false;
-        }
-
-        $permission = $resourceName.'.read.padalinys';
-
-        // Check if user has the padalinys permission for the taskable
-        if (! $this->authorizer->allows($user, $permission)) {
-            return false;
-        }
-
-        // Get user's permissible tenants for this permission
-        $permissibleTenants = $user->tenants()
-            ->whereIn('duties.id', $this->authorizer->duties($user, $permission)->pluck('id'))
-            ->get();
-
-        // Get taskable's tenants
-        $taskableTenants = $taskable->load('tenants')->getRelation('tenants');
-
-        // Convert to collection for consistent handling
-        $taskableCollection = new Collection;
-        if ($taskableTenants instanceof Model) {
-            $taskableCollection->push($taskableTenants);
-        } elseif ($taskableTenants instanceof Collection) {
-            $taskableCollection = $taskableTenants;
-        }
-
-        // Check if any tenant matches
-        return $taskableCollection->intersect($permissibleTenants)->isNotEmpty();
     }
 }

@@ -7,7 +7,7 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Tenant;
 use App\Services\Documents\SharepointDocumentDiscovery;
-use App\Services\SharepointGraphService;
+use App\Services\Sharepoint\SharepointGraphService;
 use App\Settings\DocumentDiscoverySettings;
 use Database\Seeders\RoleDocumentManagerSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

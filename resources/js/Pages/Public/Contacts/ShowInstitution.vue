@@ -38,6 +38,7 @@
         </div>
 
         <div v-if="institution.description" class="mt-6 max-w-3xl pl-5 sm:pl-7 lg:col-span-2 lg:mt-3">
+          <!-- v-html: sanitized on write (Institution::sanitizedHtmlTranslations) -->
           <div
             :class="[
               'typography text-base leading-relaxed text-muted-foreground',

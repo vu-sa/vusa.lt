@@ -52,7 +52,9 @@ class InstitutionCheckInPolicy
 
     private function isMember(User $user, Institution $institution): bool
     {
-        return $institution->users()->whereKey($user->getKey())->exists();
+        return $user->current_or_upcoming_duties()
+            ->where('duties.institution_id', $institution->getKey())
+            ->exists();
     }
 
     /**

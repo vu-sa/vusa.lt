@@ -43,6 +43,7 @@
         @cancel="editing = false"
       />
       <template v-else>
+        <!-- v-html: sanitized on write (Comment body mutator, sanitizeCommentBody) -->
         <div v-if="comment.body" class="comment-content mt-1 max-w-none text-sm text-foreground" v-html="comment.body" />
         <CommentImages v-if="comment.images?.length" :images="comment.images" />
         <PollBlock v-if="comment.kind === 'poll' && comment.poll" :poll="comment.poll" @vote="(optionId) => $emit('vote', comment.id, optionId)" />

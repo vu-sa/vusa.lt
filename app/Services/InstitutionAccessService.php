@@ -89,7 +89,7 @@ class InstitutionAccessService
      */
     public function getUserDutyInstitutionIds(User $user): Collection
     {
-        return $user->authorization_duties()
+        return $user->current_or_upcoming_duties()
             ->whereNotNull('institution_id')
             ->pluck('institution_id')
             ->filter()
@@ -118,22 +118,6 @@ class InstitutionAccessService
     public function getAdministeredInstitutionIds(User $user): Collection
     {
         return $this->getSecretariedInstitutionIds($user);
-    }
-
-    /**
-     * Get institution IDs from all user duties (including historical).
-     * Used for the institutions collection where all user duties grant access.
-     *
-     * @return Collection<int, string> Collection of institution IDs (ULIDs)
-     */
-    public function getAllDutyInstitutionIds(User $user): Collection
-    {
-        return $user->duties()
-            ->whereNotNull('institution_id')
-            ->pluck('institution_id')
-            ->filter()
-            ->unique()
-            ->values();
     }
 
     /**

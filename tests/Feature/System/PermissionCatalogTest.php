@@ -4,6 +4,7 @@ use App\Models\Duty;
 use App\Policies\ModelPolicy;
 use App\Support\Permissions\BaselineAccess;
 use App\Support\Permissions\PermissionCatalog;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
@@ -63,8 +64,10 @@ test('combinations that grant nothing are not offered', function (string $name):
     'tasks belong to the assignee' => 'tasks.update.own',
     'users manage themselves' => 'users.read.own',
     'everyone sees their reservations' => 'reservations.read.own',
+    'participants already edit their reservations' => 'reservations.update.own',
+    'a duty would reach every past holder\'s reservations' => 'reservations.delete.own',
     'no create at own outside meetings and documents' => 'news.create.own',
-    'no duty relation behind own' => 'files.read.own',
+    'own means nothing for files' => 'files.read.own',
     'members read their institutions' => 'institutions.read.own',
     'members already read their meetings' => 'meetings.read.own',
     'permissions are only listed' => 'permissions.update.*',
@@ -73,20 +76,28 @@ test('combinations that grant nothing are not offered', function (string $name):
 
 test('what is still offered at own', function (string $name): void {
     expect(PermissionCatalog::isGrantable($name))->toBeTrue();
-})->with(['meetings.create.own', 'meetings.update.own', 'documents.create.own', 'documents.update.own', 'duties.update.own', 'goals.update.own', 'reservations.delete.own', 'settings.read.*']);
+})->with(['meetings.create.own', 'meetings.update.own', 'documents.create.own', 'documents.update.own', 'duties.update.own', 'goals.update.own', 'settings.read.*']);
 
-test('every own scope has a same-named relation on Duty, or is reserved on purpose', function (): void {
-    $reserved = ['goals'];
-
+test('own is offered only on the resources whose meaning the catalog spells out', function (): void {
     $withOwn = collect(PermissionCatalog::names())
         ->filter(fn (string $name): bool => str_ends_with($name, '.own'))
-        ->map(fn (string $name): string => Str::before($name, '.'))
-        ->unique()
-        ->reject(fn (string $resource): bool => in_array($resource, $reserved, true) || $resource === 'duties');
+        ->values()
+        ->all();
 
-    $withOwn->each(fn (string $resource) => expect(method_exists(Duty::class, $resource))
-        ->toBeTrue("{$resource} offers an own scope but Duty has no {$resource}() relation to resolve it through"));
+    expect($withOwn)->toEqualCanonicalizing([
+        'documents.create.own', 'documents.read.own', 'documents.update.own', 'documents.delete.own',
+        'dutiables.read.own', 'dutiables.update.own', 'dutiables.delete.own',
+        'duties.update.own',
+        'goals.read.own', 'goals.update.own', 'goals.delete.own',
+        'meetings.create.own', 'meetings.update.own', 'meetings.delete.own',
+    ]);
 });
+
+test('every own relation the catalog names exists on Duty', function (string $resource): void {
+    $relation = PermissionCatalog::ownRelation($resource);
+
+    expect($relation === 'duties' || (new Duty)->{$relation}() instanceof Relation)->toBeTrue();
+})->with(['duties', 'dutiables', 'meetings', 'documents']);
 
 test('meeting scope explanations and highlighted duty dates are translated without HTML', function (string $locale): void {
     app()->setLocale($locale);

@@ -14,6 +14,7 @@
       :placeholder="localizedLabel(field.placeholder, locale)" v-bind="accessibility" @update:model-value="emit('update:modelValue', String($event))" @blur="emit('validate')" />
     <Input v-else-if="field.type !== 'boolean'" :id="controlId" :model-value="textValue" :type="inputType" :step="field.type === 'number' ? 'any' : undefined"
       :placeholder="localizedLabel(field.placeholder, locale)" v-bind="accessibility" @update:model-value="updateInput" @blur="emit('validate')" />
+    <!-- v-html: sanitized on write (FormField::sanitizedHtmlTranslations) -->
     <div v-if="description" :id="`${controlId}-description`" class="typography text-sm text-muted-foreground" v-html="description" />
     <p v-if="error" :id="`${controlId}-error`" class="text-sm text-destructive" role="alert">
       {{ error }}

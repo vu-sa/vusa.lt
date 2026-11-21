@@ -47,8 +47,8 @@ jobs:
             - 'vite-plugins/**'
             - 'dev/*.mjs'
             - 'eslint*.mjs'
-            - 'scripts/typecheck-ratchet.mjs'
-            - 'scripts/__tests__/typecheck-ratchet.test.mjs'
+            - 'scripts/*.mjs'
+            - 'scripts/__tests__/*.test.mjs'
             - '.github/workflows/ci.yml'
           types:
             - 'app/Models/**'

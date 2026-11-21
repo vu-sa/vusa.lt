@@ -27,6 +27,7 @@ use App\Support\Season;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class DashboardController extends AdminController
@@ -162,8 +163,14 @@ class DashboardController extends AdminController
     {
         abort_unless($this->authorizer->allows(auth()->user(), 'institutions.read.padalinys'), 403);
 
-        // Only the fields the graph actually renders (id, name, users_count, tenant for grouping).
-        $institutions = Institution::withCount('users')->get(['id', 'name', 'tenant_id', 'is_active']);
+        $today = today();
+        $institutions = Institution::withCount([
+            'users' => fn ($query) => $query
+                ->whereDate('dutiables.start_date', '<=', $today)
+                ->where(fn ($query) => $query->whereNull('dutiables.end_date')
+                    ->orWhereDate('dutiables.end_date', '>=', $today))
+                ->select(DB::raw('count(distinct users.id)')),
+        ])->get(['id', 'name', 'tenant_id', 'is_active']);
 
         $relations = app(InstitutionRelationService::class);
         $graphs = Cache::remember('dashboard:institution-graphs:'.app()->getLocale().':'.InstitutionRelationService::version(), now()->addDay(), fn () => [

@@ -24,6 +24,7 @@ use App\Services\PostCreateRedirect;
 use App\Services\TanstackTableService;
 use App\Support\Experiments\GoalsExperiment;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -86,7 +87,7 @@ class ProblemController extends AdminController
     #[Authorize('create', Problem::class)]
     public function create(CreateProblemRequest $request)
     {
-        $tenants = GetTenantsForUpserts::execute('problems.create.padalinys', $this->authorizer);
+        $tenants = GetTenantsForUpserts::execute($request->user(), 'problems.create.padalinys', $this->authorizer);
 
         // Opened from an institution's Problemos tab: start in its padalinys, already linked, if the user may write there.
         $institution = filled($request->validated('institution'))
@@ -213,13 +214,13 @@ class ProblemController extends AdminController
      * Show the form for editing the specified resource.
      */
     #[Authorize('update', 'problem')]
-    public function edit(Problem $problem)
+    public function edit(Request $request, Problem $problem)
     {
         $problemData = $problem->load(['tenant', 'createdBy', 'responsibleUser', 'categories', 'institutions'])->toFullArray();
         $problemData['categories'] = $problem->categories->pluck('id')->toArray();
         $problemData['institutions'] = $problem->institutions->pluck('id')->toArray();
 
-        $tenants = GetTenantsForUpserts::execute('problems.update.padalinys', $this->authorizer);
+        $tenants = GetTenantsForUpserts::execute($request->user(), 'problems.update.padalinys', $this->authorizer);
 
         return Inertia::render('Admin/Problems/EditProblem', [
             'problem' => $problemData,

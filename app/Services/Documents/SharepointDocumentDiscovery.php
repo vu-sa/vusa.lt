@@ -8,7 +8,7 @@ use App\Exceptions\SharepointThrottledException;
 use App\Jobs\SyncDocumentFromSharePointJob;
 use App\Models\Document;
 use App\Models\Institution;
-use App\Services\SharepointGraphService;
+use App\Services\Sharepoint\SharepointGraphService;
 use App\Settings\DocumentDiscoverySettings;
 use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Database\DetectsLostConnections;

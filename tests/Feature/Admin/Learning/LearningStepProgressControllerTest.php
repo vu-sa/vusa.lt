@@ -37,7 +37,7 @@ test('a member cannot change progress outside their path', function (): void {
 
 test('meeting preparation cannot receive progress and returns 422', function (): void {
     $user = makeUser(Tenant::query()->firstOrFail());
-    $duty = $user->authorization_duties()->firstOrFail();
+    $duty = $user->current_or_upcoming_duties()->firstOrFail();
     $type = InstitutionType::factory()->create();
     $duty->institution->types()->attach($type);
     $step = LearningStep::factory()->meetingPrep($type)->create();

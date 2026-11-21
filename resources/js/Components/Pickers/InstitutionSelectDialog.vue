@@ -41,7 +41,7 @@ defineEmits<{
   'confirm': [hits: NormalizedSearchHit[]];
 }>();
 
-// The assignable set is scoped by whole tenants (DutyService), so filtering the
+// The assignable set is scoped by whole tenants (InstitutionQueries), so filtering the
 // institutions collection by those tenant ids reproduces it exactly while staying
 // compact even for global-scope admins.
 const baseFilterBy = computed(() => {

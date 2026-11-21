@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Rezervacijos
-last_reviewed: 2026-10-25
+last_reviewed: 2026-11-20
 tests:
   - tests/Feature/Responsibilities/ReservationHandlingTest.php
   - tests/Feature/Tasks/Subscribers/ApprovalTaskSubscriberTest.php
@@ -212,7 +212,11 @@ pakeitimai neišsaugomi ir forma parodo klaidą. Galima rezervuoti ir kitų pada
 | Atšaukti išteklių (kol neišduotas) | – | ✓ | – |
 | Tvirtinti, atmesti, išduoti, grąžinti, užbaigti | – | – | ✓, tik savo padalinio daiktus |
 | Atšaukti paskutinį veiksmą | – | – | ✓, tik savo padalinio daiktus |
-| Ištrinti rezervaciją | – | ✓ | – |
+| Ištrinti rezervaciją | – | ✓, kol nė vienas daiktas nepatvirtintas | – |
+
+Teikėjai savo rezervaciją mato visada. Kiti ją mato pagal padalinio teises: rezervacija priklauso
+jos daiktų padaliniams ir padaliniams, kuriuose teikėjai šiuo metu eina (ar netrukus pradės eiti)
+pareigas. Padalinio, kuriame teikėjas pareigas ėjo tik anksčiau, administratoriai jos nebemato.
 
 ::: warning Tik savo padalinio daiktai
 Tvirtinimo teisė tikrinama pagal **daikto** padalinį. MIF administratorius mato rezervaciją, kurioje

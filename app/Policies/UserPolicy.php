@@ -83,10 +83,7 @@ class UserPolicy extends ModelPolicy
     }
 
     /**
-     * Tenant shortnames the target belongs to but the actor does not administer.
-     *
-     * Used only to explain a refused identity change — a coordinator who is told
-     * "also belongs to VU SA" knows who to ask, whereas a bare 403 does not.
+     * Includes ended terms so a refused identity change names every tenant that blocks containment.
      *
      * @return SupportCollection<int, string>
      */

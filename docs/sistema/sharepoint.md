@@ -49,9 +49,9 @@ diskas. Veiksmas nėra imituojamas ir automatiškai nenukreipiamas į kitą disk
 
 ## Techninė informacija {#technine-informacija}
 
-- Graph sąsaja: `SharepointGraphService` (`microsoft/microsoft-graph`), diskas –
+- Graph sąsaja: `App\Services\Sharepoint\SharepointGraphService` (`microsoft/microsoft-graph`), diskas –
   `filesystems.sharepoint.vusa_drive_id`, archyvas – `archive_drive_id`.
-- Įrašų failai: `SharepointFileService`, `FileableFile`; aplankų pervadinimas –
+- Įrašų failai: `App\Services\Sharepoint\SharepointFileService`, `FileableFile`; aplankų pervadinimas –
   `UpdateSharepointFolder`; sinchronizavimas – `SyncFileableFilesJob`.
 - Apsauga: `StagingProtection::ensureSharepointIsWritable()`; platformos užklausas atskirai riboja
   `StagingReadOnlyMode`.

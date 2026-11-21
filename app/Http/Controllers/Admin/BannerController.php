@@ -92,7 +92,7 @@ class BannerController extends AdminController
     #[Authorize('create', Banner::class)]
     public function store(StoreBannerRequest $request, SyncImageMedia $syncImage, PostCreateRedirect $redirect)
     {
-        $tenants = GetTenantsForUpserts::execute('banners.create.padalinys', $this->authorizer);
+        $tenants = GetTenantsForUpserts::execute($request->user(), 'banners.create.padalinys', $this->authorizer);
 
         $banner = new Banner;
         $banner->title = $request->title;

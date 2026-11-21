@@ -125,10 +125,10 @@ class FormController extends AdminController
      * Show the form for creating a new resource.
      */
     #[Authorize('create', Form::class)]
-    public function create()
+    public function create(Request $request)
     {
         return Inertia::render('Admin/Forms/CreateForm', [
-            'assignableTenants' => GetTenantsForUpserts::execute('forms.create.padalinys', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute($request->user(), 'forms.create.padalinys', $this->authorizer),
             ...$this->fieldModelChoices(),
         ]);
     }
@@ -237,7 +237,7 @@ class FormController extends AdminController
      * Show the form for editing the specified resource.
      */
     #[Authorize('update', 'form')]
-    public function edit(Form $form)
+    public function edit(Request $request, Form $form)
     {
         return Inertia::render('Admin/Forms/EditForm', [
             'form' => [
@@ -249,7 +249,7 @@ class FormController extends AdminController
                     }),
                 'registrations_count' => $form->registrations()->count(),
             ],
-            'assignableTenants' => GetTenantsForUpserts::execute('forms.update.padalinys', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute($request->user(), 'forms.update.padalinys', $this->authorizer),
             ...$this->fieldModelChoices(),
         ]);
     }

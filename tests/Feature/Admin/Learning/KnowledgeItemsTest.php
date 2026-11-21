@@ -181,7 +181,7 @@ test('inactive articles cannot be tracked', function (): void {
 test('knowledge completion persists across term changes', function (): void {
     $this->freezeTime();
     $user = makeUser(Tenant::query()->firstOrFail());
-    grantPurpose($user->authorization_duties()->firstOrFail(), ResponsibilityPurpose::StudentRepresentation);
+    grantPurpose($user->current_or_upcoming_duties()->firstOrFail(), ResponsibilityPurpose::StudentRepresentation);
     $user->dutiables()->firstOrFail()->update(['start_date' => today()->subDays(10), 'end_date' => today()->addYear()]);
     $term = KnowledgeItem::factory()->create([]);
     $ordinary = KnowledgeItem::factory()->create();

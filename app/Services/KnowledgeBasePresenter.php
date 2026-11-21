@@ -186,7 +186,7 @@ class KnowledgeBasePresenter
      */
     public static function materials(KnowledgeItem $term, string $locale, ?User $viewer = null): array
     {
-        $mine = $viewer?->tenants()->pluck('tenants.id')->all() ?? [];
+        $mine = $viewer?->current_or_upcoming_tenants()->pluck('tenants.id')->all() ?? [];
         $isMine = fn (KnowledgeItem $page): bool => $page->tenant_id !== null && in_array($page->tenant_id, $mine, true);
 
         return KnowledgeItem::query()->active()->where('kind', KnowledgeItemKind::Material)

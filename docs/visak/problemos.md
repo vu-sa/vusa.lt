@@ -148,7 +148,7 @@ pavadinimą ar aprašymą. Susietą problemą atsieja mygtukas **Atsieti**.
 
 - Paieška ieško pavadinime ir aprašyme.
 - Greitieji filtrai: **Atviros ir vykdomos**, **Mano padalinio**, **Man priskirtos**, **Mano
-  sukurtos**.
+  sukurtos**. **Mano padalinio** apima padalinius, kuriuose turi dabartinių arba būsimų pareigų.
 - Filtrai: būsena, kategorija, padalinys.
 - Pagal nutylėjimą atveriama lentelė; padalinys rodomas iškart po pavadinimo. Lentelėje ilgi pavadinimai rodomi keliomis eilutėmis. Įvykimo ir išsprendimo datos pagal nutylėjimą paslėptos; jas galima įjungti per **Stulpeliai**. Išsaugoti stulpelių pasirinkimai išlieka.
 - Rikiavimas pagal įvykio datą (naujausios arba seniausios).

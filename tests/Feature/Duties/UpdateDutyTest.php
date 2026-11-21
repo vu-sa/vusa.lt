@@ -30,7 +30,7 @@ function updateDutyActionData(Duty $duty, array $overrides = []): array
 }
 
 test('duty update persists attributes institution and types, leaving responsibilities to the record', function (): void {
-    asUser(makeAdminUser(Tenant::query()->first()));
+    $actor = makeAdminUser(Tenant::query()->first());
     $duty = Duty::factory()->create();
     $institution = Institution::factory()->create();
     $role = Role::factory()->create();
@@ -45,7 +45,7 @@ test('duty update persists attributes institution and types, leaving responsibil
         'contacts_grouping' => 'tenant',
         'roles' => [$role->id],
         'types' => [$type->id],
-    ]));
+    ]), $actor);
 
     $updated = $duty->fresh();
     expect($updated->getTranslations('name'))->toBe(['lt' => 'Atnaujintos pareigos', 'en' => 'Updated duty'])

@@ -1,6 +1,6 @@
 <template>
   <SectionCard :title="$t('Apie pareigas')" :icon="Info">
-    <!-- eslint-disable-next-line vue/no-v-html -->
+    <!-- v-html: sanitized on write (Duty / Dutiable::sanitizedHtmlTranslations) -->
     <div
       v-if="description"
       class="text-sm text-muted-foreground max-w-none"

@@ -77,7 +77,7 @@
     <template #apie>
       <div :class="['grid gap-10', (expectedResult || evaluation) && 'xl:grid-cols-2 xl:gap-16']">
         <OverviewSection variant="home" :title="$t('entities.goal.description')" :icon="FileText">
-          <!-- eslint-disable-next-line vue/no-v-html -->
+          <!-- v-html: sanitized on write (Goal::sanitizedHtmlTranslations) -->
           <div v-if="description" class="prose prose-zinc dark:prose-invert max-w-none text-sm" v-html="description" />
           <p v-else class="text-sm italic text-muted-foreground">
             {{ $t('Aprašymas nepateiktas.') }}
@@ -91,7 +91,7 @@
             </p>
           </OverviewSection>
           <OverviewSection v-if="evaluation" variant="home" :title="$t('entities.goal.evaluation')" :icon="ClipboardCheck">
-            <!-- eslint-disable-next-line vue/no-v-html -->
+            <!-- v-html: sanitized on write (Goal::sanitizedHtmlTranslations) -->
             <div class="prose prose-zinc dark:prose-invert max-w-none text-sm" v-html="evaluation" />
           </OverviewSection>
         </div>

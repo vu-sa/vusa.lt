@@ -62,9 +62,9 @@ class GoalController extends AdminController
     }
 
     #[Authorize('create', Goal::class)]
-    public function create(): Response
+    public function create(Request $request): Response
     {
-        $tenants = GetTenantsForUpserts::execute('goals.create.padalinys', $this->authorizer)
+        $tenants = GetTenantsForUpserts::execute($request->user(), 'goals.create.padalinys', $this->authorizer)
             ->whereIn('id', GoalsExperiment::enabledTenantIds())->values();
 
         return Inertia::render('Admin/Goals/CreateGoal', [
@@ -136,10 +136,10 @@ class GoalController extends AdminController
     }
 
     #[Authorize('update', 'goal')]
-    public function edit(Goal $goal): Response
+    public function edit(Request $request, Goal $goal): Response
     {
         return Inertia::render('Admin/Goals/EditGoal', [
-            ...$this->formOptions(GetTenantsForUpserts::execute('goals.update.padalinys', $this->authorizer)
+            ...$this->formOptions(GetTenantsForUpserts::execute($request->user(), 'goals.update.padalinys', $this->authorizer)
                 ->whereIn('id', GoalsExperiment::enabledTenantIds())->values()),
             'goal' => [
                 ...$goal->toFullArray(),

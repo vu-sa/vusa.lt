@@ -6,6 +6,7 @@ use App\Models\Duty;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\DutyAccessService;
 use App\Services\InstitutionAccessService;
 use App\Services\InstitutionRelationService;
 use App\Services\MeetingAccessService;
@@ -103,6 +104,9 @@ class TypesenseScopedKeyService
                 $tenantIds = $this->getTenantIdsForPermission($user, $permission);
 
                 $filterBy = $this->buildCombinedFilterByClause($tenantIds, collect());
+                if ($collection === 'duties') {
+                    $filterBy = app(DutyAccessService::class)->searchFilter($user, $filterBy);
+                }
 
                 if (! $filterBy) {
                     continue;

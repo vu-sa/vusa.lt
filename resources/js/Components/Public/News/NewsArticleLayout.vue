@@ -78,6 +78,7 @@
     <!-- ── Body ─────────────────────────────────────────────────────────────────────────── -->
     <div class="mx-auto max-w-3xl px-5 py-12 sm:px-6 lg:py-16">
       <ReadingSizeControl>
+        <!-- v-html: sanitized on write (News short mutator) -->
         <div v-if="article.short" class="rc-lead" v-html="article.short" />
 
         <HighlightsCallout v-if="article.highlights?.length" :highlights="article.highlights as string[]" />

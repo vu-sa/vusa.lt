@@ -118,15 +118,15 @@ class DutiableController extends AdminController
     }
 
     /**
-     * Warns, without blocking, when a seat counts toward a padalinys its member does not belong to:
-     * that padalinys's admins cannot edit it (DutyPolicy::managePeople checks membership).
+     * A padalinys's admins cannot edit a quota seat if its member has no non-ended term
+     * in that padalinys (DutyPolicy::managePeople).
      */
     private function savedResponse(string $action, Duty $duty, ?int $tenantId, ?string $userId): RedirectResponse
     {
         $response = back()->with('success', $this->entityMessage($action, 'dutiable'));
         $member = $tenantId !== null && $userId !== null ? User::query()->find($userId) : null;
 
-        if ($member === null || $member->tenants()->where('tenants.id', $tenantId)->exists()) {
+        if ($member === null || $member->current_or_upcoming_tenants()->where('tenants.id', $tenantId)->exists()) {
             return $response;
         }
 

@@ -135,7 +135,7 @@
     <template #about>
       <div class="grid gap-10 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] xl:gap-16">
         <OverviewSection variant="home" :title="$t('Aprašymas')" :icon="FileText">
-          <!-- eslint-disable-next-line vue/no-v-html -->
+          <!-- v-html: sanitized on write (Duty::sanitizedHtmlTranslations) -->
           <div v-if="dutyDescriptionHtml" class="prose prose-sm dark:prose-invert max-w-none" v-html="dutyDescriptionHtml" />
           <p v-else class="text-sm text-muted-foreground">
             {{ $t('Ši pareigybė neturi aprašymo.') }}

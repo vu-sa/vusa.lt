@@ -18,9 +18,9 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Services\InstitutionActivityStatusService;
 use App\Services\InstitutionRelationService;
+use App\Services\Institutions\InstitutionQueries;
 use App\Services\InstitutionScopeResolver;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\ResourceServices\DutyService;
 use App\Settings\AtstovavimasSettings;
 use App\Settings\RepMetricSettings;
 use Illuminate\Database\Eloquent\Collection;
@@ -50,14 +50,14 @@ class AtstovavimasDashboardController extends AdminController
         // Get basic user info with duty institution IDs only
         $user = fn () => once(function () use ($request) {
             $u = $request->user();
-            $u?->loadMissing(['authorization_duties:id,name,institution_id']);
+            $u?->loadMissing(['current_or_upcoming_duties:id,name,institution_id']);
 
             return $u;
         });
 
         // Get only user's directly assigned institutions (lightweight, always loaded)
-        $userInstitutions = fn () => once(function () {
-            $institutions = DutyService::getUserInstitutionsForDashboard(activeOnly: true);
+        $userInstitutions = fn () => once(function () use ($request) {
+            $institutions = InstitutionQueries::getUserInstitutionsForDashboard($request->user(), activeOnly: true);
 
             $institutions->each(function ($institution): void {
                 $institution->meetings?->each->append(['completion_status', 'has_report', 'has_protocol', 'has_calendar_event']);
@@ -89,7 +89,7 @@ class AtstovavimasDashboardController extends AdminController
         return Inertia::render('Admin/Dashboard/ShowAtstovavimas', [
             'user' => fn () => [
                 ...$user()->withoutRelations()->toArray(),
-                'authorization_duties' => $user()->authorization_duties->map(fn ($duty) => [
+                'current_or_upcoming_duties' => $user()->current_or_upcoming_duties->map(fn ($duty) => [
                     'id' => $duty->id,
                     'institution_id' => $duty->institution_id,
                 ])->values(),
@@ -147,7 +147,7 @@ class AtstovavimasDashboardController extends AdminController
      */
     private function ownActivityRequests(User $user): array
     {
-        $institutionIds = $user->authorization_duties->pluck('institution_id')
+        $institutionIds = $user->current_or_upcoming_duties->pluck('institution_id')
             ->merge($user->secretariedInstitutions()->pluck('institutions.id'))
             ->filter()
             ->map(fn ($id) => (string) $id)
@@ -194,7 +194,7 @@ class AtstovavimasDashboardController extends AdminController
     {
         $tenantIds = $statsTenants->isNotEmpty()
             ? $statsTenants->pluck('id')
-            : Institution::query()->whereIn('id', $user->authorization_duties()->pluck('institution_id'))->pluck('tenant_id');
+            : Institution::query()->whereIn('id', $user->current_or_upcoming_duties()->pluck('institution_id'))->pluck('tenant_id');
 
         return $tenantIds
             ->intersect($ganttTenants->pluck('id'))

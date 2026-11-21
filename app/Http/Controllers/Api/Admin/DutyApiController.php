@@ -11,8 +11,8 @@ use App\Http\Requests\IndexDutyRequest;
 use App\Http\Requests\StoreDutyRequest;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Duty;
+use App\Services\DutyAccessService;
 use App\Services\DutyAssignmentService;
-use App\Services\ModelAuthorizer;
 use App\Services\TanstackTableService;
 use App\Support\CollectionFacetCounts;
 use Illuminate\Http\JsonResponse;
@@ -23,7 +23,7 @@ class DutyApiController extends ApiController
 {
     use HasTanstackTables;
 
-    public function __construct(private TanstackTableService $tableService, private ModelAuthorizer $authorizer) {}
+    public function __construct(private TanstackTableService $tableService) {}
 
     public function updateStatus(UpdateRecordActivityRequest $request, Duty $duty, SetDutyActive $update): JsonResponse
     {
@@ -33,10 +33,10 @@ class DutyApiController extends ApiController
     }
 
     #[Authorize('viewAny', Duty::class)]
-    public function index(IndexDutyRequest $request): JsonResponse
+    public function index(IndexDutyRequest $request, DutyAccessService $access): JsonResponse
     {
         $query = fn (IndexDutyRequest $request) => $this->applyTanstackFilters(
-            BuildDutyIndexQuery::execute($request, $this->authorizer),
+            BuildDutyIndexQuery::execute($request, $access),
             $request,
             $this->tableService,
             ['name', 'email'],

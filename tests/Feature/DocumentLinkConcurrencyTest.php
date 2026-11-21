@@ -3,8 +3,8 @@
 use App\Enums\DocumentStatus;
 use App\Jobs\RevokeSharepointPermissionJob;
 use App\Models\Document;
-use App\Services\DocumentSharepointSyncService;
-use App\Services\SharepointGraphService;
+use App\Services\Sharepoint\DocumentSharepointSyncService;
+use App\Services\Sharepoint\SharepointGraphService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;

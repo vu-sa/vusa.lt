@@ -274,7 +274,7 @@ paskelbtas dokumentas nepraranda nuorodos.
   `abilities.updateInstitutionIds`. Pasirinkus failą be institucijos, `ResolvePickedDocuments`
   grąžina klaidą `documents`, o ne 403.
 - Paskelbimas ir paslėpimas – tik per `UpdateDocumentStatus`, kuris eilutę skaito iš naujo su
-  `lockForUpdate()`; nuorodą saugantis `DocumentSharepointSyncService` laikosi to paties užrakto, todėl
+  `lockForUpdate()`; nuorodą saugantis `App\Services\Sharepoint\DocumentSharepointSyncService` laikosi to paties užrakto, todėl
   paslėpimas visada mato atšauktiną leidimą. Posėdžio susiejimas eina per `linkToMeeting()`; su kitu
   posėdžiu susietas dokumentas atmetamas (`StoreMeetingDocumentRequest::after()`).
 - Sąsaja: `IndexDocument.vue` – nariams Typesense archyvas (`useTypesenseCollectionSource`),

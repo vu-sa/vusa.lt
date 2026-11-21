@@ -30,6 +30,7 @@ use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use App\Settings\MeetingSettings;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -70,12 +71,12 @@ class InstitutionController extends AdminController
      * Show the form for creating a new resource.
      */
     #[Authorize('create', Institution::class)]
-    public function create()
+    public function create(Request $request)
     {
         Inertia::share('seo.title', 'Nauja institucija');
 
         return Inertia::render('Admin/People/CreateInstitution', [
-            'assignableTenants' => GetTenantsForUpserts::execute('institutions.create.padalinys', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute($request->user(), 'institutions.create.padalinys', $this->authorizer),
             'institutionTypes' => InstitutionType::query()->get(),
         ]);
     }
@@ -166,7 +167,7 @@ class InstitutionController extends AdminController
      * Show the form for editing the specified resource.
      */
     #[Authorize('update', 'institution')]
-    public function edit(Institution $institution)
+    public function edit(Request $request, Institution $institution)
     {
         $institution->load('types');
 
@@ -184,7 +185,7 @@ class InstitutionController extends AdminController
                 'public_urls' => $institution->publicUrls()->get(['id', 'url', 'locale', 'created_at']),
             ],
             'institutionTypes' => InstitutionType::query()->get(),
-            'assignableTenants' => GetTenantsForUpserts::execute('institutions.update.padalinys', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute($request->user(), 'institutions.update.padalinys', $this->authorizer),
         ]);
     }
 

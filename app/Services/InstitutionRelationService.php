@@ -9,6 +9,7 @@ use App\Models\Institution;
 use App\Models\InstitutionLink;
 use App\Models\InstitutionType;
 use App\Models\InstitutionTypeLink;
+use App\Services\Institutions\InstitutionQueries;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -209,6 +210,8 @@ class InstitutionRelationService
             'meetings.agendaItems:id,meeting_id,title,type,brought_by_students,order,is_private,public_title',
             'meetings.agendaItems.votes:id,agenda_item_id,title,decision,student_vote,student_benefit,is_main,is_consensus',
         ])->get()->merge(Institution::query()->when($activeOnly, fn ($query) => $query->active())->whereIn('id', $restrictedIds)->with($base)->get());
+
+        InstitutionQueries::hideMemberDetails($loaded);
 
         return $loaded->each(function (Institution $institution) use ($picked): void {
             $entry = $picked[$institution->id];

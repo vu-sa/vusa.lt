@@ -134,6 +134,13 @@ Jei gali matyti ir padalinio užduotis, sąraše rodomas mygtukas **Visos užduo
 | Pažymėti automatinę užduotį atlikta | – | – | – |
 | Ištrinti rankinę ar automatinę užduotį | – | – | ✓ |
 
+Posėdžio, institucijos ar rezervacijos užduotį, kuri tau nepriskirta, gali atverti turėdamas
+užduočių peržiūros teisę ir atitinkamą posėdžių, institucijų ar rezervacijų peržiūros teisę. Abi turi
+apimti bent vieną posėdžio, institucijos ar rezervacijos padalinį – užduoties padalinį lemia jos
+objektas, ne atsakingų žmonių buvusios pareigos. Atsakingi žmonės savo užduotis mato visada. Visų padalinių teisės apima ir šiuos įrašus.
+Užduotis, kurios objektas ištrintas visam laikui, lieka atsakingų žmonių dabartiniuose padaliniuose,
+kad ją būtų galima užbaigti ar ištrinti.
+
 Atsakingas už užduotį jos ištrinti negali. Ištrinti gali tik turintys užduočių trynimo teisę – ir
 automatinę užduotį, pvz., kai ji nebegali užsibaigti pati, nes ištrintas jos objektas.
 

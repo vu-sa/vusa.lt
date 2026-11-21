@@ -1,4 +1,3 @@
-<!-- eslint-disable vue/no-v-html -->
 <template>
   <component
     :is="useInertia ? Link : 'a'"
@@ -48,6 +47,7 @@
       <div v-if="showExcerpt && news.short && excerptMatch" :class="excerptClass">
         <SearchMatch :match="excerptMatch" />
       </div>
+      <!-- v-html: sanitized on write (News short mutator) -->
       <div v-else-if="showExcerpt && news.short" :class="excerptClass" v-html="unwrapLinks(news.short)" />
       <span v-if="size === 'lg' || size === 'featured'" class="mt-4 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-brand">
         {{ $t('Skaityti daugiau') }} <IFluentArrowUpRight16Regular class="size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />

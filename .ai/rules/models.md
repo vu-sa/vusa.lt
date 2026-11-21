@@ -24,7 +24,7 @@ Helpers to reach for instead of re-deriving:
 - `Tenant::main()` — the single central-office tenant (was hand-written in six places).
 - `Tenant::query()->representational()` — everything except PKP. Inside a `whereHas()` closure PHPStan only sees `Builder<Model>`, so use `whereIn('type', TenantType::representationalValues())` there.
 
-`GetTenantsForUpserts` deliberately emits `$tenant->type?->value`: its array shape goes straight to Inertia and is compared against plain strings by several callers.
+`GetTenantsForUpserts::execute($user, $permission, $authorizer)` deliberately emits `$tenant->type?->value`: its array shape goes straight to Inertia and is compared against plain strings by several callers.
 
 ## Institution governance scope is an InstitutionType flag, inherited down the type tree
 Whether an institution is one of VU SA's own bodies (`vusa`) or an external one VU SA delegates

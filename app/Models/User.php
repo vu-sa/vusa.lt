@@ -14,6 +14,7 @@ use App\Models\Traits\HasUIPreferences;
 use App\Models\Traits\LogsModelActivity;
 use App\Models\Traits\LogsRelationshipChanges;
 use App\Services\ContactSearchIndexSynchronizer;
+use App\Services\ModelAuthorizer;
 use App\Services\NotificationRouter;
 use App\Services\Typesense\SearchText;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -69,7 +70,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read InstitutionSecretary|InstitutionFollow|Dutiable|null $pivot
- * @property-read Collection<int, Duty> $authorization_duties
+ * @property-read Collection<int, Duty> $current_or_upcoming_duties
+ * @property-read Collection<int, Tenant> $current_or_upcoming_tenants
  * @property-read Collection<int, Duty> $current_duties
  * @property-read Collection<int, Dutiable> $dutiables
  * @property-read Collection<int, Duty> $duties
@@ -306,12 +308,13 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
     }
 
     /**
-     * Not ended: permissions start before the term does, on purpose. For who holds a duty, or
-     * whom to contact, use {@see current_duties()}.
+     * Duties whose terms have not ended, including terms that have yet to start because
+     * permissions start before the term does. To find who holds a duty now or whom to
+     * contact, use {@see current_duties()}.
      *
      * @return MorphToMany<Duty, $this, Dutiable, 'pivot'>
      */
-    public function authorization_duties(): MorphToMany
+    public function current_or_upcoming_duties(): MorphToMany
     {
         return $this->duties()
             ->where(fn ($query) => $query->whereNull('dutiables.end_date')
@@ -321,7 +324,7 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
     /** @return MorphToMany<Duty, $this, Dutiable, 'pivot'> */
     public function upcoming_duties(): MorphToMany
     {
-        return $this->authorization_duties()
+        return $this->current_or_upcoming_duties()
             ->whereDate('dutiables.start_date', '>', now()->toDateString());
     }
 
@@ -389,12 +392,25 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
     }
 
     /**
-     * The tenants this user belongs to, derived from *all* their duties — including
-     * ones that have ended. Most tenant-scoped authorization resolves through here.
+     * Tenants from all terms, including ended ones. Use {@see ModelAuthorizer::scope()}
+     * for permissions and {@see current_or_upcoming_tenants()} for unit membership.
+     *
+     * @return HasManyDeep<Tenant, $this>
      */
     public function tenants(): HasManyDeep
     {
-        return $this->hasManyDeepFromRelations($this->duties(), (new Duty)->institution(), (new Institution)->tenant());
+        /** @var HasManyDeep<Tenant, $this> $tenants */
+        $tenants = $this->hasManyDeepFromRelations($this->duties(), (new Duty)->institution(), (new Institution)->tenant());
+
+        return $tenants;
+    }
+
+    /** @return HasManyDeep<Tenant, $this> */
+    public function current_or_upcoming_tenants(): HasManyDeep
+    {
+        return $this->tenants()
+            ->where(fn ($query) => $query->whereNull('dutiables.end_date')
+                ->orWhereDate('dutiables.end_date', '>=', today()));
     }
 
     /** @return BelongsToMany<Task, $this> */
@@ -443,11 +459,11 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
     }
 
     /**
-     * Check if the user has a duty at a specific institution.
+     * Whether the user holds a seat there now. A former member is not, so they may follow it.
      */
     public function hasInstitution(Institution $institution): bool
     {
-        return $this->institutions()->where('institutions.id', $institution->id)->exists();
+        return $this->current_duties()->where('duties.institution_id', $institution->id)->exists();
     }
 
     public function reservations(): BelongsToMany

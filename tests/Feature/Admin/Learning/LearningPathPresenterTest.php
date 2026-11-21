@@ -106,7 +106,7 @@ test('automatic tracking is exposed before a system step is completed', function
 test('path separates document progress and groups meeting preparation by the winning audience', function (): void {
     $user = makeUser(Tenant::query()->firstOrFail());
     LearningStep::query()->update(['is_active' => false]);
-    $duty = $user->authorization_duties()->firstOrFail();
+    $duty = $user->current_or_upcoming_duties()->firstOrFail();
     $type = InstitutionType::factory()->create();
     $duty->institution->types()->attach($type);
     $action = LearningStep::factory()->create(['kind' => LearningStepKind::Action]);
@@ -131,7 +131,7 @@ test('meeting prep steps for the same institution type form one group', function
     $user = makeUser(Tenant::query()->firstOrFail());
     LearningStep::query()->update(['is_active' => false]);
     $type = InstitutionType::factory()->create();
-    $user->authorization_duties()->firstOrFail()->institution->types()->attach($type);
+    $user->current_or_upcoming_duties()->firstOrFail()->institution->types()->attach($type);
     $first = LearningStep::factory()->meetingPrep($type)->create(['order' => 1]);
     $second = LearningStep::factory()->meetingPrep($type)->create(['order' => 2]);
     $path = ResolveLearningPath::execute($user);

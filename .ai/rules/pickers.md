@@ -6,7 +6,6 @@ paths:
   - 'resources/js/Components/Search/**'
   - 'resources/js/Components/ui/single-select/**'
   - 'resources/js/Pages/Admin/**'
-  - 'resources/js/Components/**/Forms/**'
 ---
 
 # Pickers

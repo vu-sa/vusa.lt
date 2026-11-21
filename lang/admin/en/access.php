@@ -45,6 +45,7 @@ return [
     'duty_period' => 'your time in office',
     'own_institutions' => 'Own institutions, all terms',
     'own_institution_documents' => 'Own institutions',
+    'own_duties' => 'Own duties',
     'permission_scopes' => [
         'meetings' => [
             'read' => [
@@ -75,7 +76,7 @@ return [
         'dutiables' => 'Everyone sees their own duties and terms; managing other people\'s terms goes through the duty.',
         'tasks' => 'Sees and completes tasks assigned to them.',
         'comments' => 'Comments wherever they can see the record; edits their own comment within 15 minutes of writing it and deletes it any time. Whoever can edit the record deletes other people\'s.',
-        'reservations' => 'Anyone can start a reservation, sees and changes the ones they take part in, and deletes their own until it is approved.',
+        'reservations' => 'Anyone can start a reservation, sees and changes the ones they take part in, and deletes their own until any of its items is approved. These permissions cover other people\'s reservations in a unit or everywhere.',
         'users' => 'Everyone sees and edits themselves (Profile) but cannot delete themselves.',
     ],
 ];

@@ -13,7 +13,7 @@ class GetAttachableMeetingInstitutions
     /** @return Collection<int, Institution> */
     public static function execute(User $user, Meeting $meeting): Collection
     {
-        $ownIds = $user->authorization_duties()->pluck('institution_id')->filter()->unique();
+        $ownIds = $user->current_or_upcoming_duties()->pluck('institution_id')->filter()->unique();
         $relations = app(InstitutionRelationService::class);
         $relatedIds = $ownIds->flatMap(fn (string $id) => $relations->relatedTo($id)->pluck('institution_id'));
 

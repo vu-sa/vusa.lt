@@ -63,10 +63,10 @@ class CalendarController extends AdminController
      * Show the form for creating a new resource.
      */
     #[Authorize('create', Calendar::class)]
-    public function create()
+    public function create(Request $request)
     {
         return Inertia::render('Admin/Calendar/CreateCalendarEvent', [
-            'assignableTenants' => GetTenantsForUpserts::execute('calendars.create.padalinys', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute($request->user(), 'calendars.create.padalinys', $this->authorizer),
             'eventTypes' => EventType::query()->orderBy('sort_order')->get(),
             'availableTags' => Tag::orderBy('alias')->get()->map->toFullArray(),
         ]);
@@ -140,7 +140,7 @@ class CalendarController extends AdminController
             'eventTypes' => EventType::query()->orderBy('sort_order')->get(),
             'availableTags' => Tag::orderBy('alias')->get()->map->toFullArray(),
             'assignableTenants' => $canUpdate
-                ? GetTenantsForUpserts::execute('calendars.update.padalinys', $this->authorizer)
+                ? GetTenantsForUpserts::execute($request->user(), 'calendars.update.padalinys', $this->authorizer)
                 : collect([$calendar->tenant]),
             'canUpdate' => $canUpdate,
             // An event standing for a meeting is not an ordinary event: publishing it is what

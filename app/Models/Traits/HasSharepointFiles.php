@@ -3,7 +3,7 @@
 namespace App\Models\Traits;
 
 use App\Models\FileableFile;
-use App\Services\ResourceServices\SharepointFileService;
+use App\Services\Sharepoint\SharepointFileService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 

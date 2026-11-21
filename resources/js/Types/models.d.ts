@@ -2970,7 +2970,7 @@ declare global {
       previous_duties?: Duty[]
       microsoft_identities?: UserMicrosoftIdentity[]
       current_duties?: Duty[]
-      authorization_duties?: Duty[]
+      current_or_upcoming_duties?: Duty[]
       upcoming_duties?: Duty[]
       dutiables?: Dutiable[]
       tenants?: Tenant
@@ -2993,7 +2993,7 @@ declare global {
       previous_duties_count: number
       microsoft_identities_count: number
       current_duties_count: number
-      authorization_duties_count: number
+      current_or_upcoming_duties_count: number
       upcoming_duties_count: number
       dutiables_count: number
       tasks_count: number
@@ -3013,7 +3013,7 @@ declare global {
       previous_duties_exists: boolean
       microsoft_identities_exists: boolean
       current_duties_exists: boolean
-      authorization_duties_exists: boolean
+      current_or_upcoming_duties_exists: boolean
       upcoming_duties_exists: boolean
       dutiables_exists: boolean
       tasks_exists: boolean

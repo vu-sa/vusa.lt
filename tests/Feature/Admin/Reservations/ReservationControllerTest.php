@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Comment;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Reservation;
@@ -9,6 +10,7 @@ use App\Models\User;
 use App\Notifications\AssignedToResourceNotification;
 use App\States\ReservationResource\Cancelled;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
 
 pest()->use(RefreshDatabase::class);
@@ -94,6 +96,37 @@ describe('database collection API', function (): void {
             ->assertOk()
             ->assertJsonPath('data.total', 0);
     });
+
+    test("a reservation belongs to the units of its resources and of its reservers' current or upcoming terms", function (string $readerUnit, bool $visible): void {
+        [$formerTenant, $currentTenant, $incomingTenant] = Tenant::query()->whereKeyNot($this->tenant->id)->limit(3)->get()->all();
+        foreach ([
+            [$formerTenant, today()->subYear(), today()->subDay()],
+            [$currentTenant, today()->subMonth(), today()],
+            [$incomingTenant, today()->addWeek(), null],
+        ] as [$tenant, $startDate, $endDate]) {
+            $duty = Duty::factory()->for(Institution::factory()->for($tenant))->create();
+            $this->reservationManager->duties()->attach($duty, ['start_date' => $startDate, 'end_date' => $endDate]);
+        }
+
+        $reader = makeUser(match ($readerUnit) {
+            'former' => $formerTenant,
+            'current' => $currentTenant,
+            'incoming' => $incomingTenant,
+            'resource' => $this->tenant,
+        });
+        $reader->givePermissionTo(['reservations.read.padalinys', 'comments.delete.padalinys']);
+
+        asUser($reader)->get(route('reservations.show', $this->reservation))->assertStatus($visible ? 200 : 403);
+
+        $comment = Comment::factory()->for($this->reservation, 'commentable')->for($this->reservationManager)->create();
+        expect(Gate::forUser($reader)->allows('view', $comment))->toBe($visible)
+            ->and(Gate::forUser($reader)->allows('delete', $comment))->toBe($visible);
+    })->with([
+        'former reserver unit' => ['former', false],
+        'current reserver unit on its last day' => ['current', true],
+        'incoming reserver unit' => ['incoming', true],
+        'resource owner' => ['resource', true],
+    ]);
 });
 
 describe('auth: simple user', function (): void {

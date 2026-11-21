@@ -62,11 +62,13 @@
                   </p>
                   <template v-else>
                     <RichContentTiptapHTML v-if="!html" :json_content="item.content" />
+                    <!-- v-html: sanitized on write (ContentPart::sanitizeJsonContentHtml) -->
                     <div v-else class="rc-prose" v-html="item.html" />
                   </template>
                 </div>
                 <template v-else>
                   <RichContentTiptapHTML v-if="!html" :json_content="item.content" />
+                  <!-- v-html: sanitized on write (ContentPart::sanitizeJsonContentHtml) -->
                   <div v-else class="rc-prose" v-html="item.html" />
                 </template>
               </div>

@@ -1,6 +1,6 @@
 <template>
   <div v-if="description?.trim()" class="max-w-prose" data-slot="institution-about">
-    <!-- eslint-disable-next-line vue/no-v-html -- sanitised on write (Institution::sanitizedHtmlTranslations) -->
+    <!-- v-html: sanitized on write (Institution::sanitizedHtmlTranslations) -->
     <div v-if="expanded" class="prose prose-sm dark:prose-invert max-w-none text-muted-foreground" v-html="description" />
     <p v-else ref="clamped" class="line-clamp-2 text-sm text-muted-foreground">
       {{ plainText }}

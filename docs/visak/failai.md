@@ -124,7 +124,7 @@ Kas mato ir redaguoja posėdžius bei institucijas, aprašyta puslapiuose
   `SharepointFileableContract`; leidžiami tipai – `AllowedFileablesEnum`.
 - Valdiklis: `FileableFileController` (`fileableFiles.store`, `open`, `publicLink`,
   `revokePublicLink`, `destroy`); teisės – `FileableFilePolicy` (perduoda įrašo `view`/`update`).
-- Tarnyba: `SharepointFileService` (`uploadFile`, `publicLinkFor`, `revokePublicLink`,
+- Tarnyba: `App\Services\Sharepoint\SharepointFileService` (`uploadFile`, `publicLinkFor`, `revokePublicLink`,
   `folderUrlOrNull`); nuoroda – anoniminis SharePoint leidimas be galiojimo pabaigos, jo ID
   saugomas `public_link_permission_id`.
 - Aplanko nuoroda: `filesystems.sharepoint.vusa_drive_url` (`SHAREPOINT_VUSA_DRIVE_URL`); be jos

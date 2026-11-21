@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreFileableFilesRequest;
 use App\Models\FileableFile;
-use App\Services\ResourceServices\SharepointFileService;
+use App\Services\Sharepoint\SharepointFileService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\UploadedFile;

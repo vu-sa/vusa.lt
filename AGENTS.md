@@ -260,15 +260,19 @@ Public controllers extending `PublicController` should call `shareOtherLangURL()
 - `attribute_changes` column = `{attributes, old}` (auto, from `LogsActivity`); `properties` column = your `withProperties()` data.
 - Config: `config/activitylog.php` (`enabled`, `clean_after_days`, `default_except_attributes`).
 
+### Where backend code lives
+
+Actions, Services and Support each have one job; see `.ai/rules/backend-layout.md` before adding a class to `app/`.
+
 ### Common helper patterns
 
 ```php
-// Always pass both args
-GetTenantsForUpserts::execute('models.create.padalinys', $this->authorizer);
+// The controller reads the actor; actions and services take it as an argument
+GetTenantsForUpserts::execute($request->user(), 'models.create.padalinys', $this->authorizer);
 
-// Manual filtering before TanStack filters
-if ($request->filled('field')) {
-    $query->where('field', $request->field);
+// Manual filtering before TanStack filters: read validated input, never raw
+if ($request->safe()->filled('field')) {
+    $query->where('field', $request->validated('field'));
 }
 ```
 
@@ -425,6 +429,8 @@ protected function sanitizedHtmlTranslations(): array
 ```
 
 That covers every write path (mass assignment, `update()`, `setTranslations()`, factories, seeders). Do **not** add `#[\Override]` — the parent is a trait, not a class. Precedents: `Problem`, `Duty`, `Institution`, `Pivots\Dutiable`.
+
+`tests/Feature/System/RichTextSanitizationConventionTest.php` sets a `<script>` on every model column with a markup-like name and fails unless it is stripped or the column is listed there as plain text. The blocking `html-source/require-comment` lint (`scripts/eslint-html-source.mjs`) requires a `<!-- v-html: <where it is sanitized> -->` comment right before every `v-html`.
 
 **No raw identifiers in SQL.** Validate request-derived columns against `Schema::hasColumn` and use query-builder methods so the grammar quotes identifiers.
 

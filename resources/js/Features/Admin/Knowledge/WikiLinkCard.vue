@@ -6,8 +6,7 @@
   >
     <span class="flex items-start gap-4 p-4">
       <span class="min-w-0 flex-1 space-y-2">
-        <!-- Sanitized on write to bold and italic marks (HtmlSanitizerService::sanitizeInlineMarks). -->
-        <!-- eslint-disable-next-line vue/no-v-html -->
+        <!-- v-html: sanitized on write (KnowledgeItem::inlineHtmlTranslations) -->
         <span v-if="page.summaryHtml" class="block text-sm leading-relaxed text-foreground [&_b]:font-bold [&_strong]:font-bold" data-slot="wiki-link-card-summary" v-html="page.summaryHtml" />
         <span v-else class="block text-sm font-bold leading-snug text-foreground">{{ page.title }}</span>
         <abbr v-if="showAbbreviation" :title="page.title" class="inline-block border border-border px-1.5 py-px text-xs font-bold tracking-wide no-underline">{{ page.abbreviation }}</abbr>

@@ -27,19 +27,19 @@ class UpdateDuty
      *     types?: list<int>|null, ex_officio_target_duty_ids?: list<string>|null, assignable_tenants?: list<array{tenant_id: int, quota?: int|null, user_ids?: list<string>|null}>|null,
      *     is_active?: bool, former_names?: list<array{name: array<string, string|null>, used_until: string}>|null} $data
      */
-    public function execute(Duty $duty, array $data): void
+    public function execute(Duty $duty, array $data, ?User $actor = null): void
     {
-        DB::transaction(function () use ($duty, $data): void {
+        DB::transaction(function () use ($duty, $data, $actor): void {
             Institution::withTrashed()->whereIn('id', [$duty->institution_id, $data['institution_id']])
                 ->orderBy('id')->lockForUpdate()->get();
             $institutionChanged = $duty->institution_id !== $data['institution_id'];
-            if ($institutionChanged && auth()->user() === null) {
+            if ($institutionChanged && $actor === null) {
                 throw ValidationException::withMessages(['institution_id' => __('validation.outside_tenant_scope')]);
             }
             Validator::make($data, [
                 'institution_id' => [
                     'bail', 'required', 'ulid', SoftDeleteRules::existsLive('institutions'),
-                    ...($institutionChanged ? [new WithinAuthorizedTenantScope(Institution::class, 'duties.update.padalinys')] : []),
+                    ...($institutionChanged ? [new WithinAuthorizedTenantScope(Institution::class, 'duties.update.padalinys', $actor)] : []),
                 ],
             ])->validate();
             $duty->update(Arr::only($data, ['name', 'description', 'email', 'places_to_occupy', 'contacts_grouping', 'is_active']));
@@ -58,7 +58,7 @@ class UpdateDuty
             ]);
 
             if (isset($data['current_users'])) {
-                $this->assignments->syncRepresentatives($duty, $data['current_users']);
+                $this->assignments->syncRepresentatives($duty, $data['current_users'], actor: $actor);
             }
 
             SyncExOfficioTargets::execute($duty, array_values(array_filter($data['ex_officio_target_duty_ids'] ?? [])));
@@ -86,7 +86,7 @@ class UpdateDuty
             // The duty form sends only tenant and quota; a missing list must not read as "remove everyone".
             foreach ($assignableTenantsInput as $row) {
                 if (array_key_exists('user_ids', $row)) {
-                    $this->assignments->syncRepresentatives($duty, $row['user_ids'] ?? [], (int) $row['tenant_id']);
+                    $this->assignments->syncRepresentatives($duty, $row['user_ids'] ?? [], (int) $row['tenant_id'], $actor);
                 }
             }
             if ($institutionChanged || $tenantIdsChanged) {

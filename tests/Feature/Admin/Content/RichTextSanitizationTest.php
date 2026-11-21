@@ -6,6 +6,7 @@ use App\Models\ContentPart;
 use App\Models\Form;
 use App\Models\FormField;
 use App\Models\News;
+use App\Models\Tag;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -55,6 +56,16 @@ test('form field description is sanitized on write', function (): void {
     expect($field->fresh()->getTranslation('description', 'lt'))
         ->toContain('Paaiškinimas')
         ->not->toContain('javascript:');
+});
+
+test('tag description is sanitized on write', function (): void {
+    $tag = Tag::factory()->create([
+        'description' => ['lt' => '<p>Tema</p><img src=x onerror="alert(1)">'],
+    ]);
+
+    expect($tag->fresh()->getTranslation('description', 'lt'))
+        ->toContain('Tema')
+        ->not->toContain('onerror');
 });
 
 /**

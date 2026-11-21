@@ -160,7 +160,7 @@ test('term stages follow the first months and final forty five day boundaries', 
     [$user, $duty] = learningRep(start: today()->subDays($startedDaysAgo)->toDateString());
     $term = $user->dutiables()->where('duty_id', $duty->id)->firstOrFail();
     $term->update(['end_date' => today()->addDays($endsInDays)]);
-    $user->unsetRelation('authorization_duties');
+    $user->unsetRelation('current_or_upcoming_duties');
     expect(ResolveLearningPath::execute($user)->currentStage)->toBe($stage);
 })->with([
     'sixtieth day' => [60, 200, LearningStage::FirstMonths],

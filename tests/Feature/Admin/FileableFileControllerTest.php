@@ -4,7 +4,7 @@ use App\Models\FileableFile;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Tenant;
-use App\Services\SharepointGraphService;
+use App\Services\Sharepoint\SharepointGraphService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;

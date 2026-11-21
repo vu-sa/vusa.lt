@@ -584,7 +584,7 @@ describe('institutions needing attention', function (): void {
         [$user, $institution] = institutionForUserWithMeeting('2025-10-01 10:00:00');
 
         // A completed check-in ending 5 days ago should reset the activity clock,
-        // matching what the ShowAtstovavimas page computes via DutyService.
+        // matching what the ShowAtstovavimas page computes via InstitutionQueries.
         InstitutionCheckIn::factory()->create([
             'institution_id' => $institution->id,
             'user_id' => $user->id,
@@ -761,6 +761,25 @@ describe('institution graph', function (): void {
                 ->component('Admin/ShowInstitutionGraph')
                 ->where('institutions', fn ($institutions) => collect($institutions)->every(fn ($institution) => isset($institution['users_count']) && is_numeric($institution['users_count'])))
             );
+    });
+
+    test('institution graph counts distinct current members and excludes former and upcoming members', function (): void {
+        $this->freezeTime();
+        $institution = Institution::factory()->for($this->tenant)->create();
+        $duty = Duty::factory()->for($institution)->create();
+        $secondDuty = Duty::factory()->for($institution)->create();
+        $current = User::factory()->create();
+        $current->duties()->attach([$duty->id, $secondDuty->id], [
+            'start_date' => now()->subMonth(),
+            'end_date' => today(),
+        ]);
+        User::factory()->hasAttached($duty, ['start_date' => now()->subYears(3), 'end_date' => now()->subYears(2)])->create();
+        User::factory()->hasAttached($duty, ['start_date' => now()->addMonth(), 'end_date' => null])->create();
+
+        $response = asUserWithInertia($this->admin)->get(route('institutionGraph'))->assertOk();
+
+        $node = collect($response->json('props.institutions'))->firstWhere('id', $institution->id);
+        expect($node)->toMatchArray(['id' => $institution->id, 'users_count' => 1]);
     });
 });
 

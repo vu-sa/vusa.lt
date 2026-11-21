@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Pareigybės
-last_reviewed: 2026-11-09
+last_reviewed: 2026-11-21
 tests:
   - tests/Browser/CollectionTrashRefreshTest.php
   - resources/js/Components/AdminForms/__tests__/DutyForm.component.test.ts
@@ -10,6 +10,8 @@ tests:
   - tests/Feature/Permissions/DutyTypeAssignmentTest.php
   - resources/js/Pages/Admin/People/__tests__/IndexDuty.component.test.ts
   - tests/Feature/Admin/DutyMergeTest.php
+  - tests/Feature/CrossTenantDutyTest.php
+  - tests/Feature/Admin/Search/SearchVisibilityParityTest.php
   - tests/Feature/Api/Admin/DutyApiControllerTest.php
   - tests/Browser/PostCreateNavigationTest.php
   - tests/Browser/DutySeatReferenceTest.php
@@ -155,8 +157,8 @@ padalinių.
 Tokioms pareigybėms naudojamas **padalinių kvotų mechanizmas**:
 - Pareigybę sukūręs padalinys nustato, kurie kiti padaliniai gali skirti savo atstovus ir kokia
   jiems skirta vieta (kvota).
-- Fakulteto koordinatorius mato šią instituciją ir pareigybę savo sąraše kaip išorinę ir gali
-  paskirti savo fakulteto studentą, neviršydamas skirtos kvotos.
+- Fakulteto koordinatorius mato šią instituciją ir pareigybę savo sąraše kaip išorinę, gali atidaryti
+  jos puslapį peržiūrai ir paskirti savo fakulteto studentą, neviršydamas skirtos kvotos.
 - Fakulteto administratorius negali keisti pačios pareigybės pavadinimo ar kitų padalinių atstovų,
   tačiau gali valdyti savo deleguotus narius.
 
@@ -167,8 +169,8 @@ kvota)“, vieta priklauso pačios pareigybės padaliniui.
 
 - Pasirinkus jau užpildytą kvotą, laikotarpis vis tiek išsaugomas, o kvota rodoma viršyta (pvz., 4/3).
   Fakulteto koordinatoriams pilna kvota ir toliau neleidžia pridėti naujo nario.
-- Jei narys nepriklauso pasirinktam padaliniui, išsaugant parodomas įspėjimas: to padalinio
-  administratoriai šios vietos redaguoti negalės.
+- Kito padalinio administratoriai gali valdyti savo kvotai priskirtą vietą, jei narys turi tame
+  padalinyje dabartinių arba būsimų pareigų. Jei tokių pareigų nėra, išsaugant parodomas įspėjimas.
 - Prie deleguoto nario rodoma žyma **Deleguota** su padalinio pavadinimu.
 
 <ChangelogNote date="2026-10-26" title="Kvotos pasirinkimas laikotarpyje">
@@ -288,7 +290,7 @@ Kad duomenų bazėje nesidaugintų dubliuotos pareigybės:
 
 ### Pareigybių sąrašas ir filtrai {#sarasas}
 
-Pareigybių sąraše (`/mano/duties`) pateikiamos visos pasiekiamos pareigybės:
+Pareigybių sąraše (`/mano/duties`) pateikiamos visos pasiekiamos pareigybės, taip pat tos, kurias pats eini ar ėjai:
 
 - **Paieška**: galima ieškoti pagal pareigybės pavadinimą, el. paštą arba instituciją.
 - Ilgas pareigybės pavadinimas neišplečia lentelės už jos ribų; slenkant lentelę horizontaliai, veiksmų meniu lieka pasiekiamas.
@@ -462,6 +464,7 @@ ir „Atstovė taryboje“, arba dublikatas dėl rašybos klaidos), Superadminis
 |---|---|---|---|---|---|
 | Matyti savo pareigybę | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Matyti padalinio pareigybes | – | ✓ | ✓ | ✓, visų padalinių | ✓ |
+| Matyti bendras pareigybes, į kurias padalinys skiria narius | – | ✓ | ✓ | ✓ | ✓ |
 | Sukurti ir redaguoti padalinio pareigybę | – | ✓ | ✓ | ✓, visų padalinių | ✓ |
 | Priskirti narius savo padalinyje | – | ✓ | ✓ | ✓, visų padalinių | ✓ |
 | Priskirti narius pagal savo padalinio kvotą bendrose pareigybėse | – | ✓ | ✓ | ✓ | ✓ |
@@ -512,7 +515,9 @@ laikotarpyje gali turėti nurodytą papildomą kontaktinį el. paštą ar asmeni
 
 - Pareigybių administravimą reglamentuoja `DutyPolicy`.
 - `duties.read.*` leidžia matyti visas sistemos pareigybes; `duties.read.padalinys` riboja matomumą
-  iki vartotojo atstovaujamo padalinio institucijų.
+  iki vartotojo atstovaujamo padalinio institucijų ir bendrų pareigybių, kurių `assignableTenants`
+  apima tą padalinį. Sąrašą, paiešką ir įrašo atidarymą lemia ta pati taisyklė (`DutyAccessService`);
+  sąraše ir paieškoje matomos ir naudotojo eitos pareigybės.
 - Kiekvienas naudotojas, kuris bent kartą ėjo pareigybę, turi teisę peržiūrėti tos pareigybės įrašą
   (`DutyPolicy::view`).
 - `DutyPolicy::managePeople` tikrina, ar vartotojas gali priskirti ir šalinti narius: savame
@@ -540,7 +545,7 @@ laikotarpyje gali turėti nurodytą papildomą kontaktinį el. paštą ar asmeni
   naujas narys kuriamas tame pačiame `dutiables.store` užklausime (`new_user`), jei veikiantis naudotojas gali kurti narius.
 - Savęs užsirakinimo apsaugą užtikrina `AdminController::guardSelfLockout` kartu su
   `DutySelfLockoutChecker`.
-- `current_duties` tikrina ir pradžią, ir imtinę pabaigą. `authorization_duties` apima ir
+- `current_duties` tikrina ir pradžią, ir imtinę pabaigą. `current_or_upcoming_duties` apima ir
   dar neprasidėjusius laikotarpius; tai tikrina `ScheduledDutyAuthorizationTest`.
   Būsimas laikotarpis dėl to netampa dabartiniu.
 

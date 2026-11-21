@@ -9,6 +9,8 @@ import importPlugin, { createNodeResolver } from 'eslint-plugin-import-x';
 import stylistic from '@stylistic/eslint-plugin';
 import globals from 'globals';
 
+import { htmlSourcePlugin } from './scripts/eslint-html-source.mjs';
+
 const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 const sourceResolver = createNodeResolver({
   alias: { '@': [path.resolve(projectRoot, 'resources/js')] },
@@ -361,6 +363,15 @@ export default tseslint.config(
     files: MIGRATED_ADMIN_COMPONENT_PATHS,
     plugins: { 'admin-redesign': adminRedesignPlugin },
     rules: { 'admin-redesign/no-legacy-utility': 'error' },
+  },
+  {
+    files: ['resources/js/**/*.vue'],
+    ignores: ['**/__tests__/**', '**/*.stories.*'],
+    plugins: { 'html-source': htmlSourcePlugin },
+    rules: {
+      'vue/no-v-html': 'off',
+      'html-source/require-comment': 'error',
+    },
   },
   {
     files: ['resources/js/**/*.{vue,ts,tsx,js,jsx}'],

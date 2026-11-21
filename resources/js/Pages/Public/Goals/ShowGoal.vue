@@ -14,7 +14,7 @@
         </span>
       </div>
 
-      <!-- eslint-disable-next-line vue/no-v-html -->
+      <!-- v-html: sanitized on write (Goal::sanitizedHtmlTranslations) -->
       <div v-if="goal.description" class="prose prose-zinc dark:prose-invert mt-8 max-w-3xl" v-html="goal.description" />
     </SectionBand>
 
@@ -22,7 +22,7 @@
       <EyebrowLabel as="h2" class="mb-4">
         {{ $t('goals.public.evaluation') }}
       </EyebrowLabel>
-      <!-- eslint-disable-next-line vue/no-v-html -->
+      <!-- v-html: sanitized on write (Goal::sanitizedHtmlTranslations) -->
       <div class="prose prose-zinc dark:prose-invert max-w-3xl" v-html="goal.evaluation" />
     </SectionBand>
 

@@ -5,7 +5,8 @@ import type { NavFooterColumn, NavItem } from '@/Components/Public/Nav/types';
 import type { LocaleEnum, ModelEnum } from './enums';
 
 interface User extends Omit<App.Entities.User, 'tenants'> {
-  tenants: Pick<App.Entities.Tenant, 'id' | 'shortname'>[];
+  /** Units of the user's current and upcoming terms. */
+  tenants: Pick<App.Entities.Tenant, 'id' | 'shortname' | 'alias'>[];
   isSuperAdmin: boolean;
   unreadNotifications: Record<string, any>[] | null;
   unreadNotificationsCount?: number;

@@ -22,6 +22,7 @@
         </button>
         <template v-else>
           <RichContentTiptapHTML v-if="!html" :json_content="element.json_content?.quote" />
+          <!-- v-html: sanitized on render (ContentPart::renderTiptapHtml) -->
           <div v-else v-html="element.html" />
         </template>
       </blockquote>

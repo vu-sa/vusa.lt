@@ -1,4 +1,5 @@
 <template>
+  <!-- v-html: renderToHTMLString from ContentPart JSON; the schema drops unknown nodes and escapes attrs -->
   <div class="rc-prose tracking-normal" v-html="generateHTMLfromTiptap(json_content)" />
 </template>
 

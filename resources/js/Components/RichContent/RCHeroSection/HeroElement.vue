@@ -15,11 +15,13 @@
             </slot>
             <slot name="title" :title="element.json_content.title">
               <div role="heading" :aria-level="headingLevel" :class="[titleClass, titleAlignmentClass]">
+                <!-- v-html: sanitized on write (ContentPart::sanitizeJsonContentHtml) -->
                 <span v-html="element.json_content.title" />
               </div>
             </slot>
             <slot name="description" :description="element.json_content.description">
               <div v-if="hasHtmlText(element.json_content.description)" :class="descriptionClass">
+                <!-- v-html: sanitized on write (ContentPart::sanitizeJsonContentHtml) -->
                 <span v-html="element.json_content.description" />
               </div>
             </slot>
@@ -60,11 +62,13 @@
       </slot>
       <slot name="title" :title="element.json_content.title">
         <div role="heading" :aria-level="headingLevel" :class="[titleClass, titleAlignmentClass]">
+          <!-- v-html: sanitized on write (ContentPart::sanitizeJsonContentHtml) -->
           <span v-html="element.json_content.title" />
         </div>
       </slot>
       <slot name="description" :description="element.json_content.description">
         <div v-if="hasHtmlText(element.json_content.description)" :class="descriptionClass">
+          <!-- v-html: sanitized on write (ContentPart::sanitizeJsonContentHtml) -->
           <span v-html="element.json_content.description" />
         </div>
       </slot>
@@ -81,6 +85,7 @@
     <div class="max-w-6xl mx-auto px-4 relative z-10 flex flex-col items-center gap-4 text-center sm:flex-row sm:justify-between sm:text-left">
       <slot name="title" :title="element.json_content.title">
         <div role="heading" aria-level="2" :class="[titleClass, titleAlignmentClass]">
+          <!-- v-html: sanitized on write (ContentPart::sanitizeJsonContentHtml) -->
           <span v-html="element.json_content.title" />
         </div>
       </slot>
@@ -114,11 +119,13 @@
           </slot>
           <slot name="title" :title="element.json_content.title">
             <div role="heading" :aria-level="headingLevel" :class="[titleClass, titleAlignmentClass]">
+              <!-- v-html: sanitized on write (ContentPart::sanitizeJsonContentHtml) -->
               <span v-html="element.json_content.title" />
             </div>
           </slot>
           <slot name="description" :description="element.json_content.description">
             <div v-if="hasHtmlText(element.json_content.description)" :class="descriptionClass">
+              <!-- v-html: sanitized on write (ContentPart::sanitizeJsonContentHtml) -->
               <span v-html="element.json_content.description" />
             </div>
           </slot>

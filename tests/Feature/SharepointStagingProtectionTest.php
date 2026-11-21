@@ -1,7 +1,7 @@
 <?php
 
 use App\Exceptions\StagingResourceReadOnlyException;
-use App\Services\SharepointGraphService;
+use App\Services\Sharepoint\SharepointGraphService;
 use App\Support\StagingProtection;
 use Illuminate\Http\UploadedFile;
 

@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\ActivityRequests\GetUserActivityRequests;
 use App\Actions\BuildUserIndexQuery;
 use App\Actions\DeleteUserPassword;
+use App\Actions\Duties\SyncUserDuties;
 use App\Actions\FindMergeableUserDuplicates;
 use App\Actions\ForgetUserAccess;
 use App\Actions\GenerateUserPassword;
+use App\Actions\GetPermissableTenants;
+use App\Actions\GetTenantsWithDutiesForForm;
 use App\Actions\Media\SyncImageMedia;
 use App\Actions\MergeUsers;
 use App\Enums\LoginRecency;
@@ -28,10 +31,10 @@ use App\Models\StudyProgram;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
-use App\Services\ResourceServices\UserDutyService;
 use App\Services\TanstackTableService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\Auth;
@@ -101,11 +104,11 @@ class UserController extends AdminController
      * Show the form for creating a new resource.
      */
     #[Authorize('create', User::class)]
-    public function create()
+    public function create(Request $request)
     {
         return Inertia::render('Admin/People/CreateUser', [
-            'tenantsWithDuties' => UserDutyService::getTenantsWithDutiesForForm($this->authorizer),
-            'permissableTenants' => UserDutyService::getPermissableTenants($this->authorizer, 'users.create.padalinys'),
+            'tenantsWithDuties' => GetTenantsWithDutiesForForm::execute($request->user(), $this->authorizer),
+            'permissableTenants' => GetPermissableTenants::execute($request->user(), $this->authorizer, 'users.create.padalinys'),
         ]);
     }
 
@@ -125,9 +128,8 @@ class UserController extends AdminController
 
             $syncImage->fromValidated($user, 'profile_photo', $request->validated(), 'profile_photo_media', $request->user());
 
-            // Routed through the service so creation is held to the same tenant check
-            // as editing; the old raw attach() accepted duty ids from any tenant.
-            UserDutyService::syncDutiesForUser(
+            SyncUserDuties::execute(
+                $request->user(),
                 new SupportCollection($request->validated('current_duties')),
                 new SupportCollection,
                 $user,
@@ -245,11 +247,12 @@ class UserController extends AdminController
             $fields[] = 'email';
         }
 
-        $mutation = function () use ($request, $user, $currentDutyIds, $fields): void {
+        $mutation = function () use ($request, $actor, $user, $currentDutyIds, $fields): void {
             // Duties are managed on the record (Priskirti sheet), so the form no longer posts
             // them — and absent must mean "leave alone", never "remove all".
             if ($request->has('current_duties')) {
-                UserDutyService::syncDutiesForUser(
+                SyncUserDuties::execute(
+                    $actor,
                     new SupportCollection($request->current_duties ?? []),
                     $currentDutyIds,
                     $user,

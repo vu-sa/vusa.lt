@@ -10,7 +10,7 @@ use App\Models\User;
 use App\Notifications\MeetingReminderNotification;
 use App\Services\CommentableMentionResolver;
 use App\Services\InstitutionAccessService;
-use App\Services\ResourceServices\DutyService;
+use App\Services\Institutions\InstitutionQueries;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 
@@ -154,7 +154,7 @@ describe('secretaries are not members', function (): void {
     test('and it reaches their dashboard, flagged as secretary rather than held', function (): void {
         asUser($this->nominee)->get(route('dashboard.atstovavimas'));
 
-        $institutions = DutyService::getUserInstitutionsForDashboard();
+        $institutions = InstitutionQueries::getUserInstitutionsForDashboard($this->nominee);
 
         expect($institutions->pluck('id'))->toContain($this->institution->id)
             ->and($institutions->firstWhere('id', $this->institution->id)->is_secretary)->toBeTrue();
