@@ -21,6 +21,7 @@ use App\Models\FileableFile;
 use App\Models\Institution;
 use App\Models\InstitutionLink;
 use App\Models\InstitutionType;
+use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\PublicUrl;
 use App\Services\InstitutionActivityStatusService;
@@ -132,6 +133,7 @@ class InstitutionController extends AdminController
         $activityStatus = fn () => once(fn () => $this->activityStatusService->resolve($loadInstitution()));
 
         $loadMeetings = function (BelongsToMany $query): Collection {
+            /** @var Collection<int, Meeting> $meetings */
             $meetings = $query->get();
 
             foreach ($meetings as $meeting) {

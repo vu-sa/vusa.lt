@@ -296,7 +296,7 @@ class ResponsibilityResolver
             ->unique()->values()->all();
         $tenantIds = $this->tenantIdsByDuty($ownTenantDutyIds);
 
-        return $this->assignments[$purpose->value] = $grants
+        return $this->assignments[$purpose->value] = $grants->toBase()
             ->flatMap(function (ResponsibilityGrant $grant) use ($dutyIds, $tenantIds): array {
                 $ids = $dutyIds[$grant->id];
 
@@ -309,7 +309,7 @@ class ResponsibilityResolver
                     ->map(fn (SupportCollection $ids, int|string $tenantId): array => [
                         'scope_type' => ResponsibilityScope::Tenant->value,
                         'scope_id' => (string) $tenantId,
-                        'duty_ids' => $ids->all(),
+                        'duty_ids' => array_values($ids->all()),
                     ])
                     ->values()->all();
             })
