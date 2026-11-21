@@ -1,9 +1,9 @@
 /**
- * useTenantMeetings - Windowed meetings store for the tenant Gantt chart.
+ * Windowed meetings store for a Gantt chart.
  *
  * The Gantt emits the dates on screen as it scrolls or zooms; `ensureRange()` pads them, rounds
  * to whole months and fetches what is missing in chunks of at most six months, nearest the
- * middle of the view first. Meetings are deduped by id.
+ * middle of the view first. Meetings are deduped by `keyOf`.
  */
 import { computed, ref, shallowRef, type ComputedRef } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
@@ -48,7 +48,49 @@ function chunk(segment: Window): Window[] {
   return chunks;
 }
 
+interface WindowedMeetingsSource {
+  /** Endpoint plus query for one window, or null when there is nothing to fetch. */
+  request: (from: string, until: string, refresh: boolean) => { url: string; params: URLSearchParams } | null;
+  keyOf: (meeting: AtstovavimasTenantMeeting) => string;
+}
+
 export function useTenantMeetings(tenantIds: () => Array<string | number>) {
+  return useWindowedMeetings({
+    request: (from, until, refresh) => {
+      const ids = tenantIds().map(String);
+      if (ids.length === 0) return null;
+
+      const params = new URLSearchParams();
+      ids.forEach(id => params.append('tenant_ids[]', id));
+      params.set('from', from);
+      params.set('until', until);
+      if (refresh) params.set('refresh', '1');
+
+      return { url: route('api.v1.admin.visak.meetings'), params };
+    },
+    keyOf: meeting => String(meeting.id),
+  });
+}
+
+/** The overview's own and related institutions; a joint meeting appears once per institution. */
+export function useInstitutionMeetings(institutionIds: () => Array<string | number>) {
+  return useWindowedMeetings({
+    request: (from, until) => {
+      const ids = institutionIds().map(String);
+      if (ids.length === 0) return null;
+
+      const params = new URLSearchParams();
+      ids.forEach(id => params.append('institution_ids[]', id));
+      params.set('from', from);
+      params.set('to', until);
+
+      return { url: route('api.v1.admin.atstovavimas.meetings'), params };
+    },
+    keyOf: meeting => `${meeting.institution_id}:${meeting.id}`,
+  });
+}
+
+function useWindowedMeetings(source: WindowedMeetingsSource) {
   const toasts = useToasts();
 
   const meetingsById = shallowRef<Map<string, GanttMeeting>>(new Map());
@@ -112,18 +154,16 @@ export function useTenantMeetings(tenantIds: () => Array<string | number>) {
   }
 
   async function fetchWindow(window: Window, refresh = false): Promise<void> {
-    const ids = tenantIds().map(String);
-    if (ids.length === 0) return;
+    const request = source.request(
+      toNaiveDateTimeString(new Date(window.from)).slice(0, 10),
+      toNaiveDateTimeString(new Date(window.until)).slice(0, 10),
+      refresh,
+    );
+    if (!request) return;
 
     const generationAtStart = generation;
 
-    const params = new URLSearchParams();
-    ids.forEach(id => params.append('tenant_ids[]', id));
-    params.set('from', toNaiveDateTimeString(new Date(window.from)).slice(0, 10));
-    params.set('until', toNaiveDateTimeString(new Date(window.until)).slice(0, 10));
-    if (refresh) params.set('refresh', '1');
-
-    const response = await fetch(`${route('api.v1.admin.visak.meetings')}?${params}`, {
+    const response = await fetch(`${request.url}?${request.params}`, {
       headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
       credentials: 'same-origin',
     });
@@ -137,12 +177,12 @@ export function useTenantMeetings(tenantIds: () => Array<string | number>) {
       throw new Error('Unexpected meetings response shape');
     }
 
-    // The tenant selection changed while fetching — drop the stale response
+    // The selection changed while fetching — drop the stale response
     if (generationAtStart !== generation) return;
 
     const map = new Map(meetingsById.value);
     for (const meeting of json.data) {
-      map.set(String(meeting.id), {
+      map.set(source.keyOf(meeting), {
         ...meeting,
         start_time: new Date(meeting.start_time),
       });
@@ -252,7 +292,7 @@ export function useTenantMeetings(tenantIds: () => Array<string | number>) {
     }
   }
 
-  /** Drop all loaded meetings and windows (e.g. when the tenant selection changes). */
+  /** Drop all loaded meetings and windows (e.g. when the selection changes). */
   function reset(): void {
     debouncedFlush.cancel();
     pendingRange = null;

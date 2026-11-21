@@ -63,8 +63,12 @@
           :related-institutions
           :may-have-related-institutions="props.mayHaveRelatedInstitutions"
           :activity-requests="props.activityRequests ?? []"
+          :institution-has-activity
+          :loading-range="meetingsLoadingRange"
+          :meetings-loading="meetingsLoadingVisible"
           @create-meeting="actions.onGapCreateMeeting"
           @create-check-in="actions.onGapCreateCheckIn"
+          @range-changed="institutionMeetings.ensureRange"
         />
       </div>
     </section>
@@ -107,7 +111,7 @@ import { Deferred, Link } from '@inertiajs/vue3';
 import { useIntersectionObserver, useMediaQuery } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowRight, Eye } from '@lucide/vue';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 
 import { provideGanttSettings } from '@/Components/Graphs/composables/useGanttSettings';
 import { Button } from '@/Components/ui/button';
@@ -133,10 +137,11 @@ import {
   calculateInactivePeriods,
   extractDutyMembers,
 } from './utils/ganttHelpers';
-import type { AtstovavimasInstitution, AtstovavimasMeeting, AtstovavimasUser, GanttActivityRequest } from './types';
+import type { AtstovavimasInstitution, AtstovavimasUser, GanttActivityRequest } from './types';
 import { provideTimelineFilters } from './Composables/useTimelineFilters';
 import { useAtstovavimasData } from './Composables/useAtstovavimasData';
 import { useAtstovavimasActions } from './Composables/useAtstovavimasActions';
+import { useInstitutionMeetings } from './Composables/useTenantMeetings';
 import UserTimelineSection from './Components/UserTimelineSection.vue';
 import TimelineGanttSkeleton from './Components/TimelineGanttSkeleton.vue';
 import TenantScopeSelector from './Components/TenantScopeSelector.vue';
@@ -144,7 +149,9 @@ import CoordinatorSkeleton from './Components/CoordinatorSkeleton.vue';
 
 const props = defineProps<{
   user: AtstovavimasUser;
-  userInstitutions: App.Entities.Institution[];
+  userInstitutions: AtstovavimasInstitution[];
+  /** Meetings fetched first; the Gantt asks for more as it scrolls. */
+  initialMeetingsWindow: { from: string; to: string };
   relatedInstitutions?: AtstovavimasInstitution[];
   mayHaveRelatedInstitutions?: boolean;
   canViewTenantOverview: boolean;
@@ -164,9 +171,9 @@ const relatedInstitutions = computed<AtstovavimasInstitution[]>(() =>
 );
 
 // Getter keeps reactivity when an Inertia partial reload replaces the prop.
-const atstovavimasData = useAtstovavimasData(() => props.user, () => props.userInstitutions as unknown as AtstovavimasInstitution[]);
+const atstovavimasData = useAtstovavimasData(() => props.user, () => props.userInstitutions);
 const timelineFilters = provideTimelineFilters(atstovavimasData.institutions.value, []);
-const actions = useAtstovavimasActions(props.userInstitutions);
+const actions = useAtstovavimasActions(props.userInstitutions as unknown as App.Entities.Institution[]);
 
 provideGanttSettings();
 
@@ -180,18 +187,6 @@ const userScopedInstitutions = computed(() => {
 
 const userScopedInstitutionIds = computed(() =>
   new Set(userScopedInstitutions.value.map(institution => String(institution.id))),
-);
-
-function meetingBelongsToSelectedUserInstitutions(meeting: AtstovavimasMeeting): boolean {
-  if (meeting.institution_id) {
-    return userScopedInstitutionIds.value.has(String(meeting.institution_id));
-  }
-
-  return meeting.institutions?.some(institution => userScopedInstitutionIds.value.has(String(institution.id))) ?? false;
-}
-
-const userScopedMeetings = computed(() =>
-  atstovavimasData.sortedMeetings.value.filter(meetingBelongsToSelectedUserInstitutions),
 );
 
 // Followed institutions sit outside the tenant selector, which only lists the user's duty tenants.
@@ -208,11 +203,29 @@ const scopedUpcomingTotal = computed(() =>
   scopedUpcoming.value.length === props.upcomingMeetings.items.length ? props.upcomingMeetings.total : scopedUpcoming.value.length,
 );
 
-const userScopedGanttMeetings = computed(() =>
-  atstovavimasData.allUserMeetings.value.filter(meeting =>
-    userScopedInstitutionIds.value.has(String(meeting.institution_id)),
-  ),
+// Related institutions joined only once their filter is on; the store resets when the set changes.
+const shownRelatedInstitutionIds = computed(() =>
+  timelineFilters.showRelatedInstitutionsUser.value ? relatedInstitutions.value.map(institution => institution.id) : [],
 );
+
+const meetingInstitutionIds = computed(() => [
+  ...new Set([...atstovavimasData.institutions.value.map(institution => String(institution.id)), ...shownRelatedInstitutionIds.value]),
+].sort());
+
+const institutionMeetings = useInstitutionMeetings(() => meetingInstitutionIds.value);
+
+const userScopedGanttMeetings = computed(() => {
+  const shown = new Set([...userScopedInstitutionIds.value, ...shownRelatedInstitutionIds.value]);
+
+  return institutionMeetings.meetings.value.filter(meeting => shown.has(String(meeting.institution_id)));
+});
+
+const institutionHasActivity = computed(() => Object.fromEntries(
+  [...atstovavimasData.institutions.value, ...relatedInstitutions.value].map(institution => [
+    String(institution.id),
+    Boolean(institution.last_meeting_date || institution.next_meeting_date || institution.check_ins?.length),
+  ]),
+));
 
 const userScopedGaps = computed(() =>
   atstovavimasData.userGaps.value.filter(gap => userScopedInstitutionIds.value.has(String(gap.institution_id))),
@@ -254,7 +267,7 @@ const numbers = computed<OverviewNumberItem[]>(() => [
   {
     key: 'incomplete_meetings',
     label: $t('visak.overview.numbers.incomplete_meetings'),
-    value: userScopedMeetings.value.filter(meeting => meeting.completion_status === 'incomplete').length,
+    value: userScopedInstitutions.value.reduce((sum, institution) => sum + (institution.incomplete_meetings_count ?? 0), 0),
     href: route('meetings.index', { completion_status: 'incomplete' }),
     tone: 'attention',
   },
@@ -274,6 +287,50 @@ useIntersectionObserver(timelineAnchor, ([entry]) => {
     timelineVisible.value = true;
   }
 }, { rootMargin: '200px' });
+
+const ganttActive = computed(() => isAtLeastMd.value && timelineVisible.value);
+
+function loadInitialMeetingWindow(): void {
+  institutionMeetings.ensureRange(
+    new Date(`${props.initialMeetingsWindow.from}T00:00:00`),
+    new Date(`${props.initialMeetingsWindow.to}T00:00:00`),
+  );
+}
+
+watch(ganttActive, (active) => {
+  if (active) loadInitialMeetingWindow();
+}, { immediate: true });
+
+watch(meetingInstitutionIds, (ids, previous) => {
+  if (ids.join(',') === previous.join(',')) return;
+  institutionMeetings.reset();
+  if (ganttActive.value) loadInitialMeetingWindow();
+});
+
+// A meeting created or edited from the ActionWindow must show without a page reload.
+watch(actionWindow.isOpen, (open, wasOpen) => {
+  if (wasOpen && !open && ganttActive.value) void institutionMeetings.refresh();
+});
+
+const meetingsLoadingRange = computed(() => {
+  const pending = institutionMeetings.pendingWindow.value;
+  return pending ? { from: new Date(pending.from), until: new Date(pending.until) } : null;
+});
+
+// Only shown after 300ms so a fast response never flashes it.
+const meetingsLoadingVisible = ref(false);
+let meetingsLoadingTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(institutionMeetings.isFetching, (loading) => {
+  if (meetingsLoadingTimeout) clearTimeout(meetingsLoadingTimeout);
+  if (loading) {
+    meetingsLoadingTimeout = setTimeout(() => {
+      meetingsLoadingVisible.value = true;
+    }, 300);
+  }
+  else {
+    meetingsLoadingVisible.value = false;
+  }
+});
 
 const userInstitutionNames = computed(() => buildInstitutionNamesMap(userScopedInstitutions.value));
 const userInstitutionHasPublicMeetings = computed(() => buildInstitutionPublicMeetingsMap(userScopedInstitutions.value));

@@ -34,13 +34,15 @@
         :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsUser.value"
         :hide-internal-institutions="filters.hideInternalInstitutionsUser.value"
         :institution-names="allInstitutionNames" :tenant-names :institution-has-public-meetings="allInstitutionHasPublicMeetings"
+        :institution-has-activity :loading-range :meetings-loading
         :institution-periodicity="allInstitutionPeriodicity"
         :duty-members="mergedDutyMembers" :inactive-periods="mergedInactivePeriods"
         :show-duty-members="filters.showDutyMembersUser.value"
         :activity-requests :show-activity-requests="filters.showActivityRequestsUser.value"
         :empty-message="$t('Neturi tiesiogiai priskirtų institucijų')" @create-meeting="$emit('create-meeting', $event)"
         @create-check-in="$emit('create-check-in', $event)"
-        @fullscreen="toggle" />
+        @fullscreen="toggle"
+        @range-changed="(min: Date, max: Date) => $emit('range-changed', min, max)" />
     </OverviewSection>
   </FocusModeFrame>
 </template>
@@ -85,6 +87,10 @@ interface Props {
   // Flag to show related institutions filter even when data is lazy-loaded
   mayHaveRelatedInstitutions?: boolean;
   activityRequests?: GanttActivityRequest[];
+  /** Meetings arrive by window, so activity is read from the institution rows instead. */
+  institutionHasActivity?: Record<string, boolean>;
+  loadingRange?: { from: Date; until: Date } | null;
+  meetingsLoading?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -112,6 +118,7 @@ onMounted(() => {
 defineEmits<{
   'create-meeting': [payload: { institution_id: string | number; suggestedAt: Date }];
   'create-check-in': [payload: { institution_id: string | number; startDate: Date; endDate: Date }];
+  'range-changed': [min: Date, max: Date];
 }>();
 
 // In place rather than a modal, so dialogs opened from the chart stack above it.

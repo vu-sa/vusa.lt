@@ -24,6 +24,13 @@ export interface GanttActivityRequest {
   recipients_count: number;
 }
 
+export interface AtstovavimasMembershipPeriod {
+  user: { id: string; name: string; profile_photo_path: string | null };
+  duty_id: string;
+  start_date: string;
+  end_date: string | null;
+}
+
 export interface AtstovavimasInstitution {
   id: string;
   name: string;
@@ -39,8 +46,9 @@ export interface AtstovavimasInstitution {
   check_ins?: InstitutionCheckIn[];
   active_check_in?: InstitutionCheckIn | null;
   activity_status: InstitutionActivityStatus;
-  hasUpcomingMeetings?: boolean;
   upcoming_meetings_count?: number;
+  /** Over all dates, so the tile does not depend on the loaded Gantt window; null when unauthorized. */
+  incomplete_meetings_count?: number | null;
   /** Last meeting already held (ISO) */
   last_meeting_date?: string | null;
   next_meeting_date?: string | null;
@@ -57,6 +65,8 @@ export interface AtstovavimasInstitution {
   meeting_periodicity_days?: number;
   // Duty members (Gantt coverage periods); tenant timeline only
   duties?: AtstovavimasDuty[];
+  /** Overview rows carry assignment periods instead of the duty graph. */
+  membership_periods?: AtstovavimasMembershipPeriod[];
   // Related institution metadata (only present for related institutions)
   is_related?: boolean;
   relationship_direction?: 'outgoing' | 'incoming' | 'mutual';

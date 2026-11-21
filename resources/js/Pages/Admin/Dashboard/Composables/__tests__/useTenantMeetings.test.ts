@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useTenantMeetings } from '../useTenantMeetings';
+import { useInstitutionMeetings, useTenantMeetings } from '../useTenantMeetings';
 import type { AtstovavimasTenantMeeting } from '../../types';
 
 function makeMeeting(id: string, startTime: string): AtstovavimasTenantMeeting {
@@ -194,5 +194,53 @@ describe('useTenantMeetings', () => {
     store.ensureRange(new Date(2024, 0, 1), new Date(2026, 11, 31));
     await vi.advanceTimersByTimeAsync(200);
     expect(fetchedUrls).toHaveLength(0);
+  });
+});
+
+describe('useInstitutionMeetings', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    fetchedUrls.splice(0);
+    responseQueue = [];
+    mockFetch();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('asks the representative endpoint for the given institutions and window', async () => {
+    const store = useInstitutionMeetings(() => ['inst-1', 'inst-2']);
+
+    store.ensureRange(new Date(2026, 5, 15), new Date(2026, 6, 15));
+    await vi.advanceTimersByTimeAsync(200);
+
+    const url = new URL(fetchedUrls[0]!, 'http://localhost');
+    expect(url.pathname).toContain('api.v1.admin.atstovavimas.meetings');
+    expect(url.searchParams.getAll('institution_ids[]')).toEqual(['inst-1', 'inst-2']);
+    expect(url.searchParams.get('from')).toBe('2026-05-01');
+    expect(url.searchParams.get('to')).toBe('2026-08-31');
+  });
+
+  it('keeps a joint meeting once under each of its institutions', async () => {
+    const store = useInstitutionMeetings(() => ['inst-1', 'inst-2']);
+    responseQueue.push([
+      makeMeeting('joint', '2026-06-20T10:00:00'),
+      { ...makeMeeting('joint', '2026-06-20T10:00:00'), institution_id: 'inst-2' },
+    ]);
+
+    store.ensureRange(new Date(2026, 5, 15), new Date(2026, 6, 15));
+    await vi.advanceTimersByTimeAsync(200);
+
+    expect(store.meetings.value.map(meeting => meeting.institution_id)).toEqual(['inst-1', 'inst-2']);
+  });
+
+  it('does not fetch without institutions', async () => {
+    const store = useInstitutionMeetings(() => []);
+
+    store.ensureRange(new Date(2026, 5, 15), new Date(2026, 6, 15));
+    await vi.advanceTimersByTimeAsync(200);
+
+    expect(fetch).not.toHaveBeenCalled();
   });
 });

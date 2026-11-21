@@ -21,6 +21,16 @@ export function extractDutyMembers(institutions: AtstovavimasInstitution[]): Gan
   const members: GanttDutyMember[] = [];
 
   for (const institution of institutions) {
+    for (const period of (institution.membership_periods ?? [])) {
+      members.push({
+        institution_id: String(institution.id),
+        duty_id: String(period.duty_id),
+        user: { id: String(period.user.id), name: period.user.name, profile_photo_path: period.user.profile_photo_path },
+        start_date: new Date(period.start_date),
+        end_date: period.end_date ? new Date(period.end_date) : null,
+      });
+    }
+
     const inst = institution as any;
     for (const duty of (inst.duties ?? [])) {
       // Use users (all members including historical) for Gantt timeline display
