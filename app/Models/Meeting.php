@@ -10,6 +10,7 @@ use App\Enums\MeetingKind;
 use App\Enums\MeetingType;
 use App\Events\FileableNameUpdated;
 use App\Models\Pivots\AgendaItem;
+use App\Models\Pivots\Dutiable;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasPublicSearchMirror;
 use App\Models\Traits\HasSharepointFiles;
@@ -24,6 +25,7 @@ use App\Services\Typesense\MeetingSearchEngine;
 use App\Services\Typesense\SearchText;
 use App\Services\VoteStatisticsCalculator;
 use App\Support\MeetingTitle;
+use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -33,8 +35,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Laravel\Scout\Searchable;
@@ -490,8 +492,8 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
         }
     }
 
-    /** @return BelongsToMany<Duty, User> */
-    private static function dutiesHeldOn(User $user, string|Expression $date): BelongsToMany
+    /** @return MorphToMany<Duty, User, Dutiable, 'pivot'> */
+    private static function dutiesHeldOn(User $user, string|Expression $date): MorphToMany
     {
         return $user->duties()
             ->whereDate('dutiables.start_date', '<=', $date)

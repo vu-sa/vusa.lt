@@ -29,7 +29,7 @@ class AtstovavimasMeetingAgendaRequest extends AtstovavimasTenantRequest
         $dashboard = app(AtstovavimasDashboardService::class);
         $access = $tenantIds === []
             ? $dashboard->representativeInstitutionAccess($actor)
-            : $dashboard->cachedGanttInstitutionAccess($actor, array_values(array_map(intval(...), $tenantIds)), $this->boolean('refresh'));
+            : $dashboard->cachedGanttInstitutionAccess($actor, array_map(intval(...), $tenantIds), $this->boolean('refresh'));
         $institutionId = $access->keys()->first(fn (string $id): bool => strcasecmp($id, $requestedId) === 0);
         if ($institutionId === null) {
             return false;

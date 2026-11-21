@@ -25,7 +25,6 @@ class IncompleteMeetingQueries
                         ->orWhereHas('votes', self::incompleteOutcomeVote(...))))));
     }
 
-    /** @param  Builder<Vote>  $votes */
     private static function incompleteOutcomeVote(Builder $votes): void
     {
         // The first marked vote wins, even on historical items with multiple main votes.

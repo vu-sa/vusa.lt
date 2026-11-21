@@ -127,15 +127,15 @@ class MeetingApiController extends ApiController
 
         $recentMeetings = $userInstitutions
             ->flatMap(fn ($institution) => $institution->meetings
-                ?->filter(fn ($meeting) => $meeting->start_time >= $sixMonthsAgo)
+                ->filter(fn ($meeting) => $meeting->start_time >= $sixMonthsAgo)
                 ->map(fn ($meeting) => [
                     'id' => (string) $meeting->id,
                     'title' => $meeting->title,
-                    'start_time' => $meeting->start_time?->toISOString(),
+                    'start_time' => $meeting->start_time->toISOString(),
                     'institution_id' => (string) $institution->id,
                     'institution_name' => $institution->name ?? 'Unknown',
                     'agenda_items' => $meeting->agendaItems->map(fn ($item) => ['title' => AgendaItemPresenter::forUser($item, $actor)['title']])->toArray(),
-                ]) ?? collect())
+                ]))
             ->sortByDesc('start_time')
             ->unique('id')
             ->take(10)
