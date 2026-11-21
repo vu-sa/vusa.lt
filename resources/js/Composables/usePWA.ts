@@ -4,6 +4,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { toast } from 'vue-sonner';
 import type { registerSW as RegisterSW } from 'virtual:pwa-register';
 
+import { apiRequest } from '@/Composables/apiRequest';
 import { describeDevice } from '@/Utils/pushDevice';
 
 /**
@@ -90,7 +91,7 @@ function checkPWAMode(): boolean {
   return (
     window.matchMedia('(display-mode: standalone)').matches
     || window.matchMedia('(display-mode: minimal-ui)').matches
-    || (window.navigator as any).standalone === true // iOS Safari
+    || (window.navigator as Navigator & { standalone?: boolean }).standalone === true // iOS Safari
   );
 }
 
@@ -112,10 +113,6 @@ function updatePWACookie(): void {
   if (currentValue !== cookieValue) {
     document.cookie = `pwa_mode=${cookieValue}; path=/; max-age=${maxAge}; SameSite=Lax`;
   }
-}
-
-function getCsrfToken(): string {
-  return (usePage().props.csrf_token as string) || '';
 }
 
 function getVapidKey(): string | null {
@@ -148,21 +145,17 @@ async function subscribeRegistration(registration: ServiceWorkerRegistration, va
   const subscriptionJson = subscription.toJSON() as PushSubscriptionJSON;
 
   // PushEncryptionKeyName tells the server which encryption format to use
-  const response = await fetch(route('api.v1.admin.pushSubscriptions.store'), {
+  const response = await apiRequest(route('api.v1.admin.pushSubscriptions.store'), {
     method: 'POST',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      'X-CSRF-TOKEN': getCsrfToken(),
-    },
-    body: JSON.stringify({
+    body: {
       endpoint: subscriptionJson.endpoint,
       keys: subscriptionJson.keys,
       contentEncoding: (PushManager as unknown as { supportedContentEncodings?: string[] }).supportedContentEncodings?.[0] || 'aes128gcm',
       deviceName: describeDevice(navigator.userAgent),
-    }),
+    },
   });
 
+  if (response.status === 0) throw new TypeError(response.message ?? 'Network error');
   if (!response.ok) {
     throw new Error(`Server returned ${response.status}`);
   }
@@ -170,16 +163,13 @@ async function subscribeRegistration(registration: ServiceWorkerRegistration, va
   return subscriptionJson;
 }
 
-function destroySubscription(endpoint: string): Promise<Response> {
-  return fetch(route('api.v1.admin.pushSubscriptions.destroy'), {
+async function destroySubscription(endpoint: string) {
+  const result = await apiRequest(route('api.v1.admin.pushSubscriptions.destroy'), {
     method: 'DELETE',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      'X-CSRF-TOKEN': getCsrfToken(),
-    },
-    body: JSON.stringify({ endpoint }),
+    body: { endpoint },
   });
+  if (result.status === 0) throw new TypeError(result.message ?? 'Network error');
+  return result;
 }
 
 const RELOAD_FALLBACK_MS = 3000;
@@ -305,7 +295,7 @@ export function usePWA() {
     }
     // Fall back to checking if current browser's endpoint is in server list
     const page = usePage();
-    const endpoints = (page.props.pwa as any)?.subscriptionEndpoints ?? [];
+    const endpoints = (page.props.pwa as { subscriptionEndpoints?: string[] } | undefined)?.subscriptionEndpoints ?? [];
     if (currentBrowserEndpoint.value && endpoints.length > 0) {
       return endpoints.includes(currentBrowserEndpoint.value);
     }
@@ -316,7 +306,7 @@ export function usePWA() {
   // Check if ANY device has push subscription (for showing device management)
   const hasAnyPushSubscription = computed(() => {
     const page = usePage();
-    return (page.props.pwa as any)?.hasPushSubscription ?? false;
+    return (page.props.pwa as { hasPushSubscription?: boolean } | undefined)?.hasPushSubscription ?? false;
   });
 
   // Check current browser's subscription status and store endpoint
@@ -339,7 +329,7 @@ export function usePWA() {
 
     // Fallback: check against server-side endpoints
     const page = usePage();
-    const endpoints = (page.props.pwa as any)?.subscriptionEndpoints ?? [];
+    const endpoints = (page.props.pwa as { subscriptionEndpoints?: string[] } | undefined)?.subscriptionEndpoints ?? [];
     if (currentBrowserEndpoint.value) {
       currentBrowserSubscribed.value = endpoints.includes(currentBrowserEndpoint.value);
     }
@@ -476,13 +466,8 @@ export function usePWA() {
   // Remove a subscription by ID (for device management)
   const removeSubscriptionById = async (id: number): Promise<boolean> => {
     try {
-      const response = await fetch(route('api.v1.admin.pushSubscriptions.destroyById', { id }), {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': getCsrfToken(),
-        },
-      });
+      const response = await apiRequest(route('api.v1.admin.pushSubscriptions.destroyById', { id }), { method: 'DELETE' });
+      if (response.status === 0) throw new TypeError(response.message ?? 'Network error');
 
       if (!response.ok) {
         console.error('[PWA] Failed to remove subscription:', response.status);
@@ -506,21 +491,16 @@ export function usePWA() {
   // Fetch all push subscriptions for device management
   const fetchPushSubscriptions = async (): Promise<PushSubscriptionDevice[]> => {
     try {
-      const response = await fetch(route('api.v1.admin.pushSubscriptions.index'), {
-        headers: {
-          'Accept': 'application/json',
-          'X-CSRF-TOKEN': getCsrfToken(),
-        },
-      });
+      const response = await apiRequest<PushSubscriptionDevice[]>(route('api.v1.admin.pushSubscriptions.index'));
+      if (response.status === 0) throw new TypeError(response.message ?? 'Network error');
 
       if (!response.ok) {
         console.error('[PWA] Failed to fetch subscriptions:', response.status);
         return [];
       }
 
-      // ApiResponses shape: { success, data }.
-      const payload = await response.json() as { data?: PushSubscriptionDevice[] };
-      const subscriptions = payload.data ?? [];
+      if (response.body === null) throw new SyntaxError('Unexpected end of JSON input');
+      const subscriptions = response.data ?? [];
 
       // Mark which subscription belongs to current browser
       if (currentBrowserEndpoint.value) {
@@ -549,10 +529,10 @@ export function usePWA() {
 
     try {
       if (count > 0) {
-        await (navigator as any).setAppBadge(count);
+        await navigator.setAppBadge(count);
       }
       else {
-        await (navigator as any).clearAppBadge();
+        await navigator.clearAppBadge();
       }
       return true;
     }
@@ -572,7 +552,7 @@ export function usePWA() {
     }
 
     try {
-      await (navigator as any).clearAppBadge();
+      await navigator.clearAppBadge();
       return true;
     }
     catch (error) {

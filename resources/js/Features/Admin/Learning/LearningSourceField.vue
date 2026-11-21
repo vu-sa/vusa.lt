@@ -116,6 +116,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Search, X } from '@lucide/vue';
 import { computed, nextTick, reactive } from 'vue';
 
+import { apiRequest } from '@/Composables/apiRequest';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import { FormSegmentedControl, StatusBadge, type FormSegmentOption } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
@@ -217,10 +218,11 @@ async function search(locale: LocaleKey): Promise<void> {
   open[locale] = true;
   searching[locale] = true;
   try {
-    const response = await fetch(route('knowledgeItems.documentSearch', { q: queries[locale].trim() }), { headers: { Accept: 'application/json' } });
-    if (response.ok) {
-      const data = await response.json();
-      results[locale] = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
+    const result = await apiRequest<LearningDocumentSearchHit[]>(route('knowledgeItems.documentSearch', { q: queries[locale].trim() }));
+    if (result.status === 0) throw new TypeError(result.message ?? 'Network error');
+    if (result.ok) {
+      if (result.body === null) throw new SyntaxError('Unexpected end of JSON input');
+      results[locale] = Array.isArray(result.data) ? result.data : [];
     }
   }
   finally {

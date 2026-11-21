@@ -1,20 +1,8 @@
-/**
- * Owns the lifecycle of an agenda item's private collaborative notes document.
- *
- * Responsibilities:
- *  - hold the single `Y.Doc` + awareness shared by the (sidebar/dialog) editor,
- *  - connect it to the Reverb presence channel via {@link ReverbYjsProvider},
- *  - hydrate the durable snapshot from the API and persist debounced snapshots,
- *  - expose the live participant list and a save-status indicator.
- *
- * Created once per page so the doc survives the editor remounting when the user
- * toggles between the sidebar and the expanded dialog.
- */
 import { onScopeDispose, ref, shallowRef } from 'vue';
-import { usePage } from '@inertiajs/vue3';
 import { Awareness } from 'y-protocols/awareness';
 import * as Y from 'yjs';
 
+import { apiRequest } from '@/Composables/apiRequest';
 import { ReverbYjsProvider } from '@/Composables/useYjsReverbProvider';
 
 export type NotesSaveStatus = 'idle' | 'saving' | 'saved' | 'dirty';
@@ -51,8 +39,11 @@ function colorForUser(id: string | number): string {
   return palette[Math.abs(hash)];
 }
 
-function csrfToken(): string {
-  return ((usePage().props as { csrf_token?: string }).csrf_token) ?? '';
+interface StoredNote {
+  yjs_state?: string | null;
+  notes_html?: string | null;
+  version?: number | null;
+  representatives?: NotesMentionUser[];
 }
 
 export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUser) {
@@ -108,11 +99,7 @@ export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUse
     return bytes;
   }
 
-  /**
-   * Persist the current snapshot. Pass `keepalive` from unload/visibility
-   * handlers so the request reliably completes even as the page goes away
-   * (keepalive preserves our PUT + CSRF header, unlike sendBeacon).
-   */
+  /** Keepalive lets the versioned PUT outlive the page. */
   async function persist(opts: { keepalive?: boolean } = {}): Promise<void> {
     if (destroyed) {
       return;
@@ -124,32 +111,25 @@ export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUse
     saving = true;
     saveStatus.value = 'saving';
     try {
-      const response = await fetch(route('api.v1.admin.agendaItems.note.update', agendaItemId), {
+      const result = await apiRequest<StoredNote>(route('api.v1.admin.agendaItems.note.update', agendaItemId), {
         method: 'PUT',
-        credentials: 'same-origin',
         keepalive: opts.keepalive ?? false,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-          'X-CSRF-TOKEN': csrfToken(),
-        },
-        body: JSON.stringify({
+        body: {
           yjs_state: bytesToBase64(Y.encodeStateAsUpdate(doc)),
           notes_html: currentHtml,
           base_version: baseVersion,
-        }),
+        },
       });
-      if (response.status === 409) {
-        mergeStoredState(await response.json());
+      if (result.status === 409 && result.body !== null) {
+        mergeStoredState(result.body as { data?: StoredNote });
         return;
       }
-      if (response.ok) {
+      if (result.ok) {
         dirty = false;
-        const version = (await response.json())?.data?.version;
+        const version = result.data?.version;
         baseVersion = typeof version === 'number' ? version : baseVersion;
       }
-      saveStatus.value = response.ok ? 'saved' : 'dirty';
+      saveStatus.value = result.ok && result.body !== null ? 'saved' : 'dirty';
     }
     catch {
       saveStatus.value = 'dirty';
@@ -164,7 +144,7 @@ export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUse
   }
 
   /** Someone saved since this doc's version: merge their state (a CRDT merge keeps both) and save the union. */
-  function mergeStoredState(json: { data?: { yjs_state?: string | null; version?: number } } | null): void {
+  function mergeStoredState(json: { data?: StoredNote }): void {
     const state = json?.data?.yjs_state;
     if (state) {
       Y.applyUpdate(doc, base64ToBytes(state), HYDRATE_ORIGIN);
@@ -208,24 +188,19 @@ export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUse
     isHydrating.value = true;
     loadFailed.value = false;
     try {
-      const response = await fetch(route('api.v1.admin.agendaItems.note.show', agendaItemId), {
-        credentials: 'same-origin',
-        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-      });
-      if (response.ok) {
-        const json = await response.json();
-        const state = json?.data?.yjs_state as string | null | undefined;
-        if (state) {
-          Y.applyUpdate(doc, base64ToBytes(state), HYDRATE_ORIGIN);
+      const { ok, data, body } = await apiRequest<StoredNote>(route('api.v1.admin.agendaItems.note.show', agendaItemId));
+      if (ok && body !== null) {
+        if (data?.yjs_state) {
+          Y.applyUpdate(doc, base64ToBytes(data.yjs_state), HYDRATE_ORIGIN);
         }
-        if (typeof json?.data?.notes_html === 'string') {
-          notesHtml.value = json.data.notes_html;
-          currentHtml = json.data.notes_html;
+        if (typeof data?.notes_html === 'string') {
+          notesHtml.value = data.notes_html;
+          currentHtml = data.notes_html;
         }
-        if (Array.isArray(json?.data?.representatives)) {
-          representatives.value = json.data.representatives;
+        if (Array.isArray(data?.representatives)) {
+          representatives.value = data.representatives;
         }
-        baseVersion = typeof json?.data?.version === 'number' ? json.data.version : null;
+        baseVersion = typeof data?.version === 'number' ? data.version : null;
       }
       else {
         loadFailed.value = true;

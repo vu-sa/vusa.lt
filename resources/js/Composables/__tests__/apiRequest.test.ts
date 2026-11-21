@@ -20,7 +20,7 @@ function respond(body: unknown, status = 200) {
 }
 
 function sentInit(): RequestInit & { headers: Record<string, string> } {
-  return mockFetch.mock.calls[0][1];
+  return mockFetch.mock.calls[0]?.[1];
 }
 
 describe('apiRequest', () => {
@@ -132,6 +132,6 @@ describe('apiRequest', () => {
     const { calls } = vi.mocked(toast.error).mock;
     expect(calls).toHaveLength(2);
     expect(calls.every(([, options]) => options?.id === 'session-expired')).toBe(true);
-    expect(calls[0][1]?.action).toMatchObject({ label: 'common.reload_page' });
+    expect(calls[0]?.[1]?.action).toMatchObject({ label: 'common.reload_page' });
   });
 });

@@ -1,18 +1,16 @@
 import { getCurrentScope, onScopeDispose, ref, shallowRef } from 'vue';
 
+import { apiRequest } from '@/Composables/apiRequest';
 import type { RepresentativeActivityCategory } from '@/Components/Graphs/types';
 
 import type { AtstovavimasInstitution, AtstovavimasMembershipPeriod } from '../types';
 
-interface MembersResponse {
-  success?: boolean;
-  data?: {
-    users: Record<string, { name: string; profile_photo_path: string | null }>;
-    institutions: Record<string, {
-      periods: Array<{ user_id: string; duty_id: string; start_date: string; end_date: string | null }>;
-      activity?: Record<string, RepresentativeActivityCategory>;
-    }>;
-  };
+interface MembersData {
+  users: Record<string, { name: string; profile_photo_path: string | null }>;
+  institutions: Record<string, {
+    periods: Array<{ user_id: string; duty_id: string; start_date: string; end_date: string | null }>;
+    activity?: Record<string, RepresentativeActivityCategory>;
+  }>;
 }
 
 interface RowMembers {
@@ -38,16 +36,13 @@ export function useRowMembers() {
     if (refresh) params.set('refresh', '1');
 
     try {
-      const response = await fetch(`${route('api.v1.admin.visak.gantt.members')}?${params}`, {
-        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-        credentials: 'same-origin',
+      const { ok, data } = await apiRequest<MembersData>(`${route('api.v1.admin.visak.gantt.members')}?${params}`, {
         signal: request.signal,
       });
-      const json = response.ok ? await response.json() as MembersResponse : null;
-      if (!json?.success || !json.data) throw new Error('Unexpected member history response');
+      if (!ok || !data) throw new Error('Unexpected member history response');
       if (request.signal.aborted) return;
 
-      const { users, institutions } = json.data;
+      const { users, institutions } = data;
       const map = new Map<string, RowMembers>();
       for (const [id, entry] of Object.entries(institutions)) {
         map.set(id, {
