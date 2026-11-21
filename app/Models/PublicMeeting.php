@@ -135,16 +135,6 @@ class PublicMeeting extends Meeting
     }
 
     /**
-     * @param  Builder<PublicMeeting>  $query
-     * @return Builder<PublicMeeting>
-     */
-    #[\Override]
-    protected function makeAllSearchableUsing(Builder $query)
-    {
-        return $query->withSearchableRelations();
-    }
-
-    /**
      * Get searchable array for Typesense indexing
      */
     #[\Override]

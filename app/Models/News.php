@@ -524,6 +524,10 @@ class News extends Model implements Feedable, ImageMediaOwner, Sitemapable
         $query->with(['tags', 'content.parts', 'tenant', 'other_language_news', 'media']);
     }
 
+    /**
+     * @param  Builder<News>  $query
+     * @return Builder<News>
+     */
     protected function makeAllSearchableUsing(Builder $query)
     {
         return $query->withSearchableRelations();

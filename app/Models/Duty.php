@@ -175,7 +175,7 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
             'assignableTenants',
             'formerNames',
             'current_users' => fn ($users) => $users->select(['users.id', 'users.name']),
-            'previous_users' => fn ($users) => $users->select(['users.id', 'users.name'])->orderByPivot('end_date', 'desc'),
+            'previous_users' => fn ($users) => $users->select(['users.id', 'users.name'])->orderByDesc('dutiables.end_date'),
         ]);
     }
 

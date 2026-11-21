@@ -124,8 +124,8 @@ class Resource extends Model implements GuardsForceDelete, ImageMediaOwner
     }
 
     /**
-     * @param  Builder<resource>  $query
-     * @return Builder<resource>
+     * @param  Builder<self>  $query
+     * @return Builder<self>
      */
     protected function makeAllSearchableUsing(Builder $query)
     {

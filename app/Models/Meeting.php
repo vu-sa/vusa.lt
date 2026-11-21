@@ -292,12 +292,16 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
     }
 
     /**
-     * @param  Builder<Meeting>  $query
-     * @return Builder<Meeting>
+     * @template TModel of Meeting
+     *
+     * @param  Builder<TModel>  $query
+     * @return Builder<TModel>
      */
     protected function makeAllSearchableUsing(Builder $query)
     {
-        return $query->withSearchableRelations();
+        $this->scopeWithSearchableRelations($query);
+
+        return $query;
     }
 
     /**

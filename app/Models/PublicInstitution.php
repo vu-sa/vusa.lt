@@ -171,16 +171,6 @@ class PublicInstitution extends Institution
     }
 
     /**
-     * @param  Builder<PublicInstitution>  $query
-     * @return Builder<PublicInstitution>
-     */
-    #[\Override]
-    protected function makeAllSearchableUsing(Builder $query)
-    {
-        return $query->withSearchableRelations();
-    }
-
-    /**
      * Get searchable array for Typesense indexing.
      * Delegates to PublicInstitutionSearchIndexBuilder.
      */
