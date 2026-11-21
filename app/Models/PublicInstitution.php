@@ -83,6 +83,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  *
  * @method static Builder<static>|PublicInstitution active()
  * @method static Builder<static>|PublicInstitution hasActiveDuties()
+ * @method static Builder<static>|PublicInstitution withSearchableRelations()
  * @method static Builder<static>|PublicInstitution newModelQuery()
  * @method static Builder<static>|PublicInstitution newQuery()
  * @method static Builder<static>|PublicInstitution onlyTrashed()
@@ -148,6 +149,35 @@ class PublicInstitution extends Institution
     public function shouldBeSearchable(): bool
     {
         return ! $this->trashed() && $this->is_active === 1;
+    }
+
+    #[\Override]
+    public function scopeWithSearchableRelations(Builder $query): void
+    {
+        $query->with([
+            'tenant',
+            'types',
+            'media',
+            'duties' => fn ($duties) => $duties->orderBy('order')->with([
+                'current_users' => fn ($users) => $users->select([
+                    'users.id',
+                    'users.name',
+                    'users.email',
+                    'users.profile_photo_path',
+                    'users.profile_photo_focal_point',
+                ]),
+            ]),
+        ]);
+    }
+
+    /**
+     * @param  Builder<PublicInstitution>  $query
+     * @return Builder<PublicInstitution>
+     */
+    #[\Override]
+    protected function makeAllSearchableUsing(Builder $query)
+    {
+        return $query->withSearchableRelations();
     }
 
     /**

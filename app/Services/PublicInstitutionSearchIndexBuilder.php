@@ -20,20 +20,19 @@ class PublicInstitutionSearchIndexBuilder
             'tenant',
             'types',
             'media',
-        ]);
-
-        $duties = $institution->duties()
-            ->with(['current_users' => function ($q): void {
-                $q->select([
+            'duties' => fn ($duties) => $duties->orderBy('order')->with([
+                'current_users' => fn ($users) => $users->select([
                     'users.id',
                     'users.name',
                     'users.email',
                     'users.profile_photo_path',
                     'users.profile_photo_focal_point',
-                ]);
-            }])
-            ->orderBy('order')
-            ->get();
+                ]),
+            ]),
+        ]);
+
+        $duties = $institution->duties;
+        $duties->loadMissing('current_users');
 
         $contacts = [];
         $currentUserNames = [];

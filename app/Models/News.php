@@ -519,9 +519,14 @@ class News extends Model implements Feedable, ImageMediaOwner, Sitemapable
             ->get();
     }
 
+    public function scopeWithSearchableRelations(Builder $query): void
+    {
+        $query->with(['tags', 'content.parts', 'tenant', 'other_language_news', 'media']);
+    }
+
     protected function makeAllSearchableUsing(Builder $query)
     {
-        return $query->with(['tags', 'content.parts', 'tenant', 'other_language_news', 'media']);
+        return $query->withSearchableRelations();
     }
 
     public function toSearchableArray(): array

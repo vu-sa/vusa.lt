@@ -243,7 +243,7 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     // Role duties come from the responsibility projection.
     'app/Services/Permissions/ResponsibilityPermissionGaps.php' => ['->duties' => 1],
     // Institution duty catalog and a count of duties with current holders.
-    'app/Services/PublicInstitutionSearchIndexBuilder.php' => ['->duties' => 1, "'duties" => 1],
+    'app/Services/PublicInstitutionSearchIndexBuilder.php' => ['->duties' => 1, "'duties" => 2],
     // Duty catalog queries and responsibility lookups with date-scoped holders.
     'app/Services/ResponsibilityResolver.php' => ['->users' => 1, '->duties' => 1, "'duties" => 9],
     // User table updates scrub all staging accounts.

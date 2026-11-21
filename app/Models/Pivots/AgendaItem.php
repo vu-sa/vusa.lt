@@ -26,6 +26,7 @@ use Database\Factories\AgendaItemFactory;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Attributes\Touches;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -288,6 +289,24 @@ class AgendaItem extends Pivot implements Commentable
     public function shouldBeSearchable(): bool
     {
         return $this->meeting !== null;
+    }
+
+    public function scopeWithSearchableRelations(Builder $query): void
+    {
+        $query->with([
+            'meeting.institutions.tenant',
+            'meeting.institutions.types',
+            'votes',
+        ]);
+    }
+
+    /**
+     * @param  Builder<AgendaItem>  $query
+     * @return Builder<AgendaItem>
+     */
+    protected function makeAllSearchableUsing(Builder $query)
+    {
+        return $query->withSearchableRelations();
     }
 
     /**

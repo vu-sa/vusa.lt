@@ -25,6 +25,7 @@ use App\Services\Typesense\SearchText;
 use App\Services\VoteStatisticsCalculator;
 use App\Support\MeetingTitle;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -278,6 +279,25 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
     public function searchableUsing()
     {
         return MeetingSearchEngine::resolve();
+    }
+
+    public function scopeWithSearchableRelations(Builder $query): void
+    {
+        $query->with([
+            'institutions.types',
+            'institutions.tenant',
+            'agendaItems.votes',
+            'users',
+        ]);
+    }
+
+    /**
+     * @param  Builder<Meeting>  $query
+     * @return Builder<Meeting>
+     */
+    protected function makeAllSearchableUsing(Builder $query)
+    {
+        return $query->withSearchableRelations();
     }
 
     /**
