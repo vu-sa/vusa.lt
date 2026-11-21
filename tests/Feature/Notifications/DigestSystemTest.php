@@ -8,6 +8,7 @@ use App\Mail\NotificationDigest;
 use App\Models\NotificationDigestQueue;
 use App\Models\Task;
 use App\Notifications\CommentPostedNotification;
+use App\Notifications\InstitutionActivityNotification;
 use App\Notifications\TaskAssignedNotification;
 use App\Notifications\TaskOverdueNotification;
 use App\Notifications\TaskReminderNotification;
@@ -15,6 +16,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Notifications\Events\NotificationSending;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
@@ -660,4 +662,76 @@ describe('digest queue cleanup on read', function (): void {
 
         expect($this->getDigestQueueCountForUser($user))->toBe(0);
     });
+});
+
+test('notifications:send-digests keeps select query count constant as pending user count grows', function (): void {
+    Mail::fake();
+
+    $queueReadyItemForUser = function (): void {
+        $user = $this->createUserWithPreferences();
+        $user->update(['notification_preferences' => ['digest_frequency_hours' => 4]]);
+
+        $item = NotificationDigestQueue::create([
+            'user_id' => $user->id,
+            'notification_class' => CommentPostedNotification::class,
+            'category' => NotificationCategory::Comment->value,
+            'data' => ['title' => 'Comment', 'body' => 'Body', 'url' => '/test', 'icon' => '💬'],
+        ]);
+        $item->forceFill(['created_at' => now()->subHours(5)])->saveQuietly();
+    };
+
+    $runAndCountSelects = function (int $userCount) use ($queueReadyItemForUser): int {
+        $this->clearDigestQueue();
+
+        for ($i = 0; $i < $userCount; $i++) {
+            $queueReadyItemForUser();
+        }
+
+        DB::enableQueryLog();
+        try {
+            DB::flushQueryLog();
+            Artisan::call('notifications:send-digests');
+
+            return collect(DB::getQueryLog())
+                ->filter(fn (array $entry): bool => str_starts_with(strtolower(ltrim($entry['query'])), 'select'))
+                ->count();
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
+    };
+
+    // Warm up any one-time command/mail infrastructure before comparing N=1 against N=4.
+    $runAndCountSelects(1);
+
+    $oneUserSelects = $runAndCountSelects(1);
+    $fourUserSelects = $runAndCountSelects(4);
+
+    expect($fourUserSelects)->toBe($oneUserSelects);
+    Mail::assertSentCount(6);
+});
+
+test('queued activity digest item with empty activity_request_ids is deleted and not mailed', function (): void {
+    Mail::fake();
+
+    $user = $this->createUserWithPreferences(['digest_frequency_hours' => 4]);
+
+    $item = NotificationDigestQueue::create([
+        'user_id' => $user->id,
+        'notification_class' => InstitutionActivityNotification::class,
+        'category' => NotificationCategory::Meeting->value,
+        'data' => [
+            'title' => 'Ar vyko posėdis?',
+            'body' => 'Body',
+            'url' => '/test',
+            'icon' => '🗓️',
+            'activity_request_ids' => [],
+        ],
+    ]);
+    $item->forceFill(['created_at' => now()->subHours(5)])->saveQuietly();
+
+    Artisan::call('notifications:send-digests');
+
+    Mail::assertNothingSent();
+    expect($this->getDigestQueueCountForUser($user))->toBe(0);
 });
