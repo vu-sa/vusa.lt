@@ -13,6 +13,7 @@ use App\Services\InstitutionRelationService;
 use App\Services\Meetings\IncompleteMeetingQueries;
 use App\Services\ModelAuthorizer;
 use App\Settings\AtstovavimasSettings;
+use App\Support\MorphMap;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -196,15 +197,14 @@ class InstitutionQueries
         return app(InstitutionActivityStatusService::class)->withSummary($query)
             ->with([
                 'tenant:id,shortname',
-                'duties:id,institution_id',
-                'duties.users:id,name,profile_photo_path',
                 'checkIns:id,institution_id,start_date,end_date,note',
             ])
             ->withCount([
                 'meetings as upcoming_meetings_count' => fn ($meetings) => $meetings->where('start_time', '>', now()),
                 'meetings as incomplete_meetings_count' => IncompleteMeetingQueries::constrain(...),
             ])
-            ->tap(self::withLastActivityDate(...));
+            ->tap(self::withLastActivityDate(...))
+            ->tap(self::withMembershipPeriods(...));
     }
 
     /** @param  Collection|array  $tenantIds */
@@ -255,6 +255,8 @@ class InstitutionQueries
         }
 
         return self::timelineInstitutionsQuery()->active()
+            ->with('duties.users:id,name,profile_photo_path,last_action')
+            ->afterQuery(self::hideMemberDetails(...))
             ->whereIn('tenant_id', $accessibleTenantIds)
             ->get();
     }
@@ -273,7 +275,25 @@ class InstitutionQueries
         }
 
         return self::timelineInstitutionsQuery()->active()
+            ->with(['types:id,title,extra_attributes', 'checkIns:id,institution_id,start_date,end_date,note'])
             ->whereIn('institutions.id', $institutionIds)
+            ->get();
+    }
+
+    /**
+     * @param  Collection<int, string>  $institutionIds
+     * @return EloquentCollection<int, Institution>
+     */
+    public static function getGanttMemberInstitutions(Collection $institutionIds): EloquentCollection
+    {
+        if ($institutionIds->isEmpty()) {
+            return new EloquentCollection;
+        }
+
+        return Institution::select('id')->active()
+            ->whereKey($institutionIds)
+            ->whereHas('tenant', fn (Builder $query) => $query->whereIn('type', TenantType::representationalValues()))
+            ->tap(fn (Builder $query) => self::withMembershipPeriods($query, withActivity: true))
             ->get();
     }
 
@@ -291,8 +311,6 @@ class InstitutionQueries
                 'types', // needed for has_public_meetings and meeting_periodicity_days
                 // Meetings only carry start_time: enough for activity-status resolution.
                 'meetings:id,start_time',
-                // Historical assignments are required for Gantt coverage periods.
-                'duties.users:id,name,profile_photo_path,last_action',
                 'checkIns',
             ])
             ->withCount([
@@ -300,8 +318,22 @@ class InstitutionQueries
                     $query->where('start_time', '>', now());
                 },
             ])
-            ->tap(self::withActivityDates(...))
-            ->afterQuery(self::hideMemberDetails(...));
+            ->tap(self::withActivityDates(...));
+    }
+
+    /** @param  Builder<Institution>  $query */
+    private static function withMembershipPeriods(Builder $query, bool $withActivity = false): void
+    {
+        $userColumns = 'id,name,profile_photo_path'.($withActivity ? ',last_action' : '');
+
+        $query->with([
+            'duties:id,institution_id',
+            'duties.dutiables' => fn ($terms) => $terms
+                ->select('duty_id', 'dutiable_id', 'start_date', 'end_date')
+                ->where('dutiable_type', MorphMap::alias(User::class))
+                ->whereNotNull('start_date')
+                ->with('user:'.$userColumns),
+        ]);
     }
 
     /** @return Builder<Institution> */

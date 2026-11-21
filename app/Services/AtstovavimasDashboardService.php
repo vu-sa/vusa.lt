@@ -12,6 +12,7 @@ use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\User;
 use App\Models\Vote;
+use App\Services\Institutions\AtstovavimasInstitutionPresenter;
 use App\Services\Institutions\InstitutionQueries;
 use App\Settings\AtstovavimasSettings;
 use App\Settings\MeetingSettings;
@@ -68,6 +69,7 @@ class AtstovavimasDashboardService
             'institutions' => $institutions
                 ->map(fn (Institution $institution) => [
                     ...$this->mapInstitution($institution),
+                    'duties' => $this->mapTimelineDuties($institution),
                     'in_summary' => $countedIds->has((string) $institution->id),
                 ])
                 ->values()
@@ -230,16 +232,16 @@ class AtstovavimasDashboardService
             $grant($inSelection()->whereIn('tenant_id', $managedTenantIds)->pluck('institutions.id'), self::PROJECTION_FULL);
         }
 
-        $ownInstitutions = Institution::query()->active()
-            ->whereIn('id', $user->current_or_upcoming_duties()->pluck('institution_id')
-                ->merge($user->secretariedInstitutions()->pluck('institutions.id'))
-                ->filter()
-                ->unique())
-            ->get();
+        $institutionAccess = app(InstitutionAccessService::class);
+        $dutyIds = $institutionAccess->getUserDutyInstitutionIds($user);
+        $ownIds = Institution::query()->active()
+            ->whereKey($dutyIds->merge($institutionAccess->getSecretariedInstitutionIds($user))->unique()->values())
+            ->pluck('id');
 
-        $candidates = $ownInstitutions->mapWithKeys(fn (Institution $institution) => [(string) $institution->id => self::PROJECTION_FULL])->all();
-        foreach ($ownInstitutions as $institution) {
-            foreach (app(InstitutionRelationService::class)->relatedTo($institution->id) as $related) {
+        $candidates = $ownIds->mapWithKeys(fn (string $id): array => [$id => self::PROJECTION_FULL])->all();
+        $relations = app(InstitutionRelationService::class);
+        foreach ($ownIds->intersect($dutyIds) as $institutionId) {
+            foreach ($relations->relatedTo($institutionId) as $related) {
                 $relatedId = $related['institution_id'];
 
                 if (($candidates[$relatedId] ?? null) !== self::PROJECTION_FULL) {
@@ -276,8 +278,11 @@ class AtstovavimasDashboardService
      */
     public function cachedGanttInstitutionAccess(User $actor, array $tenantIds, bool $refresh = false): SupportCollection
     {
+        $tenantIds = array_unique($tenantIds);
+        sort($tenantIds, SORT_NUMERIC);
+
         return RepStatisticsCache::remember(
-            'gantt-access:'.$actor->id.':'.InstitutionRelationService::version().':'.implode(',', collect($tenantIds)->sort()->all()),
+            'gantt-access:v2:'.$actor->id.':'.InstitutionRelationService::version().':'.implode(',', $tenantIds),
             fn () => $this->ganttInstitutionAccess($actor, $tenantIds),
             refresh: $refresh,
             tenantIds: $tenantIds,
@@ -286,8 +291,7 @@ class AtstovavimasDashboardService
     }
 
     /**
-     * The padaliniai Gantt rows. Rows outside full access keep meetings' anchors, members and
-     * check-ins, but not the health status or members' activity.
+     * Rows outside full access keep the meeting anchors and check-ins with a null activity status.
      *
      * @param  SupportCollection<string, string>  $access  from ganttInstitutionAccess()
      * @return list<array<string, mixed>>
@@ -301,25 +305,48 @@ class AtstovavimasDashboardService
             ->map(function (Institution $institution) use ($access): array {
                 $row = $this->mapInstitution($institution);
 
-                if ($access[(string) $institution->id] === self::PROJECTION_FULL) {
+                if ($access[$institution->id] === self::PROJECTION_FULL) {
                     return $row;
                 }
 
-                return [
-                    ...$row,
-                    'authorized' => false,
-                    'activity_status' => null,
-                    'duties' => array_map(fn (array $duty) => [
-                        ...$duty,
-                        'users' => array_map(
-                            fn (array $representative) => Arr::except($representative, ['activity_category']),
-                            $duty['users'],
-                        ),
-                    ], $row['duties']),
-                ];
+                return [...$row, 'authorized' => false, 'activity_status' => null];
             })
             ->values()
             ->all();
+    }
+
+    /**
+     * @param  SupportCollection<string, string>  $access
+     * @return array{users: object, institutions: object}
+     */
+    public function ganttMembers(SupportCollection $access): array
+    {
+        $users = [];
+        $institutions = [];
+        foreach (InstitutionQueries::getGanttMemberInstitutions($access->keys()) as $institution) {
+            $fullAccess = $access[$institution->id] === self::PROJECTION_FULL;
+            $periods = [];
+            $activity = [];
+            foreach (AtstovavimasInstitutionPresenter::membershipTerms($institution) as ['term' => $term, 'user' => $user]) {
+                $users[$user->id] ??= ['name' => $user->name, 'profile_photo_path' => $user->profile_photo_path];
+                $periods[] = [
+                    'user_id' => $user->id,
+                    'duty_id' => $term->duty_id,
+                    'start_date' => $term->start_date->toDateString(),
+                    'end_date' => $term->end_date?->toDateString(),
+                ];
+                if ($fullAccess) {
+                    $activity[$user->id] ??= $this->activityCategory($user->last_action);
+                }
+            }
+
+            $institutions[$institution->id] = ['periods' => $periods];
+            if ($fullAccess) {
+                $institutions[$institution->id]['activity'] = (object) $activity;
+            }
+        }
+
+        return ['users' => (object) $users, 'institutions' => (object) $institutions];
     }
 
     /**
@@ -439,15 +466,6 @@ class AtstovavimasDashboardService
                 'activity_status',
                 $this->activityStatusService->resolve($institution)->toArray()
             );
-
-            $institution->duties->each(function ($duty): void {
-                $duty->users->each(function (User $representative): void {
-                    $representative->setAttribute(
-                        'activity_category',
-                        $this->activityCategory($representative->last_action)
-                    );
-                });
-            });
         });
     }
 
@@ -504,26 +522,31 @@ class AtstovavimasDashboardService
                 ])
                 ->values()
                 ->all(),
-            'duties' => $institution->duties
-                ->map(fn ($duty) => [
-                    'id' => (string) $duty->id,
-                    'users' => $duty->users
-                        ->map(fn (User $representative) => [
-                            'id' => (string) $representative->id,
-                            'name' => $representative->name,
-                            'profile_photo_path' => $representative->profile_photo_path,
-                            'activity_category' => $representative->getAttribute('activity_category'),
-                            'pivot' => [
-                                'start_date' => $representative->pivot?->start_date,
-                                'end_date' => $representative->pivot?->end_date,
-                            ],
-                        ])
-                        ->values()
-                        ->all(),
-                ])
-                ->values()
-                ->all(),
         ];
+    }
+
+    /** @return list<array{id: string, users: list<array{id: string, name: string, profile_photo_path: string|null, activity_category: string, pivot: array{start_date: CarbonInterface|null, end_date: CarbonInterface|null}}>}> */
+    private function mapTimelineDuties(Institution $institution): array
+    {
+        return $institution->duties
+            ->map(fn ($duty) => [
+                'id' => (string) $duty->id,
+                'users' => $duty->users
+                    ->map(fn (User $representative) => [
+                        'id' => (string) $representative->id,
+                        'name' => $representative->name,
+                        'profile_photo_path' => $representative->profile_photo_path,
+                        'activity_category' => $this->activityCategory($representative->last_action),
+                        'pivot' => [
+                            'start_date' => $representative->pivot?->start_date,
+                            'end_date' => $representative->pivot?->end_date,
+                        ],
+                    ])
+                    ->values()
+                    ->all(),
+            ])
+            ->values()
+            ->all();
     }
 
     /**

@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Actions\ActivityRequests\GetOpenActivityRequestSpans;
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Api\Admin\AtstovavimasGanttMembersRequest;
+use App\Http\Requests\Api\Admin\AtstovavimasGanttRequest;
 use App\Http\Requests\Api\Admin\AtstovavimasMeetingAgendaRequest;
 use App\Http\Requests\Api\Admin\AtstovavimasMeetingsRequest;
 use App\Http\Requests\Api\Admin\AtstovavimasStatusHistoryRequest;
@@ -39,12 +41,21 @@ class AtstovavimasApiController extends ApiController
     /**
      * The padaliniai Gantt rows: open to every admin, trimmed per row to what they may read.
      */
-    public function gantt(AtstovavimasTenantRequest $request): JsonResponse
+    public function gantt(AtstovavimasGanttRequest $request): JsonResponse
     {
-        $access = $this->ganttAccess($this->requireAuth($request), $request);
+        [$access, $scope] = $this->ganttSelection($this->requireAuth($request), $request);
 
         return $this->jsonSuccess(
-            $this->rememberVisak('gantt', $this->accessScope($access), $request->boolean('refresh'), fn () => $this->dashboardService->ganttInstitutions($access), 'activity-dates-v3', $request->tenantIds())
+            $this->rememberVisak('gantt', $scope, $request->boolean('refresh'), fn () => $this->dashboardService->ganttInstitutions($access), 'rows-shell-v1', $request->tenantIds())
+        );
+    }
+
+    public function ganttMembers(AtstovavimasGanttMembersRequest $request): JsonResponse
+    {
+        [$access, $scope] = $this->ganttSelection($this->requireAuth($request), $request);
+
+        return $this->jsonSuccess(
+            $this->rememberVisak('gantt-members', $scope, $request->boolean('refresh'), fn () => $this->dashboardService->ganttMembers($access), 'member-history-v1', $request->tenantIds())
         );
     }
 
@@ -88,7 +99,7 @@ class AtstovavimasApiController extends ApiController
     public function meetings(AtstovavimasMeetingsRequest $request): JsonResponse
     {
         $user = $this->requireAuth($request);
-        $access = $this->ganttAccess($user, $request);
+        [$access, $scope] = $this->ganttSelection($user, $request);
         $from = Carbon::parse($request->validated('from'))->startOfDay();
         $until = Carbon::parse($request->validated('until'))->endOfDay();
 
@@ -96,7 +107,7 @@ class AtstovavimasApiController extends ApiController
             $this->rememberVisak(
                 'meeting-markers',
                 // Outcome summaries still depend on which private items the reader can see.
-                $this->accessScope($access).'|user:'.$user->id,
+                $scope.'|user:'.$user->id,
                 $request->boolean('refresh'),
                 fn () => $this->dashboardService->ganttMeetings($user, $access, $from, $until),
                 $from->toDateString().':'.$until->toDateString(),
@@ -130,9 +141,24 @@ class AtstovavimasApiController extends ApiController
      *
      * @return Collection<string, string>
      */
-    private function ganttAccess(User $user, AtstovavimasTenantRequest|AtstovavimasMeetingsRequest $request): Collection
+    private function ganttAccess(User $user, AtstovavimasTenantRequest $request): Collection
     {
         return $this->dashboardService->cachedGanttInstitutionAccess($user, $request->tenantIds(), $request->boolean('refresh'));
+    }
+
+    /** @return array{Collection<string, string>, string} */
+    private function ganttSelection(User $user, AtstovavimasGanttRequest $request): array
+    {
+        $access = $this->ganttAccess($user, $request);
+        $ids = $request->institutionIds();
+        if ($ids === null) {
+            return [$access, $this->accessScope($access)];
+        }
+
+        $selected = array_fill_keys($ids, true);
+        $access = $access->filter(fn (string $projection, string $id): bool => isset($selected[strtoupper($id)]));
+
+        return [$access, $this->accessScope($access).'|subset:'.implode(',', $ids)];
     }
 
     private function repMetricsFor(array $tenantIds): array

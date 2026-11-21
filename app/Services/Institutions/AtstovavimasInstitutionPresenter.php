@@ -5,8 +5,9 @@ namespace App\Services\Institutions;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\Pivots\Dutiable;
+use App\Models\User;
 use App\Services\InstitutionActivityStatusService;
-use Carbon\CarbonInterface;
+use Generator;
 use Illuminate\Database\Eloquent\Collection;
 
 class AtstovavimasInstitutionPresenter
@@ -88,26 +89,30 @@ class AtstovavimasInstitutionPresenter
     }
 
     /** @return list<array{user: array{id: string, name: string, profile_photo_path: string|null}, duty_id: string, start_date: string, end_date: string|null}> */
-    private static function membershipPeriods(Institution $institution): array
+    public static function membershipPeriods(Institution $institution): array
     {
         $periods = [];
-        foreach ($institution->duties as $duty) {
-            foreach ($duty->users as $user) {
-                $term = $user->getRelation('pivot');
-                $start = $term instanceof Dutiable ? $term->getAttribute('start_date') : null;
-                if (! $start instanceof CarbonInterface) {
-                    continue;
-                }
-
-                $periods[] = [
-                    'user' => ['id' => (string) $user->id, 'name' => $user->name, 'profile_photo_path' => $user->profile_photo_path],
-                    'duty_id' => (string) $duty->id,
-                    'start_date' => $start->toDateString(),
-                    'end_date' => $term->end_date?->toDateString(),
-                ];
-            }
+        foreach (self::membershipTerms($institution) as ['term' => $term, 'user' => $user]) {
+            $periods[] = [
+                'user' => ['id' => (string) $user->id, 'name' => $user->name, 'profile_photo_path' => $user->profile_photo_path],
+                'duty_id' => $term->duty_id,
+                'start_date' => $term->start_date->toDateString(),
+                'end_date' => $term->end_date?->toDateString(),
+            ];
         }
 
         return $periods;
+    }
+
+    /** @return Generator<int, array{term: Dutiable, user: User}> */
+    public static function membershipTerms(Institution $institution): Generator
+    {
+        foreach ($institution->duties as $duty) {
+            foreach ($duty->dutiables as $term) {
+                if ($term->user !== null) {
+                    yield ['term' => $term, 'user' => $term->user];
+                }
+            }
+        }
     }
 }

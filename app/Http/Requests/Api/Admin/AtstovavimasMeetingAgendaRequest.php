@@ -20,7 +20,7 @@ class AtstovavimasMeetingAgendaRequest extends AtstovavimasTenantRequest
 
         $requestedId = $this->input('institution_id');
         $tenantIds = $this->input('tenant_ids', []);
-        if (! Str::isUlid($requestedId) || ! is_array($tenantIds) || count($tenantIds) > 100
+        if (! Str::isUlid($requestedId) || ! is_array($tenantIds) || ! array_is_list($tenantIds) || count($tenantIds) > 100
             || ($tenantIds === [] && $this->has('tenant_ids'))
             || array_any($tenantIds, fn (mixed $id): bool => filter_var($id, FILTER_VALIDATE_INT) === false)) {
             return true;
@@ -45,7 +45,7 @@ class AtstovavimasMeetingAgendaRequest extends AtstovavimasTenantRequest
     {
         return [
             ...parent::rules(),
-            'tenant_ids' => ['sometimes', 'required', 'array', 'min:1', 'max:100'],
+            'tenant_ids' => ['sometimes', 'required', 'array', 'list', 'min:1', 'max:100'],
             'institution_id' => ['required', 'string', 'ulid'],
         ];
     }

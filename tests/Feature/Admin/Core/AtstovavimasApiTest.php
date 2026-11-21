@@ -19,11 +19,16 @@ use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Vote;
+use App\Services\AtstovavimasDashboardService;
 use App\Services\InstitutionActivityStatusService;
 use App\Services\InstitutionStatusSnapshotService;
 use App\Settings\MeetingSettings;
+use Illuminate\Cache\Events\KeyWritten;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Str;
 
 pest()->use(RefreshDatabase::class);
 
@@ -185,6 +190,51 @@ test('the agenda endpoint returns 404 when the meeting is not attached to the re
         'meeting' => $meeting->id,
         'institution_id' => $own->id,
     ]))->assertNotFound();
+});
+
+test('the agenda endpoint returns 422 for an associative tenant selection with dotted keys', function (): void {
+    $rep = makeUser($this->tenant);
+    $institution = $rep->current_duties()->first()->institution;
+    $meeting = Meeting::factory()->hasAttached($institution)->create();
+    $url = route('api.v1.admin.atstovavimas.meetings.agenda', [
+        'meeting' => $meeting->id,
+        'institution_id' => $institution->id,
+    ]);
+
+    asUser($rep)->getJson($url.'&tenant_ids[a]='.$this->tenant->id.'&tenant_ids[a.b]=x')
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('tenant_ids');
+});
+
+test('a secretary-only nomination does not grant tenant Gantt access to an outgoing linked institution', function (): void {
+    $secretary = User::factory()->create();
+    $source = $this->institution;
+    $target = Institution::factory()->for($this->tenant)->create();
+    $cadence = Cadence::factory()->for($source)->create();
+    InstitutionSecretary::create([
+        'institution_id' => $source->id,
+        'cadence_id' => $cadence->id,
+        'user_id' => $secretary->id,
+    ]);
+    InstitutionLink::factory()->create(['source_institution_id' => $source->id, 'target_institution_id' => $target->id]);
+    $ownMeeting = Meeting::factory()->hasAttached($source)->create(['start_time' => now()->subDay()]);
+    $linkedMeeting = Meeting::factory()->hasAttached($target)->create(['start_time' => now()->subDay()]);
+    $tenantIds = [$this->tenant->id];
+
+    asUser($secretary)->getJson(route('api.v1.admin.visak.gantt', ['tenant_ids' => $tenantIds]))
+        ->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $source->id);
+    asUser($secretary)->getJson(route('api.v1.admin.visak.meetings', [
+        'tenant_ids' => $tenantIds,
+        'from' => now()->subWeek()->toDateString(),
+        'until' => now()->toDateString(),
+    ]))->assertOk()->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $ownMeeting->id)
+        ->assertJsonPath('data.0.completion_status', 'no_items');
+    asUser($secretary)->getJson(route('api.v1.admin.atstovavimas.meetings.agenda', [
+        'meeting' => $linkedMeeting->id,
+        'institution_id' => $target->id,
+        'tenant_ids' => $tenantIds,
+    ]))->assertForbidden();
 });
 
 test('timeline requires an authenticated user', function (): void {
@@ -814,14 +864,79 @@ describe('padaliniai gantt', function (): void {
             ->toEqual(collect([(string) $this->publicInstitution->id, (string) $this->ownInstitution->id])->sort()->values()->all());
 
         $public = $rows->get((string) $this->publicInstitution->id);
+        $own = $rows->get((string) $this->ownInstitution->id);
         expect($public['authorized'])->toBeFalse()
             ->and($public['activity_status'])->toBeNull()
             ->and($public['check_ins'])->toHaveCount(1)
-            ->and($public['duties'][0]['users'][0])->toHaveKeys(['id', 'name'])->not->toHaveKey('last_action')
-            ->and($rows->get((string) $this->ownInstitution->id))->not->toHaveKey('authorized')
-            ->and($rows->get((string) $this->ownInstitution->id)['activity_status'])->not->toBeNull()
-            ->and($rows->get((string) $this->ownInstitution->id)['duties'][0]['users'][0])->toHaveKey('activity_category')->not->toHaveKey('last_action');
+            ->and($public)->not->toHaveKeys(['duties', 'membership_periods', 'member_activity_categories'])
+            ->and($own)->not->toHaveKeys(['authorized', 'duties', 'membership_periods', 'member_activity_categories'])
+            ->and($own['activity_status'])->not->toBeNull();
     });
+
+    test('member batches keep current and historical terms, deduplicate users and protect activity', function (): void {
+        $duty = $this->rep->current_duties()->first();
+        $former = User::factory()->create(['last_action' => now()->subYear()]);
+        $term = ['start_date' => '2020-07-01', 'end_date' => '2021-06-30'];
+        $duty->users()->attach($former, $term);
+        $publicDuty = $this->publicInstitution->duties()->first();
+        $publicDuty->users()->attach($former, $term);
+        $unrequested = Institution::factory()->for($this->tenant)->create();
+        $unrequested->types()->attach($this->publicType);
+        $missingId = (string) Str::ulid();
+
+        $data = asUser($this->rep)->getJson(route('api.v1.admin.visak.gantt.members', [
+            'tenant_ids' => [$this->tenant->id, $this->ownInstitution->tenant_id],
+            'institution_ids' => [$this->ownInstitution->id, strtoupper($this->publicInstitution->id), $this->institution->id, $missingId],
+        ]))->assertOk()
+            ->assertJsonCount(2, 'data.institutions')
+            ->assertJsonCount(3, 'data.users')
+            ->assertJsonMissingPath('data.institutions.'.$unrequested->id)
+            ->assertJsonMissingPath('data.institutions.'.$this->institution->id)
+            ->assertJsonMissingPath('data.institutions.'.$missingId)
+            ->assertJsonMissingPath('data.institutions.'.$this->publicInstitution->id.'.activity')
+            ->assertJsonPath('data.institutions.'.$this->ownInstitution->id.'.activity.'.$former->id, 'stale')
+            ->json('data');
+
+        $periods = collect($data['institutions'][$this->ownInstitution->id]['periods'])->keyBy('user_id');
+        $publicPeriods = collect($data['institutions'][$this->publicInstitution->id]['periods'])->keyBy('user_id');
+        expect($data['users'][$former->id])->toBe(['name' => $former->name, 'profile_photo_path' => $former->profile_photo_path]);
+        expect($periods[$this->rep->id])->toBe([
+            'user_id' => $this->rep->id,
+            'duty_id' => $duty->id,
+            'start_date' => $duty->pivot->start_date->toDateString(),
+            'end_date' => null,
+        ])->and($periods[$former->id])->toBe([
+            'user_id' => $former->id,
+            'duty_id' => $duty->id,
+            ...$term,
+        ])->and($publicPeriods[$former->id])->toBe([
+            'user_id' => $former->id,
+            'duty_id' => $publicDuty->id,
+            ...$term,
+        ]);
+    });
+
+    test('a Gantt subset returns requested accessible institutions and drops stale or forbidden IDs', function (string $routeName, string $institutionKey): void {
+        foreach ([$this->ownInstitution, $this->publicInstitution, $this->institution] as $institution) {
+            Meeting::factory()->hasAttached($institution)->create(['start_time' => now()->subDay()]);
+        }
+        $params = [
+            'tenant_ids' => [$this->tenant->id, $this->ownInstitution->tenant_id],
+            'from' => now()->subWeek()->toDateString(),
+            'until' => now()->toDateString(),
+        ];
+        $fetch = fn (array $filters) => asUser($this->rep)->getJson(route($routeName, [...$params, ...$filters]))->assertOk();
+
+        $fetch([])->assertJsonCount(2, 'data');
+        $fetch(['institution_ids' => [strtoupper($this->publicInstitution->id), $this->institution->id, (string) Str::ulid()]])
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.'.$institutionKey, $this->publicInstitution->id);
+        $fetch(['institution_ids' => [$this->institution->id]])->assertJsonCount(0, 'data');
+        $fetch([])->assertJsonCount(2, 'data');
+    })->with([
+        'rows' => ['api.v1.admin.visak.gantt', 'id'],
+        'meetings' => ['api.v1.admin.visak.meetings', 'institution_id'],
+    ]);
 
     test('a padalinys reader gets their padalinys in full and only public bodies elsewhere', function (): void {
         $coordinator = makeTenantUserWithRole('Studentų atstovų koordinatorius', $this->ownInstitution->tenant);
@@ -1016,6 +1131,116 @@ test('gantt rows carry their institution types for type sections', function (): 
 
     expect($row['types'])->toBe([['id' => (string) $type->id, 'title' => 'Studijų kolegija']]);
 });
+
+test('member batches for one or five institutions use the same number of queries', function (): void {
+    $coordinator = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
+    $member = User::factory()->create();
+    $institutions = Institution::factory()->for($this->tenant)->count(5)->create();
+    foreach ($institutions as $institution) {
+        Duty::factory()->for($institution)->create()->users()->attach($member, ['start_date' => now()->subDay()]);
+    }
+    $params = ['tenant_ids' => [$this->tenant->id]];
+    $measure = function (array $ids) use ($coordinator, $params, $member): int {
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        try {
+            $response = asUser($coordinator)->getJson(route('api.v1.admin.visak.gantt.members', [
+                ...$params,
+                'institution_ids' => $ids,
+            ]))->assertOk();
+            $queries = count(DB::getQueryLog());
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
+
+        $response->assertJsonCount(count($ids), 'data.institutions')
+            ->assertJsonCount(1, 'data.users')
+            ->assertJsonPath('data.institutions.'.$ids[0].'.periods.0.user_id', $member->id);
+
+        return $queries;
+    };
+
+    asUser($coordinator)->getJson(route('api.v1.admin.visak.gantt', $params))->assertOk();
+    $small = $measure([$institutions->first()->id]);
+
+    expect($measure($institutions->modelKeys()))->toBe($small);
+});
+
+test('the members endpoint requires a batch and returns empty maps when no requested institution is accessible', function (): void {
+    $rep = makeUser($this->tenant);
+    $params = ['tenant_ids' => [$this->tenant->id]];
+
+    asUser($rep)->getJson(route('api.v1.admin.visak.gantt.members', $params))
+        ->assertUnprocessable()->assertJsonValidationErrors('institution_ids');
+    asUser($rep)->getJson(route('api.v1.admin.visak.gantt.members', [
+        ...$params,
+        'institution_ids' => [$this->institution->id],
+    ]))->assertOk()->assertContent('{"success":true,"data":{"users":{},"institutions":{}}}');
+});
+
+test('the member batch and Gantt access caches reuse normalized tenant and institution selections', function (): void {
+    $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
+    $other = Institution::factory()->for($otherTenant)->create();
+    $tenantIds = [$this->tenant->id, $otherTenant->id];
+    $ids = [$this->institution->id, $other->id];
+    $events = Event::fake([KeyWritten::class]);
+    $fetch = fn (array $tenants, array $institutions) => asUser($this->admin)->getJson(route('api.v1.admin.visak.gantt.members', [
+        'tenant_ids' => $tenants,
+        'institution_ids' => $institutions,
+    ]))->assertOk()->assertJsonCount(2, 'data.institutions');
+
+    $fetch($tenantIds, $ids);
+    $fetch(array_reverse($tenantIds), array_reverse($ids));
+    app(AtstovavimasDashboardService::class)->cachedGanttInstitutionAccess($this->admin, [$otherTenant->id, ...$tenantIds]);
+
+    $writes = $events->dispatched(KeyWritten::class, fn (KeyWritten $event): bool => str_starts_with($event->key, 'visak:statistics:'));
+    expect($writes->filter(fn (array $args): bool => $args[0]->value instanceof Collection && $args[0]->value->has($ids)))
+        ->toHaveCount(1)
+        ->and($writes->filter(fn (array $args): bool => is_array($args[0]->value) && isset($args[0]->value['institutions'])))
+        ->toHaveCount(1);
+});
+
+test('full and explicit Gantt selections use different cache entries and subset order does not change the key', function (string $routeName, string $institutionKey): void {
+    $other = Institution::factory()->for($this->tenant)->create();
+    $ids = [$this->institution->id, $other->id];
+    foreach ([$this->institution, $other] as $institution) {
+        Meeting::factory()->hasAttached($institution)->create(['start_time' => now()->subDay()]);
+    }
+    $fetch = fn (array $filters) => asUser($this->admin)->getJson(route($routeName, [
+        'tenant_ids' => [$this->tenant->id],
+        'from' => now()->subWeek()->toDateString(),
+        'until' => now()->toDateString(),
+        ...$filters,
+    ]))->assertOk()->assertJsonCount(2, 'data');
+    $events = Event::fake([KeyWritten::class]);
+
+    $fetch([]);
+    $fetch(['institution_ids' => $ids]);
+    $fetch(['institution_ids' => array_reverse($ids)]);
+
+    $keys = $events->dispatched(KeyWritten::class, fn (KeyWritten $event): bool => str_starts_with($event->key, 'visak:statistics:')
+        && is_array($event->value) && count($event->value) === 2
+        && array_diff($ids, array_column($event->value, $institutionKey)) === [])
+        ->map(fn (array $arguments): string => $arguments[0]->key);
+
+    expect($keys)->toHaveCount(2)->and($keys->unique())->toHaveCount(2);
+})->with([
+    'rows' => ['api.v1.admin.visak.gantt', 'id'],
+    'meetings' => ['api.v1.admin.visak.meetings', 'institution_id'],
+]);
+
+test('Gantt subsets validate ULIDs and the 100-institution limit', function (string $routeName): void {
+    $params = [
+        'tenant_ids' => [$this->tenant->id],
+        'from' => now()->subWeek()->toDateString(),
+        'until' => now()->toDateString(),
+    ];
+    $fetch = fn (array $ids) => asUser($this->admin)->getJson(route($routeName, [...$params, 'institution_ids' => $ids]));
+
+    $fetch(['invalid'])->assertUnprocessable()->assertJsonValidationErrors('institution_ids.0');
+    $fetch(array_fill(0, 101, $this->institution->id))->assertUnprocessable()->assertJsonValidationErrors('institution_ids');
+})->with(['api.v1.admin.visak.gantt', 'api.v1.admin.visak.meetings', 'api.v1.admin.visak.gantt.members']);
 
 test('the Gantt uses a constant query count for one or five meetings with private agenda items', function (): void {
     $coordinator = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
