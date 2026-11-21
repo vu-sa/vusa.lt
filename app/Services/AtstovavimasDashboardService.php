@@ -212,12 +212,7 @@ class AtstovavimasDashboardService
             }
         };
 
-        $publicTypeIds = $this->meetingSettings->getPublicMeetingInstitutionTypeIds();
-        if ($publicTypeIds->isNotEmpty()) {
-            $grant($inSelection()
-                ->whereHas('types', fn (Builder $query) => $query->whereIn('institution_types.id', $publicTypeIds))
-                ->pluck('institutions.id'), self::PROJECTION_PUBLIC);
-        }
+        $grant($this->publicMeetingInstitutionIds($inSelection()), self::PROJECTION_PUBLIC);
 
         $managedTenantIds = $this->atstovavimasSettings->getVisibleTenantIds($user)->map(fn ($id) => (int) $id);
         if ($managedTenantIds->intersect($tenantIds)->isNotEmpty()) {
@@ -251,16 +246,38 @@ class AtstovavimasDashboardService
         return collect($access);
     }
 
+    /**
+     * @param  Builder<Institution>  $institutions
+     * @return SupportCollection<int, string>
+     */
+    private function publicMeetingInstitutionIds(Builder $institutions): SupportCollection
+    {
+        $publicTypeIds = $this->meetingSettings->getPublicMeetingInstitutionTypeIds();
+
+        return $publicTypeIds->isEmpty()
+            ? collect()
+            : $institutions->whereHas('types', fn (Builder $query) => $query->whereIn('institution_types.id', $publicTypeIds))
+                ->pluck('institutions.id');
+    }
+
     /** @return SupportCollection<string, string> */
     public function representativeInstitutionAccess(User $user): SupportCollection
     {
         $own = InstitutionQueries::representativeDashboardInstitutions($user, withSummary: false);
         $related = InstitutionQueries::relatedRepresentativeDashboardInstitutions($own, withSummary: false);
+        $restrictedIds = $related->where('authorized', false)->modelKeys();
+        $public = $restrictedIds === []
+            ? collect()
+            : $this->publicMeetingInstitutionIds(Institution::query()->whereKey($restrictedIds))->flip();
 
         return collect($own->modelKeys())
             ->mapWithKeys(fn (string $id): array => [$id => self::PROJECTION_FULL])
             ->union($related->mapWithKeys(fn (Institution $institution): array => [
-                $institution->id => $institution->getAttribute('authorized') ? self::PROJECTION_FULL : self::PROJECTION_RESTRICTED,
+                $institution->id => match (true) {
+                    $institution->getAttribute('authorized') === true => self::PROJECTION_FULL,
+                    $public->has($institution->id) => self::PROJECTION_PUBLIC,
+                    default => self::PROJECTION_RESTRICTED,
+                },
             ]));
     }
 

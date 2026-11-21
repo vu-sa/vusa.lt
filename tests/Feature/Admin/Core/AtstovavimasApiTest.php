@@ -91,10 +91,15 @@ describe('representative meetings window', function (): void {
             ]);
     });
 
-    test('a plain representative receives 403 for a selection that includes an unrelated institution', function (): void {
+    test('a plain representative receives 403 for a selection that includes an unrelated public institution', function (): void {
         $rep = makeUser($this->tenant);
         $own = $rep->current_duties()->first()->institution;
         $unrelated = Institution::factory()->for($own->tenant)->create();
+        $type = InstitutionType::factory()->create();
+        $unrelated->types()->attach($type);
+        $settings = app(MeetingSettings::class);
+        $settings->public_meeting_institution_type_ids = [$type->id];
+        $settings->save();
 
         asUser($rep)->getJson(route('api.v1.admin.atstovavimas.meetings', [
             'institution_ids' => [$own->id, $unrelated->id],
@@ -125,7 +130,7 @@ describe('representative meetings window', function (): void {
         ]))->assertForbidden();
     });
 
-    test('an incoming-only link gives meeting anchors and file flags without recording state', function (): void {
+    test('an incoming-only link to a non-public institution gives meeting anchors and file flags without an agenda', function (): void {
         $rep = makeUser($this->tenant);
         $own = $rep->current_duties()->first()->institution;
         InstitutionLink::factory()->create([
@@ -152,6 +157,66 @@ describe('representative meetings window', function (): void {
             'meeting' => $meeting->id,
             'institution_id' => $this->institution->id,
         ]))->assertOk()->assertJsonPath('data', ['agenda_items' => [], 'agenda_items_count' => 0]);
+    });
+
+    test('an incoming-only link to a public institution gives a plain rep the agenda with private items redacted', function (): void {
+        $rep = makeUser($this->tenant);
+        $own = $rep->current_duties()->first()->institution;
+        InstitutionLink::factory()->create([
+            'source_institution_id' => $this->institution->id,
+            'target_institution_id' => $own->id,
+            'mutual' => false,
+        ]);
+        $type = InstitutionType::factory()->create();
+        $this->institution->types()->attach($type);
+        $settings = app(MeetingSettings::class);
+        $settings->public_meeting_institution_type_ids = [$type->id];
+        $settings->save();
+        $meeting = Meeting::factory()->hasAttached($this->institution)->create(['start_time' => '2026-11-20 09:00:00']);
+        FileableFile::factory()->for($meeting, 'fileable')->report()->create();
+        Calendar::factory()->for($this->tenant)->create(['meeting_id' => $meeting->id, 'is_draft' => true]);
+        $publicItem = AgendaItem::factory()->for($meeting)->voting()->create(['order' => 1]);
+        Vote::factory()->for($publicItem, 'agendaItem')->positive()->create();
+        $privateItem = AgendaItem::factory()->for($meeting)->voting()->create([
+            'order' => 2,
+            'is_private' => true,
+            'title' => ['lt' => 'Slaptas klausimas', 'en' => 'Private item'],
+            'public_title' => 'Uždaras klausimas',
+        ]);
+        Vote::factory()->for($privateItem, 'agendaItem')->negative()->create();
+
+        $meeting = $meeting->fresh();
+        expect($rep->can('viewSummary', $meeting))->toBeTrue()
+            ->and($rep->can('view', $meeting))->toBeFalse();
+
+        asUser($rep)->getJson(route('api.v1.admin.atstovavimas.meetings', [
+            'institution_ids' => [$this->institution->id],
+            'from' => '2026-11-01',
+            'to' => '2026-11-30',
+        ]))->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $meeting->id)
+            ->assertJsonMissingPath('data.0.authorized')
+            ->assertJsonPath('data.0.agenda_items_count', 2)
+            ->assertJsonPath('data.0.completion_status', null)
+            ->assertJsonPath('data.0.vote_alignment_status', null)
+            ->assertJsonPath('data.0.has_report', false)
+            ->assertJsonPath('data.0.has_calendar_event', false);
+
+        asUser($rep)->getJson(route('api.v1.admin.atstovavimas.meetings.agenda', [
+            'meeting' => $meeting->id,
+            'institution_id' => $this->institution->id,
+        ]))->assertOk()
+            ->assertJsonPath('data.agenda_items_count', 2)
+            ->assertJsonCount(2, 'data.agenda_items')
+            ->assertJsonPath('data.agenda_items.0.id', $publicItem->id)
+            ->assertJsonPath('data.agenda_items.0.votes', [
+                ['student_vote' => 'positive', 'decision' => 'positive', 'is_consensus' => false],
+            ])
+            ->assertJsonPath('data.agenda_items.1.id', $privateItem->id)
+            ->assertJsonPath('data.agenda_items.1.title', 'Uždaras klausimas')
+            ->assertJsonPath('data.agenda_items.1.is_redacted', true)
+            ->assertJsonMissingPath('data.agenda_items.1.votes');
     });
 
     test('the meetings window requires authentication', function (): void {
