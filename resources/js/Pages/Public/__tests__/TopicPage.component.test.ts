@@ -37,7 +37,8 @@ describe('Public/TopicPage.vue', () => {
     expect(lead.text()).not.toContain('<p>');
   });
 
-  it('leaves the lead out when the tag has no description', () => {
+  it('leaves the lead out when the description is missing or only an empty paragraph', () => {
     expect(mountPage(null).find('[data-slot="topic-lead"]').exists()).toBe(false);
+    expect(mountPage('<p></p>').find('[data-slot="topic-lead"]').exists()).toBe(false);
   });
 });

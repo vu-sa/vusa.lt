@@ -4,7 +4,7 @@
       <template #breadcrumbs>
         <PublicBreadcrumbs variant="inline" />
       </template>
-      <template v-if="topic.description" #lead>
+      <template v-if="hasHtmlText(topic.description)" #lead>
         <!-- v-html: sanitized on write (Tag::sanitizedHtmlTranslations) -->
         <div class="[&_p]:m-0 [&_p+p]:mt-3 [&_a]:text-foreground [&_a]:underline" data-slot="topic-lead" v-html="topic.description" />
       </template>
@@ -86,6 +86,7 @@ import SmartLink from '@/Components/Public/SmartLink.vue';
 import NewsCard from '@/Components/Public/News/NewsCard.vue';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { formatDateWith } from '@/Utils/dateTime';
+import { hasHtmlText } from '@/Utils/String';
 import { LocaleEnum } from '@/Types/enums';
 import type { NewsItem } from '@/Types/contentParts';
 
