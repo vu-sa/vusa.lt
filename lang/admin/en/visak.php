@@ -160,6 +160,8 @@ return [
     // Gantt chart loading state
     'gantt' => [
         'loading_meetings' => 'Loading meetings…',
+        'members_load_failed' => 'Failed to load member history.',
+        'retry' => 'Try again',
         'meetings_load_failed' => 'Failed to load meetings. Please try again.',
         'agenda_loading' => 'Loading agenda…',
         'agenda' => 'Agenda',

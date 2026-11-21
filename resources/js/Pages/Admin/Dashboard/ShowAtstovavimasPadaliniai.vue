@@ -61,7 +61,7 @@
     <!-- The timeline is a workbench: it renders only once it is near the viewport, and never on a phone. -->
     <section v-if="isAtLeastMd" :aria-label="$t('visak.overview.timeline.title')">
       <div ref="timelineAnchor" class="min-h-64">
-        <TimelineGanttSkeleton v-if="!timelineVisible || !ganttRows.loaded.value" />
+        <TimelineGanttSkeleton v-if="!timelineVisible || !ganttRows.loadedResult.value" />
         <TenantTimelineSection
           v-else
           :available-tenants="props.ganttTenants"
@@ -85,8 +85,11 @@
           @create-meeting="onCreateMeeting"
           @create-check-in="actions.onGapCreateCheckIn"
           @range-changed="onTenantRangeChanged"
-          @rows-changed="onRowsChanged"
         />
+        <div v-if="rowMembers.failed.value || tenantMeetings.lastError.value" class="flex flex-wrap items-center gap-2 text-sm" role="alert">
+          <span>{{ $t(rowMembers.failed.value ? 'visak.gantt.members_load_failed' : 'visak.gantt.meetings_load_failed') }}</span>
+          <Button variant="outline" size="sm" voice="sentence" @click="retryGanttData">{{ $t('visak.gantt.retry') }}</Button>
+        </div>
       </div>
     </section>
     <p v-else class="border-t border-border pt-3 text-sm text-muted-foreground">
@@ -136,6 +139,7 @@ import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { InstitutionScope } from '@/Types/enums';
 import { OverviewSection } from '@/Components/Patterns';
+import { Button } from '@/Components/ui/button';
 
 import InstitutionAttentionSkeleton from './Components/InstitutionAttentionSkeleton.vue';
 import OverviewNumbersSkeleton from './Components/OverviewNumbersSkeleton.vue';
@@ -183,22 +187,15 @@ const actions = useAtstovavimasActions([]);
 const tenantTimelineData = useTenantTimelineData();
 const ganttRows = useTenantTimelineData<AtstovavimasInstitution[]>('api.v1.admin.visak.gantt');
 const ganttActivityRequests = useTenantTimelineData<GanttActivityRequest[]>('api.v1.admin.visak.activityRequests');
-// Hundreds of rows: requests follow the rows on screen, so none go out before the chart reports them.
-const tenantMeetings = useTenantMeetings(() => timelineFilters.selectedTenantForGantt.value, { waitForRows: true });
-const tenantInstitutionsData = computed(() => tenantTimelineData.data.value?.institutions ?? []);
-const rowMembers = useRowMembers(() => timelineFilters.selectedTenantForGantt.value);
-const ganttInstitutionsData = computed(() => ganttRows.data.value ?? []);
+const ganttTenantIds = computed(() => [...new Set(timelineFilters.selectedTenantForGantt.value.map(String))].sort());
+const ganttTenantKey = computed(() => ganttTenantIds.value.join(','));
+const ganttInstitutionsData = computed(() => ganttRows.loadedResult.value?.data ?? []);
+const rowMembers = useRowMembers();
 const memberRows = computed(() => rowMembers.withHistory(ganttInstitutionsData.value));
 const membersPending = computed(() => rowMembers.pendingIds(ganttInstitutionsData.value));
+const tenantInstitutionsData = computed(() => tenantTimelineData.data.value?.institutions ?? []);
 
-function onRowsChanged(institutionIds: string[], firstVisible: number, lastVisible: number): void {
-  // Until a new selection's rows arrive, the chart still reports the previous selection's.
-  if (ganttRows.isFetching.value) return;
-  tenantMeetings.setRows(institutionIds, firstVisible, lastVisible);
-  rowMembers.setRows(institutionIds, firstVisible, lastVisible);
-}
 const representativeActivity = computed(() => tenantTimelineData.data.value?.representative_activity);
-const ganttData = useGanttChartData(ganttInstitutionsData, props.ganttTenants, tenantMeetings.meetings, memberRows);
 
 provideGanttSettings();
 
@@ -295,6 +292,20 @@ useIntersectionObserver(timelineAnchor, ([entry]) => {
   }
 }, { rootMargin: '200px' });
 
+const ganttActive = computed(() => isAtLeastMd.value && timelineVisible.value);
+const readyTenantKey = computed(() => {
+  const key = ganttTenantKey.value;
+  return ganttActive.value && key === ganttRows.loadedResult.value?.tenantKey && ganttInstitutionsData.value.length ? key : '';
+});
+const tenantMeetings = useTenantMeetings(() => readyTenantKey.value ? ganttTenantIds.value : []);
+const ganttData = useGanttChartData(ganttInstitutionsData, props.ganttTenants, tenantMeetings.meetings, memberRows);
+
+function retryGanttData(): void {
+  if (!readyTenantKey.value) return;
+  rowMembers.retry(ganttTenantIds.value);
+  if (tenantMeetings.lastError.value) tenantMeetings.retry();
+}
+
 // Only shown after 300ms so a fast cache hit never flashes it.
 const meetingsLoadingVisible = ref(false);
 let meetingsLoadingTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -317,45 +328,32 @@ watch(ganttRows.isFetching, (loading) => {
   timelineFilters.tenantInstitutionsLoading.value = loading;
 }, { immediate: true });
 
-watch(ganttRows.loaded, (loaded) => {
-  timelineFilters.tenantInstitutionsLoaded.value = loaded;
+watch(ganttRows.loadedResult, (result) => {
+  timelineFilters.tenantInstitutionsLoaded.value = result !== null;
 }, { immediate: true });
 
 function onTenantRangeChanged(min: Date, max: Date): void {
   tenantMeetings.ensureRange(min, max);
 }
 
-// The Gantt's three requests are the heaviest on the page: wait until it can actually be seen.
-const ganttActive = computed(() => isAtLeastMd.value && timelineVisible.value);
-
 onMounted(() => {
   tenantTimelineData.load(timelineFilters.selectedStatsTenants.value);
 });
 
-// Meetings and member history follow the rows: the chart reports the rows on screen, and those load first.
-watch(ganttActive, (active) => {
-  if (!active) return;
-  const tenants = timelineFilters.selectedTenantForGantt.value;
-  if (tenants.length === 0) return;
-  ganttRows.load(tenants);
-  ganttActivityRequests.load(tenants);
+watch([ganttActive, ganttTenantKey], ([active, key]) => {
+  if (!active || !key) return;
+  ganttRows.load(ganttTenantIds.value);
+  ganttActivityRequests.load(ganttTenantIds.value);
 }, { immediate: true });
+
+watch(readyTenantKey, (key) => {
+  tenantMeetings.reset({ reload: Boolean(key) });
+  if (key) void rowMembers.load(ganttTenantIds.value);
+  else rowMembers.reset();
+});
 
 watch(() => timelineFilters.selectedStatsTenants.value, (tenantIds) => {
   tenantTimelineData.load(tenantIds);
-}, { deep: true });
-
-watch(() => timelineFilters.selectedTenantForGantt.value, (newTenants, oldTenants) => {
-  if (newTenants.length === 0) return;
-  const changed = newTenants.join(',') !== (oldTenants ?? []).join(',');
-  // Loaded windows belong to the old selection even while the Gantt is hidden.
-  if (changed) {
-    tenantMeetings.reset();
-    rowMembers.reset();
-  }
-  if (!ganttActive.value) return;
-  ganttRows.load(newTenants);
-  ganttActivityRequests.load(newTenants);
 }, { deep: true });
 
 // --- Gantt lookup maps ------------------------------------------------------------------------
@@ -402,9 +400,9 @@ function refreshDashboard(): void {
     ganttActivityRequests.load(timelineFilters.selectedTenantForGantt.value, true);
   }
   void statusHistory.load(timelineFilters.selectedStatsTenants.value, historyDays.value, true);
-  if (ganttActive.value) {
+  if (readyTenantKey.value) {
     tenantMeetings.refresh();
-    rowMembers.refresh();
+    void rowMembers.load(ganttTenantIds.value, true);
   }
 }
 </script>

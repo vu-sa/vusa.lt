@@ -63,8 +63,7 @@
           :empty-message="$t('Šiame padalinyje nėra institucijų')" @create-meeting="$emit('create-meeting', $event)"
           @create-check-in="$emit('create-check-in', $event)"
           @fullscreen="toggle"
-          @range-changed="(min: Date, max: Date) => $emit('range-changed', min, max)"
-          @rows-changed="(ids: string[], first: number, last: number) => $emit('rows-changed', ids, first, last)" />
+          @range-changed="(min: Date, max: Date) => $emit('range-changed', min, max)" />
       </div>
     </OverviewSection>
   </FocusModeFrame>
@@ -125,7 +124,6 @@ defineEmits<{
   'create-meeting': [payload: { institution_id: string | number; suggestedAt: Date; institutionName?: string }];
   'create-check-in': [payload: { institution_id: string | number; startDate: Date; endDate: Date }];
   'range-changed': [min: Date, max: Date];
-  'rows-changed': [institutionIds: string[], firstVisible: number, lastVisible: number];
 }>();
 
 // The Gantt is heavy; give the rest of the page its first frame.

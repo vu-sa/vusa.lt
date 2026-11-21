@@ -42,8 +42,7 @@
         :empty-message="$t('Neturi tiesiogiai priskirtų institucijų')" @create-meeting="$emit('create-meeting', $event)"
         @create-check-in="$emit('create-check-in', $event)"
         @fullscreen="toggle"
-        @range-changed="(min: Date, max: Date) => $emit('range-changed', min, max)"
-        @rows-changed="(ids: string[], first: number, last: number) => $emit('rows-changed', ids, first, last)" />
+        @range-changed="(min: Date, max: Date) => $emit('range-changed', min, max)" />
     </OverviewSection>
   </FocusModeFrame>
 </template>
@@ -122,7 +121,6 @@ defineEmits<{
   'create-meeting': [payload: { institution_id: string | number; suggestedAt: Date }];
   'create-check-in': [payload: { institution_id: string | number; startDate: Date; endDate: Date }];
   'range-changed': [min: Date, max: Date];
-  'rows-changed': [institutionIds: string[], firstVisible: number, lastVisible: number];
 }>();
 
 // In place rather than a modal, so dialogs opened from the chart stack above it.

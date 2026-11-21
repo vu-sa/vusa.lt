@@ -11,7 +11,7 @@ class AtstovavimasGanttMembersRequest extends AtstovavimasGanttRequest
     {
         return [
             ...parent::rules(),
-            'institution_ids' => ['required', 'array', 'list', 'max:100'],
+            'institution_ids' => ['sometimes', 'array', 'list', 'min:1', 'max:100'],
         ];
     }
 }

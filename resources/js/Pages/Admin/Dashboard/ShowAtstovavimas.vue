@@ -70,7 +70,6 @@
           @create-meeting="actions.onGapCreateMeeting"
           @create-check-in="actions.onGapCreateCheckIn"
           @range-changed="(min: Date, max: Date) => institutionMeetings.ensureRange(min, max)"
-          @rows-changed="institutionMeetings.setRows"
         />
       </div>
     </section>

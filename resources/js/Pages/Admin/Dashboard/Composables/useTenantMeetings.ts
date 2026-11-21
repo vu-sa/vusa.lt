@@ -1,12 +1,4 @@
-/**
- * Windowed meetings store for a Gantt chart.
- *
- * The Gantt reports the dates on screen (`ensureRange`) and the institution rows in display order
- * with the slice on screen (`setRows`). Missing (institution batch × month chunk) requests are
- * queued rows-on-screen first, then nearest the middle of the view, and run a few at a time.
- */
-import { computed, ref, shallowRef, type ComputedRef } from 'vue';
-import { useDebounceFn } from '@vueuse/core';
+import { computed, getCurrentScope, onScopeDispose, ref, shallowRef, type ComputedRef } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { useToasts } from '@/Composables/useToasts';
@@ -19,15 +11,11 @@ import type { AtstovavimasTenantMeeting, GanttMeeting } from '../types';
 /** Smallest padding fetched beyond the visible range; wide views pad a quarter of their span. */
 const MIN_BUFFER_DAYS = 30;
 const FETCH_DEBOUNCE_MS = 150;
-/** Requests in flight at once; the server answers each in tens of milliseconds, so latency dominates. */
 const CONCURRENCY = 3;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 /** One request covers at most this many months, well under the server's 24-month cap. */
 const DEFAULT_CHUNK_MONTHS = 6;
-/** Rows per request, cut along display order so a scroll position always asks for the same, cacheable batches. */
-const BATCH_SIZE = 20;
-/** Coverage of a request made before the rows were known; it covers every institution. */
-const ALL = '*';
+const REPRESENTATIVE_ID_LIMIT = 100;
 
 interface Window {
   from: number;
@@ -35,13 +23,11 @@ interface Window {
 }
 
 interface Task {
+  key: string;
   window: Window;
-  /** null: every institution the source may show (no subset sent). */
   institutionIds: string[] | null;
-  /** Bypass the server cache (after an edit). */
-  refresh?: boolean;
+  controller: AbortController;
 }
-
 
 /** Chunks sit on calendar boundaries (half-years, years), so a view always asks for the same, cacheable windows. */
 function chunkStart(ts: number, months: number): number {
@@ -66,94 +52,51 @@ function chunk(segment: Window, months: number): Window[] {
   return chunks;
 }
 
-/** Parts of `window` not covered by `covered`. */
-function subtract(window: Window, covered: Window[]): Window[] {
-  let segments: Window[] = [window];
-  for (const w of covered) {
-    const next: Window[] = [];
-    for (const s of segments) {
-      if (w.until < s.from || w.from > s.until) {
-        next.push(s);
-        continue;
-      }
-      if (w.from > s.from) next.push({ from: s.from, until: Math.min(s.until, w.from - 1) });
-      if (w.until < s.until) next.push({ from: Math.max(s.from, w.until + 1), until: s.until });
-    }
-    segments = next;
-  }
-  return segments;
-}
-
-function merge(windows: Window[]): Window[] {
-  const merged: Window[] = [];
-  for (const w of [...windows].sort((a, b) => a.from - b.from)) {
-    const last = merged[merged.length - 1];
-    // Overlapping or adjacent (within a day) windows become one.
-    if (last && w.from <= last.until + MS_PER_DAY) {
-      last.until = Math.max(last.until, w.until);
-    }
-    else {
-      merged.push({ ...w });
-    }
-  }
-  return merged;
-}
-
 interface WindowedMeetingsSource {
-  /** Endpoint plus query for one window and (optionally) a subset of institutions, or null when there is nothing to fetch. */
-  request: (from: string, until: string, refresh: boolean, institutionIds: string[] | null) => { url: string; params: URLSearchParams } | null;
-  keyOf: (meeting: AtstovavimasTenantMeeting) => string;
+  groups: () => Array<string[] | null>;
+  request: (from: string, until: string, refresh: boolean, institutionIds: string[] | null) => { url: string; params: URLSearchParams };
   chunkMonths?: number;
-  /** Query for one meeting's tooltip agenda, resolved with the same access as the window. */
   agendaParams: () => URLSearchParams;
-  /** Plan nothing until the chart reports its rows, rather than one request for every institution. */
-  waitForRows?: boolean;
 }
 
 type AgendaItems = NonNullable<Awaited<ReturnType<GanttAgendaLoader>>>;
 
-export function useTenantMeetings(tenantIds: () => Array<string | number>, { waitForRows = false }: { waitForRows?: boolean } = {}) {
+export function useTenantMeetings(tenantIds: () => Array<string | number>) {
   return useWindowedMeetings({
-    waitForRows,
-    request: (from, until, refresh, institutionIds) => {
-      const ids = tenantIds().map(String);
-      if (ids.length === 0) return null;
-
+    groups: () => tenantIds().length ? [null] : [],
+    request: (from, until, refresh) => {
       const params = new URLSearchParams();
-      ids.forEach(id => params.append('tenant_ids[]', id));
-      institutionIds?.forEach(id => params.append('institution_ids[]', id));
+      tenantIds().forEach(id => params.append('tenant_ids[]', String(id)));
       params.set('from', from);
       params.set('until', until);
       if (refresh) params.set('refresh', '1');
-
       return { url: route('api.v1.admin.visak.meetings'), params };
     },
-    // A joint meeting is one marker per institution row.
-    keyOf: meeting => `${meeting.institution_id}:${meeting.id}`,
     agendaParams: () => {
       const params = new URLSearchParams();
-      tenantIds().map(String).forEach(id => params.append('tenant_ids[]', id));
+      tenantIds().forEach(id => params.append('tenant_ids[]', String(id)));
       return params;
     },
   });
 }
 
-/** The overview's own and related institutions; a joint meeting appears once per institution. */
 export function useInstitutionMeetings(institutionIds: () => Array<string | number>) {
   return useWindowedMeetings({
-    request: (from, until, _refresh, subset) => {
-      const ids = subset ?? institutionIds().map(String);
-      if (ids.length === 0) return null;
-
+    groups: () => {
+      const ids = [...new Set(institutionIds().map(String))].sort();
+      const groups: string[][] = [];
+      for (let i = 0; i < ids.length; i += REPRESENTATIVE_ID_LIMIT) {
+        groups.push(ids.slice(i, i + REPRESENTATIVE_ID_LIMIT));
+      }
+      return groups;
+    },
+    request: (from, until, _refresh, ids) => {
       const params = new URLSearchParams();
-      ids.forEach(id => params.append('institution_ids[]', id));
+      ids?.forEach(id => params.append('institution_ids[]', id));
       params.set('from', from);
       params.set('to', until);
-
       return { url: route('api.v1.admin.atstovavimas.meetings'), params };
     },
-    keyOf: meeting => `${meeting.institution_id}:${meeting.id}`,
-    // A handful of institutions: a year is still a small response, and the first view is one request.
     chunkMonths: 12,
     agendaParams: () => new URLSearchParams(),
   });
@@ -163,197 +106,133 @@ function useWindowedMeetings(source: WindowedMeetingsSource) {
   const toasts = useToasts();
   const chunkMonths = source.chunkMonths ?? DEFAULT_CHUNK_MONTHS;
 
-  const meetingsById = shallowRef<Map<string, GanttMeeting>>(new Map());
-  /** Loaded windows per institution id; `ALL` holds requests made without a subset. */
-  const coverage = new Map<string, Window[]>();
-  // Shallow: tasks are compared by identity, which a deep ref's proxies would break.
+  const meetingsById = shallowRef(new Map<string, GanttMeeting>());
+  const loaded = new Set<string>();
+  const failed = new Set<string>();
+  const forceRefresh = new Set<string>();
   const inFlight = shallowRef<Task[]>([]);
   const isFetching = computed(() => inFlight.value.length > 0);
-  /** Set when the most recent fetch failed; cleared on the next success. */
   const lastError = ref<string | null>(null);
-
-  let queue: Task[] = [];
   let range: Window | null = null;
-  /** Institution rows in display order, and the slice of them on screen. */
-  let rows: string[] = [];
-  let visible: { first: number; last: number } = { first: 0, last: -1 };
-  // Incremented on reset: responses for a previous selection are dropped.
-  let generation = 0;
-  let failuresSinceToast = 0;
 
   const meetings: ComputedRef<GanttMeeting[]> = computed(() =>
-    Array.from(meetingsById.value.values())
-      .sort((a, b) => a.start_time.getTime() - b.start_time.getTime()),
+    [...meetingsById.value.values()].sort((a, b) => a.start_time.getTime() - b.start_time.getTime()),
   );
-
-  const loadingSegments = computed<GanttLoadingSegment[]>(() => inFlight.value.map(task => ({
-    from: new Date(task.window.from),
-    until: new Date(task.window.until),
-    institutionIds: task.institutionIds,
+  const loadingSegments = computed<GanttLoadingSegment[]>(() => inFlight.value.map(({ window }) => ({
+    from: new Date(window.from),
+    until: new Date(window.until),
   })));
 
-  function coveredFor(id: string, includeInFlight: boolean): Window[] {
-    const windows = [...(coverage.get(id) ?? []), ...(coverage.get(ALL) ?? [])];
-    if (includeInFlight) {
-      for (const task of inFlight.value) {
-        if (task.institutionIds === null || task.institutionIds.includes(id)) windows.push(task.window);
-      }
-    }
-    return windows;
-  }
-
-  function markCovered(task: Task): void {
-    for (const id of task.institutionIds ?? [ALL]) {
-      coverage.set(id, merge([...(coverage.get(id) ?? []), task.window]));
-    }
-  }
-
-  /** Every missing (batch × chunk), rows on screen first, then nearest the middle of the view. */
-  function plan(): Task[] {
+  function plan() {
     if (!range) return [];
 
-    const chunks = chunk(range, chunkMonths);
     const center = (range.from + range.until) / 2;
-    const byDistance = (a: Task, b: Task) =>
-      Math.abs((a.window.from + a.window.until) / 2 - center) - Math.abs((b.window.from + b.window.until) / 2 - center);
-
-    if (rows.length === 0) {
-      if (source.waitForRows) return [];
-      return chunks
-        .flatMap(window => subtract(window, coveredFor(ALL, true)))
-        .map(window => ({ window, institutionIds: null }))
-        .sort(byDistance);
-    }
-
-    const batches: string[][] = [];
-    for (let i = 0; i < rows.length; i += BATCH_SIZE) batches.push(rows.slice(i, i + BATCH_SIZE));
-    const firstOnScreen = Math.floor(visible.first / BATCH_SIZE);
-    const lastOnScreen = Math.floor(visible.last / BATCH_SIZE);
-    // Batches on screen, then outward from them: the rows a scroll reaches next come before the far end.
-    const batchOrder = batches
-      .map((_, index) => index)
-      .sort((a, b) => {
-        const distance = (i: number) => (i < firstOnScreen ? firstOnScreen - i : i > lastOnScreen ? i - lastOnScreen : 0);
-        return distance(a) - distance(b) || a - b;
-      });
-
-    return batchOrder.flatMap((batchIndex) => {
-      const batch = batches[batchIndex]!;
-      return chunks
-        .filter(window => batch.some(id => subtract(window, coveredFor(id, true)).length > 0))
-        .map(window => ({ window, institutionIds: batch }))
-        .sort(byDistance);
-    });
+    const distance = (window: Window) => Math.abs((window.from + window.until) / 2 - center);
+    const groups = source.groups();
+    return chunk(range, chunkMonths)
+      .sort((a, b) => distance(a) - distance(b))
+      .flatMap(window => groups.map(institutionIds => ({
+        window,
+        institutionIds,
+        key: `${window.from}:${institutionIds?.join(',') ?? '*'}`,
+      })));
   }
 
-  async function fetchTask(task: Task, refresh = false): Promise<void> {
-    const request = source.request(
-      toNaiveDateTimeString(new Date(task.window.from)).slice(0, 10),
-      toNaiveDateTimeString(new Date(task.window.until)).slice(0, 10),
-      refresh,
+  async function fetchWindow(task: Task): Promise<void> {
+    const { key, window, controller } = task;
+    const { url, params } = source.request(
+      toNaiveDateTimeString(new Date(window.from)).slice(0, 10),
+      toNaiveDateTimeString(new Date(window.until)).slice(0, 10),
+      forceRefresh.has(key),
       task.institutionIds,
     );
-    if (!request) return;
 
-    const generationAtStart = generation;
-    const response = await fetch(`${request.url}?${request.params}`, {
-      headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-      credentials: 'same-origin',
-    });
+    try {
+      const response = await fetch(`${url}?${params}`, {
+        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        credentials: 'same-origin',
+        signal: controller.signal,
+      });
+      if (!response.ok) throw new Error(`Failed to fetch meetings window (HTTP ${response.status})`);
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch meetings window (HTTP ${response.status})`);
-    }
+      const json = await response.json() as { success?: boolean; data?: AtstovavimasTenantMeeting[] };
+      if (!json.success || !Array.isArray(json.data)) throw new Error('Unexpected meetings response shape');
+      if (controller.signal.aborted) return;
 
-    const json = await response.json() as { success?: boolean; data?: AtstovavimasTenantMeeting[] };
-    if (!json?.success || !Array.isArray(json.data)) {
-      throw new Error('Unexpected meetings response shape');
-    }
-
-    if (generationAtStart !== generation) return;
-
-    const map = new Map(meetingsById.value);
-    for (const meeting of json.data) {
-      map.set(source.keyOf(meeting), { ...meeting, start_time: new Date(meeting.start_time) });
-    }
-    meetingsById.value = map;
-    markCovered(task);
-  }
-
-  async function worker(): Promise<void> {
-    while (queue.length > 0) {
-      const task = queue.shift()!;
-      const generationAtStart = generation;
-      inFlight.value = [...inFlight.value, task];
-      try {
-        await fetchTask(task, task.refresh);
-        lastError.value = null;
+      const map = new Map(meetingsById.value);
+      for (const meeting of json.data) {
+        map.set(`${meeting.institution_id}:${meeting.id}`, { ...meeting, start_time: new Date(meeting.start_time) });
       }
-      catch (error) {
-        failuresSinceToast += 1;
-        lastError.value = error instanceof Error ? error.message : String(error);
-      }
-      finally {
+      meetingsById.value = map;
+      loaded.add(key);
+      forceRefresh.delete(key);
+    }
+    catch (error) {
+      if (controller.signal.aborted) return;
+
+      if (!lastError.value) toasts.error($t('visak.gantt.meetings_load_failed'));
+      lastError.value = error instanceof Error ? error.message : String(error);
+      failed.add(key);
+    }
+    finally {
+      if (!controller.signal.aborted) {
         inFlight.value = inFlight.value.filter(t => t !== task);
+        schedule();
       }
-      if (generationAtStart !== generation) return;
-    }
-
-    if (inFlight.value.length === 0 && failuresSinceToast > 0) {
-      failuresSinceToast = 0;
-      toasts.error($t('visak.gantt.meetings_load_failed'));
     }
   }
 
-  /** Re-plans the queue around what is on screen now; requests already in flight finish. */
   function schedule(): void {
-    queue = plan();
-    const idle = CONCURRENCY - inFlight.value.length;
-    for (let i = 0; i < Math.min(idle, queue.length); i++) void worker();
+    const activeKeys = new Set(inFlight.value.map(task => task.key));
+    const next = plan()
+      .filter(({ key }) => !loaded.has(key) && !failed.has(key) && !activeKeys.has(key))
+      .slice(0, CONCURRENCY - inFlight.value.length)
+      .map(task => ({ ...task, controller: new AbortController() }));
+    if (!next.length) return;
+
+    inFlight.value = [...inFlight.value, ...next];
+    next.forEach(task => void fetchWindow(task));
   }
 
-  const debouncedSchedule = useDebounceFn(schedule, FETCH_DEBOUNCE_MS);
-
-  /** Running workers pick from the new order at once; only starting new ones waits for the view to settle. */
-  function reprioritise(): void {
-    if (inFlight.value.length > 0) queue = plan();
-    void debouncedSchedule();
+  let scheduleTimer: ReturnType<typeof setTimeout> | undefined;
+  function resume(): void {
+    clearTimeout(scheduleTimer);
+    scheduleTimer = setTimeout(schedule, FETCH_DEBOUNCE_MS);
   }
 
-  /**
-   * Ensure meetings are loaded for [from, until] plus padding. Debounced; only missing months are fetched.
-   * `pad: false` keeps a first load of up to one chunk to one request per batch.
-   */
   function ensureRange(from: Date, until: Date, { pad = true }: { pad?: boolean } = {}): void {
     const bufferMs = pad ? Math.max(MIN_BUFFER_DAYS * MS_PER_DAY, (until.getTime() - from.getTime()) / 4) : 0;
-    // Re-planned even when unchanged: a failed request is retried on the next report.
-    range = { from: chunkStart(from.getTime() - bufferMs, chunkMonths), until: chunkEnd(until.getTime() + bufferMs, chunkMonths) };
-    reprioritise();
+    const next = { from: chunkStart(from.getTime() - bufferMs, chunkMonths), until: chunkEnd(until.getTime() + bufferMs, chunkMonths) };
+    if (next.from === range?.from && next.until === range.until) return;
+
+    range = next;
+    failed.clear();
+    lastError.value = null;
+    resume();
   }
 
-  /** Institution ids in display order and the indexes of the first and last row on screen. */
-  function setRows(orderedIds: Array<string | number>, firstVisible: number, lastVisible: number): void {
-    const ids = orderedIds.map(String);
-    const sameRows = ids.length === rows.length && ids.every((id, index) => id === rows[index]);
-    const sameBatches = Math.floor(firstVisible / BATCH_SIZE) === Math.floor(visible.first / BATCH_SIZE)
-      && Math.floor(lastVisible / BATCH_SIZE) === Math.floor(visible.last / BATCH_SIZE);
-    visible = { first: firstVisible, last: lastVisible };
-    if (sameRows && sameBatches) return;
-
-    rows = ids;
-    reprioritise();
+  function retry(): void {
+    failed.clear();
+    lastError.value = null;
+    schedule();
   }
 
-  /** After an edit: drop what was loaded (deleted or moved meetings too) and reload the view, bypassing the cache. */
-  function refresh(): void {
-    debouncedSchedule.cancel?.();
-    generation += 1;
-    agendas.clear();
-    coverage.clear();
+  function clear(): void {
+    clearTimeout(scheduleTimer);
+    inFlight.value.forEach(task => task.controller.abort());
     inFlight.value = [];
     meetingsById.value = new Map();
-    queue = plan().map(task => ({ ...task, refresh: true }));
-    for (let i = 0; i < Math.min(CONCURRENCY, queue.length); i++) void worker();
+    loaded.clear();
+    failed.clear();
+    forceRefresh.clear();
+    agendas.clear();
+    lastError.value = null;
+  }
+
+  function refresh(): void {
+    clear();
+    for (const task of plan()) forceRefresh.add(task.key);
+    schedule();
   }
 
   const agendas = new Map<string, Promise<AgendaItems | null>>();
@@ -377,7 +256,7 @@ function useWindowedMeetings(source: WindowedMeetingsSource) {
         return json.data.agenda_items;
       })
       .catch(() => {
-        agendas.delete(key);
+        if (agendas.get(key) === request) agendas.delete(key);
         return null;
       });
 
@@ -385,34 +264,12 @@ function useWindowedMeetings(source: WindowedMeetingsSource) {
     return request;
   };
 
-  /** Drop all loaded meetings and coverage (e.g. when the selection changes); keeps the view. */
-  function reset(): void {
-    debouncedSchedule.cancel?.();
-    queue = [];
-    generation += 1;
-    meetingsById.value = new Map();
-    coverage.clear();
-    inFlight.value = [];
-    agendas.clear();
-    rows = [];
-    visible = { first: 0, last: -1 };
-    const lastRange = range;
-    range = null;
-    if (lastRange) {
-      range = lastRange;
-      void debouncedSchedule();
-    }
+  function reset({ reload = true } = {}): void {
+    clear();
+    if (reload) resume();
   }
 
-  return {
-    meetings,
-    isFetching,
-    loadingSegments,
-    lastError,
-    ensureRange,
-    setRows,
-    refresh,
-    reset,
-    loadAgenda,
-  };
+  if (getCurrentScope()) onScopeDispose(clear);
+
+  return { meetings, isFetching, loadingSegments, lastError, ensureRange, refresh, reset, retry, loadAgenda };
 }

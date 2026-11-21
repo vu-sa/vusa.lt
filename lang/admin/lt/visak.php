@@ -160,6 +160,8 @@ return [
     // Gantt chart loading state
     'gantt' => [
         'loading_meetings' => 'Kraunami posėdžiai…',
+        'members_load_failed' => 'Nepavyko įkelti narių istorijos.',
+        'retry' => 'Bandyti dar kartą',
         'meetings_load_failed' => 'Nepavyko įkelti posėdžių. Bandyk dar kartą.',
         'agenda_loading' => 'Kraunama darbotvarkė…',
         'agenda' => 'Darbotvarkė',

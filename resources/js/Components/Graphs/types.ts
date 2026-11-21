@@ -14,5 +14,4 @@ export type GanttAgendaLoader = (meeting: { id: string | number; institution_id:
 export interface GanttLoadingSegment {
   from: Date;
   until: Date;
-  institutionIds: string[] | null;
 }

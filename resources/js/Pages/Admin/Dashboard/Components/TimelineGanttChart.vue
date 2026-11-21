@@ -30,7 +30,6 @@
         @fullscreen="$emit('fullscreen')"
         @show-legend-modal="showLegendModal = true"
         @range-changed="(min: Date, max: Date) => $emit('range-changed', min, max)"
-        @rows-changed="(ids: string[], first: number, last: number) => $emit('rows-changed', ids, first, last)"
       />
     </div>
 
@@ -95,7 +94,6 @@ defineEmits<{
   'create-check-in': [payload: { institution_id: string | number; startDate: Date; endDate: Date }];
   'fullscreen': [];
   'range-changed': [min: Date, max: Date];
-  'rows-changed': [institutionIds: string[], firstVisible: number, lastVisible: number];
 }>();
 
 const showLegendModal = ref(false);

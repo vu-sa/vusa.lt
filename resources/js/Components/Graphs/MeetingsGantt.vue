@@ -195,7 +195,6 @@ const emit = defineEmits<{
   /** The dates on screen changed — consumers lazy-load meetings for them */
   (e: 'range-changed', min: Date, max: Date): void;
   /** Institution ids in display order (each once) and the first and last of them on screen. */
-  (e: 'rows-changed', institutionIds: string[], firstVisible: number, lastVisible: number): void;
 }>();
 
 const DAYS_AROUND_TODAY = 60;
@@ -549,10 +548,7 @@ function render(): void {
     const x0 = Math.max(0, x(segment.from), visibleLeft);
     const x1 = Math.min(innerWidth, x(segment.until), visibleRight);
     if (x1 <= x0) return [];
-    const ids = segment.institutionIds ? new Set(segment.institutionIds) : null;
-    return visibleInstitutionRows
-      .filter(row => !ids || ids.has(String(row.institutionId)))
-      .map(row => ({ key: row.key, x0, x1 }));
+    return visibleInstitutionRows.map(row => ({ key: row.key, x0, x1 }));
   });
   if (loadingCells.length > 0) {
     g.append('g')
@@ -664,23 +660,11 @@ function render(): void {
   });
 
   emit('range-changed', x.invert(Math.max(0, visibleLeft)), x.invert(visibleRight));
-  emitRows(visibleRows);
 
-  // Background batches redraw while the pointer rests on a meeting; its tooltip comes back instead of vanishing.
+  // Meeting responses redraw while the pointer rests on a meeting; its tooltip comes back instead of vanishing.
   container.querySelector('g.meeting-icon:hover')?.dispatchEvent(new MouseEvent('mouseenter', { clientX: lastPointer.x, clientY: lastPointer.y }));
 
   afterRenderQueue.splice(0).forEach(callback => callback());
-}
-
-function emitRows(visibleRows: Array<{ type: string; institutionId?: string | number }>): void {
-  const order = new Map<string, number>();
-  for (const row of layoutRows.value) {
-    if (row.type === 'institution' && !order.has(String(row.institutionId))) order.set(String(row.institutionId), order.size);
-  }
-  const onScreen = visibleRows
-    .filter(row => row.type === 'institution')
-    .map(row => order.get(String(row.institutionId))!);
-  emit('rows-changed', [...order.keys()], onScreen.length ? Math.min(...onScreen) : 0, onScreen.length ? Math.max(...onScreen) : -1);
 }
 
 watch(

@@ -1,15 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { flushPromises } from '@vue/test-utils';
 
 import { useRowMembers } from '../useRowMembers';
 import type { AtstovavimasInstitution } from '../../types';
 
-const rows = Array.from({ length: 50 }, (_, i) => `inst-${String(i).padStart(2, '0')}`);
+const rows = Array.from({ length: 360 }, (_, i) => `inst-${String(i).padStart(2, '0')}`);
 const urls: string[] = [];
 let failNext = false;
 
-function respond(url: string): Response {
-  const ids = new URL(url, 'http://localhost').searchParams.getAll('institution_ids[]');
+function respond(ids = rows): Response {
   if (failNext) {
     failNext = false;
     return { ok: false, json: async () => ({}) } as Response;
@@ -21,7 +19,7 @@ function respond(url: string): Response {
       data: {
         users: { u1: { name: 'Lina', profile_photo_path: null } },
         institutions: Object.fromEntries(ids.map(id => [id, {
-          periods: [{ user_id: 'u1', duty_id: 'd1', start_date: '2025-09-01', end_date: null }],
+          periods: id === 'inst-01' ? [] : [{ user_id: 'u1', duty_id: 'd1', start_date: '2025-09-01', end_date: null }],
           activity: { u1: 'week' },
         }])),
       },
@@ -37,7 +35,7 @@ describe('useRowMembers', () => {
     failNext = false;
     vi.stubGlobal('fetch', vi.fn(async (url: string) => {
       urls.push(String(url));
-      return respond(String(url));
+      return respond();
     }));
   });
 
@@ -45,43 +43,45 @@ describe('useRowMembers', () => {
     vi.stubGlobal('fetch', undefined);
   });
 
-  it('loads the batch on screen first, then its neighbours, two at a time', async () => {
-    const members = useRowMembers(() => ['1']);
+  it('loads the selection in one request and preserves pending and empty history', async () => {
+    const members = useRowMembers();
+    await members.load(['1', '2']);
+    expect(urls).toHaveLength(1);
+    expect(idsOf(urls[0]!)).toEqual([]);
+    expect(new URL(urls[0]!, 'http://localhost').searchParams.getAll('tenant_ids[]')).toEqual(['1', '2']);
+    expect(members.pendingIds(rows.map(id => ({ id }) as AtstovavimasInstitution))).toEqual([]);
 
-    members.setRows(rows, 22, 30);
-    expect(urls.map(url => idsOf(url)[0])).toEqual(['inst-20', 'inst-00']);
-
-    await flushPromises();
-    expect(urls.map(url => idsOf(url)[0])).toEqual(['inst-20', 'inst-00', 'inst-40']);
-    expect(new URL(urls[0]!, 'http://localhost').searchParams.getAll('tenant_ids[]')).toEqual(['1']);
-  });
-
-  it('returns only rows with arrived history, in the shape the Gantt helpers read, and lists the rest as pending', async () => {
-    const members = useRowMembers(() => ['1']);
-    members.setRows(rows.slice(0, 5), 0, 4);
-    await flushPromises();
-
-    const rowsIn = [{ id: 'inst-00', name: 'A' } as AtstovavimasInstitution, { id: 'other', name: 'B' } as AtstovavimasInstitution];
+    const rowsIn = ['inst-00', 'inst-01', 'other'].map(id => ({ id }) as AtstovavimasInstitution);
     const withHistory = members.withHistory(rowsIn);
-    expect(withHistory).toHaveLength(1);
+    expect(withHistory).toHaveLength(2);
+    expect(withHistory[1]!.membership_periods).toEqual([]);
     expect(members.pendingIds(rowsIn)).toEqual(['other']);
     const [row] = withHistory;
     expect(row!.membership_periods).toEqual([{ user: { id: 'u1', name: 'Lina', profile_photo_path: null }, duty_id: 'd1', start_date: '2025-09-01', end_date: null }]);
     expect(row!.member_activity_categories).toEqual({ u1: 'week' });
   });
 
-  it('does not ask twice for loaded rows and retries a failed batch on the next report', async () => {
-    const members = useRowMembers(() => ['1']);
+  it('retries a failure and passes the refresh flag after an edit', async () => {
+    const members = useRowMembers();
     failNext = true;
-    members.setRows(rows.slice(0, 5), 0, 4);
-    await flushPromises();
-    expect(urls).toHaveLength(1);
+    await members.load(['1']);
+    expect(members.failed.value).toBe(true);
 
-    members.setRows(rows.slice(0, 5), 0, 4);
-    await flushPromises();
-    members.setRows(rows.slice(0, 5), 0, 4);
-    await flushPromises();
-
+    await members.load(['1'], true);
+    expect(members.failed.value).toBe(false);
     expect(urls).toHaveLength(2);
+    expect(urls[1]).toContain('refresh=1');
+  });
+
+  it('ignores a response completed after the selection changes', async () => {
+    const members = useRowMembers();
+    let resolveOld!: (response: Response) => void;
+    vi.mocked(fetch).mockImplementationOnce(() => new Promise(resolve => { resolveOld = resolve; }));
+    const obsolete = members.load(['1']);
+    await members.load(['2']);
+    resolveOld(respond([]));
+    await obsolete;
+
+    expect(members.pendingIds([{ id: 'inst-00' } as AtstovavimasInstitution])).toEqual([]);
   });
 });

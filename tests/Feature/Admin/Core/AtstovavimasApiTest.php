@@ -965,6 +965,16 @@ describe('padaliniai gantt', function (): void {
             ->assertJsonPath('data.institutions.'.$this->ownInstitution->id.'.activity.'.$former->id, 'stale')
             ->json('data');
 
+        asUser($this->rep)->getJson(route('api.v1.admin.visak.gantt.members', [
+            'tenant_ids' => [$this->tenant->id, $this->ownInstitution->tenant_id],
+        ]))->assertOk()
+            ->assertJsonCount(3, 'data.institutions')
+            ->assertJsonCount(3, 'data.users')
+            ->assertJsonPath('data.institutions.'.$unrequested->id.'.periods', [])
+            ->assertJsonMissingPath('data.institutions.'.$this->institution->id)
+            ->assertJsonMissingPath('data.institutions.'.$this->publicInstitution->id.'.activity')
+            ->assertJsonPath('data.institutions.'.$this->ownInstitution->id.'.activity.'.$former->id, 'stale');
+
         $periods = collect($data['institutions'][$this->ownInstitution->id]['periods'])->keyBy('user_id');
         $publicPeriods = collect($data['institutions'][$this->publicInstitution->id]['periods'])->keyBy('user_id');
         expect($data['users'][$former->id])->toBe(['name' => $former->name, 'profile_photo_path' => $former->profile_photo_path]);
@@ -1090,6 +1100,11 @@ describe('padaliniai gantt', function (): void {
         expect($rows->get((string) $related->id)['authorized'])->toBeFalse()
             ->and($meetings['Susijęs']['authorized'])->toBeFalse()
             ->and($meetings['Susijęs']['agenda_items_count'])->toBe(0);
+
+        asUser($this->rep)->getJson(route('api.v1.admin.visak.gantt.members', ['tenant_ids' => $tenantIds]))
+            ->assertOk()
+            ->assertJsonPath('data.institutions.'.$related->id.'.periods', [])
+            ->assertJsonMissingPath('data.institutions.'.$related->id.'.activity');
 
         asUser($this->rep)->getJson(route('api.v1.admin.atstovavimas.meetings.agenda', [
             'meeting' => $meeting->id,
@@ -1307,12 +1322,14 @@ test('member batches for one or five institutions use the same number of queries
     expect($measure($institutions->modelKeys()))->toBe($small);
 });
 
-test('the members endpoint requires a batch and returns empty maps when no requested institution is accessible', function (): void {
+test('the members endpoint returns empty maps when no institution is accessible', function (): void {
     $rep = makeUser($this->tenant);
     $params = ['tenant_ids' => [$this->tenant->id]];
 
-    asUser($rep)->getJson(route('api.v1.admin.visak.gantt.members', $params))
-        ->assertUnprocessable()->assertJsonValidationErrors('institution_ids');
+    asUser($rep)->getJson(route('api.v1.admin.visak.gantt.members', [
+        'tenant_ids' => [Tenant::factory()->create(['type' => 'padalinys'])->id],
+    ]))
+        ->assertOk()->assertContent('{"success":true,"data":{"users":{},"institutions":{}}}');
     asUser($rep)->getJson(route('api.v1.admin.visak.gantt.members', [
         ...$params,
         'institution_ids' => [$this->institution->id],
