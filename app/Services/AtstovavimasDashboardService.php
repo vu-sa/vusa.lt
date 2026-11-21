@@ -299,11 +299,16 @@ class AtstovavimasDashboardService
      * renders. Outside full access the recording state is left out; `restricted` rows also lose
      * their agendas.
      *
-     * @param  SupportCollection<string, string>  $access  from ganttInstitutionAccess()
+     * @param  SupportCollection<string, string>  $access  institution id => projection
      * @return list<array<string, mixed>>
      */
-    public function ganttMeetings(SupportCollection $access, CarbonInterface $from, CarbonInterface $until): array
-    {
+    public function ganttMeetings(
+        User $actor,
+        SupportCollection $access,
+        CarbonInterface $from,
+        CarbonInterface $until,
+        bool $includeRestrictedFiles = false,
+    ): array {
         if ($access->isEmpty()) {
             return [];
         }
@@ -330,7 +335,7 @@ class AtstovavimasDashboardService
 
         return $institutions
             ->flatMap(fn (Institution $institution) => $institution->meetings
-                ->map(fn (Meeting $meeting) => $this->mapMeeting($meeting, $institution, $access[(string) $institution->id])))
+                ->map(fn (Meeting $meeting) => $this->mapMeeting($actor, $meeting, $institution, $access[(string) $institution->id], $includeRestrictedFiles)))
             ->values()
             ->all();
     }
@@ -443,10 +448,12 @@ class AtstovavimasDashboardService
     /**
      * @return array<string, mixed>
      */
-    private function mapMeeting(Meeting $meeting, Institution $institution, string $projection = self::PROJECTION_FULL): array
+    private function mapMeeting(User $actor, Meeting $meeting, Institution $institution, string $projection, bool $includeRestrictedFiles): array
     {
         $isFull = $projection === self::PROJECTION_FULL;
-        $agendaItems = $projection === self::PROJECTION_RESTRICTED ? new Collection : $meeting->agendaItems;
+        $isRestricted = $projection === self::PROJECTION_RESTRICTED;
+        $showFiles = $isFull || ($isRestricted && $includeRestrictedFiles);
+        $agendaItems = $isRestricted ? new Collection : $meeting->agendaItems;
         $calendarEvent = $meeting->calendarEvent;
 
         if ($agendaItems->isNotEmpty()) {
@@ -454,7 +461,7 @@ class AtstovavimasDashboardService
             $agendaItems->each(fn (AgendaItem $item) => $item->setRelation('tenants', $meetingTenants));
         }
 
-        $outcome = $isFull ? $meeting->outcomeSummary(auth()->user()) : null;
+        $outcome = $isFull ? $meeting->outcomeSummary($actor) : null;
 
         return [
             'id' => (string) $meeting->id,
@@ -466,16 +473,16 @@ class AtstovavimasDashboardService
             'completion_status' => $outcome['completion_status'] ?? null,
             'vote_alignment_status' => $outcome['vote_alignment_status'] ?? null,
             'requires_student_perspective' => $isFull ? $meeting->requiresStudentPerspective() : null,
-            'has_report' => $isFull && $meeting->has_report,
-            'has_protocol' => $isFull && $meeting->has_protocol,
+            'has_report' => $showFiles && $meeting->has_report,
+            'has_protocol' => $showFiles && $meeting->has_protocol,
             // Announced in the public calendar, and whether that announcement is still a
             // draft — a drafted event is invisible to everyone but the admins.
             'has_calendar_event' => $isFull && $calendarEvent !== null,
             'calendar_event_is_draft' => $isFull && $calendarEvent !== null && $calendarEvent->is_draft,
-            ...($projection === self::PROJECTION_RESTRICTED ? ['authorized' => false] : []),
+            ...($isRestricted ? ['authorized' => false] : []),
             'agenda_items' => $agendaItems
                 ->take(4)
-                ->map(fn (AgendaItem $item) => $this->mapAgendaItem($item))
+                ->map(fn (AgendaItem $item) => $this->mapAgendaItem($actor, $item))
                 ->values()
                 ->all(),
             'agenda_items_count' => $agendaItems->count(),
@@ -485,9 +492,9 @@ class AtstovavimasDashboardService
     /**
      * @return array<string, mixed>
      */
-    private function mapAgendaItem(AgendaItem $item): array
+    private function mapAgendaItem(User $actor, AgendaItem $item): array
     {
-        if ($item->is_private && ! AgendaItemPresenter::canRead($item, auth()->user())) {
+        if ($item->is_private && ! AgendaItemPresenter::canRead($item, $actor)) {
             return AgendaItemPresenter::redacted($item);
         }
 

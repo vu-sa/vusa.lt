@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\Admin\AtstovavimasMeetingsRequest;
 use App\Http\Requests\Api\Admin\AtstovavimasStatusHistoryRequest;
 use App\Http\Requests\Api\Admin\AtstovavimasTenantRequest;
+use App\Http\Requests\Api\Admin\RepresentativeMeetingsRequest;
 use App\Models\User;
 use App\Services\AtstovavimasDashboardService;
 use App\Services\InstitutionRelationService;
@@ -97,11 +98,23 @@ class AtstovavimasApiController extends ApiController
                 // Private agenda items are redacted per reader (past members, scoped permissions), which the access map does not capture.
                 $this->accessScope($access).'|user:'.$user->id,
                 $request->boolean('refresh'),
-                fn () => $this->dashboardService->ganttMeetings($access, $from, $until),
+                fn () => $this->dashboardService->ganttMeetings($user, $access, $from, $until),
                 $from->toDateString().':'.$until->toDateString(),
                 $request->tenantIds(),
             )
         );
+    }
+
+    // Authorized in RepresentativeMeetingsRequest: each institution must be on the user's dashboard.
+    public function representativeMeetings(RepresentativeMeetingsRequest $request): JsonResponse
+    {
+        return $this->jsonSuccess($this->dashboardService->ganttMeetings(
+            $this->requireAuth($request),
+            $request->institutionAccess(),
+            Carbon::parse($request->validated('from'))->startOfDay(),
+            Carbon::parse($request->validated('to'))->endOfDay(),
+            includeRestrictedFiles: true,
+        ));
     }
 
     /**

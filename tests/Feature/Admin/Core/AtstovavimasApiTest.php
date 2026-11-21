@@ -3,7 +3,9 @@
 use App\Enums\InstitutionActivityCampaign;
 use App\Enums\ResponsibilityPurpose;
 use App\Models\Cadence;
+use App\Models\Calendar;
 use App\Models\Duty;
+use App\Models\FileableFile;
 use App\Models\Institution;
 use App\Models\InstitutionActivityRequest;
 use App\Models\InstitutionCheckIn;
@@ -30,6 +32,102 @@ beforeEach(function (): void {
     $this->institution = Institution::factory()->for($this->tenant)->create([
         'name' => ['lt' => 'Tiesioginė institucija', 'en' => 'Direct institution'],
     ]);
+});
+
+describe('representative meetings window', function (): void {
+    test('a plain representative gets windowed meetings for their own and outgoing related institutions', function (): void {
+        $this->travelTo('2026-11-21 12:00:00');
+        $rep = makeUser(Tenant::query()->first());
+        $own = $rep->current_duties()->first()->institution;
+        InstitutionLink::factory()->create([
+            'source_institution_id' => $own->id,
+            'target_institution_id' => $this->institution->id,
+        ]);
+        $meeting = Meeting::factory()->hasAttached($own)->create(['start_time' => '2026-11-01 00:00:00']);
+        $relatedMeeting = Meeting::factory()->hasAttached($this->institution)->create(['start_time' => '2026-11-30 23:59:59']);
+        Meeting::factory()->hasAttached($own)->create(['start_time' => '2025-11-20 09:00:00']);
+        FileableFile::factory()->for($meeting, 'fileable')->report()->create();
+        FileableFile::factory()->for($meeting, 'fileable')->protocol()->create();
+        Calendar::factory()->for($own->tenant)->create(['meeting_id' => $meeting->id, 'is_draft' => true]);
+        $items = AgendaItem::factory()->for($meeting)->voting()->count(5)->sequentialOrder()->create();
+        foreach ($items as $item) {
+            Vote::factory()->for($item, 'agendaItem')->consensus()->create();
+        }
+
+        $response = asUser($rep)->getJson(route('api.v1.admin.atstovavimas.meetings', [
+            'institution_ids' => [$own->id, $this->institution->id],
+            'from' => '2026-11-01',
+            'to' => '2026-11-30',
+        ]))->assertOk()->assertJsonCount(2, 'data');
+
+        $meetings = collect($response->json('data'))->keyBy('id');
+        expect($meetings[$meeting->id])
+            ->toMatchArray([
+                'institution_id' => $own->id,
+                'completion_status' => 'complete',
+                'has_report' => true,
+                'has_protocol' => true,
+                'has_calendar_event' => true,
+                'calendar_event_is_draft' => true,
+                'agenda_items_count' => 5,
+            ]);
+        expect($meetings[$meeting->id]['agenda_items'])->toHaveCount(4)
+            ->and($meetings[$meeting->id]['agenda_items'][0]['votes'])->toBe([
+                ['student_vote' => 'positive', 'decision' => 'positive', 'is_consensus' => true],
+            ])
+            ->and($meetings[$relatedMeeting->id]['institution_id'])->toBe($this->institution->id);
+    });
+
+    test('a plain representative receives 403 for a selection that includes an unrelated institution', function (): void {
+        $rep = makeUser($this->tenant);
+        $own = $rep->current_duties()->first()->institution;
+        $unrelated = Institution::factory()->for($own->tenant)->create();
+
+        asUser($rep)->getJson(route('api.v1.admin.atstovavimas.meetings', [
+            'institution_ids' => [$own->id, $unrelated->id],
+            'from' => '2026-11-01',
+            'to' => '2026-11-30',
+        ]))->assertForbidden();
+    });
+
+    test('an incoming-only link gives meeting anchors and file flags without recording state', function (): void {
+        $rep = makeUser($this->tenant);
+        $own = $rep->current_duties()->first()->institution;
+        InstitutionLink::factory()->create([
+            'source_institution_id' => $this->institution->id,
+            'target_institution_id' => $own->id,
+        ]);
+        $meeting = Meeting::factory()->hasAttached($this->institution)->create(['start_time' => '2026-11-20 09:00:00']);
+        AgendaItem::factory()->for($meeting)->create();
+        FileableFile::factory()->for($meeting, 'fileable')->report()->create();
+
+        asUser($rep)->getJson(route('api.v1.admin.atstovavimas.meetings', [
+            'institution_ids' => [$this->institution->id],
+            'from' => '2026-11-01',
+            'to' => '2026-11-30',
+        ]))->assertOk()
+            ->assertJsonPath('data.0.id', $meeting->id)
+            ->assertJsonPath('data.0.authorized', false)
+            ->assertJsonPath('data.0.has_report', true)
+            ->assertJsonPath('data.0.completion_status', null)
+            ->assertJsonCount(0, 'data.0.agenda_items')
+            ->assertJsonPath('data.0.agenda_items_count', 0);
+    });
+
+    test('the meetings window requires authentication', function (): void {
+        $this->getJson(route('api.v1.admin.atstovavimas.meetings'))->assertUnauthorized();
+    });
+
+    test('the meetings window rejects a range over 24 months', function (): void {
+        $rep = makeUser($this->tenant);
+        $own = $rep->current_duties()->first()->institution;
+
+        asUser($rep)->getJson(route('api.v1.admin.atstovavimas.meetings', [
+            'institution_ids' => [$own->id],
+            'from' => '2023-01-01',
+            'to' => '2026-01-01',
+        ]))->assertUnprocessable()->assertJsonValidationErrors('to');
+    });
 });
 
 test('timeline requires an authenticated user', function (): void {

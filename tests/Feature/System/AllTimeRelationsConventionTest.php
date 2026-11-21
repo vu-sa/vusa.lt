@@ -224,8 +224,10 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     'app/Services/InstitutionPresenter.php' => ['->duties' => 4, "'duties" => 3],
     // Related institutions load term history for the Gantt and join the tenant table for graph edges.
     'app/Services/InstitutionRelationService.php' => ["'tenants'" => 1, "'duties" => 2],
+    // Term history feeds Gantt coverage.
+    'app/Services/Institutions/AtstovavimasInstitutionPresenter.php' => ['->duties' => 1, '->users' => 1],
     // Duty permission scopes, full term history for Gantt coverage, and trimming those member rows.
-    'app/Services/Institutions/InstitutionQueries.php' => ['->tenants' => 1, "'duties" => 8, "'users'" => 1, '->duties' => 1, '->users' => 1],
+    'app/Services/Institutions/InstitutionQueries.php' => ['->tenants' => 1, "'duties" => 10, "'users'" => 1, '->duties' => 1, '->users' => 1],
     // Tenant options come from the section's upsert permission.
     'app/Services/KnowledgeSectionOptions.php' => ["'tenants'" => 1],
     // User table lookup for profile photos.
