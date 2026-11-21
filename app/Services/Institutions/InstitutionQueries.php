@@ -194,7 +194,7 @@ class InstitutionQueries
     {
         $query = Institution::select('id', 'name', 'short_name', 'tenant_id', 'meeting_periodicity_days');
 
-        return app(InstitutionActivityStatusService::class)->withSummary($query)
+        return self::withActivitySummary($query)
             ->with([
                 'tenant:id,shortname',
                 'checkIns:id,institution_id,start_date,end_date,note',
@@ -203,7 +203,6 @@ class InstitutionQueries
                 'meetings as upcoming_meetings_count' => fn ($meetings) => $meetings->where('start_time', '>', now()),
                 'meetings as incomplete_meetings_count' => IncompleteMeetingQueries::constrain(...),
             ])
-            ->tap(self::withLastActivityDate(...))
             ->tap(self::withMembershipPeriods(...));
     }
 
@@ -255,8 +254,6 @@ class InstitutionQueries
         }
 
         return self::timelineInstitutionsQuery()->active()
-            ->with('duties.users:id,name,profile_photo_path,last_action')
-            ->afterQuery(self::hideMemberDetails(...))
             ->whereIn('tenant_id', $accessibleTenantIds)
             ->get();
     }
@@ -268,14 +265,13 @@ class InstitutionQueries
      * @param  Collection<int, string>  $institutionIds
      * @return EloquentCollection<int, Institution>
      */
-    public static function getTimelineInstitutions(Collection $institutionIds)
+    public static function getTimelineInstitutions(Collection $institutionIds): EloquentCollection
     {
         if ($institutionIds->isEmpty()) {
             return new EloquentCollection;
         }
 
         return self::timelineInstitutionsQuery()->active()
-            ->with(['types:id,title,extra_attributes', 'checkIns:id,institution_id,start_date,end_date,note'])
             ->whereIn('institutions.id', $institutionIds)
             ->get();
     }
@@ -300,25 +296,40 @@ class InstitutionQueries
     /**
      * @return Builder<Institution>
      */
-    private static function timelineInstitutionsQuery()
+    private static function timelineInstitutionsQuery(): Builder
     {
-        return Institution::select('id', 'name', 'alias', 'tenant_id', 'is_active', 'meeting_periodicity_days')
+        $query = Institution::select('id', 'name', 'tenant_id', 'is_active', 'meeting_periodicity_days')
             ->whereHas('tenant', function ($query): void {
                 $query->whereIn('type', TenantType::representationalValues());
-            })
+            });
+
+        return self::withActivitySummary($query)
             ->with([
                 'tenant:id,shortname,type',
-                'types', // needed for has_public_meetings and meeting_periodicity_days
-                // Meetings only carry start_time: enough for activity-status resolution.
-                'meetings:id,start_time',
-                'checkIns',
+                'types:id,title,extra_attributes',
+                'checkIns:id,institution_id,start_date,end_date,note',
             ])
             ->withCount([
                 'meetings as upcoming_meetings_count' => function ($query): void {
                     $query->where('start_time', '>', now());
                 },
-            ])
-            ->tap(self::withActivityDates(...));
+            ]);
+    }
+
+    /**
+     * @param  Builder<Institution>  $query
+     * @return Builder<Institution>
+     */
+    private static function withActivitySummary(Builder $query): Builder
+    {
+        return app(InstitutionActivityStatusService::class)->withSummary($query)
+            ->tap(self::withLastActivityDate(...))
+            ->afterQuery(function (EloquentCollection $institutions): void {
+                foreach ($institutions as $institution) {
+                    $institution->setAttribute('last_meeting_date', self::activityDateToIso($institution->getAttribute('activity_last_meeting_at')));
+                    $institution->setAttribute('next_meeting_date', self::activityDateToIso($institution->getAttribute('activity_next_meeting_at')));
+                }
+            });
     }
 
     /** @param  Builder<Institution>  $query */

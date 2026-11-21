@@ -59,22 +59,14 @@ class AtstovavimasDashboardService
     public function tenantTimeline(User $actor, array $tenantIds): array
     {
         $institutions = InstitutionQueries::getTimelineInstitutionsForTenants($actor, $tenantIds, $this->authorizer);
-        $this->decorateInstitutions($institutions);
-        $counted = $this->countedInstitutions($institutions);
-        $countedIds = $counted->pluck('id')->map(fn ($id) => (string) $id)->flip();
+        $rows = $institutions->map(fn (Institution $institution): array => [
+            ...$this->mapInstitution($institution),
+            'in_summary' => RepStatisticsScope::counts($institution),
+        ])->values();
 
         return [
-            // Every row is drawn; the chart's own toggle decides which are shown. The tiles and the
-            // attention list stay on the set the settings call formal (`in_summary`), so the two agree.
-            'institutions' => $institutions
-                ->map(fn (Institution $institution) => [
-                    ...$this->mapInstitution($institution),
-                    'duties' => $this->mapTimelineDuties($institution),
-                    'in_summary' => $countedIds->has((string) $institution->id),
-                ])
-                ->values()
-                ->all(),
-            'institution_summary' => $this->institutionSummary($counted),
+            'institutions' => $rows->all(),
+            'institution_summary' => $this->institutionSummary($rows->where('in_summary', true)),
             'representative_activity' => $this->representativeActivitySummary($tenantIds),
         ];
     }
@@ -299,18 +291,12 @@ class AtstovavimasDashboardService
     public function ganttInstitutions(SupportCollection $access): array
     {
         $institutions = InstitutionQueries::getTimelineInstitutions($access->keys());
-        $this->decorateInstitutions($institutions);
 
         return $institutions
-            ->map(function (Institution $institution) use ($access): array {
-                $row = $this->mapInstitution($institution);
-
-                if ($access[$institution->id] === self::PROJECTION_FULL) {
-                    return $row;
-                }
-
-                return [...$row, 'authorized' => false, 'activity_status' => null];
-            })
+            ->map(fn (Institution $institution): array => $this->mapInstitution(
+                $institution,
+                authorized: $access[$institution->id] === self::PROJECTION_FULL,
+            ))
             ->values()
             ->all();
     }
@@ -423,6 +409,7 @@ class AtstovavimasDashboardService
 
         $items = $meeting->agendaItems()
             ->with('votes:id,agenda_item_id,decision,student_vote,is_main,is_consensus')
+            ->orderBy('order')
             ->limit(4)
             ->get(['id', 'meeting_id', 'title', 'type', 'order', 'is_private', 'public_title']);
 
@@ -449,36 +436,16 @@ class AtstovavimasDashboardService
     }
 
     /**
-     * @param  Collection<int, Institution>  $institutions
-     */
-    private function decorateInstitutions(Collection $institutions): void
-    {
-        $institutions->each(function (Institution $institution): void {
-            $institution->setAttribute(
-                'active_check_in',
-                $institution->checkIns
-                    ->where('end_date', '>=', now())
-                    ->where('start_date', '<=', now())
-                    ->first()
-            );
-            $institution->append(['has_public_meetings', 'meeting_periodicity_days']);
-            $institution->setAttribute(
-                'activity_status',
-                $this->activityStatusService->resolve($institution)->toArray()
-            );
-        });
-    }
-
-    /**
      * Map an institution to the exact shape the tenant timeline UI consumes.
      * Plain arrays (not models) keep the payload small and prevent lazy-loaded
      * relation internals from leaking into the response.
      *
      * @return array<string, mixed>
      */
-    private function mapInstitution(Institution $institution): array
+    private function mapInstitution(Institution $institution, bool $authorized = true): array
     {
-        $activeCheckIn = $institution->getAttribute('active_check_in');
+        $now = now();
+        $activeCheckIn = $institution->checkIns->where('end_date', '>=', $now)->where('start_date', '<=', $now)->first();
 
         return [
             'id' => (string) $institution->id,
@@ -500,11 +467,10 @@ class AtstovavimasDashboardService
             'is_internal' => $this->scopeResolver->forInstitution($institution)->isInternal(),
             'has_public_meetings' => $institution->has_public_meetings,
             'upcoming_meetings_count' => (int) ($institution->upcoming_meetings_count ?? 0),
-            // ISO strings from InstitutionQueries::withActivityDates(); the Gantt sorts and sections by them.
             'last_meeting_date' => $institution->getAttribute('last_meeting_date'),
             'next_meeting_date' => $institution->getAttribute('next_meeting_date'),
             'last_activity_at' => $institution->getAttribute('last_activity_at'),
-            'activity_status' => $institution->getAttribute('activity_status'),
+            'activity_status' => $authorized ? $this->activityStatusService->resolve($institution)->toArray() : null,
             'active_check_in' => $activeCheckIn ? [
                 'id' => (string) $activeCheckIn->id,
                 'institution_id' => (string) $activeCheckIn->institution_id,
@@ -522,31 +488,8 @@ class AtstovavimasDashboardService
                 ])
                 ->values()
                 ->all(),
+            ...($authorized ? [] : ['authorized' => false]),
         ];
-    }
-
-    /** @return list<array{id: string, users: list<array{id: string, name: string, profile_photo_path: string|null, activity_category: string, pivot: array{start_date: CarbonInterface|null, end_date: CarbonInterface|null}}>}> */
-    private function mapTimelineDuties(Institution $institution): array
-    {
-        return $institution->duties
-            ->map(fn ($duty) => [
-                'id' => (string) $duty->id,
-                'users' => $duty->users
-                    ->map(fn (User $representative) => [
-                        'id' => (string) $representative->id,
-                        'name' => $representative->name,
-                        'profile_photo_path' => $representative->profile_photo_path,
-                        'activity_category' => $this->activityCategory($representative->last_action),
-                        'pivot' => [
-                            'start_date' => $representative->pivot?->start_date,
-                            'end_date' => $representative->pivot?->end_date,
-                        ],
-                    ])
-                    ->values()
-                    ->all(),
-            ])
-            ->values()
-            ->all();
     }
 
     /**
@@ -606,15 +549,13 @@ class AtstovavimasDashboardService
     }
 
     /**
-     * @param  Collection<int, Institution>  $institutions
+     * @param  SupportCollection<int, array<string, mixed>>  $institutions
      * @return array<string, int>
      */
-    private function institutionSummary(Collection $institutions): array
+    private function institutionSummary(SupportCollection $institutions): array
     {
         $statuses = $institutions->pluck('activity_status.status')->countBy();
-        $needsAttention = $institutions->filter(
-            fn (Institution $institution) => (bool) data_get($institution, 'activity_status.requires_action')
-        )->count();
+        $needsAttention = $institutions->where('activity_status.requires_action', true)->count();
 
         return [
             'all' => $institutions->count(),
@@ -689,14 +630,5 @@ class AtstovavimasDashboardService
         }
 
         return 'stale';
-    }
-
-    /**
-     * @param  Collection<int, Institution>  $institutions
-     * @return Collection<int, Institution>
-     */
-    private function countedInstitutions(Collection $institutions): Collection
-    {
-        return $institutions->filter(RepStatisticsScope::counts(...))->values();
     }
 }

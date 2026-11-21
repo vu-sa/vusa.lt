@@ -19,7 +19,7 @@ class AtstovavimasInstitutionPresenter
      *     types: list<array{id: int, title: string|null, slug: string|null}>, is_internal: bool, has_public_meetings: bool,
      *     meeting_periodicity_days: int, upcoming_meetings_count: int, incomplete_meetings_count: int|null,
      *     last_meeting_date: string|null, next_meeting_date: string|null, last_activity_at: string|null,
-     *     activity_status: array{status: string, requires_action: bool, priority: int, periodicity_days: int, effective_days_since_activity: int|null, progress_percentage: int|null, last_activity_type: string|null, last_activity_at: string|null, last_meeting_at: string|null, next_meeting_at: string|null, active_check_in_until: string|null, last_completed_check_in_at: string|null},
+     *     activity_status: array{status: string, requires_action: bool, priority: int, periodicity_days: int, effective_days_since_activity: int|null, progress_percentage: int|null, last_activity_type: string|null, last_activity_at: string|null, last_meeting_at: string|null, next_meeting_at: string|null, active_check_in_until: string|null, last_completed_check_in_at: string|null}|null,
      *     active_check_in: array{id: string, institution_id: string, start_date: string, end_date: string, note: string|null}|null,
      *     check_ins: list<array{id: string, institution_id: string, start_date: string, end_date: string, note: string|null}>,
      *     membership_periods: list<array{user: array{id: string, name: string, profile_photo_path: string|null}, duty_id: string, start_date: string, end_date: string|null}>,
@@ -37,9 +37,7 @@ class AtstovavimasInstitutionPresenter
             $tenant = $institution->tenant;
             $activeCheckIn = $institution->checkIns->where('end_date', '>=', $today)->where('start_date', '<=', $today)->first();
             $authorized = $institution->getAttribute('authorized') !== false;
-            $related = (bool) $institution->getAttribute('is_related');
             $secretary = (bool) $institution->getAttribute('is_secretary');
-            $activityStatus = $activity->resolve($institution)->toArray();
             $types = [];
             foreach ($institution->types as $type) {
                 $types[] = ['id' => $type->id, 'title' => $type->getTranslation('title', app()->getLocale()), 'slug' => $type->slug];
@@ -56,16 +54,16 @@ class AtstovavimasInstitutionPresenter
                 'meeting_periodicity_days' => $institution->meeting_periodicity_days,
                 'upcoming_meetings_count' => (int) $institution->getAttribute('upcoming_meetings_count'),
                 'incomplete_meetings_count' => $authorized ? (int) $institution->getAttribute('incomplete_meetings_count') : null,
-                'last_meeting_date' => $related ? null : $activityStatus['last_meeting_at'],
-                'next_meeting_date' => $related ? null : $activityStatus['next_meeting_at'],
-                'last_activity_at' => $related ? null : $institution->getAttribute('last_activity_at'),
-                'activity_status' => $activityStatus,
+                'last_meeting_date' => $institution->getAttribute('last_meeting_date'),
+                'next_meeting_date' => $institution->getAttribute('next_meeting_date'),
+                'last_activity_at' => $institution->getAttribute('last_activity_at'),
+                'activity_status' => $authorized ? $activity->resolve($institution)->toArray() : null,
                 'active_check_in' => $activeCheckIn === null ? null : self::checkIn($activeCheckIn),
                 'check_ins' => $institution->checkIns->map(self::checkIn(...))->values()->all(),
                 'membership_periods' => self::membershipPeriods($institution),
                 'is_secretary' => $secretary,
                 'is_administered' => $secretary,
-                'is_related' => $related,
+                'is_related' => (bool) $institution->getAttribute('is_related'),
                 'authorized' => $authorized,
                 'relationship_direction' => $institution->getAttribute('relationship_direction'),
                 'relationship_type' => $institution->getAttribute('relationship_type'),

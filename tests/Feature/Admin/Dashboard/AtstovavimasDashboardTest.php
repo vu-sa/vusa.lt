@@ -742,6 +742,7 @@ describe('atstovavimas related institutions', function (): void {
         ]);
         $meeting = Meeting::factory()->hasAttached($this->relatedInstitution)->create(['start_time' => now()->subYear()]);
         AgendaItem::factory()->for($meeting)->voting()->create();
+        $upcoming = Meeting::factory()->hasAttached($this->relatedInstitution)->create(['start_time' => now()->addDay()]);
 
         asUserWithInertia($this->user)->get(route('dashboard.atstovavimas'))
             ->assertOk()
@@ -753,6 +754,9 @@ describe('atstovavimas related institutions', function (): void {
                         ->where('id', $this->relatedInstitution->id)
                         ->where('authorized', true)
                         ->where('incomplete_meetings_count', 1)
+                        ->where('last_meeting_date', $meeting->start_time->toISOString())
+                        ->where('next_meeting_date', $upcoming->start_time->toISOString())
+                        ->where('activity_status.status', 'covered_by_upcoming_meeting')
                         ->missing('meetings')
                         ->missing('duties')
                         ->etc())));
@@ -785,7 +789,8 @@ describe('atstovavimas related institutions', function (): void {
             );
     });
 
-    test('restricted related institution summaries omit the incomplete meeting count', function (): void {
+    test('restricted related institution summaries keep the dates and hide recording and activity status', function (): void {
+        $this->travelTo('2026-11-21 12:00:00');
         InstitutionLink::factory()->create([
             'source_institution_id' => $this->relatedInstitution->id,
             'target_institution_id' => $this->userInstitution->id,
@@ -793,6 +798,8 @@ describe('atstovavimas related institutions', function (): void {
         ]);
         $meeting = Meeting::factory()->hasAttached($this->relatedInstitution)->create(['start_time' => now()->subYear()]);
         AgendaItem::factory()->for($meeting)->voting()->create();
+        $upcoming = Meeting::factory()->hasAttached($this->relatedInstitution)->create(['start_time' => now()->addDay()]);
+        $checkIn = InstitutionCheckIn::factory()->for($this->relatedInstitution)->for($this->user)->create();
 
         asUserWithInertia($this->user)->get(route('dashboard.atstovavimas'))
             ->assertOk()
@@ -802,6 +809,10 @@ describe('atstovavimas related institutions', function (): void {
                         ->where('id', $this->relatedInstitution->id)
                         ->where('authorized', false)
                         ->where('incomplete_meetings_count', null)
+                        ->where('last_meeting_date', $meeting->start_time->toISOString())
+                        ->where('next_meeting_date', $upcoming->start_time->toISOString())
+                        ->where('last_activity_at', $checkIn->created_at->toISOString())
+                        ->where('activity_status', null)
                         ->missing('meetings')
                         ->missing('duties')
                         ->etc())));
