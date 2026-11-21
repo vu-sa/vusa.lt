@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "total": 2552,
+  "total": 2549,
   "fingerprints": {
     "docs/pdf/build-release.ts | TS2322 | Type 'string | undefined' is not assignable to type 'string'.": 1,
     "docs/pdf/build-release.ts | TS2345 | Argument of type 'string | undefined' is not assignable to parameter of type 'string'.": 1,
@@ -1091,8 +1091,6 @@
     "resources/js/Pages/Admin/Forms/EditForm.vue | TS2322 | Type 'Record<string, unknown>[]' is not assignable to type '{ value: string; label: string; }[]'.": 2,
     "resources/js/Pages/Admin/Forms/EditForm.vue | TS2352 | Conversion of type 'unknown[]' to type 'Record<string, string>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.": 2,
     "resources/js/Pages/Admin/Forms/ShowForm.vue | TS18046 | 'opt' is of type 'unknown'.": 4,
-    "resources/js/Pages/Admin/Forms/ShowForm.vue | TS18048 | 'fieldResponse.form_field' is possibly 'undefined'.": 2,
-    "resources/js/Pages/Admin/Forms/ShowForm.vue | TS18048 | 'fr.form_field' is possibly 'undefined'.": 1,
     "resources/js/Pages/Admin/Forms/ShowForm.vue | TS18048 | 'props.form.form_fields' is possibly 'undefined'.": 6,
     "resources/js/Pages/Admin/Forms/ShowForm.vue | TS18048 | 'registration.field_responses' is possibly 'undefined'.": 2,
     "resources/js/Pages/Admin/Forms/ShowForm.vue | TS2322 | Type 'ColumnDef<TableFeatures, Record<string, unknown>, unknown>[]' is not assignable to type 'ColumnDef<any, Record<string, unknown>, any>[]'.": 1,
