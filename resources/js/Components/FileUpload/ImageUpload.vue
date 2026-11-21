@@ -289,7 +289,7 @@ import { toast } from 'vue-sonner';
 const FocalPointPicker = defineAsyncComponent(() => import('@/Components/ui/upload/FocalPointPicker.vue'));
 const ImageCropper = defineAsyncComponent(() => import('@/Components/ui/upload/ImageCropper.vue'));
 
-import { apiRequest } from '@/Composables/apiRequest';
+import { apiRequest, SessionExpiredError } from '@/Composables/apiRequest';
 import Upload from '@/Components/ui/upload/Upload.vue';
 import UploadDropzone from '@/Components/ui/upload/UploadDropzone.vue';
 import type { UploadFile } from '@/Components/ui/upload/variants';
@@ -583,6 +583,7 @@ async function uploadFileToServer(uploadFile: UploadFile) {
     });
 
     if (disposed || controller.signal.aborted) return;
+    if (result.status === 419) throw new SessionExpiredError();
     if (!result.ok || !result.data) {
       if (result.status !== 0) failureMessage = result.message ?? failureMessage;
       throw new Error(failureMessage);
@@ -597,11 +598,11 @@ async function uploadFileToServer(uploadFile: UploadFile) {
 
     updateModels();
   }
-  catch {
+  catch (error) {
     if (disposed || controller.signal.aborted) return;
     uploadFile.status = 'error';
     uploadFile.error = failureMessage;
-    toast.error(uploadFile.error);
+    if (!(error instanceof SessionExpiredError)) toast.error(uploadFile.error);
   }
   finally {
     if (uploadController === controller) uploadController = null;

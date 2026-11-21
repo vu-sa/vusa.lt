@@ -532,7 +532,6 @@ export default tseslint.config(
       'resources/js/Composables/useAdminSearch.ts',
       'resources/js/Composables/usePublicMultiSearch.ts',
       'resources/js/Search/core/services/SearchClientFactory.ts',
-      'resources/js/Search/public/DocumentSearchService.ts',
       'resources/js/Components/AdminForms/FluentIconSelect.vue',
       'resources/js/Composables/useDocsUpdateIndicator.ts',
       'resources/js/Components/ui/upload/Upload.vue',

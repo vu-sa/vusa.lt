@@ -1,6 +1,8 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { nextTick } from 'vue';
 
+import { toast } from 'vue-sonner';
+
 import { useApiMutation } from '../useApi';
 
 vi.mock('vue-sonner', () => ({
@@ -91,5 +93,23 @@ describe('useApiMutation', () => {
 
     expect(isSuccess.value).toBe(true);
     expect(data.value?.is_followed).toBe(false);
+  });
+
+  test('shows only the session-expired toast on 419', async () => {
+    const body = { message: 'CSRF token mismatch.' };
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 419,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      json: () => Promise.resolve(body),
+      text: () => Promise.resolve(JSON.stringify(body)),
+      clone() { return this; },
+    });
+
+    const { execute } = useApiMutation('/api/v1/admin/institutions/test-id/follow', 'POST');
+    await execute();
+
+    expect(toast.error).toHaveBeenCalledOnce();
+    expect(vi.mocked(toast.error).mock.calls[0]?.[1]).toMatchObject({ id: 'session-expired' });
   });
 });

@@ -210,7 +210,7 @@ async function startImpersonating(userId: string) {
     const result = await apiRequest(url, { method: 'POST', body: { user_id: userId } });
 
     if (!result.ok) {
-      requestError.value = result.message ?? $t('Nepavyko prisijungti kaip šis narys.');
+      requestError.value = (result.status === 0 ? null : result.message) ?? $t('Nepavyko prisijungti kaip šis narys.');
       return;
     }
 
@@ -232,7 +232,7 @@ async function stopImpersonating() {
     const result = await apiRequest(url, { method: 'POST' });
 
     if (!result.ok) {
-      requestError.value = result.message ?? $t('Nepavyko grįžti į savo paskyrą.');
+      requestError.value = (result.status === 0 ? null : result.message) ?? $t('Nepavyko grįžti į savo paskyrą.');
       return;
     }
 

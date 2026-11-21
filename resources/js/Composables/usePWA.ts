@@ -4,7 +4,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { toast } from 'vue-sonner';
 import type { registerSW as RegisterSW } from 'virtual:pwa-register';
 
-import { apiRequest } from '@/Composables/apiRequest';
+import { apiRequest, SessionExpiredError } from '@/Composables/apiRequest';
 import { describeDevice } from '@/Utils/pushDevice';
 
 /**
@@ -156,6 +156,7 @@ async function subscribeRegistration(registration: ServiceWorkerRegistration, va
   });
 
   if (response.status === 0) throw new TypeError(response.message ?? 'Network error');
+  if (response.status === 419) throw new SessionExpiredError();
   if (!response.ok) {
     throw new Error(`Server returned ${response.status}`);
   }
@@ -395,7 +396,7 @@ export function usePWA() {
     }
     catch (error) {
       console.error('[PWA] Push subscription failed:', error);
-      toast.error($t('notifications.push_devices.subscribe_failed'));
+      if (!(error instanceof SessionExpiredError)) toast.error($t('notifications.push_devices.subscribe_failed'));
       return false;
     }
     finally {

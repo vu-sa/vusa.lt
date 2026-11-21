@@ -187,6 +187,7 @@ const copyLink = async (file: FileableFileItem) => {
   try {
     const result = await apiRequest<{ url?: string }>(route('fileableFiles.publicLink', file.id), { method: 'POST' });
     if (!result.ok) {
+      if (result.status === 419) return;
       toasts.error((result.status === 0 ? null : result.message) ?? $t('common.link_copy_failed'));
       return;
     }

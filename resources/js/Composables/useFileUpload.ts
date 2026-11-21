@@ -1,4 +1,4 @@
-import { apiRequest } from '@/Composables/apiRequest';
+import { apiRequest, SessionExpiredError } from '@/Composables/apiRequest';
 
 export interface UploadedFileResult {
   name: string;
@@ -34,6 +34,7 @@ export async function uploadFiles(files: File[], path: string): Promise<UploadBa
   });
 
   if (result.status === 0) throw new TypeError(result.message ?? 'Network error');
+  if (result.status === 419) throw new SessionExpiredError();
   if (!result.ok || !result.data) {
     throw new Error(result.message || `Upload failed (${result.status})`);
   }

@@ -2,7 +2,7 @@ import '../css/app.css';
 import '../css/admin/tour.css';
 import { type DefineComponent, createApp, h } from 'vue';
 import { ZiggyVue } from 'ziggy-js';
-import { createInertiaApp, http } from '@inertiajs/vue3';
+import { createInertiaApp, http, router } from '@inertiajs/vue3';
 import { defineAsyncComponent } from 'vue';
 import { i18nVue } from 'laravel-vue-i18n';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
@@ -21,6 +21,8 @@ http.onError((error) => {
     notifySessionExpired();
   }
 });
+// Without this, a visit's 419 also opens Laravel's error page in Inertia's modal, over the toast.
+router.on('httpException', event => event.detail.response.status !== 419);
 
 const AdminLayout = defineAsyncComponent(
   () => import('./Components/Layouts/AdminLayout.vue'),

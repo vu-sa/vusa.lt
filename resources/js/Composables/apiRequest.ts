@@ -31,7 +31,15 @@ export interface ApiResult<T> {
   meta: Record<string, unknown> | null;
 }
 
-const SESSION_EXPIRED_STATUS = 419;
+export const SESSION_EXPIRED_STATUS = 419;
+
+/** Thrown by callers that turn a failed result into an exception, so their catch can skip a second toast. */
+export class SessionExpiredError extends Error {
+  constructor() {
+    super('Session expired');
+    this.name = 'SessionExpiredError';
+  }
+}
 
 function readCookie(name: string): string | null {
   if (typeof document === 'undefined') {
@@ -86,7 +94,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-async function readBody(response: Response): Promise<unknown> {
+async function readBody(response: Response, signal?: AbortSignal): Promise<unknown> {
   if (response.status === 204) {
     return null;
   }
@@ -94,23 +102,32 @@ async function readBody(response: Response): Promise<unknown> {
   try {
     return await response.json();
   }
-  catch {
+  catch (error) {
+    if (isAbort(error, signal)) {
+      throw error;
+    }
+
     return null;
   }
+}
+
+/** A failed response never fills `data`, so a bare error body cannot pass for a payload. */
+function readData<T>(body: unknown, envelope: Record<string, unknown> | null, ok: boolean, raw: boolean): T | null {
+  if (raw) {
+    return (body ?? null) as T | null;
+  }
+  if (!ok) {
+    return null;
+  }
+
+  return (envelope === null ? body ?? null : envelope.data ?? null) as T | null;
 }
 
 function toResult<T>(response: Response, body: unknown, raw: boolean): ApiResult<T> {
   const envelope = isRecord(body) && 'success' in body ? body : null;
   const ok = response.ok && (envelope === null || envelope.success !== false);
 
-  let data: T | null;
-  if (raw || envelope === null) {
-    data = (body ?? null) as T | null;
-  }
-  else {
-    data = ok && 'data' in envelope ? (envelope.data as T) : null;
-  }
-
+  const data = readData<T>(body, envelope, ok, raw);
   const source = isRecord(body) ? body : {};
 
   return {
@@ -172,7 +189,7 @@ export async function apiRequest<T = unknown>(url: string, options: ApiRequestOp
     return networkFailure<T>(error, showErrorToast);
   }
 
-  const result = toResult<T>(response, await readBody(response), raw);
+  const result = toResult<T>(response, await readBody(response, options.signal), raw);
 
   if (response.status === SESSION_EXPIRED_STATUS) {
     notifySessionExpired();

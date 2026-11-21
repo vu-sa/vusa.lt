@@ -88,6 +88,31 @@ describe('apiRequest', () => {
     expect(toast.error).not.toHaveBeenCalled();
   });
 
+  test('keeps a bare error body out of data, so callers never mistake it for a payload', async () => {
+    mockFetch.mockResolvedValueOnce(respond({ message: 'The query field is required.', errors: { query: ['Required'] } }, 422));
+
+    expect(await apiRequest('/api/v1/admin/merge-candidates')).toMatchObject({
+      ok: false,
+      data: null,
+      message: 'The query field is required.',
+      errors: { query: ['Required'] },
+    });
+  });
+
+  test('rethrows an abort that lands while the body is read', async () => {
+    const controller = new AbortController();
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: () => {
+        controller.abort();
+        return Promise.reject(new DOMException('Aborted', 'AbortError'));
+      },
+    });
+
+    await expect(apiRequest('/api/v1/admin/x', { signal: controller.signal })).rejects.toThrow('Aborted');
+  });
+
   test('toasts the server message when asked to', async () => {
     mockFetch.mockResolvedValueOnce(respond({ success: false, message: 'Forbidden' }, 403));
 

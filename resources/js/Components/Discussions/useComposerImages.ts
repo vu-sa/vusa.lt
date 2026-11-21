@@ -1,7 +1,7 @@
 import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { apiRequest } from '@/Composables/apiRequest';
+import { apiRequest, SessionExpiredError } from '@/Composables/apiRequest';
 import { useToasts } from '@/Composables/useToasts';
 import type { ImageData } from '@/Types/media';
 
@@ -31,12 +31,15 @@ export function useComposerImages() {
         method: 'POST',
         body: formData,
       });
+      if (result.status === 419) throw new SessionExpiredError();
       if (!result.ok || !result.data) throw new Error(result.message ?? $t('forms.image_upload.failed'));
       const current = images.value.find(candidate => candidate.key === image.key);
       if (current) current.uploaded = result.data;
     }
     catch (error) {
-      toasts.error(error instanceof Error ? error.message : $t('forms.image_upload.failed'));
+      if (!(error instanceof SessionExpiredError)) {
+        toasts.error(error instanceof Error ? error.message : $t('forms.image_upload.failed'));
+      }
       remove(image.key);
     }
   }

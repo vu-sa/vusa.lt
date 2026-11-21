@@ -215,6 +215,11 @@ export function useApi<T = unknown>(
   const execute = async (): Promise<void> => {
     await fetchReturn.execute();
 
+    // onFetchError already showed the session-expired toast.
+    if (fetchReturn.statusCode.value === 419) {
+      return;
+    }
+
     const rawData = unref(fetchReturn.data);
 
     // Safety check for undefined/null response
@@ -230,7 +235,7 @@ export function useApi<T = unknown>(
       toasts.success(message);
     }
 
-    if (rawData.success === false && showErrorToast && fetchReturn.statusCode.value !== 419) {
+    if (rawData.success === false && showErrorToast) {
       const message = errorMessage || (rawData as ApiErrorResponse).message || 'An error occurred';
       toasts.error(message);
     }
@@ -361,6 +366,11 @@ export function useApiMutation<T = unknown, B = unknown>(
   const execute = async (): Promise<void> => {
     await fetchReturn.execute();
 
+    // onFetchError already showed the session-expired toast.
+    if (fetchReturn.statusCode.value === 419) {
+      return;
+    }
+
     const rawData = unref(fetchReturn.data);
 
     // Safety check for undefined/null response
@@ -376,7 +386,7 @@ export function useApiMutation<T = unknown, B = unknown>(
       toasts.success(message);
     }
 
-    if (rawData.success === false && showErrorToast && fetchReturn.statusCode.value !== 419) {
+    if (rawData.success === false && showErrorToast) {
       const message = errorMessage || (rawData as ApiErrorResponse).message || 'An error occurred';
       toasts.error(message);
     }

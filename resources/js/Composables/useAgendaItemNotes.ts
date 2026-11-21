@@ -124,7 +124,7 @@ export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUse
         mergeStoredState(result.body as { data?: StoredNote });
         return;
       }
-      if (result.ok) {
+      if (result.ok && result.body !== null) {
         dirty = false;
         const version = result.data?.version;
         baseVersion = typeof version === 'number' ? version : baseVersion;
