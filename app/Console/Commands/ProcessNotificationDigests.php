@@ -117,17 +117,22 @@ class ProcessNotificationDigests extends Command
     private function refreshActivityRequests(SupportCollection $digestItems, User $user, ResolveActivityRequestEligibility $eligibility): SupportCollection
     {
         $activityItems = $digestItems->where('notification_class', InstitutionActivityNotification::class);
-        $requestIds = $activityItems->flatMap(fn ($item) => $item->data['activity_request_ids'] ?? [])->unique();
 
-        if ($requestIds->isEmpty()) {
+        if ($activityItems->isEmpty()) {
             return $digestItems;
         }
 
-        $activityRequests = InstitutionActivityRequest::query()->open()->whereKey($requestIds)
-            ->where('recipient_id', $user->id)->whereHas('institution')->whereHas('recipient')
-            ->with(['institution.meetings', 'institution.checkIns', 'institution.types', 'recipient', 'requestedBy', 'task'])->get()->keyBy('id');
-        $activityRequests->where('campaign_type', InstitutionActivityCampaign::MissingMeetings)
-            ->loadMissing(['institution.meetings.agendaItems.votes', 'institution.meetings.institutions.types']);
+        $requestIds = $activityItems->flatMap(fn ($item) => $item->data['activity_request_ids'] ?? [])->unique();
+
+        if ($requestIds->isEmpty()) {
+            $activityRequests = new Collection;
+        } else {
+            $activityRequests = InstitutionActivityRequest::query()->open()->whereKey($requestIds)
+                ->where('recipient_id', $user->id)->whereHas('institution')->whereHas('recipient')
+                ->with(['institution.meetings', 'institution.checkIns', 'institution.types', 'recipient', 'requestedBy', 'task'])->get()->keyBy('id');
+            $activityRequests->where('campaign_type', InstitutionActivityCampaign::MissingMeetings)
+                ->loadMissing(['institution.meetings.agendaItems.votes', 'institution.meetings.institutions.types']);
+        }
 
         return $digestItems->filter(function ($item) use ($user, $activityRequests, $eligibility): bool {
             if ($item->notification_class !== InstitutionActivityNotification::class || ! isset($item->data['activity_request_ids'])) {

@@ -8,6 +8,7 @@ use App\Mail\NotificationDigest;
 use App\Models\NotificationDigestQueue;
 use App\Models\Task;
 use App\Notifications\CommentPostedNotification;
+use App\Notifications\InstitutionActivityNotification;
 use App\Notifications\TaskAssignedNotification;
 use App\Notifications\TaskOverdueNotification;
 use App\Notifications\TaskReminderNotification;
@@ -708,4 +709,29 @@ test('notifications:send-digests keeps select query count constant as pending us
 
     expect($fourUserSelects)->toBe($oneUserSelects);
     Mail::assertSentCount(6);
+});
+
+test('queued activity digest item with empty activity_request_ids is deleted and not mailed', function (): void {
+    Mail::fake();
+
+    $user = $this->createUserWithPreferences(['digest_frequency_hours' => 4]);
+
+    $item = NotificationDigestQueue::create([
+        'user_id' => $user->id,
+        'notification_class' => InstitutionActivityNotification::class,
+        'category' => NotificationCategory::Meeting->value,
+        'data' => [
+            'title' => 'Ar vyko posėdis?',
+            'body' => 'Body',
+            'url' => '/test',
+            'icon' => '🗓️',
+            'activity_request_ids' => [],
+        ],
+    ]);
+    $item->forceFill(['created_at' => now()->subHours(5)])->saveQuietly();
+
+    Artisan::call('notifications:send-digests');
+
+    Mail::assertNothingSent();
+    expect($this->getDigestQueueCountForUser($user))->toBe(0);
 });
