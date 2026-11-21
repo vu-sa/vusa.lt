@@ -2,9 +2,7 @@
 
 namespace App\Http\Requests\Api\Admin;
 
-use App\Models\Institution;
 use App\Services\AtstovavimasDashboardService;
-use App\Services\Institutions\InstitutionQueries;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Collection;
@@ -18,7 +16,7 @@ class RepresentativeMeetingsRequest extends FormRequest
     /** @var Collection<string, string> */
     private Collection $institutionAccess;
 
-    public function authorize(): bool
+    public function authorize(AtstovavimasDashboardService $dashboard): bool
     {
         $user = $this->user();
         if ($user === null) {
@@ -33,15 +31,7 @@ class RepresentativeMeetingsRequest extends FormRequest
         $requested = collect($ids)
             ->filter(fn (mixed $id): bool => is_string($id) && Str::isUlid($id))
             ->map(fn (string $id): string => strtoupper($id));
-        $own = InstitutionQueries::representativeDashboardInstitutions($user, withSummary: false);
-        $related = InstitutionQueries::relatedRepresentativeDashboardInstitutions($own, withSummary: false);
-        $this->institutionAccess = collect($own->modelKeys())
-            ->mapWithKeys(fn (string $id) => [$id => AtstovavimasDashboardService::PROJECTION_FULL])
-            ->union($related->mapWithKeys(fn (Institution $institution) => [
-                $institution->id => $institution->getAttribute('authorized')
-                    ? AtstovavimasDashboardService::PROJECTION_FULL
-                    : AtstovavimasDashboardService::PROJECTION_RESTRICTED,
-            ]))
+        $this->institutionAccess = $dashboard->representativeInstitutionAccess($user)
             ->filter(fn (string $projection, string $id): bool => $requested->containsStrict(strtoupper($id)));
 
         $allowed = $this->institutionAccess->keys()->map(fn (string $id): string => strtoupper($id));

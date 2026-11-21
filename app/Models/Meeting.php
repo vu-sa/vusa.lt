@@ -34,6 +34,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Laravel\Scout\Searchable;
@@ -463,11 +464,38 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
     {
         $date = $this->start_time->toDateString();
 
-        return $this->hadMemberMemo[$user->getKey().':'.$date] ??= $user->duties()
+        return $this->hadMemberMemo[$user->getKey().':'.$date] ??= self::dutiesHeldOn($user, $date)
             ->whereIn('duties.institution_id', $this->institutions()->select('institutions.id'))
-            ->whereDate('dutiables.start_date', '<=', $date)
-            ->where(fn ($query) => $query->whereNull('dutiables.end_date')->orWhereDate('dutiables.end_date', '>=', $date))
             ->exists();
+    }
+
+    /** @param  Collection<int, self>  $meetings */
+    public static function preloadMembershipAtMeetingTime(User $user, Collection $meetings): void
+    {
+        if ($meetings->isEmpty()) {
+            return;
+        }
+
+        $memberMeetingIds = self::query()
+            ->whereKey($meetings->modelKeys())
+            ->whereHas('institutions', fn (Builder $institutions) => $institutions->whereIn(
+                'institutions.id',
+                self::dutiesHeldOn($user, DB::raw('date(meetings.start_time)'))->select('duties.institution_id'),
+            ))
+            ->pluck('meetings.id')
+            ->flip();
+
+        foreach ($meetings as $meeting) {
+            $meeting->hadMemberMemo[$user->getKey().':'.$meeting->start_time->toDateString()] = $memberMeetingIds->has($meeting->id);
+        }
+    }
+
+    /** @return BelongsToMany<Duty, User> */
+    private static function dutiesHeldOn(User $user, string|Expression $date): BelongsToMany
+    {
+        return $user->duties()
+            ->whereDate('dutiables.start_date', '<=', $date)
+            ->where(fn ($query) => $query->whereNull('dutiables.end_date')->orWhereDate('dutiables.end_date', '>=', $date));
     }
 
     /**

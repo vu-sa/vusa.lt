@@ -4,13 +4,13 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Actions\ActivityRequests\GetOpenActivityRequestSpans;
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Api\Admin\AtstovavimasMeetingAgendaRequest;
 use App\Http\Requests\Api\Admin\AtstovavimasMeetingsRequest;
 use App\Http\Requests\Api\Admin\AtstovavimasStatusHistoryRequest;
 use App\Http\Requests\Api\Admin\AtstovavimasTenantRequest;
 use App\Http\Requests\Api\Admin\RepresentativeMeetingsRequest;
 use App\Models\User;
 use App\Services\AtstovavimasDashboardService;
-use App\Services\InstitutionRelationService;
 use App\Services\RepMetricReportService;
 use App\Services\RepStatisticsCache;
 use App\Settings\AtstovavimasSettings;
@@ -94,8 +94,8 @@ class AtstovavimasApiController extends ApiController
 
         return $this->jsonSuccess(
             $this->rememberVisak(
-                'meetings',
-                // Private agenda items are redacted per reader (past members, scoped permissions), which the access map does not capture.
+                'meeting-markers',
+                // Outcome summaries still depend on which private items the reader can see.
                 $this->accessScope($access).'|user:'.$user->id,
                 $request->boolean('refresh'),
                 fn () => $this->dashboardService->ganttMeetings($user, $access, $from, $until),
@@ -117,6 +117,14 @@ class AtstovavimasApiController extends ApiController
         ));
     }
 
+    // Authorized in AtstovavimasMeetingAgendaRequest against the selected Gantt's institution access.
+    public function meetingAgenda(AtstovavimasMeetingAgendaRequest $request, string $meeting): JsonResponse
+    {
+        $access = $request->institutionAccess();
+
+        return $this->jsonSuccess($this->dashboardService->ganttMeetingAgenda($this->requireAuth($request), $access['id'], $meeting, $access['projection']));
+    }
+
     /**
      * Resolved for every Gantt request (rows, requests, each meetings window), so it is kept briefly per user.
      *
@@ -124,15 +132,7 @@ class AtstovavimasApiController extends ApiController
      */
     private function ganttAccess(User $user, AtstovavimasTenantRequest|AtstovavimasMeetingsRequest $request): Collection
     {
-        $tenantIds = $request->tenantIds();
-
-        return RepStatisticsCache::remember(
-            'gantt-access:'.$user->id.':'.InstitutionRelationService::version().':'.implode(',', collect($tenantIds)->sort()->all()),
-            fn () => $this->dashboardService->ganttInstitutionAccess($user, $tenantIds),
-            refresh: $request->boolean('refresh'),
-            tenantIds: $tenantIds,
-            ttl: 120,
-        );
+        return $this->dashboardService->cachedGanttInstitutionAccess($user, $request->tenantIds(), $request->boolean('refresh'));
     }
 
     private function repMetricsFor(array $tenantIds): array

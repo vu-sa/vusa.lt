@@ -191,7 +191,7 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     // Agenda item tenants are the meeting's institution tenants.
     'app/Services/AgendaItemPresenter.php' => ['->tenants' => 1, "'tenants'" => 2],
     // Gantt shows all terms and reuses the meeting's institution tenants for its agenda.
-    'app/Services/AtstovavimasDashboardService.php' => ['->tenants' => 1, "'tenants'" => 2, '->users' => 2, "'users'" => 3, '->duties' => 2, "'duties" => 4],
+    'app/Services/AtstovavimasDashboardService.php' => ['->tenants' => 1, "'tenants'" => 3, '->users' => 2, "'users'" => 3, '->duties' => 2, "'duties" => 4],
     // Reads tenants from an already resolved permission scope.
     'app/Services/Authorization/PermissionScope.php' => ['->tenants' => 2],
     // Legacy reservation-resource comments use reservation participants after curated audiences are checked.
