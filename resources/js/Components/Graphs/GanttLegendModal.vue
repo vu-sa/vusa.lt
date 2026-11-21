@@ -14,10 +14,10 @@
       </DialogHeader>
 
       <div class="space-y-6 py-4">
-        <!-- Main Legend Grid - 2 columns on desktop -->
-        <div class="grid gap-6 lg:grid-cols-2">
+        <!-- Sections flow into balanced columns, so a long one does not leave a gap beside it. -->
+        <div class="gap-x-10 lg:columns-2" data-slot="gantt-legend-sections">
           <!-- Meetings Section -->
-          <div class="space-y-3">
+          <div class="mb-6 break-inside-avoid space-y-3">
             <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
               <component :is="MeetingIconFilled" class="h-4 w-4" />
               {{ $t('Posėdžiai') }}
@@ -35,9 +35,13 @@
                 </div>
               </div>
             </div>
-            <h5 class="pl-6 pt-1 text-xs font-medium text-muted-foreground">
+          </div>
+
+          <div class="mb-6 break-inside-avoid space-y-3">
+            <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
+              <component :is="MeetingIconFilled" class="h-4 w-4" />
               {{ $t('visak.gantt.legend.types') }}
-            </h5>
+            </h4>
             <div class="grid gap-2 pl-6">
               <div v-for="entry in meetingTypeEntries" :key="entry.key" class="flex items-center gap-3">
                 <svg viewBox="0 0 20 20" class="size-4 shrink-0" aria-hidden="true">
@@ -49,7 +53,7 @@
           </div>
 
           <!-- Coverage Section -->
-          <div class="space-y-3">
+          <div class="mb-6 break-inside-avoid space-y-3">
             <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
               <component :is="NotificationIconFilled" class="h-4 w-4" />
               {{ $t('Atstovavimo padengimas') }}
@@ -88,7 +92,7 @@
             </div>
           </div>
 
-          <div class="space-y-3">
+          <div class="mb-6 break-inside-avoid space-y-3">
             <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
               <MailQuestion class="size-4" aria-hidden="true" />
               {{ $t('activity_requests.gantt.legend_title') }}
@@ -123,7 +127,7 @@
           </div>
 
           <!-- Institution Indicators Section -->
-          <div class="space-y-3">
+          <div class="mb-6 break-inside-avoid space-y-3">
             <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
               <component :is="InstitutionIconFilled" class="h-4 w-4" />
               {{ $t('Institucijų indikatoriai') }}
@@ -151,7 +155,7 @@
           </div>
 
           <!-- Duty Members Section -->
-          <div class="space-y-3">
+          <div class="mb-6 break-inside-avoid space-y-3">
             <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
@@ -192,7 +196,7 @@
           </div>
 
           <!-- Time Indicators Section -->
-          <div class="space-y-3">
+          <div class="mb-6 break-inside-avoid space-y-3">
             <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
@@ -222,7 +226,7 @@
           </div>
 
           <!-- Vacation Periods Section -->
-          <div class="space-y-3">
+          <div class="mb-6 break-inside-avoid space-y-3">
             <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
@@ -326,6 +330,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { useMutationObserver } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Globe, Link2, CalendarOff, MailQuestion } from '@lucide/vue';
 
@@ -341,11 +346,15 @@ const props = defineProps<{
   isOpen: boolean;
 }>();
 
-// Read on open, so the swatches follow the theme the chart is drawn in.
+// The swatches follow the theme the chart is drawn in, also when it changes while the legend is open.
 const colors = ref<GanttColors>(getGanttColors(isDarkModeActive()));
+const readTheme = () => {
+  colors.value = getGanttColors(isDarkModeActive());
+};
 watch(() => props.isOpen, (open) => {
-  if (open) colors.value = getGanttColors(isDarkModeActive());
+  if (open) readTheme();
 });
+useMutationObserver(() => (typeof document === 'undefined' ? null : document.documentElement), readTheme, { attributes: true, attributeFilter: ['class'] });
 
 const icons = MEETING_ICON_PATHS['in-person'];
 
