@@ -124,6 +124,7 @@ describe('similar', function (): void {
         expect($match)->not->toBeNull()
             ->and($match['reason'])->toBe('same_institution_exact')
             ->and($match['can_manage'])->toBeTrue()
+            ->and($match['tenant_shortname'])->toBe($this->institution->tenant->shortname)
             // Managing is not merging: only super admins merge duties.
             ->and($match['can_merge'])->toBeFalse();
     });

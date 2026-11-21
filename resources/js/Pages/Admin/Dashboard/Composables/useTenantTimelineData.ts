@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue';
+import { computed, ref, shallowRef } from 'vue';
 
 import { useApi } from '@/Composables/useApi';
 
@@ -13,7 +13,8 @@ export function useTenantTimelineData<T = AtstovavimasTenantTimelineData>(
   }));
   const pendingTenantIds = ref<string[] | null>(null);
   let pendingForce = false;
-  const loadedTenantKey = ref('');
+  const pendingKey = () => pendingTenantIds.value?.join(',');
+  const loadedResult = shallowRef<{ tenantKey: string; data: T } | null>(null);
 
   const {
     data,
@@ -36,7 +37,7 @@ export function useTenantTimelineData<T = AtstovavimasTenantTimelineData>(
 
     if (
       !force
-      && tenantKey === loadedTenantKey.value
+      && tenantKey === loadedResult.value?.tenantKey
       && !isFetching.value
       && pendingTenantIds.value === null
     ) {
@@ -66,8 +67,9 @@ export function useTenantTimelineData<T = AtstovavimasTenantTimelineData>(
 
       await execute();
 
-      if (isSuccess.value) {
-        loadedTenantKey.value = requestKey;
+      const nextKey = pendingKey();
+      if (isSuccess.value && data.value !== null && (nextKey === undefined || nextKey === requestKey)) {
+        loadedResult.value = { tenantKey: requestKey, data: data.value };
       }
     }
   }
@@ -76,6 +78,7 @@ export function useTenantTimelineData<T = AtstovavimasTenantTimelineData>(
     data,
     isFetching,
     loaded,
+    loadedResult,
     load,
   };
 }

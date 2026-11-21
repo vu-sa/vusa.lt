@@ -148,8 +148,18 @@ trait HasNotificationPreferences
             'type' => 'user',
         ]] : [];
 
+        $hasLoadedDuties = $this->relationLoaded('current_duties')
+            && $this->current_duties->every(
+                fn (Duty $duty): bool => array_key_exists('email', $duty->getAttributes())
+                    && array_key_exists('name', $duty->getAttributes())
+            );
+
+        $currentDuties = $hasLoadedDuties
+            ? $this->current_duties
+            : $this->current_duties()->get();
+
         /** @var Duty $duty */
-        foreach ($this->current_duties()->get() as $duty) {
+        foreach ($currentDuties as $duty) {
             if (! empty($duty->email) && ! in_array($duty->email, array_column($emails, 'email'), true)) {
                 $emails[] = [
                     'email' => $duty->email,

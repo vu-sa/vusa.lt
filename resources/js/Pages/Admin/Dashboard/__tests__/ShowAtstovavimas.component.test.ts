@@ -12,24 +12,19 @@ import { commonStubs } from '@/tests/stubs';
 // personal overview's contract — every number is a link, the padalinys view is a link away for those
 // who may see it, and nothing tenant-wide leaks onto this page.
 
-const institution = (id: string, status: string) => ({
+const institution = (id: string, status: string, incompleteMeetings = 0) => ({
   id,
   name: `Institucija ${id}`,
   tenant: { id: '1', shortname: 'VU SA 1' },
   activity_status: { status, requires_action: status !== 'healthy', priority: 1, effective_days_since_activity: 40 },
-  meetings: [],
+  incomplete_meetings_count: incompleteMeetings,
 });
 
-const institutions = ref([institution('1', 'overdue'), institution('2', 'healthy'), institution('3', 'approaching')]);
+const institutions = ref([institution('1', 'overdue', 1), institution('2', 'healthy'), institution('3', 'approaching')]);
 
 vi.mock('@/Pages/Admin/Dashboard/Composables/useAtstovavimasData', () => ({
   useAtstovavimasData: () => ({
     institutions,
-    sortedMeetings: ref([
-      { id: 'm1', start_time: '2026-09-01T10:00:00', institution_id: '1', completion_status: 'incomplete' },
-      { id: 'm2', start_time: '2026-09-02T10:00:00', institution_id: '2', completion_status: 'complete' },
-    ]),
-    allUserMeetings: ref([]),
     userGaps: ref([]),
   }),
 }));
@@ -39,6 +34,7 @@ vi.mock('@/Pages/Admin/Dashboard/Composables/useTimelineFilters', () => ({
     availableTenantsUser: ref([]),
     userTenantFilter: ref(['1']),
     setUserTenantFilter: vi.fn(),
+    showRelatedInstitutionsUser: ref(false),
   }),
 }));
 
@@ -89,6 +85,7 @@ function createWrapper(canViewTenantOverview: boolean, followedInstitutions?: Ho
     props: {
       user: baseUser,
       userInstitutions: [],
+      initialMeetingsWindow: { from: '2026-05-01', to: '2026-11-30' },
       canViewTenantOverview,
       openTasksCount: 4,
       coordinators,
@@ -102,7 +99,7 @@ function createWrapper(canViewTenantOverview: boolean, followedInstitutions?: Ho
 let wrapper: ReturnType<typeof mount>;
 
 beforeEach(() => {
-  institutions.value = [institution('1', 'overdue'), institution('2', 'healthy'), institution('3', 'approaching')];
+  institutions.value = [institution('1', 'overdue', 1), institution('2', 'healthy'), institution('3', 'approaching')];
   vi.stubGlobal('route', (name: string, params?: Record<string, string>) =>
     `/mano/${name}${params ? `?${new URLSearchParams(params).toString()}` : ''}`);
 });

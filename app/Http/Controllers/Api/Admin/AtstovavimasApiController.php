@@ -4,12 +4,15 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Actions\ActivityRequests\GetOpenActivityRequestSpans;
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Api\Admin\AtstovavimasGanttMembersRequest;
+use App\Http\Requests\Api\Admin\AtstovavimasGanttRequest;
+use App\Http\Requests\Api\Admin\AtstovavimasMeetingAgendaRequest;
 use App\Http\Requests\Api\Admin\AtstovavimasMeetingsRequest;
 use App\Http\Requests\Api\Admin\AtstovavimasStatusHistoryRequest;
 use App\Http\Requests\Api\Admin\AtstovavimasTenantRequest;
+use App\Http\Requests\Api\Admin\RepresentativeMeetingsRequest;
 use App\Models\User;
 use App\Services\AtstovavimasDashboardService;
-use App\Services\InstitutionRelationService;
 use App\Services\RepMetricReportService;
 use App\Services\RepStatisticsCache;
 use App\Settings\AtstovavimasSettings;
@@ -31,19 +34,28 @@ class AtstovavimasApiController extends ApiController
         $tenantIds = $this->authorizedTenantIds($request->validated('tenant_ids'), $user);
 
         return $this->jsonSuccess(
-            $this->rememberVisak('timeline', $tenantIds->sort()->implode(','), $request->boolean('refresh'), fn () => $this->dashboardService->tenantTimeline($user, $tenantIds->all()), 'activity-status-v4', $tenantIds->all())
+            $this->rememberVisak('timeline', $tenantIds->sort()->implode(','), $request->boolean('refresh'), fn () => $this->dashboardService->tenantTimeline($user, $tenantIds->all()), 'activity-status-v5', $tenantIds->all())
         );
     }
 
     /**
      * The padaliniai Gantt rows: open to every admin, trimmed per row to what they may read.
      */
-    public function gantt(AtstovavimasTenantRequest $request): JsonResponse
+    public function gantt(AtstovavimasGanttRequest $request): JsonResponse
     {
-        $access = $this->ganttAccess($this->requireAuth($request), $request);
+        [$access, $scope] = $this->ganttSelection($this->requireAuth($request), $request);
 
         return $this->jsonSuccess(
-            $this->rememberVisak('gantt', $this->accessScope($access), $request->boolean('refresh'), fn () => $this->dashboardService->ganttInstitutions($access), 'activity-dates-v3', $request->tenantIds())
+            $this->rememberVisak('gantt', $scope, $request->boolean('refresh'), fn () => $this->dashboardService->ganttInstitutions($access), 'rows-shell-v1', $request->tenantIds())
+        );
+    }
+
+    public function ganttMembers(AtstovavimasGanttMembersRequest $request): JsonResponse
+    {
+        [$access, $scope] = $this->ganttSelection($this->requireAuth($request), $request);
+
+        return $this->jsonSuccess(
+            $this->rememberVisak('gantt-members', $scope, $request->boolean('refresh'), fn () => $this->dashboardService->ganttMembers($access), 'member-history-v1', $request->tenantIds())
         );
     }
 
@@ -87,21 +99,41 @@ class AtstovavimasApiController extends ApiController
     public function meetings(AtstovavimasMeetingsRequest $request): JsonResponse
     {
         $user = $this->requireAuth($request);
-        $access = $this->ganttAccess($user, $request);
+        [$access, $scope] = $this->ganttSelection($user, $request);
         $from = Carbon::parse($request->validated('from'))->startOfDay();
         $until = Carbon::parse($request->validated('until'))->endOfDay();
 
         return $this->jsonSuccess(
             $this->rememberVisak(
-                'meetings',
-                // Private agenda items are redacted per reader (past members, scoped permissions), which the access map does not capture.
-                $this->accessScope($access).'|user:'.$user->id,
+                'meeting-markers',
+                // Outcome summaries still depend on which private items the reader can see.
+                $scope.'|user:'.$user->id,
                 $request->boolean('refresh'),
-                fn () => $this->dashboardService->ganttMeetings($access, $from, $until),
+                fn () => $this->dashboardService->ganttMeetings($user, $access, $from, $until),
                 $from->toDateString().':'.$until->toDateString(),
                 $request->tenantIds(),
             )
         );
+    }
+
+    // Authorized in RepresentativeMeetingsRequest: each institution must be on the user's dashboard.
+    public function representativeMeetings(RepresentativeMeetingsRequest $request): JsonResponse
+    {
+        return $this->jsonSuccess($this->dashboardService->ganttMeetings(
+            $this->requireAuth($request),
+            $request->institutionAccess(),
+            Carbon::parse($request->validated('from'))->startOfDay(),
+            Carbon::parse($request->validated('to'))->endOfDay(),
+            includeRestrictedFiles: true,
+        ));
+    }
+
+    // Authorized in AtstovavimasMeetingAgendaRequest against the selected Gantt's institution access.
+    public function meetingAgenda(AtstovavimasMeetingAgendaRequest $request, string $meeting): JsonResponse
+    {
+        $access = $request->institutionAccess();
+
+        return $this->jsonSuccess($this->dashboardService->ganttMeetingAgenda($this->requireAuth($request), $access['id'], $meeting, $access['projection']));
     }
 
     /**
@@ -109,17 +141,24 @@ class AtstovavimasApiController extends ApiController
      *
      * @return Collection<string, string>
      */
-    private function ganttAccess(User $user, AtstovavimasTenantRequest|AtstovavimasMeetingsRequest $request): Collection
+    private function ganttAccess(User $user, AtstovavimasTenantRequest $request): Collection
     {
-        $tenantIds = $request->tenantIds();
+        return $this->dashboardService->cachedGanttInstitutionAccess($user, $request->tenantIds(), $request->boolean('refresh'));
+    }
 
-        return RepStatisticsCache::remember(
-            'gantt-access:'.$user->id.':'.InstitutionRelationService::version().':'.implode(',', collect($tenantIds)->sort()->all()),
-            fn () => $this->dashboardService->ganttInstitutionAccess($user, $tenantIds),
-            refresh: $request->boolean('refresh'),
-            tenantIds: $tenantIds,
-            ttl: 120,
-        );
+    /** @return array{Collection<string, string>, string} */
+    private function ganttSelection(User $user, AtstovavimasGanttRequest $request): array
+    {
+        $access = $this->ganttAccess($user, $request);
+        $ids = $request->institutionIds();
+        if ($ids === null) {
+            return [$access, $this->accessScope($access)];
+        }
+
+        $selected = array_fill_keys($ids, true);
+        $access = $access->filter(fn (string $projection, string $id): bool => isset($selected[strtoupper($id)]));
+
+        return [$access, $this->accessScope($access).'|subset:'.implode(',', $ids)];
     }
 
     private function repMetricsFor(array $tenantIds): array

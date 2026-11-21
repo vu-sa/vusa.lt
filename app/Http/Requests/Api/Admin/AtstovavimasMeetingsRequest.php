@@ -5,19 +5,13 @@ namespace App\Http\Requests\Api\Admin;
 use Carbon\Carbon;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Foundation\Http\FormRequest;
 
-class AtstovavimasMeetingsRequest extends FormRequest
+class AtstovavimasMeetingsRequest extends AtstovavimasGanttRequest
 {
     /**
      * Maximum window span, so a single request cannot pull years of meetings.
      */
     private const int MAX_SPAN_MONTHS = 24;
-
-    public function authorize(): bool
-    {
-        return $this->user() !== null;
-    }
 
     /**
      * Get the validation rules that apply to the request.
@@ -27,11 +21,9 @@ class AtstovavimasMeetingsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'tenant_ids' => ['required', 'array', 'min:1', 'max:100'],
-            'tenant_ids.*' => ['required', 'integer', 'distinct', 'exists:tenants,id'],
+            ...parent::rules(),
             'from' => ['required', 'date'],
             'until' => ['required', 'date', 'after_or_equal:from'],
-            'refresh' => ['nullable', 'boolean'],
         ];
     }
 
@@ -49,13 +41,5 @@ class AtstovavimasMeetingsRequest extends FormRequest
                 $validator->errors()->add('until', __('The date range may not span more than :months months.', ['months' => self::MAX_SPAN_MONTHS]));
             }
         });
-    }
-
-    /**
-     * @return list<int>
-     */
-    public function tenantIds(): array
-    {
-        return array_values(array_map(intval(...), $this->validated('tenant_ids')));
     }
 }

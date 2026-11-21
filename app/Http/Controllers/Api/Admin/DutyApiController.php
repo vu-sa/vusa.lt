@@ -13,6 +13,7 @@ use App\Http\Traits\HasTanstackTables;
 use App\Models\Duty;
 use App\Services\DutyAccessService;
 use App\Services\DutyAssignmentService;
+use App\Services\DutyPresenter;
 use App\Services\TanstackTableService;
 use App\Support\CollectionFacetCounts;
 use Illuminate\Http\JsonResponse;
@@ -43,8 +44,10 @@ class DutyApiController extends ApiController
         );
         $duties = $query($request)->paginate($request->getPerPage());
 
+        $this->appendForceDeleteBlockedReason($duties->getCollection(), $request);
+
         return $this->jsonSuccess([
-            'items' => $duties->getCollection()->map(fn (Duty $duty): array => [...$duty->append('force_delete_blocked_reason')->toFullArray(), 'can_update' => $request->user()->can('update', $duty), 'can_delete' => $request->user()->can('delete', $duty)])->values(),
+            'items' => $duties->getCollection()->map(fn (Duty $duty): array => DutyPresenter::forIndex($duty, $request->user()))->values(),
             'total' => $duties->total(),
             'per_page' => $duties->perPage(),
             'current_page' => $duties->currentPage(),

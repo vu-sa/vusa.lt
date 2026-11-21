@@ -19,6 +19,7 @@ use App\Services\NotificationRouter;
 use App\Services\Typesense\SearchText;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -69,6 +70,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $profile_photo_focal_point
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
+ * @property-read Collection<int, Comment> $authoredComments
+ * @property-read Collection<int, Problem> $createdProblems
+ * @property-read Collection<int, InstitutionCheckIn> $institutionCheckIns
  * @property-read InstitutionSecretary|InstitutionFollow|Dutiable|null $pivot
  * @property-read Collection<int, Duty> $current_duties
  * @property-read Collection<int, Duty> $current_or_upcoming_duties
@@ -199,6 +203,20 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
     public function searchableUsing()
     {
         return app(EngineManager::class)->engine('typesense');
+    }
+
+    public function scopeWithSearchableRelations(Builder $query): void
+    {
+        $query->with(['current_duties.institution.tenant', 'previous_duties', 'duties']);
+    }
+
+    /**
+     * @param  Builder<User>  $query
+     * @return Builder<User>
+     */
+    protected function makeAllSearchableUsing(Builder $query)
+    {
+        return $query->withSearchableRelations();
     }
 
     public function toSearchableArray(): array
@@ -488,16 +506,30 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
         return AddressivizeHelper::addressivizeEveryWord($this->name);
     }
 
-    /**
-     * Comments and check-ins restrict deletes, and `problems.created_by` cascades —
-     * permanently deleting a person would take the problems they reported with them.
-     */
+    /** @return HasMany<Comment, $this> */
+    public function authoredComments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    /** @return HasMany<InstitutionCheckIn, $this> */
+    public function institutionCheckIns(): HasMany
+    {
+        return $this->hasMany(InstitutionCheckIn::class);
+    }
+
+    /** @return HasMany<Problem, $this> */
+    public function createdProblems(): HasMany
+    {
+        return $this->hasMany(Problem::class, 'created_by');
+    }
+
     public function forceDeleteBlockedReason(): ?string
     {
         return $this->forceDeleteReasonFor([
-            'trash.blockers.comments' => Comment::query()->where('user_id', $this->id)->count(),
-            'trash.blockers.check_ins' => InstitutionCheckIn::query()->where('user_id', $this->id)->count(),
-            'trash.blockers.reported_problems' => Problem::query()->where('created_by', $this->id)->count(),
+            'trash.blockers.comments' => $this->countedRelation('authoredComments'),
+            'trash.blockers.check_ins' => $this->countedRelation('institutionCheckIns'),
+            'trash.blockers.reported_problems' => $this->countedRelation('createdProblems'),
         ]);
     }
 

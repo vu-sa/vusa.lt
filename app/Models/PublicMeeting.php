@@ -11,6 +11,7 @@ use App\Services\VoteStatisticsCalculator;
 use App\Settings\MeetingSettings;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -121,6 +122,22 @@ class PublicMeeting extends Meeting
     public function shouldBeSearchable(): bool
     {
         return ! $this->trashed() && $this->isPubliclyVisible();
+    }
+
+    #[\Override]
+    public function scopeWithSearchableRelations(Builder $query): void
+    {
+        $query->with([
+            'institutions.types',
+            'institutions.tenant',
+            'agendaItems.votes',
+        ]);
+    }
+
+    #[\Override]
+    protected function makeAllSearchableUsing(Builder $query)
+    {
+        return $query->withSearchableRelations();
     }
 
     /**

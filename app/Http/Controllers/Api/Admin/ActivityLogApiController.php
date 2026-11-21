@@ -14,6 +14,7 @@ use App\Services\ActivityChangeFormatter;
 use App\Services\AgendaItemPresenter;
 use App\Support\Auditables;
 use App\Support\MorphMap;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -54,7 +55,15 @@ class ActivityLogApiController extends ApiController
                 fn ($q, $type) => $q->where('subject_type', MorphMap::alias(Auditables::subjectClassFor($type)))
             )
             ->when($request->validated('causer_id'), fn ($q, $causerId) => $q->where('causer_id', $causerId))
-            ->with(['causer:id,name,profile_photo_path', 'subject'])
+            ->with([
+                'causer:id,name,profile_photo_path',
+                'subject' => fn (MorphTo $subject) => $subject->morphWith([
+                    AgendaItem::class => ['meeting.institutions:id', 'tenants'],
+                    Vote::class => ['agendaItem.meeting.institutions:id', 'agendaItem.tenants'],
+                    AgendaItemNote::class => ['agendaItem.meeting.institutions:id', 'agendaItem.tenants'],
+                    Step::class => ['agendaItem.meeting.institutions:id', 'agendaItem.tenants'],
+                ]),
+            ])
             ->orderByDesc('id');
 
         // cursorPaginate() resolves the current cursor itself from the

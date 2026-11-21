@@ -176,13 +176,13 @@ class FormController extends AdminController
      * Display the specified resource.
      */
     #[Authorize('view', 'form')]
-    public function show(Request $request, Form $form)
+    public function show(Request $request, Form $form): Response
     {
         $form->load(['formFields' => fn ($query) => $query->orderBy('order')]);
 
         $registrations = $this->registrationVisibility
             ->query($form, $request->user())
-            ->with('fieldResponses.formField')
+            ->with('fieldResponses')
             ->latest()
             ->get();
 
@@ -190,11 +190,12 @@ class FormController extends AdminController
         $institutions = collect();
         if (app(FormSettings::class)->student_rep_registration_form_id === $form->id) {
             // Get all institutions that are referenced in the registrations
-            $institutionField = $form->formFields->first(fn (FormField $field) => $field->resolvedOptionSource() === FormOptionSource::Institution);
+            $fields = $form->formFields->keyBy('id');
+            $institutionField = $fields->first(fn (FormField $field) => $field->resolvedOptionSource() === FormOptionSource::Institution);
 
             if ($institutionField) {
-                $institutionIds = $registrations->flatMap(function ($registration) use ($institutionField) {
-                    $response = $registration->fieldResponses->first(fn ($fieldResponse) => $fieldResponse->formField->id === $institutionField->id);
+                $institutionIds = $registrations->flatMap(function ($registration) use ($fields, $institutionField): array {
+                    $response = $registration->fieldResponses->first(fn ($fieldResponse) => $fields->get($fieldResponse->form_field_id)?->id === $institutionField->id);
 
                     return $response?->response['value'] ? [$response->response['value']] : [];
                 })->unique();
