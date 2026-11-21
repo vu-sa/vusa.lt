@@ -135,7 +135,11 @@ describe('authorized access', function (): void {
         $small->assertJsonCount(3, $itemsPath);
         $large->assertJsonCount(10, $itemsPath)
             ->assertJsonPath($itemsPath.'.0.can_update', true)
-            ->assertJsonPath($itemsPath.'.0.can_delete', true);
+            ->assertJsonPath($itemsPath.'.0.can_delete', true)
+            ->assertJsonPath($itemsPath.'.0.dutiables_count', fn ($count): bool => is_int($count))
+            ->assertJsonPath($itemsPath.'.0.tenants.0.id', $this->tenant->id)
+            ->assertJsonPath($itemsPath.'.0.tenants.0.laravel_through_key', $large->json($itemsPath.'.0.institution.id'))
+            ->assertJsonMissingPath($itemsPath.'.0.force_delete_blocked_reason');
         expect($largeCount)->toBe($smallCount);
     })->with([
         'page' => ['duties.index', 'props.duties.data'],

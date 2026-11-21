@@ -4,6 +4,7 @@ use App\Actions\GetInstitutionCoordinators;
 use App\Actions\GetUserCoordinators;
 use App\Enums\InstitutionScope;
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\Meeting;
@@ -11,7 +12,9 @@ use App\Models\ResponsibilityGrant;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
+use App\Services\ResponsibilityResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
@@ -192,4 +195,51 @@ test('coordinator presentation retains pronouns and the assignment name override
 
     expect(coordinatorCardFor($this->institution))
         ->toMatchArray(['pronouns' => ['lt' => 'ji/jos', 'en' => 'she/her'], 'use_original_duty_name' => true]);
+});
+
+test('resolving coordinators batches institutions, grants, and fallback email addresses', function (): void {
+    $rep = User::factory()->create();
+    $this->managerDuty->update(['email' => 'kontaktas@vusa.lt']);
+    $parentType = DutyType::factory()->create();
+    $childType = DutyType::factory()->create(['parent_id' => $parentType->id]);
+    $addInstitutions = function (int $count) use ($rep, $parentType, $childType): void {
+        foreach (Institution::factory()->for($this->tenant)->count($count)->create() as $institution) {
+            $seat = Duty::factory()->for($institution)->create();
+            $seat->assignRole('Studentų atstovas');
+            $rep->duties()->attach($seat, ['start_date' => now()->subDay()]);
+
+            $coordinatorDuty = Duty::factory()->for($institution)->create(['email' => null]);
+            $coordinatorDuty->types()->attach($childType);
+            $this->coordinator->duties()->attach($coordinatorDuty, ['start_date' => now()->subDay()]);
+            ResponsibilityGrant::factory()->forDutyType($parentType)->forInstitution($institution)->create();
+        }
+    };
+    $measure = function (int $expectedInstitutions) use ($rep): int {
+        $viewer = $rep->fresh();
+        GetUserCoordinators::execute($viewer);
+        app(ResponsibilityResolver::class)->flush();
+        $viewer->unsetRelation('current_or_upcoming_duties');
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+
+        try {
+            $coordinators = GetUserCoordinators::execute($viewer);
+            $queries = count(DB::getQueryLog());
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
+
+        expect($coordinators)->toHaveCount(1)
+            ->and($coordinators[0]['email'])->toBe('kontaktas@vusa.lt')
+            ->and($coordinators[0]['institutions'])->toHaveCount($expectedInstitutions);
+
+        return $queries;
+    };
+
+    $addInstitutions(1);
+    $small = $measure(1);
+    $addInstitutions(4);
+
+    expect($measure(5))->toBe($small);
 });

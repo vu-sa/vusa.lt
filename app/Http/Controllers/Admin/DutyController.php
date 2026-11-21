@@ -43,6 +43,7 @@ use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class DutyController extends AdminController
 {
@@ -54,7 +55,7 @@ class DutyController extends AdminController
      * Display a listing of the resource.
      */
     #[Authorize('viewAny', Duty::class)]
-    public function index(IndexDutyRequest $request, DutyAccessService $access)
+    public function index(IndexDutyRequest $request, DutyAccessService $access): Response
     {
         $query = $this->applyTanstackFilters(
             BuildDutyIndexQuery::execute($request, $access),
@@ -68,12 +69,11 @@ class DutyController extends AdminController
         $duties = $query->paginate($request->getPerPage())
             ->withQueryString();
 
+        $this->appendForceDeleteBlockedReason($duties->getCollection(), $request);
+
         return Inertia::render('Admin/People/IndexDuty', [
             'duties' => [
-                'data' => $duties->getCollection()->map(function ($duty) {
-                    /** @var Duty $duty */
-                    return [...$duty->append('force_delete_blocked_reason')->toFullArray(), 'can_update' => request()->user()->can('update', $duty), 'can_delete' => request()->user()->can('delete', $duty)];
-                })->values(),
+                'data' => $duties->getCollection()->map(fn (Duty $duty): array => DutyPresenter::forIndex($duty, $request->user()))->values(),
                 'meta' => [
                     'total' => $duties->total(),
                     'per_page' => $duties->perPage(),

@@ -40,6 +40,7 @@ use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class UserController extends AdminController
 {
@@ -51,7 +52,7 @@ class UserController extends AdminController
      * Display a listing of the resource.
      */
     #[Authorize('viewAny', User::class)]
-    public function index(IndexUserRequest $request)
+    public function index(IndexUserRequest $request): Response
     {
         $buildQuery = fn (bool $includeDuplicates = true) => $this->applyTanstackFilters(
             BuildUserIndexQuery::execute($request, $this->authorizer, $includeDuplicates),
@@ -71,7 +72,7 @@ class UserController extends AdminController
         $query = $buildQuery();
 
         // Trash view only: lets the table say why permanent deletion is refused.
-        $query = $this->withForceDeleteBlockers($query, $request);
+        $query = $this->withForceDeleteBlockers($query, $request, ['authoredComments', 'institutionCheckIns', 'createdProblems']);
 
         $users = $query->paginate($request->getPerPage())
             ->withQueryString();
@@ -148,7 +149,7 @@ class UserController extends AdminController
      * Display the specified resource.
      */
     // Authorized in ActivityRequestHistoryRequest: the user in the route.
-    public function show(ActivityRequestHistoryRequest $request, User $user, GetUserActivityRequests $activityRequests)
+    public function show(ActivityRequestHistoryRequest $request, User $user, GetUserActivityRequests $activityRequests): Response
     {
         $loadUser = fn () => once(function () use ($user) {
             $user->loadMissing([
@@ -158,16 +159,13 @@ class UserController extends AdminController
                 'upcoming_duties' => fn ($query) => $query->withPivot('created_at', 'updated_at'),
                 'previous_duties.institution.tenant',
                 'previous_duties.formerNames',
-                'tasks.taskable',
-                'tasks.users:id,name,email,profile_photo_path',
-                'tasks.tenants',
             ]);
             $user->append('has_password');
 
             return $user;
         });
 
-        $tasks = fn () => once(fn () => $loadUser()->tasks->sortByDesc('created_at')->values());
+        $tasks = fn () => once(fn () => $user->tasks()->withListingRelations()->get()->sortByDesc('created_at')->values());
 
         $taskStats = fn () => once(function () use ($tasks) {
             $t = $tasks();

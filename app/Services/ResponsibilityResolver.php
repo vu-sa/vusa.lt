@@ -5,11 +5,13 @@ namespace App\Services;
 use App\Enums\ResponsibilityPurpose;
 use App\Enums\ResponsibilityScope;
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\ResponsibilityGrant;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\MorphMap;
 use App\Support\TypeTree;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -192,29 +194,54 @@ class ResponsibilityResolver
     private function resolve(ResponsibilityPurpose $purpose, Institution $institution): array
     {
         $key = $purpose->value.':'.$institution->id;
-
-        if (isset($this->memo[$key])) {
-            return $this->memo[$key];
+        if (! isset($this->memo[$key])) {
+            $this->loadForInstitutions($purpose, new Collection([$institution]));
         }
 
-        $none = ['scope' => null, 'duties' => new Collection];
+        return $this->memo[$key];
+    }
 
-        if (! $purpose->appliesTo($institution)) {
-            return $this->memo[$key] = $none;
+    /** @param Collection<int, Institution> $institutions */
+    public function loadForInstitutions(ResponsibilityPurpose $purpose, Collection $institutions): void
+    {
+        $pending = $institutions->reject(fn (Institution $institution): bool => isset($this->memo[$purpose->value.':'.$institution->id]));
+        if ($pending->count() > 1) {
+            $pending->loadMissing('types');
         }
 
-        foreach ($this->levels($institution) as [$scope, $ids]) {
-            $dutyIds = $this->dutyIdsAt($purpose, $scope, $ids);
+        $matches = [];
 
-            if ($dutyIds !== []) {
-                return $this->memo[$key] = [
-                    'scope' => $scope,
-                    'duties' => Duty::query()->whereIn('id', $dutyIds)->orderBy('order')->get(),
-                ];
+        foreach ($pending as $institution) {
+            $key = $purpose->value.':'.$institution->id;
+            $matches[$key] = $this->winningAssignment($purpose, $institution);
+        }
+
+        $allIds = array_unique(array_merge(...array_column($matches, 'duty_ids')));
+        $duties = $allIds === [] ? new Collection : Duty::query()->whereKey($allIds)->orderBy('order')->get();
+
+        foreach ($matches as $key => $match) {
+            $ids = array_flip($match['duty_ids']);
+            $this->memo[$key] = [
+                'scope' => $match['scope'],
+                'duties' => $duties->filter(fn (Duty $duty): bool => isset($ids[$duty->id]))->values(),
+            ];
+        }
+    }
+
+    /** @return array{scope: ResponsibilityScope|null, duty_ids: list<string>} */
+    private function winningAssignment(ResponsibilityPurpose $purpose, Institution $institution): array
+    {
+        if ($purpose->appliesTo($institution)) {
+            foreach ($this->levels($institution) as [$scope, $ids]) {
+                $dutyIds = $this->dutyIdsAt($purpose, $scope, $ids);
+
+                if ($dutyIds !== []) {
+                    return ['scope' => $scope, 'duty_ids' => $dutyIds];
+                }
             }
         }
 
-        return $this->memo[$key] = $none;
+        return ['scope' => null, 'duty_ids' => []];
     }
 
     /**
@@ -256,40 +283,105 @@ class ResponsibilityResolver
      */
     private function assignments(ResponsibilityPurpose $purpose): SupportCollection
     {
-        return $this->assignments[$purpose->value] ??= ResponsibilityGrant::query()
+        if (isset($this->assignments[$purpose->value])) {
+            return $this->assignments[$purpose->value];
+        }
+
+        $grants = ResponsibilityGrant::query()
             ->whereHas('role', fn (Builder $role) => $role->where('purpose', $purpose))
-            ->get()
-            ->flatMap(function (ResponsibilityGrant $grant): array {
-                $dutyIds = ResponsibilityGrant::dutyIdsQuery(ResponsibilityGrant::query()->whereKey($grant->id))
-                    ->pluck('duty_id')
-                    ->map(strval(...))
-                    ->all();
+            ->get();
+        $dutyIds = $this->dutyIdsByGrant($grants);
+        $ownTenantDutyIds = $grants->filter(fn (ResponsibilityGrant $grant): bool => $grant->coversOwnTenant())
+            ->flatMap(fn (ResponsibilityGrant $grant): array => $dutyIds[$grant->id])
+            ->unique()->values()->all();
+        $tenantIds = $this->tenantIdsByDuty($ownTenantDutyIds);
+
+        return $this->assignments[$purpose->value] = $grants
+            ->flatMap(function (ResponsibilityGrant $grant) use ($dutyIds, $tenantIds): array {
+                $ids = $dutyIds[$grant->id];
 
                 if (! $grant->coversOwnTenant()) {
-                    return [['scope_type' => $grant->scope_type, 'scope_id' => $grant->scope_id, 'duty_ids' => $dutyIds]];
+                    return [['scope_type' => $grant->scope_type, 'scope_id' => $grant->scope_id, 'duty_ids' => $ids]];
                 }
 
-                return $this->dutyIdsByTenant($dutyIds)
-                    ->map(fn (array $ids, string $tenantId): array => ['scope_type' => ResponsibilityScope::Tenant->value, 'scope_id' => $tenantId, 'duty_ids' => $ids])
-                    ->values()
-                    ->all();
+                return collect($ids)->filter(fn (string $id): bool => isset($tenantIds[$id]))
+                    ->groupBy(fn (string $id): string => (string) $tenantIds[$id])
+                    ->map(fn (SupportCollection $ids, int|string $tenantId): array => [
+                        'scope_type' => ResponsibilityScope::Tenant->value,
+                        'scope_id' => (string) $tenantId,
+                        'duty_ids' => $ids->all(),
+                    ])
+                    ->values()->all();
             })
             ->values();
     }
 
     /**
-     * @param  list<string>  $dutyIds
-     * @return SupportCollection<int|string, list<string>>
+     * @param  Collection<int, ResponsibilityGrant>  $grants
+     * @return array<string, list<string>>
      */
-    private function dutyIdsByTenant(array $dutyIds): SupportCollection
+    private function dutyIdsByGrant(Collection $grants): array
     {
+        $dutyType = MorphMap::alias(DutyType::class);
+        $institution = MorphMap::alias(Institution::class);
+        $grantees = $grants->groupBy('grantee_type');
+
+        $typeIds = $grantees->get($dutyType, collect())->pluck('grantee_id')->unique();
+        $parents = $typeIds->isEmpty() ? [] : DutyType::liveParentMap();
+        $descendants = $typeIds->mapWithKeys(fn (string $id): array => [$id => DutyType::withDescendantIds([$id], $parents)]);
+        $expandedTypeIds = $descendants->flatten()->unique();
+        $institutionIds = $grantees->get($institution, collect())->pluck('grantee_id')->unique();
+
+        $byType = collect();
+        $byInstitution = collect();
+
+        if ($expandedTypeIds->isNotEmpty() || $institutionIds->isNotEmpty()) {
+            // A grant can win scope even when all its duties are trashed.
+            $viaType = DB::table('duty_duty_type')
+                ->whereIn('duty_type_id', $expandedTypeIds)
+                ->select('duty_type_id as grantee_id', 'duty_id')
+                ->selectRaw('? as grantee_type', [$dutyType]);
+            $viaInstitution = DB::table('duties')
+                ->whereIn('institution_id', $institutionIds)
+                ->select('institution_id as grantee_id', 'id as duty_id')
+                ->selectRaw('? as grantee_type', [$institution]);
+            $rows = $viaType->unionAll($viaInstitution)->get()->groupBy(['grantee_type', 'grantee_id']);
+            $byType = $rows->get($dutyType, collect());
+            $byInstitution = $rows->get($institution, collect());
+        }
+
+        $direct = MorphMap::alias(Duty::class);
+
+        return $grants->mapWithKeys(function (ResponsibilityGrant $grant) use ($direct, $dutyType, $institution, $descendants, $byType, $byInstitution): array {
+            $ids = match ($grant->grantee_type) {
+                $direct => [$grant->grantee_id],
+                $dutyType => collect($descendants->get($grant->grantee_id, []))
+                    ->flatMap(fn (int $id) => $byType->get($id, collect())->pluck('duty_id'))
+                    ->map(strval(...))->unique()->values()->all(),
+                $institution => $byInstitution->get($grant->grantee_id, collect())
+                    ->pluck('duty_id')->map(strval(...))->values()->all(),
+                default => [],
+            };
+
+            return [$grant->id => $ids];
+        })->all();
+    }
+
+    /**
+     * @param  list<string>  $dutyIds
+     * @return SupportCollection<string, int>
+     */
+    private function tenantIdsByDuty(array $dutyIds): SupportCollection
+    {
+        if ($dutyIds === []) {
+            return collect();
+        }
+
         return DB::table('duties')
             ->join('institutions', 'institutions.id', '=', 'duties.institution_id')
             ->whereIn('duties.id', $dutyIds)
             ->whereNotNull('institutions.tenant_id')
-            ->get(['duties.id', 'institutions.tenant_id'])
-            ->groupBy(fn (object $row): string => (string) $row->tenant_id)
-            ->map(fn (SupportCollection $rows): array => array_values($rows->pluck('id')->map(strval(...))->all()));
+            ->pluck('institutions.tenant_id', 'duties.id');
     }
 
     /**

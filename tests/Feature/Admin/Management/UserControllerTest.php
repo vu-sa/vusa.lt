@@ -1,10 +1,14 @@
 <?php
 
 use App\Actions\Duties\SyncUserDuties;
+use App\Models\Comment;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\InstitutionCheckIn;
 use App\Models\Pivots\Dutiable;
+use App\Models\Problem;
 use App\Models\Role;
+use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
@@ -672,3 +676,93 @@ describe('the record hands the assignment sheets their options', function (): vo
                 ->loadDeferredProps('userPanels', fn ($panels) => $panels->has('assignment.studyPrograms')));
     });
 });
+
+test('user details batch task permissions for a padalinys coordinator', function (): void {
+    $coordinator = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
+    $coordinator->duties()->firstOrFail()->givePermissionTo('tasks.update.padalinys');
+    $user = makeUser($this->tenant);
+    $addTasks = function (int $count) use ($user): void {
+        for ($i = 0; $i < $count; $i++) {
+            $institution = Institution::factory()->for($this->tenant)->create();
+            Task::factory()->for($institution, 'taskable')->hasAttached($user, [], 'users')->create();
+        }
+    };
+    $fetch = fn () => asUserWithInertia($coordinator)->getJson(route('users.show', $user))->assertOk();
+
+    $measure = function (int $expectedTasks) use ($fetch): int {
+        $fetch();
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+
+        try {
+            $response = $fetch();
+            $queries = count(DB::getQueryLog());
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
+
+        $response->assertJsonMissingPath('props.user.tasks')
+            ->assertJsonCount($expectedTasks, 'props.tasks')
+            ->assertJsonPath('props.taskStats.total', $expectedTasks);
+
+        expect(collect($response->json('props.tasks'))->pluck('can_update')->unique()->all())->toBe([true]);
+
+        return $queries;
+    };
+
+    $addTasks(1);
+    $small = $measure(1);
+    $addTasks(4);
+
+    expect($measure(5))->toBe($small);
+});
+
+test('user trash lists blocker reasons without adding queries per row', function (string $routeName, string $itemsPath): void {
+    $coordinator = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
+    $institution = Institution::factory()->for($this->tenant)->create();
+    $duty = Duty::factory()->for($institution)->create();
+    $users = User::factory()->count(5)->hasAttached($duty, ['start_date' => now()->subDay()])->create();
+
+    foreach ($users as $user) {
+        Comment::factory()->for($user)->for($institution, 'commentable')->create();
+        InstitutionCheckIn::factory()->for($institution)->create(['user_id' => $user->id]);
+        Problem::factory()->for($this->tenant)->create(['created_by' => $user->id]);
+        $user->delete();
+    }
+
+    $fetch = fn (int $perPage) => asUserWithInertia($coordinator)
+        ->getJson(route($routeName, ['showDeleted' => 'true', 'per_page' => $perPage]))->assertOk();
+    $measure = function (int $perPage) use ($fetch, $itemsPath): int {
+        $fetch($perPage);
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+
+        try {
+            $response = $fetch($perPage);
+            $queries = count(DB::getQueryLog());
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
+
+        $response->assertJsonCount($perPage, $itemsPath)
+            ->assertJsonMissingPath($itemsPath.'.0.authored_comments_count')
+            ->assertJsonMissingPath($itemsPath.'.0.institution_check_ins_count')
+            ->assertJsonMissingPath($itemsPath.'.0.created_problems_count');
+        $blockers = collect(['comments', 'check_ins', 'reported_problems'])
+            ->map(fn (string $blocker): string => '1 '.trans_choice('trash.blockers.'.$blocker, 1))
+            ->implode(', ');
+        $reason = __('trash.blocked.generic', ['blockers' => $blockers]);
+        expect(collect($response->json($itemsPath))->pluck('force_delete_blocked_reason')->unique()->all())->toBe([$reason]);
+
+        return $queries;
+    };
+
+    $small = $measure(1);
+
+    expect($measure(5))->toBe($small);
+})->with([
+    'page' => ['users.index', 'props.users.data'],
+    'API' => ['api.v1.admin.users.index', 'data.items'],
+]);

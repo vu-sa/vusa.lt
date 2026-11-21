@@ -8,8 +8,10 @@ use App\Models\User;
 class ActivityRequestHistoryMapper
 {
     public const array RELATIONS = [
-        'recipient:id,name', 'requestedBy:id,name', 'meetings:id,start_time', 'checkIns',
-        'meeting:id,start_time', 'checkIn', 'resolvedByRequest:id,recipient_id', 'resolvedByRequest.recipient:id,name',
+        'recipient:id,name', 'requestedBy:id,name', 'checkIns', 'checkIn',
+        'meetings:id,start_time', 'meetings.institutions:id', 'meetings.tenants',
+        'meeting:id,start_time', 'meeting.institutions:id', 'meeting.tenants',
+        'resolvedByRequest:id,recipient_id', 'resolvedByRequest.recipient:id,name',
     ];
 
     public function map(InstitutionActivityRequest $request, User $user): array

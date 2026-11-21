@@ -82,7 +82,7 @@ class MeetingPanelPresenter
     public static function documents(Meeting $meeting, User $user): array
     {
         $documents = [];
-        $linked = $meeting->documents()->orderBy('document_date')->orderBy('title')->get();
+        $linked = $meeting->documents()->with('institution.tenant')->orderBy('document_date')->orderBy('title')->get();
         foreach ($linked as $document) {
             if ($document->isPublished() || $user->can('view', $document)) {
                 $documents[] = self::document($document);

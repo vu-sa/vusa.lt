@@ -14,6 +14,9 @@ class MeetingAccessService
     /** @var \WeakMap<Meeting, array<string, bool>> */
     private \WeakMap $baselineAccess;
 
+    /** @var array<string, Collection<int, array{institution_id: string, start: Carbon, end: Carbon|null}>> */
+    private array $historicalPeriods = [];
+
     public function __construct(private readonly InstitutionAccessService $institutions, private readonly ModelAuthorizer $authorizer)
     {
         $this->baselineAccess = new \WeakMap;
@@ -25,8 +28,8 @@ class MeetingAccessService
         $key = $user->getKey().':'.$meeting->start_time->toDateString();
 
         if (! array_key_exists($key, $memo)) {
-            $memo[$key] = $meeting->hadMemberAtTheTime($user)
-                || $this->institutions->getAccessibleInstitutionIds($user)->intersect($meeting->institutions->modelKeys())->isNotEmpty();
+            $memo[$key] = $this->institutions->getAccessibleInstitutionIds($user)->intersect($meeting->institutions->modelKeys())->isNotEmpty()
+                || $meeting->hadMemberAtTheTime($user);
             $this->baselineAccess[$meeting] = $memo;
         }
 
@@ -53,9 +56,13 @@ class MeetingAccessService
     /** @return Collection<int, array{institution_id: string, start: Carbon, end: Carbon|null}> */
     private function historicalPeriods(User $user): Collection
     {
+        if (isset($this->historicalPeriods[$user->id])) {
+            return $this->historicalPeriods[$user->id];
+        }
+
         $accessible = $this->institutions->getAccessibleInstitutionIds($user);
 
-        return $user->duties()->whereNotNull('duties.institution_id')->whereNotNull('dutiables.start_date')->get()
+        return $this->historicalPeriods[$user->id] = $user->duties()->whereNotNull('duties.institution_id')->whereNotNull('dutiables.start_date')->get()
             ->reject(fn ($duty): bool => $accessible->contains($duty->institution_id))
             ->map(fn ($duty): array => [
                 'institution_id' => $duty->institution_id,

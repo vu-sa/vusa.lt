@@ -920,3 +920,43 @@ describe('activity requests on the gantt', function (): void {
         $this->getJson(route('api.v1.admin.visak.activityRequests', ['tenant_ids' => [$this->tenant->id]]))->assertUnauthorized();
     });
 });
+
+test('gantt meetings batch private agenda access for a padalinys coordinator', function (): void {
+    $coordinator = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
+    $meeting = Meeting::factory()->hasAttached($this->institution)->create(['start_time' => now()->subDays(3)]);
+    $addItems = fn (int $count) => AgendaItem::factory()->for($meeting)->count($count)->create([
+        'is_private' => true,
+        'title' => ['lt' => 'Uždaras klausimas', 'en' => 'Private item'],
+    ]);
+
+    $fetch = fn (int $daysUntil) => asUser($coordinator)->getJson(route('api.v1.admin.visak.meetings', [
+        'tenant_ids' => [$this->tenant->id],
+        'from' => now()->subMonth()->toDateString(),
+        'until' => now()->addDays($daysUntil)->toDateString(),
+    ]))->assertOk();
+
+    $measure = function (int $expectedItems) use ($fetch): int {
+        $fetch($expectedItems + 1);
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+
+        try {
+            $response = $fetch($expectedItems);
+            $queries = count(DB::getQueryLog());
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
+
+        $response->assertJsonPath('data.0.agenda_items_count', $expectedItems)
+            ->assertJsonPath('data.0.agenda_items.0.title', 'Uždaras klausimas');
+
+        return $queries;
+    };
+
+    $addItems(1);
+    $small = $measure(1);
+    $addItems(4);
+
+    expect($measure(5))->toBe($small);
+});

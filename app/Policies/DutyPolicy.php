@@ -6,6 +6,7 @@ use App\Models\Duty;
 use App\Models\User;
 use App\Services\DutyAccessService;
 use App\Services\ModelAuthorizer;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 class DutyPolicy extends ModelPolicy
@@ -19,6 +20,18 @@ class DutyPolicy extends ModelPolicy
     public function view(User $user, Model $duty): bool
     {
         return app(DutyAccessService::class)->allowsRead($user, $duty);
+    }
+
+    #[\Override]
+    protected function tenantsFor(Model $model, string $tenantRelation): Collection
+    {
+        if ($model instanceof Duty && $model->relationLoaded('institution') && $model->institution?->relationLoaded('tenant')) {
+            $tenant = $model->institution->tenant;
+
+            return new Collection($tenant === null ? [] : [$tenant]);
+        }
+
+        return parent::tenantsFor($model, $tenantRelation);
     }
 
     /** Merging rewrites assignment history and permanently deletes duties, so only super admins may. */

@@ -28,6 +28,7 @@ use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Inertia\Response;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class CalendarController extends AdminController
@@ -114,14 +115,14 @@ class CalendarController extends AdminController
      * Show the form for editing the specified resource.
      */
     #[Authorize('view', 'calendar')]
-    public function edit(Request $request, Calendar $calendar)
+    public function edit(Request $request, Calendar $calendar): Response
     {
         $canUpdate = $request->user()->can('update', $calendar);
-        $calendar->loadMissing('tenant:id,type,shortname');
+        $calendar->loadMissing('tenant:id,type,shortname', 'tags', 'meeting.institutions');
 
         return Inertia::render('Admin/Calendar/EditCalendarEvent', [
             'calendar' => [
-                ...$calendar->toFullArray(),
+                ...(clone $calendar)->unsetRelation('meeting')->unsetRelation('tags')->toFullArray(),
                 'main_image_media' => $calendar->imageData('main_image'),
                 'images' => $calendar->getMedia('images')->map(
                     fn ($image) => [
