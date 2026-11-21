@@ -19,6 +19,7 @@ use App\Services\NotificationRouter;
 use App\Services\Typesense\SearchText;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -202,6 +203,20 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
     public function searchableUsing()
     {
         return app(EngineManager::class)->engine('typesense');
+    }
+
+    public function scopeWithSearchableRelations(Builder $query): void
+    {
+        $query->with(['current_duties.institution.tenant', 'previous_duties', 'duties']);
+    }
+
+    /**
+     * @param  Builder<User>  $query
+     * @return Builder<User>
+     */
+    protected function makeAllSearchableUsing(Builder $query)
+    {
+        return $query->withSearchableRelations();
     }
 
     public function toSearchableArray(): array

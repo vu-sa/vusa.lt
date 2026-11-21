@@ -341,6 +341,11 @@ class Page extends Model implements ImageMediaOwner, Sitemapable
         ]);
     }
 
+    public function scopeWithSearchableRelations(Builder $query): void
+    {
+        $query->with(['tenant', 'tags', 'content.parts']);
+    }
+
     /**
      * No return type declared: matches Searchable::makeAllSearchableUsing()'s own signature
      * exactly. PublicPage re-declares `use Searchable;` on its own class body, which flattens
@@ -352,7 +357,7 @@ class Page extends Model implements ImageMediaOwner, Sitemapable
      */
     protected function makeAllSearchableUsing(Builder $query)
     {
-        return $query->with(['tenant', 'tags', 'content.parts']);
+        return $query->withSearchableRelations();
     }
 
     public function toSearchableArray(): array

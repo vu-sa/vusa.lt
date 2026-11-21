@@ -167,9 +167,37 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
         ];
     }
 
+    public function scopeWithSearchableRelations(Builder $query): void
+    {
+        $query->with([
+            'institution.tenant',
+            'types',
+            'assignableTenants',
+            'formerNames',
+            'current_users' => fn ($users) => $users->select(['users.id', 'users.name']),
+            'previous_users' => fn ($users) => $users->select(['users.id', 'users.name'])->orderByDesc('dutiables.end_date'),
+        ]);
+    }
+
+    /**
+     * @param  Builder<Duty>  $query
+     * @return Builder<Duty>
+     */
+    protected function makeAllSearchableUsing(Builder $query)
+    {
+        return $query->withSearchableRelations();
+    }
+
     public function toSearchableArray(): array
     {
-        $this->loadMissing(['institution.tenant', 'types', 'assignableTenants', 'formerNames']);
+        $this->loadMissing([
+            'institution.tenant',
+            'types',
+            'assignableTenants',
+            'formerNames',
+            'current_users' => fn ($users) => $users->select(['users.id', 'users.name']),
+            'previous_users' => fn ($users) => $users->select(['users.id', 'users.name'])->orderByPivot('end_date', 'desc'),
+        ]);
 
         $homeTenantId = $this->institution?->tenant_id ? (int) $this->institution->tenant_id : null;
 
@@ -184,11 +212,9 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
             ->values()
             ->all();
 
-        $currentUsersCount = $this->current_users()->count();
-        $currentUsers = $this->current_users()->get(['users.id', 'name']);
-        $previousUsers = $this->previous_users()
-            ->orderByPivot('end_date', 'desc')
-            ->get(['users.id', 'name']);
+        $currentUsers = $this->current_users;
+        $currentUsersCount = $currentUsers->count();
+        $previousUsers = $this->previous_users->sortByDesc(fn (User $user) => $user->pivot?->end_date)->values();
 
         return [
             ...SearchText::forModel($this),

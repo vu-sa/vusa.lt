@@ -15,6 +15,7 @@ use App\Services\Typesense\SearchText;
 use App\ValueObjects\TimeRange;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -117,8 +118,24 @@ class Resource extends Model implements GuardsForceDelete, ImageMediaOwner
         });
     }
 
+    public function scopeWithSearchableRelations(Builder $query): void
+    {
+        $query->with(['tenant', 'category', 'media']);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    protected function makeAllSearchableUsing(Builder $query)
+    {
+        return $query->withSearchableRelations();
+    }
+
     public function toSearchableArray(): array
     {
+        $this->loadMissing(['tenant', 'category', 'media']);
+
         return [
             ...SearchText::forModel($this),
             'id' => (string) $this->id,

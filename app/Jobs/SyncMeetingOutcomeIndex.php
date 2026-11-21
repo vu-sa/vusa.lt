@@ -34,7 +34,7 @@ class SyncMeetingOutcomeIndex implements ShouldBeUniqueUntilProcessing, ShouldQu
     public function handle(MeetingSearchLock $lock): void
     {
         $lock->run($this->meetingId, function (): void {
-            $meeting = Meeting::query()->find($this->meetingId);
+            $meeting = Meeting::query()->withSearchableRelations()->find($this->meetingId);
 
             if ($meeting === null) {
                 return;
@@ -42,7 +42,7 @@ class SyncMeetingOutcomeIndex implements ShouldBeUniqueUntilProcessing, ShouldQu
 
             $meeting->searchableUsing()->update(new Collection([$meeting]));
 
-            $items = $meeting->agendaItems()->get();
+            $items = $meeting->agendaItems()->withSearchableRelations()->get();
             if ($items->isNotEmpty()) {
                 $items->first()->searchableUsing()->update($items);
             }

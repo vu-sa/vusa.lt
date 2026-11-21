@@ -115,6 +115,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static Builder<static>|Institution active()
  * @method static \Database\Factories\InstitutionFactory factory($count = null, $state = [])
  * @method static Builder<static>|Institution hasActiveDuties()
+ * @method static Builder<static>|Institution withSearchableRelations()
  * @method static Builder<static>|Institution newModelQuery()
  * @method static Builder<static>|Institution newQuery()
  * @method static Builder<static>|Institution onlyTrashed()
@@ -376,9 +377,26 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
         return app(EngineManager::class)->engine('typesense');
     }
 
+    public function scopeWithSearchableRelations(Builder $query): void
+    {
+        app(InstitutionActivityStatusService::class)->withSummary($query)
+            ->with(['tenant', 'duties.current_users', 'duties.users']);
+    }
+
+    /**
+     * @template TModel of Institution
+     *
+     * @param  Builder<TModel>  $query
+     * @return Builder<TModel>
+     */
+    protected function makeAllSearchableUsing(Builder $query)
+    {
+        return $query->withSearchableRelations();
+    }
+
     public function toSearchableArray(): array
     {
-        $this->loadMissing(['duties.current_users', 'duties.users', 'types']);
+        $this->loadMissing(['tenant', 'duties.current_users', 'duties.users', 'types']);
 
         $currentUserNames = $this->duties
             ->flatMap(fn (Duty $duty) => $duty->current_users->pluck('name'))

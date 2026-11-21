@@ -133,6 +133,20 @@ class Document extends Model
         });
     }
 
+    public function scopeWithSearchableRelations(Builder $query): void
+    {
+        $query->with(['institution.tenant', 'meeting.calendarEvent']);
+    }
+
+    /**
+     * @param  Builder<Document>  $query
+     * @return Builder<Document>
+     */
+    protected function makeAllSearchableUsing(Builder $query)
+    {
+        return $query->withSearchableRelations();
+    }
+
     public function toSearchableArray(): array
     {
         // Scout's queued MakeSearchable never re-asks shouldBeSearchable(); the engine skips an empty record,
