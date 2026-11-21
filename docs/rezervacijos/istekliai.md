@@ -1,10 +1,11 @@
 ---
 doc_status: reviewed
 title: Ištekliai
-last_reviewed: 2026-11-19
+last_reviewed: 2026-11-21
 tests:
   - tests/Feature/Admin/Reservations/ResourceControllerTest.php
   - tests/Feature/Api/Admin/ResourceAvailabilityApiControllerTest.php
+  - tests/Feature/Reservations/ResourceCapacityCalculatorTest.php
   - tests/Feature/Api/Admin/ResourceApiControllerTest.php
   - tests/Feature/Admin/Search/ResourcePreviewApiTest.php
   - tests/Unit/Models/ResourceTest.php

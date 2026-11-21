@@ -5,6 +5,8 @@ namespace App\Actions;
 use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\User;
+use App\Services\ResourceCapacityCalculator;
+use App\ValueObjects\TimeRange;
 use Carbon\Carbon;
 
 /**
@@ -16,22 +18,24 @@ use Carbon\Carbon;
  */
 class SerializeResourceAvailability
 {
+    public const array RESERVATION_POLICY_RELATIONS = ['users', 'resources.tenant', ...Reservation::TENANT_RELATIONS];
+
     /**
      * @return array{capacity: int, is_reservable: bool, lowestCapacityAtDateTimeRange: int, strictLowestCapacityAtDateTimeRange: int, discrepancies: list<array<string, mixed>>}
      */
     public static function execute(Resource $resource, Carbon|int $start, Carbon|int $end, User $viewer): array
     {
-        $strictTimeline = $resource->getCapacityAtDateTimeRange($start, $end);
-        $flexibleTimeline = $resource->getCapacityAtDateTimeRange($start, $end, [], [], true);
+        $calculator = new ResourceCapacityCalculator($resource);
+        $availability = $calculator->summarizeAvailability(new TimeRange($start, $end));
 
         return [
             'capacity' => (int) $resource->capacity,
             'is_reservable' => (bool) $resource->is_reservable,
-            'lowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($flexibleTimeline),
-            'strictLowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($strictTimeline),
-            'discrepancies' => $resource->findTimeEndedActiveReservations($start, $end)
-                ->map(fn (Reservation $reservation) => self::reservationRow($reservation, $viewer))
-                ->values()
+            'lowestCapacityAtDateTimeRange' => $availability['flexible'],
+            'strictLowestCapacityAtDateTimeRange' => $availability['strict'],
+            'discrepancies' => $availability['discrepancies']
+                ->loadMissing(self::RESERVATION_POLICY_RELATIONS)
+                ->map(fn (Reservation $reservation): array => self::reservationRow($reservation, $viewer))
                 ->all(),
         ];
     }
