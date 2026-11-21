@@ -5,6 +5,8 @@ import config from './eslint.config.mjs';
 const BLOCKING_RULES = new Set([
   'import-x/no-restricted-paths',
   'html-source/require-comment',
+  'no-restricted-globals',
+  'no-restricted-syntax',
 ]);
 
 export default config.map(block => (block.rules

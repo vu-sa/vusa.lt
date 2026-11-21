@@ -160,6 +160,11 @@ Language specifics: PHPDoc over inline comments (PHP), JSDoc rules under [TypeSc
 - `/api/v1/admin/*` — admin API (session auth)
 - `/mano/*` — Inertia admin pages (defined in `routes/admin.php`). Note: `/mano`, **not** `/admin`. Route names have **no** `admin.` prefix — e.g. `route('studyPrograms.index')`.
 
+**One HTTP convention** (blocking lint: `no-restricted-globals` / `no-restricted-syntax` in `eslint.config.mjs`):
+- JSON calls to our own endpoints → `useApi` (reactive read), `useApiMutation` (one fixed action) or `apiRequest()` (imperative: any URL, concurrent, `FormData`, `keepalive`, status-aware) from `@/Composables/useApi`.
+- A form with bound fields and validation errors outside page navigation → Inertia `useHttp`.
+- Raw `fetch`, XHR or VueUse `useFetch` only for Typesense, external services, static files and upload progress — the lint allowlist.
+
 **API vs Inertia**:
 
 | Use API (`useApi`) | Use Inertia props |
